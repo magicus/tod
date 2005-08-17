@@ -1,15 +1,10 @@
 package tod.plugin;
 
-import org.eclipse.ui.plugin.*;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
-import reflex.lib.logging.miner.api.IBrowsableLog;
-import reflex.lib.logging.miner.api.LogMiner;
-import reflex.lib.logging.miner.impl.sql.Queries;
-import reflex.lib.logging.miner.impl.sql.backend.ISQLBackend;
-import reflex.lib.logging.miner.impl.sql.backend.PostgreSQLBackend;
-import reflex.lib.logging.miner.impl.sql.queries.DatabaseInit;
+import reflex.ide.eclipse.launcher.ReflexLauncherPlugin;
 
 /**
  * The main plugin class to be used in the desktop.
@@ -24,6 +19,9 @@ public class TODPlugin extends AbstractUIPlugin
 	 * Temporarily we support a unique session.
 	 */
 	private TODSession itsSession;
+	
+	private String itsLibraryPath;
+
 	
 	/**
 	 * The constructor.
@@ -40,9 +38,7 @@ public class TODPlugin extends AbstractUIPlugin
 	{
 		super.start(context);
 		
-		ISQLBackend theBackend = new PostgreSQLBackend();
-		IBrowsableLog theLog = LogMiner.createDBLogServer(theBackend, 4012);
-		itsSession = new TODSession(theLog);
+		itsSession = TODSessionManager.getInstance().getCleanSession();
 	}
 
 	/**
@@ -79,4 +75,14 @@ public class TODPlugin extends AbstractUIPlugin
 	{
 		return AbstractUIPlugin.imageDescriptorFromPlugin("tod.plugin", path);
 	}
+	
+	public String getLibraryPath()
+	{
+		if (itsLibraryPath == null)
+			itsLibraryPath = ReflexLauncherPlugin.getLibraryPath(this);
+		
+		return itsLibraryPath;
+	}
+	
+
 }

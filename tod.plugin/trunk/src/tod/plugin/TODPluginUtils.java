@@ -42,6 +42,8 @@ public class TODPluginUtils
 			
 			String theTypeName = theType.getFullyQualifiedName();
 			TypeInfo theTypeInfo = theLocationRegistrer.getType(theTypeName);
+			if (theTypeInfo == null) return null;
+			
 			System.out.println(theTypeInfo);
 			
 			if (theMember instanceof IMethod)

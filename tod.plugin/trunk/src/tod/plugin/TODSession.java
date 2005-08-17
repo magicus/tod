@@ -3,23 +3,37 @@
  */
 package tod.plugin;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+
+import reflex.lib.logging.core.api.collector.ILogCollector;
+import reflex.lib.logging.core.impl.transport.LogReceiver;
 import reflex.lib.logging.miner.api.IBrowsableLog;
 
 /**
  * Describes a debugger session
  * @author gpothier
  */
-public class TODSession
+public class TODSession extends LogReceiver
 {
-	private IBrowsableLog itsLog;
+	private final IBrowsableLog itsLog;
+	private final int itsPort;
 
-	public TODSession(IBrowsableLog aLog)
+	public TODSession(int aPort, IBrowsableLog aLog, ILogCollector aCollector) throws IOException
 	{
-		itsLog = aLog;
+		super (new ServerSocket(aPort), aCollector);
+		itsPort = aPort;
+		itsLog = aLog;	
+	}
+	
+	public int getPort()
+	{
+		return itsPort;
 	}
 
 	public IBrowsableLog getLog()
 	{
 		return itsLog;
 	}
+	
 }
