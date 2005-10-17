@@ -47,7 +47,7 @@ public class TODLaunchDelegate extends AbstractReflexLaunchConfigurationDelegate
 		
 		theMap.put(StaticConfig.PARAM_COLLECTOR_PORT, ""+TODPlugin.getDefault().getSession().getPort());
 		theMap.put(StaticConfig.PARAM_LOGGING_WORKINGSET, "[-java.** -javax.**]");
-		theMap.put(StaticConfig.PARAM_IDENTIFICATION_WORKINGSET, "[-java.** -javax.**]");
+//		theMap.put(StaticConfig.PARAM_IDENTIFICATION_WORKINGSET, "[-java.** -javax.**]");
 		
 		return theMap;
 	}
@@ -63,6 +63,12 @@ public class TODLaunchDelegate extends AbstractReflexLaunchConfigurationDelegate
 	
 	@Override
 	protected boolean includeReflexInClasspath(ILaunchConfiguration aConfiguration) throws CoreException
+	{
+		return true;
+	}
+	
+	@Override
+	protected boolean useCustomLoader(ILaunchConfiguration aConfiguration) throws CoreException
 	{
 		return true;
 	}

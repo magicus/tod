@@ -3,14 +3,11 @@
  */
 package tod.plugin;
 
-import java.io.IOException;
-import java.sql.SQLException;
-
-import reflex.lib.logging.core.impl.transport.LogReceiver;
+import reflex.lib.logging.miner.api.IBrowsableLog;
+import reflex.lib.logging.miner.impl.local.LocalCollector;
 import reflex.lib.logging.miner.impl.sql.Queries;
 import reflex.lib.logging.miner.impl.sql.SQLBrowsableLog;
 import reflex.lib.logging.miner.impl.sql.backend.PostgreSQLBackend;
-import zz.utils.Pool;
 
 /**
  * Manages a pool of debugging sessions.
@@ -31,10 +28,8 @@ public class TODSessionManager
 	{
 		try
 		{
-			PostgreSQLBackend theBackend = new PostgreSQLBackend();
-			SQLBrowsableLog theLog = new SQLBrowsableLog(new Queries(theBackend));
-
-			itsSession = new TODSession(4012, theLog, theLog.getCollector());
+			LocalCollector theLog = new LocalCollector();
+			itsSession = new TODSession(4012, theLog, theLog);
 		}
 		catch (Exception e)
 		{

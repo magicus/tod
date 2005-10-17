@@ -19,8 +19,10 @@ import reflex.lib.logging.core.api.collector.LocationInfo;
 import reflex.lib.logging.miner.api.IBrowsableLog;
 import reflex.lib.logging.miner.gui.BrowserNavigator;
 import reflex.lib.logging.miner.gui.IGUIManager;
+import reflex.lib.logging.miner.gui.MinerUI;
 import reflex.lib.logging.miner.gui.seed.Seed;
 import reflex.lib.logging.miner.gui.seed.SeedFactory;
+import reflex.lib.logging.miner.gui.seed.ThreadsSeed;
 import reflex.lib.logging.miner.impl.sql.Queries;
 import reflex.lib.logging.miner.impl.sql.backend.PostgreSQLBackend;
 import tod.plugin.TODPlugin;
@@ -32,27 +34,12 @@ public class EventViewer extends JPanel implements IGUIManager
 {
 	private IBrowsableLog itsCollector;
 	private BrowserNavigator itsNavigator = new BrowserNavigator();
-	private Queries itsQueries; 
 
 	private IRWProperty<Long> pTimestamp = new SimpleRWProperty<Long>(this);
 
 	public EventViewer(IBrowsableLog aCollector)
 	{
 		itsCollector = aCollector;
-		
-		try
-		{
-			itsQueries = new Queries(new PostgreSQLBackend());
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
-		}
-		catch (ClassNotFoundException e)
-		{
-			e.printStackTrace();
-		}
-		
 		createUI();
 	}
 
@@ -81,18 +68,23 @@ public class EventViewer extends JPanel implements IGUIManager
 		theClearDbButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e)
 			{
-				try
-				{
-					itsQueries.dbInit.init();
-				}
-				catch (SQLException e1)
-				{
-					e1.printStackTrace();
-				}
+				itsCollector.clear();
 			}
 		});
 
 		theToolbar.add (theClearDbButton);
+		
+		JButton theThreadsViewButton = new JButton("View threads");
+		theThreadsViewButton.addActionListener(new ActionListener()
+				{
+					public void actionPerformed(ActionEvent aE)
+					{
+						openSeed(new ThreadsSeed(EventViewer.this, itsCollector), false);
+					}
+				});
+		
+		theToolbar.add(theThreadsViewButton);
+
 
 		return theToolbar;
 	}

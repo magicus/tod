@@ -14,10 +14,13 @@
       <library name="/home/gpothier/eclipse/workbench-3.1/LogMiner/bin">
          <export name="*"/>
       </library>
-      <library name="/home/gpothier/installs/java/pg74.216.jdbc3.jar">
+      <library name="/home/gpothier/eclipse/workbench-3.1/zz.utils/bin">
          <export name="*"/>
       </library>
-      <library name="/home/gpothier/eclipse/workbench-3.1/zz.utils/bin">
+      <library name="/home/gpothier/eclipse/workbench-3.1/zz.csg/bin">
+         <export name="*"/>
+      </library>
+      <library name="lib/log4j.jar">
          <export name="*"/>
       </library>
    </runtime>
