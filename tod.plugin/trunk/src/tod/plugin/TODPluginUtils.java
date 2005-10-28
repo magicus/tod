@@ -3,17 +3,38 @@
  */
 package tod.plugin;
 
+import java.util.List;
+
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IInitializer;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.search.IJavaSearchConstants;
+import org.eclipse.jdt.core.search.IJavaSearchScope;
+import org.eclipse.jdt.core.search.SearchEngine;
+import org.eclipse.jdt.core.search.SearchParticipant;
+import org.eclipse.jdt.core.search.SearchPattern;
+import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.eclipse.ui.texteditor.ITextEditor;
 
-import reflex.lib.logging.core.api.collector.LocationInfo;
-import reflex.lib.logging.core.api.collector.LocationRegistrer;
-import reflex.lib.logging.core.api.collector.TypeInfo;
-import reflex.lib.logging.miner.api.IBrowsableLog;
+import tod.core.LocationRegistrer;
+import tod.core.model.event.IBehaviorEnterEvent;
+import tod.core.model.event.IEvent_Location;
+import tod.core.model.structure.BehaviorInfo;
+import tod.core.model.structure.LocationInfo;
+import tod.core.model.structure.TypeInfo;
+import tod.core.model.trace.IEventTrace;
+import tod.session.ISession;
 
 /**
  * Utilities for the TOD plugin
@@ -28,9 +49,9 @@ public class TODPluginUtils
 	 * @param aElement The JDT java element to look for.
 	 * @return TOD location info, or null if none is found.
 	 */
-	public static LocationInfo getLocationInfo (TODSession aSession, IJavaElement aElement)
+	public static LocationInfo getLocationInfo (ISession aSession, IJavaElement aElement)
 	{
-		IBrowsableLog theLog = aSession.getLog();
+		IEventTrace theLog = aSession.getEventTrace();
 		LocationRegistrer theLocationRegistrer = theLog.getLocationRegistrer();
 		
 		if (aElement instanceof IMember)
@@ -68,4 +89,97 @@ public class TODPluginUtils
 		
 		return null;
 	}
+	
+	private static final SearchParticipant[] PARTICIPANTS = {SearchEngine.getDefaultSearchParticipant()};
+	
+	/**
+	 * Searches for declarations of the given name and kind in the whole workspace. 
+	 */
+	public static List searchDeclarations (String aName, int aKind) throws CoreException
+	{
+		SearchPattern thePattern = SearchPattern.createPattern(
+				aName, 
+				aKind,
+				IJavaSearchConstants.DECLARATIONS, 
+				SearchPattern.R_EXACT_MATCH);
+
+		IJavaSearchScope theScope = SearchEngine.createWorkspaceScope();
+		SearchEngine theSearchEngine = new SearchEngine();
+		SimpleResultCollector theCollector = new SimpleResultCollector ();
+
+		theSearchEngine.search(
+				thePattern, 
+				PARTICIPANTS,
+				theScope, 
+				theCollector,
+				null);
+		
+		return theCollector.getResults();
+	}
+	
+	public static void gotoSource (IEvent_Location aEvent)
+	{
+	    IBehaviorEnterEvent theFather = aEvent.getFather();
+	    if (theFather == null) return;
+	    
+	    int theBytecodeIndex = aEvent.getOperationBytecodeIndex();
+	    BehaviorInfo theBehavior = theFather.getBehavior();
+	    int theLineNumber = theBehavior.getLineNumber(theBytecodeIndex);
+	    TypeInfo theType = theBehavior.getType();
+	    
+	    gotoSource(theType.getName(), theLineNumber);
+	}
+	
+	public static void gotoSource (String aTypeName, final int aLineNumber)
+	{
+		try
+		{
+			// Search Java type
+			List theList = searchDeclarations(aTypeName, IJavaSearchConstants.TYPE);
+
+			if (theList.size() == 1)
+			{
+				IType theSourceType = (IType) theList.get(0);
+				final ICompilationUnit theCompilationUnit = theSourceType.getCompilationUnit();
+				
+				Display.getDefault().asyncExec(new Runnable ()
+				{
+					public void run()
+					{
+						try
+						{
+							IEditorPart theEditorPart = JavaUI.openInEditor(theCompilationUnit);
+
+							// Select precise line
+							if (theEditorPart instanceof ITextEditor && aLineNumber >= 0)
+							{
+								ITextEditor theEditor = (ITextEditor) theEditorPart;
+								
+								IDocumentProvider provider = theEditor.getDocumentProvider();
+								IDocument document = provider.getDocument(theEditor.getEditorInput());
+								int start = document.getLineOffset(aLineNumber);
+								theEditor.selectAndReveal(start, 0);
+								
+							}
+						} 
+						catch (Exception e)
+						{
+							e.printStackTrace();
+						}
+					}
+				});
+				
+			}
+		}
+		catch (CoreException e)
+		{
+			e.printStackTrace();
+		}
+
+//
+//		IWorkbenchPage page= editor.getSite().getPage();
+//		page.activate(editor);
+
+	}
+
 }

@@ -24,9 +24,12 @@ import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.ViewPart;
 
-import reflex.lib.logging.core.api.collector.LocationInfo;
 import reflex.lib.logging.miner.gui.BrowserNavigator;
 import reflex.lib.logging.miner.gui.seed.SeedFactory;
+import tod.core.model.event.IEvent_Location;
+import tod.core.model.event.ILogEvent;
+import tod.core.model.structure.LocationInfo;
+import tod.core.model.structure.TypeInfo;
 import tod.plugin.TODPlugin;
 import tod.plugin.TODPluginUtils;
 import tod.plugin.TextSelectionUtils;
@@ -38,6 +41,12 @@ import tod.plugin.TextSelectionUtils;
 public class TraceNavigatorView extends ViewPart implements ISelectionListener
 {
 	private Frame itsFrame;
+	
+	/**
+	 * This flag permits to avoid infinite recursion or misbehaviors
+	 * of selection in java source vs. {@link #gotoEvent(ILogEvent)}.
+	 */
+	private boolean itsMoving = false;
 
 	private EventViewer itsEventViewer;
 	
@@ -55,7 +64,7 @@ public class TraceNavigatorView extends ViewPart implements ISelectionListener
 		Panel theRootPanel = new Panel(new BorderLayout());
 		itsFrame.add(theRootPanel);
 		
-		itsEventViewer = new EventViewer(TODPlugin.getDefault().getSession().getLog());
+		itsEventViewer = new EventViewer(this);
 		theRootPanel.add(itsEventViewer);
 	}
 	
@@ -76,25 +85,42 @@ public class TraceNavigatorView extends ViewPart implements ISelectionListener
 	 */
 	public void selectionChanged(IWorkbenchPart aPart, ISelection aSelection)
 	{
-		IJavaElement theJavaElement = null;
-		
-		if (aSelection instanceof IStructuredSelection)
-		{
-			IStructuredSelection theSelection = (IStructuredSelection) aSelection;
-			Object theElement = theSelection.getFirstElement();
-			if (theElement instanceof IJavaElement)
-			{
-				theJavaElement = (IJavaElement) theElement;
-			}
-		}
-		else if (aSelection instanceof ITextSelection)
-		{
-			ITextSelection theTextSelection = (ITextSelection) aSelection;
-			theJavaElement = TextSelectionUtils.getJavaElement(aPart, theTextSelection);
-		}
-		
-		if (theJavaElement != null) itsEventViewer.showElement(theJavaElement);
+	    if (itsMoving) return;
+	    itsMoving = true;
+	    
+//		IJavaElement theJavaElement = null;
+//		
+//		if (aSelection instanceof IStructuredSelection)
+//		{
+//			IStructuredSelection theSelection = (IStructuredSelection) aSelection;
+//			Object theElement = theSelection.getFirstElement();
+//			if (theElement instanceof IJavaElement)
+//			{
+//				theJavaElement = (IJavaElement) theElement;
+//			}
+//		}
+//		else if (aSelection instanceof ITextSelection)
+//		{
+//			ITextSelection theTextSelection = (ITextSelection) aSelection;
+//			theJavaElement = TextSelectionUtils.getJavaElement(aPart, theTextSelection);
+//		}
+//		
+//		if (theJavaElement != null) itsEventViewer.showElement(theJavaElement);
+		itsMoving = false;
 	}
 	
+	public void gotoEvent(ILogEvent aEvent)
+	{
+	    if (itsMoving) return;
+	    itsMoving = true;
+	    
+	    if (aEvent instanceof IEvent_Location)
+		{
+			IEvent_Location theEvent = (IEvent_Location) aEvent;
+			TODPluginUtils.gotoSource(theEvent);
+		}
+	    
+	    itsMoving = false;
+	}
 
 }

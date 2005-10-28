@@ -23,6 +23,15 @@
       <library name="lib/log4j.jar">
          <export name="*"/>
       </library>
+      <library name="/home/gpothier/eclipse/workbench-3.1/RemoteBCI/bin">
+         <export name="*"/>
+      </library>
+      <library name="lib/asm-2.1.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/asm-commons-2.1.jar">
+         <export name="*"/>
+      </library>
    </runtime>
 
    <requires>
@@ -34,6 +43,7 @@
       <import plugin="reflex.ide.eclipse.launcher"/>
       <import plugin="org.eclipse.jface.text"/>
       <import plugin="org.eclipse.jdt.ui"/>
+      <import plugin="org.eclipse.ui.workbench.texteditor"/>
    </requires>
 
    <extension

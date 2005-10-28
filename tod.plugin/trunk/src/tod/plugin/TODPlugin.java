@@ -5,24 +5,18 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 import reflex.ide.eclipse.launcher.ReflexLauncherPlugin;
+import tod.session.ISession;
 
 /**
  * The main plugin class to be used in the desktop.
  */
 public class TODPlugin extends AbstractUIPlugin
 {
-
 	// The shared instance.
 	private static TODPlugin plugin;
-
-	/**
-	 * Temporarily we support a unique session.
-	 */
-	private TODSession itsSession;
 	
 	private String itsLibraryPath;
 
-	
 	/**
 	 * The constructor.
 	 */
@@ -37,8 +31,6 @@ public class TODPlugin extends AbstractUIPlugin
 	public void start(BundleContext context) throws Exception
 	{
 		super.start(context);
-		
-		itsSession = TODSessionManager.getInstance().getCleanSession();
 	}
 
 	/**
@@ -56,11 +48,6 @@ public class TODPlugin extends AbstractUIPlugin
 	public static TODPlugin getDefault()
 	{
 		return plugin;
-	}
-
-	public TODSession getSession()
-	{
-		return itsSession;
 	}
 
 	/**

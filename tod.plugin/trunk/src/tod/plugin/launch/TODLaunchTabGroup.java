@@ -27,7 +27,7 @@ public class TODLaunchTabGroup extends AbstractLaunchConfigurationTabGroup {
 		ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] {
 				new JavaMainTab(),
 				new JavaArgumentsTab(),
-				new MyOptionsTab(),
+//				new MyOptionsTab(),
 				new JavaJRETab(),
 				new JavaClasspathTab(),
 				new SourceLookupTab(),
@@ -37,15 +37,15 @@ public class TODLaunchTabGroup extends AbstractLaunchConfigurationTabGroup {
 			setTabs(tabs);
 	}
 	
-	private static class MyOptionsTab extends OptionsTab
-	{
-		/**
-		 * We don't require the project to be a reflex project.
-		 */
-		@Override
-		protected void checkReflexProject(ILaunchConfiguration aLaunchConfiguration) throws InvalidLaunchConfiguration
-		{
-		}
-	}
+//	private static class MyOptionsTab extends OptionsTab
+//	{
+//		/**
+//		 * We don't require the project to be a reflex project.
+//		 */
+//		@Override
+//		protected void checkReflexProject(ILaunchConfiguration aLaunchConfiguration) throws InvalidLaunchConfiguration
+//		{
+//		}
+//	}
 
 }

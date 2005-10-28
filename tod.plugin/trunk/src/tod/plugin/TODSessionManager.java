@@ -3,11 +3,14 @@
  */
 package tod.plugin;
 
-import reflex.lib.logging.miner.api.IBrowsableLog;
-import reflex.lib.logging.miner.impl.local.LocalCollector;
-import reflex.lib.logging.miner.impl.sql.Queries;
-import reflex.lib.logging.miner.impl.sql.SQLBrowsableLog;
-import reflex.lib.logging.miner.impl.sql.backend.PostgreSQLBackend;
+import tod.session.DefaultSessionFactory;
+import tod.session.ISession;
+import zz.utils.notification.IEvent;
+import zz.utils.notification.SimpleEvent;
+import zz.utils.properties.IProperty;
+import zz.utils.properties.IRWProperty;
+import zz.utils.properties.SimpleRWProperty;
+
 
 /**
  * Manages a pool of debugging sessions.
@@ -17,32 +20,40 @@ public class TODSessionManager
 {
 	private static TODSessionManager INSTANCE = new TODSessionManager();
 	
-	private TODSession itsSession;
-
+	private IRWProperty<ISession> pCurrentSession = new SimpleRWProperty<ISession>(this)
+	{
+		@Override
+		protected void changed(ISession aOldValue, ISession aNewValue)
+		{
+			if (aOldValue != null) aOldValue.disconnect();
+		}
+	};
+	
 	public static TODSessionManager getInstance()
 	{
 		return INSTANCE;
 	}
-
+	
 	private TODSessionManager()
 	{
-		try
-		{
-			LocalCollector theLog = new LocalCollector();
-			itsSession = new TODSession(4012, theLog, theLog);
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
 	}
 	
 	/**
+	 * This propety contains the curent TOD session.
+	 */
+	public IProperty<ISession> pCurrentSession()
+	{
+		return pCurrentSession;
+	}
+
+	/**
 	 * Obtains a free, clean collector session.
 	 */
-	public TODSession getCleanSession()
+	public ISession createSession()
 	{
-		return itsSession;
+		ISession theSession = DefaultSessionFactory.getInstance().createSession(null, null, null, null);
+		pCurrentSession.set(theSession);
+		return theSession;
 	}
 	
 }

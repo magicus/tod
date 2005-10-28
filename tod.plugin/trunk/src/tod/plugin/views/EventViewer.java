@@ -6,7 +6,6 @@ package tod.plugin.views;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.SQLException;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -15,31 +14,27 @@ import javax.swing.JPanel;
 
 import org.eclipse.jdt.core.IJavaElement;
 
-import reflex.lib.logging.core.api.collector.LocationInfo;
-import reflex.lib.logging.miner.api.IBrowsableLog;
 import reflex.lib.logging.miner.gui.BrowserNavigator;
 import reflex.lib.logging.miner.gui.IGUIManager;
-import reflex.lib.logging.miner.gui.MinerUI;
 import reflex.lib.logging.miner.gui.seed.Seed;
 import reflex.lib.logging.miner.gui.seed.SeedFactory;
 import reflex.lib.logging.miner.gui.seed.ThreadsSeed;
-import reflex.lib.logging.miner.impl.sql.Queries;
-import reflex.lib.logging.miner.impl.sql.backend.PostgreSQLBackend;
-import tod.plugin.TODPlugin;
+import tod.core.model.event.ILogEvent;
+import tod.core.model.structure.LocationInfo;
 import tod.plugin.TODPluginUtils;
-import zz.utils.properties.IRWProperty;
-import zz.utils.properties.SimpleRWProperty;
+import tod.plugin.TODSessionManager;
+import tod.session.ISession;
+import zz.utils.properties.IProperty;
+import zz.utils.properties.PropertyListener;
 
 public class EventViewer extends JPanel implements IGUIManager
 {
-	private IBrowsableLog itsCollector;
 	private BrowserNavigator itsNavigator = new BrowserNavigator();
+	private final TraceNavigatorView itsTraceNavigatorView;
 
-	private IRWProperty<Long> pTimestamp = new SimpleRWProperty<Long>(this);
-
-	public EventViewer(IBrowsableLog aCollector)
+	public EventViewer(TraceNavigatorView aTraceNavigatorView)
 	{
-		itsCollector = aCollector;
+		itsTraceNavigatorView = aTraceNavigatorView;
 		createUI();
 	}
 
@@ -59,34 +54,42 @@ public class EventViewer extends JPanel implements IGUIManager
 		
 		add (theCenterPanel, BorderLayout.CENTER);
 		theNavButtonsPanel.add (createToolbar());
+		
+		TODSessionManager.getInstance().pCurrentSession().addHardListener(new PropertyListener<ISession>()
+				{
+					public void propertyChanged(IProperty<ISession> aProperty, ISession aOldValue, ISession aNewValue)
+					{
+						reset();
+					}
+				});
 	}
 
+	private ISession getSession()
+	{
+		return TODSessionManager.getInstance().pCurrentSession().get();
+	}
+	
 	private JComponent createToolbar()
 	{
 		JPanel theToolbar = new JPanel();
-		JButton theClearDbButton = new JButton ("Clear db");
-		theClearDbButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e)
-			{
-				itsCollector.clear();
-			}
-		});
 
-		theToolbar.add (theClearDbButton);
-		
 		JButton theThreadsViewButton = new JButton("View threads");
 		theThreadsViewButton.addActionListener(new ActionListener()
 				{
 					public void actionPerformed(ActionEvent aE)
 					{
-						openSeed(new ThreadsSeed(EventViewer.this, itsCollector), false);
+						reset();
 					}
 				});
 		
 		theToolbar.add(theThreadsViewButton);
 
-
 		return theToolbar;
+	}
+	
+	private void reset()
+	{
+		openSeed(new ThreadsSeed(EventViewer.this, getSession().getEventTrace()), false);
 	}
 
 
@@ -96,7 +99,7 @@ public class EventViewer extends JPanel implements IGUIManager
 		if (aSelectedLocations.size() == 1)
 		{
 			LocationInfo theInfo = (LocationInfo) aSelectedLocations.get(0);
-			theSeed = SeedFactory.getDefaultSeed(this, itsCollector, theInfo);
+			theSeed = SeedFactory.getDefaultSeed(this, getSession().getEventTrace(), theInfo);
 		}
 
 		itsNavigator.open(theSeed);
@@ -104,8 +107,8 @@ public class EventViewer extends JPanel implements IGUIManager
 	
 	public void showElement (IJavaElement aElement)
 	{
-		LocationInfo theLocationInfo = TODPluginUtils.getLocationInfo(TODPlugin.getDefault().getSession(), aElement);
-		Seed theSeed = SeedFactory.getDefaultSeed(this, itsCollector, theLocationInfo);
+		LocationInfo theLocationInfo = TODPluginUtils.getLocationInfo(getSession(), aElement);
+		Seed theSeed = SeedFactory.getDefaultSeed(this, getSession().getEventTrace(), theLocationInfo);
 		openSeed(theSeed, false);
 	}
 	
@@ -113,11 +116,12 @@ public class EventViewer extends JPanel implements IGUIManager
 	{
 		itsNavigator.open(aSeed);
 	}
-	
-	
-	public IRWProperty<Long> pTimestamp()
+
+	public void gotoEvent(ILogEvent aEvent)
 	{
-		return pTimestamp;
+	    itsTraceNavigatorView.gotoEvent(aEvent);
 	}
+	
+	
 
 }
