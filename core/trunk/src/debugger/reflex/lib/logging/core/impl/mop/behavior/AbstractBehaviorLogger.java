@@ -109,8 +109,8 @@ public abstract class AbstractBehaviorLogger implements InstrumentationListener
                 
                 Config.COLLECTOR.registerBehaviorAttributes(
                         theBehaviorId,
-                        ILocationRegistrer.LineNumberInfo.createTable(theBehavior.getLineNumberTable()),
-                        ILocationRegistrer.LocalVariableInfo.createTable(theBehavior.getLocalVariableTable()));
+                        DebugTablesBuilder.createTable(theBehavior.getLineNumberTable()),
+                        DebugTablesBuilder.createTable(theBehavior.getLocalVariableTable()));
             }
 		}
 		catch (NotFoundException e)

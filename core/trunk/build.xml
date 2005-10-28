@@ -3,15 +3,25 @@
     <target name="init">
 
         <property name="build.dir" value="${basedir}/build"/>
-        <property name="src.dir" value="${basedir}/src"/>
         <property name="lib.dir" value="${basedir}/lib"/>
-        <property name="classes.dir" value="${basedir}/classes"/>
+        <property name="src-agent.dir" value="${basedir}/src/agent"/>
+        <property name="src-debugger.dir" value="${basedir}/src/debugger"/>
+        <property name="classes-agent.dir" value="${basedir}/classes-agent"/>
+        <property name="classes-debugger.dir" value="${basedir}/classes-debugger"/>
 
-        <path id="project.classpath">
-            <pathelement path="../reflex/classes"/>
-            <pathelement path="../zz.utils/classes"/>
+        <path id="agent.classpath">
+            <pathelement path="../RemoteBCI/bin"/>
+            <pathelement path="${lib.dir}/asm-2.1.jar"/>
+            <pathelement path="${lib.dir}/asm-commons-2.1.jar"/>
+        </path>
+    	
+        <path id="debugger.classpath">
+            <pathelement path="../reflex-trunk/bin"/>
+            <pathelement path="../zz.utils/bin"/>
+            <pathelement path="../RemoteBCI/bin"/>
             <pathelement path="${lib.dir}/junit.jar"/>
-            <pathelement path="${lib.dir}/javassist.jar"/>
+            <pathelement path="${lib.dir}/asm-2.1.jar"/>
+            <pathelement path="${lib.dir}/asm-commons-2.1.jar"/>
         </path>
     </target>
 
@@ -22,13 +32,24 @@
         </delete>
     </target>
 
-    <target name="compile" depends="init">
-        <mkdir dir="${classes.dir}"/>
+    <target name="compile-agent" depends="init">
+        <mkdir dir="${classes-agent.dir}"/>
         <javac compiler="javac1.5" source="1.5" target="1.5"
         	debug="yes" nowarn="yes"
-            srcdir="${src.dir}"
-            destdir="${classes.dir}"
-            classpathref="project.classpath"/>
+            srcdir="${src-agent.dir}"
+            destdir="${classes-agent.dir}"
+            classpathref="agent.classpath"/>
     </target>
+
+    <target name="compile-debugger" depends="init">
+        <mkdir dir="${classes-debugger.dir}"/>
+        <javac compiler="javac1.5" source="1.5" target="1.5"
+        	debug="yes" nowarn="yes"
+            srcdir="${src-debugger.dir}"
+            destdir="${classes-debugger.dir}"
+            classpathref="debugger.classpath"/>
+    </target>
+	
+	<target name="compile" depends="compile-agent, compile-debugger"/>
 
 </project>

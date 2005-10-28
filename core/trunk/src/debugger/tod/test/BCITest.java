@@ -3,7 +3,11 @@
  */
 package tod.test;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import tod.agent.AgentReady;
 import tod.core.IIdentifiableObject;
@@ -12,6 +16,19 @@ public class BCITest
 {
 	public static void main(String[] args)
 	{
+		try
+		{
+			JarFile theFile = new JarFile("/home/gpothier/eclipse/workbench-3.1/TOD/lib/junit.jar");
+			for (Enumeration<JarEntry> e = theFile.entries(); e.hasMoreElements();)
+			{
+				System.out.println(e.nextElement().getName());
+			}
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		
 		int k = 0;
 		long j = 90;
 		BCITest theTest = new BCITest(50, 123);

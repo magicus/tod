@@ -165,18 +165,22 @@ implements IEventTrace
 		theEvent.setTarget(aTarget);
 		
         LocalVariableInfo theInfo = null;
-        if (aVariableId >= 0)
-        {
-        	BehaviorInfo theBehavior = aThreadInfo.getCurrentBehavior().getBehavior();
-    		theInfo = theBehavior.getLocalVariableInfo(aVariableId);
-    		if (theInfo == null) theInfo = new LocalVariableInfo((short)-1, (short)-1, "$"+aVariableId, "", (short)-1);
-        }
-        else
-        {
-        	short theIndex = (short) (-aVariableId-1);
-        	theInfo = new LocalVariableInfo((short)-1, (short)-1, "$"+aVariableId, "", theIndex);
-        }
+//        if (aVariableId >= 0)
+//        {
+//        	BehaviorInfo theBehavior = aThreadInfo.getCurrentBehavior().getBehavior();
+//    		theInfo = theBehavior.getLocalVariableInfo(aVariableId);
+//    		if (theInfo == null) theInfo = new LocalVariableInfo((short)-1, (short)-1, "$"+aVariableId, "", (short)-1);
+//        }
+//        else
+//        {
+//        	short theIndex = (short) (-aVariableId-1);
+//        	theInfo = new LocalVariableInfo((short)-1, (short)-1, "$"+aVariableId, "", theIndex);
+//        }
 				
+       	BehaviorInfo theBehavior = aThreadInfo.getCurrentBehavior().getBehavior();
+       	theInfo = theBehavior.getLocalVariableInfo(aOperationBytecodeIndex+35, aVariableId); // 35 is the size of our instrumentation
+       	if (theInfo == null) theInfo = new LocalVariableInfo((short)-1, (short)-1, "$"+aVariableId, "", (short)-1);
+        
 		theEvent.setVariable(theInfo);
 		theEvent.setValue(aValue);
 		

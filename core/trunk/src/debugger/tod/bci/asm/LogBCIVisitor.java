@@ -24,6 +24,9 @@ import zz.utils.Stack;
 public class LogBCIVisitor extends ClassAdapter implements Opcodes
 {
 	private static final boolean LOG = true;
+	private static final String ID_FIELD_NAME = "__log_uid";
+	private static final String ID_METHOD_NAME = "__log_uid";
+
 	
 	private boolean itsModified = false;
 	
@@ -119,14 +122,14 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		// If the class implements IIdentifiableObject, add field and getter
 		if (itsIdentifiable)
 		{
-			cv.visitField(ACC_PRIVATE, "__log_uid", "J", null, null);
+			cv.visitField(ACC_PRIVATE | ACC_TRANSIENT, ID_FIELD_NAME, "J", null, null);
 			
 			MethodVisitor mv;
 			{
-				mv = cv.visitMethod(ACC_PUBLIC, "__log_uid", "()J", null, null);
+				mv = cv.visitMethod(ACC_PUBLIC, ID_METHOD_NAME, "()J", null, null);
 				mv.visitCode();
 				mv.visitVarInsn(ALOAD, 0);
-				mv.visitFieldInsn(GETFIELD, itsTypeName, "__log_uid", "J");
+				mv.visitFieldInsn(GETFIELD, itsTypeName, ID_FIELD_NAME, "J");
 				mv.visitInsn(LRETURN);
 				mv.visitMaxs(2, 1);
 				mv.visitEnd();
@@ -153,11 +156,10 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 	
 	private class BCIMethodVisitor extends MethodAdapter
 	{
+
 		private ASMMethodInfo itsMethodInfo;
 		
 		private Label itsReturnHookLabel = new Label();
-
-		private boolean itsWaitingSuper = false;
 
 		private int itsMethodId;
 
@@ -314,10 +316,6 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 				Label l = new Label();
 				mv.visitLabel(l);
 				int theBytecodeIndex = l.getOffset();
-				
-				// We must pass the offset of the first instruction after the instrumentation is
-				// completed
-				theBytecodeIndex += 35;
 
 				// :: value
 			
@@ -361,14 +359,16 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			if (itsIdentifiable && "<init>".equals(itsMethodInfo.getName()))
 			{
 				mv.visitVarInsn(ALOAD, 0);
-				mv.visitFieldInsn(GETFIELD, itsTypeName, "__log_uid", "J");
+				mv.visitFieldInsn(GETFIELD, itsTypeName, ID_FIELD_NAME, "J");
 				mv.visitInsn(LCONST_0);
 				mv.visitInsn(LCMP);
 				Label l = new Label();
 				mv.visitJumpInsn(IFNE, l);
+				
 				mv.visitVarInsn(ALOAD, 0);
 				mv.visitMethodInsn(INVOKESTATIC, Type.getInternalName(IdGenerator.class), "createLongId", "()J");
-				mv.visitFieldInsn(PUTFIELD, itsTypeName, "__log_uid", "J");
+				mv.visitFieldInsn(PUTFIELD, itsTypeName, ID_FIELD_NAME, "J");
+				
 				mv.visitLabel(l);
 			}
 			
@@ -399,10 +399,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		@Override
 		public void visitCode()
 		{
-//			if ("<init>".equals(itsMethodInfo.getName())) itsWaitingSuper = true;
-//			else insertEntryHooks();
 			insertEntryHooks();
-			
 			super.visitCode();
 		}
 		
