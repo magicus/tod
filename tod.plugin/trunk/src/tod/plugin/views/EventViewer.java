@@ -21,9 +21,9 @@ import reflex.lib.logging.miner.gui.seed.SeedFactory;
 import reflex.lib.logging.miner.gui.seed.ThreadsSeed;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.LocationInfo;
+import tod.plugin.DebuggingSession;
 import tod.plugin.TODPluginUtils;
 import tod.plugin.TODSessionManager;
-import tod.session.ISession;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.PropertyListener;
 
@@ -55,16 +55,16 @@ public class EventViewer extends JPanel implements IGUIManager
 		add (theCenterPanel, BorderLayout.CENTER);
 		theNavButtonsPanel.add (createToolbar());
 		
-		TODSessionManager.getInstance().pCurrentSession().addHardListener(new PropertyListener<ISession>()
+		TODSessionManager.getInstance().pCurrentSession().addHardListener(new PropertyListener<DebuggingSession>()
 				{
-					public void propertyChanged(IProperty<ISession> aProperty, ISession aOldValue, ISession aNewValue)
+					public void propertyChanged(IProperty<DebuggingSession> aProperty, DebuggingSession aOldValue, DebuggingSession aNewValue)
 					{
 						reset();
 					}
 				});
 	}
 
-	private ISession getSession()
+	private DebuggingSession getSession()
 	{
 		return TODSessionManager.getInstance().pCurrentSession().get();
 	}
@@ -73,6 +73,7 @@ public class EventViewer extends JPanel implements IGUIManager
 	{
 		JPanel theToolbar = new JPanel();
 
+		// Add a button that permits to jump to the threads view.
 		JButton theThreadsViewButton = new JButton("View threads");
 		theThreadsViewButton.addActionListener(new ActionListener()
 				{
@@ -84,6 +85,18 @@ public class EventViewer extends JPanel implements IGUIManager
 		
 		theToolbar.add(theThreadsViewButton);
 
+		// Adds a button that permits to disconnect the current session
+		JButton theKillSessionButton = new JButton("Kill session");
+		theKillSessionButton.addActionListener(new ActionListener()
+				{
+					public void actionPerformed(ActionEvent aE)
+					{
+						getSession().disconnect();
+					}
+				});
+		
+		theToolbar.add(theKillSessionButton);
+		
 		return theToolbar;
 	}
 	
@@ -119,7 +132,7 @@ public class EventViewer extends JPanel implements IGUIManager
 
 	public void gotoEvent(ILogEvent aEvent)
 	{
-	    itsTraceNavigatorView.gotoEvent(aEvent);
+	    itsTraceNavigatorView.gotoEvent(getSession(), aEvent);
 	}
 	
 	

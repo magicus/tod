@@ -3,16 +3,11 @@
  */
 package tod.plugin.launch;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Date;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchManager;
@@ -22,8 +17,8 @@ import org.eclipse.jdt.launching.LibraryLocation;
 import reflex.ide.eclipse.launcher.AbstractCustomLaunchConfigurationDelegate;
 import tod.plugin.TODPlugin;
 import tod.plugin.TODSessionManager;
+import tod.session.ClassCacheCleaner;
 import tod.session.ISession;
-import zz.utils.Utils;
 
 public class TODLaunchDelegate extends AbstractCustomLaunchConfigurationDelegate
 {
@@ -33,7 +28,15 @@ public class TODLaunchDelegate extends AbstractCustomLaunchConfigurationDelegate
 	public void launch(ILaunchConfiguration aConfiguration, String aMode, ILaunch aLaunch, IProgressMonitor aMonitor)
 	throws CoreException
 	{
-		ISession theSession = TODSessionManager.getInstance().createSession();
+		if (aMonitor == null) aMonitor = new NullProgressMonitor();
+		
+		aMonitor.beginTask("Launching with TOD", IProgressMonitor.UNKNOWN);
+		
+		if (aMonitor.isCanceled()) return;		
+		aMonitor.subTask("Creating session");
+		
+		ISession theSession = TODSessionManager.getInstance().createSession(getJavaProject(aConfiguration));
+		
 		try
 		{
 			LibraryLocation[] theLibraryLocations = JavaRuntime.getLibraryLocations(getVMInstall(aConfiguration));
@@ -46,8 +49,12 @@ public class TODLaunchDelegate extends AbstractCustomLaunchConfigurationDelegate
 			
 			String[] theBootClasspath = getBootpath(aConfiguration);
 			String[] theClasspath = getClasspath(aConfiguration);
+
+			if (aMonitor.isCanceled()) return;		
+			aMonitor.subTask("Checking cached classes");
+			
 			ClassCacheCleaner.deleteUpdatedClasses(theSession, theBootpath, theClasspath);
-			super.launch(aConfiguration, ILaunchManager.DEBUG_MODE, aLaunch, aMonitor);
+			super.launch(aConfiguration, ILaunchManager.DEBUG_MODE, aLaunch, aMonitor, true);
 		}
 		catch (CoreException e)
 		{

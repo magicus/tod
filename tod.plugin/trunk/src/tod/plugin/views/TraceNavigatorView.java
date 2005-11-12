@@ -6,6 +6,7 @@ package tod.plugin.views;
 import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.Panel;
+import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -26,10 +27,12 @@ import org.eclipse.ui.part.ViewPart;
 
 import reflex.lib.logging.miner.gui.BrowserNavigator;
 import reflex.lib.logging.miner.gui.seed.SeedFactory;
+import tod.core.model.event.IBehaviorEnterEvent;
 import tod.core.model.event.IEvent_Location;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.LocationInfo;
 import tod.core.model.structure.TypeInfo;
+import tod.plugin.DebuggingSession;
 import tod.plugin.TODPlugin;
 import tod.plugin.TODPluginUtils;
 import tod.plugin.TextSelectionUtils;
@@ -109,16 +112,12 @@ public class TraceNavigatorView extends ViewPart implements ISelectionListener
 		itsMoving = false;
 	}
 	
-	public void gotoEvent(ILogEvent aEvent)
+	public void gotoEvent(DebuggingSession aSession, ILogEvent aEvent)
 	{
 	    if (itsMoving) return;
 	    itsMoving = true;
-	    
-	    if (aEvent instanceof IEvent_Location)
-		{
-			IEvent_Location theEvent = (IEvent_Location) aEvent;
-			TODPluginUtils.gotoSource(theEvent);
-		}
+
+		TODPluginUtils.gotoSource(aSession, aEvent);
 	    
 	    itsMoving = false;
 	}

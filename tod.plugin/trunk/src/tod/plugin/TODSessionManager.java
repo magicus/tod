@@ -3,6 +3,8 @@
  */
 package tod.plugin;
 
+import org.eclipse.jdt.core.IJavaProject;
+
 import tod.session.DefaultSessionFactory;
 import tod.session.ISession;
 import zz.utils.notification.IEvent;
@@ -20,10 +22,10 @@ public class TODSessionManager
 {
 	private static TODSessionManager INSTANCE = new TODSessionManager();
 	
-	private IRWProperty<ISession> pCurrentSession = new SimpleRWProperty<ISession>(this)
+	private IRWProperty<DebuggingSession> pCurrentSession = new SimpleRWProperty<DebuggingSession>(this)
 	{
 		@Override
-		protected void changed(ISession aOldValue, ISession aNewValue)
+		protected void changed(DebuggingSession aOldValue, DebuggingSession aNewValue)
 		{
 			if (aOldValue != null) aOldValue.disconnect();
 		}
@@ -41,7 +43,7 @@ public class TODSessionManager
 	/**
 	 * This propety contains the curent TOD session.
 	 */
-	public IProperty<ISession> pCurrentSession()
+	public IProperty<DebuggingSession> pCurrentSession()
 	{
 		return pCurrentSession;
 	}
@@ -49,11 +51,13 @@ public class TODSessionManager
 	/**
 	 * Obtains a free, clean collector session.
 	 */
-	public ISession createSession()
+	public DebuggingSession createSession(IJavaProject aJavaProject)
 	{
 		ISession theSession = DefaultSessionFactory.getInstance().createSession(null, null, null, null);
-		pCurrentSession.set(theSession);
-		return theSession;
+		DebuggingSession theDebuggingSession = new DebuggingSession(theSession, aJavaProject);
+		
+		pCurrentSession.set(theDebuggingSession);
+		return theDebuggingSession;
 	}
 	
 }
