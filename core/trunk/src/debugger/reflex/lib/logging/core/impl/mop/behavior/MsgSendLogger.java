@@ -105,7 +105,7 @@ public class MsgSendLogger
 				aTarget,
 				aArguments));
 		
-		Config.COLLECTOR.logBeforeMethodCall(
+		Config.COLLECTOR.logBeforeBehaviorCall(
 				System.nanoTime(), 
 				Thread.currentThread().getId(), 
 				aOperationBytecodeIndex,
@@ -127,7 +127,7 @@ public class MsgSendLogger
 				aTarget,
 				aResult));
 		
-		Config.COLLECTOR.logAfterMethodCall(
+		Config.COLLECTOR.logAfterBehaviorCall(
 				System.nanoTime(), 
 				Thread.currentThread().getId(), 
 				aOperationBytecodeIndex,

@@ -13,16 +13,12 @@ import tod.core.model.event.IInstantiationEvent;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.BehaviorInfo;
 import tod.core.model.structure.FieldInfo;
-import tod.core.model.structure.LocationTreeBuilder;
 import tod.core.model.structure.MemberInfo;
 import tod.core.model.structure.ObjectId;
 import tod.core.model.structure.TypeInfo;
-import tod.core.model.structure.LocationTreeBuilder.MemberNode;
-import tod.core.model.structure.LocationTreeBuilder.Node;
-import tod.core.model.structure.LocationTreeBuilder.TypeNode;
-import tod.core.model.trace.IEventTrace;
 import tod.core.model.trace.IEventBrowser;
 import tod.core.model.trace.IEventFilter;
+import tod.core.model.trace.IEventTrace;
 import tod.core.model.trace.IObjectInspector;
 import zz.utils.Utils;
 
@@ -166,7 +162,7 @@ public class ObjectInspector implements IObjectInspector
 				BehaviorInfo theBehavior = (BehaviorInfo) aMember;
 
 				theFilter = itsLog.createIntersectionFilter(
-						itsLog.createBehaviorFilter(theBehavior),
+						itsLog.createBehaviorCallFilter(theBehavior),
 //						itsLog.createFieldWriteFilter(),
 						itsLog.createTargetFilter(itsObjectId));
 				

@@ -42,6 +42,8 @@ public class EventList
 					aEvent, 
 					EventComparator.getInstance());
 			
+			if (theIndex < 0) theIndex = -theIndex-1;
+			
 			itsEvents.add (theIndex, aEvent);
 		}
 	}

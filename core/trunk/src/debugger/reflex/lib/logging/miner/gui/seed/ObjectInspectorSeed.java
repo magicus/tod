@@ -29,13 +29,13 @@ public class ObjectInspectorSeed extends Seed
 		super(aGUIManager, aLog);
 		itsInspectedObject = aInspectedObject;
 		
-		pSelectionStart().set(getLog().getFirstTimestamp());
-		pSelectionEnd().set((getLog().getFirstTimestamp() + getLog().getLastTimestamp()) / 2);
+		pSelectionStart().set(getEventTrace().getFirstTimestamp());
+		pSelectionEnd().set((getEventTrace().getFirstTimestamp() + getEventTrace().getLastTimestamp()) / 2);
 	}
 	
 	protected LogView requestComponent()
 	{
-		ObjectInspectorView theView = new ObjectInspectorView (getGUIManager(), getLog(), this);
+		ObjectInspectorView theView = new ObjectInspectorView (getGUIManager(), getEventTrace(), this);
 		theView.init();
 		return theView;
 	}

@@ -8,7 +8,7 @@ import tod.core.Output;
 /**
  * @author gpothier
  */
-public interface IOutputEvent extends ILogEvent
+public interface IOutputEvent extends ICallerSideEvent
 {
 	public String getData();
 	public Output getOutput();

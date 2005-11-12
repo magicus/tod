@@ -12,7 +12,6 @@ import tod.core.model.event.ILocalVariableWriteEvent;
 public class LocalVariableWriteEvent extends Event implements ILocalVariableWriteEvent
 {
 	private ILocationRegistrer.LocalVariableInfo itsVariable;
-	private Object itsTarget;
 	private Object itsValue;
 	
 	public ILocationRegistrer.LocalVariableInfo getVariable()
@@ -23,16 +22,6 @@ public class LocalVariableWriteEvent extends Event implements ILocalVariableWrit
 	public void setVariable(ILocationRegistrer.LocalVariableInfo aVariable)
 	{
 		itsVariable = aVariable;
-	}
-
-	public Object getTarget()
-	{
-		return itsTarget;
-	}
-
-	public void setTarget(Object aTarget)
-	{
-		itsTarget = aTarget;
 	}
 
 	public Object getValue()

@@ -4,7 +4,6 @@
 package tod.core.model.structure;
 
 import tod.core.ILogCollector;
-import tod.core.model.event.IBehaviorEnterEvent;
 
 /**
  * Aggregates the information a {@link ILogCollector collector}
@@ -15,8 +14,12 @@ public class ThreadInfo
 {
 	private long itsId;
 	private String itsName;
-	private IBehaviorEnterEvent itsCurrentBehavior;
 	
+	public ThreadInfo(long aId)
+	{
+		itsId = aId;
+	}
+
 	public ThreadInfo(long aId, String aName)
 	{
 		itsId = aId;
@@ -33,13 +36,8 @@ public class ThreadInfo
 		return itsName;
 	}
 
-	public IBehaviorEnterEvent getCurrentBehavior()
+	public void setName(String aName)
 	{
-		return itsCurrentBehavior;
-	}
-
-	public void setCurrentBehavior(IBehaviorEnterEvent aCurrentBehavior)
-	{
-		itsCurrentBehavior = aCurrentBehavior;
+		itsName = aName;
 	}
 }

@@ -92,4 +92,25 @@ public class BehaviorInfo extends MemberInfo
         }
         else return -1;
     }
+    
+    public ILocationRegistrer.LocalVariableInfo[] getLocalVariables()
+    {
+    	return itsLocalVariableTable;
+    }
+    
+    /**
+     * Indicates if this behavior is a constructor. 
+     */
+    public boolean isConstructor()
+    {
+    	return "<init>".equals(getName());
+    }
+
+    /**
+     * Indicates if this behavior is a static class initializer 
+     */
+    public boolean isStaticInit()
+    {
+    	return "<clinit>".equals(getName());
+    }
 }

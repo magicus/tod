@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import tod.core.LocationRegistrer;
+import tod.core.model.trace.ILocationTrace;
 
 
 /**
@@ -17,20 +17,20 @@ import tod.core.LocationRegistrer;
  */
 public class LocationTreeBuilder
 {
-	private static Map<LocationRegistrer, LocationTreeBuilder> itsInstances = 
-		new HashMap<LocationRegistrer, LocationTreeBuilder>();
+	private static Map<ILocationTrace, LocationTreeBuilder> itsInstances = 
+		new HashMap<ILocationTrace, LocationTreeBuilder>();
 	
 	/**
 	 * Returns a builder for the specified registerer.
 	 * There is one shared instance for each registerer. 
 	 */
-	public static LocationTreeBuilder getInstance (LocationRegistrer aRegistrer)
+	public static LocationTreeBuilder getInstance (ILocationTrace aLocationTrace)
 	{
-		LocationTreeBuilder theInstance = itsInstances.get(aRegistrer);
+		LocationTreeBuilder theInstance = itsInstances.get(aLocationTrace);
 		if (theInstance == null)
 		{
-			theInstance = new LocationTreeBuilder(aRegistrer);
-			itsInstances.put(aRegistrer, theInstance);
+			theInstance = new LocationTreeBuilder(aLocationTrace);
+			itsInstances.put(aLocationTrace, theInstance);
 		}
 		
 		return theInstance;
@@ -47,11 +47,11 @@ public class LocationTreeBuilder
 	
 	private PackageNode itsRootNode;
 
-	private final LocationRegistrer itsRegistrer;
+	private final ILocationTrace itsLocationTrace;
 
-	private LocationTreeBuilder(LocationRegistrer aRegistrer)
+	private LocationTreeBuilder(ILocationTrace aLocationTrace)
 	{
-		itsRegistrer = aRegistrer;
+		itsLocationTrace = aLocationTrace;
 		rebuild();
 	}
 	
@@ -64,9 +64,9 @@ public class LocationTreeBuilder
 		itsTypeNodesMap.clear();
 		itsRootNode = null;
 		
-		buildTypes(itsRegistrer.getTypes());
-		buildMembers(itsRegistrer.getBehaviours());
-		buildMembers(itsRegistrer.getFields());		
+		buildTypes(itsLocationTrace.getTypes());
+		buildMembers(itsLocationTrace.getBehaviours());
+		buildMembers(itsLocationTrace.getFields());		
 	}
 	
 	/**

@@ -3,8 +3,8 @@
  */
 package reflex.lib.logging.miner.impl.common.event;
 
-import tod.core.model.event.IBehaviorEnterEvent;
-import tod.core.model.event.ILogEvent;
+import tod.core.model.event.IBehaviorCallEvent;
+import tod.core.model.event.ICallerSideEvent;
 import tod.core.model.structure.BehaviorInfo;
 import tod.core.model.structure.ThreadInfo;
 
@@ -12,45 +12,25 @@ import tod.core.model.structure.ThreadInfo;
  * Base class of all logged events.
  * @author gpothier
  */
-public abstract class Event implements IMinerEvent
+public abstract class Event implements ICallerSideEvent
 {
-	/**
-	 * A unique id for the event.
-	 * Currently only the sql implementation uses it.
-	 */
-	private long itsId;
-	
-	/**
-	 * Depth of the event in its call stack (per thread).
-	 */
-	private int itsDepth;
-	private long itsSerial;
-	
 	private long itsTimestamp;
+	
 	private ThreadInfo itsThreadInfo;
+	private long itsSerial;
 	
 	private int itsOperationBytecodeIndex;
 	
-	private IBehaviorEnterEvent itsFather;
+	private IBehaviorCallEvent itsParent;
 	
-	public int getDepth()
+	public IBehaviorCallEvent getParent()
 	{
-		return itsDepth;
-	}
-	
-	public void setDepth(int aDepth)
-	{
-		itsDepth = aDepth;
-	}
-	
-	public IBehaviorEnterEvent getFather()
-	{
-		return itsFather;
+		return itsParent;
 	}
 
-	public void setFather(IBehaviorEnterEvent aFather)
+	public void setFather(IBehaviorCallEvent aParent)
 	{
-		itsFather = aFather;
+		itsParent = aParent;
 	}
 
 	public ThreadInfo getThread()
@@ -83,16 +63,6 @@ public abstract class Event implements IMinerEvent
 		itsSerial = aSerial;
 	}
 	
-	public long getId()
-	{
-		return itsId;
-	}
-	
-	public void setId(long aId)
-	{
-		itsId = aId;
-	}
-
 	public int getOperationBytecodeIndex()
 	{
 		return itsOperationBytecodeIndex;
@@ -102,7 +72,5 @@ public abstract class Event implements IMinerEvent
 	{
 		itsOperationBytecodeIndex = aOperationBytecodeIndex;
 	}
-    
-    
-    
+
 }

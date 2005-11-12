@@ -84,13 +84,7 @@ public class InstantiationLogger
 				"Instantiated: type: %d",
 				aTypeId));
 
-		
-		Config.COLLECTOR.logInstantiation(
-				System.nanoTime(), 
-				Thread.currentThread().getId(),
-				aOperationBytecodeIndex,
-				aTypeId,
-				aInstance);
+		Config.COLLECTOR.logInstantiation(Thread.currentThread().getId());
 	}
 
 	private static class TypeIdParameter extends AbstractParameter

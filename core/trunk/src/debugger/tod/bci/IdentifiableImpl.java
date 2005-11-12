@@ -18,7 +18,6 @@ public class IdentifiableImpl implements IIdentifiableObject
 
 	public IdentifiableImpl()
 	{
-		if (__log_uid == 0) __log_uid = IdGenerator.createIntId();
 	}
 
 

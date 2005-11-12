@@ -24,7 +24,7 @@ public class ThreadsSeed extends Seed
 	@Override
 	protected LogView requestComponent()
 	{
-		ThreadsView theView = new ThreadsView(getGUIManager(), getLog(), this);
+		ThreadsView theView = new ThreadsView(getGUIManager(), getEventTrace(), this);
 		theView.init();
 		return theView;
 	}

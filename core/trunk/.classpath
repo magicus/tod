@@ -9,8 +9,8 @@
 	<classpathentry kind="lib" path="/home/gpothier/installs/java/pg74.216.jdbc3.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/zz.csg"/>
 	<classpathentry sourcepath="/home/gpothier/apps/groovy-1.0-jsr-02/src/main" kind="lib" path="/home/gpothier/apps/groovy-1.0-jsr-02/embeddable/groovy-all-1.0-jsr-02.jar"/>
-	<classpathentry sourcepath="/home/gpothier/apps/java/asm-2.1/src.zip" kind="lib" path="lib/asm-2.1.jar"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/RemoteBCI"/>
 	<classpathentry sourcepath="/home/gpothier/apps/java/asm-2.1/src.zip" kind="lib" path="lib/asm-commons-2.1.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ASM"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

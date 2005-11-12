@@ -5,14 +5,11 @@ package reflex.lib.logging.miner.impl.local;
 
 import java.util.List;
 
-import reflex.lib.logging.miner.impl.common.event.Event;
-import tod.core.model.event.IBehaviorEnterEvent;
+import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.ThreadInfo;
-import tod.core.model.trace.IEventTrace;
 import tod.core.model.trace.ICFlowBrowser;
-import tod.core.model.trace.ICompoundFilter;
-import tod.core.model.trace.IEventBrowser;
+import tod.core.model.trace.IEventTrace;
 import zz.utils.tree.AbstractTree;
 
 /**
@@ -28,45 +25,30 @@ implements ICFlowBrowser
 	
 	private final ThreadInfo itsThread;
 	
-	private IBehaviorEnterEvent itsRoot; 
+	private IBehaviorCallEvent itsRoot; 
 	
 	
-	public CFlowBrowser(IEventTrace aLog, ThreadInfo aThread)
+	public CFlowBrowser(IEventTrace aLog, ThreadInfo aThread, IBehaviorCallEvent aRoot)
 	{
 		itsLog = aLog;
 		itsThread = aThread;
-		
-		ICompoundFilter theFilter = itsLog.createIntersectionFilter(
-				itsLog.createBehaviorFilter(),
-				itsLog.createThreadFilter(itsThread));
-		
-		IEventBrowser theBrowser = itsLog.createBrowser(theFilter);
-		
-		while (theBrowser.hasNext())
-		{
-			ILogEvent theEvent = theBrowser.getNext();
-			if (theEvent instanceof IBehaviorEnterEvent) 
-			{
-				itsRoot = (IBehaviorEnterEvent) theEvent;
-				break;
-			}
-		}
+		itsRoot = aRoot;
 	}
 
 
 	public ILogEvent getChild(ILogEvent aParent, int aIndex)
 	{
-		IBehaviorEnterEvent theEvent = (IBehaviorEnterEvent) aParent;
+		IBehaviorCallEvent theEvent = (IBehaviorCallEvent) aParent;
 		return theEvent.getChildren().get(aIndex);
 	}
 
 
 	public int getChildCount(ILogEvent aParent)
 	{
-		if (aParent instanceof IBehaviorEnterEvent)
+		if (aParent instanceof IBehaviorCallEvent)
 		{
-			IBehaviorEnterEvent theEvent = (IBehaviorEnterEvent) aParent;
-			List<Event> theChildren = theEvent.getChildren();
+			IBehaviorCallEvent theEvent = (IBehaviorCallEvent) aParent;
+			List<ILogEvent> theChildren = theEvent.getChildren();
 			return theChildren != null ? theChildren.size() : 0;
 		}
 		return 0;
@@ -75,14 +57,14 @@ implements ICFlowBrowser
 
 	public int getIndexOfChild(ILogEvent aParent, ILogEvent aChild)
 	{
-		IBehaviorEnterEvent theEvent = (IBehaviorEnterEvent) aParent;
+		IBehaviorCallEvent theEvent = (IBehaviorCallEvent) aParent;
 		return theEvent.getChildren().indexOf(aChild);
 	}
 
 
 	public ILogEvent getParent(ILogEvent aNode)
 	{
-		return aNode.getFather();
+		return aNode.getParent();
 	}
 
 

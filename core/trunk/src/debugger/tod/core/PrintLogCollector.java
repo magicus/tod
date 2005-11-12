@@ -6,12 +6,7 @@ package tod.core;
 import java.io.PrintStream;
 import java.util.Arrays;
 
-import tod.core.ILogCollector;
-import tod.core.Output;
-import tod.core.ILocationRegistrer.LineNumberInfo;
-import tod.core.ILocationRegistrer.LocalVariableInfo;
 import tod.core.model.structure.BehaviorInfo;
-
 import zz.utils.ArrayStack;
 import zz.utils.Stack;
 
@@ -37,63 +32,123 @@ public class PrintLogCollector extends LocationRegistrer implements ILogCollecto
 		itsOutput = aOutput;
 	}
 
-	public void logBeforeMethodCall(
+	public void logBeforeBehaviorCall(
 			long aTimestamp, 
 			long aThreadId,
 			int aOperationBytecodeIndex,
-			int aMethodLocationId,
+			int aBehaviorLocationId,
 			Object aTarget,
 			Object[] aArguments)
 	{
+		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
 		if (itsPrintEvents) itsOutput.println(String.format(
-                "[LOG] calling method: %s (%d) on %s with (%s)",
-                getBehavior(aMethodLocationId).getName(),
-                aMethodLocationId,
+                "[LOG] calling method: %s.%s (%d) on %s with (%s)",
+				theBehavior.getType().getName(),
+                theBehavior.getName(),
+                aBehaviorLocationId,
                 aTarget,
                 Arrays.asList(aArguments)));
 	}
 	
-	public void logAfterMethodCall(
+	public void logAfterBehaviorCall(
 			long aTimestamp, 
 			long aThreadId, 
 			int aOperationBytecodeIndex, 
-			int aMethodLocationId,
+			int aBehaviorLocationId,
 			Object aTarget, 
 			Object aResult)
 	{
+		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
 		if (itsPrintEvents) itsOutput.println(String.format(
-                "[LOG] method called: %s (%d) on %s result: %s",
-                getBehavior(aMethodLocationId).getName(),
-                aMethodLocationId,
+                "[LOG] method called: %s.%s (%d) on %s result: %s",
+				theBehavior.getType().getName(),
+                theBehavior.getName(),
+                aBehaviorLocationId,
                 aTarget,
                 aResult));
 	}
 
+	public void logAfterBehaviorCallWithException(
+			long aTimestamp, 
+			long aThreadId, 
+			int aOperationBytecodeIndex, 
+			int aBehaviorLocationId,
+			Object aTarget, 
+			Object aException)
+	{
+		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
+		if (itsPrintEvents) itsOutput.println(String.format(
+				"[LOG] method returned with exception: %s.%s (%d) on %s exception: %s",
+				theBehavior.getType().getName(),
+				theBehavior.getName(),
+				aBehaviorLocationId,
+				aTarget,
+				aException));
+	}
+	
 
 	public void logBehaviorEnter(
 			long aTimestamp,
 			long aThreadId, 
-			int aBehaviorLocationId)
+			int aBehaviorLocationId, 
+			Object aObject,
+			Object[] aArguments)
 	{
 		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
 		if (itsPrintEvents) itsOutput.println(String.format(
-				"[LOG] entering: %s (%d)",
+				"[LOG] entering: %s.%s (%d) on %s with %s",
+				theBehavior.getType().getName(),
 				theBehavior.getName(),
-				aBehaviorLocationId));
+				aBehaviorLocationId,
+				aObject,
+				Arrays.asList(aArguments)));
 		itsBehaviorsStack.push(theBehavior);
 	}
 
 	public void logBehaviorExit(
 			long aTimestamp,
 			long aThreadId,
-			int aBehaviorLocationId)
+			int aBehaviorLocationId,
+			Object aResult)
 	{
 		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
 		if (itsPrintEvents) itsOutput.println(String.format(
-				"[LOG] exiting: %s (%d)",
+				"[LOG] exiting: %s.%s (%d), result: %s",
+				theBehavior.getType().getName(),
+				theBehavior.getName(),
+				aBehaviorLocationId,
+				aResult));
+		if (itsBehaviorsStack.pop() != theBehavior) throw new RuntimeException();
+	}
+	
+	public void logBehaviorExitWithException(
+			long aTimestamp, 
+			long aThreadId, 
+			int aBehaviorLocationId, 
+			Object aException)
+	{
+		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
+		if (itsPrintEvents) itsOutput.println(String.format(
+				"[LOG] exiting with exception: %s.%s (%d)",
+				theBehavior.getType().getName(),
 				theBehavior.getName(),
 				aBehaviorLocationId));
 		if (itsBehaviorsStack.pop() != theBehavior) throw new RuntimeException();
+	}
+	
+	public void logExceptionGenerated(
+			long aTimestamp, 
+			long aThreadId, 
+			int aBehaviorLocationId, 
+			int aOperationBytecodeIndex, 
+			Object aException)
+	{
+		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
+		if (itsPrintEvents) itsOutput.println(String.format(
+				"[LOG] exception generated in: %s.%s (%d)",
+				theBehavior.getType().getName(),
+				theBehavior.getName(),
+				aBehaviorLocationId));
 	}
 
 	public void logFieldWrite(
@@ -112,18 +167,24 @@ public class PrintLogCollector extends LocationRegistrer implements ILogCollecto
 				aValue));
 	}
 
-	public void logInstantiation(
-			long aTimestamp, 
-			long aThreadId, 
-			int aOperationBytecodeIndex,
-			int aTypeLocationId,
-			Object aInstance)
+	public void logInstantiation(long aThreadId)
 	{
-		if (itsPrintEvents) itsOutput.println(String.format(
-				"[LOG] class instantiated: %s (%d), instance: %s",
-				getType(aTypeLocationId).getName(),
-				aTypeLocationId,
-				aInstance));
+		if (itsPrintEvents) itsOutput.println("[LOG] instantiating");
+	}
+
+	public void logAfterBehaviorCall(long aThreadId)
+	{
+		if (itsPrintEvents) itsOutput.println("[LOG] after method call (dry)");
+	}
+
+	public void logBeforeBehaviorCall(long aThreadId, int aOperationBytecodeIndex, int aMethodLocationId)
+	{
+		if (itsPrintEvents) itsOutput.println("[LOG] before method call (dry)");
+	}
+
+	public void logConstructorChaining(long aThreadId)
+	{
+		if (itsPrintEvents) itsOutput.println("[LOG] constructor chaining");
 	}
 
 	public void logLocalVariableWrite(
@@ -131,7 +192,6 @@ public class PrintLogCollector extends LocationRegistrer implements ILogCollecto
 			long aThreadId, 
 			int aOperationBytecodeIndex, 
 			int aVariableId, 
-			Object aTarget, 
 			Object aValue)
 	{
 		BehaviorInfo theInfo = itsBehaviorsStack.peek();

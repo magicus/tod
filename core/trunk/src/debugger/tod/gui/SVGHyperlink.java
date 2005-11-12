@@ -20,32 +20,53 @@ public class SVGHyperlink extends SVGFlowText
 {
 	private IGUIManager itsGUIManager;
 	private Seed itsSeed;
-	private Color itsColor;
+	private boolean itsMouseOver = false;
 	
-	public SVGHyperlink(IGUIManager aGUIManager, Seed aSeed, Color aColor)
+	public SVGHyperlink(IGUIManager aGUIManager, Seed aSeed)
 	{
 		itsGUIManager = aGUIManager;
 		itsSeed = aSeed;
-		itsColor = aColor;
 	}
 
 	@Override
-	public void mouseEntered(GraphicObjectContext aContext)
+	public void mouseEntered(GraphicObjectContext aContext, MouseEvent aEvent)
 	{
-		pStrokePaint().set(itsColor.darker());
+		setMouseOver(MouseModifiers.hasCtrl(aEvent));
 	}
 	
 	@Override
-	public void mouseExited(GraphicObjectContext aContext)
+	public void mouseExited(GraphicObjectContext aContext, MouseEvent aEvent)
 	{
-		pStrokePaint().set(itsColor);
+		setMouseOver(false);
+	}
+	
+	@Override
+	public boolean mouseMoved(GraphicObjectContext aContext, MouseEvent aEvent, Point2D aPoint)
+	{
+		boolean theCtrl = MouseModifiers.hasCtrl(aEvent); 
+		setMouseOver(theCtrl);
+		return theCtrl;
+	}
+	
+	private void setMouseOver(boolean aMouseOver)
+	{
+		if (itsMouseOver != aMouseOver)
+		{
+			XFont theFont = pFont().get();
+			pFont().set(new XFont(theFont.getAWTFont(), aMouseOver));
+			itsMouseOver = aMouseOver;
+		}
 	}
 	
 	@Override
 	public boolean mouseClicked(GraphicObjectContext aContext, MouseEvent aEvent, Point2D aPoint)
 	{
-		itsGUIManager.openSeed(itsSeed, MouseModifiers.hasCtrl(aEvent));
-		return true;
+		if (MouseModifiers.hasCtrl(aEvent))
+		{
+			itsGUIManager.openSeed(itsSeed, MouseModifiers.hasCtrl(aEvent));
+			return true;
+		}
+		else return false;
 	}
 	
 	/**
@@ -53,9 +74,9 @@ public class SVGHyperlink extends SVGFlowText
 	 */
 	public static SVGHyperlink create(IGUIManager aGUIManager, Seed aSeed, String aText, XFont aFont, Color aColor)
 	{
-		XFont theFont = aFont.isUnderline() ? aFont : new XFont(aFont.getAWTFont(), true);
+		XFont theFont = aFont.isUnderline() ? new XFont(aFont.getAWTFont(), false) : aFont;
 		
-		SVGHyperlink theHyperlink = new SVGHyperlink(aGUIManager, aSeed, aColor);
+		SVGHyperlink theHyperlink = new SVGHyperlink(aGUIManager, aSeed);
 		theHyperlink.pText().set(aText);
 		theHyperlink.pStrokePaint().set(aColor);
 		theHyperlink.pFont().set(theFont);

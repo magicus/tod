@@ -30,8 +30,8 @@ public interface ILogEvent
 	public long getSerial();
 	
 	/**
-	 * Returns behavior enter event corresponding to the behavior execution
+	 * Returns behavior call event corresponding to the behavior execution
 	 * during which this event occured.
 	 */
-	public IBehaviorEnterEvent getFather();
+	public IBehaviorCallEvent getParent();
 }

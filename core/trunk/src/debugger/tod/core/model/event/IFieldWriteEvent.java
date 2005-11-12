@@ -3,11 +3,18 @@
  */
 package tod.core.model.event;
 
+import tod.core.model.structure.FieldInfo;
+
 /**
  * @author gpothier
  */
-public interface IFieldWriteEvent extends IEvent_Field, IEvent_Target, IEvent_Location
+public interface IFieldWriteEvent extends ICallerSideEvent
 {
+	/**
+	 * The written field
+	 */
+	public FieldInfo getField();
+	
 	/**
 	 * Returns the value written to the field.
 	 */

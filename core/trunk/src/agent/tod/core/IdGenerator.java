@@ -6,30 +6,14 @@ package tod.core;
 
 public class IdGenerator
 {
-	private static long itsCurrentLongId = 1l+Integer.MAX_VALUE;
-	private static int itsCurrentIntId = 1;
+	private static long itsCurrentId = 1;
 
 	/**
 	 * This method is used in introduced field's initializer.
 	 * We make it static to limit overhead.
 	 */
-	public static synchronized long createLongId()
+	public static synchronized long createId()
 	{
-//		System.out.println("ObjectIdentifier.createLongId()");
-//		if (itsCurrentLongId == Long.MAX_VALUE) throw new RuntimeException("Long ids exhausted");
-		return itsCurrentLongId++;
+		return itsCurrentId++;
 	}
-	
-	/**
-	 * This method is used in introduced field's initializer.
-	 * We make it static to limit overhead.
-	 */
-	public static synchronized int createIntId()
-	{
-//		System.out.println("ObjectIdentifier.createIntId()");
-//		if (itsCurrentIntId == Integer.MAX_VALUE) throw new RuntimeException("Int ids exhausted");
-		return itsCurrentIntId++;
-	}
-	
-
 }

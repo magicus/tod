@@ -40,4 +40,19 @@ public abstract class LocationInfo
 	{
 		itsName = aName;
 	}
+	
+	/**
+	 * Two location info are equal if they have the same class and
+	 * the same id.
+	 */
+	@Override
+	public final boolean equals(Object aObj)
+	{
+		if (aObj instanceof LocationInfo)
+		{
+			LocationInfo theInfo = (LocationInfo) aObj;
+			return theInfo.getClass().equals(getClass()) && theInfo.getId() == getId();
+		}
+		else return false;
+	}
 }

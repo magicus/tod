@@ -6,6 +6,7 @@ package reflex.lib.logging.miner.gui.formatter;
 import tod.core.BehaviourType;
 import tod.core.model.structure.BehaviorInfo;
 import tod.core.model.structure.FieldInfo;
+import tod.core.model.structure.ThreadInfo;
 import tod.core.model.structure.TypeInfo;
 import zz.utils.AbstractFormatter;
 
@@ -43,6 +44,14 @@ public class LocationFormatter extends AbstractFormatter
 			BehaviorInfo theInfo = (BehaviorInfo) aObject;
 			BehaviourType theBehaviourType = theInfo.getBehaviourType();
 			return theBehaviourType.getName() + " " + theInfo.getName();
+		}
+		else if (aObject instanceof ThreadInfo)
+		{
+			ThreadInfo theInfo = (ThreadInfo) aObject;
+			String theName = theInfo.getName();
+			return theName != null ? 
+					"Thread "+theName+" ("+theInfo.getId()+")" 
+					: "Thread ("+theInfo.getId()+")";
 		}
 		else return "Not handled: "+aObject; 
 	}

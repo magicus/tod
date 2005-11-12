@@ -14,15 +14,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import reflex.lib.logging.miner.gui.IGUIManager;
-import reflex.lib.logging.miner.gui.seed.FilterSeed;
-import reflex.lib.logging.miner.gui.seed.Seed;
+import reflex.lib.logging.miner.gui.formatter.LocationFormatter;
+import reflex.lib.logging.miner.gui.seed.CFlowSeed;
 import reflex.lib.logging.miner.gui.seed.ThreadsSeed;
 import tod.core.model.structure.ThreadInfo;
 import tod.core.model.trace.IEventTrace;
-import tod.core.model.trace.IEventFilter;
 import zz.utils.SimpleComboBoxModel;
 import zz.utils.Utils;
-import zz.utils.ui.StackLayout;
+import zz.utils.ui.FormattedRenderer;
 
 /**
  * A view that lets the user select a thread and displays all the events 
@@ -32,9 +31,6 @@ import zz.utils.ui.StackLayout;
 public class ThreadsView extends LogView
 {
 	private ThreadsSeed itsSeed;
-	private Seed itsCurrentSeed;
-	
-	private JPanel itsSubviewContainer;
 	
 	public ThreadsView(IGUIManager aGUIManager, IEventTrace aLog, ThreadsSeed aSeed)
 	{
@@ -47,9 +43,10 @@ public class ThreadsView extends LogView
 	private void createUI()
 	{
 		List<ThreadInfo> theThreads = new ArrayList<ThreadInfo>();
-		Utils.fillCollection(theThreads, getLog().getLocationRegistrer().getThreads());
+		Utils.fillCollection(theThreads, getEventTrace().getLocationTrace().getThreads());
 		
 		final JComboBox theThreadsCombo = new JComboBox(new SimpleComboBoxModel(theThreads));
+		theThreadsCombo.setRenderer(new FormattedRenderer(LocationFormatter.getInstance()));
 		theThreadsCombo.addActionListener(new ActionListener()
 				{
 					public void actionPerformed(ActionEvent aE)
@@ -65,34 +62,11 @@ public class ThreadsView extends LogView
 		
 		setLayout(new BorderLayout());
 		add (theTopPanel, BorderLayout.NORTH);
-		
-		itsSubviewContainer = new JPanel(new StackLayout());
-		add (itsSubviewContainer, BorderLayout.CENTER);
 	}
 	
-	private void showThread(ThreadInfo aThreadInfo)
+	private void showThread(ThreadInfo aThread)
 	{
-		itsSubviewContainer.removeAll();
-		
-		if (itsCurrentSeed != null) itsCurrentSeed.deactivate();
-		
-		if (aThreadInfo != null)
-		{
-			IEventFilter theFilter = getLog().createThreadFilter(aThreadInfo);
-			itsCurrentSeed = new FilterSeed(getGUIManager(), getLog(), theFilter);
-		}
-		
-		if (itsCurrentSeed != null)
-		{
-			itsCurrentSeed.activate();
-			LogView theSubview = itsCurrentSeed.getComponent();
-			theSubview.init();
-			itsSubviewContainer.add (theSubview);
-		}
-		
-		itsSubviewContainer.revalidate();
-		itsSubviewContainer.repaint();
-		itsSubviewContainer.validate();
+		getGUIManager().openSeed(new CFlowSeed(getGUIManager(), getEventTrace(), aThread), false);
 	}
 
 }

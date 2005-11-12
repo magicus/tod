@@ -30,6 +30,10 @@ public class CollectorPacketReader
                 readInstantiation(aStream, aCollector);
                 break;
                 
+			case CONSTRUCTOR_CHAINING:
+				readConstructorChaining(aStream, aCollector);
+				break;
+				
 			case BEHAVIOR_ENTER:
                 readBehaviorEnter(aStream, aCollector);
                 break;
@@ -38,6 +42,14 @@ public class CollectorPacketReader
                 readBehaviorExit(aStream, aCollector);
                 break;
                 
+			case BEHAVIOR_EXIT_WITH_EXCEPTION:
+				readBehaviorExitWithException(aStream, aCollector);
+				break;
+				
+			case EXCEPTION_GENERATED:
+				readExceptionGenerated(aStream, aCollector);
+				break;
+				
 			case FIELD_WRITE:
                 readFieldWrite(aStream, aCollector);
                 break;
@@ -50,40 +62,28 @@ public class CollectorPacketReader
                 readBeforeMethodCall(aStream, aCollector);
                 break;
                 
+			case BEFORE_METHOD_CALL_DRY:
+				readBeforeMethodCallDry(aStream, aCollector);
+				break;
+				
 			case AFTER_METHOD_CALL:
                 readAfterMethodCall(aStream, aCollector);
+				break;
+				
+			case AFTER_METHOD_CALL_DRY:
+				readAfterMethodCallDry(aStream, aCollector);
+				break;
+				
+			case AFTER_METHOD_CALL_WITH_EXCEPTION:
+				readAfterMethodCallWithException(aStream, aCollector);
 				break;
 				
 			case OUTPUT:
 				readOutput(aStream, aCollector);
 				break;
 				
-			case REGISTER_CLASS:
-				readClass(aStream, aCollector);
-				break;
-				
-			case REGISTER_BEHAVIOR:
-				readBehaviour(aStream, aCollector);
-				break;
-				
-			case REGISTER_BEHAVIOR_ATTRIBUTES:
-				readBehaviourAttributes(aStream, aCollector);
-				break;
-				
-			case REGISTER_FIELD:
-				readField(aStream, aCollector);
-				break;
-				
-			case REGISTER_FILE:
-				readFile(aStream, aCollector);
-				break;
-				
-			case REGISTER_THREAD:
-				readThread(aStream, aCollector);
-				break;
-				
 			default:
-				throw new RuntimeException("Unexpected message: "+aCommand);
+				readPacket(aStream, (ILocationRegistrer) aCollector, aCommand);
 		}
 
 	}
@@ -191,12 +191,12 @@ public class CollectorPacketReader
 	
     public static void readInstantiation(DataInputStream aStream, ILogCollector aCollector) throws IOException
     {
-        aCollector.logInstantiation(
-        		aStream.readLong(),
-        		aStream.readLong(),
-                aStream.readShort(),
-                aStream.readInt(),
-                readValue(aStream));
+        aCollector.logInstantiation(aStream.readLong());
+    }
+    
+    public static void readConstructorChaining(DataInputStream aStream, ILogCollector aCollector) throws IOException
+    {
+    	aCollector.logConstructorChaining(aStream.readLong());
     }
     
     public static void readBehaviorEnter(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -204,7 +204,9 @@ public class CollectorPacketReader
         aCollector.logBehaviorEnter(
         		aStream.readLong(),
                 aStream.readLong(),
-                aStream.readInt());
+                aStream.readInt(),
+                readValue(aStream),
+                readArguments(aStream));
     }
     
     public static void readBehaviorExit(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -212,12 +214,32 @@ public class CollectorPacketReader
         aCollector.logBehaviorExit(
         		aStream.readLong(),
                 aStream.readLong(),
-                aStream.readInt());
+                aStream.readInt(),
+                readValue(aStream));
+    }
+    
+    public static void readBehaviorExitWithException(DataInputStream aStream, ILogCollector aCollector) throws IOException
+    {
+    	aCollector.logBehaviorExitWithException(
+    			aStream.readLong(),
+    			aStream.readLong(),
+    			aStream.readInt(),
+    			readValue(aStream));
+    }
+    
+    public static void readExceptionGenerated(DataInputStream aStream, ILogCollector aCollector) throws IOException
+    {
+    	aCollector.logExceptionGenerated(
+    			aStream.readLong(),
+    			aStream.readLong(),
+    			aStream.readInt(),
+    			aStream.readInt(),
+    			readValue(aStream));
     }
     
     public static void readBeforeMethodCall(DataInputStream aStream, ILogCollector aCollector) throws IOException
     {
-        aCollector.logBeforeMethodCall(
+        aCollector.logBeforeBehaviorCall(
         		aStream.readLong(),
         		aStream.readLong(), 
                 aStream.readShort(),
@@ -226,15 +248,39 @@ public class CollectorPacketReader
                 readArguments(aStream));
     }
     
+    public static void readBeforeMethodCallDry(DataInputStream aStream, ILogCollector aCollector) throws IOException
+    {
+    	aCollector.logBeforeBehaviorCall(
+    			aStream.readLong(),
+    			aStream.readShort(),
+    			aStream.readInt());
+    }
+    
     public static void readAfterMethodCall(DataInputStream aStream, ILogCollector aCollector) throws IOException
     {
-        aCollector.logAfterMethodCall(
+        aCollector.logAfterBehaviorCall(
         		aStream.readLong(),
         		aStream.readLong(),
                 aStream.readShort(),
                 aStream.readInt(),
                 readValue(aStream),
                 readValue(aStream));
+    }
+    
+    public static void readAfterMethodCallDry(DataInputStream aStream, ILogCollector aCollector) throws IOException
+    {
+    	aCollector.logAfterBehaviorCall(aStream.readLong());
+    }
+    
+    public static void readAfterMethodCallWithException(DataInputStream aStream, ILogCollector aCollector) throws IOException
+    {
+    	aCollector.logAfterBehaviorCallWithException(
+    			aStream.readLong(),
+    			aStream.readLong(),
+    			aStream.readShort(),
+    			aStream.readInt(),
+    			readValue(aStream),
+    			readValue(aStream));
     }
     
     public static void readFieldWrite(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -255,7 +301,6 @@ public class CollectorPacketReader
     			aStream.readLong(),
     			aStream.readShort(),
     			aStream.readShort(),
-    			readValue(aStream),
     			readValue(aStream));
     }
     

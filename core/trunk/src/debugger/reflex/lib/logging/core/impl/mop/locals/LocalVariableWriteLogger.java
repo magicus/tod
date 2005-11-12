@@ -82,7 +82,6 @@ public class LocalVariableWriteLogger
 				Thread.currentThread().getId(),
 				aOperationBytecodeIndex,
 				aVariableId,
-				aTarget,
 				aValue);
 	}	
 

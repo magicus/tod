@@ -152,7 +152,16 @@ public interface ILocationRegistrer {
          */
         public boolean match (int aPc, int aIndex)
         {
-            return aIndex == getIndex() && aPc >= getStartPc() && aPc < getStartPc() + getLength();
+            return aIndex == getIndex() && available(aPc);
+        }
+        
+        /**
+         * Indicates if this entry is available at the specified bytecode position.
+         * @param aPc A position in the bytecode where the variable is used.
+         */
+        public boolean available (int aPc)
+        {
+        	return aPc >= getStartPc() && aPc < getStartPc() + getLength();
         }
     }
 

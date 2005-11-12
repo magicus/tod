@@ -8,29 +8,36 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-public class MethodCallInstrumenter implements Opcodes
+public class ASMBehaviorCallInstrumenter implements Opcodes
 {
-	private MethodVisitor mv;
-	private final int itsMethodId;
-	private final boolean itsStatic;
+	private final MethodVisitor mv;
+	private final ASMBehaviorInstrumenter itsInstrumenter;
+	
+	private int itsMethodId;
+	private boolean itsStatic;
 	private Type[] itsArgTypes;
 	private Type itsReturnType;
 
 	private int itsBytecodeIndex;
 	
-	private final int itsFirstVar;
+	private int itsFirstVar;
 	private int itsAfterArgumentsVar;
 	private int itsTargetVar; 
 	private int itsArrayVar;
 
-	public MethodCallInstrumenter(
-			MethodVisitor aVisitor, 
+	
+	public ASMBehaviorCallInstrumenter(MethodVisitor mv, ASMBehaviorInstrumenter aInstrumenter)
+	{
+		this.mv = mv;
+		itsInstrumenter = aInstrumenter;
+	}
+
+	public void setup(
 			int aMaxLocals,
 			int aMethodId, 
 			String aDesc, 
 			boolean aStatic)
 	{
-		mv = aVisitor;
 		itsFirstVar = aMaxLocals;
 		itsMethodId = aMethodId;
 		itsStatic = aStatic;
@@ -40,6 +47,10 @@ public class MethodCallInstrumenter implements Opcodes
 		Label l = new Label();
 		mv.visitLabel(l);
 		itsBytecodeIndex = l.getOffset();
+		
+		itsAfterArgumentsVar = -1;
+		itsTargetVar = -1;
+		itsArrayVar = -1;
 	}
 	
 	/**
@@ -78,44 +89,16 @@ public class MethodCallInstrumenter implements Opcodes
 	 */
 	public void createArgsArray()
 	{
-		if (itsArgTypes.length > 0)
-		{
-			mv.visitIntInsn(BIPUSH, itsArgTypes.length);
-			mv.visitTypeInsn(ANEWARRAY, "java/lang/Object");
-			
-			// :: array
-			mv.visitVarInsn(ASTORE, itsArrayVar);
-			
-			// ::
-			
-			int theCurrentVar = itsAfterArgumentsVar;
-			short theIndex = 0;
-			for (Type theType : itsArgTypes)
-			{
-				theCurrentVar -= theType.getSize();
-				
-				mv.visitVarInsn(ALOAD, itsArrayVar); // :: array
-				BCIUtils.pushInt(mv, theIndex++); // :: array, index
-				mv.visitVarInsn(theType.getOpcode(ILOAD), theCurrentVar); // :: array, index, val
-				BCIUtils.wrap(mv, theType);
-				mv.visitInsn(AASTORE); // :: 
-			}
-		}
-		else
-		{
-			mv.visitInsn(ACONST_NULL); // :: null
-			mv.visitVarInsn(ASTORE, itsArrayVar); // ::
-		}
+		itsInstrumenter.createArgsArray(itsArgTypes, itsArrayVar, itsAfterArgumentsVar, true);
 	}
 	
 	/**
 	 * Generates the code that calls 
-	 * {@link tod.core.ILogCollector#logBeforeMethodCall(long, long, int, int, Object, Object[])}
+	 * {@link tod.core.ILogCollector#logBeforeBehaviorCall(long, long, int, int, Object, Object[])}
 	 */
 	public void callLogBeforeMethodCall()
 	{
-		BCIUtils.invokeLogBeforeMethodCall(
-				mv, 
+		itsInstrumenter.invokeLogBeforeBehaviorCall(
 				itsBytecodeIndex, 
 				itsMethodId, 
 				itsStatic ? -1 : itsTargetVar, 
@@ -123,7 +106,18 @@ public class MethodCallInstrumenter implements Opcodes
 	}
 	
 	/**
-	 * Generates the code that pushes stred arguments back to the stack
+	 * Generates the code that calls 
+	 * {@link tod.core.ILogCollector#logBeforeBehaviorCall(long, long, int, int, Object, Object[])}
+	 */
+	public void callLogBeforeMethodCallDry()
+	{
+		itsInstrumenter.invokeLogBeforeBehaviorCall(
+				itsBytecodeIndex, 
+				itsMethodId);
+	}
+	
+	/**
+	 * Generates the code that pushes stored arguments back to the stack
 	 * Stack: . => [target], arg1, ..., argN
 	 */
 	public void pushArgs()
@@ -141,7 +135,7 @@ public class MethodCallInstrumenter implements Opcodes
 	
 	/**
 	 * Generates the code that calls 
-	 * {@link tod.core.ILogCollector#logAfterMethodCall(long, long, int, int, Object, Object)}
+	 * {@link tod.core.ILogCollector#logAfterBehaviorCall(long, long, int, int, Object, Object)}
 	 */
 	public void callLogAfterMethodCall()
 	{
@@ -162,13 +156,41 @@ public class MethodCallInstrumenter implements Opcodes
 		
 		// :: [result]
 		
-		BCIUtils.invokeLogAfterMethodCall(
-				mv, 
+		itsInstrumenter.invokeLogAfterBehaviorCall(
 				itsBytecodeIndex, 
 				itsMethodId, 
 				itsStatic ? -1 : itsTargetVar, 
 				itsArrayVar);
 	}
 
+	/**
+	 * Generates the code that calls 
+	 * {@link tod.core.ILogCollector#logAfterBehaviorCall(long, long, int, int, Object, Object)}
+	 */
+	public void callLogAfterMethodCallWithException()
+	{
+		// :: [exception]
+		
+		mv.visitInsn(DUP);
+		mv.visitVarInsn(ASTORE, itsArrayVar);
+		
+		// :: [exception]
+		
+		itsInstrumenter.invokeLogAfterBehaviorCallWithException(
+				itsBytecodeIndex, 
+				itsMethodId, 
+				itsStatic ? -1 : itsTargetVar, 
+				itsArrayVar);
+	}
+	
+	/**
+	 * Generates the code that calls 
+	 * {@link tod.core.ILogCollector#logAfterBehaviorCall(long, long, int, int, Object, Object)}
+	 */
+	public void callLogAfterMethodCallDry()
+	{
+		itsInstrumenter.invokeLogAfterBehaviorCall();
+	}
+	
 	
 }

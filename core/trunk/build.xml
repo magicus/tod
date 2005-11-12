@@ -1,4 +1,4 @@
-<project name="LogMiner" default="compile" basedir=".">
+<project name="TOD" default="compile" basedir=".">
 
     <target name="init">
 

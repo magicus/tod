@@ -3,17 +3,23 @@
  */
 package tod.session;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.URI;
 
+import reflex.lib.logging.core.impl.mop.behavior.CollectorStream;
 import reflex.lib.logging.miner.impl.local.LocalCollector;
 import remotebci.RemoteInstrumenter;
 import tod.core.PrintThroughCollector;
+import tod.core.model.structure.ObjectId;
 import tod.core.model.trace.IEventTrace;
 import tod.core.model.trace.ILocationTrace;
+import tod.core.transport.CollectorPacketReader;
 import tod.core.transport.LogReceiver;
+import tod.core.transport.MessageType;
 
 /**
  * A session that uses a {@link reflex.lib.logging.miner.impl.local.LocalCollector}
@@ -28,7 +34,8 @@ public class ASMLocalSession extends AbstractSession
 	private MyLogReceiver itsLogReceiver;
 	private MyInstrumenter itsInstrumenter;
 
-	private String itsCachedClassesPath = "/home/gpothier/tmp/ASM";
+	private String itsCachedClassesPath;
+	private File itsCachedLocationsPath;
 
 	public ASMLocalSession(
 			URI aUri, 
@@ -37,71 +44,21 @@ public class ASMLocalSession extends AbstractSession
 			String aTraceWorkingSet)
 	{
 		super(aUri);
-		itsCollector = new LocalCollector();
 		
-		String ws = "["
-			+"+java.lang.AbstractStringBuilder "
-			+"+java.lang.Appendable "
-			+"+java.lang.Boolean "
-			+"+java.lang.Byte "
-			+"+java.lang.Character "
-			+"+java.lang.CharacterDataLatin1 "
-			+"+java.lang.CharSequence "
-			+"+java.lang.Class$1 "
-			+"+java.lang.Class$3 "
-			+"+java.lang.Class "
-			+"+java.lang.ClassLoader$3 "
-			+"+java.lang.ClassLoader "
-			+"+java.lang.ClassLoader$NativeLibrary "
-			+"+java.lang.Cloneable "
-			+"+java.lang.Comparable "
-			+"+java.lang.Compiler$1 "
-			+"+java.lang.Compiler "
-			+"+java.lang.Double "
-			+"+java.lang.Error "
-			+"+java.lang.Exception "
-			+"+java.lang.Float "
-			+"+java.lang.Integer "
-			+"+java.lang.Iterable "
-			+"+java.lang.Long "
-			+"+java.lang.Number "
-//			+"+java.lang.Object "
-			+"+java.lang.Readable "
-			+"+java.lang.Runnable "
-			+"+java.lang.Runtime "
-			+"+java.lang.RuntimePermission "
-//			+"+java.lang.Short "
-			+"+java.lang.Shutdown "
-			+"+java.lang.Shutdown$Lock "
-			+"+java.lang.StackTraceElement "
-			+"+java.lang.StrictMath "
-			+"+java.lang.StringBuffer "
-			+"+java.lang.StringBuilder "
-			+"+java.lang.String$CaseInsensitiveComparator "
-//			+"+java.lang.String "
-			+"+java.lang.StringCoding$CharsetSD "
-			+"+java.lang.StringCoding$CharsetSE "
-			+"+java.lang.StringCoding "
-			+"+java.lang.StringCoding$StringDecoder "
-			+"+java.lang.StringCoding$StringEncoder "
-			+"+java.lang.System$2 "
-			+"+java.lang.System "
-			+"+java.lang.SystemClassLoaderAction "
-			+"+java.lang.Terminator$1 "
-			+"+java.lang.Terminator "
-			+"+java.lang.Thread "
-			+"+java.lang.ThreadDeath "
-			+"+java.lang.ThreadGroup "
-			+"+java.lang.ThreadLocal "
-			+"+java.lang.ThreadLocal$ThreadLocalMap "
-			+"+java.lang.ThreadLocal$ThreadLocalMap$Entry "
-			+"+java.lang.Thread$UncaughtExceptionHandler "
-			+"+java.lang.Throwable "
-			+"]";
+		if (aUri != null)
+		{
+			File theCachePath = new File(aUri);
+			itsCachedClassesPath = theCachePath.getPath();
+			
+			itsCachedLocationsPath = new File(theCachePath, "loc.dat");
+		}
+		
+		
+		itsCollector = new LocalCollector();
 		
 		itsConfig = new ASMDebuggerConfig(
 				new PrintThroughCollector(itsCollector),
-				new File("/home/gpothier/tmp/ASM/loc.dat"), 
+				itsCachedLocationsPath, 
 				"[-tod.** -remotebci.** +tod.test.** +tod.demo.**]",
 				"[-java.lang.String -java.lang.Number]",
 				"[-java.** -javax.** -sun.** -com.sun.**]");
@@ -140,6 +97,10 @@ public class ASMLocalSession extends AbstractSession
 
 	private class MyInstrumenter extends RemoteInstrumenter
 	{
+		private static final int EXCEPTION_GENERATED = 20;
+		private static final byte OBJECT_HASH = 1;
+		private static final byte OBJECT_UID = 2;
+
 		private boolean itsFinished = false;
 		
 		public MyInstrumenter(int aPort) throws IOException
@@ -156,12 +117,52 @@ public class ASMLocalSession extends AbstractSession
 		@Override
 		protected boolean getSkipCoreClasses()
 		{
-			return false;
+			return true;
 		}
 		
 		public byte[] instrumentClass(String aClassName, byte[] aBytecode)
 		{
 			return itsConfig.getInstrumenter().instrumentClass(aClassName, aBytecode);
+		}
+		
+		@Override
+		protected void processCommand(int aCommand, DataInputStream aInputStream, DataOutputStream aOutputStream) throws IOException
+		{
+			if (aCommand == EXCEPTION_GENERATED)
+			{
+				long theTimestamp = aInputStream.readLong();
+				long theThreadId = aInputStream.readLong();
+				String theMethodName = aInputStream.readUTF();
+				String theMethodSignature = aInputStream.readUTF();
+				String theMethodDeclaringClassSignature = aInputStream.readUTF();
+				int theBytecodeIndex = aInputStream.readInt();
+				byte theExceptionIdType = aInputStream.readByte();
+				Object theException;
+				
+				switch (theExceptionIdType)
+				{
+				case OBJECT_UID:
+					long theUid = aInputStream.readLong();
+					theException = new ObjectId.ObjectUID(theUid);
+					break;
+					
+				case OBJECT_HASH:
+					int theHash = aInputStream.readInt();
+					theException = new ObjectId.ObjectHash(theHash);
+					break;
+					
+				default:
+					throw new RuntimeException("Not handled: "+theExceptionIdType);
+				}
+				
+				String theClassName = theMethodDeclaringClassSignature.substring(1, theMethodDeclaringClassSignature.length()-1);
+				int theTypeId = itsConfig.getLocationPool().getTypeId(theClassName);
+				int theBehaviorId = itsConfig.getLocationPool().getMethodId(theTypeId, theMethodName, theMethodSignature);
+				
+				itsConfig.getCollector().logExceptionGenerated(theTimestamp, theThreadId, theBehaviorId, theBytecodeIndex, theException);
+
+			}
+			else super.processCommand(aCommand, aInputStream, aOutputStream);
 		}
 		
 		@Override

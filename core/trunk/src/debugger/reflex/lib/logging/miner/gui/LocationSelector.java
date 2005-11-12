@@ -27,6 +27,7 @@ import tod.core.LocationRegistrer;
 import tod.core.model.structure.LocationInfo;
 import tod.core.model.structure.LocationTreeBuilder;
 import tod.core.model.structure.LocationTreeBuilder.Node;
+import tod.core.model.trace.ILocationTrace;
 
 /**
  * This panel permits to select a source code location.
@@ -36,7 +37,7 @@ import tod.core.model.structure.LocationTreeBuilder.Node;
  */
 public class LocationSelector extends JPanel implements TreeSelectionListener
 {
-	private LocationRegistrer itsLocationRegistrer;
+	private ILocationTrace itsLocationTrace;
 	
 	private MyTreeModel itsModel;
 	private JTree itsTree;
@@ -46,10 +47,10 @@ public class LocationSelector extends JPanel implements TreeSelectionListener
 
 	private LocationTreeBuilder itsLocationTreeBuilder;
 	
-	public LocationSelector(LocationRegistrer aLocationRegistrer)
+	public LocationSelector(ILocationTrace aLocationTrace)
 	{
-		itsLocationRegistrer = aLocationRegistrer;
-		itsLocationTreeBuilder = LocationTreeBuilder.getInstance(itsLocationRegistrer);
+		itsLocationTrace = aLocationTrace;
+		itsLocationTreeBuilder = LocationTreeBuilder.getInstance(itsLocationTrace);
 		createUI();
 	}
 	

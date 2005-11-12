@@ -110,7 +110,7 @@ public class EventComparator implements Comparator<ILogEvent>
 			return 0;
 		}
 
-		public IBehaviorEnterEvent getFather()
+		public IBehaviorCallEvent getParent()
 		{
 			return null;
 		}

@@ -72,8 +72,8 @@ public class ObjectInspectorView extends LogView
 		
 		// Setup time scale
 		itsTimeScale = new TimeScale();
-		itsTimeScale.pStart().set(getLog().getFirstTimestamp());
-		itsTimeScale.pEnd().set(getLog().getLastTimestamp());
+		itsTimeScale.pStart().set(getEventTrace().getFirstTimestamp());
+		itsTimeScale.pEnd().set(getEventTrace().getLastTimestamp());
 		connect (itsSeed.pSelectionStart(), itsTimeScale.pSelectionStart(), true);
 		connect (itsSeed.pSelectionEnd(), itsTimeScale.pSelectionEnd(), true);
 		connect (itsSeed.pCurrentPosition(), itsTimeScale.pCurrentPosition(), true);
@@ -109,7 +109,7 @@ public class ObjectInspectorView extends LogView
 
 	private void setObject (ObjectId aObjectId)
 	{
-		itsInspector = aObjectId != null ? getLog().createObjectInspector(aObjectId) : null;
+		itsInspector = aObjectId != null ? getEventTrace().createObjectInspector(aObjectId) : null;
 		itsTimeScale.pEventBrowsers().clear();
 		
 		if (itsInspector != null)

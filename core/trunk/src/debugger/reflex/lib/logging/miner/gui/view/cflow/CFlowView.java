@@ -69,7 +69,7 @@ public class CFlowView extends LogView
 	{
 		super(aGUIManager, aLog);
 		itsSeed = aSeed;
-		itsCFlowBrowser = getLog().createCFlowBrowser(itsSeed.getThread());
+		itsCFlowBrowser = getEventTrace().createCFlowBrowser(itsSeed.getThread());
 	}
 	
 	@Override
@@ -124,11 +124,11 @@ public class CFlowView extends LogView
 		
 		// Update call stack
 		List<IBehaviorEnterEvent> theCallStack = new ArrayList<IBehaviorEnterEvent>();
-		IBehaviorEnterEvent theCurrentEvent = aEvent.getFather();
+		IBehaviorEnterEvent theCurrentEvent = aEvent.getParent();
 		while (theCurrentEvent != null)
 		{
 			theCallStack.add(theCurrentEvent);
-			theCurrentEvent = theCurrentEvent.getFather();
+			theCurrentEvent = theCurrentEvent.getParent();
 		}
 		itsCallStackListModel.setList(theCallStack);
 	}

@@ -156,10 +156,12 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 	
 	private class BCIMethodVisitor extends MethodAdapter
 	{
-
 		private ASMMethodInfo itsMethodInfo;
+		private ASMBehaviorInstrumenter itsInstrumenter;
 		
-		private Label itsReturnHookLabel = new Label();
+		private Label itsReturnHookLabel;
+		private Label itsFinallyHookLabel;
+		private Label itsCodeStartLabel;
 
 		private int itsMethodId;
 
@@ -171,6 +173,13 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 								itsTypeId, 
 								itsMethodInfo.getName(), 
 								itsMethodInfo.getDescriptor());
+			
+			itsInstrumenter = new ASMBehaviorInstrumenter(
+					itsConfig,
+					mv, 
+					getLocationPool(), 
+					itsMethodInfo,
+					itsMethodId);
 			
 			if (LOG) System.out.println("Processing method "+itsMethodInfo.getName()+itsMethodInfo.getDescriptor());
 		}
@@ -184,30 +193,14 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		
 		public void visitSuperOrThisCallInsn(int aOpcode, String aOwner, String aName, String aDesc)
 		{
-			mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
+			if (itsTrace) itsInstrumenter.constructorChainingCall(aOpcode, aOwner, aName, aDesc);
+			else mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
 		}
 		
 		public void visitConstructorCallInsn(int aOpcode, String aOwner, int aCalledTypeId, String aName, String aDesc)
 		{
-			int theBytecodeIndex = -1;
-			
-			if (itsTrace) 
-			{
-				Label l = new Label();
-				mv.visitLabel(l);
-				theBytecodeIndex = l.getOffset();
-			}
-			
-			// Call constructor
-			mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
-			
-			if (itsTrace) 
-			{
-				int theInstanceVar = itsMethodInfo.getMaxLocals();
-				mv.visitVarInsn(ASTORE, theInstanceVar);
-				
-				BCIUtils.invokeLogInstantiation(mv, theBytecodeIndex, aCalledTypeId, theInstanceVar);
-			}
+			if (itsTrace) itsInstrumenter.constructorCall(aOpcode, aOwner, aCalledTypeId, aName, aDesc);
+			else mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
 		}
 		
 		/**
@@ -222,41 +215,8 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 				throw new RuntimeException("Should have been filtered");
 			}
 			
-			int theCalledTypeId = -1;
-			int theCalledMethodId = -1;
-			MethodCallInstrumenter theInstrumenter = null;
-			
-			// Init variables
-			if (itsTrace)
-			{
-				theCalledTypeId = getLocationPool().getTypeId(aOwner);
-				theCalledMethodId = getLocationPool().getMethodId(theCalledTypeId, aName, aDesc);
-			}
-			
-			// Handle before method call
-			if (itsTrace)
-			{
-				theInstrumenter = new MethodCallInstrumenter(
-						mv,
-						itsMethodInfo.getMaxLocals(),
-						theCalledMethodId,
-						aDesc,
-						aOpcode == INVOKESTATIC);
-				
-				theInstrumenter.storeArgsToLocals();
-				theInstrumenter.createArgsArray();
-				theInstrumenter.callLogBeforeMethodCall();
-				theInstrumenter.pushArgs();
-			}
-			
-			// Do the original call
-			mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
-			
-			// Handle after method call
-			if (itsTrace)
-			{
-				theInstrumenter.callLogAfterMethodCall();
-			}
+			if (itsTrace) itsInstrumenter.methodCall(aOpcode, aOwner, aName, aDesc);
+			else mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
 		}
 		
 		@Override
@@ -264,45 +224,9 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		{
 			if (itsTrace && (aOpcode == PUTFIELD || aOpcode == PUTSTATIC))
 			{
-				boolean theStatic = aOpcode == PUTSTATIC;
-				int theTypeId = getLocationPool().getTypeId(aOwner);
-				int theFieldId = getLocationPool().getFieldId(theTypeId, aName, aDesc);
-				Type theType = Type.getType(aDesc);
-				
-				Label l = new Label();
-				mv.visitLabel(l);
-				int theBytecodeIndex = l.getOffset();
-
-				int theCurrentVar = itsMethodInfo.getMaxLocals();
-				int theValueVar;
-				int theTargetVar;
-				
-				if (theStatic)
-				{
-					theTargetVar = -1;
-					theValueVar = theCurrentVar++;
-				}
-				else
-				{
-					theTargetVar = theCurrentVar++;
-					theValueVar = theCurrentVar++;
-				}
-				
-				// :: [target], value
-			
-				// Store parameters
-				
-				mv.visitVarInsn(theType.getOpcode(ISTORE), theValueVar);
-				if (! theStatic) mv.visitVarInsn(ASTORE, theTargetVar);
-				
-				// Call log method
-				BCIUtils.invokeLogFieldWrite(mv, theBytecodeIndex, theFieldId, theTargetVar, theType, theValueVar);
-				
-				// Push parameters back to stack
-				if (! theStatic) mv.visitVarInsn(ALOAD, theTargetVar);
-				mv.visitVarInsn(theType.getOpcode(ILOAD), theValueVar);
+				itsInstrumenter.fieldWrite(aOpcode, aOwner, aName, aDesc);
 			}
-			mv.visitFieldInsn(aOpcode, aOwner, aName, aDesc);
+			else mv.visitFieldInsn(aOpcode, aOwner, aName, aDesc);
 		}
 		
 		@Override
@@ -310,29 +234,19 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		{
 			if (itsTrace && aOpcode >= ISTORE && aOpcode < IASTORE)
 			{
-				int theSort = BCIUtils.getSort(aOpcode);
-				boolean theStatic = itsMethodInfo.isStatic();
-				
-				Label l = new Label();
-				mv.visitLabel(l);
-				int theBytecodeIndex = l.getOffset();
-
-				// :: value
-			
-				// Perform store
-				mv.visitVarInsn(aOpcode, aVar);
-				
-				// Call log method
-				BCIUtils.invokeLogLocalVariableWrite(
-						mv, 
-						theBytecodeIndex, 
-						aVar, 
-						theStatic ? -1 : 0, 
-						BCIUtils.getType(theSort), 
-						aVar);
-				
+				itsInstrumenter.variableWrite(aOpcode, aVar);
 			}
 			else mv.visitVarInsn(aOpcode, aVar);
+		}
+		
+		@Override
+		public void visitIincInsn(int aVar, int aIncrement)
+		{
+			if (itsTrace)
+			{
+				itsInstrumenter.variableInc(aVar, aIncrement);
+			}
+			else mv.visitIincInsn(aVar, aIncrement);
 		}
 		
 		/**
@@ -342,7 +256,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		@Override
 		public void visitInsn(int aOpcode)
 		{
-			if (aOpcode >= IRETURN && aOpcode <= RETURN) mv.visitJumpInsn(GOTO, itsReturnHookLabel);
+			if (itsTrace && aOpcode >= IRETURN && aOpcode <= RETURN) mv.visitJumpInsn(GOTO, itsReturnHookLabel);
 			else super.visitInsn(aOpcode);
 		}
 		
@@ -366,31 +280,43 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 				mv.visitJumpInsn(IFNE, l);
 				
 				mv.visitVarInsn(ALOAD, 0);
-				mv.visitMethodInsn(INVOKESTATIC, Type.getInternalName(IdGenerator.class), "createLongId", "()J");
+				mv.visitMethodInsn(INVOKESTATIC, Type.getInternalName(IdGenerator.class), "createId", "()J");
 				mv.visitFieldInsn(PUTFIELD, itsTypeName, ID_FIELD_NAME, "J");
 				
 				mv.visitLabel(l);
 			}
 			
-			// Call logBehaviorEnter
-			if (itsTrace) BCIUtils.invokeLogBehaviorEnter(mv, itsMethodId);
-			
-			// Goto to real code.
-			Label theCodeLabel = new Label();
-			mv.visitJumpInsn(GOTO, theCodeLabel);
-			
-			// Insert return hooks
-			mv.visitLabel(itsReturnHookLabel);
-			
+			if (itsTrace)
+			{
+				itsReturnHookLabel = new Label();
+				itsFinallyHookLabel = new Label();
+				itsCodeStartLabel = new Label();
+				
+				// Call logBehaviorEnter
+				itsInstrumenter.behaviorEnter();
+				
+				mv.visitJumpInsn(GOTO, itsCodeStartLabel);
+				
+				// -- Return hook
+				mv.visitLabel(itsReturnHookLabel);
+	
+				// Call logBehaviorExit
+				itsInstrumenter.behaviorExit();
+	
+				// Insert RETURN
+				Type theReturnType = Type.getReturnType(itsMethodInfo.getDescriptor());
+				mv.visitInsn(theReturnType.getOpcode(IRETURN));
+				
+				// -- Finally hook
+				mv.visitLabel(itsFinallyHookLabel);
+				
+				// Call logBehaviorExitWithException
+				itsInstrumenter.behaviorExitWithException();
+				
+				mv.visitInsn(ATHROW);
 
-			// Call logBehaviorEnter
-			if (itsTrace) BCIUtils.invokeLogBehaviorExit(mv, itsMethodId);
-
-			// Insert RETURN
-			Type theReturnType = Type.getReturnType(itsMethodInfo.getDescriptor());
-			mv.visitInsn(theReturnType.getOpcode(IRETURN));
-
-			mv.visitLabel(theCodeLabel);
+				mv.visitLabel(itsCodeStartLabel);
+			}
 		}
 		
 		/**
@@ -401,6 +327,19 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		{
 			insertEntryHooks();
 			super.visitCode();
+		}
+		
+		@Override
+		public void visitMaxs(int aMaxStack, int aMaxLocals)
+		{
+			if (itsTrace)
+			{
+				Label theCodeEndLabel = new Label();
+				mv.visitLabel(theCodeEndLabel);
+				mv.visitTryCatchBlock(itsCodeStartLabel, theCodeEndLabel, itsFinallyHookLabel, null);
+			}
+			
+			super.visitMaxs(aMaxStack, aMaxLocals);
 		}
 		
 		@Override

@@ -4,7 +4,7 @@
 package reflex.lib.logging.miner.impl.local.filter;
 
 import reflex.lib.logging.miner.impl.local.LocalCollector;
-import tod.core.model.event.IEvent_Target;
+import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.ObjectId;
 
@@ -24,11 +24,7 @@ public class TargetFilter extends AbstractStatelessFilter
 	
 	public boolean accept(ILogEvent aEvent)
 	{
-		if (aEvent instanceof IEvent_Target)
-		{
-			IEvent_Target theTargetEvent = (IEvent_Target) aEvent;
-			return itsTarget.equals(theTargetEvent.getTarget());
-		}
-		else return false;
+		IBehaviorCallEvent theParent = aEvent.getParent();
+		return theParent != null && itsTarget.equals(theParent.getCurrentObject());
 	}
 }

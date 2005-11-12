@@ -6,15 +6,19 @@ package tod.bci.asm;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.objectweb.asm.Type;
+
 import tod.core.ILocationRegistrer.LineNumberInfo;
 import tod.core.ILocationRegistrer.LocalVariableInfo;
 
 public class ASMMethodInfo
 {
-	int itsMaxLocals;
-	final String itsName;
-	final String itsDescriptor;
-	final boolean itsStatic;
+	private int itsMaxLocals;
+	private final String itsName;
+	private final String itsDescriptor;
+	private final boolean itsStatic;
+	
+	private int itsNextFreeVariable;
 	
 	private List<ASMLineNumberInfo> itsLineNumberInfo = new ArrayList<ASMLineNumberInfo>();
 	private List<ASMLocalVariableInfo> itsLocalVariableInfo = new ArrayList<ASMLocalVariableInfo>();
@@ -34,8 +38,28 @@ public class ASMMethodInfo
 	public void setMaxLocals(int aMaxLocals)
 	{
 		itsMaxLocals = aMaxLocals;
+		itsNextFreeVariable = itsMaxLocals;
 	}
 
+//	/**
+//	 * Returns the index of a free variable slot for the described method.
+//	 */
+//	public int getNextFreeVariable(Type aType)
+//	{
+//		return itsNextFreeVariable;
+//	}
+//	
+//	/**
+//	 * Allocates space for a variable of the given type for the
+//	 * described method.
+//	 */
+//	public int createVariable(Type aType)
+//	{
+//		int theVariable = itsNextFreeVariable;
+//		itsNextFreeVariable += aType.getSize();
+//		return theVariable;
+//	}
+//	
 	public String getDescriptor()
 	{
 		return itsDescriptor;

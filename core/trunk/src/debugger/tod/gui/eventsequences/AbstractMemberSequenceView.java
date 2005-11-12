@@ -19,15 +19,19 @@ import tod.core.model.trace.IEventTrace;
 import tod.core.model.trace.IEventBrowser;
 import tod.core.model.trace.IObjectInspector;
 import tod.gui.BrowserData;
+import tod.gui.Hyperlinks;
 import tod.gui.SVGHyperlink;
 import zz.csg.api.IDisplay;
 import zz.csg.api.IRectangularGraphicObject;
 import zz.csg.impl.figures.SVGFlowText;
 import zz.utils.ItemAction;
 import zz.utils.properties.IRWProperty;
+import zz.utils.ui.text.XFont;
 
 public abstract class AbstractMemberSequenceView implements IEventSequenceView
 {
+	public static final XFont FONT = XFont.DEFAULT_XPLAIN.deriveFont(10);
+	
 	private MyMural itsMural;
 	private final IDisplay itsDisplay;
 	private final IObjectInspector itsInspector;
@@ -100,27 +104,10 @@ public abstract class AbstractMemberSequenceView implements IEventSequenceView
 	 */
 	protected IRectangularGraphicObject createBaloon(Object aObject)
 	{
-		if (aObject instanceof ObjectId)
-		{
-			ObjectId theId = (ObjectId) aObject;
-			IGUIManager theGUIManager = itsLogView.getGUIManager();
-			IEventTrace theLog = itsLogView.getLog();
+		IGUIManager theGUIManager = itsLogView.getGUIManager();
+		IEventTrace theEventTrace = itsLogView.getEventTrace();
 			
-			TypeInfo theType = theLog.createObjectInspector(theId).getType();
-			
-			return SVGHyperlink.create(
-					theGUIManager, 
-					new ObjectInspectorSeed(theGUIManager, theLog, theId),
-					theType.getName() + " (" + theId + ")", 
-					10, 
-					Color.RED);
-		}
-		else 
-		{
-			SVGFlowText theFlowText = SVGFlowText.create(""+aObject, 10, Color.BLUE);
-			return theFlowText;
-		}
-
+		return Hyperlinks.object(theGUIManager, theEventTrace, itsInspector.getObject(), aObject, FONT);
 	}
 
 	

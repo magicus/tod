@@ -87,15 +87,21 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationTrace
 	
 	public void registerThread(long aThreadId, String aName)
 	{
-		itsThreads.put (aThreadId, createThreadInfo (aThreadId, aName));
+		ThreadInfo theThreadInfo = getThread(aThreadId);
+		setupThreadInfo(theThreadInfo, aName);
 	}
 	
 	/**
 	 * Factory method for thread info.
 	 */
-	protected ThreadInfo createThreadInfo (long aId, String aName)
+	protected ThreadInfo createThreadInfo (long aId)
 	{
-		return new ThreadInfo (aId, aName);
+		return new ThreadInfo (aId);
+	}
+	
+	protected TypeInfo createTypeInfo (int aId)
+	{
+		return new TypeInfo(aId);
 	}
 	
 	/**
@@ -142,6 +148,11 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationTrace
 		aTypeInfo.setSupertype(theSupertype);
 		aTypeInfo.setInterfaces(theInterfaces);
 	}
+	
+	protected void setupThreadInfo (ThreadInfo aThreadInfo, String aName)
+	{
+		aThreadInfo.setName(aName);
+	}
 
 
 	/**
@@ -154,7 +165,7 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationTrace
 		TypeInfo theTypeInfo = itsTypes.get(aId);
 		if (theTypeInfo == null)
 		{
-			theTypeInfo = new TypeInfo(aId);
+			theTypeInfo = createTypeInfo(aId);
 			itsTypes.set(aId, theTypeInfo);
 		}
 
@@ -181,7 +192,13 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationTrace
 	
 	public ThreadInfo getThread (long aId)
 	{
-		return itsThreads.get(aId);
+		ThreadInfo theThreadInfo = itsThreads.get(aId);
+		if (theThreadInfo == null)
+		{
+			theThreadInfo = createThreadInfo(aId);
+			itsThreads.put (aId, theThreadInfo);
+		}
+		return theThreadInfo;
 	}
 
 	/**

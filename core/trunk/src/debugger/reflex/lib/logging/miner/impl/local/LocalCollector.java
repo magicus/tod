@@ -3,43 +3,42 @@
  */
 package reflex.lib.logging.miner.impl.local;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import reflex.lib.logging.miner.impl.common.AbstractMinerCollector;
 import reflex.lib.logging.miner.impl.common.ObjectInspector;
-import reflex.lib.logging.miner.impl.common.event.AfterMethodCall;
-import reflex.lib.logging.miner.impl.common.event.BeforeMethodCall;
-import reflex.lib.logging.miner.impl.common.event.BehaviorEnter;
-import reflex.lib.logging.miner.impl.common.event.BehaviourExit;
+import reflex.lib.logging.miner.impl.common.VariablesInspector;
+import reflex.lib.logging.miner.impl.common.event.BehaviorCallEvent;
+import reflex.lib.logging.miner.impl.common.event.ConstructorChainingEvent;
 import reflex.lib.logging.miner.impl.common.event.Event;
+import reflex.lib.logging.miner.impl.common.event.ExceptionGeneratedEvent;
 import reflex.lib.logging.miner.impl.common.event.FieldWriteEvent;
-import reflex.lib.logging.miner.impl.common.event.Instantiation;
+import reflex.lib.logging.miner.impl.common.event.InstantiationEvent;
 import reflex.lib.logging.miner.impl.common.event.LocalVariableWriteEvent;
+import reflex.lib.logging.miner.impl.common.event.MethodCallEvent;
 import reflex.lib.logging.miner.impl.common.event.OutputEvent;
 import reflex.lib.logging.miner.impl.local.filter.AbstractFilter;
 import reflex.lib.logging.miner.impl.local.filter.BehaviorCallFilter;
-import reflex.lib.logging.miner.impl.local.filter.BehaviourFilter;
 import reflex.lib.logging.miner.impl.local.filter.FieldWriteFilter;
 import reflex.lib.logging.miner.impl.local.filter.InstantiationFilter;
 import reflex.lib.logging.miner.impl.local.filter.IntersectionFilter;
-import reflex.lib.logging.miner.impl.local.filter.LocationFilter;
 import reflex.lib.logging.miner.impl.local.filter.TargetFilter;
 import reflex.lib.logging.miner.impl.local.filter.ThreadFilter;
 import reflex.lib.logging.miner.impl.local.filter.UnionFilter;
+import tod.core.ILogCollector;
+import tod.core.LocationRegistrer;
 import tod.core.Output;
-import tod.core.ILocationRegistrer.LocalVariableInfo;
+import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.structure.BehaviorInfo;
 import tod.core.model.structure.FieldInfo;
 import tod.core.model.structure.ObjectId;
 import tod.core.model.structure.ThreadInfo;
 import tod.core.model.structure.TypeInfo;
-import tod.core.model.trace.IEventTrace;
 import tod.core.model.trace.ICFlowBrowser;
 import tod.core.model.trace.ICompoundFilter;
 import tod.core.model.trace.IEventBrowser;
 import tod.core.model.trace.IEventFilter;
+import tod.core.model.trace.IEventTrace;
+import tod.core.model.trace.ILocationTrace;
 import tod.core.model.trace.IObjectInspector;
+import tod.core.model.trace.IVariablesInspector;
 
 /**
  * This log collector stores all the events it receives,
@@ -47,10 +46,15 @@ import tod.core.model.trace.IObjectInspector;
  * in a convenient way.
  * @author gpothier
  */
-public class LocalCollector extends AbstractMinerCollector 
-implements IEventTrace
+public class LocalCollector extends LocationRegistrer 
+implements ILogCollector, IEventTrace
 {
 	private EventList itsEvents = new EventList();
+	
+	public ILocationTrace getLocationTrace()
+	{
+		return this;
+	}
 	
 	public void clear()
 	{
@@ -58,15 +62,21 @@ implements IEventTrace
 	}
 
 	@Override
-	protected ThreadInfo createThreadInfo(long aId, String aName)
+	protected ThreadInfo createThreadInfo(long aId)
 	{
-		ThreadInfo theThreadInfo = super.createThreadInfo(aId, aName);
-		BehaviorEnter theBehaviorEnter = new BehaviorEnter();
-		theBehaviorEnter.setThread(theThreadInfo);
-		theThreadInfo.setCurrentBehavior(theBehaviorEnter);
-		itsEvents.add (theBehaviorEnter);
+		BehaviorCallEvent theRootEvent = new MethodCallEvent();
+		ThreadInfo theThreadInfo = new MyThreadInfo(aId, theRootEvent);
+		theRootEvent.setThread(theThreadInfo);
+		theRootEvent.setDirectParent(false);
 		
+		itsEvents.add (theRootEvent);
 		return theThreadInfo;
+	}
+	
+	@Override
+	public MyThreadInfo getThread(long aId)
+	{
+		return (MyThreadInfo) super.getThread(aId);
 	}
 	
 	public EventList getEvents()
@@ -77,92 +87,152 @@ implements IEventTrace
 	private void initEvent (
 			Event aEvent, 
 			long aTimestamp,
-			ThreadInfo aThreadInfo, 
-            int aOperationBytecodeIndex, 
-			long aSerial, 
-			int aDepth)
+			MyThreadInfo aThreadInfo, 
+            int aOperationBytecodeIndex)
 	{
 		aEvent.setTimestamp(aTimestamp);
 		aEvent.setThread(aThreadInfo);
 		aEvent.setOperationBytecodeIndex(aOperationBytecodeIndex);
-		aEvent.setSerial(aSerial);
-		aEvent.setDepth(aDepth);
+		aEvent.setSerial(aThreadInfo.getSerial());
 		
-		BehaviorEnter theCurrentBehavior = (BehaviorEnter) aThreadInfo.getCurrentBehavior();
+		BehaviorCallEvent theCurrentBehavior = 
+			(BehaviorCallEvent) aThreadInfo.getCurrentParent();
+		
 		aEvent.setFather(theCurrentBehavior);
 		theCurrentBehavior.addChild (aEvent);
 	}
 	
 
-	protected void logBehaviorEnter(
-			long aTimestamp,
-			ThreadInfo aThreadInfo, 
-			long aSerial, 
-			int aDepth, 
-			int aBehaviorId)
+	public void logBehaviorEnter(
+			long aTimestamp, 
+			long aThreadId, 
+			int aBehaviorLocationId, 
+			Object aObject, 
+			Object[] aArguments)
 	{
-		BehaviorEnter theEvent = new BehaviorEnter();
-		initEvent(theEvent, aTimestamp, aThreadInfo, -1, aSerial, aDepth);
+		MyThreadInfo theThread = getThread(aThreadId);
+		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
+		BehaviorCallEvent theEvent;
 		
-		theEvent.setBehavior(getBehavior(aBehaviorId));
+		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();
+		if (theCurrentParent.isDirectParent())
+		{
+			// We come from instrumented code, an event already exists
+			theEvent = theCurrentParent;
+			theEvent.setTimestamp(aTimestamp);
+		}
+		else
+		{
+			// We come from non instrumented code, create a new event
+			
+			// There can be a problem as we cannot detect constructor 
+			// chaining.
+			theEvent = theBehavior.isConstructor() ?
+					new InstantiationEvent()
+					: new MethodCallEvent();
+			
+			initEvent(theEvent, aTimestamp, theThread, -1);
+			
+			theThread.setCurrentParent(theEvent);
+			itsEvents.add (theEvent);
+		}
 		
-		aThreadInfo.setCurrentBehavior(theEvent);
-		
-		itsEvents.add (theEvent);
+		theEvent.setCalledBehavior(theBehavior);
+		theEvent.setCurrentObject(aObject);
+		theEvent.setArguments(aArguments);
 	}
 
-	protected void logBehaviorExit(
-			long aTimestamp, 
-			ThreadInfo aThreadInfo, 
-			long aSerial,
-			int aDepth, 
-			int aBehaviorId)
+	public void logBehaviorExit(
+			long aTimestamp,
+			long aThreadId,
+			int aBehaviorLocationId,
+			Object aResult)
 	{
-		BehaviourExit theEvent = new BehaviourExit();
-		initEvent(theEvent, aTimestamp, aThreadInfo, -1, aSerial, aDepth);
+		MyThreadInfo theThread = getThread(aThreadId);
 		
-		theEvent.setBehavior(getBehavior(aBehaviorId));
+		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();
+		assert theCurrentParent.getCalledBehavior().getId() == aBehaviorLocationId;
+		assert theCurrentParent.isDirectParent();
+		
+		theCurrentParent.setResult(aResult);
+		theCurrentParent.setHasThrown(false);
+		theCurrentParent.setLastTimestamp(aTimestamp);
+		
+		theThread.setCurrentParent((BehaviorCallEvent) theCurrentParent.getParent());
+	}
+	
+	public void logBehaviorExitWithException(
+			long aTimestamp, 
+			long aThreadId,
+			int aBehaviorLocationId, 
+			Object aException)
+	{
+		MyThreadInfo theThread = getThread(aThreadId);
+		
+		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();
+		assert theCurrentParent.getCalledBehavior().getId() == aBehaviorLocationId;
+		assert theCurrentParent.isDirectParent();
+		
+		theCurrentParent.setResult(aException);
+		theCurrentParent.setHasThrown(true);
+		theCurrentParent.setLastTimestamp(aTimestamp);
+		
+		theThread.setCurrentParent((BehaviorCallEvent) theCurrentParent.getParent());
+	}
+	
+	public void logExceptionGenerated(
+			long aTimestamp,
+			long aThreadId,
+			int aBehaviorLocationId,
+			int aOperationBytecodeIndex, 
+			Object aException)
+	{
+		MyThreadInfo theThread = getThread(aThreadId);
+		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
 
-		aThreadInfo.setCurrentBehavior(aThreadInfo.getCurrentBehavior().getFather());
+		ExceptionGeneratedEvent theEvent = new ExceptionGeneratedEvent();
+		initEvent(theEvent, aTimestamp, theThread, aOperationBytecodeIndex);
+		
+		theEvent.setThrowingBehavior(theBehavior);
+		theEvent.setException(aException);
 		
 		itsEvents.add (theEvent);
 	}
 	
-	protected void logFieldWrite(
-			long aTimestamp, 
-			ThreadInfo aThreadInfo,
-            int aOperationBytecodeIndex, 
-			long aSerial, 
-			int aDepth, 
-			int aFieldId,
-			Object aTarget,
+	public void logFieldWrite(
+			long aTimestamp,
+			long aThreadId, 
+			int aOperationBytecodeIndex, 
+			int aFieldLocationId, 
+			Object aTarget, 
 			Object aValue)
 	{
+		MyThreadInfo theThread = getThread(aThreadId);
+		FieldInfo theField = getField(aFieldLocationId);
+
 		FieldWriteEvent theEvent = new FieldWriteEvent();
-		initEvent(theEvent, aTimestamp, aThreadInfo, aOperationBytecodeIndex, aSerial, aDepth);
+		initEvent(theEvent, aTimestamp, theThread, aOperationBytecodeIndex);
 		
 		theEvent.setTarget(aTarget);
-		
-		theEvent.setField(getField(aFieldId));
+		theEvent.setField(theField);
 		theEvent.setValue(aValue);
 		
 		itsEvents.add (theEvent);
 	}
 	
-	protected void logLocalVariableWrite(
+	public void logLocalVariableWrite(
 			long aTimestamp, 
-			ThreadInfo aThreadInfo,
-            int aOperationBytecodeIndex, 
-			long aSerial, 
-			int aDepth, 
+			long aThreadId, 
+			int aOperationBytecodeIndex,
 			int aVariableId,
-			Object aTarget,
 			Object aValue)
 	{
-		LocalVariableWriteEvent theEvent = new LocalVariableWriteEvent();
-		initEvent(theEvent, aTimestamp, aThreadInfo, aOperationBytecodeIndex, aSerial, aDepth);
+		MyThreadInfo theThread = getThread(aThreadId);
+		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();
+		BehaviorInfo theBehavior = theCurrentParent.getCalledBehavior();
 		
-		theEvent.setTarget(aTarget);
+		LocalVariableWriteEvent theEvent = new LocalVariableWriteEvent();
+		initEvent(theEvent, aTimestamp, theThread, aOperationBytecodeIndex);
 		
         LocalVariableInfo theInfo = null;
 //        if (aVariableId >= 0)
@@ -177,7 +247,6 @@ implements IEventTrace
 //        	theInfo = new LocalVariableInfo((short)-1, (short)-1, "$"+aVariableId, "", theIndex);
 //        }
 				
-       	BehaviorInfo theBehavior = aThreadInfo.getCurrentBehavior().getBehavior();
        	theInfo = theBehavior.getLocalVariableInfo(aOperationBytecodeIndex+35, aVariableId); // 35 is the size of our instrumentation
        	if (theInfo == null) theInfo = new LocalVariableInfo((short)-1, (short)-1, "$"+aVariableId, "", (short)-1);
         
@@ -187,82 +256,115 @@ implements IEventTrace
 		itsEvents.add (theEvent);
 	}
 	
-	protected void logInstantiation(
-			long aTimestamp, 
-			ThreadInfo aThreadInfo,
-            int aOperationBytecodeIndex, 
-			long aSerial, 
-			int aDepth, 
-			int aLocationId,
-			Object aInstance)
+	public void logInstantiation(long aThreadId)
 	{
-		Instantiation theEvent = new Instantiation();
-		initEvent(theEvent, aTimestamp, aThreadInfo, aOperationBytecodeIndex, aSerial, aDepth);
-		
-		theEvent.setType(getType(aLocationId));
-		theEvent.setInstance(aInstance);
-		
-		itsEvents.add (theEvent);
+		MyThreadInfo theThread = getThread(aThreadId);
+		theThread.expectInstantiation();
 	}
 	
-	protected void logBeforeMethodCall(
+	public void logConstructorChaining(long aThreadId)
+	{
+		MyThreadInfo theThread = getThread(aThreadId);
+		theThread.expectConstructorChaining();
+	}
+	
+	public void logBeforeBehaviorCall(
+			long aThreadId, 
+			int aOperationBytecodeIndex, 
+			int aMethodLocationId)
+	{
+		MyThreadInfo theThread = getThread(aThreadId);
+
+		BehaviorCallEvent theEvent = theThread.createCallEvent();
+		
+		initEvent(theEvent, -1, theThread, aOperationBytecodeIndex);
+		theEvent.setDirectParent(true);
+		
+		theThread.setCurrentParent(theEvent);
+	}
+	
+	public void logBeforeBehaviorCall(
 			long aTimestamp, 
-			ThreadInfo aThreadInfo,
-            int aOperationBytecodeIndex, 
-			long aSerial, 
-			int aDepth, 
-			int aLocationId,
-			Object aTarget,
+			long aThreadId, 
+			int aOperationBytecodeIndex,
+			int aBehaviorLocationId,
+			Object aTarget, 
 			Object[] aArguments)
 	{
-		BeforeMethodCall theEvent = new BeforeMethodCall();
-		initEvent(theEvent, aTimestamp, aThreadInfo, aOperationBytecodeIndex, aSerial, aDepth);
+		MyThreadInfo theThread = getThread(aThreadId);
+		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
+
+		BehaviorCallEvent theEvent = theThread.createCallEvent();
 		
-		theEvent.setTarget (aTarget);
-		theEvent.setBehavior(getBehavior(aLocationId));
+		initEvent(theEvent, aTimestamp, theThread, aOperationBytecodeIndex);
+		theEvent.setDirectParent(false);
+		theEvent.setCalledBehavior(theBehavior);
+		theEvent.setCurrentObject(aTarget);
 		theEvent.setArguments(aArguments);
 		
-		itsEvents.add (theEvent);
+		theThread.setCurrentParent(theEvent);
 	}
-	
-	protected void logAfterMethodCall(
-			long aTimestamp, 
-			ThreadInfo aThreadInfo,
-            int aOperationBytecodeIndex, 
-			long aSerial, 
-			int aDepth, 
-			int aLocationId,
-			Object aTarget,
-			Object aReturnValue)
+
+	public void logAfterBehaviorCall(long aThreadId)
 	{
-		AfterMethodCall theEvent = new AfterMethodCall();
-		initEvent(theEvent, aTimestamp, aThreadInfo, aOperationBytecodeIndex, aSerial, aDepth);
-		
-		theEvent.setTarget (aTarget);
-		theEvent.setBehavior(getBehavior(aLocationId));
-		theEvent.setReturnValue(aReturnValue);
-		
-		itsEvents.add (theEvent);
+		// Nothing to do here, maybe we don't need this message
 	}
 	
-	protected void logOutput(
-			long aTimestamp,
-			ThreadInfo aThreadInfo, 
-			long aSerial, 
-			int aDepth, 
+	public void logAfterBehaviorCall(
+			long aTimestamp, 
+			long aThreadId, 
+			int aOperationBytecodeIndex, 
+			int aBehaviorLocationId, 
+			Object aTarget,
+			Object aResult)
+	{
+		MyThreadInfo theThread = getThread(aThreadId);
+		
+		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();
+		assert theCurrentParent.getCalledBehavior().getId() == aBehaviorLocationId;
+		
+		theCurrentParent.setResult(aResult);
+		theCurrentParent.setHasThrown(false);
+		theCurrentParent.setLastTimestamp(aTimestamp);
+		
+		theThread.setCurrentParent((BehaviorCallEvent) theCurrentParent.getParent());
+	}
+	
+	public void logAfterBehaviorCallWithException(
+			long aTimestamp, 
+			long aThreadId, 
+			int aOperationBytecodeIndex,
+			int aBehaviorLocationId, 
+			Object aTarget, 
+			Object aException)
+	{
+		MyThreadInfo theThread = getThread(aThreadId);
+		
+		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();
+		assert theCurrentParent.getCalledBehavior().getId() == aBehaviorLocationId;
+		
+		theCurrentParent.setResult(aException);
+		theCurrentParent.setHasThrown(true);
+		theCurrentParent.setLastTimestamp(aTimestamp);
+		
+		theThread.setCurrentParent((BehaviorCallEvent) theCurrentParent.getParent());
+	}
+	
+	public void logOutput(
+			long aTimestamp, 
+			long aThreadId, 
 			Output aOutput, 
 			byte[] aData)
 	{
+		MyThreadInfo theThread = getThread(aThreadId);
 		OutputEvent theEvent = new OutputEvent();
-		initEvent(theEvent, aTimestamp, aThreadInfo, -1, aSerial, aDepth);
+		initEvent(theEvent, aTimestamp, theThread, -1);
 		
 		theEvent.setOutput(aOutput);
 		theEvent.setData(new String (aData));
 		
 		itsEvents.add (theEvent);
 	}
-	
-	
 
 	public long getFirstTimestamp()
 	{
@@ -284,16 +386,6 @@ implements IEventTrace
 	public IEventFilter createArgumentFilter(ObjectId aId)
 	{
 		return null;
-	}
-	
-	public IEventFilter createBehaviorFilter()
-	{
-		return new BehaviourFilter(this);
-	}
-	
-	public IEventFilter createBehaviorFilter(BehaviorInfo aBehaviourInfo)
-	{
-		return new BehaviourFilter(this, aBehaviourInfo);
 	}
 	
 	public IEventFilter createBehaviorCallFilter()
@@ -353,12 +445,12 @@ implements IEventTrace
 	
 	public IEventFilter createLocationFilter(TypeInfo aTypeInfo, int aLineNumber)
 	{
-		return new LocationFilter(this, aTypeInfo, aLineNumber);
+		throw new UnsupportedOperationException();
 	}
 	
 	public ICFlowBrowser createCFlowBrowser(ThreadInfo aThread)
 	{
-		return new CFlowBrowser(this, aThread);
+		return new CFlowBrowser(this, aThread, ((MyThreadInfo) aThread).getRootEvent());
 	}
 	
 	public IObjectInspector createObjectInspector(ObjectId aObjectId)
@@ -366,5 +458,88 @@ implements IEventTrace
 		return new ObjectInspector(this, aObjectId);
 	}
 	
+	public IVariablesInspector createVariablesInspector(IBehaviorCallEvent aEvent)
+	{
+		return new VariablesInspector(aEvent);
+	}
 	
+	private static class MyThreadInfo extends ThreadInfo
+	{
+		private BehaviorCallEvent itsRootEvent;
+		
+		private BehaviorCallEvent itsCurrentParent;
+		
+		private boolean itsExpectingInstantiation;
+		private boolean itsExpectingConstructorChaining;
+		
+		/**
+		 * Serial number of the last event of this thread;
+		 */
+		private long itsSerial;
+		
+		public MyThreadInfo(long aId)
+		{
+			super(aId);
+		}
+
+		public MyThreadInfo(long aId, BehaviorCallEvent aRootEvent)
+		{
+			super(aId);
+			itsRootEvent = aRootEvent;
+			itsCurrentParent = itsRootEvent;
+		}
+
+		public BehaviorCallEvent getRootEvent()
+		{
+			return itsRootEvent;
+		}
+		
+		public BehaviorCallEvent getCurrentParent()
+		{
+			return itsCurrentParent;
+		}
+
+		public void setCurrentParent(BehaviorCallEvent aCurrentParent)
+		{
+			itsCurrentParent = aCurrentParent;
+		}
+
+		public long getSerial ()
+		{
+			return itsSerial++;
+		}
+
+		public void expectConstructorChaining()
+		{
+			itsExpectingConstructorChaining = true;
+		}
+
+		public void expectInstantiation()
+		{
+			itsExpectingInstantiation = true;
+		}
+
+		/**
+		 * Creates a behavior call event of the right type
+		 * according to the current state of instantiation/constructor chaining
+		 * modifiers.
+		 */
+		public BehaviorCallEvent createCallEvent()
+		{
+			BehaviorCallEvent theEvent;
+			
+			if (itsExpectingConstructorChaining)
+				theEvent = new ConstructorChainingEvent();
+			else if (itsExpectingInstantiation)
+				theEvent = new InstantiationEvent();
+			else
+				theEvent = new MethodCallEvent();
+			
+			itsExpectingConstructorChaining = false;
+			itsExpectingInstantiation = false;
+			
+			return theEvent;
+		}
+	}
+
 }

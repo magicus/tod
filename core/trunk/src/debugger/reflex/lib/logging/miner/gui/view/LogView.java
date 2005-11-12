@@ -68,7 +68,7 @@ public abstract class LogView extends JPanel
 		itsConnectors.add (theConnector);
 	}
 	
-	public IEventTrace getLog()
+	public IEventTrace getEventTrace()
 	{
 		return itsLog;
 	}
@@ -127,7 +127,7 @@ public abstract class LogView extends JPanel
 			return new SeedLinkLabel (
 					getGUIManager(), 
 					ObjectFormatter.getInstance().getPlainText(aObject), 
-					new ObjectInspectorSeed(getGUIManager(), getLog(), theObjectId));
+					new ObjectInspectorSeed(getGUIManager(), getEventTrace(), theObjectId));
 		}
 		else return new JLabel (ObjectFormatter.getInstance().getPlainText(aObject));
 	}

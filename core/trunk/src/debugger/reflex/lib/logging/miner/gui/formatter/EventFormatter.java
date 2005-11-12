@@ -12,6 +12,7 @@ import tod.core.model.event.IEvent_ReturnValue;
 import tod.core.model.event.IFieldWriteEvent;
 import tod.core.model.event.IInstantiationEvent;
 import tod.core.model.event.ILocalVariableWriteEvent;
+import tod.core.model.event.ILogEvent;
 import tod.core.model.event.IOutputEvent;
 import tod.core.model.structure.LocationInfo;
 import zz.utils.AbstractFormatter;
@@ -20,7 +21,7 @@ import zz.utils.AbstractFormatter;
  * Formatter for {@link tod.core.model.event.Event}
  * @author gpothier
  */
-public class EventFormatter extends AbstractFormatter
+public class EventFormatter extends AbstractFormatter<ILogEvent>
 {
 	private static EventFormatter INSTANCE = new EventFormatter();
 
@@ -33,56 +34,56 @@ public class EventFormatter extends AbstractFormatter
 	{
 	}
 	
-	protected String getText(Object aObject, boolean aHtml)
+	protected String getText(ILogEvent aEvent, boolean aHtml)
 	{
-		if (aObject instanceof IBeforeMethodCallEvent)
+		if (aEvent instanceof IBeforeMethodCallEvent)
 		{
-			IBeforeMethodCallEvent theEvent = (IBeforeMethodCallEvent) aObject;
+			IBeforeMethodCallEvent theEvent = (IBeforeMethodCallEvent) aEvent;
 			return "Calling "+formatLocation(theEvent.getBehavior())
 				+ " with "+formatArgs(theEvent.getArguments());
 		}
-		else if (aObject instanceof IAfterMethodCallEvent)
+		else if (aEvent instanceof IAfterMethodCallEvent)
 		{
-			IAfterMethodCallEvent theEvent = (IAfterMethodCallEvent) aObject;
+			IAfterMethodCallEvent theEvent = (IAfterMethodCallEvent) aEvent;
 			return "Called "+formatLocation(theEvent.getBehavior());
 		}
-		if (aObject instanceof IBehaviorEnterEvent)
+		if (aEvent instanceof IBehaviorEnterEvent)
 		{
-			IBehaviorEnterEvent theEvent = (IBehaviorEnterEvent) aObject;
+			IBehaviorEnterEvent theEvent = (IBehaviorEnterEvent) aEvent;
 			return "Entered "+formatLocation(theEvent.getBehavior());
 		}
-		else if (aObject instanceof IBehaviorExitEvent)
+		else if (aEvent instanceof IBehaviorExitEvent)
 		{
-			IBehaviorExitEvent theEvent = (IBehaviorExitEvent) aObject;
+			IBehaviorExitEvent theEvent = (IBehaviorExitEvent) aEvent;
 			return "Exited "+formatLocation(theEvent.getBehavior());
 		}
-		else if (aObject instanceof IFieldWriteEvent)
+		else if (aEvent instanceof IFieldWriteEvent)
 		{
-			IFieldWriteEvent theEvent = (IFieldWriteEvent) aObject;
+			IFieldWriteEvent theEvent = (IFieldWriteEvent) aEvent;
 			
 			return "Field written: "+formatLocation(theEvent.getField())
 				+" on "+formatObject(theEvent.getTarget())
 				+" value: "+formatObject(theEvent.getValue());
 		}
-        else if (aObject instanceof ILocalVariableWriteEvent)
+        else if (aEvent instanceof ILocalVariableWriteEvent)
 		{
-			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) aObject;
+			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) aEvent;
 			
             return "Variable written: "+theEvent.getVariable().getVariableName()
             	+" on "+formatObject(theEvent.getTarget())
             	+" value: "+formatObject(theEvent.getValue());
 		}
-		else if (aObject instanceof IInstantiationEvent)
+		else if (aEvent instanceof IInstantiationEvent)
 		{
-			IInstantiationEvent theEvent = (IInstantiationEvent) aObject;
+			IInstantiationEvent theEvent = (IInstantiationEvent) aEvent;
 			return "Object instantiated: "+formatLocation(theEvent.getType());
 		}
-		else if (aObject instanceof IOutputEvent)
+		else if (aEvent instanceof IOutputEvent)
 		{
-			IOutputEvent theEvent = (IOutputEvent) aObject;
+			IOutputEvent theEvent = (IOutputEvent) aEvent;
 			return "Output ("+theEvent.getOutput()+"): "+theEvent.getData();
 		}
-		else return ""+aObject;
+		else return ""+aEvent;
 	}
 	
 	private String formatObject (Object aObject)

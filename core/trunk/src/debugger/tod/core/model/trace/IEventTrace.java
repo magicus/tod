@@ -3,8 +3,7 @@
  */
 package tod.core.model.trace;
 
-import tod.core.LocationRegistrer;
-import tod.core.model.event.ILogEvent;
+import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.structure.BehaviorInfo;
 import tod.core.model.structure.FieldInfo;
 import tod.core.model.structure.ObjectId;
@@ -44,7 +43,7 @@ public interface IEventTrace
 	 * Returns the registrer that maintains all location and
 	 * thread info.
 	 */
-	public LocationRegistrer getLocationRegistrer ();
+	public ILocationTrace getLocationTrace ();
 	
 	/**
 	 * Creates a browser that only reports events that pass a specific
@@ -72,17 +71,6 @@ public interface IEventTrace
 	 * Creates a filter that accepts only behavior call events (before call and after call).
 	 */
 	public IEventFilter createBehaviorCallFilter ();
-	
-	/**
-	 * Creates a filter that accepts only events related to a specific
-	 * behaviour.
-	 */
-	public IEventFilter createBehaviorFilter (BehaviorInfo aBehavior);
-	
-	/**
-	 * Creates a filter that accepts only behaviour events (before call, after call, enter and exit)
-	 */
-	public IEventFilter createBehaviorFilter ();
 	
 	/**
 	 * Creates a filter that accepts only the instantiation of the 
@@ -148,5 +136,11 @@ public interface IEventTrace
 	 * object at any point in time.
 	 */
 	public IObjectInspector createObjectInspector (ObjectId aObjectId);
+	
+	/**
+	 * Creates an inspector that permits to determine the value of a behavior's
+	 * local variables at any point in time.
+	 */
+	public IVariablesInspector createVariablesInspector (IBehaviorCallEvent aEvent);
 	
 }

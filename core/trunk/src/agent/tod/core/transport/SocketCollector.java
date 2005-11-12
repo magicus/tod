@@ -93,7 +93,7 @@ public class SocketCollector implements ILogCollector
 	
 	private boolean shouldLog()
 	{
-		return false;
+		return true;
 	}
 	
 	private void log (String aText)
@@ -104,14 +104,16 @@ public class SocketCollector implements ILogCollector
 	public void logBehaviorEnter(
 			long aTimestamp, 
 			long aThreadId, 
-			int aLocationId)
+			int aBehaviorLocationId, 
+			Object aObject,
+            Object[] aArguments)
 	{
 		ThreadData theData = getThreadInfo();
 		if (theData.isSending()) return;
         try
         {
         	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendBehaviorEnter(theStream, aTimestamp, aThreadId, aLocationId);
+        	CollectorPacketWriter.sendBehaviorEnter(theStream, aTimestamp, aThreadId, aBehaviorLocationId, aObject, aArguments);
             theData.packetEnd();
         }
         catch (IOException e)
@@ -123,14 +125,56 @@ public class SocketCollector implements ILogCollector
 	public void logBehaviorExit(
 			long aTimestamp,
 			long aThreadId,
-			int aLocationId)
+			int aLocationId,
+			Object aResult)
 	{
 		ThreadData theData = getThreadInfo();
 		if (theData.isSending()) return;
         try
         {
         	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendBehaviorExit(theStream, aTimestamp, aThreadId, aLocationId);
+        	CollectorPacketWriter.sendBehaviorExit(theStream, aTimestamp, aThreadId, aLocationId, aResult);
+            theData.packetEnd();
+        }
+        catch (IOException e)
+        {
+        	throw new RuntimeException(e);
+        }
+	}
+
+	public void logBehaviorExitWithException(
+			long aTimestamp, 
+			long aThreadId, 
+			int aBehaviorLocationId, 
+			Object aException)
+	{
+		ThreadData theData = getThreadInfo();
+		if (theData.isSending()) return;
+        try
+        {
+        	DataOutputStream theStream = theData.packetStart();
+        	CollectorPacketWriter.sendBehaviorExitWithException(theStream, aTimestamp, aThreadId, aBehaviorLocationId, aException);
+            theData.packetEnd();
+        }
+        catch (IOException e)
+        {
+        	throw new RuntimeException(e);
+        }
+	}
+
+	public void logExceptionGenerated(
+			long aTimestamp, 
+			long aThreadId, 
+			int aBehaviorLocationId, 
+			int aOperationBytecodeIndex, 
+			Object aException)
+	{
+		ThreadData theData = getThreadInfo();
+		if (theData.isSending()) return;
+        try
+        {
+        	DataOutputStream theStream = theData.packetStart();
+        	CollectorPacketWriter.sendExceptionGenerated(theStream, aTimestamp, aThreadId, aBehaviorLocationId, aOperationBytecodeIndex, aException);
             theData.packetEnd();
         }
         catch (IOException e)
@@ -139,11 +183,11 @@ public class SocketCollector implements ILogCollector
         }
 	}
 	
-    public void logBeforeMethodCall(
+    public void logBeforeBehaviorCall(
             long aTimestamp,
             long aThreadId, 
             int aOperationBytecodeIndex, 
-            int aMethodLocationId,
+            int aBehaviorLocationId,
             Object aTarget,
             Object[] aArguments)
     {
@@ -167,7 +211,27 @@ public class SocketCollector implements ILogCollector
         try
         {
         	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendBeforeMethodCall(theStream, aTimestamp, aThreadId, aOperationBytecodeIndex, aMethodLocationId, aTarget, aArguments);
+        	CollectorPacketWriter.sendBeforeMethodCall(theStream, aTimestamp, aThreadId, aOperationBytecodeIndex, aBehaviorLocationId, aTarget, aArguments);
+            theData.packetEnd();
+        }
+        catch (IOException e)
+        {
+        	throw new RuntimeException(e);
+        }
+    }
+
+    public void logBeforeBehaviorCall(
+            long aThreadId, 
+            int aOperationBytecodeIndex, 
+            int aMethodLocationId)
+    {
+		ThreadData theData = getThreadInfo();
+		if (theData.isSending()) return;
+    	
+        try
+        {
+        	DataOutputStream theStream = theData.packetStart();
+        	CollectorPacketWriter.sendBeforeMethodCall(theStream, aThreadId, aOperationBytecodeIndex, aMethodLocationId);
             theData.packetEnd();
         }
         catch (IOException e)
@@ -177,11 +241,11 @@ public class SocketCollector implements ILogCollector
     }
 
 	
-	public void logAfterMethodCall(
+	public void logAfterBehaviorCall(
 			long aTimestamp, 
             long aThreadId, 
             int aOperationBytecodeIndex,
-            int aMethodLocationId,
+            int aBehaviorLocationId,
             Object aTarget, 
             Object aResult)
 	{
@@ -200,7 +264,7 @@ public class SocketCollector implements ILogCollector
         try
         {
         	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendAfterMethodCall(theStream, aTimestamp, aThreadId, aOperationBytecodeIndex, aMethodLocationId, aTarget, aResult);
+        	CollectorPacketWriter.sendAfterMethodCall(theStream, aTimestamp, aThreadId, aOperationBytecodeIndex, aBehaviorLocationId, aTarget, aResult);
             theData.packetEnd();
         }
         catch (IOException e)
@@ -209,6 +273,55 @@ public class SocketCollector implements ILogCollector
         }
 	}
 
+	public void logAfterBehaviorCall(long aThreadId)
+	{
+		ThreadData theData = getThreadInfo();
+		if (theData.isSending()) return;
+
+        try
+        {
+        	DataOutputStream theStream = theData.packetStart();
+        	CollectorPacketWriter.sendAfterMethodCall(theStream, aThreadId);
+            theData.packetEnd();
+        }
+        catch (IOException e)
+        {
+        	throw new RuntimeException(e);
+        }
+	}
+
+	public void logAfterBehaviorCallWithException(
+			long aTimestamp, 
+			long aThreadId, 
+			int aOperationBytecodeIndex,
+			int aBehaviorLocationId,
+			Object aTarget, 
+			Object aException)
+	{
+		ThreadData theData = getThreadInfo();
+		if (theData.isSending()) return;
+		
+//    	System.out.println(String.format(
+//				"After method call: %d, %d, %d, %d, %s, %s",
+//				aTimestamp,
+//				aThreadId,
+//				aOperationBytecodeIndex,
+//				aMethodLocationId,
+//				aTarget,
+//				aResult));
+		
+		try
+		{
+			DataOutputStream theStream = theData.packetStart();
+			CollectorPacketWriter.sendAfterMethodCallWithException(theStream, aTimestamp, aThreadId, aOperationBytecodeIndex, aBehaviorLocationId, aTarget, aException);
+			theData.packetEnd();
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
 	public void logFieldWrite(
 			long aTimestamp, 
             long aThreadId, 
@@ -231,27 +344,15 @@ public class SocketCollector implements ILogCollector
         }
 	}
 
-	public void logInstantiation(
-			long aTimestamp, 
-            long aThreadId,
-            int aOperationBytecodeIndex, 
-            int aTypeLocationId,
-            Object aInstance)
+	public void logInstantiation(long aThreadId)
 	{
 		ThreadData theData = getThreadInfo();
 		if (theData.isSending()) return;
-//    	System.out.println(String.format(
-//				"Instantiation: %d, %d, %d, %d, %s",
-//				aTimestamp,
-//				aThreadId,
-//				aOperationBytecodeIndex,
-//				aTypeLocationId,
-//				aInstance));
 		
         try
         {
         	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendInstantiation(theStream, aTimestamp, aThreadId, aOperationBytecodeIndex, aTypeLocationId, aInstance);
+        	CollectorPacketWriter.sendInstantiation(theStream, aThreadId);
             theData.packetEnd();
         }
         catch (IOException e)
@@ -260,12 +361,28 @@ public class SocketCollector implements ILogCollector
         }
 	}
 
+	public void logConstructorChaining(long aThreadId)
+	{
+		ThreadData theData = getThreadInfo();
+		if (theData.isSending()) return;
+		
+		try
+		{
+			DataOutputStream theStream = theData.packetStart();
+			CollectorPacketWriter.sendConstructorChaining(theStream, aThreadId);
+			theData.packetEnd();
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
 	public void logLocalVariableWrite(
 			long aTimestamp,
             long aThreadId,
             int aOperationBytecodeIndex, 
             int aVariableId,
-            Object aTarget,
             Object aValue)
 	{
 		ThreadData theData = getThreadInfo();
@@ -273,7 +390,7 @@ public class SocketCollector implements ILogCollector
         try
         {
         	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendLocalVariableWrite(theStream, aTimestamp, aThreadId, aOperationBytecodeIndex, aVariableId, aTarget, aValue);
+        	CollectorPacketWriter.sendLocalVariableWrite(theStream, aTimestamp, aThreadId, aOperationBytecodeIndex, aVariableId, aValue);
             theData.packetEnd();
         }
         catch (IOException e)

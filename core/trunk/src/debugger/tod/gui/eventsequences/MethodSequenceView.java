@@ -67,7 +67,7 @@ public class MethodSequenceView extends AbstractMemberSequenceView
 
 		// Create hyperlink to call event
 		IGUIManager theGUIManager = getLogView().getGUIManager();
-		IEventTrace theLog = getLogView().getLog();
+		IEventTrace theLog = getLogView().getEventTrace();
 
 		CFlowSeed theSeed = new CFlowSeed(theGUIManager, theLog, aEvent);
 		SVGHyperlink theHyperlink = SVGHyperlink.create(theGUIManager, theSeed, "call", 10, Color.BLACK);

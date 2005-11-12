@@ -33,7 +33,7 @@ public class FilterSeed extends Seed/*<FilterView>*/
 	
 	protected LogView requestComponent()
 	{
-		FilterView theView = new FilterView (getGUIManager(), getLog(), this);
+		FilterView theView = new FilterView (getGUIManager(), getEventTrace(), this);
 		theView.init();
 		return theView;
 	}

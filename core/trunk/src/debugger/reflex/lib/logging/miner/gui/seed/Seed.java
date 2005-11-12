@@ -31,7 +31,7 @@ public abstract class Seed/*<T extends LogView>*/
 		itsLog = aLog;
 	}
 	
-	protected IEventTrace getLog()
+	protected IEventTrace getEventTrace()
 	{
 		return itsLog;
 	}

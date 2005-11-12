@@ -8,8 +8,16 @@ import tod.core.model.structure.TypeInfo;
 /**
  * @author gpothier
  */
-public interface IInstantiationEvent extends ILogEvent 
+public interface IInstantiationEvent extends IBehaviorCallEvent
 {
+	/**
+	 * The instanciated type
+	 */
 	public TypeInfo getType();
+
+	/**
+	 * The resulting instance.
+	 * Same as {@link ICallerSideEvent#getCurrentObject()}
+	 */
 	public Object getInstance();
 }

@@ -68,9 +68,14 @@ public class ASMLocationPool
 		}
 	}
 
+	protected String getBehaviorKey(int aTypeId, String aName, String aDescriptor)
+	{
+		return ""+aTypeId+":"+aName+aDescriptor;
+	}
+	
 	public int getMethodId(int aTypeId, String aName, String aDescriptor)
 	{
-		String theKey = ""+aTypeId+":"+aName+aDescriptor;
+		String theKey = getBehaviorKey(aTypeId, aName, aDescriptor);
 		Integer theId = itsMethodIds.get(theKey);
 		if (theId == null)
 		{
@@ -82,9 +87,14 @@ public class ASMLocationPool
 		return theId.intValue();
 	}
 	
+	protected String getFieldKey(int aTypeId, String aName)
+	{
+		return ""+aTypeId+":"+aName;
+	}
+	
 	public int getFieldId(int aTypeId, String aName, String aDescriptor)
 	{
-		String theKey = ""+aTypeId+":"+aName+aDescriptor;
+		String theKey = getFieldKey(aTypeId, aName);
 		Integer theId = itsFieldIds.get(theKey);
 		if (theId == null)
 		{
@@ -95,7 +105,7 @@ public class ASMLocationPool
 		
 		return theId.intValue();
 	}
-	
+
 	public int getTypeId(String aName)
 	{
 		Integer theId = itsTypeIds.get(aName);
@@ -143,16 +153,23 @@ public class ASMLocationPool
 		
 		public void registerBehavior(BehaviourType aBehaviourType, int aBehaviourId, int aTypeId, String aBehaviourName, String aSignature)
 		{
+			itsNextMethodId = aBehaviourId+1;
+			itsMethodIds.put(getBehaviorKey(aTypeId, aBehaviourName, aSignature), aBehaviourId);
+			
 			itsTargetRegistrer.registerBehavior(aBehaviourType, aBehaviourId, aTypeId, aBehaviourName, aSignature);
 		}
 
 		public void registerBehaviorAttributes(int aBehaviourId, LineNumberInfo[] aLineNumberTable, LocalVariableInfo[] aLocalVariableTable)
 		{
+			itsNextMethodId = aBehaviourId+1;
 			itsTargetRegistrer.registerBehaviorAttributes(aBehaviourId, aLineNumberTable, aLocalVariableTable);
 		}
 
 		public void registerField(int aFieldId, int aTypeId, String aFieldName)
 		{
+			itsNextFieldId = aFieldId+1;
+			itsFieldIds.put(getFieldKey(aTypeId, aFieldName), aFieldId);
+			
 			itsTargetRegistrer.registerField(aFieldId, aTypeId, aFieldName);
 		}
 
@@ -168,6 +185,9 @@ public class ASMLocationPool
 
 		public void registerType(int aTypeId, String aTypeName, int aSupertypeId, int[] aInterfaceIds)
 		{
+			itsNextTypeId = aTypeId+1;
+			itsTypeIds.put (aTypeName, aTypeId);
+			
 			itsTargetRegistrer.registerType(aTypeId, aTypeName, aSupertypeId, aInterfaceIds);
 		}
 

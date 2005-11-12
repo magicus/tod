@@ -120,7 +120,7 @@ public abstract class AbstractBehaviorLogger implements InstrumentationListener
         
 	}
 
-	public void enter(int aBehaviourId)
+	public void enter(int aBehaviourId, Object aObject, Object[] aArguments)
 	{
 		System.out.println(String.format (
 				"Behavior enter: beh: %d",
@@ -129,13 +129,15 @@ public abstract class AbstractBehaviorLogger implements InstrumentationListener
 		Config.COLLECTOR.logBehaviorEnter(
 				System.nanoTime(), 
 				Thread.currentThread().getId(), 
-				aBehaviourId);
+				aBehaviourId,
+				aObject,
+				aArguments);
 
 		for (OutputHandler theHandler : itsHandlers)
 			theHandler.startCollecting();
 	}
 
-	public void exit(int aBehaviourId)
+	public void exit(int aBehaviourId, Object aResult)
 	{
 		System.out.println(String.format (
 				"Behavior exit: beh: %d",
@@ -147,7 +149,8 @@ public abstract class AbstractBehaviorLogger implements InstrumentationListener
 		Config.COLLECTOR.logBehaviorExit(
 				System.nanoTime(), 
 				Thread.currentThread().getId(), 
-				aBehaviourId);
+				aBehaviourId,
+				aResult);
 	}
 
 	private static class MyOperationSelector implements OperationSelector

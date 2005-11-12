@@ -4,9 +4,7 @@
 package reflex.lib.logging.miner.impl.local.filter;
 
 import reflex.lib.logging.miner.impl.local.LocalCollector;
-import tod.core.model.event.IAfterMethodCallEvent;
-import tod.core.model.event.IBeforeMethodCallEvent;
-import tod.core.model.event.IEvent_Behaviour;
+import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.BehaviorInfo;
 
@@ -16,7 +14,7 @@ import tod.core.model.structure.BehaviorInfo;
  */
 public class BehaviorCallFilter extends AbstractStatelessFilter
 {
-	private BehaviorInfo itsBehaviourInfo;
+	private BehaviorInfo itsBehaviour;
 	
 	/**
 	 * Creates a filter that accepts any behaviou-related event.
@@ -33,22 +31,15 @@ public class BehaviorCallFilter extends AbstractStatelessFilter
 	public BehaviorCallFilter(LocalCollector aCollector, BehaviorInfo aBehaviourInfo)
 	{
 		super(aCollector);
-		itsBehaviourInfo = aBehaviourInfo;
+		itsBehaviour = aBehaviourInfo;
 	}
 	
 	public boolean accept(ILogEvent aEvent)
 	{
-		if (aEvent instanceof IBeforeMethodCallEvent)
+		if (aEvent instanceof IBehaviorCallEvent)
 		{
-			IBeforeMethodCallEvent theEvent = (IBeforeMethodCallEvent) aEvent;
-			return itsBehaviourInfo == null 
-				|| theEvent.getBehavior() == itsBehaviourInfo;
-		}
-		else if (aEvent instanceof IAfterMethodCallEvent)
-		{
-			IAfterMethodCallEvent theEvent = (IAfterMethodCallEvent) aEvent;
-			return itsBehaviourInfo == null 
-			|| theEvent.getBehavior() == itsBehaviourInfo;
+			IBehaviorCallEvent theEvent = (IBehaviorCallEvent) aEvent;
+			return theEvent.getCalledBehavior().equals(itsBehaviour);
 		}
 		else return false;
 	}
