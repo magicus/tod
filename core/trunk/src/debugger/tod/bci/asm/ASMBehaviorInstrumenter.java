@@ -139,7 +139,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			String aDesc)
 	{
 		int theCalledTypeId = itsLocationPool.getTypeId(aOwner);
-		int theCalledMethodId = itsLocationPool.getMethodId(theCalledTypeId, aName, aDesc);
+		int theCalledMethodId = itsLocationPool.getBehaviorId(theCalledTypeId, aName, aDesc);
 		
 		itsBehaviorCallInstrumenter.setup(
 				itsFirstFreeVar,
@@ -209,7 +209,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		mv.visitLabel(l);
 		int theBytecodeIndex = l.getOffset();
 
-		int theCurrentVar = itsMethodInfo.getMaxLocals();
+		int theCurrentVar = itsFirstFreeVar;
 		int theValueVar;
 		int theTargetVar;
 		

@@ -5,13 +5,15 @@ package tod.test;
 
 import java.util.ArrayList;
 
+import javax.swing.JPanel;
+
 import tod.core.IIdentifiableObject;
 
 public class BCITest
 {
 	public static void main(String[] args)
 	{
-		Double.parseDouble("totototo");
+		new JPanel();
 		BCITest theTest = new BCITest(50, 123);
 		int k = theTest.ex(0);
 		long j = 90;

@@ -3,14 +3,8 @@
  */
 package reflex.lib.logging.miner.gui.formatter;
 
-import tod.core.model.event.IAfterMethodCallEvent;
-import tod.core.model.event.IBeforeMethodCallEvent;
-import tod.core.model.event.IBehaviorEnterEvent;
-import tod.core.model.event.IBehaviorExitEvent;
-import tod.core.model.event.IEvent_Arguments;
-import tod.core.model.event.IEvent_ReturnValue;
+import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.event.IFieldWriteEvent;
-import tod.core.model.event.IInstantiationEvent;
 import tod.core.model.event.ILocalVariableWriteEvent;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.event.IOutputEvent;
@@ -36,26 +30,10 @@ public class EventFormatter extends AbstractFormatter<ILogEvent>
 	
 	protected String getText(ILogEvent aEvent, boolean aHtml)
 	{
-		if (aEvent instanceof IBeforeMethodCallEvent)
+		if (aEvent instanceof IBehaviorCallEvent)
 		{
-			IBeforeMethodCallEvent theEvent = (IBeforeMethodCallEvent) aEvent;
-			return "Calling "+formatLocation(theEvent.getBehavior())
-				+ " with "+formatArgs(theEvent.getArguments());
-		}
-		else if (aEvent instanceof IAfterMethodCallEvent)
-		{
-			IAfterMethodCallEvent theEvent = (IAfterMethodCallEvent) aEvent;
-			return "Called "+formatLocation(theEvent.getBehavior());
-		}
-		if (aEvent instanceof IBehaviorEnterEvent)
-		{
-			IBehaviorEnterEvent theEvent = (IBehaviorEnterEvent) aEvent;
-			return "Entered "+formatLocation(theEvent.getBehavior());
-		}
-		else if (aEvent instanceof IBehaviorExitEvent)
-		{
-			IBehaviorExitEvent theEvent = (IBehaviorExitEvent) aEvent;
-			return "Exited "+formatLocation(theEvent.getBehavior());
+			IBehaviorCallEvent theEvent = (IBehaviorCallEvent) aEvent;
+			return "Behavior call";
 		}
 		else if (aEvent instanceof IFieldWriteEvent)
 		{
@@ -70,13 +48,7 @@ public class EventFormatter extends AbstractFormatter<ILogEvent>
 			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) aEvent;
 			
             return "Variable written: "+theEvent.getVariable().getVariableName()
-            	+" on "+formatObject(theEvent.getTarget())
             	+" value: "+formatObject(theEvent.getValue());
-		}
-		else if (aEvent instanceof IInstantiationEvent)
-		{
-			IInstantiationEvent theEvent = (IInstantiationEvent) aEvent;
-			return "Object instantiated: "+formatLocation(theEvent.getType());
 		}
 		else if (aEvent instanceof IOutputEvent)
 		{

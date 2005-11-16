@@ -5,16 +5,16 @@ package tod.gui.controlflow;
 
 import java.awt.Color;
 
-import tod.core.model.event.IMethodCallEvent;
+import tod.core.model.event.IConstructorChainingEvent;
 import zz.csg.api.IRectangularGraphicContainer;
 import zz.csg.impl.figures.SVGFlowText;
 import zz.utils.ui.text.XFont;
 
-public class MethodCallNode extends AbstractBehaviorNode
+public class ConstructorChainingNode extends AbstractBehaviorNode
 {
-	public MethodCallNode(
+	public ConstructorChainingNode(
 			CFlowView aView,
-			IMethodCallEvent aEvent)
+			IConstructorChainingEvent aEvent)
 	{
 		super (aView, aEvent);
 	}

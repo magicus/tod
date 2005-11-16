@@ -5,5 +5,5 @@ package tod.agent;
 
 public class AgentReady
 {
-	public static boolean READY = true;
+	public static boolean READY = false;
 }

@@ -25,14 +25,14 @@ public class EventComparator implements Comparator<ILogEvent>
 	public int compare(ILogEvent aEvent1, ILogEvent aEvent2)
 	{
 		long theDelta;
-		if (aEvent1.getThread() == aEvent2.getThread())
-		{
-			theDelta = aEvent1.getSerial() - aEvent2.getSerial(); 
-		}
-		else 
-		{
+//		if (aEvent1.getThread() == aEvent2.getThread())
+//		{
+//			theDelta = aEvent1.getSerial() - aEvent2.getSerial(); 
+//		}
+//		else 
+//		{
 			theDelta = aEvent1.getTimestamp() - aEvent2.getTimestamp();
-		}
+//		}
 		
 		if (theDelta > 0) return 1;
 		else if (theDelta < 0) return -1;

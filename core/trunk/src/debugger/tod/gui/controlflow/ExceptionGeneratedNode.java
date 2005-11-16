@@ -33,7 +33,7 @@ public class ExceptionGeneratedNode extends AbstractEventNode
 	}
 	
 	@Override
-	protected ILogEvent getMainEvent()
+	protected ILogEvent getEvent()
 	{
 		return itsEvent;
 	}

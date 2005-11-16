@@ -50,6 +50,10 @@ public class CollectorPacketReader
 				readExceptionGenerated(aStream, aCollector);
 				break;
 				
+			case EXCEPTION_GENERATED_UNRESOLVED:
+				readExceptionGeneratedUnresolved(aStream, aCollector);
+				break;
+				
 			case FIELD_WRITE:
                 readFieldWrite(aStream, aCollector);
                 break;
@@ -233,6 +237,18 @@ public class CollectorPacketReader
     			aStream.readLong(),
     			aStream.readLong(),
     			aStream.readInt(),
+    			aStream.readInt(),
+    			readValue(aStream));
+    }
+    
+    public static void readExceptionGeneratedUnresolved(DataInputStream aStream, ILogCollector aCollector) throws IOException
+    {
+    	aCollector.logExceptionGenerated(
+    			aStream.readLong(),
+    			aStream.readLong(),
+    			aStream.readUTF(),
+    			aStream.readUTF(),
+    			aStream.readUTF(),
     			aStream.readInt(),
     			readValue(aStream));
     }

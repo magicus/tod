@@ -183,6 +183,29 @@ public class SocketCollector implements ILogCollector
         }
 	}
 	
+	public void logExceptionGenerated(
+			long aTimestamp, 
+			long aThreadId,
+			String aMethodName, 
+			String aMethodSignature, 
+			String aMethodDeclaringClassSignature,
+			int aOperationBytecodeIndex,
+			Object aException)
+	{
+		ThreadData theData = getThreadInfo();
+		if (theData.isSending()) return;
+        try
+        {
+        	DataOutputStream theStream = theData.packetStart();
+        	CollectorPacketWriter.sendExceptionGenerated(theStream, aTimestamp, aThreadId, aMethodName, aMethodSignature, aMethodDeclaringClassSignature, aOperationBytecodeIndex, aException);
+            theData.packetEnd();
+        }
+        catch (IOException e)
+        {
+        	throw new RuntimeException(e);
+        }
+	}
+	
     public void logBeforeBehaviorCall(
             long aTimestamp,
             long aThreadId, 
@@ -630,6 +653,8 @@ public class SocketCollector implements ILogCollector
 			
 			setDaemon(true);
 			start();
+			
+			AgentReady.READY = true;			
 		}
 
 		public void setThreadInfosList(List<Reference<ThreadData>> aThreadInfosList)

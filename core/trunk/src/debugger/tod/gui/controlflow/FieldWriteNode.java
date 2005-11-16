@@ -6,7 +6,7 @@ package tod.gui.controlflow;
 import java.awt.Color;
 
 import reflex.lib.logging.miner.gui.IGUIManager;
-import tod.core.model.event.IBehaviorEnterEvent;
+import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.event.IFieldWriteEvent;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.trace.IEventTrace;
@@ -29,7 +29,7 @@ public class FieldWriteNode extends AbstractEventNode
 		setLayoutManager(new SequenceLayout());
 		
 		Object theCurrentObject = null;
-		IBehaviorEnterEvent theContainer = itsEvent.getParent();
+		IBehaviorCallEvent theContainer = itsEvent.getParent();
 		if (theContainer != null)
 		{
 			theCurrentObject = theContainer.getTarget();
@@ -43,7 +43,7 @@ public class FieldWriteNode extends AbstractEventNode
 	}
 	
 	@Override
-	protected ILogEvent getMainEvent()
+	protected ILogEvent getEvent()
 	{
 		return itsEvent;
 	}

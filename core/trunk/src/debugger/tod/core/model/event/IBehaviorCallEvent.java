@@ -48,7 +48,7 @@ public interface IBehaviorCallEvent extends IParentEvent, ICallerSideEvent
 	 * <br/>
 	 * This information is always available.
 	 */
-	public Object getCurrentObject();
+	public Object getTarget();
 	
 	/**
 	 * The behavior that requested the call.

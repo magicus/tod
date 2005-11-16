@@ -3,6 +3,8 @@
  */
 package reflex.lib.logging.miner.impl.local;
 
+import org.objectweb.asm.Type;
+
 import reflex.lib.logging.miner.impl.common.ObjectInspector;
 import reflex.lib.logging.miner.impl.common.VariablesInspector;
 import reflex.lib.logging.miner.impl.common.event.BehaviorCallEvent;
@@ -22,11 +24,14 @@ import reflex.lib.logging.miner.impl.local.filter.IntersectionFilter;
 import reflex.lib.logging.miner.impl.local.filter.TargetFilter;
 import reflex.lib.logging.miner.impl.local.filter.ThreadFilter;
 import reflex.lib.logging.miner.impl.local.filter.UnionFilter;
+import tod.bci.asm.BCIUtils;
 import tod.core.ILogCollector;
 import tod.core.LocationRegistrer;
 import tod.core.Output;
 import tod.core.model.event.IBehaviorCallEvent;
+import tod.core.model.event.IParentEvent;
 import tod.core.model.structure.BehaviorInfo;
+import tod.core.model.structure.ClassInfo;
 import tod.core.model.structure.FieldInfo;
 import tod.core.model.structure.ObjectId;
 import tod.core.model.structure.ThreadInfo;
@@ -98,7 +103,7 @@ implements ILogCollector, IEventTrace
 		BehaviorCallEvent theCurrentBehavior = 
 			(BehaviorCallEvent) aThreadInfo.getCurrentParent();
 		
-		aEvent.setFather(theCurrentBehavior);
+		aEvent.setParent(theCurrentBehavior);
 		theCurrentBehavior.addChild (aEvent);
 	}
 	
@@ -138,7 +143,7 @@ implements ILogCollector, IEventTrace
 		}
 		
 		theEvent.setCalledBehavior(theBehavior);
-		theEvent.setCurrentObject(aObject);
+		theEvent.setTarget(aObject);
 		theEvent.setArguments(aArguments);
 	}
 
@@ -188,8 +193,34 @@ implements ILogCollector, IEventTrace
 			Object aException)
 	{
 		MyThreadInfo theThread = getThread(aThreadId);
+		
 		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
 
+		ExceptionGeneratedEvent theEvent = new ExceptionGeneratedEvent();
+		initEvent(theEvent, aTimestamp, theThread, aOperationBytecodeIndex);
+		
+		theEvent.setThrowingBehavior(theBehavior);
+		theEvent.setException(aException);
+		
+		itsEvents.add (theEvent);
+	}
+	
+	public void logExceptionGenerated(
+			long aTimestamp, 
+			long aThreadId, 
+			String aMethodName,
+			String aMethodSignature,
+			String aMethodDeclaringClassSignature, 
+			int aOperationBytecodeIndex,
+			Object aException)
+	{
+		MyThreadInfo theThread = getThread(aThreadId);
+		
+		String theClassName = Type.getType(aMethodDeclaringClassSignature).getClassName();
+		ClassInfo theClass = (ClassInfo) getType(theClassName);
+		TypeInfo[] theArgumentTypes = getArgumentTypes(aMethodSignature);
+		BehaviorInfo theBehavior = theClass.getBehavior(aMethodName, theArgumentTypes);
+		
 		ExceptionGeneratedEvent theEvent = new ExceptionGeneratedEvent();
 		initEvent(theEvent, aTimestamp, theThread, aOperationBytecodeIndex);
 		
@@ -280,6 +311,8 @@ implements ILogCollector, IEventTrace
 		initEvent(theEvent, -1, theThread, aOperationBytecodeIndex);
 		theEvent.setDirectParent(true);
 		
+		itsEvents.add (theEvent);
+		
 		theThread.setCurrentParent(theEvent);
 	}
 	
@@ -299,8 +332,10 @@ implements ILogCollector, IEventTrace
 		initEvent(theEvent, aTimestamp, theThread, aOperationBytecodeIndex);
 		theEvent.setDirectParent(false);
 		theEvent.setCalledBehavior(theBehavior);
-		theEvent.setCurrentObject(aTarget);
+		theEvent.setTarget(aTarget);
 		theEvent.setArguments(aArguments);
+		
+		itsEvents.add (theEvent);
 		
 		theThread.setCurrentParent(theEvent);
 	}

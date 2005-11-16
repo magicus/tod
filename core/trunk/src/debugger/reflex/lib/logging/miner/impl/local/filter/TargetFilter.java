@@ -25,6 +25,6 @@ public class TargetFilter extends AbstractStatelessFilter
 	public boolean accept(ILogEvent aEvent)
 	{
 		IBehaviorCallEvent theParent = aEvent.getParent();
-		return theParent != null && itsTarget.equals(theParent.getCurrentObject());
+		return theParent != null && itsTarget.equals(theParent.getTarget());
 	}
 }

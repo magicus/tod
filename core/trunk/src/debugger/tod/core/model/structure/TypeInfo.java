@@ -3,91 +3,45 @@
  */
 package tod.core.model.structure;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import tod.core.ILogCollector;
+import tod.core.model.trace.ILocationTrace;
 
 /**
- * Aggregates the information a {@link ILogCollector collector}
- * receives about a type (class or interface).
+ * Description of a type. This is an abstract class;
+ * there are concrete subclasses for class, interface,
+ * primitive type and array type.
  * @author gpothier
  */
-public class TypeInfo extends LocationInfo
+public abstract class TypeInfo extends LocationInfo
 {
-	private TypeInfo itsSupertype;
-	private TypeInfo[] itsInterfaces;
-	
-	private Map<String, FieldInfo> itsFieldsMap = new HashMap<String, FieldInfo>();
-	private Map<String, BehaviorInfo> itsBehaviorsMap = new HashMap<String, BehaviorInfo>();
-	
-
-	public TypeInfo(int aId)
+	public TypeInfo(ILocationTrace aTrace, int aId, String aName)
 	{
-		super(aId);
+		super(aTrace, aId, aName);
 	}
 
-	public TypeInfo(int aId, String aName, TypeInfo aSupertype, TypeInfo[] aInterfaces)
+	public TypeInfo(ILocationTrace aTrace, int aId)
 	{
-		super(aId, aName);
-		
-		itsSupertype = aSupertype;
-		itsInterfaces = aInterfaces;
-	}
-
-	/**
-	 * Registers the given field info object.
-	 */
-	public void register(FieldInfo aFieldInfo)
-	{
-		itsFieldsMap.put (aFieldInfo.getName(), aFieldInfo);
+		super(aTrace, aId);
 	}
 	
 	/**
-	 * Registers the given behavior info object.
+	 * Returns the number of JVM stack slots that an object of
+	 * this type occupies.
+	 * For instance, object reference is 1, long and double are 2, void is 0.
 	 */
-	public void register(BehaviorInfo aBehaviorInfo)
-	{
-		itsBehaviorsMap.put(aBehaviorInfo.getName(), aBehaviorInfo);
-	}
+	public abstract int getSize();
 	
-	public FieldInfo getField(String aName)
-	{
-		return itsFieldsMap.get(aName);
-	}
+	/**
+	 * Indicates if ths type is a primitive type.
+	 */
+	public abstract boolean isPrimitive();
 	
-	public BehaviorInfo getBehavior(String aName)
-	{
-		return itsBehaviorsMap.get(aName);
-	}
+	/**
+	 * Indicates if ths type is an array type.
+	 */
+	public abstract boolean isArray();
 	
-	public Iterable<FieldInfo> getFields()
-	{
-		return itsFieldsMap.values();
-	}
-	
-	public Iterable<BehaviorInfo> getBehaviors()
-	{
-		return itsBehaviorsMap.values();
-	}
-	
-	public TypeInfo[] getInterfaces()
-	{
-		return itsInterfaces;
-	}
-
-	public void setInterfaces(TypeInfo[] aInterfaces)
-	{
-		itsInterfaces = aInterfaces;
-	}
-
-	public void setSupertype(TypeInfo aSupertype)
-	{
-		itsSupertype = aSupertype;
-	}
-
-	public TypeInfo getSupertype()
-	{
-		return itsSupertype;
-	}
+	/**
+	 * Indicates if ths type is the void type.
+	 */
+	public abstract boolean isVoid();
 }

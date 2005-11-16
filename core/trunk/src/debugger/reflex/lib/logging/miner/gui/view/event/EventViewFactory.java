@@ -4,7 +4,7 @@
 package reflex.lib.logging.miner.gui.view.event;
 
 import reflex.lib.logging.miner.gui.IGUIManager;
-import tod.core.model.event.IBehaviorEnterEvent;
+import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.event.IFieldWriteEvent;
 import tod.core.model.event.IInstantiationEvent;
 import tod.core.model.event.ILogEvent;
@@ -27,10 +27,10 @@ public class EventViewFactory
 	{
 		EventView theView = null;
 		
-		if (aEvent instanceof IBehaviorEnterEvent)
+		if (aEvent instanceof IBehaviorCallEvent)
 		{
-			IBehaviorEnterEvent theEvent = (IBehaviorEnterEvent) aEvent;
-			theView = new BehaviourEnterView (aGUIManager, aLog, theEvent);
+			IBehaviorCallEvent theEvent = (IBehaviorCallEvent) aEvent;
+			theView = new BehaviorCallView (aGUIManager, aLog, theEvent);
 		}
 		else if (aEvent instanceof IInstantiationEvent)
 		{

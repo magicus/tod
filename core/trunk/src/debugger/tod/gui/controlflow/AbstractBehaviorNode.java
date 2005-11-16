@@ -7,15 +7,15 @@ import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 
-import reflex.lib.logging.miner.gui.IGUIManager;
-import tod.core.model.event.IParentEvent;
-import tod.core.model.event.ILogEvent;
-import tod.core.model.trace.IEventTrace;
+import tod.core.model.event.IBehaviorCallEvent;
+import tod.core.model.structure.BehaviorInfo;
+import tod.core.model.structure.TypeInfo;
 import tod.gui.Hyperlinks;
 import zz.csg.api.IGraphicContainer;
 import zz.csg.api.IRectangularGraphicContainer;
 import zz.csg.api.IRectangularGraphicObject;
 import zz.csg.api.layout.AbstractSimpleLayout;
+import zz.csg.api.layout.SequenceLayout;
 import zz.csg.api.layout.StackLayout;
 import zz.csg.impl.SVGGraphicContainer;
 import zz.csg.impl.figures.SVGFlowText;
@@ -26,8 +26,7 @@ import zz.utils.ui.text.XFont;
 
 public abstract class AbstractBehaviorNode extends AbstractEventNode
 {
-	private IParentEvent itsContainerEvent;
-	private ILogEvent itsMainEvent;
+	private IBehaviorCallEvent itsEvent;
 	
 	private IRectangularGraphicContainer itsChildrenContainer;
 	private IRectangularGraphicContainer itsHeader;
@@ -46,13 +45,11 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 	
 	public AbstractBehaviorNode(
 			CFlowView aView,
-			IParentEvent aContainerEvent,
-			ILogEvent aMainEvent)
+			IBehaviorCallEvent aEvent)
 	{
 		super (aView);
 		
-		itsContainerEvent = aContainerEvent;
-		itsMainEvent = aMainEvent;
+		itsEvent = aEvent;
 		
 		itsExpanderWidget = new ExpanderWidget();
 		pChildren().add(itsExpanderWidget);
@@ -65,9 +62,9 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 	}
 	
 	@Override
-	protected final ILogEvent getMainEvent()
+	protected IBehaviorCallEvent getEvent()
 	{
-		return itsMainEvent;
+		return itsEvent;
 	}
 	
 	@Override
@@ -96,7 +93,7 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 	
 	private void expand()
 	{
-		List<IRectangularGraphicObject> theNodes = getBuilder().buildNodes(itsContainerEvent);
+		List<IRectangularGraphicObject> theNodes = getBuilder().buildNodes(getEvent());
 		
 		for (IRectangularGraphicObject theNode : theNodes)
 		{
@@ -112,7 +109,73 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 		repaintAllContexts();
 	}
 	
-	protected abstract IRectangularGraphicContainer buildHeader();
+	protected IRectangularGraphicContainer buildHeader()
+	{
+		IRectangularGraphicContainer theHeader = new SVGGraphicContainer();
+		theHeader.setLayoutManager(new SequenceLayout());
+
+		fillHeader(theHeader);
+		
+		return theHeader;
+	}
+	
+	protected IRectangularGraphicContainer buildFooter()
+	{
+		IRectangularGraphicContainer theFooter = new SVGGraphicContainer();
+		theFooter.setLayoutManager(new SequenceLayout());
+
+		fillFooter(theFooter);
+		
+		return theFooter;
+	}
+
+	
+	protected void fillHeader(IRectangularGraphicContainer aContainer)
+	{
+		XFont theFont = getHeaderFont();
+		
+		BehaviorInfo theBehavior = getEvent().getCalledBehavior();
+		TypeInfo theType = theBehavior.getType();
+		Object[] theArguments = getEvent().getArguments();
+		
+		aContainer.pChildren().add(Hyperlinks.type(getGUIManager(), theType, theFont));
+		aContainer.pChildren().add(SVGFlowText.create(".", theFont, Color.BLACK));
+		aContainer.pChildren().add(Hyperlinks.behavior(getGUIManager(), theBehavior, theFont));
+
+		addArguments(aContainer, theArguments, theFont);
+	}
+	
+	protected void fillFooter(IRectangularGraphicContainer aContainer)
+	{
+		XFont theFont = getHeaderFont();
+
+		BehaviorInfo theBehavior = getEvent().getCalledBehavior();
+		
+		if (getEvent().hasThrown())
+		{
+			aContainer.pChildren().add(SVGFlowText.create("Thrown ", theFont, Color.RED));
+
+			aContainer.pChildren().add(Hyperlinks.object(
+					getGUIManager(), 
+					getEventTrace(), 
+					getEvent().getResult(), 
+					theFont));
+		}
+		else if (theBehavior.getReturnType().isVoid())
+		{
+			aContainer.pChildren().add(SVGFlowText.create("Returned", theFont, Color.BLACK));
+		}
+		else 
+		{
+			aContainer.pChildren().add(SVGFlowText.create("Returned ", theFont, Color.BLACK));
+			
+			aContainer.pChildren().add(Hyperlinks.object(
+					getGUIManager(), 
+					getEventTrace(), 
+					getEvent().getResult(), 
+					theFont));
+		}
+	}
 	
 	/**
 	 * Returns the font size that should be used for headers.
@@ -153,8 +216,6 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 		
 		aContainer.pChildren().add(SVGFlowText.create(")", aFont, Color.BLACK));
 	}
-	
-	protected abstract IRectangularGraphicContainer buildFooter();
 	
 	private class MyLayout extends AbstractSimpleLayout
 	{

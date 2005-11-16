@@ -77,6 +77,14 @@ public class MultiCollector extends MultiRegistrer implements ILogCollector
         }
 	}
 	
+	public void logExceptionGenerated(long aTimestamp, long aThreadId, String aMethodName, String aMethodSignature, String aMethodDeclaringClassSignature, int aOperationBytecodeIndex, Object aException)
+	{
+        for (ILogCollector theCollector : getCollectors())
+        {
+            theCollector.logExceptionGenerated(aTimestamp, aThreadId, aMethodName, aMethodSignature, aMethodDeclaringClassSignature, aOperationBytecodeIndex, aException);
+        }
+	}
+	
 	public void logFieldWrite(long aTimestamp, long aThreadId, int aOperationBytecodeIndex, int aFieldLocationId, Object aTarget, Object aValue)
 	{
         for (ILogCollector theCollector : getCollectors())

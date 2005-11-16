@@ -12,6 +12,7 @@ import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.event.ILocalVariableWriteEvent;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.BehaviorInfo;
+import tod.core.model.structure.TypeInfo;
 import tod.core.model.trace.IVariablesInspector;
 
 public class VariablesInspector implements IVariablesInspector
@@ -85,6 +86,25 @@ public class VariablesInspector implements IVariablesInspector
 				}
 			}
 		}
+		
+		// If we did not find a variable write corresponding to the variable,
+		// we consider the behavior call's initial argument values
+		BehaviorInfo theBehavior = itsBehaviorCall.getCalledBehavior();
+		TypeInfo[] theArgumentTypes = theBehavior.getArgumentTypes();
+		int theSlot = theBehavior.isStatic() ? 0 : 1;
+		for (int i = 0; i < theArgumentTypes.length; i++)
+		{
+			if (aVariable.getIndex() == theSlot)
+			{
+				return itsBehaviorCall.getArguments()[i];
+			}
+			else
+			{
+				TypeInfo theType = theArgumentTypes[i];
+				theSlot += theType.getSize();
+			}
+		}
+		
 		return null;
 	}
 	

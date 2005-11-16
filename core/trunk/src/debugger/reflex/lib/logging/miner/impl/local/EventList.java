@@ -27,25 +27,29 @@ public class EventList
 	
 	/**
 	 * Adds the specified event to this list.
+	 * @return The index at which the event is inserted
 	 */
-	public void add (Event aEvent)
+	public int add (Event aEvent)
 	{
+		int theIndex;
+		
 		if (size() == 0
 			|| getLast().getTimestamp() <= aEvent.getTimestamp())
 		{
-			itsEvents.add (aEvent);
+			theIndex = size();
 		}
 		else
 		{
-			int theIndex = Collections.binarySearch(
+			theIndex = Collections.binarySearch(
 					itsEvents, 
 					aEvent, 
 					EventComparator.getInstance());
 			
 			if (theIndex < 0) theIndex = -theIndex-1;
-			
-			itsEvents.add (theIndex, aEvent);
 		}
+		
+		itsEvents.add (theIndex, aEvent);
+		return theIndex;
 	}
 	
 	public Event getLast()

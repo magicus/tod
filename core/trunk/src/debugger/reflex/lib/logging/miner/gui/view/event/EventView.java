@@ -3,11 +3,7 @@
  */
 package reflex.lib.logging.miner.gui.view.event;
 
-import java.awt.FlowLayout;
-
-import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 import reflex.lib.logging.miner.gui.IGUIManager;
 import reflex.lib.logging.miner.gui.formatter.EventFormatter;
@@ -15,14 +11,9 @@ import reflex.lib.logging.miner.gui.kit.LinkLabel;
 import reflex.lib.logging.miner.gui.kit.SeedLinkLabel;
 import reflex.lib.logging.miner.gui.seed.CFlowSeed;
 import reflex.lib.logging.miner.gui.seed.FilterSeed;
-import reflex.lib.logging.miner.gui.seed.Seed;
-import reflex.lib.logging.miner.gui.seed.SeedFactory;
 import reflex.lib.logging.miner.gui.view.LogView;
-import tod.core.model.event.IEvent_Behaviour;
-import tod.core.model.event.IEvent_Target;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.ThreadInfo;
-import tod.core.model.structure.TypeInfo;
 import tod.core.model.trace.IEventTrace;
 import zz.utils.ui.GridStackLayout;
 
@@ -67,26 +58,6 @@ public abstract class EventView extends LogView
 				new CFlowSeed(getGUIManager(), getEventTrace(), theEvent));
 		add (theCFlowLabel);
 		
-		// Behaviour
-		if (theEvent instanceof IEvent_Behaviour)
-		{
-			IEvent_Behaviour theBehaviourEvent = (IEvent_Behaviour) theEvent;
-			TypeInfo theTypeInfo = theBehaviourEvent.getBehavior().getType();
-			String theTypeName = theTypeInfo.getName();
-			
-			add (createTitledLink(
-					"Type: ", 
-					theTypeName, 
-					SeedFactory.getDefaultSeed(getGUIManager(), getEventTrace(), theTypeInfo)));
-		}
-		
-		// Target
-		if (theEvent instanceof IEvent_Target)
-		{
-			IEvent_Target theTargetEvent = (IEvent_Target) theEvent;
-
-			add (createTitledPanel("Target: ", createInspectorLink(theTargetEvent.getTarget())));
-		}
 	}
 
 	/**

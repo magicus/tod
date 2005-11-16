@@ -18,16 +18,15 @@ public class IdentifiableImpl implements IIdentifiableObject
 
 	public IdentifiableImpl()
 	{
+		System.out.println("IdentifiableImpl.IdentifiableImpl()");
 	}
 
 
 
 	public long __log_uid()
 	{
-		String s = new String("x");
-		System.out.println(s);
-		new String ("y");
-		return __log_uid;
+		IdentifiableImpl theImpl = new IdentifiableImpl();
+		return -1;
 	}
 	
 	public void foo2() throws Exception

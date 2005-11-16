@@ -117,7 +117,7 @@ public class ASMLocalSession extends AbstractSession
 		@Override
 		protected boolean getSkipCoreClasses()
 		{
-			return true;
+			return false;
 		}
 		
 		public byte[] instrumentClass(String aClassName, byte[] aBytecode)
@@ -157,7 +157,7 @@ public class ASMLocalSession extends AbstractSession
 				
 				String theClassName = theMethodDeclaringClassSignature.substring(1, theMethodDeclaringClassSignature.length()-1);
 				int theTypeId = itsConfig.getLocationPool().getTypeId(theClassName);
-				int theBehaviorId = itsConfig.getLocationPool().getMethodId(theTypeId, theMethodName, theMethodSignature);
+				int theBehaviorId = itsConfig.getLocationPool().getBehaviorId(theTypeId, theMethodName, theMethodSignature);
 				
 				itsConfig.getCollector().logExceptionGenerated(theTimestamp, theThreadId, theBehaviorId, theBytecodeIndex, theException);
 

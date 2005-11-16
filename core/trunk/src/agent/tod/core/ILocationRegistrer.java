@@ -161,7 +161,7 @@ public interface ILocationRegistrer {
          */
         public boolean available (int aPc)
         {
-        	return aPc >= getStartPc() && aPc < getStartPc() + getLength();
+        	return aPc >= getStartPc() && aPc <= getStartPc() + getLength();
         }
     }
 

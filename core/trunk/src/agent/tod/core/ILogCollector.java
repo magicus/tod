@@ -176,6 +176,19 @@ public interface ILogCollector extends ILocationRegistrer
 			Object aException);
 	
 	/**
+	 * This is another version of {@link #logExceptionGenerated(long, long, int, int, Object)},
+	 * used when the agent canot resolve class and method names.
+	 */
+	public void logExceptionGenerated(
+			long aTimestamp,
+			long aThreadId,
+			String aMethodName,
+			String aMethodSignature,
+			String aMethodDeclaringClassSignature,
+			int aOperationBytecodeIndex,
+			Object aException);
+	
+	/**
 	 * Called when data is output by a behaviour on the standard output streams
 	 * @param aOutput Identifies the output stream
 	 * @param aData The output data

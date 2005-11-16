@@ -150,6 +150,22 @@ public class PrintLogCollector extends LocationRegistrer implements ILogCollecto
 				theBehavior.getName(),
 				aBehaviorLocationId));
 	}
+	
+	public void logExceptionGenerated(
+			long aTimestamp,
+			long aThreadId,
+			String aMethodName, 
+			String aMethodSignature,
+			String aMethodDeclaringClassSignature,
+			int aOperationBytecodeIndex, 
+			Object aException)
+	{
+		if (itsPrintEvents) itsOutput.println(String.format(
+				"[LOG] exception generated in: %s.%s: %s",
+				aMethodDeclaringClassSignature,
+				aMethodName,
+				aException));
+	}
 
 	public void logFieldWrite(
 			long aTimestamp,
@@ -243,7 +259,7 @@ public class PrintLogCollector extends LocationRegistrer implements ILogCollecto
                 "[LOG] register behavior: %s (%d) in type %s (%d)",
                 aBehaviourName,
                 aBehaviourId,
-                getType(aTypeId).getName(),
+                getClass(aTypeId).getName(),
                 aTypeId));
 
 		super.registerBehavior(aBehaviourType, aBehaviourId, aTypeId, aBehaviourName, aSignature);
@@ -267,7 +283,7 @@ public class PrintLogCollector extends LocationRegistrer implements ILogCollecto
                 "[LOG] register field: %s (%d) in type %s (%d)",
                 aFieldName,
                 aFieldId,
-                getType(aTypeId).getName(),
+                getClass(aTypeId).getName(),
                 aTypeId));
 		
 		super.registerField(aFieldId, aTypeId, aFieldName);

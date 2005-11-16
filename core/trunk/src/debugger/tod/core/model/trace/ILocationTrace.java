@@ -4,6 +4,7 @@
 package tod.core.model.trace;
 
 import tod.core.model.structure.BehaviorInfo;
+import tod.core.model.structure.ClassInfo;
 import tod.core.model.structure.FieldInfo;
 import tod.core.model.structure.ThreadInfo;
 import tod.core.model.structure.TypeInfo;
@@ -23,7 +24,7 @@ public interface ILocationTrace
 	/**
 	 * Returns all registered types.
 	 */
-	public Iterable<TypeInfo> getTypes();
+	public Iterable<ClassInfo> getClasses();
 	
 	/**
 	 * Returns all registered behaviours.

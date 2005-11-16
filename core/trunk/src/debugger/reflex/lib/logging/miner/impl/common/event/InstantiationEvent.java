@@ -13,12 +13,12 @@ public class InstantiationEvent extends BehaviorCallEvent implements IInstantiat
 {
 	public Object getInstance()
 	{
-		return getCurrentObject();
+		return getTarget();
 	}
 	
 	public void setInstance(Object aInstance)
 	{
-		setCurrentObject(aInstance);
+		setTarget(aInstance);
 	}
 	
 	public TypeInfo getType()

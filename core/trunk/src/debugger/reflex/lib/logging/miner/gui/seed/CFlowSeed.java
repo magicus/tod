@@ -5,7 +5,6 @@ package reflex.lib.logging.miner.gui.seed;
 
 import reflex.lib.logging.miner.gui.IGUIManager;
 import reflex.lib.logging.miner.gui.view.LogView;
-import tod.core.model.event.IEvent_Arguments;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.ThreadInfo;
 import tod.core.model.trace.ICFlowBrowser;

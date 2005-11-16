@@ -5,71 +5,65 @@ package tod.gui.controlflow;
 
 import java.awt.Color;
 
-import tod.core.model.event.IBehaviorEnterEvent;
 import tod.core.model.event.IInstantiationEvent;
-import tod.core.model.structure.BehaviorInfo;
-import tod.core.model.structure.TypeInfo;
 import tod.gui.Hyperlinks;
 import zz.csg.api.IRectangularGraphicContainer;
-import zz.csg.api.layout.SequenceLayout;
-import zz.csg.impl.SVGGraphicContainer;
 import zz.csg.impl.figures.SVGFlowText;
 import zz.utils.ui.text.XFont;
 
 public class InstantiationNode extends AbstractBehaviorNode
 {
-	private TypeInfo itsType;
-	private BehaviorInfo itsConstructor;
-	private Object[] itsArguments;
-	private Object itsInstance;
-	
-	public InstantiationNode(
-			CFlowView aView,
-			IInstantiationEvent aInstantiationEvent,
-			IBehaviorEnterEvent aBehaviorEnterEvent)
-	{
-		super (aView, aBehaviorEnterEvent, aInstantiationEvent);
-		itsType = aInstantiationEvent.getType();
-		itsInstance = aInstantiationEvent.getInstance();
-		itsConstructor = aBehaviorEnterEvent.getBehavior();
-	}
-	
 	public InstantiationNode(
 			CFlowView aView,
 			IInstantiationEvent aInstantiationEvent)
 	{
-		super (aView, null, aInstantiationEvent);
-		itsType = aInstantiationEvent.getType();
-		itsInstance = aInstantiationEvent.getInstance();
+		super (aView, aInstantiationEvent);
 	}
 	
-	protected IRectangularGraphicContainer buildHeader()
+	
+	@Override
+	protected IInstantiationEvent getEvent()
+	{
+		return (IInstantiationEvent) super.getEvent();
+	}
+	
+	@Override
+	protected void fillHeader(IRectangularGraphicContainer aContainer)
 	{
 		XFont theFont = getHeaderFont();
 		
-		IRectangularGraphicContainer theHeader = new SVGGraphicContainer();
-		theHeader.setLayoutManager(new SequenceLayout());
-		
-		theHeader.pChildren().add(SVGFlowText.create("new ", theFont, Color.BLACK));
-		theHeader.pChildren().add(Hyperlinks.type(getGUIManager(), itsType, theFont));
+		aContainer.pChildren().add(SVGFlowText.create("new ", theFont, Color.BLACK));
+		aContainer.pChildren().add(Hyperlinks.type(getGUIManager(), getEvent().getType(), theFont));
 
-		addArguments(theHeader, itsArguments, theFont);
-		
-		
-		return theHeader;
+		addArguments(aContainer, getEvent().getArguments(), theFont);
 	}
 	
-	protected IRectangularGraphicContainer buildFooter()
+	@Override
+	protected void fillFooter(IRectangularGraphicContainer aContainer)
 	{
 		XFont theFont = getHeaderFont();
 
-		IRectangularGraphicContainer theFooter = new SVGGraphicContainer();
-		theFooter.setLayoutManager(new SequenceLayout());
+		if (getEvent().hasThrown())
+		{
+			aContainer.pChildren().add(SVGFlowText.create("Thrown ", theFont, Color.RED));
+			
+			aContainer.pChildren().add(Hyperlinks.object(
+					getGUIManager(), 
+					getEventTrace(), 
+					getEvent().getResult(),
+					theFont));
+		}
+		else
+		{
+			aContainer.pChildren().add(SVGFlowText.create("Instanciated ", theFont, Color.BLACK));
 
-		theFooter.pChildren().add(SVGFlowText.create("Instanciated: ", theFont, Color.BLACK));
-		theFooter.pChildren().add(Hyperlinks.object(getGUIManager(), getEventTrace(), itsInstance, theFont));
+			aContainer.pChildren().add(Hyperlinks.object(
+					getGUIManager(), 
+					getEventTrace(), 
+					getEvent().getInstance(),
+					theFont));
+		}
 		
-		return theFooter;
 	}
 	
 }

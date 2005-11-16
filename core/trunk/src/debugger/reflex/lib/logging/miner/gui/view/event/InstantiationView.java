@@ -5,33 +5,29 @@ package reflex.lib.logging.miner.gui.view.event;
 
 import reflex.lib.logging.miner.gui.IGUIManager;
 import tod.core.model.event.IInstantiationEvent;
-import tod.core.model.event.ILogEvent;
 import tod.core.model.trace.IEventTrace;
 
 /**
  * View for {@link tod.core.model.event.IInstantiationEvent}
  * @author gpothier
  */
-public class InstantiationView extends EventView
+public class InstantiationView extends BehaviorCallView
 {
-	private IInstantiationEvent itsEvent;
-	
 	public InstantiationView(IGUIManager aManager, IEventTrace aLog, IInstantiationEvent aEvent)
 	{
-		super(aManager, aLog);
-		itsEvent = aEvent;
+		super(aManager, aLog, aEvent);
 	}
 	
 	
-	protected ILogEvent getEvent()
+	protected IInstantiationEvent getEvent()
 	{
-		return itsEvent;
+		return (IInstantiationEvent) super.getEvent();
 	}
 	
 	public void init()
 	{
 		super.init();
-		add (createTitledPanel("Created instance: ", createInspectorLink(itsEvent.getInstance())));
+		add (createTitledPanel("Created instance: ", createInspectorLink(getEvent().getInstance())));
 	}
 
 }

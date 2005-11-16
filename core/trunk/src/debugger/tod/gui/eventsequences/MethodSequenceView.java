@@ -8,8 +8,7 @@ import java.awt.Color;
 import reflex.lib.logging.miner.gui.IGUIManager;
 import reflex.lib.logging.miner.gui.seed.CFlowSeed;
 import reflex.lib.logging.miner.gui.view.LogView;
-import tod.core.model.event.IAfterMethodCallEvent;
-import tod.core.model.event.IBeforeMethodCallEvent;
+import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.event.IFieldWriteEvent;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.BehaviorInfo;
@@ -47,20 +46,15 @@ public class MethodSequenceView extends AbstractMemberSequenceView
 	@Override
 	protected IRectangularGraphicObject getBaloon(ILogEvent aEvent)
 	{
-		if (aEvent instanceof IBeforeMethodCallEvent)
+		if (aEvent instanceof IBehaviorCallEvent)
 		{
-			IBeforeMethodCallEvent theEvent = (IBeforeMethodCallEvent) aEvent;
-			return createBeforeCallBaloon(theEvent);
-		}
-		else if (aEvent instanceof IAfterMethodCallEvent)
-		{
-			IAfterMethodCallEvent theEvent = (IAfterMethodCallEvent) aEvent;
-			return createAfterCallBaloon(theEvent);
+			IBehaviorCallEvent theEvent = (IBehaviorCallEvent) aEvent;
+			return createBehaviorCallBaloon(theEvent);
 		}
 		else return null;
 	}
 	
-	private IRectangularGraphicObject createBeforeCallBaloon (IBeforeMethodCallEvent aEvent)
+	private IRectangularGraphicObject createBehaviorCallBaloon (IBehaviorCallEvent aEvent)
 	{
 		SVGGraphicContainer theContainer = new SVGGraphicContainer();
 		theContainer.setLayoutManager(new SequenceLayout());
@@ -90,25 +84,17 @@ public class MethodSequenceView extends AbstractMemberSequenceView
 			theContainer.pChildren().add(createBaloon(theArgument));
 		}
 		
-		// CLose parenthesis
+		// Close parenthesis
 		theContainer.pChildren().add (SVGFlowText.create(")", 10, Color.BLACK));
+
+		// Return value
+		theContainer.pChildren().add (SVGFlowText.create("return: ", 10, Color.BLACK));
+		theContainer.pChildren().add (createBaloon(aEvent.getResult()));
 		
 		return theContainer;
 		
 	}
 
-	private IRectangularGraphicObject createAfterCallBaloon (IAfterMethodCallEvent aEvent)
-	{
-		SVGGraphicContainer theContainer = new SVGGraphicContainer();
-		theContainer.setLayoutManager(new SequenceLayout());
-		
-		theContainer.pChildren().add (SVGFlowText.create("return: ", 10, Color.BLACK));
-		theContainer.pChildren().add (createBaloon(aEvent.getReturnValue()));
-		
-		return theContainer;
-		
-	}
-	
 	@Override
 	public MemberInfo getMember()
 	{

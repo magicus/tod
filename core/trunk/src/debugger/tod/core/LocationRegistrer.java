@@ -8,10 +8,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.objectweb.asm.Type;
+
 import reflex.lib.logging.Util;
 import tod.core.ILocationRegistrer;
+import tod.core.model.structure.ArrayTypeInfo;
 import tod.core.model.structure.BehaviorInfo;
+import tod.core.model.structure.ClassInfo;
 import tod.core.model.structure.FieldInfo;
+import tod.core.model.structure.PrimitiveTypeInfo;
 import tod.core.model.structure.ThreadInfo;
 import tod.core.model.structure.TypeInfo;
 import tod.core.model.trace.ILocationTrace;
@@ -21,7 +26,7 @@ import tod.core.model.trace.ILocationTrace;
  */
 public class LocationRegistrer implements ILocationRegistrer, ILocationTrace
 {
-	private List<TypeInfo> itsTypes = new ArrayList<TypeInfo>();
+	private List<ClassInfo> itsTypes = new ArrayList<ClassInfo>();
 	private Map<String, TypeInfo> itsTypesMap = new HashMap<String, TypeInfo>();
 	
 	private List<String> itsFiles = new ArrayList<String>();
@@ -29,7 +34,24 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationTrace
 	private List<FieldInfo> itsFields = new ArrayList<FieldInfo>();
 	private	Map<Long, ThreadInfo> itsThreads = new HashMap<Long, ThreadInfo>();
 	
+	public LocationRegistrer()
+	{
+		registerPrimitiveType("void", 0);
+		registerPrimitiveType("boolean", 1);
+		registerPrimitiveType("int", 1);
+		registerPrimitiveType("long", 2);
+		registerPrimitiveType("byte", 1);
+		registerPrimitiveType("short", 1);
+		registerPrimitiveType("char", 1);
+		registerPrimitiveType("double", 2);
+		registerPrimitiveType("float", 1);
+	}
 	
+	private void registerPrimitiveType(String aName, int aSize)
+	{
+		TypeInfo theType = new PrimitiveTypeInfo(this, aName, aSize);
+		itsTypesMap.put(aName, theType);
+	}
 
 	public void registerFile(int aFileId, String aFileName)
 	{
@@ -39,10 +61,10 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationTrace
 
 	public void registerType(int aTypeId, String aTypeName, int aSupertypeId, int[] aInterfaceIds)
 	{
-		TypeInfo theType = getType(aTypeId); // this method creates the type if it doesn't exist yet.
-		setupTypeInfo(theType, aTypeName, aSupertypeId, aInterfaceIds);
+		ClassInfo theClass = getClass(aTypeId); // this method creates the type if it doesn't exist yet.
+		setupClassInfo(theClass, aTypeName, aSupertypeId, aInterfaceIds);
 		
-		itsTypesMap.put(aTypeName, theType);
+		itsTypesMap.put(aTypeName, theClass);
 	}
 
 	public void registerBehavior(
@@ -53,18 +75,19 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationTrace
 			String aSignature)
 	{
 		Util.ensureSize(itsBehaviors, aBehaviourId);
-		TypeInfo theTypeInfo = getType(aTypeId);
+		ClassInfo theType = getClass(aTypeId);
 		
 		BehaviorInfo theBehaviourInfo = createBehaviourInfo(
 				aBehaviourType, 
 				aBehaviourId, 
-				theTypeInfo, 
+				theType, 
 				aBehaviourName,
+				aSignature,
 				null,
 				null);
 		
 		itsBehaviors.set (aBehaviourId, theBehaviourInfo);
-		theTypeInfo.register(theBehaviourInfo);
+		theType.register(theBehaviourInfo);
 	}
 
 	public void registerBehaviorAttributes(
@@ -79,10 +102,10 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationTrace
 	public void registerField(int aFieldId, int aTypeId, String aFieldName)
 	{
 		Util.ensureSize(itsFields, aFieldId);
-		TypeInfo theTypeInfo = getType(aTypeId);
-		FieldInfo theFieldInfo = createFieldInfo(aFieldId, theTypeInfo, aFieldName);
+		ClassInfo theType = getClass(aTypeId);
+		FieldInfo theFieldInfo = createFieldInfo(aFieldId, theType, aFieldName);
 		itsFields.set (aFieldId, theFieldInfo);
-		theTypeInfo.register(theFieldInfo);
+		theType.register(theFieldInfo);
 	}
 	
 	public void registerThread(long aThreadId, String aName)
@@ -99,54 +122,91 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationTrace
 		return new ThreadInfo (aId);
 	}
 	
-	protected TypeInfo createTypeInfo (int aId)
+	protected ClassInfo createClassInfo (int aId)
 	{
-		return new TypeInfo(aId);
+		return new ClassInfo(this, aId);
 	}
 	
 	/**
 	 * Factory method for field info
 	 */
-	protected FieldInfo createFieldInfo(int aId, TypeInfo aTypeInfo, String aName)
+	protected FieldInfo createFieldInfo(int aId, ClassInfo aTypeInfo, String aName)
 	{
-		return new FieldInfo(aId, aTypeInfo, aName);
+		return new FieldInfo(this, aId, aTypeInfo, aName);
 	}
 
+	/**
+	 * Determines the TOD argument types given a method signature.
+	 */
+	protected TypeInfo[] getArgumentTypes(String aSignature)
+	{
+		Type[] theASMArgumentTypes = Type.getArgumentTypes(aSignature);
+		TypeInfo[] theArgumentTypes = new TypeInfo[theASMArgumentTypes.length];
+		
+		for (int i = 0; i < theASMArgumentTypes.length; i++)
+		{
+			Type theASMType = theASMArgumentTypes[i];
+			theArgumentTypes[i] = getType(theASMType.getClassName());
+		}
+		
+		return theArgumentTypes;
+	}
+
+	/**
+	 * Determines a TOD return type given a method signature
+	 */
+	protected TypeInfo getReturnType(String aSignature)
+	{
+		Type theASMReturnType = Type.getReturnType(aSignature);
+		return getType(theASMReturnType.getClassName());
+	}
+	
 	/**
 	 * Factory method for constructor info.
 	 */
 	protected BehaviorInfo createBehaviourInfo(
 			BehaviourType aBehaviourType, 
 			int aId, 
-			TypeInfo aTypeInfo, 
+			ClassInfo aTypeInfo, 
 			String aName,
+			String aSignature,
 			LineNumberInfo[] aLineNumberTable,
 			LocalVariableInfo[] aLocalVariableTable)
 	{
-		return new BehaviorInfo(aBehaviourType, aId, aTypeInfo, aName, aLineNumberTable, aLocalVariableTable);
+		
+		return new BehaviorInfo(
+				this,
+				aBehaviourType,
+				aId, 
+				aTypeInfo,
+				aName,
+				getArgumentTypes(aSignature),
+				getReturnType(aSignature),
+				aLineNumberTable,
+				aLocalVariableTable);
 	}
 
 	/**
 	 * Factory method for type info.
 	 */
-	protected void setupTypeInfo(TypeInfo aTypeInfo, String aName, int aSupertypeId, int[] aInterfaceIds)
+	protected void setupClassInfo(ClassInfo aClass, String aName, int aSupertypeId, int[] aInterfaceIds)
 	{
-		TypeInfo theSupertype = aSupertypeId >= 0 ? getType(aSupertypeId) : null;
+		ClassInfo theSupertype = aSupertypeId >= 0 ? getClass(aSupertypeId) : null;
 		
-		TypeInfo[] theInterfaces = null;
+		ClassInfo[] theInterfaces = null;
 		if (aInterfaceIds != null)
 		{
-			theInterfaces = new TypeInfo[aInterfaceIds.length];
+			theInterfaces = new ClassInfo[aInterfaceIds.length];
 			for (int i = 0; i < aInterfaceIds.length; i++)
 			{
 				int theId = aInterfaceIds[i];
-				theInterfaces[i] = getType(theId);
+				theInterfaces[i] = getClass(theId);
 			}
 		}
 		
-		aTypeInfo.setName(aName);
-		aTypeInfo.setSupertype(theSupertype);
-		aTypeInfo.setInterfaces(theInterfaces);
+		aClass.setName(aName);
+		aClass.setSupertype(theSupertype);
+		aClass.setInterfaces(theInterfaces);
 	}
 	
 	protected void setupThreadInfo (ThreadInfo aThreadInfo, String aName)
@@ -159,25 +219,38 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationTrace
 	 * Returns the type info that corresponds to the specified id.
 	 * If the type has not been registered yet, it is created and pre-registered.
 	 */
-	public TypeInfo getType (int aId)
+	public ClassInfo getClass (int aId)
 	{
 		Util.ensureSize(itsTypes, aId);
-		TypeInfo theTypeInfo = itsTypes.get(aId);
-		if (theTypeInfo == null)
+		ClassInfo theClassInfo = itsTypes.get(aId);
+		if (theClassInfo == null)
 		{
-			theTypeInfo = createTypeInfo(aId);
-			itsTypes.set(aId, theTypeInfo);
+			theClassInfo = createClassInfo(aId);
+			itsTypes.set(aId, theClassInfo);
 		}
 
-		return theTypeInfo;
+		return theClassInfo;
 	}
 	
+
 	/**
 	 * Returns the type object that corresponds to the given name.
 	 */
 	public TypeInfo getType(String aName)
 	{
-		return itsTypesMap.get(aName);
+		int theDimension = 0;
+		while (aName.endsWith("[]"))
+		{
+			aName = aName.substring(0, aName.length()-2);
+			theDimension++;
+		}
+		
+		TypeInfo theType = itsTypesMap.get(aName);
+		if (theDimension == 0) return theType;
+		else
+		{
+			return new ArrayTypeInfo(this, theType, theDimension);
+		}
 	}
 	
 	public BehaviorInfo getBehavior (int aId)
@@ -204,7 +277,7 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationTrace
 	/**
 	 * Returns all available classes.
 	 */
-	public Iterable<TypeInfo> getTypes()
+	public Iterable<ClassInfo> getClasses()
 	{
 		return itsTypes;
 	}

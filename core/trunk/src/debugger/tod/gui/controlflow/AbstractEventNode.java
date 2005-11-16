@@ -47,7 +47,7 @@ public abstract class AbstractEventNode extends SVGGraphicContainer
 	@Override
 	public boolean mousePressed(GraphicObjectContext aContext, MouseEvent aEvent, Point2D aPoint)
 	{
-		ILogEvent theMainEvent = getMainEvent();
+		ILogEvent theMainEvent = getEvent();
 		if (theMainEvent != null)
 		{
 			getView().selectEvent(theMainEvent);
@@ -59,7 +59,7 @@ public abstract class AbstractEventNode extends SVGGraphicContainer
 	@Override
 	protected void paintBackground(GraphicObjectContext aContext, Graphics2D aGraphics, Area aVisibleArea)
 	{
-		ILogEvent theMainEvent = getMainEvent();
+		ILogEvent theMainEvent = getEvent();
 		if (theMainEvent != null && getView().isEventSelected(theMainEvent))
 		{
 			aGraphics.setColor(Color.YELLOW);
@@ -70,6 +70,6 @@ public abstract class AbstractEventNode extends SVGGraphicContainer
 	/**
 	 * Returns the main event of this node
 	 */
-	protected abstract ILogEvent getMainEvent();
+	protected abstract ILogEvent getEvent();
 
 }

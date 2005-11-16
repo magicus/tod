@@ -169,7 +169,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		{
 			super (mv);
 			itsMethodInfo = aMethodInfo;
-			itsMethodId = getLocationPool().getMethodId(
+			itsMethodId = getLocationPool().getBehaviorId(
 								itsTypeId, 
 								itsMethodInfo.getName(), 
 								itsMethodInfo.getDescriptor());
@@ -188,7 +188,6 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		public void visitTypeInsn(int aOpcode, String aDesc)
 		{
 			mv.visitTypeInsn(aOpcode, aDesc);
-			if (itsTrace && aOpcode == NEW) mv.visitInsn(DUP);
 		}
 		
 		public void visitSuperOrThisCallInsn(int aOpcode, String aOwner, String aName, String aDesc)

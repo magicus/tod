@@ -11,6 +11,12 @@ import tod.core.model.structure.FieldInfo;
 public interface IFieldWriteEvent extends ICallerSideEvent
 {
 	/**
+	 * The object on which the field is written.
+	 */
+	public Object getTarget();
+
+	
+	/**
 	 * The written field
 	 */
 	public FieldInfo getField();

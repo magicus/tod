@@ -7,12 +7,10 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.List;
 
-import javax.swing.text.StyledEditorKit.FontSizeAction;
-
 import reflex.lib.logging.miner.gui.IGUIManager;
 import tod.core.ILocationRegistrer.LocalVariableInfo;
-import tod.core.model.event.IBehaviorEnterEvent;
-import tod.core.model.event.IEvent_Location;
+import tod.core.model.event.IBehaviorCallEvent;
+import tod.core.model.event.ICallerSideEvent;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.BehaviorInfo;
 import tod.core.model.trace.IEventTrace;
@@ -67,10 +65,10 @@ public class CFlowVariablesBuilder
 		{
 			theContainer.pChildren().add(build(aCurrentEvent));
 			
-			IBehaviorEnterEvent theBehaviorEnter = aCurrentEvent.getParent();
-			if (theBehaviorEnter == aRootEvent || theBehaviorEnter.getParent().getBehavior() == null) break;
+			IBehaviorCallEvent theParent = aCurrentEvent.getParent();
+			if (theParent == aRootEvent || theParent.getParent().getCalledBehavior() == null) break;
 			
-			aCurrentEvent = theBehaviorEnter;
+			aCurrentEvent = theParent;
 
 			theContainer.pChildren().add(SVGRectangle.create(0, 0, 50, 5, Color.BLACK));
 		}
@@ -82,19 +80,19 @@ public class CFlowVariablesBuilder
 	
 	private IRectangularGraphicObject build (ILogEvent aCurrentEvent)
 	{
-		IBehaviorEnterEvent theBehaviorEnter = aCurrentEvent.getParent();
-		IVariablesInspector theInspector = getEventTrace().createVariablesInspector(theBehaviorEnter);
+		IBehaviorCallEvent theParent = aCurrentEvent.getParent();
+		IVariablesInspector theInspector = getEventTrace().createVariablesInspector(theParent);
 		theInspector.setCurrentEvent(aCurrentEvent);
 
 		// Determine current object
-		Object theCurrentObject = theBehaviorEnter.getTarget();
+		Object theCurrentObject = theParent.getTarget();
 		
 		// Determine available variables
 		List<LocalVariableInfo> theVariables;
 		
-		if (aCurrentEvent instanceof IEvent_Location)
+		if (aCurrentEvent instanceof ICallerSideEvent)
 		{
-			IEvent_Location theEvent = (IEvent_Location) aCurrentEvent;
+			ICallerSideEvent theEvent = (ICallerSideEvent) aCurrentEvent;
 			int theBytecodeIndex = theEvent.getOperationBytecodeIndex();
 			theVariables = theInspector.getVariables(theBytecodeIndex);
 		}
@@ -103,7 +101,7 @@ public class CFlowVariablesBuilder
 		// Create container
 		SVGGraphicContainer theContainer = new SVGGraphicContainer();
 		
-		theContainer.pChildren().add(buildHeader(theBehaviorEnter.getBehavior()));
+		theContainer.pChildren().add(buildHeader(theParent.getCalledBehavior()));
 		
 		if (theCurrentObject != null)
 		{

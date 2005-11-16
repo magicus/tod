@@ -49,7 +49,7 @@ public class SeedFactory
 			return createSeed(
 					aGUIManager, 
 					aLog, 
-					aLog.createBehaviorFilter(theBehaviourInfo));
+					aLog.createBehaviorCallFilter(theBehaviourInfo));
 		}
 		else if (aInfo instanceof FieldInfo)
 		{

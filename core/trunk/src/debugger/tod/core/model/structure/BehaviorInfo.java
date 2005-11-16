@@ -3,10 +3,13 @@
  */
 package tod.core.model.structure;
 
+import org.objectweb.asm.Type;
+
 import tod.core.BehaviourType;
 import tod.core.ILocationRegistrer;
 import tod.core.ILocationRegistrer.LineNumberInfo;
 import tod.core.ILocationRegistrer.LocalVariableInfo;
+import tod.core.model.trace.ILocationTrace;
 
 
 /**
@@ -16,19 +19,27 @@ import tod.core.ILocationRegistrer.LocalVariableInfo;
 public class BehaviorInfo extends MemberInfo
 {
 	private final BehaviourType itsBehaviourType;
+	
+	private final TypeInfo[] itsArgumentTypes;
+	private final TypeInfo itsReturnType;
 
 	private ILocationRegistrer.LineNumberInfo[] itsLineNumberTable;
 	private ILocationRegistrer.LocalVariableInfo[] itsLocalVariableTable;
 
 	public BehaviorInfo(
+			ILocationTrace aTrace, 
 			BehaviourType aBehaviourType, 
 			int aId, 
-			TypeInfo aTypeInfo, 
+			ClassInfo aType, 
 			String aName,
+			TypeInfo[] aArgumentTypes,
+			TypeInfo aReturnType,
 			ILocationRegistrer.LineNumberInfo[] aLineNumberTable,
 			ILocationRegistrer.LocalVariableInfo[] aLocalVariableTable)
 	{
-		super(aId, aTypeInfo, aName);
+		super(aTrace, aId, aType, aName);
+		itsArgumentTypes = aArgumentTypes;
+		itsReturnType = aReturnType;
 		itsBehaviourType = aBehaviourType;
 		itsLineNumberTable = aLineNumberTable;
 		itsLocalVariableTable = aLocalVariableTable;
@@ -46,8 +57,18 @@ public class BehaviorInfo extends MemberInfo
 	{
 		return itsBehaviourType;
 	}
-    
-    /**
+
+	public TypeInfo[] getArgumentTypes()
+	{
+		return itsArgumentTypes;
+	}
+
+	public TypeInfo getReturnType()
+	{
+		return itsReturnType;
+	}
+
+	/**
      * Returns the local variable symbolic information for a given bytecode index
      * and variable slot
      * @param aPc Bytecode index
@@ -112,5 +133,14 @@ public class BehaviorInfo extends MemberInfo
     public boolean isStaticInit()
     {
     	return "<clinit>".equals(getName());
+    }
+    
+    /**
+     * Indicates if this behavior is static.
+     */
+    public boolean isStatic()
+    {
+    	return getBehaviourType() == BehaviourType.STATIC_BLOCK
+    		|| getBehaviourType() == BehaviourType.STATIC_METHOD;
     }
 }

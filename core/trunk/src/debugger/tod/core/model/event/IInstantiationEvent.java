@@ -17,7 +17,7 @@ public interface IInstantiationEvent extends IBehaviorCallEvent
 
 	/**
 	 * The resulting instance.
-	 * Same as {@link ICallerSideEvent#getCurrentObject()}
+	 * Same as {@link ICallerSideEvent#getTarget()}
 	 */
 	public Object getInstance();
 }

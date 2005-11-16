@@ -28,13 +28,13 @@ public class LocalVariableWriteNode extends AbstractEventNode
 
 		setLayoutManager(new SequenceLayout());
 		
-		pChildren().add(SVGFlowText.create(EventUtils.getVariableName(itsEvent), CFlowTreeBuilder.FONT, Color.BLACK));
+		pChildren().add(SVGFlowText.create(itsEvent.getVariable().getVariableName(), CFlowTreeBuilder.FONT, Color.BLACK));
 		pChildren().add(SVGFlowText.create(" = ", CFlowTreeBuilder.FONT, Color.BLACK));
 		pChildren().add(Hyperlinks.object(getGUIManager(), getEventTrace(), itsEvent.getValue(), CFlowTreeBuilder.FONT));
 	}
 	
 	@Override
-	protected ILogEvent getMainEvent()
+	protected ILogEvent getEvent()
 	{
 		return itsEvent;
 	}

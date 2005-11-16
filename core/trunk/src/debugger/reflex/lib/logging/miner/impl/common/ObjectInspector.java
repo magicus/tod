@@ -12,6 +12,7 @@ import tod.core.model.event.IFieldWriteEvent;
 import tod.core.model.event.IInstantiationEvent;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.BehaviorInfo;
+import tod.core.model.structure.ClassInfo;
 import tod.core.model.structure.FieldInfo;
 import tod.core.model.structure.MemberInfo;
 import tod.core.model.structure.ObjectId;
@@ -29,7 +30,7 @@ import zz.utils.Utils;
  */
 public class ObjectInspector implements IObjectInspector
 {
-	private final IEventTrace itsLog;
+	private final IEventTrace itsEventTrace;
 	private ObjectId itsObjectId;
 	private List<MemberInfo> itsMembers;
 	
@@ -39,9 +40,9 @@ public class ObjectInspector implements IObjectInspector
 	
 	private long itsTimestamp;
 
-	public ObjectInspector(IEventTrace aLog, ObjectId aObjectId)
+	public ObjectInspector(IEventTrace aEventTrace, ObjectId aObjectId)
 	{
-		itsLog = aLog;
+		itsEventTrace = aEventTrace;
 		itsObjectId = aObjectId;
 	}
 	
@@ -54,15 +55,15 @@ public class ObjectInspector implements IObjectInspector
 	{
 		if (itsType == null) 
 		{
-			IEventFilter theFilter = itsLog.createInstantiationFilter(getObject());
-			IEventBrowser theBrowser = itsLog.createBrowser(theFilter);
+			IEventFilter theFilter = itsEventTrace.createInstantiationFilter(getObject());
+			IEventBrowser theBrowser = itsEventTrace.createBrowser(theFilter);
 			
 			if (theBrowser.hasNext())
 			{
 				IInstantiationEvent theEvent = (IInstantiationEvent) theBrowser.getNext();
 				itsType = theEvent.getType();
 			}
-			else itsType = new TypeInfo(-1, "Unknown", null, null); 
+			else itsType = new ClassInfo(null, -1, "Unknown"); 
 		}
 		return itsType;
 	}
@@ -72,16 +73,21 @@ public class ObjectInspector implements IObjectInspector
 	 */
 	private void fillMembers (TypeInfo aType)
 	{
-		Utils.fillCollection(itsMembers, aType.getFields());
-		Utils.fillCollection(itsMembers, aType.getBehaviors());
-
-		// Fill supertypes & interfaces, recursively
-		TypeInfo theSupertype = aType.getSupertype();
-		if (theSupertype != null) fillMembers(theSupertype);
-		TypeInfo[] theInterfaces = aType.getInterfaces();
-		if (theInterfaces != null) for (TypeInfo theInterface : theInterfaces)
+		if (aType instanceof ClassInfo)
 		{
-			fillMembers(theInterface);
+			ClassInfo theClass = (ClassInfo) aType;
+			
+			Utils.fillCollection(itsMembers, theClass.getFields());
+			Utils.fillCollection(itsMembers, theClass.getBehaviors());
+
+			// Fill supertypes & interfaces, recursively
+			TypeInfo theSupertype = theClass.getSupertype();
+			if (theSupertype != null) fillMembers(theSupertype);
+			TypeInfo[] theInterfaces = theClass.getInterfaces();
+			if (theInterfaces != null) for (TypeInfo theInterface : theInterfaces)
+			{
+				fillMembers(theInterface);
+			}
 		}
 	}
 	
@@ -136,7 +142,7 @@ public class ObjectInspector implements IObjectInspector
 		IEventBrowser theBrowser = itsBrowsersMap.get(aMember);
 		if (theBrowser == null)
 		{
-			theBrowser = itsLog.createBrowser(getFilter(aMember));
+			theBrowser = itsEventTrace.createBrowser(getFilter(aMember));
 			itsBrowsersMap.put (aMember, theBrowser);
 		}
 		
@@ -152,19 +158,19 @@ public class ObjectInspector implements IObjectInspector
 			{
 				FieldInfo theField = (FieldInfo) aMember;
 				
-				theFilter = itsLog.createIntersectionFilter(
-						itsLog.createFieldFilter(theField),
-						itsLog.createFieldWriteFilter(),
-						itsLog.createTargetFilter(itsObjectId));
+				theFilter = itsEventTrace.createIntersectionFilter(
+						itsEventTrace.createFieldFilter(theField),
+						itsEventTrace.createFieldWriteFilter(),
+						itsEventTrace.createTargetFilter(itsObjectId));
 			}
 			else if (aMember instanceof BehaviorInfo)
 			{
 				BehaviorInfo theBehavior = (BehaviorInfo) aMember;
 
-				theFilter = itsLog.createIntersectionFilter(
-						itsLog.createBehaviorCallFilter(theBehavior),
+				theFilter = itsEventTrace.createIntersectionFilter(
+						itsEventTrace.createBehaviorCallFilter(theBehavior),
 //						itsLog.createFieldWriteFilter(),
-						itsLog.createTargetFilter(itsObjectId));
+						itsEventTrace.createTargetFilter(itsObjectId));
 				
 			}
 			else throw new RuntimeException("Not handled: "+aMember);

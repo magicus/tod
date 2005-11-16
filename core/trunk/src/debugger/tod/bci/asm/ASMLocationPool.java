@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.objectweb.asm.Type;
+
 import tod.bci.LocationPoolPersister;
 import tod.core.BehaviourType;
 import tod.core.ILocationRegistrer;
@@ -73,18 +75,40 @@ public class ASMLocationPool
 		return ""+aTypeId+":"+aName+aDescriptor;
 	}
 	
-	public int getMethodId(int aTypeId, String aName, String aDescriptor)
+	public int getBehaviorId(int aTypeId, String aName, String aDescriptor)
 	{
 		String theKey = getBehaviorKey(aTypeId, aName, aDescriptor);
 		Integer theId = itsMethodIds.get(theKey);
 		if (theId == null)
 		{
+			// Pregerister argument and return types
+			preregisterType(Type.getReturnType(aDescriptor));
+			
+			for (Type theType : Type.getArgumentTypes(aDescriptor))
+			{
+				preregisterType(theType);
+			}
+
+			// Register the behavior
 			theId = itsNextMethodId++;
 			itsMethodIds.put(theKey, theId);
 			itsLocationRegistrer.registerBehavior(BehaviourType.METHOD, theId, aTypeId, aName, aDescriptor);
 		}
 		
 		return theId.intValue();
+	}
+	
+	private void preregisterType (Type aType)
+	{
+		if (aType.getSort() == Type.OBJECT)
+		{
+			getTypeId(aType.getInternalName());
+		}
+		else if (aType.getSort() == Type.ARRAY)
+		{
+			Type theElementType = aType.getElementType();
+			preregisterType(theElementType);
+		}
 	}
 	
 	protected String getFieldKey(int aTypeId, String aName)

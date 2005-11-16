@@ -4,6 +4,7 @@
 package tod.core.model.structure;
 
 import tod.core.ILogCollector;
+import tod.core.model.trace.ILocationTrace;
 
 /**
  * Aggregates the information a {@link ILogCollector collector}
@@ -12,16 +13,16 @@ import tod.core.ILogCollector;
  */
 public abstract class MemberInfo extends LocationInfo
 {
-	private TypeInfo itsTypeInfo;
+	private ClassInfo itsType;
 	
-	public MemberInfo(int aId, TypeInfo aTypeInfo, String aName)
+	public MemberInfo(ILocationTrace aTrace, int aId, ClassInfo aTypeInfo, String aName)
 	{
-		super(aId, aName);
-		itsTypeInfo = aTypeInfo;
+		super(aTrace, aId, aName);
+		itsType = aTypeInfo;
 	}
 	
-	public TypeInfo getType()
+	public ClassInfo getType()
 	{
-		return itsTypeInfo;
+		return itsType;
 	}	
 }

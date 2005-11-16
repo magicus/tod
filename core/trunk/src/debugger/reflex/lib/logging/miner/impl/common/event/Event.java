@@ -28,7 +28,7 @@ public abstract class Event implements ICallerSideEvent
 		return itsParent;
 	}
 
-	public void setFather(IBehaviorCallEvent aParent)
+	public void setParent(IBehaviorCallEvent aParent)
 	{
 		itsParent = aParent;
 	}

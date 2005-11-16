@@ -82,6 +82,27 @@ public class CollectorPacketWriter
 		sendValue(aStream, aException);
 	}
 	
+	public static void sendExceptionGenerated(
+			DataOutputStream aStream,
+			long aTimestamp, 
+			long aThreadId,
+			String aMethodName, 
+			String aMethodSignature, 
+			String aMethodDeclaringClassSignature,
+			int aOperationBytecodeIndex,
+			Object aException) throws IOException
+	{
+		sendMessageType(aStream, MessageType.EXCEPTION_GENERATED_UNRESOLVED);
+		
+		aStream.writeLong(aTimestamp);
+		aStream.writeLong(aThreadId);
+		aStream.writeUTF(aMethodName);
+		aStream.writeUTF(aMethodSignature);
+		aStream.writeUTF(aMethodDeclaringClassSignature);
+		aStream.writeInt(aOperationBytecodeIndex);
+		sendValue(aStream, aException);
+	}
+	
     public static void sendBeforeMethodCall(
 			DataOutputStream aStream,
             long aTimestamp,

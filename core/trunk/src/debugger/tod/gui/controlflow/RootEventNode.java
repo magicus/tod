@@ -34,7 +34,7 @@ public class RootEventNode extends AbstractEventNode
 	}
 	
 	@Override
-	protected ILogEvent getMainEvent()
+	protected ILogEvent getEvent()
 	{
 		return null;
 	}

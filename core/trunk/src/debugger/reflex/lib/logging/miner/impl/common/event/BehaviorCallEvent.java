@@ -19,13 +19,18 @@ public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEv
 	private Object[] itsArguments;
 	private BehaviorInfo itsCalledBehavior;
 	private BehaviorInfo itsCallingBehavior;
-	private Object itsCurrentObject;
+	private Object itsTarget;
 	private long itsLastTimestamp;
 
 
 	public List<ILogEvent> getChildren()
 	{
 		return itsChildren;
+	}
+	
+	public int getChildrenCount()
+	{
+		return itsChildren == null ? 0 : itsChildren.size();
 	}
 
 	public void addChild (Event aEvent)
@@ -34,6 +39,12 @@ public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEv
 		itsChildren.add(aEvent);
 	}
 
+	public void addChild (int aIndex, Event aEvent)
+	{
+		if (itsChildren == null) itsChildren = new ArrayList<ILogEvent>();
+		itsChildren.add(aIndex, aEvent);
+	}
+	
 	public BehaviorInfo getCalledBehavior()
 	{
 		return itsCalledBehavior;
@@ -94,14 +105,14 @@ public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEv
 		itsCallingBehavior = aCallingBehavior;
 	}
 
-	public Object getCurrentObject()
+	public Object getTarget()
 	{
-		return itsCurrentObject;
+		return itsTarget;
 	}
 
-	public void setCurrentObject(Object aCurrentObject)
+	public void setTarget(Object aCurrentObject)
 	{
-		itsCurrentObject = aCurrentObject;
+		itsTarget = aCurrentObject;
 	}
 
 
