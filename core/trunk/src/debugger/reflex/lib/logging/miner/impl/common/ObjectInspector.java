@@ -33,6 +33,7 @@ public class ObjectInspector implements IObjectInspector
 	private final IEventTrace itsEventTrace;
 	private ObjectId itsObjectId;
 	private List<MemberInfo> itsMembers;
+	private List<FieldInfo> itsFields;
 	
 	private Map<MemberInfo, IEventBrowser> itsBrowsersMap = new HashMap<MemberInfo, IEventBrowser>();
 	private Map<MemberInfo, IEventFilter> itsFiltersMap = new HashMap<MemberInfo, IEventFilter>();
@@ -44,6 +45,12 @@ public class ObjectInspector implements IObjectInspector
 	{
 		itsEventTrace = aEventTrace;
 		itsObjectId = aObjectId;
+	}
+	
+	public ObjectInspector(IEventTrace aEventTrace, ClassInfo aClass)
+	{
+		itsEventTrace = aEventTrace;
+		itsType = aClass;
 	}
 	
 	public ObjectId getObject()
@@ -100,12 +107,35 @@ public class ObjectInspector implements IObjectInspector
 		}
 		return itsMembers;
 	}
+	
+	public List<FieldInfo> getFields()
+	{
+		if (itsFields == null)
+		{
+			itsFields = new ArrayList<FieldInfo>();
+			
+			for (MemberInfo theMember : getMembers())
+			{
+				if (theMember instanceof FieldInfo)
+				{
+					FieldInfo theField = (FieldInfo) theMember;
+					itsFields.add (theField);
+				}
+			}
+		}
+		return itsFields;
+	}
 
 	public void setTimestamp(long aTimestamp)
 	{
 		itsTimestamp = aTimestamp;
 	}
 	
+	public void setCurrentEvent(ILogEvent aEvent)
+	{
+		setTimestamp(aEvent.getTimestamp());
+	}
+
 	public long getTimestamp()
 	{
 		return itsTimestamp;

@@ -13,6 +13,7 @@ import reflex.lib.logging.miner.gui.IGUIManager;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.trace.IEventTrace;
 import zz.csg.api.GraphicObjectContext;
+import zz.csg.api.IGraphicContainer;
 import zz.csg.impl.SVGGraphicContainer;
 
 public abstract class AbstractEventNode extends SVGGraphicContainer
@@ -43,7 +44,7 @@ public abstract class AbstractEventNode extends SVGGraphicContainer
 	{
 		return itsView;
 	}
-
+	
 	@Override
 	public boolean mousePressed(GraphicObjectContext aContext, MouseEvent aEvent, Point2D aPoint)
 	{
@@ -68,8 +69,26 @@ public abstract class AbstractEventNode extends SVGGraphicContainer
 	}
 
 	/**
-	 * Returns the main event of this node
+	 * Returns the event that corresponds to this node.
 	 */
 	protected abstract ILogEvent getEvent();
+
+	/**
+	 * Searches the node that corresponds to the given event in this node's
+	 * hierarchy.
+	 */
+	public AbstractEventNode getNode(ILogEvent aEvent)
+	{
+		if (aEvent == getEvent()) return this;
+		else return null;
+	}
+	
+	public void expand()
+	{
+	}
+
+	public void collapse()
+	{
+	}
 
 }

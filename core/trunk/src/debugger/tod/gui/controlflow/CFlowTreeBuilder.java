@@ -3,12 +3,10 @@
  */
 package tod.gui.controlflow;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
 
-import reflex.lib.logging.miner.gui.formatter.EventFormatter;
 import tod.core.model.event.EventUtils;
 import tod.core.model.event.IConstructorChainingEvent;
 import tod.core.model.event.IExceptionGeneratedEvent;
@@ -18,8 +16,6 @@ import tod.core.model.event.ILocalVariableWriteEvent;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.event.IMethodCallEvent;
 import tod.core.model.event.IParentEvent;
-import zz.csg.api.IRectangularGraphicObject;
-import zz.csg.impl.figures.SVGFlowText;
 import zz.utils.ui.text.XFont;
 
 /**
@@ -38,21 +34,21 @@ public class CFlowTreeBuilder
 		itsView = aView;
 	}
 
-	public IRectangularGraphicObject buildRootNode (IParentEvent aRootEvent)
+	public AbstractEventNode buildRootNode (IParentEvent aRootEvent)
 	{
 		return new RootEventNode(itsView, (IParentEvent) aRootEvent);		
 	}
 	
-	public List<IRectangularGraphicObject> buildNodes (IParentEvent aContainer)
+	public List<AbstractEventNode> buildNodes (IParentEvent aContainer)
 	{
-		List<IRectangularGraphicObject> theNodes = new ArrayList<IRectangularGraphicObject>();
+		List<AbstractEventNode> theNodes = new ArrayList<AbstractEventNode>();
 		
 		List<ILogEvent> theChildren = aContainer.getChildren();
 		if (theChildren == null || theChildren.size() == 0) return theNodes;
 		
 		for (ILogEvent theEvent : theChildren)
 		{
-			IRectangularGraphicObject theNode = buildNode(theEvent);
+			AbstractEventNode theNode = buildNode(theEvent);
 			if (theNode != null) 
 			{
 				theNodes.add(theNode);
@@ -63,7 +59,7 @@ public class CFlowTreeBuilder
 		return theNodes;
 	}
 
-	private IRectangularGraphicObject buildNode(ILogEvent aEvent)
+	private AbstractEventNode buildNode(ILogEvent aEvent)
 	{
 		if (aEvent instanceof IFieldWriteEvent)
 		{
@@ -94,11 +90,10 @@ public class CFlowTreeBuilder
 		else if (aEvent instanceof IConstructorChainingEvent)
 		{
 			IConstructorChainingEvent theEvent = (IConstructorChainingEvent) aEvent;
-			// TODO: implement
+			return new ConstructorChainingNode(itsView, theEvent);
 		}
 
-		String theText = "Not handled: "+EventFormatter.getInstance().getPlainText(aEvent);
-		return SVGFlowText.create(theText, FONT, Color.RED);
+		return new UnknownEventNode(itsView, aEvent);
 	}
 
 }

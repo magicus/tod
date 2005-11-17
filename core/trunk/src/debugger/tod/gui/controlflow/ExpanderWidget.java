@@ -12,8 +12,6 @@ import java.awt.geom.Rectangle2D;
 
 import zz.csg.api.GraphicObjectContext;
 import zz.csg.impl.AbstractRectangularGraphicObject;
-import zz.utils.notification.IEvent;
-import zz.utils.notification.SimpleEvent;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
 
@@ -25,7 +23,7 @@ public class ExpanderWidget extends AbstractRectangularGraphicObject
 {
 	public static final double WIDTH = 10;
 	
-	private IRWProperty<Boolean> pExpanded = new SimpleRWProperty<Boolean>(this, false)
+	private final IRWProperty<Boolean> pExpanded = new SimpleRWProperty<Boolean>(this, false)
 	{
 		@Override
 		protected void changed(Boolean aOldValue, Boolean aNewValue)
@@ -34,6 +32,15 @@ public class ExpanderWidget extends AbstractRectangularGraphicObject
 		}
 	};
 	
+	private Color itsColor;
+	private double itsThickness;
+	
+	public ExpanderWidget(Color aColor, double aThickness)
+	{
+		itsColor = aColor;
+		itsThickness = aThickness;
+	}
+
 	/**
 	 * This property reflects the expanded/collapsed state of this widget.
 	 */
@@ -45,12 +52,12 @@ public class ExpanderWidget extends AbstractRectangularGraphicObject
 	public void paint(GraphicObjectContext aContext, Graphics2D aGraphics, Area aVisibleArea)
 	{
 		Rectangle2D theBounds = pBounds().get();
-		aGraphics.setColor(Color.BLUE);
-		aGraphics.fillRect(
-				(int) (theBounds.getX()+(theBounds.getWidth()/2)-2), 
-				(int) theBounds.getY() + 1,
-				4,
-				(int) theBounds.getHeight() - 2);
+		aGraphics.setColor(itsColor);
+		aGraphics.fill(new Rectangle2D.Double(
+				theBounds.getX() + theBounds.getWidth()/2 - itsThickness/2, 
+				theBounds.getY() + 1,
+				itsThickness,
+				theBounds.getHeight() - 2));
 	}
 	
 	@Override

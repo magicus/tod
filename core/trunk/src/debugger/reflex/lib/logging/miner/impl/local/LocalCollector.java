@@ -24,12 +24,10 @@ import reflex.lib.logging.miner.impl.local.filter.IntersectionFilter;
 import reflex.lib.logging.miner.impl.local.filter.TargetFilter;
 import reflex.lib.logging.miner.impl.local.filter.ThreadFilter;
 import reflex.lib.logging.miner.impl.local.filter.UnionFilter;
-import tod.bci.asm.BCIUtils;
 import tod.core.ILogCollector;
 import tod.core.LocationRegistrer;
 import tod.core.Output;
 import tod.core.model.event.IBehaviorCallEvent;
-import tod.core.model.event.IParentEvent;
 import tod.core.model.structure.BehaviorInfo;
 import tod.core.model.structure.ClassInfo;
 import tod.core.model.structure.FieldInfo;
@@ -74,7 +72,7 @@ implements ILogCollector, IEventTrace
 		theRootEvent.setThread(theThreadInfo);
 		theRootEvent.setDirectParent(false);
 		
-		itsEvents.add (theRootEvent);
+//		itsEvents.add (theRootEvent);
 		return theThreadInfo;
 	}
 	
@@ -117,6 +115,7 @@ implements ILogCollector, IEventTrace
 	{
 		MyThreadInfo theThread = getThread(aThreadId);
 		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
+		assert theBehavior != null;
 		BehaviorCallEvent theEvent;
 		
 		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();
@@ -139,10 +138,11 @@ implements ILogCollector, IEventTrace
 			initEvent(theEvent, aTimestamp, theThread, -1);
 			
 			theThread.setCurrentParent(theEvent);
+			theEvent.setDirectParent(true);
 			itsEvents.add (theEvent);
 		}
 		
-		theEvent.setCalledBehavior(theBehavior);
+		theEvent.setExecutedBehavior(theBehavior);
 		theEvent.setTarget(aObject);
 		theEvent.setArguments(aArguments);
 	}
@@ -156,7 +156,7 @@ implements ILogCollector, IEventTrace
 		MyThreadInfo theThread = getThread(aThreadId);
 		
 		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();
-		assert theCurrentParent.getCalledBehavior().getId() == aBehaviorLocationId;
+		assert theCurrentParent.getExecutedBehavior().getId() == aBehaviorLocationId;
 		assert theCurrentParent.isDirectParent();
 		
 		theCurrentParent.setResult(aResult);
@@ -175,7 +175,7 @@ implements ILogCollector, IEventTrace
 		MyThreadInfo theThread = getThread(aThreadId);
 		
 		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();
-		assert theCurrentParent.getCalledBehavior().getId() == aBehaviorLocationId;
+		assert theCurrentParent.getExecutedBehavior().getId() == aBehaviorLocationId;
 		assert theCurrentParent.isDirectParent();
 		
 		theCurrentParent.setResult(aException);
@@ -193,16 +193,10 @@ implements ILogCollector, IEventTrace
 			Object aException)
 	{
 		MyThreadInfo theThread = getThread(aThreadId);
-		
+		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();		
 		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
 
-		ExceptionGeneratedEvent theEvent = new ExceptionGeneratedEvent();
-		initEvent(theEvent, aTimestamp, theThread, aOperationBytecodeIndex);
-		
-		theEvent.setThrowingBehavior(theBehavior);
-		theEvent.setException(aException);
-		
-		itsEvents.add (theEvent);
+		logExceptionGenerated(aTimestamp, theThread, theBehavior, aOperationBytecodeIndex, aException);
 	}
 	
 	public void logExceptionGenerated(
@@ -218,13 +212,45 @@ implements ILogCollector, IEventTrace
 		
 		String theClassName = Type.getType(aMethodDeclaringClassSignature).getClassName();
 		ClassInfo theClass = (ClassInfo) getType(theClassName);
+		
+		if (theClass == null) return; // TODO: don't do that...
+		
 		TypeInfo[] theArgumentTypes = getArgumentTypes(aMethodSignature);
 		BehaviorInfo theBehavior = theClass.getBehavior(aMethodName, theArgumentTypes);
+
+		logExceptionGenerated(aTimestamp, theThread, theBehavior, aOperationBytecodeIndex, aException);
+	}
+	
+	protected void logExceptionGenerated(
+			long aTimestamp, 
+			MyThreadInfo aThread,
+			BehaviorInfo aBehavior,
+			int aOperationBytecodeIndex,
+			Object aException)
+	{
+		BehaviorCallEvent theCurrentParent = aThread.getCurrentParent();		
+
+		// We check if we really entered in the current parent, or
+		// if some exception prevented the call from succeeding.
+		boolean theFailedCall = false;
 		
+		BehaviorInfo theCallingBehavior = theCurrentParent.getCallingBehavior();
+		if (aBehavior != null && theCallingBehavior != null)
+		{
+			if (theCurrentParent.getExecutedBehavior() == null
+					&& theCurrentParent.getCallingBehavior().getId() == aBehavior.getId())
+				theFailedCall = true;
+		}
+		
+		if (theFailedCall)
+		{
+			aThread.setCurrentParent((BehaviorCallEvent) theCurrentParent.getParent());
+		}
+
 		ExceptionGeneratedEvent theEvent = new ExceptionGeneratedEvent();
-		initEvent(theEvent, aTimestamp, theThread, aOperationBytecodeIndex);
+		initEvent(theEvent, aTimestamp, aThread, aOperationBytecodeIndex);
 		
-		theEvent.setThrowingBehavior(theBehavior);
+		theEvent.setThrowingBehavior(aBehavior);
 		theEvent.setException(aException);
 		
 		itsEvents.add (theEvent);
@@ -260,7 +286,7 @@ implements ILogCollector, IEventTrace
 	{
 		MyThreadInfo theThread = getThread(aThreadId);
 		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();
-		BehaviorInfo theBehavior = theCurrentParent.getCalledBehavior();
+		BehaviorInfo theBehavior = theCurrentParent.getExecutedBehavior();
 		
 		LocalVariableWriteEvent theEvent = new LocalVariableWriteEvent();
 		initEvent(theEvent, aTimestamp, theThread, aOperationBytecodeIndex);
@@ -302,14 +328,19 @@ implements ILogCollector, IEventTrace
 	public void logBeforeBehaviorCall(
 			long aThreadId, 
 			int aOperationBytecodeIndex, 
-			int aMethodLocationId)
+			int aBehaviorLocationId)
 	{
 		MyThreadInfo theThread = getThread(aThreadId);
+		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();
+		assert theCurrentParent.isDirectParent() && theCurrentParent.getExecutedBehavior() != null;
+		
+		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
 
 		BehaviorCallEvent theEvent = theThread.createCallEvent();
 		
 		initEvent(theEvent, -1, theThread, aOperationBytecodeIndex);
 		theEvent.setDirectParent(true);
+		theEvent.setCalledBehavior(theBehavior);
 		
 		itsEvents.add (theEvent);
 		
@@ -325,6 +356,7 @@ implements ILogCollector, IEventTrace
 			Object[] aArguments)
 	{
 		MyThreadInfo theThread = getThread(aThreadId);
+
 		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
 
 		BehaviorCallEvent theEvent = theThread.createCallEvent();
@@ -332,6 +364,7 @@ implements ILogCollector, IEventTrace
 		initEvent(theEvent, aTimestamp, theThread, aOperationBytecodeIndex);
 		theEvent.setDirectParent(false);
 		theEvent.setCalledBehavior(theBehavior);
+		if (theBehavior.isConstructor()) theEvent.setExecutedBehavior(theBehavior);
 		theEvent.setTarget(aTarget);
 		theEvent.setArguments(aArguments);
 		
@@ -361,6 +394,7 @@ implements ILogCollector, IEventTrace
 		theCurrentParent.setResult(aResult);
 		theCurrentParent.setHasThrown(false);
 		theCurrentParent.setLastTimestamp(aTimestamp);
+		theCurrentParent.setTarget(aTarget);
 		
 		theThread.setCurrentParent((BehaviorCallEvent) theCurrentParent.getParent());
 	}
@@ -381,6 +415,7 @@ implements ILogCollector, IEventTrace
 		theCurrentParent.setResult(aException);
 		theCurrentParent.setHasThrown(true);
 		theCurrentParent.setLastTimestamp(aTimestamp);
+		theCurrentParent.setTarget(aTarget);
 		
 		theThread.setCurrentParent((BehaviorCallEvent) theCurrentParent.getParent());
 	}
@@ -403,12 +438,12 @@ implements ILogCollector, IEventTrace
 
 	public long getFirstTimestamp()
 	{
-		return itsEvents.get(0).getTimestamp();
+		return itsEvents.getFirstTimestamp();
 	}
 
 	public long getLastTimestamp()
 	{
-		return itsEvents.getLast().getTimestamp();
+		return itsEvents.getLastTimestamp();
 	}
 
 	public IEventBrowser createBrowser (IEventFilter aFilter)
@@ -493,6 +528,11 @@ implements ILogCollector, IEventTrace
 		return new ObjectInspector(this, aObjectId);
 	}
 	
+	public IObjectInspector createClassInspector(ClassInfo aClass)
+	{
+		return new ObjectInspector(this, aClass);
+	}
+
 	public IVariablesInspector createVariablesInspector(IBehaviorCallEvent aEvent)
 	{
 		return new VariablesInspector(aEvent);

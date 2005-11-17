@@ -117,11 +117,11 @@ public class MultiCollector extends MultiRegistrer implements ILogCollector
         }
 	}
 
-	public void logBeforeBehaviorCall(long aThreadId, int aOperationBytecodeIndex, int aMethodLocationId)
+	public void logBeforeBehaviorCall(long aThreadId, int aOperationBytecodeIndex, int aBehaviorLocationId)
 	{
         for (ILogCollector theCollector : getCollectors())
         {
-        	theCollector.logBeforeBehaviorCall(aThreadId, aOperationBytecodeIndex, aMethodLocationId);
+        	theCollector.logBeforeBehaviorCall(aThreadId, aOperationBytecodeIndex, aBehaviorLocationId);
         }
 	}
 

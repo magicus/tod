@@ -112,14 +112,14 @@ public class CollectorPacketWriter
             Object aTarget,
             Object[] aArguments) throws IOException
     {
-            sendMessageType(aStream, MessageType.BEFORE_METHOD_CALL);
-            
-            aStream.writeLong(aTimestamp);
-            aStream.writeLong(aThreadId);
-            aStream.writeShort((short) aOperationBytecodeIndex);
-            aStream.writeInt(aMethodLocationId);
-            sendValue(aStream, aTarget);
-            sendArguments(aStream, aArguments);
+        sendMessageType(aStream, MessageType.BEFORE_METHOD_CALL);
+        
+        aStream.writeLong(aTimestamp);
+        aStream.writeLong(aThreadId);
+        aStream.writeShort((short) aOperationBytecodeIndex);
+        aStream.writeInt(aMethodLocationId);
+        sendValue(aStream, aTarget);
+        sendArguments(aStream, aArguments);
     }
 
     public static void sendBeforeMethodCall(
@@ -128,11 +128,11 @@ public class CollectorPacketWriter
     		int aOperationBytecodeIndex, 
     		int aMethodLocationId) throws IOException
     {
-    	sendMessageType(aStream, MessageType.BEFORE_METHOD_CALL_DRY);
-    	
-    	aStream.writeLong(aThreadId);
-    	aStream.writeShort((short) aOperationBytecodeIndex);
-    	aStream.writeInt(aMethodLocationId);
+		sendMessageType(aStream, MessageType.BEFORE_METHOD_CALL_DRY);
+		
+		aStream.writeLong(aThreadId);
+		aStream.writeShort((short) aOperationBytecodeIndex);
+		aStream.writeInt(aMethodLocationId);
     }
     
 	
@@ -145,23 +145,23 @@ public class CollectorPacketWriter
             Object aTarget, 
             Object aResult) throws IOException
 	{
-            sendMessageType(aStream, MessageType.AFTER_METHOD_CALL);
-            
-            aStream.writeLong(aTimestamp);
-            aStream.writeLong(aThreadId);
-            aStream.writeShort((short) aOperationBytecodeIndex);
-            aStream.writeInt(aMethodLocationId);
-            sendValue(aStream, aTarget);
-            sendValue(aStream, aResult);
+        sendMessageType(aStream, MessageType.AFTER_METHOD_CALL);
+        
+        aStream.writeLong(aTimestamp);
+        aStream.writeLong(aThreadId);
+        aStream.writeShort((short) aOperationBytecodeIndex);
+        aStream.writeInt(aMethodLocationId);
+        sendValue(aStream, aTarget);
+        sendValue(aStream, aResult);
 	}
 
 	public static void sendAfterMethodCall(
 			DataOutputStream aStream,
             long aThreadId) throws IOException
 	{
-            sendMessageType(aStream, MessageType.AFTER_METHOD_CALL_DRY);
-            
-            aStream.writeLong(aThreadId);
+        sendMessageType(aStream, MessageType.AFTER_METHOD_CALL_DRY);
+        
+        aStream.writeLong(aThreadId);
 	}
 
 	public static void sendAfterMethodCallWithException(
@@ -192,14 +192,14 @@ public class CollectorPacketWriter
             Object aTarget, 
             Object aValue) throws IOException
 	{
-            sendMessageType(aStream, MessageType.FIELD_WRITE);
-            
-            aStream.writeLong(aTimestamp);
-            aStream.writeLong(aThreadId);
-            aStream.writeShort((short) aOperationBytecodeIndex);
-            aStream.writeInt(aFieldLocationId);
-            sendValue(aStream, aTarget);
-            sendValue(aStream, aValue);
+        sendMessageType(aStream, MessageType.FIELD_WRITE);
+        
+        aStream.writeLong(aTimestamp);
+        aStream.writeLong(aThreadId);
+        aStream.writeShort((short) aOperationBytecodeIndex);
+        aStream.writeInt(aFieldLocationId);
+        sendValue(aStream, aTarget);
+        sendValue(aStream, aValue);
 	}
 
 	public static void sendInstantiation(
@@ -226,13 +226,13 @@ public class CollectorPacketWriter
             int aVariableId,
             Object aValue) throws IOException
 	{
-            sendMessageType(aStream, MessageType.LOCAL_VARIABLE_WRITE);
-            
-            aStream.writeLong(aTimestamp);
-            aStream.writeLong(aThreadId);
-            aStream.writeShort((short) aOperationBytecodeIndex);
-            aStream.writeShort((short) aVariableId);
-            sendValue(aStream, aValue);
+        sendMessageType(aStream, MessageType.LOCAL_VARIABLE_WRITE);
+        
+        aStream.writeLong(aTimestamp);
+        aStream.writeLong(aThreadId);
+        aStream.writeShort((short) aOperationBytecodeIndex);
+        aStream.writeShort((short) aVariableId);
+        sendValue(aStream, aValue);
 	}
 
 	public static void sendOutput(
@@ -242,14 +242,14 @@ public class CollectorPacketWriter
             Output aOutput, 
             byte[] aData) throws IOException
 	{
-            sendMessageType(aStream, MessageType.OUTPUT);
-            
-            aStream.writeLong(aTimestamp);
-            aStream.writeLong(aThreadId);
-            aStream.writeByte((byte) aOutput.ordinal());
-            
-            aStream.writeInt(aData.length);
-            aStream.write(aData);
+        sendMessageType(aStream, MessageType.OUTPUT);
+        
+        aStream.writeLong(aTimestamp);
+        aStream.writeLong(aThreadId);
+        aStream.writeByte((byte) aOutput.ordinal());
+        
+        aStream.writeInt(aData.length);
+        aStream.write(aData);
 	}
 
 	public static void sendRegisterType(
@@ -259,12 +259,12 @@ public class CollectorPacketWriter
 			int aSupertypeId, 
 			int[] aInterfaceIds) throws IOException
 	{
-			sendMessageType(aStream, MessageType.REGISTER_CLASS);
-			aStream.writeInt(aTypeId);
-			aStream.writeUTF(aTypeName);
-			aStream.writeInt(aSupertypeId);
-			aStream.writeByte(aInterfaceIds != null ? (byte) aInterfaceIds.length : 0);
-			if (aInterfaceIds != null) for (int theId : aInterfaceIds) aStream.writeInt(theId);
+		sendMessageType(aStream, MessageType.REGISTER_CLASS);
+		aStream.writeInt(aTypeId);
+		aStream.writeUTF(aTypeName);
+		aStream.writeInt(aSupertypeId);
+		aStream.writeByte(aInterfaceIds != null ? (byte) aInterfaceIds.length : 0);
+		if (aInterfaceIds != null) for (int theId : aInterfaceIds) aStream.writeInt(theId);
 	}
 	
     
@@ -276,12 +276,12 @@ public class CollectorPacketWriter
             String aBehaviourName,
             String aSignature) throws IOException
     {
-			sendMessageType(aStream, MessageType.REGISTER_BEHAVIOR);
-			aStream.writeByte((byte) aBehaviourType.ordinal());
-			aStream.writeInt(aBehaviourId);
-			aStream.writeInt(aTypeId);
-			aStream.writeUTF(aBehaviourName);
-			aStream.writeUTF(aSignature);
+		sendMessageType(aStream, MessageType.REGISTER_BEHAVIOR);
+		aStream.writeByte((byte) aBehaviourType.ordinal());
+		aStream.writeInt(aBehaviourId);
+		aStream.writeInt(aTypeId);
+		aStream.writeUTF(aBehaviourName);
+		aStream.writeUTF(aSignature);
 	}
 	
     public static void sendRegisterBehaviorAttributes(
@@ -290,27 +290,27 @@ public class CollectorPacketWriter
     		LineNumberInfo[] aLineNumberTable, 
     		LocalVariableInfo[] aLocalVariableTable) throws IOException
     {
-    		sendMessageType(aStream, MessageType.REGISTER_BEHAVIOR_ATTRIBUTES);
-    		aStream.writeInt(aBehaviourId);
-    		
-    		// Send line number table
-    		aStream.writeInt(aLineNumberTable != null ? aLineNumberTable.length : 0);
-    		if (aLineNumberTable != null) for (LineNumberInfo theLineNumberInfo : aLineNumberTable)
-    		{
-    			aStream.writeShort(theLineNumberInfo.getStartPc());
-    			aStream.writeShort(theLineNumberInfo.getLineNumber());
-    		}
-    		
-    		// Send local variable table
-    		aStream.writeInt(aLocalVariableTable != null ? aLocalVariableTable.length : 0);
-    		if (aLocalVariableTable != null) for (LocalVariableInfo theLocalVariableInfo : aLocalVariableTable)
-    		{
-    			aStream.writeShort(theLocalVariableInfo.getStartPc());
-    			aStream.writeShort(theLocalVariableInfo.getLength());
-    			aStream.writeUTF(theLocalVariableInfo.getVariableName());
-    			aStream.writeUTF(theLocalVariableInfo.getVariableTypeName());
-    			aStream.writeShort(theLocalVariableInfo.getIndex());
-    		}
+		sendMessageType(aStream, MessageType.REGISTER_BEHAVIOR_ATTRIBUTES);
+		aStream.writeInt(aBehaviourId);
+		
+		// Send line number table
+		aStream.writeInt(aLineNumberTable != null ? aLineNumberTable.length : 0);
+		if (aLineNumberTable != null) for (LineNumberInfo theLineNumberInfo : aLineNumberTable)
+		{
+			aStream.writeShort(theLineNumberInfo.getStartPc());
+			aStream.writeShort(theLineNumberInfo.getLineNumber());
+		}
+		
+		// Send local variable table
+		aStream.writeInt(aLocalVariableTable != null ? aLocalVariableTable.length : 0);
+		if (aLocalVariableTable != null) for (LocalVariableInfo theLocalVariableInfo : aLocalVariableTable)
+		{
+			aStream.writeShort(theLocalVariableInfo.getStartPc());
+			aStream.writeShort(theLocalVariableInfo.getLength());
+			aStream.writeUTF(theLocalVariableInfo.getVariableName());
+			aStream.writeUTF(theLocalVariableInfo.getVariableTypeName());
+			aStream.writeShort(theLocalVariableInfo.getIndex());
+		}
     }
     
 	public static void sendRegisterField(
@@ -319,10 +319,10 @@ public class CollectorPacketWriter
 			int aClassId, 
 			String aFieldName) throws IOException
 	{
-			sendMessageType(aStream, MessageType.REGISTER_FIELD);
-			aStream.writeInt(aFieldId);
-			aStream.writeInt(aClassId);
-			aStream.writeUTF(aFieldName);
+		sendMessageType(aStream, MessageType.REGISTER_FIELD);
+		aStream.writeInt(aFieldId);
+		aStream.writeInt(aClassId);
+		aStream.writeUTF(aFieldName);
 	}
 	
 	public static void sendRegisterFile(
@@ -330,9 +330,9 @@ public class CollectorPacketWriter
 			int aFileId,
 			String aFileName) throws IOException
 	{
-			sendMessageType(aStream, MessageType.REGISTER_FILE);
-			aStream.writeInt(aFileId);
-			aStream.writeUTF(aFileName);
+		sendMessageType(aStream, MessageType.REGISTER_FILE);
+		aStream.writeInt(aFileId);
+		aStream.writeUTF(aFileName);
 	}
 	
 	public static void sendRegisterThread (
@@ -340,9 +340,9 @@ public class CollectorPacketWriter
 			long aThreadId,
 			String aName) throws IOException
 	{
-			sendMessageType(aStream, MessageType.REGISTER_THREAD);
-			aStream.writeLong(aThreadId);
-			aStream.writeUTF(aName);
+		sendMessageType(aStream, MessageType.REGISTER_THREAD);
+		aStream.writeLong(aThreadId);
+		aStream.writeUTF(aName);
 	}
 
     /**

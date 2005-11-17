@@ -18,7 +18,7 @@ public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEv
 	private Object itsResult;
 	private Object[] itsArguments;
 	private BehaviorInfo itsCalledBehavior;
-	private BehaviorInfo itsCallingBehavior;
+	private BehaviorInfo itsExecutedBehavior;
 	private Object itsTarget;
 	private long itsLastTimestamp;
 
@@ -43,6 +43,16 @@ public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEv
 	{
 		if (itsChildren == null) itsChildren = new ArrayList<ILogEvent>();
 		itsChildren.add(aIndex, aEvent);
+	}
+	
+	public BehaviorInfo getExecutedBehavior()
+	{
+		return itsExecutedBehavior;
+	}
+
+	public void setExecutedBehavior(BehaviorInfo aExecutedBehavior)
+	{
+		itsExecutedBehavior = aExecutedBehavior;
 	}
 	
 	public BehaviorInfo getCalledBehavior()
@@ -97,12 +107,10 @@ public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEv
 
 	public BehaviorInfo getCallingBehavior()
 	{
-		return itsCallingBehavior;
-	}
-
-	public void setCallingBehavior(BehaviorInfo aCallingBehavior)
-	{
-		itsCallingBehavior = aCallingBehavior;
+		if (getParent() == null) return null;
+		else return getParent().isDirectParent() ? 
+				getParent().getExecutedBehavior()
+				: null;
 	}
 
 	public Object getTarget()

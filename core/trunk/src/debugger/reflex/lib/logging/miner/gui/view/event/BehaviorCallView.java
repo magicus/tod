@@ -6,6 +6,7 @@ package reflex.lib.logging.miner.gui.view.event;
 import reflex.lib.logging.miner.gui.IGUIManager;
 import reflex.lib.logging.miner.gui.seed.SeedFactory;
 import tod.core.model.event.IBehaviorCallEvent;
+import tod.core.model.structure.BehaviorInfo;
 import tod.core.model.structure.TypeInfo;
 import tod.core.model.trace.IEventTrace;
 
@@ -39,7 +40,15 @@ public class BehaviorCallView extends EventView
 		IBehaviorCallEvent theEvent = getEvent();
 		
 		// Behaviour
-		TypeInfo theTypeInfo = theEvent.getCalledBehavior().getType();
+		TypeInfo theTypeInfo = null;
+		BehaviorInfo theExecutedBehavior = theEvent.getExecutedBehavior();
+		if (theExecutedBehavior != null) theTypeInfo = theExecutedBehavior.getType();
+		else
+		{
+			BehaviorInfo theCalledBehavior = theEvent.getCalledBehavior();
+			if (theCalledBehavior != null) theTypeInfo = theCalledBehavior.getType();
+		}
+		
 		String theTypeName = theTypeInfo.getName();
 		
 		add (createTitledLink(

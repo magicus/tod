@@ -246,7 +246,7 @@ public class SocketCollector implements ILogCollector
     public void logBeforeBehaviorCall(
             long aThreadId, 
             int aOperationBytecodeIndex, 
-            int aMethodLocationId)
+            int aBehaviorLocationId)
     {
 		ThreadData theData = getThreadInfo();
 		if (theData.isSending()) return;
@@ -254,7 +254,7 @@ public class SocketCollector implements ILogCollector
         try
         {
         	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendBeforeMethodCall(theStream, aThreadId, aOperationBytecodeIndex, aMethodLocationId);
+        	CollectorPacketWriter.sendBeforeMethodCall(theStream, aThreadId, aOperationBytecodeIndex, aBehaviorLocationId);
             theData.packetEnd();
         }
         catch (IOException e)

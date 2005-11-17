@@ -24,7 +24,10 @@ public class MethodCallNode extends AbstractBehaviorNode
 	{
 		XFont theFont = getHeaderFont();
 		
-		aContainer.pChildren().add(SVGFlowText.create("call to ", theFont, Color.BLACK));
+		aContainer.pChildren().add(SVGFlowText.create(
+				"call to ", 
+				theFont, 
+				getEvent().hasThrown() ? Color.RED : Color.BLACK));
 
 		super.fillHeader(aContainer);
 	}

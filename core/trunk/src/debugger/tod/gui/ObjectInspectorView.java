@@ -5,13 +5,14 @@ package tod.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.util.List;
+import java.awt.FlowLayout;
 
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import reflex.lib.logging.miner.gui.IGUIManager;
+import reflex.lib.logging.miner.gui.kit.SeedLinkLabel;
+import reflex.lib.logging.miner.gui.seed.FilterSeed;
 import reflex.lib.logging.miner.gui.seed.ObjectInspectorSeed;
 import reflex.lib.logging.miner.gui.view.LogView;
 import tod.core.model.structure.BehaviorInfo;
@@ -19,8 +20,8 @@ import tod.core.model.structure.FieldInfo;
 import tod.core.model.structure.MemberInfo;
 import tod.core.model.structure.ObjectId;
 import tod.core.model.structure.TypeInfo;
-import tod.core.model.trace.IEventTrace;
 import tod.core.model.trace.IEventBrowser;
+import tod.core.model.trace.IEventTrace;
 import tod.core.model.trace.IObjectInspector;
 import tod.gui.eventsequences.FieldSequenceView;
 import tod.gui.eventsequences.MembersDock;
@@ -43,7 +44,7 @@ public class ObjectInspectorView extends LogView
 	
 	private MembersDock itsDock;
 	
-	private JLabel itsTitleLabel;
+	private JPanel itsTitlePanel;
 	
 	private MemberSelector itsMemberSelector;
 	
@@ -68,7 +69,9 @@ public class ObjectInspectorView extends LogView
 		JPanel theNorthPanel = new JPanel(new GridStackLayout(1));
 	
 		// Setup title
-		theNorthPanel.add (createTitlePanel());
+		itsTitlePanel = new JPanel();
+		theNorthPanel.add (itsTitlePanel);
+		updateTitlePanel();
 		
 		// Setup time scale
 		itsTimeScale = new TimeScale();
@@ -116,10 +119,6 @@ public class ObjectInspectorView extends LogView
 		{
 			// Update label
 			TypeInfo theType = itsInspector.getType();
-			itsTitleLabel.setText(String.format(
-					"Object inspector for: %s (%s)",
-					aObjectId,
-					theType.getName()));
 
 			// Update timescale's browsers
 			for (MemberInfo theMember : itsInspector.getMembers())
@@ -131,23 +130,56 @@ public class ObjectInspectorView extends LogView
 				else throw new RuntimeException("Not handled: "+theMember); 
 				itsTimeScale.pEventBrowsers().add (new BrowserData(theBrowser, theColor));
 			}
-			
-		}
-		else 
-		{
-			itsTitleLabel.setText("Object inspector");
 		}
 		
 		itsMemberSelector.pInspector().set(itsInspector);
 		itsMemberSelector.selectFields();
 
+		updateTitlePanel();
 	}
 	
-	
-	private JComponent createTitlePanel()
+	private void updateTitlePanel()
 	{
-		itsTitleLabel = new JLabel();
-		return itsTitleLabel;
+		itsTitlePanel.removeAll();
+		itsTitlePanel.setLayout(new FlowLayout());
+		
+		String theTitle;
+		ObjectId theObject;
+		
+		if (itsInspector != null)
+		{
+			// Update label
+			TypeInfo theType = itsInspector.getType();
+			theObject = itsInspector.getObject();
+			theTitle = String.format(
+					"Object inspector for: %s (%s)",
+					theObject,
+					theType.getName());
+		}
+		else 
+		{
+			theTitle = "Object inspector";
+			theObject = null;
+		}
+		
+		JLabel theTitleLabel = new JLabel(theTitle);
+		itsTitlePanel.add(theTitleLabel);
+		
+		if (theObject != null)
+		{
+			FilterSeed theSeed = new FilterSeed(
+					getGUIManager(), 
+					getEventTrace(), 
+					getEventTrace().createTargetFilter(theObject));
+			
+			itsTitlePanel.add (new SeedLinkLabel(
+					getGUIManager(), 
+					"Show all events", 
+					theSeed));
+		}
+			
+		itsTitlePanel.revalidate();
+		itsTitlePanel.repaint();
 	}
 	
 	/**

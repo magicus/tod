@@ -74,13 +74,13 @@ public interface ILogCollector extends ILocationRegistrer
 	 * Called before a method is called,
 	 * when the target behavior is known to be instrumented for tracing. 
 	 * The next event on the thread will be a "behavior enter"
-	 * @param aMethodLocationId Id of the called method.
+	 * @param aBehaviorLocationId Id of the called method.
 	 * @param aOperationBytecodeIndex Index of the operation in the behavior's bytecode
 	 */
 	public void logBeforeBehaviorCall(
 			long aThreadId, 
 			int aOperationBytecodeIndex, 
-			int aMethodLocationId);
+			int aBehaviorLocationId);
 	
 	/**
 	 * Called after a behavior call has returned normally, 

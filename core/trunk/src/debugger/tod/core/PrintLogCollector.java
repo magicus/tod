@@ -193,9 +193,17 @@ public class PrintLogCollector extends LocationRegistrer implements ILogCollecto
 		if (itsPrintEvents) itsOutput.println("[LOG] after method call (dry)");
 	}
 
-	public void logBeforeBehaviorCall(long aThreadId, int aOperationBytecodeIndex, int aMethodLocationId)
+	public void logBeforeBehaviorCall(
+			long aThreadId, 
+			int aOperationBytecodeIndex, 
+			int aBehaviorLocationId)
 	{
-		if (itsPrintEvents) itsOutput.println("[LOG] before method call (dry)");
+		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
+		if (itsPrintEvents) itsOutput.println(String.format(
+                "[LOG] before behavior call (dry): %s.%s (%d)",
+				theBehavior.getType().getName(),
+                theBehavior.getName(),
+                aBehaviorLocationId));
 	}
 
 	public void logConstructorChaining(long aThreadId)

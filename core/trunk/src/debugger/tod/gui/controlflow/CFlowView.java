@@ -3,25 +3,30 @@
  */
 package tod.gui.controlflow;
 
-import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.Point2D.Double;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.JComponent;
+import javax.swing.BoxLayout;
 import javax.swing.JScrollPane;
 
 import reflex.lib.logging.miner.gui.IGUIManager;
 import reflex.lib.logging.miner.gui.seed.CFlowSeed;
 import reflex.lib.logging.miner.gui.view.LogView;
-import tod.core.model.event.IParentEvent;
 import tod.core.model.event.ILogEvent;
+import tod.core.model.event.IParentEvent;
 import tod.core.model.structure.ThreadInfo;
 import tod.core.model.trace.ICFlowBrowser;
 import tod.core.model.trace.IEventTrace;
-import zz.csg.api.IRectangularGraphicObject;
 import zz.csg.display.GraphicPanel;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
@@ -33,11 +38,15 @@ public class CFlowView extends LogView
 	private ICFlowBrowser itsBrowser;
 	private CFlowTreeBuilder itsTreeBuilder;
 	private CFlowVariablesBuilder itsVariablesBuilder;
+	private CFlowObjectsBuilder itsObjectsBuilder;
 	
 	private GraphicPanel itsTreePanel;
 	private GraphicPanel itsVariablesPanel;
+	private GraphicPanel itsObjectsPanel;
 	
 	private Set<IParentEvent> itsExpandedEvents = new HashSet<IParentEvent>();
+	
+	private AbstractEventNode itsRootNode;
 	
 	private IPropertyListener<ILogEvent> itsSelectedEventListener = new PropertyListener<ILogEvent>()
 	{
@@ -46,7 +55,7 @@ public class CFlowView extends LogView
 		{
 			itsTreePanel.repaint();
 			if (aNewValue != null) getGUIManager().gotoEvent(aNewValue);
-			updateVariables();
+			update();
 		}
 	};
 
@@ -55,7 +64,7 @@ public class CFlowView extends LogView
 		@Override
 		public void propertyChanged(IProperty<ILogEvent> aProperty, ILogEvent aOldValue, ILogEvent aNewValue)
 		{
-			updateVariables();
+			update();
 		}
 	};
 	
@@ -71,16 +80,19 @@ public class CFlowView extends LogView
 	@Override
 	public void init()
 	{
-		setLayout(new BorderLayout());
+		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
 		// Create tree panel
 		itsTreeBuilder = new CFlowTreeBuilder(this);
+		itsRootNode = itsTreeBuilder.buildRootNode((IParentEvent) itsBrowser.getRoot());
 		
 		itsTreePanel = new GraphicPanel();
 		itsTreePanel.setTransform(new AffineTransform());
-		itsTreePanel.setRootNode(itsTreeBuilder.buildRootNode((IParentEvent) itsBrowser.getRoot()));
+		itsTreePanel.setRootNode(itsRootNode);
 		
-		add(new JScrollPane(itsTreePanel), BorderLayout.CENTER);
+		JScrollPane theTreeScrollPane = new JScrollPane(itsTreePanel);
+		theTreeScrollPane.setPreferredSize(new Dimension(400, 10));
+		add(theTreeScrollPane);
 		
 		// Create variables panel
 		itsVariablesBuilder = new CFlowVariablesBuilder(this);
@@ -88,18 +100,58 @@ public class CFlowView extends LogView
 		itsVariablesPanel = new GraphicPanel();
 		itsVariablesPanel.setTransform(new AffineTransform());
 		
-		add(new JScrollPane(itsVariablesPanel), BorderLayout.EAST);
+		add(new JScrollPane(itsVariablesPanel));
+		
+		// Create objects panel
+		itsObjectsBuilder = new CFlowObjectsBuilder(this);
+		
+		itsObjectsPanel = new GraphicPanel();
+		itsObjectsPanel.setTransform(new AffineTransform());
+		
+		add(new JScrollPane(itsObjectsPanel));
+		
+		update();
 	}
 	
-	private void updateVariables()
+	private void update()
 	{
 		ILogEvent theRootEvent = itsSeed.pRootEvent().get();
 		ILogEvent theSelectedEvent = itsSeed.pSelectedEvent().get();
 		
-		IRectangularGraphicObject theGraphicObject = 
-			itsVariablesBuilder.build(theRootEvent, theSelectedEvent);
+		if (theSelectedEvent != null)
+		{
+			itsVariablesPanel.setRootNode(itsVariablesBuilder.build(theRootEvent, theSelectedEvent));
+			itsObjectsPanel.setRootNode(itsObjectsBuilder.build(theRootEvent, theSelectedEvent));
+			
+			showEvent(theSelectedEvent);
+		}
+	}
+	
+	private void showEvent (ILogEvent aEvent)
+	{
+		ILogEvent theRootEvent = itsSeed.pRootEvent().get();
 		
-		itsVariablesPanel.setRootNode(theGraphicObject);
+		LinkedList<ILogEvent> theEventPath = new LinkedList<ILogEvent>();
+		
+		while (aEvent != null)
+		{
+			theEventPath.addFirst(aEvent);
+			if (aEvent == theRootEvent) break;
+			aEvent = aEvent.getParent();
+		}
+		
+		AbstractEventNode theNode = itsRootNode;
+		for (ILogEvent theEvent : theEventPath)
+		{
+			theNode = theNode.getNode(theEvent);
+			theNode.expand();
+		}
+		
+//		itsRootNode.invalidate();
+//		itsRootNode.checkValid(); // the layout must be ready.
+//		Rectangle2D theNodeBounds = theNode.getBounds(null);
+//		Rectangle theBounds = itsTreePanel.localToPixel(null, theNode, theNodeBounds);
+//		itsTreePanel.scrollRectToVisible(theBounds);
 	}
 		
 	@Override

@@ -4,10 +4,14 @@
 package tod.gui.controlflow;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.geom.Rectangle2D;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import tod.core.model.event.IBehaviorCallEvent;
+import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.BehaviorInfo;
 import tod.core.model.structure.TypeInfo;
 import tod.gui.Hyperlinks;
@@ -33,13 +37,17 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 	private IRectangularGraphicContainer itsFooter;
 	private ExpanderWidget itsExpanderWidget;
 	
+	private Map<ILogEvent, AbstractEventNode> itsNodesMap = 
+		new HashMap<ILogEvent, AbstractEventNode>();
+	
+	
 	private IRWProperty<Boolean> pExpanded = new SimpleRWProperty<Boolean>(this, false)
 	{
 		@Override
 		protected void changed(Boolean aOldValue, Boolean aNewValue)
 		{
-			if (aNewValue) expand();
-			else collapse();
+			if (aNewValue) doExpand();
+			else doCollapse();
 		}
 	};
 	
@@ -51,7 +59,10 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 		
 		itsEvent = aEvent;
 		
-		itsExpanderWidget = new ExpanderWidget();
+		itsExpanderWidget = new ExpanderWidget(
+				getEvent().hasThrown() ? Color.RED : Color.BLUE,
+				4);
+		
 		pChildren().add(itsExpanderWidget);
 		
 		PropertyUtils.connect(pExpanded(), itsExpanderWidget.pExpanded(), true);
@@ -82,6 +93,14 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 		
 		return true;
 	}
+	
+	@Override
+	public AbstractEventNode getNode(ILogEvent aEvent)
+	{
+		AbstractEventNode theNode = super.getNode(aEvent);
+		if (theNode != null) return theNode;
+		else return itsNodesMap.get(aEvent);
+	}
 
 	/**
 	 * Whether this node is expanded or collapsed.
@@ -91,21 +110,35 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 		return pExpanded;
 	}
 	
-	private void expand()
+	public void expand()
 	{
-		List<IRectangularGraphicObject> theNodes = getBuilder().buildNodes(getEvent());
+		if (! pExpanded().get().booleanValue()) doExpand();
+	}
+	
+	private void doExpand()
+	{
+		List<AbstractEventNode> theNodes = getBuilder().buildNodes(getEvent());
 		
-		for (IRectangularGraphicObject theNode : theNodes)
+		itsNodesMap.clear();
+		
+		for (AbstractEventNode theNode : theNodes)
 		{
 			itsChildrenContainer.pChildren().add(theNode);
+			itsNodesMap.put(theNode.getEvent(), theNode);
 		}
 		
 		repaintAllContexts();
 	}
 	
-	private void collapse()
+	public void collapse()
+	{
+		if (pExpanded().get().booleanValue()) doCollapse();
+	}
+	
+	private void doCollapse()
 	{
 		itsChildrenContainer.pChildren().clear();		
+		itsNodesMap.clear();
 		repaintAllContexts();
 	}
 	
@@ -134,7 +167,12 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 	{
 		XFont theFont = getHeaderFont();
 		
-		BehaviorInfo theBehavior = getEvent().getCalledBehavior();
+		BehaviorInfo theBehavior = getEvent().getExecutedBehavior();
+		if (theBehavior == null)
+		{
+			theFont = theFont.deriveFont(Font.ITALIC, theFont.getAWTFont().getSize2D());
+			theBehavior = getEvent().getCalledBehavior();
+		}
 		TypeInfo theType = theBehavior.getType();
 		Object[] theArguments = getEvent().getArguments();
 		
@@ -149,7 +187,8 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 	{
 		XFont theFont = getHeaderFont();
 
-		BehaviorInfo theBehavior = getEvent().getCalledBehavior();
+		BehaviorInfo theBehavior = getEvent().getExecutedBehavior();
+		if (theBehavior == null) theBehavior = getEvent().getCalledBehavior();
 		
 		if (getEvent().hasThrown())
 		{

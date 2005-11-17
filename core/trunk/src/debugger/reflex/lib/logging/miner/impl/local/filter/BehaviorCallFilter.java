@@ -39,7 +39,13 @@ public class BehaviorCallFilter extends AbstractStatelessFilter
 		if (aEvent instanceof IBehaviorCallEvent)
 		{
 			IBehaviorCallEvent theEvent = (IBehaviorCallEvent) aEvent;
-			return theEvent.getCalledBehavior().equals(itsBehaviour);
+			BehaviorInfo theExecutedBehavior = theEvent.getExecutedBehavior();
+			BehaviorInfo theCalledBehavior = theEvent.getCalledBehavior();
+			
+			return (theExecutedBehavior != null 
+					&& theExecutedBehavior.equals(itsBehaviour))
+				|| (theCalledBehavior != null
+					&& theCalledBehavior.equals(itsBehaviour));
 		}
 		else return false;
 	}

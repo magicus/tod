@@ -36,9 +36,19 @@ public interface IBehaviorCallEvent extends IParentEvent, ICallerSideEvent
 	public Object getResult();
 	
 	/**
-	 * The called behavior. 
+	 * The behavior that is actually executed. 
+	 * It might be different than {@link #getCalledBehavior() },
+	 * for instance if the caller calls an interface or overridden method.
 	 * <br/>
 	 * This information is always available.
+	 */
+	public BehaviorInfo getExecutedBehavior();
+	
+	/**
+	 * The called behavior.
+	 * <br/>
+	 * This information is available only if the caller behavior
+	 * was instrumented.
 	 */
 	public BehaviorInfo getCalledBehavior();
 	

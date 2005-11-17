@@ -3,7 +3,10 @@
  */
 package reflex.lib.logging.miner.impl.common.event;
 
+import tod.core.model.event.IConstructorChainingEvent;
+
 public class ConstructorChainingEvent extends BehaviorCallEvent
+implements IConstructorChainingEvent
 {
 
 }

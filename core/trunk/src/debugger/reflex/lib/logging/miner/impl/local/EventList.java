@@ -17,8 +17,9 @@ import tod.core.model.event.EventComparator;
  */
 public class EventList
 {
-	
 	private List<Event> itsEvents = new ArrayList<Event>();
+	private long itsFirstTimestamp = Long.MAX_VALUE;
+	private long itsLastTimestamp = 0;
 	
 	public void clear()
 	{
@@ -33,8 +34,10 @@ public class EventList
 	{
 		int theIndex;
 		
+		long theTimestamp = aEvent.getTimestamp();
+		
 		if (size() == 0
-			|| getLast().getTimestamp() <= aEvent.getTimestamp())
+			|| getLast().getTimestamp() <= theTimestamp)
 		{
 			theIndex = size();
 		}
@@ -49,6 +52,13 @@ public class EventList
 		}
 		
 		itsEvents.add (theIndex, aEvent);
+		
+		if (theTimestamp > 0)
+		{
+			itsFirstTimestamp = Math.min(itsFirstTimestamp, theTimestamp);
+			itsLastTimestamp = Math.max(itsLastTimestamp, theTimestamp);
+		}
+		
 		return theIndex;
 	}
 	
@@ -65,6 +75,16 @@ public class EventList
 	public Event get (int aIndex)
 	{
 		return itsEvents.get(aIndex);
+	}
+
+	public long getFirstTimestamp()
+	{
+		return itsFirstTimestamp;
+	}
+
+	public long getLastTimestamp()
+	{
+		return itsLastTimestamp;
 	}
 	
 }

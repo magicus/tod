@@ -35,7 +35,7 @@ public class VariablesInspector implements IVariablesInspector
 	
 	public BehaviorInfo getBehavior()
 	{
-		return getBehaviorCall().getCalledBehavior();
+		return getBehaviorCall().getExecutedBehavior();
 	}
 	
 	public List<LocalVariableInfo> getVariables()
@@ -89,7 +89,7 @@ public class VariablesInspector implements IVariablesInspector
 		
 		// If we did not find a variable write corresponding to the variable,
 		// we consider the behavior call's initial argument values
-		BehaviorInfo theBehavior = itsBehaviorCall.getCalledBehavior();
+		BehaviorInfo theBehavior = itsBehaviorCall.getExecutedBehavior();
 		TypeInfo[] theArgumentTypes = theBehavior.getArgumentTypes();
 		int theSlot = theBehavior.isStatic() ? 0 : 1;
 		for (int i = 0; i < theArgumentTypes.length; i++)

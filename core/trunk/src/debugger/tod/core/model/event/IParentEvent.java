@@ -19,6 +19,12 @@ public interface IParentEvent extends ILogEvent
 	public List<ILogEvent> getChildren();
 	
 	/**
+	 * Returns the number of children of this event.
+	 */
+	public int getChildrenCount();
+
+	
+	/**
 	 * Indicates if this event is the direct parent of its children.
 	 * A call to an instrumented behavior from another instrumented
 	 * behavior results in a direct parent event: children events are

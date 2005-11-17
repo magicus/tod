@@ -5,6 +5,7 @@ package tod.core.model.trace;
 
 import java.util.List;
 
+import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.FieldInfo;
 import tod.core.model.structure.MemberInfo;
 import tod.core.model.structure.ObjectId;
@@ -36,9 +37,16 @@ public interface IObjectInspector
 	public List<MemberInfo> getMembers();
 	
 	/**
+	 * Retrieves all the field descriptors of the inspected object.
+	 */
+	public List<FieldInfo> getFields();
+	
+	/**
 	 * Sets the current timestamp of this inspector.
 	 */
 	public void setTimestamp (long aTimestamp);
+	
+	public void setCurrentEvent (ILogEvent aEvent);
 	
 	/**
 	 * Returns the current timestamp of this inspector

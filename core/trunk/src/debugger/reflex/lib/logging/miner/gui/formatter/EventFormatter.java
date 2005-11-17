@@ -3,11 +3,14 @@
  */
 package reflex.lib.logging.miner.gui.formatter;
 
+import java.util.Arrays;
+
 import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.event.IFieldWriteEvent;
 import tod.core.model.event.ILocalVariableWriteEvent;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.event.IOutputEvent;
+import tod.core.model.structure.BehaviorInfo;
 import tod.core.model.structure.LocationInfo;
 import zz.utils.AbstractFormatter;
 
@@ -33,15 +36,25 @@ public class EventFormatter extends AbstractFormatter<ILogEvent>
 		if (aEvent instanceof IBehaviorCallEvent)
 		{
 			IBehaviorCallEvent theEvent = (IBehaviorCallEvent) aEvent;
-			return "Behavior call";
+			
+			BehaviorInfo theBehavior = theEvent.getExecutedBehavior();
+			if (theBehavior == null) theBehavior = theEvent.getCalledBehavior();
+			
+			return String.format(
+					"%s.%s (%s)",
+					theBehavior.getType().getName(),
+	                theBehavior.getName(),
+	                Arrays.asList(theEvent.getArguments()));
 		}
 		else if (aEvent instanceof IFieldWriteEvent)
 		{
 			IFieldWriteEvent theEvent = (IFieldWriteEvent) aEvent;
-			
-			return "Field written: "+formatLocation(theEvent.getField())
-				+" on "+formatObject(theEvent.getTarget())
-				+" value: "+formatObject(theEvent.getValue());
+
+			return String.format(
+					"%s.%s = %s",
+					theEvent.getField().getType().getName(),
+					theEvent.getField().getName(),
+					formatObject(theEvent.getValue()));
 		}
         else if (aEvent instanceof ILocalVariableWriteEvent)
 		{

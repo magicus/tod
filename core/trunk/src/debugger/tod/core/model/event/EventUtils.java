@@ -20,7 +20,7 @@ public class EventUtils
 	
 	public static String getVariableName(ILocalVariableWriteEvent aEvent)
 	{
-		BehaviorInfo theInfo = aEvent.getParent().getCalledBehavior();
+		BehaviorInfo theInfo = aEvent.getParent().getExecutedBehavior();
 		
 		int theBytecodeIndex = aEvent.getOperationBytecodeIndex();
 		short theVariableIndex = aEvent.getVariable().getIndex();

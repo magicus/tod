@@ -3,6 +3,10 @@
  */
 package tod.test;
 
+import java.util.ArrayList;
+
+import javax.swing.JPanel;
+
 /**
  * @author gpothier
  */
@@ -12,6 +16,8 @@ public class LoggingTest
 	
     public static void main(String[] args) throws Throwable
     {
+    	new JPanel();
+    	ArrayList<Object> theList = new ArrayList<Object>();
     	new LoggingTest().compute();
     }
     

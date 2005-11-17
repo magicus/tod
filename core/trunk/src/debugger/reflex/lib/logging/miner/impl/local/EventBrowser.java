@@ -84,11 +84,10 @@ public class EventBrowser implements IEventBrowser
 	public void setPreviousTimestamp(long aTimestamp)
 	{
 		itsIndex = EventComparator.indexOf(aTimestamp, itsEvents);
-		do
+		while (hasNext() && itsEvents.get(itsIndex).getTimestamp() == aTimestamp)
 		{
 			itsIndex++;
 		} 
-		while (hasNext() && itsEvents.get(itsIndex).getTimestamp() == aTimestamp);
 	}
 	
 	public void setCursor(ILogEvent aEvent)

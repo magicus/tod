@@ -3,19 +3,22 @@
  */
 package tod.gui.controlflow;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import reflex.lib.logging.miner.gui.IGUIManager;
-import tod.core.model.event.IParentEvent;
 import tod.core.model.event.ILogEvent;
-import tod.core.model.trace.IEventTrace;
-import zz.csg.api.IRectangularGraphicObject;
+import tod.core.model.event.IParentEvent;
 import zz.csg.api.layout.StackLayout;
 
 public class RootEventNode extends AbstractEventNode
 {
 	private IParentEvent itsRootEvent;
 	
+	private Map<ILogEvent, AbstractEventNode> itsNodesMap = 
+		new HashMap<ILogEvent, AbstractEventNode>();
+	
+
 	public RootEventNode(
 			CFlowView aView,
 			IParentEvent aRootEvent)
@@ -25,17 +28,26 @@ public class RootEventNode extends AbstractEventNode
 		
 		setLayoutManager(new StackLayout());
 
-		List<IRectangularGraphicObject> theNodes = getBuilder().buildNodes(itsRootEvent);
+		List<AbstractEventNode> theNodes = getBuilder().buildNodes(itsRootEvent);
 		
-		for (IRectangularGraphicObject theNode : theNodes)
+		for (AbstractEventNode theNode : theNodes)
 		{
 			pChildren().add(theNode);
+			itsNodesMap.put(theNode.getEvent(), theNode);
 		}		
 	}
 	
 	@Override
 	protected ILogEvent getEvent()
 	{
-		return null;
+		return itsRootEvent;
+	}
+	
+	@Override
+	public AbstractEventNode getNode(ILogEvent aEvent)
+	{
+		AbstractEventNode theNode = super.getNode(aEvent);
+		if (theNode != null) return theNode;
+		else return itsNodesMap.get(aEvent);
 	}
 }

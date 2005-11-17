@@ -5,6 +5,7 @@ package tod.core.model.trace;
 
 import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.structure.BehaviorInfo;
+import tod.core.model.structure.ClassInfo;
 import tod.core.model.structure.FieldInfo;
 import tod.core.model.structure.ObjectId;
 import tod.core.model.structure.ThreadInfo;
@@ -136,6 +137,12 @@ public interface IEventTrace
 	 * object at any point in time.
 	 */
 	public IObjectInspector createObjectInspector (ObjectId aObjectId);
+	
+	/**
+	 * Creates an inspector that permits to evaluate the state of the specified
+	 * type's static fields at any point in time.
+	 */
+	public IObjectInspector createClassInspector (ClassInfo aClass);
 	
 	/**
 	 * Creates an inspector that permits to determine the value of a behavior's

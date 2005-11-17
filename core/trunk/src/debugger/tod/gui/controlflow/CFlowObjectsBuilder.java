@@ -8,13 +8,12 @@ import java.awt.Font;
 import java.util.List;
 
 import reflex.lib.logging.miner.gui.IGUIManager;
-import tod.core.ILocationRegistrer.LocalVariableInfo;
 import tod.core.model.event.IBehaviorCallEvent;
-import tod.core.model.event.ICallerSideEvent;
 import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.BehaviorInfo;
+import tod.core.model.structure.FieldInfo;
+import tod.core.model.structure.ObjectId;
 import tod.core.model.trace.IEventTrace;
-import tod.core.model.trace.IVariablesInspector;
+import tod.core.model.trace.IObjectInspector;
 import tod.gui.Hyperlinks;
 import zz.csg.api.IRectangularGraphicObject;
 import zz.csg.api.layout.SequenceLayout;
@@ -25,19 +24,17 @@ import zz.csg.impl.figures.SVGRectangle;
 import zz.utils.ui.text.XFont;
 
 /**
- * Builds the variables list for the CFlow view. 
+ * Builds a snapshot view of objects on the call stack for the CFlow view. 
  * @author gpothier
  */
-public class CFlowVariablesBuilder
+public class CFlowObjectsBuilder
 {
 	public static final XFont FONT = XFont.DEFAULT_XPLAIN.deriveFont(12);
 	public static final XFont HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, 14);
 
 	private CFlowView itsView;
 	
-	
-	
-	public CFlowVariablesBuilder(CFlowView aView)
+	public CFlowObjectsBuilder(CFlowView aView)
 	{
 		itsView = aView;
 	}
@@ -81,73 +78,69 @@ public class CFlowVariablesBuilder
 	private IRectangularGraphicObject build (ILogEvent aCurrentEvent)
 	{
 		IBehaviorCallEvent theParent = aCurrentEvent.getParent();
-		IVariablesInspector theInspector = getEventTrace().createVariablesInspector(theParent);
+		ObjectId theCurrentObject = (ObjectId) theParent.getTarget();
+		
+		IObjectInspector theInspector = theCurrentObject != null ?
+				getEventTrace().createObjectInspector(theCurrentObject)
+				: getEventTrace().createClassInspector(theParent.getExecutedBehavior().getType());
+		
 		theInspector.setCurrentEvent(aCurrentEvent);
 
-		// Determine current object
-		Object theCurrentObject = theParent.getTarget();
-		
-		// Determine available variables
-		List<LocalVariableInfo> theVariables;
-		
-		if (aCurrentEvent instanceof ICallerSideEvent)
-		{
-			ICallerSideEvent theEvent = (ICallerSideEvent) aCurrentEvent;
-			int theBytecodeIndex = theEvent.getOperationBytecodeIndex();
-			theVariables = theInspector.getVariables(theBytecodeIndex);
-		}
-		else theVariables = theInspector.getVariables();
+		// Determine available fields
+		List<FieldInfo> theFields = theInspector.getFields();
 		
 		// Create container
 		SVGGraphicContainer theContainer = new SVGGraphicContainer();
 		
-		theContainer.pChildren().add(buildHeader(theParent.getExecutedBehavior()));
-		
-		if (theCurrentObject != null)
+		theContainer.pChildren().add(buildHeader(theCurrentObject));
+
+		for (FieldInfo theField : theFields)
 		{
-			theContainer.pChildren().add(buildCurrentObjectLine(theCurrentObject));
-		}
-		
-		for (LocalVariableInfo theVariable : theVariables)
-		{
-			if ("this".equals(theVariable.getVariableName())) continue;
-			Object theValue = theInspector.getVariableValue(theVariable);
-			theContainer.pChildren().add(buildVariableLine(theVariable, theCurrentObject, theValue));
+			List<Object> theValues = theInspector.getFieldValue(theField);
+			theContainer.pChildren().add(buildFieldLine(theField, theCurrentObject, theValues));
 		}
 
 		theContainer.setLayoutManager(new StackLayout());
 		return theContainer;
 	}
 	
-	private IRectangularGraphicObject buildHeader(BehaviorInfo aBehavior)
+	private IRectangularGraphicObject buildHeader(ObjectId aCurrentObject)
 	{
 		SVGGraphicContainer theContainer = new SVGGraphicContainer();
 		
-		theContainer.pChildren().add(SVGFlowText.create("Behavior: ", HEADER_FONT, Color.BLACK));
-		theContainer.pChildren().add(Hyperlinks.behavior(getGUIManager(), aBehavior, HEADER_FONT));
+		theContainer.pChildren().add(SVGFlowText.create("Object: ", HEADER_FONT, Color.BLACK));
+		theContainer.pChildren().add(Hyperlinks.object(getGUIManager(), getEventTrace(), aCurrentObject, HEADER_FONT));
 		
 		theContainer.setLayoutManager(new SequenceLayout());
 		return theContainer;
 	}
 	
-	private IRectangularGraphicObject buildVariableLine(
-			LocalVariableInfo aVariable, 
+	private IRectangularGraphicObject buildFieldLine(
+			FieldInfo aField, 
 			Object aCurrentObject, 
-			Object aValue)
+			List<Object> aValues)
 	{
 		SVGGraphicContainer theContainer = new SVGGraphicContainer();
 		
-		String theVariableName = aVariable.getVariableName();
-		String theTypeName = aVariable.getVariableTypeName();
-		String theText = /*theTypeName + " " + */theVariableName + " = ";
+		String theFieldName = aField.getName();
+		String theTypeName = aField.getClass().getName();
+		String theText = /*theTypeName + " " + */theFieldName + " = ";
 		
 		theContainer.pChildren().add(SVGFlowText.create(theText, FONT, Color.BLACK));
-		theContainer.pChildren().add(Hyperlinks.object(
-				getGUIManager(), 
-				getEventTrace(), 
-				aCurrentObject,
-				aValue,
-				FONT));
+		
+		boolean theFirst = true;
+		for (Object theValue : aValues)
+		{
+			if (theFirst) theFirst = false;
+			else theContainer.pChildren().add(SVGFlowText.create(" / ", FONT, Color.BLACK));
+			theContainer.pChildren().add(Hyperlinks.object(
+					getGUIManager(), 
+					getEventTrace(), 
+					aCurrentObject,
+					theValue,
+					FONT));
+			
+		}
 		
 		theContainer.setLayoutManager(new SequenceLayout());
 		return theContainer;		

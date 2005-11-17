@@ -321,7 +321,7 @@ public class EventMural extends SVGGraphicContainer
 			if (t == 0) continue;
 			
 			Color c1 = new Color(r/t, g/t, b/t);
-			Color c2 = c1.darker();
+			Color c2 = Utils.getLighterColor(c1);
 
 			// Draw main bar
 			aGraphics.setColor(c1);

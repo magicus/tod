@@ -48,7 +48,7 @@ public class FilterView extends LogView implements ListSelectionListener
 
 	private void createUI()
 	{
-		itsSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+		itsSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		
 		IEventBrowser theBrowser = getEventTrace().createBrowser(itsSeed.getFilter());
 		itsModel = new EventListModel (theBrowser);

@@ -31,8 +31,12 @@ public class InstantiationNode extends AbstractBehaviorNode
 	protected void fillHeader(IRectangularGraphicContainer aContainer)
 	{
 		XFont theFont = getHeaderFont();
+
+		aContainer.pChildren().add(SVGFlowText.create(
+				"new ", 
+				theFont, 
+				getEvent().hasThrown() ? Color.RED : Color.BLACK));
 		
-		aContainer.pChildren().add(SVGFlowText.create("new ", theFont, Color.BLACK));
 		aContainer.pChildren().add(Hyperlinks.type(getGUIManager(), getEvent().getType(), theFont));
 
 		addArguments(aContainer, getEvent().getArguments(), theFont);

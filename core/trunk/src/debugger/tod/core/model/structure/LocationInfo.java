@@ -51,6 +51,7 @@ public abstract class LocationInfo
 	 */ 
 	public void setName(String aName)
 	{
+		assert itsName == null || itsName.equals(aName);
 		itsName = aName;
 	}
 	

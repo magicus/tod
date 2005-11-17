@@ -9,7 +9,8 @@ import tod.core.model.structure.TypeInfo;
 /**
  * @author gpothier
  */
-public class InstantiationEvent extends BehaviorCallEvent implements IInstantiationEvent
+public class InstantiationEvent extends BehaviorCallEvent 
+implements IInstantiationEvent
 {
 	public Object getInstance()
 	{
@@ -23,6 +24,6 @@ public class InstantiationEvent extends BehaviorCallEvent implements IInstantiat
 	
 	public TypeInfo getType()
 	{
-		return getCalledBehavior().getType();
+		return getExecutedBehavior().getType();
 	}
 }
