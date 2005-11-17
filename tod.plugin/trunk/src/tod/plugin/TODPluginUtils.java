@@ -6,7 +6,6 @@ package tod.plugin;
 import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IInitializer;
 import org.eclipse.jdt.core.IJavaElement;
@@ -19,15 +18,9 @@ import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchParticipant;
 import org.eclipse.jdt.core.search.SearchPattern;
-import org.eclipse.jdt.ui.JavaUI;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.texteditor.IDocumentProvider;
-import org.eclipse.ui.texteditor.ITextEditor;
 
-import tod.core.model.event.IBehaviorEnterEvent;
-import tod.core.model.event.IEvent_Location;
+import tod.core.model.event.IBehaviorCallEvent;
+import tod.core.model.event.ICallerSideEvent;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.BehaviorInfo;
 import tod.core.model.structure.LocationInfo;
@@ -122,25 +115,27 @@ public class TODPluginUtils
 	
 	public static void gotoSource (DebuggingSession aSession, ILogEvent aEvent)
 	{
-		if (aEvent instanceof IEvent_Location)
+		if (aEvent instanceof ICallerSideEvent)
 		{
-			IEvent_Location theEvent = (IEvent_Location) aEvent;
+			ICallerSideEvent theEvent = (ICallerSideEvent) aEvent;
 			gotoSource(aSession, theEvent);
 		}
-		else if (aEvent instanceof IBehaviorEnterEvent)
+		else if (aEvent instanceof IBehaviorCallEvent)
 		{
-			IBehaviorEnterEvent theEvent = (IBehaviorEnterEvent) aEvent;
-			gotoSource(aSession, theEvent.getBehavior());
+			IBehaviorCallEvent theEvent = (IBehaviorCallEvent) aEvent;
+			gotoSource(aSession, theEvent.getExecutedBehavior());
 		}
 	}
 	
-	public static void gotoSource (DebuggingSession aSession, IEvent_Location aEvent)
+	public static void gotoSource (DebuggingSession aSession, ICallerSideEvent aEvent)
 	{
-	    IBehaviorEnterEvent theFather = aEvent.getParent();
-	    if (theFather == null) return;
+		IBehaviorCallEvent theParent = aEvent.getParent();
+	    if (theParent == null) return;
 	    
 	    int theBytecodeIndex = aEvent.getOperationBytecodeIndex();
-	    BehaviorInfo theBehavior = theFather.getBehavior();
+	    BehaviorInfo theBehavior = theParent.getExecutedBehavior();
+	    if (theBehavior == null) return;
+	    
 	    int theLineNumber = theBehavior.getLineNumber(theBytecodeIndex);
 	    TypeInfo theType = theBehavior.getType();
 	    

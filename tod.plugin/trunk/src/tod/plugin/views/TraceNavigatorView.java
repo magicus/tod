@@ -6,16 +6,8 @@ package tod.plugin.views;
 import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.Panel;
-import java.util.List;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.layout.FillLayout;
@@ -25,17 +17,9 @@ import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.ViewPart;
 
-import reflex.lib.logging.miner.gui.BrowserNavigator;
-import reflex.lib.logging.miner.gui.seed.SeedFactory;
-import tod.core.model.event.IBehaviorEnterEvent;
-import tod.core.model.event.IEvent_Location;
 import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.LocationInfo;
-import tod.core.model.structure.TypeInfo;
 import tod.plugin.DebuggingSession;
-import tod.plugin.TODPlugin;
 import tod.plugin.TODPluginUtils;
-import tod.plugin.TextSelectionUtils;
 
 /**
  * This view is the trace navigator.

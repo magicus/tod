@@ -3,6 +3,9 @@
  */
 package tod.plugin;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.eclipse.jdt.core.IJavaProject;
 
 import tod.session.DefaultSessionFactory;
@@ -53,11 +56,25 @@ public class TODSessionManager
 	 */
 	public DebuggingSession createSession(IJavaProject aJavaProject)
 	{
-		ISession theSession = DefaultSessionFactory.getInstance().createSession(null, null, null, null);
-		DebuggingSession theDebuggingSession = new DebuggingSession(theSession, aJavaProject);
+		ISession theSession;
+		try
+		{
+			theSession = DefaultSessionFactory.getInstance().createSession(
+					new URI("file:/home/gpothier/tmp/ASM"), 
+					null, 
+					null, 
+					null);
+			
+			DebuggingSession theDebuggingSession = new DebuggingSession(theSession, aJavaProject);
+			
+			pCurrentSession.set(theDebuggingSession);
+			return theDebuggingSession;
+		}
+		catch (URISyntaxException e)
+		{
+			throw new RuntimeException(e);
+		}
 		
-		pCurrentSession.set(theDebuggingSession);
-		return theDebuggingSession;
 	}
 	
 }
