@@ -54,7 +54,6 @@ public class CFlowView extends LogView
 		public void propertyChanged(IProperty<ILogEvent> aProperty, ILogEvent aOldValue, ILogEvent aNewValue)
 		{
 			itsTreePanel.repaint();
-			if (aNewValue != null) getGUIManager().gotoEvent(aNewValue);
 			update();
 		}
 	};
@@ -125,6 +124,8 @@ public class CFlowView extends LogView
 			
 			showEvent(theSelectedEvent);
 		}
+		
+		if (theSelectedEvent != null) getGUIManager().gotoEvent(theSelectedEvent);
 	}
 	
 	private void showEvent (ILogEvent aEvent)
