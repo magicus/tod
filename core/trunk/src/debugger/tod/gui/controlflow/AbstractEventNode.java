@@ -9,11 +9,10 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 
-import reflex.lib.logging.miner.gui.IGUIManager;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.trace.IEventTrace;
+import tod.gui.IGUIManager;
 import zz.csg.api.GraphicObjectContext;
-import zz.csg.api.IGraphicContainer;
 import zz.csg.impl.SVGGraphicContainer;
 
 public abstract class AbstractEventNode extends SVGGraphicContainer

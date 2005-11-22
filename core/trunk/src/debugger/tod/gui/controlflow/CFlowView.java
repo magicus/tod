@@ -4,12 +4,7 @@
 package tod.gui.controlflow;
 
 import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.awt.geom.Point2D.Double;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -19,14 +14,14 @@ import java.util.Set;
 import javax.swing.BoxLayout;
 import javax.swing.JScrollPane;
 
-import reflex.lib.logging.miner.gui.IGUIManager;
-import reflex.lib.logging.miner.gui.seed.CFlowSeed;
-import reflex.lib.logging.miner.gui.view.LogView;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.event.IParentEvent;
-import tod.core.model.structure.ThreadInfo;
+import tod.core.model.structure.IThreadInfo;
 import tod.core.model.trace.ICFlowBrowser;
 import tod.core.model.trace.IEventTrace;
+import tod.gui.IGUIManager;
+import tod.gui.seed.CFlowSeed;
+import tod.gui.view.LogView;
 import zz.csg.display.GraphicPanel;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
@@ -72,7 +67,7 @@ public class CFlowView extends LogView
 		super (aGUIManager, aEventTrace);
 		itsSeed = aSeed;
 
-		ThreadInfo theThread = itsSeed.getThread();
+		IThreadInfo theThread = itsSeed.getThread();
 		itsBrowser = getEventTrace().createCFlowBrowser(theThread);
 	}
 

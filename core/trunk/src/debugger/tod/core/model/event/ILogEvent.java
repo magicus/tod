@@ -3,7 +3,7 @@
  */
 package tod.core.model.event;
 
-import tod.core.model.structure.ThreadInfo;
+import tod.core.model.structure.IThreadInfo;
 
 /**
  * Root of the interface graph of logging events.
@@ -14,7 +14,7 @@ public interface ILogEvent
 	/**
 	 * Identifies the thread in which the event occured.
 	 */
-	public ThreadInfo getThread();
+	public IThreadInfo getThread();
 	
 	/**
 	 * Timestamp of the event. Its absolute value has no

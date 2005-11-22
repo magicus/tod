@@ -3,7 +3,7 @@
  */
 package tod.core.model.event;
 
-import tod.core.model.structure.TypeInfo;
+import tod.core.model.structure.ITypeInfo;
 
 /**
  * @author gpothier
@@ -13,7 +13,7 @@ public interface IInstantiationEvent extends IBehaviorCallEvent
 	/**
 	 * The instanciated type
 	 */
-	public TypeInfo getType();
+	public ITypeInfo getType();
 
 	/**
 	 * The resulting instance.

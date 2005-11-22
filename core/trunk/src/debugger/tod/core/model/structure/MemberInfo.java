@@ -11,17 +11,17 @@ import tod.core.model.trace.ILocationTrace;
  * receives about a type member (method, constructor, field).
  * @author gpothier
  */
-public abstract class MemberInfo extends LocationInfo
+public abstract class MemberInfo extends LocationInfo implements IMemberInfo
 {
-	private ClassInfo itsType;
+	private IClassInfo itsType;
 	
-	public MemberInfo(ILocationTrace aTrace, int aId, ClassInfo aTypeInfo, String aName)
+	public MemberInfo(ILocationTrace aTrace, int aId, IClassInfo aTypeInfo, String aName)
 	{
 		super(aTrace, aId, aName);
 		itsType = aTypeInfo;
 	}
 	
-	public ClassInfo getType()
+	public IClassInfo getType()
 	{
 		return itsType;
 	}	

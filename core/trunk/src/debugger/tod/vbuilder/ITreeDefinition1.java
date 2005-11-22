@@ -3,7 +3,6 @@
  */
 package tod.vbuilder;
 
-import tod.core.model.structure.ObjectId;
 
 public interface ITreeDefinition1<N>
 {

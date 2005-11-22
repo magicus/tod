@@ -6,10 +6,10 @@ package tod.core.model.trace;
 import java.util.List;
 
 import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.FieldInfo;
-import tod.core.model.structure.MemberInfo;
+import tod.core.model.structure.IFieldInfo;
+import tod.core.model.structure.IMemberInfo;
+import tod.core.model.structure.ITypeInfo;
 import tod.core.model.structure.ObjectId;
-import tod.core.model.structure.TypeInfo;
 
 /**
  * Permits to estimate the state of an object at a given moment.
@@ -29,17 +29,17 @@ public interface IObjectInspector
 	/**
 	 * Returns the type descriptor of the object.
 	 */
-	public TypeInfo getType ();
+	public ITypeInfo getType ();
 	
 	/**
 	 * Retrieves all the member descriptors of the inspected object.
 	 */
-	public List<MemberInfo> getMembers();
+	public List<IMemberInfo> getMembers();
 	
 	/**
 	 * Retrieves all the field descriptors of the inspected object.
 	 */
-	public List<FieldInfo> getFields();
+	public List<IFieldInfo> getFields();
 	
 	/**
 	 * Sets the current timestamp of this inspector.
@@ -61,43 +61,43 @@ public interface IObjectInspector
 	 * This can happen for instance if several field write events have
 	 * the same timestamp.
 	 */
-	public List<Object> getFieldValue (FieldInfo aField);
+	public List<Object> getFieldValue (IFieldInfo aField);
 	
 	/**
 	 * Returns a filter on field write or behavior call events for the specified member
 	 * of the inspected object.
 	 */
-	public IEventFilter getFilter (MemberInfo aMemberInfo);
+	public IEventFilter getFilter (IMemberInfo aMemberInfo);
 	
 	/**
 	 * Returns an event broswer on field write or behavior call events for the specified member
 	 * of the inspected object.
 	 */
-	public IEventBrowser getBrowser (MemberInfo aMemberInfo);
+	public IEventBrowser getBrowser (IMemberInfo aMemberInfo);
 	
 	/**
 	 * Positions this inspector to the point of the next field write/behavior call
 	 * of the specified member.
 	 */
-	public void stepToNext (MemberInfo aMemberInfo);
+	public void stepToNext (IMemberInfo aMemberInfo);
 	
 	/**
 	 * Indicates if there is a field write/behavior call to the specified member after
 	 * the current timestamp.
 	 */
-	public boolean hasNext (MemberInfo aMemberInfo);
+	public boolean hasNext (IMemberInfo aMemberInfo);
 
 	/**
 	 * Positions this inspector to the point of the previous field write/behavior call
 	 * of the specified member.
 	 */
-	public void stepToPrevious (MemberInfo aMemberInfo);
+	public void stepToPrevious (IMemberInfo aMemberInfo);
 	
 	/**
 	 * Indicates if there is a field write/behavior call to the specified member before
 	 * the current timestamp.
 	 */
-	public boolean hasPrevious (MemberInfo aMemberInfo);
+	public boolean hasPrevious (IMemberInfo aMemberInfo);
 
 	/**
 	 * Positions this inspector to the point of the next field write/behavior call

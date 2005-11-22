@@ -6,10 +6,10 @@ package reflex.lib.logging.core.impl.mop.behavior;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import reflex.lib.logging.core.api.config.DynamicConfig;
-import reflex.lib.logging.core.api.config.DynamicConfig.OutputBehaviour;
 import reflex.lib.logging.core.impl.mop.Config;
 import tod.core.Output;
+import tod.core.config.DynamicConfig;
+import tod.core.config.DynamicConfig.OutputBehaviour;
 
 
 /**

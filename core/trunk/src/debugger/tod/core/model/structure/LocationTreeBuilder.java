@@ -42,8 +42,8 @@ public class LocationTreeBuilder
 	private Map<String, PackageNode> itsPackageMap =
 		new HashMap<String, PackageNode>();
 	
-	private Map<TypeInfo, TypeNode> itsTypeNodesMap =
-		new HashMap<TypeInfo, TypeNode>();
+	private Map<ITypeInfo, TypeNode> itsTypeNodesMap =
+		new HashMap<ITypeInfo, TypeNode>();
 	
 	private PackageNode itsRootNode;
 
@@ -72,13 +72,13 @@ public class LocationTreeBuilder
 	/**
 	 * Builds the packages & types.
 	 */
-	private void buildTypes(Iterable<ClassInfo> aTypes)
+	private void buildTypes(Iterable<IClassInfo> aTypes)
 	{
 		itsRootNode = new PackageNode("");
 		itsPackageMap.put ("", itsRootNode);
 
 		// Build the tree
-		for (ClassInfo theClass : aTypes)
+		for (IClassInfo theClass : aTypes)
 		{
 			String thePackageName = getPackageName(theClass.getName());
 			PackageNode thePackageNode = getPackageNode(thePackageName);
@@ -89,17 +89,17 @@ public class LocationTreeBuilder
 	/**
 	 * Fills types nodes with members from the given list.
 	 */
-	private void buildMembers (Iterable<? extends MemberInfo> aMembers)
+	private void buildMembers (Iterable<? extends IMemberInfo> aMembers)
 	{
-		for (MemberInfo theMemberInfo : aMembers)
+		for (IMemberInfo theMemberInfo : aMembers)
 		{
-			TypeInfo theTypeInfo = theMemberInfo.getType();
+			ITypeInfo theTypeInfo = theMemberInfo.getType();
 			TypeNode theTypeNode = getTypeNode(theTypeInfo);
 			theTypeNode.addChild(new MemberNode(theMemberInfo));
 		}
 	}
 	
-	private void createTypeNode (Node aParentNode, TypeInfo aInfo)
+	private void createTypeNode (Node aParentNode, ITypeInfo aInfo)
 	{
 		TypeNode theNode = new TypeNode(aInfo);
 		itsTypeNodesMap.put(aInfo, theNode);
@@ -109,7 +109,7 @@ public class LocationTreeBuilder
 	/**
 	 * Returns the type node that corresponds to the given type descriptor.
 	 */
-	public TypeNode getTypeNode (TypeInfo aInfo)
+	public TypeNode getTypeNode (ITypeInfo aInfo)
 	{
 		return (TypeNode) itsTypeNodesMap.get(aInfo);
 	}
@@ -215,16 +215,16 @@ public class LocationTreeBuilder
 	
 	public static class TypeNode extends Node
 	{
-		private TypeInfo itsTypeInfo;
+		private ITypeInfo itsTypeInfo;
 		private String itsDisplayName;
 		
-		public TypeNode(TypeInfo aTypeInfo)
+		public TypeNode(ITypeInfo aTypeInfo)
 		{
 			itsTypeInfo = aTypeInfo;
 			itsDisplayName = getLastName(itsTypeInfo.getName());
 		}
 		
-		public TypeInfo getTypeInfo()
+		public ITypeInfo getTypeInfo()
 		{
 			return itsTypeInfo;
 		}
@@ -237,16 +237,16 @@ public class LocationTreeBuilder
 
 	public static class MemberNode extends Node
 	{
-		private MemberInfo itsMemberInfo;
+		private IMemberInfo itsMemberInfo;
 		private String itsDisplayName;
 		
-		public MemberNode(MemberInfo aMemberInfo)
+		public MemberNode(IMemberInfo aMemberInfo)
 		{
 			itsMemberInfo = aMemberInfo;
 			itsDisplayName = aMemberInfo.getName();
 		}
 		
-		public MemberInfo getMemberInfo()
+		public IMemberInfo getMemberInfo()
 		{
 			return itsMemberInfo;
 		}

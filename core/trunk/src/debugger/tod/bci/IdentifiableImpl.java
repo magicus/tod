@@ -3,13 +3,8 @@
  */
 package tod.bci;
 
-import reflex.lib.logging.core.impl.mop.Config;
-import reflex.lib.logging.core.impl.mop.identification.ObjectIdentifier;
-import tod.agent.AgentConfig;
 import tod.agent.AgentReady;
 import tod.core.IIdentifiableObject;
-import tod.core.ILogCollector;
-import tod.core.IdGenerator;
 
 public class IdentifiableImpl implements IIdentifiableObject
 {

@@ -10,22 +10,21 @@ import java.awt.FlowLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import reflex.lib.logging.miner.gui.IGUIManager;
-import reflex.lib.logging.miner.gui.kit.SeedLinkLabel;
-import reflex.lib.logging.miner.gui.seed.FilterSeed;
-import reflex.lib.logging.miner.gui.seed.ObjectInspectorSeed;
-import reflex.lib.logging.miner.gui.view.LogView;
-import tod.core.model.structure.BehaviorInfo;
-import tod.core.model.structure.FieldInfo;
-import tod.core.model.structure.MemberInfo;
+import tod.core.model.structure.IBehaviorInfo;
+import tod.core.model.structure.IFieldInfo;
+import tod.core.model.structure.IMemberInfo;
+import tod.core.model.structure.ITypeInfo;
 import tod.core.model.structure.ObjectId;
-import tod.core.model.structure.TypeInfo;
 import tod.core.model.trace.IEventBrowser;
 import tod.core.model.trace.IEventTrace;
 import tod.core.model.trace.IObjectInspector;
 import tod.gui.eventsequences.FieldSequenceView;
 import tod.gui.eventsequences.MembersDock;
 import tod.gui.eventsequences.MethodSequenceView;
+import tod.gui.kit.SeedLinkLabel;
+import tod.gui.seed.FilterSeed;
+import tod.gui.seed.ObjectInspectorSeed;
+import tod.gui.view.LogView;
 import zz.utils.list.ICollection;
 import zz.utils.list.ICollectionListener;
 import zz.utils.properties.ISetProperty;
@@ -94,14 +93,14 @@ public class ObjectInspectorView extends LogView
 		
 		// Setup member selector
 		itsMemberSelector = new MemberSelector();
-		itsMemberSelector.pSelectedMembers().addHardListener(new ICollectionListener<MemberInfo>()
+		itsMemberSelector.pSelectedMembers().addHardListener(new ICollectionListener<IMemberInfo>()
 				{
-					public void elementAdded(ICollection<MemberInfo> aCollection, MemberInfo aElement)
+					public void elementAdded(ICollection<IMemberInfo> aCollection, IMemberInfo aElement)
 					{
 						itsDock.addMember(itsInspector, aElement);
 					}
 
-					public void elementRemoved(ICollection<MemberInfo> aCollection, MemberInfo aElement)
+					public void elementRemoved(ICollection<IMemberInfo> aCollection, IMemberInfo aElement)
 					{
 						itsDock.removeMember(aElement);
 					}
@@ -118,15 +117,15 @@ public class ObjectInspectorView extends LogView
 		if (itsInspector != null)
 		{
 			// Update label
-			TypeInfo theType = itsInspector.getType();
+			ITypeInfo theType = itsInspector.getType();
 
 			// Update timescale's browsers
-			for (MemberInfo theMember : itsInspector.getMembers())
+			for (IMemberInfo theMember : itsInspector.getMembers())
 			{
 				IEventBrowser theBrowser = itsInspector.getBrowser(theMember);
 				Color theColor;
-				if (theMember instanceof FieldInfo) theColor = FieldSequenceView.FIELD_COLOR;
-				else if (theMember instanceof BehaviorInfo) theColor = MethodSequenceView.METHOD_COLOR;
+				if (theMember instanceof IFieldInfo) theColor = FieldSequenceView.FIELD_COLOR;
+				else if (theMember instanceof IBehaviorInfo) theColor = MethodSequenceView.METHOD_COLOR;
 				else throw new RuntimeException("Not handled: "+theMember); 
 				itsTimeScale.pEventBrowsers().add (new BrowserData(theBrowser, theColor));
 			}
@@ -149,7 +148,7 @@ public class ObjectInspectorView extends LogView
 		if (itsInspector != null)
 		{
 			// Update label
-			TypeInfo theType = itsInspector.getType();
+			ITypeInfo theType = itsInspector.getType();
 			theObject = itsInspector.getObject();
 			theTitle = String.format(
 					"Object inspector for: %s (%s)",
@@ -185,7 +184,7 @@ public class ObjectInspectorView extends LogView
 	/**
 	 * The property that contains the members whose history is displayed.
 	 */
-	public ISetProperty<MemberInfo> pMembers()
+	public ISetProperty<IMemberInfo> pMembers()
 	{
 		return itsMemberSelector.pSelectedMembers();
 	}

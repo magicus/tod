@@ -11,7 +11,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import tod.core.BehaviourType;
+import tod.core.BehaviourKind;
 import tod.core.ILocationRegistrer;
 import tod.core.transport.CollectorPacketReader;
 import tod.core.transport.CollectorPacketWriter;
@@ -40,7 +40,7 @@ public class LocationPoolPersister
 			itsStream = aStream;
 		}
 
-		public void registerBehavior(BehaviourType aBehaviourType, int aBehaviourId, int aTypeId, String aBehaviourName, String aSignature)
+		public void registerBehavior(BehaviourKind aBehaviourType, int aBehaviourId, int aTypeId, String aBehaviourName, String aSignature)
 		{
 			try
 			{

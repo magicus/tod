@@ -8,13 +8,11 @@ import reflex.api.model.RBehavior;
 import reflex.api.model.RClass;
 import reflex.api.model.RConstructor;
 import reflex.api.model.RField;
-import reflex.api.model.RLocalVariable;
 import reflex.api.model.RMember;
 import reflex.api.model.RMethod;
 import reflex.api.model.RStructuralElement;
 import reflex.std.installer.msgreceive.RMethodWrapper;
-import tod.core.BehaviourType;
-import tod.core.ILocationRegistrer;
+import tod.core.BehaviourKind;
 
 /**
  * Helps the MOP to maintain and generate location ids.
@@ -72,10 +70,10 @@ public class ReflexLocationPool
 		protected void register(int aId, RStructuralElement aElement)
 		{
 			RBehavior theBehavior = (RBehavior) aElement;
-			BehaviourType theType = null;
+			BehaviourKind theType = null;
 			
-			if (theBehavior instanceof RMethod) theType = BehaviourType.METHOD;
-			else if (theBehavior instanceof RConstructor) theType = BehaviourType.CONSTRUCTOR;
+			if (theBehavior instanceof RMethod) theType = BehaviourKind.METHOD;
+			else if (theBehavior instanceof RConstructor) theType = BehaviourKind.CONSTRUCTOR;
 			
 			Config.COLLECTOR.registerBehavior(
 					theType,

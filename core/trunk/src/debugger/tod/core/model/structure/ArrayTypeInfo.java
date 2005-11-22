@@ -5,12 +5,12 @@ package tod.core.model.structure;
 
 import tod.core.model.trace.ILocationTrace;
 
-public class ArrayTypeInfo extends TypeInfo
+public class ArrayTypeInfo extends TypeInfo implements IArrayTypeInfo
 {
-	private TypeInfo itsElementType;
+	private ITypeInfo itsElementType;
 	private int itsDimensions;
 	
-	public ArrayTypeInfo(ILocationTrace aTrace, TypeInfo aElementType, int aDimensions)
+	public ArrayTypeInfo(ILocationTrace aTrace, ITypeInfo aElementType, int aDimensions)
 	{
 		super(aTrace, -1);
 		itsElementType = aElementType;
@@ -22,30 +22,26 @@ public class ArrayTypeInfo extends TypeInfo
 		return itsDimensions;
 	}
 
-	public TypeInfo getElementType()
+	public ITypeInfo getElementType()
 	{
 		return itsElementType;
 	}
 
-	@Override
 	public int getSize()
 	{
 		return 1;
 	}
 
-	@Override
 	public boolean isArray()
 	{
 		return true;
 	}
 
-	@Override
 	public boolean isPrimitive()
 	{
 		return false;
 	}
 
-	@Override
 	public boolean isVoid()
 	{
 		return false;

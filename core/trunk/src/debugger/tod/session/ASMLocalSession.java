@@ -10,19 +10,16 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.URI;
 
-import reflex.lib.logging.core.impl.mop.behavior.CollectorStream;
-import reflex.lib.logging.miner.impl.local.LocalCollector;
 import remotebci.RemoteInstrumenter;
 import tod.core.PrintThroughCollector;
 import tod.core.model.structure.ObjectId;
 import tod.core.model.trace.IEventTrace;
 import tod.core.model.trace.ILocationTrace;
-import tod.core.transport.CollectorPacketReader;
 import tod.core.transport.LogReceiver;
-import tod.core.transport.MessageType;
+import tod.impl.local.LocalCollector;
 
 /**
- * A session that uses a {@link reflex.lib.logging.miner.impl.local.LocalCollector}
+ * A session that uses a {@link tod.impl.local.LocalCollector}
  * and {@link tod.bci.asm.ASMInstrumenter}.
  * @author gpothier
  */

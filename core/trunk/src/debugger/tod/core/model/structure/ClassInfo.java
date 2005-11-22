@@ -8,13 +8,13 @@ import java.util.Map;
 
 import tod.core.model.trace.ILocationTrace;
 
-public class ClassInfo extends TypeInfo
+public class ClassInfo extends TypeInfo implements IClassInfo
 {
 	private ClassInfo itsSupertype;
 	private ClassInfo[] itsInterfaces;
 	
-	private Map<String, FieldInfo> itsFieldsMap = new HashMap<String, FieldInfo>();
-	private Map<String, BehaviorInfo> itsBehaviorsMap = new HashMap<String, BehaviorInfo>();
+	private Map<String, IFieldInfo> itsFieldsMap = new HashMap<String, IFieldInfo>();
+	private Map<String, IBehaviorInfo> itsBehaviorsMap = new HashMap<String, IBehaviorInfo>();
 	
 
 	public ClassInfo(ILocationTrace aTrace, int aId)
@@ -43,7 +43,7 @@ public class ClassInfo extends TypeInfo
 	/**
 	 * Registers the given field info object.
 	 */
-	public void register(FieldInfo aFieldInfo)
+	public void register(IFieldInfo aFieldInfo)
 	{
 		itsFieldsMap.put (aFieldInfo.getName(), aFieldInfo);
 	}
@@ -51,27 +51,27 @@ public class ClassInfo extends TypeInfo
 	/**
 	 * Registers the given behavior info object.
 	 */
-	public void register(BehaviorInfo aBehaviorInfo)
+	public void register(IBehaviorInfo aBehavior)
 	{
-		itsBehaviorsMap.put(getKey(aBehaviorInfo), aBehaviorInfo);
+		itsBehaviorsMap.put(getKey(aBehavior), aBehavior);
 	}
 	
-	public FieldInfo getField(String aName)
+	public IFieldInfo getField(String aName)
 	{
 		return itsFieldsMap.get(aName);
 	}
 	
-	public BehaviorInfo getBehavior(String aName, TypeInfo[] aArgumentTypes)
+	public IBehaviorInfo getBehavior(String aName, ITypeInfo[] aArgumentTypes)
 	{
 		return itsBehaviorsMap.get(getKey(aName, aArgumentTypes));
 	}
 	
-	public Iterable<FieldInfo> getFields()
+	public Iterable<IFieldInfo> getFields()
 	{
 		return itsFieldsMap.values();
 	}
 	
-	public Iterable<BehaviorInfo> getBehaviors()
+	public Iterable<IBehaviorInfo> getBehaviors()
 	{
 		return itsBehaviorsMap.values();
 	}
@@ -96,40 +96,36 @@ public class ClassInfo extends TypeInfo
 		return itsSupertype;
 	}
 
-	@Override
 	public int getSize()
 	{
 		return 1;
 	}
 
-	@Override
 	public boolean isArray()
 	{
 		return false;
 	}
 
-	@Override
 	public boolean isPrimitive()
 	{
 		return false;
 	}
 
-	@Override
 	public boolean isVoid()
 	{
 		return false;
 	}
 
-	private String getKey(BehaviorInfo aBehavior)
+	private String getKey(IBehaviorInfo aBehavior)
 	{
 		return getKey(aBehavior.getName(), aBehavior.getArgumentTypes());
 	}
 	
-	private String getKey(String aName, TypeInfo[] aArgumentTypes)
+	private String getKey(String aName, ITypeInfo[] aArgumentTypes)
 	{
 		StringBuilder theBuilder = new StringBuilder();
 		theBuilder.append(aName);
-		for (TypeInfo theType : aArgumentTypes)
+		for (ITypeInfo theType : aArgumentTypes)
 		{
 			theBuilder.append('|');
 			theBuilder.append(theType.getName());

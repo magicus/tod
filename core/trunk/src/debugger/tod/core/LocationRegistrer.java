@@ -10,8 +10,7 @@ import java.util.Map;
 
 import org.objectweb.asm.Type;
 
-import reflex.lib.logging.Util;
-import tod.core.ILocationRegistrer;
+import tod.Util;
 import tod.core.model.structure.ArrayTypeInfo;
 import tod.core.model.structure.BehaviorInfo;
 import tod.core.model.structure.ClassInfo;
@@ -68,7 +67,7 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationTrace
 	}
 
 	public void registerBehavior(
-			BehaviourType aBehaviourType, 
+			BehaviourKind aBehaviourType, 
 			int aBehaviourId, 
 			int aTypeId, 
 			String aBehaviourName,
@@ -165,7 +164,7 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationTrace
 	 * Factory method for constructor info.
 	 */
 	protected BehaviorInfo createBehaviourInfo(
-			BehaviourType aBehaviourType, 
+			BehaviourKind aBehaviourType, 
 			int aId, 
 			ClassInfo aTypeInfo, 
 			String aName,
@@ -277,7 +276,7 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationTrace
 	/**
 	 * Returns all available classes.
 	 */
-	public Iterable<ClassInfo> getClasses()
+	public Iterable getClasses()
 	{
 		return itsTypes;
 	}
@@ -285,7 +284,7 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationTrace
 	/**
 	 * Returns all available behaviours.
 	 */
-	public Iterable<BehaviorInfo> getBehaviours()
+	public Iterable getBehaviours()
 	{
 		return itsBehaviors;
 	}
@@ -293,7 +292,7 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationTrace
 	/**
 	 * Returns all available fields.
 	 */
-	public Iterable<FieldInfo> getFields()
+	public Iterable getFields()
 	{
 		return itsFields;
 	}
@@ -309,7 +308,7 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationTrace
 	/**
 	 * Returns all available threads.
 	 */
-	public Iterable<ThreadInfo> getThreads()
+	public Iterable getThreads()
 	{
 		return itsThreads.values();
 	}

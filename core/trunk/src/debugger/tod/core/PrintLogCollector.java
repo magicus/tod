@@ -6,7 +6,7 @@ package tod.core;
 import java.io.PrintStream;
 import java.util.Arrays;
 
-import tod.core.model.structure.BehaviorInfo;
+import tod.core.model.structure.IBehaviorInfo;
 import zz.utils.ArrayStack;
 import zz.utils.Stack;
 
@@ -20,7 +20,7 @@ public class PrintLogCollector extends LocationRegistrer implements ILogCollecto
 	private boolean itsPrintEvents = true;
 	private boolean itsPrintRegistrations = false;
 	
-	private Stack<BehaviorInfo> itsBehaviorsStack = new ArrayStack<BehaviorInfo>();
+	private Stack<IBehaviorInfo> itsBehaviorsStack = new ArrayStack<IBehaviorInfo>();
 
 	public PrintLogCollector()
 	{
@@ -40,7 +40,7 @@ public class PrintLogCollector extends LocationRegistrer implements ILogCollecto
 			Object aTarget,
 			Object[] aArguments)
 	{
-		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
+		IBehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
 		if (itsPrintEvents) itsOutput.println(String.format(
                 "[LOG] calling method: %s.%s (%d) on %s with (%s)",
 				theBehavior.getType().getName(),
@@ -58,7 +58,7 @@ public class PrintLogCollector extends LocationRegistrer implements ILogCollecto
 			Object aTarget, 
 			Object aResult)
 	{
-		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
+		IBehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
 		if (itsPrintEvents) itsOutput.println(String.format(
                 "[LOG] method called: %s.%s (%d) on %s result: %s",
 				theBehavior.getType().getName(),
@@ -76,7 +76,7 @@ public class PrintLogCollector extends LocationRegistrer implements ILogCollecto
 			Object aTarget, 
 			Object aException)
 	{
-		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
+		IBehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
 		if (itsPrintEvents) itsOutput.println(String.format(
 				"[LOG] method returned with exception: %s.%s (%d) on %s exception: %s",
 				theBehavior.getType().getName(),
@@ -94,7 +94,7 @@ public class PrintLogCollector extends LocationRegistrer implements ILogCollecto
 			Object aObject,
 			Object[] aArguments)
 	{
-		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
+		IBehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
 		if (itsPrintEvents) itsOutput.println(String.format(
 				"[LOG] entering: %s.%s (%d) on %s with %s",
 				theBehavior.getType().getName(),
@@ -111,7 +111,7 @@ public class PrintLogCollector extends LocationRegistrer implements ILogCollecto
 			int aBehaviorLocationId,
 			Object aResult)
 	{
-		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
+		IBehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
 		if (itsPrintEvents) itsOutput.println(String.format(
 				"[LOG] exiting: %s.%s (%d), result: %s",
 				theBehavior.getType().getName(),
@@ -127,7 +127,7 @@ public class PrintLogCollector extends LocationRegistrer implements ILogCollecto
 			int aBehaviorLocationId, 
 			Object aException)
 	{
-		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
+		IBehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
 		if (itsPrintEvents) itsOutput.println(String.format(
 				"[LOG] exiting with exception: %s.%s (%d)",
 				theBehavior.getType().getName(),
@@ -143,7 +143,7 @@ public class PrintLogCollector extends LocationRegistrer implements ILogCollecto
 			int aOperationBytecodeIndex, 
 			Object aException)
 	{
-		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
+		IBehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
 		if (itsPrintEvents) itsOutput.println(String.format(
 				"[LOG] exception generated in: %s.%s (%d)",
 				theBehavior.getType().getName(),
@@ -198,7 +198,7 @@ public class PrintLogCollector extends LocationRegistrer implements ILogCollecto
 			int aOperationBytecodeIndex, 
 			int aBehaviorLocationId)
 	{
-		BehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
+		IBehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
 		if (itsPrintEvents) itsOutput.println(String.format(
                 "[LOG] before behavior call (dry): %s.%s (%d)",
 				theBehavior.getType().getName(),
@@ -218,7 +218,7 @@ public class PrintLogCollector extends LocationRegistrer implements ILogCollecto
 			int aVariableId, 
 			Object aValue)
 	{
-		BehaviorInfo theInfo = itsBehaviorsStack.peek();
+		IBehaviorInfo theInfo = itsBehaviorsStack.peek();
         
         String theName;
 //        if (aVariableId >= 0)
@@ -261,7 +261,7 @@ public class PrintLogCollector extends LocationRegistrer implements ILogCollecto
 	}
 
 	@Override
-	public void registerBehavior(BehaviourType aBehaviourType, int aBehaviourId, int aTypeId, String aBehaviourName, String aSignature)
+	public void registerBehavior(BehaviourKind aBehaviourType, int aBehaviourId, int aTypeId, String aBehaviourName, String aSignature)
 	{
 		if (itsPrintRegistrations) itsOutput.println(String.format(
                 "[LOG] register behavior: %s (%d) in type %s (%d)",

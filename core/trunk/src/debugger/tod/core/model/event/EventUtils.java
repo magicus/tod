@@ -7,8 +7,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import tod.core.ILocationRegistrer.LocalVariableInfo;
-import tod.core.model.structure.BehaviorInfo;
-import tod.core.model.structure.TypeInfo;
+import tod.core.model.structure.IBehaviorInfo;
+import tod.core.model.structure.ITypeInfo;
 
 /**
  * Provides utility methods related to events
@@ -20,7 +20,7 @@ public class EventUtils
 	
 	public static String getVariableName(ILocalVariableWriteEvent aEvent)
 	{
-		BehaviorInfo theInfo = aEvent.getParent().getExecutedBehavior();
+		IBehaviorInfo theInfo = aEvent.getParent().getExecutedBehavior();
 		
 		int theBytecodeIndex = aEvent.getOperationBytecodeIndex();
 		short theVariableIndex = aEvent.getVariable().getIndex();
@@ -68,10 +68,10 @@ public class EventUtils
 		
 		public boolean isIgnorableException (IExceptionGeneratedEvent aEvent)
 		{
-			BehaviorInfo theBehavior = aEvent.getThrowingBehavior();
+			IBehaviorInfo theBehavior = aEvent.getThrowingBehavior();
 			if (theBehavior == null) return true; // TODO: this is temporary
 			
-			TypeInfo theType = theBehavior.getType();
+			ITypeInfo theType = theBehavior.getType();
 			return itsIgnorableExceptions.contains(theType.getName()+"."+theBehavior.getName());
 		}
 	}

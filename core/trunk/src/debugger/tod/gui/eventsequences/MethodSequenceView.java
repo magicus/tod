@@ -5,20 +5,16 @@ package tod.gui.eventsequences;
 
 import java.awt.Color;
 
-import reflex.lib.logging.miner.gui.IGUIManager;
-import reflex.lib.logging.miner.gui.seed.CFlowSeed;
-import reflex.lib.logging.miner.gui.view.LogView;
 import tod.core.model.event.IBehaviorCallEvent;
-import tod.core.model.event.IFieldWriteEvent;
 import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.BehaviorInfo;
-import tod.core.model.structure.FieldInfo;
-import tod.core.model.structure.MemberInfo;
+import tod.core.model.structure.IBehaviorInfo;
+import tod.core.model.structure.IMemberInfo;
 import tod.core.model.trace.IEventTrace;
-import tod.core.model.trace.IEventBrowser;
 import tod.core.model.trace.IObjectInspector;
-import tod.gui.ObjectInspectorView;
+import tod.gui.IGUIManager;
 import tod.gui.SVGHyperlink;
+import tod.gui.seed.CFlowSeed;
+import tod.gui.view.LogView;
 import zz.csg.api.IDisplay;
 import zz.csg.api.IRectangularGraphicObject;
 import zz.csg.api.layout.SequenceLayout;
@@ -29,10 +25,10 @@ public class MethodSequenceView extends AbstractMemberSequenceView
 {
 	public static final Color METHOD_COLOR = Color.GREEN;
 	
-	private BehaviorInfo itsMethod;
+	private IBehaviorInfo itsMethod;
 
 	
-	public MethodSequenceView(IDisplay aDisplay, LogView aLogView, IObjectInspector aInspector, BehaviorInfo aMethod)
+	public MethodSequenceView(IDisplay aDisplay, LogView aLogView, IObjectInspector aInspector, IBehaviorInfo aMethod)
 	{
 		super(aDisplay, aLogView, aInspector, METHOD_COLOR);
 		itsMethod = aMethod;
@@ -96,7 +92,7 @@ public class MethodSequenceView extends AbstractMemberSequenceView
 	}
 
 	@Override
-	public MemberInfo getMember()
+	public IMemberInfo getMember()
 	{
 		return itsMethod;
 	}

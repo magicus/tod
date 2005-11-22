@@ -6,7 +6,7 @@ package tod.core.transport;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import tod.core.BehaviourType;
+import tod.core.BehaviourKind;
 import tod.core.IIdentifiableObject;
 import tod.core.ObjectIdentity;
 import tod.core.Output;
@@ -270,7 +270,7 @@ public class CollectorPacketWriter
     
     public static void sendRegisterBehavior(
 			DataOutputStream aStream,
-    		BehaviourType aBehaviourType,
+    		BehaviourKind aBehaviourType,
             int aBehaviourId, 
             int aTypeId,
             String aBehaviourName,

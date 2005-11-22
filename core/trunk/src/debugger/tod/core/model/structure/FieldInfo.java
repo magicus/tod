@@ -11,10 +11,10 @@ import tod.core.model.trace.ILocationTrace;
  * receives about a field.
  * @author gpothier
  */
-public class FieldInfo extends MemberInfo
+public class FieldInfo extends MemberInfo implements IFieldInfo
 {
 
-	public FieldInfo(ILocationTrace aTrace, int aId, ClassInfo aTypeInfo, String aName)
+	public FieldInfo(ILocationTrace aTrace, int aId, IClassInfo aTypeInfo, String aName)
 	{
 		super(aTrace, aId, aTypeInfo, aName);
 		

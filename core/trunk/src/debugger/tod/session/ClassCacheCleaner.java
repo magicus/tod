@@ -10,8 +10,6 @@ import java.util.Map;
 import java.util.jar.JarFile;
 
 import zz.utils.IProgress;
-import zz.utils.IVisitor;
-import zz.utils.ProgressModel;
 
 
 /**

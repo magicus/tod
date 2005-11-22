@@ -6,7 +6,6 @@ package tod.vbuilder.example.tree;
 import java.util.List;
 
 import tod.core.model.structure.ObjectId;
-import tod.vbuilder.eval.IEvaluationContext;
 
 public class Node implements ObjectId
 {

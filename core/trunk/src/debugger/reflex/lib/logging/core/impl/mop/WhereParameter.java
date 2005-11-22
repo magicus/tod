@@ -4,7 +4,6 @@
 package reflex.lib.logging.core.impl.mop;
 
 import reflex.api.call.AbstractParameter;
-import reflex.api.call.Parameter;
 import reflex.api.hookset.Operation;
 import reflex.std.operation.CallerSideOperation;
 

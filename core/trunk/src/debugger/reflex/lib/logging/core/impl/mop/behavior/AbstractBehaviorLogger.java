@@ -22,13 +22,12 @@ import reflex.api.model.RClass;
 import reflex.api.model.iterator.RBehaviorIterator;
 import reflex.core.build.Builder;
 import reflex.core.build.InstrumentationListener;
-import reflex.lib.logging.core.api.config.StaticConfig;
 import reflex.lib.logging.core.impl.mop.Config;
 import reflex.lib.logging.core.impl.mop.ReflexLocationPool;
 import reflex.lib.logging.core.impl.mop.identification.ObjectIdentifier;
 import reflex.std.operation.MsgReceive;
-import tod.core.ILocationRegistrer;
 import tod.core.Output;
+import tod.core.config.StaticConfig;
 
 /**
  * Base class for method and constructor loggers. Implements the logging

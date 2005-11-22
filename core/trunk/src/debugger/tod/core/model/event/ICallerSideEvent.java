@@ -3,7 +3,6 @@
  */
 package tod.core.model.event;
 
-import tod.core.model.structure.BehaviorInfo;
 
 /**
  * This interface provide methods that give information

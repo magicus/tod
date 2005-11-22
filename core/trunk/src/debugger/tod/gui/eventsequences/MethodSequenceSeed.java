@@ -3,9 +3,9 @@
  */
 package tod.gui.eventsequences;
 
-import reflex.lib.logging.miner.gui.view.LogView;
-import tod.core.model.structure.BehaviorInfo;
+import tod.core.model.structure.IBehaviorInfo;
 import tod.core.model.trace.IObjectInspector;
+import tod.gui.view.LogView;
 import zz.csg.api.IDisplay;
 
 /**
@@ -14,10 +14,10 @@ import zz.csg.api.IDisplay;
  */
 public class MethodSequenceSeed implements IEventSequenceSeed
 {
-	private BehaviorInfo itsMethod;
+	private IBehaviorInfo itsMethod;
 	private final IObjectInspector itsInspector;
 
-	public MethodSequenceSeed(IObjectInspector aInspector, BehaviorInfo aMethod)
+	public MethodSequenceSeed(IObjectInspector aInspector, IBehaviorInfo aMethod)
 	{
 		itsInspector = aInspector;
 		itsMethod = aMethod;

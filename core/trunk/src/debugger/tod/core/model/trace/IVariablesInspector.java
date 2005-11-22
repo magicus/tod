@@ -8,7 +8,7 @@ import java.util.List;
 import tod.core.ILocationRegistrer.LocalVariableInfo;
 import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.BehaviorInfo;
+import tod.core.model.structure.IBehaviorInfo;
 
 /**
  * Permits to determine the value of local variables during a method execution.
@@ -33,7 +33,7 @@ public interface IVariablesInspector
 	/**
 	 * Returns the analysed behavior.
 	 */
-	public BehaviorInfo getBehavior();
+	public IBehaviorInfo getBehavior();
 	
 	/**
 	 * Returns a list of all the local variables available 

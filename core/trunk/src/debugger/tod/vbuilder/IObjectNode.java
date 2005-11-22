@@ -3,8 +3,6 @@
  */
 package tod.vbuilder;
 
-import java.util.Map;
-
 import tod.core.model.structure.ObjectId;
 import zz.csg.api.IRectangularGraphicContainer;
 

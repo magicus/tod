@@ -5,12 +5,11 @@ package tod.gui;
 
 import java.awt.Color;
 
-import reflex.lib.logging.miner.gui.IGUIManager;
-import reflex.lib.logging.miner.gui.seed.ObjectInspectorSeed;
-import tod.core.model.structure.BehaviorInfo;
+import tod.core.model.structure.IBehaviorInfo;
+import tod.core.model.structure.ITypeInfo;
 import tod.core.model.structure.ObjectId;
-import tod.core.model.structure.TypeInfo;
 import tod.core.model.trace.IEventTrace;
+import tod.gui.seed.ObjectInspectorSeed;
 import zz.csg.api.IRectangularGraphicObject;
 import zz.csg.impl.figures.SVGFlowText;
 import zz.utils.ui.text.XFont;
@@ -22,12 +21,12 @@ import zz.utils.ui.text.XFont;
  */
 public class Hyperlinks
 {
-	public static IRectangularGraphicObject type (IGUIManager aGUIManager, TypeInfo aType, XFont aFont)
+	public static IRectangularGraphicObject type (IGUIManager aGUIManager, ITypeInfo aType, XFont aFont)
 	{
 		return SVGHyperlink.create(aGUIManager, null, aType.getName(), aFont, Color.BLUE);
 	}
 	
-	public static IRectangularGraphicObject behavior(IGUIManager aGUIManager, BehaviorInfo aBehavior, XFont aFont)
+	public static IRectangularGraphicObject behavior(IGUIManager aGUIManager, IBehaviorInfo aBehavior, XFont aFont)
 	{
 		return SVGHyperlink.create(aGUIManager, null, aBehavior.getName(), aFont, Color.BLUE);		
 	}
@@ -58,7 +57,7 @@ public class Hyperlinks
 		if (aObject instanceof ObjectId)
 		{
 			ObjectId theId = (ObjectId) aObject;
-			TypeInfo theType = aEventTrace.createObjectInspector(theId).getType();
+			ITypeInfo theType = aEventTrace.createObjectInspector(theId).getType();
 
 			String theText;
 			if (aCurrentObject != null && aCurrentObject.equals(aObject)) theText = "this";

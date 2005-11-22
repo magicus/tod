@@ -8,14 +8,9 @@ import java.awt.Font;
 import java.util.HashMap;
 import java.util.Map;
 
-import EDU.Washington.grad.gjb.cassowary.ClStrength;
-import EDU.Washington.grad.gjb.cassowary.ExCLNonlinearExpression;
-
 import tod.core.model.structure.ObjectId;
 import zz.csg.api.constraints.ConstraintParser;
 import zz.csg.api.constraints.ConstraintSystem;
-import zz.csg.api.constraints.SymbolNotFoundException;
-import zz.csg.api.constraints.parser.ParseException;
 import zz.csg.api.figures.IGOFlowText;
 import zz.csg.api.figures.IGORectangle;
 import zz.csg.impl.SVGGraphicContainer;

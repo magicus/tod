@@ -7,27 +7,20 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.util.Collection;
 
 import javax.swing.JPanel;
 
-import tod.core.model.trace.IEventBrowser;
 import tod.gui.eventsequences.EventMural;
-
 import zz.csg.api.GraphicNode;
 import zz.csg.api.IGraphicObject;
 import zz.csg.display.GraphicPanel;
 import zz.utils.Utils;
-import zz.utils.properties.ArrayListProperty;
 import zz.utils.properties.IListProperty;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;

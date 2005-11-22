@@ -8,22 +8,17 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import reflex.lib.logging.miner.gui.IGUIManager;
-import reflex.lib.logging.miner.gui.seed.ObjectInspectorSeed;
-import reflex.lib.logging.miner.gui.view.LogView;
 import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.MemberInfo;
-import tod.core.model.structure.ObjectId;
-import tod.core.model.structure.TypeInfo;
-import tod.core.model.trace.IEventTrace;
+import tod.core.model.structure.IMemberInfo;
 import tod.core.model.trace.IEventBrowser;
+import tod.core.model.trace.IEventTrace;
 import tod.core.model.trace.IObjectInspector;
 import tod.gui.BrowserData;
 import tod.gui.Hyperlinks;
-import tod.gui.SVGHyperlink;
+import tod.gui.IGUIManager;
+import tod.gui.view.LogView;
 import zz.csg.api.IDisplay;
 import zz.csg.api.IRectangularGraphicObject;
-import zz.csg.impl.figures.SVGFlowText;
 import zz.utils.ItemAction;
 import zz.utils.properties.IRWProperty;
 import zz.utils.ui.text.XFont;
@@ -90,7 +85,7 @@ public abstract class AbstractMemberSequenceView implements IEventSequenceView
 	/**
 	 * Returns the member whose events are displayed in this sequence.
 	 */
-	public abstract MemberInfo getMember();
+	public abstract IMemberInfo getMember();
 	
 	/**
 	 * Hook for subclasses to provide baloons.

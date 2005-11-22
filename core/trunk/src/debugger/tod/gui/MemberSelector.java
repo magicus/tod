@@ -15,13 +15,9 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
-import reflex.lib.logging.miner.impl.common.ObjectInspector;
-import tod.core.model.structure.FieldInfo;
-import tod.core.model.structure.MemberInfo;
-import tod.core.model.structure.TypeInfo;
+import tod.core.model.structure.IFieldInfo;
+import tod.core.model.structure.IMemberInfo;
 import tod.core.model.trace.IObjectInspector;
 import zz.utils.SimpleListModel;
 import zz.utils.Utils;
@@ -32,7 +28,7 @@ import zz.utils.properties.SimpleRWProperty;
 
 public class MemberSelector extends JPanel
 {
-	private ISetProperty<MemberInfo> pSelectedMembers = new HashSetProperty<MemberInfo>(this)
+	private ISetProperty<IMemberInfo> pSelectedMembers = new HashSetProperty<IMemberInfo>(this)
 	{
 		@Override
 		protected void contentChanged()
@@ -61,7 +57,7 @@ public class MemberSelector extends JPanel
 	/**
 	 * The set of currently selected members.
 	 */
-	public ISetProperty<MemberInfo> pSelectedMembers()
+	public ISetProperty<IMemberInfo> pSelectedMembers()
 	{
 		return pSelectedMembers;
 	}
@@ -87,7 +83,7 @@ public class MemberSelector extends JPanel
 					public void mouseClicked(MouseEvent aE)
 					{
 						int theIndex = itsMembersList.locationToIndex(aE.getPoint());
-						MemberInfo theMember = (MemberInfo) itsMembersListModel.getElementAt(theIndex);
+						IMemberInfo theMember = (IMemberInfo) itsMembersListModel.getElementAt(theIndex);
 						if (! pSelectedMembers().remove(theMember)) pSelectedMembers().add (theMember);
 					}
 				});
@@ -97,7 +93,7 @@ public class MemberSelector extends JPanel
 	private void updateListPanel()
 	{
 		IObjectInspector theInspector = pInspector().get();
-		List<MemberInfo> theList = new ArrayList<MemberInfo>();
+		List<IMemberInfo> theList = new ArrayList<IMemberInfo>();
 		if (theInspector != null) Utils.fillCollection(theList, theInspector.getMembers());
 		itsMembersListModel.setList(theList);
 	}
@@ -112,11 +108,11 @@ public class MemberSelector extends JPanel
 		IObjectInspector theInspector = pInspector().get();
 		if (theInspector != null)
 		{
-			for (MemberInfo theMember : theInspector.getMembers())
+			for (IMemberInfo theMember : theInspector.getMembers())
 			{
-				if (theMember instanceof FieldInfo)
+				if (theMember instanceof IFieldInfo)
 				{
-					FieldInfo theField = (FieldInfo) theMember;
+					IFieldInfo theField = (IFieldInfo) theMember;
 					pSelectedMembers().add(theField);
 				}
 			}
@@ -128,7 +124,7 @@ public class MemberSelector extends JPanel
 	{
 		public Component getListCellRendererComponent(JList aList, Object aValue, int aIndex, boolean aIsSelected, boolean aCellHasFocus)
 		{
-			MemberInfo theMember = (MemberInfo) aValue;
+			IMemberInfo theMember = (IMemberInfo) aValue;
 			setText(theMember.getName());
 			setSelected(pSelectedMembers().contains(theMember));
 			

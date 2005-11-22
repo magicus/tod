@@ -3,9 +3,8 @@
  */
 package tod.gui.eventsequences;
 
-import reflex.lib.logging.miner.gui.view.LogView;
+import tod.gui.view.LogView;
 import zz.csg.api.IDisplay;
-import zz.utils.properties.IRWProperty;
 
 /**
  * A seed that permits to create event sequence views.

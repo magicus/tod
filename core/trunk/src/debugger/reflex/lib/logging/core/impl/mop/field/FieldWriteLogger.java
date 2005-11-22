@@ -3,7 +3,6 @@
  */
 package reflex.lib.logging.core.impl.mop.field;
 
-import reflex.api.API;
 import reflex.api.ReflexConfig;
 import reflex.api.call.AbstractParameter;
 import reflex.api.call.CallDescriptor;
@@ -16,14 +15,13 @@ import reflex.api.link.MODefinition;
 import reflex.api.link.attribute.Activation;
 import reflex.api.link.attribute.Control;
 import reflex.api.link.attribute.Scope;
-import reflex.lib.logging.core.api.config.StaticConfig;
 import reflex.lib.logging.core.impl.mop.Config;
 import reflex.lib.logging.core.impl.mop.ReflexLocationPool;
-import reflex.lib.logging.core.impl.mop.WhereParameter;
 import reflex.std.installer.FieldAccessPool;
 import reflex.std.installer.StdParameters;
 import reflex.std.operation.FieldAccess;
 import reflex.tools.selectors.FieldWriteOS;
+import tod.core.config.StaticConfig;
 
 /**
  * Logs field write accesses.

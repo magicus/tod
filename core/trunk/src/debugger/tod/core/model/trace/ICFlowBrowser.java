@@ -4,7 +4,7 @@
 package tod.core.model.trace;
 
 import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.ThreadInfo;
+import tod.core.model.structure.IThreadInfo;
 import zz.utils.tree.ITree;
 
 /**
@@ -17,5 +17,5 @@ public interface ICFlowBrowser extends ITree<ILogEvent, ILogEvent>
 	/**
 	 * Returns the thread considered by this browser.
 	 */
-	public ThreadInfo getThread();
+	public IThreadInfo getThread();
 }

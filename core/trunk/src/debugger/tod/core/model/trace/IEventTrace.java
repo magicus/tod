@@ -4,12 +4,12 @@
 package tod.core.model.trace;
 
 import tod.core.model.event.IBehaviorCallEvent;
-import tod.core.model.structure.BehaviorInfo;
-import tod.core.model.structure.ClassInfo;
-import tod.core.model.structure.FieldInfo;
+import tod.core.model.structure.IBehaviorInfo;
+import tod.core.model.structure.IClassInfo;
+import tod.core.model.structure.IFieldInfo;
+import tod.core.model.structure.IThreadInfo;
+import tod.core.model.structure.ITypeInfo;
 import tod.core.model.structure.ObjectId;
-import tod.core.model.structure.ThreadInfo;
-import tod.core.model.structure.TypeInfo;
 
 /**
  * Interface to the trace database.
@@ -66,7 +66,7 @@ public interface IEventTrace
 	 * Creates a filter that accepts only behavior call events
 	 * related to a specific behavior.
 	 */
-	public IEventFilter createBehaviorCallFilter (BehaviorInfo aBehaviorInfo);
+	public IEventFilter createBehaviorCallFilter (IBehaviorInfo aBehavior);
 	
 	/**
 	 * Creates a filter that accepts only behavior call events (before call and after call).
@@ -84,7 +84,7 @@ public interface IEventTrace
 	 * Creates a filter that accepts only the instantiations of
 	 * the specified type.
 	 */
-	public IEventFilter createInstantiationsFilter (TypeInfo aType);
+	public IEventFilter createInstantiationsFilter (ITypeInfo aType);
 	
 	/**
 	 * Creates a filter that accepts only instantiations events
@@ -95,7 +95,7 @@ public interface IEventTrace
 	 * Creates a filter that accepts only events related to a specific
 	 * field.
 	 */
-	public IEventFilter createFieldFilter (FieldInfo aField);
+	public IEventFilter createFieldFilter (IFieldInfo aField);
 
 	/**
 	 * Creates a filter that accepts only field write events
@@ -119,18 +119,18 @@ public interface IEventTrace
 	 * Creates a filter that accepts only the events that occurr
 	 * in a specific thread.
 	 */
-	public IEventFilter createThreadFilter (ThreadInfo aThread);
+	public IEventFilter createThreadFilter (IThreadInfo aThread);
 	
 	/**
 	 * Creates a control flow browser.
 	 */
-	public ICFlowBrowser createCFlowBrowser (ThreadInfo aThread);
+	public ICFlowBrowser createCFlowBrowser (IThreadInfo aThread);
 	
 	/**
 	 * Creates a filter that accepts only events that occured at a specific
 	 * location in source code. 
 	 */
-	public IEventFilter createLocationFilter (TypeInfo aType, int aLineNumber);
+	public IEventFilter createLocationFilter (ITypeInfo aType, int aLineNumber);
 	
 	/**
 	 * Creates an inspector that permits to evaluate the state of the specified
@@ -142,7 +142,7 @@ public interface IEventTrace
 	 * Creates an inspector that permits to evaluate the state of the specified
 	 * type's static fields at any point in time.
 	 */
-	public IObjectInspector createClassInspector (ClassInfo aClass);
+	public IObjectInspector createClassInspector (IClassInfo aClass);
 	
 	/**
 	 * Creates an inspector that permits to determine the value of a behavior's

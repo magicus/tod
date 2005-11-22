@@ -3,7 +3,7 @@
  */
 package tod.core.model.event;
 
-import tod.core.model.structure.BehaviorInfo;
+import tod.core.model.structure.IBehaviorInfo;
 
 /**
  * This event corresponds to the call and execution of 
@@ -42,7 +42,7 @@ public interface IBehaviorCallEvent extends IParentEvent, ICallerSideEvent
 	 * <br/>
 	 * This information is always available.
 	 */
-	public BehaviorInfo getExecutedBehavior();
+	public IBehaviorInfo getExecutedBehavior();
 	
 	/**
 	 * The called behavior.
@@ -50,7 +50,7 @@ public interface IBehaviorCallEvent extends IParentEvent, ICallerSideEvent
 	 * This information is available only if the caller behavior
 	 * was instrumented.
 	 */
-	public BehaviorInfo getCalledBehavior();
+	public IBehaviorInfo getCalledBehavior();
 	
 	/**
 	 * The object on which the behavior was called, or
@@ -67,7 +67,7 @@ public interface IBehaviorCallEvent extends IParentEvent, ICallerSideEvent
 	 * was instrumented.
 	 * @return Calling behavior, or null if not available
 	 */
-	public BehaviorInfo getCallingBehavior();
+	public IBehaviorInfo getCallingBehavior();
 	
 
 	

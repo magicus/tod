@@ -3,7 +3,6 @@
  */
 package tod.core;
 
-import tod.core.ILogCollector;
 
 /**
  * A collector that prints events and send them to another collector.

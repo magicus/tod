@@ -17,13 +17,13 @@ import reflex.api.link.attribute.Activation;
 import reflex.api.link.attribute.Control;
 import reflex.api.link.attribute.Scope;
 import reflex.api.model.RClass;
-import reflex.lib.logging.core.api.config.StaticConfig;
 import reflex.lib.logging.core.impl.mop.Config;
 import reflex.lib.logging.core.impl.mop.ReflexLocationPool;
 import reflex.lib.logging.core.impl.mop.identification.ObjectIdentifier;
 import reflex.std.installer.StdParameters;
 import reflex.std.operation.MsgReceive;
 import reflex.std.operation.MsgSend;
+import tod.core.config.StaticConfig;
 
 /**
  * Logs message sends.

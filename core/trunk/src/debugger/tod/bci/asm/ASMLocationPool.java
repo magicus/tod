@@ -14,7 +14,7 @@ import java.util.Map;
 import org.objectweb.asm.Type;
 
 import tod.bci.LocationPoolPersister;
-import tod.core.BehaviourType;
+import tod.core.BehaviourKind;
 import tod.core.ILocationRegistrer;
 import tod.core.ILogCollector;
 import tod.session.ASMDebuggerConfig;
@@ -92,7 +92,7 @@ public class ASMLocationPool
 			// Register the behavior
 			theId = itsNextMethodId++;
 			itsMethodIds.put(theKey, theId);
-			itsLocationRegistrer.registerBehavior(BehaviourType.METHOD, theId, aTypeId, aName, aDescriptor);
+			itsLocationRegistrer.registerBehavior(BehaviourKind.METHOD, theId, aTypeId, aName, aDescriptor);
 		}
 		
 		return theId.intValue();
@@ -175,7 +175,7 @@ public class ASMLocationPool
 			itsTargetRegistrer = aTargetRegistrer;
 		}
 		
-		public void registerBehavior(BehaviourType aBehaviourType, int aBehaviourId, int aTypeId, String aBehaviourName, String aSignature)
+		public void registerBehavior(BehaviourKind aBehaviourType, int aBehaviourId, int aTypeId, String aBehaviourName, String aSignature)
 		{
 			itsNextMethodId = Math.max(itsNextMethodId, aBehaviourId+1);
 			itsMethodIds.put(getBehaviorKey(aTypeId, aBehaviourName, aSignature), aBehaviourId);

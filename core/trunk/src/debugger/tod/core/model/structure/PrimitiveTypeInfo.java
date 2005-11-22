@@ -5,7 +5,7 @@ package tod.core.model.structure;
 
 import tod.core.model.trace.ILocationTrace;
 
-public class PrimitiveTypeInfo extends TypeInfo
+public class PrimitiveTypeInfo extends TypeInfo implements IPrimitiveTypeInfo
 {
 	private final int itsSize;
 
@@ -20,19 +20,16 @@ public class PrimitiveTypeInfo extends TypeInfo
 		return itsSize;
 	}
 
-	@Override
 	public boolean isArray()
 	{
 		return false;
 	}
 
-	@Override
 	public boolean isPrimitive()
 	{
 		return true;
 	}
 
-	@Override
 	public boolean isVoid()
 	{
 		return "void".equals(getName());

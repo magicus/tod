@@ -6,7 +6,7 @@ package tod.core.transport;
 import java.io.DataInputStream;
 import java.io.IOException;
 
-import tod.core.BehaviourType;
+import tod.core.BehaviourKind;
 import tod.core.ILocationRegistrer;
 import tod.core.ILogCollector;
 import tod.core.Output;
@@ -363,7 +363,7 @@ public class CollectorPacketReader
 	
 	public static void readBehaviour (DataInputStream aStream, ILocationRegistrer aRegistrer) throws IOException
 	{
-		BehaviourType theType = BehaviourType.values()[aStream.readByte()];
+		BehaviourKind theType = BehaviourKind.values()[aStream.readByte()];
 		int theId = aStream.readInt();
 		int theClassId = aStream.readInt();
 		String theName = aStream.readUTF();

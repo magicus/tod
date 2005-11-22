@@ -25,7 +25,6 @@
 package reflex.lib.logging.core.impl.mop;
 
 import reflex.api.ReflexConfig;
-import reflex.lib.logging.core.api.config.StaticConfig;
 import reflex.lib.logging.core.impl.mop.behavior.ConstructorLogger;
 import reflex.lib.logging.core.impl.mop.behavior.MethodLogger;
 import reflex.lib.logging.core.impl.mop.behavior.MsgSendLogger;
@@ -35,6 +34,7 @@ import reflex.lib.logging.core.impl.mop.instantiation.InstantiationLogger;
 import reflex.lib.logging.core.impl.mop.locals.LocalVariableWriteLogger;
 import tod.core.ILogCollector;
 import tod.core.PrintLogCollector;
+import tod.core.config.StaticConfig;
 
 /**
  * @author gpothier

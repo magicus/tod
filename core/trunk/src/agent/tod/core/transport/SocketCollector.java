@@ -19,7 +19,7 @@ import java.util.List;
 
 import remotebci.SocketThread;
 import tod.agent.AgentReady;
-import tod.core.BehaviourType;
+import tod.core.BehaviourKind;
 import tod.core.ILogCollector;
 import tod.core.Output;
 
@@ -462,7 +462,7 @@ public class SocketCollector implements ILogCollector
 	
     
     public void registerBehavior(
-    		BehaviourType aBehaviourType,
+    		BehaviourKind aBehaviourType,
             int aBehaviourId, 
             int aTypeId,
             String aBehaviourName,

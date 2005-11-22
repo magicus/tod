@@ -5,8 +5,6 @@ package tod.session;
 
 import java.net.URI;
 
-import reflex.Run;
-
 public interface ISessionFactory
 {
 	/**

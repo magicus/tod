@@ -3,9 +3,9 @@
  */
 package tod.gui.eventsequences;
 
-import reflex.lib.logging.miner.gui.view.LogView;
-import tod.core.model.structure.FieldInfo;
+import tod.core.model.structure.IFieldInfo;
 import tod.core.model.trace.IObjectInspector;
+import tod.gui.view.LogView;
 import zz.csg.api.IDisplay;
 
 /**
@@ -14,10 +14,10 @@ import zz.csg.api.IDisplay;
  */
 public class FieldSequenceSeed implements IEventSequenceSeed
 {
-	private FieldInfo itsField;
+	private IFieldInfo itsField;
 	private final IObjectInspector itsInspector;
 
-	public FieldSequenceSeed(IObjectInspector aInspector, FieldInfo aField)
+	public FieldSequenceSeed(IObjectInspector aInspector, IFieldInfo aField)
 	{
 		itsInspector = aInspector;
 		itsField = aField;

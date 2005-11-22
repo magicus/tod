@@ -2,13 +2,12 @@ package tod.vbuilder;
 
 import java.util.List;
 
-import EDU.Washington.grad.gjb.cassowary.ClStrength;
-
 import zz.csg.api.constraints.Constraint;
 import zz.csg.api.constraints.ConstraintParser;
 import zz.csg.api.constraints.ConstraintSystem;
 import zz.csg.api.constraints.IConstrainedDouble;
 import zz.csg.impl.constraints.ConstrainedDouble;
+import EDU.Washington.grad.gjb.cassowary.ClStrength;
 
 public class BaseTreeLayout extends CellEventProcessor
 implements ICellListener

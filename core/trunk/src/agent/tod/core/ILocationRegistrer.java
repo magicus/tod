@@ -29,7 +29,7 @@ public interface ILocationRegistrer {
 	 * @param aSignature JVM signature of the method.
 	 */
 	public void registerBehavior (
-			BehaviourType aBehaviourType,
+			BehaviourKind aBehaviourType,
 			int aBehaviourId,
 			int aTypeId,
 			String aBehaviourName,

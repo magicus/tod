@@ -3,11 +3,11 @@
  */
 package tod.core.model.trace;
 
-import tod.core.model.structure.BehaviorInfo;
-import tod.core.model.structure.ClassInfo;
-import tod.core.model.structure.FieldInfo;
-import tod.core.model.structure.ThreadInfo;
-import tod.core.model.structure.TypeInfo;
+import tod.core.model.structure.IBehaviorInfo;
+import tod.core.model.structure.IClassInfo;
+import tod.core.model.structure.IFieldInfo;
+import tod.core.model.structure.IThreadInfo;
+import tod.core.model.structure.ITypeInfo;
 
 /**
  * Permits to obtain the location info objects that have been registered during a 
@@ -19,22 +19,22 @@ public interface ILocationTrace
 	/**
 	 * Returns the type object that corresponds to the given name.
 	 */
-	public TypeInfo getType(String aName);
+	public ITypeInfo getType(String aName);
 	
 	/**
 	 * Returns all registered types.
 	 */
-	public Iterable<ClassInfo> getClasses();
+	public Iterable<IClassInfo> getClasses();
 	
 	/**
 	 * Returns all registered behaviours.
 	 */
-	public Iterable<BehaviorInfo> getBehaviours();
+	public Iterable<IBehaviorInfo> getBehaviours();
 	
 	/**
 	 * Returns all registered fields.
 	 */
-	public Iterable<FieldInfo> getFields();
+	public Iterable<IFieldInfo> getFields();
 	
 	/**
 	 * Returns all registered files.
@@ -44,5 +44,5 @@ public interface ILocationTrace
 	/**
 	 * Returns all registered threads.
 	 */
-	public Iterable<ThreadInfo> getThreads();
+	public Iterable<IThreadInfo> getThreads();
 }

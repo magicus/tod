@@ -6,13 +6,11 @@ package tod.gui.eventsequences;
 import java.util.HashMap;
 import java.util.Map;
 
-import reflex.lib.logging.miner.gui.IGUIManager;
-import reflex.lib.logging.miner.gui.view.LogView;
-import tod.core.BehaviourType;
-import tod.core.model.structure.BehaviorInfo;
-import tod.core.model.structure.FieldInfo;
-import tod.core.model.structure.MemberInfo;
+import tod.core.model.structure.IBehaviorInfo;
+import tod.core.model.structure.IFieldInfo;
+import tod.core.model.structure.IMemberInfo;
 import tod.core.model.trace.IObjectInspector;
+import tod.gui.view.LogView;
 
 /**
  * A {@link tod.gui.eventsequences.SequenceViewsDock} specialized for displaying members of a type.
@@ -20,36 +18,36 @@ import tod.core.model.trace.IObjectInspector;
  */
 public class MembersDock extends SequenceViewsDock
 {
-	private Map<MemberInfo, Integer> itsMembersMap = new HashMap<MemberInfo, Integer>();
+	private Map<IMemberInfo, Integer> itsMembersMap = new HashMap<IMemberInfo, Integer>();
 	
 	public MembersDock(LogView aLogView)
 	{
 		super (aLogView);
 	}
 
-	protected IEventSequenceSeed createSeed (IObjectInspector aInspector, MemberInfo aMember)
+	protected IEventSequenceSeed createSeed (IObjectInspector aInspector, IMemberInfo aMember)
 	{
-		if (aMember instanceof FieldInfo)
+		if (aMember instanceof IFieldInfo)
 		{
-			FieldInfo theField = (FieldInfo) aMember;
+			IFieldInfo theField = (IFieldInfo) aMember;
 			return new FieldSequenceSeed(aInspector, theField);
 		}
-		else if (aMember instanceof BehaviorInfo)
+		else if (aMember instanceof IBehaviorInfo)
 		{
-			BehaviorInfo theBehavior = (BehaviorInfo) aMember;
-			switch (theBehavior.getBehaviourType())
+			IBehaviorInfo theBehavior = (IBehaviorInfo) aMember;
+			switch (theBehavior.getBehaviourKind())
 			{
 			case METHOD:
 				return new MethodSequenceSeed(aInspector, theBehavior);
 			default:
-				throw new RuntimeException("Not handled: "+theBehavior.getBehaviourType());
+				throw new RuntimeException("Not handled: "+theBehavior.getBehaviourKind());
 			}
 		}
 		else 				
 			throw new RuntimeException("Not handled: "+aMember);
 	}
 	
-	public void addMember (IObjectInspector aInspector, MemberInfo aMember)
+	public void addMember (IObjectInspector aInspector, IMemberInfo aMember)
 	{
 		IEventSequenceSeed theSeed = createSeed(aInspector, aMember);
 		int theIndex = pSeeds().size();
@@ -57,7 +55,7 @@ public class MembersDock extends SequenceViewsDock
 		itsMembersMap.put(aMember, theIndex);
 	}
 
-	public void removeMember (MemberInfo aMember)
+	public void removeMember (IMemberInfo aMember)
 	{
 		Integer theIndex = itsMembersMap.get(aMember);
 		if (theIndex == null) throw new RuntimeException("Seed not found for member: "+aMember);

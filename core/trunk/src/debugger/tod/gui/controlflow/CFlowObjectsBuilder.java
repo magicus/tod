@@ -7,14 +7,14 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.List;
 
-import reflex.lib.logging.miner.gui.IGUIManager;
 import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.FieldInfo;
+import tod.core.model.structure.IFieldInfo;
 import tod.core.model.structure.ObjectId;
 import tod.core.model.trace.IEventTrace;
 import tod.core.model.trace.IObjectInspector;
 import tod.gui.Hyperlinks;
+import tod.gui.IGUIManager;
 import zz.csg.api.IRectangularGraphicObject;
 import zz.csg.api.layout.SequenceLayout;
 import zz.csg.api.layout.StackLayout;
@@ -87,14 +87,14 @@ public class CFlowObjectsBuilder
 		theInspector.setCurrentEvent(aCurrentEvent);
 
 		// Determine available fields
-		List<FieldInfo> theFields = theInspector.getFields();
+		List<IFieldInfo> theFields = theInspector.getFields();
 		
 		// Create container
 		SVGGraphicContainer theContainer = new SVGGraphicContainer();
 		
 		theContainer.pChildren().add(buildHeader(theCurrentObject));
 
-		for (FieldInfo theField : theFields)
+		for (IFieldInfo theField : theFields)
 		{
 			List<Object> theValues = theInspector.getFieldValue(theField);
 			theContainer.pChildren().add(buildFieldLine(theField, theCurrentObject, theValues));
@@ -116,7 +116,7 @@ public class CFlowObjectsBuilder
 	}
 	
 	private IRectangularGraphicObject buildFieldLine(
-			FieldInfo aField, 
+			IFieldInfo aField, 
 			Object aCurrentObject, 
 			List<Object> aValues)
 	{

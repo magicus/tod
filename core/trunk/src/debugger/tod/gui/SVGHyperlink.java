@@ -7,11 +7,8 @@ import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 
-import reflex.lib.logging.miner.gui.IGUIManager;
-import reflex.lib.logging.miner.gui.seed.Seed;
-import reflex.lib.logging.miner.gui.view.LogView;
+import tod.gui.seed.Seed;
 import zz.csg.api.GraphicObjectContext;
-import zz.csg.api.figures.IGOFlowText.DefaultSizeComputer;
 import zz.csg.impl.figures.SVGFlowText;
 import zz.utils.ui.MouseModifiers;
 import zz.utils.ui.text.XFont;

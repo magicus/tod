@@ -16,12 +16,12 @@ import reflex.api.link.attribute.Activation;
 import reflex.api.link.attribute.Control;
 import reflex.api.link.attribute.Scope;
 import reflex.api.model.RLocalVariable;
-import reflex.lib.logging.core.api.config.StaticConfig;
 import reflex.lib.logging.core.impl.mop.Config;
 import reflex.std.installer.StdParameters;
 import reflex.std.installer.localvariableaccess.LocalVariableAccessPool;
 import reflex.std.operation.LocalVariableAccess;
 import reflex.tools.selectors.LocalVariableWriteOS;
+import tod.core.config.StaticConfig;
 
 /**
  * Logs local variable write accesses.

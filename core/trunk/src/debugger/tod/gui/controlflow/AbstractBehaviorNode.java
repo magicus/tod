@@ -12,12 +12,11 @@ import java.util.Map;
 
 import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.BehaviorInfo;
-import tod.core.model.structure.TypeInfo;
+import tod.core.model.structure.IBehaviorInfo;
+import tod.core.model.structure.ITypeInfo;
 import tod.gui.Hyperlinks;
 import zz.csg.api.IGraphicContainer;
 import zz.csg.api.IRectangularGraphicContainer;
-import zz.csg.api.IRectangularGraphicObject;
 import zz.csg.api.layout.AbstractSimpleLayout;
 import zz.csg.api.layout.SequenceLayout;
 import zz.csg.api.layout.StackLayout;
@@ -167,13 +166,13 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 	{
 		XFont theFont = getHeaderFont();
 		
-		BehaviorInfo theBehavior = getEvent().getExecutedBehavior();
+		IBehaviorInfo theBehavior = getEvent().getExecutedBehavior();
 		if (theBehavior == null)
 		{
 			theFont = theFont.deriveFont(Font.ITALIC, theFont.getAWTFont().getSize2D());
 			theBehavior = getEvent().getCalledBehavior();
 		}
-		TypeInfo theType = theBehavior.getType();
+		ITypeInfo theType = theBehavior.getType();
 		Object[] theArguments = getEvent().getArguments();
 		
 		aContainer.pChildren().add(Hyperlinks.type(getGUIManager(), theType, theFont));
@@ -187,7 +186,7 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 	{
 		XFont theFont = getHeaderFont();
 
-		BehaviorInfo theBehavior = getEvent().getExecutedBehavior();
+		IBehaviorInfo theBehavior = getEvent().getExecutedBehavior();
 		if (theBehavior == null) theBehavior = getEvent().getCalledBehavior();
 		
 		if (getEvent().hasThrown())

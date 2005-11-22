@@ -7,15 +7,15 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.List;
 
-import reflex.lib.logging.miner.gui.IGUIManager;
 import tod.core.ILocationRegistrer.LocalVariableInfo;
 import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.event.ICallerSideEvent;
 import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.BehaviorInfo;
+import tod.core.model.structure.IBehaviorInfo;
 import tod.core.model.trace.IEventTrace;
 import tod.core.model.trace.IVariablesInspector;
 import tod.gui.Hyperlinks;
+import tod.gui.IGUIManager;
 import zz.csg.api.IRectangularGraphicObject;
 import zz.csg.api.layout.SequenceLayout;
 import zz.csg.api.layout.StackLayout;
@@ -119,7 +119,7 @@ public class CFlowVariablesBuilder
 		return theContainer;
 	}
 	
-	private IRectangularGraphicObject buildHeader(BehaviorInfo aBehavior)
+	private IRectangularGraphicObject buildHeader(IBehaviorInfo aBehavior)
 	{
 		SVGGraphicContainer theContainer = new SVGGraphicContainer();
 		

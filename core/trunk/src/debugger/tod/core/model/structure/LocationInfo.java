@@ -9,7 +9,7 @@ import tod.core.model.trace.ILocationTrace;
  * Base class for aggregation of location information.
  * @author gpothier
  */
-public abstract class LocationInfo
+public abstract class LocationInfo implements ILocationInfo
 {
 	private final ILocationTrace itsTrace;
 	private final int itsId;
@@ -33,9 +33,6 @@ public abstract class LocationInfo
 		return itsId;
 	}
 	
-	/**
-	 * Returns the location trace that contains this location. 
-	 */
 	public ILocationTrace getTrace()
 	{
 		return itsTrace;
@@ -64,7 +61,7 @@ public abstract class LocationInfo
 	{
 		if (aObj instanceof LocationInfo)
 		{
-			LocationInfo theInfo = (LocationInfo) aObj;
+			ILocationInfo theInfo = (ILocationInfo) aObj;
 			return theInfo.getClass().equals(getClass()) && theInfo.getId() == getId();
 		}
 		else return false;

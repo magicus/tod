@@ -3,7 +3,7 @@
  */
 package tod.core.model.event;
 
-import tod.core.model.structure.BehaviorInfo;
+import tod.core.model.structure.IBehaviorInfo;
 
 public interface IExceptionGeneratedEvent extends ICallerSideEvent
 {
@@ -15,5 +15,5 @@ public interface IExceptionGeneratedEvent extends ICallerSideEvent
 	/**
 	 * Returns the behavior that throws the exception.
 	 */
-	public BehaviorInfo getThrowingBehavior();
+	public IBehaviorInfo getThrowingBehavior();
 }

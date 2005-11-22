@@ -1,12 +1,11 @@
 package tod.vbuilder;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import tod.core.model.structure.ObjectId;
-
-import zz.csg.api.constraints.Constraint;
 import zz.utils.properties.IListProperty;
-import zz.utils.tree.*;
+import zz.utils.tree.SimpleTreeNode;
 
 class BaseTreeStructure
 {

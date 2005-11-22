@@ -13,7 +13,7 @@ import reflex.api.model.RField;
 import reflex.api.model.RMethod;
 import reflex.api.mop.MOPException;
 import reflex.api.mop.SMetaobject;
-import reflex.lib.logging.core.api.config.StaticConfig;
+import tod.core.config.StaticConfig;
 
 /**
  * This structural metaobject adds a field on each object

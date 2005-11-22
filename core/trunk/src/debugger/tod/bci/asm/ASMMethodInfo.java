@@ -6,8 +6,6 @@ package tod.bci.asm;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.objectweb.asm.Type;
-
 import tod.core.ILocationRegistrer.LineNumberInfo;
 import tod.core.ILocationRegistrer.LocalVariableInfo;
 

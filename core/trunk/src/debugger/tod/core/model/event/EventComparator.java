@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import tod.core.model.structure.ThreadInfo;
+import tod.core.model.structure.IThreadInfo;
 
 /**
  * Compares events based on their timestamp.
@@ -95,7 +95,7 @@ public class EventComparator implements Comparator<ILogEvent>
 			itsTimestamp = aTimestamp;
 		}
 		
-		public ThreadInfo getThread()
+		public IThreadInfo getThread()
 		{
 			return null;
 		}

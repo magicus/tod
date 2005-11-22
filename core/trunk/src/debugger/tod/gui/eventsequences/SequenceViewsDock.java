@@ -16,10 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 
-import reflex.lib.logging.miner.gui.IGUIManager;
-import reflex.lib.logging.miner.gui.view.LogView;
-
-import zz.csg.api.IDisplay;
+import tod.gui.view.LogView;
 import zz.csg.api.IRectangularGraphicObject;
 import zz.csg.display.GraphicPanel;
 import zz.utils.ItemAction;
@@ -29,7 +26,6 @@ import zz.utils.properties.IRWProperty;
 import zz.utils.properties.PropertyUtils;
 import zz.utils.properties.SimpleRWProperty;
 import zz.utils.ui.GridStackLayout;
-import zz.utils.ui.StackLayout;
 
 /**
  * A component that displays a stack of event views.

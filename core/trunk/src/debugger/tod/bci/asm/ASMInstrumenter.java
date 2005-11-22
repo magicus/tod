@@ -3,14 +3,10 @@
  */
 package tod.bci.asm;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
 import remotebci.IInstrumenter;
-import remotebci.RemoteInstrumenter;
 import tod.session.ASMDebuggerConfig;
 
 /**

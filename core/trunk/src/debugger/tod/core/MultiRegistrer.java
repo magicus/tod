@@ -31,7 +31,7 @@ public class MultiRegistrer implements ILocationRegistrer
 	}
 
 
-	public void registerBehavior(BehaviourType aBehaviourType, int aBehaviourId, int aTypeId, String aBehaviourName, String aSignature)
+	public void registerBehavior(BehaviourKind aBehaviourType, int aBehaviourId, int aTypeId, String aBehaviourName, String aSignature)
 	{
         for (ILogCollector theCollector : getCollectors())
         {

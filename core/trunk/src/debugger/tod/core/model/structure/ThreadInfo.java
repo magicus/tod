@@ -10,7 +10,7 @@ import tod.core.ILogCollector;
  * receives about a thread.
  * @author gpothier
  */
-public class ThreadInfo
+public class ThreadInfo implements IThreadInfo
 {
 	private long itsId;
 	private String itsName;
