@@ -298,6 +298,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		// ->timestamp
 		mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "nanoTime", "()J");
+//		mv.visitInsn(LCONST_0);
 		
 		// ->thread id
 		mv.visitVarInsn(LLOAD, itsCurrentThreadVar);		
