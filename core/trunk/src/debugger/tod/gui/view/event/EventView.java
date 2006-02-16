@@ -44,7 +44,7 @@ public abstract class EventView extends LogView
 		add (createTitledLink(
 				"Thread: ", 
 				"\""+theThreadInfo.getName()+"\" ["+theThreadInfo.getId()+"]", 
-				new FilterSeed (getGUIManager(), getEventTrace(), getEventTrace().createThreadFilter(theThreadInfo))));
+				new FilterSeed (getGUIManager(), getTrace(), getTrace().createThreadFilter(theThreadInfo))));
 
 		add (createTitledPanel(
 				"Timestamp: ", 
@@ -55,7 +55,7 @@ public abstract class EventView extends LogView
 		LinkLabel theCFlowLabel = new SeedLinkLabel(
 				getGUIManager(), 
 				"View control flow", 
-				new CFlowSeed(getGUIManager(), getEventTrace(), theEvent));
+				new CFlowSeed(getGUIManager(), getTrace(), theEvent));
 		add (theCFlowLabel);
 		
 	}

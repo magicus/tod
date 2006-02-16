@@ -30,7 +30,7 @@ public class MethodSequenceView extends AbstractMemberSequenceView
 	
 	public MethodSequenceView(IDisplay aDisplay, LogView aLogView, IObjectInspector aInspector, IBehaviorInfo aMethod)
 	{
-		super(aDisplay, aLogView, aInspector, METHOD_COLOR);
+		super(aDisplay, aLogView, METHOD_COLOR, aInspector);
 		itsMethod = aMethod;
 	}
 
@@ -57,7 +57,7 @@ public class MethodSequenceView extends AbstractMemberSequenceView
 
 		// Create hyperlink to call event
 		IGUIManager theGUIManager = getLogView().getGUIManager();
-		IEventTrace theLog = getLogView().getEventTrace();
+		IEventTrace theLog = getLogView().getTrace();
 
 		CFlowSeed theSeed = new CFlowSeed(theGUIManager, theLog, aEvent);
 		SVGHyperlink theHyperlink = SVGHyperlink.create(theGUIManager, theSeed, "call", 10, Color.BLACK);

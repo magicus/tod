@@ -23,7 +23,7 @@ public class FieldSequenceView extends AbstractMemberSequenceView
 	
 	public FieldSequenceView(IDisplay aDisplay, LogView aLogView, IObjectInspector aInspector, IFieldInfo aField)
 	{
-		super(aDisplay, aLogView, aInspector, FIELD_COLOR);
+		super(aDisplay, aLogView, FIELD_COLOR, aInspector);
 		itsField = aField;
 	}
 

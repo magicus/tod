@@ -8,7 +8,7 @@ import java.io.File;
 import reflex.Run;
 import reflex.tools.parsers.ParseException;
 import reflex.tools.parsers.workingset.WorkingSetFactory;
-import remotebci.IInstrumenter;
+import tod.bci.IInstrumenter;
 import tod.bci.asm.ASMInstrumenter;
 import tod.bci.asm.ASMLocationPool;
 import tod.core.ILogCollector;
@@ -20,7 +20,6 @@ public class ASMDebuggerConfig
 	private ILogCollector itsCollector;
 	private Run.ClassNameSelector itsGlobalSelector;
 	private Run.ClassNameSelector itsTraceSelector;
-	private Run.ClassNameSelector itsIdSelector;
 	
 	private IInstrumenter itsInstrumenter;
 	private File itsLocationsFile;
@@ -34,7 +33,6 @@ public class ASMDebuggerConfig
 			ILogCollector aCollector, 
 			File aLocationsFile,
 			String aGlobalWorkingSet,
-			String aIdentifiableWorkingSet,
 			String aTraceWorkingSet)
 	{
 		itsCollector = aCollector;
@@ -46,7 +44,6 @@ public class ASMDebuggerConfig
 		{
 			itsGlobalSelector = WorkingSetFactory.parseWorkingSet(aGlobalWorkingSet);
 			itsTraceSelector = WorkingSetFactory.parseWorkingSet(aTraceWorkingSet);
-			itsIdSelector = WorkingSetFactory.parseWorkingSet(aIdentifiableWorkingSet);
 		}
 		catch (ParseException e)
 		{
@@ -60,15 +57,6 @@ public class ASMDebuggerConfig
 	public ILogCollector getCollector()
 	{
 		return itsCollector;
-	}
-
-	/**
-	 * Returns the selector that indicates which classes should be 
-	 * made identifiable with {@link tod.core.IIdentifiableObject}
-	 */
-	public Run.ClassNameSelector getIdSelector()
-	{
-		return itsIdSelector;
 	}
 
 	/**

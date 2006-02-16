@@ -14,8 +14,5 @@ public class ObjectIdentity
 	/**
 	 * Retrieves the identifier of an object.
 	 */
-	public static long get (IIdentifiableObject aObject)
-	{
-		return aObject.__log_uid();
-	}
+	public static native long get (Object aObject);
 }

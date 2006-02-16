@@ -6,7 +6,7 @@ package tod.bci.asm;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
-import remotebci.IInstrumenter;
+import tod.bci.IInstrumenter;
 import tod.session.ASMDebuggerConfig;
 
 /**

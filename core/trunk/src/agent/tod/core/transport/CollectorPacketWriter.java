@@ -7,7 +7,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import tod.core.BehaviourKind;
-import tod.core.IIdentifiableObject;
 import tod.core.ObjectIdentity;
 import tod.core.Output;
 import tod.core.ILocationRegistrer.LineNumberInfo;
@@ -415,19 +414,18 @@ public class CollectorPacketWriter
 			sendMessageType(aStream, MessageType.STRING);
 			aStream.writeUTF(theString);
 		}
-		else if (aValue instanceof IIdentifiableObject)
+		else
 		{
-			IIdentifiableObject theObject = (IIdentifiableObject) aValue;
-			long theObjectId = ObjectIdentity.get(theObject);
+			long theObjectId = ObjectIdentity.get(aValue);
 			sendMessageType(aStream, MessageType.OBJECT_UID);
 			aStream.writeLong(theObjectId);
 		}
-		else
-		{
-			int theHash = aValue.hashCode();
-			sendMessageType(aStream, MessageType.OBJECT_HASH);
-			aStream.writeInt(theHash);
-		}
+//		else
+//		{
+//			int theHash = aValue.hashCode();
+//			sendMessageType(aStream, MessageType.OBJECT_HASH);
+//			aStream.writeInt(theHash);
+//		}
 	}
 
 	private static void sendMessageType (DataOutputStream aStream, MessageType aMessageType) throws IOException

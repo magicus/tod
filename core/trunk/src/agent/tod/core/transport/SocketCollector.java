@@ -17,7 +17,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import remotebci.SocketThread;
 import tod.agent.AgentReady;
 import tod.core.BehaviourKind;
 import tod.core.ILogCollector;

@@ -7,7 +7,8 @@ import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
-import tod.core.IIdentifiableObject;
+import tod.core.ObjectIdentity;
+
 
 public class BCITest
 {
@@ -58,16 +59,7 @@ public class BCITest
 	
 	public static void print (Object aObject)
 	{
-		if (aObject instanceof IIdentifiableObject)
-		{
-			IIdentifiableObject theObject = (IIdentifiableObject) aObject;
-			long theId = theObject.__log_uid();
-			System.out.println("Identifiable object: "+theId+" "+theObject);
-		}
-		else
-		{
-			System.out.println("Normal object: "+aObject);
-		}
+		System.out.println("Object: "+ObjectIdentity.get(aObject));
 	}
 	
 	private void foo (int i, long l, float f, double d, String s)

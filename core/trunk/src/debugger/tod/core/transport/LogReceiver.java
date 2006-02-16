@@ -11,8 +11,7 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import remotebci.RemoteInstrumenter;
-import remotebci.SocketThread;
+import tod.bci.RemoteInstrumenter;
 import tod.core.ILogCollector;
 import tod.session.ASMDebuggerConfig;
 

@@ -6,22 +6,18 @@ package tod.gui.view;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.swing.Timer;
 
 import tod.core.model.structure.IThreadInfo;
 import tod.core.model.trace.IEventTrace;
 import tod.gui.IGUIManager;
-import tod.gui.formatter.LocationFormatter;
-import tod.gui.seed.CFlowSeed;
+import tod.gui.eventsequences.SequenceViewsDock;
+import tod.gui.eventsequences.ThreadSequenceSeed;
 import tod.gui.seed.ThreadsSeed;
-import zz.utils.SimpleComboBoxModel;
-import zz.utils.Utils;
-import zz.utils.ui.FormattedRenderer;
 
 /**
  * A view that lets the user select a thread and displays all the events 
@@ -31,6 +27,14 @@ import zz.utils.ui.FormattedRenderer;
 public class ThreadsView extends LogView
 {
 	private ThreadsSeed itsSeed;
+	
+	private SequenceViewsDock itsDock;
+	private Map<IThreadInfo, ThreadSequenceSeed> itsSeedsMap = new HashMap<IThreadInfo, ThreadSequenceSeed>();
+	
+	private JLabel itsEventsCountLabel;
+	private long itsLastEventCount = -1;
+
+	private Timer itsTimer;
 	
 	public ThreadsView(IGUIManager aGUIManager, IEventTrace aLog, ThreadsSeed aSeed)
 	{
@@ -42,31 +46,56 @@ public class ThreadsView extends LogView
 	
 	private void createUI()
 	{
-		List<IThreadInfo> theThreads = new ArrayList<IThreadInfo>();
-		Utils.fillCollection(theThreads, getEventTrace().getLocationTrace().getThreads());
-		
-		final JComboBox theThreadsCombo = new JComboBox(new SimpleComboBoxModel(theThreads));
-		theThreadsCombo.setRenderer(new FormattedRenderer(LocationFormatter.getInstance()));
-		theThreadsCombo.addActionListener(new ActionListener()
-				{
-					public void actionPerformed(ActionEvent aE)
-					{
-						showThread((IThreadInfo) theThreadsCombo.getSelectedItem());
-					}
-				}
-		);
-		
-		JPanel theTopPanel = new JPanel();
-		theTopPanel.add(new JLabel("Select thread"));
-		theTopPanel.add(theThreadsCombo);
+		itsDock = new SequenceViewsDock(this);
+		itsEventsCountLabel = new JLabel();
 		
 		setLayout(new BorderLayout());
-		add (theTopPanel, BorderLayout.NORTH);
+		add (itsDock, BorderLayout.CENTER);
+		add (itsEventsCountLabel, BorderLayout.NORTH);
+		
+		update();
+		
+		itsTimer = new Timer(500, new ActionListener()
+						{
+							public void actionPerformed(ActionEvent aE)
+							{
+								update();
+							}
+						});
+		itsTimer.start();
 	}
 	
-	private void showThread(IThreadInfo aThread)
+	@Override
+	public void removeNotify()
 	{
-		getGUIManager().openSeed(new CFlowSeed(getGUIManager(), getEventTrace(), aThread), false);
+		super.removeNotify();
+		itsTimer.stop();
 	}
 
+	private void update()
+	{
+		long theCount = getTrace().getEventsCount();
+		
+		if (theCount != itsLastEventCount)
+		{
+			itsLastEventCount = theCount;
+			
+			itsEventsCountLabel.setText("Events registered: "+theCount);
+			
+			for (IThreadInfo theThread : getTrace().getLocationTrace().getThreads())
+			{
+				ThreadSequenceSeed theSeed = itsSeedsMap.get(theThread);
+				if (theSeed == null)
+				{
+					theSeed = new ThreadSequenceSeed(getTrace(), theThread);
+					itsSeedsMap.put(theThread, theSeed);
+					
+					itsDock.pSeeds().add(theSeed);
+				}
+			}
+			
+			itsDock.pStart().set(getTrace().getFirstTimestamp());
+			itsDock.pEnd().set(getTrace().getLastTimestamp());
+		}
+	}
 }

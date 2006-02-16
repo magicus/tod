@@ -46,7 +46,7 @@ public class CFlowObjectsBuilder
 
 	public IEventTrace getEventTrace()
 	{
-		return getView().getEventTrace(); 
+		return getView().getTrace(); 
 	}
 	
 	public IGUIManager getGUIManager()

@@ -41,6 +41,11 @@ public interface IEventTrace
 	public long getLastTimestamp();
 	
 	/**
+	 * Returns the total number of logged events.
+	 */
+	public long getEventsCount();
+	
+	/**
 	 * Returns the registrer that maintains all location and
 	 * thread info.
 	 */

@@ -47,15 +47,6 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	}
 	
 	/**
-	 * Indicates if the given class has (or will have) the identity instrumentation.
-	 */
-	private boolean hasIdentity(String aClassName)
-	{
-		return BCIUtils.acceptClass(aClassName, itsConfig.getGlobalSelector())
-			&& BCIUtils.acceptClass(aClassName, itsConfig.getIdSelector());
-	}
-	
-	/**
 	 * Indicates if the given class has (or will have) tracing instrumentation.
 	 */
 	private boolean hasTrace(String aClassName)

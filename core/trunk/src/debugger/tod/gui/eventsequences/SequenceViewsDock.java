@@ -148,7 +148,7 @@ public class SequenceViewsDock extends JPanel
 		
 		private void createUI()
 		{
-			setLayout(new BorderLayout());
+			setLayout(new BorderLayout(5, 0));
 			setPreferredSize(new Dimension(10, 80));
 			
 			itsStripe = itsView.getEventStripe();
@@ -179,10 +179,11 @@ public class SequenceViewsDock extends JPanel
 		
 		public JPanel createNorthPanel()
 		{
-			JPanel thePanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+			JPanel thePanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 5, 0));
 			thePanel.add (new JLabel(itsView.getTitle()));
 			
 			JToolBar theToolBar = new JToolBar();
+			theToolBar.setFloatable(false);
 			for (ItemAction theAction : itsView.getActions())
 			{
 				theToolBar.add(theAction);

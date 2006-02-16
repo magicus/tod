@@ -11,8 +11,6 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-import tod.core.IIdentifiableObject;
-import tod.core.IdGenerator;
 import tod.session.ASMDebuggerConfig;
 import zz.utils.ArrayStack;
 import zz.utils.Stack;
@@ -24,13 +22,9 @@ import zz.utils.Stack;
 public class LogBCIVisitor extends ClassAdapter implements Opcodes
 {
 	private static final boolean LOG = true;
-	private static final String ID_FIELD_NAME = "__log_uid";
-	private static final String ID_METHOD_NAME = "__log_uid";
 
-	
 	private boolean itsModified = false;
 	
-	private boolean itsIdentifiable = false;
 	private boolean itsTrace = false;
 	
 	private String itsTypeName;
@@ -94,17 +88,6 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		
 		getLocationPool().registerType(itsTypeId, itsTypeName, itsSupertypeId, theInterfaceIds);
 		
-		// Check if the class should implement IIdentifiableObject
-		if (! BCIUtils.isInterface(access) 
-				&& "java/lang/Object".equals(aSuperName) 
-				&& BCIUtils.acceptClass(aName, itsConfig.getIdSelector()))
-		{
-			itsIdentifiable = true;
-			markModified();
-			
-			aInterfaces = BCIUtils.addToArray(aInterfaces, Type.getInternalName(IIdentifiableObject.class));
-		}
-		
 		// Check if we should trace operations in the class
 		if (! BCIUtils.isInterface(access)
 				&& BCIUtils.acceptClass(aName, itsConfig.getTraceSelector()))
@@ -114,29 +97,6 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		}
 		
 		super.visit(aVersion, access, aName, aSignature, aSuperName, aInterfaces);
-	}
-
-	@Override
-	public void visitEnd()
-	{
-		// If the class implements IIdentifiableObject, add field and getter
-		if (itsIdentifiable)
-		{
-			cv.visitField(ACC_PRIVATE | ACC_TRANSIENT, ID_FIELD_NAME, "J", null, null);
-			
-			MethodVisitor mv;
-			{
-				mv = cv.visitMethod(ACC_PUBLIC, ID_METHOD_NAME, "()J", null, null);
-				mv.visitCode();
-				mv.visitVarInsn(ALOAD, 0);
-				mv.visitFieldInsn(GETFIELD, itsTypeName, ID_FIELD_NAME, "J");
-				mv.visitInsn(LRETURN);
-				mv.visitMaxs(2, 1);
-				mv.visitEnd();
-			}
-		}
-		
-		super.visitEnd();
 	}
 	
 	@Override
@@ -268,23 +228,6 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		 */
 		private void insertEntryHooks()
 		{
-			// If the class implements IIdentifiableObject, add initialization code 
-			if (itsIdentifiable && "<init>".equals(itsMethodInfo.getName()))
-			{
-				mv.visitVarInsn(ALOAD, 0);
-				mv.visitFieldInsn(GETFIELD, itsTypeName, ID_FIELD_NAME, "J");
-				mv.visitInsn(LCONST_0);
-				mv.visitInsn(LCMP);
-				Label l = new Label();
-				mv.visitJumpInsn(IFNE, l);
-				
-				mv.visitVarInsn(ALOAD, 0);
-				mv.visitMethodInsn(INVOKESTATIC, Type.getInternalName(IdGenerator.class), "createId", "()J");
-				mv.visitFieldInsn(PUTFIELD, itsTypeName, ID_FIELD_NAME, "J");
-				
-				mv.visitLabel(l);
-			}
-			
 			if (itsTrace)
 			{
 				itsReturnHookLabel = new Label();

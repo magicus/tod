@@ -1,8 +1,11 @@
 /*
  * Created on Jan 21, 2006
  */
-package tod.core;
+package tod.core.transport;
 
+import tod.core.BehaviourKind;
+import tod.core.ILogCollector;
+import tod.core.Output;
 import tod.core.ILocationRegistrer.LineNumberInfo;
 import tod.core.ILocationRegistrer.LocalVariableInfo;
 

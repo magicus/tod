@@ -133,7 +133,7 @@ public class EventBrowser implements IEventBrowser
 		{
 			long theTimestamp = theEvent.getTimestamp();
 			if (theTimestamp < aT1) continue;
-			if (theTimestamp > aT2) break;
+			if (theTimestamp >= aT2) break;
 
 			int theSlot = (int)(((theTimestamp - aT1) * aSlotsCount) / (aT2 - aT1));
 			theCounts[theSlot]++;

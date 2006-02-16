@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.URI;
 
-import remotebci.RemoteInstrumenter;
+import tod.bci.RemoteInstrumenter;
 import tod.core.PrintThroughCollector;
 import tod.core.model.structure.ObjectId;
 import tod.core.model.trace.IEventTrace;
@@ -54,10 +54,10 @@ public class ASMLocalSession extends AbstractSession
 		itsCollector = new LocalCollector();
 		
 		itsConfig = new ASMDebuggerConfig(
-				new PrintThroughCollector(itsCollector),
+//				new PrintThroughCollector(itsCollector),
+				itsCollector,
 				itsCachedLocationsPath, 
 				"[-tod.** -remotebci.** +tod.test.** +tod.demo.**]",
-				"[-java.lang.String -java.lang.Number]",
 				"[-java.** -javax.** -sun.** -com.sun.**]");
 
 		try

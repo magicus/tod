@@ -5,8 +5,8 @@ package tod.agent;
 
 import java.io.IOException;
 
-import tod.core.DummyCollector;
 import tod.core.ILogCollector;
+import tod.core.transport.DummyCollector;
 import tod.core.transport.SocketCollector;
 import tod.utils.ConfigUtils;
 

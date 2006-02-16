@@ -68,7 +68,7 @@ public class CFlowView extends LogView
 		itsSeed = aSeed;
 
 		IThreadInfo theThread = itsSeed.getThread();
-		itsBrowser = getEventTrace().createCFlowBrowser(theThread);
+		itsBrowser = getTrace().createCFlowBrowser(theThread);
 	}
 
 	@Override

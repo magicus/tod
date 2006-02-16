@@ -64,6 +64,11 @@ implements ILogCollector, IEventTrace
 		itsEvents.clear();
 	}
 
+	public long getEventsCount()
+	{
+		return itsEvents.size();
+	}
+
 	@Override
 	protected ThreadInfo createThreadInfo(long aId)
 	{
