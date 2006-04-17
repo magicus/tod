@@ -26,6 +26,7 @@ import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
 import zz.utils.ui.MouseModifiers;
 import zz.utils.ui.StackLayout;
+import zz.utils.ui.UIUtils;
 
 /**
  * This component presents an overview of an {@link tod.core.model.trace.IEventBrowser}
@@ -275,11 +276,11 @@ public class TimeScale extends JPanel
 			int s1x = getX(s1t);
 			int s2x = getX(s2t);
 			
-			theGraphics.setComposite(Utils.ALPHA_04);
+			theGraphics.setComposite(UIUtils.ALPHA_04);
 			theGraphics.setColor(Color.BLUE);
 			theGraphics.fillRect(s1x, 0, s2x - s1x, h);
 			
-			theGraphics.setComposite(Utils.ALPHA_OPAQUE);
+			theGraphics.setComposite(UIUtils.ALPHA_OPAQUE);
 		}
 		
 		if (pCurrentPosition().get() != null)

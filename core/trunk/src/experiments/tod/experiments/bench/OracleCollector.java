@@ -29,8 +29,8 @@ public class OracleCollector extends AbstractSQLCollector
 
 		Utils.pipe(new FileInputStream("doc/cc55a/db-oracle.sql"), theProcess.getOutputStream());
 		theProcess.getOutputStream().close();
-		Utils.pipe(theProcess.getInputStream(), System.out);
-		Utils.pipe(theProcess.getErrorStream(), System.out);
+		Utils.pipe(theProcess.getInputStream(), System.err);
+		Utils.pipe(theProcess.getErrorStream(), System.err);
 		theProcess.waitFor();
 
 		

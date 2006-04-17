@@ -9,7 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-public abstract class AbstractSQLCollector implements ISimpleLogCollector
+public abstract class AbstractSQLCollector extends ISimpleLogCollector
 {
 	private Connection itsConnection;
 	
@@ -51,11 +51,13 @@ public abstract class AbstractSQLCollector implements ISimpleLogCollector
 
 	public abstract long getStoredSize();
 	
+
+	
 	private void insertEvent(long aTid, long aSeq, EventType aType, long aParentTid, long aParentSeq) throws SQLException
 	{
 		itsEventsInsertStmt.setLong(1, aTid);
 		itsEventsInsertStmt.setLong(2, aSeq);
-		itsEventsInsertStmt.setLong(3, System.currentTimeMillis());
+		itsEventsInsertStmt.setLong(3, time());
 		itsEventsInsertStmt.setShort(4, (short) aType.ordinal());
 		
 		if (aParentTid >= 0)

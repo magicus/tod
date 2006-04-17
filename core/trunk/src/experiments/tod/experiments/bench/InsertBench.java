@@ -5,6 +5,8 @@ package tod.experiments.bench;
 
 import java.util.Random;
 
+import zz.utils.Utils;
+
 public class InsertBench
 {
 	public static final int NUM_THREADS = 10;
@@ -51,7 +53,7 @@ public class InsertBench
 		
 		private long seq()
 		{
-			if (itsSeq % 10000 == 0) System.err.println(itsId + ": " + itsSeq);
+			if (itsSeq % 1000000 == 0) System.err.println(itsId + ": " + itsSeq);
 			return itsSeq++;
 		}
 		
@@ -138,7 +140,6 @@ public class InsertBench
 				(long)(eventCount/seconds),
 				1f*size/(1024*1024),
 				size/(1024*1024*seconds)));
-		
 	}
 
 
@@ -154,5 +155,22 @@ public class InsertBench
 		System.out.println("Running InsertBench of "+colletorClass.getSimpleName()+" with "+numEvents+" events.");
 		
 		new InsertBench(collector, numEvents);
+	}
+	
+	public static long getDirSize(String aDir)
+	{
+		try
+		{
+			Process theProcess = Runtime.getRuntime().exec("du -bs "+aDir);
+			theProcess.waitFor();
+			
+			String theResult = Utils.readInputStream(theProcess.getInputStream());
+			theResult = theResult.split("[\t ]")[0];
+			return Long.parseLong(theResult);
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 }

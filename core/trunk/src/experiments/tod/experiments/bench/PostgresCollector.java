@@ -27,8 +27,8 @@ public class PostgresCollector extends AbstractSQLCollector
 		Process theProcess = Runtime.getRuntime().exec("/usr/bin/psql -p 5433 -d tod");
 		Utils.pipe(new FileInputStream("doc/cc55a/db-postgres.sql"), theProcess.getOutputStream());
 		theProcess.getOutputStream().close();
-		Utils.pipe(theProcess.getInputStream(), System.out);
-		Utils.pipe(theProcess.getErrorStream(), System.out);
+		Utils.pipe(theProcess.getInputStream(), System.err);
+		Utils.pipe(theProcess.getErrorStream(), System.err);
 		theProcess.waitFor();
 		
 		Class.forName("org.postgresql.Driver");
@@ -37,6 +37,6 @@ public class PostgresCollector extends AbstractSQLCollector
 
 	public long getStoredSize()
 	{
-		return 0;
+		return InsertBench.getDirSize("/var/lib/postgresql/8.1/main/");
 	}
 }

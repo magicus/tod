@@ -10,7 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class RawStorageCollector implements ISimpleLogCollector
+public class RawStorageCollector extends ISimpleLogCollector
 {
 	private DataOutputStream itsOutputStream;
 	private File itsFile; 
@@ -21,7 +21,7 @@ public class RawStorageCollector implements ISimpleLogCollector
 		{
 			itsFile = new File("/home/gpothier/tmp/tod-raw.bin");
 			if (itsFile.exists()) itsFile.delete();
-			itsOutputStream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(itsFile), 1000000));
+			itsOutputStream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(itsFile), 100000));
 		}
 		catch (FileNotFoundException e)
 		{
@@ -41,7 +41,7 @@ public class RawStorageCollector implements ISimpleLogCollector
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	public synchronized void logBehaviorEnter(long aTid, long aSeq, int aBehaviorId, long aTarget, long[] args)
 	{
 		try
@@ -49,7 +49,7 @@ public class RawStorageCollector implements ISimpleLogCollector
 			itsOutputStream.writeByte(EventType.BEHAVIOR_ENTER.ordinal());
 			itsOutputStream.writeLong(aTid);
 			itsOutputStream.writeLong(aSeq);
-			itsOutputStream.writeLong(System.currentTimeMillis());
+			itsOutputStream.writeLong(time());
 			itsOutputStream.writeInt(aBehaviorId);
 			itsOutputStream.writeLong(aTarget);
 			for (int i = 0; i < args.length; i++)
@@ -71,7 +71,7 @@ public class RawStorageCollector implements ISimpleLogCollector
 			itsOutputStream.writeByte(EventType.BEHAVIOR_EXIT.ordinal());
 			itsOutputStream.writeLong(aTid);
 			itsOutputStream.writeLong(aSeq);
-			itsOutputStream.writeLong(System.currentTimeMillis());
+			itsOutputStream.writeLong(time());
 			itsOutputStream.writeLong(aRetValue);
 		}
 		catch (IOException e)
@@ -87,7 +87,7 @@ public class RawStorageCollector implements ISimpleLogCollector
 			itsOutputStream.writeByte(EventType.FIELD_WRITE.ordinal());
 			itsOutputStream.writeLong(aTid);
 			itsOutputStream.writeLong(aSeq);
-			itsOutputStream.writeLong(System.currentTimeMillis());
+			itsOutputStream.writeLong(time());
 			itsOutputStream.writeInt(aFieldId);
 			itsOutputStream.writeLong(aTarget);
 			itsOutputStream.writeLong(aValue);
@@ -105,7 +105,7 @@ public class RawStorageCollector implements ISimpleLogCollector
 			itsOutputStream.writeByte(EventType.VAR_WRITE.ordinal());
 			itsOutputStream.writeLong(aTid);
 			itsOutputStream.writeLong(aSeq);
-			itsOutputStream.writeLong(System.currentTimeMillis());
+			itsOutputStream.writeLong(time());
 			itsOutputStream.writeInt(aVarId);
 			itsOutputStream.writeLong(aValue);
 		}

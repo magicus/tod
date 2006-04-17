@@ -29,11 +29,11 @@ import zz.csg.api.IDisplay;
 import zz.csg.api.IRectangularGraphicObject;
 import zz.csg.impl.SVGGraphicContainer;
 import zz.utils.Cleaner;
-import zz.utils.Utils;
 import zz.utils.properties.ArrayListProperty;
 import zz.utils.properties.IListProperty;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
+import zz.utils.ui.UIUtils;
 
 /**
  * A graphic object that represents a mural (see http://reflex.dcc.uchile.cl/?q=node/60) 
@@ -321,7 +321,7 @@ public class EventMural extends SVGGraphicContainer
 			if (t == 0) continue;
 			
 			Color c1 = new Color(r/t, g/t, b/t);
-			Color c2 = Utils.getLighterColor(c1);
+			Color c2 = UIUtils.getLighterColor(c1);
 
 			// Draw main bar
 			aGraphics.setColor(c1);
