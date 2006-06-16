@@ -1,0 +1,609 @@
+#LyX 1.4.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 245
+\begin_document
+\begin_header
+\textclass article
+\language english
+\inputencoding auto
+\fontscheme default
+\graphics default
+\paperfontsize 12
+\spacing single
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\cite_engine basic
+\use_bibtopic false
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language swedish
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Database Management for a Trace Oriented Debugger - Scaling up
+\end_layout
+
+\begin_layout Author
+Guillaume Pothier
+\end_layout
+
+\begin_layout Standard
+\begin_inset LatexCommand \tableofcontents{}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Introduction 
+\end_layout
+
+\begin_layout Standard
+In step #2 we presented benchmarks of three types of database backends for
+ TOD, our trace-oriented debugger: 
+\end_layout
+
+\begin_layout Itemize
+Relational, with PostgreSQL and Oracle 10g.
+ These provided a throughput of less than 1.000 events/s.
+ 
+\end_layout
+
+\begin_layout Itemize
+Generic, with Berkeley DB Java Edition.
+ The throughput was almost 10.000 events/s.
+ 
+\end_layout
+
+\begin_layout Itemize
+In order to obtain an upper bound on the efficiency we also implemented
+ a raw backend that only stores event and doesn't allow queries.
+ We were able to handle between 500.000 and 1.000.000 events/s.
+ 
+\end_layout
+
+\begin_layout Standard
+As we thrive to support at least 100.000 events/s in this phase of the project,
+ both relational and generic backends have to be ruled out.
+ The only remaining possibility is to implement a custom backend, leveraging
+ the highly constrained nature of our data flow and queries.
+ 
+\end_layout
+
+\begin_layout Standard
+This document is divided into two parts: first we devise efficient indexing
+ schemes for generic filtering queries and for statistical queries.
+ Next we show that our problem is amenable to parallelization, and that
+ we can scale up quite linearly in the number of hosts.
+ 
+\end_layout
+
+\begin_layout Section
+Indexing schemes 
+\end_layout
+
+\begin_layout Standard
+In this section we propose indexing schemes especially crafted for our highly
+ constrained data.
+ Each of the following subsections focus on one of the three main types
+ of queries presented in earlier documents.
+ 
+\end_layout
+
+\begin_layout Subsection
+Generic filtering 
+\end_layout
+
+\begin_layout Standard
+Filtering queries are those that return a cursor that can be used to iterate
+ over a set of events that meet a particular condition, in their timestamp
+ order.
+ The condition is a boolean combination of 
+\begin_inset Formula $f=C$
+\end_inset
+
+ comparisons, where 
+\begin_inset Formula $f$
+\end_inset
+
+ is a field of the event and 
+\begin_inset Formula $C$
+\end_inset
+
+ is a constant.
+ 
+\end_layout
+
+\begin_layout Standard
+Let's first observe that the event fields can be divided into two groups:
+ 
+\end_layout
+
+\begin_layout Itemize
+ClassId, BehaviorId, FieldId and LocalVarId depend on the structure of the
+ debugged program and generally do not depend on the number of generated
+ events.
+\begin_inset Foot
+status collapsed
+
+\begin_layout Standard
+A worst case scenario would be a program that continually generates classes,
+ loads them and executes some methods in them.
+ However, this is a far from common task.
+\end_layout
+
+\end_inset
+
+ In other words, once all classes have been loaded, the debugged program
+ can run forever without generating any new value for ClassId, for instance.
+ Moreover, the value domain of these fields is dense in the sense that if
+ there exists a value k for ClassId it means that all values from 1 to k-1
+ also exist.
+ This is because values for those fields are generated sequentially as classes
+ are loaded.
+ 
+\end_layout
+
+\begin_layout Itemize
+ObjectId and ThreadId on the other hand might depend on the number of generated
+ events: it is not uncommon for a program to repetitively create and destroy
+ objects or threads.
+ The value domain of these fields are sparse, as opposed to the dense value
+ domains of the previous group's fields.
+ 
+\end_layout
+
+\begin_layout Standard
+Two other important facts should be noted: 
+\end_layout
+
+\begin_layout Itemize
+Events are never deleted from the database.
+ As a corollary, there is no reason for a given ClassId, BehaviorId or any
+ of the aforementioned Id values to disappear.
+ 
+\end_layout
+
+\begin_layout Itemize
+Events arrive almost
+\begin_inset Foot
+status collapsed
+
+\begin_layout Standard
+Some events might arrive out of order because of timing inaccuracies, but
+ by a small amount.
+ Reordering them is very cheap because only the last few events must be
+ taken into account.
+\end_layout
+
+\end_inset
+
+ ordered by timestamp, and for each thread exactly ordered by serial number.
+ 
+\end_layout
+
+\begin_layout Standard
+We can leverage these characteristics to implement a fairly efficient indexing
+ scheme in which we find matching events without ever accessing the event
+ records themselves, relying solely on indexes.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Merge select
+\begin_inset Foot
+status collapsed
+
+\begin_layout Standard
+This algorithm probably already has a name of its own, but not aware of
+ it we called it merge select for its resemblance to merge sort.
+\end_layout
+
+\end_inset
+
+ algorithm 
+\end_layout
+
+\begin_layout Standard
+The idea of our index structure is best conveyed by first describing its
+ key algorithm.
+ Let 
+\begin_inset Formula $S=\left[s_{1},s_{2},...,s_{n}\right]$
+\end_inset
+
+ be a stream of heterogeneous tuples where each 
+\begin_inset Formula $s_{i}$
+\end_inset
+
+ has a number of fields chosen among a set of fields 
+\begin_inset Formula $F=\left\{ f_{0},...,f_{k}\right\} $
+\end_inset
+
+.
+ Let 
+\begin_inset Formula $D{}_{j}$
+\end_inset
+
+ be the domain of 
+\begin_inset Formula $f_{j}$
+\end_inset
+
+, i.e.
+ the set of all the values that can be taken by 
+\begin_inset Formula $f_{j}$
+\end_inset
+
+ for any tuple 
+\begin_inset Formula $s_{i}$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+Every 
+\begin_inset Formula $s_{i}$
+\end_inset
+
+ has at least the field 
+\begin_inset Formula $f_{0}$
+\end_inset
+
+, and the 
+\begin_inset Formula $s_{i}$
+\end_inset
+
+ are ordered by their value of 
+\begin_inset Formula $f_{0}$
+\end_inset
+
+, assuming there exists a complete order on 
+\begin_inset Formula $D_{0}$
+\end_inset
+
+.
+ We define 
+\begin_inset Formula $I_{j}:D{}_{j}\mapsto(D_{0},\mathbb{N})^{*}$
+\end_inset
+
+ the 
+\emph on
+index
+\emph default
+ of 
+\begin_inset Formula $S$
+\end_inset
+
+ on 
+\begin_inset Formula $f_{j}$
+\end_inset
+
+ as a function that maps any possible value 
+\begin_inset Formula $v_{j}$
+\end_inset
+
+ of 
+\begin_inset Formula $f_{j}$
+\end_inset
+
+ to a list of pairs of the form 
+\begin_inset Formula $(v_{0},i)$
+\end_inset
+
+ ordered by 
+\begin_inset Formula $v_{0}$
+\end_inset
+
+, where 
+\begin_inset Formula $v_{0}$
+\end_inset
+
+ is the value of 
+\begin_inset Formula $s_{i}.f_{0}$
+\end_inset
+
+, for all those tuples in 
+\begin_inset Formula $S$
+\end_inset
+
+ that have 
+\begin_inset Formula $v_{j}$
+\end_inset
+
+ as the value of 
+\begin_inset Formula $f_{j}$
+\end_inset
+
+.
+ Formally:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\forall v_{j}\in D{}_{j},1\leq i\leq n:(v_{0},i)\in I_{j}(v_{j})\,$
+\end_inset
+
+
+\begin_inset Formula $\Leftrightarrow s_{i}.f_{j}=v_{j}\,\wedge\, s_{i}.f_{0}=v_{0}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+We shall now see how these indexes can be used to select the tuples that
+ match a boolean combination of conditions on their fields.
+\end_layout
+
+\begin_layout Standard
+In the case of a simple 
+\begin_inset Formula $f_{j}=C$
+\end_inset
+
+ condition we can retrieve matching tuples ordered by 
+\begin_inset Formula $f_{0}$
+\end_inset
+
+ by obtaining 
+\begin_inset Formula $I_{j}(C)$
+\end_inset
+
+ and retaining the 
+\begin_inset Formula $i$
+\end_inset
+
+ of each 
+\begin_inset Formula $(v_{0},i)$
+\end_inset
+
+ pair.
+ 
+\end_layout
+
+\begin_layout Standard
+Let's now consider a conjunctive condition 
+\begin_inset Formula $f_{j_{1}}=C_{1}\wedge\ldots\wedge f_{j_{m}}=C_{m}$
+\end_inset
+
+.
+ The merge select algorithm permits to obtain the stream of matching tuples
+ without actually accessing the tuples.
+ The idea is to obtain all of the 
+\begin_inset Formula $I_{j_{l}}(C_{l})$
+\end_inset
+
+ and to maintain a pointer to a current 
+\begin_inset Formula $(v_{0_{l}},i_{l})$
+\end_inset
+
+ for each.
+ Then we start a loop in which at every step we check if all of the 
+\begin_inset Formula $i_{l}$
+\end_inset
+
+ are equal, in which case we add 
+\begin_inset Formula $s_{i}$
+\end_inset
+
+ to the result, and then advance the pointer of one of the pairs that has
+ the minumum value of 
+\begin_inset Formula $v_{0}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+merge-select(
+\begin_inset Formula $S$
+\end_inset
+
+, 
+\begin_inset Formula $j_{1}$
+\end_inset
+
+,\SpecialChar \ldots{}
+,
+\begin_inset Formula $j_{m}$
+\end_inset
+
+,
+\begin_inset Formula $C_{1}$
+\end_inset
+
+,\SpecialChar \ldots{}
+,
+\begin_inset Formula $C_{m}$
+\end_inset
+
+):
+\end_layout
+
+\begin_layout Standard
+for (l=1 to m): 
+\end_layout
+
+\begin_layout Standard
+---index[l] 
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+
+\begin_inset Formula $I_{j_{l}}(C_{l})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+---pos[l] 
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+1
+\end_layout
+
+\begin_layout Standard
+do
+\end_layout
+
+\begin_layout Standard
+---match 
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+ true
+\end_layout
+
+\begin_layout Standard
+---minL 
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+ -1
+\end_layout
+
+\begin_layout Standard
+---minV0 
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+ 
+\begin_inset Formula $+\infty$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+---refI 
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+-1
+\end_layout
+
+\begin_layout Standard
+---for (l=1 to m): 
+\end_layout
+
+\begin_layout Standard
+------currentI 
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+index[l][pos[l]].i
+\end_layout
+
+\begin_layout Standard
+------currentV0 
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+index[l][pos[l]].v0
+\end_layout
+
+\begin_layout Standard
+------if (refI = -1): refI 
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+ currentI
+\end_layout
+
+\begin_layout Standard
+------else if currentI 
+\begin_inset Formula $\neq$
+\end_inset
+
+ refI: match 
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+false
+\end_layout
+
+\begin_layout Standard
+------if (currentV0 < minV0)
+\end_layout
+
+\begin_layout Standard
+---------minV0 
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+ currentV0
+\end_layout
+
+\begin_layout Standard
+---------minL 
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+ l
+\end_layout
+
+\begin_layout Standard
+---if (match) result 
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+result 
+\begin_inset Formula $\cup$
+\end_inset
+
+ {
+\begin_inset Formula $s_{refI}$
+\end_inset
+
+}
+\end_layout
+
+\begin_layout Standard
+---pos[minL] 
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+ pos[minL] + 1
+\end_layout
+
+\begin_layout Standard
+until some index is exhausted
+\end_layout
+
+\begin_layout Subsubsection
+Index structure
+\end_layout
+
+\begin_layout Subsection
+Statistics 
+\end_layout
+
+\begin_layout Subsection
+Control flow reconstitution 
+\end_layout
+
+\begin_layout Section
+Scaling up with a debugging grid 
+\end_layout
+
+\begin_layout Section
+Conclusion
+\end_layout
+
+\end_body
+\end_document
