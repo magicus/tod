@@ -3,6 +3,10 @@
 \begin_document
 \begin_header
 \textclass article
+\begin_preamble
+\usepackage{algorithm}
+\usepackage[noend]{algorithmic}
+\end_preamble
 \language english
 \inputencoding auto
 \fontscheme default
@@ -206,8 +210,9 @@ Merge select
 status collapsed
 
 \begin_layout Standard
-This algorithm probably already has a name of its own, but not aware of
- it we called it merge select for its resemblance to merge sort.
+This algorithm probably already has a name of its own, of which we are not
+ aware.
+ We called it merge select for its resemblance with merge sort.
 \end_layout
 
 \end_inset
@@ -232,7 +237,7 @@ The idea of our index structure is best conveyed by first describing its
 
 .
  Let 
-\begin_inset Formula $D{}_{j}$
+\begin_inset Formula $D_{j}$
 \end_inset
 
  be the domain of 
@@ -275,7 +280,7 @@ Every
 
 .
  We define 
-\begin_inset Formula $I_{j}:D{}_{j}\mapsto(D_{0},\mathbb{N})^{*}$
+\begin_inset Formula $I_{j}:D_{j}\mapsto(D_{0},\mathbb{N})^{*}$
 \end_inset
 
  the 
@@ -331,7 +336,7 @@ index
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $\forall v_{j}\in D{}_{j},1\leq i\leq n:(v_{0},i)\in I_{j}(v_{j})\,$
+\begin_inset Formula $\forall v_{j}\in D_{j},1\leq i\leq n:(v_{0},i)\in I_{j}(v_{j})\,$
 \end_inset
 
 
@@ -405,6 +410,31 @@ Let's now consider a conjunctive condition
 \end_inset
 
 .
+ See algorithm 
+\begin_inset LatexCommand \ref{alg:merge-select}
+
+\end_inset
+
+ for details.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+wide false
+sideways false
+status collapsed
+
+\begin_layout Caption
+
+\noun on
+merge-select
+\noun default
+
+\begin_inset LatexCommand \label{alg:merge-select}
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -434,155 +464,759 @@ merge-select(
 \end_layout
 
 \begin_layout Standard
-for (l=1 to m): 
-\end_layout
+\begin_inset ERT
+status open
 
 \begin_layout Standard
----index[l] 
-\begin_inset Formula $\leftarrow$
+
+
+\backslash
+begin{algorithmic}
+\end_layout
+
 \end_inset
 
 
-\begin_inset Formula $I_{j_{l}}(C_{l})$
-\end_inset
-
-
 \end_layout
 
 \begin_layout Standard
----pos[l] 
-\begin_inset Formula $\leftarrow$
-\end_inset
-
-1
-\end_layout
+\begin_inset ERT
+status open
 
 \begin_layout Standard
-do
+
+
+\backslash
+STATE
 \end_layout
 
-\begin_layout Standard
----match 
-\begin_inset Formula $\leftarrow$
-\end_inset
-
- true
-\end_layout
-
-\begin_layout Standard
----minL 
-\begin_inset Formula $\leftarrow$
-\end_inset
-
- -1
-\end_layout
-
-\begin_layout Standard
----minV0 
-\begin_inset Formula $\leftarrow$
 \end_inset
 
  
-\begin_inset Formula $+\infty$
+\begin_inset Formula $result\leftarrow\emptyset$
 \end_inset
 
 
 \end_layout
 
 \begin_layout Standard
----refI 
-\begin_inset Formula $\leftarrow$
-\end_inset
-
--1
-\end_layout
+\begin_inset ERT
+status open
 
 \begin_layout Standard
----for (l=1 to m): 
+
+
+\backslash
+FOR{
 \end_layout
 
-\begin_layout Standard
-------currentI 
-\begin_inset Formula $\leftarrow$
 \end_inset
 
-index[l][pos[l]].i
-\end_layout
 
-\begin_layout Standard
-------currentV0 
-\begin_inset Formula $\leftarrow$
+\begin_inset Formula $l=1$
 \end_inset
 
-index[l][pos[l]].v0
-\end_layout
+ to 
+\begin_inset Formula $m$
+\end_inset
+
+
+\begin_inset ERT
+status open
 
 \begin_layout Standard
-------if (refI = -1): refI 
-\begin_inset Formula $\leftarrow$
-\end_inset
-
- currentI
-\end_layout
-
-\begin_layout Standard
-------else if currentI 
-\begin_inset Formula $\neq$
-\end_inset
-
- refI: match 
-\begin_inset Formula $\leftarrow$
-\end_inset
-
-false
-\end_layout
-
-\begin_layout Standard
-------if (currentV0 < minV0)
-\end_layout
-
-\begin_layout Standard
----------minV0 
-\begin_inset Formula $\leftarrow$
-\end_inset
-
- currentV0
-\end_layout
-
-\begin_layout Standard
----------minL 
-\begin_inset Formula $\leftarrow$
-\end_inset
-
- l
-\end_layout
-
-\begin_layout Standard
----if (match) result 
-\begin_inset Formula $\leftarrow$
-\end_inset
-
-result 
-\begin_inset Formula $\cup$
-\end_inset
-
- {
-\begin_inset Formula $s_{refI}$
-\end_inset
 
 }
 \end_layout
 
-\begin_layout Standard
----pos[minL] 
-\begin_inset Formula $\leftarrow$
 \end_inset
 
- pos[minL] + 1
+
 \end_layout
 
 \begin_layout Standard
-until some index is exhausted
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+STATE
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $index[l]\leftarrow I_{j_{l}}(C_{l})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+STATE
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $pos[l]\leftarrow1$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+ENDFOR
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+WHILE{
+\end_layout
+
+\end_inset
+
+there are more elements
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+STATE
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $match\leftarrow true$
+\end_inset
+
+, 
+\begin_inset Formula $refI\leftarrow-1$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+STATE
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $minL\leftarrow-1$
+\end_inset
+
+, 
+\begin_inset Formula $minV0\leftarrow+\infty$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+FOR{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $l=1$
+\end_inset
+
+ to 
+\begin_inset Formula $m$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+STATE
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $currentI\leftarrow index[l][pos[l]].i$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+STATE
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $currentV0\leftarrow index[l][pos[l]].v0$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+IF{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $refI=-1$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+STATE
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $refI\leftarrow currentI$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+ELSIF{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $currentI\neq refI$
+\end_inset
+
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+STATE
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $match\leftarrow false$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+ENDIF
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+IF{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $currentV0<minV0$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+STATE
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $minV0\leftarrow currentV0$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+STATE
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $minL\leftarrow l$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+ENDIF
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+ENDFOR
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+IF{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $match$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+STATE
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $result\leftarrow result\cup\{ s_{refI}\}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+ENDIF
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+STATE
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $pos[minL]\leftarrow pos[minL]+1$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+ENDWHILE
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+%
+\backslash
+RETURN
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $result$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+end{algorithmic}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We can generalize to any boolean combination of conditions by first converting
+ it to conjunctive normal form and then apply merge select to each conjunction
+ and perform a merge sort of the results.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+It is easy to see that merge select run in linear time with respect to the
+ sum of the sizes of the considered indexes.
+ We will now study its cost in terms of I/O operations, applying it to our
+ application: 
+\begin_inset Formula $S$
+\end_inset
+
+ is the stream of recorded events and 
+\begin_inset Formula $f_{0}$
+\end_inset
+
+ is the timestamp field.
+\end_layout
+
+\begin_layout Standard
+The average size of a tuple in 
+\begin_inset Formula $S$
+\end_inset
+
+ is 42 bytes and there are 
+\begin_inset Formula $10\cdot10^{6}$
+\end_inset
+
+ tuples.
+ The size of a 
+\begin_inset Formula $(v_{0},i)$
+\end_inset
+
+ pair is 16 bytes.
+ We consider the fields 
+\begin_inset Formula $f_{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $f_{2}$
+\end_inset
+
+, which could be FieldId and ObjectId for instance, and the request 
+\begin_inset Formula $f_{1}=X\wedge f_{2}=Y$
+\end_inset
+
+.
+ Only 10% of all events have a value for 
+\begin_inset Formula $f_{1}$
+\end_inset
+
+, and 
+\begin_inset Formula $\left|D_{1}\right|=100$
+\end_inset
+
+; 50% of all events have a value for 
+\begin_inset Formula $f_{2}$
+\end_inset
+
+ and 
+\begin_inset Formula $\left|D_{2}\right|=1,000$
+\end_inset
+
+.
+ Assuming a uniform distribution of the values of 
+\begin_inset Formula $f_{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $f_{2}$
+\end_inset
+
+ in the event stream, we obtain that 
+\begin_inset Formula $\left|I_{1}(X)\right|=\frac{10}{100}\cdot\frac{1}{\left|D_{1}\right|}\cdot\left|S\right|=10,000$
+\end_inset
+
+ and 
+\begin_inset Formula $\left|I_{2}(Y)\right|=\frac{50}{100}\cdot\frac{1}{\left|D_{2}\right|}\cdot\left|S\right|=5,000$
+\end_inset
+
+.
+ Further assuming that 
+\begin_inset Formula $f_{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $f_{2}$
+\end_inset
+
+ are independant, there should be 
+\begin_inset Formula $R=\frac{10}{100}\cdot\frac{1}{\left|D_{1}\right|}\cdot\frac{50}{100}\cdot\frac{1}{\left|D_{2}\right|}\left|S\right|=5$
+\end_inset
+
+ matching tuples.
+ The algorithm will have to read 
+\begin_inset Formula $(10,000+5,000)\cdot16=240,000$
+\end_inset
+
+ bytes of index data, which is stored in consecutive disk blocks, and 
+\begin_inset Formula $5\cdot42=210$
+\end_inset
+
+ bytes of tuple data, which might be stored in different disk blocks.
+\end_layout
+
+\begin_layout Standard
+A brute force approach would have required to read 
+\begin_inset Formula $10\cdot10^{6}\cdot42=420\cdot10^{6}$
+\end_inset
+
+ bytes of data.
 \end_layout
 
 \begin_layout Subsubsection
