@@ -6,6 +6,7 @@
 \begin_preamble
 \usepackage{algorithm}
 \usepackage[noend]{algorithmic}
+\usepackage{tabularx}
 \end_preamble
 \language english
 \inputencoding auto
@@ -156,10 +157,10 @@ Events arrive almost
 status collapsed
 
 \begin_layout Standard
-Some events might arrive out of order because of timing inaccuracies, but
- by a small amount.
- Reordering them is very cheap as only the last few events must be taken
- into account.
+Events of different threads might arrive out of order because of the way
+ network packets are sent.
+ Nevertheless, reordering them is rather cheap as only the last few events
+ must be taken into account.
  From here on we assume that the events have been reordered before they
  reach the backend.
 \end_layout
@@ -270,7 +271,16 @@ Every tuple has at least the field
 \end_layout
 
 \begin_layout Standard
-We define 
+In our application 
+\begin_inset Formula $S$
+\end_inset
+
+ is quite naturally the stream of recorded events and 
+\begin_inset Formula $f_{0}$
+\end_inset
+
+ is the timestamp field.
+ We now define 
 \begin_inset Formula $I_{j}:D_{j}\mapsto(D_{0},\mathbb{N})^{*}$
 \end_inset
 
@@ -382,7 +392,7 @@ Conjunctive conditions
 \end_layout
 
 \begin_layout Standard
-Let's now consider a conjunctive boolean condition 
+Let us now consider a conjunctive boolean condition 
 \begin_inset Formula $f_{j_{1}}=C_{1}\wedge\ldots\wedge f_{j_{m}}=C_{m}$
 \end_inset
 
@@ -423,8 +433,9 @@ Let's now consider a conjunctive boolean condition
 \end_inset
 
  for details.
- It is easy to see that merge select run in linear time with respect to
- the sum of the sizes of the considered indexes.
+ As each index is scanned only once and there is no nested loop, merge join
+ run in linear time with respect to the sum of the sizes of the considered
+ indexes.
  
 \end_layout
 
@@ -1119,7 +1130,7 @@ We can generalize to any compound boolean condition:
 \end_layout
 
 \begin_layout Enumerate
-Convert the condition to its Conjunctive Normal Form.
+Convert the condition to its Disjunctive Normal Form.
 \end_layout
 
 \begin_layout Enumerate
@@ -1134,6 +1145,20 @@ Perform a merge (like in merge sort) of the results.
 \begin_layout Standard
 Thus the cost remains linear with respect to the sum of the sizes of the
  considered indexes.
+ It is noteworthy that both merge join and merge are stream operators: they
+ produce an output tuple as soon as they have received enough input tuples,
+ without ever needing to get back to already used input tuples, or to access
+ 
+\begin_inset Quotes sld
+\end_inset
+
+future
+\begin_inset Quotes srd
+\end_inset
+
+ input tuples.
+ It is therefore possible to pipeline both operators so that no intermediate
+ results have to be stored.
 \end_layout
 
 \begin_layout Subsubsection
@@ -1142,29 +1167,20 @@ I/O efficiency of queries
 
 \begin_layout Standard
 In this section we compare the I/O costs of the indexed and indexless approaches.
- In our application 
-\begin_inset Formula $S$
-\end_inset
-
- is quite naturally the stream of recorded events and 
-\begin_inset Formula $f_{0}$
-\end_inset
-
- is the timestamp field.
  Tuples and index entries are stored on hard disk in pages of length 
 \begin_inset Formula $P$
 \end_inset
 
 ; the entries for any given index are stored together in the same pages.
- Let's call 
-\begin_inset Formula $tsize$
+ Let us call 
+\begin_inset Formula $\left\Vert s\right\Vert $
 \end_inset
 
- the average size of a tuple and 
-\begin_inset Formula $isize$
+ the average size in bytes of a tuple and 
+\begin_inset Formula $\left\Vert (v_{0},i)\right\Vert $
 \end_inset
 
- the size of a 
+ the size in bytes of a 
 \begin_inset Formula $(v_{0},i)$
 \end_inset
 
@@ -1185,8 +1201,9 @@ We consider a compound boolean condition where terms are of the form
 \end_inset
 
 .
- We don't care about the actual boolean operators between the terms as they
- have no impact on the I/O cost (merge joins and merges can be pipelined).
+ We do not care about the actual boolean operators between the terms: as
+ merge joins and merges can be pipelined the I/O cost depends only on the
+ sizes of considered indexes.
 \end_layout
 
 \begin_layout Standard
@@ -1196,7 +1213,7 @@ The cost of the indexed approach is determined as follows.
 
 \begin_layout Standard
 \begin_inset Formula \[
-N=\frac{isize}{P}\cdot\sum_{l=1}^{m}\left|I_{l}(X)\right|\]
+N=\frac{\left\Vert (v_{0},i)\right\Vert }{P}\cdot\sum_{l=1}^{m}\left|I_{l}(X)\right|\]
 
 \end_inset
 
@@ -1210,7 +1227,7 @@ Then we determine the number of tuple pages that must be read, assuming
 
 \begin_layout Standard
 \begin_inset Formula \[
-M=min\left(\left|result\right|,\frac{tsize}{P}\cdot\left|S\right|\right)\]
+M=min\left(\left|result\right|,\frac{\left\Vert s\right\Vert }{P}\cdot\left|S\right|\right)\]
 
 \end_inset
 
@@ -1222,7 +1239,8 @@ The total I/O cost of the query is
 \begin_inset Formula $N+M$
 \end_inset
 
-, as we don't write the results to disk but instead stream them to the client.
+, as we do not write the results to disk but instead stream them to the
+ client.
 \end_layout
 
 \begin_layout Subsubsection*
@@ -1235,7 +1253,7 @@ The average size of a tuple in
 \end_inset
 
  is 
-\begin_inset Formula $tsize=42$
+\begin_inset Formula $\left\Vert s\right\Vert =42$
 \end_inset
 
  bytes
@@ -1254,7 +1272,7 @@ We derive this figure from the results of the benchmarks presented in the
 \end_inset
 
  pair is 
-\begin_inset Formula $isize=16$
+\begin_inset Formula $\left\Vert (v_{0},i)\right\Vert =16$
 \end_inset
 
  bytes
@@ -1274,7 +1292,7 @@ Two 64 bits integers
 \end_layout
 
 \begin_layout Standard
-Let's consider two fields 
+Let us consider two fields 
 \begin_inset Formula $f_{1}$
 \end_inset
 
@@ -1394,7 +1412,7 @@ Assuming a rather conservative page access time of 20ms, the query would
 status collapsed
 
 \begin_layout Standard
-A page access time of 20ms means a throughput of around 200KB/s.
+A page access time of 20ms corresponds to a throughput of around 200KB/s.
  We know that for sequential accesses we can achieve a 20MB/s throughput.
  Real figures are probably in-between.
 \end_layout
@@ -1415,7 +1433,7 @@ A brute force approach reading all tuples would require a number of page
 
 \begin_layout Standard
 \begin_inset Formula \[
-\left\lceil \left|S\right|\cdot\frac{tsize}{P}\right\rceil \approx100,000\]
+\left\lceil \left|S\right|\cdot\frac{\left\Vert s\right\Vert }{P}\right\rceil \approx100,000\]
 
 \end_inset
 
@@ -1424,6 +1442,9 @@ A brute force approach reading all tuples would require a number of page
 
 \begin_layout Standard
 With the same 20ms access time the query would execute in 33mn.
+ Beyond the 1600-fold improvement, it is encouraging to note that the 1.26s
+ estimated response time of the indexed approach is compatible with interactive
+ applications.
 \end_layout
 
 \begin_layout Subsubsection
@@ -1654,123 +1675,161 @@ The number of distinct indexes is:
 \end_layout
 
 \begin_layout Standard
-Let's try to estimate that quantity.
+Let us try to estimate that quantity.
  BehaviorId, FieldId, LocalVarId and BytecodeIndex only depend on the structure
  of the code, not on the number of events.
  If the debugged program has 10,000 classes, with 100 fields per class,
  100 behaviors per class and 100 local variables per behavior we would have
  the following counts:
-\end_layout
-
-\begin_layout Standard
-\begin_inset Tabular
-<lyxtabular version="3" rows="5" columns="2">
-<features islongtable="true">
-<column alignment="center" valignment="top" leftline="true" width="0">
-<column alignment="center" valignment="top" leftline="true" rightline="true" width="0">
-<row topline="true" bottomline="true">
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Standard
-field
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Standard
-\begin_inset Formula $\left|D_{field}\right|$
+\begin_inset VSpace defskip
 \end_inset
 
 
 \end_layout
 
-\end_inset
-</cell>
-</row>
-<row topline="true">
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
 \begin_layout Standard
-BehaviorId
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Standard
-1,000,000
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row topline="true">
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Standard
-FieldId
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Standard
-1,000,000
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row topline="true">
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Standard
-LocalVarId
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Standard
-100
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row topline="true" bottomline="true">
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Standard
-BytecodeIndex
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Standard
-65536
-\begin_inset Foot
+\noindent
+\align center
+\begin_inset ERT
 status collapsed
 
 \begin_layout Standard
-As per the Java Virtual Machine Specification
+
+
+\backslash
+begin{tabularx}{200pt}{|c|X|}
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+hline 
+\end_layout
+
+\begin_layout Standard
+
+field&
+\end_layout
+
+\begin_layout Standard
+
+$
+\backslash
+left|D_{field}
+\backslash
+right|$
+\backslash
+tabularnewline
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+hline
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+hline 
+\end_layout
+
+\begin_layout Standard
+
+BehaviorId&
+\end_layout
+
+\begin_layout Standard
+
+1,000,000
+\backslash
+tabularnewline
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+hline 
+\end_layout
+
+\begin_layout Standard
+
+FieldId&
+\end_layout
+
+\begin_layout Standard
+
+1,000,000
+\backslash
+tabularnewline
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+hline 
+\end_layout
+
+\begin_layout Standard
+
+LocalVarId&
+\end_layout
+
+\begin_layout Standard
+
+100
+\backslash
+tabularnewline
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+hline 
+\end_layout
+
+\begin_layout Standard
+
+BytecodeIndex&
+\end_layout
+
+\begin_layout Standard
+
+65536%
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+footnote{As per the Java Virtual Machine Specification%
+\end_layout
+
+\begin_layout Standard
+
+}
+\backslash
+tabularnewline
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+hline
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+end{tabularx}
 \end_layout
 
 \end_inset
@@ -1778,11 +1837,8 @@ As per the Java Virtual Machine Specification
 
 \end_layout
 
-\end_inset
-</cell>
-</row>
-</lyxtabular>
-
+\begin_layout Standard
+\begin_inset VSpace defskip
 \end_inset
 
 
@@ -1797,78 +1853,117 @@ ThreadId and ObjectId are more difficult to evaluate.
  to the JVM, all all live threads must be reasonably executable by the CPU.
  Thus, although the backend will not delete information about old entities,
  it is sufficient to have buffer space for the currently used ones.
- Let's then complete our table:
-\end_layout
-
-\begin_layout Standard
-\begin_inset Tabular
-<lyxtabular version="3" rows="3" columns="2">
-<features islongtable="true">
-<column alignment="center" valignment="top" leftline="true" width="0">
-<column alignment="center" valignment="top" leftline="true" rightline="true" width="0">
-<row topline="true" bottomline="true">
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Standard
-field
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Standard
-\begin_inset Formula $\left|D'_{field}\right|$
+ Let us then complete our table:
+\begin_inset VSpace defskip
 \end_inset
 
 
 \end_layout
 
-\end_inset
-</cell>
-</row>
-<row topline="true">
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
+\begin_layout Standard
+\align center
+\begin_inset ERT
+status open
 
 \begin_layout Standard
-ThreadId
+
+
+\backslash
+begin{tabularx}{150pt}{|c|X|}
 \end_layout
 
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
+\begin_layout Standard
+
+
+\backslash
+hline 
+\end_layout
 
 \begin_layout Standard
+
+field&
+\end_layout
+
+\begin_layout Standard
+
+$
+\backslash
+left|D'_{field}
+\backslash
+right|$
+\backslash
+tabularnewline
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+hline
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+hline 
+\end_layout
+
+\begin_layout Standard
+
+ThreadId&
+\end_layout
+
+\begin_layout Standard
+
 1,000
+\backslash
+tabularnewline
 \end_layout
-
-\end_inset
-</cell>
-</row>
-<row topline="true" bottomline="true">
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
 
 \begin_layout Standard
-ObjectId
-\end_layout
 
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
+
+\backslash
+hline 
+\end_layout
 
 \begin_layout Standard
-10,000,000
-\begin_inset Foot
-status collapsed
+
+ObjectId&
+\end_layout
 
 \begin_layout Standard
-Estimation based on a JVM heap size of the order of 1GB.
+
+10,000,000%
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+footnote{Estimation based on a JVM heap size of the order of 1GB.%
+\end_layout
+
+\begin_layout Standard
+
+}
+\backslash
+tabularnewline
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+hline
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+end{tabularx}
 \end_layout
 
 \end_inset
@@ -1876,11 +1971,8 @@ Estimation based on a JVM heap size of the order of 1GB.
 
 \end_layout
 
-\end_inset
-</cell>
-</row>
-</lyxtabular>
-
+\begin_layout Standard
+\begin_inset VSpace defskip
 \end_inset
 
 
@@ -1978,10 +2070,10 @@ Indexing the indexes
 \end_layout
 
 \begin_layout Standard
-When a client issues a generic filter query it might not need the whole
- result set; it might even not need more than one event.
- Let's recall that a generic filter query returns a cursor that can be used
- by the client to actually retrieve successive matching events.
+When a client issues a generic filter query he might not need the whole
+ result set; he might even not need more than one event.
+ Let us recall that a generic filter query returns a cursor that can be
+ used by the client to actually retrieve successive matching events.
  The cursor can be moved forward and backward by one event, and can also
  be positioned directly at a specific position given a reference event or
  timestamp.
@@ -1992,7 +2084,7 @@ When a client issues a generic filter query it might not need the whole
 \begin_layout Standard
 Fortunately this additional indexing is relatively cheap as we can use a
  multilevel clustered index.
- Let's call level-0 the index we already described.
+ Let us call level-0 the index we already described.
  Whenever a level-0 index page is full, we add a 
 \begin_inset Formula $(v_{0},pid)$
 \end_inset
@@ -2091,7 +2183,7 @@ The current page of all the levels above a particular level-0 index can
 
  page, the I/O overhead is negligible.
  On the other hand the RAM requirements are multiplied by the number of
- index levels, which in practice should not be more than 4.
+ additional index levels, which in practice should not be more than 4.
 \end_layout
 
 \begin_layout Itemize
@@ -2123,8 +2215,8 @@ Choosing the right fields
 \begin_layout Standard
 The last point we must refine is the choice of the fields on which we construct
  the indexes.
- Let's consider the same simplified model that we considered for our benchmarks,
- which consists of only three kinds of events:
+ Let us consider the same simplified model that we considered for our benchmarks
+, which consists of only three kinds of events:
 \end_layout
 
 \begin_layout Itemize
@@ -2164,8 +2256,8 @@ There is an issue however with the Value, Target, Arguments and Result fields.
 \begin_inset Formula $Kind=FieldWrite\wedge Target=objectX$
 \end_inset
 
- as it would return not only return the field write events whose Target
- is objectX, but also those whose 
+ as it would return not only the field write events whose Target is objectX,
+ but also those whose 
 \emph on
 Value
 \emph default
@@ -2354,8 +2446,8 @@ As a single byte suffices to represent
 \end_inset
 
  it is immediate that the cost of this alteration is minimal.
- The merge join algorithm would be slightly modified so that it accepts
- an additional argument giving a condition on 
+ The merge join algorithm would have to be slightly modified so that it
+ accepts an additional argument giving a condition on 
 \begin_inset Formula $r$
 \end_inset
 
