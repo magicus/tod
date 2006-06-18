@@ -72,14 +72,14 @@ Generic, with Berkeley DB Java Edition.
 
 \begin_layout Itemize
 In order to obtain an upper bound on the efficiency we also implemented
- a raw backend that only stores event and doesn't allow queries.
- We were able to handle between 500.000 and 1.000.000 events/s.
+ a raw backend that only stores events and doesn't allow queries.
+ It is able to handle between 500.000 and 1.000.000 events/s.
  
 \end_layout
 
 \begin_layout Standard
-As we strive to support at least 100.000 events/s in this phase of the project,
- both relational and generic backends have to be ruled out.
+In this phase of the project we strive to support at least 100.000 events/s
+ so both relational and generic backends have to be ruled out.
  The only remaining possibility is to implement a custom backend, leveraging
  the highly constrained nature of our data and queries.
  
@@ -90,23 +90,37 @@ As we strive to support at least 100.000 events/s in this phase of the project,
 \end_layout
 
 \begin_layout Standard
-This document is divided into two parts: first we devise efficient indexing
- schemes for generic filtering and statistical queries.
- Next we show how our problem is amenable to parallelization, and that we
- can scale up quite linearly in the number of hosts.
+This document is divided into two parts: in section 
+\begin_inset LatexCommand \ref{sec:Indexing-schemes}
+
+\end_inset
+
+ we devise efficient indexing schemes to speed up our queries.
+ Then section 
+\begin_inset LatexCommand \ref{sec:grid}
+
+\end_inset
+
+ shows how our problem is amenable to parallelization, and in particular
+ that we can scale up quite linearly with respect to the number of nodes.
  
 \end_layout
 
 \begin_layout Section
-Indexing schemes 
+Indexing schemes
+\begin_inset LatexCommand \label{sec:Indexing-schemes}
+
+\end_inset
+
+ 
 \end_layout
 
 \begin_layout Standard
 In this section we propose indexing schemes especially crafted for our highly
  constrained data.
  Each of the following subsections focus on one of the three main types
- of queries presented in earlier documents.
- 
+ of queries presented in earlier documents: generic filtering, statistics
+ and control flow.
 \end_layout
 
 \begin_layout Subsection
@@ -146,8 +160,8 @@ Some events might arrive out of order because of timing inaccuracies, but
  by a small amount.
  Reordering them is very cheap as only the last few events must be taken
  into account.
- From here on we assume that the reordering step is performed and that events
- actually are ordered by timestamp when they reach the backend.
+ From here on we assume that the events have been reordered before they
+ reach the backend.
 \end_layout
 
 \end_inset
@@ -158,8 +172,7 @@ Some events might arrive out of order because of timing inaccuracies, but
 
 \begin_layout Itemize
 Events are never deleted from the database.
- As a corollary, there is no reason for a given ClassId, BehaviorId or any
- of the aforementioned Id values to disappear.
+ As a corollary, there is no reason for a given field value to disappear.
  
 \end_layout
 
@@ -167,20 +180,20 @@ Events are never deleted from the database.
 We can leverage these characteristics to implement a fairly efficient indexing
  scheme in which matching events are found without ever accessing the event
  records themselves, relying solely on indexes.
- The remaining of this section describes the merge select algorithm used
- to find matching events and discusses its I/O and space efficiency.
+ The remaining of this section describes the n-ary merge join algorithm
+ used to find matching events and discusses its I/O and space efficiency.
  
 \end_layout
 
 \begin_layout Subsubsection
-Merge select
+N-ary merge join
 \begin_inset Foot
 status collapsed
 
 \begin_layout Standard
-This algorithm probably already has a name of its own, of which we are not
- aware.
- We called it merge select for its resemblance with merge sort.
+We named this algorithm after the well known sort-merge join used by many
+ database management systems.
+ In our application the sort step is not necessary.
 \end_layout
 
 \end_inset
@@ -190,14 +203,18 @@ This algorithm probably already has a name of its own, of which we are not
 
 \begin_layout Standard
 Let 
-\begin_inset Formula $S=\left[s_{1},s_{2},...,s_{n}\right]$
+\begin_inset Formula $S=\left\langle s_{1},...,s_{n}\right\rangle $
 \end_inset
 
- be a stream of heterogeneous tuples where each 
+ be a stream of 
+\begin_inset Formula $n$
+\end_inset
+
+ heterogeneous tuples where each 
 \begin_inset Formula $s_{i}$
 \end_inset
 
- has a number of fields chosen among a set of fields 
+ can have a value for certain fields chosen among the set 
 \begin_inset Formula $F=\left\{ f_{0},...,f_{k}\right\} $
 \end_inset
 
@@ -211,7 +228,7 @@ Let
 \end_inset
 
 , i.e.
- the set of all the values that can be taken by 
+ the set of all distinct values that can be taken by 
 \begin_inset Formula $f_{j}$
 \end_inset
 
@@ -220,15 +237,11 @@ Let
 \end_inset
 
 .
- 
-\end_layout
-
-\begin_layout Standard
-The field 
+ The 
 \begin_inset Formula $f_{0}$
 \end_inset
 
- is particular:
+ field is particular:
 \end_layout
 
 \begin_layout Itemize
@@ -240,16 +253,12 @@ There must exist a complete order on
 \end_layout
 
 \begin_layout Itemize
-Every 
-\begin_inset Formula $s_{i}$
-\end_inset
-
- has at least the field 
+Every tuple has at least the field 
 \begin_inset Formula $f_{0}$
 \end_inset
 
-, and the 
-\begin_inset Formula $s_{i}$
+, and the tuples of 
+\begin_inset Formula $S$
 \end_inset
 
  are ordered by their value of 
@@ -294,15 +303,15 @@ index
 \end_inset
 
 .
- There is a pair in an index 
+ Such a pair appears in an index 
 \begin_inset Formula $I_{j}(v)$
 \end_inset
 
- for all the tuples 
-\begin_inset Formula $s\in S$
+ if and only if the tuple 
+\begin_inset Formula $s_{i}$
 \end_inset
 
- that have 
+ has 
 \begin_inset Formula $v$
 \end_inset
 
@@ -310,12 +319,12 @@ index
 \begin_inset Formula $f_{j}$
 \end_inset
 
- and where 
+ and 
 \begin_inset Formula $v_{0}$
 \end_inset
 
- is the value of 
-\begin_inset Formula $s.f_{0}$
+ as the value of 
+\begin_inset Formula $f_{0}$
 \end_inset
 
 .
@@ -324,7 +333,7 @@ index
 
 \begin_layout Standard
 \begin_inset Formula \[
-\forall v\in D_{j},1\leq i\leq n:(v_{0},i)\in I_{j}(v)\Leftrightarrow\exists s\in S,s.f_{j}=v\wedge s.f_{0}=v_{0}\]
+\forall v\in D_{j},1\leq i\leq n:(v_{0},i)\in I_{j}(v)\Leftrightarrow\exists s_{i}\in S,s_{i}.f_{j}=v\wedge s_{i}.f_{0}=v_{0}\]
 
 \end_inset
 
@@ -335,8 +344,8 @@ index
 \begin_inset VSpace defskip
 \end_inset
 
-We shall now see how these indexes can be used to select the tuples that
- match a boolean combination of conditions on their fields.
+We shall now see how these indexes can be used to find the tuples that match
+ a boolean condition on their fields.
 \end_layout
 
 \begin_layout Subsubsection*
@@ -360,7 +369,7 @@ In the case of a simple
 \begin_inset Formula $s_{i}$
 \end_inset
 
- of each 
+ for each 
 \begin_inset Formula $(v_{0},i)$
 \end_inset
 
@@ -378,8 +387,8 @@ Let's now consider a conjunctive boolean condition
 \end_inset
 
 .
- The merge select algorithm permits to obtain the stream of matching tuples
- without actually accessing the tuples.
+ The n-ary merge join algorithm permits to identify matching tuples without
+ actually accessing them.
  The idea is to obtain all of the 
 \begin_inset Formula $I_{j_{l}}(C_{l})$
 \end_inset
@@ -409,7 +418,7 @@ Let's now consider a conjunctive boolean condition
 
  we advance the pointer of any one of them.
  See algorithm 
-\begin_inset LatexCommand \ref{alg:merge-select}
+\begin_inset LatexCommand \ref{alg:merge-join}
 
 \end_inset
 
@@ -428,10 +437,14 @@ status collapsed
 \begin_layout Caption
 
 \noun on
-merge-select
+merge
+\noun default
+-
+\noun on
+join
 \noun default
 
-\begin_inset LatexCommand \label{alg:merge-select}
+\begin_inset LatexCommand \label{alg:merge-join}
 
 \end_inset
 
@@ -439,7 +452,7 @@ merge-select
 \end_layout
 
 \begin_layout Standard
-merge-select(
+merge-join(
 \begin_inset Formula $S$
 \end_inset
 
@@ -1106,11 +1119,11 @@ We can generalize to any compound boolean condition:
 \end_layout
 
 \begin_layout Enumerate
-Convert the condition to Conjunctive Normal Form.
+Convert the condition to its Conjunctive Normal Form.
 \end_layout
 
 \begin_layout Enumerate
-Apply merge select to each conjunction.
+Apply merge join to each conjunction.
 \end_layout
 
 \begin_layout Enumerate
@@ -1128,7 +1141,7 @@ I/O efficiency of queries
 \end_layout
 
 \begin_layout Standard
-In this section we compare the I/O costs of indexed and indexless approaches.
+In this section we compare the I/O costs of the indexed and indexless approaches.
  In our application 
 \begin_inset Formula $S$
 \end_inset
@@ -1138,24 +1151,24 @@ In this section we compare the I/O costs of indexed and indexless approaches.
 \end_inset
 
  is the timestamp field.
- Tuples and index pairs are stored on hard disk in pages of length 
+ Tuples and index entries are stored on hard disk in pages of length 
 \begin_inset Formula $P$
 \end_inset
 
-; the pairs for any given index are stored together in the same pages.
+; the entries for any given index are stored together in the same pages.
  Let's call 
 \begin_inset Formula $tsize$
 \end_inset
 
  the average size of a tuple and 
-\begin_inset Formula $psize$
+\begin_inset Formula $isize$
 \end_inset
 
  the size of a 
 \begin_inset Formula $(v_{0},i)$
 \end_inset
 
- index pair.
+ index entry.
 \end_layout
 
 \begin_layout Subsubsection*
@@ -1173,7 +1186,7 @@ We consider a compound boolean condition where terms are of the form
 
 .
  We don't care about the actual boolean operators between the terms as they
- have no impact on the I/O cost (merge selects and merges can be pipelined).
+ have no impact on the I/O cost (merge joins and merges can be pipelined).
 \end_layout
 
 \begin_layout Standard
@@ -1183,7 +1196,7 @@ The cost of the indexed approach is determined as follows.
 
 \begin_layout Standard
 \begin_inset Formula \[
-N=\frac{psize}{P}\cdot\sum_{l=1}^{m}\left|I_{l}(X)\right|\]
+N=\frac{isize}{P}\cdot\sum_{l=1}^{m}\left|I_{l}(X)\right|\]
 
 \end_inset
 
@@ -1210,10 +1223,6 @@ The total I/O cost of the query is
 \end_inset
 
 , as we don't write the results to disk but instead stream them to the client.
-\begin_inset VSpace defskip
-\end_inset
-
-
 \end_layout
 
 \begin_layout Subsubsection*
@@ -1245,7 +1254,7 @@ We derive this figure from the results of the benchmarks presented in the
 \end_inset
 
  pair is 
-\begin_inset Formula $psize=16$
+\begin_inset Formula $isize=16$
 \end_inset
 
  bytes
@@ -1371,7 +1380,7 @@ If the page size is
 
 \begin_layout Standard
 \begin_inset Formula \[
-\frac{16}{4096}\cdot(10,000+5,000)+5\approx63\]
+\left\lceil \frac{16}{4096}\cdot(10,000+5,000)+5\right\rceil =64\]
 
 \end_inset
 
@@ -1400,13 +1409,13 @@ Cost of the indexless approach
 \end_layout
 
 \begin_layout Standard
-A brute force approach would have required to read all tuples, requiring
- a number of page accesses of:
+A brute force approach reading all tuples would require a number of page
+ accesses of:
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula \[
-\left|S\right|\cdot\frac{tsize}{P}\approx100,000\]
+\left\lceil \left|S\right|\cdot\frac{tsize}{P}\right\rceil \approx100,000\]
 
 \end_inset
 
@@ -1419,6 +1428,11 @@ With the same 20ms access time the query would execute in 33mn.
 
 \begin_layout Subsubsection
 Space requirements and I/O efficiency of index creation
+\begin_inset LatexCommand \label{sub:creation-space-io}
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -1646,10 +1660,6 @@ Let's try to estimate that quantity.
  If the debugged program has 10,000 classes, with 100 fields per class,
  100 behaviors per class and 100 local variables per behavior we would have
  the following counts:
-\begin_inset VSpace defskip
-\end_inset
-
-
 \end_layout
 
 \begin_layout Standard
@@ -1760,7 +1770,7 @@ BytecodeIndex
 status collapsed
 
 \begin_layout Standard
-As per the Java Virtual Machine Specifications
+As per the Java Virtual Machine Specification
 \end_layout
 
 \end_inset
@@ -1779,9 +1789,6 @@ As per the Java Virtual Machine Specifications
 \end_layout
 
 \begin_layout Standard
-\begin_inset VSpace defskip
-\end_inset
-
 ThreadId and ObjectId are more difficult to evaluate.
  Their domain can be really huge given that the program can repetitively
  create and destroy objects and threads.
@@ -1789,12 +1796,8 @@ ThreadId and ObjectId are more difficult to evaluate.
  given point in time: all live objects must fit within the memory allocated
  to the JVM, all all live threads must be reasonably executable by the CPU.
  Thus, although the backend will not delete information about old entities,
- it is sufficient to have buffer space for the most recently used ones.
+ it is sufficient to have buffer space for the currently used ones.
  Let's then complete our table:
-\begin_inset VSpace defskip
-\end_inset
-
-
 \end_layout
 
 \begin_layout Standard
@@ -1865,7 +1868,7 @@ ObjectId
 status collapsed
 
 \begin_layout Standard
-Estimation based on a JVM heap size of the order of 100MB.
+Estimation based on a JVM heap size of the order of 1GB.
 \end_layout
 
 \end_inset
@@ -1878,10 +1881,6 @@ Estimation based on a JVM heap size of the order of 100MB.
 </row>
 </lyxtabular>
 
-\end_inset
-
-
-\begin_inset VSpace defskip
 \end_inset
 
 
@@ -1932,28 +1931,34 @@ Timing issues
 \end_layout
 
 \begin_layout Standard
-The timestamps of the events have a limited accuracy: it is possible for
- several events of the same thread to share the same timestamp value.
-\end_layout
+It is possible for several events of the same thread to share the same timestamp
+ value: although timestamps are reported with nanosecond precision, they
+ are not actually accurate to the nanosecond.
+ Moreover, even if they were, there would still be the possibility of two
+ events occurring at less than a nanosecond interval.
+\begin_inset Foot
+status collapsed
 
 \begin_layout Standard
+It is almost impossible for such a situation to occur with the current generatio
+n of CPUs: if we take a clock speed of 4GHz it would mean that two events
+ would have to be sent in less than 4 clock cycles.
+ It might occur in the future if faster chips are produced.
+\end_layout
+
+\end_inset
+
 
 \end_layout
 
 \begin_layout Standard
 A solution to this problem would be to alter timestamp values so that they
- are indeed distinct and increasing for all events of any given thread,
- and that an event that occured after another event of the same thread.
+ are indeed distinct for all events of any given thread.
  We can achieve this by shifting them a few bits to the left and use the
  free bits to differentiate events of the same thread that share the same
  timestamp.
- 
-\end_layout
-
-\begin_layout Standard
-The amount of shifting is a tradeoff between the desired duration of the
- debugging session and the expected number of events that can occur during
- a nanosecond.
+ The free bits are those introduced by the shift and those that are not
+ used in the original value because of the lack of accuracy.
 \end_layout
 
 \begin_layout Standard
@@ -1962,9 +1967,10 @@ The original timestamp value is a 64 bits integer with nanosecond precision.
 \begin_inset Formula $2^{64}\cdot10^{-9}$
 \end_inset
 
- seconds, that is about 584 years.
- If we shift left by 8 bits, we could still represent a more than two year
- duration, while allowing for 256 events per nanosecond, which is 
+ seconds, about 584 years.
+ Shifting by 8 bits would reduce it to around two years and permit 256 events
+ per nanosecond in a single thread, which is more than enough for our purposes.
+ 
 \end_layout
 
 \begin_layout Subsubsection*
@@ -1972,46 +1978,395 @@ Indexing the indexes
 \end_layout
 
 \begin_layout Standard
-When a client issues a generic filter query
+When a client issues a generic filter query it might not need the whole
+ result set; it might even not need more than one event.
+ Let's recall that a generic filter query returns a cursor that can be used
+ by the client to actually retrieve successive matching events.
+ The cursor can be moved forward and backward by one event, and can also
+ be positioned directly at a specific position given a reference event or
+ timestamp.
+ In order to efficiently service such requests the indexes themselves must
+ be indexed by timestamp.
 \end_layout
 
 \begin_layout Standard
-Let's first observe that the event fields can be divided into two groups:
+Fortunately this additional indexing is relatively cheap as we can use a
+ multilevel clustered index.
+ Let's call level-0 the index we already described.
+ Whenever a level-0 index page is full, we add a 
+\begin_inset Formula $(v_{0},pid)$
+\end_inset
+
+ entry to a level-1 index, where 
+\begin_inset Formula $v_{0}$
+\end_inset
+
+ is taken from the first 
+\begin_inset Formula $(v_{0},i)$
+\end_inset
+
+ pair of the filled level-0 page, and 
+\begin_inset Formula $pid$
+\end_inset
+
+ is a pointer to that page.
+ Level-1 index entries themselves accumulate in pages, and when such a page
+ is full we add an entry to a level-2 index, and so on.
  
 \end_layout
 
-\begin_layout Itemize
-ClassId, BehaviorId, FieldId and LocalVarId depend on the structure of the
- debugged program and generally do not depend on the number of generated
- events.
-\begin_inset Foot
-status collapsed
+\begin_layout Standard
+A 
+\begin_inset Formula $(v_{0},pid)$
+\end_inset
+
+ entry occupies 12 bytes, as we need use only 4 bytes for 
+\begin_inset Formula $pid$
+\end_inset
+
+.
+ It can be easily seen that the storage cost of this method is quite low:
+ for each 
+\begin_inset Formula $P=4096$
+\end_inset
+
+ bytes of level-
+\begin_inset Formula $i$
+\end_inset
+
+ index we generate 12 bytes of level-
+\begin_inset Formula $(i+1)$
+\end_inset
+
+ index.
+ A level-
+\begin_inset Formula $(i+1)$
+\end_inset
+
+ page if filled for every 
+\begin_inset Formula $\left\lceil \frac{4096}{12}\right\rceil =342$
+\end_inset
+
+ level-
+\begin_inset Formula $i$
+\end_inset
+
+ page.
+ The number of index levels is logarithmic with respect to the number of
+ index entries.
+ For instance, an index with 10,000,000 entries would have 
+\begin_inset Formula $\left\lceil log_{342}(10,000,000)\right\rceil =3$
+\end_inset
+
+ additional index levels.
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
 
 \begin_layout Standard
-A worst case scenario would be a program that continually generates classes,
- loads them and executes some methods in them.
- However, this is a far from common task.
+Although the storage space cost of this method is very low there is an overhead
+ in either I/O or RAM.
+ We have already seen in section 
+\begin_inset LatexCommand \ref{sub:creation-space-io}
+
+\end_inset
+
+ that the current page of each level-0 index should be kept in RAM.
+ With the multilevel index there are two possibilities: 
+\end_layout
+
+\begin_layout Itemize
+The current page of all the levels above a particular level-0 index can
+ be kept in RAM.
+ In this case an extra I/O cost is incurred only when an upper level page
+ is full: as a level-
+\begin_inset Formula $(i+1)$
+\end_inset
+
+ page if filled for every 342 level-
+\begin_inset Formula $i$
+\end_inset
+
+ page, the I/O overhead is negligible.
+ On the other hand the RAM requirements are multiplied by the number of
+ index levels, which in practice should not be more than 4.
+\end_layout
+
+\begin_layout Itemize
+Only the current page of the level-0 index can be kept in RAM.
+ In this scenario whenever a level-0 page is filled, the current level-1
+ page must be read from disk, updated and then written back to disk.
+ Overlooking the level-2 page accesses needed every 342 level-0 accesses,
+ the amount of page accesses is tripled.
+\end_layout
+
+\begin_layout Standard
+Any in-between combination of the above is of course possible.
+ We are confident that even with the overhead of the multilevel index scheme
+ we can attain our goal of handling 100,000 events/s, though benchmarks
+ alone can confirm or infirm this conjecture.
+ 
+\end_layout
+
+\begin_layout Standard
+Usage of the multilevel index for queries is straightforward and permits
+ to locate the event that is closest to a given timestamp in as many page
+ reads as there are levels in the index.
+\end_layout
+
+\begin_layout Subsubsection*
+Choosing the right fields
+\end_layout
+
+\begin_layout Standard
+The last point we must refine is the choice of the fields on which we construct
+ the indexes.
+ Let's consider the same simplified model that we considered for our benchmarks,
+ which consists of only three kinds of events:
+\end_layout
+
+\begin_layout Itemize
+Field write (Timestamp, ThreadId, BytecodeIndex, FieldId, Target, Value).
+\end_layout
+
+\begin_layout Itemize
+Local variable write (Timestamp, ThreadId, BytecodeIndex, VariableId, Value).
+\end_layout
+
+\begin_layout Itemize
+Behavior enter (Timestamp, ThreadId, BehaviorId, Target, Arguments) and
+ exit (Timestamp, ThreadId, BehaviorId, Result).
+\end_layout
+
+\begin_layout Standard
+Additionally we consider that every event has a virtual field indicating
+ its kind.
+ We can use our indexing method verbatim for the ThreadId, BytecodeIndex,
+ FieldId, VariableId, BehaviorId and Kind fields.
+\end_layout
+
+\begin_layout Standard
+There is an issue however with the Value, Target, Arguments and Result fields.
+ They all refer to Java objects and thus their values are object ids, but
+ they have different semantics.
+ We saw in section 
+\begin_inset LatexCommand \ref{sub:creation-space-io}
+
+\end_inset
+
+ that maintaining an index for an ObjectId field is very expensive in terms
+ of memory requirements, so if we create an index for each one of these
+ fields our problem becomes intractable.
+ On the other hand if we maintain only one global ObjectId index we cannot
+ process a query like 
+\begin_inset Formula $Kind=FieldWrite\wedge Target=objectX$
+\end_inset
+
+ as it would return not only return the field write events whose Target
+ is objectX, but also those whose 
+\emph on
+Value
+\emph default
+ is objectX.
+\end_layout
+
+\begin_layout Standard
+Fortunately we can make a small modification to the ObjectId index so that
+ such a request would work.
+ Instead of storing 
+\begin_inset Formula $(v_{0},i)$
+\end_inset
+
+ pairs we store 
+\begin_inset Formula $(v_{0},i,r)$
+\end_inset
+
+ tuples, where 
+\begin_inset Formula $r$
+\end_inset
+
+ indicates the 
+\emph on
+role
+\emph default
+ of the ObjectId value in the event.
+ Table 
+\begin_inset LatexCommand \ref{tab:ObjectId-roles-encoding}
+
+\end_inset
+
+ shows a possible encoding.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+wide false
+sideways false
+status open
+
+\begin_layout Caption
+ObjectId roles encoding
+\begin_inset LatexCommand \label{tab:ObjectId-roles-encoding}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="5" columns="2">
+<features islongtable="true">
+<column alignment="center" valignment="top" width="0">
+<column alignment="left" valignment="top" leftline="true" width="0">
+<row topline="true" bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+\begin_inset Formula $r$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+role
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+\begin_inset Formula $-1$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+Target
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+\begin_inset Formula $-2$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+Value
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+\begin_inset Formula $-3$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+Result
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row topline="true" bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+\begin_inset Formula $\geq0$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+Arguments, indicating the argument index
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
 
- In other words, once all classes have been loaded, the debugged program
- can run forever without generating any new value for ClassId, for instance.
- Moreover, the value domain of these fields is dense in the sense that if
- there exists a value k for ClassId it means that all values from 1 to k-1
- also exist.
- This is because values for those fields are generated sequentially as classes
- are loaded.
- 
+
 \end_layout
 
-\begin_layout Itemize
-ObjectId and ThreadId on the other hand might depend on the number of generated
- events: it is not uncommon for a program to repetitively create and destroy
- objects or threads.
- The value domain of these fields are sparse, as opposed to the dense value
- domains of the previous group's fields.
- 
+\begin_layout Standard
+As a single byte suffices to represent 
+\begin_inset Formula $r$
+\end_inset
+
+ it is immediate that the cost of this alteration is minimal.
+ The merge join algorithm would be slightly modified so that it accepts
+ an additional argument giving a condition on 
+\begin_inset Formula $r$
+\end_inset
+
+ for each occurence of a condition on an ObjectId field, and considers only
+ those index entries that match that condition.
+ As a corrollary the algorithm could be given multiple ObjectId conditions
+ with different conditions on 
+\begin_inset Formula $r$
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Subsection
@@ -2023,7 +2378,12 @@ Control flow reconstitution
 \end_layout
 
 \begin_layout Section
-Scaling up with a debugging grid 
+Scaling up with a debugging grid
+\begin_inset LatexCommand \label{sec:grid}
+
+\end_inset
+
+ 
 \end_layout
 
 \begin_layout Section
