@@ -7,6 +7,7 @@
 \usepackage{algorithm}
 \usepackage[noend]{algorithmic}
 \usepackage{tabularx}
+\usepackage{multicol}
 \end_preamble
 \language english
 \inputencoding auto
@@ -35,7 +36,14 @@
 \begin_body
 
 \begin_layout Title
-Database Management for a Trace Oriented Debugger - Scaling up
+Database Management for a 
+\newline
+Trace Oriented Debugger 
+\newline
+
+\shape italic
+\size larger
+Scaling up
 \end_layout
 
 \begin_layout Author
@@ -1126,29 +1134,16 @@ Generic boolean conditions
 \end_layout
 
 \begin_layout Standard
-We can generalize to any compound boolean condition:
-\end_layout
-
-\begin_layout Enumerate
-Convert the condition to its Disjunctive Normal Form.
-\end_layout
-
-\begin_layout Enumerate
-Apply merge join to each conjunction.
-\end_layout
-
-\begin_layout Enumerate
-Perform a merge (like in merge sort) of the results.
- 
+We can generalize to any compound boolean condition: we perform a merge
+ join for each conjunction and a merge (like in merge sort) for each disjunction.
+ The cost thus remains linear with respect to the sum of the sizes of the
+ considered indexes.
 \end_layout
 
 \begin_layout Standard
-Thus the cost remains linear with respect to the sum of the sizes of the
- considered indexes.
- It is noteworthy that both merge join and merge are stream operators: they
- produce an output tuple as soon as they have received enough input tuples,
- without ever needing to get back to already used input tuples, or to access
- 
+Note that both merge join and merge are stream operators: they produce an
+ output tuple as soon as they have received enough input tuples, without
+ ever needing to get back to already used input tuples, or to access 
 \begin_inset Quotes sld
 \end_inset
 
@@ -1433,7 +1428,7 @@ A brute force approach reading all tuples would require a number of page
 
 \begin_layout Standard
 \begin_inset Formula \[
-\left\lceil \left|S\right|\cdot\frac{\left\Vert s\right\Vert }{P}\right\rceil \approx100,000\]
+\left|S\right|\cdot\frac{\left\Vert s\right\Vert }{P}\approx100,000\]
 
 \end_inset
 
@@ -2467,6 +2462,377 @@ Statistics
 
 \begin_layout Subsection
 Control flow reconstitution 
+\end_layout
+
+\begin_layout Standard
+The control flow of a program is the order in which its instructions are
+ executed, which is basically what TOD records.
+ Although it is, strictly speaking, a flat sequence of events, it can be
+ useful to represent it as a tree.
+ In that case internal nodes represent the execution of a behavior and their
+ children represent the instructions that were executed during the execution
+ of that behavior.
+ If the instruction is a behavior call, the corresponding child is another
+ node, otherwise it is a leaf.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+begin{multicols}{3}
+\end_layout
+
+\begin_layout Standard
+
+[Consider the following program:]
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+setlength{
+\backslash
+columnseprule}{0.4pt}
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Standard
+
+main()
+\end_layout
+
+\begin_layout Standard
+
+  i = foo()
+\end_layout
+
+\begin_layout Standard
+
+  j = bar(10)
+\end_layout
+
+\begin_layout Standard
+
+  return i+j
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+columnbreak
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Standard
+
+foo()
+\end_layout
+
+\begin_layout Standard
+
+  k = 1
+\end_layout
+
+\begin_layout Standard
+
+  for i = 1 to 3 do:
+\end_layout
+
+\begin_layout Standard
+
+    bar(k)
+\end_layout
+
+\begin_layout Standard
+
+    k = k*2
+\end_layout
+
+\begin_layout Standard
+
+  return k
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+columnbreak
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Standard
+
+bar(k)
+\end_layout
+
+\begin_layout Standard
+
+  c = k+k
+\end_layout
+
+\begin_layout Standard
+
+  d = k*k
+\end_layout
+
+\begin_layout Standard
+
+  return c+d
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+end{multicols}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+begin{multicols}{3}
+\end_layout
+
+\begin_layout Standard
+
+[The control flow of this program is:]
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+setlength{
+\backslash
+columnseprule}{0.4pt}
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Standard
+
+Enter(main, [])
+\end_layout
+
+\begin_layout Standard
+
+Enter(foo, []) 
+\end_layout
+
+\begin_layout Standard
+
+Write(k, 1) 
+\end_layout
+
+\begin_layout Standard
+
+Write(i, 1) 
+\end_layout
+
+\begin_layout Standard
+
+Enter(bar, [1]) 
+\end_layout
+
+\begin_layout Standard
+
+Write(c, 2) 
+\end_layout
+
+\begin_layout Standard
+
+Write(d, 1) 
+\end_layout
+
+\begin_layout Standard
+
+Exit(bar, 3) 
+\end_layout
+
+\begin_layout Standard
+
+Write(k, 2) 
+\end_layout
+
+\begin_layout Standard
+
+Write(i, 2) 
+\end_layout
+
+\begin_layout Standard
+
+Enter(bar, [2]) 
+\end_layout
+
+\begin_layout Standard
+
+Write(c, 4) 
+\end_layout
+
+\begin_layout Standard
+
+Write(d, 4) 
+\end_layout
+
+\begin_layout Standard
+
+Exit(bar, 8) 
+\end_layout
+
+\begin_layout Standard
+
+Write(k, 4) 
+\end_layout
+
+\begin_layout Standard
+
+Write(i, 3) 
+\end_layout
+
+\begin_layout Standard
+
+Enter(bar, [4]) 
+\end_layout
+
+\begin_layout Standard
+
+Write(c, 8) 
+\end_layout
+
+\begin_layout Standard
+
+Write(d, 16) 
+\end_layout
+
+\begin_layout Standard
+
+Exit(bar, 24) 
+\end_layout
+
+\begin_layout Standard
+
+Write(k, 8)
+\end_layout
+
+\begin_layout Standard
+
+Exit(foo, 8) 
+\end_layout
+
+\begin_layout Standard
+
+Write(i, 8)
+\end_layout
+
+\begin_layout Standard
+
+Enter(bar, [10]) 
+\end_layout
+
+\begin_layout Standard
+
+Write(c, 20) 
+\end_layout
+
+\begin_layout Standard
+
+Write(d, 100) 
+\end_layout
+
+\begin_layout Standard
+
+Exit(bar, 120) 
+\end_layout
+
+\begin_layout Standard
+
+Write(j, 120)
+\end_layout
+
+\begin_layout Standard
+
+Exit(main, 128)
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+end{multicols}
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
