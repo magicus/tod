@@ -7,6 +7,9 @@
 \usepackage{algorithm}
 \usepackage[noend]{algorithmic}
 \usepackage{tabularx}
+\usepackage{psfrag}
+\usepackage{graphicx}
+
 \usepackage{multicol}
 \setlength{\columnseprule}{0.4pt}
 \end_preamble
@@ -134,7 +137,12 @@ In this section we propose indexing schemes especially crafted for our highly
 \end_layout
 
 \begin_layout Subsection
-Generic filtering 
+Generic filtering
+\begin_inset LatexCommand \label{sub:Generic-filtering}
+
+\end_inset
+
+ 
 \end_layout
 
 \begin_layout Standard
@@ -2067,12 +2075,23 @@ The original timestamp value is a 64 bits integer with nanosecond precision.
 
  seconds, about 584 years.
  Shifting by 8 bits would reduce it to around two years and permit 256 events
- per nanosecond in a single thread, which is more than enough for our purposes.
+ per nanosecond in a single thread, which is more than enough for our purpose.
  
 \end_layout
 
+\begin_layout Standard
+Note that to compare the timestamps of two events of different threads we
+ must use the original timestamps, not the altered ones: if both had the
+ same timestamp, we must not give a false notion of ordering.
+\end_layout
+
 \begin_layout Subsubsection*
-Indexing the indexes
+Hierarchical indexing 
+\begin_inset LatexCommand \label{sub:hierarchical-indexes}
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -2109,8 +2128,105 @@ Fortunately this additional indexing is relatively cheap as we can use a
 
  is a pointer to that page.
  Level-1 index entries themselves accumulate in pages, and when such a page
- is full we add an entry to a level-2 index, and so on.
+ is full we add an entry to a level-2 index, and so on, as shown in figure
  
+\begin_inset LatexCommand \ref{fig:Hierarchical-indexes}
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Caption
+Hierarchical indexes
+\begin_inset LatexCommand \label{fig:Hierarchical-indexes}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+psfrag{_v0i}{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $(v_{0},i)$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+psfrag{_v0pid}{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $(v_{0},pid)$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename hierarchical_indexes.eps
+	clip
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -2142,7 +2258,7 @@ A
 \end_inset
 
  page if filled for every 
-\begin_inset Formula $\left\lceil \frac{4096}{12}\right\rceil =342$
+\begin_inset Formula $\left\lfloor \frac{4096}{12}\right\rfloor =341$
 \end_inset
 
  level-
@@ -2153,7 +2269,7 @@ A
  The number of index levels is logarithmic with respect to the number of
  index entries.
  For instance, an index with 10,000,000 entries would have 
-\begin_inset Formula $\left\lceil log_{342}(10,000,000)\right\rceil =3$
+\begin_inset Formula $\left\lceil log_{341}(10,000,000)\right\rceil =3$
 \end_inset
 
  additional index levels.
@@ -2183,20 +2299,20 @@ The current page of all the levels above a particular level-0 index can
 \begin_inset Formula $(i+1)$
 \end_inset
 
- page if filled for every 342 level-
+ page if filled for every 341 level-
 \begin_inset Formula $i$
 \end_inset
 
  page, the I/O overhead is negligible.
  On the other hand the RAM requirements are multiplied by the number of
- additional index levels, which in practice should not be more than 4.
+ index levels, which in practice should not be more than 4.
 \end_layout
 
 \begin_layout Itemize
 Only the current page of the level-0 index can be kept in RAM.
  In this scenario whenever a level-0 page is filled, the current level-1
  page must be read from disk, updated and then written back to disk.
- Overlooking the level-2 page accesses needed every 342 level-0 accesses,
+ Overlooking the level-2 page accesses needed every 341 level-0 accesses,
  the amount of page accesses is tripled.
 \end_layout
 
@@ -2468,7 +2584,653 @@ As a single byte suffices to represent
 \end_layout
 
 \begin_layout Subsection
-Statistics 
+Statistics
+\begin_inset LatexCommand \label{sub:Statistics}
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+Statistic queries permit to obtain an approximation of the evolution of
+ 
+\emph on
+event densities
+\emph default
+ over time for a set of events corresponding to any generic filtering query
+ (see 
+\begin_inset LatexCommand \ref{sub:Generic-filtering}
+
+\end_inset
+
+).
+ A statistic query is formulated as:
+\end_layout
+
+\begin_layout Itemize
+A boolean condition on event fields, like in generic filtering queries.
+\end_layout
+
+\begin_layout Itemize
+A time slice length 
+\begin_inset Formula $\delta t$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+A timestamp range defined by initial timestamp 
+\begin_inset Formula $t_{i}$
+\end_inset
+
+ and final timestamp 
+\begin_inset Formula $t_{f}$
+\end_inset
+
+, such that 
+\begin_inset Formula $(t_{f}-t_{i})=k\cdot\delta t$
+\end_inset
+
+ with 
+\begin_inset Formula $k\in\mathbb{N}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The response is a list giving an approximation of the number of matching
+ events that occurred during each of the 
+\begin_inset Formula $k$
+\end_inset
+
+ time slices in the specified interval.
+\end_layout
+
+\begin_layout Standard
+A simple and exact solution would be to issue a generic filtering query
+ and appropriately count the resulting events, but this would not be scalable:
+ there might be a huge number of matching events in the considered interval.
+\end_layout
+
+\begin_layout Standard
+Instead, we can leverage existing indexes (as defined in section 
+\begin_inset LatexCommand \ref{sub:hierarchical-indexes}
+
+\end_inset
+
+) to provide approximated answers.
+ Let us remember that there are two kinds of index pages: level-0 pages
+ contain 
+\begin_inset Formula $(v_{0},i)$
+\end_inset
+
+ entries, while pages corresponding to higher levels contain 
+\begin_inset Formula $(v_{0},pid)$
+\end_inset
+
+ entries, where 
+\begin_inset Formula $v_{0}$
+\end_inset
+
+ represent timestamp values, 
+\begin_inset Formula $i$
+\end_inset
+
+ represent pointers to events and 
+\begin_inset Formula $pid$
+\end_inset
+
+ represent pointer to index pages.
+ As index entries have a fixed size we can know the number of entries in
+ each page (except possibly for the last page of each level, which might
+ not be full).
+ Let us call 
+\begin_inset Formula $n_{i}$
+\end_inset
+
+ the number of entries per page in level-
+\begin_inset Formula $i$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection*
+Single-term conditions
+\end_layout
+
+\begin_layout Standard
+For a simple 
+\begin_inset Formula $f_{j}=C$
+\end_inset
+
+ boolean condition we know that index 
+\begin_inset Formula $I_{j}$
+\end_inset
+
+ references all matching events.
+ Let 
+\begin_inset Formula $e_{1}$
+\end_inset
+
+and 
+\begin_inset Formula $e_{2}$
+\end_inset
+
+ be two successive entries in the corresponding level-1 index.
+ As level-1 entries are generated whenever a level-0 page is full, we deduce
+ that during the interval between 
+\begin_inset Formula $e_{1}.v_{0}$
+\end_inset
+
+ and 
+\begin_inset Formula $e_{2}.v_{0}$
+\end_inset
+
+ there are 
+\begin_inset Formula $n_{0}$
+\end_inset
+
+ matching events.
+ This can be generalized to higher levels as well.
+\end_layout
+
+\begin_layout Standard
+Assuming a uniform distribution of events we can use this information to
+ calculate average event densities for each requested time slice, as shown
+ in figure 
+\begin_inset LatexCommand \ref{fig:uniform-simple-stats}
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Caption
+Event density approximation for single term condition assuming a uniform
+ distribution of events
+\begin_inset LatexCommand \label{fig:uniform-simple-stats}
+
+\end_inset
+
+
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+psfrag{_1n0}{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $1n_{i}$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+psfrag{_2n0}{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $2n_{i}$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+psfrag{_3n0}{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $3n_{i}$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+psfrag{_4n0}{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $4n_{i}$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+psfrag{_5n0}{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $5n_{i}$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+psfrag{_6n0}{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $6n_{i}$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+psfrag{_1dt}{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $1\delta t$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+psfrag{_2dt}{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $2\delta t$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+psfrag{_3dt}{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $3\delta t$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+psfrag{_4dt}{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $4\delta t$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+psfrag{_5dt}{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $5\delta t$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+psfrag{_6dt}{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $6\delta t$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+psfrag{_7dt}{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $7\delta t$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+psfrag{_8dt}{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $8\delta t$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename uniform_simple_stats.eps
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+Compound conditions
+\end_layout
+
+\begin_layout Standard
+!!! Here we must show how to combine multiple indexes.
+\end_layout
+
+\begin_layout Subsubsection*
+Non-uniform event distributions
+\end_layout
+
+\begin_layout Standard
+!!! What information can we collect to make the approximations more precise.
 \end_layout
 
 \begin_layout Subsection
@@ -3235,7 +3997,7 @@ With:
 \begin_inset Text
 
 \begin_layout Standard
-expected maximum simultaneously alive threads
+Expected maximum simultaneously alive threads
 \end_layout
 
 \end_inset
@@ -3258,7 +4020,7 @@ expected maximum simultaneously alive threads
 \begin_inset Text
 
 \begin_layout Standard
-expected maximum simultaneously alive objects
+Expected maximum simultaneously alive objects
 \end_layout
 
 \end_inset
@@ -3281,7 +4043,7 @@ expected maximum simultaneously alive objects
 \begin_inset Text
 
 \begin_layout Standard
-expected number of code items (behaviors, fields, local variables)
+Number of code items (behaviors, fields, local variables)
 \end_layout
 
 \end_inset
@@ -3304,7 +4066,7 @@ expected number of code items (behaviors, fields, local variables)
 \begin_inset Text
 
 \begin_layout Standard
-expected average thread stack depth
+Expected average thread stack depth
 \end_layout
 
 \end_inset
@@ -3327,7 +4089,11 @@ expected average thread stack depth
 \begin_inset Text
 
 \begin_layout Standard
-write page size in bytes
+
+\emph on
+Write
+\emph default
+ page size in bytes
 \end_layout
 
 \end_inset
@@ -3359,7 +4125,7 @@ The
 \end_inset
 
  part corresponds to the hierarchical indexes defined in 
-\begin_inset LatexCommand \ref{sub:refining}
+\begin_inset LatexCommand \ref{sub:hierarchical-indexes}
 
 \end_inset
 
@@ -3383,6 +4149,10 @@ Scaling up with a debugging grid
 \end_inset
 
  
+\end_layout
+
+\begin_layout Standard
+!!! Show that the problem is highly parallelizable
 \end_layout
 
 \begin_layout Section
