@@ -8,6 +8,7 @@
 \usepackage[noend]{algorithmic}
 \usepackage{tabularx}
 \usepackage{multicol}
+\setlength{\columnseprule}{0.4pt}
 \end_preamble
 \language english
 \inputencoding auto
@@ -63,8 +64,8 @@ Introduction
 \end_layout
 
 \begin_layout Standard
-In step #2 we presented benchmarks of three types of database backends for
- TOD, our trace-oriented debugger: 
+In step #2 we presented benchmarks of three types of database back-ends
+ for TOD, our trace-oriented debugger: 
 \end_layout
 
 \begin_layout Itemize
@@ -81,15 +82,15 @@ Generic, with Berkeley DB Java Edition.
 
 \begin_layout Itemize
 In order to obtain an upper bound on the efficiency we also implemented
- a raw backend that only stores events and doesn't allow queries.
+ a raw back-end that only stores events and doesn't allow queries.
  It is able to handle between 500.000 and 1.000.000 events/s.
  
 \end_layout
 
 \begin_layout Standard
 In this phase of the project we strive to support at least 100.000 events/s
- so both relational and generic backends have to be ruled out.
- The only remaining possibility is to implement a custom backend, leveraging
+ so both relational and generic back-ends have to be ruled out.
+ The only remaining possibility is to implement a custom back-end, leveraging
  the highly constrained nature of our data and queries.
  
 \begin_inset VSpace defskip
@@ -156,7 +157,7 @@ Filtering queries return a cursor that can be used to iterate in timestamp
 \end_layout
 
 \begin_layout Standard
-Two important specificities of our application should be noted: 
+Two important peculiarities of our application should be noted: 
 \end_layout
 
 \begin_layout Itemize
@@ -424,7 +425,7 @@ Let us now consider a conjunctive boolean condition
 \begin_inset Formula $s_{i}$
 \end_inset
 
- to the result, and then advance the pointer of the pair that has the minumum
+ to the result, and then advance the pointer of the pair that has the minimum
  value of 
 \begin_inset Formula $v_{0}$
 \end_inset
@@ -1158,6 +1159,11 @@ future
 
 \begin_layout Subsubsection
 I/O efficiency of queries
+\begin_inset LatexCommand \label{sub:IO-efficiency-queries}
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -1371,7 +1377,7 @@ Further assuming that
 \begin_inset Formula $f_{2}$
 \end_inset
 
- are independant, the number of matching tuples would be: 
+ are independent, the number of matching tuples would be: 
 \end_layout
 
 \begin_layout Standard
@@ -1464,7 +1470,7 @@ For each tuple
 \begin_inset Formula $s_{i}$
 \end_inset
 
- that streams into the backend there are at most 
+ that streams into the back-end there are at most 
 \begin_inset Formula $\left|F\right|-1$
 \end_inset
 
@@ -1646,7 +1652,7 @@ We can consider in a first approximation that TOD uses 6 different fields
 \end_layout
 
 \begin_layout Standard
-The Raw storage backend we implemented achieved a throughput 5 to 10 times
+The Raw storage back-end we implemented achieved a throughput 5 to 10 times
  superior to our objective of 100,000 events/s.
  As we are only slightly more than triplicating the amount of data to store,
  we should still be above our objective under one condition: we must be
@@ -1846,7 +1852,7 @@ ThreadId and ObjectId are more difficult to evaluate.
  However, only a fraction of all threads and objects can be in use at any
  given point in time: all live objects must fit within the memory allocated
  to the JVM, all all live threads must be reasonably executable by the CPU.
- Thus, although the backend will not delete information about old entities,
+ Thus, although the back-end will not delete information about old entities,
  it is sufficient to have buffer space for the currently used ones.
  Let us then complete our table:
 \begin_inset VSpace defskip
@@ -1974,7 +1980,7 @@ end{tabularx}
 \end_layout
 
 \begin_layout Standard
-Our backend should ideally have access to about 12,000,000 buffer pages.
+Our back-end should ideally have access to about 12,000,000 buffer pages.
  Keeping the same 
 \begin_inset Formula $P=4096$
 \end_inset
@@ -2005,7 +2011,12 @@ read
 \end_layout
 
 \begin_layout Subsubsection
-Refining the index structure 
+Refining the index structure
+\begin_inset LatexCommand \label{sub:refining}
+
+\end_inset
+
+ 
 \end_layout
 
 \begin_layout Standard
@@ -2446,9 +2457,9 @@ As a single byte suffices to represent
 \begin_inset Formula $r$
 \end_inset
 
- for each occurence of a condition on an ObjectId field, and considers only
- those index entries that match that condition.
- As a corrollary the algorithm could be given multiple ObjectId conditions
+ for each occurrence of a condition on an ObjectId field, and considers
+ only those index entries that match that condition.
+ As a corollary the algorithm could be given multiple ObjectId conditions
  with different conditions on 
 \begin_inset Formula $r$
 \end_inset
@@ -2461,24 +2472,23 @@ Statistics
 \end_layout
 
 \begin_layout Subsection
-Control flow reconstitution 
+Control flow reconstitution
+\begin_inset LatexCommand \label{sub:Control-flow-reconstitution}
+
+\end_inset
+
+ 
 \end_layout
 
 \begin_layout Standard
 The control flow of a program is the order in which its instructions are
  executed, which is basically what TOD records.
- Although it is, strictly speaking, a flat sequence of events, it can be
- useful to represent it as a tree.
- In that case internal nodes represent the execution of a behavior and their
- children represent the instructions that were executed during the execution
- of that behavior.
- If the instruction is a behavior call, the corresponding child is another
- node, otherwise it is a leaf.
+ 
 \end_layout
 
 \begin_layout Standard
 \begin_inset ERT
-status open
+status collapsed
 
 \begin_layout Standard
 
@@ -2640,6 +2650,30 @@ end{multicols}
 \end_layout
 
 \begin_layout Standard
+The control flow of this program is shown in figure 
+\begin_inset LatexCommand \ref{fig:cflow-rep}
+
+\end_inset
+
+a.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Caption
+Representations of the control flow.
+\begin_inset LatexCommand \label{fig:cflow-rep}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 \begin_inset ERT
 status open
 
@@ -2647,28 +2681,29 @@ status open
 
 
 \backslash
-begin{multicols}{3}
+begin{multicols}{2}
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-
-[The control flow of this program is:]
+\align center
+(a) As a flat sequence
 \end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset ERT
+status open
 
 \begin_layout Standard
 
 
 \backslash
-setlength{
-\backslash
-columnseprule}{0.4pt}
-\end_layout
-
-\begin_layout Standard
-
-
-\backslash
-begin{verbatim}
+begin{verbatim} 
 \end_layout
 
 \begin_layout Standard
@@ -2823,6 +2858,205 @@ Exit(main, 128)
 end{verbatim}
 \end_layout
 
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+columnbreak
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\align center
+(b) As a tree
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Standard
+
+Enter(main, [])
+\end_layout
+
+\begin_layout Standard
+
+  Enter(foo, []) 
+\end_layout
+
+\begin_layout Standard
+
+    Write(k, 1) 
+\end_layout
+
+\begin_layout Standard
+
+    Write(i, 1) 
+\end_layout
+
+\begin_layout Standard
+
+    Enter(bar, [1]) 
+\end_layout
+
+\begin_layout Standard
+
+      Write(c, 2) 
+\end_layout
+
+\begin_layout Standard
+
+      Write(d, 1) 
+\end_layout
+
+\begin_layout Standard
+
+      Exit(bar, 3) 
+\end_layout
+
+\begin_layout Standard
+
+    Write(k, 2) 
+\end_layout
+
+\begin_layout Standard
+
+    Write(i, 2) 
+\end_layout
+
+\begin_layout Standard
+
+    Enter(bar, [2]) 
+\end_layout
+
+\begin_layout Standard
+
+      Write(c, 4) 
+\end_layout
+
+\begin_layout Standard
+
+      Write(d, 4) 
+\end_layout
+
+\begin_layout Standard
+
+      Exit(bar, 8) 
+\end_layout
+
+\begin_layout Standard
+
+    Write(k, 4) 
+\end_layout
+
+\begin_layout Standard
+
+    Write(i, 3) 
+\end_layout
+
+\begin_layout Standard
+
+    Enter(bar, [4]) 
+\end_layout
+
+\begin_layout Standard
+
+      Write(c, 8) 
+\end_layout
+
+\begin_layout Standard
+
+      Write(d, 16) 
+\end_layout
+
+\begin_layout Standard
+
+      Exit(bar, 24) 
+\end_layout
+
+\begin_layout Standard
+
+    Write(k, 8)
+\end_layout
+
+\begin_layout Standard
+
+    Exit(foo, 8) 
+\end_layout
+
+\begin_layout Standard
+
+  Write(i, 8)
+\end_layout
+
+\begin_layout Standard
+
+  Enter(bar, [10]) 
+\end_layout
+
+\begin_layout Standard
+
+    Write(c, 20) 
+\end_layout
+
+\begin_layout Standard
+
+    Write(d, 100) 
+\end_layout
+
+\begin_layout Standard
+
+    Exit(bar, 120) 
+\end_layout
+
+\begin_layout Standard
+
+  Write(j, 120)
+\end_layout
+
+\begin_layout Standard
+
+  Exit(main, 128)
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
 \begin_layout Standard
 
 
@@ -2833,6 +3067,313 @@ end{multicols}
 \end_inset
 
 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Although the control flow is, strictly speaking, a flat sequence of events,
+ it can be useful to represent it as a tree.
+ In that case internal nodes represent the execution of a behavior and their
+ children represent the instructions that were executed during the execution
+ of that behavior.
+ If the instruction is a behavior call, the corresponding child is another
+ node, otherwise it is a leaf.
+ The result of applying this method to the above program is shown in figure
+ 
+\begin_inset LatexCommand \ref{fig:cflow-rep}
+
+\end_inset
+
+b.
+ Such a representation is much easier to understand.
+ Moreover, an interactive application can let the user expand or collapse
+ nodes so that he can concentrate on the parts that are of interest to him.
+\end_layout
+
+\begin_layout Standard
+The goal of control flow reconstitution in TOD is precisely to transform
+ the flat sequence of events into a tree.
+ Such a transformation is conceptually simple to achieve: for each thread
+ of the debugged application we maintain a stack whose top element is the
+ behavior enter event that corresponds to the currently executing behavior;
+ this event is called the 
+\emph on
+current parent
+\emph default
+.
+ Whenever a new event is received for the same thread, it becomes the next
+ child of the current parent, and additionally if the new event is a behavior
+ enter event, it is pushed onto the stack and becomes the current parent.
+ Conversely, if the new event is a behavior exit event, the current parent
+ is popped from the stack.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+It is fortunately possible to implement this algorithm with a rather low
+ I/O overhead.
+ Whenever a behavior enter event arrives, we set up a simple structure consistin
+g of a linked list of pages that will store pointers to children events.
+ In order to avoid wasting storage space, the first page of each such structure
+ can be smaller than the global page size 
+\begin_inset Formula $P$
+\end_inset
+
+ defined in section 
+\begin_inset LatexCommand \ref{sub:IO-efficiency-queries}
+
+\end_inset
+
+ and each new page within the same structure is twice the size of its predecesso
+r until the global page size is reached.
+ In order to reduce I/O overhead we must maintain the last page of as many
+ children list structures as possible in RAM.
+ 
+\end_layout
+
+\begin_layout Standard
+Let us estimate the amount of RAM required for control flow tree reconstitution.
+ We can observe that the size of any one of the per-thread stacks is the
+ same as the actual size of the corresponding thread's stack in the JVM,
+ and although by default the JVM allocates as much as 2MB of stack per thread,
+ it is extremely uncommon to have more than a few hundred elements on the
+ stack.
+ If we allow for 1,000 live threads and a stack depth of 1,000 for each,
+ we would need buffer space for 1,000,000 items.
+ Each item being an 8-bytes event pointer, we would only need 8MB of RAM
+ for the stacks.
+\end_layout
+
+\begin_layout Standard
+As far as children lists are concerned, maintaining in memory the last page
+ of the children list corresponding to the current parent event of each
+ thread would require at most 
+\begin_inset Formula $1,000\cdot P\approx4$
+\end_inset
+
+MB of RAM.
+ Maintaining the last pages of the 
+\begin_inset Formula $n$
+\end_inset
+
+ top current parents for each thread would thus require 
+\begin_inset Formula $n\cdot4$
+\end_inset
+
+MB of RAM so it seems reasonable to expect that we will be able to buffer
+ at least a few levels of children lists for each thread, thus reducing
+ the I/O overhead.
+ It is also possible to use the same trick of small write page size as in
+ 
+\begin_inset LatexCommand \ref{sub:creation-space-io}
+
+\end_inset
+
+ to augment the number of levels that can be buffered.
+\end_layout
+
+\begin_layout Subsection
+Summary
+\end_layout
+
+\begin_layout Standard
+In this section we tried to show that our goal of handling 100,000 events/s
+ is attainable with current commodity hardware.
+ We have seen that the amount of RAM is of utmost importance to keep I/O
+ costs low.
+ We can summarize the required amount of RAM as follows:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \[
+\underbrace{\left(O+C+T\right)\cdot P_{w}}_{a}+\underbrace{3\cdot\left(O+C+T\right)\cdot P_{w}}_{b}+\underbrace{T\cdot D\cdot P_{w}}_{c}\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+With:
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="5" columns="2">
+<features>
+<column alignment="center" valignment="top" width="0">
+<column alignment="left" valignment="top" width="0">
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+\begin_inset Formula $T$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+expected maximum simultaneously alive threads
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+\begin_inset Formula $O$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+expected maximum simultaneously alive objects
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+\begin_inset Formula $C$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+expected number of code items (behaviors, fields, local variables)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+\begin_inset Formula $D$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+expected average thread stack depth
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+\begin_inset Formula $P_{w}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+write page size in bytes
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+The 
+\begin_inset Formula $a$
+\end_inset
+
+ part corresponds to the buffer pages for the main indexes defined in 
+\begin_inset LatexCommand \ref{sub:creation-space-io}
+
+\end_inset
+
+.
+ The 
+\begin_inset Formula $b$
+\end_inset
+
+ part corresponds to the hierarchical indexes defined in 
+\begin_inset LatexCommand \ref{sub:refining}
+
+\end_inset
+
+.
+ The 
+\begin_inset Formula $c$
+\end_inset
+
+ part corresponds to the control flow reconstitution described in 
+\begin_inset LatexCommand \ref{sub:Control-flow-reconstitution}
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Section
