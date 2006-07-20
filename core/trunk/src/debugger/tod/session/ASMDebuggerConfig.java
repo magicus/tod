@@ -6,6 +6,7 @@ package tod.session;
 import java.io.File;
 
 import reflex.Run;
+import reflex.run.common.ClassNameSelector;
 import reflex.tools.parsers.ParseException;
 import reflex.tools.parsers.workingset.WorkingSetFactory;
 import tod.bci.IInstrumenter;
@@ -18,8 +19,8 @@ public class ASMDebuggerConfig
 	public static final String PARAM_COLLECTOR_PORT = "collector-port";
 	
 	private ILogCollector itsCollector;
-	private Run.ClassNameSelector itsGlobalSelector;
-	private Run.ClassNameSelector itsTraceSelector;
+	private ClassNameSelector itsGlobalSelector;
+	private ClassNameSelector itsTraceSelector;
 	
 	private IInstrumenter itsInstrumenter;
 	private File itsLocationsFile;
@@ -63,7 +64,7 @@ public class ASMDebuggerConfig
 	 * Returns the selector that indicates which classes should be
 	 * instrumented so that execution of their methods is traced.
 	 */
-	public Run.ClassNameSelector getTraceSelector()
+	public ClassNameSelector getTraceSelector()
 	{
 		return itsTraceSelector;
 	}
@@ -72,7 +73,7 @@ public class ASMDebuggerConfig
 	 * Returns the global selector. Classes not accepted by the global selector
 	 * will not be instrumented at all even if they are accepted by other selectors.
 	 */
-	public Run.ClassNameSelector getGlobalSelector()
+	public ClassNameSelector getGlobalSelector()
 	{
 		return itsGlobalSelector;
 	}

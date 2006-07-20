@@ -215,7 +215,8 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		@Override
 		public void visitInsn(int aOpcode)
 		{
-			if (itsTrace && aOpcode >= IRETURN && aOpcode <= RETURN) mv.visitJumpInsn(GOTO, itsReturnHookLabel);
+			if (itsTrace && aOpcode >= IRETURN && aOpcode <= RETURN) 
+				mv.visitJumpInsn(GOTO, itsReturnHookLabel);
 			else super.visitInsn(aOpcode);
 		}
 		
