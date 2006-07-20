@@ -6,12 +6,6 @@ package tod.core.config;
 import java.util.ArrayList;
 import java.util.List;
 
-import reflex.api.hookset.ClassSelector;
-import reflex.api.model.RClass;
-import reflex.lib.logging.core.impl.mop.ReflexLocationPool;
-import reflex.tools.selectors.NameCS;
-import reflex.tools.selectors.PackageCS;
-
 /**
  * Defines a filter that accepts specific classes.
  * @author gpothier
@@ -68,15 +62,11 @@ public class ClassFilter implements ClassSelector
 		itsSelectors.add (new NameCS(aClassNames));
 	}
 	
-	public boolean accept(RClass aClass)
+	public boolean accept(String aName)
 	{
 		for (ClassSelector theSelector : itsSelectors)
 		{
-			if (theSelector.accept(aClass))
-			{
-				ReflexLocationPool.getLocationId(aClass);
-				return true;
-			}
+			if (theSelector.accept(aName)) return true;
 		}
 		return false;
 	}

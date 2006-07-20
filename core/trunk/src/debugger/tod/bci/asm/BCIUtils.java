@@ -9,9 +9,9 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-import reflex.run.common.ClassNameSelector;
 import tod.agent.AgentConfig;
 import tod.core.ILogCollector;
+import tod.core.config.ClassSelector;
 
 public class BCIUtils implements Opcodes
 {
@@ -307,7 +307,7 @@ public class BCIUtils implements Opcodes
 		}
 	}
 	
-	public static boolean acceptClass (String aClassName, ClassNameSelector aSelector)
+	public static boolean acceptClass (String aClassName, ClassSelector aSelector)
 	{
 		return aSelector.accept(getClassName(aClassName));
 	}

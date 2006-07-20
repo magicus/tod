@@ -5,14 +5,12 @@ package tod.core.config;
 
 import java.io.IOException;
 
-import reflex.api.hookset.ClassSelector;
-import reflex.lib.logging.core.impl.mop.Config;
-import reflex.tools.parsers.ParseException;
-import reflex.tools.selectors.AllCS;
-import reflex.tools.selectors.WorkingSetClassSelector;
 import tod.core.ILogCollector;
 import tod.core.PrintLogCollector;
+import tod.core.config.ClassSelector.AllCS;
+import tod.core.config.ClassSelector.WorkingSetClassSelector;
 import tod.core.transport.SocketCollector;
+import tod.tools.parsers.ParseException;
 import tod.utils.ConfigUtils;
 
 /**
@@ -205,7 +203,8 @@ public class StaticConfig
 	public void setLogCollector (ILogCollector aCollector)
 	{
 		checkState();
-		Config.COLLECTOR = aCollector;
+		throw new RuntimeException("We should do womething here...");
+//		Config.COLLECTOR = aCollector;
 	}
 	
 	

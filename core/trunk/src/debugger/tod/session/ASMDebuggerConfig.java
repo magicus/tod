@@ -5,22 +5,21 @@ package tod.session;
 
 import java.io.File;
 
-import reflex.Run;
-import reflex.run.common.ClassNameSelector;
-import reflex.tools.parsers.ParseException;
-import reflex.tools.parsers.workingset.WorkingSetFactory;
 import tod.bci.IInstrumenter;
 import tod.bci.asm.ASMInstrumenter;
 import tod.bci.asm.ASMLocationPool;
 import tod.core.ILogCollector;
+import tod.core.config.ClassSelector;
+import tod.tools.parsers.ParseException;
+import tod.tools.parsers.workingset.WorkingSetFactory;
 
 public class ASMDebuggerConfig
 {
 	public static final String PARAM_COLLECTOR_PORT = "collector-port";
 	
 	private ILogCollector itsCollector;
-	private ClassNameSelector itsGlobalSelector;
-	private ClassNameSelector itsTraceSelector;
+	private ClassSelector itsGlobalSelector;
+	private ClassSelector itsTraceSelector;
 	
 	private IInstrumenter itsInstrumenter;
 	private File itsLocationsFile;
@@ -64,7 +63,7 @@ public class ASMDebuggerConfig
 	 * Returns the selector that indicates which classes should be
 	 * instrumented so that execution of their methods is traced.
 	 */
-	public ClassNameSelector getTraceSelector()
+	public ClassSelector getTraceSelector()
 	{
 		return itsTraceSelector;
 	}
@@ -73,7 +72,7 @@ public class ASMDebuggerConfig
 	 * Returns the global selector. Classes not accepted by the global selector
 	 * will not be instrumented at all even if they are accepted by other selectors.
 	 */
-	public ClassNameSelector getGlobalSelector()
+	public ClassSelector getGlobalSelector()
 	{
 		return itsGlobalSelector;
 	}
