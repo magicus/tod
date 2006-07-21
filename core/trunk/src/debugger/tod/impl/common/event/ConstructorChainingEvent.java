@@ -1,7 +1,7 @@
 /*
  * Created on Nov 10, 2005
  */
-package tod.impl.local.event;
+package tod.impl.common.event;
 
 import tod.core.model.event.IConstructorChainingEvent;
 

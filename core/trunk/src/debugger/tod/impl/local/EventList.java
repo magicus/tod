@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.List;
 
 import tod.core.model.event.EventComparator;
-import tod.impl.local.event.Event;
+import tod.impl.common.event.Event;
 
 /**
  * A list of events, ordered by timestamps.

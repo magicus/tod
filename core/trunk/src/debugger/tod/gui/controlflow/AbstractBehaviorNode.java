@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import tod.core.model.event.IBehaviorCallEvent;
+import tod.core.model.event.IBehaviorExitEvent;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.IBehaviorInfo;
 import tod.core.model.structure.ITypeInfo;
@@ -59,7 +60,7 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 		itsEvent = aEvent;
 		
 		itsExpanderWidget = new ExpanderWidget(
-				getEvent().hasThrown() ? Color.RED : Color.BLUE,
+				getEvent().getExitEvent().hasThrown() ? Color.RED : Color.BLUE,
 				4);
 		
 		pChildren().add(itsExpanderWidget);
@@ -189,14 +190,15 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 		IBehaviorInfo theBehavior = getEvent().getExecutedBehavior();
 		if (theBehavior == null) theBehavior = getEvent().getCalledBehavior();
 		
-		if (getEvent().hasThrown())
+		IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
+		if (theExitEvent.hasThrown())
 		{
 			aContainer.pChildren().add(SVGFlowText.create("Thrown ", theFont, Color.RED));
 
 			aContainer.pChildren().add(Hyperlinks.object(
 					getGUIManager(), 
 					getEventTrace(), 
-					getEvent().getResult(), 
+					theExitEvent.getResult(), 
 					theFont));
 		}
 		else if (theBehavior.getReturnType().isVoid())
@@ -210,7 +212,7 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 			aContainer.pChildren().add(Hyperlinks.object(
 					getGUIManager(), 
 					getEventTrace(), 
-					getEvent().getResult(), 
+					theExitEvent.getResult(), 
 					theFont));
 		}
 	}

@@ -8,9 +8,9 @@ import java.util.List;
 
 import tod.core.model.event.ILogEvent;
 import tod.core.model.trace.IEventBrowser;
+import tod.impl.common.event.Event;
 import tod.impl.local.EventBrowser;
 import tod.impl.local.LocalCollector;
-import tod.impl.local.event.Event;
 
 /**
  * Base class for filters that are precomputed.

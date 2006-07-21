@@ -27,7 +27,7 @@ public class ConstructorChainingNode extends AbstractBehaviorNode
 		aContainer.pChildren().add(SVGFlowText.create(
 				"call to ", 
 				theFont, 
-				getEvent().hasThrown() ? Color.RED : Color.BLACK));
+				getEvent().getExitEvent().hasThrown() ? Color.RED : Color.BLACK));
 
 		super.fillHeader(aContainer);
 	}

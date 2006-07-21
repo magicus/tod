@@ -35,7 +35,7 @@ public class InstantiationNode extends AbstractBehaviorNode
 		aContainer.pChildren().add(SVGFlowText.create(
 				"new ", 
 				theFont, 
-				getEvent().hasThrown() ? Color.RED : Color.BLACK));
+				getEvent().getExitEvent().hasThrown() ? Color.RED : Color.BLACK));
 		
 		aContainer.pChildren().add(Hyperlinks.type(getGUIManager(), getEvent().getType(), theFont));
 
@@ -47,14 +47,14 @@ public class InstantiationNode extends AbstractBehaviorNode
 	{
 		XFont theFont = getHeaderFont();
 
-		if (getEvent().hasThrown())
+		if (getEvent().getExitEvent().hasThrown())
 		{
 			aContainer.pChildren().add(SVGFlowText.create("Thrown ", theFont, Color.RED));
 			
 			aContainer.pChildren().add(Hyperlinks.object(
 					getGUIManager(), 
 					getEventTrace(), 
-					getEvent().getResult(),
+					getEvent().getExitEvent().getResult(),
 					theFont));
 		}
 		else

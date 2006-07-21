@@ -1,26 +1,24 @@
 /*
  * Created on Nov 10, 2005
  */
-package tod.impl.local.event;
+package tod.impl.common.event;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import tod.core.model.event.IBehaviorCallEvent;
+import tod.core.model.event.IBehaviorExitEvent;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.IBehaviorInfo;
 
-public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEvent
+public class BehaviorCallEvent extends Event implements IBehaviorCallEvent
 {
 	private List<ILogEvent> itsChildren;
 	private boolean itsDirectParent;
-	private boolean itsHasThrown;
-	private Object itsResult;
 	private Object[] itsArguments;
 	private IBehaviorInfo itsCalledBehavior;
 	private IBehaviorInfo itsExecutedBehavior;
 	private Object itsTarget;
-	private long itsLastTimestamp;
 
 
 	public List<ILogEvent> getChildren()
@@ -75,26 +73,6 @@ public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEv
 		itsDirectParent = aDirectParent;
 	}
 
-	public boolean hasThrown()
-	{
-		return itsHasThrown;
-	}
-
-	public void setHasThrown(boolean aHasThrown)
-	{
-		itsHasThrown = aHasThrown;
-	}
-
-	public Object getResult()
-	{
-		return itsResult;
-	}
-
-	public void setResult(Object aResult)
-	{
-		itsResult = aResult;
-	}
-
 	public Object[] getArguments()
 	{
 		return itsArguments;
@@ -132,13 +110,24 @@ public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEv
 
 	public long getLastTimestamp()
 	{
-		return itsLastTimestamp;
+		return getExitEvent().getTimestamp();
 	}
 
-	public void setLastTimestamp(long aLastTimestamp)
+	public IBehaviorExitEvent getExitEvent()
 	{
-		itsLastTimestamp = aLastTimestamp;
+		if (getChildrenCount() > 0)
+		{
+			ILogEvent theLastEvent = getChildren().get(getChildrenCount()-1);
+			if (theLastEvent instanceof IBehaviorExitEvent)
+			{
+				return (IBehaviorExitEvent) theLastEvent;
+			}
+		}
+		
+		throw new RuntimeException("Exit event not found");
 	}
+	
+	
 
 
 }

@@ -85,7 +85,7 @@ public class MethodSequenceView extends AbstractMemberSequenceView
 
 		// Return value
 		theContainer.pChildren().add (SVGFlowText.create("return: ", 10, Color.BLACK));
-		theContainer.pChildren().add (createBaloon(aEvent.getResult()));
+		theContainer.pChildren().add (createBaloon(aEvent.getExitEvent().getResult()));
 		
 		return theContainer;
 		

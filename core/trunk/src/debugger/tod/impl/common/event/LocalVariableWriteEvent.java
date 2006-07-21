@@ -1,7 +1,7 @@
 /*
  * Created on Nov 9, 2004
  */
-package tod.impl.local.event;
+package tod.impl.common.event;
 
 import tod.core.ILocationRegistrer;
 import tod.core.model.event.ILocalVariableWriteEvent;

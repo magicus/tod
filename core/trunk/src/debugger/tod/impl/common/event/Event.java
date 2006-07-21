@@ -1,9 +1,8 @@
 /*
  * Created on Oct 25, 2004
  */
-package tod.impl.local.event;
+package tod.impl.common.event;
 
-import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.event.ICallerSideEvent;
 import tod.core.model.structure.IThreadInfo;
 
@@ -20,14 +19,14 @@ public abstract class Event implements ICallerSideEvent
 	
 	private int itsOperationBytecodeIndex;
 	
-	private IBehaviorCallEvent itsParent;
+	private BehaviorCallEvent itsParent;
 	
-	public IBehaviorCallEvent getParent()
+	public BehaviorCallEvent getParent()
 	{
 		return itsParent;
 	}
 
-	public void setParent(IBehaviorCallEvent aParent)
+	public void setParent(BehaviorCallEvent aParent)
 	{
 		itsParent = aParent;
 	}

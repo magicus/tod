@@ -54,8 +54,8 @@ public class ASMLocalSession extends AbstractSession
 		itsCollector = new LocalCollector();
 		
 		itsConfig = new ASMDebuggerConfig(
-//				new PrintThroughCollector(itsCollector),
-				itsCollector,
+				new PrintThroughCollector(itsCollector),
+//				itsCollector,
 				itsCachedLocationsPath, 
 				"[-tod.** -remotebci.** +tod.test.** +tod.demo.**]",
 				"[-java.** -javax.** -sun.** -com.sun.**]");

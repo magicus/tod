@@ -1,7 +1,7 @@
 /*
  * Created on Oct 25, 2004
  */
-package tod.impl.local.event;
+package tod.impl.common.event;
 
 import tod.core.Output;
 import tod.core.model.event.IOutputEvent;

@@ -22,20 +22,6 @@ public interface IBehaviorCallEvent extends IParentEvent, ICallerSideEvent
 	public Object[] getArguments();
 	
 	/**
-	 * Whether the behavior returned normally or with an
-	 * exception.
-	 * <br/>
-	 * This information is always available.
-	 */
-	public boolean hasThrown();
-
-	/**
-	 * Value returned by the behavior, or exception thrown by the 
-	 * behavior, according to the value of {@link #hasThrown()}.
-	 */
-	public Object getResult();
-	
-	/**
 	 * The behavior that is actually executed. 
 	 * It might be different than {@link #getCalledBehavior() },
 	 * for instance if the caller calls an interface or overridden method.
@@ -68,6 +54,11 @@ public interface IBehaviorCallEvent extends IParentEvent, ICallerSideEvent
 	 * @return Calling behavior, or null if not available
 	 */
 	public IBehaviorInfo getCallingBehavior();
+	
+	/**
+	 * Returns the event that corresponds to the end of this behavior.
+	 */
+	public IBehaviorExitEvent getExitEvent();
 	
 
 	

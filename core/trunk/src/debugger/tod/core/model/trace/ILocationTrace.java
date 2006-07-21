@@ -8,6 +8,7 @@ import tod.core.model.structure.IClassInfo;
 import tod.core.model.structure.IFieldInfo;
 import tod.core.model.structure.IThreadInfo;
 import tod.core.model.structure.ITypeInfo;
+import tod.core.model.structure.ThreadInfo;
 
 /**
  * Permits to obtain the location info objects that have been registered during a 
@@ -20,6 +21,11 @@ public interface ILocationTrace
 	 * Returns the type object that corresponds to the given name.
 	 */
 	public ITypeInfo getType(String aName);
+	
+	/**
+	 * Returns the thread info for a specific thread id.
+	 */
+	public ThreadInfo getThread (long aId);
 	
 	/**
 	 * Returns all registered types.
