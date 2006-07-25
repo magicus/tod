@@ -51,7 +51,7 @@ public class ASMLocalSession extends AbstractSession
 		}
 		
 		
-		itsCollector = new LocalCollector();
+		itsCollector = new LocalCollector(null);
 		
 		itsConfig = new ASMDebuggerConfig(
 				new PrintThroughCollector(itsCollector),

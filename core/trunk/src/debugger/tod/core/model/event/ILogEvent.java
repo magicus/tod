@@ -3,6 +3,7 @@
  */
 package tod.core.model.event;
 
+import tod.core.model.structure.IHostInfo;
 import tod.core.model.structure.IThreadInfo;
 
 /**
@@ -11,6 +12,11 @@ import tod.core.model.structure.IThreadInfo;
  */
 public interface ILogEvent
 {
+	/**
+	 * Identifies the host in which the event occurred.
+	 */
+	public IHostInfo getHost();
+	
 	/**
 	 * Identifies the thread in which the event occured.
 	 */

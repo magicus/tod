@@ -7,6 +7,7 @@ import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.structure.IBehaviorInfo;
 import tod.core.model.structure.IClassInfo;
 import tod.core.model.structure.IFieldInfo;
+import tod.core.model.structure.IHostInfo;
 import tod.core.model.structure.IThreadInfo;
 import tod.core.model.structure.ITypeInfo;
 import tod.core.model.structure.ObjectId;
@@ -41,6 +42,11 @@ implements IEventTrace
 {
 	private EventList itsEvents = new EventList();
 	
+	public LocalCollector(IHostInfo aHost)
+	{
+		super(aHost);
+	}
+
 	public ILocationTrace getLocationTrace()
 	{
 		return this;
@@ -58,9 +64,9 @@ implements IEventTrace
 	
 	
 	@Override
-	protected void processEvent(BehaviorCallEvent aParent, Event aEvent)
+	protected void processEvent(DefaultThreadInfo aThread, Event aEvent)
 	{
-		aParent.addChild(aEvent);
+		aEvent.getParent().addChild(aEvent);
 		itsEvents.add(aEvent);
 	}
 
@@ -154,7 +160,7 @@ implements IEventTrace
 	
 	public ICFlowBrowser createCFlowBrowser(IThreadInfo aThread)
 	{
-		return new CFlowBrowser(this, aThread, ((MyThreadInfo) aThread).getRootEvent());
+		return new CFlowBrowser(this, aThread, ((DefaultThreadInfo) aThread).getRootEvent());
 	}
 	
 	public IObjectInspector createObjectInspector(ObjectId aObjectId)

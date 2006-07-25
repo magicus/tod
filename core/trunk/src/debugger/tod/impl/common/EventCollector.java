@@ -11,6 +11,7 @@ import tod.core.Output;
 import tod.core.model.structure.IBehaviorInfo;
 import tod.core.model.structure.IClassInfo;
 import tod.core.model.structure.IFieldInfo;
+import tod.core.model.structure.IHostInfo;
 import tod.core.model.structure.ITypeInfo;
 import tod.core.model.structure.ThreadInfo;
 import tod.impl.common.event.BehaviorCallEvent;
@@ -27,40 +28,60 @@ import tod.impl.common.event.OutputEvent;
 /**
  * An abstract log collector that transforms log messages to events.
  * Whenever an event is produced it is passed to the 
- * {@link #processEvent(Event)} method.
+ * {@link #processEvent(tod.impl.common.EventCollector.DefaultThreadInfo, Event)} method.
+ * If there are multiple debugged hosts there must be multiple collectors.
  * @author gpothier
  */
 public abstract class EventCollector extends LocationRegistrer 
 implements ILogCollector
 {
 	/**
+	 * The host whose events are sent to this collector.
+	 */
+	private IHostInfo itsHost;
+	
+	public EventCollector(IHostInfo aHost)
+	{
+		itsHost = aHost;
+	}
+
+	/**
 	 * This method is called whenever an event is generated.
 	 * Note that subclasses should take care of adding the event to
 	 * its parent if they whish so.
 	 */
-	protected abstract void processEvent(BehaviorCallEvent aParent, Event aEvent);
+	protected abstract void processEvent(DefaultThreadInfo aThread, Event aEvent);
 
 	@Override
-	protected ThreadInfo createThreadInfo(long aId)
+	protected final DefaultThreadInfo createThreadInfo(long aId)
 	{
 		BehaviorCallEvent theRootEvent = new MethodCallEvent();
-		MyThreadInfo theThreadInfo = new MyThreadInfo(aId, theRootEvent);
+		DefaultThreadInfo theThreadInfo = createThreadInfo(aId, theRootEvent);
 		theRootEvent.setThread(theThreadInfo);
 		theRootEvent.setDirectParent(false);
 		
 		return theThreadInfo;
 	}
 	
-	@Override
-	public MyThreadInfo getThread(long aId)
+	/**
+	 * Subclasses can override this method if they whish to provide custom subclasses
+	 * of {@link DefaultThreadInfo}
+	 */
+	protected DefaultThreadInfo createThreadInfo(long aId, BehaviorCallEvent aRootEvent)
 	{
-		return (MyThreadInfo) super.getThread(aId);
+		return new DefaultThreadInfo(aId, aRootEvent);
 	}
 	
-	private void addEvent(Event aEvent)
+	@Override
+	public DefaultThreadInfo getThread(long aId)
+	{
+		return (DefaultThreadInfo) super.getThread(aId);
+	}
+	
+	private void addEvent(DefaultThreadInfo aThread, Event aEvent)
 	{
 		assert aEvent.getTimestamp() >= 0;
-		processEvent(aEvent.getParent(), aEvent);
+		processEvent(aThread, aEvent);
 	}
 	
 	/**
@@ -69,10 +90,11 @@ implements ILogCollector
 	private void initEvent (
 			Event aEvent, 
 			long aTimestamp,
-			MyThreadInfo aThreadInfo, 
+			DefaultThreadInfo aThreadInfo, 
             int aOperationBytecodeIndex)
 	{
 		aEvent.setTimestamp(aTimestamp);
+		aEvent.setHost(itsHost);
 		aEvent.setThread(aThreadInfo);
 		aEvent.setOperationBytecodeIndex(aOperationBytecodeIndex);
 		aEvent.setSerial(aThreadInfo.getSerial());
@@ -90,7 +112,7 @@ implements ILogCollector
 			Object aObject, 
 			Object[] aArguments)
 	{
-		MyThreadInfo theThread = getThread(aThreadId);
+		DefaultThreadInfo theThread = getThread(aThreadId);
 		IBehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
 		assert theBehavior != null;
 		BehaviorCallEvent theEvent;
@@ -123,7 +145,7 @@ implements ILogCollector
 		theEvent.setTarget(aObject);
 		theEvent.setArguments(aArguments);
 		
-		addEvent(theEvent);
+		addEvent(theThread, theEvent);
 	}
 
 	public void logBehaviorExit(
@@ -132,7 +154,7 @@ implements ILogCollector
 			int aBehaviorLocationId,
 			Object aResult)
 	{
-		MyThreadInfo theThread = getThread(aThreadId);
+		DefaultThreadInfo theThread = getThread(aThreadId);
 		
 		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();
 		assert theCurrentParent.getExecutedBehavior().getId() == aBehaviorLocationId;
@@ -143,9 +165,9 @@ implements ILogCollector
 		theExitEvent.setResult(aResult);
 		theExitEvent.setHasThrown(false);
 		
-		addEvent(theExitEvent);
+		addEvent(theThread, theExitEvent);
 		
-		theThread.setCurrentParent((BehaviorCallEvent) theCurrentParent.getParent());
+		theThread.setCurrentParent(theCurrentParent.getParent());
 	}
 	
 	public void logBehaviorExitWithException(
@@ -154,7 +176,7 @@ implements ILogCollector
 			int aBehaviorLocationId, 
 			Object aException)
 	{
-		MyThreadInfo theThread = getThread(aThreadId);
+		DefaultThreadInfo theThread = getThread(aThreadId);
 		
 		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();
 		assert theCurrentParent.getExecutedBehavior().getId() == aBehaviorLocationId;
@@ -165,9 +187,9 @@ implements ILogCollector
 		theExitEvent.setResult(aException);
 		theExitEvent.setHasThrown(true);
 		
-		addEvent(theExitEvent);
+		addEvent(theThread, theExitEvent);
 		
-		theThread.setCurrentParent((BehaviorCallEvent) theCurrentParent.getParent());
+		theThread.setCurrentParent(theCurrentParent.getParent());
 	}
 	
 	public void logExceptionGenerated(
@@ -177,8 +199,7 @@ implements ILogCollector
 			int aOperationBytecodeIndex, 
 			Object aException)
 	{
-		MyThreadInfo theThread = getThread(aThreadId);
-		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();		
+		DefaultThreadInfo theThread = getThread(aThreadId);
 		IBehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
 
 		logExceptionGenerated(aTimestamp, theThread, theBehavior, aOperationBytecodeIndex, aException);
@@ -193,7 +214,7 @@ implements ILogCollector
 			int aOperationBytecodeIndex,
 			Object aException)
 	{
-		MyThreadInfo theThread = getThread(aThreadId);
+		DefaultThreadInfo theThread = getThread(aThreadId);
 		
 		String theClassName = Type.getType(aMethodDeclaringClassSignature).getClassName();
 		IClassInfo theClass = (IClassInfo) getType(theClassName);
@@ -208,7 +229,7 @@ implements ILogCollector
 	
 	protected void logExceptionGenerated(
 			long aTimestamp, 
-			MyThreadInfo aThread,
+			DefaultThreadInfo aThread,
 			IBehaviorInfo aBehavior,
 			int aOperationBytecodeIndex,
 			Object aException)
@@ -229,7 +250,7 @@ implements ILogCollector
 		
 		if (theFailedCall)
 		{
-			aThread.setCurrentParent((BehaviorCallEvent) theCurrentParent.getParent());
+			aThread.setCurrentParent(theCurrentParent.getParent());
 		}
 
 		ExceptionGeneratedEvent theEvent = new ExceptionGeneratedEvent();
@@ -238,7 +259,7 @@ implements ILogCollector
 		theEvent.setThrowingBehavior(aBehavior);
 		theEvent.setException(aException);
 		
-		addEvent(theEvent);
+		addEvent(aThread, theEvent);
 	}
 	
 	public void logFieldWrite(
@@ -249,7 +270,7 @@ implements ILogCollector
 			Object aTarget, 
 			Object aValue)
 	{
-		MyThreadInfo theThread = getThread(aThreadId);
+		DefaultThreadInfo theThread = getThread(aThreadId);
 		IFieldInfo theField = getField(aFieldLocationId);
 
 		FieldWriteEvent theEvent = new FieldWriteEvent();
@@ -259,7 +280,7 @@ implements ILogCollector
 		theEvent.setField(theField);
 		theEvent.setValue(aValue);
 		
-		addEvent(theEvent);
+		addEvent(theThread, theEvent);
 	}
 	
 	public void logLocalVariableWrite(
@@ -269,7 +290,7 @@ implements ILogCollector
 			int aVariableId,
 			Object aValue)
 	{
-		MyThreadInfo theThread = getThread(aThreadId);
+		DefaultThreadInfo theThread = getThread(aThreadId);
 		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();
 		IBehaviorInfo theBehavior = theCurrentParent.getExecutedBehavior();
 		
@@ -295,18 +316,18 @@ implements ILogCollector
 		theEvent.setVariable(theInfo);
 		theEvent.setValue(aValue);
 		
-		addEvent(theEvent);
+		addEvent(theThread, theEvent);
 	}
 	
 	public void logInstantiation(long aThreadId)
 	{
-		MyThreadInfo theThread = getThread(aThreadId);
+		DefaultThreadInfo theThread = getThread(aThreadId);
 		theThread.expectInstantiation();
 	}
 	
 	public void logConstructorChaining(long aThreadId)
 	{
-		MyThreadInfo theThread = getThread(aThreadId);
+		DefaultThreadInfo theThread = getThread(aThreadId);
 		theThread.expectConstructorChaining();
 	}
 	
@@ -315,7 +336,7 @@ implements ILogCollector
 			int aOperationBytecodeIndex, 
 			int aBehaviorLocationId)
 	{
-		MyThreadInfo theThread = getThread(aThreadId);
+		DefaultThreadInfo theThread = getThread(aThreadId);
 		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();
 		assert theCurrentParent.isDirectParent() && theCurrentParent.getExecutedBehavior() != null;
 		
@@ -342,7 +363,7 @@ implements ILogCollector
 			Object aTarget, 
 			Object[] aArguments)
 	{
-		MyThreadInfo theThread = getThread(aThreadId);
+		DefaultThreadInfo theThread = getThread(aThreadId);
 
 		IBehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
 
@@ -356,7 +377,7 @@ implements ILogCollector
 		theEvent.setArguments(aArguments);
 		
 		// Here we do process the event because it is not a direct parent.
-		addEvent(theEvent);
+		addEvent(theThread, theEvent);
 		
 		theThread.setCurrentParent(theEvent);
 	}
@@ -374,17 +395,17 @@ implements ILogCollector
 			Object aTarget,
 			Object aResult)
 	{
-		MyThreadInfo theThread = getThread(aThreadId);
+		DefaultThreadInfo theThread = getThread(aThreadId);
 		
 		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();
 		assert theCurrentParent.getCalledBehavior().getId() == aBehaviorLocationId;
 		
 		BehaviorExitEvent theExitEvent = new BehaviorExitEvent();
-		initEvent(theExitEvent, aTimestamp, theThread, aBehaviorLocationId);
+		initEvent(theExitEvent, aTimestamp, theThread, aOperationBytecodeIndex);
 		theExitEvent.setResult(aResult);
 		theExitEvent.setHasThrown(false);
 		
-		addEvent(theExitEvent);
+		addEvent(theThread, theExitEvent);
 		
 		theThread.setCurrentParent(theCurrentParent.getParent());
 	}
@@ -397,7 +418,7 @@ implements ILogCollector
 			Object aTarget, 
 			Object aException)
 	{
-		MyThreadInfo theThread = getThread(aThreadId);
+		DefaultThreadInfo theThread = getThread(aThreadId);
 		
 		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();
 		assert theCurrentParent.getCalledBehavior().getId() == aBehaviorLocationId;
@@ -407,7 +428,7 @@ implements ILogCollector
 		theExitEvent.setResult(aException);
 		theExitEvent.setHasThrown(true);
 		
-		addEvent(theExitEvent);
+		addEvent(theThread, theExitEvent);
 		
 		theThread.setCurrentParent(theCurrentParent.getParent());
 	}
@@ -418,17 +439,17 @@ implements ILogCollector
 			Output aOutput, 
 			byte[] aData)
 	{
-		MyThreadInfo theThread = getThread(aThreadId);
+		DefaultThreadInfo theThread = getThread(aThreadId);
 		OutputEvent theEvent = new OutputEvent();
 		initEvent(theEvent, aTimestamp, theThread, -1);
 		
 		theEvent.setOutput(aOutput);
 		theEvent.setData(new String (aData));
 		
-		addEvent(theEvent);
+		addEvent(theThread, theEvent);
 	}
 
-	protected static class MyThreadInfo extends ThreadInfo
+	protected static class DefaultThreadInfo extends ThreadInfo
 	{
 		private BehaviorCallEvent itsRootEvent;
 		
@@ -442,12 +463,12 @@ implements ILogCollector
 		 */
 		private long itsSerial;
 		
-		public MyThreadInfo(long aId)
+		public DefaultThreadInfo(long aId)
 		{
 			super(aId);
 		}
 
-		public MyThreadInfo(long aId, BehaviorCallEvent aRootEvent)
+		public DefaultThreadInfo(long aId, BehaviorCallEvent aRootEvent)
 		{
 			super(aId);
 			itsRootEvent = aRootEvent;

@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import tod.core.model.structure.IHostInfo;
 import tod.core.model.structure.IThreadInfo;
 
 /**
@@ -100,6 +101,11 @@ public class EventComparator implements Comparator<ILogEvent>
 			return null;
 		}
 		
+		public IHostInfo getHost()
+		{
+			return null;
+		}
+
 		public long getTimestamp()
 		{
 			return itsTimestamp;
