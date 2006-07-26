@@ -3,7 +3,8 @@
  */
 package tod.impl.dbgrid;
 
-import zz.utils.BitStruct;
+import zz.utils.bit.BitStruct;
+import zz.utils.bit.BitUtils;
 
 /**
  * Expanded representation of an external pointer.
@@ -41,16 +42,16 @@ public class ExternalPointer
 	
 	public static void write(BitStruct aBitStruct, int aNode, int aHost, int aThread, long aTimestamp)
 	{
-		if (aNode >= BitStruct.pow2(DebuggerGridConfig.EVENT_NODE_BITS))
+		if (aNode >= BitUtils.pow2i(DebuggerGridConfig.EVENT_NODE_BITS))
 			throw new RuntimeException("Overflow on node: "+aNode);
 		
-		if (aHost >= BitStruct.pow2(DebuggerGridConfig.EVENT_HOST_BITS))
+		if (aHost >= BitUtils.pow2i(DebuggerGridConfig.EVENT_HOST_BITS))
 			throw new RuntimeException("Overflow on host: "+aHost);
 		
-		if (aThread >= BitStruct.pow2(DebuggerGridConfig.EVENT_THREAD_BITS))
+		if (aThread >= BitUtils.pow2i(DebuggerGridConfig.EVENT_THREAD_BITS))
 			throw new RuntimeException("Overflow on thread: "+aThread);
 		
-		if (aTimestamp >= BitStruct.pow2(DebuggerGridConfig.EVENT_TIMESTAMP_BITS))
+		if (aTimestamp >= BitUtils.pow2(DebuggerGridConfig.EVENT_TIMESTAMP_BITS))
 			throw new RuntimeException("Overflow on timestamp: "+aTimestamp);
 		
 		aBitStruct.writeInt(aNode, DebuggerGridConfig.EVENT_NODE_BITS);

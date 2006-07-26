@@ -7,7 +7,8 @@ import tod.impl.common.event.Event;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
-import zz.utils.BitStruct;
+import zz.utils.bit.BitStruct;
+import zz.utils.bit.IntBitStruct;
 
 public class GridBehaviorCallEvent extends GridEvent
 {
@@ -42,7 +43,7 @@ public class GridBehaviorCallEvent extends GridEvent
 		itsTarget = aTarget;
 	}
 
-	public GridBehaviorCallEvent(BitStruct aBitStruct, EventType aType)
+	public GridBehaviorCallEvent(IntBitStruct aBitStruct, EventType aType)
 	{
 		super(aBitStruct);
 		itsType = (byte) aType.ordinal();
@@ -58,7 +59,7 @@ public class GridBehaviorCallEvent extends GridEvent
 	}
 	
 	@Override
-	public void writeTo(BitStruct aBitStruct)
+	public void writeTo(IntBitStruct aBitStruct)
 	{
 		super.writeTo(aBitStruct);
 		

@@ -6,7 +6,7 @@ package tod.impl.dbgrid.dbnode;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.dbnode.PagedFile.PageBitStruct;
 import tod.impl.dbgrid.messages.GridEvent;
-import zz.utils.BitStruct;
+import zz.utils.bit.BitUtils;
 
 public class EventList
 {
@@ -58,10 +58,10 @@ public class EventList
 		
 		// Construct event pointer
 		long thePageId = itsCurrentBitStruct.getPage().getPageId();
-		long thePageMask = BitStruct.pow2(DebuggerGridConfig.DB_EVENTID_PAGE_BITS)-1;
+		long thePageMask = BitUtils.pow2(DebuggerGridConfig.DB_EVENTID_PAGE_BITS)-1;
 		if ((thePageId & thePageMask) != 0) throw new RuntimeException("Page Id overflow");
 		
-		long theIndexMask = BitStruct.pow2(DebuggerGridConfig.DB_EVENTID_INDEX_BITS)-1;
+		long theIndexMask = BitUtils.pow2(DebuggerGridConfig.DB_EVENTID_INDEX_BITS)-1;
 		if ((itsRecordIndex & theIndexMask) != 0) throw new RuntimeException("Record index overflow");
 		
 		long theEventPointer = thePageId << DebuggerGridConfig.DB_EVENTID_INDEX_BITS;
@@ -84,10 +84,10 @@ public class EventList
 	public GridEvent getEvent(long aPointer)
 	{
 		long thePageId = aPointer >>> DebuggerGridConfig.DB_EVENTID_INDEX_BITS;
-		int theRecordIndex = (int) (aPointer & (BitStruct.pow2(DebuggerGridConfig.DB_EVENTID_INDEX_BITS)-1));
+		int theRecordIndex = (int) (aPointer & (BitUtils.pow2(DebuggerGridConfig.DB_EVENTID_INDEX_BITS)-1));
 		
 		PagedFile.Page thePage = itsFile.getPage(thePageId);
-		BitStruct theBitStruct = thePage.asBitStruct();
+		PageBitStruct theBitStruct = thePage.asBitStruct();
 		
 		do 
 		{

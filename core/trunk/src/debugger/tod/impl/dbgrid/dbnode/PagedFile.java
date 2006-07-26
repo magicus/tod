@@ -9,11 +9,15 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.nio.channels.FileChannel;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import zz.utils.BitStruct;
+import zz.utils.bit.BitStruct;
+import zz.utils.bit.IntBitStruct;
 
 /**
  * A file organized in pages.
@@ -22,7 +26,7 @@ import zz.utils.BitStruct;
 public class PagedFile
 {
 	private Map<Long, Reference<Page>> itsPagesMap = new HashMap<Long, Reference<Page>>();
-	private RandomAccessFile itsFile;
+	private FileChannel itsFile;
 	private int itsPageSize;
 	
 	/**
@@ -30,11 +34,19 @@ public class PagedFile
 	 */
 	private long itsPagesCount;
 	
+	private ByteBuffer itsByteBuffer;
+	private IntBuffer itsIntBufferView;
+	
 	public PagedFile(File aFile, int aPageSize) throws FileNotFoundException
 	{
-		itsFile = new RandomAccessFile(aFile, "rw");
+		assert itsPageSize % 4 == 0;
+		
+		itsFile = new RandomAccessFile(aFile, "rw").getChannel();
 		itsPageSize = aPageSize;
 		itsPagesCount = 0;
+		
+		itsByteBuffer = ByteBuffer.allocateDirect(itsPageSize);
+		itsIntBufferView = itsByteBuffer.asIntBuffer();
 	}
 
 	/**
@@ -46,7 +58,7 @@ public class PagedFile
 		Page thePage = thePageRef != null ? thePageRef.get() : null;
 		if (thePage == null)
 		{
-			byte[] thePageData = loadPageData(aPageId);
+			int[] thePageData = loadPageData(aPageId);
 			thePage = new Page(thePageData, aPageId);
 			itsPagesMap.put(aPageId, new WeakReference<Page>(thePage));
 		}
@@ -59,31 +71,35 @@ public class PagedFile
 	 */
 	public Page createPage()
 	{
-		try
-		{
-			itsPagesCount++;
-			itsFile.setLength(itsPagesCount * itsPageSize);
-			byte[] thePageData = PageManager.getInstance().getFreeBuffer(itsPageSize, true);
-			long thePageId = itsPagesCount-1;
-			Page thePage = new Page(thePageData, thePageId);
-			itsPagesMap.put(thePageId, new WeakReference<Page>(thePage));
-			return thePage;
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
+		itsPagesCount++;
+		int[] thePageData = PageManager.getInstance().getFreeBuffer(itsPageSize, true);
+		long thePageId = itsPagesCount-1;
+		Page thePage = new Page(thePageData, thePageId);
+		itsPagesMap.put(thePageId, new WeakReference<Page>(thePage));
+		return thePage;
 	}
 	
-	private byte[] loadPageData(long aPageId)
+	private int[] loadPageData(long aPageId)
 	{
 		if (aPageId >= itsPagesCount) throw new RuntimeException("Page does not exist: "+aPageId+" (page count: "+itsPagesCount+")");
 		
 		try
 		{
-			byte[] theBuffer = PageManager.getInstance().getFreeBuffer(itsPageSize, false);
-			itsFile.seek(aPageId * itsPageSize);
-			itsFile.readFully(theBuffer);
+			int[] theBuffer = PageManager.getInstance().getFreeBuffer(itsPageSize, false);
+			itsByteBuffer.rewind();
+			
+			itsFile.position(aPageId * itsPageSize);
+			int theTotalReadBytes = 0;
+			while (theTotalReadBytes < itsPageSize)
+			{
+				int theReadBytes = itsFile.read(itsByteBuffer);
+				if (theReadBytes == -1) throw new IOException("Could not read page");
+				theTotalReadBytes += theReadBytes;
+			}
+			
+			itsIntBufferView.rewind();
+			itsIntBufferView.get(theBuffer);
+			
 			return theBuffer;
 		}
 		catch (IOException e)
@@ -99,24 +115,26 @@ public class PagedFile
 	{
 		try
 		{
-			itsFile.seek(aPage.getPageId() * itsPageSize);
-			itsFile.write(aPage.getData());
+			itsIntBufferView.rewind();
+			itsIntBufferView.put(aPage.getData());
+			itsByteBuffer.rewind();
+			int theWritten = itsFile.write(itsByteBuffer, aPage.getPageId() * itsPageSize);
+			if (theWritten != itsPageSize) throw new IOException("Could not write page");
 			aPage.clearModified();
 		}
 		catch (IOException e)
 		{
 			throw new RuntimeException(e);
 		}
-		
 	}
 	
 	public class Page 
 	{
 		private boolean itsModified;
 		private long itsPageId;
-		private byte[] itsData;
+		private int[] itsData;
 		
-		private Page(byte[] aData, long aPageId)
+		private Page(int[] aData, long aPageId)
 		{
 			itsData = aData;
 			itsPageId = aPageId;
@@ -159,13 +177,13 @@ public class PagedFile
 			return new PageBitStruct(this);
 		}
 		
-		private byte[] getData()
+		private int[] getData()
 		{
 			return itsData;
 		}
 	}
 	
-	public static class PageBitStruct extends BitStruct
+	public static class PageBitStruct extends IntBitStruct
 	{
 		private Page itsPage;
 		
@@ -187,15 +205,15 @@ public class PagedFile
 		}
 		
 		@Override
-		protected void setBytes(byte[] aBytes)
-		{
-			throw new UnsupportedOperationException();
-		}
-		
-		@Override
-		protected byte[] getBytes()
+		protected int[] getData()
 		{
 			return itsPage.getData();
+		}
+
+		@Override
+		protected void setData(int[] aData)
+		{
+			throw new UnsupportedOperationException();
 		}
 
 		@Override
@@ -259,13 +277,13 @@ public class PagedFile
 		
 		/**
 		 * Returns a free byte buffer of the indicated size.
-		 * @param aSize The required buffer size.
+		 * @param aSize The required buffer size, int bytes.
 		 * @param aInitialize If true, the buffer is initialized to contain only 0s 
 		 */
-		public byte[] getFreeBuffer(int aSize, boolean aInitialize)
+		public int[] getFreeBuffer(int aSize, boolean aInitialize)
 		{
 			// TODO: finish this. We must manage memory...
-			return new byte[aSize];
+			return new int[aSize/4];
 		}
 	}
 }

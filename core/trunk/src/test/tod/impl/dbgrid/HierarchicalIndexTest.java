@@ -8,17 +8,20 @@ import java.io.FileNotFoundException;
 import java.util.Iterator;
 import java.util.Random;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.runner.JUnitCore;
+
+import static org.junit.Assert.*;
 import tod.impl.dbgrid.dbnode.HierarchicalIndex;
 import tod.impl.dbgrid.dbnode.PagedFile;
 import tod.impl.dbgrid.dbnode.StdIndexSet;
 import tod.impl.dbgrid.dbnode.StdIndexSet.Tuple;
 
-public class HierarchicalIndexTest extends TestCase
+public class HierarchicalIndexTest
 {
-	public void testIndex() throws FileNotFoundException
+	@Test public void testIndex() throws FileNotFoundException
 	{
-//		fillCheck(10000000);
+		fillCheck(10000000);
 	}
 	
 	private void fillCheck(long aTupleCount) throws FileNotFoundException
@@ -28,14 +31,17 @@ public class HierarchicalIndexTest extends TestCase
 		checkIndex(theIndex, new TimestampGenerator(0), aTupleCount);
 	}
 	
-	public void testSeek() throws FileNotFoundException
+	@Test public void testSeek() throws FileNotFoundException
 	{
 		HierarchicalIndex<Tuple> theIndex = createStdIndex();
-		fillIndex(theIndex, new TimestampGenerator(0), 100000);
+		fillIndex(theIndex, new TimestampGenerator(0), 1000000);
 		
-		seekAndCheck(theIndex, new TimestampGenerator(0), 1000, 100);
-		seekAndCheck(theIndex, new TimestampGenerator(0), 1000, 1000);
-		seekAndCheck(theIndex, new TimestampGenerator(0), 1000, 10000);
+		seekAndCheck(theIndex, new TimestampGenerator(0), 10000, 100);
+		seekAndCheck(theIndex, new TimestampGenerator(0), 10000, 1000);
+		seekAndCheck(theIndex, new TimestampGenerator(0), 10000, 10000);
+		seekAndCheck(theIndex, new TimestampGenerator(0), 10000, 100000);
+		seekAndCheck(theIndex, new TimestampGenerator(0), 10000, 500000);
+		seekAndCheck(theIndex, new TimestampGenerator(0), 10000, 900000);
 	}
 	
 	private HierarchicalIndex<StdIndexSet.Tuple> createStdIndex() throws FileNotFoundException
@@ -119,7 +125,6 @@ public class HierarchicalIndexTest extends TestCase
 		for (long i=0;i<aTupleCount;i++)
 		{
 			long theTimestamp = aGenerator.next();
-			long theData = inventData(theTimestamp);
 			
 			if (! aIterator.hasNext()) fail("No more tuples");
 			Tuple theTuple = aIterator.next();
@@ -152,14 +157,20 @@ public class HierarchicalIndexTest extends TestCase
 		public TimestampGenerator(long aSeed)
 		{
 			itsRandom = new Random(aSeed);
-			itsTimestamp = itsRandom.nextLong() >>> 8;
+//			itsTimestamp = itsRandom.nextLong() >>> 8;
 		}
 		
 		public long next()
 		{
-			itsTimestamp += itsRandom.nextInt(100000) + 10;
+//			itsTimestamp += itsRandom.nextInt(100000) + 10;
+			itsTimestamp += 20;
 			return itsTimestamp;
 		}
 		
+	}
+	
+	public static void main(String[] args)
+	{
+		JUnitCore.runClasses(HierarchicalIndexTest.class);
 	}
 }

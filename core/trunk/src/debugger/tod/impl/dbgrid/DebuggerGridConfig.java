@@ -5,7 +5,7 @@ package tod.impl.dbgrid;
 
 import tod.impl.dbgrid.dbnode.HierarchicalIndex;
 import tod.impl.dbgrid.messages.EventType;
-import zz.utils.BitStruct;
+import zz.utils.bit.BitUtils;
 
 public class DebuggerGridConfig
 {
@@ -23,7 +23,7 @@ public class DebuggerGridConfig
 	/**
 	 * Mask of artificial timestamp bits.
 	 */
-	public static final long TIMESTAMP_ADJUST_MASK = BitStruct.pow2(TIMESTAMP_ADJUST_INACCURACY+TIMESTAMP_ADJUST_SHIFT)-1;
+	public static final long TIMESTAMP_ADJUST_MASK = BitUtils.pow2(TIMESTAMP_ADJUST_INACCURACY+TIMESTAMP_ADJUST_SHIFT)-1;
 	
 	/**
 	 * Number of bits used to represent the owner node of an event.

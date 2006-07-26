@@ -20,7 +20,8 @@ import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.StdIndexSet;
 import tod.impl.dbgrid.dispatcher.EventDispatcher;
 import tod.impl.dbgrid.dispatcher.GridEventCollector;
-import zz.utils.BitStruct;
+import zz.utils.bit.BitStruct;
+import zz.utils.bit.IntBitStruct;
 
 public abstract class GridEvent extends GridMessage
 {
@@ -40,7 +41,7 @@ public abstract class GridEvent extends GridMessage
 		itsParentPointer = (byte[]) aEvent.getParent().getAttribute(EventDispatcher.EVENT_ATTR_ID);
 	}
 	
-	public GridEvent(BitStruct aBitStruct)
+	public GridEvent(IntBitStruct aBitStruct)
 	{
 		itsHost = aBitStruct.readInt(DebuggerGridConfig.EVENT_HOST_BITS);
 		itsThread = aBitStruct.readInt(DebuggerGridConfig.EVENT_THREAD_BITS);
@@ -54,7 +55,7 @@ public abstract class GridEvent extends GridMessage
 	 * Subclasses must override this method to serialize their attributes,
 	 * and must call super first.
 	 */
-	public void writeTo(BitStruct aBitStruct)
+	public void writeTo(IntBitStruct aBitStruct)
 	{
 		aBitStruct.writeInt(getEventType().ordinal(), DebuggerGridConfig.EVENT_TYPE_BITS);
 		aBitStruct.writeInt(getHost(), DebuggerGridConfig.EVENT_HOST_BITS);
@@ -86,7 +87,7 @@ public abstract class GridEvent extends GridMessage
 	 * Writes an object to the specified struct. This method should be used
 	 * by subclasses to serialize values. 
 	 */
-	protected void writeObject(BitStruct aBitStruct, Object aObject)
+	protected void writeObject(IntBitStruct aBitStruct, Object aObject)
 	{
 		if (aObject instanceof ObjectId.ObjectUID)
 		{
@@ -112,7 +113,7 @@ public abstract class GridEvent extends GridMessage
 	 * Reads an object from the specified struct. 
 	 * This method should be used by subclasses to deserialize values.
 	 */
-	protected Object readObject(BitStruct aBitStruct)
+	protected Object readObject(IntBitStruct aBitStruct)
 	{
 		long theId = aBitStruct.readLong(64);
 		return new ObjectId.ObjectUID(theId);
@@ -168,9 +169,9 @@ public abstract class GridEvent extends GridMessage
 
 	/**
 	 * Creates an event from a serialized representation, 
-	 * symmetric to {@link #writeTo(BitStruct)}.
+	 * symmetric to {@link #writeTo(IntBitStruct)}.
 	 */
-	public static GridEvent create(BitStruct aBitStruct)
+	public static GridEvent create(IntBitStruct aBitStruct)
 	{
 		EventType theType = EventType.values()[aBitStruct.readInt(DebuggerGridConfig.EVENT_TYPE_BITS)];
 		switch (theType)

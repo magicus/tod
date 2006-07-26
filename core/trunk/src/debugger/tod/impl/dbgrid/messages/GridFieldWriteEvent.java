@@ -8,7 +8,8 @@ import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import tod.impl.dbgrid.dbnode.StdIndexSet;
-import zz.utils.BitStruct;
+import zz.utils.bit.BitStruct;
+import zz.utils.bit.IntBitStruct;
 
 public class GridFieldWriteEvent extends GridEvent
 {
@@ -29,7 +30,7 @@ public class GridFieldWriteEvent extends GridEvent
 		itsValue = aValue;
 	}
 
-	public GridFieldWriteEvent(BitStruct aBitStruct)
+	public GridFieldWriteEvent(IntBitStruct aBitStruct)
 	{
 		super(aBitStruct);
 
@@ -39,7 +40,7 @@ public class GridFieldWriteEvent extends GridEvent
 	}
 
 	@Override
-	public void writeTo(BitStruct aBitStruct)
+	public void writeTo(IntBitStruct aBitStruct)
 	{
 		super.writeTo(aBitStruct);
 		aBitStruct.writeInt(getFieldId(), DebuggerGridConfig.EVENT_FIELD_BITS);

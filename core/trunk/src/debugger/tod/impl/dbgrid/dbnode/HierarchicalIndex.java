@@ -7,7 +7,8 @@ import java.util.Iterator;
 
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.dbnode.PagedFile.PageBitStruct;
-import zz.utils.BitStruct;
+import zz.utils.bit.BitStruct;
+import zz.utils.bit.IntBitStruct;
 
 /**
  * Implementation of a hierarchical index on an attribute value,
@@ -28,6 +29,11 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 	private int itsRootLevel;
 	private PageBitStruct[] itsCurrentPages = new PageBitStruct[DebuggerGridConfig.DB_MAX_INDEX_LEVELS];
 	
+	/**
+	 * Number of pages per level
+	 */
+	private int[] itsPagesCount = new int[DebuggerGridConfig.DB_MAX_INDEX_LEVELS];
+	
 	public HierarchicalIndex(PagedFile aFile, TupleCodec<T> aTupleCodec) 
 	{
 		itsFile = aFile;
@@ -38,6 +44,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		itsFirstLeafPageId = itsRootPage.getPageId();
 		itsRootLevel = 0;
 		itsCurrentPages[0] = itsRootPage.asBitStruct();
+		itsPagesCount[0] = 1;
 	}
 	
 	/**
@@ -84,8 +91,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 	private <T2 extends Tuple> T2 findTuple(PageBitStruct aPage, long aTimestamp, TupleCodec<T2> aTupleCodec)
 	{
 		int theIndex = findTupleIndex(aPage, aTimestamp, aTupleCodec);
-		aPage.setPos(theIndex * aTupleCodec.getTupleSize());
-		return aTupleCodec.read(aPage);
+		return readTuple(aPage, aTupleCodec, theIndex);
 	}
 	
 	/**
@@ -139,6 +145,9 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		return aTupleCodec.read(aPage);
 	}
 
+	/**
+	 * Adds a tuple to this index.
+	 */
 	public void add(T aTuple)
 	{
 		add(aTuple, 0, itsTupleCodec.getTupleSize());
@@ -154,6 +163,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 			itsRootPage = itsFile.createPage();
 			thePage = itsRootPage.asBitStruct();
 			itsCurrentPages[aLevel] = thePage;
+			itsPagesCount[aLevel]++;
 		}
 		
 		if (thePage.getRemainingBits() < aTupleSize + DebuggerGridConfig.DB_INDEX_PAGE_POINTER_BITS)
@@ -164,13 +174,18 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 			// Write next page id (+1: 0 means no next page).
 			thePage.writeLong(theNextPageId+1, DebuggerGridConfig.DB_INDEX_PAGE_POINTER_BITS);
 			
-			// Read timestamp of first tuple
-			thePage.setPos(0);
-			long theTimestamp = thePage.readLong(DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
-			add(
-					new InternalTuple(theTimestamp, thePage.getPage().getPageId()),
-					aLevel+1, 
-					itsInternalTupleSize);
+			// If this is the first time we finish a page at this level,
+			// we must update upper level index.
+			if (itsRootLevel == aLevel)
+			{
+				// Read timestamp of first tuple
+				thePage.setPos(0);
+				long theTimestamp = thePage.readLong(DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
+				add(
+						new InternalTuple(theTimestamp, thePage.getPage().getPageId()),
+						aLevel+1, 
+						itsInternalTupleSize);
+			}
 			
 			// Save old page
 			itsFile.writePage(thePage.getPage());
@@ -178,8 +193,19 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 			
 			thePage = theNextPage;
 			itsCurrentPages[aLevel] = theNextPage;
+			itsPagesCount[aLevel]++;
 		}
 
+		if (thePage.getPos() == 0 && itsRootLevel > aLevel)
+		{
+			// When we write the first tuple of a page we also update indexes.
+			long theTimestamp = aTuple.getTimestamp();
+			add(
+					new InternalTuple(theTimestamp, thePage.getPage().getPageId()),
+					aLevel+1, 
+					itsInternalTupleSize);
+		}
+		
 		aTuple.writeTo(thePage);
 	}
 	
@@ -202,9 +228,9 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		/**
 		 * Reads a tuple from the given struct.
 		 */
-		public abstract T read(BitStruct aBitStruct);
+		public abstract T read(IntBitStruct aBitStruct);
 		
-		public void write(BitStruct aBitStruct, Tuple aTuple)
+		public void write(IntBitStruct aBitStruct, Tuple aTuple)
 		{
 			aTuple.writeTo(aBitStruct);
 		}
@@ -224,7 +250,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 			itsTimestamp = aTimestamp;
 		}
 		
-		public Tuple(BitStruct aBitStruct)
+		public Tuple(IntBitStruct aBitStruct)
 		{
 			itsTimestamp = aBitStruct.readLong(DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
 		}
@@ -235,7 +261,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		 * Subclasses should override to serialize additional attributes,
 		 * and call super first.
 		 */
-		public void writeTo(BitStruct aBitStruct)
+		public void writeTo(IntBitStruct aBitStruct)
 		{
 			aBitStruct.writeLong(getTimestamp(), DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
 		}
@@ -247,6 +273,15 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		{
 			return itsTimestamp;
 		}
+		
+		@Override
+		public String toString()
+		{
+			return String.format("%s: t=%d",
+					getClass().getSimpleName(),
+					getTimestamp());
+		}
+
 	}
 	
 	/**
@@ -273,7 +308,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		}
 
 		@Override
-		public InternalTuple read(BitStruct aBitStruct)
+		public InternalTuple read(IntBitStruct aBitStruct)
 		{
 			return new InternalTuple(aBitStruct);
 		}
@@ -295,14 +330,14 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 			itsPagePointer = aPagePointer;
 		}
 		
-		public InternalTuple(BitStruct aBitStruct)
+		public InternalTuple(IntBitStruct aBitStruct)
 		{
 			super(aBitStruct);
 			itsPagePointer = aBitStruct.readLong(DebuggerGridConfig.DB_INDEX_PAGE_POINTER_BITS);
 		}
 
 		@Override
-		public void writeTo(BitStruct aBitStruct)
+		public void writeTo(IntBitStruct aBitStruct)
 		{
 			super.writeTo(aBitStruct);
 			aBitStruct.writeLong(getPagePointer(), DebuggerGridConfig.DB_INDEX_PAGE_POINTER_BITS);
@@ -311,6 +346,15 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		public long getPagePointer()
 		{
 			return itsPagePointer;
+		}
+		
+		@Override
+		public String toString()
+		{
+			return String.format("%s: t=%d p=%d",
+					getClass().getSimpleName(),
+					getTimestamp(),
+					getPagePointer());
 		}
 	}
 	
