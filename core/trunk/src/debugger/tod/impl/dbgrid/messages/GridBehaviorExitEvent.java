@@ -22,6 +22,24 @@ public class GridBehaviorExitEvent extends GridEvent
 	 */
 	private int itsBehaviorId;
 
+	
+	
+	public GridBehaviorExitEvent(
+			int aHost, 
+			int aThread, 
+			long aTimestamp, 
+			int aOperationBytecodeIndex, 
+			byte[] aParentPointer, 
+			boolean aHasThrown, 
+			Object aResult, 
+			int aBehaviorId)
+	{
+		super(aHost, aThread, aTimestamp, aOperationBytecodeIndex, aParentPointer);
+		itsHasThrown = aHasThrown;
+		itsResult = aResult;
+		itsBehaviorId = aBehaviorId;
+	}
+
 	public GridBehaviorExitEvent(
 			Event aEvent,
 			boolean aHasThrown, 

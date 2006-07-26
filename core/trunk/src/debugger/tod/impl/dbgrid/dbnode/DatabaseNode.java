@@ -44,6 +44,11 @@ public class DatabaseNode
 		}
 	}
 
+	public Indexes getIndexes()
+	{
+		return itsIndexes;
+	}
+
 	public void push(List<GridMessage> aMessagesList)
 	{
 		for (GridMessage theMessage : aMessagesList)

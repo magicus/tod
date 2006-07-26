@@ -19,6 +19,22 @@ public class GridFieldWriteEvent extends GridEvent
 	
 
 	public GridFieldWriteEvent(
+			int aHost, 
+			int aThread, 
+			long aTimestamp, 
+			int aOperationBytecodeIndex, 
+			byte[] aParentPointer, 
+			int aFieldId, 
+			Object aTarget, 
+			Object aValue)
+	{
+		super(aHost, aThread, aTimestamp, aOperationBytecodeIndex, aParentPointer);
+		itsFieldId = aFieldId;
+		itsTarget = aTarget;
+		itsValue = aValue;
+	}
+
+	public GridFieldWriteEvent(
 			Event aEvent, 
 			int aFieldId, 
 			Object aTarget, 

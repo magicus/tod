@@ -26,6 +26,28 @@ public class GridBehaviorCallEvent extends GridEvent
 
 	
 	public GridBehaviorCallEvent(
+			int aHost, 
+			int aThread,
+			long aTimestamp, 
+			int aOperationBytecodeIndex,
+			byte[] aParentPointer,
+			EventType aType, 
+			boolean aDirectParent, 
+			Object[] aArguments, 
+			int aCalledBehaviorId, 
+			int aExecutedBehaviorId, 
+			Object aTarget)
+	{
+		super(aHost, aThread, aTimestamp, aOperationBytecodeIndex, aParentPointer);
+		itsType = (byte) aType.ordinal();
+		itsDirectParent = aDirectParent;
+		itsArguments = aArguments;
+		itsCalledBehaviorId = aCalledBehaviorId;
+		itsExecutedBehaviorId = aExecutedBehaviorId;
+		itsTarget = aTarget;
+	}
+
+	public GridBehaviorCallEvent(
 			Event aEvent,
 			EventType aType,
 			boolean aDirectParent,

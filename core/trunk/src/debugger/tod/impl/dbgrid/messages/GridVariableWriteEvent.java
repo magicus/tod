@@ -16,6 +16,20 @@ public class GridVariableWriteEvent extends GridEvent
 	private int itsVariableId;
 	private Object itsValue;
 	
+	public GridVariableWriteEvent(
+			int aHost, 
+			int aThread, 
+			long aTimestamp, 
+			int aOperationBytecodeIndex, 
+			byte[] aParentPointer, 
+			int aVariableId, 
+			Object aValue)
+	{
+		super(aHost, aThread, aTimestamp, aOperationBytecodeIndex, aParentPointer);
+		itsVariableId = aVariableId;
+		itsValue = aValue;
+	}
+
 
 	public GridVariableWriteEvent(Event aEvent, int aVariableId, Object aValue)
 	{

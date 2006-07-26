@@ -5,7 +5,7 @@ package tod.impl.dbgrid.dbnode;
 
 import java.util.Iterator;
 
-import tod.impl.dbgrid.DebuggerGridConfig;
+import static tod.impl.dbgrid.DebuggerGridConfig.*;
 import tod.impl.dbgrid.dbnode.PagedFile.PageBitStruct;
 import zz.utils.bit.BitStruct;
 import zz.utils.bit.IntBitStruct;
@@ -19,20 +19,19 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 {
 	private TupleCodec<T> itsTupleCodec;
 	
-	private int itsInternalTupleSize = 
-		DebuggerGridConfig.EVENT_TIMESTAMP_BITS + DebuggerGridConfig.DB_INDEX_PAGE_POINTER_BITS;
+	private int itsInternalTupleSize = EVENT_TIMESTAMP_BITS + DB_PAGE_POINTER_BITS;
 	
 	private PagedFile itsFile;
 	
 	private PagedFile.Page itsRootPage;
 	private long itsFirstLeafPageId;
 	private int itsRootLevel;
-	private PageBitStruct[] itsCurrentPages = new PageBitStruct[DebuggerGridConfig.DB_MAX_INDEX_LEVELS];
+	private PageBitStruct[] itsCurrentPages = new PageBitStruct[DB_MAX_INDEX_LEVELS];
 	
 	/**
 	 * Number of pages per level
 	 */
-	private int[] itsPagesCount = new int[DebuggerGridConfig.DB_MAX_INDEX_LEVELS];
+	private int[] itsPagesCount = new int[DB_MAX_INDEX_LEVELS];
 	
 	private long itsLeafTupleCount = 0;
 	
@@ -104,7 +103,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 	{
 		aPage.setPos(0);
 		int thePageSize = aPage.getRemainingBits();
-		int theTupleCount = (thePageSize - DebuggerGridConfig.DB_INDEX_PAGE_POINTER_BITS) 
+		int theTupleCount = (thePageSize - DB_PAGE_POINTER_BITS) 
 			/ aTupleCodec.getTupleSize();
 		
 		return findTupleIndex(aPage, aTimestamp, aTupleCodec, 0, theTupleCount-1);
@@ -169,13 +168,13 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 			itsPagesCount[aLevel]++;
 		}
 		
-		if (thePage.getRemainingBits() < aTupleSize + DebuggerGridConfig.DB_INDEX_PAGE_POINTER_BITS)
+		if (thePage.getRemainingBits() < aTupleSize + DB_PAGE_POINTER_BITS)
 		{
 			PageBitStruct theNextPage = itsFile.createPage().asBitStruct();
 			long theNextPageId = theNextPage.getPage().getPageId();
 			
 			// Write next page id (+1: 0 means no next page).
-			thePage.writeLong(theNextPageId+1, DebuggerGridConfig.DB_INDEX_PAGE_POINTER_BITS);
+			thePage.writeLong(theNextPageId+1, DB_PAGE_POINTER_BITS);
 			
 			// If this is the first time we finish a page at this level,
 			// we must update upper level index.
@@ -183,7 +182,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 			{
 				// Read timestamp of first tuple
 				thePage.setPos(0);
-				long theTimestamp = thePage.readLong(DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
+				long theTimestamp = thePage.readLong(EVENT_TIMESTAMP_BITS);
 				add(
 						new InternalTuple(theTimestamp, thePage.getPage().getPageId()),
 						aLevel+1, 
@@ -245,7 +244,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		 */
 		public int getTupleSize()
 		{
-			return DebuggerGridConfig.EVENT_TIMESTAMP_BITS;
+			return EVENT_TIMESTAMP_BITS;
 		}
 		
 		/**
@@ -275,7 +274,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		
 		public Tuple(IntBitStruct aBitStruct)
 		{
-			itsTimestamp = aBitStruct.readLong(DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
+			itsTimestamp = aBitStruct.readLong(EVENT_TIMESTAMP_BITS);
 		}
 
 		/**
@@ -286,7 +285,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		 */
 		public void writeTo(IntBitStruct aBitStruct)
 		{
-			aBitStruct.writeLong(getTimestamp(), DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
+			aBitStruct.writeLong(getTimestamp(), EVENT_TIMESTAMP_BITS);
 		}
 		
 		/**
@@ -327,7 +326,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		@Override
 		public int getTupleSize()
 		{
-			return super.getTupleSize() + DebuggerGridConfig.DB_INDEX_PAGE_POINTER_BITS;
+			return super.getTupleSize() + DB_PAGE_POINTER_BITS;
 		}
 
 		@Override
@@ -356,14 +355,14 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		public InternalTuple(IntBitStruct aBitStruct)
 		{
 			super(aBitStruct);
-			itsPagePointer = aBitStruct.readLong(DebuggerGridConfig.DB_INDEX_PAGE_POINTER_BITS);
+			itsPagePointer = aBitStruct.readLong(DB_PAGE_POINTER_BITS);
 		}
 
 		@Override
 		public void writeTo(IntBitStruct aBitStruct)
 		{
 			super.writeTo(aBitStruct);
-			aBitStruct.writeLong(getPagePointer(), DebuggerGridConfig.DB_INDEX_PAGE_POINTER_BITS);
+			aBitStruct.writeLong(getPagePointer(), DB_PAGE_POINTER_BITS);
 		}
 		
 		public long getPagePointer()
@@ -395,10 +394,10 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 
 		private T readNextTuple()
 		{
-			if (itsPage.getRemainingBits() < itsTupleCodec.getTupleSize() + DebuggerGridConfig.DB_INDEX_PAGE_POINTER_BITS)
+			if (itsPage.getRemainingBits() < itsTupleCodec.getTupleSize() + DB_PAGE_POINTER_BITS)
 			{
 				// We reached the end of the page, we must read the next-page pointer
-				long theNextPage = itsPage.readLong(DebuggerGridConfig.DB_INDEX_PAGE_POINTER_BITS);
+				long theNextPage = itsPage.readLong(DB_PAGE_POINTER_BITS);
 				if (theNextPage == 0) return null;
 				
 //				itsFile.freePage(itsPage.getPage());

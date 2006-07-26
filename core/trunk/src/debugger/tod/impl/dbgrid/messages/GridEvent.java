@@ -32,6 +32,20 @@ public abstract class GridEvent extends GridMessage
 	private int itsOperationBytecodeIndex;
 	private byte[] itsParentPointer;
 	
+	public GridEvent(
+			int aHost, 
+			int aThread, 
+			long aTimestamp, 
+			int aOperationBytecodeIndex, 
+			byte[] aParentPointer)
+	{
+		itsHost = aHost;
+		itsThread = aThread;
+		itsTimestamp = aTimestamp;
+		itsOperationBytecodeIndex = aOperationBytecodeIndex;
+		itsParentPointer = aParentPointer;
+	}
+
 	public GridEvent(Event aEvent)
 	{
 		itsHost = aEvent.getHost().getId();

@@ -3,6 +3,7 @@
  */
 package tod.impl.dbgrid;
 
+import tod.impl.dbgrid.dbnode.EventList;
 import tod.impl.dbgrid.dbnode.HierarchicalIndex;
 import tod.impl.dbgrid.messages.EventType;
 import zz.utils.bit.BitUtils;
@@ -100,9 +101,10 @@ public class DebuggerGridConfig
 	public static final int DB_INDEX_PAGE_SIZE = 8192;
 	
 	/**
-	 * Number of bits to represent a page pointer in {@link HierarchicalIndex}.
+	 * Number of bits to represent a page pointer in {@link HierarchicalIndex}
+	 * and {@link EventList}.
 	 */
-	public static final int DB_INDEX_PAGE_POINTER_BITS = 64;
+	public static final int DB_PAGE_POINTER_BITS = 32;
 	
 	/**
 	 * Size of an index page in the database for writing

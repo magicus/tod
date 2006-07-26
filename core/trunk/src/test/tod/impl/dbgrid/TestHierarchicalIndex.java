@@ -23,18 +23,18 @@ public class TestHierarchicalIndex
 		fillCheck(10000000);
 	}
 	
-	private void fillCheck(long aTupleCount) throws FileNotFoundException
+	private void fillCheck(long aTupleCount)
 	{
-		HierarchicalIndex<Tuple> theIndex = FixtureHierarchicalIndex.createStdIndex();
-		FixtureHierarchicalIndex.fillIndex(theIndex, new TimestampGenerator(0), aTupleCount);
+		HierarchicalIndex<Tuple> theIndex = FixtureIndexes.createStdIndex();
+		FixtureIndexes.fillIndex(theIndex, new TimestampGenerator(0), aTupleCount);
 		checkIndex(theIndex, new TimestampGenerator(0), aTupleCount);
 	}
 	
 	@Test 
-	public void testSeek() throws FileNotFoundException
+	public void testSeek()
 	{
-		HierarchicalIndex<Tuple> theIndex = FixtureHierarchicalIndex.createStdIndex();
-		FixtureHierarchicalIndex.fillIndex(theIndex, new TimestampGenerator(0), 1000000);
+		HierarchicalIndex<Tuple> theIndex = FixtureIndexes.createStdIndex();
+		FixtureIndexes.fillIndex(theIndex, new TimestampGenerator(0), 1000000);
 		
 		seekAndCheck(theIndex, new TimestampGenerator(0), 10000, 100);
 		seekAndCheck(theIndex, new TimestampGenerator(0), 10000, 1000);
@@ -45,7 +45,7 @@ public class TestHierarchicalIndex
 	}
 	
 	/**
-	 * Checks the values of an index filled with {@link FixtureHierarchicalIndex#fillIndex(HierarchicalIndex, tod.impl.dbgrid.TestHierarchicalIndex.TimestampGenerator, long)}
+	 * Checks the values of an index filled with {@link FixtureIndexes#fillIndex(HierarchicalIndex, tod.impl.dbgrid.TestHierarchicalIndex.TimestampGenerator, long)}
 	 */
 	private void checkIndex(
 			HierarchicalIndex<StdIndexSet.Tuple> aIndex, 
@@ -98,7 +98,7 @@ public class TestHierarchicalIndex
 			Tuple theTuple = aIterator.next();
 			checkTuple(theTuple, theTimestamp);
 			
-			if (i % 100000 == 0) System.out.println("v: "+i);
+			if (i % 1000000 == 0) System.out.println("v: "+i);
 		}
 		
 		if (aExhaust && aIterator.hasNext()) fail("Too many tuple");
@@ -106,7 +106,7 @@ public class TestHierarchicalIndex
 	
 	private void checkTuple(Tuple aTuple, long aTimestamp)
 	{
-		long theData = FixtureHierarchicalIndex.inventData(aTimestamp);
+		long theData = FixtureIndexes.inventData(aTimestamp);
 		
 		if (aTuple.getTimestamp() != aTimestamp) fail("Timestamp mismatch");
 		if (aTuple.getEventPointer() != theData) fail("Data mismatch");
@@ -125,13 +125,12 @@ public class TestHierarchicalIndex
 		public TimestampGenerator(long aSeed)
 		{
 			itsRandom = new Random(aSeed);
-//			itsTimestamp = itsRandom.nextLong() >>> 8;
+			itsTimestamp = itsRandom.nextLong() >>> 8;
 		}
 		
 		public long next()
 		{
-//			itsTimestamp += itsRandom.nextInt(100000) + 10;
-			itsTimestamp += 20;
+			itsTimestamp += itsRandom.nextInt(100000) + 10;
 			return itsTimestamp;
 		}
 		

@@ -3,7 +3,7 @@
  */
 package tod.impl.dbgrid;
 
-import java.io.FileNotFoundException;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -40,18 +40,13 @@ public class BenchIndexes
 		System.out.println("Tuple count: "+theTupleCount);
 		System.out.println("Storage space: "+theStorage);
 		System.out.println("MB/s: "+theMBs);
+		
+		assertTrue(theMBs > 20);
 	}
 	
 	private void fill(long aTupleCount)
 	{
-		try
-		{
-			itsIndex = FixtureHierarchicalIndex.createStdIndex();
-			FixtureHierarchicalIndex.fillIndex(itsIndex, new TimestampGenerator(0), aTupleCount);
-		}
-		catch (FileNotFoundException e)
-		{
-			throw new RuntimeException(e);
-		}		
+		itsIndex = FixtureIndexes.createStdIndex();
+		FixtureIndexes.fillIndex(itsIndex, new TimestampGenerator(0), aTupleCount);
 	}
 }
