@@ -31,6 +31,8 @@ public class TODPlugin extends AbstractUIPlugin
 	public void start(BundleContext context) throws Exception
 	{
 		super.start(context);
+		Class.forName("org.objectweb.asm.commons.EmptyVisitor");
+		Class.forName("tod.session.ISession");
 	}
 
 	/**

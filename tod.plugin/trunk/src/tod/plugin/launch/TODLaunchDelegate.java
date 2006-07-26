@@ -92,15 +92,15 @@ public class TODLaunchDelegate extends AbstractCustomLaunchConfigurationDelegate
 	{
 		List<String> theEntries = super.getPrependedBootClassPathEntries(aConfiguration);
 		
-		String theBciPath = System.getProperty(
-				"bci.path",
-				TODPlugin.getDefault().getLibraryPath()+"/remotebci.jar");
+//		String theBciPath = System.getProperty(
+//				"bci.path",
+//				TODPlugin.getDefault().getLibraryPath()+"/remotebci.jar");
 		
 		String theAgentPath = System.getProperty(
 				"agent.path",
 				TODPlugin.getDefault().getLibraryPath()+"/tod-agent.jar");
 		
-		theEntries.add(theBciPath);
+//		theEntries.add(theBciPath);
 		theEntries.add(theAgentPath);
 		
 		return theEntries;

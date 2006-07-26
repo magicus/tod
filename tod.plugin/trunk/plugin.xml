@@ -11,19 +11,16 @@
       <library name="plugin.jar">
          <export name="*"/>
       </library>
-      <library name="/home/gpothier/eclipse/workbench-3.1/TOD/bin">
+      <library name="external:/home/gpothier/eclipse/workbench-3.1/TOD/bin/">
          <export name="*"/>
       </library>
-      <library name="/home/gpothier/eclipse/workbench-3.1/zz.utils/bin">
+      <library name="external:/home/gpothier/eclipse/workbench-3.1/zz.utils/bin/">
          <export name="*"/>
       </library>
-      <library name="/home/gpothier/eclipse/workbench-3.1/zz.csg/bin">
+      <library name="external:/home/gpothier/eclipse/workbench-3.1/zz.csg/bin/">
          <export name="*"/>
       </library>
       <library name="lib/log4j.jar">
-         <export name="*"/>
-      </library>
-      <library name="/home/gpothier/eclipse/workbench-3.1/RemoteBCI/bin">
          <export name="*"/>
       </library>
       <library name="lib/asm-2.1.jar">

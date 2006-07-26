@@ -14,13 +14,13 @@ import javax.swing.JPanel;
 
 import org.eclipse.jdt.core.IJavaElement;
 
-import reflex.lib.logging.miner.gui.BrowserNavigator;
-import reflex.lib.logging.miner.gui.IGUIManager;
-import reflex.lib.logging.miner.gui.seed.Seed;
-import reflex.lib.logging.miner.gui.seed.SeedFactory;
-import reflex.lib.logging.miner.gui.seed.ThreadsSeed;
 import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.LocationInfo;
+import tod.core.model.structure.ILocationInfo;
+import tod.gui.BrowserNavigator;
+import tod.gui.IGUIManager;
+import tod.gui.seed.Seed;
+import tod.gui.seed.SeedFactory;
+import tod.gui.seed.ThreadsSeed;
 import tod.plugin.DebuggingSession;
 import tod.plugin.TODPluginUtils;
 import tod.plugin.TODSessionManager;
@@ -111,7 +111,7 @@ public class EventViewer extends JPanel implements IGUIManager
 		Seed theSeed = null;
 		if (aSelectedLocations.size() == 1)
 		{
-			LocationInfo theInfo = (LocationInfo) aSelectedLocations.get(0);
+			ILocationInfo theInfo = (ILocationInfo) aSelectedLocations.get(0);
 			theSeed = SeedFactory.getDefaultSeed(this, getSession().getEventTrace(), theInfo);
 		}
 
@@ -120,7 +120,7 @@ public class EventViewer extends JPanel implements IGUIManager
 	
 	public void showElement (IJavaElement aElement)
 	{
-		LocationInfo theLocationInfo = TODPluginUtils.getLocationInfo(getSession(), aElement);
+		ILocationInfo theLocationInfo = TODPluginUtils.getLocationInfo(getSession(), aElement);
 		Seed theSeed = SeedFactory.getDefaultSeed(this, getSession().getEventTrace(), theLocationInfo);
 		openSeed(theSeed, false);
 	}

@@ -22,9 +22,10 @@ import org.eclipse.jdt.core.search.SearchPattern;
 import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.event.ICallerSideEvent;
 import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.BehaviorInfo;
-import tod.core.model.structure.LocationInfo;
-import tod.core.model.structure.TypeInfo;
+import tod.core.model.structure.IBehaviorInfo;
+import tod.core.model.structure.IClassInfo;
+import tod.core.model.structure.ILocationInfo;
+import tod.core.model.structure.ITypeInfo;
 import tod.core.model.trace.IEventTrace;
 import tod.core.model.trace.ILocationTrace;
 import tod.session.ISession;
@@ -42,7 +43,7 @@ public class TODPluginUtils
 	 * @param aElement The JDT java element to look for.
 	 * @return TOD location info, or null if none is found.
 	 */
-	public static LocationInfo getLocationInfo (ISession aSession, IJavaElement aElement)
+	public static ILocationInfo getLocationInfo (ISession aSession, IJavaElement aElement)
 	{
 		IEventTrace theEventTrace = aSession.getEventTrace();
 		ILocationTrace theLocationTrace = theEventTrace.getLocationTrace();
@@ -55,7 +56,7 @@ public class TODPluginUtils
 			if (theType == null) return null;
 			
 			String theTypeName = theType.getFullyQualifiedName();
-			TypeInfo theTypeInfo = theLocationTrace.getType(theTypeName);
+			IClassInfo theTypeInfo = (IClassInfo) theLocationTrace.getType(theTypeName);
 			if (theTypeInfo == null) return null;
 			
 			System.out.println(theTypeInfo);
@@ -64,13 +65,13 @@ public class TODPluginUtils
 			{
 				IMethod theMethod = (IMethod) theMember;
 				String theMethodName = theMethod.getElementName();
-				return theTypeInfo.getBehavior(theMethodName);
+				return theTypeInfo.getBehavior(theMethodName, null);
 			}
 			else if (theMember instanceof IInitializer)
 			{
 				IInitializer theInitializer = (IInitializer) theMember;
 				String theInitializerName = theInitializer.getElementName();
-				return theTypeInfo.getBehavior(theInitializerName);
+				return theTypeInfo.getBehavior(theInitializerName, null);
 			}
 			else if (theMember instanceof IField)
 			{
@@ -133,16 +134,16 @@ public class TODPluginUtils
 	    if (theParent == null) return;
 	    
 	    int theBytecodeIndex = aEvent.getOperationBytecodeIndex();
-	    BehaviorInfo theBehavior = theParent.getExecutedBehavior();
+	    IBehaviorInfo theBehavior = theParent.getExecutedBehavior();
 	    if (theBehavior == null) return;
 	    
 	    int theLineNumber = theBehavior.getLineNumber(theBytecodeIndex);
-	    TypeInfo theType = theBehavior.getType();
+	    ITypeInfo theType = theBehavior.getType();
 	    
 	    SourceRevealer.reveal(aSession.getJavaProject(), theType.getName(), theLineNumber);
 	}
 	
-	public static void gotoSource (DebuggingSession aSession, BehaviorInfo aBehavior)
+	public static void gotoSource (DebuggingSession aSession, IBehaviorInfo aBehavior)
 	{
 		SourceRevealer.reveal(
 				aSession.getJavaProject(), 
