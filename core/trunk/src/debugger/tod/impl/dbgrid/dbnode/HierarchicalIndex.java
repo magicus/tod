@@ -34,6 +34,8 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 	 */
 	private int[] itsPagesCount = new int[DebuggerGridConfig.DB_MAX_INDEX_LEVELS];
 	
+	private long itsLeafTupleCount = 0;
+	
 	public HierarchicalIndex(PagedFile aFile, TupleCodec<T> aTupleCodec) 
 	{
 		itsFile = aFile;
@@ -151,6 +153,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 	public void add(T aTuple)
 	{
 		add(aTuple, 0, itsTupleCodec.getTupleSize());
+		itsLeafTupleCount++;
 	}
 	
 	private void add(Tuple aTuple, int aLevel, int aTupleSize)
@@ -207,6 +210,26 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		}
 		
 		aTuple.writeTo(thePage);
+	}
+	
+	/**
+	 * Returns the total number of pages occupied by this index
+	 */
+	public int getTotalPageCount()
+	{
+		int theCount = 0;
+		for (int theLevelCount : itsPagesCount) theCount += theLevelCount;
+		return theCount;
+	}
+	
+	public long getLeafTupleCount()
+	{
+		return itsLeafTupleCount;
+	}
+	
+	public int getPageSize()
+	{
+		return itsFile.getPageSize();
 	}
 	
 	/**
@@ -406,4 +429,5 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		}
 		
 	}
+
 }

@@ -49,6 +49,11 @@ public class PagedFile
 		itsIntBufferView = itsByteBuffer.asIntBuffer();
 	}
 
+	public int getPageSize()
+	{
+		return itsPageSize;
+	}
+
 	/**
 	 * Returns a particular page of this file.
 	 */
@@ -286,4 +291,5 @@ public class PagedFile
 			return new int[aSize/4];
 		}
 	}
+
 }

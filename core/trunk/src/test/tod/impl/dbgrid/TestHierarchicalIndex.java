@@ -3,7 +3,6 @@
  */
 package tod.impl.dbgrid;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Iterator;
 import java.util.Random;
@@ -13,28 +12,29 @@ import org.junit.runner.JUnitCore;
 
 import static org.junit.Assert.*;
 import tod.impl.dbgrid.dbnode.HierarchicalIndex;
-import tod.impl.dbgrid.dbnode.PagedFile;
 import tod.impl.dbgrid.dbnode.StdIndexSet;
 import tod.impl.dbgrid.dbnode.StdIndexSet.Tuple;
 
-public class HierarchicalIndexTest
+public class TestHierarchicalIndex
 {
-	@Test public void testIndex() throws FileNotFoundException
+	@Test 
+	public void testIndex() throws FileNotFoundException
 	{
 		fillCheck(10000000);
 	}
 	
 	private void fillCheck(long aTupleCount) throws FileNotFoundException
 	{
-		HierarchicalIndex<Tuple> theIndex = createStdIndex();
-		fillIndex(theIndex, new TimestampGenerator(0), aTupleCount);
+		HierarchicalIndex<Tuple> theIndex = FixtureHierarchicalIndex.createStdIndex();
+		FixtureHierarchicalIndex.fillIndex(theIndex, new TimestampGenerator(0), aTupleCount);
 		checkIndex(theIndex, new TimestampGenerator(0), aTupleCount);
 	}
 	
-	@Test public void testSeek() throws FileNotFoundException
+	@Test 
+	public void testSeek() throws FileNotFoundException
 	{
-		HierarchicalIndex<Tuple> theIndex = createStdIndex();
-		fillIndex(theIndex, new TimestampGenerator(0), 1000000);
+		HierarchicalIndex<Tuple> theIndex = FixtureHierarchicalIndex.createStdIndex();
+		FixtureHierarchicalIndex.fillIndex(theIndex, new TimestampGenerator(0), 1000000);
 		
 		seekAndCheck(theIndex, new TimestampGenerator(0), 10000, 100);
 		seekAndCheck(theIndex, new TimestampGenerator(0), 10000, 1000);
@@ -44,40 +44,8 @@ public class HierarchicalIndexTest
 		seekAndCheck(theIndex, new TimestampGenerator(0), 10000, 900000);
 	}
 	
-	private HierarchicalIndex<StdIndexSet.Tuple> createStdIndex() throws FileNotFoundException
-	{
-		File theFile = new File("indexTest.bin");
-		theFile.delete();
-		PagedFile thePagedFile = new PagedFile(theFile, DebuggerGridConfig.DB_INDEX_PAGE_SIZE);
-		return new HierarchicalIndex<StdIndexSet.Tuple>(thePagedFile, StdIndexSet.TUPLE_CODEC);
-	}
-	
-	private long inventData(long aTimestamp)
-	{
-		return (long) (Math.sin(aTimestamp) * Long.MAX_VALUE);
-	}
-	
 	/**
-	 * Fills an index with values.
-	 */
-	private void fillIndex(
-			HierarchicalIndex<StdIndexSet.Tuple> aIndex, 
-			TimestampGenerator aGenerator,
-			long aTupleCount)
-	{
-		for (long i=0;i<aTupleCount;i++)
-		{
-			long theTimestamp = aGenerator.next();
-			long theData = inventData(theTimestamp);
-			
-			aIndex.add(new StdIndexSet.Tuple(theTimestamp, theData));
-			
-			if (i % 100000 == 0) System.out.println("w: "+i);
-		}
-	}
-
-	/**
-	 * Checks the values of an index filled with {@link #fillIndex(HierarchicalIndex, tod.impl.dbgrid.HierarchicalIndexTest.TimestampGenerator, long)}
+	 * Checks the values of an index filled with {@link FixtureHierarchicalIndex#fillIndex(HierarchicalIndex, tod.impl.dbgrid.TestHierarchicalIndex.TimestampGenerator, long)}
 	 */
 	private void checkIndex(
 			HierarchicalIndex<StdIndexSet.Tuple> aIndex, 
@@ -138,7 +106,7 @@ public class HierarchicalIndexTest
 	
 	private void checkTuple(Tuple aTuple, long aTimestamp)
 	{
-		long theData = inventData(aTimestamp);
+		long theData = FixtureHierarchicalIndex.inventData(aTimestamp);
 		
 		if (aTuple.getTimestamp() != aTimestamp) fail("Timestamp mismatch");
 		if (aTuple.getEventPointer() != theData) fail("Data mismatch");
@@ -171,6 +139,6 @@ public class HierarchicalIndexTest
 	
 	public static void main(String[] args)
 	{
-		JUnitCore.runClasses(HierarchicalIndexTest.class);
+		JUnitCore.runClasses(TestHierarchicalIndex.class);
 	}
 }
