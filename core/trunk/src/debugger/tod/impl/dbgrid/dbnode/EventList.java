@@ -72,7 +72,15 @@ public class EventList
 		}
 		
 		// Construct event pointer
-		long theEventPointer = makeInternalPointer(itsCurrentBitStruct.getPage().getPageId(), itsRecordIndex);
+		long theEventPointer = makeInternalPointer(
+				itsCurrentBitStruct.getPage().getPageId(), 
+				itsRecordIndex);
+		
+//		System.out.println(String.format(
+//				"Add event %d (%d, %d)",
+//				theEventPointer,
+//				itsCurrentBitStruct.getPage().getPageId(),
+//				itsRecordIndex));
 		
 		// Write data
 		itsEventsCount++;
@@ -106,6 +114,7 @@ public class EventList
 	{
 		long thePageId = aPointer >>> DB_EVENTID_INDEX_BITS;
 		int theRecordIndex = (int) (aPointer & (BitUtils.pow2(DB_EVENTID_INDEX_BITS)-1));
+		int theCount = theRecordIndex;
 		
 		PagedFile.Page thePage = itsFile.getPage(thePageId);
 		PageBitStruct theBitStruct = thePage.asBitStruct();
@@ -115,14 +124,18 @@ public class EventList
 			int theRecordLength = theBitStruct.readInt(DB_EVENT_SIZE_BITS);
 			if (theRecordLength == 0) break; // End-of-page marker.
 			
-			if (theRecordIndex == 0) return GridEvent.create(theBitStruct);
+			if (theCount == 0) return GridEvent.create(theBitStruct);
 			
 			theBitStruct.skip(theRecordLength-DB_EVENT_SIZE_BITS);
-			theRecordIndex--;
+			theCount--;
 			
-		} while (theRecordIndex > 0);
+		} while (theCount >= 0);
 		
-		throw new RuntimeException("Event not found: "+aPointer);
+		throw new RuntimeException(String.format(
+				"Event not found: %d (%d, %d)", 
+				aPointer,
+				thePageId,
+				theRecordIndex));
 	}
 	
 	/**

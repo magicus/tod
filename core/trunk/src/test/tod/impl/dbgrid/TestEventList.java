@@ -56,6 +56,22 @@ public class TestEventList
 		if (aExhaust && aIterator.hasNext()) fail("Too many events");
 	}
 	
-	
+	@Test public void testRandomAccess()
+	{
+		int theCount = 10000;
+		EventList theEventList = Fixtures.createEventList();
+		EventGenerator theGenerator = new EventGenerator(0);
+		long[] theIds = Fixtures.fillEventListReport(theEventList, theGenerator, theCount);
+		
+		theGenerator = new EventGenerator(0);
+		
+		for(int i=0;i<theCount;i++)
+		{
+			GridEvent theRefEvent = theGenerator.next();
+			
+			GridEvent theEvent = theEventList.getEvent(theIds[i]);
+			Fixtures.assertEquals(theRefEvent, theEvent);
+		}
+	}
 	
 }
