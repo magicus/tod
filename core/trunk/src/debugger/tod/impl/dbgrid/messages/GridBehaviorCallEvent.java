@@ -3,6 +3,8 @@
  */
 package tod.impl.dbgrid.messages;
 
+import java.util.Iterator;
+
 import tod.impl.common.event.Event;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.dbnode.Indexes;
@@ -165,8 +167,33 @@ public class GridBehaviorCallEvent extends GridEvent
 					new RoleIndexSet.Tuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_EXECUTED));
 		}
 		
+		for (int i = 0; i < itsArguments.length; i++)
+		{
+			Object theArgument = itsArguments[i];
+
+			aIndexes.objectIndex.addTuple(
+					getObjectId(theArgument),
+					new RoleIndexSet.Tuple(getTimestamp(), aPointer, (byte) i));
+		}
+		
 		aIndexes.objectIndex.addTuple(
-				getTarget(), 
+				getObjectId(getTarget()), 
 				new RoleIndexSet.Tuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_TARGET));
+	}
+	
+	@Override
+	public boolean matchBehaviorCondition(int aBehaviorId, byte aRole)
+	{
+		return (aRole == RoleIndexSet.ROLE_BEHAVIOR_CALLED && aBehaviorId == getCalledBehaviorId())
+			|| (aRole == RoleIndexSet.ROLE_BEHAVIOR_EXECUTED && aBehaviorId == getExecutedBehaviorId())
+			|| (aRole == RoleIndexSet.ROLE_BEHAVIOR_ANY && (aBehaviorId == getExecutedBehaviorId() || aBehaviorId == getCalledBehaviorId()));
+	
+	}
+	
+	@Override
+	public boolean matchObjectCondition(int aObjectId, byte aRole)
+	{
+		return (aRole == RoleIndexSet.ROLE_OBJECT_TARGET && aObjectId == getObjectId(getTarget()))
+			|| (aRole >= 0 && aRole < getArguments().length && aObjectId == getObjectId(getArguments()[aRole]));
 	}
 }

@@ -5,19 +5,19 @@ package tod.impl.dbgrid.dbnode;
 
 import zz.utils.bit.IntBitStruct;
 
-public class StdIndexSet<K> extends IndexSet<K, StdIndexSet.Tuple>
+public class StdIndexSet extends IndexSet<StdIndexSet.Tuple> 
 {
 	public static final TupleCodec TUPLE_CODEC = new TupleCodec();
 	
-	public StdIndexSet(PagedFile aFile)
+	public StdIndexSet(String aName, PagedFile aFile, int aIndexCount)
 	{
-		super(aFile);
+		super(aName, aFile, aIndexCount);
 	}
-
+	
 	@Override
-	protected HierarchicalIndex<Tuple> createIndex(PagedFile aFile)
+	protected HierarchicalIndex<Tuple> createIndex(String aName, PagedFile aFile)
 	{
-		return new HierarchicalIndex<Tuple>(aFile, TUPLE_CODEC);
+		return new HierarchicalIndex<Tuple>(aName, aFile, TUPLE_CODEC);
 	}
 
 	public static class TupleCodec extends HierarchicalIndex.TupleCodec<Tuple>

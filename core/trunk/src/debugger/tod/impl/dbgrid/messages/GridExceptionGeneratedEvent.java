@@ -92,9 +92,21 @@ public class GridExceptionGeneratedEvent extends GridEvent
 				new RoleIndexSet.Tuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_EXECUTED));
 		
 		aIndexes.objectIndex.addTuple(
-				getException(), 
+				getObjectId(getException()), 
 				new RoleIndexSet.Tuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_EXCEPTION));
 	}
 	
+	@Override
+	public boolean matchBehaviorCondition(int aBehaviorId, byte aRole)
+	{
+		return (aRole == RoleIndexSet.ROLE_BEHAVIOR_EXECUTED || aRole == RoleIndexSet.ROLE_BEHAVIOR_ANY)
+			&& aBehaviorId == getThrowingBehaviorId();			
+	}
+	
+	@Override
+	public boolean matchObjectCondition(int aObjectId, byte aRole)
+	{
+		return (aRole == RoleIndexSet.ROLE_OBJECT_EXCEPTION && aObjectId == getObjectId(getException()));
+	}
 
 }

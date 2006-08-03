@@ -6,8 +6,6 @@ package tod.impl.dbgrid.dbnode;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import tod.impl.dbgrid.messages.GridEvent;
-
 /**
  * This class permit to perform n-ary merge joins.
  * @author gpothier
@@ -16,28 +14,26 @@ public class Merger
 {
 	/**
 	 * Returns an iterator that retrieves all the events that are common to all
-	 * the specified indexes. 
+	 * the specified indexes starting from a specified timestamp. 
 	 */
-	public static <T extends StdIndexSet.Tuple> Iterator<GridEvent> conjunction(
-			EventList aEventList,
-			HierarchicalIndex<T>[] aIndexes, 
-			long aTimestamp)
+	public static <T extends StdIndexSet.Tuple> Iterator<T> conjunction(Iterator<T>[] aIterators)
 	{
-		return new ConjunctionIterator<T>(aEventList, getIterators(aIndexes, aTimestamp));
+		return new ConjunctionIterator<T>(aIterators);
 	}
 	
 	/**
 	 * Returns an iterator that retrieves all the events of all the specified indexes. 
 	 */
-	public static <T extends StdIndexSet.Tuple> Iterator<GridEvent> disjunction(
-			EventList aEventList,
-			HierarchicalIndex<T>[] aIndexes, 
-			long aTimestamp)
+	public static <T extends StdIndexSet.Tuple> Iterator<T> disjunction(Iterator<T>[] aIterators)
 	{
-		return new DisjunctionIterator<T>(aEventList, getIterators(aIndexes, aTimestamp));
+		return new DisjunctionIterator<T>(aIterators);
 	}
 	
-	private static <T extends StdIndexSet.Tuple> Iterator<T>[] getIterators(
+	/**
+	 * Returns the tuple iterators of all the specified indexes, starting
+	 * at the specified timestamp. 
+	 */
+	public static <T extends StdIndexSet.Tuple> Iterator<T>[] getIterators(
 			HierarchicalIndex<T>[] aIndexes,
 			long aTimestamp)
 	{
@@ -50,65 +46,62 @@ public class Merger
 		return theIterators;
 	}
 	
-	private static abstract class MergerIterator<T extends StdIndexSet.Tuple> implements Iterator<GridEvent>
+	private static abstract class MergerIterator<T extends StdIndexSet.Tuple> 
+	implements Iterator<T>
 	{
-		private final EventList itsEventList;
 		private final Iterator<T>[] itsIterators;
-		private final StdIndexSet.Tuple[] itsHeadTuples;
-		private GridEvent itsNextEvent;
-		private boolean itsExhausted = false;
+		private final T[] itsHeadTuples;
+		private T itsNextTuple;
 		
-		public MergerIterator(EventList aEventList, Iterator<T>[] aIterators)
+		public MergerIterator(Iterator<T>[] aIterators)
 		{
-			itsEventList = aEventList;
 			itsIterators = aIterators;
-			itsHeadTuples = new StdIndexSet.Tuple[itsIterators.length];
+			itsHeadTuples = (T[]) new StdIndexSet.Tuple[itsIterators.length];
 		
 			// Init head tuples
-			for (int i=0;i<itsIterators.length && ! itsExhausted;i++) advance(i);
+			for (int i=0;i<itsIterators.length;i++) advance(i);
 			
-			itsNextEvent = itsExhausted ? null : itsEventList.getEvent(readNextEvent());
+			itsNextTuple = readNextTuple();
 		}
 		
-		protected void advance(int aHeadIndex)
+		/**
+		 * Advances the specified head until a tuple is found that is accepted by the tuple
+		 * filter (a null tuple filter accepts all tuples).
+		 * If the end of the stream is reached, the head is set to null and the method returns false.
+		 * @return True if it was possible to advance, false otherwise.
+		 */
+		protected boolean advance(int aHeadIndex)
 		{
-			assert ! itsExhausted;
 			if (itsIterators[aHeadIndex].hasNext()) 
 			{
-				itsHeadTuples[aHeadIndex] = itsIterators[aHeadIndex].next();
+				T theTuple = itsIterators[aHeadIndex].next();
+				
+				itsHeadTuples[aHeadIndex] = theTuple;
+				return true;
 			}
-			else 
+			else
 			{
-				itsExhausted = true;
+				itsHeadTuples[aHeadIndex] = null;
+				return false;
 			}
-		}
-		
-		protected boolean isExhausted()
-		{
-			return itsExhausted;
 		}
 
 		/**
 		 * Retrieves the next matching event pointer
 		 */
-		protected abstract long readNextEvent();
+		protected abstract T readNextTuple();
 		
-		protected StdIndexSet.Tuple[] getHeadTuples()
+		protected T[] getHeadTuples()
 		{
 			return itsHeadTuples;
 		}
 		
-		public boolean hasNext()
-		{
-			return ! itsExhausted;
-		}
-
-		public GridEvent next()
+		public T next()
 		{
 			if (! hasNext()) throw new NoSuchElementException();
-			GridEvent theResult = itsNextEvent;
-			long theNextEvent = readNextEvent();
-			itsNextEvent = isExhausted() ? null : itsEventList.getEvent(theNextEvent);
+			T theResult = itsNextTuple;
+			T theNextTuple = readNextTuple();
+			itsNextTuple = theNextTuple;
 			return theResult;
 		}
 
@@ -121,31 +114,55 @@ public class Merger
 	
 	private static class ConjunctionIterator<T extends StdIndexSet.Tuple> extends MergerIterator<T>
 	{
+		/**
+		 * The iterator is exhausted when any one of its source iterators is
+		 * exhausted.
+		 */
+		private boolean itsExhausted;
 		
-		public ConjunctionIterator(EventList aEventList, Iterator<T>[] aIterators)
+		public ConjunctionIterator(Iterator<T>[] aIterators)
 		{
-			super(aEventList, aIterators);
+			super(aIterators);
+			
+			itsExhausted = false;
+			for (T theTuple : getHeadTuples())
+			{
+				if (theTuple == null) 
+				{
+					itsExhausted = true;
+					break;
+				}
+			}
+		}
+		
+		public boolean hasNext()
+		{
+			return ! itsExhausted;
 		}
 		
 		@Override
-		protected long readNextEvent()
+		protected T readNextTuple()
 		{
-			long theResult = -1;
+			if (itsExhausted) return null;
+			
+			T theResult = null;
 			boolean theMatch;
 			do
 			{
 				theMatch = true;
 				
-				long theRefPointer = -1;
+				T theRefTuple = null;
 				int theMinTimestampHead = -1;
 				long theMinTimestamp = Long.MAX_VALUE;
 				
+				// Check if current head set is a match (ie. all head tuples point to the same event).
+				// At the same time find the head that has the minimum timestamp
 				for (int i = 0; i < getHeadTuples().length; i++)
 				{
-					StdIndexSet.Tuple theTuple = getHeadTuples()[i];
+					T theTuple = getHeadTuples()[i];
 					
-					if (theRefPointer == -1) theRefPointer = theTuple.getEventPointer();
-					else if (theRefPointer != theTuple.getEventPointer()) theMatch = false;
+					if (theRefTuple == null) theRefTuple = theTuple;
+					else if (theRefTuple.getEventPointer() != theTuple.getEventPointer()) theMatch = false;
 					
 					if (theTuple.getTimestamp() < theMinTimestamp)
 					{
@@ -156,11 +173,12 @@ public class Merger
 
 				if (theMatch)
 				{
-					theResult = theRefPointer;
+					theResult = theRefTuple;
 				}
 
-				advance(theMinTimestampHead);
-			} while(! theMatch && ! isExhausted());
+				if (! advance(theMinTimestampHead)) itsExhausted = true;
+				
+			} while((! theMatch) && (! itsExhausted));
 			
 			return theResult;
 		}
@@ -168,33 +186,45 @@ public class Merger
 	
 	private static class DisjunctionIterator<T extends StdIndexSet.Tuple> extends MergerIterator<T>
 	{
+		/**
+		 * The number of iterators that still have elements.
+		 */
+		private int itsRemainingHeads;
 		
-		public DisjunctionIterator(EventList aEventList, Iterator<T>[] aIterators)
+		public DisjunctionIterator(Iterator<T>[] aIterators)
 		{
-			super(aEventList, aIterators);
+			super(aIterators);
+			itsRemainingHeads = aIterators.length;
+		}
+		
+		public boolean hasNext()
+		{
+			return itsRemainingHeads > 0;
 		}
 		
 		@Override
-		protected long readNextEvent()
+		protected T readNextTuple()
 		{
+			if (itsRemainingHeads == 0) return null;
+			
 			int theMinTimestampHead = -1;
 			long theMinTimestamp = Long.MAX_VALUE;
 			
 			for (int i = 0; i < getHeadTuples().length; i++)
 			{
-				StdIndexSet.Tuple theTuple = getHeadTuples()[i];
+				T theTuple = getHeadTuples()[i];
 				
-				if (theTuple.getTimestamp() < theMinTimestamp)
+				if (theTuple != null && theTuple.getTimestamp() < theMinTimestamp)
 				{
 					theMinTimestamp = theTuple.getTimestamp();
 					theMinTimestampHead = i;
 				}
 			}
 			
-			long thePointer = getHeadTuples()[theMinTimestampHead].getEventPointer();
-			advance(theMinTimestampHead);
+			T theResult = getHeadTuples()[theMinTimestampHead];
+			if (! advance(theMinTimestampHead)) itsRemainingHeads--;
 			
-			return thePointer;
+			return theResult;
 		}
 	}
 }

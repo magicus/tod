@@ -33,16 +33,27 @@ public interface ObjectId
 			return itsId;
 		}
 		
-		public boolean equals(Object aObj)
-		{
-			if (aObj instanceof ObjectUID)
-			{
-				ObjectUID theOther = (ObjectUID) aObj;
-				return itsId == theOther.itsId;
-			}
-			else return false;
-		}
 		
+		@Override
+		public int hashCode()
+		{
+			final int PRIME = 31;
+			int result = 1;
+			result = PRIME * result + (int) (itsId ^ (itsId >>> 32));
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			final ObjectUID other = (ObjectUID) obj;
+			if (itsId != other.itsId) return false;
+			return true;
+		}
+
 		@Override
 		public String toString()
 		{
@@ -64,16 +75,26 @@ public interface ObjectId
 			return itsHascode;
 		}
 		
-		public boolean equals(Object aObj)
+		@Override
+		public int hashCode()
 		{
-			if (aObj instanceof ObjectHash)
-			{
-				ObjectHash theOther = (ObjectHash) aObj;
-				return itsHascode == theOther.itsHascode;
-			}
-			else return false;
+			final int PRIME = 31;
+			int result = 1;
+			result = PRIME * result + itsHascode;
+			return result;
 		}
-		
+
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			final ObjectHash other = (ObjectHash) obj;
+			if (itsHascode != other.itsHascode) return false;
+			return true;
+		}
+
 		@Override
 		public String toString()
 		{

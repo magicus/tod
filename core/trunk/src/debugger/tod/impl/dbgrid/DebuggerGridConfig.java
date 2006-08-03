@@ -10,6 +10,46 @@ import zz.utils.bit.BitUtils;
 
 public class DebuggerGridConfig
 {
+	/**
+	 * Maximum number of event types 
+	 */
+	public static final int STRUCTURE_TYPE_COUNT = EventType.values().length;
+
+	/**
+	 * Maximum number of hosts
+	 */
+	public static final int STRUCTURE_HOSTS_COUNT = 100;
+
+	/**
+	 * Maximum number of threads
+	 */
+	public static final int STRUCTURE_THREADS_COUNT = 10000;
+
+	/**
+	 * Maximum number of bytecode locations
+	 */
+	public static final int STRUCTURE_BYTECODE_LOCS_COUNT = 1000;
+
+	/**
+	 * Maximum number of behaviors
+	 */
+	public static final int STRUCTURE_BEHAVIOR_COUNT = 10000;
+
+	/**
+	 * Maximum number of fields
+	 */
+	public static final int STRUCTURE_FIELD_COUNT = 10000;
+
+	/**
+	 * Maximum number of variable indexes
+	 */
+	public static final int STRUCTURE_VAR_COUNT = 1000;
+
+	/**
+	 * Maximum number of 
+	 */
+	public static final int STRUCTURE_OBJECT_COUNT = 10000;
+
 
 	/**
 	 * Number of bits to shift timestamp values.
@@ -93,12 +133,12 @@ public class DebuggerGridConfig
 	/**
 	 * Size of an event page in the database for writing
 	 */
-	public static final int DB_EVENT_WRITE_PAGE_SIZE = 8192;
+	public static final int DB_EVENT_WRITE_PAGE_SIZE = 65536;
 	
 	/**
 	 * Size of an index page in the database
 	 */
-	public static final int DB_INDEX_PAGE_SIZE = 8192;
+	public static final int DB_INDEX_PAGE_SIZE = 4096;
 	
 	/**
 	 * Number of bits to represent a page pointer in {@link HierarchicalIndex}

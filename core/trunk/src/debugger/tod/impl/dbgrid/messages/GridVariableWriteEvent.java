@@ -8,7 +8,6 @@ import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import tod.impl.dbgrid.dbnode.StdIndexSet;
-import zz.utils.bit.BitStruct;
 import zz.utils.bit.IntBitStruct;
 
 public class GridVariableWriteEvent extends GridEvent
@@ -93,8 +92,20 @@ public class GridVariableWriteEvent extends GridEvent
 		aIndexes.variableIndex.addTuple(getVariableId(), theStdTuple); 
 
 		aIndexes.objectIndex.addTuple(
-				getValue(), 
+				getObjectId(getValue()), 
 				new RoleIndexSet.Tuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_VALUE));
 	}
 	
+	@Override
+	public boolean matchVariableCondition(int aVariableId)
+	{
+		return aVariableId == getVariableId();
+	}
+	
+	@Override
+	public boolean matchObjectCondition(int aObjectId, byte aRole)
+	{
+		return (aRole == RoleIndexSet.ROLE_OBJECT_VALUE && aObjectId == getObjectId(getValue()));
+	}
+
 }

@@ -9,6 +9,9 @@ import java.util.Iterator;
 
 import tod.impl.dbgrid.dbnode.PagedFile.PageBitStruct;
 import tod.impl.dbgrid.messages.GridEvent;
+import tod.impl.dbgrid.monitoring.AggregationType;
+import tod.impl.dbgrid.monitoring.Monitor;
+import tod.impl.dbgrid.monitoring.Probe;
 import zz.utils.bit.BitUtils;
 
 public class EventList
@@ -23,6 +26,11 @@ public class EventList
 	 */
 	private long itsEventsSize = 0;
 	
+	/**
+	 * Number of used pages.
+	 */
+	private long itsPageCount = 0;
+	
 	private PagedFile itsFile;
 	private long itsFirstPageId;
 	private PageBitStruct itsCurrentBitStruct;
@@ -34,6 +42,7 @@ public class EventList
 	
 	public EventList(PagedFile aFile) 
 	{
+		Monitor.getInstance().register(this);
 		itsFile = aFile;
 		itsCurrentBitStruct = itsFile.createPage().asBitStruct();
 		itsFirstPageId = itsCurrentBitStruct.getPage().getPageId();
@@ -52,12 +61,13 @@ public class EventList
 		{
 			PageBitStruct theOldBitStruct = itsCurrentBitStruct;
 			itsCurrentBitStruct = itsFile.createPage().asBitStruct();
+			itsPageCount++;
 			
 			theOldBitStruct.writeInt(0, DB_EVENT_SIZE_BITS); // End-of-page marker 
 			theOldBitStruct.writeLong(itsCurrentBitStruct.getPage().getPageId()+1, DB_PAGE_POINTER_BITS);
 			
 			itsFile.writePage(theOldBitStruct.getPage());
-//			itsFile.freePage(theOldBitStruct.getPage());
+			itsFile.freePage(theOldBitStruct.getPage());
 			itsRecordIndex = 0;
 		}
 		
@@ -123,6 +133,36 @@ public class EventList
 		return new EventIterator(itsFile.getPage(itsFirstPageId).asBitStruct());
 	}
 	
+	public int getPageSize()
+	{
+		return itsFile.getPageSize();
+	}
+	
+	@Probe(key = "event pages", aggr = AggregationType.SUM)
+	public long getPageCount()
+	{
+		return itsPageCount;
+	}
+	
+	@Probe(key = "event storage", aggr = AggregationType.SUM)
+	public long getStorageSpace()
+	{
+		return getPageCount() * getPageSize();
+	}
+	
+	@Probe(key = "event count", aggr = AggregationType.SUM)
+	public long getEventsCount()
+	{
+		return itsEventsCount;
+	}
+		
+	@Probe(key = "event size", aggr = AggregationType.AVG)
+	public float getAverageEventSize()
+	{
+		if (itsEventsCount == 0) return -1;
+		return itsEventsSize / itsEventsCount / 8f;
+	}
+	
 	private class EventIterator implements Iterator<GridEvent>
 	{
 		private PageBitStruct itsPage;
@@ -178,4 +218,5 @@ public class EventList
 		
 		
 	}
+
 }

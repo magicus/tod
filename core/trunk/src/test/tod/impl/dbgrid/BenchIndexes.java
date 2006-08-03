@@ -46,7 +46,7 @@ public class BenchIndexes
 	
 	private void fill(long aTupleCount)
 	{
-		itsIndex = FixtureIndexes.createStdIndex();
-		FixtureIndexes.fillIndex(itsIndex, new TimestampGenerator(0), aTupleCount);
+		itsIndex = Fixtures.createStdIndex();
+		Fixtures.fillStdIndex(itsIndex, new TimestampGenerator(0), aTupleCount);
 	}
 }

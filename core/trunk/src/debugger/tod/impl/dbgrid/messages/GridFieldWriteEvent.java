@@ -106,12 +106,24 @@ public class GridFieldWriteEvent extends GridEvent
 		aIndexes.fieldIndex.addTuple(getFieldId(), theStdTuple);
 		
 		aIndexes.objectIndex.addTuple(
-				getTarget(), 
+				getObjectId(getTarget()), 
 				new RoleIndexSet.Tuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_TARGET));
 		
 		aIndexes.objectIndex.addTuple(
-				getValue(), 
+				getObjectId(getValue()), 
 				new RoleIndexSet.Tuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_VALUE));
 	}
 	
+	@Override
+	public boolean matchFieldCondition(int aFieldId)
+	{
+		return aFieldId == getFieldId();
+	}
+	
+	@Override
+	public boolean matchObjectCondition(int aObjectId, byte aRole)
+	{
+		return (aRole == RoleIndexSet.ROLE_OBJECT_VALUE && aObjectId == getObjectId(getValue()));
+	}
+
 }

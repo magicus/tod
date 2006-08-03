@@ -20,6 +20,8 @@ import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.StdIndexSet;
 import tod.impl.dbgrid.dispatcher.EventDispatcher;
 import tod.impl.dbgrid.dispatcher.GridEventCollector;
+import tod.impl.dbgrid.queries.BehaviorCondition;
+import tod.impl.dbgrid.queries.FieldCondition;
 import zz.utils.bit.BitStruct;
 import zz.utils.bit.IntBitStruct;
 
@@ -66,8 +68,8 @@ public abstract class GridEvent extends GridMessage
 
 	/**
 	 * Writes out a representation of this event to a {@link BitStruct}.
-	 * Subclasses must override this method to serialize their attributes,
-	 * and must call super first.
+	 * Subclasses must override this method to serialize their attributes, and
+	 * must call super first.
 	 */
 	public void writeTo(IntBitStruct aBitStruct)
 	{
@@ -80,9 +82,9 @@ public abstract class GridEvent extends GridMessage
 	}
 	
 	/**
-	 * Returns the number of bits necessary to serialize this event.
-	 * Subclasses should override this method and sum the number of bits
-	 * they need to the number of bits returned by super.
+	 * Returns the number of bits necessary to serialize this event. Subclasses
+	 * should override this method and sum the number of bits they need to the
+	 * number of bits returned by super.
 	 */
 	public int getBitCount()
 	{
@@ -98,8 +100,8 @@ public abstract class GridEvent extends GridMessage
 	}
 	
 	/**
-	 * Writes an object to the specified struct. This method should be used
-	 * by subclasses to serialize values. 
+	 * Writes an object to the specified struct. This method should be used by
+	 * subclasses to serialize values.
 	 */
 	protected void writeObject(IntBitStruct aBitStruct, Object aObject)
 	{
@@ -124,8 +126,8 @@ public abstract class GridEvent extends GridMessage
 	}
 	
 	/**
-	 * Reads an object from the specified struct. 
-	 * This method should be used by subclasses to deserialize values.
+	 * Reads an object from the specified struct. This method should be used by
+	 * subclasses to deserialize values.
 	 */
 	protected Object readObject(IntBitStruct aBitStruct)
 	{
@@ -165,10 +167,12 @@ public abstract class GridEvent extends GridMessage
 	
 	
 	/**
-	 * Instructs this event to add relevant data to the indexes.
-	 * The base version handles all common data; subclasses
-	 * should override this method to index specific data.
-	 * @param aPointer The internal pointer to this event.
+	 * Instructs this event to add relevant data to the indexes. The base
+	 * version handles all common data; subclasses should override this method
+	 * to index specific data.
+	 * 
+	 * @param aPointer
+	 *            The internal pointer to this event.
 	 */
 	public void index(Indexes aIndexes, long aPointer)
 	{
@@ -182,8 +186,8 @@ public abstract class GridEvent extends GridMessage
 	}
 
 	/**
-	 * Creates an event from a serialized representation, 
-	 * symmetric to {@link #writeTo(IntBitStruct)}.
+	 * Creates an event from a serialized representation, symmetric to
+	 * {@link #writeTo(IntBitStruct)}.
 	 */
 	public static GridEvent create(IntBitStruct aBitStruct)
 	{
@@ -209,8 +213,8 @@ public abstract class GridEvent extends GridMessage
 	}
 	
 	/**
-	 * Creates a {@link GridEvent} with the information extracted from
-	 * and {@link Event}.
+	 * Creates a {@link GridEvent} with the information extracted from and
+	 * {@link Event}.
 	 */
 	public static GridEvent create(Event aEvent)
 	{
@@ -288,4 +292,51 @@ public abstract class GridEvent extends GridMessage
 				aEvent.getExecutedBehavior() != null ? aEvent.getExecutedBehavior().getId() : -1,
 				aEvent.getTarget());
 	}
+	
+	protected static int getObjectId(Object aObject)
+	{
+		if (aObject instanceof ObjectId.ObjectUID)
+		{
+			ObjectId.ObjectUID theUid = (ObjectId.ObjectUID) aObject;
+			long theId = theUid.getId();
+			if ((theId & ~0xffffffffL) != 0) throw new RuntimeException("Object id overflow");
+			return (int) theId;
+		}
+		else throw new RuntimeException("Not handled: "+aObject);
+		
+	}
+	
+	/**
+	 * Whether this event matches a {@link BehaviorCondition}
+	 */
+	public boolean matchBehaviorCondition(int aBehaviorId, byte aRole)
+	{
+		return false;
+	}
+	
+	/**
+	 * Whether this event matches a {@link FieldCondition}
+	 */
+	public boolean matchFieldCondition(int aFieldId)
+	{
+		return false;
+	}
+	
+	/**
+	 * Whether this event matches a {@link VariableCondition}
+	 */
+	public boolean matchVariableCondition(int aVariableId)
+	{
+		return false;
+	}
+	
+	/**
+	 * Whether this event matches a {@link ObjectCondition}
+	 */
+	public boolean matchObjectCondition(int aObjectId, byte aRole)
+	{
+		return false;
+	}
+	
+	
 }

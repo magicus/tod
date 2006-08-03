@@ -16,6 +16,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import tod.impl.dbgrid.monitoring.AggregationType;
+import tod.impl.dbgrid.monitoring.Monitor;
+import tod.impl.dbgrid.monitoring.Probe;
+
+import zz.utils.ArrayStack;
+import zz.utils.RingBuffer;
+import zz.utils.Utils;
 import zz.utils.bit.BitStruct;
 import zz.utils.bit.IntBitStruct;
 
@@ -34,13 +41,18 @@ public class PagedFile
 	 */
 	private long itsPagesCount;
 	
+	private long itsWrittenPagesCount;
+	private long itsReadPagesCount;
+	
 	private ByteBuffer itsByteBuffer;
 	private IntBuffer itsIntBufferView;
 	
 	public PagedFile(File aFile, int aPageSize) throws FileNotFoundException
 	{
+		Monitor.getInstance().register(this);
 		assert itsPageSize % 4 == 0;
 		
+		aFile.delete();
 		itsFile = new RandomAccessFile(aFile, "rw").getChannel();
 		itsPageSize = aPageSize;
 		itsPagesCount = 0;
@@ -53,7 +65,28 @@ public class PagedFile
 	{
 		return itsPageSize;
 	}
+	
+	/**
+	 * Returns the amount of storage, in bytes, occupied by this file.
+	 */
+	@Probe(key = "file storage", aggr = AggregationType.SUM)
+	public long getStorageSpace()
+	{
+		return itsPagesCount * itsPageSize;
+	}
+	
+	@Probe(key = "file written bytes", aggr = AggregationType.SUM)
+	public long getWrittenBytes()
+	{
+		return itsWrittenPagesCount * itsPageSize;
+	}
 
+	@Probe(key = "file read bytes", aggr = AggregationType.SUM)
+	public long getReadBytes()
+	{
+		return itsReadPagesCount * itsPageSize;
+	}
+	
 	/**
 	 * Returns a particular page of this file.
 	 */
@@ -105,6 +138,8 @@ public class PagedFile
 			itsIntBufferView.rewind();
 			itsIntBufferView.get(theBuffer);
 			
+			itsReadPagesCount++;
+			
 			return theBuffer;
 		}
 		catch (IOException e)
@@ -123,14 +158,32 @@ public class PagedFile
 			itsIntBufferView.rewind();
 			itsIntBufferView.put(aPage.getData());
 			itsByteBuffer.rewind();
-			int theWritten = itsFile.write(itsByteBuffer, aPage.getPageId() * itsPageSize);
-			if (theWritten != itsPageSize) throw new IOException("Could not write page");
+			if (true)
+			{
+				int theWritten = itsFile.write(itsByteBuffer, aPage.getPageId() * itsPageSize);
+				if (theWritten != itsPageSize) throw new IOException("Could not write page");
+			}
 			aPage.clearModified();
+			
+			itsWrittenPagesCount++;
 		}
 		catch (IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+	}
+	
+	/**
+	 * Marks the given page as free. The caller should ensure that 
+	 * all references to the page have been cleared.
+	 * After calling this method the page can not be used anymore.
+	 */
+	public void freePage(Page aPage)
+	{
+		itsPagesMap.remove(aPage.getPageId());
+		int[] theData = aPage.getData();
+		aPage.tearDown();
+		PageManager.getInstance().freeBuffer(theData);
 	}
 	
 	public class Page 
@@ -161,6 +214,14 @@ public class PagedFile
 		private void clearModified()
 		{
 			itsModified = false;
+		}
+		
+		/**
+		 * Marks this page as invalid and frees its buffer.
+		 */
+		private void tearDown()
+		{
+			itsData = null;
 		}
 
 		/**
@@ -275,11 +336,22 @@ public class PagedFile
 
 		private PageManager()
 		{
+			Monitor.getInstance().register(this);
 		}
 		
-		private Map<Integer, List<byte[]>> itsFreeBuffers =
-			new HashMap<Integer, List<byte[]>>();
+		private long itsRecycleCount;
+		private long itsRequestsCount;
 		
+		private Map<Integer, RingBuffer<int[]>> itsFreeBuffers =
+			new HashMap<Integer, RingBuffer<int[]>>();
+		
+		
+		public void freeBuffer(int[] aBuffer)
+		{
+			RingBuffer<int[]> theBuffers = itsFreeBuffers.get(aBuffer.length*4);
+			if (! theBuffers.isFull()) theBuffers.add(aBuffer);
+		}
+			
 		/**
 		 * Returns a free byte buffer of the indicated size.
 		 * @param aSize The required buffer size, int bytes.
@@ -287,8 +359,42 @@ public class PagedFile
 		 */
 		public int[] getFreeBuffer(int aSize, boolean aInitialize)
 		{
-			// TODO: finish this. We must manage memory...
-			return new int[aSize/4];
+			itsRequestsCount++;
+			
+//			return new int[aSize/4];
+			RingBuffer<int[]> theBuffers = itsFreeBuffers.get(aSize);
+			if (theBuffers == null)
+			{
+				theBuffers = new RingBuffer<int[]>(128);
+				itsFreeBuffers.put(aSize, theBuffers);
+			}
+			
+			if (theBuffers.isEmpty()) return new int[aSize/4];
+			else 
+			{
+				itsRecycleCount++;
+				int[] theBuffer = theBuffers.remove();
+				if (aInitialize) Utils.memset(theBuffer, 0);
+				return theBuffer;
+			}
+		}
+
+		@Probe(key = "pages recycled")
+		public long getRecycleCount()
+		{
+			return itsRecycleCount;
+		}
+
+		@Probe(key = "pages requested")
+		public long getRequestsCount()
+		{
+			return itsRequestsCount;
+		}
+		
+		@Probe(key = "pages recycle ratio")
+		public float getRecycleRatio()
+		{
+			return 1.0f * itsRecycleCount / itsRequestsCount;
 		}
 	}
 

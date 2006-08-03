@@ -6,12 +6,15 @@ package tod.impl.dbgrid.dbnode;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
-import tod.impl.dbgrid.DebuggerGridConfig;
+import static tod.impl.dbgrid.DebuggerGridConfig.*;
 import tod.impl.dbgrid.messages.AddChildEvent;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.GridMessage;
+import tod.impl.dbgrid.monitoring.Monitor;
+import tod.impl.dbgrid.queries.EventCondition;
 import zz.utils.SortedRingBuffer;
 
 public class DatabaseNode
@@ -26,17 +29,19 @@ public class DatabaseNode
 	private SortedRingBuffer<GridEvent> itsEventBuffer = 
 		new SortedRingBuffer<GridEvent>(16, new EventTimestampComparator());
 	
+	private PagedFile itsEventsFile;
+	private PagedFile itsIndexesFile;
+	
 	public DatabaseNode()
 	{
+		Monitor.getInstance().register(this);
 		try
 		{
-			itsEventList = new EventList(new PagedFile(
-					new File("events.bin"), 
-					DebuggerGridConfig.DB_EVENT_PAGE_SIZE));
+			itsEventsFile = new PagedFile(new File("events.bin"), DB_EVENT_PAGE_SIZE);
+			itsEventList = new EventList(itsEventsFile);
 			
-			itsIndexes = new Indexes(new PagedFile(
-					new File("indexes.bin"),
-					DebuggerGridConfig.DB_INDEX_PAGE_SIZE));
+			itsIndexesFile = new PagedFile(new File("indexes.bin"), DB_INDEX_PAGE_SIZE);
+			itsIndexes = new Indexes(itsIndexesFile);
 		}
 		catch (FileNotFoundException e)
 		{
@@ -48,23 +53,42 @@ public class DatabaseNode
 	{
 		return itsIndexes;
 	}
+	
+	/**
+	 * Creates an iterator over matching events of this node, starting at the specified timestamp.
+	 */
+	public Iterator<GridEvent> evaluate(EventCondition aCondition, long aTimestamp)
+	{
+		return aCondition.createIterator(itsEventList, getIndexes(), aTimestamp);
+	}
 
+	/**
+	 * Pushes a list of messages to this node.
+	 * @see #push(GridMessage) 
+	 */
 	public void push(List<GridMessage> aMessagesList)
 	{
-		for (GridMessage theMessage : aMessagesList)
+		for (GridMessage theMessage : aMessagesList) push(theMessage);
+	}
+
+	/**
+	 * Pushes a single message to this node.
+	 * Messages can be events or parent/child
+	 * relations.
+	 */
+	public void push(GridMessage aMessage)
+	{
+		if (aMessage instanceof GridEvent)
 		{
-			if (theMessage instanceof GridEvent)
-			{
-				GridEvent theEvent = (GridEvent) theMessage;
-				addEvent(theEvent);
-			}
-			else if (theMessage instanceof AddChildEvent)
-			{
-				AddChildEvent theEvent = (AddChildEvent) theMessage;
-				processAddChildEvent(theEvent);
-			}
-			else throw new RuntimeException("Not handled: "+theMessage);
+			GridEvent theEvent = (GridEvent) aMessage;
+			addEvent(theEvent);
 		}
+		else if (aMessage instanceof AddChildEvent)
+		{
+			AddChildEvent theEvent = (AddChildEvent) aMessage;
+			processAddChildEvent(theEvent);
+		}
+		else throw new RuntimeException("Not handled: "+aMessage);
 	}
 	
 	private void addEvent(GridEvent aEvent)
@@ -90,6 +114,20 @@ public class DatabaseNode
 		
 	}
 	
+	/**
+	 * Returns the amount of disk storage used by this node.
+	 */
+	public long getStorageSpace()
+	{
+		return itsEventsFile.getStorageSpace() + itsIndexesFile.getStorageSpace();
+	}
+	
+	public long getEventsCount()
+	{
+		return itsEventList.getEventsCount();
+	}
+
+	
 	private static class EventTimestampComparator implements Comparator<GridEvent>
 	{
 		public int compare(GridEvent aEvent1, GridEvent aEvent2)
@@ -100,4 +138,5 @@ public class DatabaseNode
 			else return -1;
 		}
 	}
+	
 }

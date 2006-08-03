@@ -7,6 +7,10 @@ import java.util.Iterator;
 
 import static tod.impl.dbgrid.DebuggerGridConfig.*;
 import tod.impl.dbgrid.dbnode.PagedFile.PageBitStruct;
+import tod.impl.dbgrid.monitoring.AggregationType;
+import tod.impl.dbgrid.monitoring.Monitor;
+import tod.impl.dbgrid.monitoring.Probe;
+import zz.utils.ToString;
 import zz.utils.bit.BitStruct;
 import zz.utils.bit.IntBitStruct;
 
@@ -34,9 +38,15 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 	private int[] itsPagesCount = new int[DB_MAX_INDEX_LEVELS];
 	
 	private long itsLeafTupleCount = 0;
+
+	/**
+	 * A name for this index (for monitoring);
+	 */
+	private final String itsName;
 	
-	public HierarchicalIndex(PagedFile aFile, TupleCodec<T> aTupleCodec) 
+	public HierarchicalIndex(String aName, PagedFile aFile, TupleCodec<T> aTupleCodec) 
 	{
+		itsName = aName;
 		itsFile = aFile;
 		itsTupleCodec = aTupleCodec;
 		
@@ -46,6 +56,8 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		itsRootLevel = 0;
 		itsCurrentPages[0] = itsRootPage.asBitStruct();
 		itsPagesCount[0] = 1;
+		
+//		Monitor.getInstance().register(this);
 	}
 	
 	/**
@@ -191,7 +203,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 			
 			// Save old page
 			itsFile.writePage(thePage.getPage());
-//			itsFile.freePage(thePage.getPage());
+			itsFile.freePage(thePage.getPage());
 			
 			thePage = theNextPage;
 			itsCurrentPages[aLevel] = theNextPage;
@@ -214,6 +226,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 	/**
 	 * Returns the total number of pages occupied by this index
 	 */
+	@Probe(key = "index pages", aggr = AggregationType.SUM)	
 	public int getTotalPageCount()
 	{
 		int theCount = 0;
@@ -221,6 +234,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		return theCount;
 	}
 	
+	@Probe(key = "leaf index tuples", aggr = AggregationType.SUM)
 	public long getLeafTupleCount()
 	{
 		return itsLeafTupleCount;
@@ -231,6 +245,20 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		return itsFile.getPageSize();
 	}
 	
+	@Probe(key = "index storage", aggr = AggregationType.SUM)
+	public long getStorageSpace()
+	{
+		return getTotalPageCount() * getPageSize();
+	}
+
+	@Override
+	public String toString()
+	{
+		return "Index "+itsName;
+	}
+
+
+
 	/**
 	 * A tuple codec is able to serialized and deserialize tuples in a {@link BitStruct}
 	 * @author gpothier

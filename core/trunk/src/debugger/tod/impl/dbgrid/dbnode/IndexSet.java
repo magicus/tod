@@ -3,39 +3,68 @@
  */
 package tod.impl.dbgrid.dbnode;
 
-import java.util.HashMap;
-import java.util.Map;
+import tod.impl.dbgrid.monitoring.AggregationType;
+import tod.impl.dbgrid.monitoring.Monitor;
+import tod.impl.dbgrid.monitoring.Probe;
 
 /**
  * A set of indexes for a given attribute. Within a set,
  * there is one index per possible attribute value.
  * @author gpothier
  */
-public abstract class IndexSet<K, T extends HierarchicalIndex.Tuple>
+public abstract class IndexSet<T extends HierarchicalIndex.Tuple>
 {
-	private Map<K, HierarchicalIndex<T>> itsMap = new HashMap<K, HierarchicalIndex<T>>();
+	private HierarchicalIndex<T>[] itsIndexes;
+	
+	/**
+	 * Name of this index set (for monitoring)
+	 */
+	private final String itsName;
 	
 	private PagedFile itsFile;
 	
-	public IndexSet(PagedFile aFile)
+	public IndexSet(String aName, PagedFile aFile, int aIndexCount)
 	{
+		itsName = aName;
 		itsFile = aFile;
+		itsIndexes = new HierarchicalIndex[aIndexCount];
+		Monitor.getInstance().register(this);
 	}
 
 	/**
 	 * Creates a new index for this set.
 	 */
-	protected abstract HierarchicalIndex<T> createIndex(PagedFile aFile);
-
-	public void addTuple(K aKey, T aTuple)
+	protected abstract HierarchicalIndex<T> createIndex(String aName, PagedFile aFile);
+	
+	/**
+	 * Retrieved the index corresponding to the specified... index.
+	 */
+	public HierarchicalIndex<T> getIndex(int aIndex)
 	{
-		HierarchicalIndex<T> theIndex = itsMap.get(aKey);
+		HierarchicalIndex<T> theIndex = itsIndexes[aIndex];
 		if (theIndex == null)
 		{
-			theIndex = createIndex(itsFile);
-			itsMap.put(aKey, theIndex);
+			theIndex = createIndex(itsName+"-"+aIndex, itsFile);
+			itsIndexes[aIndex] = theIndex;
 		}
 		
-		theIndex.add(aTuple);
+		return theIndex;
+	}
+
+	public void addTuple(int aIndex, T aTuple)
+	{
+		getIndex(aIndex).add(aTuple);
+	}
+	
+	@Probe(key = "index count", aggr = AggregationType.SUM)
+	public long getIndexCount()
+	{
+		return itsIndexes.length;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return getClass().getSimpleName()+": "+itsName;
 	}
 }
