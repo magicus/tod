@@ -1,19 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/agent"/>
-	<classpathentry kind="src" path="src/experiments"/>
-	<classpathentry excluding="reflex/lib/logging/miner/impl/sql/" kind="src" path="src/debugger"/>
+	<classpathentry excluding="reflex/lib/logging/miner/impl/sql/|tod/test/DBBench.java" kind="src" path="src/debugger"/>
+	<classpathentry kind="src" path="src/test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="/zz.utils"/>
-	<classpathentry kind="lib" path="lib/junit.jar"/>
-	<classpathentry kind="lib" path="/home/gpothier/installs/java/pg74.216.jdbc3.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/zz.csg"/>
-	<classpathentry sourcepath="/home/gpothier/apps/groovy-1.0-jsr-02/src/main" kind="lib" path="/home/gpothier/apps/groovy-1.0-jsr-02/embeddable/groovy-all-1.0-jsr-02.jar"/>
 	<classpathentry sourcepath="/home/gpothier/apps/java/asm-2.1/src.zip" kind="lib" path="lib/asm-commons-2.1.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ASM"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/reflex-trunk"/>
-	<classpathentry kind="lib" path="/home/gpothier/installs/java/postgresql-8.1-405.jdbc3.jar"/>
-	<classpathentry kind="lib" path="/usr/lib/oracle/xe/app/oracle/product/10.2.0/server/jdbc/lib/ojdbc14.jar"/>
-	<classpathentry sourcepath="/home/gpothier/apps/java/je-2.1.30/src" kind="lib" path="/home/gpothier/apps/java/je-2.1.30/lib/je.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
