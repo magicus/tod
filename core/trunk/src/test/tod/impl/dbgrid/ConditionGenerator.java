@@ -30,14 +30,26 @@ public class ConditionGenerator
 	private Random itsRandom;
 	private EventGenerator itsEventGenerator;
 	
+	/**
+	 * Current depth of the generated condition.
+	 * Not thread-safe!
+	 */
+	private int itsLevel = 0;
+	
 	public ConditionGenerator(long aSeed)
 	{
-		itsRandom = new Random(aSeed);
-		itsEventGenerator = new EventGenerator(aSeed); 
+		this(aSeed, new EventGenerator(aSeed)); 
 	}
 	
+	public ConditionGenerator(long aSeed, EventGenerator aEventGenerator)
+	{
+		itsRandom = new Random(aSeed);
+		itsEventGenerator = aEventGenerator;
+	}
+
 	public EventCondition next()
 	{
+		itsLevel = 0;
 		return next(0.5f);
 	}
 	
@@ -48,11 +60,13 @@ public class ConditionGenerator
 	public EventCondition next(float aSimpleProbability)
 	{
 		float f = itsRandom.nextFloat();
-		if (f < aSimpleProbability) return generateSimpleCondition();
-		else return nextCompoundCondition(); 
+		
+		return f < aSimpleProbability ?
+				nextSimpleCondition()
+				: nextCompoundCondition();
 	}
 	
-	private EventCondition generateSimpleCondition()
+	public EventCondition nextSimpleCondition()
 	{
 		switch(itsRandom.nextInt(8))
 		{
@@ -94,6 +108,7 @@ public class ConditionGenerator
 	
 	public EventCondition nextCompoundCondition()
 	{
+		itsLevel++;
 		if (itsRandom.nextBoolean()) return nextConjunction();
 		else return nextDisjunction();
 	}
@@ -114,10 +129,10 @@ public class ConditionGenerator
 	
 	private void fillCompoundCondition(CompoundCondition aCondition)
 	{
-		int theCount = itsRandom.nextInt();
+		int theCount = itsRandom.nextInt(9)+1;
 		for(int i=0;i<theCount;i++)
 		{
-			aCondition.addCondition(next(1f));
+			aCondition.addCondition(next(itsLevel < 3 ? 0.9f : 1f));
 		}
 	}
 }

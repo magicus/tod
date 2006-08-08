@@ -100,7 +100,7 @@ public class GridExceptionGeneratedEvent extends GridEvent
 	public boolean matchBehaviorCondition(int aBehaviorId, byte aRole)
 	{
 		return (aRole == RoleIndexSet.ROLE_BEHAVIOR_EXECUTED || aRole == RoleIndexSet.ROLE_BEHAVIOR_ANY)
-			&& aBehaviorId == getThrowingBehaviorId();			
+			&& (aBehaviorId == getThrowingBehaviorId());			
 	}
 	
 	@Override
@@ -109,4 +109,14 @@ public class GridExceptionGeneratedEvent extends GridEvent
 		return (aRole == RoleIndexSet.ROLE_OBJECT_EXCEPTION && aObjectId == getObjectId(getException()));
 	}
 
+	@Override
+	public String toString()
+	{
+		return String.format(
+				"%s (ex: %s, b: %d, %s)",
+				getEventType(),
+				itsException,
+				itsThrowingBehaviorId,
+				toString0());
+	}
 }

@@ -126,4 +126,16 @@ public class GridFieldWriteEvent extends GridEvent
 		return (aRole == RoleIndexSet.ROLE_OBJECT_VALUE && aObjectId == getObjectId(getValue()));
 	}
 
+	@Override
+	public String toString()
+	{
+		return String.format(
+				"%s (f: %d, tg: %s, v: %s, %s)",
+				getEventType(),
+				itsFieldId,
+				itsTarget,
+				itsValue,
+				toString0());
+	}
+
 }

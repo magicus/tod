@@ -34,5 +34,10 @@ public class VariableCondition extends EventCondition
 		return aEvent.matchVariableCondition(itsVariableId);
 	}
 	
+	@Override
+	protected String toString(int aIndent)
+	{
+		return String.format("VariableId = %d", itsVariableId);
+	}
 	
 }

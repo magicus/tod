@@ -34,4 +34,11 @@ public class TypeCondition extends EventCondition
 	{
 		return aEvent.getEventType() == itsType;
 	}
+	
+	@Override
+	protected String toString(int aIndent)
+	{
+		return String.format("Event type = %s", itsType);
+	}
+
 }

@@ -51,4 +51,12 @@ public abstract class EventCondition
 			Indexes aIndexes,
 			long aTimestamp);
 	
+	protected abstract String toString(int aIndent);
+	
+	@Override
+	public String toString()
+	{
+		return toString(0);
+	}
+	
 }

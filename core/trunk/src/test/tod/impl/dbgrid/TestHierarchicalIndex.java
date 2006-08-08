@@ -88,6 +88,7 @@ public class TestHierarchicalIndex
 			
 			// Check when timestamp is a bit more
 			theIterator = aIndex.getTupleIterator(theTimestamp+5);
+			theTimestamp = aGenerator.next();
 			theTuple = theIterator.next();
 			checkTuple(theTuple, theTimestamp);
 			
@@ -182,12 +183,14 @@ public class TestHierarchicalIndex
 		public TimestampGenerator(long aSeed)
 		{
 			itsRandom = new Random(aSeed);
-			itsTimestamp = itsRandom.nextLong() >>> 8;
+//			itsTimestamp = itsRandom.nextLong() >>> 8;
+			itsTimestamp = 0;
 		}
 		
 		public long next()
 		{
-			itsTimestamp += itsRandom.nextInt(100000) + 10;
+//			itsTimestamp += itsRandom.nextInt(100000) + 10;
+			itsTimestamp += 10;
 			return itsTimestamp;
 		}
 		

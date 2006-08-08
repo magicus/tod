@@ -33,4 +33,11 @@ public class HostCondition extends EventCondition
 	{
 		return aEvent.getHost() == itsHost;
 	}
+	
+	@Override
+	protected String toString(int aIndent)
+	{
+		return String.format("HostId = %d", itsHost);
+	}
+
 }

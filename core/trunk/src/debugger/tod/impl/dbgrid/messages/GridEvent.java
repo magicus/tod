@@ -338,5 +338,16 @@ public abstract class GridEvent extends GridMessage
 		return false;
 	}
 	
-	
+	/**
+	 * Internal version of toString, used by subclasses.
+	 */
+	protected String toString0()
+	{
+		return String.format(
+				"h: %d, bc: %d, th: %d, t: %d",
+				itsHost,
+				itsOperationBytecodeIndex,
+				itsThread,
+				itsTimestamp); 
+	}
 }

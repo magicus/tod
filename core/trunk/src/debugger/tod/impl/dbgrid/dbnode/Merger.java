@@ -57,11 +57,15 @@ public class Merger
 		{
 			itsIterators = aIterators;
 			itsHeadTuples = (T[]) new StdIndexSet.Tuple[itsIterators.length];
-		
-			// Init head tuples
-			for (int i=0;i<itsIterators.length;i++) advance(i);
+
+			initHeadTuples();
 			
 			itsNextTuple = readNextTuple();
+		}
+		
+		protected void initHeadTuples()
+		{
+			for (int i=0;i<itsIterators.length;i++) advance(i);
 		}
 		
 		/**
@@ -123,7 +127,13 @@ public class Merger
 		public ConjunctionIterator(Iterator<T>[] aIterators)
 		{
 			super(aIterators);
-			
+		}
+		
+		@Override
+		protected void initHeadTuples()
+		{
+			super.initHeadTuples();
+
 			itsExhausted = false;
 			for (T theTuple : getHeadTuples())
 			{
@@ -194,7 +204,17 @@ public class Merger
 		public DisjunctionIterator(Iterator<T>[] aIterators)
 		{
 			super(aIterators);
-			itsRemainingHeads = aIterators.length;
+		}
+		
+		@Override
+		protected void initHeadTuples()
+		{
+			super.initHeadTuples();
+			itsRemainingHeads = 0;
+			for (T theTuple : getHeadTuples())
+			{
+				if (theTuple != null) itsRemainingHeads++; 
+			}
 		}
 		
 		public boolean hasNext()
@@ -207,9 +227,10 @@ public class Merger
 		{
 			if (itsRemainingHeads == 0) return null;
 			
-			int theMinTimestampHead = -1;
+			T theMinTimestampTuple = null;
 			long theMinTimestamp = Long.MAX_VALUE;
-			
+
+			// Find the head with the minimum timestamp
 			for (int i = 0; i < getHeadTuples().length; i++)
 			{
 				T theTuple = getHeadTuples()[i];
@@ -217,14 +238,23 @@ public class Merger
 				if (theTuple != null && theTuple.getTimestamp() < theMinTimestamp)
 				{
 					theMinTimestamp = theTuple.getTimestamp();
-					theMinTimestampHead = i;
+					theMinTimestampTuple = theTuple;
 				}
 			}
 			
-			T theResult = getHeadTuples()[theMinTimestampHead];
-			if (! advance(theMinTimestampHead)) itsRemainingHeads--;
+			// Remove heads that point to the same event
+			for (int i = 0; i < getHeadTuples().length; i++)
+			{
+				T theTuple = getHeadTuples()[i];
+				
+				if (theTuple != null 
+						&& theTuple.getEventPointer() == theMinTimestampTuple.getEventPointer())
+				{
+					if (! advance(i)) itsRemainingHeads--;
+				}
+			}
 			
-			return theResult;
+			return theMinTimestampTuple;
 		}
 	}
 }

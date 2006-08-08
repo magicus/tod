@@ -28,11 +28,50 @@ public class EventGenerator
 {
 	private Random itsRandom;
 	private TimestampGenerator itsTimestampGenerator;
+	
+	private int itsHostsRange;
+	private int itsThreadsRange;
+	private int itsBytecodeRange;
+	private int itsBehaviorRange;
+	private int itsFieldRange;
+	private int itsVariableRange;
+	private int itsObjectRange;
+
+
+
+	public EventGenerator(
+			long aSeed,
+			int aHostsRange, 
+			int aThreadsRange, 
+			int aBytecodeRange, 
+			int aBehaviorRange, 
+			int aFieldRange, 
+			int aVariableRange, 
+			int aObjectRange)
+	{
+		itsRandom = new Random(aSeed);
+		itsTimestampGenerator = new TimestampGenerator(aSeed);		
+		
+		itsHostsRange = aHostsRange;
+		itsThreadsRange = aThreadsRange;
+		itsBytecodeRange = aBytecodeRange;
+		itsBehaviorRange = aBehaviorRange;
+		itsFieldRange = aFieldRange;
+		itsVariableRange = aVariableRange;
+		itsObjectRange = aObjectRange;
+	}
 
 	public EventGenerator(long aSeed)
 	{
-		itsRandom = new Random(aSeed);
-		itsTimestampGenerator = new TimestampGenerator(aSeed);
+		this(
+				aSeed, 
+				STRUCTURE_HOSTS_COUNT, 
+				STRUCTURE_THREADS_COUNT,
+				STRUCTURE_BYTECODE_LOCS_COUNT,
+				STRUCTURE_BEHAVIOR_COUNT,
+				STRUCTURE_FIELD_COUNT,
+				STRUCTURE_VAR_COUNT,
+				STRUCTURE_OBJECT_COUNT);
 	}
 	
 	public GridEvent next()
@@ -141,37 +180,37 @@ public class EventGenerator
 	
 	public int genHostId()
 	{
-		return itsRandom.nextInt(STRUCTURE_HOSTS_COUNT);
+		return itsRandom.nextInt(itsHostsRange);
 	}
 	
 	public int genThreadId()
 	{
-		return itsRandom.nextInt(STRUCTURE_THREADS_COUNT);
+		return itsRandom.nextInt(itsThreadsRange);
 	}
 	
 	public int genBehaviorId()
 	{
-		return itsRandom.nextInt(STRUCTURE_BEHAVIOR_COUNT);
+		return itsRandom.nextInt(itsBehaviorRange);
 	}
 	
 	public int genFieldId()
 	{
-		return itsRandom.nextInt(STRUCTURE_FIELD_COUNT);
+		return itsRandom.nextInt(itsFieldRange);
 	}
 	
 	public int genVariableId()
 	{
-		return itsRandom.nextInt(STRUCTURE_VAR_COUNT);
+		return itsRandom.nextInt(itsVariableRange);
 	}
 	
 	public int genBytecodeIndex()
 	{
-		return itsRandom.nextInt(STRUCTURE_BYTECODE_LOCS_COUNT);
+		return itsRandom.nextInt(itsBytecodeRange);
 	}
 	
 	public Object genObject()
 	{
-		return new ObjectId.ObjectUID(itsRandom.nextInt(STRUCTURE_OBJECT_COUNT));
+		return new ObjectId.ObjectUID(itsRandom.nextInt(itsObjectRange));
 	}
 	
 	public Object[] genArgs()

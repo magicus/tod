@@ -33,4 +33,11 @@ public class BytecodeLocationCondition extends EventCondition
 	{
 		return aEvent.getOperationBytecodeIndex() == itsBytecodeLocation;
 	}
+	
+	@Override
+	protected String toString(int aIndent)
+	{
+		return String.format("Bytecode index = %d", itsBytecodeLocation);
+	}
+
 }

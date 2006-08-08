@@ -4,7 +4,7 @@
 package tod.impl.dbgrid;
 
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -199,7 +199,13 @@ public class Fixtures
 		aRefEvent.writeTo(theRefStruct);
 		aEvent.writeTo(theStruct);
 		
-		assertTrue("Size mismatch", theRefStruct.getPos() == theStruct.getPos());
+		if (theRefStruct.getPos() != theStruct.getPos())
+		{
+			System.out.println("ref:  "+aRefEvent);
+			System.out.println("test: "+aEvent);
+			fail("Size mismatch");
+		}
+		
 		int theSize = (theRefStruct.getPos()+31)/32;
 		
 		theRefStruct.setPos(0);
@@ -207,7 +213,12 @@ public class Fixtures
 		
 		for (int i=0;i<theSize;i++)
 		{
-			assertTrue("Data mismatch", theRefStruct.readInt(32) == theStruct.readInt(32));
+			if (theRefStruct.readInt(32) != theStruct.readInt(32))
+			{
+				System.out.println("ref:  "+aRefEvent);
+				System.out.println("test: "+aEvent);
+				fail("Data mismatch");				
+			}
 		}
 	}
 	

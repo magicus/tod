@@ -109,7 +109,7 @@ public class GridBehaviorExitEvent extends GridEvent
 		
 		aIndexes.behaviorIndex.addTuple(
 				getBehaviorId(), 
-				new RoleIndexSet.Tuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_ANY));
+				new RoleIndexSet.Tuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_EXIT));
 		
 		aIndexes.objectIndex.addTuple(
 				getObjectId(getResult()), 
@@ -119,7 +119,8 @@ public class GridBehaviorExitEvent extends GridEvent
 	@Override
 	public boolean matchBehaviorCondition(int aBehaviorId, byte aRole)
 	{
-		return aBehaviorId == getBehaviorId();
+		return (aRole == RoleIndexSet.ROLE_BEHAVIOR_EXIT || aRole == RoleIndexSet.ROLE_BEHAVIOR_ANY)
+			&& (aBehaviorId == getBehaviorId());
 	}
 	
 	@Override
@@ -127,4 +128,17 @@ public class GridBehaviorExitEvent extends GridEvent
 	{
 		return (aRole == RoleIndexSet.ROLE_OBJECT_RESULT && aObjectId == getObjectId(getResult()));
 	}
+	
+	@Override
+	public String toString()
+	{
+		return String.format(
+				"%s (b: %d, ht: %b, r: %s, %s)",
+				getEventType(),
+				itsBehaviorId,
+				itsHasThrown,
+				itsResult,
+				toString0());
+	}
+
 }

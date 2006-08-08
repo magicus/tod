@@ -33,4 +33,11 @@ public class FieldCondition extends EventCondition
 	{
 		return aEvent.matchFieldCondition(itsFieldId);
 	}
+	
+	@Override
+	protected String toString(int aIndent)
+	{
+		return String.format("FieldId = %d", itsFieldId);
+	}
+
 }

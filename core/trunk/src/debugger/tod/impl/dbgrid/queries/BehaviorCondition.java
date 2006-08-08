@@ -30,7 +30,7 @@ public class BehaviorCondition extends EventCondition
 	{
 		Iterator<RoleIndexSet.Tuple> theTupleIterator = aIndexes.behaviorIndex.getIndex(itsBehaviorId).getTupleIterator(aTimestamp);
 		theTupleIterator = itsRole == RoleIndexSet.ROLE_BEHAVIOR_ANY ? 
-				theTupleIterator
+				RoleIndexSet.createFilteredIterator(theTupleIterator)
 				: RoleIndexSet.createFilteredIterator(theTupleIterator, itsRole);
 		
 		return (Iterator) theTupleIterator;
@@ -40,5 +40,11 @@ public class BehaviorCondition extends EventCondition
 	public boolean match(GridEvent aEvent)
 	{
 		return aEvent.matchBehaviorCondition(itsBehaviorId, itsRole);
+	}
+	
+	@Override
+	protected String toString(int aIndent)
+	{
+		return String.format("BehaviorId = %d (role %d)", itsBehaviorId, itsRole);
 	}
 }

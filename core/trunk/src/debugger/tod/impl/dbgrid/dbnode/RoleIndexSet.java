@@ -19,6 +19,7 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.Tuple>
 	public static final byte ROLE_BEHAVIOR_ANY = 0;
 	public static final byte ROLE_BEHAVIOR_CALLED = 1;
 	public static final byte ROLE_BEHAVIOR_EXECUTED = 2;
+	public static final byte ROLE_BEHAVIOR_EXIT = 3;
 	
 	public static final byte ROLE_OBJECT_TARGET = -1;
 	public static final byte ROLE_OBJECT_VALUE = -2;
@@ -53,6 +54,31 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.Tuple>
 			}
 		};
 	}
+	
+	/**
+	 * Creates an iterator that filters out duplicate tuples, which is useful when the 
+	 * role is not checked: for instance if a behavior call event has the same called
+	 * and executed method, it would appear twice in the behavior index with
+	 * a different role.
+	 */
+	public static Iterator<Tuple> createFilteredIterator(Iterator<Tuple> aIterator)
+	{
+		return new AbstractFilteredIterator<Tuple, Tuple>(aIterator)
+		{
+			private long itsLastEventPointer = -1;
+			
+			@Override
+			protected Object transform(Tuple aIn)
+			{
+				if (aIn.getEventPointer() == itsLastEventPointer) return REJECT;
+				itsLastEventPointer = aIn.getEventPointer();
+				
+				return aIn;
+			}
+		};
+	}
+	
+	
 
 	private static class TupleCodec extends HierarchicalIndex.TupleCodec<Tuple>
 	{

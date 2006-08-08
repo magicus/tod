@@ -41,5 +41,15 @@ public class GridOutputEvent extends GridEvent
 		super.index(aIndexes, aPointer);
 	}
 	
+	@Override
+	public String toString()
+	{
+		return String.format(
+				"%s (d: %d, o: %s, %s)",
+				getEventType(),
+				itsData,
+				itsOutput,
+				toString0());
+	}
 
 }

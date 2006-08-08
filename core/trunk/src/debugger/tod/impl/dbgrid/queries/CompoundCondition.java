@@ -6,6 +6,8 @@ package tod.impl.dbgrid.queries;
 import java.util.ArrayList;
 import java.util.List;
 
+import zz.utils.Utils;
+
 /**
  * A condition that is compound of various other {@link EventCondition}s.
  * @author gpothier
@@ -24,4 +26,20 @@ public abstract class CompoundCondition extends EventCondition
 		itsConditions.add(aCondition);
 	}
 
+	@Override
+	protected String toString(int aIndent)
+	{
+		StringBuilder theBuilder = new StringBuilder();
+		Utils.indentln(theBuilder, aIndent);
+		theBuilder.append(getClass().getSimpleName());
+		
+		for (EventCondition theCondition : getConditions())
+		{
+			Utils.indentln(theBuilder, aIndent+2);
+			theBuilder.append(theCondition.toString(aIndent+2));
+		}
+		
+		theBuilder.append('\n');
+		return theBuilder.toString();
+	}
 }

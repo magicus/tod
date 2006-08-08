@@ -39,4 +39,11 @@ public class ObjectCondition extends EventCondition
 	{
 		return aEvent.matchObjectCondition(itsObjectId, itsRole);
 	}
+	
+	@Override
+	protected String toString(int aIndent)
+	{
+		return String.format("ObjectId = %d (role %d)", itsObjectId, itsRole);
+	}
+
 }

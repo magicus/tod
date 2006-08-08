@@ -108,4 +108,15 @@ public class GridVariableWriteEvent extends GridEvent
 		return (aRole == RoleIndexSet.ROLE_OBJECT_VALUE && aObjectId == getObjectId(getValue()));
 	}
 
+	@Override
+	public String toString()
+	{
+		return String.format(
+				"%s (val: %s, var: %d, %s)",
+				getEventType(),
+				itsValue,
+				itsVariableId,
+				toString0());
+	}
+
 }

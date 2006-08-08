@@ -186,7 +186,8 @@ public class GridBehaviorCallEvent extends GridEvent
 	{
 		return (aRole == RoleIndexSet.ROLE_BEHAVIOR_CALLED && aBehaviorId == getCalledBehaviorId())
 			|| (aRole == RoleIndexSet.ROLE_BEHAVIOR_EXECUTED && aBehaviorId == getExecutedBehaviorId())
-			|| (aRole == RoleIndexSet.ROLE_BEHAVIOR_ANY && (aBehaviorId == getExecutedBehaviorId() || aBehaviorId == getCalledBehaviorId()));
+			|| (aRole == RoleIndexSet.ROLE_BEHAVIOR_ANY 
+					&& (aBehaviorId == getExecutedBehaviorId() || aBehaviorId == getCalledBehaviorId()));
 	
 	}
 	
@@ -195,5 +196,18 @@ public class GridBehaviorCallEvent extends GridEvent
 	{
 		return (aRole == RoleIndexSet.ROLE_OBJECT_TARGET && aObjectId == getObjectId(getTarget()))
 			|| (aRole >= 0 && aRole < getArguments().length && aObjectId == getObjectId(getArguments()[aRole]));
+	}
+	
+	@Override
+	public String toString()
+	{
+		return String.format(
+				"%s (cb: %d, dp: %b, eb: %d, tg: %s, %s)",
+				getEventType(),
+				itsCalledBehaviorId,
+				itsDirectParent,
+				itsExecutedBehaviorId,
+				itsTarget,
+				toString0());
 	}
 }
