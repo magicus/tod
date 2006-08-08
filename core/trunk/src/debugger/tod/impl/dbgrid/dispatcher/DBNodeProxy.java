@@ -26,6 +26,8 @@ public class DBNodeProxy
 	private DatabaseNode itsDatabaseNode;
 	private MessageQueue itsMessageQueue = new MessageQueue();
 	
+	private boolean itsFlushed = false;
+	
 	public DBNodeProxy(DatabaseNode aDatabaseNode)
 	{
 		itsDatabaseNode = aDatabaseNode;
@@ -36,6 +38,7 @@ public class DBNodeProxy
 	 */
 	public void pushEvent(Event aEvent)
 	{
+		assert ! itsFlushed;
 		byte[] theId = makeExternalPointer(aEvent);
 		aEvent.putAttribute(EventDispatcher.EVENT_ATTR_ID, theId);
 		
@@ -48,10 +51,18 @@ public class DBNodeProxy
 	 */
 	public void pushChildEvent(Event aParentEvent, Event aChildEvent)
 	{
+		assert ! itsFlushed;
 		byte[] theParentId = (byte[]) aParentEvent.getAttribute(EventDispatcher.EVENT_ATTR_ID);
 		byte[] theChildId = (byte[]) aChildEvent.getAttribute(EventDispatcher.EVENT_ATTR_ID);
 		
 		itsMessageQueue.pushMessage(new AddChildEvent(theParentId, theChildId));
+	}
+	
+	public void flush()
+	{
+		itsMessageQueue.send();
+		itsDatabaseNode.flush();
+		itsFlushed = true;
 	}
 	
 	/**
@@ -77,6 +88,8 @@ public class DBNodeProxy
 
 		public void send()
 		{
+			assert ! itsFlushed;
+
 			List<GridMessage> theEvents;
 			
 			synchronized (this)

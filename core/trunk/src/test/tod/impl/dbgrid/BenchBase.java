@@ -32,8 +32,19 @@ public class BenchBase
 	
 	public static class BenchResults
 	{
+		/**
+		 * Total execution time, in milliseconds
+		 */
 		public final long totalTime;
+		
+		/**
+		 * CPU time, nanoseconds
+		 */
 		public final long cpuTime;
+		
+		/**
+		 * CPU user time, nanoseconds.
+		 */
 		public final long userTime;
 		
 		public BenchResults(long aTotalTime, long aCpuTime, long aUserTime)

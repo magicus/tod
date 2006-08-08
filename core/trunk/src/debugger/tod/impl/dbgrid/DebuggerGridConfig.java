@@ -3,6 +3,7 @@
  */
 package tod.impl.dbgrid;
 
+import tod.impl.dbgrid.dbnode.DatabaseNode;
 import tod.impl.dbgrid.dbnode.EventList;
 import tod.impl.dbgrid.dbnode.HierarchicalIndex;
 import tod.impl.dbgrid.messages.EventType;
@@ -10,6 +11,11 @@ import zz.utils.bit.BitUtils;
 
 public class DebuggerGridConfig
 {
+	/**
+	 * Size of the {@link DatabaseNode} event buffer
+	 */
+	public static final int DB_EVENT_BUFFER_SIZE = 16;
+	
 	/**
 	 * Maximum number of event types 
 	 */

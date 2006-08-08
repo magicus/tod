@@ -13,7 +13,7 @@ import tod.impl.dbgrid.messages.GridEvent;
  * Represents a condition on a variable write event's variable number
  * @author gpothier
  */
-public class VariableCondition extends EventCondition
+public class VariableCondition extends SimpleCondition
 {
 	private int itsVariableId;
 

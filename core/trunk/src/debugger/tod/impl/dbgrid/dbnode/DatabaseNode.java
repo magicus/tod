@@ -27,10 +27,12 @@ public class DatabaseNode
 	 */
 	private long itsLastProcessedTimestamp;
 	private SortedRingBuffer<GridEvent> itsEventBuffer = 
-		new SortedRingBuffer<GridEvent>(16, new EventTimestampComparator());
+		new SortedRingBuffer<GridEvent>(DB_EVENT_BUFFER_SIZE, new EventTimestampComparator());
 	
 	private PagedFile itsEventsFile;
 	private PagedFile itsIndexesFile;
+	
+	private boolean itsFlushed = false;
 	
 	public DatabaseNode()
 	{
@@ -78,6 +80,8 @@ public class DatabaseNode
 	 */
 	public void push(GridMessage aMessage)
 	{
+		assert ! itsFlushed;
+		
 		if (aMessage instanceof GridEvent)
 		{
 			GridEvent theEvent = (GridEvent) aMessage;
@@ -89,6 +93,16 @@ public class DatabaseNode
 			processAddChildEvent(theEvent);
 		}
 		else throw new RuntimeException("Not handled: "+aMessage);
+	}
+	
+	/**
+	 * Flushes the event buffer. Events should not be added
+	 * after this method is called.
+	 */
+	public void flush()
+	{
+		while (! itsEventBuffer.isEmpty()) processEvent(itsEventBuffer.remove());
+		itsFlushed = true;
 	}
 	
 	private void addEvent(GridEvent aEvent)

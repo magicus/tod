@@ -30,28 +30,27 @@ public class TestDatabaseNode
 		System.out.println("checking...");
 		
 		// Check with fixed condition
-		CompoundCondition theCondition = new Disjunction();
-//		theCondition.addCondition(new BehaviorCondition(5, (byte) 2));
-		theCondition.addCondition(new BehaviorCondition(3, (byte) 0));
-		
-		checkCondition(
-				theNode, 
-				theCondition,
-				createGenerator(),
-				5000,
-				10000);
+//		CompoundCondition theCondition = new Disjunction();
+//		theCondition.addCondition(new BehaviorCondition(3, (byte) 0));
+//		
+//		Fixtures.checkCondition(
+//				theNode, 
+//				theCondition,
+//				createGenerator(),
+//				5000,
+//				10000);
 
 		// Check with random conditions
 		ConditionGenerator theConditionGenerator = new ConditionGenerator(0, createGenerator());
-		theConditionGenerator.next();
+//		for (int i=0;i<449;i++) theConditionGenerator.next();
 		
-		for (int i=0;i<100;i++)
+		for (int i=0;i<1000;i++)
 		{
 			System.out.println(i+1);
 			EventCondition theEventCondition = theConditionGenerator.next();
 			System.out.println(theEventCondition);
 			
-			checkCondition(
+			Fixtures.checkCondition(
 					theNode, 
 					theEventCondition,
 					createGenerator(),
@@ -62,38 +61,7 @@ public class TestDatabaseNode
 	
 	private EventGenerator createGenerator()
 	{
-		return new EventGenerator(0, 10, 10, 10, 10, 10, 10, 10);
+		return new EventGenerator(0, 100, 100, 100, 100, 100, 100, 100);
 	}
 	
-	private void checkCondition(
-			DatabaseNode aNode, 
-			EventCondition aCondition, 
-			EventGenerator aReferenceGenerator,
-			int aSkip,
-			int aCount)
-	{
-		GridEvent theEvent = null;
-		for (int i=0;i<aSkip;i++)
-		{
-			theEvent = aReferenceGenerator.next();
-		}
-		
-		int theMatched = 0;
-		long theTimestamp = theEvent != null ? theEvent.getTimestamp()+1 : 0;
-		Iterator<GridEvent> theIterator = aNode.evaluate(aCondition, theTimestamp);
-		for (int i=0;i<aCount;i++)
-		{
-			GridEvent theRefEvent = aReferenceGenerator.next();
-			if (aCondition.match(theRefEvent))
-			{
-				GridEvent theTestedEvent = theIterator.next(); 
-				Fixtures.assertEquals(theRefEvent, theTestedEvent);
-				theMatched++;
-//				System.out.println(i+"m");
-			}
-//			else System.out.println(i);
-		}
-		
-		System.out.println("Matched: "+theMatched);
-	}
 }

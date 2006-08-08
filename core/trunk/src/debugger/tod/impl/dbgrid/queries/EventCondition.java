@@ -42,6 +42,11 @@ public abstract class EventCondition
 			}
 		};
 	}
+	
+	/**
+	 * Returns the number of clauses (terminal nodes) of this condition;
+	 */
+	public abstract int getClausesCount();
 
 	/**
 	 * Creates an iterator over matching events, taking them from the specified

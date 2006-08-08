@@ -14,7 +14,7 @@ import tod.impl.dbgrid.messages.GridEvent;
  * Represents a condition on an object, with a corresponding role.
  * @author gpothier
  */
-public class ObjectCondition extends EventCondition
+public class ObjectCondition extends SimpleCondition
 {
 	private int itsObjectId;
 	private byte itsRole;

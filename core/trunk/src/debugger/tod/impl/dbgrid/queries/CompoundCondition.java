@@ -42,4 +42,16 @@ public abstract class CompoundCondition extends EventCondition
 		theBuilder.append('\n');
 		return theBuilder.toString();
 	}
+	
+	@Override
+	public int getClausesCount()
+	{
+		int theCount = 0;
+		for (EventCondition theCondition : getConditions()) 
+		{
+			theCount += theCondition.getClausesCount();
+		}
+		
+		return theCount;
+	}
 }

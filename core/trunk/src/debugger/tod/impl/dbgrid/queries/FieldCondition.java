@@ -13,7 +13,7 @@ import tod.impl.dbgrid.messages.GridEvent;
  * Represents a condition on a Field write event's field.
  * @author gpothier
  */
-public class FieldCondition extends EventCondition
+public class FieldCondition extends SimpleCondition
 {
 	private int itsFieldId;
 

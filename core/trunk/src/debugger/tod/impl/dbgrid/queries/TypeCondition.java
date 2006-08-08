@@ -14,7 +14,7 @@ import tod.impl.dbgrid.messages.GridEvent;
  * Represents a condition on event type.
  * @author gpothier
  */
-public class TypeCondition extends EventCondition
+public class TypeCondition extends SimpleCondition
 {
 	private EventType itsType;
 

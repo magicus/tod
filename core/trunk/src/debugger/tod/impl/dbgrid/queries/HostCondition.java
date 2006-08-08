@@ -13,7 +13,7 @@ import tod.impl.dbgrid.messages.GridEvent;
  * Represents a condition on event host.
  * @author gpothier
  */
-public class HostCondition extends EventCondition
+public class HostCondition extends SimpleCondition
 {
 	private int itsHost;
 

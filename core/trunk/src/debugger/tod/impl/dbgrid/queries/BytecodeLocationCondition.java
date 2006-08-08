@@ -13,7 +13,7 @@ import tod.impl.dbgrid.messages.GridEvent;
  * Represents a condition on bytecode location
  * @author gpothier
  */
-public class BytecodeLocationCondition extends EventCondition
+public class BytecodeLocationCondition extends SimpleCondition
 {
 	private int itsBytecodeLocation;
 

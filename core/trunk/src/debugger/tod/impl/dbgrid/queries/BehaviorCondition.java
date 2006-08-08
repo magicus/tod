@@ -14,7 +14,7 @@ import tod.impl.dbgrid.messages.GridEvent;
  * Represents a condition on behavior id and corresponding role.
  * @author gpothier
  */
-public class BehaviorCondition extends EventCondition
+public class BehaviorCondition extends SimpleCondition
 {
 	private int itsBehaviorId;
 	private byte itsRole;

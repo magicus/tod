@@ -26,8 +26,12 @@ public class EventDispatcher
 	private List<DBNodeProxy> itsNodes = new ArrayList<DBNodeProxy>();
 	private int itsCurrentNode = 0;
 	
+	private boolean itsFlushed = false;
+	
 	public void dispatchEvent(Event aEvent)
 	{
+		assert ! itsFlushed;
+		
 		DBNodeProxy theProxy = itsNodes.get(itsCurrentNode);
 		aEvent.putAttribute(EVENT_ATTR_NODE, itsCurrentNode);
 		theProxy.pushEvent(aEvent);
@@ -38,5 +42,15 @@ public class EventDispatcher
 		theParentProxy.pushChildEvent(theParent, aEvent);
 		
 		itsCurrentNode = (itsCurrentNode+1) % itsNodes.size();
+	}
+	
+	/**
+	 * Flushes all buffers so that events are sent to the nodes 
+	 * and stored.
+	 */
+	public void flush()
+	{
+		for (DBNodeProxy theProxy : itsNodes) theProxy.flush();
+		itsFlushed = true;
 	}
 }

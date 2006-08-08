@@ -63,21 +63,33 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.Tuple>
 	 */
 	public static Iterator<Tuple> createFilteredIterator(Iterator<Tuple> aIterator)
 	{
-		return new AbstractFilteredIterator<Tuple, Tuple>(aIterator)
-		{
-			private long itsLastEventPointer = -1;
-			
-			@Override
-			protected Object transform(Tuple aIn)
-			{
-				if (aIn.getEventPointer() == itsLastEventPointer) return REJECT;
-				itsLastEventPointer = aIn.getEventPointer();
-				
-				return aIn;
-			}
-		};
+		return new DuplicateFilterIterator(aIterator);
 	}
 	
+	private static class DuplicateFilterIterator extends AbstractFilteredIterator<Tuple, Tuple>
+	{
+		private long itsLastEventPointer;
+		
+		public DuplicateFilterIterator(Iterator<Tuple> aIterator)
+		{
+			super(aIterator);
+		}
+		
+		@Override
+		protected void init()
+		{
+			itsLastEventPointer = -1;
+		}
+
+		@Override
+		protected Object transform(Tuple aIn)
+		{
+			if (aIn.getEventPointer() == itsLastEventPointer) return REJECT;
+			itsLastEventPointer = aIn.getEventPointer();
+			
+			return aIn;
+		}
+	}
 	
 
 	private static class TupleCodec extends HierarchicalIndex.TupleCodec<Tuple>

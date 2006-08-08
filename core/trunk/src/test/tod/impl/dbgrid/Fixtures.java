@@ -8,6 +8,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Iterator;
 
 import tod.impl.dbgrid.dbnode.DatabaseNode;
 import tod.impl.dbgrid.dbnode.EventList;
@@ -16,6 +17,7 @@ import tod.impl.dbgrid.dbnode.PagedFile;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import tod.impl.dbgrid.dbnode.StdIndexSet;
 import tod.impl.dbgrid.messages.GridEvent;
+import tod.impl.dbgrid.queries.EventCondition;
 import zz.utils.bit.IntBitStruct;
 
 
@@ -185,7 +187,11 @@ public class Fixtures
 	 */
 	public static void fillNode(DatabaseNode aNode, EventGenerator aGenerator, long aCount)
 	{
-		for(long i=0;i<aCount;i++) aNode.push(aGenerator.next());
+		for(long i=0;i<aCount;i++) 
+		{
+			aNode.push(aGenerator.next());
+			if (i % 1000000 == 0) System.out.println(i);
+		}
 	}
 
 	/**
@@ -222,5 +228,36 @@ public class Fixtures
 		}
 	}
 	
+	public static void checkCondition(
+			DatabaseNode aNode, 
+			EventCondition aCondition, 
+			EventGenerator aReferenceGenerator,
+			int aSkip,
+			int aCount)
+	{
+		GridEvent theEvent = null;
+		for (int i=0;i<aSkip;i++)
+		{
+			theEvent = aReferenceGenerator.next();
+		}
+		
+		int theMatched = 0;
+		long theTimestamp = theEvent != null ? theEvent.getTimestamp()+1 : 0;
+		Iterator<GridEvent> theIterator = aNode.evaluate(aCondition, theTimestamp);
+		for (int i=0;i<aCount;i++)
+		{
+			GridEvent theRefEvent = aReferenceGenerator.next();
+			if (aCondition.match(theRefEvent))
+			{
+				GridEvent theTestedEvent = theIterator.next(); 
+				Fixtures.assertEquals(theRefEvent, theTestedEvent);
+				theMatched++;
+//				System.out.println(i+"m");
+			}
+//			else System.out.println(i);
+		}
+		
+		System.out.println("Matched: "+theMatched);
+	}
 
 }

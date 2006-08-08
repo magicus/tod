@@ -16,7 +16,6 @@ public class GridFieldWriteEvent extends GridEvent
 	private int itsFieldId;
 	private Object itsTarget;
 	private Object itsValue;
-	
 
 	public GridFieldWriteEvent(
 			int aHost, 
@@ -123,7 +122,8 @@ public class GridFieldWriteEvent extends GridEvent
 	@Override
 	public boolean matchObjectCondition(int aObjectId, byte aRole)
 	{
-		return (aRole == RoleIndexSet.ROLE_OBJECT_VALUE && aObjectId == getObjectId(getValue()));
+		return (aRole == RoleIndexSet.ROLE_OBJECT_VALUE && aObjectId == getObjectId(getValue()))
+			|| (aRole == RoleIndexSet.ROLE_OBJECT_TARGET && aObjectId == getObjectId(getTarget()));
 	}
 
 	@Override
