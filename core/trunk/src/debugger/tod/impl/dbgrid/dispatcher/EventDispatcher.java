@@ -32,10 +32,12 @@ public class EventDispatcher
 	{
 		assert ! itsFlushed;
 		
+		// Choose a node and send the event
 		DBNodeProxy theProxy = itsNodes.get(itsCurrentNode);
 		aEvent.putAttribute(EVENT_ATTR_NODE, itsCurrentNode);
 		theProxy.pushEvent(aEvent);
 		
+		// Send an add child message to the node that contains the parent
 		BehaviorCallEvent theParent = aEvent.getParent();
 		int theParentNode = (Integer) theParent.getAttribute(EVENT_ATTR_NODE);
 		DBNodeProxy theParentProxy = itsNodes.get(theParentNode);

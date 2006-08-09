@@ -5,10 +5,8 @@ package tod.impl.dbgrid.dbnode;
 
 import java.util.Iterator;
 
-import tod.impl.dbgrid.monitoring.Monitor;
 import zz.utils.AbstractFilteredIterator;
 import zz.utils.bit.BitStruct;
-import zz.utils.bit.IntBitStruct;
 
 /**
  * An index set where index tuples have associated roles
@@ -102,7 +100,7 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.Tuple>
 		}
 
 		@Override
-		public Tuple read(IntBitStruct aBitStruct)
+		public Tuple read(BitStruct aBitStruct)
 		{
 			return new Tuple(aBitStruct);
 		}
@@ -120,14 +118,14 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.Tuple>
 			itsRole = (byte) aRole;
 		}
 
-		public Tuple(IntBitStruct aBitStruct)
+		public Tuple(BitStruct aBitStruct)
 		{
 			super(aBitStruct);
 			itsRole = (byte) aBitStruct.readInt(8);
 		}
 		
 		@Override
-		public void writeTo(IntBitStruct aBitStruct)
+		public void writeTo(BitStruct aBitStruct)
 		{
 			super.writeTo(aBitStruct);
 			aBitStruct.writeInt(getRole(), 8);

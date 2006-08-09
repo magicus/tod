@@ -8,7 +8,7 @@ import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import tod.impl.dbgrid.dbnode.StdIndexSet;
-import zz.utils.bit.IntBitStruct;
+import zz.utils.bit.BitStruct;
 
 public class GridVariableWriteEvent extends GridEvent
 {
@@ -38,7 +38,7 @@ public class GridVariableWriteEvent extends GridEvent
 	}
 
 
-	public GridVariableWriteEvent(IntBitStruct aBitStruct)
+	public GridVariableWriteEvent(BitStruct aBitStruct)
 	{
 		super(aBitStruct);
 
@@ -47,7 +47,7 @@ public class GridVariableWriteEvent extends GridEvent
 	}
 
 	@Override
-	public void writeTo(IntBitStruct aBitStruct)
+	public void writeTo(BitStruct aBitStruct)
 	{
 		super.writeTo(aBitStruct);
 		aBitStruct.writeInt(getVariableId(), DebuggerGridConfig.EVENT_VARIABLE_BITS);

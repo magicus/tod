@@ -8,7 +8,6 @@ import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import zz.utils.bit.BitStruct;
-import zz.utils.bit.IntBitStruct;
 
 public class GridBehaviorExitEvent extends GridEvent
 {
@@ -52,7 +51,7 @@ public class GridBehaviorExitEvent extends GridEvent
 		itsBehaviorId = aBehaviorId;
 	}
 
-	public GridBehaviorExitEvent(IntBitStruct aBitStruct)
+	public GridBehaviorExitEvent(BitStruct aBitStruct)
 	{
 		super(aBitStruct);
 		itsBehaviorId = aBitStruct.readInt(DebuggerGridConfig.EVENT_BEHAVIOR_BITS);
@@ -61,7 +60,7 @@ public class GridBehaviorExitEvent extends GridEvent
 	}
 
 	@Override
-	public void writeTo(IntBitStruct aBitStruct)
+	public void writeTo(BitStruct aBitStruct)
 	{
 		super.writeTo(aBitStruct);
 		aBitStruct.writeInt(getBehaviorId(), DebuggerGridConfig.EVENT_BEHAVIOR_BITS);

@@ -3,19 +3,18 @@
  */
 package tod.impl.dbgrid.dbnode;
 
+import static tod.impl.dbgrid.DebuggerGridConfig.DB_MAX_INDEX_LEVELS;
+import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_POINTER_BITS;
+import static tod.impl.dbgrid.DebuggerGridConfig.EVENT_TIMESTAMP_BITS;
+
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import javax.print.attribute.standard.Finishings;
-
-import static tod.impl.dbgrid.DebuggerGridConfig.*;
 import tod.impl.dbgrid.dbnode.PagedFile.PageBitStruct;
 import tod.impl.dbgrid.monitoring.AggregationType;
-import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Probe;
-import zz.utils.ToString;
 import zz.utils.bit.BitStruct;
-import zz.utils.bit.IntBitStruct;
+import zz.utils.bit.ByteBitStruct;
 
 /**
  * Implementation of a hierarchical index on an attribute value,
@@ -298,7 +297,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 
 
 	/**
-	 * A tuple codec is able to serialized and deserialize tuples in a {@link BitStruct}
+	 * A tuple codec is able to serialized and deserialize tuples in a {@link ByteBitStruct}
 	 * @author gpothier
 	 */
 	public abstract static class TupleCodec<T extends Tuple>
@@ -316,9 +315,9 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		/**
 		 * Reads a tuple from the given struct.
 		 */
-		public abstract T read(IntBitStruct aBitStruct);
+		public abstract T read(BitStruct aBitStruct);
 		
-		public void write(IntBitStruct aBitStruct, Tuple aTuple)
+		public void write(BitStruct aBitStruct, Tuple aTuple)
 		{
 			aTuple.writeTo(aBitStruct);
 		}
@@ -338,7 +337,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 			itsTimestamp = aTimestamp;
 		}
 		
-		public Tuple(IntBitStruct aBitStruct)
+		public Tuple(BitStruct aBitStruct)
 		{
 			itsTimestamp = aBitStruct.readLong(EVENT_TIMESTAMP_BITS);
 		}
@@ -349,7 +348,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		 * Subclasses should override to serialize additional attributes,
 		 * and call super first.
 		 */
-		public void writeTo(IntBitStruct aBitStruct)
+		public void writeTo(BitStruct aBitStruct)
 		{
 			aBitStruct.writeLong(getTimestamp(), EVENT_TIMESTAMP_BITS);
 		}
@@ -396,7 +395,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		}
 
 		@Override
-		public InternalTuple read(IntBitStruct aBitStruct)
+		public InternalTuple read(BitStruct aBitStruct)
 		{
 			return new InternalTuple(aBitStruct);
 		}
@@ -418,14 +417,14 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 			itsPagePointer = aPagePointer;
 		}
 		
-		public InternalTuple(IntBitStruct aBitStruct)
+		public InternalTuple(BitStruct aBitStruct)
 		{
 			super(aBitStruct);
 			itsPagePointer = aBitStruct.readLong(DB_PAGE_POINTER_BITS);
 		}
 
 		@Override
-		public void writeTo(IntBitStruct aBitStruct)
+		public void writeTo(BitStruct aBitStruct)
 		{
 			super.writeTo(aBitStruct);
 			aBitStruct.writeLong(getPagePointer(), DB_PAGE_POINTER_BITS);

@@ -5,6 +5,7 @@ package tod.impl.dbgrid;
 
 import zz.utils.bit.BitStruct;
 import zz.utils.bit.BitUtils;
+import zz.utils.bit.ByteBitStruct;
 
 /**
  * Expanded representation of an external pointer.
@@ -33,9 +34,12 @@ public class ExternalPointer
 		write(aBitStruct, itsNode, itsHost, itsThread, itsTimestamp);
 	}
 	
+	/**
+	 * Creates an external pointer with the given information.
+	 */
 	public static byte[] create(int aNode, int aHost, int aThread, long aTimestamp)
 	{
-		BitStruct theBitStruct = new BitStruct(DebuggerGridConfig.EVENTID_POINTER_SIZE);
+		BitStruct theBitStruct = new ByteBitStruct(DebuggerGridConfig.EVENTID_POINTER_SIZE);
 		write(theBitStruct, aNode, aHost, aThread, aTimestamp);
 		return theBitStruct.packedBytes();
 	}
@@ -63,7 +67,7 @@ public class ExternalPointer
 	/**
 	 * Reads an external pointer from the given struct.
 	 */
-	public static ExternalPointer read(BitStruct aBitStruct)
+	public static ExternalPointer read(ByteBitStruct aBitStruct)
 	{
 		int theNode = aBitStruct.readInt(DebuggerGridConfig.EVENT_NODE_BITS);
 		int theHost = aBitStruct.readInt(DebuggerGridConfig.EVENT_HOST_BITS);

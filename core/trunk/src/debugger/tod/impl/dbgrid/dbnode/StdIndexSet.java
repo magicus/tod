@@ -3,7 +3,7 @@
  */
 package tod.impl.dbgrid.dbnode;
 
-import zz.utils.bit.IntBitStruct;
+import zz.utils.bit.BitStruct;
 
 public class StdIndexSet extends IndexSet<StdIndexSet.Tuple> 
 {
@@ -30,7 +30,7 @@ public class StdIndexSet extends IndexSet<StdIndexSet.Tuple>
 		}
 
 		@Override
-		public Tuple read(IntBitStruct aBitStruct)
+		public Tuple read(BitStruct aBitStruct)
 		{
 			return new Tuple(aBitStruct);
 		}
@@ -50,14 +50,14 @@ public class StdIndexSet extends IndexSet<StdIndexSet.Tuple>
 			itsEventPointer = aEventPointer;
 		}
 		
-		public Tuple(IntBitStruct aBitStruct)
+		public Tuple(BitStruct aBitStruct)
 		{
 			super(aBitStruct);
 			itsEventPointer = aBitStruct.readLong(64);
 		}
 
 		@Override
-		public void writeTo(IntBitStruct aBitStruct)
+		public void writeTo(BitStruct aBitStruct)
 		{
 			super.writeTo(aBitStruct);
 			aBitStruct.writeLong(getEventPointer(), 64);

@@ -3,6 +3,7 @@
  */
 package tod.impl.dbgrid;
 
+import tod.impl.dbgrid.btree.Node;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
 import tod.impl.dbgrid.dbnode.EventList;
 import tod.impl.dbgrid.dbnode.HierarchicalIndex;
@@ -137,14 +138,14 @@ public class DebuggerGridConfig
 	public static final int DB_EVENT_PAGE_SIZE = 8192;
 	
 	/**
-	 * Size of an event page in the database for writing
-	 */
-	public static final int DB_EVENT_WRITE_PAGE_SIZE = 65536;
-	
-	/**
 	 * Size of an index page in the database
 	 */
 	public static final int DB_INDEX_PAGE_SIZE = 4096;
+	
+	/**
+	 * Size of a btree page 
+	 */
+	public static final int DB_BTREE_PAGE_SIZE = 8192;
 	
 	/**
 	 * Number of bits to represent a page pointer in {@link HierarchicalIndex}
@@ -153,14 +154,9 @@ public class DebuggerGridConfig
 	public static final int DB_PAGE_POINTER_BITS = 32;
 	
 	/**
-	 * Size of an index page in the database for writing
-	 */
-	public static final int DB_INDEX_WRITE_PAGE_SIZE = 8192;
-	
-	/**
 	 * Average event size.
 	 */
-	public static final int DB_AVG_EVENT_SIZE = 40;
+	public static final int DB_AVG_EVENT_SIZE = 55;
 	
 	public static final int DB_AVG_EVENTS_PER_PAGE = DB_EVENT_PAGE_SIZE/DB_AVG_EVENT_SIZE;
 	
@@ -187,4 +183,9 @@ public class DebuggerGridConfig
 	 */
 	public static final int DB_MAX_INDEX_LEVELS = 6;
 	
+	/**
+	 * Number of bits used to represent the entries count in a 
+	 * {@link Node}. 
+	 */
+	public static final int DB_BTREE_COUNT_BITS = 16;
 }

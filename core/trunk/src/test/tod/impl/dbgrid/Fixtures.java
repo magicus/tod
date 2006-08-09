@@ -4,7 +4,7 @@
 package tod.impl.dbgrid;
 
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,6 +18,7 @@ import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import tod.impl.dbgrid.dbnode.StdIndexSet;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
+import zz.utils.bit.BitStruct;
 import zz.utils.bit.IntBitStruct;
 
 
@@ -199,8 +200,8 @@ public class Fixtures
 	 */
 	public static void assertEquals(GridEvent aRefEvent, GridEvent aEvent)
 	{
-		IntBitStruct theRefStruct = new IntBitStruct(1000);
-		IntBitStruct theStruct = new IntBitStruct(1000);
+		BitStruct theRefStruct = new IntBitStruct(1000);
+		BitStruct theStruct = new IntBitStruct(1000);
 		
 		aRefEvent.writeTo(theRefStruct);
 		aEvent.writeTo(theStruct);

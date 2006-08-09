@@ -6,7 +6,7 @@ package tod.impl.dbgrid.queries;
 import java.util.Iterator;
 
 import tod.impl.dbgrid.dbnode.Indexes;
-import tod.impl.dbgrid.dbnode.Merger;
+import tod.impl.dbgrid.dbnode.IndexMerger;
 import tod.impl.dbgrid.dbnode.StdIndexSet.Tuple;
 import tod.impl.dbgrid.messages.GridEvent;
 
@@ -29,7 +29,7 @@ public class Conjunction extends CompoundCondition
 			theIterators[i++] = theCondition.createTupleIterator(aIndexes, aTimestamp);
 		}
 		
-		return Merger.conjunction(theIterators);
+		return IndexMerger.conjunction(theIterators);
 	}
 
 	@Override

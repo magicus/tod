@@ -23,7 +23,7 @@ import tod.impl.dbgrid.monitoring.Probe;
 import zz.utils.ArrayStack;
 import zz.utils.RingBuffer;
 import zz.utils.Utils;
-import zz.utils.bit.BitStruct;
+import zz.utils.bit.ByteBitStruct;
 import zz.utils.bit.IntBitStruct;
 
 /**
@@ -61,6 +61,9 @@ public class PagedFile
 		itsIntBufferView = itsByteBuffer.asIntBuffer();
 	}
 
+	/**
+	 * Page size, in bytes.
+	 */
 	public int getPageSize()
 	{
 		return itsPageSize;
@@ -102,6 +105,29 @@ public class PagedFile
 		}
 		
 		return thePage;
+	}
+	
+	/**
+	 * Returns a page object suitable for overwriting the file page
+	 * of the specified id. The data of the returned page is undefined.
+	 * Moreover, the actual file contents can be considered as undefined
+	 * once this method has been called, because of the way page caching works:
+	 * it is not guaranteed that a client can retrieve the previous content of
+	 * the page even is the page is not written out.
+	 */
+	public Page getPageForOverwrite(long aPageId)
+	{
+		Reference<Page> thePageRef = itsPagesMap.get(aPageId);
+		Page thePage = thePageRef != null ? thePageRef.get() : null;
+		if (thePage == null)
+		{
+			int[] theBuffer = PageManager.getInstance().getFreeBuffer(itsPageSize, false);
+			thePage = new Page(theBuffer, aPageId);
+			itsPagesMap.put(aPageId, new WeakReference<Page>(thePage));
+		}
+		
+		return thePage;
+		
 	}
 	
 	/**
@@ -233,9 +259,9 @@ public class PagedFile
 		}
 		
 		/**
-		 * Returns a new {@link BitStruct} backed by this page.
-		 * The advantage of having the {@link BitStruct} and page separate
-		 * is that we can maintain several {@link BitStruct}s on the same page,
+		 * Returns a new {@link ByteBitStruct} backed by this page.
+		 * The advantage of having the {@link ByteBitStruct} and page separate
+		 * is that we can maintain several {@link ByteBitStruct}s on the same page,
 		 * each with a different position.
 		 */
 		public PageBitStruct asBitStruct()
