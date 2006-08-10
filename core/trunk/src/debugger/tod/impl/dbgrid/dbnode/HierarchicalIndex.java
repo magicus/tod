@@ -6,38 +6,32 @@ package tod.impl.dbgrid.dbnode;
 import static tod.impl.dbgrid.DebuggerGridConfig.DB_MAX_INDEX_LEVELS;
 import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_POINTER_BITS;
 import static tod.impl.dbgrid.DebuggerGridConfig.EVENT_TIMESTAMP_BITS;
-
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-
 import tod.impl.dbgrid.dbnode.PagedFile.PageBitStruct;
 import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Probe;
 import zz.utils.bit.BitStruct;
-import zz.utils.bit.ByteBitStruct;
 
 /**
  * Implementation of a hierarchical index on an attribute value,
  * for instance a particular behavior id.
  * @author gpothier
  */
-public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
+public class HierarchicalIndex<T extends HierarchicalIndex.IndexTuple>
 {
 	private TupleCodec<T> itsTupleCodec;
-	
-	private int itsInternalTupleSize = EVENT_TIMESTAMP_BITS + DB_PAGE_POINTER_BITS;
 	
 	private PagedFile itsFile;
 	
 	private PagedFile.Page itsRootPage;
 	private long itsFirstLeafPageId;
 	private int itsRootLevel;
-	private PageBitStruct[] itsCurrentPages = new PageBitStruct[DB_MAX_INDEX_LEVELS];
+	private MyTupleWriter[] itsTupleWriters = new MyTupleWriter[DB_MAX_INDEX_LEVELS];
+//	private PageBitStruct[] itsCurrentPages = new PageBitStruct[DB_MAX_INDEX_LEVELS];
 	
 	/**
 	 * Number of pages per level
 	 */
-	private int[] itsPagesCount = new int[DB_MAX_INDEX_LEVELS];
+//	private int[] itsPagesCount = new int[DB_MAX_INDEX_LEVELS];
 	
 	private long itsLeafTupleCount = 0;
 
@@ -53,13 +47,28 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		itsTupleCodec = aTupleCodec;
 		
 		// Init pages
-		itsRootPage = itsFile.createPage();
+		itsTupleWriters[0] = new MyTupleWriter<T>(itsFile, itsTupleCodec, 0);
+		itsRootPage = itsTupleWriters[0].getCurrentPage();
 		itsFirstLeafPageId = itsRootPage.getPageId();
 		itsRootLevel = 0;
-		itsCurrentPages[0] = itsRootPage.asBitStruct();
-		itsPagesCount[0] = 1;
 		
 //		Monitor.getInstance().register(this);
+	}
+	
+	/**
+	 * Returns the first tuple that has a timestamp greater or equal
+	 * than the specified timestamp, if any.
+	 * @param aExact If true, only a tuple with exactly the specified
+	 * timestamp is returned.
+	 * @return A matching tuple, or null if none is found.
+	 */
+	public T getTupleAt(long aTimestamp, boolean aExact)
+	{
+		TupleIterator<T> theIterator = getTupleIterator(aTimestamp);
+		if (! theIterator.hasNext()) return null;
+		T theTuple = theIterator.nextOneShot();
+		if (aExact && theTuple.getTimestamp() != aTimestamp) return null;
+		else return theTuple;
 	}
 	
 	/**
@@ -68,13 +77,13 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 	 * @param aTimestamp Requested first timestamp, or 0 to start
 	 * at the beginning of the list.
 	 */
-	public Iterator<T> getTupleIterator(long aTimestamp)
+	public TupleIterator<T> getTupleIterator(long aTimestamp)
 	{
 //		System.out.println("Get    "+aTimestamp);
 		if (aTimestamp == 0)
 		{
 			PageBitStruct theBitStruct = itsFile.getPage(itsFirstLeafPageId).asBitStruct();
-			return new TupleIterator(theBitStruct);
+			return new TupleIterator<T>(itsFile, itsTupleCodec, theBitStruct);
 		}
 		else
 		{
@@ -83,7 +92,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 			while (theLevel > 0)
 			{
 //				System.out.println("Level: "+theLevel);
-				InternalTuple theTuple = findTuple(
+				InternalTuple theTuple = TupleFinder.findTuple(
 						thePage.asBitStruct(), 
 						aTimestamp, 
 						InternalTupleCodec.getInstance(),
@@ -94,13 +103,17 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 			}
 			
 			PageBitStruct theBitStruct = thePage.asBitStruct();
-			int theIndex = findTupleIndex(theBitStruct, aTimestamp, itsTupleCodec, true);
+			int theIndex = TupleFinder.findTupleIndex(
+					theBitStruct,
+					aTimestamp, 
+					itsTupleCodec,
+					true);
 			
-			if (theIndex == -1) return new TupleIterator();
+			if (theIndex == -1) return new TupleIterator<T>();
 			else
 			{
 				theBitStruct.setPos(theIndex * itsTupleCodec.getTupleSize());
-				TupleIterator theIterator = new TupleIterator(theBitStruct);
+				TupleIterator<T> theIterator = new TupleIterator<T>(itsFile, itsTupleCodec, theBitStruct);
 				T theTuple = theIterator.getNextTuple();
 				if (theIterator.hasNext() && theTuple.getTimestamp() < aTimestamp)
 					theIterator.next();
@@ -111,153 +124,27 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 	}
 	
 	/**
-	 * Finds the first tuple that verifies a condition on timestamp.
-	 * See {@link #findTupleIndex(PageBitStruct, long, tod.impl.dbgrid.dbnode.HierarchicalIndex.TupleCodec, boolean)}
-	 */
-	private <T2 extends Tuple> T2 findTuple(
-			PageBitStruct aPage, 
-			long aTimestamp, 
-			TupleCodec<T2> aTupleCodec,
-			boolean aBefore)
-	{
-		int theIndex = findTupleIndex(aPage, aTimestamp, aTupleCodec, aBefore);
-		return readTuple(aPage, aTupleCodec, theIndex);
-	}
-	
-	/**
-	 * Binary search of tuple.
-	 * @param aBefore If true, then the search will return the tuple with the greatest timestamp
-	 * that is smaller than the given timestamp.
-	 * If false, the search will return the tuple which has the smallest timestamp value that is
-	 * greater than or equeal to the given timestamp
-	 */
-	private <T2 extends Tuple> int findTupleIndex(
-			PageBitStruct aPage, 
-			long aTimestamp, 
-			TupleCodec<T2> aTupleCodec,
-			boolean aBefore)
-	{
-		aPage.setPos(0);
-		int thePageSize = aPage.getRemainingBits();
-		int theTupleCount = (thePageSize - DB_PAGE_POINTER_BITS) 
-			/ aTupleCodec.getTupleSize();
-		
-		return findTupleIndex(aPage, aTimestamp, aTupleCodec, 0, theTupleCount-1, aBefore);
-	}
-	
-	/**
-	 * Binary search of tuple. 
-	 * See {@link #findTupleIndex(PageBitStruct, long, tod.impl.dbgrid.dbnode.HierarchicalIndex.TupleCodec)}.
-	 */
-	private <T2 extends Tuple> int findTupleIndex(
-			PageBitStruct aPage, 
-			long aTimestamp, 
-			TupleCodec<T2> aTupleCodec, 
-			int aFirst, 
-			int aLast,
-			boolean aBefore)
-	{
-		assert aLast-aFirst > 0;
-		
-		T2 theFirstTuple = readTuple(aPage, aTupleCodec, aFirst);
-		long theFirstTimestamp = theFirstTuple.getTimestamp();
-		if (theFirstTimestamp == 0) theFirstTimestamp = Long.MAX_VALUE;
-		
-		T2 theLastTuple = readTuple(aPage, aTupleCodec, aLast);
-		long theLastTimestamp = theLastTuple.getTimestamp();
-		if (theLastTimestamp == 0) theLastTimestamp = Long.MAX_VALUE;
-		
-//		System.out.println(String.format("First  %d:%d", theFirstTimestamp, aFirst));
-//		System.out.println(String.format("Last   %d:%d", theLastTimestamp, aLast));
-		
-		if (aTimestamp < theFirstTimestamp) return aBefore ? -1 : aFirst;
-		if (aTimestamp == theFirstTimestamp) return aFirst;
-		if (aTimestamp == theLastTimestamp) return aLast;
-		if (aTimestamp > theLastTimestamp) return aBefore ? aLast : -1;
-		
-		if (aLast-aFirst == 1) return aFirst;
-		
-		int theMiddle = (aFirst + aLast) / 2;
-		T2 theMiddleTuple = readTuple(aPage, aTupleCodec, theMiddle);
-		long theMiddleTimestamp = theMiddleTuple.getTimestamp();
-		if (theMiddleTimestamp == 0) theMiddleTimestamp = Long.MAX_VALUE;
-		
-//		System.out.println(String.format("Middle %d:%d", theMiddleTimestamp, theMiddle));
-		
-		if (aTimestamp == theMiddleTimestamp) return theMiddle;
-		if (aTimestamp < theMiddleTimestamp) return findTupleIndex(aPage, aTimestamp, aTupleCodec, aFirst, theMiddle, aBefore);
-		else return findTupleIndex(aPage, aTimestamp, aTupleCodec, theMiddle, aLast, aBefore);
-	}
-	
-	private <T2 extends Tuple> T2 readTuple(PageBitStruct aPage, TupleCodec<T2> aTupleCodec, int aIndex)
-	{
-		aPage.setPos(aIndex * aTupleCodec.getTupleSize());
-		return aTupleCodec.read(aPage);
-	}
-
-	/**
 	 * Adds a tuple to this index.
 	 */
 	public void add(T aTuple)
 	{
-		add(aTuple, 0, itsTupleCodec.getTupleSize());
+		add(aTuple, 0, itsTupleCodec);
 		itsLeafTupleCount++;
 	}
 	
-	private void add(Tuple aTuple, int aLevel, int aTupleSize)
+	private <T1 extends IndexTuple> void add(T1 aTuple, int aLevel, TupleCodec<T1> aCodec)
 	{
-		PageBitStruct thePage = itsCurrentPages[aLevel];
-		if (thePage == null)
+		MyTupleWriter<T1> theWriter = itsTupleWriters[aLevel];
+		if (theWriter == null)
 		{
 			assert aLevel == itsRootLevel+1;
 			itsRootLevel = aLevel;
-			itsRootPage = itsFile.createPage();
-			thePage = itsRootPage.asBitStruct();
-			itsCurrentPages[aLevel] = thePage;
-			itsPagesCount[aLevel]++;
+			theWriter = new MyTupleWriter<T1>(itsFile, aCodec, aLevel);
+			itsTupleWriters[aLevel] = theWriter;
+			itsRootPage = itsTupleWriters[aLevel].getCurrentPage();
 		}
 		
-		if (thePage.getRemainingBits() < aTupleSize + DB_PAGE_POINTER_BITS)
-		{
-			PageBitStruct theNextPage = itsFile.createPage().asBitStruct();
-			long theNextPageId = theNextPage.getPage().getPageId();
-			
-			// Write next page id (+1: 0 means no next page).
-			thePage.writeLong(theNextPageId+1, DB_PAGE_POINTER_BITS);
-			
-			// If this is the first time we finish a page at this level,
-			// we must update upper level index.
-			if (itsRootLevel == aLevel)
-			{
-				// Read timestamp of first tuple
-				thePage.setPos(0);
-				long theTimestamp = thePage.readLong(EVENT_TIMESTAMP_BITS);
-				add(
-						new InternalTuple(theTimestamp, thePage.getPage().getPageId()),
-						aLevel+1, 
-						itsInternalTupleSize);
-			}
-			
-			// Save old page
-			itsFile.writePage(thePage.getPage());
-			itsFile.freePage(thePage.getPage());
-			
-			thePage = theNextPage;
-			itsCurrentPages[aLevel] = theNextPage;
-			itsPagesCount[aLevel]++;
-		}
-
-		if (thePage.getPos() == 0 && itsRootLevel > aLevel)
-		{
-			// When we write the first tuple of a page we also update indexes.
-			long theTimestamp = aTuple.getTimestamp();
-			add(
-					new InternalTuple(theTimestamp, thePage.getPage().getPageId()),
-					aLevel+1, 
-					itsInternalTupleSize);
-		}
-		
-		aTuple.writeTo(thePage);
+		theWriter.add(aTuple);
 	}
 	
 	/**
@@ -267,7 +154,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 	public int getTotalPageCount()
 	{
 		int theCount = 0;
-		for (int theLevelCount : itsPagesCount) theCount += theLevelCount;
+		for (TupleWriter theWriter : itsTupleWriters) theCount += theWriter.getPagesCount();
 		return theCount;
 	}
 	
@@ -294,50 +181,28 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		return "Index "+itsName;
 	}
 
-
-
-	/**
-	 * A tuple codec is able to serialized and deserialize tuples in a {@link ByteBitStruct}
-	 * @author gpothier
-	 */
-	public abstract static class TupleCodec<T extends Tuple>
+	public static abstract class IndexTupleCodec<T extends IndexTuple> extends TupleCodec<T>
 	{
-		/**
-		 * Returns the size (in bits) of each tuple.
-		 * Subclasses must override this method to add the size of their tuple's
-		 * own attributes to the total
-		 */
+		@Override
 		public int getTupleSize()
 		{
-			return EVENT_TIMESTAMP_BITS;
-		}
-		
-		/**
-		 * Reads a tuple from the given struct.
-		 */
-		public abstract T read(BitStruct aBitStruct);
-		
-		public void write(BitStruct aBitStruct, Tuple aTuple)
-		{
-			aTuple.writeTo(aBitStruct);
+			return super.getTupleSize() + EVENT_TIMESTAMP_BITS;
 		}
 	}
 	
-	
 	/**
 	 * Base class for all index tuples. Only contains the timestamp.
-	 * @author gpothier
 	 */
-	public abstract static class Tuple
+	public static class IndexTuple extends Tuple
 	{
 		private long itsTimestamp;
 
-		public Tuple(long aTimestamp)
+		public IndexTuple(long aTimestamp)
 		{
 			itsTimestamp = aTimestamp;
 		}
 		
-		public Tuple(BitStruct aBitStruct)
+		public IndexTuple(BitStruct aBitStruct)
 		{
 			itsTimestamp = aBitStruct.readLong(EVENT_TIMESTAMP_BITS);
 		}
@@ -362,20 +227,25 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		}
 		
 		@Override
+		public boolean isNull()
+		{
+			return itsTimestamp == 0;
+		}
+		
+		@Override
 		public String toString()
 		{
 			return String.format("%s: t=%d",
 					getClass().getSimpleName(),
 					getTimestamp());
 		}
-
 	}
-	
+
 	/**
 	 * Codec for {@link InternalTuple}.
 	 * @author gpothier
 	 */
-	public static class InternalTupleCodec extends TupleCodec<InternalTuple>
+	private static class InternalTupleCodec extends IndexTupleCodec<InternalTuple>
 	{
 		private static InternalTupleCodec INSTANCE = new InternalTupleCodec();
 
@@ -404,7 +274,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 	/**
 	 * Tuple for internal index nodes.
 	 */
-	public static class InternalTuple extends Tuple
+	private static class InternalTuple extends IndexTuple
 	{
 		/**
 		 * Page pointer
@@ -445,66 +315,46 @@ public class HierarchicalIndex<T extends HierarchicalIndex.Tuple>
 		}
 	}
 	
-	public class TupleIterator implements Iterator<T>
+	private class MyTupleWriter<T extends IndexTuple> extends TupleWriter<T>
 	{
-		private PageBitStruct itsPage;
+		private final int itsLevel;
 		
-		private T itsNextTuple;
-
-		/**
-		 * Creates an exhausted iterator.
-		 */
-		public TupleIterator()
+		public MyTupleWriter(PagedFile aFile, TupleCodec<T> aTupleCodec, final int aLevel)
 		{
-			itsNextTuple = null;
-		}
-		
-		public TupleIterator(PageBitStruct aPage)
-		{
-			itsPage = aPage;
-			itsNextTuple = readNextTuple();
+			super(aFile, aTupleCodec);
+			itsLevel = aLevel;
 		}
 
-		private T readNextTuple()
+		@Override
+		protected void newPageHook(PageBitStruct aStruct, long aNewPageId)
 		{
-			if (itsPage.getRemainingBits() < itsTupleCodec.getTupleSize() + DB_PAGE_POINTER_BITS)
+			// If this is the first time we finish a page at this level,
+			// we must update upper level index.
+			if (itsRootLevel == itsLevel)
 			{
-				// We reached the end of the page, we must read the next-page pointer
-				long theNextPage = itsPage.readLong(DB_PAGE_POINTER_BITS);
-				if (theNextPage == 0) return null;
+				// Read timestamp of first tuple
+				aStruct.setPos(0);
+				long theTimestamp = aStruct.readLong(EVENT_TIMESTAMP_BITS);
 				
-//				itsFile.freePage(itsPage.getPage());
-				itsPage = itsFile.getPage(theNextPage-1).asBitStruct();
+				HierarchicalIndex.this.add(
+						new InternalTuple(theTimestamp, aStruct.getPage().getPageId()),
+						itsLevel+1, 
+						InternalTupleCodec.getInstance());
 			}
-			
-			T theTuple = itsTupleCodec.read(itsPage);
-			if (theTuple.getTimestamp() == 0) return null;
-			
-			return theTuple;
-		}
-		
-		public boolean hasNext()
-		{
-			return itsNextTuple != null;
 		}
 
-		public T next()
+		@Override
+		protected void startPageHook(PageBitStruct aStruct, T aTuple)
 		{
-			if (! hasNext()) throw new NoSuchElementException();
-			T theResult = itsNextTuple;
-			assert theResult != null;
-			itsNextTuple = readNextTuple();
-			return theResult;
-		}
-		
-		T getNextTuple()
-		{
-			return itsNextTuple;
-		}
-
-		public void remove()
-		{
-			throw new UnsupportedOperationException();
+			if (itsRootLevel > itsLevel)
+			{
+				// When we write the first tuple of a page we also update indexes.
+				long theTimestamp = aTuple.getTimestamp();
+				HierarchicalIndex.this.add(
+						new InternalTuple(theTimestamp, aStruct.getPage().getPageId()),
+						itsLevel+1, 
+						InternalTupleCodec.getInstance());
+			}
 		}
 		
 	}

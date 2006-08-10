@@ -6,7 +6,7 @@ package tod.impl.dbgrid.queries;
 import java.util.Iterator;
 
 import tod.impl.dbgrid.dbnode.Indexes;
-import tod.impl.dbgrid.dbnode.StdIndexSet.Tuple;
+import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.messages.EventType;
 import tod.impl.dbgrid.messages.GridEvent;
 
@@ -24,7 +24,7 @@ public class TypeCondition extends SimpleCondition
 	}
 
 	@Override
-	protected Iterator<Tuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
+	protected Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
 		return aIndexes.typeIndex.getIndex(itsType.ordinal()).getTupleIterator(aTimestamp);
 	}

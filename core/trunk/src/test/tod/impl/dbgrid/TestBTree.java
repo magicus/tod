@@ -12,8 +12,8 @@ import org.junit.Test;
 
 import static tod.impl.dbgrid.DebuggerGridConfig.*;
 
-import tod.impl.dbgrid.btree.BTree;
 import tod.impl.dbgrid.dbnode.PagedFile;
+import tod.impl.dbgrid.dbnode.btree.BTree;
 
 public class TestBTree
 {

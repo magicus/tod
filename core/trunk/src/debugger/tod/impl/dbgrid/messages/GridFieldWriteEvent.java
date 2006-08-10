@@ -99,17 +99,17 @@ public class GridFieldWriteEvent extends GridEvent
 	public void index(Indexes aIndexes, long aPointer)
 	{
 		super.index(aIndexes, aPointer);
-		StdIndexSet.Tuple theStdTuple = new StdIndexSet.Tuple(getTimestamp(), aPointer);
+		StdIndexSet.StdTuple theStdTuple = new StdIndexSet.StdTuple(getTimestamp(), aPointer);
 	
 		aIndexes.fieldIndex.addTuple(getFieldId(), theStdTuple);
 		
 		aIndexes.objectIndex.addTuple(
 				getObjectId(getTarget()), 
-				new RoleIndexSet.Tuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_TARGET));
+				new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_TARGET));
 		
 		aIndexes.objectIndex.addTuple(
 				getObjectId(getValue()), 
-				new RoleIndexSet.Tuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_VALUE));
+				new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_VALUE));
 	}
 	
 	@Override

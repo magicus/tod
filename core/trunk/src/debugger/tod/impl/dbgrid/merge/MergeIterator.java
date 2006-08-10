@@ -4,35 +4,34 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- * Base class for merge iterators. Maintains an array of head tuples,
+ * Base class for merge iterators. Maintains an array of head items,
  * one for each source iterator.
  * @author gpothier
  */
 public abstract class MergeIterator<T> implements Iterator<T>
 {
 	private final Iterator<T>[] itsIterators;
-	private final T[] itsHeadTuples;
-	private T itsNextTuple;
+	private final T[] itsHeadItems;
+	private T itsNextItem;
 
 	public MergeIterator(Iterator<T>[] aIterators)
 	{
 		itsIterators = aIterators;
-		itsHeadTuples = (T[]) new Object[itsIterators.length];
+		itsHeadItems = (T[]) new Object[itsIterators.length];
 
-		initHeadTuples();
+		initHeadItems();
 
-		itsNextTuple = readNextTuple();
+		itsNextItem = readNextItem();
 	}
 
-	protected void initHeadTuples()
+	protected void initHeadItems()
 	{
 		for (int i = 0; i < itsIterators.length; i++)
 			advance(i);
 	}
 
 	/**
-	 * Advances the specified head until a tuple is found that is accepted by
-	 * the tuple filter (a null tuple filter accepts all tuples). If the end of
+	 * Advances the specified head. If the end of
 	 * the stream is reached, the head is set to null and the method returns
 	 * false.
 	 * 
@@ -42,14 +41,14 @@ public abstract class MergeIterator<T> implements Iterator<T>
 	{
 		if (itsIterators[aHeadIndex].hasNext())
 		{
-			T theTuple = itsIterators[aHeadIndex].next();
+			T theitem = itsIterators[aHeadIndex].next();
 
-			itsHeadTuples[aHeadIndex] = theTuple;
+			itsHeadItems[aHeadIndex] = theitem;
 			return true;
 		}
 		else
 		{
-			itsHeadTuples[aHeadIndex] = null;
+			itsHeadItems[aHeadIndex] = null;
 			return false;
 		}
 	}
@@ -57,29 +56,29 @@ public abstract class MergeIterator<T> implements Iterator<T>
 	/**
 	 * Retrieves the next matching event pointer
 	 */
-	protected abstract T readNextTuple();
+	protected abstract T readNextItem();
 	
 	/**
 	 * Returns the timestamp of the specified tuple.
 	 */
-	protected abstract long getTimestamp(T aTuple);
+	protected abstract long getTimestamp(T aItem);
 	
 	/**
-	 * Indicates if the specified tuples represent the same event.
+	 * Indicates if the specified items represent the same event.
 	 */
 	protected abstract boolean sameEvent(T aTuple1, T aTuple2);
 
-	protected T[] getHeadTuples()
+	protected T[] getHeadItems()
 	{
-		return itsHeadTuples;
+		return itsHeadItems;
 	}
 
 	public T next()
 	{
 		if (!hasNext()) throw new NoSuchElementException();
-		T theResult = itsNextTuple;
-		T theNextTuple = readNextTuple();
-		itsNextTuple = theNextTuple;
+		T theResult = itsNextItem;
+		T theNextItem = readNextItem();
+		itsNextItem = theNextItem;
 		return theResult;
 	}
 

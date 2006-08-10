@@ -7,7 +7,7 @@ import java.util.Iterator;
 
 import tod.impl.dbgrid.dbnode.EventList;
 import tod.impl.dbgrid.dbnode.Indexes;
-import tod.impl.dbgrid.dbnode.StdIndexSet.Tuple;
+import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.messages.GridEvent;
 import zz.utils.AbstractFilteredIterator;
 
@@ -32,11 +32,11 @@ public abstract class EventCondition
 			Indexes aIndexes,
 			long aTimestamp)
 	{
-		Iterator<Tuple> theIterator = createTupleIterator(aIndexes, aTimestamp);
-		return new AbstractFilteredIterator<Tuple, GridEvent>(theIterator)
+		Iterator<StdTuple> theIterator = createTupleIterator(aIndexes, aTimestamp);
+		return new AbstractFilteredIterator<StdTuple, GridEvent>(theIterator)
 		{
 			@Override
-			protected Object transform(Tuple aIn)
+			protected Object transform(StdTuple aIn)
 			{
 				return aEventList.getEvent(aIn.getEventPointer());
 			}
@@ -52,7 +52,7 @@ public abstract class EventCondition
 	 * Creates an iterator over matching events, taking them from the specified
 	 * {@link EventList} and {@link Indexes}.
 	 */
-	protected abstract Iterator<Tuple> createTupleIterator(
+	protected abstract Iterator<StdTuple> createTupleIterator(
 			Indexes aIndexes,
 			long aTimestamp);
 	

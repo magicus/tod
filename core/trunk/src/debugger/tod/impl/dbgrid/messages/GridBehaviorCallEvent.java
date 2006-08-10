@@ -154,14 +154,14 @@ public class GridBehaviorCallEvent extends GridEvent
 		{
 			aIndexes.behaviorIndex.addTuple(
 					getCalledBehaviorId(), 
-					new RoleIndexSet.Tuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_CALLED));
+					new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_CALLED));
 		}
 		
 		if (getExecutedBehaviorId() != -1)
 		{
 			aIndexes.behaviorIndex.addTuple(
 					getExecutedBehaviorId(), 
-					new RoleIndexSet.Tuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_EXECUTED));
+					new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_EXECUTED));
 		}
 		
 		for (int i = 0; i < itsArguments.length; i++)
@@ -170,12 +170,12 @@ public class GridBehaviorCallEvent extends GridEvent
 
 			aIndexes.objectIndex.addTuple(
 					getObjectId(theArgument),
-					new RoleIndexSet.Tuple(getTimestamp(), aPointer, (byte) i));
+					new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, (byte) i));
 		}
 		
 		aIndexes.objectIndex.addTuple(
 				getObjectId(getTarget()), 
-				new RoleIndexSet.Tuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_TARGET));
+				new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_TARGET));
 	}
 	
 	@Override

@@ -87,13 +87,13 @@ public class GridVariableWriteEvent extends GridEvent
 	public void index(Indexes aIndexes, long aPointer)
 	{
 		super.index(aIndexes, aPointer);
-		StdIndexSet.Tuple theStdTuple = new StdIndexSet.Tuple(getTimestamp(), aPointer);
+		StdIndexSet.StdTuple theStdTuple = new StdIndexSet.StdTuple(getTimestamp(), aPointer);
 		
 		aIndexes.variableIndex.addTuple(getVariableId(), theStdTuple); 
 
 		aIndexes.objectIndex.addTuple(
 				getObjectId(getValue()), 
-				new RoleIndexSet.Tuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_VALUE));
+				new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_VALUE));
 	}
 	
 	@Override

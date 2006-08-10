@@ -20,7 +20,7 @@ public class BenchDatabaseNode
 
 	@Test public void test()
 	{
-		itsNode = new DatabaseNode();
+		itsNode = new DatabaseNode(0);
 		store();
 		fetchSimple(1000);
 		fetchCompound(100, 8);

@@ -1,4 +1,4 @@
-package tod.impl.dbgrid.btree;
+package tod.impl.dbgrid.dbnode.btree;
 
 import static tod.impl.dbgrid.DebuggerGridConfig.DB_BTREE_COUNT_BITS;
 import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_POINTER_BITS;
@@ -6,6 +6,7 @@ import static tod.impl.dbgrid.DebuggerGridConfig.EVENTID_POINTER_SIZE;
 
 import java.util.Arrays;
 
+import tod.impl.dbgrid.ExternalPointer;
 import tod.impl.dbgrid.dbnode.PagedFile.Page;
 import tod.impl.dbgrid.dbnode.PagedFile.PageBitStruct;
 
@@ -15,7 +16,6 @@ import tod.impl.dbgrid.dbnode.PagedFile.PageBitStruct;
  */
 public class Node
 {
-	private static final byte[] BLANK_POINTER = new byte[(EVENTID_POINTER_SIZE+7) / 8];
 	
 	/**
 	 * The tree that owns this node.
@@ -137,7 +137,7 @@ public class Node
 			byte[] theKey = itsKeys[i];
 			
 			theBitStruct.writeBytes(
-					theKey != null ? theKey : BLANK_POINTER,
+					theKey != null ? theKey : ExternalPointer.BLANK_POINTER,
 					EVENTID_POINTER_SIZE);
 			
 			theBitStruct.writeLong(itsValues[i], DB_PAGE_POINTER_BITS);

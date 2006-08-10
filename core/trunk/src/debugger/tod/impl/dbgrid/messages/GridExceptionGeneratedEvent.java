@@ -88,11 +88,11 @@ public class GridExceptionGeneratedEvent extends GridEvent
 		
 		aIndexes.behaviorIndex.addTuple(
 				getThrowingBehaviorId(),
-				new RoleIndexSet.Tuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_EXECUTED));
+				new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_EXECUTED));
 		
 		aIndexes.objectIndex.addTuple(
 				getObjectId(getException()), 
-				new RoleIndexSet.Tuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_EXCEPTION));
+				new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_EXCEPTION));
 	}
 	
 	@Override

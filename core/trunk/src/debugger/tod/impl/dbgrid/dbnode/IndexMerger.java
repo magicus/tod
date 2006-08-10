@@ -18,7 +18,7 @@ public class IndexMerger
 	 * Returns an iterator that retrieves all the events that are common to all
 	 * the specified indexes starting from a specified timestamp. 
 	 */
-	public static <T extends StdIndexSet.Tuple> Iterator<T> conjunction(Iterator<T>[] aIterators)
+	public static <T extends StdIndexSet.StdTuple> Iterator<T> conjunction(Iterator<T>[] aIterators)
 	{
 		return new MyConjunctionIterator<T>(aIterators);
 	}
@@ -26,7 +26,7 @@ public class IndexMerger
 	/**
 	 * Returns an iterator that retrieves all the events of all the specified indexes. 
 	 */
-	public static <T extends StdIndexSet.Tuple> Iterator<T> disjunction(Iterator<T>[] aIterators)
+	public static <T extends StdIndexSet.StdTuple> Iterator<T> disjunction(Iterator<T>[] aIterators)
 	{
 		return new MyDisjunctionIterator<T>(aIterators);
 	}
@@ -35,7 +35,7 @@ public class IndexMerger
 	 * Returns the tuple iterators of all the specified indexes, starting
 	 * at the specified timestamp. 
 	 */
-	public static <T extends StdIndexSet.Tuple> Iterator<T>[] getIterators(
+	public static <T extends StdIndexSet.StdTuple> Iterator<T>[] getIterators(
 			HierarchicalIndex<T>[] aIndexes,
 			long aTimestamp)
 	{
@@ -49,7 +49,7 @@ public class IndexMerger
 	}
 	
 	
-	public static class MyConjunctionIterator<T extends StdIndexSet.Tuple> 
+	public static class MyConjunctionIterator<T extends StdIndexSet.StdTuple> 
 	extends ConjunctionIterator<T>
 	{
 		public MyConjunctionIterator(Iterator<T>[] aIterators)
@@ -58,9 +58,9 @@ public class IndexMerger
 		}
 
 		@Override
-		protected long getTimestamp(T aTuple)
+		protected long getTimestamp(T aItem)
 		{
-			return aTuple.getTimestamp();
+			return aItem.getTimestamp();
 		}
 
 		@Override
@@ -70,7 +70,7 @@ public class IndexMerger
 		}
 	}
 	
-	public static class MyDisjunctionIterator<T extends StdIndexSet.Tuple> 
+	public static class MyDisjunctionIterator<T extends StdIndexSet.StdTuple> 
 	extends DisjunctionIterator<T>
 	{
 		public MyDisjunctionIterator(Iterator<T>[] aIterators)
@@ -79,9 +79,9 @@ public class IndexMerger
 		}
 		
 		@Override
-		protected long getTimestamp(T aTuple)
+		protected long getTimestamp(T aItem)
 		{
-			return aTuple.getTimestamp();
+			return aItem.getTimestamp();
 		}
 
 		@Override

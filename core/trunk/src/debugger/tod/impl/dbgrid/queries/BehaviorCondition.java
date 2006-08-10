@@ -7,7 +7,7 @@ import java.util.Iterator;
 
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
-import tod.impl.dbgrid.dbnode.StdIndexSet.Tuple;
+import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.messages.GridEvent;
 
 /**
@@ -26,9 +26,9 @@ public class BehaviorCondition extends SimpleCondition
 	}
 	
 	@Override
-	protected Iterator<Tuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
+	protected Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
-		Iterator<RoleIndexSet.Tuple> theTupleIterator = aIndexes.behaviorIndex.getIndex(itsBehaviorId).getTupleIterator(aTimestamp);
+		Iterator<RoleIndexSet.RoleTuple> theTupleIterator = aIndexes.behaviorIndex.getIndex(itsBehaviorId).getTupleIterator(aTimestamp);
 		theTupleIterator = itsRole == RoleIndexSet.ROLE_BEHAVIOR_ANY ? 
 				RoleIndexSet.createFilteredIterator(theTupleIterator)
 				: RoleIndexSet.createFilteredIterator(theTupleIterator, itsRole);

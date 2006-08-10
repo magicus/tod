@@ -20,14 +20,14 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 	}
 
 	@Override
-	protected void initHeadTuples()
+	protected void initHeadItems()
 	{
-		super.initHeadTuples();
+		super.initHeadItems();
 
 		itsExhausted = false;
-		for (T theTuple : getHeadTuples())
+		for (T theItem : getHeadItems())
 		{
-			if (theTuple == null)
+			if (theItem == null)
 			{
 				itsExhausted = true;
 				break;
@@ -41,7 +41,7 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 	}
 
 	@Override
-	protected T readNextTuple()
+	protected T readNextItem()
 	{
 		if (itsExhausted) return null;
 
@@ -51,30 +51,30 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 		{
 			theMatch = true;
 
-			T theRefTuple = null;
+			T theRefItem = null;
 			int theMinTimestampHead = -1;
 			long theMinTimestamp = Long.MAX_VALUE;
 
 			// Check if current head set is a match (ie. all head tuples point
 			// to the same event).
 			// At the same time find the head that has the minimum timestamp
-			for (int i = 0; i < getHeadTuples().length; i++)
+			for (int i = 0; i < getHeadItems().length; i++)
 			{
-				T theTuple = getHeadTuples()[i];
+				T theItem = getHeadItems()[i];
 
-				if (theRefTuple == null) theRefTuple = theTuple;
-				else if (! sameEvent(theRefTuple, theTuple)) theMatch = false;
+				if (theRefItem == null) theRefItem = theItem;
+				else if (! sameEvent(theRefItem, theItem)) theMatch = false;
 
-				if (getTimestamp(theTuple) < theMinTimestamp)
+				if (getTimestamp(theItem) < theMinTimestamp)
 				{
-					theMinTimestamp = getTimestamp(theTuple);
+					theMinTimestamp = getTimestamp(theItem);
 					theMinTimestampHead = i;
 				}
 			}
 
 			if (theMatch)
 			{
-				theResult = theRefTuple;
+				theResult = theRefItem;
 			}
 
 			if (!advance(theMinTimestampHead)) itsExhausted = true;

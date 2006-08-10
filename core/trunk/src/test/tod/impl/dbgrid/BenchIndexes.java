@@ -10,11 +10,11 @@ import org.junit.Test;
 import tod.impl.dbgrid.BenchBase.BenchResults;
 import tod.impl.dbgrid.TestHierarchicalIndex.TimestampGenerator;
 import tod.impl.dbgrid.dbnode.HierarchicalIndex;
-import tod.impl.dbgrid.dbnode.StdIndexSet.Tuple;
+import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
 
 public class BenchIndexes
 {
-	private HierarchicalIndex<Tuple> itsIndex;
+	private HierarchicalIndex<StdTuple> itsIndex;
 	
 	@Test
 	public void hierarchicalWriteBench()

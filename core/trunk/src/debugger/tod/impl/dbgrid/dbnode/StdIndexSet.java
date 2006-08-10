@@ -3,11 +3,13 @@
  */
 package tod.impl.dbgrid.dbnode;
 
+import tod.impl.dbgrid.dbnode.HierarchicalIndex.IndexTuple;
+import tod.impl.dbgrid.dbnode.HierarchicalIndex.IndexTupleCodec;
 import zz.utils.bit.BitStruct;
 
-public class StdIndexSet extends IndexSet<StdIndexSet.Tuple> 
+public class StdIndexSet extends IndexSet<StdIndexSet.StdTuple> 
 {
-	public static final TupleCodec TUPLE_CODEC = new TupleCodec();
+	public static final TupleCodec TUPLE_CODEC = new StdTupleCodec();
 	
 	public StdIndexSet(String aName, PagedFile aFile, int aIndexCount)
 	{
@@ -15,14 +17,13 @@ public class StdIndexSet extends IndexSet<StdIndexSet.Tuple>
 	}
 	
 	@Override
-	protected HierarchicalIndex<Tuple> createIndex(String aName, PagedFile aFile)
+	protected HierarchicalIndex<StdTuple> createIndex(String aName, PagedFile aFile)
 	{
-		return new HierarchicalIndex<Tuple>(aName, aFile, TUPLE_CODEC);
+		return new HierarchicalIndex<StdTuple>(aName, aFile, TUPLE_CODEC);
 	}
 
-	public static class TupleCodec extends HierarchicalIndex.TupleCodec<Tuple>
+	public static class StdTupleCodec extends IndexTupleCodec<StdTuple>
 	{
-
 		@Override
 		public int getTupleSize()
 		{
@@ -30,27 +31,26 @@ public class StdIndexSet extends IndexSet<StdIndexSet.Tuple>
 		}
 
 		@Override
-		public Tuple read(BitStruct aBitStruct)
+		public StdTuple read(BitStruct aBitStruct)
 		{
-			return new Tuple(aBitStruct);
+			return new StdTuple(aBitStruct);
 		}
-		
 	}
 	
-	public static class Tuple extends HierarchicalIndex.Tuple
+	public static class StdTuple extends IndexTuple
 	{
 		/**
 		 * Internal event pointer
 		 */
 		private long itsEventPointer;
 
-		public Tuple(long aTimestamp, long aEventPointer)
+		public StdTuple(long aTimestamp, long aEventPointer)
 		{
 			super(aTimestamp);
 			itsEventPointer = aEventPointer;
 		}
 		
-		public Tuple(BitStruct aBitStruct)
+		public StdTuple(BitStruct aBitStruct)
 		{
 			super(aBitStruct);
 			itsEventPointer = aBitStruct.readLong(64);

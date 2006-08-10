@@ -13,8 +13,8 @@ import java.util.Random;
 import org.junit.Test;
 
 import tod.impl.dbgrid.BenchBase.BenchResults;
-import tod.impl.dbgrid.btree.BTree;
 import tod.impl.dbgrid.dbnode.PagedFile;
+import tod.impl.dbgrid.dbnode.btree.BTree;
 
 public class BenchBTree
 {

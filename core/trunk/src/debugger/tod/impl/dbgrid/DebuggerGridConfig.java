@@ -3,10 +3,10 @@
  */
 package tod.impl.dbgrid;
 
-import tod.impl.dbgrid.btree.Node;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
 import tod.impl.dbgrid.dbnode.EventList;
 import tod.impl.dbgrid.dbnode.HierarchicalIndex;
+import tod.impl.dbgrid.dbnode.btree.Node;
 import tod.impl.dbgrid.messages.EventType;
 import zz.utils.bit.BitUtils;
 
@@ -141,6 +141,11 @@ public class DebuggerGridConfig
 	 * Size of an index page in the database
 	 */
 	public static final int DB_INDEX_PAGE_SIZE = 4096;
+	
+	/**
+	 * Size of a cflow data page in the database
+	 */
+	public static final int DB_CFLOW_PAGE_SIZE = 4096;
 	
 	/**
 	 * Size of a btree page 

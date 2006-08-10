@@ -7,23 +7,28 @@ import zz.utils.bit.BitStruct;
 import zz.utils.bit.BitUtils;
 import zz.utils.bit.ByteBitStruct;
 
+import static tod.impl.dbgrid.DebuggerGridConfig.*;
+
 /**
  * Expanded representation of an external pointer.
  * @author gpothier
  */
 public class ExternalPointer
 {
-	private final int itsNode;
-	private final int itsHost;
-	private final int itsThread;
-	private final long itsTimestamp;
+	public static final byte[] BLANK_POINTER = new byte[(EVENTID_POINTER_SIZE+7) / 8];
+
+	
+	public final int node;
+	public final int host;
+	public final int thread;
+	public final long timestamp;
 
 	public ExternalPointer(int aNode, int aHost, int aThread, long aTimestamp)
 	{
-		itsNode = aNode;
-		itsHost = aHost;
-		itsThread = aThread;
-		itsTimestamp = aTimestamp;
+		node = aNode;
+		host = aHost;
+		thread = aThread;
+		timestamp = aTimestamp;
 	}
 	
 	/**
@@ -31,7 +36,7 @@ public class ExternalPointer
 	 */
 	public void writeTo(BitStruct aBitStruct)
 	{
-		write(aBitStruct, itsNode, itsHost, itsThread, itsTimestamp);
+		write(aBitStruct, node, host, thread, timestamp);
 	}
 	
 	/**
@@ -67,7 +72,7 @@ public class ExternalPointer
 	/**
 	 * Reads an external pointer from the given struct.
 	 */
-	public static ExternalPointer read(ByteBitStruct aBitStruct)
+	public static ExternalPointer read(BitStruct aBitStruct)
 	{
 		int theNode = aBitStruct.readInt(DebuggerGridConfig.EVENT_NODE_BITS);
 		int theHost = aBitStruct.readInt(DebuggerGridConfig.EVENT_HOST_BITS);
@@ -77,5 +82,18 @@ public class ExternalPointer
 		return new ExternalPointer(theNode, theHost, theThread, theTimestamp);
 	}
 	
+	public static ExternalPointer read(byte[] aPointer)
+	{
+		return read(new ByteBitStruct(aPointer));
+	}
+	
+	/**
+	 * Indicates if the given pointer is null
+	 */
+	public static boolean isNull(byte[] aPointer)
+	{
+		for (byte b : aPointer) if (b != 0) return false;
+		return true;
+	}
 }
 

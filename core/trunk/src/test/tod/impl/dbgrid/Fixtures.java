@@ -25,22 +25,22 @@ import zz.utils.bit.IntBitStruct;
 public class Fixtures
 {
 
-	public static HierarchicalIndex<StdIndexSet.Tuple> createStdIndex() 
+	public static HierarchicalIndex<StdIndexSet.StdTuple> createStdIndex() 
 	{
 		return createStdIndexes(1)[0];
 	}
 
-	public static HierarchicalIndex<StdIndexSet.Tuple>[] createStdIndexes(int aCount) 
+	public static HierarchicalIndex<StdIndexSet.StdTuple>[] createStdIndexes(int aCount) 
 	{
 		try
 		{
 			File theFile = new File("stdIndexTest.bin");
 			theFile.delete();
 			PagedFile thePagedFile = new PagedFile(theFile, DebuggerGridConfig.DB_INDEX_PAGE_SIZE);
-			HierarchicalIndex<StdIndexSet.Tuple>[] theIndexes = new HierarchicalIndex[aCount];
+			HierarchicalIndex<StdIndexSet.StdTuple>[] theIndexes = new HierarchicalIndex[aCount];
 			for (int i = 0; i < theIndexes.length; i++)
 			{
-				theIndexes[i] = new HierarchicalIndex<StdIndexSet.Tuple>(
+				theIndexes[i] = new HierarchicalIndex<StdIndexSet.StdTuple>(
 						""+i, 
 						thePagedFile, 
 						StdIndexSet.TUPLE_CODEC);
@@ -54,22 +54,22 @@ public class Fixtures
 		}
 	}
 	
-	public static HierarchicalIndex<RoleIndexSet.Tuple> createRoleIndex() 
+	public static HierarchicalIndex<RoleIndexSet.RoleTuple> createRoleIndex() 
 	{
 		return createRoleIndexes(1)[0];
 	}
 	
-	public static HierarchicalIndex<RoleIndexSet.Tuple>[] createRoleIndexes(int aCount) 
+	public static HierarchicalIndex<RoleIndexSet.RoleTuple>[] createRoleIndexes(int aCount) 
 	{
 		try
 		{
 			File theFile = new File("roleIndexTest.bin");
 			theFile.delete();
 			PagedFile thePagedFile = new PagedFile(theFile, DebuggerGridConfig.DB_INDEX_PAGE_SIZE);
-			HierarchicalIndex<RoleIndexSet.Tuple>[] theIndexes = new HierarchicalIndex[aCount];
+			HierarchicalIndex<RoleIndexSet.RoleTuple>[] theIndexes = new HierarchicalIndex[aCount];
 			for (int i = 0; i < theIndexes.length; i++)
 			{
-				theIndexes[i] = new HierarchicalIndex<RoleIndexSet.Tuple>(
+				theIndexes[i] = new HierarchicalIndex<RoleIndexSet.RoleTuple>(
 						""+i, 
 						thePagedFile, 
 						RoleIndexSet.TUPLE_CODEC);
@@ -113,14 +113,14 @@ public class Fixtures
 	 * Fills an std index with values.
 	 */
 	public static void fillStdIndex(
-			HierarchicalIndex<StdIndexSet.Tuple> aIndex, 
+			HierarchicalIndex<StdIndexSet.StdTuple> aIndex, 
 			TestHierarchicalIndex.TimestampGenerator aGenerator,
 			long aTupleCount)
 	{
 		for (long i=0;i<aTupleCount;i++)
 		{
 			long theTimestamp = aGenerator.next();
-			aIndex.add(new StdIndexSet.Tuple(theTimestamp, inventData(theTimestamp)));
+			aIndex.add(new StdIndexSet.StdTuple(theTimestamp, inventData(theTimestamp)));
 			
 			if (i % 1000000 == 0) System.out.println("w: "+i);
 		}
@@ -130,14 +130,14 @@ public class Fixtures
 	 * Fills an std index with values.
 	 */
 	public static void fillRoleIndex(
-			HierarchicalIndex<RoleIndexSet.Tuple> aIndex, 
+			HierarchicalIndex<RoleIndexSet.RoleTuple> aIndex, 
 			TestHierarchicalIndex.TimestampGenerator aGenerator,
 			long aTupleCount)
 	{
 		for (long i=0;i<aTupleCount;i++)
 		{
 			long theTimestamp = aGenerator.next();
-			aIndex.add(new RoleIndexSet.Tuple(
+			aIndex.add(new RoleIndexSet.RoleTuple(
 					theTimestamp, 
 					inventData(theTimestamp), 
 					inventRole(theTimestamp)));

@@ -7,7 +7,7 @@ import java.util.Iterator;
 
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.IndexMerger;
-import tod.impl.dbgrid.dbnode.StdIndexSet.Tuple;
+import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.messages.GridEvent;
 
 /**
@@ -18,11 +18,11 @@ public class Disjunction extends CompoundCondition
 {
 
 	@Override
-	protected Iterator<Tuple> createTupleIterator(
+	protected Iterator<StdTuple> createTupleIterator(
 			Indexes aIndexes,
 			long aTimestamp)
 	{
-		Iterator<Tuple>[] theIterators = new Iterator[getConditions().size()];
+		Iterator<StdTuple>[] theIterators = new Iterator[getConditions().size()];
 		int i = 0;
 		for (EventCondition theCondition : getConditions())
 		{

@@ -21,7 +21,7 @@ public class TestDatabaseNode
 {
 	@Test public void check()
 	{
-		DatabaseNode theNode = new DatabaseNode();
+		DatabaseNode theNode = new DatabaseNode(0);
 		EventGenerator theEventGenerator = createGenerator();
 		
 		System.out.println("filling...");

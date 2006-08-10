@@ -3,6 +3,7 @@
  */
 package tod.impl.dbgrid.dbnode;
 
+import tod.impl.dbgrid.dbnode.HierarchicalIndex.IndexTuple;
 import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Probe;
@@ -12,7 +13,7 @@ import tod.impl.dbgrid.monitoring.Probe;
  * there is one index per possible attribute value.
  * @author gpothier
  */
-public abstract class IndexSet<T extends HierarchicalIndex.Tuple>
+public abstract class IndexSet<T extends IndexTuple>
 {
 	private HierarchicalIndex<T>[] itsIndexes;
 	

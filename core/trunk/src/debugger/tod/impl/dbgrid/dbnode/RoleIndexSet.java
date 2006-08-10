@@ -12,7 +12,7 @@ import zz.utils.bit.BitStruct;
  * An index set where index tuples have associated roles
  * @author gpothier
  */
-public class RoleIndexSet extends IndexSet<RoleIndexSet.Tuple>
+public class RoleIndexSet extends IndexSet<RoleIndexSet.RoleTuple>
 {
 	public static final byte ROLE_BEHAVIOR_ANY = 0;
 	public static final byte ROLE_BEHAVIOR_CALLED = 1;
@@ -24,7 +24,7 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.Tuple>
 	public static final byte ROLE_OBJECT_RESULT = -3;
 	public static final byte ROLE_OBJECT_EXCEPTION = -4;
 	
-	public static final TupleCodec TUPLE_CODEC = new TupleCodec();
+	public static final TupleCodec TUPLE_CODEC = new RoleTupleCodec();
 	
 	public RoleIndexSet(String aName, PagedFile aFile, int aIndexCount)
 	{
@@ -32,21 +32,21 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.Tuple>
 	}
 	
 	@Override
-	protected HierarchicalIndex<Tuple> createIndex(String aName, PagedFile aFile)
+	protected HierarchicalIndex<RoleTuple> createIndex(String aName, PagedFile aFile)
 	{
-		return new HierarchicalIndex<Tuple>(aName, aFile, TUPLE_CODEC);
+		return new HierarchicalIndex<RoleTuple>(aName, aFile, TUPLE_CODEC);
 	}
 	
 	/**
 	 * Creates an iterator that filters out the tuples from a source iterator that
 	 * don't have the specified role.
 	 */
-	public static Iterator<Tuple> createFilteredIterator(Iterator<Tuple> aIterator, final byte aRole)
+	public static Iterator<RoleTuple> createFilteredIterator(Iterator<RoleTuple> aIterator, final byte aRole)
 	{
-		return new AbstractFilteredIterator<Tuple, Tuple>(aIterator)
+		return new AbstractFilteredIterator<RoleTuple, RoleTuple>(aIterator)
 		{
 			@Override
-			protected Object transform(Tuple aIn)
+			protected Object transform(RoleTuple aIn)
 			{
 				return aIn.getRole() == aRole ? aIn : REJECT;
 			}
@@ -59,16 +59,16 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.Tuple>
 	 * and executed method, it would appear twice in the behavior index with
 	 * a different role.
 	 */
-	public static Iterator<Tuple> createFilteredIterator(Iterator<Tuple> aIterator)
+	public static Iterator<RoleTuple> createFilteredIterator(Iterator<RoleTuple> aIterator)
 	{
 		return new DuplicateFilterIterator(aIterator);
 	}
 	
-	private static class DuplicateFilterIterator extends AbstractFilteredIterator<Tuple, Tuple>
+	private static class DuplicateFilterIterator extends AbstractFilteredIterator<RoleTuple, RoleTuple>
 	{
 		private long itsLastEventPointer;
 		
-		public DuplicateFilterIterator(Iterator<Tuple> aIterator)
+		public DuplicateFilterIterator(Iterator<RoleTuple> aIterator)
 		{
 			super(aIterator);
 		}
@@ -80,7 +80,7 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.Tuple>
 		}
 
 		@Override
-		protected Object transform(Tuple aIn)
+		protected Object transform(RoleTuple aIn)
 		{
 			if (aIn.getEventPointer() == itsLastEventPointer) return REJECT;
 			itsLastEventPointer = aIn.getEventPointer();
@@ -90,7 +90,7 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.Tuple>
 	}
 	
 
-	private static class TupleCodec extends HierarchicalIndex.TupleCodec<Tuple>
+	private static class RoleTupleCodec extends TupleCodec<RoleTuple>
 	{
 
 		@Override
@@ -100,25 +100,25 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.Tuple>
 		}
 
 		@Override
-		public Tuple read(BitStruct aBitStruct)
+		public RoleTuple read(BitStruct aBitStruct)
 		{
-			return new Tuple(aBitStruct);
+			return new RoleTuple(aBitStruct);
 		}
 		
 	}
 	
-	public static class Tuple extends StdIndexSet.Tuple
+	public static class RoleTuple extends StdIndexSet.StdTuple
 	{
 		private byte itsRole;
 
-		public Tuple(long aTimestamp, long aEventPointer, int aRole)
+		public RoleTuple(long aTimestamp, long aEventPointer, int aRole)
 		{
 			super(aTimestamp, aEventPointer);
 			if (aRole > Byte.MAX_VALUE) throw new RuntimeException("Role overflow");
 			itsRole = (byte) aRole;
 		}
 
-		public Tuple(BitStruct aBitStruct)
+		public RoleTuple(BitStruct aBitStruct)
 		{
 			super(aBitStruct);
 			itsRole = (byte) aBitStruct.readInt(8);

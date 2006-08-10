@@ -19,36 +19,55 @@ import zz.utils.SortedRingBuffer;
 
 public class DatabaseNode
 {
+	/**
+	 * Id of this node in the system
+	 */
+	private final int itsNodeId;
+	
+	private final PagedFile itsEventsFile;
+	private final PagedFile itsIndexesFile;
+	private final PagedFile itsCFlowDataFile;
+	
 	private final EventList itsEventList;
 	private final Indexes itsIndexes;
+	private final CFlowMap itsCFlowMap;
 	
 	/**
 	 * Timestamp of the last processed event
 	 */
 	private long itsLastProcessedTimestamp;
+	
 	private SortedRingBuffer<GridEvent> itsEventBuffer = 
 		new SortedRingBuffer<GridEvent>(DB_EVENT_BUFFER_SIZE, new EventTimestampComparator());
 	
-	private PagedFile itsEventsFile;
-	private PagedFile itsIndexesFile;
-	
 	private boolean itsFlushed = false;
 	
-	public DatabaseNode()
+	public DatabaseNode(int aNodeId)
 	{
 		Monitor.getInstance().register(this);
+		itsNodeId = aNodeId;
 		try
 		{
 			itsEventsFile = new PagedFile(new File("events.bin"), DB_EVENT_PAGE_SIZE);
-			itsEventList = new EventList(itsEventsFile);
-			
 			itsIndexesFile = new PagedFile(new File("indexes.bin"), DB_INDEX_PAGE_SIZE);
+			itsCFlowDataFile = new PagedFile(new File("cflow.bin"), DB_CFLOW_PAGE_SIZE);
+			
+			itsEventList = new EventList(itsEventsFile);
 			itsIndexes = new Indexes(itsIndexesFile);
+			itsCFlowMap = new CFlowMap(this, itsIndexesFile, itsCFlowDataFile);
 		}
 		catch (FileNotFoundException e)
 		{
 			throw new RuntimeException(e);
 		}
+	}
+
+	/**
+	 * Returns the id of this node
+	 */
+	public int getNodeId()
+	{
+		return itsNodeId;
 	}
 
 	public Indexes getIndexes()
@@ -125,7 +144,7 @@ public class DatabaseNode
 	
 	private void processAddChildEvent(AddChildEvent aMessage)
 	{
-		
+		itsCFlowMap.add(aMessage.getParentPointer(), aMessage.getChildPointer());
 	}
 	
 	/**

@@ -179,7 +179,7 @@ public abstract class GridEvent extends GridMessage
 	public void index(Indexes aIndexes, long aPointer)
 	{
 		// We add the same tuple to all standard indexes so we create it now.
-		StdIndexSet.Tuple theStdTuple = new StdIndexSet.Tuple(getTimestamp(), aPointer);
+		StdIndexSet.StdTuple theStdTuple = new StdIndexSet.StdTuple(getTimestamp(), aPointer);
 		
 		aIndexes.typeIndex.addTuple((byte) getEventType().ordinal(), theStdTuple);
 		aIndexes.bytecodeLocationIndex.addTuple(getOperationBytecodeIndex(), theStdTuple);

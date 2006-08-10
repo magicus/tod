@@ -108,11 +108,11 @@ public class GridBehaviorExitEvent extends GridEvent
 		
 		aIndexes.behaviorIndex.addTuple(
 				getBehaviorId(), 
-				new RoleIndexSet.Tuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_EXIT));
+				new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_EXIT));
 		
 		aIndexes.objectIndex.addTuple(
 				getObjectId(getResult()), 
-				new RoleIndexSet.Tuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_RESULT));
+				new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_RESULT));
 	}
 
 	@Override

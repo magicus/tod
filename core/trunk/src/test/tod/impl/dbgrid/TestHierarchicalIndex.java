@@ -14,7 +14,7 @@ import org.junit.runner.JUnitCore;
 import tod.impl.dbgrid.dbnode.HierarchicalIndex;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import tod.impl.dbgrid.dbnode.StdIndexSet;
-import tod.impl.dbgrid.dbnode.RoleIndexSet.Tuple;
+import tod.impl.dbgrid.dbnode.RoleIndexSet.RoleTuple;
 
 public class TestHierarchicalIndex
 {
@@ -25,7 +25,7 @@ public class TestHierarchicalIndex
 		fillCheck(new RoleIndexTester(), 10000000);
 	}
 	
-	private <T extends StdIndexSet.Tuple> void fillCheck(IndexTester<T> aTester, long aTupleCount)
+	private <T extends StdIndexSet.StdTuple> void fillCheck(IndexTester<T> aTester, long aTupleCount)
 	{
 		HierarchicalIndex<T> theIndex = aTester.createIndex();
 		aTester.fillIndex(theIndex, new TimestampGenerator(0), aTupleCount);
@@ -39,7 +39,7 @@ public class TestHierarchicalIndex
 		testSeek(new RoleIndexTester());
 	}
 	
-	private <T extends StdIndexSet.Tuple> void testSeek(IndexTester<T> aTester)
+	private <T extends StdIndexSet.StdTuple> void testSeek(IndexTester<T> aTester)
 	{
 		HierarchicalIndex<T> theIndex = aTester.createIndex();
 		aTester.fillIndex(theIndex, new TimestampGenerator(0), 1000000);
@@ -52,7 +52,7 @@ public class TestHierarchicalIndex
 		aTester.seekAndCheck(theIndex, new TimestampGenerator(0), 10000, 900000);
 	}
 	
-	private abstract static class IndexTester<T extends StdIndexSet.Tuple>
+	private abstract static class IndexTester<T extends StdIndexSet.StdTuple>
 	{
 		public abstract HierarchicalIndex<T> createIndex();
 		
@@ -132,37 +132,37 @@ public class TestHierarchicalIndex
 		
 	}
 	
-	private static class StdIndexTester extends IndexTester<StdIndexSet.Tuple>
+	private static class StdIndexTester extends IndexTester<StdIndexSet.StdTuple>
 	{
 		@Override
-		public HierarchicalIndex<tod.impl.dbgrid.dbnode.StdIndexSet.Tuple> createIndex()
+		public HierarchicalIndex<tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple> createIndex()
 		{
 			return Fixtures.createStdIndex();
 		}
 
 		@Override
-		public void fillIndex(HierarchicalIndex<tod.impl.dbgrid.dbnode.StdIndexSet.Tuple> aIndex, TimestampGenerator aGenerator, long aTupleCount)
+		public void fillIndex(HierarchicalIndex<tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple> aIndex, TimestampGenerator aGenerator, long aTupleCount)
 		{
 			Fixtures.fillStdIndex(aIndex, aGenerator, aTupleCount);
 		}
 	}
 	
-	private static class RoleIndexTester extends IndexTester<RoleIndexSet.Tuple>
+	private static class RoleIndexTester extends IndexTester<RoleIndexSet.RoleTuple>
 	{
 		@Override
-		public HierarchicalIndex<Tuple> createIndex()
+		public HierarchicalIndex<RoleTuple> createIndex()
 		{
 			return Fixtures.createRoleIndex();
 		}
 
 		@Override
-		public void fillIndex(HierarchicalIndex<Tuple> aIndex, TimestampGenerator aGenerator, long aTupleCount)
+		public void fillIndex(HierarchicalIndex<RoleTuple> aIndex, TimestampGenerator aGenerator, long aTupleCount)
 		{
 			Fixtures.fillRoleIndex(aIndex, aGenerator, aTupleCount);
 		}
 
 		@Override
-		protected void checkTuple(Tuple aTuple, long aTimestamp)
+		protected void checkTuple(RoleTuple aTuple, long aTimestamp)
 		{
 			super.checkTuple(aTuple, aTimestamp);
 			if (aTuple.getRole() != Fixtures.inventRole(aTimestamp)) fail("Role mismatch");

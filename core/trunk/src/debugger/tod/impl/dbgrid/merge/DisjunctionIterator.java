@@ -19,13 +19,13 @@ public abstract class DisjunctionIterator<T> extends MergeIterator<T>
 	}
 
 	@Override
-	protected void initHeadTuples()
+	protected void initHeadItems()
 	{
-		super.initHeadTuples();
+		super.initHeadItems();
 		itsRemainingHeads = 0;
-		for (T theTuple : getHeadTuples())
+		for (T theItem : getHeadItems())
 		{
-			if (theTuple != null) itsRemainingHeads++;
+			if (theItem != null) itsRemainingHeads++;
 		}
 	}
 
@@ -35,40 +35,40 @@ public abstract class DisjunctionIterator<T> extends MergeIterator<T>
 	}
 
 	@Override
-	protected T readNextTuple()
+	protected T readNextItem()
 	{
 		if (itsRemainingHeads == 0) return null;
 
-		T theMinTimestampTuple = null;
+		T theMinTimestampItem = null;
 		long theMinTimestamp = Long.MAX_VALUE;
 
 		// Find the head with the minimum timestamp
-		for (int i = 0; i < getHeadTuples().length; i++)
+		for (int i = 0; i < getHeadItems().length; i++)
 		{
-			T theTuple = getHeadTuples()[i];
+			T theItem = getHeadItems()[i];
 
-			if (theTuple != null)
+			if (theItem != null)
 			{
-				long theTimestamp = getTimestamp(theTuple);
+				long theTimestamp = getTimestamp(theItem);
 				if (theTimestamp < theMinTimestamp)
 				{
 					theMinTimestamp = theTimestamp;
-					theMinTimestampTuple = theTuple;
+					theMinTimestampItem = theItem;
 				}
 			}
 		}
 
 		// Remove heads that point to the same event
-		for (int i = 0; i < getHeadTuples().length; i++)
+		for (int i = 0; i < getHeadItems().length; i++)
 		{
-			T theTuple = getHeadTuples()[i];
+			T theItem = getHeadItems()[i];
 
-			if (theTuple != null && sameEvent(theMinTimestampTuple, theTuple))
+			if (theItem != null && sameEvent(theMinTimestampItem, theItem))
 			{
 				if (!advance(i)) itsRemainingHeads--;
 			}
 		}
 
-		return theMinTimestampTuple;
+		return theMinTimestampItem;
 	}
 }
