@@ -1,7 +1,7 @@
 /*
  * Created on Jul 26, 2006
  */
-package tod.impl.dbgrid;
+package tod.impl.dbgrid.bench;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -9,7 +9,10 @@ import java.util.List;
 
 import org.junit.Test;
 
-import tod.impl.dbgrid.BenchBase.BenchResults;
+import tod.impl.dbgrid.ConditionGenerator;
+import tod.impl.dbgrid.EventGenerator;
+import tod.impl.dbgrid.Fixtures;
+import tod.impl.dbgrid.bench.BenchBase.BenchResults;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;

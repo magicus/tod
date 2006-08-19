@@ -18,6 +18,7 @@ import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import tod.impl.dbgrid.dbnode.StdIndexSet;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
+import tod.impl.dbgrid.test.TestHierarchicalIndex;
 import zz.utils.bit.BitStruct;
 import zz.utils.bit.IntBitStruct;
 

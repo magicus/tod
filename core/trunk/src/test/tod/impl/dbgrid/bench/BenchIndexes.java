@@ -1,16 +1,18 @@
 /*
  * Created on Jul 26, 2006
  */
-package tod.impl.dbgrid;
+package tod.impl.dbgrid.bench;
 
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import tod.impl.dbgrid.BenchBase.BenchResults;
-import tod.impl.dbgrid.TestHierarchicalIndex.TimestampGenerator;
+import tod.impl.dbgrid.Fixtures;
+import tod.impl.dbgrid.bench.BenchBase.BenchResults;
 import tod.impl.dbgrid.dbnode.HierarchicalIndex;
 import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
+import tod.impl.dbgrid.test.TestHierarchicalIndex;
+import tod.impl.dbgrid.test.TestHierarchicalIndex.TimestampGenerator;
 
 public class BenchIndexes
 {

@@ -14,14 +14,14 @@ import tod.impl.dbgrid.dbnode.PagedFile.PageBitStruct;
 /**
  * A tuple iterator reads {@link Tuple}s from a linked list of
  * {@link Page}s. Tuples are decoded with a user-specified
- * {@link TupleIterator}.
+ * {@link TupleCodec}.
  * @author gpothier
  */
-public class TupleIterator<T extends Tuple> implements Iterator<T>
+public class TupleIterator<T> implements Iterator<T>
 {
 	private PagedFile itsFile;
 	private TupleCodec<T> itsTupleCodec;
-	private PageBitStruct itsPage;
+	private PageBitStruct itsStruct;
 	private T itsNextTuple;
 
 	/**
@@ -32,29 +32,42 @@ public class TupleIterator<T extends Tuple> implements Iterator<T>
 		itsNextTuple = null;
 	}
 
-	public TupleIterator(PagedFile aFile, TupleCodec<T> aTupleCodec, PageBitStruct aPage)
+	public TupleIterator(PagedFile aFile, TupleCodec<T> aTupleCodec, PageBitStruct aStruct)
 	{
 		itsFile = aFile;
 		itsTupleCodec = aTupleCodec;
-		itsPage = aPage;
+		itsStruct = aStruct;
 		itsNextTuple = readNextTuple();
+	}
+	
+	/**
+	 * Reads the next page pointer from the given page.
+	 */
+	public static Long readNextPageId(Page aPage, int aTupleSize)
+	{
+		PageBitStruct theStruct = aPage.asBitStruct();
+		int thePageSize = theStruct.getRemainingBits();
+		int theTupleCount = (thePageSize - DB_PAGE_POINTER_BITS) / aTupleSize;
+		theStruct.setPos(theTupleCount * aTupleSize);
+		long theNextPage = theStruct.readLong(DB_PAGE_POINTER_BITS);
+		return theNextPage == 0 ? null : theNextPage-1;
 	}
 
 	private T readNextTuple()
 	{
-		if (itsPage.getRemainingBits() < itsTupleCodec.getTupleSize() + DB_PAGE_POINTER_BITS)
+		if (itsStruct.getRemainingBits() < itsTupleCodec.getTupleSize() + DB_PAGE_POINTER_BITS)
 		{
 			// We reached the end of the page, we must read the next-page
 			// pointer
-			long theNextPage = itsPage.readLong(DB_PAGE_POINTER_BITS);
+			long theNextPage = itsStruct.readLong(DB_PAGE_POINTER_BITS);
 			if (theNextPage == 0) return null;
 
 			// itsFile.freePage(itsPage.getPage());
-			itsPage = itsFile.getPage(theNextPage - 1).asBitStruct();
+			itsStruct = itsFile.getPage(theNextPage - 1).asBitStruct();
 		}
 
-		T theTuple = itsTupleCodec.read(itsPage);
-		if (theTuple.isNull()) return null;
+		T theTuple = itsTupleCodec.read(itsStruct);
+		if (itsTupleCodec.isNull(theTuple)) return null;
 
 		return theTuple;
 	}

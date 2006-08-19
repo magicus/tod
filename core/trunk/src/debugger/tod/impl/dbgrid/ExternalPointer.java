@@ -44,29 +44,29 @@ public class ExternalPointer
 	 */
 	public static byte[] create(int aNode, int aHost, int aThread, long aTimestamp)
 	{
-		BitStruct theBitStruct = new ByteBitStruct(DebuggerGridConfig.EVENTID_POINTER_SIZE);
+		BitStruct theBitStruct = new ByteBitStruct(EVENTID_POINTER_SIZE);
 		write(theBitStruct, aNode, aHost, aThread, aTimestamp);
 		return theBitStruct.packedBytes();
 	}
 	
 	public static void write(BitStruct aBitStruct, int aNode, int aHost, int aThread, long aTimestamp)
 	{
-		if (aNode >= BitUtils.pow2i(DebuggerGridConfig.EVENT_NODE_BITS))
+		if (BitUtils.isOverflow(aNode, EVENT_NODE_BITS))
 			throw new RuntimeException("Overflow on node: "+aNode);
 		
-		if (aHost >= BitUtils.pow2i(DebuggerGridConfig.EVENT_HOST_BITS))
+		if (BitUtils.isOverflow(aHost, EVENT_HOST_BITS))
 			throw new RuntimeException("Overflow on host: "+aHost);
 		
-		if (aThread >= BitUtils.pow2i(DebuggerGridConfig.EVENT_THREAD_BITS))
+		if (BitUtils.isOverflow(aThread, EVENT_THREAD_BITS))
 			throw new RuntimeException("Overflow on thread: "+aThread);
 		
-		if (aTimestamp >= BitUtils.pow2(DebuggerGridConfig.EVENT_TIMESTAMP_BITS))
+		if (BitUtils.isOverflow(aTimestamp, EVENT_TIMESTAMP_BITS))
 			throw new RuntimeException("Overflow on timestamp: "+aTimestamp);
 		
-		aBitStruct.writeInt(aNode, DebuggerGridConfig.EVENT_NODE_BITS);
-		aBitStruct.writeInt(aHost, DebuggerGridConfig.EVENT_HOST_BITS);
-		aBitStruct.writeInt(aThread, DebuggerGridConfig.EVENT_THREAD_BITS);
-		aBitStruct.writeLong(aTimestamp, DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
+		aBitStruct.writeInt(aNode, EVENT_NODE_BITS);
+		aBitStruct.writeInt(aHost, EVENT_HOST_BITS);
+		aBitStruct.writeInt(aThread, EVENT_THREAD_BITS);
+		aBitStruct.writeLong(aTimestamp, EVENT_TIMESTAMP_BITS);
 	}
 	
 	/**
@@ -74,10 +74,10 @@ public class ExternalPointer
 	 */
 	public static ExternalPointer read(BitStruct aBitStruct)
 	{
-		int theNode = aBitStruct.readInt(DebuggerGridConfig.EVENT_NODE_BITS);
-		int theHost = aBitStruct.readInt(DebuggerGridConfig.EVENT_HOST_BITS);
-		int theThread = aBitStruct.readInt(DebuggerGridConfig.EVENT_THREAD_BITS);
-		long theTimestamp = aBitStruct.readLong(DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
+		int theNode = aBitStruct.readInt(EVENT_NODE_BITS);
+		int theHost = aBitStruct.readInt(EVENT_HOST_BITS);
+		int theThread = aBitStruct.readInt(EVENT_THREAD_BITS);
+		long theTimestamp = aBitStruct.readLong(EVENT_TIMESTAMP_BITS);
 		
 		return new ExternalPointer(theNode, theHost, theThread, theTimestamp);
 	}

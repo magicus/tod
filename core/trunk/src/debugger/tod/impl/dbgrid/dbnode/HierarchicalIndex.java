@@ -26,7 +26,11 @@ public class HierarchicalIndex<T extends HierarchicalIndex.IndexTuple>
 	private long itsFirstLeafPageId;
 	private int itsRootLevel;
 	private MyTupleWriter[] itsTupleWriters = new MyTupleWriter[DB_MAX_INDEX_LEVELS];
-//	private PageBitStruct[] itsCurrentPages = new PageBitStruct[DB_MAX_INDEX_LEVELS];
+	
+	/**
+	 * The timestamp of the last added tuple
+	 */
+	private long itsLastTimestamp = 0;
 	
 	/**
 	 * Number of pages per level
@@ -128,8 +132,21 @@ public class HierarchicalIndex<T extends HierarchicalIndex.IndexTuple>
 	 */
 	public void add(T aTuple)
 	{
+		assert checkTimestamp(aTuple);
 		add(aTuple, 0, itsTupleCodec);
 		itsLeafTupleCount++;
+	}
+	
+	/**
+	 * Checks that the newly added tuple's timestamp is greater than
+	 * the last timestamp.
+	 */
+	private boolean checkTimestamp(T aTuple)
+	{
+		long theTimestamp = aTuple.getTimestamp();
+		assert theTimestamp >= itsLastTimestamp;
+		itsLastTimestamp = theTimestamp;
+		return true;
 	}
 	
 	private <T1 extends IndexTuple> void add(T1 aTuple, int aLevel, TupleCodec<T1> aCodec)
@@ -186,7 +203,19 @@ public class HierarchicalIndex<T extends HierarchicalIndex.IndexTuple>
 		@Override
 		public int getTupleSize()
 		{
-			return super.getTupleSize() + EVENT_TIMESTAMP_BITS;
+			return EVENT_TIMESTAMP_BITS;
+		}
+		
+		@Override
+		public final void write(BitStruct aBitStruct, T aTuple)
+		{
+			aTuple.writeTo(aBitStruct);
+		}
+		
+		@Override
+		public final boolean isNull(T aTuple)
+		{
+			return aTuple.getTimestamp() == 0;
 		}
 	}
 	
@@ -224,12 +253,6 @@ public class HierarchicalIndex<T extends HierarchicalIndex.IndexTuple>
 		public long getTimestamp()
 		{
 			return itsTimestamp;
-		}
-		
-		@Override
-		public boolean isNull()
-		{
-			return itsTimestamp == 0;
 		}
 		
 		@Override
@@ -321,7 +344,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.IndexTuple>
 		
 		public MyTupleWriter(PagedFile aFile, TupleCodec<T> aTupleCodec, final int aLevel)
 		{
-			super(aFile, aTupleCodec);
+			super(aFile, aTupleCodec, aFile.createPage(), 0);
 			itsLevel = aLevel;
 		}
 

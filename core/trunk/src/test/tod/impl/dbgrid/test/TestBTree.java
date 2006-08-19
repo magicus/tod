@@ -1,7 +1,7 @@
 /*
  * Created on Aug 9, 2006
  */
-package tod.impl.dbgrid;
+package tod.impl.dbgrid.test;
 
 import java.io.File;
 import java.io.FileNotFoundException;

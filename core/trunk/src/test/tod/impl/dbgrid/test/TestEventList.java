@@ -1,7 +1,7 @@
 /*
  * Created on Jul 26, 2006
  */
-package tod.impl.dbgrid;
+package tod.impl.dbgrid.test;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -10,6 +10,8 @@ import java.util.Iterator;
 
 import org.junit.Test;
 
+import tod.impl.dbgrid.EventGenerator;
+import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.dbnode.EventList;
 import tod.impl.dbgrid.messages.GridEvent;
 import zz.utils.bit.IntBitStruct;

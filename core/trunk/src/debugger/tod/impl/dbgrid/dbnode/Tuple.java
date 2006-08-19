@@ -24,7 +24,7 @@ public abstract class Tuple
 	 * Indicates if this tuple is null.
 	 * A null tuple typically indicates the end of a page.
 	 */
-	public abstract boolean isNull();
+	public final boolean isNull() {return false;}
 
 
 }

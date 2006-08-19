@@ -5,6 +5,8 @@ package tod.impl.dbgrid.dbnode;
 
 import java.util.Iterator;
 
+import tod.impl.dbgrid.dbnode.HierarchicalIndex.IndexTupleCodec;
+
 import zz.utils.AbstractFilteredIterator;
 import zz.utils.bit.BitStruct;
 
@@ -90,7 +92,7 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.RoleTuple>
 	}
 	
 
-	private static class RoleTupleCodec extends TupleCodec<RoleTuple>
+	private static class RoleTupleCodec extends IndexTupleCodec<RoleTuple>
 	{
 
 		@Override
@@ -104,7 +106,6 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.RoleTuple>
 		{
 			return new RoleTuple(aBitStruct);
 		}
-		
 	}
 	
 	public static class RoleTuple extends StdIndexSet.StdTuple

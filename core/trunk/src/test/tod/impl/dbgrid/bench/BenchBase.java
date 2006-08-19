@@ -1,7 +1,7 @@
 /*
  * Created on Jul 26, 2006
  */
-package tod.impl.dbgrid;
+package tod.impl.dbgrid.bench;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;

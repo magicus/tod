@@ -15,7 +15,6 @@ import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_VAR_COUNT;
 import java.util.Random;
 
 import tod.core.model.structure.ObjectId;
-import tod.impl.dbgrid.TestHierarchicalIndex.TimestampGenerator;
 import tod.impl.dbgrid.messages.EventType;
 import tod.impl.dbgrid.messages.GridBehaviorCallEvent;
 import tod.impl.dbgrid.messages.GridBehaviorExitEvent;
@@ -23,6 +22,7 @@ import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.GridExceptionGeneratedEvent;
 import tod.impl.dbgrid.messages.GridFieldWriteEvent;
 import tod.impl.dbgrid.messages.GridVariableWriteEvent;
+import tod.impl.dbgrid.test.TestHierarchicalIndex.TimestampGenerator;
 
 public class EventGenerator
 {
@@ -85,7 +85,7 @@ public class EventGenerator
 					genThreadId(),
 					itsTimestampGenerator.next(),
 					genBytecodeIndex(),
-					genParentPointer(),
+					genExternalPointer(),
 					itsRandom.nextBoolean(),
 					genObject(),
 					genBehaviorId());
@@ -96,7 +96,7 @@ public class EventGenerator
 					genThreadId(),
 					itsTimestampGenerator.next(),
 					genBytecodeIndex(),
-					genParentPointer(),
+					genExternalPointer(),
 					EventType.CONSTRUCTOR_CHAINING,
 					itsRandom.nextBoolean(),
 					genArgs(),
@@ -110,7 +110,7 @@ public class EventGenerator
 					genThreadId(),
 					itsTimestampGenerator.next(),
 					genBytecodeIndex(),
-					genParentPointer(),
+					genExternalPointer(),
 					genObject(),
 					genBehaviorId());
 			
@@ -120,7 +120,7 @@ public class EventGenerator
 					genThreadId(),
 					itsTimestampGenerator.next(),
 					genBytecodeIndex(),
-					genParentPointer(),
+					genExternalPointer(),
 					genFieldId(),
 					genObject(),
 					genObject());
@@ -131,7 +131,7 @@ public class EventGenerator
 					genThreadId(),
 					itsTimestampGenerator.next(),
 					genBytecodeIndex(),
-					genParentPointer(),
+					genExternalPointer(),
 					EventType.INSTANTIATION,
 					itsRandom.nextBoolean(),
 					genArgs(),
@@ -145,7 +145,7 @@ public class EventGenerator
 					genThreadId(),
 					itsTimestampGenerator.next(),
 					genBytecodeIndex(),
-					genParentPointer(),
+					genExternalPointer(),
 					genVariableId(),
 					genObject());
 			
@@ -155,7 +155,7 @@ public class EventGenerator
 					genThreadId(),
 					itsTimestampGenerator.next(),
 					genBytecodeIndex(),
-					genParentPointer(),
+					genExternalPointer(),
 					EventType.METHOD_CALL,
 					itsRandom.nextBoolean(),
 					genArgs(),
@@ -173,34 +173,38 @@ public class EventGenerator
 		return EventType.values()[itsRandom.nextInt(EventType.values().length-1)];
 	}
 	
-	public byte[] genParentPointer()
+	public byte[] genExternalPointer()
 	{
-		return new byte[(EVENTID_POINTER_SIZE+7)/8];
+		return ExternalPointer.create(
+				0, 
+				genHostId(), 
+				genThreadId(), 
+				itsTimestampGenerator.next());
 	}
 	
 	public int genHostId()
 	{
-		return itsRandom.nextInt(itsHostsRange);
+		return itsRandom.nextInt(itsHostsRange) + 1;
 	}
 	
 	public int genThreadId()
 	{
-		return itsRandom.nextInt(itsThreadsRange);
+		return itsRandom.nextInt(itsThreadsRange) + 1;
 	}
 	
 	public int genBehaviorId()
 	{
-		return itsRandom.nextInt(itsBehaviorRange);
+		return itsRandom.nextInt(itsBehaviorRange) + 1;
 	}
 	
 	public int genFieldId()
 	{
-		return itsRandom.nextInt(itsFieldRange);
+		return itsRandom.nextInt(itsFieldRange) + 1;
 	}
 	
 	public int genVariableId()
 	{
-		return itsRandom.nextInt(itsVariableRange);
+		return itsRandom.nextInt(itsVariableRange) + 1;
 	}
 	
 	public int genBytecodeIndex()
@@ -210,7 +214,7 @@ public class EventGenerator
 	
 	public Object genObject()
 	{
-		return new ObjectId.ObjectUID(itsRandom.nextInt(itsObjectRange));
+		return new ObjectId.ObjectUID(itsRandom.nextInt(itsObjectRange) + 1);
 	}
 	
 	public Object[] genArgs()

@@ -1,7 +1,7 @@
 /*
  * Created on Aug 9, 2006
  */
-package tod.impl.dbgrid;
+package tod.impl.dbgrid.bench;
 
 import static tod.impl.dbgrid.DebuggerGridConfig.DB_BTREE_PAGE_SIZE;
 import static tod.impl.dbgrid.DebuggerGridConfig.EVENTID_POINTER_SIZE;
@@ -12,7 +12,7 @@ import java.util.Random;
 
 import org.junit.Test;
 
-import tod.impl.dbgrid.BenchBase.BenchResults;
+import tod.impl.dbgrid.bench.BenchBase.BenchResults;
 import tod.impl.dbgrid.dbnode.PagedFile;
 import tod.impl.dbgrid.dbnode.btree.BTree;
 

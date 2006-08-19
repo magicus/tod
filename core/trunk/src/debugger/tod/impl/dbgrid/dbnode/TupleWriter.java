@@ -11,7 +11,7 @@ import tod.impl.dbgrid.dbnode.PagedFile.PageBitStruct;
  * Writes out {@link Tuple}s in a linked list of {@link Page}s.
  * @author gpothier
  */
-public class TupleWriter<T extends Tuple>
+public class TupleWriter<T>
 {
 	private PagedFile itsFile;
 	private TupleCodec<T> itsTupleCodec;
@@ -20,30 +20,25 @@ public class TupleWriter<T extends Tuple>
 	private int itsPagesCount;
 
 	/**
-	 * Creates a tuple writer that starts a new linked list of pages.
-	 */
-	public TupleWriter(PagedFile aFile, TupleCodec<T> aTupleCodec)
-	{
-		itsFile = aFile;
-		itsTupleCodec = aTupleCodec;
-		itsCurrentPage = itsFile.createPage();
-		itsCurrentStruct = itsCurrentPage.asBitStruct();
-		itsPagesCount = 1;
-	}
-
-	/**
 	 * Creates a tuple writer that resumes writing at the specified page.
 	 */
 	public TupleWriter(PagedFile aFile, TupleCodec<T> aTupleCodec, Page aPage, int aPos)
 	{
 		itsFile = aFile;
 		itsTupleCodec = aTupleCodec;
-		
-		itsCurrentPage = aPage;
-		itsCurrentStruct = itsCurrentPage.asBitStruct();
-		itsCurrentStruct.setPos(aPos);
+		setCurrentPage(aPage, aPos);
 	}
 	
+	/**
+	 * Creates an uninitialized tuple writer. Use {@link #setCurrentPage(Page, int)} to
+	 * properly initialize.
+	 */
+	protected TupleWriter(PagedFile aFile, TupleCodec<T> aTupleCodec)
+	{
+		itsFile = aFile;
+		itsTupleCodec = aTupleCodec;
+	}
+
 	/**
 	 * Writes a tuple to the file.
 	 */
@@ -109,5 +104,41 @@ public class TupleWriter<T extends Tuple>
 	public Page getCurrentPage()
 	{
 		return itsCurrentPage;
+	}
+	
+	public PagedFile getFile()
+	{
+		return itsFile;
+	}
+
+	public TupleCodec<T> getTupleCodec()
+	{
+		return itsTupleCodec;
+	}
+
+	public PageBitStruct getCurrentStruct()
+	{
+		return itsCurrentStruct;
+	}
+
+	/**
+	 * Sets the current page and moves the internal pointer to the given
+	 * position (in bits).
+	 */
+	protected void setCurrentPage(Page aPage, int aPos)
+	{
+		itsCurrentPage = aPage;
+		itsCurrentStruct = itsCurrentPage.asBitStruct();
+		itsCurrentStruct.setPos(aPos);
+	}
+	
+	/**
+	 * Sets the current struct, taking the struct's current position
+	 * and page.
+	 */
+	protected void setCurrentStruct(PageBitStruct aStruct)
+	{
+		itsCurrentStruct = aStruct;
+		itsCurrentPage = itsCurrentStruct.getPage();
 	}
 }

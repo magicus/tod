@@ -1,12 +1,15 @@
 /*
  * Created on Aug 2, 2006
  */
-package tod.impl.dbgrid;
+package tod.impl.dbgrid.test;
 
 import java.util.Iterator;
 
 import org.junit.Test;
 
+import tod.impl.dbgrid.ConditionGenerator;
+import tod.impl.dbgrid.EventGenerator;
+import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.BehaviorCondition;

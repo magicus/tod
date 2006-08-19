@@ -1,7 +1,7 @@
 /*
  * Created on Jul 25, 2006
  */
-package tod.impl.dbgrid;
+package tod.impl.dbgrid.test;
 
 import static org.junit.Assert.fail;
 
@@ -11,6 +11,7 @@ import java.util.Random;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
 
+import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.dbnode.HierarchicalIndex;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import tod.impl.dbgrid.dbnode.StdIndexSet;
@@ -62,7 +63,7 @@ public class TestHierarchicalIndex
 				long aTupleCount);
 		
 		/**
-		 * Checks the values of an index filled with {@link Fixtures#fillIndex(HierarchicalIndex, tod.impl.dbgrid.TestHierarchicalIndex.TimestampGenerator, long)}
+		 * Checks the values of an index filled with {@link Fixtures#fillIndex(HierarchicalIndex, tod.impl.dbgrid.test.TestHierarchicalIndex.TimestampGenerator, long)}
 		 */
 		public void checkIndex(
 				HierarchicalIndex<T> aIndex, 

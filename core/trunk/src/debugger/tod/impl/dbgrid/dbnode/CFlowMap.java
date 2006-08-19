@@ -3,9 +3,13 @@
  */
 package tod.impl.dbgrid.dbnode;
 
-import static tod.impl.dbgrid.DebuggerGridConfig.*;
+import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_POINTER_BITS;
+import static tod.impl.dbgrid.DebuggerGridConfig.EVENTID_POINTER_SIZE;
+import static tod.impl.dbgrid.DebuggerGridConfig.EVENT_HOST_BITS;
+import static tod.impl.dbgrid.DebuggerGridConfig.EVENT_THREAD_BITS;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import tod.impl.dbgrid.ExternalPointer;
@@ -13,7 +17,9 @@ import tod.impl.dbgrid.dbnode.HierarchicalIndex.IndexTuple;
 import tod.impl.dbgrid.dbnode.HierarchicalIndex.IndexTupleCodec;
 import tod.impl.dbgrid.dbnode.PagedFile.Page;
 import tod.impl.dbgrid.dbnode.PagedFile.PageBitStruct;
-import zz.utils.Utils;
+import tod.impl.dbgrid.monitoring.AggregationType;
+import tod.impl.dbgrid.monitoring.Monitor;
+import tod.impl.dbgrid.monitoring.Probe;
 import zz.utils.bit.BitStruct;
 import zz.utils.cache.MRUBuffer;
 
@@ -36,7 +42,21 @@ public class CFlowMap
 	public static final CFlowDataTupleCodec DATA_TUPLE_CODEC = new CFlowDataTupleCodec();
 	
 	private final byte[] itsPointerBuffer = new byte[(EVENTID_POINTER_SIZE+7) / 8];
-	private final CFlowDataTuple itsTupleBuffer = new CFlowDataTuple();
+	
+	/**
+	 * The number of page seeks performed for appending.
+	 */
+	private long itsSeekCount = 0;
+	
+	/**
+	 * The number of adds
+	 */
+	private long itsAddCount = 0;
+	
+	/**
+	 * The number of children list fetches.
+	 */
+	private long itsFetchCount = 0;
 	
 	static
 	{
@@ -50,6 +70,8 @@ public class CFlowMap
 		itsNode = aNode;
 		itsIndexFile = aIndexFile;
 		itsDataFile = aDataFile;
+		
+		Monitor.getInstance().register(this);
 	}
 
 	/**
@@ -57,17 +79,27 @@ public class CFlowMap
 	 */
 	public void add(byte[] aParentPointer, byte[] aChildPointer)
 	{
-		ChildrenList theChildrenList = getChildrenList(aParentPointer);
-		itsTupleBuffer.setPointer(aChildPointer);
-		theChildrenList.add(itsTupleBuffer);
+		ChildrenList theChildrenList = itsChildrenListBuffer.get(aParentPointer, true);
+		theChildrenList.add(aChildPointer);
 		itsChildrenListBuffer.markNode(theChildrenList);
+		
+		itsAddCount++;
 	}
 	
-	private ChildrenList getChildrenList(byte[] aParentPointer)
+	/**
+	 * Returns an iterator over all the children event pointers
+	 * of the given parent pointer.
+	 */
+	public Iterator<byte[]> getChildrenPointers(byte[] aParentPointer)
 	{
-		return itsChildrenListBuffer.get(aParentPointer);
+		ChildrenList theList = fetchChildrenList(aParentPointer, false, false);
+		return theList != null ? theList.createIterator() : null;
 	}
 	
+	/**
+	 * Constructs an integer key taking the thread and host attributes
+	 * of the given event pointer. 
+	 */
 	private int makeKey(ExternalPointer aPointer)
 	{
 		int theKey = aPointer.host | aPointer.thread << EVENT_HOST_BITS;
@@ -77,8 +109,15 @@ public class CFlowMap
 	
 	/**
 	 * Returns the children list corresponding to the specified parent event pointer.
+	 * @param aCreate If the list does not exist and this parameter is true, a new list
+	 * is created.
+	 * @param aAppend If this parameter is true, the returned list will be positioned
+	 * for appending at the end. Otherwise, the list will be positioned at the beginning.
 	 */
-	private ChildrenList fetchChildrenList(byte[] aParentPointer)
+	private ChildrenList fetchChildrenList(
+			byte[] aParentPointer, 
+			boolean aCreate, 
+			boolean aAppend)
 	{
 		ExternalPointer theParentPointer = ExternalPointer.read(aParentPointer);
 		assert theParentPointer.node == itsNode.getNodeId();
@@ -88,6 +127,7 @@ public class CFlowMap
 		HierarchicalIndex<CFlowIndexTuple> theIndex = itsIndexes.get(theKey);
 		if (theIndex == null)
 		{
+			if (! aCreate) return null;
 			theIndex = new HierarchicalIndex<CFlowIndexTuple>(
 					"cflow-"+aParentPointer, 
 					itsIndexFile, 
@@ -102,6 +142,7 @@ public class CFlowMap
 		CFlowIndexTuple theTuple = theIndex.getTupleAt(theParentPointer.timestamp, true);
 		if (theTuple == null)
 		{
+			if (! aCreate) return null;
 			thePage = itsDataFile.createPage();
 			theTuple = new CFlowIndexTuple(theParentPointer.timestamp, thePage.getPageId());
 			theIndex.add(theTuple);
@@ -111,40 +152,17 @@ public class CFlowMap
 			thePage = itsDataFile.getPage(theTuple.getPagePointer());
 		}
 		
-		// Resume writing to the page
-		PageBitStruct theStruct = thePage.asBitStruct();
-		int theFreeIndex = findFreeDataTuple(theStruct);
+		itsFetchCount++;
 		
-		return new ChildrenList(aParentPointer, thePage, theFreeIndex*EVENTID_POINTER_SIZE);
+		return new ChildrenList(aParentPointer, thePage, aAppend);
 	}
 	
-	private int findFreeDataTuple(PageBitStruct aStruct)
+	@Probe(key = "cflow map seek count", aggr = AggregationType.SUM)
+	public long getSeekCount()
 	{
-		int theCount = (itsDataFile.getPageSize()*8 - DB_PAGE_POINTER_BITS) / EVENTID_POINTER_SIZE;
-		int theIndex = findFreeDataTuple(aStruct, 0, theCount-1);
-		return theIndex >= 0 ? theIndex : theCount;
+		return itsSeekCount;
 	}
-	
-	private int findFreeDataTuple(PageBitStruct aStruct, int aFirst, int aLast)
-	{
-		if (isDataTupleNull(aStruct, aFirst)) return aFirst;
-		if (aFirst == aLast) return -1;
-		if (! isDataTupleNull(aStruct, aLast)) return -1;
-		
-		if (aLast - aFirst == 1) return aLast;
-		
-		int theMiddle = (aFirst + aLast)/2;
-		if (isDataTupleNull(aStruct, theMiddle))
-			return findFreeDataTuple(aStruct, aFirst, theMiddle-1);
-		else return findFreeDataTuple(aStruct, theMiddle+1, aLast);
-	}
-	
-	private boolean isDataTupleNull(PageBitStruct aStruct, int aIndex)
-	{
-		aStruct.setPos(aIndex*EVENTID_POINTER_SIZE);
-		aStruct.readBytes(EVENTID_POINTER_SIZE, itsPointerBuffer);
-		return ExternalPointer.isNull(itsPointerBuffer);
-	}
+
 	
 	private static class CFlowIndexTupleCodec extends IndexTupleCodec<CFlowIndexTuple>
 	{
@@ -197,74 +215,110 @@ public class CFlowMap
 		}
 	}
 	
-	private static class CFlowDataTupleCodec extends TupleCodec<CFlowDataTuple>
+	private static class CFlowDataTupleCodec extends TupleCodec<byte[]>
 	{
-
 		@Override
 		public int getTupleSize()
 		{
-			return super.getTupleSize() + EVENTID_POINTER_SIZE;
+			return EVENTID_POINTER_SIZE;
 		}
 
 		@Override
-		public CFlowDataTuple read(BitStruct aBitStruct)
+		public byte[] read(BitStruct aBitStruct)
 		{
-			return new CFlowDataTuple(aBitStruct.readBytes(EVENTID_POINTER_SIZE));
+			return aBitStruct.readBytes(EVENTID_POINTER_SIZE);
 		}
 		
+		@Override
+		public void write(BitStruct aBitStruct, byte[] aTuple)
+		{
+			aBitStruct.writeBytes(aTuple, EVENTID_POINTER_SIZE);
+		}
+		
+		@Override
+		public boolean isNull(byte[] aTuple)
+		{
+			return ExternalPointer.isNull(aTuple);
+		}
 	}
 	
-	/**
-	 * Data tuples contain children event pointers.
-	 * @author gpothier
-	 */
-	private static class CFlowDataTuple extends Tuple
-	{
-		private byte[] itsPointer;
 
-		public CFlowDataTuple()
-		{
-		}
-
-		public CFlowDataTuple(byte[] aPointer)
-		{
-			itsPointer = aPointer;
-		}
-
-		@Override
-		public boolean isNull()
-		{
-			return ExternalPointer.isNull(itsPointer);
-		}
-
-		@Override
-		public void writeTo(BitStruct aBitStruct)
-		{
-			super.writeTo(aBitStruct);
-			aBitStruct.writeBytes(itsPointer, EVENTID_POINTER_SIZE);
-		}
-
-		public void setPointer(byte[] aPointer)
-		{
-			itsPointer = aPointer;
-		}
-		
-		
-	}
-
-	private class ChildrenList extends TupleWriter<CFlowDataTuple>
+	private class ChildrenList extends TupleWriter<byte[]>
 	{
 		private byte[] itsParentPointer;
 		
-		public ChildrenList(byte[] aParentPointer, Page aPage, int aPos)
+		public ChildrenList(byte[] aParentPointer, Page aFirstPage, boolean aAppend)
 		{
-			super(itsDataFile, DATA_TUPLE_CODEC, aPage, aPos);
+			super(itsDataFile, DATA_TUPLE_CODEC);
 			itsParentPointer = aParentPointer;
+			
+			if (aAppend)
+			{
+				Page thePage = aFirstPage;
+				int theTupleSize = DATA_TUPLE_CODEC.getTupleSize();
+				while (true)
+				{
+					Long theNextPage = TupleIterator.readNextPageId(thePage, theTupleSize);
+					if (theNextPage == null) break;
+					
+					thePage = itsDataFile.getPage(theNextPage);
+					itsSeekCount++;
+				}
+				
+				PageBitStruct theStruct = thePage.asBitStruct();
+				int theFreeIndex = findFreeDataTuple(theStruct);
+				theStruct.setPos(theFreeIndex * theTupleSize);
+
+				setCurrentStruct(theStruct);
+			}
+			else
+			{
+				setCurrentPage(aFirstPage, 0);
+			}
 		}
+		
+		private int findFreeDataTuple(PageBitStruct aStruct)
+		{
+			int theCount = (itsDataFile.getPageSize()*8 - DB_PAGE_POINTER_BITS) / EVENTID_POINTER_SIZE;
+			int theIndex = findFreeDataTuple(aStruct, 0, theCount-1);
+			return theIndex;
+//			return theIndex >= 0 ? theIndex : theCount;
+		}
+		
+		private int findFreeDataTuple(PageBitStruct aStruct, int aFirst, int aLast)
+		{
+			if (isDataTupleNull(aStruct, aFirst)) return aFirst;
+			if (aFirst == aLast) return aLast+1;
+			if (! isDataTupleNull(aStruct, aLast)) return aLast+1;
+			
+			if (aLast - aFirst == 1) return aLast;
+			
+			int theMiddle = (aFirst + aLast)/2;
+			if (isDataTupleNull(aStruct, theMiddle))
+				return findFreeDataTuple(aStruct, aFirst, theMiddle-1);
+			else return findFreeDataTuple(aStruct, theMiddle+1, aLast);
+		}
+		
+		private boolean isDataTupleNull(PageBitStruct aStruct, int aIndex)
+		{
+			aStruct.setPos(aIndex*EVENTID_POINTER_SIZE);
+			aStruct.readBytes(EVENTID_POINTER_SIZE, itsPointerBuffer);
+			return ExternalPointer.isNull(itsPointerBuffer);
+		}
+		
+
 
 		public byte[] getParentPointer()
 		{
 			return itsParentPointer;
+		}
+		
+		/**
+		 * Creates a tuple iterator that starts at this list's current position
+		 */
+		public TupleIterator<byte[]> createIterator()
+		{
+			return new TupleIterator<byte[]>(getFile(), getTupleCodec(), getCurrentStruct());
 		}
 	}
 	
@@ -279,13 +333,14 @@ public class CFlowMap
 		@Override
 		protected void saveNode(ChildrenList aValue)
 		{
-			itsDataFile.writePage(aValue.getCurrentPage());
+			Page thePage = aValue.getCurrentPage();
+			itsDataFile.writePage(thePage);
 		}
 
 		@Override
 		protected ChildrenList fetch(byte[] aId)
 		{
-			return fetchChildrenList(aId);
+			return fetchChildrenList(aId, true, true);
 		}
 
 		@Override
@@ -295,4 +350,5 @@ public class CFlowMap
 		}
 		
 	}
+
 }

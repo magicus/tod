@@ -3,10 +3,11 @@
 	<classpathentry kind="src" path="src/agent"/>
 	<classpathentry excluding="reflex/lib/logging/miner/impl/sql/|tod/test/DBBench.java" kind="src" path="src/debugger"/>
 	<classpathentry kind="src" path="src/test"/>
+	<classpathentry excluding="tod/experiments/bench/" kind="src" path="src/experiments"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="/zz.utils"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/zz.csg"/>
-	<classpathentry sourcepath="/home/gpothier/apps/java/asm-2.1/src.zip" kind="lib" path="lib/asm-commons-2.1.jar"/>
+	<classpathentry kind="lib" path="lib/asm-commons-2.1.jar" sourcepath="/home/gpothier/apps/java/asm-2.1/src.zip"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ASM"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="bin"/>
