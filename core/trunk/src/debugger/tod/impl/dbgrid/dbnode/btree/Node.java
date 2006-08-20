@@ -7,8 +7,8 @@ import static tod.impl.dbgrid.DebuggerGridConfig.EVENTID_POINTER_SIZE;
 import java.util.Arrays;
 
 import tod.impl.dbgrid.ExternalPointer;
-import tod.impl.dbgrid.dbnode.PagedFile.Page;
-import tod.impl.dbgrid.dbnode.PagedFile.PageBitStruct;
+import tod.impl.dbgrid.dbnode.file.HardPagedFile.Page;
+import tod.impl.dbgrid.dbnode.file.HardPagedFile.PageBitStruct;
 
 /**
  * Node for a {@link BTree}.

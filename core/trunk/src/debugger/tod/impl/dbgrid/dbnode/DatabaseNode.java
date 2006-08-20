@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static tod.impl.dbgrid.DebuggerGridConfig.*;
+import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 import tod.impl.dbgrid.messages.AddChildEvent;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.GridMessage;
@@ -24,9 +25,9 @@ public class DatabaseNode
 	 */
 	private final int itsNodeId;
 	
-	private final PagedFile itsEventsFile;
-	private final PagedFile itsIndexesFile;
-	private final PagedFile itsCFlowDataFile;
+	private final HardPagedFile itsEventsFile;
+	private final HardPagedFile itsIndexesFile;
+	private final HardPagedFile itsCFlowDataFile;
 	
 	private final EventList itsEventList;
 	private final Indexes itsIndexes;
@@ -48,9 +49,9 @@ public class DatabaseNode
 		itsNodeId = aNodeId;
 		try
 		{
-			itsEventsFile = new PagedFile(new File("events.bin"), DB_EVENT_PAGE_SIZE);
-			itsIndexesFile = new PagedFile(new File("indexes.bin"), DB_INDEX_PAGE_SIZE);
-			itsCFlowDataFile = new PagedFile(new File("cflow.bin"), DB_CFLOW_PAGE_SIZE);
+			itsEventsFile = new HardPagedFile(new File("events.bin"), DB_EVENT_PAGE_SIZE);
+			itsIndexesFile = new HardPagedFile(new File("indexes.bin"), DB_INDEX_PAGE_SIZE);
+			itsCFlowDataFile = new HardPagedFile(new File("cflow.bin"), DB_CFLOW_PAGE_SIZE);
 			
 			itsEventList = new EventList(itsEventsFile);
 			itsIndexes = new Indexes(itsIndexesFile);

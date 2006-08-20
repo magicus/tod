@@ -1,12 +1,8 @@
 /*
  * Created on Aug 10, 2006
  */
-package tod.impl.dbgrid.dbnode;
+package tod.impl.dbgrid.dbnode.file;
 
-import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_POINTER_BITS;
-import tod.impl.dbgrid.dbnode.HierarchicalIndex.IndexTuple;
-import tod.impl.dbgrid.dbnode.PagedFile.Page;
-import tod.impl.dbgrid.dbnode.PagedFile.PageBitStruct;
 import zz.utils.bit.BitStruct;
 
 /**
@@ -21,11 +17,12 @@ public class TupleFinder
 	 */
 	public static <T extends IndexTuple> T findTuple(
 			BitStruct aPage, 
+			int aPagePointerSize,
 			long aTimestamp, 
 			TupleCodec<T> aTupleCodec,
 			boolean aBefore)
 	{
-		int theIndex = findTupleIndex(aPage, aTimestamp, aTupleCodec, aBefore);
+		int theIndex = findTupleIndex(aPage, aPagePointerSize, aTimestamp, aTupleCodec, aBefore);
 		return readTuple(aPage, aTupleCodec, theIndex);
 	}
 	
@@ -38,13 +35,14 @@ public class TupleFinder
 	 */
 	public static <T extends IndexTuple> int findTupleIndex(
 			BitStruct aPage, 
+			int aPagePointerSize,
 			long aTimestamp, 
 			TupleCodec<T> aTupleCodec,
 			boolean aBefore)
 	{
 		aPage.setPos(0);
 		int thePageSize = aPage.getRemainingBits();
-		int theTupleCount = (thePageSize - DB_PAGE_POINTER_BITS) 
+		int theTupleCount = (thePageSize - aPagePointerSize) 
 			/ aTupleCodec.getTupleSize();
 		
 		return findTupleIndex(aPage, aTimestamp, aTupleCodec, 0, theTupleCount-1, aBefore);

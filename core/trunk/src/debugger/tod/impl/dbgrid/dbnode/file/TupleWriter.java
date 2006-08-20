@@ -1,11 +1,11 @@
 /*
  * Created on Aug 10, 2006
  */
-package tod.impl.dbgrid.dbnode;
+package tod.impl.dbgrid.dbnode.file;
 
-import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_POINTER_BITS;
-import tod.impl.dbgrid.dbnode.PagedFile.Page;
-import tod.impl.dbgrid.dbnode.PagedFile.PageBitStruct;
+import tod.impl.dbgrid.dbnode.file.PageBank.Page;
+import tod.impl.dbgrid.dbnode.file.PageBank.PageBitStruct;
+
 
 /**
  * Writes out {@link Tuple}s in a linked list of {@link Page}s.
@@ -13,7 +13,7 @@ import tod.impl.dbgrid.dbnode.PagedFile.PageBitStruct;
  */
 public class TupleWriter<T>
 {
-	private PagedFile itsFile;
+	private PageBank itsBank;
 	private TupleCodec<T> itsTupleCodec;
 	private Page itsCurrentPage;
 	private PageBitStruct itsCurrentStruct;
@@ -22,9 +22,9 @@ public class TupleWriter<T>
 	/**
 	 * Creates a tuple writer that resumes writing at the specified page.
 	 */
-	public TupleWriter(PagedFile aFile, TupleCodec<T> aTupleCodec, Page aPage, int aPos)
+	public TupleWriter(PageBank aBank, TupleCodec<T> aTupleCodec, Page aPage, int aPos)
 	{
-		itsFile = aFile;
+		itsBank = aBank;
 		itsTupleCodec = aTupleCodec;
 		setCurrentPage(aPage, aPos);
 	}
@@ -33,32 +33,39 @@ public class TupleWriter<T>
 	 * Creates an uninitialized tuple writer. Use {@link #setCurrentPage(Page, int)} to
 	 * properly initialize.
 	 */
-	protected TupleWriter(PagedFile aFile, TupleCodec<T> aTupleCodec)
+	protected TupleWriter(PageBank aBank, TupleCodec<T> aTupleCodec)
 	{
-		itsFile = aFile;
+		itsBank = aBank;
 		itsTupleCodec = aTupleCodec;
 	}
 
+	private int getPagePointerSize()
+	{
+		return itsBank.getPagePointerSize();
+	}
+
+
+	
 	/**
 	 * Writes a tuple to the file.
 	 */
 	public void add(T aTuple)
 	{
-		if (itsCurrentStruct.getRemainingBits() < itsTupleCodec.getTupleSize() + DB_PAGE_POINTER_BITS)
+		if (itsCurrentStruct.getRemainingBits() < itsTupleCodec.getTupleSize() + getPagePointerSize())
 		{
-			Page theNextPage = itsFile.createPage();
+			Page theNextPage = itsBank.create();
 			itsPagesCount++;
 			
 			PageBitStruct theNextStruct = theNextPage.asBitStruct();
 			long theNextPageId = theNextStruct.getPage().getPageId();
 			
 			// Write next page id (+1: 0 means no next page).
-			itsCurrentStruct.writeLong(theNextPageId+1, DB_PAGE_POINTER_BITS);
+			itsCurrentStruct.writeLong(theNextPageId+1, getPagePointerSize());
 			
 			newPageHook(itsCurrentStruct, theNextPageId);
 			
 			// Save old page
-			itsFile.writePage(itsCurrentPage);
+//			itsBank.store(itsCurrentPage);
 //			itsFile.freePage(itsCurrentPage);
 			
 			itsCurrentStruct = theNextStruct;
@@ -106,9 +113,9 @@ public class TupleWriter<T>
 		return itsCurrentPage;
 	}
 	
-	public PagedFile getFile()
+	public PageBank getBank()
 	{
-		return itsFile;
+		return itsBank;
 	}
 
 	public TupleCodec<T> getTupleCodec()

@@ -3,7 +3,8 @@
  */
 package tod.impl.dbgrid.dbnode;
 
-import tod.impl.dbgrid.dbnode.HierarchicalIndex.IndexTuple;
+import tod.impl.dbgrid.dbnode.file.HardPagedFile;
+import tod.impl.dbgrid.dbnode.file.IndexTuple;
 import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Probe;
@@ -22,9 +23,9 @@ public abstract class IndexSet<T extends IndexTuple>
 	 */
 	private final String itsName;
 	
-	private PagedFile itsFile;
+	private HardPagedFile itsFile;
 	
-	public IndexSet(String aName, PagedFile aFile, int aIndexCount)
+	public IndexSet(String aName, HardPagedFile aFile, int aIndexCount)
 	{
 		itsName = aName;
 		itsFile = aFile;
@@ -35,7 +36,7 @@ public abstract class IndexSet<T extends IndexTuple>
 	/**
 	 * Creates a new index for this set.
 	 */
-	protected abstract HierarchicalIndex<T> createIndex(String aName, PagedFile aFile);
+	protected abstract HierarchicalIndex<T> createIndex(String aName, HardPagedFile aFile);
 	
 	/**
 	 * Retrieved the index corresponding to the specified... index.

@@ -21,7 +21,7 @@ import org.junit.Test;
 import tod.impl.dbgrid.ExternalPointer;
 import tod.impl.dbgrid.dbnode.CFlowMap;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
-import tod.impl.dbgrid.dbnode.PagedFile;
+import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 import tod.impl.dbgrid.test.TestHierarchicalIndex.TimestampGenerator;
 import zz.utils.ListMap;
 import zz.utils.Utils;
@@ -39,8 +39,8 @@ public class TestCFlowMap
 	private void test(int aKeysCount, int aChildrenCount) throws FileNotFoundException
 	{
 		DatabaseNode theNode = new DatabaseNode(1);
-		PagedFile theIndexFile = new PagedFile(new File("cflow-index.bin"), DB_INDEX_PAGE_SIZE);
-		PagedFile theDataFile = new PagedFile(new File("cflow-data.bin"), DB_CFLOW_PAGE_SIZE);
+		HardPagedFile theIndexFile = new HardPagedFile(new File("cflow-index.bin"), DB_INDEX_PAGE_SIZE);
+		HardPagedFile theDataFile = new HardPagedFile(new File("cflow-data.bin"), DB_CFLOW_PAGE_SIZE);
 		CFlowMap theMap = new CFlowMap(theNode, theIndexFile, theDataFile);
 
 		ListMap<byte[], byte[]> theMemMap = new ListMap<byte[], byte[]>();

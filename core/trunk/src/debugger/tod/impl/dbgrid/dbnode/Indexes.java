@@ -4,6 +4,7 @@
 package tod.impl.dbgrid.dbnode;
 
 import static tod.impl.dbgrid.DebuggerGridConfig.*;
+import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 
 /**
  * Groups all the indexes maintained by a database node.
@@ -20,15 +21,15 @@ public class Indexes
 	public final StdIndexSet variableIndex;
 	public final RoleIndexSet objectIndex;
 	
-	public Indexes(PagedFile aFile)
+	public Indexes(HardPagedFile aFile)
 	{
-		typeIndex = new StdIndexSet("type", aFile, STRUCTURE_TYPE_COUNT);
-		hostIndex = new StdIndexSet("host", aFile, STRUCTURE_HOSTS_COUNT);
-		threadIndex = new StdIndexSet("thread", aFile, STRUCTURE_THREADS_COUNT);
-		bytecodeLocationIndex = new StdIndexSet("bytecodeLoc.", aFile, STRUCTURE_BYTECODE_LOCS_COUNT);
-		behaviorIndex = new RoleIndexSet("behavior", aFile, STRUCTURE_BEHAVIOR_COUNT);
-		fieldIndex = new StdIndexSet("field", aFile, STRUCTURE_FIELD_COUNT);
-		variableIndex = new StdIndexSet("variable", aFile, STRUCTURE_VAR_COUNT);
-		objectIndex = new RoleIndexSet("object", aFile, STRUCTURE_OBJECT_COUNT);
+		typeIndex = new StdIndexSet("type", aFile, STRUCTURE_TYPE_COUNT+1);
+		hostIndex = new StdIndexSet("host", aFile, STRUCTURE_HOSTS_COUNT+1);
+		threadIndex = new StdIndexSet("thread", aFile, STRUCTURE_THREADS_COUNT+1);
+		bytecodeLocationIndex = new StdIndexSet("bytecodeLoc.", aFile, STRUCTURE_BYTECODE_LOCS_COUNT+1);
+		behaviorIndex = new RoleIndexSet("behavior", aFile, STRUCTURE_BEHAVIOR_COUNT+1);
+		fieldIndex = new StdIndexSet("field", aFile, STRUCTURE_FIELD_COUNT+1);
+		variableIndex = new StdIndexSet("variable", aFile, STRUCTURE_VAR_COUNT+1);
+		objectIndex = new RoleIndexSet("object", aFile, STRUCTURE_OBJECT_COUNT+1);
 	}
 }

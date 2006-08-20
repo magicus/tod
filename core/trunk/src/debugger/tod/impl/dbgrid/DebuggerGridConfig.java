@@ -7,6 +7,8 @@ import tod.impl.dbgrid.dbnode.DatabaseNode;
 import tod.impl.dbgrid.dbnode.EventList;
 import tod.impl.dbgrid.dbnode.HierarchicalIndex;
 import tod.impl.dbgrid.dbnode.btree.Node;
+import tod.impl.dbgrid.dbnode.file.TupleIterator;
+import tod.impl.dbgrid.dbnode.file.TupleWriter;
 import tod.impl.dbgrid.messages.EventType;
 import zz.utils.bit.BitUtils;
 
@@ -153,8 +155,8 @@ public class DebuggerGridConfig
 	public static final int DB_BTREE_PAGE_SIZE = 8192;
 	
 	/**
-	 * Number of bits to represent a page pointer in {@link HierarchicalIndex}
-	 * and {@link EventList}.
+	 * Number of bits to represent a page pointer in a linked pages list,
+	 * as used by {@link TupleWriter} and {@link TupleIterator}
 	 */
 	public static final int DB_PAGE_POINTER_BITS = 32;
 	

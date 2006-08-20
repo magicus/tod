@@ -1,6 +1,6 @@
-package tod.impl.dbgrid.dbnode;
+package tod.impl.dbgrid.dbnode.file;
 
-import tod.impl.dbgrid.dbnode.PagedFile.Page;
+import tod.impl.dbgrid.dbnode.file.HardPagedFile.Page;
 import zz.utils.bit.BitStruct;
 
 /**

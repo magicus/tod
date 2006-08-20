@@ -12,8 +12,8 @@ import org.junit.Test;
 
 import static tod.impl.dbgrid.DebuggerGridConfig.*;
 
-import tod.impl.dbgrid.dbnode.PagedFile;
 import tod.impl.dbgrid.dbnode.btree.BTree;
+import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 
 public class TestBTree
 {
@@ -21,7 +21,7 @@ public class TestBTree
 	
 	@Test public void testPut() throws FileNotFoundException
 	{
-		PagedFile theFile = new PagedFile(new File("btree.bin"), DB_BTREE_PAGE_SIZE);
+		HardPagedFile theFile = new HardPagedFile(new File("btree.bin"), DB_BTREE_PAGE_SIZE);
 		BTree theTree = new BTree(theFile);
 
 		Random theRandom = new Random(0);

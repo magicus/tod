@@ -7,12 +7,11 @@ import static tod.impl.dbgrid.DebuggerGridConfig.EVENTID_POINTER_SIZE;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import tod.impl.dbgrid.dbnode.PagedFile;
-import tod.impl.dbgrid.dbnode.PagedFile.Page;
+import tod.impl.dbgrid.dbnode.file.HardPagedFile;
+import tod.impl.dbgrid.dbnode.file.HardPagedFile.Page;
 import zz.utils.Utils;
 
 /**
@@ -23,7 +22,7 @@ import zz.utils.Utils;
  */
 public class BTree
 {
-	private PagedFile itsFile;
+	private HardPagedFile itsFile;
 	private NodeManager itsNodeManager = new NodeManager();
 	private Node itsRoot;
 	
@@ -32,7 +31,7 @@ public class BTree
 	private final int itsMaxChildren;
 	private final int itsMinChildren;
 
-	public BTree(PagedFile aFile)
+	public BTree(HardPagedFile aFile)
 	{
 		itsFile = aFile;
 		
@@ -289,7 +288,7 @@ public class BTree
 //			System.out.println("save node: "+aNode.getPageId());
 			Page thePage = itsFile.getPageForOverwrite(aNode.getPageId());
 			aNode.writeTo(thePage);
-			itsFile.writePage(thePage);
+//			itsFile.store(thePage);
 		}
 		
 		public Node getNode(long aId)
@@ -308,13 +307,13 @@ public class BTree
 		private Node readNode(long aId)
 		{
 //			System.out.println("read node: "+aId);
-			Page thePage = itsFile.getPage(aId);
+			Page thePage = itsFile.get(aId);
 			return Node.readFrom(BTree.this, thePage);
 		}
 		
 		public Node create(boolean aLeaf)
 		{
-			Page thePage = itsFile.createPage();
+			Page thePage = itsFile.create();
 			return Node.create(BTree.this, thePage.getPageId(), aLeaf);
 		}
 

@@ -5,7 +5,9 @@ package tod.impl.dbgrid.dbnode;
 
 import java.util.Iterator;
 
-import tod.impl.dbgrid.dbnode.HierarchicalIndex.IndexTupleCodec;
+import tod.impl.dbgrid.dbnode.file.HardPagedFile;
+import tod.impl.dbgrid.dbnode.file.IndexTupleCodec;
+import tod.impl.dbgrid.dbnode.file.TupleCodec;
 
 import zz.utils.AbstractFilteredIterator;
 import zz.utils.bit.BitStruct;
@@ -28,13 +30,13 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.RoleTuple>
 	
 	public static final TupleCodec TUPLE_CODEC = new RoleTupleCodec();
 	
-	public RoleIndexSet(String aName, PagedFile aFile, int aIndexCount)
+	public RoleIndexSet(String aName, HardPagedFile aFile, int aIndexCount)
 	{
 		super(aName, aFile, aIndexCount);
 	}
 	
 	@Override
-	protected HierarchicalIndex<RoleTuple> createIndex(String aName, PagedFile aFile)
+	protected HierarchicalIndex<RoleTuple> createIndex(String aName, HardPagedFile aFile)
 	{
 		return new HierarchicalIndex<RoleTuple>(aName, aFile, TUPLE_CODEC);
 	}

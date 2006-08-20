@@ -16,7 +16,7 @@ import tod.impl.dbgrid.EventGenerator;
 import tod.impl.dbgrid.bench.BenchBase.BenchResults;
 import tod.impl.dbgrid.dbnode.CFlowMap;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
-import tod.impl.dbgrid.dbnode.PagedFile;
+import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 
 
 public class BenchCFlowMap
@@ -31,8 +31,8 @@ public class BenchCFlowMap
 		System.out.println("Bench with parents count: "+aParentsCount+", children count: "+aChildrenCount);
 		
 		DatabaseNode theNode = new DatabaseNode(0);
-		PagedFile theIndexFile = new PagedFile(new File("cflow-index.bin"), DB_INDEX_PAGE_SIZE);
-		PagedFile theDataFile = new PagedFile(new File("cflow-data.bin"), DB_CFLOW_PAGE_SIZE);
+		HardPagedFile theIndexFile = new HardPagedFile(new File("cflow-index.bin"), DB_INDEX_PAGE_SIZE);
+		HardPagedFile theDataFile = new HardPagedFile(new File("cflow-data.bin"), DB_CFLOW_PAGE_SIZE);
 		final CFlowMap theMap = new CFlowMap(theNode, theIndexFile, theDataFile);
 
 		final EventGenerator theGenerator = new EventGenerator(0);

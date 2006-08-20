@@ -13,8 +13,8 @@ import java.util.Random;
 import org.junit.Test;
 
 import tod.impl.dbgrid.bench.BenchBase.BenchResults;
-import tod.impl.dbgrid.dbnode.PagedFile;
 import tod.impl.dbgrid.dbnode.btree.BTree;
+import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 
 public class BenchBTree
 {
@@ -22,7 +22,7 @@ public class BenchBTree
 	
 	@Test public void bench() throws FileNotFoundException
 	{
-		PagedFile theFile = new PagedFile(new File("btree.bin"), DB_BTREE_PAGE_SIZE);
+		HardPagedFile theFile = new HardPagedFile(new File("btree.bin"), DB_BTREE_PAGE_SIZE);
 		final BTree theTree = new BTree(theFile);
 
 		BenchResults theResults = BenchBase.benchmark(new Runnable()

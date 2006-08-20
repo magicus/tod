@@ -13,10 +13,15 @@ import java.util.Iterator;
 import java.util.Map;
 
 import tod.impl.dbgrid.ExternalPointer;
-import tod.impl.dbgrid.dbnode.HierarchicalIndex.IndexTuple;
-import tod.impl.dbgrid.dbnode.HierarchicalIndex.IndexTupleCodec;
-import tod.impl.dbgrid.dbnode.PagedFile.Page;
-import tod.impl.dbgrid.dbnode.PagedFile.PageBitStruct;
+import tod.impl.dbgrid.dbnode.file.HardPagedFile;
+import tod.impl.dbgrid.dbnode.file.IndexTuple;
+import tod.impl.dbgrid.dbnode.file.IndexTupleCodec;
+import tod.impl.dbgrid.dbnode.file.PageBank;
+import tod.impl.dbgrid.dbnode.file.TupleCodec;
+import tod.impl.dbgrid.dbnode.file.TupleIterator;
+import tod.impl.dbgrid.dbnode.file.TupleWriter;
+import tod.impl.dbgrid.dbnode.file.PageBank.Page;
+import tod.impl.dbgrid.dbnode.file.PageBank.PageBitStruct;
 import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Probe;
@@ -30,8 +35,8 @@ import zz.utils.cache.MRUBuffer;
 public class CFlowMap
 {
 	private DatabaseNode itsNode;
-	private PagedFile itsIndexFile;
-	private PagedFile itsDataFile;
+	private HardPagedFile itsIndexFile;
+	private PageBank itsDataFile;
 	
 	private Map<Integer, HierarchicalIndex<CFlowIndexTuple>> itsIndexes =
 		new HashMap<Integer, HierarchicalIndex<CFlowIndexTuple>>();
@@ -65,7 +70,7 @@ public class CFlowMap
 	}
 	
 
-	public CFlowMap(DatabaseNode aNode, PagedFile aIndexFile, PagedFile aDataFile)
+	public CFlowMap(DatabaseNode aNode, HardPagedFile aIndexFile, PageBank aDataFile)
 	{
 		itsNode = aNode;
 		itsIndexFile = aIndexFile;
@@ -81,8 +86,6 @@ public class CFlowMap
 	{
 		ChildrenList theChildrenList = itsChildrenListBuffer.get(aParentPointer, true);
 		theChildrenList.add(aChildPointer);
-		itsChildrenListBuffer.markNode(theChildrenList);
-		
 		itsAddCount++;
 	}
 	
@@ -143,13 +146,13 @@ public class CFlowMap
 		if (theTuple == null)
 		{
 			if (! aCreate) return null;
-			thePage = itsDataFile.createPage();
+			thePage = itsDataFile.create();
 			theTuple = new CFlowIndexTuple(theParentPointer.timestamp, thePage.getPageId());
 			theIndex.add(theTuple);
 		}
 		else
 		{
-			thePage = itsDataFile.getPage(theTuple.getPagePointer());
+			thePage = itsDataFile.get(theTuple.getPagePointer());
 		}
 		
 		itsFetchCount++;
@@ -258,10 +261,14 @@ public class CFlowMap
 				int theTupleSize = DATA_TUPLE_CODEC.getTupleSize();
 				while (true)
 				{
-					Long theNextPage = TupleIterator.readNextPageId(thePage, theTupleSize);
+					Long theNextPage = TupleIterator.readNextPageId(
+							thePage, 
+							itsDataFile.getPagePointerSize(), 
+							theTupleSize);
+					
 					if (theNextPage == null) break;
 					
-					thePage = itsDataFile.getPage(theNextPage);
+					thePage = itsDataFile.get(theNextPage);
 					itsSeekCount++;
 				}
 				
@@ -279,7 +286,8 @@ public class CFlowMap
 		
 		private int findFreeDataTuple(PageBitStruct aStruct)
 		{
-			int theCount = (itsDataFile.getPageSize()*8 - DB_PAGE_POINTER_BITS) / EVENTID_POINTER_SIZE;
+			aStruct.setPos(0);
+			int theCount = (aStruct.getRemainingBits() - itsDataFile.getPagePointerSize()) / EVENTID_POINTER_SIZE;
 			int theIndex = findFreeDataTuple(aStruct, 0, theCount-1);
 			return theIndex;
 //			return theIndex >= 0 ? theIndex : theCount;
@@ -305,8 +313,6 @@ public class CFlowMap
 			aStruct.readBytes(EVENTID_POINTER_SIZE, itsPointerBuffer);
 			return ExternalPointer.isNull(itsPointerBuffer);
 		}
-		
-
 
 		public byte[] getParentPointer()
 		{
@@ -318,7 +324,7 @@ public class CFlowMap
 		 */
 		public TupleIterator<byte[]> createIterator()
 		{
-			return new TupleIterator<byte[]>(getFile(), getTupleCodec(), getCurrentStruct());
+			return new TupleIterator<byte[]>(getBank(), getTupleCodec(), getCurrentStruct());
 		}
 	}
 	
@@ -331,10 +337,10 @@ public class CFlowMap
 		}
 
 		@Override
-		protected void saveNode(ChildrenList aValue)
+		protected void drop(ChildrenList aValue)
 		{
-			Page thePage = aValue.getCurrentPage();
-			itsDataFile.writePage(thePage);
+//			Page thePage = aValue.getCurrentPage();
+//			itsDataFile.store(thePage);
 		}
 
 		@Override

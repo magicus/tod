@@ -6,7 +6,15 @@ package tod.impl.dbgrid.dbnode;
 import static tod.impl.dbgrid.DebuggerGridConfig.DB_MAX_INDEX_LEVELS;
 import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_POINTER_BITS;
 import static tod.impl.dbgrid.DebuggerGridConfig.EVENT_TIMESTAMP_BITS;
-import tod.impl.dbgrid.dbnode.PagedFile.PageBitStruct;
+import tod.impl.dbgrid.dbnode.file.HardPagedFile;
+import tod.impl.dbgrid.dbnode.file.IndexTuple;
+import tod.impl.dbgrid.dbnode.file.IndexTupleCodec;
+import tod.impl.dbgrid.dbnode.file.TupleCodec;
+import tod.impl.dbgrid.dbnode.file.TupleFinder;
+import tod.impl.dbgrid.dbnode.file.TupleIterator;
+import tod.impl.dbgrid.dbnode.file.TupleWriter;
+import tod.impl.dbgrid.dbnode.file.PageBank.Page;
+import tod.impl.dbgrid.dbnode.file.PageBank.PageBitStruct;
 import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Probe;
 import zz.utils.bit.BitStruct;
@@ -16,13 +24,13 @@ import zz.utils.bit.BitStruct;
  * for instance a particular behavior id.
  * @author gpothier
  */
-public class HierarchicalIndex<T extends HierarchicalIndex.IndexTuple>
+public class HierarchicalIndex<T extends IndexTuple>
 {
 	private TupleCodec<T> itsTupleCodec;
 	
-	private PagedFile itsFile;
+	private HardPagedFile itsFile;
 	
-	private PagedFile.Page itsRootPage;
+	private Page itsRootPage;
 	private long itsFirstLeafPageId;
 	private int itsRootLevel;
 	private MyTupleWriter[] itsTupleWriters = new MyTupleWriter[DB_MAX_INDEX_LEVELS];
@@ -44,7 +52,7 @@ public class HierarchicalIndex<T extends HierarchicalIndex.IndexTuple>
 	 */
 	private final String itsName;
 	
-	public HierarchicalIndex(String aName, PagedFile aFile, TupleCodec<T> aTupleCodec) 
+	public HierarchicalIndex(String aName, HardPagedFile aFile, TupleCodec<T> aTupleCodec) 
 	{
 		itsName = aName;
 		itsFile = aFile;
@@ -86,29 +94,31 @@ public class HierarchicalIndex<T extends HierarchicalIndex.IndexTuple>
 //		System.out.println("Get    "+aTimestamp);
 		if (aTimestamp == 0)
 		{
-			PageBitStruct theBitStruct = itsFile.getPage(itsFirstLeafPageId).asBitStruct();
+			PageBitStruct theBitStruct = itsFile.get(itsFirstLeafPageId).asBitStruct();
 			return new TupleIterator<T>(itsFile, itsTupleCodec, theBitStruct);
 		}
 		else
 		{
 			int theLevel = itsRootLevel;
-			PagedFile.Page thePage = itsRootPage;
+			Page thePage = itsRootPage;
 			while (theLevel > 0)
 			{
 //				System.out.println("Level: "+theLevel);
 				InternalTuple theTuple = TupleFinder.findTuple(
 						thePage.asBitStruct(), 
+						DB_PAGE_POINTER_BITS,
 						aTimestamp, 
 						InternalTupleCodec.getInstance(),
 						true);
 				
-				thePage = itsFile.getPage(theTuple.getPagePointer());
+				thePage = itsFile.get(theTuple.getPagePointer());
 				theLevel--;
 			}
 			
 			PageBitStruct theBitStruct = thePage.asBitStruct();
 			int theIndex = TupleFinder.findTupleIndex(
 					theBitStruct,
+					DB_PAGE_POINTER_BITS,
 					aTimestamp, 
 					itsTupleCodec,
 					true);
@@ -198,72 +208,6 @@ public class HierarchicalIndex<T extends HierarchicalIndex.IndexTuple>
 		return "Index "+itsName;
 	}
 
-	public static abstract class IndexTupleCodec<T extends IndexTuple> extends TupleCodec<T>
-	{
-		@Override
-		public int getTupleSize()
-		{
-			return EVENT_TIMESTAMP_BITS;
-		}
-		
-		@Override
-		public final void write(BitStruct aBitStruct, T aTuple)
-		{
-			aTuple.writeTo(aBitStruct);
-		}
-		
-		@Override
-		public final boolean isNull(T aTuple)
-		{
-			return aTuple.getTimestamp() == 0;
-		}
-	}
-	
-	/**
-	 * Base class for all index tuples. Only contains the timestamp.
-	 */
-	public static class IndexTuple extends Tuple
-	{
-		private long itsTimestamp;
-
-		public IndexTuple(long aTimestamp)
-		{
-			itsTimestamp = aTimestamp;
-		}
-		
-		public IndexTuple(BitStruct aBitStruct)
-		{
-			itsTimestamp = aBitStruct.readLong(EVENT_TIMESTAMP_BITS);
-		}
-
-		/**
-		 * Writes a serialized representation of this tuple to
-		 * the specified struct.
-		 * Subclasses should override to serialize additional attributes,
-		 * and call super first.
-		 */
-		public void writeTo(BitStruct aBitStruct)
-		{
-			aBitStruct.writeLong(getTimestamp(), EVENT_TIMESTAMP_BITS);
-		}
-		
-		/**
-		 * Returns the timestamp of this tuple.
-		 */
-		public long getTimestamp()
-		{
-			return itsTimestamp;
-		}
-		
-		@Override
-		public String toString()
-		{
-			return String.format("%s: t=%d",
-					getClass().getSimpleName(),
-					getTimestamp());
-		}
-	}
-
 	/**
 	 * Codec for {@link InternalTuple}.
 	 * @author gpothier
@@ -342,9 +286,9 @@ public class HierarchicalIndex<T extends HierarchicalIndex.IndexTuple>
 	{
 		private final int itsLevel;
 		
-		public MyTupleWriter(PagedFile aFile, TupleCodec<T> aTupleCodec, final int aLevel)
+		public MyTupleWriter(HardPagedFile aFile, TupleCodec<T> aTupleCodec, final int aLevel)
 		{
-			super(aFile, aTupleCodec, aFile.createPage(), 0);
+			super(aFile, aTupleCodec, aFile.create(), 0);
 			itsLevel = aLevel;
 		}
 

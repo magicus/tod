@@ -1,15 +1,14 @@
 /*
  * Created on Aug 10, 2006
  */
-package tod.impl.dbgrid.dbnode;
-
-import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_POINTER_BITS;
+package tod.impl.dbgrid.dbnode.file;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import tod.impl.dbgrid.dbnode.PagedFile.Page;
-import tod.impl.dbgrid.dbnode.PagedFile.PageBitStruct;
+import tod.impl.dbgrid.dbnode.file.PageBank.Page;
+import tod.impl.dbgrid.dbnode.file.PageBank.PageBitStruct;
+
 
 /**
  * A tuple iterator reads {@link Tuple}s from a linked list of
@@ -19,7 +18,7 @@ import tod.impl.dbgrid.dbnode.PagedFile.PageBitStruct;
  */
 public class TupleIterator<T> implements Iterator<T>
 {
-	private PagedFile itsFile;
+	private PageBank itsBank;
 	private TupleCodec<T> itsTupleCodec;
 	private PageBitStruct itsStruct;
 	private T itsNextTuple;
@@ -32,38 +31,45 @@ public class TupleIterator<T> implements Iterator<T>
 		itsNextTuple = null;
 	}
 
-	public TupleIterator(PagedFile aFile, TupleCodec<T> aTupleCodec, PageBitStruct aStruct)
+	public TupleIterator(PageBank aBank, TupleCodec<T> aTupleCodec, PageBitStruct aStruct)
 	{
-		itsFile = aFile;
+		itsBank = aBank;
 		itsTupleCodec = aTupleCodec;
 		itsStruct = aStruct;
 		itsNextTuple = readNextTuple();
 	}
 	
+	private int getPagePointerSize()
+	{
+		return itsBank.getPagePointerSize();
+	}
+
+
+	
 	/**
 	 * Reads the next page pointer from the given page.
 	 */
-	public static Long readNextPageId(Page aPage, int aTupleSize)
+	public static Long readNextPageId(Page aPage, int aPagePointerSize, int aTupleSize)
 	{
 		PageBitStruct theStruct = aPage.asBitStruct();
 		int thePageSize = theStruct.getRemainingBits();
-		int theTupleCount = (thePageSize - DB_PAGE_POINTER_BITS) / aTupleSize;
+		int theTupleCount = (thePageSize - aPagePointerSize) / aTupleSize;
 		theStruct.setPos(theTupleCount * aTupleSize);
-		long theNextPage = theStruct.readLong(DB_PAGE_POINTER_BITS);
+		long theNextPage = theStruct.readLong(aPagePointerSize);
 		return theNextPage == 0 ? null : theNextPage-1;
 	}
 
 	private T readNextTuple()
 	{
-		if (itsStruct.getRemainingBits() < itsTupleCodec.getTupleSize() + DB_PAGE_POINTER_BITS)
+		if (itsStruct.getRemainingBits() < itsTupleCodec.getTupleSize() + getPagePointerSize())
 		{
 			// We reached the end of the page, we must read the next-page
 			// pointer
-			long theNextPage = itsStruct.readLong(DB_PAGE_POINTER_BITS);
+			long theNextPage = itsStruct.readLong(getPagePointerSize());
 			if (theNextPage == 0) return null;
 
 			// itsFile.freePage(itsPage.getPage());
-			itsStruct = itsFile.getPage(theNextPage - 1).asBitStruct();
+			itsStruct = itsBank.get(theNextPage - 1).asBitStruct();
 		}
 
 		T theTuple = itsTupleCodec.read(itsStruct);

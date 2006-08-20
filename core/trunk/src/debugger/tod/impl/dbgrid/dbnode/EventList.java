@@ -7,7 +7,8 @@ import static tod.impl.dbgrid.DebuggerGridConfig.*;
 
 import java.util.Iterator;
 
-import tod.impl.dbgrid.dbnode.PagedFile.PageBitStruct;
+import tod.impl.dbgrid.dbnode.file.HardPagedFile;
+import tod.impl.dbgrid.dbnode.file.HardPagedFile.PageBitStruct;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Monitor;
@@ -31,7 +32,7 @@ public class EventList
 	 */
 	private long itsPageCount = 0;
 	
-	private PagedFile itsFile;
+	private HardPagedFile itsFile;
 	private long itsFirstPageId;
 	private PageBitStruct itsCurrentBitStruct;
 	
@@ -40,11 +41,11 @@ public class EventList
 	 */
 	private int itsRecordIndex = 0;
 	
-	public EventList(PagedFile aFile) 
+	public EventList(HardPagedFile aFile) 
 	{
 		Monitor.getInstance().register(this);
 		itsFile = aFile;
-		itsCurrentBitStruct = itsFile.createPage().asBitStruct();
+		itsCurrentBitStruct = itsFile.create().asBitStruct();
 		itsFirstPageId = itsCurrentBitStruct.getPage().getPageId();
 	}
 
@@ -60,14 +61,14 @@ public class EventList
 		if (itsCurrentBitStruct.getRemainingBits() - theTailSize < theRecordLength)
 		{
 			PageBitStruct theOldBitStruct = itsCurrentBitStruct;
-			itsCurrentBitStruct = itsFile.createPage().asBitStruct();
+			itsCurrentBitStruct = itsFile.create().asBitStruct();
 			itsPageCount++;
 			
 			theOldBitStruct.writeInt(0, DB_EVENT_SIZE_BITS); // End-of-page marker 
 			theOldBitStruct.writeLong(itsCurrentBitStruct.getPage().getPageId()+1, DB_PAGE_POINTER_BITS);
 			
-			itsFile.writePage(theOldBitStruct.getPage());
-			itsFile.freePage(theOldBitStruct.getPage());
+//			itsFile.store(theOldBitStruct.getPage());
+//			itsFile.free(theOldBitStruct.getPage());
 			itsRecordIndex = 0;
 		}
 		
@@ -116,7 +117,7 @@ public class EventList
 		int theRecordIndex = (int) (aPointer & (BitUtils.pow2(DB_EVENTID_INDEX_BITS)-1));
 		int theCount = theRecordIndex;
 		
-		PagedFile.Page thePage = itsFile.getPage(thePageId);
+		HardPagedFile.Page thePage = itsFile.get(thePageId);
 		PageBitStruct theBitStruct = thePage.asBitStruct();
 		
 		do 
@@ -143,7 +144,7 @@ public class EventList
 	 */
 	public Iterator<GridEvent> getEventIterator()
 	{
-		return new EventIterator(itsFile.getPage(itsFirstPageId).asBitStruct());
+		return new EventIterator(itsFile.get(itsFirstPageId).asBitStruct());
 	}
 	
 	public int getPageSize()
@@ -203,7 +204,7 @@ public class EventList
 					if (theNextPage == 0) return null;
 					
 //					itsFile.freePage(itsPage.getPage());
-					itsPage = itsFile.getPage(theNextPage-1).asBitStruct();
+					itsPage = itsFile.get(theNextPage-1).asBitStruct();
 				}
 			} while (theRecordLength == 0); // We really should not loop more than once
 			
