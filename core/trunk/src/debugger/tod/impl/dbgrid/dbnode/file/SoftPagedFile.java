@@ -50,7 +50,7 @@ public class SoftPagedFile
 		if (itsMinLog == -1) throw new IllegalArgumentException("Bad minimum size: "+itsMinPageSize);
 		if (theMaxLog == -1) throw new IllegalArgumentException("Bad maximum size: "+theMaxPageSize);
 		
-		int theSizesCount = theMaxLog - itsMinLog;
+		int theSizesCount = theMaxLog - itsMinLog + 1;
 		itsPagesData = new PageData[theSizesCount];
 		for(int i=0;i<theSizesCount;i++) itsPagesData[i] = new PageData(i);
 		
@@ -67,6 +67,22 @@ public class SoftPagedFile
 	public int getPagePointerSize()
 	{
 		return itsPagePointerSize;
+	}
+	
+	/**
+	 * Returns the minimum page size, in bytes, supported by this file.
+	 */
+	public int getMinPageSize()
+	{
+		return itsMinPageSize*4;
+	}
+
+	/**
+	 * Returns the maximum page size supported by this file.
+	 */
+	public int getMaxPageSize()
+	{
+		return itsFile.getPageSize();
 	}
 
 	public SoftPage get(long aId)
@@ -96,8 +112,8 @@ public class SoftPagedFile
 		return new SoftPage(
 				aId, 
 				itsFile.get(thePageId),
-				thePageIndex*thePageSize*4, 
-				thePageSize*4);
+				thePageIndex*thePageSize, 
+				thePageSize);
 	}
 	
 	/**
@@ -146,6 +162,7 @@ public class SoftPagedFile
 		if ((aPageId & ~thePageIdMask) != 0) throw new IllegalArgumentException("Page id overflow");
 		if ((aPageSizeIndex & ~thePageSizeMask) != 0) throw new IllegalArgumentException("Page size index overflow");
 		if ((aPageIndex & ~thePageIndexMask) != 0) throw new IllegalArgumentException("Page index overflow");
+		assert aPageId <= itsFile.getPagesCount();
 		
 		long theId = 0;
 		
@@ -173,7 +190,7 @@ public class SoftPagedFile
 		private int itsPageSizeIndex;
 		
 		/**
-		 * Actual page size, in bytes.
+		 * Actual page size, in array slots.
 		 */
 		private int itsPageSize;
 		
@@ -203,13 +220,15 @@ public class SoftPagedFile
 					itsPageSizeIndex, 
 					itsCurrentIndex);
 			
-			itsCurrentIndex++;
-			
-			return new SoftPage(
+			SoftPage thePage = new SoftPage(
 					theId, 
 					itsCurrentPage, 
-					itsCurrentIndex * itsPageSize * 4, 
-					itsPageSize * 4);
+					itsCurrentIndex * itsPageSize, 
+					itsPageSize);
+			
+			itsCurrentIndex++;
+			
+			return thePage;
 		}
 	}
 	
@@ -238,6 +257,12 @@ public class SoftPagedFile
 		public SoftPageBitStruct asBitStruct()
 		{
 			return new SoftPageBitStruct(this, itsOffset, itsSize);
+		}
+		
+		@Override
+		public int getSize()
+		{
+			return itsSize*4;
 		}
 		
 		private int[] getData()

@@ -17,14 +17,36 @@ public class ExponentialPageBank extends PageBank
 	
 	private int itsCurrentSize;
 	private int itsMaxSize;
-	
+
+	/**
+	 * Creates an exponential bank using a new soft file based on the specified hard file.
+	 */
 	public ExponentialPageBank(HardPagedFile aFile, int aMinimumSize)
 	{
-		itsFile = new SoftPagedFile(aFile, aMinimumSize);
-		itsCurrentSize = aMinimumSize;
-		itsMaxSize = aFile.getPageSize();
+		this(new SoftPagedFile(aFile, aMinimumSize));
+	}
+	
+	/**
+	 * Creates an exponential bank using an existing soft file.
+	 */
+	public ExponentialPageBank(SoftPagedFile aFile)
+	{
+		itsFile = aFile;
+		itsCurrentSize = itsFile.getMinPageSize();
+		itsMaxSize = itsFile.getMaxPageSize();
 	}
 
+	/**
+	 * Creates an exponential bank using an existing soft file and 
+	 * starting with the specified page size.
+	 */
+	public ExponentialPageBank(SoftPagedFile aFile, int aCurrentSize)
+	{
+		itsFile = aFile;
+		itsCurrentSize = aCurrentSize;
+		itsMaxSize = itsFile.getMaxPageSize();
+	}
+	
 	@Override
 	public Page create()
 	{
@@ -33,18 +55,6 @@ public class ExponentialPageBank extends PageBank
 		return thePage;
 	}
 
-//	@Override
-//	public void free(Page aPage)
-//	{
-//		itsFile.free(aPage);
-//	}
-//
-//	@Override
-//	public void store(Page aPage)
-//	{
-//		itsFile.store(aPage);
-//	}
-//	
 	@Override
 	public Page get(long aId)
 	{
@@ -56,6 +66,32 @@ public class ExponentialPageBank extends PageBank
 	{
 		return itsFile.getPagePointerSize();
 	}
+	
+	/**
+	 * Returns the minimum page size, in bytes, supported by this file.
+	 */
+	public int getMinPageSize()
+	{
+		return itsFile.getMinPageSize();
+	}
+
+	/**
+	 * Returns the maximum page size supported by this file.
+	 */
+	public int getMaxPageSize()
+	{
+		return itsFile.getMaxPageSize();
+	}
+	
+	/**
+	 * Returns the size of the next page that will be created.
+	 */
+	public int getCurrentPageSize()
+	{
+		return itsCurrentSize;
+	}
+
+
 
 	
 }

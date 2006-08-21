@@ -79,6 +79,14 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 	}
 	
 	/**
+	 * Returns the number of allocated pages.
+	 */
+	public long getPagesCount()
+	{
+		return itsPagesCount;
+	}
+
+	/**
 	 * Returns the amount of storage, in bytes, occupied by this file.
 	 */
 	@Probe(key = "file storage", aggr = AggregationType.SUM)
@@ -407,6 +415,7 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 		private Page(long aPageId)
 		{
 			super(aPageId);
+			assert aPageId < itsPagesCount;
 		}
 		
 		/**
@@ -418,6 +427,12 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 		public PageBitStruct asBitStruct()
 		{
 			return new PageBitStruct(this);
+		}
+		
+		@Override
+		public int getSize()
+		{
+			return getPageSize();
 		}
 		
 		int[] getData()

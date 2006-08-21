@@ -11,18 +11,16 @@ import static tod.impl.dbgrid.DebuggerGridConfig.DB_INDEX_PAGE_SIZE;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 import org.junit.Test;
 
-import tod.impl.dbgrid.ExternalPointer;
+import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.dbnode.CFlowMap;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
 import tod.impl.dbgrid.dbnode.file.HardPagedFile;
-import tod.impl.dbgrid.test.TestHierarchicalIndex.TimestampGenerator;
 import zz.utils.ListMap;
 import zz.utils.Utils;
 
@@ -31,9 +29,8 @@ public class TestCFlowMap
 	@Test public void test() throws FileNotFoundException
 	{
 		test(100, 10000);
-		test(1000, 1);
 		test(1000, 1000000);
-//		test(10000, 1000000);
+		test(10000, 10000000);
 	}
 	
 	private void test(int aKeysCount, int aChildrenCount) throws FileNotFoundException
@@ -47,14 +44,14 @@ public class TestCFlowMap
 		
 		// Fill map
 		System.out.println("Fill...");
-		FakeThread[] theThreads = new FakeThread[aKeysCount];
-		for (int i=0;i<aKeysCount;i++) theThreads[i] = new FakeThread(i%100 + 1, i/100 + 1);
+		Fixtures.FakeThread[] theThreads = new Fixtures.FakeThread[aKeysCount];
+		for (int i=0;i<aKeysCount;i++) theThreads[i] = new Fixtures.FakeThread(i%100 + 1, i/100 + 1);
 		
 		Random theRandom = new Random(0);
 		for(int i=0;i<aChildrenCount;i++)
 		{
 			int theIndex = theRandom.nextInt(theThreads.length);
-			FakeThread theThread = theThreads[theIndex];
+			Fixtures.FakeThread theThread = theThreads[theIndex];
 			
 			if (theThread != null)
 			{
@@ -62,7 +59,7 @@ public class TestCFlowMap
 				if (! theContinue) theThreads[theIndex] = null;
 			}
 			
-			if (i % 10000 == 0) System.out.println(i);
+			if (i % 100000 == 0) System.out.println(i);
 		}
 		
 		//  Check
@@ -85,65 +82,12 @@ public class TestCFlowMap
 			}
 			
 			assertFalse("Count mismatch", theChildrenPointers.hasNext());
-			if (i % 10000 == 0) System.out.println(i);
+			if (i % 100000 == 0) System.out.println(i);
 			i++;
 			
 		}
 		
 		System.out.println("Done.");
 		
-	}
-	
-	private static class FakeThread
-	{
-		private static int itsExpectedLength = 10;
-		
-		private int itsHostId;
-		private int itsThreadId;
-		
-		private TimestampGenerator itsGenerator;
-		private Random itsRandom;
-		private LinkedList<byte[]> itsStack = new LinkedList<byte[]>();
-		
-		public FakeThread(int aHostId, int aThreadId)
-		{
-			itsHostId = aHostId;
-			itsThreadId = aThreadId;
-			
-			int theSeed = itsHostId*10000 + itsThreadId;
-			itsGenerator = new TimestampGenerator(theSeed);
-			itsRandom = new Random(theSeed);
-			
-			itsStack.addLast(genPointer());
-		}
-		
-		private byte[] genPointer()
-		{
-			return ExternalPointer.create(1, itsHostId, itsThreadId, itsGenerator.next());
-		}
-		
-		public boolean addNextToMap(CFlowMap aMap, ListMap<byte[], byte[]> aMemMap)
-		{
-			byte[] theParent = itsStack.getLast();
-			byte[] theChild = genPointer();
-			
-			aMap.add(theParent, theChild);
-			aMemMap.add(theParent, theChild);
-			
-			
-			// Check if we recurse
-			if (itsRandom.nextFloat() < 0.5f)
-			{
-				itsStack.addLast(theChild);
-			}
-			
-			// Check if we exit
-			if (itsRandom.nextFloat() < 1f / itsExpectedLength)
-			{
-				itsStack.removeLast();
-			}
-			
-			return ! itsStack.isEmpty();
-		}
 	}
 }

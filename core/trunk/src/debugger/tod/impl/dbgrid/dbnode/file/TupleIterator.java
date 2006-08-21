@@ -52,7 +52,7 @@ public class TupleIterator<T> implements Iterator<T>
 	public static Long readNextPageId(Page aPage, int aPagePointerSize, int aTupleSize)
 	{
 		PageBitStruct theStruct = aPage.asBitStruct();
-		int thePageSize = theStruct.getRemainingBits();
+		int thePageSize = theStruct.getTotalBits();
 		int theTupleCount = (thePageSize - aPagePointerSize) / aTupleSize;
 		theStruct.setPos(theTupleCount * aTupleSize);
 		long theNextPage = theStruct.readLong(aPagePointerSize);

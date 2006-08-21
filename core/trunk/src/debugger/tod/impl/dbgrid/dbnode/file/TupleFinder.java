@@ -34,18 +34,17 @@ public class TupleFinder
 	 * greater than or equeal to the given timestamp
 	 */
 	public static <T extends IndexTuple> int findTupleIndex(
-			BitStruct aPage, 
+			BitStruct aStruct, 
 			int aPagePointerSize,
 			long aTimestamp, 
 			TupleCodec<T> aTupleCodec,
 			boolean aBefore)
 	{
-		aPage.setPos(0);
-		int thePageSize = aPage.getRemainingBits();
+		int thePageSize = aStruct.getTotalBits();
 		int theTupleCount = (thePageSize - aPagePointerSize) 
 			/ aTupleCodec.getTupleSize();
 		
-		return findTupleIndex(aPage, aTimestamp, aTupleCodec, 0, theTupleCount-1, aBefore);
+		return findTupleIndex(aStruct, aTimestamp, aTupleCodec, 0, theTupleCount-1, aBefore);
 	}
 	
 	/**

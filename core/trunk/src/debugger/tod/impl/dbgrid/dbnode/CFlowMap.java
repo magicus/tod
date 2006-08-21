@@ -3,6 +3,7 @@
  */
 package tod.impl.dbgrid.dbnode;
 
+import static tod.impl.dbgrid.DebuggerGridConfig.*;
 import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_POINTER_BITS;
 import static tod.impl.dbgrid.DebuggerGridConfig.EVENTID_POINTER_SIZE;
 import static tod.impl.dbgrid.DebuggerGridConfig.EVENT_HOST_BITS;
@@ -13,10 +14,12 @@ import java.util.Iterator;
 import java.util.Map;
 
 import tod.impl.dbgrid.ExternalPointer;
+import tod.impl.dbgrid.dbnode.file.ExponentialPageBank;
 import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 import tod.impl.dbgrid.dbnode.file.IndexTuple;
 import tod.impl.dbgrid.dbnode.file.IndexTupleCodec;
 import tod.impl.dbgrid.dbnode.file.PageBank;
+import tod.impl.dbgrid.dbnode.file.SoftPagedFile;
 import tod.impl.dbgrid.dbnode.file.TupleCodec;
 import tod.impl.dbgrid.dbnode.file.TupleIterator;
 import tod.impl.dbgrid.dbnode.file.TupleWriter;
@@ -36,14 +39,14 @@ public class CFlowMap
 {
 	private DatabaseNode itsNode;
 	private HardPagedFile itsIndexFile;
-	private PageBank itsDataFile;
+	private SoftPagedFile itsDataFile;
 	
 	private Map<Integer, HierarchicalIndex<CFlowIndexTuple>> itsIndexes =
 		new HashMap<Integer, HierarchicalIndex<CFlowIndexTuple>>();
 	
 	private ChildrenListBuffer itsChildrenListBuffer = new ChildrenListBuffer();
 	
-	public static final CFlowIndexTupleCodec INDEX_TUPLE_CODEC = new CFlowIndexTupleCodec();
+	public final CFlowIndexTupleCodec INDEX_TUPLE_CODEC = new CFlowIndexTupleCodec();
 	public static final CFlowDataTupleCodec DATA_TUPLE_CODEC = new CFlowDataTupleCodec();
 	
 	private final byte[] itsPointerBuffer = new byte[(EVENTID_POINTER_SIZE+7) / 8];
@@ -70,11 +73,11 @@ public class CFlowMap
 	}
 	
 
-	public CFlowMap(DatabaseNode aNode, HardPagedFile aIndexFile, PageBank aDataFile)
+	public CFlowMap(DatabaseNode aNode, HardPagedFile aIndexFile, HardPagedFile aDataFile)
 	{
 		itsNode = aNode;
 		itsIndexFile = aIndexFile;
-		itsDataFile = aDataFile;
+		itsDataFile = new SoftPagedFile(aDataFile, DB_MIN_CFLOW_PAGE_SIZE);
 		
 		Monitor.getInstance().register(this);
 	}
@@ -146,7 +149,7 @@ public class CFlowMap
 		if (theTuple == null)
 		{
 			if (! aCreate) return null;
-			thePage = itsDataFile.create();
+			thePage = itsDataFile.create(DB_MIN_CFLOW_PAGE_SIZE);
 			theTuple = new CFlowIndexTuple(theParentPointer.timestamp, thePage.getPageId());
 			theIndex.add(theTuple);
 		}
@@ -157,22 +160,108 @@ public class CFlowMap
 		
 		itsFetchCount++;
 		
-		return new ChildrenList(aParentPointer, thePage, aAppend);
+		return createChildrenList(aParentPointer, thePage, aAppend);
 	}
+	
+	/**
+	 * Factory method for children lists.
+	 */
+	private ChildrenList createChildrenList(
+			byte[] aParentPointer, 
+			Page aFirstPage, 
+			boolean aAppend)
+	{
+		PageBank theBank;
+		PageBitStruct theStartingStruct;
+		
+		if (aAppend)
+		{
+			Page thePage = aFirstPage;
+			int thePageSize = itsDataFile.getMinPageSize();
+			int theTupleSize = DATA_TUPLE_CODEC.getTupleSize();
+			while (true)
+			{
+				assert thePage.getSize() == thePageSize;
+				thePageSize *= 2;
+				
+				Long theNextPage = TupleIterator.readNextPageId(
+						thePage, 
+						itsDataFile.getPagePointerSize(), 
+						theTupleSize);
+				
+				if (theNextPage == null) break;
+				
+				thePage = itsDataFile.get(theNextPage);
+				itsSeekCount++;
+			}
+			
+			theStartingStruct = thePage.asBitStruct();
+			int theFreeIndex = findFreeDataTuple(theStartingStruct);
+			theStartingStruct.setPos(theFreeIndex * theTupleSize);
+
+			theBank = new ExponentialPageBank(itsDataFile, thePageSize); 
+		}
+		else
+		{
+			assert aFirstPage.getSize() == DB_MIN_CFLOW_PAGE_SIZE;
+			theBank = new ExponentialPageBank(itsDataFile, DB_MIN_CFLOW_PAGE_SIZE*2);
+			theStartingStruct = aFirstPage.asBitStruct();
+		}
+		
+		return new ChildrenList(aParentPointer, theBank, theStartingStruct);
+	}
+	
+	private int findFreeDataTuple(PageBitStruct aStruct)
+	{
+		int theCount = (aStruct.getTotalBits() - itsDataFile.getPagePointerSize()) / EVENTID_POINTER_SIZE;
+		int theIndex = findFreeDataTuple(aStruct, 0, theCount-1);
+		return theIndex;
+//		return theIndex >= 0 ? theIndex : theCount;
+	}
+	
+	private int findFreeDataTuple(PageBitStruct aStruct, int aFirst, int aLast)
+	{
+		if (isDataTupleNull(aStruct, aFirst)) return aFirst;
+		if (aFirst == aLast) return aLast+1;
+		if (! isDataTupleNull(aStruct, aLast)) return aLast+1;
+		
+		if (aLast - aFirst == 1) return aLast;
+		
+		int theMiddle = (aFirst + aLast)/2;
+		if (isDataTupleNull(aStruct, theMiddle))
+			return findFreeDataTuple(aStruct, aFirst, theMiddle-1);
+		else return findFreeDataTuple(aStruct, theMiddle+1, aLast);
+	}
+	
+	private boolean isDataTupleNull(PageBitStruct aStruct, int aIndex)
+	{
+		aStruct.setPos(aIndex*EVENTID_POINTER_SIZE);
+		aStruct.readBytes(EVENTID_POINTER_SIZE, itsPointerBuffer);
+		return ExternalPointer.isNull(itsPointerBuffer);
+	}
+
 	
 	@Probe(key = "cflow map seek count", aggr = AggregationType.SUM)
 	public long getSeekCount()
 	{
 		return itsSeekCount;
 	}
+	
+	/**
+	 * Returns the page pointer size for data pages.
+	 */
+	private int getDataPagePointerSize()
+	{
+		return itsDataFile.getPagePointerSize();
+	}
 
 	
-	private static class CFlowIndexTupleCodec extends IndexTupleCodec<CFlowIndexTuple>
+	private class CFlowIndexTupleCodec extends IndexTupleCodec<CFlowIndexTuple>
 	{
 		@Override
 		public int getTupleSize()
 		{
-			return super.getTupleSize() + DB_PAGE_POINTER_BITS;
+			return super.getTupleSize() + getDataPagePointerSize();
 		}
 
 		@Override
@@ -186,7 +275,7 @@ public class CFlowMap
 	 * Index tuples contain children list page pointers
 	 * @author gpothier
 	 */
-	private static class CFlowIndexTuple extends IndexTuple
+	private class CFlowIndexTuple extends IndexTuple
 	{
 		/**
 		 * Data page pointer 
@@ -202,14 +291,14 @@ public class CFlowMap
 		public CFlowIndexTuple(BitStruct aBitStruct)
 		{
 			super(aBitStruct);
-			itsPagePointer = aBitStruct.readLong(DB_PAGE_POINTER_BITS);
+			itsPagePointer = aBitStruct.readLong(getDataPagePointerSize());
 		}
 
 		@Override
 		public void writeTo(BitStruct aBitStruct)
 		{
 			super.writeTo(aBitStruct);
-			aBitStruct.writeLong(getPagePointer(), DB_PAGE_POINTER_BITS);
+			aBitStruct.writeLong(getPagePointer(), getDataPagePointerSize());
 		}
 		
 		public long getPagePointer()
@@ -245,74 +334,17 @@ public class CFlowMap
 		}
 	}
 	
-
-	private class ChildrenList extends TupleWriter<byte[]>
+	private static class ChildrenList extends TupleWriter<byte[]>
 	{
 		private byte[] itsParentPointer;
 		
-		public ChildrenList(byte[] aParentPointer, Page aFirstPage, boolean aAppend)
+		public ChildrenList(byte[] aParentPointer, PageBank aBank, PageBitStruct aCurrentStruct)
 		{
-			super(itsDataFile, DATA_TUPLE_CODEC);
+			super(aBank, DATA_TUPLE_CODEC);
 			itsParentPointer = aParentPointer;
-			
-			if (aAppend)
-			{
-				Page thePage = aFirstPage;
-				int theTupleSize = DATA_TUPLE_CODEC.getTupleSize();
-				while (true)
-				{
-					Long theNextPage = TupleIterator.readNextPageId(
-							thePage, 
-							itsDataFile.getPagePointerSize(), 
-							theTupleSize);
-					
-					if (theNextPage == null) break;
-					
-					thePage = itsDataFile.get(theNextPage);
-					itsSeekCount++;
-				}
-				
-				PageBitStruct theStruct = thePage.asBitStruct();
-				int theFreeIndex = findFreeDataTuple(theStruct);
-				theStruct.setPos(theFreeIndex * theTupleSize);
-
-				setCurrentStruct(theStruct);
-			}
-			else
-			{
-				setCurrentPage(aFirstPage, 0);
-			}
+			setCurrentStruct(aCurrentStruct);
 		}
 		
-		private int findFreeDataTuple(PageBitStruct aStruct)
-		{
-			aStruct.setPos(0);
-			int theCount = (aStruct.getRemainingBits() - itsDataFile.getPagePointerSize()) / EVENTID_POINTER_SIZE;
-			int theIndex = findFreeDataTuple(aStruct, 0, theCount-1);
-			return theIndex;
-//			return theIndex >= 0 ? theIndex : theCount;
-		}
-		
-		private int findFreeDataTuple(PageBitStruct aStruct, int aFirst, int aLast)
-		{
-			if (isDataTupleNull(aStruct, aFirst)) return aFirst;
-			if (aFirst == aLast) return aLast+1;
-			if (! isDataTupleNull(aStruct, aLast)) return aLast+1;
-			
-			if (aLast - aFirst == 1) return aLast;
-			
-			int theMiddle = (aFirst + aLast)/2;
-			if (isDataTupleNull(aStruct, theMiddle))
-				return findFreeDataTuple(aStruct, aFirst, theMiddle-1);
-			else return findFreeDataTuple(aStruct, theMiddle+1, aLast);
-		}
-		
-		private boolean isDataTupleNull(PageBitStruct aStruct, int aIndex)
-		{
-			aStruct.setPos(aIndex*EVENTID_POINTER_SIZE);
-			aStruct.readBytes(EVENTID_POINTER_SIZE, itsPointerBuffer);
-			return ExternalPointer.isNull(itsPointerBuffer);
-		}
 
 		public byte[] getParentPointer()
 		{
@@ -330,17 +362,9 @@ public class CFlowMap
 	
 	private class ChildrenListBuffer extends MRUBuffer<byte[], ChildrenList>
 	{
-
 		public ChildrenListBuffer()
 		{
-			super(256);
-		}
-
-		@Override
-		protected void drop(ChildrenList aValue)
-		{
-//			Page thePage = aValue.getCurrentPage();
-//			itsDataFile.store(thePage);
+			super(DB_CFLOW_CHILDREN_LIST_BUFFER_SIZE);
 		}
 
 		@Override

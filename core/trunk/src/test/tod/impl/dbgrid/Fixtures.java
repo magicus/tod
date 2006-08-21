@@ -9,7 +9,10 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Random;
 
+import tod.impl.dbgrid.dbnode.CFlowMap;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
 import tod.impl.dbgrid.dbnode.EventList;
 import tod.impl.dbgrid.dbnode.HierarchicalIndex;
@@ -19,12 +22,67 @@ import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.impl.dbgrid.test.TestHierarchicalIndex;
+import tod.impl.dbgrid.test.TestHierarchicalIndex.TimestampGenerator;
+import zz.utils.ListMap;
 import zz.utils.bit.BitStruct;
 import zz.utils.bit.IntBitStruct;
 
 
 public class Fixtures
 {
+
+	public static class FakeThread
+	{
+		private static int itsExpectedLength = 10;
+		
+		private int itsHostId;
+		private int itsThreadId;
+		
+		private TimestampGenerator itsGenerator;
+		private Random itsRandom;
+		private LinkedList<byte[]> itsStack = new LinkedList<byte[]>();
+		
+		public FakeThread(int aHostId, int aThreadId)
+		{
+			itsHostId = aHostId;
+			itsThreadId = aThreadId;
+			
+			int theSeed = itsHostId*10000 + itsThreadId;
+			itsGenerator = new TimestampGenerator(theSeed);
+			itsRandom = new Random(theSeed);
+			
+			itsStack.addLast(genPointer());
+		}
+		
+		private byte[] genPointer()
+		{
+			return ExternalPointer.create(1, itsHostId, itsThreadId, itsGenerator.next());
+		}
+		
+		public boolean addNextToMap(CFlowMap aMap, ListMap<byte[], byte[]> aMemMap)
+		{
+			byte[] theParent = itsStack.getLast();
+			byte[] theChild = genPointer();
+			
+			aMap.add(theParent, theChild);
+			if (aMemMap != null) aMemMap.add(theParent, theChild);
+			
+			
+			// Check if we recurse
+			if (itsRandom.nextFloat() < 0.5f)
+			{
+				itsStack.addLast(theChild);
+			}
+			
+			// Check if we exit
+			if (itsRandom.nextFloat() < 1f / itsExpectedLength)
+			{
+				itsStack.removeLast();
+			}
+			
+			return ! itsStack.isEmpty();
+		}
+	}
 
 	public static HierarchicalIndex<StdIndexSet.StdTuple> createStdIndex() 
 	{

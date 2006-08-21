@@ -3,6 +3,7 @@
  */
 package tod.impl.dbgrid;
 
+import tod.impl.dbgrid.dbnode.CFlowMap;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
 import tod.impl.dbgrid.dbnode.EventList;
 import tod.impl.dbgrid.dbnode.HierarchicalIndex;
@@ -148,6 +149,16 @@ public class DebuggerGridConfig
 	 * Size of a cflow data page in the database
 	 */
 	public static final int DB_CFLOW_PAGE_SIZE = 4096;
+	
+	/**
+	 * Minimum page size for CFlow data pages
+	 */
+	public static final int DB_MIN_CFLOW_PAGE_SIZE = 128;
+	
+	/**
+	 * Size of the children list buffer in {@link CFlowMap}.
+	 */
+	public static final int DB_CFLOW_CHILDREN_LIST_BUFFER_SIZE = 256;
 	
 	/**
 	 * Size of a btree page 

@@ -22,16 +22,6 @@ public abstract class PageBank<P extends PageBank.Page, S extends PageBank.PageB
 	 */
 	public abstract P create();
 	
-//	/**
-//	 * Stores the given page.
-//	 */
-//	public abstract void store(P aPage);
-//	
-//	/**
-//	 * Marks the page as free so that the allocated memory can be immediately reclaimed.
-//	 */
-//	public abstract void free(P aPage);
-	
 	/**
 	 * Returns the number of bits necessary to represent a 
 	 * page pointer.
@@ -56,6 +46,11 @@ public abstract class PageBank<P extends PageBank.Page, S extends PageBank.PageB
 		 * Marks this page as modified.
 		 */
 		abstract void modified();
+
+		/**
+		 * Returns the size of this page, in bytes.
+		 */
+		public abstract int getSize();
 		
 		public abstract PageBitStruct asBitStruct();
 	}
