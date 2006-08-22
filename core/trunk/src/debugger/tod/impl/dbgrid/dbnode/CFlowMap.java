@@ -3,8 +3,8 @@
  */
 package tod.impl.dbgrid.dbnode;
 
-import static tod.impl.dbgrid.DebuggerGridConfig.*;
-import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_POINTER_BITS;
+import static tod.impl.dbgrid.DebuggerGridConfig.DB_CFLOW_CHILDREN_LIST_BUFFER_SIZE;
+import static tod.impl.dbgrid.DebuggerGridConfig.DB_MIN_CFLOW_PAGE_SIZE;
 import static tod.impl.dbgrid.DebuggerGridConfig.EVENTID_POINTER_SIZE;
 import static tod.impl.dbgrid.DebuggerGridConfig.EVENT_HOST_BITS;
 import static tod.impl.dbgrid.DebuggerGridConfig.EVENT_THREAD_BITS;
@@ -247,6 +247,18 @@ public class CFlowMap
 		return itsSeekCount;
 	}
 	
+	@Probe(key = "cflow map add count", aggr = AggregationType.SUM)
+	public long getAddCount()
+	{
+		return itsAddCount;
+	}
+
+	@Probe(key = "cflow map fetch count", aggr = AggregationType.SUM)
+	public long getFetchCount()
+	{
+		return itsFetchCount;
+	}
+
 	/**
 	 * Returns the page pointer size for data pages.
 	 */

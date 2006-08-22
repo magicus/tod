@@ -10,7 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.ref.ReferenceQueue;
-import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.channels.FileChannel;
@@ -81,6 +81,7 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 	/**
 	 * Returns the number of allocated pages.
 	 */
+	@Probe(key="file page count", aggr=AggregationType.SUM)
 	public long getPagesCount()
 	{
 		return itsPagesCount;
@@ -107,6 +108,12 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 		return itsReadPagesCount * itsPageSize;
 	}
 	
+	@Probe(key = "file cached pages count", aggr = AggregationType.SUM)
+	public long getCachedPagesCount()
+	{
+		return itsPagesMap.size();
+	}
+	
 	/**
 	 * Returns a particular page of this file.
 	 */
@@ -114,10 +121,13 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 	{
 		// Remove unused keys from the map.
 		PageRef theQuededRef;
+		int thePrunedRefs = 0;
 		while ((theQuededRef = (PageRef) itsPageRefQueue.poll()) != null)
 		{
 			itsPagesMap.remove(theQuededRef.getId());
+			thePrunedRefs++;
 		}
+		if (thePrunedRefs > 0) System.out.println("Pruned: "+thePrunedRefs);
 		
 		
 		PageRef thePageRef = itsPagesMap.get(aPageId);
@@ -177,7 +187,7 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 			int[] theBuffer = new int[itsPageSize/4];
 			itsByteBuffer.rewind();
 			
-			assert itsFile.size() > (aId+1) * itsPageSize;
+			assert itsFile.size() >= (aId+1) * itsPageSize;
 			itsFile.position(aId * itsPageSize);
 			int theTotalReadBytes = 0;
 			while (theTotalReadBytes < itsPageSize)
@@ -225,6 +235,7 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 	
 	/**
 	 * Manages the collections of {@link PageData} instances.
+	 * Ensures that all dirty pages are saved before 
 	 * @author gpothier
 	 */
 	private static class PageDataManager extends MRUBuffer<PageKey, PageData>
@@ -239,10 +250,11 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 		private PageDataManager()
 		{
 			super(-1);
+			Monitor.getInstance().register(this);
 		}
 		
-		private int itsMaxSpace = 100*1000*1000;
-		private int itsCurrentSpace;
+		private long itsMaxSpace = 100*1000*1000;
+		private long itsCurrentSpace;
 		
 		public PageData create(HardPagedFile aFile, long aId)
 		{
@@ -270,6 +282,7 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 		protected void drop(PageData aPageData)
 		{
 			aPageData.store();
+			aPageData.detach();
 			itsCurrentSpace -= aPageData.getSize();
 		}
 
@@ -283,6 +296,12 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 		protected PageKey getKey(PageData aValue)
 		{
 			return aValue.getKey();
+		}
+
+		@Probe(key="page manager space", aggr=AggregationType.SUM)
+		public long getCurrentSpace()
+		{
+			return itsCurrentSpace;
 		}
 	}
 	
@@ -333,6 +352,12 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 			if (itsPageId != other.itsPageId) return false;
 			return true;
 		}
+		
+		@Override
+		public String toString()
+		{
+			return "PageKey ["+itsPageId+" on "+itsFile.itsName+"]";
+		}
 	}
 	
 	/**
@@ -355,7 +380,10 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 		@Override
 		protected void finalize() throws Throwable
 		{
-			assert ! itsDirty;
+			if (itsDirty)
+			{
+				System.err.println("Finalizing dirty page: "+itsKey);
+			}
 		}
 		
 		public int[] getData()
@@ -478,13 +506,13 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 		}
 	}
 	
-	public class PageRef extends SoftReference<Page>
+	public class PageRef extends WeakReference<Page>
 	{
 		private long itsId;
 
 		public PageRef(Page aPage)
 		{
-			super(aPage);
+			super(aPage, itsPageRefQueue);
 			itsId = aPage.getPageId();
 		}
 

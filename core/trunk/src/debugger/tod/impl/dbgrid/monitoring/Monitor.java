@@ -6,6 +6,7 @@ package tod.impl.dbgrid.monitoring;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.reflect.Method;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -85,6 +86,7 @@ public class Monitor
 						return aD1.key.compareTo(aD2.key);
 					}
 				});
+		
 		for (KeyMonitorData theMonitorData : theData)
 		{
 			System.out.println(theMonitorData.toString(aIndividual));
@@ -242,7 +244,10 @@ public class Monitor
 		public final Object aggregateValue;
 		public final List<IndividualProbeValue> individualValues;
 		
-		public KeyMonitorData(String aKey, Object aAggregateValue, List<IndividualProbeValue> aIndividualValues)
+		public KeyMonitorData(
+				String aKey, 
+				Object aAggregateValue, 
+				List<IndividualProbeValue> aIndividualValues)
 		{
 			key = aKey;
 			aggregateValue = aAggregateValue;
@@ -259,13 +264,16 @@ public class Monitor
 		{
 			StringBuilder theBuilder = new StringBuilder(key);
 			theBuilder.append(": ");
-			theBuilder.append(aggregateValue);
+			theBuilder.append(format(aggregateValue));
+			theBuilder.append(" [");
+			theBuilder.append(individualValues.size());
+			theBuilder.append("]");
 			if (aIndividual)
 			{
 				theBuilder.append('(');
 				for (IndividualProbeValue theValue : individualValues) 
 				{
-					theBuilder.append(theValue.toString());
+					theBuilder.append(format(theValue));
 					theBuilder.append(' ');
 				}
 				theBuilder.append(')');
@@ -273,6 +281,24 @@ public class Monitor
 			
 			return theBuilder.toString();
 		}
+	}
+	
+	private static final DecimalFormat INTEGER_FORMAT = new DecimalFormat("#,###");
+	private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#,###.##");
+	
+	private static String format(Object aValue)
+	{
+		if (aValue instanceof Long)
+		{
+			Long theLong = (Long) aValue;
+			return INTEGER_FORMAT.format(theLong);
+		}
+		else if (aValue instanceof Double)
+		{
+			Double theDouble = (Double) aValue;
+			return DECIMAL_FORMAT.format(theDouble);
+		}
+		else return ""+aValue;
 	}
 	
 	public static class IndividualProbeValue

@@ -24,6 +24,7 @@ public class BenchCFlowMap
 {
 	@Test public void bench() throws FileNotFoundException
 	{
+//		bench(10000, 1000000);
 		bench(10000, 10000000);
 	}
 	
@@ -56,6 +57,8 @@ public class BenchCFlowMap
 						boolean theContinue = theThread.addNextToMap(theMap, null);
 						if (! theContinue) theThreads[theIndex] = null;
 					}
+					
+					if (i % 100000 == 0) System.out.println(i);
 				}
 				
 			}
