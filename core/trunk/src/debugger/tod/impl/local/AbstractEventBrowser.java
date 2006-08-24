@@ -6,13 +6,13 @@ package tod.impl.local;
 import java.security.InvalidParameterException;
 import java.util.NoSuchElementException;
 
+import tod.core.model.browser.IEventBrowser;
 import tod.core.model.event.ILogEvent;
-import tod.core.model.trace.IEventBrowser;
 
 /**
- * base implementation of {@link tod.core.model.trace.IEventBrowser}
- * relying only on {@link tod.core.model.trace.IEventBrowser#getEventCount()}
- * and {@link tod.core.model.trace.IEventBrowser#getEvent(int)},
+ * base implementation of {@link tod.core.model.browser.IEventBrowser}
+ * relying only on {@link tod.core.model.browser.IEventBrowser#getEventCount()}
+ * and {@link tod.core.model.browser.IEventBrowser#getEvent(int)},
  * and timestamp related methods.
  * @author gpothier
  */

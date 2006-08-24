@@ -5,8 +5,8 @@ package tod.session;
 
 import java.net.URI;
 
-import tod.core.model.trace.IEventTrace;
-import tod.core.model.trace.ILocationTrace;
+import tod.core.model.browser.ILocationLog;
+import tod.core.model.browser.ILogBrowser;
 
 public interface ISession
 {
@@ -16,8 +16,8 @@ public interface ISession
 	 * @see ISessionFactory#loadSession(URI);
 	 */
 	public URI getUri();
-	public IEventTrace getEventTrace();
-	public ILocationTrace getLocationTrace();
+	public ILogBrowser getEventTrace();
+	public ILocationLog getLocationTrace();
 	
 	/**
 	 * Returns the path where the agent caches instrumented classes

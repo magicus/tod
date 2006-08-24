@@ -3,6 +3,14 @@
  */
 package tod.impl.local;
 
+import tod.core.model.browser.ICFlowBrowser;
+import tod.core.model.browser.ICompoundFilter;
+import tod.core.model.browser.IEventBrowser;
+import tod.core.model.browser.IEventFilter;
+import tod.core.model.browser.ILocationLog;
+import tod.core.model.browser.ILogBrowser;
+import tod.core.model.browser.IObjectInspector;
+import tod.core.model.browser.IVariablesInspector;
 import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.structure.IBehaviorInfo;
 import tod.core.model.structure.IClassInfo;
@@ -11,14 +19,6 @@ import tod.core.model.structure.IHostInfo;
 import tod.core.model.structure.IThreadInfo;
 import tod.core.model.structure.ITypeInfo;
 import tod.core.model.structure.ObjectId;
-import tod.core.model.trace.ICFlowBrowser;
-import tod.core.model.trace.ICompoundFilter;
-import tod.core.model.trace.IEventBrowser;
-import tod.core.model.trace.IEventFilter;
-import tod.core.model.trace.IEventTrace;
-import tod.core.model.trace.ILocationTrace;
-import tod.core.model.trace.IObjectInspector;
-import tod.core.model.trace.IVariablesInspector;
 import tod.impl.common.EventCollector;
 import tod.impl.common.event.BehaviorCallEvent;
 import tod.impl.common.event.Event;
@@ -38,7 +38,7 @@ import tod.impl.local.filter.UnionFilter;
  * @author gpothier
  */
 public class LocalCollector extends EventCollector
-implements IEventTrace
+implements ILogBrowser
 {
 	private EventList itsEvents = new EventList();
 	
@@ -47,7 +47,7 @@ implements IEventTrace
 		super(aHost);
 	}
 
-	public ILocationTrace getLocationTrace()
+	public ILocationLog getLocationTrace()
 	{
 		return this;
 	}

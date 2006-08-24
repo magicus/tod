@@ -5,11 +5,11 @@ package tod.impl.local;
 
 import java.util.List;
 
+import tod.core.model.browser.ICFlowBrowser;
+import tod.core.model.browser.ILogBrowser;
 import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.IThreadInfo;
-import tod.core.model.trace.ICFlowBrowser;
-import tod.core.model.trace.IEventTrace;
 import zz.utils.tree.AbstractTree;
 
 /**
@@ -21,14 +21,14 @@ import zz.utils.tree.AbstractTree;
 public class CFlowBrowser extends AbstractTree<ILogEvent, ILogEvent> 
 implements ICFlowBrowser
 {
-	private IEventTrace itsLog;
+	private ILogBrowser itsLog;
 	
 	private final IThreadInfo itsThread;
 	
 	private IBehaviorCallEvent itsRoot; 
 	
 	
-	public CFlowBrowser(IEventTrace aLog, IThreadInfo aThread, IBehaviorCallEvent aRoot)
+	public CFlowBrowser(ILogBrowser aLog, IThreadInfo aThread, IBehaviorCallEvent aRoot)
 	{
 		itsLog = aLog;
 		itsThread = aThread;

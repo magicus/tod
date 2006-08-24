@@ -8,12 +8,12 @@ import java.awt.Font;
 import java.util.List;
 
 import tod.core.ILocationRegistrer.LocalVariableInfo;
+import tod.core.model.browser.ILogBrowser;
+import tod.core.model.browser.IVariablesInspector;
 import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.event.ICallerSideEvent;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.IBehaviorInfo;
-import tod.core.model.trace.IEventTrace;
-import tod.core.model.trace.IVariablesInspector;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
 import zz.csg.api.IRectangularGraphicObject;
@@ -47,7 +47,7 @@ public class CFlowVariablesBuilder
 		return itsView;
 	}
 
-	public IEventTrace getEventTrace()
+	public ILogBrowser getEventTrace()
 	{
 		return getView().getTrace(); 
 	}

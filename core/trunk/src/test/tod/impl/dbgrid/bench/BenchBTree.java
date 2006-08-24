@@ -18,7 +18,7 @@ import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 
 public class BenchBTree
 {
-	private static final int n = 100000;
+	private static final int n = 1000000;
 	
 	@Test public void bench() throws FileNotFoundException
 	{

@@ -3,14 +3,14 @@
  */
 package tod.gui.seed;
 
-import tod.core.model.trace.IEventFilter;
-import tod.core.model.trace.IEventTrace;
+import tod.core.model.browser.IEventFilter;
+import tod.core.model.browser.ILogBrowser;
 import tod.gui.IGUIManager;
 import tod.gui.view.FilterView;
 import tod.gui.view.LogView;
 
 /**
- * A seed that is based on a {@link tod.core.model.trace.IEventBrowser}.
+ * A seed that is based on a {@link tod.core.model.browser.IEventBrowser}.
  * Its view is simply a sequential view of filtered events.
  * @author gpothier
  */
@@ -24,7 +24,7 @@ public class FilterSeed extends Seed/*<FilterView>*/
 	private long itsTimestamp;
 	
 	
-	public FilterSeed(IGUIManager aGUIManager, IEventTrace aLog, IEventFilter aFilter)
+	public FilterSeed(IGUIManager aGUIManager, ILogBrowser aLog, IEventFilter aFilter)
 	{
 		super(aGUIManager, aLog);
 		itsFilter = aFilter;

@@ -3,7 +3,7 @@
  */
 package tod.core.model.structure;
 
-import tod.core.model.trace.ILocationTrace;
+import tod.core.model.browser.ILocationLog;
 
 /**
  * Base class for aggregation of location information.
@@ -11,17 +11,17 @@ import tod.core.model.trace.ILocationTrace;
  */
 public abstract class LocationInfo implements ILocationInfo
 {
-	private final ILocationTrace itsTrace;
+	private final ILocationLog itsTrace;
 	private final int itsId;
 	private String itsName;
 	
-	public LocationInfo(ILocationTrace aTrace, int aId)
+	public LocationInfo(ILocationLog aTrace, int aId)
 	{
 		itsTrace = aTrace;
 		itsId = aId;
 	}
 
-	public LocationInfo(ILocationTrace aTrace, int aId, String aName)
+	public LocationInfo(ILocationLog aTrace, int aId, String aName)
 	{
 		itsTrace = aTrace;
 		itsId = aId;
@@ -33,7 +33,7 @@ public abstract class LocationInfo implements ILocationInfo
 		return itsId;
 	}
 	
-	public ILocationTrace getTrace()
+	public ILocationLog getTrace()
 	{
 		return itsTrace;
 	}

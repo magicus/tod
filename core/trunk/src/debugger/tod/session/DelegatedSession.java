@@ -5,8 +5,8 @@ package tod.session;
 
 import java.net.URI;
 
-import tod.core.model.trace.IEventTrace;
-import tod.core.model.trace.ILocationTrace;
+import tod.core.model.browser.ILocationLog;
+import tod.core.model.browser.ILogBrowser;
 
 /**
  * A session that delegates to another session.
@@ -31,12 +31,12 @@ public abstract class DelegatedSession implements ISession
 		return itsDelegate.getCachedClassesPath();
 	}
 
-	public IEventTrace getEventTrace()
+	public ILogBrowser getEventTrace()
 	{
 		return itsDelegate.getEventTrace();
 	}
 
-	public ILocationTrace getLocationTrace()
+	public ILocationLog getLocationTrace()
 	{
 		return itsDelegate.getLocationTrace();
 	}

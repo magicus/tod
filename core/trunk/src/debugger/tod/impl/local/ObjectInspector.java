@@ -8,6 +8,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import tod.core.model.browser.IEventBrowser;
+import tod.core.model.browser.IEventFilter;
+import tod.core.model.browser.ILogBrowser;
+import tod.core.model.browser.IObjectInspector;
 import tod.core.model.event.IFieldWriteEvent;
 import tod.core.model.event.IInstantiationEvent;
 import tod.core.model.event.ILogEvent;
@@ -18,20 +22,16 @@ import tod.core.model.structure.IFieldInfo;
 import tod.core.model.structure.IMemberInfo;
 import tod.core.model.structure.ITypeInfo;
 import tod.core.model.structure.ObjectId;
-import tod.core.model.trace.IEventBrowser;
-import tod.core.model.trace.IEventFilter;
-import tod.core.model.trace.IEventTrace;
-import tod.core.model.trace.IObjectInspector;
 import zz.utils.Utils;
 
 /**
- * Implementation of {@link tod.core.model.trace.IObjectInspector} based 
+ * Implementation of {@link tod.core.model.browser.IObjectInspector} based 
  * on API only.
  * @author gpothier
  */
 public class ObjectInspector implements IObjectInspector
 {
-	private final IEventTrace itsEventTrace;
+	private final ILogBrowser itsEventTrace;
 	private ObjectId itsObjectId;
 	private List<IMemberInfo> itsMembers;
 	private List<IFieldInfo> itsFields;
@@ -42,13 +42,13 @@ public class ObjectInspector implements IObjectInspector
 	
 	private long itsTimestamp;
 
-	public ObjectInspector(IEventTrace aEventTrace, ObjectId aObjectId)
+	public ObjectInspector(ILogBrowser aEventTrace, ObjectId aObjectId)
 	{
 		itsEventTrace = aEventTrace;
 		itsObjectId = aObjectId;
 	}
 	
-	public ObjectInspector(IEventTrace aEventTrace, IClassInfo aClass)
+	public ObjectInspector(ILogBrowser aEventTrace, IClassInfo aClass)
 	{
 		itsEventTrace = aEventTrace;
 		itsType = aClass;

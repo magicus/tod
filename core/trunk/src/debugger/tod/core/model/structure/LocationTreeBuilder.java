@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import tod.core.model.trace.ILocationTrace;
+import tod.core.model.browser.ILocationLog;
 
 
 /**
@@ -17,14 +17,14 @@ import tod.core.model.trace.ILocationTrace;
  */
 public class LocationTreeBuilder
 {
-	private static Map<ILocationTrace, LocationTreeBuilder> itsInstances = 
-		new HashMap<ILocationTrace, LocationTreeBuilder>();
+	private static Map<ILocationLog, LocationTreeBuilder> itsInstances = 
+		new HashMap<ILocationLog, LocationTreeBuilder>();
 	
 	/**
 	 * Returns a builder for the specified registerer.
 	 * There is one shared instance for each registerer. 
 	 */
-	public static LocationTreeBuilder getInstance (ILocationTrace aLocationTrace)
+	public static LocationTreeBuilder getInstance (ILocationLog aLocationTrace)
 	{
 		LocationTreeBuilder theInstance = itsInstances.get(aLocationTrace);
 		if (theInstance == null)
@@ -47,9 +47,9 @@ public class LocationTreeBuilder
 	
 	private PackageNode itsRootNode;
 
-	private final ILocationTrace itsLocationTrace;
+	private final ILocationLog itsLocationTrace;
 
-	private LocationTreeBuilder(ILocationTrace aLocationTrace)
+	private LocationTreeBuilder(ILocationLog aLocationTrace)
 	{
 		itsLocationTrace = aLocationTrace;
 		rebuild();

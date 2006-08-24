@@ -3,7 +3,7 @@
  */
 package tod.impl.local.filter;
 
-import tod.core.model.trace.IEventBrowser;
+import tod.core.model.browser.IEventBrowser;
 import tod.impl.local.EventBrowser;
 import tod.impl.local.LocalCollector;
 

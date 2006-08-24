@@ -1,7 +1,7 @@
 /*
  * Created on Oct 26, 2005
  */
-package tod.core.model.trace;
+package tod.core.model.browser;
 
 import tod.core.model.structure.IBehaviorInfo;
 import tod.core.model.structure.IClassInfo;
@@ -15,7 +15,7 @@ import tod.core.model.structure.ThreadInfo;
  * {@link tod.session.ISession}
  * @author gpothier
  */
-public interface ILocationTrace
+public interface ILocationLog
 {
 	/**
 	 * Returns the type object that corresponds to the given name.

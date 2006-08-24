@@ -3,7 +3,7 @@
  */
 package tod.core.model.structure;
 
-import tod.core.model.trace.ILocationTrace;
+import tod.core.model.browser.ILocationLog;
 
 /**
  * Description of a type. This is an abstract class;
@@ -13,12 +13,12 @@ import tod.core.model.trace.ILocationTrace;
  */
 public abstract class TypeInfo extends LocationInfo implements ITypeInfo
 {
-	public TypeInfo(ILocationTrace aTrace, int aId, String aName)
+	public TypeInfo(ILocationLog aTrace, int aId, String aName)
 	{
 		super(aTrace, aId, aName);
 	}
 
-	public TypeInfo(ILocationTrace aTrace, int aId)
+	public TypeInfo(ILocationLog aTrace, int aId)
 	{
 		super(aTrace, aId);
 	}

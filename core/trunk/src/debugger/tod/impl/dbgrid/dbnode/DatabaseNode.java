@@ -18,7 +18,7 @@ import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.queries.EventCondition;
 import zz.utils.SortedRingBuffer;
 
-public class DatabaseNode
+public class DatabaseNode implements RIDatabaseNode
 {
 	/**
 	 * Id of this node in the system

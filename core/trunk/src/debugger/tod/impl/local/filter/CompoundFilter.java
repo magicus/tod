@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import tod.core.model.trace.ICompoundFilter;
-import tod.core.model.trace.IEventFilter;
+import tod.core.model.browser.ICompoundFilter;
+import tod.core.model.browser.IEventFilter;
 import tod.impl.local.LocalCollector;
 
 /**

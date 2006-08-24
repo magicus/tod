@@ -3,7 +3,7 @@
  */
 package tod.gui.seed;
 
-import tod.core.model.trace.IEventTrace;
+import tod.core.model.browser.ILogBrowser;
 import tod.gui.IGUIManager;
 import tod.gui.view.LogView;
 
@@ -16,7 +16,7 @@ public class ObjectSimulationSeed extends Seed
 {
 	private Object itsObject;
 	
-	public ObjectSimulationSeed(IGUIManager aGUIManager, IEventTrace aLog, Object aObject)
+	public ObjectSimulationSeed(IGUIManager aGUIManager, ILogBrowser aLog, Object aObject)
 	{
 		super(aGUIManager, aLog);
 		itsObject = aObject;

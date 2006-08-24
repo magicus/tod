@@ -3,10 +3,10 @@
  */
 package tod.gui.view.event;
 
+import tod.core.model.browser.ILogBrowser;
 import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.structure.IBehaviorInfo;
 import tod.core.model.structure.ITypeInfo;
-import tod.core.model.trace.IEventTrace;
 import tod.gui.IGUIManager;
 import tod.gui.seed.SeedFactory;
 
@@ -20,7 +20,7 @@ public class BehaviorCallView extends EventView
 	
 	public BehaviorCallView(
 			IGUIManager aManager, 
-			IEventTrace aLog, 
+			ILogBrowser aLog, 
 			IBehaviorCallEvent aEvent)
 	{
 		super(aManager, aLog);

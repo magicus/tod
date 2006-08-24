@@ -3,8 +3,8 @@
  */
 package tod.gui.eventsequences;
 
+import tod.core.model.browser.ILogBrowser;
 import tod.core.model.structure.IThreadInfo;
-import tod.core.model.trace.IEventTrace;
 import tod.gui.view.LogView;
 import zz.csg.api.IDisplay;
 
@@ -14,10 +14,10 @@ import zz.csg.api.IDisplay;
  */
 public class ThreadSequenceSeed implements IEventSequenceSeed
 {
-	private IEventTrace itsTrace;
+	private ILogBrowser itsTrace;
 	private IThreadInfo itsThread;
 
-	public ThreadSequenceSeed(IEventTrace aTrace, IThreadInfo aThread)
+	public ThreadSequenceSeed(ILogBrowser aTrace, IThreadInfo aThread)
 	{
 		itsTrace = aTrace;
 		itsThread = aThread;
@@ -28,7 +28,7 @@ public class ThreadSequenceSeed implements IEventSequenceSeed
 		return itsThread;
 	}
 
-	public IEventTrace getTrace()
+	public ILogBrowser getTrace()
 	{
 		return itsTrace;
 	}

@@ -1,7 +1,7 @@
 /*
  * Created on Nov 9, 2004
  */
-package tod.core.model.trace;
+package tod.core.model.browser;
 
 import java.util.List;
 

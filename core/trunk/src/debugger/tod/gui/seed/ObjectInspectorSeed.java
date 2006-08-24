@@ -3,8 +3,8 @@
  */
 package tod.gui.seed;
 
+import tod.core.model.browser.ILogBrowser;
 import tod.core.model.structure.ObjectId;
-import tod.core.model.trace.IEventTrace;
 import tod.gui.IGUIManager;
 import tod.gui.ObjectInspectorView;
 import tod.gui.view.LogView;
@@ -24,7 +24,7 @@ public class ObjectInspectorSeed extends Seed
 	private IRWProperty<Long> pCurrentPosition = new SimpleRWProperty<Long>(this);
 
 	
-	public ObjectInspectorSeed(IGUIManager aGUIManager, IEventTrace aLog, ObjectId aInspectedObject)
+	public ObjectInspectorSeed(IGUIManager aGUIManager, ILogBrowser aLog, ObjectId aInspectedObject)
 	{
 		super(aGUIManager, aLog);
 		itsInspectedObject = aInspectedObject;

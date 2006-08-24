@@ -3,13 +3,13 @@
  */
 package tod.core.model.structure;
 
-import tod.core.model.trace.ILocationTrace;
+import tod.core.model.browser.ILocationLog;
 
 public class PrimitiveTypeInfo extends TypeInfo implements IPrimitiveTypeInfo
 {
 	private final int itsSize;
 
-	public PrimitiveTypeInfo(ILocationTrace aTrace, String aName, int aSize)
+	public PrimitiveTypeInfo(ILocationLog aTrace, String aName, int aSize)
 	{
 		super(aTrace, -1, aName);
 		itsSize = aSize;

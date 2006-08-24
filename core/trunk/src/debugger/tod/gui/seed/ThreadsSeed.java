@@ -3,7 +3,7 @@
  */
 package tod.gui.seed;
 
-import tod.core.model.trace.IEventTrace;
+import tod.core.model.browser.ILogBrowser;
 import tod.gui.IGUIManager;
 import tod.gui.view.LogView;
 import tod.gui.view.ThreadsView;
@@ -16,7 +16,7 @@ import tod.gui.view.ThreadsView;
 public class ThreadsSeed extends Seed
 {
 
-	public ThreadsSeed(IGUIManager aGUIManager, IEventTrace aLog)
+	public ThreadsSeed(IGUIManager aGUIManager, ILogBrowser aLog)
 	{
 		super(aGUIManager, aLog);
 	}

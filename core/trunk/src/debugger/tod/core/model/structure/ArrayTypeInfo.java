@@ -3,14 +3,14 @@
  */
 package tod.core.model.structure;
 
-import tod.core.model.trace.ILocationTrace;
+import tod.core.model.browser.ILocationLog;
 
 public class ArrayTypeInfo extends TypeInfo implements IArrayTypeInfo
 {
 	private ITypeInfo itsElementType;
 	private int itsDimensions;
 	
-	public ArrayTypeInfo(ILocationTrace aTrace, ITypeInfo aElementType, int aDimensions)
+	public ArrayTypeInfo(ILocationLog aTrace, ITypeInfo aElementType, int aDimensions)
 	{
 		super(aTrace, -1);
 		itsElementType = aElementType;

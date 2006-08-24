@@ -1,7 +1,7 @@
 /*
  * Created on Nov 8, 2004
  */
-package tod.core.model.trace;
+package tod.core.model.browser;
 
 import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.structure.IBehaviorInfo;
@@ -23,7 +23,7 @@ import tod.core.model.structure.ObjectId;
  * See {@link #createIntersectionFilter()} and {@link #createUnionFilter()}.
  * @author gpothier
  */
-public interface IEventTrace
+public interface ILogBrowser
 {
 	/**
 	 * Clears all the events and other information from this log.
@@ -49,7 +49,7 @@ public interface IEventTrace
 	 * Returns the registrer that maintains all location and
 	 * thread info.
 	 */
-	public ILocationTrace getLocationTrace ();
+	public ILocationLog getLocationTrace ();
 	
 	/**
 	 * Creates a browser that only reports events that pass a specific

@@ -12,8 +12,8 @@ import java.util.Map;
 import javax.swing.JLabel;
 import javax.swing.Timer;
 
+import tod.core.model.browser.ILogBrowser;
 import tod.core.model.structure.IThreadInfo;
-import tod.core.model.trace.IEventTrace;
 import tod.gui.IGUIManager;
 import tod.gui.eventsequences.SequenceViewsDock;
 import tod.gui.eventsequences.ThreadSequenceSeed;
@@ -36,7 +36,7 @@ public class ThreadsView extends LogView
 
 	private Timer itsTimer;
 	
-	public ThreadsView(IGUIManager aGUIManager, IEventTrace aLog, ThreadsSeed aSeed)
+	public ThreadsView(IGUIManager aGUIManager, ILogBrowser aLog, ThreadsSeed aSeed)
 	{
 		super(aGUIManager, aLog);
 		itsSeed = aSeed;

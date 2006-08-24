@@ -3,13 +3,13 @@
  */
 package tod.gui.seed;
 
+import tod.core.model.browser.ICompoundFilter;
+import tod.core.model.browser.IEventFilter;
+import tod.core.model.browser.ILogBrowser;
 import tod.core.model.structure.IBehaviorInfo;
 import tod.core.model.structure.IFieldInfo;
 import tod.core.model.structure.ILocationInfo;
 import tod.core.model.structure.ITypeInfo;
-import tod.core.model.trace.ICompoundFilter;
-import tod.core.model.trace.IEventFilter;
-import tod.core.model.trace.IEventTrace;
 import tod.gui.IGUIManager;
 
 /**
@@ -19,7 +19,7 @@ public class SeedFactory
 {
 	private static Seed createSeed (
 			IGUIManager aGUIManager, 
-			IEventTrace aLog,
+			ILogBrowser aLog,
 			IEventFilter aFilter)
 	{
 		return new FilterSeed (aGUIManager, aLog, aFilter);
@@ -32,7 +32,7 @@ public class SeedFactory
 	 */
 	public static Seed getDefaultSeed (
 			IGUIManager aGUIManager, 
-			IEventTrace aLog, 
+			ILogBrowser aLog, 
 			ILocationInfo aInfo)
 	{
 		if (aInfo instanceof ITypeInfo)

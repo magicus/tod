@@ -16,9 +16,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 
+import tod.core.model.browser.IObjectInspector;
 import tod.core.model.structure.IFieldInfo;
 import tod.core.model.structure.IMemberInfo;
-import tod.core.model.trace.IObjectInspector;
 import zz.utils.SimpleListModel;
 import zz.utils.Utils;
 import zz.utils.properties.HashSetProperty;

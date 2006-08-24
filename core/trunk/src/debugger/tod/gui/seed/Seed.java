@@ -3,7 +3,7 @@
  */
 package tod.gui.seed;
 
-import tod.core.model.trace.IEventTrace;
+import tod.core.model.browser.ILogBrowser;
 import tod.gui.IGUIManager;
 import tod.gui.view.LogView;
 
@@ -19,17 +19,17 @@ import tod.gui.view.LogView;
 public abstract class Seed/*<T extends LogView>*/
 {
 	private IGUIManager itsGUIManager;
-	private IEventTrace itsLog;
+	private ILogBrowser itsLog;
 	
 	private /*T*/LogView itsComponent;
 	
-	public Seed(IGUIManager aGUIManager, IEventTrace aLog)
+	public Seed(IGUIManager aGUIManager, ILogBrowser aLog)
 	{
 		itsGUIManager = aGUIManager;
 		itsLog = aLog;
 	}
 	
-	protected IEventTrace getEventTrace()
+	protected ILogBrowser getEventTrace()
 	{
 		return itsLog;
 	}

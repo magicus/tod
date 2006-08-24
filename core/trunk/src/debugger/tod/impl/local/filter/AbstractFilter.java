@@ -3,9 +3,9 @@
  */
 package tod.impl.local.filter;
 
+import tod.core.model.browser.IEventBrowser;
+import tod.core.model.browser.IEventFilter;
 import tod.core.model.event.ILogEvent;
-import tod.core.model.trace.IEventBrowser;
-import tod.core.model.trace.IEventFilter;
 import tod.impl.local.LocalCollector;
 
 /**

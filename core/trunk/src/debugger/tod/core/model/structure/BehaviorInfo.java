@@ -7,7 +7,7 @@ import tod.core.BehaviourKind;
 import tod.core.ILocationRegistrer;
 import tod.core.ILocationRegistrer.LineNumberInfo;
 import tod.core.ILocationRegistrer.LocalVariableInfo;
-import tod.core.model.trace.ILocationTrace;
+import tod.core.model.browser.ILocationLog;
 
 
 /**
@@ -25,7 +25,7 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 	private ILocationRegistrer.LocalVariableInfo[] itsLocalVariableTable;
 
 	public BehaviorInfo(
-			ILocationTrace aTrace, 
+			ILocationLog aTrace, 
 			BehaviourKind aBehaviourKind, 
 			int aId, 
 			ClassInfo aType, 

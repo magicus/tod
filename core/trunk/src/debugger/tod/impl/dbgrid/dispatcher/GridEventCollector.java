@@ -32,7 +32,9 @@ public class GridEventCollector extends EventCollector
 	}
 
 	@Override
-	protected synchronized DefaultThreadInfo createThreadInfo(long aId, BehaviorCallEvent aRootEvent)
+	protected synchronized DefaultThreadInfo createThreadInfo(
+			long aId, 
+			BehaviorCallEvent aRootEvent)
 	{
 		return new MyThreadInfo(aId, aRootEvent, itsLastThreadNumber++);
 	}

@@ -5,12 +5,12 @@ package tod.gui.eventsequences;
 
 import java.awt.Color;
 
+import tod.core.model.browser.ILogBrowser;
+import tod.core.model.browser.IObjectInspector;
 import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.IBehaviorInfo;
 import tod.core.model.structure.IMemberInfo;
-import tod.core.model.trace.IEventTrace;
-import tod.core.model.trace.IObjectInspector;
 import tod.gui.IGUIManager;
 import tod.gui.SVGHyperlink;
 import tod.gui.seed.CFlowSeed;
@@ -57,7 +57,7 @@ public class MethodSequenceView extends AbstractMemberSequenceView
 
 		// Create hyperlink to call event
 		IGUIManager theGUIManager = getLogView().getGUIManager();
-		IEventTrace theLog = getLogView().getTrace();
+		ILogBrowser theLog = getLogView().getTrace();
 
 		CFlowSeed theSeed = new CFlowSeed(theGUIManager, theLog, aEvent);
 		SVGHyperlink theHyperlink = SVGHyperlink.create(theGUIManager, theSeed, "call", 10, Color.BLACK);

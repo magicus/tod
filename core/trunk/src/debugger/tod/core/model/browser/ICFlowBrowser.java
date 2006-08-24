@@ -1,7 +1,7 @@
 /*
  * Created on Nov 18, 2004
  */
-package tod.core.model.trace;
+package tod.core.model.browser;
 
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.IThreadInfo;

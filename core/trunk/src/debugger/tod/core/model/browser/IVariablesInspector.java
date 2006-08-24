@@ -1,7 +1,7 @@
 /*
  * Created on Nov 4, 2005
  */
-package tod.core.model.trace;
+package tod.core.model.browser;
 
 import java.util.List;
 
@@ -19,7 +19,7 @@ import tod.core.model.structure.IBehaviorInfo;
  * There are no uncertainties in evaluating the values of local variables as only
  * one thread accesses them.  
  * 
- * @see tod.core.model.trace.IEventTrace#createVariablesInspector(IBehaviorEnterEvent)
+ * @see tod.core.model.browser.ILogBrowser#createVariablesInspector(IBehaviorEnterEvent)
  * @author gpothier
  */
 public interface IVariablesInspector

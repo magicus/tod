@@ -3,7 +3,7 @@
  */
 package tod.core.model.structure;
 
-import tod.core.model.trace.ILocationTrace;
+import tod.core.model.browser.ILocationLog;
 
 public interface ILocationInfo
 {
@@ -13,7 +13,7 @@ public interface ILocationInfo
 	/**
 	 * Returns the location trace that contains this location. 
 	 */
-	public ILocationTrace getTrace();
+	public ILocationLog getTrace();
 
 	public String getName();
 

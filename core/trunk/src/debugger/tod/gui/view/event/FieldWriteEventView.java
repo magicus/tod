@@ -3,9 +3,9 @@
  */
 package tod.gui.view.event;
 
+import tod.core.model.browser.ILogBrowser;
 import tod.core.model.event.IFieldWriteEvent;
 import tod.core.model.event.ILogEvent;
-import tod.core.model.trace.IEventTrace;
 import tod.gui.IGUIManager;
 
 /**
@@ -15,7 +15,7 @@ public class FieldWriteEventView extends EventView
 {
 	private IFieldWriteEvent itsEvent;
 	
-	public FieldWriteEventView(IGUIManager aManager, IEventTrace aLog, IFieldWriteEvent aEvent)
+	public FieldWriteEventView(IGUIManager aManager, ILogBrowser aLog, IFieldWriteEvent aEvent)
 	{
 		super(aManager, aLog);
 		itsEvent = aEvent;

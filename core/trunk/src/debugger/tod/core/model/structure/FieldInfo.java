@@ -4,7 +4,7 @@
 package tod.core.model.structure;
 
 import tod.core.ILogCollector;
-import tod.core.model.trace.ILocationTrace;
+import tod.core.model.browser.ILocationLog;
 
 /**
  * Aggregates the information a {@link ILogCollector collector}
@@ -14,7 +14,7 @@ import tod.core.model.trace.ILocationTrace;
 public class FieldInfo extends MemberInfo implements IFieldInfo
 {
 
-	public FieldInfo(ILocationTrace aTrace, int aId, IClassInfo aTypeInfo, String aName)
+	public FieldInfo(ILocationLog aTrace, int aId, IClassInfo aTypeInfo, String aName)
 	{
 		super(aTrace, aId, aTypeInfo, aName);
 		

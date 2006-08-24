@@ -12,9 +12,9 @@ import java.net.URI;
 
 import tod.bci.RemoteInstrumenter;
 import tod.core.PrintThroughCollector;
+import tod.core.model.browser.ILocationLog;
+import tod.core.model.browser.ILogBrowser;
 import tod.core.model.structure.ObjectId;
-import tod.core.model.trace.IEventTrace;
-import tod.core.model.trace.ILocationTrace;
 import tod.core.transport.LogReceiver;
 import tod.impl.local.LocalCollector;
 
@@ -71,12 +71,12 @@ public class ASMLocalSession extends AbstractSession
 		}
 	}
 	
-	public IEventTrace getEventTrace()
+	public ILogBrowser getEventTrace()
 	{
 		return itsCollector;
 	}
 
-	public ILocationTrace getLocationTrace()
+	public ILocationLog getLocationTrace()
 	{
 		return itsCollector;
 	}

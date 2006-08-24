@@ -5,9 +5,9 @@ package tod.gui.view.event;
 
 import javax.swing.JLabel;
 
+import tod.core.model.browser.ILogBrowser;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.IThreadInfo;
-import tod.core.model.trace.IEventTrace;
 import tod.gui.IGUIManager;
 import tod.gui.formatter.EventFormatter;
 import tod.gui.kit.LinkLabel;
@@ -27,7 +27,7 @@ import zz.utils.ui.GridStackLayout;
  */
 public abstract class EventView extends LogView
 {
-	public EventView(IGUIManager aManager, IEventTrace aLog)
+	public EventView(IGUIManager aManager, ILogBrowser aLog)
 	{
 		super (aManager, aLog);
 	}

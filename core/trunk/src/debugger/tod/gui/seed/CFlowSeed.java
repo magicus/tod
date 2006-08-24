@@ -3,10 +3,10 @@
  */
 package tod.gui.seed;
 
+import tod.core.model.browser.ICFlowBrowser;
+import tod.core.model.browser.ILogBrowser;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.IThreadInfo;
-import tod.core.model.trace.ICFlowBrowser;
-import tod.core.model.trace.IEventTrace;
 import tod.gui.IGUIManager;
 import tod.gui.controlflow.CFlowView;
 import tod.gui.view.LogView;
@@ -24,14 +24,14 @@ public class CFlowSeed extends Seed
 	private IRWProperty<ILogEvent> pSelectedEvent = new SimpleRWProperty<ILogEvent>(this);
 	private IRWProperty<ILogEvent> pRootEvent = new SimpleRWProperty<ILogEvent>(this);
 	
-	public CFlowSeed(IGUIManager aGUIManager, IEventTrace aLog, ILogEvent aSelectedEvent)
+	public CFlowSeed(IGUIManager aGUIManager, ILogBrowser aLog, ILogEvent aSelectedEvent)
 	{
 		this(aGUIManager, aLog, aSelectedEvent.getThread());
 		pSelectedEvent().set(aSelectedEvent);
 	}
 
 	
-	public CFlowSeed(IGUIManager aGUIManager, IEventTrace aLog, IThreadInfo aThread)
+	public CFlowSeed(IGUIManager aGUIManager, ILogBrowser aLog, IThreadInfo aThread)
 	{
 		super(aGUIManager, aLog);
 		itsThread = aThread;

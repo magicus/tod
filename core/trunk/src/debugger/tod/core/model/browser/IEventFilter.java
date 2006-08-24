@@ -1,7 +1,7 @@
 /*
  * Created on Oct 27, 2004
  */
-package tod.core.model.trace;
+package tod.core.model.browser;
 
 
 /**

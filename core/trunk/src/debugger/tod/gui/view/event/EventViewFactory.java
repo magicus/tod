@@ -3,11 +3,11 @@
  */
 package tod.gui.view.event;
 
+import tod.core.model.browser.ILogBrowser;
 import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.event.IFieldWriteEvent;
 import tod.core.model.event.IInstantiationEvent;
 import tod.core.model.event.ILogEvent;
-import tod.core.model.trace.IEventTrace;
 import tod.gui.IGUIManager;
 
 /**
@@ -22,7 +22,7 @@ public class EventViewFactory
 	 */
 	public static EventView createView (
 			IGUIManager aGUIManager, 
-			IEventTrace aLog,
+			ILogBrowser aLog,
 			ILogEvent aEvent)
 	{
 		EventView theView = null;

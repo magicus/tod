@@ -5,10 +5,10 @@ package tod.gui;
 
 import java.awt.Color;
 
+import tod.core.model.browser.ILogBrowser;
 import tod.core.model.structure.IBehaviorInfo;
 import tod.core.model.structure.ITypeInfo;
 import tod.core.model.structure.ObjectId;
-import tod.core.model.trace.IEventTrace;
 import tod.gui.seed.ObjectInspectorSeed;
 import zz.csg.api.IRectangularGraphicObject;
 import zz.csg.impl.figures.SVGFlowText;
@@ -33,7 +33,7 @@ public class Hyperlinks
 	
 	public static IRectangularGraphicObject object(
 			IGUIManager aGUIManager, 
-			IEventTrace aEventTrace, 
+			ILogBrowser aEventTrace, 
 			Object aObject,
 			XFont aFont)
 	{
@@ -48,7 +48,7 @@ public class Hyperlinks
 	 */
 	public static IRectangularGraphicObject object(
 			IGUIManager aGUIManager,
-			IEventTrace aEventTrace,
+			ILogBrowser aEventTrace,
 			Object aCurrentObject, 
 			Object aObject, 
 			XFont aFont)

@@ -3,8 +3,8 @@
  */
 package tod.gui.eventsequences;
 
+import tod.core.model.browser.IObjectInspector;
 import tod.core.model.structure.IFieldInfo;
-import tod.core.model.trace.IObjectInspector;
 import tod.gui.view.LogView;
 import zz.csg.api.IDisplay;
 

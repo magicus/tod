@@ -5,10 +5,10 @@ package tod.gui.eventsequences;
 
 import java.awt.Color;
 
+import tod.core.model.browser.IEventBrowser;
+import tod.core.model.browser.ILogBrowser;
+import tod.core.model.browser.IObjectInspector;
 import tod.core.model.structure.IMemberInfo;
-import tod.core.model.trace.IEventBrowser;
-import tod.core.model.trace.IEventTrace;
-import tod.core.model.trace.IObjectInspector;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
 import tod.gui.view.LogView;
@@ -48,7 +48,7 @@ public abstract class AbstractMemberSequenceView extends AbstractSingleBrowserSe
 	{
 		LogView theLogView = getLogView();
 		IGUIManager theGUIManager = theLogView.getGUIManager();
-		IEventTrace theEventTrace = theLogView.getTrace();
+		ILogBrowser theEventTrace = theLogView.getTrace();
 			
 		return Hyperlinks.object(theGUIManager, theEventTrace, itsInspector.getObject(), aObject, FONT);
 	}

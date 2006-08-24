@@ -6,10 +6,10 @@ package tod.gui.eventsequences;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 
+import tod.core.model.browser.IEventBrowser;
+import tod.core.model.browser.IEventFilter;
+import tod.core.model.browser.ILogBrowser;
 import tod.core.model.structure.IThreadInfo;
-import tod.core.model.trace.IEventBrowser;
-import tod.core.model.trace.IEventFilter;
-import tod.core.model.trace.IEventTrace;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.view.LogView;
 import zz.csg.api.IDisplay;
@@ -29,7 +29,7 @@ public class ThreadSequenceView extends AbstractSingleBrowserSequenceView
 		addBaseAction(new ShowThreadAction());
 	}
 
-	public IEventTrace getTrace()
+	public ILogBrowser getTrace()
 	{
 		return itsSeed.getTrace();
 	}

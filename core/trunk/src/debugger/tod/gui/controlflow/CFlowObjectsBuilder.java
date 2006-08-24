@@ -7,12 +7,12 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.List;
 
+import tod.core.model.browser.ILogBrowser;
+import tod.core.model.browser.IObjectInspector;
 import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.IFieldInfo;
 import tod.core.model.structure.ObjectId;
-import tod.core.model.trace.IEventTrace;
-import tod.core.model.trace.IObjectInspector;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
 import zz.csg.api.IRectangularGraphicObject;
@@ -44,7 +44,7 @@ public class CFlowObjectsBuilder
 		return itsView;
 	}
 
-	public IEventTrace getEventTrace()
+	public ILogBrowser getEventTrace()
 	{
 		return getView().getTrace(); 
 	}

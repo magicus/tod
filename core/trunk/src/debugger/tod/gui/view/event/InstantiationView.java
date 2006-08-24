@@ -3,8 +3,8 @@
  */
 package tod.gui.view.event;
 
+import tod.core.model.browser.ILogBrowser;
 import tod.core.model.event.IInstantiationEvent;
-import tod.core.model.trace.IEventTrace;
 import tod.gui.IGUIManager;
 
 /**
@@ -13,7 +13,7 @@ import tod.gui.IGUIManager;
  */
 public class InstantiationView extends BehaviorCallView
 {
-	public InstantiationView(IGUIManager aManager, IEventTrace aLog, IInstantiationEvent aEvent)
+	public InstantiationView(IGUIManager aManager, ILogBrowser aLog, IInstantiationEvent aEvent)
 	{
 		super(aManager, aLog, aEvent);
 	}

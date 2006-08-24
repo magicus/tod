@@ -9,8 +9,8 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 
+import tod.core.model.browser.ILogBrowser;
 import tod.core.model.event.ILogEvent;
-import tod.core.model.trace.IEventTrace;
 import tod.gui.IGUIManager;
 import zz.csg.api.GraphicObjectContext;
 import zz.csg.impl.SVGGraphicContainer;
@@ -34,7 +34,7 @@ public abstract class AbstractEventNode extends SVGGraphicContainer
 		return itsView.getGUIManager();
 	}
 
-	public IEventTrace getEventTrace()
+	public ILogBrowser getEventTrace()
 	{
 		return itsView.getTrace();
 	}

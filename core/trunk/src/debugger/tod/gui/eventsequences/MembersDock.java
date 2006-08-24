@@ -6,10 +6,10 @@ package tod.gui.eventsequences;
 import java.util.HashMap;
 import java.util.Map;
 
+import tod.core.model.browser.IObjectInspector;
 import tod.core.model.structure.IBehaviorInfo;
 import tod.core.model.structure.IFieldInfo;
 import tod.core.model.structure.IMemberInfo;
-import tod.core.model.trace.IObjectInspector;
 import tod.gui.view.LogView;
 
 /**

@@ -11,6 +11,7 @@ import java.util.Map;
 import org.objectweb.asm.Type;
 
 import tod.Util;
+import tod.core.model.browser.ILocationLog;
 import tod.core.model.structure.ArrayTypeInfo;
 import tod.core.model.structure.BehaviorInfo;
 import tod.core.model.structure.ClassInfo;
@@ -18,12 +19,11 @@ import tod.core.model.structure.FieldInfo;
 import tod.core.model.structure.PrimitiveTypeInfo;
 import tod.core.model.structure.ThreadInfo;
 import tod.core.model.structure.TypeInfo;
-import tod.core.model.trace.ILocationTrace;
 /**
  * This class permits to register location ids.
  * @author gpothier
  */
-public class LocationRegistrer implements ILocationRegistrer, ILocationTrace
+public class LocationRegistrer implements ILocationRegistrer, ILocationLog
 {
 	private List<ClassInfo> itsTypes = new ArrayList<ClassInfo>();
 	private Map<String, TypeInfo> itsTypesMap = new HashMap<String, TypeInfo>();

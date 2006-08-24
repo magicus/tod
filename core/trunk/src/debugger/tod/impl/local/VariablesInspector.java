@@ -8,12 +8,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import tod.core.ILocationRegistrer.LocalVariableInfo;
+import tod.core.model.browser.IVariablesInspector;
 import tod.core.model.event.IBehaviorCallEvent;
 import tod.core.model.event.ILocalVariableWriteEvent;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.IBehaviorInfo;
 import tod.core.model.structure.ITypeInfo;
-import tod.core.model.trace.IVariablesInspector;
 
 public class VariablesInspector implements IVariablesInspector
 {

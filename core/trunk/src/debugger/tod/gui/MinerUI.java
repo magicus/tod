@@ -13,9 +13,9 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import tod.core.model.browser.ILogBrowser;
 import tod.core.model.event.ILogEvent;
 import tod.core.model.structure.ILocationInfo;
-import tod.core.model.trace.IEventTrace;
 import tod.gui.seed.Seed;
 import tod.gui.seed.SeedFactory;
 import tod.gui.seed.ThreadsSeed;
@@ -48,12 +48,12 @@ implements ILocationSelectionListener, IGUIManager
 //		}
 	}
 	
-	private IEventTrace itsCollector;
+	private ILogBrowser itsCollector;
 	private LocationSelector itsLocationSelector;
 	
 	private BrowserNavigator itsNavigator = new BrowserNavigator();
 	
-	public MinerUI(IEventTrace aCollector)
+	public MinerUI(ILogBrowser aCollector)
 	{
 		itsCollector = aCollector;
 		createUI();

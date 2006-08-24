@@ -11,8 +11,8 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import tod.core.model.browser.ILogBrowser;
 import tod.core.model.structure.ObjectId;
-import tod.core.model.trace.IEventTrace;
 import tod.gui.IGUIManager;
 import tod.gui.formatter.ObjectFormatter;
 import tod.gui.kit.SeedLinkLabel;
@@ -28,13 +28,13 @@ import zz.utils.properties.PropertyUtils;
  */
 public abstract class LogView extends JPanel
 {
-	private final IEventTrace itsLog;
+	private final ILogBrowser itsLog;
 	private final IGUIManager itsGUIManager;
 	
 	private List<PropertyUtils.Connector> itsConnectors; 
 
 	
-	public LogView(IGUIManager aGUIManager, IEventTrace aLog)
+	public LogView(IGUIManager aGUIManager, ILogBrowser aLog)
 	{
 		itsGUIManager = aGUIManager;
 		itsLog = aLog;
@@ -68,7 +68,7 @@ public abstract class LogView extends JPanel
 		itsConnectors.add (theConnector);
 	}
 	
-	public IEventTrace getTrace()
+	public ILogBrowser getTrace()
 	{
 		return itsLog;
 	}

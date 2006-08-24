@@ -6,7 +6,7 @@ package tod.core.model.structure;
 import java.util.HashMap;
 import java.util.Map;
 
-import tod.core.model.trace.ILocationTrace;
+import tod.core.model.browser.ILocationLog;
 
 public class ClassInfo extends TypeInfo implements IClassInfo
 {
@@ -17,18 +17,18 @@ public class ClassInfo extends TypeInfo implements IClassInfo
 	private Map<String, IBehaviorInfo> itsBehaviorsMap = new HashMap<String, IBehaviorInfo>();
 	
 
-	public ClassInfo(ILocationTrace aTrace, int aId)
+	public ClassInfo(ILocationLog aTrace, int aId)
 	{
 		super(aTrace, aId);
 	}
 
-	public ClassInfo(ILocationTrace aTrace, int aId, String aName)
+	public ClassInfo(ILocationLog aTrace, int aId, String aName)
 	{
 		this (aTrace, aId, aName, null, null);
 	}
 	
 	public ClassInfo(
-			ILocationTrace aTrace,
+			ILocationLog aTrace,
 			int aId, 
 			String aName, 
 			ClassInfo aSupertype,
