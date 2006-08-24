@@ -4,7 +4,7 @@
 package tod.impl.common.event;
 
 import tod.core.Output;
-import tod.core.model.event.IOutputEvent;
+import tod.core.database.event.IOutputEvent;
 
 /**
  * @author gpothier

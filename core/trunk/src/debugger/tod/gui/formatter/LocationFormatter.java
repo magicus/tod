@@ -4,14 +4,14 @@
 package tod.gui.formatter;
 
 import tod.core.BehaviourKind;
-import tod.core.model.structure.IBehaviorInfo;
-import tod.core.model.structure.IFieldInfo;
-import tod.core.model.structure.IThreadInfo;
-import tod.core.model.structure.ITypeInfo;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.IThreadInfo;
+import tod.core.database.structure.ITypeInfo;
 import zz.utils.AbstractFormatter;
 
 /**
- * Formatter for {@link tod.core.model.structure.ILocationInfo}
+ * Formatter for {@link tod.core.database.structure.ILocationInfo}
  * @author gpothier
  */
 public class LocationFormatter extends AbstractFormatter

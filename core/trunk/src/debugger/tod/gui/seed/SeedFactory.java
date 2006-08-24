@@ -3,13 +3,13 @@
  */
 package tod.gui.seed;
 
-import tod.core.model.browser.ICompoundFilter;
-import tod.core.model.browser.IEventFilter;
-import tod.core.model.browser.ILogBrowser;
-import tod.core.model.structure.IBehaviorInfo;
-import tod.core.model.structure.IFieldInfo;
-import tod.core.model.structure.ILocationInfo;
-import tod.core.model.structure.ITypeInfo;
+import tod.core.database.browser.ICompoundFilter;
+import tod.core.database.browser.IEventFilter;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.ITypeInfo;
 import tod.gui.IGUIManager;
 
 /**

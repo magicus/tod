@@ -3,8 +3,8 @@
  */
 package tod.impl.dbgrid.messages;
 
-import tod.core.model.structure.IBehaviorInfo;
-import tod.core.model.structure.ObjectId;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.ObjectId;
 import tod.impl.common.event.BehaviorCallEvent;
 import tod.impl.common.event.BehaviorExitEvent;
 import tod.impl.common.event.ConstructorChainingEvent;

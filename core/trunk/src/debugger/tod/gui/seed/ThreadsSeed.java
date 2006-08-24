@@ -3,7 +3,7 @@
  */
 package tod.gui.seed;
 
-import tod.core.model.browser.ILogBrowser;
+import tod.core.database.browser.ILogBrowser;
 import tod.gui.IGUIManager;
 import tod.gui.view.LogView;
 import tod.gui.view.ThreadsView;

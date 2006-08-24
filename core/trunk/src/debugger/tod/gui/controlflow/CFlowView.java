@@ -14,11 +14,11 @@ import java.util.Set;
 import javax.swing.BoxLayout;
 import javax.swing.JScrollPane;
 
-import tod.core.model.browser.ICFlowBrowser;
-import tod.core.model.browser.ILogBrowser;
-import tod.core.model.event.ILogEvent;
-import tod.core.model.event.IParentEvent;
-import tod.core.model.structure.IThreadInfo;
+import tod.core.database.browser.ICFlowBrowser;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.ILogEvent;
+import tod.core.database.event.IParentEvent;
+import tod.core.database.structure.IThreadInfo;
 import tod.gui.IGUIManager;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.view.LogView;

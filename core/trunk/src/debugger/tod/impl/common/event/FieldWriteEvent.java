@@ -3,8 +3,8 @@
  */
 package tod.impl.common.event;
 
-import tod.core.model.event.IFieldWriteEvent;
-import tod.core.model.structure.IFieldInfo;
+import tod.core.database.event.IFieldWriteEvent;
+import tod.core.database.structure.IFieldInfo;
 
 /**
  * @author gpothier

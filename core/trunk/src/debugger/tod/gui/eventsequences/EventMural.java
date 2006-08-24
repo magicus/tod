@@ -20,9 +20,9 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import tod.core.model.browser.IEventBrowser;
-import tod.core.model.event.EventComparator;
-import tod.core.model.event.ILogEvent;
+import tod.core.database.browser.IEventBrowser;
+import tod.core.database.event.EventComparator;
+import tod.core.database.event.ILogEvent;
 import tod.gui.BrowserData;
 import zz.csg.api.GraphicObjectContext;
 import zz.csg.api.IDisplay;

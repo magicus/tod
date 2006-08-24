@@ -5,7 +5,7 @@ package tod.gui.controlflow;
 
 import java.awt.Color;
 
-import tod.core.model.event.IInstantiationEvent;
+import tod.core.database.event.IInstantiationEvent;
 import tod.gui.Hyperlinks;
 import zz.csg.api.IRectangularGraphicContainer;
 import zz.csg.impl.figures.SVGFlowText;

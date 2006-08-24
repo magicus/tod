@@ -6,10 +6,10 @@ package tod.gui.eventsequences;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 
-import tod.core.model.browser.IEventBrowser;
-import tod.core.model.browser.IEventFilter;
-import tod.core.model.browser.ILogBrowser;
-import tod.core.model.structure.IThreadInfo;
+import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.IEventFilter;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.IThreadInfo;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.view.LogView;
 import zz.csg.api.IDisplay;

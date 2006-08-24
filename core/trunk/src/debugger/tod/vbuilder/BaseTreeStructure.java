@@ -3,7 +3,7 @@ package tod.vbuilder;
 import java.util.ArrayList;
 import java.util.List;
 
-import tod.core.model.structure.ObjectId;
+import tod.core.database.structure.ObjectId;
 import zz.utils.properties.IListProperty;
 import zz.utils.tree.SimpleTreeNode;
 

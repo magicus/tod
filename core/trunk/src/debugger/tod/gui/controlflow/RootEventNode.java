@@ -7,8 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import tod.core.model.event.ILogEvent;
-import tod.core.model.event.IParentEvent;
+import tod.core.database.event.ILogEvent;
+import tod.core.database.event.IParentEvent;
 import zz.csg.api.layout.StackLayout;
 
 public class RootEventNode extends AbstractEventNode

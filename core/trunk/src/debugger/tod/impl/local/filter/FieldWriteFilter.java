@@ -3,9 +3,9 @@
  */
 package tod.impl.local.filter;
 
-import tod.core.model.event.IFieldWriteEvent;
-import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.IFieldInfo;
+import tod.core.database.event.IFieldWriteEvent;
+import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IFieldInfo;
 import tod.impl.local.LocalCollector;
 
 /**

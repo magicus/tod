@@ -4,7 +4,7 @@
 package tod.impl.common.event;
 
 import tod.core.ILocationRegistrer;
-import tod.core.model.event.ILocalVariableWriteEvent;
+import tod.core.database.event.ILocalVariableWriteEvent;
 
 /**
  * @author gpothier

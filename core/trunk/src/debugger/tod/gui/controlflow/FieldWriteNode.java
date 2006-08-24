@@ -5,9 +5,9 @@ package tod.gui.controlflow;
 
 import java.awt.Color;
 
-import tod.core.model.event.IBehaviorCallEvent;
-import tod.core.model.event.IFieldWriteEvent;
-import tod.core.model.event.ILogEvent;
+import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.IFieldWriteEvent;
+import tod.core.database.event.ILogEvent;
 import tod.gui.Hyperlinks;
 import zz.csg.api.layout.SequenceLayout;
 import zz.csg.impl.figures.SVGFlowText;

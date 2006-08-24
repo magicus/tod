@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import tod.core.model.browser.IEventBrowser;
-import tod.core.model.event.ILogEvent;
+import tod.core.database.browser.IEventBrowser;
+import tod.core.database.event.ILogEvent;
 import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
 import tod.gui.view.LogView;

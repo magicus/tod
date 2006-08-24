@@ -3,7 +3,7 @@
  */
 package tod.impl.local.filter;
 
-import tod.core.model.event.ILogEvent;
+import tod.core.database.event.ILogEvent;
 import tod.impl.local.LocalCollector;
 
 /**

@@ -5,17 +5,17 @@ package tod.gui.formatter;
 
 import java.util.Arrays;
 
-import tod.core.model.event.IBehaviorCallEvent;
-import tod.core.model.event.IFieldWriteEvent;
-import tod.core.model.event.ILocalVariableWriteEvent;
-import tod.core.model.event.ILogEvent;
-import tod.core.model.event.IOutputEvent;
-import tod.core.model.structure.IBehaviorInfo;
-import tod.core.model.structure.ILocationInfo;
+import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.IFieldWriteEvent;
+import tod.core.database.event.ILocalVariableWriteEvent;
+import tod.core.database.event.ILogEvent;
+import tod.core.database.event.IOutputEvent;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.ILocationInfo;
 import zz.utils.AbstractFormatter;
 
 /**
- * Formatter for {@link tod.core.model.event.Event}
+ * Formatter for {@link tod.core.database.event.Event}
  * @author gpothier
  */
 public class EventFormatter extends AbstractFormatter<ILogEvent>

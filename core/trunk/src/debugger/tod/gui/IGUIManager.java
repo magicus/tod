@@ -3,7 +3,7 @@
  */
 package tod.gui;
 
-import tod.core.model.event.ILogEvent;
+import tod.core.database.event.ILogEvent;
 import tod.gui.seed.Seed;
 
 /**

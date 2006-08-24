@@ -3,9 +3,9 @@
  */
 package tod.impl.local.filter;
 
-import tod.core.model.event.IBehaviorCallEvent;
-import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.IBehaviorInfo;
+import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IBehaviorInfo;
 import tod.impl.local.LocalCollector;
 
 /**

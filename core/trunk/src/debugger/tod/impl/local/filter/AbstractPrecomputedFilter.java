@@ -6,8 +6,8 @@ package tod.impl.local.filter;
 import java.util.ArrayList;
 import java.util.List;
 
-import tod.core.model.browser.IEventBrowser;
-import tod.core.model.event.ILogEvent;
+import tod.core.database.browser.IEventBrowser;
+import tod.core.database.event.ILogEvent;
 import tod.impl.common.event.Event;
 import tod.impl.local.EventBrowser;
 import tod.impl.local.LocalCollector;

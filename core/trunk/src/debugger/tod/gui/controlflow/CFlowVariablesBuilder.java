@@ -8,12 +8,12 @@ import java.awt.Font;
 import java.util.List;
 
 import tod.core.ILocationRegistrer.LocalVariableInfo;
-import tod.core.model.browser.ILogBrowser;
-import tod.core.model.browser.IVariablesInspector;
-import tod.core.model.event.IBehaviorCallEvent;
-import tod.core.model.event.ICallerSideEvent;
-import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.IBehaviorInfo;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.browser.IVariablesInspector;
+import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.ICallerSideEvent;
+import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IBehaviorInfo;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
 import zz.csg.api.IRectangularGraphicObject;

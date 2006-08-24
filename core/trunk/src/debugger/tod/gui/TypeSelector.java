@@ -8,7 +8,7 @@ import java.util.List;
 import javax.swing.JPanel;
 
 /**
- * Permits to select a type ({@link tod.core.model.structure.ITypeInfo}).
+ * Permits to select a type ({@link tod.core.database.structure.ITypeInfo}).
  * @author gpothier
  */
 public class TypeSelector extends JPanel

@@ -3,9 +3,9 @@
  */
 package tod.gui.view.event;
 
-import tod.core.model.browser.ILogBrowser;
-import tod.core.model.event.IFieldWriteEvent;
-import tod.core.model.event.ILogEvent;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.IFieldWriteEvent;
+import tod.core.database.event.ILogEvent;
 import tod.gui.IGUIManager;
 
 /**

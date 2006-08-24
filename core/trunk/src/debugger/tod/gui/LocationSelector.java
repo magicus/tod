@@ -22,19 +22,19 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
-import tod.core.model.browser.ILocationLog;
-import tod.core.model.structure.LocationTreeBuilder;
-import tod.core.model.structure.LocationTreeBuilder.Node;
+import tod.core.database.browser.ILocationsRepository;
+import tod.core.database.structure.LocationTreeBuilder;
+import tod.core.database.structure.LocationTreeBuilder.Node;
 
 /**
  * This panel permits to select a source code location.
  * Locations are subclasses of 
- * {@link tod.core.model.structure.ILocationInfo}
+ * {@link tod.core.database.structure.ILocationInfo}
  * @author gpothier
  */
 public class LocationSelector extends JPanel implements TreeSelectionListener
 {
-	private ILocationLog itsLocationTrace;
+	private ILocationsRepository itsLocationTrace;
 	
 	private MyTreeModel itsModel;
 	private JTree itsTree;
@@ -44,7 +44,7 @@ public class LocationSelector extends JPanel implements TreeSelectionListener
 
 	private LocationTreeBuilder itsLocationTreeBuilder;
 	
-	public LocationSelector(ILocationLog aLocationTrace)
+	public LocationSelector(ILocationsRepository aLocationTrace)
 	{
 		itsLocationTrace = aLocationTrace;
 		itsLocationTreeBuilder = LocationTreeBuilder.getInstance(itsLocationTrace);

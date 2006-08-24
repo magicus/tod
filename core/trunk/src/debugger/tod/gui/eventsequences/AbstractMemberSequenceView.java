@@ -5,10 +5,10 @@ package tod.gui.eventsequences;
 
 import java.awt.Color;
 
-import tod.core.model.browser.IEventBrowser;
-import tod.core.model.browser.ILogBrowser;
-import tod.core.model.browser.IObjectInspector;
-import tod.core.model.structure.IMemberInfo;
+import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.browser.IObjectInspector;
+import tod.core.database.structure.IMemberInfo;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
 import tod.gui.view.LogView;

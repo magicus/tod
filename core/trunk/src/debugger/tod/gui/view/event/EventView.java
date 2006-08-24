@@ -5,9 +5,9 @@ package tod.gui.view.event;
 
 import javax.swing.JLabel;
 
-import tod.core.model.browser.ILogBrowser;
-import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.IThreadInfo;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IThreadInfo;
 import tod.gui.IGUIManager;
 import tod.gui.formatter.EventFormatter;
 import tod.gui.kit.LinkLabel;

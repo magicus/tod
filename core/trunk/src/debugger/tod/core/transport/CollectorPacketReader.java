@@ -12,7 +12,7 @@ import tod.core.ILogCollector;
 import tod.core.Output;
 import tod.core.ILocationRegistrer.LineNumberInfo;
 import tod.core.ILocationRegistrer.LocalVariableInfo;
-import tod.core.model.structure.ObjectId;
+import tod.core.database.structure.ObjectId;
 
 public class CollectorPacketReader
 {

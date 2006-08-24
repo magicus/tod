@@ -7,12 +7,12 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.List;
 
-import tod.core.model.browser.ILogBrowser;
-import tod.core.model.browser.IObjectInspector;
-import tod.core.model.event.IBehaviorCallEvent;
-import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.IFieldInfo;
-import tod.core.model.structure.ObjectId;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.browser.IObjectInspector;
+import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.ObjectId;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
 import zz.csg.api.IRectangularGraphicObject;

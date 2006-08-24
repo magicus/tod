@@ -3,7 +3,7 @@
  */
 package tod.impl.common.event;
 
-import tod.core.model.event.IMethodCallEvent;
+import tod.core.database.event.IMethodCallEvent;
 
 public class MethodCallEvent extends BehaviorCallEvent implements IMethodCallEvent
 {

@@ -3,8 +3,8 @@
  */
 package tod.impl.common.event;
 
-import tod.core.model.event.IInstantiationEvent;
-import tod.core.model.structure.ITypeInfo;
+import tod.core.database.event.IInstantiationEvent;
+import tod.core.database.structure.ITypeInfo;
 
 /**
  * @author gpothier

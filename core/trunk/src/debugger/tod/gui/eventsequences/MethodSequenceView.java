@@ -5,12 +5,12 @@ package tod.gui.eventsequences;
 
 import java.awt.Color;
 
-import tod.core.model.browser.ILogBrowser;
-import tod.core.model.browser.IObjectInspector;
-import tod.core.model.event.IBehaviorCallEvent;
-import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.IBehaviorInfo;
-import tod.core.model.structure.IMemberInfo;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.browser.IObjectInspector;
+import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IMemberInfo;
 import tod.gui.IGUIManager;
 import tod.gui.SVGHyperlink;
 import tod.gui.seed.CFlowSeed;

@@ -6,7 +6,7 @@ package tod.core;
 import java.io.PrintStream;
 import java.util.Arrays;
 
-import tod.core.model.structure.IBehaviorInfo;
+import tod.core.database.structure.IBehaviorInfo;
 import zz.utils.ArrayStack;
 import zz.utils.Stack;
 

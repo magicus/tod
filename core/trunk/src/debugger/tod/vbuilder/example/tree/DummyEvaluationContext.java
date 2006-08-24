@@ -3,12 +3,12 @@
  */
 package tod.vbuilder.example.tree;
 
-import tod.core.model.structure.ObjectId;
+import tod.core.database.structure.ObjectId;
 import tod.vbuilder.eval.IEvaluationContext;
 
 /**
  * This dummy evaluation context works with aobjects that implement
- * {@link tod.core.model.structure.ObjectId}.
+ * {@link tod.core.database.structure.ObjectId}.
  * @author gpothier
  */
 public class DummyEvaluationContext implements IEvaluationContext

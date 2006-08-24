@@ -3,7 +3,7 @@
  */
 package tod.impl.common.event;
 
-import tod.core.model.event.IBehaviorExitEvent;
+import tod.core.database.event.IBehaviorExitEvent;
 
 public class BehaviorExitEvent extends Event implements IBehaviorExitEvent
 {

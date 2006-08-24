@@ -5,7 +5,7 @@ package tod.gui.controlflow;
 
 import java.awt.Color;
 
-import tod.core.model.event.ILogEvent;
+import tod.core.database.event.ILogEvent;
 import zz.csg.api.layout.SequenceLayout;
 import zz.csg.impl.figures.SVGFlowText;
 

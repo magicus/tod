@@ -6,9 +6,9 @@ package tod.impl.common.event;
 import java.util.HashMap;
 import java.util.Map;
 
-import tod.core.model.event.ICallerSideEvent;
-import tod.core.model.structure.IHostInfo;
-import tod.core.model.structure.IThreadInfo;
+import tod.core.database.event.ICallerSideEvent;
+import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.IThreadInfo;
 
 /**
  * Base class of all logged events.

@@ -3,15 +3,15 @@
  */
 package tod.gui.view.event;
 
-import tod.core.model.browser.ILogBrowser;
-import tod.core.model.event.IBehaviorCallEvent;
-import tod.core.model.structure.IBehaviorInfo;
-import tod.core.model.structure.ITypeInfo;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.ITypeInfo;
 import tod.gui.IGUIManager;
 import tod.gui.seed.SeedFactory;
 
 /**
- * View for a {@link tod.core.model.event.MethodEnter} event.
+ * View for a {@link tod.core.database.event.MethodEnter} event.
  * @author gpothier
  */
 public class BehaviorCallView extends EventView

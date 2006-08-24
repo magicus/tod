@@ -3,7 +3,7 @@
  */
 package tod.impl.common.event;
 
-import tod.core.model.event.IConstructorChainingEvent;
+import tod.core.database.event.IConstructorChainingEvent;
 
 public class ConstructorChainingEvent extends BehaviorCallEvent
 implements IConstructorChainingEvent

@@ -5,8 +5,8 @@ package tod.gui.controlflow;
 
 import java.awt.Color;
 
-import tod.core.model.event.ILocalVariableWriteEvent;
-import tod.core.model.event.ILogEvent;
+import tod.core.database.event.ILocalVariableWriteEvent;
+import tod.core.database.event.ILogEvent;
 import tod.gui.Hyperlinks;
 import zz.csg.api.layout.SequenceLayout;
 import zz.csg.impl.figures.SVGFlowText;

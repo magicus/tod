@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import tod.core.model.event.EventComparator;
+import tod.core.database.event.EventComparator;
 import tod.impl.common.event.Event;
 
 /**

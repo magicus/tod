@@ -3,10 +3,10 @@
  */
 package tod.impl.local.filter;
 
-import tod.core.model.event.IInstantiationEvent;
-import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.ITypeInfo;
-import tod.core.model.structure.ObjectId;
+import tod.core.database.event.IInstantiationEvent;
+import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.ObjectId;
 import tod.impl.local.LocalCollector;
 
 /**

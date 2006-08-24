@@ -11,8 +11,8 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import tod.core.model.browser.ILogBrowser;
-import tod.core.model.structure.ObjectId;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.ObjectId;
 import tod.gui.IGUIManager;
 import tod.gui.formatter.ObjectFormatter;
 import tod.gui.kit.SeedLinkLabel;

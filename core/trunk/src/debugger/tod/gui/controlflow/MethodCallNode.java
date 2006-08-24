@@ -5,7 +5,7 @@ package tod.gui.controlflow;
 
 import java.awt.Color;
 
-import tod.core.model.event.IMethodCallEvent;
+import tod.core.database.event.IMethodCallEvent;
 import zz.csg.api.IRectangularGraphicContainer;
 import zz.csg.impl.figures.SVGFlowText;
 import zz.utils.ui.text.XFont;

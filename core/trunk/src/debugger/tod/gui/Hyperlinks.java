@@ -5,10 +5,10 @@ package tod.gui;
 
 import java.awt.Color;
 
-import tod.core.model.browser.ILogBrowser;
-import tod.core.model.structure.IBehaviorInfo;
-import tod.core.model.structure.ITypeInfo;
-import tod.core.model.structure.ObjectId;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.ObjectId;
 import tod.gui.seed.ObjectInspectorSeed;
 import zz.csg.api.IRectangularGraphicObject;
 import zz.csg.impl.figures.SVGFlowText;

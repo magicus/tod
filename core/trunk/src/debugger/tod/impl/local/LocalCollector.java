@@ -3,23 +3,26 @@
  */
 package tod.impl.local;
 
-import tod.core.model.browser.ICFlowBrowser;
-import tod.core.model.browser.ICompoundFilter;
-import tod.core.model.browser.IEventBrowser;
-import tod.core.model.browser.IEventFilter;
-import tod.core.model.browser.ILocationLog;
-import tod.core.model.browser.ILogBrowser;
-import tod.core.model.browser.IObjectInspector;
-import tod.core.model.browser.IVariablesInspector;
-import tod.core.model.event.IBehaviorCallEvent;
-import tod.core.model.structure.IBehaviorInfo;
-import tod.core.model.structure.IClassInfo;
-import tod.core.model.structure.IFieldInfo;
-import tod.core.model.structure.IHostInfo;
-import tod.core.model.structure.IThreadInfo;
-import tod.core.model.structure.ITypeInfo;
-import tod.core.model.structure.ObjectId;
+import tod.core.database.browser.ICFlowBrowser;
+import tod.core.database.browser.ICompoundFilter;
+import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.IEventFilter;
+import tod.core.database.browser.ILocationsRepository;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.browser.IObjectInspector;
+import tod.core.database.browser.IVariablesInspector;
+import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IClassInfo;
+import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.IThreadInfo;
+import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.ObjectId;
+import tod.impl.common.CFlowBrowser;
 import tod.impl.common.EventCollector;
+import tod.impl.common.ObjectInspector;
+import tod.impl.common.VariablesInspector;
 import tod.impl.common.event.BehaviorCallEvent;
 import tod.impl.common.event.Event;
 import tod.impl.local.filter.AbstractFilter;
@@ -47,7 +50,7 @@ implements ILogBrowser
 		super(aHost);
 	}
 
-	public ILocationLog getLocationTrace()
+	public ILocationsRepository getLocationTrace()
 	{
 		return this;
 	}

@@ -3,12 +3,14 @@
  */
 package tod.impl.dbgrid.dispatcher;
 
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
 import tod.impl.common.event.Event;
 import tod.impl.dbgrid.ExternalPointer;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
+import tod.impl.dbgrid.dbnode.RIDatabaseNode;
 import tod.impl.dbgrid.messages.AddChildEvent;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.GridMessage;
@@ -23,12 +25,12 @@ public class DBNodeProxy
 {
 	private static final int TRANSMIT_DELAY_MS = 1000;
 	
-	private DatabaseNode itsDatabaseNode;
+	private RIDatabaseNode itsDatabaseNode;
 	private MessageQueue itsMessageQueue = new MessageQueue();
 	
 	private boolean itsFlushed = false;
 	
-	public DBNodeProxy(DatabaseNode aDatabaseNode)
+	public DBNodeProxy(RIDatabaseNode aDatabaseNode)
 	{
 		itsDatabaseNode = aDatabaseNode;
 	}
@@ -60,9 +62,16 @@ public class DBNodeProxy
 	
 	public void flush()
 	{
-		itsMessageQueue.send();
-		itsDatabaseNode.flush();
-		itsFlushed = true;
+		try
+		{
+			itsMessageQueue.send();
+			itsDatabaseNode.flush();
+			itsFlushed = true;
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 	
 	/**
@@ -86,7 +95,7 @@ public class DBNodeProxy
 			start();
 		}
 
-		public void send()
+		public void send() throws RemoteException
 		{
 			assert ! itsFlushed;
 
@@ -122,6 +131,10 @@ public class DBNodeProxy
 				}
 			}
 			catch (InterruptedException e)
+			{
+				throw new RuntimeException(e);
+			}
+			catch (RemoteException e)
 			{
 				throw new RuntimeException(e);
 			}

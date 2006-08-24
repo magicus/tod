@@ -12,8 +12,8 @@ import java.util.Map;
 import javax.swing.JLabel;
 import javax.swing.Timer;
 
-import tod.core.model.browser.ILogBrowser;
-import tod.core.model.structure.IThreadInfo;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.IThreadInfo;
 import tod.gui.IGUIManager;
 import tod.gui.eventsequences.SequenceViewsDock;
 import tod.gui.eventsequences.ThreadSequenceSeed;

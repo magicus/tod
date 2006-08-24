@@ -3,12 +3,12 @@
  */
 package tod.gui.view.event;
 
-import tod.core.model.browser.ILogBrowser;
-import tod.core.model.event.IInstantiationEvent;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.IInstantiationEvent;
 import tod.gui.IGUIManager;
 
 /**
- * View for {@link tod.core.model.event.IInstantiationEvent}
+ * View for {@link tod.core.database.event.IInstantiationEvent}
  * @author gpothier
  */
 public class InstantiationView extends BehaviorCallView

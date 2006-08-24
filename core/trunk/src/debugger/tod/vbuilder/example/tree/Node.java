@@ -5,7 +5,7 @@ package tod.vbuilder.example.tree;
 
 import java.util.List;
 
-import tod.core.model.structure.ObjectId;
+import tod.core.database.structure.ObjectId;
 
 public class Node implements ObjectId
 {

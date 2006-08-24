@@ -6,10 +6,10 @@ package tod.impl.common.event;
 import java.util.ArrayList;
 import java.util.List;
 
-import tod.core.model.event.IBehaviorCallEvent;
-import tod.core.model.event.IBehaviorExitEvent;
-import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.IBehaviorInfo;
+import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.IBehaviorExitEvent;
+import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IBehaviorInfo;
 
 public class BehaviorCallEvent extends Event implements IBehaviorCallEvent
 {

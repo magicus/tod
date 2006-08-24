@@ -11,9 +11,9 @@ import javax.swing.JSplitPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import tod.core.model.browser.IEventBrowser;
-import tod.core.model.browser.ILogBrowser;
-import tod.core.model.event.ILogEvent;
+import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.ILogEvent;
 import tod.gui.EventListModel;
 import tod.gui.IGUIManager;
 import tod.gui.formatter.EventFormatter;
@@ -24,7 +24,7 @@ import zz.utils.ui.FormattedRenderer;
 
 /**
  * A view component that displays a list of events 
- * based on a {@link tod.core.model.browser.IEventFilter}
+ * based on a {@link tod.core.database.browser.IEventFilter}
  * @author gpothier
  */
 public class FilterView extends LogView implements ListSelectionListener

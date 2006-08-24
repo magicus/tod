@@ -8,7 +8,7 @@ import java.awt.Font;
 import java.util.HashMap;
 import java.util.Map;
 
-import tod.core.model.structure.ObjectId;
+import tod.core.database.structure.ObjectId;
 import zz.csg.api.constraints.ConstraintParser;
 import zz.csg.api.constraints.ConstraintSystem;
 import zz.csg.api.figures.IGOFlowText;

@@ -3,8 +3,8 @@
  */
 package tod.impl.common.event;
 
-import tod.core.model.event.IExceptionGeneratedEvent;
-import tod.core.model.structure.IBehaviorInfo;
+import tod.core.database.event.IExceptionGeneratedEvent;
+import tod.core.database.structure.IBehaviorInfo;
 
 /**
  * @author gpothier

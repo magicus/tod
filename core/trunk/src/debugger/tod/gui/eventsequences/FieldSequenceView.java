@@ -5,11 +5,11 @@ package tod.gui.eventsequences;
 
 import java.awt.Color;
 
-import tod.core.model.browser.IObjectInspector;
-import tod.core.model.event.IFieldWriteEvent;
-import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.IFieldInfo;
-import tod.core.model.structure.IMemberInfo;
+import tod.core.database.browser.IObjectInspector;
+import tod.core.database.event.IFieldWriteEvent;
+import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.IMemberInfo;
 import tod.gui.view.LogView;
 import zz.csg.api.IDisplay;
 import zz.csg.api.IRectangularGraphicObject;

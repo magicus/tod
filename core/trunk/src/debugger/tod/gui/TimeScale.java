@@ -29,7 +29,7 @@ import zz.utils.ui.StackLayout;
 import zz.utils.ui.UIUtils;
 
 /**
- * This component presents an overview of an {@link tod.core.model.browser.IEventBrowser}
+ * This component presents an overview of an {@link tod.core.database.browser.IEventBrowser}
  * in a time axis. 
  * @author gpothier
  */

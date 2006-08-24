@@ -3,7 +3,7 @@
  */
 package tod.impl.dbgrid.dispatcher;
 
-import tod.core.model.structure.IHostInfo;
+import tod.core.database.structure.IHostInfo;
 import tod.impl.common.EventCollector;
 import tod.impl.common.event.BehaviorCallEvent;
 import tod.impl.common.event.Event;

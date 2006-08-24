@@ -14,7 +14,7 @@ import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_VAR_COUNT;
 
 import java.util.Random;
 
-import tod.core.model.structure.ObjectId;
+import tod.core.database.structure.ObjectId;
 import tod.impl.dbgrid.messages.EventType;
 import tod.impl.dbgrid.messages.GridBehaviorCallEvent;
 import tod.impl.dbgrid.messages.GridBehaviorExitEvent;

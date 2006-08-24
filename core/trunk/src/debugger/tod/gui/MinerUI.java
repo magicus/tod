@@ -13,9 +13,9 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import tod.core.model.browser.ILogBrowser;
-import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.ILocationInfo;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.ILocationInfo;
 import tod.gui.seed.Seed;
 import tod.gui.seed.SeedFactory;
 import tod.gui.seed.ThreadsSeed;

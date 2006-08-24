@@ -3,14 +3,14 @@
  */
 package tod.gui.seed;
 
-import tod.core.model.browser.IEventFilter;
-import tod.core.model.browser.ILogBrowser;
+import tod.core.database.browser.IEventFilter;
+import tod.core.database.browser.ILogBrowser;
 import tod.gui.IGUIManager;
 import tod.gui.view.FilterView;
 import tod.gui.view.LogView;
 
 /**
- * A seed that is based on a {@link tod.core.model.browser.IEventBrowser}.
+ * A seed that is based on a {@link tod.core.database.browser.IEventBrowser}.
  * Its view is simply a sequential view of filtered events.
  * @author gpothier
  */

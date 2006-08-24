@@ -7,7 +7,7 @@ import java.awt.Color;
 import java.util.Collections;
 import java.util.List;
 
-import tod.core.model.browser.IEventBrowser;
+import tod.core.database.browser.IEventBrowser;
 import tod.gui.BrowserData;
 import tod.gui.view.LogView;
 import zz.csg.api.IDisplay;

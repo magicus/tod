@@ -3,7 +3,7 @@
  */
 package tod.vbuilder;
 
-import tod.core.model.structure.ObjectId;
+import tod.core.database.structure.ObjectId;
 
 public interface IBuilderContext
 {

@@ -11,9 +11,9 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import tod.bci.RemoteInstrumenter;
 import tod.core.ILogCollector;
-import tod.session.ASMDebuggerConfig;
+import tod.core.bci.IInstrumenter;
+import tod.core.bci.RemoteInstrumenter;
 
 /**
  * Receives log events from a logged application through a socket and
@@ -24,7 +24,8 @@ import tod.session.ASMDebuggerConfig;
  */
 public class LogReceiver extends SocketThread
 {
-	private final ASMDebuggerConfig itsConfig;
+	private final ILogCollector itsCollector;
+	private final IInstrumenter itsInstrumenter;
 	private DataInputStream itsStream;
 	
 	/**
@@ -32,10 +33,11 @@ public class LogReceiver extends SocketThread
 	 * @param aCollector The collector to which the events are forwarded.
 	 */
 	public static void server (
-			ASMDebuggerConfig aConfig,
+			ILogCollector aCollector,
+			IInstrumenter aInstrumenter,
 			int aPort) throws IOException
 	{
-		new LogReceiver(aConfig, new ServerSocket(aPort));
+		new LogReceiver(aCollector, aInstrumenter, new ServerSocket(aPort));
 	}
 	
 	/**
@@ -43,11 +45,13 @@ public class LogReceiver extends SocketThread
 	 * @param aCollector The collector to which the events are forwarded.
 	 */
 	public LogReceiver(
-			ASMDebuggerConfig aConfig,
+			ILogCollector aCollector,
+			IInstrumenter aInstrumenter,
 			ServerSocket aServerSocket)
 	{
 		super(aServerSocket);
-		itsConfig = aConfig;
+		itsCollector = aCollector;
+		itsInstrumenter = aInstrumenter;
 	}
 
 	/**
@@ -56,16 +60,18 @@ public class LogReceiver extends SocketThread
 	 * @param aCollector The collector to which the events are forwarded.
 	 */
 	public LogReceiver(
-			ASMDebuggerConfig aConfig,
+			ILogCollector aCollector,
+			IInstrumenter aInstrumenter,
 			Socket aSocket)
 	{
 		super(aSocket);
-		itsConfig = aConfig;
+		itsCollector = aCollector;
+		itsInstrumenter = aInstrumenter;
 	}
 	
 	private ILogCollector getCollector()
 	{
-		return itsConfig.getCollector();
+		return itsCollector;
 	}
 
 	protected void process(
@@ -83,7 +89,7 @@ public class LogReceiver extends SocketThread
 			if (theCommand == RemoteInstrumenter.INSTRUMENT_CLASS)
 			{
 				RemoteInstrumenter.processInstrumentClassCommand(
-						itsConfig.getInstrumenter(),
+						itsInstrumenter,
 						itsStream,
 						theOutputStream,
 						null);

@@ -3,7 +3,7 @@
  */
 package tod.vbuilder.eval;
 
-import tod.core.model.structure.ObjectId;
+import tod.core.database.structure.ObjectId;
 
 public interface IEvaluationContext
 {

@@ -3,7 +3,7 @@
  */
 package tod.gui.formatter;
 
-import tod.core.model.structure.ObjectId;
+import tod.core.database.structure.ObjectId;
 import zz.utils.AbstractFormatter;
 
 /**
