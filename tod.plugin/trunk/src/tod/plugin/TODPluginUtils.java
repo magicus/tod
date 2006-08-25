@@ -19,16 +19,16 @@ import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchParticipant;
 import org.eclipse.jdt.core.search.SearchPattern;
 
-import tod.core.model.event.IBehaviorCallEvent;
-import tod.core.model.event.ICallerSideEvent;
-import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.IBehaviorInfo;
-import tod.core.model.structure.IClassInfo;
-import tod.core.model.structure.ILocationInfo;
-import tod.core.model.structure.ITypeInfo;
-import tod.core.model.trace.IEventTrace;
-import tod.core.model.trace.ILocationTrace;
-import tod.session.ISession;
+import tod.core.database.browser.ILocationsRepository;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.ICallerSideEvent;
+import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IClassInfo;
+import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.ITypeInfo;
+import tod.core.session.ISession;
 
 /**
  * Utilities for the TOD plugin
@@ -45,8 +45,8 @@ public class TODPluginUtils
 	 */
 	public static ILocationInfo getLocationInfo (ISession aSession, IJavaElement aElement)
 	{
-		IEventTrace theEventTrace = aSession.getEventTrace();
-		ILocationTrace theLocationTrace = theEventTrace.getLocationTrace();
+		ILogBrowser theEventTrace = aSession.getLogBrowser();
+		ILocationsRepository theLocationTrace = theEventTrace.getLocationTrace();
 		
 		if (aElement instanceof IMember)
 		{

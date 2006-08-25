@@ -14,8 +14,8 @@ import javax.swing.JPanel;
 
 import org.eclipse.jdt.core.IJavaElement;
 
-import tod.core.model.event.ILogEvent;
-import tod.core.model.structure.ILocationInfo;
+import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.ILocationInfo;
 import tod.gui.BrowserNavigator;
 import tod.gui.IGUIManager;
 import tod.gui.seed.Seed;
@@ -102,7 +102,7 @@ public class EventViewer extends JPanel implements IGUIManager
 	
 	private void reset()
 	{
-		openSeed(new ThreadsSeed(EventViewer.this, getSession().getEventTrace()), false);
+		openSeed(new ThreadsSeed(EventViewer.this, getSession().getLogBrowser()), false);
 	}
 
 
@@ -112,7 +112,7 @@ public class EventViewer extends JPanel implements IGUIManager
 		if (aSelectedLocations.size() == 1)
 		{
 			ILocationInfo theInfo = (ILocationInfo) aSelectedLocations.get(0);
-			theSeed = SeedFactory.getDefaultSeed(this, getSession().getEventTrace(), theInfo);
+			theSeed = SeedFactory.getDefaultSeed(this, getSession().getLogBrowser(), theInfo);
 		}
 
 		itsNavigator.open(theSeed);
@@ -121,7 +121,7 @@ public class EventViewer extends JPanel implements IGUIManager
 	public void showElement (IJavaElement aElement)
 	{
 		ILocationInfo theLocationInfo = TODPluginUtils.getLocationInfo(getSession(), aElement);
-		Seed theSeed = SeedFactory.getDefaultSeed(this, getSession().getEventTrace(), theLocationInfo);
+		Seed theSeed = SeedFactory.getDefaultSeed(this, getSession().getLogBrowser(), theLocationInfo);
 		openSeed(theSeed, false);
 	}
 	

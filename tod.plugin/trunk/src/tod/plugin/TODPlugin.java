@@ -5,7 +5,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 import reflex.ide.eclipse.launcher.ReflexLauncherPlugin;
-import tod.session.ISession;
+import tod.core.session.ISession;
 
 /**
  * The main plugin class to be used in the desktop.
@@ -32,7 +32,7 @@ public class TODPlugin extends AbstractUIPlugin
 	{
 		super.start(context);
 		Class.forName("org.objectweb.asm.commons.EmptyVisitor");
-		Class.forName("tod.session.ISession");
+		Class.forName("tod.core.session.ISession");
 	}
 
 	/**

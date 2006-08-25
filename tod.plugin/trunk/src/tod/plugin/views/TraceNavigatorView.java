@@ -17,7 +17,7 @@ import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.ViewPart;
 
-import tod.core.model.event.ILogEvent;
+import tod.core.database.event.ILogEvent;
 import tod.plugin.DebuggingSession;
 import tod.plugin.TODPluginUtils;
 

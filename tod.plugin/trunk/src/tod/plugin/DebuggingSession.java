@@ -5,8 +5,8 @@ package tod.plugin;
 
 import org.eclipse.jdt.core.IJavaProject;
 
-import tod.session.DelegatedSession;
-import tod.session.ISession;
+import tod.core.session.DelegatedSession;
+import tod.core.session.ISession;
 
 public class DebuggingSession extends DelegatedSession
 {

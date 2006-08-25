@@ -8,8 +8,8 @@ import java.net.URISyntaxException;
 
 import org.eclipse.jdt.core.IJavaProject;
 
-import tod.session.DefaultSessionFactory;
-import tod.session.ISession;
+import tod.core.session.DefaultSessionFactory;
+import tod.core.session.ISession;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.SimpleEvent;
 import zz.utils.properties.IProperty;
