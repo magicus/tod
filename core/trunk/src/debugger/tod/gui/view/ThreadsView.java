@@ -74,7 +74,7 @@ public class ThreadsView extends LogView
 
 	private void update()
 	{
-		long theCount = getTrace().getEventsCount();
+		long theCount = getLogBrowser().getEventsCount();
 		
 		if (theCount != itsLastEventCount)
 		{
@@ -82,20 +82,20 @@ public class ThreadsView extends LogView
 			
 			itsEventsCountLabel.setText("Events registered: "+theCount);
 			
-			for (IThreadInfo theThread : getTrace().getLocationTrace().getThreads())
+			for (IThreadInfo theThread : getLogBrowser().getThreads())
 			{
 				ThreadSequenceSeed theSeed = itsSeedsMap.get(theThread);
 				if (theSeed == null)
 				{
-					theSeed = new ThreadSequenceSeed(getTrace(), theThread);
+					theSeed = new ThreadSequenceSeed(getLogBrowser(), theThread);
 					itsSeedsMap.put(theThread, theSeed);
 					
 					itsDock.pSeeds().add(theSeed);
 				}
 			}
 			
-			itsDock.pStart().set(getTrace().getFirstTimestamp());
-			itsDock.pEnd().set(getTrace().getLastTimestamp());
+			itsDock.pStart().set(getLogBrowser().getFirstTimestamp());
+			itsDock.pEnd().set(getLogBrowser().getLastTimestamp());
 		}
 	}
 }

@@ -9,6 +9,8 @@ import java.util.List;
 
 import tod.impl.common.event.Event;
 import tod.impl.dbgrid.ExternalPointer;
+import tod.impl.dbgrid.GridEventCollector;
+import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
 import tod.impl.dbgrid.dbnode.RIDatabaseNode;
 import tod.impl.dbgrid.messages.AddChildEvent;
@@ -25,14 +27,17 @@ public class DBNodeProxy
 {
 	private static final int TRANSMIT_DELAY_MS = 1000;
 	
-	private RIDatabaseNode itsDatabaseNode;
+	private final RIDatabaseNode itsDatabaseNode;
+	private final GridMaster itsMaster;
 	private MessageQueue itsMessageQueue = new MessageQueue();
 	
 	private boolean itsFlushed = false;
+
 	
-	public DBNodeProxy(RIDatabaseNode aDatabaseNode)
+	public DBNodeProxy(RIDatabaseNode aDatabaseNode, GridMaster aMaster)
 	{
 		itsDatabaseNode = aDatabaseNode;
+		itsMaster = aMaster;
 	}
 
 	/**
@@ -70,7 +75,7 @@ public class DBNodeProxy
 		}
 		catch (RemoteException e)
 		{
-			throw new RuntimeException(e);
+			itsMaster.fireException(e);
 		}
 	}
 	
@@ -107,7 +112,19 @@ public class DBNodeProxy
 				itsQueuedEvents = new ArrayList<GridMessage>();
 			}
 			
-			itsDatabaseNode.push(theEvents);
+			int theCount = theEvents.size();
+			GridMessage[] theBuffer = new GridMessage[1000];
+			int i=0;
+			while (i<theCount)
+			{
+				for (int j=0;j<theBuffer.length;j++)
+				{
+					theBuffer[j] = i<theCount ? theEvents.get(i) : null;
+					i++;
+				}
+				
+				itsDatabaseNode.push(theBuffer);
+			}
 		}
 		
 		public synchronized void pushMessage(GridMessage aMessage)
@@ -130,13 +147,9 @@ public class DBNodeProxy
 					if (dt < TRANSMIT_DELAY_MS) sleep(TRANSMIT_DELAY_MS - dt);
 				}
 			}
-			catch (InterruptedException e)
+			catch (Exception e)
 			{
-				throw new RuntimeException(e);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
+				itsMaster.fireException(e);
 			}
 		}
 

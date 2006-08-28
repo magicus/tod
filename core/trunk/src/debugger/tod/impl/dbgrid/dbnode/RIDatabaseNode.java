@@ -19,12 +19,29 @@ public interface RIDatabaseNode extends Remote
 	 * Pushes a list of messages to this node.
 	 * @see #push(GridMessage) 
 	 */
-	public void push(List<GridMessage> aMessagesList) throws RemoteException;
+	public void push(GridMessage[] aMessages) throws RemoteException;
 
 	/**
 	 * Flushes the event buffer. Events should not be added
 	 * after this method is called.
 	 */
 	public void flush() throws RemoteException;
+	
+	/**
+	 * Returns the number of events stored by this node
+	 */
+	public long getEventsCount() throws RemoteException;
+	
+	/**
+	 * Returns the timestamp of the first event recorded in this node.
+	 */
+	public long getFirstTimestamp() throws RemoteException;
+	
+	/**
+	 * Returns the timestamp of the last event recorded in this node.
+	 */
+	public long getLastTimestamp() throws RemoteException;
+
+
 
 }

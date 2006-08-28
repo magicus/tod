@@ -17,10 +17,13 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import tod.agent.AgentConfig;
 import tod.agent.AgentReady;
 import tod.core.BehaviourKind;
 import tod.core.ILogCollector;
 import tod.core.Output;
+import tod.core.ILocationRegistrer.LineNumberInfo;
+import tod.core.ILocationRegistrer.LocalVariableInfo;
 
 /**
  * This collector sends the events to a socket.
@@ -50,24 +53,6 @@ public class SocketCollector implements ILogCollector
 		itsThreadInfosList = new LinkedList<Reference<ThreadData>>();
 		itsThread.setThreadInfosList(itsThreadInfosList);
 		AgentReady.READY = true;
-	}
-	
-	/**
-	 * Waits until a client connects.
-	 */
-	public void waitForClient()
-	{
-		try
-		{
-			synchronized (itsThread)
-			{
-				itsThread.wait();
-			}
-		}
-		catch (InterruptedException e)
-		{
-			e.printStackTrace();
-		}
 	}
 	
 	private ThreadData createThreadData()
@@ -633,6 +618,7 @@ public class SocketCollector implements ILogCollector
 	private static class MyThread extends SocketThread
 	{
 		private List<Reference<ThreadData>> itsThreadInfosList;
+		private boolean itsHostNameSent = false;
 		
 		public MyThread(ServerSocket aServerSocket)
 		{
@@ -668,12 +654,25 @@ public class SocketCollector implements ILogCollector
 		{
 			try
 			{
+				if (! itsHostNameSent)
+				{
+					DataOutputStream theStream = new DataOutputStream(aOutputStream);
+					theStream.writeUTF(AgentConfig.getHostName());
+					itsHostNameSent = true;
+				}
+				
 				send(aOutputStream);
 				Thread.sleep (500);
 			}
 			catch (ConcurrentModificationException e1)
 			{
 			}
+		}
+		
+		@Override
+		protected void disconnected()
+		{
+			itsHostNameSent = false;
 		}
 		
 		@Override

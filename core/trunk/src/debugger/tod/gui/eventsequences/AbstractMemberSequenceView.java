@@ -48,7 +48,7 @@ public abstract class AbstractMemberSequenceView extends AbstractSingleBrowserSe
 	{
 		LogView theLogView = getLogView();
 		IGUIManager theGUIManager = theLogView.getGUIManager();
-		ILogBrowser theEventTrace = theLogView.getTrace();
+		ILogBrowser theEventTrace = theLogView.getLogBrowser();
 			
 		return Hyperlinks.object(theGUIManager, theEventTrace, itsInspector.getObject(), aObject, FONT);
 	}

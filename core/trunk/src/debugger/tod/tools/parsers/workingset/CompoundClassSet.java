@@ -11,20 +11,20 @@ public class CompoundClassSet extends AbstractClassSet
     /**
      * List of {@link SetOperation}
      */
-    private List itsOperations = new ArrayList();
+    private List<SetOperation> itsOperations = new ArrayList<SetOperation>();
 
-    public CompoundClassSet(List aOperations)
+    public CompoundClassSet(List<SetOperation> aOperations)
     {
         itsOperations = aOperations;
     }
 
     public boolean accept(String aClassname)
     {
-        SetOperation theFirstOperation = (SetOperation) itsOperations.get(0);
+        SetOperation theFirstOperation = itsOperations.get(0);
 
         for (int i = itsOperations.size() - 1; i >= 0; i--)
         {
-            SetOperation theOperation = (SetOperation) itsOperations.get(i);
+            SetOperation theOperation = itsOperations.get(i);
 
             if (theOperation.accept(aClassname)) return theOperation.isInclude();
         }

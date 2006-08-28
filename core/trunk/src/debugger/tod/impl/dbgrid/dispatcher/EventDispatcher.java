@@ -8,6 +8,9 @@ import java.util.List;
 
 import tod.impl.common.event.BehaviorCallEvent;
 import tod.impl.common.event.Event;
+import tod.impl.dbgrid.GridMaster;
+import tod.impl.dbgrid.dbnode.DatabaseNode;
+import tod.impl.dbgrid.dbnode.RIDatabaseNode;
 
 public class EventDispatcher
 {
@@ -23,11 +26,24 @@ public class EventDispatcher
 	 */
 	public static final Object EVENT_ATTR_ID = new Object();
 	
+	private GridMaster itsMaster;
+	
 	private List<DBNodeProxy> itsNodes = new ArrayList<DBNodeProxy>();
 	private int itsCurrentNode = 0;
 	
 	private boolean itsFlushed = false;
 	
+	public EventDispatcher(GridMaster aMaster)
+	{
+		itsMaster = aMaster;
+	}
+	
+	public void addNode(RIDatabaseNode aNode) 
+	{
+		DBNodeProxy theProxy = new DBNodeProxy(aNode, itsMaster);
+		itsNodes.add(theProxy);
+	}
+
 	public void dispatchEvent(Event aEvent)
 	{
 		assert ! itsFlushed;
@@ -39,9 +55,13 @@ public class EventDispatcher
 		
 		// Send an add child message to the node that contains the parent
 		BehaviorCallEvent theParent = aEvent.getParent();
-		int theParentNode = (Integer) theParent.getAttribute(EVENT_ATTR_NODE);
-		DBNodeProxy theParentProxy = itsNodes.get(theParentNode);
-		theParentProxy.pushChildEvent(theParent, aEvent);
+		Object theAttribute = theParent != null ? theParent.getAttribute(EVENT_ATTR_NODE) : null;
+		if (theAttribute != null)
+		{
+			int theParentNode = (Integer) theAttribute;
+			DBNodeProxy theParentProxy = itsNodes.get(theParentNode);
+			theParentProxy.pushChildEvent(theParent, aEvent);
+		}
 		
 		itsCurrentNode = (itsCurrentNode+1) % itsNodes.size();
 	}

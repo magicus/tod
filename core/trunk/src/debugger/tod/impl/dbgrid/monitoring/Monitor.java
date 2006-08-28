@@ -51,7 +51,7 @@ public class Monitor
 		};
 		thePrinterThread.setDaemon(true);
 		thePrinterThread.setPriority(Thread.MAX_PRIORITY);
-		thePrinterThread.start();
+//		thePrinterThread.start();
 	}
 	
 	private List<Object> itsMonitoredObjects = new ArrayList<Object>();

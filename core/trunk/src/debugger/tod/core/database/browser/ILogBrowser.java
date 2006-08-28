@@ -49,7 +49,12 @@ public interface ILogBrowser
 	 * Returns the registrer that maintains all location and
 	 * thread info.
 	 */
-	public ILocationsRepository getLocationTrace ();
+	public ILocationsRepository getLocationsRepository ();
+	
+	/**
+	 * Returns all registered threads.
+	 */
+	public Iterable<IThreadInfo> getThreads();
 	
 	/**
 	 * Creates a browser that only reports events that pass a specific

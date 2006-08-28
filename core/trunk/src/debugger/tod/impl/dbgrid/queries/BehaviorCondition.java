@@ -29,9 +29,19 @@ public class BehaviorCondition extends SimpleCondition
 	protected Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
 		Iterator<RoleIndexSet.RoleTuple> theTupleIterator = aIndexes.behaviorIndex.getIndex(itsBehaviorId).getTupleIterator(aTimestamp);
-		theTupleIterator = itsRole == RoleIndexSet.ROLE_BEHAVIOR_ANY ? 
-				RoleIndexSet.createFilteredIterator(theTupleIterator)
-				: RoleIndexSet.createFilteredIterator(theTupleIterator, itsRole);
+		switch (itsRole)
+		{
+		case RoleIndexSet.ROLE_BEHAVIOR_ANY:
+			theTupleIterator = RoleIndexSet.createFilteredIterator(theTupleIterator);
+			break;
+			
+		case RoleIndexSet.ROLE_BEHAVIOR_ANY_ENTER:
+			theTupleIterator = RoleIndexSet.createFilteredIterator(theTupleIterator, RoleIndexSet.ROLE_BEHAVIOR_CALLED, RoleIndexSet.ROLE_BEHAVIOR_EXECUTED);
+			break;
+			
+		default:
+			theTupleIterator = RoleIndexSet.createFilteredIterator(theTupleIterator, itsRole);
+		}
 		
 		return (Iterator) theTupleIterator;
 	}

@@ -7,8 +7,10 @@ import java.util.Iterator;
 
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
+import tod.impl.dbgrid.dbnode.RoleIndexSet.RoleTuple;
 import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.messages.GridEvent;
+import zz.utils.AbstractFilteredIterator;
 
 /**
  * Represents a condition on an object, with a corresponding role.
@@ -29,7 +31,21 @@ public class ObjectCondition extends SimpleCondition
 	protected Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
 		Iterator<RoleIndexSet.RoleTuple> theTupleIterator = aIndexes.objectIndex.getIndex(itsObjectId).getTupleIterator(aTimestamp);
-		theTupleIterator = RoleIndexSet.createFilteredIterator(theTupleIterator, itsRole);
+		if (itsRole == RoleIndexSet.ROLE_OBJECT_ANYARG)
+		{
+			theTupleIterator = new AbstractFilteredIterator<RoleTuple, RoleTuple>(theTupleIterator)
+			{
+				@Override
+				protected Object transform(RoleTuple aIn)
+				{
+					return aIn.getRole() >= 0 ? aIn : REJECT;
+				}
+			};
+		}
+		else
+		{
+			theTupleIterator = RoleIndexSet.createFilteredIterator(theTupleIterator, itsRole);
+		}
 		
 		return (Iterator) theTupleIterator;
 	}

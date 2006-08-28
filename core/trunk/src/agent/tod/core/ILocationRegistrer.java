@@ -1,12 +1,9 @@
 package tod.core;
 
-
 /**
- * Created by IntelliJ IDEA.
- * User: gpothier
- * Date: Apr 21, 2005
- * Time: 11:53:36 PM
- * To change this template use File | Settings | File Templates.
+ * Interface for objects that collect static code information, such as
+ * methods, classes, fields, etc.
+ * @author gpothier
  */
 public interface ILocationRegistrer {
     
@@ -50,10 +47,6 @@ public interface ILocationRegistrer {
 			int aTypeId,
 			String aFieldName);
 	
-	public void registerThread (
-			long aThreadId,
-			String aName);
-    
     /**
      * Represents an entry of a method's LineNumberTable attribute.
      * @see http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#22856 

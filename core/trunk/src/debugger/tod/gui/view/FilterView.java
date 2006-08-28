@@ -49,7 +49,7 @@ public class FilterView extends LogView implements ListSelectionListener
 	{
 		itsSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		
-		IEventBrowser theBrowser = getTrace().createBrowser(itsSeed.getFilter());
+		IEventBrowser theBrowser = getLogBrowser().createBrowser(itsSeed.getFilter());
 		itsModel = new EventListModel (theBrowser);
 		itsList = new JList (itsModel);
 		itsList.setCellRenderer(new FormattedRenderer(EventFormatter.getInstance()));
@@ -71,7 +71,7 @@ public class FilterView extends LogView implements ListSelectionListener
 	{
 		EventView theView = EventViewFactory.createView(
 				getGUIManager(), 
-				getTrace(),
+				getLogBrowser(),
 				aEvent);
 		
 		itsSplitPane.setRightComponent(theView);

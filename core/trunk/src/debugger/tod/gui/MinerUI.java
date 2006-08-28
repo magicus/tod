@@ -62,7 +62,7 @@ implements ILocationSelectionListener, IGUIManager
 	private void createUI()
 	{
 		setLayout(new BorderLayout());
-		itsLocationSelector = new LocationSelector(itsCollector.getLocationTrace());
+		itsLocationSelector = new LocationSelector(itsCollector.getLocationsRepository());
 		itsLocationSelector.addSelectionListener(this);
 		add (itsLocationSelector, BorderLayout.WEST);
 		

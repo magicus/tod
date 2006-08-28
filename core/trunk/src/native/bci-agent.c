@@ -39,7 +39,12 @@ static jvmtiEnv *globalJvmti;
 // Configuration data
 static char* cfgCachePath = NULL;
 static int cfgSkipCoreClasses = 0;
-static int cfgVerbose = 0;
+static int cfgVerbose = 1;
+
+// System properties configuration data.
+static char* cfgHost = NULL;
+static char* cfgHostName = NULL;
+static int cfgNativePort = 0;
 
 // Class and method references
 static jclass class_System;
@@ -70,30 +75,6 @@ static void fatal_ioerror(char* message)
 {
   perror(message);
   exit(-1);
-}
-
-/*
-Connects to the instrumenting host
-*/
-static void bciConnect(char* host)
-{
-  struct  sockaddr_in sin;
-  struct  hostent *hp;
-  
-  if ((hp=gethostbyname(host)) == NULL) fatal_error("gethostbyname\n");
-
-  memset((char *)&sin, sizeof(sin), 0);
-  sin.sin_family=hp->h_addrtype;
-  memcpy((char *)&sin.sin_addr, hp->h_addr, hp->h_length);
-  sin.sin_port = htons(8059);
-  
-  int s = socket(AF_INET, SOCK_STREAM, 0);
-  if (s < 0) fatal_error("socket\n");
-  int r = connect(s, (sockaddr*) &sin, sizeof(sin));
-  if (r < 0) fatal_ioerror("Cannot connect to instrumentation server");
-  
-  SOCKET_IN = fdopen(s, "r");
-  SOCKET_OUT = fdopen(s, "w");
 }
 
 static void writeByte(int i)
@@ -127,13 +108,6 @@ static void writeLong(jlong v)
   fputc(0xff & v, SOCKET_OUT);
 }
 
-static void writeUTF(const char* s)
-{
-  int len = strlen(s);
-  writeShort(len);
-  fputs(s, SOCKET_OUT);
-}
-
 static int readByte()
 {
   return fgetc(SOCKET_IN);
@@ -157,6 +131,13 @@ static int readInt()
   return (((a & 0xff) << 24) | ((b & 0xff) << 16) | ((c & 0xff) << 8) | (d & 0xff));
 }
 
+static void writeUTF(const char* s)
+{
+  int len = strlen(s);
+  writeShort(len);
+  fputs(s, SOCKET_OUT);
+}
+
 static char* readUTF()
 {
   int len = readShort();
@@ -166,6 +147,39 @@ static char* readUTF()
   
   return s;
 }
+
+
+/*
+Connects to the instrumenting host
+host: host to connect to
+hostname: name of this host, sent to the peer.
+*/
+static void bciConnect(char* host, int port, char* hostname)
+{
+  struct  sockaddr_in sin;
+  struct  hostent *hp;
+  
+  if ((hp=gethostbyname(host)) == NULL) fatal_error("gethostbyname\n");
+
+  memset((char *)&sin, sizeof(sin), 0);
+  sin.sin_family=hp->h_addrtype;
+  memcpy((char *)&sin.sin_addr, hp->h_addr, hp->h_length);
+  sin.sin_port = htons(port);
+  
+  int s = socket(AF_INET, SOCK_STREAM, 0);
+  if (s < 0) fatal_error("socket\n");
+  int r = connect(s, (sockaddr*) &sin, sizeof(sin));
+  if (r < 0) fatal_ioerror("Cannot connect to instrumentation server");
+  
+  SOCKET_IN = fdopen(s, "r");
+  SOCKET_OUT = fdopen(s, "w");
+  
+  // Send host name
+  if (cfgVerbose) printf("Sending host name: %s\n", hostname);
+  writeUTF(hostname);
+  fflush(SOCKET_OUT);
+}
+
 
 /*
 * Tries to create all the directories denoted by the given name.
@@ -243,7 +257,7 @@ static void bciConfigure()
         break;
 
       case CONFIG_DONE:
-      printf("Config done.\n");
+        printf("Config done.\n");
         return;
     }
   }
@@ -357,6 +371,7 @@ cbException(
   jmethodID catch_method,
   jlocation catch_location)
 {
+  return;
   if (VM_STARTED == 0) return;
   
   char* methodName;
@@ -482,6 +497,20 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
   
   globalJvmti = jvmti;
   
+  // Retrieve system properties
+  err = jvmti->GetSystemProperty("collector-host", &cfgHost);
+  check_jvmti_error(jvmti, err, "GetSystemProperty (collector-host)");
+  
+  err = jvmti->GetSystemProperty("tod-host", &cfgHostName);
+  check_jvmti_error(jvmti, err, "GetSystemProperty (tod-host)");
+  
+  char* s;
+  err = jvmti->GetSystemProperty("native-port", &s);
+  check_jvmti_error(jvmti, err, "GetSystemProperty (native-port)");
+  cfgNativePort = atoi(s);
+  err = jvmti->Deallocate((unsigned char*) s);
+  check_jvmti_error(jvmti, err, "Deallocate (native-port)");
+  
   // Set capabilities
   err = jvmti->GetCapabilities(&capabilities);
   check_jvmti_error(jvmti, err, "GetCapabilities");
@@ -506,7 +535,7 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
   enable_event(jvmti, JVMTI_EVENT_EXCEPTION);
   enable_event(jvmti, JVMTI_EVENT_VM_INIT);
   
-  bciConnect("localhost");
+  bciConnect(cfgHost, cfgNativePort, cfgHostName);
   bciConfigure();
 
   return JNI_OK;

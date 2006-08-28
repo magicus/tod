@@ -1,13 +1,14 @@
 /*
  * Created on Jul 20, 2006
  */
-package tod.impl.dbgrid.dispatcher;
+package tod.impl.dbgrid;
 
+import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.IHostInfo;
 import tod.impl.common.EventCollector;
 import tod.impl.common.event.BehaviorCallEvent;
 import tod.impl.common.event.Event;
-import tod.impl.dbgrid.DebuggerGridConfig;
+import tod.impl.dbgrid.dispatcher.EventDispatcher;
 
 /**
  * Event collector for the grid database backend. It handles events from a single
@@ -16,18 +17,19 @@ import tod.impl.dbgrid.DebuggerGridConfig;
  */
 public class GridEventCollector extends EventCollector
 {
-	/**
-	 * A counter used to generate sequential thread numbers.
-	 * This permits to reduce the number of bits used to represent thread ids,
-	 * as all 64 bits of original thread ids might be used.
-	 */
-	private static int itsLastThreadNumber = 0;
+	private final GridMaster itsMaster;
 	
 	private EventDispatcher itsDispatcher;
+
 	
-	public GridEventCollector(IHostInfo aHost, EventDispatcher aDispatcher)
+	public GridEventCollector(
+			GridMaster aMaster,
+			IHostInfo aHost,
+			ILocationsRepository aLocationsRepository,
+			EventDispatcher aDispatcher)
 	{
-		super(aHost);
+		super(aHost, aLocationsRepository);
+		itsMaster = aMaster;
 		itsDispatcher = aDispatcher;
 	}
 
@@ -36,13 +38,14 @@ public class GridEventCollector extends EventCollector
 			long aId, 
 			BehaviorCallEvent aRootEvent)
 	{
-		return new MyThreadInfo(aId, aRootEvent, itsLastThreadNumber++);
+		int theThreadId = itsMaster.createThreadId(getHost().getId());
+		return new GridThreadInfo(getHost(), aId, aRootEvent, theThreadId);
 	}
 	
 	@Override
 	protected void processEvent(DefaultThreadInfo aThread, Event aEvent)
 	{
-		MyThreadInfo theThread = (MyThreadInfo) aThread;
+		GridThreadInfo theThread = (GridThreadInfo) aThread;
 		theThread.adjustTimestamp(aEvent);
 		
 		itsDispatcher.dispatchEvent(aEvent);
@@ -53,17 +56,27 @@ public class GridEventCollector extends EventCollector
 	 */
 	public static int getThreadNumber(Event aEvent)
 	{
-		return ((MyThreadInfo) aEvent.getThread()).getThreadNumber();
+		return ((GridThreadInfo) aEvent.getThread()).getThreadNumber();
 	}
 	
-	private static class MyThreadInfo extends DefaultThreadInfo
+	@Override
+	public GridThreadInfo getThread(long aId)
+	{
+		return (GridThreadInfo) super.getThread(aId);
+	}
+	
+	public static class GridThreadInfo extends DefaultThreadInfo
 	{
 		private final int itsThreadNumber;
 		private long itsLastTimestamp = -1;
 		
-		public MyThreadInfo(long aId, BehaviorCallEvent aRootEvent, int aThreadNumber)
+		public GridThreadInfo(
+				IHostInfo aHost,
+				long aId, 
+				BehaviorCallEvent aRootEvent,
+				int aThreadNumber)
 		{
-			super(aId, aRootEvent);
+			super(aHost, aId, aRootEvent);
 			itsThreadNumber = aThreadNumber;
 		}
 

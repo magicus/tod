@@ -3,22 +3,34 @@
  */
 package tod.impl.dbgrid.dbnode;
 
+import static tod.impl.dbgrid.DebuggerGridConfig.DB_CFLOW_PAGE_SIZE;
+import static tod.impl.dbgrid.DebuggerGridConfig.DB_EVENT_BUFFER_SIZE;
+import static tod.impl.dbgrid.DebuggerGridConfig.DB_EVENT_PAGE_SIZE;
+import static tod.impl.dbgrid.DebuggerGridConfig.DB_INDEX_PAGE_SIZE;
+
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import static tod.impl.dbgrid.DebuggerGridConfig.*;
-import tod.impl.dbgrid.dbnode.file.HardPagedFile;
+import tod.impl.dbgrid.GridMaster;
+import tod.impl.dbgrid.RIGridMaster;
+import tod.impl.dbgrid.dbnode.file.HardPagedFile; 
 import tod.impl.dbgrid.messages.AddChildEvent;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.GridMessage;
 import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.queries.EventCondition;
+import tod.utils.ConfigUtils;
 import zz.utils.SortedRingBuffer;
 
-public class DatabaseNode implements RIDatabaseNode
+public class DatabaseNode extends UnicastRemoteObject implements RIDatabaseNode
 {
 	/**
 	 * Id of this node in the system
@@ -37,13 +49,14 @@ public class DatabaseNode implements RIDatabaseNode
 	 * Timestamp of the last processed event
 	 */
 	private long itsLastProcessedTimestamp;
+	private long itsFirstTimestamp = -1;
 	
 	private SortedRingBuffer<GridEvent> itsEventBuffer = 
 		new SortedRingBuffer<GridEvent>(DB_EVENT_BUFFER_SIZE, new EventTimestampComparator());
 	
 	private boolean itsFlushed = false;
 	
-	public DatabaseNode(int aNodeId)
+	public DatabaseNode(int aNodeId) throws RemoteException
 	{
 		Monitor.getInstance().register(this);
 		itsNodeId = aNodeId;
@@ -56,8 +69,13 @@ public class DatabaseNode implements RIDatabaseNode
 			itsEventList = new EventList(itsEventsFile);
 			itsIndexes = new Indexes(itsIndexesFile);
 			itsCFlowMap = new CFlowMap(this, itsIndexesFile, itsCFlowDataFile);
+			
+			String theRegistryHost = ConfigUtils.readString("registry-host", "localhost");
+			Registry theRegistry = LocateRegistry.getRegistry(theRegistryHost);
+			RIGridMaster theMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
+			theMaster.registerNode(this);
 		}
-		catch (FileNotFoundException e)
+		catch (Exception e)
 		{
 			throw new RuntimeException(e);
 		}
@@ -76,6 +94,17 @@ public class DatabaseNode implements RIDatabaseNode
 		return itsIndexes;
 	}
 	
+	
+	public long getFirstTimestamp()
+	{
+		return itsFirstTimestamp;
+	}
+
+	public long getLastTimestamp()
+	{
+		return itsLastProcessedTimestamp;
+	}
+
 	/**
 	 * Creates an iterator over matching events of this node, starting at the specified timestamp.
 	 */
@@ -88,9 +117,10 @@ public class DatabaseNode implements RIDatabaseNode
 	 * Pushes a list of messages to this node.
 	 * @see #push(GridMessage) 
 	 */
-	public void push(List<GridMessage> aMessagesList)
+	public void push(GridMessage[] aMessages)
 	{
-		for (GridMessage theMessage : aMessagesList) push(theMessage);
+//		System.out.println("Receiving "+aMessages.length);
+		for (GridMessage theMessage : aMessages) if (theMessage != null) push(theMessage);
 	}
 
 	/**
@@ -138,6 +168,7 @@ public class DatabaseNode implements RIDatabaseNode
 			throw new RuntimeException("Out of order events");
 		}
 		itsLastProcessedTimestamp = aEvent.getTimestamp();
+		if (itsFirstTimestamp == -1) itsFirstTimestamp = itsLastProcessedTimestamp;
 		
 		long theId = itsEventList.add(aEvent);
 		aEvent.index(itsIndexes, theId);		

@@ -5,6 +5,7 @@ package tod.impl.dbgrid.queries;
 
 import java.util.Iterator;
 
+import tod.core.database.browser.IEventFilter;
 import tod.impl.dbgrid.dbnode.EventList;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
@@ -16,6 +17,7 @@ import zz.utils.AbstractFilteredIterator;
  * @author gpothier
  */
 public abstract class EventCondition
+implements IEventFilter
 {
 	/**
 	 * Indicates if the specified event passes the condition.

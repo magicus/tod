@@ -16,10 +16,11 @@ import tod.impl.common.event.LocalVariableWriteEvent;
 import tod.impl.common.event.MethodCallEvent;
 import tod.impl.common.event.OutputEvent;
 import tod.impl.dbgrid.DebuggerGridConfig;
+import tod.impl.dbgrid.ExternalPointer;
+import tod.impl.dbgrid.GridEventCollector;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.StdIndexSet;
 import tod.impl.dbgrid.dispatcher.EventDispatcher;
-import tod.impl.dbgrid.dispatcher.GridEventCollector;
 import tod.impl.dbgrid.queries.BehaviorCondition;
 import tod.impl.dbgrid.queries.FieldCondition;
 import tod.impl.dbgrid.queries.ObjectCondition;
@@ -65,7 +66,9 @@ public abstract class GridEvent extends GridMessage
 		itsThread = aBitStruct.readInt(DebuggerGridConfig.EVENT_THREAD_BITS);
 		itsTimestamp = aBitStruct.readLong(DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
 		itsOperationBytecodeIndex = aBitStruct.readInt(DebuggerGridConfig.EVENT_BYTECODE_LOCATION_BITS);
+		
 		itsParentPointer = aBitStruct.readBytes(DebuggerGridConfig.EVENTID_POINTER_SIZE);
+		if (ExternalPointer.isNull(itsParentPointer)) itsParentPointer = null;
 	}
 
 	/**
@@ -80,7 +83,12 @@ public abstract class GridEvent extends GridMessage
 		aBitStruct.writeInt(getThread(), DebuggerGridConfig.EVENT_THREAD_BITS);
 		aBitStruct.writeLong(getTimestamp(), DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
 		aBitStruct.writeInt(getOperationBytecodeIndex(), DebuggerGridConfig.EVENT_BYTECODE_LOCATION_BITS);
-		aBitStruct.writeBytes(getParentPointer(), DebuggerGridConfig.EVENTID_POINTER_SIZE);
+		
+		
+		byte[] theParentPointer = getParentPointer();
+		aBitStruct.writeBytes(
+				theParentPointer != null ? theParentPointer : ExternalPointer.BLANK_POINTER, 
+				DebuggerGridConfig.EVENTID_POINTER_SIZE);
 	}
 	
 	/**
@@ -107,10 +115,16 @@ public abstract class GridEvent extends GridMessage
 	 */
 	protected void writeObject(BitStruct aBitStruct, Object aObject)
 	{
-		if (aObject instanceof ObjectId.ObjectUID)
+		if (aObject == null)
 		{
-			ObjectId.ObjectUID theId = (ObjectId.ObjectUID) aObject;
-			aBitStruct.writeLong(theId.getId(), 64);
+			aBitStruct.writeLong(0, 64);
+		}
+		else if (aObject instanceof ObjectId.ObjectUID)
+		{
+			ObjectId.ObjectUID theUID = (ObjectId.ObjectUID) aObject;
+			long theId = theUID.getId();
+			if (theId == 0) throw new RuntimeException("Invalid object id: "+theId);
+			aBitStruct.writeLong(theId, 64);
 		}
 		else throw new RuntimeException("Not handled: "+aObject);
 	}
@@ -120,10 +134,8 @@ public abstract class GridEvent extends GridMessage
 	 */
 	protected int getObjectBits(Object aObject)
 	{
-		if (aObject instanceof ObjectId.ObjectUID)
-		{
-			return 64;
-		}
+		if (aObject == null) return 64;
+		else if (aObject instanceof ObjectId.ObjectUID) return 64;
 		else throw new RuntimeException("Not handled: "+aObject);		
 	}
 	
@@ -134,7 +146,8 @@ public abstract class GridEvent extends GridMessage
 	protected Object readObject(BitStruct aBitStruct)
 	{
 		long theId = aBitStruct.readLong(64);
-		return new ObjectId.ObjectUID(theId);
+		if (theId == 0) return null;
+		else return new ObjectId.ObjectUID(theId);
 	}
 	
 	/**
@@ -182,9 +195,15 @@ public abstract class GridEvent extends GridMessage
 		StdIndexSet.StdTuple theStdTuple = new StdIndexSet.StdTuple(getTimestamp(), aPointer);
 		
 		aIndexes.typeIndex.addTuple((byte) getEventType().ordinal(), theStdTuple);
-		aIndexes.bytecodeLocationIndex.addTuple(getOperationBytecodeIndex(), theStdTuple);
-		aIndexes.hostIndex.addTuple(getHost(), theStdTuple);
-		aIndexes.threadIndex.addTuple(getThread(), theStdTuple);
+		
+		if (getOperationBytecodeIndex() >= 0)
+			aIndexes.bytecodeLocationIndex.addTuple(getOperationBytecodeIndex(), theStdTuple);
+		
+		if (getHost() > 0) 
+			aIndexes.hostIndex.addTuple(getHost(), theStdTuple);
+		
+		if (getThread() > 0) 
+			aIndexes.threadIndex.addTuple(getThread(), theStdTuple);
 	}
 
 	/**
@@ -290,14 +309,18 @@ public abstract class GridEvent extends GridMessage
 				aType,
 				aEvent.isDirectParent(),
 				aEvent.getArguments(),
-				aEvent.getCalledBehavior() != null ? aEvent.getCalledBehavior().getId() : -1,
-				aEvent.getExecutedBehavior() != null ? aEvent.getExecutedBehavior().getId() : -1,
+				aEvent.getCalledBehavior() != null ? aEvent.getCalledBehavior().getId() : 0,
+				aEvent.getExecutedBehavior() != null ? aEvent.getExecutedBehavior().getId() : 0,
 				aEvent.getTarget());
 	}
 	
-	protected static int getObjectId(Object aObject)
+	public static int getObjectId(Object aObject)
 	{
-		if (aObject instanceof ObjectId.ObjectUID)
+		if (aObject == null)
+		{
+			return 0;
+		}
+		else if (aObject instanceof ObjectId.ObjectUID)
 		{
 			ObjectId.ObjectUID theUid = (ObjectId.ObjectUID) aObject;
 			long theId = theUid.getId();

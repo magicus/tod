@@ -5,6 +5,8 @@ package tod.core.session;
 
 import java.net.URI;
 
+import tod.impl.bci.asm.ASMLocalSession;
+
 public class DefaultSessionFactory implements ISessionFactory
 {
 	private static DefaultSessionFactory INSTANCE = new DefaultSessionFactory();

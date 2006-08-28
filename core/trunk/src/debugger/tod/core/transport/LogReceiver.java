@@ -11,9 +11,10 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import tod.core.ILocationRegistrer;
 import tod.core.ILogCollector;
 import tod.core.bci.IInstrumenter;
-import tod.core.bci.RemoteInstrumenter;
+import tod.core.bci.NativeAgentPeer;
 
 /**
  * Receives log events from a logged application through a socket and
@@ -25,8 +26,13 @@ import tod.core.bci.RemoteInstrumenter;
 public class LogReceiver extends SocketThread
 {
 	private final ILogCollector itsCollector;
-	private final IInstrumenter itsInstrumenter;
+	private final ILocationRegistrer itsLocationRegistrer;
 	private DataInputStream itsStream;
+	
+	/**
+	 * Name of the host that sends events
+	 */
+	private String itsHostName;
 	
 	/**
 	 * Waits for incoming connections on the specified socket
@@ -34,10 +40,10 @@ public class LogReceiver extends SocketThread
 	 */
 	public static void server (
 			ILogCollector aCollector,
-			IInstrumenter aInstrumenter,
+			ILocationRegistrer aLocationRegistrer,
 			int aPort) throws IOException
 	{
-		new LogReceiver(aCollector, aInstrumenter, new ServerSocket(aPort));
+		new LogReceiver(aCollector, aLocationRegistrer, new ServerSocket(aPort));
 	}
 	
 	/**
@@ -46,12 +52,12 @@ public class LogReceiver extends SocketThread
 	 */
 	public LogReceiver(
 			ILogCollector aCollector,
-			IInstrumenter aInstrumenter,
+			ILocationRegistrer aLocationRegistrer,
 			ServerSocket aServerSocket)
 	{
 		super(aServerSocket);
 		itsCollector = aCollector;
-		itsInstrumenter = aInstrumenter;
+		itsLocationRegistrer = aLocationRegistrer;
 	}
 
 	/**
@@ -61,17 +67,61 @@ public class LogReceiver extends SocketThread
 	 */
 	public LogReceiver(
 			ILogCollector aCollector,
-			IInstrumenter aInstrumenter,
+			ILocationRegistrer aLocationRegistrer,
 			Socket aSocket)
 	{
 		super(aSocket);
 		itsCollector = aCollector;
-		itsInstrumenter = aInstrumenter;
+		itsLocationRegistrer = aLocationRegistrer;
 	}
 	
-	private ILogCollector getCollector()
+	public ILogCollector getCollector()
 	{
 		return itsCollector;
+	}
+	
+	
+	public ILocationRegistrer getLocationRegistrer()
+	{
+		return itsLocationRegistrer;
+	}
+
+	/**
+	 * Returns the name of the currently connected host, or null
+	 * if there is no connected host.
+	 */
+	public String getHostName()
+	{
+		return itsHostName;
+	}
+	
+	private synchronized void setHostName(String aHostName)
+	{
+		itsHostName = aHostName;
+		notifyAll();
+	}
+	
+	/**
+	 * Waits until the host name is available, and returns it.
+	 * See {@link #getHostName()}
+	 */
+	public synchronized String waitHostName()
+	{
+		try
+		{
+			while (itsHostName == null) wait();
+			return itsHostName;
+		}
+		catch (InterruptedException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
+	protected void disconnected()
+	{
+		setHostName(null);
 	}
 
 	protected void process(
@@ -80,24 +130,35 @@ public class LogReceiver extends SocketThread
 			throws IOException
 	{
 		itsStream = new DataInputStream(aInputStream);
+		
+		if (itsHostName == null)
+		{
+			setHostName(itsStream.readUTF());
+		}
+		
 		DataOutputStream theOutputStream = new DataOutputStream(aOutputStream);
 
 		while (true)
 		{
 			byte theCommand = itsStream.readByte();
 			
-			if (theCommand == RemoteInstrumenter.INSTRUMENT_CLASS)
+			if (theCommand == NativeAgentPeer.INSTRUMENT_CLASS)
 			{
-				RemoteInstrumenter.processInstrumentClassCommand(
-						itsInstrumenter,
-						itsStream,
-						theOutputStream,
-						null);
+				throw new RuntimeException();
+//				RemoteInstrumenter.processInstrumentClassCommand(
+//						itsInstrumenter,
+//						itsStream,
+//						theOutputStream,
+//						null);
 			}
 			else
 			{
 				MessageType theType = MessageType.values()[theCommand];
-				CollectorPacketReader.readPacket(itsStream, getCollector(), theType);
+				CollectorPacketReader.readPacket(
+						itsStream, 
+						getCollector(),
+						getLocationRegistrer(),
+						theType);
 			}
 		}
 	}

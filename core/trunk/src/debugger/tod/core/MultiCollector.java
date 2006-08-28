@@ -3,23 +3,33 @@
  */
 package tod.core;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * A collector that actually dispathes messages to other collectors.
  * @author gpothier
  */
-public class MultiCollector extends MultiRegistrer implements ILogCollector
+public class MultiCollector implements ILogCollector
 {
+	private List<ILogCollector> itsCollectors = new ArrayList<ILogCollector>();
+
 	public MultiCollector(ILogCollector... aCollectors)
 	{
-		super (aCollectors);
+		itsCollectors = Arrays.asList(aCollectors);
 	}
 
 	public MultiCollector(List<ILogCollector> aCollectors)
 	{
-		super (aCollectors);
+		itsCollectors = aCollectors;
 	}
+	
+	protected List<ILogCollector> getCollectors()
+	{
+		return itsCollectors;
+	}
+
 	
 	public void logAfterBehaviorCall(long aTimestamp, long aThreadId, int aOperationBytecodeIndex, int aBehaviorLocationId, Object aTarget, Object aResult)
 	{
@@ -138,6 +148,14 @@ public class MultiCollector extends MultiRegistrer implements ILogCollector
         for (ILogCollector theCollector : getCollectors())
         {
         	theCollector.logInstantiation(aThreadId);
+        }
+	}
+	
+	public void registerThread(long aThreadId, String aName)
+	{
+        for (ILogCollector theCollector : getCollectors())
+        {
+        	theCollector.registerThread(aThreadId, aName);
         }
 	}
 

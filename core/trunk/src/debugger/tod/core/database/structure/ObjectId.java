@@ -3,6 +3,8 @@
  */
 package tod.core.database.structure;
 
+import java.io.Serializable;
+
 /**
  * Permits to identify an object.
  * There are two identification schemes:
@@ -15,7 +17,7 @@ package tod.core.database.structure;
  * as several objects can have the same hash code.
  * @author gpothier
  */
-public interface ObjectId 
+public interface ObjectId extends Serializable
 {
 	
 	public static class ObjectUID implements ObjectId

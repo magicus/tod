@@ -50,15 +50,15 @@ public interface IEventBrowser
 	 */
 	public ILogEvent getEvent(int aIndex);
 	
-	/**
-	 * Returns the current cursor position.
-	 */
-	public int getCursor ();
+//	/**
+//	 * Returns the current cursor position.
+//	 */
+//	public int getCursor ();
 	
-	/**
-	 * Sets the current cursor position.
-	 */
-	public void setCursor (int aPosition);
+//	/**
+//	 * Sets the current cursor position.
+//	 */
+//	public void setCursor (int aPosition);
 	
 	/**
 	 * Sets the cursor so that a call to {@link #getNext()}

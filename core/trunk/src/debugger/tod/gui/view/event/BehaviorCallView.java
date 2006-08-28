@@ -54,7 +54,7 @@ public class BehaviorCallView extends EventView
 		add (createTitledLink(
 				"Type: ", 
 				theTypeName, 
-				SeedFactory.getDefaultSeed(getGUIManager(), getTrace(), theTypeInfo)));
+				SeedFactory.getDefaultSeed(getGUIManager(), getLogBrowser(), theTypeInfo)));
 		
 		// Target
 		add (createTitledPanel("Target: ", createInspectorLink(theEvent.getTarget())));

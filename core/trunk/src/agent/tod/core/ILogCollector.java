@@ -10,8 +10,19 @@ package tod.core;
  * events occur in each thread.
  * @author gpothier
  */
-public interface ILogCollector extends ILocationRegistrer
+public interface ILogCollector //extends ILocationRegistrer
 {
+	/**
+	 * Registers a thread in the system.
+	 * This method is not in {@link ILocationRegistrer} because it
+	 * is not a static part of the debugged program.
+	 */
+	public void registerThread (
+			long aThreadId,
+			String aName);
+    
+
+	
 	/**
 	 * Called when a field write operation is performed.
 	 * @param aFieldLocationId The location id of the written field

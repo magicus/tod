@@ -12,16 +12,19 @@ import tod.core.ILogCollector;
  */
 public class ThreadInfo implements IThreadInfo
 {
+	private IHostInfo itsHost;
 	private long itsId;
 	private String itsName;
 	
-	public ThreadInfo(long aId)
+	public ThreadInfo(IHostInfo aHost, long aId)
 	{
+		itsHost = aHost;
 		itsId = aId;
 	}
 
-	public ThreadInfo(long aId, String aName)
+	public ThreadInfo(IHostInfo aHost, long aId, String aName)
 	{
+		itsHost = aHost;
 		itsId = aId;
 		itsName = aName;
 	}
@@ -31,6 +34,11 @@ public class ThreadInfo implements IThreadInfo
 		return itsId;
 	}
 	
+	public IHostInfo getHost()
+	{
+		return itsHost;
+	}
+
 	public String getName()
 	{
 		return itsName;

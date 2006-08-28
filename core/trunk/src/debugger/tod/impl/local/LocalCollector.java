@@ -23,7 +23,6 @@ import tod.impl.common.CFlowBrowser;
 import tod.impl.common.EventCollector;
 import tod.impl.common.ObjectInspector;
 import tod.impl.common.VariablesInspector;
-import tod.impl.common.event.BehaviorCallEvent;
 import tod.impl.common.event.Event;
 import tod.impl.local.filter.AbstractFilter;
 import tod.impl.local.filter.BehaviorCallFilter;
@@ -45,16 +44,11 @@ implements ILogBrowser
 {
 	private EventList itsEvents = new EventList();
 	
-	public LocalCollector(IHostInfo aHost)
+	public LocalCollector(IHostInfo aHost, ILocationsRepository aLocationsRepository)
 	{
-		super(aHost);
+		super(aHost, aLocationsRepository);
 	}
 
-	public ILocationsRepository getLocationTrace()
-	{
-		return this;
-	}
-	
 	public void clear()
 	{
 		itsEvents.clear();

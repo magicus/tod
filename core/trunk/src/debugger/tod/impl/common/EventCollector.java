@@ -3,15 +3,20 @@
  */
 package tod.impl.common;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.objectweb.asm.Type;
 
 import tod.core.ILogCollector;
-import tod.core.LocationRegistrer;
 import tod.core.Output;
+import tod.core.ILocationRegistrer.LocalVariableInfo;
+import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ThreadInfo;
 import tod.impl.common.event.BehaviorCallEvent;
@@ -32,7 +37,7 @@ import tod.impl.common.event.OutputEvent;
  * If there are multiple debugged hosts there must be multiple collectors.
  * @author gpothier
  */
-public abstract class EventCollector extends LocationRegistrer 
+public abstract class EventCollector// extends LocationRegistrer 
 implements ILogCollector
 {
 	/**
@@ -40,9 +45,19 @@ implements ILogCollector
 	 */
 	private IHostInfo itsHost;
 	
-	public EventCollector(IHostInfo aHost)
+	private ILocationsRepository itsLocationsRepository;
+	
+	private	Map<Long, DefaultThreadInfo> itsThreads = new HashMap<Long, DefaultThreadInfo>();
+	
+	public EventCollector(IHostInfo aHost, ILocationsRepository aLocationsRepository)
 	{
 		itsHost = aHost;
+		itsLocationsRepository = aLocationsRepository;
+	}
+
+	public ILocationsRepository getLocationsRepository()
+	{
+		return itsLocationsRepository;
 	}
 
 	/**
@@ -52,7 +67,36 @@ implements ILogCollector
 	 */
 	protected abstract void processEvent(DefaultThreadInfo aThread, Event aEvent);
 
-	@Override
+	/**
+	 * Returns the host associated with this collector.
+	 */
+	public IHostInfo getHost()
+	{
+		return itsHost;
+	}
+
+	public void registerThread(long aThreadId, String aName)
+	{
+		ThreadInfo theThreadInfo = getThread(aThreadId);
+		setupThreadInfo(theThreadInfo, aName);
+	}
+	
+	protected void setupThreadInfo (ThreadInfo aThreadInfo, String aName)
+	{
+		aThreadInfo.setName(aName);
+	}
+	
+	public DefaultThreadInfo getThread (long aId)
+	{
+		DefaultThreadInfo theThreadInfo = itsThreads.get(aId);
+		if (theThreadInfo == null)
+		{
+			theThreadInfo = createThreadInfo(aId);
+			itsThreads.put (aId, theThreadInfo);
+		}
+		return theThreadInfo;
+	}
+
 	protected final DefaultThreadInfo createThreadInfo(long aId)
 	{
 		BehaviorCallEvent theRootEvent = new MethodCallEvent();
@@ -69,14 +113,17 @@ implements ILogCollector
 	 */
 	protected DefaultThreadInfo createThreadInfo(long aId, BehaviorCallEvent aRootEvent)
 	{
-		return new DefaultThreadInfo(aId, aRootEvent);
+		return new DefaultThreadInfo(itsHost, aId, aRootEvent);
 	}
 	
-	@Override
-	public DefaultThreadInfo getThread(long aId)
+	/**
+	 * Returns all available threads.
+	 */
+	public Iterable<IThreadInfo> getThreads()
 	{
-		return (DefaultThreadInfo) super.getThread(aId);
+		return (Iterable) itsThreads.values();
 	}
+
 	
 	private void addEvent(DefaultThreadInfo aThread, Event aEvent)
 	{
@@ -113,7 +160,7 @@ implements ILogCollector
 			Object[] aArguments)
 	{
 		DefaultThreadInfo theThread = getThread(aThreadId);
-		IBehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
+		IBehaviorInfo theBehavior = itsLocationsRepository.getBehavior(aBehaviorLocationId);
 		assert theBehavior != null;
 		BehaviorCallEvent theEvent;
 		
@@ -200,7 +247,7 @@ implements ILogCollector
 			Object aException)
 	{
 		DefaultThreadInfo theThread = getThread(aThreadId);
-		IBehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
+		IBehaviorInfo theBehavior = itsLocationsRepository.getBehavior(aBehaviorLocationId);
 
 		logExceptionGenerated(aTimestamp, theThread, theBehavior, aOperationBytecodeIndex, aException);
 	}
@@ -217,11 +264,11 @@ implements ILogCollector
 		DefaultThreadInfo theThread = getThread(aThreadId);
 		
 		String theClassName = Type.getType(aMethodDeclaringClassSignature).getClassName();
-		IClassInfo theClass = (IClassInfo) getType(theClassName);
+		IClassInfo theClass = (IClassInfo) itsLocationsRepository.getType(theClassName);
 		
 		if (theClass == null) return; // TODO: don't do that...
 		
-		ITypeInfo[] theArgumentTypes = getArgumentTypes(aMethodSignature);
+		ITypeInfo[] theArgumentTypes = itsLocationsRepository.getArgumentTypes(aMethodSignature);
 		IBehaviorInfo theBehavior = theClass.getBehavior(aMethodName, theArgumentTypes);
 
 		logExceptionGenerated(aTimestamp, theThread, theBehavior, aOperationBytecodeIndex, aException);
@@ -271,7 +318,7 @@ implements ILogCollector
 			Object aValue)
 	{
 		DefaultThreadInfo theThread = getThread(aThreadId);
-		IFieldInfo theField = getField(aFieldLocationId);
+		IFieldInfo theField = itsLocationsRepository.getField(aFieldLocationId);
 
 		FieldWriteEvent theEvent = new FieldWriteEvent();
 		initEvent(theEvent, aTimestamp, theThread, aOperationBytecodeIndex);
@@ -340,7 +387,7 @@ implements ILogCollector
 		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();
 		assert theCurrentParent.isDirectParent() && theCurrentParent.getExecutedBehavior() != null;
 		
-		IBehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
+		IBehaviorInfo theBehavior = itsLocationsRepository.getBehavior(aBehaviorLocationId);
 
 		BehaviorCallEvent theEvent = theThread.createCallEvent();
 		
@@ -365,7 +412,7 @@ implements ILogCollector
 	{
 		DefaultThreadInfo theThread = getThread(aThreadId);
 
-		IBehaviorInfo theBehavior = getBehavior(aBehaviorLocationId);
+		IBehaviorInfo theBehavior = itsLocationsRepository.getBehavior(aBehaviorLocationId);
 
 		BehaviorCallEvent theEvent = theThread.createCallEvent();
 		
@@ -463,14 +510,14 @@ implements ILogCollector
 		 */
 		private long itsSerial;
 		
-		public DefaultThreadInfo(long aId)
+		public DefaultThreadInfo(IHostInfo aHost, long aId)
 		{
-			super(aId);
+			super(aHost, aId);
 		}
 
-		public DefaultThreadInfo(long aId, BehaviorCallEvent aRootEvent)
+		public DefaultThreadInfo(IHostInfo aHost, long aId, BehaviorCallEvent aRootEvent)
 		{
-			super(aId);
+			super(aHost, aId);
 			itsRootEvent = aRootEvent;
 			itsCurrentParent = itsRootEvent;
 		}

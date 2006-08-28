@@ -49,7 +49,7 @@ public class CFlowVariablesBuilder
 
 	public ILogBrowser getEventTrace()
 	{
-		return getView().getTrace(); 
+		return getView().getLogBrowser(); 
 	}
 	
 	public IGUIManager getGUIManager()

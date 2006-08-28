@@ -13,69 +13,61 @@ import java.util.List;
  */
 public class MultiRegistrer implements ILocationRegistrer
 {
-	private List<ILogCollector> itsCollectors = new ArrayList<ILogCollector>();
+	private List<ILocationRegistrer> itsRegistrers = new ArrayList<ILocationRegistrer>();
 
-	public MultiRegistrer(ILogCollector... aCollectors)
+	public MultiRegistrer(ILocationRegistrer... aCollectors)
 	{
-		itsCollectors = Arrays.asList(aCollectors);
+		itsRegistrers = Arrays.asList(aCollectors);
 	}
 
-	public MultiRegistrer(List<ILogCollector> aCollectors)
+	public MultiRegistrer(List<ILocationRegistrer> aCollectors)
 	{
-		itsCollectors = aCollectors;
+		itsRegistrers = aCollectors;
 	}
 	
-	protected List<ILogCollector> getCollectors()
+	protected List<ILocationRegistrer> getRegistrers()
 	{
-		return itsCollectors;
+		return itsRegistrers;
 	}
 
 
 	public void registerBehavior(BehaviourKind aBehaviourType, int aBehaviourId, int aTypeId, String aBehaviourName, String aSignature)
 	{
-        for (ILogCollector theCollector : getCollectors())
+        for (ILocationRegistrer theRegistrer : getRegistrers())
         {
-            theCollector.registerBehavior(aBehaviourType, aBehaviourId, aTypeId, aBehaviourName, aSignature);
+            theRegistrer.registerBehavior(aBehaviourType, aBehaviourId, aTypeId, aBehaviourName, aSignature);
         }
 	}
 
 	public void registerBehaviorAttributes(int aBehaviourId, LineNumberInfo[] aLineNumberTable, LocalVariableInfo[] aLocalVariableTable)
 	{
-        for (ILogCollector theCollector : getCollectors())
+        for (ILocationRegistrer theRegistrer : getRegistrers())
         {
-            theCollector.registerBehaviorAttributes(aBehaviourId, aLineNumberTable, aLocalVariableTable);
+            theRegistrer.registerBehaviorAttributes(aBehaviourId, aLineNumberTable, aLocalVariableTable);
         }
 	}
 
 	public void registerField(int aFieldId, int aTypeId, String aFieldName)
 	{
-        for (ILogCollector theCollector : getCollectors())
+        for (ILocationRegistrer theRegistrer : getRegistrers())
         {
-            theCollector.registerField(aFieldId, aTypeId, aFieldName);
+            theRegistrer.registerField(aFieldId, aTypeId, aFieldName);
         }
 	}
 
 	public void registerFile(int aFileId, String aFileName)
 	{
-        for (ILogCollector theCollector : getCollectors())
+        for (ILocationRegistrer theRegistrer : getRegistrers())
         {
-            theCollector.registerFile(aFileId, aFileName);
-        }
-	}
-
-	public void registerThread(long aThreadId, String aName)
-	{
-        for (ILogCollector theCollector : getCollectors())
-        {
-            theCollector.registerThread(aThreadId, aName);
+            theRegistrer.registerFile(aFileId, aFileName);
         }
 	}
 
 	public void registerType(int aTypeId, String aTypeName, int aSupertypeId, int[] aInterfaceIds)
 	{
-        for (ILogCollector theCollector : getCollectors())
+        for (ILocationRegistrer theRegistrer : getRegistrers())
         {
-            theCollector.registerType(aTypeId, aTypeName, aSupertypeId, aInterfaceIds);
+            theRegistrer.registerType(aTypeId, aTypeName, aSupertypeId, aInterfaceIds);
         }
 	}
     

@@ -307,16 +307,13 @@ public class PrintLogCollector extends LocationRegistrer implements ILogCollecto
 		
 		super.registerFile(aFileId, aFileName);
 	}
-
-	@Override
+	
 	public void registerThread(long aThreadId, String aName)
 	{
 		if (itsPrintRegistrations) itsOutput.println(String.format(
                 "[LOG] register thread: %s (%d)",
                 aName,
                 aThreadId));
-		
-		super.registerThread(aThreadId, aName);
 	}
 
 	@Override

@@ -36,7 +36,7 @@ public abstract class AbstractEventNode extends SVGGraphicContainer
 
 	public ILogBrowser getEventTrace()
 	{
-		return itsView.getTrace();
+		return itsView.getLogBrowser();
 	}
 	
 	public CFlowView getView()

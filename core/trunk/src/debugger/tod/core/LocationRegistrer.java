@@ -16,8 +16,10 @@ import tod.core.database.structure.ArrayTypeInfo;
 import tod.core.database.structure.BehaviorInfo;
 import tod.core.database.structure.ClassInfo;
 import tod.core.database.structure.FieldInfo;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.PrimitiveTypeInfo;
-import tod.core.database.structure.ThreadInfo;
 import tod.core.database.structure.TypeInfo;
 /**
  * This class permits to register location ids.
@@ -31,7 +33,6 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationsReposito
 	private List<String> itsFiles = new ArrayList<String>();
 	private List<BehaviorInfo> itsBehaviors = new ArrayList<BehaviorInfo>();
 	private List<FieldInfo> itsFields = new ArrayList<FieldInfo>();
-	private	Map<Long, ThreadInfo> itsThreads = new HashMap<Long, ThreadInfo>();
 	
 	public LocationRegistrer()
 	{
@@ -107,20 +108,6 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationsReposito
 		theType.register(theFieldInfo);
 	}
 	
-	public void registerThread(long aThreadId, String aName)
-	{
-		ThreadInfo theThreadInfo = getThread(aThreadId);
-		setupThreadInfo(theThreadInfo, aName);
-	}
-	
-	/**
-	 * Factory method for thread info.
-	 */
-	protected ThreadInfo createThreadInfo (long aId)
-	{
-		return new ThreadInfo (aId);
-	}
-	
 	protected ClassInfo createClassInfo (int aId)
 	{
 		return new ClassInfo(this, aId);
@@ -137,7 +124,7 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationsReposito
 	/**
 	 * Determines the TOD argument types given a method signature.
 	 */
-	protected TypeInfo[] getArgumentTypes(String aSignature)
+	public TypeInfo[] getArgumentTypes(String aSignature)
 	{
 		Type[] theASMArgumentTypes = Type.getArgumentTypes(aSignature);
 		TypeInfo[] theArgumentTypes = new TypeInfo[theASMArgumentTypes.length];
@@ -208,11 +195,6 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationsReposito
 		aClass.setInterfaces(theInterfaces);
 	}
 	
-	protected void setupThreadInfo (ThreadInfo aThreadInfo, String aName)
-	{
-		aThreadInfo.setName(aName);
-	}
-
 
 	/**
 	 * Returns the type info that corresponds to the specified id.
@@ -262,17 +244,11 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationsReposito
 		return itsFields.get(aId);
 	}
 	
-	public ThreadInfo getThread (long aId)
+	public ITypeInfo getType(int aId)
 	{
-		ThreadInfo theThreadInfo = itsThreads.get(aId);
-		if (theThreadInfo == null)
-		{
-			theThreadInfo = createThreadInfo(aId);
-			itsThreads.put (aId, theThreadInfo);
-		}
-		return theThreadInfo;
+		return itsTypes.get(aId);
 	}
-
+	
 	/**
 	 * Returns all available classes.
 	 */
@@ -305,11 +281,92 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationsReposito
 		return itsFiles;
 	}
 	
-	/**
-	 * Returns all available threads.
-	 */
-	public Iterable getThreads()
+	public IBehaviorInfo getBehavior(
+			ITypeInfo aType, 
+			String aName, 
+			String aSignature, 
+			boolean aSearchAncestors)
 	{
-		return itsThreads.values();
+		ClassInfo theClassInfo = (ClassInfo) aType;
+		ITypeInfo[] theArgumentTypes = getArgumentTypes(aSignature);
+		
+		while (theClassInfo != null)
+		{
+			IBehaviorInfo theBehavior = theClassInfo.getBehavior(aName, theArgumentTypes);
+			if (theBehavior != null) return theBehavior;
+			
+			if (! aSearchAncestors) return null;
+			
+			theClassInfo = theClassInfo.getSupertype();
+		}
+
+		return null;
 	}
+
+	public IFieldInfo getField(
+			ITypeInfo aType, 
+			String aName,
+			boolean aSearchAncestors)
+	{
+		ClassInfo theClassInfo = (ClassInfo) aType;
+		
+		while (theClassInfo != null)
+		{
+			IFieldInfo theField = theClassInfo.getField(aName);
+			if (theField != null) return theField;
+			
+			if (! aSearchAncestors) return null;
+			
+			theClassInfo = theClassInfo.getSupertype();
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns a new synchronized view of this registrer.
+	 * (only registration methods are synchronized, hence only the {@link ILocationRegistrer}
+	 * interface is returned).
+	 */
+	public ILocationRegistrer getSynchronizedRegistrer()
+	{
+		return new SynchronizedRegistrer();
+	}
+	
+	/**
+	 * A wrapper that synchronizes calls to the registering methods.
+	 * @author gpothier
+	 */
+	private class SynchronizedRegistrer implements ILocationRegistrer
+	{
+
+		public synchronized void registerBehavior(BehaviourKind aBehaviourType, int aBehaviourId, int aTypeId,
+				String aBehaviourName, String aSignature)
+		{
+			LocationRegistrer.this.registerBehavior(aBehaviourType, aBehaviourId, aTypeId, aBehaviourName, aSignature);
+		}
+
+		public synchronized void registerBehaviorAttributes(int aBehaviourId, LineNumberInfo[] aLineNumberTable,
+				LocalVariableInfo[] aLocalVariableTable)
+		{
+			LocationRegistrer.this.registerBehaviorAttributes(aBehaviourId, aLineNumberTable, aLocalVariableTable);
+		}
+
+		public synchronized void registerField(int aFieldId, int aTypeId, String aFieldName)
+		{
+			LocationRegistrer.this.registerField(aFieldId, aTypeId, aFieldName);
+		}
+
+		public synchronized void registerFile(int aFileId, String aFileName)
+		{
+			LocationRegistrer.this.registerFile(aFileId, aFileName);
+		}
+
+		public synchronized void registerType(int aTypeId, String aTypeName, int aSupertypeId, int[] aInterfaceIds)
+		{
+			LocationRegistrer.this.registerType(aTypeId, aTypeName, aSupertypeId, aInterfaceIds);
+		}
+		
+	}
+	
 }

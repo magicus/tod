@@ -1,15 +1,12 @@
 /*
  * Created on Oct 25, 2005
  */
-package tod.core.session;
+package tod.impl.bci.asm;
 
 import java.io.File;
 
-import tod.core.ILogCollector;
-import tod.core.bci.IInstrumenter;
+import tod.core.ILocationRegistrer;
 import tod.core.config.ClassSelector;
-import tod.impl.bci.asm.ASMInstrumenter;
-import tod.impl.bci.asm.ASMLocationPool;
 import tod.tools.parsers.ParseException;
 import tod.tools.parsers.workingset.WorkingSetFactory;
 
@@ -17,27 +14,23 @@ public class ASMDebuggerConfig
 {
 	public static final String PARAM_COLLECTOR_PORT = "collector-port";
 	
-	private ILogCollector itsCollector;
+	private final ILocationRegistrer itsLocationRegistrer;
 	private ClassSelector itsGlobalSelector;
 	private ClassSelector itsTraceSelector;
 	
-	private IInstrumenter itsInstrumenter;
-	private File itsLocationsFile;
-
 	private ASMLocationPool itsLocationPool;
+
 	
 	/**
 	 * Creates a default debugger configuration.
 	 */
 	public ASMDebuggerConfig(
-			ILogCollector aCollector, 
+			ILocationRegistrer aLocationRegistrer,
 			File aLocationsFile,
 			String aGlobalWorkingSet,
 			String aTraceWorkingSet)
 	{
-		itsCollector = aCollector;
-		
-		itsLocationsFile = aLocationsFile;
+		itsLocationRegistrer = aLocationRegistrer;
 		
 		// Setup selectors
 		try
@@ -50,15 +43,9 @@ public class ASMDebuggerConfig
 			throw new RuntimeException("Cannot setup selectors", e);
 		}
 		
-		itsInstrumenter = new ASMInstrumenter(this);
-		itsLocationPool = new ASMLocationPool(this);
+		itsLocationPool = new ASMLocationPool(itsLocationRegistrer, aLocationsFile);
 	}
 	
-	public ILogCollector getCollector()
-	{
-		return itsCollector;
-	}
-
 	/**
 	 * Returns the selector that indicates which classes should be
 	 * instrumented so that execution of their methods is traced.
@@ -77,22 +64,6 @@ public class ASMDebuggerConfig
 		return itsGlobalSelector;
 	}
 	
-	/**
-	 * Returns the instrumenter to use
-	 */
-	public IInstrumenter getInstrumenter()
-	{
-		return itsInstrumenter;
-	}
-
-	/**
-	 * Returns the name of the file where locations should be loaded and stored.
-	 */
-	public File getLocationsFile()
-	{
-		return itsLocationsFile;
-	}
-
 	public ASMLocationPool getLocationPool()
 	{
 		return itsLocationPool;

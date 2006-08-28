@@ -15,9 +15,7 @@ import org.objectweb.asm.Type;
 
 import tod.core.BehaviourKind;
 import tod.core.ILocationRegistrer;
-import tod.core.ILogCollector;
 import tod.core.bci.LocationPoolPersister;
-import tod.core.session.ASMDebuggerConfig;
 
 public class ASMLocationPool
 {
@@ -30,25 +28,22 @@ public class ASMLocationPool
 	private Map<String, Integer> itsTypeIds = new HashMap<String, Integer>();
 	private int itsNextTypeId = 1;
 	
-	private final ASMDebuggerConfig itsConfig;
 	private ILocationRegistrer itsLocationRegistrer;
 	
-	public ASMLocationPool(ASMDebuggerConfig aConfig)
+	public ASMLocationPool(ILocationRegistrer aLocationRegistrer, File aLocationsFile)
 	{
-		itsConfig = aConfig;
-		ILogCollector theCollector = itsConfig.getCollector();
-		
-		File theLocationsFile = itsConfig.getLocationsFile();
-		if (theLocationsFile != null)
+		if (aLocationsFile != null)
 		{
 			DataOutputStream theOutputStream = null;
 			try
 			{
-				if (! theLocationsFile.exists()) theLocationsFile.createNewFile();
-				theOutputStream = new DataOutputStream(new FileOutputStream(theLocationsFile, true));
+				if (! aLocationsFile.exists()) aLocationsFile.createNewFile();
+				theOutputStream = new DataOutputStream(new FileOutputStream(aLocationsFile, true));
 				
 				// Read existing locations
-				LocationPoolPersister.read(theLocationsFile, new LoadRegistrerAdapter(theCollector));
+				LocationPoolPersister.read(
+						aLocationsFile,
+						new LoadRegistrerAdapter(aLocationRegistrer));
 			}
 			catch (FileNotFoundException e)
 			{
@@ -61,12 +56,12 @@ public class ASMLocationPool
 			
 			// prepare to store new locations
 			itsLocationRegistrer = new LocationPoolPersister.Store(
-					theCollector,
+					aLocationRegistrer,
 					theOutputStream);			
 		}
 		else
 		{
-			itsLocationRegistrer = itsConfig.getCollector();
+			itsLocationRegistrer = aLocationRegistrer;
 		}
 	}
 

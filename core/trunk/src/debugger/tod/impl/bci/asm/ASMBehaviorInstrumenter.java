@@ -9,7 +9,6 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import tod.core.ILogCollector;
-import tod.core.session.ASMDebuggerConfig;
 
 /**
  * Provides all the methods that perform the insertion

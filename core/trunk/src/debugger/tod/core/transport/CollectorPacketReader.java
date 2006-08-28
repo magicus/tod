@@ -16,13 +16,20 @@ import tod.core.database.structure.ObjectId;
 
 public class CollectorPacketReader
 {
-	public static void readPacket(DataInputStream aStream, ILogCollector aCollector) throws IOException
+	public static void readPacket(
+			DataInputStream aStream, 
+			ILogCollector aCollector,
+			ILocationRegistrer aLocationRegistrer) throws IOException
 	{
 		MessageType theCommand = readMessageType(aStream);
-		readPacket(aStream, aCollector, theCommand);
+		readPacket(aStream, aCollector, aLocationRegistrer, theCommand);
 	}
 	
-	public static void readPacket(DataInputStream aStream, ILogCollector aCollector, MessageType aCommand) throws IOException
+	public static void readPacket(
+			DataInputStream aStream,
+			ILogCollector aCollector, 
+			ILocationRegistrer aLocationRegistrer,
+			MessageType aCommand) throws IOException
 	{
 		switch (aCommand)
 		{
@@ -86,19 +93,29 @@ public class CollectorPacketReader
 				readOutput(aStream, aCollector);
 				break;
 				
+			case REGISTER_THREAD:
+				readThread(aStream, aCollector);
+				break;
+				
+
 			default:
-				readPacket(aStream, (ILocationRegistrer) aCollector, aCommand);
+				readPacket(aStream, aLocationRegistrer, aCommand);
 		}
 
 	}
 	
-	public static void readPacket(DataInputStream aStream, ILocationRegistrer aRegistrer) throws IOException
+	public static void readPacket(
+			DataInputStream aStream, 
+			ILocationRegistrer aRegistrer) throws IOException
 	{
 		MessageType theCommand = readMessageType(aStream);
 		readPacket(aStream, aRegistrer, theCommand);
 	}
 	
-	public static void readPacket(DataInputStream aStream, ILocationRegistrer aRegistrer, MessageType aCommand) throws IOException
+	public static void readPacket(
+			DataInputStream aStream,
+			ILocationRegistrer aRegistrer, 
+			MessageType aCommand) throws IOException
 	{
 		switch (aCommand)
 		{
@@ -120,10 +137,6 @@ public class CollectorPacketReader
 			
 		case REGISTER_FILE:
 			readFile(aStream, aRegistrer);
-			break;
-			
-		case REGISTER_THREAD:
-			readThread(aStream, aRegistrer);
 			break;
 			
 		default:
@@ -409,12 +422,12 @@ public class CollectorPacketReader
 		aRegistrer.registerField(theId, theClassId, theName);
 	}
 	
-	public static void readThread (DataInputStream aStream, ILocationRegistrer aRegistrer) throws IOException
+	public static void readThread (DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
 		long theId = aStream.readLong();
 		String theName = aStream.readUTF();
 		
-		aRegistrer.registerThread(theId, theName);
+		aCollector.registerThread(theId, theName);
 	}
 
 }

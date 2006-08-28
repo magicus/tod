@@ -18,15 +18,26 @@ import zz.utils.bit.BitStruct;
  */
 public class RoleIndexSet extends IndexSet<RoleIndexSet.RoleTuple>
 {
+	/**
+	 * Represents any of the behavior roles.
+	 */
 	public static final byte ROLE_BEHAVIOR_ANY = 0;
-	public static final byte ROLE_BEHAVIOR_CALLED = 1;
-	public static final byte ROLE_BEHAVIOR_EXECUTED = 2;
-	public static final byte ROLE_BEHAVIOR_EXIT = 3;
+	
+	/**
+	 * Represents either {@link #ROLE_BEHAVIOR_CALLED} or {@link #ROLE_BEHAVIOR_EXECUTED}.
+	 */
+	public static final byte ROLE_BEHAVIOR_ANY_ENTER = 1;
+	
+	public static final byte ROLE_BEHAVIOR_CALLED = 2;
+	public static final byte ROLE_BEHAVIOR_EXECUTED = 3;
+	public static final byte ROLE_BEHAVIOR_EXIT = 4;
+	
 	
 	public static final byte ROLE_OBJECT_TARGET = -1;
 	public static final byte ROLE_OBJECT_VALUE = -2;
 	public static final byte ROLE_OBJECT_RESULT = -3;
 	public static final byte ROLE_OBJECT_EXCEPTION = -4;
+	public static final byte ROLE_OBJECT_ANYARG = -5;
 	
 	public static final TupleCodec TUPLE_CODEC = new RoleTupleCodec();
 	
@@ -43,16 +54,23 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.RoleTuple>
 	
 	/**
 	 * Creates an iterator that filters out the tuples from a source iterator that
-	 * don't have the specified role.
+	 * don't have one of the specified roles.
 	 */
-	public static Iterator<RoleTuple> createFilteredIterator(Iterator<RoleTuple> aIterator, final byte aRole)
+	public static Iterator<RoleTuple> createFilteredIterator(
+			Iterator<RoleTuple> aIterator,
+			final byte... aRole)
 	{
 		return new AbstractFilteredIterator<RoleTuple, RoleTuple>(aIterator)
 		{
 			@Override
 			protected Object transform(RoleTuple aIn)
 			{
-				return aIn.getRole() == aRole ? aIn : REJECT;
+				byte theRole = aIn.getRole();
+				for (byte theAllowedRole : aRole)
+				{
+					if (theRole == theAllowedRole) return aIn;
+				}
+				return REJECT;
 			}
 		};
 	}

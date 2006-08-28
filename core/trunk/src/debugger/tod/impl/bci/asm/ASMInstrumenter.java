@@ -7,7 +7,6 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
 import tod.core.bci.IInstrumenter;
-import tod.core.session.ASMDebuggerConfig;
 
 /**
  * This class instruments classes of the application VM

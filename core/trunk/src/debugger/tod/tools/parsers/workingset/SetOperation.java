@@ -4,7 +4,6 @@
 package tod.tools.parsers.workingset;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class SetOperation
@@ -17,9 +16,9 @@ public class SetOperation
     /**
      * List of {@link AbstractClassSet}
      */
-    private List itsSubsets = new ArrayList();
+    private List<AbstractClassSet> itsSubsets = new ArrayList<AbstractClassSet>();
 
-    public SetOperation(String aInclude, List aSubsets)
+    public SetOperation(String aInclude, List<AbstractClassSet> aSubsets)
     {
         if ("+".equals(aInclude)) itsInclude = true;
         else if ("-".equals(aInclude)) itsInclude = false;
@@ -33,9 +32,8 @@ public class SetOperation
      */
     public boolean accept(String aClassname)
     {
-        for (Iterator theIterator = itsSubsets.iterator(); theIterator.hasNext();)
-        {
-            AbstractClassSet theSubset = (AbstractClassSet) theIterator.next();
+    	for (AbstractClassSet theSubset : itsSubsets)
+		{
             if (theSubset.accept(aClassname)) return true;
         }
         return false;
