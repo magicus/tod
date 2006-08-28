@@ -8,6 +8,7 @@ import static tod.impl.dbgrid.DebuggerGridConfig.DB_INDEX_PAGE_SIZE;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.rmi.RemoteException;
 import java.util.Random;
 
 import org.junit.Test;
@@ -22,13 +23,13 @@ import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 
 public class BenchCFlowMap
 {
-	@Test public void bench() throws FileNotFoundException
+	@Test public void bench() throws FileNotFoundException, RemoteException
 	{
 //		bench(10000, 1000000);
 		bench(10000, 10000000);
 	}
 	
-	private void bench(final int aKeysCount, final int aChildrenCount) throws FileNotFoundException
+	private void bench(final int aKeysCount, final int aChildrenCount) throws FileNotFoundException, RemoteException
 	{
 		System.out.println("Bench with keys count: "+aKeysCount+", children count: "+aChildrenCount);
 		

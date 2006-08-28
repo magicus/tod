@@ -10,6 +10,7 @@ import static tod.impl.dbgrid.DebuggerGridConfig.DB_INDEX_PAGE_SIZE;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.rmi.RemoteException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -26,14 +27,14 @@ import zz.utils.Utils;
 
 public class TestCFlowMap
 {
-	@Test public void test() throws FileNotFoundException
+	@Test public void test() throws FileNotFoundException, RemoteException
 	{
 		test(100, 10000);
 		test(1000, 1000000);
 		test(10000, 10000000);
 	}
 	
-	private void test(int aKeysCount, int aChildrenCount) throws FileNotFoundException
+	private void test(int aKeysCount, int aChildrenCount) throws FileNotFoundException, RemoteException
 	{
 		DatabaseNode theNode = new DatabaseNode(1);
 		HardPagedFile theIndexFile = new HardPagedFile(new File("cflow-index.bin"), DB_INDEX_PAGE_SIZE);

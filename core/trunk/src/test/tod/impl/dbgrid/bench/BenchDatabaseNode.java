@@ -3,6 +3,7 @@
  */
 package tod.impl.dbgrid.bench;
 
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -21,7 +22,7 @@ public class BenchDatabaseNode
 {
 	private DatabaseNode itsNode;
 
-	@Test public void test()
+	@Test public void test() throws RemoteException
 	{
 		itsNode = new DatabaseNode(0);
 		store();
