@@ -5,6 +5,7 @@ package tod.impl.dbgrid.messages;
 
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ObjectId;
+import tod.core.database.structure.ObjectId.ObjectUID;
 import tod.impl.common.event.BehaviorCallEvent;
 import tod.impl.common.event.BehaviorExitEvent;
 import tod.impl.common.event.ConstructorChainingEvent;
@@ -107,47 +108,6 @@ public abstract class GridEvent extends GridMessage
 		theCount += DebuggerGridConfig.EVENTID_POINTER_SIZE;
 		
 		return theCount;
-	}
-	
-	/**
-	 * Writes an object to the specified struct. This method should be used by
-	 * subclasses to serialize values.
-	 */
-	protected void writeObject(BitStruct aBitStruct, Object aObject)
-	{
-		if (aObject == null)
-		{
-			aBitStruct.writeLong(0, 64);
-		}
-		else if (aObject instanceof ObjectId.ObjectUID)
-		{
-			ObjectId.ObjectUID theUID = (ObjectId.ObjectUID) aObject;
-			long theId = theUID.getId();
-			if (theId == 0) throw new RuntimeException("Invalid object id: "+theId);
-			aBitStruct.writeLong(theId, 64);
-		}
-		else throw new RuntimeException("Not handled: "+aObject);
-	}
-	
-	/**
-	 * Returns the number of bits necessary to serialize the given object.
-	 */
-	protected int getObjectBits(Object aObject)
-	{
-		if (aObject == null) return 64;
-		else if (aObject instanceof ObjectId.ObjectUID) return 64;
-		else throw new RuntimeException("Not handled: "+aObject);		
-	}
-	
-	/**
-	 * Reads an object from the specified struct. This method should be used by
-	 * subclasses to deserialize values.
-	 */
-	protected Object readObject(BitStruct aBitStruct)
-	{
-		long theId = aBitStruct.readLong(64);
-		if (theId == 0) return null;
-		else return new ObjectId.ObjectUID(theId);
 	}
 	
 	/**
@@ -312,23 +272,6 @@ public abstract class GridEvent extends GridMessage
 				aEvent.getCalledBehavior() != null ? aEvent.getCalledBehavior().getId() : 0,
 				aEvent.getExecutedBehavior() != null ? aEvent.getExecutedBehavior().getId() : 0,
 				aEvent.getTarget());
-	}
-	
-	public static int getObjectId(Object aObject)
-	{
-		if (aObject == null)
-		{
-			return 0;
-		}
-		else if (aObject instanceof ObjectId.ObjectUID)
-		{
-			ObjectId.ObjectUID theUid = (ObjectId.ObjectUID) aObject;
-			long theId = theUid.getId();
-			if ((theId & ~0xffffffffL) != 0) throw new RuntimeException("Object id overflow");
-			return (int) theId;
-		}
-		else throw new RuntimeException("Not handled: "+aObject);
-		
 	}
 	
 	/**

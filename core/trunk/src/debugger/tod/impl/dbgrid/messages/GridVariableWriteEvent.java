@@ -9,6 +9,7 @@ import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import tod.impl.dbgrid.dbnode.StdIndexSet;
 import zz.utils.bit.BitStruct;
+import static tod.impl.dbgrid.messages.ObjectCodec.*;
 
 public class GridVariableWriteEvent extends GridEvent
 {
@@ -92,7 +93,7 @@ public class GridVariableWriteEvent extends GridEvent
 		aIndexes.variableIndex.addTuple(getVariableId(), theStdTuple); 
 
 		aIndexes.objectIndex.addTuple(
-				getObjectId(getValue()), 
+				getValue(), 
 				new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_VALUE));
 	}
 	
@@ -105,7 +106,8 @@ public class GridVariableWriteEvent extends GridEvent
 	@Override
 	public boolean matchObjectCondition(int aObjectId, byte aRole)
 	{
-		return (aRole == RoleIndexSet.ROLE_OBJECT_VALUE && aObjectId == getObjectId(getValue()));
+		assert aObjectId != 0;
+		return (aRole == RoleIndexSet.ROLE_OBJECT_VALUE && aObjectId == getObjectId(getValue(), false));
 	}
 
 	@Override

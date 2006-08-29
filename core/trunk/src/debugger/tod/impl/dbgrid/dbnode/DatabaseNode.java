@@ -56,7 +56,7 @@ public class DatabaseNode extends UnicastRemoteObject implements RIDatabaseNode
 	
 	private boolean itsFlushed = false;
 	
-	public DatabaseNode(int aNodeId) throws RemoteException
+	public DatabaseNode(int aNodeId, boolean aRegisterToMaster) throws RemoteException
 	{
 		Monitor.getInstance().register(this);
 		itsNodeId = aNodeId;
@@ -70,10 +70,13 @@ public class DatabaseNode extends UnicastRemoteObject implements RIDatabaseNode
 			itsIndexes = new Indexes(itsIndexesFile);
 			itsCFlowMap = new CFlowMap(this, itsIndexesFile, itsCFlowDataFile);
 			
-			String theRegistryHost = ConfigUtils.readString("registry-host", "localhost");
-			Registry theRegistry = LocateRegistry.getRegistry(theRegistryHost);
-			RIGridMaster theMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
-			theMaster.registerNode(this);
+			if (aRegisterToMaster) 
+			{
+				String theRegistryHost = ConfigUtils.readString("registry-host", "localhost");
+				Registry theRegistry = LocateRegistry.getRegistry(theRegistryHost);
+				RIGridMaster theMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
+				theMaster.registerNode(this);
+			}
 		}
 		catch (Exception e)
 		{

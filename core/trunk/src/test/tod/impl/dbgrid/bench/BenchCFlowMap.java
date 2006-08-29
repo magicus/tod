@@ -33,7 +33,7 @@ public class BenchCFlowMap
 	{
 		System.out.println("Bench with keys count: "+aKeysCount+", children count: "+aChildrenCount);
 		
-		DatabaseNode theNode = new DatabaseNode(1);
+		DatabaseNode theNode = new DatabaseNode(1, false);
 		HardPagedFile theIndexFile = new HardPagedFile(new File("cflow-index.bin"), DB_INDEX_PAGE_SIZE);
 		HardPagedFile theDataFile = new HardPagedFile(new File("cflow-data.bin"), DB_CFLOW_PAGE_SIZE);
 		final CFlowMap theMap = new CFlowMap(theNode, theIndexFile, theDataFile);

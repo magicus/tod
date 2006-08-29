@@ -8,6 +8,7 @@ import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import zz.utils.bit.BitStruct;
+import static tod.impl.dbgrid.messages.ObjectCodec.*;
 
 public class GridExceptionGeneratedEvent extends GridEvent
 {
@@ -91,7 +92,7 @@ public class GridExceptionGeneratedEvent extends GridEvent
 				new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_EXECUTED));
 		
 		aIndexes.objectIndex.addTuple(
-				getObjectId(getException()), 
+				getException(), 
 				new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_EXCEPTION));
 	}
 	
@@ -105,7 +106,8 @@ public class GridExceptionGeneratedEvent extends GridEvent
 	@Override
 	public boolean matchObjectCondition(int aObjectId, byte aRole)
 	{
-		return (aRole == RoleIndexSet.ROLE_OBJECT_EXCEPTION && aObjectId == getObjectId(getException()));
+		assert aObjectId != 0;
+		return (aRole == RoleIndexSet.ROLE_OBJECT_EXCEPTION && aObjectId == getObjectId(getException(), false));
 	}
 
 	@Override

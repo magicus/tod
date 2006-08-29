@@ -36,7 +36,7 @@ public class TestCFlowMap
 	
 	private void test(int aKeysCount, int aChildrenCount) throws FileNotFoundException, RemoteException
 	{
-		DatabaseNode theNode = new DatabaseNode(1);
+		DatabaseNode theNode = new DatabaseNode(1, false);
 		HardPagedFile theIndexFile = new HardPagedFile(new File("cflow-index.bin"), DB_INDEX_PAGE_SIZE);
 		HardPagedFile theDataFile = new HardPagedFile(new File("cflow-data.bin"), DB_CFLOW_PAGE_SIZE);
 		CFlowMap theMap = new CFlowMap(theNode, theIndexFile, theDataFile);

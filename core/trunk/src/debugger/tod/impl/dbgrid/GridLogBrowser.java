@@ -24,6 +24,7 @@ import tod.core.database.structure.ObjectId;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import tod.impl.dbgrid.messages.EventType;
 import tod.impl.dbgrid.messages.GridEvent;
+import tod.impl.dbgrid.messages.ObjectCodec;
 import tod.impl.dbgrid.queries.BehaviorCondition;
 import tod.impl.dbgrid.queries.CompoundCondition;
 import tod.impl.dbgrid.queries.Disjunction;
@@ -59,7 +60,7 @@ public class GridLogBrowser implements ILogBrowser, RIGridMasterListener
 
 	public IEventFilter createArgumentFilter(ObjectId aId)
 	{
-		int theId = GridEvent.getObjectId(aId);
+		int theId = ObjectCodec.getObjectId(aId, true);
 		return new ObjectCondition(theId, RoleIndexSet.ROLE_OBJECT_ANYARG);
 	}
 
@@ -86,7 +87,7 @@ public class GridLogBrowser implements ILogBrowser, RIGridMasterListener
 
 	public IEventFilter createInstantiationFilter(ObjectId aId)
 	{
-		int theId = GridEvent.getObjectId(aId);
+		int theId = ObjectCodec.getObjectId(aId, true);
 		return CompoundCondition.and(
 				new ObjectCondition(theId, RoleIndexSet.ROLE_OBJECT_ANYARG),
 				new TypeCondition(EventType.INSTANTIATION));
@@ -109,7 +110,7 @@ public class GridLogBrowser implements ILogBrowser, RIGridMasterListener
 
 	public IEventFilter createTargetFilter(ObjectId aId)
 	{
-		int theId = GridEvent.getObjectId(aId);
+		int theId = ObjectCodec.getObjectId(aId, true);
 		return new ObjectCondition(theId, RoleIndexSet.ROLE_OBJECT_TARGET);
 	}
 

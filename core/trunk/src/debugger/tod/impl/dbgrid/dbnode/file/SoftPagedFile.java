@@ -58,8 +58,8 @@ public class SoftPagedFile
 		// base page pointer + page size + soft page index
 		int theMaxSoftPagesCount = theMaxPageSize/itsMinPageSize;
 		itsPageIdBits = itsFile.getPagePointerSize();
-		itsPageSizeBits = (int) Math.ceil(BitUtils.log2(theSizesCount));
-		itsPageIndexBits = (int) Math.ceil(BitUtils.log2(theMaxSoftPagesCount));
+		itsPageSizeBits = BitUtils.log2ceil(theSizesCount);
+		itsPageIndexBits = BitUtils.log2ceil(theMaxSoftPagesCount);
 		
 		itsPagePointerSize = itsPageIdBits + itsPageSizeBits + itsPageIndexBits;
 	}

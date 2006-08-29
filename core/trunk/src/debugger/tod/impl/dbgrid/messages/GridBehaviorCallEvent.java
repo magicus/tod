@@ -8,6 +8,7 @@ import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import zz.utils.bit.BitStruct;
+import static tod.impl.dbgrid.messages.ObjectCodec.*;
 
 public class GridBehaviorCallEvent extends GridEvent
 {
@@ -169,12 +170,12 @@ public class GridBehaviorCallEvent extends GridEvent
 			Object theArgument = itsArguments[i];
 
 			aIndexes.objectIndex.addTuple(
-					getObjectId(theArgument),
+					theArgument,
 					new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, (byte) i));
 		}
 		
 		aIndexes.objectIndex.addTuple(
-				getObjectId(getTarget()), 
+				getTarget(), 
 				new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_TARGET));
 	}
 	
@@ -191,8 +192,9 @@ public class GridBehaviorCallEvent extends GridEvent
 	@Override
 	public boolean matchObjectCondition(int aObjectId, byte aRole)
 	{
-		return (aRole == RoleIndexSet.ROLE_OBJECT_TARGET && aObjectId == getObjectId(getTarget()))
-			|| (aRole >= 0 && aRole < getArguments().length && aObjectId == getObjectId(getArguments()[aRole]));
+		assert aObjectId != 0;
+		return (aRole == RoleIndexSet.ROLE_OBJECT_TARGET && aObjectId == getObjectId(getTarget(), false))
+			|| (aRole >= 0 && aRole < getArguments().length && aObjectId == getObjectId(getArguments()[aRole], false));
 	}
 	
 	@Override

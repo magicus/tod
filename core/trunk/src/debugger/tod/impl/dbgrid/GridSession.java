@@ -67,6 +67,6 @@ public class GridSession
 		GridSession theSession = new GridSession();
 		theRegistry.bind(GridMaster.RMI_ID, theSession.itsMaster);
 		
-		new DatabaseNode(1);
+		new DatabaseNode(1, true);
 	}
 }
