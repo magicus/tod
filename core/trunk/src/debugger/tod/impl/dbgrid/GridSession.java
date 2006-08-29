@@ -4,6 +4,7 @@
 package tod.impl.dbgrid;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -49,14 +50,12 @@ public class GridSession
 
 		public ILogCollector create()
 		{
-			try
-			{
-				return itsMaster.createCollector(itsHostId++);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			return itsMaster.createCollector(itsHostId++);
+		}
+		
+		public void flushAll()
+		{
+			itsMaster.flush();
 		}
 	}
 

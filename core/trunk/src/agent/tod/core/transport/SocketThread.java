@@ -36,6 +36,7 @@ public abstract class SocketThread extends Thread
 	public SocketThread(ServerSocket aServerSocket, boolean aStart)
 	{
 	    itsServerSocket = aServerSocket;
+	    setName(getClass().getSimpleName());
 	    if (aStart) start();
 	}
 	
@@ -53,6 +54,7 @@ public abstract class SocketThread extends Thread
 	public SocketThread(Socket aSocket, boolean aStart)
 	{
 		itsSocket = aSocket;
+	    setName(getClass().getSimpleName());
 	    if (aStart) start();
 	}
 	
@@ -61,7 +63,7 @@ public abstract class SocketThread extends Thread
 	 */
 	public String getLabel()
 	{
-		return ""+this+" ("+getClass()+")";
+		return "SocketThread ("+getClass().getSimpleName()+")";
 	}
 	
 	public final void run()
@@ -92,6 +94,7 @@ public abstract class SocketThread extends Thread
 				disconnected();
 				Thread.sleep (500);
 				if (itsServerSocket != null) itsSocket = null;
+				else break;
 			}
 		}
 		catch (InterruptedException e)

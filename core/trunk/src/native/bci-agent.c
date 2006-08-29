@@ -19,6 +19,7 @@
 // Outgoing commands
 static const char EXCEPTION_GENERATED = 20;
 static const char INSTRUMENT_CLASS = 50;
+static const char FLUSH = 99;
 
 static const char OBJECT_HASH = 1;
 static const char OBJECT_UID = 2;
@@ -539,6 +540,17 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
   bciConfigure();
 
   return JNI_OK;
+}
+
+JNIEXPORT void JNICALL 
+Agent_OnUnload(JavaVM *vm)
+{
+  if (SOCKET_OUT)
+  {
+    writeByte(FLUSH);
+    fflush(SOCKET_OUT);
+    if (cfgVerbose) printf("Sent flush\n");
+  }
 }
 
 

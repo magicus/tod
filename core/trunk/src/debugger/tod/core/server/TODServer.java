@@ -146,6 +146,26 @@ public class TODServer
 					aException);
 
 		}
+
+		@Override
+		protected void processFlush()
+		{
+			System.out.println("Flushing...");
+			for(LogReceiver theReceiver : itsReceivers.values())
+			{
+				try
+				{
+					theReceiver.interrupt();
+					theReceiver.join();
+				}
+				catch (InterruptedException e)
+				{
+					throw new RuntimeException(e);
+				}
+			}
+			itsCollectorFactory.flushAll();
+			System.out.println("done.");
+		}
 		
 	}
 	

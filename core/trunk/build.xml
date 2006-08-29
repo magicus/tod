@@ -10,7 +10,6 @@
         <property name="classes-debugger.dir" value="${basedir}/classes-debugger"/>
 
         <path id="agent.classpath">
-            <pathelement path="../RemoteBCI/bin"/>
             <pathelement path="${lib.dir}/asm-2.1.jar"/>
             <pathelement path="${lib.dir}/asm-commons-2.1.jar"/>
         </path>
@@ -18,7 +17,8 @@
         <path id="debugger.classpath">
             <pathelement path="../reflex-trunk/bin"/>
             <pathelement path="../zz.utils/bin"/>
-            <pathelement path="../RemoteBCI/bin"/>
+            <pathelement path="../zz.csg/bin"/>
+        	<pathelement path="${classes-agent.dir}"/>
             <pathelement path="${lib.dir}/junit.jar"/>
             <pathelement path="${lib.dir}/asm-2.1.jar"/>
             <pathelement path="${lib.dir}/asm-commons-2.1.jar"/>
@@ -28,7 +28,8 @@
     <target name="clean" depends="init">
         <delete includeemptydirs="true" failonerror="false">
             <fileset dir="${build.dir}"/>
-            <fileset dir="${classes.dir}"/>
+            <fileset dir="${classes-agent.dir}"/>
+            <fileset dir="${classes-debugger.dir}"/>
         </delete>
     </target>
 
@@ -41,7 +42,7 @@
             classpathref="agent.classpath"/>
     </target>
 
-    <target name="compile-debugger" depends="init">
+    <target name="compile-debugger" depends="init, compile-agent">
         <mkdir dir="${classes-debugger.dir}"/>
         <javac compiler="javac1.5" source="1.5" target="1.5"
         	debug="yes" nowarn="yes"
@@ -51,5 +52,31 @@
     </target>
 	
 	<target name="compile" depends="compile-agent, compile-debugger"/>
+	
+	<target name="rmic" depends="compile">
+		<rmic 
+			base="${classes-debugger.dir}" 
+			classpathref="debugger.classpath"
+			classname="tod.impl.dbgrid.GridMaster"/>
+		
+		<rmic 
+			base="${classes-debugger.dir}" 
+			classpathref="debugger.classpath"
+			classname="tod.impl.dbgrid.dbnode.DatabaseNode"/>
+	</target>
 
+	<target name="jar" depends="compile, rmic">
+        <mkdir dir="${build.dir}"/>
+		<jar destfile="${build.dir}/tod-agent.jar" basedir="${classes-agent.dir}"/>
+		<jar destfile="${build.dir}/tod-debugger.jar" basedir="${classes-debugger.dir}"/>
+	</target>
+	
+    <target name="pushJars" depends="jar" >
+        <apply executable="scp" parallel="true" failonerror="true">
+        	<srcfile/>
+        	<arg value="syntagma.dim.uchile.cl:~/tod"/>
+        	<fileset dir="${build.dir}" includes="*.jar"/>
+    	</apply>
+    </target>
+	
 </project>

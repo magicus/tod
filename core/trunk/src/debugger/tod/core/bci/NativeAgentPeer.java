@@ -23,11 +23,12 @@ import tod.core.transport.SocketThread;
  */
 public abstract class NativeAgentPeer extends SocketThread
 {
-	public static final int EXCEPTION_GENERATED = 20;
+	public static final byte EXCEPTION_GENERATED = 20;
+	public static final byte INSTRUMENT_CLASS = 50;
+	public static final byte FLUSH = 99;
 	public static final byte OBJECT_HASH = 1;
 	public static final byte OBJECT_UID = 2;
 	
-    public static final byte INSTRUMENT_CLASS = 50;
     public static final byte SET_CACHE_PATH = 80;
     public static final byte SET_SKIP_CORE_CLASSES = 81;
     public static final byte CONFIG_DONE = 90;
@@ -138,6 +139,11 @@ public abstract class NativeAgentPeer extends SocketThread
             
         case EXCEPTION_GENERATED:
         	processExceptionGenerated(aInputStream, aOutputStream);
+        	break;
+        	
+        case FLUSH:
+        	processFlush();
+        	break;
             
         default:
             throw new RuntimeException("Command not handled: "+aCommand);
@@ -220,6 +226,11 @@ public abstract class NativeAgentPeer extends SocketThread
 			String aMethodSignature,
 			int aBytecodeIndex,
 			Object aException);
+	
+	/**
+	 * This method is called when the target vm is terminated.
+	 */
+	protected abstract void processFlush();
 
 
     /**

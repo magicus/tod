@@ -123,7 +123,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		return theId;
 	}
 	
-	public ILogCollector createCollector(int aHostId) throws RemoteException
+	public ILogCollector createCollector(int aHostId)
 	{
 		GridEventCollector theCollector = new GridEventCollector(
 				this,
@@ -134,6 +134,14 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		itsCollectors.put(aHostId, theCollector);
 		
 		return theCollector;
+	}
+	
+	/**
+	 * Ensures that all buffered data is pushed to the nodes.
+	 */
+	public void flush()
+	{
+		itsDispatcher.flush();
 	}
 	
 	/**

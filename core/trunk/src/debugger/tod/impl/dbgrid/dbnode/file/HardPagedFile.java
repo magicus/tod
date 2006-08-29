@@ -30,7 +30,7 @@ import zz.utils.cache.MRUBuffer;
 public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.PageBitStruct>
 {
 	private Map<Long, PageRef> itsPagesMap = new HashMap<Long, PageRef>();
-	private ReferenceQueue<Page> itsPageRefQueue = new ReferenceQueue<Page>();
+	private ReferenceQueue itsPageRefQueue = new ReferenceQueue();
 	
 	private String itsName;
 	private FileChannel itsFile;

@@ -19,7 +19,19 @@ import zz.utils.ListMap;
 public class Monitor
 {
 	private static Monitor INSTANCE = new Monitor();
-	private static MemoryMXBean MEMORY_MX_BEAN = ManagementFactory.getMemoryMXBean();
+	private static MemoryMXBean MEMORY_MX_BEAN;
+	
+	static
+	{
+		try
+		{
+			MEMORY_MX_BEAN = ManagementFactory.getMemoryMXBean();
+		}
+		catch (Throwable e)
+		{
+			MEMORY_MX_BEAN = null;
+		}
+	}
 
 	public static Monitor getInstance()
 	{
@@ -74,8 +86,11 @@ public class Monitor
 	{
 		System.out.println("--- Monitor ---");
 		
-		System.out.println("heap mem: " + MEMORY_MX_BEAN.getHeapMemoryUsage());
-		System.out.println("non-heap mem: " + MEMORY_MX_BEAN.getNonHeapMemoryUsage());
+		if (MEMORY_MX_BEAN != null)
+		{
+			System.out.println("heap mem: " + MEMORY_MX_BEAN.getHeapMemoryUsage());
+			System.out.println("non-heap mem: " + MEMORY_MX_BEAN.getNonHeapMemoryUsage());
+		}
 
 		
 		List<KeyMonitorData> theData = getProbeData();

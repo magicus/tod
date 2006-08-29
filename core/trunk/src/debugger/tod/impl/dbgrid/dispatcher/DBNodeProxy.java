@@ -31,8 +31,6 @@ public class DBNodeProxy
 	private final GridMaster itsMaster;
 	private MessageQueue itsMessageQueue = new MessageQueue();
 	
-	private boolean itsFlushed = false;
-
 	public DBNodeProxy(RIDatabaseNode aDatabaseNode, GridMaster aMaster)
 	{
 		itsDatabaseNode = aDatabaseNode;
@@ -44,7 +42,6 @@ public class DBNodeProxy
 	 */
 	public void pushEvent(Event aEvent)
 	{
-		assert ! itsFlushed;
 		byte[] theId = makeExternalPointer(aEvent);
 		aEvent.putAttribute(EventDispatcher.EVENT_ATTR_ID, theId);
 		
@@ -57,7 +54,6 @@ public class DBNodeProxy
 	 */
 	public void pushChildEvent(Event aParentEvent, Event aChildEvent)
 	{
-		assert ! itsFlushed;
 		byte[] theParentId = (byte[]) aParentEvent.getAttribute(EventDispatcher.EVENT_ATTR_ID);
 		byte[] theChildId = (byte[]) aChildEvent.getAttribute(EventDispatcher.EVENT_ATTR_ID);
 		
@@ -68,11 +64,16 @@ public class DBNodeProxy
 	{
 		try
 		{
-			itsMessageQueue.send();
+			MessageQueue theMessageQueue = itsMessageQueue;
+			itsMessageQueue = null;
+			theMessageQueue.interrupt();
+			theMessageQueue.join();
+			
+			theMessageQueue.send();
+			
 			itsDatabaseNode.flush();
-			itsFlushed = true;
 		}
-		catch (RemoteException e)
+		catch (Exception e)
 		{
 			itsMaster.fireException(e);
 		}
@@ -101,8 +102,6 @@ public class DBNodeProxy
 
 		public void send() throws RemoteException
 		{
-			assert ! itsFlushed;
-
 			List<GridMessage> theEvents;
 			
 			synchronized (this)
@@ -144,7 +143,11 @@ public class DBNodeProxy
 					
 					long dt = t1-t0;
 					if (dt < TRANSMIT_DELAY_MS) sleep(TRANSMIT_DELAY_MS - dt);
+					if (itsMessageQueue == null) break;
 				}
+			}
+			catch (InterruptedException e)
+			{
 			}
 			catch (Exception e)
 			{
