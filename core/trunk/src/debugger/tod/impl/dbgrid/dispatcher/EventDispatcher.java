@@ -11,6 +11,7 @@ import tod.impl.common.event.Event;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
 import tod.impl.dbgrid.dbnode.RIDatabaseNode;
+import zz.utils.Utils;
 
 public class EventDispatcher
 {
@@ -50,7 +51,7 @@ public class EventDispatcher
 		
 		// Choose a node and send the event
 		DBNodeProxy theProxy = itsNodes.get(itsCurrentNode);
-		aEvent.putAttribute(EVENT_ATTR_NODE, itsCurrentNode);
+		aEvent.putAttribute(EVENT_ATTR_NODE, itsCurrentNode+1);
 		theProxy.pushEvent(aEvent);
 		
 		// Send an add child message to the node that contains the parent
@@ -59,7 +60,7 @@ public class EventDispatcher
 		if (theAttribute != null)
 		{
 			int theParentNode = (Integer) theAttribute;
-			DBNodeProxy theParentProxy = itsNodes.get(theParentNode);
+			DBNodeProxy theParentProxy = itsNodes.get(theParentNode-1);
 			theParentProxy.pushChildEvent(theParent, aEvent);
 		}
 		

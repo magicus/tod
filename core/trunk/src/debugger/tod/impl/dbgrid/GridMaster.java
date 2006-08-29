@@ -114,11 +114,13 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		}
 	}
 	
-	public void registerNode(RIDatabaseNode aNode)
+	public int registerNode(RIDatabaseNode aNode)
 	{
 		itsNodes.add(aNode);
 		itsDispatcher.addNode(aNode);
-		System.out.println("Registered node");
+		int theId = itsNodes.size();
+		System.out.println("Registered node "+theId);
+		return theId;
 	}
 	
 	public ILogCollector createCollector(int aHostId) throws RemoteException

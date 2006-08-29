@@ -31,9 +31,7 @@ public class ExponentialPageBank extends PageBank
 	 */
 	public ExponentialPageBank(SoftPagedFile aFile)
 	{
-		itsFile = aFile;
-		itsCurrentSize = itsFile.getMinPageSize();
-		itsMaxSize = itsFile.getMaxPageSize();
+		this(aFile, aFile.getMinPageSize());
 	}
 
 	/**
@@ -45,6 +43,7 @@ public class ExponentialPageBank extends PageBank
 		itsFile = aFile;
 		itsCurrentSize = aCurrentSize;
 		itsMaxSize = itsFile.getMaxPageSize();
+		assert itsCurrentSize <= itsMaxSize;
 	}
 	
 	@Override

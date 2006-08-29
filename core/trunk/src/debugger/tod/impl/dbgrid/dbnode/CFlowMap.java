@@ -182,7 +182,7 @@ public class CFlowMap
 			while (true)
 			{
 				assert thePage.getSize() == thePageSize;
-				thePageSize *= 2;
+				if (thePageSize < itsDataFile.getMaxPageSize()) thePageSize *= 2;
 				
 				Long theNextPage = TupleIterator.readNextPageId(
 						thePage, 

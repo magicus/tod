@@ -31,8 +31,9 @@ public interface RIGridMaster extends Remote
 	
 	/**
 	 * Registers a node so that it can be used by the grid.
+	 * @return A newly assigned id for the registered node.
 	 */
-	public void registerNode(RIDatabaseNode aNode) throws RemoteException;
+	public int registerNode(RIDatabaseNode aNode) throws RemoteException;
 	
 	/**
 	 * Creates a new {@link EventCollector} that can receive events

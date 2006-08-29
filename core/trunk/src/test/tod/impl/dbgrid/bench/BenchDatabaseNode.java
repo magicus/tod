@@ -24,7 +24,7 @@ public class BenchDatabaseNode
 
 	@Test public void test() throws RemoteException
 	{
-		itsNode = new DatabaseNode(0, false);
+		itsNode = new DatabaseNode(false);
 		store();
 		fetchSimple(1000);
 		fetchCompound(100, 8);

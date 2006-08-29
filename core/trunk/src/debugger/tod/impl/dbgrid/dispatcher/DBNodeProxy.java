@@ -33,7 +33,6 @@ public class DBNodeProxy
 	
 	private boolean itsFlushed = false;
 
-	
 	public DBNodeProxy(RIDatabaseNode aDatabaseNode, GridMaster aMaster)
 	{
 		itsDatabaseNode = aDatabaseNode;

@@ -25,7 +25,7 @@ public class TestDatabaseNode
 {
 	@Test public void check() throws RemoteException
 	{
-		DatabaseNode theNode = new DatabaseNode(0, false);
+		DatabaseNode theNode = new DatabaseNode(false);
 		EventGenerator theEventGenerator = createGenerator();
 		
 		System.out.println("filling...");

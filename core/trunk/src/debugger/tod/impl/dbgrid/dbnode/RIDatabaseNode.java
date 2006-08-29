@@ -7,6 +7,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
+import tod.impl.dbgrid.RIGridMaster;
 import tod.impl.dbgrid.messages.GridMessage;
 
 /**
