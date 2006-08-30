@@ -7,9 +7,11 @@ public class Dummy
 {
 	public static void main(String[] args)
 	{
-		for(int i=0;i<1000;i++)
+		int j;
+		for(int i=0;i<1000000;i++)
 		{
-			System.out.println(i);
+			j = i;
+			if (i % 10000 == 0) System.out.println(i);
 		}
 	}
 }

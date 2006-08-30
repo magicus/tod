@@ -5,16 +5,74 @@ package tod.impl.dbgrid;
 
 import tod.impl.dbgrid.dbnode.CFlowMap;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
-import tod.impl.dbgrid.dbnode.EventList;
 import tod.impl.dbgrid.dbnode.HierarchicalIndex;
-import tod.impl.dbgrid.dbnode.btree.Node;
 import tod.impl.dbgrid.dbnode.file.TupleIterator;
 import tod.impl.dbgrid.dbnode.file.TupleWriter;
-import tod.impl.dbgrid.messages.EventType;
+import tod.impl.dbgrid.messages.MessageType;
 import zz.utils.bit.BitUtils;
 
 public class DebuggerGridConfig
 {
+	/**
+	 * Number of bits used to represent the owner node of an event.
+	 */
+	public static final int EVENT_NODE_BITS = 6;
+	
+	/**
+	 * Number of bits used to represent the host of an event.
+	 */
+	public static final int EVENT_HOST_BITS = 10;
+	
+	/**
+	 * Number of bits used to represent the thread of an event.
+	 */
+	public static final int EVENT_THREAD_BITS = 16;
+	
+	/**
+	 * Number of bits used to represent the depth of an event.
+	 */
+	public static final int EVENT_DEPTH_BITS = 12;
+	
+	/**
+	 * Number of bits used to represent the serial number of an event.
+	 */
+	public static final int EVENT_TIMESTAMP_BITS = 64; 
+	
+	/**
+	 * Number of bits used to represent a behavior id in an event.
+	 */
+	public static final int EVENT_BEHAVIOR_BITS = 16; 
+	
+	/**
+	 * Number of bits used to represent a field id in an event.
+	 */
+	public static final int EVENT_FIELD_BITS = 16; 
+	
+	/**
+	 * Number of bits used to represent a variable id in an event.
+	 */
+	public static final int EVENT_VARIABLE_BITS = 16; 
+	
+	/**
+	 * Number of bits used to represent the bytecode location of an event
+	 */
+	public static final int EVENT_BYTECODE_LOCATION_BITS = 16; 
+	
+	/**
+	 * Number of bits used to represent the number of arguments of a behavior call.
+	 */
+	public static final int EVENT_ARGS_COUNT_BITS = 8; 
+	
+	/**
+	 * Port at which database nodes connect to the master.
+	 */
+	public static final int MASTER_NODE_PORT = 8060;
+	
+	/**
+	 * NUmber of array slots in the master's event buffer.
+	 */
+	public static final int MASTER_BUFFER_SIZE = 4096;
+	
 	/**
 	 * Size of the {@link DatabaseNode} event buffer
 	 */
@@ -23,7 +81,7 @@ public class DebuggerGridConfig
 	/**
 	 * Maximum number of event types 
 	 */
-	public static final int STRUCTURE_TYPE_COUNT = EventType.values().length;
+	public static final int STRUCTURE_TYPE_COUNT = MessageType.values().length;
 
 	/**
 	 * Maximum number of hosts
@@ -35,6 +93,11 @@ public class DebuggerGridConfig
 	 */
 	public static final int STRUCTURE_THREADS_COUNT = 10000;
 
+	/**
+	 * Maximum number of threads
+	 */
+	public static final int STRUCTURE_DEPTH_RANGE = BitUtils.pow2i(EVENT_DEPTH_BITS);
+	
 	/**
 	 * Maximum number of bytecode locations
 	 */
@@ -77,54 +140,9 @@ public class DebuggerGridConfig
 	public static final long TIMESTAMP_ADJUST_MASK = BitUtils.pow2(TIMESTAMP_ADJUST_INACCURACY+TIMESTAMP_ADJUST_SHIFT)-1;
 	
 	/**
-	 * Number of bits used to represent the owner node of an event.
+	 * Number of bits used to represent the message type
 	 */
-	public static final int EVENT_NODE_BITS = 6;
-	
-	/**
-	 * Number of bits used to represent the host of an event.
-	 */
-	public static final int EVENT_HOST_BITS = 10;
-	
-	/**
-	 * Number of bits used to represent the thread of an event.
-	 */
-	public static final int EVENT_THREAD_BITS = 16;
-	
-	/**
-	 * Number of bits used to represent the serial number of an event.
-	 */
-	public static final int EVENT_TIMESTAMP_BITS = 64; 
-	
-	/**
-	 * Number of bits used to represent a behavior id in an event.
-	 */
-	public static final int EVENT_BEHAVIOR_BITS = 16; 
-	
-	/**
-	 * Number of bits used to represent a field id in an event.
-	 */
-	public static final int EVENT_FIELD_BITS = 16; 
-	
-	/**
-	 * Number of bits used to represent a variable id in an event.
-	 */
-	public static final int EVENT_VARIABLE_BITS = 16; 
-	
-	/**
-	 * Number of bits used to represent the bytecode location of an event
-	 */
-	public static final int EVENT_BYTECODE_LOCATION_BITS = 16; 
-	
-	/**
-	 * Number of bits used to represent the number of arguments of a behavior call.
-	 */
-	public static final int EVENT_ARGS_COUNT_BITS = 8; 
-	
-	/**
-	 * Number of bits used to represent the event type
-	 */
-	public static final int EVENT_TYPE_BITS = (int) Math.ceil(Math.log(EventType.values().length)/Math.log(2)); 
+	public static final int MESSAGE_TYPE_BITS = BitUtils.log2ceil(MessageType.values().length); 
 	
 	/**
 	 * Number of bits necessary to represent an external event pointer.
@@ -200,10 +218,4 @@ public class DebuggerGridConfig
 	 * Maximum number of index levels for {@link HierarchicalIndex}.
 	 */
 	public static final int DB_MAX_INDEX_LEVELS = 6;
-	
-	/**
-	 * Number of bits used to represent the entries count in a 
-	 * {@link Node}. 
-	 */
-	public static final int DB_BTREE_COUNT_BITS = 16;
 }

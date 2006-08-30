@@ -20,6 +20,7 @@ public class GridFieldWriteEvent extends GridEvent
 	public GridFieldWriteEvent(
 			int aHost, 
 			int aThread, 
+			int aDepth,
 			long aTimestamp, 
 			int aOperationBytecodeIndex, 
 			byte[] aParentPointer, 
@@ -27,7 +28,7 @@ public class GridFieldWriteEvent extends GridEvent
 			Object aTarget, 
 			Object aValue)
 	{
-		super(aHost, aThread, aTimestamp, aOperationBytecodeIndex, aParentPointer);
+		super(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentPointer);
 		itsFieldId = aFieldId;
 		itsTarget = aTarget;
 		itsValue = aValue;
@@ -76,9 +77,9 @@ public class GridFieldWriteEvent extends GridEvent
 	}
 
 	@Override
-	public EventType getEventType()
+	public MessageType getEventType()
 	{
-		return EventType.FIELD_WRITE;
+		return MessageType.FIELD_WRITE;
 	}
 
 	public int getFieldId()

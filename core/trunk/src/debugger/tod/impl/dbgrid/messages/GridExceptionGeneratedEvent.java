@@ -18,13 +18,14 @@ public class GridExceptionGeneratedEvent extends GridEvent
 	public GridExceptionGeneratedEvent(
 			int aHost, 
 			int aThread, 
+			int aDepth,
 			long aTimestamp, 
 			int aOperationBytecodeIndex, 
 			byte[] aParentPointer, 
 			Object aException, 
 			int aThrowingBehaviorId)
 	{
-		super(aHost, aThread, aTimestamp, aOperationBytecodeIndex, aParentPointer);
+		super(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentPointer);
 		itsException = aException;
 		itsThrowingBehaviorId = aThrowingBehaviorId;
 	}
@@ -67,9 +68,9 @@ public class GridExceptionGeneratedEvent extends GridEvent
 	}
 	
 	@Override
-	public EventType getEventType()
+	public MessageType getEventType()
 	{
-		return EventType.EXCEPTION_GENERATED;
+		return MessageType.EXCEPTION_GENERATED;
 	}
 
 	public Object getException()

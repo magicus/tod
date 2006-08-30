@@ -143,6 +143,7 @@ implements ILogCollector
 		aEvent.setTimestamp(aTimestamp);
 		aEvent.setHost(itsHost);
 		aEvent.setThread(aThreadInfo);
+		aEvent.setDepth(aThreadInfo.getCurrentDepth());
 		aEvent.setOperationBytecodeIndex(aOperationBytecodeIndex);
 		aEvent.setSerial(aThreadInfo.getSerial());
 		
@@ -185,6 +186,7 @@ implements ILogCollector
 			initEvent(theEvent, aTimestamp, theThread, -1);
 			
 			theThread.setCurrentParent(theEvent);
+			theThread.incDepth();
 			theEvent.setDirectParent(true);
 		}
 		
@@ -202,6 +204,7 @@ implements ILogCollector
 			Object aResult)
 	{
 		DefaultThreadInfo theThread = getThread(aThreadId);
+		theThread.decDepth();
 		
 		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();
 		assert theCurrentParent.getExecutedBehavior().getId() == aBehaviorLocationId;
@@ -224,6 +227,7 @@ implements ILogCollector
 			Object aException)
 	{
 		DefaultThreadInfo theThread = getThread(aThreadId);
+		theThread.decDepth();
 		
 		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();
 		assert theCurrentParent.getExecutedBehavior().getId() == aBehaviorLocationId;
@@ -298,6 +302,7 @@ implements ILogCollector
 		if (theFailedCall)
 		{
 			aThread.setCurrentParent(theCurrentParent.getParent());
+			aThread.decDepth();
 		}
 
 		ExceptionGeneratedEvent theEvent = new ExceptionGeneratedEvent();
@@ -400,6 +405,7 @@ implements ILogCollector
 //		processEvent(theEvent);
 		
 		theThread.setCurrentParent(theEvent);
+		theThread.incDepth();
 	}
 	
 	public void logBeforeBehaviorCall(
@@ -427,6 +433,7 @@ implements ILogCollector
 		addEvent(theThread, theEvent);
 		
 		theThread.setCurrentParent(theEvent);
+		theThread.incDepth();
 	}
 
 	public void logAfterBehaviorCall(long aThreadId)
@@ -443,6 +450,7 @@ implements ILogCollector
 			Object aResult)
 	{
 		DefaultThreadInfo theThread = getThread(aThreadId);
+		theThread.decDepth();
 		
 		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();
 		assert theCurrentParent.getCalledBehavior().getId() == aBehaviorLocationId;
@@ -466,6 +474,7 @@ implements ILogCollector
 			Object aException)
 	{
 		DefaultThreadInfo theThread = getThread(aThreadId);
+		theThread.decDepth();
 		
 		BehaviorCallEvent theCurrentParent = theThread.getCurrentParent();
 		assert theCurrentParent.getCalledBehavior().getId() == aBehaviorLocationId;
@@ -509,6 +518,8 @@ implements ILogCollector
 		 * Serial number of the last event of this thread;
 		 */
 		private long itsSerial;
+		
+		private int itsDepth = 0;
 		
 		public DefaultThreadInfo(IHostInfo aHost, long aId)
 		{
@@ -572,6 +583,22 @@ implements ILogCollector
 			itsExpectingInstantiation = false;
 			
 			return theEvent;
+		}
+		
+		public void incDepth()
+		{
+			itsDepth++;
+		}
+		
+		public void decDepth()
+		{
+			itsDepth--;
+			assert itsDepth >= 0;
+		}
+		
+		public int getCurrentDepth()
+		{
+			return itsDepth;
 		}
 	}
 

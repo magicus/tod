@@ -33,6 +33,7 @@ public abstract class GridEvent extends GridMessage
 {
 	private int itsHost;
 	private int itsThread;
+	private int itsDepth;
 	private long itsTimestamp;
 	
 	private int itsOperationBytecodeIndex;
@@ -41,12 +42,14 @@ public abstract class GridEvent extends GridMessage
 	public GridEvent(
 			int aHost, 
 			int aThread, 
+			int aDepth,
 			long aTimestamp, 
 			int aOperationBytecodeIndex, 
 			byte[] aParentPointer)
 	{
 		itsHost = aHost;
 		itsThread = aThread;
+		itsDepth = aDepth;
 		itsTimestamp = aTimestamp;
 		itsOperationBytecodeIndex = aOperationBytecodeIndex;
 		itsParentPointer = aParentPointer;
@@ -56,6 +59,7 @@ public abstract class GridEvent extends GridMessage
 	{
 		itsHost = aEvent.getHost().getId();
 		itsThread = GridEventCollector.getThreadNumber(aEvent);
+		itsDepth = aEvent.getDepth();
 		itsTimestamp = aEvent.getTimestamp();
 		itsOperationBytecodeIndex = aEvent.getOperationBytecodeIndex();
 		itsParentPointer = (byte[]) aEvent.getParent().getAttribute(EventDispatcher.EVENT_ATTR_ID);
@@ -65,23 +69,29 @@ public abstract class GridEvent extends GridMessage
 	{
 		itsHost = aBitStruct.readInt(DebuggerGridConfig.EVENT_HOST_BITS);
 		itsThread = aBitStruct.readInt(DebuggerGridConfig.EVENT_THREAD_BITS);
+		itsDepth = aBitStruct.readInt(DebuggerGridConfig.EVENT_DEPTH_BITS);
 		itsTimestamp = aBitStruct.readLong(DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
 		itsOperationBytecodeIndex = aBitStruct.readInt(DebuggerGridConfig.EVENT_BYTECODE_LOCATION_BITS);
+		
+		// TODO: this is a hack. We should not allow negative values.
+		if (itsOperationBytecodeIndex == 0xffff) itsOperationBytecodeIndex = -1;
+		
 		
 		itsParentPointer = aBitStruct.readBytes(DebuggerGridConfig.EVENTID_POINTER_SIZE);
 		if (ExternalPointer.isNull(itsParentPointer)) itsParentPointer = null;
 	}
 
 	/**
-	 * Writes out a representation of this event to a {@link ByteBitStruct}.
+	 * Writes out a representation of this event to a {@link BitStruct}.
 	 * Subclasses must override this method to serialize their attributes, and
 	 * must call super first.
 	 */
 	public void writeTo(BitStruct aBitStruct)
 	{
-		aBitStruct.writeInt(getEventType().ordinal(), DebuggerGridConfig.EVENT_TYPE_BITS);
+		super.writeTo(aBitStruct);
 		aBitStruct.writeInt(getHost(), DebuggerGridConfig.EVENT_HOST_BITS);
 		aBitStruct.writeInt(getThread(), DebuggerGridConfig.EVENT_THREAD_BITS);
+		aBitStruct.writeInt(getDepth(), DebuggerGridConfig.EVENT_DEPTH_BITS);
 		aBitStruct.writeLong(getTimestamp(), DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
 		aBitStruct.writeInt(getOperationBytecodeIndex(), DebuggerGridConfig.EVENT_BYTECODE_LOCATION_BITS);
 		
@@ -99,10 +109,10 @@ public abstract class GridEvent extends GridMessage
 	 */
 	public int getBitCount()
 	{
-		int theCount = 0;
-		theCount += DebuggerGridConfig.EVENT_TYPE_BITS;
+		int theCount = super.getBitCount();
 		theCount += DebuggerGridConfig.EVENT_HOST_BITS;
 		theCount += DebuggerGridConfig.EVENT_THREAD_BITS;
+		theCount += DebuggerGridConfig.EVENT_DEPTH_BITS;
 		theCount += DebuggerGridConfig.EVENT_TIMESTAMP_BITS;
 		theCount += DebuggerGridConfig.EVENT_BYTECODE_LOCATION_BITS;
 		theCount += DebuggerGridConfig.EVENTID_POINTER_SIZE;
@@ -113,7 +123,15 @@ public abstract class GridEvent extends GridMessage
 	/**
 	 * Returns the type of this event.
 	 */
-	public abstract EventType getEventType();
+	public abstract MessageType getEventType();
+	
+	/**
+	 * Returns the type of this event.
+	 */
+	public final MessageType getMessageType()
+	{
+		return getEventType();
+	}
 	
 	public int getHost()
 	{
@@ -133,6 +151,11 @@ public abstract class GridEvent extends GridMessage
 	public int getThread()
 	{
 		return itsThread;
+	}
+
+	public int getDepth()
+	{
+		return itsDepth;
 	}
 
 	public long getTimestamp()
@@ -164,35 +187,10 @@ public abstract class GridEvent extends GridMessage
 		
 		if (getThread() > 0) 
 			aIndexes.threadIndex.addTuple(getThread(), theStdTuple);
+		
+		aIndexes.depthIndex.addTuple(getDepth(), theStdTuple);
 	}
 
-	/**
-	 * Creates an event from a serialized representation, symmetric to
-	 * {@link #writeTo(BitStruct)}.
-	 */
-	public static GridEvent create(BitStruct aBitStruct)
-	{
-		EventType theType = EventType.values()[aBitStruct.readInt(DebuggerGridConfig.EVENT_TYPE_BITS)];
-		switch (theType)
-		{
-		case BEHAVIOR_EXIT:
-			return new GridBehaviorExitEvent(aBitStruct);
-		case CONSTRUCTOR_CHAINING:
-			return new GridBehaviorCallEvent(aBitStruct, EventType.CONSTRUCTOR_CHAINING);
-		case EXCEPTION_GENERATED:
-			return new GridExceptionGeneratedEvent(aBitStruct);
-		case FIELD_WRITE:
-			return new GridFieldWriteEvent(aBitStruct);
-		case INSTANTIATION:
-			return new GridBehaviorCallEvent(aBitStruct, EventType.INSTANTIATION);
-		case LOCAL_VARIABLE_WRITE:
-			return new GridVariableWriteEvent(aBitStruct);
-		case METHOD_CALL:
-			return new GridBehaviorCallEvent(aBitStruct, EventType.METHOD_CALL);
-		default: throw new RuntimeException("Not handled: "+theType); 
-		}
-	}
-	
 	/**
 	 * Creates a {@link GridEvent} with the information extracted from and
 	 * {@link Event}.
@@ -202,17 +200,17 @@ public abstract class GridEvent extends GridMessage
 		if (aEvent instanceof ConstructorChainingEvent)
 		{
 			ConstructorChainingEvent theEvent = (ConstructorChainingEvent) aEvent;
-			return createBehaviorCall(theEvent, EventType.CONSTRUCTOR_CHAINING);
+			return createBehaviorCall(theEvent, MessageType.CONSTRUCTOR_CHAINING);
 		}
 		else if (aEvent instanceof MethodCallEvent)
 		{
 			MethodCallEvent theEvent = (MethodCallEvent) aEvent;
-			return createBehaviorCall(theEvent, EventType.METHOD_CALL);
+			return createBehaviorCall(theEvent, MessageType.METHOD_CALL);
 		}
 		else if (aEvent instanceof InstantiationEvent)
 		{
 			InstantiationEvent theEvent = (InstantiationEvent) aEvent;
-			return createBehaviorCall(theEvent, EventType.INSTANTIATION);			
+			return createBehaviorCall(theEvent, MessageType.INSTANTIATION);			
 		}
 		else if (aEvent instanceof BehaviorExitEvent)
 		{
@@ -262,7 +260,7 @@ public abstract class GridEvent extends GridMessage
 		else throw new RuntimeException("Not handled: "+aEvent);
 	}
 
-	private static GridBehaviorCallEvent createBehaviorCall(BehaviorCallEvent aEvent, EventType aType)
+	private static GridBehaviorCallEvent createBehaviorCall(BehaviorCallEvent aEvent, MessageType aType)
 	{
 		return new GridBehaviorCallEvent(
 				aEvent,

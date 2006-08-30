@@ -5,6 +5,7 @@ package tod.impl.dbgrid.dbnode;
 
 import static tod.impl.dbgrid.DebuggerGridConfig.*;
 import tod.impl.dbgrid.dbnode.file.HardPagedFile;
+import zz.utils.bit.BitUtils;
 
 /**
  * Groups all the indexes maintained by a database node.
@@ -15,6 +16,7 @@ public class Indexes
 	public final StdIndexSet typeIndex;
 	public final StdIndexSet hostIndex;
 	public final StdIndexSet threadIndex;
+	public final StdIndexSet depthIndex;
 	public final StdIndexSet bytecodeLocationIndex;
 	public final RoleIndexSet behaviorIndex;
 	public final StdIndexSet fieldIndex;
@@ -26,6 +28,7 @@ public class Indexes
 		typeIndex = new StdIndexSet("type", aFile, STRUCTURE_TYPE_COUNT+1);
 		hostIndex = new StdIndexSet("host", aFile, STRUCTURE_HOSTS_COUNT+1);
 		threadIndex = new StdIndexSet("thread", aFile, STRUCTURE_THREADS_COUNT+1);
+		depthIndex = new StdIndexSet("depth", aFile, STRUCTURE_DEPTH_RANGE+1);
 		bytecodeLocationIndex = new StdIndexSet("bytecodeLoc.", aFile, STRUCTURE_BYTECODE_LOCS_COUNT+1);
 		behaviorIndex = new RoleIndexSet("behavior", aFile, STRUCTURE_BEHAVIOR_COUNT+1);
 		fieldIndex = new StdIndexSet("field", aFile, STRUCTURE_FIELD_COUNT+1);

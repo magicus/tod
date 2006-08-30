@@ -26,11 +26,23 @@ public abstract class Event implements ICallerSideEvent
 	
 	private BehaviorCallEvent itsParent;
 	
+	private int itsDepth;
+	
 	/**
 	 * A map of additional attributes that can be attached to this event.
 	 */
 	private Map<Object, Object> itsAttributes;
 	
+	public int getDepth()
+	{
+		return itsDepth;
+	}
+
+	public void setDepth(int aDepth)
+	{
+		itsDepth = aDepth;
+	}
+
 	public BehaviorCallEvent getParent()
 	{
 		return itsParent;

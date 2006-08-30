@@ -3,19 +3,21 @@
  */
 package tod.impl.dbgrid.dispatcher;
 
-import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
 
 import tod.impl.common.event.Event;
+import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.ExternalPointer;
 import tod.impl.dbgrid.GridEventCollector;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
-import tod.impl.dbgrid.dbnode.RIDatabaseNode;
-import tod.impl.dbgrid.messages.AddChildEvent;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.GridMessage;
+import tod.utils.NativeStream;
+import zz.utils.bit.BitStruct;
+import zz.utils.bit.IntBitStruct;
 
 /**
  * A proxy for database nodes. It collects messages in a 
@@ -27,14 +29,41 @@ public class DBNodeProxy
 {
 	private static final int TRANSMIT_DELAY_MS = 1000;
 	
-	private final RIDatabaseNode itsDatabaseNode;
+	private final Socket itsSocket;
+	private final DataOutputStream itsOutputStream;
+	private final int itsNodeId;
 	private final GridMaster itsMaster;
-	private MessageQueue itsMessageQueue = new MessageQueue();
 	
-	public DBNodeProxy(RIDatabaseNode aDatabaseNode, GridMaster aMaster)
+	private final int[] itsBuffer = new int[DebuggerGridConfig.MASTER_BUFFER_SIZE];
+	private final byte[] itsByteBuffer = new byte[DebuggerGridConfig.MASTER_BUFFER_SIZE*4];
+	private final BitStruct itsEventsBuffer = new IntBitStruct(itsBuffer);
+	
+	private long itsSentMessagesCount = 0;
+	private long itsEventsCount = 0;
+	private long itsFirstTimestamp = 0;
+	private long itsLastTimestamp = 0;
+	
+	/**
+	 * Number of currently buffered messages.
+	 */
+	private int itsMessagesCount = 0;
+	
+	public DBNodeProxy(Socket aSocket, int aNodeId, GridMaster aMaster)
 	{
-		itsDatabaseNode = aDatabaseNode;
+		itsSocket = aSocket;
+		itsNodeId = aNodeId;
 		itsMaster = aMaster;
+		
+		try
+		{
+			itsOutputStream = new DataOutputStream(itsSocket.getOutputStream());
+			itsOutputStream.writeInt(aNodeId);
+			itsOutputStream.flush();
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**
@@ -45,37 +74,63 @@ public class DBNodeProxy
 		byte[] theId = makeExternalPointer(aEvent);
 		aEvent.putAttribute(EventDispatcher.EVENT_ATTR_ID, theId);
 		
-		itsMessageQueue.pushMessage(GridEvent.create(aEvent));
+		pushMessage(GridEvent.create(aEvent));
+		
+		itsEventsCount++;
+		long theTimestamp = aEvent.getTimestamp();
+		itsFirstTimestamp = Math.min(itsFirstTimestamp, theTimestamp);
+		itsLastTimestamp = Math.max(itsLastTimestamp, theTimestamp);
 	}
 
-	/**
-	 * Indicates that a parent event stored by this proxy's node has a new child,
-	 * possibly stored by another node. 
-	 */
-	public void pushChildEvent(Event aParentEvent, Event aChildEvent)
+	private void pushMessage(GridMessage aMessage)
 	{
-		byte[] theParentId = (byte[]) aParentEvent.getAttribute(EventDispatcher.EVENT_ATTR_ID);
-		byte[] theChildId = (byte[]) aChildEvent.getAttribute(EventDispatcher.EVENT_ATTR_ID);
+		if (aMessage.getBitCount() > itsEventsBuffer.getRemainingBits())
+		{
+			sendBuffer();
+		}
 		
-		itsMessageQueue.pushMessage(new AddChildEvent(theParentId, theChildId));
+		aMessage.writeTo(itsEventsBuffer);
+		itsMessagesCount++;
+	}
+	
+	private void sendBuffer()
+	{
+//		System.out.println(String.format(
+//				"Sending %d messages to node %d (already sent %d)",
+//				itsMessagesCount,
+//				itsNodeId,
+//				itsSentMessagesCount));
+		try
+		{
+			itsOutputStream.writeInt(itsMessagesCount);
+			itsOutputStream.writeInt(0xabcdef);
+			
+			NativeStream.i2b(itsBuffer, itsByteBuffer);
+			
+			itsOutputStream.write(itsByteBuffer);
+			itsOutputStream.flush();
+			
+			itsSentMessagesCount += itsMessagesCount;
+			
+			itsEventsBuffer.reset();
+			itsMessagesCount = 0;
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 	
 	public void flush()
 	{
 		try
 		{
-			MessageQueue theMessageQueue = itsMessageQueue;
-			itsMessageQueue = null;
-			theMessageQueue.interrupt();
-			theMessageQueue.join();
-			
-			theMessageQueue.send();
-			
-			itsDatabaseNode.flush();
+			sendBuffer();
+			itsSocket.close();
 		}
-		catch (Exception e)
+		catch (IOException e)
 		{
-			itsMaster.fireException(e);
+			throw new RuntimeException(e);
 		}
 	}
 	
@@ -91,69 +146,28 @@ public class DBNodeProxy
 				aEvent.getTimestamp());
 	}
 	
-	private class MessageQueue extends Thread
+	/**
+	 * Returns the number of events stored by this node
+	 */
+	public long getEventsCount() 
 	{
-		private List<GridMessage> itsQueuedEvents = new ArrayList<GridMessage>();
-		
-		public MessageQueue()
-		{
-			start();
-		}
-
-		public void send() throws RemoteException
-		{
-			List<GridMessage> theEvents;
-			
-			synchronized (this)
-			{
-				theEvents = itsQueuedEvents;
-				itsQueuedEvents = new ArrayList<GridMessage>();
-			}
-			
-			int theCount = theEvents.size();
-			GridMessage[] theBuffer = new GridMessage[1000];
-			int i=0;
-			while (i<theCount)
-			{
-				for (int j=0;j<theBuffer.length;j++)
-				{
-					theBuffer[j] = i<theCount ? theEvents.get(i) : null;
-					i++;
-				}
-				
-				itsDatabaseNode.push(theBuffer);
-			}
-		}
-		
-		public synchronized void pushMessage(GridMessage aMessage)
-		{
-			itsQueuedEvents.add(aMessage);
-		}
-		
-		@Override
-		public void run()
-		{
-			try
-			{
-				while(true)
-				{
-					long t0 = System.currentTimeMillis();
-					itsMessageQueue.send();
-					long t1 = System.currentTimeMillis();
-					
-					long dt = t1-t0;
-					if (dt < TRANSMIT_DELAY_MS) sleep(TRANSMIT_DELAY_MS - dt);
-					if (itsMessageQueue == null) break;
-				}
-			}
-			catch (InterruptedException e)
-			{
-			}
-			catch (Exception e)
-			{
-				itsMaster.fireException(e);
-			}
-		}
-
+		return itsEventsCount;
 	}
+	
+	/**
+	 * Returns the timestamp of the first event recorded in this node.
+	 */
+	public long getFirstTimestamp()
+	{
+		return itsFirstTimestamp;
+	}
+	
+	/**
+	 * Returns the timestamp of the last event recorded in this node.
+	 */
+	public long getLastTimestamp()
+	{
+		return itsLastTimestamp;
+	}
+
 }

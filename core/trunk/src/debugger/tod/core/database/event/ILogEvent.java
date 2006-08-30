@@ -23,6 +23,11 @@ public interface ILogEvent
 	public IThreadInfo getThread();
 	
 	/**
+	 * Depth of this event in its control flow stack.
+	 */
+	public int getDepth();
+	
+	/**
 	 * Timestamp of the event. Its absolute value has no
 	 * meaning, but the difference between two timestamps
 	 * is a duration in nanoseconds.

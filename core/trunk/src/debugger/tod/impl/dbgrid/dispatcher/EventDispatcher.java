@@ -9,9 +9,6 @@ import java.util.List;
 import tod.impl.common.event.BehaviorCallEvent;
 import tod.impl.common.event.Event;
 import tod.impl.dbgrid.GridMaster;
-import tod.impl.dbgrid.dbnode.DatabaseNode;
-import tod.impl.dbgrid.dbnode.RIDatabaseNode;
-import zz.utils.Utils;
 
 public class EventDispatcher
 {
@@ -39,10 +36,9 @@ public class EventDispatcher
 		itsMaster = aMaster;
 	}
 	
-	public void addNode(RIDatabaseNode aNode) 
+	public void addNode(DBNodeProxy aProxy) 
 	{
-		DBNodeProxy theProxy = new DBNodeProxy(aNode, itsMaster);
-		itsNodes.add(theProxy);
+		itsNodes.add(aProxy);
 	}
 
 	public void dispatchEvent(Event aEvent)
@@ -53,16 +49,6 @@ public class EventDispatcher
 		DBNodeProxy theProxy = itsNodes.get(itsCurrentNode);
 		aEvent.putAttribute(EVENT_ATTR_NODE, itsCurrentNode+1);
 		theProxy.pushEvent(aEvent);
-		
-		// Send an add child message to the node that contains the parent
-		BehaviorCallEvent theParent = aEvent.getParent();
-		Object theAttribute = theParent != null ? theParent.getAttribute(EVENT_ATTR_NODE) : null;
-		if (theAttribute != null)
-		{
-			int theParentNode = (Integer) theAttribute;
-			DBNodeProxy theParentProxy = itsNodes.get(theParentNode-1);
-			theParentProxy.pushChildEvent(theParent, aEvent);
-		}
 		
 		itsCurrentNode = (itsCurrentNode+1) % itsNodes.size();
 	}

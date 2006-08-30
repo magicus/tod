@@ -54,6 +54,27 @@ public class TODServer
 		return itsReceivers.get(aHostName);
 	}
 	
+	protected void acceptJavaConnection(Socket aSocket)
+	{
+		LogReceiver theReceiver = new LogReceiver(
+				itsCollectorFactory.create(),
+				itsLocationRegistrer.getSynchronizedRegistrer(),
+				aSocket);
+		
+		String theHostName = theReceiver.waitHostName();
+		itsReceivers.put(theHostName, theReceiver);
+		
+		System.out.println("Accepted (java) connection from "+theHostName);
+	}
+	
+	protected void acceptNativeConnection(Socket aSocket)
+	{
+		NativeAgentPeer thePeer = new MyNativePeer(aSocket);
+		itsNativePeers.add(thePeer);
+		
+		System.out.println("Accepted (native) connection from "+thePeer.waitHostName());
+	}
+	
 	/**
 	 * A server that creates a {@link LogReceiver} whenever a client
 	 * connects.
@@ -68,15 +89,7 @@ public class TODServer
 		@Override
 		protected void accepted(Socket aSocket)
 		{
-			LogReceiver theReceiver = new LogReceiver(
-					itsCollectorFactory.create(),
-					itsLocationRegistrer.getSynchronizedRegistrer(),
-					aSocket);
-			
-			String theHostName = theReceiver.waitHostName();
-			itsReceivers.put(theHostName, theReceiver);
-			
-			System.out.println("Accepted (java) connection from "+theHostName);
+			acceptJavaConnection(aSocket);
 		}
 		
 	}
@@ -96,10 +109,7 @@ public class TODServer
 		@Override
 		protected void accepted(Socket aSocket)
 		{
-			NativeAgentPeer thePeer = new MyNativePeer(aSocket);
-			itsNativePeers.add(thePeer);
-			
-			System.out.println("Accepted (native) connection from "+thePeer.waitHostName());
+			acceptNativeConnection(aSocket);
 		}
 	}
 	

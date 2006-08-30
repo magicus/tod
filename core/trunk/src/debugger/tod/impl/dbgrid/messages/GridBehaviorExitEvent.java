@@ -27,6 +27,7 @@ public class GridBehaviorExitEvent extends GridEvent
 	public GridBehaviorExitEvent(
 			int aHost, 
 			int aThread, 
+			int aDepth,
 			long aTimestamp, 
 			int aOperationBytecodeIndex, 
 			byte[] aParentPointer, 
@@ -34,7 +35,7 @@ public class GridBehaviorExitEvent extends GridEvent
 			Object aResult, 
 			int aBehaviorId)
 	{
-		super(aHost, aThread, aTimestamp, aOperationBytecodeIndex, aParentPointer);
+		super(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentPointer);
 		itsHasThrown = aHasThrown;
 		itsResult = aResult;
 		itsBehaviorId = aBehaviorId;
@@ -82,9 +83,9 @@ public class GridBehaviorExitEvent extends GridEvent
 	}
 
 	@Override
-	public EventType getEventType()
+	public MessageType getEventType()
 	{
-		return EventType.BEHAVIOR_EXIT;
+		return MessageType.BEHAVIOR_EXIT;
 	}
 
 	public int getBehaviorId()

@@ -3,7 +3,7 @@
  */
 package tod.impl.dbgrid.messages;
 
-public enum EventType 
+public enum MessageType 
 {
 	BEHAVIOR_EXIT, 
 	CONSTRUCTOR_CHAINING,

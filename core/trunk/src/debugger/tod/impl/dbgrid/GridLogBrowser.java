@@ -22,7 +22,7 @@ import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
-import tod.impl.dbgrid.messages.EventType;
+import tod.impl.dbgrid.messages.MessageType;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.ObjectCodec;
 import tod.impl.dbgrid.queries.BehaviorCondition;
@@ -67,7 +67,7 @@ public class GridLogBrowser implements ILogBrowser, RIGridMasterListener
 	public IEventFilter createBehaviorCallFilter()
 	{
 		return CompoundCondition.or(
-				new TypeCondition(EventType.METHOD_CALL));
+				new TypeCondition(MessageType.METHOD_CALL));
 	}
 
 	public IEventFilter createBehaviorCallFilter(IBehaviorInfo aBehavior)
@@ -82,7 +82,7 @@ public class GridLogBrowser implements ILogBrowser, RIGridMasterListener
 
 	public IEventFilter createFieldWriteFilter()
 	{
-		return new TypeCondition(EventType.FIELD_WRITE);
+		return new TypeCondition(MessageType.FIELD_WRITE);
 	}
 
 	public IEventFilter createInstantiationFilter(ObjectId aId)
@@ -90,12 +90,12 @@ public class GridLogBrowser implements ILogBrowser, RIGridMasterListener
 		int theId = ObjectCodec.getObjectId(aId, true);
 		return CompoundCondition.and(
 				new ObjectCondition(theId, RoleIndexSet.ROLE_OBJECT_ANYARG),
-				new TypeCondition(EventType.INSTANTIATION));
+				new TypeCondition(MessageType.INSTANTIATION));
 	}
 
 	public IEventFilter createInstantiationsFilter()
 	{
-		return new TypeCondition(EventType.INSTANTIATION);
+		return new TypeCondition(MessageType.INSTANTIATION);
 	}
 
 	public IEventFilter createInstantiationsFilter(ITypeInfo aType)

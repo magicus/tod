@@ -20,9 +20,9 @@ public class GridOutputEvent extends GridEvent
 	}
 
 	@Override
-	public EventType getEventType()
+	public MessageType getEventType()
 	{
-		return EventType.OUTPUT;
+		return MessageType.OUTPUT;
 	}
 
 	public String getData()

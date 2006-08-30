@@ -28,17 +28,18 @@ public class GridBehaviorCallEvent extends GridEvent
 	public GridBehaviorCallEvent(
 			int aHost, 
 			int aThread,
+			int aDepth,
 			long aTimestamp, 
 			int aOperationBytecodeIndex,
 			byte[] aParentPointer,
-			EventType aType, 
+			MessageType aType, 
 			boolean aDirectParent, 
 			Object[] aArguments, 
 			int aCalledBehaviorId, 
 			int aExecutedBehaviorId, 
 			Object aTarget)
 	{
-		super(aHost, aThread, aTimestamp, aOperationBytecodeIndex, aParentPointer);
+		super(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentPointer);
 		itsType = (byte) aType.ordinal();
 		itsDirectParent = aDirectParent;
 		itsArguments = aArguments;
@@ -49,7 +50,7 @@ public class GridBehaviorCallEvent extends GridEvent
 
 	public GridBehaviorCallEvent(
 			Event aEvent,
-			EventType aType,
+			MessageType aType,
 			boolean aDirectParent,
 			Object[] aArguments, 
 			int aCalledBehaviorId,
@@ -65,7 +66,7 @@ public class GridBehaviorCallEvent extends GridEvent
 		itsTarget = aTarget;
 	}
 
-	public GridBehaviorCallEvent(BitStruct aBitStruct, EventType aType)
+	public GridBehaviorCallEvent(BitStruct aBitStruct, MessageType aType)
 	{
 		super(aBitStruct);
 		itsType = (byte) aType.ordinal();
@@ -111,9 +112,9 @@ public class GridBehaviorCallEvent extends GridEvent
 	}
 	
 	@Override
-	public EventType getEventType()
+	public MessageType getEventType()
 	{
-		return EventType.values()[itsType];
+		return MessageType.values()[itsType];
 	}
 
 	public Object[] getArguments()

@@ -10,6 +10,7 @@ import java.util.Iterator;
 import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 import tod.impl.dbgrid.dbnode.file.HardPagedFile.PageBitStruct;
 import tod.impl.dbgrid.messages.GridEvent;
+import tod.impl.dbgrid.messages.GridMessage;
 import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Probe;
@@ -125,7 +126,7 @@ public class EventList
 			int theRecordLength = theBitStruct.readInt(DB_EVENT_SIZE_BITS);
 			if (theRecordLength == 0) break; // End-of-page marker.
 			
-			if (theCount == 0) return GridEvent.create(theBitStruct);
+			if (theCount == 0) return (GridEvent) GridMessage.read(theBitStruct);
 			
 			theBitStruct.skip(theRecordLength-DB_EVENT_SIZE_BITS);
 			theCount--;
@@ -208,7 +209,7 @@ public class EventList
 				}
 			} while (theRecordLength == 0); // We really should not loop more than once
 			
-			GridEvent theEvent = GridEvent.create(itsPage);
+			GridEvent theEvent = (GridEvent) GridMessage.read(itsPage);
 			
 			return theEvent;
 		}

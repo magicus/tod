@@ -22,17 +22,17 @@ public class BenchDatabaseNode
 {
 	private DatabaseNode itsNode;
 
-	@Test public void test() throws RemoteException
+	@Test public void test() 
 	{
 		itsNode = new DatabaseNode(false);
 		store();
-		fetchSimple(1000);
-		fetchCompound(100, 8);
+//		fetchSimple(1000);
+//		fetchCompound(100, 8);
 	}
 	
 	private EventGenerator createGenerator()
 	{
-		return new EventGenerator(0, 100, 100, 100, 100, 100, 100, 100);
+		return new EventGenerator(0, 100, 100, 100, 100, 100, 100, 100, 100);
 	}
 	
 	private void store()

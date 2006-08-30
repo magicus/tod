@@ -3,6 +3,8 @@
  */
 package tod.impl.dbgrid;
 
+import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_OBJECT_COUNT;
+
 import java.util.Random;
 
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
@@ -10,6 +12,7 @@ import tod.impl.dbgrid.queries.BehaviorCondition;
 import tod.impl.dbgrid.queries.BytecodeLocationCondition;
 import tod.impl.dbgrid.queries.CompoundCondition;
 import tod.impl.dbgrid.queries.Conjunction;
+import tod.impl.dbgrid.queries.DepthCondition;
 import tod.impl.dbgrid.queries.Disjunction;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.impl.dbgrid.queries.FieldCondition;
@@ -18,8 +21,6 @@ import tod.impl.dbgrid.queries.ObjectCondition;
 import tod.impl.dbgrid.queries.ThreadCondition;
 import tod.impl.dbgrid.queries.TypeCondition;
 import tod.impl.dbgrid.queries.VariableCondition;
-
-import static tod.impl.dbgrid.DebuggerGridConfig.*;
 
 /**
  * Randomly generates {@link EventCondition}s.
@@ -68,7 +69,7 @@ public class ConditionGenerator
 	
 	public EventCondition nextSimpleCondition()
 	{
-		switch(itsRandom.nextInt(8))
+		switch(itsRandom.nextInt(9))
 		{
 		case 0: return new BehaviorCondition(itsEventGenerator.genBehaviorId(), genBehaviorRole());
 		case 1: return new BytecodeLocationCondition(itsEventGenerator.genBytecodeIndex());
@@ -78,6 +79,7 @@ public class ConditionGenerator
 		case 5: return new ThreadCondition(itsEventGenerator.genThreadId());
 		case 6: return new TypeCondition(itsEventGenerator.genType());
 		case 7: return new VariableCondition(itsEventGenerator.genVariableId());
+		case 8: return new DepthCondition(itsEventGenerator.genDepth());
 		default: throw new RuntimeException("Not handled");
 		}
 	}

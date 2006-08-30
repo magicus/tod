@@ -29,7 +29,7 @@ public class TestDatabaseNode
 		EventGenerator theEventGenerator = createGenerator();
 		
 		System.out.println("filling...");
-		Fixtures.fillNode(theNode, theEventGenerator, 100000);
+		Fixtures.fillNode(theNode, theEventGenerator, 1000000);
 		
 		System.out.println("checking...");
 		
@@ -65,7 +65,7 @@ public class TestDatabaseNode
 	
 	private EventGenerator createGenerator()
 	{
-		return new EventGenerator(0, 100, 100, 100, 100, 100, 100, 100);
+		return new EventGenerator(0, 100, 100, 100, 100, 100, 100, 100, 100);
 	}
 	
 }

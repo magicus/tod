@@ -19,13 +19,14 @@ public class GridVariableWriteEvent extends GridEvent
 	public GridVariableWriteEvent(
 			int aHost, 
 			int aThread, 
+			int aDepth,
 			long aTimestamp, 
 			int aOperationBytecodeIndex, 
 			byte[] aParentPointer, 
 			int aVariableId, 
 			Object aValue)
 	{
-		super(aHost, aThread, aTimestamp, aOperationBytecodeIndex, aParentPointer);
+		super(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentPointer);
 		itsVariableId = aVariableId;
 		itsValue = aValue;
 	}
@@ -67,9 +68,9 @@ public class GridVariableWriteEvent extends GridEvent
 	}
 
 	@Override
-	public EventType getEventType()
+	public MessageType getEventType()
 	{
-		return EventType.LOCAL_VARIABLE_WRITE;
+		return MessageType.LOCAL_VARIABLE_WRITE;
 	}
 
 

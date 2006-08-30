@@ -101,6 +101,11 @@ public class EventComparator implements Comparator<ILogEvent>
 			return null;
 		}
 		
+		public int getDepth()
+		{
+			return 0;
+		}
+
 		public IHostInfo getHost()
 		{
 			return null;

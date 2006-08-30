@@ -7,38 +7,37 @@ import java.util.Iterator;
 
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
-import tod.impl.dbgrid.messages.MessageType;
 import tod.impl.dbgrid.messages.GridEvent;
 
 /**
- * Represents a condition on event type.
+ * Represents a condition on event thread.
  * @author gpothier
  */
-public class TypeCondition extends SimpleCondition
+public class DepthCondition extends SimpleCondition
 {
-	private MessageType itsType;
+	private int itsDepth;
 
-	public TypeCondition(MessageType aType)
+	public DepthCondition(int aDepth)
 	{
-		itsType = aType;
+		itsDepth = aDepth;
 	}
 
 	@Override
 	protected Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
-		return aIndexes.typeIndex.getIndex(itsType.ordinal()).getTupleIterator(aTimestamp);
+		return aIndexes.depthIndex.getIndex(itsDepth).getTupleIterator(aTimestamp);
 	}
 
 	@Override
 	public boolean match(GridEvent aEvent)
 	{
-		return aEvent.getEventType() == itsType;
+		return aEvent.getDepth() == itsDepth;
 	}
 	
 	@Override
 	protected String toString(int aIndent)
 	{
-		return String.format("Event type = %s", itsType);
+		return String.format("Depth = %d", itsDepth);
 	}
 
 }

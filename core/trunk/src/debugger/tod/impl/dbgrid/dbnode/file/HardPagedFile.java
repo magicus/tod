@@ -20,6 +20,7 @@ import java.util.Map;
 import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Probe;
+import tod.utils.NativeStream;
 import zz.utils.bit.ByteBitStruct;
 import zz.utils.cache.MRUBuffer;
 
@@ -33,7 +34,7 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 	private ReferenceQueue itsPageRefQueue = new ReferenceQueue();
 	
 	private String itsName;
-	private FileChannel itsFile;
+	private RandomAccessFile itsFile;
 	private int itsPageSize;
 	
 	/**
@@ -44,8 +45,7 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 	private long itsWrittenPagesCount;
 	private long itsReadPagesCount;
 	
-	private ByteBuffer itsByteBuffer;
-	private IntBuffer itsIntBufferView;
+	private byte[] itsByteBuffer;
 	
 	public HardPagedFile(File aFile, int aPageSize) throws FileNotFoundException
 	{
@@ -54,12 +54,11 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 	
 		itsName = aFile.getName();
 		aFile.delete();
-		itsFile = new RandomAccessFile(aFile, "rw").getChannel();
+		itsFile = new RandomAccessFile(aFile, "rw");
 		itsPageSize = aPageSize;
 		itsPagesCount = 0;
 		
-		itsByteBuffer = ByteBuffer.allocateDirect(itsPageSize);
-		itsIntBufferView = itsByteBuffer.asIntBuffer();
+		itsByteBuffer = new byte[itsPageSize];
 	}
 
 	/**
@@ -185,20 +184,12 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 		try
 		{
 			int[] theBuffer = new int[itsPageSize/4];
-			itsByteBuffer.rewind();
 			
-			assert itsFile.size() >= (aId+1) * itsPageSize;
-			itsFile.position(aId * itsPageSize);
-			int theTotalReadBytes = 0;
-			while (theTotalReadBytes < itsPageSize)
-			{
-				int theReadBytes = itsFile.read(itsByteBuffer);
-				if (theReadBytes == -1) throw new IOException("Could not read page "+aId);
-				theTotalReadBytes += theReadBytes;
-			}
+			assert itsFile.length() >= (aId+1) * itsPageSize;
+			itsFile.seek(aId * itsPageSize);
+			itsFile.readFully(itsByteBuffer);
 			
-			itsIntBufferView.rewind();
-			itsIntBufferView.get(theBuffer);
+			NativeStream.b2i(itsByteBuffer, theBuffer);
 			
 			itsReadPagesCount++;
 			
@@ -215,13 +206,11 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 //		System.out.println("Storing page: "+aId+" on "+itsName);
 		try
 		{
-			itsIntBufferView.rewind();
-			itsIntBufferView.put(aData);
-			itsByteBuffer.rewind();
 			if (true)
 			{
-				int theWritten = itsFile.write(itsByteBuffer, aId * itsPageSize);
-				if (theWritten != itsPageSize) throw new IOException("Could not write page");
+				NativeStream.i2b(aData, itsByteBuffer);
+				itsFile.seek(aId * itsPageSize);
+				itsFile.write(itsByteBuffer);
 			}
 			
 			itsWrittenPagesCount++;
