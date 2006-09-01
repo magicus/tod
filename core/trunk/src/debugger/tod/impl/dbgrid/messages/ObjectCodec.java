@@ -3,6 +3,9 @@
  */
 package tod.impl.dbgrid.messages;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.ObjectId.ObjectUID;
 import zz.utils.bit.BitStruct;
@@ -284,6 +287,20 @@ public class ObjectCodec
 	 */
 	private static final int TYPE_BITS = BitUtils.log2ceil(ObjectType.values().length);
 	
+	private static final Map<Class, ObjectType> TYPES_MAP = new HashMap<Class, ObjectType>();
+	
+	static
+	{
+		TYPES_MAP.put(Byte.class, ObjectType.BYTE);
+		TYPES_MAP.put(Character.class, ObjectType.CHAR);
+		TYPES_MAP.put(Double.class, ObjectType.DOUBLE);
+		TYPES_MAP.put(Float.class, ObjectType.FLOAT);
+		TYPES_MAP.put(Integer.class, ObjectType.INT);
+		TYPES_MAP.put(Long.class, ObjectType.LONG);
+		TYPES_MAP.put(Short.class, ObjectType.SHORT);
+		TYPES_MAP.put(ObjectId.ObjectUID.class, ObjectType.UID);
+	}
+	
 	private static void writeType(BitStruct aStruct, ObjectType aType)
 	{
 		aStruct.writeInt(aType.ordinal(), TYPE_BITS);
@@ -297,11 +314,11 @@ public class ObjectCodec
 	
 	private static ObjectType findType(Object aObject)
 	{
-		for (ObjectType theType : ObjectType.values())
-		{
-			if (theType.matches(aObject)) return theType;
-		}
-		throw new RuntimeException("Not handled: "+aObject);
+		ObjectType theType;
+		if (aObject == null) theType = ObjectType.NULL;
+		else theType = TYPES_MAP.get(aObject.getClass());
+		if (theType == null) throw new RuntimeException("Not handled: "+aObject);
+		return theType;
 	}
 	
 	/**

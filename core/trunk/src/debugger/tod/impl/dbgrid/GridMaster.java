@@ -156,6 +156,15 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	}
 	
 	/**
+	 * Returns the event dispatcher. For testing only.
+	 */
+	public EventDispatcher getDispatcher()
+	{
+		return itsDispatcher;
+	}
+	
+	
+	/**
 	 * Ensures that all buffered data is pushed to the nodes.
 	 */
 	public void flush()

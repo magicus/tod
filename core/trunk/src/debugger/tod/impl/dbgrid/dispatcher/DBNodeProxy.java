@@ -69,12 +69,9 @@ public class DBNodeProxy
 	/**
 	 * Pushes an event so that it will be stored by the node behind this proxy
 	 */
-	public void pushEvent(Event aEvent)
+	public void pushEvent(GridEvent aEvent)
 	{
-		byte[] theId = makeExternalPointer(aEvent);
-		aEvent.putAttribute(EventDispatcher.EVENT_ATTR_ID, theId);
-		
-		pushMessage(GridEvent.create(aEvent));
+		pushMessage(aEvent);
 		
 		itsEventsCount++;
 		long theTimestamp = aEvent.getTimestamp();
@@ -90,6 +87,7 @@ public class DBNodeProxy
 		}
 		
 		aMessage.writeTo(itsEventsBuffer);
+//		itsEventsBuffer.skip(aMessage.getBitCount());
 		itsMessagesCount++;
 	}
 	
@@ -132,18 +130,6 @@ public class DBNodeProxy
 		{
 			throw new RuntimeException(e);
 		}
-	}
-	
-	/**
-	 * Computes the external pointer that permits to identify the given event.
-	 */
-	private byte[] makeExternalPointer(Event aEvent)
-	{
-		return ExternalPointer.create(
-				(Integer) aEvent.getAttribute(EventDispatcher.EVENT_ATTR_NODE), 
-				aEvent.getHost().getId(), 
-				GridEventCollector.getThreadNumber(aEvent), 
-				aEvent.getTimestamp());
 	}
 	
 	/**

@@ -39,7 +39,6 @@ public class DatabaseNode
 	
 	private final HardPagedFile itsEventsFile;
 	private final HardPagedFile itsIndexesFile;
-	private final HardPagedFile itsCFlowDataFile;
 	
 	private final EventList itsEventList;
 	private final Indexes itsIndexes;
@@ -63,9 +62,9 @@ public class DatabaseNode
 		{
 			String thePrefix = ConfigUtils.readString("node-data-dir", ".");
 			File theParent = new File(thePrefix);
+			System.out.println("Using data directory: "+theParent);
 			itsEventsFile = new HardPagedFile(new File(theParent, "events.bin"), DB_EVENT_PAGE_SIZE);
 			itsIndexesFile = new HardPagedFile(new File(theParent, "indexes.bin"), DB_INDEX_PAGE_SIZE);
-			itsCFlowDataFile = new HardPagedFile(new File(theParent, "cflow.bin"), DB_CFLOW_PAGE_SIZE);
 			
 			itsEventList = new EventList(itsEventsFile);
 			itsIndexes = new Indexes(itsIndexesFile);
@@ -82,6 +81,7 @@ public class DatabaseNode
 	private int connectToMaster() throws IOException
 	{
 		String theMasterHost = ConfigUtils.readString("master-host", "localhost");
+		System.out.println("Connecting to "+theMasterHost);
 		Socket theSocket = new Socket(theMasterHost, DebuggerGridConfig.MASTER_NODE_PORT);
 		DataInputStream theStream = new DataInputStream(theSocket.getInputStream());
 		int theNodeId = theStream.readInt();

@@ -22,6 +22,15 @@ public class BenchDatabaseNode
 {
 	private DatabaseNode itsNode;
 
+	public BenchDatabaseNode()
+	{
+	}
+
+	public BenchDatabaseNode(DatabaseNode aNode)
+	{
+		itsNode = aNode;
+	}
+
 	@Test public void test() 
 	{
 		itsNode = new DatabaseNode(false);
@@ -30,12 +39,12 @@ public class BenchDatabaseNode
 //		fetchCompound(100, 8);
 	}
 	
-	private EventGenerator createGenerator()
+	public static EventGenerator createGenerator()
 	{
 		return new EventGenerator(0, 100, 100, 100, 100, 100, 100, 100, 100);
 	}
 	
-	private void store()
+	void store()
 	{
 		System.out.println("Store");
 		
@@ -152,4 +161,10 @@ public class BenchDatabaseNode
 		System.out.println("Clauses/s: "+theCpS);
 		System.out.println("---");
 	}
+	
+	public static void main(String[] args)
+	{
+		new BenchDatabaseNode(new DatabaseNode(false)).store();
+	}
+
 }

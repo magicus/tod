@@ -45,6 +45,10 @@ public class GridVariableWriteEvent extends GridEvent
 		super(aBitStruct);
 
 		itsVariableId = aBitStruct.readInt(DebuggerGridConfig.EVENT_VARIABLE_BITS);
+		
+		// TODO: this is a hack. We should not allow negative values.
+		if (itsVariableId == 0xffff) itsVariableId = -1;
+		
 		itsValue = readObject(aBitStruct);
 	}
 
@@ -91,7 +95,11 @@ public class GridVariableWriteEvent extends GridEvent
 		super.index(aIndexes, aPointer);
 		StdIndexSet.StdTuple theStdTuple = new StdIndexSet.StdTuple(getTimestamp(), aPointer);
 		
-		aIndexes.variableIndex.addTuple(getVariableId(), theStdTuple); 
+		// TODO: this should not be necessary, we should not have negative values.
+		if (getVariableId() >= 0)
+		{
+			aIndexes.variableIndex.addTuple(getVariableId(), theStdTuple);
+		}
 
 		aIndexes.objectIndex.addTuple(
 				getValue(), 
