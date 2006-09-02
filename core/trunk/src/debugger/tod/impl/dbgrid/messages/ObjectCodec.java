@@ -26,12 +26,6 @@ public class ObjectCodec
 		NULL()
 		{
 			@Override
-			public boolean matches(Object aObject)
-			{
-				return aObject == null;
-			}
-			
-			@Override
 			public int getObjectBits(Object aObject)
 			{
 				return 0;
@@ -50,12 +44,6 @@ public class ObjectCodec
 		},
 		UID()
 		{
-			@Override
-			public boolean matches(Object aObject)
-			{
-				return aObject instanceof ObjectId.ObjectUID;
-			}
-			
 			@Override
 			public int getObjectBits(Object aObject)
 			{
@@ -82,12 +70,6 @@ public class ObjectCodec
 		LONG()
 		{
 			@Override
-			public boolean matches(Object aObject)
-			{
-				return aObject instanceof Long;
-			}
-			
-			@Override
 			public int getObjectBits(Object aObject)
 			{
 				return 64;
@@ -109,12 +91,6 @@ public class ObjectCodec
 		INT()
 		{
 			@Override
-			public boolean matches(Object aObject)
-			{
-				return aObject instanceof Integer;
-			}
-			
-			@Override
 			public int getObjectBits(Object aObject)
 			{
 				return 32;
@@ -135,12 +111,6 @@ public class ObjectCodec
 		}, 
 		CHAR()
 		{
-			@Override
-			public boolean matches(Object aObject)
-			{
-				return aObject instanceof Character;
-			}
-			
 			@Override
 			public int getObjectBits(Object aObject)
 			{
@@ -164,12 +134,6 @@ public class ObjectCodec
 		SHORT()
 		{
 			@Override
-			public boolean matches(Object aObject)
-			{
-				return aObject instanceof Short;
-			}
-			
-			@Override
 			public int getObjectBits(Object aObject)
 			{
 				return 16;
@@ -192,12 +156,6 @@ public class ObjectCodec
 		BYTE()
 		{
 			@Override
-			public boolean matches(Object aObject)
-			{
-				return aObject instanceof Byte;
-			}
-			
-			@Override
 			public int getObjectBits(Object aObject)
 			{
 				return 8;
@@ -218,12 +176,6 @@ public class ObjectCodec
 		}, 
 		DOUBLE()
 		{
-			@Override
-			public boolean matches(Object aObject)
-			{
-				return aObject instanceof Double;
-			}
-			
 			@Override
 			public int getObjectBits(Object aObject)
 			{
@@ -247,12 +199,6 @@ public class ObjectCodec
 		FLOAT()
 		{
 			@Override
-			public boolean matches(Object aObject)
-			{
-				return aObject instanceof Float;
-			}
-			
-			@Override
 			public int getObjectBits(Object aObject)
 			{
 				return 32;
@@ -273,10 +219,6 @@ public class ObjectCodec
 			}
 		};
 		
-		/**
-		 * Indicates whether the given object can be handled by this enum value
-		 */
-		public abstract boolean matches(Object aObject);
 		public abstract void writeObject(BitStruct aStruct, Object aObject);
 		public abstract Object readObject(BitStruct aStruct);
 		public abstract int getObjectBits(Object aObject);
@@ -286,20 +228,6 @@ public class ObjectCodec
 	 * Number of bits necessary to represent an object type.
 	 */
 	private static final int TYPE_BITS = BitUtils.log2ceil(ObjectType.values().length);
-	
-	private static final Map<Class, ObjectType> TYPES_MAP = new HashMap<Class, ObjectType>();
-	
-	static
-	{
-		TYPES_MAP.put(Byte.class, ObjectType.BYTE);
-		TYPES_MAP.put(Character.class, ObjectType.CHAR);
-		TYPES_MAP.put(Double.class, ObjectType.DOUBLE);
-		TYPES_MAP.put(Float.class, ObjectType.FLOAT);
-		TYPES_MAP.put(Integer.class, ObjectType.INT);
-		TYPES_MAP.put(Long.class, ObjectType.LONG);
-		TYPES_MAP.put(Short.class, ObjectType.SHORT);
-		TYPES_MAP.put(ObjectId.ObjectUID.class, ObjectType.UID);
-	}
 	
 	private static void writeType(BitStruct aStruct, ObjectType aType)
 	{
@@ -314,11 +242,21 @@ public class ObjectCodec
 	
 	private static ObjectType findType(Object aObject)
 	{
-		ObjectType theType;
-		if (aObject == null) theType = ObjectType.NULL;
-		else theType = TYPES_MAP.get(aObject.getClass());
-		if (theType == null) throw new RuntimeException("Not handled: "+aObject);
-		return theType;
+		if (aObject == null) return ObjectType.NULL;
+		
+		Class theClass = aObject.getClass();
+		
+		// The following code is faster than using a map
+		// (Pentium M 2ghz)
+		if (theClass == Byte.class) return ObjectType.BYTE;
+		else if (theClass == Character.class) return ObjectType.CHAR;
+		else if (theClass == Double.class) return ObjectType.DOUBLE;
+		else if (theClass == Float.class) return ObjectType.FLOAT;
+		else if (theClass == Integer.class) return ObjectType.INT;
+		else if (theClass == Long.class) return ObjectType.LONG;
+		else if (theClass == Short.class) return ObjectType.SHORT;
+		else if (theClass == ObjectId.ObjectUID.class) return ObjectType.UID;
+		else throw new RuntimeException("Not handled: "+aObject);
 	}
 	
 	/**
@@ -327,6 +265,7 @@ public class ObjectCodec
 	protected static int getObjectBits(Object aObject)
 	{
 		ObjectType theType = findType(aObject);
+//		ObjectType theType = ObjectType.DOUBLE;
 		return theType.getObjectBits(aObject) + TYPE_BITS;
 	}
 	

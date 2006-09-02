@@ -10,8 +10,15 @@ public class Dummy
 		int j;
 		for(int i=0;i<1000000;i++)
 		{
-			j = i;
+			j = i*2;
+			foo(i, j);
 			if (i % 10000 == 0) System.out.println(i);
 		}
+	}
+	
+	public static int foo(int a, long b)
+	{
+		long c = a+b;
+		return (int)(c/2);
 	}
 }

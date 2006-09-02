@@ -227,6 +227,7 @@ public class DatabaseNode
 					
 					int theMagic = theStream.readInt();
 					if (theMagic != 0xabcdef) throw new RuntimeException("Bad magic number!");
+					
 //					System.out.println(String.format(
 //							"Received %d messages (already received %d)",
 //							theCount,

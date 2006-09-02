@@ -107,6 +107,7 @@ public class GridReplay
 			}
 			
 			theCount++;
+			if (theCount % 100000 == 0) System.out.println(theCount);
 		}
 		
 		aMaster.flush();

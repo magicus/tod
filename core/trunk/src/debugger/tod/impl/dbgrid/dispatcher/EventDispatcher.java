@@ -57,7 +57,10 @@ public class EventDispatcher
 		aEvent.putAttribute(EVENT_ATTR_NODE, itsCurrentNode+1);
 		theProxy.pushEvent(theEvent);
 		
-		itsCurrentNode = (itsCurrentNode+1) % itsNodes.size();
+		// The following code is 5 times faster than using a modulo.
+		// (Pentium M 2ghz)
+		itsCurrentNode++;
+		if (itsCurrentNode >= itsNodes.size()) itsCurrentNode = 0;
 	}
 	
 	/**
@@ -67,7 +70,11 @@ public class EventDispatcher
 	{
 		DBNodeProxy theProxy = itsNodes.get(itsCurrentNode);
 		theProxy.pushEvent(aEvent);
-		itsCurrentNode = (itsCurrentNode+1) % itsNodes.size();
+		
+		// The following code is 5 times faster than using a modulo.
+		// (Pentium M 2ghz)
+		itsCurrentNode++;
+		if (itsCurrentNode >= itsNodes.size()) itsCurrentNode = 0;
 	}
 	
 	/**

@@ -7,6 +7,7 @@ import tod.impl.dbgrid.EventGenerator;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.bench.BenchBase.BenchResults;
 import tod.impl.dbgrid.dispatcher.EventDispatcher;
+import tod.impl.dbgrid.messages.GridEvent;
 
 public class GridDispatch
 {
@@ -18,14 +19,15 @@ public class GridDispatch
 		theEventsCount = Integer.parseInt(args[1]);
 		
 		final GridMaster theMaster = BenchBase.setupMaster(theExpectedNodes);
-		
+		final EventDispatcher theDispatcher = theMaster.getDispatcher();
+		final EventGenerator theGenerator = BenchDatabaseNode.createGenerator();
+
 		final int n = theEventsCount;
 		
 		BenchResults theGenResults = BenchBase.benchmark(new Runnable()
 		{
 			public void run()
 			{
-				EventGenerator theGenerator = BenchDatabaseNode.createGenerator();
 				for (int i=0;i<n;i++) theGenerator.next();
 			}
 		});
@@ -36,8 +38,7 @@ public class GridDispatch
 		{
 			public void run()
 			{
-				EventDispatcher theDispatcher = theMaster.getDispatcher();
-				EventGenerator theGenerator = BenchDatabaseNode.createGenerator();
+				GridEvent theEvent = theGenerator.next();
 				
 				for (int i=0;i<n;i++)
 				{

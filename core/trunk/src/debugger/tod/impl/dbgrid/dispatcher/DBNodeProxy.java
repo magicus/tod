@@ -75,8 +75,11 @@ public class DBNodeProxy
 		
 		itsEventsCount++;
 		long theTimestamp = aEvent.getTimestamp();
-		itsFirstTimestamp = Math.min(itsFirstTimestamp, theTimestamp);
-		itsLastTimestamp = Math.max(itsLastTimestamp, theTimestamp);
+		
+		// The following code is a bit faster than using min & max
+		// (Pentium M 2ghz)
+		if (itsFirstTimestamp == 0) itsFirstTimestamp = theTimestamp;
+		if (itsLastTimestamp < theTimestamp) itsLastTimestamp = theTimestamp;
 	}
 
 	private void pushMessage(GridMessage aMessage)
@@ -87,7 +90,6 @@ public class DBNodeProxy
 		}
 		
 		aMessage.writeTo(itsEventsBuffer);
-//		itsEventsBuffer.skip(aMessage.getBitCount());
 		itsMessagesCount++;
 	}
 	
@@ -106,7 +108,7 @@ public class DBNodeProxy
 			NativeStream.i2b(itsBuffer, itsByteBuffer);
 			
 			itsOutputStream.write(itsByteBuffer);
-			itsOutputStream.flush();
+//			itsOutputStream.flush();
 			
 			itsSentMessagesCount += itsMessagesCount;
 			
