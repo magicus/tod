@@ -15,6 +15,12 @@ import tod.impl.dbgrid.messages.GridEvent;
 
 public class EventDispatcher
 {
+	/**
+	 * Additional {@link Event} attribute for external pointer.
+	 * Type: byte[]
+	 */
+	public static final Object EVENT_ATTR_ID = new Object();
+	
 	private GridMaster itsMaster;
 	
 	private List<DBNodeProxy> itsNodes = new ArrayList<DBNodeProxy>();
@@ -36,16 +42,14 @@ public class EventDispatcher
 	{
 		assert ! itsFlushed;
 		
-		// Choose node
 		DBNodeProxy theProxy = itsNodes.get(itsCurrentNode);
 		int theNodeId = itsCurrentNode+1;
-
-		// Transform event
+		
+		byte[] theId = makeExternalPointer(aEvent, theNodeId);
+		aEvent.putAttribute(EventDispatcher.EVENT_ATTR_ID, theId);
 		GridEvent theEvent = GridEvent.create(aEvent);
-		theEvent.setParentPointer(makeExternalPointer(aEvent, theNodeId));
 
-		// Send event
-//		theProxy.pushEvent(theEvent);
+		theProxy.pushEvent(theEvent);
 		
 		// The following code is 5 times faster than using a modulo.
 		// (Pentium M 2ghz)
@@ -67,9 +71,7 @@ public class EventDispatcher
 		if (itsCurrentNode >= itsNodes.size()) itsCurrentNode = 0;
 	}
 	
-	/**
-	 * Computes the external pointer that permits to identify the given event.
-	 */
+	
 	private byte[] makeExternalPointer(Event aEvent, int aNode)
 	{
 		return ExternalPointer.create(
@@ -78,7 +80,7 @@ public class EventDispatcher
 				GridEventCollector.getThreadNumber(aEvent), 
 				aEvent.getTimestamp());
 	}
-	
+
 
 	
 	/**

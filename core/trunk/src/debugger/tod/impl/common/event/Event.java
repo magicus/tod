@@ -28,6 +28,11 @@ public abstract class Event implements ICallerSideEvent
 	
 	private int itsDepth;
 	
+	/**
+	 * A map of additional attributes that can be attached to this event.
+	 */
+	private Map<Object, Object> itsAttributes;
+	
 	public int getDepth()
 	{
 		return itsDepth;
@@ -98,4 +103,22 @@ public abstract class Event implements ICallerSideEvent
 		itsOperationBytecodeIndex = aOperationBytecodeIndex;
 	}
 
+	/**
+	 * Sets an additional attribute of this event.
+	 */
+	public Object putAttribute(Object aKey, Object aValue)
+	{
+		if (itsAttributes == null) itsAttributes = new HashMap<Object, Object>();
+		return itsAttributes.put(aKey, aValue);
+	}
+	
+	/**
+	 * Returns the value of an additional attribute. 
+	 */
+	public Object getAttribute(Object aKey)
+	{
+		return itsAttributes != null ?
+				itsAttributes.get(aKey)
+				: null;
+	}
 }

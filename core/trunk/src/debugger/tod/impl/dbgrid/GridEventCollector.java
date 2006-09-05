@@ -20,6 +20,15 @@ public class GridEventCollector extends EventCollector
 	private final GridMaster itsMaster;
 	
 	private EventDispatcher itsDispatcher;
+	
+	/**
+	 * A counter used to generate sequential thread numbers.
+	 * This permits to reduce the number of bits used to represent thread ids,
+	 * as all 64 bits of original thread ids might be used.
+	 * Thread numbers are unique for one host but might
+	 * overlap for different hosts.
+	 */
+	private int itsLastThreadNumber = 1;
 
 	
 	public GridEventCollector(
@@ -38,7 +47,7 @@ public class GridEventCollector extends EventCollector
 			long aId, 
 			BehaviorCallEvent aRootEvent)
 	{
-		int theThreadId = itsMaster.createThreadId(getHost().getId());
+		int theThreadId = itsLastThreadNumber++;
 		return new GridThreadInfo(getHost(), aId, aRootEvent, theThreadId);
 	}
 	

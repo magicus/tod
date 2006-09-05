@@ -56,13 +56,6 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	private long itsLastTimestamp;
 	private int itsThreadCount;
 	
-	/**
-	 * A counter used to generate sequential thread numbers.
-	 * This permits to reduce the number of bits used to represent thread ids,
-	 * as all 64 bits of original thread ids might be used.
-	 */
-	private static int itsLastThreadNumber = 0;
-
 	public GridMaster(ILocationsRepository aLocationsRepository) throws RemoteException
 	{
 		itsLocationsRepository = aLocationsRepository;
@@ -170,15 +163,6 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	public void flush()
 	{
 		itsDispatcher.flush();
-	}
-	
-	/**
-	 * Creates a new internal thread id for the given host
-	 */
-	public synchronized int createThreadId(int aHostId)
-	{
-		int theId = itsLastThreadNumber++;
-		return theId;
 	}
 	
 	public GridThreadInfo getThread(int aHostId, long aThreadId)
