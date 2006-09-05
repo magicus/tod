@@ -62,7 +62,6 @@ public abstract class GridEvent extends GridMessage
 		itsDepth = aEvent.getDepth();
 		itsTimestamp = aEvent.getTimestamp();
 		itsOperationBytecodeIndex = aEvent.getOperationBytecodeIndex();
-		itsParentPointer = (byte[]) aEvent.getParent().getAttribute(EventDispatcher.EVENT_ATTR_ID);
 	}
 	
 	public GridEvent(BitStruct aBitStruct)
@@ -146,6 +145,11 @@ public abstract class GridEvent extends GridMessage
 	public byte[] getParentPointer()
 	{
 		return itsParentPointer;
+	}
+
+	public void setParentPointer(byte[] aParentPointer)
+	{
+		itsParentPointer = aParentPointer;
 	}
 
 	public int getThread()

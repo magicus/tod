@@ -4241,7 +4241,7 @@ Architecture of the distributed database backend.
 \begin_layout Standard
 \align center
 \begin_inset Graphics
-	filename DebuggingGridArchitecture.png
+	filename DGA.pdf
 	lyxscale 20
 	width 80col%
 
