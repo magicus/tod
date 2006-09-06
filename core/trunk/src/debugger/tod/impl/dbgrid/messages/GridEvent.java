@@ -4,8 +4,6 @@
 package tod.impl.dbgrid.messages;
 
 import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.ObjectId;
-import tod.core.database.structure.ObjectId.ObjectUID;
 import tod.impl.common.event.BehaviorCallEvent;
 import tod.impl.common.event.BehaviorExitEvent;
 import tod.impl.common.event.ConstructorChainingEvent;
@@ -17,27 +15,29 @@ import tod.impl.common.event.LocalVariableWriteEvent;
 import tod.impl.common.event.MethodCallEvent;
 import tod.impl.common.event.OutputEvent;
 import tod.impl.dbgrid.DebuggerGridConfig;
-import tod.impl.dbgrid.ExternalPointer;
 import tod.impl.dbgrid.GridEventCollector;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.StdIndexSet;
-import tod.impl.dbgrid.dispatcher.EventDispatcher;
 import tod.impl.dbgrid.queries.BehaviorCondition;
 import tod.impl.dbgrid.queries.FieldCondition;
 import tod.impl.dbgrid.queries.ObjectCondition;
 import tod.impl.dbgrid.queries.VariableCondition;
 import zz.utils.bit.BitStruct;
-import zz.utils.bit.ByteBitStruct;
 
 public abstract class GridEvent extends GridMessage
 {
+	/**
+	 * We can find the parent event using only its timestamp,
+	 * as it necessarily belongs to the same (host, thread) as this
+	 * event
+	 */
+	private long itsParentTimestamp;
 	private int itsHost;
 	private int itsThread;
 	private int itsDepth;
 	private long itsTimestamp;
 	
 	private int itsOperationBytecodeIndex;
-	private byte[] itsParentPointer;
 	
 	public GridEvent(
 			int aHost, 
@@ -45,14 +45,14 @@ public abstract class GridEvent extends GridMessage
 			int aDepth,
 			long aTimestamp, 
 			int aOperationBytecodeIndex, 
-			byte[] aParentPointer)
+			long aParentTimestamp)
 	{
 		itsHost = aHost;
 		itsThread = aThread;
 		itsDepth = aDepth;
 		itsTimestamp = aTimestamp;
 		itsOperationBytecodeIndex = aOperationBytecodeIndex;
-		itsParentPointer = aParentPointer;
+		itsParentTimestamp = aParentTimestamp;
 	}
 
 	public GridEvent(Event aEvent)
@@ -62,7 +62,7 @@ public abstract class GridEvent extends GridMessage
 		itsDepth = aEvent.getDepth();
 		itsTimestamp = aEvent.getTimestamp();
 		itsOperationBytecodeIndex = aEvent.getOperationBytecodeIndex();
-		itsParentPointer = (byte[]) aEvent.getParent().getAttribute(EventDispatcher.EVENT_ATTR_ID);
+		itsParentTimestamp = aEvent.getParent().getTimestamp();
 	}
 	
 	public GridEvent(BitStruct aBitStruct)
@@ -76,9 +76,7 @@ public abstract class GridEvent extends GridMessage
 		// TODO: this is a hack. We should not allow negative values.
 		if (itsOperationBytecodeIndex == 0xffff) itsOperationBytecodeIndex = -1;
 		
-		
-		itsParentPointer = aBitStruct.readBytes(DebuggerGridConfig.EVENTID_POINTER_SIZE);
-		if (ExternalPointer.isNull(itsParentPointer)) itsParentPointer = null;
+		itsParentTimestamp = aBitStruct.readLong(DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
 	}
 
 	/**
@@ -95,11 +93,7 @@ public abstract class GridEvent extends GridMessage
 		aBitStruct.writeLong(getTimestamp(), DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
 		aBitStruct.writeInt(getOperationBytecodeIndex(), DebuggerGridConfig.EVENT_BYTECODE_LOCATION_BITS);
 		
-		
-		byte[] theParentPointer = getParentPointer();
-		aBitStruct.writeBytes(
-				theParentPointer != null ? theParentPointer : ExternalPointer.BLANK_POINTER, 
-				DebuggerGridConfig.EVENTID_POINTER_SIZE);
+		aBitStruct.writeLong(getParentTimestamp(), DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
 	}
 	
 	/**
@@ -115,7 +109,7 @@ public abstract class GridEvent extends GridMessage
 		theCount += DebuggerGridConfig.EVENT_DEPTH_BITS;
 		theCount += DebuggerGridConfig.EVENT_TIMESTAMP_BITS;
 		theCount += DebuggerGridConfig.EVENT_BYTECODE_LOCATION_BITS;
-		theCount += DebuggerGridConfig.EVENTID_POINTER_SIZE;
+		theCount += DebuggerGridConfig.EVENT_TIMESTAMP_BITS;
 		
 		return theCount;
 	}
@@ -143,9 +137,9 @@ public abstract class GridEvent extends GridMessage
 		return itsOperationBytecodeIndex;
 	}
 
-	public byte[] getParentPointer()
+	public long getParentTimestamp()
 	{
-		return itsParentPointer;
+		return itsParentTimestamp;
 	}
 
 	public int getThread()

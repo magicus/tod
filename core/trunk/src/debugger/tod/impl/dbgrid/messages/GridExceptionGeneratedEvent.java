@@ -21,11 +21,11 @@ public class GridExceptionGeneratedEvent extends GridEvent
 			int aDepth,
 			long aTimestamp, 
 			int aOperationBytecodeIndex, 
-			byte[] aParentPointer, 
+			long aParentTimestamp,
 			Object aException, 
 			int aThrowingBehaviorId)
 	{
-		super(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentPointer);
+		super(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp);
 		itsException = aException;
 		itsThrowingBehaviorId = aThrowingBehaviorId;
 	}

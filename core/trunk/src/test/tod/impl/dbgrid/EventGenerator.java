@@ -28,6 +28,7 @@ public class EventGenerator
 {
 	private Random itsRandom;
 	private TimestampGenerator itsTimestampGenerator;
+	private TimestampGenerator itsParentTimestampGenerator;
 	
 	private int itsHostsRange;
 	private int itsThreadsRange;
@@ -53,6 +54,7 @@ public class EventGenerator
 	{
 		itsRandom = new Random(aSeed);
 		itsTimestampGenerator = new TimestampGenerator(aSeed);		
+		itsParentTimestampGenerator = new TimestampGenerator(aSeed);		
 		
 		itsHostsRange = aHostsRange;
 		itsThreadsRange = aThreadsRange;
@@ -90,7 +92,7 @@ public class EventGenerator
 					genDepth(),
 					itsTimestampGenerator.next(),
 					genBytecodeIndex(),
-					genExternalPointer(),
+					genParentTimestamp(),
 					itsRandom.nextBoolean(),
 					genObject(),
 					genBehaviorId());
@@ -102,7 +104,7 @@ public class EventGenerator
 					genDepth(),
 					itsTimestampGenerator.next(),
 					genBytecodeIndex(),
-					genExternalPointer(),
+					genParentTimestamp(),
 					MessageType.CONSTRUCTOR_CHAINING,
 					itsRandom.nextBoolean(),
 					genArgs(),
@@ -117,7 +119,7 @@ public class EventGenerator
 					genDepth(),
 					itsTimestampGenerator.next(),
 					genBytecodeIndex(),
-					genExternalPointer(),
+					genParentTimestamp(),
 					genObject(),
 					genBehaviorId());
 			
@@ -128,7 +130,7 @@ public class EventGenerator
 					genDepth(),
 					itsTimestampGenerator.next(),
 					genBytecodeIndex(),
-					genExternalPointer(),
+					genParentTimestamp(),
 					genFieldId(),
 					genObject(),
 					genObject());
@@ -140,7 +142,7 @@ public class EventGenerator
 					genDepth(),
 					itsTimestampGenerator.next(),
 					genBytecodeIndex(),
-					genExternalPointer(),
+					genParentTimestamp(),
 					MessageType.INSTANTIATION,
 					itsRandom.nextBoolean(),
 					genArgs(),
@@ -155,7 +157,7 @@ public class EventGenerator
 					genDepth(),
 					itsTimestampGenerator.next(),
 					genBytecodeIndex(),
-					genExternalPointer(),
+					genParentTimestamp(),
 					genVariableId(),
 					genObject());
 			
@@ -166,7 +168,7 @@ public class EventGenerator
 					genDepth(),
 					itsTimestampGenerator.next(),
 					genBytecodeIndex(),
-					genExternalPointer(),
+					genParentTimestamp(),
 					MessageType.METHOD_CALL,
 					itsRandom.nextBoolean(),
 					genArgs(),
@@ -184,13 +186,9 @@ public class EventGenerator
 		return MessageType.values()[itsRandom.nextInt(MessageType.values().length-2)+1];
 	}
 	
-	public byte[] genExternalPointer()
+	public long genParentTimestamp()
 	{
-		return ExternalPointer.create(
-				0, 
-				genHostId(), 
-				genThreadId(), 
-				itsTimestampGenerator.next());
+		return itsParentTimestampGenerator.next();
 	}
 	
 	public int genHostId()

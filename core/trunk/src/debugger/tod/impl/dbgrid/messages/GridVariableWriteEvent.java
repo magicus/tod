@@ -22,11 +22,11 @@ public class GridVariableWriteEvent extends GridEvent
 			int aDepth,
 			long aTimestamp, 
 			int aOperationBytecodeIndex, 
-			byte[] aParentPointer, 
+			long aParentTimestamp,
 			int aVariableId, 
 			Object aValue)
 	{
-		super(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentPointer);
+		super(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp);
 		itsVariableId = aVariableId;
 		itsValue = aValue;
 	}
