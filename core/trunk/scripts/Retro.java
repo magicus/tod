@@ -5,7 +5,17 @@ public class Retro
 {
 	public static void main(String[] args) throws Exception
 	{
-		JITRetrotranslator.install();
+		String theVersion = System.getProperty("java.version");
+		System.out.println("JVM version: "+theVersion);
+		if (! theVersion.startsWith("1.5"))
+		{
+			System.out.println("Using RetroTranslator");
+			JITRetrotranslator.install();
+		}
+		else
+		{
+			System.out.println("JVM 1.5 detected");
+		}
 		
 		if ("session".equals(args[0]))
 		{

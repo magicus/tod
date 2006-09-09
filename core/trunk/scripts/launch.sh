@@ -1,6 +1,6 @@
 #! /bin/sh
 
-/usr/java/j2sdk1.4.2_06/bin/java -Xmx512m \
+$JAVA_HOME/bin/java -Xmx512m \
 -Djava.library.path=$NATIVE \
 -ea \
 -server \
