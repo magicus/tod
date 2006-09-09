@@ -31,7 +31,7 @@ public class GridBehaviorCallEvent extends GridEvent
 			int aDepth,
 			long aTimestamp, 
 			int aOperationBytecodeIndex,
-			byte[] aParentPointer,
+			long aParentTimestamp,
 			MessageType aType, 
 			boolean aDirectParent, 
 			Object[] aArguments, 
@@ -39,7 +39,7 @@ public class GridBehaviorCallEvent extends GridEvent
 			int aExecutedBehaviorId, 
 			Object aTarget)
 	{
-		super(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentPointer);
+		super(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp);
 		itsType = (byte) aType.ordinal();
 		itsDirectParent = aDirectParent;
 		itsArguments = aArguments;

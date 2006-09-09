@@ -3,7 +3,6 @@
  */
 package tod.impl.dbgrid;
 
-import tod.impl.dbgrid.dbnode.CFlowMap;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
 import tod.impl.dbgrid.dbnode.HierarchicalIndex;
 import tod.impl.dbgrid.dbnode.file.TupleIterator;
@@ -13,11 +12,6 @@ import zz.utils.bit.BitUtils;
 
 public class DebuggerGridConfig
 {
-	/**
-	 * Number of bits used to represent the owner node of an event.
-	 */
-	public static final int EVENT_NODE_BITS = 6;
-	
 	/**
 	 * Number of bits used to represent the host of an event.
 	 */
@@ -148,7 +142,6 @@ public class DebuggerGridConfig
 	 * Number of bits necessary to represent an external event pointer.
 	 */
 	public static final int EVENTID_POINTER_SIZE = 
-		DebuggerGridConfig.EVENT_NODE_BITS
 		+DebuggerGridConfig.EVENT_HOST_BITS
 		+DebuggerGridConfig.EVENT_THREAD_BITS
 		+DebuggerGridConfig.EVENT_TIMESTAMP_BITS;

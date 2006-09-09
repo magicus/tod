@@ -1,0 +1,11 @@
+#! /bin/sh
+
+export NATIVE=.
+
+export CLASSPATH=.:lib/asm-2.1.jar:lib/asm-commons-2.1.jar:lib/backport-util-concurrent.jar:lib/javassist.jar:lib/retrotranslator-runtime-1.0.8.jar:lib/retrotranslator-transformer-1.0.8.jar:build/tod-agent.jar:build/tod-debugger.jar:build/tod-test.jar:lib/zz.utils.jar
+
+export DATA_DIR=/state/partition1/gpothier/tod
+
+export MASTER_HOST=syntagma
+
+export EVENTS_FILE=/state/partition1/gpothier/tod/events-raw.bin

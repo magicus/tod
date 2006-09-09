@@ -23,12 +23,12 @@ public class GridFieldWriteEvent extends GridEvent
 			int aDepth,
 			long aTimestamp, 
 			int aOperationBytecodeIndex, 
-			byte[] aParentPointer, 
+			long aParentTimestamp,
 			int aFieldId, 
 			Object aTarget, 
 			Object aValue)
 	{
-		super(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentPointer);
+		super(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp);
 		itsFieldId = aFieldId;
 		itsTarget = aTarget;
 		itsValue = aValue;

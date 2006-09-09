@@ -6,21 +6,12 @@ package tod.impl.dbgrid.dispatcher;
 import java.util.ArrayList;
 import java.util.List;
 
-import tod.impl.common.event.BehaviorCallEvent;
 import tod.impl.common.event.Event;
-import tod.impl.dbgrid.ExternalPointer;
-import tod.impl.dbgrid.GridEventCollector;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.messages.GridEvent;
 
 public class EventDispatcher
 {
-	/**
-	 * Additional {@link Event} attribute for external pointer.
-	 * Type: byte[]
-	 */
-	public static final Object EVENT_ATTR_ID = new Object();
-	
 	private GridMaster itsMaster;
 	
 	private List<DBNodeProxy> itsNodes = new ArrayList<DBNodeProxy>();
@@ -43,12 +34,8 @@ public class EventDispatcher
 		assert ! itsFlushed;
 		
 		DBNodeProxy theProxy = itsNodes.get(itsCurrentNode);
-		int theNodeId = itsCurrentNode+1;
 		
-		byte[] theId = makeExternalPointer(aEvent, theNodeId);
-		aEvent.putAttribute(EventDispatcher.EVENT_ATTR_ID, theId);
 		GridEvent theEvent = GridEvent.create(aEvent);
-
 		theProxy.pushEvent(theEvent);
 		
 		// The following code is 5 times faster than using a modulo.
@@ -70,18 +57,6 @@ public class EventDispatcher
 		itsCurrentNode++;
 		if (itsCurrentNode >= itsNodes.size()) itsCurrentNode = 0;
 	}
-	
-	
-	private byte[] makeExternalPointer(Event aEvent, int aNode)
-	{
-		return ExternalPointer.create(
-				aNode, 
-				aEvent.getHost().getId(), 
-				GridEventCollector.getThreadNumber(aEvent), 
-				aEvent.getTimestamp());
-	}
-
-
 	
 	/**
 	 * Flushes all buffers so that events are sent to the nodes 
