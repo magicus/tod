@@ -8,6 +8,8 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+import tod.core.BehaviorCallType;
+
 public class ASMBehaviorCallInstrumenter implements Opcodes
 {
 	private final MethodVisitor mv;
@@ -96,11 +98,12 @@ public class ASMBehaviorCallInstrumenter implements Opcodes
 	 * Generates the code that calls 
 	 * {@link tod.core.ILogCollector#logBeforeBehaviorCall(long, long, int, int, Object, Object[])}
 	 */
-	public void callLogBeforeMethodCall()
+	public void callLogBeforeMethodCall(BehaviorCallType aCallType)
 	{
 		itsInstrumenter.invokeLogBeforeBehaviorCall(
 				itsBytecodeIndex, 
 				itsMethodId, 
+				aCallType,
 				itsStatic ? -1 : itsTargetVar, 
 				itsArrayVar);
 	}
@@ -109,11 +112,12 @@ public class ASMBehaviorCallInstrumenter implements Opcodes
 	 * Generates the code that calls 
 	 * {@link tod.core.ILogCollector#logBeforeBehaviorCall(long, long, int, int, Object, Object[])}
 	 */
-	public void callLogBeforeMethodCallDry()
+	public void callLogBeforeBehaviorCallDry(BehaviorCallType aCallType)
 	{
 		itsInstrumenter.invokeLogBeforeBehaviorCall(
 				itsBytecodeIndex, 
-				itsMethodId);
+				itsMethodId,
+				aCallType);
 	}
 	
 	/**
@@ -187,7 +191,7 @@ public class ASMBehaviorCallInstrumenter implements Opcodes
 	 * Generates the code that calls 
 	 * {@link tod.core.ILogCollector#logAfterBehaviorCall(long, long, int, int, Object, Object)}
 	 */
-	public void callLogAfterMethodCallDry()
+	public void callLogAfterBehaviorCallDry()
 	{
 		itsInstrumenter.invokeLogAfterBehaviorCall();
 	}

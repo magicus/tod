@@ -3,9 +3,6 @@
  */
 package tod.impl.bci.asm;
 
-import java.net.URI;
-
-import tod.impl.local.LocalCollector;
 
 /**
  * A session that uses a {@link tod.impl.local.LocalCollector}

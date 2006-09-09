@@ -67,7 +67,7 @@ public class DBNodeProxy
 	}
 
 	/**
-	 * Pushes an event so that it will be stored by the node behind this proxy
+	 * Pushes an event so that it will be stored by the node behind this proxy.
 	 */
 	public void pushEvent(GridEvent aEvent)
 	{

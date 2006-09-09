@@ -3,7 +3,6 @@
  */
 package tod.core.server;
 
-import java.io.File;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,8 +12,6 @@ import java.util.Map;
 import tod.core.LocationRegistrer;
 import tod.core.bci.IInstrumenter;
 import tod.core.bci.NativeAgentPeer;
-import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.ITypeInfo;
 import tod.core.transport.LogReceiver;
 import zz.utils.net.Server;
 
@@ -115,48 +112,11 @@ public class TODServer
 	
 	private class MyNativePeer extends NativeAgentPeer
 	{
-		private LogReceiver itsReceiver;
-
 		public MyNativePeer(Socket aSocket)
 		{
 			super(aSocket, null, new SynchronizedInstrumenter(itsInstrumenter));
 		}
 		
-		private LogReceiver getReceiver()
-		{
-			if (itsReceiver == null)
-			{
-				itsReceiver = TODServer.this.getReceiver(getHostName());
-			}
-			return itsReceiver;
-		}
-		
-		@Override
-		protected void processExceptionGenerated(
-				long aTimestamp, 
-				long aThreadId, 
-				String aClassName,
-				String aMethodName,
-				String aMethodSignature,
-				int aBytecodeIndex, 
-				Object aException)
-		{
-			ITypeInfo theType = itsLocationRegistrer.getType(aClassName);
-			IBehaviorInfo theBehavior = itsLocationRegistrer.getBehavior(
-					theType, 
-					aMethodName, 
-					aMethodSignature,
-					false);
-			
-			getReceiver().getCollector().logExceptionGenerated(
-					aTimestamp, 
-					aThreadId, 
-					theBehavior.getId(), 
-					aBytecodeIndex, 
-					aException);
-
-		}
-
 		@Override
 		protected void processFlush()
 		{

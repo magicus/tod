@@ -121,7 +121,7 @@ public class LocationPoolPersister
 	 */
 	public static void read (File aFile, ILocationRegistrer aRegistrer) throws FileNotFoundException, IOException
 	{
-		System.out.println("Reading stored locations");
+		System.out.println("Reading stored locations from "+aFile);
 		DataInputStream theStream = new DataInputStream(new FileInputStream(aFile));
 		while (true)
 		{

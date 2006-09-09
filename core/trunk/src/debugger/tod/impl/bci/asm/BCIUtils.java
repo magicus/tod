@@ -4,13 +4,15 @@
 package tod.impl.bci.asm;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import tod.agent.AgentConfig;
-import tod.core.ILogCollector;
+import tod.core.EventInterpreter;
+import tod.core.HighLevelCollector;
 import tod.core.config.ClassSelector;
 
 public class BCIUtils implements Opcodes
@@ -107,8 +109,8 @@ public class BCIUtils implements Opcodes
 		aVisitor.visitMethodInsn(
 				INVOKESTATIC, 
 				Type.getInternalName(AgentConfig.class), 
-				"getCollector", 
-				"()"+Type.getDescriptor(ILogCollector.class));
+				"getInterpreter", 
+				"()"+Type.getDescriptor(EventInterpreter.class));
 	}
 	
 	/**
@@ -310,5 +312,17 @@ public class BCIUtils implements Opcodes
 	public static boolean acceptClass (String aClassName, ClassSelector aSelector)
 	{
 		return aSelector.accept(getClassName(aClassName));
+	}
+	
+	/**
+	 * Generates method invocation code for the given method.
+	 */
+	public static void invoke(MethodVisitor mv, int aOpcode, Method aMethod)
+	{
+		mv.visitMethodInsn(
+				aOpcode, 
+				Type.getInternalName(aMethod.getDeclaringClass()), 
+				aMethod.getName(), 
+				Type.getMethodDescriptor(aMethod));
 	}
 }

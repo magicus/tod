@@ -33,7 +33,10 @@ public class StoreTODServer extends TODServer
 	@Override
 	protected void acceptJavaConnection(Socket aSocket)
 	{
-		new LogWriter(new File("events-"+itsConnectionNumber+".bin"), aSocket);
+		String theFileName = ConfigUtils.readString("events-file", "events-raw.bin");
+		if (itsConnectionNumber > 1) theFileName += "."+itsConnectionNumber;
+
+		new LogWriter(new File(theFileName), aSocket);
 		itsConnectionNumber++;
 	}
 	

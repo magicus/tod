@@ -3,21 +3,6 @@
  */
 package tod.impl.bci.asm;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.URI;
-
-import tod.core.ILogCollector;
-import tod.core.PrintThroughCollector;
-import tod.core.bci.NativeAgentPeer;
-import tod.core.database.browser.ILocationsRepository;
-import tod.core.database.browser.ILogBrowser;
-import tod.core.database.structure.ObjectId;
-import tod.core.session.AbstractSession;
-import tod.core.transport.LogReceiver;
 
 //public class ASMSession extends AbstractSession
 //{

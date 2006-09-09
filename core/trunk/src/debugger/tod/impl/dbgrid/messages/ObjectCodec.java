@@ -3,9 +3,6 @@
  */
 package tod.impl.dbgrid.messages;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.ObjectId.ObjectUID;
 import zz.utils.bit.BitStruct;

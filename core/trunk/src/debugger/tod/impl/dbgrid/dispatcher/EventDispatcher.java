@@ -6,7 +6,6 @@ package tod.impl.dbgrid.dispatcher;
 import java.util.ArrayList;
 import java.util.List;
 
-import tod.impl.common.event.Event;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.messages.GridEvent;
 
@@ -29,21 +28,6 @@ public class EventDispatcher
 		itsNodes.add(aProxy);
 	}
 
-	public void dispatchEvent(Event aEvent)
-	{
-		assert ! itsFlushed;
-		
-		DBNodeProxy theProxy = itsNodes.get(itsCurrentNode);
-		
-		GridEvent theEvent = GridEvent.create(aEvent);
-		theProxy.pushEvent(theEvent);
-		
-		// The following code is 5 times faster than using a modulo.
-		// (Pentium M 2ghz)
-		itsCurrentNode++;
-		if (itsCurrentNode >= itsNodes.size()) itsCurrentNode = 0;
-	}
-	
 	/**
 	 * Directly disptaches a grid event
 	 */

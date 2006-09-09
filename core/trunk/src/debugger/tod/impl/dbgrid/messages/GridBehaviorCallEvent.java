@@ -3,12 +3,14 @@
  */
 package tod.impl.dbgrid.messages;
 
-import tod.impl.common.event.Event;
+import static tod.impl.dbgrid.messages.ObjectCodec.getObjectBits;
+import static tod.impl.dbgrid.messages.ObjectCodec.getObjectId;
+import static tod.impl.dbgrid.messages.ObjectCodec.readObject;
+import static tod.impl.dbgrid.messages.ObjectCodec.writeObject;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import zz.utils.bit.BitStruct;
-import static tod.impl.dbgrid.messages.ObjectCodec.*;
 
 public class GridBehaviorCallEvent extends GridEvent
 {
@@ -25,6 +27,10 @@ public class GridBehaviorCallEvent extends GridEvent
 	private Object itsTarget;
 
 	
+	public GridBehaviorCallEvent()
+	{
+	}
+
 	public GridBehaviorCallEvent(
 			int aHost, 
 			int aThread,
@@ -39,31 +45,7 @@ public class GridBehaviorCallEvent extends GridEvent
 			int aExecutedBehaviorId, 
 			Object aTarget)
 	{
-		super(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp);
-		itsType = (byte) aType.ordinal();
-		itsDirectParent = aDirectParent;
-		itsArguments = aArguments;
-		itsCalledBehaviorId = aCalledBehaviorId;
-		itsExecutedBehaviorId = aExecutedBehaviorId;
-		itsTarget = aTarget;
-	}
-
-	public GridBehaviorCallEvent(
-			Event aEvent,
-			MessageType aType,
-			boolean aDirectParent,
-			Object[] aArguments, 
-			int aCalledBehaviorId,
-			int aExecutedBehaviorId, 
-			Object aTarget)
-	{
-		super(aEvent);
-		itsType = (byte) aType.ordinal();
-		itsDirectParent = aDirectParent;
-		itsArguments = aArguments;
-		itsCalledBehaviorId = aCalledBehaviorId;
-		itsExecutedBehaviorId = aExecutedBehaviorId;
-		itsTarget = aTarget;
+		set(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp, aType, aDirectParent, aArguments, aCalledBehaviorId, aExecutedBehaviorId, aTarget);
 	}
 
 	public GridBehaviorCallEvent(BitStruct aBitStruct, MessageType aType)
@@ -79,6 +61,29 @@ public class GridBehaviorCallEvent extends GridEvent
 		itsExecutedBehaviorId = aBitStruct.readInt(DebuggerGridConfig.EVENT_BEHAVIOR_BITS);
 		itsDirectParent = aBitStruct.readBoolean();
 		itsTarget = readObject(aBitStruct);
+	}
+	
+	public void set(
+			int aHost, 
+			int aThread,
+			int aDepth,
+			long aTimestamp, 
+			int aOperationBytecodeIndex,
+			long aParentTimestamp,
+			MessageType aType, 
+			boolean aDirectParent, 
+			Object[] aArguments, 
+			int aCalledBehaviorId, 
+			int aExecutedBehaviorId, 
+			Object aTarget)
+	{
+		super.set(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp);
+		itsType = (byte) aType.ordinal();
+		itsDirectParent = aDirectParent;
+		itsArguments = aArguments;
+		itsCalledBehaviorId = aCalledBehaviorId;
+		itsExecutedBehaviorId = aExecutedBehaviorId;
+		itsTarget = aTarget;
 	}
 	
 	@Override

@@ -11,7 +11,7 @@ import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 
-public class BehaviorCallEvent extends Event implements IBehaviorCallEvent
+public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEvent
 {
 	private List<ILogEvent> itsChildren;
 	private boolean itsDirectParent;

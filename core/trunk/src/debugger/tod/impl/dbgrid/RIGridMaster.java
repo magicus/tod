@@ -35,7 +35,7 @@ public interface RIGridMaster extends Remote
 	 * Returns the internal thread id corresponding to the given thread
 	 * on the given host.
 	 */
-	public int getThreadNumber(int aHostId, long aThreadId) throws RemoteException;
+	public IThreadInfo getThread(int aHostId, long aThreadId) throws RemoteException;
 	
 	/**
 	 * Returns all the threads registered during the execution of the

@@ -8,32 +8,27 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import tod.agent.AgentConfig;
 import tod.agent.AgentReady;
-import tod.core.BehaviourKind;
-import tod.core.ILogCollector;
+import tod.core.HighLevelCollector;
 import tod.core.Output;
-import tod.core.ILocationRegistrer.LineNumberInfo;
-import tod.core.ILocationRegistrer.LocalVariableInfo;
+import tod.core.EventInterpreter.ThreadData;
 
 /**
  * This collector sends the events to a socket.
  * The other end of the socket should be a {@link tod.core.transport.LogReceiver}.
  * @author gpothier
  */
-public class SocketCollector implements ILogCollector
+public class SocketCollector extends HighLevelCollector<SocketCollector.SocketThreadData>
 {
-	private ThreadLocal<ThreadData> itsThreadInfos;
-	private List<Reference<ThreadData>> itsThreadInfosList;
+	private List<SocketThreadData> itsThreadDataList = new ArrayList<SocketThreadData>();
 	private MyThread itsThread;
 	
 	public SocketCollector(String aHostname, int aPort) throws IOException 
@@ -49,76 +44,47 @@ public class SocketCollector implements ILogCollector
 	public SocketCollector(MyThread aThread)
 	{
 		itsThread = aThread;
-		itsThreadInfos = new ThreadLocal<ThreadData>();
-		itsThreadInfosList = new LinkedList<Reference<ThreadData>>();
-		itsThread.setThreadInfosList(itsThreadInfosList);
+		itsThread.setThreadInfosList(itsThreadDataList);
 		AgentReady.READY = true;
 	}
-	
-	private ThreadData createThreadData()
+
+	@Override
+	public SocketThreadData createThreadData(int aId)
 	{
-		Thread theCurrentThread = Thread.currentThread();
-		long theId = theCurrentThread.getId();
-		ThreadData theData = new ThreadData();
-		itsThreadInfos.set(theData);
-		itsThreadInfosList.add (new WeakReference<ThreadData>(theData));
-		
-		registerThread(theId, theCurrentThread.getName());
+		SocketThreadData theData = new SocketThreadData(aId);
+		itsThreadDataList.add (theData);
 		
 		return theData;
 	}
 	
-	private ThreadData getThreadInfo()
-	{
-		ThreadData theData = itsThreadInfos.get();
-		if (theData == null) theData = createThreadData();
-		return theData;
-	}
-	
-	private boolean shouldLog()
-	{
-		return true;
-	}
-	
-	private void log (String aText)
-	{
-		if (shouldLog()) System.out.println(aText);
-	}
-	
-	public void logBehaviorEnter(
-			long aTimestamp, 
-			long aThreadId, 
-			int aBehaviorLocationId, 
-			Object aObject,
-            Object[] aArguments)
-	{
-		ThreadData theData = getThreadInfo();
-		if (theData.isSending()) return;
-        try
-        {
-        	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendBehaviorEnter(theStream, aTimestamp, aThreadId, aBehaviorLocationId, aObject, aArguments);
-            theData.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
-	}
-	
-	public void logBehaviorExit(
+	@Override
+	protected void behaviorExit(
+			SocketThreadData aThread,
+			long aParentTimestamp,
+			short aDepth,
 			long aTimestamp,
-			long aThreadId,
-			int aLocationId,
+			int aOperationBytecodeIndex, 
+			int aBehaviorId,
+			boolean aHasThrown,
 			Object aResult)
 	{
-		ThreadData theData = getThreadInfo();
-		if (theData.isSending()) return;
+		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendBehaviorExit(theStream, aTimestamp, aThreadId, aLocationId, aResult);
-            theData.packetEnd();
+        	DataOutputStream theStream = aThread.packetStart();
+        	
+        	CollectorPacketWriter.sendBehaviorExit(
+        			theStream,
+        			aThread.getId(),
+        			aParentTimestamp,
+        			aDepth,
+        			aTimestamp,
+        			aOperationBytecodeIndex, 
+        			aBehaviorId,
+        			aHasThrown,
+        			aResult);
+        	
+            aThread.packetEnd();
         }
         catch (IOException e)
         {
@@ -126,153 +92,36 @@ public class SocketCollector implements ILogCollector
         }
 	}
 
-	public void logBehaviorExitWithException(
-			long aTimestamp, 
-			long aThreadId, 
-			int aBehaviorLocationId, 
-			Object aException)
-	{
-		ThreadData theData = getThreadInfo();
-		if (theData.isSending()) return;
-        try
-        {
-        	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendBehaviorExitWithException(theStream, aTimestamp, aThreadId, aBehaviorLocationId, aException);
-            theData.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
-	}
-
-	public void logExceptionGenerated(
-			long aTimestamp, 
-			long aThreadId, 
-			int aBehaviorLocationId, 
-			int aOperationBytecodeIndex, 
-			Object aException)
-	{
-		ThreadData theData = getThreadInfo();
-		if (theData.isSending()) return;
-        try
-        {
-        	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendExceptionGenerated(theStream, aTimestamp, aThreadId, aBehaviorLocationId, aOperationBytecodeIndex, aException);
-            theData.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
-	}
-	
-	public void logExceptionGenerated(
-			long aTimestamp, 
-			long aThreadId,
-			String aMethodName, 
-			String aMethodSignature, 
+	@Override
+	protected void exception(
+			SocketThreadData aThread, 
+			long aParentTimestamp, 
+			short aDepth,
+			long aTimestamp,
+			String aMethodName,
+			String aMethodSignature,
 			String aMethodDeclaringClassSignature,
 			int aOperationBytecodeIndex,
 			Object aException)
 	{
-		ThreadData theData = getThreadInfo();
-		if (theData.isSending()) return;
+		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendExceptionGenerated(theStream, aTimestamp, aThreadId, aMethodName, aMethodSignature, aMethodDeclaringClassSignature, aOperationBytecodeIndex, aException);
-            theData.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
-	}
-	
-    public void logBeforeBehaviorCall(
-            long aTimestamp,
-            long aThreadId, 
-            int aOperationBytecodeIndex, 
-            int aBehaviorLocationId,
-            Object aTarget,
-            Object[] aArguments)
-    {
-		ThreadData theData = getThreadInfo();
-		if (theData.isSending()) return;
-    	
-//    	System.out.println(String.format(
-//    			"Before method call: %d, %d, %d, %d, %s, %d",
-//    			aTimestamp,
-//    			aThreadId,
-//    			aOperationBytecodeIndex,
-//    			aMethodLocationId,
-//    			aTarget,
-//    			aArguments != null ? aArguments.length : 0));
-//    	
-//    	if (aArguments != null) for (Object theObject : aArguments)
-//		{
-//			System.out.println(theObject);
-//		}
-//    	
-        try
-        {
-        	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendBeforeMethodCall(theStream, aTimestamp, aThreadId, aOperationBytecodeIndex, aBehaviorLocationId, aTarget, aArguments);
-            theData.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
-    }
-
-    public void logBeforeBehaviorCall(
-            long aThreadId, 
-            int aOperationBytecodeIndex, 
-            int aBehaviorLocationId)
-    {
-		ThreadData theData = getThreadInfo();
-		if (theData.isSending()) return;
-    	
-        try
-        {
-        	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendBeforeMethodCall(theStream, aThreadId, aOperationBytecodeIndex, aBehaviorLocationId);
-            theData.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
-    }
-
-	
-	public void logAfterBehaviorCall(
-			long aTimestamp, 
-            long aThreadId, 
-            int aOperationBytecodeIndex,
-            int aBehaviorLocationId,
-            Object aTarget, 
-            Object aResult)
-	{
-		ThreadData theData = getThreadInfo();
-		if (theData.isSending()) return;
-
-//    	System.out.println(String.format(
-//				"After method call: %d, %d, %d, %d, %s, %s",
-//				aTimestamp,
-//				aThreadId,
-//				aOperationBytecodeIndex,
-//				aMethodLocationId,
-//				aTarget,
-//				aResult));
-
-        try
-        {
-        	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendAfterMethodCall(theStream, aTimestamp, aThreadId, aOperationBytecodeIndex, aBehaviorLocationId, aTarget, aResult);
-            theData.packetEnd();
+        	DataOutputStream theStream = aThread.packetStart();
+        	
+        	CollectorPacketWriter.sendException(
+        			theStream,
+        			aThread.getId(),
+        			aParentTimestamp,
+        			aDepth,
+        			aTimestamp,
+        			aMethodName,
+        			aMethodSignature,
+        			aMethodDeclaringClassSignature,
+        			aOperationBytecodeIndex, 
+        			aException);
+        	
+            aThread.packetEnd();
         }
         catch (IOException e)
         {
@@ -280,125 +129,34 @@ public class SocketCollector implements ILogCollector
         }
 	}
 
-	public void logAfterBehaviorCall(long aThreadId)
-	{
-		ThreadData theData = getThreadInfo();
-		if (theData.isSending()) return;
-
-        try
-        {
-        	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendAfterMethodCall(theStream, aThreadId);
-            theData.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
-	}
-
-	public void logAfterBehaviorCallWithException(
-			long aTimestamp, 
-			long aThreadId, 
-			int aOperationBytecodeIndex,
-			int aBehaviorLocationId,
-			Object aTarget, 
-			Object aException)
-	{
-		ThreadData theData = getThreadInfo();
-		if (theData.isSending()) return;
-		
-//    	System.out.println(String.format(
-//				"After method call: %d, %d, %d, %d, %s, %s",
-//				aTimestamp,
-//				aThreadId,
-//				aOperationBytecodeIndex,
-//				aMethodLocationId,
-//				aTarget,
-//				aResult));
-		
-		try
-		{
-			DataOutputStream theStream = theData.packetStart();
-			CollectorPacketWriter.sendAfterMethodCallWithException(theStream, aTimestamp, aThreadId, aOperationBytecodeIndex, aBehaviorLocationId, aTarget, aException);
-			theData.packetEnd();
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-	
-	public void logFieldWrite(
-			long aTimestamp, 
-            long aThreadId, 
-            int aOperationBytecodeIndex,
-            int aFieldLocationId, 
-            Object aTarget, 
-            Object aValue)
-	{
-		ThreadData theData = getThreadInfo();
-		if (theData.isSending()) return;
-        try
-        {
-        	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendFieldWrite(theStream, aTimestamp, aThreadId, aOperationBytecodeIndex, aFieldLocationId, aTarget, aValue);
-            theData.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
-	}
-
-	public void logInstantiation(long aThreadId)
-	{
-		ThreadData theData = getThreadInfo();
-		if (theData.isSending()) return;
-		
-        try
-        {
-        	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendInstantiation(theStream, aThreadId);
-            theData.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
-	}
-
-	public void logConstructorChaining(long aThreadId)
-	{
-		ThreadData theData = getThreadInfo();
-		if (theData.isSending()) return;
-		
-		try
-		{
-			DataOutputStream theStream = theData.packetStart();
-			CollectorPacketWriter.sendConstructorChaining(theStream, aThreadId);
-			theData.packetEnd();
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-	
-	public void logLocalVariableWrite(
+	@Override
+	protected void fieldWrite(
+			SocketThreadData aThread,
+			long aParentTimestamp,
+			short aDepth,
 			long aTimestamp,
-            long aThreadId,
-            int aOperationBytecodeIndex, 
-            int aVariableId,
-            Object aValue)
+			int aOperationBytecodeIndex,
+			int aFieldLocationId,
+			Object aTarget, 
+			Object aValue)
 	{
-		ThreadData theData = getThreadInfo();
-		if (theData.isSending()) return;
+		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendLocalVariableWrite(theStream, aTimestamp, aThreadId, aOperationBytecodeIndex, aVariableId, aValue);
-            theData.packetEnd();
+        	DataOutputStream theStream = aThread.packetStart();
+        	
+        	CollectorPacketWriter.sendFieldWrite(
+        			theStream, 
+        			aThread.getId(),
+        			aParentTimestamp,
+        			aDepth,
+        			aTimestamp,
+        			aOperationBytecodeIndex,
+        			aFieldLocationId,
+        			aTarget,
+        			aValue);
+        	
+            aThread.packetEnd();
         }
         catch (IOException e)
         {
@@ -406,137 +164,201 @@ public class SocketCollector implements ILogCollector
         }
 	}
 
-	public void logOutput(
+	@Override
+	protected void instantiation(
+			SocketThreadData aThread,
+			long aParentTimestamp, 
+			short aDepth,
 			long aTimestamp, 
-            long aThreadId, 
-            Output aOutput, 
-            byte[] aData)
+			int aOperationBytecodeIndex,
+			boolean aDirectParent,
+			int aCalledBehavior, 
+			int aExecutedBehavior, 
+			Object aTarget,
+			Object[] aArguments)
 	{
-		ThreadData theData = getThreadInfo();
-		if (theData.isSending()) return;
+		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendOutput(theStream, aTimestamp, aThreadId, aOutput, aData);
-            theData.packetEnd();
+        	DataOutputStream theStream = aThread.packetStart();
+        	
+        	CollectorPacketWriter.sendInstantiation(
+        			theStream,
+        			aThread.getId(),
+        			aParentTimestamp,
+        			aDepth,
+        			aTimestamp, 
+        			aOperationBytecodeIndex, 
+        			aDirectParent,
+        			aCalledBehavior,
+        			aExecutedBehavior,
+        			aTarget,
+        			aArguments);
+        	
+            aThread.packetEnd();
         }
         catch (IOException e)
         {
         	throw new RuntimeException(e);
         }
-
 	}
 
-	public void registerType(int aTypeId, String aTypeName, int aSupertypeId, int[] aInterfaceIds)
+	@Override
+	protected void localWrite(
+			SocketThreadData aThread,
+			long aParentTimestamp,
+			short aDepth, 
+			long aTimestamp,
+			int aOperationBytecodeIndex,
+			int aVariableId,
+			Object aValue)
 	{
-		log("SocketCollector.registerClass("+aTypeId+", "+aTypeName+")");
-		ThreadData theData = getThreadInfo();
-		
-		try
-		{
-        	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendRegisterType(theStream, aTypeId, aTypeName, aSupertypeId, aInterfaceIds);
-			theData.packetEnd();
-		}
-		catch (IOException e)
-		{
+		if (aThread.isSending()) return;
+        try
+        {
+        	DataOutputStream theStream = aThread.packetStart();
+        	
+        	CollectorPacketWriter.sendLocalWrite(
+        			theStream,
+        			aThread.getId(), 
+        			aParentTimestamp,
+        			aDepth,
+        			aTimestamp,
+        			aOperationBytecodeIndex, 
+        			aVariableId, 
+        			aValue);
+        	
+            aThread.packetEnd();
+        }
+        catch (IOException e)
+        {
         	throw new RuntimeException(e);
-		}
-	}
-	
-    
-    public void registerBehavior(
-    		BehaviourKind aBehaviourType,
-            int aBehaviourId, 
-            int aTypeId,
-            String aBehaviourName,
-            String aSignature)
-    {
-    	ThreadData theData = getThreadInfo();
-		try
-		{
-        	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendRegisterBehavior(theStream, aBehaviourType, aBehaviourId, aTypeId, aBehaviourName, aSignature);
-			theData.packetEnd();
-		}
-		catch (IOException e)
-		{
-        	throw new RuntimeException(e);
-		}
-	}
-	
-    public void registerBehaviorAttributes(
-    		int aBehaviourId, 
-    		LineNumberInfo[] aLineNumberTable, 
-    		LocalVariableInfo[] aLocalVariableTable)
-    {
-    	ThreadData theData = getThreadInfo();
-    	try
-    	{
-        	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendRegisterBehaviorAttributes(theStream, aBehaviourId, aLineNumberTable, aLocalVariableTable);
-    		theData.packetEnd();
-    	}
-    	catch (IOException e)
-    	{
-        	throw new RuntimeException(e);
-    	}
-    }
-    
-	public void registerField(int aFieldId, int aClassId, String aFieldName)
-	{
-		log("SocketCollector.registerField("+aFieldId+", "+aClassId+", "+aFieldName+")");
-		ThreadData theData = getThreadInfo();
-		
-		try
-		{
-        	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendRegisterField(theStream, aFieldId, aClassId, aFieldName);
-			theData.packetEnd();
-		}
-		catch (IOException e)
-		{
-        	throw new RuntimeException(e);
-		}
-	}
-	
-	public void registerFile(int aFileId, String aFileName)
-	{
-		log("SocketCollector.registerFile("+aFileId+", "+aFileName+")");
-		ThreadData theData = getThreadInfo();
-		
-		try
-		{
-        	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendRegisterFile(theStream, aFileId, aFileName);
-			theData.packetEnd();
-		}
-		catch (IOException e)
-		{
-        	throw new RuntimeException(e);
-		}
-	}
-	
-	public void registerThread (
-			long aThreadId,
-			String aName)
-	{
-		log("SocketCollector.registerThread("+aThreadId+", "+aName+")");
-		ThreadData theData = getThreadInfo();
-		
-		try
-		{
-        	DataOutputStream theStream = theData.packetStart();
-        	CollectorPacketWriter.sendRegisterThread(theStream, aThreadId, aName);
-			theData.packetEnd();
-		}
-		catch (IOException e)
-		{
-        	throw new RuntimeException(e);
-		}
-		
+        }
 	}
 
+	@Override
+	protected void methodCall(
+			SocketThreadData aThread,
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp,
+			int aOperationBytecodeIndex,
+			boolean aDirectParent,
+			int aCalledBehavior,
+			int aExecutedBehavior,
+			Object aTarget, 
+			Object[] aArguments)
+	{
+		if (aThread.isSending()) return;
+        try
+        {
+        	DataOutputStream theStream = aThread.packetStart();
+        	
+        	CollectorPacketWriter.sendMethodCall(
+        			theStream,
+        			aThread.getId(), 
+        			aParentTimestamp,
+        			aDepth,
+        			aTimestamp,
+        			aOperationBytecodeIndex,
+        			aDirectParent, 
+        			aCalledBehavior,
+        			aExecutedBehavior,
+        			aTarget, 
+        			aArguments);
+            aThread.packetEnd();
+        }
+        catch (IOException e)
+        {
+        	throw new RuntimeException(e);
+        }
+	}
+
+	@Override
+	protected void output(
+			SocketThreadData aThread,
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp, 
+			Output aOutput,
+			byte[] aData)
+	{
+		if (aThread.isSending()) return;
+        try
+        {
+        	DataOutputStream theStream = aThread.packetStart();
+        	
+        	CollectorPacketWriter.sendOutput(
+        			theStream, 
+        			aThread.getId(),
+        			aParentTimestamp,
+        			aDepth,
+        			aTimestamp, 
+        			aOutput,
+        			aData);
+        	
+            aThread.packetEnd();
+        }
+        catch (IOException e)
+        {
+        	throw new RuntimeException(e);
+        }
+	}
+
+	@Override
+	protected void superCall(
+			SocketThreadData aThread,
+			long aParentTimestamp,
+			short aDepth, 
+			long aTimestamp,
+			int aOperationBytecodeIndex,
+			boolean aDirectParent,
+			int aCalledBehavior,
+			int aExecutedBehavior,
+			Object aTarget,
+			Object[] aArguments)
+	{
+		if (aThread.isSending()) return;
+        try
+        {
+        	DataOutputStream theStream = aThread.packetStart();
+        	
+        	CollectorPacketWriter.sendSuperCall(
+        			theStream,
+        			aThread.getId(),
+        			aParentTimestamp,
+        			aDepth,
+        			aTimestamp, 
+        			aOperationBytecodeIndex,
+        			aDirectParent,
+        			aCalledBehavior, 
+        			aExecutedBehavior, 
+        			aTarget, 
+        			aArguments);
+        	
+            aThread.packetEnd();
+        }
+        catch (IOException e)
+        {
+        	throw new RuntimeException(e);
+        }
+	}
+
+	@Override
+	protected void thread(SocketThreadData aThread, long aJVMThreadId, String aName)
+	{
+		if (aThread.isSending()) return;
+        try
+        {
+        	DataOutputStream theStream = aThread.packetStart();
+        	CollectorPacketWriter.sendThread(theStream, aThread.getId(), aJVMThreadId, aName);
+            aThread.packetEnd();
+        }
+        catch (IOException e)
+        {
+        	throw new RuntimeException(e);
+        }
+	}
 	
 	/**
 	 * Maintains the thread specific information that permits to construct
@@ -547,7 +369,7 @@ public class SocketCollector implements ILogCollector
 	 * is requested to send them to a socket.
 	 * @author gpothier
 	 */
-	private static class ThreadData
+	static class SocketThreadData extends ThreadData
 	{
 		/**
 		 * A wrapper around {@link #itsBuffer}
@@ -567,8 +389,9 @@ public class SocketCollector implements ILogCollector
 		private boolean itsSending = false;
 		
 		
-		public ThreadData()
+		public SocketThreadData(int aId)
 		{
+			super(aId);
 			itsBuffer = new ByteArrayOutputStream();
 			itsLog = new ByteArrayOutputStream(32768);
 			itsDataOutputStream = new DataOutputStream(itsBuffer);
@@ -617,7 +440,7 @@ public class SocketCollector implements ILogCollector
 	
 	private static class MyThread extends SocketThread
 	{
-		private List<Reference<ThreadData>> itsThreadInfosList;
+		private List<SocketThreadData> itsThreadInfosList;
 		private boolean itsHostNameSent = false;
 		
 		public MyThread(ServerSocket aServerSocket)
@@ -642,7 +465,7 @@ public class SocketCollector implements ILogCollector
 			AgentReady.READY = true;			
 		}
 
-		public void setThreadInfosList(List<Reference<ThreadData>> aThreadInfosList)
+		public void setThreadInfosList(List<SocketThreadData> aThreadInfosList)
 		{
 			itsThreadInfosList = aThreadInfosList;
 		}
@@ -688,19 +511,10 @@ public class SocketCollector implements ILogCollector
 		{
 			if (itsThreadInfosList == null) return;
 			
-			for (Iterator<Reference<ThreadData>> theIterator = itsThreadInfosList.iterator(); theIterator.hasNext();)
+			for (Iterator<SocketThreadData> theIterator = itsThreadInfosList.iterator(); theIterator.hasNext();)
 			{
-				Reference<ThreadData> theReference = theIterator.next();
-				ThreadData theData = theReference.get();
-				if (theData != null)
-				{
-					theData.sendLog(aOutputStream);
-				}
-				else
-				{
-					theIterator.remove();
-					continue;
-				}
+				SocketThreadData aThread = theIterator.next();
+				aThread.sendLog(aOutputStream);
 			}
 		}
 	}

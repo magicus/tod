@@ -3,7 +3,6 @@
  */
 package tod.core.database.structure;
 
-import tod.core.ILogCollector;
 
 /**
  * Aggregates the information a {@link ILogCollector collector}
@@ -13,27 +12,28 @@ import tod.core.ILogCollector;
 public class ThreadInfo implements IThreadInfo
 {
 	private IHostInfo itsHost;
-	private long itsId;
+	private int itsId;
+	private long itsJVMId;
 	private String itsName;
 	
-	public ThreadInfo(IHostInfo aHost, long aId)
+	public ThreadInfo(IHostInfo aHost, int aId, long aId2, String aName)
 	{
 		itsHost = aHost;
 		itsId = aId;
-	}
-
-	public ThreadInfo(IHostInfo aHost, long aId, String aName)
-	{
-		itsHost = aHost;
-		itsId = aId;
+		itsJVMId = aId2;
 		itsName = aName;
 	}
-	
-	public long getId()
+
+	public int getId()
 	{
 		return itsId;
 	}
 	
+	public long getJVMId()
+	{
+		return itsJVMId;
+	}
+
 	public IHostInfo getHost()
 	{
 		return itsHost;

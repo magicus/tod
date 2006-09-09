@@ -4,7 +4,6 @@
 package tod.impl.dbgrid.messages;
 
 import tod.core.Output;
-import tod.impl.common.event.Event;
 import tod.impl.dbgrid.dbnode.Indexes;
 
 public class GridOutputEvent extends GridEvent
@@ -12,13 +11,22 @@ public class GridOutputEvent extends GridEvent
 	private String itsData;
 	private Output itsOutput;
 	
-	public GridOutputEvent(Event aEvent, String aData, Output aOutput)
+	public GridOutputEvent()
 	{
-		super(aEvent);
+	}
+
+
+	public GridOutputEvent(String aData, Output aOutput)
+	{
+		set(aData, aOutput);
+	}
+
+	public void set(String aData, Output aOutput)
+	{
 		itsData = aData;
 		itsOutput = aOutput;
 	}
-
+	
 	@Override
 	public MessageType getEventType()
 	{

@@ -3,18 +3,24 @@
  */
 package tod.impl.dbgrid.messages;
 
-import tod.impl.common.event.Event;
+import static tod.impl.dbgrid.messages.ObjectCodec.getObjectBits;
+import static tod.impl.dbgrid.messages.ObjectCodec.getObjectId;
+import static tod.impl.dbgrid.messages.ObjectCodec.readObject;
+import static tod.impl.dbgrid.messages.ObjectCodec.writeObject;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import zz.utils.bit.BitStruct;
-import static tod.impl.dbgrid.messages.ObjectCodec.*;
 
 public class GridExceptionGeneratedEvent extends GridEvent
 {
 	private Object itsException;
 	private int itsThrowingBehaviorId;
 	
+	public GridExceptionGeneratedEvent()
+	{
+	}
+
 	public GridExceptionGeneratedEvent(
 			int aHost, 
 			int aThread, 
@@ -25,27 +31,30 @@ public class GridExceptionGeneratedEvent extends GridEvent
 			Object aException, 
 			int aThrowingBehaviorId)
 	{
-		super(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp);
-		itsException = aException;
-		itsThrowingBehaviorId = aThrowingBehaviorId;
+		set(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp, aException, aThrowingBehaviorId);
 	}
 
-	public GridExceptionGeneratedEvent(
-			Event aEvent,
-			Object aException, 
-			int aThrowingBehaviorId)
-	{
-		super(aEvent);
-		itsException = aException;
-		itsThrowingBehaviorId = aThrowingBehaviorId;
-	}
-	
 	public GridExceptionGeneratedEvent(BitStruct aBitStruct)
 	{
 		super(aBitStruct);
 
 		itsThrowingBehaviorId = aBitStruct.readInt(DebuggerGridConfig.EVENT_BEHAVIOR_BITS);
 		itsException = readObject(aBitStruct);
+	}
+	
+	public void set(
+			int aHost, 
+			int aThread, 
+			int aDepth,
+			long aTimestamp, 
+			int aOperationBytecodeIndex, 
+			long aParentTimestamp,
+			Object aException, 
+			int aThrowingBehaviorId)
+	{
+		super.set(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp);
+		itsException = aException;
+		itsThrowingBehaviorId = aThrowingBehaviorId;
 	}
 
 	@Override

@@ -8,7 +8,9 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-import tod.core.ILogCollector;
+import tod.agent.AgentReady;
+import tod.core.BehaviorCallType;
+import tod.core.EventInterpreter;
 
 /**
  * Provides all the methods that perform the insertion
@@ -24,8 +26,17 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	private final int itsMethodId;
 	private final ASMDebuggerConfig itsConfig;
 	
-	private int itsCurrentThreadVar;
+	/**
+	 * Index of the variable that stores the real return point of the method.
+	 */
+	private int itsReturnLocationVar;
 	private int itsFirstFreeVar;
+	
+	private Label itsReturnHookLabel;
+	private Label itsFinallyHookLabel;
+	private Label itsCodeStartLabel;
+
+
 	
 	public ASMBehaviorInstrumenter(
 			ASMDebuggerConfig aConfig,
@@ -41,8 +52,9 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		itsMethodId = aMethodId;
 		itsBehaviorCallInstrumenter = new ASMBehaviorCallInstrumenter(mv, this);
 		
-		itsCurrentThreadVar = itsMethodInfo.getMaxLocals();
-		itsFirstFreeVar = itsCurrentThreadVar+2;
+		itsFirstFreeVar = itsMethodInfo.getMaxLocals();
+		itsReturnLocationVar = itsFirstFreeVar;
+		itsFirstFreeVar += 1;
 	}
 	
 	/**
@@ -54,13 +66,75 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		&& BCIUtils.acceptClass(aClassName, itsConfig.getTraceSelector());
 	}
 	
-	public void behaviorEnter()
+	/**
+	 * <li>Identifiable objects' id initialization</li>
+	 * <li>Log behavior enter</li>
+	 * <li>Insert return hooks at the beginning of the method body:
+	 * 		<li>Log behavior exit</li>
+	 * </li>
+	 */
+	public void insertEntryHooks()
 	{
-		// Store thread id
-		mv.visitMethodInsn(INVOKESTATIC, "java/lang/Thread", "currentThread", "()Ljava/lang/Thread;");
-		mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Thread", "getId", "()J");
-		mv.visitVarInsn(LSTORE, itsCurrentThreadVar);
+		itsReturnHookLabel = new Label();
+		itsFinallyHookLabel = new Label();
+		itsCodeStartLabel = new Label();
 		
+		// Call logBehaviorEnter
+		// We suppose that if a class is instrumented all its descendants
+		// are also instrumented, so we can't miss a super call
+		behaviorEnter("<init>".equals(itsMethodInfo.getName()) ?
+				BehaviorCallType.INSTANTIATION
+				: BehaviorCallType.METHOD_CALL);
+		
+		mv.visitJumpInsn(GOTO, itsCodeStartLabel);
+		
+		// -- Return hook
+		mv.visitLabel(itsReturnHookLabel);
+
+		// Call logBehaviorExit
+		behaviorExit();
+
+		// Insert RETURN
+		Type theReturnType = Type.getReturnType(itsMethodInfo.getDescriptor());
+		mv.visitInsn(theReturnType.getOpcode(IRETURN));
+		
+		// -- Finally hook
+		mv.visitLabel(itsFinallyHookLabel);
+		
+		// Call logBehaviorExitWithException
+		behaviorExitWithException();
+		
+		mv.visitInsn(ATHROW);
+
+		mv.visitLabel(itsCodeStartLabel);
+	}
+	
+	public void endHooks()
+	{
+		Label theCodeEndLabel = new Label();
+		mv.visitLabel(theCodeEndLabel);
+		mv.visitTryCatchBlock(itsCodeStartLabel, theCodeEndLabel, itsFinallyHookLabel, null);
+	}
+
+	public void doReturn(int aOpcode)
+	{
+		if (aOpcode >= IRETURN && aOpcode <= RETURN) 
+		{
+			// Store location of this return into the variable
+			Label l = new Label();
+			mv.visitLabel(l);
+			int theBytecodeIndex = l.getOffset();
+			
+			BCIUtils.pushInt(mv, theBytecodeIndex);
+			mv.visitVarInsn(ISTORE, itsReturnLocationVar);
+			
+			mv.visitJumpInsn(GOTO, itsReturnHookLabel);
+		}
+		else mv.visitInsn(aOpcode);
+	}
+	
+	public void behaviorEnter(BehaviorCallType aCallType)
+	{
 		// Create arguments array
 		int theArrayVar = itsFirstFreeVar;
 		int theFirstArgVar = itsMethodInfo.isStatic() ? 0 : 1;
@@ -70,6 +144,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		invokeLogBehaviorEnter(
 				itsMethodId,
+				aCallType,
 				itsMethodInfo.isStatic() ? -1 : 0,
 				theArrayVar);
 	}
@@ -101,32 +176,12 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		invokeLogBehaviorExitWithException(itsMethodId, itsFirstFreeVar);
 	}
 	
-	public void constructorCall(
-			int aOpcode,
-			String aOwner, 
-			int aTypeId,
-			String aName,
-			String aDesc)
-	{
-		invokeLogInstantiation();
-		methodCall(aOpcode, aOwner, aName, aDesc);
-	}
-	
-	public void constructorChainingCall(
-			int aOpcode,
-			String aOwner, 
-			String aName,
-			String aDesc)
-	{
-		invokeLogConstructorChaining();
-		methodCall(aOpcode, aOwner, aName, aDesc);
-	}
-	
 	public void methodCall(
 			int aOpcode,
 			String aOwner, 
 			String aName,
-			String aDesc)
+			String aDesc,
+			BehaviorCallType aCallType)
 	{
 		int theCalledTypeId = itsLocationPool.getTypeId(aOwner);
 		int theCalledMethodId = itsLocationPool.getBehaviorId(theCalledTypeId, aName, aDesc);
@@ -140,20 +195,20 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		if (hasTrace(aOwner))
 		{
 			// Handle before method call
-			itsBehaviorCallInstrumenter.callLogBeforeMethodCallDry();
+			itsBehaviorCallInstrumenter.callLogBeforeBehaviorCallDry(aCallType);
 			
 			// Do the original call
 			mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
 			
 			// Handle after method call
-			itsBehaviorCallInstrumenter.callLogAfterMethodCallDry();						
+			itsBehaviorCallInstrumenter.callLogAfterBehaviorCallDry();						
 		}
 		else
 		{
 			// Handle before method call
 			itsBehaviorCallInstrumenter.storeArgsToLocals();
 			itsBehaviorCallInstrumenter.createArgsArray();
-			itsBehaviorCallInstrumenter.callLogBeforeMethodCall();
+			itsBehaviorCallInstrumenter.callLogBeforeMethodCall(aCallType);
 			itsBehaviorCallInstrumenter.pushArgs();
 
 			Label theBefore = new Label();
@@ -289,9 +344,6 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		// ->timestamp
 		mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "nanoTime", "()J");
 //		mv.visitInsn(LCONST_0);
-		
-		// ->thread id
-		mv.visitVarInsn(LLOAD, itsCurrentThreadVar);		
 	}
 
 	/**
@@ -304,18 +356,16 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	{
 		// ->target collector
 		BCIUtils.pushCollector(mv);
-		
-		// ->thread id
-		mv.visitVarInsn(LLOAD, itsCurrentThreadVar);		
 	}
 	
 	public void invokeLogBeforeBehaviorCall(
 			int aBytecodeIndex, 
 			int aMethodId,
+			BehaviorCallType aCallType,
 			int aTargetVar,
 			int aArgsArrayVar)
 	{
-		mv.visitFieldInsn(GETSTATIC, "tod/agent/AgentReady", "READY", "Z");
+		mv.visitFieldInsn(GETSTATIC, Type.getInternalName(AgentReady.class), "READY", "Z");
 		Label l = new Label();
 		mv.visitJumpInsn(IFEQ, l);
 		
@@ -326,6 +376,13 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		// ->method id
 		BCIUtils.pushInt(mv, aMethodId);
+		
+		// ->call type
+		mv.visitFieldInsn(
+				GETSTATIC, 
+				Type.getInternalName(BehaviorCallType.class),
+				aCallType.name(), 
+				Type.getDescriptor(BehaviorCallType.class));
 	
 		// ->target
 		if (aTargetVar < 0) mv.visitInsn(ACONST_NULL);
@@ -335,19 +392,20 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		mv.visitVarInsn(ALOAD, aArgsArrayVar);
 	
 		mv.visitMethodInsn(
-				INVOKEINTERFACE, 
-				Type.getInternalName(ILogCollector.class), 
+				INVOKEVIRTUAL, 
+				Type.getInternalName(EventInterpreter.class), 
 				"logBeforeBehaviorCall", 
-				"(JJIILjava/lang/Object;[Ljava/lang/Object;)V");
+				"(JII"+Type.getDescriptor(BehaviorCallType.class)+"Ljava/lang/Object;[Ljava/lang/Object;)V");
 		
 		mv.visitLabel(l);
 	}
 
 	public void invokeLogBeforeBehaviorCall(
 			int aBytecodeIndex, 
-			int aMethodId)
+			int aMethodId,
+			BehaviorCallType aCallType)
 	{
-		mv.visitFieldInsn(GETSTATIC, "tod/agent/AgentReady", "READY", "Z");
+		mv.visitFieldInsn(GETSTATIC, Type.getInternalName(AgentReady.class), "READY", "Z");
 		Label l = new Label();
 		mv.visitJumpInsn(IFEQ, l);
 		
@@ -358,12 +416,19 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		// ->method id
 		BCIUtils.pushInt(mv, aMethodId);
+
+		// ->call type
+		mv.visitFieldInsn(
+				GETSTATIC, 
+				Type.getInternalName(BehaviorCallType.class),
+				aCallType.name(), 
+				Type.getDescriptor(BehaviorCallType.class));
 		
 		mv.visitMethodInsn(
-				INVOKEINTERFACE, 
-				Type.getInternalName(ILogCollector.class), 
+				INVOKEVIRTUAL, 
+				Type.getInternalName(EventInterpreter.class), 
 				"logBeforeBehaviorCall", 
-		"(JII)V");
+				"(II"+Type.getDescriptor(BehaviorCallType.class)+")V");
 		
 		mv.visitLabel(l);
 	}
@@ -374,7 +439,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			int aTargetVar,
 			int aResultVar)
 	{
-		mv.visitFieldInsn(GETSTATIC, "tod/agent/AgentReady", "READY", "Z");
+		mv.visitFieldInsn(GETSTATIC, Type.getInternalName(AgentReady.class), "READY", "Z");
 		Label l = new Label();
 		mv.visitJumpInsn(IFEQ, l);
 		
@@ -394,27 +459,27 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		mv.visitVarInsn(ALOAD, aResultVar);
 		
 		mv.visitMethodInsn(
-				INVOKEINTERFACE, 
-				Type.getInternalName(ILogCollector.class), 
+				INVOKEVIRTUAL, 
+				Type.getInternalName(EventInterpreter.class), 
 				"logAfterBehaviorCall", 
-				"(JJIILjava/lang/Object;Ljava/lang/Object;)V");
+				"(JIILjava/lang/Object;Ljava/lang/Object;)V");
 		
 		mv.visitLabel(l);
 	}
 
 	public void invokeLogAfterBehaviorCall()
 	{
-		mv.visitFieldInsn(GETSTATIC, "tod/agent/AgentReady", "READY", "Z");
+		mv.visitFieldInsn(GETSTATIC, Type.getInternalName(AgentReady.class), "READY", "Z");
 		Label l = new Label();
 		mv.visitJumpInsn(IFEQ, l);
 		
 		pushDryLogArgs();
 		
 		mv.visitMethodInsn(
-				INVOKEINTERFACE, 
-				Type.getInternalName(ILogCollector.class), 
+				INVOKEVIRTUAL, 
+				Type.getInternalName(EventInterpreter.class), 
 				"logAfterBehaviorCall", 
-		"(J)V");
+				"()V");
 		
 		mv.visitLabel(l);
 	}
@@ -425,7 +490,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			int aTargetVar,
 			int aExceptionVar)
 	{
-		mv.visitFieldInsn(GETSTATIC, "tod/agent/AgentReady", "READY", "Z");
+		mv.visitFieldInsn(GETSTATIC, Type.getInternalName(AgentReady.class), "READY", "Z");
 		Label l = new Label();
 		mv.visitJumpInsn(IFEQ, l);
 		
@@ -445,27 +510,10 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		mv.visitVarInsn(ALOAD, aExceptionVar);
 		
 		mv.visitMethodInsn(
-				INVOKEINTERFACE, 
-				Type.getInternalName(ILogCollector.class), 
+				INVOKEVIRTUAL, 
+				Type.getInternalName(EventInterpreter.class), 
 				"logAfterBehaviorCallWithException", 
-		"(JJIILjava/lang/Object;Ljava/lang/Object;)V");
-		
-		mv.visitLabel(l);
-	}
-	
-	public void invokeLogAfterBehaviorCallWithException()
-	{
-		mv.visitFieldInsn(GETSTATIC, "tod/agent/AgentReady", "READY", "Z");
-		Label l = new Label();
-		mv.visitJumpInsn(IFEQ, l);
-		
-		pushDryLogArgs();
-		
-		mv.visitMethodInsn(
-				INVOKEINTERFACE, 
-				Type.getInternalName(ILogCollector.class), 
-				"logAfterBehaviorCallWithException", 
-				"(J)V");
+				"(JIILjava/lang/Object;Ljava/lang/Object;)V");
 		
 		mv.visitLabel(l);
 	}
@@ -477,7 +525,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			Type theType,
 			int aValueVar)
 	{
-		mv.visitFieldInsn(GETSTATIC, "tod/agent/AgentReady", "READY", "Z");
+		mv.visitFieldInsn(GETSTATIC, Type.getInternalName(AgentReady.class), "READY", "Z");
 		Label l = new Label();
 		mv.visitJumpInsn(IFEQ, l);
 		
@@ -498,10 +546,10 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		BCIUtils.wrap(mv, theType);
 		
 		mv.visitMethodInsn(
-				INVOKEINTERFACE, 
-				Type.getInternalName(ILogCollector.class), 
+				INVOKEVIRTUAL, 
+				Type.getInternalName(EventInterpreter.class), 
 				"logFieldWrite", 
-				"(JJIILjava/lang/Object;Ljava/lang/Object;)V");
+				"(JIILjava/lang/Object;Ljava/lang/Object;)V");
 		
 		mv.visitLabel(l);
 	}
@@ -512,7 +560,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			Type theType,
 			int aValueVar)
 	{
-		mv.visitFieldInsn(GETSTATIC, "tod/agent/AgentReady", "READY", "Z");
+		mv.visitFieldInsn(GETSTATIC, Type.getInternalName(AgentReady.class), "READY", "Z");
 		Label l = new Label();
 		mv.visitJumpInsn(IFEQ, l);
 		
@@ -529,17 +577,21 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		BCIUtils.wrap(mv, theType);
 		
 		mv.visitMethodInsn(
-				INVOKEINTERFACE, 
-				Type.getInternalName(ILogCollector.class), 
+				INVOKEVIRTUAL, 
+				Type.getInternalName(EventInterpreter.class), 
 				"logLocalVariableWrite", 
-				"(JJIILjava/lang/Object;)V");
+				"(JIILjava/lang/Object;)V");
 		
 		mv.visitLabel(l);
 	}
 
-	public void invokeLogBehaviorEnter (int aMethodId, int aTargetVar, int aArgsArrayVar)
+	public void invokeLogBehaviorEnter (
+			int aMethodId, 
+			BehaviorCallType aCallType,
+			int aTargetVar, 
+			int aArgsArrayVar)
 	{
-		mv.visitFieldInsn(GETSTATIC, "tod/agent/AgentReady", "READY", "Z");
+		mv.visitFieldInsn(GETSTATIC, Type.getInternalName(AgentReady.class), "READY", "Z");
 		Label l = new Label();
 		mv.visitJumpInsn(IFEQ, l);
 		
@@ -547,6 +599,13 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	
 		// ->method id
 		BCIUtils.pushInt(mv, aMethodId);
+		
+		// ->call type
+		mv.visitFieldInsn(
+				GETSTATIC, 
+				Type.getInternalName(BehaviorCallType.class),
+				aCallType.name(), 
+				Type.getDescriptor(BehaviorCallType.class));
 	
 		// ->target
 		if (aTargetVar < 0) mv.visitInsn(ACONST_NULL);
@@ -556,21 +615,24 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		mv.visitVarInsn(ALOAD, aArgsArrayVar);
 		
 		mv.visitMethodInsn(
-				Opcodes.INVOKEINTERFACE, 
-				Type.getInternalName(ILogCollector.class), 
+				Opcodes.INVOKEVIRTUAL, 
+				Type.getInternalName(EventInterpreter.class), 
 				"logBehaviorEnter", 
-				"(JJILjava/lang/Object;[Ljava/lang/Object;)V");	
+				"(JI"+Type.getDescriptor(BehaviorCallType.class)+"Ljava/lang/Object;[Ljava/lang/Object;)V");	
 	
 		mv.visitLabel(l);
 	}
 
 	public void invokeLogBehaviorExit (int aMethodId, int aResultVar)
 	{
-		mv.visitFieldInsn(GETSTATIC, "tod/agent/AgentReady", "READY", "Z");
+		mv.visitFieldInsn(GETSTATIC, Type.getInternalName(AgentReady.class), "READY", "Z");
 		Label l = new Label();
 		mv.visitJumpInsn(IFEQ, l);
 		
 		pushStdLogArgs();
+		
+		// ->bytecode index
+		mv.visitVarInsn(ILOAD, itsReturnLocationVar);
 		
 		// ->method id
 		BCIUtils.pushInt(mv, aMethodId);
@@ -579,17 +641,17 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		mv.visitVarInsn(ALOAD, aResultVar);
 
 		mv.visitMethodInsn(
-				Opcodes.INVOKEINTERFACE, 
-				Type.getInternalName(ILogCollector.class), 
+				Opcodes.INVOKEVIRTUAL, 
+				Type.getInternalName(EventInterpreter.class), 
 				"logBehaviorExit", 
-				"(JJILjava/lang/Object;)V");	
+				"(JIILjava/lang/Object;)V");	
 	
 		mv.visitLabel(l);
 	}
 
-	public void invokeLogBehaviorExitWithException (int aMethodId, int aExceptionVar)
+	private void invokeLogBehaviorExitWithException (int aMethodId, int aExceptionVar)
 	{
-		mv.visitFieldInsn(GETSTATIC, "tod/agent/AgentReady", "READY", "Z");
+		mv.visitFieldInsn(GETSTATIC, Type.getInternalName(AgentReady.class), "READY", "Z");
 		Label l = new Label();
 		mv.visitJumpInsn(IFEQ, l);
 		
@@ -602,44 +664,10 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		mv.visitVarInsn(ALOAD, aExceptionVar);
 		
 		mv.visitMethodInsn(
-				Opcodes.INVOKEINTERFACE, 
-				Type.getInternalName(ILogCollector.class), 
+				Opcodes.INVOKEVIRTUAL, 
+				Type.getInternalName(EventInterpreter.class), 
 				"logBehaviorExitWithException", 
-				"(JJILjava/lang/Object;)V");	
-		
-		mv.visitLabel(l);
-	}
-	
-	public void invokeLogInstantiation()
-	{
-		mv.visitFieldInsn(GETSTATIC, "tod/agent/AgentReady", "READY", "Z");
-		Label l = new Label();
-		mv.visitJumpInsn(IFEQ, l);
-		
-		pushDryLogArgs();
-	
-		mv.visitMethodInsn(
-				INVOKEINTERFACE, 
-				Type.getInternalName(ILogCollector.class), 
-				"logInstantiation", 
-				"(J)V");
-		
-		mv.visitLabel(l);
-	}
-
-	public void invokeLogConstructorChaining()
-	{
-		mv.visitFieldInsn(GETSTATIC, "tod/agent/AgentReady", "READY", "Z");
-		Label l = new Label();
-		mv.visitJumpInsn(IFEQ, l);
-		
-		pushDryLogArgs();
-		
-		mv.visitMethodInsn(
-				INVOKEINTERFACE, 
-				Type.getInternalName(ILogCollector.class), 
-				"logConstructorChaining", 
-		"(J)V");
+				"(JILjava/lang/Object;)V");	
 		
 		mv.visitLabel(l);
 	}

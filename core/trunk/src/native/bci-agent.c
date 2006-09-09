@@ -51,9 +51,6 @@ static int cfgNativePort = 0;
 static jclass class_System;
 static jmethodID method_System_nanoTime;
 
-static jclass class_Thread;
-static jmethodID method_Thread_getId;
-
 static jclass class_Object;
 static jmethodID method_Object_hashCode;
 
@@ -280,7 +277,7 @@ cbClassFileLoadHook(
       || strncmp("com/sun/", name, 8) == 0 
     )) return;
     
-  if (cfgVerbose) printf("Loading %s\n", name);
+  if (cfgVerbose) printf("Loading (hook) %s\n", name);
   
   // Check if we have a cached version
   if (cfgCachePath != NULL)
@@ -323,6 +320,7 @@ cbClassFileLoadHook(
   fflush(SOCKET_OUT);
   
   int len = readInt();
+  
   if (len > 0)
   {
     if (cfgVerbose) printf("Redefining %s...\n", name);
@@ -385,7 +383,6 @@ cbException(
   
   // Obtain timestamp and thread id
   jlong timestamp = jni->CallStaticLongMethod(class_System, method_System_nanoTime);
-  jlong threadId = jni->CallLongMethod(thread, method_Thread_getId);
   
   // Obtain method information
   jvmti->GetMethodName(method, &methodName, &methodSignature, NULL);
@@ -402,7 +399,6 @@ cbException(
     class_ExceptionGeneratedReceiver, 
     method_ExceptionGeneratedReceiver_exceptionGenerated,
     timestamp,
-    threadId,
     jni->NewStringUTF(methodName),
     jni->NewStringUTF(methodSignature),
     jni->NewStringUTF(methodDeclaringClassSignature),
@@ -449,6 +445,7 @@ cbVMInit(
 {
   if (cfgVerbose) printf("VMInit\n");
   
+  
   // Initialize the classes and method ids that will be used
   // for exception processing
   if (cfgVerbose) printf("Loading (jni) java.lang.System\n");
@@ -456,11 +453,6 @@ cbVMInit(
   class_System = (jclass) jni->NewGlobalRef(class_System);
   method_System_nanoTime = jni->GetStaticMethodID(class_System, "nanoTime", "()J");
   
-  if (cfgVerbose) printf("Loading (jni) java.lang.Thread\n");
-  class_Thread = jni->FindClass("java/lang/Thread");
-  class_Thread = (jclass) jni->NewGlobalRef(class_Thread);
-  method_Thread_getId = jni->GetMethodID(class_Thread, "getId", "()J");
-
   if (cfgVerbose) printf("Loading (jni) java.lang.Object\n");
   class_Object = jni->FindClass("java/lang/Object");
   class_Object = (jclass) jni->NewGlobalRef(class_Object);
@@ -468,13 +460,14 @@ cbVMInit(
 
   if (cfgVerbose) printf("Loading (jni) tod.agent.ExceptionGeneratedReceiver\n");
   class_ExceptionGeneratedReceiver = jni->FindClass("tod/agent/ExceptionGeneratedReceiver");
+  if (class_ExceptionGeneratedReceiver == NULL) printf("Could not load!\n");
   class_ExceptionGeneratedReceiver = (jclass) jni->NewGlobalRef(class_ExceptionGeneratedReceiver);
   method_ExceptionGeneratedReceiver_exceptionGenerated = 
     jni->GetStaticMethodID(
       class_ExceptionGeneratedReceiver,
       "exceptionGenerated", 
-      "(JJLjava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Throwable;)V");
-      
+      "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Throwable;)V");
+  
   if (cfgVerbose) printf("VMInit - done\n");
   
   VM_STARTED = 1;

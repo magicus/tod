@@ -3,7 +3,6 @@
  */
 package tod.core.database.structure;
 
-import tod.core.ILogCollector;
 import tod.core.database.browser.ILocationsRepository;
 
 /**

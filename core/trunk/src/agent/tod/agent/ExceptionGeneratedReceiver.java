@@ -17,16 +17,14 @@ public class ExceptionGeneratedReceiver
 	
 	public static void exceptionGenerated(
 			long aTimestamp,
-			long aThreadId,
 			String aMethodName,
 			String aMethodSignature,
 			String aMethodDeclaringClassSignature,
 			int aOperationBytecodeIndex,
 			Throwable aThrowable)
 	{
-		if (AgentReady.READY) AgentConfig.getCollector().logExceptionGenerated(
+		if (AgentReady.READY) AgentConfig.getInterpreter().logExceptionGenerated(
 				aTimestamp, 
-				aThreadId,
 				aMethodName,
 				aMethodSignature, 
 				aMethodDeclaringClassSignature,

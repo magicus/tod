@@ -3,101 +3,77 @@
  */
 package tod.core.transport;
 
-import tod.core.BehaviourKind;
-import tod.core.ILogCollector;
+import tod.core.HighLevelCollector;
 import tod.core.Output;
-import tod.core.ILocationRegistrer.LineNumberInfo;
-import tod.core.ILocationRegistrer.LocalVariableInfo;
+import tod.core.EventInterpreter.ThreadData;
 
 /**
  * A collector that does nothing
  * @author gpothier
  */
-public class DummyCollector implements ILogCollector
+public class DummyCollector extends HighLevelCollector<ThreadData>
 {
 
-	public void logAfterBehaviorCall(long aTimestamp, long aThreadId, int aOperationBytecodeIndex, int aBehaviorLocationId, Object aTarget, Object aResult)
+	@Override
+	protected void behaviorExit(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
+			int aOperationBytecodeIndex, int aBehaviorId, boolean aHasThrown, Object aResult)
 	{
 	}
 
-	public void logAfterBehaviorCall(long aThreadId)
+	@Override
+	public ThreadData createThreadData(int aId)
+	{
+		return null;
+	}
+
+	@Override
+	protected void exception(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
+			String aMethodName, String aMethodSignature, String aMethodDeclaringClassSignature,
+			int aOperationBytecodeIndex, Object aException)
 	{
 	}
 
-	public void logAfterBehaviorCallWithException(long aTimestamp, long aThreadId, int aOperationBytecodeIndex, int aBehaviorLocationId, Object aTarget, Object aException)
+	@Override
+	protected void fieldWrite(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
+			int aOperationBytecodeIndex, int aFieldId, Object aTarget, Object aValue)
 	{
 	}
 
-	public void logBeforeBehaviorCall(long aThreadId, int aOperationBytecodeIndex, int aBehaviorLocationId)
+	@Override
+	protected void instantiation(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
+			int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
+			Object aTarget, Object[] aArguments)
 	{
 	}
 
-	public void logBeforeBehaviorCall(long aTimestamp, long aThreadId, int aOperationBytecodeIndex, int aBehaviorLocationId, Object aTarget, Object[] aArguments)
+	@Override
+	protected void localWrite(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
+			int aOperationBytecodeIndex, int aVariableId, Object aValue)
 	{
 	}
 
-	public void logBehaviorEnter(long aTimestamp, long aThreadId, int aBehaviorLocationId, Object aObject, Object[] aArguments)
+	@Override
+	protected void methodCall(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
+			int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
+			Object aTarget, Object[] aArguments)
 	{
 	}
 
-	public void logBehaviorExit(long aTimestamp, long aThreadId, int aBehaviorLocationId, Object aResult)
+	@Override
+	protected void output(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp, Output aOutput,
+			byte[] aData)
 	{
 	}
 
-	public void logBehaviorExitWithException(long aTimestamp, long aThreadId, int aBehaviorLocationId, Object aException)
+	@Override
+	protected void superCall(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
+			int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorid, int aExecutedBehaviorId,
+			Object aTarget, Object[] aArguments)
 	{
 	}
 
-	public void logConstructorChaining(long aThreadId)
+	@Override
+	protected void thread(ThreadData aThread, long aJVMThreadId, String aName)
 	{
 	}
-
-	public void logExceptionGenerated(long aTimestamp, long aThreadId, int aBehaviorLocationId, int aOperationBytecodeIndex, Object aException)
-	{
-	}
-
-	public void logExceptionGenerated(long aTimestamp, long aThreadId, String aMethodName, String aMethodSignature, String aMethodDeclaringClassSignature, int aOperationBytecodeIndex, Object aException)
-	{
-	}
-
-	public void logFieldWrite(long aTimestamp, long aThreadId, int aOperationBytecodeIndex, int aFieldLocationId, Object aTarget, Object aValue)
-	{
-	}
-
-	public void logInstantiation(long aThreadId)
-	{
-	}
-
-	public void logLocalVariableWrite(long aTimestamp, long aThreadId, int aOperationBytecodeIndex, int aVariableId, Object aValue)
-	{
-	}
-
-	public void logOutput(long aTimestamp, long aThreadId, Output aOutput, byte[] aData)
-	{
-	}
-
-	public void registerBehavior(BehaviourKind aBehaviourType, int aBehaviourId, int aTypeId, String aBehaviourName, String aSignature)
-	{
-	}
-
-	public void registerBehaviorAttributes(int aBehaviourId, LineNumberInfo[] aLineNumberTable, LocalVariableInfo[] aLocalVariableTable)
-	{
-	}
-
-	public void registerField(int aFieldId, int aTypeId, String aFieldName)
-	{
-	}
-
-	public void registerFile(int aFileId, String aFileName)
-	{
-	}
-
-	public void registerThread(long aThreadId, String aName)
-	{
-	}
-
-	public void registerType(int aTypeId, String aTypeName, int aSupertypeId, int[] aInterfaceIds)
-	{
-	}
-
 }

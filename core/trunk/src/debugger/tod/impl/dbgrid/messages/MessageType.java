@@ -6,7 +6,7 @@ package tod.impl.dbgrid.messages;
 public enum MessageType 
 {
 	BEHAVIOR_EXIT, 
-	CONSTRUCTOR_CHAINING,
+	SUPER_CALL,
 	EXCEPTION_GENERATED,
 	FIELD_WRITE,
 	INSTANTIATION,

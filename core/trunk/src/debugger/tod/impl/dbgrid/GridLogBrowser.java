@@ -116,15 +116,8 @@ public class GridLogBrowser implements ILogBrowser, RIGridMasterListener
 
 	public IEventFilter createThreadFilter(IThreadInfo aThread)
 	{
-		try
-		{
-			int theThreadNumber = itsMaster.getThreadNumber(aThread.getHost().getId(), aThread.getId());
-			return new ThreadCondition(theThreadNumber);
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		int theThreadId = aThread.getId();
+		return new ThreadCondition(theThreadId);
 	}
 
 	public ICompoundFilter createIntersectionFilter(IEventFilter... aFilters)

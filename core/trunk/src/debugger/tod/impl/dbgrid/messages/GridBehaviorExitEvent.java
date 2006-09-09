@@ -3,12 +3,14 @@
  */
 package tod.impl.dbgrid.messages;
 
-import tod.impl.common.event.Event;
+import static tod.impl.dbgrid.messages.ObjectCodec.getObjectBits;
+import static tod.impl.dbgrid.messages.ObjectCodec.getObjectId;
+import static tod.impl.dbgrid.messages.ObjectCodec.readObject;
+import static tod.impl.dbgrid.messages.ObjectCodec.writeObject;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import zz.utils.bit.BitStruct;
-import static tod.impl.dbgrid.messages.ObjectCodec.*;
 
 public class GridBehaviorExitEvent extends GridEvent
 {
@@ -24,6 +26,10 @@ public class GridBehaviorExitEvent extends GridEvent
 
 	
 	
+	public GridBehaviorExitEvent()
+	{
+	}
+
 	public GridBehaviorExitEvent(
 			int aHost, 
 			int aThread, 
@@ -35,22 +41,7 @@ public class GridBehaviorExitEvent extends GridEvent
 			Object aResult, 
 			int aBehaviorId)
 	{
-		super(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp);
-		itsHasThrown = aHasThrown;
-		itsResult = aResult;
-		itsBehaviorId = aBehaviorId;
-	}
-
-	public GridBehaviorExitEvent(
-			Event aEvent,
-			boolean aHasThrown, 
-			Object aResult, 
-			int aBehaviorId)
-	{
-		super(aEvent);
-		itsHasThrown = aHasThrown;
-		itsResult = aResult;
-		itsBehaviorId = aBehaviorId;
+		set(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp, aHasThrown, aResult, aBehaviorId);
 	}
 
 	public GridBehaviorExitEvent(BitStruct aBitStruct)
@@ -61,6 +52,23 @@ public class GridBehaviorExitEvent extends GridEvent
 		itsResult = readObject(aBitStruct);
 	}
 
+	public void set(
+			int aHost, 
+			int aThread, 
+			int aDepth,
+			long aTimestamp, 
+			int aOperationBytecodeIndex, 
+			long aParentTimestamp,
+			boolean aHasThrown, 
+			Object aResult, 
+			int aBehaviorId)
+	{
+		super.set(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp);
+		itsHasThrown = aHasThrown;
+		itsResult = aResult;
+		itsBehaviorId = aBehaviorId;
+	}
+	
 	@Override
 	public void writeTo(BitStruct aBitStruct)
 	{

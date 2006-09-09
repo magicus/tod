@@ -11,7 +11,6 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import tod.core.ILogCollector;
 import tod.core.database.structure.ObjectId;
 import tod.core.transport.SocketThread;
 
@@ -23,7 +22,6 @@ import tod.core.transport.SocketThread;
  */
 public abstract class NativeAgentPeer extends SocketThread
 {
-	public static final byte EXCEPTION_GENERATED = 20;
 	public static final byte INSTRUMENT_CLASS = 50;
 	public static final byte FLUSH = 99;
 	public static final byte OBJECT_HASH = 1;
@@ -137,10 +135,6 @@ public abstract class NativeAgentPeer extends SocketThread
             processInstrumentClassCommand(itsInstrumenter, aInputStream, aOutputStream, itsStoreClassesDir);
             break;
             
-        case EXCEPTION_GENERATED:
-        	processExceptionGenerated(aInputStream, aOutputStream);
-        	break;
-        	
         case FLUSH:
         	processFlush();
         	break;
@@ -174,59 +168,6 @@ public abstract class NativeAgentPeer extends SocketThread
     	aOutputStream.writeByte(CONFIG_DONE);
     }
     
-	private void processExceptionGenerated(DataInputStream aInputStream, DataOutputStream aOutputStream) throws IOException
-	{
-		long theTimestamp = aInputStream.readLong();
-		long theThreadId = aInputStream.readLong();
-		String theMethodName = aInputStream.readUTF();
-		String theMethodSignature = aInputStream.readUTF();
-		String theMethodDeclaringClassSignature = aInputStream.readUTF();
-		int theBytecodeIndex = aInputStream.readInt();
-		byte theExceptionIdType = aInputStream.readByte();
-		Object theException;
-		
-		switch (theExceptionIdType)
-		{
-		case OBJECT_UID:
-			long theUid = aInputStream.readLong();
-			theException = new ObjectId.ObjectUID(theUid);
-			break;
-			
-		case OBJECT_HASH:
-			int theHash = aInputStream.readInt();
-			theException = new ObjectId.ObjectHash(theHash);
-			break;
-			
-		default:
-			throw new RuntimeException("Not handled: "+theExceptionIdType);
-		}
-		
-		String theClassName = theMethodDeclaringClassSignature.substring(1, theMethodDeclaringClassSignature.length()-1);
-		
-		processExceptionGenerated(
-				theTimestamp, 
-				theThreadId, 
-				theClassName,
-				theMethodName,
-				theMethodSignature,
-				theBytecodeIndex, 
-				theException);
-	}
-	
-	/**
-	 * This method is called when an exception has been detected by the native agent.
-	 * Subclasses should resolve the class and method and call one of the exception methods
-	 * of {@link ILogCollector}
-	 */
-	protected abstract void processExceptionGenerated(
-			long aTimestamp,
-			long aThreadId, 
-			String aClassName, 
-			String aMethodName,
-			String aMethodSignature,
-			int aBytecodeIndex,
-			Object aException);
-	
 	/**
 	 * This method is called when the target vm is terminated.
 	 */

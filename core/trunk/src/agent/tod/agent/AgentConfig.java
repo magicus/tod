@@ -5,7 +5,8 @@ package tod.agent;
 
 import java.io.IOException;
 
-import tod.core.ILogCollector;
+import tod.core.EventInterpreter;
+import tod.core.HighLevelCollector;
 import tod.core.transport.DummyCollector;
 import tod.core.transport.SocketCollector;
 import tod.utils.ConfigUtils;
@@ -27,8 +28,36 @@ public class AgentConfig
 	 * This parameter defines the name of the host the agent runs on.
 	 */
 	public static final String PARAM_HOST = "tod-host";
+	
+	/**
+	 * Number of bits to shift timestamp values.
+	 */
+	public static final int TIMESTAMP_ADJUST_SHIFT = 8;
+	
+	/**
+	 * Number of bits of original timestamp values that are considered inaccurate.
+	 */
+	public static final int TIMESTAMP_ADJUST_INACCURACY = 4;
+	
+	/**
+	 * Mask of artificial timestamp bits.
+	 */
+	public static final long TIMESTAMP_ADJUST_MASK = pow2(TIMESTAMP_ADJUST_INACCURACY+TIMESTAMP_ADJUST_SHIFT)-1;
+	
+	/**
+	 * Copied from zz.utils.
+	 * Can't depend on it. 
+	 */
+	public static final long pow2(int aN)
+	{
+		return 1L << aN;
+	}
 
-	private static ILogCollector itsCollector;
+
+
+	private static HighLevelCollector itsCollector;
+	
+	private static EventInterpreter itsInterpreter;
 	
 	/**
 	 * Name of this host.
@@ -66,17 +95,19 @@ public class AgentConfig
 		else 
 			throw new RuntimeException("Unknown collector type: "+theCollectorType);
 		
+		itsInterpreter = new EventInterpreter(itsCollector);
+		
 	}
 	
-	private static ILogCollector createDummyCollector()
+	private static HighLevelCollector createDummyCollector()
 	{
 		System.out.println("Using dummy collector.");
 		return new DummyCollector();
 	}
 	
-	private static ILogCollector createSocketCollector()
+	private static HighLevelCollector createSocketCollector()
 	{
-		System.out.println("Using socket collector ("+itsHost+":"+itsEventsPort);
+		System.out.println("AgentConfig: Using socket collector ("+itsHost+":"+itsEventsPort+")");
 		try
 		{
 			return new SocketCollector(itsHost, itsEventsPort);
@@ -87,10 +118,15 @@ public class AgentConfig
 		}
 	}
 	
+	public static EventInterpreter getInterpreter()
+	{
+		return itsInterpreter;
+	}
+
 	/**
 	 * This method is called by instrumented code to obtain the current collector.
 	 */
-	public static ILogCollector getCollector()
+	public static HighLevelCollector getCollector()
 	{
 		return itsCollector;
 	}

@@ -18,7 +18,6 @@ import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.HostInfo;
 import tod.core.database.structure.IThreadInfo;
 import tod.impl.common.EventCollector;
-import tod.impl.dbgrid.GridEventCollector.GridThreadInfo;
 import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
 import tod.impl.dbgrid.dispatcher.DBNodeProxy;
@@ -165,17 +164,12 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		itsDispatcher.flush();
 	}
 	
-	public GridThreadInfo getThread(int aHostId, long aThreadId)
+	public IThreadInfo getThread(int aHostId, long aJVMThreadId)
 	{
 		GridEventCollector theCollector = itsCollectors.get(aHostId);
-		return theCollector.getThread(aThreadId);
+		return theCollector.getThread(aJVMThreadId);
 	}
 
-	public int getThreadNumber(int aHostId, long aThreadId)
-	{
-		return getThread(aHostId, aThreadId).getThreadNumber();
-	}
-	
 	public List<IThreadInfo> getThreads()
 	{
 		List<IThreadInfo> theThreads = new ArrayList<IThreadInfo>();

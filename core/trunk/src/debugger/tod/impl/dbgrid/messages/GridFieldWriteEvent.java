@@ -3,19 +3,25 @@
  */
 package tod.impl.dbgrid.messages;
 
-import tod.impl.common.event.Event;
+import static tod.impl.dbgrid.messages.ObjectCodec.getObjectBits;
+import static tod.impl.dbgrid.messages.ObjectCodec.getObjectId;
+import static tod.impl.dbgrid.messages.ObjectCodec.readObject;
+import static tod.impl.dbgrid.messages.ObjectCodec.writeObject;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import tod.impl.dbgrid.dbnode.StdIndexSet;
 import zz.utils.bit.BitStruct;
-import static tod.impl.dbgrid.messages.ObjectCodec.*;
 
 public class GridFieldWriteEvent extends GridEvent
 {
 	private int itsFieldId;
 	private Object itsTarget;
 	private Object itsValue;
+
+	public GridFieldWriteEvent()
+	{
+	}
 
 	public GridFieldWriteEvent(
 			int aHost, 
@@ -28,22 +34,7 @@ public class GridFieldWriteEvent extends GridEvent
 			Object aTarget, 
 			Object aValue)
 	{
-		super(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp);
-		itsFieldId = aFieldId;
-		itsTarget = aTarget;
-		itsValue = aValue;
-	}
-
-	public GridFieldWriteEvent(
-			Event aEvent, 
-			int aFieldId, 
-			Object aTarget, 
-			Object aValue)
-	{
-		super(aEvent);
-		itsFieldId = aFieldId;
-		itsTarget = aTarget;
-		itsValue = aValue;
+		set(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp, aFieldId, aTarget, aValue);
 	}
 
 	public GridFieldWriteEvent(BitStruct aBitStruct)
@@ -55,6 +46,23 @@ public class GridFieldWriteEvent extends GridEvent
 		itsValue = readObject(aBitStruct);
 	}
 
+	public void set(
+			int aHost, 
+			int aThread, 
+			int aDepth,
+			long aTimestamp, 
+			int aOperationBytecodeIndex, 
+			long aParentTimestamp,
+			int aFieldId, 
+			Object aTarget, 
+			Object aValue)
+	{
+		super.set(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp);
+		itsFieldId = aFieldId;
+		itsTarget = aTarget;
+		itsValue = aValue;
+	}
+	
 	@Override
 	public void writeTo(BitStruct aBitStruct)
 	{

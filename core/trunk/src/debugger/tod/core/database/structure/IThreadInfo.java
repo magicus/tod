@@ -9,8 +9,16 @@ public interface IThreadInfo
 	 * Returns the host on which this thread is run.
 	 */
 	public IHostInfo getHost();
+
+	/**
+	 * Returns the internal (sequential, per host) id of the thread.
+	 */
+	public int getId();
 	
-	public long getId();
+	/**
+	 * Returns the external (JVM) id of the thread.
+	 */
+	public long getJVMId();
 
 	public String getName();
 

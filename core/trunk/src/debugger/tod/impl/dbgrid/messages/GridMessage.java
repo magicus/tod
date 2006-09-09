@@ -3,9 +3,9 @@
  */
 package tod.impl.dbgrid.messages;
 
-import java.io.Serializable;
+import static tod.impl.dbgrid.DebuggerGridConfig.MESSAGE_TYPE_BITS;
 
-import static tod.impl.dbgrid.DebuggerGridConfig.*;
+import java.io.Serializable;
 
 import zz.utils.bit.BitStruct;
 
@@ -27,8 +27,8 @@ public abstract class GridMessage implements Serializable
 		{
 		case BEHAVIOR_EXIT:
 			return new GridBehaviorExitEvent(aBitStruct);
-		case CONSTRUCTOR_CHAINING:
-			return new GridBehaviorCallEvent(aBitStruct, MessageType.CONSTRUCTOR_CHAINING);
+		case SUPER_CALL:
+			return new GridBehaviorCallEvent(aBitStruct, MessageType.SUPER_CALL);
 		case EXCEPTION_GENERATED:
 			return new GridExceptionGeneratedEvent(aBitStruct);
 		case FIELD_WRITE:

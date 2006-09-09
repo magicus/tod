@@ -119,21 +119,6 @@ public class DebuggerGridConfig
 
 
 	/**
-	 * Number of bits to shift timestamp values.
-	 */
-	public static final int TIMESTAMP_ADJUST_SHIFT = 8;
-	
-	/**
-	 * Number of bits of original timestamp values that are considered inaccurate.
-	 */
-	public static final int TIMESTAMP_ADJUST_INACCURACY = 4;
-	
-	/**
-	 * Mask of artificial timestamp bits.
-	 */
-	public static final long TIMESTAMP_ADJUST_MASK = BitUtils.pow2(TIMESTAMP_ADJUST_INACCURACY+TIMESTAMP_ADJUST_SHIFT)-1;
-	
-	/**
 	 * Number of bits used to represent the message type
 	 */
 	public static final int MESSAGE_TYPE_BITS = BitUtils.log2ceil(MessageType.values().length); 

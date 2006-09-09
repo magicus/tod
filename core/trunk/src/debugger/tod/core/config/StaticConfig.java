@@ -5,8 +5,6 @@ package tod.core.config;
 
 import java.io.IOException;
 
-import tod.core.ILogCollector;
-import tod.core.PrintLogCollector;
 import tod.core.config.ClassSelector.AllCS;
 import tod.core.config.ClassSelector.WorkingSetClassSelector;
 import tod.core.transport.SocketCollector;
@@ -36,7 +34,6 @@ public class StaticConfig
 
 	private StaticConfig()
 	{
-		setLogCollector(new PrintLogCollector());
 	}
 	
 	/**
@@ -88,18 +85,8 @@ public class StaticConfig
 			String theIdentificationWorkingSet = ConfigUtils.readString(PARAM_IDENTIFICATION_WORKINGSET, null);
 			if (theIdentificationWorkingSet != null)
 				itsIdentificationClassSelector = new WorkingSetClassSelector(theIdentificationWorkingSet);
-			
-			int theCollectorPort = ConfigUtils.readInt(PARAM_COLLECTOR_PORT, 0);
-			if (theCollectorPort != 0)
-			{
-				setLogCollector(new SocketCollector("localhost", theCollectorPort));
-			}
 		}
 		catch (ParseException e)
-		{
-			throw new RuntimeException("Exception reading StaticConfig", e);
-		}
-		catch (IOException e)
 		{
 			throw new RuntimeException("Exception reading StaticConfig", e);
 		}
@@ -196,18 +183,6 @@ public class StaticConfig
 	{
 		itsLogParameters = aLogParameters;
 	}
-	
-	/**
-	 * Sets the collector that will receive log events.
-	 */
-	public void setLogCollector (ILogCollector aCollector)
-	{
-		checkState();
-		throw new RuntimeException("We should do womething here...");
-//		Config.COLLECTOR = aCollector;
-	}
-	
-	
 	
 	/**
 	 * Returns the class selector that filters the classes

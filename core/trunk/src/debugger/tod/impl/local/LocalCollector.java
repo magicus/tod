@@ -3,6 +3,7 @@
  */
 package tod.impl.local;
 
+import tod.core.Output;
 import tod.core.database.browser.ICFlowBrowser;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
@@ -23,7 +24,6 @@ import tod.impl.common.CFlowBrowser;
 import tod.impl.common.EventCollector;
 import tod.impl.common.ObjectInspector;
 import tod.impl.common.VariablesInspector;
-import tod.impl.common.event.Event;
 import tod.impl.local.filter.AbstractFilter;
 import tod.impl.local.filter.BehaviorCallFilter;
 import tod.impl.local.filter.FieldWriteFilter;
@@ -32,6 +32,7 @@ import tod.impl.local.filter.IntersectionFilter;
 import tod.impl.local.filter.TargetFilter;
 import tod.impl.local.filter.ThreadFilter;
 import tod.impl.local.filter.UnionFilter;
+
 
 /**
  * This log collector stores all the events it receives,
@@ -59,14 +60,6 @@ implements ILogBrowser
 		return itsEvents.size();
 	}
 	
-	
-	@Override
-	protected void processEvent(DefaultThreadInfo aThread, Event aEvent)
-	{
-		aEvent.getParent().addChild(aEvent);
-		itsEvents.add(aEvent);
-	}
-
 	public EventList getEvents()
 	{
 		return itsEvents;
@@ -157,7 +150,8 @@ implements ILogBrowser
 	
 	public ICFlowBrowser createCFlowBrowser(IThreadInfo aThread)
 	{
-		return new CFlowBrowser(this, aThread, ((DefaultThreadInfo) aThread).getRootEvent());
+		throw new UnsupportedOperationException();
+//		return new CFlowBrowser(this, aThread, ((DefaultThreadInfo) aThread).getRootEvent());
 	}
 	
 	public IObjectInspector createObjectInspector(ObjectId aObjectId)
@@ -174,5 +168,50 @@ implements ILogBrowser
 	{
 		return new VariablesInspector(aEvent);
 	}
+
+	@Override
+	protected void exception(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aBehaviorId,
+			int aOperationBytecodeIndex, Object aException)
+	{
+	}
+
+	public void behaviorExit(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
+			int aOperationBytecodeIndex, int aBehaviorId, boolean aHasThrown, Object aResult)
+	{
+	}
+
+	public void fieldWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
+			int aOperationBytecodeIndex, int aFieldId, Object aTarget, Object aValue)
+	{
+	}
+
+	public void instantiation(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
+			int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
+			Object aTarget, Object[] aArguments)
+	{
+	}
+
+	public void localWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
+			int aOperationBytecodeIndex, int aVariableId, Object aValue)
+	{
+	}
+
+	public void methodCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
+			int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
+			Object aTarget, Object[] aArguments)
+	{
+	}
+
+	public void output(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, Output aOutput, byte[] aData)
+	{
+	}
+
+	public void superCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
+			int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorid, int aExecutedBehaviorId,
+			Object aTarget, Object[] aArguments)
+	{
+	}
+	
+	
 	
 }

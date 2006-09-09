@@ -11,6 +11,8 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+import tod.core.BehaviorCallType;
+
 import zz.utils.ArrayStack;
 import zz.utils.Stack;
 
@@ -118,10 +120,6 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		private ASMMethodInfo itsMethodInfo;
 		private ASMBehaviorInstrumenter itsInstrumenter;
 		
-		private Label itsReturnHookLabel;
-		private Label itsFinallyHookLabel;
-		private Label itsCodeStartLabel;
-
 		private int itsMethodId;
 
 		public BCIMethodVisitor(MethodVisitor mv, ASMMethodInfo aMethodInfo)
@@ -151,14 +149,16 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		
 		public void visitSuperOrThisCallInsn(int aOpcode, String aOwner, String aName, String aDesc)
 		{
-			if (itsTrace) itsInstrumenter.constructorChainingCall(aOpcode, aOwner, aName, aDesc);
+			if (itsTrace) itsInstrumenter.methodCall(aOpcode, aOwner, aName, aDesc, BehaviorCallType.SUPER_CALL);
 			else mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
+//			mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
 		}
 		
 		public void visitConstructorCallInsn(int aOpcode, String aOwner, int aCalledTypeId, String aName, String aDesc)
 		{
-			if (itsTrace) itsInstrumenter.constructorCall(aOpcode, aOwner, aCalledTypeId, aName, aDesc);
+			if (itsTrace) itsInstrumenter.methodCall(aOpcode, aOwner, aName, aDesc, BehaviorCallType.INSTANTIATION);
 			else mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
+//			mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
 		}
 		
 		/**
@@ -173,39 +173,39 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 				throw new RuntimeException("Should have been filtered");
 			}
 			
-			if (itsTrace) itsInstrumenter.methodCall(aOpcode, aOwner, aName, aDesc);
+			if (itsTrace) itsInstrumenter.methodCall(aOpcode, aOwner, aName, aDesc, BehaviorCallType.METHOD_CALL);
 			else mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
 		}
 		
-		@Override
-		public void visitFieldInsn(int aOpcode, String aOwner, String aName, String aDesc)
-		{
-			if (itsTrace && (aOpcode == PUTFIELD || aOpcode == PUTSTATIC))
-			{
-				itsInstrumenter.fieldWrite(aOpcode, aOwner, aName, aDesc);
-			}
-			else mv.visitFieldInsn(aOpcode, aOwner, aName, aDesc);
-		}
+//		@Override
+//		public void visitFieldInsn(int aOpcode, String aOwner, String aName, String aDesc)
+//		{
+//			if (itsTrace && (aOpcode == PUTFIELD || aOpcode == PUTSTATIC))
+//			{
+//				itsInstrumenter.fieldWrite(aOpcode, aOwner, aName, aDesc);
+//			}
+//			else mv.visitFieldInsn(aOpcode, aOwner, aName, aDesc);
+//		}
 		
-		@Override
-		public void visitVarInsn(int aOpcode, int aVar)
-		{
-			if (itsTrace && aOpcode >= ISTORE && aOpcode < IASTORE)
-			{
-				itsInstrumenter.variableWrite(aOpcode, aVar);
-			}
-			else mv.visitVarInsn(aOpcode, aVar);
-		}
+//		@Override
+//		public void visitVarInsn(int aOpcode, int aVar)
+//		{
+//			if (itsTrace && aOpcode >= ISTORE && aOpcode < IASTORE)
+//			{
+//				itsInstrumenter.variableWrite(aOpcode, aVar);
+//			}
+//			else mv.visitVarInsn(aOpcode, aVar);
+//		}
 		
-		@Override
-		public void visitIincInsn(int aVar, int aIncrement)
-		{
-			if (itsTrace)
-			{
-				itsInstrumenter.variableInc(aVar, aIncrement);
-			}
-			else mv.visitIincInsn(aVar, aIncrement);
-		}
+//		@Override
+//		public void visitIincInsn(int aVar, int aIncrement)
+//		{
+//			if (itsTrace)
+//			{
+//				itsInstrumenter.variableInc(aVar, aIncrement);
+//			}
+//			else mv.visitIincInsn(aVar, aIncrement);
+//		}
 		
 		/**
 		 * <li>Replace RETURN bytecodes by GOTOs to the return hooks defined in
@@ -214,52 +214,10 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		@Override
 		public void visitInsn(int aOpcode)
 		{
-			if (itsTrace && aOpcode >= IRETURN && aOpcode <= RETURN) 
-				mv.visitJumpInsn(GOTO, itsReturnHookLabel);
+			if (itsTrace) itsInstrumenter.doReturn(aOpcode);
 			else super.visitInsn(aOpcode);
 		}
 		
-		/**
-		 * <li>Identifiable objects' id initialization</li>
-		 * <li>Log behavior enter</li>
-		 * <li>Insert return hooks at the beginning of the method body:
-		 * 		<li>Log behavior exit</li>
-		 * </li>
-		 */
-		private void insertEntryHooks()
-		{
-			if (itsTrace)
-			{
-				itsReturnHookLabel = new Label();
-				itsFinallyHookLabel = new Label();
-				itsCodeStartLabel = new Label();
-				
-				// Call logBehaviorEnter
-				itsInstrumenter.behaviorEnter();
-				
-				mv.visitJumpInsn(GOTO, itsCodeStartLabel);
-				
-				// -- Return hook
-				mv.visitLabel(itsReturnHookLabel);
-	
-				// Call logBehaviorExit
-				itsInstrumenter.behaviorExit();
-	
-				// Insert RETURN
-				Type theReturnType = Type.getReturnType(itsMethodInfo.getDescriptor());
-				mv.visitInsn(theReturnType.getOpcode(IRETURN));
-				
-				// -- Finally hook
-				mv.visitLabel(itsFinallyHookLabel);
-				
-				// Call logBehaviorExitWithException
-				itsInstrumenter.behaviorExitWithException();
-				
-				mv.visitInsn(ATHROW);
-
-				mv.visitLabel(itsCodeStartLabel);
-			}
-		}
 		
 		/**
 		 * Check if we must insert entry hooks. 
@@ -267,20 +225,14 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		@Override
 		public void visitCode()
 		{
-			insertEntryHooks();
+			if (itsTrace) itsInstrumenter.insertEntryHooks();
 			super.visitCode();
 		}
 		
 		@Override
 		public void visitMaxs(int aMaxStack, int aMaxLocals)
 		{
-			if (itsTrace)
-			{
-				Label theCodeEndLabel = new Label();
-				mv.visitLabel(theCodeEndLabel);
-				mv.visitTryCatchBlock(itsCodeStartLabel, theCodeEndLabel, itsFinallyHookLabel, null);
-			}
-			
+			if (itsTrace) itsInstrumenter.endHooks();			
 			super.visitMaxs(aMaxStack, aMaxLocals);
 		}
 		

@@ -37,60 +37,32 @@ public class CollectorPacketReader
                 readInstantiation(aStream, aCollector);
                 break;
                 
-			case CONSTRUCTOR_CHAINING:
-				readConstructorChaining(aStream, aCollector);
+			case SUPER_CALL:
+				readSuperCall(aStream, aCollector);
 				break;
 				
-			case BEHAVIOR_ENTER:
-                readBehaviorEnter(aStream, aCollector);
+			case METHOD_CALL:
+                readMethodCall(aStream, aCollector);
                 break;
                 
 			case BEHAVIOR_EXIT:
                 readBehaviorExit(aStream, aCollector);
                 break;
                 
-			case BEHAVIOR_EXIT_WITH_EXCEPTION:
-				readBehaviorExitWithException(aStream, aCollector);
-				break;
-				
-			case EXCEPTION_GENERATED:
-				readExceptionGenerated(aStream, aCollector);
-				break;
-				
-			case EXCEPTION_GENERATED_UNRESOLVED:
-				readExceptionGeneratedUnresolved(aStream, aCollector);
-				break;
-				
 			case FIELD_WRITE:
                 readFieldWrite(aStream, aCollector);
                 break;
                 
 			case LOCAL_VARIABLE_WRITE:
-				readLocalVariableWrite(aStream, aCollector);
-				break;
-				
-			case BEFORE_METHOD_CALL:
-                readBeforeMethodCall(aStream, aCollector);
-                break;
-                
-			case BEFORE_METHOD_CALL_DRY:
-				readBeforeMethodCallDry(aStream, aCollector);
-				break;
-				
-			case AFTER_METHOD_CALL:
-                readAfterMethodCall(aStream, aCollector);
-				break;
-				
-			case AFTER_METHOD_CALL_DRY:
-				readAfterMethodCallDry(aStream, aCollector);
-				break;
-				
-			case AFTER_METHOD_CALL_WITH_EXCEPTION:
-				readAfterMethodCallWithException(aStream, aCollector);
+				readLocalWrite(aStream, aCollector);
 				break;
 				
 			case OUTPUT:
 				readOutput(aStream, aCollector);
+				break;
+				
+			case EXCEPTION:
+				readException(aStream, aCollector);
 				break;
 				
 			case REGISTER_THREAD:
@@ -206,132 +178,123 @@ public class CollectorPacketReader
 		}
 	}
 	
-    public static void readInstantiation(DataInputStream aStream, ILogCollector aCollector) throws IOException
-    {
-        aCollector.logInstantiation(aStream.readLong());
-    }
-    
-    public static void readConstructorChaining(DataInputStream aStream, ILogCollector aCollector) throws IOException
-    {
-    	aCollector.logConstructorChaining(aStream.readLong());
-    }
-    
-    public static void readBehaviorEnter(DataInputStream aStream, ILogCollector aCollector) throws IOException
-    {
-        aCollector.logBehaviorEnter(
+	
+	public static void readMethodCall(DataInputStream aStream, ILogCollector aCollector) throws IOException
+	{
+		aCollector.methodCall(
+				aStream.readInt(),
+				aStream.readLong(),
+				aStream.readShort(),
+				aStream.readLong(),
+				aStream.readInt(),
+				aStream.readBoolean(),
+				aStream.readInt(),
+				aStream.readInt(),
+				readValue(aStream),
+				readArguments(aStream));
+	}
+	
+	public static void readInstantiation(DataInputStream aStream, ILogCollector aCollector) throws IOException
+	{
+		aCollector.instantiation(
+				aStream.readInt(),
+				aStream.readLong(),
+				aStream.readShort(),
+				aStream.readLong(),
+				aStream.readInt(),
+				aStream.readBoolean(),
+				aStream.readInt(),
+				aStream.readInt(),
+				readValue(aStream),
+				readArguments(aStream));
+	}
+	
+	public static void readSuperCall(DataInputStream aStream, ILogCollector aCollector) throws IOException
+	{
+		aCollector.superCall(
+				aStream.readInt(),
+				aStream.readLong(),
+				aStream.readShort(),
+				aStream.readLong(),
+				aStream.readInt(),
+				aStream.readBoolean(),
+				aStream.readInt(),
+				aStream.readInt(),
+				readValue(aStream),
+				readArguments(aStream));
+
+	}
+	
+	public static void readBehaviorExit(DataInputStream aStream, ILogCollector aCollector) throws IOException
+	{
+		aCollector.behaviorExit(
+				aStream.readInt(),
+				aStream.readLong(),
+				aStream.readShort(),
+				aStream.readLong(),
+				aStream.readInt(),
+				aStream.readInt(),
+				aStream.readBoolean(),
+				readValue(aStream));
+	}
+	
+	public static void readFieldWrite(DataInputStream aStream, ILogCollector aCollector) throws IOException
+	{
+		aCollector.fieldWrite(
+				aStream.readInt(),
+				aStream.readLong(),
+				aStream.readShort(),
+				aStream.readLong(),
+				aStream.readInt(),
+				aStream.readInt(),
+				readValue(aStream),
+				readValue(aStream));
+	}
+	
+	public static void readLocalWrite(DataInputStream aStream, ILogCollector aCollector) throws IOException
+	{
+		aCollector.localWrite(
+				aStream.readInt(),
+				aStream.readLong(),
+				aStream.readShort(),
+				aStream.readLong(),
+				aStream.readInt(),
+				aStream.readInt(),
+				readValue(aStream));
+	}
+	
+	public static void readException(DataInputStream aStream, ILogCollector aCollector) throws IOException
+	{
+		aCollector.exception(
+				aStream.readInt(),
+				aStream.readLong(),
+				aStream.readShort(),
+				aStream.readLong(),
+				aStream.readUTF(),
+				aStream.readUTF(),
+				aStream.readUTF(),
+				aStream.readInt(),
+				readValue(aStream));
+	}
+	
+	public static void readOutput(DataInputStream aStream, ILogCollector aCollector) throws IOException
+	{
+        aCollector.output(
+        		aStream.readInt(),
+				aStream.readLong(),
+        		aStream.readShort(),
         		aStream.readLong(),
-                aStream.readLong(),
-                aStream.readInt(),
-                readValue(aStream),
-                readArguments(aStream));
-    }
-    
-    public static void readBehaviorExit(DataInputStream aStream, ILogCollector aCollector) throws IOException
-    {
-        aCollector.logBehaviorExit(
-        		aStream.readLong(),
-                aStream.readLong(),
-                aStream.readInt(),
-                readValue(aStream));
-    }
-    
-    public static void readBehaviorExitWithException(DataInputStream aStream, ILogCollector aCollector) throws IOException
-    {
-    	aCollector.logBehaviorExitWithException(
-    			aStream.readLong(),
-    			aStream.readLong(),
-    			aStream.readInt(),
-    			readValue(aStream));
-    }
-    
-    public static void readExceptionGenerated(DataInputStream aStream, ILogCollector aCollector) throws IOException
-    {
-    	aCollector.logExceptionGenerated(
-    			aStream.readLong(),
-    			aStream.readLong(),
-    			aStream.readInt(),
-    			aStream.readInt(),
-    			readValue(aStream));
-    }
-    
-    public static void readExceptionGeneratedUnresolved(DataInputStream aStream, ILogCollector aCollector) throws IOException
-    {
-    	aCollector.logExceptionGenerated(
-    			aStream.readLong(),
-    			aStream.readLong(),
-    			aStream.readUTF(),
-    			aStream.readUTF(),
-    			aStream.readUTF(),
-    			aStream.readInt(),
-    			readValue(aStream));
-    }
-    
-    public static void readBeforeMethodCall(DataInputStream aStream, ILogCollector aCollector) throws IOException
-    {
-        aCollector.logBeforeBehaviorCall(
-        		aStream.readLong(),
-        		aStream.readLong(), 
-                aStream.readShort(),
-                aStream.readInt(),
-                readValue(aStream),
-                readArguments(aStream));
-    }
-    
-    public static void readBeforeMethodCallDry(DataInputStream aStream, ILogCollector aCollector) throws IOException
-    {
-    	aCollector.logBeforeBehaviorCall(
-    			aStream.readLong(),
-    			aStream.readShort(),
-    			aStream.readInt());
-    }
-    
-    public static void readAfterMethodCall(DataInputStream aStream, ILogCollector aCollector) throws IOException
-    {
-        aCollector.logAfterBehaviorCall(
-        		aStream.readLong(),
-        		aStream.readLong(),
-                aStream.readShort(),
-                aStream.readInt(),
-                readValue(aStream),
-                readValue(aStream));
-    }
-    
-    public static void readAfterMethodCallDry(DataInputStream aStream, ILogCollector aCollector) throws IOException
-    {
-    	aCollector.logAfterBehaviorCall(aStream.readLong());
-    }
-    
-    public static void readAfterMethodCallWithException(DataInputStream aStream, ILogCollector aCollector) throws IOException
-    {
-    	aCollector.logAfterBehaviorCallWithException(
-    			aStream.readLong(),
-    			aStream.readLong(),
-    			aStream.readShort(),
-    			aStream.readInt(),
-    			readValue(aStream),
-    			readValue(aStream));
-    }
-    
-    public static void readFieldWrite(DataInputStream aStream, ILogCollector aCollector) throws IOException
-    {
-        aCollector.logFieldWrite(
-        		aStream.readLong(),
-                aStream.readLong(),
-                aStream.readShort(),
-                aStream.readInt(),
-                readValue(aStream),
-                readValue(aStream));
-    }
-    
-    public static void readLocalVariableWrite(DataInputStream aStream, ILogCollector aCollector) throws IOException
-    {
-    	aCollector.logLocalVariableWrite(
-    			aStream.readLong(),
-    			aStream.readLong(),
-    			aStream.readShort(),
-    			aStream.readShort(),
-    			readValue(aStream));
-    }
+                Output.values()[aStream.readByte()],
+                readBytes(aStream));
+	}
+	
+	public static void readThread(DataInputStream aStream, ILogCollector aCollector) throws IOException
+	{
+		aCollector.thread(
+				aStream.readInt(),
+				aStream.readLong(),
+				aStream.readUTF());
+	}
     
     private static byte[] readBytes(DataInputStream aStream) throws IOException
     {
@@ -339,15 +302,6 @@ public class CollectorPacketReader
         byte[] theBytes = new byte[theLength];
         aStream.readFully(theBytes);
         return theBytes;
-    }
-    
-    public static void readOutput(DataInputStream aStream, ILogCollector aCollector) throws IOException
-    {
-        aCollector.logOutput(
-        		aStream.readLong(),
-        		aStream.readLong(),
-                Output.values()[aStream.readByte()],
-                readBytes(aStream));
     }
     
 	public static void readClass(DataInputStream aStream, ILocationRegistrer aRegistrer) throws IOException
@@ -422,12 +376,4 @@ public class CollectorPacketReader
 		aRegistrer.registerField(theId, theClassId, theName);
 	}
 	
-	public static void readThread (DataInputStream aStream, ILogCollector aCollector) throws IOException
-	{
-		long theId = aStream.readLong();
-		String theName = aStream.readUTF();
-		
-		aCollector.registerThread(theId, theName);
-	}
-
 }

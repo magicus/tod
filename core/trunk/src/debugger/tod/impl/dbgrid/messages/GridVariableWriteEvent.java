@@ -3,19 +3,25 @@
  */
 package tod.impl.dbgrid.messages;
 
-import tod.impl.common.event.Event;
+import static tod.impl.dbgrid.messages.ObjectCodec.getObjectBits;
+import static tod.impl.dbgrid.messages.ObjectCodec.getObjectId;
+import static tod.impl.dbgrid.messages.ObjectCodec.readObject;
+import static tod.impl.dbgrid.messages.ObjectCodec.writeObject;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import tod.impl.dbgrid.dbnode.StdIndexSet;
 import zz.utils.bit.BitStruct;
-import static tod.impl.dbgrid.messages.ObjectCodec.*;
 
 public class GridVariableWriteEvent extends GridEvent
 {
 	private int itsVariableId;
 	private Object itsValue;
 	
+	public GridVariableWriteEvent()
+	{
+	}
+
 	public GridVariableWriteEvent(
 			int aHost, 
 			int aThread, 
@@ -26,17 +32,7 @@ public class GridVariableWriteEvent extends GridEvent
 			int aVariableId, 
 			Object aValue)
 	{
-		super(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp);
-		itsVariableId = aVariableId;
-		itsValue = aValue;
-	}
-
-
-	public GridVariableWriteEvent(Event aEvent, int aVariableId, Object aValue)
-	{
-		super(aEvent);
-		itsVariableId = aVariableId;
-		itsValue = aValue;
+		set(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp, aVariableId, aValue);
 	}
 
 
@@ -52,6 +48,21 @@ public class GridVariableWriteEvent extends GridEvent
 		itsValue = readObject(aBitStruct);
 	}
 
+	public void set(
+			int aHost, 
+			int aThread, 
+			int aDepth,
+			long aTimestamp, 
+			int aOperationBytecodeIndex, 
+			long aParentTimestamp,
+			int aVariableId, 
+			Object aValue)
+	{
+		super.set(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp);
+		itsVariableId = aVariableId;
+		itsValue = aValue;
+	}
+	
 	@Override
 	public void writeTo(BitStruct aBitStruct)
 	{

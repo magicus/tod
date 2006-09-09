@@ -3,33 +3,44 @@
  */
 package tod.impl.dbgrid;
 
+import tod.core.Output;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.IHostInfo;
 import tod.impl.common.EventCollector;
-import tod.impl.common.event.BehaviorCallEvent;
-import tod.impl.common.event.Event;
 import tod.impl.dbgrid.dispatcher.EventDispatcher;
+import tod.impl.dbgrid.messages.GridBehaviorCallEvent;
+import tod.impl.dbgrid.messages.GridBehaviorExitEvent;
+import tod.impl.dbgrid.messages.GridExceptionGeneratedEvent;
+import tod.impl.dbgrid.messages.GridFieldWriteEvent;
+import tod.impl.dbgrid.messages.GridOutputEvent;
+import tod.impl.dbgrid.messages.GridVariableWriteEvent;
+import tod.impl.dbgrid.messages.MessageType;
 
 /**
  * Event collector for the grid database backend. It handles events from a single
  * hosts, preprocesses them and sends them to the {@link EventDispatcher}.
+ * Preprocessing is minimal and only involves packaging.
+ * This class is not thread-safe.
  * @author gpothier
  */
 public class GridEventCollector extends EventCollector
 {
 	private final GridMaster itsMaster;
-	
-	private EventDispatcher itsDispatcher;
+	private final EventDispatcher itsDispatcher;
 	
 	/**
-	 * A counter used to generate sequential thread numbers.
-	 * This permits to reduce the number of bits used to represent thread ids,
-	 * as all 64 bits of original thread ids might be used.
-	 * Thread numbers are unique for one host but might
-	 * overlap for different hosts.
+	 * We keep an instance of each kind of event.
+	 * As events are received their attributes are copied to the appropriate
+	 * instance, and the instance is sent to the dispatcher, which
+	 * immediately serializes them.
 	 */
-	private int itsLastThreadNumber = 1;
-
+	private final GridBehaviorCallEvent itsCallEvent = new GridBehaviorCallEvent();
+	private final GridBehaviorExitEvent itsExitEvent = new GridBehaviorExitEvent();
+	private final GridExceptionGeneratedEvent itsExceptionEvent = new GridExceptionGeneratedEvent();
+	private final GridFieldWriteEvent itsFieldWriteEvent = new GridFieldWriteEvent();
+	private final GridOutputEvent itsOutputEvent = new GridOutputEvent();
+	private final GridVariableWriteEvent itsVariableWriteEvent = new GridVariableWriteEvent();
+	
 	
 	public GridEventCollector(
 			GridMaster aMaster,
@@ -42,79 +53,205 @@ public class GridEventCollector extends EventCollector
 		itsDispatcher = aDispatcher;
 	}
 
-	@Override
-	protected synchronized DefaultThreadInfo createThreadInfo(
-			long aId, 
-			BehaviorCallEvent aRootEvent)
+	public GridMaster getMaster()
 	{
-		int theThreadId = itsLastThreadNumber++;
-		return new GridThreadInfo(getHost(), aId, aRootEvent, theThreadId);
+		return itsMaster;
 	}
-	
-	@Override
-	protected void processEvent(DefaultThreadInfo aThread, Event aEvent)
-	{
-		GridThreadInfo theThread = (GridThreadInfo) aThread;
-		theThread.adjustTimestamp(aEvent);
-		
-		itsDispatcher.dispatchEvent(aEvent);
-	}
-	
-	/**
-	 * Returns the thread number of the given event.
-	 */
-	public static int getThreadNumber(Event aEvent)
-	{
-		return ((GridThreadInfo) aEvent.getThread()).getThreadNumber();
-	}
-	
-	@Override
-	public GridThreadInfo getThread(long aId)
-	{
-		return (GridThreadInfo) super.getThread(aId);
-	}
-	
-	public static class GridThreadInfo extends DefaultThreadInfo
-	{
-		private final int itsThreadNumber;
-		private long itsLastTimestamp = -1;
-		
-		public GridThreadInfo(
-				IHostInfo aHost,
-				long aId, 
-				BehaviorCallEvent aRootEvent,
-				int aThreadNumber)
-		{
-			super(aHost, aId, aRootEvent);
-			itsThreadNumber = aThreadNumber;
-		}
 
-		/**
-		 * Transforms the timestamp of the provided event so that no two events
-		 * of the same thread share the same timestamp.
-		 */
-		public void adjustTimestamp(Event aEvent)
-		{
-			long theTimestamp = (aEvent.getTimestamp() << DebuggerGridConfig.TIMESTAMP_ADJUST_SHIFT) & ~DebuggerGridConfig.TIMESTAMP_ADJUST_MASK;
-			if ((itsLastTimestamp & ~DebuggerGridConfig.TIMESTAMP_ADJUST_MASK) == theTimestamp)
-			{
-				// Original timestamps overlap.
-				if ((itsLastTimestamp & DebuggerGridConfig.TIMESTAMP_ADJUST_MASK) == DebuggerGridConfig.TIMESTAMP_ADJUST_MASK)
-				{
-					throw new RuntimeException("Timestamp adjust overflow");
-				}
-				
-				theTimestamp = itsLastTimestamp+1;
-			}
-			
-			aEvent.setTimestamp(theTimestamp);
-			itsLastTimestamp = theTimestamp;
-		}
-
-		public int getThreadNumber()
-		{
-			return itsThreadNumber;
-		}
+	@Override
+	protected void exception(
+			int aThreadId,
+			long aParentTimestamp, 
+			short aDepth,
+			long aTimestamp,
+			int aBehaviorId,
+			int aOperationBytecodeIndex,
+			Object aException)
+	{
+		itsExceptionEvent.set(
+				getHost().getId(),
+				aThreadId, 
+				aDepth,
+				aTimestamp,
+				aOperationBytecodeIndex,
+				aParentTimestamp, 
+				aException,
+				aBehaviorId);
+		
+		itsDispatcher.dispatchEvent(itsExceptionEvent);
 	}
-	
+
+
+	public void behaviorExit(
+			int aThreadId, 
+			long aParentTimestamp, 
+			short aDepth, 
+			long aTimestamp,
+			int aOperationBytecodeIndex,
+			int aBehaviorId,
+			boolean aHasThrown, 
+			Object aResult)
+	{
+		itsExitEvent.set(
+				getHost().getId(), 
+				aThreadId, 
+				aDepth, 
+				aTimestamp, 
+				aOperationBytecodeIndex,
+				aParentTimestamp, 
+				aHasThrown,
+				aResult,
+				aBehaviorId);
+		
+		itsDispatcher.dispatchEvent(itsExitEvent);
+	}
+
+
+	public void fieldWrite(
+			int aThreadId, 
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp,
+			int aOperationBytecodeIndex,
+			int aFieldId,
+			Object aTarget,
+			Object aValue)
+	{
+		itsFieldWriteEvent.set(
+				getHost().getId(),
+				aThreadId, 
+				aDepth,
+				aTimestamp,
+				aOperationBytecodeIndex,
+				aParentTimestamp,
+				aFieldId, 
+				aTarget, 
+				aValue);
+		
+		itsDispatcher.dispatchEvent(itsFieldWriteEvent);
+	}
+
+
+	public void instantiation(
+			int aThreadId,
+			long aParentTimestamp,
+			short aDepth, 
+			long aTimestamp,
+			int aOperationBytecodeIndex,
+			boolean aDirectParent,
+			int aCalledBehavior,
+			int aExecutedBehavior,
+			Object aTarget,
+			Object[] aArguments)
+	{
+		itsCallEvent.set(
+				getHost().getId(), 
+				aThreadId, 
+				aDepth, 
+				aTimestamp,
+				aOperationBytecodeIndex,
+				aParentTimestamp,
+				MessageType.INSTANTIATION, 
+				aDirectParent, 
+				aArguments,
+				aCalledBehavior,
+				aExecutedBehavior,
+				aTarget);
+		
+		itsDispatcher.dispatchEvent(itsCallEvent);
+	}
+
+
+	public void localWrite(
+			int aThreadId,
+			long aParentTimestamp, 
+			short aDepth,
+			long aTimestamp,
+			int aOperationBytecodeIndex,
+			int aVariableId,
+			Object aValue)
+	{
+		itsVariableWriteEvent.set(
+				getHost().getId(), 
+				aThreadId,
+				aDepth, 
+				aTimestamp,
+				aOperationBytecodeIndex,
+				aParentTimestamp,
+				aVariableId, 
+				aValue);
+	}
+
+
+	public void methodCall(
+			int aThreadId, 
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp,
+			int aOperationBytecodeIndex,
+			boolean aDirectParent,
+			int aCalledBehavior,
+			int aExecutedBehavior,
+			Object aTarget,
+			Object[] aArguments)
+	{
+		itsCallEvent.set(
+				getHost().getId(), 
+				aThreadId, 
+				aDepth, 
+				aTimestamp,
+				aOperationBytecodeIndex,
+				aParentTimestamp,
+				MessageType.METHOD_CALL, 
+				aDirectParent, 
+				aArguments,
+				aCalledBehavior,
+				aExecutedBehavior,
+				aTarget);
+		
+		itsDispatcher.dispatchEvent(itsCallEvent);
+	}
+
+
+	public void output(
+			int aThreadId,
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp,
+			Output aOutput,
+			byte[] aData)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+
+	public void superCall(
+			int aThreadId,
+			long aParentTimestamp,
+			short aDepth, 
+			long aTimestamp,
+			int aOperationBytecodeIndex,
+			boolean aDirectParent,
+			int aCalledBehavior, 
+			int aExecutedBehavior,
+			Object aTarget, 
+			Object[] aArguments)
+	{
+		itsCallEvent.set(
+				getHost().getId(), 
+				aThreadId, 
+				aDepth, 
+				aTimestamp,
+				aOperationBytecodeIndex,
+				aParentTimestamp,
+				MessageType.SUPER_CALL, 
+				aDirectParent, 
+				aArguments,
+				aCalledBehavior,
+				aExecutedBehavior,
+				aTarget);
+		
+		itsDispatcher.dispatchEvent(itsCallEvent);
+	}
+
 }

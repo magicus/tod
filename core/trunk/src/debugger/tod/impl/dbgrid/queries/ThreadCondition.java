@@ -15,29 +15,29 @@ import tod.impl.dbgrid.messages.GridEvent;
  */
 public class ThreadCondition extends SimpleCondition
 {
-	private int itsThreadNumber;
+	private int itsThreadId;
 
-	public ThreadCondition(int aThreadNumber)
+	public ThreadCondition(int aThreadId)
 	{
-		itsThreadNumber = aThreadNumber;
+		itsThreadId = aThreadId;
 	}
 
 	@Override
 	protected Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
-		return aIndexes.threadIndex.getIndex(itsThreadNumber).getTupleIterator(aTimestamp);
+		return aIndexes.threadIndex.getIndex(itsThreadId).getTupleIterator(aTimestamp);
 	}
 
 	@Override
 	public boolean match(GridEvent aEvent)
 	{
-		return aEvent.getThread() == itsThreadNumber;
+		return aEvent.getThread() == itsThreadId;
 	}
 	
 	@Override
 	protected String toString(int aIndent)
 	{
-		return String.format("Thread number = %d", itsThreadNumber);
+		return String.format("Thread number = %d", itsThreadId);
 	}
 
 }

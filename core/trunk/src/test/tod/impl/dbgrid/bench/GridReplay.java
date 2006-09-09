@@ -3,6 +3,7 @@
  */
 package tod.impl.dbgrid.bench;
 
+import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.File;
@@ -21,6 +22,7 @@ import tod.core.transport.MessageType;
 import tod.impl.bci.asm.ASMLocationPool;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
+import tod.utils.ConfigUtils;
 import tod.utils.StoreTODServer;
 
 /**
@@ -37,8 +39,9 @@ public class GridReplay
 //		ILogCollector theCollector = theMaster.createCollector(1);
 		ILogCollector theCollector = new DummyCollector();
 		
+		String theFileName = ConfigUtils.readString("events-file", "events-raw.bin");
 		long t0 = System.currentTimeMillis();
-		File theFile = new File("events-1.bin");
+		File theFile = new File(theFileName);
 		long theCount = process(theFile, theMaster, theCollector);
 //		long theCount = readFile(new File("indexes2.bin"));
 		long t1 = System.currentTimeMillis();
@@ -65,7 +68,7 @@ public class GridReplay
 			ILogCollector aCollector) 
 			throws IOException
 	{
-		DataInputStream theStream = new DataInputStream(new FileInputStream(aFile));
+		DataInputStream theStream = new DataInputStream(new BufferedInputStream(new FileInputStream(aFile)));
 		
 		String theHostName = theStream.readUTF();
 		System.out.println("Reading events of "+theHostName);
@@ -119,76 +122,51 @@ public class GridReplay
 	private static class DummyCollector implements ILogCollector
 	{
 
-		public void logAfterBehaviorCall(long aTimestamp, long aThreadId, int aOperationBytecodeIndex,
-				int aBehaviorLocationId, Object aTarget, Object aResult)
+		public void behaviorExit(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
+				int aOperationBytecodeIndex, int aBehaviorId, boolean aHasThrown, Object aResult)
 		{
 		}
 
-		public void logAfterBehaviorCall(long aThreadId)
-		{
-		}
-
-		public void logAfterBehaviorCallWithException(long aTimestamp, long aThreadId, int aOperationBytecodeIndex,
-				int aBehaviorLocationId, Object aTarget, Object aException)
-		{
-		}
-
-		public void logBeforeBehaviorCall(long aThreadId, int aOperationBytecodeIndex, int aBehaviorLocationId)
-		{
-		}
-
-		public void logBeforeBehaviorCall(long aTimestamp, long aThreadId, int aOperationBytecodeIndex,
-				int aBehaviorLocationId, Object aTarget, Object[] aArguments)
-		{
-		}
-
-		public void logBehaviorEnter(long aTimestamp, long aThreadId, int aBehaviorLocationId, Object aObject,
-				Object[] aArguments)
-		{
-		}
-
-		public void logBehaviorExit(long aTimestamp, long aThreadId, int aBehaviorLocationId, Object aResult)
-		{
-		}
-
-		public void logBehaviorExitWithException(long aTimestamp, long aThreadId, int aBehaviorLocationId,
+		public void exception(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, String aMethodName,
+				String aMethodSignature, String aMethodDeclaringClassSignature, int aOperationBytecodeIndex,
 				Object aException)
 		{
 		}
 
-		public void logConstructorChaining(long aThreadId)
+		public void fieldWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
+				int aOperationBytecodeIndex, int aFieldId, Object aTarget, Object aValue)
 		{
 		}
 
-		public void logExceptionGenerated(long aTimestamp, long aThreadId, int aBehaviorLocationId,
-				int aOperationBytecodeIndex, Object aException)
+		public void instantiation(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
+				int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
+				Object aTarget, Object[] aArguments)
 		{
 		}
 
-		public void logExceptionGenerated(long aTimestamp, long aThreadId, String aMethodName, String aMethodSignature,
-				String aMethodDeclaringClassSignature, int aOperationBytecodeIndex, Object aException)
+		public void localWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
+				int aOperationBytecodeIndex, int aVariableId, Object aValue)
 		{
 		}
 
-		public void logFieldWrite(long aTimestamp, long aThreadId, int aOperationBytecodeIndex, int aFieldLocationId,
-				Object aTarget, Object aValue)
+		public void methodCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
+				int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
+				Object aTarget, Object[] aArguments)
 		{
 		}
 
-		public void logInstantiation(long aThreadId)
+		public void output(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, Output aOutput,
+				byte[] aData)
 		{
 		}
 
-		public void logLocalVariableWrite(long aTimestamp, long aThreadId, int aOperationBytecodeIndex,
-				int aVariableId, Object aValue)
+		public void superCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
+				int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorid, int aExecutedBehaviorId,
+				Object aTarget, Object[] aArguments)
 		{
 		}
 
-		public void logOutput(long aTimestamp, long aThreadId, Output aOutput, byte[] aData)
-		{
-		}
-
-		public void registerThread(long aThreadId, String aName)
+		public void thread(int aThreadId, long aJVMThreadId, String aName)
 		{
 		}
 		

@@ -1,5 +1,6 @@
 package tod.core;
 
+
 /**
  * Interface for objects that collect static code information, such as
  * methods, classes, fields, etc.

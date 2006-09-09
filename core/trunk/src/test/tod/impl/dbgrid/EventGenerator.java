@@ -97,7 +97,7 @@ public class EventGenerator
 					genObject(),
 					genBehaviorId());
 			
-		case CONSTRUCTOR_CHAINING:
+		case SUPER_CALL:
 			return new GridBehaviorCallEvent(
 					genHostId(),
 					genThreadId(),
@@ -105,7 +105,7 @@ public class EventGenerator
 					itsTimestampGenerator.next(),
 					genBytecodeIndex(),
 					genParentTimestamp(),
-					MessageType.CONSTRUCTOR_CHAINING,
+					MessageType.SUPER_CALL,
 					itsRandom.nextBoolean(),
 					genArgs(),
 					genBehaviorId(),

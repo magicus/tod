@@ -9,92 +9,186 @@ import java.io.IOException;
 import tod.core.BehaviourKind;
 import tod.core.ObjectIdentity;
 import tod.core.Output;
-import tod.core.ILocationRegistrer.LineNumberInfo;
-import tod.core.ILocationRegistrer.LocalVariableInfo;
+import static tod.core.ILocationRegistrer.LineNumberInfo;
+import static tod.core.ILocationRegistrer.LocalVariableInfo;
 
 /**
  * Provides the methods used to encode streamed log data.
  */
 public class CollectorPacketWriter
 {
-	public static void sendBehaviorEnter(
+	private static void sendMethodCall(
 			DataOutputStream aStream,
+			MessageType aMessageType,
+			int aThreadId, 
+			long aParentTimestamp,
+			int aDepth,
 			long aTimestamp, 
-			long aThreadId, 
-			int aLocationId,
-			Object aObject,
-            Object[] aArguments) throws IOException
+			int aOperationBytecodeIndex,
+			boolean aDirectParent,
+			int aCalledBehavior,
+			int aExecutedBehavior,
+			Object aTarget,
+			Object[] aArguments) throws IOException
 	{
-		sendMessageType(aStream, MessageType.BEHAVIOR_ENTER);
-
-		aStream.writeLong(aTimestamp);
-		aStream.writeLong(aThreadId);
-		aStream.writeInt(aLocationId);
-		sendValue(aStream, aObject);
-        sendArguments(aStream, aArguments);
+		sendStd(aStream, aMessageType, aThreadId, aParentTimestamp, aDepth, aTimestamp);
+		aStream.writeInt(aOperationBytecodeIndex);
+		aStream.writeBoolean(aDirectParent);
+		aStream.writeInt(aCalledBehavior);
+		aStream.writeInt(aExecutedBehavior);
+		sendValue(aStream, aTarget);
+		sendArguments(aStream, aArguments);
+	}
+	
+	public static void sendMethodCall(
+			DataOutputStream aStream,
+			int aThreadId, 
+			long aParentTimestamp,
+			int aDepth,
+			long aTimestamp, 
+			int aOperationBytecodeIndex,
+			boolean aDirectParent,
+			int aCalledBehavior,
+			int aExecutedBehavior,
+			Object aTarget,
+			Object[] aArguments) throws IOException
+	{
+		sendMethodCall(
+				aStream,
+				MessageType.METHOD_CALL,
+				aThreadId, 
+				aParentTimestamp,
+				aDepth,
+				aTimestamp, 
+				aOperationBytecodeIndex,
+				aDirectParent, 
+				aCalledBehavior,
+				aExecutedBehavior, 
+				aTarget,
+				aArguments);
+	}
+	
+	public static void sendInstantiation(
+			DataOutputStream aStream,
+			int aThreadId, 
+			long aParentTimestamp,
+			int aDepth,
+			long aTimestamp, 
+			int aOperationBytecodeIndex,
+			boolean aDirectParent,
+			int aCalledBehavior,
+			int aExecutedBehavior,
+			Object aTarget,
+			Object[] aArguments) throws IOException
+	{
+		sendMethodCall(
+				aStream,
+				MessageType.INSTANTIATION,
+				aThreadId, 
+				aParentTimestamp,
+				aDepth,
+				aTimestamp, 
+				aOperationBytecodeIndex,
+				aDirectParent, 
+				aCalledBehavior,
+				aExecutedBehavior, 
+				aTarget,
+				aArguments);
+	}
+	
+	public static void sendSuperCall(
+			DataOutputStream aStream,
+			int aThreadId, 
+			long aParentTimestamp,
+			int aDepth,
+			long aTimestamp, 
+			int aOperationBytecodeIndex,
+			boolean aDirectParent,
+			int aCalledBehavior,
+			int aExecutedBehavior,
+			Object aTarget,
+			Object[] aArguments) throws IOException
+	{
+		sendMethodCall(
+				aStream,
+				MessageType.SUPER_CALL,
+				aThreadId, 
+				aParentTimestamp,
+				aDepth,
+				aTimestamp, 
+				aOperationBytecodeIndex,
+				aDirectParent, 
+				aCalledBehavior,
+				aExecutedBehavior, 
+				aTarget,
+				aArguments);
 	}
 	
 	public static void sendBehaviorExit(
 			DataOutputStream aStream,
-			long aTimestamp,
-			long aThreadId,
-			int aLocationId,
+			int aThreadId, 
+			long aParentTimestamp,
+			int aDepth,
+			long aTimestamp, 
+			int aOperationBytecodeIndex,
+			int aBehaviorId,
+			boolean aHasThrown,
 			Object aResult) throws IOException
 	{
-		sendMessageType(aStream, MessageType.BEHAVIOR_EXIT);
-
-		aStream.writeLong(aTimestamp);
-		aStream.writeLong(aThreadId);
-		aStream.writeInt(aLocationId);
+		sendStd(aStream, MessageType.BEHAVIOR_EXIT, aThreadId, aParentTimestamp, aDepth, aTimestamp);
+		aStream.writeInt(aOperationBytecodeIndex);
+		aStream.writeInt(aBehaviorId);
+		aStream.writeBoolean(aHasThrown);
 		sendValue(aStream, aResult);
 	}
 	
-	public static void sendBehaviorExitWithException(
+	public static void sendFieldWrite(
 			DataOutputStream aStream,
+			int aThreadId,
+			long aParentTimestamp,
+			int aDepth,
 			long aTimestamp, 
-			long aThreadId, 
-			int aBehaviorLocationId,
-			Object aException) throws IOException
+			int aOperationBytecodeIndex,
+			int aFieldLocationId,
+			Object aTarget,
+			Object aValue) throws IOException
 	{
-		sendMessageType(aStream, MessageType.BEHAVIOR_EXIT_WITH_EXCEPTION);
-		
-		aStream.writeLong(aTimestamp);
-		aStream.writeLong(aThreadId);
-		aStream.writeInt(aBehaviorLocationId);
-		sendValue(aStream, aException);
+		sendStd(aStream, MessageType.FIELD_WRITE, aThreadId, aParentTimestamp, aDepth, aTimestamp);
+		aStream.writeInt(aOperationBytecodeIndex);
+		aStream.writeInt(aFieldLocationId);
+		sendValue(aStream, aTarget);
+		sendValue(aStream, aValue);
 	}
 	
-	public static void sendExceptionGenerated(
+	public static void sendLocalWrite(
 			DataOutputStream aStream,
-			long aTimestamp, 
-			long aThreadId, 
-			int aBehaviorLocationId,
-			int aBytecodeIndex,
-			Object aException) throws IOException
+			int aThreadId, 
+			long aParentTimestamp,
+			int aDepth,
+			long aTimestamp,
+			int aOperationBytecodeIndex,
+			int aVariableId,
+			Object aValue) throws IOException
 	{
-		sendMessageType(aStream, MessageType.EXCEPTION_GENERATED);
-		
-		aStream.writeLong(aTimestamp);
-		aStream.writeLong(aThreadId);
-		aStream.writeInt(aBehaviorLocationId);
-		aStream.writeInt(aBytecodeIndex);
-		sendValue(aStream, aException);
+		sendStd(aStream, MessageType.LOCAL_VARIABLE_WRITE, aThreadId, aParentTimestamp, aDepth, aTimestamp);
+		aStream.writeInt(aOperationBytecodeIndex);
+		aStream.writeInt(aVariableId);
+		sendValue(aStream, aValue);
 	}
 	
-	public static void sendExceptionGenerated(
+	public static void sendException(
 			DataOutputStream aStream,
-			long aTimestamp, 
-			long aThreadId,
+			int aThreadId, 
+			long aParentTimestamp,
+			int aDepth,
+			long aTimestamp,
 			String aMethodName, 
-			String aMethodSignature, 
+			String aMethodSignature,
 			String aMethodDeclaringClassSignature,
 			int aOperationBytecodeIndex,
 			Object aException) throws IOException
 	{
-		sendMessageType(aStream, MessageType.EXCEPTION_GENERATED_UNRESOLVED);
-		
-		aStream.writeLong(aTimestamp);
-		aStream.writeLong(aThreadId);
+		sendStd(aStream, MessageType.EXCEPTION, aThreadId, aParentTimestamp, aDepth, aTimestamp);
 		aStream.writeUTF(aMethodName);
 		aStream.writeUTF(aMethodSignature);
 		aStream.writeUTF(aMethodDeclaringClassSignature);
@@ -102,153 +196,32 @@ public class CollectorPacketWriter
 		sendValue(aStream, aException);
 	}
 	
-    public static void sendBeforeMethodCall(
-			DataOutputStream aStream,
-            long aTimestamp,
-            long aThreadId, 
-            int aOperationBytecodeIndex, 
-            int aMethodLocationId,
-            Object aTarget,
-            Object[] aArguments) throws IOException
-    {
-        sendMessageType(aStream, MessageType.BEFORE_METHOD_CALL);
-        
-        aStream.writeLong(aTimestamp);
-        aStream.writeLong(aThreadId);
-        aStream.writeShort((short) aOperationBytecodeIndex);
-        aStream.writeInt(aMethodLocationId);
-        sendValue(aStream, aTarget);
-        sendArguments(aStream, aArguments);
-    }
-
-    public static void sendBeforeMethodCall(
-    		DataOutputStream aStream,
-    		long aThreadId, 
-    		int aOperationBytecodeIndex, 
-    		int aMethodLocationId) throws IOException
-    {
-		sendMessageType(aStream, MessageType.BEFORE_METHOD_CALL_DRY);
-		
-		aStream.writeLong(aThreadId);
-		aStream.writeShort((short) aOperationBytecodeIndex);
-		aStream.writeInt(aMethodLocationId);
-    }
-    
-	
-	public static void sendAfterMethodCall(
-			DataOutputStream aStream,
-			long aTimestamp, 
-            long aThreadId, 
-            int aOperationBytecodeIndex,
-            int aMethodLocationId,
-            Object aTarget, 
-            Object aResult) throws IOException
-	{
-        sendMessageType(aStream, MessageType.AFTER_METHOD_CALL);
-        
-        aStream.writeLong(aTimestamp);
-        aStream.writeLong(aThreadId);
-        aStream.writeShort((short) aOperationBytecodeIndex);
-        aStream.writeInt(aMethodLocationId);
-        sendValue(aStream, aTarget);
-        sendValue(aStream, aResult);
-	}
-
-	public static void sendAfterMethodCall(
-			DataOutputStream aStream,
-            long aThreadId) throws IOException
-	{
-        sendMessageType(aStream, MessageType.AFTER_METHOD_CALL_DRY);
-        
-        aStream.writeLong(aThreadId);
-	}
-
-	public static void sendAfterMethodCallWithException(
-			DataOutputStream aStream,
-			long aTimestamp, 
-			long aThreadId, 
-			int aOperationBytecodeIndex,
-			int aMethodLocationId,
-			Object aTarget, 
-			Object aException) throws IOException
-	{
-		sendMessageType(aStream, MessageType.AFTER_METHOD_CALL_WITH_EXCEPTION);
-		
-		aStream.writeLong(aTimestamp);
-		aStream.writeLong(aThreadId);
-		aStream.writeShort((short) aOperationBytecodeIndex);
-		aStream.writeInt(aMethodLocationId);
-		sendValue(aStream, aTarget);
-		sendValue(aStream, aException);
-	}
-	
-	public static void sendFieldWrite(
-			DataOutputStream aStream,
-			long aTimestamp, 
-            long aThreadId, 
-            int aOperationBytecodeIndex,
-            int aFieldLocationId, 
-            Object aTarget, 
-            Object aValue) throws IOException
-	{
-        sendMessageType(aStream, MessageType.FIELD_WRITE);
-        
-        aStream.writeLong(aTimestamp);
-        aStream.writeLong(aThreadId);
-        aStream.writeShort((short) aOperationBytecodeIndex);
-        aStream.writeInt(aFieldLocationId);
-        sendValue(aStream, aTarget);
-        sendValue(aStream, aValue);
-	}
-
-	public static void sendInstantiation(
-			DataOutputStream aStream,
-            long aThreadId) throws IOException
-	{
-            sendMessageType(aStream, MessageType.INSTANTIATION);
-            aStream.writeLong(aThreadId);
-	}
-
-	public static void sendConstructorChaining(
-			DataOutputStream aStream,
-			long aThreadId) throws IOException
-	{
-		sendMessageType(aStream, MessageType.CONSTRUCTOR_CHAINING);
-		aStream.writeLong(aThreadId);
-	}
-	
-	public static void sendLocalVariableWrite(
-			DataOutputStream aStream,
-			long aTimestamp,
-            long aThreadId,
-            int aOperationBytecodeIndex, 
-            int aVariableId,
-            Object aValue) throws IOException
-	{
-        sendMessageType(aStream, MessageType.LOCAL_VARIABLE_WRITE);
-        
-        aStream.writeLong(aTimestamp);
-        aStream.writeLong(aThreadId);
-        aStream.writeShort((short) aOperationBytecodeIndex);
-        aStream.writeShort((short) aVariableId);
-        sendValue(aStream, aValue);
-	}
-
 	public static void sendOutput(
 			DataOutputStream aStream,
-			long aTimestamp, 
-            long aThreadId, 
-            Output aOutput, 
-            byte[] aData) throws IOException
+			int aThreadId, 
+			long aParentTimestamp,
+			int aDepth,
+			long aTimestamp,
+			Output aOutput,
+			byte[] aData) throws IOException
 	{
-        sendMessageType(aStream, MessageType.OUTPUT);
-        
-        aStream.writeLong(aTimestamp);
-        aStream.writeLong(aThreadId);
-        aStream.writeByte((byte) aOutput.ordinal());
-        
-        aStream.writeInt(aData.length);
-        aStream.write(aData);
+		sendStd(aStream, MessageType.OUTPUT, aThreadId, aParentTimestamp, aDepth, aTimestamp);
+		aStream.writeByte((byte) aOutput.ordinal());
+		aStream.writeInt(aData.length);
+		aStream.write(aData);
+	}
+	
+	public static void sendThread(
+			DataOutputStream aStream,
+			int aThreadId, 
+			long aJVMThreadId,
+			String aName) throws IOException
+	{
+		sendMessageType(aStream, MessageType.REGISTER_THREAD);
+		
+		aStream.writeInt(aThreadId);
+		aStream.writeLong(aJVMThreadId);
+		aStream.writeUTF(aName);
 	}
 
 	public static void sendRegisterType(
@@ -333,30 +306,36 @@ public class CollectorPacketWriter
 		aStream.writeInt(aFileId);
 		aStream.writeUTF(aFileName);
 	}
-	
-	public static void sendRegisterThread (
-			DataOutputStream aStream,
-			long aThreadId,
-			String aName) throws IOException
-	{
-		sendMessageType(aStream, MessageType.REGISTER_THREAD);
-		aStream.writeLong(aThreadId);
-		aStream.writeUTF(aName);
-	}
 
-    /**
-     * Sends an argument to the socked. This method handles arrays,
-     * single objects or null values.
-     */
-    private static void sendArguments(
+	private static void sendStd(
 			DataOutputStream aStream,
-    		Object[] aArguments) throws IOException
-    {
-        aStream.writeInt(aArguments != null ? aArguments.length : 0);
-        
-        if (aArguments != null) 
-        	for (Object theArgument : aArguments) sendValue(aStream, theArgument);
-    }
+			MessageType aMessageType,
+			int aThreadId, 
+			long aParentTimestamp,
+			int aDepth,
+			long aTimestamp) throws IOException
+	{
+		sendMessageType(aStream, aMessageType);
+		
+		aStream.writeInt(aThreadId);
+		aStream.writeLong(aParentTimestamp);
+		aStream.writeShort(aDepth);
+		aStream.writeLong(aTimestamp);
+	}
+	
+    /**
+	 * Sends an argument to the socked. This method handles arrays, single
+	 * objects or null values.
+	 */
+	private static void sendArguments(
+			DataOutputStream aStream,
+			Object[] aArguments) throws IOException
+	{
+		aStream.writeInt(aArguments != null ? aArguments.length : 0);
+
+		if (aArguments != null) for (Object theArgument : aArguments)
+			sendValue(aStream, theArgument);
+	}
     
 
 	
