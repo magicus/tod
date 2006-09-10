@@ -3,8 +3,6 @@
  */
 package tod.core.config;
 
-import javax.security.auth.login.Configuration;
-
 import tod.utils.ConfigUtils;
 
 public class GeneralConfig
@@ -25,12 +23,11 @@ public class GeneralConfig
 	
 	static
 	{
-		LOCATIONS_FILE = ConfigUtils.readString(PARAM_LOCATIONS_FILE, "~/tmp/tod-locations");
+		System.out.println("Loading general config");
+		LOCATIONS_FILE = ConfigUtils.readString(PARAM_LOCATIONS_FILE, "/home/gpothier/tmp/tod-locations");
 		MASTER_HOST = ConfigUtils.readString(PARAM_MASTER_HOST, "localhost");
 		NODE_DATA_DIR = ConfigUtils.readString(PARAM_NODE_DATA_DIR, ".");
 		STORE_EVENTS_FILE = ConfigUtils.readString(PARAM_STORE_EVENTS_FILE, "events-raw.bin");
-
-
 	}
 
 }

@@ -3,12 +3,15 @@
  */
 package tod.utils;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
+import tod.core.ILogCollector;
 import tod.core.LocationRegistrer;
 import tod.core.bci.IInstrumenter;
 import tod.core.config.GeneralConfig;
@@ -63,10 +66,11 @@ public class StoreTODServer extends TODServer
 				System.out.println("Starting");
 				long t0 = System.currentTimeMillis();
 				
-				FileOutputStream theStream = new FileOutputStream(itsFile);
+				OutputStream theStream = new BufferedOutputStream(new FileOutputStream(itsFile));
 				InputStream theInputStream = itsSocket.getInputStream();
 				Utils.pipe(theInputStream, theStream);
 				
+				theStream.flush();
 				long t1 = System.currentTimeMillis();
 				float dt = (t1-t0)/1000f;
 				System.out.println("Writing finished ("+dt+"s)");
@@ -78,19 +82,31 @@ public class StoreTODServer extends TODServer
 		}
 	}
 	
+	private static class DummyCollectorFactory implements ICollectorFactory
+	{
+		public ILogCollector create()
+		{
+			return null;
+		}
+
+		public void flushAll()
+		{
+		}
+	}
+	
 	public static void main(String[] args)
 	{
 		LocationRegistrer theLocationRegistrer = new LocationRegistrer();
 		
 		ASMDebuggerConfig theConfig = new ASMDebuggerConfig(
 				theLocationRegistrer,
-				new File("/home/gpothier/tmp/tod"), 
+				new File(GeneralConfig.LOCATIONS_FILE), 
 				"[-tod.** -remotebci.** +tod.test.** +tod.demo.**]",
 				"[-java.** -javax.** -sun.** -com.sun.**]");
 
 		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theConfig);
 		
-		new StoreTODServer(null, theInstrumenter);
+		new StoreTODServer(new DummyCollectorFactory(), theInstrumenter);
 	}
 
 }

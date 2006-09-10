@@ -37,6 +37,7 @@ public class ASMLocationPool
 			DataOutputStream theOutputStream = null;
 			try
 			{
+				System.out.println("Setting up locations pool using "+aLocationsFile);
 				if (! aLocationsFile.exists()) aLocationsFile.createNewFile();
 				theOutputStream = new DataOutputStream(new FileOutputStream(aLocationsFile, true));
 				
