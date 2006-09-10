@@ -11,6 +11,7 @@ import java.rmi.registry.Registry;
 
 import tod.core.ILogCollector;
 import tod.core.LocationRegistrer;
+import tod.core.config.GeneralConfig;
 import tod.core.transport.DummyCollector;
 import tod.impl.bci.asm.ASMLocationPool;
 import tod.impl.dbgrid.GridMaster;
@@ -117,7 +118,7 @@ public class BenchBase
 		System.out.println("Expecting "+aExpectedNodes+" nodes");
 		
 		LocationRegistrer theLocationRegistrer = new LocationRegistrer();
-		new ASMLocationPool(theLocationRegistrer, new File("/home/gpothier/tmp/tod"));
+		new ASMLocationPool(theLocationRegistrer, new File(GeneralConfig.LOCATIONS_FILE));
 		GridMaster theMaster = new GridMaster(theLocationRegistrer);
 		
 		Registry theRegistry = LocateRegistry.createRegistry(1099);

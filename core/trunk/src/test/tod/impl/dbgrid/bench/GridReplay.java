@@ -17,6 +17,7 @@ import tod.core.ILogCollector;
 import tod.core.LocationRegistrer;
 import tod.core.Output;
 import tod.core.bci.NativeAgentPeer;
+import tod.core.config.GeneralConfig;
 import tod.core.transport.CollectorPacketReader;
 import tod.core.transport.MessageType;
 import tod.impl.bci.asm.ASMLocationPool;
@@ -39,7 +40,7 @@ public class GridReplay
 //		ILogCollector theCollector = theMaster.createCollector(1);
 		ILogCollector theCollector = new DummyCollector();
 		
-		String theFileName = ConfigUtils.readString("events-file", "events-raw.bin");
+		String theFileName = GeneralConfig.STORE_EVENTS_FILE;
 		long t0 = System.currentTimeMillis();
 		File theFile = new File(theFileName);
 		long theCount = process(theFile, theMaster, theCollector);

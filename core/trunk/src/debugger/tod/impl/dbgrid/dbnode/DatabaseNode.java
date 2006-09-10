@@ -17,6 +17,7 @@ import java.rmi.RemoteException;
 import java.util.Comparator;
 import java.util.Iterator;
 
+import tod.core.config.GeneralConfig;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 import tod.impl.dbgrid.messages.GridEvent;
@@ -60,7 +61,7 @@ public class DatabaseNode
 		Monitor.getInstance().register(this);
 		try
 		{
-			String thePrefix = ConfigUtils.readString("node-data-dir", ".");
+			String thePrefix = GeneralConfig.NODE_DATA_DIR;
 			File theParent = new File(thePrefix);
 			System.out.println("Using data directory: "+theParent);
 			itsEventsFile = new HardPagedFile(new File(theParent, "events.bin"), DB_EVENT_PAGE_SIZE);
@@ -80,7 +81,7 @@ public class DatabaseNode
 	
 	private int connectToMaster() throws IOException
 	{
-		String theMasterHost = ConfigUtils.readString("master-host", "localhost");
+		String theMasterHost = GeneralConfig.MASTER_HOST;
 		System.out.println("Connecting to "+theMasterHost);
 		Socket theSocket = new Socket(theMasterHost, DebuggerGridConfig.MASTER_NODE_PORT);
 		DataInputStream theStream = new DataInputStream(theSocket.getInputStream());

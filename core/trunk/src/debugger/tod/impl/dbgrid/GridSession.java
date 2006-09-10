@@ -13,6 +13,7 @@ import java.rmi.server.UnicastRemoteObject;
 
 import tod.core.ILogCollector;
 import tod.core.LocationRegistrer;
+import tod.core.config.GeneralConfig;
 import tod.core.server.ICollectorFactory;
 import tod.core.server.TODServer;
 import tod.impl.bci.asm.ASMDebuggerConfig;
@@ -33,7 +34,7 @@ public class GridSession
 		
 		ASMDebuggerConfig theConfig = new ASMDebuggerConfig(
 				itsLocationRegistrer,
-				new File("/home/gpothier/tmp/tod"), 
+				new File(GeneralConfig.LOCATIONS_FILE), 
 				"[-tod.** -remotebci.** +tod.test.** +tod.demo.**]",
 				"[-java.** -javax.** -sun.** -com.sun.**]");
 

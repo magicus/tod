@@ -9,7 +9,6 @@ export CLASSPATH=.:../lib/asm-2.1.jar:../lib/asm-commons-2.1.jar\
 :../lib/zz.utils.jar
 
 export DATA_DIR=$LOCAL_STORAGE/tod
-
 export MASTER_HOST=syntagma
-
 export EVENTS_FILE=$LOCAL_STORAGE/tod/events-raw.bin
+export LOCATIONS_FILE=$SHARED_STORAGE/tod/locations.bin

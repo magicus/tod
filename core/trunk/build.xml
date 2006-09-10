@@ -3,6 +3,7 @@
     <target name="init">
 
         <property name="build.dir" value="${basedir}/build"/>
+        <property name="scripts.dir" value="${basedir}/scripts"/>
         <property name="lib.dir" value="${basedir}/lib"/>
         <property name="src-agent.dir" value="${basedir}/src/agent"/>
         <property name="src-debugger.dir" value="${basedir}/src/debugger"/>
@@ -99,25 +100,9 @@
 	</target>
 	
     <target name="deploy" depends="jar" >
-        <exec executable="rsync" failonerror="true" output="rsync.log">
-        	<arg value="-avvvvz"/>
-        	<arg value="-e"/>
-        	<arg value="ssh"/>
-        	<arg value="--rsync-path"/>
-        	<arg value="/usr/bin/rsync --server --daemon --config=$HOME/rsync.conf ."/>
+        <exec executable="${scripts.dir}/deploy.sh" failonerror="true" output="rsync.log">
         	<arg value="${build.dir}"/>
-        	<arg value="gpothier@${deploy-host}::tod"/>
     	</exec>
     </target>
-	
-	<target name="stdDeploy">
-		<antcall target="deploy">
-			<param name="deploy-host" value="syntagma.dim.uchile.cl"/>
-		</antcall>
-		
-		<antcall target="deploy">
-			<param name="deploy-host" value="ireul.dcc.uchile.cl"/>
-		</antcall>
-	</target>
 	
 </project>

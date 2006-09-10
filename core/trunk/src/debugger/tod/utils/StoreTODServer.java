@@ -11,6 +11,7 @@ import java.net.Socket;
 
 import tod.core.LocationRegistrer;
 import tod.core.bci.IInstrumenter;
+import tod.core.config.GeneralConfig;
 import tod.core.server.ICollectorFactory;
 import tod.core.server.TODServer;
 import tod.impl.bci.asm.ASMDebuggerConfig;
@@ -33,7 +34,7 @@ public class StoreTODServer extends TODServer
 	@Override
 	protected void acceptJavaConnection(Socket aSocket)
 	{
-		String theFileName = ConfigUtils.readString("events-file", "events-raw.bin");
+		String theFileName = GeneralConfig.STORE_EVENTS_FILE;
 		if (itsConnectionNumber > 1) theFileName += "."+itsConnectionNumber;
 
 		new LogWriter(new File(theFileName), aSocket);
