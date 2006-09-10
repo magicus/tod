@@ -6,6 +6,6 @@
 #$ -notify
 #$ -P dbparallel
 #$ -N nodes
-#$ -S /bin/bash
+#$ -S /bin/sh
 
 ./start-node.sh $1
