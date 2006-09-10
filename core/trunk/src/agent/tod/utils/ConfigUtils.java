@@ -29,6 +29,7 @@ public class ConfigUtils
 	public static String readString (String aPropertyName, String aDefault)
 	{
 		String theString = System.getProperty(aPropertyName);
+		System.out.println(aPropertyName+"="+theString);
 		return theString != null ? theString : aDefault;
 	}
 	

@@ -12,7 +12,7 @@ public class Dummy
 		{
 			j = i*2;
 			foo(i, j);
-			if (i % 10000 == 0) System.out.println(i);
+			if (i % 100000 == 0) System.out.println(i);
 		}
 	}
 	

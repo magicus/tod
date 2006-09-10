@@ -37,8 +37,8 @@ public class GridReplay
 	{
 		GridMaster theMaster = BenchBase.setupMaster(args);
 		
-//		ILogCollector theCollector = theMaster.createCollector(1);
-		ILogCollector theCollector = new DummyCollector();
+		ILogCollector theCollector = theMaster.createCollector(1);
+//		ILogCollector theCollector = new DummyCollector();
 		
 		String theFileName = GeneralConfig.STORE_EVENTS_FILE;
 		long t0 = System.currentTimeMillis();
