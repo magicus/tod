@@ -5,7 +5,7 @@
 #$ -M gpothier@gmail.com
 #$ -notify
 #$ -P dbparallel
-#$ -N test1
+#$ -N nodes
 #$ -S /bin/bash
 
-./start-node.sh
+./start-node.sh $1
