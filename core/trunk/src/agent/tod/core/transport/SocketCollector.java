@@ -29,19 +29,19 @@ import tod.core.EventInterpreter.ThreadData;
 public class SocketCollector extends HighLevelCollector<SocketCollector.SocketThreadData>
 {
 	private List<SocketThreadData> itsThreadDataList = new ArrayList<SocketThreadData>();
-	private MyThread itsThread;
+	private SenderThread itsThread;
 	
 	public SocketCollector(String aHostname, int aPort) throws IOException 
 	{
-		this (new MyThread (new Socket(aHostname, aPort)));
+		this (new SenderThread (new Socket(aHostname, aPort)));
 	}
 	
 	public SocketCollector(int aPort) throws IOException 
 	{
-		this (new MyThread (new ServerSocket(aPort)));
+		this (new SenderThread (new ServerSocket(aPort)));
 	}
 	
-	public SocketCollector(MyThread aThread)
+	public SocketCollector(SenderThread aThread)
 	{
 		itsThread = aThread;
 		itsThread.setThreadInfosList(itsThreadDataList);
@@ -438,18 +438,18 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		}
 	}
 	
-	private static class MyThread extends SocketThread
+	private static class SenderThread extends SocketThread
 	{
 		private List<SocketThreadData> itsThreadInfosList;
 		private boolean itsHostNameSent = false;
 		
-		public MyThread(ServerSocket aServerSocket)
+		public SenderThread(ServerSocket aServerSocket)
 		{
 			super(aServerSocket, false);
 			init();
 		}
 
-		public MyThread(Socket aSocket)
+		public SenderThread(Socket aSocket)
 		{
 			super(aSocket, false);
 			init();
@@ -505,6 +505,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 				throws IOException, InterruptedException
 		{
 			send(aOutputStream);
+			System.out.println("SocketCollector: Shut down");
 		}
 
 		private void send(OutputStream aOutputStream) throws IOException
@@ -521,9 +522,9 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 	
 	private static class MyShutdownHook extends Thread
 	{
-		private MyThread itsThread;
+		private SenderThread itsThread;
 		
-		public MyShutdownHook(MyThread aThread)
+		public MyShutdownHook(SenderThread aThread)
 		{
 			itsThread = aThread;
 		}
@@ -531,6 +532,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		@Override
 		public void run()
 		{
+			System.out.println("SocketCollector: Shutting down");
 			itsThread.interrupt();
 		}
 	}
