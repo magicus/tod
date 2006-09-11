@@ -394,7 +394,7 @@ public class EventMural extends SVGGraphicContainer
 				if (theBrowser.hasNext())
 				{
 					itsNonEmptyBrowsers.add(theBrowser);
-					itsNextEvents.put (theBrowser.getNext(), theBrowser);
+					itsNextEvents.put (theBrowser.next(), theBrowser);
 				}
 			}
 		}
@@ -409,7 +409,7 @@ public class EventMural extends SVGGraphicContainer
 				theBrowser.setNextTimestamp(aT);
 				if (theBrowser.hasNext())
 				{
-					itsNextEvents.put (theBrowser.getNext(), theBrowser);
+					itsNextEvents.put (theBrowser.next(), theBrowser);
 				}
 				else theIterator.remove();
 			}
@@ -442,7 +442,7 @@ public class EventMural extends SVGGraphicContainer
 		private void consume(ILogEvent aEvent)
 		{
 			IEventBrowser theBrowser = itsNextEvents.remove(aEvent);
-			if (theBrowser.hasNext()) itsNextEvents.put (theBrowser.getNext(), theBrowser);
+			if (theBrowser.hasNext()) itsNextEvents.put (theBrowser.next(), theBrowser);
 			else itsNonEmptyBrowsers.remove(theBrowser);
 		}
 	}

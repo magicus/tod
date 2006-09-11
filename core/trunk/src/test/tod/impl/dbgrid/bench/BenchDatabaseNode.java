@@ -31,7 +31,7 @@ public class BenchDatabaseNode
 		itsNode = aNode;
 	}
 
-	@Test public void test() 
+	@Test public void test() throws RemoteException 
 	{
 		itsNode = new DatabaseNode(false);
 		store();
@@ -162,7 +162,7 @@ public class BenchDatabaseNode
 		System.out.println("---");
 	}
 	
-	public static void main(String[] args)
+	public static void main(String[] args) throws RemoteException
 	{
 		new BenchDatabaseNode(new DatabaseNode(false)).store();
 	}

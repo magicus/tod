@@ -3,7 +3,6 @@
  */
 package tod.impl.dbgrid.dbnode;
 
-import static tod.impl.dbgrid.DebuggerGridConfig.DB_CFLOW_PAGE_SIZE;
 import static tod.impl.dbgrid.DebuggerGridConfig.DB_EVENT_BUFFER_SIZE;
 import static tod.impl.dbgrid.DebuggerGridConfig.DB_EVENT_PAGE_SIZE;
 import static tod.impl.dbgrid.DebuggerGridConfig.DB_INDEX_PAGE_SIZE;
@@ -13,30 +12,48 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.Comparator;
 import java.util.Iterator;
 
 import tod.core.config.GeneralConfig;
 import tod.impl.dbgrid.DebuggerGridConfig;
+import tod.impl.dbgrid.GridMaster;
+import tod.impl.dbgrid.RIGridMaster;
 import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.GridMessage;
 import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.queries.EventCondition;
-import tod.utils.ConfigUtils;
 import tod.utils.NativeStream;
 import zz.utils.SortedRingBuffer;
 import zz.utils.Utils;
 import zz.utils.bit.BitStruct;
 import zz.utils.bit.IntBitStruct;
 
-public class DatabaseNode
+public class DatabaseNode extends UnicastRemoteObject
+implements RIDatabaseNode
 {
+	/**
+	 * This command pushes a list of events to the node.
+	 * args:
+	 *  count: int
+	 *  events
+	 * return: none
+	 */
+	public static final byte CMD_PUSH_EVENTS = 17;
+	
 	/**
 	 * Id of this node in the system
 	 */
 	private final int itsNodeId;
+	
+	private RIGridMaster itsMaster;
 	
 	private final HardPagedFile itsEventsFile;
 	private final HardPagedFile itsIndexesFile;
@@ -56,7 +73,7 @@ public class DatabaseNode
 	
 	private boolean itsFlushed = false;
 	
-	public DatabaseNode(boolean aRegisterToMaster)
+	public DatabaseNode(boolean aRegisterToMaster) throws RemoteException
 	{
 		Monitor.getInstance().register(this);
 		try
@@ -79,8 +96,9 @@ public class DatabaseNode
 		}
 	}
 	
-	private int connectToMaster() throws IOException
+	private int connectToMaster() throws IOException, NotBoundException
 	{
+		// Setup socket connection
 		String theMasterHost = GeneralConfig.MASTER_HOST;
 		System.out.println("Connecting to "+theMasterHost);
 		Socket theSocket = new Socket(theMasterHost, DebuggerGridConfig.MASTER_NODE_PORT);
@@ -88,6 +106,11 @@ public class DatabaseNode
 		int theNodeId = theStream.readInt();
 		
 		itsMasterConnection = new MasterConnection(theSocket);
+		
+		// Setup RMI connection
+		Registry theRegistry = LocateRegistry.getRegistry(GeneralConfig.MASTER_HOST);
+		itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
+		itsMaster.registerNode(this);
 		
 		return theNodeId;
 	}
@@ -112,6 +135,11 @@ public class DatabaseNode
 	public Iterator<GridEvent> evaluate(EventCondition aCondition, long aTimestamp)
 	{
 		return aCondition.createIterator(itsEventList, getIndexes(), aTimestamp);
+	}
+
+	public RIEventIterator getIterator(EventCondition aCondition) throws RemoteException
+	{
+		return new EventIterator(this, aCondition);
 	}
 
 	/**
@@ -195,8 +223,8 @@ public class DatabaseNode
 	 */
 	private class MasterConnection extends Thread
 	{
-		private final int[] itsBuffer = new int[DebuggerGridConfig.MASTER_BUFFER_SIZE];
-		private final byte[] itsByteBuffer = new byte[DebuggerGridConfig.MASTER_BUFFER_SIZE*4];
+		private final int[] itsBuffer = new int[DebuggerGridConfig.MASTER_EVENT_BUFFER_SIZE];
+		private final byte[] itsByteBuffer = new byte[DebuggerGridConfig.MASTER_EVENT_BUFFER_SIZE*4];
 		private final BitStruct itsStruct = new IntBitStruct(itsBuffer);
 		private final Socket itsSocket;
 		private long itsReceivedMessages = 0;
@@ -216,34 +244,25 @@ public class DatabaseNode
 				
 				while (itsSocket.isConnected())
 				{
-					int theCount;
+					byte theCommand;
 					try
 					{
-						theCount = theStream.readInt();
+						theCommand = theStream.readByte();
 					}
 					catch (EOFException e)
 					{
 						break;
 					}
 					
-					int theMagic = theStream.readInt();
-					if (theMagic != 0xabcdef) throw new RuntimeException("Bad magic number!");
-					
-//					System.out.println(String.format(
-//							"Received %d messages (already received %d)",
-//							theCount,
-//							itsReceivedMessages));
-					
-					Utils.readFully(theStream, itsByteBuffer);
-					NativeStream.b2i(itsByteBuffer, itsBuffer);
-					itsStruct.reset();
-					
-					itsReceivedMessages += theCount;
-
-					for (int i=0;i<theCount;i++)
+					switch (theCommand)
 					{
-						GridMessage theMessage = GridMessage.read(itsStruct);
-						push(theMessage);
+					case CMD_PUSH_EVENTS:
+						pushEvents(theStream);
+						break;
+						
+					default:
+						throw new RuntimeException("Not handled: "+theCommand);
+							
 					}
 				}
 			}
@@ -253,6 +272,28 @@ public class DatabaseNode
 			}
 			
 			flush();
+		}
+		
+		private void pushEvents(DataInputStream aStream) throws IOException
+		{
+			int theCount = aStream.readInt();
+			
+//			System.out.println(String.format(
+//			"Received %d messages (already received %d)",
+//			theCount,
+//			itsReceivedMessages));
+			
+			Utils.readFully(aStream, itsByteBuffer);
+			NativeStream.b2i(itsByteBuffer, itsBuffer);
+			itsStruct.reset();
+			
+			itsReceivedMessages += theCount;
+
+			for (int i=0;i<theCount;i++)
+			{
+				GridMessage theMessage = GridMessage.read(itsStruct);
+				push(theMessage);
+			}
 		}
 	}
 }

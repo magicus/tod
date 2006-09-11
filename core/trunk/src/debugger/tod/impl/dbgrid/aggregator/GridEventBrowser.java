@@ -3,52 +3,49 @@
  */
 package tod.impl.dbgrid.aggregator;
 
+import java.rmi.RemoteException;
 import java.util.List;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.event.ILogEvent;
+import tod.impl.dbgrid.RIGridMaster;
 import tod.impl.dbgrid.queries.EventCondition;
 
 public class GridEventBrowser implements IEventBrowser
 {
-	private EventCondition itsCondition;
+	private RIQueryAggregator itsAggregator;
 
-	public int getCursor()
+	public GridEventBrowser(RIGridMaster aMaster, EventCondition aCondition) throws RemoteException
 	{
-		return 0;
-	}
-
-	public ILogEvent getEvent(int aIndex)
-	{
-		return null;
+		itsAggregator = aMaster.createAggregator(aCondition);
 	}
 
 	public int getEventCount()
 	{
-		return 0;
+		throw new UnsupportedOperationException();
 	}
 
 	public int getEventCount(long aT1, long aT2)
 	{
-		return 0;
+		throw new UnsupportedOperationException();
 	}
 
 	public int[] getEventCounts(long aT1, long aT2, int aSlotsCount)
 	{
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	public List<ILogEvent> getEvents(long aT1, long aT2)
 	{
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
-	public ILogEvent getNext()
+	public ILogEvent next()
 	{
 		return null;
 	}
 
-	public ILogEvent getPrevious()
+	public ILogEvent previous()
 	{
 		return null;
 	}
@@ -64,10 +61,6 @@ public class GridEventBrowser implements IEventBrowser
 	}
 
 	public void setCursor(ILogEvent aEvent)
-	{
-	}
-
-	public void setCursor(int aPosition)
 	{
 	}
 

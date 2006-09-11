@@ -11,7 +11,7 @@ import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.messages.GridEvent;
 
 /**
- * A conjunctive condition: all subconditions must match.
+ * A disjunctive condition: any subcondition must match.
  * @author gpothier
  */
 public class Disjunction extends CompoundCondition

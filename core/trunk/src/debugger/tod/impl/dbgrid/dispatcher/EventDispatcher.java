@@ -29,7 +29,7 @@ public class EventDispatcher
 	}
 
 	/**
-	 * Directly disptaches a grid event
+	 * Directly dispatches a grid event
 	 */
 	public void dispatchEvent(GridEvent aEvent)
 	{

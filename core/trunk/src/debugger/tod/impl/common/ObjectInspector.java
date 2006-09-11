@@ -68,7 +68,7 @@ public class ObjectInspector implements IObjectInspector
 			
 			if (theBrowser.hasNext())
 			{
-				IInstantiationEvent theEvent = (IInstantiationEvent) theBrowser.getNext();
+				IInstantiationEvent theEvent = (IInstantiationEvent) theBrowser.next();
 				itsType = theEvent.getType();
 			}
 			else itsType = new ClassInfo(null, -1, "Unknown"); 
@@ -153,7 +153,7 @@ public class ObjectInspector implements IObjectInspector
 		
 		while (theBrowser.hasPrevious())
 		{
-			IFieldWriteEvent theEvent = (IFieldWriteEvent) theBrowser.getPrevious();
+			IFieldWriteEvent theEvent = (IFieldWriteEvent) theBrowser.previous();
 			long theTimestamp = theEvent.getTimestamp();
 			
 			if (thePreviousTimestamp == -1) thePreviousTimestamp = theTimestamp;
@@ -244,7 +244,7 @@ public class ObjectInspector implements IObjectInspector
 	{
 		IEventBrowser theBrowser = getBrowser(aMember);
 		theBrowser.setPreviousTimestamp(itsTimestamp);
-		ILogEvent theEvent = theBrowser.getNext();
+		ILogEvent theEvent = theBrowser.next();
 		if (theEvent != null) setTimestamp(theEvent.getTimestamp());
 	}
 	
@@ -259,7 +259,7 @@ public class ObjectInspector implements IObjectInspector
 	{
 		IEventBrowser theBrowser = getBrowser(aMember);
 		theBrowser.setNextTimestamp(itsTimestamp);
-		ILogEvent theEvent = theBrowser.getPrevious();
+		ILogEvent theEvent = theBrowser.previous();
 		if (theEvent != null) setTimestamp(theEvent.getTimestamp());
 	}
 }

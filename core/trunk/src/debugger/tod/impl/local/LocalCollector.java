@@ -20,13 +20,13 @@ import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
-import tod.impl.common.CFlowBrowser;
 import tod.impl.common.EventCollector;
 import tod.impl.common.ObjectInspector;
 import tod.impl.common.VariablesInspector;
 import tod.impl.local.filter.AbstractFilter;
 import tod.impl.local.filter.BehaviorCallFilter;
 import tod.impl.local.filter.FieldWriteFilter;
+import tod.impl.local.filter.HostFilter;
 import tod.impl.local.filter.InstantiationFilter;
 import tod.impl.local.filter.IntersectionFilter;
 import tod.impl.local.filter.TargetFilter;
@@ -136,6 +136,11 @@ implements ILogBrowser
 	public IEventFilter createThreadFilter(IThreadInfo aThreadInfo)
 	{
 		return new ThreadFilter(this, aThreadInfo.getId());
+	}
+	
+	public IEventFilter createHostFilter(IHostInfo aHostInfo)
+	{
+		return new HostFilter(this, aHostInfo.getId());
 	}
 	
 	public ICompoundFilter createUnionFilter(IEventFilter... aFilters)

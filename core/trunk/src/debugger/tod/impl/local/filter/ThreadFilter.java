@@ -12,9 +12,9 @@ import tod.impl.local.LocalCollector;
  */
 public class ThreadFilter extends AbstractStatelessFilter
 {
-	private long itsThreadId;
+	private int itsThreadId;
 	
-	public ThreadFilter(LocalCollector aCollector, long aThreadId)
+	public ThreadFilter(LocalCollector aCollector, int aThreadId)
 	{
 		super (aCollector);
 		itsThreadId = aThreadId;

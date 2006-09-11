@@ -57,12 +57,12 @@ public class EventBrowser implements IEventBrowser
 		return itsIndex > 0;
 	}
 	
-	public ILogEvent getNext()
+	public ILogEvent next()
 	{
 		return getEvent(itsIndex++);
 	}
 	
-	public ILogEvent getPrevious()
+	public ILogEvent previous()
 	{
 		return getEvent(--itsIndex);
 	}

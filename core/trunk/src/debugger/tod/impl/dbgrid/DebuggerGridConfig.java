@@ -63,9 +63,9 @@ public class DebuggerGridConfig
 	public static final int MASTER_NODE_PORT = 8060;
 	
 	/**
-	 * NUmber of array slots in the master's event buffer.
+	 * Number of array slots in the master's event buffer.
 	 */
-	public static final int MASTER_BUFFER_SIZE = 4096;
+	public static final int MASTER_EVENT_BUFFER_SIZE = 4096;
 	
 	/**
 	 * Size of the {@link DatabaseNode} event buffer
@@ -196,4 +196,9 @@ public class DebuggerGridConfig
 	 * Maximum number of index levels for {@link HierarchicalIndex}.
 	 */
 	public static final int DB_MAX_INDEX_LEVELS = 6;
+	
+	/**
+	 * Number of events to fetch at a time 
+	 */
+	public static final int QUERY_ITERATOR_BUFFER_SIZE = 10;
 }

@@ -10,6 +10,9 @@ import java.util.List;
 import tod.core.database.structure.IThreadInfo;
 import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
+import tod.impl.dbgrid.dbnode.RIDatabaseNode;
+import tod.impl.dbgrid.queries.EventCondition;
+import tod.utils.remote.RILocationsRepository;
 
 /**
  * Remote interface of the grid master.
@@ -27,9 +30,15 @@ public interface RIGridMaster extends Remote
 	public void addListener(RIGridMasterListener aListener) throws RemoteException;
 	
 	/**
-	 * Returns the unique query aggregator attached to this master. 
+	 * Registers a node so that it can be used by the grid.
 	 */
-	public RIQueryAggregator getAggregator() throws RemoteException;
+	public void registerNode(RIDatabaseNode aNode) throws RemoteException;
+	
+
+	/**
+	 * Returns a new query aggregator for the specified query 
+	 */
+	public RIQueryAggregator createAggregator(EventCondition aCondition) throws RemoteException;
 	
 	/**
 	 * Returns the internal thread id corresponding to the given thread
@@ -57,5 +66,10 @@ public interface RIGridMaster extends Remote
 	 * Returns the timestamp of the last event recorded in this log.
 	 */
 	public long getLastTimestamp() throws RemoteException;
+	
+	/**
+	 * Returns a remote locations repository.
+	 */
+	public RILocationsRepository getLocationsRepository() throws RemoteException;
 
 }

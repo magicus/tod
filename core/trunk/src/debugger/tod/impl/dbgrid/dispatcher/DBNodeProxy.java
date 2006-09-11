@@ -34,8 +34,8 @@ public class DBNodeProxy
 	private final int itsNodeId;
 	private final GridMaster itsMaster;
 	
-	private final int[] itsBuffer = new int[DebuggerGridConfig.MASTER_BUFFER_SIZE];
-	private final byte[] itsByteBuffer = new byte[DebuggerGridConfig.MASTER_BUFFER_SIZE*4];
+	private final int[] itsBuffer = new int[DebuggerGridConfig.MASTER_EVENT_BUFFER_SIZE];
+	private final byte[] itsByteBuffer = new byte[DebuggerGridConfig.MASTER_EVENT_BUFFER_SIZE*4];
 	private final BitStruct itsEventsBuffer = new IntBitStruct(itsBuffer);
 	
 	private long itsSentMessagesCount = 0;

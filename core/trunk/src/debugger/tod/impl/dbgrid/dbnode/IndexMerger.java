@@ -64,9 +64,9 @@ public class IndexMerger
 		}
 
 		@Override
-		protected boolean sameEvent(T aTuple1, T aTuple2)
+		protected boolean sameEvent(T aItem1, T aItem2)
 		{
-			return aTuple1.getEventPointer() == aTuple2.getEventPointer();
+			return aItem1.getEventPointer() == aItem2.getEventPointer();
 		}
 	}
 	
@@ -85,9 +85,9 @@ public class IndexMerger
 		}
 
 		@Override
-		protected boolean sameEvent(T aTuple1, T aTuple2)
+		protected boolean sameEvent(T aItem1, T aItem2)
 		{
-			return aTuple1.getEventPointer() == aTuple2.getEventPointer();
+			return aItem1.getEventPointer() == aItem2.getEventPointer();
 		}
 	}
 }

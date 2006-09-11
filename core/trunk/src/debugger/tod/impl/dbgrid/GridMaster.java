@@ -20,8 +20,12 @@ import tod.core.database.structure.IThreadInfo;
 import tod.impl.common.EventCollector;
 import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
+import tod.impl.dbgrid.dbnode.RIDatabaseNode;
 import tod.impl.dbgrid.dispatcher.DBNodeProxy;
 import tod.impl.dbgrid.dispatcher.EventDispatcher;
+import tod.impl.dbgrid.queries.EventCondition;
+import tod.utils.remote.RILocationsRepository;
+import tod.utils.remote.RemoteLocationsRepository;
 import zz.utils.Utils;
 import zz.utils.net.Server;
 
@@ -38,8 +42,9 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	
 	private List<RIGridMasterListener> itsListeners = new ArrayList<RIGridMasterListener>();
 	
-	private List<DBNodeProxy> itsNodes = new ArrayList<DBNodeProxy>();
-	private QueryAggregator itsAggregator = new QueryAggregator(this);
+	private List<RIDatabaseNode> itsNodes = new ArrayList<RIDatabaseNode>();
+	private List<DBNodeProxy> itsNodeProxies = new ArrayList<DBNodeProxy>();
+	
 	private EventDispatcher itsDispatcher = new EventDispatcher(this);
 	
 	/**
@@ -48,6 +53,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	private Map<Integer, GridEventCollector> itsCollectors = new HashMap<Integer, GridEventCollector>();
 	
 	private ILocationsRepository itsLocationsRepository;
+	private RemoteLocationsRepository itsRemoteLocationsRepository;
 	private NodeServer itsNodeServer;
 	
 	private long itsEventsCount;
@@ -58,6 +64,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	public GridMaster(ILocationsRepository aLocationsRepository) throws RemoteException
 	{
 		itsLocationsRepository = aLocationsRepository;
+		itsRemoteLocationsRepository = new RemoteLocationsRepository(itsLocationsRepository);
 		
 		itsNodeServer = new NodeServer();
 		
@@ -114,19 +121,33 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	
 	public synchronized void acceptNode(Socket aSocket)
 	{
-		int theId = itsNodes.size()+1;
+		int theId = itsNodeProxies.size()+1;
 		DBNodeProxy theProxy = new DBNodeProxy(aSocket, theId, this);
-		itsNodes.add(theProxy);
+		itsNodeProxies.add(theProxy);
 		itsDispatcher.addNode(theProxy);
-		System.out.println("Registered node "+theId);
+		System.out.println("Registered node (socket): "+theId);
 	}
 	
+	public void registerNode(RIDatabaseNode aNode) throws RemoteException
+	{
+		itsNodes.add(aNode);
+		System.out.println("Registered node (RMI): "+aNode.getNodeId());
+	}
+	
+	/**
+	 * Returns the currently registered nodes.
+	 */
+	public List<RIDatabaseNode> getNodes()
+	{
+		return itsNodes;
+	}
+
 	/**
 	 * Returns the number of registered nodes.
 	 */
 	public int getNodeCount()
 	{
-		return itsNodes.size();
+		return itsNodeProxies.size();
 	}
 	
 	/**
@@ -181,9 +202,9 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		return theThreads;
 	}
 	
-	public RIQueryAggregator getAggregator()
+	public RIQueryAggregator createAggregator(EventCondition aCondition) throws RemoteException
 	{
-		return itsAggregator;
+		return new QueryAggregator(this, aCondition);
 	}
 	
 	public long getEventsCount()
@@ -202,6 +223,12 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	}
 
 	
+	public RILocationsRepository getLocationsRepository() 
+	{
+		return itsRemoteLocationsRepository;
+	}
+
+
 	/**
 	 * A timer task that periodically updates aggregate data,
 	 * and notifies listeners if data has changed since last update. 
@@ -218,7 +245,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			long theLastTimestamp = 0;
 			int theThreadsCount = 0;
 			
-			for (DBNodeProxy theProxy : itsNodes)
+			for (DBNodeProxy theProxy : itsNodeProxies)
 			{
 				theEventsCount += theProxy.getEventsCount();
 				theFirstTimestamp = Math.min(theFirstTimestamp, theProxy.getFirstTimestamp());

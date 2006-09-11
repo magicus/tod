@@ -7,6 +7,7 @@ import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
@@ -124,6 +125,11 @@ public interface ILogBrowser
 	 * is the specified object reference.
 	 */
 	public IEventFilter createArgumentFilter (ObjectId aId);
+	
+	/**
+	 * Creates a filter that accepts only events on the given host.
+	 */
+	public IEventFilter createHostFilter (IHostInfo aHost);
 	
 	/**
 	 * Creates a filter that accepts only the events that occurr

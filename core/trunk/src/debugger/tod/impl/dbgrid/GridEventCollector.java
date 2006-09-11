@@ -10,6 +10,7 @@ import tod.impl.common.EventCollector;
 import tod.impl.dbgrid.dispatcher.EventDispatcher;
 import tod.impl.dbgrid.messages.GridBehaviorCallEvent;
 import tod.impl.dbgrid.messages.GridBehaviorExitEvent;
+import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.GridExceptionGeneratedEvent;
 import tod.impl.dbgrid.messages.GridFieldWriteEvent;
 import tod.impl.dbgrid.messages.GridOutputEvent;
@@ -58,6 +59,11 @@ public class GridEventCollector extends EventCollector
 		return itsMaster;
 	}
 
+	private void dispatch(GridEvent aEvent)
+	{
+		itsDispatcher.dispatchEvent(aEvent);
+	}
+	
 	@Override
 	protected void exception(
 			int aThreadId,
@@ -78,7 +84,7 @@ public class GridEventCollector extends EventCollector
 				aException,
 				aBehaviorId);
 		
-		itsDispatcher.dispatchEvent(itsExceptionEvent);
+		dispatch(itsExceptionEvent);
 	}
 
 
@@ -103,7 +109,7 @@ public class GridEventCollector extends EventCollector
 				aResult,
 				aBehaviorId);
 		
-		itsDispatcher.dispatchEvent(itsExitEvent);
+		dispatch(itsExitEvent);
 	}
 
 
@@ -128,7 +134,7 @@ public class GridEventCollector extends EventCollector
 				aTarget, 
 				aValue);
 		
-		itsDispatcher.dispatchEvent(itsFieldWriteEvent);
+		dispatch(itsFieldWriteEvent);
 	}
 
 
@@ -158,7 +164,7 @@ public class GridEventCollector extends EventCollector
 				aExecutedBehavior,
 				aTarget);
 		
-		itsDispatcher.dispatchEvent(itsCallEvent);
+		dispatch(itsCallEvent);
 	}
 
 
@@ -180,6 +186,8 @@ public class GridEventCollector extends EventCollector
 				aParentTimestamp,
 				aVariableId, 
 				aValue);
+		
+		dispatch(itsVariableWriteEvent);
 	}
 
 
@@ -209,7 +217,7 @@ public class GridEventCollector extends EventCollector
 				aExecutedBehavior,
 				aTarget);
 		
-		itsDispatcher.dispatchEvent(itsCallEvent);
+		dispatch(itsCallEvent);
 	}
 
 
@@ -251,7 +259,7 @@ public class GridEventCollector extends EventCollector
 				aExecutedBehavior,
 				aTarget);
 		
-		itsDispatcher.dispatchEvent(itsCallEvent);
+		dispatch(itsCallEvent);
 	}
 
 }

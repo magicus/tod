@@ -66,7 +66,7 @@ public abstract class MergeIterator<T> implements Iterator<T>
 	/**
 	 * Indicates if the specified items represent the same event.
 	 */
-	protected abstract boolean sameEvent(T aTuple1, T aTuple2);
+	protected abstract boolean sameEvent(T aItem1, T aItem2);
 
 	protected T[] getHeadItems()
 	{

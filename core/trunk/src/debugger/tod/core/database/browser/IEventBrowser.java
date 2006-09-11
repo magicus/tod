@@ -45,10 +45,10 @@ public interface IEventBrowser
 	 */
 	public List<ILogEvent> getEvents(long aT1, long aT2);
 	
-	/**
-	 * Returns the event at  the specified index.
-	 */
-	public ILogEvent getEvent(int aIndex);
+//	/**
+//	 * Returns the event at  the specified index.
+//	 */
+//	public ILogEvent getEvent(int aIndex);
 	
 //	/**
 //	 * Returns the current cursor position.
@@ -61,17 +61,17 @@ public interface IEventBrowser
 //	public void setCursor (int aPosition);
 	
 	/**
-	 * Sets the cursor so that a call to {@link #getNext()}
+	 * Sets the cursor so that a call to {@link #next()}
 	 * will return the first event available to
 	 * this browser that occured not before the specified event.
 	 * In the case the specified event is available to this browser,
-	 * {@link #getNext()} will return this event.
+	 * {@link #next()} will return this event.
 	 */
 	public void setCursor (ILogEvent aEvent);
 	
 	/**
 	 * Sets the internal cursor of this browser so that the next
-	 * element returned by {@link #getNext()} is the first event
+	 * element returned by {@link #next()} is the first event
 	 * whose timestamp is superior or equal to the specified 
 	 * timestamp.
 	 */
@@ -79,7 +79,7 @@ public interface IEventBrowser
 	
 	/**
 	 * Sets the internal cursor of this browser so that the next
-	 * element returned by {@link #getPrevious()} is the last event
+	 * element returned by {@link #previous()} is the last event
 	 * whose timestamp is inferior or equal to the specified 
 	 * timestamp.
 	 */
@@ -98,10 +98,10 @@ public interface IEventBrowser
 	/**
 	 * Returns the next event and updates the cursor.
 	 */
-	public ILogEvent getNext();
+	public ILogEvent next();
 
 	/**
 	 * Returns the previous event and updates the cursor.
 	 */
-	public ILogEvent getPrevious();	
+	public ILogEvent previous();	
 }
