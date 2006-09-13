@@ -49,7 +49,7 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationsReposito
 	
 	private void registerPrimitiveType(String aName, int aSize)
 	{
-		TypeInfo theType = new PrimitiveTypeInfo(this, aName, aSize);
+		TypeInfo theType = new PrimitiveTypeInfo(aName, aSize);
 		itsTypesMap.put(aName, theType);
 	}
 
@@ -110,7 +110,7 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationsReposito
 	
 	protected ClassInfo createClassInfo (int aId)
 	{
-		return new ClassInfo(this, aId);
+		return new ClassInfo(aId);
 	}
 	
 	/**
@@ -118,7 +118,7 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationsReposito
 	 */
 	protected FieldInfo createFieldInfo(int aId, ClassInfo aTypeInfo, String aName)
 	{
-		return new FieldInfo(this, aId, aTypeInfo, aName);
+		return new FieldInfo(aId, aTypeInfo, aName);
 	}
 
 	/**
@@ -161,7 +161,6 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationsReposito
 	{
 		
 		return new BehaviorInfo(
-				this,
 				aBehaviourType,
 				aId, 
 				aTypeInfo,
@@ -230,7 +229,7 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationsReposito
 		if (theDimension == 0) return theType;
 		else
 		{
-			return new ArrayTypeInfo(this, theType, theDimension);
+			return new ArrayTypeInfo(theType, theDimension);
 		}
 	}
 	

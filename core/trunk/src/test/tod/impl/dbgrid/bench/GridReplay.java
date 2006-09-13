@@ -21,6 +21,7 @@ import tod.core.config.GeneralConfig;
 import tod.core.transport.CollectorPacketReader;
 import tod.core.transport.MessageType;
 import tod.impl.bci.asm.ASMLocationPool;
+import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
 import tod.utils.ConfigUtils;
@@ -35,89 +36,21 @@ public class GridReplay
 {
 	public static void main(String[] args) throws Exception
 	{
-		GridMaster theMaster = BenchBase.setupMaster(args);
+		String theFileName = GeneralConfig.STORE_EVENTS_FILE;
+		File theFile = new File(theFileName);
+		
+		GridMaster theMaster = Fixtures.setupMaster(args);
 		
 		ILogCollector theCollector = theMaster.createCollector(1);
 //		ILogCollector theCollector = new DummyCollector();
 		
-		String theFileName = GeneralConfig.STORE_EVENTS_FILE;
 		long t0 = System.currentTimeMillis();
-		File theFile = new File(theFileName);
-		long theCount = process(theFile, theMaster, theCollector);
-//		long theCount = readFile(new File("indexes2.bin"));
+		long theCount = Fixtures.replay(theFile, theMaster, theCollector);
 		long t1 = System.currentTimeMillis();
 		float dt = (t1-t0)/1000f;
 		float theEpS = theCount/dt;
 		System.out.println("Events: "+theCount+" time: "+dt+"s rate: "+theEpS+"ev/s");
 		System.exit(0);
-	}
-	
-	private static long readFile(File aFile) throws IOException
-	{
-		FileInputStream theStream = new FileInputStream(aFile);
-		int c;
-		long sz = 0;
-		byte[] b = new byte[4096];
-		while ((c = theStream.read(b)) > 0) sz += c;
-		
-		return sz;
-	}
-	
-	private static long process(
-			File aFile,
-			GridMaster aMaster,
-			ILogCollector aCollector) 
-			throws IOException
-	{
-		DataInputStream theStream = new DataInputStream(new BufferedInputStream(new FileInputStream(aFile)));
-		
-		String theHostName = theStream.readUTF();
-		System.out.println("Reading events of "+theHostName);
-
-		long theCount = 0;
-		
-		while (true)
-		{
-			byte theCommand;
-			try
-			{
-				theCommand = theStream.readByte();
-			}
-			catch (EOFException e)
-			{
-				break;
-			}
-			
-			try
-			{
-				if (theCommand == NativeAgentPeer.INSTRUMENT_CLASS)
-				{
-					throw new RuntimeException();
-				}
-				else
-				{
-					MessageType theType = MessageType.values()[theCommand];
-					CollectorPacketReader.readPacket(
-							theStream, 
-							aCollector,
-							null,
-							theType);
-				}
-			}
-			catch (Exception e)
-			{
-				e.printStackTrace();
-				break;
-			}
-			
-			theCount++;
-			if (theCount % 100000 == 0) System.out.println(theCount);
-		}
-		
-		aMaster.flush();
-		System.out.println("Done");
-		
-		return theCount;
 	}
 	
 	private static class DummyCollector implements ILogCollector

@@ -94,51 +94,5 @@ public class BenchBase
 		
 	}
 
-	/**
-	 * Standard setup of a grid master that waits for a number
-	 * of database nodes to connect
-	 */
-	public static GridMaster setupMaster(String[] args) throws Exception
-	{
-		int theExpectedNodes = 0;
-		if (args.length > 0)
-		{
-			theExpectedNodes = Integer.parseInt(args[0]);
-		}
-		
-		return setupMaster(theExpectedNodes);
-	}
-		
-	/**
-	 * Standard setup of a grid master that waits for a number
-	 * of database nodes to connect
-	 */
-	public static GridMaster setupMaster(int aExpectedNodes) throws Exception
-	{
-		System.out.println("Expecting "+aExpectedNodes+" nodes");
-		
-		LocationRegistrer theLocationRegistrer = new LocationRegistrer();
-		new ASMLocationPool(theLocationRegistrer, new File(GeneralConfig.LOCATIONS_FILE));
-		GridMaster theMaster = new GridMaster(theLocationRegistrer);
-		
-		Registry theRegistry = LocateRegistry.createRegistry(1099);
-		
-		theRegistry.bind(GridMaster.RMI_ID, theMaster);
-		
-		System.out.println("Bound master");
-
-		if (aExpectedNodes > 0)
-		{
-			while (theMaster.getNodeCount() < aExpectedNodes)
-			{
-				Thread.sleep(1000);
-				System.out.println("Found "+theMaster.getNodeCount()+"/"+aExpectedNodes+" nodes.");
-			}
-		}
-		else new DatabaseNode(true);
-
-		return theMaster;
-	}
-	
 
 }

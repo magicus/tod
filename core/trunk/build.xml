@@ -87,8 +87,16 @@
 	<target name="rmic" depends="compile">
 		<rmic 
 			base="${classes-debugger.dir}" 
-			classpathref="debugger.classpath"
-			classname="tod.impl.dbgrid.GridMaster"/>
+			classpathref="debugger.classpath">
+			
+			<include name="tod.impl.dbgrid.GridMaster"/>
+			<include name="tod.impl.dbgrid.aggregator.QueryAggregator"/>
+			<include name="tod.impl.dbgrid.dbnode.DatabaseNode"/>
+			<include name="tod.impl.dbgrid.dbnode.EventIterator"/>
+			<include name="tod.impl.dbgrid.GridLogBrowser"/>
+			<include name="tod.utils.remote.RemoteLocationsRepository"/>
+			
+		</rmic>
 	</target>
 
 	<target name="jar" depends="compile, rmic">

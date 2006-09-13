@@ -4,6 +4,9 @@
 package tod.impl.dbgrid.messages;
 
 import tod.core.Output;
+import tod.core.database.event.ILogEvent;
+import tod.impl.common.event.OutputEvent;
+import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.dbnode.Indexes;
 
 public class GridOutputEvent extends GridEvent
@@ -25,6 +28,16 @@ public class GridOutputEvent extends GridEvent
 	{
 		itsData = aData;
 		itsOutput = aOutput;
+	}
+	
+	@Override
+	public ILogEvent toLogEvent(GridLogBrowser aBrowser)
+	{
+		OutputEvent theEvent = new OutputEvent();
+		initEvent(aBrowser, theEvent);
+		theEvent.setData(getData());
+		theEvent.setOutput(getOutput());
+		return theEvent;
 	}
 	
 	@Override

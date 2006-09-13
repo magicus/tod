@@ -1,5 +1,7 @@
 package tod.core;
 
+import java.io.Serializable;
+
 
 /**
  * Interface for objects that collect static code information, such as
@@ -53,7 +55,7 @@ public interface ILocationRegistrer {
      * @see http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#22856 
      * @author gpothier
      */
-    public static class LineNumberInfo 
+    public static class LineNumberInfo implements Serializable
     {
         private short itsStartPc;
         private short itsLineNumber;
@@ -80,7 +82,7 @@ public interface ILocationRegistrer {
      * @see http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#5956
      * @author gpothier
      */
-    public static class LocalVariableInfo 
+    public static class LocalVariableInfo implements Serializable
     {
         private short itsStartPc;
         private short itsLength;

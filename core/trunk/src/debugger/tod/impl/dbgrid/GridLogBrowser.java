@@ -4,7 +4,11 @@
 package tod.impl.dbgrid;
 
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import tod.core.database.browser.ICFlowBrowser;
 import tod.core.database.browser.ICompoundFilter;
@@ -15,6 +19,7 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.IVariablesInspector;
 import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
@@ -25,7 +30,6 @@ import tod.core.database.structure.ObjectId;
 import tod.impl.dbgrid.aggregator.GridEventBrowser;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import tod.impl.dbgrid.messages.MessageType;
-import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.ObjectCodec;
 import tod.impl.dbgrid.queries.BehaviorCondition;
 import tod.impl.dbgrid.queries.CompoundCondition;
@@ -38,14 +42,19 @@ import tod.impl.dbgrid.queries.ObjectCondition;
 import tod.impl.dbgrid.queries.ThreadCondition;
 import tod.impl.dbgrid.queries.TypeCondition;
 import tod.utils.remote.RemoteLocationsRepository;
+import zz.utils.ListMap;
+import zz.utils.Utils;
+import zz.utils.cache.MRUBuffer;
 
 /**
  * Implementation of {@link ILogBrowser} for the grid backend.
  * This is the client-side object that interfaces with the {@link GridMaster}
  * for executing queries.
+ * Note: it is remote because it must be accessed by the master.
  * @author gpothier
  */
-public class GridLogBrowser implements ILogBrowser, RIGridMasterListener
+public class GridLogBrowser extends UnicastRemoteObject
+implements ILogBrowser, RIGridMasterListener
 {
 	private RIGridMaster itsMaster;
 	private ILocationsRepository itsLocationsRepository;
@@ -54,6 +63,13 @@ public class GridLogBrowser implements ILogBrowser, RIGridMasterListener
 	private long itsFirstTimestamp;
 	private long itsLastTimestamp;
 	private List<IThreadInfo> itsThreads;
+	private List<IHostInfo> itsHosts;
+	private Map<Integer, HostThreadsList> itsHostThreadsLists = new HashMap<Integer, HostThreadsList>();
+	
+	/**
+	 * A buffer of most recently used parent events.
+	 */
+	private EventsBuffer itsEventsBuffer = new EventsBuffer();
 
 	public GridLogBrowser(RIGridMaster aMaster) throws RemoteException
 	{
@@ -174,16 +190,102 @@ public class GridLogBrowser implements ILogBrowser, RIGridMasterListener
 		return itsLastTimestamp;
 	}
 	
-	public Iterable<IThreadInfo> getThreads()
+	private List<IThreadInfo> getThreads0()
 	{
+		try
+		{
+			if (itsThreads == null)
+			{
+				itsThreads = itsMaster.getThreads();
+				
+				// Update per-host threads list
+				itsHostThreadsLists.clear();
+				for (IThreadInfo theThread : itsThreads)
+				{
+					IHostInfo theHost = theThread.getHost();
+					HostThreadsList theList = itsHostThreadsLists.get(theHost.getId());
+					if (theList == null)
+					{
+						theList = new HostThreadsList(theHost);
+						itsHostThreadsLists.put(theHost.getId(), theList);
+					}
+					
+					theList.add(theThread);
+				}
+			}
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
 		return itsThreads;
 	}
 	
+	private List<IHostInfo> getHosts0()
+	{
+		try
+		{
+			if (itsHosts == null) 
+			{
+				itsHosts = new ArrayList<IHostInfo>();
+				List<IHostInfo> theHosts = itsMaster.getHosts();
+				for (IHostInfo theHost : theHosts)
+				{
+					Utils.listSet(itsHosts, theHost.getId(), theHost);
+				}
+			}
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
+		return itsHosts;
+	}
+	
+	public Iterable<IThreadInfo> getThreads()
+	{
+		return getThreads0();
+	}
+	
+	public Iterable<IHostInfo> getHosts()
+	{
+		return getHosts0();
+	}
+	
+	public IHostInfo getHost(int aId)
+	{
+		return getHosts0().get(aId);
+	}
+	
+	public IThreadInfo getThread(int aHostId, int aThreadId)
+	{
+		getThreads(); // Lazy init of thread lists
+		HostThreadsList theList = itsHostThreadsLists.get(aHostId);
+		if (theList == null) return null;
+		
+		return theList.get(aThreadId);
+	}
+	
+	/**
+	 * Retrieves the event that corresponds to the specified information, if
+	 * it exists.
+	 */
+	public ILogEvent getEvent(int aHostId, int aThreadId, long aTimestamp)
+	{
+		byte[] theKey = ExternalPointer.create(aHostId, aThreadId, aTimestamp);
+		return itsEventsBuffer.get(theKey);
+	}
+
 	public ILocationsRepository getLocationsRepository()
 	{
 		return itsLocationsRepository;
 	}
 	
+	public RIGridMaster getMaster()
+	{
+		return itsMaster;
+	}
+
 	public IEventBrowser createBrowser(IEventFilter aFilter)
 	{
 		if (aFilter instanceof EventCondition)
@@ -191,7 +293,7 @@ public class GridLogBrowser implements ILogBrowser, RIGridMasterListener
 			EventCondition theCondition = (EventCondition) aFilter;
 			try
 			{
-				return new GridEventBrowser(itsMaster, theCondition);
+				return new GridEventBrowser(this, theCondition);
 			}
 			catch (RemoteException e)
 			{
@@ -226,13 +328,58 @@ public class GridLogBrowser implements ILogBrowser, RIGridMasterListener
 		itsEventsCount = itsMaster.getEventsCount();
 		itsFirstTimestamp = itsMaster.getFirstTimestamp();
 		itsLastTimestamp = itsMaster.getLastTimestamp();
-		itsThreads = itsMaster.getThreads();
+		itsThreads = null; // lazy
+		itsHosts = null; // lazy
 	}
 
 	public void exception(Throwable aThrowable) 
 	{
 		aThrowable.printStackTrace();
 	}
-
 	
+	/**
+	 * A MRU buffer that keep track of events identified by their
+	 * external identifier.
+	 * @author gpothier
+	 */
+	private class EventsBuffer extends MRUBuffer<byte[], ILogEvent>
+	{
+		public EventsBuffer()
+		{
+			super(128);
+		}
+
+		@Override
+		protected ILogEvent fetch(byte[] aId)
+		{
+			return null;
+		}
+
+		@Override
+		protected byte[] getKey(ILogEvent aValue)
+		{
+			return null;
+		}
+	}
+	
+	private static class HostThreadsList
+	{
+		private IHostInfo itsHost;
+		private List<IThreadInfo> itsThreads = new ArrayList<IThreadInfo>();
+		
+		public HostThreadsList(IHostInfo aHost)
+		{
+			itsHost = aHost;
+		}
+		
+		public void add(IThreadInfo aThread)
+		{
+			Utils.listSet(itsThreads, aThread.getId(), aThread);
+		}
+		
+		public IThreadInfo get(int aIndex)
+		{
+			return itsThreads.get(aIndex);
+		}
+	}
 }

@@ -7,7 +7,10 @@ import static tod.impl.dbgrid.messages.ObjectCodec.getObjectBits;
 import static tod.impl.dbgrid.messages.ObjectCodec.getObjectId;
 import static tod.impl.dbgrid.messages.ObjectCodec.readObject;
 import static tod.impl.dbgrid.messages.ObjectCodec.writeObject;
+import tod.core.database.event.ILogEvent;
+import tod.impl.common.event.ExceptionGeneratedEvent;
 import tod.impl.dbgrid.DebuggerGridConfig;
+import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import zz.utils.bit.BitStruct;
@@ -74,6 +77,16 @@ public class GridExceptionGeneratedEvent extends GridEvent
 		theCount += getObjectBits(getException());
 
 		return theCount;
+	}
+	
+	@Override
+	public ILogEvent toLogEvent(GridLogBrowser aBrowser)
+	{
+		ExceptionGeneratedEvent theEvent = new ExceptionGeneratedEvent();
+		initEvent(aBrowser, theEvent);
+		theEvent.setException(getException());
+		theEvent.setThrowingBehavior(aBrowser.getLocationsRepository().getBehavior(getThrowingBehaviorId()));
+		return theEvent;
 	}
 	
 	@Override

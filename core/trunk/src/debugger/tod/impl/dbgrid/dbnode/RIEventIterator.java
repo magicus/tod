@@ -3,6 +3,7 @@
  */
 package tod.impl.dbgrid.dbnode;
 
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import tod.impl.dbgrid.messages.GridEvent;
@@ -11,7 +12,7 @@ import tod.impl.dbgrid.messages.GridEvent;
  * Remote interface for {@link EventIterator}.
  * @author gpothier
  */
-public interface RIEventIterator
+public interface RIEventIterator extends Remote
 {
 	/**
 	 * Semantics matches {@link IEventBrowser#setNextTimestamp(long)}

@@ -3,6 +3,8 @@
  */
 package tod.impl.local;
 
+import java.util.Collections;
+
 import tod.core.Output;
 import tod.core.database.browser.ICFlowBrowser;
 import tod.core.database.browser.ICompoundFilter;
@@ -217,6 +219,9 @@ implements ILogBrowser
 	{
 	}
 	
-	
+	public Iterable<IHostInfo> getHosts()
+	{
+		return Collections.singleton(getHost());
+	}
 	
 }

@@ -51,7 +51,7 @@ implements RIDatabaseNode
 	/**
 	 * Id of this node in the system
 	 */
-	private final int itsNodeId;
+	private int itsNodeId;
 	
 	private RIGridMaster itsMaster;
 	
@@ -87,7 +87,7 @@ implements RIDatabaseNode
 			itsEventList = new EventList(itsEventsFile);
 			itsIndexes = new Indexes(itsIndexesFile);
 			
-			if (aRegisterToMaster) itsNodeId = connectToMaster();
+			if (aRegisterToMaster) connectToMaster();
 			else itsNodeId = 1;
 		}
 		catch (Exception e)
@@ -96,14 +96,15 @@ implements RIDatabaseNode
 		}
 	}
 	
-	private int connectToMaster() throws IOException, NotBoundException
+	private void connectToMaster() throws IOException, NotBoundException
 	{
 		// Setup socket connection
 		String theMasterHost = GeneralConfig.MASTER_HOST;
 		System.out.println("Connecting to "+theMasterHost);
 		Socket theSocket = new Socket(theMasterHost, DebuggerGridConfig.MASTER_NODE_PORT);
 		DataInputStream theStream = new DataInputStream(theSocket.getInputStream());
-		int theNodeId = theStream.readInt();
+		itsNodeId = theStream.readInt();
+		System.out.println("Master assigned node id "+itsNodeId);
 		
 		itsMasterConnection = new MasterConnection(theSocket);
 		
@@ -111,8 +112,6 @@ implements RIDatabaseNode
 		Registry theRegistry = LocateRegistry.getRegistry(GeneralConfig.MASTER_HOST);
 		itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
 		itsMaster.registerNode(this);
-		
-		return theNodeId;
 	}
 
 	/**

@@ -7,7 +7,10 @@ import static tod.impl.dbgrid.messages.ObjectCodec.getObjectBits;
 import static tod.impl.dbgrid.messages.ObjectCodec.getObjectId;
 import static tod.impl.dbgrid.messages.ObjectCodec.readObject;
 import static tod.impl.dbgrid.messages.ObjectCodec.writeObject;
+import tod.core.database.event.ILogEvent;
+import tod.impl.common.event.FieldWriteEvent;
 import tod.impl.dbgrid.DebuggerGridConfig;
+import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import tod.impl.dbgrid.dbnode.StdIndexSet;
@@ -82,6 +85,17 @@ public class GridFieldWriteEvent extends GridEvent
 		theCount += getObjectBits(getValue());
 		
 		return theCount;
+	}
+	
+	@Override
+	public ILogEvent toLogEvent(GridLogBrowser aBrowser)
+	{
+		FieldWriteEvent theEvent = new FieldWriteEvent();
+		initEvent(aBrowser, theEvent);
+		theEvent.setField(aBrowser.getLocationsRepository().getField(getFieldId()));
+		theEvent.setTarget(getTarget());
+		theEvent.setValue(getValue());
+		return theEvent;
 	}
 
 	@Override

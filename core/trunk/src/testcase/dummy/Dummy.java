@@ -8,7 +8,7 @@ public class Dummy
 	public static void main(String[] args)
 	{
 		int j;
-		for(int i=0;i<10000000;i++)
+		for(int i=0;i<100000;i++)
 		{
 			j = i*2;
 			foo(i, j);

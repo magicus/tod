@@ -7,7 +7,13 @@ import static tod.impl.dbgrid.messages.ObjectCodec.getObjectBits;
 import static tod.impl.dbgrid.messages.ObjectCodec.getObjectId;
 import static tod.impl.dbgrid.messages.ObjectCodec.readObject;
 import static tod.impl.dbgrid.messages.ObjectCodec.writeObject;
+import tod.core.database.event.ILogEvent;
+import tod.impl.common.event.BehaviorCallEvent;
+import tod.impl.common.event.ConstructorChainingEvent;
+import tod.impl.common.event.InstantiationEvent;
+import tod.impl.common.event.MethodCallEvent;
 import tod.impl.dbgrid.DebuggerGridConfig;
+import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import zz.utils.bit.BitStruct;
@@ -114,6 +120,39 @@ public class GridBehaviorCallEvent extends GridEvent
 		theCount += getObjectBits(getTarget());
 		
 		return theCount;
+	}
+	
+	@Override
+	public ILogEvent toLogEvent(GridLogBrowser aBrowser)
+	{
+		BehaviorCallEvent theEvent;
+		
+		switch(getEventType()) 
+		{
+		case METHOD_CALL:
+			theEvent = new MethodCallEvent();
+			break;
+			
+		case INSTANTIATION:
+			theEvent = new InstantiationEvent();
+			break;
+			
+		case SUPER_CALL:
+			theEvent = new ConstructorChainingEvent();
+			break;
+			
+		default:
+			throw new RuntimeException("Not handled: "+this);
+		}
+		
+		initEvent(aBrowser, theEvent);
+		theEvent.setArguments(getArguments());
+		theEvent.setCalledBehavior(aBrowser.getLocationsRepository().getBehavior(getCalledBehaviorId()));
+		theEvent.setExecutedBehavior(aBrowser.getLocationsRepository().getBehavior(getExecutedBehaviorId()));
+		theEvent.setDirectParent(isDirectParent());
+		theEvent.setTarget(getTarget());
+		
+		return theEvent;
 	}
 	
 	@Override

@@ -13,13 +13,19 @@ import tod.core.database.browser.ILocationsRepository;
  */
 public abstract class TypeInfo extends LocationInfo implements ITypeInfo
 {
-	public TypeInfo(ILocationsRepository aTrace, int aId, String aName)
+	public TypeInfo(int aId, String aName)
 	{
-		super(aTrace, aId, aName);
+		super(aId, aName);
 	}
 
-	public TypeInfo(ILocationsRepository aTrace, int aId)
+	public TypeInfo(int aId)
 	{
-		super(aTrace, aId);
+		super(aId);
+	}
+	
+	@Override
+	public String toString()
+	{
+		return "Type ("+getId()+", "+getName()+")";
 	}
 }

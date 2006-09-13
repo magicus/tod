@@ -6,12 +6,26 @@ package tod.impl.dbgrid;
 
 import static org.junit.Assert.fail;
 
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Random;
 
+import tod.core.ILogCollector;
+import tod.core.LocationRegistrer;
+import tod.core.bci.NativeAgentPeer;
+import tod.core.config.GeneralConfig;
+import tod.core.transport.CollectorPacketReader;
+import tod.core.transport.MessageType;
+import tod.impl.bci.asm.ASMLocationPool;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
 import tod.impl.dbgrid.dbnode.EventList;
 import tod.impl.dbgrid.dbnode.HierarchicalIndex;
@@ -294,5 +308,109 @@ public class Fixtures
 		
 		System.out.println("Matched: "+theMatched);
 	}
+
+	/**
+	 * Standard setup of a grid master that waits for a number
+	 * of database nodes to connect
+	 */
+	public static GridMaster setupMaster(String[] args) throws Exception
+	{
+		int theExpectedNodes = 0;
+		if (args.length > 0)
+		{
+			theExpectedNodes = Integer.parseInt(args[0]);
+		}
+		
+		return setupMaster(theExpectedNodes);
+	}
+		
+	/**
+	 * Standard setup of a grid master that waits for a number
+	 * of database nodes to connect
+	 */
+	public static GridMaster setupMaster(int aExpectedNodes) throws Exception
+	{
+		System.out.println("Expecting "+aExpectedNodes+" nodes");
+		
+		LocationRegistrer theLocationRegistrer = new LocationRegistrer();
+		new ASMLocationPool(theLocationRegistrer, new File(GeneralConfig.LOCATIONS_FILE));
+		GridMaster theMaster = new GridMaster(theLocationRegistrer);
+		
+		Registry theRegistry = LocateRegistry.createRegistry(1099);
+		
+		theRegistry.bind(GridMaster.RMI_ID, theMaster);
+		
+		System.out.println("Bound master");
+
+		if (aExpectedNodes > 0)
+		{
+			while (theMaster.getNodeCount() < aExpectedNodes)
+			{
+				Thread.sleep(1000);
+				System.out.println("Found "+theMaster.getNodeCount()+"/"+aExpectedNodes+" nodes.");
+			}
+		}
+		else new DatabaseNode(true);
+
+		return theMaster;
+	}
+	
+	public static long replay(
+			File aFile,
+			GridMaster aMaster,
+			ILogCollector aCollector) 
+			throws IOException
+	{
+		DataInputStream theStream = new DataInputStream(new BufferedInputStream(new FileInputStream(aFile)));
+		
+		String theHostName = theStream.readUTF();
+		System.out.println("Reading events of "+theHostName);
+
+		long theCount = 0;
+		
+		while (true)
+		{
+			byte theCommand;
+			try
+			{
+				theCommand = theStream.readByte();
+			}
+			catch (EOFException e)
+			{
+				break;
+			}
+			
+			try
+			{
+				if (theCommand == NativeAgentPeer.INSTRUMENT_CLASS)
+				{
+					throw new RuntimeException();
+				}
+				else
+				{
+					MessageType theType = MessageType.values()[theCommand];
+					CollectorPacketReader.readPacket(
+							theStream, 
+							aCollector,
+							null,
+							theType);
+				}
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+				break;
+			}
+			
+			theCount++;
+			if (theCount % 100000 == 0) System.out.println(theCount);
+		}
+		
+		aMaster.flush();
+		System.out.println("Done");
+		
+		return theCount;
+	}
+	
 
 }

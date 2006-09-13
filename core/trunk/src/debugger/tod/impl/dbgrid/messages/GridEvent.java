@@ -3,7 +3,11 @@
  */
 package tod.impl.dbgrid.messages;
 
+import tod.core.database.event.ILogEvent;
+import tod.impl.common.event.BehaviorCallEvent;
+import tod.impl.common.event.Event;
 import tod.impl.dbgrid.DebuggerGridConfig;
+import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.StdIndexSet;
 import tod.impl.dbgrid.queries.BehaviorCondition;
@@ -105,6 +109,26 @@ public abstract class GridEvent extends GridMessage
 		theCount += DebuggerGridConfig.EVENT_TIMESTAMP_BITS;
 		
 		return theCount;
+	}
+	
+	/**
+	 * Transforms this event into a {@link ILogEvent}
+	 */
+	public abstract ILogEvent toLogEvent(GridLogBrowser aBrowser);
+	
+	/**
+	 * Initializes common event fields. Subclasses can use this method in the
+	 * implementation of {@link #toLogEvent(GridLogBrowser)}
+	 */
+	protected void initEvent(GridLogBrowser aBrowser, Event aEvent)
+	{
+		aEvent.setHost(aBrowser.getHost(getHost()));
+		aEvent.setThread(aBrowser.getThread(getHost(), getThread()));
+		aEvent.setTimestamp(getTimestamp());
+		aEvent.setDepth(getDepth());
+		aEvent.setOperationBytecodeIndex(getOperationBytecodeIndex());
+		
+		aEvent.setParent((BehaviorCallEvent) aBrowser.getEvent(getHost(), getThread(), getParentTimestamp()));
 	}
 	
 	/**

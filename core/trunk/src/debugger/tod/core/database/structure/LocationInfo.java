@@ -3,27 +3,26 @@
  */
 package tod.core.database.structure;
 
+import java.io.Serializable;
+
 import tod.core.database.browser.ILocationsRepository;
 
 /**
  * Base class for aggregation of location information.
  * @author gpothier
  */
-public abstract class LocationInfo implements ILocationInfo
+public abstract class LocationInfo implements ILocationInfo, Serializable
 {
-	private final ILocationsRepository itsTrace;
 	private final int itsId;
 	private String itsName;
 	
-	public LocationInfo(ILocationsRepository aTrace, int aId)
+	public LocationInfo(int aId)
 	{
-		itsTrace = aTrace;
 		itsId = aId;
 	}
 
-	public LocationInfo(ILocationsRepository aTrace, int aId, String aName)
+	public LocationInfo(int aId, String aName)
 	{
-		itsTrace = aTrace;
 		itsId = aId;
 		itsName = aName;
 	}
@@ -33,11 +32,6 @@ public abstract class LocationInfo implements ILocationInfo
 		return itsId;
 	}
 	
-	public ILocationsRepository getTrace()
-	{
-		return itsTrace;
-	}
-
 	public String getName()
 	{
 		return itsName;

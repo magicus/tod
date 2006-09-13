@@ -17,24 +17,23 @@ public class ClassInfo extends TypeInfo implements IClassInfo
 	private Map<String, IBehaviorInfo> itsBehaviorsMap = new HashMap<String, IBehaviorInfo>();
 	
 
-	public ClassInfo(ILocationsRepository aTrace, int aId)
+	public ClassInfo(int aId)
 	{
-		super(aTrace, aId);
+		super(aId);
 	}
 
-	public ClassInfo(ILocationsRepository aTrace, int aId, String aName)
+	public ClassInfo(int aId, String aName)
 	{
-		this (aTrace, aId, aName, null, null);
+		this (aId, aName, null, null);
 	}
 	
 	public ClassInfo(
-			ILocationsRepository aTrace,
 			int aId, 
 			String aName, 
 			ClassInfo aSupertype,
 			ClassInfo[] aInterfaces)
 	{
-		super(aTrace, aId, aName);
+		super(aId, aName);
 		
 		itsSupertype = aSupertype;
 		itsInterfaces = aInterfaces;
@@ -132,5 +131,11 @@ public class ClassInfo extends TypeInfo implements IClassInfo
 		}
 		
 		return theBuilder.toString();
+	}
+	
+	@Override
+	public String toString()
+	{
+		return "Class ("+getId()+", "+getName()+")";
 	}
 }

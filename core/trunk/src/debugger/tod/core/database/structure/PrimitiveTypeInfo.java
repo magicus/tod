@@ -9,9 +9,9 @@ public class PrimitiveTypeInfo extends TypeInfo implements IPrimitiveTypeInfo
 {
 	private final int itsSize;
 
-	public PrimitiveTypeInfo(ILocationsRepository aTrace, String aName, int aSize)
+	public PrimitiveTypeInfo(String aName, int aSize)
 	{
-		super(aTrace, -1, aName);
+		super(-1, aName);
 		itsSize = aSize;
 	}
 

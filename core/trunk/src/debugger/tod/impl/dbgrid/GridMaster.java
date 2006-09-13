@@ -8,6 +8,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
@@ -16,6 +17,7 @@ import java.util.TimerTask;
 import tod.core.ILogCollector;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.HostInfo;
+import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
 import tod.impl.common.EventCollector;
 import tod.impl.dbgrid.aggregator.QueryAggregator;
@@ -184,7 +186,23 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	{
 		itsDispatcher.flush();
 	}
+
+	/**
+	 * Returns the number of events received by the collectors.
+	 * @return
+	 */
+	private long getCollectorEventsCount()
+	{
+		long theCount = 0;
+		for (GridEventCollector theCollector : itsCollectors.values())
+		{
+			theCount += theCollector.getEventsCount();
+		}
+		
+		return theCount;
+	}
 	
+
 	public IThreadInfo getThread(int aHostId, long aJVMThreadId)
 	{
 		GridEventCollector theCollector = itsCollectors.get(aHostId);
@@ -196,12 +214,26 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		List<IThreadInfo> theThreads = new ArrayList<IThreadInfo>();
 		for (GridEventCollector theCollector : itsCollectors.values())
 		{
-			Utils.fillCollection(theThreads, theCollector.getThreads());
+			for (IThreadInfo theThread : theCollector.getThreads()) 
+			{
+				if (theThread != null) theThreads.add (theThread);
+			}
 		}
 		
 		return theThreads;
 	}
 	
+	public List<IHostInfo> getHosts()
+	{
+		List<IHostInfo> theHosts = new ArrayList<IHostInfo>();
+		for (GridEventCollector theCollector : itsCollectors.values())
+		{
+			theHosts.add(theCollector.getHost());
+		}
+		
+		return theHosts;
+	}
+
 	public RIQueryAggregator createAggregator(EventCondition aCondition) throws RemoteException
 	{
 		return new QueryAggregator(this, aCondition);

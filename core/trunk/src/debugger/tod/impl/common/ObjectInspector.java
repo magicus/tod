@@ -71,7 +71,7 @@ public class ObjectInspector implements IObjectInspector
 				IInstantiationEvent theEvent = (IInstantiationEvent) theBrowser.next();
 				itsType = theEvent.getType();
 			}
-			else itsType = new ClassInfo(null, -1, "Unknown"); 
+			else itsType = new ClassInfo(-1, "Unknown"); 
 		}
 		return itsType;
 	}

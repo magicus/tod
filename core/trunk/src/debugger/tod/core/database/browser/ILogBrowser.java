@@ -58,6 +58,13 @@ public interface ILogBrowser
 	public Iterable<IThreadInfo> getThreads();
 	
 	/**
+	 * Returns all registered hosts.
+	 * The list can be indexed by host id, which also means that the first element
+	 * (index 0) is null.
+	 */
+	public Iterable<IHostInfo> getHosts();
+	
+	/**
 	 * Creates a browser that only reports events that pass a specific
 	 * filter.
 	 */

@@ -8,18 +8,68 @@ import java.util.List;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.event.ILogEvent;
+import tod.impl.dbgrid.DebuggerGridConfig;
+import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.RIGridMaster;
+import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
+import zz.utils.BufferedIterator;
 
-public class GridEventBrowser implements IEventBrowser
+public class GridEventBrowser extends BufferedIterator<ILogEvent[], ILogEvent>
+implements IEventBrowser
 {
+	private final GridLogBrowser itsBrowser;
 	private RIQueryAggregator itsAggregator;
 
-	public GridEventBrowser(RIGridMaster aMaster, EventCondition aCondition) throws RemoteException
+	public GridEventBrowser(GridLogBrowser aBrowser, EventCondition aCondition) throws RemoteException
 	{
-		itsAggregator = aMaster.createAggregator(aCondition);
+		itsBrowser = aBrowser;
+		itsAggregator = itsBrowser.getMaster().createAggregator(aCondition);
+		reset();
+	}
+	
+	
+	@Override
+	protected ILogEvent[] fetchNextBuffer()
+	{
+		try
+		{
+			GridEvent[] theGridEvents = itsAggregator.next(DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
+			if (theGridEvents == null) return null;
+			
+			ILogEvent[] theLogEvents = new ILogEvent[theGridEvents.length];
+			for(int i=0;i<theGridEvents.length;i++) theLogEvents[i] = convert(theGridEvents[i]);
+			return theLogEvents;
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
+
+	@Override
+	protected ILogEvent get(ILogEvent[] aBuffer, int aIndex)
+	{
+		return aBuffer[aIndex];
+	}
+
+
+	@Override
+	protected int getSize(ILogEvent[] aBuffer)
+	{
+		return aBuffer.length;
+	}
+
+
+	/**
+	 * Converts a {@link GridEvent} into an {@link ILogEvent}.
+	 */
+	private ILogEvent convert(GridEvent aEvent)
+	{
+		return aEvent.toLogEvent(itsBrowser);
+	}
+	
 	public int getEventCount()
 	{
 		throw new UnsupportedOperationException();
@@ -40,35 +90,36 @@ public class GridEventBrowser implements IEventBrowser
 		throw new UnsupportedOperationException();
 	}
 
-	public ILogEvent next()
-	{
-		return null;
-	}
-
 	public ILogEvent previous()
 	{
-		return null;
-	}
-
-	public boolean hasNext()
-	{
-		return false;
+		throw new UnsupportedOperationException();
 	}
 
 	public boolean hasPrevious()
 	{
-		return false;
+		throw new UnsupportedOperationException();
 	}
 
 	public void setCursor(ILogEvent aEvent)
 	{
+		throw new UnsupportedOperationException();
 	}
 
 	public void setNextTimestamp(long aTimestamp)
 	{
+		try
+		{
+			itsAggregator.setNextTimestamp(aTimestamp);
+			reset();
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	public void setPreviousTimestamp(long aTimestamp)
 	{
+		throw new UnsupportedOperationException();
 	}
 }

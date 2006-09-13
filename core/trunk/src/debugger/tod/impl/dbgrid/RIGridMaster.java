@@ -7,6 +7,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
+import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
 import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
@@ -51,6 +52,12 @@ public interface RIGridMaster extends Remote
 	 * debugged program.
 	 */
 	public List<IThreadInfo> getThreads() throws RemoteException;
+	
+	/**
+	 * Returns all the hosts registered during the execution of the
+	 * debugged program.
+	 */
+	public List<IHostInfo> getHosts() throws RemoteException;
 	
 	/**
 	 * Returns the number of events stored by the nodes of this master.

@@ -3,13 +3,15 @@
  */
 package tod.core.database.structure;
 
+import java.io.Serializable;
+
 
 /**
  * Aggregates the information a {@link ILogCollector collector}
  * receives about a thread.
  * @author gpothier
  */
-public class ThreadInfo implements IThreadInfo
+public class ThreadInfo implements IThreadInfo, Serializable
 {
 	private IHostInfo itsHost;
 	private int itsId;
@@ -48,4 +50,11 @@ public class ThreadInfo implements IThreadInfo
 	{
 		itsName = aName;
 	}
+	
+	@Override
+	public String toString()
+	{
+		return "Thread ("+getId()+", "+getJVMId()+", "+getName()+")";
+	}
+
 }

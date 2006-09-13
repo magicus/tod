@@ -17,6 +17,7 @@ import tod.impl.dbgrid.dbnode.RIEventIterator;
 import tod.impl.dbgrid.merge.DisjunctionIterator;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
+import zz.utils.BufferedIterator;
 
 /**
  * Aggregates the partial results of a query obtained from the nodes.
@@ -33,6 +34,7 @@ implements RIQueryAggregator
 	{
 		itsMaster = aMaster;
 		itsCondition = aCondition;
+		initIterators(0);
 	}
 	
 	private void initIterators(long aTimestamp) throws RemoteException
@@ -83,56 +85,39 @@ implements RIQueryAggregator
 	 * A real iterator that wraps a {@link RIEventIterator}
 	 * @author gpothier
 	 */
-	private static class EventIterator implements Iterator<GridEvent>
+	private static class EventIterator extends BufferedIterator<GridEvent[], GridEvent>
 	{
 		private RIEventIterator itsIterator;
-		private GridEvent[] itsBuffer;
-		private int itsIndex;
-		private GridEvent itsNext; 
 
 		public EventIterator(RIEventIterator aIterator)
 		{
 			itsIterator = aIterator;
-			fetchBuffer();
-			fetchNext();
+			reset();
 		}
 		
-		private void fetchBuffer()
+		@Override
+		protected GridEvent[] fetchNextBuffer()
 		{
 			try
 			{
-				itsBuffer = itsIterator.next(DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
-				itsIndex = 0;
+				return itsIterator.next(DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
 			}
 			catch (RemoteException e)
 			{
 				throw new RuntimeException(e);
 			}
 		}
-		
-		private void fetchNext()
+
+		@Override
+		protected int getSize(GridEvent[] aBuffer)
 		{
-			if (itsIndex == itsBuffer.length) fetchBuffer();
-			if (itsBuffer != null) itsNext = itsBuffer[itsIndex++];
-			else itsNext = null;
+			return aBuffer.length;
 		}
-		
-		public boolean hasNext()
+
+		@Override
+		protected GridEvent get(GridEvent[] aBuffer, int aIndex)
 		{
-			return itsBuffer != null;
-		}
-		
-		public GridEvent next()
-		{
-			if (! hasNext()) throw new NoSuchElementException();
-			GridEvent theResult = itsNext;
-			fetchNext();
-			return theResult;
-		}
-		
-		public void remove()
-		{
-			throw new UnsupportedOperationException();
+			return aBuffer[aIndex];
 		}
 	}
 	

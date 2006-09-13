@@ -30,6 +30,11 @@ public class GridEventCollector extends EventCollector
 	private final EventDispatcher itsDispatcher;
 	
 	/**
+	 * Number of events received by this collector
+	 */
+	private long itsEventsCount;
+	
+	/**
 	 * We keep an instance of each kind of event.
 	 * As events are received their attributes are copied to the appropriate
 	 * instance, and the instance is sent to the dispatcher, which
@@ -62,8 +67,17 @@ public class GridEventCollector extends EventCollector
 	private void dispatch(GridEvent aEvent)
 	{
 		itsDispatcher.dispatchEvent(aEvent);
+		itsEventsCount++;
 	}
 	
+	/**
+	 * Returns the number of events received by this collector.
+	 */
+	public long getEventsCount()
+	{
+		return itsEventsCount;
+	}
+
 	@Override
 	protected void exception(
 			int aThreadId,

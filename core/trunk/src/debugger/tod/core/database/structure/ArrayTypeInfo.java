@@ -10,9 +10,9 @@ public class ArrayTypeInfo extends TypeInfo implements IArrayTypeInfo
 	private ITypeInfo itsElementType;
 	private int itsDimensions;
 	
-	public ArrayTypeInfo(ILocationsRepository aTrace, ITypeInfo aElementType, int aDimensions)
+	public ArrayTypeInfo(ITypeInfo aElementType, int aDimensions)
 	{
-		super(aTrace, -1);
+		super(-1);
 		itsElementType = aElementType;
 		itsDimensions = aDimensions;
 	}

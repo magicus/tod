@@ -25,7 +25,6 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 	private ILocationRegistrer.LocalVariableInfo[] itsLocalVariableTable;
 
 	public BehaviorInfo(
-			ILocationsRepository aTrace, 
 			BehaviourKind aBehaviourKind, 
 			int aId, 
 			ClassInfo aType, 
@@ -35,7 +34,7 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 			ILocationRegistrer.LineNumberInfo[] aLineNumberTable,
 			ILocationRegistrer.LocalVariableInfo[] aLocalVariableTable)
 	{
-		super(aTrace, aId, aType, aName);
+		super(aId, aType, aName);
 		itsArgumentTypes = aArgumentTypes;
 		itsReturnType = aReturnType;
 		itsBehaviourKind = aBehaviourKind;
@@ -119,4 +118,12 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
     	return getBehaviourKind() == BehaviourKind.STATIC_BLOCK
     		|| getBehaviourKind() == BehaviourKind.STATIC_METHOD;
     }
+    
+	
+	@Override
+	public String toString()
+	{
+		return "Behavior ("+getId()+", "+getName()+") of "+getType();
+	}
+
 }

@@ -102,8 +102,8 @@ public class DBNodeProxy
 //				itsSentMessagesCount));
 		try
 		{
+			itsOutputStream.writeByte(DatabaseNode.CMD_PUSH_EVENTS);
 			itsOutputStream.writeInt(itsMessagesCount);
-			itsOutputStream.writeInt(0xabcdef);
 			
 			NativeStream.i2b(itsBuffer, itsByteBuffer);
 			

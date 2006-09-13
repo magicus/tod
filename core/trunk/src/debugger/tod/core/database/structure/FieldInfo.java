@@ -13,10 +13,16 @@ import tod.core.database.browser.ILocationsRepository;
 public class FieldInfo extends MemberInfo implements IFieldInfo
 {
 
-	public FieldInfo(ILocationsRepository aTrace, int aId, IClassInfo aTypeInfo, String aName)
+	public FieldInfo(int aId, IClassInfo aTypeInfo, String aName)
 	{
-		super(aTrace, aId, aTypeInfo, aName);
-		
+		super(aId, aTypeInfo, aName);
+	}
+
+	
+	@Override
+	public String toString()
+	{
+		return "Field ("+getId()+", "+getName()+")";
 	}
 
 }

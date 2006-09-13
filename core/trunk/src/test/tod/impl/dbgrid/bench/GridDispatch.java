@@ -4,6 +4,7 @@
 package tod.impl.dbgrid.bench;
 
 import tod.impl.dbgrid.EventGenerator;
+import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.bench.BenchBase.BenchResults;
 import tod.impl.dbgrid.dispatcher.EventDispatcher;
@@ -18,7 +19,7 @@ public class GridDispatch
 		theExpectedNodes = Integer.parseInt(args[0]);
 		theEventsCount = Integer.parseInt(args[1]);
 		
-		final GridMaster theMaster = BenchBase.setupMaster(theExpectedNodes);
+		final GridMaster theMaster = Fixtures.setupMaster(theExpectedNodes);
 		final EventDispatcher theDispatcher = theMaster.getDispatcher();
 		final EventGenerator theGenerator = BenchDatabaseNode.createGenerator();
 

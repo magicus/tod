@@ -3,6 +3,7 @@
  */
 package tod.impl.dbgrid.queries;
 
+import java.io.Serializable;
 import java.util.Iterator;
 
 import tod.core.database.browser.IEventFilter;
@@ -17,7 +18,7 @@ import zz.utils.AbstractFilteredIterator;
  * @author gpothier
  */
 public abstract class EventCondition
-implements IEventFilter
+implements IEventFilter, Serializable
 {
 	/**
 	 * Indicates if the specified event passes the condition.

@@ -14,9 +14,9 @@ public abstract class MemberInfo extends LocationInfo implements IMemberInfo
 {
 	private IClassInfo itsType;
 	
-	public MemberInfo(ILocationsRepository aTrace, int aId, IClassInfo aTypeInfo, String aName)
+	public MemberInfo(int aId, IClassInfo aTypeInfo, String aName)
 	{
-		super(aTrace, aId, aName);
+		super(aId, aName);
 		itsType = aTypeInfo;
 	}
 	
