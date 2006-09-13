@@ -46,7 +46,7 @@ public class TODPluginUtils
 	public static ILocationInfo getLocationInfo (ISession aSession, IJavaElement aElement)
 	{
 		ILogBrowser theEventTrace = aSession.getLogBrowser();
-		ILocationsRepository theLocationTrace = theEventTrace.getLocationTrace();
+		ILocationsRepository theLocationTrace = theEventTrace.getLocationsRepository();
 		
 		if (aElement instanceof IMember)
 		{
