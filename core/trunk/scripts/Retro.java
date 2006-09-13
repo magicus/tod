@@ -33,6 +33,10 @@ public class Retro
 		{
 			launch("tod.impl.dbgrid.bench.GridReplay", new String[] {args[1]});
 		}
+		else if ("query".equals(args[0]))
+		{
+			launch("tod.impl.dbgrid.bench.GridQuery", new String[] {args[1]});
+		}
 		else if ("nodestore".equals(args[0]))
 		{
 			launch("tod.impl.dbgrid.bench.BenchDatabaseNode", new String[] {});
