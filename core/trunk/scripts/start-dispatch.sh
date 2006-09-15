@@ -2,4 +2,4 @@
 
 source common
 
-./launch.sh Retro dispatch $1 $2
+./launch.sh dispatch $1 $2

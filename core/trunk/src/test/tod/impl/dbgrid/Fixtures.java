@@ -313,7 +313,7 @@ public class Fixtures
 	 * Standard setup of a grid master that waits for a number
 	 * of database nodes to connect
 	 */
-	public static GridMaster setupMaster(String[] args) throws Exception
+	public static GridMaster setupMaster(Registry aRegistry, String[] args) throws Exception
 	{
 		int theExpectedNodes = 0;
 		if (args.length > 0)
@@ -321,14 +321,14 @@ public class Fixtures
 			theExpectedNodes = Integer.parseInt(args[0]);
 		}
 		
-		return setupMaster(theExpectedNodes);
+		return setupMaster(aRegistry, theExpectedNodes);
 	}
 		
 	/**
 	 * Standard setup of a grid master that waits for a number
 	 * of database nodes to connect
 	 */
-	public static GridMaster setupMaster(int aExpectedNodes) throws Exception
+	public static GridMaster setupMaster(Registry aRegistry, int aExpectedNodes) throws Exception
 	{
 		System.out.println("Expecting "+aExpectedNodes+" nodes");
 		
@@ -336,9 +336,7 @@ public class Fixtures
 		new ASMLocationPool(theLocationRegistrer, new File(GeneralConfig.LOCATIONS_FILE));
 		GridMaster theMaster = new GridMaster(theLocationRegistrer);
 		
-		Registry theRegistry = LocateRegistry.createRegistry(1099);
-		
-		theRegistry.bind(GridMaster.RMI_ID, theMaster);
+		aRegistry.bind(GridMaster.RMI_ID, theMaster);
 		
 		System.out.println("Bound master");
 

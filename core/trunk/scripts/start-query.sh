@@ -2,4 +2,4 @@
 
 source common
 
-./launch.sh Retro query $1
+./launch.sh query $1

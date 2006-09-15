@@ -15,12 +15,17 @@ import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
 import zz.utils.BufferedIterator;
 
+/**
+ * Implementation of {@link IEventBrowser} that serves as the client-side
+ * of a {@link QueryAggregator}.
+ * @author gpothier
+ */
 public class GridEventBrowser extends BufferedIterator<ILogEvent[], ILogEvent>
 implements IEventBrowser
 {
 	private final GridLogBrowser itsBrowser;
 	private RIQueryAggregator itsAggregator;
-
+	
 	public GridEventBrowser(GridLogBrowser aBrowser, EventCondition aCondition) throws RemoteException
 	{
 		itsBrowser = aBrowser;
@@ -70,19 +75,26 @@ implements IEventBrowser
 		return aEvent.toLogEvent(itsBrowser);
 	}
 	
-	public int getEventCount()
+	public long getEventCount()
 	{
-		throw new UnsupportedOperationException();
+		return getEventCount(0, Long.MAX_VALUE);
 	}
 
-	public int getEventCount(long aT1, long aT2)
+	public long getEventCount(long aT1, long aT2)
 	{
-		throw new UnsupportedOperationException();
+		return getEventCounts(aT1, aT2, 1)[0];
 	}
 
-	public int[] getEventCounts(long aT1, long aT2, int aSlotsCount)
+	public long[] getEventCounts(long aT1, long aT2, int aSlotsCount)
 	{
-		throw new UnsupportedOperationException();
+		try
+		{
+			return itsAggregator.getEventCounts(aT1, aT2, aSlotsCount);
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	public List<ILogEvent> getEvents(long aT1, long aT2)

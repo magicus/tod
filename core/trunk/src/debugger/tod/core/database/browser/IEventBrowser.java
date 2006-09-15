@@ -22,12 +22,12 @@ public interface IEventBrowser
 	 * Returns the number of events that can be returned by this
 	 * browser.
 	 */
-	public int getEventCount ();
+	public long getEventCount ();
 	
 	/**
 	 * Returns the number of events that occured between the specified timestamps
 	 */
-	public int getEventCount(long aT1, long aT2);
+	public long getEventCount(long aT1, long aT2);
 
 	/**
 	 * Returns an array of event counts. The timestamp range
@@ -38,7 +38,7 @@ public interface IEventBrowser
 	 * @param aT2 End of timestamp range
 	 * @param aSlotsCount Number of slots to consider. 
 	 */
-	public int[] getEventCounts(long aT1, long aT2, int aSlotsCount);
+	public long[] getEventCounts(long aT1, long aT2, int aSlotsCount);
 	
 	/**
 	 * Returns a list of all the events that occured between the specified timestamps

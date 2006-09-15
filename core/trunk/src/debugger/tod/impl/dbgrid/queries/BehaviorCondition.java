@@ -26,7 +26,7 @@ public class BehaviorCondition extends SimpleCondition
 	}
 	
 	@Override
-	protected Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
+	public Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
 		Iterator<RoleIndexSet.RoleTuple> theTupleIterator = aIndexes.behaviorIndex.getIndex(itsBehaviorId).getTupleIterator(aTimestamp);
 		switch (itsRole)

@@ -25,6 +25,7 @@ import tod.core.config.GeneralConfig;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.RIGridMaster;
+import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.GridMessage;
@@ -136,9 +137,28 @@ implements RIDatabaseNode
 		return aCondition.createIterator(itsEventList, getIndexes(), aTimestamp);
 	}
 
-	public RIEventIterator getIterator(EventCondition aCondition) throws RemoteException
+	public RINodeEventIterator getIterator(EventCondition aCondition) throws RemoteException
 	{
-		return new EventIterator(this, aCondition);
+		return new NodeEventIterator(this, aCondition);
+	}
+
+	public long[] getEventCounts(EventCondition aCondition, long aT1, long aT2, int aSlotsCount) throws RemoteException
+	{
+		long[] theCounts = new long[aSlotsCount];
+		
+		Iterator<StdTuple> theIterator = aCondition.createTupleIterator(getIndexes(), aT1);
+		while (theIterator.hasNext())
+		{
+			StdTuple theTuple = theIterator.next();
+			long theTimestamp = theTuple.getTimestamp();
+			if (theTimestamp < aT1) continue;
+			if (theTimestamp >= aT2) break;
+
+			int theSlot = (int)(((theTimestamp - aT1) * aSlotsCount) / (aT2 - aT1));
+			theCounts[theSlot]++;
+		}
+		
+		return theCounts;
 	}
 
 	/**

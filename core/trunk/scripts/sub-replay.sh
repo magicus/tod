@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 NODES=$1
 rm master-host

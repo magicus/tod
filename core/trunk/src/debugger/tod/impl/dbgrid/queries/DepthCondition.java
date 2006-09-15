@@ -23,7 +23,7 @@ public class DepthCondition extends SimpleCondition
 	}
 
 	@Override
-	protected Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
+	public Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
 		return aIndexes.depthIndex.getIndex(itsDepth).getTupleIterator(aTimestamp);
 	}

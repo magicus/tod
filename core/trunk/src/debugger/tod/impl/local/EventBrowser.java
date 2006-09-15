@@ -105,14 +105,14 @@ public class EventBrowser implements IEventBrowser
 		itsIndex = aPosition;
 	}
 	
-	public int getEventCount()
+	public long getEventCount()
 	{
 		return itsEvents.size();
 	}
 
-	public int getEventCount(long aT1, long aT2)
+	public long getEventCount(long aT1, long aT2)
 	{
-		int theCount = 0;
+		long theCount = 0;
 		
 		for (ILogEvent theEvent : itsEvents)
 		{
@@ -125,9 +125,9 @@ public class EventBrowser implements IEventBrowser
 		return theCount;
 	}
 
-	public int[] getEventCounts(long aT1, long aT2, int aSlotsCount)
+	public long[] getEventCounts(long aT1, long aT2, int aSlotsCount)
 	{
-		int[] theCounts = new int[aSlotsCount];
+		long[] theCounts = new long[aSlotsCount];
 		
 		for (ILogEvent theEvent : itsEvents)
 		{

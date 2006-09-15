@@ -23,7 +23,7 @@ public class BytecodeLocationCondition extends SimpleCondition
 	}
 
 	@Override
-	protected Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
+	public Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
 		return aIndexes.bytecodeLocationIndex.getIndex(itsBytecodeLocation).getTupleIterator(aTimestamp);
 	}

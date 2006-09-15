@@ -23,7 +23,7 @@ public class FieldCondition extends SimpleCondition
 	}
 
 	@Override
-	protected Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
+	public Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
 		return aIndexes.fieldIndex.getIndex(itsFieldId).getTupleIterator(aTimestamp);
 	}

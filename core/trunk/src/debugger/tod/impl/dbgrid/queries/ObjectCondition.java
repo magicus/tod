@@ -28,7 +28,7 @@ public class ObjectCondition extends SimpleCondition
 	}
 
 	@Override
-	protected Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
+	public Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
 		Iterator<RoleIndexSet.RoleTuple> theTupleIterator = aIndexes.objectIndex.getIndex(itsObjectId).getTupleIterator(aTimestamp);
 		if (itsRole == RoleIndexSet.ROLE_OBJECT_ANYARG)

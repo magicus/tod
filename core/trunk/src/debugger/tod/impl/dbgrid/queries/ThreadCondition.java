@@ -23,7 +23,7 @@ public class ThreadCondition extends SimpleCondition
 	}
 
 	@Override
-	protected Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
+	public Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
 		return aIndexes.threadIndex.getIndex(itsThreadId).getTupleIterator(aTimestamp);
 	}

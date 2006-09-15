@@ -4,6 +4,7 @@
 package tod.impl.dbgrid.bench;
 
 import java.io.File;
+import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
@@ -14,12 +15,12 @@ import tod.core.config.GeneralConfig;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILocationsRepository;
-import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
+import tod.core.database.structure.ObjectId;
 import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.GridMaster;
@@ -31,16 +32,34 @@ public class GridQuery
 {
 	public static void main(String[] args) throws Exception
 	{
+		Registry theRegistry = LocateRegistry.createRegistry(1099);
+		
 		String theFileName = GeneralConfig.STORE_EVENTS_FILE;
-		File theFile = new File(theFileName);
+		final File theFile = new File(theFileName);
 		
-		GridMaster theMaster = Fixtures.setupMaster(args);
-		ILogCollector theCollector = theMaster.createCollector(1);
+		final GridMaster theMaster = Fixtures.setupMaster(theRegistry, args);
+		final ILogCollector theCollector = theMaster.createCollector(1);
 		
-		long theEventsCount = Fixtures.replay(theFile, theMaster, theCollector);
-		System.out.println("Replayed "+theEventsCount+" events");
+		final long[] theEventsCount = new long[1];
+		BenchResults theReplayTime = BenchBase.benchmark(new Runnable()
+		{
+			public void run()
+			{
+				try
+				{
+					theEventsCount[0] = Fixtures.replay(theFile, theMaster, theCollector);
+				}
+				catch (IOException e)
+				{
+					throw new RuntimeException(e);
+				}
+			}
+		});
+		System.out.println(theReplayTime);
+		float theEpS = 1000f*theEventsCount[0]/theReplayTime.totalTime;
+		System.out.println("Replayed "+theEventsCount[0]+" events: "+theEpS+"ev/s");
 
-		Registry theRegistry = LocateRegistry.getRegistry();
+		System.out.println("Found registry");
 		RIGridMaster theRemoteMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
 		
 		GridLogBrowser theBrowser = new GridLogBrowser(theRemoteMaster);
@@ -61,31 +80,24 @@ public class GridQuery
 		ICompoundFilter theFilter = theBrowser.createIntersectionFilter(
 				theBrowser.createHostFilter(theHosts.get(1)),
 				theBrowser.createThreadFilter(theThreads.get(0)),
-				theBrowser.createBehaviorCallFilter(theBehaviors.get(4))
+				theBrowser.createBehaviorCallFilter(theBehaviors.get(8)),
+				theBrowser.createArgumentFilter(new ObjectId.ObjectUID(32))
 				);
 		
-		System.out.println("Filter: "+theFilter);
+//		System.out.println("Filter: "+theFilter);
 		
 		final IEventBrowser theEventBrowser = theBrowser.createBrowser(theFilter);
 		
-		BenchResults theResults = BenchBase.benchmark(new Runnable()
+		BenchResults theQueryTime = BenchBase.benchmark(new Runnable()
 		{
 			public void run()
 			{
-				long theCount = 0;
-				while (theEventBrowser.hasNext())
-				{
-					ILogEvent theEvent = theEventBrowser.next();
-//					System.out.println(theEvent);
-					theCount++;
-					if (theCount % 1000 == 0) System.out.println(theCount);
-				}
-				
+				long theCount = theEventBrowser.getEventCount();
 				System.out.println("Event count: "+theCount);
 			}
 		});
 		
-		System.out.println(theResults);
+		System.out.println(theQueryTime);
 		System.exit(0);
 	}
 	

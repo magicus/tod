@@ -18,7 +18,7 @@ public class Conjunction extends CompoundCondition
 {
 
 	@Override
-	protected Iterator<StdTuple> createTupleIterator(
+	public Iterator<StdTuple> createTupleIterator(
 			Indexes aIndexes,
 			long aTimestamp)
 	{

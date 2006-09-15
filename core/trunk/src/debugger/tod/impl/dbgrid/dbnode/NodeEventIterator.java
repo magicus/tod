@@ -16,15 +16,15 @@ import tod.impl.dbgrid.queries.EventCondition;
  * Iterator for events of a particular query for a given node.
  * @author gpothier
  */
-public class EventIterator extends UnicastRemoteObject 
-implements RIEventIterator
+public class NodeEventIterator extends UnicastRemoteObject 
+implements RINodeEventIterator
 {
 	private DatabaseNode itsNode;
 	private EventCondition itsCondition;
 	
 	private Iterator<GridEvent> itsIterator;
 	
-	public EventIterator(DatabaseNode aNode, EventCondition aCondition) throws RemoteException
+	public NodeEventIterator(DatabaseNode aNode, EventCondition aCondition) throws RemoteException
 	{
 		itsNode = aNode;
 		itsCondition = aCondition;

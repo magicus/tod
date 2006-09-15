@@ -280,12 +280,13 @@ public class EventMural extends SVGGraphicContainer
 			long aT2,
 			Collection<BrowserData> aBrowserData)
 	{
-		int[][] theValues = new int[aBrowserData.size()][];
+		long[][] theValues = new long[aBrowserData.size()][];
 		Color[] theColors = new Color[aBrowserData.size()];
 		
 		int i = 0;
 		for (BrowserData theBrowserData : aBrowserData)
 		{
+			// TODO: check conversion
 			theValues[i] = theBrowserData.getBrowser().getEventCounts(aT1, aT2, aBounds.width);
 			theColors[i] = theBrowserData.getColor();
 			i++;
@@ -294,7 +295,7 @@ public class EventMural extends SVGGraphicContainer
 		paintMural(aGraphics, aBounds, theValues, theColors);
 	}
 	
-	public static void paintMural (Graphics2D aGraphics, Rectangle aBounds, int[][] aValues, Color[] aColors)
+	public static void paintMural (Graphics2D aGraphics, Rectangle aBounds, long[][] aValues, Color[] aColors)
 	{
 		int theH = aBounds.height;
 		int theY = aBounds.y;
@@ -309,7 +310,7 @@ public class EventMural extends SVGGraphicContainer
 			
 			for (int j = 0; j < aValues.length; j++)
 			{
-				int theValue = aValues[j][i];
+				long theValue = aValues[j][i];
 				Color theColor = aColors[j];
 				
 				t += theValue;

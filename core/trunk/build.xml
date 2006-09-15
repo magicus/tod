@@ -89,12 +89,12 @@
 			base="${classes-debugger.dir}" 
 			classpathref="debugger.classpath">
 			
-			<include name="tod.impl.dbgrid.GridMaster"/>
-			<include name="tod.impl.dbgrid.aggregator.QueryAggregator"/>
-			<include name="tod.impl.dbgrid.dbnode.DatabaseNode"/>
-			<include name="tod.impl.dbgrid.dbnode.EventIterator"/>
-			<include name="tod.impl.dbgrid.GridLogBrowser"/>
-			<include name="tod.utils.remote.RemoteLocationsRepository"/>
+			<include name="tod/impl/dbgrid/GridMaster.class"/>
+			<include name="tod/impl/dbgrid/aggregator/QueryAggregator.class"/>
+			<include name="tod/impl/dbgrid/dbnode/DatabaseNode.class"/>
+			<include name="tod/impl/dbgrid/dbnode/NodeEventIterator.class"/>
+			<include name="tod/impl/dbgrid/GridLogBrowser.class"/>
+			<include name="tod/utils/remote/RemoteLocationsRepository.class"/>
 			
 		</rmic>
 	</target>
@@ -110,6 +110,8 @@
     <target name="deploy" depends="jar" >
         <exec executable="${scripts.dir}/deploy.sh" failonerror="true" output="rsync.log">
         	<arg value="${build.dir}"/>
+        	<arg value="${lib.dir}"/>
+        	<arg value="${scripts.dir}"/>
     	</exec>
     </target>
 	

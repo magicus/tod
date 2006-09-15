@@ -257,6 +257,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	
 	public RILocationsRepository getLocationsRepository() 
 	{
+		System.out.println("GridMaster.getLocationsRepository()");
 		return itsRemoteLocationsRepository;
 	}
 

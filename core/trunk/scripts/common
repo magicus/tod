@@ -1,14 +1,18 @@
 #! /bin/sh
 
+
 export NATIVE=..
 
-export CLASSPATH=.:../lib/asm-2.1.jar:../lib/asm-commons-2.1.jar\
-:../lib/backport-util-concurrent.jar:../lib/javassist.jar\
-:../lib/retrotranslator-runtime-1.0.8.jar:../lib/retrotranslator-transformer-1.0.8.jar\
-:../build/tod-agent.jar:../build/tod-debugger.jar:../build/tod-test.jar\
-:../lib/zz.utils.jar
+[ -n "$LIB_DIR" ] || export LIB_DIR=../lib
+[ -n "$BUILD_DIR" ] || export BUILD_DIR=../build
 
+export CLASSPATH=.:$LIB_DIR/asm-2.1.jar:$LIB_DIR/asm-commons-2.1.jar\
+:$LIB_DIR/backport-util-concurrent.jar:$LIB_DIR/javassist.jar\
+:$LIB_DIR/retrotranslator-runtime-1.0.8.jar:$LIB_DIR/retrotranslator-transformer-1.0.8.jar\
+:$BUILD_DIR/tod-agent.jar:$BUILD_DIR/tod-debugger.jar:$BUILD_DIR/tod-test.jar\
+:$LIB_DIR/zz.utils.jar
+
+[ -n "$MASTER_HOST" ] || export MASTER_HOST=syntagma
 export DATA_DIR=$LOCAL_STORAGE/tod
-export MASTER_HOST=syntagma
-export EVENTS_FILE=$LOCAL_STORAGE/tod/events-raw.bin
+export EVENTS_FILE=$SHARED_STORAGE/tod/events-raw.bin
 export LOCATIONS_FILE=$SHARED_STORAGE/tod/locations.bin

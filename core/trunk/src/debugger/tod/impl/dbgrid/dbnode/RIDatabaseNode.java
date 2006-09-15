@@ -6,6 +6,7 @@ package tod.impl.dbgrid.dbnode;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+import tod.core.database.browser.IEventBrowser;
 import tod.impl.dbgrid.queries.EventCondition;
 
 /**
@@ -23,5 +24,10 @@ public interface RIDatabaseNode extends Remote
 	/**
 	 * Creates a new event iterator for the given condition.
 	 */
-	public RIEventIterator getIterator(EventCondition aCondition) throws RemoteException;
+	public RINodeEventIterator getIterator(EventCondition aCondition) throws RemoteException;
+	
+	/**
+	 * Semantic matches {@link IEventBrowser#getEventCounts(long, long, int)}
+	 */
+	public long[] getEventCounts(EventCondition aCondition, long aT1, long aT2, int aSlotsCount) throws RemoteException;
 }

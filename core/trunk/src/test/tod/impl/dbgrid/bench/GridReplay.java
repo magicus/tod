@@ -36,10 +36,12 @@ public class GridReplay
 {
 	public static void main(String[] args) throws Exception
 	{
+		Registry theRegistry = LocateRegistry.createRegistry(1099);
+		
 		String theFileName = GeneralConfig.STORE_EVENTS_FILE;
 		File theFile = new File(theFileName);
 		
-		GridMaster theMaster = Fixtures.setupMaster(args);
+		GridMaster theMaster = Fixtures.setupMaster(theRegistry, args);
 		
 		ILogCollector theCollector = theMaster.createCollector(1);
 //		ILogCollector theCollector = new DummyCollector();

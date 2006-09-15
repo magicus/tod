@@ -3,22 +3,29 @@
  */
 package dummy;
 
+import java.util.Random;
+
 public class Dummy
 {
 	public static void main(String[] args)
 	{
 		int j;
+		
+		Object[] theObjects = new Object[100];
+		for(int i=0;i<theObjects.length;i++) theObjects[i] = new Object();
+		
+		Random theRandom = new Random(0);
 		for(int i=0;i<100000;i++)
 		{
 			j = i*2;
-			foo(i, j);
+			foo(theObjects[theRandom.nextInt(theObjects.length)], j);
 			if (i % 100000 == 0) System.out.println(i);
 		}
 	}
 	
-	public static int foo(int a, long b)
+	public static int foo(Object o, long b)
 	{
-		long c = a+b;
+		long c = o.hashCode()+b;
 		return (int)(c/2);
 	}
 }

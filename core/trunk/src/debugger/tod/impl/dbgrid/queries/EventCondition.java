@@ -55,7 +55,7 @@ implements IEventFilter, Serializable
 	 * Creates an iterator over matching events, taking them from the specified
 	 * {@link EventList} and {@link Indexes}.
 	 */
-	protected abstract Iterator<StdTuple> createTupleIterator(
+	public abstract Iterator<StdTuple> createTupleIterator(
 			Indexes aIndexes,
 			long aTimestamp);
 	

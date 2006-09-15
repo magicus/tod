@@ -2,4 +2,4 @@
 
 source common
 
-./launch.sh Retro replay $1
+./launch.sh replay $1

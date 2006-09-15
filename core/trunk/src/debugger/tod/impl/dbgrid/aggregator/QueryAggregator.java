@@ -8,12 +8,12 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.dbnode.RIDatabaseNode;
 import tod.impl.dbgrid.dbnode.RIEventIterator;
+import tod.impl.dbgrid.dbnode.RINodeEventIterator;
 import tod.impl.dbgrid.merge.DisjunctionIterator;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
@@ -41,10 +41,13 @@ implements RIQueryAggregator
 	{
 		List<RIDatabaseNode> theNodes = itsMaster.getNodes();
 		EventIterator[] theIterators = new EventIterator[theNodes.size()];
+		
 		for (int i=0;i<theNodes.size();i++)
 		{
 			RIDatabaseNode theNode = theNodes.get(i);
-			RIEventIterator theIterator = theNode.getIterator(itsCondition);
+			
+			RINodeEventIterator theIterator = theNode.getIterator(itsCondition);
+			
 			theIterator.setNextTimestamp(aTimestamp);
 			theIterators[i] = new EventIterator(theIterator);
 		}
@@ -81,6 +84,36 @@ implements RIQueryAggregator
 		throw new UnsupportedOperationException();
 	}
 	
+	public long[] getEventCounts(final long aT1, final long aT2, final int aSlotsCount) throws RemoteException
+	{
+		long[] theCounts = new long[aSlotsCount];
+
+		// Sum results from all nodes.
+		List<RIDatabaseNode> theNodes = itsMaster.getNodes();
+		List<Future<long[]>> theFutures = new ArrayList<Future<long[]>>();
+		
+		for (RIDatabaseNode theNode : theNodes)
+		{
+			final RIDatabaseNode theNode0 = theNode;
+			theFutures.add (new Future<long[]>()
+			{
+				@Override
+				protected long[] fetch() throws Throwable
+				{
+					return theNode0.getEventCounts(itsCondition, aT1, aT2, aSlotsCount);
+				}
+			});
+		}
+		
+		for (Future<long[]> theFuture : theFutures)
+		{
+			long[] theNodeCounts = theFuture.get();
+			for(int i=0;i<aSlotsCount;i++) theCounts[i] += theNodeCounts[i];
+		}
+		
+		return theCounts;
+	}
+
 	/**
 	 * A real iterator that wraps a {@link RIEventIterator}
 	 * @author gpothier
@@ -144,6 +177,55 @@ implements RIQueryAggregator
 			return aItem1.getHost() == aItem2.getHost()
 				&& aItem1.getThread() == aItem2.getThread()
 				&& aItem1.getTimestamp() == aItem2.getTimestamp();
+		}
+	}
+	
+	private static abstract class Future<T> extends Thread
+	{
+		private T itsResult;
+		private Throwable itsException;
+		private boolean itsDone = false;
+		
+		public Future()
+		{
+			start();
+		}
+
+		@Override
+		public synchronized void run()
+		{
+			try
+			{
+				itsResult = fetch();
+			}
+			catch (Throwable e)
+			{
+				itsException = e;
+			}
+			itsDone = true;
+			notifyAll();
+		}
+		
+		protected abstract T fetch() throws Throwable;
+		
+		public synchronized T get()
+		{
+			try
+			{
+				while (! itsDone) wait();
+				
+				if (itsException != null) throw new RuntimeException(itsException);
+				return itsResult;
+			}
+			catch (InterruptedException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		
+		public boolean isDone()
+		{
+			return itsDone;
 		}
 	}
 }

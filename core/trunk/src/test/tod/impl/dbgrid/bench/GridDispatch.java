@@ -3,6 +3,9 @@
  */
 package tod.impl.dbgrid.bench;
 
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+
 import tod.impl.dbgrid.EventGenerator;
 import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.GridMaster;
@@ -14,12 +17,14 @@ public class GridDispatch
 {
 	public static void main(String[] args) throws Exception
 	{
+		Registry theRegistry = LocateRegistry.createRegistry(1099);
+		
 		int theExpectedNodes;
 		int theEventsCount;
 		theExpectedNodes = Integer.parseInt(args[0]);
 		theEventsCount = Integer.parseInt(args[1]);
 		
-		final GridMaster theMaster = Fixtures.setupMaster(theExpectedNodes);
+		final GridMaster theMaster = Fixtures.setupMaster(theRegistry, theExpectedNodes);
 		final EventDispatcher theDispatcher = theMaster.getDispatcher();
 		final EventGenerator theGenerator = BenchDatabaseNode.createGenerator();
 

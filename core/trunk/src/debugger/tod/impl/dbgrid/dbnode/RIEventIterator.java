@@ -6,10 +6,11 @@ package tod.impl.dbgrid.dbnode;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+import tod.core.database.browser.IEventBrowser;
 import tod.impl.dbgrid.messages.GridEvent;
 
 /**
- * Remote interface for {@link EventIterator}.
+ * Remote interface for {@link NodeEventIterator}.
  * @author gpothier
  */
 public interface RIEventIterator extends Remote
