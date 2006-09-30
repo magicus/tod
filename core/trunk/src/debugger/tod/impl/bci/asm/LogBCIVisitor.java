@@ -23,10 +23,27 @@ import zz.utils.Stack;
 public class LogBCIVisitor extends ClassAdapter implements Opcodes
 {
 	private static final boolean LOG = true;
+	
+	private static final boolean TRACE_FIELD = true;
+	private static final boolean TRACE_VAR = true;
+	private static final boolean TRACE_CALL = true;
+	private static final boolean TRACE_ENVELOPPE = true;
+	public static final boolean TRACE_ENTRY = true;
+	public static final boolean TRACE_EXIT = true;
+	
+	public static final boolean ENABLE_READY_CHECK = false;
+	
+	/**
+	 * If set to true, features that prevent bytecode verification will
+	 * not be used.
+	 */
+	public static final boolean ENABLE_VERIFY = false;
 
 	private boolean itsModified = false;
 	
 	private boolean itsTrace = false;
+	
+	private boolean itsOverflow = false;
 	
 	private String itsTypeName;
 	private int itsSupertypeId;
@@ -38,13 +55,21 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 	private final ASMDebuggerConfig itsConfig;
 
 	
-	public LogBCIVisitor(ASMDebuggerConfig aConfig, InfoCollector aInfoCollector, ClassVisitor aVisitor)
+	public LogBCIVisitor(
+			ASMDebuggerConfig aConfig,
+			InfoCollector aInfoCollector, 
+			ClassVisitor aVisitor)
 	{
 		super(aVisitor);
 		itsInfoCollector = aInfoCollector;
 		itsConfig = aConfig;
 	}
 
+	public boolean hasOverflow()
+	{
+		return itsOverflow;
+	}
+	
 	/**
 	 * Indicates if this visitor modified the original class.
 	 */
@@ -121,6 +146,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		private ASMBehaviorInstrumenter itsInstrumenter;
 		
 		private int itsMethodId;
+		private int itsStoreIndex = 0;
 
 		public BCIMethodVisitor(MethodVisitor mv, ASMMethodInfo aMethodInfo)
 		{
@@ -149,16 +175,14 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		
 		public void visitSuperOrThisCallInsn(int aOpcode, String aOwner, String aName, String aDesc)
 		{
-			if (itsTrace) itsInstrumenter.methodCall(aOpcode, aOwner, aName, aDesc, BehaviorCallType.SUPER_CALL);
+			if (itsTrace && TRACE_CALL && ! ENABLE_VERIFY) itsInstrumenter.methodCall(aOpcode, aOwner, aName, aDesc, BehaviorCallType.SUPER_CALL);
 			else mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
-//			mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
 		}
 		
 		public void visitConstructorCallInsn(int aOpcode, String aOwner, int aCalledTypeId, String aName, String aDesc)
 		{
-			if (itsTrace) itsInstrumenter.methodCall(aOpcode, aOwner, aName, aDesc, BehaviorCallType.INSTANTIATION);
+			if (itsTrace && TRACE_CALL && ! ENABLE_VERIFY) itsInstrumenter.methodCall(aOpcode, aOwner, aName, aDesc, BehaviorCallType.INSTANTIATION);
 			else mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
-//			mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
 		}
 		
 		/**
@@ -173,39 +197,48 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 				throw new RuntimeException("Should have been filtered");
 			}
 			
-			if (itsTrace) itsInstrumenter.methodCall(aOpcode, aOwner, aName, aDesc, BehaviorCallType.METHOD_CALL);
+			if (itsTrace && TRACE_CALL) itsInstrumenter.methodCall(aOpcode, aOwner, aName, aDesc, BehaviorCallType.METHOD_CALL);
 			else mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
 		}
 		
-//		@Override
-//		public void visitFieldInsn(int aOpcode, String aOwner, String aName, String aDesc)
-//		{
-//			if (itsTrace && (aOpcode == PUTFIELD || aOpcode == PUTSTATIC))
-//			{
-//				itsInstrumenter.fieldWrite(aOpcode, aOwner, aName, aDesc);
-//			}
-//			else mv.visitFieldInsn(aOpcode, aOwner, aName, aDesc);
-//		}
+		@Override
+		public void visitFieldInsn(int aOpcode, String aOwner, String aName, String aDesc)
+		{
+			if (itsTrace && TRACE_FIELD && (aOpcode == PUTFIELD || aOpcode == PUTSTATIC))
+			{
+				itsInstrumenter.fieldWrite(aOpcode, aOwner, aName, aDesc);
+			}
+			else mv.visitFieldInsn(aOpcode, aOwner, aName, aDesc);
+		}
 		
-//		@Override
-//		public void visitVarInsn(int aOpcode, int aVar)
-//		{
-//			if (itsTrace && aOpcode >= ISTORE && aOpcode < IASTORE)
-//			{
-//				itsInstrumenter.variableWrite(aOpcode, aVar);
-//			}
-//			else mv.visitVarInsn(aOpcode, aVar);
-//		}
+		@Override
+		public void visitVarInsn(int aOpcode, int aVar)
+		{
+			if (itsTrace && TRACE_VAR && aOpcode >= ISTORE && aOpcode < IASTORE)
+			{
+				if (! itsMethodInfo.shouldIgnoreStore(itsStoreIndex))
+				{
+					itsInstrumenter.variableWrite(aOpcode, aVar);
+				}
+				else 
+				{
+					mv.visitVarInsn(aOpcode, aVar);
+				}
+				
+				itsStoreIndex++;
+			}
+			else mv.visitVarInsn(aOpcode, aVar);
+		}
 		
-//		@Override
-//		public void visitIincInsn(int aVar, int aIncrement)
-//		{
-//			if (itsTrace)
-//			{
-//				itsInstrumenter.variableInc(aVar, aIncrement);
-//			}
-//			else mv.visitIincInsn(aVar, aIncrement);
-//		}
+		@Override
+		public void visitIincInsn(int aVar, int aIncrement)
+		{
+			if (itsTrace && TRACE_VAR)
+			{
+				itsInstrumenter.variableInc(aVar, aIncrement);
+			}
+			else mv.visitIincInsn(aVar, aIncrement);
+		}
 		
 		/**
 		 * <li>Replace RETURN bytecodes by GOTOs to the return hooks defined in
@@ -214,7 +247,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		@Override
 		public void visitInsn(int aOpcode)
 		{
-			if (itsTrace) itsInstrumenter.doReturn(aOpcode);
+			if (itsTrace && TRACE_ENVELOPPE) itsInstrumenter.doReturn(aOpcode);
 			else super.visitInsn(aOpcode);
 		}
 		
@@ -225,14 +258,22 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		@Override
 		public void visitCode()
 		{
-			if (itsTrace) itsInstrumenter.insertEntryHooks();
+			if (itsTrace && TRACE_ENVELOPPE) itsInstrumenter.insertEntryHooks();
 			super.visitCode();
 		}
 		
 		@Override
 		public void visitMaxs(int aMaxStack, int aMaxLocals)
 		{
-			if (itsTrace) itsInstrumenter.endHooks();			
+			Label theLabel = new Label();
+			mv.visitLabel(theLabel);
+			if (theLabel.getOffset() > 65535) 
+			{
+				System.err.println("Method size overflow: "+itsMethodInfo.getName());
+				itsOverflow = true;
+			}
+			
+			if (itsTrace && TRACE_ENVELOPPE) itsInstrumenter.endHooks();			
 			super.visitMaxs(aMaxStack, aMaxLocals);
 		}
 		
@@ -342,5 +383,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
 		}
 	}
+	
+
 }
 

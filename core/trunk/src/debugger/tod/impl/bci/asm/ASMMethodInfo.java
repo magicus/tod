@@ -4,10 +4,15 @@
 package tod.impl.bci.asm;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import tod.core.ILocationRegistrer.LineNumberInfo;
 import tod.core.ILocationRegistrer.LocalVariableInfo;
+import tod.impl.bci.asm.InfoCollector.StoreInfo;
 
 public class ASMMethodInfo
 {
@@ -20,7 +25,14 @@ public class ASMMethodInfo
 	
 	private List<ASMLineNumberInfo> itsLineNumberInfo = new ArrayList<ASMLineNumberInfo>();
 	private List<ASMLocalVariableInfo> itsLocalVariableInfo = new ArrayList<ASMLocalVariableInfo>();
-
+	
+	/**
+	 * An array of store operations to ignore.
+	 * The index is the rank of the store operation within the method.
+	 * @see InfoCollector.JSRAnalyserVisitor
+	 */
+	private boolean[] itsIgnoreStores;
+	
 	public ASMMethodInfo(String aName, String aDescriptor, boolean aStatic)
 	{
 		itsName = aName;
@@ -119,4 +131,17 @@ public class ASMMethodInfo
     	return theTable;
     }
     
+    public void setIgnoreStores(boolean[] aIgnoreStores)
+	{
+		itsIgnoreStores = aIgnoreStores;
+	}
+
+	/**
+     * Indicates if the n-th store instruction should be ignored 
+     * @param aIndex Rank of the store instruction.
+     */
+    public boolean shouldIgnoreStore(int aIndex)
+    {
+    	return itsIgnoreStores[aIndex];
+    }
 }

@@ -24,7 +24,7 @@ public class GeneralConfig
 	static
 	{
 		System.out.println("Loading general config");
-		LOCATIONS_FILE = ConfigUtils.readString(PARAM_LOCATIONS_FILE, "/home/gpothier/tmp/tod-locations");
+		LOCATIONS_FILE = ConfigUtils.readString(PARAM_LOCATIONS_FILE, "/tmp/tod/tod-locations");
 		MASTER_HOST = ConfigUtils.readString(PARAM_MASTER_HOST, "localhost");
 		NODE_DATA_DIR = ConfigUtils.readString(PARAM_NODE_DATA_DIR, ".");
 		STORE_EVENTS_FILE = ConfigUtils.readString(PARAM_STORE_EVENTS_FILE, "events-raw.bin");

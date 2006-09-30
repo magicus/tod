@@ -3,9 +3,6 @@
  */
 package tod.core;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import tod.agent.AgentUtils;
 
 /**
@@ -16,6 +13,7 @@ import tod.agent.AgentUtils;
 public class EventInterpreter<T extends EventInterpreter.ThreadData>
 {
 	private static final boolean LOG = false;
+	private static final boolean IGNORE_ALL = false;
 	
 	private ThreadLocal<T> itsThreadInfos = new ThreadLocal<T>();
 	private HighLevelCollector<T> itsCollector;
@@ -51,6 +49,11 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 		return theData;
 	}
 
+	private String getObjectId(Object aObject)
+	{
+		if (aObject == null) return "null";
+		else return ""+ObjectIdentity.get(aObject);
+	}
 	
 	public void logBehaviorEnter(
 			long aTimestamp, 
@@ -59,26 +62,29 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 			Object aObject, 
 			Object[] aArguments)
 	{
+		if (IGNORE_ALL) return;
 		T theThread = getThreadData();
 		long theTimestamp = theThread.transformTimestamp(aTimestamp);
+		
 		
 		FrameInfo theFrame = theThread.currentFrame();
 		
 		if (LOG) System.out.println(String.format(
-				"logBehaviorEnter(%d, %d, %s, %s, %s)\n depth: %d\n frame: %s",
+				"logBehaviorEnter(%d, %d, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s",
 				aTimestamp,
 				aBehaviorId,
 				aCallType,
-				aObject,
+				getObjectId(aObject),
 				aArguments,
+				theThread.getId(),
 				theThread.getCurrentDepth(),
 				theFrame));
 		
-		if (theFrame.directParent)
+		if (theFrame.directParent && theFrame.callType != null)
 		{
 			// We come from instrumented code, ie. before/enter scheme
 			// Part of the event info is available in the frame, but the
-			// event has not been sent
+			// event has not been sent yet.
 			theFrame.callType.call(
 					itsCollector,
 					theThread,
@@ -102,6 +108,8 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 		else
 		{
 			// We come from non instrumented code
+			// Or it is an implicit call (eg. static initializer) in the direct
+			// control flow of an instrumented method.
 			
 			aCallType.call(
 					itsCollector,
@@ -126,19 +134,22 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 			int aBehaviorId,
 			Object aResult)
 	{
+		if (IGNORE_ALL) return;
 		T theThread = getThreadData();
 		long theTimestamp = theThread.transformTimestamp(aTimestamp);
 		
+
 		FrameInfo theFrame = theThread.popFrame();
 		assert theFrame.behavior == aBehaviorId;
 		assert theFrame.directParent;
 		
 		if (LOG) System.out.println(String.format(
-				"logBehaviorExit(%d, %d, %d, %s)\n depth: %d\n frame: %s",
+				"logBehaviorExit(%d, %d, %d, %s)\n thread: %d, depth: %d\n frame: %s",
 				aTimestamp,
 				aOperationBytecodeIndex,
 				aBehaviorId,
-				aResult,
+				getObjectId(aResult),
+				theThread.getId(),
 				theThread.getCurrentDepth(),
 				theFrame));
 		
@@ -158,22 +169,32 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 			int aBehaviorId, 
 			Object aException)
 	{
-		((Throwable) aException).printStackTrace();
-		if (LOG) System.out.println(String.format(
+		if (IGNORE_ALL) return;
+		
+		if (LOG)
+		{
+			System.err.println("Exit with exception:");
+			((Throwable) aException).printStackTrace();
+			
+			System.out.println(String.format(
 				"logBehaviorExitWithException(%d, %d, %s)",
 				aTimestamp,
 				aBehaviorId,
 				aException));
+		}
 
 		T theThread = getThreadData();
 		long theTimestamp = theThread.transformTimestamp(aTimestamp);
+		
+
 		
 		FrameInfo theFrame = theThread.popFrame();
 		assert theFrame.behavior == aBehaviorId;
 		assert theFrame.directParent;
 		
 		if (LOG) System.out.println(String.format(
-				" depth: %d\n frame: %s",
+				" thread: %d, depth: %d\n frame: %s",
+				theThread.getId(),
 				theThread.getCurrentDepth(),
 				theFrame));
 		
@@ -197,19 +218,21 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 			int aOperationBytecodeIndex,
 			Object aException)
 	{
+		if (IGNORE_ALL) return;
 		T theThread = getThreadData();
 		long theTimestamp = theThread.transformTimestamp(aTimestamp);
 
 		FrameInfo theFrame = theThread.currentFrame();
 
 		if (LOG) System.out.println(String.format(
-				"logExceptionGenerated(%d, %%s, %s, %s, %d, %s)\n depth: %d\n frame: %s",
+				"logExceptionGenerated(%d, %%s, %s, %s, %d, %s)\n thread: %d, depth: %d\n frame: %s",
 				aTimestamp,
 				aMethodName,
 				aMethodSignature,
 				aMethodDeclaringClassSignature,
 				aOperationBytecodeIndex,
 				aException,
+				theThread.getId(),
 				theThread.getCurrentDepth(),
 				theFrame));
 		
@@ -236,18 +259,20 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 			Object aTarget, 
 			Object aValue)
 	{
+		if (IGNORE_ALL) return;
 		T theThread = getThreadData();
 		long theTimestamp = theThread.transformTimestamp(aTimestamp);
 
 		FrameInfo theFrame = theThread.currentFrame();
 		
 		if (LOG) System.out.println(String.format(
-				"logFieldWrite(%d, %d, %d, %s, %s)\n depth: %d\n frame: %s",
+				"logFieldWrite(%d, %d, %d, %s, %s)\n thread: %d, depth: %d\n frame: %s",
 				aTimestamp,
 				aOperationBytecodeIndex,
 				aFieldId,
-				aTarget,
-				aValue,
+				getObjectId(aTarget),
+				getObjectId(aValue),
+				theThread.getId(),
 				theThread.getCurrentDepth(),
 				theFrame));
 
@@ -268,17 +293,19 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 			int aVariableId,
 			Object aValue)
 	{
+		if (IGNORE_ALL) return;
 		T theThread = getThreadData();
 		long theTimestamp = theThread.transformTimestamp(aTimestamp);
 
 		FrameInfo theFrame = theThread.currentFrame();
 		
 		if (LOG) System.out.println(String.format(
-				"logLocalVariableWrite(%d, %d, %d, %s)\n depth: %d\n frame: %s",
+				"logLocalVariableWrite(%d, %d, %d, %s)\n thread: %d, depth: %d\n frame: %s",
 				aTimestamp,
 				aOperationBytecodeIndex,
 				aVariableId,
-				aValue,
+				getObjectId(aValue),
+				theThread.getId(),
 				theThread.getCurrentDepth(),
 				theFrame));
 		
@@ -297,16 +324,18 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 			int aBehaviorId,
 			BehaviorCallType aCallType)
 	{
+		if (IGNORE_ALL) return;
 		T theThread = getThreadData();
 
 		FrameInfo theFrame = theThread.currentFrame();
 		assert theFrame.directParent && theFrame.behavior > 0;
 		
 		if (LOG) System.out.println(String.format(
-				"logBeforeBehaviorCall(%d, %d, %s)\n depth: %d\n frame: %s",
+				"logBeforeBehaviorCall(%d, %d, %s)\n thread: %d, depth: %d\n frame: %s",
 				aOperationBytecodeIndex,
 				aBehaviorId,
 				aCallType,
+				theThread.getId(),
 				theThread.getCurrentDepth(),
 				theFrame));
 
@@ -321,19 +350,21 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 			Object aTarget, 
 			Object[] aArguments)
 	{
+		if (IGNORE_ALL) return;
 		T theThread = getThreadData();
 		long theTimestamp = theThread.transformTimestamp(aTimestamp);
 
 		FrameInfo theFrame = theThread.currentFrame();
 		
 		if (LOG) System.out.println(String.format(
-				"logBeforeBehaviorCall(%d, %d, %d, %s, %s, %s)\n depth: %d\n frame: %s",
+				"logBeforeBehaviorCall(%d, %d, %d, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s",
 				aTimestamp,
 				aOperationBytecodeIndex,
 				aBehaviorId,
 				aCallType,
-				aTarget,
+				getObjectId(aTarget),
 				aArguments,
+				theThread.getId(),
 				theThread.getCurrentDepth(),
 				theFrame));
 		
@@ -355,12 +386,14 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 
 	public void logAfterBehaviorCall()
 	{
+		if (IGNORE_ALL) return;
 		// Nothing to do here, maybe we don't need this message
 		T theThread = getThreadData();
 		FrameInfo theFrame = theThread.popFrame();
 		
 		if (LOG) System.out.println(String.format(
-				"logAfterBehaviorCall()\n depth: %d\n frame: %s",
+				"logAfterBehaviorCall()\n thread: %d, depth: %d\n frame: %s",
+				theThread.getId(),
 				theThread.getCurrentDepth(),
 				theFrame));
 	}
@@ -372,6 +405,7 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 			Object aTarget,
 			Object aResult)
 	{
+		if (IGNORE_ALL) return;
 		T theThread = getThreadData();
 		long theTimestamp = theThread.transformTimestamp(aTimestamp);
 
@@ -379,12 +413,13 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 		assert theFrame.behavior == aBehaviorId;
 		
 		if (LOG) System.out.println(String.format(
-				"logAfterBehaviorCall(%d, %d, %d, %s, %s)\n depth: %d\n frame: %s",
+				"logAfterBehaviorCall(%d, %d, %d, %s, %s)\n thread: %d, depth: %d\n frame: %s",
 				aTimestamp,
 				aOperationBytecodeIndex,
 				aBehaviorId,
-				aTarget,
-				aResult,
+				getObjectId(aTarget),
+				getObjectId(aResult),
+				theThread.getId(),
 				theThread.getCurrentDepth(),
 				theFrame));
 		
@@ -407,6 +442,7 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 			Object aTarget, 
 			Object aException)
 	{
+		if (IGNORE_ALL) return;
 		T theThread = getThreadData();
 		long theTimestamp = theThread.transformTimestamp(aTimestamp);
 
@@ -414,12 +450,13 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 		assert theFrame.behavior == aBehaviorId;
 		
 		if (LOG) System.out.println(String.format(
-				"logAfterBehaviorCallWithException(%d, %d, %d, %s, %s)\n depth: %d\n frame: %s",
+				"logAfterBehaviorCallWithException(%d, %d, %d, %s, %s)\n thread: %d, depth: %d\n frame: %s",
 				aTimestamp,
 				aOperationBytecodeIndex,
 				aBehaviorId,
-				aTarget,
+				getObjectId(aTarget),
 				aException,
+				theThread.getId(),
 				theThread.getCurrentDepth(),
 				theFrame));
 
@@ -439,16 +476,18 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 			Output aOutput, 
 			byte[] aData)
 	{
+		if (IGNORE_ALL) return;
 		T theThread = getThreadData();
 		long theTimestamp = theThread.transformTimestamp(aTimestamp);
 
 		FrameInfo theFrame = theThread.currentFrame();
 		
 		if (LOG) System.out.println(String.format(
-				"logOutput(%d, %%s, %s)\n depth: %d\n frame: %s",
+				"logOutput(%d, %s, %s)\n thread: %d, depth: %d\n frame: %s",
 				aTimestamp,
 				aOutput,
 				aData,
+				theThread.getId(),
 				theThread.getCurrentDepth(),
 				theFrame));
 
@@ -470,8 +509,12 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 		 */
 		private int itsId;
 		
-		private List<FrameInfo> itsStack = new ArrayList<FrameInfo>();
-		private List<FrameInfo> itsFreeFrames = new ArrayList<FrameInfo>();
+		// We don't want to use ArrayList here, it might be instrumented.
+		private FrameInfo[] itsStack = new FrameInfo[10000];
+		private int itsStackSize;
+		
+		private FrameInfo[] itsFreeFrames = new FrameInfo[10000];
+		private int itsFreeFramesSize;
 		
 		/**
 		 * Current partial serial number. if two events of the same thread have the same
@@ -519,9 +562,11 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 
 		private FrameInfo getFreeFrame()
 		{
-			int theSize = itsFreeFrames.size();
-			if (theSize == 0) return new FrameInfo();
-			else return itsFreeFrames.remove(theSize-1);
+			if (itsFreeFramesSize == 0) return new FrameInfo();
+			else 
+			{
+				return itsFreeFrames[--itsFreeFramesSize];
+			}
 		}
 		
 		public FrameInfo pushFrame(
@@ -532,6 +577,7 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 				BehaviorCallType aCallType, 
 				int aBytecodeIndex)
 		{
+			assert aCallType != null;
 			FrameInfo theFrame = getFreeFrame();
 			theFrame.entering = aEntering;
 			theFrame.behavior = aBehavior;
@@ -540,26 +586,26 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 			theFrame.callType = aCallType;
 			theFrame.bytecodeIndex = aBytecodeIndex;
 			
-			itsStack.add(theFrame);
+			itsStack[itsStackSize++] = theFrame;
 			
 			return theFrame;
 		}
 		
 		public FrameInfo popFrame()
 		{
-			FrameInfo theFrame = itsStack.remove(itsStack.size()-1);
-			itsFreeFrames.add(theFrame);
+			FrameInfo theFrame = itsStack[--itsStackSize];
+			itsFreeFrames[itsFreeFramesSize++] = theFrame;
 			return theFrame;
 		}
 		
 		public FrameInfo currentFrame()
 		{
-			return itsStack.get(itsStack.size()-1);
+			return itsStack[itsStackSize-1];
 		}
 		
 		public short getCurrentDepth()
 		{
-			return (short) itsStack.size();
+			return (short) itsStackSize;
 		}
 		
 		private byte getNextSerial(long aTimestamp)

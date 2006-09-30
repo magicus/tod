@@ -5,6 +5,8 @@ package tod.core.transport;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 
 import tod.core.BehaviourKind;
 import tod.core.ObjectIdentity;
@@ -391,7 +393,9 @@ public class CollectorPacketWriter
 		{
 			String theString = (String) aValue;
 			sendMessageType(aStream, MessageType.STRING);
-			aStream.writeUTF(theString);
+			MyObjectOutputStream theStream = new MyObjectOutputStream(aStream);
+			theStream.writeObject(theString);
+			theStream.drain();
 		}
 		else
 		{
@@ -411,5 +415,20 @@ public class CollectorPacketWriter
 	{
 		aStream.writeByte(aMessageType.ordinal());			
 	}
+	
+	private static class MyObjectOutputStream extends ObjectOutputStream
+	{
+		public MyObjectOutputStream(OutputStream aOut) throws IOException
+		{
+			super(aOut);
+		}
+
+		@Override
+		public void drain() throws IOException
+		{
+			super.drain();
+		}
+	}
+	
 
 }

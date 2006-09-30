@@ -3,6 +3,7 @@
  */
 package tod.core.bci;
 
+import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -122,12 +123,15 @@ public class LocationPoolPersister
 	public static void read (File aFile, ILocationRegistrer aRegistrer) throws FileNotFoundException, IOException
 	{
 		System.out.println("Reading stored locations from "+aFile);
-		DataInputStream theStream = new DataInputStream(new FileInputStream(aFile));
+		DataInputStream theStream = new DataInputStream(new BufferedInputStream(new FileInputStream(aFile)));
+		int i = 0;
 		while (true)
 		{
 			try
 			{
 				CollectorPacketReader.readPacket(theStream, aRegistrer);
+				if (i % 10000 == 0) System.out.println(i);
+				i++;
 			}
 			catch (EOFException e)
 			{

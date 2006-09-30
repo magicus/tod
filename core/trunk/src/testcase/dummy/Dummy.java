@@ -3,19 +3,23 @@
  */
 package dummy;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.Random;
 
 public class Dummy
 {
 	public static void main(String[] args)
 	{
+		Object theObject = new Object();
+		
 		int j;
 		
 		Object[] theObjects = new Object[100];
 		for(int i=0;i<theObjects.length;i++) theObjects[i] = new Object();
 		
 		Random theRandom = new Random(0);
-		for(int i=0;i<100000;i++)
+		for(int i=0;i<10000000;i++)
 		{
 			j = i*2;
 			foo(theObjects[theRandom.nextInt(theObjects.length)], j);

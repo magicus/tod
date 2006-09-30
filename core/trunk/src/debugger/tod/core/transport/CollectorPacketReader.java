@@ -5,6 +5,7 @@ package tod.core.transport;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 
 import tod.core.BehaviourKind;
 import tod.core.ILocationRegistrer;
@@ -165,7 +166,15 @@ public class CollectorPacketReader
 				return new Double (aStream.readDouble());
 				
 			case STRING:
-				return aStream.readUTF();
+				ObjectInputStream theStream = new ObjectInputStream(aStream);
+				try
+				{
+					return theStream.readObject();
+				}
+				catch (ClassNotFoundException e)
+				{
+					throw new RuntimeException(e);
+				}
 				
 			case OBJECT_UID:
 				return new ObjectId.ObjectUID(aStream.readLong());

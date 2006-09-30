@@ -28,6 +28,9 @@ import tod.core.EventInterpreter.ThreadData;
  */
 public class SocketCollector extends HighLevelCollector<SocketCollector.SocketThreadData>
 {
+	private static final boolean IGNORE_ALL = false;
+	private static final boolean DO_SEND = true;
+	
 	private List<SocketThreadData> itsThreadDataList = new ArrayList<SocketThreadData>();
 	private SenderThread itsThread;
 	
@@ -68,6 +71,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			boolean aHasThrown,
 			Object aResult)
 	{
+		if (IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -104,6 +108,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			int aOperationBytecodeIndex,
 			Object aException)
 	{
+		if (IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -140,6 +145,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			Object aTarget, 
 			Object aValue)
 	{
+		if (IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -177,6 +183,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			Object aTarget,
 			Object[] aArguments)
 	{
+		if (IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -213,6 +220,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			int aVariableId,
 			Object aValue)
 	{
+		if (IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -249,6 +257,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			Object aTarget, 
 			Object[] aArguments)
 	{
+		if (IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -283,6 +292,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			Output aOutput,
 			byte[] aData)
 	{
+		if (IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -318,6 +328,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			Object aTarget,
 			Object[] aArguments)
 	{
+		if (IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -347,6 +358,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 	@Override
 	protected void thread(SocketThreadData aThread, long aJVMThreadId, String aName)
 	{
+		if (IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -417,7 +429,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			{
 				itsDataOutputStream.flush();
 //				System.out.println("Flushing "+itsBuffer.size()+" bytes.");
-				itsBuffer.writeTo(itsLog);
+				if (DO_SEND) itsBuffer.writeTo(itsLog);
 				itsBuffer.reset();
 //				itsLog.flush();
 			}

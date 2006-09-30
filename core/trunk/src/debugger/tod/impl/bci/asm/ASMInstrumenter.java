@@ -37,7 +37,9 @@ public class ASMInstrumenter implements IInstrumenter
     	LogBCIVisitor theVisitor = new LogBCIVisitor(itsConfig, theInfoCollector, theWriter);
     	theReader.accept(theVisitor, false);
     	
-        return theVisitor.isModified() ? theWriter.toByteArray() : null;
+        return theVisitor.isModified() && !  theVisitor.hasOverflow() 
+        	? theWriter.toByteArray() 
+        	: null;
     }
 
 }

@@ -3,6 +3,8 @@
  */
 package tod.core.transport;
 
+import tod.agent.AgentConfig;
+import tod.agent.AgentReady;
 import tod.core.HighLevelCollector;
 import tod.core.Output;
 import tod.core.EventInterpreter.ThreadData;
@@ -14,6 +16,11 @@ import tod.core.EventInterpreter.ThreadData;
 public class DummyCollector extends HighLevelCollector<ThreadData>
 {
 
+	public DummyCollector()
+	{
+		AgentReady.READY = true;
+	}
+
 	@Override
 	protected void behaviorExit(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
 			int aOperationBytecodeIndex, int aBehaviorId, boolean aHasThrown, Object aResult)
@@ -23,7 +30,7 @@ public class DummyCollector extends HighLevelCollector<ThreadData>
 	@Override
 	public ThreadData createThreadData(int aId)
 	{
-		return null;
+		return new ThreadData(aId);
 	}
 
 	@Override

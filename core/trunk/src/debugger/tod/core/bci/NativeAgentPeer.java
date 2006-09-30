@@ -180,7 +180,8 @@ public abstract class NativeAgentPeer extends SocketThread
      */
     protected String cfgCachePath()
     {
-    	return null;
+    	return "/tmp/tod";
+//    	return null;
     }
     
     /**

@@ -13,7 +13,7 @@
 #include <jni.h>
 #include <jvmti.h>
 
-// Build: g++ -shared -o ../../libbci-agent.so -I ~/apps/java/jdk1.5.0_04/include/ -I ~/apps/java/jdk1.5.0_04/include/linux/ bci-agent.c
+// Build: g++ -shared -o ../../libbci-agent.so -I $JAVA_HOME/include/ -I $JAVA_HOME/include/linux/ bci-agent.c
 
 
 // Outgoing commands
@@ -61,89 +61,92 @@ static jmethodID method_ExceptionGeneratedReceiver_exceptionGenerated;
 static pthread_mutex_t oidMutex = PTHREAD_MUTEX_INITIALIZER;
 static long oidCurrent = 1;
 
+// Mutex for class load callback
+static pthread_mutex_t loadMutex = PTHREAD_MUTEX_INITIALIZER;
+
 static char buffer[10000];
 
 static void fatal_error(char* message)
 {
-  printf(message);
-  exit(-1);
+	printf(message);
+	exit(-1);
 }
 
 static void fatal_ioerror(char* message)
 {
-  perror(message);
-  exit(-1);
+	perror(message);
+	exit(-1);
 }
 
 static void writeByte(int i)
 {
-  fputc(i & 0xff, SOCKET_OUT);
+	fputc(i & 0xff, SOCKET_OUT);
 }
 
 static void writeShort(int v)
 {
-  fputc(0xff & (v >> 8), SOCKET_OUT);
-  fputc(0xff & v, SOCKET_OUT);
+	fputc(0xff & (v >> 8), SOCKET_OUT);
+	fputc(0xff & v, SOCKET_OUT);
 }
 
 static void writeInt(int v)
 {
-  fputc(0xff & (v >> 24), SOCKET_OUT);
-  fputc(0xff & (v >> 16), SOCKET_OUT);
-  fputc(0xff & (v >> 8), SOCKET_OUT);
-  fputc(0xff & v, SOCKET_OUT);
+	fputc(0xff & (v >> 24), SOCKET_OUT);
+	fputc(0xff & (v >> 16), SOCKET_OUT);
+	fputc(0xff & (v >> 8), SOCKET_OUT);
+	fputc(0xff & v, SOCKET_OUT);
 }
 
 static void writeLong(jlong v)
 {
-  fputc(0xff & (v >> 56), SOCKET_OUT);
-  fputc(0xff & (v >> 48), SOCKET_OUT);
-  fputc(0xff & (v >> 40), SOCKET_OUT);
-  fputc(0xff & (v >> 32), SOCKET_OUT);
-  fputc(0xff & (v >> 24), SOCKET_OUT);
-  fputc(0xff & (v >> 16), SOCKET_OUT);
-  fputc(0xff & (v >> 8), SOCKET_OUT);
-  fputc(0xff & v, SOCKET_OUT);
+	fputc(0xff & (v >> 56), SOCKET_OUT);
+	fputc(0xff & (v >> 48), SOCKET_OUT);
+	fputc(0xff & (v >> 40), SOCKET_OUT);
+	fputc(0xff & (v >> 32), SOCKET_OUT);
+	fputc(0xff & (v >> 24), SOCKET_OUT);
+	fputc(0xff & (v >> 16), SOCKET_OUT);
+	fputc(0xff & (v >> 8), SOCKET_OUT);
+	fputc(0xff & v, SOCKET_OUT);
 }
 
 static int readByte()
 {
-  return fgetc(SOCKET_IN);
+	return fgetc(SOCKET_IN);
 }
 
 static int readShort()
 {
-  int a = fgetc(SOCKET_IN);
-  int b = fgetc(SOCKET_IN);
-  
-  return (((a & 0xff) << 8) | (b & 0xff));
+	int a = fgetc(SOCKET_IN);
+	int b = fgetc(SOCKET_IN);
+	
+	return (((a & 0xff) << 8) | (b & 0xff));
 }
 
 static int readInt()
 {
-  int a = fgetc(SOCKET_IN);
-  int b = fgetc(SOCKET_IN);
-  int c = fgetc(SOCKET_IN);
-  int d = fgetc(SOCKET_IN);
-  
-  return (((a & 0xff) << 24) | ((b & 0xff) << 16) | ((c & 0xff) << 8) | (d & 0xff));
+	int a = fgetc(SOCKET_IN);
+	int b = fgetc(SOCKET_IN);
+	int c = fgetc(SOCKET_IN);
+	int d = fgetc(SOCKET_IN);
+	
+	return (((a & 0xff) << 24) | ((b & 0xff) << 16) | ((c & 0xff) << 8) | (d & 0xff));
 }
 
 static void writeUTF(const char* s)
 {
-  int len = strlen(s);
-  writeShort(len);
-  fputs(s, SOCKET_OUT);
+	int len = strlen(s);
+	writeShort(len);
+	fputs(s, SOCKET_OUT);
 }
 
 static char* readUTF()
 {
-  int len = readShort();
-  char* s = (char*) malloc(len+1);
-  fread(s, 1, len, SOCKET_IN);
-  s[len] = 0;
-  
-  return s;
+	int len = readShort();
+	char* s = (char*) malloc(len+1);
+	fread(s, 1, len, SOCKET_IN);
+	s[len] = 0;
+	
+	return s;
 }
 
 
@@ -154,28 +157,28 @@ hostname: name of this host, sent to the peer.
 */
 static void bciConnect(char* host, int port, char* hostname)
 {
-  struct  sockaddr_in sin;
-  struct  hostent *hp;
-  
-  if ((hp=gethostbyname(host)) == NULL) fatal_error("gethostbyname\n");
+	struct sockaddr_in sin;
+	struct hostent *hp;
+	
+	if ((hp=gethostbyname(host)) == NULL) fatal_error("gethostbyname\n");
 
-  memset((char *)&sin, sizeof(sin), 0);
-  sin.sin_family=hp->h_addrtype;
-  memcpy((char *)&sin.sin_addr, hp->h_addr, hp->h_length);
-  sin.sin_port = htons(port);
-  
-  int s = socket(AF_INET, SOCK_STREAM, 0);
-  if (s < 0) fatal_error("socket\n");
-  int r = connect(s, (sockaddr*) &sin, sizeof(sin));
-  if (r < 0) fatal_ioerror("Cannot connect to instrumentation server");
-  
-  SOCKET_IN = fdopen(s, "r");
-  SOCKET_OUT = fdopen(s, "w");
-  
-  // Send host name
-  if (cfgVerbose) printf("Sending host name: %s\n", hostname);
-  writeUTF(hostname);
-  fflush(SOCKET_OUT);
+	memset((char *)&sin, sizeof(sin), 0);
+	sin.sin_family=hp->h_addrtype;
+	memcpy((char *)&sin.sin_addr, hp->h_addr, hp->h_length);
+	sin.sin_port = htons(port);
+	
+	int s = socket(AF_INET, SOCK_STREAM, 0);
+	if (s < 0) fatal_error("socket\n");
+	int r = connect(s, (sockaddr*) &sin, sizeof(sin));
+	if (r < 0) fatal_ioerror("Cannot connect to instrumentation server");
+	
+	SOCKET_IN = fdopen(s, "r");
+	SOCKET_OUT = fdopen(s, "w");
+	
+	// Send host name
+	if (cfgVerbose) printf("Sending host name: %s\n", hostname);
+	writeUTF(hostname);
+	fflush(SOCKET_OUT);
 }
 
 
@@ -184,20 +187,20 @@ static void bciConnect(char* host, int port, char* hostname)
 */
 static int mkdirs(char* name)
 {
-  char* c;
-  int exists = 1;
-  struct stat stbuf;
-  
-  for(c = name+1; exists && *c != '\0'; c++)
-  {
-    if (*c == '/')
-    {
-      *c = '\0';
-      if (stat(name, &stbuf) == -1) exists = mkdir(name, 0777) >= 0;
-      *c = '/';
-    }
-  }
-  return exists;
+	char* c;
+	int exists = 1;
+	struct stat stbuf;
+	
+	for(c = name+1; exists && *c != '\0'; c++)
+	{
+		if (*c == '/')
+		{
+			*c = '\0';
+			if (stat(name, &stbuf) == -1) exists = mkdir(name, 0777) >= 0;
+			*c = '/';
+		}
+	}
+	return exists;
 }
 
 /* Every JVMTI interface returns an error code, which should be checked
@@ -208,342 +211,352 @@ static int mkdirs(char* name)
 static void
 check_jvmti_error(jvmtiEnv *jvmti, jvmtiError errnum, const char *str)
 {
-    if ( errnum != JVMTI_ERROR_NONE ) {
-	char       *errnum_str;
-	
-	errnum_str = NULL;
-	(void)jvmti->GetErrorName(errnum, &errnum_str);
-	
-	printf("ERROR: JVMTI: %d(%s): %s\n", errnum, 
-		(errnum_str==NULL?"Unknown":errnum_str),
-		(str==NULL?"":str));
+	if ( errnum != JVMTI_ERROR_NONE ) 
+	{
+		char *errnum_str;
 		
-    }
+		errnum_str = NULL;
+		(void)jvmti->GetErrorName(errnum, &errnum_str);
+		
+		printf("ERROR: JVMTI: %d(%s): %s\n", errnum, 
+			(errnum_str==NULL?"Unknown":errnum_str),
+			(str==NULL?"":str));
+		
+	}
 }
 
 static void
 enable_event(jvmtiEnv *jvmti, jvmtiEvent event)
 {
-  jvmtiError err = jvmti->SetEventNotificationMode(JVMTI_ENABLE, event, NULL);
-  check_jvmti_error(jvmti, err, "SetEventNotificationMode");
+	jvmtiError err = jvmti->SetEventNotificationMode(JVMTI_ENABLE, event, NULL);
+	check_jvmti_error(jvmti, err, "SetEventNotificationMode");
 }
 
 static void bciConfigure()
 {
-  // Obtain class and method ids for System.currentTimeNano, Thread.getId...
-  
+	// Obtain class and method ids for System.currentTimeNano, Thread.getId...
+	
 
 
-  while(true)
-  {
-    int cmd = readByte();
-    switch(cmd)
-    {
-      case SET_CACHE_PATH:
-        cfgCachePath = readUTF();
-        printf("Setting cache path: %s\n", cfgCachePath);
-        break;
-        
-      case SET_SKIP_CORE_CLASSES:
-        cfgSkipCoreClasses = readByte();
-        printf(cfgSkipCoreClasses ? "Skipping core classes\n" : "Not skipping core classes\n");
-        break;
+	while(true)
+	{
+		int cmd = readByte();
+		switch(cmd)
+		{
+			case SET_CACHE_PATH:
+				cfgCachePath = readUTF();
+				printf("Setting cache path: %s\n", cfgCachePath);
+				break;
+				
+			case SET_SKIP_CORE_CLASSES:
+				cfgSkipCoreClasses = readByte();
+				printf(cfgSkipCoreClasses ? "Skipping core classes\n" : "Not skipping core classes\n");
+				break;
 
-      case SET_VERBOSE:
-        cfgVerbose = readByte();
-        printf(cfgVerbose ? "Verbose\n" : "Terse\n");
-        break;
+			case SET_VERBOSE:
+				cfgVerbose = readByte();
+				printf(cfgVerbose ? "Verbose\n" : "Terse\n");
+				break;
 
-      case CONFIG_DONE:
-        printf("Config done.\n");
-        return;
-    }
-  }
+			case CONFIG_DONE:
+				printf("Config done.\n");
+				return;
+		}
+	}
 }
 
 static void JNICALL
 cbClassFileLoadHook(
-  jvmtiEnv *jvmti, JNIEnv* jni,
-  jclass class_being_redefined, jobject loader,
-  const char* name, jobject protection_domain,
-  jint class_data_len, const unsigned char* class_data,
-  jint* new_class_data_len, unsigned char** new_class_data) 
+	jvmtiEnv *jvmti, JNIEnv* jni,
+	jclass class_being_redefined, jobject loader,
+	const char* name, jobject protection_domain,
+	jint class_data_len, const unsigned char* class_data,
+	jint* new_class_data_len, unsigned char** new_class_data) 
 {
-  if (cfgSkipCoreClasses 
-    && (
-      strncmp("java/", name, 5) == 0 
-      || strncmp("sun/", name, 4) == 0
-      || strncmp("javax/", name, 6) == 0 
-      || strncmp("com/sun/", name, 8) == 0 
-    )) return;
-    
-  if (cfgVerbose) printf("Loading (hook) %s\n", name);
-  
-  // Check if we have a cached version
-  if (cfgCachePath != NULL)
-  {
-    snprintf(buffer, sizeof(buffer), "%s/%s.class", cfgCachePath, name);
-    FILE* f = fopen(buffer, "rb");
-    if (f != NULL)
-    {
-      struct stat stbuf;
-      if (stat(buffer, &stbuf) == -1) fatal_ioerror("Cannot stat");
-      int len = stbuf.st_size;
-      
-      if (len == 0)
-      {
-        if (cfgVerbose) printf ("Using original\n");
-        return;
-      }
-      
-      jvmtiError err = jvmti->Allocate(len, new_class_data);
-      check_jvmti_error(jvmti, err, "Allocate");
-      *new_class_data_len = len;
-    
-      if (fread(*new_class_data, 1, len, f) != len) fatal_ioerror("fread from file");
-      if (cfgVerbose) printf("Class definition uploaded from cache.\n");
-      fclose(f);
-      return;
-    }
-    
-  }
-  
-  // Send command
-  writeByte(INSTRUMENT_CLASS);
-  
-  // Send class name
-  writeUTF(name);
-  
-  // Send bytecode
-  writeInt(class_data_len);
-  fwrite(class_data, 1, class_data_len, SOCKET_OUT);
-  fflush(SOCKET_OUT);
-  
-  int len = readInt();
-  
-  if (len > 0)
-  {
-    if (cfgVerbose) printf("Redefining %s...\n", name);
-    jvmtiError err = jvmti->Allocate(len, new_class_data);
-    check_jvmti_error(jvmti, err, "Allocate");
-    *new_class_data_len = len;
-    
-    if (fread(*new_class_data, 1, len, SOCKET_IN) != len) fatal_ioerror("fread");
-    if (cfgVerbose) printf("Class definition uploaded.\n");
-    
-    // Cache class
-    if (cfgCachePath != NULL)
-    {
-      snprintf(buffer, sizeof(buffer), "%s/%s.class", cfgCachePath, name);
-      if (cfgVerbose) printf("Caching %s\n", buffer);
-      if (! mkdirs(buffer)) fatal_ioerror("Error in mkdirs");
-      FILE* f = fopen(buffer, "wb");
-      if (f == NULL) fatal_ioerror("Opening cache class file for output");
-      if (fwrite(*new_class_data, 1, len, f) < len) fatal_ioerror("Writing cached class");
-      fflush(f);
-      fclose(f);
-      if (cfgVerbose) printf("Cached.\n");
-    }
-  }
-  else if (cfgCachePath != NULL)
-  {
-    // Mark class as not instrumented.
-    snprintf(buffer, sizeof(buffer), "%s/%s.class", cfgCachePath, name);
-    if (cfgVerbose) printf("Caching empty: %s\n", buffer);
-    if (! mkdirs(buffer)) fatal_ioerror("Error in mkdirs");
-    FILE* f = fopen(buffer, "wb");
-    if (f == NULL) fatal_ioerror("Opening cache class file for output");
-    fflush(f);
-    fclose(f);
-    if (cfgVerbose) printf("Cached empty.\n");
-  }
+	if (cfgSkipCoreClasses 
+		&& (
+			strncmp("java/", name, 5) == 0 
+			|| strncmp("sun/", name, 4) == 0
+			|| strncmp("javax/", name, 6) == 0 
+			|| strncmp("com/sun/", name, 8) == 0 
+		)) return;
+
+	if (cfgVerbose) printf("Loading (hook) %s\n", name);
+	
+	// Check if we have a cached version
+	if (cfgCachePath != NULL)
+	{
+		char buffer[2000];
+		
+		snprintf(buffer, sizeof(buffer), "%s/%s.class", cfgCachePath, name);
+		
+		// Check if length is 0
+		struct stat stbuf;
+		if (stat(buffer, &stbuf) == 0)
+		{
+			int len = stbuf.st_size;
+
+			if (len == 0)
+			{
+				if (cfgVerbose) printf ("Using original\n");
+			}
+			else
+			{
+				FILE* f = fopen(buffer, "rb");
+				if (f == NULL) fatal_error("Could not open file");
+				
+				jvmtiError err = jvmti->Allocate(len, new_class_data);
+				check_jvmti_error(jvmti, err, "Allocate");
+				*new_class_data_len = len;
+		
+				if (fread(*new_class_data, 1, len, f) != len) fatal_ioerror("fread from file");
+				if (cfgVerbose) printf("Class definition uploaded from cache.\n");
+				fclose(f);
+			}
+			return;
+		}
+	}
+	
+	pthread_mutex_lock(&loadMutex);
+
+	// Send command
+	writeByte(INSTRUMENT_CLASS);
+	
+	// Send class name
+	writeUTF(name);
+	
+	// Send bytecode
+	writeInt(class_data_len);
+	fwrite(class_data, 1, class_data_len, SOCKET_OUT);
+	fflush(SOCKET_OUT);
+	
+	int len = readInt();
+	
+	if (len > 0)
+	{
+		if (cfgVerbose) printf("Redefining %s...\n", name);
+		jvmtiError err = jvmti->Allocate(len, new_class_data);
+		check_jvmti_error(jvmti, err, "Allocate");
+		*new_class_data_len = len;
+		
+		if (fread(*new_class_data, 1, len, SOCKET_IN) != len) fatal_ioerror("fread");
+		if (cfgVerbose) printf("Class definition uploaded.\n");
+		
+		// Cache class
+		if (cfgCachePath != NULL)
+		{
+			snprintf(buffer, sizeof(buffer), "%s/%s.class", cfgCachePath, name);
+			if (cfgVerbose) printf("Caching %s\n", buffer);
+			if (! mkdirs(buffer)) fatal_ioerror("Error in mkdirs");
+			FILE* f = fopen(buffer, "wb");
+			if (f == NULL) fatal_ioerror("Opening cache class file for output");
+			if (fwrite(*new_class_data, 1, len, f) < len) fatal_ioerror("Writing cached class");
+			fflush(f);
+			fclose(f);
+			if (cfgVerbose) printf("Cached.\n");
+		}
+	}
+	else if (cfgCachePath != NULL)
+	{
+		// Mark class as not instrumented.
+		snprintf(buffer, sizeof(buffer), "%s/%s.class", cfgCachePath, name);
+		if (cfgVerbose) printf("Caching empty: %s\n", buffer);
+		if (! mkdirs(buffer)) fatal_ioerror("Error in mkdirs");
+		FILE* f = fopen(buffer, "wb");
+		if (f == NULL) fatal_ioerror("Opening cache class file for output");
+		fflush(f);
+		fclose(f);
+		if (cfgVerbose) printf("Cached empty.\n");
+	}
+	
+	pthread_mutex_unlock(&loadMutex);
 }
 
 void JNICALL
 cbException(
-  jvmtiEnv *jvmti,
-  JNIEnv* jni,
-  jthread thread,
-  jmethodID method,
-  jlocation location,
-  jobject exception,
-  jmethodID catch_method,
-  jlocation catch_location)
+	jvmtiEnv *jvmti,
+	JNIEnv* jni,
+	jthread thread,
+	jmethodID method,
+	jlocation location,
+	jobject exception,
+	jmethodID catch_method,
+	jlocation catch_location)
 {
-  return;
-  if (VM_STARTED == 0) return;
-  
-  char* methodName;
-  char* methodSignature;
-  jclass methodDeclaringClass;
-  char* methodDeclaringClassSignature;
+	return;
+	if (VM_STARTED == 0) return;
+	
+	char* methodName;
+	char* methodSignature;
+	jclass methodDeclaringClass;
+	char* methodDeclaringClassSignature;
  
-  jvmtiJlocationFormat locationFormat;
-  int bytecodeIndex = -1;
-  
-  // Obtain timestamp and thread id
-  jlong timestamp = jni->CallStaticLongMethod(class_System, method_System_nanoTime);
-  
-  // Obtain method information
-  jvmti->GetMethodName(method, &methodName, &methodSignature, NULL);
-  jvmti->GetMethodDeclaringClass(method, &methodDeclaringClass);
-  jvmti->GetClassSignature(methodDeclaringClass, &methodDeclaringClassSignature, NULL);
-  
-  // Obtain location information
-  jvmti->GetJLocationFormat(&locationFormat);
-  if (locationFormat == JVMTI_JLOCATION_JVMBCI) bytecodeIndex = (int) location;
-  
-  if (cfgVerbose) printf("Exception generated: %s, %s, %s, %d\n", methodName, methodSignature, methodDeclaringClassSignature, bytecodeIndex);
-  
-  jni->CallStaticVoidMethod(
-    class_ExceptionGeneratedReceiver, 
-    method_ExceptionGeneratedReceiver_exceptionGenerated,
-    timestamp,
-    jni->NewStringUTF(methodName),
-    jni->NewStringUTF(methodSignature),
-    jni->NewStringUTF(methodDeclaringClassSignature),
-    bytecodeIndex,
-    exception);
+	jvmtiJlocationFormat locationFormat;
+	int bytecodeIndex = -1;
+	
+	// Obtain timestamp and thread id
+	jlong timestamp = jni->CallStaticLongMethod(class_System, method_System_nanoTime);
+	
+	// Obtain method information
+	jvmti->GetMethodName(method, &methodName, &methodSignature, NULL);
+	jvmti->GetMethodDeclaringClass(method, &methodDeclaringClass);
+	jvmti->GetClassSignature(methodDeclaringClass, &methodDeclaringClassSignature, NULL);
+	
+	// Obtain location information
+	jvmti->GetJLocationFormat(&locationFormat);
+	if (locationFormat == JVMTI_JLOCATION_JVMBCI) bytecodeIndex = (int) location;
+	
+	if (cfgVerbose) printf("Exception generated: %s, %s, %s, %d\n", methodName, methodSignature, methodDeclaringClassSignature, bytecodeIndex);
+	
+	jni->CallStaticVoidMethod(
+		class_ExceptionGeneratedReceiver, 
+		method_ExceptionGeneratedReceiver_exceptionGenerated,
+		timestamp,
+		jni->NewStringUTF(methodName),
+		jni->NewStringUTF(methodSignature),
+		jni->NewStringUTF(methodDeclaringClassSignature),
+		bytecodeIndex,
+		exception);
 
 /*
-  // Send data
-  writeByte(EXCEPTION_GENERATED);
-  writeLong(timestamp);
-  writeLong(threadId);
-  writeUTF(methodName);
-  writeUTF(methodSignature);
-  writeUTF(methodDeclaringClassSignature);
-  writeInt(bytecodeIndex);
-  
-  if (jni->IsInstanceOf(exception, class_IIdentifiableObject))
-  {
-    long exceptionUid = jni->CallLongMethod(exception, method_IIdentifiableObject_log_uid);
-    writeByte(OBJECT_UID);
-    writeLong(exceptionUid);
-  }
-  else
-  {
-    int exceptionHash = jni->CallIntMethod(exception, method_Object_hashCode);
-    writeByte(OBJECT_HASH);
-    writeInt(exceptionHash);
-  }
-  
-  fflush(SOCKET_OUT);
+	// Send data
+	writeByte(EXCEPTION_GENERATED);
+	writeLong(timestamp);
+	writeLong(threadId);
+	writeUTF(methodName);
+	writeUTF(methodSignature);
+	writeUTF(methodDeclaringClassSignature);
+	writeInt(bytecodeIndex);
+	
+	if (jni->IsInstanceOf(exception, class_IIdentifiableObject))
+	{
+		long exceptionUid = jni->CallLongMethod(exception, method_IIdentifiableObject_log_uid);
+		writeByte(OBJECT_UID);
+		writeLong(exceptionUid);
+	}
+	else
+	{
+		int exceptionHash = jni->CallIntMethod(exception, method_Object_hashCode);
+		writeByte(OBJECT_HASH);
+		writeInt(exceptionHash);
+	}
+	
+	fflush(SOCKET_OUT);
 */
 
-  // Free buffers
-  jvmti->Deallocate((unsigned char*) methodName);
-  jvmti->Deallocate((unsigned char*) methodSignature);
-  jvmti->Deallocate((unsigned char*) methodDeclaringClassSignature);
+	// Free buffers
+	jvmti->Deallocate((unsigned char*) methodName);
+	jvmti->Deallocate((unsigned char*) methodSignature);
+	jvmti->Deallocate((unsigned char*) methodDeclaringClassSignature);
 }
 
 void JNICALL
 cbVMInit(
-  jvmtiEnv *jvmti,
-  JNIEnv* jni,
-  jthread thread)
+	jvmtiEnv *jvmti,
+	JNIEnv* jni,
+	jthread thread)
 {
-  if (cfgVerbose) printf("VMInit\n");
-  
-  
-  // Initialize the classes and method ids that will be used
-  // for exception processing
-  if (cfgVerbose) printf("Loading (jni) java.lang.System\n");
-  class_System = jni->FindClass("java/lang/System");
-  class_System = (jclass) jni->NewGlobalRef(class_System);
-  method_System_nanoTime = jni->GetStaticMethodID(class_System, "nanoTime", "()J");
-  
-  if (cfgVerbose) printf("Loading (jni) java.lang.Object\n");
-  class_Object = jni->FindClass("java/lang/Object");
-  class_Object = (jclass) jni->NewGlobalRef(class_Object);
-  method_Object_hashCode = jni->GetMethodID(class_Object, "hashCode", "()I");
+	if (cfgVerbose) printf("VMInit\n");
+	
+	
+	// Initialize the classes and method ids that will be used
+	// for exception processing
+	if (cfgVerbose) printf("Loading (jni) java.lang.System\n");
+	class_System = jni->FindClass("java/lang/System");
+	class_System = (jclass) jni->NewGlobalRef(class_System);
+	method_System_nanoTime = jni->GetStaticMethodID(class_System, "nanoTime", "()J");
+	
+	if (cfgVerbose) printf("Loading (jni) java.lang.Object\n");
+	class_Object = jni->FindClass("java/lang/Object");
+	class_Object = (jclass) jni->NewGlobalRef(class_Object);
+	method_Object_hashCode = jni->GetMethodID(class_Object, "hashCode", "()I");
 
-  if (cfgVerbose) printf("Loading (jni) tod.agent.ExceptionGeneratedReceiver\n");
-  class_ExceptionGeneratedReceiver = jni->FindClass("tod/agent/ExceptionGeneratedReceiver");
-  if (class_ExceptionGeneratedReceiver == NULL) printf("Could not load!\n");
-  class_ExceptionGeneratedReceiver = (jclass) jni->NewGlobalRef(class_ExceptionGeneratedReceiver);
-  method_ExceptionGeneratedReceiver_exceptionGenerated = 
-    jni->GetStaticMethodID(
-      class_ExceptionGeneratedReceiver,
-      "exceptionGenerated", 
-      "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Throwable;)V");
-  
-  if (cfgVerbose) printf("VMInit - done\n");
-  
-  VM_STARTED = 1;
+	if (cfgVerbose) printf("Loading (jni) tod.agent.ExceptionGeneratedReceiver\n");
+	class_ExceptionGeneratedReceiver = jni->FindClass("tod/agent/ExceptionGeneratedReceiver");
+	if (class_ExceptionGeneratedReceiver == NULL) printf("Could not load!\n");
+	class_ExceptionGeneratedReceiver = (jclass) jni->NewGlobalRef(class_ExceptionGeneratedReceiver);
+	method_ExceptionGeneratedReceiver_exceptionGenerated = 
+		jni->GetStaticMethodID(
+			class_ExceptionGeneratedReceiver,
+			"exceptionGenerated", 
+			"(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Throwable;)V");
+	
+	if (cfgVerbose) printf("VMInit - done\n");
+	
+	VM_STARTED = 1;
 }
 
 JNIEXPORT jint JNICALL 
 Agent_OnLoad(JavaVM *vm, char *options, void *reserved) 
 {
-  jint rc;
-  jvmtiError err;
-  jvmtiEventCallbacks callbacks;
-  jvmtiCapabilities capabilities;
-  jvmtiEnv *jvmti;
+	jint rc;
+	jvmtiError err;
+	jvmtiEventCallbacks callbacks;
+	jvmtiCapabilities capabilities;
+	jvmtiEnv *jvmti;
 
-  /* Get JVMTI environment */
-  rc = vm->GetEnv((void **)&jvmti, JVMTI_VERSION);
-  if (rc != JNI_OK) {
-    fprintf(stderr, "ERROR: Unable to create jvmtiEnv, GetEnv failed, error=%d\n", rc);
-    return -1;
-  }
-  
-  globalJvmti = jvmti;
-  
-  // Retrieve system properties
-  err = jvmti->GetSystemProperty("collector-host", &cfgHost);
-  check_jvmti_error(jvmti, err, "GetSystemProperty (collector-host)");
-  
-  err = jvmti->GetSystemProperty("tod-host", &cfgHostName);
-  check_jvmti_error(jvmti, err, "GetSystemProperty (tod-host)");
-  
-  char* s;
-  err = jvmti->GetSystemProperty("native-port", &s);
-  check_jvmti_error(jvmti, err, "GetSystemProperty (native-port)");
-  cfgNativePort = atoi(s);
-  err = jvmti->Deallocate((unsigned char*) s);
-  check_jvmti_error(jvmti, err, "Deallocate (native-port)");
-  
-  // Set capabilities
-  err = jvmti->GetCapabilities(&capabilities);
-  check_jvmti_error(jvmti, err, "GetCapabilities");
-  
-  capabilities.can_generate_all_class_hook_events = 1;
-  capabilities.can_generate_exception_events = 1;
-  capabilities.can_tag_objects = 1;
-  err = jvmti->AddCapabilities(&capabilities);
-  check_jvmti_error(jvmti, err, "AddCapabilities");
+	/* Get JVMTI environment */
+	rc = vm->GetEnv((void **)&jvmti, JVMTI_VERSION);
+	if (rc != JNI_OK) {
+		fprintf(stderr, "ERROR: Unable to create jvmtiEnv, GetEnv failed, error=%d\n", rc);
+		return -1;
+	}
+	
+	globalJvmti = jvmti;
+	
+	// Retrieve system properties
+	err = jvmti->GetSystemProperty("collector-host", &cfgHost);
+	check_jvmti_error(jvmti, err, "GetSystemProperty (collector-host)");
+	
+	err = jvmti->GetSystemProperty("tod-host", &cfgHostName);
+	check_jvmti_error(jvmti, err, "GetSystemProperty (tod-host)");
+	
+	char* s;
+	err = jvmti->GetSystemProperty("native-port", &s);
+	check_jvmti_error(jvmti, err, "GetSystemProperty (native-port)");
+	cfgNativePort = atoi(s);
+	err = jvmti->Deallocate((unsigned char*) s);
+	check_jvmti_error(jvmti, err, "Deallocate (native-port)");
+	
+	// Set capabilities
+	err = jvmti->GetCapabilities(&capabilities);
+	check_jvmti_error(jvmti, err, "GetCapabilities");
+	
+	capabilities.can_generate_all_class_hook_events = 1;
+	capabilities.can_generate_exception_events = 1;
+	capabilities.can_tag_objects = 1;
+	err = jvmti->AddCapabilities(&capabilities);
+	check_jvmti_error(jvmti, err, "AddCapabilities");
 
-  // Set callbacks and enable event notifications 
-  memset(&callbacks, 0, sizeof(callbacks));
-  callbacks.ClassFileLoadHook = &cbClassFileLoadHook;
-  callbacks.Exception = &cbException;
-  callbacks.VMInit = &cbVMInit;
-  
-  err = jvmti->SetEventCallbacks(&callbacks, sizeof(callbacks));
-  check_jvmti_error(jvmti, err, "SetEventCallbacks");
-  
-  // Enable events
-  enable_event(jvmti, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK);
-  enable_event(jvmti, JVMTI_EVENT_EXCEPTION);
-  enable_event(jvmti, JVMTI_EVENT_VM_INIT);
-  
-  bciConnect(cfgHost, cfgNativePort, cfgHostName);
-  bciConfigure();
+	// Set callbacks and enable event notifications 
+	memset(&callbacks, 0, sizeof(callbacks));
+	callbacks.ClassFileLoadHook = &cbClassFileLoadHook;
+	callbacks.Exception = &cbException;
+	callbacks.VMInit = &cbVMInit;
+	
+	err = jvmti->SetEventCallbacks(&callbacks, sizeof(callbacks));
+	check_jvmti_error(jvmti, err, "SetEventCallbacks");
+	
+	// Enable events
+	enable_event(jvmti, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK);
+	enable_event(jvmti, JVMTI_EVENT_EXCEPTION);
+	enable_event(jvmti, JVMTI_EVENT_VM_INIT);
+	
+	bciConnect(cfgHost, cfgNativePort, cfgHostName);
+	bciConfigure();
 
-  return JNI_OK;
+	return JNI_OK;
 }
 
 JNIEXPORT void JNICALL 
 Agent_OnUnload(JavaVM *vm)
 {
-  if (SOCKET_OUT)
-  {
-    writeByte(FLUSH);
-    fflush(SOCKET_OUT);
-    if (cfgVerbose) printf("Sent flush\n");
-  }
+	if (SOCKET_OUT)
+	{
+		writeByte(FLUSH);
+		fflush(SOCKET_OUT);
+		if (cfgVerbose) printf("Sent flush\n");
+	}
 }
 
 
@@ -555,10 +568,10 @@ Thread-safe.
 */
 static long getNextOid()
 {
-  pthread_mutex_lock(&oidMutex);
-  long val = oidCurrent++;
-  pthread_mutex_unlock(&oidMutex);
-  return val;
+	pthread_mutex_lock(&oidMutex);
+	long val = oidCurrent++;
+	pthread_mutex_unlock(&oidMutex);
+	return val;
 }
 
 
@@ -568,29 +581,29 @@ extern "C" {
 #endif
 
 /*
- * Class:     tod_core_ObjectIdentity
- * Method:    get
+ * Class: tod_core_ObjectIdentity
+ * Method: get
  * Signature: (Ljava/lang/Object;)J
  */
 JNIEXPORT jlong JNICALL Java_tod_core_ObjectIdentity_get
-  (JNIEnv * jni, jclass cls, jobject obj)
+	(JNIEnv * jni, jclass cls, jobject obj)
 {
-  jvmtiError err;
-  jvmtiEnv *jvmti = globalJvmti;
-  jlong tag;
-  
-  err = jvmti->GetTag(obj, &tag);
-  check_jvmti_error(jvmti, err, "GetTag");
-  
-  if (tag != 0) return tag;
-  
-  // Not tagged yet, assign an oid.
-  tag = getNextOid();
-  
-  err = jvmti->SetTag(obj, tag);
-  check_jvmti_error(jvmti, err, "SetTag");
-  
-  return tag;
+	jvmtiError err;
+	jvmtiEnv *jvmti = globalJvmti;
+	jlong tag;
+	
+	err = jvmti->GetTag(obj, &tag);
+	check_jvmti_error(jvmti, err, "GetTag");
+	
+	if (tag != 0) return tag;
+	
+	// Not tagged yet, assign an oid.
+	tag = getNextOid();
+	
+	err = jvmti->SetTag(obj, tag);
+	check_jvmti_error(jvmti, err, "SetTag");
+	
+	return tag;
 }
 
 #ifdef __cplusplus
