@@ -19,7 +19,7 @@ public class Dummy
 		for(int i=0;i<theObjects.length;i++) theObjects[i] = new Object();
 		
 		Random theRandom = new Random(0);
-		for(int i=0;i<10000000;i++)
+		for(int i=0;i<1000000;i++)
 		{
 			j = i*2;
 			foo(theObjects[theRandom.nextInt(theObjects.length)], j);

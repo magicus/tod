@@ -326,7 +326,7 @@ public class CollectorPacketWriter
 	}
 	
     /**
-	 * Sends an argument to the socked. This method handles arrays, single
+	 * Sends an argument to the socket. This method handles arrays, single
 	 * objects or null values.
 	 */
 	private static void sendArguments(
@@ -391,17 +391,30 @@ public class CollectorPacketWriter
 		}
 		else if (aValue instanceof String)
 		{
-			String theString = (String) aValue;
-			sendMessageType(aStream, MessageType.STRING);
-			MyObjectOutputStream theStream = new MyObjectOutputStream(aStream);
-			theStream.writeObject(theString);
-			theStream.drain();
+			long theObjectId = ObjectIdentity.get(aValue);
+			
+			if (theObjectId > 0)
+			{
+				// Already registered, we only send object id.
+				sendMessageType(aStream, MessageType.OBJECT_UID);
+				aStream.writeLong(theObjectId);
+			}
+			else
+			{
+				// First time this string appears, register it.
+				String theString = (String) aValue;
+				sendMessageType(aStream, MessageType.STRING);
+				aStream.writeLong(-theObjectId);
+				MyObjectOutputStream theStream = new MyObjectOutputStream(aStream);
+				theStream.writeObject(theString);
+				theStream.drain();
+			}
 		}
 		else
 		{
 			long theObjectId = ObjectIdentity.get(aValue);
 			sendMessageType(aStream, MessageType.OBJECT_UID);
-			aStream.writeLong(theObjectId);
+			aStream.writeLong(Math.abs(theObjectId));
 		}
 //		else
 //		{

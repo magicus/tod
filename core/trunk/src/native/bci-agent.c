@@ -13,6 +13,8 @@
 #include <jni.h>
 #include <jvmti.h>
 
+#include "utils.h"
+
 // Build: g++ -shared -o ../../libbci-agent.so -I $JAVA_HOME/include/ -I $JAVA_HOME/include/linux/ bci-agent.c
 
 
@@ -40,7 +42,7 @@ static jvmtiEnv *globalJvmti;
 // Configuration data
 static char* cfgCachePath = NULL;
 static int cfgSkipCoreClasses = 0;
-static int cfgVerbose = 1;
+int cfgVerbose = 1;
 
 // System properties configuration data.
 static char* cfgHost = NULL;
@@ -65,18 +67,6 @@ static long oidCurrent = 1;
 static pthread_mutex_t loadMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static char buffer[10000];
-
-static void fatal_error(char* message)
-{
-	printf(message);
-	exit(-1);
-}
-
-static void fatal_ioerror(char* message)
-{
-	perror(message);
-	exit(-1);
-}
 
 static void writeByte(int i)
 {
@@ -570,7 +560,10 @@ static long getNextOid()
 {
 	pthread_mutex_lock(&oidMutex);
 	long val = oidCurrent++;
+	if (val < 0) val = 0;
 	pthread_mutex_unlock(&oidMutex);
+	
+	if (val == 0) fatal_error("OID overflow");
 	return val;
 }
 
@@ -586,7 +579,7 @@ extern "C" {
  * Signature: (Ljava/lang/Object;)J
  */
 JNIEXPORT jlong JNICALL Java_tod_core_ObjectIdentity_get
-	(JNIEnv * jni, jclass cls, jobject obj)
+	(JNIEnv * jni, jclass, jobject obj)
 {
 	jvmtiError err;
 	jvmtiEnv *jvmti = globalJvmti;
@@ -603,7 +596,7 @@ JNIEXPORT jlong JNICALL Java_tod_core_ObjectIdentity_get
 	err = jvmti->SetTag(obj, tag);
 	check_jvmti_error(jvmti, err, "SetTag");
 	
-	return tag;
+	return -tag;
 }
 
 #ifdef __cplusplus

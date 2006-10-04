@@ -166,15 +166,19 @@ public class CollectorPacketReader
 				return new Double (aStream.readDouble());
 				
 			case STRING:
+				long theObjectId = aStream.readLong();
 				ObjectInputStream theStream = new ObjectInputStream(aStream);
 				try
 				{
-					return theStream.readObject();
+					Object theString = theStream.readObject();
+					// TODO: register string
+					return theString;
 				}
 				catch (ClassNotFoundException e)
 				{
 					throw new RuntimeException(e);
 				}
+				
 				
 			case OBJECT_UID:
 				return new ObjectId.ObjectUID(aStream.readLong());

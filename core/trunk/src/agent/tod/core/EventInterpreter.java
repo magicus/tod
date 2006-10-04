@@ -52,7 +52,7 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 	private String getObjectId(Object aObject)
 	{
 		if (aObject == null) return "null";
-		else return ""+ObjectIdentity.get(aObject);
+		else return ""+Math.abs(ObjectIdentity.get(aObject));
 	}
 	
 	public void logBehaviorEnter(

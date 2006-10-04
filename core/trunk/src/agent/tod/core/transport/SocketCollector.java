@@ -32,22 +32,19 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 	private static final boolean DO_SEND = true;
 	
 	private List<SocketThreadData> itsThreadDataList = new ArrayList<SocketThreadData>();
-	private SenderThread itsThread;
+	private Sender itsSender;
 	
 	public SocketCollector(String aHostname, int aPort) throws IOException 
 	{
-		this (new SenderThread (new Socket(aHostname, aPort)));
+		this (new Socket(aHostname, aPort));
 	}
 	
-	public SocketCollector(int aPort) throws IOException 
+	public SocketCollector(Socket aSocket)
 	{
-		this (new SenderThread (new ServerSocket(aPort)));
-	}
-	
-	public SocketCollector(SenderThread aThread)
-	{
-		itsThread = aThread;
-		itsThread.setThreadInfosList(itsThreadDataList);
+		itsSender = new Sender(aSocket);
+		itsSender.sendHostName();
+		Runtime.getRuntime().addShutdownHook(new MyShutdownHook());
+
 		AgentReady.READY = true;
 	}
 
@@ -56,6 +53,8 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 	{
 		SocketThreadData theData = new SocketThreadData(aId);
 		itsThreadDataList.add (theData);
+		
+		System.out.println("Created thread data ("+itsThreadDataList.size()+")");
 		
 		return theData;
 	}
@@ -381,8 +380,10 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 	 * is requested to send them to a socket.
 	 * @author gpothier
 	 */
-	static class SocketThreadData extends ThreadData
+	class SocketThreadData extends ThreadData
 	{
+		private static final int BUFFER_SIZE = 32768;
+		
 		/**
 		 * A wrapper around {@link #itsBuffer}
 		 */
@@ -400,12 +401,14 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		
 		private boolean itsSending = false;
 		
+		private boolean itsShutDown = false;
+		
 		
 		public SocketThreadData(int aId)
 		{
 			super(aId);
 			itsBuffer = new ByteArrayOutputStream();
-			itsLog = new ByteArrayOutputStream(32768);
+			itsLog = new ByteArrayOutputStream(BUFFER_SIZE);
 			itsDataOutputStream = new DataOutputStream(itsBuffer);
 		}
 
@@ -428,10 +431,10 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			try
 			{
 				itsDataOutputStream.flush();
-//				System.out.println("Flushing "+itsBuffer.size()+" bytes.");
+				int theRequestedSize = itsBuffer.size();
+				if (itsLog.size() + theRequestedSize > BUFFER_SIZE) send();
 				if (DO_SEND) itsBuffer.writeTo(itsLog);
 				itsBuffer.reset();
-//				itsLog.flush();
 			}
 			catch (IOException e)
 			{
@@ -439,113 +442,79 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			}
 		}
 		
-		public synchronized void sendLog (OutputStream aOutputStream) throws IOException
+		private void send()
 		{
-			if (itsLog.size() > 0)
+			if (! itsShutDown && itsLog.size() > 0)
 			{
 //				System.out.println("Sending "+itsLog.size()+" bytes");
-				itsLog.writeTo(aOutputStream);
+				itsSender.sendLog(itsLog);
 				itsLog.reset();
 			}
 		}
+		
+		public void shutDown() 
+		{
+			send();
+			itsShutDown = true;
+		}
 	}
 	
-	private static class SenderThread extends SocketThread
+	private static class Sender
 	{
-		private List<SocketThreadData> itsThreadInfosList;
-		private boolean itsHostNameSent = false;
+		private Socket itsSocket;
+		private OutputStream itsOutputStream;
+
+		public Sender(Socket aSocket)
+		{
+			itsSocket = aSocket;
+			try
+			{
+				itsOutputStream = itsSocket.getOutputStream();
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
 		
-		public SenderThread(ServerSocket aServerSocket)
-		{
-			super(aServerSocket, false);
-			init();
-		}
-
-		public SenderThread(Socket aSocket)
-		{
-			super(aSocket, false);
-			init();
-		}
-		
-		private void init()
-		{
-			Runtime.getRuntime().addShutdownHook(new MyShutdownHook(this));
-			
-			setDaemon(true);
-			start();
-			
-			AgentReady.READY = true;			
-		}
-
-		public void setThreadInfosList(List<SocketThreadData> aThreadInfosList)
-		{
-			itsThreadInfosList = aThreadInfosList;
-		}
-
-		protected void process (
-				OutputStream aOutputStream, 
-				InputStream aInputStream) 
-				throws IOException, InterruptedException
+		public void sendHostName()
 		{
 			try
 			{
-				if (! itsHostNameSent)
-				{
-					DataOutputStream theStream = new DataOutputStream(aOutputStream);
-					theStream.writeUTF(AgentConfig.getHostName());
-					itsHostNameSent = true;
-				}
-				
-				send(aOutputStream);
-				Thread.sleep (500);
+				DataOutputStream theStream = new DataOutputStream(itsOutputStream);
+				theStream.writeUTF(AgentConfig.getHostName());
 			}
-			catch (ConcurrentModificationException e1)
+			catch (IOException e)
 			{
+				throw new RuntimeException(e);
 			}
 		}
 		
-		@Override
-		protected void disconnected()
+		public synchronized void sendLog(ByteArrayOutputStream aStream)
 		{
-			itsHostNameSent = false;
-		}
-		
-		@Override
-		protected void processInterrupted(
-				OutputStream aOutputStream, 
-				InputStream aInputStream) 
-				throws IOException, InterruptedException
-		{
-			send(aOutputStream);
-			System.out.println("SocketCollector: Shut down");
-		}
-
-		private void send(OutputStream aOutputStream) throws IOException
-		{
-			if (itsThreadInfosList == null) return;
-			
-			for (Iterator<SocketThreadData> theIterator = itsThreadInfosList.iterator(); theIterator.hasNext();)
+			try
 			{
-				SocketThreadData aThread = theIterator.next();
-				aThread.sendLog(aOutputStream);
+				aStream.writeTo(itsOutputStream);
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
 			}
 		}
 	}
-	
-	private static class MyShutdownHook extends Thread
-	{
-		private SenderThread itsThread;
 		
-		public MyShutdownHook(SenderThread aThread)
-		{
-			itsThread = aThread;
-		}
-
+	private class MyShutdownHook extends Thread
+	{
 		@Override
 		public void run()
 		{
 			System.out.println("SocketCollector: Shutting down");
-			itsThread.interrupt();
+			
+			if (itsThreadDataList == null) return;
+			
+			for (SocketThreadData theData : itsThreadDataList) theData.shutDown();
+			
+			System.out.println("SocketLogCollector: flushed all threads.");
 		}
 	}
 }

@@ -278,6 +278,51 @@ JNIEXPORT void JNICALL Java_tod_utils_NativeStream_i2b
 	env->ReleasePrimitiveArrayCritical(dest, d, 0);
 }
 
+static char buffer[10000];
+
+
+static char* cpyByte(char* dest, jbyte v)
+{
+	memcpy(dest, &v, 1);
+	return dest+1;
+}
+
+static char* cpyShort(char* dest, jshort v)
+{
+	memcpy(dest, &v, 2);
+	return dest+2;
+}
+
+static char* cpyInt(char* dest, jint v)
+{
+	memcpy(dest, &v, 4);
+	return dest+4;
+}
+
+static char* cpyLong(char* dest, jlong v)
+{
+	memcpy(dest, &v, 8);
+	return dest+8;
+}
+
+
+static char* otherbuf = (char*) malloc(200);
+
+/*
+ * Class:     tod_experiments_NativeLog
+ * Method:    log
+ * Signature: (IBSJ)V
+ */
+JNIEXPORT void JNICALL Java_tod_experiments_NativeLog_log
+  (JNIEnv * env, jclass cls, jint a, jbyte b, jshort c, jlong d)
+{
+	char* buf = otherbuf;
+	buf = cpyInt(buf, a);
+	buf = cpyByte(buf, b);
+	buf = cpyShort(buf, c);
+	buf = cpyLong(buf, d);
+}
+
 
 #ifdef __cplusplus
 }
