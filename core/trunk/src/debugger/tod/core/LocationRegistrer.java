@@ -11,6 +11,7 @@ import java.util.Map;
 import org.objectweb.asm.Type;
 
 import tod.Util;
+import tod.core.ILocationRegistrer.Stats;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.ArrayTypeInfo;
 import tod.core.database.structure.BehaviorInfo;
@@ -320,6 +321,13 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationsReposito
 		}
 
 		return null;
+	}
+	
+	
+
+	public Stats getStats()
+	{
+		return new Stats(itsTypes.size(), itsBehaviors.size(), itsFields.size());
 	}
 
 	/**

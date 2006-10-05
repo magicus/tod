@@ -39,7 +39,7 @@ public class AgentConfig
 	/**
 	 * Number of bits of original timestamp values that are considered inaccurate.
 	 */
-	public static final int TIMESTAMP_ADJUST_INACCURACY = 4;
+	public static final int TIMESTAMP_ADJUST_INACCURACY = 0;
 	
 	/**
 	 * Mask of artificial timestamp bits.

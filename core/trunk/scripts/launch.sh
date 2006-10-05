@@ -14,14 +14,21 @@ case "$1" in
 		exit 1;;
 esac
 	
+VMARGS=''
+VMARGS="$VMARGS -Xmx512m"
+VMARGS="$VMARGS -Djava.library.path=$NATIVE"
+VMARGS="$VMARGS -ea"
+VMARGS="$VMARGS -server"
+VMARGS="$VMARGS -cp $CLASSPATH"
+VMARGS="$VMARGS -Dnode-data-dir=$DATA_DIR"
+VMARGS="$VMARGS -Dmaster-host=$MASTER_HOST"
+VMARGS="$VMARGS -Devents-file=$EVENTS_FILE"
+VMARGS="$VMARGS -Dlocations-file=$LOCATIONS_FILE"
 
-$JAVA_HOME/bin/java -Xmx512m\
- -Djava.library.path=$NATIVE\
- -ea\
- -server\
- -cp $CLASSPATH\
- -Dnode-data-dir=$DATA_DIR\
- -Dmaster-host=$MASTER_HOST\
- -Devents-file=$EVENTS_FILE\
- -Dlocations-file=$LOCATIONS_FILE\
- $MAIN $2 $3 $4 $5
+if [ -n "$JDWP_PORT" ]
+then
+	VMARGS="$VMARGS -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=$JDWP_PORT"
+fi
+
+
+$JAVA_HOME/bin/java $VMARGS $MAIN $2 $3 $4 $5

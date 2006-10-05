@@ -6,6 +6,7 @@ package tod.utils.remote;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+import tod.core.ILocationRegistrer.Stats;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
@@ -34,4 +35,7 @@ public interface RILocationsRepository extends Remote
 	public Iterable<IBehaviorInfo> getBehaviours() throws RemoteException;
 	public Iterable<IFieldInfo> getFields() throws RemoteException;
 	public Iterable<String> getFiles() throws RemoteException;
+	public Stats getStats() throws RemoteException;
+	
+
 }

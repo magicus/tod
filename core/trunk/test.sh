@@ -1,7 +1,7 @@
 #! /bin/sh
 
 AGENT=./libbci-agent.so
-CLASSPATH=./bin
+CLASSPATH=./bin:../zz.utils/bin
 
 HOST=localhost
 #HOST=syntagma.dim.uchile.cl
@@ -19,7 +19,7 @@ VMARGS="$VMARGS -Xmx256m"
 #VMARGS="$VMARGS -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"
 
 #java $VMARGS -cp ./bin dummy.Dummy
-~/apps/eclipse-3.3/eclipse -data ~/eclipse/ws-tod -vmargs $VMARGS
+~/apps/eclipse-3.3/eclipse -data ~/eclipse/ws-tod -consolelog -vmargs $VMARGS
 
 
 #Machines:

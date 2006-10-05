@@ -42,7 +42,7 @@ static jvmtiEnv *globalJvmti;
 // Configuration data
 static char* cfgCachePath = NULL;
 static int cfgSkipCoreClasses = 0;
-int cfgVerbose = 1;
+int cfgVerbose = 0;
 
 // System properties configuration data.
 static char* cfgHost = NULL;
@@ -384,9 +384,6 @@ cbException(
 	jvmtiJlocationFormat locationFormat;
 	int bytecodeIndex = -1;
 	
-	// Obtain timestamp and thread id
-	jlong timestamp = jni->CallStaticLongMethod(class_System, method_System_nanoTime);
-	
 	// Obtain method information
 	jvmti->GetMethodName(method, &methodName, &methodSignature, NULL);
 	jvmti->GetMethodDeclaringClass(method, &methodDeclaringClass);
@@ -401,7 +398,6 @@ cbException(
 	jni->CallStaticVoidMethod(
 		class_ExceptionGeneratedReceiver, 
 		method_ExceptionGeneratedReceiver_exceptionGenerated,
-		timestamp,
 		jni->NewStringUTF(methodName),
 		jni->NewStringUTF(methodSignature),
 		jni->NewStringUTF(methodDeclaringClassSignature),
@@ -469,7 +465,7 @@ cbVMInit(
 		jni->GetStaticMethodID(
 			class_ExceptionGeneratedReceiver,
 			"exceptionGenerated", 
-			"(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Throwable;)V");
+			"(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Throwable;)V");
 	
 	if (cfgVerbose) printf("VMInit - done\n");
 	

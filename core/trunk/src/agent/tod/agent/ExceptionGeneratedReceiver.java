@@ -16,7 +16,6 @@ public class ExceptionGeneratedReceiver
 	}
 	
 	public static void exceptionGenerated(
-			long aTimestamp,
 			String aMethodName,
 			String aMethodSignature,
 			String aMethodDeclaringClassSignature,
@@ -24,7 +23,6 @@ public class ExceptionGeneratedReceiver
 			Throwable aThrowable)
 	{
 		if (AgentReady.READY) AgentConfig.getInterpreter().logExceptionGenerated(
-				aTimestamp, 
 				aMethodName,
 				aMethodSignature, 
 				aMethodDeclaringClassSignature,

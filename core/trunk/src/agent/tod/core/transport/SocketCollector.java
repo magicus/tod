@@ -6,17 +6,14 @@ package tod.core.transport;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
-import java.util.Iterator;
 import java.util.List;
 
 import tod.agent.AgentConfig;
 import tod.agent.AgentReady;
+import tod.agent.AgentUtils;
 import tod.core.HighLevelCollector;
 import tod.core.Output;
 import tod.core.EventInterpreter.ThreadData;
@@ -32,7 +29,9 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 	private static final boolean DO_SEND = true;
 	
 	private List<SocketThreadData> itsThreadDataList = new ArrayList<SocketThreadData>();
+	private NakedLinkedList<SocketThreadData> itsLRUList = new NakedLinkedList<SocketThreadData>();
 	private Sender itsSender;
+	private SenderThread itsSenderThread = new SenderThread();
 	
 	public SocketCollector(String aHostname, int aPort) throws IOException 
 	{
@@ -44,6 +43,8 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		itsSender = new Sender(aSocket);
 		itsSender.sendHostName();
 		Runtime.getRuntime().addShutdownHook(new MyShutdownHook());
+		
+		itsSenderThread.start();
 
 		AgentReady.READY = true;
 	}
@@ -74,7 +75,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = aThread.packetStart();
+        	DataOutputStream theStream = aThread.packetStart(aTimestamp);
         	
         	CollectorPacketWriter.sendBehaviorExit(
         			theStream,
@@ -111,7 +112,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = aThread.packetStart();
+        	DataOutputStream theStream = aThread.packetStart(aTimestamp);
         	
         	CollectorPacketWriter.sendException(
         			theStream,
@@ -148,7 +149,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = aThread.packetStart();
+        	DataOutputStream theStream = aThread.packetStart(aTimestamp);
         	
         	CollectorPacketWriter.sendFieldWrite(
         			theStream, 
@@ -186,7 +187,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = aThread.packetStart();
+        	DataOutputStream theStream = aThread.packetStart(aTimestamp);
         	
         	CollectorPacketWriter.sendInstantiation(
         			theStream,
@@ -223,7 +224,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = aThread.packetStart();
+        	DataOutputStream theStream = aThread.packetStart(aTimestamp);
         	
         	CollectorPacketWriter.sendLocalWrite(
         			theStream,
@@ -260,7 +261,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = aThread.packetStart();
+        	DataOutputStream theStream = aThread.packetStart(aTimestamp);
         	
         	CollectorPacketWriter.sendMethodCall(
         			theStream,
@@ -295,7 +296,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = aThread.packetStart();
+        	DataOutputStream theStream = aThread.packetStart(aTimestamp);
         	
         	CollectorPacketWriter.sendOutput(
         			theStream, 
@@ -331,7 +332,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = aThread.packetStart();
+        	DataOutputStream theStream = aThread.packetStart(aTimestamp);
         	
         	CollectorPacketWriter.sendSuperCall(
         			theStream,
@@ -361,7 +362,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = aThread.packetStart();
+        	DataOutputStream theStream = aThread.packetStart(0);
         	CollectorPacketWriter.sendThread(theStream, aThread.getId(), aJVMThreadId, aName);
             aThread.packetEnd();
         }
@@ -370,6 +371,9 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
         	throw new RuntimeException(e);
         }
 	}
+	
+	private long itsBiggestDeltaT;
+
 	
 	/**
 	 * Maintains the thread specific information that permits to construct
@@ -403,6 +407,14 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		
 		private boolean itsShutDown = false;
 		
+		private long itsFirstTimestamp;
+		private long itsLastTimestamp;
+		
+		/**
+		 * Our own entry in the LRU list
+		 */
+		private NakedLinkedList.Entry<SocketThreadData> itsEntry;
+		
 		
 		public SocketThreadData(int aId)
 		{
@@ -410,12 +422,20 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			itsBuffer = new ByteArrayOutputStream();
 			itsLog = new ByteArrayOutputStream(BUFFER_SIZE);
 			itsDataOutputStream = new DataOutputStream(itsBuffer);
+			
+			// Add ourself to LRU list
+			itsEntry = itsLRUList.createEntry(this);
+			itsLRUList.addLast(itsEntry);
 		}
 
-		public DataOutputStream packetStart()
+		public DataOutputStream packetStart(long aTimestamp)
 		{
 			if (itsSending) throw new RuntimeException();
 			itsSending = true;
+			
+			if (itsFirstTimestamp == 0) itsFirstTimestamp = aTimestamp;
+			if (aTimestamp != 0) itsLastTimestamp = aTimestamp;
+			
 			return itsDataOutputStream;
 		}
 		
@@ -442,14 +462,28 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			}
 		}
 		
-		private void send()
+		public synchronized void send()
 		{
 			if (! itsShutDown && itsLog.size() > 0)
 			{
-//				System.out.println("Sending "+itsLog.size()+" bytes");
+//				long theDeltaT = itsLastTimestamp-itsFirstTimestamp;
+//				itsBiggestDeltaT = Math.max(itsBiggestDeltaT, theDeltaT);
+//				System.out.println(String.format(
+//						"Sending %d bytes, deltaT: %s, biggest: %s, id: %02d",
+//						itsLog.size(),
+//						AgentUtils.formatTimestamp(theDeltaT),
+//						AgentUtils.formatTimestamp(itsBiggestDeltaT),
+//						getId()));
+				
 				itsSender.sendLog(itsLog);
 				itsLog.reset();
 			}
+			
+			itsFirstTimestamp = itsLastTimestamp = 0;
+			
+			// Place ourself at the end of the LRU list
+			itsLRUList.remove(itsEntry);
+			itsLRUList.addLast(itsEntry);
 		}
 		
 		public void shutDown() 
@@ -517,4 +551,47 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			System.out.println("SocketLogCollector: flushed all threads.");
 		}
 	}
+	
+	
+	/**
+	 * This thread periodically flushes the least recently flushed thread data.
+	 * This permits to avoid data being cached for too long in waiting threads.
+	 * @author gpothier
+	 */
+	private class SenderThread extends Thread
+	{
+		public SenderThread()
+		{
+			setDaemon(true);
+			setPriority(MAX_PRIORITY);
+		}
+		
+		@Override
+		public void run()
+		{
+			try
+			{
+				while(true)
+				{
+					if (itsLRUList.size() > 0)
+					{
+						SocketThreadData theFirst = itsLRUList.getFirst();
+//						System.out.println("Flushing "+theFirst.getId());
+						theFirst.send();
+					}
+//					for(SocketThreadData theData : itsThreadDataList)
+//					{
+//						theData.send();
+//					}
+					Thread.sleep(10);
+				}
+			}
+			catch (InterruptedException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		
+	}
+	
 }

@@ -346,17 +346,10 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	 * <li>Timestamp</li>
 	 * <li>Thread id</li>
 	 */
-	public void pushStdLogArgs(boolean aAllowFastTimestamp)
+	public void pushStdLogArgs()
 	{
 		// ->target collector
 		BCIUtils.pushCollector(mv);
-		
-		// ->timestamp
-		mv.visitMethodInsn(
-				INVOKESTATIC, 
-				"tod/agent/AgentUtils",
-				aAllowFastTimestamp ? "timestamp_fast" : "timestamp", 
-				"()J");
 	}
 
 	/**
@@ -385,7 +378,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			mv.visitJumpInsn(IFEQ, l);
 		}
 		
-		pushStdLogArgs(false);
+		pushStdLogArgs();
 	
 		// ->bytecode index
 		BCIUtils.pushInt(mv, aBytecodeIndex);
@@ -411,7 +404,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				INVOKEVIRTUAL, 
 				Type.getInternalName(EventInterpreter.class), 
 				"logBeforeBehaviorCall", 
-				"(JII"+Type.getDescriptor(BehaviorCallType.class)+"Ljava/lang/Object;[Ljava/lang/Object;)V");
+				"(II"+Type.getDescriptor(BehaviorCallType.class)+"Ljava/lang/Object;[Ljava/lang/Object;)V");
 		
 		mv.visitLabel(l);
 	}
@@ -465,7 +458,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			mv.visitJumpInsn(IFEQ, l);
 		}
 		
-		pushStdLogArgs(false);
+		pushStdLogArgs();
 		
 		// ->bytecode index
 		BCIUtils.pushInt(mv, aBytecodeIndex);
@@ -484,7 +477,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				INVOKEVIRTUAL, 
 				Type.getInternalName(EventInterpreter.class), 
 				"logAfterBehaviorCall", 
-				"(JIILjava/lang/Object;Ljava/lang/Object;)V");
+				"(IILjava/lang/Object;Ljava/lang/Object;)V");
 		
 		mv.visitLabel(l);
 	}
@@ -522,7 +515,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			mv.visitJumpInsn(IFEQ, l);
 		}
 		
-		pushStdLogArgs(false);
+		pushStdLogArgs();
 		
 		// ->bytecode index
 		BCIUtils.pushInt(mv, aBytecodeIndex);
@@ -541,7 +534,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				INVOKEVIRTUAL, 
 				Type.getInternalName(EventInterpreter.class), 
 				"logAfterBehaviorCallWithException", 
-				"(JIILjava/lang/Object;Ljava/lang/Object;)V");
+				"(IILjava/lang/Object;Ljava/lang/Object;)V");
 		
 		mv.visitLabel(l);
 	}
@@ -560,7 +553,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			mv.visitJumpInsn(IFEQ, l);
 		}
 		
-		pushStdLogArgs(true);
+		pushStdLogArgs();
 		
 		// ->bytecode index
 		BCIUtils.pushInt(mv, aBytecodeIndex);
@@ -580,7 +573,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				INVOKEVIRTUAL, 
 				Type.getInternalName(EventInterpreter.class), 
 				"logFieldWrite", 
-				"(JIILjava/lang/Object;Ljava/lang/Object;)V");
+				"(IILjava/lang/Object;Ljava/lang/Object;)V");
 		
 		mv.visitLabel(l);
 	}
@@ -598,7 +591,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			mv.visitJumpInsn(IFEQ, l);
 		}
 		
-		pushStdLogArgs(true);
+		pushStdLogArgs();
 		
 		// ->bytecode index
 		BCIUtils.pushInt(mv, aBytecodeIndex);
@@ -614,7 +607,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				INVOKEVIRTUAL, 
 				Type.getInternalName(EventInterpreter.class), 
 				"logLocalVariableWrite", 
-				"(JIILjava/lang/Object;)V");
+				"(IILjava/lang/Object;)V");
 		
 		mv.visitLabel(l);
 	}
@@ -632,7 +625,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			mv.visitJumpInsn(IFEQ, l);
 		}
 		
-		pushStdLogArgs(false);
+		pushStdLogArgs();
 	
 		// ->method id
 		BCIUtils.pushInt(mv, aMethodId);
@@ -655,7 +648,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				Opcodes.INVOKEVIRTUAL, 
 				Type.getInternalName(EventInterpreter.class), 
 				"logBehaviorEnter", 
-				"(JI"+Type.getDescriptor(BehaviorCallType.class)+"Ljava/lang/Object;[Ljava/lang/Object;)V");	
+				"(I"+Type.getDescriptor(BehaviorCallType.class)+"Ljava/lang/Object;[Ljava/lang/Object;)V");	
 	
 		mv.visitLabel(l);
 	}
@@ -669,7 +662,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			mv.visitJumpInsn(IFEQ, l);
 		}
 		
-		pushStdLogArgs(false);
+		pushStdLogArgs();
 		
 		// ->bytecode index
 		mv.visitVarInsn(ILOAD, itsReturnLocationVar);
@@ -684,7 +677,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				Opcodes.INVOKEVIRTUAL, 
 				Type.getInternalName(EventInterpreter.class), 
 				"logBehaviorExit", 
-				"(JIILjava/lang/Object;)V");	
+				"(IILjava/lang/Object;)V");	
 	
 		mv.visitLabel(l);
 	}
@@ -698,7 +691,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			mv.visitJumpInsn(IFEQ, l);
 		}
 		
-		pushStdLogArgs(false);
+		pushStdLogArgs();
 		
 		// ->method id
 		BCIUtils.pushInt(mv, aMethodId);
@@ -710,7 +703,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				Opcodes.INVOKEVIRTUAL, 
 				Type.getInternalName(EventInterpreter.class), 
 				"logBehaviorExitWithException", 
-				"(JILjava/lang/Object;)V");	
+				"(ILjava/lang/Object;)V");	
 		
 		mv.visitLabel(l);
 	}

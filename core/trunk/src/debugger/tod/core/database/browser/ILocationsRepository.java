@@ -3,6 +3,7 @@
  */
 package tod.core.database.browser;
 
+import tod.core.ILocationRegistrer.Stats;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
@@ -78,5 +79,12 @@ public interface ILocationsRepository
 	 * Returns all registered files.
 	 */
 	public Iterable<String> getFiles();
+	
+	/**
+	 * Returns statistics about registered locations
+	 */
+	public Stats getStats();
+	
+
 	
 }

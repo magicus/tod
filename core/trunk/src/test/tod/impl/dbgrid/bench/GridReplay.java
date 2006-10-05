@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+import tod.agent.AgentUtils;
 import tod.core.ILogCollector;
 import tod.core.LocationRegistrer;
 import tod.core.Output;
@@ -52,7 +53,7 @@ public class GridReplay
 		float dt = (t1-t0)/1000f;
 		float theEpS = theCount/dt;
 		System.out.println("Events: "+theCount+" time: "+dt+"s rate: "+theEpS+"ev/s");
-		System.exit(0);
+//		System.exit(0);
 	}
 	
 	private static class DummyCollector implements ILogCollector
@@ -103,6 +104,10 @@ public class GridReplay
 		}
 
 		public void thread(int aThreadId, long aJVMThreadId, String aName)
+		{
+		}
+
+		public void registerString(long aObjectUID, String aString)
 		{
 		}
 		

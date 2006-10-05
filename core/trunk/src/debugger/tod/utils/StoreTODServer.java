@@ -103,6 +103,8 @@ public class StoreTODServer extends TODServer
 				new File(GeneralConfig.LOCATIONS_FILE), 
 				"[-tod.** -remotebci.** +tod.test.** +tod.demo.**]",
 				"[-java.** -javax.** -sun.** -com.sun.**]");
+		
+		System.out.println(theLocationRegistrer.getStats());
 
 		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theConfig);
 		

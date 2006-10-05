@@ -82,6 +82,11 @@ public abstract class EventCollector implements ILogCollector
 		itsThreadsMap.put(aJVMThreadId, theThread);
 	}
 	
+	public void registerString(long aObjectUID, String aString)
+	{
+		//TODO: implement
+	}
+	
 	/**
 	 * This method fetches the behavior identified by the supplied names.
 	 */

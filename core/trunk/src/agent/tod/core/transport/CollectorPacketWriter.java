@@ -426,7 +426,7 @@ public class CollectorPacketWriter
 
 	private static void sendMessageType (DataOutputStream aStream, MessageType aMessageType) throws IOException
 	{
-		aStream.writeByte(aMessageType.ordinal());			
+		aStream.writeByte(aMessageType.ordinal());	
 	}
 	
 	private static class MyObjectOutputStream extends ObjectOutputStream

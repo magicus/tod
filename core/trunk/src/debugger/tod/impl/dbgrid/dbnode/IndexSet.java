@@ -30,6 +30,7 @@ public abstract class IndexSet<T extends IndexTuple>
 		itsName = aName;
 		itsFile = aFile;
 		itsIndexes = new HierarchicalIndex[aIndexCount];
+		System.out.println("Created index "+itsName+" with "+aIndexCount+" entries.");
 		Monitor.getInstance().register(this);
 	}
 
@@ -43,6 +44,7 @@ public abstract class IndexSet<T extends IndexTuple>
 	 */
 	public HierarchicalIndex<T> getIndex(int aIndex)
 	{
+		if (aIndex >= itsIndexes.length) throw new IndexOutOfBoundsException("Index overflow for "+itsName+": "+aIndex+" >= "+itsIndexes.length);
 		HierarchicalIndex<T> theIndex = itsIndexes[aIndex];
 		if (theIndex == null)
 		{

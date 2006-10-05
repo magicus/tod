@@ -51,114 +51,139 @@ public interface ILocationRegistrer {
 			String aFieldName);
 	
     /**
-     * Represents an entry of a method's LineNumberTable attribute.
-     * @see http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#22856 
-     * @author gpothier
-     */
-    public static class LineNumberInfo implements Serializable
-    {
-        private short itsStartPc;
-        private short itsLineNumber;
-        
-        public LineNumberInfo(short aStartPc, short aLineNumber)
-        {
-            itsStartPc = aStartPc;
-            itsLineNumber = aLineNumber;
-        }
+	 * Represents an entry of a method's LineNumberTable attribute.
+	 * @see http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#22856 
+	 * @author gpothier
+	 */
+	public static class LineNumberInfo implements Serializable
+	{
+		private short itsStartPc;
+		private short itsLineNumber;
 
-        public short getLineNumber()
-        {
-            return itsLineNumber;
-        }
+		public LineNumberInfo(short aStartPc, short aLineNumber)
+		{
+			itsStartPc = aStartPc;
+			itsLineNumber = aLineNumber;
+		}
 
-        public short getStartPc()
-        {
-            return itsStartPc;
-        }        
-    }
-    
-    /**
-     * Represents an entry of a method's LocalVariableTable attribute. 
-     * @see http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#5956
-     * @author gpothier
-     */
-    public static class LocalVariableInfo implements Serializable
-    {
-        private short itsStartPc;
-        private short itsLength;
-        private String itsVariableName;
-        private String itsVariableTypeName;
-        private short itsIndex;
-        
-        public LocalVariableInfo(short aStartPc, short aLength, String aVariableName, String aVariableTypeName, short aIndex)
-        {
-            itsStartPc = aStartPc;
-            itsLength = aLength;
-            itsVariableName = aVariableName;
-            itsVariableTypeName = aVariableTypeName;
-            itsIndex = aIndex;
-        }
+		public short getLineNumber()
+		{
+			return itsLineNumber;
+		}
 
-        /**
-         * Index of the local variable's storage in the frame's local variables array
-         * @return
-         */
-        public short getIndex()
-        {
-            return itsIndex;
-        }
+		public short getStartPc()
+		{
+			return itsStartPc;
+		}
+	}
 
-        /**
-         * Index of first bytecoed where this local variable can be used.
-         */
-        public short getStartPc()
-        {
-            return itsStartPc;
-        }
+	/**
+	 * Represents an entry of a method's LocalVariableTable attribute. 
+	 * @see http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#5956
+	 * @author gpothier
+	 */
+	public static class LocalVariableInfo implements Serializable
+	{
+		private short itsStartPc;
+		private short itsLength;
+		private String itsVariableName;
+		private String itsVariableTypeName;
+		private short itsIndex;
 
-        /**
-         * Length of the bytecode span where this variable can be used.
-         */
-        public short getLength()
-        {
-            return itsLength;
-        }
+		public LocalVariableInfo(short aStartPc, short aLength, String aVariableName, String aVariableTypeName,
+				short aIndex)
+		{
+			itsStartPc = aStartPc;
+			itsLength = aLength;
+			itsVariableName = aVariableName;
+			itsVariableTypeName = aVariableTypeName;
+			itsIndex = aIndex;
+		}
 
-        /**
-         * Name of the variable.
-         */
-        public String getVariableName()
-        {
-            return itsVariableName;
-        }
+		/**
+		 * Index of the local variable's storage in the frame's local variables array
+		 * @return
+		 */
+		public short getIndex()
+		{
+			return itsIndex;
+		}
 
-        /**
-         * Variable's type name.
-         */
-        public String getVariableTypeName()
-        {
-            return itsVariableTypeName;
-        }
-        
-        /**
-         * Indicates if this entry matches the local variable at the specified index
-         * for the specified bytecode position
-         * @param aPc A position in the bytecode where the variable is used.
-         * @param aIndex Index of the local variable in the frame's local variables array.
-         */
-        public boolean match (int aPc, int aIndex)
-        {
-            return aIndex == getIndex() && available(aPc);
-        }
-        
-        /**
-         * Indicates if this entry is available at the specified bytecode position.
-         * @param aPc A position in the bytecode where the variable is used.
-         */
-        public boolean available (int aPc)
-        {
-        	return aPc >= getStartPc() && aPc <= getStartPc() + getLength();
-        }
-    }
+		/**
+		 * Index of first bytecoed where this local variable can be used.
+		 */
+		public short getStartPc()
+		{
+			return itsStartPc;
+		}
+
+		/**
+		 * Length of the bytecode span where this variable can be used.
+		 */
+		public short getLength()
+		{
+			return itsLength;
+		}
+
+		/**
+		 * Name of the variable.
+		 */
+		public String getVariableName()
+		{
+			return itsVariableName;
+		}
+
+		/**
+		 * Variable's type name.
+		 */
+		public String getVariableTypeName()
+		{
+			return itsVariableTypeName;
+		}
+
+		/**
+		 * Indicates if this entry matches the local variable at the specified index
+		 * for the specified bytecode position
+		 * @param aPc A position in the bytecode where the variable is used.
+		 * @param aIndex Index of the local variable in the frame's local variables array.
+		 */
+		public boolean match(int aPc, int aIndex)
+		{
+			return aIndex == getIndex() && available(aPc);
+		}
+
+		/**
+		 * Indicates if this entry is available at the specified bytecode position.
+		 * @param aPc A position in the bytecode where the variable is used.
+		 */
+		public boolean available(int aPc)
+		{
+			return aPc >= getStartPc() && aPc <= getStartPc() + getLength();
+		}
+	}
+
+	public static class Stats
+	{
+		public final int nTypes;
+		public final int nBehaviors;
+		public final int nFields;
+
+		public Stats(int aTypes, int aBehaviors, int aFields)
+		{
+			nTypes = aTypes;
+			nBehaviors = aBehaviors;
+			nFields = aFields;
+		}
+		
+		@Override
+		public String toString()
+		{
+			return String.format(
+					"Location repository stats: %d types, %d behaviors, %d fields",
+					nTypes,
+					nBehaviors,
+					nFields);
+		}
+	}
 
 }

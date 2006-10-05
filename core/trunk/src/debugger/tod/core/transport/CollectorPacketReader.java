@@ -124,19 +124,19 @@ public class CollectorPacketReader
 		return MessageType.values()[theByte];
 	}
 	
-    private static Object[] readArguments(DataInputStream aStream) throws IOException
+    private static Object[] readArguments(DataInputStream aStream, ILogCollector aCollector) throws IOException
     {
         int theCount = aStream.readInt();
         Object[] theArguments = new Object[theCount];
         
         for (int i=0;i<theCount;i++)
         {
-            theArguments[i] = readValue(aStream);
+            theArguments[i] = readValue(aStream, aCollector);
         }
         return theArguments;
     }
     
-	private static Object readValue (DataInputStream aStream) throws IOException
+	private static Object readValue (DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
 		MessageType theType = readMessageType(aStream);
 		switch (theType)
@@ -170,9 +170,9 @@ public class CollectorPacketReader
 				ObjectInputStream theStream = new ObjectInputStream(aStream);
 				try
 				{
-					Object theString = theStream.readObject();
-					// TODO: register string
-					return theString;
+					String theString = (String) theStream.readObject();
+					aCollector.registerString(theObjectId, theString);
+					return new ObjectId.ObjectUID(theObjectId);
 				}
 				catch (ClassNotFoundException e)
 				{
@@ -203,8 +203,8 @@ public class CollectorPacketReader
 				aStream.readBoolean(),
 				aStream.readInt(),
 				aStream.readInt(),
-				readValue(aStream),
-				readArguments(aStream));
+				readValue(aStream, aCollector),
+				readArguments(aStream, aCollector));
 	}
 	
 	public static void readInstantiation(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -218,8 +218,8 @@ public class CollectorPacketReader
 				aStream.readBoolean(),
 				aStream.readInt(),
 				aStream.readInt(),
-				readValue(aStream),
-				readArguments(aStream));
+				readValue(aStream, aCollector),
+				readArguments(aStream, aCollector));
 	}
 	
 	public static void readSuperCall(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -233,8 +233,8 @@ public class CollectorPacketReader
 				aStream.readBoolean(),
 				aStream.readInt(),
 				aStream.readInt(),
-				readValue(aStream),
-				readArguments(aStream));
+				readValue(aStream, aCollector),
+				readArguments(aStream, aCollector));
 
 	}
 	
@@ -248,7 +248,7 @@ public class CollectorPacketReader
 				aStream.readInt(),
 				aStream.readInt(),
 				aStream.readBoolean(),
-				readValue(aStream));
+				readValue(aStream, aCollector));
 	}
 	
 	public static void readFieldWrite(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -260,8 +260,8 @@ public class CollectorPacketReader
 				aStream.readLong(),
 				aStream.readInt(),
 				aStream.readInt(),
-				readValue(aStream),
-				readValue(aStream));
+				readValue(aStream, aCollector),
+				readValue(aStream, aCollector));
 	}
 	
 	public static void readLocalWrite(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -273,7 +273,7 @@ public class CollectorPacketReader
 				aStream.readLong(),
 				aStream.readInt(),
 				aStream.readInt(),
-				readValue(aStream));
+				readValue(aStream, aCollector));
 	}
 	
 	public static void readException(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -287,7 +287,7 @@ public class CollectorPacketReader
 				aStream.readUTF(),
 				aStream.readUTF(),
 				aStream.readInt(),
-				readValue(aStream));
+				readValue(aStream, aCollector));
 	}
 	
 	public static void readOutput(DataInputStream aStream, ILogCollector aCollector) throws IOException

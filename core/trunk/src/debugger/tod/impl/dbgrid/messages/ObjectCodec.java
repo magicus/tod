@@ -171,6 +171,27 @@ public class ObjectCodec
 				aStruct.writeInt(theByte.byteValue(), 8);
 			}
 		}, 
+		BOOLEAN()
+		{
+			@Override
+			public int getObjectBits(Object aObject)
+			{
+				return 1;
+			}
+			
+			@Override
+			public Object readObject(BitStruct aStruct)
+			{
+				return aStruct.readBoolean();
+			}
+			
+			@Override
+			public void writeObject(BitStruct aStruct, Object aObject)
+			{
+				Boolean theBoolean = (Boolean) aObject;
+				aStruct.writeBoolean(theBoolean.booleanValue());
+			}
+		}, 
 		DOUBLE()
 		{
 			@Override
@@ -246,6 +267,7 @@ public class ObjectCodec
 		// The following code is faster than using a map
 		// (Pentium M 2ghz)
 		if (theClass == Byte.class) return ObjectType.BYTE;
+		else if (theClass == Boolean.class) return ObjectType.BOOLEAN;
 		else if (theClass == Character.class) return ObjectType.CHAR;
 		else if (theClass == Double.class) return ObjectType.DOUBLE;
 		else if (theClass == Float.class) return ObjectType.FLOAT;
@@ -253,7 +275,7 @@ public class ObjectCodec
 		else if (theClass == Long.class) return ObjectType.LONG;
 		else if (theClass == Short.class) return ObjectType.SHORT;
 		else if (theClass == ObjectId.ObjectUID.class) return ObjectType.UID;
-		else throw new RuntimeException("Not handled: "+aObject);
+		else throw new RuntimeException("Not handled: "+aObject+" ("+theClass+")");
 	}
 	
 	/**

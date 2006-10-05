@@ -15,19 +15,22 @@ public class AgentUtils
 		
 		return ((aTimestamp << AgentConfig.TIMESTAMP_ADJUST_SHIFT)
 				& ~AgentConfig.TIMESTAMP_ADJUST_MASK)
-				| aSerial & AgentConfig.TIMESTAMP_ADJUST_MASK;
+				| (aSerial & AgentConfig.TIMESTAMP_ADJUST_MASK);
 	}
 	
 	private static final boolean FORCE_FAST_TS = true;
+	private static final boolean FORCE_FALSE_TS = false;
 	private static final int MAX_DTS = 10;
-	private static int dts;
+	private static int dts = MAX_DTS;
 	private static long ts;
+	private static long last_ts;
 	
 	/**
 	 * Returns the current timestamp.
 	 */
 	public static long timestamp()
 	{
+		if (FORCE_FALSE_TS) return timestamp_false();
 		if (FORCE_FAST_TS) return timestamp_fast();
 		else
 		{
@@ -39,11 +42,90 @@ public class AgentUtils
 	
 	public static long timestamp_fast()
 	{
+		if (FORCE_FALSE_TS) return timestamp_false();
 		if (dts++ >= MAX_DTS)
 		{
 			dts = 0;
 			ts = System.nanoTime();
 		}
+		
 		return ts++;
+	}
+	
+	private static synchronized long timestamp_false()
+	{
+		ts += 1 << AgentConfig.TIMESTAMP_ADJUST_SHIFT;
+		
+		if (ts < last_ts) throw new RuntimeException("Out of order!");
+		last_ts = ts;
+		
+		if (ts == 62572800 || ts == 62583552)
+		{
+			System.out.println("AgentUtils.timestamp_real()");
+		}
+		
+		return ts;
+	}
+	
+	public static String formatTimestamp(long aTimestamp)
+	{
+//		aTimestamp >>>= AgentConfig.TIMESTAMP_ADJUST_SHIFT;
+		
+		long theMicros = aTimestamp/1000;
+		aTimestamp -= theMicros*1000;
+		
+		long theMillis = theMicros/1000;
+		theMicros -= theMillis*1000;
+		
+		long theSeconds = theMillis/1000;
+		theMillis -= theSeconds*1000;
+		
+		long theMinutes = theSeconds/60;
+		theSeconds -= theMinutes*60;
+		
+		long theHours = theMinutes/60;
+		theMinutes -= theHours*60;
+		
+		long theDays = theHours/24;
+		theHours -= theDays*24;
+		
+		long theYears = theDays/365;
+		theDays -= theYears*365;
+		
+		boolean theStarted = false;
+		StringBuilder theBuilder = new StringBuilder();
+		if (theYears > 0) 
+		{
+			theBuilder.append(theYears+"y ");
+			theStarted = true;
+		}
+		
+		if (theStarted || theDays > 0)
+		{
+			theBuilder.append(theDays+"d ");
+			theStarted = true;
+		}
+		
+		if (theStarted || theHours > 0)
+		{
+			theBuilder.append(theHours+"h ");
+			theStarted = true;
+		}
+		
+		if (theStarted || theMinutes > 0)
+		{
+			theBuilder.append(theMinutes+"m ");
+			theStarted = true;
+		}
+		
+		if (theStarted || theSeconds > 0)
+		{
+			theBuilder.append(theSeconds+"s ");
+			theStarted = true;
+		}
+		
+		theBuilder.append(String.format("%03d.%03d.%03d", theMillis, theMicros, aTimestamp));
+		
+		return theBuilder.toString();
 	}
 }

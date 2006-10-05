@@ -14,6 +14,7 @@ import java.io.IOException;
 
 import tod.core.BehaviourKind;
 import tod.core.ILocationRegistrer;
+import tod.core.database.browser.ILocationsRepository;
 import tod.core.transport.CollectorPacketReader;
 import tod.core.transport.CollectorPacketWriter;
 
@@ -138,7 +139,7 @@ public class LocationPoolPersister
 				break;
 			}
 		}
-		System.out.println("Stored locations loaded");
+		System.out.println("Stored locations loaded.");
 	}
 	
 }

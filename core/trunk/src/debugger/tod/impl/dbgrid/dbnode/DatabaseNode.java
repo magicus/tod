@@ -65,7 +65,12 @@ implements RIDatabaseNode
 	/**
 	 * Timestamp of the last processed event
 	 */
-	private long itsLastProcessedTimestamp;
+	private long itsLastProcessedTimestamp;	
+	private long itsProcessedEventsCount = 0;
+	
+	private long itsLastAddedTimestamp;
+	private long itsAddedEventsCount = 0;
+	private GridEvent itsLastAddedEvent;
 	
 	private SortedRingBuffer<GridEvent> itsEventBuffer = 
 		new SortedRingBuffer<GridEvent>(DB_EVENT_BUFFER_SIZE, new EventTimestampComparator());
@@ -184,23 +189,52 @@ implements RIDatabaseNode
 	 */
 	public void flush()
 	{
+		System.out.println("DatabaseNode: flushing "+itsEventBuffer.getSize()+" events...");
 		while (! itsEventBuffer.isEmpty()) processEvent(itsEventBuffer.remove());
 		itsFlushed = true;
+		System.out.println("DatabaseNode: flushed");
 	}
 	
 	private void addEvent(GridEvent aEvent)
 	{
+//		System.out.println("AddEvent ts: "+aEvent.getTimestamp());
+		long theTimestamp = aEvent.getTimestamp();
+		if (theTimestamp < itsLastAddedTimestamp)
+		{
+			System.out.println(String.format(
+					"Out of order event: %s(%02d)/%s(%02d) (#%d)",
+					theTimestamp,
+					aEvent.getThread(),
+					itsLastAddedTimestamp,
+					itsLastAddedEvent.getThread(),
+					itsAddedEventsCount));
+		}
+		
+		itsLastAddedTimestamp = theTimestamp;
+		itsLastAddedEvent = aEvent;
+		itsAddedEventsCount++;
+		
 		if (itsEventBuffer.isFull()) processEvent(itsEventBuffer.remove());
+		if (itsAddedEventsCount == 523000)
+		{
+			System.out.println("DatabaseNode.addEvent()");
+		}
 		itsEventBuffer.add(aEvent);
 	}
 	
 	private void processEvent(GridEvent aEvent)
 	{
-		if (aEvent.getTimestamp() < itsLastProcessedTimestamp)
+		long theTimestamp = aEvent.getTimestamp();
+		if (theTimestamp < itsLastProcessedTimestamp)
 		{
-			throw new RuntimeException("Out of order events");
+			throw new RuntimeException(
+					"Out of order event: "+theTimestamp+"/"+itsLastProcessedTimestamp
+					+" (#"+itsProcessedEventsCount+")"
+					+" (buffer size: "+itsEventBuffer.getCapacity()+")");
 		}
-		itsLastProcessedTimestamp = aEvent.getTimestamp();
+		
+		itsLastProcessedTimestamp = theTimestamp;
+		itsProcessedEventsCount++;
 		
 		long theId = itsEventList.add(aEvent);
 		aEvent.index(itsIndexes, theId);		

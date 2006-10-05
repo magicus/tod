@@ -48,7 +48,9 @@ public class EventDispatcher
 	 */
 	public void flush()
 	{
+		System.out.println("Event dispatcher: flushing...");
 		for (DBNodeProxy theProxy : itsNodes) theProxy.flush();
 		itsFlushed = true;
+		System.out.println("Event dispatcher: flushed.");
 	}
 }

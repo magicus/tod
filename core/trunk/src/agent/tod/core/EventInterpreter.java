@@ -10,7 +10,7 @@ import tod.agent.AgentUtils;
  * transforms them into higher-level events.
  * @author gpothier
  */
-public class EventInterpreter<T extends EventInterpreter.ThreadData>
+public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 {
 	private static final boolean LOG = false;
 	private static final boolean IGNORE_ALL = false;
@@ -56,22 +56,22 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 	}
 	
 	public void logBehaviorEnter(
-			long aTimestamp, 
 			int aBehaviorId, 
 			BehaviorCallType aCallType,
 			Object aObject, 
 			Object[] aArguments)
 	{
 		if (IGNORE_ALL) return;
+		long theTimestamp = AgentUtils.timestamp();
 		T theThread = getThreadData();
-		long theTimestamp = theThread.transformTimestamp(aTimestamp);
+		theTimestamp = theThread.transformTimestamp(theTimestamp);
 		
 		
 		FrameInfo theFrame = theThread.currentFrame();
 		
 		if (LOG) System.out.println(String.format(
 				"logBehaviorEnter(%d, %d, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s",
-				aTimestamp,
+				theTimestamp,
 				aBehaviorId,
 				aCallType,
 				getObjectId(aObject),
@@ -129,14 +129,14 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 	}
 
 	public void logBehaviorExit(
-			long aTimestamp,
 			int aOperationBytecodeIndex, 
 			int aBehaviorId,
 			Object aResult)
 	{
 		if (IGNORE_ALL) return;
+		long theTimestamp = AgentUtils.timestamp();
 		T theThread = getThreadData();
-		long theTimestamp = theThread.transformTimestamp(aTimestamp);
+		theTimestamp = theThread.transformTimestamp(theTimestamp);
 		
 
 		FrameInfo theFrame = theThread.popFrame();
@@ -145,7 +145,7 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 		
 		if (LOG) System.out.println(String.format(
 				"logBehaviorExit(%d, %d, %d, %s)\n thread: %d, depth: %d\n frame: %s",
-				aTimestamp,
+				theTimestamp,
 				aOperationBytecodeIndex,
 				aBehaviorId,
 				getObjectId(aResult),
@@ -165,11 +165,14 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 	}
 	
 	public void logBehaviorExitWithException(
-			long aTimestamp, 
 			int aBehaviorId, 
 			Object aException)
 	{
 		if (IGNORE_ALL) return;
+		
+		long theTimestamp = AgentUtils.timestamp();
+		T theThread = getThreadData();
+		theTimestamp = theThread.transformTimestamp(theTimestamp);
 		
 		if (LOG)
 		{
@@ -178,14 +181,11 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 			
 			System.out.println(String.format(
 				"logBehaviorExitWithException(%d, %d, %s)",
-				aTimestamp,
+				theTimestamp,
 				aBehaviorId,
 				aException));
 		}
 
-		T theThread = getThreadData();
-		long theTimestamp = theThread.transformTimestamp(aTimestamp);
-		
 
 		
 		FrameInfo theFrame = theThread.popFrame();
@@ -211,7 +211,6 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 	}
 	
 	public void logExceptionGenerated(
-			long aTimestamp, 
 			String aMethodName,
 			String aMethodSignature,
 			String aMethodDeclaringClassSignature, 
@@ -219,14 +218,15 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 			Object aException)
 	{
 		if (IGNORE_ALL) return;
+		long theTimestamp = AgentUtils.timestamp();
 		T theThread = getThreadData();
-		long theTimestamp = theThread.transformTimestamp(aTimestamp);
+		theTimestamp = theThread.transformTimestamp(theTimestamp);
 
 		FrameInfo theFrame = theThread.currentFrame();
 
 		if (LOG) System.out.println(String.format(
 				"logExceptionGenerated(%d, %%s, %s, %s, %d, %s)\n thread: %d, depth: %d\n frame: %s",
-				aTimestamp,
+				theTimestamp,
 				aMethodName,
 				aMethodSignature,
 				aMethodDeclaringClassSignature,
@@ -253,21 +253,21 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 	}
 	
 	public void logFieldWrite(
-			long aTimestamp,
 			int aOperationBytecodeIndex, 
 			int aFieldId,
 			Object aTarget, 
 			Object aValue)
 	{
 		if (IGNORE_ALL) return;
+		long theTimestamp = AgentUtils.timestamp_fast();
 		T theThread = getThreadData();
-		long theTimestamp = theThread.transformTimestamp(aTimestamp);
+		theTimestamp = theThread.transformTimestamp(theTimestamp);
 
 		FrameInfo theFrame = theThread.currentFrame();
 		
 		if (LOG) System.out.println(String.format(
 				"logFieldWrite(%d, %d, %d, %s, %s)\n thread: %d, depth: %d\n frame: %s",
-				aTimestamp,
+				theTimestamp,
 				aOperationBytecodeIndex,
 				aFieldId,
 				getObjectId(aTarget),
@@ -288,20 +288,20 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 	}
 	
 	public void logLocalVariableWrite(
-			long aTimestamp, 
 			int aOperationBytecodeIndex,
 			int aVariableId,
 			Object aValue)
 	{
 		if (IGNORE_ALL) return;
+		long theTimestamp = AgentUtils.timestamp_fast();
 		T theThread = getThreadData();
-		long theTimestamp = theThread.transformTimestamp(aTimestamp);
+		theTimestamp = theThread.transformTimestamp(theTimestamp);
 
 		FrameInfo theFrame = theThread.currentFrame();
 		
 		if (LOG) System.out.println(String.format(
 				"logLocalVariableWrite(%d, %d, %d, %s)\n thread: %d, depth: %d\n frame: %s",
-				aTimestamp,
+				theTimestamp,
 				aOperationBytecodeIndex,
 				aVariableId,
 				getObjectId(aValue),
@@ -343,7 +343,6 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 	}
 	
 	public void logBeforeBehaviorCall(
-			long aTimestamp, 
 			int aOperationBytecodeIndex,
 			int aBehaviorId,
 			BehaviorCallType aCallType,
@@ -351,14 +350,15 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 			Object[] aArguments)
 	{
 		if (IGNORE_ALL) return;
+		long theTimestamp = AgentUtils.timestamp();
 		T theThread = getThreadData();
-		long theTimestamp = theThread.transformTimestamp(aTimestamp);
+		theTimestamp = theThread.transformTimestamp(theTimestamp);
 
 		FrameInfo theFrame = theThread.currentFrame();
 		
 		if (LOG) System.out.println(String.format(
 				"logBeforeBehaviorCall(%d, %d, %d, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s",
-				aTimestamp,
+				theTimestamp,
 				aOperationBytecodeIndex,
 				aBehaviorId,
 				aCallType,
@@ -399,22 +399,22 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 	}
 	
 	public void logAfterBehaviorCall(
-			long aTimestamp, 
 			int aOperationBytecodeIndex, 
 			int aBehaviorId, 
 			Object aTarget,
 			Object aResult)
 	{
 		if (IGNORE_ALL) return;
+		long theTimestamp = AgentUtils.timestamp();
 		T theThread = getThreadData();
-		long theTimestamp = theThread.transformTimestamp(aTimestamp);
+		theTimestamp = theThread.transformTimestamp(theTimestamp);
 
 		FrameInfo theFrame = theThread.popFrame();
 		assert theFrame.behavior == aBehaviorId;
 		
 		if (LOG) System.out.println(String.format(
 				"logAfterBehaviorCall(%d, %d, %d, %s, %s)\n thread: %d, depth: %d\n frame: %s",
-				aTimestamp,
+				theTimestamp,
 				aOperationBytecodeIndex,
 				aBehaviorId,
 				getObjectId(aTarget),
@@ -436,22 +436,22 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 	}
 	
 	public void logAfterBehaviorCallWithException(
-			long aTimestamp, 
 			int aOperationBytecodeIndex,
 			int aBehaviorId, 
 			Object aTarget, 
 			Object aException)
 	{
 		if (IGNORE_ALL) return;
+		long theTimestamp = AgentUtils.timestamp();
 		T theThread = getThreadData();
-		long theTimestamp = theThread.transformTimestamp(aTimestamp);
+		theTimestamp = theThread.transformTimestamp(theTimestamp);
 
 		FrameInfo theFrame = theThread.currentFrame();
 		assert theFrame.behavior == aBehaviorId;
 		
 		if (LOG) System.out.println(String.format(
 				"logAfterBehaviorCallWithException(%d, %d, %d, %s, %s)\n thread: %d, depth: %d\n frame: %s",
-				aTimestamp,
+				theTimestamp,
 				aOperationBytecodeIndex,
 				aBehaviorId,
 				getObjectId(aTarget),
@@ -472,19 +472,19 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 	}
 	
 	public void logOutput(
-			long aTimestamp, 
 			Output aOutput, 
 			byte[] aData)
 	{
 		if (IGNORE_ALL) return;
+		long theTimestamp = AgentUtils.timestamp();
 		T theThread = getThreadData();
-		long theTimestamp = theThread.transformTimestamp(aTimestamp);
+		theTimestamp = theThread.transformTimestamp(theTimestamp);
 
 		FrameInfo theFrame = theThread.currentFrame();
 		
 		if (LOG) System.out.println(String.format(
 				"logOutput(%d, %s, %s)\n thread: %d, depth: %d\n frame: %s",
-				aTimestamp,
+				theTimestamp,
 				aOutput,
 				aData,
 				theThread.getId(),
@@ -505,7 +505,7 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 		/**
 		 * Internal thread id.
 		 * These are different than JVM thread ids, which can potentially
-		 * use the whole 64 range. Internal ids are sequential.
+		 * use the whole 64 bits range. Internal ids are sequential.
 		 */
 		private int itsId;
 		
@@ -610,7 +610,19 @@ public class EventInterpreter<T extends EventInterpreter.ThreadData>
 		
 		private byte getNextSerial(long aTimestamp)
 		{
-			if (aTimestamp == itsLastTimestamp) return ++itsSerial;
+			if (aTimestamp < itsLastTimestamp) 
+			{
+			  throw new RuntimeException(String.format(
+					  "Out of order on single thread, BUG! (current: %s, previous: %s) tid: %02d",
+					  AgentUtils.formatTimestamp(aTimestamp),
+					  AgentUtils.formatTimestamp(itsLastTimestamp),
+					  itsId));
+			}
+			else if (aTimestamp == itsLastTimestamp) 
+			{
+				itsLastTimestamp = aTimestamp;
+				return ++itsSerial;
+			}
 			else
 			{
 				itsLastTimestamp = aTimestamp;

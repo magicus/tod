@@ -97,4 +97,6 @@ public interface ILogCollector
 			int aThreadId, 
 			long aJVMThreadId,
 			String aName);
+	
+	public void registerString(long aObjectUID, String aString);
 }

@@ -68,14 +68,14 @@ public class DebuggerGridConfig
 	public static final int MASTER_EVENT_BUFFER_SIZE = 4096;
 	
 	/**
-	 * Size of the {@link DatabaseNode} event buffer
+	 * Size of the {@link DatabaseNode} reordering event buffer
 	 */
-	public static final int DB_EVENT_BUFFER_SIZE = 16;
+	public static final int DB_EVENT_BUFFER_SIZE = 50000;
 	
 	/**
 	 * Maximum number of event types 
 	 */
-	public static final int STRUCTURE_TYPE_COUNT = MessageType.values().length;
+	public static final int STRUCTURE_TYPE_COUNT = 40000;
 
 	/**
 	 * Maximum number of hosts
@@ -95,17 +95,17 @@ public class DebuggerGridConfig
 	/**
 	 * Maximum number of bytecode locations
 	 */
-	public static final int STRUCTURE_BYTECODE_LOCS_COUNT = 1000;
+	public static final int STRUCTURE_BYTECODE_LOCS_COUNT = 65536;
 
 	/**
 	 * Maximum number of behaviors
 	 */
-	public static final int STRUCTURE_BEHAVIOR_COUNT = 10000;
+	public static final int STRUCTURE_BEHAVIOR_COUNT = 100000;
 
 	/**
 	 * Maximum number of fields
 	 */
-	public static final int STRUCTURE_FIELD_COUNT = 10000;
+	public static final int STRUCTURE_FIELD_COUNT = 100000;
 
 	/**
 	 * Maximum number of variable indexes
@@ -113,9 +113,9 @@ public class DebuggerGridConfig
 	public static final int STRUCTURE_VAR_COUNT = 1000;
 
 	/**
-	 * Maximum number of 
+	 * Maximum number of objects 
 	 */
-	public static final int STRUCTURE_OBJECT_COUNT = 10000;
+	public static final int STRUCTURE_OBJECT_COUNT = 1000000;
 
 
 	/**

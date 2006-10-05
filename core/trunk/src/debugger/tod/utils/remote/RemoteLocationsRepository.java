@@ -6,12 +6,19 @@ package tod.utils.remote;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+import tod.core.ILocationRegistrer.Stats;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ITypeInfo;
 
+/**
+ * Remote object that mimics a {@link ILocationsRepository}.
+ * Use {@link #createRepository(RILocationsRepository)} on the client
+ * to obtain the actual repository.
+ * @author gpothier
+ */
 public class RemoteLocationsRepository extends UnicastRemoteObject
 implements RILocationsRepository
 {
@@ -77,6 +84,11 @@ implements RILocationsRepository
 		return itsDelegate.getType(aName);
 	}
 	
+	public Stats getStats()
+	{
+		return itsDelegate.getStats();
+	}
+
 	/**
 	 * Creates a local locations repository that delegates to a remote one.
 	 */
@@ -215,6 +227,20 @@ implements RILocationsRepository
 					throw new RuntimeException(e);
 				}
 			}
+
+			public Stats getStats()
+			{
+				try
+				{
+					return aRepository.getStats();
+				}
+				catch (RemoteException e)
+				{
+					throw new RuntimeException(e);
+				}
+			}
+			
+			
 		};
 	}
 
