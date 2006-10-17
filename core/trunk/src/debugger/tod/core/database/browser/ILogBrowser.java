@@ -145,6 +145,12 @@ public interface ILogBrowser
 	public IEventFilter createThreadFilter (IThreadInfo aThread);
 	
 	/**
+	 * Creates a filter that accepts only events that have the
+	 * specified call depth.
+	 */
+	public IEventFilter createDepthFilter(int aDepth);
+	
+	/**
 	 * Creates a control flow browser.
 	 */
 	public ICFlowBrowser createCFlowBrowser (IThreadInfo aThread);

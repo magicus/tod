@@ -27,6 +27,7 @@ import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.impl.common.CFlowBrowser;
 import tod.impl.dbgrid.aggregator.GridEventBrowser;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import tod.impl.dbgrid.messages.MessageType;
@@ -34,6 +35,7 @@ import tod.impl.dbgrid.messages.ObjectCodec;
 import tod.impl.dbgrid.queries.BehaviorCondition;
 import tod.impl.dbgrid.queries.CompoundCondition;
 import tod.impl.dbgrid.queries.Conjunction;
+import tod.impl.dbgrid.queries.DepthCondition;
 import tod.impl.dbgrid.queries.Disjunction;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.impl.dbgrid.queries.FieldCondition;
@@ -151,6 +153,11 @@ implements ILogBrowser, RIGridMasterListener
 	public IEventFilter createThreadFilter(IThreadInfo aThread)
 	{
 		return new ThreadCondition(aThread.getId());
+	}
+
+	public IEventFilter createDepthFilter(int aDepth)
+	{
+		return new DepthCondition(aDepth);
 	}
 
 	public ICompoundFilter createIntersectionFilter(IEventFilter... aFilters)
@@ -305,7 +312,7 @@ implements ILogBrowser, RIGridMasterListener
 
 	public ICFlowBrowser createCFlowBrowser(IThreadInfo aThread)
 	{
-		throw new UnsupportedOperationException();
+		return new CFlowBrowser(this, aThread);
 	}
 
 	public IObjectInspector createClassInspector(IClassInfo aClass)

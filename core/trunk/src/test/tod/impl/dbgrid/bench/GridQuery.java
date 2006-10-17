@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.core.ILogCollector;
+import tod.core.ILocationRegistrer.Stats;
 import tod.core.config.GeneralConfig;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
@@ -65,6 +66,8 @@ public class GridQuery
 		GridLogBrowser theBrowser = new GridLogBrowser(theRemoteMaster);
 		ILocationsRepository theLocationsRepository = theBrowser.getLocationsRepository();
 
+		Stats theStats = theLocationsRepository.getStats();
+		
 		List<IHostInfo> theHosts = list(theBrowser.getHosts());
 		List<IThreadInfo> theThreads = list(theBrowser.getThreads());
 		List<IClassInfo> theClasses = list(theLocationsRepository.getClasses());

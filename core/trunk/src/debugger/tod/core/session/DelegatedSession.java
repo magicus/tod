@@ -36,11 +36,6 @@ public abstract class DelegatedSession implements ISession
 		return itsDelegate.getLogBrowser();
 	}
 
-	public ILocationsRepository getLocations()
-	{
-		return itsDelegate.getLocations();
-	}
-
 	public URI getUri()
 	{
 		return itsDelegate.getUri();

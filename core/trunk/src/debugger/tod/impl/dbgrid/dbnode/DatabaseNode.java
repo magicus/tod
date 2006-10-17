@@ -149,6 +149,7 @@ implements RIDatabaseNode
 
 	public long[] getEventCounts(EventCondition aCondition, long aT1, long aT2, int aSlotsCount) throws RemoteException
 	{
+		long t0 = System.currentTimeMillis();
 		long[] theCounts = new long[aSlotsCount];
 		
 		Iterator<StdTuple> theIterator = aCondition.createTupleIterator(getIndexes(), aT1);
@@ -163,6 +164,9 @@ implements RIDatabaseNode
 			theCounts[theSlot]++;
 		}
 		
+		long t1 = System.currentTimeMillis();
+		
+		System.out.println("Counts computed in "+(t1-t0)+"ms");
 		return theCounts;
 	}
 
@@ -215,10 +219,6 @@ implements RIDatabaseNode
 		itsAddedEventsCount++;
 		
 		if (itsEventBuffer.isFull()) processEvent(itsEventBuffer.remove());
-		if (itsAddedEventsCount == 523000)
-		{
-			System.out.println("DatabaseNode.addEvent()");
-		}
 		itsEventBuffer.add(aEvent);
 	}
 	

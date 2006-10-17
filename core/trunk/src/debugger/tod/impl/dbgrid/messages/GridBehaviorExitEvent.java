@@ -17,6 +17,8 @@ import zz.utils.bit.BitStruct;
 
 public class GridBehaviorExitEvent extends GridEvent
 {
+	private static final long serialVersionUID = -5809462388785867681L;
+	
 	private boolean itsHasThrown;
 	private Object itsResult;
 	

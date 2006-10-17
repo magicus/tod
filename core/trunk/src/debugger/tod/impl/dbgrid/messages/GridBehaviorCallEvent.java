@@ -7,6 +7,9 @@ import static tod.impl.dbgrid.messages.ObjectCodec.getObjectBits;
 import static tod.impl.dbgrid.messages.ObjectCodec.getObjectId;
 import static tod.impl.dbgrid.messages.ObjectCodec.readObject;
 import static tod.impl.dbgrid.messages.ObjectCodec.writeObject;
+
+import java.io.Serializable;
+
 import tod.core.database.event.ILogEvent;
 import tod.impl.common.event.BehaviorCallEvent;
 import tod.impl.common.event.ConstructorChainingEvent;
@@ -20,6 +23,8 @@ import zz.utils.bit.BitStruct;
 
 public class GridBehaviorCallEvent extends GridEvent
 {
+	private static final long serialVersionUID = -6294318569339045898L;
+
 	/**
 	 * We don't have separate classes for method call,
 	 * constructor chaining and instantiation.

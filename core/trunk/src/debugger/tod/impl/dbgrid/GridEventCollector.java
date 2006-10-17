@@ -38,7 +38,7 @@ public class GridEventCollector extends EventCollector
 	 * We keep an instance of each kind of event.
 	 * As events are received their attributes are copied to the appropriate
 	 * instance, and the instance is sent to the dispatcher, which
-	 * immediately serializes them.
+	 * immediately serializes it.
 	 */
 	private final GridBehaviorCallEvent itsCallEvent = new GridBehaviorCallEvent();
 	private final GridBehaviorExitEvent itsExitEvent = new GridBehaviorExitEvent();

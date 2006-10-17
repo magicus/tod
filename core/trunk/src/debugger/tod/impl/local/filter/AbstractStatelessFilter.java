@@ -5,7 +5,8 @@ package tod.impl.local.filter;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.impl.local.EventBrowser;
-import tod.impl.local.LocalCollector;
+import tod.impl.local.LocalBrowser;
+import tod.impl.local.LocalBrowser;
 
 /**
  * A stateless filter is determined only by a condition.
@@ -13,13 +14,13 @@ import tod.impl.local.LocalCollector;
  */
 public abstract class AbstractStatelessFilter extends AbstractFilter
 {
-	public AbstractStatelessFilter(LocalCollector aCollector)
+	public AbstractStatelessFilter(LocalBrowser aBrowser)
 	{
-		super(aCollector);
+		super(aBrowser);
 	}
 
 	public IEventBrowser createBrowser ()
 	{
-		return new EventBrowser (getCollector().getEvents(), this);
+		return new EventBrowser (getBrowser().getEvents(), this);
 	}
 }

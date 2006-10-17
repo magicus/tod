@@ -6,7 +6,8 @@ package tod.impl.local.filter;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
-import tod.impl.local.LocalCollector;
+import tod.impl.local.LocalBrowser;
+import tod.impl.local.LocalBrowser;
 
 /**
  * A filter that accepts only behavior calls (before and after).
@@ -19,18 +20,18 @@ public class BehaviorCallFilter extends AbstractStatelessFilter
 	/**
 	 * Creates a filter that accepts any behaviou-related event.
 	 */
-	public BehaviorCallFilter(LocalCollector aCollector)
+	public BehaviorCallFilter(LocalBrowser aBrowser)
 	{
-		this (aCollector, null);
+		this (aBrowser, null);
 	}
 
 	/**
 	 * Creates a filter that accepts only the events related 
 	 * to a particular behaviour (method/constructor).
 	 */
-	public BehaviorCallFilter(LocalCollector aCollector, IBehaviorInfo aBehavior)
+	public BehaviorCallFilter(LocalBrowser aBrowser, IBehaviorInfo aBehavior)
 	{
-		super(aCollector);
+		super(aBrowser);
 		itsBehaviour = aBehavior;
 	}
 	

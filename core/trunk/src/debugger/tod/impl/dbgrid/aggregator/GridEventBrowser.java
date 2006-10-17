@@ -112,7 +112,15 @@ implements IEventBrowser
 		throw new UnsupportedOperationException();
 	}
 
-	public void setCursor(ILogEvent aEvent)
+	
+	
+	public void setNextEvent(ILogEvent aEvent)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+
+	public void setPreviousEvent(ILogEvent aEvent)
 	{
 		throw new UnsupportedOperationException();
 	}

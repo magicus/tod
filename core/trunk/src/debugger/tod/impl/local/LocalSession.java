@@ -1,36 +1,37 @@
 /*
  * Created on Aug 28, 2006
  */
-package tod.impl.dbgrid;
+package tod.impl.local;
 
 import java.io.File;
-import java.lang.reflect.Method;
-import java.rmi.AlreadyBoundException;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import tod.core.ILogCollector;
 import tod.core.LocationRegistrer;
 import tod.core.config.GeneralConfig;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.HostInfo;
 import tod.core.server.ICollectorFactory;
 import tod.core.server.TODServer;
+import tod.core.session.AbstractSession;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
-import tod.impl.dbgrid.dbnode.DatabaseNode;
 
-public class GridSession
+public class LocalSession extends AbstractSession
 {
-	private GridMaster itsMaster;
 	private TODServer itsServer;
-	
 	private LocationRegistrer itsLocationRegistrer;
 	
-	public GridSession() throws RemoteException
+	private LocalBrowser itsBrowser;
+	private List<LocalCollector> itsCollectors = new ArrayList<LocalCollector>();
+	
+	public LocalSession(URI aUri)
 	{
+		super(aUri);
 		itsLocationRegistrer = new LocationRegistrer();
-		itsMaster = new GridMaster(itsLocationRegistrer);
+		itsBrowser = new LocalBrowser(itsLocationRegistrer);
 		
 		ASMDebuggerConfig theConfig = new ASMDebuggerConfig(
 				itsLocationRegistrer,
@@ -45,28 +46,40 @@ public class GridSession
 				theInstrumenter);
 	}
 	
+	public void disconnect()
+	{
+		itsServer.disconnect();
+	}
+
+	public String getCachedClassesPath()
+	{
+		return null;
+	}
+
+	public ILogBrowser getLogBrowser()
+	{
+		return itsBrowser;
+	}
+
 	private class MyCollectorFactory implements ICollectorFactory
 	{
 		private int itsHostId = 1;
 
 		public ILogCollector create()
 		{
-			return itsMaster.createCollector(itsHostId++);
+			LocalCollector theCollector = new LocalCollector(
+					itsBrowser,
+					new HostInfo(itsHostId++));
+			
+			itsCollectors.add(theCollector);
+			return theCollector;
 		}
 		
 		public void flushAll()
 		{
-			itsMaster.flush();
+			for (LocalCollector theCollector : itsCollectors)
+			{
+			}
 		}
-	}
-
-	public static void main(String[] args) throws RemoteException, AlreadyBoundException
-	{
-		Registry theRegistry = LocateRegistry.createRegistry(1099);
-				
-		GridSession theSession = new GridSession();
-		theRegistry.bind(GridMaster.RMI_ID, theSession.itsMaster);
-		
-		if (args.length == 0) new DatabaseNode(true);
 	}
 }

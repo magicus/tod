@@ -18,6 +18,8 @@ import zz.utils.bit.BitStruct;
 
 public class GridVariableWriteEvent extends GridEvent
 {
+	private static final long serialVersionUID = 5600466618091824186L;
+	
 	private int itsVariableId;
 	private Object itsValue;
 	

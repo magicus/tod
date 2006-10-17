@@ -68,6 +68,14 @@ public abstract class EventCollector implements ILogCollector
 	}
 	
 	/**
+	 * Returns the thread info corresponding to the given id.
+	 */
+	public IThreadInfo getThread(int aId)
+	{
+		return itsThreads.get(aId);
+	}
+	
+	/**
 	 * Returns an iterable over all registered threads.
 	 */
 	public Iterable<IThreadInfo> getThreads()
@@ -77,9 +85,28 @@ public abstract class EventCollector implements ILogCollector
 
 	public void thread(int aThreadId, long aJVMThreadId, String aName)
 	{
-		ThreadInfo theThread = new ThreadInfo(getHost(), aThreadId, aJVMThreadId, aName);
+		ThreadInfo theThread = createThreadInfo(getHost(), aThreadId, aJVMThreadId, aName);
 		Utils.listSet(itsThreads, aThreadId, theThread);
 		itsThreadsMap.put(aJVMThreadId, theThread);
+		
+		thread(theThread);
+	}
+
+	/**
+	 * Subclasses can override this method is they need to be notified of thread registration
+	 * and need the {@link IThreadInfo} object.
+	 */
+	protected void thread(ThreadInfo aThread)
+	{
+	}
+	
+	/**
+	 * Instantiates a {@link ThreadInfo} object. Subclasses can override this 
+	 * method if they need to instantiate a subclass.
+	 */
+	protected ThreadInfo createThreadInfo(IHostInfo aHost, int aId, long aJVMId, String aName)
+	{
+		return new ThreadInfo(aHost, aId, aJVMId, aName);
 	}
 	
 	public void registerString(long aObjectUID, String aString)
@@ -102,14 +129,26 @@ public abstract class EventCollector implements ILogCollector
 			Object aException)
 	{
 		String theClassName = Type.getType(aMethodDeclaringClassSignature).getClassName();
-		IClassInfo theClass = (IClassInfo) itsLocationsRepository.getType(theClassName);
+		ITypeInfo theType = itsLocationsRepository.getType(theClassName);
 		
-		if (theClass == null) return; // TODO: don't do that...
-		
-		ITypeInfo[] theArgumentTypes = itsLocationsRepository.getArgumentTypes(aMethodSignature);
-		IBehaviorInfo theBehavior = theClass.getBehavior(aMethodName, theArgumentTypes);
+		if (theType instanceof IClassInfo)
+		{
+			IClassInfo theClass = (IClassInfo) theType;
+			
+			ITypeInfo[] theArgumentTypes = itsLocationsRepository.getArgumentTypes(aMethodSignature);
+			IBehaviorInfo theBehavior = theClass.getBehavior(aMethodName, theArgumentTypes);
 
-		exception(aThreadId, aParentTimestamp, aDepth, aTimestamp, theBehavior.getId(), aOperationBytecodeIndex, aException);
+			if (theBehavior == null) return; //TODO: don't do that...
+			
+			exception(
+					aThreadId, 
+					aParentTimestamp, 
+					aDepth, 
+					aTimestamp, 
+					theBehavior.getId(), 
+					aOperationBytecodeIndex, 
+					aException);
+		}
 	}
 
 	/**

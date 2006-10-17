@@ -14,6 +14,7 @@ import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ICallerSideEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
+import tod.gui.FontConfig;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
 import zz.csg.api.IRectangularGraphicObject;
@@ -30,8 +31,8 @@ import zz.utils.ui.text.XFont;
  */
 public class CFlowVariablesBuilder
 {
-	public static final XFont FONT = XFont.DEFAULT_XPLAIN.deriveFont(12);
-	public static final XFont HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, 14);
+	public static final XFont FONT = XFont.DEFAULT_XPLAIN.deriveFont(FontConfig.FONT_SIZE);
+	public static final XFont HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, FontConfig.HEADER_FONT_SIZE);
 
 	private CFlowView itsView;
 	
@@ -125,6 +126,7 @@ public class CFlowVariablesBuilder
 		
 		theContainer.pChildren().add(SVGFlowText.create("Behavior: ", HEADER_FONT, Color.BLACK));
 		theContainer.pChildren().add(Hyperlinks.behavior(getGUIManager(), aBehavior, HEADER_FONT));
+		theContainer.pChildren().add(SVGFlowText.create(" ("+aBehavior.getType().getName()+")", HEADER_FONT, Color.BLACK));
 		
 		theContainer.setLayoutManager(new SequenceLayout());
 		return theContainer;

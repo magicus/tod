@@ -23,7 +23,6 @@ public class AgentUtils
 	private static final int MAX_DTS = 10;
 	private static int dts = MAX_DTS;
 	private static long ts;
-	private static long last_ts;
 	
 	/**
 	 * Returns the current timestamp.
@@ -52,17 +51,14 @@ public class AgentUtils
 		return ts++;
 	}
 	
-	private static synchronized long timestamp_false()
+	private static long timestamp_false()
 	{
 		ts += 1 << AgentConfig.TIMESTAMP_ADJUST_SHIFT;
 		
-		if (ts < last_ts) throw new RuntimeException("Out of order!");
-		last_ts = ts;
-		
-		if (ts == 62572800 || ts == 62583552)
-		{
-			System.out.println("AgentUtils.timestamp_real()");
-		}
+//		if (ts == 62572800 || ts == 62583552)
+//		{
+//			System.out.println("AgentUtils.timestamp_real()");
+//		}
 		
 		return ts;
 	}
@@ -102,25 +98,25 @@ public class AgentUtils
 		
 		if (theStarted || theDays > 0)
 		{
-			theBuilder.append(theDays+"d ");
+			theBuilder.append(String.format("%03dd ", theDays));
 			theStarted = true;
 		}
 		
 		if (theStarted || theHours > 0)
 		{
-			theBuilder.append(theHours+"h ");
+			theBuilder.append(String.format("%02dh ", theHours));
 			theStarted = true;
 		}
 		
 		if (theStarted || theMinutes > 0)
 		{
-			theBuilder.append(theMinutes+"m ");
+			theBuilder.append(String.format("%02dm ", theMinutes));
 			theStarted = true;
 		}
 		
 		if (theStarted || theSeconds > 0)
 		{
-			theBuilder.append(theSeconds+"s ");
+			theBuilder.append(String.format("%02ds ", theSeconds));
 			theStarted = true;
 		}
 		

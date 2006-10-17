@@ -99,7 +99,7 @@
 		</rmic>
 	</target>
 
-	<target name="jar" depends="compile, rmic">
+	<target name="jar" depends="compile">
         <mkdir dir="${build.dir}"/>
 		<jar destfile="${build.dir}/tod-agent.jar" basedir="${classes-agent.dir}"/>
 		<jar destfile="${build.dir}/tod-debugger.jar" basedir="${classes-debugger.dir}"/>

@@ -4,7 +4,8 @@
 package tod.impl.local.filter;
 
 import tod.core.database.event.ILogEvent;
-import tod.impl.local.LocalCollector;
+import tod.impl.local.LocalBrowser;
+import tod.impl.local.LocalBrowser;
 
 /**
  * Accepts only events of a given thread.
@@ -14,9 +15,9 @@ public class ThreadFilter extends AbstractStatelessFilter
 {
 	private int itsThreadId;
 	
-	public ThreadFilter(LocalCollector aCollector, int aThreadId)
+	public ThreadFilter(LocalBrowser aBrowser, int aThreadId)
 	{
-		super (aCollector);
+		super (aBrowser);
 		itsThreadId = aThreadId;
 	}
 	

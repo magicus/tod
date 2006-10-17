@@ -23,7 +23,7 @@ public class UnknownEventNode extends AbstractEventNode
 
 		setLayoutManager(new SequenceLayout());
 		
-		pChildren().add(SVGFlowText.create("Unknown", CFlowTreeBuilder.FONT, Color.GRAY));
+		pChildren().add(SVGFlowText.create("Unknown ("+aEvent+")", CFlowTreeBuilder.FONT, Color.GRAY));
 	}
 	
 	@Override

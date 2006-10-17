@@ -7,7 +7,8 @@ import tod.core.database.event.IInstantiationEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
-import tod.impl.local.LocalCollector;
+import tod.impl.local.LocalBrowser;
+import tod.impl.local.LocalBrowser;
 
 /**
  * Instantiation-related filter.
@@ -21,18 +22,18 @@ public class InstantiationFilter extends AbstractStatelessFilter
 	/**
 	 * Creates a filter that accepts any instantiation event.
 	 */
-	public InstantiationFilter(LocalCollector aCollector)
+	public InstantiationFilter(LocalBrowser aBrowser)
 	{
-		super (aCollector);
+		super (aBrowser);
 	}
 
 	/**
 	 * Creates a filer that accepts only the instantiation events
 	 * for a specific type.
 	 */
-	public InstantiationFilter(LocalCollector aCollector, ITypeInfo aTypeInfo)
+	public InstantiationFilter(LocalBrowser aBrowser, ITypeInfo aTypeInfo)
 	{
-		super (aCollector);
+		super (aBrowser);
 		itsTypeInfo = aTypeInfo;
 	}
 	
@@ -40,9 +41,9 @@ public class InstantiationFilter extends AbstractStatelessFilter
 	 * Creates a filer that accepts only the instantiation events
 	 * for a specific object.
 	 */
-	public InstantiationFilter(LocalCollector aCollector, ObjectId aObject)
+	public InstantiationFilter(LocalBrowser aBrowser, ObjectId aObject)
 	{
-		super (aCollector);
+		super (aBrowser);
 		itsObject = aObject;
 	}
 	

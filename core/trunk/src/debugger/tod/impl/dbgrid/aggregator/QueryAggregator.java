@@ -86,6 +86,9 @@ implements RIQueryAggregator
 	
 	public long[] getEventCounts(final long aT1, final long aT2, final int aSlotsCount) throws RemoteException
 	{
+		System.out.println("Aggregating counts...");
+		
+		long t0 = System.currentTimeMillis();
 		long[] theCounts = new long[aSlotsCount];
 
 		// Sum results from all nodes.
@@ -100,7 +103,8 @@ implements RIQueryAggregator
 				@Override
 				protected long[] fetch() throws Throwable
 				{
-					return theNode0.getEventCounts(itsCondition, aT1, aT2, aSlotsCount);
+					long[] theEventCounts = theNode0.getEventCounts(itsCondition, aT1, aT2, aSlotsCount);
+					return theEventCounts;
 				}
 			});
 		}
@@ -110,6 +114,10 @@ implements RIQueryAggregator
 			long[] theNodeCounts = theFuture.get();
 			for(int i=0;i<aSlotsCount;i++) theCounts[i] += theNodeCounts[i];
 		}
+		
+		long t1 = System.currentTimeMillis();
+		
+		System.out.println("Computed counts in "+(t1-t0)+"ms.");
 		
 		return theCounts;
 	}

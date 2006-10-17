@@ -9,7 +9,8 @@ import java.util.List;
 
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventFilter;
-import tod.impl.local.LocalCollector;
+import tod.impl.local.LocalBrowser;
+import tod.impl.local.LocalBrowser;
 
 /**
  * Base class for filters that are compound of other filters.
@@ -19,20 +20,20 @@ public abstract class CompoundFilter extends AbstractStatelessFilter implements 
 {
 	private List<IEventFilter> itsFilters;
 	
-	public CompoundFilter(LocalCollector aCollector)
+	public CompoundFilter(LocalBrowser aBrowser)
 	{
-		this (aCollector, new ArrayList<IEventFilter>());
+		this (aBrowser, new ArrayList<IEventFilter>());
 	}
 	
-	public CompoundFilter(LocalCollector aCollector, List<IEventFilter> aFilters)
+	public CompoundFilter(LocalBrowser aBrowser, List<IEventFilter> aFilters)
 	{
-		super (aCollector);
+		super (aBrowser);
 		itsFilters = aFilters;
 	}
 	
-	public CompoundFilter(LocalCollector aCollector, IEventFilter... aFilters)
+	public CompoundFilter(LocalBrowser aBrowser, IEventFilter... aFilters)
 	{
-		super (aCollector);
+		super (aBrowser);
 		itsFilters = new ArrayList<IEventFilter>(Arrays.asList(aFilters));
 	}
 	

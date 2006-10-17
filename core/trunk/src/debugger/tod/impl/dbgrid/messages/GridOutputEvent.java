@@ -11,6 +11,8 @@ import tod.impl.dbgrid.dbnode.Indexes;
 
 public class GridOutputEvent extends GridEvent
 {
+	private static final long serialVersionUID = 2432106275871615061L;
+	
 	private String itsData;
 	private Output itsOutput;
 	

@@ -7,7 +7,8 @@ import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.ObjectId;
-import tod.impl.local.LocalCollector;
+import tod.impl.local.LocalBrowser;
+import tod.impl.local.LocalBrowser;
 
 /**
  * @author gpothier
@@ -16,9 +17,9 @@ public class ArgumentFilter extends AbstractStatelessFilter
 {
 	private ObjectId itsObjectId;
 	
-	public ArgumentFilter(LocalCollector aCollector, ObjectId aObjectId)
+	public ArgumentFilter(LocalBrowser aBrowser, ObjectId aObjectId)
 	{
-		super (aCollector);
+		super (aBrowser);
 		itsObjectId = aObjectId;
 	}
 	

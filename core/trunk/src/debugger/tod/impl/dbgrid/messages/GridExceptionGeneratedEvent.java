@@ -17,6 +17,8 @@ import zz.utils.bit.BitStruct;
 
 public class GridExceptionGeneratedEvent extends GridEvent
 {
+	private static final long serialVersionUID = 7070448347537157710L;
+	
 	private Object itsException;
 	private int itsThrowingBehaviorId;
 	

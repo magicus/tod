@@ -12,6 +12,11 @@ import tod.agent.AgentUtils;
  */
 public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 {
+	static
+	{
+		System.out.println("EventInterpreter loaded.");
+	}
+	
 	private static final boolean LOG = false;
 	private static final boolean IGNORE_ALL = false;
 	
@@ -612,11 +617,14 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		{
 			if (aTimestamp < itsLastTimestamp) 
 			{
-			  throw new RuntimeException(String.format(
-					  "Out of order on single thread, BUG! (current: %s, previous: %s) tid: %02d",
-					  AgentUtils.formatTimestamp(aTimestamp),
-					  AgentUtils.formatTimestamp(itsLastTimestamp),
-					  itsId));
+				System.err.println(String.format(
+						"EventInterpreter.getNextSerial: Out of order on single thread, BUG! (current: %s, previous: %s) tid: %02d",
+						AgentUtils.formatTimestamp(aTimestamp),
+						AgentUtils.formatTimestamp(itsLastTimestamp),
+						itsId));
+				
+				itsSerial = 0;
+				return 0;
 			}
 			else if (aTimestamp == itsLastTimestamp) 
 			{

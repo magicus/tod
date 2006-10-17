@@ -45,6 +45,17 @@ public class TODServer
 		itsReceiverServer = new LogReceiverServer();
 		itsNativePeerServer = new NativePeerServer();
 	}
+	
+	/**
+	 * Causes this server to stop accepting connections.
+	 */
+	public void disconnect()
+	{
+		System.out.println("Server disconnecting...");
+		itsReceiverServer.disconnect();
+		itsNativePeerServer.disconnect();
+		System.out.println("Server disconnected.");
+	}
 
 	private LogReceiver getReceiver(String aHostName)
 	{

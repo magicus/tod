@@ -22,8 +22,7 @@ public class EventListModel extends AbstractListModel
 
 	public int getSize()
 	{
-		throw new UnsupportedOperationException();
-//		return itsBrowser.getEventCount();
+		return (int) itsBrowser.getEventCount();
 	}
 
 	public Object getElementAt(int aIndex)

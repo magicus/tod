@@ -6,7 +6,8 @@ package tod.impl.local.filter;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IFieldInfo;
-import tod.impl.local.LocalCollector;
+import tod.impl.local.LocalBrowser;
+import tod.impl.local.LocalBrowser;
 
 /**
  * Field write  filter.
@@ -19,18 +20,18 @@ public class FieldWriteFilter extends AbstractStatelessFilter
 	/**
 	 * Creates a filter that accepts any field write event.
 	 */
-	public FieldWriteFilter(LocalCollector aCollector)
+	public FieldWriteFilter(LocalBrowser aBrowser)
 	{
-		this (aCollector, null);
+		this (aBrowser, null);
 	}
 
 	/**
 	 * Creates a filter that accepts only the field write events 
 	 * for a particular field.
 	 */
-	public FieldWriteFilter(LocalCollector aCollector, IFieldInfo aFieldInfo)
+	public FieldWriteFilter(LocalBrowser aBrowser, IFieldInfo aFieldInfo)
 	{
-		super (aCollector);
+		super (aBrowser);
 		itsFieldInfo = aFieldInfo;
 	}
 	

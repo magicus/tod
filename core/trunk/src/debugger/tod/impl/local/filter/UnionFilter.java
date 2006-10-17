@@ -7,7 +7,8 @@ import java.util.List;
 
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.event.ILogEvent;
-import tod.impl.local.LocalCollector;
+import tod.impl.local.LocalBrowser;
+import tod.impl.local.LocalBrowser;
 
 /**
  * A compound filter that corresponds to the logical union of
@@ -18,19 +19,19 @@ import tod.impl.local.LocalCollector;
 public class UnionFilter extends CompoundFilter
 {
 
-	public UnionFilter(LocalCollector aCollector)
+	public UnionFilter(LocalBrowser aBrowser)
 	{
-		super (aCollector);
+		super (aBrowser);
 	}
 	
-	public UnionFilter(LocalCollector aCollector, List<IEventFilter> aFilters)
+	public UnionFilter(LocalBrowser aBrowser, List<IEventFilter> aFilters)
 	{
-		super(aCollector, aFilters);
+		super(aBrowser, aFilters);
 	}
 
-	public UnionFilter(LocalCollector aCollector, IEventFilter... aFilters)
+	public UnionFilter(LocalBrowser aBrowser, IEventFilter... aFilters)
 	{
-		super(aCollector, aFilters);
+		super(aBrowser, aFilters);
 	}
 	
 	public boolean accept(ILogEvent aEvent)

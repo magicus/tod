@@ -6,7 +6,8 @@ package tod.impl.local.filter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.event.ILogEvent;
-import tod.impl.local.LocalCollector;
+import tod.impl.local.LocalBrowser;
+import tod.impl.local.LocalBrowser;
 
 /**
  * Abstract base class for stateless filters. They only implement 
@@ -15,17 +16,17 @@ import tod.impl.local.LocalCollector;
  */
 public abstract class AbstractFilter implements IEventFilter
 {
-	private LocalCollector itsCollector;
+	private LocalBrowser itsBrowser;
 	
-	public AbstractFilter(LocalCollector aCollector)
+	public AbstractFilter(LocalBrowser aBrowser)
 	{
-		itsCollector = aCollector;
+		itsBrowser = aBrowser;
 	}
 	
 	
-	protected LocalCollector getCollector()
+	protected LocalBrowser getBrowser()
 	{
-		return itsCollector;
+		return itsBrowser;
 	}
 
 	/**

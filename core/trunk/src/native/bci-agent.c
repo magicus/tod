@@ -373,7 +373,6 @@ cbException(
 	jmethodID catch_method,
 	jlocation catch_location)
 {
-	return;
 	if (VM_STARTED == 0) return;
 	
 	char* methodName;
@@ -480,6 +479,8 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
 	jvmtiEventCallbacks callbacks;
 	jvmtiCapabilities capabilities;
 	jvmtiEnv *jvmti;
+	
+	printf("Loading BCI agent\n");
 
 	/* Get JVMTI environment */
 	rc = vm->GetEnv((void **)&jvmti, JVMTI_VERSION);

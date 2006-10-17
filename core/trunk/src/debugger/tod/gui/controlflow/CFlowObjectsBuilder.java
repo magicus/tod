@@ -13,6 +13,7 @@ import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ObjectId;
+import tod.gui.FontConfig;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
 import zz.csg.api.IRectangularGraphicObject;
@@ -29,8 +30,8 @@ import zz.utils.ui.text.XFont;
  */
 public class CFlowObjectsBuilder
 {
-	public static final XFont FONT = XFont.DEFAULT_XPLAIN.deriveFont(12);
-	public static final XFont HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, 14);
+	public static final XFont FONT = XFont.DEFAULT_XPLAIN.deriveFont(FontConfig.FONT_SIZE);
+	public static final XFont HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, FontConfig.HEADER_FONT_SIZE);
 
 	private CFlowView itsView;
 	

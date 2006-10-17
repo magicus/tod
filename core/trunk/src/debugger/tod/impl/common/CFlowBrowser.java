@@ -6,6 +6,8 @@ package tod.impl.common;
 import java.util.List;
 
 import tod.core.database.browser.ICFlowBrowser;
+import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
@@ -37,6 +39,22 @@ implements ICFlowBrowser
 		itsThread = aThread;
 		itsRoot = aRoot;
 	}
+	
+	/**
+	 * Creates a cflow browser root at the specified thread's root event.
+	 */
+	public CFlowBrowser(ILogBrowser aBrowser, IThreadInfo aThread)
+	{
+		this(aBrowser, aThread, getRootEvent(aBrowser, aThread));
+	}
+	
+	public static IBehaviorCallEvent getRootEvent(ILogBrowser aBrowser, IThreadInfo aThread)
+	{
+		IEventFilter theFilter = aBrowser.createThreadFilter(aThread);
+		IEventBrowser theBrowser = aBrowser.createBrowser(theFilter);
+		return (IBehaviorCallEvent) theBrowser.next();
+	}
+	
 
 
 	public ILogEvent getChild(ILogEvent aParent, int aIndex)

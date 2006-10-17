@@ -20,7 +20,6 @@ public abstract class Event implements ICallerSideEvent
 	
 	private IHostInfo itsHost;
 	private IThreadInfo itsThread;
-	private long itsSerial;
 	
 	private int itsOperationBytecodeIndex;
 	
@@ -76,16 +75,6 @@ public abstract class Event implements ICallerSideEvent
 	public void setTimestamp(long aTimestamp)
 	{
 		itsTimestamp = aTimestamp;
-	}
-	
-	public long getSerial()
-	{
-		return itsSerial;
-	}
-	
-	public void setSerial(long aSerial)
-	{
-		itsSerial = aSerial;
 	}
 	
 	public int getOperationBytecodeIndex()

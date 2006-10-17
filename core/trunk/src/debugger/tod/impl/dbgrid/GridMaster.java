@@ -71,12 +71,20 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		itsNodeServer = new NodeServer();
 		
 		Timer theTimer = new Timer(true);
-		theTimer.schedule(new DataUpdater(), 5000);
+		theTimer.schedule(new DataUpdater(), 5000, 3000);
 	}
 
 	public void addListener(RIGridMasterListener aListener) 
 	{
 		itsListeners.add(aListener);
+		try
+		{
+			aListener.eventsReceived();
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		} 
 	}
 	
 	/**

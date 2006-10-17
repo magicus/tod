@@ -89,6 +89,7 @@ public class EventMural extends SVGGraphicContainer
 	
 	private BufferedImage itsImage;
 	private IDisplay itsDisplay;
+	private boolean itsShowBaloons = false;
 	
 	/**
 	 * Constructs a new mural
@@ -173,6 +174,7 @@ public class EventMural extends SVGGraphicContainer
 	protected void updateBaloons()
 	{
 		pChildren().clear();
+		if (! itsShowBaloons) return;
 		if (! isReady()) return;
 		
 		// Create the multibrowser.
@@ -297,9 +299,21 @@ public class EventMural extends SVGGraphicContainer
 	
 	public static void paintMural (Graphics2D aGraphics, Rectangle aBounds, long[][] aValues, Color[] aColors)
 	{
-		int theH = aBounds.height;
+		long t0 = System.currentTimeMillis();
+		
+		int theHeight = aBounds.height;
 		int theY = aBounds.y;
-		int k = 4;
+		int bh = 4; // base height
+
+		int theMaxT = 0;
+		
+		// Determine maximum value
+		for (int i = 0; i < aValues[0].length; i++)
+		{
+			int t = 0; 
+			for (int j = 0; j < aValues.length; j++) t += aValues[j][i];
+			theMaxT = Math.max(theMaxT, t);
+		}
 		
 		for (int i = 0; i < aValues[0].length; i++)
 		{
@@ -326,13 +340,17 @@ public class EventMural extends SVGGraphicContainer
 
 			// Draw main bar
 			aGraphics.setColor(c1);
-			aGraphics.fillRect(aBounds.x + i, theY, 1, theH);
+			aGraphics.fillRect(aBounds.x + i, theY+theHeight-bh, 1, bh);
 			
 			// Draw proportional bar
-			int h = theH - ((theH * k)/(t+k));
+			int h = (theHeight-bh) * t / theMaxT;
 			aGraphics.setColor(c2);
-			aGraphics.fillRect(aBounds.x + i, theY + (theH - h)/2, 1, h);
+			aGraphics.fillRect(aBounds.x + i, theY+theHeight-bh-h, 1, h);
 		}
+		
+		long t1 = System.currentTimeMillis();
+		
+		System.out.println("Mural painted in "+(t1-t0)+"ms");
 	}
 	
 	/**

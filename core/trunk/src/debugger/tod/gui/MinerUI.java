@@ -10,12 +10,11 @@ import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import tod.core.database.browser.ILogBrowser;
-import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.ILocationInfo;
+import tod.core.session.ISession;
 import tod.gui.seed.Seed;
 import tod.gui.seed.SeedFactory;
 import tod.gui.seed.ThreadsSeed;
@@ -23,48 +22,24 @@ import tod.gui.seed.ThreadsSeed;
 /**
  * @author gpothier
  */
-public class MinerUI extends JPanel 
+public abstract class MinerUI extends JPanel 
 implements ILocationSelectionListener, IGUIManager
 {
-//	private static Queries itsQueries;
-
-	public static void main(String[] args) throws Exception
-	{
-		JFrame theFrame = new JFrame("lib.logging - miner");
-		
-//		ISQLBackend theBackend = new PostgreSQLBackend();
-
-//		if (args != null && args.length > 0 && "-i".equals(args[0])) DatabaseInit.init(theBackend);
-//		else
-//		{
-//			itsQueries = new Queries(theBackend);
-//	
-//	//		IBrowsableLog theBrowsableLog = LogMiner.createLocalLogServer(4012);
-//			IBrowsableLog theBrowsableLog = LogMiner.createDBLogServer(theBackend, 4012);
-//			
-//			theFrame.setContentPane(new MinerUI(theBrowsableLog));
-//			theFrame.pack();
-//			theFrame.setVisible(true);
-//		}
-	}
-	
-	private ILogBrowser itsCollector;
-	private LocationSelector itsLocationSelector;
-	
 	private BrowserNavigator itsNavigator = new BrowserNavigator();
 	
-	public MinerUI(ILogBrowser aCollector)
+	public MinerUI()
 	{
-		itsCollector = aCollector;
 		createUI();
+	}
+	
+	protected ILogBrowser getBrowser()
+	{
+		return getSession().getLogBrowser();
 	}
 
 	private void createUI()
 	{
 		setLayout(new BorderLayout());
-		itsLocationSelector = new LocationSelector(itsCollector.getLocationsRepository());
-		itsLocationSelector.addSelectionListener(this);
-		add (itsLocationSelector, BorderLayout.WEST);
 		
 		JPanel theCenterPanel = new JPanel (new BorderLayout());
 		
@@ -77,41 +52,45 @@ implements ILocationSelectionListener, IGUIManager
 		theCenterPanel.add (theNavButtonsPanel, BorderLayout.NORTH);
 		
 		add (theCenterPanel, BorderLayout.CENTER);
-		add (createToolbar(), BorderLayout.NORTH);
+		theNavButtonsPanel.add (createToolbar());
 	}
 
+	protected abstract ISession getSession();
+	
 	private JComponent createToolbar()
 	{
 		JPanel theToolbar = new JPanel();
-		JButton theClearDbButton = new JButton ("Clear db");
-		theClearDbButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e)
-			{
-//				try
-//				{
-//					itsQueries.dbInit.init();
-//				}
-//				catch (SQLException e1)
-//				{
-//					e1.printStackTrace();
-//				}
-			}
-		});
 
-		theToolbar.add (theClearDbButton);
-		
+		// Add a button that permits to jump to the threads view.
 		JButton theThreadsViewButton = new JButton("View threads");
 		theThreadsViewButton.addActionListener(new ActionListener()
 				{
 					public void actionPerformed(ActionEvent aE)
 					{
-						itsNavigator.open(new ThreadsSeed(MinerUI.this, itsCollector));
+						reset();
 					}
 				});
 		
 		theToolbar.add(theThreadsViewButton);
 
+		// Adds a button that permits to disconnect the current session
+		JButton theKillSessionButton = new JButton("Kill session");
+		theKillSessionButton.addActionListener(new ActionListener()
+				{
+					public void actionPerformed(ActionEvent aE)
+					{
+						getSession().disconnect();
+					}
+				});
+		
+		theToolbar.add(theKillSessionButton);
+		
 		return theToolbar;
+	}
+	
+	protected void reset()
+	{
+		openSeed(new ThreadsSeed(this, getSession().getLogBrowser()), false);
 	}
 
 
@@ -121,19 +100,16 @@ implements ILocationSelectionListener, IGUIManager
 		if (aSelectedLocations.size() == 1)
 		{
 			ILocationInfo theInfo = (ILocationInfo) aSelectedLocations.get(0);
-			theSeed = SeedFactory.getDefaultSeed(this, itsCollector, theInfo);
+			theSeed = SeedFactory.getDefaultSeed(this, getSession().getLogBrowser(), theInfo);
 		}
 
 		itsNavigator.open(theSeed);
 	}
-	
 	
 	public void openSeed(Seed aSeed, boolean aNewTab)
 	{
 		itsNavigator.open(aSeed);
 	}
 
-	public void gotoEvent(ILogEvent aEvent)
-	{
-	}
+
 }

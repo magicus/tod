@@ -4,15 +4,16 @@
 package tod.impl.local.filter;
 
 import tod.core.database.event.ILogEvent;
-import tod.impl.local.LocalCollector;
+import tod.impl.local.LocalBrowser;
+import tod.impl.local.LocalBrowser;
 
 public class HostFilter extends AbstractStatelessFilter
 {
 	private int itsHostId;
 	
-	public HostFilter(LocalCollector aCollector, int aHostId)
+	public HostFilter(LocalBrowser aBrowser, int aHostId)
 	{
-		super (aCollector);
+		super (aBrowser);
 		itsHostId = aHostId;
 	}
 	

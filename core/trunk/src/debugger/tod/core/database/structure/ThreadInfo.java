@@ -18,11 +18,11 @@ public class ThreadInfo implements IThreadInfo, Serializable
 	private long itsJVMId;
 	private String itsName;
 	
-	public ThreadInfo(IHostInfo aHost, int aId, long aId2, String aName)
+	public ThreadInfo(IHostInfo aHost, int aId, long aJVMId, String aName)
 	{
 		itsHost = aHost;
 		itsId = aId;
-		itsJVMId = aId2;
+		itsJVMId = aJVMId;
 		itsName = aName;
 	}
 

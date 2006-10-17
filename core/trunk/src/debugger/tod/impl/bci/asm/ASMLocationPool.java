@@ -38,7 +38,11 @@ public class ASMLocationPool
 			try
 			{
 				System.out.println("Setting up locations pool using "+aLocationsFile);
-				if (! aLocationsFile.exists()) aLocationsFile.createNewFile();
+				if (! aLocationsFile.exists()) 
+				{
+					aLocationsFile.getParentFile().mkdirs();
+					aLocationsFile.createNewFile();
+				}
 				theOutputStream = new DataOutputStream(new FileOutputStream(aLocationsFile, true));
 				
 				// Read existing locations

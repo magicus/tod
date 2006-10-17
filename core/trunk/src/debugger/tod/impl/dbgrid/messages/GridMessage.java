@@ -16,6 +16,8 @@ import zz.utils.bit.BitStruct;
  */
 public abstract class GridMessage implements Serializable
 {
+	private static final long serialVersionUID = -4356933902943147698L;
+
 	/**
 	 * Creates an event from a serialized representation, symmetric to
 	 * {@link #writeTo(BitStruct)}.

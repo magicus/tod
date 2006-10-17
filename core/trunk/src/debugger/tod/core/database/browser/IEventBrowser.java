@@ -67,7 +67,16 @@ public interface IEventBrowser
 	 * In the case the specified event is available to this browser,
 	 * {@link #next()} will return this event.
 	 */
-	public void setCursor (ILogEvent aEvent);
+	public void setNextEvent (ILogEvent aEvent);
+	
+	/**
+	 * Sets the cursor so that a call to {@link #previous()}
+	 * will return the last event available to
+	 * this browser that occured not after the specified event.
+	 * In the case the specified event is available to this browser,
+	 * {@link #previous()} will return this event.
+	 */
+	public void setPreviousEvent (ILogEvent aEvent);
 	
 	/**
 	 * Sets the internal cursor of this browser so that the next

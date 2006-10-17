@@ -6,7 +6,8 @@ package tod.impl.local.filter;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.ObjectId;
-import tod.impl.local.LocalCollector;
+import tod.impl.local.LocalBrowser;
+import tod.impl.local.LocalBrowser;
 
 /**
  * Filter for all events that have a specific target.
@@ -16,9 +17,9 @@ public class TargetFilter extends AbstractStatelessFilter
 {
 	private ObjectId itsTarget;
 	
-	public TargetFilter(LocalCollector aCollector, ObjectId aTarget)
+	public TargetFilter(LocalBrowser aBrowser, ObjectId aTarget)
 	{
-		super (aCollector);
+		super (aBrowser);
 		itsTarget = aTarget;
 	}
 	

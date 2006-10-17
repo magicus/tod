@@ -111,6 +111,14 @@ public class HierarchicalIndex<T extends IndexTuple>
 						InternalTupleCodec.getInstance(),
 						true);
 				
+				if (theTuple == null) 
+				{
+					// The first tuple of this index is after the specified timestamp
+					thePage = itsFile.get(itsFirstLeafPageId);
+					PageBitStruct theBitStruct = thePage.asBitStruct();
+					return new TupleIterator<T>(itsFile, itsTupleCodec, theBitStruct);
+				}
+				
 				thePage = itsFile.get(theTuple.getPagePointer());
 				theLevel--;
 			}

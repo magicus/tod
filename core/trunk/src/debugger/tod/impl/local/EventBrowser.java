@@ -90,21 +90,18 @@ public class EventBrowser implements IEventBrowser
 		} 
 	}
 	
-	public void setCursor(ILogEvent aEvent)
+	
+	
+	public void setNextEvent(ILogEvent aEvent)
 	{
 		itsIndex = EventComparator.indexOf(aEvent, itsEvents);
 	}
-	
-	public int getCursor()
+
+	public void setPreviousEvent(ILogEvent aEvent)
 	{
-		return itsIndex;
+		itsIndex = EventComparator.indexOf(aEvent, itsEvents)+1;
 	}
-	
-	public void setCursor(int aPosition)
-	{
-		itsIndex = aPosition;
-	}
-	
+
 	public long getEventCount()
 	{
 		return itsEvents.size();

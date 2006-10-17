@@ -3,37 +3,26 @@
  */
 package tod.impl.local;
 
-import java.util.Collections;
-
+import tod.agent.AgentUtils;
 import tod.core.Output;
-import tod.core.database.browser.ICFlowBrowser;
-import tod.core.database.browser.ICompoundFilter;
-import tod.core.database.browser.IEventBrowser;
-import tod.core.database.browser.IEventFilter;
-import tod.core.database.browser.ILocationsRepository;
-import tod.core.database.browser.ILogBrowser;
-import tod.core.database.browser.IObjectInspector;
-import tod.core.database.browser.IVariablesInspector;
-import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.ILocationRegistrer.LocalVariableInfo;
 import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IHostInfo;
-import tod.core.database.structure.IThreadInfo;
-import tod.core.database.structure.ITypeInfo;
-import tod.core.database.structure.ObjectId;
+import tod.core.database.structure.ThreadInfo;
 import tod.impl.common.EventCollector;
-import tod.impl.common.ObjectInspector;
-import tod.impl.common.VariablesInspector;
-import tod.impl.local.filter.AbstractFilter;
-import tod.impl.local.filter.BehaviorCallFilter;
-import tod.impl.local.filter.FieldWriteFilter;
-import tod.impl.local.filter.HostFilter;
-import tod.impl.local.filter.InstantiationFilter;
-import tod.impl.local.filter.IntersectionFilter;
-import tod.impl.local.filter.TargetFilter;
-import tod.impl.local.filter.ThreadFilter;
-import tod.impl.local.filter.UnionFilter;
+import tod.impl.common.event.BehaviorCallEvent;
+import tod.impl.common.event.BehaviorExitEvent;
+import tod.impl.common.event.ConstructorChainingEvent;
+import tod.impl.common.event.Event;
+import tod.impl.common.event.ExceptionGeneratedEvent;
+import tod.impl.common.event.FieldWriteEvent;
+import tod.impl.common.event.InstantiationEvent;
+import tod.impl.common.event.LocalVariableWriteEvent;
+import tod.impl.common.event.MethodCallEvent;
+import tod.impl.common.event.OutputEvent;
+import zz.utils.ArrayStack;
+import zz.utils.Stack;
 
 
 /**
@@ -43,185 +32,377 @@ import tod.impl.local.filter.UnionFilter;
  * @author gpothier
  */
 public class LocalCollector extends EventCollector
-implements ILogBrowser
 {
-	private EventList itsEvents = new EventList();
+	private static final boolean LOG = false;
 	
-	public LocalCollector(IHostInfo aHost, ILocationsRepository aLocationsRepository)
+	private final LocalBrowser itsBrowser;
+	
+	public LocalCollector(LocalBrowser aBrowser, IHostInfo aHost)
 	{
-		super(aHost, aLocationsRepository);
+		super(aHost, aBrowser.getLocationsRepository());
+		itsBrowser = aBrowser;
+		itsBrowser.addHost(aHost);
 	}
 
-	public void clear()
+	private void addEvent(Event aEvent)
 	{
-		itsEvents.clear();
-	}
-
-	public long getEventsCount()
-	{
-		return itsEvents.size();
+		itsBrowser.addEvent(aEvent);
 	}
 	
-	public EventList getEvents()
+	private IBehaviorInfo getBehavior(int aId)
 	{
-		return itsEvents;
+		return itsBrowser.getLocationsRepository().getBehavior(aId);
 	}
 	
-
-	public long getFirstTimestamp()
+	private IFieldInfo getField(int aId)
 	{
-		return itsEvents.getFirstTimestamp();
-	}
-
-	public long getLastTimestamp()
-	{
-		return itsEvents.getLastTimestamp();
-	}
-
-	public IEventBrowser createBrowser (IEventFilter aFilter)
-	{
-		AbstractFilter theFilter = (AbstractFilter) aFilter;
-		return theFilter.createBrowser();
+		return itsBrowser.getLocationsRepository().getField(aId);
 	}
 	
-	
-	public IEventFilter createArgumentFilter(ObjectId aId)
+	@Override
+	protected ThreadInfo createThreadInfo(IHostInfo aHost, int aId, long aJVMId, String aName)
 	{
-		return null;
+		return new LocalThreadInfo(aHost, aId, aJVMId, aName);
 	}
 	
-	public IEventFilter createBehaviorCallFilter()
+	@Override
+	public LocalThreadInfo getThread(int aId)
 	{
-		return new BehaviorCallFilter(this);
-	}
-
-	public IEventFilter createBehaviorCallFilter(IBehaviorInfo aBehavior)
-	{
-		return new BehaviorCallFilter(this, aBehavior);
-	}
-
-	public IEventFilter createFieldFilter(IFieldInfo aFieldInfo)
-	{
-		return new FieldWriteFilter(this, aFieldInfo);
+		return (LocalThreadInfo) super.getThread(aId);
 	}
 	
-	public IEventFilter createFieldWriteFilter()
+	private String formatBehavior(int aId)
 	{
-		return new FieldWriteFilter(this);
+		IBehaviorInfo theBehavior = getBehavior(aId);
+		return theBehavior != null ? 
+				String.format("%d (%s.%s)", aId, theBehavior.getType().getName(), theBehavior.getName())
+				: ""+aId;
 	}
 	
-	public IEventFilter createInstantiationsFilter()
+	private String formatField(int aId)
 	{
-		return new InstantiationFilter(this);
+		IFieldInfo theField = getField(aId);
+		return theField != null ?
+				String.format("%d (%s)", aId, theField.getName())
+				: ""+aId;
 	}
 	
-	public IEventFilter createInstantiationsFilter(ITypeInfo aTypeInfo)
+	private void initEvent(
+			Event aEvent, 
+			LocalThreadInfo aThread, 
+			long aParentTimestamp, 
+			short aDepth,
+			long aTimestamp, 
+			int aOperationBytecodeIndex)
 	{
-		return new InstantiationFilter(this, aTypeInfo);
-	}
-	
-	public IEventFilter createInstantiationFilter(ObjectId aObjectId)
-	{
-		return new InstantiationFilter(this, aObjectId);
-	}
-	
-	public ICompoundFilter createIntersectionFilter(IEventFilter... aFilters)
-	{
-		return new IntersectionFilter(this, aFilters);
-	}
-	
-	public IEventFilter createTargetFilter(ObjectId aId)
-	{
-		return new TargetFilter(this, aId);
-	}
-	
-	public IEventFilter createThreadFilter(IThreadInfo aThreadInfo)
-	{
-		return new ThreadFilter(this, aThreadInfo.getId());
-	}
-	
-	public IEventFilter createHostFilter(IHostInfo aHostInfo)
-	{
-		return new HostFilter(this, aHostInfo.getId());
-	}
-	
-	public ICompoundFilter createUnionFilter(IEventFilter... aFilters)
-	{
-		return new UnionFilter(this, aFilters);
-	}
-	
-	public IEventFilter createLocationFilter(ITypeInfo aTypeInfo, int aLineNumber)
-	{
-		throw new UnsupportedOperationException();
-	}
-	
-	public ICFlowBrowser createCFlowBrowser(IThreadInfo aThread)
-	{
-		throw new UnsupportedOperationException();
-//		return new CFlowBrowser(this, aThread, ((DefaultThreadInfo) aThread).getRootEvent());
-	}
-	
-	public IObjectInspector createObjectInspector(ObjectId aObjectId)
-	{
-		return new ObjectInspector(this, aObjectId);
-	}
-	
-	public IObjectInspector createClassInspector(IClassInfo aClass)
-	{
-		return new ObjectInspector(this, aClass);
-	}
-
-	public IVariablesInspector createVariablesInspector(IBehaviorCallEvent aEvent)
-	{
-		return new VariablesInspector(aEvent);
+		BehaviorCallEvent theParentEvent = aThread.peekParent();
+//		assert theParentEvent == null || theParentEvent.getTimestamp() == aParentTimestamp;
+		
+		aEvent.setHost(getHost());
+		aEvent.setThread(aThread);
+		aEvent.setDepth(aDepth);
+		aEvent.setParent(theParentEvent);
+		aEvent.setTimestamp(aTimestamp);
+		aEvent.setOperationBytecodeIndex(aOperationBytecodeIndex);
+		
+		if (theParentEvent != null) theParentEvent.addChild(aEvent);
 	}
 
 	@Override
-	protected void exception(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aBehaviorId,
-			int aOperationBytecodeIndex, Object aException)
+	protected void exception(
+			int aThreadId, 
+			long aParentTimestamp, 
+			short aDepth,
+			long aTimestamp, 
+			int aBehaviorId,
+			int aOperationBytecodeIndex, 
+			Object aException)
 	{
+		if (LOG) System.out.println(String.format(
+				"exception    (thread: %d, p.ts: %s, depth: %d, ts: %s, bid: %s, exc.: %s",
+				aThreadId,
+				AgentUtils.formatTimestamp(aParentTimestamp),
+				aDepth,
+				AgentUtils.formatTimestamp(aTimestamp),
+				formatBehavior(aBehaviorId),
+				aException));
+		
+		ExceptionGeneratedEvent theEvent = new ExceptionGeneratedEvent();
+		LocalThreadInfo theThread = getThread(aThreadId);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex);
+		
+		theEvent.setException(aException);
+		theEvent.setThrowingBehavior(getBehavior(aBehaviorId));
+		
+		addEvent(theEvent);
 	}
 
-	public void behaviorExit(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, int aBehaviorId, boolean aHasThrown, Object aResult)
+	public void behaviorExit(
+			int aThreadId,
+			long aParentTimestamp, 
+			short aDepth,
+			long aTimestamp,
+			int aOperationBytecodeIndex, 
+			int aBehaviorId,
+			boolean aHasThrown, 
+			Object aResult)
 	{
+		if (LOG) System.out.println(String.format(
+				"behaviorExit (thread: %d, p.ts: %s, depth: %d, ts: %s, bid: %s, thrown: %s, ret: %s",
+				aThreadId,
+				AgentUtils.formatTimestamp(aParentTimestamp),
+				aDepth,
+				AgentUtils.formatTimestamp(aTimestamp),
+				formatBehavior(aBehaviorId),
+				aHasThrown,
+				aResult));
+		
+		BehaviorExitEvent theEvent = new BehaviorExitEvent();
+		LocalThreadInfo theThread = getThread(aThreadId);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex);
+		
+		theEvent.setHasThrown(aHasThrown);
+		theEvent.setResult(aResult);
+		
+		addEvent(theEvent);
+		
+		theThread.popParent();
 	}
 
-	public void fieldWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, int aFieldId, Object aTarget, Object aValue)
+	public void fieldWrite(
+			int aThreadId, 
+			long aParentTimestamp, 
+			short aDepth,
+			long aTimestamp,
+			int aOperationBytecodeIndex,
+			int aFieldId,
+			Object aTarget, 
+			Object aValue)
 	{
+		if (LOG) System.out.println(String.format(
+				"fieldWrite   (thread: %d, p.ts: %s, depth: %d, ts: %s, fid: %s, target: %s, val: %s",
+				aThreadId,
+				AgentUtils.formatTimestamp(aParentTimestamp),
+				aDepth,
+				AgentUtils.formatTimestamp(aTimestamp),
+				formatField(aFieldId),
+				aTarget,
+				aValue));
+		
+		FieldWriteEvent theEvent = new FieldWriteEvent();
+		LocalThreadInfo theThread = getThread(aThreadId);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex);
+
+		theEvent.setField(getField(aFieldId));
+		theEvent.setTarget(aTarget);
+		theEvent.setValue(aValue);
+		
+		addEvent(theEvent);
 	}
 
-	public void instantiation(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
-			Object aTarget, Object[] aArguments)
+	public void instantiation(
+			int aThreadId, 
+			long aParentTimestamp, 
+			short aDepth, 
+			long aTimestamp,
+			int aOperationBytecodeIndex, 
+			boolean aDirectParent, 
+			int aCalledBehaviorId, 
+			int aExecutedBehaviorId,
+			Object aTarget, 
+			Object[] aArguments)
 	{
+		if (LOG) System.out.println(String.format(
+				"instantiation(thread: %d, p.ts: %s, depth: %d, ts: %s, direct: %s, c.bid: %s, e.bid: %s, target: %s, args: %s",
+				aThreadId,
+				AgentUtils.formatTimestamp(aParentTimestamp),
+				aDepth,
+				AgentUtils.formatTimestamp(aTimestamp),
+				aDirectParent,
+				formatBehavior(aCalledBehaviorId),
+				formatBehavior(aExecutedBehaviorId),
+				aTarget,
+				aArguments));
+		
+		InstantiationEvent theEvent = new InstantiationEvent();
+		LocalThreadInfo theThread = getThread(aThreadId);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex);
+
+		theEvent.setDirectParent(aDirectParent);
+		theEvent.setCalledBehavior(getBehavior(aCalledBehaviorId));
+		theEvent.setExecutedBehavior(getBehavior(aExecutedBehaviorId));
+		theEvent.setTarget(aTarget);
+		theEvent.setArguments(aArguments);
+		
+		addEvent(theEvent);
+		
+		theThread.pushParent(theEvent);
 	}
 
-	public void localWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, int aVariableId, Object aValue)
+	public void localWrite(
+			int aThreadId, 
+			long aParentTimestamp, 
+			short aDepth, 
+			long aTimestamp,
+			int aOperationBytecodeIndex,
+			int aVariableId, 
+			Object aValue)
 	{
+		if (LOG) System.out.println(String.format(
+				"localWrite   (thread: %d, p.ts: %s, depth: %d, ts: %s, vid: %d, val: %s",
+				aThreadId,
+				AgentUtils.formatTimestamp(aParentTimestamp),
+				aDepth,
+				AgentUtils.formatTimestamp(aTimestamp),
+				aVariableId,
+				aValue));
+		
+		LocalVariableWriteEvent theEvent = new LocalVariableWriteEvent();
+		LocalThreadInfo theThread = getThread(aThreadId);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex);
+
+		IBehaviorInfo theBehavior = theThread.peekParent().getExecutedBehavior();
+		LocalVariableInfo theInfo = theBehavior.getLocalVariableInfo(aOperationBytecodeIndex+35, aVariableId); // 35 is the size of our instrumentation
+       	if (theInfo == null) theInfo = new LocalVariableInfo((short)-1, (short)-1, "$"+aVariableId, "", (short)-1);
+        
+		theEvent.setVariable(theInfo);
+		
+		theEvent.setValue(aValue);
+		
+		addEvent(theEvent);
 	}
 
-	public void methodCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
-			Object aTarget, Object[] aArguments)
+	public void methodCall(
+			int aThreadId,
+			long aParentTimestamp,
+			short aDepth, 
+			long aTimestamp,
+			int aOperationBytecodeIndex, 
+			boolean aDirectParent, 
+			int aCalledBehaviorId,
+			int aExecutedBehaviorId,
+			Object aTarget,
+			Object[] aArguments)
 	{
+		if (LOG) System.out.println(String.format(
+				"methodCall   (thread: %d, p.ts: %s, depth: %d, ts: %s, direct: %s, c.bid: %s, e.bid: %s, target: %s, args: %s",
+				aThreadId,
+				AgentUtils.formatTimestamp(aParentTimestamp),
+				aDepth,
+				AgentUtils.formatTimestamp(aTimestamp),
+				aDirectParent,
+				formatBehavior(aCalledBehaviorId),
+				formatBehavior(aExecutedBehaviorId),
+				aTarget,
+				aArguments));
+		
+		MethodCallEvent theEvent = new MethodCallEvent();
+		LocalThreadInfo theThread = getThread(aThreadId);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex);
+
+		theEvent.setDirectParent(aDirectParent);
+		theEvent.setCalledBehavior(getBehavior(aCalledBehaviorId));
+		theEvent.setExecutedBehavior(getBehavior(aExecutedBehaviorId));
+		theEvent.setTarget(aTarget);
+		theEvent.setArguments(aArguments);
+		
+		addEvent(theEvent);
+		theThread.pushParent(theEvent);
 	}
 
-	public void output(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, Output aOutput, byte[] aData)
+	public void output(
+			int aThreadId,
+			long aParentTimestamp, 
+			short aDepth, 
+			long aTimestamp,
+			Output aOutput,
+			byte[] aData)
 	{
+		if (LOG) System.out.println(String.format(
+				"output       (thread: %d, p.ts: %s, depth: %d, ts: %s, out: %s, data: %s",
+				aThreadId,
+				AgentUtils.formatTimestamp(aParentTimestamp),
+				aDepth,
+				AgentUtils.formatTimestamp(aTimestamp),
+				aOutput,
+				aData));
+		
+		OutputEvent theEvent = new OutputEvent();
+		LocalThreadInfo theThread = getThread(aThreadId);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, -1);
+		
+		theEvent.setOutput(aOutput);
+		theEvent.setData(null); //TODO: fix
+		
+		addEvent(theEvent);
 	}
 
-	public void superCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorid, int aExecutedBehaviorId,
-			Object aTarget, Object[] aArguments)
+	public void superCall(
+			int aThreadId, 
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp,
+			int aOperationBytecodeIndex,
+			boolean aDirectParent, 
+			int aCalledBehaviorId,
+			int aExecutedBehaviorId,
+			Object aTarget, 
+			Object[] aArguments)
 	{
+		if (LOG) System.out.println(String.format(
+				"superCall    (thread: %d, p.ts: %s, depth: %d, ts: %s, direct: %s, c.bid: %s, e.bid: %s, target: %s, args: %s",
+				aThreadId,
+				AgentUtils.formatTimestamp(aParentTimestamp),
+				aDepth,
+				AgentUtils.formatTimestamp(aTimestamp),
+				aDirectParent,
+				formatBehavior(aCalledBehaviorId),
+				formatBehavior(aExecutedBehaviorId),
+				aTarget,
+				aArguments));
+		
+		ConstructorChainingEvent theEvent = new ConstructorChainingEvent();
+		LocalThreadInfo theThread = getThread(aThreadId);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex);
+
+		theEvent.setDirectParent(aDirectParent);
+		theEvent.setCalledBehavior(getBehavior(aCalledBehaviorId));
+		theEvent.setExecutedBehavior(getBehavior(aExecutedBehaviorId));
+		theEvent.setTarget(aTarget);
+		theEvent.setArguments(aArguments);
+		
+		addEvent(theEvent);
+		theThread.pushParent(theEvent);
 	}
 	
-	public Iterable<IHostInfo> getHosts()
+	@Override
+	protected void thread(ThreadInfo aThread)
 	{
-		return Collections.singleton(getHost());
+		itsBrowser.addThread(aThread);
 	}
 	
+	private static class LocalThreadInfo extends ThreadInfo
+	{
+		private Stack<BehaviorCallEvent> itsParentsStack = new ArrayStack<BehaviorCallEvent>();
+
+		public LocalThreadInfo(IHostInfo aHost, int aId, long aJVMId, String aName)
+		{
+			super(aHost, aId, aJVMId, aName);
+		}
+		
+		public void pushParent(BehaviorCallEvent aEvent)
+		{
+			itsParentsStack.push(aEvent);
+		}
+		
+		public BehaviorCallEvent popParent()
+		{
+			return itsParentsStack.pop();
+		}
+		
+		public BehaviorCallEvent peekParent()
+		{
+			return itsParentsStack.peek();
+		}
+	}
 }

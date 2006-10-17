@@ -3,7 +3,9 @@
  */
 package tod.gui.controlflow;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,10 +14,15 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 
 import tod.core.database.browser.ICFlowBrowser;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.browser.Stepper;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
 import tod.core.database.structure.IThreadInfo;
@@ -23,6 +30,7 @@ import tod.gui.IGUIManager;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.view.LogView;
 import zz.csg.display.GraphicPanel;
+import zz.utils.SimpleAction;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.PropertyListener;
@@ -34,6 +42,8 @@ public class CFlowView extends LogView
 	private CFlowTreeBuilder itsTreeBuilder;
 	private CFlowVariablesBuilder itsVariablesBuilder;
 	private CFlowObjectsBuilder itsObjectsBuilder;
+	
+	private Stepper itsStepper;
 	
 	private GraphicPanel itsTreePanel;
 	private GraphicPanel itsVariablesPanel;
@@ -69,13 +79,14 @@ public class CFlowView extends LogView
 
 		IThreadInfo theThread = itsSeed.getThread();
 		itsBrowser = getLogBrowser().createCFlowBrowser(theThread);
+		itsStepper = new Stepper(getLogBrowser(), theThread);
 	}
 
 	@Override
 	public void init()
 	{
-		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-
+		setLayout(new BorderLayout());
+		
 		// Create tree panel
 		itsTreeBuilder = new CFlowTreeBuilder(this);
 		itsRootNode = itsTreeBuilder.buildRootNode((IParentEvent) itsBrowser.getRoot());
@@ -86,7 +97,10 @@ public class CFlowView extends LogView
 		
 		JScrollPane theTreeScrollPane = new JScrollPane(itsTreePanel);
 		theTreeScrollPane.setPreferredSize(new Dimension(400, 10));
-		add(theTreeScrollPane);
+		
+		JPanel theCFlowPanel = new JPanel(new BorderLayout());
+		theCFlowPanel.add(theTreeScrollPane, BorderLayout.CENTER);
+		theCFlowPanel.add(createToolbar(), BorderLayout.NORTH);
 		
 		// Create variables panel
 		itsVariablesBuilder = new CFlowVariablesBuilder(this);
@@ -94,17 +108,74 @@ public class CFlowView extends LogView
 		itsVariablesPanel = new GraphicPanel();
 		itsVariablesPanel.setTransform(new AffineTransform());
 		
-		add(new JScrollPane(itsVariablesPanel));
-		
 		// Create objects panel
 		itsObjectsBuilder = new CFlowObjectsBuilder(this);
 		
 		itsObjectsPanel = new GraphicPanel();
 		itsObjectsPanel.setTransform(new AffineTransform());
 		
-		add(new JScrollPane(itsObjectsPanel));
+
+		// Setup split panes
+		JSplitPane theSplitPane1 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		theSplitPane1.setLeftComponent(theCFlowPanel);
+		
+//		JSplitPane theSplitPane2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+//		theSplitPane2.setLeftComponent(new JScrollPane(itsVariablesPanel));
+//		theSplitPane2.setRightComponent(new JScrollPane(itsObjectsPanel));
+//		
+//		theSplitPane1.setRightComponent(theSplitPane2);
+		theSplitPane1.setRightComponent(new JScrollPane(itsVariablesPanel));
+		
+		add(theSplitPane1, BorderLayout.CENTER);
 		
 		update();
+	}
+	
+	private JComponent createToolbar()
+	{
+		JPanel theToolbar = new JPanel();
+		
+		theToolbar.add(new JButton(new SimpleAction("|<", "Backward step over")
+		{
+			public void actionPerformed(ActionEvent aE)
+			{
+				itsStepper.setCurrentEvent(itsSeed.pSelectedEvent().get());
+				itsStepper.backwardStepOver();
+				selectEvent(itsStepper.getCurrentEvent());
+			}
+		}));
+		
+		theToolbar.add(new JButton(new SimpleAction("{}<", "Backward step into")
+		{
+			public void actionPerformed(ActionEvent aE)
+			{
+				itsStepper.setCurrentEvent(itsSeed.pSelectedEvent().get());
+				itsStepper.backwardStepInto();
+				selectEvent(itsStepper.getCurrentEvent());
+			}
+		}));
+		
+		theToolbar.add(new JButton(new SimpleAction(">{}", "Forward step into")
+		{
+			public void actionPerformed(ActionEvent aE)
+			{
+				itsStepper.setCurrentEvent(itsSeed.pSelectedEvent().get());
+				itsStepper.forwardStepInto();
+				selectEvent(itsStepper.getCurrentEvent());
+			}
+		}));
+		
+		theToolbar.add(new JButton(new SimpleAction(">|", "Forward step over")
+		{
+			public void actionPerformed(ActionEvent aE)
+			{
+				itsStepper.setCurrentEvent(itsSeed.pSelectedEvent().get());
+				itsStepper.forwardStepOver();
+				selectEvent(itsStepper.getCurrentEvent());
+			}
+		}));
+		
+		return theToolbar;
 	}
 	
 	private void update()

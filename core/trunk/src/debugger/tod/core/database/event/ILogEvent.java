@@ -35,12 +35,6 @@ public interface ILogEvent
 	public long getTimestamp();
 	
 	/**
-	 * Returns the serial number of this event.
-	 * Events in a thread have successive serial numbers.
-	 */
-	public long getSerial();
-	
-	/**
 	 * Returns behavior call event corresponding to the behavior execution
 	 * during which this event occured.
 	 */

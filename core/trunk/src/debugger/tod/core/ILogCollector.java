@@ -40,7 +40,7 @@ public interface ILogCollector
 			long aTimestamp, 
 			int aOperationBytecodeIndex,
 			boolean aDirectParent,
-			int aCalledBehaviorid,
+			int aCalledBehaviorId,
 			int aExecutedBehaviorId,
 			Object aTarget,
 			Object[] aArguments);

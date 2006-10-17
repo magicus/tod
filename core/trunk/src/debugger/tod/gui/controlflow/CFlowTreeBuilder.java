@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.core.database.event.EventUtils;
+import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.IConstructorChainingEvent;
 import tod.core.database.event.IExceptionGeneratedEvent;
 import tod.core.database.event.IFieldWriteEvent;
@@ -16,6 +17,7 @@ import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IMethodCallEvent;
 import tod.core.database.event.IParentEvent;
+import tod.gui.FontConfig;
 import zz.utils.ui.text.XFont;
 
 /**
@@ -24,9 +26,9 @@ import zz.utils.ui.text.XFont;
  */
 public class CFlowTreeBuilder
 {
-	public static final XFont FONT = XFont.DEFAULT_XPLAIN.deriveFont(12);
-	public static final XFont HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, 14);
-	
+	public static final XFont FONT = XFont.DEFAULT_XPLAIN.deriveFont(FontConfig.FONT_SIZE);
+	public static final XFont HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, FontConfig.HEADER_FONT_SIZE);
+
 	private CFlowView itsView;
 	
 	public CFlowTreeBuilder(CFlowView aView)
@@ -91,6 +93,10 @@ public class CFlowTreeBuilder
 		{
 			IConstructorChainingEvent theEvent = (IConstructorChainingEvent) aEvent;
 			return new ConstructorChainingNode(itsView, theEvent);
+		}
+		else if (aEvent instanceof IBehaviorExitEvent)
+		{
+			return null;
 		}
 
 		return new UnknownEventNode(itsView, aEvent);

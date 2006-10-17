@@ -24,6 +24,8 @@ implements IInstantiationEvent
 	
 	public ITypeInfo getType()
 	{
-		return getExecutedBehavior().getType();
+		return getExecutedBehavior() != null ? 
+				getExecutedBehavior().getType()
+				: getCalledBehavior().getType();
 	}
 }

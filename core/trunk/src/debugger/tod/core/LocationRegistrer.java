@@ -22,6 +22,7 @@ import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.PrimitiveTypeInfo;
 import tod.core.database.structure.TypeInfo;
+import tod.core.database.structure.UnknownTypeInfo;
 /**
  * This class permits to register location ids.
  * @author gpothier
@@ -29,6 +30,7 @@ import tod.core.database.structure.TypeInfo;
 public class LocationRegistrer implements ILocationRegistrer, ILocationsRepository
 {
 	private List<ClassInfo> itsTypes = new ArrayList<ClassInfo>();
+	private List<UnknownTypeInfo> itsUnknownTypes = new ArrayList<UnknownTypeInfo>();
 	private Map<String, TypeInfo> itsTypesMap = new HashMap<String, TypeInfo>();
 	
 	private List<String> itsFiles = new ArrayList<String>();
@@ -213,6 +215,12 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationsReposito
 		return theClassInfo;
 	}
 	
+	private synchronized UnknownTypeInfo registerUnknownType(String aName)
+	{
+		UnknownTypeInfo theType = new UnknownTypeInfo(-itsUnknownTypes.size()-1, aName);
+		itsUnknownTypes.add(theType);
+		return theType;
+	}
 
 	/**
 	 * Returns the type object that corresponds to the given name.
@@ -227,6 +235,8 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationsReposito
 		}
 		
 		TypeInfo theType = itsTypesMap.get(aName);
+		if (theType == null) theType = registerUnknownType(aName);
+		
 		if (theDimension == 0) return theType;
 		else
 		{
@@ -246,7 +256,8 @@ public class LocationRegistrer implements ILocationRegistrer, ILocationsReposito
 	
 	public ITypeInfo getType(int aId)
 	{
-		return itsTypes.get(aId);
+		if (aId < -1) return itsUnknownTypes.get(-aId-1);
+		else return itsTypes.get(aId);
 	}
 	
 	/**

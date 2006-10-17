@@ -17,7 +17,6 @@ public interface ISession
 	 */
 	public URI getUri();
 	public ILogBrowser getLogBrowser();
-	public ILocationsRepository getLocations();
 	
 	/**
 	 * Returns the path where the agent caches instrumented classes

@@ -30,5 +30,6 @@ then
 	VMARGS="$VMARGS -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=$JDWP_PORT"
 fi
 
-
+echo Host: `hostname`
+$JAVA_HOME/bin/java -version
 $JAVA_HOME/bin/java $VMARGS $MAIN $2 $3 $4 $5

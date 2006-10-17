@@ -10,7 +10,8 @@ import tod.core.database.browser.IEventBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.impl.common.event.Event;
 import tod.impl.local.EventBrowser;
-import tod.impl.local.LocalCollector;
+import tod.impl.local.LocalBrowser;
+import tod.impl.local.LocalBrowser;
 
 /**
  * Base class for filters that are precomputed.
@@ -20,9 +21,9 @@ public abstract class AbstractPrecomputedFilter extends AbstractFilter
 {
 	private List<ILogEvent> itsEvents = new ArrayList<ILogEvent>();
 
-	public AbstractPrecomputedFilter(LocalCollector aCollector)
+	public AbstractPrecomputedFilter(LocalBrowser aBrowser)
 	{
-		super(aCollector);
+		super(aBrowser);
 		
 	}
 	

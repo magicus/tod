@@ -14,6 +14,9 @@ public class TupleFinder
 	/**
 	 * Finds the first tuple that verifies a condition on timestamp.
 	 * See {@link #findTupleIndex(PageBitStruct, long, tod.impl.dbgrid.dbnode.HierarchicalIndex.TupleCodec, boolean)}
+	 * @return The first matching tuple, or null if no tuple matches,
+	 * ie. if {@link #findTupleIndex(PageBitStruct, long, tod.impl.dbgrid.dbnode.HierarchicalIndex.TupleCodec, boolean)}
+	 * returns -1.
 	 */
 	public static <T extends IndexTuple> T findTuple(
 			BitStruct aPage, 
@@ -23,6 +26,7 @@ public class TupleFinder
 			boolean aBefore)
 	{
 		int theIndex = findTupleIndex(aPage, aPagePointerSize, aTimestamp, aTupleCodec, aBefore);
+		if (theIndex < 0) return null;
 		return readTuple(aPage, aTupleCodec, theIndex);
 	}
 	
@@ -93,6 +97,7 @@ public class TupleFinder
 	
 	public static <T extends Tuple> T readTuple(BitStruct aPage, TupleCodec<T> aTupleCodec, int aIndex)
 	{
+		assert aIndex >= 0;
 		aPage.setPos(aIndex * aTupleCodec.getTupleSize());
 		return aTupleCodec.read(aPage);
 	}
