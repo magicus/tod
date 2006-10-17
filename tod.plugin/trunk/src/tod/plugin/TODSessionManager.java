@@ -8,10 +8,8 @@ import java.net.URISyntaxException;
 
 import org.eclipse.jdt.core.IJavaProject;
 
-import tod.core.session.DefaultSessionFactory;
 import tod.core.session.ISession;
-import zz.utils.notification.IEvent;
-import zz.utils.notification.SimpleEvent;
+import tod.impl.local.LocalSession;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
@@ -25,14 +23,7 @@ public class TODSessionManager
 {
 	private static TODSessionManager INSTANCE = new TODSessionManager();
 	
-	private IRWProperty<DebuggingSession> pCurrentSession = new SimpleRWProperty<DebuggingSession>(this)
-	{
-		@Override
-		protected void changed(DebuggingSession aOldValue, DebuggingSession aNewValue)
-		{
-			if (aOldValue != null) aOldValue.disconnect();
-		}
-	};
+	private IRWProperty<DebuggingSession> pCurrentSession = new SimpleRWProperty<DebuggingSession>(this);
 	
 	public static TODSessionManager getInstance()
 	{
@@ -59,12 +50,10 @@ public class TODSessionManager
 		ISession theSession;
 		try
 		{
-			theSession = DefaultSessionFactory.getInstance().createSession(
-					new URI("file:/home/gpothier/tmp/ASM"), 
-					null, 
-					null, 
-					null);
+			DebuggingSession thePreviousSession = pCurrentSession.get();
+			if (thePreviousSession != null) thePreviousSession.disconnect();
 			
+			theSession = new LocalSession(new URI("file:/home/gpothier/tmp/ASM"));
 			DebuggingSession theDebuggingSession = new DebuggingSession(theSession, aJavaProject);
 			
 			pCurrentSession.set(theDebuggingSession);

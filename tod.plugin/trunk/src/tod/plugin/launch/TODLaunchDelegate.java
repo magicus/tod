@@ -84,6 +84,13 @@ public class TODLaunchDelegate extends AbstractCustomLaunchConfigurationDelegate
 		
 		theArguments.add("-noverify");
 		
+		theArguments.add("-Dcollector-host=localhost");
+		theArguments.add("-Dcollector-port=8058");
+		theArguments.add("-Dnative-port=8059");
+		theArguments.add("-Dtod-host=tod-1");
+		
+
+		
 		return theArguments;
 	}
 	
