@@ -15,6 +15,7 @@ import tod.impl.dbgrid.messages.GridEvent;
  */
 public class BytecodeLocationCondition extends SimpleCondition
 {
+	private static final long serialVersionUID = 7843402757580345452L;
 	private int itsBytecodeLocation;
 
 	public BytecodeLocationCondition(int aBytecodeLocation)

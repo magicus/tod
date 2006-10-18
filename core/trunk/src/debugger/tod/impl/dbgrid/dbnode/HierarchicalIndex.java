@@ -6,6 +6,7 @@ package tod.impl.dbgrid.dbnode;
 import static tod.impl.dbgrid.DebuggerGridConfig.DB_MAX_INDEX_LEVELS;
 import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_POINTER_BITS;
 import static tod.impl.dbgrid.DebuggerGridConfig.EVENT_TIMESTAMP_BITS;
+import tod.agent.AgentUtils;
 import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 import tod.impl.dbgrid.dbnode.file.IndexTuple;
 import tod.impl.dbgrid.dbnode.file.IndexTupleCodec;
@@ -17,7 +18,10 @@ import tod.impl.dbgrid.dbnode.file.PageBank.Page;
 import tod.impl.dbgrid.dbnode.file.PageBank.PageBitStruct;
 import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Probe;
+import zz.utils.ArrayStack;
+import zz.utils.Stack;
 import zz.utils.bit.BitStruct;
+import zz.utils.bit.BitUtils;
 
 /**
  * Implementation of a hierarchical index on an attribute value,
@@ -68,6 +72,15 @@ public class HierarchicalIndex<T extends IndexTuple>
 	}
 	
 	/**
+	 * Returns the level number that corresponds to the root page.
+	 * This is equivalent to the height of the index.
+	 */
+	public int getRootLevel()
+	{
+		return itsRootLevel;
+	}
+
+	/**
 	 * Returns the first tuple that has a timestamp greater or equal
 	 * than the specified timestamp, if any.
 	 * @param aExact If true, only a tuple with exactly the specified
@@ -81,6 +94,17 @@ public class HierarchicalIndex<T extends IndexTuple>
 		T theTuple = theIterator.nextOneShot();
 		if (aExact && theTuple.getTimestamp() != aTimestamp) return null;
 		else return theTuple;
+	}
+	
+	/**
+	 * Returns an iterator over the tuples of the given page
+	 */
+	public TupleIterator<IndexTuple> getTupleIterator(Page aPage, int aLevel)
+	{
+		return new TupleIterator(
+				itsFile, 
+				aLevel > 0 ? InternalTupleCodec.getInstance() : itsTupleCodec, 
+				aPage.asBitStruct());
 	}
 	
 	/**
@@ -181,6 +205,92 @@ public class HierarchicalIndex<T extends IndexTuple>
 		
 		theWriter.add(aTuple);
 	}
+	
+	private TupleIterator<? extends IndexTuple> createTupleIterator(PageBitStruct aPage, int aLevel)
+	{
+		return aLevel > 0 ?
+				new TupleIterator<InternalTuple>(itsFile, InternalTupleCodec.getInstance(), aPage)
+				: new TupleIterator<T>(itsFile, itsTupleCodec, aPage);
+	}
+	
+	private String printIndex()
+	{
+		StringBuilder theBuilder = new StringBuilder();
+		int theLevel = itsRootLevel;
+		Page theCurrentPage = itsRootPage;
+		Page theFirstChildPage = null;
+		
+		while (theLevel > 0)
+		{
+			theBuilder.append("Level "+theLevel+"\n");
+			
+			TupleIterator<InternalTuple> theIterator = new TupleIterator<InternalTuple>(
+					itsFile, 
+					InternalTupleCodec.getInstance(), 
+					theCurrentPage.asBitStruct());
+			
+			int i = 0;
+			while (theIterator.hasNext())
+			{
+				InternalTuple theTuple = theIterator.next();
+				if (theFirstChildPage == null)
+				{
+					theFirstChildPage = itsFile.get(theTuple.getPagePointer());
+				}
+				
+				theBuilder.append(AgentUtils.formatTimestampU(theTuple.getTimestamp()));
+				theBuilder.append('\n');
+				i++;
+			}
+			theBuilder.append(""+i+" entries\n");
+			
+			theCurrentPage = theFirstChildPage;
+			theFirstChildPage = null;
+			theLevel--;
+		}
+		
+		return theBuilder.toString();
+	}
+	
+	/**
+	 * Realizes a fast counting of the tuples of this index, using
+	 * upper-level indexes when possible.
+	 */
+	public long[] fastCountTuples(
+			long aT1, 
+			long aT2, 
+			int aSlotsCount) 
+	{
+		return new TupleCounter(aT1, aT2, aSlotsCount).count();
+	}
+	
+	/**
+	 * Data structure used by {@link HierarchicalIndex#fastCountTuples(long, long, int)}.
+	 * @author gpothier
+	 */
+	private static class LevelData
+	{
+		public TupleIterator<? extends IndexTuple> iterator;
+		public IndexTuple lastTuple;
+		
+		/**
+		 * Minimum number of tuples to read at this level.
+		 */
+		public int remaining;
+		
+		public LevelData(TupleIterator< ? extends IndexTuple> aIterator, int aRemaining)
+		{
+			iterator = aIterator;
+			remaining = aRemaining;
+		}
+
+		public IndexTuple next()
+		{
+			lastTuple = iterator.next();
+			return lastTuple;
+		}
+	}
+
 	
 	/**
 	 * Returns the total number of pages occupied by this index
@@ -334,4 +444,203 @@ public class HierarchicalIndex<T extends IndexTuple>
 		
 	}
 
+	/**
+	 * Implementation of fast tuple counting. 
+	 * @author gpothier
+	 */
+	private class TupleCounter
+	{
+		private long itsT1;
+		private long itsT2;
+		private int itsSlotsCount;
+		
+		/**
+		 * t2-t1
+		 */
+		private long itsDT;
+		
+		private Stack<LevelData> itsStack = new ArrayStack<LevelData>();
+
+		private float[] itsCounts;
+
+		private int[] itsTuplesBetweenPairs;
+		private int itsTuplesPerPage0;
+		private int itsTuplesPerPageU;
+		private LevelData itsCurrentLevel;
+		private IndexTuple itsLastTuple;
+		private int itsCurrentHeight;
+		
+		public TupleCounter(long aT1, long aT2, int aSlotsCount)
+		{
+			itsT1 = aT1;
+			itsT2 = aT2;
+			itsSlotsCount = aSlotsCount;
+			itsDT = (aT2-aT1)/aSlotsCount;
+			
+			precomputeTuplesBetweenPairs();
+			itsCounts = new float[aSlotsCount];
+
+			itsStack.push(new LevelData(
+					createTupleIterator(itsRootPage.asBitStruct(), itsRootLevel), 
+					0));
+
+		}
+
+		/**
+		 * Compute the number of level-0 tuples between each pair of
+		 * level-i tuples, for each level.
+		 */
+		private void precomputeTuplesBetweenPairs()
+		{
+			itsTuplesBetweenPairs = new int[itsRootLevel+1];
+			
+			itsTuplesPerPage0 = TupleFinder.getTuplesPerPage(
+					itsFile.getPageSize()*8,
+					DB_PAGE_POINTER_BITS,
+					itsTupleCodec);
+			
+			itsTuplesPerPageU = TupleFinder.getTuplesPerPage(
+					itsFile.getPageSize()*8,
+					DB_PAGE_POINTER_BITS,
+					InternalTupleCodec.getInstance());
+			
+			for (int i=0;i<=itsRootLevel;i++)
+			{
+				itsTuplesBetweenPairs[i] = i > 0 ?
+						itsTuplesPerPage0 * BitUtils.powi(itsTuplesPerPageU, i-1)
+						: 1;
+			}
+		}
+		
+		private void drillDown()
+		{
+			InternalTuple theTuple = (InternalTuple) itsLastTuple;
+			Page theChildPage = itsFile.get(theTuple.getPagePointer());
+			
+			itsStack.push(new LevelData(
+					createTupleIterator(theChildPage.asBitStruct(), itsCurrentHeight-1),
+					itsCurrentHeight > 1 ? itsTuplesPerPageU : itsTuplesPerPage0));
+		}
+
+		public long[] count() 
+		{
+//			System.out.println(printIndex());
+
+//			System.out.println("dt: "+AgentUtils.formatTimestampU(dt));
+			
+			long t = itsT1;
+			
+			boolean theFinished = false;
+			
+			while(! theFinished)
+			{
+				itsCurrentLevel = itsStack.peek();
+				itsCurrentHeight = itsRootLevel - itsStack.size() + 1;
+				long theStart;
+				long theEnd;
+
+				itsLastTuple = itsCurrentLevel.lastTuple;
+				if (itsCurrentLevel.iterator.hasNext()) 
+				{
+					IndexTuple theCurrent = itsCurrentLevel.next();
+					theEnd = theCurrent.getTimestamp();
+				}
+				else if (itsCurrentHeight > 0)
+				{
+					drillDown();
+					continue;
+				}
+				else
+				{
+					theFinished = true;
+					theEnd = itsLastTimestamp;
+				}
+				
+				if (itsLastTuple == null || theEnd < t) continue;
+				theStart = itsLastTuple.getTimestamp();
+
+				itsCurrentHeight = itsRootLevel - itsStack.size() + 1;
+				long dtPair = theEnd-theStart;
+//				System.out.println("dtPair: "+AgentUtils.formatTimestampU(dtPair));
+				
+				if (itsCurrentHeight > 0 && dtPair > itsDT/2)
+				{
+					drillDown();
+					continue;
+				}
+				
+				t = theStart;
+				int theSlot = (int)(((t - itsT1) * itsSlotsCount) / (itsT2 - itsT1));
+				if (theSlot >= itsSlotsCount) break;
+				
+				if (itsCurrentHeight == 0)
+				{
+					itsCounts[theSlot] += 1;
+				}
+				else
+				{
+					int theCount = itsTuplesBetweenPairs[itsCurrentHeight];
+					
+					distributeCounts(theCount, theStart, theEnd, theSlot);
+				}
+
+				itsCurrentLevel.remaining--;
+				if (itsCurrentLevel.remaining == 0)
+				{
+					itsStack.pop();
+				}
+			}
+			
+			long[] theResult = new long[itsSlotsCount];
+			for (int i = 0; i < itsCounts.length; i++)
+			{
+				float f = itsCounts[i];
+				theResult[i] = (long) f;
+			}
+			
+			return theResult;
+		}
+
+		/**
+		 * Distribute a number of events across one or several slots.
+		 * @param theCount The number of events to distribute
+		 * @param theStart Beginning of the interval in which the events occurred
+		 * @param theEnd End of the interval
+		 * @param theSlot The main receiving slot
+		 */
+		private void distributeCounts(
+				int theCount, 
+				long theStart, 
+				long theEnd, 
+				int theSlot)
+		{
+			long theSlotStart = itsT1 + theSlot * (itsT2 - itsT1) / itsSlotsCount;
+			long theSlotEnd = theSlotStart + itsDT;
+			
+			long dtPair = theEnd-theStart;
+			
+			if (theStart < theSlotStart)
+			{
+				// We overflow before
+				long theBefore = theSlotStart-theStart;
+				float theRatio = 1f * theBefore / dtPair;
+				if (theSlot > 0) itsCounts[theSlot-1] += theRatio * theCount;
+				itsCounts[theSlot] += (1f-theRatio) * theCount;
+			}
+			else if (theEnd > theSlotEnd)
+			{
+				// We overflow after
+				long theAfter = theEnd-theSlotEnd;
+				float theRatio = 1f * theAfter / dtPair;
+				if (theSlot < itsCounts.length-1) itsCounts[theSlot+1] += theRatio * theCount;
+				itsCounts[theSlot] += (1f-theRatio) * theCount;
+			}
+			else
+			{
+				// No overflow - note the invariant dtPair > dt/2
+				itsCounts[theSlot] += theCount;
+			}
+		}
+		
+	}
 }

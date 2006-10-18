@@ -5,9 +5,11 @@ package tod.impl.dbgrid;
 
 import tod.impl.dbgrid.dbnode.DatabaseNode;
 import tod.impl.dbgrid.dbnode.HierarchicalIndex;
+import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 import tod.impl.dbgrid.dbnode.file.TupleIterator;
 import tod.impl.dbgrid.dbnode.file.TupleWriter;
 import tod.impl.dbgrid.messages.MessageType;
+import tod.utils.ConfigUtils;
 import zz.utils.bit.BitUtils;
 
 public class DebuggerGridConfig
@@ -70,7 +72,7 @@ public class DebuggerGridConfig
 	/**
 	 * Size of the {@link DatabaseNode} reordering event buffer
 	 */
-	public static final int DB_EVENT_BUFFER_SIZE = 50000;
+	public static final int DB_EVENT_BUFFER_SIZE = 100000;
 	
 	/**
 	 * Maximum number of event types 
@@ -201,4 +203,19 @@ public class DebuggerGridConfig
 	 * Number of events to fetch at a time 
 	 */
 	public static final int QUERY_ITERATOR_BUFFER_SIZE = 10;
+	
+	public static final String PARAM_DB_PAGE_BUFFER_SIZE = "page-buffer-size";
+	
+	/**
+	 * Maximum size allocated to page buffers.
+	 * See {@link HardPagedFile.PageDataManager}
+	 */
+	public static long DB_PAGE_BUFFER_SIZE;
+	
+	static
+	{
+		System.out.println("Loading db grid config");
+		DB_PAGE_BUFFER_SIZE = ConfigUtils.readSize(PARAM_DB_PAGE_BUFFER_SIZE, "100m");
+	}
+
 }

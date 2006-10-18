@@ -11,6 +11,14 @@ import zz.utils.bit.BitStruct;
  */
 public class TupleFinder
 {
+	public static <T> int getTuplesPerPage(
+			int aPageSize, 
+			int aPagePointerSize,
+			TupleCodec<T> aTupleCodec)
+	{
+		return (aPageSize - aPagePointerSize) / aTupleCodec.getTupleSize();
+	}
+	
 	/**
 	 * Finds the first tuple that verifies a condition on timestamp.
 	 * See {@link #findTupleIndex(PageBitStruct, long, tod.impl.dbgrid.dbnode.HierarchicalIndex.TupleCodec, boolean)}
@@ -36,19 +44,17 @@ public class TupleFinder
 	 * that is smaller than the given timestamp.
 	 * If false, the search will return the tuple which has the smallest timestamp value that is
 	 * greater than or equeal to the given timestamp
+	 * @param aPagePointerSize Size in bits of page pointers for linking to next/previous pages.
 	 */
 	public static <T extends IndexTuple> int findTupleIndex(
-			BitStruct aStruct, 
+			BitStruct aPage, 
 			int aPagePointerSize,
 			long aTimestamp, 
 			TupleCodec<T> aTupleCodec,
 			boolean aBefore)
 	{
-		int thePageSize = aStruct.getTotalBits();
-		int theTupleCount = (thePageSize - aPagePointerSize) 
-			/ aTupleCodec.getTupleSize();
-		
-		return findTupleIndex(aStruct, aTimestamp, aTupleCodec, 0, theTupleCount-1, aBefore);
+		int theTupleCount = getTuplesPerPage(aPage.getTotalBits(), aPagePointerSize, aTupleCodec);
+		return findTupleIndex(aPage, aTimestamp, aTupleCodec, 0, theTupleCount-1, aBefore);
 	}
 	
 	/**

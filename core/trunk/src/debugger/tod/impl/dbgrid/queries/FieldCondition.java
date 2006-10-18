@@ -15,6 +15,7 @@ import tod.impl.dbgrid.messages.GridEvent;
  */
 public class FieldCondition extends SimpleCondition
 {
+	private static final long serialVersionUID = -8850366553462947973L;
 	private int itsFieldId;
 
 	public FieldCondition(int aFieldId)

@@ -15,6 +15,7 @@ import tod.impl.dbgrid.messages.GridEvent;
  */
 public class VariableCondition extends SimpleCondition
 {
+	private static final long serialVersionUID = -7171025129792888283L;
 	private int itsVariableId;
 
 	public VariableCondition(int aVariableId)

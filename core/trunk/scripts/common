@@ -13,6 +13,7 @@ export CLASSPATH=.:$LIB_DIR/asm-2.1.jar:$LIB_DIR/asm-commons-2.1.jar\
 :$LIB_DIR/zz.utils.jar
 
 [ -n "$MASTER_HOST" ] || export MASTER_HOST=syntagma
+
 export DATA_DIR=$LOCAL_STORAGE/tod
 export EVENTS_FILE=$SHARED_STORAGE/tod/events-raw.bin
 export LOCATIONS_FILE=$SHARED_STORAGE/tod/locations.bin

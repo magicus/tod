@@ -4,10 +4,12 @@
 package tod.impl.dbgrid.queries;
 
 import java.io.Serializable;
+import java.rmi.RemoteException;
 import java.util.Iterator;
 
 import tod.core.database.browser.IEventFilter;
 import tod.impl.dbgrid.dbnode.EventList;
+import tod.impl.dbgrid.dbnode.EventsCounter;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.messages.GridEvent;
@@ -58,6 +60,17 @@ implements IEventFilter, Serializable
 	public abstract Iterator<StdTuple> createTupleIterator(
 			Indexes aIndexes,
 			long aTimestamp);
+	
+	/**
+	 * Returns the number of events that matches this condition.
+	 * By default performs a merge count. Subclasses can override this method
+	 * to provide a more efficient implementation.
+	 */
+	public long[] getEventCounts(Indexes aIndexes, long aT1, long aT2, int aSlotsCount)
+	{
+		return EventsCounter.mergeCountEvents(this, aIndexes, aT1, aT2, aSlotsCount); 
+	}
+
 	
 	protected abstract String toString(int aIndent);
 	

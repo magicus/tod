@@ -17,6 +17,7 @@ import java.nio.channels.FileChannel;
 import java.util.HashMap;
 import java.util.Map;
 
+import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Probe;
@@ -242,7 +243,6 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 			Monitor.getInstance().register(this);
 		}
 		
-		private long itsMaxSpace = 100*1000*1000;
 		private long itsCurrentSpace;
 		
 		public PageData create(HardPagedFile aFile, long aId)
@@ -258,7 +258,7 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 		@Override
 		protected boolean shouldDrop(int aCachedItems)
 		{
-			return itsCurrentSpace >= itsMaxSpace;
+			return itsCurrentSpace >= DebuggerGridConfig.DB_PAGE_BUFFER_SIZE;
 		}
 		
 		@Override

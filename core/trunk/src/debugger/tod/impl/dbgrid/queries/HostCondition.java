@@ -15,6 +15,7 @@ import tod.impl.dbgrid.messages.GridEvent;
  */
 public class HostCondition extends SimpleCondition
 {
+	private static final long serialVersionUID = -6783805983938219464L;
 	private int itsHost;
 
 	public HostCondition(int aHost)

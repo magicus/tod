@@ -33,5 +33,21 @@ public class ConfigUtils
 		return theString != null ? theString : aDefault;
 	}
 	
+	/**
+	 * Reads a size in bytes. Commonly used size suffixes can be used:
+	 * k for kilo, m for mega, g for giga
+	 */
+	public static long readSize (String aPropertyName, String aDefault)
+	{
+		String theValue = readString(aPropertyName, aDefault);
+		long theFactor = 1;
+		if (theValue.endsWith("k")) theFactor = 1024;
+		else if (theValue.endsWith("m")) theFactor = 1024*1024;
+		else if (theValue.endsWith("g")) theFactor = 1024*1024*1024;
+		if (theFactor != 1) theValue = theValue.substring(0, theValue.length()-1);
+		
+		return Long.parseLong(theValue)*theFactor;
+	}
+	
 
 }

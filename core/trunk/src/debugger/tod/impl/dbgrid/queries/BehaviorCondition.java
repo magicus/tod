@@ -16,6 +16,7 @@ import tod.impl.dbgrid.messages.GridEvent;
  */
 public class BehaviorCondition extends SimpleCondition
 {
+	private static final long serialVersionUID = -9029772284148605574L;
 	private int itsBehaviorId;
 	private byte itsRole;
 	

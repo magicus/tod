@@ -16,6 +16,7 @@ import tod.impl.dbgrid.messages.GridEvent;
  */
 public class TypeCondition extends SimpleCondition
 {
+	private static final long serialVersionUID = 5860441411500604107L;
 	private MessageType itsType;
 
 	public TypeCondition(MessageType aType)

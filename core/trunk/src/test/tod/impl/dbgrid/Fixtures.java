@@ -12,7 +12,10 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Iterator;
@@ -366,6 +369,12 @@ public class Fixtures
 
 		long theCount = 0;
 		
+		PrintWriter theTimingsWriter = new PrintWriter(new FileWriter("bench/replay-times.txt"));
+		theTimingsWriter.println("# col. 1: event count");
+		theTimingsWriter.println("# col. 2: time in ms");
+		
+		long t0 = System.currentTimeMillis();
+		
 		while (true)
 		{
 			byte theCommand;
@@ -401,11 +410,22 @@ public class Fixtures
 			}
 			
 			theCount++;
-			if (theCount % 100000 == 0) System.out.println(theCount);
+			
+			if (theCount % 100000 == 0)
+			{
+				System.out.println(theCount);
+				
+				long t = System.currentTimeMillis()-t0;
+				theTimingsWriter.println(theCount+" "+t);
+			}
 		}
 		
 		aMaster.flush();
 		System.out.println("Done");
+
+		long t = System.currentTimeMillis()-t0;
+		theTimingsWriter.println(theCount+" "+t);
+		theTimingsWriter.close();
 		
 		return theCount;
 	}

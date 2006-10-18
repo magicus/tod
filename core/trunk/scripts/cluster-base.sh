@@ -7,7 +7,7 @@ then
 	echo $MASTER_HOST > master-host
 	echo Starting master, host: $MASTER_HOST
 	./$1 $2 $3
-	rm master-host.$JOB_ID
+	rm master-host
 else
 	echo NODE
 	sleep 5s

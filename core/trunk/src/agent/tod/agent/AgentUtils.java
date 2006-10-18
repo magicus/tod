@@ -18,6 +18,11 @@ public class AgentUtils
 				| (aSerial & AgentConfig.TIMESTAMP_ADJUST_MASK);
 	}
 	
+	public static long untransformTimestamp(long aTimestamp)
+	{
+		return aTimestamp >>> AgentConfig.TIMESTAMP_ADJUST_SHIFT;
+	}
+	
 	private static final boolean FORCE_FAST_TS = true;
 	private static final boolean FORCE_FALSE_TS = false;
 	private static final int MAX_DTS = 10;
@@ -61,6 +66,11 @@ public class AgentUtils
 //		}
 		
 		return ts;
+	}
+	
+	public static String formatTimestampU(long aTimestamp)
+	{
+		return formatTimestamp(untransformTimestamp(aTimestamp));
 	}
 	
 	public static String formatTimestamp(long aTimestamp)

@@ -17,6 +17,8 @@ import tod.impl.dbgrid.messages.GridEvent;
 public class Conjunction extends CompoundCondition
 {
 
+	private static final long serialVersionUID = 6155046517220795498L;
+
 	@Override
 	public Iterator<StdTuple> createTupleIterator(
 			Indexes aIndexes,

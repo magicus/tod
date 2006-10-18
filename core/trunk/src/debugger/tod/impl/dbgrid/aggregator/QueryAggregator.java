@@ -86,7 +86,7 @@ implements RIQueryAggregator
 	
 	public long[] getEventCounts(final long aT1, final long aT2, final int aSlotsCount) throws RemoteException
 	{
-		System.out.println("Aggregating counts...");
+//		System.out.println("Aggregating counts...");
 		
 		long t0 = System.currentTimeMillis();
 		long[] theCounts = new long[aSlotsCount];
@@ -117,7 +117,7 @@ implements RIQueryAggregator
 		
 		long t1 = System.currentTimeMillis();
 		
-		System.out.println("Computed counts in "+(t1-t0)+"ms.");
+//		System.out.println("Computed counts in "+(t1-t0)+"ms.");
 		
 		return theCounts;
 	}

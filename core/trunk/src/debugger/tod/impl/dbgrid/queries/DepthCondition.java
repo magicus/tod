@@ -15,6 +15,7 @@ import tod.impl.dbgrid.messages.GridEvent;
  */
 public class DepthCondition extends SimpleCondition
 {
+	private static final long serialVersionUID = 4667937394229993337L;
 	private int itsDepth;
 
 	public DepthCondition(int aDepth)

@@ -8,11 +8,11 @@ import static tod.impl.dbgrid.DebuggerGridConfig.DB_EVENT_PAGE_SIZE;
 import static tod.impl.dbgrid.DebuggerGridConfig.DB_INDEX_PAGE_SIZE;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -25,7 +25,6 @@ import tod.core.config.GeneralConfig;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.RIGridMaster;
-import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.GridMessage;
@@ -48,6 +47,14 @@ implements RIDatabaseNode
 	 * return: none
 	 */
 	public static final byte CMD_PUSH_EVENTS = 17;
+	
+	/**
+	 * This command flushes all buffered events.
+	 * args: none
+	 * return:
+	 *  number of flushed events: int
+	 */
+	public static final byte CMD_FLUSH_EVENTS = 18;
 	
 	/**
 	 * Id of this node in the system
@@ -149,25 +156,7 @@ implements RIDatabaseNode
 
 	public long[] getEventCounts(EventCondition aCondition, long aT1, long aT2, int aSlotsCount) throws RemoteException
 	{
-		long t0 = System.currentTimeMillis();
-		long[] theCounts = new long[aSlotsCount];
-		
-		Iterator<StdTuple> theIterator = aCondition.createTupleIterator(getIndexes(), aT1);
-		while (theIterator.hasNext())
-		{
-			StdTuple theTuple = theIterator.next();
-			long theTimestamp = theTuple.getTimestamp();
-			if (theTimestamp < aT1) continue;
-			if (theTimestamp >= aT2) break;
-
-			int theSlot = (int)(((theTimestamp - aT1) * aSlotsCount) / (aT2 - aT1));
-			theCounts[theSlot]++;
-		}
-		
-		long t1 = System.currentTimeMillis();
-		
-		System.out.println("Counts computed in "+(t1-t0)+"ms");
-		return theCounts;
+		return aCondition.getEventCounts(getIndexes(), aT1, aT2, aSlotsCount);
 	}
 
 	/**
@@ -191,12 +180,14 @@ implements RIDatabaseNode
 	 * Flushes the event buffer. Events should not be added
 	 * after this method is called.
 	 */
-	public void flush()
+	public int flush()
 	{
-		System.out.println("DatabaseNode: flushing "+itsEventBuffer.getSize()+" events...");
+		int theCount = itsEventBuffer.getSize();
+		System.out.println("DatabaseNode: flushing "+theCount+" events...");
 		while (! itsEventBuffer.isEmpty()) processEvent(itsEventBuffer.remove());
 		itsFlushed = true;
 		System.out.println("DatabaseNode: flushed");
+		return theCount;
 	}
 	
 	private void addEvent(GridEvent aEvent)
@@ -293,14 +284,15 @@ implements RIDatabaseNode
 		{
 			try
 			{
-				DataInputStream theStream = new DataInputStream(itsSocket.getInputStream());
+				DataInputStream theInStream = new DataInputStream(itsSocket.getInputStream());
+				DataOutputStream theOutStream = new DataOutputStream(itsSocket.getOutputStream());
 				
 				while (itsSocket.isConnected())
 				{
 					byte theCommand;
 					try
 					{
-						theCommand = theStream.readByte();
+						theCommand = theInStream.readByte();
 					}
 					catch (EOFException e)
 					{
@@ -310,8 +302,14 @@ implements RIDatabaseNode
 					switch (theCommand)
 					{
 					case CMD_PUSH_EVENTS:
-						pushEvents(theStream);
+						pushEvents(theInStream);
 						break;
+						
+					case CMD_FLUSH_EVENTS:
+						int theCount = flush();
+						theOutStream.writeInt(theCount);
+						theOutStream.flush();
+						return;
 						
 					default:
 						throw new RuntimeException("Not handled: "+theCommand);
@@ -324,7 +322,7 @@ implements RIDatabaseNode
 				throw new RuntimeException(e);
 			}
 			
-			flush();
+			if (! itsFlushed) flush();
 		}
 		
 		private void pushEvents(DataInputStream aStream) throws IOException

@@ -3,6 +3,7 @@
  */
 package tod.impl.dbgrid.dispatcher;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
@@ -30,7 +31,8 @@ public class DBNodeProxy
 	private static final int TRANSMIT_DELAY_MS = 1000;
 	
 	private final Socket itsSocket;
-	private final DataOutputStream itsOutputStream;
+	private final DataOutputStream itsOutStream;
+	private final DataInputStream itsInStream;
 	private final int itsNodeId;
 	private final GridMaster itsMaster;
 	
@@ -56,9 +58,11 @@ public class DBNodeProxy
 		
 		try
 		{
-			itsOutputStream = new DataOutputStream(itsSocket.getOutputStream());
-			itsOutputStream.writeInt(aNodeId);
-			itsOutputStream.flush();
+			itsOutStream = new DataOutputStream(itsSocket.getOutputStream());
+			itsOutStream.writeInt(aNodeId);
+			itsOutStream.flush();
+			
+			itsInStream = new DataInputStream(itsSocket.getInputStream());
 		}
 		catch (IOException e)
 		{
@@ -102,12 +106,12 @@ public class DBNodeProxy
 //				itsSentMessagesCount));
 		try
 		{
-			itsOutputStream.writeByte(DatabaseNode.CMD_PUSH_EVENTS);
-			itsOutputStream.writeInt(itsMessagesCount);
+			itsOutStream.writeByte(DatabaseNode.CMD_PUSH_EVENTS);
+			itsOutStream.writeInt(itsMessagesCount);
 			
 			NativeStream.i2b(itsBuffer, itsByteBuffer);
 			
-			itsOutputStream.write(itsByteBuffer);
+			itsOutStream.write(itsByteBuffer);
 //			itsOutputStream.flush();
 			
 			itsSentMessagesCount += itsMessagesCount;
@@ -126,6 +130,12 @@ public class DBNodeProxy
 		try
 		{
 			sendBuffer();
+			
+			itsOutStream.writeByte(DatabaseNode.CMD_FLUSH_EVENTS);
+			itsOutStream.flush();
+			
+			int theCount = itsInStream.readInt();
+			System.out.println("DBNodeProxy: database node flushed "+theCount+" events.");
 			itsSocket.close();
 		}
 		catch (IOException e)

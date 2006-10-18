@@ -18,6 +18,7 @@ import zz.utils.AbstractFilteredIterator;
  */
 public class ObjectCondition extends SimpleCondition
 {
+	private static final long serialVersionUID = 4506201457044007004L;
 	private int itsObjectId;
 	private byte itsRole;
 	
