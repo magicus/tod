@@ -10,17 +10,17 @@ import zz.utils.bit.IntBitStruct;
  * a unique number, or pointer.
  * @author gpothier
  */
-public abstract class PageBank<P extends PageBank.Page, S extends PageBank.PageBitStruct>
+public abstract class PageBank
 {
 	/**
 	 * Retrieve a page given its id.
 	 */
-	public abstract P get(long aId);
+	public abstract Page get(long aId);
 	
 	/**
 	 * Creates a new, blank page
 	 */
-	public abstract P create();
+	public abstract Page create();
 	
 	/**
 	 * Returns the number of bits necessary to represent a 
@@ -28,12 +28,14 @@ public abstract class PageBank<P extends PageBank.Page, S extends PageBank.PageB
 	 */
 	public abstract int getPagePointerSize();
 	
-	public static abstract class Page
+	public static abstract class PageKey
 	{
-		private long itsPageId;
-
-		public Page(long aPageId)
+		private final PageBank itsBank;
+		private final long itsPageId;
+		
+		public PageKey(PageBank aBank, long aPageId)
 		{
+			itsBank = aBank;
 			itsPageId = aPageId;
 		}
 
@@ -41,7 +43,64 @@ public abstract class PageBank<P extends PageBank.Page, S extends PageBank.PageB
 		{
 			return itsPageId;
 		}
+
+		public PageBank getBank()
+		{
+			return itsBank;
+		}
+
+		@Override
+		public int hashCode()
+		{
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((itsBank == null) ? 0 : itsBank.hashCode());
+			result = prime * result + (int) (itsPageId ^ (itsPageId >>> 32));
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			final PageKey other = (PageKey) obj;
+			if (itsBank == null)
+			{
+				if (other.itsBank != null) return false;
+			}
+			else if (!itsBank.equals(other.itsBank)) return false;
+			if (itsPageId != other.itsPageId) return false;
+			return true;
+		}
 		
+		@Override
+		public String toString()
+		{
+			return "PageKey ["+itsPageId+" on "+itsBank+"]";
+		}
+	}
+	
+	public static abstract class Page
+	{
+		private PageKey itsKey;
+
+		public Page(PageKey aKey)
+		{
+			itsKey = aKey;
+		}
+		
+		public PageKey getKey()
+		{
+			return itsKey;
+		}
+		
+		public long getPageId()
+		{
+			return getKey().getPageId();
+		}
+
 		/**
 		 * Marks this page as modified.
 		 */

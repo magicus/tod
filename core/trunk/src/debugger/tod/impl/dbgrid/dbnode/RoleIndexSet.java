@@ -145,6 +145,12 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.RoleTuple>
 			itsRole = (byte) aBitStruct.readInt(8);
 		}
 		
+		public void set(long aTimestamp, long aEventPointer, int aRole)
+		{
+			super.set(aTimestamp, aEventPointer);
+			itsRole = (byte) aRole;
+		}
+		
 		@Override
 		public void writeTo(BitStruct aBitStruct)
 		{

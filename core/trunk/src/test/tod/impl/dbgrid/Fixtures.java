@@ -369,9 +369,10 @@ public class Fixtures
 
 		long theCount = 0;
 		
-		PrintWriter theTimingsWriter = new PrintWriter(new FileWriter("bench/replay-times.txt"));
-		theTimingsWriter.println("# col. 1: event count");
-		theTimingsWriter.println("# col. 2: time in ms");
+		DerivativeDataPrinter thePrinter = new DerivativeDataPrinter(
+				new File("replay-times.txt"),
+				"time (ms)",
+				"events");
 		
 		long t0 = System.currentTimeMillis();
 		
@@ -416,7 +417,7 @@ public class Fixtures
 				System.out.println(theCount);
 				
 				long t = System.currentTimeMillis()-t0;
-				theTimingsWriter.println(theCount+" "+t);
+				thePrinter.addPoint(t/1000f, theCount);
 			}
 		}
 		
@@ -424,8 +425,8 @@ public class Fixtures
 		System.out.println("Done");
 
 		long t = System.currentTimeMillis()-t0;
-		theTimingsWriter.println(theCount+" "+t);
-		theTimingsWriter.close();
+		thePrinter.addPoint(t/1000f, theCount);
+		thePrinter.close();
 		
 		return theCount;
 	}

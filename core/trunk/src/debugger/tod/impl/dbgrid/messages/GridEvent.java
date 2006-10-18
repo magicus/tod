@@ -174,6 +174,7 @@ public abstract class GridEvent extends GridMessage
 		return itsTimestamp;
 	}
 	
+	private static StdIndexSet.StdTuple TUPLE = new StdIndexSet.StdTuple(-1, -1);
 	
 	/**
 	 * Instructs this event to add relevant data to the indexes. The base
@@ -186,20 +187,20 @@ public abstract class GridEvent extends GridMessage
 	public void index(Indexes aIndexes, long aPointer)
 	{
 		// We add the same tuple to all standard indexes so we create it now.
-		StdIndexSet.StdTuple theStdTuple = new StdIndexSet.StdTuple(getTimestamp(), aPointer);
+		TUPLE.set(getTimestamp(), aPointer);
 		
-		aIndexes.typeIndex.addTuple((byte) getEventType().ordinal(), theStdTuple);
+		aIndexes.typeIndex.addTuple((byte) getEventType().ordinal(), TUPLE);
 		
 		if (getOperationBytecodeIndex() >= 0)
-			aIndexes.bytecodeLocationIndex.addTuple(getOperationBytecodeIndex(), theStdTuple);
+			aIndexes.bytecodeLocationIndex.addTuple(getOperationBytecodeIndex(), TUPLE);
 		
 		if (getHost() > 0) 
-			aIndexes.hostIndex.addTuple(getHost(), theStdTuple);
+			aIndexes.hostIndex.addTuple(getHost(), TUPLE);
 		
 		if (getThread() > 0) 
-			aIndexes.threadIndex.addTuple(getThread(), theStdTuple);
+			aIndexes.threadIndex.addTuple(getThread(), TUPLE);
 		
-		aIndexes.depthIndex.addTuple(getDepth(), theStdTuple);
+		aIndexes.depthIndex.addTuple(getDepth(), TUPLE);
 	}
 
 	/**

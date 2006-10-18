@@ -57,6 +57,12 @@ public class StdIndexSet extends IndexSet<StdIndexSet.StdTuple>
 			super(aBitStruct);
 			itsEventPointer = aBitStruct.readLong(64);
 		}
+		
+		public void set(long aTimestamp, long aEventPointer)
+		{
+			super.set(aTimestamp);
+			itsEventPointer = aEventPointer;
+		}
 
 		@Override
 		public void writeTo(BitStruct aBitStruct)

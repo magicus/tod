@@ -232,7 +232,7 @@ public class SoftPagedFile
 		}
 	}
 	
-	public class SoftPage extends PageBank.Page
+	public static class SoftPage extends PageBank.Page
 	{
 		private Page itsPage;
 		
@@ -248,7 +248,7 @@ public class SoftPagedFile
 		
 		public SoftPage(long aId, Page aPage, int aOffset, int aSize)
 		{
-			super(aId);
+			super(null); //TODO: BROKEN, should be a page key but it seems soft pages are not needed anymore.
 			itsPage = aPage;
 			itsOffset = aOffset;
 			itsSize = aSize;
@@ -277,7 +277,7 @@ public class SoftPagedFile
 		}
 	}
 	
-	public class SoftPageBitStruct extends PageBank.PageBitStruct
+	public static class SoftPageBitStruct extends PageBank.PageBitStruct
 	{
 		public SoftPageBitStruct(SoftPage aPage, int aOffset, int aSize)
 		{

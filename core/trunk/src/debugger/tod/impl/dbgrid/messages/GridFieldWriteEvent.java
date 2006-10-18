@@ -121,21 +121,26 @@ public class GridFieldWriteEvent extends GridEvent
 		return itsValue;
 	}
 
+	private static StdIndexSet.StdTuple STD_TUPLE = new StdIndexSet.StdTuple(-1, -1);
+	private static RoleIndexSet.RoleTuple ROLE_TUPLE = new RoleIndexSet.RoleTuple(-1, -1, -1);
+	
 	@Override
 	public void index(Indexes aIndexes, long aPointer)
 	{
 		super.index(aIndexes, aPointer);
-		StdIndexSet.StdTuple theStdTuple = new StdIndexSet.StdTuple(getTimestamp(), aPointer);
+		STD_TUPLE.set(getTimestamp(), aPointer);
 	
-		aIndexes.fieldIndex.addTuple(getFieldId(), theStdTuple);
+		aIndexes.fieldIndex.addTuple(getFieldId(), STD_TUPLE);
 		
+		ROLE_TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_TARGET);
 		aIndexes.objectIndex.addTuple(
 				getTarget(), 
-				new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_TARGET));
+				ROLE_TUPLE);
 		
+		ROLE_TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_VALUE);
 		aIndexes.objectIndex.addTuple(
 				getValue(), 
-				new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_VALUE));
+				ROLE_TUPLE);
 	}
 	
 	@Override

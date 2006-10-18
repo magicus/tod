@@ -14,10 +14,13 @@ import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import tod.impl.dbgrid.DebuggerGridConfig;
+import tod.impl.dbgrid.dbnode.file.PageBank.PageKey;
 import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Probe;
@@ -29,9 +32,8 @@ import zz.utils.cache.MRUBuffer;
  * A file organized in pages.
  * @author gpothier
  */
-public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.PageBitStruct>
+public class HardPagedFile extends PageBank
 {
-	private Map<Long, PageRef> itsPagesMap = new HashMap<Long, PageRef>();
 	private ReferenceQueue itsPageRefQueue = new ReferenceQueue();
 	
 	private String itsName;
@@ -108,10 +110,16 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 		return itsReadPagesCount * itsPageSize;
 	}
 	
-	@Probe(key = "file cached pages count", aggr = AggregationType.SUM)
-	public long getCachedPagesCount()
+	@Probe(key = "file written pages", aggr = AggregationType.SUM)
+	public long getWrittenPages()
 	{
-		return itsPagesMap.size();
+		return itsWrittenPagesCount;
+	}
+	
+	@Probe(key = "file read pages", aggr = AggregationType.SUM)
+	public long getReadPages()
+	{
+		return itsReadPagesCount;
 	}
 	
 	/**
@@ -120,25 +128,9 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 	public Page get(long aPageId)
 	{
 		// Remove unused keys from the map.
-		PageRef theQuededRef;
-		int thePrunedRefs = 0;
-		while ((theQuededRef = (PageRef) itsPageRefQueue.poll()) != null)
-		{
-			itsPagesMap.remove(theQuededRef.getId());
-			thePrunedRefs++;
-		}
-		if (thePrunedRefs > 0) System.out.println("Pruned: "+thePrunedRefs);
-		
-		
-		PageRef thePageRef = itsPagesMap.get(aPageId);
-		Page thePage = thePageRef != null ? thePageRef.get() : null;
-		if (thePage == null)
-		{
-			thePage = new Page(aPageId);
-			itsPagesMap.put(aPageId, new PageRef(thePage));
-		}
-		
-		return thePage;
+		PageKey theKey = new PageKey(this, aPageId);
+		PageData theData = PageDataManager.getInstance().get(theKey, false);
+		return theData != null ? theData.getAttachedPage() : new Page(theKey);
 	}
 	
 	/**
@@ -171,9 +163,8 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 	{
 		itsPagesCount++;
 		long thePageId = itsPagesCount-1;
-		PageDataManager.getInstance().create(this, thePageId);
-		Page thePage = new Page(thePageId);
-		itsPagesMap.put(thePageId, new PageRef(thePage));
+		PageData theData = PageDataManager.getInstance().create(this, thePageId);
+		Page thePage = new Page(theData);
 		return thePage;
 	}
 	
@@ -236,7 +227,7 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 		{
 			return INSTANCE;
 		}
-
+		
 		private PageDataManager()
 		{
 			super(-1);
@@ -294,58 +285,27 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 		}
 	}
 	
-	private static class PageKey
+	public static class PageKey extends PageBank.PageKey
 	{
-		private final HardPagedFile itsFile;
-		private final long itsPageId;
-		
 		public PageKey(HardPagedFile aFile, long aPageId)
 		{
-			itsFile = aFile;
-			itsPageId = aPageId;
+			super(aFile, aPageId);
+		}
+		
+		public HardPagedFile getFile()
+		{
+			return (HardPagedFile) getBank();
 		}
 
 		public PageData load()
 		{
-			int[] theData = itsFile.loadPageData(itsPageId);
+			int[] theData = getFile().loadPageData(getPageId());
 			return new PageData(this, theData);
 		}
 		
 		public void store(int[] aData)
 		{
-			itsFile.storePageData(itsPageId, aData);
-		}
-		
-		@Override
-		public int hashCode()
-		{
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((itsFile == null) ? 0 : itsFile.hashCode());
-			result = prime * result + (int) (itsPageId ^ (itsPageId >>> 32));
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj)
-		{
-			if (this == obj) return true;
-			if (obj == null) return false;
-			if (getClass() != obj.getClass()) return false;
-			final PageKey other = (PageKey) obj;
-			if (itsFile == null)
-			{
-				if (other.itsFile != null) return false;
-			}
-			else if (!itsFile.equals(other.itsFile)) return false;
-			if (itsPageId != other.itsPageId) return false;
-			return true;
-		}
-		
-		@Override
-		public String toString()
-		{
-			return "PageKey ["+itsPageId+" on "+itsFile.itsName+"]";
+			getFile().storePageData(getPageId(), aData);
 		}
 	}
 	
@@ -422,17 +382,33 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 		public void detach()
 		{
 			itsPage.clearData();
+			itsPage = null;
+		}
+		
+		/**
+		 * Returns the currently attached {@link Page}.
+		 */
+		public Page getAttachedPage()
+		{
+			return itsPage;
 		}
 	}
 	
-	public class Page extends PageBank.Page
+	public static class Page extends PageBank.Page
 	{
 		private PageData itsData;
 		
-		private Page(long aPageId)
+		private Page(PageKey aKey)
 		{
-			super(aPageId);
-			assert aPageId < itsPagesCount;
+			super(aKey);
+			assert aKey.getPageId() < aKey.getFile().itsPagesCount;
+		}
+		
+		private Page(PageData aData)
+		{
+			this(aData.getKey());
+			itsData = aData;
+			itsData.attach(this);
 		}
 		
 		/**
@@ -447,16 +423,27 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 		}
 		
 		@Override
+		public PageKey getKey()
+		{
+			return (PageKey) super.getKey();
+		}
+		
+		public HardPagedFile getFile()
+		{
+			return getKey().getFile();
+		}
+		
+		@Override
 		public int getSize()
 		{
-			return getPageSize();
+			return getFile().getPageSize();
 		}
 		
 		int[] getData()
 		{
 			if (itsData == null)
 			{
-				itsData = PageDataManager.getInstance().get(new PageKey(HardPagedFile.this, getPageId()));
+				itsData = PageDataManager.getInstance().get(getKey());
 				itsData.attach(this);
 			}
 			return itsData.getData();
@@ -492,22 +479,6 @@ public class HardPagedFile extends PageBank<HardPagedFile.Page, HardPagedFile.Pa
 		protected int[] getData()
 		{
 			return getPage().getData();
-		}
-	}
-	
-	public class PageRef extends WeakReference<Page>
-	{
-		private long itsId;
-
-		public PageRef(Page aPage)
-		{
-			super(aPage, itsPageRefQueue);
-			itsId = aPage.getPageId();
-		}
-
-		public long getId()
-		{
-			return itsId;
 		}
 	}
 	

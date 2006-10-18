@@ -107,18 +107,22 @@ public class GridExceptionGeneratedEvent extends GridEvent
 		return itsThrowingBehaviorId;
 	}
 	
+	private static RoleIndexSet.RoleTuple TUPLE = new RoleIndexSet.RoleTuple(-1, -1, -1);
+	
 	@Override
 	public void index(Indexes aIndexes, long aPointer)
 	{
 		super.index(aIndexes, aPointer);
 		
+		TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_EXECUTED);
 		aIndexes.behaviorIndex.addTuple(
 				getThrowingBehaviorId(),
-				new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_EXECUTED));
+				TUPLE);
 		
+		TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_EXCEPTION);
 		aIndexes.objectIndex.addTuple(
 				getException(), 
-				new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_EXCEPTION));
+				TUPLE);
 	}
 	
 	@Override

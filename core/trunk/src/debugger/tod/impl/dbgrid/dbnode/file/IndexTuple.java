@@ -20,6 +20,11 @@ public class IndexTuple extends Tuple
 		itsTimestamp = aBitStruct.readLong(EVENT_TIMESTAMP_BITS);
 	}
 
+	protected void set(long aTimestamp)
+	{
+		itsTimestamp = aTimestamp;
+	}
+	
 	/**
 	 * Writes a serialized representation of this tuple to
 	 * the specified struct.

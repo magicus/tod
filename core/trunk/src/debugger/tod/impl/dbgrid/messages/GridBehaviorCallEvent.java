@@ -196,6 +196,8 @@ public class GridBehaviorCallEvent extends GridEvent
 		return itsType;
 	}
 	
+	private static RoleIndexSet.RoleTuple TUPLE = new RoleIndexSet.RoleTuple(-1, -1, -1);
+	
 	@Override
 	public void index(Indexes aIndexes, long aPointer)
 	{
@@ -203,30 +205,34 @@ public class GridBehaviorCallEvent extends GridEvent
 		
 		if (getCalledBehaviorId() != -1)
 		{
+			TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_CALLED);
 			aIndexes.behaviorIndex.addTuple(
 					getCalledBehaviorId(), 
-					new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_CALLED));
+					TUPLE);
 		}
 		
 		if (getExecutedBehaviorId() != -1)
 		{
+			TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_EXECUTED);
 			aIndexes.behaviorIndex.addTuple(
 					getExecutedBehaviorId(), 
-					new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_EXECUTED));
+					TUPLE);
 		}
 		
 		for (int i = 0; i < itsArguments.length; i++)
 		{
 			Object theArgument = itsArguments[i];
 
+			TUPLE.set(getTimestamp(), aPointer, (byte) i);
 			aIndexes.objectIndex.addTuple(
 					theArgument,
-					new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, (byte) i));
+					TUPLE);
 		}
 		
+		TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_TARGET);
 		aIndexes.objectIndex.addTuple(
 				getTarget(), 
-				new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_TARGET));
+				TUPLE);
 	}
 	
 	@Override

@@ -126,18 +126,22 @@ public class GridBehaviorExitEvent extends GridEvent
 		return itsResult;
 	}
 	
+	private static RoleIndexSet.RoleTuple TUPLE = new RoleIndexSet.RoleTuple(-1, -1, -1);
+	
 	@Override
 	public void index(Indexes aIndexes, long aPointer)
 	{
 		super.index(aIndexes, aPointer);
 		
+		TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_EXIT);
 		aIndexes.behaviorIndex.addTuple(
 				getBehaviorId(), 
-				new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_EXIT));
+				TUPLE);
 		
+		TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_RESULT);
 		aIndexes.objectIndex.addTuple(
 				getResult(), 
-				new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_RESULT));
+				TUPLE);
 	}
 
 	@Override

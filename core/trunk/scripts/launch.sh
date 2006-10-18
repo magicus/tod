@@ -15,7 +15,7 @@ case "$1" in
 esac
 	
 VMARGS=''
-VMARGS="$VMARGS -Xmx512m"
+VMARGS="$VMARGS -Xmx$JVM_HEAP_SIZE_SIZE"
 VMARGS="$VMARGS -Djava.library.path=$NATIVE"
 VMARGS="$VMARGS -ea"
 VMARGS="$VMARGS -server"
@@ -24,6 +24,7 @@ VMARGS="$VMARGS -Dnode-data-dir=$DATA_DIR"
 VMARGS="$VMARGS -Dmaster-host=$MASTER_HOST"
 VMARGS="$VMARGS -Devents-file=$EVENTS_FILE"
 VMARGS="$VMARGS -Dlocations-file=$LOCATIONS_FILE"
+VMARGS="$VMARGS -Dpage-buffer-size=$PAGE_BUFFER_SIZE"
 
 if [ -n "$JDWP_PORT" ]
 then

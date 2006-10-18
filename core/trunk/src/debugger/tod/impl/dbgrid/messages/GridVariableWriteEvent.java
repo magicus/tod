@@ -116,21 +116,25 @@ public class GridVariableWriteEvent extends GridEvent
 		return itsValue;
 	}
 	
+	private static StdIndexSet.StdTuple STD_TUPLE = new StdIndexSet.StdTuple(-1, -1);
+	private static RoleIndexSet.RoleTuple ROLE_TUPLE = new RoleIndexSet.RoleTuple(-1, -1, -1);
+	
 	@Override
 	public void index(Indexes aIndexes, long aPointer)
 	{
 		super.index(aIndexes, aPointer);
-		StdIndexSet.StdTuple theStdTuple = new StdIndexSet.StdTuple(getTimestamp(), aPointer);
+		STD_TUPLE.set(getTimestamp(), aPointer);
 		
 		// TODO: this should not be necessary, we should not have negative values.
 		if (getVariableId() >= 0)
 		{
-			aIndexes.variableIndex.addTuple(getVariableId(), theStdTuple);
+			aIndexes.variableIndex.addTuple(getVariableId(), STD_TUPLE);
 		}
 
+		ROLE_TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_VALUE);
 		aIndexes.objectIndex.addTuple(
 				getValue(), 
-				new RoleIndexSet.RoleTuple(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_VALUE));
+				ROLE_TUPLE);
 	}
 	
 	@Override

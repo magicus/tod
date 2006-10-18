@@ -21,6 +21,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Comparator;
 import java.util.Iterator;
 
+import tod.agent.AgentUtils;
 import tod.core.config.GeneralConfig;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
@@ -28,7 +29,9 @@ import tod.impl.dbgrid.RIGridMaster;
 import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.GridMessage;
+import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Monitor;
+import tod.impl.dbgrid.monitoring.Probe;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.utils.NativeStream;
 import zz.utils.SortedRingBuffer;
@@ -78,6 +81,8 @@ implements RIDatabaseNode
 	private long itsLastAddedTimestamp;
 	private long itsAddedEventsCount = 0;
 	private GridEvent itsLastAddedEvent;
+	
+	private long itsDroppedEvents;
 	
 	private SortedRingBuffer<GridEvent> itsEventBuffer = 
 		new SortedRingBuffer<GridEvent>(DB_EVENT_BUFFER_SIZE, new EventTimestampComparator());
@@ -198,9 +203,9 @@ implements RIDatabaseNode
 		{
 			System.out.println(String.format(
 					"Out of order event: %s(%02d)/%s(%02d) (#%d)",
-					theTimestamp,
+					AgentUtils.formatTimestampU(theTimestamp),
 					aEvent.getThread(),
-					itsLastAddedTimestamp,
+					AgentUtils.formatTimestampU(itsLastAddedTimestamp),
 					itsLastAddedEvent.getThread(),
 					itsAddedEventsCount));
 		}
@@ -213,15 +218,28 @@ implements RIDatabaseNode
 		itsEventBuffer.add(aEvent);
 	}
 	
+	@Probe(key = "DROPPED EVENTS", aggr = AggregationType.SUM)
+	public long getWrittenPages()
+	{
+		return itsDroppedEvents;
+	}
+
+	
 	private void processEvent(GridEvent aEvent)
 	{
 		long theTimestamp = aEvent.getTimestamp();
 		if (theTimestamp < itsLastProcessedTimestamp)
 		{
-			throw new RuntimeException(
+			System.err.println("****************** WARNING ********************\n" +
+					"**********************************************\n" +
+//			throw new RuntimeException(
 					"Out of order event: "+theTimestamp+"/"+itsLastProcessedTimestamp
 					+" (#"+itsProcessedEventsCount+")"
 					+" (buffer size: "+itsEventBuffer.getCapacity()+")");
+			
+			itsDroppedEvents++;
+			
+			return;
 		}
 		
 		itsLastProcessedTimestamp = theTimestamp;

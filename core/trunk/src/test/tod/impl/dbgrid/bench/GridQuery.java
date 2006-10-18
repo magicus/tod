@@ -105,7 +105,6 @@ public class GridQuery
 		});
 		
 		System.out.println(theQueryTime);
-
 		
 		System.exit(0);
 	}
