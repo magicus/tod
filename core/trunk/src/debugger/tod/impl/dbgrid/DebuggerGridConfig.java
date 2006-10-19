@@ -117,7 +117,7 @@ public class DebuggerGridConfig
 	/**
 	 * Maximum number of objects 
 	 */
-	public static final int STRUCTURE_OBJECT_COUNT = 1000000;
+	public static final int STRUCTURE_OBJECT_COUNT = 2000000;
 
 
 	/**

@@ -5,8 +5,8 @@ package tod.core.session;
 
 import java.net.URI;
 
-//public class DefaultSessionFactory implements ISessionFactory
-//{
+public class DefaultSessionFactory //implements ISessionFactory
+{
 //	private static DefaultSessionFactory INSTANCE = new DefaultSessionFactory();
 //
 //	public static DefaultSessionFactory getInstance()
@@ -32,4 +32,4 @@ import java.net.URI;
 //		throw new UnsupportedOperationException();
 //	}
 //
-//}
+}

@@ -59,9 +59,6 @@ public class DBNodeProxy
 		try
 		{
 			itsOutStream = new DataOutputStream(itsSocket.getOutputStream());
-			itsOutStream.writeInt(aNodeId);
-			itsOutStream.flush();
-			
 			itsInStream = new DataInputStream(itsSocket.getInputStream());
 		}
 		catch (IOException e)

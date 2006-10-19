@@ -3,14 +3,18 @@
  */
 package tod.impl.dbgrid;
 
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.net.Socket;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -22,6 +26,7 @@ import tod.core.database.structure.IThreadInfo;
 import tod.impl.common.EventCollector;
 import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
+import tod.impl.dbgrid.dbnode.NodeRejectedException;
 import tod.impl.dbgrid.dbnode.RIDatabaseNode;
 import tod.impl.dbgrid.dispatcher.DBNodeProxy;
 import tod.impl.dbgrid.dispatcher.EventDispatcher;
@@ -63,9 +68,17 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	private long itsLastTimestamp;
 	private int itsThreadCount;
 	
-	public GridMaster(ILocationsRepository aLocationsRepository) throws RemoteException
+	/**
+	 * Maximum number of nodes to accept.
+	 */
+	private int itsMaxNodes;
+	
+	private Set<String> itsNodeHosts = new HashSet<String>();
+	
+	public GridMaster(ILocationsRepository aLocationsRepository, int aMaxNodes) throws RemoteException
 	{
 		itsLocationsRepository = aLocationsRepository;
+		itsMaxNodes = aMaxNodes;
 		itsRemoteLocationsRepository = new RemoteLocationsRepository(itsLocationsRepository);
 		
 		itsNodeServer = new NodeServer();
@@ -131,17 +144,35 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	
 	public synchronized void acceptNode(Socket aSocket)
 	{
-		int theId = itsNodeProxies.size()+1;
-		DBNodeProxy theProxy = new DBNodeProxy(aSocket, theId, this);
-		itsNodeProxies.add(theProxy);
-		itsDispatcher.addNode(theProxy);
-		System.out.println("Registered node (socket): "+theId);
+		try
+		{
+			DataInputStream theStream = new DataInputStream(aSocket.getInputStream());
+			int theId = theStream.readInt();
+			
+			DBNodeProxy theProxy = new DBNodeProxy(aSocket, theId, this);
+			itsNodeProxies.add(theProxy);
+			itsDispatcher.addNode(theProxy);
+			System.out.println("Registered node (socket): "+theId);
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 	
-	public void registerNode(RIDatabaseNode aNode) throws RemoteException
+	public synchronized int registerNode(RIDatabaseNode aNode, String aHostname) throws RemoteException, NodeRejectedException
 	{
+		if (itsMaxNodes > 0 && itsNodes.size() >= itsMaxNodes) 
+			throw new NodeRejectedException("Maximum number of nodes reached");
+		
+		if (! itsNodeHosts.add(aHostname)) 
+			throw new NodeRejectedException("Refused node from same host");
+		
+		int theId = itsNodes.size()+1;
 		itsNodes.add(aNode);
-		System.out.println("Registered node (RMI): "+aNode.getNodeId());
+		System.out.println("Registered node (RMI): "+theId);
+		
+		return theId;
 	}
 	
 	/**

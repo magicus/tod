@@ -18,5 +18,7 @@ export CLASSPATH=.:$LIB_DIR/asm-2.1.jar:$LIB_DIR/asm-commons-2.1.jar\
 [ -n "$EVENTS_FILE" ] || export EVENTS_FILE=$SHARED_STORAGE/tod/events-raw.bin
 export LOCATIONS_FILE=$SHARED_STORAGE/tod/locations.bin
 
-export PAGE_BUFFER_SIZE=200m
-export JVM_HEAP_SIZE_SIZE=900m
+[ -n "$PAGE_BUFFER_SIZE" ] || export PAGE_BUFFER_SIZE=200m
+[ -n "$JVM_HEAP_SIZE_SIZE" ] || export JVM_HEAP_SIZE_SIZE=500m
+
+# LOCK_FILE=$LOCAL_STORAGE/tod/lock

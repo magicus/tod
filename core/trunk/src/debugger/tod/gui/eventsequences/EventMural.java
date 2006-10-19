@@ -289,7 +289,7 @@ public class EventMural extends SVGGraphicContainer
 		for (BrowserData theBrowserData : aBrowserData)
 		{
 			// TODO: check conversion
-			theValues[i] = theBrowserData.getBrowser().getEventCounts(aT1, aT2, aBounds.width);
+			theValues[i] = theBrowserData.getBrowser().getEventCounts(aT1, aT2, aBounds.width, false);
 			theColors[i] = theBrowserData.getColor();
 			i++;
 		}

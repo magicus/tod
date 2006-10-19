@@ -127,7 +127,6 @@ public class HardPagedFile extends PageBank
 	 */
 	public Page get(long aPageId)
 	{
-		// Remove unused keys from the map.
 		PageKey theKey = new PageKey(this, aPageId);
 		PageData theData = PageDataManager.getInstance().get(theKey, false);
 		return theData != null ? theData.getAttachedPage() : new Page(theKey);
@@ -316,7 +315,7 @@ public class HardPagedFile extends PageBank
 	private static class PageData
 	{
 		private PageKey itsKey;
-		private Page itsPage;
+		private List<Page> itsAttachedPages = new ArrayList<Page>(1);
 		private int[] itsData;
 		private boolean itsDirty = false;
 		
@@ -372,8 +371,11 @@ public class HardPagedFile extends PageBank
 		
 		public void attach(Page aPage)
 		{
-			assert itsPage == null;
-			itsPage = aPage;
+			itsAttachedPages.add(aPage);
+			if (itsAttachedPages.size() > 1) System.err.println(String.format(
+					"Warning: page %d attached %d times",
+					getKey().getPageId(),
+					itsAttachedPages.size()));
 		}
 		
 		/**
@@ -381,8 +383,11 @@ public class HardPagedFile extends PageBank
 		 */
 		public void detach()
 		{
-			itsPage.clearData();
-			itsPage = null;
+			for (Page thePage : itsAttachedPages)
+			{
+				thePage.clearData();
+			}
+			itsAttachedPages.clear();
 		}
 		
 		/**
@@ -390,7 +395,9 @@ public class HardPagedFile extends PageBank
 		 */
 		public Page getAttachedPage()
 		{
-			return itsPage;
+			// There should always be at least one attached page
+			// when this method is called
+			return itsAttachedPages.get(0);
 		}
 	}
 	

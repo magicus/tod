@@ -32,9 +32,9 @@ public class ThreadCondition extends SimpleCondition
 	}
 
 	@Override
-	public long[] getEventCounts(Indexes aIndexes, long aT1, long aT2, int aSlotsCount)
+	public long[] getEventCounts(Indexes aIndexes, long aT1, long aT2, int aSlotsCount, boolean aForceMergeCounts)
 	{
-		if (EventsCounter.FORCE_MERGE_COUNTS) return super.getEventCounts(aIndexes, aT1, aT2, aSlotsCount);
+		if (aForceMergeCounts) return super.getEventCounts(aIndexes, aT1, aT2, aSlotsCount, true);
 		
 		HierarchicalIndex<StdTuple> theIndex = aIndexes.threadIndex.getIndex(itsThreadId);
 		return theIndex.fastCountTuples(aT1, aT2, aSlotsCount);

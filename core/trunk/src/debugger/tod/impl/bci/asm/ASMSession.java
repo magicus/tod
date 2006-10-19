@@ -16,8 +16,8 @@ import tod.core.session.AbstractSession;
 import tod.core.transport.LogReceiver;
 
 
-//public class ASMSession extends AbstractSession
-//{
+public class ASMSession //extends AbstractSession
+{
 //	private final ASMDebuggerConfig itsConfig;
 //	private final ILogCollector itsCollector;
 //	
@@ -177,4 +177,4 @@ import tod.core.transport.LogReceiver;
 //			disconnect();
 //		}
 //	}
-//}
+}

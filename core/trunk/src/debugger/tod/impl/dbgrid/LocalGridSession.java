@@ -40,7 +40,7 @@ public class LocalGridSession extends AbstractSession
 		super(null);
 
 		LocationRegistrer theRegistrer = new LocationRegistrer();
-		itsMaster = new GridMaster(theRegistrer);
+		itsMaster = new GridMaster(theRegistrer, 0);
 		
 		ASMDebuggerConfig theConfig = new ASMDebuggerConfig(
 				theRegistrer,

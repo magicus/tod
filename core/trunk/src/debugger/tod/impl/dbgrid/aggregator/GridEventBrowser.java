@@ -77,19 +77,19 @@ implements IEventBrowser
 	
 	public long getEventCount()
 	{
-		return getEventCount(0, Long.MAX_VALUE);
+		return getEventCount(0, Long.MAX_VALUE, false);
 	}
 
-	public long getEventCount(long aT1, long aT2)
+	public long getEventCount(long aT1, long aT2, boolean aForceMergeCounts)
 	{
-		return getEventCounts(aT1, aT2, 1)[0];
+		return getEventCounts(aT1, aT2, 1, aForceMergeCounts)[0];
 	}
 
-	public long[] getEventCounts(long aT1, long aT2, int aSlotsCount)
+	public long[] getEventCounts(long aT1, long aT2, int aSlotsCount, boolean aForceMergeCounts)
 	{
 		try
 		{
-			return itsAggregator.getEventCounts(aT1, aT2, aSlotsCount);
+			return itsAggregator.getEventCounts(aT1, aT2, aSlotsCount, aForceMergeCounts);
 		}
 		catch (RemoteException e)
 		{

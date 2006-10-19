@@ -145,6 +145,12 @@ implements ILogBrowser, RIGridMasterListener
 		return new ObjectCondition(theId, RoleIndexSet.ROLE_OBJECT_TARGET);
 	}
 
+	public IEventFilter createObjectFilter(ObjectId aId)
+	{
+		int theId = ObjectCodec.getObjectId(aId, true);
+		return new ObjectCondition(theId, RoleIndexSet.ROLE_OBJECT_ANY);
+	}
+	
 	public IEventFilter createHostFilter(IHostInfo aHost)
 	{
 		return new HostCondition(aHost.getId());

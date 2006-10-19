@@ -337,7 +337,7 @@ public class Fixtures
 		
 		LocationRegistrer theLocationRegistrer = new LocationRegistrer();
 		new ASMLocationPool(theLocationRegistrer, new File(GeneralConfig.LOCATIONS_FILE));
-		GridMaster theMaster = new GridMaster(theLocationRegistrer);
+		GridMaster theMaster = new GridMaster(theLocationRegistrer, aExpectedNodes);
 		
 		aRegistry.bind(GridMaster.RMI_ID, theMaster);
 		

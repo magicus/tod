@@ -32,7 +32,18 @@ public class ObjectCondition extends SimpleCondition
 	public Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
 		Iterator<RoleIndexSet.RoleTuple> theTupleIterator = aIndexes.objectIndex.getIndex(itsObjectId).getTupleIterator(aTimestamp);
-		if (itsRole == RoleIndexSet.ROLE_OBJECT_ANYARG)
+		if (itsRole == RoleIndexSet.ROLE_OBJECT_ANY)
+		{
+			theTupleIterator = new AbstractFilteredIterator<RoleTuple, RoleTuple>(theTupleIterator)
+			{
+				@Override
+				protected Object transform(RoleTuple aIn)
+				{
+					return aIn;
+				}
+			};
+		}
+		else if (itsRole == RoleIndexSet.ROLE_OBJECT_ANYARG)
 		{
 			theTupleIterator = new AbstractFilteredIterator<RoleTuple, RoleTuple>(theTupleIterator)
 			{

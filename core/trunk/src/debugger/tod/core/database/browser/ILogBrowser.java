@@ -134,6 +134,13 @@ public interface ILogBrowser
 	public IEventFilter createArgumentFilter (ObjectId aId);
 	
 	/**
+	 * Creates a filter that accepts any event that refers to
+	 * the specified object.
+	 */
+	public IEventFilter createObjectFilter(ObjectId aId);
+
+	
+	/**
 	 * Creates a filter that accepts only events on the given host.
 	 */
 	public IEventFilter createHostFilter (IHostInfo aHost);

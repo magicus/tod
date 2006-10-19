@@ -107,7 +107,7 @@ public class EventBrowser implements IEventBrowser
 		return itsEvents.size();
 	}
 
-	public long getEventCount(long aT1, long aT2)
+	public long getEventCount(long aT1, long aT2, boolean aForceMergeCounts)
 	{
 		long theCount = 0;
 		
@@ -122,7 +122,7 @@ public class EventBrowser implements IEventBrowser
 		return theCount;
 	}
 
-	public long[] getEventCounts(long aT1, long aT2, int aSlotsCount)
+	public long[] getEventCounts(long aT1, long aT2, int aSlotsCount, boolean aForceMergeCounts)
 	{
 		long[] theCounts = new long[aSlotsCount];
 		

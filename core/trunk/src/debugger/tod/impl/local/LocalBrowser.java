@@ -159,6 +159,11 @@ public class LocalBrowser implements ILogBrowser
 		return new TargetFilter(this, aId);
 	}
 	
+	public IEventFilter createObjectFilter(ObjectId aId)
+	{
+		throw new UnsupportedOperationException();
+	}
+
 	public IEventFilter createThreadFilter(IThreadInfo aThreadInfo)
 	{
 		return new ThreadFilter(this, aThreadInfo.getId());

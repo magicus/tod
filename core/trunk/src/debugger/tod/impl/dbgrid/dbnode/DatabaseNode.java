@@ -12,6 +12,7 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -116,20 +117,31 @@ implements RIDatabaseNode
 	
 	private void connectToMaster() throws IOException, NotBoundException
 	{
+		// Setup RMI connection
+		Registry theRegistry = LocateRegistry.getRegistry(GeneralConfig.MASTER_HOST);
+		itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
+
+		try
+		{
+			itsNodeId = itsMaster.registerNode(this, InetAddress.getLocalHost().getHostName());
+		}
+		catch (NodeRejectedException e)
+		{
+			System.out.println("Rejected by master: "+e.getMessage());
+			System.exit(1);
+		}
+		
+		System.out.println("Master assigned node id "+itsNodeId);
+		
 		// Setup socket connection
 		String theMasterHost = GeneralConfig.MASTER_HOST;
 		System.out.println("Connecting to "+theMasterHost);
 		Socket theSocket = new Socket(theMasterHost, DebuggerGridConfig.MASTER_NODE_PORT);
-		DataInputStream theStream = new DataInputStream(theSocket.getInputStream());
-		itsNodeId = theStream.readInt();
-		System.out.println("Master assigned node id "+itsNodeId);
+		DataOutputStream theStream = new DataOutputStream(theSocket.getOutputStream());
+		theStream.writeInt(itsNodeId);
+		theStream.flush();
 		
 		itsMasterConnection = new MasterConnection(theSocket);
-		
-		// Setup RMI connection
-		Registry theRegistry = LocateRegistry.getRegistry(GeneralConfig.MASTER_HOST);
-		itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
-		itsMaster.registerNode(this);
 	}
 
 	/**
@@ -159,9 +171,14 @@ implements RIDatabaseNode
 		return new NodeEventIterator(this, aCondition);
 	}
 
-	public long[] getEventCounts(EventCondition aCondition, long aT1, long aT2, int aSlotsCount) throws RemoteException
+	public long[] getEventCounts(
+			EventCondition aCondition,
+			long aT1, 
+			long aT2,
+			int aSlotsCount, 
+			boolean aForceMergeCounts) throws RemoteException
 	{
-		return aCondition.getEventCounts(getIndexes(), aT1, aT2, aSlotsCount);
+		return aCondition.getEventCounts(getIndexes(), aT1, aT2, aSlotsCount, aForceMergeCounts);
 	}
 
 	/**

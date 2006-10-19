@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.impl.dbgrid.GridMaster;
+import tod.impl.dbgrid.aggregator.Future;
+import tod.impl.dbgrid.dbnode.RIDatabaseNode;
 import tod.impl.dbgrid.messages.GridEvent;
 
 public class EventDispatcher
@@ -49,7 +51,25 @@ public class EventDispatcher
 	public void flush()
 	{
 		System.out.println("Event dispatcher: flushing...");
-		for (DBNodeProxy theProxy : itsNodes) theProxy.flush();
+		
+		// TODO: maybe use something else than Future...
+		List<Future<Boolean>> theFutures = new ArrayList<Future<Boolean>>();
+		for (DBNodeProxy theProxy : itsNodes)
+		{
+			final DBNodeProxy theProxy0 = theProxy;
+			theFutures.add (new Future<Boolean>()
+			{
+				@Override
+				protected Boolean fetch() throws Throwable
+				{
+					theProxy0.flush();
+					return true;
+				}
+			});
+		}
+		
+		for (Future<Boolean> theFuture : theFutures) theFuture.get();
+
 		itsFlushed = true;
 		System.out.println("Event dispatcher: flushed.");
 	}

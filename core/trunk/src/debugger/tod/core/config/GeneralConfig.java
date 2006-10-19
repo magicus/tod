@@ -19,6 +19,9 @@ public class GeneralConfig
 	public static final String PARAM_STORE_EVENTS_FILE = "events-file";
 	public static String STORE_EVENTS_FILE;
 	
+	public static final String PARAM_TASK_ID = "task-id";
+	public static String TASK_ID;
+	
 	
 	
 	static
@@ -28,6 +31,7 @@ public class GeneralConfig
 		MASTER_HOST = ConfigUtils.readString(PARAM_MASTER_HOST, "localhost");
 		NODE_DATA_DIR = ConfigUtils.readString(PARAM_NODE_DATA_DIR, ".");
 		STORE_EVENTS_FILE = ConfigUtils.readString(PARAM_STORE_EVENTS_FILE, "events-raw.bin");
+		TASK_ID = ConfigUtils.readString(PARAM_TASK_ID, "00");
 	}
 
 }

@@ -11,6 +11,7 @@ import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
 import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
+import tod.impl.dbgrid.dbnode.NodeRejectedException;
 import tod.impl.dbgrid.dbnode.RIDatabaseNode;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.utils.remote.RILocationsRepository;
@@ -32,8 +33,10 @@ public interface RIGridMaster extends Remote
 	
 	/**
 	 * Registers a node so that it can be used by the grid.
+	 * @throws NodeRejectedException Thrown if the master refuses the new node
+	 * @return The id assigned to the node.
 	 */
-	public void registerNode(RIDatabaseNode aNode) throws RemoteException;
+	public int registerNode(RIDatabaseNode aNode, String aHostname) throws RemoteException, NodeRejectedException;
 	
 
 	/**

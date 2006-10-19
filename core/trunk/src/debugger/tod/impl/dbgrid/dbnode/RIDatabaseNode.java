@@ -29,5 +29,10 @@ public interface RIDatabaseNode extends Remote
 	/**
 	 * Semantic matches {@link IEventBrowser#getEventCounts(long, long, int)}
 	 */
-	public long[] getEventCounts(EventCondition aCondition, long aT1, long aT2, int aSlotsCount) throws RemoteException;
+	public long[] getEventCounts(
+			EventCondition aCondition,
+			long aT1,
+			long aT2,
+			int aSlotsCount, 
+			boolean aForceMergeCounts) throws RemoteException;
 }

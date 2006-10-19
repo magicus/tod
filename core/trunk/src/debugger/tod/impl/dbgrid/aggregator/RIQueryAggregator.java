@@ -3,7 +3,6 @@
  */
 package tod.impl.dbgrid.aggregator;
 
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import tod.core.database.browser.IEventBrowser;
@@ -18,6 +17,10 @@ public interface RIQueryAggregator extends RIEventIterator
 	/**
 	 * Semantic matches {@link IEventBrowser#getEventCounts(long, long, int)}
 	 */
-	public long[] getEventCounts(long aT1, long aT2, int aSlotsCount) throws RemoteException;
+	public long[] getEventCounts(
+			long aT1, 
+			long aT2, 
+			int aSlotsCount,
+			boolean aForceMergeCounts) throws RemoteException;
 
 }

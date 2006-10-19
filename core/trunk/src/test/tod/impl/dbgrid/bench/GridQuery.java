@@ -4,7 +4,9 @@
 package tod.impl.dbgrid.bench;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
@@ -20,10 +22,12 @@ import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IFieldWriteEvent;
+import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ObjectId;
+import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.GridMaster;
@@ -70,24 +74,22 @@ public class GridQuery
 		
 		long theFirstTimestamp = theBrowser.getFirstTimestamp();
 		long theLastTimestamp = theBrowser.getLastTimestamp();
+		
+		
+//		System.out.println("\nCreating objects plot\n");
+//		createObjectPlot(theBrowser);
 
 		System.out.println("\nPerforming count benchmarks --- pass #1\n");
 		
 		int theSlots = 1000;
 		
-		EventsCounter.FORCE_MERGE_COUNTS = true;
-		benchCounts(theBrowser, theFirstTimestamp, theLastTimestamp, theSlots);
-		
-		EventsCounter.FORCE_MERGE_COUNTS = false;
-		benchCounts(theBrowser, theFirstTimestamp, theLastTimestamp, theSlots);
+		benchCounts(theBrowser, theFirstTimestamp, theLastTimestamp, theSlots, true);
+		benchCounts(theBrowser, theFirstTimestamp, theLastTimestamp, theSlots, false);
 		
 		System.out.println("\nPerforming count benchmarks --- pass #2\n");
 		
-		EventsCounter.FORCE_MERGE_COUNTS = true;
-		long[] theMergeCounts = benchCounts(theBrowser, theFirstTimestamp, theLastTimestamp, theSlots);
-		
-		EventsCounter.FORCE_MERGE_COUNTS = false;
-		long[] theFastCounts = benchCounts(theBrowser, theFirstTimestamp, theLastTimestamp, theSlots);
+		long[] theMergeCounts = benchCounts(theBrowser, theFirstTimestamp, theLastTimestamp, theSlots, true);
+		long[] theFastCounts = benchCounts(theBrowser, theFirstTimestamp, theLastTimestamp, theSlots, false);
 		
 		printDistortion(theMergeCounts, theFastCounts);
 
@@ -148,14 +150,17 @@ public class GridQuery
 		return theList;
 	}
 	
-	private static long[] benchCounts(final ILogBrowser aBrowser, final long aT1, final long aT2, final int aSlots)
+	private static long[] benchCounts(
+			final ILogBrowser aBrowser, 
+			final long aT1,
+			final long aT2, 
+			final int aSlots,
+			final boolean aForceMergeCounts)
 	{
-		System.out.println("Count benchmarks (force merge: "+EventsCounter.FORCE_MERGE_COUNTS+")");
+		System.out.println("\nCount benchmarks (force merge: "+aForceMergeCounts+")");
 //		System.out.println("t1: "+AgentUtils.formatTimestamp(aT1));
 //		System.out.println("t2: "+AgentUtils.formatTimestamp(aT2));
 //		System.out.println("Slots: "+aSlots);
-		
-		System.out.println("");
 		
 		final long[] theCounts = new long[aSlots];
 		
@@ -173,7 +178,8 @@ public class GridQuery
 					long[] theThreadCounts = theEventBrowser.getEventCounts(
 							aT1, 
 							aT2, 
-							aSlots);
+							aSlots,
+							aForceMergeCounts);
 					
 					long theCount = 0;
 					for (int i = 0; i < theThreadCounts.length; i++)
@@ -223,6 +229,7 @@ public class GridQuery
 					theTimestamp = theFirstTimestamp + theTimestamp % theTimeSpan; 
 					
 					benchCursor(aBrowser, theFilter, theTimestamp, aBulk);
+					System.out.println(i);
 				}
 //				
 //				for(Map.Entry<ObjectId, IFieldInfo> theEntry : theFields.entrySet())
@@ -324,4 +331,48 @@ public class GridQuery
 		
 //		if (i < aCount) System.out.println(i);
 	}
+	
+	/**
+	 * Creates a data file containing the timestamps of references
+	 * to each object.
+	 */
+	private static final void createObjectPlot(ILogBrowser aBrowser)
+	{
+		try
+		{
+			PrintWriter theWriter = new PrintWriter(new FileWriter("objects-refs.txt"));
+			for (long i=1;i<DebuggerGridConfig.STRUCTURE_OBJECT_COUNT;i++)
+			{
+				ObjectId theId = new ObjectId.ObjectUID(i);
+				IEventFilter theFilter = aBrowser.createObjectFilter(theId);
+				IEventBrowser theBrowser = aBrowser.createBrowser(theFilter);
+				
+				long[] theCounts = theBrowser.getEventCounts(
+						aBrowser.getFirstTimestamp(), 
+						aBrowser.getLastTimestamp(), 
+						1000, 
+						false);
+				
+				StringBuilder theBuilder = new StringBuilder(i + " ");
+				for (long theCount : theCounts)
+				{
+					theBuilder.append(theCount);
+					theBuilder.append('\t');
+				}
+				
+				theWriter.println(theBuilder.toString());
+				
+				if (i % 1000 == 0) System.out.println(i);
+			}
+			
+			theWriter.close();
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+		
+
+	}
+	
 }

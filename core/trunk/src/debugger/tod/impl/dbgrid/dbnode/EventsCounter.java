@@ -22,12 +22,6 @@ import zz.utils.Stack;
  */
 public class EventsCounter
 {
-	/**
-	 * If this flag is set to true, counting queries are forced to use the merge
-	 * operations.
-	 */
-	public static boolean FORCE_MERGE_COUNTS = false;
-	
 	public static long[] mergeCountEvents(
 			EventCondition aCondition, 
 			Indexes aIndexes, 

@@ -38,6 +38,7 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.RoleTuple>
 	public static final byte ROLE_OBJECT_RESULT = -3;
 	public static final byte ROLE_OBJECT_EXCEPTION = -4;
 	public static final byte ROLE_OBJECT_ANYARG = -5;
+	public static final byte ROLE_OBJECT_ANY = -6;
 	
 	public static final TupleCodec TUPLE_CODEC = new RoleTupleCodec();
 	

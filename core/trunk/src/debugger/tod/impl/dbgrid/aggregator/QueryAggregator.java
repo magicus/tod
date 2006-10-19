@@ -84,7 +84,11 @@ implements RIQueryAggregator
 		throw new UnsupportedOperationException();
 	}
 	
-	public long[] getEventCounts(final long aT1, final long aT2, final int aSlotsCount) throws RemoteException
+	public long[] getEventCounts(
+			final long aT1,
+			final long aT2, 
+			final int aSlotsCount,
+			final boolean aForceMergeCounts) throws RemoteException
 	{
 //		System.out.println("Aggregating counts...");
 		
@@ -103,7 +107,12 @@ implements RIQueryAggregator
 				@Override
 				protected long[] fetch() throws Throwable
 				{
-					long[] theEventCounts = theNode0.getEventCounts(itsCondition, aT1, aT2, aSlotsCount);
+					long[] theEventCounts = theNode0.getEventCounts(
+							itsCondition,
+							aT1,
+							aT2, 
+							aSlotsCount,
+							aForceMergeCounts);
 					return theEventCounts;
 				}
 			});
@@ -185,55 +194,6 @@ implements RIQueryAggregator
 			return aItem1.getHost() == aItem2.getHost()
 				&& aItem1.getThread() == aItem2.getThread()
 				&& aItem1.getTimestamp() == aItem2.getTimestamp();
-		}
-	}
-	
-	private static abstract class Future<T> extends Thread
-	{
-		private T itsResult;
-		private Throwable itsException;
-		private boolean itsDone = false;
-		
-		public Future()
-		{
-			start();
-		}
-
-		@Override
-		public synchronized void run()
-		{
-			try
-			{
-				itsResult = fetch();
-			}
-			catch (Throwable e)
-			{
-				itsException = e;
-			}
-			itsDone = true;
-			notifyAll();
-		}
-		
-		protected abstract T fetch() throws Throwable;
-		
-		public synchronized T get()
-		{
-			try
-			{
-				while (! itsDone) wait();
-				
-				if (itsException != null) throw new RuntimeException(itsException);
-				return itsResult;
-			}
-			catch (InterruptedException e)
-			{
-				throw new RuntimeException(e);
-			}
-		}
-		
-		public boolean isDone()
-		{
-			return itsDone;
 		}
 	}
 }

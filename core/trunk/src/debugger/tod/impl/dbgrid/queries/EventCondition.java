@@ -66,7 +66,7 @@ implements IEventFilter, Serializable
 	 * By default performs a merge count. Subclasses can override this method
 	 * to provide a more efficient implementation.
 	 */
-	public long[] getEventCounts(Indexes aIndexes, long aT1, long aT2, int aSlotsCount)
+	public long[] getEventCounts(Indexes aIndexes, long aT1, long aT2, int aSlotsCount, boolean aForceMergeCounts)
 	{
 		return EventsCounter.mergeCountEvents(this, aIndexes, aT1, aT2, aSlotsCount); 
 	}
