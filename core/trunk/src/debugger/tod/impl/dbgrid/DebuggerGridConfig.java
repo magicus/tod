@@ -134,35 +134,9 @@ public class DebuggerGridConfig
 		+DebuggerGridConfig.EVENT_TIMESTAMP_BITS;
 
 	/**
-	 * Size of an event page in the database
+	 * Size of file pages in the database
 	 */
-	public static final int DB_EVENT_PAGE_SIZE = 8192;
-	
-	/**
-	 * Size of an index page in the database
-	 */
-	public static final int DB_INDEX_PAGE_SIZE = 4096;
-	
-	/**
-	 * Size of a cflow data page in the database
-	 */
-	public static final int DB_CFLOW_PAGE_SIZE = 4096;
-	
-	/**
-	 * Minimum page size for CFlow data pages
-	 */
-	public static final int DB_MIN_CFLOW_PAGE_SIZE = 128;
-	
-	/**
-	 * Size of the children list buffer in {@link CFlowMap}.
-	 */
-	public static final int DB_CFLOW_CHILDREN_LIST_BUFFER_SIZE = 256;
-	
-	/**
-	 * Size of a btree page 
-	 */
-	public static final int DB_BTREE_PAGE_SIZE = 8192;
-	
+	public static final int DB_PAGE_SIZE = 4096;
 	/**
 	 * Number of bits to represent a page pointer in a linked pages list,
 	 * as used by {@link TupleWriter} and {@link TupleIterator}
@@ -174,7 +148,7 @@ public class DebuggerGridConfig
 	 */
 	public static final int DB_AVG_EVENT_SIZE = 55;
 	
-	public static final int DB_AVG_EVENTS_PER_PAGE = DB_EVENT_PAGE_SIZE/DB_AVG_EVENT_SIZE;
+	public static final int DB_AVG_EVENTS_PER_PAGE = DB_PAGE_SIZE/DB_AVG_EVENT_SIZE;
 	
 	/**
 	 * Number of bits used to represent the record index in an internal

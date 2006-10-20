@@ -3,9 +3,7 @@
  */
 package tod.impl.dbgrid.dbnode;
 
-import static tod.impl.dbgrid.DebuggerGridConfig.DB_EVENT_BUFFER_SIZE;
-import static tod.impl.dbgrid.DebuggerGridConfig.DB_EVENT_PAGE_SIZE;
-import static tod.impl.dbgrid.DebuggerGridConfig.DB_INDEX_PAGE_SIZE;
+import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_SIZE;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -22,7 +20,6 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Comparator;
 import java.util.Iterator;
 
-import tod.agent.AgentUtils;
 import tod.core.config.GeneralConfig;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
@@ -35,7 +32,6 @@ import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Probe;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.utils.NativeStream;
-import zz.utils.SortedRingBuffer;
 import zz.utils.Utils;
 import zz.utils.bit.BitStruct;
 import zz.utils.bit.IntBitStruct;
@@ -81,12 +77,11 @@ implements RIDatabaseNode
 	
 	private long itsLastAddedTimestamp;
 	private long itsAddedEventsCount = 0;
-	private GridEvent itsLastAddedEvent;
 	
-	private long itsDroppedEvents;
+	private long itsDroppedEvents = 0;
+	private long itsUnorderedEvents = 0;
 	
-	private SortedRingBuffer<GridEvent> itsEventBuffer = 
-		new SortedRingBuffer<GridEvent>(DB_EVENT_BUFFER_SIZE, new EventTimestampComparator());
+	private EventReorderingBuffer itsReorderingBuffer = new EventReorderingBuffer();
 	
 	private MasterConnection itsMasterConnection;
 	
@@ -100,8 +95,8 @@ implements RIDatabaseNode
 			String thePrefix = GeneralConfig.NODE_DATA_DIR;
 			File theParent = new File(thePrefix);
 			System.out.println("Using data directory: "+theParent);
-			itsEventsFile = new HardPagedFile(new File(theParent, "events.bin"), DB_EVENT_PAGE_SIZE);
-			itsIndexesFile = new HardPagedFile(new File(theParent, "indexes.bin"), DB_INDEX_PAGE_SIZE);
+			itsEventsFile = new HardPagedFile(new File(theParent, "events.bin"), DB_PAGE_SIZE);
+			itsIndexesFile = new HardPagedFile(new File(theParent, "indexes.bin"), DB_PAGE_SIZE);
 			
 			itsEventList = new EventList(itsEventsFile);
 			itsIndexes = new Indexes(itsIndexesFile);
@@ -204,11 +199,15 @@ implements RIDatabaseNode
 	 */
 	public int flush()
 	{
-		int theCount = itsEventBuffer.getSize();
-		System.out.println("DatabaseNode: flushing "+theCount+" events...");
-		while (! itsEventBuffer.isEmpty()) processEvent(itsEventBuffer.remove());
+		int theCount = 0;
+		System.out.println("DatabaseNode: flushing...");
+		while (itsReorderingBuffer.available())
+		{
+			processEvent(itsReorderingBuffer.pop());
+			theCount++;
+		}
 		itsFlushed = true;
-		System.out.println("DatabaseNode: flushed");
+		System.out.println("DatabaseNode: flushed "+theCount+" events...");
 		return theCount;
 	}
 	
@@ -218,25 +217,35 @@ implements RIDatabaseNode
 		long theTimestamp = aEvent.getTimestamp();
 		if (theTimestamp < itsLastAddedTimestamp)
 		{
-			System.out.println(String.format(
-					"Out of order event: %s(%02d)/%s(%02d) (#%d)",
-					AgentUtils.formatTimestampU(theTimestamp),
-					aEvent.getThread(),
-					AgentUtils.formatTimestampU(itsLastAddedTimestamp),
-					itsLastAddedEvent.getThread(),
-					itsAddedEventsCount));
+//			System.out.println(String.format(
+//					"Out of order event: %s(%02d)/%s(%02d) (#%d)",
+//					AgentUtils.formatTimestampU(theTimestamp),
+//					aEvent.getThread(),
+//					AgentUtils.formatTimestampU(itsLastAddedTimestamp),
+//					itsLastAddedEvent.getThread(),
+//					itsAddedEventsCount));
+//			
+			itsUnorderedEvents++;
+		}
+		else
+		{
+			itsLastAddedTimestamp = theTimestamp;
 		}
 		
-		itsLastAddedTimestamp = theTimestamp;
-		itsLastAddedEvent = aEvent;
 		itsAddedEventsCount++;
 		
-		if (itsEventBuffer.isFull()) processEvent(itsEventBuffer.remove());
-		itsEventBuffer.add(aEvent);
+		while (itsReorderingBuffer.available()) processEvent(itsReorderingBuffer.pop());
+		itsReorderingBuffer.push(aEvent);
 	}
 	
+	@Probe(key = "Out of order events", aggr = AggregationType.SUM)
+	public long getUnorderedEvents()
+	{
+		return itsUnorderedEvents;
+	}
+
 	@Probe(key = "DROPPED EVENTS", aggr = AggregationType.SUM)
-	public long getWrittenPages()
+	public long getDroppedEvents()
 	{
 		return itsDroppedEvents;
 	}
@@ -247,12 +256,12 @@ implements RIDatabaseNode
 		long theTimestamp = aEvent.getTimestamp();
 		if (theTimestamp < itsLastProcessedTimestamp)
 		{
-			System.err.println("****************** WARNING ********************\n" +
-					"**********************************************\n" +
-//			throw new RuntimeException(
-					"Out of order event: "+theTimestamp+"/"+itsLastProcessedTimestamp
-					+" (#"+itsProcessedEventsCount+")"
-					+" (buffer size: "+itsEventBuffer.getCapacity()+")");
+//			System.err.println("****************** WARNING ********************\n" +
+//					"**********************************************\n" +
+////			throw new RuntimeException(
+//					"Out of order event: "+theTimestamp+"/"+itsLastProcessedTimestamp
+//					+" (#"+itsProcessedEventsCount+")"
+//					+" (buffer size: "+itsEventBuffer.getCapacity()+")");
 			
 			itsDroppedEvents++;
 			

@@ -87,7 +87,7 @@ public class Fixtures
 		{
 			File theFile = new File("stdIndexTest.bin");
 			theFile.delete();
-			HardPagedFile thePagedFile = new HardPagedFile(theFile, DebuggerGridConfig.DB_INDEX_PAGE_SIZE);
+			HardPagedFile thePagedFile = new HardPagedFile(theFile, DebuggerGridConfig.DB_PAGE_SIZE);
 			HierarchicalIndex<StdIndexSet.StdTuple>[] theIndexes = new HierarchicalIndex[aCount];
 			for (int i = 0; i < theIndexes.length; i++)
 			{
@@ -116,7 +116,7 @@ public class Fixtures
 		{
 			File theFile = new File("roleIndexTest.bin");
 			theFile.delete();
-			HardPagedFile thePagedFile = new HardPagedFile(theFile, DebuggerGridConfig.DB_INDEX_PAGE_SIZE);
+			HardPagedFile thePagedFile = new HardPagedFile(theFile, DebuggerGridConfig.DB_PAGE_SIZE);
 			HierarchicalIndex<RoleIndexSet.RoleTuple>[] theIndexes = new HierarchicalIndex[aCount];
 			for (int i = 0; i < theIndexes.length; i++)
 			{
@@ -140,7 +140,7 @@ public class Fixtures
 		{
 			File theFile = new File("eventTest.bin");
 			theFile.delete();
-			HardPagedFile thePagedFile = new HardPagedFile(theFile, DebuggerGridConfig.DB_EVENT_PAGE_SIZE);
+			HardPagedFile thePagedFile = new HardPagedFile(theFile, DebuggerGridConfig.DB_PAGE_SIZE);
 			return new EventList(thePagedFile);
 		}
 		catch (FileNotFoundException e)

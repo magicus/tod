@@ -26,6 +26,7 @@ VMARGS="$VMARGS -Devents-file=$EVENTS_FILE"
 VMARGS="$VMARGS -Dlocations-file=$LOCATIONS_FILE"
 VMARGS="$VMARGS -Dpage-buffer-size=$PAGE_BUFFER_SIZE"
 VMARGS="$VMARGS -Dtask-id=$TASK_ID"
+VMARGS="$VMARGS $EXTRA_JVM_ARGS"
 
 if [ -n "$JDWP_PORT" ]
 then

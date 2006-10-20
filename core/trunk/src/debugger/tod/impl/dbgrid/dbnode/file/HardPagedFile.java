@@ -3,7 +3,7 @@
  */
 package tod.impl.dbgrid.dbnode.file;
 
-import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_POINTER_BITS;
+import static tod.impl.dbgrid.DebuggerGridConfig.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -25,6 +25,9 @@ import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Probe;
 import tod.utils.NativeStream;
+import zz.utils.ArrayStack;
+import zz.utils.Stack;
+import zz.utils.Utils;
 import zz.utils.bit.ByteBitStruct;
 import zz.utils.cache.MRUBuffer;
 
@@ -34,6 +37,9 @@ import zz.utils.cache.MRUBuffer;
  */
 public class HardPagedFile extends PageBank
 {
+	private static PageDataManager itsPageDataManager = 
+		new PageDataManager(DB_PAGE_SIZE, (int) (DB_PAGE_BUFFER_SIZE/DB_PAGE_SIZE));
+	
 	private ReferenceQueue itsPageRefQueue = new ReferenceQueue();
 	
 	private String itsName;
@@ -128,7 +134,7 @@ public class HardPagedFile extends PageBank
 	public Page get(long aPageId)
 	{
 		PageKey theKey = new PageKey(this, aPageId);
-		PageData theData = PageDataManager.getInstance().get(theKey, false);
+		PageData theData = itsPageDataManager.get(theKey, false);
 		return theData != null ? theData.getAttachedPage() : new Page(theKey);
 	}
 	
@@ -162,7 +168,7 @@ public class HardPagedFile extends PageBank
 	{
 		itsPagesCount++;
 		long thePageId = itsPagesCount-1;
-		PageData theData = PageDataManager.getInstance().create(this, thePageId);
+		PageData theData = itsPageDataManager.create(this, thePageId);
 		Page thePage = new Page(theData);
 		return thePage;
 	}
@@ -174,7 +180,7 @@ public class HardPagedFile extends PageBank
 		
 		try
 		{
-			int[] theBuffer = new int[itsPageSize/4];
+			int[] theBuffer = itsPageDataManager.getFreeBuffer();
 			
 			assert itsFile.length() >= (aId+1) * itsPageSize;
 			itsFile.seek(aId * itsPageSize);
@@ -220,49 +226,50 @@ public class HardPagedFile extends PageBank
 	 */
 	private static class PageDataManager extends MRUBuffer<PageKey, PageData>
 	{
-		private static PageDataManager INSTANCE = new PageDataManager();
-
-		public static PageDataManager getInstance()
-		{
-			return INSTANCE;
-		}
+		private Stack<int[]> itsFreeBuffers = new ArrayStack<int[]>();
+		private long itsCurrentSpace = 0;
+		private final int itsPageSize;
 		
-		private PageDataManager()
+		private PageDataManager(int aPageSize, int aBufferedPages)
 		{
-			super(-1);
+			super(aBufferedPages);
+			itsPageSize = aPageSize;
 			Monitor.getInstance().register(this);
 		}
 		
-		private long itsCurrentSpace;
+		public int[] getFreeBuffer()
+		{
+			if (itsFreeBuffers.isEmpty()) 
+			{
+				itsCurrentSpace += itsPageSize;
+				return new int[itsPageSize/4];
+			}
+			else return itsFreeBuffers.pop();
+		}
+		
+		private void addFreeBuffer(int[] aBuffer)
+		{
+			Utils.memset(aBuffer, 0);
+			itsFreeBuffers.push(aBuffer);
+		}
 		
 		public PageData create(HardPagedFile aFile, long aId)
 		{
+			assert aFile.getPageSize() == itsPageSize;
+			
 			PageData theData = new PageData(
-					new PageKey(aFile, aId), 
-					new int[aFile.getPageSize()/4]);
+					new PageKey(aFile, aId),
+					getFreeBuffer());
 			
 			add(theData);
 			return theData;
 		}
 		
 		@Override
-		protected boolean shouldDrop(int aCachedItems)
-		{
-			return itsCurrentSpace >= DebuggerGridConfig.DB_PAGE_BUFFER_SIZE;
-		}
-		
-		@Override
-		protected void added(PageData aPageData)
-		{
-			itsCurrentSpace += aPageData.getSize();
-		}
-		
-		@Override
 		protected void drop(PageData aPageData)
 		{
 			aPageData.store();
-			aPageData.detach();
-			itsCurrentSpace -= aPageData.getSize();
+			addFreeBuffer(aPageData.detach());
 		}
 
 		@Override
@@ -321,6 +328,7 @@ public class HardPagedFile extends PageBank
 		
 		public PageData(PageKey aKey, int[] aData)
 		{
+			assert aData != null;
 			itsKey = aKey;
 			itsData = aData;
 		}
@@ -336,6 +344,7 @@ public class HardPagedFile extends PageBank
 		
 		public int[] getData()
 		{
+			assert itsData != null;
 			return itsData;
 		}
 		
@@ -379,15 +388,19 @@ public class HardPagedFile extends PageBank
 		}
 		
 		/**
-		 * Detaches this page data from its page, so that it can be reclaimed.
+		 * Detaches this page data from its pages, so that it can be reclaimed.
 		 */
-		public void detach()
+		public int[] detach()
 		{
 			for (Page thePage : itsAttachedPages)
 			{
 				thePage.clearData();
 			}
-			itsAttachedPages.clear();
+			itsAttachedPages = null;
+			
+			int[] theData = itsData;
+			itsData = null;
+			return theData;
 		}
 		
 		/**
@@ -450,7 +463,11 @@ public class HardPagedFile extends PageBank
 		{
 			if (itsData == null)
 			{
-				itsData = PageDataManager.getInstance().get(getKey());
+				if (getKey().getPageId() == 255)
+				{
+					
+				}
+				itsData = itsPageDataManager.get(getKey());
 				itsData.attach(this);
 			}
 			return itsData.getData();
