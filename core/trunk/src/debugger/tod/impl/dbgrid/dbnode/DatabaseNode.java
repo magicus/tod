@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 
 import tod.core.config.GeneralConfig;
+import tod.impl.dbgrid.DebugFlags;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.RIGridMaster;
@@ -39,6 +40,7 @@ import zz.utils.bit.IntBitStruct;
 public class DatabaseNode extends UnicastRemoteObject
 implements RIDatabaseNode
 {
+	
 	/**
 	 * This command pushes a list of events to the node.
 	 * args:
@@ -185,6 +187,8 @@ implements RIDatabaseNode
 	{
 		assert ! itsFlushed;
 		
+		if (DebugFlags.SKIP_EVENTS) return;
+		
 		if (aMessage instanceof GridEvent)
 		{
 			GridEvent theEvent = (GridEvent) aMessage;
@@ -201,7 +205,7 @@ implements RIDatabaseNode
 	{
 		int theCount = 0;
 		System.out.println("DatabaseNode: flushing...");
-		while (itsReorderingBuffer.available())
+		while (! itsReorderingBuffer.isEmpty())
 		{
 			processEvent(itsReorderingBuffer.pop());
 			theCount++;
@@ -234,8 +238,15 @@ implements RIDatabaseNode
 		
 		itsAddedEventsCount++;
 		
-		while (itsReorderingBuffer.available()) processEvent(itsReorderingBuffer.pop());
-		itsReorderingBuffer.push(aEvent);
+		if (DebugFlags.DISABLE_REORDER)
+		{
+			processEvent(aEvent);
+		}
+		else
+		{
+			while (itsReorderingBuffer.isFull()) processEvent(itsReorderingBuffer.pop());
+			itsReorderingBuffer.push(aEvent);
+		}
 	}
 	
 	@Probe(key = "Out of order events", aggr = AggregationType.SUM)
@@ -272,7 +283,7 @@ implements RIDatabaseNode
 		itsProcessedEventsCount++;
 		
 		long theId = itsEventList.add(aEvent);
-		aEvent.index(itsIndexes, theId);		
+		if (! DebugFlags.DISABLE_INDEXES) aEvent.index(itsIndexes, theId);		
 	}
 	
 	/**

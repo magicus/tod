@@ -176,6 +176,11 @@ public class HierarchicalIndex<T extends IndexTuple>
 	{
 		assert checkTimestamp(aTuple);
 		add(aTuple, 0, itsTupleCodec);
+		for (MyTupleWriter theTupleWriter : itsTupleWriters)
+		{
+			if (theTupleWriter != null) theTupleWriter.getCurrentPage().use();
+		}
+		
 		itsLeafTupleCount++;
 	}
 	

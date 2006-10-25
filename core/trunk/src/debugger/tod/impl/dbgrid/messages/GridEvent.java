@@ -6,6 +6,7 @@ package tod.impl.dbgrid.messages;
 import tod.core.database.event.ILogEvent;
 import tod.impl.common.event.BehaviorCallEvent;
 import tod.impl.common.event.Event;
+import tod.impl.dbgrid.DebugFlags;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.dbnode.Indexes;
@@ -191,8 +192,11 @@ public abstract class GridEvent extends GridMessage
 		
 		aIndexes.typeIndex.addTuple((byte) getEventType().ordinal(), TUPLE);
 		
-		if (getOperationBytecodeIndex() >= 0)
-			aIndexes.bytecodeLocationIndex.addTuple(getOperationBytecodeIndex(), TUPLE);
+		if (! DebugFlags.DISABLE_LOCATION_INDEX)
+		{
+			if (getOperationBytecodeIndex() >= 0)
+				aIndexes.bytecodeLocationIndex.addTuple(getOperationBytecodeIndex(), TUPLE);
+		}
 		
 		if (getHost() > 0) 
 			aIndexes.hostIndex.addTuple(getHost(), TUPLE);

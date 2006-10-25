@@ -23,6 +23,13 @@ public abstract class PageBank
 	public abstract Page create();
 	
 	/**
+	 * Clients can call this method if they know the given
+	 * page will not be used anymore, so that
+	 * its space can be reclaimed. 
+	 */
+	public abstract void free(Page aPage);
+	
+	/**
 	 * Returns the number of bits necessary to represent a 
 	 * page pointer.
 	 */
@@ -112,6 +119,14 @@ public abstract class PageBank
 		public abstract int getSize();
 		
 		public abstract PageBitStruct asBitStruct();
+
+		/**
+		 * Notifies the system that this page is being used.
+		 * This is an optional operation.
+		 */
+		public void use()
+		{
+		}
 	}
 	
 	public static abstract class PageBitStruct extends IntBitStruct

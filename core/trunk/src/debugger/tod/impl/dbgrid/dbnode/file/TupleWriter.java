@@ -64,6 +64,8 @@ public class TupleWriter<T>
 			
 			newPageHook(itsCurrentStruct, theNextPageId);
 			
+			itsBank.free(itsCurrentPage);
+			
 			// Save old page
 //			itsBank.store(itsCurrentPage);
 //			itsFile.freePage(itsCurrentPage);
@@ -74,6 +76,7 @@ public class TupleWriter<T>
 
 		if (itsCurrentStruct.getPos() == 0) startPageHook(itsCurrentStruct, aTuple);
 		
+//		itsCurrentStruct.getPage().use();
 		itsTupleCodec.write(itsCurrentStruct, aTuple);
 	}
 	

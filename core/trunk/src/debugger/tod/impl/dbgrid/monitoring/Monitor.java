@@ -5,6 +5,7 @@ package tod.impl.dbgrid.monitoring;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
+import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -20,16 +21,20 @@ public class Monitor
 {
 	private static Monitor INSTANCE = new Monitor();
 	private static MemoryMXBean MEMORY_MX_BEAN;
-	
+	private static ThreadMXBean THREAD_MX_BEAN;
+
 	static
 	{
 		try
 		{
 			MEMORY_MX_BEAN = ManagementFactory.getMemoryMXBean();
+			THREAD_MX_BEAN = ManagementFactory.getThreadMXBean();
+			if (THREAD_MX_BEAN != null) THREAD_MX_BEAN.setThreadCpuTimeEnabled(true);
 		}
 		catch (Throwable e)
 		{
 			MEMORY_MX_BEAN = null;
+			THREAD_MX_BEAN = null;
 		}
 	}
 
@@ -285,13 +290,13 @@ public class Monitor
 			theBuilder.append("]");
 			if (aIndividual)
 			{
-				theBuilder.append('(');
+				theBuilder.append('\n');
 				for (IndividualProbeValue theValue : individualValues) 
 				{
+					theBuilder.append("  ");
 					theBuilder.append(format(theValue));
-					theBuilder.append(' ');
+					theBuilder.append('\n');
 				}
-				theBuilder.append(')');
 			}
 			
 			return theBuilder.toString();

@@ -5,7 +5,9 @@ package tod.impl.dbgrid;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
@@ -77,6 +79,15 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	
 	public GridMaster(ILocationsRepository aLocationsRepository, int aMaxNodes) throws RemoteException
 	{
+		try
+		{
+			itsNodeHosts.add(InetAddress.getLocalHost().getHostName());
+		}
+		catch (UnknownHostException e)
+		{
+			e.printStackTrace();
+		}
+		
 		itsLocationsRepository = aLocationsRepository;
 		itsMaxNodes = aMaxNodes;
 		itsRemoteLocationsRepository = new RemoteLocationsRepository(itsLocationsRepository);
@@ -170,7 +181,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		
 		int theId = itsNodes.size()+1;
 		itsNodes.add(aNode);
-		System.out.println("Registered node (RMI): "+theId);
+		System.out.println("Registered node (RMI): "+theId+" from "+aHostname);
 		
 		return theId;
 	}

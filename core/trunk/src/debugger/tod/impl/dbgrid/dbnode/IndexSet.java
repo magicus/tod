@@ -25,6 +25,8 @@ public abstract class IndexSet<T extends IndexTuple>
 	
 	private HardPagedFile itsFile;
 	
+	private int itsIndexCount = 0;
+	
 	public IndexSet(String aName, HardPagedFile aFile, int aIndexCount)
 	{
 		itsName = aName;
@@ -50,6 +52,7 @@ public abstract class IndexSet<T extends IndexTuple>
 		{
 			theIndex = createIndex(itsName+"-"+aIndex, itsFile);
 			itsIndexes[aIndex] = theIndex;
+			itsIndexCount++;
 		}
 		
 		return theIndex;
@@ -63,7 +66,7 @@ public abstract class IndexSet<T extends IndexTuple>
 	@Probe(key = "index count", aggr = AggregationType.SUM)
 	public long getIndexCount()
 	{
-		return itsIndexes.length;
+		return itsIndexCount;
 	}
 	
 	@Override

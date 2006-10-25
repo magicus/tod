@@ -44,10 +44,14 @@ public class EventReorderingBuffer
 	 * if an event is available it should be immediately retrieved,
 	 * before a new event is pushed.
 	 */
-	public boolean available()
+	public boolean isFull()
 	{
-		return itsBuffer.isFull() 
-			|| (itsBuffer.isEmpty() && itsOutOfOrderBuffer.getNextAvailable() != Long.MAX_VALUE);
+		return itsBuffer.isFull();
+	}
+	
+	public boolean isEmpty()
+	{
+		return itsBuffer.isEmpty() && itsOutOfOrderBuffer.isEmpty();
 	}
 
 	/**
@@ -101,6 +105,11 @@ public class EventReorderingBuffer
 			theBuffer.add(aEvent);
 			
 			if (itsNextAvailable == null) itsNextAvailable = aEvent;
+		}
+		
+		public boolean isEmpty()
+		{
+			return itsNextAvailable == null;
 		}
 		
 		public long getNextAvailable()

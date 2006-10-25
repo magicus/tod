@@ -3,6 +3,7 @@
  */
 package tod.impl.dbgrid.dbnode.file;
 
+import tod.impl.dbgrid.dbnode.file.PageBank.Page;
 import tod.impl.dbgrid.dbnode.file.SoftPagedFile.SoftPage;
 
 /**
@@ -58,6 +59,12 @@ public class ExponentialPageBank extends PageBank
 	public Page get(long aId)
 	{
 		return itsFile.get(aId);
+	}
+	
+	@Override
+	public void free(Page aPage)
+	{
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

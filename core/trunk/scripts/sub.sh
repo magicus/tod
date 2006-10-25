@@ -2,7 +2,7 @@
 
 SCRIPT=$1
 NODES=$2
-NODES=$((15*NODES/10))
+SEC_NODES=$((2*NODES))
 
 # echo Removing lock files...
 # cluster-fork rm -f $LOCK_FILE
@@ -11,9 +11,9 @@ NODES=$((15*NODES/10))
 if [ -n "$SYNTAGMASTER" ] 
 then
 	echo "syntagma" > master-host
-	qsub -t 2-$((NODES+1)):1 cluster-$SCRIPT.sh $NODES
+	qsub -t 2-$((SEC_NODES+1)):1 ./cluster-$SCRIPT.sh $NODES
 	./start-$SCRIPT.sh $NODES
 else
-	qsub -t 1-$((NODES+1)):1 cluster-$SCRIPT.sh $NODES
+	qsub -t 1-$((SEC_NODES+1)):1 ./cluster-$SCRIPT.sh $NODES
 fi
 

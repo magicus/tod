@@ -3,24 +3,20 @@
  */
 package tod.impl.dbgrid.dbnode.file;
 
-import static tod.impl.dbgrid.DebuggerGridConfig.*;
+import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_BUFFER_SIZE;
+import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_POINTER_BITS;
+import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_SIZE;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.ref.ReferenceQueue;
-import java.lang.ref.WeakReference;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import tod.impl.dbgrid.DebuggerGridConfig;
-import tod.impl.dbgrid.dbnode.file.PageBank.PageKey;
+import tod.impl.dbgrid.DebugFlags;
+import tod.impl.dbgrid.dbnode.file.PageBank.Page;
 import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Probe;
@@ -30,6 +26,7 @@ import zz.utils.Stack;
 import zz.utils.Utils;
 import zz.utils.bit.ByteBitStruct;
 import zz.utils.cache.MRUBuffer;
+import zz.utils.list.NakedLinkedList.Entry;
 
 /**
  * A file organized in pages.
@@ -43,7 +40,7 @@ public class HardPagedFile extends PageBank
 	private ReferenceQueue itsPageRefQueue = new ReferenceQueue();
 	
 	private String itsName;
-	private RandomAccessFile itsFile;
+	private FileAccessor itsFileAccessor;
 	private int itsPageSize;
 	
 	/**
@@ -54,20 +51,16 @@ public class HardPagedFile extends PageBank
 	private long itsWrittenPagesCount;
 	private long itsReadPagesCount;
 	
-	private byte[] itsByteBuffer;
-	
 	public HardPagedFile(File aFile, int aPageSize) throws FileNotFoundException
 	{
 		Monitor.getInstance().register(this);
 		assert itsPageSize % 4 == 0;
 	
+		itsPageSize = aPageSize;
 		itsName = aFile.getName();
 		aFile.delete();
-		itsFile = new RandomAccessFile(aFile, "rw");
-		itsPageSize = aPageSize;
+		itsFileAccessor = new FileAccessor (new RandomAccessFile(aFile, "rw"));
 		itsPagesCount = 0;
-		
-		itsByteBuffer = new byte[itsPageSize];
 	}
 
 	/**
@@ -138,6 +131,13 @@ public class HardPagedFile extends PageBank
 		return theData != null ? theData.getAttachedPage() : new Page(theKey);
 	}
 	
+	@Override
+	public void free(PageBank.Page aPage)
+	{
+		PageKey theKey = (PageKey) aPage.getKey();
+		itsPageDataManager.drop(theKey);
+	}
+	
 	/**
 	 * Returns a page object suitable for overwriting the file page
 	 * of the specified id. The data of the returned page is undefined.
@@ -168,7 +168,7 @@ public class HardPagedFile extends PageBank
 	{
 		itsPagesCount++;
 		long thePageId = itsPagesCount-1;
-		PageData theData = itsPageDataManager.create(this, thePageId);
+		Entry<PageData> theData = itsPageDataManager.create(this, thePageId);
 		Page thePage = new Page(theData);
 		return thePage;
 	}
@@ -182,11 +182,10 @@ public class HardPagedFile extends PageBank
 		{
 			int[] theBuffer = itsPageDataManager.getFreeBuffer();
 			
-			assert itsFile.length() >= (aId+1) * itsPageSize;
-			itsFile.seek(aId * itsPageSize);
-			itsFile.readFully(itsByteBuffer);
-			
-			NativeStream.b2i(itsByteBuffer, theBuffer);
+			if (! DebugFlags.DISABLE_STORE)
+			{
+				itsFileAccessor.read(aId, theBuffer);
+			}
 			
 			itsReadPagesCount++;
 			
@@ -203,11 +202,9 @@ public class HardPagedFile extends PageBank
 //		System.out.println("Storing page: "+aId+" on "+itsName);
 		try
 		{
-			if (true)
+			if (! DebugFlags.DISABLE_STORE)
 			{
-				NativeStream.i2b(aData, itsByteBuffer);
-				itsFile.seek(aId * itsPageSize);
-				itsFile.write(itsByteBuffer);
+				itsFileAccessor.write(aId, aData);
 			}
 			
 			itsWrittenPagesCount++;
@@ -216,7 +213,102 @@ public class HardPagedFile extends PageBank
 		{
 			throw new RuntimeException(e);
 		}
+	}
+	
+	private class FileAccessor extends Thread
+	{
+		private RandomAccessFile itsFile;
+
+		private byte[] itsReadByteBuffer;
+		private byte[] itsWriteByteBuffer;
+		private long itsPageId;
+		private IOException itsException;
 		
+		private long itsReadCount = 0;
+		private long itsWriteCount = 0;
+
+		public FileAccessor(RandomAccessFile aFile)
+		{
+			Monitor.getInstance().register(this);
+			
+			itsFile = aFile;
+			itsReadByteBuffer = new byte[itsPageSize];
+			itsWriteByteBuffer = new byte[itsPageSize];
+			itsPageId = -1;
+			if (! DebugFlags.DISABLE_ASYNC_WRITES) start();
+		}
+		
+		public synchronized void read(long aId, int[] aBuffer) throws IOException
+		{
+			itsReadCount++;
+			assert itsFile.length() >= (aId+1) * itsPageSize;
+			itsFile.seek(aId * itsPageSize);
+			itsFile.readFully(itsReadByteBuffer);
+			
+			NativeStream.b2i(itsReadByteBuffer, aBuffer);
+		}
+		
+		public synchronized void write(long aId, int[] aData) throws IOException
+		{
+			itsWriteCount++;
+			if (DebugFlags.DISABLE_ASYNC_WRITES)
+			{
+				NativeStream.i2b(aData, itsWriteByteBuffer);
+				itsFile.seek(aId * itsPageSize);
+				itsFile.write(itsWriteByteBuffer);
+				return;
+			}
+			
+			try
+			{
+				while (itsPageId >= 0) wait();
+				itsPageId = aId;
+				NativeStream.i2b(aData, itsWriteByteBuffer);
+				IOException theException = itsException;
+				itsException = null;
+				notifyAll();
+				
+				if (theException != null) throw theException;
+			}
+			catch (InterruptedException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		
+		@Override
+		public synchronized void run()
+		{
+			try
+			{
+				while (true)
+				{
+					while (itsPageId < 0) wait();
+					try
+					{
+						itsFile.seek(itsPageId * itsPageSize);
+						itsFile.write(itsWriteByteBuffer);
+					}
+					catch (IOException e)
+					{
+						System.err.println("Exception in file writer thread");
+						itsException = e;
+					}
+					itsPageId = -1;
+					notifyAll();
+				}
+			}
+			catch (InterruptedException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		
+		@Probe(key = "read/write ratio (%)", aggr = AggregationType.AVG)
+		public float getWrittenPages()
+		{
+			return 100f*itsReadCount/itsWriteCount;
+		}
 	}
 	
 	/**
@@ -253,7 +345,7 @@ public class HardPagedFile extends PageBank
 			itsFreeBuffers.push(aBuffer);
 		}
 		
-		public PageData create(HardPagedFile aFile, long aId)
+		public Entry<PageData> create(HardPagedFile aFile, long aId)
 		{
 			assert aFile.getPageSize() == itsPageSize;
 			
@@ -261,12 +353,11 @@ public class HardPagedFile extends PageBank
 					new PageKey(aFile, aId),
 					getFreeBuffer());
 			
-			add(theData);
-			return theData;
+			return add(theData);
 		}
 		
 		@Override
-		protected void drop(PageData aPageData)
+		protected void dropped(PageData aPageData)
 		{
 			aPageData.store();
 			addFreeBuffer(aPageData.detach());
@@ -416,7 +507,7 @@ public class HardPagedFile extends PageBank
 	
 	public static class Page extends PageBank.Page
 	{
-		private PageData itsData;
+		private Entry<PageData> itsData;
 		
 		private Page(PageKey aKey)
 		{
@@ -424,11 +515,11 @@ public class HardPagedFile extends PageBank
 			assert aKey.getPageId() < aKey.getFile().itsPagesCount;
 		}
 		
-		private Page(PageData aData)
+		private Page(Entry<PageData> aData)
 		{
-			this(aData.getKey());
+			this(aData.getValue().getKey());
 			itsData = aData;
-			itsData.attach(this);
+			itsData.getValue().attach(this);
 		}
 		
 		/**
@@ -463,14 +554,10 @@ public class HardPagedFile extends PageBank
 		{
 			if (itsData == null)
 			{
-				if (getKey().getPageId() == 255)
-				{
-					
-				}
-				itsData = itsPageDataManager.get(getKey());
-				itsData.attach(this);
+				itsData = itsPageDataManager.getEntry(getKey());
+				itsData.getValue().attach(this);
 			}
-			return itsData.getData();
+			return itsData.getValue().getData();
 		}
 		
 		void clearData()
@@ -481,7 +568,14 @@ public class HardPagedFile extends PageBank
 		void modified()
 		{
 			if (itsData == null) throw new IllegalStateException("Trying to modify an absent page...");
-			itsData.markDirty();
+			itsData.getValue().markDirty();
+		}
+		
+		@Override
+		public void use()
+		{
+			if (! DebugFlags.DISABLE_USE_PAGES && itsData != null) 
+				itsPageDataManager.use(itsData);
 		}
 	}
 	

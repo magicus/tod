@@ -68,10 +68,11 @@ public class EventList
 			theOldBitStruct.writeInt(0, DB_EVENT_SIZE_BITS); // End-of-page marker 
 			theOldBitStruct.writeLong(itsCurrentBitStruct.getPage().getPageId()+1, DB_PAGE_POINTER_BITS);
 			
-//			itsFile.store(theOldBitStruct.getPage());
-//			itsFile.free(theOldBitStruct.getPage());
+			itsFile.free(theOldBitStruct.getPage());
 			itsRecordIndex = 0;
 		}
+		
+		itsCurrentBitStruct.getPage().use();
 		
 		// Construct event pointer
 		long theEventPointer = makeInternalPointer(
