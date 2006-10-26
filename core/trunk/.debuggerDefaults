@@ -18,7 +18,7 @@
 MaxTimeStamps:		400000
 StartPattern:		
 StopPattern:		
-SourceDirectory:	
+SourceDirectory:	"/home/gpothier/eclipse/workbench-3.1/TOD/src/testcase/"
 OnlyInstrument:		
 DidntInstrument:	
 DontInstrumentMethod:	

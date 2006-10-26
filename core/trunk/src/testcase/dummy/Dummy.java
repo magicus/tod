@@ -15,6 +15,8 @@ public class Dummy
 		
 		int j;
 		
+		long t0 = System.currentTimeMillis();
+		
 		Object[] theObjects = new Object[100];
 		for(int i=0;i<theObjects.length;i++) theObjects[i] = new Object();
 		
@@ -25,6 +27,9 @@ public class Dummy
 			foo(theObjects[theRandom.nextInt(theObjects.length)], j);
 			if (i % 100000 == 0) System.out.println(i);
 		}
+		
+		long t1 = System.currentTimeMillis();
+		System.out.println("Time: "+(t1-t0));
 	}
 	
 	public static int foo(Object o, long b)

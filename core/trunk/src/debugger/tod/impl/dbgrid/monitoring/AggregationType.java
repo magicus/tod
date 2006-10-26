@@ -28,6 +28,24 @@ public enum AggregationType
 	},
 
 	/**
+	 * Indicates that the maximum value of the values returned by the 
+	 * annotated methods will be returned
+	 */
+	MAX
+	{
+		@Override
+		public Object aggregate(Object[] aValues)
+		{
+			if (aValues[0] instanceof Long) return longMax(aValues);
+			if (aValues[0] instanceof Integer) return longMax(aValues);
+			if (aValues[0] instanceof Float) return doubleMax(aValues);
+			if (aValues[0] instanceof Double) return doubleMax(aValues);
+			
+			throw new IllegalArgumentException("Type not supported: "+aValues);
+		}
+	},
+	
+	/**
 	 * Indicates that the values returned by the annotated methods
 	 * will be averaged for all registered instances.
 	 */
@@ -77,6 +95,17 @@ public enum AggregationType
 		return theSum;
 	}
 	
+	private static long longMax(Object[] aValues)
+	{
+		long theMax = 0;
+		for (Object theValue : aValues) 
+		{
+			Number theNumber = (Number) theValue;
+			theMax = Math.max(theMax, theNumber.longValue());
+		}
+		return theMax;
+	}
+	
 	private static long longAvg(Object[] aValues)
 	{
 		return longSum(aValues) / aValues.length;
@@ -91,6 +120,17 @@ public enum AggregationType
 			theSum += theNumber.doubleValue();
 		}
 		return theSum;
+	}
+	
+	private static double doubleMax(Object[] aValues)
+	{
+		double theMax = 0;
+		for (Object theValue : aValues) 
+		{
+			Number theNumber = (Number) theValue;
+			theMax = Math.max(theMax, theNumber.doubleValue());
+		}
+		return theMax;
 	}
 	
 	private static double doubleAvg(Object[] aValues)

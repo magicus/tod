@@ -18,6 +18,7 @@ import tod.impl.dbgrid.merge.DisjunctionIterator;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
 import zz.utils.BufferedIterator;
+import zz.utils.Future;
 
 /**
  * Aggregates the partial results of a query obtained from the nodes.
@@ -37,20 +38,35 @@ implements RIQueryAggregator
 		initIterators(0);
 	}
 	
-	private void initIterators(long aTimestamp) throws RemoteException
+	private void initIterators(final long aTimestamp) throws RemoteException
 	{
-		List<RIDatabaseNode> theNodes = itsMaster.getNodes();
-		EventIterator[] theIterators = new EventIterator[theNodes.size()];
+		final List<RIDatabaseNode> theNodes = itsMaster.getNodes();
+		final EventIterator[] theIterators = new EventIterator[theNodes.size()];
+		
+		List<Future<EventIterator>> theFutures = new ArrayList<Future<EventIterator>>();
 		
 		for (int i=0;i<theNodes.size();i++)
 		{
-			RIDatabaseNode theNode = theNodes.get(i);
+			final int i0 = i;
+			theFutures.add(new Future<EventIterator>()
+					{
+						@Override
+						protected EventIterator fetch() throws Throwable
+						{
+							RIDatabaseNode theNode = theNodes.get(i0);
+							RINodeEventIterator theIterator = theNode.getIterator(itsCondition);
+							
+							theIterator.setNextTimestamp(aTimestamp);
+							theIterators[i0] = new EventIterator(theIterator);
+							
+							return theIterators[i0];
+						}
+					});
 			
-			RINodeEventIterator theIterator = theNode.getIterator(itsCondition);
-			
-			theIterator.setNextTimestamp(aTimestamp);
-			theIterators[i] = new EventIterator(theIterator);
 		}
+
+		// Ensure all futures have completed
+		for (Future<EventIterator> theFuture : theFutures) theFuture.get();
 		
 		itsMergeIterator = new MergeIterator(theIterators);
 	}

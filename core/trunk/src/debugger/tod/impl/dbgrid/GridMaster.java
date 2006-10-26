@@ -186,6 +186,11 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		return theId;
 	}
 	
+	public synchronized void nodeException(NodeException aException) 
+	{
+		itsDispatcher.nodeException(aException);
+	}
+	
 	/**
 	 * Returns the currently registered nodes.
 	 */

@@ -56,7 +56,7 @@ public class Monitor
 				{
 					try
 					{
-						print(false);
+						print(true);
 						sleep(10000);
 					}
 					catch (InterruptedException e)
@@ -288,7 +288,7 @@ public class Monitor
 			theBuilder.append(" [");
 			theBuilder.append(individualValues.size());
 			theBuilder.append("]");
-			if (aIndividual)
+			if (aIndividual && individualValues.size() > 1)
 			{
 				theBuilder.append('\n');
 				for (IndividualProbeValue theValue : individualValues) 

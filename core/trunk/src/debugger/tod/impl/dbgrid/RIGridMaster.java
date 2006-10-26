@@ -11,6 +11,7 @@ import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
 import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
+import tod.impl.dbgrid.dbnode.DatabaseNode;
 import tod.impl.dbgrid.dbnode.NodeRejectedException;
 import tod.impl.dbgrid.dbnode.RIDatabaseNode;
 import tod.impl.dbgrid.queries.EventCondition;
@@ -37,6 +38,11 @@ public interface RIGridMaster extends Remote
 	 * @return The id assigned to the node.
 	 */
 	public int registerNode(RIDatabaseNode aNode, String aHostname) throws RemoteException, NodeRejectedException;
+	
+	/**
+	 * {@link DatabaseNode}s call this method when they encounter an exception.
+	 */
+	public void nodeException(NodeException aException) throws RemoteException;
 	
 
 	/**

@@ -83,30 +83,18 @@ public class GridQuery
 		
 		int theSlots = 1000;
 		
-		benchCounts(theBrowser, theFirstTimestamp, theLastTimestamp, theSlots, true);
 		benchCounts(theBrowser, theFirstTimestamp, theLastTimestamp, theSlots, false);
+		benchCounts(theBrowser, theFirstTimestamp, theLastTimestamp, theSlots, true);
 		
 		System.out.println("\nPerforming count benchmarks --- pass #2\n");
 		
-		long[] theMergeCounts = benchCounts(theBrowser, theFirstTimestamp, theLastTimestamp, theSlots, true);
 		long[] theFastCounts = benchCounts(theBrowser, theFirstTimestamp, theLastTimestamp, theSlots, false);
+		long[] theMergeCounts = benchCounts(theBrowser, theFirstTimestamp, theLastTimestamp, theSlots, true);
 		
 		printDistortion(theMergeCounts, theFastCounts);
-
 		
 		benchCursors(theBrowser, 1, 1000);
 		benchCursors(theBrowser, 1000, 10);
-		
-		System.out.println("Bench look up valid fields");
-		BenchResults theQueryTime = BenchBase.benchmark(new Runnable()
-		{
-			public void run()
-			{
-				createValidFields(theBrowser, 1000);
-			}
-		});
-		
-		System.out.println(theQueryTime);
 		
 		System.exit(0);
 	}

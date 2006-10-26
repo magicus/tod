@@ -11,6 +11,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import tod.DebugFlags;
 import tod.agent.AgentConfig;
 import tod.agent.AgentReady;
 import tod.agent.AgentUtils;
@@ -25,9 +26,6 @@ import tod.core.EventInterpreter.ThreadData;
  */
 public class SocketCollector extends HighLevelCollector<SocketCollector.SocketThreadData>
 {
-	private static final boolean IGNORE_ALL = false;
-	private static final boolean DO_SEND = true;
-	
 	private List<SocketThreadData> itsThreadDataList = new ArrayList<SocketThreadData>();
 	private NakedLinkedList<SocketThreadData> itsLRUList = new NakedLinkedList<SocketThreadData>();
 	private Sender itsSender;
@@ -71,7 +69,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			boolean aHasThrown,
 			Object aResult)
 	{
-		if (IGNORE_ALL) return;
+		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -108,7 +106,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			int aOperationBytecodeIndex,
 			Object aException)
 	{
-		if (IGNORE_ALL) return;
+		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -145,7 +143,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			Object aTarget, 
 			Object aValue)
 	{
-		if (IGNORE_ALL) return;
+		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -183,7 +181,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			Object aTarget,
 			Object[] aArguments)
 	{
-		if (IGNORE_ALL) return;
+		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -220,7 +218,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			int aVariableId,
 			Object aValue)
 	{
-		if (IGNORE_ALL) return;
+		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -257,7 +255,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			Object aTarget, 
 			Object[] aArguments)
 	{
-		if (IGNORE_ALL) return;
+		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -292,7 +290,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			Output aOutput,
 			byte[] aData)
 	{
-		if (IGNORE_ALL) return;
+		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -328,7 +326,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			Object aTarget,
 			Object[] aArguments)
 	{
-		if (IGNORE_ALL) return;
+		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -358,7 +356,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 	@Override
 	protected void thread(SocketThreadData aThread, long aJVMThreadId, String aName)
 	{
-		if (IGNORE_ALL) return;
+		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -453,7 +451,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 				itsDataOutputStream.flush();
 				int theRequestedSize = itsBuffer.size();
 				if (itsLog.size() + theRequestedSize > BUFFER_SIZE) send();
-				if (DO_SEND) itsBuffer.writeTo(itsLog);
+				if (! DebugFlags.DISABLE_EVENT_SEND) itsBuffer.writeTo(itsLog);
 				itsBuffer.reset();
 			}
 			catch (IOException e)

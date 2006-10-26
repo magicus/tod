@@ -20,10 +20,11 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Comparator;
 import java.util.Iterator;
 
+import tod.DebugFlags;
 import tod.core.config.GeneralConfig;
-import tod.impl.dbgrid.DebugFlags;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
+import tod.impl.dbgrid.NodeException;
 import tod.impl.dbgrid.RIGridMaster;
 import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 import tod.impl.dbgrid.messages.GridEvent;
@@ -83,7 +84,7 @@ implements RIDatabaseNode
 	private long itsDroppedEvents = 0;
 	private long itsUnorderedEvents = 0;
 	
-	private EventReorderingBuffer itsReorderingBuffer = new EventReorderingBuffer();
+	private EventReorderingBuffer itsReorderingBuffer = new EventReorderingBuffer(this);
 	
 	private MasterConnection itsMasterConnection;
 	
@@ -262,20 +263,26 @@ implements RIDatabaseNode
 	}
 
 	
+	public void eventDropped()
+	{
+//		System.err.println("****************** WARNING ********************\n" +
+//		"**********************************************\n" +
+////throw new RuntimeException(
+//		"Out of order event: "+theTimestamp+"/"+itsLastProcessedTimestamp
+//		+" (#"+itsProcessedEventsCount+")"
+//		+" (buffer size: "+itsEventBuffer.getCapacity()+")");
+		
+		itsDroppedEvents++;
+		
+		
+	}
+	
 	private void processEvent(GridEvent aEvent)
 	{
 		long theTimestamp = aEvent.getTimestamp();
 		if (theTimestamp < itsLastProcessedTimestamp)
 		{
-//			System.err.println("****************** WARNING ********************\n" +
-//					"**********************************************\n" +
-////			throw new RuntimeException(
-//					"Out of order event: "+theTimestamp+"/"+itsLastProcessedTimestamp
-//					+" (#"+itsProcessedEventsCount+")"
-//					+" (buffer size: "+itsEventBuffer.getCapacity()+")");
-			
-			itsDroppedEvents++;
-			
+			eventDropped();
 			return;
 		}
 		
@@ -371,13 +378,23 @@ implements RIDatabaseNode
 							
 					}
 				}
+				
+				if (! itsFlushed) flush();
+				System.exit(0);
 			}
-			catch (IOException e)
+			catch (Throwable e)
 			{
-				throw new RuntimeException(e);
+				try
+				{
+					itsMaster.nodeException(new NodeException(getNodeId(), e));
+				}
+				catch (RemoteException e1)
+				{
+					throw new RuntimeException(e1);
+				}
+				e.printStackTrace();
+				System.exit(1);
 			}
-			
-			if (! itsFlushed) flush();
 		}
 		
 		private void pushEvents(DataInputStream aStream) throws IOException

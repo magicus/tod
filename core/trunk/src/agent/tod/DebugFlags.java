@@ -1,9 +1,9 @@
 /*
  * Created on Oct 24, 2006
  */
-package tod.impl.dbgrid;
+package tod;
 
-import tod.impl.dbgrid.dbnode.file.HardPagedFile;
+import tod.core.EventInterpreter;
 
 /**
  * This class groups severla flags that are used to
@@ -47,13 +47,30 @@ public class DebugFlags
 	/**
 	 * Disables asynchronous file writes in {@link HardPagedFile}
 	 */
-	public static final boolean DISABLE_ASYNC_WRITES = false;
+	public static final boolean DISABLE_ASYNC_WRITES = true;
 	
 	/**
 	 * if true, pages are not explicitly marked as used when accessed.
 	 */
 	public static final boolean DISABLE_USE_PAGES = false;
-	
 
+	/**
+	 * Causes the {@link EventInterpreter} to ignore all events
+	 */
+	public static final boolean DISABLE_INTERPRETER = false;
 
+	/**
+	 * If true, the {@link EventInterpreter} prints all the events it receives
+	 */
+	public static final boolean EVENT_INTERPRETER_LOG = false;
+
+	/**
+	 * Causes the high level collectors to ignore all events
+	 */
+	public static final boolean COLLECTOR_IGNORE_ALL = false;
+
+	/**
+	 * Causes the socket collector to not send events
+	 */
+	public static final boolean DISABLE_EVENT_SEND = false;
 }

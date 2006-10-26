@@ -3,10 +3,10 @@
  */
 package tod.impl.dbgrid.messages;
 
+import tod.DebugFlags;
 import tod.core.database.event.ILogEvent;
 import tod.impl.common.event.BehaviorCallEvent;
 import tod.impl.common.event.Event;
-import tod.impl.dbgrid.DebugFlags;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.dbnode.Indexes;

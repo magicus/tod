@@ -21,6 +21,13 @@ public class EventReorderingBuffer
 	private RingBuffer<GridEvent> itsBuffer = new RingBuffer<GridEvent>(DebuggerGridConfig.DB_EVENT_BUFFER_SIZE);
 	private OutOfOrderBuffer itsOutOfOrderBuffer = new OutOfOrderBuffer();
 	
+	private DatabaseNode itsDatabaseNode;
+	
+	public EventReorderingBuffer(DatabaseNode aDatabaseNode)
+	{
+		itsDatabaseNode = aDatabaseNode;
+	}
+
 	/**
 	 * Pushes an incoming event into this buffer.
 	 */
@@ -84,7 +91,7 @@ public class EventReorderingBuffer
 	 * Buffer for events that arrived late
 	 * @author gpothier
 	 */
-	private static class OutOfOrderBuffer
+	private class OutOfOrderBuffer
 	{
 		private List<PerThreadBuffer> itsBuffers = new ArrayList<PerThreadBuffer>();
 		
@@ -146,7 +153,7 @@ public class EventReorderingBuffer
 		}
 	}
 	
-	private static class PerThreadBuffer extends RingBuffer<GridEvent>
+	private class PerThreadBuffer extends RingBuffer<GridEvent>
 	{
 		private long itsLastAdded;
 		
@@ -159,7 +166,10 @@ public class EventReorderingBuffer
 		{
 			long theTimestamp = aEvent.getTimestamp();
 			if (theTimestamp < itsLastAdded) 
-				throw new RuntimeException("Out of order events from same thread");
+			{
+				itsDatabaseNode.eventDropped();
+				return;
+			}
 			
 			itsLastAdded = theTimestamp;
 			super.add(aEvent);

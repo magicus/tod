@@ -7,9 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.impl.dbgrid.GridMaster;
-import tod.impl.dbgrid.aggregator.Future;
+import tod.impl.dbgrid.NodeException;
 import tod.impl.dbgrid.dbnode.RIDatabaseNode;
 import tod.impl.dbgrid.messages.GridEvent;
+import zz.utils.Future;
 
 public class EventDispatcher
 {
@@ -20,9 +21,22 @@ public class EventDispatcher
 	
 	private boolean itsFlushed = false;
 	
+	/**
+	 * This field is set when the master detects an exception in a node.
+	 */
+	private NodeException itsNodeException;
+	
 	public EventDispatcher(GridMaster aMaster)
 	{
 		itsMaster = aMaster;
+	}
+	
+	/**
+	 * Sets the node exception. It will be reported at the next client method call 
+	 */
+	public void nodeException(NodeException aException)
+	{
+		itsNodeException = aException;
 	}
 	
 	public void addNode(DBNodeProxy aProxy) 
@@ -35,6 +49,13 @@ public class EventDispatcher
 	 */
 	public void dispatchEvent(GridEvent aEvent)
 	{
+		if (itsNodeException != null) 
+		{
+			NodeException theException = itsNodeException;
+			itsNodeException = null;
+			throw theException;
+		}
+		
 		DBNodeProxy theProxy = itsNodes.get(itsCurrentNode);
 		theProxy.pushEvent(aEvent);
 		
