@@ -80,6 +80,16 @@ public class NativeCollector extends HighLevelCollector<NativeCollector.NativeTh
 	{
 		fieldWrite(aThread.getId(), aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aFieldId, aTarget, aValue);
 	}
+	
+	
+	@Override
+	protected void arrayWrite(NativeThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
+			int aOperationBytecodeIndex, Object aTarget, int aIndex, Object aValue)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+
 
 	@Override
 	protected void instantiation(NativeThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,

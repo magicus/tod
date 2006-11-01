@@ -8,6 +8,7 @@ import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.IHostInfo;
 import tod.impl.common.EventCollector;
 import tod.impl.dbgrid.dispatcher.EventDispatcher;
+import tod.impl.dbgrid.messages.GridArrayWriteEvent;
 import tod.impl.dbgrid.messages.GridBehaviorCallEvent;
 import tod.impl.dbgrid.messages.GridBehaviorExitEvent;
 import tod.impl.dbgrid.messages.GridEvent;
@@ -44,6 +45,7 @@ public class GridEventCollector extends EventCollector
 	private final GridBehaviorExitEvent itsExitEvent = new GridBehaviorExitEvent();
 	private final GridExceptionGeneratedEvent itsExceptionEvent = new GridExceptionGeneratedEvent();
 	private final GridFieldWriteEvent itsFieldWriteEvent = new GridFieldWriteEvent();
+	private final GridArrayWriteEvent itsArrayWriteEvent = new GridArrayWriteEvent();
 	private final GridOutputEvent itsOutputEvent = new GridOutputEvent();
 	private final GridVariableWriteEvent itsVariableWriteEvent = new GridVariableWriteEvent();
 	
@@ -149,6 +151,30 @@ public class GridEventCollector extends EventCollector
 				aValue);
 		
 		dispatch(itsFieldWriteEvent);
+	}
+	
+	public void arrayWrite(
+			int aThreadId,
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp,
+			int aOperationBytecodeIndex,
+			Object aTarget, 
+			int aIndex, 
+			Object aValue)
+	{
+		itsArrayWriteEvent.set(
+				getHost().getId(),
+				aThreadId, 
+				aDepth,
+				aTimestamp,
+				aOperationBytecodeIndex,
+				aParentTimestamp,
+				aTarget,
+				aIndex,
+				aValue);
+		
+		dispatch(itsArrayWriteEvent);
 	}
 
 

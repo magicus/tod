@@ -11,6 +11,7 @@ import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.StdIndexSet;
+import tod.impl.dbgrid.queries.ArrayIndexCondition;
 import tod.impl.dbgrid.queries.BehaviorCondition;
 import tod.impl.dbgrid.queries.FieldCondition;
 import tod.impl.dbgrid.queries.ObjectCondition;
@@ -219,6 +220,14 @@ public abstract class GridEvent extends GridMessage
 	 * Whether this event matches a {@link FieldCondition}
 	 */
 	public boolean matchFieldCondition(int aFieldId)
+	{
+		return false;
+	}
+	
+	/**
+	 * Whether this event matches a {@link ArrayIndexCondition}
+	 */
+	public boolean matchIndexCondition(int aIndex)
 	{
 		return false;
 	}

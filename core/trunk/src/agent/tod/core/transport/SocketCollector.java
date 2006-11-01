@@ -167,6 +167,44 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
         	throw new RuntimeException(e);
         }
 	}
+	
+	
+
+	@Override
+	protected void arrayWrite(
+			SocketThreadData aThread,
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp,
+			int aOperationBytecodeIndex,
+			Object aTarget,
+			int aIndex, 
+			Object aValue)
+	{
+		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
+		if (aThread.isSending()) return;
+        try
+        {
+        	DataOutputStream theStream = aThread.packetStart(aTimestamp);
+        	
+        	CollectorPacketWriter.sendArrayWrite(
+        			theStream, 
+        			aThread.getId(),
+        			aParentTimestamp,
+        			aDepth,
+        			aTimestamp,
+        			aOperationBytecodeIndex,
+        			aTarget,
+        			aIndex,
+        			aValue);
+        	
+            aThread.packetEnd();
+        }
+        catch (IOException e)
+        {
+        	throw new RuntimeException(e);
+        }
+	}
 
 	@Override
 	protected void instantiation(

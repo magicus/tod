@@ -45,6 +45,12 @@ public class DummyCollector extends HighLevelCollector<ThreadData>
 			int aOperationBytecodeIndex, int aFieldId, Object aTarget, Object aValue)
 	{
 	}
+	
+	@Override
+	protected void arrayWrite(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
+			int aOperationBytecodeIndex, Object aTarget, int aIndex, Object aValue)
+	{
+	}
 
 	@Override
 	protected void instantiation(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,

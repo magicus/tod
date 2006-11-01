@@ -290,6 +290,41 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				aValue);
 	}
 	
+	public void logArrayWrite(
+			int aOperationBytecodeIndex, 
+			Object aTarget,
+			int aIndex,
+			Object aValue)
+	{
+		if (DISABLE_INTERPRETER) return;
+		long theTimestamp = AgentUtils.timestamp_fast();
+		T theThread = getThreadData();
+		theTimestamp = theThread.transformTimestamp(theTimestamp);
+		
+		FrameInfo theFrame = theThread.currentFrame();
+		
+		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
+				"logArrayWrite(%d, %d, %s, %d, %s)\n thread: %d, depth: %d\n frame: %s",
+				theTimestamp,
+				aOperationBytecodeIndex,
+				getObjectId(aTarget),
+				aIndex,
+				getObjectId(aValue),
+				theThread.getId(),
+				theThread.getCurrentDepth(),
+				theFrame));
+		
+		itsCollector.arrayWrite(
+				theThread,
+				theFrame.parentTimestamp,
+				theThread.getCurrentDepth(),
+				theTimestamp,
+				aOperationBytecodeIndex,
+				aTarget,
+				aIndex,
+				aValue);
+	}
+	
 	public void logLocalVariableWrite(
 			int aOperationBytecodeIndex,
 			int aVariableId,

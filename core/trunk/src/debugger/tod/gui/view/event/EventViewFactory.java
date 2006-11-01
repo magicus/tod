@@ -4,6 +4,7 @@
 package tod.gui.view.event;
 
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.IArrayWriteEvent;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.IInstantiationEvent;
@@ -41,6 +42,11 @@ public class EventViewFactory
 		{
 			IFieldWriteEvent theEvent = (IFieldWriteEvent) aEvent;
 			theView = new FieldWriteEventView (aGUIManager, aLog, theEvent);
+		}
+		else if (aEvent instanceof IArrayWriteEvent)
+		{
+			IArrayWriteEvent theEvent = (IArrayWriteEvent) aEvent;
+			theView = new ArrayWriteEventView(aGUIManager, aLog, theEvent);
 		}
 		
 		if (theView != null) theView.init();

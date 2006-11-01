@@ -11,6 +11,7 @@ import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.ThreadInfo;
 import tod.impl.common.EventCollector;
+import tod.impl.common.event.ArrayWriteEvent;
 import tod.impl.common.event.BehaviorCallEvent;
 import tod.impl.common.event.BehaviorExitEvent;
 import tod.impl.common.event.ConstructorChainingEvent;
@@ -195,6 +196,37 @@ public class LocalCollector extends EventCollector
 
 		theEvent.setField(getField(aFieldId));
 		theEvent.setTarget(aTarget);
+		theEvent.setValue(aValue);
+		
+		addEvent(theEvent);
+	}
+	
+	public void arrayWrite(
+			int aThreadId, 
+			long aParentTimestamp, 
+			short aDepth, 
+			long aTimestamp,
+			int aOperationBytecodeIndex,
+			Object aTarget, 
+			int aIndex, 
+			Object aValue)
+	{
+		if (LOG) System.out.println(String.format(
+				"arrayWrite   (thread: %d, p.ts: %s, depth: %d, ts: %s, target: %s, ind: %d, val: %s",
+				aThreadId,
+				AgentUtils.formatTimestamp(aParentTimestamp),
+				aDepth,
+				AgentUtils.formatTimestamp(aTimestamp),
+				aTarget,
+				aIndex,
+				aValue));
+		
+		ArrayWriteEvent theEvent = new ArrayWriteEvent();
+		LocalThreadInfo theThread = getThread(aThreadId);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex);
+
+		theEvent.setTarget(aTarget);
+		theEvent.setIndex(aIndex);
 		theEvent.setValue(aValue);
 		
 		addEvent(theEvent);

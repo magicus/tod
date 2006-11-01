@@ -75,6 +75,11 @@ public class GridReplay
 		{
 		}
 
+		public void arrayWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
+				int aOperationBytecodeIndex, Object aTarget, int aIndex, Object aValue)
+		{
+		}
+
 		public void instantiation(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
 				int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
 				Object aTarget, Object[] aArguments)

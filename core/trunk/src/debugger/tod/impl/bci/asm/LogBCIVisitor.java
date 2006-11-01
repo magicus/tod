@@ -28,6 +28,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 	private static final boolean TRACE_VAR = true;
 	private static final boolean TRACE_CALL = true;
 	private static final boolean TRACE_ENVELOPPE = true;
+	private static final boolean TRACE_ARRAY = true;
 	public static final boolean TRACE_ENTRY = true;
 	public static final boolean TRACE_EXIT = true;
 	
@@ -247,7 +248,14 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		@Override
 		public void visitInsn(int aOpcode)
 		{
-			if (itsTrace && TRACE_ENVELOPPE) itsInstrumenter.doReturn(aOpcode);
+			if (aOpcode >= IRETURN && aOpcode <= RETURN && itsTrace && TRACE_ENVELOPPE)
+			{
+				itsInstrumenter.doReturn(aOpcode);
+			}
+			else if (aOpcode >= IASTORE && aOpcode <= SASTORE && itsTrace && TRACE_ARRAY)
+			{
+				itsInstrumenter.arrayWrite(aOpcode);
+			}
 			else super.visitInsn(aOpcode);
 		}
 		

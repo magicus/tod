@@ -77,6 +77,16 @@ public abstract class HighLevelCollector<T extends ThreadData>
 			Object aTarget,
 			Object aValue);
 	
+	protected abstract void arrayWrite(
+			T aThread, 
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp, 
+			int aOperationBytecodeIndex,
+			Object aTarget,
+			int aIndex,
+			Object aValue);
+	
 	protected abstract void localWrite(
 			T aThread, 
 			long aParentTimestamp,

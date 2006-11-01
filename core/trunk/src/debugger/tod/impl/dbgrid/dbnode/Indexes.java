@@ -24,6 +24,7 @@ public class Indexes
 	public final RoleIndexSet behaviorIndex;
 	public final StdIndexSet fieldIndex;
 	public final StdIndexSet variableIndex;
+	public final StdIndexSet indexIndex;
 	public final ObjectIndexSet objectIndex;
 	
 	public Indexes(HardPagedFile aFile)
@@ -36,6 +37,7 @@ public class Indexes
 		behaviorIndex = new RoleIndexSet("behavior", aFile, STRUCTURE_BEHAVIOR_COUNT+1);
 		fieldIndex = new StdIndexSet("field", aFile, STRUCTURE_FIELD_COUNT+1);
 		variableIndex = new StdIndexSet("variable", aFile, STRUCTURE_VAR_COUNT+1);
+		indexIndex = new StdIndexSet("index", aFile, STRUCTURE_ARRAY_INDEX_COUNT+1);
 		objectIndex = new ObjectIndexSet("object", aFile, STRUCTURE_OBJECT_COUNT+1);
 	}
 }

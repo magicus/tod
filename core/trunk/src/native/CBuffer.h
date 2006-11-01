@@ -12,36 +12,37 @@
 #define MessageType_BEHAVIOR_EXIT		3
 #define MessageType_EXCEPTION			4
 #define MessageType_FIELD_WRITE			5
-#define MessageType_LOCAL_VARIABLE_WRITE	6
-#define MessageType_OUTPUT			7
+#define MessageType_ARRAY_WRITE			6
+#define MessageType_LOCAL_VARIABLE_WRITE	7
+#define MessageType_OUTPUT			8
 	
 //Arguments
-#define MessageType_OBJECT_ARRAY		8
-#define MessageType_SIMPLE_OBJECT		9
-#define MessageType_NONE			10
+#define MessageType_OBJECT_ARRAY		9
+#define MessageType_SIMPLE_OBJECT		10
+#define MessageType_NONE			11
 	
 // Argument values
-#define MessageType_NULL			11
-#define MessageType_BOOLEAN			12
-#define MessageType_BYTE			13
-#define MessageType_CHAR			14
-#define MessageType_SHORT			15
-#define MessageType_INT				16
-#define MessageType_LONG			17
-#define MessageType_FLOAT			18
-#define MessageType_DOUBLE			19
-#define MessageType_STRING			20
-#define MessageType_OBJECT_UID			21
-#define MessageType_OBJECT_HASH			22
+#define MessageType_NULL			12
+#define MessageType_BOOLEAN			13
+#define MessageType_BYTE			14
+#define MessageType_CHAR			15
+#define MessageType_SHORT			16
+#define MessageType_INT				17
+#define MessageType_LONG			18
+#define MessageType_FLOAT			19
+#define MessageType_DOUBLE			20
+#define MessageType_STRING			21
+#define MessageType_OBJECT_UID			22
+#define MessageType_OBJECT_HASH			23
 
 // Registering
-#define MessageType_REGISTER_CLASS		23
-#define MessageType_REGISTER_BEHAVIOR		24
-#define MessageType_REGISTER_FIELD		25
-#define MessageType_REGISTER_FILE		26
-#define MessageType_REGISTER_THREAD		27
-#define MessageType_REGISTER_LOCAL_VARIABLE	28
-#define MessageType_REGISTER_BEHAVIOR_ATTRIBUTES	29
+#define MessageType_REGISTER_CLASS		24
+#define MessageType_REGISTER_BEHAVIOR		25
+#define MessageType_REGISTER_FIELD		26
+#define MessageType_REGISTER_FILE		27
+#define MessageType_REGISTER_THREAD		28
+#define MessageType_REGISTER_LOCAL_VARIABLE	29
+#define MessageType_REGISTER_BEHAVIOR_ATTRIBUTES	30
 
 struct CachedClasses
 {

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.core.database.event.EventUtils;
+import tod.core.database.event.IArrayWriteEvent;
 import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.IConstructorChainingEvent;
 import tod.core.database.event.IExceptionGeneratedEvent;
@@ -56,6 +57,8 @@ public class CFlowTreeBuilder
 				theNodes.add(theNode);
 				theNode.checkValid();
 			}
+			
+			if (theNodes.size() > 1000) break;
 		}		
 		
 		return theNodes;
@@ -67,6 +70,11 @@ public class CFlowTreeBuilder
 		{
 			IFieldWriteEvent theEvent = (IFieldWriteEvent) aEvent;
 			return new FieldWriteNode(itsView, theEvent);
+		}
+		else if (aEvent instanceof IArrayWriteEvent)
+		{
+			IArrayWriteEvent theEvent = (IArrayWriteEvent) aEvent;
+			return new ArrayWriteNode(itsView, theEvent);
 		}
 		else if (aEvent instanceof ILocalVariableWriteEvent)
 		{

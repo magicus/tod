@@ -65,6 +65,16 @@ public interface ILogCollector
 			Object aTarget,
 			Object aValue);
 	
+	public void arrayWrite(
+			int aThreadId, 
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp, 
+			int aOperationBytecodeIndex,
+			Object aTarget,
+			int aIndex,
+			Object aValue);
+	
 	public void localWrite(
 			int aThreadId, 
 			long aParentTimestamp,

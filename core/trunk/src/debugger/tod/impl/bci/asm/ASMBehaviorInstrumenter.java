@@ -128,19 +128,15 @@ public class ASMBehaviorInstrumenter implements Opcodes
 
 	public void doReturn(int aOpcode)
 	{
-		if (aOpcode >= IRETURN && aOpcode <= RETURN) 
-		{
-			// Store location of this return into the variable
-			Label l = new Label();
-			mv.visitLabel(l);
-			int theBytecodeIndex = l.getOffset();
-			
-			BCIUtils.pushInt(mv, theBytecodeIndex);
-			mv.visitVarInsn(ISTORE, itsReturnLocationVar);
-			
-			mv.visitJumpInsn(GOTO, itsReturnHookLabel);
-		}
-		else mv.visitInsn(aOpcode);
+		// Store location of this return into the variable
+		Label l = new Label();
+		mv.visitLabel(l);
+		int theBytecodeIndex = l.getOffset();
+		
+		BCIUtils.pushInt(mv, theBytecodeIndex);
+		mv.visitVarInsn(ISTORE, itsReturnLocationVar);
+		
+		mv.visitJumpInsn(GOTO, itsReturnHookLabel);
 	}
 	
 	public void behaviorEnter(BehaviorCallType aCallType)
@@ -339,6 +335,51 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				BCIUtils.getType(Type.INT), 
 				aVar);
 	}
+
+	public void arrayWrite(int aOpcode)
+	{
+		int theSort = BCIUtils.getSort(aOpcode);
+		Type theType = BCIUtils.getType(theSort);
+		
+		Label l = new Label();
+		mv.visitLabel(l);
+		int theBytecodeIndex = l.getOffset();
+
+		// :: array ref, index, value
+		
+		int theCurrentVar = itsFirstFreeVar;
+		int theValueVar;
+		int theIndexVar;
+		int theTargetVar;
+		
+		theTargetVar = theCurrentVar++;
+		theIndexVar = theCurrentVar++;
+		theValueVar = theCurrentVar++;
+		
+		// Store parameters
+		
+		mv.visitVarInsn(theType.getOpcode(ISTORE), theValueVar);
+		mv.visitVarInsn(ISTORE, theIndexVar);
+		mv.visitVarInsn(ASTORE, theTargetVar);
+		
+		// Reload parameters
+		
+		mv.visitVarInsn(ALOAD, theTargetVar);
+		mv.visitVarInsn(ILOAD, theIndexVar);
+		mv.visitVarInsn(theType.getOpcode(ILOAD), theValueVar);
+	
+		// Perform store
+		mv.visitInsn(aOpcode);
+		
+		// Call log method (if no exception occurred)
+		invokeLogArrayWrite(
+				theBytecodeIndex, 
+				theTargetVar, 
+				theIndexVar, 
+				theType, 
+				theValueVar);
+	}
+	
 
 	/**
 	 * Pushes standard method log args onto the stack:
@@ -578,6 +619,44 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		mv.visitLabel(l);
 	}
 
+	public void invokeLogArrayWrite(
+			int aBytecodeIndex, 
+			int aTargetVar,
+			int aIndexVar,
+			Type theType,
+			int aValueVar)
+	{
+		Label l = new Label();
+		if (LogBCIVisitor.ENABLE_READY_CHECK)
+		{
+			mv.visitFieldInsn(GETSTATIC, Type.getInternalName(AgentReady.class), "READY", "Z");
+			mv.visitJumpInsn(IFEQ, l);
+		}
+		
+		pushStdLogArgs();
+		
+		// ->bytecode index
+		BCIUtils.pushInt(mv, aBytecodeIndex);
+		
+		// ->target
+		mv.visitVarInsn(ALOAD, aTargetVar);
+		
+		// ->index
+		mv.visitVarInsn(ILOAD, aIndexVar);
+		
+		// ->value
+		mv.visitVarInsn(theType.getOpcode(ILOAD), aValueVar);
+		BCIUtils.wrap(mv, theType);
+		
+		mv.visitMethodInsn(
+				INVOKEVIRTUAL, 
+				Type.getInternalName(EventInterpreter.class), 
+				"logArrayWrite", 
+		"(ILjava/lang/Object;ILjava/lang/Object;)V");
+		
+		mv.visitLabel(l);
+	}
+	
 	public void invokeLogLocalVariableWrite(
 			int aBytecodeIndex, 
 			int aVariableId,

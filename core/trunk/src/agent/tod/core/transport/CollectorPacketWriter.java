@@ -162,6 +162,24 @@ public class CollectorPacketWriter
 		sendValue(aStream, aValue);
 	}
 	
+	public static void sendArrayWrite(
+			DataOutputStream aStream,
+			int aThreadId,
+			long aParentTimestamp,
+			int aDepth,
+			long aTimestamp, 
+			int aOperationBytecodeIndex,
+			Object aTarget,
+			int aIndex,
+			Object aValue) throws IOException
+	{
+		sendStd(aStream, MessageType.ARRAY_WRITE, aThreadId, aParentTimestamp, aDepth, aTimestamp);
+		aStream.writeInt(aOperationBytecodeIndex);
+		sendValue(aStream, aTarget);
+		aStream.writeInt(aIndex);
+		sendValue(aStream, aValue);
+	}
+	
 	public static void sendLocalWrite(
 			DataOutputStream aStream,
 			int aThreadId, 

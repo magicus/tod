@@ -54,6 +54,10 @@ public class CollectorPacketReader
                 readFieldWrite(aStream, aCollector);
                 break;
                 
+			case ARRAY_WRITE:
+				readArrayWrite(aStream, aCollector);
+				break;
+				
 			case LOCAL_VARIABLE_WRITE:
 				readLocalWrite(aStream, aCollector);
 				break;
@@ -261,6 +265,19 @@ public class CollectorPacketReader
 				aStream.readInt(),
 				aStream.readInt(),
 				readValue(aStream, aCollector),
+				readValue(aStream, aCollector));
+	}
+	
+	public static void readArrayWrite(DataInputStream aStream, ILogCollector aCollector) throws IOException
+	{
+		aCollector.arrayWrite(
+				aStream.readInt(),
+				aStream.readLong(),
+				aStream.readShort(),
+				aStream.readLong(),
+				aStream.readInt(),
+				readValue(aStream, aCollector),
+				aStream.readInt(),
 				readValue(aStream, aCollector));
 	}
 	

@@ -94,7 +94,7 @@ public class GridQuery
 		printDistortion(theMergeCounts, theFastCounts);
 		
 		benchCursors(theBrowser, 1, 1000);
-		benchCursors(theBrowser, 1000, 10);
+		benchCursors(theBrowser, 1000, 100);
 		
 		System.exit(0);
 	}
@@ -201,6 +201,8 @@ public class GridQuery
 		final long theLastTimestamp = aBrowser.getLastTimestamp();
 		final long theTimeSpan = theLastTimestamp-theFirstTimestamp;
 		
+		final long[] theCount = new long[1];
+		
 		BenchResults theQueryTime = BenchBase.benchmark(new Runnable()
 		{
 			public void run()
@@ -216,7 +218,7 @@ public class GridQuery
 					long theTimestamp = theRandom.nextLong();
 					theTimestamp = theFirstTimestamp + theTimestamp % theTimeSpan; 
 					
-					benchCursor(aBrowser, theFilter, theTimestamp, aBulk);
+					theCount[0] += benchCursor(aBrowser, theFilter, theTimestamp, aBulk);
 					System.out.println(i);
 				}
 //				
@@ -229,7 +231,7 @@ public class GridQuery
 		
 		System.out.println(theQueryTime);
 		float theQpS = 1000f * aCount / theQueryTime.totalTime;
-		System.out.println("Queries/s: "+theQpS);
+		System.out.println("Queries/s: "+theQpS+", retrieved events: "+theCount[0]);
 		
 	}
 	
@@ -301,7 +303,7 @@ public class GridQuery
 		benchCursor(aBrowser, theFilter, aTimestamp, aCount);
 	}
 	
-	private static void benchCursor(
+	private static int benchCursor(
 			ILogBrowser aBrowser,
 			IEventFilter aFilter,
 			long aTimestamp,
@@ -318,6 +320,7 @@ public class GridQuery
 		}
 		
 //		if (i < aCount) System.out.println(i);
+		return i;
 	}
 	
 	/**

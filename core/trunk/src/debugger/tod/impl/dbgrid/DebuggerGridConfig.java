@@ -118,6 +118,11 @@ public class DebuggerGridConfig
 	 * Maximum number of objects 
 	 */
 	public static final int STRUCTURE_OBJECT_COUNT = 2000000;
+	
+	/**
+	 * Maximum number of array indexes.
+	 */
+	public static final int STRUCTURE_ARRAY_INDEX_COUNT = 1000000;
 
 
 	/**

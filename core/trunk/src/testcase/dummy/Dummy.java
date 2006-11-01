@@ -11,8 +11,6 @@ public class Dummy
 {
 	public static void main(String[] args)
 	{
-		Object theObject = new Object();
-		
 		int j;
 		
 		long t0 = System.currentTimeMillis();
@@ -21,11 +19,11 @@ public class Dummy
 		for(int i=0;i<theObjects.length;i++) theObjects[i] = new Object();
 		
 		Random theRandom = new Random(0);
-		for(int i=0;i<1000000;i++)
+		for(int i=0;i<10000000;i++)
 		{
 			j = i*2;
 			foo(theObjects[theRandom.nextInt(theObjects.length)], j);
-			if (i % 100000 == 0) System.out.println(i);
+			if (i % 1000000 == 0) System.out.println(i);
 		}
 		
 		long t1 = System.currentTimeMillis();

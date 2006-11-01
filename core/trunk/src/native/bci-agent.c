@@ -14,6 +14,7 @@
 #include <jvmti.h>
 
 #include "utils.h"
+#include "md5.h"
 
 // Build: g++ -shared -o ../../libbci-agent.so -I $JAVA_HOME/include/ -I $JAVA_HOME/include/linux/ bci-agent.c
 
@@ -65,8 +66,6 @@ static long oidCurrent = 1;
 
 // Mutex for class load callback
 static pthread_mutex_t loadMutex = PTHREAD_MUTEX_INITIALIZER;
-
-static char buffer[10000];
 
 static void writeByte(int i)
 {
@@ -273,16 +272,27 @@ cbClassFileLoadHook(
 
 	if (cfgVerbose) printf("Loading (hook) %s\n", name);
 	
+	// Compute MD5 sum
+	char md5Buffer[16];
+	char md5String[33];
+	md5_buffer((const char *) class_data, class_data_len, md5Buffer);
+	md5_sig_to_string(md5Buffer, md5String, 33);
+	if (cfgVerbose) printf("MD5 sum: %s\n", md5String);
+	
+	// Compute cache file name	
+	char cacheFileName[2000];
+	cacheFileName[0] = 0;
+	if (cfgCachePath != NULL)
+	{
+		snprintf(cacheFileName, sizeof(cacheFileName), "%s/%s.%s.class", cfgCachePath, name, md5String);
+	}
+
 	// Check if we have a cached version
 	if (cfgCachePath != NULL)
 	{
-		char buffer[2000];
-		
-		snprintf(buffer, sizeof(buffer), "%s/%s.class", cfgCachePath, name);
-		
 		// Check if length is 0
 		struct stat stbuf;
-		if (stat(buffer, &stbuf) == 0)
+		if (stat(cacheFileName, &stbuf) == 0)
 		{
 			int len = stbuf.st_size;
 
@@ -292,7 +302,7 @@ cbClassFileLoadHook(
 			}
 			else
 			{
-				FILE* f = fopen(buffer, "rb");
+				FILE* f = fopen(cacheFileName, "rb");
 				if (f == NULL) fatal_error("Could not open file");
 				
 				jvmtiError err = jvmti->Allocate(len, new_class_data);
@@ -335,10 +345,9 @@ cbClassFileLoadHook(
 		// Cache class
 		if (cfgCachePath != NULL)
 		{
-			snprintf(buffer, sizeof(buffer), "%s/%s.class", cfgCachePath, name);
-			if (cfgVerbose) printf("Caching %s\n", buffer);
-			if (! mkdirs(buffer)) fatal_ioerror("Error in mkdirs");
-			FILE* f = fopen(buffer, "wb");
+			if (cfgVerbose) printf("Caching %s\n", cacheFileName);
+			if (! mkdirs(cacheFileName)) fatal_ioerror("Error in mkdirs");
+			FILE* f = fopen(cacheFileName, "wb");
 			if (f == NULL) fatal_ioerror("Opening cache class file for output");
 			if (fwrite(*new_class_data, 1, len, f) < len) fatal_ioerror("Writing cached class");
 			fflush(f);
@@ -349,10 +358,9 @@ cbClassFileLoadHook(
 	else if (cfgCachePath != NULL)
 	{
 		// Mark class as not instrumented.
-		snprintf(buffer, sizeof(buffer), "%s/%s.class", cfgCachePath, name);
-		if (cfgVerbose) printf("Caching empty: %s\n", buffer);
-		if (! mkdirs(buffer)) fatal_ioerror("Error in mkdirs");
-		FILE* f = fopen(buffer, "wb");
+		if (cfgVerbose) printf("Caching empty: %s\n", cacheFileName);
+		if (! mkdirs(cacheFileName)) fatal_ioerror("Error in mkdirs");
+		FILE* f = fopen(cacheFileName, "wb");
 		if (f == NULL) fatal_ioerror("Opening cache class file for output");
 		fflush(f);
 		fclose(f);
