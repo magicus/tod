@@ -3,8 +3,8 @@
  */
 package tod.impl.dbgrid.queries;
 
-import java.util.Iterator;
 
+import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.messages.GridEvent;
@@ -25,7 +25,7 @@ public class ArrayIndexCondition extends SimpleCondition
 	}
 
 	@Override
-	public Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
+	public BidiIterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
 		return aIndexes.indexIndex.getIndex(itsIndex).getTupleIterator(aTimestamp);
 	}

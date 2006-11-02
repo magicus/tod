@@ -16,7 +16,7 @@ public class TupleFinder
 			int aPagePointerSize,
 			TupleCodec<T> aTupleCodec)
 	{
-		return (aPageSize - aPagePointerSize) / aTupleCodec.getTupleSize();
+		return (aPageSize - 2*aPagePointerSize) / aTupleCodec.getTupleSize();
 	}
 	
 	/**

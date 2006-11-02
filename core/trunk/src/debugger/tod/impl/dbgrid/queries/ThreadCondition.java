@@ -3,8 +3,8 @@
  */
 package tod.impl.dbgrid.queries;
 
-import java.util.Iterator;
 
+import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.dbnode.EventsCounter;
 import tod.impl.dbgrid.dbnode.HierarchicalIndex;
 import tod.impl.dbgrid.dbnode.Indexes;
@@ -26,7 +26,7 @@ public class ThreadCondition extends SimpleCondition
 	}
 
 	@Override
-	public Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
+	public BidiIterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
 		return aIndexes.threadIndex.getIndex(itsThreadId).getTupleIterator(aTimestamp);
 	}

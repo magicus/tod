@@ -5,6 +5,8 @@ package tod.impl.dbgrid.queries;
 
 import java.util.Iterator;
 
+import tod.impl.dbgrid.AbstractFilteredBidiIterator;
+import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import tod.impl.dbgrid.dbnode.RoleIndexSet.RoleTuple;
@@ -29,12 +31,12 @@ public class ObjectCondition extends SimpleCondition
 	}
 
 	@Override
-	public Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
+	public BidiIterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
-		Iterator<RoleIndexSet.RoleTuple> theTupleIterator = aIndexes.objectIndex.getIndex(itsObjectId).getTupleIterator(aTimestamp);
+		BidiIterator<RoleIndexSet.RoleTuple> theTupleIterator = aIndexes.objectIndex.getIndex(itsObjectId).getTupleIterator(aTimestamp);
 		if (itsRole == RoleIndexSet.ROLE_OBJECT_ANY)
 		{
-			theTupleIterator = new AbstractFilteredIterator<RoleTuple, RoleTuple>(theTupleIterator)
+			theTupleIterator = new AbstractFilteredBidiIterator<RoleTuple, RoleTuple>(theTupleIterator)
 			{
 				@Override
 				protected Object transform(RoleTuple aIn)
@@ -45,7 +47,7 @@ public class ObjectCondition extends SimpleCondition
 		}
 		else if (itsRole == RoleIndexSet.ROLE_OBJECT_ANYARG)
 		{
-			theTupleIterator = new AbstractFilteredIterator<RoleTuple, RoleTuple>(theTupleIterator)
+			theTupleIterator = new AbstractFilteredBidiIterator<RoleTuple, RoleTuple>(theTupleIterator)
 			{
 				@Override
 				protected Object transform(RoleTuple aIn)
@@ -59,7 +61,7 @@ public class ObjectCondition extends SimpleCondition
 			theTupleIterator = RoleIndexSet.createFilteredIterator(theTupleIterator, itsRole);
 		}
 		
-		return (Iterator) theTupleIterator;
+		return (BidiIterator) theTupleIterator;
 	}
 
 	@Override

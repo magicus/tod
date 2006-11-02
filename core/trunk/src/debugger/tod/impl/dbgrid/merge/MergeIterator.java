@@ -1,62 +1,58 @@
 package tod.impl.dbgrid.merge;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import tod.impl.dbgrid.AbstractBidiIterator;
+import tod.impl.dbgrid.BidiIterator;
 
 /**
  * Base class for merge iterators. Maintains an array of head items,
  * one for each source iterator.
  * @author gpothier
  */
-public abstract class MergeIterator<T> implements Iterator<T>
+public abstract class MergeIterator<T> extends AbstractBidiIterator<T>
 {
-	private final Iterator<T>[] itsIterators;
-	private final T[] itsHeadItems;
-	private T itsNextItem;
+	private final BidiIterator<T>[] itsIterators;
 
-	public MergeIterator(Iterator<T>[] aIterators)
+	public MergeIterator(BidiIterator<T>[] aIterators)
 	{
 		itsIterators = aIterators;
-		itsHeadItems = (T[]) new Object[itsIterators.length];
-
-		initHeadItems();
-
-		itsNextItem = readNextItem();
 	}
-
-	protected void initHeadItems()
+	
+	/**
+	 * Returns the number of heads (base iterators) of this merge
+	 * iterator.
+	 */
+	protected int getHeadCount()
 	{
-		for (int i = 0; i < itsIterators.length; i++)
-			advance(i);
+		return itsIterators.length;
 	}
 
 	/**
-	 * Advances the specified head. If the end of
-	 * the stream is reached, the head is set to null and the method returns
-	 * false.
-	 * 
-	 * @return True if it was possible to advance, false otherwise.
+	 * Moves the specified head to the next element.
+	 * @return True if it was possible to move, false otherwise.
 	 */
-	protected boolean advance(int aHeadIndex)
+	protected boolean moveNext(int aHeadIndex)
 	{
 		if (itsIterators[aHeadIndex].hasNext())
 		{
-			T theitem = itsIterators[aHeadIndex].next();
-
-			itsHeadItems[aHeadIndex] = theitem;
+			itsIterators[aHeadIndex].next();
 			return true;
 		}
-		else
-		{
-			itsHeadItems[aHeadIndex] = null;
-			return false;
-		}
+		else return false;
 	}
 
 	/**
-	 * Retrieves the next matching event pointer
+	 * Moves the specified head to the previous element.
+	 * @return True if it was possible to move, false otherwise.
 	 */
-	protected abstract T readNextItem();
+	protected boolean movePrevious(int aHeadIndex)
+	{
+		if (itsIterators[aHeadIndex].hasPrevious())
+		{
+			itsIterators[aHeadIndex].previous();
+			return true;
+		}
+		else return false;
+	}
 	
 	/**
 	 * Returns the timestamp of the specified tuple.
@@ -68,23 +64,14 @@ public abstract class MergeIterator<T> implements Iterator<T>
 	 */
 	protected abstract boolean sameEvent(T aItem1, T aItem2);
 
-	protected T[] getHeadItems()
+	protected T getNextHead(int aHead)
 	{
-		return itsHeadItems;
+		return itsIterators[aHead].peekNext();
 	}
 
-	public T next()
+	protected T getPreviousHead(int aHead)
 	{
-		if (!hasNext()) throw new NoSuchElementException();
-		T theResult = itsNextItem;
-		T theNextItem = readNextItem();
-		itsNextItem = theNextItem;
-		return theResult;
+		return itsIterators[aHead].peekPrevious();
 	}
-
-	public void remove()
-	{
-		throw new UnsupportedOperationException();
-	}
-
+	
 }

@@ -3,8 +3,7 @@
  */
 package tod.impl.dbgrid.dbnode;
 
-import java.util.Iterator;
-
+import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.merge.ConjunctionIterator;
 import tod.impl.dbgrid.merge.DisjunctionIterator;
 
@@ -18,7 +17,8 @@ public class IndexMerger
 	 * Returns an iterator that retrieves all the events that are common to all
 	 * the specified indexes starting from a specified timestamp. 
 	 */
-	public static <T extends StdIndexSet.StdTuple> Iterator<T> conjunction(Iterator<T>[] aIterators)
+	public static <T extends StdIndexSet.StdTuple> BidiIterator<T> conjunction(
+			BidiIterator<T>[] aIterators)
 	{
 		return new MyConjunctionIterator<T>(aIterators);
 	}
@@ -26,7 +26,8 @@ public class IndexMerger
 	/**
 	 * Returns an iterator that retrieves all the events of all the specified indexes. 
 	 */
-	public static <T extends StdIndexSet.StdTuple> Iterator<T> disjunction(Iterator<T>[] aIterators)
+	public static <T extends StdIndexSet.StdTuple> BidiIterator<T> disjunction(
+			BidiIterator<T>[] aIterators)
 	{
 		return new MyDisjunctionIterator<T>(aIterators);
 	}
@@ -35,11 +36,11 @@ public class IndexMerger
 	 * Returns the tuple iterators of all the specified indexes, starting
 	 * at the specified timestamp. 
 	 */
-	public static <T extends StdIndexSet.StdTuple> Iterator<T>[] getIterators(
+	public static <T extends StdIndexSet.StdTuple> BidiIterator<T>[] getIterators(
 			HierarchicalIndex<T>[] aIndexes,
 			long aTimestamp)
 	{
-		Iterator<T>[] theIterators = new Iterator[aIndexes.length];
+		BidiIterator<T>[] theIterators = new BidiIterator[aIndexes.length];
 		for (int i = 0; i < aIndexes.length; i++)
 		{
 			HierarchicalIndex<T> theIndex = aIndexes[i];
@@ -52,7 +53,7 @@ public class IndexMerger
 	public static class MyConjunctionIterator<T extends StdIndexSet.StdTuple> 
 	extends ConjunctionIterator<T>
 	{
-		public MyConjunctionIterator(Iterator<T>[] aIterators)
+		public MyConjunctionIterator(BidiIterator<T>[] aIterators)
 		{
 			super(aIterators);
 		}
@@ -73,7 +74,7 @@ public class IndexMerger
 	public static class MyDisjunctionIterator<T extends StdIndexSet.StdTuple> 
 	extends DisjunctionIterator<T>
 	{
-		public MyDisjunctionIterator(Iterator<T>[] aIterators)
+		public MyDisjunctionIterator(BidiIterator<T>[] aIterators)
 		{
 			super(aIterators);
 		}

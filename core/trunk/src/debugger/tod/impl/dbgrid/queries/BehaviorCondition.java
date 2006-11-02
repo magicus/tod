@@ -5,6 +5,7 @@ package tod.impl.dbgrid.queries;
 
 import java.util.Iterator;
 
+import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
@@ -27,9 +28,9 @@ public class BehaviorCondition extends SimpleCondition
 	}
 	
 	@Override
-	public Iterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
+	public BidiIterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
-		Iterator<RoleIndexSet.RoleTuple> theTupleIterator = aIndexes.behaviorIndex.getIndex(itsBehaviorId).getTupleIterator(aTimestamp);
+		BidiIterator<RoleIndexSet.RoleTuple> theTupleIterator = aIndexes.behaviorIndex.getIndex(itsBehaviorId).getTupleIterator(aTimestamp);
 		switch (itsRole)
 		{
 		case RoleIndexSet.ROLE_BEHAVIOR_ANY:
@@ -44,7 +45,7 @@ public class BehaviorCondition extends SimpleCondition
 			theTupleIterator = RoleIndexSet.createFilteredIterator(theTupleIterator, itsRole);
 		}
 		
-		return (Iterator) theTupleIterator;
+		return (BidiIterator) theTupleIterator;
 	}
 	
 	@Override

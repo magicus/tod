@@ -6,9 +6,10 @@ package tod.impl.dbgrid.aggregator;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
+import tod.impl.dbgrid.BidiIterator;
+import tod.impl.dbgrid.BufferedBidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.dbnode.RIDatabaseNode;
@@ -17,7 +18,6 @@ import tod.impl.dbgrid.dbnode.RINodeEventIterator;
 import tod.impl.dbgrid.merge.DisjunctionIterator;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
-import zz.utils.BufferedIterator;
 import zz.utils.Future;
 
 /**
@@ -151,14 +151,13 @@ implements RIQueryAggregator
 	 * A real iterator that wraps a {@link RIEventIterator}
 	 * @author gpothier
 	 */
-	private static class EventIterator extends BufferedIterator<GridEvent[], GridEvent>
+	private static class EventIterator extends BufferedBidiIterator<GridEvent[], GridEvent>
 	{
 		private RIEventIterator itsIterator;
 
 		public EventIterator(RIEventIterator aIterator)
 		{
 			itsIterator = aIterator;
-			reset();
 		}
 		
 		@Override
@@ -167,6 +166,19 @@ implements RIQueryAggregator
 			try
 			{
 				return itsIterator.next(DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		@Override
+		protected GridEvent[] fetchPreviousBuffer()
+		{
+			try
+			{
+				return itsIterator.previous(DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
 			}
 			catch (RemoteException e)
 			{
@@ -193,7 +205,7 @@ implements RIQueryAggregator
 	 */
 	private static class MergeIterator extends DisjunctionIterator<GridEvent>
 	{
-		public MergeIterator(Iterator<GridEvent>[] aIterators)
+		public MergeIterator(BidiIterator<GridEvent>[] aIterators)
 		{
 			super(aIterators);
 		}

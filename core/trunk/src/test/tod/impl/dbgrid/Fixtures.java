@@ -12,13 +12,8 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -295,7 +290,7 @@ public class Fixtures
 		
 		int theMatched = 0;
 		long theTimestamp = theEvent != null ? theEvent.getTimestamp()+1 : 0;
-		Iterator<GridEvent> theIterator = aNode.evaluate(aCondition, theTimestamp);
+		BidiIterator<GridEvent> theIterator = aNode.evaluate(aCondition, theTimestamp);
 		for (int i=0;i<aCount;i++)
 		{
 			GridEvent theRefEvent = aReferenceGenerator.next();

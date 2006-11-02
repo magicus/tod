@@ -5,12 +5,12 @@ package tod.impl.dbgrid.test;
 
 import static org.junit.Assert.fail;
 
-import java.util.Iterator;
 import java.util.Random;
 
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
 
+import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.dbnode.HierarchicalIndex;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
@@ -83,7 +83,7 @@ public class TestHierarchicalIndex
 			for (long i=0;i<aSkippedTuples-1;i++) theTimestamp = aGenerator.next();
 			
 			// Check when timestamp is equal
-			Iterator<T> theIterator = aIndex.getTupleIterator(theTimestamp);
+			BidiIterator<T> theIterator = aIndex.getTupleIterator(theTimestamp);
 			T theTuple = theIterator.next();
 			checkTuple(theTuple, theTimestamp);
 			
@@ -104,7 +104,7 @@ public class TestHierarchicalIndex
 		 * 
 		 */
 		private void checkTuples(
-				Iterator<T> aIterator, 
+				BidiIterator<T> aIterator, 
 				TimestampGenerator aGenerator,
 				long aTupleCount,
 				boolean aExhaust)

@@ -91,7 +91,7 @@ public class HierarchicalIndex<T extends IndexTuple>
 	{
 		TupleIterator<T> theIterator = getTupleIterator(aTimestamp);
 		if (! theIterator.hasNext()) return null;
-		T theTuple = theIterator.nextOneShot();
+		T theTuple = theIterator.next();
 		if (aExact && theTuple.getTimestamp() != aTimestamp) return null;
 		else return theTuple;
 	}
@@ -160,7 +160,7 @@ public class HierarchicalIndex<T extends IndexTuple>
 			{
 				theBitStruct.setPos(theIndex * itsTupleCodec.getTupleSize());
 				TupleIterator<T> theIterator = new TupleIterator<T>(itsFile, itsTupleCodec, theBitStruct);
-				T theTuple = theIterator.getNextTuple();
+				T theTuple = theIterator.peekNext();
 				if (theIterator.hasNext() && theTuple.getTimestamp() < aTimestamp)
 					theIterator.next();
 				

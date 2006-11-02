@@ -5,6 +5,8 @@ package tod.impl.dbgrid.dbnode;
 
 import java.util.Iterator;
 
+import tod.impl.dbgrid.AbstractFilteredBidiIterator;
+import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 import tod.impl.dbgrid.dbnode.file.IndexTupleCodec;
 import tod.impl.dbgrid.dbnode.file.TupleCodec;
@@ -57,11 +59,11 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.RoleTuple>
 	 * Creates an iterator that filters out the tuples from a source iterator that
 	 * don't have one of the specified roles.
 	 */
-	public static Iterator<RoleTuple> createFilteredIterator(
-			Iterator<RoleTuple> aIterator,
+	public static BidiIterator<RoleTuple> createFilteredIterator(
+			BidiIterator<RoleTuple> aIterator,
 			final byte... aRole)
 	{
-		return new AbstractFilteredIterator<RoleTuple, RoleTuple>(aIterator)
+		return new AbstractFilteredBidiIterator<RoleTuple, RoleTuple>(aIterator)
 		{
 			@Override
 			protected Object transform(RoleTuple aIn)
@@ -82,26 +84,39 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.RoleTuple>
 	 * and executed method, it would appear twice in the behavior index with
 	 * a different role.
 	 */
-	public static Iterator<RoleTuple> createFilteredIterator(Iterator<RoleTuple> aIterator)
+	public static BidiIterator<RoleTuple> createFilteredIterator(
+			BidiIterator<RoleTuple> aIterator)
 	{
 		return new DuplicateFilterIterator(aIterator);
 	}
 	
-	private static class DuplicateFilterIterator extends AbstractFilteredIterator<RoleTuple, RoleTuple>
+	private static class DuplicateFilterIterator extends AbstractFilteredBidiIterator<RoleTuple, RoleTuple>
 	{
 		private long itsLastEventPointer;
+		private int itsDirection = 0;
 		
-		public DuplicateFilterIterator(Iterator<RoleTuple> aIterator)
+		public DuplicateFilterIterator(BidiIterator<RoleTuple> aIterator)
 		{
 			super(aIterator);
+			itsLastEventPointer = -1;
 		}
 		
 		@Override
-		protected void init()
+		protected RoleTuple fetchNext()
 		{
-			itsLastEventPointer = -1;
+			if (itsDirection != 1) itsLastEventPointer = -1;
+			itsDirection = 1;
+			return super.fetchNext();
 		}
-
+		
+		@Override
+		protected RoleTuple fetchPrevious()
+		{
+			if (itsDirection != -1) itsLastEventPointer = -1;
+			itsDirection = -1;
+			return super.fetchPrevious();
+		}
+		
 		@Override
 		protected Object transform(RoleTuple aIn)
 		{

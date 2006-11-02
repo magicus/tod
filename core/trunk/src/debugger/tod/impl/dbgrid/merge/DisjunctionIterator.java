@@ -1,6 +1,6 @@
 package tod.impl.dbgrid.merge;
 
-import java.util.Iterator;
+import tod.impl.dbgrid.BidiIterator;
 
 /**
  * A disjunction (boolean OR) merge iterator.
@@ -8,44 +8,21 @@ import java.util.Iterator;
  */
 public abstract class DisjunctionIterator<T> extends MergeIterator<T>
 {
-	/**
-	 * The number of iterators that still have elements.
-	 */
-	private int itsRemainingHeads;
-
-	public DisjunctionIterator(Iterator<T>[] aIterators)
+	public DisjunctionIterator(BidiIterator<T>[] aIterators)
 	{
 		super(aIterators);
 	}
-
+	
 	@Override
-	protected void initHeadItems()
+	protected T fetchNext()
 	{
-		super.initHeadItems();
-		itsRemainingHeads = 0;
-		for (T theItem : getHeadItems())
-		{
-			if (theItem != null) itsRemainingHeads++;
-		}
-	}
-
-	public boolean hasNext()
-	{
-		return itsRemainingHeads > 0;
-	}
-
-	@Override
-	protected T readNextItem()
-	{
-		if (itsRemainingHeads == 0) return null;
-
 		T theMinTimestampItem = null;
 		long theMinTimestamp = Long.MAX_VALUE;
 
-		// Find the head with the minimum timestamp
-		for (int i = 0; i < getHeadItems().length; i++)
+		// Find the item with the minimum timestamp
+		for (int i = 0; i < getHeadCount(); i++)
 		{
-			T theItem = getHeadItems()[i];
+			T theItem = getNextHead(i);
 
 			if (theItem != null)
 			{
@@ -57,18 +34,58 @@ public abstract class DisjunctionIterator<T> extends MergeIterator<T>
 				}
 			}
 		}
+		
+		if (theMinTimestampItem == null) return null;
 
-		// Remove heads that point to the same event
-		for (int i = 0; i < getHeadItems().length; i++)
+		// Move all heads that point to the same event
+		for (int i = 0; i < getHeadCount(); i++)
 		{
-			T theItem = getHeadItems()[i];
+			T theItem = getNextHead(i);
 
 			if (theItem != null && sameEvent(theMinTimestampItem, theItem))
 			{
-				if (!advance(i)) itsRemainingHeads--;
+				moveNext(i);
 			}
 		}
 
 		return theMinTimestampItem;
+	}
+
+	@Override
+	protected T fetchPrevious()
+	{
+		T theMaxTimestampItem = null;
+		long theMaxTimestamp = 0;
+
+		// Find the item with the maximum timestamp
+		for (int i = 0; i < getHeadCount(); i++)
+		{
+			T theItem = getPreviousHead(i);
+
+			if (theItem != null)
+			{
+				long theTimestamp = getTimestamp(theItem);
+				if (theTimestamp > theMaxTimestamp)
+				{
+					theMaxTimestamp = theTimestamp;
+					theMaxTimestampItem = theItem;
+				}
+			}
+		}
+		
+		if (theMaxTimestampItem == null) return null;
+
+		// Move all heads that point to the same event
+		for (int i = 0; i < getHeadCount(); i++)
+		{
+			T theItem = getPreviousHead(i);
+
+			if (theItem != null && sameEvent(theMaxTimestampItem, theItem))
+			{
+				movePrevious(i);
+			}
+		}
+
+		return theMaxTimestampItem;
 	}
 }

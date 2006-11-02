@@ -7,6 +7,7 @@ import java.util.Iterator;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
+import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.dbnode.file.IndexTuple;
 import tod.impl.dbgrid.dbnode.file.TupleIterator;
@@ -35,7 +36,7 @@ public class EventsCounter
 		
 		long theTotal = 0;
 		
-		Iterator<StdTuple> theIterator = aCondition.createTupleIterator(aIndexes, aT1);
+		BidiIterator<StdTuple> theIterator = aCondition.createTupleIterator(aIndexes, aT1);
 		while (theIterator.hasNext())
 		{
 			StdTuple theTuple = theIterator.next();

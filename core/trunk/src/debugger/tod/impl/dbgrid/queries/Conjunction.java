@@ -5,6 +5,7 @@ package tod.impl.dbgrid.queries;
 
 import java.util.Iterator;
 
+import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.dbnode.Indexes;
 import tod.impl.dbgrid.dbnode.IndexMerger;
 import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
@@ -20,11 +21,11 @@ public class Conjunction extends CompoundCondition
 	private static final long serialVersionUID = 6155046517220795498L;
 
 	@Override
-	public Iterator<StdTuple> createTupleIterator(
+	public BidiIterator<StdTuple> createTupleIterator(
 			Indexes aIndexes,
 			long aTimestamp)
 	{
-		Iterator<StdTuple>[] theIterators = new Iterator[getConditions().size()];
+		BidiIterator<StdTuple>[] theIterators = new BidiIterator[getConditions().size()];
 		int i = 0;
 		for (EventCondition theCondition : getConditions())
 		{

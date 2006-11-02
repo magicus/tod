@@ -9,6 +9,7 @@ import tod.impl.dbgrid.dbnode.file.PageBank.PageBitStruct;
 
 /**
  * Writes out {@link Tuple}s in a linked list of {@link Page}s.
+ * See {@link TupleIterator} for a description of page format.
  * @author gpothier
  */
 public class TupleWriter<T>
@@ -44,31 +45,37 @@ public class TupleWriter<T>
 		return itsBank.getPagePointerSize();
 	}
 
-
+	private int getTupleSize()
+	{
+		return itsTupleCodec.getTupleSize();
+	}
 	
 	/**
 	 * Writes a tuple to the file.
 	 */
 	public void add(T aTuple)
 	{
-		if (itsCurrentStruct.getRemainingBits() < itsTupleCodec.getTupleSize() + getPagePointerSize())
+		if (itsCurrentStruct.getRemainingBits() - 2*getPagePointerSize() < getTupleSize())
 		{
 			Page theNextPage = itsBank.create();
 			itsPagesCount++;
 			
 			PageBitStruct theNextStruct = theNextPage.asBitStruct();
 			long theNextPageId = theNextStruct.getPage().getPageId();
+			long theCurrentPageId = itsCurrentStruct.getPage().getPageId();
 			
 			// Write next page id (+1: 0 means no next page).
+			itsCurrentStruct.setPos(itsCurrentStruct.getTotalBits()-getPagePointerSize());
 			itsCurrentStruct.writeLong(theNextPageId+1, getPagePointerSize());
+			
+			// Write previous page id on next page
+			theNextStruct.setPos(itsCurrentStruct.getTotalBits()-2*getPagePointerSize());
+			theNextStruct.writeLong(theCurrentPageId+1, getPagePointerSize());
+			theNextStruct.setPos(0);
 			
 			newPageHook(itsCurrentStruct, theNextPageId);
 			
 			itsBank.free(itsCurrentPage);
-			
-			// Save old page
-//			itsBank.store(itsCurrentPage);
-//			itsFile.freePage(itsCurrentPage);
 			
 			itsCurrentStruct = theNextStruct;
 			itsCurrentPage = theNextPage;

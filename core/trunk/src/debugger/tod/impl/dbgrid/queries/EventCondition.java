@@ -8,6 +8,8 @@ import java.rmi.RemoteException;
 import java.util.Iterator;
 
 import tod.core.database.browser.IEventFilter;
+import tod.impl.dbgrid.AbstractFilteredBidiIterator;
+import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.dbnode.EventList;
 import tod.impl.dbgrid.dbnode.EventsCounter;
 import tod.impl.dbgrid.dbnode.Indexes;
@@ -32,13 +34,13 @@ implements IEventFilter, Serializable
 	 * Creates an iterator over matching events, taking them from the specified
 	 * {@link EventList} and {@link Indexes}.
 	 */
-	public final Iterator<GridEvent> createIterator(
+	public final BidiIterator<GridEvent> createIterator(
 			final EventList aEventList,
 			Indexes aIndexes,
 			long aTimestamp)
 	{
-		Iterator<StdTuple> theIterator = createTupleIterator(aIndexes, aTimestamp);
-		return new AbstractFilteredIterator<StdTuple, GridEvent>(theIterator)
+		BidiIterator<StdTuple> theIterator = createTupleIterator(aIndexes, aTimestamp);
+		return new AbstractFilteredBidiIterator<StdTuple, GridEvent>(theIterator)
 		{
 			@Override
 			protected Object transform(StdTuple aIn)
@@ -57,7 +59,7 @@ implements IEventFilter, Serializable
 	 * Creates an iterator over matching events, taking them from the specified
 	 * {@link EventList} and {@link Indexes}.
 	 */
-	public abstract Iterator<StdTuple> createTupleIterator(
+	public abstract BidiIterator<StdTuple> createTupleIterator(
 			Indexes aIndexes,
 			long aTimestamp);
 	

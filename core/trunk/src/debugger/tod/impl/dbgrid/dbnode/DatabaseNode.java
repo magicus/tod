@@ -18,10 +18,10 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Comparator;
-import java.util.Iterator;
 
 import tod.DebugFlags;
 import tod.core.config.GeneralConfig;
+import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.NodeException;
@@ -159,7 +159,7 @@ implements RIDatabaseNode
 	/**
 	 * Creates an iterator over matching events of this node, starting at the specified timestamp.
 	 */
-	public Iterator<GridEvent> evaluate(EventCondition aCondition, long aTimestamp)
+	public BidiIterator<GridEvent> evaluate(EventCondition aCondition, long aTimestamp)
 	{
 		return aCondition.createIterator(itsEventList, getIndexes(), aTimestamp);
 	}

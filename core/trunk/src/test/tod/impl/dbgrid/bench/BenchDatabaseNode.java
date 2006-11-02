@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.ConditionGenerator;
 import tod.impl.dbgrid.EventGenerator;
 import tod.impl.dbgrid.Fixtures;
@@ -142,7 +143,7 @@ public class BenchDatabaseNode
 				{
 					EventCondition theCondition = aConditions.get(i);
 					
-					Iterator<GridEvent> theIterator = itsNode.evaluate(theCondition, 0);;
+					BidiIterator<GridEvent> theIterator = itsNode.evaluate(theCondition, 0);;
 					for (int j=0;j<aCount;j++)
 					{
 						if (! theIterator.hasNext()) break;
