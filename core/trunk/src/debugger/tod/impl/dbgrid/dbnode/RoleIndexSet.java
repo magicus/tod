@@ -3,15 +3,11 @@
  */
 package tod.impl.dbgrid.dbnode;
 
-import java.util.Iterator;
-
 import tod.impl.dbgrid.AbstractFilteredBidiIterator;
 import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 import tod.impl.dbgrid.dbnode.file.IndexTupleCodec;
 import tod.impl.dbgrid.dbnode.file.TupleCodec;
-
-import zz.utils.AbstractFilteredIterator;
 import zz.utils.bit.BitStruct;
 
 /**
@@ -42,7 +38,7 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.RoleTuple>
 	public static final byte ROLE_OBJECT_ANYARG = -5;
 	public static final byte ROLE_OBJECT_ANY = -6;
 	
-	public static final TupleCodec TUPLE_CODEC = new RoleTupleCodec();
+	public static final TupleCodec<RoleTuple> TUPLE_CODEC = new RoleTupleCodec();
 	
 	public RoleIndexSet(String aName, HardPagedFile aFile, int aIndexCount)
 	{
@@ -50,11 +46,11 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.RoleTuple>
 	}
 	
 	@Override
-	protected HierarchicalIndex<RoleTuple> createIndex(String aName, HardPagedFile aFile)
+	public TupleCodec<RoleTuple> getTupleCodec()
 	{
-		return new HierarchicalIndex<RoleTuple>(aName, aFile, TUPLE_CODEC);
+		return TUPLE_CODEC;
 	}
-	
+
 	/**
 	 * Creates an iterator that filters out the tuples from a source iterator that
 	 * don't have one of the specified roles.

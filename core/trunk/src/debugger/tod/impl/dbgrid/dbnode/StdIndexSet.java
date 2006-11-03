@@ -11,7 +11,7 @@ import zz.utils.bit.BitStruct;
 
 public class StdIndexSet extends IndexSet<StdIndexSet.StdTuple> 
 {
-	public static final TupleCodec TUPLE_CODEC = new StdTupleCodec();
+	public static final TupleCodec<StdTuple> TUPLE_CODEC = new StdTupleCodec();
 	
 	public StdIndexSet(String aName, HardPagedFile aFile, int aIndexCount)
 	{
@@ -19,11 +19,11 @@ public class StdIndexSet extends IndexSet<StdIndexSet.StdTuple>
 	}
 	
 	@Override
-	protected HierarchicalIndex<StdTuple> createIndex(String aName, HardPagedFile aFile)
+	public TupleCodec<StdTuple> getTupleCodec()
 	{
-		return new HierarchicalIndex<StdTuple>(aName, aFile, TUPLE_CODEC);
+		return TUPLE_CODEC;
 	}
-
+	
 	public static class StdTupleCodec extends IndexTupleCodec<StdTuple>
 	{
 		@Override

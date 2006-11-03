@@ -4,10 +4,17 @@
 package tod.impl.dbgrid.dbnode;
 
 import tod.impl.dbgrid.dbnode.file.HardPagedFile;
+import tod.impl.dbgrid.dbnode.file.TupleCodec;
+import zz.utils.list.NakedLinkedList.Entry;
 import tod.impl.dbgrid.dbnode.file.IndexTuple;
+import tod.impl.dbgrid.dbnode.file.HardPagedFile.Page;
+import tod.impl.dbgrid.dbnode.file.HardPagedFile.PageBitStruct;
 import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Probe;
+import zz.utils.bit.BitStruct;
+import zz.utils.cache.MRUBuffer;
+import static tod.impl.dbgrid.DebuggerGridConfig.*;
 
 /**
  * A set of indexes for a given attribute. Within a set,
@@ -16,7 +23,24 @@ import tod.impl.dbgrid.monitoring.Probe;
  */
 public abstract class IndexSet<T extends IndexTuple>
 {
-	private HierarchicalIndex<T>[] itsIndexes;
+	/**
+	 * This dummy entry is used in {@link #itsIndexes} to differenciate
+	 * entries that never existed (null  value) from entries that were
+	 * discarded and that are available in the file. 
+	 */
+	private static Entry DISCARDED_ENTRY = new Entry(null);
+	
+	private Entry<HierarchicalIndex<T>>[] itsIndexes;
+	
+	/**
+	 * The page ids of all the pages that are used to store discarded indexes.
+	 */
+	private long[] itsIndexPages;
+	
+	/**
+	 * Number of discarded indexes that fit in a page. 
+	 */
+	private int itsIndexesPerPage;
 	
 	/**
 	 * Name of this index set (for monitoring)
@@ -27,19 +51,37 @@ public abstract class IndexSet<T extends IndexTuple>
 	
 	private int itsIndexCount = 0;
 	
+	private int itsDiscardCount = 0;
+	private int itsLoadCount = 0;
+
+	
 	public IndexSet(String aName, HardPagedFile aFile, int aIndexCount)
 	{
 		itsName = aName;
 		itsFile = aFile;
-		itsIndexes = new HierarchicalIndex[aIndexCount];
+		itsIndexes = new Entry[aIndexCount];
+		
+		// Init discarded index page directory.
+		itsIndexesPerPage = aFile.getPageSize()*8/HierarchicalIndex.getSerializedSize(itsFile);
+		int theNumPages = (aIndexCount+itsIndexesPerPage-1)/itsIndexesPerPage;
+		itsIndexPages = new long[theNumPages];
+		
 		System.out.println("Created index "+itsName+" with "+aIndexCount+" entries.");
 		Monitor.getInstance().register(this);
 	}
 
 	/**
-	 * Creates a new index for this set.
+	 * Returns the tuple codec used for the level 0 of the indexes of this set.
 	 */
-	protected abstract HierarchicalIndex<T> createIndex(String aName, HardPagedFile aFile);
+	public abstract TupleCodec<T> getTupleCodec();
+	
+	/**
+	 * Returns the file used by the indexes of this set.
+	 */
+	public HardPagedFile getFile()
+	{
+		return itsFile;
+	}
 	
 	/**
 	 * Retrieved the index corresponding to the specified... index.
@@ -47,15 +89,64 @@ public abstract class IndexSet<T extends IndexTuple>
 	public HierarchicalIndex<T> getIndex(int aIndex)
 	{
 		if (aIndex >= itsIndexes.length) throw new IndexOutOfBoundsException("Index overflow for "+itsName+": "+aIndex+" >= "+itsIndexes.length);
-		HierarchicalIndex<T> theIndex = itsIndexes[aIndex];
-		if (theIndex == null)
+		
+		Entry<HierarchicalIndex<T>> theEntry = itsIndexes[aIndex];
+		HierarchicalIndex<T> theIndex;
+		
+		if (theEntry == null)
 		{
-			theIndex = createIndex(itsName+"-"+aIndex, itsFile);
-			itsIndexes[aIndex] = theIndex;
+			theIndex = new HierarchicalIndex<T>(this, aIndex);
+			theEntry = new Entry<HierarchicalIndex<T>>(theIndex);
+			itsIndexes[aIndex] = theEntry;
 			itsIndexCount++;
 		}
+		else if (theEntry == DISCARDED_ENTRY)
+		{
+			theIndex = new HierarchicalIndex<T>(this, aIndex, getIndexStruct(aIndex));
+			theEntry = new Entry<HierarchicalIndex<T>>(theIndex);
+			itsIndexes[aIndex] = theEntry;
+			itsLoadCount++;
+		}
+		else theIndex = theEntry.getValue();
+		
+		IndexManager.getInstance().use((Entry) theEntry);
 		
 		return theIndex;
+	}
+	
+	/**
+	 * Returns the bit struct corresponding to the given index,
+	 * positionned right before where the index is stored 
+	 */
+	private BitStruct getIndexStruct(int aIndex)
+	{
+		long thePageId = itsIndexPages[aIndex/itsIndexesPerPage];
+		
+		Page thePage;
+		if (thePageId == 0)
+		{
+			thePage = itsFile.create();
+			itsIndexPages[aIndex/itsIndexesPerPage] = thePage.getPageId()+1;
+		}
+		else
+		{
+			thePage = itsFile.get(thePageId-1);
+		}
+		
+		PageBitStruct theBitStruct = thePage.asBitStruct();
+		theBitStruct.setPos((aIndex % itsIndexesPerPage) * HierarchicalIndex.getSerializedSize(itsFile));
+		
+		return theBitStruct;
+	}
+	
+	private void discardIndex(int aIndex)
+	{
+		Entry<HierarchicalIndex<T>> theEntry = itsIndexes[aIndex];
+		HierarchicalIndex<T> theIndex = theEntry.getValue();
+		
+		theIndex.writeTo(getIndexStruct(aIndex));
+		itsIndexes[aIndex] = DISCARDED_ENTRY;
+		itsDiscardCount++;
 	}
 
 	public void addTuple(int aIndex, T aTuple)
@@ -69,9 +160,56 @@ public abstract class IndexSet<T extends IndexTuple>
 		return itsIndexCount;
 	}
 	
+	@Probe(key = "index discard count", aggr = AggregationType.SUM)
+	public int getDiscardCount()
+	{
+		return itsDiscardCount;
+	}
+
+	@Probe(key = "index reload count", aggr = AggregationType.SUM)
+	public int getLoadCount()
+	{
+		return itsLoadCount;
+	}
+
 	@Override
 	public String toString()
 	{
 		return getClass().getSimpleName()+": "+itsName;
+	}
+	
+	private static class IndexManager extends MRUBuffer<Integer, HierarchicalIndex>
+	{
+		private static IndexManager INSTANCE = new IndexManager();
+
+		public static IndexManager getInstance()
+		{
+			return INSTANCE;
+		}
+
+		private IndexManager()
+		{
+			super((int) (DB_PAGE_BUFFER_SIZE/DB_PAGE_SIZE), false);
+		}
+		
+		@Override
+		protected void dropped(HierarchicalIndex aValue)
+		{
+			aValue.getIndexSet().discardIndex(aValue.getIndex());
+		}
+
+		@Override
+		protected HierarchicalIndex fetch(Integer aId)
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		protected Integer getKey(HierarchicalIndex aValue)
+		{
+			throw new UnsupportedOperationException();
+		}
+		
+		
 	}
 }

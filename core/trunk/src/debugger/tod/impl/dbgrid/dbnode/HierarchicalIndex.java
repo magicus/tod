@@ -30,9 +30,12 @@ import zz.utils.bit.BitUtils;
  */
 public class HierarchicalIndex<T extends IndexTuple>
 {
-	private TupleCodec<T> itsTupleCodec;
+	private IndexSet<T> itsIndexSet;
 	
-	private HardPagedFile itsFile;
+	/**
+	 * The position of this index within its set.
+	 */
+	private int itsIndex;
 	
 	private Page itsRootPage;
 	private long itsFirstLeafPageId;
@@ -51,24 +54,120 @@ public class HierarchicalIndex<T extends IndexTuple>
 	
 	private long itsLeafTupleCount = 0;
 
-	/**
-	 * A name for this index (for monitoring);
-	 */
-	private final String itsName;
-	
-	public HierarchicalIndex(String aName, HardPagedFile aFile, TupleCodec<T> aTupleCodec) 
+	public HierarchicalIndex(IndexSet<T> aIndexSet, int aIndex) 
 	{
-		itsName = aName;
-		itsFile = aFile;
-		itsTupleCodec = aTupleCodec;
+		itsIndexSet = aIndexSet;
+		itsIndex = aIndex;
 		
 		// Init pages
-		itsTupleWriters[0] = new MyTupleWriter<T>(itsFile, itsTupleCodec, 0);
+		itsTupleWriters[0] = new MyTupleWriter<T>(getFile(), getTupleCodec(), 0);
 		itsRootPage = itsTupleWriters[0].getCurrentPage();
 		itsFirstLeafPageId = itsRootPage.getPageId();
 		itsRootLevel = 0;
+	}
+	
+	public IndexSet<T> getIndexSet()
+	{
+		return itsIndexSet;
+	}
+
+	public int getIndex()
+	{
+		return itsIndex;
+	}
+
+	private TupleCodec<T> getTupleCodec()
+	{
+		return itsIndexSet.getTupleCodec();
+	}
+	
+	private HardPagedFile getFile()
+	{
+		return itsIndexSet.getFile();
+	}
+	
+	/**
+	 * Reconstructs a previously-written index from the given struct.
+	 */
+	public HierarchicalIndex(
+			IndexSet<T> aIndexSet,
+			int aIndex,
+			BitStruct aStoredIndexStruct)
+	{
+		itsIndexSet = aIndexSet;
+		itsIndex = aIndex;
+	
+		int thePagePointerSize = getFile().getPagePointerSize();
+		long theRootPageId = aStoredIndexStruct.readLong(thePagePointerSize);
+		itsRootPage = getFile().get(theRootPageId);
 		
-//		Monitor.getInstance().register(this);
+		itsFirstLeafPageId = aStoredIndexStruct.readLong(thePagePointerSize);
+		itsLastTimestamp = aStoredIndexStruct.readLong(64);
+		itsLeafTupleCount = aStoredIndexStruct.readLong(32);
+		itsRootLevel = aStoredIndexStruct.readInt(BitUtils.log2ceil(DB_MAX_INDEX_LEVELS));
+		
+		for (int i=0;i<DB_MAX_INDEX_LEVELS;i++)
+		{
+			long thePageId = aStoredIndexStruct.readLong(thePagePointerSize);
+			if (thePageId != 0)
+			{
+				int thePos = aStoredIndexStruct.readInt(BitUtils.log2ceil(getFile().getPageSize()*8));
+				itsTupleWriters[i] = new MyTupleWriter(
+						getFile(),
+						i == 0 ? getTupleCodec() : InternalTupleCodec.getInstance(),
+						i,
+						getFile().get(thePageId-1),
+						thePos);
+			}
+		}
+	}
+
+	
+	/**
+	 * Writes this index to the given struct so that it can be reloaded
+	 * later.
+	 */
+	public void writeTo(BitStruct aBitStruct)
+	{
+		int thePagePointerSize = getFile().getPagePointerSize();
+		aBitStruct.writeLong(itsRootPage.getPageId(), thePagePointerSize);
+		aBitStruct.writeLong(itsFirstLeafPageId, thePagePointerSize);
+		aBitStruct.writeLong(itsLastTimestamp, 64);
+		aBitStruct.writeLong(itsLeafTupleCount, 32);
+		aBitStruct.writeInt(itsRootLevel, BitUtils.log2ceil(DB_MAX_INDEX_LEVELS));
+		
+		for (int i=0;i<DB_MAX_INDEX_LEVELS;i++)
+		{
+			MyTupleWriter theWriter = itsTupleWriters[i];
+			PageBitStruct theStruct = theWriter != null ? theWriter.getCurrentStruct() : null;
+			
+			aBitStruct.writeLong(
+					theStruct != null ? theStruct.getPage().getPageId()+1 : 0, 
+					thePagePointerSize);
+			
+			aBitStruct.writeInt(
+					theStruct != null ? theStruct.getPos() : 0, 
+					BitUtils.log2ceil(getFile().getPageSize()*8));
+		}
+	}
+	
+	/**
+	 * Returns the size, in bits of the serialized data for a {@link HierarchicalIndex}
+	 */
+	public static int getSerializedSize(HardPagedFile aFile)
+	{
+		int thePagePointerSize = aFile.getPagePointerSize();
+		int theResult = 0;
+
+		theResult += thePagePointerSize;
+		theResult += thePagePointerSize;
+		theResult += 64;
+		theResult += 32;
+		theResult += BitUtils.log2ceil(DB_MAX_INDEX_LEVELS);
+		
+		theResult += DB_MAX_INDEX_LEVELS * (thePagePointerSize+BitUtils.log2ceil(aFile.getPageSize()*8));
+
+		return theResult;
 	}
 	
 	/**
@@ -102,8 +201,8 @@ public class HierarchicalIndex<T extends IndexTuple>
 	public TupleIterator<IndexTuple> getTupleIterator(Page aPage, int aLevel)
 	{
 		return new TupleIterator(
-				itsFile, 
-				aLevel > 0 ? InternalTupleCodec.getInstance() : itsTupleCodec, 
+				getFile(), 
+				aLevel > 0 ? InternalTupleCodec.getInstance() : getTupleCodec(), 
 				aPage.asBitStruct());
 	}
 	
@@ -118,8 +217,8 @@ public class HierarchicalIndex<T extends IndexTuple>
 //		System.out.println("Get    "+aTimestamp);
 		if (aTimestamp == 0)
 		{
-			PageBitStruct theBitStruct = itsFile.get(itsFirstLeafPageId).asBitStruct();
-			return new TupleIterator<T>(itsFile, itsTupleCodec, theBitStruct);
+			PageBitStruct theBitStruct = getFile().get(itsFirstLeafPageId).asBitStruct();
+			return new TupleIterator<T>(getFile(), getTupleCodec(), theBitStruct);
 		}
 		else
 		{
@@ -138,12 +237,12 @@ public class HierarchicalIndex<T extends IndexTuple>
 				if (theTuple == null) 
 				{
 					// The first tuple of this index is after the specified timestamp
-					thePage = itsFile.get(itsFirstLeafPageId);
+					thePage = getFile().get(itsFirstLeafPageId);
 					PageBitStruct theBitStruct = thePage.asBitStruct();
-					return new TupleIterator<T>(itsFile, itsTupleCodec, theBitStruct);
+					return new TupleIterator<T>(getFile(), getTupleCodec(), theBitStruct);
 				}
 				
-				thePage = itsFile.get(theTuple.getPagePointer());
+				thePage = getFile().get(theTuple.getPagePointer());
 				theLevel--;
 			}
 			
@@ -152,14 +251,14 @@ public class HierarchicalIndex<T extends IndexTuple>
 					theBitStruct,
 					DB_PAGE_POINTER_BITS,
 					aTimestamp, 
-					itsTupleCodec,
+					getTupleCodec(),
 					true);
 			
 			if (theIndex == -1) return new TupleIterator<T>();
 			else
 			{
-				theBitStruct.setPos(theIndex * itsTupleCodec.getTupleSize());
-				TupleIterator<T> theIterator = new TupleIterator<T>(itsFile, itsTupleCodec, theBitStruct);
+				theBitStruct.setPos(theIndex * getTupleCodec().getTupleSize());
+				TupleIterator<T> theIterator = new TupleIterator<T>(getFile(), getTupleCodec(), theBitStruct);
 				T theTuple = theIterator.peekNext();
 				if (theIterator.hasNext() && theTuple.getTimestamp() < aTimestamp)
 					theIterator.next();
@@ -175,7 +274,7 @@ public class HierarchicalIndex<T extends IndexTuple>
 	public void add(T aTuple)
 	{
 		assert checkTimestamp(aTuple);
-		add(aTuple, 0, itsTupleCodec);
+		add(aTuple, 0, getTupleCodec());
 		for (MyTupleWriter theTupleWriter : itsTupleWriters)
 		{
 			if (theTupleWriter != null) theTupleWriter.getCurrentPage().use();
@@ -203,7 +302,7 @@ public class HierarchicalIndex<T extends IndexTuple>
 		{
 			assert aLevel == itsRootLevel+1;
 			itsRootLevel = aLevel;
-			theWriter = new MyTupleWriter<T1>(itsFile, aCodec, aLevel);
+			theWriter = new MyTupleWriter<T1>(getFile(), aCodec, aLevel);
 			itsTupleWriters[aLevel] = theWriter;
 			itsRootPage = itsTupleWriters[aLevel].getCurrentPage();
 		}
@@ -214,8 +313,8 @@ public class HierarchicalIndex<T extends IndexTuple>
 	private TupleIterator<? extends IndexTuple> createTupleIterator(PageBitStruct aPage, int aLevel)
 	{
 		return aLevel > 0 ?
-				new TupleIterator<InternalTuple>(itsFile, InternalTupleCodec.getInstance(), aPage)
-				: new TupleIterator<T>(itsFile, itsTupleCodec, aPage);
+				new TupleIterator<InternalTuple>(getFile(), InternalTupleCodec.getInstance(), aPage)
+				: new TupleIterator<T>(getFile(), getTupleCodec(), aPage);
 	}
 	
 	private String printIndex()
@@ -230,7 +329,7 @@ public class HierarchicalIndex<T extends IndexTuple>
 			theBuilder.append("Level "+theLevel+"\n");
 			
 			TupleIterator<InternalTuple> theIterator = new TupleIterator<InternalTuple>(
-					itsFile, 
+					getFile(), 
 					InternalTupleCodec.getInstance(), 
 					theCurrentPage.asBitStruct());
 			
@@ -240,7 +339,7 @@ public class HierarchicalIndex<T extends IndexTuple>
 				InternalTuple theTuple = theIterator.next();
 				if (theFirstChildPage == null)
 				{
-					theFirstChildPage = itsFile.get(theTuple.getPagePointer());
+					theFirstChildPage = getFile().get(theTuple.getPagePointer());
 				}
 				
 				theBuilder.append(AgentUtils.formatTimestampU(theTuple.getTimestamp()));
@@ -316,19 +415,13 @@ public class HierarchicalIndex<T extends IndexTuple>
 	
 	public int getPageSize()
 	{
-		return itsFile.getPageSize();
+		return getFile().getPageSize();
 	}
 	
 	@Probe(key = "index storage", aggr = AggregationType.SUM)
 	public long getStorageSpace()
 	{
 		return getTotalPageCount() * getPageSize();
-	}
-
-	@Override
-	public String toString()
-	{
-		return "Index "+itsName;
 	}
 
 	/**
@@ -409,11 +502,22 @@ public class HierarchicalIndex<T extends IndexTuple>
 	{
 		private final int itsLevel;
 		
-		public MyTupleWriter(HardPagedFile aFile, TupleCodec<T> aTupleCodec, final int aLevel)
+		public MyTupleWriter(HardPagedFile aFile, TupleCodec<T> aTupleCodec, int aLevel)
 		{
-			super(aFile, aTupleCodec, aFile.create(), 0);
+			this(aFile, aTupleCodec, aLevel, aFile.create(), 0);
+		}
+		
+		public MyTupleWriter(
+				HardPagedFile aFile,
+				TupleCodec<T> aTupleCodec, 
+				int aLevel,
+				Page aPage,
+				int aPos)
+		{
+			super(aFile, aTupleCodec, aPage, aPos);
 			itsLevel = aLevel;
 		}
+
 
 		@Override
 		protected void newPageHook(PageBitStruct aStruct, long aNewPageId)
@@ -500,12 +604,12 @@ public class HierarchicalIndex<T extends IndexTuple>
 			itsTuplesBetweenPairs = new int[itsRootLevel+1];
 			
 			itsTuplesPerPage0 = TupleFinder.getTuplesPerPage(
-					itsFile.getPageSize()*8,
+					getFile().getPageSize()*8,
 					DB_PAGE_POINTER_BITS,
-					itsTupleCodec);
+					getTupleCodec());
 			
 			itsTuplesPerPageU = TupleFinder.getTuplesPerPage(
-					itsFile.getPageSize()*8,
+					getFile().getPageSize()*8,
 					DB_PAGE_POINTER_BITS,
 					InternalTupleCodec.getInstance());
 			
@@ -520,7 +624,7 @@ public class HierarchicalIndex<T extends IndexTuple>
 		private void drillDown()
 		{
 			InternalTuple theTuple = (InternalTuple) itsLastTuple;
-			Page theChildPage = itsFile.get(theTuple.getPagePointer());
+			Page theChildPage = getFile().get(theTuple.getPagePointer());
 			
 			itsStack.push(new LevelData(
 					createTupleIterator(theChildPage.asBitStruct(), itsCurrentHeight-1),

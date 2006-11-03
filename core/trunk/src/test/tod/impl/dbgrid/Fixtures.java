@@ -83,13 +83,13 @@ public class Fixtures
 			File theFile = new File("stdIndexTest.bin");
 			theFile.delete();
 			HardPagedFile thePagedFile = new HardPagedFile(theFile, DebuggerGridConfig.DB_PAGE_SIZE);
+			
+			StdIndexSet theIndexSet = new StdIndexSet("test", thePagedFile, aCount);
+			
 			HierarchicalIndex<StdIndexSet.StdTuple>[] theIndexes = new HierarchicalIndex[aCount];
 			for (int i = 0; i < theIndexes.length; i++)
 			{
-				theIndexes[i] = new HierarchicalIndex<StdIndexSet.StdTuple>(
-						""+i, 
-						thePagedFile, 
-						StdIndexSet.TUPLE_CODEC);
+				theIndexes[i] = new HierarchicalIndex<StdIndexSet.StdTuple>(theIndexSet, -1);
 			}
 			
 			return theIndexes;
@@ -112,13 +112,12 @@ public class Fixtures
 			File theFile = new File("roleIndexTest.bin");
 			theFile.delete();
 			HardPagedFile thePagedFile = new HardPagedFile(theFile, DebuggerGridConfig.DB_PAGE_SIZE);
+			
+			RoleIndexSet theIndexSet = new RoleIndexSet("test", thePagedFile, aCount);
 			HierarchicalIndex<RoleIndexSet.RoleTuple>[] theIndexes = new HierarchicalIndex[aCount];
 			for (int i = 0; i < theIndexes.length; i++)
 			{
-				theIndexes[i] = new HierarchicalIndex<RoleIndexSet.RoleTuple>(
-						""+i, 
-						thePagedFile, 
-						RoleIndexSet.TUPLE_CODEC);
+				theIndexes[i] = new HierarchicalIndex<RoleIndexSet.RoleTuple>(theIndexSet, -1);
 			}
 			
 			return theIndexes;
