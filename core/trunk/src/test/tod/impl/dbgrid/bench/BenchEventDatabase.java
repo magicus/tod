@@ -3,9 +3,8 @@
  */
 package tod.impl.dbgrid.bench;
 
-import java.rmi.RemoteException;
+import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Test;
@@ -15,26 +14,26 @@ import tod.impl.dbgrid.ConditionGenerator;
 import tod.impl.dbgrid.EventGenerator;
 import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.bench.BenchBase.BenchResults;
-import tod.impl.dbgrid.dbnode.DatabaseNode;
+import tod.impl.dbgrid.dbnode.EventDatabase;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
 
-public class BenchDatabaseNode
+public class BenchEventDatabase
 {
-	private DatabaseNode itsNode;
+	private EventDatabase itsDatabase;
 
-	public BenchDatabaseNode()
+	public BenchEventDatabase()
 	{
 	}
 
-	public BenchDatabaseNode(DatabaseNode aNode)
+	public BenchEventDatabase(EventDatabase aDatabase)
 	{
-		itsNode = aNode;
+		itsDatabase = aDatabase;
 	}
 
-	@Test public void test() throws RemoteException 
+	@Test public void test()  
 	{
-		itsNode = new DatabaseNode(false);
+		itsDatabase = new EventDatabase(new File("test.bin"));
 		store();
 //		fetchSimple(1000);
 //		fetchCompound(100, 8);
@@ -55,15 +54,15 @@ public class BenchDatabaseNode
 		{
 			public void run()
 			{
-				Fixtures.fillNode(itsNode, theGenerator, 10*1000*1000);
-				itsNode.flush();
+				Fixtures.fillDatabase(itsDatabase, theGenerator, 10*1000*1000);
+				itsDatabase.flush();
 			}
 		});
 		
 		System.out.println(theResults);
 		
-		long theEventCount = itsNode.getEventsCount();
-		long theStorage = itsNode.getStorageSpace();
+		long theEventCount = itsDatabase.getEventsCount();
+		long theStorage = itsDatabase.getStorageSpace();
 		
 		float theMBs = (1.0f * theStorage / (1024*1024)) / (theResults.totalTime / 1000.0f);
 		float theEvents = 1.0f * theEventCount / (theResults.totalTime / 1000.0f);
@@ -143,7 +142,7 @@ public class BenchDatabaseNode
 				{
 					EventCondition theCondition = aConditions.get(i);
 					
-					BidiIterator<GridEvent> theIterator = itsNode.evaluate(theCondition, 0);;
+					BidiIterator<GridEvent> theIterator = itsDatabase.evaluate(theCondition, 0);;
 					for (int j=0;j<aCount;j++)
 					{
 						if (! theIterator.hasNext()) break;
@@ -163,9 +162,9 @@ public class BenchDatabaseNode
 		System.out.println("---");
 	}
 	
-	public static void main(String[] args) throws RemoteException
+	public static void main(String[] args) 
 	{
-		new BenchDatabaseNode(new DatabaseNode(false)).store();
+		new BenchEventDatabase(new EventDatabase(new File("test.bin"))).store();
 	}
 
 }

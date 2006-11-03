@@ -18,8 +18,8 @@ VMARGS="$VMARGS -server"
 VMARGS="$VMARGS -Xmx256m" 
 #VMARGS="$VMARGS -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"
 
-java $VMARGS -cp ./bin dummy.Dummy
-#~/apps/eclipse-3.3/eclipse -data ~/eclipse/ws-tod -consolelog -vmargs $VMARGS
+#java $VMARGS -cp ./bin dummy.Dummy
+~/apps/eclipse-3.3/eclipse -data ~/eclipse/ws-tod -consolelog -vmargs $VMARGS
 
 
 #Machines:
@@ -28,3 +28,4 @@ java $VMARGS -cp ./bin dummy.Dummy
 # bardiel
 # naud2
 # leliel
+# pilmaiquen

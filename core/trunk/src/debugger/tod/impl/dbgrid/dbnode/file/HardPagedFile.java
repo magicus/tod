@@ -37,9 +37,6 @@ public class HardPagedFile extends PageBank
 	private static PageDataManager itsPageDataManager = 
 		new PageDataManager(DB_PAGE_SIZE, (int) (DB_PAGE_BUFFER_SIZE/DB_PAGE_SIZE));
 	
-	private ReferenceQueue itsPageRefQueue = new ReferenceQueue();
-	
-	private String itsName;
 	private FileAccessor itsFileAccessor;
 	private int itsPageSize;
 	
@@ -57,10 +54,15 @@ public class HardPagedFile extends PageBank
 		assert itsPageSize % 4 == 0;
 	
 		itsPageSize = aPageSize;
-		itsName = aFile.getName();
 		aFile.delete();
 		itsFileAccessor = new FileAccessor (new RandomAccessFile(aFile, "rw"));
 		itsPagesCount = 0;
+	}
+	
+	public void unregister()
+	{
+		Monitor.getInstance().unregister(this);
+		itsFileAccessor.unregister();
 	}
 
 	/**
@@ -236,6 +238,11 @@ public class HardPagedFile extends PageBank
 			itsWriteByteBuffer = new byte[itsPageSize];
 			itsPageId = -1;
 			if (! DebugFlags.DISABLE_ASYNC_WRITES) start();
+		}
+		
+		public void unregister()
+		{
+			Monitor.getInstance().unregister(this);			
 		}
 		
 		public synchronized void read(long aId, int[] aBuffer) throws IOException

@@ -41,4 +41,18 @@ public class Indexes
 		indexIndex = new StdIndexSet("index", aFile, STRUCTURE_ARRAY_INDEX_COUNT+1);
 		objectIndex = new ObjectIndexSet("object", aFile, STRUCTURE_OBJECT_COUNT+1);
 	}
+	
+	public void unregister()
+	{
+		typeIndex.unregister();
+		hostIndex.unregister();
+		threadIndex.unregister();
+		depthIndex.unregister();
+		bytecodeLocationIndex.unregister();
+		behaviorIndex.unregister();
+		fieldIndex.unregister();
+		variableIndex.unregister();
+		indexIndex.unregister();
+		objectIndex.unregister();
+	}
 }

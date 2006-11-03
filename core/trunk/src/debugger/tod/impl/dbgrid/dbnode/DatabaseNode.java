@@ -3,8 +3,6 @@
  */
 package tod.impl.dbgrid.dbnode;
 
-import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_SIZE;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -17,21 +15,15 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.Comparator;
 
-import tod.DebugFlags;
 import tod.core.config.GeneralConfig;
-import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.NodeException;
 import tod.impl.dbgrid.RIGridMaster;
-import tod.impl.dbgrid.dbnode.file.HardPagedFile;
-import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.GridMessage;
-import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Monitor;
-import tod.impl.dbgrid.monitoring.Probe;
+import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.utils.NativeStream;
 import zz.utils.Utils;
@@ -60,50 +52,28 @@ implements RIDatabaseNode
 	public static final byte CMD_FLUSH_EVENTS = 18;
 	
 	/**
+	 * This command causes the database node to clear its db
+	 * arts: none
+	 * return:
+	 * 	1 (constant): int
+	 */
+	public static final byte CMD_CLEAR = 19;
+	
+	/**
 	 * Id of this node in the system
 	 */
 	private int itsNodeId;
 	
 	private RIGridMaster itsMaster;
-	
-	private final HardPagedFile itsEventsFile;
-	private final HardPagedFile itsIndexesFile;
-	
-	private final EventList itsEventList;
-	private final Indexes itsIndexes;
-	
-	/**
-	 * Timestamp of the last processed event
-	 */
-	private long itsLastProcessedTimestamp;	
-	private long itsProcessedEventsCount = 0;
-	
-	private long itsLastAddedTimestamp;
-	private long itsAddedEventsCount = 0;
-	
-	private long itsDroppedEvents = 0;
-	private long itsUnorderedEvents = 0;
-	
-	private EventReorderingBuffer itsReorderingBuffer = new EventReorderingBuffer(this);
-	
 	private MasterConnection itsMasterConnection;
 	
-	private boolean itsFlushed = false;
+	private EventDatabase itsCurrentDatabase;
 	
 	public DatabaseNode(boolean aRegisterToMaster) throws RemoteException
 	{
-		Monitor.getInstance().register(this);
+		clear();
 		try
 		{
-			String thePrefix = GeneralConfig.NODE_DATA_DIR;
-			File theParent = new File(thePrefix);
-			System.out.println("Using data directory: "+theParent);
-			itsEventsFile = new HardPagedFile(new File(theParent, "events.bin"), DB_PAGE_SIZE);
-			itsIndexesFile = new HardPagedFile(new File(theParent, "indexes.bin"), DB_PAGE_SIZE);
-			
-			itsEventList = new EventList(itsEventsFile);
-			itsIndexes = new Indexes(itsIndexesFile);
-			
 			if (aRegisterToMaster) connectToMaster();
 			else itsNodeId = 1;
 		}
@@ -111,6 +81,22 @@ implements RIDatabaseNode
 		{
 			throw new RuntimeException(e);
 		}
+	}
+	
+	public void clear() 
+	{
+		if (itsCurrentDatabase != null)
+		{
+			itsCurrentDatabase.unregister();
+		}
+		
+		String thePrefix = GeneralConfig.NODE_DATA_DIR;
+		File theParent = new File(thePrefix);
+		System.out.println("Using data directory: "+theParent);
+		
+		File theFile = new File(theParent, "events.bin");
+		theFile.delete();
+		itsCurrentDatabase = new EventDatabase(theFile);
 	}
 	
 	private void connectToMaster() throws IOException, NotBoundException
@@ -131,6 +117,8 @@ implements RIDatabaseNode
 		
 		System.out.println("Master assigned node id "+itsNodeId);
 		
+		startMonitoringThread();
+		
 		// Setup socket connection
 		String theMasterHost = GeneralConfig.MASTER_HOST;
 		System.out.println("Connecting to "+theMasterHost);
@@ -141,6 +129,40 @@ implements RIDatabaseNode
 		
 		itsMasterConnection = new MasterConnection(theSocket);
 	}
+	
+	private void startMonitoringThread()
+	{
+		Thread thePrinterThread = new Thread()
+		{
+			@Override
+			public void run()
+			{
+				try
+				{
+					while (true)
+					{
+						try
+						{
+							MonitorData theData = Monitor.getInstance().collectData();
+							itsMaster.pushMonitorData(getNodeId(), theData);
+							sleep(10000);
+						}
+						catch (InterruptedException e)
+						{
+							itsMaster.nodeException(new NodeException(getNodeId(), e));
+						}
+					}
+				}
+				catch (RemoteException e)
+				{
+					throw new RuntimeException(e);
+				}
+			}
+		};
+		thePrinterThread.setDaemon(true);
+		thePrinterThread.setPriority(Thread.MAX_PRIORITY);
+		thePrinterThread.start();
+	}
 
 	/**
 	 * Returns the id of this node
@@ -150,177 +172,24 @@ implements RIDatabaseNode
 		return itsNodeId;
 	}
 
-	public Indexes getIndexes()
+	public long[] getEventCounts(
+			EventCondition aCondition, 
+			long aT1, 
+			long aT2,
+			int aSlotsCount,
+			boolean aForceMergeCounts) throws RemoteException
 	{
-		return itsIndexes;
-	}
-	
-	
-	/**
-	 * Creates an iterator over matching events of this node, starting at the specified timestamp.
-	 */
-	public BidiIterator<GridEvent> evaluate(EventCondition aCondition, long aTimestamp)
-	{
-		return aCondition.createIterator(itsEventList, getIndexes(), aTimestamp);
+		return itsCurrentDatabase.getEventCounts(
+				aCondition, 
+				aT1, 
+				aT2, 
+				aSlotsCount,
+				aForceMergeCounts);
 	}
 
 	public RINodeEventIterator getIterator(EventCondition aCondition) throws RemoteException
 	{
-		return new NodeEventIterator(this, aCondition);
-	}
-
-	public long[] getEventCounts(
-			EventCondition aCondition,
-			long aT1, 
-			long aT2,
-			int aSlotsCount, 
-			boolean aForceMergeCounts) throws RemoteException
-	{
-		return aCondition.getEventCounts(getIndexes(), aT1, aT2, aSlotsCount, aForceMergeCounts);
-	}
-
-	/**
-	 * Pushes a single message to this node.
-	 * Messages can be events or parent/child
-	 * relations.
-	 */
-	public void push(GridMessage aMessage)
-	{
-		assert ! itsFlushed;
-		
-		if (DebugFlags.SKIP_EVENTS) return;
-		
-		if (aMessage instanceof GridEvent)
-		{
-			GridEvent theEvent = (GridEvent) aMessage;
-			addEvent(theEvent);
-		}
-		else throw new RuntimeException("Not handled: "+aMessage);
-	}
-	
-	/**
-	 * Flushes the event buffer. Events should not be added
-	 * after this method is called.
-	 */
-	public int flush()
-	{
-		int theCount = 0;
-		System.out.println("DatabaseNode: flushing...");
-		while (! itsReorderingBuffer.isEmpty())
-		{
-			processEvent(itsReorderingBuffer.pop());
-			theCount++;
-		}
-		itsFlushed = true;
-		System.out.println("DatabaseNode: flushed "+theCount+" events...");
-		return theCount;
-	}
-	
-	private void addEvent(GridEvent aEvent)
-	{
-//		System.out.println("AddEvent ts: "+aEvent.getTimestamp());
-		long theTimestamp = aEvent.getTimestamp();
-		if (theTimestamp < itsLastAddedTimestamp)
-		{
-//			System.out.println(String.format(
-//					"Out of order event: %s(%02d)/%s(%02d) (#%d)",
-//					AgentUtils.formatTimestampU(theTimestamp),
-//					aEvent.getThread(),
-//					AgentUtils.formatTimestampU(itsLastAddedTimestamp),
-//					itsLastAddedEvent.getThread(),
-//					itsAddedEventsCount));
-//			
-			itsUnorderedEvents++;
-		}
-		else
-		{
-			itsLastAddedTimestamp = theTimestamp;
-		}
-		
-		itsAddedEventsCount++;
-		
-		if (DebugFlags.DISABLE_REORDER)
-		{
-			processEvent(aEvent);
-		}
-		else
-		{
-			while (itsReorderingBuffer.isFull()) processEvent(itsReorderingBuffer.pop());
-			itsReorderingBuffer.push(aEvent);
-		}
-	}
-	
-	@Probe(key = "Out of order events", aggr = AggregationType.SUM)
-	public long getUnorderedEvents()
-	{
-		return itsUnorderedEvents;
-	}
-
-	@Probe(key = "DROPPED EVENTS", aggr = AggregationType.SUM)
-	public long getDroppedEvents()
-	{
-		return itsDroppedEvents;
-	}
-
-	
-	public void eventDropped()
-	{
-//		System.err.println("****************** WARNING ********************\n" +
-//		"**********************************************\n" +
-////throw new RuntimeException(
-//		"Out of order event: "+theTimestamp+"/"+itsLastProcessedTimestamp
-//		+" (#"+itsProcessedEventsCount+")"
-//		+" (buffer size: "+itsEventBuffer.getCapacity()+")");
-		
-		itsDroppedEvents++;
-		
-		
-	}
-	
-	private void processEvent(GridEvent aEvent)
-	{
-		long theTimestamp = aEvent.getTimestamp();
-		if (theTimestamp < itsLastProcessedTimestamp)
-		{
-			eventDropped();
-			return;
-		}
-		
-		itsLastProcessedTimestamp = theTimestamp;
-		itsProcessedEventsCount++;
-		
-		long theId = itsEventList.add(aEvent);
-		if (! DebugFlags.DISABLE_INDEXES) aEvent.index(itsIndexes, theId);		
-	}
-	
-	/**
-	 * Returns the amount of disk storage used by this node.
-	 */
-	public long getStorageSpace()
-	{
-		return itsEventsFile.getStorageSpace() + itsIndexesFile.getStorageSpace();
-	}
-	
-	public long getEventsCount()
-	{
-		return itsEventList.getEventsCount();
-	}
-
-	
-	private static class EventTimestampComparator implements Comparator<GridEvent>
-	{
-		public int compare(GridEvent aEvent1, GridEvent aEvent2)
-		{
-			long theDelta = aEvent1.getTimestamp() - aEvent2.getTimestamp();
-			if (theDelta == 0) return 0;
-			else if (theDelta > 0) return 1;
-			else return -1;
-		}
-	}
-	
-	public static void main(String[] args) throws RemoteException
-	{
-		new DatabaseNode(true);
+		return itsCurrentDatabase.getIterator(aCondition);
 	}
 
 	/**
@@ -368,10 +237,16 @@ implements RIDatabaseNode
 						break;
 						
 					case CMD_FLUSH_EVENTS:
-						int theCount = flush();
+						int theCount = itsCurrentDatabase.flush();
 						theOutStream.writeInt(theCount);
 						theOutStream.flush();
-						return;
+						break;
+						
+					case CMD_CLEAR:
+						clear();
+						theOutStream.writeInt(1);
+						theOutStream.flush();
+						break;
 						
 					default:
 						throw new RuntimeException("Not handled: "+theCommand);
@@ -379,7 +254,6 @@ implements RIDatabaseNode
 					}
 				}
 				
-				if (! itsFlushed) flush();
 				System.exit(0);
 			}
 			catch (Throwable e)
@@ -415,8 +289,15 @@ implements RIDatabaseNode
 			for (int i=0;i<theCount;i++)
 			{
 				GridMessage theMessage = GridMessage.read(itsStruct);
-				push(theMessage);
+				itsCurrentDatabase.push(theMessage);
 			}
 		}
 	}
+	
+	public static void main(String[] args) throws RemoteException
+	{
+		new DatabaseNode(true);
+	}
+
+
 }

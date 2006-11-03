@@ -49,6 +49,11 @@ public class EventList
 		itsCurrentBitStruct = itsFile.create().asBitStruct();
 		itsFirstPageId = itsCurrentBitStruct.getPage().getPageId();
 	}
+	
+	public void unregister()
+	{
+		Monitor.getInstance().register(this);
+	}
 
 	/**
 	 * Adds an event to the events list and returns its internal pointer.

@@ -102,7 +102,7 @@ public class GridArrayWriteEvent extends GridEvent
 	@Override
 	public MessageType getEventType()
 	{
-		return MessageType.FIELD_WRITE;
+		return MessageType.ARRAY_WRITE;
 	}
 
 	public int getIndex()

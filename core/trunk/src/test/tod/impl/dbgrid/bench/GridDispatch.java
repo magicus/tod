@@ -26,7 +26,7 @@ public class GridDispatch
 		
 		final GridMaster theMaster = Fixtures.setupMaster(theRegistry, theExpectedNodes);
 		final EventDispatcher theDispatcher = theMaster.getDispatcher();
-		final EventGenerator theGenerator = BenchDatabaseNode.createGenerator();
+		final EventGenerator theGenerator = BenchEventDatabase.createGenerator();
 
 		final int n = theEventsCount;
 		

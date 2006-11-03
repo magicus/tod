@@ -9,8 +9,11 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+import javax.swing.JComponent;
+
 import tod.core.database.browser.ILogBrowser;
 import tod.core.session.AbstractSession;
+import tod.impl.dbgrid.gui.GridConsole;
 
 public class RemoteGridSession extends AbstractSession
 {
@@ -46,4 +49,11 @@ public class RemoteGridSession extends AbstractSession
 	{
 		return itsBrowser;
 	}
+
+	public JComponent createConsole()
+	{
+		return new GridConsole(itsBrowser);
+	}
+	
+	
 }

@@ -14,8 +14,11 @@
         <property name="classes-test.dir" value="${basedir}/classes-test"/>
         <property name="classes-testcase.dir" value="${basedir}/classes-testcase"/>
     	
-    	<property name="deploy-host" value="syntagma.dim.uchile.cl"/>
+        <property name="zz.utils.base" value="${basedir}/../zz.utils"/>
+        <property name="zzu.src.dir" value="${zz.utils.base}/src"/>
+        <property name="zzu.classes.dir" value="${zz.utils.base}/classes"/>
 
+    	
         <path id="agent.classpath">
             <pathelement path="${lib.dir}/asm-2.1.jar"/>
             <pathelement path="${lib.dir}/asm-commons-2.1.jar"/>
@@ -43,6 +46,9 @@
             <fileset dir="${build.dir}"/>
             <fileset dir="${classes-agent.dir}"/>
             <fileset dir="${classes-debugger.dir}"/>
+        	
+        	<fileset file="${lib.dir}/zz.utils.jar"/>
+            <fileset dir="${zzu.classes.dir}"/>
         </delete>
     </target>
 
@@ -82,6 +88,14 @@
             classpathref="debugger.classpath"/>
     </target>
 	
+    <target name="zzu.compile" depends="init">
+        <mkdir dir="${zzu.classes.dir}"/>
+        <javac compiler="javac1.5" source="1.5" target="1.5"
+        	debug="yes" nowarn="yes"
+            srcdir="${zzu.src.dir}"
+            destdir="${zzu.classes.dir}"/>
+    </target>
+	
 	<target name="compile" depends="compile-agent, compile-debugger, compile-test, compile-testcase"/>
 	
 	<target name="rmic" depends="compile">
@@ -107,7 +121,11 @@
 		<jar destfile="${build.dir}/tod-testcase.jar" basedir="${classes-testcase.dir}"/>
 	</target>
 	
-    <target name="deploy" depends="jar" >
+	<target name="zzu.jar" depends="zzu.compile">
+		<jar destfile="${lib.dir}/zz.utils.jar" basedir="${zzu.classes.dir}"/>
+	</target>
+	
+    <target name="deploy" depends="jar, zzu.jar" >
         <exec executable="${scripts.dir}/deploy.sh" failonerror="true" output="rsync.log">
         	<arg value="${build.dir}"/>
         	<arg value="${lib.dir}"/>

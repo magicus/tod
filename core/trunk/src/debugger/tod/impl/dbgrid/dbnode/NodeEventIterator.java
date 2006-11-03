@@ -19,14 +19,14 @@ import tod.impl.dbgrid.queries.EventCondition;
 public class NodeEventIterator extends UnicastRemoteObject 
 implements RINodeEventIterator
 {
-	private DatabaseNode itsNode;
+	private EventDatabase itsDatabase;
 	private EventCondition itsCondition;
 	
 	private BidiIterator<GridEvent> itsIterator;
 	
-	public NodeEventIterator(DatabaseNode aNode, EventCondition aCondition) throws RemoteException
+	public NodeEventIterator(EventDatabase aDatabase, EventCondition aCondition) throws RemoteException
 	{
-		itsNode = aNode;
+		itsDatabase = aDatabase;
 		itsCondition = aCondition;
 	}
 
@@ -46,7 +46,7 @@ implements RINodeEventIterator
 
 	public void setNextTimestamp(long aTimestamp)
 	{
-		itsIterator = itsNode.evaluate(itsCondition, aTimestamp);
+		itsIterator = itsDatabase.evaluate(itsCondition, aTimestamp);
 	}
 
 	public GridEvent[] previous(int aCount)

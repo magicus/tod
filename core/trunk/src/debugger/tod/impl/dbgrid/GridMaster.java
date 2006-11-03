@@ -13,7 +13,6 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,10 +31,11 @@ import tod.impl.dbgrid.dbnode.NodeRejectedException;
 import tod.impl.dbgrid.dbnode.RIDatabaseNode;
 import tod.impl.dbgrid.dispatcher.DBNodeProxy;
 import tod.impl.dbgrid.dispatcher.EventDispatcher;
+import tod.impl.dbgrid.monitoring.Monitor;
+import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.utils.remote.RILocationsRepository;
 import tod.utils.remote.RemoteLocationsRepository;
-import zz.utils.Utils;
 import zz.utils.net.Server;
 
 /**
@@ -81,7 +81,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	{
 		try
 		{
-			itsNodeHosts.add(InetAddress.getLocalHost().getHostName());
+			if (aMaxNodes > 0) itsNodeHosts.add(InetAddress.getLocalHost().getHostName());
 		}
 		catch (UnknownHostException e)
 		{
@@ -111,6 +111,12 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		} 
 	}
 	
+	public void pushMonitorData(int aNodeId, MonitorData aData)
+	{
+		System.out.println("Received monitor data from node #"+aNodeId+"\n"+Monitor.format(aData, false));
+		fireMonitorData(aNodeId, aData);
+	}
+
 	/**
 	 * Fires the {@link RIGridMasterListener#eventsReceived()} message
 	 * to all listeners.
@@ -122,6 +128,25 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			for (RIGridMasterListener theListener : itsListeners)
 			{
 				theListener.eventsReceived();
+			}
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	/**
+	 * Fires the {@link RIGridMasterListener#eventsReceived()} message
+	 * to all listeners.
+	 */
+	protected void fireMonitorData(int aNodeId, MonitorData aData) 
+	{
+		try
+		{
+			for (RIGridMasterListener theListener : itsListeners)
+			{
+				theListener.monitorData(aNodeId, aData);
 			}
 		}
 		catch (RemoteException e)
@@ -233,6 +258,10 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		return itsDispatcher;
 	}
 	
+	public void clear() 
+	{
+		itsDispatcher.clear();
+	}
 	
 	/**
 	 * Ensures that all buffered data is pushed to the nodes.
@@ -241,22 +270,6 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	{
 		itsDispatcher.flush();
 	}
-
-	/**
-	 * Returns the number of events received by the collectors.
-	 * @return
-	 */
-	private long getCollectorEventsCount()
-	{
-		long theCount = 0;
-		for (GridEventCollector theCollector : itsCollectors.values())
-		{
-			theCount += theCollector.getEventsCount();
-		}
-		
-		return theCount;
-	}
-	
 
 	public IThreadInfo getThread(int aHostId, long aJVMThreadId)
 	{

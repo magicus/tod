@@ -69,6 +69,11 @@ public abstract class IndexSet<T extends IndexTuple>
 		System.out.println("Created index "+itsName+" with "+aIndexCount+" entries.");
 		Monitor.getInstance().register(this);
 	}
+	
+	public void unregister()
+	{
+		Monitor.getInstance().unregister(this);		
+	}
 
 	/**
 	 * Returns the tuple codec used for the level 0 of the indexes of this set.

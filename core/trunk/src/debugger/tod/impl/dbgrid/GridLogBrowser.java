@@ -32,6 +32,7 @@ import tod.impl.dbgrid.aggregator.GridEventBrowser;
 import tod.impl.dbgrid.dbnode.RoleIndexSet;
 import tod.impl.dbgrid.messages.MessageType;
 import tod.impl.dbgrid.messages.ObjectCodec;
+import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
 import tod.impl.dbgrid.queries.BehaviorCondition;
 import tod.impl.dbgrid.queries.CompoundCondition;
 import tod.impl.dbgrid.queries.Conjunction;
@@ -68,6 +69,8 @@ implements ILogBrowser, RIGridMasterListener
 	private List<IHostInfo> itsHosts;
 	private Map<Integer, HostThreadsList> itsHostThreadsLists = new HashMap<Integer, HostThreadsList>();
 	
+	private List<IGridBrowserListener> itsListeners = new ArrayList<IGridBrowserListener>();
+	
 	/**
 	 * A buffer of most recently used parent events.
 	 */
@@ -87,6 +90,25 @@ implements ILogBrowser, RIGridMasterListener
 		throw new UnsupportedOperationException();
 	}
 
+	public void addListener(IGridBrowserListener aListener)
+	{
+		itsListeners.add(aListener);
+	}
+	
+	public void removeListener(IGridBrowserListener aListener)
+	{
+		itsListeners.remove(aListener);
+	}
+	
+	private void fireMonitorData(int aNodeId, MonitorData aData)
+	{
+		for (IGridBrowserListener theListener : itsListeners)
+		{
+			theListener.monitorData(aNodeId, aData);
+		}
+	}
+
+	
 	public IEventFilter createArgumentFilter(ObjectId aId)
 	{
 		int theId = ObjectCodec.getObjectId(aId, true);
@@ -350,6 +372,11 @@ implements ILogBrowser, RIGridMasterListener
 		aThrowable.printStackTrace();
 	}
 	
+	public void monitorData(int aNodeId, MonitorData aData) 
+	{
+		fireMonitorData(aNodeId, aData);
+	}
+
 	/**
 	 * A MRU buffer that keep track of events identified by their
 	 * external identifier.

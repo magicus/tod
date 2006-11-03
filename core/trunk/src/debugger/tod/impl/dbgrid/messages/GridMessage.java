@@ -35,6 +35,8 @@ public abstract class GridMessage implements Serializable
 			return new GridExceptionGeneratedEvent(aBitStruct);
 		case FIELD_WRITE:
 			return new GridFieldWriteEvent(aBitStruct);
+		case ARRAY_WRITE:
+			return new GridArrayWriteEvent(aBitStruct);
 		case INSTANTIATION:
 			return new GridBehaviorCallEvent(aBitStruct, MessageType.INSTANTIATION);
 		case LOCAL_VARIABLE_WRITE:

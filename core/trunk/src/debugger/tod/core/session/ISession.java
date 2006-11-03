@@ -5,6 +5,8 @@ package tod.core.session;
 
 import java.net.URI;
 
+import javax.swing.JComponent;
+
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.browser.ILogBrowser;
 
@@ -27,4 +29,9 @@ public interface ISession
 	 * Disconnects this session from the target VM, if it is connected 
 	 */
 	public void disconnect();
+	
+	/**
+	 * Creates a console that can be used to control this session.
+	 */
+	public JComponent createConsole();
 }

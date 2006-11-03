@@ -20,7 +20,7 @@ public interface RIDatabaseNode extends Remote
 	 * Returns the id of this node
 	 */
 	public int getNodeId() throws RemoteException;
-
+	
 	/**
 	 * Creates a new event iterator for the given condition.
 	 */

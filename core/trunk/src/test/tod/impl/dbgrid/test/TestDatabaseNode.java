@@ -3,33 +3,26 @@
  */
 package tod.impl.dbgrid.test;
 
+import java.io.File;
 import java.rmi.RemoteException;
-import java.util.Iterator;
 
 import org.junit.Test;
 
 import tod.impl.dbgrid.ConditionGenerator;
 import tod.impl.dbgrid.EventGenerator;
 import tod.impl.dbgrid.Fixtures;
-import tod.impl.dbgrid.dbnode.DatabaseNode;
-import tod.impl.dbgrid.messages.GridEvent;
-import tod.impl.dbgrid.queries.BehaviorCondition;
-import tod.impl.dbgrid.queries.CompoundCondition;
-import tod.impl.dbgrid.queries.Conjunction;
-import tod.impl.dbgrid.queries.Disjunction;
+import tod.impl.dbgrid.dbnode.EventDatabase;
 import tod.impl.dbgrid.queries.EventCondition;
-import tod.impl.dbgrid.queries.HostCondition;
-import tod.impl.dbgrid.queries.ThreadCondition;
 
 public class TestDatabaseNode
 {
-	@Test public void check() throws RemoteException
+	@Test public void check() 
 	{
-		DatabaseNode theNode = new DatabaseNode(false);
+		EventDatabase theDatabase = new EventDatabase(new File("test.bin"));
 		EventGenerator theEventGenerator = createGenerator();
 		
 		System.out.println("filling...");
-		Fixtures.fillNode(theNode, theEventGenerator, 1000000);
+		Fixtures.fillDatabase(theDatabase, theEventGenerator, 1000000);
 		
 		System.out.println("checking...");
 		
@@ -55,7 +48,7 @@ public class TestDatabaseNode
 			System.out.println(theEventCondition);
 			
 			Fixtures.checkCondition(
-					theNode, 
+					theDatabase, 
 					theEventCondition,
 					createGenerator(),
 					5000,

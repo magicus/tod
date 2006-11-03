@@ -9,7 +9,6 @@ import java.util.List;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.messages.GridEvent;
 import zz.utils.RingBuffer;
-import zz.utils.Utils;
 
 /**
  * A buffer that permits to reorder incoming events.
@@ -21,11 +20,11 @@ public class EventReorderingBuffer
 	private RingBuffer<GridEvent> itsBuffer = new RingBuffer<GridEvent>(DebuggerGridConfig.DB_EVENT_BUFFER_SIZE);
 	private OutOfOrderBuffer itsOutOfOrderBuffer = new OutOfOrderBuffer();
 	
-	private DatabaseNode itsDatabaseNode;
+	private EventDatabase itsDatabase;
 	
-	public EventReorderingBuffer(DatabaseNode aDatabaseNode)
+	public EventReorderingBuffer(EventDatabase aDatabase)
 	{
-		itsDatabaseNode = aDatabaseNode;
+		itsDatabase = aDatabase;
 	}
 
 	/**
@@ -167,7 +166,7 @@ public class EventReorderingBuffer
 			long theTimestamp = aEvent.getTimestamp();
 			if (theTimestamp < itsLastAdded) 
 			{
-				itsDatabaseNode.eventDropped();
+				itsDatabase.eventDropped();
 				return;
 			}
 			

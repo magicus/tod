@@ -5,6 +5,8 @@ package tod.core.session;
 
 import java.net.URI;
 
+import javax.swing.JComponent;
+
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.browser.ILogBrowser;
 
@@ -40,4 +42,11 @@ public abstract class DelegatedSession implements ISession
 	{
 		return itsDelegate.getUri();
 	}
+
+	public JComponent createConsole()
+	{
+		return itsDelegate.createConsole();
+	}
+	
+	
 }

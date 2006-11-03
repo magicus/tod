@@ -13,6 +13,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+import javax.swing.JComponent;
+
 import tod.core.ILogCollector;
 import tod.core.LocationRegistrer;
 import tod.core.config.GeneralConfig;
@@ -70,6 +72,11 @@ public class LocalGridSession extends AbstractSession
 	public ILogBrowser getLogBrowser()
 	{
 		return itsBrowser;
+	}
+
+	public JComponent createConsole()
+	{
+		return null;
 	}
 
 	private class MyCollectorFactory implements ICollectorFactory

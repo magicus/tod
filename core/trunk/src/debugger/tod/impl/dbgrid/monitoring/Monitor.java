@@ -3,6 +3,7 @@
  */
 package tod.impl.dbgrid.monitoring;
 
+import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.ThreadMXBean;
@@ -11,6 +12,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,30 +47,6 @@ public class Monitor
 
 	private Monitor()
 	{
-//		MonitorUI.showFrame(this);
-		register(this); // The monitor provides system-wide information
-		Thread thePrinterThread = new Thread()
-		{
-			@Override
-			public void run()
-			{
-				while (true)
-				{
-					try
-					{
-						print(true);
-						sleep(10000);
-					}
-					catch (InterruptedException e)
-					{
-						throw new RuntimeException(e);
-					}
-				}
-			}
-		};
-		thePrinterThread.setDaemon(true);
-		thePrinterThread.setPriority(Thread.MAX_PRIORITY);
-		thePrinterThread.start();
 	}
 	
 	private List<Object> itsMonitoredObjects = new ArrayList<Object>();
@@ -76,12 +54,34 @@ public class Monitor
 	public synchronized void register(Object aMonitored)
 	{
 		itsMonitoredObjects.add(aMonitored);
-//		System.out.println("Monitor registered: "+aMonitored);
 	}
 	
 	public synchronized void unregister(Object aMonitored)
 	{
 		itsMonitoredObjects.remove(aMonitored);
+	}
+	
+	/**
+	 * Prints the given monitor data.
+	 */
+	public static String format(MonitorData aData, boolean aIndividual)
+	{
+		Collections.sort(aData.getKeyData(), new Comparator<KeyMonitorData>()
+				{
+					public int compare(KeyMonitorData aD1, KeyMonitorData aD2)
+					{
+						return aD1.key.compareTo(aD2.key);
+					}
+				});
+		
+		StringBuilder theBuilder = new StringBuilder();
+		for (KeyMonitorData theMonitorData : aData.getKeyData())
+		{
+			theBuilder.append(theMonitorData.toString(aIndividual));
+			theBuilder.append('\n');
+		}
+		
+		return theBuilder.toString();
 	}
 	
 	/**
@@ -97,20 +97,9 @@ public class Monitor
 			System.out.println("non-heap mem: " + MEMORY_MX_BEAN.getNonHeapMemoryUsage());
 		}
 
+		MonitorData theData = collectData();
+		System.out.println(format(theData, aIndividual));
 		
-		List<KeyMonitorData> theData = getProbeData();
-		Collections.sort(theData, new Comparator<KeyMonitorData>()
-				{
-					public int compare(KeyMonitorData aD1, KeyMonitorData aD2)
-					{
-						return aD1.key.compareTo(aD2.key);
-					}
-				});
-		
-		for (KeyMonitorData theMonitorData : theData)
-		{
-			System.out.println(theMonitorData.toString(aIndividual));
-		}
 		System.out.println("---------------");
 		System.out.println();
 	}
@@ -118,7 +107,7 @@ public class Monitor
 	/**
 	 * Collects and aggregates all probe data from the registered objects.
 	 */
-	public List<KeyMonitorData> getProbeData()
+	public MonitorData collectData()
 	{
 		List<KeyMonitorData> theData = new ArrayList<KeyMonitorData>();
 		
@@ -143,15 +132,18 @@ public class Monitor
 			AggregationType theAggregationType = theEntry.getValue().get(0).getAggregationType(); 
 			
 			Object theAggregateValue = theAggregationType.aggregate(theValues);
-			theData.add(new KeyMonitorData(theEntry.getKey(), theAggregateValue, theIndividualValues));
+			theData.add(new KeyMonitorData(
+					theEntry.getKey(),
+					theAggregationType,
+					theAggregateValue, 
+					theIndividualValues));
 		}
 		
-		return theData;
+		return new MonitorData(new Date(), theData);
 	}
 	
 	/**
 	 * Collects all probe instances in the currently registered objects.
-	 * @return
 	 */
 	private synchronized ListMap<String, ProbeInstance> getProbeInstances()
 	{
@@ -258,19 +250,62 @@ public class Monitor
 		}
 	}
 	
-	public static class KeyMonitorData
+	/**
+	 * Aggregates all monitor data within the VM at a given instant.
+	 * @author gpothier
+	 */
+	public static class MonitorData implements Serializable
 	{
+		private static final long serialVersionUID = -5173624638872847819L;
+		
+		private Date itsTimestamp;
+		private List<KeyMonitorData> itsKeyData;
+		
+		public MonitorData(Date aTimestamp, List<KeyMonitorData> aKeyData)
+		{
+			itsTimestamp = aTimestamp;
+			itsKeyData = aKeyData;
+		}
+
+		/**
+		 * The moment at which the data was collected
+		 */
+		public Date getTimestamp()
+		{
+			return itsTimestamp;
+		}
+
+		/**
+		 * A list of monitor data for each existing key.
+		 */
+		public List<KeyMonitorData> getKeyData()
+		{
+			return itsKeyData;
+		}
+	}
+	
+	/**
+	 * Aggregates the monitor data for a given key
+	 * @author gpothier
+	 */
+	public static class KeyMonitorData implements Serializable
+	{
+		private static final long serialVersionUID = -6803392321363851054L;
+		
 		public final String key;
+		public final AggregationType aggregationType;
 		public final Object aggregateValue;
 		public final List<IndividualProbeValue> individualValues;
 		
 		public KeyMonitorData(
 				String aKey, 
+				AggregationType aAggregationType,
 				Object aAggregateValue, 
 				List<IndividualProbeValue> aIndividualValues)
 		{
 			key = aKey;
 			aggregateValue = aAggregateValue;
+			aggregationType = aAggregationType;
 			individualValues = aIndividualValues;
 		}
 		
@@ -321,8 +356,10 @@ public class Monitor
 		else return ""+aValue;
 	}
 	
-	public static class IndividualProbeValue
+	public static class IndividualProbeValue implements Serializable
 	{
+		private static final long serialVersionUID = -5344174148287045665L;
+		
 		public final String instanceName;
 		public final Object value;
 		

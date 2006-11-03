@@ -37,7 +37,7 @@ public class DebugFlags
 	 * Artificially limits the number of of object indexes.
 	 * Set to 0 to disable the limit
 	 */
-	public static final int ALIAS_OBJECTS = 150000;
+	public static final int ALIAS_OBJECTS = 0;//150000;
 	
 	/**
 	 * Disables the bytecode location index.

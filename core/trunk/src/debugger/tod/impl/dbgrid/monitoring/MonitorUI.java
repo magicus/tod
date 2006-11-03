@@ -4,40 +4,35 @@
 package tod.impl.dbgrid.monitoring;
 
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.Timer;
 
 import tod.impl.dbgrid.monitoring.Monitor.IndividualProbeValue;
 import tod.impl.dbgrid.monitoring.Monitor.KeyMonitorData;
+import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
 import zz.utils.treetable.AbstractTreeTableModel;
 import zz.utils.treetable.JTreeTable;
 
 public class MonitorUI extends JPanel
 {
 	private JTreeTable itsTreeTable;
-	private Monitor itsMonitor;
 	
-	public MonitorUI(Monitor aMonitor)
+	public MonitorUI()
 	{
-		itsMonitor = aMonitor;
 		createUI();
 	}
 	
-	public static void showFrame(Monitor aMonitor)
-	{
-		MonitorUI theUI = new MonitorUI(aMonitor);
-		JFrame theFrame = new JFrame("Monitor");
-		theFrame.setContentPane(theUI);
-		theFrame.pack();
-		theFrame.setVisible(true);
-	}
+//	public static void showFrame(Monitor aMonitor)
+//	{
+//		MonitorUI theUI = new MonitorUI(aMonitor);
+//		JFrame theFrame = new JFrame("Monitor");
+//		theFrame.setContentPane(theUI);
+//		theFrame.pack();
+//		theFrame.setVisible(true);
+//	}
 
 	private void createUI()
 	{
@@ -45,20 +40,14 @@ public class MonitorUI extends JPanel
 		
 		itsTreeTable = new JTreeTable();
 		add(new JScrollPane(itsTreeTable), BorderLayout.CENTER);
-		
-		new Timer(10*1000, new ActionListener()
-		{
-			public void actionPerformed(ActionEvent aE)
-			{
-				update();
-			}
-		}).start();
 	}
-	
-	private void update()
+
+	/**
+	 * Sets the data shown in this UI.
+	 */
+	public void setData(MonitorData aData)
 	{
-		List<KeyMonitorData> theProbeData = itsMonitor.getProbeData();
-		itsTreeTable.setTreeTableModel(new MyTreeModel(theProbeData));
+		itsTreeTable.setTreeTableModel(new MyTreeModel(aData.getKeyData()));		
 	}
 	
 	private static class MyTreeModel extends AbstractTreeTableModel

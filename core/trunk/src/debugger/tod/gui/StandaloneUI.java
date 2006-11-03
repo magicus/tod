@@ -4,19 +4,22 @@
 package tod.gui;
 
 import java.net.URI;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
 
+import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 
 import tod.core.database.event.ILogEvent;
 import tod.core.session.ISession;
 import tod.impl.dbgrid.LocalGridSession;
 import tod.impl.dbgrid.RemoteGridSession;
+import zz.utils.ui.StackLayout;
 
-public class StandaloneUI extends MinerUI
+public class StandaloneUI extends JPanel
 {
 	private ISession itsSession;
+	private MyTraceView itsTraceView;
 
 	public StandaloneUI(URI aUri)
 	{
@@ -36,16 +39,34 @@ public class StandaloneUI extends MinerUI
 		{
 			itsSession = LocalGridSession.create();
 		}
+		
+		createUI();
 	}
 
-	@Override
-	protected ISession getSession()
+	private void createUI()
 	{
-		return itsSession;
+		setLayout(new StackLayout());
+		JTabbedPane theTabbedPane = new JTabbedPane();
+		add (theTabbedPane);
+		
+		itsTraceView = new MyTraceView();
+		theTabbedPane.addTab("Trace view", itsTraceView);
+		
+		JComponent theConsole = itsSession.createConsole();
+		if (theConsole != null) theTabbedPane.addTab("Console", theConsole);
 	}
 
-	public void gotoEvent(ILogEvent aEvent)
+	private class MyTraceView extends MinerUI
 	{
+		@Override
+		protected ISession getSession()
+		{
+			return itsSession;
+		}
+
+		public void gotoEvent(ILogEvent aEvent)
+		{
+		}
 	}
 	
 	public static void main(String[] args)

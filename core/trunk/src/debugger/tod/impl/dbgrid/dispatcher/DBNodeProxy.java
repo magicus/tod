@@ -67,6 +67,7 @@ public class DBNodeProxy
 		}
 	}
 
+	
 	/**
 	 * Pushes an event so that it will be stored by the node behind this proxy.
 	 */
@@ -133,7 +134,24 @@ public class DBNodeProxy
 			
 			int theCount = itsInStream.readInt();
 			System.out.println("DBNodeProxy: database node flushed "+theCount+" events.");
-			itsSocket.close();
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public void clear()
+	{
+		try
+		{
+			sendBuffer();
+			
+			itsOutStream.writeByte(DatabaseNode.CMD_CLEAR);
+			itsOutStream.flush();
+			
+			int theResult = itsInStream.readInt();
+			assert theResult == 1;
 		}
 		catch (IOException e)
 		{

@@ -8,6 +8,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JComponent;
+
 import tod.core.ILogCollector;
 import tod.core.LocationRegistrer;
 import tod.core.config.GeneralConfig;
@@ -59,6 +61,11 @@ public class LocalSession extends AbstractSession
 	public ILogBrowser getLogBrowser()
 	{
 		return itsBrowser;
+	}
+	
+	public JComponent createConsole()
+	{
+		return null;
 	}
 
 	private class MyCollectorFactory implements ICollectorFactory
