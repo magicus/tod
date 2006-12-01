@@ -140,7 +140,8 @@ public class TODPluginUtils
 	    int theLineNumber = theBehavior.getLineNumber(theBytecodeIndex);
 	    ITypeInfo theType = theBehavior.getType();
 	    
-	    SourceRevealer.reveal(aSession.getJavaProject(), theType.getName(), theLineNumber);
+	    String theTypeName = theType.getName().replace('$', '.');
+	    SourceRevealer.reveal(aSession.getJavaProject(), theTypeName, theLineNumber);
 	}
 	
 	public static void gotoSource (DebuggingSession aSession, IBehaviorInfo aBehavior)
