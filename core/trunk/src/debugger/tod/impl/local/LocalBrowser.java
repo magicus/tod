@@ -4,10 +4,10 @@
 package tod.impl.local;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import tod.core.Output;
 import tod.core.database.browser.ICFlowBrowser;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
@@ -45,6 +45,13 @@ public class LocalBrowser implements ILogBrowser
 	private List<IHostInfo> itsHosts = new ArrayList<IHostInfo>();
 	private List<IThreadInfo> itsThreads = new ArrayList<IThreadInfo>();
 	private final ILocationsRepository itsLocationsRepository;
+	
+	/**
+	 * Temporary. Holds registered objects.
+	 */
+	private Map<Long, Object> itsRegisteredObjects = new HashMap<Long, Object>();
+	
+
 	
 	public LocalBrowser(ILocationsRepository aLocationsRepository)
 	{
@@ -100,6 +107,16 @@ public class LocalBrowser implements ILogBrowser
 	public long getLastTimestamp()
 	{
 		return itsEvents.getLastTimestamp();
+	}
+	
+	public void register(long aObjectUID, Object aObject)
+	{
+		itsRegisteredObjects.put(aObjectUID, aObject);
+	}
+	
+	public Object getRegistered(long aId)
+	{
+		return itsRegisteredObjects.get(aId);
 	}
 
 	public IEventBrowser createBrowser (IEventFilter aFilter)

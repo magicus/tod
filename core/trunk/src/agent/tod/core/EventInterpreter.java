@@ -69,8 +69,8 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		T theThread = getThreadData();
 		theTimestamp = theThread.transformTimestamp(theTimestamp);
 		
-		
 		FrameInfo theFrame = theThread.currentFrame();
+		short theDepth = (short) (theThread.getCurrentDepth()-1);
 		
 		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
 				"logBehaviorEnter(%d, %d, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s",
@@ -80,7 +80,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				getObjectId(aObject),
 				aArguments,
 				theThread.getId(),
-				theThread.getCurrentDepth(),
+				theDepth,
 				theFrame));
 		
 		if (theFrame.directParent && theFrame.callType != null)
@@ -92,7 +92,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 					itsCollector,
 					theThread,
 					theFrame.parentTimestamp,
-					theThread.getCurrentDepth(),
+					theDepth,
 					theTimestamp,
 					theFrame.bytecodeIndex,
 					true,
@@ -377,7 +377,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				theThread.getCurrentDepth(),
 				theFrame));
 
-		theThread.pushFrame(true, aBehaviorId, false, theFrame.parentTimestamp, aCallType, aOperationBytecodeIndex);
+		theThread.pushFrame(true, aBehaviorId, true, theFrame.parentTimestamp, aCallType, aOperationBytecodeIndex);
 	}
 	
 	public void logBeforeBehaviorCall(
@@ -427,7 +427,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		if (DISABLE_INTERPRETER) return;
 		// Nothing to do here, maybe we don't need this message
 		T theThread = getThreadData();
-		FrameInfo theFrame = theThread.popFrame();
+		FrameInfo theFrame = theThread.currentFrame();
 		
 		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
 				"logAfterBehaviorCall()\n thread: %d, depth: %d\n frame: %s",
@@ -484,7 +484,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		T theThread = getThreadData();
 		theTimestamp = theThread.transformTimestamp(theTimestamp);
 
-		FrameInfo theFrame = theThread.currentFrame();
+		FrameInfo theFrame = theThread.popFrame();
 		assert theFrame.behavior == aBehaviorId;
 		
 		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
@@ -505,7 +505,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				theTimestamp,
 				aOperationBytecodeIndex,
 				aBehaviorId,
-				false,
+				true,
 				aException);
 	}
 	

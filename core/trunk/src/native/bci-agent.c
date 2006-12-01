@@ -381,6 +381,7 @@ cbException(
 	jmethodID catch_method,
 	jlocation catch_location)
 {
+	return;
 	if (VM_STARTED == 0) return;
 	
 	char* methodName;

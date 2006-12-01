@@ -7,6 +7,8 @@ import java.util.List;
 
 import tod.core.ILocationRegistrer.LocalVariableInfo;
 import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.IFieldWriteEvent;
+import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 
@@ -67,4 +69,10 @@ public interface IVariablesInspector
 	 * current event was executed.
 	 */
 	public Object getVariableValue (LocalVariableInfo aVariable);
+	
+	/**
+	 * Returns the event that set the variable to the value it had at
+	 * the time the current event was executed.
+	 */
+	public ILocalVariableWriteEvent getVariableSetter(LocalVariableInfo aVariable);
 }

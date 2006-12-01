@@ -302,4 +302,8 @@ public class GridEventCollector extends EventCollector
 		dispatch(itsCallEvent);
 	}
 
+	public void register(long aObjectUID, Object aObject)
+	{
+		// TODO: implement
+	}
 }

@@ -89,7 +89,7 @@ public class EventMural extends SVGGraphicContainer
 	
 	private BufferedImage itsImage;
 	private IDisplay itsDisplay;
-	private boolean itsShowBaloons = false;
+	private boolean itsShowBaloons = true;
 	
 	/**
 	 * Constructs a new mural

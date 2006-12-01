@@ -12,6 +12,7 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IVariablesInspector;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ICallerSideEvent;
+import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.gui.FontConfig;
@@ -112,8 +113,9 @@ public class CFlowVariablesBuilder
 		for (LocalVariableInfo theVariable : theVariables)
 		{
 			if ("this".equals(theVariable.getVariableName())) continue;
-			Object theValue = theInspector.getVariableValue(theVariable);
-			theContainer.pChildren().add(buildVariableLine(theVariable, theCurrentObject, theValue));
+			ILocalVariableWriteEvent theSetter = theInspector.getVariableSetter(theVariable);
+			Object theValue = theInspector.getVariableValue(theVariable); // The value might be the initial parameter value, in which case there is no setter
+			theContainer.pChildren().add(buildVariableLine(theVariable, theCurrentObject, theValue, theSetter));
 		}
 
 		theContainer.setLayoutManager(new StackLayout());
@@ -124,18 +126,23 @@ public class CFlowVariablesBuilder
 	{
 		SVGGraphicContainer theContainer = new SVGGraphicContainer();
 		
-		theContainer.pChildren().add(SVGFlowText.create("Behavior: ", HEADER_FONT, Color.BLACK));
-		theContainer.pChildren().add(Hyperlinks.behavior(getGUIManager(), aBehavior, HEADER_FONT));
-		theContainer.pChildren().add(SVGFlowText.create(" ("+aBehavior.getType().getName()+")", HEADER_FONT, Color.BLACK));
+		if (aBehavior != null)
+		{
+			theContainer.pChildren().add(SVGFlowText.create("Behavior: ", HEADER_FONT, Color.BLACK));
+			theContainer.pChildren().add(Hyperlinks.behavior(getGUIManager(), aBehavior, HEADER_FONT));
+			theContainer.pChildren().add(SVGFlowText.create(" ("+aBehavior.getType().getName()+")", HEADER_FONT, Color.BLACK));
+
+			theContainer.setLayoutManager(new SequenceLayout());
+		}
 		
-		theContainer.setLayoutManager(new SequenceLayout());
 		return theContainer;
 	}
 	
 	private IRectangularGraphicObject buildVariableLine(
 			LocalVariableInfo aVariable, 
 			Object aCurrentObject, 
-			Object aValue)
+			Object aValue, 
+			ILocalVariableWriteEvent aSetter)
 	{
 		SVGGraphicContainer theContainer = new SVGGraphicContainer();
 		
@@ -150,6 +157,18 @@ public class CFlowVariablesBuilder
 				aCurrentObject,
 				aValue,
 				FONT));
+		
+		if (aSetter != null)
+		{
+			theContainer.pChildren().add(SVGFlowText.create(" (", FONT, Color.BLACK));
+			theContainer.pChildren().add(Hyperlinks.event(
+					getGUIManager(),
+					getEventTrace(),
+					"why?", 
+					aSetter, 
+					FONT));
+			theContainer.pChildren().add(SVGFlowText.create(")", FONT, Color.BLACK));
+		}
 		
 		theContainer.setLayoutManager(new SequenceLayout());
 		return theContainer;		

@@ -407,26 +407,10 @@ public class CollectorPacketWriter
 			sendMessageType(aStream, MessageType.DOUBLE);
 			aStream.writeDouble(theDouble.doubleValue());
 		}
-		else if (aValue instanceof String)
+		else if ((aValue instanceof String)
+				|| (aValue instanceof Throwable))
 		{
-			long theObjectId = ObjectIdentity.get(aValue);
-			
-			if (theObjectId > 0)
-			{
-				// Already registered, we only send object id.
-				sendMessageType(aStream, MessageType.OBJECT_UID);
-				aStream.writeLong(theObjectId);
-			}
-			else
-			{
-				// First time this string appears, register it.
-				String theString = (String) aValue;
-				sendMessageType(aStream, MessageType.STRING);
-				aStream.writeLong(-theObjectId);
-				MyObjectOutputStream theStream = new MyObjectOutputStream(aStream);
-				theStream.writeObject(theString);
-				theStream.drain();
-			}
+			sendRegisteredObject(aStream, aValue);
 		}
 		else
 		{
@@ -440,6 +424,28 @@ public class CollectorPacketWriter
 //			sendMessageType(aStream, MessageType.OBJECT_HASH);
 //			aStream.writeInt(theHash);
 //		}
+	}
+	
+	private static void sendRegisteredObject(DataOutputStream aStream, Object aObject) throws IOException
+	{
+		long theObjectId = ObjectIdentity.get(aObject);
+		
+		if (theObjectId > 0)
+		{
+			// Already registered, we only send object id.
+			sendMessageType(aStream, MessageType.OBJECT_UID);
+			aStream.writeLong(theObjectId);
+		}
+		else
+		{
+			// First time this object appears, register it.
+			sendMessageType(aStream, MessageType.REGISTERED);
+			aStream.writeLong(-theObjectId);
+			MyObjectOutputStream theStream = new MyObjectOutputStream(aStream);
+			theStream.writeObject(aObject);
+			theStream.drain();
+		}
+
 	}
 
 	private static void sendMessageType (DataOutputStream aStream, MessageType aMessageType) throws IOException

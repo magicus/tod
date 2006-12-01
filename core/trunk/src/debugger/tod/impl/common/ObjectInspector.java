@@ -144,7 +144,15 @@ public class ObjectInspector implements IObjectInspector
 	
 	public List<Object> getFieldValue(IFieldInfo aField)
 	{
+		List<IFieldWriteEvent> theSetters = getFieldSetter(aField);
 		List<Object> theResult = new ArrayList<Object>();
+		for (IFieldWriteEvent theSetter : theSetters) theResult.add(theSetter.getValue());
+		return theResult;
+	}
+	
+	public List<IFieldWriteEvent> getFieldSetter(IFieldInfo aField)
+	{
+		List<IFieldWriteEvent> theResult = new ArrayList<IFieldWriteEvent>();
 		
 		IEventBrowser theBrowser = getBrowser(aField);
 		theBrowser.setPreviousTimestamp(itsTimestamp);
@@ -158,7 +166,7 @@ public class ObjectInspector implements IObjectInspector
 			
 			if (thePreviousTimestamp == -1) thePreviousTimestamp = theTimestamp;
 			
-			if (theTimestamp == thePreviousTimestamp) theResult.add(theEvent.getValue());
+			if (theTimestamp == thePreviousTimestamp) theResult.add(theEvent);
 			else break;
 		}
 		

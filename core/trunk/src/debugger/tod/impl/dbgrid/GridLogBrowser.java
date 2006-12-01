@@ -210,6 +210,12 @@ implements ILogBrowser, RIGridMasterListener
 		return theCompound;
 	}
 	
+	public Object getRegistered(long aId)
+	{
+		// TODO: implement
+		return null;
+	}
+
 	public long getEventsCount()
 	{
 		return itsEventsCount;

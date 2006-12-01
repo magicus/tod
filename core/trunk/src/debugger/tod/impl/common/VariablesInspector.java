@@ -5,6 +5,7 @@ package tod.impl.common;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import tod.core.ILocationRegistrer.LocalVariableInfo;
@@ -24,8 +25,8 @@ public class VariablesInspector implements IVariablesInspector
 	
 	public VariablesInspector(IBehaviorCallEvent aBehaviorCall)
 	{
-		assert aBehaviorCall.isDirectParent();
-		itsBehaviorCall = aBehaviorCall;
+//		assert aBehaviorCall.isDirectParent();
+		itsBehaviorCall = aBehaviorCall.isDirectParent() ? aBehaviorCall : null;
 	}
 
 	public IBehaviorCallEvent getBehaviorCall()
@@ -35,14 +36,16 @@ public class VariablesInspector implements IVariablesInspector
 	
 	public IBehaviorInfo getBehavior()
 	{
-		return getBehaviorCall().getExecutedBehavior();
+		return getBehaviorCall() != null ? getBehaviorCall().getExecutedBehavior() : null;
 	}
 	
 	public List<LocalVariableInfo> getVariables()
 	{
 		if (itsVariables == null)
 		{
-			itsVariables = Arrays.asList(getBehavior().getLocalVariables());
+			itsVariables = getBehaviorCall() != null ?
+					Arrays.asList(getBehavior().getLocalVariables())
+					: Collections.EMPTY_LIST;
 		}
 		return itsVariables;
 	}
@@ -60,6 +63,8 @@ public class VariablesInspector implements IVariablesInspector
 	
 	public void setCurrentEvent(ILogEvent aEvent)
 	{
+		if (getBehaviorCall() == null) return;
+		
 		int theIndex = getBehaviorCall().getChildren().indexOf(aEvent);
 		if (theIndex == -1) throw new RuntimeException("Event not found in method execution");
 		
@@ -74,6 +79,9 @@ public class VariablesInspector implements IVariablesInspector
 
 	public Object getVariableValue(LocalVariableInfo aVariable)
 	{
+		if (getBehaviorCall() == null) return null;
+		
+		// TODO: Use proper cursor APIs!!!!!!
 		for (int i=itsCurrentIndex; i>=0; i--)
 		{
 			ILogEvent theEvent = getBehaviorCall().getChildren().get(i);
@@ -107,6 +115,28 @@ public class VariablesInspector implements IVariablesInspector
 		
 		return null;
 	}
+
+	public ILocalVariableWriteEvent getVariableSetter(LocalVariableInfo aVariable)
+	{
+		if (getBehaviorCall() == null) return null;
+		
+		// TODO: Use proper cursor APIs!!!!!!
+		for (int i=itsCurrentIndex; i>=0; i--)
+		{
+			ILogEvent theEvent = getBehaviorCall().getChildren().get(i);
+			if (theEvent instanceof ILocalVariableWriteEvent)
+			{
+				ILocalVariableWriteEvent theLocalVariableWriteEvent = (ILocalVariableWriteEvent) theEvent;
+				if (theLocalVariableWriteEvent.getVariable() == aVariable)
+				{
+					return theLocalVariableWriteEvent;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
 	
 	
 }

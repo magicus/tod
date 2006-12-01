@@ -65,6 +65,12 @@ public interface ILogBrowser
 	public Iterable<IHostInfo> getHosts();
 	
 	/**
+	 * Returns the registered object (eg. string) that corresponds to the
+	 * given object id.
+	 */
+	public Object getRegistered(long aId);
+	
+	/**
 	 * Creates a browser that only reports events that pass a specific
 	 * filter.
 	 */

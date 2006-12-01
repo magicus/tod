@@ -112,7 +112,7 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 	
 	public void expand()
 	{
-		if (! pExpanded().get().booleanValue()) doExpand();
+		pExpanded().set(true);
 	}
 	
 	private void doExpand()

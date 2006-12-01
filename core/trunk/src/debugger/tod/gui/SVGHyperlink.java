@@ -15,6 +15,7 @@ import zz.utils.ui.text.XFont;
 
 public class SVGHyperlink extends SVGFlowText
 {
+	private static final boolean WITH_CTRL = false;
 	private IGUIManager itsGUIManager;
 	private Seed itsSeed;
 	private boolean itsMouseOver = false;
@@ -28,7 +29,7 @@ public class SVGHyperlink extends SVGFlowText
 	@Override
 	public void mouseEntered(GraphicObjectContext aContext, MouseEvent aEvent)
 	{
-		setMouseOver(MouseModifiers.hasCtrl(aEvent));
+		setMouseOver(! WITH_CTRL || MouseModifiers.hasCtrl(aEvent));
 	}
 	
 	@Override
@@ -40,7 +41,7 @@ public class SVGHyperlink extends SVGFlowText
 	@Override
 	public boolean mouseMoved(GraphicObjectContext aContext, MouseEvent aEvent, Point2D aPoint)
 	{
-		boolean theCtrl = MouseModifiers.hasCtrl(aEvent); 
+		boolean theCtrl = ! WITH_CTRL || MouseModifiers.hasCtrl(aEvent); 
 		setMouseOver(theCtrl);
 		return theCtrl;
 	}
@@ -58,9 +59,9 @@ public class SVGHyperlink extends SVGFlowText
 	@Override
 	public boolean mouseClicked(GraphicObjectContext aContext, MouseEvent aEvent, Point2D aPoint)
 	{
-		if (MouseModifiers.hasCtrl(aEvent))
+		if (! WITH_CTRL || MouseModifiers.hasCtrl(aEvent))
 		{
-			itsGUIManager.openSeed(itsSeed, MouseModifiers.hasCtrl(aEvent));
+			itsGUIManager.openSeed(itsSeed, false);
 			return true;
 		}
 		else return false;

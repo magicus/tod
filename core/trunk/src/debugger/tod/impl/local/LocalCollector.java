@@ -34,7 +34,7 @@ import zz.utils.Stack;
  */
 public class LocalCollector extends EventCollector
 {
-	private static final boolean LOG = false;
+	private static final boolean LOG = true;
 	
 	private final LocalBrowser itsBrowser;
 	
@@ -317,7 +317,7 @@ public class LocalCollector extends EventCollector
 			Object[] aArguments)
 	{
 		if (LOG) System.out.println(String.format(
-				"methodCall   (thread: %d, p.ts: %s, depth: %d, ts: %s, direct: %s, c.bid: %s, e.bid: %s, target: %s, args: %s",
+				"methodCall   (thread: %d, p.ts: %s, depth: %d, ts: %s, direct: %s, c.bid: %s, e.bid: %s, target: %s, args: %s, bci: %d)",
 				aThreadId,
 				AgentUtils.formatTimestamp(aParentTimestamp),
 				aDepth,
@@ -326,7 +326,8 @@ public class LocalCollector extends EventCollector
 				formatBehavior(aCalledBehaviorId),
 				formatBehavior(aExecutedBehaviorId),
 				aTarget,
-				aArguments));
+				aArguments,
+				aOperationBytecodeIndex));
 		
 		MethodCallEvent theEvent = new MethodCallEvent();
 		LocalThreadInfo theThread = getThread(aThreadId);
@@ -411,6 +412,11 @@ public class LocalCollector extends EventCollector
 	protected void thread(ThreadInfo aThread)
 	{
 		itsBrowser.addThread(aThread);
+	}
+	
+	public void register(long aObjectUID, Object aObject)
+	{
+		itsBrowser.register(aObjectUID, aObject);
 	}
 	
 	private static class LocalThreadInfo extends ThreadInfo

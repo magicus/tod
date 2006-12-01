@@ -108,5 +108,8 @@ public interface ILogCollector
 			long aJVMThreadId,
 			String aName);
 	
-	public void registerString(long aObjectUID, String aString);
+	/**
+	 * Registers an object whose state cannot be otherwise determined (eg String, Exception)
+	 */
+	public void register(long aObjectUID, Object aObject);
 }

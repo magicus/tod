@@ -109,11 +109,6 @@ public abstract class EventCollector implements ILogCollector
 		return new ThreadInfo(aHost, aId, aJVMId, aName);
 	}
 	
-	public void registerString(long aObjectUID, String aString)
-	{
-		//TODO: implement
-	}
-	
 	/**
 	 * This method fetches the behavior identified by the supplied names.
 	 */

@@ -10,6 +10,7 @@ import java.util.List;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ObjectId;
@@ -97,8 +98,8 @@ public class CFlowObjectsBuilder
 
 		for (IFieldInfo theField : theFields)
 		{
-			List<Object> theValues = theInspector.getFieldValue(theField);
-			theContainer.pChildren().add(buildFieldLine(theField, theCurrentObject, theValues));
+			List<IFieldWriteEvent> theSetters = theInspector.getFieldSetter(theField);
+			theContainer.pChildren().add(buildFieldLine(theField, theCurrentObject, theSetters));
 		}
 
 		theContainer.setLayoutManager(new StackLayout());
@@ -119,7 +120,7 @@ public class CFlowObjectsBuilder
 	private IRectangularGraphicObject buildFieldLine(
 			IFieldInfo aField, 
 			Object aCurrentObject, 
-			List<Object> aValues)
+			List<IFieldWriteEvent> aSetters)
 	{
 		SVGGraphicContainer theContainer = new SVGGraphicContainer();
 		
@@ -130,7 +131,7 @@ public class CFlowObjectsBuilder
 		theContainer.pChildren().add(SVGFlowText.create(theText, FONT, Color.BLACK));
 		
 		boolean theFirst = true;
-		for (Object theValue : aValues)
+		for (IFieldWriteEvent theSetter : aSetters)
 		{
 			if (theFirst) theFirst = false;
 			else theContainer.pChildren().add(SVGFlowText.create(" / ", FONT, Color.BLACK));
@@ -138,9 +139,17 @@ public class CFlowObjectsBuilder
 					getGUIManager(), 
 					getEventTrace(), 
 					aCurrentObject,
-					theValue,
+					theSetter.getValue(),
 					FONT));
 			
+			theContainer.pChildren().add(SVGFlowText.create(" (", FONT, Color.BLACK));
+			theContainer.pChildren().add(Hyperlinks.event(
+					getGUIManager(),
+					getEventTrace(),
+					"why?", 
+					theSetter, 
+					FONT));
+			theContainer.pChildren().add(SVGFlowText.create(")", FONT, Color.BLACK));
 		}
 		
 		theContainer.setLayoutManager(new SequenceLayout());

@@ -3,6 +3,9 @@
  */
 package tod.gui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.AbstractListModel;
 
 import tod.core.database.browser.IEventBrowser;
@@ -15,19 +18,22 @@ public class EventListModel extends AbstractListModel
 {
 	private IEventBrowser itsBrowser;
 	
+	// TODO: this is a hack, UI should be changed so that we don't use lists
+	private List itsList = new ArrayList();
+	
 	public EventListModel (IEventBrowser aBrowser)
 	{
 		itsBrowser = aBrowser;
+		while (aBrowser.hasNext()) itsList.add(aBrowser.next());
 	}
 
 	public int getSize()
 	{
-		return (int) itsBrowser.getEventCount();
+		return itsList.size();
 	}
 
 	public Object getElementAt(int aIndex)
 	{
-		throw new UnsupportedOperationException();
-//		return itsBrowser.getEvent(aIndex);
+		return itsList.get(aIndex);
 	}
 }

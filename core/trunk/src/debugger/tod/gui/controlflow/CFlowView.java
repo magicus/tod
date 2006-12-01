@@ -119,12 +119,12 @@ public class CFlowView extends LogView
 		JSplitPane theSplitPane1 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		theSplitPane1.setLeftComponent(theCFlowPanel);
 		
-//		JSplitPane theSplitPane2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-//		theSplitPane2.setLeftComponent(new JScrollPane(itsVariablesPanel));
-//		theSplitPane2.setRightComponent(new JScrollPane(itsObjectsPanel));
-//		
-//		theSplitPane1.setRightComponent(theSplitPane2);
-		theSplitPane1.setRightComponent(new JScrollPane(itsVariablesPanel));
+		JSplitPane theSplitPane2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		theSplitPane2.setLeftComponent(new JScrollPane(itsVariablesPanel));
+		theSplitPane2.setRightComponent(new JScrollPane(itsObjectsPanel));
+		
+		theSplitPane1.setRightComponent(theSplitPane2);
+//		theSplitPane1.setRightComponent(new JScrollPane(itsVariablesPanel));
 		
 		add(theSplitPane1, BorderLayout.CENTER);
 		
@@ -151,6 +151,16 @@ public class CFlowView extends LogView
 			{
 				itsStepper.setCurrentEvent(itsSeed.pSelectedEvent().get());
 				itsStepper.backwardStepInto();
+				selectEvent(itsStepper.getCurrentEvent());
+			}
+		}));
+		
+		theToolbar.add(new JButton(new SimpleAction("/\\", "Step out")
+		{
+			public void actionPerformed(ActionEvent aE)
+			{
+				itsStepper.setCurrentEvent(itsSeed.pSelectedEvent().get());
+				itsStepper.stepOut();
 				selectEvent(itsStepper.getCurrentEvent());
 			}
 		}));

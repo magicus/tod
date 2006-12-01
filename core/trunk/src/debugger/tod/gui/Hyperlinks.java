@@ -6,9 +6,11 @@ package tod.gui;
 import java.awt.Color;
 
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.gui.seed.CFlowSeed;
 import tod.gui.seed.ObjectInspectorSeed;
 import zz.csg.api.IRectangularGraphicObject;
 import zz.csg.impl.figures.SVGFlowText;
@@ -29,6 +31,25 @@ public class Hyperlinks
 	public static IRectangularGraphicObject behavior(IGUIManager aGUIManager, IBehaviorInfo aBehavior, XFont aFont)
 	{
 		return SVGHyperlink.create(aGUIManager, null, aBehavior.getName(), aFont, Color.BLUE);		
+	}
+	
+	/**
+	 * An hyperlink that jumps to the cflow of the given event.
+	 */
+	public static IRectangularGraphicObject event(
+			IGUIManager aGUIManager, 
+			ILogBrowser aBrowser, 
+			String aText,
+			ILogEvent aEvent, 
+			XFont aFont)
+	{
+		CFlowSeed theSeed = new CFlowSeed(aGUIManager, aBrowser, aEvent);
+		return SVGHyperlink.create(
+				aGUIManager, 
+				theSeed, 
+				aText,
+				aFont, 
+				Color.BLUE);
 	}
 	
 	public static IRectangularGraphicObject object(
@@ -53,10 +74,18 @@ public class Hyperlinks
 			Object aObject, 
 			XFont aFont)
 	{
+		// Check if this is a registered object.
+		if (aObject instanceof ObjectId.ObjectUID)
+		{
+			ObjectId.ObjectUID theObject = (ObjectId.ObjectUID) aObject;
+			Object theRegistered = aEventTrace.getRegistered(theObject.getId());
+			if (theRegistered != null) aObject = theRegistered;
+		}
 		
 		if (aObject instanceof ObjectId)
 		{
 			ObjectId theId = (ObjectId) aObject;
+			
 			ITypeInfo theType = aEventTrace.createObjectInspector(theId).getType();
 
 			String theText;
@@ -74,6 +103,19 @@ public class Hyperlinks
 		{
 			String theString = (String) aObject;
 			return SVGFlowText.create("\""+theString+"\"", aFont, Color.GRAY);
+		}
+		else if (aObject instanceof Throwable)
+		{
+			Throwable theThrowable = (Throwable) aObject;
+			StringBuilder theBuilder = new StringBuilder();
+			theBuilder.append(theThrowable.getClass().getSimpleName());
+			if (theThrowable.getMessage() != null)
+			{
+				theBuilder.append('(');
+				theBuilder.append(theThrowable.getMessage());
+				theBuilder.append(')');
+			}
+			return SVGFlowText.create(theBuilder.toString(), aFont, Color.RED);
 		}
 		else 
 		{

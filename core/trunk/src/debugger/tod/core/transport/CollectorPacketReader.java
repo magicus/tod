@@ -169,13 +169,13 @@ public class CollectorPacketReader
 			case DOUBLE:
 				return new Double (aStream.readDouble());
 				
-			case STRING:
+			case REGISTERED:
 				long theObjectId = aStream.readLong();
 				ObjectInputStream theStream = new ObjectInputStream(aStream);
 				try
 				{
-					String theString = (String) theStream.readObject();
-					aCollector.registerString(theObjectId, theString);
+					Object theObject = theStream.readObject();
+					aCollector.register(theObjectId, theObject);
 					return new ObjectId.ObjectUID(theObjectId);
 				}
 				catch (ClassNotFoundException e)

@@ -5,6 +5,7 @@ package tod.core.database.browser;
 
 import java.util.List;
 
+import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMemberInfo;
@@ -62,6 +63,11 @@ public interface IObjectInspector
 	 * the same timestamp.
 	 */
 	public List<Object> getFieldValue (IFieldInfo aField);
+	
+	/**
+	 * Returns the candidate events corresponding to {@link #getFieldValue(IFieldInfo)}.
+	 */
+	public List<IFieldWriteEvent> getFieldSetter (IFieldInfo aField);
 	
 	/**
 	 * Returns a filter on field write or behavior call events for the specified member

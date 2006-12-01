@@ -34,5 +34,5 @@ then
 fi
 
 echo Host: `hostname`
-$JAVA_HOME/bin/java -version
+#$JAVA_HOME/bin/java -version 
 $JAVA_HOME/bin/java $VMARGS $MAIN $2 $3 $4 $5

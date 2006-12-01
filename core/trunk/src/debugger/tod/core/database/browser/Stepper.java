@@ -3,6 +3,7 @@
  */
 package tod.core.database.browser;
 
+import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IThreadInfo;
 
@@ -40,13 +41,19 @@ public class Stepper
 	private void forward(IEventBrowser aBrowser)
 	{
 		aBrowser.setPreviousEvent(itsCurrentEvent);
-		itsCurrentEvent = aBrowser.next();		
+		do
+		{
+			itsCurrentEvent = aBrowser.next();		
+		} while (itsCurrentEvent instanceof IBehaviorExitEvent);
 	}
 	
 	private void backward(IEventBrowser aBrowser)
 	{
 		aBrowser.setNextEvent(itsCurrentEvent);
-		itsCurrentEvent = aBrowser.previous();
+		do
+		{
+			itsCurrentEvent = aBrowser.previous();
+		} while (itsCurrentEvent instanceof IBehaviorExitEvent);
 	}
 
 	public void forwardStepInto()
@@ -71,5 +78,10 @@ public class Stepper
 		backward(itsBrowser.createBrowser(itsBrowser.createIntersectionFilter(
 				itsBrowser.createThreadFilter(itsThread),
 				itsBrowser.createDepthFilter(itsCurrentEvent.getDepth()))));
+	}
+	
+	public void stepOut()
+	{
+		itsCurrentEvent = itsCurrentEvent.getParent();
 	}
 }

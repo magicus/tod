@@ -112,7 +112,7 @@ public class GridReplay
 		{
 		}
 
-		public void registerString(long aObjectUID, String aString)
+		public void register(long aObjectUID, Object aObject)
 		{
 		}
 		
