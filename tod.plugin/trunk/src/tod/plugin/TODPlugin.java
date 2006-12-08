@@ -32,6 +32,7 @@ public class TODPlugin extends AbstractUIPlugin
 	{
 		super.start(context);
 		Class.forName("org.objectweb.asm.commons.EmptyVisitor");
+		Class.forName("tod.core.ObjectIdentity");
 		Class.forName("tod.core.session.ISession");
 	}
 

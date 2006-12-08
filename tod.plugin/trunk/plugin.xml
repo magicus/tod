@@ -4,30 +4,45 @@
    id="tod.plugin"
    name="TOD Eclipse Plugin"
    version="1.0.0"
-   provider-name="ITCC"
+   provider-name="DCC - Universidad de Chile"
    class="tod.plugin.TODPlugin">
 
    <runtime>
       <library name="plugin.jar">
          <export name="*"/>
       </library>
-      <library name="external:/home/gpothier/eclipse/workbench-3.1/TOD/bin/">
-         <export name="*"/>
-      </library>
-      <library name="external:/home/gpothier/eclipse/workbench-3.1/zz.utils/bin/">
-         <export name="*"/>
-      </library>
-      <library name="external:/home/gpothier/eclipse/workbench-3.1/zz.csg/bin/">
-         <export name="*"/>
-      </library>
       <library name="lib/log4j.jar">
          <export name="*"/>
       </library>
+      <library name="lib/zz.utils.jar">
+         <export
+               name="*">
+         </export>
+      </library>
+      <library name="lib/tod-debugger.jar">
+         <export
+               name="*">
+         </export>
+      </library>
       <library name="lib/asm-2.1.jar">
-         <export name="*"/>
+         <export
+               name="*">
+         </export>
+      </library>
+      <library name="lib/zz.csg.jar">
+         <export
+               name="*">
+         </export>
       </library>
       <library name="lib/asm-commons-2.1.jar">
-         <export name="*"/>
+         <export
+               name="*">
+         </export>
+      </library>
+      <library name="lib/tod-agent.jar">
+         <export
+               name="*">
+         </export>
       </library>
    </runtime>
 
