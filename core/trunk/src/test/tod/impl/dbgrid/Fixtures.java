@@ -20,7 +20,7 @@ import java.util.Random;
 import tod.core.ILogCollector;
 import tod.core.LocationRegistrer;
 import tod.core.bci.NativeAgentPeer;
-import tod.core.config.GeneralConfig;
+import tod.core.config.TODConfig;
 import tod.core.transport.CollectorPacketReader;
 import tod.core.transport.MessageType;
 import tod.impl.bci.asm.ASMLocationPool;
@@ -328,10 +328,18 @@ public class Fixtures
 	 */
 	public static GridMaster setupMaster(Registry aRegistry, int aExpectedNodes) throws Exception
 	{
+		return setupMaster(new TODConfig(), aRegistry, aExpectedNodes);
+	}
+	
+	public static GridMaster setupMaster(TODConfig aConfig, Registry aRegistry, int aExpectedNodes) throws Exception
+	{
 		System.out.println("Expecting "+aExpectedNodes+" nodes");
 		
 		LocationRegistrer theLocationRegistrer = new LocationRegistrer();
-		new ASMLocationPool(theLocationRegistrer, new File(GeneralConfig.LOCATIONS_FILE));
+		
+		new ASMLocationPool(
+				theLocationRegistrer, 
+				new File(aConfig.get(TODConfig.INSTRUMENTER_LOCATIONS_FILE)));
 		GridMaster theMaster = new GridMaster(theLocationRegistrer, aExpectedNodes);
 		
 		aRegistry.bind(GridMaster.RMI_ID, theMaster);

@@ -12,7 +12,7 @@ import javax.swing.JComponent;
 
 import tod.core.ILogCollector;
 import tod.core.LocationRegistrer;
-import tod.core.config.GeneralConfig;
+import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.HostInfo;
 import tod.core.server.ICollectorFactory;
@@ -29,21 +29,20 @@ public class LocalSession extends AbstractSession
 	private LocalBrowser itsBrowser;
 	private List<LocalCollector> itsCollectors = new ArrayList<LocalCollector>();
 	
-	public LocalSession(URI aUri)
+	public LocalSession(TODConfig aConfig, URI aUri)
 	{
 		super(aUri);
 		itsLocationRegistrer = new LocationRegistrer();
 		itsBrowser = new LocalBrowser(itsLocationRegistrer);
 		
 		ASMDebuggerConfig theConfig = new ASMDebuggerConfig(
-				itsLocationRegistrer,
-				new File(GeneralConfig.LOCATIONS_FILE), 
-				"[-tod.** -remotebci.** +tod.test.** +tod.demo.**]",
-				"[-java.** -javax.** -sun.** -com.sun.**]");
+				aConfig,
+				itsLocationRegistrer);
 
 		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theConfig);
 		
 		itsServer = new TODServer(
+				aConfig,
 				new MyCollectorFactory(),
 				theInstrumenter);
 	}

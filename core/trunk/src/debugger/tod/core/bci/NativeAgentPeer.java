@@ -11,7 +11,7 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import tod.core.database.structure.ObjectId;
+import tod.core.config.TODConfig;
 import tod.core.transport.SocketThread;
 
 
@@ -29,7 +29,11 @@ public abstract class NativeAgentPeer extends SocketThread
 	
     public static final byte SET_CACHE_PATH = 80;
     public static final byte SET_SKIP_CORE_CLASSES = 81;
+    public static final byte SET_VERBOSE = 82;
+
     public static final byte CONFIG_DONE = 90;
+    
+    private final TODConfig itsConfig;
     
 	private final File itsStoreClassesDir;
 	private final IInstrumenter itsInstrumenter;
@@ -46,12 +50,14 @@ public abstract class NativeAgentPeer extends SocketThread
 	 * Starts a peer that acts as a server, creating its own {@link ServerSocket}.
 	 */
     public NativeAgentPeer(
+    		TODConfig aConfig,
     		int aPort, 
     		boolean aStartImmediately,
     		File aStoreClassesDir,
     		IInstrumenter aInstrumenter) throws IOException
     {
         super (new ServerSocket(aPort), aStartImmediately);
+        itsConfig = aConfig;
 		itsStoreClassesDir = aStoreClassesDir;
 		itsInstrumenter = aInstrumenter;
     }
@@ -60,11 +66,13 @@ public abstract class NativeAgentPeer extends SocketThread
      * Starts a peer that uses an already connected socket.
      */
     public NativeAgentPeer(
+    		TODConfig aConfig,
     		Socket aSocket,
     		File aStoreClassesDir,
     		IInstrumenter aInstrumenter)
     {
     	super (aSocket);
+    	itsConfig = aConfig;
     	itsStoreClassesDir = aStoreClassesDir;
     	itsInstrumenter = aInstrumenter;
     }
@@ -132,7 +140,12 @@ public abstract class NativeAgentPeer extends SocketThread
         switch (aCommand)
         {
         case INSTRUMENT_CLASS:
-            processInstrumentClassCommand(itsInstrumenter, aInputStream, aOutputStream, itsStoreClassesDir);
+            processInstrumentClassCommand(
+            		itsInstrumenter, 
+            		aInputStream, 
+            		aOutputStream, 
+            		itsStoreClassesDir);
+            
             break;
             
         case FLUSH:
@@ -155,15 +168,20 @@ public abstract class NativeAgentPeer extends SocketThread
     	DataInputStream theStream = new DataInputStream(aInputStream);
 		setHostName(theStream.readUTF());
 
-    	String theCachePath = cfgCachePath();
+		String theCachePath = itsConfig.get(TODConfig.AGENT_CACHE_PATH);
     	if (theCachePath != null)
     	{
     		aOutputStream.writeByte(SET_CACHE_PATH);
-    		aOutputStream.writeUTF(theCachePath);
+			aOutputStream.writeUTF(theCachePath);
     	}
     	
+    	boolean theSkipCoreClasses = itsConfig.get(TODConfig.AGENT_SKIP_CORE_CLASSE);
     	aOutputStream.writeByte(SET_SKIP_CORE_CLASSES);
-    	aOutputStream.writeByte(cfgSkipCoreClasses() ? 1 : 0);
+		aOutputStream.writeByte(theSkipCoreClasses ? 1 : 0);
+		
+		boolean theVerbose = itsConfig.get(TODConfig.AGENT_VERBOSE);
+    	aOutputStream.writeByte(SET_VERBOSE);
+		aOutputStream.writeByte(theVerbose ? 1 : 0);
     	
     	aOutputStream.writeByte(CONFIG_DONE);
     }
@@ -173,24 +191,6 @@ public abstract class NativeAgentPeer extends SocketThread
 	 */
 	protected abstract void processFlush();
 
-
-    /**
-     * Returns the directory where instrumented classes should be cached, or
-     * null if no caching should be performed.
-     */
-    protected String cfgCachePath()
-    {
-    	return "/tmp/tod";
-//    	return null;
-    }
-    
-    /**
-     * Indicates if core JDK classes should be skipped.
-     */
-    protected boolean cfgSkipCoreClasses()
-    {
-    	return true;
-    }
 
     /**
      * Processes an INSTRUMENT_CLASS command sent by the agent.

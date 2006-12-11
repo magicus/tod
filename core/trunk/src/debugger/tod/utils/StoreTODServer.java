@@ -6,7 +6,6 @@ package tod.utils;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -14,11 +13,12 @@ import java.net.Socket;
 import tod.core.ILogCollector;
 import tod.core.LocationRegistrer;
 import tod.core.bci.IInstrumenter;
-import tod.core.config.GeneralConfig;
+import tod.core.config.TODConfig;
 import tod.core.server.ICollectorFactory;
 import tod.core.server.TODServer;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
+import tod.impl.dbgrid.DebuggerGridConfig;
 import zz.utils.Utils;
 
 /**
@@ -29,15 +29,15 @@ public class StoreTODServer extends TODServer
 {
 	private int itsConnectionNumber = 1;
 
-	public StoreTODServer(ICollectorFactory aCollectorFactory, IInstrumenter aInstrumenter)
+	public StoreTODServer(TODConfig aConfig, ICollectorFactory aCollectorFactory, IInstrumenter aInstrumenter)
 	{
-		super(aCollectorFactory, aInstrumenter);
+		super(aConfig, aCollectorFactory, aInstrumenter);
 	}
 
 	@Override
 	protected void acceptJavaConnection(Socket aSocket)
 	{
-		String theFileName = GeneralConfig.STORE_EVENTS_FILE;
+		String theFileName = DebuggerGridConfig.STORE_EVENTS_FILE;
 		if (itsConnectionNumber > 1) theFileName += "."+itsConnectionNumber;
 
 		new LogWriter(new File(theFileName), aSocket);
@@ -96,19 +96,18 @@ public class StoreTODServer extends TODServer
 	
 	public static void main(String[] args)
 	{
+		TODConfig theConfig = new TODConfig();
 		LocationRegistrer theLocationRegistrer = new LocationRegistrer();
 		
-		ASMDebuggerConfig theConfig = new ASMDebuggerConfig(
-				theLocationRegistrer,
-				new File(GeneralConfig.LOCATIONS_FILE), 
-				"[-tod.** -remotebci.** +tod.test.** +tod.demo.**]",
-				"[-java.** -javax.** -sun.** -com.sun.**]");
+		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(
+				theConfig,
+				theLocationRegistrer);
 		
 		System.out.println(theLocationRegistrer.getStats());
 
-		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theConfig);
+		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theDebuggerConfig);
 		
-		new StoreTODServer(new DummyCollectorFactory(), theInstrumenter);
+		new StoreTODServer(theConfig, new DummyCollectorFactory(), theInstrumenter);
 	}
 
 }

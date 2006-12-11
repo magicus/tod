@@ -12,6 +12,7 @@ import java.util.Map;
 import tod.core.LocationRegistrer;
 import tod.core.bci.IInstrumenter;
 import tod.core.bci.NativeAgentPeer;
+import tod.core.config.TODConfig;
 import tod.core.transport.LogReceiver;
 import zz.utils.net.Server;
 
@@ -24,6 +25,8 @@ import zz.utils.net.Server;
  */
 public class TODServer
 {
+	private final TODConfig itsConfig;
+	
 	private ICollectorFactory itsCollectorFactory;
 	private IInstrumenter itsInstrumenter;
 	
@@ -35,8 +38,9 @@ public class TODServer
 	private LogReceiverServer itsReceiverServer;
 	private NativePeerServer itsNativePeerServer;
 
-	public TODServer(ICollectorFactory aCollectorFactory, IInstrumenter aInstrumenter)
+	public TODServer(TODConfig aConfig, ICollectorFactory aCollectorFactory, IInstrumenter aInstrumenter)
 	{
+		itsConfig = aConfig;
 		itsCollectorFactory = aCollectorFactory;
 		itsInstrumenter = aInstrumenter;
 		
@@ -125,7 +129,7 @@ public class TODServer
 	{
 		public MyNativePeer(Socket aSocket)
 		{
-			super(aSocket, null, new SynchronizedInstrumenter(itsInstrumenter));
+			super(itsConfig, aSocket, null, new SynchronizedInstrumenter(itsInstrumenter));
 		}
 		
 		@Override

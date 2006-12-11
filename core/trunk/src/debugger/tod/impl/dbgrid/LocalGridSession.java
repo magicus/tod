@@ -4,21 +4,15 @@
 package tod.impl.dbgrid;
 
 import java.io.File;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.rmi.AccessException;
-import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 
 import javax.swing.JComponent;
 
 import tod.core.ILogCollector;
 import tod.core.LocationRegistrer;
-import tod.core.config.GeneralConfig;
-import tod.core.database.browser.ILocationsRepository;
+import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.server.ICollectorFactory;
 import tod.core.server.TODServer;
@@ -37,22 +31,21 @@ public class LocalGridSession extends AbstractSession
 	private TODServer itsServer;
 	private GridLogBrowser itsBrowser;
 	
-	public LocalGridSession() throws RemoteException
+	public LocalGridSession(TODConfig aConfig) throws RemoteException
 	{
 		super(null);
 
 		LocationRegistrer theRegistrer = new LocationRegistrer();
 		itsMaster = new GridMaster(theRegistrer, 0);
 		
-		ASMDebuggerConfig theConfig = new ASMDebuggerConfig(
-				theRegistrer,
-				new File(GeneralConfig.LOCATIONS_FILE), 
-				"[-tod.** -remotebci.** +tod.test.** +tod.demo.**]",
-				"[-java.** -javax.** -sun.** -com.sun.**]");
+		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(
+				aConfig,
+				theRegistrer);
 
-		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theConfig);
+		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theDebuggerConfig);
 		
 		itsServer = new TODServer(
+				aConfig,
 				new MyCollectorFactory(),
 				theInstrumenter);
 		
@@ -94,13 +87,13 @@ public class LocalGridSession extends AbstractSession
 		}
 	}
 	
-	public static LocalGridSession create() 
+	public static LocalGridSession create(TODConfig aConfig) 
 	{
 		try
 		{
 			Registry theRegistry = LocateRegistry.createRegistry(1099);
 					
-			LocalGridSession theSession = new LocalGridSession();
+			LocalGridSession theSession = new LocalGridSession(aConfig);
 			theRegistry.bind(GridMaster.RMI_ID, theSession.itsMaster);
 			
 			new DatabaseNode(true);

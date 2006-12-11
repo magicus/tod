@@ -16,7 +16,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import tod.core.config.GeneralConfig;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.NodeException;
@@ -90,7 +89,7 @@ implements RIDatabaseNode
 			itsCurrentDatabase.unregister();
 		}
 		
-		String thePrefix = GeneralConfig.NODE_DATA_DIR;
+		String thePrefix = DebuggerGridConfig.NODE_DATA_DIR;
 		File theParent = new File(thePrefix);
 		System.out.println("Using data directory: "+theParent);
 		
@@ -102,7 +101,7 @@ implements RIDatabaseNode
 	private void connectToMaster() throws IOException, NotBoundException
 	{
 		// Setup RMI connection
-		Registry theRegistry = LocateRegistry.getRegistry(GeneralConfig.MASTER_HOST);
+		Registry theRegistry = LocateRegistry.getRegistry(DebuggerGridConfig.MASTER_HOST);
 		itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
 
 		try
@@ -120,7 +119,7 @@ implements RIDatabaseNode
 		startMonitoringThread();
 		
 		// Setup socket connection
-		String theMasterHost = GeneralConfig.MASTER_HOST;
+		String theMasterHost = DebuggerGridConfig.MASTER_HOST;
 		System.out.println("Connecting to "+theMasterHost);
 		Socket theSocket = new Socket(theMasterHost, DebuggerGridConfig.MASTER_NODE_PORT);
 		DataOutputStream theStream = new DataOutputStream(theSocket.getOutputStream());

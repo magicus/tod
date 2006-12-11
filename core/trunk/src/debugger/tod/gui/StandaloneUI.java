@@ -10,6 +10,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
+import tod.core.config.TODConfig;
 import tod.core.database.event.ILogEvent;
 import tod.core.session.ISession;
 import tod.impl.dbgrid.LocalGridSession;
@@ -23,6 +24,7 @@ public class StandaloneUI extends JPanel
 
 	public StandaloneUI(URI aUri)
 	{
+		TODConfig theConfig = new TODConfig();
 		String theScheme = aUri != null ? aUri.getScheme() : null;
 		if (RemoteGridSession.TOD_GRID_SCHEME.equals(theScheme))
 		{
@@ -37,7 +39,7 @@ public class StandaloneUI extends JPanel
 		}
 		else
 		{
-			itsSession = LocalGridSession.create();
+			itsSession = LocalGridSession.create(theConfig);
 		}
 		
 		createUI();

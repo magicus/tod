@@ -34,7 +34,7 @@ import zz.utils.Stack;
  */
 public class LocalCollector extends EventCollector
 {
-	private static final boolean LOG = true;
+	private static final boolean LOG = false;
 	
 	private final LocalBrowser itsBrowser;
 	

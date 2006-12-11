@@ -3,29 +3,15 @@
  */
 package tod.impl.dbgrid.bench;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.EOFException;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-import tod.agent.AgentUtils;
 import tod.core.ILogCollector;
-import tod.core.LocationRegistrer;
 import tod.core.Output;
-import tod.core.bci.NativeAgentPeer;
-import tod.core.config.GeneralConfig;
-import tod.core.transport.CollectorPacketReader;
-import tod.core.transport.MessageType;
-import tod.impl.bci.asm.ASMLocationPool;
+import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.GridMaster;
-import tod.impl.dbgrid.dbnode.DatabaseNode;
-import tod.utils.ConfigUtils;
 import tod.utils.StoreTODServer;
 
 /**
@@ -39,7 +25,7 @@ public class GridReplay
 	{
 		Registry theRegistry = LocateRegistry.createRegistry(1099);
 		
-		String theFileName = GeneralConfig.STORE_EVENTS_FILE;
+		String theFileName = DebuggerGridConfig.STORE_EVENTS_FILE;
 		File theFile = new File(theFileName);
 		
 		GridMaster theMaster = Fixtures.setupMaster(theRegistry, args);

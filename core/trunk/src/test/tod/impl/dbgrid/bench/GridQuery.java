@@ -16,13 +16,11 @@ import java.util.Map;
 import java.util.Random;
 
 import tod.core.ILogCollector;
-import tod.core.config.GeneralConfig;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IFieldWriteEvent;
-import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IThreadInfo;
@@ -33,7 +31,6 @@ import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.RIGridMaster;
 import tod.impl.dbgrid.bench.BenchBase.BenchResults;
-import tod.impl.dbgrid.dbnode.EventsCounter;
 import zz.utils.Utils;
 
 public class GridQuery
@@ -42,7 +39,7 @@ public class GridQuery
 	{
 		Registry theRegistry = LocateRegistry.createRegistry(1099);
 		
-		String theFileName = GeneralConfig.STORE_EVENTS_FILE;
+		String theFileName = DebuggerGridConfig.STORE_EVENTS_FILE;
 		final File theFile = new File(theFileName);
 		
 		final GridMaster theMaster = Fixtures.setupMaster(theRegistry, args);

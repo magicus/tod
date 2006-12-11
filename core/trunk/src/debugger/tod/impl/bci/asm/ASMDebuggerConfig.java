@@ -7,6 +7,7 @@ import java.io.File;
 
 import tod.core.ILocationRegistrer;
 import tod.core.config.ClassSelector;
+import tod.core.config.TODConfig;
 import tod.tools.parsers.ParseException;
 import tod.tools.parsers.workingset.WorkingSetFactory;
 
@@ -25,25 +26,28 @@ public class ASMDebuggerConfig
 	 * Creates a default debugger configuration.
 	 */
 	public ASMDebuggerConfig(
-			ILocationRegistrer aLocationRegistrer,
-			File aLocationsFile,
-			String aGlobalWorkingSet,
-			String aTraceWorkingSet)
+			TODConfig aConfig,
+			ILocationRegistrer aLocationRegistrer)
 	{
 		itsLocationRegistrer = aLocationRegistrer;
+		
+		File theLocationsFile = new File(aConfig.get(TODConfig.INSTRUMENTER_LOCATIONS_FILE));
+		String theGlobalWorkingSet = aConfig.get(TODConfig.SCOPE_GLOBAL_FILTER); 
+		String theTraceWorkingSet = aConfig.get(TODConfig.SCOPE_TRACE_FILTER);
+		
 		
 		// Setup selectors
 		try
 		{
-			itsGlobalSelector = WorkingSetFactory.parseWorkingSet(aGlobalWorkingSet);
-			itsTraceSelector = WorkingSetFactory.parseWorkingSet(aTraceWorkingSet);
+			itsGlobalSelector = WorkingSetFactory.parseWorkingSet(theGlobalWorkingSet);
+			itsTraceSelector = WorkingSetFactory.parseWorkingSet(theTraceWorkingSet);
 		}
 		catch (ParseException e)
 		{
 			throw new RuntimeException("Cannot setup selectors", e);
 		}
 		
-		itsLocationPool = new ASMLocationPool(itsLocationRegistrer, aLocationsFile);
+		itsLocationPool = new ASMLocationPool(itsLocationRegistrer, theLocationsFile);
 	}
 	
 	/**

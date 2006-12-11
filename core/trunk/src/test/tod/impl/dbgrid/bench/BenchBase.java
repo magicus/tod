@@ -3,19 +3,8 @@
  */
 package tod.impl.dbgrid.bench;
 
-import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-
-import tod.core.ILogCollector;
-import tod.core.LocationRegistrer;
-import tod.core.config.GeneralConfig;
-import tod.core.transport.DummyCollector;
-import tod.impl.bci.asm.ASMLocationPool;
-import tod.impl.dbgrid.GridMaster;
-import tod.impl.dbgrid.dbnode.DatabaseNode;
 
 public class BenchBase
 {
