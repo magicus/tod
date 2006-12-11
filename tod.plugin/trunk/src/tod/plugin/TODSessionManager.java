@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 
 import org.eclipse.jdt.core.IJavaProject;
 
+import tod.core.config.TODConfig;
 import tod.core.session.ISession;
 import tod.impl.local.LocalSession;
 import zz.utils.properties.IProperty;
@@ -53,7 +54,8 @@ public class TODSessionManager
 			DebuggingSession thePreviousSession = pCurrentSession.get();
 			if (thePreviousSession != null) thePreviousSession.disconnect();
 			
-			theSession = new LocalSession(new URI("file:/home/gpothier/tmp/ASM"));
+			TODConfig theConfig = new TODConfig();
+			theSession = new LocalSession(theConfig, new URI("file:/home/gpothier/tmp/ASM"));
 			DebuggingSession theDebuggingSession = new DebuggingSession(theSession, aJavaProject);
 			
 			pCurrentSession.set(theDebuggingSession);

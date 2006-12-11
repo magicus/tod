@@ -3,7 +3,6 @@
  */
 package tod.plugin.launch;
 
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTabGroup;
 import org.eclipse.debug.ui.CommonTab;
 import org.eclipse.debug.ui.EnvironmentTab;
@@ -16,8 +15,6 @@ import org.eclipse.jdt.debug.ui.launchConfigurations.JavaClasspathTab;
 import org.eclipse.jdt.debug.ui.launchConfigurations.JavaJRETab;
 import org.eclipse.jdt.debug.ui.launchConfigurations.JavaMainTab;
 
-import reflex.ide.eclipse.launcher.options.OptionsTab;
-
 public class TODLaunchTabGroup extends AbstractLaunchConfigurationTabGroup {
 
 	/**
@@ -27,7 +24,7 @@ public class TODLaunchTabGroup extends AbstractLaunchConfigurationTabGroup {
 		ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] {
 				new JavaMainTab(),
 				new JavaArgumentsTab(),
-//				new MyOptionsTab(),
+				new TODConfigLaunchTab(),
 				new JavaJRETab(),
 				new JavaClasspathTab(),
 				new SourceLookupTab(),
@@ -37,15 +34,4 @@ public class TODLaunchTabGroup extends AbstractLaunchConfigurationTabGroup {
 			setTabs(tabs);
 	}
 	
-//	private static class MyOptionsTab extends OptionsTab
-//	{
-//		/**
-//		 * We don't require the project to be a reflex project.
-//		 */
-//		@Override
-//		protected void checkReflexProject(ILaunchConfiguration aLaunchConfiguration) throws InvalidLaunchConfiguration
-//		{
-//		}
-//	}
-
 }

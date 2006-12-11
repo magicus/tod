@@ -3,7 +3,6 @@
 	<name>tod.plugin</name>
 	<comment></comment>
 	<projects>
-		<project>LogMiner</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -1,12 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project default="plugin_export" name="build">
-	<target name="plugin_export">
+<project default="plugin_export" name="TOD plugin">
+	
+	
+    <target name="init">
+        <property name="tod.dir" value="${basedir}/../TOD"/>
+        <property name="zz.utils.dir" value="${basedir}/../zz.utils"/>
+    </target>
+	
+	<target name="plugin_export" depends="init, dep.all">
 		<pde.exportPlugins 
 			destination="/home/gpothier/eclipse/workbench-3.1/tod.plugin/build" 
 			exportSource="false" 
 			exportType="zip" 
 			filename="tod.plugin.zip" 
-			plugins="reflex.ide.eclipse.launcher,tod.plugin" 
+			plugins="tod.plugin,zz.eclipse.utils" 
 			useJARFormat="false"/>
 	</target>
+	
+	<target name="dep.tod" depends="init">
+		<ant antfile="${tod.dir}/build.xml" dir="${tod.dir}" target="jar"/>
+		<copy todir="lib">
+			<fileset dir="${tod.dir}/build" includes="tod-debugger.jar tod-agent.jar"/>
+			<fileset dir="${tod.dir}" includes="libbci-agent.*"/>
+		</copy>
+	</target>
+	
+	<target name="dep.zz.utils" depends="init">
+		<ant antfile="${zz.utils.dir}/build.xml" dir="${zz.utils.dir}" target="jar"/>
+		<copy todir="lib">
+			<fileset dir="${zz.utils.dir}/build" includes="zz.utils.jar"/>
+		</copy>
+	</target>
+	
+	<target name="dep.all" depends="dep.tod, dep.zz.utils"/>
 </project>

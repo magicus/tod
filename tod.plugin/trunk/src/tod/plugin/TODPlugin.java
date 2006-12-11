@@ -4,8 +4,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
-import reflex.ide.eclipse.launcher.ReflexLauncherPlugin;
-import tod.core.session.ISession;
+import zz.eclipse.utils.EclipseUtils;
 
 /**
  * The main plugin class to be used in the desktop.
@@ -31,9 +30,10 @@ public class TODPlugin extends AbstractUIPlugin
 	public void start(BundleContext context) throws Exception
 	{
 		super.start(context);
-		Class.forName("org.objectweb.asm.commons.EmptyVisitor");
-		Class.forName("tod.core.ObjectIdentity");
-		Class.forName("tod.core.session.ISession");
+//		Class.forName("org.objectweb.asm.commons.EmptyVisitor");
+//		Class.forName("tod.core.ObjectIdentity");
+//		Class.forName("tod.core.session.ISession");
+//		Class.forName("zz.eclipse.utils.EclipseUtils");
 	}
 
 	/**
@@ -69,7 +69,7 @@ public class TODPlugin extends AbstractUIPlugin
 	public String getLibraryPath()
 	{
 		if (itsLibraryPath == null)
-			itsLibraryPath = ReflexLauncherPlugin.getLibraryPath(this);
+			itsLibraryPath = EclipseUtils.getLibraryPath(this);
 		
 		return itsLibraryPath;
 	}

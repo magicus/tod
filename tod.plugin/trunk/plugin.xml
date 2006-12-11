@@ -52,10 +52,10 @@
       <import plugin="org.eclipse.jdt.core"/>
       <import plugin="org.eclipse.debug.core"/>
       <import plugin="org.eclipse.debug.ui"/>
-      <import plugin="reflex.ide.eclipse.launcher"/>
       <import plugin="org.eclipse.jface.text"/>
       <import plugin="org.eclipse.jdt.ui"/>
       <import plugin="org.eclipse.ui.workbench.texteditor"/>
+      <import plugin="zz.eclipse.utils"/>
    </requires>
 
    <extension
@@ -137,6 +137,15 @@
             class="tod.plugin.launch.TODLaunchTabGroup"
             id="tod.plugin.launchConfigurationTabGroup.localJavaApplication"
             type="org.eclipse.jdt.launching.localJavaApplication"/>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationComparators">
+      <launchConfigurationComparator
+            attribute="tod.plugin.launch.OPTIONS_MAP"
+            class="zz.eclipse.utils.launcher.options.OptionsMapComparator"
+            id="tod.plugin.launch.OPTIONS_MAP">
+         
+      </launchConfigurationComparator>
    </extension>
 
 </plugin>

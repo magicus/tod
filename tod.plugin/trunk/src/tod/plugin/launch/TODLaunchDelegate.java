@@ -14,11 +14,11 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.LibraryLocation;
 
-import reflex.ide.eclipse.launcher.AbstractCustomLaunchConfigurationDelegate;
 import tod.core.session.ClassCacheCleaner;
 import tod.core.session.ISession;
 import tod.plugin.TODPlugin;
 import tod.plugin.TODSessionManager;
+import zz.eclipse.utils.launcher.AbstractCustomLaunchConfigurationDelegate;
 
 public class TODLaunchDelegate extends AbstractCustomLaunchConfigurationDelegate
 {
