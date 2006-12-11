@@ -7,7 +7,7 @@
         <property name="zz.utils.dir" value="${basedir}/../zz.utils"/>
     </target>
 	
-	<target name="plugin_export" depends="init, dep.all">
+	<target name="plugin_export" depends="init">
 		<pde.exportPlugins 
 			destination="/home/gpothier/eclipse/workbench-3.1/tod.plugin/build" 
 			exportSource="false" 
