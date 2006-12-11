@@ -1,6 +1,6 @@
 /*
 TOD - Trace Oriented Debugger.
-Copyright (C) 2006 Guillaume Pothier
+Copyright (C) 2006 Guillaume Pothier (gpothier -at- dcc . uchile . cl)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,8 +17,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
-
-Contact: gpothier -at- dcc . uchile . cl
 */
 package tod.core.server;
 
@@ -80,6 +78,14 @@ public class TODServer
 		System.out.println("Server disconnected.");
 	}
 
+	/**
+	 * This method is called when the connection with the target VM is lost.
+	 *
+	 */
+	protected void disconnected()
+	{
+	}
+
 	private LogReceiver getReceiver(String aHostName)
 	{
 		return itsReceivers.get(aHostName);
@@ -90,7 +96,15 @@ public class TODServer
 		LogReceiver theReceiver = new LogReceiver(
 				itsCollectorFactory.create(),
 				itsLocationRegistrer.getSynchronizedRegistrer(),
-				aSocket);
+				aSocket)
+		{
+			@Override
+			protected void disconnected()
+			{
+				super.disconnected();
+				TODServer.this.disconnected();
+			}
+		};
 		
 		String theHostName = theReceiver.waitHostName();
 		itsReceivers.put(theHostName, theReceiver);
@@ -100,7 +114,15 @@ public class TODServer
 	
 	protected void acceptNativeConnection(Socket aSocket)
 	{
-		NativeAgentPeer thePeer = new MyNativePeer(aSocket);
+		NativeAgentPeer thePeer = new MyNativePeer(aSocket)
+		{
+			@Override
+			protected void disconnected()
+			{
+				super.disconnected();
+				TODServer.this.disconnected();
+			}
+		};
 		itsNativePeers.add(thePeer);
 		
 		System.out.println("Accepted (native) connection from "+thePeer.waitHostName());
@@ -122,7 +144,6 @@ public class TODServer
 		{
 			acceptJavaConnection(aSocket);
 		}
-		
 	}
 	
 	/**

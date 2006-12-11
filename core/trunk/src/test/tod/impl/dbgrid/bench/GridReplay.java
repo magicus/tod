@@ -1,6 +1,6 @@
 /*
 TOD - Trace Oriented Debugger.
-Copyright (C) 2006 Guillaume Pothier
+Copyright (C) 2006 Guillaume Pothier (gpothier -at- dcc . uchile . cl)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,8 +17,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
-
-Contact: gpothier -at- dcc . uchile . cl
 */
 package tod.impl.dbgrid.bench;
 
@@ -27,7 +25,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 import tod.core.ILogCollector;
-import tod.core.Output;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.GridMaster;
@@ -59,68 +56,6 @@ public class GridReplay
 		float theEpS = theCount/dt;
 		System.out.println("Events: "+theCount+" time: "+dt+"s rate: "+theEpS+"ev/s");
 //		System.exit(0);
-	}
-	
-	private static class DummyCollector implements ILogCollector
-	{
-
-		public void behaviorExit(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-				int aOperationBytecodeIndex, int aBehaviorId, boolean aHasThrown, Object aResult)
-		{
-		}
-
-		public void exception(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, String aMethodName,
-				String aMethodSignature, String aMethodDeclaringClassSignature, int aOperationBytecodeIndex,
-				Object aException)
-		{
-		}
-
-		public void fieldWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-				int aOperationBytecodeIndex, int aFieldId, Object aTarget, Object aValue)
-		{
-		}
-
-		public void arrayWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-				int aOperationBytecodeIndex, Object aTarget, int aIndex, Object aValue)
-		{
-		}
-
-		public void instantiation(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-				int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
-				Object aTarget, Object[] aArguments)
-		{
-		}
-
-		public void localWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-				int aOperationBytecodeIndex, int aVariableId, Object aValue)
-		{
-		}
-
-		public void methodCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-				int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
-				Object aTarget, Object[] aArguments)
-		{
-		}
-
-		public void output(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, Output aOutput,
-				byte[] aData)
-		{
-		}
-
-		public void superCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-				int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorid, int aExecutedBehaviorId,
-				Object aTarget, Object[] aArguments)
-		{
-		}
-
-		public void thread(int aThreadId, long aJVMThreadId, String aName)
-		{
-		}
-
-		public void register(long aObjectUID, Object aObject)
-		{
-		}
-		
 	}
 
 }

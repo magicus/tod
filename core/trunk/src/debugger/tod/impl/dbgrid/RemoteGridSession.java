@@ -1,6 +1,6 @@
 /*
 TOD - Trace Oriented Debugger.
-Copyright (C) 2006 Guillaume Pothier
+Copyright (C) 2006 Guillaume Pothier (gpothier -at- dcc . uchile . cl)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,8 +17,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
-
-Contact: gpothier -at- dcc . uchile . cl
 */
 package tod.impl.dbgrid;
 
