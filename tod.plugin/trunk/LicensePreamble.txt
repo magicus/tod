@@ -1,6 +1,6 @@
 /*
 TOD plugin - Eclipse pluging for TOD
-Copyright (C) 2006 Guillaume Pothier (gpothier -at- dcc . uchile . cl)
+Copyright (C) 2006 Guillaume Pothier (gpothier@dcc.uchile.cl)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

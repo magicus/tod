@@ -1,6 +1,6 @@
 /*
 TOD plugin - Eclipse pluging for TOD
-Copyright (C) 2006 Guillaume Pothier (gpothier -at- dcc . uchile . cl)
+Copyright (C) 2006 Guillaume Pothier (gpothier@dcc.uchile.cl)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -23,6 +23,8 @@ package tod.plugin.launch;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
@@ -31,6 +33,7 @@ import tod.core.config.TODConfig.Item;
 import tod.core.config.TODConfig.ItemType;
 import zz.eclipse.utils.launcher.options.AbstractItemControl;
 import zz.eclipse.utils.launcher.options.BooleanControl;
+import zz.eclipse.utils.launcher.options.IntegerControl;
 import zz.eclipse.utils.launcher.options.OptionsTab;
 import zz.eclipse.utils.launcher.options.TextControl;
 
@@ -89,7 +92,7 @@ public class TODConfigLaunchTab extends OptionsTab<TODConfig.Item>
 	
 	@Override
 	protected AbstractItemControl<Item> createControl(
-			OptionsTab aOptionsTab,
+			OptionsTab<Item> aOptionsTab,
 			Composite aParent, 
 			Item aItem)
 	{
@@ -104,18 +107,27 @@ public class TODConfigLaunchTab extends OptionsTab<TODConfig.Item>
 		theMap.put(TODConfig.ItemType.ITEM_TYPE_STRING, new ItemTypeHandler()
 		{
 			@Override
-			public AbstractItemControl<Item> createControl(OptionsTab aOptionsTab, Composite aParent, Item aItem)
+			public AbstractItemControl<Item> createControl(OptionsTab<Item> aOptionsTab, Composite aParent, Item aItem)
 			{
-				return new TextControl(aParent, aOptionsTab, aItem);
+				return new TextControl<Item>(aParent, aOptionsTab, aItem);
+			}
+		});
+		
+		theMap.put(TODConfig.ItemType.ITEM_TYPE_INTEGER, new ItemTypeHandler()
+		{
+			@Override
+			public AbstractItemControl<Item> createControl(OptionsTab<Item> aOptionsTab, Composite aParent, Item aItem)
+			{
+				return new IntegerControl<Item>(aParent, aOptionsTab, aItem);
 			}
 		});
 		
 		theMap.put(TODConfig.ItemType.ITEM_TYPE_BOOLEAN, new ItemTypeHandler()
 		{
 			@Override
-			public AbstractItemControl<Item> createControl(OptionsTab aOptionsTab, Composite aParent, Item aItem)
+			public AbstractItemControl<Item> createControl(OptionsTab<Item> aOptionsTab, Composite aParent, Item aItem)
 			{
-				return new BooleanControl(aParent, aOptionsTab, aItem);
+				return new BooleanControl<Item>(aParent, aOptionsTab, aItem);
 			}
 		});
 		
@@ -129,8 +141,26 @@ public class TODConfigLaunchTab extends OptionsTab<TODConfig.Item>
 	private static abstract class ItemTypeHandler
 	{
 		public abstract AbstractItemControl<Item> createControl(
-				OptionsTab aOptionsTab,
+				OptionsTab<Item> aOptionsTab,
 				Composite aParent, 
 				Item aItem);
+	}
+	
+	/**
+	 * Reads the TOD config options from the given launch configuration. 
+	 */
+	public static TODConfig readConfig(ILaunchConfiguration aLaunchConfiguration) throws CoreException
+	{
+		Map<String, String> theOptionsMap = OptionsTab.loadOptionsMap(aLaunchConfiguration, MAP_NAME);
+		
+		TODConfig theConfig = new TODConfig();
+		for (Item theItem : TODConfig.ITEMS)
+		{
+			String theString = theOptionsMap.get(theItem.getKey());
+			Object theValue = theItem.getOptionValue(theString);
+			theConfig.set(theItem, theValue);
+		}
+		
+		return theConfig;
 	}
 }

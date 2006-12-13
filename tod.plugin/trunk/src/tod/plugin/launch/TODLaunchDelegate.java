@@ -1,6 +1,6 @@
 /*
 TOD plugin - Eclipse pluging for TOD
-Copyright (C) 2006 Guillaume Pothier (gpothier -at- dcc . uchile . cl)
+Copyright (C) 2006 Guillaume Pothier (gpothier@dcc.uchile.cl)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -31,6 +31,7 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.LibraryLocation;
 
+import tod.core.config.TODConfig;
 import tod.core.session.ClassCacheCleaner;
 import tod.core.session.ISession;
 import tod.plugin.TODPlugin;
@@ -52,7 +53,10 @@ public class TODLaunchDelegate extends AbstractCustomLaunchConfigurationDelegate
 		if (aMonitor.isCanceled()) return;		
 		aMonitor.subTask("Creating session");
 		
-		ISession theSession = TODSessionManager.getInstance().createSession(getJavaProject(aConfiguration));
+		TODConfig theConfig = TODConfigLaunchTab.readConfig(aConfiguration);
+		ISession theSession = TODSessionManager.getInstance().createSession(
+				getJavaProject(aConfiguration),
+				theConfig);
 		
 		try
 		{
@@ -101,12 +105,12 @@ public class TODLaunchDelegate extends AbstractCustomLaunchConfigurationDelegate
 		
 		theArguments.add("-noverify");
 		
-		theArguments.add("-Dcollector-host=localhost");
-		theArguments.add("-Dcollector-port=8058");
-		theArguments.add("-Dnative-port=8059");
-		theArguments.add("-Dtod-host=tod-1");
+		TODConfig theConfig = TODConfigLaunchTab.readConfig(aConfiguration);
 		
-
+		theArguments.add("-Dcollector-host="+theConfig.get(TODConfig.COLLECTOR_HOST));
+		theArguments.add("-Dcollector-port="+theConfig.get(TODConfig.COLLECTOR_JAVA_PORT));
+		theArguments.add("-Dnative-port="+theConfig.get(TODConfig.COLLECTOR_NATIVE_PORT));
+		theArguments.add("-Dtod-host=tod-1");
 		
 		return theArguments;
 	}

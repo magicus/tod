@@ -1,6 +1,6 @@
 /*
 TOD plugin - Eclipse pluging for TOD
-Copyright (C) 2006 Guillaume Pothier (gpothier -at- dcc . uchile . cl)
+Copyright (C) 2006 Guillaume Pothier (gpothier@dcc.uchile.cl)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -63,7 +63,7 @@ public class TODSessionManager
 	/**
 	 * Obtains a free, clean collector session.
 	 */
-	public DebuggingSession createSession(IJavaProject aJavaProject)
+	public DebuggingSession createSession(IJavaProject aJavaProject, TODConfig aConfig)
 	{
 		ISession theSession;
 		try
@@ -71,8 +71,7 @@ public class TODSessionManager
 			DebuggingSession thePreviousSession = pCurrentSession.get();
 			if (thePreviousSession != null) thePreviousSession.disconnect();
 			
-			TODConfig theConfig = new TODConfig();
-			theSession = new LocalSession(theConfig, new URI("file:/home/gpothier/tmp/ASM"));
+			theSession = new LocalSession(aConfig, new URI("file:/home/gpothier/tmp/ASM"));
 			DebuggingSession theDebuggingSession = new DebuggingSession(theSession, aJavaProject);
 			
 			pCurrentSession.set(theDebuggingSession);
