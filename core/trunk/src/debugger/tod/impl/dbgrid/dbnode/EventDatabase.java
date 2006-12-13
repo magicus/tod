@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Comparator;
 
-import tod.DebugFlags;
+import tod.agent.DebugFlags;
 import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 import tod.impl.dbgrid.messages.GridEvent;

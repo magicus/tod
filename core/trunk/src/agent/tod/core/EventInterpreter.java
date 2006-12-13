@@ -21,7 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.core;
 
 import tod.agent.AgentUtils;
-import static tod.DebugFlags.*;
+import static tod.agent.DebugFlags.*;
 
 /**
  * Interprets low-level events sent by the instrumentation code and

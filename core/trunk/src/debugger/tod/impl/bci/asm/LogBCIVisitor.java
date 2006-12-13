@@ -194,8 +194,11 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 								itsMethodInfo.getName(), 
 								itsMethodInfo.getDescriptor());
 			
-			itsTracedMethods.add(itsMethodId);
-			getLocationPool().setTraced(itsMethodId);
+			if (itsTrace)
+			{
+				itsTracedMethods.add(itsMethodId);
+				getLocationPool().setTraced(itsMethodId);
+			}
 			
 			itsInstrumenter = new ASMBehaviorInstrumenter(
 					itsConfig,

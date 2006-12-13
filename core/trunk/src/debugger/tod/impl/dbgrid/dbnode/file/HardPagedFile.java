@@ -32,7 +32,7 @@ import java.lang.ref.ReferenceQueue;
 import java.util.ArrayList;
 import java.util.List;
 
-import tod.DebugFlags;
+import tod.agent.DebugFlags;
 import tod.impl.dbgrid.dbnode.file.PageBank.Page;
 import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Monitor;

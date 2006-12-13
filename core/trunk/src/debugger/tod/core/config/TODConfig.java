@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import tod.utils.ConfigUtils;
+import tod.agent.ConfigUtils;
 
 /**
  * Instances of this class contain configuration options for a TOD session.
@@ -66,7 +66,7 @@ public class TODConfig
 			"Used mainly to shield TOD agent classes from instrumentation. " +
 			"Classes that do no pass this filter are not touched by any kind " +
 			"of instrumentation and are not registered in the trace database.",
-			"[-tod.** -remotebci.** +tod.test.** +tod.demo.**]");
+			"[-tod.agent.** -tod.core.**]");
 	
 	public static final StringItem SCOPE_TRACE_FILTER = new StringItem(
 			"scope.traceFilter",
@@ -75,6 +75,26 @@ public class TODConfig
 			"Classes that do no pass this filter are not instrumented " +
 			"but are registered in the structure database.",
 			ConfigUtils.readString("trace-filter", "[-java.** -javax.** -sun.** -com.sun.**]"));
+	
+	public static final StringItem COLLECTOR_HOST = new StringItem(
+			"collector.host",
+			"Collector - host",
+			"Host to which the debugged program should send events.",
+			"localhost");
+	
+	public static final IntegerItem COLLECTOR_JAVA_PORT = new IntegerItem(
+			"collector.javaPort",
+			"Collector - Java port",
+			"Port to which the Java portion of the TOD agent should connect.",
+			8058);
+	
+	public static final IntegerItem COLLECTOR_NATIVE_PORT = new IntegerItem(
+			"collector.nativePort",
+			"Collector - native port",
+			"Port to which the native portion of the TOD agent should connect.",
+			8059);
+	
+	
 	/**
 	 * Contains all available configuration items.
 	 */

@@ -135,7 +135,7 @@ public class TODServer
 	{
 		public LogReceiverServer()
 		{
-			super(8058);
+			super(itsConfig.get(TODConfig.COLLECTOR_JAVA_PORT));
 		}
 
 		@Override
@@ -154,7 +154,7 @@ public class TODServer
 	{
 		public NativePeerServer()
 		{
-			super(8059);
+			super(itsConfig.get(TODConfig.COLLECTOR_NATIVE_PORT));
 		}
 
 		@Override

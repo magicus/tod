@@ -27,7 +27,6 @@ import tod.core.HighLevelCollector;
 import tod.core.transport.DummyCollector;
 import tod.core.transport.NativeCollector;
 import tod.core.transport.SocketCollector;
-import tod.utils.ConfigUtils;
 
 /**
  * Configuration of the agent in the target VM. 

@@ -28,10 +28,10 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import tod.DebugFlags;
 import tod.agent.AgentConfig;
 import tod.agent.AgentReady;
 import tod.agent.AgentUtils;
+import tod.agent.DebugFlags;
 import tod.core.HighLevelCollector;
 import tod.core.Output;
 import tod.core.EventInterpreter.ThreadData;

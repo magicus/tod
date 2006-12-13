@@ -20,8 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.local;
 
-import tod.DebugFlags;
 import tod.agent.AgentUtils;
+import tod.agent.DebugFlags;
 import tod.core.Output;
 import tod.core.ILocationRegistrer.LocalVariableInfo;
 import tod.core.database.structure.IBehaviorInfo;
