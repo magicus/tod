@@ -100,7 +100,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				theDepth,
 				theFrame));
 		
-		if (theFrame.directParent && theFrame.callType != null)
+		if (theFrame.entering)
 		{
 			// We come from instrumented code, ie. before/enter scheme
 			// Part of the event info is available in the frame, but the
@@ -245,7 +245,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		FrameInfo theFrame = theThread.currentFrame();
 
 		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
-				"logExceptionGenerated(%d, %%s, %s, %s, %d, %s)\n thread: %d, depth: %d\n frame: %s",
+				"logExceptionGenerated(%d, %s, %s, %s, %d, %s)\n thread: %d, depth: %d\n frame: %s",
 				theTimestamp,
 				aMethodName,
 				aMethodSignature,
@@ -380,6 +380,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 			BehaviorCallType aCallType)
 	{
 		if (DISABLE_INTERPRETER) return;
+		assert aCallType != null;
 		T theThread = getThreadData();
 
 		FrameInfo theFrame = theThread.currentFrame();
@@ -451,6 +452,11 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				theThread.getId(),
 				theThread.getCurrentDepth(),
 				theFrame));
+		
+		if (theFrame.entering)
+		{
+			System.err.println("We missed something...");
+		}
 	}
 	
 	public void logAfterBehaviorCall(
@@ -477,7 +483,6 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				theThread.getId(),
 				theThread.getCurrentDepth(),
 				theFrame));
-		
 		
 		itsCollector.behaviorExit(
 				theThread,
@@ -642,6 +647,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 			theFrame.bytecodeIndex = aBytecodeIndex;
 			
 			itsStack[itsStackSize++] = theFrame;
+//			if (itsStackSize % 10 == 0) System.out.println(itsStackSize);
 			
 			return theFrame;
 		}
@@ -650,6 +656,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		{
 			FrameInfo theFrame = itsStack[--itsStackSize];
 			itsFreeFrames[itsFreeFramesSize++] = theFrame;
+
 			return theFrame;
 		}
 		

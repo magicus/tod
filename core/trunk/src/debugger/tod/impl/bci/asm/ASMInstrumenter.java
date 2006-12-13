@@ -20,6 +20,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.bci.asm;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -39,7 +42,7 @@ public class ASMInstrumenter implements IInstrumenter
 		itsConfig = aConfig;
 	}
 
-	public byte[] instrumentClass (String aName, byte[] aBytecode)
+	public InstrumentedClass instrumentClass (String aName, byte[] aBytecode)
     {
 		if (! BCIUtils.acceptClass(aName, itsConfig.getGlobalSelector())) return null;
     	
@@ -50,12 +53,19 @@ public class ASMInstrumenter implements IInstrumenter
     	InfoCollector theInfoCollector = new InfoCollector();
     	theReader.accept(theInfoCollector, true);
     	
+    	List<Integer> theTracedMethods = new ArrayList<Integer>();
+    	
     	// Pass 2: actual instrumentation
-    	LogBCIVisitor theVisitor = new LogBCIVisitor(itsConfig, theInfoCollector, theWriter);
+    	LogBCIVisitor theVisitor = new LogBCIVisitor(
+    			itsConfig, 
+    			theInfoCollector,
+    			theWriter,
+    			theTracedMethods);
+    	
     	theReader.accept(theVisitor, false);
     	
         return theVisitor.isModified() && !  theVisitor.hasOverflow() 
-        	? theWriter.toByteArray() 
+        	? new InstrumentedClass(theWriter.toByteArray(), theTracedMethods) 
         	: null;
     }
 

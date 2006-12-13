@@ -26,7 +26,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.objectweb.asm.Type;
 
@@ -46,6 +48,12 @@ public class ASMLocationPool
 	private int itsNextTypeId = 1;
 	
 	private ILocationRegistrer itsLocationRegistrer;
+	
+	/**
+	 * We keep track of the methods that have already been traced.
+	 * @see ASMBehaviorInstrumenter#hasTrace(String)
+	 */
+	private Set<Integer> itsTracedMethods = new HashSet<Integer>();
 	
 	public ASMLocationPool(ILocationRegistrer aLocationRegistrer, File aLocationsFile)
 	{
@@ -85,6 +93,16 @@ public class ASMLocationPool
 		{
 			itsLocationRegistrer = aLocationRegistrer;
 		}
+	}
+	
+	public void setTraced(int aId)
+	{
+		itsTracedMethods.add(aId);
+	}
+	
+	public boolean isTraced(int aId)
+	{
+		return itsTracedMethods.contains(aId);
 	}
 
 	protected String getBehaviorKey(int aTypeId, String aName, String aDescriptor)

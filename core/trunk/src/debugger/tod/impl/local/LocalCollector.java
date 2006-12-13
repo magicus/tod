@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.local;
 
+import tod.DebugFlags;
 import tod.agent.AgentUtils;
 import tod.core.Output;
 import tod.core.ILocationRegistrer.LocalVariableInfo;
@@ -51,8 +52,6 @@ import zz.utils.Stack;
  */
 public class LocalCollector extends EventCollector
 {
-	private static final boolean LOG = false;
-	
 	private final LocalBrowser itsBrowser;
 	
 	public LocalCollector(LocalBrowser aBrowser, IHostInfo aHost)
@@ -64,7 +63,7 @@ public class LocalCollector extends EventCollector
 
 	private void addEvent(Event aEvent)
 	{
-		itsBrowser.addEvent(aEvent);
+		if (DebugFlags.LOCAL_COLLECTOR_STORE) itsBrowser.addEvent(aEvent);
 	}
 	
 	private IBehaviorInfo getBehavior(int aId)
@@ -123,7 +122,10 @@ public class LocalCollector extends EventCollector
 		aEvent.setTimestamp(aTimestamp);
 		aEvent.setOperationBytecodeIndex(aOperationBytecodeIndex);
 		
-		if (theParentEvent != null) theParentEvent.addChild(aEvent);
+		if (DebugFlags.LOCAL_COLLECTOR_STORE && theParentEvent != null) 
+		{
+			theParentEvent.addChild(aEvent);
+		}
 	}
 
 	@Override
@@ -136,7 +138,7 @@ public class LocalCollector extends EventCollector
 			int aOperationBytecodeIndex, 
 			Object aException)
 	{
-		if (LOG) System.out.println(String.format(
+		if (DebugFlags.COLLECTOR_LOG) System.out.println(String.format(
 				"exception    (thread: %d, p.ts: %s, depth: %d, ts: %s, bid: %s, exc.: %s",
 				aThreadId,
 				AgentUtils.formatTimestamp(aParentTimestamp),
@@ -165,7 +167,7 @@ public class LocalCollector extends EventCollector
 			boolean aHasThrown, 
 			Object aResult)
 	{
-		if (LOG) System.out.println(String.format(
+		if (DebugFlags.COLLECTOR_LOG) System.out.println(String.format(
 				"behaviorExit (thread: %d, p.ts: %s, depth: %d, ts: %s, bid: %s, thrown: %s, ret: %s",
 				aThreadId,
 				AgentUtils.formatTimestamp(aParentTimestamp),
@@ -197,7 +199,7 @@ public class LocalCollector extends EventCollector
 			Object aTarget, 
 			Object aValue)
 	{
-		if (LOG) System.out.println(String.format(
+		if (DebugFlags.COLLECTOR_LOG) System.out.println(String.format(
 				"fieldWrite   (thread: %d, p.ts: %s, depth: %d, ts: %s, fid: %s, target: %s, val: %s",
 				aThreadId,
 				AgentUtils.formatTimestamp(aParentTimestamp),
@@ -228,7 +230,7 @@ public class LocalCollector extends EventCollector
 			int aIndex, 
 			Object aValue)
 	{
-		if (LOG) System.out.println(String.format(
+		if (DebugFlags.COLLECTOR_LOG) System.out.println(String.format(
 				"arrayWrite   (thread: %d, p.ts: %s, depth: %d, ts: %s, target: %s, ind: %d, val: %s",
 				aThreadId,
 				AgentUtils.formatTimestamp(aParentTimestamp),
@@ -261,7 +263,7 @@ public class LocalCollector extends EventCollector
 			Object aTarget, 
 			Object[] aArguments)
 	{
-		if (LOG) System.out.println(String.format(
+		if (DebugFlags.COLLECTOR_LOG) System.out.println(String.format(
 				"instantiation(thread: %d, p.ts: %s, depth: %d, ts: %s, direct: %s, c.bid: %s, e.bid: %s, target: %s, args: %s",
 				aThreadId,
 				AgentUtils.formatTimestamp(aParentTimestamp),
@@ -297,7 +299,7 @@ public class LocalCollector extends EventCollector
 			int aVariableId, 
 			Object aValue)
 	{
-		if (LOG) System.out.println(String.format(
+		if (DebugFlags.COLLECTOR_LOG) System.out.println(String.format(
 				"localWrite   (thread: %d, p.ts: %s, depth: %d, ts: %s, vid: %d, val: %s",
 				aThreadId,
 				AgentUtils.formatTimestamp(aParentTimestamp),
@@ -333,7 +335,7 @@ public class LocalCollector extends EventCollector
 			Object aTarget,
 			Object[] aArguments)
 	{
-		if (LOG) System.out.println(String.format(
+		if (DebugFlags.COLLECTOR_LOG) System.out.println(String.format(
 				"methodCall   (thread: %d, p.ts: %s, depth: %d, ts: %s, direct: %s, c.bid: %s, e.bid: %s, target: %s, args: %s, bci: %d)",
 				aThreadId,
 				AgentUtils.formatTimestamp(aParentTimestamp),
@@ -368,7 +370,7 @@ public class LocalCollector extends EventCollector
 			Output aOutput,
 			byte[] aData)
 	{
-		if (LOG) System.out.println(String.format(
+		if (DebugFlags.COLLECTOR_LOG) System.out.println(String.format(
 				"output       (thread: %d, p.ts: %s, depth: %d, ts: %s, out: %s, data: %s",
 				aThreadId,
 				AgentUtils.formatTimestamp(aParentTimestamp),
@@ -399,7 +401,7 @@ public class LocalCollector extends EventCollector
 			Object aTarget, 
 			Object[] aArguments)
 	{
-		if (LOG) System.out.println(String.format(
+		if (DebugFlags.COLLECTOR_LOG) System.out.println(String.format(
 				"superCall    (thread: %d, p.ts: %s, depth: %d, ts: %s, direct: %s, c.bid: %s, e.bid: %s, target: %s, args: %s",
 				aThreadId,
 				AgentUtils.formatTimestamp(aParentTimestamp),

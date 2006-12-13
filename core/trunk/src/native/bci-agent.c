@@ -51,6 +51,7 @@ static const char OBJECT_UID = 2;
 static const char SET_CACHE_PATH = 80;
 static const char SET_SKIP_CORE_CLASSES = 81;
 static const char SET_VERBOSE = 82;
+static const char SET_CAPTURE_EXCEPTIONS = 83;
 static const char CONFIG_DONE = 90;
 
 static int VM_STARTED = 0;
@@ -63,7 +64,8 @@ static jvmtiEnv *globalJvmti;
 // Configuration data
 static char* cfgCachePath = NULL;
 static int cfgSkipCoreClasses = 0;
-int cfgVerbose = 0;
+int cfgVerbose = 1;
+int cfgCaptureExceptions = 0;
 
 // System properties configuration data.
 static char* cfgHost = NULL;
@@ -80,83 +82,18 @@ static jmethodID method_Object_hashCode;
 static jclass class_ExceptionGeneratedReceiver;
 static jmethodID method_ExceptionGeneratedReceiver_exceptionGenerated;
 
+static jclass class_TracedMethods;
+static jmethodID method_TracedMethods_setTraced;
+
+// Method IDs for methods whose exceptions are ignored
+static jmethodID ignoredExceptionMethods[3];
+
 // Object Id mutex and current id value
 static pthread_mutex_t oidMutex = PTHREAD_MUTEX_INITIALIZER;
 static long oidCurrent = 1;
 
 // Mutex for class load callback
 static pthread_mutex_t loadMutex = PTHREAD_MUTEX_INITIALIZER;
-
-static void writeByte(int i)
-{
-	fputc(i & 0xff, SOCKET_OUT);
-}
-
-static void writeShort(int v)
-{
-	fputc(0xff & (v >> 8), SOCKET_OUT);
-	fputc(0xff & v, SOCKET_OUT);
-}
-
-static void writeInt(int v)
-{
-	fputc(0xff & (v >> 24), SOCKET_OUT);
-	fputc(0xff & (v >> 16), SOCKET_OUT);
-	fputc(0xff & (v >> 8), SOCKET_OUT);
-	fputc(0xff & v, SOCKET_OUT);
-}
-
-static void writeLong(jlong v)
-{
-	fputc(0xff & (v >> 56), SOCKET_OUT);
-	fputc(0xff & (v >> 48), SOCKET_OUT);
-	fputc(0xff & (v >> 40), SOCKET_OUT);
-	fputc(0xff & (v >> 32), SOCKET_OUT);
-	fputc(0xff & (v >> 24), SOCKET_OUT);
-	fputc(0xff & (v >> 16), SOCKET_OUT);
-	fputc(0xff & (v >> 8), SOCKET_OUT);
-	fputc(0xff & v, SOCKET_OUT);
-}
-
-static int readByte()
-{
-	return fgetc(SOCKET_IN);
-}
-
-static int readShort()
-{
-	int a = fgetc(SOCKET_IN);
-	int b = fgetc(SOCKET_IN);
-	
-	return (((a & 0xff) << 8) | (b & 0xff));
-}
-
-static int readInt()
-{
-	int a = fgetc(SOCKET_IN);
-	int b = fgetc(SOCKET_IN);
-	int c = fgetc(SOCKET_IN);
-	int d = fgetc(SOCKET_IN);
-	
-	return (((a & 0xff) << 24) | ((b & 0xff) << 16) | ((c & 0xff) << 8) | (d & 0xff));
-}
-
-static void writeUTF(const char* s)
-{
-	int len = strlen(s);
-	writeShort(len);
-	fputs(s, SOCKET_OUT);
-}
-
-static char* readUTF()
-{
-	int len = readShort();
-	char* s = (char*) malloc(len+1);
-	fread(s, 1, len, SOCKET_IN);
-	s[len] = 0;
-	
-	return s;
-}
 
 
 /*
@@ -185,8 +122,8 @@ static void bciConnect(char* host, int port, char* hostname)
 	SOCKET_OUT = fdopen(s, "w");
 	
 	// Send host name
-	if (cfgVerbose) printf("Sending host name: %s\n", hostname);
-	writeUTF(hostname);
+	if (cfgVerbose>=1) printf("Sending host name: %s\n", hostname);
+	writeUTF(SOCKET_OUT, hostname);
 	fflush(SOCKET_OUT);
 }
 
@@ -249,22 +186,27 @@ static void bciConfigure()
 
 	while(true)
 	{
-		int cmd = readByte();
+		int cmd = readByte(SOCKET_IN);
 		switch(cmd)
 		{
 			case SET_CACHE_PATH:
-				cfgCachePath = readUTF();
+				cfgCachePath = readUTF(SOCKET_IN);
 				printf("Setting cache path: %s\n", cfgCachePath);
 				break;
 				
 			case SET_SKIP_CORE_CLASSES:
-				cfgSkipCoreClasses = readByte();
-				printf(cfgSkipCoreClasses ? "Skipping core classes\n" : "Not skipping core classes\n");
+				cfgSkipCoreClasses = readByte(SOCKET_IN);
+				printf("Skipping core classes: %s\n", cfgSkipCoreClasses ? "Yes" : "No");
 				break;
 
 			case SET_VERBOSE:
-				cfgVerbose = readByte();
-				printf(cfgVerbose ? "Verbose\n" : "Terse\n");
+				cfgVerbose = readByte(SOCKET_IN);
+				printf("Verbosity: %d\n", cfgVerbose);
+				break;
+				
+			case SET_CAPTURE_EXCEPTIONS:
+				cfgCaptureExceptions = readByte(SOCKET_IN);
+				printf("Capture exceptions: %s\n", cfgCaptureExceptions ? "Yes" : "No");
 				break;
 
 			case CONFIG_DONE:
@@ -272,6 +214,22 @@ static void bciConfigure()
 				return;
 		}
 	}
+}
+
+void registerTracedMethods(JNIEnv* jni, int nTracedMethods, int* tracedMethods)
+{
+	if (cfgVerbose>=1 && nTracedMethods>0) printf("Registering %d traced methods\n", nTracedMethods);
+	for (int i=0;i<nTracedMethods;i++)
+	{
+		jni->CallStaticVoidMethod(
+			class_TracedMethods, 
+			method_TracedMethods_setTraced,
+			tracedMethods[i]);
+			
+		if (cfgVerbose>=3) printf("Registering traced method: %d\n", tracedMethods[i]);
+	}
+	
+	if (tracedMethods) delete tracedMethods;
 }
 
 static void JNICALL
@@ -282,6 +240,11 @@ cbClassFileLoadHook(
 	jint class_data_len, const unsigned char* class_data,
 	jint* new_class_data_len, unsigned char** new_class_data) 
 {
+	if (strncmp("tod/core/", name, 9) == 0 
+		|| strncmp("tod/agent/", name, 10) == 0
+		) return;
+
+
 	if (cfgSkipCoreClasses 
 		&& (
 			strncmp("java/", name, 5) == 0 
@@ -290,21 +253,27 @@ cbClassFileLoadHook(
 			|| strncmp("com/sun/", name, 8) == 0 
 		)) return;
 
-	if (cfgVerbose) printf("Loading (hook) %s\n", name);
+	if (cfgVerbose>=1) printf("Loading (hook) %s\n", name);
+	
+	int* tracedMethods = NULL;
+	int nTracedMethods = 0;
 	
 	// Compute MD5 sum
 	char md5Buffer[16];
 	char md5String[33];
 	md5_buffer((const char *) class_data, class_data_len, md5Buffer);
 	md5_sig_to_string(md5Buffer, md5String, 33);
-	if (cfgVerbose) printf("MD5 sum: %s\n", md5String);
+	if (cfgVerbose>=3) printf("MD5 sum: %s\n", md5String);
 	
 	// Compute cache file name	
 	char cacheFileName[2000];
+	char tracedCacheFileName[2000];
 	cacheFileName[0] = 0;
+	tracedCacheFileName[0] = 0;
 	if (cfgCachePath != NULL)
 	{
 		snprintf(cacheFileName, sizeof(cacheFileName), "%s/%s.%s.class", cfgCachePath, name, md5String);
+		snprintf(tracedCacheFileName, sizeof(tracedCacheFileName), "%s/%s.%s.tm", cfgCachePath, name, md5String);
 	}
 
 	// Check if we have a cached version
@@ -318,21 +287,32 @@ cbClassFileLoadHook(
 
 			if (len == 0)
 			{
-				if (cfgVerbose) printf ("Using original\n");
+				if (cfgVerbose>=2) printf ("Using original\n");
 			}
 			else
 			{
 				FILE* f = fopen(cacheFileName, "rb");
-				if (f == NULL) fatal_error("Could not open file");
+				if (f == NULL) fatal_error("Could not open class file");
 				
 				jvmtiError err = jvmti->Allocate(len, new_class_data);
 				check_jvmti_error(jvmti, err, "Allocate");
 				*new_class_data_len = len;
 		
 				if (fread(*new_class_data, 1, len, f) != len) fatal_ioerror("fread from file");
-				if (cfgVerbose) printf("Class definition uploaded from cache.\n");
+				if (cfgVerbose>=2) printf("Class definition uploaded from cache.\n");
+				fclose(f);
+				
+				f = fopen(tracedCacheFileName, "rb");
+				if (f == NULL) fatal_error("Could not open traced methods file");
+				nTracedMethods = readInt(f);
+				tracedMethods = new int[nTracedMethods];
+				for (int i=0;i<nTracedMethods;i++) tracedMethods[i] = readInt(f);
 				fclose(f);
 			}
+			
+			// Register traced methods
+			registerTracedMethods(jni, nTracedMethods, tracedMethods);
+
 			return;
 		}
 	}
@@ -340,54 +320,73 @@ cbClassFileLoadHook(
 	pthread_mutex_lock(&loadMutex);
 
 	// Send command
-	writeByte(INSTRUMENT_CLASS);
+	writeByte(SOCKET_OUT, INSTRUMENT_CLASS);
 	
 	// Send class name
-	writeUTF(name);
+	writeUTF(SOCKET_OUT, name);
 	
 	// Send bytecode
-	writeInt(class_data_len);
+	writeInt(SOCKET_OUT, class_data_len);
 	fwrite(class_data, 1, class_data_len, SOCKET_OUT);
 	fflush(SOCKET_OUT);
 	
-	int len = readInt();
+	int len = readInt(SOCKET_IN);
 	
 	if (len > 0)
 	{
-		if (cfgVerbose) printf("Redefining %s...\n", name);
+		if (cfgVerbose>=2) printf("Redefining %s...\n", name);
 		jvmtiError err = jvmti->Allocate(len, new_class_data);
 		check_jvmti_error(jvmti, err, "Allocate");
 		*new_class_data_len = len;
 		
 		if (fread(*new_class_data, 1, len, SOCKET_IN) != len) fatal_ioerror("fread");
-		if (cfgVerbose) printf("Class definition uploaded.\n");
+		if (cfgVerbose>=2) printf("Class definition uploaded.\n");
+		
+		nTracedMethods = readInt(SOCKET_IN);
+		tracedMethods = new int[nTracedMethods];
+		for (int i=0;i<nTracedMethods;i++) tracedMethods[i] = readInt(SOCKET_IN);
+
 		
 		// Cache class
 		if (cfgCachePath != NULL)
 		{
-			if (cfgVerbose) printf("Caching %s\n", cacheFileName);
+			if (cfgVerbose>=2) printf("Caching %s\n", cacheFileName);
 			if (! mkdirs(cacheFileName)) fatal_ioerror("Error in mkdirs");
+			
+			// Cache bytecode
 			FILE* f = fopen(cacheFileName, "wb");
 			if (f == NULL) fatal_ioerror("Opening cache class file for output");
 			if (fwrite(*new_class_data, 1, len, f) < len) fatal_ioerror("Writing cached class");
 			fflush(f);
 			fclose(f);
-			if (cfgVerbose) printf("Cached.\n");
+			
+			// Cache traced methods
+			f = fopen(tracedCacheFileName, "wb");
+			if (f == NULL) fatal_ioerror("Opening cache traced methods file for output");
+			writeInt(f, nTracedMethods);
+			for (int i=0;i<nTracedMethods;i++) writeInt(f, tracedMethods[i]);
+			fflush(f);
+			fclose(f);
+			
+			if (cfgVerbose>=2) printf("Cached.\n");
 		}
 	}
 	else if (cfgCachePath != NULL)
 	{
 		// Mark class as not instrumented.
-		if (cfgVerbose) printf("Caching empty: %s\n", cacheFileName);
+		if (cfgVerbose>=2) printf("Caching empty: %s\n", cacheFileName);
 		if (! mkdirs(cacheFileName)) fatal_ioerror("Error in mkdirs");
 		FILE* f = fopen(cacheFileName, "wb");
 		if (f == NULL) fatal_ioerror("Opening cache class file for output");
 		fflush(f);
 		fclose(f);
-		if (cfgVerbose) printf("Cached empty.\n");
+		if (cfgVerbose>=2) printf("Cached empty.\n");
 	}
 	
 	pthread_mutex_unlock(&loadMutex);
+	
+	// Register traced methods
+	registerTracedMethods(jni, nTracedMethods, tracedMethods);
 }
 
 void JNICALL
@@ -401,8 +400,13 @@ cbException(
 	jmethodID catch_method,
 	jlocation catch_location)
 {
-	return;
+	if (cfgCaptureExceptions == 0) return;
 	if (VM_STARTED == 0) return;
+	
+	for (int i=0;i<sizeof(ignoredExceptionMethods);i++)
+	{
+		if (method == ignoredExceptionMethods[i]) return;
+	}
 	
 	char* methodName;
 	char* methodSignature;
@@ -421,7 +425,7 @@ cbException(
 	jvmti->GetJLocationFormat(&locationFormat);
 	if (locationFormat == JVMTI_JLOCATION_JVMBCI) bytecodeIndex = (int) location;
 	
-	if (cfgVerbose) printf("Exception generated: %s, %s, %s, %d\n", methodName, methodSignature, methodDeclaringClassSignature, bytecodeIndex);
+	if (cfgVerbose>=1) printf("Exception generated: %s, %s, %s, %d\n", methodName, methodSignature, methodDeclaringClassSignature, bytecodeIndex);
 	
 	jni->CallStaticVoidMethod(
 		class_ExceptionGeneratedReceiver, 
@@ -430,33 +434,8 @@ cbException(
 		jni->NewStringUTF(methodSignature),
 		jni->NewStringUTF(methodDeclaringClassSignature),
 		bytecodeIndex,
-		exception);
+ 		exception);
 
-/*
-	// Send data
-	writeByte(EXCEPTION_GENERATED);
-	writeLong(timestamp);
-	writeLong(threadId);
-	writeUTF(methodName);
-	writeUTF(methodSignature);
-	writeUTF(methodDeclaringClassSignature);
-	writeInt(bytecodeIndex);
-	
-	if (jni->IsInstanceOf(exception, class_IIdentifiableObject))
-	{
-		long exceptionUid = jni->CallLongMethod(exception, method_IIdentifiableObject_log_uid);
-		writeByte(OBJECT_UID);
-		writeLong(exceptionUid);
-	}
-	else
-	{
-		int exceptionHash = jni->CallIntMethod(exception, method_Object_hashCode);
-		writeByte(OBJECT_HASH);
-		writeInt(exceptionHash);
-	}
-	
-	fflush(SOCKET_OUT);
-*/
 
 	// Free buffers
 	jvmti->Deallocate((unsigned char*) methodName);
@@ -464,30 +443,59 @@ cbException(
 	jvmti->Deallocate((unsigned char*) methodDeclaringClassSignature);
 }
 
+static void ignoreMethod(JNIEnv* jni, int index, char* className, char* methodName, char* signature)
+{
+	if (cfgVerbose>=2) printf("Loading (jni-ignore) %s\n", className);
+	jclass clazz = jni->FindClass(className);
+	if (clazz == NULL) printf("Could not load %s\n", className);
+	jmethodID method = jni->GetMethodID(clazz, methodName, signature);
+	if (method == NULL) printf("Could not find %s.%s%s\n", className, methodName, signature);
+	jni->DeleteLocalRef(clazz);
+
+	ignoredExceptionMethods[index] = method;
+}
+
+
+static void initIgnoredMethods(JNIEnv* jni)
+{
+	int i=0;
+	ignoreMethod(jni, i++, "java/lang/ClassLoader", "findBootstrapClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+	ignoreMethod(jni, i++, "java/net/URLClassLoader$1", "run", "()Ljava/lang/Object;");
+	ignoreMethod(jni, i++, "java/net/URLClassLoader", "findClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+}
+
+
 void JNICALL
 cbVMInit(
 	jvmtiEnv *jvmti,
 	JNIEnv* jni,
 	jthread thread)
 {
-	if (cfgVerbose) printf("VMInit\n");
+	if (cfgVerbose>=1) printf("VMInit\n");
 	
 	
 	// Initialize the classes and method ids that will be used
 	// for exception processing
-	if (cfgVerbose) printf("Loading (jni) java.lang.System\n");
+	if (cfgVerbose>=2) printf("Loading (jni) java.lang.System\n");
 	class_System = jni->FindClass("java/lang/System");
 	class_System = (jclass) jni->NewGlobalRef(class_System);
 	method_System_nanoTime = jni->GetStaticMethodID(class_System, "nanoTime", "()J");
 	
-	if (cfgVerbose) printf("Loading (jni) java.lang.Object\n");
+	if (cfgVerbose>=2) printf("Loading (jni) java.lang.Object\n");
 	class_Object = jni->FindClass("java/lang/Object");
 	class_Object = (jclass) jni->NewGlobalRef(class_Object);
 	method_Object_hashCode = jni->GetMethodID(class_Object, "hashCode", "()I");
 
-	if (cfgVerbose) printf("Loading (jni) tod.agent.ExceptionGeneratedReceiver\n");
+	if (cfgVerbose>=2) printf("Loading (jni) tod.agent.TracedMethods\n");
+	class_TracedMethods = jni->FindClass("tod/agent/TracedMethods");
+	if (class_TracedMethods == NULL) printf("Could not load TracedMethods!\n");
+	class_TracedMethods = (jclass) jni->NewGlobalRef(class_TracedMethods);
+	method_TracedMethods_setTraced = jni->GetStaticMethodID(class_TracedMethods, "setTraced", "(I)V");
+	if (method_TracedMethods_setTraced == NULL) printf("Could not find setTraced!\n");
+	
+	if (cfgVerbose>=2) printf("Loading (jni) tod.agent.ExceptionGeneratedReceiver\n");
 	class_ExceptionGeneratedReceiver = jni->FindClass("tod/agent/ExceptionGeneratedReceiver");
-	if (class_ExceptionGeneratedReceiver == NULL) printf("Could not load!\n");
+	if (class_ExceptionGeneratedReceiver == NULL) printf("Could not load ExceptionGeneratedReceiver!\n");
 	class_ExceptionGeneratedReceiver = (jclass) jni->NewGlobalRef(class_ExceptionGeneratedReceiver);
 	method_ExceptionGeneratedReceiver_exceptionGenerated = 
 		jni->GetStaticMethodID(
@@ -495,10 +503,13 @@ cbVMInit(
 			"exceptionGenerated", 
 			"(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Throwable;)V");
 	
-	if (cfgVerbose) printf("VMInit - done\n");
+	initIgnoredMethods(jni);
+	
+	if (cfgVerbose>=1) printf("VMInit - done\n");
 	
 	VM_STARTED = 1;
 }
+
 
 JNIEXPORT jint JNICALL 
 Agent_OnLoad(JavaVM *vm, char *options, void *reserved) 
@@ -569,9 +580,9 @@ Agent_OnUnload(JavaVM *vm)
 {
 	if (SOCKET_OUT)
 	{
-		writeByte(FLUSH);
+		writeByte(SOCKET_OUT, FLUSH);
 		fflush(SOCKET_OUT);
-		if (cfgVerbose) printf("Sent flush\n");
+		if (cfgVerbose>=1) printf("Sent flush\n");
 	}
 }
 

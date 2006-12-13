@@ -90,4 +90,14 @@ public class DebugFlags
 	 * Causes the socket collector to not send events
 	 */
 	public static final boolean DISABLE_EVENT_SEND = false;
+
+	/**
+	 * Causes the event collector to print the events it receives.
+	 */
+	public static final boolean COLLECTOR_LOG = false;
+	
+	/**
+	 * If set to true, the local collector will actually store events.
+	 */
+	public static final boolean LOCAL_COLLECTOR_STORE = false;
 }

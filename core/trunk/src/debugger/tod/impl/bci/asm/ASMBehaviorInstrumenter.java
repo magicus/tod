@@ -24,8 +24,10 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.omg.CORBA.UNKNOWN;
 
 import tod.agent.AgentReady;
+import tod.agent.TracedMethods;
 import tod.core.BehaviorCallType;
 import tod.core.EventInterpreter;
 
@@ -77,10 +79,13 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	/**
 	 * Indicates if the given class has (or will have) tracing instrumentation.
 	 */
-	private boolean hasTrace(String aClassName)
+	private HasTrace hasTrace(String aClassName, int aMethodId)
 	{
-		return BCIUtils.acceptClass(aClassName, itsConfig.getGlobalSelector())
-		&& BCIUtils.acceptClass(aClassName, itsConfig.getTraceSelector());
+		if (itsLocationPool.isTraced(aMethodId)) return HasTrace.YES;
+		else if (BCIUtils.acceptClass(aClassName, itsConfig.getGlobalSelector())
+			&& BCIUtils.acceptClass(aClassName, itsConfig.getTraceSelector()))
+			return HasTrace.UNKNOWN;
+		else return HasTrace.NO;
 	}
 	
 	/**
@@ -199,6 +204,11 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		invokeLogBehaviorExitWithException(itsMethodId, itsFirstFreeVar);
 	}
 	
+	private static enum HasTrace
+	{
+		YES, NO, UNKNOWN;
+	}
+	
 	public void methodCall(
 			int aOpcode,
 			String aOwner, 
@@ -207,7 +217,10 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			BehaviorCallType aCallType)
 	{
 		int theCalledTypeId = itsLocationPool.getTypeId(aOwner);
-		int theCalledMethodId = itsLocationPool.getBehaviorId(theCalledTypeId, aName, aDesc);
+		int theCalledMethodId = itsLocationPool.getBehaviorId(
+				theCalledTypeId, 
+				aName, 
+				aDesc);
 		
 		itsBehaviorCallInstrumenter.setup(
 				itsFirstFreeVar,
@@ -215,7 +228,37 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				aDesc,
 				aOpcode == INVOKESTATIC);
 		
-		if (hasTrace(aOwner))
+		
+		// Note: a class that has trace might inherit methods from
+		// a non-traced superclass. Therefore we cannot be sure that
+		// the called method is indeed traced. On the other hand if the
+		// owner class has no trace, we are sure that the called method
+		// is also traced, if the filters respect our requirement that
+		// a traced class' subclasses must also be traced.
+		// Support for the YES case is somewhat limited because it is
+		// restricted to methods of classes that have already been
+		// instrumented.
+		HasTrace theHasTrace = hasTrace(aOwner, theCalledMethodId);
+		
+		Label theElse = new Label();
+		Label theEndif = new Label();
+
+		if (theHasTrace == HasTrace.UNKNOWN)
+		{
+			// Runtime check for trace info
+			
+			BCIUtils.pushInt(mv, theCalledMethodId);
+			
+			mv.visitMethodInsn(
+					INVOKESTATIC, 
+					Type.getInternalName(TracedMethods.class), 
+					"isTraced", 
+					"(I)Z");
+			
+			mv.visitJumpInsn(IFEQ, theElse);
+		}
+		
+		if (theHasTrace == HasTrace.UNKNOWN || theHasTrace == HasTrace.YES)
 		{
 			// Handle before method call
 			itsBehaviorCallInstrumenter.callLogBeforeBehaviorCallDry(aCallType);
@@ -226,7 +269,14 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			// Handle after method call
 			itsBehaviorCallInstrumenter.callLogAfterBehaviorCallDry();						
 		}
-		else
+		
+		if (theHasTrace == HasTrace.UNKNOWN)
+		{
+			mv.visitJumpInsn(GOTO, theEndif);
+			mv.visitLabel(theElse);
+		}
+		
+		if (theHasTrace == HasTrace.UNKNOWN || theHasTrace == HasTrace.NO)
 		{
 			// Handle before method call
 			itsBehaviorCallInstrumenter.storeArgsToLocals();
@@ -260,6 +310,72 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			// Handle after method call
 			itsBehaviorCallInstrumenter.callLogAfterMethodCall();
 		}
+
+		if (theHasTrace == HasTrace.UNKNOWN)
+		{
+			mv.visitLabel(theEndif);
+		}
+	}
+	
+	private void handleBeforeUnknownCall(BehaviorCallType aCallType)
+	{
+		mv.visitMethodInsn(
+				INVOKESTATIC, 
+				Type.getInternalName(TracedMethods.class), 
+				"isTraced", 
+				"(I)Z");
+		Label lb = new Label();
+		Label lbe = new Label();
+		
+		mv.visitJumpInsn(IFEQ, lb);
+		handleBeforeTracedCall(aCallType);
+		mv.visitJumpInsn(GOTO, lbe);
+		mv.visitLabel(lb);
+		handleBeforeNonTracedCall(aCallType);
+		mv.visitLabel(lbe);
+	}
+	
+	private void handleBeforeTracedCall(BehaviorCallType aCallType)
+	{
+		itsBehaviorCallInstrumenter.callLogBeforeBehaviorCallDry(aCallType);		
+	}
+	
+	private void handleBeforeNonTracedCall(BehaviorCallType aCallType)
+	{
+		itsBehaviorCallInstrumenter.storeArgsToLocals();
+		itsBehaviorCallInstrumenter.createArgsArray();
+		itsBehaviorCallInstrumenter.callLogBeforeMethodCall(aCallType);
+		itsBehaviorCallInstrumenter.pushArgs();
+	}
+	
+	private void handleAfterUnknownCall()
+	{
+		
+	}
+	
+	private void handleAfterTracedCall()
+	{
+		itsBehaviorCallInstrumenter.callLogAfterBehaviorCallDry();						
+	}
+	
+	private void handleAfterNonTracedCall()
+	{
+		itsBehaviorCallInstrumenter.callLogAfterMethodCall();
+	}
+	
+	private void handleAfterUnknownCallEx()
+	{
+		
+	}
+	
+	private void handleAfterTracedCallEx()
+	{
+		
+	}
+	
+	private void handleAfterNonTracedCallEx()
+	{
+		itsBehaviorCallInstrumenter.callLogAfterMethodCallWithException();
 	}
 	
 	public void fieldWrite(

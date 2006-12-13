@@ -20,6 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.bci.asm;
 
+import java.util.List;
+
 import org.objectweb.asm.ClassAdapter;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Label;
@@ -39,7 +41,7 @@ import zz.utils.Stack;
  */
 public class LogBCIVisitor extends ClassAdapter implements Opcodes
 {
-	private static final boolean LOG = true;
+	private static final int LOG = 1;
 	
 	private static final boolean TRACE_FIELD = true;
 	private static final boolean TRACE_VAR = true;
@@ -72,15 +74,22 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 
 	private final ASMDebuggerConfig itsConfig;
 
+	/**
+	 * This list will be filled with the ids of traced methods.
+	 */
+	private final List<Integer> itsTracedMethods;
+
 	
 	public LogBCIVisitor(
 			ASMDebuggerConfig aConfig,
 			InfoCollector aInfoCollector, 
-			ClassVisitor aVisitor)
+			ClassVisitor aVisitor, 
+			List<Integer> aTracedMethods)
 	{
 		super(aVisitor);
 		itsInfoCollector = aInfoCollector;
 		itsConfig = aConfig;
+		itsTracedMethods = aTracedMethods;
 	}
 
 	public boolean hasOverflow()
@@ -115,6 +124,8 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			String aSuperName, 
 			String[] aInterfaces)
 	{
+//		if (LOG>=1) System.out.println("Processing "+aName);
+		
 		// Register type
 		itsTypeName = aName;
 		itsTypeId = getLocationPool().getTypeId(aName);
@@ -151,11 +162,19 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			String aSignature, 
 			String[] aExceptions)
 	{
-		ASMMethodInfo theMethodInfo = itsInfoCollector.getMethodInfo(itsCurrentMethodIndex++);
+		ASMMethodInfo theMethodInfo = 
+			itsInfoCollector.getMethodInfo(itsCurrentMethodIndex++);
+		
 		MethodVisitor mv = super.visitMethod(access, aName, aDesc, aSignature, aExceptions);
-		if (mv == null) return null;
-		else return new InstantiationAnalyserVisitor (new BCIMethodVisitor(mv, theMethodInfo), theMethodInfo);
-//		else return new BCIMethodVisitor(mv, theMethodInfo);
+		if (mv != null 
+				&& (access & ACC_NATIVE) == 0
+				&& (access & ACC_ABSTRACT) == 0) 
+		{
+			return new InstantiationAnalyserVisitor (
+					new BCIMethodVisitor(mv, theMethodInfo), 
+					theMethodInfo);			
+		}
+		else return mv;
 	}
 	
 	private class BCIMethodVisitor extends MethodAdapter
@@ -175,6 +194,9 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 								itsMethodInfo.getName(), 
 								itsMethodInfo.getDescriptor());
 			
+			itsTracedMethods.add(itsMethodId);
+			getLocationPool().setTraced(itsMethodId);
+			
 			itsInstrumenter = new ASMBehaviorInstrumenter(
 					itsConfig,
 					mv, 
@@ -182,7 +204,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 					itsMethodInfo,
 					itsMethodId);
 			
-			if (LOG) System.out.println("Processing method "+itsMethodInfo.getName()+itsMethodInfo.getDescriptor());
+			if (LOG>=2) System.out.println("Processing method "+itsMethodInfo.getName()+itsMethodInfo.getDescriptor());
 		}
 
 		@Override

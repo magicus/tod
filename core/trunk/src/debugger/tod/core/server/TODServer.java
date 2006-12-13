@@ -80,7 +80,6 @@ public class TODServer
 
 	/**
 	 * This method is called when the connection with the target VM is lost.
-	 *
 	 */
 	protected void disconnected()
 	{
@@ -203,7 +202,7 @@ public class TODServer
 			itsDelegate = aDelegate;
 		}
 
-		public synchronized byte[] instrumentClass(String aClassName, byte[] aBytecode)
+		public synchronized InstrumentedClass instrumentClass(String aClassName, byte[] aBytecode)
 		{
 			return itsDelegate.instrumentClass(aClassName, aBytecode);
 		}

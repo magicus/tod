@@ -34,11 +34,11 @@ import tod.utils.ConfigUtils;
  */
 public class TODConfig
 {
-	public static final BooleanItem AGENT_VERBOSE = new BooleanItem(
+	public static final IntegerItem AGENT_VERBOSE = new IntegerItem(
 			"agent.verbose",
 			"Agent - verbose",
 			"Defines the verbosity level of the native agent.",
-			false);
+			ConfigUtils.readInt("agent-verbose", 0));
 	
 	public static final BooleanItem AGENT_SKIP_CORE_CLASSE = new BooleanItem(
 			"agent.skipCoreClasses",
@@ -51,7 +51,7 @@ public class TODConfig
 			"agent.cachePath",
 			"Agent - class cache path",
 			"Defines the path where the native agent stores instrumented classes.",
-			null);
+			ConfigUtils.readString("classes-cache-path", "/tmp/tod"));
 	
 	public static final StringItem INSTRUMENTER_LOCATIONS_FILE = new StringItem(
 			"instrumenter.locationsFile",
@@ -74,7 +74,7 @@ public class TODConfig
 			"Tracing class filter for instrumentation. " +
 			"Classes that do no pass this filter are not instrumented " +
 			"but are registered in the structure database.",
-			"[-java.** -javax.** -sun.** -com.sun.**]");
+			ConfigUtils.readString("trace-filter", "[-java.** -javax.** -sun.** -com.sun.**]"));
 	/**
 	 * Contains all available configuration items.
 	 */
@@ -280,6 +280,14 @@ public class TODConfig
 		public StringItem(String aKey, String aName, String aDescription, String aDefault)
 		{
 			super(ItemType.ITEM_TYPE_STRING, aKey, aName, aDescription, aDefault);
+		}
+	}
+	
+	public static class IntegerItem extends Item<Integer>
+	{
+		public IntegerItem(String aKey, String aName, String aDescription, Integer aDefault)
+		{
+			super(ItemType.ITEM_TYPE_INTEGER, aKey, aName, aDescription, aDefault);
 		}
 	}
 }

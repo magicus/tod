@@ -21,8 +21,22 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 #ifndef _Included_utils_h
 #define _Included_utils_h
 
+#include <stdio.h>
+#include <jni.h>
+
 
 void fatal_error(char*);
 void fatal_ioerror(char*);
+
+void writeByte(FILE* f, int i);
+void writeShort(FILE* f, int v);
+void writeInt(FILE* f, int v);
+void writeLong(FILE* f, jlong v);
+int readByte(FILE* f);
+int readShort(FILE* f);
+int readInt(FILE* f);
+void writeUTF(FILE* f, const char* s);
+char* readUTF(FILE* f);
+
 
 #endif

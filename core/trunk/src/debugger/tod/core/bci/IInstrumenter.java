@@ -20,6 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.bci;
 
+import java.util.List;
+
 public interface IInstrumenter
 {
     /**
@@ -28,5 +30,28 @@ public interface IInstrumenter
      * @param aBytecode Original bytecode of the class
      * @return New bytecode, or null if no instrumentation is performed.
      */
-	public byte[] instrumentClass (String aClassName, byte[] aBytecode);
+	public InstrumentedClass instrumentClass (String aClassName, byte[] aBytecode);
+	
+	/**
+	 * Aggregates the results of class instrumentation
+	 * @author gpothier
+	 */
+	public static class InstrumentedClass
+	{
+		/**
+		 * Instrumented bytecode
+		 */
+		public final byte[] bytecode;
+		
+		/**
+		 * List of ids of the methods that were instrumented
+		 */
+		public final List<Integer> tracedMethods;
+
+		public InstrumentedClass(byte[] aBytecode, List<Integer> aTracedMethods)
+		{
+			bytecode = aBytecode;
+			tracedMethods = aTracedMethods;
+		}
+	}
 }

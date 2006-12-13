@@ -39,3 +39,75 @@ void fatal_ioerror(char* message)
 	perror(message);
 	exit(-1);
 }
+
+void writeByte(FILE* f, int i)
+{
+	fputc(i & 0xff, f);
+}
+
+void writeShort(FILE* f, int v)
+{
+	fputc(0xff & (v >> 8), f);
+	fputc(0xff & v, f);
+}
+
+void writeInt(FILE* f, int v)
+{
+	fputc(0xff & (v >> 24), f);
+	fputc(0xff & (v >> 16), f);
+	fputc(0xff & (v >> 8), f);
+	fputc(0xff & v, f);
+}
+
+void writeLong(FILE* f, jlong v)
+{
+	fputc(0xff & (v >> 56), f);
+	fputc(0xff & (v >> 48), f);
+	fputc(0xff & (v >> 40), f);
+	fputc(0xff & (v >> 32), f);
+	fputc(0xff & (v >> 24), f);
+	fputc(0xff & (v >> 16), f);
+	fputc(0xff & (v >> 8), f);
+	fputc(0xff & v, f);
+}
+
+int readByte(FILE* f)
+{
+	return fgetc(f);
+}
+
+int readShort(FILE* f)
+{
+	int a = fgetc(f);
+	int b = fgetc(f);
+	
+	return (((a & 0xff) << 8) | (b & 0xff));
+}
+
+int readInt(FILE* f)
+{
+	int a = fgetc(f);
+	int b = fgetc(f);
+	int c = fgetc(f);
+	int d = fgetc(f);
+	
+	return (((a & 0xff) << 24) | ((b & 0xff) << 16) | ((c & 0xff) << 8) | (d & 0xff));
+}
+
+void writeUTF(FILE* f, const char* s)
+{
+	int len = strlen(s);
+	writeShort(f, len);
+	fputs(s, f);
+}
+
+char* readUTF(FILE* f)
+{
+	int len = readShort(f);
+	char* s = (char*) malloc(len+1);
+	fread(s, 1, len, f);
+	s[len] = 0;
+	
+	return s;
+}
+

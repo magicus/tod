@@ -189,17 +189,19 @@ public class CollectorPacketReader
 			case REGISTERED:
 				long theObjectId = aStream.readLong();
 				ObjectInputStream theStream = new ObjectInputStream(aStream);
+				Object theObject;
 				try
 				{
-					Object theObject = theStream.readObject();
-					aCollector.register(theObjectId, theObject);
-					return new ObjectId.ObjectUID(theObjectId);
+					theObject = theStream.readObject();
 				}
 				catch (ClassNotFoundException e)
 				{
-					throw new RuntimeException(e);
+					System.err.println("Warning - class no found: "+e.getMessage());
+					theObject = "Unknown ("+e.getMessage()+")";
 				}
 				
+				aCollector.register(theObjectId, theObject);
+				return new ObjectId.ObjectUID(theObjectId);
 				
 			case OBJECT_UID:
 				return new ObjectId.ObjectUID(aStream.readLong());
