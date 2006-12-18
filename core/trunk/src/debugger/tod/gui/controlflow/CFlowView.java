@@ -114,25 +114,25 @@ public class CFlowView extends LogView
 		itsTreeBuilder = new CFlowTreeBuilder(this);
 		itsRootNode = itsTreeBuilder.buildRootNode((IParentEvent) itsBrowser.getRoot());
 		
-		itsTreePanel = new GraphicPanel()
-		{
-			@Override
-			protected void paintComponent(Graphics aG)
-			{
-				super.paintComponent(aG);
-				if (! itsUpdated) 
-				{
-					SwingUtilities.invokeLater(new Runnable()
-					{
-						public void run()
-						{
-							CFlowView.this.update();
-						}
-					});
-					itsUpdated = true;
-				}
-			}
-		};
+		itsTreePanel = new GraphicPanel();
+//		{
+//			@Override
+//			protected void paintComponent(Graphics aG)
+//			{
+//				super.paintComponent(aG);
+//				if (! itsUpdated) 
+//				{
+//					SwingUtilities.invokeLater(new Runnable()
+//					{
+//						public void run()
+//						{
+//							CFlowView.this.update();
+//						}
+//					});
+//					itsUpdated = true;
+//				}
+//			}
+//		};
 		itsTreePanel.setTransform(new AffineTransform());
 		itsTreePanel.setRootNode(itsRootNode);
 		
@@ -265,14 +265,19 @@ public class CFlowView extends LogView
 			
 			theNode = theNode.getNode(theEvent);
 			if (theIterator.hasNext()) theNode.expand();
+			theNode.invalidate();
 		}
 		
 		itsUpdated = false;
 		
 		itsRootNode.invalidate();
 		itsRootNode.checkValid(); // the layout must be ready.
+		
+		itsTreePanel.setShownBounds(null); // TODO: hack to recompute the size.
+		
 		Rectangle2D theNodeBounds = theNode.getBounds(null);
 		Rectangle theBounds = itsTreePanel.localToPixel(null, theNode, theNodeBounds);
+		System.out.println(theBounds);
 		itsTreePanel.scrollRectToVisible(theBounds);
 	}
 		

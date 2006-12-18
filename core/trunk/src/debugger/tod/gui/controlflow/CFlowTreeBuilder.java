@@ -45,7 +45,7 @@ import zz.utils.ui.text.XFont;
 public class CFlowTreeBuilder
 {
 	public static final XFont FONT = XFont.DEFAULT_XPLAIN.deriveFont(FontConfig.FONT_SIZE);
-	public static final XFont HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, FontConfig.HEADER_FONT_SIZE);
+	public static final XFont HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, FontConfig.FONT_SIZE);
 
 	private CFlowView itsView;
 	

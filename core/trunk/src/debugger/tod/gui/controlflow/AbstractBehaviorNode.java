@@ -87,17 +87,6 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 		itsChildrenContainer = new SVGGraphicContainer();
 		itsChildrenContainer.setLayoutManager(new StackLayout());
 		pChildren().add(itsChildrenContainer);
-	}
-	
-	@Override
-	protected IBehaviorCallEvent getEvent()
-	{
-		return itsEvent;
-	}
-	
-	@Override
-	protected boolean validate()
-	{
 		
 		itsHeader = buildHeader();
 		pChildren().add(itsHeader);
@@ -106,9 +95,38 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 		pChildren().add(itsFooter);
 		
 		setLayoutManager(new MyLayout());
-		
-		super.validate();
-		return true;
+
+	}
+	
+	@Override
+	protected IBehaviorCallEvent getEvent()
+	{
+		return itsEvent;
+	}
+	
+//	@Override
+//	protected boolean validate()
+//	{
+//		if (itsHeader != null) pChildren().remove(itsHeader);
+//		if (itsFooter != null) pChildren().remove(itsFooter);
+//		
+//		itsHeader = buildHeader();
+//		pChildren().add(itsHeader);
+//		
+//		itsFooter = buildFooter();
+//		pChildren().add(itsFooter);
+//		
+//		setLayoutManager(new MyLayout());
+//		
+//		super.validate();
+//		return true;
+//	}
+	
+	@Override
+	public void invalidate()
+	{
+		super.invalidate();
+		itsChildrenContainer.invalidate();
 	}
 	
 	@Override
@@ -134,6 +152,7 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 	
 	private void doExpand()
 	{
+		invalidate();
 		List<AbstractEventNode> theNodes = getBuilder().buildNodes(getEvent());
 		
 		itsNodesMap.clear();
@@ -149,13 +168,15 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 	
 	public void collapse()
 	{
-		if (pExpanded().get().booleanValue()) doCollapse();
+		pExpanded().set(false);
 	}
 	
 	private void doCollapse()
 	{
+		invalidate();
 		itsChildrenContainer.pChildren().clear();		
 		itsNodesMap.clear();
+		
 		repaintAllContexts();
 	}
 	
@@ -240,7 +261,8 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 	 */
 	protected XFont getHeaderFont()
 	{
-		return pExpanded().get() ? CFlowTreeBuilder.HEADER_FONT : CFlowTreeBuilder.FONT;
+//		return pExpanded().get() ? CFlowTreeBuilder.HEADER_FONT : CFlowTreeBuilder.FONT;
+		return CFlowTreeBuilder.FONT;
 	}
 	
 	/**
