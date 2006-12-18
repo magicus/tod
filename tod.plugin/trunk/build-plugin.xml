@@ -5,6 +5,7 @@
     <target name="init">
         <property name="tod.dir" value="${basedir}/../TOD"/>
         <property name="zz.utils.dir" value="${basedir}/../zz.utils"/>
+        <property name="zz.csg.dir" value="${basedir}/../zz.csg"/>
     </target>
 	
 	<target name="plugin_export" depends="init">
@@ -29,6 +30,13 @@
 		<ant antfile="${zz.utils.dir}/build.xml" dir="${zz.utils.dir}" target="jar"/>
 		<copy todir="lib">
 			<fileset dir="${zz.utils.dir}/build" includes="zz.utils.jar"/>
+		</copy>
+	</target>
+	
+	<target name="dep.zz.csg" depends="init">
+		<ant antfile="${zz.csg.dir}/build.xml" dir="${zz.csg.dir}" target="jar"/>
+		<copy todir="lib">
+			<fileset dir="${zz.csg.dir}/build" includes="zz.csg.jar"/>
 		</copy>
 	</target>
 	
