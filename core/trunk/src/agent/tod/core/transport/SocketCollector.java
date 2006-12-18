@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.transport;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -30,7 +31,6 @@ import java.util.List;
 
 import tod.agent.AgentConfig;
 import tod.agent.AgentReady;
-import tod.agent.AgentUtils;
 import tod.agent.DebugFlags;
 import tod.core.HighLevelCollector;
 import tod.core.Output;
@@ -541,6 +541,10 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		
 		public void shutDown() 
 		{
+//			System.out.println(String.format(
+//					"Shutting down thread %d, sending %d bytes",
+//					getId(),
+//					itsLog.size()));
 			send();
 			itsShutDown = true;
 		}
@@ -582,6 +586,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			try
 			{
 				aStream.writeTo(itsOutputStream);
+				itsOutputStream.flush();
 			}
 			catch (IOException e)
 			{
@@ -601,7 +606,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			
 			for (SocketThreadData theData : itsThreadDataList) theData.shutDown();
 			
-			System.out.println("SocketLogCollector: flushed all threads.");
+			System.out.println("SocketCollector: flushed all threads.");
 		}
 	}
 	

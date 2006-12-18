@@ -98,7 +98,6 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 	@Override
 	protected boolean validate()
 	{
-		super.validate();
 		
 		itsHeader = buildHeader();
 		pChildren().add(itsHeader);
@@ -108,6 +107,7 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 		
 		setLayoutManager(new MyLayout());
 		
+		super.validate();
 		return true;
 	}
 	

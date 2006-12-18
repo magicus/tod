@@ -214,6 +214,8 @@ static void bciConfigure()
 				return;
 		}
 	}
+	
+	fflush(stdout);
 }
 
 void registerTracedMethods(JNIEnv* jni, int nTracedMethods, int* tracedMethods)
@@ -506,6 +508,7 @@ cbVMInit(
 	initIgnoredMethods(jni);
 	
 	if (cfgVerbose>=1) printf("VMInit - done\n");
+	fflush(stdout);
 	
 	VM_STARTED = 1;
 }
@@ -571,6 +574,8 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
 	
 	bciConnect(cfgHost, cfgNativePort, cfgHostName);
 	bciConfigure();
+
+	fflush(stdout);
 
 	return JNI_OK;
 }

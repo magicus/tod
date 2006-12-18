@@ -56,7 +56,7 @@ public class CFlowTreeBuilder
 
 	public AbstractEventNode buildRootNode (IParentEvent aRootEvent)
 	{
-		return new RootEventNode(itsView, (IParentEvent) aRootEvent);		
+		return new RootEventNode(itsView, aRootEvent);		
 	}
 	
 	public List<AbstractEventNode> buildNodes (IParentEvent aContainer)

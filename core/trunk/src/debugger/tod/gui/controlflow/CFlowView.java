@@ -22,20 +22,24 @@ package tod.gui.controlflow;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.SwingUtilities;
 
 import tod.core.database.browser.ICFlowBrowser;
 import tod.core.database.browser.ILogBrowser;
@@ -69,6 +73,8 @@ public class CFlowView extends LogView
 	private Set<IParentEvent> itsExpandedEvents = new HashSet<IParentEvent>();
 	
 	private AbstractEventNode itsRootNode;
+	
+	private boolean itsUpdated = false;
 	
 	private IPropertyListener<ILogEvent> itsSelectedEventListener = new PropertyListener<ILogEvent>()
 	{
@@ -108,7 +114,25 @@ public class CFlowView extends LogView
 		itsTreeBuilder = new CFlowTreeBuilder(this);
 		itsRootNode = itsTreeBuilder.buildRootNode((IParentEvent) itsBrowser.getRoot());
 		
-		itsTreePanel = new GraphicPanel();
+		itsTreePanel = new GraphicPanel()
+		{
+			@Override
+			protected void paintComponent(Graphics aG)
+			{
+				super.paintComponent(aG);
+				if (! itsUpdated) 
+				{
+					SwingUtilities.invokeLater(new Runnable()
+					{
+						public void run()
+						{
+							CFlowView.this.update();
+						}
+					});
+					itsUpdated = true;
+				}
+			}
+		};
 		itsTreePanel.setTransform(new AffineTransform());
 		itsTreePanel.setRootNode(itsRootNode);
 		
@@ -235,17 +259,21 @@ public class CFlowView extends LogView
 		}
 		
 		AbstractEventNode theNode = itsRootNode;
-		for (ILogEvent theEvent : theEventPath)
+		for (Iterator<ILogEvent> theIterator = theEventPath.iterator(); theIterator.hasNext();)
 		{
+			ILogEvent theEvent = theIterator.next();
+			
 			theNode = theNode.getNode(theEvent);
-			theNode.expand();
+			if (theIterator.hasNext()) theNode.expand();
 		}
 		
-//		itsRootNode.invalidate();
-//		itsRootNode.checkValid(); // the layout must be ready.
-//		Rectangle2D theNodeBounds = theNode.getBounds(null);
-//		Rectangle theBounds = itsTreePanel.localToPixel(null, theNode, theNodeBounds);
-//		itsTreePanel.scrollRectToVisible(theBounds);
+		itsUpdated = false;
+		
+		itsRootNode.invalidate();
+		itsRootNode.checkValid(); // the layout must be ready.
+		Rectangle2D theNodeBounds = theNode.getBounds(null);
+		Rectangle theBounds = itsTreePanel.localToPixel(null, theNode, theNodeBounds);
+		itsTreePanel.scrollRectToVisible(theBounds);
 	}
 		
 	@Override
@@ -254,6 +282,8 @@ public class CFlowView extends LogView
 		super.addNotify();
 		itsSeed.pSelectedEvent().addHardListener(itsSelectedEventListener);
 		itsSeed.pRootEvent().addHardListener(itsRootEventListener);
+		
+		update();
 	}
 	
 	@Override
@@ -263,7 +293,7 @@ public class CFlowView extends LogView
 		itsSeed.pSelectedEvent().removeListener(itsSelectedEventListener);
 		itsSeed.pRootEvent().removeListener(itsRootEventListener);
 	}
-
+	
 	public CFlowTreeBuilder getBuilder()
 	{
 		return itsTreeBuilder;
