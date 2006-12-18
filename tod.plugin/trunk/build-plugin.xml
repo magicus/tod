@@ -40,5 +40,5 @@
 		</copy>
 	</target>
 	
-	<target name="dep.all" depends="dep.tod, dep.zz.utils"/>
+	<target name="dep.all" depends="dep.tod, dep.zz.utils, dep.zz.csg"/>
 </project>
