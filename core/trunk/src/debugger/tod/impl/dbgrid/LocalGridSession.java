@@ -37,6 +37,7 @@ import tod.core.session.AbstractSession;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
+import tod.impl.dbgrid.gridimpl.GridImpl;
 
 /**
  * A single-process grid session.
@@ -53,7 +54,7 @@ public class LocalGridSession extends AbstractSession
 		super(null);
 
 		LocationRegistrer theRegistrer = new LocationRegistrer();
-		itsMaster = new GridMaster(theRegistrer, 0);
+		itsMaster = new GridMaster(aConfig, theRegistrer, 0);
 		
 		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(
 				aConfig,
@@ -113,7 +114,7 @@ public class LocalGridSession extends AbstractSession
 			LocalGridSession theSession = new LocalGridSession(aConfig);
 			theRegistry.bind(GridMaster.RMI_ID, theSession.itsMaster);
 			
-			new DatabaseNode(true);
+			GridImpl.getFactory(aConfig).createNode(true);
 			
 			return theSession;
 		}

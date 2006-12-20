@@ -94,6 +94,20 @@ public class TODConfig
 			"Port to which the native portion of the TOD agent should connect.",
 			8059);
 	
+	public static final String GRID_IMPL_UNIFORM = "uniform";
+	public static final String GRID_IMPL_GROUPED_INDEXES = "grpIdx";
+	
+	public static final StringItem GRID_IMPLEMENTATION = new StringItem(
+			"grid.impl",
+			"Grid implementation",
+			"Specifies the type of grid implementation. One of:\n" +
+			" - "+GRID_IMPL_UNIFORM+": each index can be split across all nodes. " +
+					"Memory requirements do not depend on the number of nodes.\n" +
+			" - "+GRID_IMPL_GROUPED_INDEXES+": indexes are not split across " +
+					"nodes, which reduces the memory requirements as more nodes " +
+					"are available.",
+			ConfigUtils.readString("grid-impl", GRID_IMPL_UNIFORM));
+	
 	
 	/**
 	 * Contains all available configuration items.

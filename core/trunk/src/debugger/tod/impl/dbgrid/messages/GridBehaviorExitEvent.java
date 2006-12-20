@@ -151,12 +151,12 @@ public class GridBehaviorExitEvent extends GridEvent
 		super.index(aIndexes, aPointer);
 		
 		TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_EXIT);
-		aIndexes.behaviorIndex.addTuple(
+		aIndexes.indexBehavior(
 				getBehaviorId(), 
 				TUPLE);
 		
 		TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_RESULT);
-		aIndexes.objectIndex.addTuple(
+		aIndexes.indexObject(
 				getResult(), 
 				TUPLE);
 	}

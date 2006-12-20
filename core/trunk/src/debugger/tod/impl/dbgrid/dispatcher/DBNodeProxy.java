@@ -20,22 +20,16 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.dispatcher;
 
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-import tod.impl.common.event.Event;
-import tod.impl.dbgrid.DebuggerGridConfig;
-import tod.impl.dbgrid.ExternalPointer;
-import tod.impl.dbgrid.GridEventCollector;
 import tod.impl.dbgrid.GridMaster;
+import tod.impl.dbgrid.SimplePointer;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
 import tod.impl.dbgrid.messages.GridEvent;
-import tod.impl.dbgrid.messages.GridMessage;
-import tod.utils.NativeStream;
-import zz.utils.bit.BitStruct;
-import zz.utils.bit.IntBitStruct;
 
 /**
  * A proxy for database nodes. It collects messages in a 
@@ -43,29 +37,19 @@ import zz.utils.bit.IntBitStruct;
  * when there are enough, or after a certain time.
  * @author gpothier
  */
-public class DBNodeProxy
+public abstract class DBNodeProxy
 {
-	private static final int TRANSMIT_DELAY_MS = 1000;
-	
 	private final Socket itsSocket;
 	private final DataOutputStream itsOutStream;
 	private final DataInputStream itsInStream;
+
 	private final int itsNodeId;
 	private final GridMaster itsMaster;
 	
-	private final int[] itsBuffer = new int[DebuggerGridConfig.MASTER_EVENT_BUFFER_SIZE];
-	private final byte[] itsByteBuffer = new byte[DebuggerGridConfig.MASTER_EVENT_BUFFER_SIZE*4];
-	private final BitStruct itsEventsBuffer = new IntBitStruct(itsBuffer);
-	
-	private long itsSentMessagesCount = 0;
 	private long itsEventsCount = 0;
 	private long itsFirstTimestamp = 0;
 	private long itsLastTimestamp = 0;
-	
-	/**
-	 * Number of currently buffered messages.
-	 */
-	private int itsMessagesCount = 0;
+
 	
 	public DBNodeProxy(Socket aSocket, int aNodeId, GridMaster aMaster)
 	{
@@ -75,22 +59,63 @@ public class DBNodeProxy
 		
 		try
 		{
-			itsOutStream = new DataOutputStream(itsSocket.getOutputStream());
-			itsInStream = new DataInputStream(itsSocket.getInputStream());
+			itsOutStream = new DataOutputStream(new BufferedOutputStream(aSocket.getOutputStream()));
+			itsInStream = new DataInputStream(aSocket.getInputStream());
 		}
 		catch (IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+
 	}
 
 	
+	public GridMaster getMaster()
+	{
+		return itsMaster;
+	}
+
+	public int getNodeId()
+	{
+		return itsNodeId;
+	}
+
+	protected Socket getSocket()
+	{
+		return itsSocket;
+	}
+
+	protected DataInputStream getInStream()
+	{
+		return itsInStream;
+	}
+
+	protected DataOutputStream getOutStream()
+	{
+		return itsOutStream;
+	}
+
+
+	/**
+	 * Flushes possibly buffered messages, both in this proxy 
+	 * and in the node.
+	 */
+	public abstract void flush();
+
+	/**
+	 * Requests the node to clear its database.
+	 *
+	 */
+	public abstract void clear();
+	
 	/**
 	 * Pushes an event so that it will be stored by the node behind this proxy.
+	 * @return A simple id of the event (see {@link SimplePointer}).
 	 */
-	public void pushEvent(GridEvent aEvent)
+	public final long pushEvent(GridEvent aEvent)
 	{
-		pushMessage(aEvent);
+		pushEvent0(aEvent);
+		long theId = SimplePointer.create(itsEventsCount, getNodeId());
 		
 		itsEventsCount++;
 		long theTimestamp = aEvent.getTimestamp();
@@ -99,82 +124,12 @@ public class DBNodeProxy
 		// (Pentium M 2ghz)
 		if (itsFirstTimestamp == 0) itsFirstTimestamp = theTimestamp;
 		if (itsLastTimestamp < theTimestamp) itsLastTimestamp = theTimestamp;
+		
+		return theId;
 	}
 
-	private void pushMessage(GridMessage aMessage)
-	{
-		if (aMessage.getBitCount() > itsEventsBuffer.getRemainingBits())
-		{
-			sendBuffer();
-		}
-		
-		aMessage.writeTo(itsEventsBuffer);
-		itsMessagesCount++;
-	}
-	
-	private void sendBuffer()
-	{
-//		System.out.println(String.format(
-//				"Sending %d messages to node %d (already sent %d)",
-//				itsMessagesCount,
-//				itsNodeId,
-//				itsSentMessagesCount));
-		try
-		{
-			itsOutStream.writeByte(DatabaseNode.CMD_PUSH_EVENTS);
-			itsOutStream.writeInt(itsMessagesCount);
-			
-			NativeStream.i2b(itsBuffer, itsByteBuffer);
-			
-			itsOutStream.write(itsByteBuffer);
-//			itsOutputStream.flush();
-			
-			itsSentMessagesCount += itsMessagesCount;
-			
-			itsEventsBuffer.reset();
-			itsMessagesCount = 0;
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-	
-	public void flush()
-	{
-		try
-		{
-			sendBuffer();
-			
-			itsOutStream.writeByte(DatabaseNode.CMD_FLUSH_EVENTS);
-			itsOutStream.flush();
-			
-			int theCount = itsInStream.readInt();
-			System.out.println("DBNodeProxy: database node flushed "+theCount+" events.");
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-	
-	public void clear()
-	{
-		try
-		{
-			sendBuffer();
-			
-			itsOutStream.writeByte(DatabaseNode.CMD_CLEAR);
-			itsOutStream.flush();
-			
-			int theResult = itsInStream.readInt();
-			assert theResult == 1;
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
+	protected abstract void pushEvent0(GridEvent aEvent);
+
 	
 	/**
 	 * Returns the number of events stored by this node
@@ -199,5 +154,6 @@ public class DBNodeProxy
 	{
 		return itsLastTimestamp;
 	}
+
 
 }

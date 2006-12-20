@@ -41,6 +41,14 @@ public abstract class Tuple
 	}
 	
 	/**
+	 * Indicates the number of bits required to serialize this tuple.
+	 */
+	public int getBitCount()
+	{
+		return 0;
+	}
+	
+	/**
 	 * Indicates if this tuple is null.
 	 * A null tuple typically indicates the end of a page.
 	 */

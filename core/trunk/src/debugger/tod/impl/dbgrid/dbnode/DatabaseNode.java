@@ -20,10 +20,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.dbnode;
 
+import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -33,39 +33,26 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+import tod.core.config.TODConfig;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.NodeException;
 import tod.impl.dbgrid.RIGridMaster;
-import tod.impl.dbgrid.messages.GridMessage;
+import tod.impl.dbgrid.gridimpl.GridImpl;
 import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
-import tod.impl.dbgrid.queries.EventCondition;
-import tod.utils.NativeStream;
-import zz.utils.Utils;
-import zz.utils.bit.BitStruct;
-import zz.utils.bit.IntBitStruct;
 
-public class DatabaseNode extends UnicastRemoteObject
+public abstract class DatabaseNode extends UnicastRemoteObject
 implements RIDatabaseNode
 {
 	
 	/**
-	 * This command pushes a list of events to the node.
-	 * args:
-	 *  count: int
-	 *  events
-	 * return: none
-	 */
-	public static final byte CMD_PUSH_EVENTS = 17;
-	
-	/**
-	 * This command flushes all buffered events.
+	 * This command flushes all buffered events and indexes.
 	 * args: none
 	 * return:
 	 *  number of flushed events: int
 	 */
-	public static final byte CMD_FLUSH_EVENTS = 18;
+	public static final byte CMD_FLUSH = 10;
 	
 	/**
 	 * This command causes the database node to clear its db
@@ -73,7 +60,9 @@ implements RIDatabaseNode
 	 * return:
 	 * 	1 (constant): int
 	 */
-	public static final byte CMD_CLEAR = 19;
+	public static final byte CMD_CLEAR = 11;
+	
+
 	
 	/**
 	 * Id of this node in the system
@@ -82,8 +71,6 @@ implements RIDatabaseNode
 	
 	private RIGridMaster itsMaster;
 	private MasterConnection itsMasterConnection;
-	
-	private EventDatabase itsCurrentDatabase;
 	
 	public DatabaseNode(boolean aRegisterToMaster) throws RemoteException
 	{
@@ -99,21 +86,16 @@ implements RIDatabaseNode
 		}
 	}
 	
-	public void clear() 
-	{
-		if (itsCurrentDatabase != null)
-		{
-			itsCurrentDatabase.unregister();
-		}
-		
-		String thePrefix = DebuggerGridConfig.NODE_DATA_DIR;
-		File theParent = new File(thePrefix);
-		System.out.println("Using data directory: "+theParent);
-		
-		File theFile = new File(theParent, "events.bin");
-		theFile.delete();
-		itsCurrentDatabase = new EventDatabase(theFile);
-	}
+	/**
+	 * Initializes or reinitializes the database.
+	 */
+	public abstract void clear();
+	
+	/**
+	 * Flushes all buffered data.
+	 * @return The number of flushed elements.
+	 */
+	public abstract int flush();
 	
 	private void connectToMaster() throws IOException, NotBoundException
 	{
@@ -188,37 +170,44 @@ implements RIDatabaseNode
 		return itsNodeId;
 	}
 
-	public long[] getEventCounts(
-			EventCondition aCondition, 
-			long aT1, 
-			long aT2,
-			int aSlotsCount,
-			boolean aForceMergeCounts) throws RemoteException
+	/**
+	 * Processes a command sent by the master.
+	 * @param aCommand Command id
+	 * @throws IOException 
+	 */
+	protected void processCommand(
+			byte aCommand, 
+			DataInputStream aInStream, 
+			DataOutputStream aOutStream) throws IOException
 	{
-		return itsCurrentDatabase.getEventCounts(
-				aCondition, 
-				aT1, 
-				aT2, 
-				aSlotsCount,
-				aForceMergeCounts);
-	}
+		switch (aCommand)
+		{
+		case CMD_FLUSH:
+			int theCount = flush();
+			aOutStream.writeInt(theCount);
+			aOutStream.flush();
+			break;
+			
+		case CMD_CLEAR:
+			clear();
+			aOutStream.writeInt(1);
+			aOutStream.flush();
+			break;
+			
+		default:
+			throw new RuntimeException("Not handled: "+aCommand);
+				
+		}
 
-	public RINodeEventIterator getIterator(EventCondition aCondition) throws RemoteException
-	{
-		return itsCurrentDatabase.getIterator(aCondition);
 	}
-
+	
 	/**
 	 * The socket thread that handles the connection with the grid master.
 	 * @author gpothier
 	 */
 	private class MasterConnection extends Thread
 	{
-		private final int[] itsBuffer = new int[DebuggerGridConfig.MASTER_EVENT_BUFFER_SIZE];
-		private final byte[] itsByteBuffer = new byte[DebuggerGridConfig.MASTER_EVENT_BUFFER_SIZE*4];
-		private final BitStruct itsStruct = new IntBitStruct(itsBuffer);
 		private final Socket itsSocket;
-		private long itsReceivedMessages = 0;
 
 		public MasterConnection(Socket aSocket)
 		{
@@ -231,42 +220,19 @@ implements RIDatabaseNode
 		{
 			try
 			{
-				DataInputStream theInStream = new DataInputStream(itsSocket.getInputStream());
+				DataInputStream theInStream = new DataInputStream(new BufferedInputStream(itsSocket.getInputStream()));
 				DataOutputStream theOutStream = new DataOutputStream(itsSocket.getOutputStream());
 				
 				while (itsSocket.isConnected())
 				{
-					byte theCommand;
 					try
 					{
-						theCommand = theInStream.readByte();
+						byte theCommand = theInStream.readByte();
+						processCommand(theCommand, theInStream, theOutStream);
 					}
 					catch (EOFException e)
 					{
 						break;
-					}
-					
-					switch (theCommand)
-					{
-					case CMD_PUSH_EVENTS:
-						pushEvents(theInStream);
-						break;
-						
-					case CMD_FLUSH_EVENTS:
-						int theCount = itsCurrentDatabase.flush();
-						theOutStream.writeInt(theCount);
-						theOutStream.flush();
-						break;
-						
-					case CMD_CLEAR:
-						clear();
-						theOutStream.writeInt(1);
-						theOutStream.flush();
-						break;
-						
-					default:
-						throw new RuntimeException("Not handled: "+theCommand);
-							
 					}
 				}
 				
@@ -287,32 +253,11 @@ implements RIDatabaseNode
 			}
 		}
 		
-		private void pushEvents(DataInputStream aStream) throws IOException
-		{
-			int theCount = aStream.readInt();
-			
-//			System.out.println(String.format(
-//			"Received %d messages (already received %d)",
-//			theCount,
-//			itsReceivedMessages));
-			
-			Utils.readFully(aStream, itsByteBuffer);
-			NativeStream.b2i(itsByteBuffer, itsBuffer);
-			itsStruct.reset();
-			
-			itsReceivedMessages += theCount;
-
-			for (int i=0;i<theCount;i++)
-			{
-				GridMessage theMessage = GridMessage.read(itsStruct);
-				itsCurrentDatabase.push(theMessage);
-			}
-		}
 	}
 	
-	public static void main(String[] args) throws RemoteException
+	public static void main(String[] args)
 	{
-		new DatabaseNode(true);
+		GridImpl.getFactory(new TODConfig()).createNode(true);
 	}
 
 

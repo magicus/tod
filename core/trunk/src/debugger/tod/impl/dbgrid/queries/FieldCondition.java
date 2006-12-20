@@ -43,7 +43,7 @@ public class FieldCondition extends SimpleCondition
 	@Override
 	public BidiIterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
-		return aIndexes.fieldIndex.getIndex(itsFieldId).getTupleIterator(aTimestamp);
+		return aIndexes.getFieldIndex(itsFieldId).getTupleIterator(aTimestamp);
 	}
 
 	@Override

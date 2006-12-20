@@ -40,18 +40,16 @@ public class ObjectIndexSet extends RoleIndexSet
 		
 	}
 
-	public void addTuple(Object aIndex, RoleTuple aTuple) 
-	{
-		int theId = ObjectCodec.getObjectId(aIndex, false);
-		itsMaxId = Math.max(itsMaxId, theId);
-		if (DebugFlags.ALIAS_OBJECTS > 0) theId %= DebugFlags.ALIAS_OBJECTS;
-		if (theId != 0) super.addTuple(theId, aTuple);
-	}
-	
 	@Override
 	public void addTuple(int aIndex, RoleTuple aTuple)
 	{
-		throw new UnsupportedOperationException();
+		itsMaxId = Math.max(itsMaxId, aIndex);
+		if (DebugFlags.ALIAS_OBJECTS > 0)
+		{
+			aIndex = (aIndex % DebugFlags.ALIAS_OBJECTS) + 1;
+		}
+		
+		super.addTuple(aIndex, aTuple);
 	}
 	
 	@Probe(key = "max object id", aggr = AggregationType.MAX)

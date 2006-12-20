@@ -22,6 +22,10 @@ package tod.gui.controlflow;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.Shape;
+import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.List;
@@ -33,11 +37,13 @@ import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.gui.Hyperlinks;
+import zz.csg.api.GraphicObjectContext;
 import zz.csg.api.IGraphicContainer;
 import zz.csg.api.IRectangularGraphicContainer;
 import zz.csg.api.layout.AbstractSimpleLayout;
 import zz.csg.api.layout.SequenceLayout;
 import zz.csg.api.layout.StackLayout;
+import zz.csg.impl.AbstractRectangularGraphicObject;
 import zz.csg.impl.SVGGraphicContainer;
 import zz.csg.impl.figures.SVGFlowText;
 import zz.utils.properties.IRWProperty;
@@ -157,12 +163,22 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 		
 		itsNodesMap.clear();
 		
+		if (!itsEvent.isDirectParent()) 
+		{
+			itsChildrenContainer.pChildren().add(new IndirectDotsWidget(true, 4));
+		}
+		
 		for (AbstractEventNode theNode : theNodes)
 		{
 			itsChildrenContainer.pChildren().add(theNode);
 			itsNodesMap.put(theNode.getEvent(), theNode);
 		}
-		
+
+		if (!itsEvent.isDirectParent()) 
+		{
+			itsChildrenContainer.pChildren().add(new IndirectDotsWidget(false, 4));
+		}
+
 		repaintAllContexts();
 	}
 	
@@ -312,7 +328,10 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 				theY += itsHeader.pBounds().get().getHeight();
 			}				
 			
-			itsChildrenContainer.pBounds().setPosition(ExpanderWidget.WIDTH + 10, theY);
+			itsChildrenContainer.pBounds().setPosition(
+					ExpanderWidget.WIDTH + 10, 
+					theY);
+			
 			theY += itsChildrenContainer.pBounds().get().getHeight();
 			
 			if (itsFooter != null)
@@ -329,4 +348,51 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 		
 	}
 	
+	/**
+	 * This widget shows a few dots in a diagonal to indicate
+	 * that the event is not a direct parent.
+	 * @author gpothier
+	 */
+	private static class IndirectDotsWidget extends AbstractRectangularGraphicObject
+	{
+		public static final double SIZE = 20;
+		public static final double NDOTS = 3;
+		
+		private boolean itsEnter;
+		private double itsThickness;
+		
+		public IndirectDotsWidget(boolean aEnter, double aThickness)
+		{
+			itsEnter = aEnter;
+			itsThickness = aThickness;
+			pBounds().set(0, 0, SIZE, SIZE);
+		}
+
+		
+		public void paint(GraphicObjectContext aContext, Graphics2D aGraphics, Area aVisibleArea)
+		{
+			Rectangle2D theBounds = pBounds().get();
+			
+			double theX = theBounds.getX();
+			if (! itsEnter) theX += theBounds.getWidth()-itsThickness;
+			double theY = theBounds.getY();
+			
+			double theDX = (theBounds.getWidth()-itsThickness)/(NDOTS-1);
+			double theDY = (theBounds.getHeight()-itsThickness)/(NDOTS-1);
+
+			aGraphics.setColor(Color.BLACK);
+			for (int i=0;i<NDOTS;i++)
+			{
+				aGraphics.fill(new Ellipse2D.Double(
+						theX, 
+						theY, 
+						itsThickness, 
+						itsThickness));
+				
+				theX = itsEnter ? theX + theDX : theX - theDX;
+				theY += theDY;
+			}
+		}
+	}
+
 }

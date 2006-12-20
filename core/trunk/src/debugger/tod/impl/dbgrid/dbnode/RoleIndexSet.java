@@ -55,7 +55,7 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.RoleTuple>
 	public static final byte ROLE_OBJECT_ANYARG = -5;
 	public static final byte ROLE_OBJECT_ANY = -6;
 	
-	public static final TupleCodec<RoleTuple> TUPLE_CODEC = new RoleTupleCodec();
+	public static final IndexTupleCodec<RoleTuple> TUPLE_CODEC = new RoleTupleCodec();
 	
 	public RoleIndexSet(String aName, HardPagedFile aFile, int aIndexCount)
 	{
@@ -185,6 +185,12 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.RoleTuple>
 		{
 			super.writeTo(aBitStruct);
 			aBitStruct.writeInt(getRole(), 8);
+		}
+		
+		@Override
+		public int getBitCount()
+		{
+			return super.getBitCount() + 8;
 		}
 		
 		public byte getRole()

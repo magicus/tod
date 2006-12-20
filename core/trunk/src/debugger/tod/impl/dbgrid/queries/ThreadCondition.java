@@ -45,7 +45,7 @@ public class ThreadCondition extends SimpleCondition
 	@Override
 	public BidiIterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
-		return aIndexes.threadIndex.getIndex(itsThreadId).getTupleIterator(aTimestamp);
+		return aIndexes.getThreadIndex(itsThreadId).getTupleIterator(aTimestamp);
 	}
 
 	@Override
@@ -53,7 +53,7 @@ public class ThreadCondition extends SimpleCondition
 	{
 		if (aForceMergeCounts) return super.getEventCounts(aIndexes, aT1, aT2, aSlotsCount, true);
 		
-		HierarchicalIndex<StdTuple> theIndex = aIndexes.threadIndex.getIndex(itsThreadId);
+		HierarchicalIndex<StdTuple> theIndex = aIndexes.getThreadIndex(itsThreadId);
 		return theIndex.fastCountTuples(aT1, aT2, aSlotsCount);
 	}
 

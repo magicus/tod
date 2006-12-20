@@ -44,7 +44,7 @@ public class ArrayIndexCondition extends SimpleCondition
 	@Override
 	public BidiIterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
-		return aIndexes.indexIndex.getIndex(itsIndex).getTupleIterator(aTimestamp);
+		return aIndexes.getArrayIndexIndex(itsIndex).getTupleIterator(aTimestamp);
 	}
 
 	@Override

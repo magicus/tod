@@ -37,11 +37,11 @@ public class EventReorderingBuffer
 	private RingBuffer<GridEvent> itsBuffer = new RingBuffer<GridEvent>(DebuggerGridConfig.DB_EVENT_BUFFER_SIZE);
 	private OutOfOrderBuffer itsOutOfOrderBuffer = new OutOfOrderBuffer();
 	
-	private EventDatabase itsDatabase;
+	private ReorderingBufferListener itsListener;
 	
-	public EventReorderingBuffer(EventDatabase aDatabase)
+	public EventReorderingBuffer(ReorderingBufferListener aListener)
 	{
-		itsDatabase = aDatabase;
+		itsListener = aListener;
 	}
 
 	/**
@@ -128,6 +128,8 @@ public class EventReorderingBuffer
 			theBuffer.add(aEvent);
 			
 			if (itsNextAvailable == null) itsNextAvailable = aEvent;
+			
+			assert itsNextAvailable.getThread() <= itsBuffers.size();
 		}
 		
 		public boolean isEmpty()
@@ -165,10 +167,16 @@ public class EventReorderingBuffer
 				}
 			}
 			
+			assert itsNextAvailable == null || itsNextAvailable.getThread() <= itsBuffers.size();
 			return theNextEvent;
 		}
 	}
 	
+	/**
+	 * Events of a single thread arrive in order so we place
+	 * them in a per-thread buffer.
+	 * @author gpothier
+	 */
 	private class PerThreadBuffer extends RingBuffer<GridEvent>
 	{
 		private long itsLastAdded;
@@ -181,14 +189,27 @@ public class EventReorderingBuffer
 		public void add(GridEvent aEvent)
 		{
 			long theTimestamp = aEvent.getTimestamp();
-			if (theTimestamp < itsLastAdded) 
+			if (theTimestamp < itsLastAdded)
 			{
-				itsDatabase.eventDropped();
+				System.err.println("Out of order events in same thread!!! (EventReorderingBuffer)");
+			}
+			
+			if (isFull()) 
+			{
+				itsListener.eventDropped();
 				return;
 			}
 			
 			itsLastAdded = theTimestamp;
 			super.add(aEvent);
 		}
+	}
+	
+	public interface ReorderingBufferListener
+	{
+		/**
+		 * Called when an event could not be reordered and had to be dropped.
+		 */
+		public void eventDropped();
 	}
 }

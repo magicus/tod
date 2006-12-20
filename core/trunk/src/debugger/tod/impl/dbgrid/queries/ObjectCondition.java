@@ -50,7 +50,8 @@ public class ObjectCondition extends SimpleCondition
 	@Override
 	public BidiIterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
-		BidiIterator<RoleIndexSet.RoleTuple> theTupleIterator = aIndexes.objectIndex.getIndex(itsObjectId).getTupleIterator(aTimestamp);
+		BidiIterator<RoleIndexSet.RoleTuple> theTupleIterator = 
+			aIndexes.getObjectIndex(itsObjectId).getTupleIterator(aTimestamp);
 		if (itsRole == RoleIndexSet.ROLE_OBJECT_ANY)
 		{
 			theTupleIterator = new AbstractFilteredBidiIterator<RoleTuple, RoleTuple>(theTupleIterator)

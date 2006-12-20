@@ -147,15 +147,15 @@ public class GridFieldWriteEvent extends GridEvent
 		super.index(aIndexes, aPointer);
 		STD_TUPLE.set(getTimestamp(), aPointer);
 	
-		aIndexes.fieldIndex.addTuple(getFieldId(), STD_TUPLE);
+		aIndexes.indexField(getFieldId(), STD_TUPLE);
 		
 		ROLE_TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_TARGET);
-		aIndexes.objectIndex.addTuple(
+		aIndexes.indexObject(
 				getTarget(), 
 				ROLE_TUPLE);
 		
 		ROLE_TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_VALUE);
-		aIndexes.objectIndex.addTuple(
+		aIndexes.indexObject(
 				getValue(), 
 				ROLE_TUPLE);
 	}

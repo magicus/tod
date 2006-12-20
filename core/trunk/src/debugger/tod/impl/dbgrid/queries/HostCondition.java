@@ -43,7 +43,7 @@ public class HostCondition extends SimpleCondition
 	@Override
 	public BidiIterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
-		return aIndexes.hostIndex.getIndex(itsHost).getTupleIterator(aTimestamp);
+		return aIndexes.getHostIndex(itsHost).getTupleIterator(aTimestamp);
 	}
 
 	@Override

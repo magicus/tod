@@ -37,6 +37,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import tod.core.ILogCollector;
+import tod.core.config.TODConfig;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.HostInfo;
 import tod.core.database.structure.IHostInfo;
@@ -48,6 +49,7 @@ import tod.impl.dbgrid.dbnode.NodeRejectedException;
 import tod.impl.dbgrid.dbnode.RIDatabaseNode;
 import tod.impl.dbgrid.dispatcher.DBNodeProxy;
 import tod.impl.dbgrid.dispatcher.EventDispatcher;
+import tod.impl.dbgrid.gridimpl.GridImpl;
 import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
 import tod.impl.dbgrid.queries.EventCondition;
@@ -71,7 +73,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	private List<RIDatabaseNode> itsNodes = new ArrayList<RIDatabaseNode>();
 	private List<DBNodeProxy> itsNodeProxies = new ArrayList<DBNodeProxy>();
 	
-	private EventDispatcher itsDispatcher = new EventDispatcher(this);
+	private EventDispatcher itsDispatcher;
 	
 	/**
 	 * This map stores the collector associated with each host.
@@ -94,10 +96,14 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	
 	private Set<String> itsNodeHosts = new HashSet<String>();
 	
-	public GridMaster(ILocationsRepository aLocationsRepository, int aMaxNodes) throws RemoteException
+	public GridMaster(
+			TODConfig aConfig, 
+			ILocationsRepository aLocationsRepository, 
+			int aMaxNodes) throws RemoteException
 	{
 		try
 		{
+			itsDispatcher = GridImpl.getFactory(aConfig).createDispatcher(this);
 			if (aMaxNodes > 0) itsNodeHosts.add(InetAddress.getLocalHost().getHostName());
 		}
 		catch (UnknownHostException e)
@@ -202,9 +208,8 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			DataInputStream theStream = new DataInputStream(aSocket.getInputStream());
 			int theId = theStream.readInt();
 			
-			DBNodeProxy theProxy = new DBNodeProxy(aSocket, theId, this);
+			DBNodeProxy theProxy = itsDispatcher.addNode(aSocket, theId);
 			itsNodeProxies.add(theProxy);
-			itsDispatcher.addNode(theProxy);
 			System.out.println("Registered node (socket): "+theId);
 		}
 		catch (IOException e)

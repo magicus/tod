@@ -147,14 +147,14 @@ public class GridArrayWriteEvent extends GridEvent
 		STD_TUPLE.set(getTimestamp(), aPointer);
 	
 		ROLE_TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_TARGET);
-		aIndexes.objectIndex.addTuple(
+		aIndexes.indexObject(
 				getTarget(), 
 				ROLE_TUPLE);
 		
-		aIndexes.indexIndex.addTuple(getIndex(), STD_TUPLE);
+		aIndexes.indexArrayIndex(getIndex(), STD_TUPLE);
 		
 		ROLE_TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_VALUE);
-		aIndexes.objectIndex.addTuple(
+		aIndexes.indexObject(
 				getValue(), 
 				ROLE_TUPLE);
 	}

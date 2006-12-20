@@ -56,6 +56,12 @@ public class IndexTuple extends Tuple
 		aBitStruct.writeLong(getTimestamp(), EVENT_TIMESTAMP_BITS);
 	}
 	
+	@Override
+	public int getBitCount()
+	{
+		return super.getBitCount() + EVENT_TIMESTAMP_BITS;
+	}
+	
 	/**
 	 * Returns the timestamp of this tuple.
 	 */

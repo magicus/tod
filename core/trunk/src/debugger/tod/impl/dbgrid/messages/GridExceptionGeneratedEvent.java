@@ -132,12 +132,12 @@ public class GridExceptionGeneratedEvent extends GridEvent
 		super.index(aIndexes, aPointer);
 		
 		TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_EXECUTED);
-		aIndexes.behaviorIndex.addTuple(
+		aIndexes.indexBehavior(
 				getThrowingBehaviorId(),
 				TUPLE);
 		
 		TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_EXCEPTION);
-		aIndexes.objectIndex.addTuple(
+		aIndexes.indexObject(
 				getException(), 
 				TUPLE);
 	}

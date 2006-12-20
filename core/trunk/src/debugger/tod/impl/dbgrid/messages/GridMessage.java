@@ -24,6 +24,7 @@ import static tod.impl.dbgrid.DebuggerGridConfig.MESSAGE_TYPE_BITS;
 
 import java.io.Serializable;
 
+import zz.utils.PublicCloneable;
 import zz.utils.bit.BitStruct;
 
 /**
@@ -31,7 +32,8 @@ import zz.utils.bit.BitStruct;
  * the database nodes. 
  * @author gpothier
  */
-public abstract class GridMessage implements Serializable
+public abstract class GridMessage extends PublicCloneable 
+implements Serializable
 {
 	private static final long serialVersionUID = -4356933902943147698L;
 
@@ -89,4 +91,5 @@ public abstract class GridMessage implements Serializable
 	{
 		return MESSAGE_TYPE_BITS;
 	}
+	
 }

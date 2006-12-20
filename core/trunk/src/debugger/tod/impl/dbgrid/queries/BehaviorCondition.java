@@ -47,7 +47,9 @@ public class BehaviorCondition extends SimpleCondition
 	@Override
 	public BidiIterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
-		BidiIterator<RoleIndexSet.RoleTuple> theTupleIterator = aIndexes.behaviorIndex.getIndex(itsBehaviorId).getTupleIterator(aTimestamp);
+		BidiIterator<RoleIndexSet.RoleTuple> theTupleIterator = 
+			aIndexes.getBehaviorIndex(itsBehaviorId).getTupleIterator(aTimestamp);
+		
 		switch (itsRole)
 		{
 		case RoleIndexSet.ROLE_BEHAVIOR_ANY:

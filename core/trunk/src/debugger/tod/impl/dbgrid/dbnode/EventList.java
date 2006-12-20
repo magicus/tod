@@ -24,6 +24,7 @@ import static tod.impl.dbgrid.DebuggerGridConfig.*;
 
 import java.util.Iterator;
 
+import tod.impl.dbgrid.InternalPointer;
 import tod.impl.dbgrid.dbnode.file.HardPagedFile;
 import tod.impl.dbgrid.dbnode.file.HardPagedFile.PageBitStruct;
 import tod.impl.dbgrid.messages.GridEvent;
@@ -50,6 +51,12 @@ public class EventList
 	 */
 	private long itsPageCount = 0;
 	
+	/**
+	 * Id of the node that contains this event list.
+	 * Serves to construct internal pointers.
+	 */
+	private int itsNodeId;
+	
 	private HardPagedFile itsFile;
 	private long itsFirstPageId;
 	private PageBitStruct itsCurrentBitStruct;
@@ -59,9 +66,10 @@ public class EventList
 	 */
 	private int itsRecordIndex = 0;
 	
-	public EventList(HardPagedFile aFile) 
+	public EventList(int aNodeId, HardPagedFile aFile) 
 	{
 		Monitor.getInstance().register(this);
+		itsNodeId = aNodeId;
 		itsFile = aFile;
 		itsCurrentBitStruct = itsFile.create().asBitStruct();
 		itsFirstPageId = itsCurrentBitStruct.getPage().getPageId();
@@ -97,9 +105,10 @@ public class EventList
 		itsCurrentBitStruct.getPage().use();
 		
 		// Construct event pointer
-		long theEventPointer = makeInternalPointer(
+		long theEventPointer = InternalPointer.create(
+				itsRecordIndex,
 				itsCurrentBitStruct.getPage().getPageId(), 
-				itsRecordIndex);
+				itsNodeId);
 		
 //		System.out.println(String.format(
 //				"Add event %d (%d, %d)",
@@ -118,27 +127,15 @@ public class EventList
 		return theEventPointer;
 	}
 	
-	private static long makeInternalPointer(long aPageId, int aRecordIndex)
-	{
-		long thePageMask = BitUtils.pow2(DB_EVENTID_PAGE_BITS)-1;
-		if ((aPageId & ~thePageMask) != 0) throw new RuntimeException("Page Id overflow");
-		
-		long theIndexMask = BitUtils.pow2(DB_EVENTID_INDEX_BITS)-1;
-		if ((aRecordIndex & ~theIndexMask) != 0) throw new RuntimeException("Record index overflow: "+aRecordIndex);
-		
-		long thePointer = aPageId << DB_EVENTID_INDEX_BITS;
-		thePointer |= aRecordIndex;
-		
-		return thePointer;
-	}
-	
 	/**
 	 * Returns the event corresponding to the specified internal pointer.
 	 */
 	public GridEvent getEvent(long aPointer)
 	{
-		long thePageId = aPointer >>> DB_EVENTID_INDEX_BITS;
-		int theRecordIndex = (int) (aPointer & (BitUtils.pow2(DB_EVENTID_INDEX_BITS)-1));
+		InternalPointer thePointer = new InternalPointer(aPointer);
+		assert thePointer.getNode() == itsNodeId;
+		long thePageId = thePointer.getPage();
+		int theRecordIndex = thePointer.getIndex();
 		int theCount = theRecordIndex;
 		
 		HardPagedFile.Page thePage = itsFile.get(thePageId);

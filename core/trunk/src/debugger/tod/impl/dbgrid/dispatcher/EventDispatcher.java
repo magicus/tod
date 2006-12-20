@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.dispatcher;
 
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,13 +28,13 @@ import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.NodeException;
 import tod.impl.dbgrid.messages.GridEvent;
 import zz.utils.Future;
+import zz.utils.Task;
 
-public class EventDispatcher
+public abstract class EventDispatcher
 {
 	private GridMaster itsMaster;
 	
 	private List<DBNodeProxy> itsNodes = new ArrayList<DBNodeProxy>();
-	private int itsCurrentNode = 0;
 	
 	private boolean itsFlushed = false;
 	
@@ -47,6 +48,11 @@ public class EventDispatcher
 		itsMaster = aMaster;
 	}
 	
+	public GridMaster getMaster()
+	{
+		return itsMaster;
+	}
+
 	/**
 	 * Sets the node exception. It will be reported at the next client method call 
 	 */
@@ -55,9 +61,48 @@ public class EventDispatcher
 		itsNodeException = aException;
 	}
 	
-	public void addNode(DBNodeProxy aProxy) 
+	public DBNodeProxy addNode(Socket aSocket, int aId) 
 	{
-		itsNodes.add(aProxy);
+		DBNodeProxy theProxy = createProxy(aSocket, aId);
+		itsNodes.add(theProxy);
+		return theProxy;
+	}
+	
+	protected abstract DBNodeProxy createProxy(Socket aSocket, int aId);
+	
+	protected DBNodeProxy getNode(int aIndex)
+	{
+		return itsNodes.get(aIndex);
+	}
+	
+	protected int getNodesCount()
+	{
+		return itsNodes.size();
+	}
+	
+	/**
+	 * Forks a task to all attached nodes, and returns when all nodes
+	 * complete the task.
+	 */
+	private void fork(final Task<DBNodeProxy> aTask)
+	{
+		// TODO: maybe use something else than Future...
+		List<Future<Boolean>> theFutures = new ArrayList<Future<Boolean>>();
+		for (DBNodeProxy theProxy : itsNodes)
+		{
+			final DBNodeProxy theProxy0 = theProxy;
+			theFutures.add (new Future<Boolean>()
+			{
+				@Override
+				protected Boolean fetch() throws Throwable
+				{
+					aTask.run(theProxy0);
+					return true;
+				}
+			});
+		}
+		
+		for (Future<Boolean> theFuture : theFutures) theFuture.get();
 	}
 
 	/**
@@ -67,48 +112,15 @@ public class EventDispatcher
 	{
 		System.out.println("Event dispatcher: clearing...");
 		
-		// TODO: maybe use something else than Future...
-		List<Future<Boolean>> theFutures = new ArrayList<Future<Boolean>>();
-		for (DBNodeProxy theProxy : itsNodes)
-		{
-			final DBNodeProxy theProxy0 = theProxy;
-			theFutures.add (new Future<Boolean>()
+		fork(new Task<DBNodeProxy>() {
+			public void run(DBNodeProxy aParameter)
 			{
-				@Override
-				protected Boolean fetch() throws Throwable
-				{
-					theProxy0.clear();
-					return true;
-				}
-			});
-		}
-		
-		for (Future<Boolean> theFuture : theFutures) theFuture.get();
+				aParameter.clear();
+			}
+		});
 
 		itsFlushed = false;
 		System.out.println("Event dispatcher: cleared.");
-
-	}
-	
-	/**
-	 * Directly dispatches a grid event
-	 */
-	public synchronized void dispatchEvent(GridEvent aEvent)
-	{
-		if (itsNodeException != null) 
-		{
-			NodeException theException = itsNodeException;
-			itsNodeException = null;
-			throw theException;
-		}
-		
-		DBNodeProxy theProxy = itsNodes.get(itsCurrentNode);
-		theProxy.pushEvent(aEvent);
-		
-		// The following code is 5 times faster than using a modulo.
-		// (Pentium M 2ghz)
-		itsCurrentNode++;
-		if (itsCurrentNode >= itsNodes.size()) itsCurrentNode = 0;
 	}
 	
 	/**
@@ -118,26 +130,34 @@ public class EventDispatcher
 	public synchronized void flush()
 	{
 		System.out.println("Event dispatcher: flushing...");
-		
-		// TODO: maybe use something else than Future...
-		List<Future<Boolean>> theFutures = new ArrayList<Future<Boolean>>();
-		for (DBNodeProxy theProxy : itsNodes)
-		{
-			final DBNodeProxy theProxy0 = theProxy;
-			theFutures.add (new Future<Boolean>()
+
+		fork(new Task<DBNodeProxy>() {
+			public void run(DBNodeProxy aParameter)
 			{
-				@Override
-				protected Boolean fetch() throws Throwable
-				{
-					theProxy0.flush();
-					return true;
-				}
-			});
-		}
-		
-		for (Future<Boolean> theFuture : theFutures) theFuture.get();
+				aParameter.flush();
+			}
+		});
 
 		itsFlushed = true;
 		System.out.println("Event dispatcher: flushed.");
 	}
+
+	
+	/**
+	 * Directly dispatches a grid event
+	 */
+	public synchronized final void dispatchEvent(GridEvent aEvent)
+	{
+		if (itsNodeException != null) 
+		{
+			NodeException theException = itsNodeException;
+			itsNodeException = null;
+			throw theException;
+		}
+
+		dispatchEvent0(aEvent);
+	}
+	
+	protected abstract void dispatchEvent0(GridEvent aEvent);
+	
 }

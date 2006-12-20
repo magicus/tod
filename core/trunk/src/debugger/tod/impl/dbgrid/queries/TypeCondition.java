@@ -44,7 +44,7 @@ public class TypeCondition extends SimpleCondition
 	@Override
 	public BidiIterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
-		return aIndexes.typeIndex.getIndex(itsType.ordinal()).getTupleIterator(aTimestamp);
+		return aIndexes.getTypeIndex(itsType.ordinal()).getTupleIterator(aTimestamp);
 	}
 
 	@Override

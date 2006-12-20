@@ -208,21 +208,21 @@ public abstract class GridEvent extends GridMessage
 		// We add the same tuple to all standard indexes so we create it now.
 		TUPLE.set(getTimestamp(), aPointer);
 		
-		aIndexes.typeIndex.addTuple((byte) getEventType().ordinal(), TUPLE);
+		aIndexes.indexType((byte) getEventType().ordinal(), TUPLE);
 		
 		if (! DebugFlags.DISABLE_LOCATION_INDEX)
 		{
 			if (getOperationBytecodeIndex() >= 0)
-				aIndexes.bytecodeLocationIndex.addTuple(getOperationBytecodeIndex(), TUPLE);
+				aIndexes.indexLocation(getOperationBytecodeIndex(), TUPLE);
 		}
 		
 		if (getHost() > 0) 
-			aIndexes.hostIndex.addTuple(getHost(), TUPLE);
+			aIndexes.indexHost(getHost(), TUPLE);
 		
 		if (getThread() > 0) 
-			aIndexes.threadIndex.addTuple(getThread(), TUPLE);
+			aIndexes.indexThread(getThread(), TUPLE);
 		
-		aIndexes.depthIndex.addTuple(getDepth(), TUPLE);
+		aIndexes.indexDepth(getDepth(), TUPLE);
 	}
 
 	/**

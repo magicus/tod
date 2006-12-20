@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.impl.dbgrid.BidiIterator;
+import tod.impl.dbgrid.gridimpl.uniform.UniformEventDatabase;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
 
@@ -36,12 +37,12 @@ import tod.impl.dbgrid.queries.EventCondition;
 public class NodeEventIterator extends UnicastRemoteObject 
 implements RINodeEventIterator
 {
-	private EventDatabase itsDatabase;
+	private UniformEventDatabase itsDatabase;
 	private EventCondition itsCondition;
 	
 	private BidiIterator<GridEvent> itsIterator;
 	
-	public NodeEventIterator(EventDatabase aDatabase, EventCondition aCondition) throws RemoteException
+	public NodeEventIterator(UniformEventDatabase aDatabase, EventCondition aCondition) throws RemoteException
 	{
 		itsDatabase = aDatabase;
 		itsCondition = aCondition;

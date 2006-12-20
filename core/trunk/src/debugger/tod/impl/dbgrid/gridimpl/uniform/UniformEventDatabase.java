@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.dbgrid.dbnode;
+package tod.impl.dbgrid.gridimpl.uniform;
 
 import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_SIZE;
 
@@ -29,7 +29,14 @@ import java.util.Comparator;
 
 import tod.agent.DebugFlags;
 import tod.impl.dbgrid.BidiIterator;
+import tod.impl.dbgrid.dbnode.EventList;
+import tod.impl.dbgrid.dbnode.EventReorderingBuffer;
+import tod.impl.dbgrid.dbnode.Indexes;
+import tod.impl.dbgrid.dbnode.NodeEventIterator;
+import tod.impl.dbgrid.dbnode.RINodeEventIterator;
+import tod.impl.dbgrid.dbnode.EventReorderingBuffer.ReorderingBufferListener;
 import tod.impl.dbgrid.dbnode.file.HardPagedFile;
+import tod.impl.dbgrid.gridimpl.AbstractEventDatabase;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.GridMessage;
 import tod.impl.dbgrid.monitoring.AggregationType;
@@ -43,7 +50,8 @@ import tod.impl.dbgrid.queries.EventCondition;
  * of indexes.
  * @author gpothier
  */
-public class EventDatabase
+public class UniformEventDatabase extends AbstractEventDatabase 
+implements ReorderingBufferListener
 {
 	private final HardPagedFile itsFile;
 	
@@ -69,14 +77,14 @@ public class EventDatabase
 	/**
 	 * Creates a new database using the specified file.
 	 */
-	public EventDatabase(File aFile) 
+	public UniformEventDatabase(int aNodeId, File aFile) 
 	{
 		Monitor.getInstance().register(this);
 		try
 		{
 			itsFile = new HardPagedFile(aFile, DB_PAGE_SIZE);
 			
-			itsEventList = new EventList(itsFile);
+			itsEventList = new EventList(aNodeId, itsFile);
 			itsIndexes = new Indexes(itsFile);
 		}
 		catch (IOException e)
@@ -84,10 +92,8 @@ public class EventDatabase
 			throw new RuntimeException(e);
 		}
 	}
-	
-	/**
-	 * Causes this database to recursively unregister from the monitor.
-	 */
+
+	@Override
 	public void unregister()
 	{
 		Monitor.getInstance().unregister(this);
@@ -101,19 +107,19 @@ public class EventDatabase
 		return itsIndexes;
 	}
 	
-	/**
-	 * Creates an iterator over matching events of this node, starting at the specified timestamp.
-	 */
+	@Override
 	public BidiIterator<GridEvent> evaluate(EventCondition aCondition, long aTimestamp)
 	{
 		return aCondition.createIterator(itsEventList, getIndexes(), aTimestamp);
 	}
 
+	@Override
 	public RINodeEventIterator getIterator(EventCondition aCondition) throws RemoteException
 	{
 		return new NodeEventIterator(this, aCondition);
 	}
 
+	@Override
 	public long[] getEventCounts(
 			EventCondition aCondition,
 			long aT1, 
@@ -124,45 +130,13 @@ public class EventDatabase
 		return aCondition.getEventCounts(getIndexes(), aT1, aT2, aSlotsCount, aForceMergeCounts);
 	}
 
-	/**
-	 * Pushes a single message to this node.
-	 * Messages can be events or parent/child
-	 * relations.
-	 */
-	public void push(GridMessage aMessage)
+	@Override
+	public void push(GridEvent aEvent)
 	{
 		assert ! itsFlushed;
 		
 		if (DebugFlags.SKIP_EVENTS) return;
 		
-		if (aMessage instanceof GridEvent)
-		{
-			GridEvent theEvent = (GridEvent) aMessage;
-			addEvent(theEvent);
-		}
-		else throw new RuntimeException("Not handled: "+aMessage);
-	}
-	
-	/**
-	 * Flushes the event buffer. Events should not be added
-	 * after this method is called.
-	 */
-	public int flush()
-	{
-		int theCount = 0;
-		System.out.println("DatabaseNode: flushing...");
-		while (! itsReorderingBuffer.isEmpty())
-		{
-			processEvent(itsReorderingBuffer.pop());
-			theCount++;
-		}
-		itsFlushed = true;
-		System.out.println("DatabaseNode: flushed "+theCount+" events...");
-		return theCount;
-	}
-	
-	private void addEvent(GridEvent aEvent)
-	{
 //		System.out.println("AddEvent ts: "+aEvent.getTimestamp());
 		long theTimestamp = aEvent.getTimestamp();
 		if (theTimestamp < itsLastAddedTimestamp)
@@ -194,6 +168,22 @@ public class EventDatabase
 			itsReorderingBuffer.push(aEvent);
 		}
 	}
+	
+	@Override
+	public int flush()
+	{
+		int theCount = 0;
+		System.out.println("DatabaseNode: flushing...");
+		while (! itsReorderingBuffer.isEmpty())
+		{
+			processEvent(itsReorderingBuffer.pop());
+			theCount++;
+		}
+		itsFlushed = true;
+		System.out.println("DatabaseNode: flushed "+theCount+" events...");
+		return theCount;
+	}
+	
 	
 	@Probe(key = "Out of order events", aggr = AggregationType.SUM)
 	public long getUnorderedEvents()

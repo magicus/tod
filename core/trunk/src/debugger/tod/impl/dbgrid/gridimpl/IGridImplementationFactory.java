@@ -18,44 +18,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.dbgrid.queries;
+package tod.impl.dbgrid.gridimpl;
 
-
-import tod.impl.dbgrid.BidiIterator;
-import tod.impl.dbgrid.dbnode.Indexes;
-import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
-import tod.impl.dbgrid.messages.GridEvent;
+import tod.impl.dbgrid.GridMaster;
+import tod.impl.dbgrid.dbnode.DatabaseNode;
+import tod.impl.dbgrid.dispatcher.EventDispatcher;
 
 /**
- * Represents a condition on event thread.
+ * Factory used to obtain the implementations of grid elements
+ * such as event dispatcher, database nodes, query aggregator.
  * @author gpothier
  */
-public class DepthCondition extends SimpleCondition
+public interface IGridImplementationFactory
 {
-	private static final long serialVersionUID = 4667937394229993337L;
-	private int itsDepth;
-
-	public DepthCondition(int aDepth)
-	{
-		itsDepth = aDepth;
-	}
-
-	@Override
-	public BidiIterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
-	{
-		return aIndexes.getDepthIndex(itsDepth).getTupleIterator(aTimestamp);
-	}
-
-	@Override
-	public boolean match(GridEvent aEvent)
-	{
-		return aEvent.getDepth() == itsDepth;
-	}
+	public EventDispatcher createDispatcher(GridMaster aMaster);
 	
-	@Override
-	protected String toString(int aIndent)
-	{
-		return String.format("Depth = %d", itsDepth);
-	}
-
+	public DatabaseNode createNode(boolean aRegisterToMaster);
 }

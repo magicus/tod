@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
+import static tod.impl.dbgrid.DebuggerGridConfig.DB_EVENTID_PAGE_BITS;
 import tod.agent.ConfigUtils;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
 import tod.impl.dbgrid.dbnode.HierarchicalIndex;
@@ -107,7 +108,7 @@ public class DebuggerGridConfig
 	public static final int STRUCTURE_THREADS_COUNT = 10000;
 
 	/**
-	 * Maximum number of threads
+	 * Maximum number of different depths
 	 */
 	public static final int STRUCTURE_DEPTH_RANGE = BitUtils.pow2i(EVENT_DEPTH_BITS);
 	
@@ -177,14 +178,20 @@ public class DebuggerGridConfig
 	 * event pointer.
 	 */
 	public static final int DB_EVENTID_INDEX_BITS = 
-		(int) Math.ceil(Math.log(DB_AVG_EVENTS_PER_PAGE)/Math.log(2)) + 1;
+		BitUtils.log2ceil(DB_AVG_EVENTS_PER_PAGE) + 1;
+	
+	/**
+	 * Number of bits used to represent the node in an internal event
+	 * pointer. 
+	 */
+	public static final int DB_EVENTID_NODE_BITS = 6;
 	
 	/**
 	 * Number of bits used to represent the page in an internal
 	 * event pointer.
 	 */
-	public static final int DB_EVENTID_PAGE_BITS = 64 - DB_EVENTID_INDEX_BITS;
-	
+	public static final int DB_EVENTID_PAGE_BITS = 64 - DB_EVENTID_INDEX_BITS - DB_EVENTID_NODE_BITS;
+
 	/**
 	 * Number of bits used to represent event sizes in event pages.
 	 */

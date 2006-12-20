@@ -28,14 +28,14 @@ import org.junit.Test;
 import tod.impl.dbgrid.ConditionGenerator;
 import tod.impl.dbgrid.EventGenerator;
 import tod.impl.dbgrid.Fixtures;
-import tod.impl.dbgrid.dbnode.EventDatabase;
+import tod.impl.dbgrid.gridimpl.uniform.UniformEventDatabase;
 import tod.impl.dbgrid.queries.EventCondition;
 
 public class TestDatabaseNode
 {
 	@Test public void check() 
 	{
-		EventDatabase theDatabase = new EventDatabase(new File("test.bin"));
+		UniformEventDatabase theDatabase = new UniformEventDatabase(0, new File("test.bin"));
 		EventGenerator theEventGenerator = createGenerator();
 		
 		System.out.println("filling...");

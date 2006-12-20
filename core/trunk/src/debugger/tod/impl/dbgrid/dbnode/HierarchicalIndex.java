@@ -500,6 +500,12 @@ public class HierarchicalIndex<T extends IndexTuple>
 			aBitStruct.writeLong(getPagePointer(), DB_PAGE_POINTER_BITS);
 		}
 		
+		@Override
+		public int getBitCount()
+		{
+			return super.getBitCount() + DB_PAGE_POINTER_BITS;
+		}
+		
 		public long getPagePointer()
 		{
 			return itsPagePointer;

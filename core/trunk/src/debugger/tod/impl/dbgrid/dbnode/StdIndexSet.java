@@ -28,7 +28,7 @@ import zz.utils.bit.BitStruct;
 
 public class StdIndexSet extends IndexSet<StdIndexSet.StdTuple> 
 {
-	public static final TupleCodec<StdTuple> TUPLE_CODEC = new StdTupleCodec();
+	public static final IndexTupleCodec TUPLE_CODEC = new StdTupleCodec();
 	
 	public StdIndexSet(String aName, HardPagedFile aFile, int aIndexCount)
 	{
@@ -86,6 +86,12 @@ public class StdIndexSet extends IndexSet<StdIndexSet.StdTuple>
 		{
 			super.writeTo(aBitStruct);
 			aBitStruct.writeLong(getEventPointer(), 64);
+		}
+		
+		@Override
+		public int getBitCount()
+		{
+			return super.getBitCount() + 64;
 		}
 		
 		public long getEventPointer()

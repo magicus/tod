@@ -18,44 +18,33 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.dbgrid.queries;
+package tod.impl.dbgrid.gridimpl.grpidx;
 
+import java.rmi.RemoteException;
 
-import tod.impl.dbgrid.BidiIterator;
-import tod.impl.dbgrid.dbnode.Indexes;
-import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
-import tod.impl.dbgrid.messages.GridEvent;
+import tod.impl.dbgrid.GridMaster;
+import tod.impl.dbgrid.dbnode.DatabaseNode;
+import tod.impl.dbgrid.dispatcher.EventDispatcher;
+import tod.impl.dbgrid.gridimpl.IGridImplementationFactory;
 
-/**
- * Represents a condition on event thread.
- * @author gpothier
- */
-public class DepthCondition extends SimpleCondition
+public class GrpIdxImplementationFactory implements IGridImplementationFactory
 {
-	private static final long serialVersionUID = 4667937394229993337L;
-	private int itsDepth;
 
-	public DepthCondition(int aDepth)
+	public EventDispatcher createDispatcher(GridMaster aMaster)
 	{
-		itsDepth = aDepth;
+		return new GrpIdxEventDispatcher(aMaster);
 	}
 
-	@Override
-	public BidiIterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
+	public DatabaseNode createNode(boolean aRegisterToMaster)
 	{
-		return aIndexes.getDepthIndex(itsDepth).getTupleIterator(aTimestamp);
-	}
-
-	@Override
-	public boolean match(GridEvent aEvent)
-	{
-		return aEvent.getDepth() == itsDepth;
-	}
-	
-	@Override
-	protected String toString(int aIndent)
-	{
-		return String.format("Depth = %d", itsDepth);
+		try
+		{
+			return new GrpIdxDatabaseNode(aRegisterToMaster);
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 }

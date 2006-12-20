@@ -223,7 +223,7 @@ public class GridBehaviorCallEvent extends GridEvent
 		if (getCalledBehaviorId() != -1)
 		{
 			TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_CALLED);
-			aIndexes.behaviorIndex.addTuple(
+			aIndexes.indexBehavior(
 					getCalledBehaviorId(), 
 					TUPLE);
 		}
@@ -231,7 +231,7 @@ public class GridBehaviorCallEvent extends GridEvent
 		if (getExecutedBehaviorId() != -1)
 		{
 			TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_EXECUTED);
-			aIndexes.behaviorIndex.addTuple(
+			aIndexes.indexBehavior(
 					getExecutedBehaviorId(), 
 					TUPLE);
 		}
@@ -241,13 +241,13 @@ public class GridBehaviorCallEvent extends GridEvent
 			Object theArgument = itsArguments[i];
 
 			TUPLE.set(getTimestamp(), aPointer, (byte) i);
-			aIndexes.objectIndex.addTuple(
+			aIndexes.indexObject(
 					theArgument,
 					TUPLE);
 		}
 		
 		TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_TARGET);
-		aIndexes.objectIndex.addTuple(
+		aIndexes.indexObject(
 				getTarget(), 
 				TUPLE);
 	}

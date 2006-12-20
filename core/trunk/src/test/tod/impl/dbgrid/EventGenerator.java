@@ -20,7 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
-import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_BEHAVIOR_COUNT;
+import static tod.impl.dbgrid.DebuggerGridConfig.*;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_BYTECODE_LOCS_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_DEPTH_RANGE;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_FIELD_COUNT;
@@ -32,6 +32,8 @@ import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_VAR_COUNT;
 import java.util.Random;
 
 import tod.core.database.structure.ObjectId;
+import tod.impl.common.event.ArrayWriteEvent;
+import tod.impl.dbgrid.messages.GridArrayWriteEvent;
 import tod.impl.dbgrid.messages.GridBehaviorCallEvent;
 import tod.impl.dbgrid.messages.GridBehaviorExitEvent;
 import tod.impl.dbgrid.messages.GridEvent;
@@ -191,6 +193,18 @@ public class EventGenerator
 					genArgs(),
 					genBehaviorId(),
 					genBehaviorId(),
+					genObject());
+		
+		case ARRAY_WRITE:
+			return new GridArrayWriteEvent(
+					genHostId(),
+					genThreadId(),
+					genDepth(),
+					itsTimestampGenerator.next(),
+					genBytecodeIndex(),
+					genParentTimestamp(),
+					genObject(),
+					itsRandom.nextInt(STRUCTURE_ARRAY_INDEX_COUNT),
 					genObject());
 			
 		default: throw new RuntimeException("Not handled: "+theType); 

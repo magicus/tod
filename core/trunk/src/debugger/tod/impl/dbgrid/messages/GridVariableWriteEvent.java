@@ -145,11 +145,11 @@ public class GridVariableWriteEvent extends GridEvent
 		// TODO: this should not be necessary, we should not have negative values.
 		if (getVariableId() >= 0)
 		{
-			aIndexes.variableIndex.addTuple(getVariableId(), STD_TUPLE);
+			aIndexes.indexVariable(getVariableId(), STD_TUPLE);
 		}
 
 		ROLE_TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_VALUE);
-		aIndexes.objectIndex.addTuple(
+		aIndexes.indexObject(
 				getValue(), 
 				ROLE_TUPLE);
 	}

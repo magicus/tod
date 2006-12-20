@@ -43,7 +43,7 @@ public class VariableCondition extends SimpleCondition
 	@Override
 	public BidiIterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
-		return aIndexes.variableIndex.getIndex(itsVariableId).getTupleIterator(aTimestamp);
+		return aIndexes.getVariableIndex(itsVariableId).getTupleIterator(aTimestamp);
 	}
 
 	@Override

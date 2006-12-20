@@ -25,6 +25,7 @@ import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.IHostInfo;
 import tod.impl.common.EventCollector;
 import tod.impl.dbgrid.dispatcher.EventDispatcher;
+import tod.impl.dbgrid.gridimpl.uniform.UniformEventDispatcher;
 import tod.impl.dbgrid.messages.GridArrayWriteEvent;
 import tod.impl.dbgrid.messages.GridBehaviorCallEvent;
 import tod.impl.dbgrid.messages.GridBehaviorExitEvent;
@@ -57,6 +58,8 @@ public class GridEventCollector extends EventCollector
 	 * As events are received their attributes are copied to the appropriate
 	 * instance, and the instance is sent to the dispatcher, which
 	 * immediately serializes it.
+	 * Note: this is true only for the uniform grid implementation 
+	 * (see {@link UniformEventDispatcher}).
 	 */
 	private final GridBehaviorCallEvent itsCallEvent = new GridBehaviorCallEvent();
 	private final GridBehaviorExitEvent itsExitEvent = new GridBehaviorExitEvent();
