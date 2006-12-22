@@ -110,7 +110,11 @@ public class ASMLocationPool
 		return ""+aTypeId+":"+aName+aDescriptor;
 	}
 	
-	public int getBehaviorId(int aTypeId, String aName, String aDescriptor)
+	public int getBehaviorId(
+			int aTypeId, 
+			String aName, 
+			String aDescriptor,
+			boolean aStatic)
 	{
 		String theKey = getBehaviorKey(aTypeId, aName, aDescriptor);
 		Integer theId = itsMethodIds.get(theKey);
@@ -127,7 +131,13 @@ public class ASMLocationPool
 			// Register the behavior
 			theId = itsNextMethodId++;
 			itsMethodIds.put(theKey, theId);
-			itsLocationRegistrer.registerBehavior(BehaviourKind.METHOD, theId, aTypeId, aName, aDescriptor);
+			
+			BehaviourKind theKind;
+			if ("<init>".equals(aName)) theKind = BehaviourKind.CONSTRUCTOR;
+			else if ("<clinit>".equals(aName)) theKind = BehaviourKind.STATIC_BLOCK;
+			else theKind = aStatic ? BehaviourKind.STATIC_METHOD : BehaviourKind.METHOD;
+			
+			itsLocationRegistrer.registerBehavior(theKind, theId, aTypeId, aName, aDescriptor);
 		}
 		
 		return theId.intValue();

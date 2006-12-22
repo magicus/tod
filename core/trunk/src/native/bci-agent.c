@@ -314,7 +314,8 @@ cbClassFileLoadHook(
 			
 			// Register traced methods
 			registerTracedMethods(jni, nTracedMethods, tracedMethods);
-
+			
+			fflush(stdout);
 			return;
 		}
 	}
@@ -389,6 +390,7 @@ cbClassFileLoadHook(
 	
 	// Register traced methods
 	registerTracedMethods(jni, nTracedMethods, tracedMethods);
+	fflush(stdout);
 }
 
 void JNICALL

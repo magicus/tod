@@ -220,7 +220,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		int theCalledMethodId = itsLocationPool.getBehaviorId(
 				theCalledTypeId, 
 				aName, 
-				aDesc);
+				aDesc,
+				aOpcode == INVOKESTATIC);
 		
 		itsBehaviorCallInstrumenter.setup(
 				itsFirstFreeVar,

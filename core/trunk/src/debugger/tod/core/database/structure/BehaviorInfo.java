@@ -122,12 +122,12 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
     
     public boolean isConstructor()
     {
-    	return "<init>".equals(getName());
+    	return getBehaviourKind() == BehaviourKind.CONSTRUCTOR;
     }
 
     public boolean isStaticInit()
     {
-    	return "<clinit>".equals(getName());
+    	return getBehaviourKind() == BehaviourKind.STATIC_BLOCK;
     }
     
     public boolean isStatic()

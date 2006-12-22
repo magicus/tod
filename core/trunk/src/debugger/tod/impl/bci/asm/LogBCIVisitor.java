@@ -28,10 +28,8 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodAdapter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 
 import tod.core.BehaviorCallType;
-
 import zz.utils.ArrayStack;
 import zz.utils.Stack;
 
@@ -189,9 +187,10 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			super (mv);
 			itsMethodInfo = aMethodInfo;
 			itsMethodId = getLocationPool().getBehaviorId(
-								itsTypeId, 
-								itsMethodInfo.getName(), 
-								itsMethodInfo.getDescriptor());
+					itsTypeId,
+					itsMethodInfo.getName(),
+					itsMethodInfo.getDescriptor(),
+					aMethodInfo.isStatic());
 			
 			if (itsTrace)
 			{

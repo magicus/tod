@@ -29,6 +29,7 @@ import tod.core.database.browser.IObjectInspector;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ObjectId;
 import tod.gui.FontConfig;
@@ -101,9 +102,18 @@ public class CFlowObjectsBuilder
 		IBehaviorCallEvent theParent = aCurrentEvent.getParent();
 		ObjectId theCurrentObject = (ObjectId) theParent.getTarget();
 		
-		IObjectInspector theInspector = theCurrentObject != null ?
-				getEventTrace().createObjectInspector(theCurrentObject)
-				: getEventTrace().createClassInspector(theParent.getExecutedBehavior().getType());
+		IObjectInspector theInspector;
+		if (theCurrentObject != null)
+		{
+			theInspector = getEventTrace().createObjectInspector(theCurrentObject);
+		}
+		else
+		{
+			IBehaviorInfo theBehavior = theParent.getExecutedBehavior();
+			if (theBehavior == null) theBehavior = theParent.getCalledBehavior();
+			
+			theInspector = getEventTrace().createClassInspector(theBehavior.getType());
+		}
 		
 		theInspector.setCurrentEvent(aCurrentEvent);
 
@@ -130,7 +140,14 @@ public class CFlowObjectsBuilder
 		SVGGraphicContainer theContainer = new SVGGraphicContainer();
 		
 		theContainer.pChildren().add(SVGFlowText.create("Object: ", HEADER_FONT, Color.BLACK));
-		theContainer.pChildren().add(Hyperlinks.object(getGUIManager(), getEventTrace(), aCurrentObject, HEADER_FONT));
+		if (aCurrentObject != null)
+		{
+			theContainer.pChildren().add(Hyperlinks.object(getGUIManager(), getEventTrace(), aCurrentObject, HEADER_FONT));
+		}
+		else
+		{
+			theContainer.pChildren().add(SVGFlowText.create("(static)", HEADER_FONT, Color.GRAY));
+		}
 		
 		theContainer.setLayoutManager(new SequenceLayout());
 		return theContainer;
