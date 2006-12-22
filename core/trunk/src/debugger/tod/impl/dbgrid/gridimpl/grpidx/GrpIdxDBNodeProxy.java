@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.net.Socket;
 
 import tod.impl.dbgrid.DebuggerGridConfig;
-import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.gridimpl.grpidx.GrpIdxDatabaseNode.IndexKind;
 import tod.impl.dbgrid.gridimpl.uniform.UniformDBNodeProxy;
@@ -41,9 +40,9 @@ public class GrpIdxDBNodeProxy extends UniformDBNodeProxy
 	private long itsSentIndexCount = 0;
 	private int itsBufferedIndexCount = 0;
 
-	public GrpIdxDBNodeProxy(Socket aSocket, int aNodeId, GridMaster aMaster)
+	public GrpIdxDBNodeProxy(Socket aSocket, int aNodeId)
 	{
-		super(aSocket, aNodeId, aMaster);
+		super(aSocket, aNodeId);
 	}
 	
 	public void pushIndexData(IndexKind aIndexKind, int aIndex, StdTuple aTuple)

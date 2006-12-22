@@ -29,6 +29,7 @@ import org.objectweb.asm.Type;
 
 import tod.Util;
 import tod.core.ILocationRegistrer.Stats;
+import tod.core.database.browser.ILocationStore;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.ArrayTypeInfo;
 import tod.core.database.structure.BehaviorInfo;
@@ -44,7 +45,7 @@ import tod.core.database.structure.UnknownTypeInfo;
  * This class permits to register location ids.
  * @author gpothier
  */
-public class LocationRegistrer implements ILocationRegistrer, ILocationsRepository
+public class LocationRegistrer implements ILocationStore
 {
 	private List<ClassInfo> itsTypes = new ArrayList<ClassInfo>();
 	private List<UnknownTypeInfo> itsUnknownTypes = new ArrayList<UnknownTypeInfo>();

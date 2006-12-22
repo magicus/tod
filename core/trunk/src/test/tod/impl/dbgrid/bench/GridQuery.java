@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import tod.core.ILogCollector;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
@@ -60,7 +59,6 @@ public class GridQuery
 		final File theFile = new File(theFileName);
 		
 		final GridMaster theMaster = Fixtures.setupMaster(theRegistry, args);
-		final ILogCollector theCollector = theMaster.createCollector(1);
 		
 		final long[] theEventsCount = new long[1];
 		BenchResults theReplayTime = BenchBase.benchmark(new Runnable()
@@ -69,7 +67,7 @@ public class GridQuery
 			{
 				try
 				{
-					theEventsCount[0] = Fixtures.replay(theFile, theMaster, theCollector);
+					theEventsCount[0] = Fixtures.replay(theFile, theMaster);
 				}
 				catch (IOException e)
 				{

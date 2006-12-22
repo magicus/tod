@@ -41,6 +41,7 @@ import tod.impl.dbgrid.RIGridMaster;
 import tod.impl.dbgrid.gridimpl.GridImpl;
 import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
+import zz.utils.net.Server.ServerAdress;
 
 public abstract class DatabaseNode extends UnicastRemoteObject
 implements RIDatabaseNode
@@ -116,16 +117,26 @@ implements RIDatabaseNode
 		System.out.println("Master assigned node id "+itsNodeId);
 		
 		startMonitoringThread();
-		
-		// Setup socket connection
-		String theMasterHost = DebuggerGridConfig.MASTER_HOST;
-		System.out.println("Connecting to "+theMasterHost);
-		Socket theSocket = new Socket(theMasterHost, DebuggerGridConfig.MASTER_NODE_PORT);
-		DataOutputStream theStream = new DataOutputStream(theSocket.getOutputStream());
-		theStream.writeInt(itsNodeId);
-		theStream.flush();
-		
-		itsMasterConnection = new MasterConnection(theSocket);
+	}
+	
+	public void connectToDispatcher(ServerAdress aAdress) 
+	{
+		try
+		{
+			System.out.println("Connecting to "+aAdress.hostName);
+			Socket theSocket = aAdress.connect();
+			DataOutputStream theStream = 
+				new DataOutputStream(theSocket.getOutputStream());
+			
+			theStream.writeInt(itsNodeId);
+			theStream.flush();
+			
+			itsMasterConnection = new MasterConnection(theSocket);
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 	
 	private void startMonitoringThread()
@@ -254,11 +265,5 @@ implements RIDatabaseNode
 		}
 		
 	}
-	
-	public static void main(String[] args)
-	{
-		GridImpl.getFactory(new TODConfig()).createNode(true);
-	}
-
 
 }

@@ -100,4 +100,25 @@ public class DebugFlags
 	 * If set to true, the local collector will actually store events.
 	 */
 	public static final boolean LOCAL_COLLECTOR_STORE = true;
+	
+	/**
+	 * If not 0, {@link LogReceiver} prints received message counts
+	 * every {@link #RECEIVER_PRINT_COUNTS} messages.
+	 */
+	public static final int RECEIVER_PRINT_COUNTS = 100000;
+	
+	static
+	{
+		if (SKIP_EVENTS == true) System.err.println("Warning: SKIP_EVENTS (DebugFlags)");
+		if (DISABLE_REORDER == true) System.err.println("Warning: DISABLE_REORDER (DebugFlags)");
+		if (DISABLE_INDEXES == true) System.err.println("Warning: DISABLE_INDEXES (DebugFlags)");
+		if (DISABLE_STORE == true) System.err.println("Warning: DISABLE_STORE (DebugFlags)");
+		if (ALIAS_OBJECTS != 0) System.err.println("Warning: ALIAS_OBJECTS (DebugFlags)");
+		if (DISABLE_LOCATION_INDEX == true) System.err.println("Warning: DISABLE_LOCATION_INDEX (DebugFlags)");
+		if (DISABLE_USE_PAGES == true) System.err.println("Warning: DISABLE_USE_PAGES (DebugFlags)");
+		if (DISABLE_INTERPRETER == true) System.err.println("Warning: DISABLE_INTERPRETER (DebugFlags)");
+		if (COLLECTOR_IGNORE_ALL == true) System.err.println("Warning: COLLECTOR_IGNORE_ALL (DebugFlags)");
+		if (DISABLE_EVENT_SEND == true) System.err.println("Warning: DISABLE_EVENT_SEND (DebugFlags)");
+		if (LOCAL_COLLECTOR_STORE == false) System.err.println("Warning: LOCAL_COLLECTOR_STORE (DebugFlags)");
+	}
 }

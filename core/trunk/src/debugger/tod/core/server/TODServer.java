@@ -40,11 +40,10 @@ import zz.utils.net.Server;
  * to delegates.
  * @author gpothier
  */
-public class TODServer
+public abstract class TODServer
 {
 	private final TODConfig itsConfig;
 	
-	private ICollectorFactory itsCollectorFactory;
 	private IInstrumenter itsInstrumenter;
 	
 	private LocationRegistrer itsLocationRegistrer;
@@ -55,10 +54,9 @@ public class TODServer
 	private LogReceiverServer itsReceiverServer;
 	private NativePeerServer itsNativePeerServer;
 
-	public TODServer(TODConfig aConfig, ICollectorFactory aCollectorFactory, IInstrumenter aInstrumenter)
+	public TODServer(TODConfig aConfig, IInstrumenter aInstrumenter)
 	{
 		itsConfig = aConfig;
-		itsCollectorFactory = aCollectorFactory;
 		itsInstrumenter = aInstrumenter;
 		
 		itsLocationRegistrer = new LocationRegistrer();
@@ -67,6 +65,11 @@ public class TODServer
 		itsNativePeerServer = new NativePeerServer();
 	}
 	
+	public LocationRegistrer getLocationRegistrer()
+	{
+		return itsLocationRegistrer;
+	}
+
 	/**
 	 * Causes this server to stop accepting connections.
 	 */
@@ -90,20 +93,33 @@ public class TODServer
 		return itsReceivers.get(aHostName);
 	}
 	
+	/**
+	 * Creates a receiver for a host.
+	 */
+	protected abstract LogReceiver createReceiver(Socket aSocket);
+	
+	/**
+	 * Flushes buffers.
+	 */
+	protected void flush()
+	{
+		for(LogReceiver theReceiver : itsReceivers.values())
+		{
+			try
+			{
+				theReceiver.interrupt();
+				theReceiver.join();
+			}
+			catch (InterruptedException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+	}
+	
 	protected void acceptJavaConnection(Socket aSocket)
 	{
-		LogReceiver theReceiver = new LogReceiver(
-				itsCollectorFactory.create(),
-				itsLocationRegistrer.getSynchronizedRegistrer(),
-				aSocket)
-		{
-			@Override
-			protected void disconnected()
-			{
-				super.disconnected();
-				TODServer.this.disconnected();
-			}
-		};
+		LogReceiver theReceiver = createReceiver(aSocket);
 		
 		String theHostName = theReceiver.waitHostName();
 		itsReceivers.put(theHostName, theReceiver);
@@ -175,19 +191,7 @@ public class TODServer
 		protected void processFlush()
 		{
 			System.out.println("Flushing...");
-			for(LogReceiver theReceiver : itsReceivers.values())
-			{
-				try
-				{
-					theReceiver.interrupt();
-					theReceiver.join();
-				}
-				catch (InterruptedException e)
-				{
-					throw new RuntimeException(e);
-				}
-			}
-			itsCollectorFactory.flushAll();
+			flush();
 			System.out.println("done.");
 		}
 		

@@ -18,19 +18,24 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.dbgrid.gridimpl;
+package tod.impl.dbgrid.dispatcher;
 
-import tod.impl.dbgrid.GridMaster;
-import tod.impl.dbgrid.dbnode.DatabaseNode;
-import tod.impl.dbgrid.dispatcher.LeafEventDispatcher;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+
+import zz.utils.net.Server.ServerAdress;
 
 /**
- * Factory used to obtain the implementations of grid elements
- * such as event dispatcher, database nodes, query aggregator.
+ * Remote interface for Event dispatchers ({@link AbstractEventDispatcher}).
+ * This interface is not used to send event data, only for control.
  * @author gpothier
  */
-public interface IGridImplementationFactory
+public interface RIEventDispatcher extends RIConnectable
 {
-	public LeafEventDispatcher createLeafDispatcher(boolean aConnectToMaster);
-	public DatabaseNode createNode(boolean aConnectToMaster);
+	
+	/**
+	 * Returns the adress on which this dispatcher is accepting children
+	 * connections.
+	 */
+	public ServerAdress getAdress() throws RemoteException;
 }

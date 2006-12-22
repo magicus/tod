@@ -20,23 +20,18 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
-import java.io.File;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 import javax.swing.JComponent;
 
-import tod.core.ILogCollector;
 import tod.core.LocationRegistrer;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
-import tod.core.server.ICollectorFactory;
-import tod.core.server.TODServer;
 import tod.core.session.AbstractSession;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
-import tod.impl.dbgrid.dbnode.DatabaseNode;
 import tod.impl.dbgrid.gridimpl.GridImpl;
 
 /**
@@ -46,7 +41,6 @@ import tod.impl.dbgrid.gridimpl.GridImpl;
 public class LocalGridSession extends AbstractSession
 {
 	private GridMaster itsMaster;
-	private TODServer itsServer;
 	private GridLogBrowser itsBrowser;
 	
 	public LocalGridSession(TODConfig aConfig) throws RemoteException
@@ -54,7 +48,6 @@ public class LocalGridSession extends AbstractSession
 		super(null);
 
 		LocationRegistrer theRegistrer = new LocationRegistrer();
-		itsMaster = new GridMaster(aConfig, theRegistrer, 0);
 		
 		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(
 				aConfig,
@@ -62,17 +55,14 @@ public class LocalGridSession extends AbstractSession
 
 		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theDebuggerConfig);
 		
-		itsServer = new TODServer(
-				aConfig,
-				new MyCollectorFactory(),
-				theInstrumenter);
+		itsMaster = new GridMaster(aConfig, theRegistrer, theInstrumenter, 0);
 		
 		itsBrowser = new GridLogBrowser(itsMaster);
 	}
 	
 	public void disconnect()
 	{
-		itsServer.disconnect();
+		itsMaster.disconnect();
 	}
 
 	public String getCachedClassesPath()
@@ -90,21 +80,6 @@ public class LocalGridSession extends AbstractSession
 		return null;
 	}
 
-	private class MyCollectorFactory implements ICollectorFactory
-	{
-		private int itsHostId = 1;
-
-		public ILogCollector create()
-		{
-			return itsMaster.createCollector(itsHostId++);
-		}
-		
-		public void flushAll()
-		{
-			itsMaster.flush();
-		}
-	}
-	
 	public static LocalGridSession create(TODConfig aConfig) 
 	{
 		try

@@ -20,7 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.local;
 
-import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +31,7 @@ import tod.core.LocationRegistrer;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.HostInfo;
+import tod.core.server.CollectorTODServer;
 import tod.core.server.ICollectorFactory;
 import tod.core.server.TODServer;
 import tod.core.session.AbstractSession;
@@ -58,10 +58,10 @@ public class LocalSession extends AbstractSession
 
 		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theConfig);
 		
-		itsServer = new TODServer(
+		itsServer = new CollectorTODServer(
 				aConfig,
-				new MyCollectorFactory(),
-				theInstrumenter);
+				theInstrumenter,
+				new MyCollectorFactory());
 	}
 	
 	public void disconnect()

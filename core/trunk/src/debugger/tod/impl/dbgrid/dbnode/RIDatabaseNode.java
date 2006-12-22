@@ -24,14 +24,16 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import tod.core.database.browser.IEventBrowser;
+import tod.impl.dbgrid.dispatcher.RIConnectable;
 import tod.impl.dbgrid.queries.EventCondition;
+import zz.utils.net.Server.ServerAdress;
 
 /**
  * Remote interface for {@link DatabaseNode}, used only
  * for queries, not for event storage.
  * @author gpothier
  */
-public interface RIDatabaseNode extends Remote
+public interface RIDatabaseNode extends RIConnectable
 {
 	/**
 	 * Returns the id of this node

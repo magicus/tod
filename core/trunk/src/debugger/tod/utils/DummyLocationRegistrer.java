@@ -22,6 +22,7 @@ package tod.utils;
 
 import tod.core.BehaviourKind;
 import tod.core.ILocationRegistrer;
+import tod.core.database.browser.ILocationStore;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
@@ -29,7 +30,7 @@ import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ITypeInfo;
 
 public class DummyLocationRegistrer 
-implements ILocationRegistrer, ILocationsRepository
+implements ILocationStore
 {
 
 	public void registerBehavior(BehaviourKind aBehaviourType, int aBehaviourId, int aTypeId, String aBehaviourName, String aSignature)

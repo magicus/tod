@@ -138,6 +138,7 @@ public class GrpIdxEventDatabase extends AbstractEventDatabase
 	 */
 	public void index(IndexKind aIndexKind, int aIndex, IndexTuple aTuple)
 	{
+		if (DebugFlags.SKIP_EVENTS) return;
 		aIndexKind.index(getIndexes(), aIndex, aTuple);
 	}
 	

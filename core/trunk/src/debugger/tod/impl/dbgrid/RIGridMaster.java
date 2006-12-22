@@ -31,6 +31,7 @@ import tod.impl.dbgrid.aggregator.RIQueryAggregator;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
 import tod.impl.dbgrid.dbnode.NodeRejectedException;
 import tod.impl.dbgrid.dbnode.RIDatabaseNode;
+import tod.impl.dbgrid.dispatcher.RIEventDispatcher;
 import tod.impl.dbgrid.monitoring.Monitor.KeyMonitorData;
 import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
 import tod.impl.dbgrid.queries.EventCondition;
@@ -64,7 +65,19 @@ public interface RIGridMaster extends Remote
 	 * @throws NodeRejectedException Thrown if the master refuses the new node
 	 * @return The id assigned to the node.
 	 */
-	public int registerNode(RIDatabaseNode aNode, String aHostname) throws RemoteException, NodeRejectedException;
+	public int registerNode(RIDatabaseNode aNode, String aHostname) 
+		throws RemoteException, NodeRejectedException;
+	
+	/**
+	 * Registers a dispatcher so that it can be used by the grid.
+	 * @param aLeaf Whether the dispatcher is a leaf dispatcher or
+	 * an internal dispatcher.
+	 * @throws NodeRejectedException Thrown if the master refuses the new dispatcher.
+	 */
+	public void registerDispatcher(
+			RIEventDispatcher aDispatcher, 
+			String aHostname, 
+			boolean aLeaf) throws RemoteException, NodeRejectedException;
 	
 	/**
 	 * {@link DatabaseNode}s call this method when they encounter an exception.

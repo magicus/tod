@@ -21,9 +21,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.gridimpl.grpidx;
 
 import java.net.Socket;
+import java.rmi.RemoteException;
 
 import tod.agent.DebugFlags;
-import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.dbnode.EventReorderingBuffer;
 import tod.impl.dbgrid.dbnode.HierarchicalIndex;
 import tod.impl.dbgrid.dbnode.Indexes;
@@ -31,7 +31,8 @@ import tod.impl.dbgrid.dbnode.EventReorderingBuffer.ReorderingBufferListener;
 import tod.impl.dbgrid.dbnode.RoleIndexSet.RoleTuple;
 import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.dispatcher.DBNodeProxy;
-import tod.impl.dbgrid.dispatcher.EventDispatcher;
+import tod.impl.dbgrid.dispatcher.DispatchTreeNodeProxy;
+import tod.impl.dbgrid.dispatcher.LeafEventDispatcher;
 import tod.impl.dbgrid.gridimpl.grpidx.GrpIdxDatabaseNode.IndexKind;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.monitoring.AggregationType;
@@ -46,7 +47,7 @@ import tod.impl.dbgrid.monitoring.Probe;
  * so that a single iondex is not spread across the nodes.
  * @author gpothier
  */
-public class GrpIdxEventDispatcher extends EventDispatcher
+public class GrpIdxEventDispatcher extends LeafEventDispatcher
 implements ReorderingBufferListener
 {
 	/**
@@ -70,25 +71,25 @@ implements ReorderingBufferListener
 	
 	private DispatcherIndexes itsIndexes = new DispatcherIndexes();
 	
-	public GrpIdxEventDispatcher(GridMaster aMaster)
+	public GrpIdxEventDispatcher(boolean aConnectToMaster) throws RemoteException
 	{
-		super(aMaster);
+		super(aConnectToMaster);
 		Monitor.getInstance().register(this);
 	}
 	
 	@Override
-	public DBNodeProxy addNode(Socket aSocket, int aId)
+	protected void addChild(DispatchTreeNodeProxy aProxy)
 	{
 		if (itsStartedDispatching) 
 			throw new IllegalStateException("Dispatching already started, cannot add new node.");
 		
-		return super.addNode(aSocket, aId);
+		super.addChild(aProxy);
 	}
 	
 	@Override
 	protected DBNodeProxy createProxy(Socket aSocket, int aId)
 	{
-		return new GrpIdxDBNodeProxy(aSocket, aId, getMaster());
+		return new GrpIdxDBNodeProxy(aSocket, aId);
 	}
 
 	@Override
@@ -149,7 +150,7 @@ implements ReorderingBufferListener
 		// Send event data to the next node in the round-robin scheme
 		GrpIdxDBNodeProxy theProxy = getNode(itsCurrentNode);
 		long theId = theProxy.pushEvent(aEvent);
-		itsCurrentNode = (itsCurrentNode+1) % getNodesCount();
+		itsCurrentNode = (itsCurrentNode+1) % getChildrenCount();
 		
 		// Send index data to adequate nodes.
 		aEvent.index(itsIndexes, theId);
@@ -242,70 +243,70 @@ implements ReorderingBufferListener
 		@Override
 		public void indexArrayIndex(int aIndex, StdTuple aTuple)
 		{
-			GrpIdxDBNodeProxy theNode = getNode(aIndex % getNodesCount());
+			GrpIdxDBNodeProxy theNode = getNode(aIndex % getChildrenCount());
 			theNode.pushIndexData(IndexKind.INDEX, aIndex, aTuple);
 		}
 
 		@Override
 		public void indexBehavior(int aIndex, RoleTuple aTuple)
 		{
-			GrpIdxDBNodeProxy theNode = getNode(aIndex % getNodesCount());
+			GrpIdxDBNodeProxy theNode = getNode(aIndex % getChildrenCount());
 			theNode.pushIndexData(IndexKind.BEHAVIOR, aIndex, aTuple);
 		}
 
 		@Override
 		public void indexDepth(int aIndex, StdTuple aTuple)
 		{
-			GrpIdxDBNodeProxy theNode = getNode(aIndex % getNodesCount());
+			GrpIdxDBNodeProxy theNode = getNode(aIndex % getChildrenCount());
 			theNode.pushIndexData(IndexKind.DEPTH, aIndex, aTuple);
 		}
 
 		@Override
 		public void indexField(int aIndex, StdTuple aTuple)
 		{
-			GrpIdxDBNodeProxy theNode = getNode(aIndex % getNodesCount());
+			GrpIdxDBNodeProxy theNode = getNode(aIndex % getChildrenCount());
 			theNode.pushIndexData(IndexKind.FIELD, aIndex, aTuple);
 		}
 
 		@Override
 		public void indexHost(int aIndex, StdTuple aTuple)
 		{
-			GrpIdxDBNodeProxy theNode = getNode(aIndex % getNodesCount());
+			GrpIdxDBNodeProxy theNode = getNode(aIndex % getChildrenCount());
 			theNode.pushIndexData(IndexKind.HOST, aIndex, aTuple);
 		}
 
 		@Override
 		public void indexLocation(int aIndex, StdTuple aTuple)
 		{
-			GrpIdxDBNodeProxy theNode = getNode(aIndex % getNodesCount());
+			GrpIdxDBNodeProxy theNode = getNode(aIndex % getChildrenCount());
 			theNode.pushIndexData(IndexKind.LOCATION, aIndex, aTuple);
 		}
 
 		@Override
 		public void indexObject(int aIndex, RoleTuple aTuple)
 		{
-			GrpIdxDBNodeProxy theNode = getNode(aIndex % getNodesCount());
+			GrpIdxDBNodeProxy theNode = getNode(aIndex % getChildrenCount());
 			theNode.pushIndexData(IndexKind.OBJECT, aIndex, aTuple);
 		}
 
 		@Override
 		public void indexThread(int aIndex, StdTuple aTuple)
 		{
-			GrpIdxDBNodeProxy theNode = getNode(aIndex % getNodesCount());
+			GrpIdxDBNodeProxy theNode = getNode(aIndex % getChildrenCount());
 			theNode.pushIndexData(IndexKind.THREAD, aIndex, aTuple);
 		}
 
 		@Override
 		public void indexType(int aIndex, StdTuple aTuple)
 		{
-			GrpIdxDBNodeProxy theNode = getNode(aIndex % getNodesCount());
+			GrpIdxDBNodeProxy theNode = getNode(aIndex % getChildrenCount());
 			theNode.pushIndexData(IndexKind.TYPE, aIndex, aTuple);
 		}
 
 		@Override
 		public void indexVariable(int aIndex, StdTuple aTuple)
 		{
-			GrpIdxDBNodeProxy theNode = getNode(aIndex % getNodesCount());
+			GrpIdxDBNodeProxy theNode = getNode(aIndex % getChildrenCount());
 			theNode.pushIndexData(IndexKind.VARIABLE, aIndex, aTuple);
 		}
 	}

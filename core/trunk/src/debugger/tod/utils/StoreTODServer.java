@@ -31,8 +31,8 @@ import tod.core.ILogCollector;
 import tod.core.LocationRegistrer;
 import tod.core.bci.IInstrumenter;
 import tod.core.config.TODConfig;
+import tod.core.server.CollectorTODServer;
 import tod.core.server.ICollectorFactory;
-import tod.core.server.TODServer;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
 import tod.impl.dbgrid.DebuggerGridConfig;
@@ -42,13 +42,16 @@ import zz.utils.Utils;
  * A tod server that stores all the events it receives from the java client
  * @author gpothier
  */
-public class StoreTODServer extends TODServer
+public class StoreTODServer extends CollectorTODServer
 {
 	private int itsConnectionNumber = 1;
 
-	public StoreTODServer(TODConfig aConfig, ICollectorFactory aCollectorFactory, IInstrumenter aInstrumenter)
+	public StoreTODServer(
+			TODConfig aConfig, 
+			IInstrumenter aInstrumenter,
+			ICollectorFactory aCollectorFactory)
 	{
-		super(aConfig, aCollectorFactory, aInstrumenter);
+		super(aConfig, aInstrumenter, aCollectorFactory);
 	}
 
 	@Override
@@ -124,7 +127,10 @@ public class StoreTODServer extends TODServer
 
 		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theDebuggerConfig);
 		
-		new StoreTODServer(theConfig, new DummyCollectorFactory(), theInstrumenter);
+		new StoreTODServer(
+				theConfig, 
+				theInstrumenter,
+				new DummyCollectorFactory()); 
 	}
 
 }

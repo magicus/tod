@@ -39,7 +39,9 @@ import tod.core.LocationRegistrer;
 import tod.core.bci.NativeAgentPeer;
 import tod.core.config.TODConfig;
 import tod.core.transport.CollectorPacketReader;
+import tod.core.transport.LogReceiver;
 import tod.core.transport.MessageType;
+import tod.core.transport.LogReceiver.ILogReceiverMonitor;
 import tod.impl.bci.asm.ASMLocationPool;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
 import tod.impl.dbgrid.dbnode.EventList;
@@ -349,7 +351,10 @@ public class Fixtures
 		return setupMaster(new TODConfig(), aRegistry, aExpectedNodes);
 	}
 	
-	public static GridMaster setupMaster(TODConfig aConfig, Registry aRegistry, int aExpectedNodes) throws Exception
+	public static GridMaster setupMaster(
+			TODConfig aConfig,
+			Registry aRegistry,
+			int aExpectedNodes) throws Exception
 	{
 		System.out.println("Expecting "+aExpectedNodes+" nodes");
 		
@@ -358,98 +363,90 @@ public class Fixtures
 		new ASMLocationPool(
 				theLocationRegistrer, 
 				new File(aConfig.get(TODConfig.INSTRUMENTER_LOCATIONS_FILE)));
-		GridMaster theMaster = new GridMaster(aConfig, theLocationRegistrer, aExpectedNodes);
+		
+		GridMaster theMaster = new GridMaster(
+				aConfig, 
+				theLocationRegistrer, 
+				null,
+				aExpectedNodes);
 		
 		aRegistry.bind(GridMaster.RMI_ID, theMaster);
 		
 		System.out.println("Bound master");
+		
+		theMaster.waitReady();
 
-		if (aExpectedNodes > 0)
-		{
-			while (theMaster.getNodeCount() < aExpectedNodes)
-			{
-				Thread.sleep(1000);
-				System.out.println("Found "+theMaster.getNodeCount()+"/"+aExpectedNodes+" nodes.");
-			}
-		}
-		else GridImpl.getFactory(aConfig).createNode(true);
+		if (aExpectedNodes == 0) GridImpl.getFactory(aConfig).createNode(true);
 
 		return theMaster;
 	}
 	
 	public static long replay(
 			File aFile,
-			GridMaster aMaster,
-			ILogCollector aCollector) 
+			GridMaster aMaster) 
 			throws IOException
 	{
-		DataInputStream theStream = new DataInputStream(new BufferedInputStream(new FileInputStream(aFile)));
+		DataInputStream theStream = new DataInputStream(
+				new BufferedInputStream(new FileInputStream(aFile)));
 		
-		String theHostName = theStream.readUTF();
-		System.out.println("Reading events of "+theHostName);
 
-		long theCount = 0;
+		LogReceiver theReceiver = aMaster.getDispatcher().createLogReceiver(
+				null, 
+				aMaster, 
+				null, 
+				theStream, 
+				null,
+				false);
 		
-		DerivativeDataPrinter thePrinter = new DerivativeDataPrinter(
-				new File("replay-times.txt"),
-				"time (ms)",
-				"events");
+		MyLogReceiverMonitor theMonitor = new MyLogReceiverMonitor();
+		theReceiver.setMonitor(theMonitor);
 		
-		long t0 = System.currentTimeMillis();
-		
-		while (true)
-		{
-			byte theCommand;
-			try
-			{
-				theCommand = theStream.readByte();
-			}
-			catch (EOFException e)
-			{
-				break;
-			}
-			
-			try
-			{
-				if (theCommand == NativeAgentPeer.INSTRUMENT_CLASS)
-				{
-					throw new RuntimeException();
-				}
-				else
-				{
-					MessageType theType = MessageType.values()[theCommand];
-					CollectorPacketReader.readPacket(
-							theStream, 
-							aCollector,
-							null,
-							theType);
-				}
-			}
-			catch (Exception e)
-			{
-				e.printStackTrace();
-				break;
-			}
-			
-			theCount++;
-			
-			if (theCount % 100000 == 0)
-			{
-				System.out.println(theCount);
-				
-				long t = System.currentTimeMillis()-t0;
-				thePrinter.addPoint(t/1000f, theCount);
-			}
-		}
+		theReceiver.start();
+
+		theReceiver.waitEof();
 		
 		aMaster.flush();
 		System.out.println("Done");
 
-		long t = System.currentTimeMillis()-t0;
-		thePrinter.addPoint(t/1000f, theCount);
-		thePrinter.close();
+		theMonitor.processedMessages(theReceiver.getMessageCount());
 		
-		return theCount;
+		return theReceiver.getMessageCount();
+	}
+	
+	private static class MyLogReceiverMonitor implements ILogReceiverMonitor
+	{
+		private long t0;
+		private DerivativeDataPrinter itsPrinter;
+		
+		private MyLogReceiverMonitor()
+		{
+			try
+			{
+				itsPrinter = new DerivativeDataPrinter(
+									new File("replay-times.txt"),
+									"time (ms)",
+									"events");
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		public void started()
+		{
+			t0 = System.currentTimeMillis();
+		}
+
+		public void processedMessages(long aCount)
+		{
+			System.out.println(aCount);
+
+			long t = System.currentTimeMillis()-t0;
+			itsPrinter.addPoint(t/1000f, aCount);
+		}
+
+		
 	}
 	
 

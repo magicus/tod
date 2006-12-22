@@ -55,7 +55,7 @@ implements RIQueryAggregator
 		initIterators(0);
 	}
 	
-	private void initIterators(final long aTimestamp) throws RemoteException
+	private void initIterators(final long aTimestamp)
 	{
 		final List<RIDatabaseNode> theNodes = itsMaster.getNodes();
 		final EventIterator[] theIterators = new EventIterator[theNodes.size()];

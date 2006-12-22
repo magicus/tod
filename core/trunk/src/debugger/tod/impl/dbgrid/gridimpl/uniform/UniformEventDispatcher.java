@@ -21,10 +21,11 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.gridimpl.uniform;
 
 import java.net.Socket;
+import java.rmi.RemoteException;
 
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.dispatcher.DBNodeProxy;
-import tod.impl.dbgrid.dispatcher.EventDispatcher;
+import tod.impl.dbgrid.dispatcher.LeafEventDispatcher;
 import tod.impl.dbgrid.messages.GridEvent;
 
 /**
@@ -32,19 +33,19 @@ import tod.impl.dbgrid.messages.GridEvent;
  * to one node, in a round robin fashion.
  * @author gpothier
  */
-public class UniformEventDispatcher extends EventDispatcher
+public class UniformEventDispatcher extends LeafEventDispatcher
 {
 	private int itsCurrentNode = 0;
 	
-	public UniformEventDispatcher(GridMaster aMaster)
+	public UniformEventDispatcher(boolean aConnectToMaster) throws RemoteException
 	{
-		super(aMaster);
+		super(aConnectToMaster);
 	}
 	
 	@Override
 	protected DBNodeProxy createProxy(Socket aSocket, int aId)
 	{
-		return new UniformDBNodeProxy(aSocket, aId, getMaster());
+		return new UniformDBNodeProxy(aSocket, aId);
 	}
 
 	@Override
@@ -62,7 +63,7 @@ public class UniformEventDispatcher extends EventDispatcher
 		// The following code is 5 times faster than using a modulo.
 		// (Pentium M 2ghz)
 		itsCurrentNode++;
-		if (itsCurrentNode >= getNodesCount()) itsCurrentNode = 0;
+		if (itsCurrentNode >= getChildrenCount()) itsCurrentNode = 0;
 	}
 	
 }

@@ -18,19 +18,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.dbgrid.gridimpl;
+package tod.core.database.browser;
 
-import tod.impl.dbgrid.GridMaster;
-import tod.impl.dbgrid.dbnode.DatabaseNode;
-import tod.impl.dbgrid.dispatcher.LeafEventDispatcher;
+import tod.core.ILocationRegistrer;
 
 /**
- * Factory used to obtain the implementations of grid elements
- * such as event dispatcher, database nodes, query aggregator.
+ * This interface only extends {@link ILocationsRepository}
+ * and {@link ILocationRegistrer}.
  * @author gpothier
  */
-public interface IGridImplementationFactory
+public interface ILocationStore extends ILocationsRepository, ILocationRegistrer
 {
-	public LeafEventDispatcher createLeafDispatcher(boolean aConnectToMaster);
-	public DatabaseNode createNode(boolean aConnectToMaster);
+
 }

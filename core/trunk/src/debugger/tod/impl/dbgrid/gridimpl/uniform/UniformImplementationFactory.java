@@ -26,14 +26,21 @@ import java.rmi.RemoteException;
 
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.dbnode.DatabaseNode;
-import tod.impl.dbgrid.dispatcher.EventDispatcher;
+import tod.impl.dbgrid.dispatcher.LeafEventDispatcher;
 import tod.impl.dbgrid.gridimpl.IGridImplementationFactory;
 
 public class UniformImplementationFactory implements IGridImplementationFactory
 {
-	public EventDispatcher createDispatcher(GridMaster aMaster)
+	public LeafEventDispatcher createLeafDispatcher(boolean aConnectToMaster)
 	{
-		return new UniformEventDispatcher(aMaster);
+		try
+		{
+			return new UniformEventDispatcher(aConnectToMaster);
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	public DatabaseNode createNode(boolean aRegisterToMaster)

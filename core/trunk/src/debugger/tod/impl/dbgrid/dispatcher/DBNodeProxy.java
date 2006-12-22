@@ -20,10 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.dispatcher;
 
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.net.Socket;
 
 import tod.impl.dbgrid.GridMaster;
@@ -37,76 +33,17 @@ import tod.impl.dbgrid.messages.GridEvent;
  * when there are enough, or after a certain time.
  * @author gpothier
  */
-public abstract class DBNodeProxy
+public abstract class DBNodeProxy extends DispatchTreeNodeProxy
 {
-	private final Socket itsSocket;
-	private final DataOutputStream itsOutStream;
-	private final DataInputStream itsInStream;
-
-	private final int itsNodeId;
-	private final GridMaster itsMaster;
-	
 	private long itsEventsCount = 0;
 	private long itsFirstTimestamp = 0;
 	private long itsLastTimestamp = 0;
 
 	
-	public DBNodeProxy(Socket aSocket, int aNodeId, GridMaster aMaster)
+	public DBNodeProxy(Socket aSocket, int aNodeId)
 	{
-		itsSocket = aSocket;
-		itsNodeId = aNodeId;
-		itsMaster = aMaster;
-		
-		try
-		{
-			itsOutStream = new DataOutputStream(new BufferedOutputStream(aSocket.getOutputStream()));
-			itsInStream = new DataInputStream(aSocket.getInputStream());
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
-
+		super (aSocket, aNodeId);
 	}
-
-	
-	public GridMaster getMaster()
-	{
-		return itsMaster;
-	}
-
-	public int getNodeId()
-	{
-		return itsNodeId;
-	}
-
-	protected Socket getSocket()
-	{
-		return itsSocket;
-	}
-
-	protected DataInputStream getInStream()
-	{
-		return itsInStream;
-	}
-
-	protected DataOutputStream getOutStream()
-	{
-		return itsOutStream;
-	}
-
-
-	/**
-	 * Flushes possibly buffered messages, both in this proxy 
-	 * and in the node.
-	 */
-	public abstract void flush();
-
-	/**
-	 * Requests the node to clear its database.
-	 *
-	 */
-	public abstract void clear();
 	
 	/**
 	 * Pushes an event so that it will be stored by the node behind this proxy.

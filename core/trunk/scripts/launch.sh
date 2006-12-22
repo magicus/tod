@@ -2,7 +2,7 @@
 
 case "$1" in
 	"session"	) MAIN="tod.impl.dbgrid.GridSession";;
-	"node"		) MAIN="tod.impl.dbgrid.dbnode.DatabaseNode";;
+	"node"		) MAIN="tod.impl.dbgrid.StartNode";;
 	"store"		) MAIN="tod.utils.StoreTODServer";;
 	"replay"	) MAIN="tod.impl.dbgrid.bench.GridReplay";;
 	"query"		) MAIN="tod.impl.dbgrid.bench.GridQuery";;

@@ -52,9 +52,9 @@ public class UniformDBNodeProxy extends DBNodeProxy
 	 */
 	private int itsBufferedEventsCount = 0;
 	
-	public UniformDBNodeProxy(Socket aSocket, int aNodeId, GridMaster aMaster)
+	public UniformDBNodeProxy(Socket aSocket, int aNodeId)
 	{
-		super(aSocket, aNodeId, aMaster);
+		super(aSocket, aNodeId);
 	}
 
 	@Override

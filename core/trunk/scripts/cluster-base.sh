@@ -2,6 +2,8 @@ echo JobID: $JOB_ID - Task ID: $SGE_TASK_ID
 
 source ./common
 
+echo cluster-base - called with $*
+
 if [ $SGE_TASK_ID -eq 1 ] 
 then
 	echo MASTER
@@ -33,7 +35,7 @@ else
 	echo Starting node, connecting to $MASTER_HOST
 	sleep 5s
 	export TASK_ID=$SGE_TASK_ID
-	./start-node.sh $MASTER_HOST
+	./start-node.sh $MASTER_HOST $2
 	
 # 	rm -f $LOCK_FILE
 fi

@@ -22,14 +22,12 @@ package tod.core.transport;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
 
-import tod.core.ILocationRegistrer;
-import tod.core.ILogCollector;
+import tod.agent.DebugFlags;
 import tod.core.bci.NativeAgentPeer;
 
 /**
@@ -39,67 +37,44 @@ import tod.core.bci.NativeAgentPeer;
  * or to wait for incoming connections from applications
  * @author gpothier
  */
-public class LogReceiver extends SocketThread
+public abstract class LogReceiver extends Thread
 {
-	private final ILogCollector itsCollector;
-	private final ILocationRegistrer itsLocationRegistrer;
-	private DataInputStream itsStream;
-	
 	/**
 	 * Name of the host that sends events
 	 */
 	private String itsHostName;
 	
-	/**
-	 * Waits for incoming connections on the specified socket
-	 * @param aCollector The collector to which the events are forwarded.
-	 */
-	public static void server (
-			ILogCollector aCollector,
-			ILocationRegistrer aLocationRegistrer,
-			int aPort) throws IOException
-	{
-		new LogReceiver(aCollector, aLocationRegistrer, new ServerSocket(aPort));
-	}
+	private boolean itsEof = false;
+	
+	private ILogReceiverMonitor itsMonitor = null;
 	
 	/**
-	 * Waits for incoming connections on the specified socket
-	 * @param aCollector The collector to which the events are forwarded.
+	 * Number of commands received.
 	 */
-	public LogReceiver(
-			ILogCollector aCollector,
-			ILocationRegistrer aLocationRegistrer,
-			ServerSocket aServerSocket)
-	{
-		super(aServerSocket);
-		itsCollector = aCollector;
-		itsLocationRegistrer = aLocationRegistrer;
-	}
-
+	private long itsMessageCount = 0;
+	
+	private final InputStream itsInStream;
+	private final OutputStream itsOutStream;
+	
 	/**
 	 * Connects to an already running aplication through the specified socket.
 	 * @param aSocket The socket used to connect.
-	 * @param aCollector The collector to which the events are forwarded.
 	 */
-	public LogReceiver(
-			ILogCollector aCollector,
-			ILocationRegistrer aLocationRegistrer,
-			Socket aSocket)
+	public LogReceiver(InputStream aInStream, OutputStream aOutStream)
 	{
-		super(aSocket);
-		itsCollector = aCollector;
-		itsLocationRegistrer = aLocationRegistrer;
+		this(aInStream, aOutStream, true);
 	}
 	
-	public ILogCollector getCollector()
+	public LogReceiver(InputStream aInStream, OutputStream aOutStream, boolean aStart)
 	{
-		return itsCollector;
+		itsInStream = aInStream;
+		itsOutStream = aOutStream;
+		if (aStart) start();
 	}
 	
-	
-	public ILocationRegistrer getLocationRegistrer()
+	public void setMonitor(ILogReceiverMonitor aMonitor)
 	{
-		return itsLocationRegistrer;
+		itsMonitor = aMonitor;
 	}
 
 	/**
@@ -114,6 +89,12 @@ public class LogReceiver extends SocketThread
 	private synchronized void setHostName(String aHostName)
 	{
 		itsHostName = aHostName;
+		notifyAll();
+	}
+	
+	protected synchronized void eof()
+	{
+		itsEof = true;
 		notifyAll();
 	}
 	
@@ -133,49 +114,92 @@ public class LogReceiver extends SocketThread
 			throw new RuntimeException(e);
 		}
 	}
+	
+	/**
+	 * Waits until the input stream terminates
+	 */
+	public synchronized void waitEof()
+	{
+		try
+		{
+			while (! itsEof) wait();
+		}
+		catch (InterruptedException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	/**
+	 * Returns the total number of messages received by this receiver.
+	 */
+	public long getMessageCount()
+	{
+		return itsMessageCount;
+	}
 
 	@Override
-	protected void disconnected()
+	public void run()
 	{
-		setHostName(null);
+		try
+		{
+			DataInputStream theStream = new DataInputStream(
+					new BufferedInputStream(itsInStream));
+			
+			setHostName(theStream.readUTF());
+			
+			if (itsMonitor != null) itsMonitor.started();
+			
+			while (true)
+			{
+				try
+				{
+					byte theCommand = theStream.readByte();
+					
+					if (theCommand == NativeAgentPeer.INSTRUMENT_CLASS)
+					{
+						throw new RuntimeException();
+//							RemoteInstrumenter.processInstrumentClassCommand(
+//									itsInstrumenter,
+//									itsStream,
+//									theOutputStream,
+//									null);
+					}
+					else
+					{
+						MessageType theType = MessageType.values()[theCommand];
+						readPacket(theStream, theType);
+					}
+					
+					itsMessageCount++;
+					
+					if (itsMonitor != null 
+							&& DebugFlags.RECEIVER_PRINT_COUNTS > 0 
+							&& itsMessageCount % 100000 == 0)
+					{
+						itsMonitor.processedMessages(itsMessageCount);
+					}
+
+				}
+				catch (EOFException e)
+				{
+					System.err.println("LogReceiver: EOF");
+					eof();
+					break;
+				}
+			}
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
-	protected void process(
-			OutputStream aOutputStream, 
-			InputStream aInputStream) 
-			throws IOException
+	protected abstract void readPacket(DataInputStream aStream, MessageType aType) throws IOException;
+	
+	public interface ILogReceiverMonitor
 	{
-		itsStream = new DataInputStream(new BufferedInputStream(aInputStream));
-		
-		if (itsHostName == null)
-		{
-			setHostName(itsStream.readUTF());
-		}
-		
-		while (true)
-		{
-			byte theCommand = itsStream.readByte();
-			
-			if (theCommand == NativeAgentPeer.INSTRUMENT_CLASS)
-			{
-				throw new RuntimeException();
-//				RemoteInstrumenter.processInstrumentClassCommand(
-//						itsInstrumenter,
-//						itsStream,
-//						theOutputStream,
-//						null);
-			}
-			else
-			{
-				MessageType theType = MessageType.values()[theCommand];
-				CollectorPacketReader.readPacket(
-						itsStream, 
-						getCollector(),
-						getLocationRegistrer(),
-						theType);
-			}
-		}
+		public void started();
+		public void processedMessages(long aCount);
 	}
-	
-	
 }

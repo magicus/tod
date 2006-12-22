@@ -207,6 +207,11 @@ public class DebuggerGridConfig
 	 */
 	public static final int QUERY_ITERATOR_BUFFER_SIZE = 10;
 	
+	/**
+	 * Number of children of dispatchers.
+	 */
+	public static final int DISPATCH_BRANCHING_FACTOR = 5;
+	
 	public static final String PARAM_DB_PAGE_BUFFER_SIZE = "page-buffer-size";
 	
 	/**

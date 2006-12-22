@@ -24,8 +24,8 @@ import tod.core.Output;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.IHostInfo;
 import tod.impl.common.EventCollector;
-import tod.impl.dbgrid.dispatcher.EventDispatcher;
-import tod.impl.dbgrid.gridimpl.uniform.UniformEventDispatcher;
+import tod.impl.dbgrid.dispatcher.AbstractEventDispatcher;
+import tod.impl.dbgrid.dispatcher.LeafEventDispatcher;
 import tod.impl.dbgrid.messages.GridArrayWriteEvent;
 import tod.impl.dbgrid.messages.GridBehaviorCallEvent;
 import tod.impl.dbgrid.messages.GridBehaviorExitEvent;
@@ -38,15 +38,14 @@ import tod.impl.dbgrid.messages.MessageType;
 
 /**
  * Event collector for the grid database backend. It handles events from a single
- * hosts, preprocesses them and sends them to the {@link EventDispatcher}.
+ * hosts, preprocesses them and sends them to the {@link AbstractEventDispatcher}.
  * Preprocessing is minimal and only involves packaging.
  * This class is not thread-safe.
  * @author gpothier
  */
 public class GridEventCollector extends EventCollector
 {
-	private final GridMaster itsMaster;
-	private final EventDispatcher itsDispatcher;
+	private final LeafEventDispatcher itsDispatcher;
 	
 	/**
 	 * Number of events received by this collector
@@ -57,9 +56,7 @@ public class GridEventCollector extends EventCollector
 	 * We keep an instance of each kind of event.
 	 * As events are received their attributes are copied to the appropriate
 	 * instance, and the instance is sent to the dispatcher, which
-	 * immediately serializes it.
-	 * Note: this is true only for the uniform grid implementation 
-	 * (see {@link UniformEventDispatcher}).
+	 * should immediately either serializes it or clone it.
 	 */
 	private final GridBehaviorCallEvent itsCallEvent = new GridBehaviorCallEvent();
 	private final GridBehaviorExitEvent itsExitEvent = new GridBehaviorExitEvent();
@@ -71,19 +68,12 @@ public class GridEventCollector extends EventCollector
 	
 	
 	public GridEventCollector(
-			GridMaster aMaster,
 			IHostInfo aHost,
 			ILocationsRepository aLocationsRepository,
-			EventDispatcher aDispatcher)
+			LeafEventDispatcher aDispatcher)
 	{
 		super(aHost, aLocationsRepository);
-		itsMaster = aMaster;
 		itsDispatcher = aDispatcher;
-	}
-
-	public GridMaster getMaster()
-	{
-		return itsMaster;
 	}
 
 	private void dispatch(GridEvent aEvent)

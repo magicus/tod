@@ -46,11 +46,8 @@ public class GridReplay
 		
 		GridMaster theMaster = Fixtures.setupMaster(theRegistry, args);
 		
-		ILogCollector theCollector = theMaster.createCollector(1);
-//		ILogCollector theCollector = new DummyCollector();
-		
 		long t0 = System.currentTimeMillis();
-		long theCount = Fixtures.replay(theFile, theMaster, theCollector);
+		long theCount = Fixtures.replay(theFile, theMaster);
 		long t1 = System.currentTimeMillis();
 		float dt = (t1-t0)/1000f;
 		float theEpS = theCount/dt;
