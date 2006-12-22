@@ -53,7 +53,6 @@ import zz.utils.SimpleAction;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.PropertyListener;
-import zz.utils.ui.ZSplitPane;
 
 public class CFlowView extends LogView
 {
