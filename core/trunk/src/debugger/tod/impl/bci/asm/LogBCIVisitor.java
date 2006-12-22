@@ -61,7 +61,8 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 
 	private boolean itsModified = false;
 	
-	private boolean itsTrace = false;
+	private boolean itsTrace;
+	private boolean itsInterface;
 	
 	private boolean itsOverflow = false;
 	
@@ -144,12 +145,10 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		getLocationPool().registerType(itsTypeId, itsTypeName, itsSupertypeId, theInterfaceIds);
 		
 		// Check if we should trace operations in the class
-		if (! BCIUtils.isInterface(access)
-				&& BCIUtils.acceptClass(aName, itsConfig.getTraceSelector()))
-		{
-			itsTrace = true;
-			markModified();
-		}
+		itsInterface = BCIUtils.isInterface(access);
+		itsTrace = BCIUtils.acceptClass(aName, itsConfig.getTraceSelector());
+		
+		if (! itsInterface && itsTrace) markModified();
 		
 		super.visit(aVersion, access, aName, aSignature, aSuperName, aInterfaces);
 	}
@@ -166,9 +165,9 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			itsInfoCollector.getMethodInfo(itsCurrentMethodIndex++);
 		
 		MethodVisitor mv = super.visitMethod(access, aName, aDesc, aSignature, aExceptions);
-		if (mv != null 
+		if (mv != null
 				&& (access & ACC_NATIVE) == 0
-				&& (access & ACC_ABSTRACT) == 0) 
+				/*&& (access & ACC_ABSTRACT) == 0*/) 
 		{
 			return new InstantiationAnalyserVisitor (
 					new BCIMethodVisitor(mv, theMethodInfo), 
@@ -308,6 +307,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		@Override
 		public void visitCode()
 		{
+			assert ! itsInterface;
 			if (itsTrace && TRACE_ENVELOPPE) itsInstrumenter.insertEntryHooks();
 			super.visitCode();
 		}
