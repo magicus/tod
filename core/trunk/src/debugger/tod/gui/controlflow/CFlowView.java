@@ -22,7 +22,6 @@ package tod.gui.controlflow;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.geom.AffineTransform;
@@ -39,7 +38,6 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.SwingUtilities;
 
 import tod.core.database.browser.ICFlowBrowser;
 import tod.core.database.browser.ILogBrowser;
@@ -55,6 +53,7 @@ import zz.utils.SimpleAction;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.PropertyListener;
+import zz.utils.ui.ZSplitPane;
 
 public class CFlowView extends LogView
 {
@@ -158,9 +157,11 @@ public class CFlowView extends LogView
 
 		// Setup split panes
 		JSplitPane theSplitPane1 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+//		theSplitPane1.setResizeWeight(0.33);
 		theSplitPane1.setLeftComponent(theCFlowPanel);
 		
 		JSplitPane theSplitPane2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		theSplitPane2.setResizeWeight(0.5);
 		theSplitPane2.setLeftComponent(new JScrollPane(itsVariablesPanel));
 		theSplitPane2.setRightComponent(new JScrollPane(itsObjectsPanel));
 		

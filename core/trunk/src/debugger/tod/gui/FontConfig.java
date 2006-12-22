@@ -22,6 +22,6 @@ package tod.gui;
 
 public class FontConfig
 {
-	public static final int HEADER_FONT_SIZE = 20;
+	public static final int HEADER_FONT_SIZE = 16;
 	public static final int FONT_SIZE = 16;
 }
