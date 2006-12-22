@@ -21,6 +21,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.controlflow;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -56,6 +58,8 @@ import zz.utils.properties.PropertyListener;
 
 public class CFlowView extends LogView
 {
+	public static final boolean SHOW_PARENT_FRAMES = false;
+	
 	private CFlowSeed itsSeed;
 	private ICFlowBrowser itsBrowser;
 	private CFlowTreeBuilder itsTreeBuilder;
@@ -134,7 +138,7 @@ public class CFlowView extends LogView
 		itsTreePanel.setTransform(new AffineTransform());
 		itsTreePanel.setRootNode(itsRootNode);
 		
-		JScrollPane theTreeScrollPane = new JScrollPane(itsTreePanel);
+		JScrollPane theTreeScrollPane = new MyScrollPane(itsTreePanel);
 		theTreeScrollPane.setPreferredSize(new Dimension(400, 10));
 		
 		JPanel theCFlowPanel = new JPanel(new BorderLayout());
@@ -159,10 +163,10 @@ public class CFlowView extends LogView
 //		theSplitPane1.setResizeWeight(0.33);
 		theSplitPane1.setLeftComponent(theCFlowPanel);
 		
-		JSplitPane theSplitPane2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		JSplitPane theSplitPane2 = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		theSplitPane2.setResizeWeight(0.5);
-		theSplitPane2.setLeftComponent(new JScrollPane(itsVariablesPanel));
-		theSplitPane2.setRightComponent(new JScrollPane(itsObjectsPanel));
+		theSplitPane2.setLeftComponent(new MyScrollPane(itsVariablesPanel));
+		theSplitPane2.setRightComponent(new MyScrollPane(itsObjectsPanel));
 		
 		theSplitPane1.setRightComponent(theSplitPane2);
 //		theSplitPane1.setRightComponent(new JScrollPane(itsVariablesPanel));
@@ -355,5 +359,14 @@ public class CFlowView extends LogView
 	public boolean isEventSelected(ILogEvent aEvent)
 	{
 		return itsSeed.pSelectedEvent().get() == aEvent;
+	}
+	
+	private static class MyScrollPane extends JScrollPane
+	{
+		private MyScrollPane(Component aView)
+		{
+			super(aView);
+			getViewport().setBackground(GraphicPanel.BACKGROUND_PAINT);
+		}
 	}
 }

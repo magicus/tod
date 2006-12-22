@@ -82,7 +82,9 @@ public class CFlowObjectsBuilder
 			theContainer.pChildren().add(build(aCurrentEvent));
 			
 			IBehaviorCallEvent theParent = aCurrentEvent.getParent();
-			if (theParent == aRootEvent || theParent.getParent().getExecutedBehavior() == null) break;
+			if (! CFlowView.SHOW_PARENT_FRAMES  
+					|| theParent == aRootEvent 
+					|| theParent.getParent().getExecutedBehavior() == null) break;
 			
 			aCurrentEvent = theParent;
 
