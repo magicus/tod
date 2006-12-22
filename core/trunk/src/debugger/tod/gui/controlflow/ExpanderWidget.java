@@ -31,6 +31,7 @@ import zz.csg.api.GraphicObjectContext;
 import zz.csg.impl.AbstractRectangularGraphicObject;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
+import zz.utils.ui.UIUtils;
 
 /**
  * A widget that permits to expand/collapse a section of a tree
@@ -51,11 +52,14 @@ public class ExpanderWidget extends AbstractRectangularGraphicObject
 	
 	private Color itsColor;
 	private double itsThickness;
+
+	private boolean itsEnabled;
 	
-	public ExpanderWidget(Color aColor, double aThickness)
+	public ExpanderWidget(Color aColor, double aThickness, boolean aEnabled)
 	{
 		itsColor = aColor;
 		itsThickness = aThickness;
+		itsEnabled = aEnabled;
 	}
 
 	/**
@@ -69,7 +73,11 @@ public class ExpanderWidget extends AbstractRectangularGraphicObject
 	public void paint(GraphicObjectContext aContext, Graphics2D aGraphics, Area aVisibleArea)
 	{
 		Rectangle2D theBounds = pBounds().get();
-		aGraphics.setColor(itsColor);
+		Color theColor = itsEnabled ? 
+				itsColor 
+				: UIUtils.getLighterColor(itsColor, 0.2f);
+		
+		aGraphics.setColor(theColor);
 		aGraphics.fill(new Rectangle2D.Double(
 				theBounds.getX() + theBounds.getWidth()/2 - itsThickness/2, 
 				theBounds.getY() + 1,
@@ -80,8 +88,12 @@ public class ExpanderWidget extends AbstractRectangularGraphicObject
 	@Override
 	public boolean mousePressed(GraphicObjectContext aContext, MouseEvent aEvent, Point2D aPoint)
 	{
-		pExpanded().set(! pExpanded().get());
-		return true;
+		if (itsEnabled) 
+		{
+			pExpanded().set(! pExpanded().get());
+			return true;
+		}
+		else return false;
 	}
 	
 }

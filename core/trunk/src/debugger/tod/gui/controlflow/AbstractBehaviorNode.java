@@ -84,7 +84,8 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 		
 		itsExpanderWidget = new ExpanderWidget(
 				getEvent().getExitEvent().hasThrown() ? Color.RED : Color.BLUE,
-				4);
+				4,
+				getEvent().hasRealChildren());
 		
 		pChildren().add(itsExpanderWidget);
 		

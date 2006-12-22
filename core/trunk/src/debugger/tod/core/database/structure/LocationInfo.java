@@ -41,7 +41,7 @@ public abstract class LocationInfo implements ILocationInfo, Serializable
 	public LocationInfo(int aId, String aName)
 	{
 		itsId = aId;
-		itsName = aName;
+		setName(aName);
 	}
 	
 	public int getId()

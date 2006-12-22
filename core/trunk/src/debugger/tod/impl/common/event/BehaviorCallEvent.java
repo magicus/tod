@@ -36,6 +36,8 @@ public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEv
 	private IBehaviorInfo itsCalledBehavior;
 	private IBehaviorInfo itsExecutedBehavior;
 	private Object itsTarget;
+	
+	private IBehaviorExitEvent itsExitEvent;
 
 
 	public List<ILogEvent> getChildren()
@@ -46,6 +48,12 @@ public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEv
 	public int getChildrenCount()
 	{
 		return itsChildren == null ? 0 : itsChildren.size();
+	}
+	
+	public boolean hasRealChildren()
+	{
+		if (getChildrenCount() == 0) return false;
+		else return getChildren().get(0) != getExitEvent();
 	}
 
 	public void addChild (Event aEvent)
@@ -132,16 +140,20 @@ public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEv
 
 	public IBehaviorExitEvent getExitEvent()
 	{
-		if (getChildrenCount() > 0)
+		if (itsExitEvent == null)
 		{
-			ILogEvent theLastEvent = getChildren().get(getChildrenCount()-1);
-			if (theLastEvent instanceof IBehaviorExitEvent)
+			if (getChildrenCount() > 0)
 			{
-				return (IBehaviorExitEvent) theLastEvent;
+				ILogEvent theLastEvent = getChildren().get(getChildrenCount()-1);
+				if (theLastEvent instanceof IBehaviorExitEvent)
+				{
+					itsExitEvent = (IBehaviorExitEvent) theLastEvent;
+				}
 			}
+			if (itsExitEvent == null) throw new RuntimeException("Exit event not found");
 		}
 		
-		throw new RuntimeException("Exit event not found");
+		return itsExitEvent;
 	}
 	
 	

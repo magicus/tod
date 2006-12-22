@@ -41,6 +41,12 @@ public abstract class TypeInfo extends LocationInfo implements ITypeInfo
 	}
 	
 	@Override
+	public void setName(String aName)
+	{
+		super.setName(aName.replace('$', '.'));
+	}
+	
+	@Override
 	public String toString()
 	{
 		return "Type ("+getId()+", "+getName()+")";

@@ -42,12 +42,22 @@ public class Hyperlinks
 {
 	public static IRectangularGraphicObject type (IGUIManager aGUIManager, ITypeInfo aType, XFont aFont)
 	{
-		return SVGHyperlink.create(aGUIManager, null, aType.getName(), aFont, Color.BLUE);
+		return SVGHyperlink.create(
+				aGUIManager,
+				null, 
+				aType.getName(), 
+				aFont, 
+				Color.BLUE);
 	}
 	
 	public static IRectangularGraphicObject behavior(IGUIManager aGUIManager, IBehaviorInfo aBehavior, XFont aFont)
 	{
-		return SVGHyperlink.create(aGUIManager, null, aBehavior.getName(), aFont, Color.BLUE);		
+		return SVGHyperlink.create(
+				aGUIManager,
+				null, 
+				aBehavior.getName(),
+				aFont, 
+				Color.BLUE);		
 	}
 	
 	/**

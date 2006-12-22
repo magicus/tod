@@ -270,14 +270,14 @@ public class CFlowView extends LogView
 		
 		itsUpdated = false;
 		
+		// the layout must be ready.
 		itsRootNode.invalidate();
-		itsRootNode.checkValid(); // the layout must be ready.
-		
+		itsRootNode.checkValid(); 
 		itsTreePanel.setShownBounds(null); // TODO: hack to recompute the size.
 		
 		Rectangle2D theNodeBounds = theNode.getBounds(null);
 		Rectangle theBounds = itsTreePanel.localToPixel(null, theNode, theNodeBounds);
-		System.out.println(theBounds);
+		theBounds.width = 10;
 		itsTreePanel.scrollRectToVisible(theBounds);
 	}
 		

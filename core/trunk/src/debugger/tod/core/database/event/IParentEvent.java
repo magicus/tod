@@ -39,6 +39,11 @@ public interface IParentEvent extends ILogEvent
 	 * Returns the number of children of this event.
 	 */
 	public int getChildrenCount();
+	
+	/**
+	 * Indicates if this node has children apart from the exit event.
+	 */
+	public boolean hasRealChildren();
 
 	
 	/**
