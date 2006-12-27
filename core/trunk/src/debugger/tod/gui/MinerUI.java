@@ -21,6 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
@@ -60,7 +61,7 @@ implements ILocationSelectionListener, IGUIManager
 		
 		JPanel theCenterPanel = new JPanel (new BorderLayout());
 		
-		JPanel theNavButtonsPanel = new JPanel();
+		JPanel theNavButtonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
 		
 		theNavButtonsPanel.add (new JButton (itsNavigator.getBackwardAction()));
 		theNavButtonsPanel.add (new JButton (itsNavigator.getForwardAction()));

@@ -32,7 +32,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 {
 	static
 	{
-		System.out.println("EventInterpreter loaded.");
+//		System.out.println("EventInterpreter loaded.");
 	}
 	
 	private ThreadLocal<T> itsThreadInfos = new ThreadLocal<T>();

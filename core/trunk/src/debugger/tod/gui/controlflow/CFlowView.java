@@ -55,6 +55,7 @@ import zz.utils.SimpleAction;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.PropertyListener;
+import zz.utils.ui.UIUtils;
 
 public class CFlowView extends LogView
 {
@@ -96,6 +97,8 @@ public class CFlowView extends LogView
 			update();
 		}
 	};
+
+	private JSplitPane itsSplitPane1;
 	
 	public CFlowView(IGUIManager aGUIManager, ILogBrowser aEventTrace, CFlowSeed aSeed)
 	{
@@ -158,23 +161,23 @@ public class CFlowView extends LogView
 		itsObjectsPanel.setTransform(new AffineTransform());
 		
 
-		// Setup split panes
-		JSplitPane theSplitPane1 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-//		theSplitPane1.setResizeWeight(0.33);
-		theSplitPane1.setLeftComponent(theCFlowPanel);
+		itsSplitPane1 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		itsSplitPane1.setResizeWeight(0.5);
+		itsSplitPane1.setLeftComponent(theCFlowPanel);
 		
 		JSplitPane theSplitPane2 = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		theSplitPane2.setResizeWeight(0.5);
 		theSplitPane2.setLeftComponent(new MyScrollPane(itsVariablesPanel));
 		theSplitPane2.setRightComponent(new MyScrollPane(itsObjectsPanel));
 		
-		theSplitPane1.setRightComponent(theSplitPane2);
+		itsSplitPane1.setRightComponent(theSplitPane2);
 //		theSplitPane1.setRightComponent(new JScrollPane(itsVariablesPanel));
 		
-		add(theSplitPane1, BorderLayout.CENTER);
+		add(itsSplitPane1, BorderLayout.CENTER);
 		
 		update();
 	}
+	
 	
 	private JComponent createToolbar()
 	{
@@ -229,6 +232,12 @@ public class CFlowView extends LogView
 				selectEvent(itsStepper.getCurrentEvent());
 			}
 		}));
+
+		for (int i=0;i<theToolbar.getComponentCount();i++)
+		{
+			((JButton) theToolbar.getComponent(i)).setMargin(UIUtils.NULL_INSETS);
+		}
+	
 		
 		return theToolbar;
 	}
@@ -281,7 +290,14 @@ public class CFlowView extends LogView
 		
 		Rectangle2D theNodeBounds = theNode.getBounds(null);
 		Rectangle theBounds = itsTreePanel.localToPixel(null, theNode, theNodeBounds);
+		
+		// This permits the viewport to be scrolled full left.
+		// Doesn't work for deep cflow...
 		theBounds.width = 10;
+		theBounds.x = 0;
+		theBounds.y -= 10;
+		theBounds.height += 20;
+			
 		itsTreePanel.scrollRectToVisible(theBounds);
 	}
 		
@@ -291,6 +307,8 @@ public class CFlowView extends LogView
 		super.addNotify();
 		itsSeed.pSelectedEvent().addHardListener(itsSelectedEventListener);
 		itsSeed.pRootEvent().addHardListener(itsRootEventListener);
+		
+		itsSplitPane1.setDividerLocation(400);
 		
 		update();
 	}
