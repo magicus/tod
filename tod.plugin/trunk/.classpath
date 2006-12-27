@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry exported="true" kind="lib" path="lib/log4j.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/zz.utils.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/tod-debugger.jar" sourcepath="/TOD/src/debugger"/>
-	<classpathentry exported="true" kind="lib" path="lib/asm-2.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/zz.csg.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/asm-commons-2.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/tod-agent.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/tod-debugger.jar" sourcepath="/TOD/src/debugger"/>
+	<classpathentry exported="true" kind="lib" path="lib/zz.csg.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/zz.utils.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/log4j.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/asm-2.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/asm-commons-2.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/TOD"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/zz.csg"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/zz.utils"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -3,7 +3,7 @@
 <plugin
    id="tod.plugin"
    name="TOD Eclipse Plugin"
-   version="0.1"
+   version="0.2"
    provider-name="DCC - Universidad de Chile"
    class="tod.plugin.TODPlugin">
 
@@ -14,22 +14,7 @@
       <library name="lib/log4j.jar">
          <export name="*"/>
       </library>
-      <library name="lib/zz.utils.jar">
-         <export
-               name="*">
-         </export>
-      </library>
-      <library name="lib/tod-debugger.jar">
-         <export
-               name="*">
-         </export>
-      </library>
       <library name="lib/asm-2.1.jar">
-         <export
-               name="*">
-         </export>
-      </library>
-      <library name="lib/zz.csg.jar">
          <export
                name="*">
          </export>
@@ -39,10 +24,28 @@
                name="*">
          </export>
       </library>
+      <!--
+      <library name="../zz.utils/bin">
+         <export name="*"/>
+      </library>
+      <library name="../TOD/bin">
+         <export name="*"/>
+      </library>
+      <library name="../zz.csg/bin">
+         <export name="*"/>
+      </library>
+      -->
       <library name="lib/tod-agent.jar">
-         <export
-               name="*">
-         </export>
+         <export name="*"/>
+      </library>
+      <library name="lib/tod-debugger.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/zz.csg.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/zz.utils.jar">
+         <export name="*"/>
       </library>
    </runtime>
 
