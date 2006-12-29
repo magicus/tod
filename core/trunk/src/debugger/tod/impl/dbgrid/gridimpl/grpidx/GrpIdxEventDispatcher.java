@@ -32,9 +32,9 @@ import tod.impl.dbgrid.db.EventReorderingBuffer.ReorderingBufferListener;
 import tod.impl.dbgrid.db.RoleIndexSet.RoleTuple;
 import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.dispatch.DBNodeProxy;
-import tod.impl.dbgrid.dispatch.DispatchTreeNodeProxy;
+import tod.impl.dbgrid.dispatch.DispatchNodeProxy;
 import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
-import tod.impl.dbgrid.dispatch.RIConnectable;
+import tod.impl.dbgrid.dispatch.RIDispatchNode;
 import tod.impl.dbgrid.gridimpl.grpidx.GrpIdxDatabaseNode.IndexKind;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.monitoring.AggregationType;
@@ -80,7 +80,7 @@ implements ReorderingBufferListener
 	}
 	
 	@Override
-	protected void addChild(DispatchTreeNodeProxy aProxy)
+	protected void addChild(DispatchNodeProxy aProxy)
 	{
 		if (itsStartedDispatching) 
 			throw new IllegalStateException("Dispatching already started, cannot add new node.");
@@ -89,8 +89,8 @@ implements ReorderingBufferListener
 	}
 	
 	@Override
-	protected DispatchTreeNodeProxy createProxy(
-			RIConnectable aConnectable, 
+	protected DispatchNodeProxy createProxy(
+			RIDispatchNode aConnectable, 
 			Socket aSocket, 
 			String aId)
 	{

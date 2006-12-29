@@ -31,7 +31,7 @@ import tod.impl.dbgrid.messages.GridEvent;
  * when there are enough, or after a certain time.
  * @author gpothier
  */
-public abstract class DBNodeProxy extends DispatchTreeNodeProxy
+public abstract class DBNodeProxy extends DispatchNodeProxy
 {
 	private long itsEventsCount = 0;
 	private long itsFirstTimestamp = 0;
@@ -39,7 +39,7 @@ public abstract class DBNodeProxy extends DispatchTreeNodeProxy
 
 	private int itsNodeIndex;
 	
-	public DBNodeProxy(RIConnectable aConnectable, Socket aSocket, String aNodeId)
+	public DBNodeProxy(RIDispatchNode aConnectable, Socket aSocket, String aNodeId)
 	{
 		super (aConnectable, aSocket, aNodeId);
 		itsNodeIndex = Integer.parseInt(aNodeId.substring(3));

@@ -33,7 +33,7 @@ import zz.utils.net.Server.ServerAdress;
  * for queries, not for event storage.
  * @author gpothier
  */
-public interface RIDatabaseNode extends RIConnectable
+public interface RIDatabaseNode extends RIDispatchNode
 {
 	/**
 	 * Creates a new event iterator for the given condition.

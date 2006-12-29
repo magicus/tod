@@ -27,11 +27,11 @@ import java.net.Socket;
 import tod.core.transport.MessageType;
 import zz.utils.Utils;
 
-public class DispatcherProxy extends DispatchTreeNodeProxy
+public class DispatcherProxy extends DispatchNodeProxy
 {
 	private byte[] itsBuffer = new byte[1024];
 	
-	public DispatcherProxy(RIConnectable aConnectable, Socket aSocket, String aNodeId)
+	public DispatcherProxy(RIDispatchNode aConnectable, Socket aSocket, String aNodeId)
 	{
 		super(aConnectable, aSocket, aNodeId);
 	}

@@ -54,7 +54,7 @@ import tod.impl.dbgrid.db.NodeRejectedException;
 import tod.impl.dbgrid.dispatch.AbstractEventDispatcher;
 import tod.impl.dbgrid.dispatch.DBNodeProxy;
 import tod.impl.dbgrid.dispatch.InternalEventDispatcher;
-import tod.impl.dbgrid.dispatch.RIConnectable;
+import tod.impl.dbgrid.dispatch.RIDispatchNode;
 import tod.impl.dbgrid.dispatch.RIDatabaseNode;
 import tod.impl.dbgrid.dispatch.RIEventDispatcher;
 import tod.impl.dbgrid.dispatch.RIInternalDispatcher;
@@ -389,7 +389,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		return theRole;
 	}
 
-	public synchronized String registerNode(RIConnectable aNode, String aHostname) throws NodeRejectedException
+	public synchronized String registerNode(RIDispatchNode aNode, String aHostname) throws NodeRejectedException
 	{
 		if (aNode instanceof RIDatabaseNode)
 		{

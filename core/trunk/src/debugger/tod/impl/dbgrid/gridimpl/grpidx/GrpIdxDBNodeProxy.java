@@ -25,7 +25,7 @@ import java.net.Socket;
 
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
-import tod.impl.dbgrid.dispatch.RIConnectable;
+import tod.impl.dbgrid.dispatch.RIDispatchNode;
 import tod.impl.dbgrid.gridimpl.grpidx.GrpIdxDatabaseNode.IndexKind;
 import tod.impl.dbgrid.gridimpl.uniform.UniformDBNodeProxy;
 import tod.utils.NativeStream;
@@ -42,7 +42,7 @@ public class GrpIdxDBNodeProxy extends UniformDBNodeProxy
 	private int itsBufferedIndexCount = 0;
 
 	public GrpIdxDBNodeProxy(
-			RIConnectable aConnectable, 
+			RIDispatchNode aConnectable, 
 			Socket aSocket, 
 			String aNodeId)
 	{

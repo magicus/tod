@@ -24,9 +24,9 @@ import java.net.Socket;
 import java.rmi.RemoteException;
 
 import tod.core.database.browser.ILocationStore;
-import tod.impl.dbgrid.dispatch.DispatchTreeNodeProxy;
+import tod.impl.dbgrid.dispatch.DispatchNodeProxy;
 import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
-import tod.impl.dbgrid.dispatch.RIConnectable;
+import tod.impl.dbgrid.dispatch.RIDispatchNode;
 import tod.impl.dbgrid.messages.GridEvent;
 
 /**
@@ -44,8 +44,8 @@ public class UniformEventDispatcher extends LeafEventDispatcher
 	}
 	
 	@Override
-	protected DispatchTreeNodeProxy createProxy(
-			RIConnectable aConnectable,
+	protected DispatchNodeProxy createProxy(
+			RIDispatchNode aConnectable,
 			Socket aSocket, 
 			String aId)
 	{

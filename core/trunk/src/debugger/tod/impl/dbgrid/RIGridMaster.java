@@ -30,7 +30,7 @@ import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
 import tod.impl.dbgrid.db.NodeRejectedException;
 import tod.impl.dbgrid.dispatch.DatabaseNode;
-import tod.impl.dbgrid.dispatch.RIConnectable;
+import tod.impl.dbgrid.dispatch.RIDispatchNode;
 import tod.impl.dbgrid.dispatch.RIDatabaseNode;
 import tod.impl.dbgrid.dispatch.RIEventDispatcher;
 import tod.impl.dbgrid.monitoring.Monitor.KeyMonitorData;
@@ -75,7 +75,7 @@ public interface RIGridMaster extends Remote
 	 * @throws NodeRejectedException Thrown if the master refuses the new node
 	 * @return The id assigned to the node.
 	 */
-	public String registerNode(RIConnectable aNode, String aHostname) 
+	public String registerNode(RIDispatchNode aNode, String aHostname) 
 		throws RemoteException, NodeRejectedException;
 	
 	/**

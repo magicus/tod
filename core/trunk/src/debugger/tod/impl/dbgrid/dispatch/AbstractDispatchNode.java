@@ -51,7 +51,7 @@ import zz.utils.net.Server.ServerAdress;
  * @author gpothier
  */
 public abstract class AbstractDispatchNode extends UnicastRemoteObject 
-implements RIConnectable
+implements RIDispatchNode
 {
 	/**
 	 * Id of this node in the system

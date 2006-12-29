@@ -73,13 +73,13 @@ implements RIDatabaseNode
 	{
 		switch (aCommand)
 		{
-		case DispatchTreeNodeProxy.CMD_FLUSH:
+		case DispatchNodeProxy.CMD_FLUSH:
 			int theCount = flush();
 			aOutStream.writeInt(theCount);
 			aOutStream.flush();
 			break;
 			
-		case DispatchTreeNodeProxy.CMD_CLEAR:
+		case DispatchNodeProxy.CMD_CLEAR:
 			clear();
 			aOutStream.writeInt(1);
 			aOutStream.flush();

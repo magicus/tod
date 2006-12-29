@@ -26,8 +26,8 @@ import java.net.Socket;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.dispatch.DBNodeProxy;
 import tod.impl.dbgrid.dispatch.DatabaseNode;
-import tod.impl.dbgrid.dispatch.DispatchTreeNodeProxy;
-import tod.impl.dbgrid.dispatch.RIConnectable;
+import tod.impl.dbgrid.dispatch.DispatchNodeProxy;
+import tod.impl.dbgrid.dispatch.RIDispatchNode;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.utils.NativeStream;
 import zz.utils.bit.BitStruct;
@@ -54,7 +54,7 @@ public class UniformDBNodeProxy extends DBNodeProxy
 	private int itsBufferedEventsCount = 0;
 	
 	public UniformDBNodeProxy(
-			RIConnectable aConnectable,
+			RIDispatchNode aConnectable,
 			Socket aSocket, 
 			String aId)
 	{
@@ -107,7 +107,7 @@ public class UniformDBNodeProxy extends DBNodeProxy
 		{
 			sendEventBuffer();
 			
-			getOutStream().writeByte(DispatchTreeNodeProxy.CMD_FLUSH);
+			getOutStream().writeByte(DispatchNodeProxy.CMD_FLUSH);
 			getOutStream().flush();
 			
 			int theCount = getInStream().readInt();
@@ -127,7 +127,7 @@ public class UniformDBNodeProxy extends DBNodeProxy
 		{
 			sendEventBuffer();
 			
-			getOutStream().writeByte(DispatchTreeNodeProxy.CMD_CLEAR);
+			getOutStream().writeByte(DispatchNodeProxy.CMD_CLEAR);
 			getOutStream().flush();
 			
 			int theResult = getInStream().readInt();

@@ -30,7 +30,7 @@ import zz.utils.net.Server.ServerAdress;
  * This interface is not used to send event data, only for control.
  * @author gpothier
  */
-public interface RIEventDispatcher extends RIConnectable
+public interface RIEventDispatcher extends RIDispatchNode
 {
 	/**
 	 * Returns the adress on which this dispatcher is accepting children

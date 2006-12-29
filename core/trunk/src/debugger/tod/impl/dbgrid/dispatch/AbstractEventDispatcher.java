@@ -54,7 +54,7 @@ implements RIEventDispatcher
 {
 	private MyServer itsServer;
 	
-	private List<DispatchTreeNodeProxy> itsChildren = new ArrayList<DispatchTreeNodeProxy>();
+	private List<DispatchNodeProxy> itsChildren = new ArrayList<DispatchNodeProxy>();
 
 	/**
 	 * This field is set when the master detects an exception in a node.
@@ -98,9 +98,9 @@ implements RIEventDispatcher
 			String theId = theStream.readUTF();
 			
 			Registry theRegistry = LocateRegistry.getRegistry(DebuggerGridConfig.MASTER_HOST);
-			RIConnectable theConnectable = (RIConnectable) theRegistry.lookup(theId);
+			RIDispatchNode theConnectable = (RIDispatchNode) theRegistry.lookup(theId);
 
-			DispatchTreeNodeProxy theProxy = createProxy(theConnectable, aSocket, theId);
+			DispatchNodeProxy theProxy = createProxy(theConnectable, aSocket, theId);
 			addChild(theProxy);
 			System.out.println("Dispatcher accept node (socket): "+theId);
 		}
@@ -111,15 +111,15 @@ implements RIEventDispatcher
 	}
 	
 	/**
-	 * Sets up the {@link DispatchTreeNodeProxy} that handles the connection
+	 * Sets up the {@link DispatchNodeProxy} that handles the connection
 	 * with a given node.
 	 * @param aConnectable The node handled by this proxy
 	 * @param aSocket The socket through which the proxy should
 	 * communicate with the node.
 	 * @param aId The id of the node.
 	 */
-	protected abstract DispatchTreeNodeProxy createProxy(
-			RIConnectable aConnectable,
+	protected abstract DispatchNodeProxy createProxy(
+			RIDispatchNode aConnectable,
 			Socket aSocket, 
 			String aId);
 
@@ -129,12 +129,12 @@ implements RIEventDispatcher
 		return itsServer.getAdress();
 	}
 	
-	protected void addChild(DispatchTreeNodeProxy aProxy)
+	protected void addChild(DispatchNodeProxy aProxy)
 	{
 		itsChildren.add(aProxy);
 	}
 	
-	protected DispatchTreeNodeProxy getChild(int aIndex)
+	protected DispatchNodeProxy getChild(int aIndex)
 	{
 		return itsChildren.get(aIndex);
 	}
@@ -144,7 +144,7 @@ implements RIEventDispatcher
 		return itsChildren.size();
 	}
 	
-	protected Iterable<DispatchTreeNodeProxy> getChildren()
+	protected Iterable<DispatchNodeProxy> getChildren()
 	{
 		return itsChildren;
 	}
@@ -167,13 +167,13 @@ implements RIEventDispatcher
 	 * complete the task.
 	 * @return The result returned by each node.
 	 */
-	private <T> List<T> fork(final Task<DispatchTreeNodeProxy, T> aTask)
+	private <T> List<T> fork(final Task<DispatchNodeProxy, T> aTask)
 	{
 		// TODO: maybe use something else than Future...
 		List<Future<T>> theFutures = new ArrayList<Future<T>>();
-		for (DispatchTreeNodeProxy theProxy : itsChildren)
+		for (DispatchNodeProxy theProxy : itsChildren)
 		{
-			final DispatchTreeNodeProxy theProxy0 = theProxy;
+			final DispatchNodeProxy theProxy0 = theProxy;
 			theFutures.add (new Future<T>()
 			{
 				@Override
@@ -197,8 +197,8 @@ implements RIEventDispatcher
 	{
 		System.out.println("Event dispatcher: clearing...");
 		
-		fork(new Task<DispatchTreeNodeProxy, Object>() {
-			public Object run(DispatchTreeNodeProxy aProxy)
+		fork(new Task<DispatchNodeProxy, Object>() {
+			public Object run(DispatchNodeProxy aProxy)
 			{
 				aProxy.clear();
 				return null;
@@ -216,8 +216,8 @@ implements RIEventDispatcher
 	{
 		System.out.println("Event dispatcher: flushing...");
 
-		List<Integer> theResults = fork(new Task<DispatchTreeNodeProxy, Integer>() {
-			public Integer run(DispatchTreeNodeProxy aProxy)
+		List<Integer> theResults = fork(new Task<DispatchNodeProxy, Integer>() {
+			public Integer run(DispatchNodeProxy aProxy)
 			{
 				return aProxy.flush();
 			}

@@ -30,7 +30,7 @@ import java.net.Socket;
  * Proxy for nodes in the dispatching tree (dispatchers or database nodes)
  * @author gpothier
  */
-public abstract class DispatchTreeNodeProxy
+public abstract class DispatchNodeProxy
 {
 	/**
 	 * This command flushes all buffered events and indexes.
@@ -48,15 +48,15 @@ public abstract class DispatchTreeNodeProxy
 	 */
 	public static final byte CMD_CLEAR = 102;
 	
-	private RIConnectable itsConnectable;
+	private RIDispatchNode itsConnectable;
 	
 	private final DataOutputStream itsOutStream;
 	private final DataInputStream itsInStream;
 
 	private final String itsNodeId;
 	
-	public DispatchTreeNodeProxy(
-			RIConnectable aConnectable, 
+	public DispatchNodeProxy(
+			RIDispatchNode aConnectable, 
 			Socket aSocket, 
 			String aNodeId)
 	{
@@ -80,7 +80,7 @@ public abstract class DispatchTreeNodeProxy
 		return itsNodeId;
 	}
 
-	public RIConnectable getConnectable()
+	public RIDispatchNode getConnectable()
 	{
 		return itsConnectable;
 	}

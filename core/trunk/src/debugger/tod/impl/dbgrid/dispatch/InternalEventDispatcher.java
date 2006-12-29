@@ -67,8 +67,8 @@ implements RIInternalDispatcher
 	}
 
 	@Override
-	protected DispatchTreeNodeProxy createProxy(
-			RIConnectable aConnectable,
+	protected DispatchNodeProxy createProxy(
+			RIDispatchNode aConnectable,
 			Socket aSocket, 
 			String aId)
 	{
@@ -197,7 +197,7 @@ implements RIInternalDispatcher
 		{
 			try
 			{
-				for (DispatchTreeNodeProxy theProxy : getChildren())
+				for (DispatchNodeProxy theProxy : getChildren())
 				{
 					CollectorPacketWriter.sendRegisterBehavior(
 							theProxy.getOutStream(), 
@@ -219,7 +219,7 @@ implements RIInternalDispatcher
 		{
 			try
 			{
-				for (DispatchTreeNodeProxy theProxy : getChildren())
+				for (DispatchNodeProxy theProxy : getChildren())
 				{
 					CollectorPacketWriter.sendRegisterBehaviorAttributes(
 							theProxy.getOutStream(),
@@ -238,7 +238,7 @@ implements RIInternalDispatcher
 		{
 			try
 			{
-				for (DispatchTreeNodeProxy theProxy : getChildren())
+				for (DispatchNodeProxy theProxy : getChildren())
 				{
 					CollectorPacketWriter.sendRegisterField(
 							theProxy.getOutStream(),
@@ -257,7 +257,7 @@ implements RIInternalDispatcher
 		{
 			try
 			{
-				for (DispatchTreeNodeProxy theProxy : getChildren())
+				for (DispatchNodeProxy theProxy : getChildren())
 				{
 					CollectorPacketWriter.sendRegisterFile(
 							theProxy.getOutStream(),
@@ -275,7 +275,7 @@ implements RIInternalDispatcher
 		{
 			try
 			{
-				for (DispatchTreeNodeProxy theProxy : getChildren())
+				for (DispatchNodeProxy theProxy : getChildren())
 				{
 					CollectorPacketWriter.sendRegisterType(
 							theProxy.getOutStream(), 

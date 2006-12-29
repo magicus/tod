@@ -26,10 +26,10 @@ import java.rmi.RemoteException;
 import zz.utils.net.Server.ServerAdress;
 
 /**
- * Remote interface for connectable parts of the dispatching tree.
+ * Remote interface for dispatch nodes (dispatchers and db nodes)
  * @author gpothier
  */
-public interface RIConnectable extends Remote
+public interface RIDispatchNode extends Remote
 {
 	/**
 	 * Returns the id of this node
