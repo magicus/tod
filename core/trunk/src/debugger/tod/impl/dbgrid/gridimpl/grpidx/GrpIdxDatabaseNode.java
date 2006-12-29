@@ -37,13 +37,13 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 
 import tod.impl.dbgrid.DebuggerGridConfig;
-import tod.impl.dbgrid.dbnode.Indexes;
-import tod.impl.dbgrid.dbnode.RoleIndexSet;
-import tod.impl.dbgrid.dbnode.StdIndexSet;
-import tod.impl.dbgrid.dbnode.RoleIndexSet.RoleTuple;
-import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
-import tod.impl.dbgrid.dbnode.file.IndexTuple;
-import tod.impl.dbgrid.dbnode.file.IndexTupleCodec;
+import tod.impl.dbgrid.db.Indexes;
+import tod.impl.dbgrid.db.RoleIndexSet;
+import tod.impl.dbgrid.db.StdIndexSet;
+import tod.impl.dbgrid.db.RoleIndexSet.RoleTuple;
+import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
+import tod.impl.dbgrid.db.file.IndexTuple;
+import tod.impl.dbgrid.db.file.IndexTupleCodec;
 import tod.impl.dbgrid.gridimpl.AbstractEventDatabase;
 import tod.impl.dbgrid.gridimpl.uniform.UniformDatabaseNode;
 import tod.impl.dbgrid.messages.MessageType;
@@ -200,7 +200,9 @@ public class GrpIdxDatabaseNode extends UniformDatabaseNode
 	@Override
 	protected AbstractEventDatabase createDatabase(File aFile)
 	{
-		return new GrpIdxEventDatabase(getNodeId(), aFile);
+		int theNodeIndex = Integer.parseInt(getNodeId().substring(3));
+
+		return new GrpIdxEventDatabase(theNodeIndex, aFile);
 	}
 
 	@Override

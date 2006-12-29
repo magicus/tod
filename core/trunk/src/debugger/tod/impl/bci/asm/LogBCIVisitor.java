@@ -306,7 +306,8 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		@Override
 		public void visitCode()
 		{
-			assert ! itsInterface;
+			// Note: this method can be called if the currently visited type
+			// is an interface (<clinit>).
 			if (itsTrace && TRACE_ENVELOPPE) itsInstrumenter.insertEntryHooks();
 			super.visitCode();
 		}

@@ -32,6 +32,7 @@ import java.io.IOException;
 import tod.core.BehaviourKind;
 import tod.core.ILocationRegistrer;
 import tod.core.database.browser.ILocationsRepository;
+import tod.core.database.structure.ILocationInfo;
 import tod.core.transport.CollectorPacketReader;
 import tod.core.transport.CollectorPacketWriter;
 

@@ -24,9 +24,10 @@ import java.io.IOException;
 import java.net.Socket;
 
 import tod.impl.dbgrid.DebuggerGridConfig;
-import tod.impl.dbgrid.GridMaster;
-import tod.impl.dbgrid.dbnode.DatabaseNode;
-import tod.impl.dbgrid.dispatcher.DBNodeProxy;
+import tod.impl.dbgrid.dispatch.DBNodeProxy;
+import tod.impl.dbgrid.dispatch.DatabaseNode;
+import tod.impl.dbgrid.dispatch.DispatchTreeNodeProxy;
+import tod.impl.dbgrid.dispatch.RIConnectable;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.utils.NativeStream;
 import zz.utils.bit.BitStruct;
@@ -52,9 +53,12 @@ public class UniformDBNodeProxy extends DBNodeProxy
 	 */
 	private int itsBufferedEventsCount = 0;
 	
-	public UniformDBNodeProxy(Socket aSocket, int aNodeId)
+	public UniformDBNodeProxy(
+			RIConnectable aConnectable,
+			Socket aSocket, 
+			String aId)
 	{
-		super(aSocket, aNodeId);
+		super(aConnectable, aSocket, aId);
 	}
 
 	@Override
@@ -97,17 +101,19 @@ public class UniformDBNodeProxy extends DBNodeProxy
 		}
 	}
 	
-	public void flush()
+	public int flush()
 	{
 		try
 		{
 			sendEventBuffer();
 			
-			getOutStream().writeByte(UniformDatabaseNode.CMD_FLUSH);
+			getOutStream().writeByte(DispatchTreeNodeProxy.CMD_FLUSH);
 			getOutStream().flush();
 			
 			int theCount = getInStream().readInt();
 			System.out.println("DBNodeProxy: database node flushed "+theCount+" events.");
+			
+			return theCount;
 		}
 		catch (IOException e)
 		{
@@ -121,7 +127,7 @@ public class UniformDBNodeProxy extends DBNodeProxy
 		{
 			sendEventBuffer();
 			
-			getOutStream().writeByte(UniformDatabaseNode.CMD_CLEAR);
+			getOutStream().writeByte(DispatchTreeNodeProxy.CMD_CLEAR);
 			getOutStream().flush();
 			
 			int theResult = getInStream().readInt();

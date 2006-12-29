@@ -20,9 +20,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.gridimpl;
 
+import tod.core.database.browser.ILocationStore;
 import tod.impl.dbgrid.GridMaster;
-import tod.impl.dbgrid.dbnode.DatabaseNode;
-import tod.impl.dbgrid.dispatcher.LeafEventDispatcher;
+import tod.impl.dbgrid.dispatch.DatabaseNode;
+import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
 
 /**
  * Factory used to obtain the implementations of grid elements
@@ -31,6 +32,12 @@ import tod.impl.dbgrid.dispatcher.LeafEventDispatcher;
  */
 public interface IGridImplementationFactory
 {
-	public LeafEventDispatcher createLeafDispatcher(boolean aConnectToMaster);
+	/**
+	 * Creates a new leaf dispatcher for this grid implementation.
+	 */
+	public LeafEventDispatcher createLeafDispatcher(
+			boolean aConnectToMaster, 
+			ILocationStore aLocationStore);
+	
 	public DatabaseNode createNode(boolean aConnectToMaster);
 }

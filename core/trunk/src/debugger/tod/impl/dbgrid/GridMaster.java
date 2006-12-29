@@ -39,6 +39,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import tod.agent.DebugFlags;
 import tod.core.bci.IInstrumenter;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILocationStore;
@@ -49,15 +50,17 @@ import tod.core.server.TODServer;
 import tod.core.transport.LogReceiver;
 import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
-import tod.impl.dbgrid.dbnode.NodeRejectedException;
-import tod.impl.dbgrid.dbnode.RIDatabaseNode;
-import tod.impl.dbgrid.dispatcher.AbstractEventDispatcher;
-import tod.impl.dbgrid.dispatcher.DBNodeProxy;
-import tod.impl.dbgrid.dispatcher.InternalEventDispatcher;
-import tod.impl.dbgrid.dispatcher.RIEventDispatcher;
+import tod.impl.dbgrid.db.NodeRejectedException;
+import tod.impl.dbgrid.dispatch.AbstractEventDispatcher;
+import tod.impl.dbgrid.dispatch.DBNodeProxy;
+import tod.impl.dbgrid.dispatch.InternalEventDispatcher;
+import tod.impl.dbgrid.dispatch.RIConnectable;
+import tod.impl.dbgrid.dispatch.RIDatabaseNode;
+import tod.impl.dbgrid.dispatch.RIEventDispatcher;
+import tod.impl.dbgrid.dispatch.RIInternalDispatcher;
+import tod.impl.dbgrid.dispatch.RILeafDispatcher;
 import tod.impl.dbgrid.gridimpl.GridImpl;
 import tod.impl.dbgrid.gridimpl.IGridImplementationFactory;
-import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.utils.remote.RILocationsRepository;
@@ -106,11 +109,30 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	private int itsExpectedLeafDispatchers;
 	private int itsExpectedInternalDispatchers;
 	
+	/**
+	 * Pre-registered database nodes
+	 * (see {@link #getRoleForNode(String)}).
+	 */
+	private int itsPreNodes;
+	private int itsPreLeafDispatchers;
+	private int itsPreInternalDispatchers;
+	
 	private Set<String> itsNodeHosts = new HashSet<String>();
+	
+	/**
+	 * We maintain a separate set of host names for pre-registration.
+	 * This can probably be improved...
+	 */
+	private Set<String> itsPreNodeHosts = new HashSet<String>();
 	
 	private ThreadHostRegisterer itsRegisterer = new ThreadHostRegisterer();
 
 	
+	/**
+	 * Initializes a grid master. After calling the constructor, the
+	 * {@link #waitReady()} method should be called to wait for the nodes
+	 * to connect.
+	 */
 	public GridMaster(
 			TODConfig aConfig, 
 			ILocationStore aLocationStore, 
@@ -122,7 +144,11 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		
 		try
 		{
-			if (aExpectedNodes > 0) itsNodeHosts.add(InetAddress.getLocalHost().getHostName());
+			if (aExpectedNodes > 0) 
+			{
+				itsNodeHosts.add(InetAddress.getLocalHost().getHostName());
+				itsPreNodeHosts.add(InetAddress.getLocalHost().getHostName());
+			}
 		}
 		catch (UnknownHostException e)
 		{
@@ -130,11 +156,16 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		}
 		
 		itsLocationStore = aLocationStore;
+		
 		itsRemoteLocationsRepository = new RemoteLocationsRepository(itsLocationStore);
-		itsExpectedNodes = aExpectedNodes;
-		DispatchTreeStructure theStructure = DispatchTreeStructure.compute(itsExpectedNodes);
-		itsExpectedInternalDispatchers = theStructure.internalNodes;
-		itsExpectedLeafDispatchers = theStructure.leafNodes;
+//		itsExpectedNodes = aExpectedNodes;
+//		DispatchTreeStructure theStructure = DispatchTreeStructure.compute(itsExpectedNodes);
+//		itsExpectedInternalDispatchers = theStructure.internalNodes;
+//		itsExpectedLeafDispatchers = theStructure.leafNodes;
+		
+		itsExpectedNodes = 1;
+		itsExpectedLeafDispatchers = 1;
+		itsExpectedInternalDispatchers = 0;
 	}
 	
 	/**
@@ -147,7 +178,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	}
 	
 	/**
-	 * Waits until all nodes and dispatchers are properly connected
+	 * Waits until all nodes and dispatchers are properly connected.
 	 */
 	public void waitReady()
 	{
@@ -170,12 +201,14 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			{
 				assert itsExpectedInternalDispatchers == 0;
 				IGridImplementationFactory theFactory = GridImpl.getFactory(itsConfig);
-				itsRootDispatcher = theFactory.createLeafDispatcher(false);
+				itsRootDispatcher = theFactory.createLeafDispatcher(false, itsLocationStore);
 				itsLeafDispatchers.add(itsRootDispatcher);
 			}
 			else
 			{
-				itsRootDispatcher = new InternalEventDispatcher(false);
+				InternalEventDispatcher theDispatcher = new InternalEventDispatcher(false);
+				theDispatcher.forwardLocations(itsLocationStore.getLocations());
+				itsRootDispatcher = theDispatcher;
 			}
 
 			// Queue of nodes that must be connected to a parent.
@@ -220,17 +253,25 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			assert theChildrenQueue.removeLast() == itsRootDispatcher;
 			assert theChildrenQueue.isEmpty();
 
-			// Setup server
-			itsServer = createServer();
-			
-			Timer theTimer = new Timer(true);
-			theTimer.schedule(new DataUpdater(), 5000, 3000);
-
+			ready();
 		}
 		catch (Exception e)
 		{
 			throw new RuntimeException(e);
 		}
+	}
+	
+	/**
+	 * Called when the dispatching tree (dispatchers and db nodes) is set up.
+	 */
+	protected void ready()
+	{
+		// Setup server
+		itsServer = createServer();
+		
+		Timer theTimer = new Timer(true);
+		theTimer.schedule(new DataUpdater(), 5000, 3000);
+
 	}
 	
 	/**
@@ -254,9 +295,10 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		} 
 	}
 	
-	public void pushMonitorData(int aNodeId, MonitorData aData)
+	public void pushMonitorData(String aNodeId, MonitorData aData)
 	{
-		System.out.println("Received monitor data from node #"+aNodeId+"\n"+Monitor.format(aData, false));
+//		System.out.println("Received monitor data from node #"+aNodeId+"\n"+Monitor.format(aData, false));
+		System.out.println("Received monitor data from node #"+aNodeId);
 		fireMonitorData(aNodeId, aData);
 	}
 
@@ -283,7 +325,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 * Fires the {@link RIGridMasterListener#eventsReceived()} message
 	 * to all listeners.
 	 */
-	protected void fireMonitorData(int aNodeId, MonitorData aData) 
+	protected void fireMonitorData(String aNodeId, MonitorData aData) 
 	{
 		try
 		{
@@ -321,44 +363,93 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		}
 	}
 	
-	public synchronized int registerNode(RIDatabaseNode aNode, String aHostname) throws NodeRejectedException
+	public synchronized NodeRole getRoleForNode(String aHostName) 
+	{
+		NodeRole theRole;
+		
+		if (itsPreNodes < itsExpectedNodes 
+				&& (! DebugFlags.GRID_CHECK_NODE_HOST || itsPreNodeHosts.add(aHostName)))
+		{
+			itsPreNodes++;
+			theRole = NodeRole.DATABASE;
+		}
+		else if (itsPreLeafDispatchers < itsExpectedLeafDispatchers)
+		{
+			itsPreLeafDispatchers++;
+			theRole = NodeRole.LEAF_DISPATCHER; 
+		}
+		else if (itsPreInternalDispatchers < itsExpectedInternalDispatchers)
+		{
+			itsPreInternalDispatchers++;
+			theRole = NodeRole.INTERNAL_DISPATCHER;
+		}
+		else theRole = null;
+		
+		System.out.println("Assigned role "+theRole+" to "+aHostName);
+		return theRole;
+	}
+
+	public synchronized String registerNode(RIConnectable aNode, String aHostname) throws NodeRejectedException
+	{
+		if (aNode instanceof RIDatabaseNode)
+		{
+			RIDatabaseNode theDatabaseNode = (RIDatabaseNode) aNode;
+			return registerDatabaseNode(theDatabaseNode, aHostname);
+		}
+		else if (aNode instanceof RILeafDispatcher)
+		{
+			RILeafDispatcher theLeafDispatcher = (RILeafDispatcher) aNode;
+			return registerLeafDispatcher(theLeafDispatcher, aHostname);
+		}
+		else if (aNode instanceof RIInternalDispatcher)
+		{
+			RIInternalDispatcher theInternalDispatcher = (RIInternalDispatcher) aNode;
+			return registerInternalDispatcher(theInternalDispatcher, aHostname);
+		}
+		else throw new RuntimeException("Not handled: "+aNode);
+	}
+	
+	private String registerDatabaseNode(RIDatabaseNode aNode, String aHostname) throws NodeRejectedException
 	{
 		if (itsExpectedNodes > 0 && itsNodes.size() >= itsExpectedNodes) 
 			throw new NodeRejectedException("Maximum number of nodes reached");
 		
-		if (! itsNodeHosts.add(aHostname)) 
+		if (DebugFlags.GRID_CHECK_NODE_HOST && ! itsNodeHosts.add(aHostname)) 
 			throw new NodeRejectedException("Refused node from same host");
 		
 		int theId = itsNodes.size()+1;
 		itsNodes.add(aNode);
 		System.out.println("Registered node (RMI): "+theId+" from "+aHostname);
 		
-		return theId;
+		return "db-"+theId;
 	}
 	
-	public void registerDispatcher(
-			RIEventDispatcher aDispatcher, 
-			String aHostname, 
-			boolean aLeaf) throws NodeRejectedException
+	private String registerLeafDispatcher(
+			RILeafDispatcher aDispatcher, 
+			String aHostname) throws NodeRejectedException
 	{
-		if (aLeaf)
-		{
-			if (itsLeafDispatchers.size() >= itsExpectedLeafDispatchers) 
-				throw new NodeRejectedException("Maximum number of leaf dispatchers reached");
-			
-			int theId = itsLeafDispatchers.size()+1;
-			itsLeafDispatchers.add(aDispatcher);
-			System.out.println("Registered leaf dispatcher (RMI): "+theId+" from "+aHostname);
-		}
-		else
-		{
-			if (itsInternalDispatchers.size() >= itsExpectedInternalDispatchers) 
-				throw new NodeRejectedException("Maximum number of internal dispatchers reached");
-			
-			int theId = itsInternalDispatchers.size()+1;
-			itsInternalDispatchers.add(aDispatcher);
-			System.out.println("Registered internal dispatcher (RMI): "+theId+" from "+aHostname);
-		}
+		if (itsLeafDispatchers.size() >= itsExpectedLeafDispatchers) 
+			throw new NodeRejectedException("Maximum number of leaf dispatchers reached");
+		
+		int theId = itsLeafDispatchers.size()+1;
+		itsLeafDispatchers.add(aDispatcher);
+		System.out.println("Registered leaf dispatcher (RMI): "+theId+" from "+aHostname);
+		
+		return "leaf-"+theId;
+	}
+	
+	private String registerInternalDispatcher(
+			RIEventDispatcher aDispatcher, 
+			String aHostname) throws NodeRejectedException
+	{
+		if (itsInternalDispatchers.size() >= itsExpectedInternalDispatchers) 
+			throw new NodeRejectedException("Maximum number of internal dispatchers reached");
+		
+		int theId = itsInternalDispatchers.size()+1;
+		itsInternalDispatchers.add(aDispatcher);
+		System.out.println("Registered internal dispatcher (RMI): "+theId+" from "+aHostname);
+		
+		return "internal-"+theId;
 	}
 	
 	public synchronized void nodeException(NodeException aException) 
@@ -510,7 +601,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		
 		public MyTODServer(TODConfig aConfig, IInstrumenter aInstrumenter)
 		{
-			super(aConfig, aInstrumenter);
+			super(aConfig, aInstrumenter, itsLocationStore);
 		}
 
 		@Override
@@ -524,10 +615,8 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 				return itsRootDispatcher.createLogReceiver(
 						theHostInfo,
 						GridMaster.this,
-						getLocationRegistrer(),
 						aSocket.getInputStream(),
-						aSocket.getOutputStream(),
-						true);
+						aSocket.getOutputStream(), true);
 			}
 			catch (IOException e)
 			{
@@ -550,7 +639,8 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		
 		public void registerThread(IThreadInfo aThreadInfo)
 		{
-			int theHostId = aThreadInfo.getHost().getId();
+			IHostInfo theHost = aThreadInfo.getHost();
+			int theHostId = theHost != null ? theHost.getId() : 0;
 			long theJVMId = aThreadInfo.getJVMId();
 			Map<Long, IThreadInfo> theHostMap = itsThreadsMap.get(theHostId);
 			if (theHostMap == null)

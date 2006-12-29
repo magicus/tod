@@ -27,9 +27,9 @@ import static tod.impl.dbgrid.messages.ObjectCodec.writeObject;
 import tod.core.database.event.ILogEvent;
 import tod.impl.common.event.ArrayWriteEvent;
 import tod.impl.dbgrid.GridLogBrowser;
-import tod.impl.dbgrid.dbnode.Indexes;
-import tod.impl.dbgrid.dbnode.RoleIndexSet;
-import tod.impl.dbgrid.dbnode.StdIndexSet;
+import tod.impl.dbgrid.db.Indexes;
+import tod.impl.dbgrid.db.RoleIndexSet;
+import tod.impl.dbgrid.db.StdIndexSet;
 import zz.utils.bit.BitStruct;
 
 public class GridArrayWriteEvent extends GridEvent

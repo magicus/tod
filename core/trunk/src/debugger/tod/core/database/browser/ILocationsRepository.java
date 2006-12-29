@@ -22,8 +22,8 @@ package tod.core.database.browser;
 
 import tod.core.ILocationRegistrer.Stats;
 import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.TypeInfo;
 
@@ -45,6 +45,11 @@ public interface ILocationsRepository
 	public ITypeInfo getType(String aName);
 	
 	/**
+	 * Returns all registered types.
+	 */
+	public Iterable<ITypeInfo> getTypes();
+	
+	/**
 	 * Retrieves a field given its id.
 	 */
 	public IFieldInfo getField(int aFieldId);
@@ -56,6 +61,13 @@ public interface ILocationsRepository
 	 * of private fields, the first (closest to specified type) matching field is returned. 
 	 */
 	public IFieldInfo getField(ITypeInfo aType, String aName, boolean aSearchAncestors);
+	
+	/**
+	 * Returns all registered fields.
+	 */
+	public Iterable<IFieldInfo> getFields();
+	
+
 
 	/**
 	 * Retrieves a behavior given its id.
@@ -76,21 +88,16 @@ public interface ILocationsRepository
 	 * Returns the argument types that correspond to the given behavior signature. 
 	 */
 	public ITypeInfo[] getArgumentTypes(String aSignature);
-
+	
 	/**
-	 * Returns all registered types.
+	 * Determines a TOD return type given a method signature
 	 */
-	public Iterable<IClassInfo> getClasses();
+	public TypeInfo getReturnType(String aSignature);
 	
 	/**
 	 * Returns all registered behaviours.
 	 */
 	public Iterable<IBehaviorInfo> getBehaviours();
-	
-	/**
-	 * Returns all registered fields.
-	 */
-	public Iterable<IFieldInfo> getFields();
 	
 	/**
 	 * Returns all registered files.
@@ -101,6 +108,11 @@ public interface ILocationsRepository
 	 * Returns statistics about registered locations
 	 */
 	public Stats getStats();
+	
+	/**
+	 * Returns an iterable over all the locations stored by this repository.
+	 */
+	public Iterable<ILocationInfo> getLocations();
 	
 
 	

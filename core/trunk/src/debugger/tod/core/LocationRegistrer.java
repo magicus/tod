@@ -37,10 +37,13 @@ import tod.core.database.structure.ClassInfo;
 import tod.core.database.structure.FieldInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.PrimitiveTypeInfo;
 import tod.core.database.structure.TypeInfo;
 import tod.core.database.structure.UnknownTypeInfo;
+import zz.utils.IteratorsIterator;
+import zz.utils.Utils;
 /**
  * This class permits to register location ids.
  * @author gpothier
@@ -142,9 +145,6 @@ public class LocationRegistrer implements ILocationStore
 		return new FieldInfo(aId, aTypeInfo, aName);
 	}
 
-	/**
-	 * Determines the TOD argument types given a method signature.
-	 */
 	public TypeInfo[] getArgumentTypes(String aSignature)
 	{
 		Type[] theASMArgumentTypes = Type.getArgumentTypes(aSignature);
@@ -159,10 +159,7 @@ public class LocationRegistrer implements ILocationStore
 		return theArgumentTypes;
 	}
 
-	/**
-	 * Determines a TOD return type given a method signature
-	 */
-	protected TypeInfo getReturnType(String aSignature)
+	public TypeInfo getReturnType(String aSignature)
 	{
 		Type theASMReturnType = Type.getReturnType(aSignature);
 		return getType(theASMReturnType.getClassName());
@@ -186,6 +183,7 @@ public class LocationRegistrer implements ILocationStore
 				aId, 
 				aTypeInfo,
 				aName,
+				aSignature,
 				getArgumentTypes(aSignature),
 				getReturnType(aSignature),
 				aLineNumberTable,
@@ -281,7 +279,7 @@ public class LocationRegistrer implements ILocationStore
 	/**
 	 * Returns all available classes.
 	 */
-	public Iterable getClasses()
+	public Iterable getTypes()
 	{
 		return itsTypes;
 	}
@@ -352,7 +350,21 @@ public class LocationRegistrer implements ILocationStore
 		return null;
 	}
 	
-	
+	public Iterable<ILocationInfo> getLocations()
+	{
+		List<ILocationInfo> theLocations = new ArrayList<ILocationInfo>();
+		
+		for(ITypeInfo theType : itsTypes) 
+			if (theType != null) theLocations.add(theType);
+		
+		for(IFieldInfo theField : itsFields)
+			if (theField != null) theLocations.add(theField);
+		
+		for(IBehaviorInfo theBehavior : itsBehaviors) 
+			if (theBehavior != null) theLocations.add(theBehavior);
+		
+		return theLocations;
+	}
 
 	public Stats getStats()
 	{
@@ -360,47 +372,51 @@ public class LocationRegistrer implements ILocationStore
 	}
 
 	/**
-	 * Returns a new synchronized view of this registrer.
-	 * (only registration methods are synchronized, hence only the {@link ILocationRegistrer}
-	 * interface is returned).
+	 * Returns a new synchronized view of the given registrer.
 	 */
-	public ILocationRegistrer getSynchronizedRegistrer()
+	public static ILocationRegistrer createSynchronizedRegistrer(ILocationRegistrer aRegistrer)
 	{
-		return new SynchronizedRegistrer();
+		return new SynchronizedRegistrer(aRegistrer);
 	}
 	
 	/**
 	 * A wrapper that synchronizes calls to the registering methods.
 	 * @author gpothier
 	 */
-	private class SynchronizedRegistrer implements ILocationRegistrer
+	private static class SynchronizedRegistrer implements ILocationRegistrer
 	{
+		private ILocationRegistrer itsDelegate;
+
+		private SynchronizedRegistrer(ILocationRegistrer aDelegate)
+		{
+			itsDelegate = aDelegate;
+		}
 
 		public synchronized void registerBehavior(BehaviourKind aBehaviourType, int aBehaviourId, int aTypeId,
 				String aBehaviourName, String aSignature)
 		{
-			LocationRegistrer.this.registerBehavior(aBehaviourType, aBehaviourId, aTypeId, aBehaviourName, aSignature);
+			itsDelegate.registerBehavior(aBehaviourType, aBehaviourId, aTypeId, aBehaviourName, aSignature);
 		}
 
 		public synchronized void registerBehaviorAttributes(int aBehaviourId, LineNumberInfo[] aLineNumberTable,
 				LocalVariableInfo[] aLocalVariableTable)
 		{
-			LocationRegistrer.this.registerBehaviorAttributes(aBehaviourId, aLineNumberTable, aLocalVariableTable);
+			itsDelegate.registerBehaviorAttributes(aBehaviourId, aLineNumberTable, aLocalVariableTable);
 		}
 
 		public synchronized void registerField(int aFieldId, int aTypeId, String aFieldName)
 		{
-			LocationRegistrer.this.registerField(aFieldId, aTypeId, aFieldName);
+			itsDelegate.registerField(aFieldId, aTypeId, aFieldName);
 		}
 
 		public synchronized void registerFile(int aFileId, String aFileName)
 		{
-			LocationRegistrer.this.registerFile(aFileId, aFileName);
+			itsDelegate.registerFile(aFileId, aFileName);
 		}
 
 		public synchronized void registerType(int aTypeId, String aTypeName, int aSupertypeId, int[] aInterfaceIds)
 		{
-			LocationRegistrer.this.registerType(aTypeId, aTypeName, aSupertypeId, aInterfaceIds);
+			itsDelegate.registerType(aTypeId, aTypeName, aSupertypeId, aInterfaceIds);
 		}
 		
 	}

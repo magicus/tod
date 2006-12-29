@@ -23,6 +23,7 @@ package tod.core.database.structure;
 import java.util.HashMap;
 import java.util.Map;
 
+import tod.core.ILocationRegistrer;
 import tod.core.database.browser.ILocationsRepository;
 
 public class ClassInfo extends TypeInfo implements IClassInfo
@@ -154,5 +155,25 @@ public class ClassInfo extends TypeInfo implements IClassInfo
 	public String toString()
 	{
 		return "Class ("+getId()+", "+getName()+")";
+	}
+	
+	public void register(ILocationRegistrer aRegistrer)
+	{
+		int theInterfaceCount = getInterfaces() != null ?
+				getInterfaces().length
+				: 0;
+				
+		int[] theInterfaceIds = new int[theInterfaceCount];
+				    
+		for(int i=0;i<theInterfaceCount;i++)
+		{
+			theInterfaceIds[i] = getInterfaces()[i].getId();
+		}
+		
+		aRegistrer.registerType(
+				getId(), 
+				getName(), 
+				getSupertype() != null ? getSupertype().getId() : 0, 
+				theInterfaceIds);
 	}
 }

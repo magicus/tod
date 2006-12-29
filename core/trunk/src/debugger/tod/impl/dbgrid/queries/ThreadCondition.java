@@ -22,10 +22,10 @@ package tod.impl.dbgrid.queries;
 
 
 import tod.impl.dbgrid.BidiIterator;
-import tod.impl.dbgrid.dbnode.EventsCounter;
-import tod.impl.dbgrid.dbnode.HierarchicalIndex;
-import tod.impl.dbgrid.dbnode.Indexes;
-import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
+import tod.impl.dbgrid.db.EventsCounter;
+import tod.impl.dbgrid.db.HierarchicalIndex;
+import tod.impl.dbgrid.db.Indexes;
+import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.messages.GridEvent;
 
 /**

@@ -28,11 +28,11 @@ import java.rmi.RemoteException;
 
 import tod.agent.DebugFlags;
 import tod.impl.dbgrid.BidiIterator;
-import tod.impl.dbgrid.dbnode.EventList;
-import tod.impl.dbgrid.dbnode.Indexes;
-import tod.impl.dbgrid.dbnode.RINodeEventIterator;
-import tod.impl.dbgrid.dbnode.file.HardPagedFile;
-import tod.impl.dbgrid.dbnode.file.IndexTuple;
+import tod.impl.dbgrid.db.EventList;
+import tod.impl.dbgrid.db.Indexes;
+import tod.impl.dbgrid.db.RINodeEventIterator;
+import tod.impl.dbgrid.db.file.HardPagedFile;
+import tod.impl.dbgrid.db.file.IndexTuple;
 import tod.impl.dbgrid.gridimpl.AbstractEventDatabase;
 import tod.impl.dbgrid.gridimpl.grpidx.GrpIdxDatabaseNode.IndexKind;
 import tod.impl.dbgrid.messages.GridEvent;

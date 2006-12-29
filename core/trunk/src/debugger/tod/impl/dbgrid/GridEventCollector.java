@@ -24,8 +24,8 @@ import tod.core.Output;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.IHostInfo;
 import tod.impl.common.EventCollector;
-import tod.impl.dbgrid.dispatcher.AbstractEventDispatcher;
-import tod.impl.dbgrid.dispatcher.LeafEventDispatcher;
+import tod.impl.dbgrid.dispatch.AbstractEventDispatcher;
+import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
 import tod.impl.dbgrid.messages.GridArrayWriteEvent;
 import tod.impl.dbgrid.messages.GridBehaviorCallEvent;
 import tod.impl.dbgrid.messages.GridBehaviorExitEvent;
@@ -89,6 +89,12 @@ public class GridEventCollector extends EventCollector
 	{
 		return itsEventsCount;
 	}
+	
+	private int getHostId()
+	{
+		// TODO: fix host handling.
+		return -1;
+	}
 
 	@Override
 	protected void exception(
@@ -101,7 +107,7 @@ public class GridEventCollector extends EventCollector
 			Object aException)
 	{
 		itsExceptionEvent.set(
-				getHost().getId(),
+				getHostId(),
 				aThreadId, 
 				aDepth,
 				aTimestamp,
@@ -125,7 +131,7 @@ public class GridEventCollector extends EventCollector
 			Object aResult)
 	{
 		itsExitEvent.set(
-				getHost().getId(), 
+				getHostId(), 
 				aThreadId, 
 				aDepth, 
 				aTimestamp, 
@@ -150,7 +156,7 @@ public class GridEventCollector extends EventCollector
 			Object aValue)
 	{
 		itsFieldWriteEvent.set(
-				getHost().getId(),
+				getHostId(),
 				aThreadId, 
 				aDepth,
 				aTimestamp,
@@ -174,7 +180,7 @@ public class GridEventCollector extends EventCollector
 			Object aValue)
 	{
 		itsArrayWriteEvent.set(
-				getHost().getId(),
+				getHostId(),
 				aThreadId, 
 				aDepth,
 				aTimestamp,
@@ -201,7 +207,7 @@ public class GridEventCollector extends EventCollector
 			Object[] aArguments)
 	{
 		itsCallEvent.set(
-				getHost().getId(), 
+				getHostId(), 
 				aThreadId, 
 				aDepth, 
 				aTimestamp,
@@ -228,7 +234,7 @@ public class GridEventCollector extends EventCollector
 			Object aValue)
 	{
 		itsVariableWriteEvent.set(
-				getHost().getId(), 
+				getHostId(), 
 				aThreadId,
 				aDepth, 
 				aTimestamp,
@@ -254,7 +260,7 @@ public class GridEventCollector extends EventCollector
 			Object[] aArguments)
 	{
 		itsCallEvent.set(
-				getHost().getId(), 
+				getHostId(),  
 				aThreadId, 
 				aDepth, 
 				aTimestamp,
@@ -296,7 +302,7 @@ public class GridEventCollector extends EventCollector
 			Object[] aArguments)
 	{
 		itsCallEvent.set(
-				getHost().getId(), 
+				getHostId(), 
 				aThreadId, 
 				aDepth, 
 				aTimestamp,

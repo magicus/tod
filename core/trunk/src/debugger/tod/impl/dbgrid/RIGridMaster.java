@@ -28,10 +28,11 @@ import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
 import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
-import tod.impl.dbgrid.dbnode.DatabaseNode;
-import tod.impl.dbgrid.dbnode.NodeRejectedException;
-import tod.impl.dbgrid.dbnode.RIDatabaseNode;
-import tod.impl.dbgrid.dispatcher.RIEventDispatcher;
+import tod.impl.dbgrid.db.NodeRejectedException;
+import tod.impl.dbgrid.dispatch.DatabaseNode;
+import tod.impl.dbgrid.dispatch.RIConnectable;
+import tod.impl.dbgrid.dispatch.RIDatabaseNode;
+import tod.impl.dbgrid.dispatch.RIEventDispatcher;
 import tod.impl.dbgrid.monitoring.Monitor.KeyMonitorData;
 import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
 import tod.impl.dbgrid.queries.EventCondition;
@@ -60,36 +61,34 @@ public interface RIGridMaster extends Remote
 	public void clear() throws RemoteException;
 	
 	/**
+	 * Nodes can call this method to determine the current needs
+	 * of the dispatcher: database nodes, leaf dispatcher nodes
+	 * or internal dispatcher nodes.
+	 * Client: undetermined nodes.
+	 * @param aHostName The name of the host on which the node executes.
+	 */
+	public NodeRole getRoleForNode(String aHostName) throws RemoteException;
+	
+	/**
 	 * Registers a node so that it can be used by the grid.
-	 * Client: database nodes
+	 * Client: dispatch nodes
 	 * @throws NodeRejectedException Thrown if the master refuses the new node
 	 * @return The id assigned to the node.
 	 */
-	public int registerNode(RIDatabaseNode aNode, String aHostname) 
+	public String registerNode(RIConnectable aNode, String aHostname) 
 		throws RemoteException, NodeRejectedException;
 	
 	/**
-	 * Registers a dispatcher so that it can be used by the grid.
-	 * @param aLeaf Whether the dispatcher is a leaf dispatcher or
-	 * an internal dispatcher.
-	 * @throws NodeRejectedException Thrown if the master refuses the new dispatcher.
-	 */
-	public void registerDispatcher(
-			RIEventDispatcher aDispatcher, 
-			String aHostname, 
-			boolean aLeaf) throws RemoteException, NodeRejectedException;
-	
-	/**
-	 * {@link DatabaseNode}s call this method when they encounter an exception.
-	 * Client: database nodes
+	 * Dispatch nodes call this method when they encounter an exception.
+	 * Client: dispatch nodes
 	 */
 	public void nodeException(NodeException aException) throws RemoteException;
 	
 	/**
-	 * Database nodes can periodically send monitoring data.
-	 * Client: database nodes
+	 * Dispatch nodes can periodically send monitoring data.
+	 * Client: dispatch nodes
 	 */
-	public void pushMonitorData(int aNodeId, MonitorData aData) throws RemoteException;
+	public void pushMonitorData(String aNodeId, MonitorData aData) throws RemoteException;
 
 	/**
 	 * Returns a new query aggregator for the specified query
@@ -142,4 +141,12 @@ public interface RIGridMaster extends Remote
 	 */
 	public RILocationsRepository getLocationsRepository() throws RemoteException;
 
+	/**
+	 * Enumerates the different kinds of roles of the nodes in the debugging grid.
+	 * @author gpothier
+	 */
+	public enum NodeRole
+	{
+		DATABASE, LEAF_DISPATCHER, INTERNAL_DISPATCHER;
+	}
 }

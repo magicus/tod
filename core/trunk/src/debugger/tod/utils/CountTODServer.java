@@ -30,6 +30,7 @@ import java.util.List;
 import javax.swing.JComponent;
 
 import tod.core.ILogCollector;
+import tod.core.LocationRegistrer;
 import tod.core.Output;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
@@ -68,6 +69,7 @@ public class CountTODServer extends AbstractSession
 		itsServer = new CollectorTODServer(
 				aConfig,
 				theInstrumenter,
+				new LocationRegistrer(),
 				new MyCollectorFactory())
 		{
 			@Override

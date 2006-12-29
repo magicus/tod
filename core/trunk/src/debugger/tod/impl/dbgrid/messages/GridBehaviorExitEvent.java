@@ -28,8 +28,8 @@ import tod.core.database.event.ILogEvent;
 import tod.impl.common.event.BehaviorExitEvent;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
-import tod.impl.dbgrid.dbnode.Indexes;
-import tod.impl.dbgrid.dbnode.RoleIndexSet;
+import tod.impl.dbgrid.db.Indexes;
+import tod.impl.dbgrid.db.RoleIndexSet;
 import zz.utils.bit.BitStruct;
 
 public class GridBehaviorExitEvent extends GridEvent

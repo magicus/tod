@@ -27,8 +27,8 @@ import tod.impl.dbgrid.EventGenerator;
 import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.bench.BenchBase.BenchResults;
-import tod.impl.dbgrid.dispatcher.AbstractEventDispatcher;
-import tod.impl.dbgrid.dispatcher.LeafEventDispatcher;
+import tod.impl.dbgrid.dispatch.AbstractEventDispatcher;
+import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
 import tod.impl.dbgrid.messages.GridEvent;
 
 public class GridDispatch

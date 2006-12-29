@@ -217,6 +217,7 @@ public class CollectorPacketReader
 	
 	public static void readMethodCall(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
+		aStream.readInt(); // Packet size
 		aCollector.methodCall(
 				aStream.readInt(),
 				aStream.readLong(),
@@ -232,6 +233,7 @@ public class CollectorPacketReader
 	
 	public static void readInstantiation(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
+		aStream.readInt(); // Packet size
 		aCollector.instantiation(
 				aStream.readInt(),
 				aStream.readLong(),
@@ -247,6 +249,7 @@ public class CollectorPacketReader
 	
 	public static void readSuperCall(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
+		aStream.readInt(); // Packet size
 		aCollector.superCall(
 				aStream.readInt(),
 				aStream.readLong(),
@@ -263,6 +266,7 @@ public class CollectorPacketReader
 	
 	public static void readBehaviorExit(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
+		aStream.readInt(); // Packet size
 		aCollector.behaviorExit(
 				aStream.readInt(),
 				aStream.readLong(),
@@ -276,6 +280,7 @@ public class CollectorPacketReader
 	
 	public static void readFieldWrite(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
+		aStream.readInt(); // Packet size
 		aCollector.fieldWrite(
 				aStream.readInt(),
 				aStream.readLong(),
@@ -289,6 +294,7 @@ public class CollectorPacketReader
 	
 	public static void readArrayWrite(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
+		aStream.readInt(); // Packet size
 		aCollector.arrayWrite(
 				aStream.readInt(),
 				aStream.readLong(),
@@ -302,6 +308,7 @@ public class CollectorPacketReader
 	
 	public static void readLocalWrite(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
+		aStream.readInt(); // Packet size
 		aCollector.localWrite(
 				aStream.readInt(),
 				aStream.readLong(),
@@ -314,6 +321,7 @@ public class CollectorPacketReader
 	
 	public static void readException(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
+		aStream.readInt(); // Packet size
 		aCollector.exception(
 				aStream.readInt(),
 				aStream.readLong(),
@@ -328,6 +336,7 @@ public class CollectorPacketReader
 	
 	public static void readOutput(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
+		aStream.readInt(); // Packet size
         aCollector.output(
         		aStream.readInt(),
 				aStream.readLong(),
@@ -339,6 +348,7 @@ public class CollectorPacketReader
 	
 	public static void readThread(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
+		aStream.readInt(); // Packet size
 		aCollector.thread(
 				aStream.readInt(),
 				aStream.readLong(),

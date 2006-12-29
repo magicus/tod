@@ -26,9 +26,10 @@ import java.rmi.RemoteException;
 import tod.core.ILocationRegistrer.Stats;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.TypeInfo;
 
 /**
  * A clone of {@link ILocationsRepository} that is used to create a remotely
@@ -48,11 +49,13 @@ public interface RILocationsRepository extends Remote
 			String aSignature, 
 			boolean aSearchAncestors) throws RemoteException;
 	public ITypeInfo[] getArgumentTypes(String aSignature) throws RemoteException;
-	public Iterable<IClassInfo> getClasses() throws RemoteException;
+	public TypeInfo getReturnType(String aSignature) throws RemoteException;
+	public Iterable<ITypeInfo> getTypes() throws RemoteException;
 	public Iterable<IBehaviorInfo> getBehaviours() throws RemoteException;
 	public Iterable<IFieldInfo> getFields() throws RemoteException;
 	public Iterable<String> getFiles() throws RemoteException;
 	public Stats getStats() throws RemoteException;
+	public Iterable<ILocationInfo> getLocations() throws RemoteException;
 	
 
 }

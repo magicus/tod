@@ -24,7 +24,6 @@ import tod.core.BehaviourKind;
 import tod.core.ILocationRegistrer;
 import tod.core.ILocationRegistrer.LineNumberInfo;
 import tod.core.ILocationRegistrer.LocalVariableInfo;
-import tod.core.database.browser.ILocationsRepository;
 
 
 /**
@@ -35,6 +34,7 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 {
 	private final BehaviourKind itsBehaviourKind;
 	
+	private final String itsSignature;
 	private final ITypeInfo[] itsArgumentTypes;
 	private final ITypeInfo itsReturnType;
 
@@ -46,12 +46,14 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 			int aId, 
 			ClassInfo aType, 
 			String aName,
+			String aSignature,
 			ITypeInfo[] aArgumentTypes,
 			ITypeInfo aReturnType,
 			ILocationRegistrer.LineNumberInfo[] aLineNumberTable,
 			ILocationRegistrer.LocalVariableInfo[] aLocalVariableTable)
 	{
 		super(aId, aType, aName);
+		itsSignature = aSignature;
 		itsArgumentTypes = aArgumentTypes;
 		itsReturnType = aReturnType;
 		itsBehaviourKind = aBehaviourKind;
@@ -142,5 +144,10 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 	{
 		return "Behavior ("+getId()+", "+getName()+") of "+getType();
 	}
-
+	
+	public void register(ILocationRegistrer aRegistrer)
+	{
+		aRegistrer.registerBehavior(getBehaviourKind(), getId(), getType().getId(), getName(), itsSignature);
+		aRegistrer.registerBehaviorAttributes(getId(), itsLineNumberTable, itsLocalVariableTable);
+	}
 }

@@ -25,14 +25,14 @@ import tod.core.ILocationRegistrer;
 import tod.core.database.browser.ILocationStore;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.TypeInfo;
 
 public class DummyLocationRegistrer 
 implements ILocationStore
 {
-
 	public void registerBehavior(BehaviourKind aBehaviourType, int aBehaviourId, int aTypeId, String aBehaviourName, String aSignature)
 	{
 	}
@@ -57,6 +57,11 @@ implements ILocationStore
 	{
 		return null;
 	}
+	
+	public TypeInfo getReturnType(String aSignature)
+	{
+		return null;
+	}
 
 	public IBehaviorInfo getBehavior(int aBehaviorId)
 	{
@@ -73,7 +78,7 @@ implements ILocationStore
 		return null;
 	}
 
-	public Iterable<IClassInfo> getClasses()
+	public Iterable<ITypeInfo> getTypes()
 	{
 		return null;
 	}
@@ -109,6 +114,11 @@ implements ILocationStore
 	}
 
 	public ITypeInfo getType(String aName)
+	{
+		return null;
+	}
+	
+	public Iterable<ILocationInfo> getLocations()
 	{
 		return null;
 	}

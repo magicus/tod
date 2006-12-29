@@ -24,7 +24,7 @@ import tod.core.Output;
 import tod.core.database.event.ILogEvent;
 import tod.impl.common.event.OutputEvent;
 import tod.impl.dbgrid.GridLogBrowser;
-import tod.impl.dbgrid.dbnode.Indexes;
+import tod.impl.dbgrid.db.Indexes;
 
 public class GridOutputEvent extends GridEvent
 {

@@ -23,9 +23,10 @@ package tod.impl.dbgrid.gridimpl.uniform;
 import java.net.Socket;
 import java.rmi.RemoteException;
 
-import tod.impl.dbgrid.GridMaster;
-import tod.impl.dbgrid.dispatcher.DBNodeProxy;
-import tod.impl.dbgrid.dispatcher.LeafEventDispatcher;
+import tod.core.database.browser.ILocationStore;
+import tod.impl.dbgrid.dispatch.DispatchTreeNodeProxy;
+import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
+import tod.impl.dbgrid.dispatch.RIConnectable;
 import tod.impl.dbgrid.messages.GridEvent;
 
 /**
@@ -37,15 +38,18 @@ public class UniformEventDispatcher extends LeafEventDispatcher
 {
 	private int itsCurrentNode = 0;
 	
-	public UniformEventDispatcher(boolean aConnectToMaster) throws RemoteException
+	public UniformEventDispatcher(boolean aConnectToMaster, ILocationStore aLocationStore) throws RemoteException
 	{
-		super(aConnectToMaster);
+		super(aConnectToMaster, aLocationStore);
 	}
 	
 	@Override
-	protected DBNodeProxy createProxy(Socket aSocket, int aId)
+	protected DispatchTreeNodeProxy createProxy(
+			RIConnectable aConnectable,
+			Socket aSocket, 
+			String aId)
 	{
-		return new UniformDBNodeProxy(aSocket, aId);
+		return new UniformDBNodeProxy(aConnectable, aSocket, aId);
 	}
 
 	@Override

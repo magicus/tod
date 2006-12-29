@@ -24,10 +24,10 @@ import java.util.Iterator;
 
 import tod.impl.dbgrid.AbstractFilteredBidiIterator;
 import tod.impl.dbgrid.BidiIterator;
-import tod.impl.dbgrid.dbnode.Indexes;
-import tod.impl.dbgrid.dbnode.RoleIndexSet;
-import tod.impl.dbgrid.dbnode.RoleIndexSet.RoleTuple;
-import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
+import tod.impl.dbgrid.db.Indexes;
+import tod.impl.dbgrid.db.RoleIndexSet;
+import tod.impl.dbgrid.db.RoleIndexSet.RoleTuple;
+import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.messages.GridEvent;
 import zz.utils.AbstractFilteredIterator;
 

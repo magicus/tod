@@ -22,19 +22,20 @@ package tod.impl.dbgrid.gridimpl.grpidx;
 
 import java.rmi.RemoteException;
 
+import tod.core.database.browser.ILocationStore;
 import tod.impl.dbgrid.GridMaster;
-import tod.impl.dbgrid.dbnode.DatabaseNode;
-import tod.impl.dbgrid.dispatcher.LeafEventDispatcher;
+import tod.impl.dbgrid.dispatch.DatabaseNode;
+import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
 import tod.impl.dbgrid.gridimpl.IGridImplementationFactory;
 
 public class GrpIdxImplementationFactory implements IGridImplementationFactory
 {
 
-	public LeafEventDispatcher createLeafDispatcher(boolean aConnectToMaster)
+	public LeafEventDispatcher createLeafDispatcher(boolean aConnectToMaster, ILocationStore aLocationStore)
 	{
 		try
 		{
-			return new GrpIdxEventDispatcher(aConnectToMaster);
+			return new GrpIdxEventDispatcher(aConnectToMaster, aLocationStore);
 		}
 		catch (RemoteException e)
 		{

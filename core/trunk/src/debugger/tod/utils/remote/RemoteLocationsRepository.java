@@ -26,9 +26,10 @@ import java.rmi.server.UnicastRemoteObject;
 import tod.core.ILocationRegistrer.Stats;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.TypeInfo;
 
 /**
  * Remote object that mimics a {@link ILocationsRepository}.
@@ -50,6 +51,11 @@ implements RILocationsRepository
 	{
 		return itsDelegate.getArgumentTypes(aSignature);
 	}
+	
+	public TypeInfo getReturnType(String aSignature) 
+	{
+		return itsDelegate.getReturnType(aSignature);
+	}
 
 	public IBehaviorInfo getBehavior(int aBehaviorId)
 	{
@@ -66,9 +72,9 @@ implements RILocationsRepository
 		return itsDelegate.getBehaviours();
 	}
 
-	public Iterable<IClassInfo> getClasses()
+	public Iterable<ITypeInfo> getTypes()
 	{
-		return itsDelegate.getClasses();
+		return itsDelegate.getTypes();
 	}
 
 	public IFieldInfo getField(int aFieldId)
@@ -96,6 +102,11 @@ implements RILocationsRepository
 		return itsDelegate.getType(aId);
 	}
 
+	public Iterable<ILocationInfo> getLocations() 
+	{
+		return itsDelegate.getLocations();
+	}
+	
 	public ITypeInfo getType(String aName)
 	{
 		return itsDelegate.getType(aName);
@@ -118,6 +129,18 @@ implements RILocationsRepository
 				try
 				{
 					return aRepository.getArgumentTypes(aSignature);
+				}
+				catch (RemoteException e)
+				{
+					throw new RuntimeException(e);
+				}
+			}
+			
+			public TypeInfo getReturnType(String aSignature)
+			{
+				try
+				{
+					return aRepository.getReturnType(aSignature);
 				}
 				catch (RemoteException e)
 				{
@@ -161,11 +184,11 @@ implements RILocationsRepository
 				}
 			}
 
-			public Iterable<IClassInfo> getClasses()
+			public Iterable<ITypeInfo> getTypes()
 			{
 				try
 				{
-					return aRepository.getClasses();
+					return aRepository.getTypes();
 				}
 				catch (RemoteException e)
 				{
@@ -226,6 +249,18 @@ implements RILocationsRepository
 				try
 				{
 					return aRepository.getType(aId);
+				}
+				catch (RemoteException e)
+				{
+					throw new RuntimeException(e);
+				}
+			}
+			
+			public Iterable<ILocationInfo> getLocations()
+			{
+				try
+				{
+					return aRepository.getLocations();
 				}
 				catch (RemoteException e)
 				{

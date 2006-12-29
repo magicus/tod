@@ -20,12 +20,24 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.structure;
 
+import tod.core.ILocationRegistrer;
 
+/**
+ * Base interface for location info (ie structural information). 
+ * Locations can be types, fields or methods
+ * @author gpothier
+ */
 public interface ILocationInfo
 {
-
+	/**
+	 * Returns the id of this location.
+	 */
 	public int getId();
 
 	public String getName();
-
+	
+	/**
+	 * Registers this location to the given registrer.
+	 */
+	public void register(ILocationRegistrer aRegistrer);
 }

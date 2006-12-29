@@ -33,7 +33,7 @@ public class DebugFlags
 	/**
 	 * Causes database nodes to skip incoming events
 	 */
-	public static final boolean SKIP_EVENTS = false; 
+	public static final boolean SKIP_EVENTS = true; 
 	
 	/**
 	 * Causes database nodes to not reorder incoming events
@@ -106,6 +106,12 @@ public class DebugFlags
 	 * every {@link #RECEIVER_PRINT_COUNTS} messages.
 	 */
 	public static final int RECEIVER_PRINT_COUNTS = 100000;
+	
+	/**
+	 * Whether the grid master should prevent multiple database nodes
+	 * on the same host.
+	 */
+	public static final boolean GRID_CHECK_NODE_HOST = false;
 	
 	static
 	{

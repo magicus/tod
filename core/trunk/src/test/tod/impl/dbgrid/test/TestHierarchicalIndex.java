@@ -29,10 +29,10 @@ import org.junit.runner.JUnitCore;
 
 import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.Fixtures;
-import tod.impl.dbgrid.dbnode.HierarchicalIndex;
-import tod.impl.dbgrid.dbnode.RoleIndexSet;
-import tod.impl.dbgrid.dbnode.StdIndexSet;
-import tod.impl.dbgrid.dbnode.RoleIndexSet.RoleTuple;
+import tod.impl.dbgrid.db.HierarchicalIndex;
+import tod.impl.dbgrid.db.RoleIndexSet;
+import tod.impl.dbgrid.db.StdIndexSet;
+import tod.impl.dbgrid.db.RoleIndexSet.RoleTuple;
 
 public class TestHierarchicalIndex
 {
@@ -153,13 +153,13 @@ public class TestHierarchicalIndex
 	private static class StdIndexTester extends IndexTester<StdIndexSet.StdTuple>
 	{
 		@Override
-		public HierarchicalIndex<tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple> createIndex()
+		public HierarchicalIndex<tod.impl.dbgrid.db.StdIndexSet.StdTuple> createIndex()
 		{
 			return Fixtures.createStdIndex();
 		}
 
 		@Override
-		public void fillIndex(HierarchicalIndex<tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple> aIndex, TimestampGenerator aGenerator, long aTupleCount)
+		public void fillIndex(HierarchicalIndex<tod.impl.dbgrid.db.StdIndexSet.StdTuple> aIndex, TimestampGenerator aGenerator, long aTupleCount)
 		{
 			Fixtures.fillStdIndex(aIndex, aGenerator, aTupleCount);
 		}

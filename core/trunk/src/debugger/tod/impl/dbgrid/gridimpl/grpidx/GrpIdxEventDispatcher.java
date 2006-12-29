@@ -24,15 +24,17 @@ import java.net.Socket;
 import java.rmi.RemoteException;
 
 import tod.agent.DebugFlags;
-import tod.impl.dbgrid.dbnode.EventReorderingBuffer;
-import tod.impl.dbgrid.dbnode.HierarchicalIndex;
-import tod.impl.dbgrid.dbnode.Indexes;
-import tod.impl.dbgrid.dbnode.EventReorderingBuffer.ReorderingBufferListener;
-import tod.impl.dbgrid.dbnode.RoleIndexSet.RoleTuple;
-import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
-import tod.impl.dbgrid.dispatcher.DBNodeProxy;
-import tod.impl.dbgrid.dispatcher.DispatchTreeNodeProxy;
-import tod.impl.dbgrid.dispatcher.LeafEventDispatcher;
+import tod.core.database.browser.ILocationStore;
+import tod.impl.dbgrid.db.EventReorderingBuffer;
+import tod.impl.dbgrid.db.HierarchicalIndex;
+import tod.impl.dbgrid.db.Indexes;
+import tod.impl.dbgrid.db.EventReorderingBuffer.ReorderingBufferListener;
+import tod.impl.dbgrid.db.RoleIndexSet.RoleTuple;
+import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
+import tod.impl.dbgrid.dispatch.DBNodeProxy;
+import tod.impl.dbgrid.dispatch.DispatchTreeNodeProxy;
+import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
+import tod.impl.dbgrid.dispatch.RIConnectable;
 import tod.impl.dbgrid.gridimpl.grpidx.GrpIdxDatabaseNode.IndexKind;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.monitoring.AggregationType;
@@ -71,9 +73,9 @@ implements ReorderingBufferListener
 	
 	private DispatcherIndexes itsIndexes = new DispatcherIndexes();
 	
-	public GrpIdxEventDispatcher(boolean aConnectToMaster) throws RemoteException
+	public GrpIdxEventDispatcher(boolean aConnectToMaster, ILocationStore aLocationStore) throws RemoteException
 	{
-		super(aConnectToMaster);
+		super(aConnectToMaster, aLocationStore);
 		Monitor.getInstance().register(this);
 	}
 	
@@ -87,9 +89,12 @@ implements ReorderingBufferListener
 	}
 	
 	@Override
-	protected DBNodeProxy createProxy(Socket aSocket, int aId)
+	protected DispatchTreeNodeProxy createProxy(
+			RIConnectable aConnectable, 
+			Socket aSocket, 
+			String aId)
 	{
-		return new GrpIdxDBNodeProxy(aSocket, aId);
+		return new GrpIdxDBNodeProxy(aConnectable, aSocket, aId);
 	}
 
 	@Override
@@ -98,8 +103,7 @@ implements ReorderingBufferListener
 		return (GrpIdxDBNodeProxy) super.getNode(aIndex);
 	}
 	
-	@Override
-	public synchronized void flush()
+	public synchronized int flush()
 	{
 		int theCount = 0;
 		System.out.println("GrpIdxEventDispatcher: flushing...");
@@ -109,7 +113,9 @@ implements ReorderingBufferListener
 			theCount++;
 		}
 		System.out.println("GrpIdxEventDispatcher: flushed "+theCount+" events...");
-		super.flush();
+		theCount += super.flush();
+		
+		return theCount;
 	}
 
 	@Override

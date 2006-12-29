@@ -27,8 +27,8 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 
 import tod.impl.dbgrid.DebuggerGridConfig;
-import tod.impl.dbgrid.dbnode.DatabaseNode;
-import tod.impl.dbgrid.dbnode.RINodeEventIterator;
+import tod.impl.dbgrid.db.RINodeEventIterator;
+import tod.impl.dbgrid.dispatch.DatabaseNode;
 import tod.impl.dbgrid.gridimpl.AbstractEventDatabase;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.GridMessage;
@@ -47,7 +47,7 @@ public class UniformDatabaseNode extends DatabaseNode
 	 *  events
 	 * return: none
 	 */
-	public static final byte CMD_PUSH_EVENTS = 17;
+	public static final byte CMD_PUSH_EVENTS = 117;
 	
 	private AbstractEventDatabase itsDatabase;
 	
@@ -80,7 +80,9 @@ public class UniformDatabaseNode extends DatabaseNode
 	
 	protected AbstractEventDatabase createDatabase(File aFile)
 	{
-		return new UniformEventDatabase(getNodeId(), aFile);
+		int theNodeIndex = Integer.parseInt(getNodeId().substring(3));
+
+		return new UniformEventDatabase(theNodeIndex, aFile);
 	}
 	
 	
@@ -89,7 +91,6 @@ public class UniformDatabaseNode extends DatabaseNode
 		return itsDatabase;
 	}
 
-	@Override
 	public int flush()
 	{
 		return itsDatabase.flush();

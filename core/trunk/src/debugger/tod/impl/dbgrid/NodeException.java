@@ -20,7 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
-import tod.impl.dbgrid.dbnode.DatabaseNode;
+import tod.impl.dbgrid.dispatch.DatabaseNode;
 
 /**
  * Wraps an exception that occurred in a {@link DatabaseNode}
@@ -29,9 +29,9 @@ import tod.impl.dbgrid.dbnode.DatabaseNode;
 public class NodeException extends RuntimeException
 {
 	private static final long serialVersionUID = -2467881614217337652L;
-	private int itsNodeId;
+	private String itsNodeId;
 
-	public NodeException(int aNodeId, Throwable aCause)
+	public NodeException(String aNodeId, Throwable aCause)
 	{
 		super("Exception occurred in node "+aNodeId, aCause);
 		itsNodeId = aNodeId;

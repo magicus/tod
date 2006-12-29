@@ -25,7 +25,6 @@ import static org.junit.Assert.fail;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
-import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -34,21 +33,16 @@ import java.rmi.registry.Registry;
 import java.util.LinkedList;
 import java.util.Random;
 
-import tod.core.ILogCollector;
 import tod.core.LocationRegistrer;
-import tod.core.bci.NativeAgentPeer;
 import tod.core.config.TODConfig;
-import tod.core.transport.CollectorPacketReader;
 import tod.core.transport.LogReceiver;
-import tod.core.transport.MessageType;
 import tod.core.transport.LogReceiver.ILogReceiverMonitor;
 import tod.impl.bci.asm.ASMLocationPool;
-import tod.impl.dbgrid.dbnode.DatabaseNode;
-import tod.impl.dbgrid.dbnode.EventList;
-import tod.impl.dbgrid.dbnode.HierarchicalIndex;
-import tod.impl.dbgrid.dbnode.RoleIndexSet;
-import tod.impl.dbgrid.dbnode.StdIndexSet;
-import tod.impl.dbgrid.dbnode.file.HardPagedFile;
+import tod.impl.dbgrid.db.EventList;
+import tod.impl.dbgrid.db.HierarchicalIndex;
+import tod.impl.dbgrid.db.RoleIndexSet;
+import tod.impl.dbgrid.db.StdIndexSet;
+import tod.impl.dbgrid.db.file.HardPagedFile;
 import tod.impl.dbgrid.gridimpl.GridImpl;
 import tod.impl.dbgrid.gridimpl.uniform.UniformEventDatabase;
 import tod.impl.dbgrid.messages.GridEvent;
@@ -393,10 +387,8 @@ public class Fixtures
 		LogReceiver theReceiver = aMaster.getDispatcher().createLogReceiver(
 				null, 
 				aMaster, 
-				null, 
-				theStream, 
-				null,
-				false);
+				theStream,
+				null, false);
 		
 		MyLogReceiverMonitor theMonitor = new MyLogReceiverMonitor();
 		theReceiver.setMonitor(theMonitor);

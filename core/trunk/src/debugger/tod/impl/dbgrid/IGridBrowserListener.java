@@ -34,6 +34,6 @@ public interface IGridBrowserListener
 	/**
 	 * See {@link RIGridMasterListener#monitorData(int, MonitorData)}
 	 */
-	public void monitorData(int aNodeId, MonitorData aData);
+	public void monitorData(String aNodeId, MonitorData aData);
 
 }

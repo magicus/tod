@@ -48,5 +48,5 @@ public interface RIGridMasterListener extends Remote
 	/**
 	 * Called when new monitoring info has been received from a database node
 	 */
-	public void monitorData(int aNodeId, MonitorData aData) throws RemoteException;
+	public void monitorData(String aNodeId, MonitorData aData) throws RemoteException;
 }

@@ -48,7 +48,8 @@ implements IGridBrowserListener
 	/**
 	 * Monitor data, per node. 
 	 */
-	private ListMap<Integer, MonitorData> itsMonitorData = new ListMap<Integer, MonitorData>();
+	private ListMap<String, MonitorData> itsMonitorData = 
+		new ListMap<String, MonitorData>();
 	
 	public GridConsole(GridLogBrowser aBrowser)
 	{
@@ -92,7 +93,7 @@ implements IGridBrowserListener
 	}
 
 
-	public void monitorData(int aNodeId, MonitorData aData)
+	public void monitorData(String aNodeId, MonitorData aData)
 	{
 		itsMonitorData.add(aNodeId, aData);
 		itsMonitorUI.setData(aData);

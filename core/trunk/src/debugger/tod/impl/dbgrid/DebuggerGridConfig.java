@@ -22,11 +22,11 @@ package tod.impl.dbgrid;
 
 import static tod.impl.dbgrid.DebuggerGridConfig.DB_EVENTID_PAGE_BITS;
 import tod.agent.ConfigUtils;
-import tod.impl.dbgrid.dbnode.DatabaseNode;
-import tod.impl.dbgrid.dbnode.HierarchicalIndex;
-import tod.impl.dbgrid.dbnode.file.HardPagedFile;
-import tod.impl.dbgrid.dbnode.file.TupleIterator;
-import tod.impl.dbgrid.dbnode.file.TupleWriter;
+import tod.impl.dbgrid.db.HierarchicalIndex;
+import tod.impl.dbgrid.db.file.HardPagedFile;
+import tod.impl.dbgrid.db.file.TupleIterator;
+import tod.impl.dbgrid.db.file.TupleWriter;
+import tod.impl.dbgrid.dispatch.DatabaseNode;
 import tod.impl.dbgrid.messages.MessageType;
 import zz.utils.bit.BitUtils;
 
@@ -210,7 +210,7 @@ public class DebuggerGridConfig
 	/**
 	 * Number of children of dispatchers.
 	 */
-	public static final int DISPATCH_BRANCHING_FACTOR = 5;
+	public static final int DISPATCH_BRANCHING_FACTOR = 1;
 	
 	public static final String PARAM_DB_PAGE_BUFFER_SIZE = "page-buffer-size";
 	

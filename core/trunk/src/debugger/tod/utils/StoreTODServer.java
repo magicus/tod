@@ -51,7 +51,7 @@ public class StoreTODServer extends CollectorTODServer
 			IInstrumenter aInstrumenter,
 			ICollectorFactory aCollectorFactory)
 	{
-		super(aConfig, aInstrumenter, aCollectorFactory);
+		super(aConfig, aInstrumenter, new LocationRegistrer(), aCollectorFactory);
 	}
 
 	@Override

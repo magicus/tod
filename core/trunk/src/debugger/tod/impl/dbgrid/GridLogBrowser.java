@@ -46,7 +46,7 @@ import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.impl.common.CFlowBrowser;
 import tod.impl.dbgrid.aggregator.GridEventBrowser;
-import tod.impl.dbgrid.dbnode.RoleIndexSet;
+import tod.impl.dbgrid.db.RoleIndexSet;
 import tod.impl.dbgrid.messages.MessageType;
 import tod.impl.dbgrid.messages.ObjectCodec;
 import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
@@ -117,7 +117,7 @@ implements ILogBrowser, RIGridMasterListener
 		itsListeners.remove(aListener);
 	}
 	
-	private void fireMonitorData(int aNodeId, MonitorData aData)
+	private void fireMonitorData(String aNodeId, MonitorData aData)
 	{
 		for (IGridBrowserListener theListener : itsListeners)
 		{
@@ -395,7 +395,7 @@ implements ILogBrowser, RIGridMasterListener
 		aThrowable.printStackTrace();
 	}
 	
-	public void monitorData(int aNodeId, MonitorData aData) 
+	public void monitorData(String aNodeId, MonitorData aData) 
 	{
 		fireMonitorData(aNodeId, aData);
 	}

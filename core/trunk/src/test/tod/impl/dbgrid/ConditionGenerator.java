@@ -24,7 +24,7 @@ import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_OBJECT_COUNT;
 
 import java.util.Random;
 
-import tod.impl.dbgrid.dbnode.RoleIndexSet;
+import tod.impl.dbgrid.db.RoleIndexSet;
 import tod.impl.dbgrid.queries.BehaviorCondition;
 import tod.impl.dbgrid.queries.BytecodeLocationCondition;
 import tod.impl.dbgrid.queries.CompoundCondition;

@@ -61,6 +61,7 @@ public class LocalSession extends AbstractSession
 		itsServer = new CollectorTODServer(
 				aConfig,
 				theInstrumenter,
+				new LocationRegistrer(),
 				new MyCollectorFactory());
 	}
 	

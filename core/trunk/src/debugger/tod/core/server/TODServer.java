@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import tod.core.ILocationRegistrer;
 import tod.core.LocationRegistrer;
 import tod.core.bci.IInstrumenter;
 import tod.core.bci.NativeAgentPeer;
@@ -46,7 +47,7 @@ public abstract class TODServer
 	
 	private IInstrumenter itsInstrumenter;
 	
-	private LocationRegistrer itsLocationRegistrer;
+	private ILocationRegistrer itsLocationRegistrer;
 	
 	private List<NativeAgentPeer> itsNativePeers = new ArrayList<NativeAgentPeer>();
 	private Map<String, LogReceiver> itsReceivers = new HashMap<String, LogReceiver>();
@@ -54,18 +55,21 @@ public abstract class TODServer
 	private LogReceiverServer itsReceiverServer;
 	private NativePeerServer itsNativePeerServer;
 
-	public TODServer(TODConfig aConfig, IInstrumenter aInstrumenter)
+	public TODServer(
+			TODConfig aConfig, 
+			IInstrumenter aInstrumenter,
+			ILocationRegistrer aRegistrer)
 	{
 		itsConfig = aConfig;
 		itsInstrumenter = aInstrumenter;
 		
-		itsLocationRegistrer = new LocationRegistrer();
+		itsLocationRegistrer = aRegistrer;
 		
 		itsReceiverServer = new LogReceiverServer();
 		itsNativePeerServer = new NativePeerServer();
 	}
 	
-	public LocationRegistrer getLocationRegistrer()
+	public ILocationRegistrer getLocationRegistrer()
 	{
 		return itsLocationRegistrer;
 	}

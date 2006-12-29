@@ -35,6 +35,7 @@ import org.objectweb.asm.Type;
 import tod.core.BehaviourKind;
 import tod.core.ILocationRegistrer;
 import tod.core.bci.LocationPoolPersister;
+import tod.core.database.structure.ILocationInfo;
 
 public class ASMLocationPool
 {

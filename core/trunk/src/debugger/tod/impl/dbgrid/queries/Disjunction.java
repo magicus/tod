@@ -23,9 +23,9 @@ package tod.impl.dbgrid.queries;
 import java.util.Iterator;
 
 import tod.impl.dbgrid.BidiIterator;
-import tod.impl.dbgrid.dbnode.Indexes;
-import tod.impl.dbgrid.dbnode.IndexMerger;
-import tod.impl.dbgrid.dbnode.StdIndexSet.StdTuple;
+import tod.impl.dbgrid.db.IndexMerger;
+import tod.impl.dbgrid.db.Indexes;
+import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.messages.GridEvent;
 
 /**

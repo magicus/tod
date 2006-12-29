@@ -81,7 +81,7 @@ public class LocationTreeBuilder
 		itsTypeNodesMap.clear();
 		itsRootNode = null;
 		
-		buildTypes(itsLocationTrace.getClasses());
+		buildTypes(itsLocationTrace.getTypes());
 		buildMembers(itsLocationTrace.getBehaviours());
 		buildMembers(itsLocationTrace.getFields());		
 	}
@@ -89,17 +89,17 @@ public class LocationTreeBuilder
 	/**
 	 * Builds the packages & types.
 	 */
-	private void buildTypes(Iterable<IClassInfo> aTypes)
+	private void buildTypes(Iterable<ITypeInfo> aTypes)
 	{
 		itsRootNode = new PackageNode("");
 		itsPackageMap.put ("", itsRootNode);
 
 		// Build the tree
-		for (IClassInfo theClass : aTypes)
+		for (ITypeInfo theType : aTypes)
 		{
-			String thePackageName = getPackageName(theClass.getName());
+			String thePackageName = getPackageName(theType.getName());
 			PackageNode thePackageNode = getPackageNode(thePackageName);
-			createTypeNode(thePackageNode, theClass);
+			createTypeNode(thePackageNode, theType);
 		}
 	}
 	

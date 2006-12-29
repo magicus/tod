@@ -20,56 +20,103 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
-import java.rmi.RemoteException;
+import java.net.InetAddress;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
+import tod.core.LocationRegistrer;
 import tod.core.config.TODConfig;
-import tod.impl.dbgrid.dispatcher.InternalEventDispatcher;
+import tod.impl.dbgrid.RIGridMaster.NodeRole;
+import tod.impl.dbgrid.dispatch.InternalEventDispatcher;
 import tod.impl.dbgrid.gridimpl.GridImpl;
 
 /**
  * Main class for starting nodes of the dispatching tree.
  * Nodes are created as leaf dispatcher, internal dispatcher or
- * database node according to the task id.
+ * database node according to the task id, or by asking to the
+ * master, depending on the command-line arguments.
  * @author gpothier
  */
 public class StartNode
 {
-	public static void main(String[] args) throws RemoteException
+	/**
+	 * Determines the role of this node by asking to the master.
+	 */
+	public static void askRoleToMaster() throws Exception
 	{
-		String theMasterHost = args[0];
-		int theExpectedNodes = Integer.parseInt(args[1]);
-		int theTaskId = Integer.parseInt(System.getProperty("task-id"));
+		Registry theRegistry = LocateRegistry.getRegistry(DebuggerGridConfig.MASTER_HOST);
+		RIGridMaster theMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
+
+		String theHostName = InetAddress.getLocalHost().getHostName();
+		
+		NodeRole theRole = theMaster.getRoleForNode(theHostName);
+
+		System.out.println("Node role: "+theRole);
+		if (theRole == null)
+		{
+			System.err.println("Master rejected this node with a null role.");
+		}
+		
+		TODConfig theConfig = new TODConfig();
+		
+		switch(theRole)
+		{
+		case DATABASE:
+			System.out.println("Starting database node.");
+			GridImpl.getFactory(theConfig).createNode(true);
+			break;
+			
+		case INTERNAL_DISPATCHER:
+			System.out.println("Starting internal dispatcher.");
+			new InternalEventDispatcher(true);
+			break;
+			
+		case LEAF_DISPATCHER:
+			System.out.println("Starting leaf dispatcher.");
+			GridImpl.getFactory(theConfig).createLeafDispatcher(true, new LocationRegistrer());
+			break;
+
+		default: throw new RuntimeException("Not handled: "+theRole); 
+		}
+	}
+	
+	/**
+	 * Determines the role of this node according to the
+	 * value of task id.
+	 */
+	public static void determineRoleFromTaskId(int aTaskId, int aExpectedNodes) throws Exception
+	{
 		
 		System.out.println(String.format(
 				"StartNode [%d]: expecting %d database nodes.",
-				theTaskId,
-				theExpectedNodes));
+				aTaskId,
+				aExpectedNodes));
 		
-		DispatchTreeStructure theStructure = DispatchTreeStructure.compute(theExpectedNodes);
+		DispatchTreeStructure theStructure = DispatchTreeStructure.compute(aExpectedNodes);
 		System.out.println(theStructure);
 
 		TODConfig theConfig = new TODConfig();
 		
-		theTaskId -= 2; //first node has task id == 2
-		if (theTaskId < theStructure.databaseNodes)
+		aTaskId -= 2; //first node has task id == 2
+		if (aTaskId < theStructure.databaseNodes)
 		{
 			System.out.println("Starting database node.");
 			GridImpl.getFactory(theConfig).createNode(true);
 			return;
 		}
 		
-		theTaskId -= theStructure.databaseNodes;
+		aTaskId -= theStructure.databaseNodes;
 		
-		if (theTaskId < theStructure.leafNodes)
+		if (aTaskId < theStructure.leafNodes)
 		{
 			System.out.println("Starting leaf dispatcher.");
-			GridImpl.getFactory(theConfig).createLeafDispatcher(true);
+			GridImpl.getFactory(theConfig).createLeafDispatcher(true, new LocationRegistrer());
 			return;
 		}
 		
-		theTaskId -= theStructure.leafNodes;
+		aTaskId -= theStructure.leafNodes;
 
-		if (theTaskId < theStructure.internalNodes)
+		if (aTaskId < theStructure.internalNodes)
 		{
 			System.out.println("Starting internal dispatcher.");
 			new InternalEventDispatcher(true);
@@ -77,5 +124,19 @@ public class StartNode
 		}
 
 		throw new UnsupportedOperationException("Don't know what to do.");
+		
+	}
+	
+	public static void main(String[] args) throws Exception
+	{
+		if (args.length == 0) askRoleToMaster();
+		else
+		{
+			String theMasterHost = args[0];
+			int theExpectedNodes = Integer.parseInt(args[1]);
+			int theTaskId = Integer.parseInt(System.getProperty("task-id"));
+	
+			determineRoleFromTaskId(theTaskId, theExpectedNodes);
+		}
 	}
 }

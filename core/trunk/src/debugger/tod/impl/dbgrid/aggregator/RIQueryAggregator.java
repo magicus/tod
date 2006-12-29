@@ -23,7 +23,7 @@ package tod.impl.dbgrid.aggregator;
 import java.rmi.RemoteException;
 
 import tod.core.database.browser.IEventBrowser;
-import tod.impl.dbgrid.dbnode.RIEventIterator;
+import tod.impl.dbgrid.db.RIEventIterator;
 
 /**
  * Remote interface for a {@link QueryAggregator}.

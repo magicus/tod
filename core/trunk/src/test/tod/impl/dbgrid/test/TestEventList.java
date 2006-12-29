@@ -29,7 +29,7 @@ import org.junit.Test;
 
 import tod.impl.dbgrid.EventGenerator;
 import tod.impl.dbgrid.Fixtures;
-import tod.impl.dbgrid.dbnode.EventList;
+import tod.impl.dbgrid.db.EventList;
 import tod.impl.dbgrid.messages.GridEvent;
 import zz.utils.bit.IntBitStruct;
 

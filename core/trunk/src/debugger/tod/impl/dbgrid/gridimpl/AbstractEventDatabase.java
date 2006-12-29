@@ -23,8 +23,8 @@ package tod.impl.dbgrid.gridimpl;
 import java.rmi.RemoteException;
 
 import tod.impl.dbgrid.BidiIterator;
-import tod.impl.dbgrid.dbnode.NodeEventIterator;
-import tod.impl.dbgrid.dbnode.RINodeEventIterator;
+import tod.impl.dbgrid.db.NodeEventIterator;
+import tod.impl.dbgrid.db.RINodeEventIterator;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
 
