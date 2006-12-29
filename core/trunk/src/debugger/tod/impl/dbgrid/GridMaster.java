@@ -158,14 +158,10 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		itsLocationStore = aLocationStore;
 		
 		itsRemoteLocationsRepository = new RemoteLocationsRepository(itsLocationStore);
-//		itsExpectedNodes = aExpectedNodes;
-//		DispatchTreeStructure theStructure = DispatchTreeStructure.compute(itsExpectedNodes);
-//		itsExpectedInternalDispatchers = theStructure.internalNodes;
-//		itsExpectedLeafDispatchers = theStructure.leafNodes;
-		
-		itsExpectedNodes = 1;
-		itsExpectedLeafDispatchers = 1;
-		itsExpectedInternalDispatchers = 0;
+		itsExpectedNodes = aExpectedNodes;
+		DispatchTreeStructure theStructure = DispatchTreeStructure.compute(itsExpectedNodes);
+		itsExpectedInternalDispatchers = theStructure.internalNodes;
+		itsExpectedLeafDispatchers = theStructure.leafNodes;
 	}
 	
 	/**
