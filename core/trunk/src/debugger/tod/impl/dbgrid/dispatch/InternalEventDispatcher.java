@@ -20,6 +20,8 @@
  */
 package tod.impl.dbgrid.dispatch;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -28,7 +30,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.rmi.RemoteException;
 
-import tod.core.BehaviourKind;
+import tod.agent.DebugFlags;
+import tod.core.BehaviorKind;
 import tod.core.ILocationRegistrer;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.ILocationInfo;
@@ -49,9 +52,8 @@ implements RIInternalDispatcher
 
 	private ILocationRegistrer itsForwardingRegistrer = new ForwardingRegistrer();
 
-	public InternalEventDispatcher(boolean aConnectToMaster) throws RemoteException
+	public InternalEventDispatcher() throws RemoteException
 	{
-		super(aConnectToMaster);
 	}
 
 	/**
@@ -88,8 +90,12 @@ implements RIInternalDispatcher
 	}
 
 	@Override
-	public LogReceiver createLogReceiver(IHostInfo aHostInfo, GridMaster aMaster, InputStream aInStream,
-			OutputStream aOutStream, boolean aStartImmediately)
+	public LogReceiver createLogReceiver(
+			IHostInfo aHostInfo, 
+			GridMaster aMaster, 
+			InputStream aInStream,
+			OutputStream aOutStream, 
+			boolean aStartImmediately)
 	{
 		return new ForwardingLogReceiver(aMaster, aHostInfo, aInStream, aOutStream, aStartImmediately);
 	}
@@ -102,8 +108,8 @@ implements RIInternalDispatcher
 			createLogReceiver(
 					null, 
 					null, 
-					aSocket.getInputStream(), 
-					aSocket.getOutputStream(), 
+					new BufferedInputStream(aSocket.getInputStream()), 
+					new BufferedOutputStream(aSocket.getOutputStream()), 
 					true);
 		}
 		catch (IOException e)
@@ -122,10 +128,12 @@ implements RIInternalDispatcher
 
 		private IHostInfo itsHostInfo;
 
-		private byte[] itsBuffer = new byte[2048];
-
-		public ForwardingLogReceiver(GridMaster aMaster, IHostInfo aHostInfo, InputStream aInStream,
-				OutputStream aOutStream, boolean aStart)
+		public ForwardingLogReceiver(
+				GridMaster aMaster,
+				IHostInfo aHostInfo,
+				InputStream aInStream,
+				OutputStream aOutStream,
+				boolean aStart)
 		{
 			super(aInStream, aOutStream, false);
 			itsMaster = aMaster;
@@ -151,7 +159,7 @@ implements RIInternalDispatcher
 				itsCurrentChild = (itsCurrentChild + 1) % getChildrenCount();
 
 				theProxy.forwardPacket(aType, aStream);
-				theProxy.getOutStream().flush();
+				if (DebugFlags.DISPATCH_FAKE_1) theProxy.getOutStream().flush();
 				break;
 				
 			case REGISTER_THREAD:
@@ -192,7 +200,7 @@ implements RIInternalDispatcher
 	 */
 	private class ForwardingRegistrer implements ILocationRegistrer
 	{
-		public void registerBehavior(BehaviourKind aBehaviourType, int aBehaviourId, int aTypeId,
+		public void registerBehavior(BehaviorKind aBehaviourType, int aBehaviourId, int aTypeId,
 				String aBehaviourName, String aSignature)
 		{
 			try

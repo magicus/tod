@@ -25,7 +25,6 @@ package tod.impl.dbgrid.gridimpl.uniform;
 import java.rmi.RemoteException;
 
 import tod.core.database.browser.ILocationStore;
-import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.dispatch.DatabaseNode;
 import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
 import tod.impl.dbgrid.gridimpl.IGridImplementationFactory;
@@ -36,21 +35,25 @@ public class UniformImplementationFactory implements IGridImplementationFactory
 	{
 		try
 		{
-			return new UniformEventDispatcher(aConnectToMaster, aLocationStore);
+			UniformEventDispatcher theDispatcher = new UniformEventDispatcher(aLocationStore);
+			if (aConnectToMaster) theDispatcher.connectToMaster();
+			return theDispatcher;
 		}
-		catch (RemoteException e)
+		catch (Exception e)
 		{
 			throw new RuntimeException(e);
 		}
 	}
 
-	public DatabaseNode createNode(boolean aRegisterToMaster)
+	public DatabaseNode createNode(boolean aConnectToMaster)
 	{
 		try
 		{
-			return new UniformDatabaseNode(aRegisterToMaster);
+			UniformDatabaseNode theNode = new UniformDatabaseNode();
+			if (aConnectToMaster) theNode.connectToMaster();
+			return theNode;
 		}
-		catch (RemoteException e)
+		catch (Exception e)
 		{
 			throw new RuntimeException(e);
 		}

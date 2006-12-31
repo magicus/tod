@@ -20,7 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.structure;
 
-import tod.core.BehaviourKind;
+import tod.core.BehaviorKind;
 import tod.core.ILocationRegistrer;
 import tod.core.ILocationRegistrer.LocalVariableInfo;
 
@@ -29,9 +29,9 @@ public interface IBehaviorInfo extends IMemberInfo
 	/**
 	 * Indicates the kind of behavior represented by this object
 	 * (method, constructor, etc.)
-	 * @see BehaviourKind
+	 * @see BehaviorKind
 	 */
-	public BehaviourKind getBehaviourKind();
+	public BehaviorKind getBehaviourKind();
 
 	/**
 	 * Returns the types of the arguments to this behavior

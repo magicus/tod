@@ -73,9 +73,9 @@ implements ReorderingBufferListener
 	
 	private DispatcherIndexes itsIndexes = new DispatcherIndexes();
 	
-	public GrpIdxEventDispatcher(boolean aConnectToMaster, ILocationStore aLocationStore) throws RemoteException
+	public GrpIdxEventDispatcher(ILocationStore aLocationStore) throws RemoteException
 	{
-		super(aConnectToMaster, aLocationStore);
+		super(aLocationStore);
 		Monitor.getInstance().register(this);
 	}
 	

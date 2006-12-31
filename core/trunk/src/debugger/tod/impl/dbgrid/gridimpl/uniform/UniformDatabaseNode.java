@@ -57,9 +57,8 @@ public class UniformDatabaseNode extends DatabaseNode
 	private long itsReceivedMessages = 0;
 
 	
-	public UniformDatabaseNode(boolean aRegisterToMaster) throws RemoteException
+	public UniformDatabaseNode() throws RemoteException
 	{
-		super(aRegisterToMaster);
 	}
 	
 	public void clear() 

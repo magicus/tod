@@ -32,7 +32,7 @@ import java.util.Set;
 
 import org.objectweb.asm.Type;
 
-import tod.core.BehaviourKind;
+import tod.core.BehaviorKind;
 import tod.core.ILocationRegistrer;
 import tod.core.bci.LocationPoolPersister;
 import tod.core.database.structure.ILocationInfo;
@@ -133,10 +133,10 @@ public class ASMLocationPool
 			theId = itsNextMethodId++;
 			itsMethodIds.put(theKey, theId);
 			
-			BehaviourKind theKind;
-			if ("<init>".equals(aName)) theKind = BehaviourKind.CONSTRUCTOR;
-			else if ("<clinit>".equals(aName)) theKind = BehaviourKind.STATIC_BLOCK;
-			else theKind = aStatic ? BehaviourKind.STATIC_METHOD : BehaviourKind.METHOD;
+			BehaviorKind theKind;
+			if ("<init>".equals(aName)) theKind = BehaviorKind.CONSTRUCTOR;
+			else if ("<clinit>".equals(aName)) theKind = BehaviorKind.STATIC_BLOCK;
+			else theKind = aStatic ? BehaviorKind.STATIC_METHOD : BehaviorKind.METHOD;
 			
 			itsLocationRegistrer.registerBehavior(theKind, theId, aTypeId, aName, aDescriptor);
 		}
@@ -221,7 +221,7 @@ public class ASMLocationPool
 			itsTargetRegistrer = aTargetRegistrer;
 		}
 		
-		public void registerBehavior(BehaviourKind aBehaviourType, int aBehaviourId, int aTypeId, String aBehaviourName, String aSignature)
+		public void registerBehavior(BehaviorKind aBehaviourType, int aBehaviourId, int aTypeId, String aBehaviourName, String aSignature)
 		{
 			itsNextMethodId = Math.max(itsNextMethodId, aBehaviourId+1);
 			itsMethodIds.put(getBehaviorKey(aTypeId, aBehaviourName, aSignature), aBehaviourId);

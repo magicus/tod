@@ -57,5 +57,10 @@ public enum Output
 	
 	public abstract PrintStream get();
 	public abstract void set(PrintStream aStream);
+	
+	/**
+	 * Cached values; call to values() is costly. 
+	 */
+	public static final Output[] VALUES = values();
 }
 

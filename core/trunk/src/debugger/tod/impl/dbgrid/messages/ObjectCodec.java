@@ -257,12 +257,17 @@ public class ObjectCodec
 		public abstract void writeObject(BitStruct aStruct, Object aObject);
 		public abstract Object readObject(BitStruct aStruct);
 		public abstract int getObjectBits(Object aObject);
+		
+		/**
+		 * Cached values; call to values() is costly. 
+		 */
+		public static final ObjectType[] VALUES = values();
 	}
 	
 	/**
 	 * Number of bits necessary to represent an object type.
 	 */
-	private static final int TYPE_BITS = BitUtils.log2ceil(ObjectType.values().length);
+	private static final int TYPE_BITS = BitUtils.log2ceil(ObjectType.VALUES.length);
 	
 	private static void writeType(BitStruct aStruct, ObjectType aType)
 	{
@@ -272,7 +277,7 @@ public class ObjectCodec
 	private static ObjectType readType(BitStruct aStruct)
 	{
 		int theIndex = aStruct.readInt(TYPE_BITS);
-		return ObjectType.values()[theIndex];
+		return ObjectType.VALUES[theIndex];
 	}
 	
 	private static ObjectType findType(Object aObject)

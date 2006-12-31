@@ -24,7 +24,7 @@ package tod.core;
  * An enumeration of the various behaviour types.
  * @author gpothier
  */
-public enum BehaviourKind
+public enum BehaviorKind
 {
 	METHOD("method"), 
 	STATIC_METHOD("static method"), 
@@ -33,7 +33,7 @@ public enum BehaviourKind
 	
 	private String itsName;
 	
-	BehaviourKind (String aName)
+	BehaviorKind (String aName)
 	{
 		itsName = aName;
 	}
@@ -42,4 +42,9 @@ public enum BehaviourKind
 	{
 		return itsName;
 	}
+
+	/**
+	 * Cached values; call to values() is costly. 
+	 */
+	public static final BehaviorKind[] VALUES = values();
 }

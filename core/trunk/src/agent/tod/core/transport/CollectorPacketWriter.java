@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
-import tod.core.BehaviourKind;
+import tod.core.BehaviorKind;
 import tod.core.ObjectIdentity;
 import tod.core.Output;
 import static tod.core.ILocationRegistrer.LineNumberInfo;
@@ -335,7 +335,7 @@ public class CollectorPacketWriter
     
     public static void sendRegisterBehavior(
 			DataOutputStream aStream,
-    		BehaviourKind aBehaviourType,
+    		BehaviorKind aBehaviourType,
             int aBehaviourId, 
             int aTypeId,
             String aBehaviourName,

@@ -61,9 +61,8 @@ implements RIEventDispatcher
 	 */
 	private NodeException itsNodeException;
 
-	public AbstractEventDispatcher(boolean aConnectToMaster) throws RemoteException
+	public AbstractEventDispatcher() throws RemoteException
 	{
-		super(aConnectToMaster);
 		itsServer = new MyServer();
 	}
 	
@@ -160,7 +159,8 @@ implements RIEventDispatcher
 			IHostInfo aHostInfo, 
 			GridMaster aMaster, 
 			InputStream aInStream,
-			OutputStream aOutStream, boolean aStartImmediately);
+			OutputStream aOutStream, 
+			boolean aStartImmediately);
 	
 	/**
 	 * Forks a task to all attached nodes, and returns when all nodes

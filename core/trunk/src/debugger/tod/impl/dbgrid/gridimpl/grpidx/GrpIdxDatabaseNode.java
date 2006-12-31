@@ -68,7 +68,7 @@ public class GrpIdxDatabaseNode extends UniformDatabaseNode
 	/**
 	 * Number of bits to encode index kind.
 	 */
-	public static final int KIND_BITS = BitUtils.log2ceil(IndexKind.values().length);
+	public static final int KIND_BITS = BitUtils.log2ceil(IndexKind.VALUES.length);
 
 	private final int[] itsBuffer = new int[DebuggerGridConfig.MASTER_EVENT_BUFFER_SIZE];
 	private final byte[] itsByteBuffer = new byte[DebuggerGridConfig.MASTER_EVENT_BUFFER_SIZE*4];
@@ -77,7 +77,7 @@ public class GrpIdxDatabaseNode extends UniformDatabaseNode
 	
 	public static enum IndexKind
 	{
-		TYPE(BitUtils.log2ceil(MessageType.values().length), StdIndexSet.TUPLE_CODEC)
+		TYPE(BitUtils.log2ceil(MessageType.VALUES.length), StdIndexSet.TUPLE_CODEC)
 		{
 			@Override
 			public void index(Indexes aIndexes, int aIndex, IndexTuple aTuple)
@@ -190,11 +190,15 @@ public class GrpIdxDatabaseNode extends UniformDatabaseNode
 			return itsCodec.read(aStruct);
 		}
 		
+		/**
+		 * Cached values; call to values() is costly. 
+		 */
+		public static final IndexKind[] VALUES = values();
+		
 	}
 
-	public GrpIdxDatabaseNode(boolean aRegisterToMaster) throws RemoteException
+	public GrpIdxDatabaseNode() throws RemoteException
 	{
-		super(aRegisterToMaster);
 	}
 	
 	@Override
@@ -239,7 +243,7 @@ public class GrpIdxDatabaseNode extends UniformDatabaseNode
 		
 		for (int i=0;i<theCount;i++)
 		{
-			IndexKind theKind = IndexKind.values()[itsStruct.readInt(GrpIdxDatabaseNode.KIND_BITS)];
+			IndexKind theKind = IndexKind.VALUES[itsStruct.readInt(GrpIdxDatabaseNode.KIND_BITS)];
 			
 			int theIndex = itsStruct.readInt(theKind.getIndexBits());
 			IndexTuple theTuple = theKind.readTuple(itsStruct);

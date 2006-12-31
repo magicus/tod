@@ -20,6 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.dispatch;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -56,9 +58,8 @@ implements RILeafDispatcher
 	 */
 	private ILocationStore itsLocationStore;
 	
-	public LeafEventDispatcher(boolean aConnectToMaster, ILocationStore aLocationStore) throws RemoteException
+	public LeafEventDispatcher(ILocationStore aLocationStore) throws RemoteException
 	{
-		super(aConnectToMaster);
 		itsLocationStore = aLocationStore;
 	}
 	
@@ -96,8 +97,8 @@ implements RILeafDispatcher
 			createLogReceiver(
 					null, 
 					null, 
-					aSocket.getInputStream(), 
-					aSocket.getOutputStream(), 
+					new BufferedInputStream(aSocket.getInputStream()), 
+					new BufferedOutputStream(aSocket.getOutputStream()), 
 					true);
 		}
 		catch (IOException e)

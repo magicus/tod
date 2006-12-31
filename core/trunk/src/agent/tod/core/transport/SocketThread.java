@@ -23,6 +23,8 @@ package tod.core.transport;
  * Created on Oct 25, 2004
  */
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -186,7 +188,9 @@ public abstract class SocketThread extends Thread
 	{
 		try
 		{
-			processInterrupted(itsSocket.getOutputStream(), itsSocket.getInputStream());
+			processInterrupted(
+					new BufferedOutputStream(itsSocket.getOutputStream()), 
+					new BufferedInputStream(itsSocket.getInputStream()));
 		}
 		catch (IOException e)
 		{
@@ -219,7 +223,9 @@ public abstract class SocketThread extends Thread
 	 */
 	protected final void process() throws IOException, InterruptedException
 	{
-		process(itsSocket.getOutputStream(), itsSocket.getInputStream());
+		process(
+				new BufferedOutputStream(itsSocket.getOutputStream()), 
+				new BufferedInputStream(itsSocket.getInputStream()));
 	}
 	
 	/**

@@ -41,7 +41,7 @@ import zz.utils.bit.BitStruct;
 public class GridBehaviorCallEvent extends GridEvent
 {
 	private static final long serialVersionUID = -6294318569339045898L;
-
+	
 	/**
 	 * We don't have separate classes for method call,
 	 * constructor chaining and instantiation.
@@ -180,7 +180,7 @@ public class GridBehaviorCallEvent extends GridEvent
 	@Override
 	public MessageType getEventType()
 	{
-		return MessageType.values()[itsType];
+		return MessageType.VALUES[itsType];
 	}
 
 	public Object[] getArguments()

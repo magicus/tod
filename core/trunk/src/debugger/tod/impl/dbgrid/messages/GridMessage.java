@@ -43,7 +43,7 @@ implements Serializable
 	 */
 	public static GridMessage read(BitStruct aBitStruct)
 	{
-		MessageType theType = MessageType.values()[aBitStruct.readInt(MESSAGE_TYPE_BITS)];
+		MessageType theType = MessageType.VALUES[aBitStruct.readInt(MESSAGE_TYPE_BITS)];
 		switch (theType)
 		{
 		case BEHAVIOR_EXIT:

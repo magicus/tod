@@ -214,7 +214,7 @@ public class EventGenerator
 
 	public MessageType genType()
 	{
-		return MessageType.values()[itsRandom.nextInt(MessageType.values().length-2)+1];
+		return MessageType.VALUES[itsRandom.nextInt(MessageType.VALUES.length-2)+1];
 	}
 	
 	public long genParentTimestamp()

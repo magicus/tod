@@ -20,7 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.transport;
 
-import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
@@ -55,15 +54,6 @@ public abstract class LogReceiver extends Thread
 	
 	private final InputStream itsInStream;
 	private final OutputStream itsOutStream;
-	
-	/**
-	 * Connects to an already running aplication through the specified socket.
-	 * @param aSocket The socket used to connect.
-	 */
-	public LogReceiver(InputStream aInStream, OutputStream aOutStream)
-	{
-		this(aInStream, aOutStream, true);
-	}
 	
 	public LogReceiver(InputStream aInStream, OutputStream aOutStream, boolean aStart)
 	{
@@ -143,8 +133,7 @@ public abstract class LogReceiver extends Thread
 	{
 		try
 		{
-			DataInputStream theStream = new DataInputStream(
-					new BufferedInputStream(itsInStream));
+			DataInputStream theStream = new DataInputStream(itsInStream);
 			
 			setHostName(theStream.readUTF());
 			
@@ -167,7 +156,7 @@ public abstract class LogReceiver extends Thread
 					}
 					else
 					{
-						MessageType theType = MessageType.values()[theCommand];
+						MessageType theType = MessageType.VALUES[theCommand];
 						readPacket(theStream, theType);
 					}
 					

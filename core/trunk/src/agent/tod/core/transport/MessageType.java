@@ -46,5 +46,11 @@ public enum MessageType
 	// Registering
 	REGISTER_CLASS, REGISTER_BEHAVIOR, REGISTER_FIELD, 
 	REGISTER_FILE, REGISTER_THREAD, REGISTER_LOCAL_VARIABLE,
-    REGISTER_BEHAVIOR_ATTRIBUTES
+    REGISTER_BEHAVIOR_ATTRIBUTES;
+	
+	/**
+	 * Cached values; call to values() is costly. 
+	 */
+	public static final MessageType[] VALUES = values();
+	
 }

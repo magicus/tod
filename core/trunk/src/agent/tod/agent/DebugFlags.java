@@ -33,7 +33,7 @@ public class DebugFlags
 	/**
 	 * Causes database nodes to skip incoming events
 	 */
-	public static final boolean SKIP_EVENTS = true; 
+	public static final boolean SKIP_EVENTS = false; 
 	
 	/**
 	 * Causes database nodes to not reorder incoming events
@@ -113,6 +113,13 @@ public class DebugFlags
 	 */
 	public static final boolean GRID_CHECK_NODE_HOST = false;
 	
+	/**
+	 * If true, hierarchical dispatching parameters are
+	 * tweaked so that there is one internal dispatcher, one
+	 * leaf dispatcher and one db node.
+	 */
+	public static final boolean DISPATCH_FAKE_1 = false;
+	
 	static
 	{
 		if (SKIP_EVENTS == true) System.err.println("Warning: SKIP_EVENTS (DebugFlags)");
@@ -126,5 +133,6 @@ public class DebugFlags
 		if (COLLECTOR_IGNORE_ALL == true) System.err.println("Warning: COLLECTOR_IGNORE_ALL (DebugFlags)");
 		if (DISABLE_EVENT_SEND == true) System.err.println("Warning: DISABLE_EVENT_SEND (DebugFlags)");
 		if (LOCAL_COLLECTOR_STORE == false) System.err.println("Warning: LOCAL_COLLECTOR_STORE (DebugFlags)");
+		if (DISPATCH_FAKE_1 == true) System.err.println("Warning: DISPATCH_FAKE_1 (DebugFlags)");
 	}
 }

@@ -92,7 +92,7 @@ public class LocationRegistrer implements ILocationStore
 	}
 
 	public void registerBehavior(
-			BehaviourKind aBehaviourType, 
+			BehaviorKind aBehaviourType, 
 			int aBehaviourId, 
 			int aTypeId, 
 			String aBehaviourName,
@@ -169,7 +169,7 @@ public class LocationRegistrer implements ILocationStore
 	 * Factory method for constructor info.
 	 */
 	protected BehaviorInfo createBehaviourInfo(
-			BehaviourKind aBehaviourType, 
+			BehaviorKind aBehaviourType, 
 			int aId, 
 			ClassInfo aTypeInfo, 
 			String aName,
@@ -392,7 +392,7 @@ public class LocationRegistrer implements ILocationStore
 			itsDelegate = aDelegate;
 		}
 
-		public synchronized void registerBehavior(BehaviourKind aBehaviourType, int aBehaviourId, int aTypeId,
+		public synchronized void registerBehavior(BehaviorKind aBehaviourType, int aBehaviourId, int aTypeId,
 				String aBehaviourName, String aSignature)
 		{
 			itsDelegate.registerBehavior(aBehaviourType, aBehaviourId, aTypeId, aBehaviourName, aSignature);

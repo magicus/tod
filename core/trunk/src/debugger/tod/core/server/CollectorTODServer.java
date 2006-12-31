@@ -20,6 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.server;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -56,7 +58,8 @@ public class CollectorTODServer extends TODServer
 			return new CollectorLogReceiver(
 					itsCollectorFactory.create(),
 					LocationRegistrer.createSynchronizedRegistrer(getLocationRegistrer()),
-					aSocket.getInputStream(), aSocket.getOutputStream())
+					new BufferedInputStream(aSocket.getInputStream()), 
+					new BufferedOutputStream(aSocket.getOutputStream()))
 			{
 				@Override
 				protected synchronized void eof()

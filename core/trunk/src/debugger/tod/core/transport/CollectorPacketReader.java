@@ -24,7 +24,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
-import tod.core.BehaviourKind;
+import tod.core.BehaviorKind;
 import tod.core.ILocationRegistrer;
 import tod.core.ILogCollector;
 import tod.core.Output;
@@ -142,7 +142,7 @@ public class CollectorPacketReader
 	private static MessageType readMessageType (DataInputStream aStream) throws IOException
 	{
 		byte theByte = aStream.readByte();
-		return MessageType.values()[theByte];
+		return MessageType.VALUES[theByte];
 	}
 	
     private static Object[] readArguments(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -342,7 +342,7 @@ public class CollectorPacketReader
 				aStream.readLong(),
         		aStream.readShort(),
         		aStream.readLong(),
-                Output.values()[aStream.readByte()],
+                Output.VALUES[aStream.readByte()],
                 readBytes(aStream));
 	}
 	
@@ -389,7 +389,7 @@ public class CollectorPacketReader
 	
 	public static void readBehaviour (DataInputStream aStream, ILocationRegistrer aRegistrer) throws IOException
 	{
-		BehaviourKind theType = BehaviourKind.values()[aStream.readByte()];
+		BehaviorKind theType = BehaviorKind.VALUES[aStream.readByte()];
 		int theId = aStream.readInt();
 		int theClassId = aStream.readInt();
 		String theName = aStream.readUTF();

@@ -146,7 +146,7 @@ public class DebuggerGridConfig
 	/**
 	 * Number of bits used to represent the message type
 	 */
-	public static final int MESSAGE_TYPE_BITS = BitUtils.log2ceil(MessageType.values().length); 
+	public static final int MESSAGE_TYPE_BITS = BitUtils.log2ceil(MessageType.VALUES.length); 
 	
 	/**
 	 * Number of bits necessary to represent an external event pointer.

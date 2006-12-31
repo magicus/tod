@@ -55,6 +55,7 @@ public class StartNode
 		if (theRole == null)
 		{
 			System.err.println("Master rejected this node with a null role.");
+			return;
 		}
 		
 		TODConfig theConfig = new TODConfig();
@@ -68,7 +69,8 @@ public class StartNode
 			
 		case INTERNAL_DISPATCHER:
 			System.out.println("Starting internal dispatcher.");
-			new InternalEventDispatcher(true);
+			InternalEventDispatcher theDispatcher = new InternalEventDispatcher();
+			theDispatcher.connectToMaster();
 			break;
 			
 		case LEAF_DISPATCHER:
@@ -119,7 +121,8 @@ public class StartNode
 		if (aTaskId < theStructure.internalNodes)
 		{
 			System.out.println("Starting internal dispatcher.");
-			new InternalEventDispatcher(true);
+			InternalEventDispatcher theDispatcher = new InternalEventDispatcher();
+			theDispatcher.connectToMaster();
 			return;
 		}
 

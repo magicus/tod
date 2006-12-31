@@ -20,7 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.structure;
 
-import tod.core.BehaviourKind;
+import tod.core.BehaviorKind;
 import tod.core.ILocationRegistrer;
 import tod.core.ILocationRegistrer.LineNumberInfo;
 import tod.core.ILocationRegistrer.LocalVariableInfo;
@@ -32,7 +32,7 @@ import tod.core.ILocationRegistrer.LocalVariableInfo;
  */
 public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 {
-	private final BehaviourKind itsBehaviourKind;
+	private final BehaviorKind itsBehaviourKind;
 	
 	private final String itsSignature;
 	private final ITypeInfo[] itsArgumentTypes;
@@ -42,7 +42,7 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 	private ILocationRegistrer.LocalVariableInfo[] itsLocalVariableTable;
 
 	public BehaviorInfo(
-			BehaviourKind aBehaviourKind, 
+			BehaviorKind aBehaviourKind, 
 			int aId, 
 			ClassInfo aType, 
 			String aName,
@@ -69,7 +69,7 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 		itsLocalVariableTable = aLocalVariableTable;
 	}
 	
-	public BehaviourKind getBehaviourKind()
+	public BehaviorKind getBehaviourKind()
 	{
 		return itsBehaviourKind;
 	}
@@ -124,18 +124,18 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
     
     public boolean isConstructor()
     {
-    	return getBehaviourKind() == BehaviourKind.CONSTRUCTOR;
+    	return getBehaviourKind() == BehaviorKind.CONSTRUCTOR;
     }
 
     public boolean isStaticInit()
     {
-    	return getBehaviourKind() == BehaviourKind.STATIC_BLOCK;
+    	return getBehaviourKind() == BehaviorKind.STATIC_BLOCK;
     }
     
     public boolean isStatic()
     {
-    	return getBehaviourKind() == BehaviourKind.STATIC_BLOCK
-    		|| getBehaviourKind() == BehaviourKind.STATIC_METHOD;
+    	return getBehaviourKind() == BehaviorKind.STATIC_BLOCK
+    		|| getBehaviourKind() == BehaviorKind.STATIC_METHOD;
     }
     
 	

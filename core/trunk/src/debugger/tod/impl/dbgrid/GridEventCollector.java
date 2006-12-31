@@ -93,7 +93,7 @@ public class GridEventCollector extends EventCollector
 	private int getHostId()
 	{
 		// TODO: fix host handling.
-		return -1;
+		return 0;
 	}
 
 	@Override

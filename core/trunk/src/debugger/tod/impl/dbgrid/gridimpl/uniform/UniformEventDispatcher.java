@@ -38,9 +38,9 @@ public class UniformEventDispatcher extends LeafEventDispatcher
 {
 	private int itsCurrentNode = 0;
 	
-	public UniformEventDispatcher(boolean aConnectToMaster, ILocationStore aLocationStore) throws RemoteException
+	public UniformEventDispatcher(ILocationStore aLocationStore) throws RemoteException
 	{
-		super(aConnectToMaster, aLocationStore);
+		super(aLocationStore);
 	}
 	
 	@Override

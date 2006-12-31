@@ -21,6 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.dispatch;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -49,9 +50,14 @@ implements RIDatabaseNode
 {
 	private MasterConnection itsMasterConnection;
 	
-	public DatabaseNode(boolean aConnectToMaster) throws RemoteException
+	public DatabaseNode() throws RemoteException
 	{
-		super(aConnectToMaster);
+	}
+	
+	@Override
+	protected void connectedToMaster()
+	{
+		super.connectedToMaster();
 		clear();
 	}
 	
@@ -111,8 +117,11 @@ implements RIDatabaseNode
 		{
 			try
 			{
-				DataInputStream theInStream = new DataInputStream(new BufferedInputStream(itsSocket.getInputStream()));
-				DataOutputStream theOutStream = new DataOutputStream(itsSocket.getOutputStream());
+				DataInputStream theInStream = new DataInputStream(
+						new BufferedInputStream(itsSocket.getInputStream()));
+				
+				DataOutputStream theOutStream = new DataOutputStream(
+						new BufferedOutputStream(itsSocket.getOutputStream()));
 				
 				while (itsSocket.isConnected())
 				{

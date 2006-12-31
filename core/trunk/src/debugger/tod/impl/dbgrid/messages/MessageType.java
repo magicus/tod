@@ -31,4 +31,9 @@ public enum MessageType
 	LOCAL_VARIABLE_WRITE,
 	METHOD_CALL,
 	OUTPUT;
+	
+	/**
+	 * Cached values; call to values() is costly. 
+	 */
+	public static final MessageType[] VALUES = values();
 }

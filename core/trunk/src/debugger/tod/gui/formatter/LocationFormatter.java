@@ -20,7 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.formatter;
 
-import tod.core.BehaviourKind;
+import tod.core.BehaviorKind;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IThreadInfo;
@@ -59,7 +59,7 @@ public class LocationFormatter extends AbstractFormatter
 		else if (aObject instanceof IBehaviorInfo)
 		{
 			IBehaviorInfo theInfo = (IBehaviorInfo) aObject;
-			BehaviourKind theBehaviourType = theInfo.getBehaviourKind();
+			BehaviorKind theBehaviourType = theInfo.getBehaviourKind();
 			return theBehaviourType.getName() + " " + theInfo.getName();
 		}
 		else if (aObject instanceof IThreadInfo)

@@ -63,16 +63,8 @@ implements RIDispatchNode
 	 */
 	private RIGridMaster itsMaster;
 
-	public AbstractDispatchNode(boolean aConnectToMaster) throws RemoteException
+	public AbstractDispatchNode() throws RemoteException
 	{
-		try
-		{
-			if (aConnectToMaster) connectToMaster();
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
 	}
 
 	/**
@@ -92,7 +84,7 @@ implements RIDispatchNode
 	 * Establishes the initial connection between this node and the
 	 * {@link GridMaster} through RMI.
 	 */
-	protected void connectToMaster() throws IOException, NotBoundException, AlreadyBoundException
+	public void connectToMaster() throws IOException, NotBoundException, AlreadyBoundException
 	{
 		// Setup RMI connection
 		Registry theRegistry = LocateRegistry.getRegistry(DebuggerGridConfig.MASTER_HOST);
@@ -102,7 +94,6 @@ implements RIDispatchNode
 		{
 			itsNodeId = itsMaster.registerNode(this, InetAddress.getLocalHost().getHostName());
 			connectedToMaster();
-			theRegistry.bind(getNodeId(), this);
 		}
 		catch (NodeRejectedException e)
 		{

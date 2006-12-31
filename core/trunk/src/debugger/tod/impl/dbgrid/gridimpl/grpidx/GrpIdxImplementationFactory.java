@@ -20,10 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.gridimpl.grpidx;
 
-import java.rmi.RemoteException;
-
 import tod.core.database.browser.ILocationStore;
-import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.dispatch.DatabaseNode;
 import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
 import tod.impl.dbgrid.gridimpl.IGridImplementationFactory;
@@ -35,21 +32,25 @@ public class GrpIdxImplementationFactory implements IGridImplementationFactory
 	{
 		try
 		{
-			return new GrpIdxEventDispatcher(aConnectToMaster, aLocationStore);
+			GrpIdxEventDispatcher theDispatcher = new GrpIdxEventDispatcher(aLocationStore);
+			if (aConnectToMaster) theDispatcher.connectToMaster();
+			return theDispatcher;
 		}
-		catch (RemoteException e)
+		catch (Exception e)
 		{
 			throw new RuntimeException(e);
 		}
 	}
 
-	public DatabaseNode createNode(boolean aRegisterToMaster)
+	public DatabaseNode createNode(boolean aConnectToMaster)
 	{
 		try
 		{
-			return new GrpIdxDatabaseNode(aRegisterToMaster);
+			GrpIdxDatabaseNode theNode = new GrpIdxDatabaseNode();
+			if (aConnectToMaster) theNode.connectToMaster();
+			return theNode;
 		}
-		catch (RemoteException e)
+		catch (Exception e)
 		{
 			throw new RuntimeException(e);
 		}

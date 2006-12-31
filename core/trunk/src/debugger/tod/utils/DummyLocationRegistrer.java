@@ -20,7 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.utils;
 
-import tod.core.BehaviourKind;
+import tod.core.BehaviorKind;
 import tod.core.ILocationRegistrer;
 import tod.core.database.browser.ILocationStore;
 import tod.core.database.browser.ILocationsRepository;
@@ -33,7 +33,7 @@ import tod.core.database.structure.TypeInfo;
 public class DummyLocationRegistrer 
 implements ILocationStore
 {
-	public void registerBehavior(BehaviourKind aBehaviourType, int aBehaviourId, int aTypeId, String aBehaviourName, String aSignature)
+	public void registerBehavior(BehaviorKind aBehaviourType, int aBehaviourId, int aTypeId, String aBehaviourName, String aSignature)
 	{
 	}
 
