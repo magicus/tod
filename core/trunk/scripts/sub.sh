@@ -4,7 +4,9 @@ source common
 
 SCRIPT=$1
 NODES=$2
-SEC_NODES=$((NODES*SUB_FACTOR))
+SEC_NODES=$((NODES*$SUB_FACTOR))
+
+echo NODES: $NODES SF: $SF SN: $SEC_NODES
 
 # echo Removing lock files...
 # cluster-fork rm -f $LOCK_FILE

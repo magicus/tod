@@ -29,8 +29,8 @@ import java.io.OutputStream;
 import tod.core.BehaviorKind;
 import tod.core.ObjectIdentity;
 import tod.core.Output;
-import static tod.core.ILocationRegistrer.LineNumberInfo;
-import static tod.core.ILocationRegistrer.LocalVariableInfo;
+import static tod.core.ILocationRegisterer.LineNumberInfo;
+import static tod.core.ILocationRegisterer.LocalVariableInfo;
 
 /**
  * Provides the methods used to encode streamed log data.

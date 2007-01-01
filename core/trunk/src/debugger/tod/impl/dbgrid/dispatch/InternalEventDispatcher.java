@@ -32,7 +32,7 @@ import java.rmi.RemoteException;
 
 import tod.agent.DebugFlags;
 import tod.core.BehaviorKind;
-import tod.core.ILocationRegistrer;
+import tod.core.ILocationRegisterer;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ThreadInfo;
@@ -50,7 +50,7 @@ implements RIInternalDispatcher
 	 */
 	private int itsCurrentChild = 0;
 
-	private ILocationRegistrer itsForwardingRegistrer = new ForwardingRegistrer();
+	private ILocationRegisterer itsForwardingRegistrer = new ForwardingRegisterer();
 
 	public InternalEventDispatcher() throws RemoteException
 	{
@@ -198,7 +198,7 @@ implements RIInternalDispatcher
 	 * @see AbstractEventDispatcher#getLocationRegistrer()
 	 * @author gpothier
 	 */
-	private class ForwardingRegistrer implements ILocationRegistrer
+	private class ForwardingRegisterer implements ILocationRegisterer
 	{
 		public void registerBehavior(BehaviorKind aBehaviourType, int aBehaviourId, int aTypeId,
 				String aBehaviourName, String aSignature)

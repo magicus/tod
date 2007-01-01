@@ -24,7 +24,7 @@ import java.net.InetAddress;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-import tod.core.LocationRegistrer;
+import tod.core.LocationRegisterer;
 import tod.core.config.TODConfig;
 import tod.impl.dbgrid.RIGridMaster.NodeRole;
 import tod.impl.dbgrid.dispatch.InternalEventDispatcher;
@@ -75,7 +75,7 @@ public class StartNode
 			
 		case LEAF_DISPATCHER:
 			System.out.println("Starting leaf dispatcher.");
-			GridImpl.getFactory(theConfig).createLeafDispatcher(true, new LocationRegistrer());
+			GridImpl.getFactory(theConfig).createLeafDispatcher(true, new LocationRegisterer());
 			break;
 
 		default: throw new RuntimeException("Not handled: "+theRole); 
@@ -112,7 +112,7 @@ public class StartNode
 		if (aTaskId < theStructure.leafNodes)
 		{
 			System.out.println("Starting leaf dispatcher.");
-			GridImpl.getFactory(theConfig).createLeafDispatcher(true, new LocationRegistrer());
+			GridImpl.getFactory(theConfig).createLeafDispatcher(true, new LocationRegisterer());
 			return;
 		}
 		

@@ -30,6 +30,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.concurrent.CountDownLatch;
 
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
@@ -62,6 +63,13 @@ implements RIDispatchNode
 	 * The master to which this node is connected.
 	 */
 	private RIGridMaster itsMaster;
+
+	/**
+	 * This latch permits to wait until this node is connected
+	 * to the master.
+	 * @see #waitConnectedToMaster()
+	 */
+	private CountDownLatch itsConnectedLatch = new CountDownLatch(1);
 
 	public AbstractDispatchNode() throws RemoteException
 	{
@@ -101,6 +109,8 @@ implements RIDispatchNode
 			System.exit(1);
 		}
 		
+		itsConnectedLatch.countDown();
+		
 		System.out.println("Master assigned node id "+itsNodeId);
 		
 		startMonitoringThread();
@@ -112,6 +122,21 @@ implements RIDispatchNode
 	 */
 	protected void connectedToMaster()
 	{
+	}
+	
+	/**
+	 * Waits until this node is connected to the grid master.
+	 */
+	protected void waitConnectedToMaster()
+	{
+		try
+		{
+			itsConnectedLatch.await();
+		}
+		catch (InterruptedException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 	
 	/**

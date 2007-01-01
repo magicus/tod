@@ -22,7 +22,7 @@ package tod.core.database.browser;
 
 import java.util.List;
 
-import tod.core.ILocationRegistrer.LocalVariableInfo;
+import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILocalVariableWriteEvent;

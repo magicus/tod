@@ -28,7 +28,7 @@ import java.util.Map;
 import org.objectweb.asm.Type;
 
 import tod.Util;
-import tod.core.ILocationRegistrer.Stats;
+import tod.core.ILocationRegisterer.Stats;
 import tod.core.database.browser.ILocationStore;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.ArrayTypeInfo;
@@ -48,7 +48,7 @@ import zz.utils.Utils;
  * This class permits to register location ids.
  * @author gpothier
  */
-public class LocationRegistrer implements ILocationStore
+public class LocationRegisterer implements ILocationStore
 {
 	private List<ClassInfo> itsTypes = new ArrayList<ClassInfo>();
 	private List<UnknownTypeInfo> itsUnknownTypes = new ArrayList<UnknownTypeInfo>();
@@ -58,7 +58,7 @@ public class LocationRegistrer implements ILocationStore
 	private List<BehaviorInfo> itsBehaviors = new ArrayList<BehaviorInfo>();
 	private List<FieldInfo> itsFields = new ArrayList<FieldInfo>();
 	
-	public LocationRegistrer()
+	public LocationRegisterer()
 	{
 		registerPrimitiveType("void", 0);
 		registerPrimitiveType("boolean", 1);
@@ -374,20 +374,20 @@ public class LocationRegistrer implements ILocationStore
 	/**
 	 * Returns a new synchronized view of the given registrer.
 	 */
-	public static ILocationRegistrer createSynchronizedRegistrer(ILocationRegistrer aRegistrer)
+	public static ILocationRegisterer createSynchronizedRegistrer(ILocationRegisterer aRegistrer)
 	{
-		return new SynchronizedRegistrer(aRegistrer);
+		return new SynchronizedRegisterer(aRegistrer);
 	}
 	
 	/**
 	 * A wrapper that synchronizes calls to the registering methods.
 	 * @author gpothier
 	 */
-	private static class SynchronizedRegistrer implements ILocationRegistrer
+	private static class SynchronizedRegisterer implements ILocationRegisterer
 	{
-		private ILocationRegistrer itsDelegate;
+		private ILocationRegisterer itsDelegate;
 
-		private SynchronizedRegistrer(ILocationRegistrer aDelegate)
+		private SynchronizedRegisterer(ILocationRegisterer aDelegate)
 		{
 			itsDelegate = aDelegate;
 		}

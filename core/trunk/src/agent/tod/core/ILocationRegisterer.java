@@ -28,7 +28,7 @@ import java.io.Serializable;
  * methods, classes, fields, etc.
  * @author gpothier
  */
-public interface ILocationRegistrer {
+public interface ILocationRegisterer {
     
 	public void registerFile (
 			int aFileId,

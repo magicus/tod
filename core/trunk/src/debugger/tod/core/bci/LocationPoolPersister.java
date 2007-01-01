@@ -30,7 +30,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import tod.core.BehaviorKind;
-import tod.core.ILocationRegistrer;
+import tod.core.ILocationRegisterer;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.transport.CollectorPacketReader;
@@ -49,12 +49,12 @@ public class LocationPoolPersister
 	 * and forwards them to another registrer
 	 * @author gpothier
 	 */
-	public static class Store implements ILocationRegistrer
+	public static class Store implements ILocationRegisterer
 	{
-		private ILocationRegistrer itsTargetRegistrer;
+		private ILocationRegisterer itsTargetRegistrer;
 		private DataOutputStream itsStream;
 		
-		public Store(ILocationRegistrer aTargetRegistrer, DataOutputStream aStream)
+		public Store(ILocationRegisterer aTargetRegistrer, DataOutputStream aStream)
 		{
 			itsTargetRegistrer = aTargetRegistrer;
 			itsStream = aStream;
@@ -139,7 +139,7 @@ public class LocationPoolPersister
 	/**
 	 * Restores previously stored location infos.
 	 */
-	public static void read (File aFile, ILocationRegistrer aRegistrer) throws FileNotFoundException, IOException
+	public static void read (File aFile, ILocationRegisterer aRegistrer) throws FileNotFoundException, IOException
 	{
 		System.out.println("Reading stored locations from "+aFile);
 		DataInputStream theStream = new DataInputStream(new BufferedInputStream(new FileInputStream(aFile)));

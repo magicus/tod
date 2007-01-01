@@ -23,7 +23,7 @@ package tod.impl.local;
 import tod.agent.AgentUtils;
 import tod.agent.DebugFlags;
 import tod.core.Output;
-import tod.core.ILocationRegistrer.LocalVariableInfo;
+import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IHostInfo;

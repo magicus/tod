@@ -20,14 +20,14 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.browser;
 
-import tod.core.ILocationRegistrer;
+import tod.core.ILocationRegisterer;
 
 /**
  * This interface only extends {@link ILocationsRepository}
- * and {@link ILocationRegistrer}.
+ * and {@link ILocationRegisterer}.
  * @author gpothier
  */
-public interface ILocationStore extends ILocationsRepository, ILocationRegistrer
+public interface ILocationStore extends ILocationsRepository, ILocationRegisterer
 {
 
 }

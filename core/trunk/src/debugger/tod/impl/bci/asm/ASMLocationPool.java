@@ -33,7 +33,7 @@ import java.util.Set;
 import org.objectweb.asm.Type;
 
 import tod.core.BehaviorKind;
-import tod.core.ILocationRegistrer;
+import tod.core.ILocationRegisterer;
 import tod.core.bci.LocationPoolPersister;
 import tod.core.database.structure.ILocationInfo;
 
@@ -48,7 +48,7 @@ public class ASMLocationPool
 	private Map<String, Integer> itsTypeIds = new HashMap<String, Integer>();
 	private int itsNextTypeId = 1;
 	
-	private ILocationRegistrer itsLocationRegistrer;
+	private ILocationRegisterer itsLocationRegistrer;
 	
 	/**
 	 * We keep track of the methods that have already been traced.
@@ -56,7 +56,7 @@ public class ASMLocationPool
 	 */
 	private Set<Integer> itsTracedMethods = new HashSet<Integer>();
 	
-	public ASMLocationPool(ILocationRegistrer aLocationRegistrer, File aLocationsFile)
+	public ASMLocationPool(ILocationRegisterer aLocationRegistrer, File aLocationsFile)
 	{
 		if (aLocationsFile != null)
 		{
@@ -74,7 +74,7 @@ public class ASMLocationPool
 				// Read existing locations
 				LocationPoolPersister.read(
 						aLocationsFile,
-						new LoadRegistrerAdapter(aLocationRegistrer));
+						new LoadRegistererAdapter(aLocationRegistrer));
 			}
 			catch (FileNotFoundException e)
 			{
@@ -209,14 +209,14 @@ public class ASMLocationPool
 	}
 	
 	/**
-	 * We pass an instance of this class to {@link LocationPoolPersister#read(File, ILocationRegistrer)}
+	 * We pass an instance of this class to {@link LocationPoolPersister#read(File, ILocationRegisterer)}
 	 * so as to initialize our tables.
 	 */
-	private class LoadRegistrerAdapter implements ILocationRegistrer
+	private class LoadRegistererAdapter implements ILocationRegisterer
 	{
-		private ILocationRegistrer itsTargetRegistrer;
+		private ILocationRegisterer itsTargetRegistrer;
 
-		public LoadRegistrerAdapter(ILocationRegistrer aTargetRegistrer)
+		public LoadRegistererAdapter(ILocationRegisterer aTargetRegistrer)
 		{
 			itsTargetRegistrer = aTargetRegistrer;
 		}

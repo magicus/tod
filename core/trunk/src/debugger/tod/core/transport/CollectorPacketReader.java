@@ -25,11 +25,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 
 import tod.core.BehaviorKind;
-import tod.core.ILocationRegistrer;
+import tod.core.ILocationRegisterer;
 import tod.core.ILogCollector;
 import tod.core.Output;
-import tod.core.ILocationRegistrer.LineNumberInfo;
-import tod.core.ILocationRegistrer.LocalVariableInfo;
+import tod.core.ILocationRegisterer.LineNumberInfo;
+import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.structure.ObjectId;
 
 public class CollectorPacketReader
@@ -37,7 +37,7 @@ public class CollectorPacketReader
 	public static void readPacket(
 			DataInputStream aStream, 
 			ILogCollector aCollector,
-			ILocationRegistrer aLocationRegistrer) throws IOException
+			ILocationRegisterer aLocationRegistrer) throws IOException
 	{
 		MessageType theCommand = readMessageType(aStream);
 		readPacket(aStream, aCollector, aLocationRegistrer, theCommand);
@@ -46,7 +46,7 @@ public class CollectorPacketReader
 	public static void readPacket(
 			DataInputStream aStream,
 			ILogCollector aCollector, 
-			ILocationRegistrer aLocationRegistrer,
+			ILocationRegisterer aLocationRegistrer,
 			MessageType aCommand) throws IOException
 	{
 		switch (aCommand)
@@ -100,7 +100,7 @@ public class CollectorPacketReader
 	
 	public static void readPacket(
 			DataInputStream aStream, 
-			ILocationRegistrer aRegistrer) throws IOException
+			ILocationRegisterer aRegistrer) throws IOException
 	{
 		MessageType theCommand = readMessageType(aStream);
 		readPacket(aStream, aRegistrer, theCommand);
@@ -108,7 +108,7 @@ public class CollectorPacketReader
 	
 	public static void readPacket(
 			DataInputStream aStream,
-			ILocationRegistrer aRegistrer, 
+			ILocationRegisterer aRegistrer, 
 			MessageType aCommand) throws IOException
 	{
 		switch (aCommand)
@@ -363,7 +363,7 @@ public class CollectorPacketReader
         return theBytes;
     }
     
-	public static void readClass(DataInputStream aStream, ILocationRegistrer aRegistrer) throws IOException
+	public static void readClass(DataInputStream aStream, ILocationRegisterer aRegistrer) throws IOException
 	{
 		int theClassId = aStream.readInt();
 		String theName = aStream.readUTF();
@@ -380,14 +380,14 @@ public class CollectorPacketReader
 		aRegistrer.registerType(theClassId, theName, theSupertypeId, theInterfaceIds);
 	}
 	
-	public static void readFile(DataInputStream aStream, ILocationRegistrer aRegistrer) throws IOException
+	public static void readFile(DataInputStream aStream, ILocationRegisterer aRegistrer) throws IOException
 	{
 		int theFileId = aStream.readInt();
 		String theName = aStream.readUTF();
 		aRegistrer.registerFile(theFileId, theName);
 	}
 	
-	public static void readBehaviour (DataInputStream aStream, ILocationRegistrer aRegistrer) throws IOException
+	public static void readBehaviour (DataInputStream aStream, ILocationRegisterer aRegistrer) throws IOException
 	{
 		BehaviorKind theType = BehaviorKind.VALUES[aStream.readByte()];
 		int theId = aStream.readInt();
@@ -398,7 +398,7 @@ public class CollectorPacketReader
         aRegistrer.registerBehavior(theType, theId, theClassId, theName, theSignature);
 	}
 
-	public static void readBehaviourAttributes (DataInputStream aStream, ILocationRegistrer aRegistrer) throws IOException
+	public static void readBehaviourAttributes (DataInputStream aStream, ILocationRegisterer aRegistrer) throws IOException
 	{
 		int theId = aStream.readInt();
 		
@@ -426,7 +426,7 @@ public class CollectorPacketReader
 		aRegistrer.registerBehaviorAttributes(theId, theLineNumberTable, theLocalVariableTable);
 	}
 	
-	public static void readField (DataInputStream aStream, ILocationRegistrer aRegistrer) throws IOException
+	public static void readField (DataInputStream aStream, ILocationRegisterer aRegistrer) throws IOException
 	{
 		int theId = aStream.readInt();
 		int theClassId = aStream.readInt();

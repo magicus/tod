@@ -20,7 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.structure;
 
-import tod.core.ILocationRegistrer;
+import tod.core.ILocationRegisterer;
 import tod.core.database.browser.ILocationsRepository;
 
 /**
@@ -43,7 +43,7 @@ public class FieldInfo extends MemberInfo implements IFieldInfo
 		return "Field ("+getId()+", "+getName()+")";
 	}
 
-	public void register(ILocationRegistrer aRegistrer)
+	public void register(ILocationRegisterer aRegistrer)
 	{
 		aRegistrer.registerField(getId(), getType().getId(), getName());
 	}

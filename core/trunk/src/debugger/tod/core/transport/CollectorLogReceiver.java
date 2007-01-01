@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import tod.core.ILocationRegistrer;
+import tod.core.ILocationRegisterer;
 import tod.core.ILogCollector;
 
 /**
@@ -37,7 +37,7 @@ import tod.core.ILogCollector;
 public class CollectorLogReceiver extends LogReceiver
 {
 	private final ILogCollector itsCollector;
-	private final ILocationRegistrer itsLocationRegistrer;
+	private final ILocationRegisterer itsLocationRegistrer;
 
 	/**
 	 * Connects to an already running aplication through the specified socket.
@@ -46,7 +46,7 @@ public class CollectorLogReceiver extends LogReceiver
 	 */
 	public CollectorLogReceiver(
 			ILogCollector aCollector,
-			ILocationRegistrer aLocationRegistrer,
+			ILocationRegisterer aLocationRegistrer,
 			InputStream aInStream,
 			OutputStream aOutStream)
 	{
@@ -55,7 +55,7 @@ public class CollectorLogReceiver extends LogReceiver
 		
 	public CollectorLogReceiver(
 			ILogCollector aCollector,
-			ILocationRegistrer aLocationRegistrer,
+			ILocationRegisterer aLocationRegistrer,
 			InputStream aInStream,
 			OutputStream aOutStream,
 			boolean aStart)
@@ -71,7 +71,7 @@ public class CollectorLogReceiver extends LogReceiver
 		return itsCollector;
 	}
 	
-	public ILocationRegistrer getLocationRegistrer()
+	public ILocationRegisterer getLocationRegistrer()
 	{
 		return itsLocationRegistrer;
 	}

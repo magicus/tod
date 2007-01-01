@@ -28,7 +28,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 import tod.core.ILogCollector;
-import tod.core.LocationRegistrer;
+import tod.core.LocationRegisterer;
 import tod.core.bci.IInstrumenter;
 import tod.core.config.TODConfig;
 import tod.core.server.CollectorTODServer;
@@ -51,7 +51,7 @@ public class StoreTODServer extends CollectorTODServer
 			IInstrumenter aInstrumenter,
 			ICollectorFactory aCollectorFactory)
 	{
-		super(aConfig, aInstrumenter, new LocationRegistrer(), aCollectorFactory);
+		super(aConfig, aInstrumenter, new LocationRegisterer(), aCollectorFactory);
 	}
 
 	@Override
@@ -117,7 +117,7 @@ public class StoreTODServer extends CollectorTODServer
 	public static void main(String[] args)
 	{
 		TODConfig theConfig = new TODConfig();
-		LocationRegistrer theLocationRegistrer = new LocationRegistrer();
+		LocationRegisterer theLocationRegistrer = new LocationRegisterer();
 		
 		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(
 				theConfig,

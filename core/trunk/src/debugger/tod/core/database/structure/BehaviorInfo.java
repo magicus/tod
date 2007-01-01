@@ -21,9 +21,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.core.database.structure;
 
 import tod.core.BehaviorKind;
-import tod.core.ILocationRegistrer;
-import tod.core.ILocationRegistrer.LineNumberInfo;
-import tod.core.ILocationRegistrer.LocalVariableInfo;
+import tod.core.ILocationRegisterer;
+import tod.core.ILocationRegisterer.LineNumberInfo;
+import tod.core.ILocationRegisterer.LocalVariableInfo;
 
 
 /**
@@ -38,8 +38,8 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 	private final ITypeInfo[] itsArgumentTypes;
 	private final ITypeInfo itsReturnType;
 
-	private ILocationRegistrer.LineNumberInfo[] itsLineNumberTable;
-	private ILocationRegistrer.LocalVariableInfo[] itsLocalVariableTable;
+	private ILocationRegisterer.LineNumberInfo[] itsLineNumberTable;
+	private ILocationRegisterer.LocalVariableInfo[] itsLocalVariableTable;
 
 	public BehaviorInfo(
 			BehaviorKind aBehaviourKind, 
@@ -49,8 +49,8 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 			String aSignature,
 			ITypeInfo[] aArgumentTypes,
 			ITypeInfo aReturnType,
-			ILocationRegistrer.LineNumberInfo[] aLineNumberTable,
-			ILocationRegistrer.LocalVariableInfo[] aLocalVariableTable)
+			ILocationRegisterer.LineNumberInfo[] aLineNumberTable,
+			ILocationRegisterer.LocalVariableInfo[] aLocalVariableTable)
 	{
 		super(aId, aType, aName);
 		itsSignature = aSignature;
@@ -62,8 +62,8 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 	}
 	
 	public void setAttributes (
-			ILocationRegistrer.LineNumberInfo[] aLineNumberTable,
-			ILocationRegistrer.LocalVariableInfo[] aLocalVariableTable)
+			ILocationRegisterer.LineNumberInfo[] aLineNumberTable,
+			ILocationRegisterer.LocalVariableInfo[] aLocalVariableTable)
 	{
 		itsLineNumberTable = aLineNumberTable;
 		itsLocalVariableTable = aLocalVariableTable;
@@ -145,7 +145,7 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 		return "Behavior ("+getId()+", "+getName()+") of "+getType();
 	}
 	
-	public void register(ILocationRegistrer aRegistrer)
+	public void register(ILocationRegisterer aRegistrer)
 	{
 		aRegistrer.registerBehavior(getBehaviourKind(), getId(), getType().getId(), getName(), itsSignature);
 		aRegistrer.registerBehaviorAttributes(getId(), itsLineNumberTable, itsLocalVariableTable);

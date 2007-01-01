@@ -22,11 +22,11 @@ package tod.impl.bci.asm;
 
 import org.objectweb.asm.Label;
 
-import tod.core.ILocationRegistrer.LineNumberInfo;
+import tod.core.ILocationRegisterer.LineNumberInfo;
 
 /**
  * Represents an unresolved entry of a method's LineNumberTable attribute.
- * @see tod.core.ILocationRegistrer.LineNumberInfo
+ * @see tod.core.ILocationRegisterer.LineNumberInfo
  * @see http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#22856 
  * @author gpothier
  */

@@ -23,7 +23,7 @@ package tod.core.database.event;
 import java.util.HashSet;
 import java.util.Set;
 
-import tod.core.ILocationRegistrer.LocalVariableInfo;
+import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 

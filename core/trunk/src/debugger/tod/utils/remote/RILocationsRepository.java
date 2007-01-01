@@ -23,7 +23,7 @@ package tod.utils.remote;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import tod.core.ILocationRegistrer.Stats;
+import tod.core.ILocationRegisterer.Stats;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;

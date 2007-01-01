@@ -20,7 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.structure;
 
-import tod.core.ILocationRegistrer;
+import tod.core.ILocationRegisterer;
 
 /**
  * Information for types that are not known o the instrumenter.
@@ -53,7 +53,7 @@ public class UnknownTypeInfo extends TypeInfo
 		return false;
 	}
 	
-	public void register(ILocationRegistrer aRegistrer)
+	public void register(ILocationRegisterer aRegistrer)
 	{
 		throw new UnsupportedOperationException();
 	}

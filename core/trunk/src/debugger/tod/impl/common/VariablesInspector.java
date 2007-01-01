@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import tod.core.ILocationRegistrer.LocalVariableInfo;
+import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.browser.IVariablesInspector;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILocalVariableWriteEvent;

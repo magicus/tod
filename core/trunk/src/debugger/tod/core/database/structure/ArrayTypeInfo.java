@@ -20,7 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.structure;
 
-import tod.core.ILocationRegistrer;
+import tod.core.ILocationRegisterer;
 import tod.core.database.browser.ILocationsRepository;
 
 public class ArrayTypeInfo extends TypeInfo implements IArrayTypeInfo
@@ -65,7 +65,7 @@ public class ArrayTypeInfo extends TypeInfo implements IArrayTypeInfo
 		return false;
 	}
 	
-	public void register(ILocationRegistrer aRegistrer)
+	public void register(ILocationRegisterer aRegistrer)
 	{
 		throw new UnsupportedOperationException();
 	}

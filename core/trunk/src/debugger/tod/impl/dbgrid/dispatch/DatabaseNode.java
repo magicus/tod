@@ -26,24 +26,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.Socket;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 
-import tod.core.config.TODConfig;
-import tod.impl.dbgrid.DebuggerGridConfig;
-import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.NodeException;
-import tod.impl.dbgrid.RIGridMaster;
-import tod.impl.dbgrid.db.NodeRejectedException;
-import tod.impl.dbgrid.gridimpl.GridImpl;
-import tod.impl.dbgrid.monitoring.Monitor;
-import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
-import zz.utils.net.Server.ServerAdress;
 
 public abstract class DatabaseNode extends AbstractDispatchNode
 implements RIDatabaseNode
@@ -115,6 +101,8 @@ implements RIDatabaseNode
 		@Override
 		public void run()
 		{
+			waitConnectedToMaster();
+			
 			try
 			{
 				DataInputStream theInStream = new DataInputStream(

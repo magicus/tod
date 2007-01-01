@@ -33,7 +33,7 @@ import java.rmi.registry.Registry;
 import java.util.LinkedList;
 import java.util.Random;
 
-import tod.core.LocationRegistrer;
+import tod.core.LocationRegisterer;
 import tod.core.config.TODConfig;
 import tod.core.transport.LogReceiver;
 import tod.core.transport.LogReceiver.ILogReceiverMonitor;
@@ -352,7 +352,7 @@ public class Fixtures
 	{
 		System.out.println("Expecting "+aExpectedNodes+" nodes");
 		
-		LocationRegistrer theLocationRegistrer = new LocationRegistrer();
+		LocationRegisterer theLocationRegistrer = new LocationRegisterer();
 		
 		new ASMLocationPool(
 				theLocationRegistrer, 

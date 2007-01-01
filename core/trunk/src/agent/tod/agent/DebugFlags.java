@@ -111,7 +111,7 @@ public class DebugFlags
 	 * Whether the grid master should prevent multiple database nodes
 	 * on the same host.
 	 */
-	public static final boolean GRID_CHECK_NODE_HOST = false;
+	public static final boolean GRID_CHECK_NODE_HOST = true;
 	
 	/**
 	 * If true, hierarchical dispatching parameters are

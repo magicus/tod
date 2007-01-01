@@ -26,7 +26,7 @@ import java.rmi.registry.Registry;
 
 import javax.swing.JComponent;
 
-import tod.core.LocationRegistrer;
+import tod.core.LocationRegisterer;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.session.AbstractSession;
@@ -47,7 +47,7 @@ public class LocalGridSession extends AbstractSession
 	{
 		super(null);
 
-		LocationRegistrer theRegistrer = new LocationRegistrer();
+		LocationRegisterer theRegistrer = new LocationRegisterer();
 		
 		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(
 				aConfig,

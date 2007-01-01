@@ -24,7 +24,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.List;
 
-import tod.core.ILocationRegistrer.LocalVariableInfo;
+import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IVariablesInspector;
 import tod.core.database.event.IBehaviorCallEvent;
