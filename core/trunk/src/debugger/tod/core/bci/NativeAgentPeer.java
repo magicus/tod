@@ -205,6 +205,7 @@ public abstract class NativeAgentPeer extends SocketThread
 		aOutputStream.writeByte((byte) theVerbosity);
 		
 		aOutputStream.writeByte(CONFIG_DONE);
+		aOutputStream.flush();
 	}
 	
 	/**

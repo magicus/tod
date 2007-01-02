@@ -180,10 +180,6 @@ enable_event(jvmtiEnv *jvmti, jvmtiEvent event)
 
 static void bciConfigure()
 {
-	// Obtain class and method ids for System.currentTimeNano, Thread.getId...
-	
-
-
 	while(true)
 	{
 		int cmd = readByte(SOCKET_IN);
@@ -214,7 +210,6 @@ static void bciConfigure()
 				return;
 		}
 	}
-	
 	fflush(stdout);
 }
 
