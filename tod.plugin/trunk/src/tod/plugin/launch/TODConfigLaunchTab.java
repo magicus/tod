@@ -25,7 +25,6 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
 import tod.core.config.TODConfig;
@@ -149,7 +148,21 @@ public class TODConfigLaunchTab extends OptionsTab<TODConfig.Item>
 	/**
 	 * Reads the TOD config options from the given launch configuration. 
 	 */
-	public static TODConfig readConfig(ILaunchConfiguration aLaunchConfiguration) throws CoreException
+	public static TODConfig readConfig(ILaunchConfiguration aLaunchConfiguration) 
+	throws CoreException
+	{
+		try
+		{
+			return readConfig0(aLaunchConfiguration);
+		}
+		catch (InvalidLaunchConfiguration e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	private static TODConfig readConfig0(ILaunchConfiguration aLaunchConfiguration) 
+	throws CoreException, InvalidLaunchConfiguration
 	{
 		Map<String, String> theOptionsMap = OptionsTab.loadOptionsMap(aLaunchConfiguration, MAP_NAME);
 		
@@ -157,13 +170,37 @@ public class TODConfigLaunchTab extends OptionsTab<TODConfig.Item>
 		for (Item theItem : TODConfig.ITEMS)
 		{
 			String theString = theOptionsMap.get(theItem.getKey());
-			if (theString != null)
+			try
 			{
 				Object theValue = theItem.getOptionValue(theString);
 				theConfig.set(theItem, theValue);
 			}
+			catch (Exception e)
+			{
+				throw new InvalidLaunchConfiguration(
+						"Invalid value for '"
+						+theItem.getName()+"'");
+			}
 		}
 		
 		return theConfig;
+	}
+	
+	
+	
+	
+	@Override
+	protected void checkValid(ILaunchConfiguration aLaunchConfiguration) 
+	throws InvalidLaunchConfiguration
+	{
+		super.checkValid(aLaunchConfiguration);
+		try
+		{
+			readConfig0(aLaunchConfiguration);
+		}
+		catch (CoreException e)
+		{
+			throw new InvalidLaunchConfiguration(e);
+		}
 	}
 }

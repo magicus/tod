@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.plugin;
 
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
@@ -92,6 +93,21 @@ public class TODPlugin extends AbstractUIPlugin
 			itsLibraryPath = EclipseUtils.getLibraryPath(this);
 		
 		return itsLibraryPath;
+	}
+	
+	public static void logError(String aMessage, Throwable aThrowable)
+	{
+		log(Status.ERROR, aMessage, aThrowable);
+	}
+	
+	public static void logWarning(String aMessage, Throwable aThrowable)
+	{
+		log(Status.WARNING, aMessage, aThrowable);
+	}
+	
+	public static void log(int aSeverity, String aMessage, Throwable aThrowable)
+	{
+		getDefault().getLog().log(new Status(aSeverity, "tod.plugin", Status.OK, aMessage, aThrowable));
 	}
 	
 
