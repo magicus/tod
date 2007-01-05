@@ -3,14 +3,17 @@
 	
 	
     <target name="init">
+    	<property name="build.dir" value="${basedir}/build"/>
         <property name="tod.dir" value="${basedir}/../TOD"/>
         <property name="zz.utils.dir" value="${basedir}/../zz.utils"/>
         <property name="zz.csg.dir" value="${basedir}/../zz.csg"/>
     </target>
 	
 	<target name="plugin_export" depends="init, dep.all">
+		<mkdir dir="${build.dir}"/>
+		
 		<pde.exportPlugins 
-			destination="/home/gpothier/eclipse/workbench-3.1/tod.plugin/build" 
+			destination="${build.dir}" 
 			exportSource="false" 
 			exportType="zip" 
 			filename="tod.plugin.zip" 
