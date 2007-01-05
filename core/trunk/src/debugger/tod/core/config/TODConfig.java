@@ -37,7 +37,8 @@ public class TODConfig
 	public static final IntegerItem AGENT_VERBOSE = new IntegerItem(
 			"agent.verbose",
 			"Agent - verbose",
-			"Defines the verbosity level of the native agent.",
+			"Defines the verbosity level of the native agent. " +
+			"0 means minimal verbosity, greater values increase verbosity.",
 			ConfigUtils.readInt("agent-verbose", 0));
 	
 	public static final BooleanItem AGENT_SKIP_CORE_CLASSE = new BooleanItem(
@@ -65,7 +66,8 @@ public class TODConfig
 			"Global class filter for instrumentation. " +
 			"Used mainly to shield TOD agent classes from instrumentation. " +
 			"Classes that do no pass this filter are not touched by any kind " +
-			"of instrumentation and are not registered in the trace database.",
+			"of instrumentation and are not registered in the trace database. " +
+			"There should not be any reason to modify it.",
 			"[-tod.agent.** -tod.core.**]");
 	
 	public static final StringItem SCOPE_TRACE_FILTER = new StringItem(
