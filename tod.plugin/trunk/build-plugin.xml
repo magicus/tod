@@ -27,14 +27,24 @@
 	</target>
 	
 	<target name="dep.zz.utils" depends="init">
-		<ant antfile="${zz.utils.dir}/build.xml" dir="${zz.utils.dir}" target="jar"/>
+		<ant 
+			antfile="${zz.utils.dir}/build.xml" 
+			dir="${zz.utils.dir}" 
+			target="jar"
+			inheritall="false"/>
+		<echo message="Finished building zz.utils"/>
 		<copy todir="lib">
 			<fileset dir="${zz.utils.dir}/build" includes="zz.utils.jar"/>
 		</copy>
 	</target>
 	
+
 	<target name="dep.zz.csg" depends="init">
-		<ant antfile="${zz.csg.dir}/build.xml" dir="${zz.csg.dir}" target="jar"/>
+		<ant 
+			antfile="${zz.csg.dir}/build.xml" 
+			dir="${zz.csg.dir}" 
+			target="jar"
+			inheritall="false"/>
 		<copy todir="lib">
 			<fileset dir="${zz.csg.dir}/build" includes="zz.csg.jar"/>
 		</copy>

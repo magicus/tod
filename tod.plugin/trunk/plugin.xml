@@ -3,7 +3,7 @@
 <plugin
    id="tod.plugin"
    name="TOD Eclipse Plugin"
-   version="0.2"
+   version="dev"
    provider-name="DCC - Universidad de Chile"
    class="tod.plugin.TODPlugin">
 
