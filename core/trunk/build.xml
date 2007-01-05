@@ -14,9 +14,8 @@
         <property name="classes-test.dir" value="${basedir}/classes-test"/>
         <property name="classes-testcase.dir" value="${basedir}/classes-testcase"/>
     	
-        <property name="zz.utils.base" value="${basedir}/../zz.utils"/>
-        <property name="zzu.src.dir" value="${zz.utils.base}/src"/>
-        <property name="zzu.classes.dir" value="${zz.utils.base}/classes"/>
+        <property name="zz.utils.dir" value="${basedir}/../zz.utils"/>
+        <property name="zz.csg.dir" value="${basedir}/../zz.csg"/>
 
     	
         <path id="agent.classpath">
@@ -25,8 +24,8 @@
         </path>
     	
         <path id="debugger.classpath">
-            <pathelement path="../zz.utils/bin"/>
-            <pathelement path="../zz.csg/bin"/>
+            <pathelement path="${lib.dir}/zz.utils.jar"/>
+            <pathelement path="${lib.dir}/zz.csg.jar"/>
         	<pathelement path="${classes-agent.dir}"/>
             <pathelement path="${lib.dir}/asm-2.1.jar"/>
             <pathelement path="${lib.dir}/asm-commons-2.1.jar"/>
@@ -52,7 +51,7 @@
         </delete>
     </target>
 
-    <target name="compile-agent" depends="init">
+    <target name="compile-agent" depends="init, dep.all">
         <mkdir dir="${classes-agent.dir}"/>
         <javac compiler="javac1.5" source="1.5" target="1.5"
         	debug="yes" nowarn="yes"
@@ -61,7 +60,7 @@
             classpathref="agent.classpath"/>
     </target>
 
-    <target name="compile-debugger" depends="init, compile-agent">
+    <target name="compile-debugger" depends="init, dep.all, compile-agent">
         <mkdir dir="${classes-debugger.dir}"/>
         <javac compiler="javac1.5" source="1.5" target="1.5"
         	debug="yes" nowarn="yes"
@@ -70,7 +69,7 @@
             classpathref="debugger.classpath"/>
     </target>
 	
-    <target name="compile-test" depends="init, compile-agent, compile-debugger">
+    <target name="compile-test" depends="init, dep.all, compile-agent, compile-debugger">
         <mkdir dir="${classes-test.dir}"/>
         <javac compiler="javac1.5" source="1.5" target="1.5"
         	debug="yes" nowarn="yes"
@@ -79,21 +78,13 @@
             classpathref="test.classpath"/>
     </target>
 	
-    <target name="compile-testcase" depends="init">
+    <target name="compile-testcase" depends="init, dep.all">
         <mkdir dir="${classes-testcase.dir}"/>
         <javac compiler="javac1.5" source="1.5" target="1.5"
         	debug="yes" nowarn="yes"
             srcdir="${src-testcase.dir}"
             destdir="${classes-testcase.dir}"
             classpathref="debugger.classpath"/>
-    </target>
-	
-    <target name="zzu.compile" depends="init">
-        <mkdir dir="${zzu.classes.dir}"/>
-        <javac compiler="javac1.5" source="1.5" target="1.5"
-        	debug="yes" nowarn="yes"
-            srcdir="${zzu.src.dir}"
-            destdir="${zzu.classes.dir}"/>
     </target>
 	
 	<target name="compile" depends="compile-agent, compile-debugger, compile-test, compile-testcase"/>
@@ -121,16 +112,29 @@
 		<jar destfile="${build.dir}/tod-testcase.jar" basedir="${classes-testcase.dir}"/>
 	</target>
 	
-	<target name="zzu.jar" depends="zzu.compile">
-		<jar destfile="${lib.dir}/zz.utils.jar" basedir="${zzu.classes.dir}"/>
-	</target>
-	
-    <target name="deploy" depends="jar, zzu.jar" >
+    <target name="deploy" depends="jar" >
         <exec executable="${scripts.dir}/deploy.sh" failonerror="true" output="rsync.log">
         	<arg value="${build.dir}"/>
         	<arg value="${lib.dir}"/>
         	<arg value="${scripts.dir}"/>
     	</exec>
     </target>
+	
+	<target name="dep.zz.utils" depends="init">
+		<ant antfile="${zz.utils.dir}/build.xml" dir="${zz.utils.dir}" target="jar"/>
+		<copy todir="lib">
+			<fileset dir="${zz.utils.dir}/build" includes="zz.utils.jar"/>
+		</copy>
+	</target>
+	
+	<target name="dep.zz.csg" depends="init">
+		<ant antfile="${zz.csg.dir}/build.xml" dir="${zz.csg.dir}" target="jar"/>
+		<copy todir="lib">
+			<fileset dir="${zz.csg.dir}/build" includes="zz.csg.jar"/>
+		</copy>
+	</target>
+	
+	<target name="dep.all" depends="dep.zz.utils, dep.zz.csg"/>
+	
 	
 </project>
