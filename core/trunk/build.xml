@@ -32,7 +32,7 @@
         </path>
     	
         <path id="test.classpath">
-            <pathelement path="../zz.utils/bin"/>
+            <pathelement path="${lib.dir}/zz.utils.jar"/>
         	<pathelement path="${classes-agent.dir}"/>
         	<pathelement path="${classes-debugger.dir}"/>
             <pathelement path="${lib.dir}/junit-4.1.jar"/>
