@@ -76,7 +76,11 @@
 	</target>
 	
 	<target name="dep.tod" depends="init">
-		<ant antfile="${tod.dir}/build.xml" dir="${tod.dir}" target="jar"/>
+		<ant 
+			antfile="${tod.dir}/build.xml" 
+			dir="${tod.dir}" 
+			target="jar"
+			inheritall="false"/>
 		<copy todir="lib">
 			<fileset dir="${tod.dir}/build" includes="tod-debugger.jar tod-agent.jar"/>
 			<fileset dir="${tod.dir}" includes="libbci-agent.*"/>
