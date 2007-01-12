@@ -36,6 +36,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 #include "utils.h"
 #include "md5.h"
 
+#include <vector>
+
 // Build: g++ -shared -o ../../libbci-agent.so -I $JAVA_HOME/include/ -I $JAVA_HOME/include/linux/ bci-agent.c
 
 
@@ -55,6 +57,7 @@ static const char SET_CAPTURE_EXCEPTIONS = 83;
 static const char CONFIG_DONE = 90;
 
 static int VM_STARTED = 0;
+static int VM_INITIALIZED = 0;
 static FILE* SOCKET_IN;
 static FILE* SOCKET_OUT;
 
@@ -94,6 +97,10 @@ static long oidCurrent = 1;
 
 // Mutex for class load callback
 static pthread_mutex_t loadMutex = PTHREAD_MUTEX_INITIALIZER;
+
+// This vector holds traced methods ids for methods
+// that are registered prior to VM initialization.
+static std::vector<int> tmpTracedMethods;
 
 
 /*
@@ -213,19 +220,51 @@ static void bciConfigure()
 	fflush(stdout);
 }
 
-void registerTracedMethods(JNIEnv* jni, int nTracedMethods, int* tracedMethods)
+void registerTracedMethod(JNIEnv* jni, int tracedMethod)
 {
-	if (cfgVerbose>=1 && nTracedMethods>0) printf("Registering %d traced methods\n", nTracedMethods);
-	for (int i=0;i<nTracedMethods;i++)
+	jni->CallStaticVoidMethod(
+		class_TracedMethods, 
+		method_TracedMethods_setTraced,
+		tracedMethod);
+		
+	if (cfgVerbose>=3) printf("Registering traced method: %d\n", tracedMethod);
+}
+
+/**
+Registers the traced methods that were registered in tmpTracedMethods
+*/ 
+void registerTmpTracedMethods(JNIEnv* jni)
+{
+	if (cfgVerbose>=1) printf("Registering %d buffered traced methods\n", tmpTracedMethods.size());
+	std::vector<int>::iterator iter = tmpTracedMethods.begin();
+	std::vector<int>::iterator end = tmpTracedMethods.end();
+	
+	while (iter != end)
 	{
-		jni->CallStaticVoidMethod(
-			class_TracedMethods, 
-			method_TracedMethods_setTraced,
-			tracedMethods[i]);
-			
-		if (cfgVerbose>=3) printf("Registering traced method: %d\n", tracedMethods[i]);
+		registerTracedMethod(jni, *iter++);
 	}
 	
+	tmpTracedMethods.clear();
+}
+
+void registerTracedMethods(JNIEnv* jni, int nTracedMethods, int* tracedMethods)
+{
+	if (VM_STARTED)
+	{
+		if (cfgVerbose>=1 && nTracedMethods>0) printf("Registering %d traced methods\n", nTracedMethods);
+		for (int i=0;i<nTracedMethods;i++)
+		{
+			registerTracedMethod(jni, tracedMethods[i]);
+		}
+	}
+	else
+	{
+		if (cfgVerbose>=1 && nTracedMethods>0) printf("Buffering %d traced methods, will register later\n", nTracedMethods);
+		for (int i=0;i<nTracedMethods;i++)
+		{
+			tmpTracedMethods.push_back(tracedMethods[i]);
+		}
+	}
 	if (tracedMethods) delete tracedMethods;
 }
 
@@ -400,7 +439,9 @@ cbException(
 	jlocation catch_location)
 {
 	if (cfgCaptureExceptions == 0) return;
-	if (VM_STARTED == 0) return;
+	if (VM_INITIALIZED == 0) return;
+	
+	if (cfgVerbose>=3) printf("Exception detected by native agent.\n");
 	
 	for (int i=0;i<sizeof(ignoredExceptionMethods);i++)
 	{
@@ -463,6 +504,33 @@ static void initIgnoredMethods(JNIEnv* jni)
 	ignoreMethod(jni, i++, "java/net/URLClassLoader", "findClass", "(Ljava/lang/String;)Ljava/lang/Class;");
 }
 
+void initClasses()
+{
+}
+
+void JNICALL
+cbVMStart(
+	jvmtiEnv *jvmti,
+	JNIEnv* jni)
+{
+	if (cfgVerbose>=1) printf("VMStart\n");
+	
+	// Initialize the classes and method ids that will be used
+	// for registering traced methods
+	if (cfgVerbose>=2) printf("Loading (jni) tod.agent.TracedMethods\n");
+	class_TracedMethods = jni->FindClass("tod/agent/TracedMethods");
+	if (class_TracedMethods == NULL) printf("Could not load TracedMethods!\n");
+	class_TracedMethods = (jclass) jni->NewGlobalRef(class_TracedMethods);
+	method_TracedMethods_setTraced = jni->GetStaticMethodID(class_TracedMethods, "setTraced", "(I)V");
+	if (method_TracedMethods_setTraced == NULL) printf("Could not find setTraced!\n");
+	
+	if (cfgVerbose>=1) printf("VMStart - done\n");
+	fflush(stdout);
+	
+	VM_STARTED = 1;
+	
+	registerTmpTracedMethods(jni);
+}
 
 void JNICALL
 cbVMInit(
@@ -471,7 +539,6 @@ cbVMInit(
 	jthread thread)
 {
 	if (cfgVerbose>=1) printf("VMInit\n");
-	
 	
 	// Initialize the classes and method ids that will be used
 	// for exception processing
@@ -485,13 +552,6 @@ cbVMInit(
 	class_Object = (jclass) jni->NewGlobalRef(class_Object);
 	method_Object_hashCode = jni->GetMethodID(class_Object, "hashCode", "()I");
 
-	if (cfgVerbose>=2) printf("Loading (jni) tod.agent.TracedMethods\n");
-	class_TracedMethods = jni->FindClass("tod/agent/TracedMethods");
-	if (class_TracedMethods == NULL) printf("Could not load TracedMethods!\n");
-	class_TracedMethods = (jclass) jni->NewGlobalRef(class_TracedMethods);
-	method_TracedMethods_setTraced = jni->GetStaticMethodID(class_TracedMethods, "setTraced", "(I)V");
-	if (method_TracedMethods_setTraced == NULL) printf("Could not find setTraced!\n");
-	
 	if (cfgVerbose>=2) printf("Loading (jni) tod.agent.ExceptionGeneratedReceiver\n");
 	class_ExceptionGeneratedReceiver = jni->FindClass("tod/agent/ExceptionGeneratedReceiver");
 	if (class_ExceptionGeneratedReceiver == NULL) printf("Could not load ExceptionGeneratedReceiver!\n");
@@ -507,7 +567,7 @@ cbVMInit(
 	if (cfgVerbose>=1) printf("VMInit - done\n");
 	fflush(stdout);
 	
-	VM_STARTED = 1;
+	VM_INITIALIZED = 1;
 }
 
 
@@ -560,6 +620,7 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
 	callbacks.ClassFileLoadHook = &cbClassFileLoadHook;
 	callbacks.Exception = &cbException;
 	callbacks.VMInit = &cbVMInit;
+	callbacks.VMStart = &cbVMStart;
 	
 	err = jvmti->SetEventCallbacks(&callbacks, sizeof(callbacks));
 	check_jvmti_error(jvmti, err, "SetEventCallbacks");
@@ -568,6 +629,7 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
 	enable_event(jvmti, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK);
 	enable_event(jvmti, JVMTI_EVENT_EXCEPTION);
 	enable_event(jvmti, JVMTI_EVENT_VM_INIT);
+	enable_event(jvmti, JVMTI_EVENT_VM_START);
 	
 	bciConnect(cfgHost, cfgNativePort, cfgHostName);
 	bciConfigure();
