@@ -57,7 +57,6 @@ static const char SET_CAPTURE_EXCEPTIONS = 83;
 static const char CONFIG_DONE = 90;
 
 static int VM_STARTED = 0;
-static int VM_INITIALIZED = 0;
 static FILE* SOCKET_IN;
 static FILE* SOCKET_OUT;
 
@@ -76,14 +75,9 @@ static char* cfgHostName = NULL;
 static int cfgNativePort = 0;
 
 // Class and method references
-static jclass class_System;
-static jmethodID method_System_nanoTime;
-
-static jclass class_Object;
-static jmethodID method_Object_hashCode;
-
 static jclass class_ExceptionGeneratedReceiver;
 static jmethodID method_ExceptionGeneratedReceiver_exceptionGenerated;
+static int isInExceptionCb = 0;
 
 static jclass class_TracedMethods;
 static jmethodID method_TracedMethods_setTraced;
@@ -427,6 +421,40 @@ cbClassFileLoadHook(
 	fflush(stdout);
 }
 
+static void ignoreMethod(JNIEnv* jni, int index, char* className, char* methodName, char* signature)
+{
+	if (cfgVerbose>=2) printf("Loading (jni-ignore) %s\n", className);
+	jclass clazz = jni->FindClass(className);
+	if (clazz == NULL) printf("Could not load %s\n", className);
+	jmethodID method = jni->GetMethodID(clazz, methodName, signature);
+	if (method == NULL) printf("Could not find %s.%s%s\n", className, methodName, signature);
+	jni->DeleteLocalRef(clazz);
+
+	ignoredExceptionMethods[index] = method;
+}
+
+
+void initExceptionClasses(JNIEnv* jni)
+{
+	// Initialize the classes and method ids that will be used
+	// for exception processing
+	if (cfgVerbose>=2) printf("Loading (jni) tod.agent.ExceptionGeneratedReceiver\n");
+	class_ExceptionGeneratedReceiver = jni->FindClass("tod/agent/ExceptionGeneratedReceiver");
+	if (class_ExceptionGeneratedReceiver == NULL) printf("Could not load ExceptionGeneratedReceiver!\n");
+	class_ExceptionGeneratedReceiver = (jclass) jni->NewGlobalRef(class_ExceptionGeneratedReceiver);
+	method_ExceptionGeneratedReceiver_exceptionGenerated = 
+		jni->GetStaticMethodID(
+			class_ExceptionGeneratedReceiver,
+			"exceptionGenerated", 
+			"(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Throwable;)V");
+	
+	// init ignored methods
+	int i=0;
+	ignoreMethod(jni, i++, "java/lang/ClassLoader", "findBootstrapClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+	ignoreMethod(jni, i++, "java/net/URLClassLoader$1", "run", "()Ljava/lang/Object;");
+	ignoreMethod(jni, i++, "java/net/URLClassLoader", "findClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+}
+
 void JNICALL
 cbException(
 	jvmtiEnv *jvmti,
@@ -438,8 +466,17 @@ cbException(
 	jmethodID catch_method,
 	jlocation catch_location)
 {
+	if (isInExceptionCb) return;
+	
 	if (cfgCaptureExceptions == 0) return;
-	if (VM_INITIALIZED == 0) return;
+	if (VM_STARTED == 0) return;
+	
+	if (! class_ExceptionGeneratedReceiver)
+	{
+		isInExceptionCb = true;
+		initExceptionClasses(jni);
+		isInExceptionCb = false;
+	}
 	
 	if (cfgVerbose>=3) printf("Exception detected by native agent.\n");
 	
@@ -483,30 +520,6 @@ cbException(
 	jvmti->Deallocate((unsigned char*) methodDeclaringClassSignature);
 }
 
-static void ignoreMethod(JNIEnv* jni, int index, char* className, char* methodName, char* signature)
-{
-	if (cfgVerbose>=2) printf("Loading (jni-ignore) %s\n", className);
-	jclass clazz = jni->FindClass(className);
-	if (clazz == NULL) printf("Could not load %s\n", className);
-	jmethodID method = jni->GetMethodID(clazz, methodName, signature);
-	if (method == NULL) printf("Could not find %s.%s%s\n", className, methodName, signature);
-	jni->DeleteLocalRef(clazz);
-
-	ignoredExceptionMethods[index] = method;
-}
-
-
-static void initIgnoredMethods(JNIEnv* jni)
-{
-	int i=0;
-	ignoreMethod(jni, i++, "java/lang/ClassLoader", "findBootstrapClass", "(Ljava/lang/String;)Ljava/lang/Class;");
-	ignoreMethod(jni, i++, "java/net/URLClassLoader$1", "run", "()Ljava/lang/Object;");
-	ignoreMethod(jni, i++, "java/net/URLClassLoader", "findClass", "(Ljava/lang/String;)Ljava/lang/Class;");
-}
-
-void initClasses()
-{
-}
 
 void JNICALL
 cbVMStart(
@@ -531,45 +544,6 @@ cbVMStart(
 	
 	registerTmpTracedMethods(jni);
 }
-
-void JNICALL
-cbVMInit(
-	jvmtiEnv *jvmti,
-	JNIEnv* jni,
-	jthread thread)
-{
-	if (cfgVerbose>=1) printf("VMInit\n");
-	
-	// Initialize the classes and method ids that will be used
-	// for exception processing
-	if (cfgVerbose>=2) printf("Loading (jni) java.lang.System\n");
-	class_System = jni->FindClass("java/lang/System");
-	class_System = (jclass) jni->NewGlobalRef(class_System);
-	method_System_nanoTime = jni->GetStaticMethodID(class_System, "nanoTime", "()J");
-	
-	if (cfgVerbose>=2) printf("Loading (jni) java.lang.Object\n");
-	class_Object = jni->FindClass("java/lang/Object");
-	class_Object = (jclass) jni->NewGlobalRef(class_Object);
-	method_Object_hashCode = jni->GetMethodID(class_Object, "hashCode", "()I");
-
-	if (cfgVerbose>=2) printf("Loading (jni) tod.agent.ExceptionGeneratedReceiver\n");
-	class_ExceptionGeneratedReceiver = jni->FindClass("tod/agent/ExceptionGeneratedReceiver");
-	if (class_ExceptionGeneratedReceiver == NULL) printf("Could not load ExceptionGeneratedReceiver!\n");
-	class_ExceptionGeneratedReceiver = (jclass) jni->NewGlobalRef(class_ExceptionGeneratedReceiver);
-	method_ExceptionGeneratedReceiver_exceptionGenerated = 
-		jni->GetStaticMethodID(
-			class_ExceptionGeneratedReceiver,
-			"exceptionGenerated", 
-			"(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Throwable;)V");
-	
-	initIgnoredMethods(jni);
-	
-	if (cfgVerbose>=1) printf("VMInit - done\n");
-	fflush(stdout);
-	
-	VM_INITIALIZED = 1;
-}
-
 
 JNIEXPORT jint JNICALL 
 Agent_OnLoad(JavaVM *vm, char *options, void *reserved) 
@@ -619,7 +593,6 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
 	memset(&callbacks, 0, sizeof(callbacks));
 	callbacks.ClassFileLoadHook = &cbClassFileLoadHook;
 	callbacks.Exception = &cbException;
-	callbacks.VMInit = &cbVMInit;
 	callbacks.VMStart = &cbVMStart;
 	
 	err = jvmti->SetEventCallbacks(&callbacks, sizeof(callbacks));
@@ -628,7 +601,6 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
 	// Enable events
 	enable_event(jvmti, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK);
 	enable_event(jvmti, JVMTI_EVENT_EXCEPTION);
-	enable_event(jvmti, JVMTI_EVENT_VM_INIT);
 	enable_event(jvmti, JVMTI_EVENT_VM_START);
 	
 	bciConnect(cfgHost, cfgNativePort, cfgHostName);
