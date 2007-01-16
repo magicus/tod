@@ -75,9 +75,9 @@ public abstract class MergeIterator<T> extends AbstractBidiIterator<T>
 	}
 	
 	/**
-	 * Returns the timestamp of the specified tuple.
+	 * Returns the key of the specified tuple.
 	 */
-	protected abstract long getTimestamp(T aItem);
+	protected abstract long getKey(T aItem);
 	
 	/**
 	 * Indicates if the specified items represent the same event.

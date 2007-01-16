@@ -30,6 +30,7 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.gui.IGUIManager;
 import zz.csg.api.GraphicObjectContext;
+import zz.csg.api.IDisplay;
 import zz.csg.impl.SVGGraphicContainer;
 
 public abstract class AbstractEventNode extends SVGGraphicContainer
@@ -74,7 +75,7 @@ public abstract class AbstractEventNode extends SVGGraphicContainer
 	}
 	
 	@Override
-	protected void paintBackground(GraphicObjectContext aContext, Graphics2D aGraphics, Area aVisibleArea)
+	protected void paintBackground(IDisplay aDisplay, GraphicObjectContext aContext, Graphics2D aGraphics, Area aVisibleArea)
 	{
 		ILogEvent theMainEvent = getEvent();
 		if (theMainEvent != null && getView().isEventSelected(theMainEvent))

@@ -20,9 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.common.event;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.ICallerSideEvent;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
@@ -33,6 +32,8 @@ import tod.core.database.structure.IThreadInfo;
  */
 public abstract class Event implements ICallerSideEvent
 {
+	private ILogBrowser itsLogBrowser;
+	
 	private long itsTimestamp;
 	
 	private IHostInfo itsHost;
@@ -40,9 +41,20 @@ public abstract class Event implements ICallerSideEvent
 	
 	private int itsOperationBytecodeIndex;
 	
+	private long itsParentTimestamp;
 	private BehaviorCallEvent itsParent;
 	
 	private int itsDepth;
+	
+	public Event(ILogBrowser aLogBrowser)
+	{
+		itsLogBrowser = aLogBrowser;
+	}
+
+	public ExternalPointer getPointer()
+	{
+		return new ExternalPointer(getHost(), getThread(), getTimestamp());
+	}
 	
 	public int getDepth()
 	{
@@ -56,12 +68,24 @@ public abstract class Event implements ICallerSideEvent
 
 	public BehaviorCallEvent getParent()
 	{
+		if (itsParent == null)
+		{
+			itsParent = (BehaviorCallEvent) itsLogBrowser.getEvent(getParentPointer());
+		}
+		
 		return itsParent;
 	}
 
-	public void setParent(BehaviorCallEvent aParent)
+	
+	public ExternalPointer getParentPointer()
 	{
-		itsParent = aParent;
+		return new ExternalPointer(getHost(), getThread(), itsParentTimestamp);
+	}
+
+	public void setParentTimestamp(long aTimestamp)
+	{
+		itsParentTimestamp = aTimestamp;
+		itsParent = null;
 	}
 
 	public IThreadInfo getThread()
@@ -103,4 +127,44 @@ public abstract class Event implements ICallerSideEvent
 	{
 		itsOperationBytecodeIndex = aOperationBytecodeIndex;
 	}
+
+	@Override
+	public int hashCode()
+	{
+		final int PRIME = 31;
+		int result = 1;
+		result = PRIME * result + ((itsHost == null) ? 0 : itsHost.hashCode());
+		result = PRIME * result + ((itsLogBrowser == null) ? 0 : itsLogBrowser.hashCode());
+		result = PRIME * result + ((itsThread == null) ? 0 : itsThread.hashCode());
+		result = PRIME * result + (int) (itsTimestamp ^ (itsTimestamp >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		final Event other = (Event) obj;
+		if (itsHost == null)
+		{
+			if (other.itsHost != null) return false;
+		}
+		else if (!itsHost.equals(other.itsHost)) return false;
+		if (itsLogBrowser == null)
+		{
+			if (other.itsLogBrowser != null) return false;
+		}
+		else if (!itsLogBrowser.equals(other.itsLogBrowser)) return false;
+		if (itsThread == null)
+		{
+			if (other.itsThread != null) return false;
+		}
+		else if (!itsThread.equals(other.itsThread)) return false;
+		if (itsTimestamp != other.itsTimestamp) return false;
+		return true;
+	}
+	
+	
 }

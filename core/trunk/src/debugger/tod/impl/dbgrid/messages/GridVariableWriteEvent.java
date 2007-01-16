@@ -107,7 +107,7 @@ public class GridVariableWriteEvent extends GridEvent
 	@Override
 	public ILogEvent toLogEvent(GridLogBrowser aBrowser)
 	{
-		LocalVariableWriteEvent theEvent = new LocalVariableWriteEvent();
+		LocalVariableWriteEvent theEvent = new LocalVariableWriteEvent(aBrowser);
 		initEvent(aBrowser, theEvent);
 		theEvent.setValue(getValue());
 		theEvent.setVariable(null); // TODO: find variable info

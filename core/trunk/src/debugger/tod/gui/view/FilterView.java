@@ -22,37 +22,38 @@ package tod.gui.view;
 
 import java.awt.BorderLayout;
 
-import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
-import tod.gui.EventListModel;
 import tod.gui.IGUIManager;
-import tod.gui.formatter.EventFormatter;
+import tod.gui.eventlist.EventList;
 import tod.gui.seed.FilterSeed;
 import tod.gui.view.event.EventView;
 import tod.gui.view.event.EventViewFactory;
-import zz.utils.ui.FormattedRenderer;
+import zz.utils.properties.IProperty;
+import zz.utils.properties.IPropertyListener;
+import zz.utils.properties.PropertyListener;
+import zz.utils.properties.PropertyUtils;
+import zz.utils.ui.StackLayout;
 
 /**
  * A view component that displays a list of events 
  * based on a {@link tod.core.database.browser.IEventFilter}
  * @author gpothier
  */
-public class FilterView extends LogView implements ListSelectionListener
+public class FilterView extends LogView 
 {
 	private FilterSeed itsSeed;
 	
-	private EventListModel itsModel;
-	
 	private JSplitPane itsSplitPane;
+	private JScrollPane itsScrollPane;
 
-	private JList itsList;
+	private EventList itsList;
+	private JPanel itsEventViewHolder;
 	
 	public FilterView(IGUIManager aGUIManager, ILogBrowser aLog, FilterSeed aSeed)
 	{
@@ -60,38 +61,58 @@ public class FilterView extends LogView implements ListSelectionListener
 		itsSeed = aSeed;
 		
 		createUI ();
+		connect(itsSeed.pSelectedEvent(), itsList.pSelectedEvent(), true);
 	}
 
 	private void createUI()
 	{
 		itsSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		itsSplitPane.setResizeWeight(0.5);
 		
 		IEventBrowser theBrowser = getLogBrowser().createBrowser(itsSeed.getFilter());
-		itsModel = new EventListModel (theBrowser);
-		itsList = new JList (itsModel);
-		itsList.setCellRenderer(new FormattedRenderer(EventFormatter.getInstance()));
-		itsList.addListSelectionListener(this);
+		itsList = new EventList (theBrowser);
+		
+		itsList.pSelectedEvent().addHardListener(new PropertyListener<ILogEvent>()
+				{
+					@Override
+					public void propertyChanged(IProperty<ILogEvent> aProperty, ILogEvent aOldValue, ILogEvent aNewValue)
+					{
+						setSelectedEvent(aNewValue);
+					}
+				});
 		
 		setLayout(new BorderLayout());
 		add (itsSplitPane, BorderLayout.CENTER);
 		
-		itsSplitPane.setLeftComponent(new JScrollPane (itsList));
+		itsSplitPane.setLeftComponent(itsList);
+		
+		itsScrollPane = new JScrollPane();
+		itsSplitPane.setRightComponent(itsScrollPane);
 	}
 	
-	
-	public void valueChanged(ListSelectionEvent aE)
+	@Override
+	public void addNotify()
 	{
-		setSelectedEvent((ILogEvent) itsList.getSelectedValue());
+		super.addNotify();
+		itsSplitPane.setDividerLocation(400);
 	}
 	
 	private void setSelectedEvent (ILogEvent aEvent)
 	{
-		EventView theView = EventViewFactory.createView(
-				getGUIManager(), 
-				getLogBrowser(),
-				aEvent);
+		if (aEvent != null)
+		{
+			EventView theView = EventViewFactory.createView(
+					getGUIManager(), 
+					getLogBrowser(),
+					aEvent);
+			
+			itsScrollPane.setViewportView(theView);
+		}
+		else
+		{
+			itsScrollPane.setViewportView(null);
+		}
 		
-		itsSplitPane.setRightComponent(theView);
 		revalidate();
 		repaint();
 	}

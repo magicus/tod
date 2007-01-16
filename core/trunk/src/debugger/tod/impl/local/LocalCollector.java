@@ -118,7 +118,8 @@ public class LocalCollector extends EventCollector
 		aEvent.setHost(getHost());
 		aEvent.setThread(aThread);
 		aEvent.setDepth(aDepth);
-		aEvent.setParent(theParentEvent);
+		aEvent.setParentTimestamp(theParentEvent != null ? 
+				theParentEvent.getTimestamp() : 0);
 		aEvent.setTimestamp(aTimestamp);
 		aEvent.setOperationBytecodeIndex(aOperationBytecodeIndex);
 		
@@ -147,7 +148,7 @@ public class LocalCollector extends EventCollector
 				formatBehavior(aBehaviorId),
 				aException));
 		
-		ExceptionGeneratedEvent theEvent = new ExceptionGeneratedEvent();
+		ExceptionGeneratedEvent theEvent = new ExceptionGeneratedEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
 		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex);
 		
@@ -177,7 +178,7 @@ public class LocalCollector extends EventCollector
 				aHasThrown,
 				aResult));
 		
-		BehaviorExitEvent theEvent = new BehaviorExitEvent();
+		BehaviorExitEvent theEvent = new BehaviorExitEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
 		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex);
 		
@@ -209,7 +210,7 @@ public class LocalCollector extends EventCollector
 				aTarget,
 				aValue));
 		
-		FieldWriteEvent theEvent = new FieldWriteEvent();
+		FieldWriteEvent theEvent = new FieldWriteEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
 		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex);
 
@@ -240,7 +241,7 @@ public class LocalCollector extends EventCollector
 				aIndex,
 				aValue));
 		
-		ArrayWriteEvent theEvent = new ArrayWriteEvent();
+		ArrayWriteEvent theEvent = new ArrayWriteEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
 		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex);
 
@@ -275,7 +276,7 @@ public class LocalCollector extends EventCollector
 				aTarget,
 				aArguments));
 		
-		InstantiationEvent theEvent = new InstantiationEvent();
+		InstantiationEvent theEvent = new InstantiationEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
 		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex);
 
@@ -308,7 +309,7 @@ public class LocalCollector extends EventCollector
 				aVariableId,
 				aValue));
 		
-		LocalVariableWriteEvent theEvent = new LocalVariableWriteEvent();
+		LocalVariableWriteEvent theEvent = new LocalVariableWriteEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
 		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex);
 
@@ -348,7 +349,7 @@ public class LocalCollector extends EventCollector
 				aArguments,
 				aOperationBytecodeIndex));
 		
-		MethodCallEvent theEvent = new MethodCallEvent();
+		MethodCallEvent theEvent = new MethodCallEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
 		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex);
 
@@ -379,7 +380,7 @@ public class LocalCollector extends EventCollector
 				aOutput,
 				aData));
 		
-		OutputEvent theEvent = new OutputEvent();
+		OutputEvent theEvent = new OutputEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
 		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, -1);
 		
@@ -413,7 +414,7 @@ public class LocalCollector extends EventCollector
 				aTarget,
 				aArguments));
 		
-		ConstructorChainingEvent theEvent = new ConstructorChainingEvent();
+		ConstructorChainingEvent theEvent = new ConstructorChainingEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
 		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex);
 

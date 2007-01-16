@@ -136,15 +136,21 @@ public class EventComparator implements Comparator<ILogEvent>
 			return itsTimestamp;
 		}
 
-		public long getSerial()
-		{
-			return 0;
-		}
-
 		public IBehaviorCallEvent getParent()
 		{
 			return null;
 		}
+
+		public ExternalPointer getParentPointer()
+		{
+			return null;
+		}
+
+		public ExternalPointer getPointer()
+		{
+			return null;
+		}
+
 	}
 
 }

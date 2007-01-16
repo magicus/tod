@@ -76,9 +76,9 @@ public class IndexMerger
 		}
 
 		@Override
-		protected long getTimestamp(T aItem)
+		protected long getKey(T aItem)
 		{
-			return aItem.getTimestamp();
+			return aItem.getKey();
 		}
 
 		@Override
@@ -97,9 +97,9 @@ public class IndexMerger
 		}
 		
 		@Override
-		protected long getTimestamp(T aItem)
+		protected long getKey(T aItem)
 		{
-			return aItem.getTimestamp();
+			return aItem.getKey();
 		}
 
 		@Override

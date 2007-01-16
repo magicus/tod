@@ -101,7 +101,7 @@ public class GridExceptionGeneratedEvent extends GridEvent
 	@Override
 	public ILogEvent toLogEvent(GridLogBrowser aBrowser)
 	{
-		ExceptionGeneratedEvent theEvent = new ExceptionGeneratedEvent();
+		ExceptionGeneratedEvent theEvent = new ExceptionGeneratedEvent(aBrowser);
 		initEvent(aBrowser, theEvent);
 		theEvent.setException(getException());
 		theEvent.setThrowingBehavior(aBrowser.getLocationsRepository().getBehavior(getThrowingBehaviorId()));

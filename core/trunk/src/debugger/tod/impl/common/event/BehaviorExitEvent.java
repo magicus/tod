@@ -20,12 +20,18 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.common.event;
 
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IBehaviorExitEvent;
 
 public class BehaviorExitEvent extends Event implements IBehaviorExitEvent
 {
 	private boolean itsHasThrown;
 	private Object itsResult;
+
+	public BehaviorExitEvent(ILogBrowser aLogBrowser)
+	{
+		super(aLogBrowser);
+	}
 
 	public boolean hasThrown()
 	{

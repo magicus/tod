@@ -23,7 +23,6 @@ package tod.gui.controlflow;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Shape;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
@@ -38,6 +37,7 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.gui.Hyperlinks;
 import zz.csg.api.GraphicObjectContext;
+import zz.csg.api.IDisplay;
 import zz.csg.api.IGraphicContainer;
 import zz.csg.api.IRectangularGraphicContainer;
 import zz.csg.api.layout.AbstractSimpleLayout;
@@ -370,7 +370,7 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 		}
 
 		
-		public void paint(GraphicObjectContext aContext, Graphics2D aGraphics, Area aVisibleArea)
+		public void paint(IDisplay aDisplay, GraphicObjectContext aContext, Graphics2D aGraphics, Area aVisibleArea)
 		{
 			Rectangle2D theBounds = pBounds().get();
 			

@@ -18,60 +18,29 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.core.database.structure;
+package tod.core.database.event;
 
-import java.io.Serializable;
+import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.IThreadInfo;
 
 
 /**
- * Aggregates the information a {@link ILogCollector collector}
- * receives about a thread.
+ * External event pointer, comprised of host id, thread id
+ * and timestamp, which is enough information to uniquely
+ * identify an event. 
  * @author gpothier
  */
-public class ThreadInfo implements IThreadInfo, Serializable
+public class ExternalPointer
 {
-	private IHostInfo itsHost;
-	private int itsId;
-	private long itsJVMId;
-	private String itsName;
-	
-	public ThreadInfo(IHostInfo aHost, int aId, long aJVMId, String aName)
-	{
-		itsHost = aHost;
-		itsId = aId;
-		itsJVMId = aJVMId;
-		itsName = aName;
-	}
+	public final IHostInfo host;
+	public final IThreadInfo thread;
+	public final long timestamp;
 
-	public int getId()
+	public ExternalPointer(IHostInfo aHost, IThreadInfo aThread, long aTimestamp)
 	{
-		return itsId;
-	}
-	
-	public long getJVMId()
-	{
-		return itsJVMId;
-	}
-
-	public IHostInfo getHost()
-	{
-		return itsHost;
-	}
-
-	public String getName()
-	{
-		return itsName;
-	}
-
-	public void setName(String aName)
-	{
-		itsName = aName;
-	}
-	
-	@Override
-	public String toString()
-	{
-		return "Thread ("+getId()+", "+getJVMId()+", "+getName()+")";
+		host = aHost;
+		thread = aThread;
+		timestamp = aTimestamp;
 	}
 
 	@Override
@@ -79,7 +48,9 @@ public class ThreadInfo implements IThreadInfo, Serializable
 	{
 		final int PRIME = 31;
 		int result = 1;
-		result = PRIME * result + itsId;
+		result = PRIME * result + ((host == null) ? 0 : host.hashCode());
+		result = PRIME * result + ((thread == null) ? 0 : thread.hashCode());
+		result = PRIME * result + (int) (timestamp ^ (timestamp >>> 32));
 		return result;
 	}
 
@@ -89,11 +60,20 @@ public class ThreadInfo implements IThreadInfo, Serializable
 		if (this == obj) return true;
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
-		final ThreadInfo other = (ThreadInfo) obj;
-		if (itsId != other.itsId) return false;
+		final ExternalPointer other = (ExternalPointer) obj;
+		if (host == null)
+		{
+			if (other.host != null) return false;
+		}
+		else if (!host.equals(other.host)) return false;
+		if (thread == null)
+		{
+			if (other.thread != null) return false;
+		}
+		else if (!thread.equals(other.thread)) return false;
+		if (timestamp != other.timestamp) return false;
 		return true;
 	}
-	
-	
 
 }
+

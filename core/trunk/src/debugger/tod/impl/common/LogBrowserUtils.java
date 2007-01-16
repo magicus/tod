@@ -18,44 +18,39 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.local.filter;
+package tod.impl.common;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.ILogEvent;
-import tod.impl.common.event.Event;
-import tod.impl.local.EventBrowser;
-import tod.impl.local.LocalBrowser;
-import tod.impl.local.LocalBrowser;
 
 /**
- * Base class for filters that are precomputed.
+ * Utility methods for implementing log browsers.
  * @author gpothier
  */
-public abstract class AbstractPrecomputedFilter extends AbstractFilter
+public class LogBrowserUtils 
 {
-	private List<ILogEvent> itsEvents = new ArrayList<ILogEvent>();
-
-	public AbstractPrecomputedFilter(LocalBrowser aBrowser)
+	public static ILogEvent getEvent(ILogBrowser aLogBrowser, ExternalPointer aPointer)
 	{
-		super(aBrowser);
+		ICompoundFilter theFilter = aLogBrowser.createIntersectionFilter(
+				aLogBrowser.createHostFilter(aPointer.host),
+				aLogBrowser.createThreadFilter(aPointer.thread));
 		
+		IEventBrowser theBrowser = aLogBrowser.createBrowser(theFilter);
+		theBrowser.setNextTimestamp(aPointer.timestamp);
+		if (theBrowser.hasNext())
+		{
+			ILogEvent theEvent = theBrowser.next();
+			
+			assert theEvent.getHost().equals(aPointer.host);
+			assert theEvent.getThread().equals(aPointer.thread);
+			if (theEvent.getTimestamp() == aPointer.timestamp) return theEvent;
+		}
+
+		return null;
 	}
-	
-	protected void addEvent (Event aEvent)
-	{
-		itsEvents.add (aEvent);
-	}
-	
-	public IEventBrowser createBrowser()
-	{
-		return new EventBrowser(getBrowser(), itsEvents);
-	}
-	
-	public boolean accept(ILogEvent aEvent)
-	{
-		return itsEvents.contains(aEvent);
-	}
+
+
 }

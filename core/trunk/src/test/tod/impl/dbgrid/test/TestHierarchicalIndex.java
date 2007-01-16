@@ -144,7 +144,7 @@ public class TestHierarchicalIndex
 		{
 			long theData = Fixtures.inventData(aTimestamp);
 			
-			if (aTuple.getTimestamp() != aTimestamp) fail("Timestamp mismatch");
+			if (aTuple.getKey() != aTimestamp) fail("Timestamp mismatch");
 			if (aTuple.getEventPointer() != theData) fail("Data mismatch");
 		}
 		

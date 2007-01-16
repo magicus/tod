@@ -23,7 +23,6 @@ package tod.gui.eventsequences;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.structure.IFieldInfo;
 import tod.gui.view.LogView;
-import zz.csg.api.IDisplay;
 
 /**
  * Sequence seed for a particular field.
@@ -40,9 +39,9 @@ public class FieldSequenceSeed implements IEventSequenceSeed
 		itsField = aField;
 	}
 
-	public IEventSequenceView createView(IDisplay aDisplay, LogView aLogView)
+	public IEventSequenceView createView(LogView aLogView)
 	{
-		return new FieldSequenceView(aDisplay, aLogView, itsInspector, itsField);
+		return new FieldSequenceView(aLogView, itsInspector, itsField);
 	}
 
 }

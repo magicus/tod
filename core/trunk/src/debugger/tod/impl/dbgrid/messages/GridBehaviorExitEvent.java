@@ -115,7 +115,7 @@ public class GridBehaviorExitEvent extends GridEvent
 	@Override
 	public ILogEvent toLogEvent(GridLogBrowser aBrowser)
 	{
-		BehaviorExitEvent theEvent = new BehaviorExitEvent();
+		BehaviorExitEvent theEvent = new BehaviorExitEvent(aBrowser);
 		initEvent(aBrowser, theEvent);
 		theEvent.setHasThrown(hasThrown());
 		theEvent.setResult(getResult());

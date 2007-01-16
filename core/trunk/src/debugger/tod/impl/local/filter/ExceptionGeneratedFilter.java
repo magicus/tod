@@ -18,39 +18,33 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui;
+package tod.impl.local.filter;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.AbstractListModel;
-
-import tod.core.database.browser.IEventBrowser;
+import tod.core.database.event.IExceptionGeneratedEvent;
+import tod.core.database.event.ILogEvent;
+import tod.impl.local.LocalBrowser;
 
 /**
- * A swing list model of an {@link tod.core.database.browser.IEventBrowser}
+ * Accepts only "exception generated" events.
  * @author gpothier
  */
-public class EventListModel extends AbstractListModel
+public class ExceptionGeneratedFilter extends AbstractStatelessFilter
 {
-	private IEventBrowser itsBrowser;
-	
-	// TODO: this is a hack, UI should be changed so that we don't use lists
-	private List itsList = new ArrayList();
-	
-	public EventListModel (IEventBrowser aBrowser)
+	/**
+	 * Creates a filter that accepts any "exception generated" event.
+	 */
+	public ExceptionGeneratedFilter(LocalBrowser aBrowser)
 	{
-		itsBrowser = aBrowser;
-		while (aBrowser.hasNext()) itsList.add(aBrowser.next());
+		super (aBrowser);
+	}
+	
+	public boolean accept(ILogEvent aEvent)
+	{
+		if (aEvent instanceof IExceptionGeneratedEvent)
+		{
+			return true;
+		}
+		else return false;
 	}
 
-	public int getSize()
-	{
-		return itsList.size();
-	}
-
-	public Object getElementAt(int aIndex)
-	{
-		return itsList.get(aIndex);
-	}
 }

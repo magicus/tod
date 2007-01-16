@@ -18,46 +18,55 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow;
+package tod.gui.view.event;
 
-import java.awt.Color;
-
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IExceptionGeneratedEvent;
-import tod.core.database.event.ILogEvent;
-import tod.gui.Hyperlinks;
-import zz.csg.api.layout.SequenceLayout;
-import zz.csg.impl.figures.SVGFlowText;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.ITypeInfo;
+import tod.gui.IGUIManager;
+import tod.gui.seed.Seed;
+import tod.gui.seed.SeedFactory;
 
-public class ExceptionGeneratedNode extends AbstractEventNode
+public class ExceptionGeneratedView extends EventView
 {
 	private IExceptionGeneratedEvent itsEvent;
-
-	public ExceptionGeneratedNode(
-			CFlowView aView,
+	
+	public ExceptionGeneratedView(
+			IGUIManager aManager, 
+			ILogBrowser aLog, 
 			IExceptionGeneratedEvent aEvent)
 	{
-		super(aView);
-		
+		super(aManager, aLog);
 		itsEvent = aEvent;
-
-		setLayoutManager(new SequenceLayout());
-		
-		pChildren().add(SVGFlowText.create(
-				"Exception: ", 
-				CFlowTreeBuilder.FONT, 
-				Color.RED));
-		
-		pChildren().add(Hyperlinks.object(
-				getGUIManager(), 
-				getEventTrace(),
-				itsEvent.getException(), 
-				CFlowTreeBuilder.FONT));
+	}
+	
+	protected IExceptionGeneratedEvent getEvent()
+	{
+		return itsEvent;
 	}
 	
 	@Override
-	protected ILogEvent getEvent()
+	public void init()
 	{
-		return itsEvent;
+		super.init();
+		
+		IExceptionGeneratedEvent theEvent = getEvent();
+		
+		// Target
+		add (createTitledPanel("Exception: ", createInspectorLink(theEvent.getException())));
+		
+		// Behaviour
+		IBehaviorInfo theBehavior = theEvent.getThrowingBehavior();
+		String theBehaviorName = theBehavior.getName();
+		
+		Seed theSeed = SeedFactory.getDefaultSeed(
+				getGUIManager(), 
+				getLogBrowser(), 
+				theBehavior);
+		
+		add (createTitledLink("Occured in: ", theBehaviorName, theSeed));
 	}
 
 }

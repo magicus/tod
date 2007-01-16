@@ -20,7 +20,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.browser;
 
+import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
@@ -62,6 +64,11 @@ public interface ILogBrowser
 	 * Returns the total number of logged events.
 	 */
 	public long getEventsCount();
+	
+	/**
+	 * Returns the event pointed to by the specified pointer.
+	 */
+	public ILogEvent getEvent(ExternalPointer aPointer);
 	
 	/**
 	 * Returns the registrer that maintains all location and
@@ -190,6 +197,11 @@ public interface ILogBrowser
 	 * location in source code. 
 	 */
 	public IEventFilter createLocationFilter (ITypeInfo aType, int aLineNumber);
+	
+	/**
+	 * Creates a filter that accepts only exception generated events.
+	 */
+	public IEventFilter createExceptionGeneratedFilter();
 	
 	/**
 	 * Creates an inspector that permits to evaluate the state of the specified

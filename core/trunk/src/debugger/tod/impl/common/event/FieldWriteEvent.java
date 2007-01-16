@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.common.event;
 
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.structure.IFieldInfo;
 
@@ -32,6 +33,11 @@ public class FieldWriteEvent extends Event implements IFieldWriteEvent
 	private Object itsTarget;
 	private Object itsValue;
 	
+	public FieldWriteEvent(ILogBrowser aLogBrowser)
+	{
+		super(aLogBrowser);
+	}
+
 	public IFieldInfo getField()
 	{
 		return itsFieldInfo;

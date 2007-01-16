@@ -52,7 +52,7 @@ public class GridOutputEvent extends GridEvent
 	@Override
 	public ILogEvent toLogEvent(GridLogBrowser aBrowser)
 	{
-		OutputEvent theEvent = new OutputEvent();
+		OutputEvent theEvent = new OutputEvent(aBrowser);
 		initEvent(aBrowser, theEvent);
 		theEvent.setData(getData());
 		theEvent.setOutput(getOutput());

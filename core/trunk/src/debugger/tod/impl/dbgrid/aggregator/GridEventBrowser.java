@@ -24,6 +24,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
@@ -50,6 +51,10 @@ implements IEventBrowser
 		reset();
 	}
 	
+	public ILogBrowser getLogBrowser()
+	{
+		return itsBrowser;
+	}
 	
 	@Override
 	protected ILogEvent[] fetchNextBuffer()

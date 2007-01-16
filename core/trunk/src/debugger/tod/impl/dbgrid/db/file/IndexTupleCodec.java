@@ -40,6 +40,6 @@ public abstract class IndexTupleCodec<T extends IndexTuple> extends TupleCodec<T
 	@Override
 	public final boolean isNull(T aTuple)
 	{
-		return aTuple.getTimestamp() == 0;
+		return aTuple.getKey() == 0;
 	}
 }

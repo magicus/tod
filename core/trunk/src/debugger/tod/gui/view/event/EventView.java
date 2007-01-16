@@ -52,7 +52,7 @@ public abstract class EventView extends LogView
 	public void init()
 	{
 		setLayout(new GridStackLayout(1, 0, 5, false, false));
-		add (createTitleLabel(EventFormatter.getInstance().getHtmlText(getEvent())));
+		add (createTitleLabel(getEventFormatter().getHtmlText(getEvent())));
 		
 		ILogEvent theEvent = getEvent();
 		IThreadInfo theThreadInfo = theEvent.getThread();

@@ -38,6 +38,6 @@ public abstract class AbstractStatelessFilter extends AbstractFilter
 
 	public IEventBrowser createBrowser ()
 	{
-		return new EventBrowser (getBrowser().getEvents(), this);
+		return new EventBrowser (getBrowser(), getBrowser().getEvents(), this);
 	}
 }

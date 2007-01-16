@@ -28,6 +28,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 import zz.csg.api.GraphicObjectContext;
+import zz.csg.api.IDisplay;
 import zz.csg.impl.AbstractRectangularGraphicObject;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
@@ -70,7 +71,7 @@ public class ExpanderWidget extends AbstractRectangularGraphicObject
 		return pExpanded;
 	}
 	
-	public void paint(GraphicObjectContext aContext, Graphics2D aGraphics, Area aVisibleArea)
+	public void paint(IDisplay aDisplay, GraphicObjectContext aContext, Graphics2D aGraphics, Area aVisibleArea)
 	{
 		Rectangle2D theBounds = pBounds().get();
 		Color theColor = itsEnabled ? 

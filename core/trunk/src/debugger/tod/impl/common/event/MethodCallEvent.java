@@ -20,9 +20,15 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.common.event;
 
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IMethodCallEvent;
 
 public class MethodCallEvent extends BehaviorCallEvent implements IMethodCallEvent
 {
+
+	public MethodCallEvent(ILogBrowser aLogBrowser)
+	{
+		super(aLogBrowser);
+	}
 
 }

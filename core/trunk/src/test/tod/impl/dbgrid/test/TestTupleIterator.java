@@ -60,7 +60,7 @@ public class TestTupleIterator
 		for (int i=1;i<=10000;i++)
 		{
 			StdTuple theTuple = theIterator.next();
-			assertTrue(theTuple.getTimestamp() == i);
+			assertTrue(theTuple.getKey() == i);
 			assertTrue(theTuple.getEventPointer() == i);
 		}
 		
@@ -71,7 +71,7 @@ public class TestTupleIterator
 		for (int i=10000;i>=1;i--)
 		{
 			StdTuple theTuple = theIterator.previous();
-			assertTrue(theTuple.getTimestamp() == i);
+			assertTrue(theTuple.getKey() == i);
 			assertTrue(theTuple.getEventPointer() == i);
 		}
 
@@ -82,7 +82,7 @@ public class TestTupleIterator
 		for (int i=1;i<=10000;i++)
 		{
 			StdTuple theTuple = theIterator.next();
-			assertTrue(theTuple.getTimestamp() == i);
+			assertTrue(theTuple.getKey() == i);
 			assertTrue(theTuple.getEventPointer() == i);
 		}
 		
@@ -93,7 +93,7 @@ public class TestTupleIterator
 		for (int i=10000;i>=1;i--)
 		{
 			StdTuple theTuple = theIterator.previous();
-			assertTrue(theTuple.getTimestamp() == i);
+			assertTrue(theTuple.getKey() == i);
 			assertTrue(theTuple.getEventPointer() == i);
 		}
 
@@ -104,7 +104,7 @@ public class TestTupleIterator
 		for (int i=1;i<=5000;i++)
 		{
 			StdTuple theTuple = theIterator.next();
-			assertTrue(theTuple.getTimestamp() == i);
+			assertTrue(theTuple.getKey() == i);
 			assertTrue(theTuple.getEventPointer() == i);
 		}
 		
@@ -115,7 +115,7 @@ public class TestTupleIterator
 		for (int i=5000;i>=1;i--)
 		{
 			StdTuple theTuple = theIterator.previous();
-			assertTrue(theTuple.getTimestamp() == i);
+			assertTrue(theTuple.getKey() == i);
 			assertTrue(theTuple.getEventPointer() == i);
 		}
 

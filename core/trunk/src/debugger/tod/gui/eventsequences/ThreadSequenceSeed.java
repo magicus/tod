@@ -23,7 +23,6 @@ package tod.gui.eventsequences;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IThreadInfo;
 import tod.gui.view.LogView;
-import zz.csg.api.IDisplay;
 
 /**
  * Sequence seed for a particular field.
@@ -50,9 +49,9 @@ public class ThreadSequenceSeed implements IEventSequenceSeed
 		return itsTrace;
 	}
 
-	public ThreadSequenceView createView(IDisplay aDisplay, LogView aLogView)
+	public ThreadSequenceView createView(LogView aLogView)
 	{
-		return new ThreadSequenceView(aDisplay, aLogView, this);
+		return new ThreadSequenceView(aLogView, this);
 	}
 
 }

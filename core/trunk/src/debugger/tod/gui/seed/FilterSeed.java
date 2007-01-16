@@ -22,9 +22,12 @@ package tod.gui.seed;
 
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.ILogEvent;
 import tod.gui.IGUIManager;
 import tod.gui.view.FilterView;
 import tod.gui.view.LogView;
+import zz.utils.properties.IRWProperty;
+import zz.utils.properties.SimpleRWProperty;
 
 /**
  * A seed that is based on a {@link tod.core.database.browser.IEventBrowser}.
@@ -40,6 +43,8 @@ public class FilterSeed extends Seed/*<FilterView>*/
 	 */
 	private long itsTimestamp;
 	
+	private IRWProperty<ILogEvent> pSelectedEvent = new SimpleRWProperty<ILogEvent>(this);
+
 	
 	public FilterSeed(IGUIManager aGUIManager, ILogBrowser aLog, IEventFilter aFilter)
 	{
@@ -54,8 +59,6 @@ public class FilterSeed extends Seed/*<FilterView>*/
 		return theView;
 	}
 	
-	
-
 	public long getTimestamp()
 	{
 		return itsTimestamp;
@@ -70,4 +73,13 @@ public class FilterSeed extends Seed/*<FilterView>*/
 	{
 		return itsFilter;
 	}
+	
+	/**
+	 * The currently selected event in the list.
+	 */
+	public IRWProperty<ILogEvent> pSelectedEvent()
+	{
+		return pSelectedEvent;
+	}
+
 }

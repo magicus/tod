@@ -33,7 +33,9 @@ import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.IVariablesInspector;
+import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
@@ -42,12 +44,14 @@ import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.impl.common.CFlowBrowser;
+import tod.impl.common.LogBrowserUtils;
 import tod.impl.common.ObjectInspector;
 import tod.impl.common.VariablesInspector;
 import tod.impl.common.event.Event;
 import tod.impl.local.filter.AbstractFilter;
 import tod.impl.local.filter.BehaviorCallFilter;
 import tod.impl.local.filter.DepthFilter;
+import tod.impl.local.filter.ExceptionGeneratedFilter;
 import tod.impl.local.filter.FieldWriteFilter;
 import tod.impl.local.filter.HostFilter;
 import tod.impl.local.filter.InstantiationFilter;
@@ -114,7 +118,11 @@ public class LocalBrowser implements ILogBrowser
 	{
 		return itsEvents;
 	}
-	
+
+	public ILogEvent getEvent(ExternalPointer aPointer)
+	{
+		return LogBrowserUtils.getEvent(this, aPointer);
+	}
 
 	public long getFirstTimestamp()
 	{
@@ -148,6 +156,11 @@ public class LocalBrowser implements ILogBrowser
 		return null;
 	}
 	
+	public IEventFilter createExceptionGeneratedFilter()
+	{
+		return new ExceptionGeneratedFilter(this);
+	}
+
 	public IEventFilter createBehaviorCallFilter()
 	{
 		return new BehaviorCallFilter(this);

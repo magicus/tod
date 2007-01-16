@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.common.event;
 
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IArrayWriteEvent;
 
 /**
@@ -32,6 +33,11 @@ public class ArrayWriteEvent extends Event implements IArrayWriteEvent
 	private Object itsValue;
 	
 	
+	public ArrayWriteEvent(ILogBrowser aLogBrowser)
+	{
+		super(aLogBrowser);
+	}
+
 	public int getIndex()
 	{
 		return itsIndex;

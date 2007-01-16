@@ -21,6 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.common.event;
 
 import tod.core.Output;
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IOutputEvent;
 
 /**
@@ -31,6 +32,11 @@ public class OutputEvent extends Event implements IOutputEvent
 	private String itsData;
 	private Output itsOutput;
 	
+	public OutputEvent(ILogBrowser aLogBrowser)
+	{
+		super(aLogBrowser);
+	}
+
 	public String getData()
 	{
 		return itsData;

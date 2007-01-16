@@ -23,6 +23,7 @@ package tod.impl.common.event;
 import java.util.ArrayList;
 import java.util.List;
 
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
@@ -39,6 +40,11 @@ public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEv
 	
 	private IBehaviorExitEvent itsExitEvent;
 
+
+	public BehaviorCallEvent(ILogBrowser aLogBrowser)
+	{
+		super(aLogBrowser);
+	}
 
 	public List<ILogEvent> getChildren()
 	{

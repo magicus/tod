@@ -35,6 +35,7 @@ import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.IVariablesInspector;
+import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
@@ -45,6 +46,7 @@ import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.impl.common.CFlowBrowser;
+import tod.impl.common.LogBrowserUtils;
 import tod.impl.dbgrid.aggregator.GridEventBrowser;
 import tod.impl.dbgrid.db.RoleIndexSet;
 import tod.impl.dbgrid.messages.MessageType;
@@ -62,7 +64,6 @@ import tod.impl.dbgrid.queries.ObjectCondition;
 import tod.impl.dbgrid.queries.ThreadCondition;
 import tod.impl.dbgrid.queries.TypeCondition;
 import tod.utils.remote.RemoteLocationsRepository;
-import zz.utils.ListMap;
 import zz.utils.Utils;
 import zz.utils.cache.MRUBuffer;
 
@@ -88,10 +89,6 @@ implements ILogBrowser, RIGridMasterListener
 	
 	private List<IGridBrowserListener> itsListeners = new ArrayList<IGridBrowserListener>();
 	
-	/**
-	 * A buffer of most recently used parent events.
-	 */
-	private EventsBuffer itsEventsBuffer = new EventsBuffer();
 
 	public GridLogBrowser(RIGridMaster aMaster) throws RemoteException
 	{
@@ -143,6 +140,11 @@ implements ILogBrowser, RIGridMasterListener
 	public IEventFilter createBehaviorCallFilter(IBehaviorInfo aBehavior)
 	{
 		return new BehaviorCondition(aBehavior.getId(), RoleIndexSet.ROLE_BEHAVIOR_ANY_ENTER);
+	}
+
+	public IEventFilter createExceptionGeneratedFilter()
+	{
+		return new TypeCondition(MessageType.EXCEPTION_GENERATED);
 	}
 
 	public IEventFilter createFieldFilter(IFieldInfo aField)
@@ -323,15 +325,10 @@ implements ILogBrowser, RIGridMasterListener
 		
 		return theList.get(aThreadId);
 	}
-	
-	/**
-	 * Retrieves the event that corresponds to the specified information, if
-	 * it exists.
-	 */
-	public ILogEvent getEvent(int aHostId, int aThreadId, long aTimestamp)
+
+	public ILogEvent getEvent(ExternalPointer aPointer)
 	{
-		byte[] theKey = ExternalPointer.create(aHostId, aThreadId, aTimestamp);
-		return itsEventsBuffer.get(theKey);
+		return LogBrowserUtils.getEvent(this, aPointer);
 	}
 
 	public ILocationsRepository getLocationsRepository()

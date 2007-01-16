@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.event;
 
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
 
@@ -29,6 +30,12 @@ import tod.core.database.structure.IThreadInfo;
  */
 public interface ILogEvent
 {
+	/**
+	 * Returns a pointer to this event.
+	 * @see ILogBrowser#getEvent(ExternalPointer)
+	 */
+	public ExternalPointer getPointer();
+	
 	/**
 	 * Identifies the host in which the event occurred.
 	 */
@@ -50,10 +57,21 @@ public interface ILogEvent
 	 * is a duration in nanoseconds.
 	 */
 	public long getTimestamp();
+
+	/**
+	 * Returns a pointer to the parent event.
+	 * Note that this method is more efficient than {@link #getParent()}.
+	 */
+	public ExternalPointer getParentPointer();
 	
 	/**
 	 * Returns behavior call event corresponding to the behavior execution
 	 * during which this event occured.
+	 * Note that calling this method might cause a database access, at
+	 * least the first time it is called (implementations of this method 
+	 * should cache the result).
+	 * If only the identity of the parent event is needed, use 
+	 * {@link #getParentPointer()} instead.
 	 */
 	public IBehaviorCallEvent getParent();
 }

@@ -20,9 +20,13 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.db;
 
-import static tod.impl.dbgrid.DebuggerGridConfig.*;
+import static tod.impl.dbgrid.DebuggerGridConfig.DB_EVENT_SIZE_BITS;
+import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_POINTER_BITS;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 
 import tod.impl.dbgrid.InternalPointer;
 import tod.impl.dbgrid.db.file.HardPagedFile;
@@ -32,7 +36,6 @@ import tod.impl.dbgrid.messages.GridMessage;
 import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Probe;
-import zz.utils.bit.BitUtils;
 
 public class EventList
 {
@@ -93,10 +96,13 @@ public class EventList
 		{
 			PageBitStruct theOldBitStruct = itsCurrentBitStruct;
 			itsCurrentBitStruct = itsFile.create().asBitStruct();
+			long thePageId = itsCurrentBitStruct.getPage().getPageId();
 			itsPageCount++;
 			
 			theOldBitStruct.writeInt(0, DB_EVENT_SIZE_BITS); // End-of-page marker 
-			theOldBitStruct.writeLong(itsCurrentBitStruct.getPage().getPageId()+1, DB_PAGE_POINTER_BITS);
+			theOldBitStruct.writeLong(
+					thePageId+1, 
+					DB_PAGE_POINTER_BITS);
 			
 			itsFile.free(theOldBitStruct.getPage());
 			itsRecordIndex = 0;
@@ -136,9 +142,17 @@ public class EventList
 		assert thePointer.getNode() == itsNodeId;
 		long thePageId = thePointer.getPage();
 		int theRecordIndex = thePointer.getIndex();
-		int theCount = theRecordIndex;
+		return getEvent(thePageId, theRecordIndex);
+	}
+	
+	/**
+	 * Returns the event corresponding to the specified internal pointer.
+	 */
+	public GridEvent getEvent(long aPageId, int aRecordIndex)
+	{
+		int theCount = aRecordIndex;
 		
-		HardPagedFile.Page thePage = itsFile.get(thePageId);
+		HardPagedFile.Page thePage = itsFile.get(aPageId);
 		PageBitStruct theBitStruct = thePage.asBitStruct();
 		
 		do 
@@ -154,10 +168,9 @@ public class EventList
 		} while (theCount >= 0);
 		
 		throw new RuntimeException(String.format(
-				"Event not found: %d (%d, %d)", 
-				aPointer,
-				thePageId,
-				theRecordIndex));
+				"Event not found: (pageId: %d, recordIndex: %d)", 
+				aPageId,
+				aRecordIndex));
 	}
 	
 	/**
@@ -253,5 +266,4 @@ public class EventList
 		
 		
 	}
-
 }

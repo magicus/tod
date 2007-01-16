@@ -30,8 +30,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.registry.Registry;
-import java.util.LinkedList;
-import java.util.Random;
 
 import tod.core.LocationRegisterer;
 import tod.core.config.TODConfig;
@@ -48,43 +46,12 @@ import tod.impl.dbgrid.gridimpl.uniform.UniformEventDatabase;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.impl.dbgrid.test.TestHierarchicalIndex;
-import tod.impl.dbgrid.test.TestHierarchicalIndex.TimestampGenerator;
 import zz.utils.bit.BitStruct;
 import zz.utils.bit.IntBitStruct;
 
 
 public class Fixtures
 {
-
-	public static class FakeThread
-	{
-		private static int itsExpectedLength = 10;
-		
-		private int itsHostId;
-		private int itsThreadId;
-		
-		private TimestampGenerator itsGenerator;
-		private Random itsRandom;
-		private LinkedList<byte[]> itsStack = new LinkedList<byte[]>();
-		
-		public FakeThread(int aHostId, int aThreadId)
-		{
-			itsHostId = aHostId;
-			itsThreadId = aThreadId;
-			
-			int theSeed = itsHostId*10000 + itsThreadId;
-			itsGenerator = new TimestampGenerator(theSeed);
-			itsRandom = new Random(theSeed);
-			
-			itsStack.addLast(genPointer());
-		}
-		
-		private byte[] genPointer()
-		{
-			return ExternalPointer.create(itsHostId, itsThreadId, itsGenerator.next());
-		}
-		
-	}
 
 	public static HierarchicalIndex<StdIndexSet.StdTuple> createStdIndex() 
 	{
@@ -99,12 +66,10 @@ public class Fixtures
 			theFile.delete();
 			HardPagedFile thePagedFile = new HardPagedFile(theFile, DebuggerGridConfig.DB_PAGE_SIZE);
 			
-			StdIndexSet theIndexSet = new StdIndexSet("test", thePagedFile, aCount);
-			
 			HierarchicalIndex<StdIndexSet.StdTuple>[] theIndexes = new HierarchicalIndex[aCount];
 			for (int i = 0; i < theIndexes.length; i++)
 			{
-				theIndexes[i] = new HierarchicalIndex<StdIndexSet.StdTuple>(theIndexSet, -1);
+				theIndexes[i] = new HierarchicalIndex<StdIndexSet.StdTuple>(StdIndexSet.TUPLE_CODEC, thePagedFile);
 			}
 			
 			return theIndexes;
@@ -128,11 +93,10 @@ public class Fixtures
 			theFile.delete();
 			HardPagedFile thePagedFile = new HardPagedFile(theFile, DebuggerGridConfig.DB_PAGE_SIZE);
 			
-			RoleIndexSet theIndexSet = new RoleIndexSet("test", thePagedFile, aCount);
 			HierarchicalIndex<RoleIndexSet.RoleTuple>[] theIndexes = new HierarchicalIndex[aCount];
 			for (int i = 0; i < theIndexes.length; i++)
 			{
-				theIndexes[i] = new HierarchicalIndex<RoleIndexSet.RoleTuple>(theIndexSet, -1);
+				theIndexes[i] = new HierarchicalIndex<RoleIndexSet.RoleTuple>(RoleIndexSet.TUPLE_CODEC, thePagedFile);
 			}
 			
 			return theIndexes;

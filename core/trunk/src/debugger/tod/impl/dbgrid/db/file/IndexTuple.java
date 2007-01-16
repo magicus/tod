@@ -20,61 +20,54 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.db.file;
 
-import static tod.impl.dbgrid.DebuggerGridConfig.EVENT_TIMESTAMP_BITS;
 import zz.utils.bit.BitStruct;
 
+
 /**
- * Base class for all index tuples. Only contains the timestamp.
+ * Base class for all index tuples. Only contains the 
+ * indexed field (timestamp in the case of events).
  */
 public class IndexTuple extends Tuple
 {
-	private long itsTimestamp;
+	private long itsKey;
 
-	public IndexTuple(long aTimestamp)
+	public IndexTuple(long aKey)
 	{
-		itsTimestamp = aTimestamp;
+		itsKey = aKey;
 	}
 	
 	public IndexTuple(BitStruct aBitStruct)
 	{
-		itsTimestamp = aBitStruct.readLong(EVENT_TIMESTAMP_BITS);
+		this(aBitStruct.readLong(64));
 	}
 
-	protected void set(long aTimestamp)
-	{
-		itsTimestamp = aTimestamp;
-	}
-	
-	/**
-	 * Writes a serialized representation of this tuple to
-	 * the specified struct.
-	 * Subclasses should override to serialize additional attributes,
-	 * and call super first.
-	 */
+	@Override
 	public void writeTo(BitStruct aBitStruct)
 	{
-		aBitStruct.writeLong(getTimestamp(), EVENT_TIMESTAMP_BITS);
+		aBitStruct.writeLong(getKey(), 64);
 	}
 	
 	@Override
 	public int getBitCount()
 	{
-		return super.getBitCount() + EVENT_TIMESTAMP_BITS;
+		return super.getBitCount() + 64;
 	}
 	
-	/**
-	 * Returns the timestamp of this tuple.
-	 */
-	public long getTimestamp()
+	protected void set(long aKey)
 	{
-		return itsTimestamp;
+		itsKey = aKey;
 	}
-	
+
+	public long getKey()
+	{
+		return itsKey;
+	}
+
 	@Override
 	public String toString()
 	{
-		return String.format("%s: t=%d",
+		return String.format("%s: k=%d",
 				getClass().getSimpleName(),
-				getTimestamp());
+				getKey());
 	}
 }

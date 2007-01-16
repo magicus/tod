@@ -29,7 +29,6 @@ import tod.core.database.structure.IMemberInfo;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
 import tod.gui.view.LogView;
-import zz.csg.api.IDisplay;
 import zz.csg.api.IRectangularGraphicObject;
 
 /**
@@ -40,9 +39,9 @@ public abstract class AbstractMemberSequenceView extends AbstractSingleBrowserSe
 {
 	private final IObjectInspector itsInspector;
 	
-	public AbstractMemberSequenceView(IDisplay aDisplay, LogView aLogView, Color aColor, IObjectInspector aInspector)
+	public AbstractMemberSequenceView(LogView aLogView, Color aColor, IObjectInspector aInspector)
 	{
-		super(aDisplay, aLogView, aColor);
+		super(aLogView, aColor);
 		itsInspector = aInspector;
 	}
 

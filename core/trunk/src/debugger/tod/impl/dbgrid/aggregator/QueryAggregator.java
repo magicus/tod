@@ -228,7 +228,7 @@ implements RIQueryAggregator
 		}
 
 		@Override
-		protected long getTimestamp(GridEvent aItem)
+		protected long getKey(GridEvent aItem)
 		{
 			return aItem.getTimestamp();
 		}

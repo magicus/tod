@@ -32,7 +32,6 @@ import tod.gui.IGUIManager;
 import tod.gui.SVGHyperlink;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.view.LogView;
-import zz.csg.api.IDisplay;
 import zz.csg.api.IRectangularGraphicObject;
 import zz.csg.api.layout.SequenceLayout;
 import zz.csg.impl.SVGGraphicContainer;
@@ -45,9 +44,9 @@ public class MethodSequenceView extends AbstractMemberSequenceView
 	private IBehaviorInfo itsMethod;
 
 	
-	public MethodSequenceView(IDisplay aDisplay, LogView aLogView, IObjectInspector aInspector, IBehaviorInfo aMethod)
+	public MethodSequenceView(LogView aLogView, IObjectInspector aInspector, IBehaviorInfo aMethod)
 	{
-		super(aDisplay, aLogView, METHOD_COLOR, aInspector);
+		super(aLogView, METHOD_COLOR, aInspector);
 		itsMethod = aMethod;
 	}
 

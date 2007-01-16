@@ -47,22 +47,18 @@ import zz.utils.bit.BitUtils;
  */
 public class HierarchicalIndex<T extends IndexTuple>
 {
-	private IndexSet<T> itsIndexSet;
-	
-	/**
-	 * The position of this index within its set.
-	 */
-	private int itsIndex;
-	
 	private Page itsRootPage;
 	private long itsFirstLeafPageId;
 	private int itsRootLevel;
 	private MyTupleWriter[] itsTupleWriters = new MyTupleWriter[DB_MAX_INDEX_LEVELS];
 	
+	private final TupleCodec<T> itsTupleCodec;
+	private final HardPagedFile itsFile;
+	
 	/**
 	 * The timestamp of the last added tuple
 	 */
-	private long itsLastTimestamp = 0;
+	private long itsLastKey = 0;
 	
 	/**
 	 * Number of pages per level
@@ -71,10 +67,10 @@ public class HierarchicalIndex<T extends IndexTuple>
 	
 	private long itsLeafTupleCount = 0;
 
-	public HierarchicalIndex(IndexSet<T> aIndexSet, int aIndex) 
+	public HierarchicalIndex(TupleCodec<T> aTupleCodec, HardPagedFile aFile) 
 	{
-		itsIndexSet = aIndexSet;
-		itsIndex = aIndex;
+		itsTupleCodec = aTupleCodec;
+		itsFile = aFile;
 		
 		// Init pages
 		itsTupleWriters[0] = new MyTupleWriter<T>(getFile(), getTupleCodec(), 0);
@@ -83,43 +79,30 @@ public class HierarchicalIndex<T extends IndexTuple>
 		itsRootLevel = 0;
 	}
 	
-	public IndexSet<T> getIndexSet()
-	{
-		return itsIndexSet;
-	}
-
-	public int getIndex()
-	{
-		return itsIndex;
-	}
-
 	private TupleCodec<T> getTupleCodec()
 	{
-		return itsIndexSet.getTupleCodec();
+		return itsTupleCodec;
 	}
 	
 	private HardPagedFile getFile()
 	{
-		return itsIndexSet.getFile();
+		return itsFile;
 	}
 	
 	/**
 	 * Reconstructs a previously-written index from the given struct.
 	 */
-	public HierarchicalIndex(
-			IndexSet<T> aIndexSet,
-			int aIndex,
-			BitStruct aStoredIndexStruct)
+	public HierarchicalIndex(TupleCodec<T> aTupleCodec, HardPagedFile aFile, BitStruct aStoredIndexStruct)
 	{
-		itsIndexSet = aIndexSet;
-		itsIndex = aIndex;
-	
+		itsTupleCodec = aTupleCodec;
+		itsFile = aFile;
+
 		int thePagePointerSize = getFile().getPagePointerSize();
 		long theRootPageId = aStoredIndexStruct.readLong(thePagePointerSize);
 		itsRootPage = getFile().get(theRootPageId);
 		
 		itsFirstLeafPageId = aStoredIndexStruct.readLong(thePagePointerSize);
-		itsLastTimestamp = aStoredIndexStruct.readLong(64);
+		itsLastKey = aStoredIndexStruct.readLong(64);
 		itsLeafTupleCount = aStoredIndexStruct.readLong(32);
 		itsRootLevel = aStoredIndexStruct.readInt(BitUtils.log2ceil(DB_MAX_INDEX_LEVELS));
 		
@@ -149,7 +132,7 @@ public class HierarchicalIndex<T extends IndexTuple>
 		int thePagePointerSize = getFile().getPagePointerSize();
 		aBitStruct.writeLong(itsRootPage.getPageId(), thePagePointerSize);
 		aBitStruct.writeLong(itsFirstLeafPageId, thePagePointerSize);
-		aBitStruct.writeLong(itsLastTimestamp, 64);
+		aBitStruct.writeLong(itsLastKey, 64);
 		aBitStruct.writeLong(itsLeafTupleCount, 32);
 		aBitStruct.writeInt(itsRootLevel, BitUtils.log2ceil(DB_MAX_INDEX_LEVELS));
 		
@@ -197,18 +180,18 @@ public class HierarchicalIndex<T extends IndexTuple>
 	}
 
 	/**
-	 * Returns the first tuple that has a timestamp greater or equal
-	 * than the specified timestamp, if any.
+	 * Returns the first tuple that has a key greater or equal
+	 * than the specified key, if any.
 	 * @param aExact If true, only a tuple with exactly the specified
 	 * timestamp is returned.
 	 * @return A matching tuple, or null if none is found.
 	 */
-	public T getTupleAt(long aTimestamp, boolean aExact)
+	public T getTupleAt(long aKey, boolean aExact)
 	{
-		TupleIterator<T> theIterator = getTupleIterator(aTimestamp);
+		TupleIterator<T> theIterator = getTupleIterator(aKey);
 		if (! theIterator.hasNext()) return null;
 		T theTuple = theIterator.next();
-		if (aExact && theTuple.getTimestamp() != aTimestamp) return null;
+		if (aExact && theTuple.getKey() != aKey) return null;
 		else return theTuple;
 	}
 	
@@ -224,15 +207,15 @@ public class HierarchicalIndex<T extends IndexTuple>
 	}
 	
 	/**
-	 * Returns an iterator that returns all tuples whose timestamp
-	 * is greater than or equal to the specified timestamp.
-	 * @param aTimestamp Requested first timestamp, or 0 to start
+	 * Returns an iterator that returns all tuples whose key
+	 * is greater than or equal to the specified key.
+	 * @param aKey Requested first key, or 0 to start
 	 * at the beginning of the list.
 	 */
-	public TupleIterator<T> getTupleIterator(long aTimestamp)
+	public TupleIterator<T> getTupleIterator(long aKey)
 	{
 //		System.out.println("Get    "+aTimestamp);
-		if (aTimestamp == 0)
+		if (aKey == 0)
 		{
 			PageBitStruct theBitStruct = getFile().get(itsFirstLeafPageId).asBitStruct();
 			return new TupleIterator<T>(getFile(), getTupleCodec(), theBitStruct);
@@ -247,13 +230,13 @@ public class HierarchicalIndex<T extends IndexTuple>
 				InternalTuple theTuple = TupleFinder.findTuple(
 						thePage.asBitStruct(), 
 						DB_PAGE_POINTER_BITS,
-						aTimestamp, 
+						aKey, 
 						InternalTupleCodec.getInstance(),
 						true);
 				
 				if (theTuple == null) 
 				{
-					// The first tuple of this index is after the specified timestamp
+					// The first tuple of this index is after the specified key
 					thePage = getFile().get(itsFirstLeafPageId);
 					PageBitStruct theBitStruct = thePage.asBitStruct();
 					return new TupleIterator<T>(getFile(), getTupleCodec(), theBitStruct);
@@ -267,7 +250,7 @@ public class HierarchicalIndex<T extends IndexTuple>
 			int theIndex = TupleFinder.findTupleIndex(
 					theBitStruct,
 					DB_PAGE_POINTER_BITS,
-					aTimestamp, 
+					aKey, 
 					getTupleCodec(),
 					true);
 			
@@ -277,7 +260,7 @@ public class HierarchicalIndex<T extends IndexTuple>
 				theBitStruct.setPos(theIndex * getTupleCodec().getTupleSize());
 				TupleIterator<T> theIterator = new TupleIterator<T>(getFile(), getTupleCodec(), theBitStruct);
 				T theTuple = theIterator.peekNext();
-				if (theIterator.hasNext() && theTuple.getTimestamp() < aTimestamp)
+				if (theIterator.hasNext() && theTuple.getKey() < aKey)
 					theIterator.next();
 				
 				return theIterator;
@@ -301,14 +284,14 @@ public class HierarchicalIndex<T extends IndexTuple>
 	}
 	
 	/**
-	 * Checks that the newly added tuple's timestamp is greater than
-	 * the last timestamp.
+	 * Checks that the newly added tuple's key is greater than
+	 * the last key.
 	 */
 	private boolean checkTimestamp(T aTuple)
 	{
-		long theTimestamp = aTuple.getTimestamp();
-		assert theTimestamp >= itsLastTimestamp;
-		itsLastTimestamp = theTimestamp;
+		long theKey = aTuple.getKey();
+		assert theKey >= itsLastKey;
+		itsLastKey = theKey;
 		return true;
 	}
 	
@@ -359,7 +342,7 @@ public class HierarchicalIndex<T extends IndexTuple>
 					theFirstChildPage = getFile().get(theTuple.getPagePointer());
 				}
 				
-				theBuilder.append(AgentUtils.formatTimestampU(theTuple.getTimestamp()));
+				theBuilder.append(AgentUtils.formatTimestampU(theTuple.getKey()));
 				theBuilder.append('\n');
 				i++;
 			}
@@ -481,9 +464,9 @@ public class HierarchicalIndex<T extends IndexTuple>
 		 */
 		private long itsPagePointer;
 
-		public InternalTuple(long aTimestamp, long aPagePointer)
+		public InternalTuple(long aKey, long aPagePointer)
 		{
-			super(aTimestamp);
+			super(aKey);
 			itsPagePointer = aPagePointer;
 		}
 		
@@ -514,9 +497,9 @@ public class HierarchicalIndex<T extends IndexTuple>
 		@Override
 		public String toString()
 		{
-			return String.format("%s: t=%d p=%d",
+			return String.format("%s: k=%d p=%d",
 					getClass().getSimpleName(),
-					getTimestamp(),
+					getKey(),
 					getPagePointer());
 		}
 	}
@@ -566,9 +549,9 @@ public class HierarchicalIndex<T extends IndexTuple>
 			if (itsRootLevel > itsLevel)
 			{
 				// When we write the first tuple of a page we also update indexes.
-				long theTimestamp = aTuple.getTimestamp();
+				long theKey = aTuple.getKey();
 				HierarchicalIndex.this.add(
-						new InternalTuple(theTimestamp, aStruct.getPage().getPageId()),
+						new InternalTuple(theKey, aStruct.getPage().getPageId()),
 						itsLevel+1, 
 						InternalTupleCodec.getInstance());
 			}
@@ -582,14 +565,14 @@ public class HierarchicalIndex<T extends IndexTuple>
 	 */
 	private class TupleCounter
 	{
-		private long itsT1;
-		private long itsT2;
-		private int itsSlotsCount;
+		private final long itsK1;
+		private final long itsK2;
+		private final int itsSlotsCount;
 		
 		/**
-		 * t2-t1
+		 * k2-k1
 		 */
-		private long itsDT;
+		private long itsDK;
 		
 		private Stack<LevelData> itsStack = new ArrayStack<LevelData>();
 
@@ -602,12 +585,12 @@ public class HierarchicalIndex<T extends IndexTuple>
 		private IndexTuple itsLastTuple;
 		private int itsCurrentHeight;
 		
-		public TupleCounter(long aT1, long aT2, int aSlotsCount)
+		public TupleCounter(long aK1, long aK2, int aSlotsCount)
 		{
-			itsT1 = aT1;
-			itsT2 = aT2;
+			itsK1 = aK1;
+			itsK2 = aK2;
 			itsSlotsCount = aSlotsCount;
-			itsDT = (aT2-aT1)/aSlotsCount;
+			itsDK = (aK2-aK1)/aSlotsCount;
 			
 			precomputeTuplesBetweenPairs();
 			itsCounts = new float[aSlotsCount];
@@ -660,7 +643,7 @@ public class HierarchicalIndex<T extends IndexTuple>
 
 //			System.out.println("dt: "+AgentUtils.formatTimestampU(dt));
 			
-			long t = itsT1;
+			long t = itsK1;
 			
 			boolean theFinished = false;
 			
@@ -675,7 +658,7 @@ public class HierarchicalIndex<T extends IndexTuple>
 				if (itsCurrentLevel.iterator.hasNext()) 
 				{
 					IndexTuple theCurrent = itsCurrentLevel.next();
-					theEnd = theCurrent.getTimestamp();
+					theEnd = theCurrent.getKey();
 				}
 				else if (itsCurrentHeight > 0)
 				{
@@ -685,24 +668,24 @@ public class HierarchicalIndex<T extends IndexTuple>
 				else
 				{
 					theFinished = true;
-					theEnd = itsLastTimestamp;
+					theEnd = itsLastKey;
 				}
 				
 				if (itsLastTuple == null || theEnd < t) continue;
-				theStart = itsLastTuple.getTimestamp();
+				theStart = itsLastTuple.getKey();
 
 				itsCurrentHeight = itsRootLevel - itsStack.size() + 1;
 				long dtPair = theEnd-theStart;
 //				System.out.println("dtPair: "+AgentUtils.formatTimestampU(dtPair));
 				
-				if (itsCurrentHeight > 0 && dtPair > itsDT/2)
+				if (itsCurrentHeight > 0 && dtPair > itsDK/2)
 				{
 					drillDown();
 					continue;
 				}
 				
 				t = theStart;
-				int theSlot = (int)(((t - itsT1) * itsSlotsCount) / (itsT2 - itsT1));
+				int theSlot = (int)(((t - itsK1) * itsSlotsCount) / (itsK2 - itsK1));
 				if (theSlot >= itsSlotsCount) break;
 				
 				if (itsCurrentHeight == 0)
@@ -746,8 +729,8 @@ public class HierarchicalIndex<T extends IndexTuple>
 				long theEnd, 
 				int theSlot)
 		{
-			long theSlotStart = itsT1 + theSlot * (itsT2 - itsT1) / itsSlotsCount;
-			long theSlotEnd = theSlotStart + itsDT;
+			long theSlotStart = itsK1 + theSlot * (itsK2 - itsK1) / itsSlotsCount;
+			long theSlotEnd = theSlotStart + itsDK;
 			
 			long dtPair = theEnd-theStart;
 			

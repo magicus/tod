@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.common.event;
 
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IExceptionGeneratedEvent;
 import tod.core.database.structure.IBehaviorInfo;
 
@@ -30,6 +31,11 @@ public class ExceptionGeneratedEvent extends Event implements IExceptionGenerate
 {
 	private Object itsException;
 	private IBehaviorInfo itsThrowingBehavior;
+
+	public ExceptionGeneratedEvent(ILogBrowser aLogBrowser)
+	{
+		super(aLogBrowser);
+	}
 
 	public Object getException()
 	{

@@ -37,7 +37,6 @@ import tod.gui.eventsequences.EventMural;
 import zz.csg.api.GraphicNode;
 import zz.csg.api.IGraphicObject;
 import zz.csg.display.GraphicPanel;
-import zz.utils.Utils;
 import zz.utils.properties.IListProperty;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
@@ -88,7 +87,7 @@ public class TimeScale extends JPanel
 		super (new StackLayout());
 		itsGraphicPanel = new GraphicPanel();
 		itsGraphicPanel.setTransform(new AffineTransform());
-		itsMural = new EventMural(itsGraphicPanel);
+		itsMural = new EventMural();
 		itsGraphicPanel.setRootNode(new GraphicNode<IGraphicObject>(itsMural));
 		
 		setPreferredSize(new Dimension(20, 30));

@@ -33,9 +33,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.WeakHashMap;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.event.EventComparator;
@@ -91,7 +93,7 @@ public class EventMural extends SVGGraphicContainer
 		@Override
 		protected void clean()
 		{
-			updateImage();
+			itsImages.clear();
 		}
 	};
 	
@@ -103,18 +105,22 @@ public class EventMural extends SVGGraphicContainer
 			updateBaloons();
 		}
 	};
-	
-	private BufferedImage itsImage;
-	private IDisplay itsDisplay;
+
+	/**
+	 * Mural image (one version per display).
+	 */
+	private Map<IDisplay, BufferedImage> itsImages = new WeakHashMap<IDisplay, BufferedImage>();
 	private boolean itsShowBaloons = true;
 	
-	/**
-	 * Constructs a new mural
-	 * @param aDisplay The display that will show this mural
-	 */
-	public EventMural(IDisplay aDisplay)
+	public EventMural()
 	{
-		itsDisplay = aDisplay;
+		pBounds().set(0, 0, 100, 20);
+	}
+
+	public EventMural(IEventBrowser aBrowser)
+	{
+		this();
+		pEventBrowsers.add(new BrowserData(aBrowser, Color.BLACK));
 	}
 
 	/**
@@ -162,27 +168,30 @@ public class EventMural extends SVGGraphicContainer
 	/**
 	 * Updates the timescale image.
 	 */
-	protected void updateImage()
+	protected BufferedImage updateImage(IDisplay aDisplay)
 	{
-		if (! isReady()) return;
+		if (! isReady()) return null;
 		
 		Rectangle2D theBounds = pBounds().get();
-		Rectangle thePixelBounds = itsDisplay.localToPixel(null, this, theBounds);
+		Rectangle thePixelBounds = aDisplay.localToPixel(null, this, theBounds);
 
-		if (thePixelBounds.height == 0 || thePixelBounds.width == 0) return;
+		if (thePixelBounds.height == 0 || thePixelBounds.width == 0) return null;
 
-		if (itsImage == null) 
+		BufferedImage theImage = itsImages.get(aDisplay);
+		if (theImage == null) 
 		{
-			GraphicsConfiguration theConfiguration = itsDisplay.getGraphicsConfiguration();
-			itsImage = theConfiguration.createCompatibleImage(thePixelBounds.width, thePixelBounds.height);
+			GraphicsConfiguration theConfiguration = aDisplay.getGraphicsConfiguration();
+			theImage = theConfiguration.createCompatibleImage(thePixelBounds.width, thePixelBounds.height);
+			itsImages.put(aDisplay, theImage);
 		}
 		
 		thePixelBounds.setLocation(0, 0);
-		Graphics2D theGraphics = itsImage.createGraphics();
+		Graphics2D theGraphics = theImage.createGraphics();
 		theGraphics.setColor(Color.WHITE);
 		theGraphics.fill(thePixelBounds);
 		paintMural(theGraphics, thePixelBounds, pStart().get(), pEnd().get(), pEventBrowsers());
-		repaintAllContexts();
+		
+		return theImage;
 	}
 	
 	/**
@@ -264,21 +273,24 @@ public class EventMural extends SVGGraphicContainer
 		super.changed(aProperty);
 		if (aProperty == pBounds())
 		{
-			itsImage = null;
+			itsImages.clear();
 			markDirty();
 		}
 	}
 	
 	@Override
-	protected void paintBackground(GraphicObjectContext aContext, Graphics2D aGraphics, Area aVisibleArea)
+	protected void paintBackground(IDisplay aDisplay, GraphicObjectContext aContext, Graphics2D aGraphics, Area aVisibleArea)
 	{
 		// Paint mural image
-		if (itsImage != null)
+		BufferedImage theImage = itsImages.get(aDisplay);
+		if (theImage == null) theImage = updateImage(aDisplay);
+
+		if (theImage != null)
 		{
 			Rectangle2D theBounds = pBounds().get();
 			int w = (int) theBounds.getWidth();
 			int h = (int) theBounds.getHeight();
-			aGraphics.drawImage(itsImage, 0, 0, w, h, null);
+			aGraphics.drawImage(theImage, 0, 0, w, h, null);
 		}
 	}
 

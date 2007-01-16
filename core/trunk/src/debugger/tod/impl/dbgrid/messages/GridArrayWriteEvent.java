@@ -108,7 +108,7 @@ public class GridArrayWriteEvent extends GridEvent
 	@Override
 	public ILogEvent toLogEvent(GridLogBrowser aBrowser)
 	{
-		ArrayWriteEvent theEvent = new ArrayWriteEvent();
+		ArrayWriteEvent theEvent = new ArrayWriteEvent(aBrowser);
 		initEvent(aBrowser, theEvent);
 		theEvent.setTarget(getTarget());
 		theEvent.setIndex(itsIndex);

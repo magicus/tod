@@ -21,7 +21,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.eventsequences;
 
 import tod.gui.view.LogView;
-import zz.csg.api.IDisplay;
 
 /**
  * A seed that permits to create event sequence views.
@@ -31,7 +30,6 @@ public interface IEventSequenceSeed
 {
 	/**
 	 * Creates a new view corresponding to this seed.
-	 * @param aLogView TODO
 	 */
-	public IEventSequenceView createView(IDisplay aDisplay, LogView aLogView);
+	public IEventSequenceView createView(LogView aLogView);
 }

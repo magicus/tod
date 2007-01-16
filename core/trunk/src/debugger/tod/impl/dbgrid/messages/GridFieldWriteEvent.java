@@ -109,7 +109,7 @@ public class GridFieldWriteEvent extends GridEvent
 	@Override
 	public ILogEvent toLogEvent(GridLogBrowser aBrowser)
 	{
-		FieldWriteEvent theEvent = new FieldWriteEvent();
+		FieldWriteEvent theEvent = new FieldWriteEvent(aBrowser);
 		initEvent(aBrowser, theEvent);
 		theEvent.setField(aBrowser.getLocationsRepository().getField(getFieldId()));
 		theEvent.setTarget(getTarget());

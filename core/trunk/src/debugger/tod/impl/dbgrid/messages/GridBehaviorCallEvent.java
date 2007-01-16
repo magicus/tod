@@ -152,15 +152,15 @@ public class GridBehaviorCallEvent extends GridEvent
 		switch(getEventType()) 
 		{
 		case METHOD_CALL:
-			theEvent = new MethodCallEvent();
+			theEvent = new MethodCallEvent(aBrowser);
 			break;
 			
 		case INSTANTIATION:
-			theEvent = new InstantiationEvent();
+			theEvent = new InstantiationEvent(aBrowser);
 			break;
 			
 		case SUPER_CALL:
-			theEvent = new ConstructorChainingEvent();
+			theEvent = new ConstructorChainingEvent(aBrowser);
 			break;
 			
 		default:

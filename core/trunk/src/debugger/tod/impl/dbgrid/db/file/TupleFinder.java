@@ -37,7 +37,7 @@ public class TupleFinder
 	}
 	
 	/**
-	 * Finds the first tuple that verifies a condition on timestamp.
+	 * Finds the first tuple that verifies a condition on key.
 	 * See {@link #findTupleIndex(PageBitStruct, long, tod.impl.dbgrid.dbnode.HierarchicalIndex.TupleCodec, boolean)}
 	 * @return The first matching tuple, or null if no tuple matches,
 	 * ie. if {@link #findTupleIndex(PageBitStruct, long, tod.impl.dbgrid.dbnode.HierarchicalIndex.TupleCodec, boolean)}
@@ -46,32 +46,32 @@ public class TupleFinder
 	public static <T extends IndexTuple> T findTuple(
 			BitStruct aPage, 
 			int aPagePointerSize,
-			long aTimestamp, 
+			long aKey, 
 			TupleCodec<T> aTupleCodec,
 			boolean aBefore)
 	{
-		int theIndex = findTupleIndex(aPage, aPagePointerSize, aTimestamp, aTupleCodec, aBefore);
+		int theIndex = findTupleIndex(aPage, aPagePointerSize, aKey, aTupleCodec, aBefore);
 		if (theIndex < 0) return null;
 		return readTuple(aPage, aTupleCodec, theIndex);
 	}
 	
 	/**
 	 * Binary search of tuple.
-	 * @param aBefore If true, then the search will return the tuple with the greatest timestamp
-	 * that is smaller than the given timestamp.
-	 * If false, the search will return the tuple which has the smallest timestamp value that is
-	 * greater than or equeal to the given timestamp
+	 * @param aBefore If true, then the search will return the tuple with the greatest key
+	 * that is smaller than the given key.
+	 * If false, the search will return the tuple which has the smallest key value that is
+	 * greater than or equeal to the given key.
 	 * @param aPagePointerSize Size in bits of page pointers for linking to next/previous pages.
 	 */
 	public static <T extends IndexTuple> int findTupleIndex(
 			BitStruct aPage, 
 			int aPagePointerSize,
-			long aTimestamp, 
+			long aKey, 
 			TupleCodec<T> aTupleCodec,
 			boolean aBefore)
 	{
 		int theTupleCount = getTuplesPerPage(aPage.getTotalBits(), aPagePointerSize, aTupleCodec);
-		return findTupleIndex(aPage, aTimestamp, aTupleCodec, 0, theTupleCount-1, aBefore);
+		return findTupleIndex(aPage, aKey, aTupleCodec, 0, theTupleCount-1, aBefore);
 	}
 	
 	/**
@@ -80,7 +80,7 @@ public class TupleFinder
 	 */
 	public static <T extends IndexTuple> int findTupleIndex(
 			BitStruct aPage, 
-			long aTimestamp, 
+			long aKey, 
 			TupleCodec<T> aTupleCodec, 
 			int aFirst, 
 			int aLast,
@@ -89,33 +89,33 @@ public class TupleFinder
 		assert aLast-aFirst > 0;
 		
 		T theFirstTuple = readTuple(aPage, aTupleCodec, aFirst);
-		long theFirstTimestamp = theFirstTuple.getTimestamp();
-		if (theFirstTimestamp == 0) theFirstTimestamp = Long.MAX_VALUE;
+		long theFirstKey = theFirstTuple.getKey();
+		if (theFirstKey == 0) theFirstKey = Long.MAX_VALUE;
 		
 		T theLastTuple = readTuple(aPage, aTupleCodec, aLast);
-		long theLastTimestamp = theLastTuple.getTimestamp();
-		if (theLastTimestamp == 0) theLastTimestamp = Long.MAX_VALUE;
+		long theLastKey = theLastTuple.getKey();
+		if (theLastKey == 0) theLastKey = Long.MAX_VALUE;
 		
 //		System.out.println(String.format("First  %d:%d", theFirstTimestamp, aFirst));
 //		System.out.println(String.format("Last   %d:%d", theLastTimestamp, aLast));
 		
-		if (aTimestamp < theFirstTimestamp) return aBefore ? -1 : aFirst;
-		if (aTimestamp == theFirstTimestamp) return aFirst;
-		if (aTimestamp == theLastTimestamp) return aLast;
-		if (aTimestamp > theLastTimestamp) return aBefore ? aLast : -1;
+		if (aKey < theFirstKey) return aBefore ? -1 : aFirst;
+		if (aKey == theFirstKey) return aFirst;
+		if (aKey == theLastKey) return aLast;
+		if (aKey > theLastKey) return aBefore ? aLast : -1;
 		
 		if (aLast-aFirst == 1) return aFirst;
 		
 		int theMiddle = (aFirst + aLast) / 2;
 		T theMiddleTuple = readTuple(aPage, aTupleCodec, theMiddle);
-		long theMiddleTimestamp = theMiddleTuple.getTimestamp();
-		if (theMiddleTimestamp == 0) theMiddleTimestamp = Long.MAX_VALUE;
+		long theMiddleKey = theMiddleTuple.getKey();
+		if (theMiddleKey == 0) theMiddleKey = Long.MAX_VALUE;
 		
 //		System.out.println(String.format("Middle %d:%d", theMiddleTimestamp, theMiddle));
 		
-		if (aTimestamp == theMiddleTimestamp) return theMiddle;
-		if (aTimestamp < theMiddleTimestamp) return findTupleIndex(aPage, aTimestamp, aTupleCodec, aFirst, theMiddle, aBefore);
-		else return findTupleIndex(aPage, aTimestamp, aTupleCodec, theMiddle, aLast, aBefore);
+		if (aKey == theMiddleKey) return theMiddle;
+		if (aKey < theMiddleKey) return findTupleIndex(aPage, aKey, aTupleCodec, aFirst, theMiddle, aBefore);
+		else return findTupleIndex(aPage, aKey, aTupleCodec, theMiddle, aLast, aBefore);
 	}
 	
 	public static <T extends Tuple> T readTuple(BitStruct aPage, TupleCodec<T> aTupleCodec, int aIndex)

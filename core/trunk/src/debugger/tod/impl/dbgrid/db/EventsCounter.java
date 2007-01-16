@@ -57,7 +57,7 @@ public class EventsCounter
 		while (theIterator.hasNext())
 		{
 			StdTuple theTuple = theIterator.next();
-			long theTimestamp = theTuple.getTimestamp();
+			long theTimestamp = theTuple.getKey();
 			if (theTimestamp < aT1) continue;
 			if (theTimestamp >= aT2) break;
 

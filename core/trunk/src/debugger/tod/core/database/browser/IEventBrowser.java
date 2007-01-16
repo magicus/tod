@@ -36,6 +36,11 @@ import tod.core.database.event.ILogEvent;
 public interface IEventBrowser
 {
 	/**
+	 * Returns the {@link ILogBrowser} that created this event browser.
+	 */
+	public ILogBrowser getLogBrowser();
+	
+	/**
 	 * Returns the number of events that can be returned by this
 	 * browser.
 	 */

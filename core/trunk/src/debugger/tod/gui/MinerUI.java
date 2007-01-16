@@ -33,6 +33,7 @@ import javax.swing.JPanel;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.session.ISession;
+import tod.gui.seed.FilterSeed;
 import tod.gui.seed.Seed;
 import tod.gui.seed.SeedFactory;
 import tod.gui.seed.ThreadsSeed;
@@ -91,6 +92,25 @@ implements ILocationSelectionListener, IGUIManager
 		
 		theToolbar.add(theThreadsViewButton);
 
+		// Add a button that permits to jump to the exceptions view.
+		JButton theExceptionsViewButton = new JButton("View exceptions");
+		theExceptionsViewButton.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent aE)
+			{
+				ILogBrowser theLogBrowser = getSession().getLogBrowser();
+				
+				FilterSeed theSeed = new FilterSeed(
+						MinerUI.this,
+						theLogBrowser,
+						theLogBrowser.createExceptionGeneratedFilter());
+				
+				openSeed(theSeed, false);			
+			}
+		});
+		
+		theToolbar.add(theExceptionsViewButton);
+		
 		// Adds a button that permits to disconnect the current session
 		JButton theKillSessionButton = new JButton("Kill session");
 		theKillSessionButton.addActionListener(new ActionListener()

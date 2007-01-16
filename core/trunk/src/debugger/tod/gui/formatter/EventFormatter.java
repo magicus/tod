@@ -22,7 +22,9 @@ package tod.gui.formatter;
 
 import java.util.Arrays;
 
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.IExceptionGeneratedEvent;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
@@ -37,17 +39,15 @@ import zz.utils.AbstractFormatter;
  */
 public class EventFormatter extends AbstractFormatter<ILogEvent>
 {
-	private static EventFormatter INSTANCE = new EventFormatter();
-
-	public static EventFormatter getInstance()
-	{
-		return INSTANCE;
-	}
-
-	private EventFormatter()
-	{
-	}
+	private ILogBrowser itsLogBrowser;
+	private ObjectFormatter itsObjectFormatter;
 	
+	public EventFormatter(ILogBrowser aLogBrowser)
+	{
+		itsLogBrowser = aLogBrowser;
+		itsObjectFormatter = new ObjectFormatter(itsLogBrowser);
+	}
+
 	protected String getText(ILogEvent aEvent, boolean aHtml)
 	{
 		if (aEvent instanceof IBehaviorCallEvent)
@@ -85,12 +85,17 @@ public class EventFormatter extends AbstractFormatter<ILogEvent>
 			IOutputEvent theEvent = (IOutputEvent) aEvent;
 			return "Output ("+theEvent.getOutput()+"): "+theEvent.getData();
 		}
+		else if (aEvent instanceof IExceptionGeneratedEvent)
+		{
+			IExceptionGeneratedEvent theEvent = (IExceptionGeneratedEvent) aEvent;
+			return "Exception thrown: "+formatObject(theEvent.getException());
+		}
 		else return ""+aEvent;
 	}
 	
 	private String formatObject (Object aObject)
 	{
-		return ObjectFormatter.getInstance().getPlainText(aObject);
+		return itsObjectFormatter.getPlainText(aObject);
 	}
 	
 	private String formatLocation (ILocationInfo aLocationInfo)

@@ -27,7 +27,6 @@ import java.util.List;
 import tod.core.database.browser.IEventBrowser;
 import tod.gui.BrowserData;
 import tod.gui.view.LogView;
-import zz.csg.api.IDisplay;
 
 /**
  * A browser sequence view for a single browser.
@@ -37,9 +36,9 @@ public abstract class AbstractSingleBrowserSequenceView extends AbstractSequence
 {
 	private final Color itsColor;
 
-	public AbstractSingleBrowserSequenceView(IDisplay aDisplay, LogView aLogView, Color aColor)
+	public AbstractSingleBrowserSequenceView(LogView aLogView, Color aColor)
 	{
-		super(aDisplay, aLogView);
+		super(aLogView);
 		itsColor = aColor;
 	}
 

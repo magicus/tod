@@ -48,14 +48,12 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 	public static final XFont FONT = XFont.DEFAULT_XPLAIN.deriveFont(10);
 	
 	private MyMural itsMural;
-	private final IDisplay itsDisplay;
 	private final LogView itsLogView;
 	
 	private Collection<ItemAction> itsBaseActions;
 	
-	public AbstractSequenceView(IDisplay aDisplay, LogView aLogView)
+	public AbstractSequenceView(LogView aLogView)
 	{
-		itsDisplay = aDisplay;
 		itsLogView = aLogView;
 	}
 
@@ -78,7 +76,7 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 	{
 		if (itsMural == null) 
 		{
-			itsMural = new MyMural(itsDisplay);
+			itsMural = new MyMural();
 			for(BrowserData theData : getBrowsers())
 			{
 				itsMural.pEventBrowsers().add(theData);			
@@ -146,11 +144,6 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 
 	private class MyMural extends EventMural
 	{
-		public MyMural(IDisplay aDisplay)
-		{
-			super (aDisplay);
-		}
-		
 		@Override
 		protected IRectangularGraphicObject getBaloon(ILogEvent aEvent)
 		{

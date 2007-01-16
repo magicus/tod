@@ -29,7 +29,6 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IThreadInfo;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.view.LogView;
-import zz.csg.api.IDisplay;
 import zz.utils.ItemAction;
 
 public class ThreadSequenceView extends AbstractSingleBrowserSequenceView
@@ -38,9 +37,9 @@ public class ThreadSequenceView extends AbstractSingleBrowserSequenceView
 
 	private final ThreadSequenceSeed itsSeed;
 	
-	public ThreadSequenceView(IDisplay aDisplay, LogView aLogView, ThreadSequenceSeed aSeed)
+	public ThreadSequenceView(LogView aLogView, ThreadSequenceSeed aSeed)
 	{
-		super(aDisplay, aLogView, EVENT_COLOR);
+		super(aLogView, EVENT_COLOR);
 		itsSeed = aSeed;
 		
 		addBaseAction(new ShowThreadAction());

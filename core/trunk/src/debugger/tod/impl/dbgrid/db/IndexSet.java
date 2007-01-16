@@ -47,7 +47,7 @@ public abstract class IndexSet<T extends IndexTuple>
 	 */
 	private static Entry DISCARDED_ENTRY = new Entry(null);
 	
-	private Entry<HierarchicalIndex<T>>[] itsIndexes;
+	private Entry<MyHierarchicalIndex<T>>[] itsIndexes;
 	
 	/**
 	 * The page ids of all the pages that are used to store discarded indexes.
@@ -112,20 +112,31 @@ public abstract class IndexSet<T extends IndexTuple>
 	{
 		if (aIndex >= itsIndexes.length) throw new IndexOutOfBoundsException("Index overflow for "+itsName+": "+aIndex+" >= "+itsIndexes.length);
 		
-		Entry<HierarchicalIndex<T>> theEntry = itsIndexes[aIndex];
-		HierarchicalIndex<T> theIndex;
+		Entry<MyHierarchicalIndex<T>> theEntry = itsIndexes[aIndex];
+		MyHierarchicalIndex<T> theIndex;
 		
 		if (theEntry == null)
 		{
-			theIndex = new HierarchicalIndex<T>(this, aIndex);
-			theEntry = new Entry<HierarchicalIndex<T>>(theIndex);
+			theIndex = new MyHierarchicalIndex<T>(
+					getTupleCodec(), 
+					getFile(), 
+					this, 
+					aIndex);
+			
+			theEntry = new Entry<MyHierarchicalIndex<T>>(theIndex);
 			itsIndexes[aIndex] = theEntry;
 			itsIndexCount++;
 		}
 		else if (theEntry == DISCARDED_ENTRY)
 		{
-			theIndex = new HierarchicalIndex<T>(this, aIndex, getIndexStruct(aIndex));
-			theEntry = new Entry<HierarchicalIndex<T>>(theIndex);
+			theIndex = new MyHierarchicalIndex<T>(
+					getTupleCodec(), 
+					getFile(), 
+					getIndexStruct(aIndex), 
+					this, 
+					aIndex);
+			
+			theEntry = new Entry<MyHierarchicalIndex<T>>(theIndex);
 			itsIndexes[aIndex] = theEntry;
 			itsLoadCount++;
 		}
@@ -163,7 +174,7 @@ public abstract class IndexSet<T extends IndexTuple>
 	
 	private void discardIndex(int aIndex)
 	{
-		Entry<HierarchicalIndex<T>> theEntry = itsIndexes[aIndex];
+		Entry<MyHierarchicalIndex<T>> theEntry = itsIndexes[aIndex];
 		HierarchicalIndex<T> theIndex = theEntry.getValue();
 		
 		theIndex.writeTo(getIndexStruct(aIndex));
@@ -200,7 +211,7 @@ public abstract class IndexSet<T extends IndexTuple>
 		return getClass().getSimpleName()+": "+itsName;
 	}
 	
-	private static class IndexManager extends MRUBuffer<Integer, HierarchicalIndex>
+	private static class IndexManager extends MRUBuffer<Integer, MyHierarchicalIndex>
 	{
 		private static IndexManager INSTANCE = new IndexManager();
 
@@ -215,23 +226,68 @@ public abstract class IndexSet<T extends IndexTuple>
 		}
 		
 		@Override
-		protected void dropped(HierarchicalIndex aValue)
+		protected void dropped(MyHierarchicalIndex aValue)
 		{
 			aValue.getIndexSet().discardIndex(aValue.getIndex());
 		}
 
 		@Override
-		protected HierarchicalIndex fetch(Integer aId)
+		protected MyHierarchicalIndex fetch(Integer aId)
 		{
 			throw new UnsupportedOperationException();
 		}
 
 		@Override
-		protected Integer getKey(HierarchicalIndex aValue)
+		protected Integer getKey(MyHierarchicalIndex aValue)
 		{
 			throw new UnsupportedOperationException();
 		}
-		
-		
 	}
+	
+	private static class MyHierarchicalIndex<T extends IndexTuple> 
+	extends HierarchicalIndex<T>
+	{
+		private final IndexSet<T> itsIndexSet;
+		
+		/**
+		 * The position of this index within the set.
+		 */
+		private final int itsIndex;
+		
+		
+		public MyHierarchicalIndex(
+				TupleCodec<T> aTupleCodec, 
+				HardPagedFile aFile,
+				IndexSet<T> aIndexSet, 
+				int aIndex)
+		{
+			super(aTupleCodec, aFile);
+			itsIndexSet = aIndexSet;
+			itsIndex = aIndex;
+		}
+
+		public MyHierarchicalIndex(
+				TupleCodec<T> aTupleCodec, 
+				HardPagedFile aFile,
+				BitStruct aStoredIndexStruct, 
+				IndexSet<T> aIndexSet, 
+				int aIndex)
+		{
+			super(aTupleCodec, aFile, aStoredIndexStruct);
+			itsIndexSet = aIndexSet;
+			itsIndex = aIndex;
+		}
+
+		public int getIndex()
+		{
+			return itsIndex;
+		}
+
+		public IndexSet<T> getIndexSet()
+		{
+			return itsIndexSet;
+		}
+
+	}
+	
 }

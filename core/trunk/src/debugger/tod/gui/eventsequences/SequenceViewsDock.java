@@ -56,7 +56,7 @@ public class SequenceViewsDock extends JPanel
 		protected void elementAdded(int aIndex, IEventSequenceSeed aSeed)
 		{
 			// TODO: provide proper display
-			SequencePanel thePanel = new SequencePanel(aSeed.createView(itsDisplay, getLogView()));
+			SequencePanel thePanel = new SequencePanel(aSeed.createView(getLogView()));
 			itsViewsPanel.add(thePanel, aIndex);
 			itsViewsPanel.revalidate();
 			itsViewsPanel.repaint();

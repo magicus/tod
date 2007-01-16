@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.EventComparator;
 import tod.core.database.event.ILogEvent;
 import tod.impl.local.filter.AbstractFilter;
@@ -33,17 +34,20 @@ import tod.impl.local.filter.AbstractFilter;
  */
 public class EventBrowser implements IEventBrowser
 {
-	private List<ILogEvent> itsEvents = new ArrayList<ILogEvent>();
+	private final ILogBrowser itsLogBrowser;
 	
+	private List<ILogEvent> itsEvents = new ArrayList<ILogEvent>();
 	private int itsIndex;
 	
-	public EventBrowser(List<ILogEvent> aEvents)
+	public EventBrowser(ILogBrowser aLogBrowser, List<ILogEvent> aEvents)
 	{
+		itsLogBrowser = aLogBrowser;
 		itsEvents = aEvents;
 	}
 	
-	public EventBrowser(EventList aEventList, AbstractFilter aFilter)
+	public EventBrowser(ILogBrowser aLogBrowser, EventList aEventList, AbstractFilter aFilter)
 	{
+		itsLogBrowser = aLogBrowser;
 		for (int i=0;i<aEventList.size();i++)
 		{
 			ILogEvent theEvent = aEventList.get(i);
@@ -53,6 +57,11 @@ public class EventBrowser implements IEventBrowser
 				itsEvents.add (theEvent);
 			}
 		}
+	}
+	
+	public ILogBrowser getLogBrowser()
+	{
+		return itsLogBrowser;
 	}
 	
 	/**

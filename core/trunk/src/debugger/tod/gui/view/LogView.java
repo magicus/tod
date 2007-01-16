@@ -31,6 +31,7 @@ import javax.swing.JPanel;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.ObjectId;
 import tod.gui.IGUIManager;
+import tod.gui.formatter.EventFormatter;
 import tod.gui.formatter.ObjectFormatter;
 import tod.gui.kit.SeedLinkLabel;
 import tod.gui.seed.ObjectInspectorSeed;
@@ -50,11 +51,15 @@ public abstract class LogView extends JPanel
 	
 	private List<PropertyUtils.Connector> itsConnectors; 
 
+	private ObjectFormatter itsObjectFormatter;
+	private EventFormatter itsEventFormatter;
 	
 	public LogView(IGUIManager aGUIManager, ILogBrowser aLog)
 	{
 		itsGUIManager = aGUIManager;
 		itsLog = aLog;
+		itsObjectFormatter = new ObjectFormatter(itsLog);
+		itsEventFormatter = new EventFormatter(itsLog);
 	}
 	
 	@Override
@@ -95,6 +100,25 @@ public abstract class LogView extends JPanel
 		return itsGUIManager;
 	}
 	
+	/**
+	 * Returns an event formatter that can be used in the context
+	 * of this view.
+	 */
+	protected EventFormatter getEventFormatter()
+	{
+		return itsEventFormatter;
+	}
+
+
+	/**
+	 * Returns an object formatter that can be used in the context 
+	 * of this view.
+	 */
+	protected ObjectFormatter getObjectFormatter()
+	{
+		return itsObjectFormatter;
+	}
+
 	/**
 	 * This method is called after the object is instantiated.
 	 * It should be used to create the user interface.
@@ -141,12 +165,18 @@ public abstract class LogView extends JPanel
 		if (aObject instanceof ObjectId)
 		{
 			ObjectId theObjectId = (ObjectId) aObject;
+			
+			ObjectInspectorSeed theSeed = new ObjectInspectorSeed(
+					getGUIManager(), 
+					getLogBrowser(), 
+					theObjectId);
+			
 			return new SeedLinkLabel (
 					getGUIManager(), 
-					ObjectFormatter.getInstance().getPlainText(aObject), 
-					new ObjectInspectorSeed(getGUIManager(), getLogBrowser(), theObjectId));
+					itsObjectFormatter.getPlainText(aObject), 
+					theSeed);
 		}
-		else return new JLabel (ObjectFormatter.getInstance().getPlainText(aObject));
+		else return new JLabel (itsObjectFormatter.getPlainText(aObject));
 	}
 
 }

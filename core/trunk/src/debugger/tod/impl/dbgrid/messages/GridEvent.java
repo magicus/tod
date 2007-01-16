@@ -22,7 +22,6 @@ package tod.impl.dbgrid.messages;
 
 import tod.agent.DebugFlags;
 import tod.core.database.event.ILogEvent;
-import tod.impl.common.event.BehaviorCallEvent;
 import tod.impl.common.event.Event;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
@@ -146,8 +145,7 @@ public abstract class GridEvent extends GridMessage
 		aEvent.setTimestamp(getTimestamp());
 		aEvent.setDepth(getDepth());
 		aEvent.setOperationBytecodeIndex(getOperationBytecodeIndex());
-		
-		aEvent.setParent((BehaviorCallEvent) aBrowser.getEvent(getHost(), getThread(), getParentTimestamp()));
+		aEvent.setParentTimestamp(getParentTimestamp());
 	}
 	
 	/**

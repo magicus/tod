@@ -46,7 +46,7 @@ public abstract class DisjunctionIterator<T> extends MergeIterator<T>
 
 			if (theItem != null)
 			{
-				long theTimestamp = getTimestamp(theItem);
+				long theTimestamp = getKey(theItem);
 				if (theTimestamp < theMinTimestamp)
 				{
 					theMinTimestamp = theTimestamp;
@@ -84,7 +84,7 @@ public abstract class DisjunctionIterator<T> extends MergeIterator<T>
 
 			if (theItem != null)
 			{
-				long theTimestamp = getTimestamp(theItem);
+				long theTimestamp = getKey(theItem);
 				if (theTimestamp > theMaxTimestamp)
 				{
 					theMaxTimestamp = theTimestamp;

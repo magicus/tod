@@ -28,7 +28,6 @@ import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMemberInfo;
 import tod.gui.view.LogView;
-import zz.csg.api.IDisplay;
 import zz.csg.api.IRectangularGraphicObject;
 
 public class FieldSequenceView extends AbstractMemberSequenceView
@@ -38,9 +37,9 @@ public class FieldSequenceView extends AbstractMemberSequenceView
 	private IFieldInfo itsField;
 
 	
-	public FieldSequenceView(IDisplay aDisplay, LogView aLogView, IObjectInspector aInspector, IFieldInfo aField)
+	public FieldSequenceView(LogView aLogView, IObjectInspector aInspector, IFieldInfo aField)
 	{
-		super(aDisplay, aLogView, FIELD_COLOR, aInspector);
+		super(aLogView, FIELD_COLOR, aInspector);
 		itsField = aField;
 	}
 

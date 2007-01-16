@@ -20,7 +20,15 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.formatter;
 
+import java.awt.Color;
+
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.gui.Hyperlinks;
+import tod.gui.SVGHyperlink;
+import tod.gui.seed.ObjectInspectorSeed;
+import zz.csg.impl.figures.SVGFlowText;
 import zz.utils.AbstractFormatter;
 
 /**
@@ -28,31 +36,63 @@ import zz.utils.AbstractFormatter;
  */
 public class ObjectFormatter extends AbstractFormatter
 {
-	private static ObjectFormatter INSTANCE = new ObjectFormatter();
+	private ILogBrowser itsLogBrowser;
 
-	public static ObjectFormatter getInstance()
+	public ObjectFormatter(ILogBrowser aLogBrowser)
 	{
-		return INSTANCE;
+		itsLogBrowser = aLogBrowser;
 	}
 
-	private ObjectFormatter()
-	{
-	}
-
+	/**
+	 * This method mimicks {@link Hyperlinks#object(tod.gui.IGUIManager, tod.core.database.browser.ILogBrowser, Object, zz.utils.ui.text.XFont)}
+	 */
 	protected String getText(Object aObject, boolean aHtml)
 	{
-		if (aObject == null) return "null";
-		else if (aObject instanceof ObjectId.ObjectHash)
+		// This is only to reduce the amount of modifications to the original
+		Object theCurrentObject = null; 
+		
+		// Check if this is a registered object.
+		if (aObject instanceof ObjectId.ObjectUID)
 		{
-			ObjectId.ObjectHash theHash = (ObjectId.ObjectHash) aObject;
-			return "Object (hash: "+theHash.getHascode()+")";
+			ObjectId.ObjectUID theObject = (ObjectId.ObjectUID) aObject;
+			Object theRegistered = itsLogBrowser.getRegistered(theObject.getId());
+			if (theRegistered != null) aObject = theRegistered;
 		}
-		else if (aObject instanceof ObjectId.ObjectUID)
+		
+		if (aObject instanceof ObjectId)
 		{
-			ObjectId.ObjectUID theObjectUID = (ObjectId.ObjectUID) aObject;
-			return "Object (uid: "+theObjectUID.getId()+")";
+			ObjectId theId = (ObjectId) aObject;
+			
+			ITypeInfo theType = itsLogBrowser.createObjectInspector(theId).getType();
+
+			String theText;
+			if (theCurrentObject != null && theCurrentObject.equals(aObject)) theText = "this";
+			else theText = theType.getName() + " (" + theId + ")";
+
+			return theText;
 		}
-		else return ""+aObject;
+		else if (aObject instanceof String)
+		{
+			String theString = (String) aObject;
+			return "\""+theString+"\"";
+		}
+		else if (aObject instanceof Throwable)
+		{
+			Throwable theThrowable = (Throwable) aObject;
+			StringBuilder theBuilder = new StringBuilder();
+			theBuilder.append(theThrowable.getClass().getSimpleName());
+			if (theThrowable.getMessage() != null)
+			{
+				theBuilder.append('(');
+				theBuilder.append(theThrowable.getMessage());
+				theBuilder.append(')');
+			}
+			return theBuilder.toString();
+		}
+		else 
+		{
+			return ""+aObject;
+		}
 	}
 
 }
