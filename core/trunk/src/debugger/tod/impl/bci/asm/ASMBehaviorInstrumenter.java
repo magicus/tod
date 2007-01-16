@@ -27,6 +27,7 @@ import org.objectweb.asm.Type;
 import org.omg.CORBA.UNKNOWN;
 
 import tod.agent.AgentReady;
+import tod.agent.ExceptionGeneratedReceiver;
 import tod.agent.TracedMethods;
 import tod.core.BehaviorCallType;
 import tod.core.EventInterpreter;
@@ -135,6 +136,12 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		{
 			behaviorExitWithException();
 		}
+		
+		mv.visitMethodInsn(
+				INVOKESTATIC, 
+				Type.getInternalName(ExceptionGeneratedReceiver.class), 
+				"ignoreNextException", 
+				"()V");
 		
 		mv.visitInsn(ATHROW);
 

@@ -230,6 +230,15 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				aException);
 	}
 	
+	/**
+	 * Sets the ignore next exception flag of the current thread.
+	 * This is called by instrumented classes.
+	 */
+	public void ignoreNextException()
+	{
+		getThreadData().ignoreNextException();
+	}
+	
 	public void logExceptionGenerated(
 			String aMethodName,
 			String aMethodSignature,
@@ -238,8 +247,10 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 			Object aException)
 	{
 		if (DISABLE_INTERPRETER) return;
-		long theTimestamp = AgentUtils.timestamp();
 		T theThread = getThreadData();
+		if (theThread.checkIgnoreNextException()) return;
+		
+		long theTimestamp = AgentUtils.timestamp();
 		theTimestamp = theThread.transformTimestamp(theTimestamp);
 
 		FrameInfo theFrame = theThread.currentFrame();
@@ -589,6 +600,14 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		 */
 		private boolean itsInCFlow = false;
 		
+		/**
+		 * When this flag is true the next exception generated event
+		 * is ignored. This permits to avoid reporting EG events that
+		 * are caused by the instrumentation.
+		 */
+		private boolean itsIgnoreNextException = false;
+
+		
 		public ThreadData(int aId)
 		{
 			itsId = aId;
@@ -699,6 +718,24 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		public long transformTimestamp(long aTimestamp)
 		{
 			return AgentUtils.transformTimestamp(aTimestamp, getNextSerial(aTimestamp));
+		}
+		
+		/**
+		 * Sets the ignore next exception flag.
+		 */
+		public void ignoreNextException()
+		{
+			itsIgnoreNextException = true;
+		}
+		
+		/**
+		 * Checks if the ignore next exception flag is set, and resets it.
+		 */
+		public boolean checkIgnoreNextException()
+		{
+			boolean theIgnoreNext = itsIgnoreNextException;
+			itsIgnoreNextException = false;
+			return theIgnoreNext;
 		}
 		
 	}

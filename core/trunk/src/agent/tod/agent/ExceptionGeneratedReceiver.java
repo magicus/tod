@@ -32,6 +32,15 @@ public class ExceptionGeneratedReceiver
 		AgentConfig.getCollector();
 	}
 	
+	/**
+	 * Sets the ignore next exception flag of the current thread.
+	 * This is called by instrumented classes.
+	 */
+	public static void ignoreNextException()
+	{
+		if (AgentReady.READY) AgentConfig.getInterpreter().ignoreNextException();
+	}
+	
 	public static void exceptionGenerated(
 			String aMethodName,
 			String aMethodSignature,
