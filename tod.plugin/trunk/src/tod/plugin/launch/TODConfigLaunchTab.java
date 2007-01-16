@@ -172,7 +172,10 @@ public class TODConfigLaunchTab extends OptionsTab<TODConfig.Item>
 			String theString = theOptionsMap.get(theItem.getKey());
 			try
 			{
-				Object theValue = theItem.getOptionValue(theString);
+				Object theValue = theString != null ?
+						theItem.getOptionValue(theString)
+						: theItem.getDefault();
+						
 				theConfig.set(theItem, theValue);
 			}
 			catch (Exception e)
