@@ -51,6 +51,7 @@ public abstract class NativeAgentPeer extends SocketThread
 	public static final byte SET_CACHE_PATH = 80;
 	public static final byte SET_SKIP_CORE_CLASSES = 81;
 	public static final byte SET_VERBOSE = 82;
+	public static final byte SET_CAPTURE_EXCEPTIONS = 83;
 
 	public static final byte CONFIG_DONE = 90;
 	
@@ -203,6 +204,10 @@ public abstract class NativeAgentPeer extends SocketThread
 		int theVerbosity = itsConfig.get(TODConfig.AGENT_VERBOSE);
 		aOutputStream.writeByte(SET_VERBOSE);
 		aOutputStream.writeByte((byte) theVerbosity);
+		
+		boolean theCaptureExceptions = itsConfig.get(TODConfig.AGENT_CAPTURE_EXCEPTIONS);
+		aOutputStream.writeByte(SET_CAPTURE_EXCEPTIONS);
+		aOutputStream.writeByte(theCaptureExceptions ? 1 : 0);
 		
 		aOutputStream.writeByte(CONFIG_DONE);
 		aOutputStream.flush();

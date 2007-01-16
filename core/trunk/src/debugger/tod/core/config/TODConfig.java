@@ -44,7 +44,7 @@ public class TODConfig
 	public static final BooleanItem AGENT_SKIP_CORE_CLASSE = new BooleanItem(
 			"agent.skipCoreClasses",
 			"Agent - skip core classes",
-			"If true, the agent will not instrument core classes, independently of" +
+			"If true, the agent will not instrument core classes, independently of " +
 			"class filter settings.",
 			true);
 	
@@ -53,6 +53,13 @@ public class TODConfig
 			"Agent - class cache path",
 			"Defines the path where the native agent stores instrumented classes.",
 			ConfigUtils.readString("classes-cache-path", "/tmp/tod"));
+	
+	public static final BooleanItem AGENT_CAPTURE_EXCEPTIONS = new BooleanItem(
+			"agent.captureExceptions",
+			"Agent - capture exceptions",
+			"If true, the native agent sets up a callback that captures " +
+			"exceptions.",
+			true);
 	
 	public static final StringItem INSTRUMENTER_LOCATIONS_FILE = new StringItem(
 			"instrumenter.locationsFile",
