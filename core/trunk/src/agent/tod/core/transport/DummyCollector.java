@@ -40,7 +40,7 @@ public class DummyCollector extends HighLevelCollector<ThreadData>
 
 	@Override
 	protected void behaviorExit(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, int aBehaviorId, boolean aHasThrown, Object aResult)
+			long aOperationLocation, int aBehaviorId, boolean aHasThrown, Object aResult)
 	{
 	}
 
@@ -59,32 +59,32 @@ public class DummyCollector extends HighLevelCollector<ThreadData>
 
 	@Override
 	protected void fieldWrite(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, int aFieldId, Object aTarget, Object aValue)
+			long aOperationLocation, int aFieldId, Object aTarget, Object aValue)
 	{
 	}
 	
 	@Override
 	protected void arrayWrite(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, Object aTarget, int aIndex, Object aValue)
+			long aOperationLocation, Object aTarget, int aIndex, Object aValue)
 	{
 	}
 
 	@Override
 	protected void instantiation(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
+			long aOperationLocation, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
 			Object aTarget, Object[] aArguments)
 	{
 	}
 
 	@Override
 	protected void localWrite(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, int aVariableId, Object aValue)
+			long aOperationLocation, int aVariableId, Object aValue)
 	{
 	}
 
 	@Override
 	protected void methodCall(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
+			long aOperationLocation, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
 			Object aTarget, Object[] aArguments)
 	{
 	}
@@ -97,7 +97,7 @@ public class DummyCollector extends HighLevelCollector<ThreadData>
 
 	@Override
 	protected void superCall(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorid, int aExecutedBehaviorId,
+			long aOperationLocation, boolean aDirectParent, int aCalledBehaviorid, int aExecutedBehaviorId,
 			Object aTarget, Object[] aArguments)
 	{
 	}

@@ -43,7 +43,7 @@ public abstract class HighLevelCollector<T extends ThreadData>
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp, 
-			int aOperationBytecodeIndex,
+			long aOperationLocation,
 			boolean aDirectParent,
 			int aCalledBehaviorId,
 			int aExecutedBehaviorId,
@@ -55,7 +55,7 @@ public abstract class HighLevelCollector<T extends ThreadData>
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp, 
-			int aOperationBytecodeIndex,
+			long aOperationLocation,
 			boolean aDirectParent,
 			int aCalledBehaviorId,
 			int aExecutedBehaviorId,
@@ -67,7 +67,7 @@ public abstract class HighLevelCollector<T extends ThreadData>
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp, 
-			int aOperationBytecodeIndex,
+			long aOperationLocation,
 			boolean aDirectParent,
 			int aCalledBehaviorid,
 			int aExecutedBehaviorId,
@@ -79,7 +79,7 @@ public abstract class HighLevelCollector<T extends ThreadData>
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp, 
-			int aOperationBytecodeIndex,
+			long aOperationLocation,
 			int aBehaviorId,
 			boolean aHasThrown,
 			Object aResult);
@@ -89,7 +89,7 @@ public abstract class HighLevelCollector<T extends ThreadData>
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp, 
-			int aOperationBytecodeIndex,
+			long aOperationLocation,
 			int aFieldId,
 			Object aTarget,
 			Object aValue);
@@ -99,7 +99,7 @@ public abstract class HighLevelCollector<T extends ThreadData>
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp, 
-			int aOperationBytecodeIndex,
+			long aOperationLocation,
 			Object aTarget,
 			int aIndex,
 			Object aValue);
@@ -109,7 +109,7 @@ public abstract class HighLevelCollector<T extends ThreadData>
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			int aOperationBytecodeIndex,
+			long aOperationLocation,
 			int aVariableId,
 			Object aValue);
 	

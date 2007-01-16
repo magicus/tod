@@ -262,6 +262,12 @@ public class LocationRegisterer implements ILocationStore
 	
 	public BehaviorInfo getBehavior (int aId)
 	{
+		if (aId == -1)
+		{
+			System.err.println("[LocationRegisterer] Warning: requested behavior id -1");
+			return null;
+		}
+		
 		return itsBehaviors.get(aId);
 	}
 	

@@ -58,7 +58,7 @@ public class ExceptionGeneratedView extends EventView
 		add (createTitledPanel("Exception: ", createInspectorLink(theEvent.getException())));
 		
 		// Behaviour
-		IBehaviorInfo theBehavior = theEvent.getThrowingBehavior();
+		IBehaviorInfo theBehavior = theEvent.getOperationBehavior();
 		String theBehaviorName = theBehavior.getName();
 		
 		Seed theSeed = SeedFactory.getDefaultSeed(

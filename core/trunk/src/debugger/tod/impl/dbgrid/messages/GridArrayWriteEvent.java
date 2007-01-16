@@ -49,13 +49,14 @@ public class GridArrayWriteEvent extends GridEvent
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
+			int aOperationBehaviorId,
 			int aOperationBytecodeIndex, 
 			long aParentTimestamp,
 			Object aTarget,
 			int aIndex,
 			Object aValue)
 	{
-		set(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp, aTarget, aIndex, aValue);
+		set(aHost, aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aParentTimestamp, aTarget, aIndex, aValue);
 	}
 
 	public GridArrayWriteEvent(BitStruct aBitStruct)
@@ -72,13 +73,14 @@ public class GridArrayWriteEvent extends GridEvent
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
+			int aOperationBehaviorId,
 			int aOperationBytecodeIndex, 
 			long aParentTimestamp,
 			Object aTarget,
 			int aIndex,
 			Object aValue)
 	{
-		super.set(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp);
+		super.set(aHost, aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aParentTimestamp);
 		itsTarget = aTarget;
 		itsIndex = aIndex;
 		itsValue = aValue;

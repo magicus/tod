@@ -85,7 +85,7 @@ public class EventUtils
 		
 		public boolean isIgnorableException (IExceptionGeneratedEvent aEvent)
 		{
-			IBehaviorInfo theBehavior = aEvent.getThrowingBehavior();
+			IBehaviorInfo theBehavior = aEvent.getOperationBehavior();
 			if (theBehavior == null) return true; // TODO: this is temporary
 			
 			ITypeInfo theType = theBehavior.getType();

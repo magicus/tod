@@ -27,7 +27,7 @@ public class DummyCollector implements ILogCollector
 {
 
 	public void behaviorExit(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, int aBehaviorId, boolean aHasThrown, Object aResult)
+			int aOperationBehaviorId, int aOperationBytecodeIndex, int aBehaviorId, boolean aHasThrown, Object aResult)
 	{
 	}
 
@@ -38,28 +38,28 @@ public class DummyCollector implements ILogCollector
 	}
 
 	public void fieldWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, int aFieldId, Object aTarget, Object aValue)
+			int aOperationBehaviorId, int aOperationBytecodeIndex, int aFieldId, Object aTarget, Object aValue)
 	{
 	}
 
 	public void arrayWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, Object aTarget, int aIndex, Object aValue)
+			int aOperationBehaviorId, int aOperationBytecodeIndex, Object aTarget, int aIndex, Object aValue)
 	{
 	}
 
 	public void instantiation(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
+			int aOperationBehaviorId, int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
 			Object aTarget, Object[] aArguments)
 	{
 	}
 
 	public void localWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, int aVariableId, Object aValue)
+			int aOperationBehaviorId, int aOperationBytecodeIndex, int aVariableId, Object aValue)
 	{
 	}
 
 	public void methodCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
+			int aOperationBehaviorId, int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
 			Object aTarget, Object[] aArguments)
 	{
 	}
@@ -70,7 +70,7 @@ public class DummyCollector implements ILogCollector
 	}
 
 	public void superCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorid, int aExecutedBehaviorId,
+			int aOperationBehaviorId, int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorid, int aExecutedBehaviorId,
 			Object aTarget, Object[] aArguments)
 	{
 	}

@@ -111,16 +111,16 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 					theFrame.parentTimestamp,
 					theDepth,
 					theTimestamp,
-					theFrame.bytecodeIndex,
+					theFrame.operationLocation,
 					true,
 					theFrame.behavior,
 					aBehaviorId,
 					aObject,
 					aArguments);
 			
-			// Update frame into
+			// Update frame info
 			theFrame.behavior = aBehaviorId;
-			theFrame.bytecodeIndex = -1;
+			theFrame.operationLocation = -1;
 			theFrame.callType = null;
 			theFrame.entering = false;
 			theFrame.parentTimestamp = theTimestamp;
@@ -149,7 +149,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 	}
 
 	public void logBehaviorExit(
-			int aOperationBytecodeIndex, 
+			long aOperationLocation, 
 			int aBehaviorId,
 			Object aResult)
 	{
@@ -166,7 +166,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
 				"logBehaviorExit(%d, %d, %d, %s)\n thread: %d, depth: %d\n frame: %s",
 				theTimestamp,
-				aOperationBytecodeIndex,
+				aOperationLocation,
 				aBehaviorId,
 				getObjectId(aResult),
 				theThread.getId(),
@@ -178,7 +178,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				theFrame.parentTimestamp,
 				(short) (theThread.getCurrentDepth()+1), // The exit event is at the same depths as other children
 				theTimestamp,
-				aOperationBytecodeIndex,
+				aOperationLocation,
 				aBehaviorId,
 				false,
 				aResult);
@@ -284,7 +284,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 	}
 	
 	public void logFieldWrite(
-			int aOperationBytecodeIndex, 
+			long aOperationLocation, 
 			int aFieldId,
 			Object aTarget, 
 			Object aValue)
@@ -299,7 +299,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
 				"logFieldWrite(%d, %d, %d, %s, %s)\n thread: %d, depth: %d\n frame: %s",
 				theTimestamp,
-				aOperationBytecodeIndex,
+				aOperationLocation,
 				aFieldId,
 				getObjectId(aTarget),
 				getObjectId(aValue),
@@ -312,14 +312,14 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				theFrame.parentTimestamp,
 				theThread.getCurrentDepth(),
 				theTimestamp,
-				aOperationBytecodeIndex,
+				aOperationLocation,
 				aFieldId,
 				aTarget,
 				aValue);
 	}
 	
 	public void logArrayWrite(
-			int aOperationBytecodeIndex, 
+			long aOperationLocation, 
 			Object aTarget,
 			int aIndex,
 			Object aValue)
@@ -334,7 +334,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
 				"logArrayWrite(%d, %d, %s, %d, %s)\n thread: %d, depth: %d\n frame: %s",
 				theTimestamp,
-				aOperationBytecodeIndex,
+				aOperationLocation,
 				getObjectId(aTarget),
 				aIndex,
 				getObjectId(aValue),
@@ -347,14 +347,14 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				theFrame.parentTimestamp,
 				theThread.getCurrentDepth(),
 				theTimestamp,
-				aOperationBytecodeIndex,
+				aOperationLocation,
 				aTarget,
 				aIndex,
 				aValue);
 	}
 	
 	public void logLocalVariableWrite(
-			int aOperationBytecodeIndex,
+			long aOperationLocation,
 			int aVariableId,
 			Object aValue)
 	{
@@ -368,7 +368,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
 				"logLocalVariableWrite(%d, %d, %d, %s)\n thread: %d, depth: %d\n frame: %s",
 				theTimestamp,
-				aOperationBytecodeIndex,
+				aOperationLocation,
 				aVariableId,
 				getObjectId(aValue),
 				theThread.getId(),
@@ -380,13 +380,13 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				theFrame.parentTimestamp,
 				theThread.getCurrentDepth(),
 				theTimestamp,
-				aOperationBytecodeIndex,
+				aOperationLocation,
 				aVariableId,
 				aValue);
 	}
 	
 	public void logBeforeBehaviorCall(
-			int aOperationBytecodeIndex, 
+			long aOperationLocation, 
 			int aBehaviorId,
 			BehaviorCallType aCallType)
 	{
@@ -399,18 +399,18 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		
 		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
 				"logBeforeBehaviorCall(%d, %d, %s)\n thread: %d, depth: %d\n frame: %s",
-				aOperationBytecodeIndex,
+				aOperationLocation,
 				aBehaviorId,
 				aCallType,
 				theThread.getId(),
 				theThread.getCurrentDepth(),
 				theFrame));
 
-		theThread.pushFrame(true, aBehaviorId, true, theFrame.parentTimestamp, aCallType, aOperationBytecodeIndex);
+		theThread.pushFrame(true, aBehaviorId, true, theFrame.parentTimestamp, aCallType, aOperationLocation);
 	}
 	
 	public void logBeforeBehaviorCall(
-			int aOperationBytecodeIndex,
+			long aOperationLocation,
 			int aBehaviorId,
 			BehaviorCallType aCallType,
 			Object aTarget, 
@@ -426,7 +426,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
 				"logBeforeBehaviorCall(%d, %d, %d, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s",
 				theTimestamp,
-				aOperationBytecodeIndex,
+				aOperationLocation,
 				aBehaviorId,
 				aCallType,
 				getObjectId(aTarget),
@@ -441,7 +441,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				theFrame.parentTimestamp,
 				theThread.getCurrentDepth(),
 				theTimestamp,
-				aOperationBytecodeIndex,
+				aOperationLocation,
 				false,
 				aBehaviorId,
 				0,
@@ -471,7 +471,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 	}
 	
 	public void logAfterBehaviorCall(
-			int aOperationBytecodeIndex, 
+			long aOperationLocation, 
 			int aBehaviorId, 
 			Object aTarget,
 			Object aResult)
@@ -487,7 +487,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
 				"logAfterBehaviorCall(%d, %d, %d, %s, %s)\n thread: %d, depth: %d\n frame: %s",
 				theTimestamp,
-				aOperationBytecodeIndex,
+				aOperationLocation,
 				aBehaviorId,
 				getObjectId(aTarget),
 				getObjectId(aResult),
@@ -500,14 +500,14 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				theFrame.parentTimestamp,
 				theThread.getCurrentDepth(),
 				theTimestamp,
-				aOperationBytecodeIndex,
+				aOperationLocation,
 				aBehaviorId,
 				false,
 				aResult);
 	}
 	
 	public void logAfterBehaviorCallWithException(
-			int aOperationBytecodeIndex,
+			long aOperationLocation,
 			int aBehaviorId, 
 			Object aTarget, 
 			Object aException)
@@ -523,7 +523,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
 				"logAfterBehaviorCallWithException(%d, %d, %d, %s, %s)\n thread: %d, depth: %d\n frame: %s",
 				theTimestamp,
-				aOperationBytecodeIndex,
+				aOperationLocation,
 				aBehaviorId,
 				getObjectId(aTarget),
 				aException,
@@ -536,7 +536,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				theFrame.parentTimestamp,
 				theThread.getCurrentDepth(),
 				theTimestamp,
-				aOperationBytecodeIndex,
+				aOperationLocation,
 				aBehaviorId,
 				true,
 				aException);
@@ -654,7 +654,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				boolean aDirectParent,
 				long aParentTimestamp,
 				BehaviorCallType aCallType, 
-				int aBytecodeIndex)
+				long aOperationLocation)
 		{
 			assert aCallType != null;
 			FrameInfo theFrame = getFreeFrame();
@@ -663,7 +663,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 			theFrame.directParent = aDirectParent;
 			theFrame.parentTimestamp = aParentTimestamp;
 			theFrame.callType = aCallType;
-			theFrame.bytecodeIndex = aBytecodeIndex;
+			theFrame.operationLocation = aOperationLocation;
 			
 			itsStack[itsStackSize++] = theFrame;
 //			if (itsStackSize % 10 == 0) System.out.println(itsStackSize);
@@ -773,7 +773,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		/**
 		 * Operation bytecode index in the case of a before/enter scheme
 		 */
-		public int bytecodeIndex;
+		public long operationLocation;
 		
 		@Override
 		public String toString()

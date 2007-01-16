@@ -49,12 +49,13 @@ public class GridVariableWriteEvent extends GridEvent
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
+			int aOperationBehaviorId,
 			int aOperationBytecodeIndex, 
 			long aParentTimestamp,
 			int aVariableId, 
 			Object aValue)
 	{
-		set(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp, aVariableId, aValue);
+		set(aHost, aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aParentTimestamp, aVariableId, aValue);
 	}
 
 
@@ -75,12 +76,13 @@ public class GridVariableWriteEvent extends GridEvent
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
+			int aOperationBehaviorId,
 			int aOperationBytecodeIndex, 
 			long aParentTimestamp,
 			int aVariableId, 
 			Object aValue)
 	{
-		super.set(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp);
+		super.set(aHost, aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aParentTimestamp);
 		itsVariableId = aVariableId;
 		itsValue = aValue;
 	}

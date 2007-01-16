@@ -31,9 +31,23 @@ import tod.agent.AgentConfig;
 import tod.core.EventInterpreter;
 import tod.core.HighLevelCollector;
 import tod.core.config.ClassSelector;
+import tod.core.transport.CollectorPacketReader;
+import tod.core.transport.CollectorPacketWriter;
 
 public class BCIUtils implements Opcodes
 {
+	/**
+	 * Creates a "packed" operation location.
+	 * @see CollectorPacketWriter#sendOperationLocation
+	 */
+	public static long operationLocation(int aBehaviorId, int aBytecodeIndex)
+	{
+		long l = 0;
+		l |= aBytecodeIndex & 0xffff;
+		l |= aBehaviorId << 16;
+		return l;
+	}
+	
 	/**
 	 * Return the normal Java class name corresponding to the given internal name
 	 */
@@ -116,6 +130,33 @@ public class BCIUtils implements Opcodes
 			aVisitor.visitIntInsn(SIPUSH, aValue);
 		else
 			aVisitor.visitLdcInsn(new Integer(aValue));
+	}
+	
+	/**
+	 * Generates the bytecode that pushes the given value onto the stack
+	 */
+	public static void pushLong (MethodVisitor aVisitor, long aValue)
+	{
+		if (aValue == 0)
+		{
+			aVisitor.visitInsn(LCONST_0);
+			return;
+		}
+		else if (aValue == 1)
+		{
+			aVisitor.visitInsn(LCONST_1);
+			return;
+		}
+		
+		aVisitor.visitLdcInsn(new Long(aValue));
+	}
+	
+	public static void pushOperationLocation(
+			MethodVisitor aVisitor, 
+			int aBehaviorId, 
+			int aBytecodeIndex)
+	{
+		pushLong(aVisitor, operationLocation(aBehaviorId, aBytecodeIndex));
 	}
 	
 	/**

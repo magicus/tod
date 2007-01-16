@@ -44,31 +44,31 @@ public class NativeCollector extends HighLevelCollector<NativeCollector.NativeTh
 	private static native void allocThreadData(int aId);
 
 	private static native void behaviorExit(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, int aBehaviorId, boolean aHasThrown, Object aResult);
+			long aOperationLocation, int aBehaviorId, boolean aHasThrown, Object aResult);
 
 	private static  native void exception(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
 			String aMethodName, String aMethodSignature, String aMethodDeclaringClassSignature,
 			int aOperationBytecodeIndex, Object aException);
 
 	private static  native void fieldWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, int aFieldId, Object aTarget, Object aValue);
+			long aOperationLocation, int aFieldId, Object aTarget, Object aValue);
 
 	private static  native void instantiation(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
+			long aOperationLocation, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
 			Object aTarget, Object[] aArguments);
 
 	private static  native void localWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, int aVariableId, Object aValue);
+			long aOperationLocation, int aVariableId, Object aValue);
 
 	private static  native void methodCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
+			long aOperationLocation, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
 			Object aTarget, Object[] aArguments);
 
 	private static  native void output(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
 			Output aOutput, byte[] aData);
 
 	private static  native void superCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorid, int aExecutedBehaviorId,
+			long aOperationLocation, boolean aDirectParent, int aCalledBehaviorid, int aExecutedBehaviorId,
 			Object aTarget, Object[] aArguments);
 
 	private static  native void thread(int aThreadId, long aJVMThreadId, String aName);
@@ -78,9 +78,9 @@ public class NativeCollector extends HighLevelCollector<NativeCollector.NativeTh
 	
 	@Override
 	protected void behaviorExit(NativeThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, int aBehaviorId, boolean aHasThrown, Object aResult)
+			long aOperationLocation, int aBehaviorId, boolean aHasThrown, Object aResult)
 	{
-		behaviorExit(aThread.getId(), aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aBehaviorId, aHasThrown, aResult);
+		behaviorExit(aThread.getId(), aParentTimestamp, aDepth, aTimestamp, aOperationLocation, aBehaviorId, aHasThrown, aResult);
 	}
 
 	@Override
@@ -93,15 +93,15 @@ public class NativeCollector extends HighLevelCollector<NativeCollector.NativeTh
 
 	@Override
 	protected void fieldWrite(NativeThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, int aFieldId, Object aTarget, Object aValue)
+			long aOperationLocation, int aFieldId, Object aTarget, Object aValue)
 	{
-		fieldWrite(aThread.getId(), aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aFieldId, aTarget, aValue);
+		fieldWrite(aThread.getId(), aParentTimestamp, aDepth, aTimestamp, aOperationLocation, aFieldId, aTarget, aValue);
 	}
 	
 	
 	@Override
 	protected void arrayWrite(NativeThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, Object aTarget, int aIndex, Object aValue)
+			long aOperationLocation, Object aTarget, int aIndex, Object aValue)
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -110,25 +110,25 @@ public class NativeCollector extends HighLevelCollector<NativeCollector.NativeTh
 
 	@Override
 	protected void instantiation(NativeThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
+			long aOperationLocation, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
 			Object aTarget, Object[] aArguments)
 	{
-		instantiation(aThread.getId(), aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
+		instantiation(aThread.getId(), aParentTimestamp, aDepth, aTimestamp, aOperationLocation, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
 	}
 
 	@Override
 	protected void localWrite(NativeThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, int aVariableId, Object aValue)
+			long aOperationLocation, int aVariableId, Object aValue)
 	{
-		localWrite(aThread.getId(), aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aVariableId, aValue);
+		localWrite(aThread.getId(), aParentTimestamp, aDepth, aTimestamp, aOperationLocation, aVariableId, aValue);
 	}
 
 	@Override
 	protected void methodCall(NativeThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
+			long aOperationLocation, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
 			Object aTarget, Object[] aArguments)
 	{
-		methodCall(aThread.getId(), aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
+		methodCall(aThread.getId(), aParentTimestamp, aDepth, aTimestamp, aOperationLocation, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
 	}
 
 	@Override
@@ -140,10 +140,10 @@ public class NativeCollector extends HighLevelCollector<NativeCollector.NativeTh
 
 	@Override
 	protected void superCall(NativeThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorid, int aExecutedBehaviorId,
+			long aOperationLocation, boolean aDirectParent, int aCalledBehaviorid, int aExecutedBehaviorId,
 			Object aTarget, Object[] aArguments)
 	{
-		superCall(aThread.getId(), aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aDirectParent, aCalledBehaviorid, aExecutedBehaviorId, aTarget, aArguments);
+		superCall(aThread.getId(), aParentTimestamp, aDepth, aTimestamp, aOperationLocation, aDirectParent, aCalledBehaviorid, aExecutedBehaviorId, aTarget, aArguments);
 	}
 
 	@Override

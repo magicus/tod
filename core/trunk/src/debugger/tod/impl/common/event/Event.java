@@ -23,6 +23,7 @@ package tod.impl.common.event;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.ICallerSideEvent;
+import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
 
@@ -39,6 +40,7 @@ public abstract class Event implements ICallerSideEvent
 	private IHostInfo itsHost;
 	private IThreadInfo itsThread;
 	
+	private IBehaviorInfo itsOperationBehavior; 
 	private int itsOperationBytecodeIndex;
 	
 	private long itsParentTimestamp;
@@ -118,6 +120,16 @@ public abstract class Event implements ICallerSideEvent
 		itsTimestamp = aTimestamp;
 	}
 	
+	public IBehaviorInfo getOperationBehavior()
+	{
+		return itsOperationBehavior;
+	}
+
+	public void setOperationBehavior(IBehaviorInfo aOperationBehavior)
+	{
+		itsOperationBehavior = aOperationBehavior;
+	}
+
 	public int getOperationBytecodeIndex()
 	{
 		return itsOperationBytecodeIndex;

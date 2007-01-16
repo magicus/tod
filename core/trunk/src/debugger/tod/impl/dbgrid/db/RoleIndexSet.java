@@ -46,6 +46,7 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.RoleTuple>
 	public static final byte ROLE_BEHAVIOR_CALLED = 2;
 	public static final byte ROLE_BEHAVIOR_EXECUTED = 3;
 	public static final byte ROLE_BEHAVIOR_EXIT = 4;
+	public static final byte ROLE_BEHAVIOR_OPERATION = 5;
 	
 	
 	public static final byte ROLE_OBJECT_TARGET = -1;

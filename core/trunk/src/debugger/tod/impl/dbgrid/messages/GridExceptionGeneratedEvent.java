@@ -37,7 +37,6 @@ public class GridExceptionGeneratedEvent extends GridEvent
 	private static final long serialVersionUID = 7070448347537157710L;
 	
 	private Object itsException;
-	private int itsThrowingBehaviorId;
 	
 	public GridExceptionGeneratedEvent()
 	{
@@ -48,19 +47,18 @@ public class GridExceptionGeneratedEvent extends GridEvent
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
+			int aOperationBehaviorId,
 			int aOperationBytecodeIndex, 
 			long aParentTimestamp,
-			Object aException, 
-			int aThrowingBehaviorId)
+			Object aException)
 	{
-		set(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp, aException, aThrowingBehaviorId);
+		set(aHost, aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aParentTimestamp, aException);
 	}
 
 	public GridExceptionGeneratedEvent(BitStruct aBitStruct)
 	{
 		super(aBitStruct);
 
-		itsThrowingBehaviorId = aBitStruct.readInt(DebuggerGridConfig.EVENT_BEHAVIOR_BITS);
 		itsException = readObject(aBitStruct);
 	}
 	
@@ -69,21 +67,19 @@ public class GridExceptionGeneratedEvent extends GridEvent
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
+			int aOperationBehaviorId,
 			int aOperationBytecodeIndex, 
 			long aParentTimestamp,
-			Object aException, 
-			int aThrowingBehaviorId)
+			Object aException)
 	{
-		super.set(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp);
+		super.set(aHost, aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aParentTimestamp);
 		itsException = aException;
-		itsThrowingBehaviorId = aThrowingBehaviorId;
 	}
 
 	@Override
 	public void writeTo(BitStruct aBitStruct)
 	{
 		super.writeTo(aBitStruct);
-		aBitStruct.writeInt(getThrowingBehaviorId(), DebuggerGridConfig.EVENT_BEHAVIOR_BITS);
 		writeObject(aBitStruct, getException());
 	}
 
@@ -104,7 +100,6 @@ public class GridExceptionGeneratedEvent extends GridEvent
 		ExceptionGeneratedEvent theEvent = new ExceptionGeneratedEvent(aBrowser);
 		initEvent(aBrowser, theEvent);
 		theEvent.setException(getException());
-		theEvent.setThrowingBehavior(aBrowser.getLocationsRepository().getBehavior(getThrowingBehaviorId()));
 		return theEvent;
 	}
 	
@@ -119,23 +114,13 @@ public class GridExceptionGeneratedEvent extends GridEvent
 		return itsException;
 	}
 	
-	public int getThrowingBehaviorId()
-	{
-		return itsThrowingBehaviorId;
-	}
-	
 	private static RoleIndexSet.RoleTuple TUPLE = new RoleIndexSet.RoleTuple(-1, -1, -1);
 	
 	@Override
 	public void index(Indexes aIndexes, long aPointer)
 	{
 		super.index(aIndexes, aPointer);
-		
-		TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_EXECUTED);
-		aIndexes.indexBehavior(
-				getThrowingBehaviorId(),
-				TUPLE);
-		
+				
 		TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_OBJECT_EXCEPTION);
 		aIndexes.indexObject(
 				getException(), 
@@ -145,8 +130,8 @@ public class GridExceptionGeneratedEvent extends GridEvent
 	@Override
 	public boolean matchBehaviorCondition(int aBehaviorId, byte aRole)
 	{
-		return (aRole == RoleIndexSet.ROLE_BEHAVIOR_EXECUTED || aRole == RoleIndexSet.ROLE_BEHAVIOR_ANY)
-			&& (aBehaviorId == getThrowingBehaviorId());			
+		return (aRole == RoleIndexSet.ROLE_BEHAVIOR_OPERATION) 
+			&& (aBehaviorId == getOperationBehaviorId());			
 	}
 	
 	@Override
@@ -163,7 +148,7 @@ public class GridExceptionGeneratedEvent extends GridEvent
 				"%s (ex: %s, b: %d, %s)",
 				getEventType(),
 				itsException,
-				itsThrowingBehaviorId,
+				getOperationBehaviorId(),
 				toString0());
 	}
 }

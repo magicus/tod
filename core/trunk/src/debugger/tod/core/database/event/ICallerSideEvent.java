@@ -20,6 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.event;
 
+import tod.core.database.structure.IBehaviorInfo;
+
 
 /**
  * This interface provide methods that give information
@@ -37,5 +39,10 @@ public interface ICallerSideEvent extends ILogEvent
 	 * @see #getCallingBehavior()
 	 */
 	public int getOperationBytecodeIndex();
+	
+	/**
+	 * Returns the id of the behavior that performed the operation.
+	 */
+	public IBehaviorInfo getOperationBehavior();
 
 }

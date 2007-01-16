@@ -70,11 +70,11 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		itsLocationPool = aLocationPool;
 		itsMethodInfo = aMethodInfo;
 		itsMethodId = aMethodId;
-		itsBehaviorCallInstrumenter = new ASMBehaviorCallInstrumenter(mv, this);
+		itsBehaviorCallInstrumenter = new ASMBehaviorCallInstrumenter(mv, this, aMethodId);
 		
 		itsFirstFreeVar = itsMethodInfo.getMaxLocals();
 		itsReturnLocationVar = itsFirstFreeVar;
-		itsFirstFreeVar += 1;
+		itsFirstFreeVar += 2;
 	}
 	
 	/**
@@ -162,8 +162,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		mv.visitLabel(l);
 		int theBytecodeIndex = l.getOffset();
 		
-		BCIUtils.pushInt(mv, theBytecodeIndex);
-		mv.visitVarInsn(ISTORE, itsReturnLocationVar);
+		BCIUtils.pushOperationLocation(mv, itsMethodId, theBytecodeIndex);
+		mv.visitVarInsn(LSTORE, itsReturnLocationVar);
 		
 		mv.visitJumpInsn(GOTO, itsReturnHookLabel);
 	}
@@ -562,8 +562,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		pushStdLogArgs();
 	
-		// ->bytecode index
-		BCIUtils.pushInt(mv, aBytecodeIndex);
+		// ->operation location
+		BCIUtils.pushOperationLocation(mv, itsMethodId, aBytecodeIndex);
 		
 		// ->method id
 		BCIUtils.pushInt(mv, aMethodId);
@@ -586,7 +586,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				INVOKEVIRTUAL, 
 				Type.getInternalName(EventInterpreter.class), 
 				"logBeforeBehaviorCall", 
-				"(II"+Type.getDescriptor(BehaviorCallType.class)+"Ljava/lang/Object;[Ljava/lang/Object;)V");
+				"(JI"+Type.getDescriptor(BehaviorCallType.class)+"Ljava/lang/Object;[Ljava/lang/Object;)V");
 		
 		mv.visitLabel(l);
 	}
@@ -605,8 +605,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		pushDryLogArgs();
 		
-		// ->bytecode index
-		BCIUtils.pushInt(mv, aBytecodeIndex);
+		// ->operation location
+		BCIUtils.pushOperationLocation(mv, itsMethodId, aBytecodeIndex);
 		
 		// ->method id
 		BCIUtils.pushInt(mv, aMethodId);
@@ -622,7 +622,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				INVOKEVIRTUAL, 
 				Type.getInternalName(EventInterpreter.class), 
 				"logBeforeBehaviorCall", 
-				"(II"+Type.getDescriptor(BehaviorCallType.class)+")V");
+				"(JI"+Type.getDescriptor(BehaviorCallType.class)+")V");
 		
 		mv.visitLabel(l);
 	}
@@ -642,8 +642,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		pushStdLogArgs();
 		
-		// ->bytecode index
-		BCIUtils.pushInt(mv, aBytecodeIndex);
+		// ->operation location
+		BCIUtils.pushOperationLocation(mv, itsMethodId, aBytecodeIndex);
 		
 		// ->method id
 		BCIUtils.pushInt(mv, aMethodId);
@@ -659,7 +659,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				INVOKEVIRTUAL, 
 				Type.getInternalName(EventInterpreter.class), 
 				"logAfterBehaviorCall", 
-				"(IILjava/lang/Object;Ljava/lang/Object;)V");
+				"(JILjava/lang/Object;Ljava/lang/Object;)V");
 		
 		mv.visitLabel(l);
 	}
@@ -699,8 +699,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		pushStdLogArgs();
 		
-		// ->bytecode index
-		BCIUtils.pushInt(mv, aBytecodeIndex);
+		// ->operation location
+		BCIUtils.pushOperationLocation(mv, itsMethodId, aBytecodeIndex);
 		
 		// ->method id
 		BCIUtils.pushInt(mv, aMethodId);
@@ -716,7 +716,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				INVOKEVIRTUAL, 
 				Type.getInternalName(EventInterpreter.class), 
 				"logAfterBehaviorCallWithException", 
-				"(IILjava/lang/Object;Ljava/lang/Object;)V");
+				"(JILjava/lang/Object;Ljava/lang/Object;)V");
 		
 		mv.visitLabel(l);
 	}
@@ -737,8 +737,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		pushStdLogArgs();
 		
-		// ->bytecode index
-		BCIUtils.pushInt(mv, aBytecodeIndex);
+		// ->operation location
+		BCIUtils.pushOperationLocation(mv, itsMethodId, aBytecodeIndex);
 		
 		// ->field id
 		BCIUtils.pushInt(mv, aFieldId);
@@ -755,7 +755,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				INVOKEVIRTUAL, 
 				Type.getInternalName(EventInterpreter.class), 
 				"logFieldWrite", 
-				"(IILjava/lang/Object;Ljava/lang/Object;)V");
+				"(JILjava/lang/Object;Ljava/lang/Object;)V");
 		
 		mv.visitLabel(l);
 	}
@@ -776,8 +776,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		pushStdLogArgs();
 		
-		// ->bytecode index
-		BCIUtils.pushInt(mv, aBytecodeIndex);
+		// ->operation location
+		BCIUtils.pushOperationLocation(mv, itsMethodId, aBytecodeIndex);
 		
 		// ->target
 		mv.visitVarInsn(ALOAD, aTargetVar);
@@ -793,7 +793,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				INVOKEVIRTUAL, 
 				Type.getInternalName(EventInterpreter.class), 
 				"logArrayWrite", 
-		"(ILjava/lang/Object;ILjava/lang/Object;)V");
+				"(JLjava/lang/Object;ILjava/lang/Object;)V");
 		
 		mv.visitLabel(l);
 	}
@@ -813,8 +813,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		pushStdLogArgs();
 		
-		// ->bytecode index
-		BCIUtils.pushInt(mv, aBytecodeIndex);
+		// ->operation location
+		BCIUtils.pushOperationLocation(mv, itsMethodId, aBytecodeIndex);
 		
 		// ->variable id
 		BCIUtils.pushInt(mv, aVariableId);
@@ -827,7 +827,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				INVOKEVIRTUAL, 
 				Type.getInternalName(EventInterpreter.class), 
 				"logLocalVariableWrite", 
-				"(IILjava/lang/Object;)V");
+				"(JILjava/lang/Object;)V");
 		
 		mv.visitLabel(l);
 	}
@@ -884,8 +884,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		pushStdLogArgs();
 		
-		// ->bytecode index
-		mv.visitVarInsn(ILOAD, itsReturnLocationVar);
+		// ->operation location
+		mv.visitVarInsn(LLOAD, itsReturnLocationVar);
 		
 		// ->method id
 		BCIUtils.pushInt(mv, aMethodId);
@@ -897,7 +897,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				Opcodes.INVOKEVIRTUAL, 
 				Type.getInternalName(EventInterpreter.class), 
 				"logBehaviorExit", 
-				"(IILjava/lang/Object;)V");	
+				"(JILjava/lang/Object;)V");	
 	
 		mv.visitLabel(l);
 	}

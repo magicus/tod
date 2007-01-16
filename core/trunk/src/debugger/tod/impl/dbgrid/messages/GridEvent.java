@@ -26,6 +26,7 @@ import tod.impl.common.event.Event;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.db.Indexes;
+import tod.impl.dbgrid.db.RoleIndexSet;
 import tod.impl.dbgrid.db.StdIndexSet;
 import tod.impl.dbgrid.queries.ArrayIndexCondition;
 import tod.impl.dbgrid.queries.BehaviorCondition;
@@ -47,6 +48,7 @@ public abstract class GridEvent extends GridMessage
 	private int itsDepth;
 	private long itsTimestamp;
 	
+	private int itsOperationBehaviorId;
 	private int itsOperationBytecodeIndex;
 	
 	public GridEvent()
@@ -58,10 +60,11 @@ public abstract class GridEvent extends GridMessage
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
+			int aOperationBehaviorId,
 			int aOperationBytecodeIndex, 
 			long aParentTimestamp)
 	{
-		set(aHost, aThread, aDepth, aTimestamp, aOperationBytecodeIndex, aParentTimestamp);
+		set(aHost, aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aParentTimestamp);
 	}
 
 	public GridEvent(BitStruct aBitStruct)
@@ -70,6 +73,7 @@ public abstract class GridEvent extends GridMessage
 		itsThread = aBitStruct.readInt(DebuggerGridConfig.EVENT_THREAD_BITS);
 		itsDepth = aBitStruct.readInt(DebuggerGridConfig.EVENT_DEPTH_BITS);
 		itsTimestamp = aBitStruct.readLong(DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
+		itsOperationBehaviorId = aBitStruct.readInt(DebuggerGridConfig.EVENT_BEHAVIOR_BITS);
 		itsOperationBytecodeIndex = aBitStruct.readInt(DebuggerGridConfig.EVENT_BYTECODE_LOCATION_BITS);
 		
 		// TODO: this is a hack. We should not allow negative values.
@@ -83,6 +87,7 @@ public abstract class GridEvent extends GridMessage
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
+			int aOperationBehaviorId,
 			int aOperationBytecodeIndex, 
 			long aParentTimestamp)
 	{
@@ -90,6 +95,7 @@ public abstract class GridEvent extends GridMessage
 		itsThread = aThread;
 		itsDepth = aDepth;
 		itsTimestamp = aTimestamp;
+		itsOperationBehaviorId = aOperationBehaviorId;
 		itsOperationBytecodeIndex = aOperationBytecodeIndex;
 		itsParentTimestamp = aParentTimestamp;
 	}
@@ -106,6 +112,7 @@ public abstract class GridEvent extends GridMessage
 		aBitStruct.writeInt(getThread(), DebuggerGridConfig.EVENT_THREAD_BITS);
 		aBitStruct.writeInt(getDepth(), DebuggerGridConfig.EVENT_DEPTH_BITS);
 		aBitStruct.writeLong(getTimestamp(), DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
+		aBitStruct.writeInt(getOperationBehaviorId(), DebuggerGridConfig.EVENT_BEHAVIOR_BITS);
 		aBitStruct.writeInt(getOperationBytecodeIndex(), DebuggerGridConfig.EVENT_BYTECODE_LOCATION_BITS);
 		
 		aBitStruct.writeLong(getParentTimestamp(), DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
@@ -144,6 +151,7 @@ public abstract class GridEvent extends GridMessage
 		aEvent.setThread(aBrowser.getThread(getHost(), getThread()));
 		aEvent.setTimestamp(getTimestamp());
 		aEvent.setDepth(getDepth());
+		aEvent.setOperationBehavior(aBrowser.getLocationsRepository().getBehavior(getOperationBehaviorId()));
 		aEvent.setOperationBytecodeIndex(getOperationBytecodeIndex());
 		aEvent.setParentTimestamp(getParentTimestamp());
 	}
@@ -171,6 +179,11 @@ public abstract class GridEvent extends GridMessage
 		return itsOperationBytecodeIndex;
 	}
 
+	public int getOperationBehaviorId()
+	{
+		return itsOperationBehaviorId;
+	}
+
 	public long getParentTimestamp()
 	{
 		return itsParentTimestamp;
@@ -192,6 +205,7 @@ public abstract class GridEvent extends GridMessage
 	}
 	
 	private static StdIndexSet.StdTuple TUPLE = new StdIndexSet.StdTuple(-1, -1);
+	private static RoleIndexSet.RoleTuple ROLE_TUPLE = new RoleIndexSet.RoleTuple(-1, -1, -1);
 	
 	/**
 	 * Instructs this event to add relevant data to the indexes. The base
@@ -221,6 +235,9 @@ public abstract class GridEvent extends GridMessage
 			aIndexes.indexThread(getThread(), TUPLE);
 		
 		aIndexes.indexDepth(getDepth(), TUPLE);
+		
+		ROLE_TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_OPERATION);
+		aIndexes.indexBehavior(getOperationBehaviorId(), ROLE_TUPLE);
 	}
 
 	/**

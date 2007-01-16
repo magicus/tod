@@ -30,7 +30,6 @@ import tod.core.database.structure.IBehaviorInfo;
 public class ExceptionGeneratedEvent extends Event implements IExceptionGeneratedEvent
 {
 	private Object itsException;
-	private IBehaviorInfo itsThrowingBehavior;
 
 	public ExceptionGeneratedEvent(ILogBrowser aLogBrowser)
 	{
@@ -45,15 +44,5 @@ public class ExceptionGeneratedEvent extends Event implements IExceptionGenerate
 	public void setException(Object aException)
 	{
 		itsException = aException;
-	}
-
-	public IBehaviorInfo getThrowingBehavior()
-	{
-		return itsThrowingBehavior;
-	}
-
-	public void setThrowingBehavior(IBehaviorInfo aThrowingBehavior)
-	{
-		itsThrowingBehavior = aThrowingBehavior;
 	}
 }

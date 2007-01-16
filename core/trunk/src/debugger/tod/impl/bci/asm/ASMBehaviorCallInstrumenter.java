@@ -37,6 +37,7 @@ public class ASMBehaviorCallInstrumenter implements Opcodes
 	private Type[] itsArgTypes;
 	private Type itsReturnType;
 
+	private int itsOperationBehaviorId;
 	private int itsBytecodeIndex;
 	
 	private int itsFirstVar;
@@ -45,10 +46,14 @@ public class ASMBehaviorCallInstrumenter implements Opcodes
 	private int itsArrayVar;
 
 	
-	public ASMBehaviorCallInstrumenter(MethodVisitor mv, ASMBehaviorInstrumenter aInstrumenter)
+	public ASMBehaviorCallInstrumenter(
+			MethodVisitor mv, 
+			ASMBehaviorInstrumenter aInstrumenter,
+			int aOperationBehaviorId)
 	{
 		this.mv = mv;
 		itsInstrumenter = aInstrumenter;
+		itsOperationBehaviorId = aOperationBehaviorId;
 	}
 
 	public void setup(

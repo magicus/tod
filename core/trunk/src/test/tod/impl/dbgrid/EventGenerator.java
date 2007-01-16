@@ -20,7 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
-import static tod.impl.dbgrid.DebuggerGridConfig.*;
+import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_ARRAY_INDEX_COUNT;
+import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_BEHAVIOR_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_BYTECODE_LOCS_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_DEPTH_RANGE;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_FIELD_COUNT;
@@ -32,7 +33,6 @@ import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_VAR_COUNT;
 import java.util.Random;
 
 import tod.core.database.structure.ObjectId;
-import tod.impl.common.event.ArrayWriteEvent;
 import tod.impl.dbgrid.messages.GridArrayWriteEvent;
 import tod.impl.dbgrid.messages.GridBehaviorCallEvent;
 import tod.impl.dbgrid.messages.GridBehaviorExitEvent;
@@ -110,6 +110,7 @@ public class EventGenerator
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
+					genBehaviorId(),
 					genBytecodeIndex(),
 					genParentTimestamp(),
 					itsRandom.nextBoolean(),
@@ -122,6 +123,7 @@ public class EventGenerator
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
+					genBehaviorId(),
 					genBytecodeIndex(),
 					genParentTimestamp(),
 					MessageType.SUPER_CALL,
@@ -137,10 +139,10 @@ public class EventGenerator
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
+					genBehaviorId(),
 					genBytecodeIndex(),
 					genParentTimestamp(),
-					genObject(),
-					genBehaviorId());
+					genObject());
 			
 		case FIELD_WRITE:
 			return new GridFieldWriteEvent(
@@ -148,6 +150,7 @@ public class EventGenerator
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
+					genBehaviorId(),
 					genBytecodeIndex(),
 					genParentTimestamp(),
 					genFieldId(),
@@ -160,6 +163,7 @@ public class EventGenerator
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
+					genBehaviorId(),
 					genBytecodeIndex(),
 					genParentTimestamp(),
 					MessageType.INSTANTIATION,
@@ -175,6 +179,7 @@ public class EventGenerator
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
+					genBehaviorId(),
 					genBytecodeIndex(),
 					genParentTimestamp(),
 					genVariableId(),
@@ -186,6 +191,7 @@ public class EventGenerator
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
+					genBehaviorId(),
 					genBytecodeIndex(),
 					genParentTimestamp(),
 					MessageType.METHOD_CALL,
@@ -201,6 +207,7 @@ public class EventGenerator
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
+					genBehaviorId(),
 					genBytecodeIndex(),
 					genParentTimestamp(),
 					genObject(),
