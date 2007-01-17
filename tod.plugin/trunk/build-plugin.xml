@@ -19,6 +19,8 @@
             <pathelement path="${lib.dir}/zz.utils.jar"/>
             <pathelement path="${lib.dir}/tod-debugger.jar"/>
             <pathelement path="${lib.dir}/tod-agent.jar"/>
+            <pathelement path="${lib.dir}/asm-2.1.jar"/>
+            <pathelement path="${lib.dir}/asm-commons-2.1.jar"/>
         	<pathelement path="${zz.eclipse.utils.dir}/build/zz.eclipse.utils/plugin.jar"/>
         	<fileset dir="${eclipse.home}/plugins">
         		<include name="*.jar"/>
