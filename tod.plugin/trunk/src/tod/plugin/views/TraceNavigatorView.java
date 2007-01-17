@@ -24,6 +24,7 @@ import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.Panel;
 
+import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
@@ -44,6 +45,11 @@ import tod.plugin.TODPluginUtils;
  */
 public class TraceNavigatorView extends ViewPart implements ISelectionListener
 {
+	/**
+	 * Id of the view as defined in plugin.xml
+	 */
+	public static final String VIEW_ID = "tod.plugin.views.TraceNavigatorView";
+	
 	private Frame itsFrame;
 	
 	/**
@@ -84,6 +90,11 @@ public class TraceNavigatorView extends ViewPart implements ISelectionListener
 	{
 	}
 
+	public void showEventsForLine(IMethod aMethod, int aLine)
+	{
+		itsEventViewer.showEventsForLine(aMethod, aLine);
+	}
+	
 	/**
 	 * Called when the selected element in the workbench changes.
 	 */

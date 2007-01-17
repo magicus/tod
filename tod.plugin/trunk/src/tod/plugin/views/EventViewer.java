@@ -21,10 +21,16 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.plugin.views;
 
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.JavaModelException;
 
+import tod.core.database.browser.ICompoundFilter;
+import tod.core.database.browser.IEventFilter;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.gui.MinerUI;
+import tod.gui.seed.FilterSeed;
 import tod.gui.seed.Seed;
 import tod.gui.seed.SeedFactory;
 import tod.plugin.DebuggingSession;
@@ -56,9 +62,16 @@ public class EventViewer extends MinerUI
 	
 	public void showElement (IJavaElement aElement)
 	{
-		ILocationInfo theLocationInfo = TODPluginUtils.getLocationInfo(getSession(), aElement);
-		Seed theSeed = SeedFactory.getDefaultSeed(this, getBrowser(), theLocationInfo);
-		openSeed(theSeed, false);
+		try
+		{
+			ILocationInfo theLocationInfo = TODPluginUtils.getLocationInfo(getSession(), aElement);
+			Seed theSeed = SeedFactory.getDefaultSeed(this, getBrowser(), theLocationInfo);
+			openSeed(theSeed, false);
+		}
+		catch (JavaModelException e)
+		{
+			throw new RuntimeException("Could not show element", e);
+		}
 	}
 	
 	public void gotoEvent(ILogEvent aEvent)
@@ -66,6 +79,31 @@ public class EventViewer extends MinerUI
 	    itsTraceNavigatorView.gotoEvent(getSession(), aEvent);
 	}
 	
+	public void showEventsForLine(IMethod aMethod, int aLine)
+	{
+		try
+		{
+			IBehaviorInfo theBehavior = (IBehaviorInfo) TODPluginUtils.getLocationInfo(getSession(), aMethod);
+			int[] theLocations = theBehavior.getBytecodeLocations(aLine);
+			if (theLocations != null && theLocations.length>0)
+			{
+				IEventFilter[] theLocationFilters = new IEventFilter[theLocations.length];
+				for(int i=0;i<theLocationFilters.length;i++)
+				{
+					theLocationFilters[i] = 
+						getBrowser().createLocationFilter(theBehavior, theLocations[i]);
+				}
+				ICompoundFilter theFilter = getBrowser().createUnionFilter(theLocationFilters);
+				Seed theSeed = new FilterSeed(this, getBrowser(), theFilter);
+				openSeed(theSeed, false);				
+			}
+		}
+		catch (JavaModelException e)
+		{
+			throw new RuntimeException("Could not show events", e);
+		}
+	}
 	
+
 
 }

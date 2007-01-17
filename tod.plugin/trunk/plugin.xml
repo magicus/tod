@@ -3,7 +3,7 @@
 <plugin
    id="tod.plugin"
    name="TOD Eclipse Plugin"
-   version="0.2"
+   version="0.2.1"
    provider-name="DCC - Universidad de Chile"
    class="tod.plugin.TODPlugin">
 
@@ -24,7 +24,6 @@
                name="*">
          </export>
       </library>
-      <!--
       <library name="../zz.utils/bin">
          <export name="*"/>
       </library>
@@ -34,7 +33,7 @@
       <library name="../zz.csg/bin">
          <export name="*"/>
       </library>
-      -->
+      <!--
       <library name="lib/tod-agent.jar">
          <export name="*"/>
       </library>
@@ -47,6 +46,7 @@
       <library name="lib/zz.utils.jar">
          <export name="*"/>
       </library>
+      -->
    </runtime>
 
    <requires>
@@ -68,29 +68,10 @@
             id="tod.plugin">
       </category>
       <view
-            name="Sample View"
-            icon="icons/sample.gif"
-            category="tod.plugin"
-            class="tod.plugin.views.SampleView"
-            id="tod.plugin.views.SampleView">
-      </view>
-      <view
             category="tod.plugin"
             class="tod.plugin.views.TraceNavigatorView"
-            id="tod.plugin.tracenavigatorview"
+            id="tod.plugin.views.TraceNavigatorView"
             name="Trace Navigator"/>
-   </extension>
-   <extension
-         point="org.eclipse.ui.perspectiveExtensions">
-      <perspectiveExtension
-            targetID="org.eclipse.ui.resourcePerspective">
-         <view
-               ratio="0.5"
-               relative="org.eclipse.ui.views.TaskList"
-               relationship="right"
-               id="tod.plugin.views.SampleView">
-         </view>
-      </perspectiveExtension>
    </extension>
    <extension
          point="org.eclipse.debug.core.launchModes">
@@ -149,6 +130,30 @@
             id="tod.plugin.launch.OPTIONS_MAP">
          
       </launchConfigurationComparator>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editorActions">
+      <editorContribution
+            id="tod.plugin.actions.ShowEventsForLine"
+            targetID="org.eclipse.jdt.ui.CompilationUnitEditor">
+         <action
+               class="tod.plugin.actions.ShowEventsForLineAction"
+               id="tod.plugin.actions.ShowEventsForLineAction"
+               label="Show events in TOD"
+               />
+      </editorContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <viewerContribution
+            id="tod.plugin.actions.CompilationUnitRulerPopupActions"
+            targetID="#CompilationUnitRulerContext">
+         <action
+               class="tod.plugin.actions.ShowEventsForLineAction"
+               id="tod.plugin.actions.ShowEventsForLineAction"
+               label="Show events in TOD"
+               menubarPath="debug"/>
+      </viewerContribution>
    </extension>
 
 </plugin>
