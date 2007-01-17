@@ -119,10 +119,17 @@ public class LocalCollector extends EventCollector
 		aEvent.setHost(getHost());
 		aEvent.setThread(aThread);
 		aEvent.setDepth(aDepth);
+		
 		aEvent.setParentTimestamp(theParentEvent != null ? 
-				theParentEvent.getTimestamp() : 0);
+				theParentEvent.getTimestamp() 
+				: 0);
+		
 		aEvent.setTimestamp(aTimestamp);
-		aEvent.setOperationBehavior(getBehavior(aOperationBehaviorId));
+		
+		aEvent.setOperationBehavior(aOperationBehaviorId != -1 ? 
+				getBehavior(aOperationBehaviorId) 
+				: null);
+		
 		aEvent.setOperationBytecodeIndex(aOperationBytecodeIndex);
 		
 		if (DebugFlags.LOCAL_COLLECTOR_STORE && theParentEvent != null) 

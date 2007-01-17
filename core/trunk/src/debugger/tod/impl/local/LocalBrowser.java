@@ -56,6 +56,7 @@ import tod.impl.local.filter.FieldWriteFilter;
 import tod.impl.local.filter.HostFilter;
 import tod.impl.local.filter.InstantiationFilter;
 import tod.impl.local.filter.IntersectionFilter;
+import tod.impl.local.filter.OperationLocationFilter;
 import tod.impl.local.filter.TargetFilter;
 import tod.impl.local.filter.ThreadFilter;
 import tod.impl.local.filter.UnionFilter;
@@ -161,6 +162,11 @@ public class LocalBrowser implements ILogBrowser
 		return new ExceptionGeneratedFilter(this);
 	}
 
+	public IEventFilter createLocationFilter(IBehaviorInfo aBehavior, int aBytecodeIndex)
+	{
+		return new OperationLocationFilter(this, aBehavior, aBytecodeIndex);
+	}
+
 	public IEventFilter createBehaviorCallFilter()
 	{
 		return new BehaviorCallFilter(this);
@@ -229,11 +235,6 @@ public class LocalBrowser implements ILogBrowser
 	public ICompoundFilter createUnionFilter(IEventFilter... aFilters)
 	{
 		return new UnionFilter(this, aFilters);
-	}
-	
-	public IEventFilter createLocationFilter(ITypeInfo aTypeInfo, int aLineNumber)
-	{
-		throw new UnsupportedOperationException();
 	}
 	
 	public ICFlowBrowser createCFlowBrowser(IThreadInfo aThread)

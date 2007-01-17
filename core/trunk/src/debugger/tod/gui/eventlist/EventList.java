@@ -21,23 +21,27 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.eventlist;
 
 import java.awt.BorderLayout;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
 import java.util.LinkedList;
 
 import javax.swing.AbstractListModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.IEventFilter;
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
+import tod.gui.eventlist.MuralScroller.UnitScroll;
 import tod.gui.formatter.EventFormatter;
 import zz.utils.Utils;
+import zz.utils.notification.IEvent;
+import zz.utils.notification.IEventListener;
+import zz.utils.properties.IProperty;
 import zz.utils.properties.IRWProperty;
+import zz.utils.properties.PropertyListener;
 import zz.utils.properties.SimpleRWProperty;
 import zz.utils.ui.FormattedRenderer;
 
@@ -48,24 +52,18 @@ import zz.utils.ui.FormattedRenderer;
  */
 public class EventList extends JPanel
 {
-	/**
-	 * Range of the scrollbar. We choose a huge value in order to
-	 * differentiate unit/block increments/decrements from tracking.
-	 */
-	private static final int SCROLL_RANGE = 1000000;
-	private static final int COUNT_SLOTS = 500;
-	
+	private final ILogBrowser itsLogBrowser;
+	private final IEventFilter itsFilter;
 	private final IEventBrowser itsBrowser;
+	
 	private long itsFirstTimestamp;
 	private long itsLastTimestamp;
 	
 	private MyListModel itsModel = new MyListModel();
 	private EventFormatter itsFormatter;
 	
-	private long[] itsCounts;
-	
-	private JScrollBar itsScrollBar;
-	private int itsLastScrollValue;
+	private boolean itsUpdating = false;
+
 	
 	/**
 	 * Delta between the first displayed event and the browser's
@@ -86,27 +84,27 @@ public class EventList extends JPanel
 	private IRWProperty<ILogEvent> pSelectedEvent = new SimpleRWProperty<ILogEvent>();
 	private JList itsList; 
 	
-	public EventList(IEventBrowser aBrowser)
+	public EventList(ILogBrowser aBrowser, IEventFilter aFilter)
 	{
-		itsBrowser = aBrowser;
-		itsFormatter = new EventFormatter(aBrowser.getLogBrowser());
+		itsLogBrowser = aBrowser;
+		itsFilter = aFilter;
+		itsBrowser = aBrowser.createBrowser(aFilter);
+		itsFormatter = new EventFormatter(itsLogBrowser);
 		
 		// Find timestamps of first and last event
-		aBrowser.setNextTimestamp(0);
-		if (aBrowser.hasNext())
+		itsBrowser.setNextTimestamp(0);
+		if (itsBrowser.hasNext())
 		{
-			itsFirstTimestamp = aBrowser.next().getTimestamp();
+			itsFirstTimestamp = itsBrowser.next().getTimestamp();
 		}
 		else itsFirstTimestamp = 0;
 		
-		aBrowser.setPreviousTimestamp(Long.MAX_VALUE);
-		if (aBrowser.hasPrevious())
+		itsBrowser.setPreviousTimestamp(Long.MAX_VALUE);
+		if (itsBrowser.hasPrevious())
 		{
-			itsLastTimestamp = aBrowser.previous().getTimestamp();
+			itsLastTimestamp = itsBrowser.previous().getTimestamp();
 		}
 		else itsLastTimestamp = 0;
-		
-		itsCounts = aBrowser.getEventCounts(itsFirstTimestamp, itsLastTimestamp, COUNT_SLOTS, false);
 		
 		createUI();
 		setTimestamp(itsFirstTimestamp);
@@ -117,49 +115,62 @@ public class EventList extends JPanel
 	{
 		setLayout(new BorderLayout());
 		
-		itsScrollBar = new JScrollBar(JScrollBar.VERTICAL);
-		itsScrollBar.setMinimum(0);
-		itsScrollBar.setMaximum(SCROLL_RANGE);
-		itsScrollBar.setUnitIncrement(1);
-		itsScrollBar.setBlockIncrement(2);
-		itsScrollBar.addAdjustmentListener(new AdjustmentListener()
-		{
-			public void adjustmentValueChanged(AdjustmentEvent aE)
-			{
-				int theValue = aE.getValue();
+		final MuralScroller theScroller = new MuralScroller(
+				itsLogBrowser.createBrowser(itsFilter), //We can't share the event browser 
+				itsFirstTimestamp, 
+				itsLastTimestamp);
 
-				int theDelta = theValue-itsLastScrollValue;
-				switch(theDelta)
+		theScroller.pTrackScroll().addHardListener(new PropertyListener<Long>()
 				{
-				case -1:
-					unitUp();
-					break;
-					
-				case 1:
-					unitDown();
-					break;
-					
-				case -2:
-					blockUp();
-					break;
-					
-				case 2:
-					blockDown();
-					break;
-					
-				case 0:
-					break;
-					
-				default:
-					track(theValue);
-				}
-				
-				update();
-				itsLastScrollValue = theValue;
-			}
-		});
+					@Override
+					public void propertyChanged(IProperty<Long> aProperty, Long aOldValue, Long aNewValue)
+					{
+						if (itsUpdating) return;
+						track(aNewValue);
+						update();
+					}
+				});
 		
-		add(itsScrollBar, BorderLayout.EAST);
+		theScroller.eUnitScroll().addListener(new IEventListener<UnitScroll>()
+				{
+					public void fired(IEvent< ? extends UnitScroll> aEvent, UnitScroll aData)
+					{
+						switch(aData)
+						{
+						case UP:
+							unitUp();
+							break;
+							
+						case DOWN:
+							unitDown();
+							break;
+							
+						case PAGE_UP:
+							blockUp();
+							break;
+							
+						case PAGE_DOWN:
+							blockDown();
+							break;
+							
+						default:
+							throw new RuntimeException("Not handled: "+aData);
+						}
+						
+						// Update tracker position
+						if (itsDisplayedEvents.size() > 0)
+						{
+							itsUpdating = true;
+							long theTimestamp = itsDisplayedEvents.get(0).getTimestamp();
+							theScroller.pTrackScroll().set(theTimestamp);
+							itsUpdating = false;
+						}
+						
+						update();
+					}
+				});
+		
+		add(theScroller, BorderLayout.EAST);
 		itsList = new JList(itsModel);
 		itsList.setCellRenderer(new FormattedRenderer(itsFormatter));
 		itsList.addListSelectionListener(new ListSelectionListener()
@@ -177,12 +188,6 @@ public class EventList extends JPanel
 				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		
 		add(theScrollPane, BorderLayout.CENTER);
-		
-//		MuralScroller theScroller = new MuralScroller(itsBrowser);
-//		GraphicNode theNode = new GraphicNode(theScroller);
-//		GraphicPanel theGraphicPanel = new GraphicPanel(theNode);
-//		theGraphicPanel.setPreferredSize(new Dimension(90, 100));
-//		add(theGraphicPanel, BorderLayout.SOUTH);
 	}
 	
 	public IRWProperty<ILogEvent> pSelectedEvent()
@@ -305,9 +310,10 @@ public class EventList extends JPanel
 		}
 	}
 	
-	protected void track(int aValue)
+	protected void track(long aValue)
 	{
-		
+		setTimestamp(aValue);
+		update();
 	}
 	
 	private class MyListModel extends AbstractListModel

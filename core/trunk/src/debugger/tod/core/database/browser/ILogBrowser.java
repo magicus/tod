@@ -111,6 +111,13 @@ public interface ILogBrowser
 	public ICompoundFilter createIntersectionFilter (IEventFilter... aFilters);
 
 	/**
+	 * Creates a filter that accepts only events that occured at a particular 
+	 * location in the source code, indicate by a behavior and a bytecode index
+	 * within this behavior.
+	 */
+	public IEventFilter createLocationFilter(IBehaviorInfo aBehavior, int aBytecodeIndex);
+	
+	/**
 	 * Creates a filter that accepts only behavior call events
 	 * related to a specific behavior.
 	 */
@@ -191,12 +198,6 @@ public interface ILogBrowser
 	 * Creates a control flow browser.
 	 */
 	public ICFlowBrowser createCFlowBrowser (IThreadInfo aThread);
-	
-	/**
-	 * Creates a filter that accepts only events that occured at a specific
-	 * location in source code. 
-	 */
-	public IEventFilter createLocationFilter (ITypeInfo aType, int aLineNumber);
 	
 	/**
 	 * Creates a filter that accepts only exception generated events.

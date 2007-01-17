@@ -23,8 +23,10 @@ package tod.gui.eventsequences;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -173,23 +175,30 @@ public class EventMural extends SVGGraphicContainer
 		if (! isReady()) return null;
 		
 		Rectangle2D theBounds = pBounds().get();
-		Rectangle thePixelBounds = aDisplay.localToPixel(null, this, theBounds);
+		Point2D p00 = new Point2D.Double(0, 0);
+		Point2D p01 = new Point2D.Double(0, theBounds.getHeight());
+		Point2D p10 = new Point2D.Double(theBounds.getWidth(), 0);
+		
+		Point tp00 = aDisplay.localToPixel(null, this, p00);
+		Point tp01 = aDisplay.localToPixel(null, this, p01);
+		Point tp10 = aDisplay.localToPixel(null, this, p10);
 
-		if (thePixelBounds.height == 0 || thePixelBounds.width == 0) return null;
+		int width = (int) tp10.distance(tp00);
+		int height = (int) tp01.distance(tp00);
+		if (height == 0 || width == 0) return null;
 
 		BufferedImage theImage = itsImages.get(aDisplay);
 		if (theImage == null) 
 		{
 			GraphicsConfiguration theConfiguration = aDisplay.getGraphicsConfiguration();
-			theImage = theConfiguration.createCompatibleImage(thePixelBounds.width, thePixelBounds.height);
+			theImage = theConfiguration.createCompatibleImage(width, height);
 			itsImages.put(aDisplay, theImage);
 		}
 		
-		thePixelBounds.setLocation(0, 0);
 		Graphics2D theGraphics = theImage.createGraphics();
 		theGraphics.setColor(Color.WHITE);
-		theGraphics.fill(thePixelBounds);
-		paintMural(theGraphics, thePixelBounds, pStart().get(), pEnd().get(), pEventBrowsers());
+		theGraphics.fillRect(0, 0, width, height);
+		paintMural(theGraphics, new Rectangle(0, 0, width, height), pStart().get(), pEnd().get(), pEventBrowsers());
 		
 		return theImage;
 	}

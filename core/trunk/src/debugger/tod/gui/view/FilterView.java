@@ -69,8 +69,7 @@ public class FilterView extends LogView
 		itsSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		itsSplitPane.setResizeWeight(0.5);
 		
-		IEventBrowser theBrowser = getLogBrowser().createBrowser(itsSeed.getFilter());
-		itsList = new EventList (theBrowser);
+		itsList = new EventList (getLogBrowser(), itsSeed.getFilter());
 		
 		itsList.pSelectedEvent().addHardListener(new PropertyListener<ILogEvent>()
 				{

@@ -53,6 +53,7 @@ import tod.impl.dbgrid.messages.MessageType;
 import tod.impl.dbgrid.messages.ObjectCodec;
 import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
 import tod.impl.dbgrid.queries.BehaviorCondition;
+import tod.impl.dbgrid.queries.BytecodeLocationCondition;
 import tod.impl.dbgrid.queries.CompoundCondition;
 import tod.impl.dbgrid.queries.Conjunction;
 import tod.impl.dbgrid.queries.DepthCondition;
@@ -129,6 +130,13 @@ implements ILogBrowser, RIGridMasterListener
 		return new ObjectCondition(theId, RoleIndexSet.ROLE_OBJECT_ANYARG);
 	}
 
+	public IEventFilter createLocationFilter(IBehaviorInfo aBehavior, int aBytecodeIndex)
+	{
+		return CompoundCondition.and(
+				new BehaviorCondition(aBehavior.getId(), RoleIndexSet.ROLE_BEHAVIOR_OPERATION),
+				new BytecodeLocationCondition(aBytecodeIndex));
+	}
+
 	public IEventFilter createBehaviorCallFilter()
 	{
 		return CompoundCondition.or(
@@ -171,11 +179,6 @@ implements ILogBrowser, RIGridMasterListener
 	}
 
 	public IEventFilter createInstantiationsFilter(ITypeInfo aType)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	public IEventFilter createLocationFilter(ITypeInfo aType, int aLineNumber)
 	{
 		throw new UnsupportedOperationException();
 	}

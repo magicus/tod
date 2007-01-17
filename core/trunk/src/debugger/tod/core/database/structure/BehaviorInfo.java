@@ -20,6 +20,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.structure;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import tod.core.BehaviorKind;
 import tod.core.ILocationRegisterer;
 import tod.core.ILocationRegisterer.LineNumberInfo;
@@ -117,7 +120,32 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
         else return -1;
     }
     
-    public LocalVariableInfo[] getLocalVariables()
+	public int[] getBytecodeLocations(int aLine)
+	{
+        if (itsLineNumberTable != null && itsLineNumberTable.length > 0)
+        {
+        	int theStart = 0;
+        	int theEnd = 0;
+            for (LineNumberInfo theInfo : itsLineNumberTable)
+			{
+            	if (theInfo.getLineNumber() <= aLine) theStart = theInfo.getStartPc();
+            	if (theInfo.getLineNumber() > aLine)
+            	{
+            		theEnd = theInfo.getStartPc();
+            		break;
+            	}
+			}
+            
+            // TODO: do something to include only valid bytecode indexes.
+            int[] theResult = new int[theEnd-theStart];
+            for (int i=theStart;i<theEnd;i++) theResult[i-theStart] = i;
+            
+            return theResult;
+        }
+        else return null;
+	}
+
+	public LocalVariableInfo[] getLocalVariables()
     {
     	return itsLocalVariableTable;
     }

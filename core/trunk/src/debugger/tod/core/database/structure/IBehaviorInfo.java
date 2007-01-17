@@ -22,6 +22,7 @@ package tod.core.database.structure;
 
 import tod.core.BehaviorKind;
 import tod.core.ILocationRegisterer;
+import tod.core.ILocationRegisterer.LineNumberInfo;
 import tod.core.ILocationRegisterer.LocalVariableInfo;
 
 public interface IBehaviorInfo extends IMemberInfo
@@ -61,6 +62,16 @@ public interface IBehaviorInfo extends IMemberInfo
      * according to the line number table. If the table is not available, returns -1.
      */
     public int getLineNumber (int aBytecodeIndex);
+    
+	/**
+	 * Returns an array of all valid bytecode locations corresponding
+	 * to the specified line in this method.
+	 * @param aLine The source code line, relative to the whole file
+	 * containing the method.
+	 * @return Array of valid bytecodes, or null if no line number info is
+	 * available.
+	 */
+	public int[] getBytecodeLocations(int aLine);
     
     public LocalVariableInfo[] getLocalVariables();
     
