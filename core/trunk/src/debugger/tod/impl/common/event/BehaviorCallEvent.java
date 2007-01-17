@@ -39,6 +39,7 @@ public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEv
 	private Object itsTarget;
 	
 	private IBehaviorExitEvent itsExitEvent;
+	private boolean itsExitEventFound = false;
 
 
 	public BehaviorCallEvent(ILogBrowser aLogBrowser)
@@ -146,7 +147,7 @@ public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEv
 
 	public IBehaviorExitEvent getExitEvent()
 	{
-		if (itsExitEvent == null)
+		if (! itsExitEventFound)
 		{
 			if (getChildrenCount() > 0)
 			{
@@ -156,7 +157,7 @@ public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEv
 					itsExitEvent = (IBehaviorExitEvent) theLastEvent;
 				}
 			}
-			if (itsExitEvent == null) throw new RuntimeException("Exit event not found");
+			itsExitEventFound = true;
 		}
 		
 		return itsExitEvent;

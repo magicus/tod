@@ -27,8 +27,11 @@ import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IThreadInfo;
+import tod.impl.common.event.Event;
+import tod.impl.common.event.MethodCallEvent;
 import zz.utils.tree.AbstractTree;
 
 /**
@@ -58,18 +61,37 @@ implements ICFlowBrowser
 	}
 	
 	/**
-	 * Creates a cflow browser root at the specified thread's root event.
+	 * Creates a cflow browser for the specified thread
 	 */
 	public CFlowBrowser(ILogBrowser aBrowser, IThreadInfo aThread)
 	{
-		this(aBrowser, aThread, getRootEvent(aBrowser, aThread));
+		this(aBrowser, aThread, createRoot(aBrowser, aThread));
 	}
 	
-	public static IBehaviorCallEvent getRootEvent(ILogBrowser aBrowser, IThreadInfo aThread)
+	private static IBehaviorCallEvent createRoot(ILogBrowser aBrowser, IThreadInfo aThread)
 	{
-		IEventFilter theFilter = aBrowser.createThreadFilter(aThread);
+		MethodCallEvent theRoot = new MethodCallEvent(aBrowser);
+		
+		IEventFilter theFilter = aBrowser.createIntersectionFilter(
+				aBrowser.createThreadFilter(aThread),
+				aBrowser.createDepthFilter(1));
+		
 		IEventBrowser theBrowser = aBrowser.createBrowser(theFilter);
-		return (IBehaviorCallEvent) theBrowser.next();
+		
+		while (theBrowser.hasNext())
+		{
+			ILogEvent theEvent = theBrowser.next();
+			if (theEvent instanceof IBehaviorCallEvent)
+			{
+				IBehaviorCallEvent theSubroot = (IBehaviorCallEvent) theEvent;
+				theRoot.addChild((Event) theSubroot);
+			}
+			else
+			{
+				System.err.println("[CFlowBrowser] Warning: bad event at level 1: "+theEvent);
+			}
+		}
+		return theRoot;
 	}
 	
 

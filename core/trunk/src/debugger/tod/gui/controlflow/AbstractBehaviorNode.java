@@ -82,8 +82,14 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 		
 		itsEvent = aEvent;
 		
+		IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
+		
+		Color theExpanderColor;
+		if (theExitEvent == null) theExpanderColor = Color.BLACK;
+		else theExpanderColor = theExitEvent.hasThrown() ? Color.RED : Color.BLUE;
+		
 		itsExpanderWidget = new ExpanderWidget(
-				getEvent().getExitEvent().hasThrown() ? Color.RED : Color.BLUE,
+				theExpanderColor,
 				4,
 				getEvent().hasRealChildren());
 		
@@ -246,7 +252,12 @@ public abstract class AbstractBehaviorNode extends AbstractEventNode
 		if (theBehavior == null) theBehavior = getEvent().getCalledBehavior();
 		
 		IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
-		if (theExitEvent.hasThrown())
+		
+		if (theExitEvent == null)
+		{
+			aContainer.pChildren().add(SVGFlowText.create("Behavior never returned", theFont, Color.BLACK));
+		}
+		else if (theExitEvent.hasThrown())
 		{
 			aContainer.pChildren().add(SVGFlowText.create("Thrown ", theFont, Color.RED));
 

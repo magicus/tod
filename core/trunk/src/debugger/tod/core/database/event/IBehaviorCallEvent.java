@@ -74,6 +74,8 @@ public interface IBehaviorCallEvent extends IParentEvent, ICallerSideEvent
 	
 	/**
 	 * Returns the event that corresponds to the end of this behavior.
+	 * This method can return null, for instance if the program
+	 * terminates with {@link System#exit(int)}.
 	 */
 	public IBehaviorExitEvent getExitEvent();
 	
