@@ -20,8 +20,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.controlflow;
 
+import static tod.gui.FontConfig.STD_FONT;
+import static tod.gui.FontConfig.STD_HEADER_FONT;
+
 import java.awt.Color;
-import java.awt.Font;
 import java.util.List;
 
 import tod.core.ILocationRegisterer.LocalVariableInfo;
@@ -32,16 +34,15 @@ import tod.core.database.event.ICallerSideEvent;
 import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
-import tod.gui.FontConfig;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
+import tod.gui.SVGUtils;
 import zz.csg.api.IRectangularGraphicObject;
 import zz.csg.api.layout.SequenceLayout;
 import zz.csg.api.layout.StackLayout;
 import zz.csg.impl.SVGGraphicContainer;
 import zz.csg.impl.figures.SVGFlowText;
 import zz.csg.impl.figures.SVGRectangle;
-import zz.utils.ui.text.XFont;
 
 /**
  * Builds the variables list for the CFlow view. 
@@ -49,9 +50,6 @@ import zz.utils.ui.text.XFont;
  */
 public class CFlowVariablesBuilder
 {
-	public static final XFont FONT = XFont.DEFAULT_XPLAIN.deriveFont(FontConfig.FONT_SIZE);
-	public static final XFont HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, FontConfig.HEADER_FONT_SIZE);
-
 	private CFlowView itsView;
 	
 	
@@ -102,6 +100,16 @@ public class CFlowVariablesBuilder
 	private IRectangularGraphicObject build (ILogEvent aCurrentEvent)
 	{
 		IBehaviorCallEvent theParent = aCurrentEvent.getParent();
+		
+		if (theParent == null)
+		{
+			return SVGUtils.createMessage(
+					"Variable information not available", 
+					Color.DARK_GRAY,
+					"Cause: the currently selected event is a control flow root.",
+					Color.DARK_GRAY);
+		}
+		
 		IVariablesInspector theInspector = getEventTrace().createVariablesInspector(theParent);
 		theInspector.setCurrentEvent(aCurrentEvent);
 
@@ -147,9 +155,9 @@ public class CFlowVariablesBuilder
 		
 		if (aBehavior != null)
 		{
-			theContainer.pChildren().add(SVGFlowText.create("Behavior: ", HEADER_FONT, Color.BLACK));
-			theContainer.pChildren().add(Hyperlinks.behavior(getGUIManager(), aBehavior, HEADER_FONT));
-			theContainer.pChildren().add(SVGFlowText.create(" ("+aBehavior.getType().getName()+")", HEADER_FONT, Color.BLACK));
+			theContainer.pChildren().add(SVGFlowText.create("Behavior: ", STD_HEADER_FONT, Color.BLACK));
+			theContainer.pChildren().add(Hyperlinks.behavior(getGUIManager(), aBehavior, STD_HEADER_FONT));
+			theContainer.pChildren().add(SVGFlowText.create(" ("+aBehavior.getType().getName()+")", STD_HEADER_FONT, Color.BLACK));
 
 			theContainer.setLayoutManager(new SequenceLayout());
 		}
@@ -169,24 +177,24 @@ public class CFlowVariablesBuilder
 		String theTypeName = aVariable.getVariableTypeName();
 		String theText = /*theTypeName + " " + */theVariableName + " = ";
 		
-		theContainer.pChildren().add(SVGFlowText.create(theText, FONT, Color.BLACK));
+		theContainer.pChildren().add(SVGFlowText.create(theText, STD_FONT, Color.BLACK));
 		theContainer.pChildren().add(Hyperlinks.object(
 				getGUIManager(), 
 				getEventTrace(), 
 				aCurrentObject,
 				aValue,
-				FONT));
+				STD_FONT));
 		
 		if (aSetter != null)
 		{
-			theContainer.pChildren().add(SVGFlowText.create(" (", FONT, Color.BLACK));
+			theContainer.pChildren().add(SVGFlowText.create(" (", STD_FONT, Color.BLACK));
 			theContainer.pChildren().add(Hyperlinks.event(
 					getGUIManager(),
 					getEventTrace(),
 					"why?", 
 					aSetter, 
-					FONT));
-			theContainer.pChildren().add(SVGFlowText.create(")", FONT, Color.BLACK));
+					STD_FONT));
+			theContainer.pChildren().add(SVGFlowText.create(")", STD_FONT, Color.BLACK));
 		}
 		
 		theContainer.setLayoutManager(new SequenceLayout());
@@ -197,13 +205,13 @@ public class CFlowVariablesBuilder
 	{
 		SVGGraphicContainer theContainer = new SVGGraphicContainer();
 		
-		theContainer.pChildren().add(SVGFlowText.create("this = ", FONT, Color.BLACK));
+		theContainer.pChildren().add(SVGFlowText.create("this = ", STD_FONT, Color.BLACK));
 		theContainer.pChildren().add(Hyperlinks.object(
 				getGUIManager(), 
 				getEventTrace(), 
 				null,
 				aCurrentObject,
-				FONT));
+				STD_FONT));
 		
 		theContainer.setLayoutManager(new SequenceLayout());
 		return theContainer;		

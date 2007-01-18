@@ -20,8 +20,15 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui;
 
+import java.awt.Font;
+
+import zz.utils.ui.text.XFont;
+
 public class FontConfig
 {
 	public static final int HEADER_FONT_SIZE = 15;
 	public static final int FONT_SIZE = 15;
+	
+	public static final XFont STD_FONT = XFont.DEFAULT_XPLAIN.deriveFont(FONT_SIZE);
+	public static final XFont STD_HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, HEADER_FONT_SIZE);
 }

@@ -20,8 +20,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.controlflow;
 
+import static tod.gui.FontConfig.STD_FONT;
+import static tod.gui.FontConfig.STD_HEADER_FONT;
+
 import java.awt.Color;
-import java.awt.Font;
 import java.util.List;
 
 import tod.core.database.browser.ILogBrowser;
@@ -32,26 +34,21 @@ import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ObjectId;
-import tod.gui.FontConfig;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
+import tod.gui.SVGUtils;
 import zz.csg.api.IRectangularGraphicObject;
 import zz.csg.api.layout.SequenceLayout;
 import zz.csg.api.layout.StackLayout;
 import zz.csg.impl.SVGGraphicContainer;
 import zz.csg.impl.figures.SVGFlowText;
 import zz.csg.impl.figures.SVGRectangle;
-import zz.utils.ui.text.XFont;
-
 /**
  * Builds a snapshot view of objects on the call stack for the CFlow view. 
  * @author gpothier
  */
 public class CFlowObjectsBuilder
 {
-	public static final XFont FONT = XFont.DEFAULT_XPLAIN.deriveFont(FontConfig.FONT_SIZE);
-	public static final XFont HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, FontConfig.HEADER_FONT_SIZE);
-
 	private CFlowView itsView;
 	
 	public CFlowObjectsBuilder(CFlowView aView)
@@ -100,6 +97,16 @@ public class CFlowObjectsBuilder
 	private IRectangularGraphicObject build (ILogEvent aCurrentEvent)
 	{
 		IBehaviorCallEvent theParent = aCurrentEvent.getParent();
+		
+		if (theParent == null)
+		{
+			return SVGUtils.createMessage(
+					"Object information not available",
+					Color.DARK_GRAY,
+					"Cause: the currently selected event is a control flow root.",
+					Color.DARK_GRAY);
+		}
+		
 		ObjectId theCurrentObject = (ObjectId) theParent.getTarget();
 		
 		IObjectInspector theInspector;
@@ -139,14 +146,14 @@ public class CFlowObjectsBuilder
 	{
 		SVGGraphicContainer theContainer = new SVGGraphicContainer();
 		
-		theContainer.pChildren().add(SVGFlowText.create("Object: ", HEADER_FONT, Color.BLACK));
+		theContainer.pChildren().add(SVGFlowText.create("Object: ", STD_HEADER_FONT, Color.BLACK));
 		if (aCurrentObject != null)
 		{
-			theContainer.pChildren().add(Hyperlinks.object(getGUIManager(), getEventTrace(), aCurrentObject, HEADER_FONT));
+			theContainer.pChildren().add(Hyperlinks.object(getGUIManager(), getEventTrace(), aCurrentObject, STD_HEADER_FONT));
 		}
 		else
 		{
-			theContainer.pChildren().add(SVGFlowText.create("(static)", HEADER_FONT, Color.GRAY));
+			theContainer.pChildren().add(SVGFlowText.create("(static)", STD_HEADER_FONT, Color.GRAY));
 		}
 		
 		theContainer.setLayoutManager(new SequenceLayout());
@@ -164,28 +171,28 @@ public class CFlowObjectsBuilder
 		String theTypeName = aField.getClass().getName();
 		String theText = /*theTypeName + " " + */theFieldName + " = ";
 		
-		theContainer.pChildren().add(SVGFlowText.create(theText, FONT, Color.BLACK));
+		theContainer.pChildren().add(SVGFlowText.create(theText, STD_FONT, Color.BLACK));
 		
 		boolean theFirst = true;
 		for (IFieldWriteEvent theSetter : aSetters)
 		{
 			if (theFirst) theFirst = false;
-			else theContainer.pChildren().add(SVGFlowText.create(" / ", FONT, Color.BLACK));
+			else theContainer.pChildren().add(SVGFlowText.create(" / ", STD_FONT, Color.BLACK));
 			theContainer.pChildren().add(Hyperlinks.object(
 					getGUIManager(), 
 					getEventTrace(), 
 					aCurrentObject,
 					theSetter.getValue(),
-					FONT));
+					STD_FONT));
 			
-			theContainer.pChildren().add(SVGFlowText.create(" (", FONT, Color.BLACK));
+			theContainer.pChildren().add(SVGFlowText.create(" (", STD_FONT, Color.BLACK));
 			theContainer.pChildren().add(Hyperlinks.event(
 					getGUIManager(),
 					getEventTrace(),
 					"why?", 
 					theSetter, 
-					FONT));
-			theContainer.pChildren().add(SVGFlowText.create(")", FONT, Color.BLACK));
+					STD_FONT));
+			theContainer.pChildren().add(SVGFlowText.create(")", STD_FONT, Color.BLACK));
 		}
 		
 		theContainer.setLayoutManager(new SequenceLayout());
@@ -196,13 +203,13 @@ public class CFlowObjectsBuilder
 	{
 		SVGGraphicContainer theContainer = new SVGGraphicContainer();
 		
-		theContainer.pChildren().add(SVGFlowText.create("this = ", FONT, Color.BLACK));
+		theContainer.pChildren().add(SVGFlowText.create("this = ", STD_FONT, Color.BLACK));
 		theContainer.pChildren().add(Hyperlinks.object(
 				getGUIManager(), 
 				getEventTrace(), 
 				null,
 				aCurrentObject,
-				FONT));
+				STD_FONT));
 		
 		theContainer.setLayoutManager(new SequenceLayout());
 		return theContainer;		
