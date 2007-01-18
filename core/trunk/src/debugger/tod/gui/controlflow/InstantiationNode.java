@@ -22,6 +22,7 @@ package tod.gui.controlflow;
 
 import java.awt.Color;
 
+import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.IInstantiationEvent;
 import tod.gui.Hyperlinks;
 import zz.csg.api.IRectangularGraphicContainer;
@@ -49,10 +50,16 @@ public class InstantiationNode extends AbstractBehaviorNode
 	{
 		XFont theFont = getHeaderFont();
 
+		IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
+		
+		Color theColor = theExitEvent != null && theExitEvent.hasThrown() ?
+				Color.RED
+				: Color.BLACK;
+		
 		aContainer.pChildren().add(SVGFlowText.create(
 				"new ", 
 				theFont, 
-				getEvent().getExitEvent().hasThrown() ? Color.RED : Color.BLACK));
+				theColor));
 		
 		aContainer.pChildren().add(Hyperlinks.type(getGUIManager(), getEvent().getType(), theFont));
 
@@ -64,14 +71,20 @@ public class InstantiationNode extends AbstractBehaviorNode
 	{
 		XFont theFont = getHeaderFont();
 
-		if (getEvent().getExitEvent().hasThrown())
+		IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
+		
+		if (theExitEvent == null)
+		{
+			aContainer.pChildren().add(SVGFlowText.create("Behavior never returned", theFont, Color.BLACK));
+		}
+		else if (theExitEvent.hasThrown())
 		{
 			aContainer.pChildren().add(SVGFlowText.create("Thrown ", theFont, Color.RED));
 			
 			aContainer.pChildren().add(Hyperlinks.object(
 					getGUIManager(), 
 					getEventTrace(), 
-					getEvent().getExitEvent().getResult(),
+					theExitEvent.getResult(),
 					theFont));
 		}
 		else

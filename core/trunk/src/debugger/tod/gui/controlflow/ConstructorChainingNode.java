@@ -22,6 +22,7 @@ package tod.gui.controlflow;
 
 import java.awt.Color;
 
+import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.IConstructorChainingEvent;
 import zz.csg.api.IRectangularGraphicContainer;
 import zz.csg.impl.figures.SVGFlowText;
@@ -41,10 +42,16 @@ public class ConstructorChainingNode extends AbstractBehaviorNode
 	{
 		XFont theFont = getHeaderFont();
 		
+		IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
+		
+		Color theColor = theExitEvent != null && theExitEvent.hasThrown() ?
+				Color.RED
+				: Color.BLACK;
+		
 		aContainer.pChildren().add(SVGFlowText.create(
 				"call to ", 
 				theFont, 
-				getEvent().getExitEvent().hasThrown() ? Color.RED : Color.BLACK));
+				theColor));
 
 		super.fillHeader(aContainer);
 	}
