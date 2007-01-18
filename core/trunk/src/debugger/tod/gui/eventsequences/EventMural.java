@@ -337,8 +337,6 @@ public class EventMural extends SVGGraphicContainer
 	
 	public static void paintMural (Graphics2D aGraphics, Rectangle aBounds, long[][] aValues, Color[] aColors)
 	{
-		long t0 = System.currentTimeMillis();
-		
 		int theHeight = aBounds.height;
 		int theY = aBounds.y;
 		int bh = 4; // base height
@@ -385,10 +383,6 @@ public class EventMural extends SVGGraphicContainer
 			aGraphics.setColor(c2);
 			aGraphics.fillRect(aBounds.x + i, theY+theHeight-bh-h, 1, h);
 		}
-		
-		long t1 = System.currentTimeMillis();
-		
-		System.out.println("Mural painted in "+(t1-t0)+"ms");
 	}
 	
 	/**
