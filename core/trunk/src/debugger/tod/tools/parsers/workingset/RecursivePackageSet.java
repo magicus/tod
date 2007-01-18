@@ -34,6 +34,12 @@ public class RecursivePackageSet extends AbstractPackageSet
 
     protected boolean acceptPackage(String aReferencePackage, String aPackageName)
     {
-        return aPackageName.startsWith(aReferencePackage);
+//    	return aPackageName.startsWith(aReferencePackage);
+        if (aPackageName.startsWith(aReferencePackage))
+        {
+        	return aPackageName.length() == aReferencePackage.length()
+        			|| aPackageName.charAt(aReferencePackage.length()) == '.';
+        }
+        else return false;
     }
 }
