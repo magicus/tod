@@ -81,12 +81,9 @@ implements ICFlowBrowser
 		while (theBrowser.hasNext())
 		{
 			ILogEvent theEvent = theBrowser.next();
-			if (theEvent instanceof IBehaviorCallEvent)
-			{
-				IBehaviorCallEvent theSubroot = (IBehaviorCallEvent) theEvent;
-				theRoot.addChild((Event) theSubroot);
-			}
-			else
+			theRoot.addChild((Event) theEvent);
+			
+			if (! (theEvent instanceof IBehaviorCallEvent))
 			{
 				System.err.println("[CFlowBrowser] Warning: bad event at level 1: "+theEvent);
 			}
