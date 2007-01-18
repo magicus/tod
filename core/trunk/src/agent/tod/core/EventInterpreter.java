@@ -87,7 +87,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		theTimestamp = theThread.transformTimestamp(theTimestamp);
 		
 		FrameInfo theFrame = theThread.currentFrame();
-		short theDepth = (short) (theThread.getCurrentDepth()-1);
+		short theDepth = (short) theThread.getCurrentDepth();
 		
 		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
 				"logBehaviorEnter(%d, %d, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s",
@@ -105,6 +105,13 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 			// We come from instrumented code, ie. before/enter scheme
 			// Part of the event info is available in the frame, but the
 			// event has not been sent yet.
+
+			// Partial update of frame info. We must do it here to indicate
+			// that we successfully entered the method, thus completing the
+			// before/enter scheme. This is necessary for exception event
+			// handling
+			theFrame.entering = false;
+			
 			theFrame.callType.call(
 					itsCollector,
 					theThread,
@@ -118,11 +125,10 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 					aObject,
 					aArguments);
 			
-			// Update frame info
+			// Finish updating frame info
 			theFrame.behavior = aBehaviorId;
 			theFrame.operationLocation = -1;
 			theFrame.callType = null;
-			theFrame.entering = false;
 			theFrame.parentTimestamp = theTimestamp;
 		}
 		else
@@ -406,7 +412,13 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				theThread.getCurrentDepth(),
 				theFrame));
 
-		theThread.pushFrame(true, aBehaviorId, true, theFrame.parentTimestamp, aCallType, aOperationLocation);
+		theThread.pushFrame(
+				true,
+				aBehaviorId, 
+				true, 
+				theFrame.parentTimestamp, 
+				aCallType, 
+				aOperationLocation);
 	}
 	
 	public void logBeforeBehaviorCall(
@@ -466,7 +478,8 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		
 		if (theFrame.entering)
 		{
-			System.err.println("We missed something...");
+			System.out.println("[EventInterpreter] We missed something...");
+			System.err.println("[EventInterpreter] We missed something...");
 		}
 	}
 	
