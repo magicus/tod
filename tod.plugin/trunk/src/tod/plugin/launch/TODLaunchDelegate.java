@@ -55,6 +55,7 @@ public class TODLaunchDelegate extends AbstractCustomLaunchConfigurationDelegate
 		
 		TODConfig theConfig = TODConfigLaunchTab.readConfig(aConfiguration);
 		ISession theSession = TODSessionManager.getInstance().createSession(
+				aLaunch,
 				getJavaProject(aConfiguration),
 				theConfig);
 		

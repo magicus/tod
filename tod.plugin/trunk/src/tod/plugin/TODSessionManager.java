@@ -23,6 +23,7 @@ package tod.plugin;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.eclipse.debug.core.ILaunch;
 import org.eclipse.jdt.core.IJavaProject;
 
 import tod.core.config.TODConfig;
@@ -63,7 +64,10 @@ public class TODSessionManager
 	/**
 	 * Obtains a free, clean collector session.
 	 */
-	public DebuggingSession createSession(IJavaProject aJavaProject, TODConfig aConfig)
+	public DebuggingSession createSession(
+			ILaunch aLaunch,
+			IJavaProject aJavaProject, 
+			TODConfig aConfig)
 	{
 		ISession theSession;
 		try
@@ -72,7 +76,10 @@ public class TODSessionManager
 			if (thePreviousSession != null) thePreviousSession.disconnect();
 			
 			theSession = new LocalSession(aConfig, new URI("file:/home/gpothier/tmp/ASM"));
-			DebuggingSession theDebuggingSession = new DebuggingSession(theSession, aJavaProject);
+			DebuggingSession theDebuggingSession = new DebuggingSession(
+					theSession,
+					aLaunch,
+					aJavaProject);
 			
 			pCurrentSession.set(theDebuggingSession);
 			return theDebuggingSession;

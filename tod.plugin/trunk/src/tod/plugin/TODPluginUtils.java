@@ -267,7 +267,7 @@ public class TODPluginUtils
 	    ITypeInfo theType = theBehavior.getType();
 	    
 	    String theTypeName = theType.getName().replace('$', '.');
-	    SourceRevealer.reveal(aSession.getJavaProject(), theTypeName, theLineNumber);
+	    SourceRevealer.reveal(aSession, theTypeName, theLineNumber);
 	}
 	
 	public static void gotoSource (DebuggingSession aSession, IBehaviorInfo aBehavior)

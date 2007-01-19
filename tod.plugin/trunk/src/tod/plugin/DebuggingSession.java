@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.plugin;
 
+import org.eclipse.debug.core.ILaunch;
 import org.eclipse.jdt.core.IJavaProject;
 
 import tod.core.session.DelegatedSession;
@@ -27,16 +28,23 @@ import tod.core.session.ISession;
 
 public class DebuggingSession extends DelegatedSession
 {
+	private ILaunch itsLaunch;
 	private IJavaProject itsJavaProject;
 
-	public DebuggingSession(ISession aDelegate, IJavaProject aJavaProject)
+	public DebuggingSession(ISession aDelegate, ILaunch aLaunch, IJavaProject aJavaProject)
 	{
 		super(aDelegate);
+		itsLaunch = aLaunch;
 		itsJavaProject = aJavaProject;
 	}
 
 	public IJavaProject getJavaProject()
 	{
 		return itsJavaProject;
+	}
+
+	public ILaunch getLaunch()
+	{
+		return itsLaunch;
 	}
 }
