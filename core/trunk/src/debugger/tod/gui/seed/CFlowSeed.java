@@ -20,9 +20,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.seed;
 
-import tod.core.database.browser.ICFlowBrowser;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.event.IParentEvent;
 import tod.core.database.structure.IThreadInfo;
 import tod.gui.IGUIManager;
 import tod.gui.controlflow.CFlowView;
@@ -39,12 +40,14 @@ public class CFlowSeed extends Seed
 	private final IThreadInfo itsThread;
 	
 	private IRWProperty<ILogEvent> pSelectedEvent = new SimpleRWProperty<ILogEvent>(this);
-	private IRWProperty<ILogEvent> pRootEvent = new SimpleRWProperty<ILogEvent>(this);
+	private IRWProperty<IBehaviorCallEvent> pParentEvent = new SimpleRWProperty<IBehaviorCallEvent>(this);
+	private IRWProperty<IParentEvent> pRootEvent = new SimpleRWProperty<IParentEvent>(this);
 	
 	public CFlowSeed(IGUIManager aGUIManager, ILogBrowser aLog, ILogEvent aSelectedEvent)
 	{
 		this(aGUIManager, aLog, aSelectedEvent.getThread());
 		pSelectedEvent().set(aSelectedEvent);
+		pParentEvent().set(aSelectedEvent.getParent());
 	}
 
 	
@@ -53,8 +56,7 @@ public class CFlowSeed extends Seed
 		super(aGUIManager, aLog);
 		itsThread = aThread;
 
-		ICFlowBrowser theBrowser = getEventTrace().createCFlowBrowser(getThread());
-		pRootEvent().set(theBrowser.getRoot());
+		pRootEvent().set(aLog.getCFlowRoot(aThread));
 	}
 
 
@@ -79,10 +81,19 @@ public class CFlowSeed extends Seed
 	}
 
 	/**
+	 * The current parent.
+	 */
+	public IRWProperty<IBehaviorCallEvent> pParentEvent()
+	{
+		return pParentEvent;
+	}
+
+
+	/**
 	 * The event at the root of the CFlow tree. Ancestors of the root event
 	 * are displayed in the call stack.  
 	 */
-	public IRWProperty<ILogEvent> pRootEvent()
+	public IRWProperty<IParentEvent> pRootEvent()
 	{
 		return pRootEvent;
 	}

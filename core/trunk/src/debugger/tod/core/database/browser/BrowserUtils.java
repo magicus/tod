@@ -18,34 +18,40 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow;
+package tod.core.database.browser;
 
-import java.awt.Color;
-
-import tod.core.database.event.ILogEvent;
-import zz.csg.api.layout.SequenceLayout;
-import zz.csg.impl.figures.SVGFlowText;
-
-public class UnknownEventNode extends AbstractEventNode
+/**
+ * Utility methods for log/event browsers
+ * @author gpothier
+ */
+public class BrowserUtils
 {
-	private ILogEvent itsEvent;
-
-	public UnknownEventNode(
-			CFlowView aView,
-			ILogEvent aEvent)
+	/**
+	 * Returns the timestamp of the first event available to the 
+	 * given browser, or 0 if there is no event. 
+	 */
+	public static long getFirstTimestamp(IEventBrowser aBrowser)
 	{
-		super(aView);
-		
-		itsEvent = aEvent;
-
-		setLayoutManager(new SequenceLayout());
-		
-		pChildren().add(SVGFlowText.create("Unknown ("+aEvent+")", CFlowTreeBuilder.FONT, Color.GRAY));
+		aBrowser.setNextTimestamp(0);
+		if (aBrowser.hasNext())
+		{
+			return aBrowser.next().getTimestamp();
+		}
+		else return 0;
 	}
 	
-	@Override
-	protected ILogEvent getEvent()
+	/**
+	 * Returns the timestamp of the last event available to the 
+	 * given browser, or 0 if there is no event. 
+	 */
+	public static long getLastTimestamp(IEventBrowser aBrowser)
 	{
-		return itsEvent;
+		aBrowser.setPreviousTimestamp(Long.MAX_VALUE);
+		if (aBrowser.hasPrevious())
+		{
+			return aBrowser.previous().getTimestamp();
+		}
+		else return 0;
 	}
+
 }

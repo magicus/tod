@@ -20,7 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.event;
 
-import java.util.List;
+import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.ILogBrowser;
 
 /**
  * An event that contains other events.
@@ -29,16 +30,10 @@ import java.util.List;
 public interface IParentEvent extends ILogEvent
 {
 	/**
-	 * Returns the list of events that occured during the execution of the
-	 * behavior corresponding to this event.
-	 * @see ILogEvent#getParent()
+	 * Returns an {@link IEventBrowser} that permits to retrieve the
+	 * children of this event.
 	 */
-	public List<ILogEvent> getChildren();
-	
-	/**
-	 * Returns the number of children of this event.
-	 */
-	public int getChildrenCount();
+	public IEventBrowser getChildrenBrowser();
 	
 	/**
 	 * Indicates if this node has children apart from the exit event.

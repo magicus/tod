@@ -21,6 +21,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
 
 import zz.csg.api.IRectangularGraphicObject;
 import zz.csg.api.layout.StackLayout;

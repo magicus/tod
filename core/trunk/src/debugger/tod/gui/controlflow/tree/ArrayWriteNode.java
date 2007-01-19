@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow;
+package tod.gui.controlflow.tree;
 
 import java.awt.Color;
 
@@ -26,7 +26,9 @@ import tod.core.database.event.IArrayWriteEvent;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILogEvent;
+import tod.gui.FontConfig;
 import tod.gui.Hyperlinks;
+import tod.gui.controlflow.CFlowView;
 import zz.csg.api.layout.SequenceLayout;
 import zz.csg.impl.figures.SVGFlowText;
 
@@ -51,11 +53,11 @@ public class ArrayWriteNode extends AbstractEventNode
 			theCurrentObject = theContainer.getTarget();
 		}
 		
-		pChildren().add(Hyperlinks.object(getGUIManager(), getEventTrace(), theCurrentObject, itsEvent.getTarget(), CFlowTreeBuilder.FONT));
-		pChildren().add(SVGFlowText.create("[", CFlowTreeBuilder.FONT, Color.BLACK));
-		pChildren().add(SVGFlowText.create(""+itsEvent.getIndex(), CFlowTreeBuilder.FONT, Color.BLACK));
-		pChildren().add(SVGFlowText.create("] = ", CFlowTreeBuilder.FONT, Color.BLACK));
-		pChildren().add(Hyperlinks.object(getGUIManager(), getEventTrace(), theCurrentObject, itsEvent.getValue(), CFlowTreeBuilder.FONT));
+		pChildren().add(Hyperlinks.object(getGUIManager(), getLogBrowser(), theCurrentObject, itsEvent.getTarget(), FontConfig.STD_FONT));
+		pChildren().add(SVGFlowText.create("[", FontConfig.STD_FONT, Color.BLACK));
+		pChildren().add(SVGFlowText.create(""+itsEvent.getIndex(), FontConfig.STD_FONT, Color.BLACK));
+		pChildren().add(SVGFlowText.create("] = ", FontConfig.STD_FONT, Color.BLACK));
+		pChildren().add(Hyperlinks.object(getGUIManager(), getLogBrowser(), theCurrentObject, itsEvent.getValue(), FontConfig.STD_FONT));
 	}
 	
 	@Override

@@ -118,14 +118,20 @@ public class EventBrowser implements IEventBrowser
 	
 	
 	
-	public void setNextEvent(ILogEvent aEvent)
+	public boolean setNextEvent(ILogEvent aEvent)
 	{
 		itsIndex = EventComparator.indexOf(aEvent, itsEvents);
+		return itsIndex>=0 
+				&& itsIndex<getEventCount()
+				&& getEvent(itsIndex) == aEvent;
 	}
 
-	public void setPreviousEvent(ILogEvent aEvent)
+	public boolean setPreviousEvent(ILogEvent aEvent)
 	{
 		itsIndex = EventComparator.indexOf(aEvent, itsEvents)+1;
+		return itsIndex>=0 
+				&& itsIndex<getEventCount()
+				&& getEvent(itsIndex) == aEvent;
 	}
 
 	public long getEventCount()

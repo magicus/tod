@@ -93,7 +93,7 @@ public class EventFormatter extends AbstractFormatter<ILogEvent>
 		else return ""+aEvent;
 	}
 	
-	private String formatObject (Object aObject)
+	public String formatObject (Object aObject)
 	{
 		return itsObjectFormatter.getPlainText(aObject);
 	}

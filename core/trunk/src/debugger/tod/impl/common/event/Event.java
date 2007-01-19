@@ -53,6 +53,11 @@ public abstract class Event implements ICallerSideEvent
 		itsLogBrowser = aLogBrowser;
 	}
 
+	public ILogBrowser getLogBrowser()
+	{
+		return itsLogBrowser;
+	}
+
 	public ExternalPointer getPointer()
 	{
 		return new ExternalPointer(getHost(), getThread(), getTimestamp());

@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import tod.core.database.browser.ICFlowBrowser;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
@@ -36,6 +35,7 @@ import tod.core.database.browser.IVariablesInspector;
 import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.event.IParentEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
@@ -43,7 +43,6 @@ import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
-import tod.impl.common.CFlowBrowser;
 import tod.impl.common.LogBrowserUtils;
 import tod.impl.common.ObjectInspector;
 import tod.impl.common.VariablesInspector;
@@ -237,11 +236,11 @@ public class LocalBrowser implements ILogBrowser
 		return new UnionFilter(this, aFilters);
 	}
 	
-	public ICFlowBrowser createCFlowBrowser(IThreadInfo aThread)
+	public IParentEvent getCFlowRoot(IThreadInfo aThread)
 	{
-		return new CFlowBrowser(this, aThread);
+		return LogBrowserUtils.createCFlowRoot(this, aThread);
 	}
-	
+
 	public IObjectInspector createObjectInspector(ObjectId aObjectId)
 	{
 		return new ObjectInspector(this, aObjectId);

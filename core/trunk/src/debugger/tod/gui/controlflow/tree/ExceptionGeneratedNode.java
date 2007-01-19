@@ -18,41 +18,48 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow;
+package tod.gui.controlflow.tree;
 
 import java.awt.Color;
 
-import tod.core.database.event.IBehaviorExitEvent;
-import tod.core.database.event.IConstructorChainingEvent;
-import zz.csg.api.IRectangularGraphicContainer;
+import tod.core.database.event.IExceptionGeneratedEvent;
+import tod.core.database.event.ILogEvent;
+import tod.gui.FontConfig;
+import tod.gui.Hyperlinks;
+import tod.gui.controlflow.CFlowView;
+import zz.csg.api.layout.SequenceLayout;
 import zz.csg.impl.figures.SVGFlowText;
-import zz.utils.ui.text.XFont;
 
-public class ConstructorChainingNode extends AbstractBehaviorNode
+public class ExceptionGeneratedNode extends AbstractEventNode
 {
-	public ConstructorChainingNode(
+	private IExceptionGeneratedEvent itsEvent;
+
+	public ExceptionGeneratedNode(
 			CFlowView aView,
-			IConstructorChainingEvent aEvent)
+			IExceptionGeneratedEvent aEvent)
 	{
-		super (aView, aEvent);
-	}
+		super(aView);
+		
+		itsEvent = aEvent;
 
+		setLayoutManager(new SequenceLayout());
+		
+		pChildren().add(SVGFlowText.create(
+				"Exception: ", 
+				FontConfig.STD_FONT, 
+				Color.RED));
+		
+		pChildren().add(Hyperlinks.object(
+				getGUIManager(), 
+				getLogBrowser(),
+				itsEvent.getException(), 
+				FontConfig.STD_FONT));
+	}
+	
 	@Override
-	protected void fillHeader(IRectangularGraphicContainer aContainer)
+	protected ILogEvent getEvent()
 	{
-		XFont theFont = getHeaderFont();
-		
-		IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
-		
-		Color theColor = theExitEvent != null && theExitEvent.hasThrown() ?
-				Color.RED
-				: Color.BLACK;
-		
-		aContainer.pChildren().add(SVGFlowText.create(
-				"call to ", 
-				theFont, 
-				theColor));
-
-		super.fillHeader(aContainer);
+		return itsEvent;
 	}
+
 }

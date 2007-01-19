@@ -18,23 +18,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow;
+package tod.gui.controlflow.tree;
 
 import java.awt.Color;
 
-import tod.core.database.event.IExceptionGeneratedEvent;
+import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
+import tod.gui.FontConfig;
 import tod.gui.Hyperlinks;
+import tod.gui.controlflow.CFlowView;
 import zz.csg.api.layout.SequenceLayout;
 import zz.csg.impl.figures.SVGFlowText;
 
-public class ExceptionGeneratedNode extends AbstractEventNode
+public class LocalVariableWriteNode extends AbstractEventNode
 {
-	private IExceptionGeneratedEvent itsEvent;
+	private ILocalVariableWriteEvent itsEvent;
 
-	public ExceptionGeneratedNode(
+	public LocalVariableWriteNode(
 			CFlowView aView,
-			IExceptionGeneratedEvent aEvent)
+			ILocalVariableWriteEvent aEvent)
 	{
 		super(aView);
 		
@@ -42,16 +44,9 @@ public class ExceptionGeneratedNode extends AbstractEventNode
 
 		setLayoutManager(new SequenceLayout());
 		
-		pChildren().add(SVGFlowText.create(
-				"Exception: ", 
-				CFlowTreeBuilder.FONT, 
-				Color.RED));
-		
-		pChildren().add(Hyperlinks.object(
-				getGUIManager(), 
-				getEventTrace(),
-				itsEvent.getException(), 
-				CFlowTreeBuilder.FONT));
+		pChildren().add(SVGFlowText.create(itsEvent.getVariable().getVariableName(), FontConfig.STD_FONT, Color.BLACK));
+		pChildren().add(SVGFlowText.create(" = ", FontConfig.STD_FONT, Color.BLACK));
+		pChildren().add(Hyperlinks.object(getGUIManager(), getLogBrowser(), itsEvent.getValue(), FontConfig.STD_FONT));
 	}
 	
 	@Override
@@ -59,5 +54,4 @@ public class ExceptionGeneratedNode extends AbstractEventNode
 	{
 		return itsEvent;
 	}
-
 }

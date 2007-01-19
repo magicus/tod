@@ -22,9 +22,15 @@ package tod.impl.common;
 
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ExternalPointer;
+import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.event.IParentEvent;
+import tod.core.database.structure.IThreadInfo;
+import tod.impl.common.event.Event;
+import tod.impl.common.event.MethodCallEvent;
 
 /**
  * Utility methods for implementing log browsers.
@@ -32,6 +38,9 @@ import tod.core.database.event.ILogEvent;
  */
 public class LogBrowserUtils 
 {
+	/**
+	 * Retrieves the event corresponding to the given pointer from a log browser.
+	 */
 	public static ILogEvent getEvent(ILogBrowser aLogBrowser, ExternalPointer aPointer)
 	{
 		ICompoundFilter theFilter = aLogBrowser.createIntersectionFilter(
@@ -51,6 +60,33 @@ public class LogBrowserUtils
 
 		return null;
 	}
+
+	/**
+	 * Iplementation of {@link ILogBrowser#getCFlowRoot(IThreadInfo)} 
+	 */
+	public static IParentEvent createCFlowRoot(ILogBrowser aBrowser, IThreadInfo aThread)
+	{
+		MethodCallEvent theRoot = new MethodCallEvent(aBrowser);
+		
+		IEventFilter theFilter = aBrowser.createIntersectionFilter(
+				aBrowser.createThreadFilter(aThread),
+				aBrowser.createDepthFilter(1));
+		
+		IEventBrowser theBrowser = aBrowser.createBrowser(theFilter);
+		
+		while (theBrowser.hasNext())
+		{
+			ILogEvent theEvent = theBrowser.next();
+			theRoot.addChild((Event) theEvent);
+			
+			if (! (theEvent instanceof IBehaviorCallEvent))
+			{
+				System.err.println("[CFlowBrowser] Warning: bad event at level 1: "+theEvent);
+			}
+		}
+		return theRoot;
+	}
+	
 
 
 }

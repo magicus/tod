@@ -18,24 +18,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow;
+package tod.gui.controlflow.tree;
 
 import java.awt.Color;
 
-import tod.core.database.event.IBehaviorCallEvent;
-import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILogEvent;
-import tod.gui.Hyperlinks;
+import tod.gui.FontConfig;
+import tod.gui.controlflow.CFlowView;
 import zz.csg.api.layout.SequenceLayout;
 import zz.csg.impl.figures.SVGFlowText;
 
-public class FieldWriteNode extends AbstractEventNode
+public class UnknownEventNode extends AbstractEventNode
 {
-	private IFieldWriteEvent itsEvent;
+	private ILogEvent itsEvent;
 
-	public FieldWriteNode(
+	public UnknownEventNode(
 			CFlowView aView,
-			IFieldWriteEvent aEvent)
+			ILogEvent aEvent)
 	{
 		super(aView);
 		
@@ -43,18 +42,7 @@ public class FieldWriteNode extends AbstractEventNode
 
 		setLayoutManager(new SequenceLayout());
 		
-		Object theCurrentObject = null;
-		IBehaviorCallEvent theContainer = itsEvent.getParent();
-		if (theContainer != null)
-		{
-			theCurrentObject = theContainer.getTarget();
-		}
-		
-		pChildren().add(Hyperlinks.object(getGUIManager(), getEventTrace(), theCurrentObject, itsEvent.getTarget(), CFlowTreeBuilder.FONT));
-		pChildren().add(SVGFlowText.create(".", CFlowTreeBuilder.FONT, Color.BLACK));
-		pChildren().add(SVGFlowText.create(itsEvent.getField().getName(), CFlowTreeBuilder.FONT, Color.BLACK));
-		pChildren().add(SVGFlowText.create(" = ", CFlowTreeBuilder.FONT, Color.BLACK));
-		pChildren().add(Hyperlinks.object(getGUIManager(), getEventTrace(), theCurrentObject, itsEvent.getValue(), CFlowTreeBuilder.FONT));
+		pChildren().add(SVGFlowText.create("Unknown ("+aEvent+")", FontConfig.STD_FONT, Color.GRAY));
 	}
 	
 	@Override

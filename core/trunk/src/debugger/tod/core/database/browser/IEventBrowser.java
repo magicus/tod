@@ -88,8 +88,10 @@ public interface IEventBrowser
 	 * this browser that occured not before the specified event.
 	 * In the case the specified event is available to this browser,
 	 * {@link #next()} will return this event.
+	 * @return Returns true if the specified event if available to 
+	 * this browser.
 	 */
-	public void setNextEvent (ILogEvent aEvent);
+	public boolean setNextEvent (ILogEvent aEvent);
 	
 	/**
 	 * Sets the cursor so that a call to {@link #previous()}
@@ -97,8 +99,10 @@ public interface IEventBrowser
 	 * this browser that occured not after the specified event.
 	 * In the case the specified event is available to this browser,
 	 * {@link #previous()} will return this event.
+	 * @return Returns true if the specified event if available to
+	 * this browser.
 	 */
-	public void setPreviousEvent (ILogEvent aEvent);
+	public boolean setPreviousEvent (ILogEvent aEvent);
 	
 	/**
 	 * Sets the internal cursor of this browser so that the next

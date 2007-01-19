@@ -18,41 +18,41 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow;
+package tod.gui.controlflow.tree;
 
-import java.awt.Color;
+import tod.core.database.browser.ILogBrowser;
+import tod.gui.IGUIManager;
+import tod.gui.controlflow.CFlowView;
+import zz.csg.impl.SVGGraphicContainer;
 
-import tod.core.database.event.IBehaviorExitEvent;
-import tod.core.database.event.IMethodCallEvent;
-import zz.csg.api.IRectangularGraphicContainer;
-import zz.csg.impl.figures.SVGFlowText;
-import zz.utils.ui.text.XFont;
-
-public class MethodCallNode extends AbstractBehaviorNode
+/**
+ * Base for all the graphic objects used in the representation 
+ * of the control flow
+ * @author gpothier
+ */
+public class AbstractCFlowNode extends SVGGraphicContainer
 {
-	public MethodCallNode(
-			CFlowView aView,
-			IMethodCallEvent aEvent)
+	private CFlowView itsView;
+
+	public AbstractCFlowNode(CFlowView aView)
 	{
-		super (aView, aEvent);
+		itsView = aView;
 	}
 
-	@Override
-	protected void fillHeader(IRectangularGraphicContainer aContainer)
+	public IGUIManager getGUIManager()
 	{
-		XFont theFont = getHeaderFont();
-		
-		IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
-		
-		Color theColor = theExitEvent != null && theExitEvent.hasThrown() ?
-				Color.RED
-				: Color.BLACK;
-		
-		aContainer.pChildren().add(SVGFlowText.create(
-				"call to ", 
-				theFont, 
-				theColor));
-
-		super.fillHeader(aContainer);
+		return itsView.getGUIManager();
 	}
+
+	public ILogBrowser getLogBrowser()
+	{
+		return itsView.getLogBrowser();
+	}
+	
+	public CFlowView getView()
+	{
+		return itsView;
+	}
+	
+
 }

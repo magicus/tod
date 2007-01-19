@@ -78,8 +78,8 @@ public class MuralScroller extends JPanel
 	
 	private EventMural itsMural;
 	private JSlider itsSlider;
-	private final long itsStart;
-	private final long itsEnd;
+	private long itsStart;
+	private long itsEnd;
 	private boolean itsUpdating = false;
 		
 	/**
@@ -88,21 +88,20 @@ public class MuralScroller extends JPanel
 	 */
 	private long itsSliderFactor;
 
+	public MuralScroller()
+	{
+		createUI();		
+	}
+	
 	public MuralScroller(IEventBrowser aBrowser, long aStart, long aEnd)
 	{
-		itsBrowser = aBrowser;
-		itsStart = aStart;
-		itsEnd = aEnd;
-		createUI();
+		this();
+		set(aBrowser, aStart, aEnd);
 	}
 
 	private void createUI()
 	{
-		// setup mural
 		itsMural = new EventMural();
-		itsMural.pStart().set(itsStart);
-		itsMural.pEnd().set(itsEnd);
-		itsMural.pEventBrowsers().add(new BrowserData(itsBrowser, Color.BLACK));
 		
 		final GraphicPanel theMuralPanel = new GraphicPanel();
 		theMuralPanel.setRootNode(itsMural);
@@ -124,15 +123,8 @@ public class MuralScroller extends JPanel
 		});
 
 		// Setup slider
-		long theDelta = itsEnd-itsStart;
-		itsSliderFactor = 1;
-		while (theDelta > Integer.MAX_VALUE)
-		{
-			theDelta /= 2;
-			itsSliderFactor *= 2;
-		}
 		
-		itsSlider = new JSlider(JSlider.VERTICAL, 0, (int) theDelta, 0);
+		itsSlider = new JSlider(JSlider.VERTICAL);
 		itsSlider.setInverted(true);
 		itsSlider.addChangeListener(new ChangeListener()
 		{
@@ -176,6 +168,32 @@ public class MuralScroller extends JPanel
 		add(theCenterContainer, BorderLayout.CENTER);
 	}
 
+	public void set(IEventBrowser aBrowser, long aStart, long aEnd)
+	{
+		itsBrowser = aBrowser;
+		itsStart = aStart;
+		itsEnd = aEnd;
+
+		// Setup mural
+		itsMural.pStart().set(itsStart);
+		itsMural.pEnd().set(itsEnd);
+		itsMural.pEventBrowsers().add(new BrowserData(itsBrowser, Color.BLACK));
+		itsMural.repaintAllContexts();
+		
+		// Setup slider
+		long theDelta = itsEnd-itsStart;
+		itsSliderFactor = 1;
+		while (theDelta > Integer.MAX_VALUE)
+		{
+			theDelta /= 2;
+			itsSliderFactor *= 2;
+		}
+
+		itsSlider.setMinimum(0);
+		itsSlider.setMaximum((int) theDelta);
+		itsSlider.setValue(0);
+	}
+	
 	/**
 	 * This property holds the current tracker timestamp.
 	 * The client is responsible of updating the tracker position

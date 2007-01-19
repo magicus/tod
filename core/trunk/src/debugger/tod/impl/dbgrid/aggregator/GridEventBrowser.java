@@ -28,7 +28,6 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
-import tod.impl.dbgrid.RIGridMaster;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
 import zz.utils.BufferedIterator;
@@ -136,13 +135,13 @@ implements IEventBrowser
 
 	
 	
-	public void setNextEvent(ILogEvent aEvent)
+	public boolean setNextEvent(ILogEvent aEvent)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 
-	public void setPreviousEvent(ILogEvent aEvent)
+	public boolean setPreviousEvent(ILogEvent aEvent)
 	{
 		throw new UnsupportedOperationException();
 	}

@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow;
+package tod.gui.controlflow.tree;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -35,66 +35,32 @@ import zz.utils.properties.SimpleRWProperty;
 import zz.utils.ui.UIUtils;
 
 /**
- * A widget that permits to expand/collapse a section of a tree
+ * A widget that permits dive into the event to which it is
+ * attached
  * @author gpothier
  */
 public class ExpanderWidget extends AbstractRectangularGraphicObject
 {
 	public static final double WIDTH = 10;
-	
-	private final IRWProperty<Boolean> pExpanded = new SimpleRWProperty<Boolean>(this, false)
-	{
-		@Override
-		protected void changed(Boolean aOldValue, Boolean aNewValue)
-		{
-			repaintAllContexts();
-		}
-	};
+	public static final double THICKNESS = 4;
 	
 	private Color itsColor;
-	private double itsThickness;
-
-	private boolean itsEnabled;
 	
-	public ExpanderWidget(Color aColor, double aThickness, boolean aEnabled)
+	public ExpanderWidget(Color aColor)
 	{
 		itsColor = aColor;
-		itsThickness = aThickness;
-		itsEnabled = aEnabled;
 	}
 
-	/**
-	 * This property reflects the expanded/collapsed state of this widget.
-	 */
-	public IRWProperty<Boolean> pExpanded()
-	{
-		return pExpanded;
-	}
-	
-	public void paint(IDisplay aDisplay, GraphicObjectContext aContext, Graphics2D aGraphics, Area aVisibleArea)
+	@Override
+	protected void paintTransformed(IDisplay aDisplay, GraphicObjectContext aContext, Graphics2D aGraphics, Area aVisibleArea)
 	{
 		Rectangle2D theBounds = pBounds().get();
-		Color theColor = itsEnabled ? 
-				itsColor 
-				: UIUtils.getLighterColor(itsColor, 0.2f);
-		
-		aGraphics.setColor(theColor);
+
+		aGraphics.setColor(itsColor);
 		aGraphics.fill(new Rectangle2D.Double(
-				theBounds.getX() + theBounds.getWidth()/2 - itsThickness/2, 
+				theBounds.getX() + theBounds.getWidth()/2 - THICKNESS/2, 
 				theBounds.getY() + 1,
-				itsThickness,
+				THICKNESS,
 				theBounds.getHeight() - 2));
 	}
-	
-	@Override
-	public boolean mousePressed(GraphicObjectContext aContext, MouseEvent aEvent, Point2D aPoint)
-	{
-		if (itsEnabled) 
-		{
-			pExpanded().set(! pExpanded().get());
-			return true;
-		}
-		else return false;
-	}
-	
 }

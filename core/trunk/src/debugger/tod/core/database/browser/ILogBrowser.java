@@ -23,6 +23,7 @@ package tod.core.database.browser;
 import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.event.IParentEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
@@ -195,9 +196,10 @@ public interface ILogBrowser
 	public IEventFilter createDepthFilter(int aDepth);
 	
 	/**
-	 * Creates a control flow browser.
+	 * Returns a synthetic parent event that contains the available root
+	 * events of the given thread.
 	 */
-	public ICFlowBrowser createCFlowBrowser (IThreadInfo aThread);
+	public IParentEvent getCFlowRoot(IThreadInfo aThread);
 	
 	/**
 	 * Creates a filter that accepts only exception generated events.

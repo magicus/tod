@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 import tod.core.ILocationRegisterer.LocalVariableInfo;
+import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IVariablesInspector;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILocalVariableWriteEvent;
@@ -35,8 +36,8 @@ import tod.core.database.structure.ITypeInfo;
 
 public class VariablesInspector implements IVariablesInspector
 {
-	private IBehaviorCallEvent itsBehaviorCall;
-	private int itsCurrentIndex;
+	private final IBehaviorCallEvent itsBehaviorCall;
+	private IEventBrowser itsBrowser;
 	private ILogEvent itsCurrentEvent;
 	private List<LocalVariableInfo> itsVariables;
 	
@@ -44,6 +45,7 @@ public class VariablesInspector implements IVariablesInspector
 	{
 //		assert aBehaviorCall.isDirectParent();
 		itsBehaviorCall = aBehaviorCall.isDirectParent() ? aBehaviorCall : null;
+		itsBrowser = itsBehaviorCall != null ? itsBehaviorCall.getChildrenBrowser() : null;
 	}
 
 	public IBehaviorCallEvent getBehaviorCall()
@@ -82,11 +84,10 @@ public class VariablesInspector implements IVariablesInspector
 	{
 		if (getBehaviorCall() == null) return;
 		
-		int theIndex = getBehaviorCall().getChildren().indexOf(aEvent);
-		if (theIndex == -1) throw new RuntimeException("Event not found in method execution");
+		if (! itsBrowser.setNextEvent(aEvent))
+			throw new RuntimeException("Event not found in method execution");
 		
 		itsCurrentEvent = aEvent;
-		itsCurrentIndex = theIndex;
 	}
 
 	public ILogEvent getCurrentEvent()
@@ -98,10 +99,10 @@ public class VariablesInspector implements IVariablesInspector
 	{
 		if (getBehaviorCall() == null) return null;
 		
-		// TODO: Use proper cursor APIs!!!!!!
-		for (int i=itsCurrentIndex; i>=0; i--)
+		itsBrowser.setNextEvent(itsCurrentEvent);
+		while (itsBrowser.hasPrevious())
 		{
-			ILogEvent theEvent = getBehaviorCall().getChildren().get(i);
+			ILogEvent theEvent = itsBrowser.previous();
 			if (theEvent instanceof ILocalVariableWriteEvent)
 			{
 				ILocalVariableWriteEvent theLocalVariableWriteEvent = (ILocalVariableWriteEvent) theEvent;
@@ -137,10 +138,10 @@ public class VariablesInspector implements IVariablesInspector
 	{
 		if (getBehaviorCall() == null) return null;
 		
-		// TODO: Use proper cursor APIs!!!!!!
-		for (int i=itsCurrentIndex; i>=0; i--)
+		itsBrowser.setNextEvent(itsCurrentEvent);
+		while (itsBrowser.hasPrevious())
 		{
-			ILogEvent theEvent = getBehaviorCall().getChildren().get(i);
+			ILogEvent theEvent = itsBrowser.previous();
 			if (theEvent instanceof ILocalVariableWriteEvent)
 			{
 				ILocalVariableWriteEvent theLocalVariableWriteEvent = (ILocalVariableWriteEvent) theEvent;

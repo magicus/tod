@@ -23,11 +23,13 @@ package tod.impl.common.event;
 import java.util.ArrayList;
 import java.util.List;
 
+import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
+import tod.impl.local.EventBrowser;
 
 public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEvent
 {
@@ -47,20 +49,15 @@ public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEv
 		super(aLogBrowser);
 	}
 
-	public List<ILogEvent> getChildren()
-	{
-		return itsChildren;
-	}
-	
-	public int getChildrenCount()
-	{
-		return itsChildren == null ? 0 : itsChildren.size();
-	}
-	
 	public boolean hasRealChildren()
 	{
-		if (getChildrenCount() == 0) return false;
-		else return getChildren().get(0) != getExitEvent();
+		if (itsChildren.size() == 0) return false;
+		else return itsChildren.get(0) != getExitEvent();
+	}
+
+	public IEventBrowser getChildrenBrowser()
+	{
+		return new EventBrowser(getLogBrowser(), itsChildren);
 	}
 
 	public void addChild (Event aEvent)
@@ -149,9 +146,9 @@ public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEv
 	{
 		if (! itsExitEventFound)
 		{
-			if (getChildrenCount() > 0)
+			if (itsChildren.size() > 0)
 			{
-				ILogEvent theLastEvent = getChildren().get(getChildrenCount()-1);
+				ILogEvent theLastEvent = itsChildren.get(itsChildren.size()-1);
 				if (theLastEvent instanceof IBehaviorExitEvent)
 				{
 					itsExitEvent = (IBehaviorExitEvent) theLastEvent;

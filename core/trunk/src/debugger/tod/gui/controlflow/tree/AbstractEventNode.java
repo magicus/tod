@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow;
+package tod.gui.controlflow.tree;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -26,42 +26,19 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
-import tod.gui.IGUIManager;
+import tod.gui.controlflow.CFlowView;
 import zz.csg.api.GraphicObjectContext;
 import zz.csg.api.IDisplay;
-import zz.csg.impl.SVGGraphicContainer;
 
-public abstract class AbstractEventNode extends SVGGraphicContainer
+public abstract class AbstractEventNode extends AbstractCFlowNode
 {
-	private CFlowView itsView;
 
 	public AbstractEventNode(CFlowView aView)
 	{
-		itsView = aView;
+		super(aView);
 	}
 
-	public CFlowTreeBuilder getBuilder()
-	{
-		return itsView.getBuilder();
-	}
-
-	public IGUIManager getGUIManager()
-	{
-		return itsView.getGUIManager();
-	}
-
-	public ILogBrowser getEventTrace()
-	{
-		return itsView.getLogBrowser();
-	}
-	
-	public CFlowView getView()
-	{
-		return itsView;
-	}
-	
 	@Override
 	public boolean mousePressed(GraphicObjectContext aContext, MouseEvent aEvent, Point2D aPoint)
 	{
