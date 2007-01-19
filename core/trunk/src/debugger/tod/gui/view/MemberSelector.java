@@ -18,13 +18,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui;
+package tod.gui.view;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.JCheckBox;
@@ -36,6 +39,7 @@ import javax.swing.ListCellRenderer;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMemberInfo;
+import tod.gui.FontConfig;
 import zz.utils.SimpleListModel;
 import zz.utils.Utils;
 import zz.utils.properties.HashSetProperty;
@@ -110,8 +114,12 @@ public class MemberSelector extends JPanel
 	private void updateListPanel()
 	{
 		IObjectInspector theInspector = pInspector().get();
+		
 		List<IMemberInfo> theList = new ArrayList<IMemberInfo>();
 		if (theInspector != null) Utils.fillCollection(theList, theInspector.getMembers());
+		
+		Collections.sort(theList, MemberComparator.getInstance());
+		
 		itsMembersListModel.setList(theList);
 	}
 	
@@ -139,13 +147,43 @@ public class MemberSelector extends JPanel
 	
 	private class MyRenderer extends JCheckBox implements ListCellRenderer
 	{
+		private Font itsBehaviorFont = FontConfig.STD_FONT.getAWTFont();
+		private Font itsFieldFont = itsBehaviorFont.deriveFont(Font.ITALIC);
+		
 		public Component getListCellRendererComponent(JList aList, Object aValue, int aIndex, boolean aIsSelected, boolean aCellHasFocus)
 		{
 			IMemberInfo theMember = (IMemberInfo) aValue;
 			setText(theMember.getName());
 			setSelected(pSelectedMembers().contains(theMember));
 			
+			if (theMember instanceof IFieldInfo) setFont(itsFieldFont);
+			else setFont(itsBehaviorFont);
+			
 			return this;
 		}
+	}
+	
+	private static class MemberComparator implements Comparator<IMemberInfo>
+	{
+		private static MemberComparator INSTANCE = new MemberComparator();
+
+		public static MemberComparator getInstance()
+		{
+			return INSTANCE;
+		}
+
+		private MemberComparator()
+		{
+		}
+
+		public int compare(IMemberInfo aO1, IMemberInfo aO2)
+		{
+			boolean theField1 = aO1 instanceof IFieldInfo;
+			boolean theField2 = aO2 instanceof IFieldInfo;
+			
+			if (theField1 != theField2) return theField1 ? -1 : 1;
+			else return aO1.getName().compareToIgnoreCase(aO2.getName());
+		}
+		
 	}
 }

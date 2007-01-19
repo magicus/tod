@@ -21,15 +21,18 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.seed;
 
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.IMemberInfo;
 import tod.core.database.structure.ObjectId;
 import tod.gui.IGUIManager;
-import tod.gui.ObjectInspectorView;
 import tod.gui.view.LogView;
+import tod.gui.view.ObjectInspectorView;
+import zz.utils.properties.HashSetProperty;
 import zz.utils.properties.IRWProperty;
+import zz.utils.properties.ISetProperty;
 import zz.utils.properties.SimpleRWProperty;
 
 /**
- * Seed for the {@link tod.gui.ObjectInspectorView}
+ * Seed for the {@link tod.gui.view.ObjectInspectorView}
  * @author gpothier
  */
 public class ObjectInspectorSeed extends Seed
@@ -39,6 +42,9 @@ public class ObjectInspectorSeed extends Seed
 	private IRWProperty<Long> pSelectionStart = new SimpleRWProperty<Long>(this);
 	private IRWProperty<Long> pSelectionEnd = new SimpleRWProperty<Long>(this);
 	private IRWProperty<Long> pCurrentPosition = new SimpleRWProperty<Long>(this);
+	
+	private ISetProperty<IMemberInfo> pSelectedMembers = new HashSetProperty<IMemberInfo>(this);
+
 
 	
 	public ObjectInspectorSeed(IGUIManager aGUIManager, ILogBrowser aLog, ObjectId aInspectedObject)
@@ -47,7 +53,7 @@ public class ObjectInspectorSeed extends Seed
 		itsInspectedObject = aInspectedObject;
 		
 		pSelectionStart().set(getEventTrace().getFirstTimestamp());
-		pSelectionEnd().set((getEventTrace().getFirstTimestamp() + getEventTrace().getLastTimestamp()) / 2);
+		pSelectionEnd().set(getEventTrace().getLastTimestamp());
 	}
 	
 	protected LogView requestComponent()
@@ -75,6 +81,11 @@ public class ObjectInspectorSeed extends Seed
 	public IRWProperty<Long> pSelectionStart()
 	{
 		return pSelectionStart;
+	}
+
+	public ISetProperty<IMemberInfo> pSelectedMembers()
+	{
+		return pSelectedMembers;
 	}
 	
 	

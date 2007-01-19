@@ -21,6 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.local.filter;
 
 import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.ObjectId;
 import tod.impl.local.LocalBrowser;
@@ -49,11 +50,12 @@ public class TargetFilter extends AbstractStatelessFilter
 			IBehaviorCallEvent theEvent = (IBehaviorCallEvent) aEvent;
 			theTarget = theEvent.getTarget();
 		}
-		else
+		else if (aEvent instanceof IFieldWriteEvent)
 		{
-			IBehaviorCallEvent theParent = aEvent.getParent();
-			theTarget = theParent != null ? theParent.getTarget() : null;
+			IFieldWriteEvent theEvent = (IFieldWriteEvent) aEvent;
+			theTarget = theEvent.getTarget();
 		}
+		else theTarget = null;
 		
 		return itsTarget == null || itsTarget.equals(theTarget);
 		

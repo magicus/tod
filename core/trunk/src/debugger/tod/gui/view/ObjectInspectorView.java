@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui;
+package tod.gui.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -35,13 +35,15 @@ import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMemberInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.gui.BrowserData;
+import tod.gui.IGUIManager;
+import tod.gui.TimeScale;
 import tod.gui.eventsequences.FieldSequenceView;
 import tod.gui.eventsequences.MembersDock;
 import tod.gui.eventsequences.MethodSequenceView;
 import tod.gui.kit.SeedLinkLabel;
 import tod.gui.seed.FilterSeed;
 import tod.gui.seed.ObjectInspectorSeed;
-import tod.gui.view.LogView;
 import zz.utils.list.ICollection;
 import zz.utils.list.ICollectionListener;
 import zz.utils.properties.ISetProperty;
@@ -122,6 +124,7 @@ public class ObjectInspectorView extends LogView
 						itsDock.removeMember(aElement);
 					}
 				});
+		connectSet(itsSeed.pSelectedMembers(), itsMemberSelector.pSelectedMembers(), true);
 		add (itsMemberSelector, BorderLayout.WEST);
 		
 	}
@@ -149,7 +152,7 @@ public class ObjectInspectorView extends LogView
 		}
 		
 		itsMemberSelector.pInspector().set(itsInspector);
-		itsMemberSelector.selectFields();
+//		itsMemberSelector.selectFields();
 
 		updateTitlePanel();
 	}

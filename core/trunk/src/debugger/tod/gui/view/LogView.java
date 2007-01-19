@@ -37,6 +37,7 @@ import tod.gui.kit.SeedLinkLabel;
 import tod.gui.seed.ObjectInspectorSeed;
 import tod.gui.seed.Seed;
 import zz.utils.properties.IRWProperty;
+import zz.utils.properties.ISetProperty;
 import zz.utils.properties.PropertyUtils;
 
 /**
@@ -79,14 +80,28 @@ public abstract class LogView extends JPanel
 	}
 	
 	/**
-	 * Prepares a connection between two properties. The connection is effective only once this
-	 * component is shown. The connection is removed when this component is hidden.
+	 * Prepares a connection between two properties. 
+	 * The connection is effective only once this component is shown. 
+	 * The connection is removed when this component is hidden.
 	 * @see PropertyUtils.Connector
 	 */
 	protected <T> void connect (IRWProperty<T> aSource, IRWProperty<T> aTarget, boolean aSymmetric)
 	{
 		if (itsConnectors == null) itsConnectors = new ArrayList<PropertyUtils.Connector>(); 
 		PropertyUtils.SimpleValueConnector<T> theConnector = new PropertyUtils.SimpleValueConnector<T>(aSource, aTarget, aSymmetric, true);
+		itsConnectors.add (theConnector);
+	}
+	
+	/**
+	 * Prepares a connection between two set properties. 
+	 * The connection is effective only once this component is shown. 
+	 * The connection is removed when this component is hidden.
+	 * @see PropertyUtils.Connector
+	 */
+	protected <T> void connectSet (ISetProperty<T> aSource, ISetProperty<T> aTarget, boolean aSymmetric)
+	{
+		if (itsConnectors == null) itsConnectors = new ArrayList<PropertyUtils.Connector>(); 
+		PropertyUtils.SetConnector<T> theConnector = new PropertyUtils.SetConnector<T>(aSource, aTarget, aSymmetric, true);
 		itsConnectors.add (theConnector);
 	}
 	
