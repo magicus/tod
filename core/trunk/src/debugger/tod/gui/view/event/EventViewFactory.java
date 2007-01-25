@@ -23,6 +23,7 @@ package tod.gui.view.event;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IArrayWriteEvent;
 import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.IExceptionGeneratedEvent;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.IInstantiationEvent;
@@ -50,6 +51,11 @@ public class EventViewFactory
 		{
 			IBehaviorCallEvent theEvent = (IBehaviorCallEvent) aEvent;
 			theView = new BehaviorCallView (aGUIManager, aLog, theEvent);
+		}
+		else if (aEvent instanceof IBehaviorExitEvent)
+		{
+			IBehaviorExitEvent theEvent = (IBehaviorExitEvent) aEvent;
+			theView = new BehaviorExitView(aGUIManager, aLog, theEvent);
 		}
 		else if (aEvent instanceof IInstantiationEvent)
 		{

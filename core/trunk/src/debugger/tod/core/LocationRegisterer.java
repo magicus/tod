@@ -60,23 +60,27 @@ public class LocationRegisterer implements ILocationStore
 	
 	public LocationRegisterer()
 	{
-		registerPrimitiveType("void", 0);
-		registerPrimitiveType("boolean", 1);
-		registerPrimitiveType("int", 1);
-		registerPrimitiveType("long", 2);
-		registerPrimitiveType("byte", 1);
-		registerPrimitiveType("short", 1);
-		registerPrimitiveType("char", 1);
-		registerPrimitiveType("double", 2);
-		registerPrimitiveType("float", 1);
+		for (PrimitiveTypeInfo thePrimitiveType : PrimitiveTypeInfo.TYPES)
+		{
+			itsTypesMap.put(thePrimitiveType.getName(), thePrimitiveType);
+		}
 	}
 	
-	private void registerPrimitiveType(String aName, int aSize)
-	{
-		TypeInfo theType = new PrimitiveTypeInfo(aName, aSize);
-		itsTypesMap.put(aName, theType);
-	}
+	/**
+	 * For testing only.
+	 * Clears all registered info.
+	 */
+    public void _clear()
+    {
+    	itsBehaviors.clear();
+    	itsFields.clear();
+    	itsFiles.clear();
+    	itsTypes.clear();
+    	itsTypesMap.clear();
+    	itsUnknownTypes.clear();
+    }
 
+	
 	public void registerFile(int aFileId, String aFileName)
 	{
 		Util.ensureSize(itsFiles, aFileId);
@@ -264,7 +268,7 @@ public class LocationRegisterer implements ILocationStore
 	{
 		if (aId == -1)
 		{
-			System.err.println("[LocationRegisterer] Warning: requested behavior id -1");
+//			System.err.println("[LocationRegisterer] Warning: requested behavior id -1");
 			return null;
 		}
 		

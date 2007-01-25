@@ -31,18 +31,20 @@ import javax.swing.JPanel;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.ObjectId;
 import tod.gui.IGUIManager;
+import tod.gui.Hyperlinks.ISeedFactory;
 import tod.gui.formatter.EventFormatter;
 import tod.gui.formatter.ObjectFormatter;
 import tod.gui.kit.SeedLinkLabel;
+import tod.gui.seed.LogViewSeedFactory;
 import tod.gui.seed.ObjectInspectorSeed;
-import tod.gui.seed.Seed;
+import tod.gui.seed.LogViewSeed;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.ISetProperty;
 import zz.utils.properties.PropertyUtils;
 
 /**
  * Base class for views.
- * @see tod.gui.seed.Seed
+ * @see tod.gui.seed.LogViewSeed
  * @author gpothier
  */
 public abstract class LogView extends JPanel
@@ -55,12 +57,16 @@ public abstract class LogView extends JPanel
 	private ObjectFormatter itsObjectFormatter;
 	private EventFormatter itsEventFormatter;
 	
+	private LogViewSeedFactory itsLogViewSeedFactory;
+
+	
 	public LogView(IGUIManager aGUIManager, ILogBrowser aLog)
 	{
 		itsGUIManager = aGUIManager;
 		itsLog = aLog;
 		itsObjectFormatter = new ObjectFormatter(itsLog);
 		itsEventFormatter = new EventFormatter(itsLog);
+		itsLogViewSeedFactory = new LogViewSeedFactory(getGUIManager(), getLogBrowser());
 	}
 	
 	@Override
@@ -116,6 +122,14 @@ public abstract class LogView extends JPanel
 	}
 	
 	/**
+	 * Returns a {@link LogViewSeedFactory} suitable for this log view.
+	 */
+	public LogViewSeedFactory getLogViewSeedFactory()
+	{
+		return itsLogViewSeedFactory;
+	}
+
+	/**
 	 * Returns an event formatter that can be used in the context
 	 * of this view.
 	 */
@@ -145,7 +159,7 @@ public abstract class LogView extends JPanel
 	/**
 	 * Creates a standard panel that shows a title and a link label.
 	 */
-	protected JComponent createTitledLink (String aTitle, String aLinkName, Seed aSeed)
+	protected JComponent createTitledLink (String aTitle, String aLinkName, LogViewSeed aSeed)
 	{
 		return createTitledPanel(aTitle, new SeedLinkLabel(getGUIManager(), aLinkName, aSeed));
 	}

@@ -22,8 +22,10 @@ package tod.gui.formatter;
 
 import java.util.Arrays;
 
+import tod.Util;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.IExceptionGeneratedEvent;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILocalVariableWriteEvent;
@@ -59,9 +61,24 @@ public class EventFormatter extends AbstractFormatter<ILogEvent>
 			
 			return String.format(
 					"%s.%s (%s)",
-					theBehavior.getType().getName(),
+					Util.getPrettyName(theBehavior.getType().getName()),
 	                theBehavior.getName(),
 	                Arrays.asList(theEvent.getArguments()));
+		}
+		else if (aEvent instanceof IBehaviorExitEvent)
+		{
+			IBehaviorExitEvent theEvent = (IBehaviorExitEvent) aEvent;
+			IBehaviorCallEvent theParent = theEvent.getParent();
+			
+			IBehaviorInfo theBehavior = theParent.getExecutedBehavior();
+			if (theBehavior == null) theBehavior = theParent.getCalledBehavior();
+			
+			return String.format(
+					"Return from %s.%s -> %s",
+					Util.getPrettyName(theBehavior.getType().getName()),
+	                theBehavior.getName(),
+	                theEvent.getResult());
+
 		}
 		else if (aEvent instanceof IFieldWriteEvent)
 		{
@@ -69,7 +86,7 @@ public class EventFormatter extends AbstractFormatter<ILogEvent>
 
 			return String.format(
 					"%s.%s = %s",
-					theEvent.getField().getType().getName(),
+					Util.getPrettyName(theEvent.getField().getType().getName()),
 					theEvent.getField().getName(),
 					formatObject(theEvent.getValue()));
 		}

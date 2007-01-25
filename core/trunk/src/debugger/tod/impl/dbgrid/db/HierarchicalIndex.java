@@ -33,6 +33,8 @@ import tod.impl.dbgrid.db.file.TupleIterator;
 import tod.impl.dbgrid.db.file.TupleWriter;
 import tod.impl.dbgrid.db.file.PageBank.Page;
 import tod.impl.dbgrid.db.file.PageBank.PageBitStruct;
+import tod.impl.dbgrid.db.file.TupleFinder.Match;
+import tod.impl.dbgrid.db.file.TupleFinder.NoMatch;
 import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Probe;
 import zz.utils.ArrayStack;
@@ -215,6 +217,10 @@ public class HierarchicalIndex<T extends IndexTuple>
 	public TupleIterator<T> getTupleIterator(long aKey)
 	{
 //		System.out.println("Get    "+aTimestamp);
+		
+		// The tuplefinder considers empty tuples to have key Long.MAX_VALUE
+		if (aKey == Long.MAX_VALUE) aKey--;
+		
 		if (aKey == 0)
 		{
 			PageBitStruct theBitStruct = getFile().get(itsFirstLeafPageId).asBitStruct();
@@ -232,7 +238,8 @@ public class HierarchicalIndex<T extends IndexTuple>
 						DB_PAGE_POINTER_BITS,
 						aKey, 
 						InternalTupleCodec.getInstance(),
-						true);
+						Match.FIRST,
+						NoMatch.BEFORE);
 				
 				if (theTuple == null) 
 				{
@@ -252,19 +259,24 @@ public class HierarchicalIndex<T extends IndexTuple>
 					DB_PAGE_POINTER_BITS,
 					aKey, 
 					getTupleCodec(),
-					true);
+					Match.FIRST,
+					NoMatch.AFTER);
 			
-			if (theIndex == -1) return new TupleIterator<T>();
-			else
+			if (theIndex < 0) 
 			{
-				theBitStruct.setPos(theIndex * getTupleCodec().getTupleSize());
-				TupleIterator<T> theIterator = new TupleIterator<T>(getFile(), getTupleCodec(), theBitStruct);
-				T theTuple = theIterator.peekNext();
-				if (theIterator.hasNext() && theTuple.getKey() < aKey)
-					theIterator.next();
-				
-				return theIterator;
+				// The last tuple is before the requested key.
+				// The index of the last tuple is -index-1
+				// We want an iterator that is past the last tuple.
+				theIndex = -theIndex;
 			}
+
+			theBitStruct.setPos(theIndex * getTupleCodec().getTupleSize());
+			TupleIterator<T> theIterator = new TupleIterator<T>(getFile(), getTupleCodec(), theBitStruct);
+			T theTuple = theIterator.peekNext();
+			if (theIterator.hasNext() && theTuple.getKey() < aKey)
+				theIterator.next();
+			
+			return theIterator;
 		}
 	}
 	

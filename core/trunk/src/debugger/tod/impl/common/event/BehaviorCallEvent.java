@@ -20,57 +20,24 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.common.event;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IBehaviorExitEvent;
-import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
-import tod.impl.local.EventBrowser;
 
 public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEvent
 {
-	private List<ILogEvent> itsChildren;
 	private boolean itsDirectParent;
 	private Object[] itsArguments;
 	private IBehaviorInfo itsCalledBehavior;
 	private IBehaviorInfo itsExecutedBehavior;
 	private Object itsTarget;
 	
-	private IBehaviorExitEvent itsExitEvent;
-	private boolean itsExitEventFound = false;
-
-
 	public BehaviorCallEvent(ILogBrowser aLogBrowser)
 	{
 		super(aLogBrowser);
 	}
 
-	public boolean hasRealChildren()
-	{
-		if (itsChildren.size() == 0) return false;
-		else return itsChildren.get(0) != getExitEvent();
-	}
-
-	public IEventBrowser getChildrenBrowser()
-	{
-		return new EventBrowser(getLogBrowser(), itsChildren);
-	}
-
-	public void addChild (Event aEvent)
-	{
-		if (itsChildren == null) itsChildren = new ArrayList<ILogEvent>();
-		itsChildren.add(aEvent);
-	}
-
-	public void addChild (int aIndex, Event aEvent)
-	{
-		if (itsChildren == null) itsChildren = new ArrayList<ILogEvent>();
-		itsChildren.add(aIndex, aEvent);
-	}
 	
 	public IBehaviorInfo getExecutedBehavior()
 	{
@@ -129,8 +96,6 @@ public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEv
 	{
 		itsTarget = aCurrentObject;
 	}
-
-
 	
 	public long getFirstTimestamp()
 	{
@@ -141,26 +106,4 @@ public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEv
 	{
 		return getExitEvent().getTimestamp();
 	}
-
-	public IBehaviorExitEvent getExitEvent()
-	{
-		if (! itsExitEventFound)
-		{
-			if (itsChildren.size() > 0)
-			{
-				ILogEvent theLastEvent = itsChildren.get(itsChildren.size()-1);
-				if (theLastEvent instanceof IBehaviorExitEvent)
-				{
-					itsExitEvent = (IBehaviorExitEvent) theLastEvent;
-				}
-			}
-			itsExitEventFound = true;
-		}
-		
-		return itsExitEvent;
-	}
-	
-	
-
-
 }

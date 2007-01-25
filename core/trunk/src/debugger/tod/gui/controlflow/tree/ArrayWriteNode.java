@@ -53,11 +53,11 @@ public class ArrayWriteNode extends AbstractEventNode
 			theCurrentObject = theContainer.getTarget();
 		}
 		
-		pChildren().add(Hyperlinks.object(getGUIManager(), getLogBrowser(), theCurrentObject, itsEvent.getTarget(), FontConfig.STD_FONT));
+		pChildren().add(Hyperlinks.object(getSeedFactory(), getLogBrowser(), theCurrentObject, itsEvent.getTarget(), FontConfig.STD_FONT));
 		pChildren().add(SVGFlowText.create("[", FontConfig.STD_FONT, Color.BLACK));
 		pChildren().add(SVGFlowText.create(""+itsEvent.getIndex(), FontConfig.STD_FONT, Color.BLACK));
 		pChildren().add(SVGFlowText.create("] = ", FontConfig.STD_FONT, Color.BLACK));
-		pChildren().add(Hyperlinks.object(getGUIManager(), getLogBrowser(), theCurrentObject, itsEvent.getValue(), FontConfig.STD_FONT));
+		pChildren().add(Hyperlinks.object(getSeedFactory(), getLogBrowser(), theCurrentObject, itsEvent.getValue(), FontConfig.STD_FONT));
 	}
 	
 	@Override

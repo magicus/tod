@@ -22,6 +22,7 @@ package tod.gui.seed;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
 import tod.core.database.structure.IThreadInfo;
@@ -35,11 +36,19 @@ import zz.utils.properties.SimpleRWProperty;
  * This seed permits to display the cflow view of a particualr thread.
  * @author gpothier
  */
-public class CFlowSeed extends Seed
+public class CFlowSeed extends LogViewSeed
 {
 	private final IThreadInfo itsThread;
 	
-	private IRWProperty<ILogEvent> pSelectedEvent = new SimpleRWProperty<ILogEvent>(this);
+	private IRWProperty<ILogEvent> pSelectedEvent = new SimpleRWProperty<ILogEvent>(this)
+	{
+		@Override
+		public void set(ILogEvent aEvent)
+		{
+			if (aEvent instanceof IBehaviorExitEvent) aEvent = aEvent.getParent();
+			super.set(aEvent);
+		}
+	};
 	private IRWProperty<IBehaviorCallEvent> pParentEvent = new SimpleRWProperty<IBehaviorCallEvent>(this);
 	private IRWProperty<IParentEvent> pRootEvent = new SimpleRWProperty<IParentEvent>(this);
 	
@@ -47,7 +56,7 @@ public class CFlowSeed extends Seed
 	{
 		this(aGUIManager, aLog, aSelectedEvent.getThread());
 		pSelectedEvent().set(aSelectedEvent);
-		pParentEvent().set(aSelectedEvent.getParent());
+		pParentEvent().set(pSelectedEvent().get().getParent());
 	}
 
 	

@@ -173,14 +173,14 @@ implements ReorderingBufferListener
 	public int flush()
 	{
 		int theCount = 0;
-		System.out.println("DatabaseNode: flushing...");
+		System.out.println("[UniformEventDatabase] Flushing...");
 		while (! itsReorderingBuffer.isEmpty())
 		{
 			processEvent(itsReorderingBuffer.pop());
 			theCount++;
 		}
 		itsFlushed = true;
-		System.out.println("DatabaseNode: flushed "+theCount+" events...");
+		System.out.println("[UniformEventDatabase] Flushed "+theCount+" events...");
 		return theCount;
 	}
 	

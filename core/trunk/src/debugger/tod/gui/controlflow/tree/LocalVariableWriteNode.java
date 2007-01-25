@@ -46,7 +46,7 @@ public class LocalVariableWriteNode extends AbstractEventNode
 		
 		pChildren().add(SVGFlowText.create(itsEvent.getVariable().getVariableName(), FontConfig.STD_FONT, Color.BLACK));
 		pChildren().add(SVGFlowText.create(" = ", FontConfig.STD_FONT, Color.BLACK));
-		pChildren().add(Hyperlinks.object(getGUIManager(), getLogBrowser(), itsEvent.getValue(), FontConfig.STD_FONT));
+		pChildren().add(Hyperlinks.object(getSeedFactory(), getLogBrowser(), itsEvent.getValue(), FontConfig.STD_FONT));
 	}
 	
 	@Override

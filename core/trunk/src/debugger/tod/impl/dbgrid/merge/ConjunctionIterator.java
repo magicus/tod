@@ -70,9 +70,12 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 			if (theMatch)
 			{
 				theResult = theRefItem;
+				for (int i = 0; i < getHeadCount(); i++) moveNext(i);
 			}
-
-			moveNext(theMinTimestampHead);
+			else
+			{
+				moveNext(theMinTimestampHead);
+			}
 		}
 		while (!theMatch);
 
@@ -114,9 +117,12 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 			if (theMatch)
 			{
 				theResult = theRefItem;
+				for (int i = 0; i < getHeadCount(); i++) movePrevious(i);
 			}
-
-			movePrevious(theMaxTimestampHead);
+			else
+			{
+				movePrevious(theMaxTimestampHead);
+			}
 		}
 		while (!theMatch);
 

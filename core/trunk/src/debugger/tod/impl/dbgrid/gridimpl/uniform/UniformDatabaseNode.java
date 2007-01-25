@@ -154,6 +154,7 @@ public class UniformDatabaseNode extends DatabaseNode
 		{
 			GridEvent theEvent = (GridEvent) GridMessage.read(itsStruct);
 			itsDatabase.push(theEvent);
+			eventStored(theEvent.getTimestamp());
 		}
 	}
 

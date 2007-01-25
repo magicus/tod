@@ -67,7 +67,7 @@ public class TestEventList
 			
 			if (! aIterator.hasNext()) fail("No more tuples");
 			GridEvent theEvent = aIterator.next();
-			Fixtures.assertEquals(theRefEvent, theEvent);
+			Fixtures.assertEquals(""+i, theRefEvent, theEvent);
 			
 			if (i % 1000000 == 0) System.out.println("v: "+i);
 		}
@@ -89,7 +89,7 @@ public class TestEventList
 			GridEvent theRefEvent = theGenerator.next();
 			
 			GridEvent theEvent = theEventList.getEvent(theIds[i]);
-			Fixtures.assertEquals(theRefEvent, theEvent);
+			Fixtures.assertEquals(""+i, theRefEvent, theEvent);
 		}
 	}
 	

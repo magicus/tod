@@ -63,26 +63,6 @@ public interface IEventBrowser
 	public long[] getEventCounts(long aT1, long aT2, int aSlotsCount, boolean aForceMergeCounts);
 	
 	/**
-	 * Returns a list of all the events that occured between the specified timestamps
-	 */
-	public List<ILogEvent> getEvents(long aT1, long aT2);
-	
-//	/**
-//	 * Returns the event at  the specified index.
-//	 */
-//	public ILogEvent getEvent(int aIndex);
-	
-//	/**
-//	 * Returns the current cursor position.
-//	 */
-//	public int getCursor ();
-	
-//	/**
-//	 * Sets the current cursor position.
-//	 */
-//	public void setCursor (int aPosition);
-	
-	/**
 	 * Sets the cursor so that a call to {@link #next()}
 	 * will return the first event available to
 	 * this browser that occured not before the specified event.
@@ -138,5 +118,11 @@ public interface IEventBrowser
 	/**
 	 * Returns the previous event and updates the cursor.
 	 */
-	public ILogEvent previous();	
+	public ILogEvent previous();
+	
+	/**
+	 * Creates a new event browser that is the intersection of this
+	 * browser's filter and the specified filter.
+	 */
+	public IEventBrowser createIntersection(IEventFilter aFilter);
 }

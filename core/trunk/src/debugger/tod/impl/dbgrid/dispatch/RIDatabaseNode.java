@@ -49,4 +49,8 @@ public interface RIDatabaseNode extends RIDispatchNode
 			long aT2,
 			int aSlotsCount, 
 			boolean aForceMergeCounts) throws RemoteException;
+	
+	public long getEventsCount() throws RemoteException;
+	public long getFirstTimestamp() throws RemoteException;
+	public long getLastTimestamp() throws RemoteException;
 }

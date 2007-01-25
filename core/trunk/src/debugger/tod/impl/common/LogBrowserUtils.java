@@ -30,7 +30,7 @@ import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
 import tod.core.database.structure.IThreadInfo;
 import tod.impl.common.event.Event;
-import tod.impl.common.event.MethodCallEvent;
+import tod.impl.local.event.RootEvent;
 
 /**
  * Utility methods for implementing log browsers.
@@ -66,7 +66,7 @@ public class LogBrowserUtils
 	 */
 	public static IParentEvent createCFlowRoot(ILogBrowser aBrowser, IThreadInfo aThread)
 	{
-		MethodCallEvent theRoot = new MethodCallEvent(aBrowser);
+		RootEvent theRoot = new RootEvent(aBrowser);
 		
 		IEventFilter theFilter = aBrowser.createIntersectionFilter(
 				aBrowser.createThreadFilter(aThread),

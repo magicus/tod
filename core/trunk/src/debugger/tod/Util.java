@@ -27,10 +27,42 @@ import java.util.List;
  */
 public class Util
 {
-
 	public static void ensureSize (List<?> aList, int aSize)
 	{
 		while (aList.size() <= aSize) aList.add (null);
 	}
-
+	
+	/**
+	 * Retrieves the package name of the given class
+	 */
+	public static String getPackageName(String aFullyQualifiedName)
+	{
+		int theIndex = aFullyQualifiedName.lastIndexOf('.');
+		if (theIndex == -1) return "";
+		else return aFullyQualifiedName.substring(0, theIndex);
+	}
+	
+	/**
+	 * Strips the package name from the given class.
+	 */
+	public static String getSimpleName(String aFullyQualifiedName)
+	{
+		int theIndex = aFullyQualifiedName.lastIndexOf('.');
+		
+		String theName = theIndex == -1 ?
+				aFullyQualifiedName
+				: aFullyQualifiedName.substring(theIndex+1);
+		
+		return theName.replace('$', '.');
+	}
+	
+	/**
+	 * Returns the name of the class,
+	 * with the '$' changed to a '.' in the case
+	 * of an inner class.
+	 */
+	public static String getPrettyName(String aFullyQualifiedName)
+	{
+		return aFullyQualifiedName.replace('$', '.');
+	}
 }

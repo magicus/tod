@@ -24,6 +24,8 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -56,8 +58,9 @@ import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
 import tod.impl.dbgrid.db.NodeRejectedException;
 import tod.impl.dbgrid.dispatch.AbstractEventDispatcher;
-import tod.impl.dbgrid.dispatch.DBNodeProxy;
+import tod.impl.dbgrid.dispatch.DatabaseNode;
 import tod.impl.dbgrid.dispatch.InternalEventDispatcher;
+import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
 import tod.impl.dbgrid.dispatch.RIDatabaseNode;
 import tod.impl.dbgrid.dispatch.RIDispatchNode;
 import tod.impl.dbgrid.dispatch.RIEventDispatcher;
@@ -93,8 +96,6 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	private List<RIDatabaseNode> itsNodes = new ArrayList<RIDatabaseNode>();
 	private List<RIEventDispatcher> itsLeafDispatchers = new ArrayList<RIEventDispatcher>();
 	private List<RIEventDispatcher> itsInternalDispatchers = new ArrayList<RIEventDispatcher>();
-	
-	private List<DBNodeProxy> itsNodeProxies = new ArrayList<DBNodeProxy>();
 	
 	private AbstractEventDispatcher itsRootDispatcher;
 	
@@ -137,6 +138,55 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	private Map<String, PrintWriter> itsMonitorLogs = new HashMap<String, PrintWriter>();
 	
+	/**
+	 * Creates a master with a single database node.
+	 */
+	public GridMaster(
+			TODConfig aConfig, 
+			ILocationStore aLocationStore, 
+			IInstrumenter aInstrumenter,
+			DatabaseNode aDatabaseNode,
+			boolean aStartServer) throws RemoteException
+	{
+		itsConfig = aConfig;
+		itsInstrumenter = aInstrumenter;
+		itsLocationStore = aLocationStore;
+		itsRemoteLocationsRepository = new RemoteLocationsRepository(itsLocationStore);
+
+		try
+		{
+			IGridImplementationFactory theFactory = GridImpl.getFactory(itsConfig);
+			LeafEventDispatcher theDispatcher = theFactory.createLeafDispatcher(false, itsLocationStore);
+			itsRootDispatcher = theDispatcher;
+		
+			PipedInputStream theDispatcherIn = new PipedInputStream();
+			PipedInputStream theNodeIn = new PipedInputStream();
+			PipedOutputStream theDispatcherOut = new PipedOutputStream(theNodeIn);
+			PipedOutputStream theNodeOut = new PipedOutputStream(theDispatcherIn);
+			
+			theDispatcher.acceptChild(
+					"db-0", 
+					aDatabaseNode, 
+					theDispatcherIn, 
+					theDispatcherOut);
+			
+			aDatabaseNode.connectToLocalDispatcher(theNodeIn, theNodeOut);
+			
+			aDatabaseNode.connectToLocalMaster(this, "db-0");
+			theDispatcher.connectToLocalMaster(this, "leaf-0");
+			
+			itsNodes.add(aDatabaseNode);
+			
+			// Setup server
+			if (aStartServer) itsServer = createServer();
+
+			ready();
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
 	
 	/**
 	 * Initializes a grid master. After calling the constructor, the
@@ -151,6 +201,8 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	{
 		itsConfig = aConfig;
 		itsInstrumenter = aInstrumenter;
+		itsLocationStore = aLocationStore;
+		itsRemoteLocationsRepository = new RemoteLocationsRepository(itsLocationStore);
 		
 		try
 		{
@@ -165,15 +217,17 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			e.printStackTrace();
 		}
 		
-		itsLocationStore = aLocationStore;
 		
-		itsRemoteLocationsRepository = new RemoteLocationsRepository(itsLocationStore);
 
 		if (DebugFlags.DISPATCH_FAKE_1)
 		{
 			itsExpectedNodes = 1;
 			itsExpectedLeafDispatchers = 1;
 			itsExpectedInternalDispatchers = 0;
+		}
+		else if (aExpectedNodes == 0)
+		{
+			
 		}
 		else
 		{
@@ -274,6 +328,9 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			assert theChildrenQueue.removeLast() == itsRootDispatcher;
 			assert theChildrenQueue.isEmpty();
 
+			// Setup server
+			itsServer = createServer();
+			
 			ready();
 		}
 		catch (Exception e)
@@ -287,12 +344,8 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	protected void ready()
 	{
-		// Setup server
-		itsServer = createServer();
-		
 		Timer theTimer = new Timer(true);
 		theTimer.schedule(new DataUpdater(), 5000, 3000);
-
 	}
 	
 	/**
@@ -526,13 +579,13 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	public int getNodeCount()
 	{
-		return itsNodeProxies.size();
+		return itsNodes.size();
 	}
 	
 	/**
 	 * Returns the event dispatcher. For testing only.
 	 */
-	public AbstractEventDispatcher getDispatcher()
+	public AbstractEventDispatcher _getDispatcher()
 	{
 		return itsRootDispatcher;
 	}
@@ -592,19 +645,51 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	
 	public long getEventsCount()
 	{
+		if (itsEventsCount == 0) updateStats();
 		return itsEventsCount;
 	}
 
 	public long getFirstTimestamp()
 	{
+		if (itsFirstTimestamp == 0) updateStats();
 		return itsFirstTimestamp;
 	}
 
 	public long getLastTimestamp()
 	{
+		if (itsLastTimestamp == 0) updateStats();
 		return itsLastTimestamp;
 	}
+	
+	protected void updateStats()
+	{
+		itsEventsCount = 0;
+		itsFirstTimestamp = Long.MAX_VALUE;
+		itsLastTimestamp = 0;
+		
+		try
+		{
+			for (RIDatabaseNode theNode : itsNodes)
+			{
+				itsEventsCount += theNode.getEventsCount();
+				itsFirstTimestamp = Math.min(itsFirstTimestamp, theNode.getFirstTimestamp());
+				itsLastTimestamp = Math.max(itsLastTimestamp, theNode.getLastTimestamp());
+			}
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
 
+	}
+
+	/**
+	 * For testing only
+	 */
+	public ILocationStore _getLocationStore()
+	{
+		return itsLocationStore;
+	}
 	
 	public RILocationsRepository getLocationsRepository() 
 	{
@@ -620,31 +705,25 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	private class DataUpdater extends TimerTask
 	{
+		private long itsPreviousEventsCount;
+		private long itsPreviousFirstTimestamp;
+		private long itsPreviousLastTimestamp;
+		private int itsPreviousThreadCount;
 		
 		@Override
 		public void run()
 		{
-			long theEventsCount = 0;
-			long theFirstTimestamp = Long.MAX_VALUE;
-			long theLastTimestamp = 0;
-			int theThreadsCount = 0;
+			updateStats();
 			
-			for (DBNodeProxy theProxy : itsNodeProxies)
+			if (itsPreviousEventsCount != itsEventsCount
+					|| itsPreviousFirstTimestamp != itsFirstTimestamp
+					|| itsPreviousLastTimestamp != itsLastTimestamp
+					|| itsPreviousThreadCount != itsThreadCount)
 			{
-				theEventsCount += theProxy.getEventsCount();
-				theFirstTimestamp = Math.min(theFirstTimestamp, theProxy.getFirstTimestamp());
-				theLastTimestamp = Math.max(theLastTimestamp, theProxy.getLastTimestamp());
-			}
-			
-			if (theEventsCount != itsEventsCount
-					|| theFirstTimestamp != itsFirstTimestamp
-					|| theLastTimestamp != itsLastTimestamp
-					|| theThreadsCount != itsThreadCount)
-			{
-				itsEventsCount = theEventsCount;
-				itsFirstTimestamp = theFirstTimestamp;
-				itsLastTimestamp = theLastTimestamp;
-				itsThreadCount = theThreadsCount;
+				itsPreviousEventsCount = itsEventsCount;
+				itsPreviousFirstTimestamp = itsFirstTimestamp;
+				itsPreviousLastTimestamp = itsLastTimestamp;
+				itsPreviousThreadCount = itsThreadCount;
 				
 				fireEventsReceived();
 			}
@@ -679,6 +758,13 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			{
 				throw new RuntimeException(e);
 			}
+		}
+		
+		@Override
+		protected void flush()
+		{
+			super.flush();
+			GridMaster.this.flush();
 		}
 	}
 	

@@ -23,79 +23,35 @@ package tod.gui;
 import java.awt.event.ActionEvent;
 
 import javax.swing.Action;
-import javax.swing.JPanel;
 
 import tod.gui.seed.Seed;
-import tod.gui.view.LogView;
 import zz.utils.ArrayStack;
 import zz.utils.ItemAction;
 import zz.utils.Stack;
-import zz.utils.ui.StackLayout;
 
 /**
  * Implements the web browser-like navigation: backward and forward stack of
  * seeds.
  * @author gpothier
  */
-public class BrowserNavigator
+public class BrowserNavigator<S extends Seed>
 {
-	private Stack<Seed> itsBackwardSeeds = new ArrayStack<Seed>(50);
-	private Stack<Seed> itsForwardSeeds = new ArrayStack<Seed>();
+	private Stack<S> itsBackwardSeeds = new ArrayStack<S>(50);
+	private Stack<S> itsForwardSeeds = new ArrayStack<S>();
 	
 	private Action itsBackwardAction = new BackwardAction();
 	private Action itsForwardAction = new ForwardAction();
 	
-	private JPanel itsViewContainer;
-	private Seed itsCurrentSeed;
-
-	public BrowserNavigator()
+	private S itsCurrentSeed;
+	
+	public S getCurrentSeed()
 	{
-		itsViewContainer = new JPanel (new StackLayout());
-		
+		return itsCurrentSeed;
 	}
-	
-	
-	private void setSeed (Seed aSeed)
+
+	protected void setSeed (S aSeed)
 	{
-		if (itsCurrentSeed != null) 
-		{
-			try
-			{
-				LogView theComponent = itsCurrentSeed.getComponent();
-				if (theComponent != null) itsViewContainer.remove(theComponent);
-				itsCurrentSeed.deactivate();
-			}
-			catch (Exception e)
-			{
-				e.printStackTrace();
-			}
-		}
-		
 		itsCurrentSeed = aSeed;
-		
-		if (itsCurrentSeed != null) 
-		{
-			try
-			{
-				itsCurrentSeed.activate();
-				LogView theComponent = itsCurrentSeed.getComponent();
-				itsViewContainer.add(theComponent);
-			}
-			catch (Exception e)
-			{
-				e.printStackTrace();
-			}
-		}
-		
-		itsViewContainer.revalidate();
-		itsViewContainer.repaint();
-		itsViewContainer.validate();
-	}
-	
-
-	public JPanel getViewContainer()
-	{
-		return itsViewContainer;
 	}
 	
 	/**
@@ -105,7 +61,7 @@ public class BrowserNavigator
 	{
 		if (! itsBackwardSeeds.isEmpty())
 		{
-			Seed theSeed = itsBackwardSeeds.pop();
+			S theSeed = itsBackwardSeeds.pop();
 			if (itsCurrentSeed != null) itsForwardSeeds.push(itsCurrentSeed);
 			setSeed(theSeed);
 			updateActions();
@@ -120,7 +76,7 @@ public class BrowserNavigator
 	{
 		if (! itsForwardSeeds.isEmpty())
 		{
-			Seed theSeed = itsForwardSeeds.pop();
+			S theSeed = itsForwardSeeds.pop();
 			if (itsCurrentSeed != null) itsBackwardSeeds.push(itsCurrentSeed);
 			setSeed(theSeed);
 			updateActions();
@@ -130,7 +86,7 @@ public class BrowserNavigator
 	/**
 	 * Opens a view for the given seed.
 	 */
-	public void open (Seed aSeed)
+	public void open (S aSeed)
 	{
 		if (itsCurrentSeed != null) itsBackwardSeeds.push(itsCurrentSeed);
 		itsForwardSeeds.clear();

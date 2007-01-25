@@ -22,7 +22,6 @@ package tod.core.database.structure;
 
 public interface ITypeInfo extends ILocationInfo
 {
-
 	/**
 	 * Returns the number of JVM stack slots that an object of
 	 * this type occupies.
@@ -44,5 +43,4 @@ public interface ITypeInfo extends ILocationInfo
 	 * Indicates if ths type is the void type.
 	 */
 	public boolean isVoid();
-
 }

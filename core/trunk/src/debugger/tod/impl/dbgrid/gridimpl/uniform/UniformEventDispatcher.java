@@ -20,6 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.gridimpl.uniform;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.rmi.RemoteException;
 
@@ -46,10 +48,11 @@ public class UniformEventDispatcher extends LeafEventDispatcher
 	@Override
 	protected DispatchNodeProxy createProxy(
 			RIDispatchNode aConnectable,
-			Socket aSocket, 
+			InputStream aInputStream,
+			OutputStream aOutputStream,
 			String aId)
 	{
-		return new UniformDBNodeProxy(aConnectable, aSocket, aId);
+		return new UniformDBNodeProxy(aConnectable, aInputStream, aOutputStream, aId);
 	}
 
 	@Override

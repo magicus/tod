@@ -18,11 +18,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.common.event;
+package tod.impl.local.event;
 
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IInstantiationEvent;
 import tod.core.database.structure.ITypeInfo;
+import tod.impl.local.LocalBrowser;
 
 /**
  * @author gpothier
@@ -30,7 +30,7 @@ import tod.core.database.structure.ITypeInfo;
 public class InstantiationEvent extends BehaviorCallEvent 
 implements IInstantiationEvent
 {
-	public InstantiationEvent(ILogBrowser aLogBrowser)
+	public InstantiationEvent(LocalBrowser aLogBrowser)
 	{
 		super(aLogBrowser);
 	}

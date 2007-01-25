@@ -25,7 +25,10 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -40,6 +43,10 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import javax.swing.Timer;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.event.EventComparator;
@@ -63,6 +70,10 @@ import zz.utils.ui.UIUtils;
  */
 public class EventMural extends SVGGraphicContainer
 {
+	private static final int MAX_BALOONS = 20;
+	
+	private static final ImageUpdater itsUpdater = new ImageUpdater();
+	
 	private IRWProperty<Long> pStart = new SimpleRWProperty<Long>(this)
 	{
 		@Override
@@ -96,6 +107,7 @@ public class EventMural extends SVGGraphicContainer
 		protected void clean()
 		{
 			itsImages.clear();
+			repaintAllContexts();
 		}
 	};
 	
@@ -114,9 +126,19 @@ public class EventMural extends SVGGraphicContainer
 	private Map<IDisplay, BufferedImage> itsImages = new WeakHashMap<IDisplay, BufferedImage>();
 	private boolean itsShowBaloons = true;
 	
+	private Timer itsTimer;
+	
 	public EventMural()
 	{
 		pBounds().set(0, 0, 100, 20);
+		itsTimer = new Timer(100, new ActionListener()
+		{
+			public void actionPerformed(ActionEvent aE)
+			{
+				repaintAllContexts();
+			}
+		});
+		itsTimer.setRepeats(false);
 	}
 
 	public EventMural(IEventBrowser aBrowser)
@@ -170,37 +192,10 @@ public class EventMural extends SVGGraphicContainer
 	/**
 	 * Updates the timescale image.
 	 */
-	protected BufferedImage updateImage(IDisplay aDisplay)
+	protected void updateImage(final IDisplay aDisplay)
 	{
-		if (! isReady()) return null;
-		
-		Rectangle2D theBounds = pBounds().get();
-		Point2D p00 = new Point2D.Double(0, 0);
-		Point2D p01 = new Point2D.Double(0, theBounds.getHeight());
-		Point2D p10 = new Point2D.Double(theBounds.getWidth(), 0);
-		
-		Point tp00 = aDisplay.localToPixel(null, this, p00);
-		Point tp01 = aDisplay.localToPixel(null, this, p01);
-		Point tp10 = aDisplay.localToPixel(null, this, p10);
-
-		int width = (int) tp10.distance(tp00);
-		int height = (int) tp01.distance(tp00);
-		if (height == 0 || width == 0) return null;
-
-		BufferedImage theImage = itsImages.get(aDisplay);
-		if (theImage == null) 
-		{
-			GraphicsConfiguration theConfiguration = aDisplay.getGraphicsConfiguration();
-			theImage = theConfiguration.createCompatibleImage(width, height);
-			itsImages.put(aDisplay, theImage);
-		}
-		
-		Graphics2D theGraphics = theImage.createGraphics();
-		theGraphics.setColor(Color.WHITE);
-		theGraphics.fillRect(0, 0, width, height);
-		paintMural(theGraphics, new Rectangle(0, 0, width, height), pStart().get(), pEnd().get(), pEventBrowsers());
-		
-		return theImage;
+		if (! isReady()) return;
+		itsUpdater.request(this, aDisplay);
 	}
 	
 	/**
@@ -235,8 +230,10 @@ public class EventMural extends SVGGraphicContainer
 		
 		SpaceManager theManager = new SpaceManager(theBounds.getHeight());
 		
-		while (theBrowser.hasNext())
+		int i = 0;
+		while (theBrowser.hasNext() && i<MAX_BALOONS)
 		{
+			i++;
 			ILogEvent theEvent = theBrowser.next();
 			t = theEvent.getTimestamp();
 			if (t > t2) break;
@@ -292,14 +289,27 @@ public class EventMural extends SVGGraphicContainer
 	{
 		// Paint mural image
 		BufferedImage theImage = itsImages.get(aDisplay);
-		if (theImage == null) theImage = updateImage(aDisplay);
+		if (theImage == null) updateImage(aDisplay);
 
+		Rectangle2D theBounds = pBounds().get();
+		double w = theBounds.getWidth();
+		double h = theBounds.getHeight();
+		
 		if (theImage != null)
 		{
-			Rectangle2D theBounds = pBounds().get();
-			int w = (int) theBounds.getWidth();
-			int h = (int) theBounds.getHeight();
-			aGraphics.drawImage(theImage, 0, 0, w, h, null);
+			aGraphics.drawImage(theImage, 0, 0, (int) w, (int) h, null);
+		}
+		else
+		{
+			double theSize = 10;
+			double theX = w/2;
+			double theY = h/2;
+			
+			long theTime = System.currentTimeMillis();
+			aGraphics.setColor((theTime/200) % 2 == 0 ? Color.BLACK : Color.LIGHT_GRAY);
+			aGraphics.fill(new Rectangle2D.Double(theX-theSize/2, theY-theSize/2, theSize, theSize));
+			
+			itsTimer.start();
 		}
 	}
 
@@ -608,5 +618,140 @@ public class EventMural extends SVGGraphicContainer
 		{
 			return itsEnd - itsStart;
 		}
+	}
+	
+	private static class ImageUpdateRequest
+	{
+		public final EventMural mural;
+		public final IDisplay display;
+		
+		public ImageUpdateRequest(EventMural aMural, IDisplay aDisplay)
+		{
+			mural = aMural;
+			display = aDisplay;
+		}
+
+		@Override
+		public int hashCode()
+		{
+			final int PRIME = 31;
+			int result = 1;
+			result = PRIME * result + ((display == null) ? 0 : display.hashCode());
+			result = PRIME * result + ((mural == null) ? 0 : mural.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			final ImageUpdateRequest other = (ImageUpdateRequest) obj;
+			if (display == null)
+			{
+				if (other.display != null) return false;
+			}
+			else if (!display.equals(other.display)) return false;
+			if (mural == null)
+			{
+				if (other.mural != null) return false;
+			}
+			else if (!mural.equals(other.mural)) return false;
+			return true;
+		}
+		
+	}
+	
+	private static class ImageUpdater extends Thread
+	{
+		private BlockingQueue<ImageUpdateRequest> itsRequestsQueue =
+			new LinkedBlockingQueue<ImageUpdateRequest>();
+		
+		private Set<ImageUpdateRequest> itsCurrentRequests =
+			new HashSet<ImageUpdateRequest>();
+		
+		public ImageUpdater()
+		{
+			super("EventMural updater");
+			start();
+		}
+
+		public synchronized void request(EventMural aMural, IDisplay aDisplay)
+		{
+			try
+			{
+				ImageUpdateRequest theRequest = new ImageUpdateRequest(aMural, aDisplay);
+				if (! itsCurrentRequests.contains(theRequest))
+				{
+					itsCurrentRequests.add(theRequest);
+					itsRequestsQueue.put(theRequest);
+				}
+			}
+			catch (InterruptedException e)
+			{
+			}
+		}
+		
+		@Override
+		public void run()
+		{
+			try
+			{
+				while(true)
+				{
+					ImageUpdateRequest theRequest = itsRequestsQueue.take();
+					long t0 = System.currentTimeMillis();
+					System.out.println("[EventMural.Updater] Processing request: "+theRequest);
+					doUpdateImage(theRequest.mural, theRequest.display);
+					long t1 = System.currentTimeMillis();
+					float t = (t1-t0)/1000f;
+					System.out.println("[EventMural.Updater] Finished request in "+t+"s.");
+					
+					itsCurrentRequests.remove(theRequest);
+				}
+			}
+			catch (InterruptedException e)
+			{
+			}
+		}
+		
+		protected void doUpdateImage(EventMural aMural, IDisplay aDisplay)
+		{
+			Rectangle2D theBounds = aMural.pBounds().get();
+			Point2D p00 = new Point2D.Double(0, 0);
+			Point2D p01 = new Point2D.Double(0, theBounds.getHeight());
+			Point2D p10 = new Point2D.Double(theBounds.getWidth(), 0);
+			
+			Point tp00 = aDisplay.localToPixel(null, aMural, p00);
+			Point tp01 = aDisplay.localToPixel(null, aMural, p01);
+			Point tp10 = aDisplay.localToPixel(null, aMural, p10);
+
+			int width = (int) tp10.distance(tp00);
+			int height = (int) tp01.distance(tp00);
+			if (height == 0 || width == 0) return;
+
+			BufferedImage theImage = aMural.itsImages.get(aDisplay);
+			if (theImage == null) 
+			{
+				GraphicsConfiguration theConfiguration = aDisplay.getGraphicsConfiguration();
+				theImage = theConfiguration.createCompatibleImage(width, height);
+				aMural.itsImages.put(aDisplay, theImage);
+			}
+			
+			Graphics2D theGraphics = theImage.createGraphics();
+			theGraphics.setColor(Color.WHITE);
+			theGraphics.fillRect(0, 0, width, height);
+			paintMural(
+					theGraphics, 
+					new Rectangle(0, 0, width, height), 
+					aMural.pStart().get(), 
+					aMural.pEnd().get(), 
+					aMural.pEventBrowsers());
+
+			aMural.repaintAllContexts();
+		}
+		
+
 	}
 }

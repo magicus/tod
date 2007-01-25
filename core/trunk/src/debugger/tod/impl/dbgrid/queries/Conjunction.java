@@ -53,11 +53,11 @@ public class Conjunction extends CompoundCondition
 	}
 
 	@Override
-	public boolean match(GridEvent aEvent)
+	public boolean _match(GridEvent aEvent)
 	{
 		for (EventCondition theCondition : getConditions())
 		{
-			if (! theCondition.match(aEvent)) return false;
+			if (! theCondition._match(aEvent)) return false;
 		}
 		return true;
 	}

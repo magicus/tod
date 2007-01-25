@@ -48,7 +48,7 @@ public class TypeCondition extends SimpleCondition
 	}
 
 	@Override
-	public boolean match(GridEvent aEvent)
+	public boolean _match(GridEvent aEvent)
 	{
 		return aEvent.getEventType() == itsType;
 	}

@@ -51,8 +51,6 @@ public interface RIEventIterator extends Remote
 	
 	/**
 	 * Fetches events preceeding the cursor position, and updates the cursor.
-	 * The events are returned in reverse order, ie. the first event of the array
-	 * is the latest.
 	 * @param aCount Maximum number of events to fetch.
 	 * @return The fetched events, or null if there are no more events.
 	 */

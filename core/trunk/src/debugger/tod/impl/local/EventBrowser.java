@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.EventComparator;
 import tod.core.database.event.ILogEvent;
@@ -186,6 +187,18 @@ public class EventBrowser implements IEventBrowser
 		}
 		
 		return theResult;
+	}
+
+	public IEventBrowser createIntersection(IEventFilter aFilter)
+	{
+		AbstractFilter theFilter = (AbstractFilter) aFilter;
+		List<ILogEvent> theEvents = new ArrayList<ILogEvent>();
+		for (ILogEvent theEvent : itsEvents)
+		{
+			if (theFilter.accept(theEvent)) theEvents.add(theEvent);
+		}
+		
+		return new EventBrowser(itsLogBrowser, theEvents);
 	}
 	
 	

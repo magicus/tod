@@ -45,7 +45,7 @@ implements IEventFilter, Serializable
 	 * Indicates if the specified event passes the condition.
 	 * This method is used for testing purposes.
 	 */
-	public abstract boolean match(GridEvent aEvent);
+	public abstract boolean _match(GridEvent aEvent);
 	
 	/**
 	 * Creates an iterator over matching events, taking them from the specified

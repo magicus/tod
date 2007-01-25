@@ -28,6 +28,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.rmi.RemoteException;
 
+import tod.agent.DebugFlags;
+import tod.core.ILogCollector;
 import tod.core.database.browser.ILocationStore;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.IHostInfo;
@@ -37,6 +39,7 @@ import tod.core.transport.LogReceiver;
 import tod.impl.dbgrid.GridEventCollector;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.messages.GridEvent;
+import tod.utils.PrintThroughCollector;
 
 /**
  * A leaf event dispatcher in the dispatching hierarchy.
@@ -58,8 +61,22 @@ implements RILeafDispatcher
 	 */
 	private ILocationStore itsLocationStore;
 	
+	/**
+	 * Creates a leaf dispatcher with a single local database node,
+	 * without using the registry.
+	 */
+	public LeafEventDispatcher(
+			ILocationStore aLocationStore,
+			DatabaseNode aDatabaseNode) throws RemoteException
+	{
+		super(false);
+		itsLocationStore = aLocationStore;
+		
+	}
+	
 	public LeafEventDispatcher(ILocationStore aLocationStore) throws RemoteException
 	{
+		super(true);
 		itsLocationStore = aLocationStore;
 	}
 	
@@ -75,11 +92,15 @@ implements RILeafDispatcher
 			InputStream aInStream,
 			OutputStream aOutStream, boolean aStartImmediately)
 	{
-		MyCollector theCollector = new MyCollector(
+		ILogCollector theCollector = new MyCollector(
 				aMaster,
 				aHostInfo,
 				itsLocationStore,
 				this);
+		
+		if (DebugFlags.COLLECTOR_LOG) theCollector = new PrintThroughCollector(
+				theCollector,
+				aMaster._getLocationStore());
 		
 		return new CollectorLogReceiver(
 				theCollector,

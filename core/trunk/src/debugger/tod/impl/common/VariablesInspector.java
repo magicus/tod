@@ -27,6 +27,8 @@ import java.util.List;
 
 import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.IEventFilter;
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IVariablesInspector;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILocalVariableWriteEvent;
@@ -37,7 +39,7 @@ import tod.core.database.structure.ITypeInfo;
 public class VariablesInspector implements IVariablesInspector
 {
 	private final IBehaviorCallEvent itsBehaviorCall;
-	private IEventBrowser itsBrowser;
+	private IEventBrowser itsChildrenBrowser;
 	private ILogEvent itsCurrentEvent;
 	private List<LocalVariableInfo> itsVariables;
 	
@@ -45,7 +47,7 @@ public class VariablesInspector implements IVariablesInspector
 	{
 //		assert aBehaviorCall.isDirectParent();
 		itsBehaviorCall = aBehaviorCall.isDirectParent() ? aBehaviorCall : null;
-		itsBrowser = itsBehaviorCall != null ? itsBehaviorCall.getChildrenBrowser() : null;
+		itsChildrenBrowser = itsBehaviorCall != null ? itsBehaviorCall.getChildrenBrowser() : null;
 	}
 
 	public IBehaviorCallEvent getBehaviorCall()
@@ -83,10 +85,6 @@ public class VariablesInspector implements IVariablesInspector
 	public void setCurrentEvent(ILogEvent aEvent)
 	{
 		if (getBehaviorCall() == null) return;
-		
-		if (! itsBrowser.setNextEvent(aEvent))
-			throw new RuntimeException("Event not found in method execution");
-		
 		itsCurrentEvent = aEvent;
 	}
 
@@ -99,18 +97,15 @@ public class VariablesInspector implements IVariablesInspector
 	{
 		if (getBehaviorCall() == null) return null;
 		
-		itsBrowser.setNextEvent(itsCurrentEvent);
-		while (itsBrowser.hasPrevious())
+		ILogBrowser theLogBrowser = itsChildrenBrowser.getLogBrowser();
+		IEventFilter theFilter = theLogBrowser.createVariableWriteFilter(aVariable);
+		IEventBrowser theBrowser = itsChildrenBrowser.createIntersection(theFilter);
+		
+		theBrowser.setNextEvent(itsCurrentEvent);
+		while (theBrowser.hasPrevious())
 		{
-			ILogEvent theEvent = itsBrowser.previous();
-			if (theEvent instanceof ILocalVariableWriteEvent)
-			{
-				ILocalVariableWriteEvent theLocalVariableWriteEvent = (ILocalVariableWriteEvent) theEvent;
-				if (theLocalVariableWriteEvent.getVariable() == aVariable)
-				{
-					return theLocalVariableWriteEvent.getValue();
-				}
-			}
+			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) theBrowser.previous();
+			if (aVariable.equals(theEvent.getVariable())) return theEvent.getValue();
 		}
 		
 		// If we did not find a variable write corresponding to the variable,
@@ -138,18 +133,15 @@ public class VariablesInspector implements IVariablesInspector
 	{
 		if (getBehaviorCall() == null) return null;
 		
-		itsBrowser.setNextEvent(itsCurrentEvent);
-		while (itsBrowser.hasPrevious())
+		ILogBrowser theLogBrowser = itsChildrenBrowser.getLogBrowser();
+		IEventFilter theFilter = theLogBrowser.createVariableWriteFilter(aVariable);
+		IEventBrowser theBrowser = itsChildrenBrowser.createIntersection(theFilter);
+		
+		theBrowser.setNextEvent(itsCurrentEvent);
+		while (theBrowser.hasPrevious())
 		{
-			ILogEvent theEvent = itsBrowser.previous();
-			if (theEvent instanceof ILocalVariableWriteEvent)
-			{
-				ILocalVariableWriteEvent theLocalVariableWriteEvent = (ILocalVariableWriteEvent) theEvent;
-				if (theLocalVariableWriteEvent.getVariable() == aVariable)
-				{
-					return theLocalVariableWriteEvent;
-				}
-			}
+			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) theBrowser.previous();
+			if (aVariable.equals(theEvent.getVariable())) return theEvent;
 		}
 		
 		return null;

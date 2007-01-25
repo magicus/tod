@@ -23,11 +23,13 @@ package tod.gui.controlflow;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.ComponentSampleModel;
 
 import javax.swing.JButton;
@@ -44,13 +46,20 @@ import tod.core.database.browser.Stepper;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.ObjectId;
 import tod.gui.IGUIManager;
+import tod.gui.Hyperlinks.ISeedFactory;
 import tod.gui.controlflow.tree.CFlowTree;
+import tod.gui.controlflow.watch.WatchPanel;
 import tod.gui.eventlist.MuralScroller;
 import tod.gui.eventlist.MuralScroller.UnitScroll;
 import tod.gui.formatter.EventFormatter;
 import tod.gui.seed.CFlowSeed;
+import tod.gui.seed.Seed;
 import tod.gui.view.LogView;
+import zz.csg.api.GraphicUtils;
 import zz.csg.display.GraphicPanel;
 import zz.utils.SimpleAction;
 import zz.utils.notification.IEvent;
@@ -66,16 +75,13 @@ public class CFlowView extends LogView
 	
 	private CFlowSeed itsSeed;
 	private CFlowTree itsCFlowTree;
-	private CFlowVariablesBuilder itsVariablesBuilder;
-	private CFlowObjectsBuilder itsObjectsBuilder;
 	
 	private EventFormatter itsFormatter;
 	
 	private Stepper itsStepper;
 	
 	private GraphicPanel itsTreePanel;
-	private GraphicPanel itsVariablesPanel;
-	private GraphicPanel itsObjectsPanel;
+	private WatchPanel itsWatchPanel;
 	
 	private MuralScroller itsScroller;
 	
@@ -111,7 +117,7 @@ public class CFlowView extends LogView
 	
 
 
-	private JSplitPane itsSplitPane1;
+	private JSplitPane itsSplitPane;
 	
 	public CFlowView(IGUIManager aGUIManager, ILogBrowser aLogBrowser, CFlowSeed aSeed)
 	{
@@ -207,32 +213,15 @@ public class CFlowView extends LogView
 		theCFlowPanel.add(theCFlowTreePanel, BorderLayout.CENTER);
 		theCFlowPanel.add(createToolbar(), BorderLayout.NORTH);
 		
-		// Create variables panel
-		itsVariablesBuilder = new CFlowVariablesBuilder(this);
-		
-		itsVariablesPanel = new GraphicPanel();
-		itsVariablesPanel.setTransform(new AffineTransform());
-		
-		// Create objects panel
-		itsObjectsBuilder = new CFlowObjectsBuilder(this);
-		
-		itsObjectsPanel = new GraphicPanel();
-		itsObjectsPanel.setTransform(new AffineTransform());
-		
+		// Create watch panel
+		itsWatchPanel = new WatchPanel(this);
 
-		itsSplitPane1 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-		itsSplitPane1.setResizeWeight(0.5);
-		itsSplitPane1.setLeftComponent(theCFlowPanel);
+		itsSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		itsSplitPane.setResizeWeight(0.5);
+		itsSplitPane.setLeftComponent(theCFlowPanel);
+		itsSplitPane.setRightComponent(itsWatchPanel);
 		
-		JSplitPane theSplitPane2 = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-		theSplitPane2.setResizeWeight(0.5);
-		theSplitPane2.setLeftComponent(new MyScrollPane(itsVariablesPanel));
-		theSplitPane2.setRightComponent(new MyScrollPane(itsObjectsPanel));
-		
-		itsSplitPane1.setRightComponent(theSplitPane2);
-//		theSplitPane1.setRightComponent(new JScrollPane(itsVariablesPanel));
-		
-		add(itsSplitPane1, BorderLayout.CENTER);
+		add(itsSplitPane, BorderLayout.CENTER);
 		
 		setParent(getSeed().pParentEvent().get());
 		update();
@@ -331,14 +320,11 @@ public class CFlowView extends LogView
 	
 	private void update()
 	{
-		ILogEvent theRootEvent = itsSeed.pRootEvent().get();
 		ILogEvent theSelectedEvent = itsSeed.pSelectedEvent().get();
 		
 		if (theSelectedEvent != null)
 		{
-			itsVariablesPanel.setRootNode(itsVariablesBuilder.build(theRootEvent, theSelectedEvent));
-			itsObjectsPanel.setRootNode(itsObjectsBuilder.build(theRootEvent, theSelectedEvent));
-			
+			itsWatchPanel.showStackFrame();
 			showEvent(theSelectedEvent);
 		}
 		
@@ -347,52 +333,25 @@ public class CFlowView extends LogView
 	
 	private void showEvent (ILogEvent aEvent)
 	{
-		getSeed().pParentEvent().set(aEvent.getParent());
+		IBehaviorCallEvent theCurrentParent = getSeed().pParentEvent().get();
+		if (! aEvent.getParentPointer().equals(theCurrentParent.getPointer()))
+		{
+			getSeed().pParentEvent().set(aEvent.getParent());
+		}
+		
 		getSeed().pSelectedEvent().set(aEvent);
 		
-		if (! itsCFlowTree.isVisible(aEvent))
+		Rectangle2D theBounds = itsCFlowTree.makeVisible(aEvent);
+		if (theBounds != null)
 		{
-			itsScroller.pTrackScroll().set(aEvent.getTimestamp());
+			Rectangle thePixelBounds = itsTreePanel.localToPixel(
+					itsTreePanel.getRootNode().getContext(), 
+					itsCFlowTree, 
+					theBounds);
+			
+			thePixelBounds.x -= 50;
+			itsTreePanel.scrollRectToVisible(thePixelBounds);
 		}
-//		ILogEvent theRootEvent = itsSeed.pRootEvent().get();
-//		
-//		LinkedList<ILogEvent> theEventPath = new LinkedList<ILogEvent>();
-//		
-//		while (aEvent != null)
-//		{
-//			theEventPath.addFirst(aEvent);
-//			if (aEvent == theRootEvent) break;
-//			aEvent = aEvent.getParent();
-//		}
-//		
-//		AbstractEventNode theNode = itsRootNode;
-//		for (Iterator<ILogEvent> theIterator = theEventPath.iterator(); theIterator.hasNext();)
-//		{
-//			ILogEvent theEvent = theIterator.next();
-//			
-//			theNode = theNode.getNode(theEvent);
-//			if (theIterator.hasNext()) theNode.expand();
-//			theNode.invalidate();
-//		}
-//		
-//		itsUpdated = false;
-//		
-//		// the layout must be ready.
-//		itsRootNode.invalidate();
-//		itsRootNode.checkValid(); 
-//		itsTreePanel.setShownBounds(null); // TODO: hack to recompute the size.
-//		
-//		Rectangle2D theNodeBounds = theNode.getBounds(null);
-//		Rectangle theBounds = itsTreePanel.localToPixel(null, theNode, theNodeBounds);
-//		
-//		// This permits the viewport to be scrolled full left.
-//		// Doesn't work for deep cflow...
-//		theBounds.width = 10;
-//		theBounds.x = 0;
-//		theBounds.y -= 10;
-//		theBounds.height += 20;
-//			
-//		itsTreePanel.scrollRectToVisible(theBounds);
 	}
 		
 	@Override
@@ -403,7 +362,7 @@ public class CFlowView extends LogView
 		itsSeed.pRootEvent().addHardListener(itsRootEventListener);
 		itsSeed.pParentEvent().addHardListener(itsParentListener);
 		
-		itsSplitPane1.setDividerLocation(400);
+		itsSplitPane.setDividerLocation(400);
 		
 		update();
 	}
@@ -480,4 +439,34 @@ public class CFlowView extends LogView
 		}
 	}
 	
+	private class CFlowSeedFactory implements ISeedFactory
+	{
+
+		public Seed behaviorSeed(IBehaviorInfo aBehavior)
+		{
+			return null;
+		}
+
+		public Seed cflowSeed(final ILogEvent aEvent)
+		{
+			return new Seed()
+			{
+				public void open()
+				{
+					showEvent(aEvent);
+				}
+			};
+		}
+
+		public Seed objectSeed(ObjectId aObjectId)
+		{
+			return null;
+		}
+
+		public Seed typeSeed(ITypeInfo aType)
+		{
+			return null;
+		}
+		
+	}
 }

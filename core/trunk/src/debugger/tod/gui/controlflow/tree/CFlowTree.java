@@ -28,8 +28,10 @@ import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import tod.core.database.event.EventUtils;
 import tod.core.database.event.IArrayWriteEvent;
@@ -59,6 +61,7 @@ import zz.csg.impl.SVGGraphicContainer;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.PropertyListener;
+import zz.utils.ui.HorizontalAlignment;
 
 public class CFlowTree extends SVGGraphicContainer
 {
@@ -76,6 +79,12 @@ public class CFlowTree extends SVGGraphicContainer
 	
 	private long itsFirstDisplayedTimestamp;
 	private long itsLastDisplayedTimestamp;
+	
+	/**
+	 * Maps currently displayed events to their graphic node.
+	 */
+	private Map<ILogEvent, AbstractEventNode> itsNodesMap = 
+		new HashMap<ILogEvent, AbstractEventNode>();
 	
 	public CFlowTree(CFlowView aView)
 	{
@@ -187,10 +196,15 @@ public class CFlowTree extends SVGGraphicContainer
 	{
 		LinkedList<ILogEvent> theEvents = itsCore.getDisplayedEvents();
 		
+		itsNodesMap.clear();
 		for (ILogEvent theEvent : theEvents)
 		{
 			AbstractEventNode theNode = buildEventNode(theEvent);
-			if (theNode != null) aContainer.pChildren().add(theNode);
+			if (theNode != null) 
+			{
+				aContainer.pChildren().add(theNode);
+				itsNodesMap.put(theEvent, theNode);
+			}
 		}
 	}
 	
@@ -199,6 +213,25 @@ public class CFlowTree extends SVGGraphicContainer
 		long theTimestamp = aEvent.getTimestamp();
 		return theTimestamp >= itsFirstDisplayedTimestamp 
 				&& theTimestamp <= itsLastDisplayedTimestamp;
+	}
+	
+	/**
+	 * Scrolls so that the given event is visible.
+	 * @return The bounds of the graphic object that represent
+	 * the event.
+	 */
+	public Rectangle2D makeVisible(ILogEvent aEvent)
+	{
+		AbstractEventNode theNode = itsNodesMap.get(aEvent);
+		if (theNode == null)
+		{
+			setTimestamp(aEvent.getTimestamp());
+			backward(2);
+			theNode = itsNodesMap.get(aEvent);
+		}
+		
+		if (theNode != null) return getDescendantBounds(theNode);
+		else return null;
 	}
 	
 	private IBehaviorCallEvent getCurrentParent()
@@ -257,7 +290,10 @@ public class CFlowTree extends SVGGraphicContainer
 			IBehaviorCallEvent theAncestor = theAncestors.get(i);
 			theContainer.pChildren().add(buildStackNode(theAncestor));
 		}
-		theContainer.setLayoutManager(new StackLayout(2, ZInsets.EMPTY));
+		theContainer.setLayoutManager(new StackLayout(
+				2, 
+				HorizontalAlignment.LEFT, 
+				ZInsets.EMPTY));
 		
 		return theContainer;
 	}

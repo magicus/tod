@@ -21,6 +21,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.gridimpl.grpidx;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
 import tod.impl.dbgrid.DebuggerGridConfig;
@@ -28,6 +30,7 @@ import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.dispatch.RIDispatchNode;
 import tod.impl.dbgrid.gridimpl.grpidx.GrpIdxDatabaseNode.IndexKind;
 import tod.impl.dbgrid.gridimpl.uniform.UniformDBNodeProxy;
+import tod.impl.dbgrid.messages.GridEvent;
 import tod.utils.NativeStream;
 import zz.utils.bit.BitStruct;
 import zz.utils.bit.IntBitStruct;
@@ -43,10 +46,21 @@ public class GrpIdxDBNodeProxy extends UniformDBNodeProxy
 
 	public GrpIdxDBNodeProxy(
 			RIDispatchNode aConnectable, 
-			Socket aSocket, 
+			InputStream aInputStream,
+			OutputStream aOutputStream,
 			String aNodeId)
 	{
-		super(aConnectable, aSocket, aNodeId);
+		super(aConnectable, aInputStream, aOutputStream, aNodeId);
+	}
+	
+	@Override
+	public long pushEvent(GridEvent aEvent)
+	{
+		super.pushEvent(aEvent);
+
+		throw new UnsupportedOperationException("Create id");
+//		long theId = SimplePointer.create(gete, itsNodeIndex);
+//		return theId;
 	}
 	
 	public void pushIndexData(IndexKind aIndexKind, int aIndex, StdTuple aTuple)

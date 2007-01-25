@@ -50,6 +50,7 @@ public class FieldWriteEventView extends EventView
 		Object theValue = itsEvent.getValue();
 		
 		add (createTitledPanel("Value: ", createInspectorLink(theValue)));
+		add (createTitledPanel("Target: ", createInspectorLink(itsEvent.getTarget())));
 	}
 
 

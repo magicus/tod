@@ -28,7 +28,6 @@ import tod.core.database.event.ILogEvent;
 import tod.impl.common.event.Event;
 import tod.impl.local.EventBrowser;
 import tod.impl.local.LocalBrowser;
-import tod.impl.local.LocalBrowser;
 
 /**
  * Base class for filters that are precomputed.

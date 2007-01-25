@@ -76,7 +76,7 @@ public class MethodSequenceView extends AbstractMemberSequenceView
 		ILogBrowser theLog = getLogView().getLogBrowser();
 
 		CFlowSeed theSeed = new CFlowSeed(theGUIManager, theLog, aEvent);
-		SVGHyperlink theHyperlink = SVGHyperlink.create(theGUIManager, theSeed, "call", 10, Color.BLACK);
+		SVGHyperlink theHyperlink = SVGHyperlink.create(theSeed, "call", 10, Color.BLACK);
 		theContainer.pChildren().add (theHyperlink);
 		
 		// Open parenthesis

@@ -57,20 +57,27 @@ public class BehaviorCondition extends SimpleCondition
 			break;
 			
 		case RoleIndexSet.ROLE_BEHAVIOR_ANY_ENTER:
-			theTupleIterator = RoleIndexSet.createFilteredIterator(theTupleIterator, RoleIndexSet.ROLE_BEHAVIOR_CALLED, RoleIndexSet.ROLE_BEHAVIOR_EXECUTED);
+			theTupleIterator = RoleIndexSet.createFilteredIterator(
+					theTupleIterator, 
+					RoleIndexSet.ROLE_BEHAVIOR_CALLED, 
+					RoleIndexSet.ROLE_BEHAVIOR_EXECUTED);
 			break;
 			
 		default:
-			theTupleIterator = RoleIndexSet.createFilteredIterator(theTupleIterator, itsRole);
+			theTupleIterator = RoleIndexSet.createFilteredIterator(
+					theTupleIterator,
+					itsRole);
 		}
 		
 		return (BidiIterator) theTupleIterator;
 	}
 	
 	@Override
-	public boolean match(GridEvent aEvent)
+	public boolean _match(GridEvent aEvent)
 	{
-		return aEvent.matchBehaviorCondition(itsBehaviorId, itsRole);
+		return ((itsRole == RoleIndexSet.ROLE_BEHAVIOR_ANY || itsRole == RoleIndexSet.ROLE_BEHAVIOR_OPERATION) 
+						&& aEvent.getOperationBehaviorId() == itsBehaviorId)
+				|| aEvent.matchBehaviorCondition(itsBehaviorId, itsRole);
 	}
 	
 	@Override

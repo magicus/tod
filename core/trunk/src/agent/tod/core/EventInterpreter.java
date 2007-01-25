@@ -20,6 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core;
 
+import java.util.StringTokenizer;
+
 import tod.agent.AgentUtils;
 import static tod.agent.DebugFlags.*;
 
@@ -87,24 +89,26 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		theTimestamp = theThread.transformTimestamp(theTimestamp);
 		
 		FrameInfo theFrame = theThread.currentFrame();
-		short theDepth = (short) theThread.getCurrentDepth();
-		
-		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
-				"logBehaviorEnter(%d, %d, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s",
-				theTimestamp,
-				aBehaviorId,
-				aCallType,
-				getObjectId(aObject),
-				aArguments,
-				theThread.getId(),
-				theDepth,
-				theFrame));
 		
 		if (theFrame.entering)
 		{
 			// We come from instrumented code, ie. before/enter scheme
 			// Part of the event info is available in the frame, but the
 			// event has not been sent yet.
+			
+			short theDepth = (short) (theThread.getCurrentDepth()-1);
+			
+			if (EVENT_INTERPRETER_LOG) print(theDepth, String.format(
+					"logBehaviorEnter(%d, %d, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s",
+					theTimestamp,
+					aBehaviorId,
+					aCallType,
+					getObjectId(aObject),
+					aArguments,
+					theThread.getId(),
+					theDepth,
+					theFrame));
+
 
 			// Partial update of frame info. We must do it here to indicate
 			// that we successfully entered the method, thus completing the
@@ -137,11 +141,25 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 			// Or it is an implicit call (eg. static initializer) in the direct
 			// control flow of an instrumented method.
 			
+			short theDepth = (short) theThread.getCurrentDepth();
+			
+			if (EVENT_INTERPRETER_LOG) print(theDepth, String.format(
+					"logBehaviorEnter(%d, %d, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s",
+					theTimestamp,
+					aBehaviorId,
+					aCallType,
+					getObjectId(aObject),
+					aArguments,
+					theThread.getId(),
+					theDepth,
+					theFrame));
+			
+			
 			aCallType.call(
 					itsCollector,
 					theThread,
 					theFrame.parentTimestamp,
-					theThread.getCurrentDepth(),
+					theDepth,
 					theTimestamp,
 					-1,
 					true,
@@ -166,23 +184,24 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		
 
 		FrameInfo theFrame = theThread.popFrame();
+		short theDepth = (short) (theThread.getCurrentDepth()+1);
 		assert theFrame.behavior == aBehaviorId;
 		assert theFrame.directParent;
 		
-		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
+		if (EVENT_INTERPRETER_LOG) print(theDepth, String.format(
 				"logBehaviorExit(%d, %d, %d, %s)\n thread: %d, depth: %d\n frame: %s",
 				theTimestamp,
 				aOperationLocation,
 				aBehaviorId,
 				getObjectId(aResult),
 				theThread.getId(),
-				theThread.getCurrentDepth(),
+				theDepth,
 				theFrame));
 		
 		itsCollector.behaviorExit(
 				theThread,
 				theFrame.parentTimestamp,
-				(short) (theThread.getCurrentDepth()+1), // The exit event is at the same depths as other children
+				theDepth,
 				theTimestamp,
 				aOperationLocation,
 				aBehaviorId,
@@ -260,8 +279,9 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		theTimestamp = theThread.transformTimestamp(theTimestamp);
 
 		FrameInfo theFrame = theThread.currentFrame();
+		short theDepth = theThread.getCurrentDepth();
 
-		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
+		if (EVENT_INTERPRETER_LOG) print(theDepth, String.format(
 				"logExceptionGenerated(%d, %s, %s, %s, %d, %s)\n thread: %d, depth: %d\n frame: %s",
 				theTimestamp,
 				aMethodName,
@@ -270,7 +290,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				aOperationBytecodeIndex,
 				aException,
 				theThread.getId(),
-				theThread.getCurrentDepth(),
+				theDepth,
 				theFrame));
 		
 		// We check if we really entered in the current parent, or
@@ -280,7 +300,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		itsCollector.exception(
 				theThread,
 				theFrame.parentTimestamp,
-				theThread.getCurrentDepth(),
+				theDepth,
 				theTimestamp,
 				aMethodName,
 				aMethodSignature,
@@ -301,8 +321,9 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		theTimestamp = theThread.transformTimestamp(theTimestamp);
 
 		FrameInfo theFrame = theThread.currentFrame();
+		short theDepth = theThread.getCurrentDepth();
 		
-		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
+		if (EVENT_INTERPRETER_LOG) print(theDepth, String.format(
 				"logFieldWrite(%d, %d, %d, %s, %s)\n thread: %d, depth: %d\n frame: %s",
 				theTimestamp,
 				aOperationLocation,
@@ -310,13 +331,13 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				getObjectId(aTarget),
 				getObjectId(aValue),
 				theThread.getId(),
-				theThread.getCurrentDepth(),
+				theDepth,
 				theFrame));
 
 		itsCollector.fieldWrite(
 				theThread,
 				theFrame.parentTimestamp,
-				theThread.getCurrentDepth(),
+				theDepth,
 				theTimestamp,
 				aOperationLocation,
 				aFieldId,
@@ -337,7 +358,8 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		
 		FrameInfo theFrame = theThread.currentFrame();
 		
-		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
+		short theDepth = theThread.getCurrentDepth();
+		if (EVENT_INTERPRETER_LOG) print(theDepth, String.format(
 				"logArrayWrite(%d, %d, %s, %d, %s)\n thread: %d, depth: %d\n frame: %s",
 				theTimestamp,
 				aOperationLocation,
@@ -345,13 +367,13 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				aIndex,
 				getObjectId(aValue),
 				theThread.getId(),
-				theThread.getCurrentDepth(),
+				theDepth,
 				theFrame));
 		
 		itsCollector.arrayWrite(
 				theThread,
 				theFrame.parentTimestamp,
-				theThread.getCurrentDepth(),
+				theDepth,
 				theTimestamp,
 				aOperationLocation,
 				aTarget,
@@ -370,21 +392,22 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		theTimestamp = theThread.transformTimestamp(theTimestamp);
 
 		FrameInfo theFrame = theThread.currentFrame();
+		short theDepth = theThread.getCurrentDepth();
 		
-		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
+		if (EVENT_INTERPRETER_LOG) print(theDepth, String.format(
 				"logLocalVariableWrite(%d, %d, %d, %s)\n thread: %d, depth: %d\n frame: %s",
 				theTimestamp,
 				aOperationLocation,
 				aVariableId,
 				getObjectId(aValue),
 				theThread.getId(),
-				theThread.getCurrentDepth(),
+				theDepth,
 				theFrame));
 		
 		itsCollector.localWrite(
 				theThread,
 				theFrame.parentTimestamp,
-				theThread.getCurrentDepth(),
+				theDepth,
 				theTimestamp,
 				aOperationLocation,
 				aVariableId,
@@ -403,14 +426,18 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		FrameInfo theFrame = theThread.currentFrame();
 		assert theFrame.directParent && theFrame.behavior > 0;
 		
-		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
-				"logBeforeBehaviorCall(%d, %d, %s)\n thread: %d, depth: %d\n frame: %s",
-				aOperationLocation,
-				aBehaviorId,
-				aCallType,
-				theThread.getId(),
-				theThread.getCurrentDepth(),
-				theFrame));
+		if (EVENT_INTERPRETER_LOG)
+		{
+			short theDepth = theThread.getCurrentDepth();
+			print(theDepth, String.format(
+					"logBeforeBehaviorCall(%d, %d, %s)\n thread: %d, depth: %d\n frame: %s",
+					aOperationLocation,
+					aBehaviorId,
+					aCallType,
+					theThread.getId(),
+					theDepth,
+					theFrame));
+		}
 
 		theThread.pushFrame(
 				true,
@@ -434,8 +461,9 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		theTimestamp = theThread.transformTimestamp(theTimestamp);
 
 		FrameInfo theFrame = theThread.currentFrame();
+		short theDepth = theThread.getCurrentDepth();
 		
-		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
+		if (EVENT_INTERPRETER_LOG) print(theDepth, String.format(
 				"logBeforeBehaviorCall(%d, %d, %d, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s",
 				theTimestamp,
 				aOperationLocation,
@@ -444,14 +472,14 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				getObjectId(aTarget),
 				aArguments,
 				theThread.getId(),
-				theThread.getCurrentDepth(),
+				theDepth,
 				theFrame));
 		
 		aCallType.call(
 				itsCollector,
 				theThread,
 				theFrame.parentTimestamp,
-				theThread.getCurrentDepth(),
+				theDepth,
 				theTimestamp,
 				aOperationLocation,
 				false,
@@ -470,11 +498,15 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		T theThread = getThreadData();
 		FrameInfo theFrame = theThread.currentFrame();
 		
-		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
-				"logAfterBehaviorCall()\n thread: %d, depth: %d\n frame: %s",
-				theThread.getId(),
-				theThread.getCurrentDepth(),
-				theFrame));
+		if (EVENT_INTERPRETER_LOG)
+		{
+			short theDepth = theThread.getCurrentDepth();
+			print(theDepth, String.format(
+					"logAfterBehaviorCall()\n thread: %d, depth: %d\n frame: %s",
+					theThread.getId(),
+					theDepth,
+					theFrame));
+		}
 		
 		if (theFrame.entering)
 		{
@@ -495,9 +527,10 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		theTimestamp = theThread.transformTimestamp(theTimestamp);
 
 		FrameInfo theFrame = theThread.popFrame();
+		short theDepth = (short) (theThread.getCurrentDepth()+1);
 		assert theFrame.behavior == aBehaviorId;
 		
-		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
+		if (EVENT_INTERPRETER_LOG) print(theDepth, String.format(
 				"logAfterBehaviorCall(%d, %d, %d, %s, %s)\n thread: %d, depth: %d\n frame: %s",
 				theTimestamp,
 				aOperationLocation,
@@ -505,13 +538,13 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				getObjectId(aTarget),
 				getObjectId(aResult),
 				theThread.getId(),
-				theThread.getCurrentDepth(),
+				theDepth,
 				theFrame));
 		
 		itsCollector.behaviorExit(
 				theThread,
 				theFrame.parentTimestamp,
-				theThread.getCurrentDepth(),
+				theDepth,
 				theTimestamp,
 				aOperationLocation,
 				aBehaviorId,
@@ -531,9 +564,10 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		theTimestamp = theThread.transformTimestamp(theTimestamp);
 
 		FrameInfo theFrame = theThread.popFrame();
+		short theDepth = (short) (theThread.getCurrentDepth()+1);
 		assert theFrame.behavior == aBehaviorId;
 		
-		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
+		if (EVENT_INTERPRETER_LOG) print(theDepth, String.format(
 				"logAfterBehaviorCallWithException(%d, %d, %d, %s, %s)\n thread: %d, depth: %d\n frame: %s",
 				theTimestamp,
 				aOperationLocation,
@@ -541,13 +575,13 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				getObjectId(aTarget),
 				aException,
 				theThread.getId(),
-				theThread.getCurrentDepth(),
+				theDepth,
 				theFrame));
 
 		itsCollector.behaviorExit(
 				theThread,
 				theFrame.parentTimestamp,
-				theThread.getCurrentDepth(),
+				theDepth,
 				theTimestamp,
 				aOperationLocation,
 				aBehaviorId,
@@ -565,20 +599,21 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		theTimestamp = theThread.transformTimestamp(theTimestamp);
 
 		FrameInfo theFrame = theThread.currentFrame();
+		short theDepth = theThread.getCurrentDepth();
 		
-		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
+		if (EVENT_INTERPRETER_LOG) print(theDepth, String.format(
 				"logOutput(%d, %s, %s)\n thread: %d, depth: %d\n frame: %s",
 				theTimestamp,
 				aOutput,
 				aData,
 				theThread.getId(),
-				theThread.getCurrentDepth(),
+				theDepth,
 				theFrame));
 
 		itsCollector.output(
 				theThread,
 				theFrame.parentTimestamp,
-				theThread.getCurrentDepth(),
+				theDepth,
 				theTimestamp,
 				aOutput,
 				aData);
@@ -800,5 +835,29 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 					parentTimestamp);
 		}
 	}
+
+	private static void print(int aDepth, String aString)
+	{
+		System.out.println(indent(aString, aDepth, "  "));
+	}
+
+	/**
+	 * Taken from zz.utils - we can't depend on it.
+	 */
+	public static String indent(String aString, int aIndent, String aPattern)
+	{
+		StringBuilder theBuilder = new StringBuilder();
+		StringTokenizer theTokenizer = new StringTokenizer(aString, "\n");
+		while (theTokenizer.hasMoreTokens())
+		{
+			String theLine = theTokenizer.nextToken();
+			for (int i=0;i<aIndent;i++) theBuilder.append(aPattern);
+			theBuilder.append(theLine);
+			theBuilder.append('\n');
+		}
+		
+		return theBuilder.toString();
+	}
+
 
 }

@@ -50,7 +50,7 @@ public class ExceptionGeneratedNode extends AbstractEventNode
 				Color.RED));
 		
 		pChildren().add(Hyperlinks.object(
-				getGUIManager(), 
+				getSeedFactory(), 
 				getLogBrowser(),
 				itsEvent.getException(), 
 				FontConfig.STD_FONT));

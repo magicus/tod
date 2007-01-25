@@ -20,8 +20,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.browser;
 
+import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
 import tod.core.database.structure.IBehaviorInfo;
@@ -157,6 +159,12 @@ public interface ILogBrowser
 	 * Creates a filter that accepts only field write events
 	 */
 	public IEventFilter createFieldWriteFilter ();
+	
+	/**
+	 * Creates a filter that accepts only local variable write events
+	 * of the specified variable.
+	 */
+	public IEventFilter createVariableWriteFilter(LocalVariableInfo aVariable);
 	
 	/**
 	 * Creates a filter that accepts only the events whose target

@@ -28,8 +28,9 @@ import java.io.Serializable;
  * methods, classes, fields, etc.
  * @author gpothier
  */
-public interface ILocationRegisterer {
-    
+public interface ILocationRegisterer 
+{
+	
 	public void registerFile (
 			int aFileId,
 			String aFileName);
@@ -179,6 +180,18 @@ public interface ILocationRegisterer {
 		public boolean available(int aPc)
 		{
 			return aPc >= getStartPc() && aPc <= getStartPc() + getLength();
+		}
+		
+		@Override
+		public boolean equals(Object aObj)
+		{
+			if (aObj instanceof LocalVariableInfo)
+			{
+				LocalVariableInfo theOther = (LocalVariableInfo) aObj;
+				return theOther.itsIndex == itsIndex
+						&& theOther.itsStartPc == itsStartPc;
+			}
+			else return false;
 		}
 	}
 

@@ -26,6 +26,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.rmi.RemoteException;
 
@@ -34,7 +36,13 @@ import tod.impl.dbgrid.NodeException;
 public abstract class DatabaseNode extends AbstractDispatchNode
 implements RIDatabaseNode
 {
-	private MasterConnection itsMasterConnection;
+	private DispatcherConnection itsMasterConnection;
+	
+	private long itsEventsCount = 0;
+	private long itsFirstTimestamp = 0;
+	private long itsLastTimestamp = 0;
+
+
 	
 	public DatabaseNode() throws RemoteException
 	{
@@ -46,11 +54,57 @@ implements RIDatabaseNode
 		super.connectedToMaster();
 		clear();
 	}
+
+	/**
+	 * Subclasses should call this method whenever an event is stored
+	 * by this node in order to update statistics
+	 * @param aTimestamp
+	 */
+	protected void eventStored(long aTimestamp)
+	{
+		itsEventsCount++;
+		
+		// The following code is a bit faster than using min & max
+		// (Pentium M 2ghz)
+		if (itsFirstTimestamp == 0) itsFirstTimestamp = aTimestamp;
+		if (itsLastTimestamp < aTimestamp) itsLastTimestamp = aTimestamp;
+	}
+	
+	public long getEventsCount()
+	{
+		return itsEventsCount;
+	}
+
+	public long getFirstTimestamp()
+	{
+		return itsFirstTimestamp;
+	}
+
+	public long getLastTimestamp()
+	{
+		return itsLastTimestamp;
+	}
+
+	public void connectToLocalDispatcher(
+			InputStream aInputStream,
+			OutputStream aOutputStream)
+	{
+		itsMasterConnection = new LocalDispatcherConnection(
+				new DataInputStream(aInputStream),
+				new DataOutputStream(aOutputStream));
+	}
 	
 	@Override
 	protected void connectToDispatcher(Socket aSocket)
 	{
-		itsMasterConnection = new MasterConnection(aSocket);
+		try
+		{
+			itsMasterConnection = new SocketDispatcherConnection(aSocket);
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 	
 	/**
@@ -85,18 +139,29 @@ implements RIDatabaseNode
 	}
 	
 	/**
-	 * The socket thread that handles the connection with the grid master.
+	 * The socket thread that handles the connection with the dispatcher.
 	 * @author gpothier
 	 */
-	private class MasterConnection extends Thread
+	private abstract class DispatcherConnection extends Thread
 	{
-		private final Socket itsSocket;
+		private final DataInputStream itsInputStream;
+		private final DataOutputStream itsOutputStream;
 
-		public MasterConnection(Socket aSocket)
+		
+		public DispatcherConnection(
+				DataInputStream aInputStream, 
+				DataOutputStream aOutputStream)
 		{
-			itsSocket = aSocket;
+			itsInputStream = aInputStream;
+			itsOutputStream = aOutputStream;
+
 			start();
 		}
+		
+		/**
+		 * Whether the connection is still valid.
+		 */
+		protected abstract boolean isConnected();
 		
 		@Override
 		public void run()
@@ -105,26 +170,18 @@ implements RIDatabaseNode
 			
 			try
 			{
-				DataInputStream theInStream = new DataInputStream(
-						new BufferedInputStream(itsSocket.getInputStream()));
-				
-				DataOutputStream theOutStream = new DataOutputStream(
-						new BufferedOutputStream(itsSocket.getOutputStream()));
-				
-				while (itsSocket.isConnected())
+				while (isConnected())
 				{
 					try
 					{
-						byte theCommand = theInStream.readByte();
-						processCommand(theCommand, theInStream, theOutStream);
+						byte theCommand = itsInputStream.readByte();
+						processCommand(theCommand, itsInputStream, itsOutputStream);
 					}
 					catch (EOFException e)
 					{
 						break;
 					}
 				}
-				
-				System.exit(0);
 			}
 			catch (Throwable e)
 			{
@@ -137,10 +194,43 @@ implements RIDatabaseNode
 					throw new RuntimeException(e1);
 				}
 				e.printStackTrace();
-				System.exit(1);
 			}
 		}
 		
+	}
+
+	private class SocketDispatcherConnection extends DispatcherConnection
+	{
+		private final Socket itsSocket;
+
+		public SocketDispatcherConnection(Socket aSocket) throws IOException
+		{
+			super(
+					new DataInputStream(new BufferedInputStream(aSocket.getInputStream())),
+					new DataOutputStream(new BufferedOutputStream(aSocket.getOutputStream())));
+			
+			itsSocket = aSocket;
+		}
+		
+		@Override
+		protected boolean isConnected()
+		{
+			return itsSocket.isConnected();
+		}
+	}
+	
+	private class LocalDispatcherConnection extends DispatcherConnection
+	{
+		public LocalDispatcherConnection(DataInputStream aInputStream, DataOutputStream aOutputStream)
+		{
+			super(aInputStream, aOutputStream);
+		}
+
+		@Override
+		protected boolean isConnected()
+		{
+			return true;
+		}
 	}
 
 }

@@ -34,7 +34,7 @@ import zz.utils.properties.SimpleRWProperty;
  * Its view is simply a sequential view of filtered events.
  * @author gpothier
  */
-public class FilterSeed extends Seed/*<FilterView>*/
+public class FilterSeed extends LogViewSeed/*<FilterView>*/
 {
 	private IEventFilter itsFilter;
 	

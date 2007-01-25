@@ -236,7 +236,7 @@ public class DebuggerGridConfig
 		System.out.println("Loading db grid config");
 		DB_PAGE_BUFFER_SIZE = ConfigUtils.readSize(PARAM_DB_PAGE_BUFFER_SIZE, "100m");
 		MASTER_HOST = ConfigUtils.readString(PARAM_MASTER_HOST, "localhost");
-		NODE_DATA_DIR = ConfigUtils.readString(PARAM_NODE_DATA_DIR, ".");
+		NODE_DATA_DIR = ConfigUtils.readString(PARAM_NODE_DATA_DIR, "/tmp/tod");
 		STORE_EVENTS_FILE = ConfigUtils.readString(PARAM_STORE_EVENTS_FILE, "events-raw.bin");
 	}
 

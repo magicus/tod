@@ -21,6 +21,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.gridimpl.uniform;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
 import tod.impl.dbgrid.DebuggerGridConfig;
@@ -55,14 +57,15 @@ public class UniformDBNodeProxy extends DBNodeProxy
 	
 	public UniformDBNodeProxy(
 			RIDispatchNode aConnectable,
-			Socket aSocket, 
+			InputStream aInputStream,
+			OutputStream aOutputStream,
 			String aId)
 	{
-		super(aConnectable, aSocket, aId);
+		super(aConnectable, aInputStream, aOutputStream, aId);
 	}
 
 	@Override
-	protected void pushEvent0(GridEvent aEvent)
+	public long pushEvent(GridEvent aEvent)
 	{
 		if (aEvent.getBitCount() > itsEventBufferStruct.getRemainingBits())
 		{
@@ -71,6 +74,8 @@ public class UniformDBNodeProxy extends DBNodeProxy
 		
 		aEvent.writeTo(itsEventBufferStruct);
 		itsBufferedEventsCount++;
+		
+		return 0;
 	}
 	
 	protected void sendEventBuffer()

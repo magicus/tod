@@ -84,14 +84,14 @@ public class BehaviorCallNode extends AbstractEventNode
 		pChildren().add(itsExpanderWidget);
 		
 		itsHeader = CFlowViewUtils.createBehaviorCallHeader(
-				getGUIManager(), 
+				getSeedFactory(), 
 				getLogBrowser(), 
 				getEvent(), 
 				itsHeaderPrefix,
 				FontConfig.STD_FONT);
 		
 		itsFooter = CFlowViewUtils.createBehaviorCallFooter(
-				getGUIManager(), 
+				getSeedFactory(), 
 				getLogBrowser(), 
 				getEvent(), 
 				itsFooterPrefix,

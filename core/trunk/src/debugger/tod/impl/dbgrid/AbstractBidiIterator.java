@@ -50,6 +50,13 @@ public abstract class AbstractBidiIterator<T> implements BidiIterator<T>
 		itsOffset = 0;
 	}
 	
+	protected void reset()
+	{
+		itsNext = itsPrevious = null;
+		itsNextReady = itsPreviousReady = false;
+		itsOffset = 0;		
+	}
+	
 	/**
 	 * Fetches the next element and moves the low-level internal pointer
 	 * of the iterator. The offset between the low-level internal pointer

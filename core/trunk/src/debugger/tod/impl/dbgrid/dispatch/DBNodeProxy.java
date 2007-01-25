@@ -20,6 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.dispatch;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
 import tod.impl.dbgrid.SimplePointer;
@@ -33,15 +35,18 @@ import tod.impl.dbgrid.messages.GridEvent;
  */
 public abstract class DBNodeProxy extends DispatchNodeProxy
 {
-	private long itsEventsCount = 0;
-	private long itsFirstTimestamp = 0;
-	private long itsLastTimestamp = 0;
-
 	private int itsNodeIndex;
 	
-	public DBNodeProxy(RIDispatchNode aConnectable, Socket aSocket, String aNodeId)
+	public DBNodeProxy(
+			RIDispatchNode aConnectable, 
+			InputStream aInputStream,
+			OutputStream aOutputStream,
+			String aNodeId)
 	{
-		super (aConnectable, aSocket, aNodeId);
+		super (aConnectable, aInputStream, aOutputStream, aNodeId);
+		
+		// Database node ids are of the form db-<number>
+		// (see GridMaster.registerDatabaseNode
 		itsNodeIndex = Integer.parseInt(aNodeId.substring(3));
 	}
 	
@@ -49,48 +54,5 @@ public abstract class DBNodeProxy extends DispatchNodeProxy
 	 * Pushes an event so that it will be stored by the node behind this proxy.
 	 * @return A simple id of the event (see {@link SimplePointer}).
 	 */
-	public final long pushEvent(GridEvent aEvent)
-	{
-		pushEvent0(aEvent);
-		long theId = SimplePointer.create(itsEventsCount, itsNodeIndex);
-		
-		itsEventsCount++;
-		long theTimestamp = aEvent.getTimestamp();
-		
-		// The following code is a bit faster than using min & max
-		// (Pentium M 2ghz)
-		if (itsFirstTimestamp == 0) itsFirstTimestamp = theTimestamp;
-		if (itsLastTimestamp < theTimestamp) itsLastTimestamp = theTimestamp;
-		
-		return theId;
-	}
-
-	protected abstract void pushEvent0(GridEvent aEvent);
-
-	
-	/**
-	 * Returns the number of events stored by this node
-	 */
-	public long getEventsCount() 
-	{
-		return itsEventsCount;
-	}
-	
-	/**
-	 * Returns the timestamp of the first event recorded in this node.
-	 */
-	public long getFirstTimestamp()
-	{
-		return itsFirstTimestamp;
-	}
-	
-	/**
-	 * Returns the timestamp of the last event recorded in this node.
-	 */
-	public long getLastTimestamp()
-	{
-		return itsLastTimestamp;
-	}
-
-
+	public abstract long pushEvent(GridEvent aEvent);
 }

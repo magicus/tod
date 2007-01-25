@@ -88,6 +88,14 @@ implements RIDispatchNode
 		return itsMaster;
 	}
 
+	public void connectToLocalMaster(GridMaster aMaster, String aId)
+	{
+		itsMaster = aMaster;
+		itsNodeId = aId;
+		connectedToMaster();
+		itsConnectedLatch.countDown();
+	}
+	
 	/**
 	 * Establishes the initial connection between this node and the
 	 * {@link GridMaster} through RMI.

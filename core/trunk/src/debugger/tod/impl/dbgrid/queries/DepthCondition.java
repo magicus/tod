@@ -47,7 +47,7 @@ public class DepthCondition extends SimpleCondition
 	}
 
 	@Override
-	public boolean match(GridEvent aEvent)
+	public boolean _match(GridEvent aEvent)
 	{
 		return aEvent.getDepth() == itsDepth;
 	}

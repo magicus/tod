@@ -33,14 +33,14 @@ import tod.gui.view.LogView;
  * objects, so as to free resources. 
  * @author gpothier
  */
-public abstract class Seed/*<T extends LogView>*/
+public abstract class LogViewSeed extends Seed
 {
 	private IGUIManager itsGUIManager;
 	private ILogBrowser itsLog;
 	
-	private /*T*/LogView itsComponent;
+	private LogView itsComponent;
 	
-	public Seed(IGUIManager aGUIManager, ILogBrowser aLog)
+	public LogViewSeed(IGUIManager aGUIManager, ILogBrowser aLog)
 	{
 		itsGUIManager = aGUIManager;
 		itsLog = aLog;
@@ -56,6 +56,11 @@ public abstract class Seed/*<T extends LogView>*/
 		return itsGUIManager;
 	}
 	
+	public void open()
+	{
+		itsGUIManager.openSeed(this, false);
+	}
+
 	/**
 	 * Creates the view component for this seed.
 	 * This method is called when the seed becomes 

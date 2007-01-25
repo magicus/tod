@@ -25,6 +25,20 @@ import tod.core.database.browser.ILocationsRepository;
 
 public class PrimitiveTypeInfo extends TypeInfo implements IPrimitiveTypeInfo
 {
+	public static final PrimitiveTypeInfo VOID = new PrimitiveTypeInfo("void", 0);
+	public static final PrimitiveTypeInfo BOOLEAN = new PrimitiveTypeInfo("boolean", 1);
+	public static final PrimitiveTypeInfo INT = new PrimitiveTypeInfo("int", 1);
+	public static final PrimitiveTypeInfo LONG = new PrimitiveTypeInfo("long", 2);
+	public static final PrimitiveTypeInfo BYTE = new PrimitiveTypeInfo("byte", 1);
+	public static final PrimitiveTypeInfo SHORT = new PrimitiveTypeInfo("short", 1);
+	public static final PrimitiveTypeInfo CHAR = new PrimitiveTypeInfo("char", 1);
+	public static final PrimitiveTypeInfo DOUBLE = new PrimitiveTypeInfo("double", 2);
+	public static final PrimitiveTypeInfo FLOAT = new PrimitiveTypeInfo("float", 1);
+
+	public static final PrimitiveTypeInfo[] TYPES = {
+		VOID, BOOLEAN, INT, LONG, BYTE, SHORT, CHAR, DOUBLE, FLOAT
+	};
+	
 	private final int itsSize;
 
 	public PrimitiveTypeInfo(String aName, int aSize)

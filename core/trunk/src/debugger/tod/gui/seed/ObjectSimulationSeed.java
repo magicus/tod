@@ -29,7 +29,7 @@ import tod.gui.view.LogView;
  * object's fields values.
  * @author gpothier
  */
-public class ObjectSimulationSeed extends Seed
+public class ObjectSimulationSeed extends LogViewSeed
 {
 	private Object itsObject;
 	

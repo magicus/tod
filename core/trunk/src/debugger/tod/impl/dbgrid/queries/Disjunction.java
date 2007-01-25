@@ -53,11 +53,11 @@ public class Disjunction extends CompoundCondition
 	}
 
 	@Override
-	public boolean match(GridEvent aEvent)
+	public boolean _match(GridEvent aEvent)
 	{
 		for (EventCondition theCondition : getConditions())
 		{
-			if (theCondition.match(aEvent)) return true;
+			if (theCondition._match(aEvent)) return true;
 		}
 		return false;
 	}

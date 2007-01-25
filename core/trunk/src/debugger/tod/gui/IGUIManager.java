@@ -21,7 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui;
 
 import tod.core.database.event.ILogEvent;
-import tod.gui.seed.Seed;
+import tod.gui.seed.LogViewSeed;
 
 /**
  * This interface permits to access the basic functionalities
@@ -37,7 +37,7 @@ public interface IGUIManager
 	 * @param aNewTab If false, the viewer for the seed will replace the
 	 * currently displayed viewer. If true, a new tab will be opened.
 	 */
-	public void openSeed (Seed aSeed, boolean aNewTab);
+	public void openSeed (LogViewSeed aSeed, boolean aNewTab);
 	
 	/**
 	 * Shows the location of the specified event in the source code.

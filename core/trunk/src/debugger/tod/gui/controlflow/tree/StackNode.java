@@ -26,6 +26,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 
+import tod.Util;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
@@ -34,7 +35,11 @@ import tod.gui.controlflow.CFlowView;
 import tod.gui.seed.CFlowSeed;
 import zz.csg.api.GraphicObjectContext;
 import zz.csg.api.IDisplay;
+import zz.csg.api.IRectangularGraphicObject;
+import zz.csg.api.layout.SequenceLayout;
 import zz.csg.api.layout.StackLayout;
+import zz.csg.impl.SVGGraphicContainer;
+import zz.csg.impl.figures.SVGEllipse;
 import zz.csg.impl.figures.SVGFlowText;
 import zz.utils.ui.UIUtils;
 
@@ -73,7 +78,7 @@ public class StackNode extends AbstractCFlowNode
 		Object[] theArguments = getEvent().getArguments();
 		
 		// Type.method
-		theBuilder.append(theType.getName());
+		theBuilder.append(Util.getSimpleName(theType.getName()));
 		theBuilder.append(".");
 		theBuilder.append(theBehavior.getName());
 		
@@ -98,13 +103,33 @@ public class StackNode extends AbstractCFlowNode
 		
 		theBuilder.append(")");
 
-		SVGFlowText theText = SVGFlowText.create(
+		pChildren().add(SVGFlowText.create(
+				Util.getPackageName(theType.getName()), 
+				FontConfig.TINY_FONT, 
+				Color.DARK_GRAY));
+		
+		pChildren().add(SVGFlowText.create(
 				theBuilder.toString(), 
 				FontConfig.SMALL_FONT, 
-				Color.BLACK);
+				Color.BLACK));
 		
-		pChildren().add(theText);
+		if (! getEvent().isDirectParent())
+		{
+			pChildren().add(createDots());
+		}
+		
 		setLayoutManager(new StackLayout());
+	}
+	
+	private IRectangularGraphicObject createDots()
+	{
+		SVGGraphicContainer theContainer = new SVGGraphicContainer();
+		theContainer.pChildren().add(SVGEllipse.create(0, 0, 5, Color.BLACK));
+		theContainer.pChildren().add(SVGEllipse.create(0, 0, 5, Color.BLACK));
+		theContainer.pChildren().add(SVGEllipse.create(0, 0, 5, Color.BLACK));
+		
+		theContainer.setLayoutManager(new SequenceLayout(3));
+		return theContainer;
 	}
 	
 	@Override

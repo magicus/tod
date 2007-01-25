@@ -35,7 +35,7 @@ import zz.utils.properties.SimpleRWProperty;
  * Seed for the {@link tod.gui.view.ObjectInspectorView}
  * @author gpothier
  */
-public class ObjectInspectorSeed extends Seed
+public class ObjectInspectorSeed extends LogViewSeed
 {
 	private ObjectId itsInspectedObject;
 	

@@ -22,13 +22,14 @@ package tod.gui;
 
 import java.awt.Color;
 
+import tod.Util;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
-import tod.gui.seed.CFlowSeed;
-import tod.gui.seed.ObjectInspectorSeed;
+import tod.gui.seed.LogViewSeedFactory;
+import tod.gui.seed.Seed;
 import zz.csg.api.IRectangularGraphicObject;
 import zz.csg.impl.figures.SVGFlowText;
 import zz.utils.ui.text.XFont;
@@ -40,22 +41,38 @@ import zz.utils.ui.text.XFont;
  */
 public class Hyperlinks
 {
-	public static IRectangularGraphicObject type (IGUIManager aGUIManager, ITypeInfo aType, XFont aFont)
+	public static IRectangularGraphicObject history(
+			LogViewSeedFactory aFactory,
+			ObjectId aObject,
+			XFont aFont)
 	{
 		return SVGHyperlink.create(
-				aGUIManager,
-				null, 
+				aFactory.objectHistory(aObject),
+				"history",
+				aFont,
+				Color.BLUE);
+	}
+	
+	public static IRectangularGraphicObject type (
+			ISeedFactory aSeedFactory, 
+			ITypeInfo aType, 
+			XFont aFont)
+	{
+		return SVGHyperlink.create(
+				aSeedFactory.typeSeed(aType),
 				aType.getName(), 
 				aFont, 
 				Color.BLUE);
 	}
 	
-	public static IRectangularGraphicObject behavior(IGUIManager aGUIManager, IBehaviorInfo aBehavior, XFont aFont)
+	public static IRectangularGraphicObject behavior(
+			ISeedFactory aSeedFactory,
+			IBehaviorInfo aBehavior,
+			XFont aFont)
 	{
 		return SVGHyperlink.create(
-				aGUIManager,
-				null, 
-				aBehavior.getName(),
+				aSeedFactory.behaviorSeed(aBehavior), 
+				Util.getPrettyName(aBehavior.getName()),
 				aFont, 
 				Color.BLUE);		
 	}
@@ -64,28 +81,25 @@ public class Hyperlinks
 	 * An hyperlink that jumps to the cflow of the given event.
 	 */
 	public static IRectangularGraphicObject event(
-			IGUIManager aGUIManager, 
-			ILogBrowser aBrowser, 
+			ISeedFactory aSeedFactory, 
 			String aText,
 			ILogEvent aEvent, 
 			XFont aFont)
 	{
-		CFlowSeed theSeed = new CFlowSeed(aGUIManager, aBrowser, aEvent);
 		return SVGHyperlink.create(
-				aGUIManager, 
-				theSeed, 
+				aSeedFactory.cflowSeed(aEvent), 
 				aText,
 				aFont, 
 				Color.BLUE);
 	}
 	
 	public static IRectangularGraphicObject object(
-			IGUIManager aGUIManager, 
+			ISeedFactory aSeedFactory, 
 			ILogBrowser aEventTrace, 
 			Object aObject,
 			XFont aFont)
 	{
-		return object(aGUIManager, aEventTrace, null, aObject, aFont);
+		return object(aSeedFactory, aEventTrace, null, aObject, aFont);
 	}
 	
 	/**
@@ -95,8 +109,8 @@ public class Hyperlinks
 	 * @param aObject The object to link to.
 	 */
 	public static IRectangularGraphicObject object(
-			IGUIManager aGUIManager,
-			ILogBrowser aEventTrace,
+			ISeedFactory aSeedFactory,
+			ILogBrowser aLogBrowser,
 			Object aCurrentObject, 
 			Object aObject, 
 			XFont aFont)
@@ -105,7 +119,7 @@ public class Hyperlinks
 		if (aObject instanceof ObjectId.ObjectUID)
 		{
 			ObjectId.ObjectUID theObject = (ObjectId.ObjectUID) aObject;
-			Object theRegistered = aEventTrace.getRegistered(theObject.getId());
+			Object theRegistered = aLogBrowser.getRegistered(theObject.getId());
 			if (theRegistered != null) aObject = theRegistered;
 		}
 		
@@ -113,15 +127,14 @@ public class Hyperlinks
 		{
 			ObjectId theId = (ObjectId) aObject;
 			
-			ITypeInfo theType = aEventTrace.createObjectInspector(theId).getType();
+			ITypeInfo theType = aLogBrowser.createObjectInspector(theId).getType();
 
 			String theText;
 			if (aCurrentObject != null && aCurrentObject.equals(aObject)) theText = "this";
 			else theText = theType.getName() + " (" + theId + ")";
 
 			return SVGHyperlink.create(
-					aGUIManager, 
-					new ObjectInspectorSeed(aGUIManager, aEventTrace, theId), 
+					aSeedFactory.objectSeed(theId), 
 					theText, 
 					aFont, 
 					Color.BLUE);
@@ -151,5 +164,13 @@ public class Hyperlinks
 		}
 
 		
+	}
+	
+	public interface ISeedFactory
+	{
+		public Seed objectSeed(ObjectId aObjectId);
+		public Seed cflowSeed(ILogEvent aEvent);
+		public Seed behaviorSeed(IBehaviorInfo aBehavior);
+		public Seed typeSeed(ITypeInfo aType);
 	}
 }

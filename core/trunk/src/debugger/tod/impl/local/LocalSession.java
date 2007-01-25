@@ -26,6 +26,7 @@ import java.util.List;
 
 import javax.swing.JComponent;
 
+import tod.agent.DebugFlags;
 import tod.core.ILogCollector;
 import tod.core.LocationRegisterer;
 import tod.core.config.TODConfig;
@@ -37,6 +38,7 @@ import tod.core.server.TODServer;
 import tod.core.session.AbstractSession;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
+import tod.utils.PrintThroughCollector;
 
 public class LocalSession extends AbstractSession
 {
@@ -44,7 +46,7 @@ public class LocalSession extends AbstractSession
 	private LocationRegisterer itsLocationRegistrer;
 	
 	private LocalBrowser itsBrowser;
-	private List<LocalCollector> itsCollectors = new ArrayList<LocalCollector>();
+	private List<ILogCollector> itsCollectors = new ArrayList<ILogCollector>();
 	
 	public LocalSession(TODConfig aConfig, URI aUri)
 	{
@@ -91,9 +93,13 @@ public class LocalSession extends AbstractSession
 
 		public ILogCollector create()
 		{
-			LocalCollector theCollector = new LocalCollector(
+			ILogCollector theCollector = new LocalCollector(
 					itsBrowser,
 					new HostInfo(itsHostId++));
+			
+			if (DebugFlags.COLLECTOR_LOG) theCollector = new PrintThroughCollector(
+					theCollector,
+					getLogBrowser().getLocationsRepository());
 			
 			itsCollectors.add(theCollector);
 			return theCollector;
@@ -101,7 +107,7 @@ public class LocalSession extends AbstractSession
 		
 		public void flushAll()
 		{
-			for (LocalCollector theCollector : itsCollectors)
+			for (ILogCollector theCollector : itsCollectors)
 			{
 			}
 		}

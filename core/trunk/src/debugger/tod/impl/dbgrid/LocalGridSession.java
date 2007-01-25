@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -32,6 +33,7 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.session.AbstractSession;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
+import tod.impl.dbgrid.dispatch.DatabaseNode;
 import tod.impl.dbgrid.gridimpl.GridImpl;
 
 /**
@@ -43,7 +45,7 @@ public class LocalGridSession extends AbstractSession
 	private GridMaster itsMaster;
 	private GridLogBrowser itsBrowser;
 	
-	public LocalGridSession(TODConfig aConfig) throws RemoteException
+	private LocalGridSession(TODConfig aConfig) throws RemoteException
 	{
 		super(null);
 
@@ -55,7 +57,8 @@ public class LocalGridSession extends AbstractSession
 
 		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theDebuggerConfig);
 		
-		itsMaster = new GridMaster(aConfig, theRegistrer, theInstrumenter, 0);
+		DatabaseNode theNode = GridImpl.getFactory(aConfig).createNode(false);
+		itsMaster = new GridMaster(aConfig, theRegistrer, theInstrumenter, theNode, true);
 		
 		itsBrowser = new GridLogBrowser(itsMaster);
 	}
@@ -67,10 +70,15 @@ public class LocalGridSession extends AbstractSession
 
 	public String getCachedClassesPath()
 	{
-		throw new UnsupportedOperationException();
+		return null;
 	}
 
-	public ILogBrowser getLogBrowser()
+	public GridMaster getMaster()
+	{
+		return itsMaster;
+	}
+
+	public GridLogBrowser getLogBrowser()
 	{
 		return itsBrowser;
 	}
@@ -79,19 +87,45 @@ public class LocalGridSession extends AbstractSession
 	{
 		return null;
 	}
+	
+	private Registry getRegistry()
+	{
+        // Check if we use an existing registry of if we create a new one.
+        Registry theRegistry = null;
+        try
+		{
+        	theRegistry = LocateRegistry.getRegistry(Registry.REGISTRY_PORT);
+			if (theRegistry != null) theRegistry.unbind("dummy");
+		}
+		catch (RemoteException e)
+		{
+            theRegistry = null;
+		}
+        catch(NotBoundException e)
+        {
+            // Ignore - we were able to reach the registry, which is all we wanted
+        }
+        
+        if (theRegistry == null) 
+        {
+            try
+			{
+				theRegistry = LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
+        }
+
+        return theRegistry;
+	}
 
 	public static LocalGridSession create(TODConfig aConfig) 
 	{
 		try
 		{
-			Registry theRegistry = LocateRegistry.createRegistry(1099);
-					
-			LocalGridSession theSession = new LocalGridSession(aConfig);
-			theRegistry.bind(GridMaster.RMI_ID, theSession.itsMaster);
-			
-			GridImpl.getFactory(aConfig).createNode(true);
-			
-			return theSession;
+			return new LocalGridSession(aConfig);
 		}
 		catch (Exception e)
 		{

@@ -20,13 +20,13 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.dispatch;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.rmi.AlreadyBoundException;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -38,7 +38,6 @@ import tod.core.transport.LogReceiver;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.NodeException;
-import tod.impl.dbgrid.RIGridMaster;
 import zz.utils.Future;
 import zz.utils.Task;
 import zz.utils.net.Server;
@@ -60,10 +59,11 @@ implements RIEventDispatcher
 	 * This field is set when the master detects an exception in a node.
 	 */
 	private NodeException itsNodeException;
+	
 
-	public AbstractEventDispatcher() throws RemoteException
+	public AbstractEventDispatcher(boolean aStartServer) throws RemoteException
 	{
-		itsServer = new MyServer();
+		if (aStartServer) itsServer = new MyServer();
 	}
 	
 	/**
@@ -89,19 +89,36 @@ implements RIEventDispatcher
 	 * This method is called when the dispatcher accepts a connection
 	 * from a child (dispatcher or node).
 	 */
-	public synchronized final void acceptChild(Socket aSocket)
+	public final void acceptChild(Socket aSocket)
 	{
 		try
 		{
-			DataInputStream theStream = new DataInputStream(aSocket.getInputStream());
+			String theId = acceptChild(
+					new BufferedInputStream(aSocket.getInputStream()),
+					new BufferedOutputStream(aSocket.getOutputStream()));
+			
+			System.out.println("Dispatcher accept node (socket): "+theId);
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public synchronized final String acceptChild(
+			InputStream aInputStream,
+			OutputStream aOutputStream)
+	{
+		try
+		{
+			DataInputStream theStream = new DataInputStream(aInputStream);
 			String theId = theStream.readUTF();
 			
 			Registry theRegistry = LocateRegistry.getRegistry(DebuggerGridConfig.MASTER_HOST);
-			RIDispatchNode theConnectable = (RIDispatchNode) theRegistry.lookup(theId);
+			RIDispatchNode theNode = (RIDispatchNode) theRegistry.lookup(theId);
 
-			DispatchNodeProxy theProxy = createProxy(theConnectable, aSocket, theId);
-			addChild(theProxy);
-			System.out.println("Dispatcher accept node (socket): "+theId);
+			acceptChild(theId, theNode, aInputStream, aOutputStream);
+			return theId;
 		}
 		catch (Exception e)
 		{
@@ -109,17 +126,32 @@ implements RIEventDispatcher
 		}
 	}
 	
+	public synchronized final void acceptChild(
+			String aId,
+			RIDispatchNode aNode,
+			InputStream aInputStream,
+			OutputStream aOutputStream)
+	{
+		DispatchNodeProxy theProxy = createProxy(
+				aNode,
+				aInputStream,
+				aOutputStream, 
+				aId);
+		
+		addChild(theProxy);
+		System.out.println("Dispatcher accept node (socket): "+aId);
+	}
+	
 	/**
 	 * Sets up the {@link DispatchNodeProxy} that handles the connection
 	 * with a given node.
 	 * @param aConnectable The node handled by this proxy
-	 * @param aSocket The socket through which the proxy should
-	 * communicate with the node.
 	 * @param aId The id of the node.
 	 */
 	protected abstract DispatchNodeProxy createProxy(
 			RIDispatchNode aConnectable,
-			Socket aSocket, 
+			InputStream aInputStream,
+			OutputStream aOutputStream,
 			String aId);
 
 
@@ -214,7 +246,7 @@ implements RIEventDispatcher
 	 */
 	public synchronized int flush()
 	{
-		System.out.println("Event dispatcher: flushing...");
+		System.out.println("[AbstractEventDispatcher] Flushing...");
 
 		List<Integer> theResults = fork(new Task<DispatchNodeProxy, Integer>() {
 			public Integer run(DispatchNodeProxy aProxy)
@@ -226,7 +258,7 @@ implements RIEventDispatcher
 		int theCount = 0;
 		for (Integer theResult : theResults) theCount += theResult;
 
-		System.out.println("Event dispatcher: flushed "+theCount+" events.");
+		System.out.println("[AbstractEventDispatcher] Flushed "+theCount+" events.");
 		return theCount;
 	}
 	

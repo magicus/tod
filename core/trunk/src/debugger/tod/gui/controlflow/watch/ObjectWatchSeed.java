@@ -18,18 +18,30 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.common.event;
+package tod.gui.controlflow.watch;
 
 import tod.core.database.browser.ILogBrowser;
-import tod.core.database.event.IConstructorChainingEvent;
+import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.ObjectId;
 
-public class ConstructorChainingEvent extends BehaviorCallEvent
-implements IConstructorChainingEvent
+public class ObjectWatchSeed extends WatchSeed
 {
-
-	public ConstructorChainingEvent(ILogBrowser aLogBrowser)
+	private ObjectId itsObject;
+	
+	public ObjectWatchSeed(WatchPanel aWatchPanel, ILogBrowser aLogBrowser, ILogEvent aRefEvent, ObjectId aObject)
 	{
-		super(aLogBrowser);
+		super(aWatchPanel, aLogBrowser, aRefEvent);
+		itsObject = aObject;
+	}
+
+	@Override
+	public IWatchProvider createProvider()
+	{
+		return new ObjectWatchProvider(
+				getWatchPanel(), 
+				getLogBrowser(),
+				getRefEvent(),
+				itsObject);
 	}
 
 }

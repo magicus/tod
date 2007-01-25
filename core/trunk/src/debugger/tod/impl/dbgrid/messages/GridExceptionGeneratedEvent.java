@@ -88,7 +88,6 @@ public class GridExceptionGeneratedEvent extends GridEvent
 	{
 		int theCount = super.getBitCount();
 		
-		theCount += DebuggerGridConfig.EVENT_BEHAVIOR_BITS;
 		theCount += getObjectBits(getException());
 
 		return theCount;

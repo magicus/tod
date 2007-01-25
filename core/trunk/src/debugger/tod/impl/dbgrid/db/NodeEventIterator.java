@@ -72,13 +72,17 @@ implements RINodeEventIterator
 		List<GridEvent> theList = new ArrayList<GridEvent>(aCount);
 		for (int i=0;i<aCount;i++)
 		{
-			if (itsIterator.hasNext()) theList.add(itsIterator.next());
+			if (itsIterator.hasPrevious()) theList.add(itsIterator.previous());
 			else break;
 		}
 		
-		return theList.size() > 0 ?
-				theList.toArray(new GridEvent[theList.size()])
-				: null;
+		int theSize = theList.size();
+		if (theSize == 0) return null;
+		
+		GridEvent[] theResult = new GridEvent[theSize];
+		for (int i=0;i<theSize;i++) theResult[i] = theList.get(theSize-i-1);
+		
+		return theResult;
 	}
 
 	public void setPreviousTimestamp(long aTimestamp)

@@ -30,16 +30,16 @@ import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.ThreadInfo;
 import tod.impl.common.EventCollector;
 import tod.impl.common.event.ArrayWriteEvent;
-import tod.impl.common.event.BehaviorCallEvent;
 import tod.impl.common.event.BehaviorExitEvent;
-import tod.impl.common.event.ConstructorChainingEvent;
 import tod.impl.common.event.Event;
 import tod.impl.common.event.ExceptionGeneratedEvent;
 import tod.impl.common.event.FieldWriteEvent;
-import tod.impl.common.event.InstantiationEvent;
 import tod.impl.common.event.LocalVariableWriteEvent;
-import tod.impl.common.event.MethodCallEvent;
 import tod.impl.common.event.OutputEvent;
+import tod.impl.local.event.BehaviorCallEvent;
+import tod.impl.local.event.ConstructorChainingEvent;
+import tod.impl.local.event.InstantiationEvent;
+import tod.impl.local.event.MethodCallEvent;
 import zz.utils.ArrayStack;
 import zz.utils.Stack;
 
@@ -88,22 +88,6 @@ public class LocalCollector extends EventCollector
 		return (LocalThreadInfo) super.getThread(aId);
 	}
 	
-	private String formatBehavior(int aId)
-	{
-		IBehaviorInfo theBehavior = getBehavior(aId);
-		return theBehavior != null ? 
-				String.format("%d (%s.%s)", aId, theBehavior.getType().getName(), theBehavior.getName())
-				: ""+aId;
-	}
-	
-	private String formatField(int aId)
-	{
-		IFieldInfo theField = getField(aId);
-		return theField != null ?
-				String.format("%d (%s)", aId, theField.getName())
-				: ""+aId;
-	}
-	
 	private void initEvent(
 			Event aEvent, 
 			LocalThreadInfo aThread, 
@@ -148,15 +132,6 @@ public class LocalCollector extends EventCollector
 			int aOperationBytecodeIndex, 
 			Object aException)
 	{
-		if (DebugFlags.COLLECTOR_LOG) System.out.println(String.format(
-				"exception    (thread: %d, p.ts: %s, depth: %d, ts: %s, bid: %s, exc.: %s",
-				aThreadId,
-				AgentUtils.formatTimestamp(aParentTimestamp),
-				aDepth,
-				AgentUtils.formatTimestamp(aTimestamp),
-				formatBehavior(aBehaviorId),
-				aException));
-		
 		ExceptionGeneratedEvent theEvent = new ExceptionGeneratedEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
 		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aBehaviorId, aOperationBytecodeIndex);
@@ -177,16 +152,6 @@ public class LocalCollector extends EventCollector
 			boolean aHasThrown, 
 			Object aResult)
 	{
-		if (DebugFlags.COLLECTOR_LOG) System.out.println(String.format(
-				"behaviorExit (thread: %d, p.ts: %s, depth: %d, ts: %s, bid: %s, thrown: %s, ret: %s",
-				aThreadId,
-				AgentUtils.formatTimestamp(aParentTimestamp),
-				aDepth,
-				AgentUtils.formatTimestamp(aTimestamp),
-				formatBehavior(aBehaviorId),
-				aHasThrown,
-				aResult));
-		
 		BehaviorExitEvent theEvent = new BehaviorExitEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
 		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex);
@@ -210,16 +175,6 @@ public class LocalCollector extends EventCollector
 			Object aTarget, 
 			Object aValue)
 	{
-		if (DebugFlags.COLLECTOR_LOG) System.out.println(String.format(
-				"fieldWrite   (thread: %d, p.ts: %s, depth: %d, ts: %s, fid: %s, target: %s, val: %s",
-				aThreadId,
-				AgentUtils.formatTimestamp(aParentTimestamp),
-				aDepth,
-				AgentUtils.formatTimestamp(aTimestamp),
-				formatField(aFieldId),
-				aTarget,
-				aValue));
-		
 		FieldWriteEvent theEvent = new FieldWriteEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
 		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex);
@@ -242,16 +197,6 @@ public class LocalCollector extends EventCollector
 			int aIndex, 
 			Object aValue)
 	{
-		if (DebugFlags.COLLECTOR_LOG) System.out.println(String.format(
-				"arrayWrite   (thread: %d, p.ts: %s, depth: %d, ts: %s, target: %s, ind: %d, val: %s",
-				aThreadId,
-				AgentUtils.formatTimestamp(aParentTimestamp),
-				aDepth,
-				AgentUtils.formatTimestamp(aTimestamp),
-				aTarget,
-				aIndex,
-				aValue));
-		
 		ArrayWriteEvent theEvent = new ArrayWriteEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
 		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex);
@@ -276,18 +221,6 @@ public class LocalCollector extends EventCollector
 			Object aTarget, 
 			Object[] aArguments)
 	{
-		if (DebugFlags.COLLECTOR_LOG) System.out.println(String.format(
-				"instantiation(thread: %d, p.ts: %s, depth: %d, ts: %s, direct: %s, c.bid: %s, e.bid: %s, target: %s, args: %s",
-				aThreadId,
-				AgentUtils.formatTimestamp(aParentTimestamp),
-				aDepth,
-				AgentUtils.formatTimestamp(aTimestamp),
-				aDirectParent,
-				formatBehavior(aCalledBehaviorId),
-				formatBehavior(aExecutedBehaviorId),
-				aTarget,
-				aArguments));
-		
 		InstantiationEvent theEvent = new InstantiationEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
 		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex);
@@ -313,21 +246,12 @@ public class LocalCollector extends EventCollector
 			int aVariableId, 
 			Object aValue)
 	{
-		if (DebugFlags.COLLECTOR_LOG) System.out.println(String.format(
-				"localWrite   (thread: %d, p.ts: %s, depth: %d, ts: %s, vid: %d, val: %s",
-				aThreadId,
-				AgentUtils.formatTimestamp(aParentTimestamp),
-				aDepth,
-				AgentUtils.formatTimestamp(aTimestamp),
-				aVariableId,
-				aValue));
-		
 		LocalVariableWriteEvent theEvent = new LocalVariableWriteEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
 		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex);
 
 		IBehaviorInfo theBehavior = theThread.peekParent().getExecutedBehavior();
-		LocalVariableInfo theInfo = theBehavior.getLocalVariableInfo(aOperationBytecodeIndex+35, aVariableId); // 35 is the size of our instrumentation
+		LocalVariableInfo theInfo = theBehavior.getLocalVariableInfo(aOperationBytecodeIndex, aVariableId); 
        	if (theInfo == null) theInfo = new LocalVariableInfo((short)-1, (short)-1, "$"+aVariableId, "", (short)-1);
         
 		theEvent.setVariable(theInfo);
@@ -350,19 +274,6 @@ public class LocalCollector extends EventCollector
 			Object aTarget,
 			Object[] aArguments)
 	{
-		if (DebugFlags.COLLECTOR_LOG) System.out.println(String.format(
-				"methodCall   (thread: %d, p.ts: %s, depth: %d, ts: %s, direct: %s, c.bid: %s, e.bid: %s, target: %s, args: %s, bci: %d)",
-				aThreadId,
-				AgentUtils.formatTimestamp(aParentTimestamp),
-				aDepth,
-				AgentUtils.formatTimestamp(aTimestamp),
-				aDirectParent,
-				formatBehavior(aCalledBehaviorId),
-				formatBehavior(aExecutedBehaviorId),
-				aTarget,
-				aArguments,
-				aOperationBytecodeIndex));
-		
 		MethodCallEvent theEvent = new MethodCallEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
 		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex);
@@ -385,15 +296,6 @@ public class LocalCollector extends EventCollector
 			Output aOutput,
 			byte[] aData)
 	{
-		if (DebugFlags.COLLECTOR_LOG) System.out.println(String.format(
-				"output       (thread: %d, p.ts: %s, depth: %d, ts: %s, out: %s, data: %s",
-				aThreadId,
-				AgentUtils.formatTimestamp(aParentTimestamp),
-				aDepth,
-				AgentUtils.formatTimestamp(aTimestamp),
-				aOutput,
-				aData));
-		
 		OutputEvent theEvent = new OutputEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
 		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, -1, -1);
@@ -417,18 +319,6 @@ public class LocalCollector extends EventCollector
 			Object aTarget, 
 			Object[] aArguments)
 	{
-		if (DebugFlags.COLLECTOR_LOG) System.out.println(String.format(
-				"superCall    (thread: %d, p.ts: %s, depth: %d, ts: %s, direct: %s, c.bid: %s, e.bid: %s, target: %s, args: %s",
-				aThreadId,
-				AgentUtils.formatTimestamp(aParentTimestamp),
-				aDepth,
-				AgentUtils.formatTimestamp(aTimestamp),
-				aDirectParent,
-				formatBehavior(aCalledBehaviorId),
-				formatBehavior(aExecutedBehaviorId),
-				aTarget,
-				aArguments));
-		
 		ConstructorChainingEvent theEvent = new ConstructorChainingEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
 		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex);

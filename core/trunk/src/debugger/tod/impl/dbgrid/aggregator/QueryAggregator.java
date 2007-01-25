@@ -88,6 +88,13 @@ implements RIQueryAggregator
 		itsMergeIterator = new MergeIterator(theIterators);
 	}
 
+	private static GridEvent[] toArray(List<GridEvent> aList)
+	{
+		return aList.size() > 0 ?
+				aList.toArray(new GridEvent[aList.size()])
+				: null;
+	}
+	
 	public GridEvent[] next(int aCount)
 	{
 		List<GridEvent> theList = new ArrayList<GridEvent>(aCount);
@@ -96,25 +103,44 @@ implements RIQueryAggregator
 			if (itsMergeIterator.hasNext()) theList.add(itsMergeIterator.next());
 			else break;
 		}
-		
-		return theList.size() > 0 ?
-				theList.toArray(new GridEvent[theList.size()])
-				: null;
+
+		return toArray(theList);
 	}
 
-	public void setNextTimestamp(long aTimestamp) throws RemoteException
+	public void setNextTimestamp(long aTimestamp)
 	{
 		initIterators(aTimestamp);
 	}
 
 	public GridEvent[] previous(int aCount)
 	{
-		throw new UnsupportedOperationException();
+		List<GridEvent> theList = new ArrayList<GridEvent>(aCount);
+		for (int i=0;i<aCount;i++)
+		{
+			if (itsMergeIterator.hasPrevious()) theList.add(itsMergeIterator.previous());
+			else break;
+		}
+
+		int theSize = theList.size();
+		if (theSize == 0) return null;
+		
+		GridEvent[] theResult = new GridEvent[theSize];
+		for (int i=0;i<theSize;i++) theResult[i] = theList.get(theSize-i-1);
+		
+		return theResult;
 	}
 
 	public void setPreviousTimestamp(long aTimestamp)
 	{
-		throw new UnsupportedOperationException();
+		initIterators(aTimestamp);
+		GridEvent theNext = itsMergeIterator.peekNext();
+		if (theNext != null && theNext.getTimestamp() > aTimestamp) return;
+		
+		while(itsMergeIterator.hasNext())
+		{
+			theNext = itsMergeIterator.next();
+			if (theNext.getTimestamp() > aTimestamp) return;
+		}
 	}
 	
 	public long[] getEventCounts(

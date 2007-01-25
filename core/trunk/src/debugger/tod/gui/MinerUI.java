@@ -34,8 +34,8 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.session.ISession;
 import tod.gui.seed.FilterSeed;
-import tod.gui.seed.Seed;
-import tod.gui.seed.SeedFactory;
+import tod.gui.seed.LogViewSeed;
+import tod.gui.seed.LogViewSeedFactory;
 import tod.gui.seed.ThreadsSeed;
 
 /**
@@ -44,7 +44,7 @@ import tod.gui.seed.ThreadsSeed;
 public abstract class MinerUI extends JPanel 
 implements ILocationSelectionListener, IGUIManager
 {
-	private BrowserNavigator itsNavigator = new BrowserNavigator();
+	private LogViewBrowserNavigator itsNavigator = new LogViewBrowserNavigator();
 	
 	public MinerUI()
 	{
@@ -134,17 +134,17 @@ implements ILocationSelectionListener, IGUIManager
 
 	public void selectionChanged(List/*<LocationInfo>*/ aSelectedLocations)
 	{
-		Seed theSeed = null;
+		LogViewSeed theSeed = null;
 		if (aSelectedLocations.size() == 1)
 		{
 			ILocationInfo theInfo = (ILocationInfo) aSelectedLocations.get(0);
-			theSeed = SeedFactory.getDefaultSeed(this, getSession().getLogBrowser(), theInfo);
+			theSeed = LogViewSeedFactory.getDefaultSeed(this, getSession().getLogBrowser(), theInfo);
 		}
 
 		itsNavigator.open(theSeed);
 	}
 	
-	public void openSeed(Seed aSeed, boolean aNewTab)
+	public void openSeed(LogViewSeed aSeed, boolean aNewTab)
 	{
 		itsNavigator.open(aSeed);
 	}

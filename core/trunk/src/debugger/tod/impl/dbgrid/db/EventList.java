@@ -126,8 +126,11 @@ public class EventList
 		itsEventsCount++;
 		itsEventsSize += theRecordLength;
 		
+		int p0 = itsCurrentBitStruct.getPos();
 		itsCurrentBitStruct.writeInt(theRecordLength, DB_EVENT_SIZE_BITS);
 		aEvent.writeTo(itsCurrentBitStruct);
+		int p1 = itsCurrentBitStruct.getPos();
+		assert p1-p0 == theRecordLength;
 		
 		itsRecordIndex++;
 		return theEventPointer;

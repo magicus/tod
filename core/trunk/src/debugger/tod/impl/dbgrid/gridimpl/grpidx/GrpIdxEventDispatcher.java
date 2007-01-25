@@ -20,7 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.gridimpl.grpidx;
 
-import java.net.Socket;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.rmi.RemoteException;
 
 import tod.agent.DebugFlags;
@@ -31,7 +32,6 @@ import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.EventReorderingBuffer.ReorderingBufferListener;
 import tod.impl.dbgrid.db.RoleIndexSet.RoleTuple;
 import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
-import tod.impl.dbgrid.dispatch.DBNodeProxy;
 import tod.impl.dbgrid.dispatch.DispatchNodeProxy;
 import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
 import tod.impl.dbgrid.dispatch.RIDispatchNode;
@@ -91,10 +91,11 @@ implements ReorderingBufferListener
 	@Override
 	protected DispatchNodeProxy createProxy(
 			RIDispatchNode aConnectable, 
-			Socket aSocket, 
+			InputStream aInputStream,
+			OutputStream aOutputStream,
 			String aId)
 	{
-		return new GrpIdxDBNodeProxy(aConnectable, aSocket, aId);
+		return new GrpIdxDBNodeProxy(aConnectable, aInputStream, aOutputStream, aId);
 	}
 
 	@Override
@@ -106,13 +107,13 @@ implements ReorderingBufferListener
 	public synchronized int flush()
 	{
 		int theCount = 0;
-		System.out.println("GrpIdxEventDispatcher: flushing...");
+		System.out.println("[GrpIdxEventDispatcher] Flushing...");
 		while (! itsReorderingBuffer.isEmpty())
 		{
 			processEvent(itsReorderingBuffer.pop());
 			theCount++;
 		}
-		System.out.println("GrpIdxEventDispatcher: flushed "+theCount+" events...");
+		System.out.println("[GrpIdxEventDispatcher] Flushed "+theCount+" events...");
 		theCount += super.flush();
 		
 		return theCount;

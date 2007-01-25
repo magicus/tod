@@ -89,10 +89,11 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 
 	public LocalVariableInfo getLocalVariableInfo (int aPc, int aIndex)
 	{
+		int thePc = aPc+35; // 35 is the size of our instrumentation
     	if (itsLocalVariableTable != null) for (int i=0; i<itsLocalVariableTable.length; i++)
     	{
     	    LocalVariableInfo theInfo = itsLocalVariableTable[i];
-    		if (theInfo.match(aPc, aIndex)) return theInfo;
+    		if (theInfo.match(thePc, aIndex)) return theInfo;
     	}
     	return null;
 	}

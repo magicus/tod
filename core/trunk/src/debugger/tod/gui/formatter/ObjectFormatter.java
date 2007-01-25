@@ -22,6 +22,7 @@ package tod.gui.formatter;
 
 import java.awt.Color;
 
+import tod.Util;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
@@ -67,7 +68,7 @@ public class ObjectFormatter extends AbstractFormatter
 
 			String theText;
 			if (theCurrentObject != null && theCurrentObject.equals(aObject)) theText = "this";
-			else theText = theType.getName() + " (" + theId + ")";
+			else theText = Util.getPrettyName(theType.getName()) + " (" + theId + ")";
 
 			return theText;
 		}

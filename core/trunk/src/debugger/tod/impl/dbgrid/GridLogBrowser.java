@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
@@ -46,6 +47,8 @@ import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.impl.common.LogBrowserUtils;
+import tod.impl.common.ObjectInspector;
+import tod.impl.common.VariablesInspector;
 import tod.impl.dbgrid.aggregator.GridEventBrowser;
 import tod.impl.dbgrid.db.RoleIndexSet;
 import tod.impl.dbgrid.messages.MessageType;
@@ -63,6 +66,7 @@ import tod.impl.dbgrid.queries.HostCondition;
 import tod.impl.dbgrid.queries.ObjectCondition;
 import tod.impl.dbgrid.queries.ThreadCondition;
 import tod.impl.dbgrid.queries.TypeCondition;
+import tod.impl.dbgrid.queries.VariableCondition;
 import tod.utils.remote.RemoteLocationsRepository;
 import zz.utils.Utils;
 import zz.utils.cache.MRUBuffer;
@@ -164,6 +168,11 @@ implements ILogBrowser, RIGridMasterListener
 		return new TypeCondition(MessageType.FIELD_WRITE);
 	}
 
+	public IEventFilter createVariableWriteFilter(LocalVariableInfo aVariable)
+	{
+		return new VariableCondition(aVariable.getIndex());
+	}
+
 	public IEventFilter createInstantiationFilter(ObjectId aId)
 	{
 		int theId = ObjectCodec.getObjectId(aId, true);
@@ -239,16 +248,19 @@ implements ILogBrowser, RIGridMasterListener
 
 	public long getEventsCount()
 	{
+		if (itsEventsCount == 0) updateStats(); 
 		return itsEventsCount;
 	}
 
 	public long getFirstTimestamp()
 	{
+		if (itsFirstTimestamp == 0) updateStats();
 		return itsFirstTimestamp;
 	}
 
 	public long getLastTimestamp()
 	{
+		if (itsFirstTimestamp == 0) updateStats();
 		return itsLastTimestamp;
 	}
 	
@@ -343,7 +355,7 @@ implements ILogBrowser, RIGridMasterListener
 		return itsMaster;
 	}
 
-	public IEventBrowser createBrowser(IEventFilter aFilter)
+	public GridEventBrowser createBrowser(IEventFilter aFilter)
 	{
 		if (aFilter instanceof EventCondition)
 		{
@@ -372,21 +384,33 @@ implements ILogBrowser, RIGridMasterListener
 
 	public IObjectInspector createObjectInspector(ObjectId aObjectId)
 	{
-		throw new UnsupportedOperationException();
+		return new ObjectInspector(this, aObjectId);
 	}
 
 	public IVariablesInspector createVariablesInspector(IBehaviorCallEvent aEvent)
 	{
-		throw new UnsupportedOperationException();
+		return new VariablesInspector(aEvent);
+	}
+	
+	private void updateStats()
+	{
+		try
+		{
+			itsEventsCount = itsMaster.getEventsCount();
+			itsFirstTimestamp = itsMaster.getFirstTimestamp();
+			itsLastTimestamp = itsMaster.getLastTimestamp();
+			itsThreads = null; // lazy
+			itsHosts = null; // lazy		
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
-	public void eventsReceived() throws RemoteException
+	public void eventsReceived() 
 	{
-		itsEventsCount = itsMaster.getEventsCount();
-		itsFirstTimestamp = itsMaster.getFirstTimestamp();
-		itsLastTimestamp = itsMaster.getLastTimestamp();
-		itsThreads = null; // lazy
-		itsHosts = null; // lazy
+		updateStats();
 	}
 
 	public void exception(Throwable aThrowable) 

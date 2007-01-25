@@ -20,12 +20,13 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.view.event;
 
+import tod.Util;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.gui.IGUIManager;
-import tod.gui.seed.SeedFactory;
+import tod.gui.seed.LogViewSeedFactory;
 
 /**
  * View for a {@link tod.core.database.event.MethodEnter} event.
@@ -66,12 +67,12 @@ public class BehaviorCallView extends EventView
 			if (theCalledBehavior != null) theTypeInfo = theCalledBehavior.getType();
 		}
 		
-		String theTypeName = theTypeInfo.getName();
+		String theTypeName = Util.getPrettyName(theTypeInfo.getName());
 		
 		add (createTitledLink(
 				"Type: ", 
 				theTypeName, 
-				SeedFactory.getDefaultSeed(getGUIManager(), getLogBrowser(), theTypeInfo)));
+				LogViewSeedFactory.getDefaultSeed(getGUIManager(), getLogBrowser(), theTypeInfo)));
 		
 		// Target
 		add (createTitledPanel("Target: ", createInspectorLink(theEvent.getTarget())));

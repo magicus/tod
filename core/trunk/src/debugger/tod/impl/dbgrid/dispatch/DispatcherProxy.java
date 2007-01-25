@@ -22,6 +22,8 @@ package tod.impl.dbgrid.dispatch;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
 import tod.core.transport.MessageType;
@@ -31,9 +33,13 @@ public class DispatcherProxy extends DispatchNodeProxy
 {
 	private byte[] itsBuffer = new byte[1024];
 	
-	public DispatcherProxy(RIDispatchNode aConnectable, Socket aSocket, String aNodeId)
+	public DispatcherProxy(
+			RIDispatchNode aConnectable, 
+			InputStream aInputStream,
+			OutputStream aOutputStream,
+			String aNodeId)
 	{
-		super(aConnectable, aSocket, aNodeId);
+		super(aConnectable, aInputStream, aOutputStream, aNodeId);
 	}
 	
 	/**

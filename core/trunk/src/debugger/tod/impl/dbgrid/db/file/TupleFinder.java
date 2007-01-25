@@ -28,6 +28,41 @@ import zz.utils.bit.BitStruct;
  */
 public class TupleFinder
 {
+	/**
+	 * Describes the possible tuple finding behavior in the case tuples
+	 * with the specified key are found.
+	 * @author gpothier
+	 */
+	public static enum Match 
+	{
+		/**
+		 * Return the first tuple whose key matches the specified key.
+		 */
+		FIRST, 
+		/**
+		 * Returns the last tuple whose key matches the specified key
+		 */
+		LAST
+	}
+	
+	/**
+	 * Describes the possible tuple finding behaviors in the case no tuple
+	 * with the specified key are found.
+	 * @author gpothier
+	 */
+	public static enum NoMatch 
+	{
+		/**
+		 * Returns the last tuple whose key is smaller than the specified key.
+		 */
+		BEFORE,
+		/**
+		 * Return the first tuple whose key is greater than the specified key.
+		 */
+		AFTER
+	}
+	
+	
 	public static <T> int getTuplesPerPage(
 			int aPageSize, 
 			int aPagePointerSize,
@@ -48,19 +83,23 @@ public class TupleFinder
 			int aPagePointerSize,
 			long aKey, 
 			TupleCodec<T> aTupleCodec,
-			boolean aBefore)
+			Match aMatchBehavior,
+			NoMatch aNoMatchBehavior)
 	{
-		int theIndex = findTupleIndex(aPage, aPagePointerSize, aKey, aTupleCodec, aBefore);
+		int theIndex = findTupleIndex(
+				aPage, 
+				aPagePointerSize, 
+				aKey, 
+				aTupleCodec, 
+				aMatchBehavior,
+				aNoMatchBehavior);
+		
 		if (theIndex < 0) return null;
 		return readTuple(aPage, aTupleCodec, theIndex);
 	}
 	
 	/**
 	 * Binary search of tuple.
-	 * @param aBefore If true, then the search will return the tuple with the greatest key
-	 * that is smaller than the given key.
-	 * If false, the search will return the tuple which has the smallest key value that is
-	 * greater than or equeal to the given key.
 	 * @param aPagePointerSize Size in bits of page pointers for linking to next/previous pages.
 	 */
 	public static <T extends IndexTuple> int findTupleIndex(
@@ -68,28 +107,38 @@ public class TupleFinder
 			int aPagePointerSize,
 			long aKey, 
 			TupleCodec<T> aTupleCodec,
-			boolean aBefore)
+			Match aMatchBehavior,
+			NoMatch aNoMatchBehavior)
 	{
 		int theTupleCount = getTuplesPerPage(aPage.getTotalBits(), aPagePointerSize, aTupleCodec);
-		return findTupleIndex(aPage, aKey, aTupleCodec, 0, theTupleCount-1, aBefore);
+		return findTupleIndex(
+				aPage, 
+				aKey, 
+				aTupleCodec, 
+				0, 
+				theTupleCount-1, 
+				aMatchBehavior,
+				aNoMatchBehavior);
 	}
 	
 	/**
 	 * Binary search of tuple. 
 	 * See {@link #findTupleIndex(PageBitStruct, long, tod.impl.dbgrid.dbnode.HierarchicalIndex.TupleCodec)}.
 	 */
-	public static <T extends IndexTuple> int findTupleIndex(
+	private static <T extends IndexTuple> int findTupleIndex(
 			BitStruct aPage, 
 			long aKey, 
 			TupleCodec<T> aTupleCodec, 
 			int aFirst, 
 			int aLast,
-			boolean aBefore)
+			Match aMatchBehavior,
+			NoMatch aNoMatchBehavior)
 	{
 		assert aLast-aFirst > 0;
 		
 		T theFirstTuple = readTuple(aPage, aTupleCodec, aFirst);
 		long theFirstKey = theFirstTuple.getKey();
+		// A key value of 0 means we are on empty space at the end of the page.
 		if (theFirstKey == 0) theFirstKey = Long.MAX_VALUE;
 		
 		T theLastTuple = readTuple(aPage, aTupleCodec, aLast);
@@ -99,12 +148,52 @@ public class TupleFinder
 //		System.out.println(String.format("First  %d:%d", theFirstTimestamp, aFirst));
 //		System.out.println(String.format("Last   %d:%d", theLastTimestamp, aLast));
 		
-		if (aKey < theFirstKey) return aBefore ? -1 : aFirst;
-		if (aKey == theFirstKey) return aFirst;
-		if (aKey == theLastKey) return aLast;
-		if (aKey > theLastKey) return aBefore ? aLast : -1;
+		if (aKey < theFirstKey) 
+		{
+			switch (aNoMatchBehavior)
+			{
+			case BEFORE:
+				assert aFirst == 0;
+				return -1;
+			case AFTER: return aFirst;
+			default: throw new RuntimeException();
+			}
+		}
 		
-		if (aLast-aFirst == 1) return aFirst;
+		if (aKey > theLastKey) 
+		{
+			switch (aNoMatchBehavior)
+			{
+			case BEFORE: return aLast;
+			case AFTER: return -aLast-1;
+			default: throw new RuntimeException();
+			}
+		}
+		
+		if (theFirstKey == theLastKey) 
+		{
+			switch (aMatchBehavior)
+			{
+			case FIRST: return aFirst;
+			case LAST: return aLast;
+			default: throw new RuntimeException();
+			}
+		}
+		
+		if (aLast-aFirst == 1) 
+		{
+			if (aKey == theFirstKey) return aFirst;
+			else if (aKey == theLastKey) return aLast;
+			else 
+			{
+				switch (aNoMatchBehavior)
+				{
+				case BEFORE: return aFirst;
+				case AFTER: return aLast;
+				default: throw new RuntimeException();
+				}
+			}
+		}
 		
 		int theMiddle = (aFirst + aLast) / 2;
 		T theMiddleTuple = readTuple(aPage, aTupleCodec, theMiddle);
@@ -113,9 +202,46 @@ public class TupleFinder
 		
 //		System.out.println(String.format("Middle %d:%d", theMiddleTimestamp, theMiddle));
 		
-		if (aKey == theMiddleKey) return theMiddle;
-		if (aKey < theMiddleKey) return findTupleIndex(aPage, aKey, aTupleCodec, aFirst, theMiddle, aBefore);
-		else return findTupleIndex(aPage, aKey, aTupleCodec, theMiddle, aLast, aBefore);
+		boolean theLookForward;
+		
+		if (aKey > theMiddleKey) theLookForward = true;
+		else if (aKey < theMiddleKey) theLookForward = false;
+		else
+		{
+			switch(aMatchBehavior)
+			{
+			case FIRST: 
+				theLookForward = false;
+				break;
+			case LAST:
+				theLookForward = true;
+				break;
+			default: throw new RuntimeException();
+			}
+		}
+		
+		if (theLookForward) 
+		{
+			return findTupleIndex(
+					aPage, 
+					aKey, 
+					aTupleCodec, 
+					theMiddle, 
+					aLast, 
+					aMatchBehavior,
+					aNoMatchBehavior);
+		}
+		else 
+		{
+			return findTupleIndex(
+					aPage, 
+					aKey, 
+					aTupleCodec, 
+					aFirst, 
+					theMiddle, 
+					aMatchBehavior,
+					aNoMatchBehavior);
+		}
 	}
 	
 	public static <T extends Tuple> T readTuple(BitStruct aPage, TupleCodec<T> aTupleCodec, int aIndex)

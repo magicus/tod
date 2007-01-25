@@ -18,17 +18,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.common.event;
+package tod.impl.dbgrid.event;
 
-import tod.core.database.browser.ILogBrowser;
-import tod.core.database.event.IMethodCallEvent;
+import tod.core.database.event.IConstructorChainingEvent;
+import tod.impl.dbgrid.GridLogBrowser;
 
-public class MethodCallEvent extends BehaviorCallEvent implements IMethodCallEvent
+public class ConstructorChainingEvent extends BehaviorCallEvent
+implements IConstructorChainingEvent
 {
-
-	public MethodCallEvent(ILogBrowser aLogBrowser)
+	public ConstructorChainingEvent(GridLogBrowser aLogBrowser)
 	{
 		super(aLogBrowser);
 	}
-
 }

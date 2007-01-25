@@ -54,6 +54,7 @@ implements RIInternalDispatcher
 
 	public InternalEventDispatcher() throws RemoteException
 	{
+		super(true);
 	}
 
 	/**
@@ -71,17 +72,18 @@ implements RIInternalDispatcher
 	@Override
 	protected DispatchNodeProxy createProxy(
 			RIDispatchNode aConnectable,
-			Socket aSocket, 
+			InputStream aInputStream,
+			OutputStream aOutputStream,
 			String aId)
 	{
 		try
 		{
-			DataOutputStream theOutStream = new DataOutputStream(aSocket.getOutputStream());
+			DataOutputStream theOutStream = new DataOutputStream(aOutputStream);
 
 			// LogReceiver expects host name
 			theOutStream.writeUTF("InternalEventDispatcher"); 
 
-			return new DispatcherProxy(aConnectable, aSocket, aId);
+			return new DispatcherProxy(aConnectable, aInputStream, aOutputStream, aId);
 		}
 		catch (IOException e)
 		{

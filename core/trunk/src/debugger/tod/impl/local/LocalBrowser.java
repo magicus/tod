@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
@@ -55,10 +56,12 @@ import tod.impl.local.filter.FieldWriteFilter;
 import tod.impl.local.filter.HostFilter;
 import tod.impl.local.filter.InstantiationFilter;
 import tod.impl.local.filter.IntersectionFilter;
+import tod.impl.local.filter.ObjectFilter;
 import tod.impl.local.filter.OperationLocationFilter;
 import tod.impl.local.filter.TargetFilter;
 import tod.impl.local.filter.ThreadFilter;
 import tod.impl.local.filter.UnionFilter;
+import tod.impl.local.filter.VariableWriteFilter;
 
 public class LocalBrowser implements ILogBrowser
 {
@@ -186,6 +189,11 @@ public class LocalBrowser implements ILogBrowser
 		return new FieldWriteFilter(this);
 	}
 	
+	public IEventFilter createVariableWriteFilter(LocalVariableInfo aVariable)
+	{
+		return new VariableWriteFilter(this, aVariable);
+	}
+
 	public IEventFilter createInstantiationsFilter()
 	{
 		return new InstantiationFilter(this);
@@ -213,7 +221,7 @@ public class LocalBrowser implements ILogBrowser
 	
 	public IEventFilter createObjectFilter(ObjectId aId)
 	{
-		throw new UnsupportedOperationException();
+		return new ObjectFilter(this, aId);
 	}
 
 	public IEventFilter createThreadFilter(IThreadInfo aThreadInfo)

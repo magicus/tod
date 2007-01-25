@@ -34,6 +34,7 @@ import tod.impl.dbgrid.queries.FieldCondition;
 import tod.impl.dbgrid.queries.ObjectCondition;
 import tod.impl.dbgrid.queries.VariableCondition;
 import zz.utils.bit.BitStruct;
+import zz.utils.bit.BitUtils;
 
 public abstract class GridEvent extends GridMessage
 {
@@ -55,31 +56,22 @@ public abstract class GridEvent extends GridMessage
 	{
 	}
 
-	public GridEvent(
-			int aHost, 
-			int aThread, 
-			int aDepth,
-			long aTimestamp, 
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex, 
-			long aParentTimestamp)
-	{
-		set(aHost, aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aParentTimestamp);
-	}
-
 	public GridEvent(BitStruct aBitStruct)
 	{
 		itsHost = aBitStruct.readInt(DebuggerGridConfig.EVENT_HOST_BITS);
 		itsThread = aBitStruct.readInt(DebuggerGridConfig.EVENT_THREAD_BITS);
 		itsDepth = aBitStruct.readInt(DebuggerGridConfig.EVENT_DEPTH_BITS);
 		itsTimestamp = aBitStruct.readLong(DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
-		itsOperationBehaviorId = aBitStruct.readInt(DebuggerGridConfig.EVENT_BEHAVIOR_BITS);
-		itsOperationBytecodeIndex = aBitStruct.readInt(DebuggerGridConfig.EVENT_BYTECODE_LOCATION_BITS);
-		
-		// TODO: this is a hack. We should not allow negative values.
-		if (itsOperationBytecodeIndex == 0xffff) itsOperationBytecodeIndex = -1;
+		itsOperationBehaviorId = readShort(aBitStruct, DebuggerGridConfig.EVENT_BEHAVIOR_BITS);
+		itsOperationBytecodeIndex = readShort(aBitStruct, DebuggerGridConfig.EVENT_BYTECODE_LOCATION_BITS);
 		
 		itsParentTimestamp = aBitStruct.readLong(DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
+	}
+	
+	private static int readShort(BitStruct aBitStruct, int aBits)
+	{
+		int theValue = aBitStruct.readInt(aBits);
+		return theValue == BitUtils.pow2i(aBits)-1 ? -1 : theValue;
 	}
 	
 	protected void set(
@@ -96,6 +88,10 @@ public abstract class GridEvent extends GridMessage
 		itsDepth = aDepth;
 		itsTimestamp = aTimestamp;
 		itsOperationBehaviorId = aOperationBehaviorId;
+		if (itsOperationBehaviorId == 65535)
+		{
+			System.out.println("GridEvent.set()");
+		}
 		itsOperationBytecodeIndex = aOperationBytecodeIndex;
 		itsParentTimestamp = aParentTimestamp;
 	}
@@ -130,6 +126,7 @@ public abstract class GridEvent extends GridMessage
 		theCount += DebuggerGridConfig.EVENT_THREAD_BITS;
 		theCount += DebuggerGridConfig.EVENT_DEPTH_BITS;
 		theCount += DebuggerGridConfig.EVENT_TIMESTAMP_BITS;
+		theCount += DebuggerGridConfig.EVENT_BEHAVIOR_BITS;
 		theCount += DebuggerGridConfig.EVENT_BYTECODE_LOCATION_BITS;
 		theCount += DebuggerGridConfig.EVENT_TIMESTAMP_BITS;
 		
@@ -237,7 +234,9 @@ public abstract class GridEvent extends GridMessage
 		aIndexes.indexDepth(getDepth(), TUPLE);
 		
 		ROLE_TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_OPERATION);
-		aIndexes.indexBehavior(getOperationBehaviorId(), ROLE_TUPLE);
+		
+		if (getOperationBehaviorId() >= 0)
+			aIndexes.indexBehavior(getOperationBehaviorId(), ROLE_TUPLE);
 	}
 
 	/**

@@ -21,7 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.kit;
 
 import tod.gui.IGUIManager;
-import tod.gui.seed.Seed;
+import tod.gui.seed.LogViewSeed;
 
 /**
  * A hyperlink-like label, that permits to jump to a specific view.
@@ -32,9 +32,9 @@ public class SeedLinkLabel extends LinkLabel
 	/**
 	 * The seed to which to jump when this link is selected.
 	 */
-	private Seed itsTargetSeed;
+	private LogViewSeed itsTargetSeed;
 	
-	public SeedLinkLabel(IGUIManager aGUIManager, String aText, Seed aTargetSeed)
+	public SeedLinkLabel(IGUIManager aGUIManager, String aText, LogViewSeed aTargetSeed)
 	{
 		super(aGUIManager, aText);
 		itsTargetSeed = aTargetSeed;

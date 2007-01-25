@@ -24,7 +24,9 @@ import static tod.impl.dbgrid.messages.ObjectCodec.getObjectBits;
 import static tod.impl.dbgrid.messages.ObjectCodec.getObjectId;
 import static tod.impl.dbgrid.messages.ObjectCodec.readObject;
 import static tod.impl.dbgrid.messages.ObjectCodec.writeObject;
+import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IBehaviorInfo;
 import tod.impl.common.event.LocalVariableWriteEvent;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
@@ -112,7 +114,21 @@ public class GridVariableWriteEvent extends GridEvent
 		LocalVariableWriteEvent theEvent = new LocalVariableWriteEvent(aBrowser);
 		initEvent(aBrowser, theEvent);
 		theEvent.setValue(getValue());
-		theEvent.setVariable(null); // TODO: find variable info
+		
+		IBehaviorInfo theBehavior = theEvent.getOperationBehavior();
+		
+		LocalVariableInfo theInfo = theBehavior.getLocalVariableInfo(
+				getOperationBytecodeIndex(), 
+				getVariableId());
+		
+       	if (theInfo == null) theInfo = new LocalVariableInfo(
+       			(short)-1, 
+       			(short)-1, 
+       			"$"+getVariableId(), 
+       			"", 
+       			(short)-1);
+
+		theEvent.setVariable(theInfo); 
 		
 		return theEvent;
 	}

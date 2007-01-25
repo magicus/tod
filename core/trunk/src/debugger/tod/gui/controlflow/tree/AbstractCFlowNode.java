@@ -22,6 +22,7 @@ package tod.gui.controlflow.tree;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.gui.IGUIManager;
+import tod.gui.Hyperlinks.ISeedFactory;
 import tod.gui.controlflow.CFlowView;
 import zz.csg.impl.SVGGraphicContainer;
 
@@ -39,6 +40,11 @@ public class AbstractCFlowNode extends SVGGraphicContainer
 		itsView = aView;
 	}
 
+	public ISeedFactory getSeedFactory()
+	{
+		return itsView.getLogViewSeedFactory();
+	}
+	
 	public IGUIManager getGUIManager()
 	{
 		return itsView.getGUIManager();

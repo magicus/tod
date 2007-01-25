@@ -122,6 +122,7 @@ implements RILocationsRepository
 	 */
 	public static ILocationsRepository createRepository(final RILocationsRepository aRepository)
 	{
+		assert aRepository != null;
 		return new ILocationsRepository()
 		{
 			public ITypeInfo[] getArgumentTypes(String aSignature)

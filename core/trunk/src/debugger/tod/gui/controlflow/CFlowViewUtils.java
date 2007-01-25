@@ -28,9 +28,8 @@ import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
-import tod.gui.FontConfig;
 import tod.gui.Hyperlinks;
-import tod.gui.IGUIManager;
+import tod.gui.Hyperlinks.ISeedFactory;
 import zz.csg.api.IGraphicContainer;
 import zz.csg.api.IRectangularGraphicObject;
 import zz.csg.api.layout.SequenceLayout;
@@ -45,7 +44,7 @@ public class CFlowViewUtils
 	 * as well as its arguments.
 	 */
 	public static IRectangularGraphicObject createBehaviorCallHeader(
-			IGUIManager aGUIManager,
+			ISeedFactory aSeedFactory,
 			ILogBrowser aLogBrowser,
 			IBehaviorCallEvent aEvent,
 			String aPrefix,
@@ -72,11 +71,11 @@ public class CFlowViewUtils
 		ITypeInfo theType = theBehavior.getType();
 		Object[] theArguments = aEvent.getArguments();
 		
-		theContainer.pChildren().add(Hyperlinks.type(aGUIManager, theType, aFont));
+		theContainer.pChildren().add(Hyperlinks.type(aSeedFactory, theType, aFont));
 		theContainer.pChildren().add(SVGFlowText.create(".", aFont, Color.BLACK));
-		theContainer.pChildren().add(Hyperlinks.behavior(aGUIManager, theBehavior, aFont));
+		theContainer.pChildren().add(Hyperlinks.behavior(aSeedFactory, theBehavior, aFont));
 
-		CFlowViewUtils.addArguments(aGUIManager, aLogBrowser, theContainer, theArguments, aFont);
+		CFlowViewUtils.addArguments(aSeedFactory, aLogBrowser, theContainer, theArguments, aFont);
 
 		theContainer.setLayoutManager(new SequenceLayout());
 		return theContainer;
@@ -93,7 +92,7 @@ public class CFlowViewUtils
 	 * @return
 	 */
 	public static IRectangularGraphicObject createBehaviorCallFooter(
-			IGUIManager aGUIManager,
+			ISeedFactory aSeedFactory,
 			ILogBrowser aLogBrowser,
 			IBehaviorCallEvent aEvent,
 			String aPrefix,
@@ -115,7 +114,7 @@ public class CFlowViewUtils
 			theContainer.pChildren().add(SVGFlowText.create("Thrown ", aFont, Color.RED));
 
 			theContainer.pChildren().add(Hyperlinks.object(
-					aGUIManager, 
+					aSeedFactory, 
 					aLogBrowser, 
 					theExitEvent.getResult(), 
 					aFont));
@@ -129,7 +128,7 @@ public class CFlowViewUtils
 			theContainer.pChildren().add(SVGFlowText.create(aPrefix, aFont, Color.BLACK));
 			
 			theContainer.pChildren().add(Hyperlinks.object(
-					aGUIManager, 
+					aSeedFactory, 
 					aLogBrowser, 
 					theExitEvent.getResult(), 
 					aFont));
@@ -144,7 +143,7 @@ public class CFlowViewUtils
 	 * Adds the hyperlinks representing the behavior's arguments to the given container.
 	 */
 	public static void addArguments(
-			IGUIManager aGUIManager,
+			ISeedFactory aSeedFactory,
 			ILogBrowser aLogBrowser,
 			IGraphicContainer aContainer,
 			Object[] aArguments, 
@@ -161,7 +160,7 @@ public class CFlowViewUtils
 				else aContainer.pChildren().add(SVGFlowText.create(", ", aFont, Color.BLACK));
 				
 				aContainer.pChildren().add(Hyperlinks.object(
-						aGUIManager,
+						aSeedFactory,
 						aLogBrowser,
 						theArgument, 
 						aFont));

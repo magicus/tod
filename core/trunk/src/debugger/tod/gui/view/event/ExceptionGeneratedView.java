@@ -26,8 +26,8 @@ import tod.core.database.event.IExceptionGeneratedEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.gui.IGUIManager;
-import tod.gui.seed.Seed;
-import tod.gui.seed.SeedFactory;
+import tod.gui.seed.LogViewSeed;
+import tod.gui.seed.LogViewSeedFactory;
 
 public class ExceptionGeneratedView extends EventView
 {
@@ -61,7 +61,7 @@ public class ExceptionGeneratedView extends EventView
 		IBehaviorInfo theBehavior = theEvent.getOperationBehavior();
 		String theBehaviorName = theBehavior.getName();
 		
-		Seed theSeed = SeedFactory.getDefaultSeed(
+		LogViewSeed theSeed = LogViewSeedFactory.getDefaultSeed(
 				getGUIManager(), 
 				getLogBrowser(), 
 				theBehavior);

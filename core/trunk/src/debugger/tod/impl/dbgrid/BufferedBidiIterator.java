@@ -35,6 +35,26 @@ public abstract class BufferedBidiIterator<B, I> extends AbstractBidiIterator<I>
 	private int itsIndex;
 	
 	/**
+	 * Direction of last move: -1 for previous, 1 for next, 0 for none
+	 */
+	private int itsLastMove = 0;
+	
+	private boolean itsEndReached = false;
+	private boolean itsStartReached = false;
+	
+	@Override
+	protected void reset()
+	{
+		super.reset();
+		itsCurrentBuffer = null;
+		itsInitialized = false;
+		itsBufferIterator.reset();
+		itsLastMove = 0;
+		itsEndReached = false;
+		itsStartReached = false;
+	}
+	
+	/**
 	 * Fetches the next available buffer.
 	 * @return A buffer, or null if no more elements are available.
 	 */
@@ -55,24 +75,50 @@ public abstract class BufferedBidiIterator<B, I> extends AbstractBidiIterator<I>
 	 */
 	protected abstract int getSize(B aBuffer);
 
+	private static int c = 0;
+	
 	@Override
 	protected final I fetchNext()
 	{
-		if (! itsInitialized && itsBufferIterator.hasNext())
+		c++;
+		if ((! itsInitialized || itsStartReached))
 		{
-			itsCurrentBuffer = itsBufferIterator.next();
-			itsIndex = 0;
+			if (itsBufferIterator.hasNext())
+			{
+				itsCurrentBuffer = itsBufferIterator.next();
+				assert itsCurrentBuffer != null;
+//				if (itsCurrentBuffer == null) itsEndReached = true;
+				itsIndex = 0;
+				itsInitialized = true;
+			}
+			else 
+			{
+				itsCurrentBuffer = null;
+				itsEndReached = true;
+			}
 		}
 		
-		if (itsCurrentBuffer == null) return null;
+		if (itsEndReached) return null;
 		
-		if (itsIndex >= getSize(itsCurrentBuffer) && itsBufferIterator.hasNext())
+		if (itsLastMove == -1 && ! itsStartReached) itsBufferIterator.next();
+		itsLastMove = 1;
+		
+		if (itsIndex >= getSize(itsCurrentBuffer))
 		{
-			itsCurrentBuffer = itsBufferIterator.next();
-			itsIndex = 0;			
+			if (itsBufferIterator.hasNext())
+			{
+				itsCurrentBuffer = itsBufferIterator.next();
+				itsIndex = 0;			
+			}
+			else
+			{
+				itsCurrentBuffer = null;
+				itsEndReached = true;
+			}
 		}
 		
-		if (itsCurrentBuffer == null) return null;
+		if (itsEndReached) return null;
+		itsStartReached = false;
 		
 		return get(itsCurrentBuffer, itsIndex++);
 	}
@@ -80,21 +126,45 @@ public abstract class BufferedBidiIterator<B, I> extends AbstractBidiIterator<I>
 	@Override
 	protected final I fetchPrevious()
 	{
-		if (! itsInitialized && itsBufferIterator.hasPrevious())
+		if ((! itsInitialized || itsEndReached))
 		{
-			itsCurrentBuffer = itsBufferIterator.previous();
-			itsIndex = getSize(itsCurrentBuffer);
+			if (itsBufferIterator.hasPrevious())
+			{
+				itsCurrentBuffer = itsBufferIterator.previous();
+				assert itsCurrentBuffer != null;
+//				if (itsCurrentBuffer == null) itsStartReached = true;
+				itsIndex = getSize(itsCurrentBuffer);
+				itsInitialized = true;
+			}
+			else
+			{
+				itsCurrentBuffer = null;
+				itsStartReached = true;
+			}
 		}
 		
-		if (itsCurrentBuffer == null) return null;
+		if (itsStartReached) return null;
 		
-		if (itsIndex < 0 && itsBufferIterator.hasPrevious())
+		if (itsLastMove == 1 && ! itsEndReached) itsBufferIterator.previous();
+		itsLastMove = -1;
+		
+		
+		if (itsIndex <= 0)
 		{
-			itsCurrentBuffer = itsBufferIterator.previous();
-			itsIndex = getSize(itsCurrentBuffer);			
+			if (itsBufferIterator.hasPrevious())
+			{
+				itsCurrentBuffer = itsBufferIterator.previous();
+				itsIndex = getSize(itsCurrentBuffer);			
+			}
+			else
+			{
+				itsCurrentBuffer = null;
+				itsStartReached = true;
+			}
 		}
 		
-		if (itsCurrentBuffer == null) return null;
+		if (itsStartReached) return null;
+		itsEndReached = false;
 		
 		return get(itsCurrentBuffer, --itsIndex);
 	}

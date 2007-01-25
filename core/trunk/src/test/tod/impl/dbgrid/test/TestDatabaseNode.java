@@ -21,42 +21,54 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.test;
 
 import java.io.File;
-import java.rmi.RemoteException;
 
+import org.junit.Before;
 import org.junit.Test;
 
+import tod.agent.DebugFlags;
 import tod.impl.dbgrid.ConditionGenerator;
 import tod.impl.dbgrid.EventGenerator;
 import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.gridimpl.uniform.UniformEventDatabase;
+import tod.impl.dbgrid.messages.MessageType;
+import tod.impl.dbgrid.queries.BehaviorCondition;
+import tod.impl.dbgrid.queries.CompoundCondition;
+import tod.impl.dbgrid.queries.Disjunction;
 import tod.impl.dbgrid.queries.EventCondition;
+import tod.impl.dbgrid.queries.TypeCondition;
 
 public class TestDatabaseNode
 {
-	@Test public void check() 
+	private UniformEventDatabase itsDatabase;
+
+	@Before public void fill()
 	{
-		UniformEventDatabase theDatabase = new UniformEventDatabase(0, new File("test.bin"));
+itsDatabase = new UniformEventDatabase(0, new File("/tmp/tod/test.bin"));
 		EventGenerator theEventGenerator = createGenerator();
 		
 		System.out.println("filling...");
-		Fixtures.fillDatabase(theDatabase, theEventGenerator, 1000000);
-		
+		Fixtures.fillDatabase(itsDatabase, theEventGenerator, 100000);
+	}
+	
+	@Test public void check() 
+	{
 		System.out.println("checking...");
 		
 		// Check with fixed condition
-//		CompoundCondition theCondition = new Disjunction();
+		CompoundCondition theCondition = new Disjunction();
 //		theCondition.addCondition(new BehaviorCondition(3, (byte) 0));
-//		
-//		Fixtures.checkCondition(
-//				theNode, 
-//				theCondition,
-//				createGenerator(),
-//				5000,
-//				10000);
+		theCondition.addCondition(new TypeCondition(MessageType.FIELD_WRITE));
+		
+		Fixtures.checkCondition(
+				itsDatabase, 
+				theCondition,
+				createGenerator(),
+				0,
+				1000);
 
 		// Check with random conditions
 		ConditionGenerator theConditionGenerator = new ConditionGenerator(0, createGenerator());
-//		for (int i=0;i<449;i++) theConditionGenerator.next();
+//		for (int i=0;i<591;i++) theConditionGenerator.next();
 		
 		for (int i=0;i<1000;i++)
 		{
@@ -64,12 +76,21 @@ public class TestDatabaseNode
 			EventCondition theEventCondition = theConditionGenerator.next();
 			System.out.println(theEventCondition);
 			
-			Fixtures.checkCondition(
-					theDatabase, 
+			int theCount = Fixtures.checkCondition(
+					itsDatabase, 
 					theEventCondition,
 					createGenerator(),
 					5000,
 					10000);
+			
+			if (theCount > 3)
+			{
+				Fixtures.checkIteration(
+						itsDatabase, 
+						theEventCondition, 
+						createGenerator(), 
+						theCount);
+			}
 		}
 	}
 	

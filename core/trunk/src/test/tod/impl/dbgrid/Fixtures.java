@@ -29,18 +29,26 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
+import java.util.ArrayList;
+import java.util.List;
 
 import tod.core.LocationRegisterer;
 import tod.core.config.TODConfig;
+import tod.core.database.event.ILogEvent;
 import tod.core.transport.LogReceiver;
 import tod.core.transport.LogReceiver.ILogReceiverMonitor;
+import tod.impl.bci.asm.ASMDebuggerConfig;
+import tod.impl.bci.asm.ASMInstrumenter;
 import tod.impl.bci.asm.ASMLocationPool;
 import tod.impl.dbgrid.db.EventList;
 import tod.impl.dbgrid.db.HierarchicalIndex;
 import tod.impl.dbgrid.db.RoleIndexSet;
 import tod.impl.dbgrid.db.StdIndexSet;
 import tod.impl.dbgrid.db.file.HardPagedFile;
+import tod.impl.dbgrid.dispatch.DatabaseNode;
+import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
 import tod.impl.dbgrid.gridimpl.GridImpl;
 import tod.impl.dbgrid.gridimpl.uniform.UniformEventDatabase;
 import tod.impl.dbgrid.messages.GridEvent;
@@ -215,14 +223,34 @@ public class Fixtures
 		for(long i=0;i<aCount;i++) 
 		{
 			aDatabase.push(aGenerator.next());
-			if (i % 1000000 == 0) System.out.println(i);
+			if (i % 100000 == 0) System.out.println(i);
 		}
+		aDatabase.flush();
+	}
+	
+	public static void fillDatabase(GridMaster aMaster, EventGenerator aGenerator, long aCount)
+	{
+		LeafEventDispatcher theDispatcher = 
+			(LeafEventDispatcher) aMaster._getDispatcher();
+		
+		for(long i=0;i<aCount;i++) 
+		{
+			theDispatcher.dispatchEvent(aGenerator.next());
+			if (i % 100000 == 0) System.out.println(i);
+		}
+		
+		aMaster.flush();
 	}
 
+	public static void assertEquals(String aMessage, ILogEvent aRefEvent, ILogEvent aEvent)
+	{
+		if (! aRefEvent.equals(aEvent)) fail(aMessage);
+	}
+	
 	/**
 	 * Checks that two events are equal.
 	 */
-	public static void assertEquals(GridEvent aRefEvent, GridEvent aEvent)
+	public static void assertEquals(String aMessage, GridEvent aRefEvent, GridEvent aEvent)
 	{
 		BitStruct theRefStruct = new IntBitStruct(1000);
 		BitStruct theStruct = new IntBitStruct(1000);
@@ -234,7 +262,7 @@ public class Fixtures
 		{
 			System.out.println("ref:  "+aRefEvent);
 			System.out.println("test: "+aEvent);
-			fail("Size mismatch");
+			fail("Size mismatch - "+aMessage);
 		}
 		
 		int theSize = (theRefStruct.getPos()+31)/32;
@@ -248,12 +276,12 @@ public class Fixtures
 			{
 				System.out.println("ref:  "+aRefEvent);
 				System.out.println("test: "+aEvent);
-				fail("Data mismatch");				
+				fail("Data mismatch - "+aMessage);				
 			}
 		}
 	}
 	
-	public static void checkCondition(
+	public static int checkCondition(
 			UniformEventDatabase aDatabase, 
 			EventCondition aCondition, 
 			EventGenerator aReferenceGenerator,
@@ -261,21 +289,28 @@ public class Fixtures
 			int aCount)
 	{
 		GridEvent theEvent = null;
-		for (int i=0;i<aSkip;i++)
-		{
-			theEvent = aReferenceGenerator.next();
-		}
+		for (int i=0;i<aSkip;i++) theEvent = aReferenceGenerator.next();
 		
-		int theMatched = 0;
 		long theTimestamp = theEvent != null ? theEvent.getTimestamp()+1 : 0;
+		
 		BidiIterator<GridEvent> theIterator = aDatabase.evaluate(aCondition, theTimestamp);
+		return checkCondition(theIterator, aCondition, aReferenceGenerator, aCount);
+	}
+	
+	public static int checkCondition(
+			BidiIterator<GridEvent> aIterator, 
+			EventCondition aCondition,
+			EventGenerator aReferenceGenerator,
+			int aCount)
+	{
+		int theMatched = 0;
 		for (int i=0;i<aCount;i++)
 		{
 			GridEvent theRefEvent = aReferenceGenerator.next();
-			if (aCondition.match(theRefEvent))
+			if (aCondition._match(theRefEvent))
 			{
-				GridEvent theTestedEvent = theIterator.next(); 
-				Fixtures.assertEquals(theRefEvent, theTestedEvent);
+				GridEvent theTestedEvent = aIterator.next(); 
+				Fixtures.assertEquals(""+i, theRefEvent, theTestedEvent);
 				theMatched++;
 //				System.out.println(i+"m");
 			}
@@ -283,8 +318,88 @@ public class Fixtures
 		}
 		
 		System.out.println("Matched: "+theMatched);
+		return theMatched;
+	}
+	
+	public static void checkIteration(
+			UniformEventDatabase aDatabase, 
+			EventCondition aCondition,
+			EventGenerator aReferenceGenerator,
+			int aCount)
+	{
+		List<GridEvent> theEvents = new ArrayList<GridEvent>(aCount);
+
+		BidiIterator<GridEvent> theIterator = aDatabase.evaluate(aCondition, 0);
+		while (theEvents.size() < aCount)
+		{
+			GridEvent theRefEvent = aReferenceGenerator.next();
+			if (aCondition._match(theRefEvent)) theEvents.add(theIterator.next());
+		}
+		
+		GridEvent theFirstEvent = theEvents.get(0);
+		theIterator = aDatabase.evaluate(aCondition, theFirstEvent.getTimestamp());
+		assertEquals("first.a", theFirstEvent, theIterator.next());
+		assertEquals("first.b", theFirstEvent, theIterator.previous());
+		
+		GridEvent theSecondEvent = theEvents.get(1);
+		theIterator = aDatabase.evaluate(aCondition, theFirstEvent.getTimestamp()+1);
+		assertEquals("sec.a", theSecondEvent, theIterator.next());
+		assertEquals("sec.b", theSecondEvent, theIterator.previous());
+		
+		theIterator = aDatabase.evaluate(aCondition, 0);
+		
+		int theIndex = 0;
+		int theDelta = aCount;
+		boolean theForward = true;
+		while(theDelta > 1)
+		{
+			for (int i=0;i<theDelta;i++)
+			{
+				GridEvent theRefEvent;
+				GridEvent theTestEvent;
+				if (theForward)
+				{
+					theRefEvent = theEvents.get(theIndex);
+					theTestEvent = theIterator.next();
+					theIndex++;
+				}
+				else
+				{
+					theTestEvent = theIterator.previous();
+					theIndex--;
+					theRefEvent = theEvents.get(theIndex);
+				}
+				
+				assertEquals("index: "+theIndex, theRefEvent, theTestEvent);
+			}
+			
+			theDelta /= 2;
+			theForward = ! theForward;
+		}
 	}
 
+	public static GridMaster setupLocalMaster()
+	{
+		try
+		{
+			TODConfig theConfig = new TODConfig();
+			LocationRegisterer theRegistrer = new LocationRegisterer();
+			
+			ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(
+					theConfig,
+					theRegistrer);
+
+			ASMInstrumenter theInstrumenter = new ASMInstrumenter(theDebuggerConfig);
+			
+			DatabaseNode theNode = GridImpl.getFactory(theConfig).createNode(false);
+			return new GridMaster(theConfig, theRegistrer, theInstrumenter, theNode, false);
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
 	/**
 	 * Standard setup of a grid master that waits for a number
 	 * of database nodes to connect
@@ -348,7 +463,7 @@ public class Fixtures
 				new BufferedInputStream(new FileInputStream(aFile)));
 		
 
-		LogReceiver theReceiver = aMaster.getDispatcher().createLogReceiver(
+		LogReceiver theReceiver = aMaster._getDispatcher().createLogReceiver(
 				null, 
 				aMaster, 
 				theStream,

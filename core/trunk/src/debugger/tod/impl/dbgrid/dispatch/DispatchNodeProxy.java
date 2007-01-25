@@ -25,6 +25,8 @@ import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
 /**
@@ -57,23 +59,16 @@ public abstract class DispatchNodeProxy
 	private final String itsNodeId;
 	
 	public DispatchNodeProxy(
-			RIDispatchNode aConnectable, 
-			Socket aSocket, 
+			RIDispatchNode aConnectable,
+			InputStream aInputStream,
+			OutputStream aOutputStream,
 			String aNodeId)
 	{
 		itsConnectable = aConnectable;
 		itsNodeId = aNodeId;
 		
-		try
-		{
-			itsOutStream = new DataOutputStream(new BufferedOutputStream(aSocket.getOutputStream()));
-			itsInStream = new DataInputStream(new BufferedInputStream(aSocket.getInputStream()));
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
-
+		itsOutStream = new DataOutputStream(aOutputStream);
+		itsInStream = new DataInputStream(aInputStream);
 	}
 
 	public String getNodeId()

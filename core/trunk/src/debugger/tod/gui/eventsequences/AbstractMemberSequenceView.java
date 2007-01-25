@@ -66,6 +66,6 @@ public abstract class AbstractMemberSequenceView extends AbstractSingleBrowserSe
 		IGUIManager theGUIManager = theLogView.getGUIManager();
 		ILogBrowser theEventTrace = theLogView.getLogBrowser();
 			
-		return Hyperlinks.object(theGUIManager, theEventTrace, itsInspector.getObject(), aObject, FONT);
+		return Hyperlinks.object(getSeedFactory(), theEventTrace, itsInspector.getObject(), aObject, FONT);
 	}
 }

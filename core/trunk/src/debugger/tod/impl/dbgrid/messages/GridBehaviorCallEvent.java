@@ -28,14 +28,14 @@ import static tod.impl.dbgrid.messages.ObjectCodec.writeObject;
 import java.io.Serializable;
 
 import tod.core.database.event.ILogEvent;
-import tod.impl.common.event.BehaviorCallEvent;
-import tod.impl.common.event.ConstructorChainingEvent;
-import tod.impl.common.event.InstantiationEvent;
-import tod.impl.common.event.MethodCallEvent;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.RoleIndexSet;
+import tod.impl.dbgrid.event.BehaviorCallEvent;
+import tod.impl.dbgrid.event.ConstructorChainingEvent;
+import tod.impl.dbgrid.event.InstantiationEvent;
+import tod.impl.dbgrid.event.MethodCallEvent;
 import zz.utils.bit.BitStruct;
 
 public class GridBehaviorCallEvent extends GridEvent

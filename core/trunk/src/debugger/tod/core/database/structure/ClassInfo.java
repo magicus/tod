@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import tod.core.ILocationRegisterer;
-import tod.core.database.browser.ILocationsRepository;
 
 public class ClassInfo extends TypeInfo implements IClassInfo
 {

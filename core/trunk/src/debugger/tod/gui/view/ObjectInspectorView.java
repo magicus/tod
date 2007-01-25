@@ -27,6 +27,7 @@ import java.awt.FlowLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import tod.Util;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
@@ -173,7 +174,7 @@ public class ObjectInspectorView extends LogView
 			theTitle = String.format(
 					"Object inspector for: %s (%s)",
 					theObject,
-					theType.getName());
+					Util.getPrettyName(theType.getName()));
 		}
 		else 
 		{
@@ -186,7 +187,7 @@ public class ObjectInspectorView extends LogView
 		
 		if (theObject != null)
 		{
-			FilterSeed theSeed = new FilterSeed(
+			FilterSeed theShowEventsSeed = new FilterSeed(
 					getGUIManager(), 
 					getLogBrowser(), 
 					getLogBrowser().createTargetFilter(theObject));
@@ -194,7 +195,18 @@ public class ObjectInspectorView extends LogView
 			itsTitlePanel.add (new SeedLinkLabel(
 					getGUIManager(), 
 					"Show all events", 
-					theSeed));
+					theShowEventsSeed));
+			
+			FilterSeed theShowHistorySeed = new FilterSeed(
+					getGUIManager(),
+					getLogBrowser(),
+					getLogBrowser().createObjectFilter(theObject));
+			
+			itsTitlePanel.add (new SeedLinkLabel(
+					getGUIManager(), 
+					"Show history", 
+					theShowHistorySeed));
+						
 		}
 			
 		itsTitlePanel.revalidate();

@@ -28,6 +28,7 @@ public class Dummy
 {
 	public static void main(String[] args)
 	{
+		System.out.println("Dummy");
 		int j;
 		
 		long t0 = System.currentTimeMillis();
@@ -36,7 +37,7 @@ public class Dummy
 		for(int i=0;i<theObjects.length;i++) theObjects[i] = new Object();
 		
 		Random theRandom = new Random(0);
-		for(int i=0;i<100000;i++)
+		for(int i=0;i<200000;i++)
 		{
 			j = i*2;
 			foo(theObjects[theRandom.nextInt(theObjects.length)], j);

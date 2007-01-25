@@ -194,9 +194,9 @@ public abstract class TODServer
 		@Override
 		protected void processFlush()
 		{
-			System.out.println("Flushing...");
+			System.out.println("[TODServer.MyNativePeer] Flushing...");
 			flush();
-			System.out.println("done.");
+			System.out.println("[TODServer.MyNativePeer] Done.");
 		}
 		
 	}

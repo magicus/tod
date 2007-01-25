@@ -33,13 +33,11 @@ import zz.utils.ui.text.XFont;
 public class SVGHyperlink extends SVGFlowText
 {
 	private static final boolean WITH_CTRL = false;
-	private IGUIManager itsGUIManager;
 	private Seed itsSeed;
 	private boolean itsMouseOver = false;
 	
-	public SVGHyperlink(IGUIManager aGUIManager, Seed aSeed)
+	public SVGHyperlink(Seed aSeed)
 	{
-		itsGUIManager = aGUIManager;
 		itsSeed = aSeed;
 	}
 
@@ -78,7 +76,7 @@ public class SVGHyperlink extends SVGFlowText
 	{
 		if (! WITH_CTRL || MouseModifiers.hasCtrl(aEvent))
 		{
-			itsGUIManager.openSeed(itsSeed, false);
+			itsSeed.open();
 			return true;
 		}
 		else return false;
@@ -87,11 +85,15 @@ public class SVGHyperlink extends SVGFlowText
 	/**
 	 * Creates a new flow text with default size computer.
 	 */
-	public static SVGHyperlink create(IGUIManager aGUIManager, Seed aSeed, String aText, XFont aFont, Color aColor)
+	public static SVGHyperlink create(
+			Seed aSeed, 
+			String aText, 
+			XFont aFont, 
+			Color aColor)
 	{
 		XFont theFont = aFont.isUnderline() ? new XFont(aFont.getAWTFont(), false) : aFont;
 		
-		SVGHyperlink theHyperlink = new SVGHyperlink(aGUIManager, aSeed);
+		SVGHyperlink theHyperlink = new SVGHyperlink(aSeed);
 		theHyperlink.pText().set(aText);
 		theHyperlink.pStrokePaint().set(aColor);
 		theHyperlink.pFont().set(theFont);
@@ -103,18 +105,18 @@ public class SVGHyperlink extends SVGFlowText
 	/**
 	 * Creates a new flow text with default size computer and font.
 	 */
-	public static SVGHyperlink create(IGUIManager aGUIManager, Seed aSeed, String aText, Color aColor)
+	public static SVGHyperlink create(Seed aSeed, String aText, Color aColor)
 	{
-		return create(aGUIManager, aSeed, aText, XFont.DEFAULT_XUNDERLINED, aColor);
+		return create(aSeed, aText, XFont.DEFAULT_XUNDERLINED, aColor);
 	}
 
 	/**
 	 * Creates a new flow text with default size computer and default font
 	 * of the given size.
 	 */
-	public static SVGHyperlink create(IGUIManager aGUIManager, Seed aSeed, String aText, float aFontSize, Color aColor)
+	public static SVGHyperlink create(Seed aSeed, String aText, float aFontSize, Color aColor)
 	{
-		return create(aGUIManager, aSeed, aText, XFont.DEFAULT_XUNDERLINED.deriveFont(aFontSize), aColor);
+		return create(aSeed, aText, XFont.DEFAULT_XUNDERLINED.deriveFont(aFontSize), aColor);
 	}
 
 }

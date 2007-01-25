@@ -30,7 +30,7 @@ import tod.gui.view.ThreadsView;
  * each thread.
  * @author gpothier
  */
-public class ThreadsSeed extends Seed
+public class ThreadsSeed extends LogViewSeed
 {
 
 	public ThreadsSeed(IGUIManager aGUIManager, ILogBrowser aLog)
