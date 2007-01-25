@@ -185,7 +185,7 @@ public class HierarchicalIndex<T extends IndexTuple>
 	 * Returns the first tuple that has a key greater or equal
 	 * than the specified key, if any.
 	 * @param aExact If true, only a tuple with exactly the specified
-	 * timestamp is returned.
+	 * key is returned.
 	 * @return A matching tuple, or null if none is found.
 	 */
 	public T getTupleAt(long aKey, boolean aExact)

@@ -73,6 +73,7 @@ import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.utils.remote.RILocationsRepository;
 import tod.utils.remote.RemoteLocationsRepository;
+import zz.utils.Task;
 import zz.utils.Utils;
 
 /**
@@ -94,7 +95,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	private TODServer itsServer;
 	
 	private List<RIDatabaseNode> itsNodes = new ArrayList<RIDatabaseNode>();
-	private List<RIEventDispatcher> itsLeafDispatchers = new ArrayList<RIEventDispatcher>();
+	private List<RILeafDispatcher> itsLeafDispatchers = new ArrayList<RILeafDispatcher>();
 	private List<RIEventDispatcher> itsInternalDispatchers = new ArrayList<RIEventDispatcher>();
 	
 	private AbstractEventDispatcher itsRootDispatcher;
@@ -158,6 +159,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			IGridImplementationFactory theFactory = GridImpl.getFactory(itsConfig);
 			LeafEventDispatcher theDispatcher = theFactory.createLeafDispatcher(false, itsLocationStore);
 			itsRootDispatcher = theDispatcher;
+			itsLeafDispatchers.add(theDispatcher);
 		
 			PipedInputStream theDispatcherIn = new PipedInputStream();
 			PipedInputStream theNodeIn = new PipedInputStream();
@@ -272,8 +274,9 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			{
 				assert itsExpectedInternalDispatchers == 0;
 				IGridImplementationFactory theFactory = GridImpl.getFactory(itsConfig);
-				itsRootDispatcher = theFactory.createLeafDispatcher(false, itsLocationStore);
-				itsLeafDispatchers.add(itsRootDispatcher);
+				LeafEventDispatcher theDispatcher = theFactory.createLeafDispatcher(false, itsLocationStore);
+				itsRootDispatcher = theDispatcher;
+				itsLeafDispatchers.add(theDispatcher);
 			}
 			else
 			{
@@ -659,6 +662,34 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	{
 		if (itsLastTimestamp == 0) updateStats();
 		return itsLastTimestamp;
+	}
+	
+	public Object getRegisteredObject(final long aId)
+	{
+		List<Object> theResults = Utils.fork(itsLeafDispatchers, new Task<RILeafDispatcher, Object>()
+				{
+					public Object run(RILeafDispatcher aInput)
+					{
+						try
+						{
+							return aInput.getRegisteredObject(aId);
+						}
+						catch (RemoteException e)
+						{
+							throw new RuntimeException(e);
+						}
+					}
+				});
+		
+		Object theObject = null;
+		for (Object theResult : theResults)
+		{
+			if (theResult == null) continue;
+			if (theObject != null) throw new RuntimeException("Object present in various nodes!");
+			theObject = theResult;
+		}
+		
+		return theObject;
 	}
 	
 	protected void updateStats()

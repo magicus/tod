@@ -40,6 +40,7 @@ import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.NodeException;
 import zz.utils.Future;
 import zz.utils.Task;
+import zz.utils.Utils;
 import zz.utils.net.Server;
 import zz.utils.net.Server.ServerAdress;
 
@@ -201,25 +202,7 @@ implements RIEventDispatcher
 	 */
 	private <T> List<T> fork(final Task<DispatchNodeProxy, T> aTask)
 	{
-		// TODO: maybe use something else than Future...
-		List<Future<T>> theFutures = new ArrayList<Future<T>>();
-		for (DispatchNodeProxy theProxy : itsChildren)
-		{
-			final DispatchNodeProxy theProxy0 = theProxy;
-			theFutures.add (new Future<T>()
-			{
-				@Override
-				protected T fetch() throws Throwable
-				{
-					return aTask.run(theProxy0);
-				}
-			});
-		}
-		
-		List<T> theResult = new ArrayList<T>();
-		for (Future<T> theFuture : theFutures) theResult.add(theFuture.get());
-		
-		return theResult;
+		return Utils.fork(itsChildren, aTask);
 	}
 
 	/**

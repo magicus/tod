@@ -142,6 +142,12 @@ public interface RIGridMaster extends Remote
 	public RILocationsRepository getLocationsRepository() throws RemoteException;
 
 	/**
+	 * Returns an object registered by the database, or null
+	 * if not found.
+	 */
+	public Object getRegisteredObject(long aId) throws RemoteException;
+
+	/**
 	 * Enumerates the different kinds of roles of the nodes in the debugging grid.
 	 * @author gpothier
 	 */

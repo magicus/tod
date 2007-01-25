@@ -23,6 +23,7 @@ package tod.impl.dbgrid;
 import static tod.impl.dbgrid.DebuggerGridConfig.DB_EVENTID_PAGE_BITS;
 import tod.agent.ConfigUtils;
 import tod.impl.dbgrid.db.HierarchicalIndex;
+import tod.impl.dbgrid.db.ObjectsDatabase;
 import tod.impl.dbgrid.db.file.HardPagedFile;
 import tod.impl.dbgrid.db.file.TupleIterator;
 import tod.impl.dbgrid.db.file.TupleWriter;
@@ -93,6 +94,11 @@ public class DebuggerGridConfig
 	public static final int DB_EVENT_BUFFER_SIZE = 100000;
 	
 	/**
+	 * Size of the object reordering buffer for {@link ObjectsDatabase}.
+	 */
+	public static final int DB_OBJECTS_BUFFER_SIZE = 1000;
+	
+	/**
 	 * Maximum number of event types 
 	 */
 	public static final int STRUCTURE_TYPE_COUNT = 40000;
@@ -160,11 +166,22 @@ public class DebuggerGridConfig
 	 * Size of file pages in the database
 	 */
 	public static final int DB_PAGE_SIZE = 4096;
+	
 	/**
 	 * Number of bits to represent a page pointer in a linked pages list,
 	 * as used by {@link TupleWriter} and {@link TupleIterator}
 	 */
 	public static final int DB_PAGE_POINTER_BITS = 32;
+	
+	/**
+	 * NUmber of bits to represent an offset (in bits) in a page.
+	 */
+	public static final int DB_PAGE_BITOFFSET_BITS = BitUtils.log2ceil(DB_PAGE_SIZE*8);
+	
+	/**
+	 * NUmber of bits to represent an offset (in bytes) in a page.
+	 */
+	public static final int DB_PAGE_BYTEOFFSET_BITS = BitUtils.log2ceil(DB_PAGE_SIZE);
 	
 	/**
 	 * Average event size.

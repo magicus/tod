@@ -20,7 +20,13 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.dispatch;
 
+import java.rmi.RemoteException;
+
 public interface RILeafDispatcher extends RIEventDispatcher
 {
-
+	/**
+	 * Returns an object registered by this dispatcher, or null
+	 * if not found.
+	 */
+	public Object getRegisteredObject(long aId) throws RemoteException;
 }

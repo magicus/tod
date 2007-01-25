@@ -48,13 +48,6 @@ implements RIDatabaseNode
 	{
 	}
 	
-	@Override
-	protected void connectedToMaster()
-	{
-		super.connectedToMaster();
-		clear();
-	}
-
 	/**
 	 * Subclasses should call this method whenever an event is stored
 	 * by this node in order to update statistics

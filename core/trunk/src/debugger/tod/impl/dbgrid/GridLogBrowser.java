@@ -242,8 +242,14 @@ implements ILogBrowser, RIGridMasterListener
 	
 	public Object getRegistered(long aId)
 	{
-		// TODO: implement
-		return null;
+		try
+		{
+			return itsMaster.getRegisteredObject(aId);
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	public long getEventsCount()

@@ -253,21 +253,32 @@ void throwEx(JNIEnv * env, const char* name, const char* msg)
  * Method:    b2i
  * Signature: ([B[I)V
  */
-JNIEXPORT void JNICALL Java_tod_utils_NativeStream_b2i
-  (JNIEnv * env, jclass cls, jbyteArray src, jintArray dest)
+JNIEXPORT void JNICALL Java_tod_utils_NativeStream_b2i (
+	JNIEnv * env, 
+	jclass cls, 
+	jbyteArray src, 
+	jint srcOffset,
+	jintArray dest,
+	jint destOffset,
+	jint len)
 {
 	jint src_len = env->GetArrayLength(src); 
 	jint dest_len = env->GetArrayLength(dest); 
 	
-	if (src_len != dest_len*4)
+	if (len > src_len-srcOffset)
 	{
-		throwEx(env, "java.lang.IllegalArgumentException", "Incompatible sizes");
+		throwEx(env, "java.lang.IllegalArgumentException", "Specified length larger than source");
+	}
+	
+	if (len > (dest_len-destOffset)*4)
+	{
+		throwEx(env, "java.lang.IllegalArgumentException", "Specified length larger than dest");
 	}
 	
 	jbyte * s = (jbyte *) env->GetPrimitiveArrayCritical(src, 0);
 	jint * d = (jint *) env->GetPrimitiveArrayCritical(dest, 0);
 	
-	memcpy(d, s, src_len);
+	memcpy(d+destOffset, s+srcOffset, len);
 	
 	env->ReleasePrimitiveArrayCritical(src, s, 0);
 	env->ReleasePrimitiveArrayCritical(dest, d, 0);
@@ -278,21 +289,32 @@ JNIEXPORT void JNICALL Java_tod_utils_NativeStream_b2i
  * Method:    i2b
  * Signature: ([I[B)V
  */
-JNIEXPORT void JNICALL Java_tod_utils_NativeStream_i2b
-  (JNIEnv * env, jclass cls, jintArray src, jbyteArray dest)
+JNIEXPORT void JNICALL Java_tod_utils_NativeStream_i2b (
+	JNIEnv * env, 
+	jclass cls, 
+	jintArray src, 
+	jint srcOffset,
+	jbyteArray dest,
+	jint destOffset,
+	jint len)
 {
 	jint src_len = env->GetArrayLength(src); 
 	jint dest_len = env->GetArrayLength(dest); 
 	
-	if (src_len*4 != dest_len)
+	if (len > (src_len-srcOffset)*4)
 	{
-		throwEx(env, "java.lang.IllegalArgumentException", "Incompatible sizes");
+		throwEx(env, "java.lang.IllegalArgumentException", "Specified length larger than source");
+	}
+	
+	if (len > dest_len-destOffset)
+	{
+		throwEx(env, "java.lang.IllegalArgumentException", "Specified length larger than dest");
 	}
 	
 	jint * s = (jint *) env->GetPrimitiveArrayCritical(src, 0);
 	jbyte * d = (jbyte *) env->GetPrimitiveArrayCritical(dest, 0);
 	
-	memcpy(d, s, dest_len);
+	memcpy(d+destOffset, s+srcOffset, len);
 	
 	env->ReleasePrimitiveArrayCritical(src, s, 0);
 	env->ReleasePrimitiveArrayCritical(dest, d, 0);

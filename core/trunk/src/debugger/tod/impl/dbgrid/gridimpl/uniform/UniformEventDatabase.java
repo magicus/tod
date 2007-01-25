@@ -180,7 +180,7 @@ implements ReorderingBufferListener
 			theCount++;
 		}
 		itsFlushed = true;
-		System.out.println("[UniformEventDatabase] Flushed "+theCount+" events...");
+		System.out.println("[UniformEventDatabase] Flushed "+theCount+" events.");
 		return theCount;
 	}
 	

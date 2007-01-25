@@ -61,7 +61,14 @@ public class UniformDatabaseNode extends DatabaseNode
 	{
 	}
 	
-	public void clear() 
+	@Override
+	protected void connectedToMaster()
+	{
+		super.connectedToMaster();
+		initDatabase();
+	}
+	
+	private void initDatabase()
 	{
 		if (itsDatabase != null)
 		{
@@ -74,7 +81,12 @@ public class UniformDatabaseNode extends DatabaseNode
 		
 		File theFile = new File(theParent, "events.bin");
 		theFile.delete();
-		itsDatabase = createDatabase(theFile);
+		itsDatabase = createDatabase(theFile);		
+	}
+	
+	public void clear() 
+	{
+		initDatabase();
 	}
 	
 	protected AbstractEventDatabase createDatabase(File aFile)

@@ -333,6 +333,6 @@ public class GridEventCollector extends EventCollector
 
 	public void register(long aObjectUID, Object aObject)
 	{
-		// TODO: implement
+		itsDispatcher.register(aObjectUID, aObject);
 	}
 }

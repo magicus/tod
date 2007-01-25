@@ -547,9 +547,9 @@ public class HardPagedFile extends PageBank
 		}
 		
 		/**
-		 * Returns a new {@link ByteBitStruct} backed by this page.
-		 * The advantage of having the {@link ByteBitStruct} and page separate
-		 * is that we can maintain several {@link ByteBitStruct}s on the same page,
+		 * Returns a new {@link PageBitStruct} backed by this page.
+		 * The advantage of having the {@link PageBitStruct} and page separate
+		 * is that we can maintain several {@link PageBitStruct}s on the same page,
 		 * each with a different position.
 		 */
 		public PageBitStruct asBitStruct()
@@ -574,7 +574,7 @@ public class HardPagedFile extends PageBank
 			return getFile().getPageSize();
 		}
 		
-		int[] getData()
+		public int[] getData()
 		{
 			if (itsData == null)
 			{

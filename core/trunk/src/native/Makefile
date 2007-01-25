@@ -3,8 +3,15 @@ gcc_options = -I $(JAVA_HOME)/include/ -I $(JAVA_HOME)/include/linux/ -O3
 
 bci-agent-objects = CBuffer.o bci-agent.o NativeCollector.o utils.o CThreadData.o md5.o
 
+native-stream-objects = native-stream.o
+
+all: bci-agent native-stream
+
 bci-agent: $(bci-agent-objects)
 	g++ -shared -o ../../libbci-agent.so $(bci-agent-objects)
+	
+native-stream: $(native-stream-objects)
+	g++ -shared -o ../../libnative-stream.so $(native-stream-objects)
 
 CBuffer.o: CBuffer.cpp CBuffer.h
 	g++ -c $(gcc_options) CBuffer.cpp
@@ -23,3 +30,6 @@ utils.o: utils.c utils.h
 	
 md5.o: md5.c md5.h
 	g++ -c $(gcc_options) md5.c
+	
+native-stream.o: native-stream.c
+	g++ -c $(gcc_options) native-stream.c
