@@ -31,8 +31,8 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.gui.MinerUI;
 import tod.gui.seed.FilterSeed;
-import tod.gui.seed.Seed;
-import tod.gui.seed.SeedFactory;
+import tod.gui.seed.LogViewSeed;
+import tod.gui.seed.LogViewSeedFactory;
 import tod.plugin.DebuggingSession;
 import tod.plugin.TODPluginUtils;
 import tod.plugin.TODSessionManager;
@@ -65,7 +65,7 @@ public class EventViewer extends MinerUI
 		try
 		{
 			ILocationInfo theLocationInfo = TODPluginUtils.getLocationInfo(getSession(), aElement);
-			Seed theSeed = SeedFactory.getDefaultSeed(this, getBrowser(), theLocationInfo);
+			LogViewSeed theSeed = LogViewSeedFactory.getDefaultSeed(this, getBrowser(), theLocationInfo);
 			openSeed(theSeed, false);
 		}
 		catch (JavaModelException e)
@@ -94,7 +94,7 @@ public class EventViewer extends MinerUI
 						getBrowser().createLocationFilter(theBehavior, theLocations[i]);
 				}
 				ICompoundFilter theFilter = getBrowser().createUnionFilter(theLocationFilters);
-				Seed theSeed = new FilterSeed(this, getBrowser(), theFilter);
+				LogViewSeed theSeed = new FilterSeed(this, getBrowser(), theFilter);
 				openSeed(theSeed, false);				
 			}
 		}

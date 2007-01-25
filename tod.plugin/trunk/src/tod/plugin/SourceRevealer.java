@@ -234,6 +234,11 @@ public class SourceRevealer
 			return false;
 		}
 
+		public IJavaReferenceType getReferenceType() throws DebugException
+		{
+			return null;
+		}
+
 		public boolean canStepInto()
 		{
 			throw new UnsupportedOperationException();
@@ -365,11 +370,6 @@ public class SourceRevealer
 		}
 
 		public String getReceivingTypeName() throws DebugException
-		{
-			throw new UnsupportedOperationException();
-		}
-
-		public IJavaReferenceType getReferenceType() throws DebugException
 		{
 			throw new UnsupportedOperationException();
 		}

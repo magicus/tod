@@ -40,6 +40,7 @@ import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
 import org.objectweb.asm.Type;
 
+import tod.Util;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
@@ -50,6 +51,7 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.PrimitiveTypeInfo;
 import tod.core.session.ISession;
 
 /**
@@ -93,6 +95,9 @@ public class TODPluginUtils
 						theLocationTrace, 
 						theMethod.getParameterTypes(), 
 						theType);
+				
+				if (theMethodName.equals(Util.getSimpleName(theTypeName))) 
+					theMethodName = "<init>";
 				
 				return theTypeInfo.getBehavior(theMethodName, theArgumentTypes);
 			}
@@ -152,9 +157,18 @@ public class TODPluginUtils
 					aRepository.getType(theClassName),
 					theDimensions);			
 		}
+		
+		case Type.BOOLEAN: return PrimitiveTypeInfo.BOOLEAN;
+		case Type.BYTE: return PrimitiveTypeInfo.BYTE;
+		case Type.CHAR: return PrimitiveTypeInfo.CHAR;
+		case Type.DOUBLE: return PrimitiveTypeInfo.DOUBLE;
+		case Type.FLOAT: return PrimitiveTypeInfo.FLOAT;
+		case Type.INT: return PrimitiveTypeInfo.INT;
+		case Type.LONG: return PrimitiveTypeInfo.LONG;
+		case Type.SHORT: return PrimitiveTypeInfo.SHORT;
 			
 		default:
-			return null;
+			throw new RuntimeException("Not handled: "+theType);
 		}
 	}
 	
@@ -266,7 +280,7 @@ public class TODPluginUtils
 	    int theLineNumber = theBehavior.getLineNumber(theBytecodeIndex);
 	    ITypeInfo theType = theBehavior.getType();
 	    
-	    String theTypeName = theType.getName().replace('$', '.');
+	    String theTypeName = theType.getName();
 	    SourceRevealer.reveal(aSession, theTypeName, theLineNumber);
 	}
 	
