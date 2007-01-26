@@ -75,12 +75,9 @@ public abstract class BufferedBidiIterator<B, I> extends AbstractBidiIterator<I>
 	 */
 	protected abstract int getSize(B aBuffer);
 
-	private static int c = 0;
-	
 	@Override
 	protected final I fetchNext()
 	{
-		c++;
 		if ((! itsInitialized || itsStartReached))
 		{
 			if (itsBufferIterator.hasNext())
@@ -100,7 +97,14 @@ public abstract class BufferedBidiIterator<B, I> extends AbstractBidiIterator<I>
 		
 		if (itsEndReached) return null;
 		
-		if (itsLastMove == -1 && ! itsStartReached) itsBufferIterator.next();
+		if (itsLastMove == -1 && ! itsStartReached) 
+		{
+			B theNextBuffer = itsBufferIterator.next();
+			int theCurrentSize = getSize(itsCurrentBuffer);
+			int theNextSize = getSize(theNextBuffer);
+			assert theNextSize >= theCurrentSize;
+			itsCurrentBuffer = theNextBuffer;
+		}
 		itsLastMove = 1;
 		
 		if (itsIndex >= getSize(itsCurrentBuffer))
@@ -145,7 +149,15 @@ public abstract class BufferedBidiIterator<B, I> extends AbstractBidiIterator<I>
 		
 		if (itsStartReached) return null;
 		
-		if (itsLastMove == 1 && ! itsEndReached) itsBufferIterator.previous();
+		if (itsLastMove == 1 && ! itsEndReached)
+		{
+			B thePreviousBuffer = itsBufferIterator.previous();
+			int theCurrentSize = getSize(itsCurrentBuffer);
+			int thePreviousSize = getSize(thePreviousBuffer);
+			assert thePreviousSize >= theCurrentSize;
+			itsIndex += thePreviousSize-theCurrentSize;
+			itsCurrentBuffer = thePreviousBuffer;
+		}
 		itsLastMove = -1;
 		
 		

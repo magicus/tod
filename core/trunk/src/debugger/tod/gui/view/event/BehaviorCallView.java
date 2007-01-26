@@ -69,10 +69,10 @@ public class BehaviorCallView extends EventView
 		
 		String theTypeName = Util.getPrettyName(theTypeInfo.getName());
 		
-		add (createTitledLink(
-				"Type: ", 
-				theTypeName, 
-				LogViewSeedFactory.getDefaultSeed(getGUIManager(), getLogBrowser(), theTypeInfo)));
+//		add (createTitledLink(
+//				"Type: ", 
+//				theTypeName, 
+//				LogViewSeedFactory.getDefaultSeed(getGUIManager(), getLogBrowser(), theTypeInfo)));
 		
 		// Target
 		add (createTitledPanel("Target: ", createInspectorLink(theEvent.getTarget())));

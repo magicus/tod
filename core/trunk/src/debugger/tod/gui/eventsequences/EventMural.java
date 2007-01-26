@@ -106,7 +106,10 @@ public class EventMural extends SVGGraphicContainer
 		@Override
 		protected void clean()
 		{
-			itsImages.clear();
+			for (ImageData theImageData : itsImages.values())
+			{
+				theImageData.setUpToDate(false);
+			}
 			repaintAllContexts();
 		}
 	};
@@ -123,7 +126,9 @@ public class EventMural extends SVGGraphicContainer
 	/**
 	 * Mural image (one version per display).
 	 */
-	private Map<IDisplay, BufferedImage> itsImages = new WeakHashMap<IDisplay, BufferedImage>();
+	private Map<IDisplay, ImageData> itsImages = 
+		new WeakHashMap<IDisplay, ImageData>();
+	
 	private boolean itsShowBaloons = true;
 	
 	private Timer itsTimer;
@@ -279,7 +284,6 @@ public class EventMural extends SVGGraphicContainer
 		super.changed(aProperty);
 		if (aProperty == pBounds())
 		{
-			itsImages.clear();
 			markDirty();
 		}
 	}
@@ -288,16 +292,23 @@ public class EventMural extends SVGGraphicContainer
 	protected void paintBackground(IDisplay aDisplay, GraphicObjectContext aContext, Graphics2D aGraphics, Area aVisibleArea)
 	{
 		// Paint mural image
-		BufferedImage theImage = itsImages.get(aDisplay);
-		if (theImage == null) updateImage(aDisplay);
+		ImageData theImageData = itsImages.get(aDisplay);
+		
+		boolean thePaintImage;
+		if (theImageData == null || ! theImageData.isUpToDate())
+		{
+			updateImage(aDisplay);
+			thePaintImage = false;
+		}
+		else thePaintImage = true;
 
 		Rectangle2D theBounds = pBounds().get();
 		double w = theBounds.getWidth();
 		double h = theBounds.getHeight();
 		
-		if (theImage != null)
+		if (thePaintImage)
 		{
-			aGraphics.drawImage(theImage, 0, 0, (int) w, (int) h, null);
+			aGraphics.drawImage(theImageData.getImage(), 0, 0, (int) w, (int) h, null);
 		}
 		else
 		{
@@ -731,27 +742,70 @@ public class EventMural extends SVGGraphicContainer
 			int height = (int) tp01.distance(tp00);
 			if (height == 0 || width == 0) return;
 
-			BufferedImage theImage = aMural.itsImages.get(aDisplay);
-			if (theImage == null) 
+			ImageData theImageData = aMural.itsImages.get(aDisplay);
+			BufferedImage theImage = theImageData != null ? theImageData.getImage() : null;
+			if (theImage == null 
+					|| theImage.getWidth() != width 
+					|| theImage.getHeight() != height) 
 			{
 				GraphicsConfiguration theConfiguration = aDisplay.getGraphicsConfiguration();
 				theImage = theConfiguration.createCompatibleImage(width, height);
-				aMural.itsImages.put(aDisplay, theImage);
+				theImageData = new ImageData(theImage);
+				aMural.itsImages.put(aDisplay, theImageData);
 			}
 			
 			Graphics2D theGraphics = theImage.createGraphics();
 			theGraphics.setColor(Color.WHITE);
 			theGraphics.fillRect(0, 0, width, height);
+			Long theStart = aMural.pStart().get();
+			Long theEnd = aMural.pEnd().get();
+			
+			System.out.println("Range: "+theStart+"-"+theEnd);
+			System.out.println("Width: "+width);
+			
 			paintMural(
 					theGraphics, 
 					new Rectangle(0, 0, width, height), 
-					aMural.pStart().get(), 
-					aMural.pEnd().get(), 
+					theStart, 
+					theEnd, 
 					aMural.pEventBrowsers());
 
+			theImageData.setUpToDate(true);
 			aMural.repaintAllContexts();
 		}
+	}
+	
+	private static class ImageData
+	{
+		private BufferedImage itsImage;
+		private boolean itsUpToDate;
 		
+		public ImageData(BufferedImage aImage)
+		{
+			itsImage = aImage;
+			itsUpToDate = false;
+		}
 
+		public BufferedImage getImage()
+		{
+			return itsImage;
+		}
+
+		public void setImage(BufferedImage aImage)
+		{
+			itsImage = aImage;
+		}
+
+		public boolean isUpToDate()
+		{
+			return itsUpToDate;
+		}
+
+		public void setUpToDate(boolean aUpToDate)
+		{
+			itsUpToDate = aUpToDate;
+		}
+		
+		
 	}
 }

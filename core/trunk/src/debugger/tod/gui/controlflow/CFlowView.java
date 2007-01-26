@@ -219,7 +219,7 @@ public class CFlowView extends LogView
 		itsSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		itsSplitPane.setResizeWeight(0.5);
 		itsSplitPane.setLeftComponent(theCFlowPanel);
-		itsSplitPane.setRightComponent(itsWatchPanel);
+		itsSplitPane.setRightComponent(new JScrollPane(itsWatchPanel));
 		
 		add(itsSplitPane, BorderLayout.CENTER);
 		

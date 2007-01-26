@@ -111,6 +111,24 @@ implements ILocationSelectionListener, IGUIManager
 		
 		theToolbar.add(theExceptionsViewButton);
 		
+		JButton theShowAllEventsButton = new JButton("events");
+		theShowAllEventsButton.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent aE)
+			{
+				ILogBrowser theLogBrowser = getSession().getLogBrowser();
+				
+				FilterSeed theSeed = new FilterSeed(
+						MinerUI.this,
+						theLogBrowser,
+						theLogBrowser.createIntersectionFilter());
+				
+				openSeed(theSeed, false);			
+			}
+		});
+		
+		theToolbar.add(theShowAllEventsButton);
+		
 		// Adds a button that permits to disconnect the current session
 		JButton theKillSessionButton = new JButton("Kill session");
 		theKillSessionButton.addActionListener(new ActionListener()

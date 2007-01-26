@@ -22,13 +22,20 @@ package tod.gui.eventsequences;
 
 import java.awt.Color;
 
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMemberInfo;
+import tod.gui.IGUIManager;
+import tod.gui.SVGHyperlink;
+import tod.gui.seed.CFlowSeed;
 import tod.gui.view.LogView;
 import zz.csg.api.IRectangularGraphicObject;
+import zz.csg.api.layout.SequenceLayout;
+import zz.csg.impl.SVGGraphicContainer;
+import zz.csg.impl.figures.SVGFlowText;
 
 public class FieldSequenceView extends AbstractMemberSequenceView
 {
@@ -52,8 +59,29 @@ public class FieldSequenceView extends AbstractMemberSequenceView
 	protected IRectangularGraphicObject getBaloon(ILogEvent aEvent)
 	{
 		IFieldWriteEvent theEvent = (IFieldWriteEvent) aEvent;
-		Object theValue = theEvent.getValue();
-		return createBaloon(theValue);
+		return createFieldWriteBaloon(theEvent);
+	}
+	
+	private IRectangularGraphicObject createFieldWriteBaloon(IFieldWriteEvent aEvent)
+	{
+		SVGGraphicContainer theContainer = new SVGGraphicContainer();
+		theContainer.setLayoutManager(new SequenceLayout());
+
+		// Create hyperlink to call event
+		IGUIManager theGUIManager = getLogView().getGUIManager();
+		ILogBrowser theLog = getLogView().getLogBrowser();
+
+		CFlowSeed theSeed = new CFlowSeed(theGUIManager, theLog, aEvent);
+		SVGHyperlink theHyperlink = SVGHyperlink.create(theSeed, "set", 10, Color.BLUE);
+		theContainer.pChildren().add (theHyperlink);
+		
+		// Colon
+		theContainer.pChildren().add (SVGFlowText.create(": ", 10, Color.BLACK));
+		
+		// Value
+		theContainer.pChildren().add(createBaloon(aEvent.getValue()));
+		
+		return theContainer;
 	}
 
 	@Override

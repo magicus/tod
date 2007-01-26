@@ -21,12 +21,15 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.eventlist;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
 
 import javax.swing.AbstractListModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -171,6 +174,19 @@ public class EventList extends JPanel
 				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		
 		add(theScrollPane, BorderLayout.CENTER);
+		
+		// Setup text box for entering timestamp
+		final JTextField theTimestampField = new JTextField();
+		theTimestampField.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent aE)
+			{
+				String theText = theTimestampField.getText();
+				long theValue = Long.parseLong(theText);
+				theScroller.pTrackScroll().set(theValue);
+			}
+		});
+		add(theTimestampField, BorderLayout.NORTH);
 	}
 	
 	public IRWProperty<ILogEvent> pSelectedEvent()

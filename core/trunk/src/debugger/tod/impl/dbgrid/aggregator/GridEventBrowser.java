@@ -119,12 +119,24 @@ implements IEventBrowser
 		if (super.hasNext())
 		{
 			if (itsLastEvent == null) return true;
-
-			ILogEvent theLast = peekPrevious();
-			if (theLast == null) return true;
-				
-			assert theLast.getTimestamp() <= itsLastEvent.getTimestamp(); 
-			return ! theLast.equals(itsLastEvent); 
+			
+			long theFirstT = itsFirstEvent != null ? itsFirstEvent.getTimestamp() : 0;
+			long theLastT = itsLastEvent.getTimestamp();
+			
+			ILogEvent theNext = peekNext();
+			long theNextT = theNext.getTimestamp();
+			
+			if (theNextT < theFirstT) return false;
+			else if (theNextT > theLastT) return false;
+			else if (theNextT < theLastT) return true;
+			else if (theNext.equals(itsLastEvent)) return true;
+			else 
+			{
+				// TODO: There is a border case we don't handle 
+				// (all available events have the same timestamp)
+				ILogEvent thePrevious = peekPrevious();
+				return ! itsLastEvent.equals(thePrevious);
+			}
 		}
 		else return false;
 	}
@@ -135,21 +147,34 @@ implements IEventBrowser
 		if (super.hasPrevious())
 		{
 			if (itsFirstEvent == null) return true;
-
-			ILogEvent theLast = peekNext();
-			if (theLast == null) return true;
-				
-			assert theLast.getTimestamp() >= itsFirstEvent.getTimestamp(); 
-			return ! theLast.equals(itsFirstEvent); 
+			
+			long theFirstT = itsFirstEvent.getTimestamp();
+			long theLastT = itsLastEvent != null ? itsLastEvent.getTimestamp() : Long.MAX_VALUE;
+			
+			ILogEvent thePrevious = peekPrevious();
+			long thePreviousT = thePrevious.getTimestamp();
+			
+			if (thePreviousT > theLastT) return false;
+			else if (thePreviousT < theFirstT) return false;
+			else if (thePreviousT > theFirstT) return true;
+			else if (thePrevious.equals(itsFirstEvent)) return true;
+			else 
+			{
+				// TODO: There is a border case we don't handle 
+				// (all available events have the same timestamp)
+				ILogEvent theNext = peekNext();
+				return ! itsFirstEvent.equals(theNext);
+			}
 		}
 		else return false;
 	}
-
+	
 	/**
 	 * Converts a {@link GridEvent} into an {@link ILogEvent}.
 	 */
 	private ILogEvent convert(GridEvent aEvent)
 	{
+		assert itsFilter._match(aEvent);
 		return aEvent.toLogEvent(itsBrowser);
 	}
 	

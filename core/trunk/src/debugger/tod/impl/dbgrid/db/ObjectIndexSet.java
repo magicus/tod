@@ -46,7 +46,7 @@ public class ObjectIndexSet extends RoleIndexSet
 		itsMaxId = Math.max(itsMaxId, aIndex);
 		if (DebugFlags.ALIAS_OBJECTS > 0)
 		{
-			aIndex = (aIndex % DebugFlags.ALIAS_OBJECTS) + 1;
+			aIndex = ((aIndex-1) % DebugFlags.ALIAS_OBJECTS) + 1;
 		}
 		
 		super.addTuple(aIndex, aTuple);

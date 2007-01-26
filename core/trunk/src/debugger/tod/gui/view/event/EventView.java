@@ -59,7 +59,7 @@ public abstract class EventView extends LogView
 		
 		// Thread & timestamp
 		add (createTitledLink(
-				"Thread: ", 
+				"[" + theEvent.getDepth() + "] Thread: ", 
 				"\""+theThreadInfo.getName()+"\" ["+theThreadInfo.getId()+"]", 
 				new FilterSeed (getGUIManager(), getLogBrowser(), getLogBrowser().createThreadFilter(theThreadInfo))));
 

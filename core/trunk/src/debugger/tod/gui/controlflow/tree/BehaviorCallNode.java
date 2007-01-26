@@ -27,20 +27,25 @@ import java.awt.geom.Rectangle2D;
 
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IBehaviorExitEvent;
+import tod.core.database.structure.IBehaviorInfo;
 import tod.gui.FontConfig;
+import tod.gui.Hyperlinks;
 import tod.gui.controlflow.CFlowView;
 import tod.gui.controlflow.CFlowViewUtils;
 import zz.csg.api.GraphicObjectContext;
 import zz.csg.api.IGraphicContainer;
+import zz.csg.api.IRectangularGraphicContainer;
 import zz.csg.api.IRectangularGraphicObject;
 import zz.csg.api.layout.AbstractSimpleLayout;
+import zz.csg.api.layout.SequenceLayout;
+import zz.csg.impl.SVGGraphicContainer;
+import zz.csg.impl.figures.SVGFlowText;
 import zz.utils.ui.UIUtils;
+import zz.utils.ui.text.XFont;
 
-public class BehaviorCallNode extends AbstractEventNode
+public abstract class BehaviorCallNode extends AbstractEventNode
 {
 	private IBehaviorCallEvent itsEvent;
-	private String itsHeaderPrefix;
-	private String itsFooterPrefix;
 	
 	private IRectangularGraphicObject itsHeader;
 	private IRectangularGraphicObject itsFooter;
@@ -48,15 +53,11 @@ public class BehaviorCallNode extends AbstractEventNode
 	
 	public BehaviorCallNode(
 			CFlowView aView,
-			IBehaviorCallEvent aEvent,
-			String aHeaderPrefix, 
-			String aFooterPrefix)
+			IBehaviorCallEvent aEvent)
 	{
 		super (aView);
 		
 		itsEvent = aEvent;
-		itsHeaderPrefix = aHeaderPrefix;
-		itsFooterPrefix = aFooterPrefix;
 		createUI();
 	}
 
@@ -83,19 +84,8 @@ public class BehaviorCallNode extends AbstractEventNode
 		
 		pChildren().add(itsExpanderWidget);
 		
-		itsHeader = CFlowViewUtils.createBehaviorCallHeader(
-				getSeedFactory(), 
-				getLogBrowser(), 
-				getEvent(), 
-				itsHeaderPrefix,
-				FontConfig.STD_FONT);
-		
-		itsFooter = CFlowViewUtils.createBehaviorCallFooter(
-				getSeedFactory(), 
-				getLogBrowser(), 
-				getEvent(), 
-				itsFooterPrefix,
-				FontConfig.STD_FONT);
+		itsHeader = createHeader(FontConfig.STD_FONT);
+		itsFooter = createFooter(FontConfig.STD_FONT);
 		
 		pChildren().add(itsHeader);
 		pChildren().add(itsFooter);
@@ -108,6 +98,83 @@ public class BehaviorCallNode extends AbstractEventNode
 	{
 		return itsEvent;
 	}
+	
+	protected IRectangularGraphicObject createHeader(XFont aFont)
+	{
+		SVGGraphicContainer theContainer = new SVGGraphicContainer();
+		
+		fillHeaderPrefix(theContainer, aFont);
+		Object[] theArguments = getEvent().getArguments();
+		CFlowViewUtils.addArguments(getSeedFactory(), getLogBrowser(), theContainer, theArguments, aFont);
+
+		theContainer.setLayoutManager(new SequenceLayout());
+		return theContainer;
+	}
+
+	
+	protected IRectangularGraphicObject createFooter(XFont aFont)
+	{
+		SVGGraphicContainer theContainer = new SVGGraphicContainer();
+
+		IBehaviorInfo theBehavior = getEvent().getExecutedBehavior();
+		if (theBehavior == null) theBehavior = getEvent().getCalledBehavior();
+		
+		IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
+		Object theResult = theExitEvent != null ? theExitEvent.getResult() : null;
+		
+		if (theExitEvent == null)
+		{
+			theContainer.pChildren().add(SVGFlowText.create("Behavior never returned", aFont, Color.BLACK));
+		}
+		else if (theExitEvent.hasThrown())
+		{
+			theContainer.pChildren().add(SVGFlowText.create("Thrown ", aFont, Color.RED));
+
+			theContainer.pChildren().add(Hyperlinks.object(
+					getSeedFactory(), 
+					getLogBrowser(), 
+					theExitEvent.getResult(), 
+					aFont));
+		}
+		else
+		{
+			fillFooterPrefix(theContainer, aFont);
+
+			if (theResult != null)
+			{
+				theContainer.pChildren().add(Hyperlinks.object(
+						getSeedFactory(), 
+						getLogBrowser(), 
+						theExitEvent.getResult(), 
+						aFont));
+			}
+			else if (theBehavior.getReturnType().isVoid())
+			{
+				theContainer.pChildren().add(SVGFlowText.create("void", aFont, Color.BLACK));
+			}
+			else 
+			{
+				theContainer.pChildren().add(SVGFlowText.create("internal error", aFont, Color.RED));
+			}
+		}
+		
+		theContainer.setLayoutManager(new SequenceLayout());
+		return theContainer;
+	}
+	
+	/**
+	 * Adds the prefix to the header. Eg.: "new MyClass" or "MyClass.myMethod" 
+	 */
+	protected abstract void fillHeaderPrefix(
+			IRectangularGraphicContainer aContainer,
+			XFont aFont);
+	
+	/**
+	 * Adds the prefix to the footer. Eg.: "Created " or "Returned "
+	 */
+	protected abstract void fillFooterPrefix(
+			IRectangularGraphicContainer aContainer,
+			XFont aFont);
 	
 	
 	private class MyLayout extends AbstractSimpleLayout

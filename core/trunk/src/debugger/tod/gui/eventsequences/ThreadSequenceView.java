@@ -28,6 +28,7 @@ import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IThreadInfo;
 import tod.gui.seed.CFlowSeed;
+import tod.gui.seed.FilterSeed;
 import tod.gui.view.LogView;
 import zz.utils.ItemAction;
 
@@ -42,12 +43,13 @@ public class ThreadSequenceView extends AbstractSingleBrowserSequenceView
 		super(aLogView, EVENT_COLOR);
 		itsSeed = aSeed;
 		
-		addBaseAction(new ShowThreadAction());
+		addBaseAction(new ShowCFlowAction());
+		addBaseAction(new ShowEventsAction());
 	}
 
-	public ILogBrowser getTrace()
+	public ILogBrowser getLogBrowser()
 	{
-		return itsSeed.getTrace();
+		return itsSeed.getLogBrowser();
 	}
 	
 	public IThreadInfo getThread()
@@ -58,8 +60,8 @@ public class ThreadSequenceView extends AbstractSingleBrowserSequenceView
 	@Override
 	protected IEventBrowser getBrowser()
 	{
-		IEventFilter theFilter = getTrace().createThreadFilter(getThread());
-		IEventBrowser theBrowser = getTrace().createBrowser(theFilter);
+		IEventFilter theFilter = getLogBrowser().createThreadFilter(getThread());
+		IEventBrowser theBrowser = getLogBrowser().createBrowser(theFilter);
 		return theBrowser;
 	}
 
@@ -68,18 +70,34 @@ public class ThreadSequenceView extends AbstractSingleBrowserSequenceView
 		return "Thread view - \""+getThread().getName() + "\"";
 	}
 	
-	private class ShowThreadAction extends ItemAction
+	private class ShowCFlowAction extends ItemAction
 	{
-		public ShowThreadAction()
+		public ShowCFlowAction()
 		{
 			setTitle("view");
+		}
+		
+		@Override
+		public void actionPerformed(ActionEvent aE)
+		{
+			CFlowSeed theSeed = new CFlowSeed(getGUIManager(), getLogBrowser(), getThread());
+			getGUIManager().openSeed(theSeed, false);
+		}
+	}
+	
+	private class ShowEventsAction extends ItemAction
+	{
+		public ShowEventsAction()
+		{
+			setTitle("events");
 		}
 
 		@Override
 		public void actionPerformed(ActionEvent aE)
 		{
-			getGUIManager().openSeed(new CFlowSeed(getGUIManager(), getTrace(), getThread()), false);
+			IEventFilter theFilter = getLogBrowser().createThreadFilter(getThread());
+			FilterSeed theSeed = new FilterSeed(getGUIManager(), getLogBrowser(), theFilter);
+			getGUIManager().openSeed(theSeed, false);
 		}
 	}
-
 }

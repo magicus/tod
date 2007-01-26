@@ -44,7 +44,7 @@ public class ThreadSequenceSeed implements IEventSequenceSeed
 		return itsThread;
 	}
 
-	public ILogBrowser getTrace()
+	public ILogBrowser getLogBrowser()
 	{
 		return itsTrace;
 	}

@@ -63,7 +63,6 @@ public abstract class AbstractMemberSequenceView extends AbstractSingleBrowserSe
 	protected IRectangularGraphicObject createBaloon(Object aObject)
 	{
 		LogView theLogView = getLogView();
-		IGUIManager theGUIManager = theLogView.getGUIManager();
 		ILogBrowser theEventTrace = theLogView.getLogBrowser();
 			
 		return Hyperlinks.object(getSeedFactory(), theEventTrace, itsInspector.getObject(), aObject, FONT);

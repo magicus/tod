@@ -71,10 +71,10 @@ public class BehaviorExitView extends EventView
 		
 		String theTypeName = Util.getPrettyName(theTypeInfo.getName());
 		
-		add (createTitledLink(
-				"Type: ", 
-				theTypeName, 
-				LogViewSeedFactory.getDefaultSeed(getGUIManager(), getLogBrowser(), theTypeInfo)));
+//		add (createTitledLink(
+//				"Type: ", 
+//				theTypeName, 
+//				LogViewSeedFactory.getDefaultSeed(getGUIManager(), getLogBrowser(), theTypeInfo)));
 		
 		// Target
 		add (createTitledPanel("Target: ", createInspectorLink(theParent.getTarget())));

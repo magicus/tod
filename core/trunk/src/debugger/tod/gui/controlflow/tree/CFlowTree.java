@@ -65,13 +65,6 @@ import zz.utils.ui.HorizontalAlignment;
 
 public class CFlowTree extends SVGGraphicContainer
 {
-	private static final String METHOD_CALL_HEADER_PREFIX = "Call to ";
-	private static final String METHOD_CALL_FOOTER_PREFIX = "Returned ";
-	private static final String CC_HEADER_PREFIX = "Call to ";
-	private static final String CC_FOOTER_PREFIX = "Returned ";
-	private static final String INSTANTIATION_HEADER_PREFIX = "new ";
-	private static final String INSTANTIATION_FOOTER_PREFIX = "Created ";
-	
 	private final CFlowView itsView;
 
 	private EventListCore itsCore;
@@ -324,29 +317,17 @@ public class CFlowTree extends SVGGraphicContainer
 		else if (aEvent instanceof IMethodCallEvent)
 		{
 			IMethodCallEvent theEvent = (IMethodCallEvent) aEvent;
-			return new BehaviorCallNode(
-					itsView, 
-					theEvent, 
-					METHOD_CALL_HEADER_PREFIX,
-					METHOD_CALL_FOOTER_PREFIX);
+			return new MethodCallNode(itsView, theEvent);
 		}
 		else if (aEvent instanceof IInstantiationEvent)
 		{
 			IInstantiationEvent theEvent = (IInstantiationEvent) aEvent;
-			return new BehaviorCallNode(
-					itsView, 
-					theEvent, 
-					INSTANTIATION_HEADER_PREFIX,
-					INSTANTIATION_FOOTER_PREFIX);
+			return new InstantiationNode(itsView, theEvent);
 		}
 		else if (aEvent instanceof IConstructorChainingEvent)
 		{
 			IConstructorChainingEvent theEvent = (IConstructorChainingEvent) aEvent;
-			return new BehaviorCallNode(
-					itsView, 
-					theEvent, 
-					CC_HEADER_PREFIX,
-					CC_FOOTER_PREFIX);
+			return new ConstructorChainingNode(itsView, theEvent);
 		}
 		else if (aEvent instanceof IBehaviorExitEvent)
 		{

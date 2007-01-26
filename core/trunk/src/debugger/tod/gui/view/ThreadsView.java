@@ -72,7 +72,7 @@ public class ThreadsView extends LogView
 		
 		update();
 		
-		itsTimer = new Timer(500, new ActionListener()
+		itsTimer = new Timer(1000, new ActionListener()
 						{
 							public void actionPerformed(ActionEvent aE)
 							{
