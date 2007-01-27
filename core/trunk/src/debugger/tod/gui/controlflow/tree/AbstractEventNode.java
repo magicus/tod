@@ -27,6 +27,7 @@ import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 
 import tod.core.database.event.ILogEvent;
+import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
 import zz.csg.api.GraphicObjectContext;
 import zz.csg.api.IDisplay;
@@ -34,9 +35,11 @@ import zz.csg.api.IDisplay;
 public abstract class AbstractEventNode extends AbstractCFlowNode
 {
 
-	public AbstractEventNode(CFlowView aView)
+	public AbstractEventNode(
+			CFlowView aView,
+			JobProcessor aJobProcessor)
 	{
-		super(aView);
+		super(aView, aJobProcessor);
 	}
 
 	@Override

@@ -28,6 +28,7 @@ import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.gui.kit.ObjectHyperlink;
 import tod.gui.seed.LogViewSeedFactory;
 import tod.gui.seed.Seed;
 import zz.csg.api.IRectangularGraphicObject;
@@ -95,11 +96,12 @@ public class Hyperlinks
 	
 	public static IRectangularGraphicObject object(
 			ISeedFactory aSeedFactory, 
-			ILogBrowser aEventTrace, 
+			ILogBrowser aLogBrowser, 
+			JobProcessor aJobProcessor,
 			Object aObject,
 			XFont aFont)
 	{
-		return object(aSeedFactory, aEventTrace, null, aObject, aFont);
+		return object(aSeedFactory, aLogBrowser, aJobProcessor, null, aObject, aFont);
 	}
 	
 	/**
@@ -111,6 +113,7 @@ public class Hyperlinks
 	public static IRectangularGraphicObject object(
 			ISeedFactory aSeedFactory,
 			ILogBrowser aLogBrowser,
+			JobProcessor aJobProcessor,
 			Object aCurrentObject, 
 			Object aObject, 
 			XFont aFont)
@@ -127,12 +130,23 @@ public class Hyperlinks
 		{
 			ObjectId theId = (ObjectId) aObject;
 			
-			ITypeInfo theType = aLogBrowser.createObjectInspector(theId).getType();
-
 			String theText;
 			if (aCurrentObject != null && aCurrentObject.equals(aObject)) theText = "this";
-			else theText = theType.getName() + " (" + theId + ")";
-
+			else if (aJobProcessor != null) 
+			{
+				return new ObjectHyperlink(
+						aSeedFactory.objectSeed(theId),
+						aLogBrowser,
+						aJobProcessor,
+						theId,
+						aFont);
+			}
+			else 
+			{
+				ITypeInfo theType = aLogBrowser.createObjectInspector(theId).getType();
+				theText = theType.getName() + " (" + theId + ")";
+			}
+			
 			return SVGHyperlink.create(
 					aSeedFactory.objectSeed(theId), 
 					theText, 

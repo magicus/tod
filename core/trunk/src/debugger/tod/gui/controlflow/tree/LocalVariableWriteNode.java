@@ -26,6 +26,7 @@ import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.gui.FontConfig;
 import tod.gui.Hyperlinks;
+import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
 import zz.csg.api.layout.SequenceLayout;
 import zz.csg.impl.figures.SVGFlowText;
@@ -36,17 +37,28 @@ public class LocalVariableWriteNode extends AbstractEventNode
 
 	public LocalVariableWriteNode(
 			CFlowView aView,
+			JobProcessor aJobProcessor,
 			ILocalVariableWriteEvent aEvent)
 	{
-		super(aView);
+		super(aView, aJobProcessor);
 		
 		itsEvent = aEvent;
 
 		setLayoutManager(new SequenceLayout());
 		
-		pChildren().add(SVGFlowText.create(itsEvent.getVariable().getVariableName(), FontConfig.STD_FONT, Color.BLACK));
+		pChildren().add(SVGFlowText.create(
+				itsEvent.getVariable().getVariableName(),
+				FontConfig.STD_FONT,
+				Color.BLACK));
+		
 		pChildren().add(SVGFlowText.create(" = ", FontConfig.STD_FONT, Color.BLACK));
-		pChildren().add(Hyperlinks.object(getSeedFactory(), getLogBrowser(), itsEvent.getValue(), FontConfig.STD_FONT));
+		
+		pChildren().add(Hyperlinks.object(
+				getSeedFactory(), 
+				getLogBrowser(),
+				getJobProcessor(),
+				itsEvent.getValue(),
+				FontConfig.STD_FONT));
 	}
 	
 	@Override

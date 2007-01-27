@@ -26,6 +26,7 @@ import tod.core.database.event.IExceptionGeneratedEvent;
 import tod.core.database.event.ILogEvent;
 import tod.gui.FontConfig;
 import tod.gui.Hyperlinks;
+import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
 import zz.csg.api.layout.SequenceLayout;
 import zz.csg.impl.figures.SVGFlowText;
@@ -36,9 +37,10 @@ public class ExceptionGeneratedNode extends AbstractEventNode
 
 	public ExceptionGeneratedNode(
 			CFlowView aView,
+			JobProcessor aJobProcessor,
 			IExceptionGeneratedEvent aEvent)
 	{
-		super(aView);
+		super(aView, aJobProcessor);
 		
 		itsEvent = aEvent;
 
@@ -52,6 +54,7 @@ public class ExceptionGeneratedNode extends AbstractEventNode
 		pChildren().add(Hyperlinks.object(
 				getSeedFactory(), 
 				getLogBrowser(),
+				getJobProcessor(),
 				itsEvent.getException(), 
 				FontConfig.STD_FONT));
 	}

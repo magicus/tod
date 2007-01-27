@@ -29,6 +29,7 @@ import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.gui.Hyperlinks;
+import tod.gui.JobProcessor;
 import tod.gui.Hyperlinks.ISeedFactory;
 import zz.csg.api.IGraphicContainer;
 import zz.csg.api.IRectangularGraphicObject;
@@ -45,6 +46,7 @@ public class CFlowViewUtils
 	public static void addArguments(
 			ISeedFactory aSeedFactory,
 			ILogBrowser aLogBrowser,
+			JobProcessor aJobProcessor,
 			IGraphicContainer aContainer,
 			Object[] aArguments, 
 			XFont aFont)
@@ -62,6 +64,7 @@ public class CFlowViewUtils
 				aContainer.pChildren().add(Hyperlinks.object(
 						aSeedFactory,
 						aLogBrowser,
+						aJobProcessor,
 						theArgument, 
 						aFont));
 			}

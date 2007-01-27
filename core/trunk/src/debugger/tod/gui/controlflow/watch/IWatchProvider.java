@@ -22,63 +22,51 @@ package tod.gui.controlflow.watch;
 
 import java.util.List;
 
-import tod.core.database.event.IFieldWriteEvent;
-import tod.core.database.event.ILogEvent;
-
+import tod.core.database.event.IWriteEvent;
+import tod.core.database.structure.ObjectId;
+import tod.gui.JobProcessor;
 import zz.csg.api.IRectangularGraphicObject;
 
 /**
  * Provider of watch data.
  * @author gpothier
  */
-public interface IWatchProvider
+public interface IWatchProvider<E>
 {
 	/**
 	 * Builds the title of the watch window.
+	 * @param aJobProcessor A job processor that can be used if elements
+	 * of the title are to be created asynchronously.
 	 */
-	public IRectangularGraphicObject buildTitle();
+	public IRectangularGraphicObject buildTitle(JobProcessor aJobProcessor);
 	
 	/**
 	 * Returns a current object. Currently this is only for
 	 * stack frame reconstitution, represents the "this" variable.
 	 */
-	public WatchEntry getCurrentObject();
+	public ObjectId getCurrentObject();
 	
 	/**
-	 * Returns the set of watch entries.
+	 * Returns the list of available entries.
+	 * This might be a time-consuming operation.
 	 */
-	public List<WatchEntry> getEntries();
-	
-	public static class WatchEntry
-	{
-		public final String name;
-		
-		/**
-		 * The array of possible values
-		 */
-		public final Object[] values;
-		
-		/**
-		 * The array of possible setters corresponding to the values
-		 */
-		public final ILogEvent[] setters;
-		
-		public WatchEntry(String aName, Object aValue)
-		{
-			this(aName, aValue, null);
-		}
-		
-		public WatchEntry(String aName, Object aValue, ILogEvent aSetter)
-		{
-			this(aName, new Object[] {aValue}, new ILogEvent[] {aSetter});
-		}
-		
-		public WatchEntry(String aName, Object[] aValues, ILogEvent[] aSetters)
-		{
-			name = aName;
-			values = aValues;
-			setters = aSetters;
-		}
+	public List<E> getEntries();
 
-	}
+	/**
+	 * Returns the name of the given entry.
+	 * This method should execute quickly.
+	 */
+	public String getEntryName(E aEntry);
+
+	/**
+	 * Returns the possible values for the given entry.
+	 * This might be a time-consuming operation.
+	 */
+	public Object[] getEntryValue(E aEntry);
+
+	/**
+	 * Returns the possible setter events for the given entry.
+	 * This might be a time-consuming operation.
+	 */
+	public IWriteEvent[] getEntrySetter(E aEntry);
 }

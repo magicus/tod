@@ -24,6 +24,7 @@ import java.awt.Color;
 
 import tod.core.database.event.ILogEvent;
 import tod.gui.FontConfig;
+import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
 import zz.csg.api.layout.SequenceLayout;
 import zz.csg.impl.figures.SVGFlowText;
@@ -34,9 +35,10 @@ public class UnknownEventNode extends AbstractEventNode
 
 	public UnknownEventNode(
 			CFlowView aView,
+			JobProcessor aJobProcessor,
 			ILogEvent aEvent)
 	{
-		super(aView);
+		super(aView, aJobProcessor);
 		
 		itsEvent = aEvent;
 

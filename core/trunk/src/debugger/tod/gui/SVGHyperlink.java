@@ -36,7 +36,16 @@ public class SVGHyperlink extends SVGFlowText
 	private Seed itsSeed;
 	private boolean itsMouseOver = false;
 	
+	public SVGHyperlink()
+	{
+	}
+
 	public SVGHyperlink(Seed aSeed)
+	{
+		itsSeed = aSeed;
+	}
+	
+	public void setSeed(Seed aSeed)
 	{
 		itsSeed = aSeed;
 	}

@@ -29,7 +29,6 @@ import java.util.Map;
 
 import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.browser.ICompoundFilter;
-import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.browser.ILogBrowser;
@@ -47,7 +46,6 @@ import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.impl.common.LogBrowserUtils;
-import tod.impl.common.ObjectInspector;
 import tod.impl.common.VariablesInspector;
 import tod.impl.dbgrid.aggregator.GridEventBrowser;
 import tod.impl.dbgrid.db.RoleIndexSet;
@@ -93,6 +91,7 @@ implements ILogBrowser, RIGridMasterListener
 	
 	private List<IGridBrowserListener> itsListeners = new ArrayList<IGridBrowserListener>();
 	
+	private TypeCache itsTypeCache = new TypeCache();
 
 	public GridLogBrowser(RIGridMaster aMaster) throws RemoteException
 	{
@@ -106,6 +105,15 @@ implements ILogBrowser, RIGridMasterListener
 	public void clear()
 	{
 		throw new UnsupportedOperationException();
+	}
+
+	
+	/**
+	 * A cache of object types, see {@link GridObjectInspector#getType()}
+	 */
+	public TypeCache getTypeCache()
+	{
+		return itsTypeCache;
 	}
 
 	public void addListener(IGridBrowserListener aListener)
@@ -388,9 +396,9 @@ implements ILogBrowser, RIGridMasterListener
 		throw new UnsupportedOperationException();
 	}
 
-	public IObjectInspector createObjectInspector(ObjectId aObjectId)
+	public GridObjectInspector createObjectInspector(ObjectId aObjectId)
 	{
-		return new ObjectInspector(this, aObjectId);
+		return new GridObjectInspector(this, aObjectId);
 	}
 
 	public IVariablesInspector createVariablesInspector(IBehaviorCallEvent aEvent)
@@ -474,4 +482,47 @@ implements ILogBrowser, RIGridMasterListener
 			return itsThreads.get(aIndex);
 		}
 	}
+	
+	/**
+	 * @see TypeCache
+	 * @author gpothier
+	 */
+	public static class TypeCacheEntry
+	{
+		public final ObjectId object;
+		public final ITypeInfo type;
+		
+		public TypeCacheEntry(final ObjectId aObject, final ITypeInfo aType)
+		{
+			object = aObject;
+			type = aType;
+		}
+	}
+	
+	/**
+	 * We maintain a cache of object types, as this is a frequent operation.
+	 * see {@link GridObjectInspector#getType()}
+	 * @author gpothier
+	 */
+	public class TypeCache extends MRUBuffer<ObjectId, TypeCacheEntry>
+	{
+		public TypeCache()
+		{
+			super(100);
+		}
+
+		@Override
+		protected TypeCacheEntry fetch(ObjectId aId)
+		{
+			return new TypeCacheEntry(aId, createObjectInspector(aId).getType0());
+		}
+
+		@Override
+		protected ObjectId getKey(TypeCacheEntry aValue)
+		{
+			return aValue.object;
+		}
+		
+	}
+	
 }

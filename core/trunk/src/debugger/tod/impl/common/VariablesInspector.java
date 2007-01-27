@@ -93,7 +93,7 @@ public class VariablesInspector implements IVariablesInspector
 		return itsCurrentEvent;
 	}
 
-	public Object getVariableValue(LocalVariableInfo aVariable)
+	public Object[] getEntryValue(LocalVariableInfo aVariable)
 	{
 		if (getBehaviorCall() == null) return null;
 		
@@ -105,7 +105,7 @@ public class VariablesInspector implements IVariablesInspector
 		while (theBrowser.hasPrevious())
 		{
 			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) theBrowser.previous();
-			if (aVariable.equals(theEvent.getVariable())) return theEvent.getValue();
+			if (aVariable.equals(theEvent.getVariable())) return new Object[] {theEvent.getValue()};
 		}
 		
 		// If we did not find a variable write corresponding to the variable,
@@ -117,7 +117,7 @@ public class VariablesInspector implements IVariablesInspector
 		{
 			if (aVariable.getIndex() == theSlot)
 			{
-				return itsBehaviorCall.getArguments()[i];
+				return new Object[] {itsBehaviorCall.getArguments()[i]};
 			}
 			else
 			{
@@ -128,8 +128,8 @@ public class VariablesInspector implements IVariablesInspector
 		
 		return null;
 	}
-
-	public ILocalVariableWriteEvent getVariableSetter(LocalVariableInfo aVariable)
+	
+	public ILocalVariableWriteEvent[] getEntrySetter(LocalVariableInfo aVariable)
 	{
 		if (getBehaviorCall() == null) return null;
 		
@@ -141,12 +141,9 @@ public class VariablesInspector implements IVariablesInspector
 		while (theBrowser.hasPrevious())
 		{
 			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) theBrowser.previous();
-			if (aVariable.equals(theEvent.getVariable())) return theEvent;
+			if (aVariable.equals(theEvent.getVariable())) return new ILocalVariableWriteEvent[] {theEvent};
 		}
 		
 		return null;
 	}
-	
-	
-	
 }

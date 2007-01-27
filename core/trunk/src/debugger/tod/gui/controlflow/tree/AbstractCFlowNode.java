@@ -22,6 +22,7 @@ package tod.gui.controlflow.tree;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.gui.IGUIManager;
+import tod.gui.JobProcessor;
 import tod.gui.Hyperlinks.ISeedFactory;
 import tod.gui.controlflow.CFlowView;
 import zz.csg.impl.SVGGraphicContainer;
@@ -33,11 +34,20 @@ import zz.csg.impl.SVGGraphicContainer;
  */
 public class AbstractCFlowNode extends SVGGraphicContainer
 {
-	private CFlowView itsView;
+	private final CFlowView itsView;
+	private final JobProcessor itsJobProcessor;
 
-	public AbstractCFlowNode(CFlowView aView)
+	public AbstractCFlowNode(
+			CFlowView aView,
+			JobProcessor aJobProcessor)
 	{
 		itsView = aView;
+		itsJobProcessor = aJobProcessor;
+	}
+
+	public JobProcessor getJobProcessor()
+	{
+		return itsJobProcessor;
 	}
 
 	public ISeedFactory getSeedFactory()

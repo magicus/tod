@@ -760,9 +760,6 @@ public class EventMural extends SVGGraphicContainer
 			Long theStart = aMural.pStart().get();
 			Long theEnd = aMural.pEnd().get();
 			
-			System.out.println("Range: "+theStart+"-"+theEnd);
-			System.out.println("Width: "+width);
-			
 			paintMural(
 					theGraphics, 
 					new Rectangle(0, 0, width, height), 

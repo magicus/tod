@@ -32,6 +32,7 @@ import tod.core.database.browser.IObjectInspector;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.IInstantiationEvent;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.event.IWriteEvent;
 import tod.core.database.structure.ClassInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
@@ -40,6 +41,7 @@ import tod.core.database.structure.IMemberInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import zz.utils.Utils;
+import zz.utils.cache.MRUBuffer;
 
 /**
  * Implementation of {@link tod.core.database.browser.IObjectInspector} based 
@@ -48,7 +50,7 @@ import zz.utils.Utils;
  */
 public class ObjectInspector implements IObjectInspector
 {
-	private final ILogBrowser itsEventTrace;
+	private final ILogBrowser itsLogBrowser;
 	private ObjectId itsObjectId;
 	private List<IMemberInfo> itsMembers;
 	private List<IFieldInfo> itsFields;
@@ -61,16 +63,21 @@ public class ObjectInspector implements IObjectInspector
 
 	public ObjectInspector(ILogBrowser aEventTrace, ObjectId aObjectId)
 	{
-		itsEventTrace = aEventTrace;
+		itsLogBrowser = aEventTrace;
 		itsObjectId = aObjectId;
 	}
 	
 	public ObjectInspector(ILogBrowser aEventTrace, IClassInfo aClass)
 	{
-		itsEventTrace = aEventTrace;
+		itsLogBrowser = aEventTrace;
 		itsType = aClass;
 	}
 	
+	protected ILogBrowser getLogBrowser()
+	{
+		return itsLogBrowser;
+	}
+
 	public ObjectId getObject()
 	{
 		return itsObjectId;
@@ -80,8 +87,8 @@ public class ObjectInspector implements IObjectInspector
 	{
 		if (itsType == null) 
 		{
-			IEventFilter theFilter = itsEventTrace.createInstantiationFilter(getObject());
-			IEventBrowser theBrowser = itsEventTrace.createBrowser(theFilter);
+			IEventFilter theFilter = itsLogBrowser.createInstantiationFilter(getObject());
+			IEventBrowser theBrowser = itsLogBrowser.createBrowser(theFilter);
 			
 			if (theBrowser.hasNext())
 			{
@@ -159,15 +166,25 @@ public class ObjectInspector implements IObjectInspector
 		return itsTimestamp;
 	}
 	
-	public List<Object> getFieldValue(IFieldInfo aField)
+	public ILogEvent getCurrentEvent()
 	{
-		List<IFieldWriteEvent> theSetters = getFieldSetter(aField);
-		List<Object> theResult = new ArrayList<Object>();
-		for (IFieldWriteEvent theSetter : theSetters) theResult.add(theSetter.getValue());
+		throw new UnsupportedOperationException();
+	}
+
+	public Object[] getEntryValue(IFieldInfo aField)
+	{
+		IFieldWriteEvent[] theSetters = getEntrySetter(aField);
+		Object[] theResult = new Object[theSetters.length];
+		
+		for (int i = 0; i < theSetters.length; i++)
+		{
+			theResult[i] = theSetters[i].getValue();
+		}
+		
 		return theResult;
 	}
-	
-	public List<IFieldWriteEvent> getFieldSetter(IFieldInfo aField)
+
+	public IFieldWriteEvent[] getEntrySetter(IFieldInfo aField)
 	{
 		List<IFieldWriteEvent> theResult = new ArrayList<IFieldWriteEvent>();
 		
@@ -187,7 +204,7 @@ public class ObjectInspector implements IObjectInspector
 			else break;
 		}
 		
-		return theResult;
+		return theResult.toArray(new IFieldWriteEvent[theResult.size()]);
 	}
 
 	/**
@@ -198,7 +215,7 @@ public class ObjectInspector implements IObjectInspector
 		IEventBrowser theBrowser = itsBrowsersMap.get(aMember);
 		if (theBrowser == null)
 		{
-			theBrowser = itsEventTrace.createBrowser(getFilter(aMember));
+			theBrowser = itsLogBrowser.createBrowser(getFilter(aMember));
 			itsBrowsersMap.put (aMember, theBrowser);
 		}
 		
@@ -214,19 +231,19 @@ public class ObjectInspector implements IObjectInspector
 			{
 				IFieldInfo theField = (IFieldInfo) aMember;
 				
-				theFilter = itsEventTrace.createIntersectionFilter(
-						itsEventTrace.createFieldFilter(theField),
-						itsEventTrace.createFieldWriteFilter(),
-						itsEventTrace.createTargetFilter(itsObjectId));
+				theFilter = itsLogBrowser.createIntersectionFilter(
+						itsLogBrowser.createFieldFilter(theField),
+						itsLogBrowser.createFieldWriteFilter(),
+						itsLogBrowser.createTargetFilter(itsObjectId));
 			}
 			else if (aMember instanceof IBehaviorInfo)
 			{
 				IBehaviorInfo theBehavior = (IBehaviorInfo) aMember;
 
-				theFilter = itsEventTrace.createIntersectionFilter(
-						itsEventTrace.createBehaviorCallFilter(theBehavior),
+				theFilter = itsLogBrowser.createIntersectionFilter(
+						itsLogBrowser.createBehaviorCallFilter(theBehavior),
 //						itsLog.createFieldWriteFilter(),
-						itsEventTrace.createTargetFilter(itsObjectId));
+						itsLogBrowser.createTargetFilter(itsObjectId));
 				
 			}
 			else throw new RuntimeException("Not handled: "+aMember);
@@ -287,4 +304,5 @@ public class ObjectInspector implements IObjectInspector
 		ILogEvent theEvent = theBrowser.previous();
 		if (theEvent != null) setTimestamp(theEvent.getTimestamp());
 	}
+	
 }

@@ -18,28 +18,41 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.core.database.event;
+package tod.impl.dbgrid;
 
-import tod.core.database.structure.IFieldInfo;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.IClassInfo;
+import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.ObjectId;
+import tod.impl.common.ObjectInspector;
+import tod.impl.dbgrid.GridLogBrowser.TypeCache;
 
-/**
- * @author gpothier
- */
-public interface IFieldWriteEvent extends ICallerSideEvent, IWriteEvent
+public class GridObjectInspector extends ObjectInspector
 {
-	/**
-	 * The object on which the field is written.
-	 */
-	public Object getTarget();
 
+	public GridObjectInspector(GridLogBrowser aEventTrace, IClassInfo aClass)
+	{
+		super(aEventTrace, aClass);
+	}
+
+	public GridObjectInspector(GridLogBrowser aEventTrace, ObjectId aObjectId)
+	{
+		super(aEventTrace, aObjectId);
+	}
+
+	protected GridLogBrowser getLogBrowser()
+	{
+		return (GridLogBrowser) super.getLogBrowser();
+	}
 	
-	/**
-	 * The written field
-	 */
-	public IFieldInfo getField();
+	@Override
+	public ITypeInfo getType()
+	{
+		return getLogBrowser().getTypeCache().get(getObject()).type;
+	}
 	
-	/**
-	 * Returns the value written to the field.
-	 */
-	public Object getValue();
+	public ITypeInfo getType0()
+	{
+		return super.getType();
+	}
 }

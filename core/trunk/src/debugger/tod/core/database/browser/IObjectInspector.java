@@ -22,8 +22,6 @@ package tod.core.database.browser;
 
 import java.util.List;
 
-import tod.core.database.event.IFieldWriteEvent;
-import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMemberInfo;
 import tod.core.database.structure.ITypeInfo;
@@ -37,7 +35,7 @@ import tod.core.database.structure.ObjectId;
  * It can also provide browsers for individual members. 
  * @author gpothier
  */
-public interface IObjectInspector
+public interface IObjectInspector extends ICompoundInspector<IFieldInfo>
 {
 	/**
 	 * Returns the identifier of the inspected object.
@@ -64,27 +62,10 @@ public interface IObjectInspector
 	 */
 	public void setTimestamp (long aTimestamp);
 	
-	public void setCurrentEvent (ILogEvent aEvent);
-	
 	/**
 	 * Returns the current timestamp of this inspector
 	 */
 	public long getTimestamp ();
-	
-	/**
-	 * Returns the possible values of the given field at the current timestamp
-	 * @param aField The field whose value is to be retrieved.
-	 * @return A list of possible values. If there is more than one value,
-	 * it means that it was impossible to retrive an unambiguous value.
-	 * This can happen for instance if several field write events have
-	 * the same timestamp.
-	 */
-	public List<Object> getFieldValue (IFieldInfo aField);
-	
-	/**
-	 * Returns the candidate events corresponding to {@link #getFieldValue(IFieldInfo)}.
-	 */
-	public List<IFieldWriteEvent> getFieldSetter (IFieldInfo aField);
 	
 	/**
 	 * Returns a filter on field write or behavior call events for the specified member

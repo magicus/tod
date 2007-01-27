@@ -25,7 +25,7 @@ import tod.core.ILocationRegisterer;
 /**
  * @author gpothier
  */
-public interface ILocalVariableWriteEvent extends ICallerSideEvent
+public interface ILocalVariableWriteEvent extends ICallerSideEvent, IWriteEvent
 {
 	/**
 	 * The written variable

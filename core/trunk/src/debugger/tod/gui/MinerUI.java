@@ -45,6 +45,7 @@ public abstract class MinerUI extends JPanel
 implements ILocationSelectionListener, IGUIManager
 {
 	private LogViewBrowserNavigator itsNavigator = new LogViewBrowserNavigator();
+	private JobProcessor itsJobProcessor = new JobProcessor();
 	
 	public MinerUI()
 	{
@@ -54,6 +55,11 @@ implements ILocationSelectionListener, IGUIManager
 	protected ILogBrowser getBrowser()
 	{
 		return getSession().getLogBrowser();
+	}
+
+	public JobProcessor getJobProcessor()
+	{
+		return itsJobProcessor;
 	}
 
 	private void createUI()
@@ -159,11 +165,12 @@ implements ILocationSelectionListener, IGUIManager
 			theSeed = LogViewSeedFactory.getDefaultSeed(this, getSession().getLogBrowser(), theInfo);
 		}
 
-		itsNavigator.open(theSeed);
+		openSeed(theSeed, false);
 	}
 	
 	public void openSeed(LogViewSeed aSeed, boolean aNewTab)
 	{
+		getJobProcessor().cancelAll();
 		itsNavigator.open(aSeed);
 	}
 

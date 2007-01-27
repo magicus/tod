@@ -18,34 +18,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui;
-
-import tod.core.database.event.ILogEvent;
-import tod.gui.seed.LogViewSeed;
+package tod.core.database.event;
 
 /**
- * This interface permits to access the basic functionalities
- * of the UI, such as setting a new view, etc.
- * All interactive UI components should have a reference to
- * a GUI manager
+ * Local variable write or field write
  * @author gpothier
  */
-public interface IGUIManager
+public interface IWriteEvent extends ILogEvent
 {
 	/**
-	 * Sets the currently viewed seed.
-	 * @param aNewTab If false, the viewer for the seed will replace the
-	 * currently displayed viewer. If true, a new tab will be opened.
+	 * Returns the newly assigned value
 	 */
-	public void openSeed (LogViewSeed aSeed, boolean aNewTab);
-	
-	/**
-	 * Shows the location of the specified event in the source code.
-	 */
-	public void gotoEvent (ILogEvent aEvent);
-	
-	/**
-	 * Returns a global job processor.
-	 */
-	public JobProcessor getJobProcessor();
+	public Object getValue();
 }

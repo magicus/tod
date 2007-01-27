@@ -30,6 +30,7 @@ import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.gui.FontConfig;
 import tod.gui.Hyperlinks;
+import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
 import tod.gui.controlflow.CFlowViewUtils;
 import zz.csg.api.GraphicObjectContext;
@@ -53,9 +54,10 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 	
 	public BehaviorCallNode(
 			CFlowView aView,
+			JobProcessor aJobProcessor,
 			IBehaviorCallEvent aEvent)
 	{
-		super (aView);
+		super (aView, aJobProcessor);
 		
 		itsEvent = aEvent;
 		createUI();
@@ -105,7 +107,13 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 		
 		fillHeaderPrefix(theContainer, aFont);
 		Object[] theArguments = getEvent().getArguments();
-		CFlowViewUtils.addArguments(getSeedFactory(), getLogBrowser(), theContainer, theArguments, aFont);
+		CFlowViewUtils.addArguments(
+				getSeedFactory(), 
+				getLogBrowser(), 
+				getJobProcessor(),
+				theContainer,
+				theArguments,
+				aFont);
 
 		theContainer.setLayoutManager(new SequenceLayout());
 		return theContainer;
@@ -133,6 +141,7 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 			theContainer.pChildren().add(Hyperlinks.object(
 					getSeedFactory(), 
 					getLogBrowser(), 
+					getJobProcessor(),
 					theExitEvent.getResult(), 
 					aFont));
 		}
@@ -145,6 +154,7 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 				theContainer.pChildren().add(Hyperlinks.object(
 						getSeedFactory(), 
 						getLogBrowser(), 
+						getJobProcessor(),
 						theExitEvent.getResult(), 
 						aFont));
 			}
@@ -154,7 +164,7 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 			}
 			else 
 			{
-				theContainer.pChildren().add(SVGFlowText.create("internal error", aFont, Color.RED));
+				theContainer.pChildren().add(SVGFlowText.create("null", aFont, Color.BLACK));
 			}
 		}
 		

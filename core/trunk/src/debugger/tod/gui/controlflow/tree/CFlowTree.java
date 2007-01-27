@@ -45,6 +45,7 @@ import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IMethodCallEvent;
 import tod.core.database.event.IParentEvent;
+import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
 import tod.gui.eventlist.EventListCore;
 import zz.csg.ZInsets;
@@ -86,6 +87,12 @@ public class CFlowTree extends SVGGraphicContainer
 		IParentEvent theRoot = itsView.getSeed().pRootEvent().get();
 		itsCore = new EventListCore(theRoot.getChildrenBrowser(), 10);
 		createUI();
+	}
+	
+	public JobProcessor getJobProcessor()
+	{
+//		return itsView.getGUIManager().getJobProcessor();
+		return null;
 	}
 
 	public void forward(int aCount)
@@ -134,8 +141,27 @@ public class CFlowTree extends SVGGraphicContainer
 	
 	private void updateList()
 	{
+		disableUpdate();
+		
 		itsEventList.pChildren().clear();
-		fillEventList(itsEventList);
+		LinkedList<ILogEvent> theEvents = itsCore.getDisplayedEvents();
+		
+		Map<ILogEvent, AbstractEventNode> theOldMap = itsNodesMap;
+		itsNodesMap = new HashMap<ILogEvent, AbstractEventNode>();
+		
+		for (ILogEvent theEvent : theEvents)
+		{
+			AbstractEventNode theNode = theOldMap.get(theEvent);
+			if (theNode == null) theNode = buildEventNode(theEvent);
+			
+			if (theNode != null) 
+			{
+				itsEventList.pChildren().add(theNode);
+				itsNodesMap.put(theEvent, theNode);
+			}
+		}
+		
+		enableUpdate();
 	}
 	
 	@Override
@@ -170,8 +196,9 @@ public class CFlowTree extends SVGGraphicContainer
 		pChildren().add(theContainer);
 		
 		itsEventList = new SVGGraphicContainer();
+		itsNodesMap.clear();
 		itsEventList.setLayoutManager(new EventListLayout());
-		fillEventList(itsEventList);
+		updateList();
 		pChildren().add(itsEventList);
 		
 		SequenceLayout theLayout = new SequenceLayout()
@@ -183,22 +210,6 @@ public class CFlowTree extends SVGGraphicContainer
 			}
 		};
 		setLayoutManager(theLayout);
-	}
-	
-	private void fillEventList(IRectangularGraphicContainer aContainer)
-	{
-		LinkedList<ILogEvent> theEvents = itsCore.getDisplayedEvents();
-		
-		itsNodesMap.clear();
-		for (ILogEvent theEvent : theEvents)
-		{
-			AbstractEventNode theNode = buildEventNode(theEvent);
-			if (theNode != null) 
-			{
-				aContainer.pChildren().add(theNode);
-				itsNodesMap.put(theEvent, theNode);
-			}
-		}
 	}
 	
 	public boolean isVisible(ILogEvent aEvent)
@@ -296,45 +307,45 @@ public class CFlowTree extends SVGGraphicContainer
 		if (aEvent instanceof IFieldWriteEvent)
 		{
 			IFieldWriteEvent theEvent = (IFieldWriteEvent) aEvent;
-			return new FieldWriteNode(itsView, theEvent);
+			return new FieldWriteNode(itsView, getJobProcessor(), theEvent);
 		}
 		else if (aEvent instanceof IArrayWriteEvent)
 		{
 			IArrayWriteEvent theEvent = (IArrayWriteEvent) aEvent;
-			return new ArrayWriteNode(itsView, theEvent);
+			return new ArrayWriteNode(itsView, getJobProcessor(), theEvent);
 		}
 		else if (aEvent instanceof ILocalVariableWriteEvent)
 		{
 			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) aEvent;
-			return new LocalVariableWriteNode(itsView, theEvent);
+			return new LocalVariableWriteNode(itsView, getJobProcessor(), theEvent);
 		}
 		else if (aEvent instanceof IExceptionGeneratedEvent)
 		{
 			IExceptionGeneratedEvent theEvent = (IExceptionGeneratedEvent) aEvent;
 			if (EventUtils.isIgnorableException(theEvent)) return null;
-			else return new ExceptionGeneratedNode(itsView, theEvent);
+			else return new ExceptionGeneratedNode(itsView, getJobProcessor(), theEvent);
 		}
 		else if (aEvent instanceof IMethodCallEvent)
 		{
 			IMethodCallEvent theEvent = (IMethodCallEvent) aEvent;
-			return new MethodCallNode(itsView, theEvent);
+			return new MethodCallNode(itsView, getJobProcessor(), theEvent);
 		}
 		else if (aEvent instanceof IInstantiationEvent)
 		{
 			IInstantiationEvent theEvent = (IInstantiationEvent) aEvent;
-			return new InstantiationNode(itsView, theEvent);
+			return new InstantiationNode(itsView, getJobProcessor(), theEvent);
 		}
 		else if (aEvent instanceof IConstructorChainingEvent)
 		{
 			IConstructorChainingEvent theEvent = (IConstructorChainingEvent) aEvent;
-			return new ConstructorChainingNode(itsView, theEvent);
+			return new ConstructorChainingNode(itsView, getJobProcessor(), theEvent);
 		}
 		else if (aEvent instanceof IBehaviorExitEvent)
 		{
 			return null;
 		}
 
-		return new UnknownEventNode(itsView, aEvent);
+		return new UnknownEventNode(itsView, getJobProcessor(), aEvent);
 	}
 
 
@@ -343,15 +354,15 @@ public class CFlowTree extends SVGGraphicContainer
 	{
 		if (aEvent instanceof IMethodCallEvent)
 		{
-			return new StackNode(itsView, aEvent);
+			return new StackNode(itsView, getJobProcessor(), aEvent);
 		}
 		else if (aEvent instanceof IInstantiationEvent)
 		{
-			return new StackNode(itsView, aEvent);
+			return new StackNode(itsView, getJobProcessor(), aEvent);
 		}
 		else if (aEvent instanceof IConstructorChainingEvent)
 		{
-			return new StackNode(itsView, aEvent);
+			return new StackNode(itsView, getJobProcessor(), aEvent);
 		}
 		else throw new RuntimeException("Not handled: "+aEvent);
 	}

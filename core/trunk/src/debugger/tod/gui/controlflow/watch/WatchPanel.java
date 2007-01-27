@@ -24,7 +24,6 @@ import static tod.gui.FontConfig.STD_FONT;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.geom.AffineTransform;
 import java.util.List;
@@ -33,17 +32,16 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.gui.BrowserNavigator;
 import tod.gui.Hyperlinks;
+import tod.gui.IGUIManager;
+import tod.gui.JobProcessor;
 import tod.gui.Hyperlinks.ISeedFactory;
 import tod.gui.controlflow.CFlowView;
-import tod.gui.controlflow.watch.IWatchProvider.WatchEntry;
 import tod.gui.seed.LogViewSeedFactory;
 import tod.gui.seed.Seed;
 import zz.csg.api.IRectangularGraphicObject;
@@ -64,10 +62,12 @@ public class WatchPanel extends JPanel
 	private MySeedFactory itsSeedFactory = new MySeedFactory();
 	private WatchBrowserNavigator itsBrowserNavigator;
 	private GraphicPanel itsGraphicPanel;
+	private JobProcessor itsJobProcessor;
 	
 	public WatchPanel(CFlowView aView)
 	{
 		itsView = aView;
+		itsJobProcessor = new JobProcessor(getGUIManager().getJobProcessor());
 		itsBrowserNavigator = new WatchBrowserNavigator();
 		createUI();
 	}
@@ -98,6 +98,36 @@ public class WatchPanel extends JPanel
 		
 		showStackFrame();
 	}
+	
+	@Override
+	public void addNotify()
+	{
+		super.addNotify();
+		if (itsJobProcessor == null) 
+			itsJobProcessor = new JobProcessor(getGUIManager().getJobProcessor());
+	}
+	
+	@Override
+	public void removeNotify()
+	{
+		super.removeNotify();
+		itsJobProcessor.detach();
+		itsJobProcessor = null;
+	}
+	
+	public IGUIManager getGUIManager()
+	{
+		return itsView.getGUIManager();
+	}
+	
+	/**
+	 * Returns a job processor that only contains jobs for this watch
+	 * panel.
+	 */
+	public JobProcessor getJobProcessor()
+	{
+		return itsJobProcessor;
+	}
 
 	public void showStackFrame()
 	{
@@ -121,80 +151,68 @@ public class WatchPanel extends JPanel
 		return itsSeedFactory;
 	}
 	
-	void showWatch(IWatchProvider aProvider)
+	/**
+	 * Shows the watch data obtained from the specified provider.
+	 */
+	public <E> void showWatch(final IWatchProvider<E> aProvider)
 	{
-		SVGGraphicContainer theContainer = new SVGGraphicContainer();
+		getJobProcessor().cancelAll();
+				
+		final SVGGraphicContainer theContainer = new SVGGraphicContainer();
 		
-		theContainer.pChildren().add(aProvider.buildTitle());
-		WatchEntry theCurrentObjectEntry = aProvider.getCurrentObject();
-		if (theCurrentObjectEntry != null)
+		theContainer.pChildren().add(aProvider.buildTitle(getJobProcessor()));
+		
+		ObjectId theCurrentObject = aProvider.getCurrentObject();
+		if (theCurrentObject != null)
 		{
-			theContainer.pChildren().add(buildEntryLine(
-					theCurrentObjectEntry, 
-					null,
-					false));
+			theContainer.pChildren().add(buildCurrentObjectLine(theCurrentObject));
 		}
-		
-		ObjectId theCurrentObject = theCurrentObjectEntry != null ?
-				(ObjectId) theCurrentObjectEntry.values[0] 
-				: null;
-				                             
-		for(WatchEntry theEntry : aProvider.getEntries())
-		{
-			theContainer.pChildren().add(buildEntryLine(
-					theEntry, 
-					theCurrentObject,
-					true));			
-		}
-		
+				
 		theContainer.setLayoutManager(new StackLayout());
+		
+		getJobProcessor().submit(new JobProcessor.Job()
+		{
+			@Override
+			public Object run()
+			{
+				List<E> theEntries = aProvider.getEntries();
+				theContainer.disableUpdate();
+				for (E theEntry : theEntries)
+				{
+					if ("this".equals(aProvider.getEntryName(theEntry))) continue;
+					
+					theContainer.pChildren().add(new WatchEntryNode<E>(
+							itsSeedFactory,
+							itsView.getLogBrowser(),
+							getJobProcessor(),
+							aProvider,
+							theEntry));
+				}
+				theContainer.enableUpdate();
+				return null;
+			}
+		});
 		
 		itsGraphicPanel.setRootNode(theContainer);
 	}
 	
-	private IRectangularGraphicObject buildEntryLine(
-			WatchEntry aEntry, 
-			ObjectId aCurrentObject,
-			boolean aShowWhyLink)
+	private IRectangularGraphicObject buildCurrentObjectLine(ObjectId aCurrentObject)
 	{
 		SVGGraphicContainer theContainer = new SVGGraphicContainer();
 		
-		String theFieldName = aEntry.name;
-//		String theTypeName = aField.getClass().getName();
-		String theText = /*theTypeName + " " + */theFieldName + " = ";
+		theContainer.pChildren().add(SVGFlowText.create("this = ", STD_FONT, Color.BLACK));
 		
-		theContainer.pChildren().add(SVGFlowText.create(theText, STD_FONT, Color.BLACK));
-		
-		boolean theFirst = true;
-		for (int i=0;i<aEntry.values.length;i++)
-		{
-			Object theValue = aEntry.values[i];
-			ILogEvent theSetter = aEntry.setters[i];
-
-			if (theFirst) theFirst = false;
-			else theContainer.pChildren().add(SVGFlowText.create(" / ", STD_FONT, Color.BLACK));
-			theContainer.pChildren().add(Hyperlinks.object(
-					itsSeedFactory,
-					itsView.getLogBrowser(), 
-					aCurrentObject,
-					theValue,
-					STD_FONT));
-			
-			if (aShowWhyLink)
-			{
-				theContainer.pChildren().add(SVGFlowText.create(" (", STD_FONT, Color.BLACK));
-				theContainer.pChildren().add(Hyperlinks.event(
-						itsSeedFactory,
-						"why?", 
-						theSetter, 
-						STD_FONT));
-				
-				theContainer.pChildren().add(SVGFlowText.create(")", STD_FONT, Color.BLACK));
-			}
-		}
+		theContainer.pChildren().add(Hyperlinks.object(
+				itsSeedFactory,
+				itsView.getLogBrowser(), 
+				getJobProcessor(),
+				null,
+				aCurrentObject,
+				STD_FONT));
 		
 		theContainer.setLayoutManager(new SequenceLayout());
 		return theContainer;		
+		
 	}
 	
 	private class MySeedFactory implements ISeedFactory

@@ -28,6 +28,7 @@ import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.gui.Hyperlinks;
+import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
 import zz.csg.api.IRectangularGraphicContainer;
 import zz.csg.impl.figures.SVGFlowText;
@@ -35,9 +36,12 @@ import zz.utils.ui.text.XFont;
 
 public class MethodCallNode extends BehaviorCallNode
 {
-	public MethodCallNode(CFlowView aView, IBehaviorCallEvent aEvent)
+	public MethodCallNode(
+			CFlowView aView, 
+			JobProcessor aJobProcessor,
+			IBehaviorCallEvent aEvent)
 	{
-		super(aView, aEvent);
+		super(aView, aJobProcessor, aEvent);
 	}
 
 	@Override

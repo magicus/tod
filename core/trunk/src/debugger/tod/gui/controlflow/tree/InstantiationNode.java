@@ -27,6 +27,7 @@ import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.gui.Hyperlinks;
+import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
 import zz.csg.api.IRectangularGraphicContainer;
 import zz.csg.impl.figures.SVGFlowText;
@@ -35,9 +36,12 @@ import zz.utils.ui.text.XFont;
 public class InstantiationNode extends BehaviorCallNode
 {
 
-	public InstantiationNode(CFlowView aView, IBehaviorCallEvent aEvent)
+	public InstantiationNode(
+			CFlowView aView, 
+			JobProcessor aJobProcessor,
+			IBehaviorCallEvent aEvent)
 	{
-		super(aView, aEvent);
+		super(aView, aJobProcessor, aEvent);
 	}
 
 	protected void fillHeaderPrefix(

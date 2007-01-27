@@ -163,18 +163,6 @@ public class CFlowView extends LogView
 		itsTreePanel.setTransform(new AffineTransform());
 		itsTreePanel.setRootNode(itsCFlowTree);
 		
-		itsTreePanel.addComponentListener(new ComponentAdapter()
-		{
-			@Override
-			public void componentResized(ComponentEvent aE)
-			{
-				itsCFlowTree.setSize(
-						itsCFlowTree.pBounds().get().getWidth(), 
-						itsTreePanel.getHeight());
-				itsCFlowTree.update();
-			}
-		});
-		
 		itsScroller = new MuralScroller();
 		itsScroller.eUnitScroll().addListener(new IEventListener<UnitScroll>()
 				{
@@ -203,6 +191,20 @@ public class CFlowView extends LogView
 		
 		JScrollPane theTreeScrollPane = new MyScrollPane(itsTreePanel);
 		theTreeScrollPane.setWheelScrollingEnabled(false);
+		
+		theTreeScrollPane.addComponentListener(new ComponentAdapter()
+		{
+			@Override
+			public void componentResized(ComponentEvent aE)
+			{
+				itsCFlowTree.setSize(
+						itsCFlowTree.pBounds().get().getWidth(), 
+						itsTreePanel.getHeight());
+				itsCFlowTree.update();
+			}
+		});
+		
+
 		
 		JPanel theCFlowTreePanel = new JPanel(new BorderLayout());
 		theCFlowTreePanel.add(theTreeScrollPane, BorderLayout.CENTER);

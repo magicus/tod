@@ -31,6 +31,7 @@ import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.gui.FontConfig;
+import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
 import tod.gui.seed.CFlowSeed;
 import zz.csg.api.GraphicObjectContext;
@@ -55,9 +56,10 @@ public class StackNode extends AbstractCFlowNode
 	
 	public StackNode(
 			CFlowView aView,
+			JobProcessor aJobProcessor,
 			IBehaviorCallEvent aEvent)
 	{
-		super(aView);
+		super(aView, aJobProcessor);
 		itsEvent = aEvent;
 		createUI();
 	}
@@ -83,25 +85,25 @@ public class StackNode extends AbstractCFlowNode
 		theBuilder.append(theBehavior.getName());
 		
 		// Arguments
-		theBuilder.append("(");
-		
-		if (theArguments != null)
-		{
-			boolean theFirst = true;
-			for (Object theArgument : theArguments)
-			{
-				if (theFirst) theFirst = false;
-				else theBuilder.append(", ");
-				
-				theBuilder.append(getView().getFormatter().formatObject(theArgument));
-			}
-		}
-		else
-		{
-			theBuilder.append("...");
-		}
-		
-		theBuilder.append(")");
+//		theBuilder.append("(");
+//		
+//		if (theArguments != null)
+//		{
+//			boolean theFirst = true;
+//			for (Object theArgument : theArguments)
+//			{
+//				if (theFirst) theFirst = false;
+//				else theBuilder.append(", ");
+//				
+//				theBuilder.append(getView().getFormatter().formatObject(theArgument));
+//			}
+//		}
+//		else
+//		{
+//			theBuilder.append("...");
+//		}
+//		
+//		theBuilder.append(")");
 
 		pChildren().add(SVGFlowText.create(
 				Util.getPackageName(theType.getName()), 
