@@ -23,7 +23,7 @@
             <pathelement path="${lib.dir}/asm-commons-2.1.jar"/>
         	<pathelement path="${zz.eclipse.utils.dir}/build/zz.eclipse.utils/plugin.jar"/>
         	<fileset dir="${eclipse.home}/plugins">
-        		<include name="*.jar"/>
+        		<include name="**/*.jar"/>
         	</fileset>
         </path>
 
