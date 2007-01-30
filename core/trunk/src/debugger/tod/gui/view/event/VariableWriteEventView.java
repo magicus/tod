@@ -18,25 +18,41 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.core.database.structure;
+package tod.gui.view.event;
 
-public interface IClassInfo extends ITypeInfo
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.ILocalVariableWriteEvent;
+import tod.gui.IGUIManager;
+
+/**
+ * @author gpothier
+ */
+public class VariableWriteEventView extends EventView
 {
-	public IClassInfo getSupertype();
+	private ILocalVariableWriteEvent itsEvent;
 	
-	public IClassInfo[] getInterfaces();
-
-	public IFieldInfo getField(String aName);
-
-	public IBehaviorInfo getBehavior(String aName, ITypeInfo[] aArgumentTypes);
-
-	public Iterable<IFieldInfo> getFields();
-
-	public Iterable<IBehaviorInfo> getBehaviors();
+	public VariableWriteEventView(
+			IGUIManager aManager, 
+			ILogBrowser aLog, 
+			ILocalVariableWriteEvent aEvent)
+	{
+		super(aManager, aLog);
+		itsEvent = aEvent;
+	}
 	
-	/**
-	 * Creates a clone of this class info object that represents
-	 * uncertain information.
-	 */
-	public ClassInfo createUncertainClone();
+	protected ILocalVariableWriteEvent getEvent()
+	{
+		return itsEvent;
+	}
+	
+	public void init()
+	{
+		super.init();
+		
+		Object theValue = itsEvent.getValue();
+		
+		add (createTitledPanel("Value: ", createInspectorLink(theValue)));
+	}
+
+
 }

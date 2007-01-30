@@ -61,6 +61,11 @@ public interface RIGridMaster extends Remote
 	public void clear() throws RemoteException;
 	
 	/**
+	 * Ensures that all buffered data is pushed to the nodes.
+	 */
+	public void flush() throws RemoteException;
+	
+	/**
 	 * Nodes can call this method to determine the current needs
 	 * of the dispatcher: database nodes, leaf dispatcher nodes
 	 * or internal dispatcher nodes.

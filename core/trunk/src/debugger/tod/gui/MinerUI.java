@@ -136,12 +136,12 @@ implements ILocationSelectionListener, IGUIManager
 		theToolbar.add(theShowAllEventsButton);
 		
 		// Adds a button that permits to disconnect the current session
-		JButton theKillSessionButton = new JButton("Kill session");
+		JButton theKillSessionButton = new JButton("flush");
 		theKillSessionButton.addActionListener(new ActionListener()
 				{
 					public void actionPerformed(ActionEvent aE)
 					{
-						getSession().disconnect();
+						getSession().flush();
 					}
 				});
 		

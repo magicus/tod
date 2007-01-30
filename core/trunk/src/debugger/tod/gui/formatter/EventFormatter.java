@@ -63,7 +63,7 @@ public class EventFormatter extends AbstractFormatter<ILogEvent>
 					"%s.%s (%s)",
 					Util.getPrettyName(theBehavior.getType().getName()),
 	                theBehavior.getName(),
-	                Arrays.asList(theEvent.getArguments()));
+	                formatArgs(theEvent.getArguments()));
 		}
 		else if (aEvent instanceof IBehaviorExitEvent)
 		{

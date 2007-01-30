@@ -23,6 +23,7 @@ package tod.gui;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 
 /**
  * Permits to process jobs asynchronously. Clients submit jobs
@@ -38,6 +39,8 @@ public class JobProcessor extends Thread
 	private JobProcessor itsParent;
 	private LinkedList<Job> itsJobs = new LinkedList<Job>();
 	private List<JobProcessor> itsChildren = new ArrayList<JobProcessor>();
+	
+	private Semaphore itsSemaphore = new Semaphore(1);
 	
 	/**
 	 * Creates a root job processor.
@@ -78,12 +81,48 @@ public class JobProcessor extends Thread
 	/**
 	 * Submits a new job to this processor, with no listener.
 	 */
-	public void submit(Job aJob)
+	public <R> void submit(Job<R> aJob)
 	{
 		submit(aJob, null);
 	}
+
+	/**
+	 * Causes the calling thread to wait until the job processor
+	 * finishes executing the current job, and to prevent the job
+	 * processor to process other jobs until a call to {@link #release()}. 
+	 */
+	public void acquire()
+	{
+		getRoot().acquire0();
+	}
 	
-	public JobProcessor getRoot()
+	private void acquire0()
+	{
+		try
+		{
+			itsSemaphore.acquire();
+		}
+		catch (InterruptedException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * See {@link #acquire()}.
+	 *
+	 */
+	public void release()
+	{
+		getRoot().release0();
+	}
+	
+	private void release0()
+	{
+		itsSemaphore.release();
+	}
+	
+	private JobProcessor getRoot()
 	{
 		JobProcessor theRoot = this;
 		while(theRoot.itsParent != null) theRoot = theRoot.itsParent;
@@ -158,7 +197,7 @@ public class JobProcessor extends Thread
 	}
 	
 	@Override
-	public synchronized void run()
+	public void run()
 	{
 		try
 		{
@@ -166,7 +205,13 @@ public class JobProcessor extends Thread
 			{
 				Job theJob = getNextJob();
 				if (theJob != null) runJob(theJob);
-				else wait();
+				else 
+				{
+					synchronized (getRoot())
+					{
+						wait();
+					}
+				}
 			}
 		}
 		catch (InterruptedException e)
@@ -180,12 +225,17 @@ public class JobProcessor extends Thread
 //		System.out.println("[JobUpdater] Processing job: "+aJob);
 		try
 		{
+			itsSemaphore.acquire();
 			aJob.doRun();
 		}
 		catch (Exception e)
 		{
 			System.err.println("[JobUpdater] Exception in Job: "+aJob);
 			e.printStackTrace();
+		}
+		finally
+		{
+			itsSemaphore.release();
 		}
 //		System.out.println("[JobUpdater] Job queue size: "+itsJobs.size());		
 	}
@@ -195,6 +245,7 @@ public class JobProcessor extends Thread
 		private JobProcessor itsProcessor;
 		private IJobListener<R> itsListener;
 		private boolean itsCancelled = false;
+		private boolean itsCompleted = false;
 		
 		private void setup(JobProcessor aProcessor, IJobListener<R> aListener)
 		{
@@ -241,6 +292,7 @@ public class JobProcessor extends Thread
 		{
 			itsProcessor.boost(this);
 		}
+		
 	}
 	
 	public interface IJobListener<R>

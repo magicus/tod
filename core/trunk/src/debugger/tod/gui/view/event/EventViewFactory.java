@@ -27,6 +27,7 @@ import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.IExceptionGeneratedEvent;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.IInstantiationEvent;
+import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.gui.IGUIManager;
 
@@ -66,6 +67,11 @@ public class EventViewFactory
 		{
 			IFieldWriteEvent theEvent = (IFieldWriteEvent) aEvent;
 			theView = new FieldWriteEventView (aGUIManager, aLog, theEvent);
+		}
+		else if (aEvent instanceof ILocalVariableWriteEvent)
+		{
+			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) aEvent;
+			theView = new VariableWriteEventView(aGUIManager, aLog, theEvent);
 		}
 		else if (aEvent instanceof IArrayWriteEvent)
 		{

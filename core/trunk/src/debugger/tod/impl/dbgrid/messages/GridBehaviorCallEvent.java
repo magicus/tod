@@ -259,7 +259,7 @@ public class GridBehaviorCallEvent extends GridEvent
 	{
 		return (aRole == RoleIndexSet.ROLE_BEHAVIOR_CALLED && aBehaviorId == getCalledBehaviorId())
 			|| (aRole == RoleIndexSet.ROLE_BEHAVIOR_EXECUTED && aBehaviorId == getExecutedBehaviorId())
-			|| (aRole == RoleIndexSet.ROLE_BEHAVIOR_ANY 
+			|| ((aRole == RoleIndexSet.ROLE_BEHAVIOR_ANY || aRole == RoleIndexSet.ROLE_BEHAVIOR_ANY_ENTER) 
 					&& (aBehaviorId == getExecutedBehaviorId() || aBehaviorId == getCalledBehaviorId()));
 	
 	}
@@ -268,8 +268,28 @@ public class GridBehaviorCallEvent extends GridEvent
 	public boolean matchObjectCondition(int aObjectId, byte aRole)
 	{
 		assert aObjectId != 0;
-		return (aRole == RoleIndexSet.ROLE_OBJECT_TARGET && aObjectId == getObjectId(getTarget(), false))
-			|| (aRole >= 0 && aRole < getArguments().length && aObjectId == getObjectId(getArguments()[aRole], false));
+		
+		if ((aRole == RoleIndexSet.ROLE_OBJECT_TARGET
+					&& aObjectId == getObjectId(getTarget(), false))
+			|| (aRole >= 0 && aRole < getArguments().length && aObjectId == getObjectId(getArguments()[aRole], false)))
+		{
+			return true;
+		}
+		
+		if (aRole == RoleIndexSet.ROLE_OBJECT_ANY)
+		{
+			if (aObjectId == getObjectId(getTarget(), false)) return true;
+			else
+			{
+				for (int i=0;i<getArguments().length;i++) 
+				{
+					if (aObjectId == getObjectId(getArguments()[i], false)) return true;
+				}
+				return false;
+			}
+		}
+		
+		return false;
 	}
 	
 	@Override

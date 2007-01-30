@@ -45,6 +45,11 @@ public abstract class DelegatedSession implements ISession
 		itsDelegate.disconnect();
 	}
 
+	public void flush()
+	{
+		itsDelegate.flush();
+	}
+
 	public String getCachedClassesPath()
 	{
 		return itsDelegate.getCachedClassesPath();

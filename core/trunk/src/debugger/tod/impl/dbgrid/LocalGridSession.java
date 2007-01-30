@@ -68,6 +68,11 @@ public class LocalGridSession extends AbstractSession
 		itsMaster.disconnect();
 	}
 
+	public void flush()
+	{
+		itsMaster.flush();
+	}
+
 	public String getCachedClassesPath()
 	{
 		return null;

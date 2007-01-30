@@ -175,4 +175,12 @@ public class ClassInfo extends TypeInfo implements IClassInfo
 				getSupertype() != null ? getSupertype().getId() : 0, 
 				theInterfaceIds);
 	}
+	
+	
+	public ClassInfo createUncertainClone()
+	{
+		ClassInfo theClone = (ClassInfo) super.clone();
+		theClone.changeName(getName()+ "?");
+		return theClone;
+	}
 }

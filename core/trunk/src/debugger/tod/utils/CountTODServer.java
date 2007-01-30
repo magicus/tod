@@ -100,6 +100,10 @@ public class CountTODServer extends AbstractSession
 		itsServer.disconnect();
 	}
 	
+	public void flush()
+	{
+	}
+
 	public String getCachedClassesPath()
 	{
 		return null;

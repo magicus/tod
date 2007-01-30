@@ -71,6 +71,11 @@ public class LocalSession extends AbstractSession
 	{
 		itsServer.disconnect();
 	}
+	
+	public void flush()
+	{
+		// Nothing to do here.
+	}
 
 	public String getCachedClassesPath()
 	{

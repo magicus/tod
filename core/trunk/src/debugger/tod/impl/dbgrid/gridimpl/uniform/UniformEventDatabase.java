@@ -72,8 +72,6 @@ implements ReorderingBufferListener
 	
 	private EventReorderingBuffer itsReorderingBuffer = new EventReorderingBuffer(this);
 	
-	private boolean itsFlushed = false;
-	
 	/**
 	 * Creates a new database using the specified file.
 	 */
@@ -133,8 +131,6 @@ implements ReorderingBufferListener
 	@Override
 	public void push(GridEvent aEvent)
 	{
-		assert ! itsFlushed;
-		
 		if (DebugFlags.SKIP_EVENTS) return;
 		
 //		System.out.println("AddEvent ts: "+aEvent.getTimestamp());
@@ -179,7 +175,6 @@ implements ReorderingBufferListener
 			processEvent(itsReorderingBuffer.pop());
 			theCount++;
 		}
-		itsFlushed = true;
 		System.out.println("[UniformEventDatabase] Flushed "+theCount+" events.");
 		return theCount;
 	}

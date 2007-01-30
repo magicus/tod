@@ -31,6 +31,7 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
@@ -94,7 +95,7 @@ public class WatchPanel extends JPanel
 		
 		itsGraphicPanel = new GraphicPanel();
 		itsGraphicPanel.setTransform(new AffineTransform());
-		add(itsGraphicPanel, BorderLayout.CENTER);
+		add(new JScrollPane(itsGraphicPanel), BorderLayout.CENTER);
 		
 		showStackFrame();
 	}
@@ -176,6 +177,8 @@ public class WatchPanel extends JPanel
 			public Object run()
 			{
 				List<E> theEntries = aProvider.getEntries();
+				if (theEntries == null) return null;
+				
 				theContainer.disableUpdate();
 				for (E theEntry : theEntries)
 				{

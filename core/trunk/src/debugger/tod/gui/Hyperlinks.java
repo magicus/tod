@@ -132,15 +132,15 @@ public class Hyperlinks
 			
 			String theText;
 			if (aCurrentObject != null && aCurrentObject.equals(aObject)) theText = "this";
-			else if (aJobProcessor != null) 
-			{
-				return new ObjectHyperlink(
-						aSeedFactory.objectSeed(theId),
-						aLogBrowser,
-						aJobProcessor,
-						theId,
-						aFont);
-			}
+//			else if (aJobProcessor != null) 
+//			{
+//				return new ObjectHyperlink(
+//						aSeedFactory.objectSeed(theId),
+//						aLogBrowser,
+//						aJobProcessor,
+//						theId,
+//						aFont);
+//			}
 			else 
 			{
 				ITypeInfo theType = aLogBrowser.createObjectInspector(theId).getType();

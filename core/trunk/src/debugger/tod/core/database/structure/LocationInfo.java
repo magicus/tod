@@ -23,12 +23,14 @@ package tod.core.database.structure;
 import java.io.Serializable;
 
 import tod.core.database.browser.ILocationsRepository;
+import zz.utils.PublicCloneable;
 
 /**
  * Base class for aggregation of location information.
  * @author gpothier
  */
-public abstract class LocationInfo implements ILocationInfo, Serializable
+public abstract class LocationInfo extends PublicCloneable 
+implements ILocationInfo, Serializable
 {
 	private final int itsId;
 	private String itsName;
@@ -60,6 +62,11 @@ public abstract class LocationInfo implements ILocationInfo, Serializable
 	public void setName(String aName)
 	{
 		assert itsName == null || itsName.equals(aName);
+		itsName = aName;
+	}
+	
+	protected void changeName(String aName)
+	{
 		itsName = aName;
 	}
 	

@@ -91,26 +91,32 @@ public class CFlowTree extends SVGGraphicContainer
 	
 	public JobProcessor getJobProcessor()
 	{
-//		return itsView.getGUIManager().getJobProcessor();
-		return null;
+		return itsView.getGUIManager().getJobProcessor();
+//		return null;
 	}
 
 	public void forward(int aCount)
 	{
+		getJobProcessor().acquire();
 		itsCore.forward(aCount);
 		updateList();
+		getJobProcessor().release();
 	}
 	
 	public void backward(int aCount)
 	{
+		getJobProcessor().acquire();
 		itsCore.backward(aCount);
 		updateList();
+		getJobProcessor().release();
 	}
 	
 	public void setTimestamp(long aTimestamp)
 	{
+		getJobProcessor().acquire();
 		itsCore.setTimestamp(aTimestamp);
 		updateList();
+		getJobProcessor().release();
 	}
 
 	@Override
@@ -304,65 +310,71 @@ public class CFlowTree extends SVGGraphicContainer
 	
 	private AbstractEventNode buildEventNode(ILogEvent aEvent)
 	{
+//		JobProcessor theJobProcessor = getJobProcessor();
+		JobProcessor theJobProcessor = null;
+		
 		if (aEvent instanceof IFieldWriteEvent)
 		{
 			IFieldWriteEvent theEvent = (IFieldWriteEvent) aEvent;
-			return new FieldWriteNode(itsView, getJobProcessor(), theEvent);
+			return new FieldWriteNode(itsView, theJobProcessor, theEvent);
 		}
 		else if (aEvent instanceof IArrayWriteEvent)
 		{
 			IArrayWriteEvent theEvent = (IArrayWriteEvent) aEvent;
-			return new ArrayWriteNode(itsView, getJobProcessor(), theEvent);
+			return new ArrayWriteNode(itsView, theJobProcessor, theEvent);
 		}
 		else if (aEvent instanceof ILocalVariableWriteEvent)
 		{
 			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) aEvent;
-			return new LocalVariableWriteNode(itsView, getJobProcessor(), theEvent);
+			return new LocalVariableWriteNode(itsView, theJobProcessor, theEvent);
 		}
 		else if (aEvent instanceof IExceptionGeneratedEvent)
 		{
 			IExceptionGeneratedEvent theEvent = (IExceptionGeneratedEvent) aEvent;
 			if (EventUtils.isIgnorableException(theEvent)) return null;
-			else return new ExceptionGeneratedNode(itsView, getJobProcessor(), theEvent);
+			else return new ExceptionGeneratedNode(itsView, theJobProcessor, theEvent);
 		}
 		else if (aEvent instanceof IMethodCallEvent)
 		{
 			IMethodCallEvent theEvent = (IMethodCallEvent) aEvent;
-			return new MethodCallNode(itsView, getJobProcessor(), theEvent);
+			return new MethodCallNode(itsView, theJobProcessor, theEvent);
 		}
 		else if (aEvent instanceof IInstantiationEvent)
 		{
 			IInstantiationEvent theEvent = (IInstantiationEvent) aEvent;
-			return new InstantiationNode(itsView, getJobProcessor(), theEvent);
+			return new InstantiationNode(itsView, theJobProcessor, theEvent);
 		}
 		else if (aEvent instanceof IConstructorChainingEvent)
 		{
 			IConstructorChainingEvent theEvent = (IConstructorChainingEvent) aEvent;
-			return new ConstructorChainingNode(itsView, getJobProcessor(), theEvent);
+			return new ConstructorChainingNode(itsView, theJobProcessor, theEvent);
 		}
 		else if (aEvent instanceof IBehaviorExitEvent)
 		{
 			return null;
 		}
 
-		return new UnknownEventNode(itsView, getJobProcessor(), aEvent);
+		return new UnknownEventNode(itsView, theJobProcessor, aEvent);
 	}
 
 
 	
 	private StackNode buildStackNode(IBehaviorCallEvent aEvent)
 	{
+//		JobProcessor theJobProcessor = getJobProcessor();
+		JobProcessor theJobProcessor = null;
+		
 		if (aEvent instanceof IMethodCallEvent)
 		{
-			return new StackNode(itsView, getJobProcessor(), aEvent);
+			return new StackNode(itsView, theJobProcessor, aEvent);
 		}
 		else if (aEvent instanceof IInstantiationEvent)
 		{
-			return new StackNode(itsView, getJobProcessor(), aEvent);
+			return new StackNode(itsView, theJobProcessor, aEvent);
 		}
 		else if (aEvent instanceof IConstructorChainingEvent)
 		{
-			return new StackNode(itsView, getJobProcessor(), aEvent);
+			return new StackNode(itsView, theJobProcessor, aEvent);
 		}
 		else throw new RuntimeException("Not handled: "+aEvent);
 	}

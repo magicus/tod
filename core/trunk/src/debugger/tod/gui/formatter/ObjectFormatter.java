@@ -49,7 +49,7 @@ public class ObjectFormatter extends AbstractFormatter
 	 */
 	protected String getText(Object aObject, boolean aHtml)
 	{
-		// This is only to reduce the amount of modifications to the original
+		// This is only to reduce the amount of modifications to the original method
 		Object theCurrentObject = null; 
 		
 		// Check if this is a registered object.

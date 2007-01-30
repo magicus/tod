@@ -171,8 +171,10 @@ public class GridArrayWriteEvent extends GridEvent
 	public boolean matchObjectCondition(int aObjectId, byte aRole)
 	{
 		assert aObjectId != 0;
-		return (aRole == RoleIndexSet.ROLE_OBJECT_VALUE && aObjectId == getObjectId(getValue(), false))
-			|| (aRole == RoleIndexSet.ROLE_OBJECT_TARGET && aObjectId == getObjectId(getTarget(), false));
+		return ((aRole == RoleIndexSet.ROLE_OBJECT_VALUE  || aRole == RoleIndexSet.ROLE_OBJECT_ANY)
+					&& aObjectId == getObjectId(getValue(), false))
+			|| ((aRole == RoleIndexSet.ROLE_OBJECT_TARGET  || aRole == RoleIndexSet.ROLE_OBJECT_ANY)
+					&& aObjectId == getObjectId(getTarget(), false));
 	}
 
 	@Override

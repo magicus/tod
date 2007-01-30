@@ -174,7 +174,8 @@ public class GridBehaviorExitEvent extends GridEvent
 	public boolean matchObjectCondition(int aObjectId, byte aRole)
 	{
 		assert aObjectId != 0;
-		return (aRole == RoleIndexSet.ROLE_OBJECT_RESULT && aObjectId == getObjectId(getResult(), false));
+		return ((aRole == RoleIndexSet.ROLE_OBJECT_RESULT || aRole == RoleIndexSet.ROLE_OBJECT_ANY)
+					&& aObjectId == getObjectId(getResult(), false));
 	}
 	
 	@Override

@@ -48,6 +48,11 @@ public interface ISession
 	public void disconnect();
 	
 	/**
+	 * Flush currently buffered events so that they are made accessible. 
+	 */
+	public void flush();
+	
+	/**
 	 * Creates a console that can be used to control this session.
 	 */
 	public JComponent createConsole();

@@ -32,7 +32,6 @@ import tod.core.database.browser.IObjectInspector;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.IInstantiationEvent;
 import tod.core.database.event.ILogEvent;
-import tod.core.database.event.IWriteEvent;
 import tod.core.database.structure.ClassInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
@@ -41,7 +40,6 @@ import tod.core.database.structure.IMemberInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import zz.utils.Utils;
-import zz.utils.cache.MRUBuffer;
 
 /**
  * Implementation of {@link tod.core.database.browser.IObjectInspector} based 
@@ -95,7 +93,22 @@ public class ObjectInspector implements IObjectInspector
 				IInstantiationEvent theEvent = (IInstantiationEvent) theBrowser.next();
 				itsType = theEvent.getType();
 			}
-			else itsType = new ClassInfo(-1, "Unknown"); 
+			else
+			{
+				// Try to guess type
+				theFilter = itsLogBrowser.createIntersectionFilter(
+						itsLogBrowser.createTargetFilter(itsObjectId),
+						itsLogBrowser.createFieldWriteFilter());
+				
+				theBrowser = itsLogBrowser.createBrowser(theFilter);
+				if (theBrowser.hasNext())
+				{
+					IFieldWriteEvent theEvent = (IFieldWriteEvent) theBrowser.next();
+					IClassInfo theClass = theEvent.getField().getType();
+					return theClass.createUncertainClone();
+				}
+				else itsType = new ClassInfo(-1, "Unknown"); 
+			}
 		}
 		return itsType;
 	}
