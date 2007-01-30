@@ -90,9 +90,9 @@ public class TraceNavigatorView extends ViewPart implements ISelectionListener
 	{
 	}
 
-	public void showEventsForLine(IMethod aMethod, int aLine)
+	public EventViewer getMinerUI()
 	{
-		itsEventViewer.showEventsForLine(aMethod, aLine);
+		return itsEventViewer;
 	}
 	
 	/**

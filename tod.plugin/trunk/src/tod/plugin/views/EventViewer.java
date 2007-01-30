@@ -78,32 +78,4 @@ public class EventViewer extends MinerUI
 	{
 	    itsTraceNavigatorView.gotoEvent(getSession(), aEvent);
 	}
-	
-	public void showEventsForLine(IMethod aMethod, int aLine)
-	{
-		try
-		{
-			IBehaviorInfo theBehavior = (IBehaviorInfo) TODPluginUtils.getLocationInfo(getSession(), aMethod);
-			int[] theLocations = theBehavior.getBytecodeLocations(aLine);
-			if (theLocations != null && theLocations.length>0)
-			{
-				IEventFilter[] theLocationFilters = new IEventFilter[theLocations.length];
-				for(int i=0;i<theLocationFilters.length;i++)
-				{
-					theLocationFilters[i] = 
-						getBrowser().createLocationFilter(theBehavior, theLocations[i]);
-				}
-				ICompoundFilter theFilter = getBrowser().createUnionFilter(theLocationFilters);
-				LogViewSeed theSeed = new FilterSeed(this, getBrowser(), theFilter);
-				openSeed(theSeed, false);				
-			}
-		}
-		catch (JavaModelException e)
-		{
-			throw new RuntimeException("Could not show events", e);
-		}
-	}
-	
-
-
 }

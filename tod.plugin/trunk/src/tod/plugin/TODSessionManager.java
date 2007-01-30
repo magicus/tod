@@ -28,6 +28,7 @@ import org.eclipse.jdt.core.IJavaProject;
 
 import tod.core.config.TODConfig;
 import tod.core.session.ISession;
+import tod.impl.dbgrid.LocalGridSession;
 import tod.impl.local.LocalSession;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IRWProperty;
@@ -75,7 +76,8 @@ public class TODSessionManager
 			DebuggingSession thePreviousSession = pCurrentSession.get();
 			if (thePreviousSession != null) thePreviousSession.disconnect();
 			
-			theSession = new LocalSession(aConfig, new URI("file:/home/gpothier/tmp/ASM"));
+//			theSession = new LocalSession(aConfig, new URI("file:/home/gpothier/tmp/ASM"));
+			theSession = LocalGridSession.create(aConfig);
 			DebuggingSession theDebuggingSession = new DebuggingSession(
 					theSession,
 					aLaunch,
@@ -84,7 +86,7 @@ public class TODSessionManager
 			pCurrentSession.set(theDebuggingSession);
 			return theDebuggingSession;
 		}
-		catch (URISyntaxException e)
+		catch (Exception e)
 		{
 			throw new RuntimeException(e);
 		}

@@ -3,7 +3,7 @@
 <plugin
    id="tod.plugin"
    name="TOD Eclipse Plugin"
-   version="0.2.1"
+   version="0.2.1.2"
    provider-name="DCC - Universidad de Chile"
    class="tod.plugin.TODPlugin">
 
@@ -24,6 +24,8 @@
                name="*">
          </export>
       </library>
+      
+      <!-- development -->
       <!--
       <library name="../zz.utils/bin">
          <export name="*"/>
@@ -35,6 +37,9 @@
          <export name="*"/>
       </library>
       -->
+      
+      <!-- deployment -->
+      
       <library name="lib/tod-agent.jar">
          <export name="*"/>
       </library>
@@ -59,6 +64,7 @@
       <import plugin="org.eclipse.jdt.ui"/>
       <import plugin="org.eclipse.ui.workbench.texteditor"/>
       <import plugin="zz.eclipse.utils"/>
+      <import plugin="org.eclipse.jdt.debug"/>
    </requires>
 
    <extension
@@ -137,7 +143,7 @@
             id="tod.plugin.actions.ShowEventsForLine"
             targetID="org.eclipse.jdt.ui.CompilationUnitEditor">
          <action
-               class="tod.plugin.actions.ShowEventsForLineAction"
+               class="tod.plugin.actions.ShowEventsForLineActionDelegate"
                id="tod.plugin.actions.ShowEventsForLineAction"
                label="Show events in TOD"
                />
@@ -148,11 +154,55 @@
       <viewerContribution
             id="tod.plugin.actions.CompilationUnitRulerPopupActions"
             targetID="#CompilationUnitRulerContext">
+         <menu
+               id="tod.plugin.CompilationUnitTODRulerMenu"
+               label="TOD"
+               path="debug">
+            <groupMarker name="tod.plugin.TODRulerMenu.events"/>
+         </menu>
          <action
-               class="tod.plugin.actions.ShowEventsForLineAction"
-               id="tod.plugin.actions.ShowEventsForLineAction"
+               class="tod.plugin.actions.ShowEventsForLineActionDelegate"
+               id="tod.plugin.actions.CompilationUnitRulerPopupActions.ShowEventsForLineAction"
                label="Show events in TOD"
-               menubarPath="debug"/>
+               menubarPath="tod.plugin.CompilationUnitTODRulerMenu/events"/>
+         <action
+               class="tod.plugin.actions.ShowNextEventForLineActionDelegate"
+               id="tod.plugin.actions.CompilationUnitRulerPopupActions.ShowNextEventForLineAction"
+               label="Next event for line"
+               menubarPath="tod.plugin.CompilationUnitTODRulerMenu/events"/>
+         <action
+               class="tod.plugin.actions.ShowPreviousEventForLineActionDelegate"
+               id="tod.plugin.actions.CompilationUnitRulerPopupActions.ShowPreviousEventForLineAction"
+               label="Previous event for line"
+               menubarPath="tod.plugin.CompilationUnitTODRulerMenu/events"/>
+               
+      </viewerContribution>
+
+      <viewerContribution
+            id="tod.plugin.actions.ClassFileRulerPopupActions"
+            targetID="#ClassFileRulerContext">
+         <menu
+               id="tod.plugin.ClassFileTODRulerMenu"
+               label="TOD"
+               path="debug">
+            <groupMarker name="events"/>
+         </menu>
+         <action
+               class="tod.plugin.actions.ShowEventsForLineActionDelegate"
+               id="tod.plugin.actions.ClassFileRulerPopupActions.ShowEventsForLineAction"
+               label="Show events in TOD"
+               menubarPath="tod.plugin.ClassFileTODRulerMenu/events"/>
+         <action
+               class="tod.plugin.actions.ShowNextEventForLineActionDelegate"
+               id="tod.plugin.actions.ClassFileRulerPopupActions.ShowNextEventForLineAction"
+               label="Next event for line"
+               menubarPath="tod.plugin.ClassFileTODRulerMenu/events"/>
+         <action
+               class="tod.plugin.actions.ShowPreviousEventForLineActionDelegate"
+               id="tod.plugin.actions.ClassFileRulerPopupActions.ShowPreviousEventForLineAction"
+               label="Previous event for line"
+               menubarPath="tod.plugin.ClassFileTODRulerMenu/events"/>
+               
       </viewerContribution>
    </extension>
 
