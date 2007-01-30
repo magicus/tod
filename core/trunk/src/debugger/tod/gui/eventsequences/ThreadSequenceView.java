@@ -74,7 +74,11 @@ public class ThreadSequenceView extends AbstractSingleBrowserSequenceView
 	{
 		public ShowCFlowAction()
 		{
-			setTitle("view");
+			setTitle("view control flow");
+			setDescription(
+					"<html>" +
+					"<b>Show control flow.</b> Shows the control flow of <br>" +
+					"this thread.");
 		}
 		
 		@Override
@@ -89,7 +93,11 @@ public class ThreadSequenceView extends AbstractSingleBrowserSequenceView
 	{
 		public ShowEventsAction()
 		{
-			setTitle("events");
+			setTitle("(all events)");
+			setDescription(
+					"<html>" +
+					"<b>Show all events.</b> Show all the events of this <br>" +
+					"thread in a list. This is used to debug TOD itself.");
 		}
 
 		@Override

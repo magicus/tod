@@ -30,13 +30,23 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
+import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.session.ISession;
+import tod.gui.controlflow.CFlowView;
 import tod.gui.seed.FilterSeed;
 import tod.gui.seed.LogViewSeed;
 import tod.gui.seed.LogViewSeedFactory;
 import tod.gui.seed.ThreadsSeed;
+import tod.gui.view.IEventListView;
+import tod.gui.view.LogView;
+import tod.utils.TODUtils;
+import zz.utils.properties.ISetProperty;
 
 /**
  * @author gpothier
@@ -44,8 +54,17 @@ import tod.gui.seed.ThreadsSeed;
 public abstract class MinerUI extends JPanel 
 implements ILocationSelectionListener, IGUIManager
 {
-	private LogViewBrowserNavigator itsNavigator = new LogViewBrowserNavigator();
+	private LogViewBrowserNavigator itsNavigator = new LogViewBrowserNavigator()
+	{
+		@Override
+		protected void viewChanged(LogView aTheView)
+		{
+			MinerUI.this.viewChanged(aTheView);
+		}
+	};
+	
 	private JobProcessor itsJobProcessor = new JobProcessor();
+	private BookmarkPanel itsBookmarkPanel = new BookmarkPanel();
 	
 	public MinerUI()
 	{
@@ -80,11 +99,18 @@ implements ILocationSelectionListener, IGUIManager
 		theNavButtonsPanel.add (createToolbar());
 	}
 
+	protected void viewChanged(LogView aView)
+	{
+		itsBookmarkPanel.setView(aView);
+	}
+	
 	protected abstract ISession getSession();
 	
 	private JComponent createToolbar()
 	{
 		JPanel theToolbar = new JPanel();
+		
+		theToolbar.add(itsBookmarkPanel);
 
 		// Add a button that permits to jump to the threads view.
 		JButton theThreadsViewButton = new JButton("View threads");
@@ -95,6 +121,11 @@ implements ILocationSelectionListener, IGUIManager
 						reset();
 					}
 				});
+		theThreadsViewButton.setToolTipText(
+				"<html>" +
+				"<b>Threads view.</b> This view presents an overview <br>" +
+				"of the activity of all the threads in the captured <br>" +
+				"execution trace.");
 		
 		theToolbar.add(theThreadsViewButton);
 
@@ -114,10 +145,17 @@ implements ILocationSelectionListener, IGUIManager
 				openSeed(theSeed, false);			
 			}
 		});
+		theExceptionsViewButton.setToolTipText(
+				"<html>" +
+				"<b>Exceptions view.</b> This view shows a list <br>" +
+				"of all the exceptions that occurred during the execution <br>" +
+				"of the program. Note that many of the exceptions shown <br>" +
+				"here are catched during the normal operation of the <br>" +
+				"program and therefore do not appear in the console.");
 		
 		theToolbar.add(theExceptionsViewButton);
 		
-		JButton theShowAllEventsButton = new JButton("events");
+		JButton theShowAllEventsButton = new JButton("(all events)");
 		theShowAllEventsButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent aE)
@@ -133,11 +171,16 @@ implements ILocationSelectionListener, IGUIManager
 			}
 		});
 		
+		theShowAllEventsButton.setToolTipText(
+				"<html>" +
+				"<b>Show all events.</b> Shows a list of all the events <br>" +
+				"that were recorded. This is used for debugging TOD itself.");
+		
 		theToolbar.add(theShowAllEventsButton);
 		
-		// Adds a button that permits to disconnect the current session
-		JButton theKillSessionButton = new JButton("flush");
-		theKillSessionButton.addActionListener(new ActionListener()
+		// Adds a button that permits to flush buffers
+		JButton theFlushButton = new JButton("Flush");
+		theFlushButton.addActionListener(new ActionListener()
 				{
 					public void actionPerformed(ActionEvent aE)
 					{
@@ -145,7 +188,13 @@ implements ILocationSelectionListener, IGUIManager
 					}
 				});
 		
-		theToolbar.add(theKillSessionButton);
+		theFlushButton.setToolTipText(
+				"<html>" +
+				"<b>Flush buffered events.</b> Ensures that all buffered <br>" +
+				"events are sent to the database. Use this to start <br>" +
+				"debugging before the program terminates.");
+		
+		theToolbar.add(theFlushButton);
 		
 		return theToolbar;
 	}
@@ -174,5 +223,112 @@ implements ILocationSelectionListener, IGUIManager
 		itsNavigator.open(aSeed);
 	}
 
+	/**
+	 * Shows a list of all the events that occurred at the specified line.
+	 */
+	public void showEventsForLine(IBehaviorInfo aBehavior, int aLine)
+	{
+		IEventFilter theFilter = TODUtils.getLocationFilter(
+				getBrowser(), 
+				aBehavior, 
+				aLine);
+		
+		if (theFilter != null)
+		{
+			LogViewSeed theSeed = new FilterSeed(this, getBrowser(), theFilter);
+			openSeed(theSeed, false);				
+		}
+	}
+	
+	/**
+	 * Returns the current view if it is a {@link CFlowView}, or null otherwise.
+	 * @return
+	 */
+	private IEventListView getEventListView()
+	{
+		LogViewSeed theCurrentSeed = itsNavigator.getCurrentSeed();
+		if (theCurrentSeed == null) return null;
+		
+		LogView theCurrentView = theCurrentSeed.getComponent();
+		if (theCurrentView instanceof IEventListView)
+		{
+			IEventListView theView = (IEventListView) theCurrentView;
+			return theView;
+		}
+		else return null;
+	}
+	
+	/**
+	 * Creates an event browser over all the event that are accessible
+	 * to a base browser and that additionally occured at the specified
+	 * location.
+	 */
+	private IEventBrowser createLocationBrowser(
+			IEventBrowser aBaseBrowser,
+			IBehaviorInfo aBehavior, 
+			int aLine)
+	{
+		IEventFilter theFilter = TODUtils.getLocationFilter(
+				aBaseBrowser.getLogBrowser(), 
+				aBehavior, 
+				aLine);
+		
+		return aBaseBrowser.createIntersection(theFilter);
+	}
+	
+	public void showNextEventForLine(IBehaviorInfo aBehavior, int aLine)
+	{
+		IEventListView theView = getEventListView();
+		if (theView == null) return;
 
+		IEventBrowser theBrowser = createLocationBrowser(
+				theView.getEventBrowser(),
+				aBehavior, 
+				aLine);
+		
+		ILogEvent theSelectedEvent = theView.getSelectedEvent();
+		if (theSelectedEvent != null) theBrowser.setPreviousEvent(theSelectedEvent);
+		
+		if (theBrowser.hasNext())
+		{
+			ILogEvent theEvent = theBrowser.next();
+			theView.selectEvent(theEvent);
+		}
+	}
+	
+	public void showPreviousEventForLine(IBehaviorInfo aBehavior, int aLine)
+	{
+		IEventListView theView = getEventListView();
+		if (theView == null) return;
+
+		IEventBrowser theBrowser = createLocationBrowser(
+				theView.getEventBrowser(),
+				aBehavior, 
+				aLine);
+		
+		ILogEvent theSelectedEvent = theView.getSelectedEvent();
+		if (theSelectedEvent != null) theBrowser.setNextEvent(theSelectedEvent);
+		
+		if (theBrowser.hasPrevious())
+		{
+			ILogEvent theEvent = theBrowser.previous();
+			theView.selectEvent(theEvent);
+		}
+	}
+	
+	/**
+	 * Whether the "Show next event for line" action should be enabled.
+	 */
+	public boolean canShowNextEventForLine()
+	{
+		return getEventListView() != null;
+	}
+
+	/**
+	 * Whether the "Show previous event for line" action should be enabled.
+	 */
+	public boolean canShowPreviousEventForLine()
+	{
+		return getEventListView() != null;
+	}
 }

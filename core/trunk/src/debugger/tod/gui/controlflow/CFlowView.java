@@ -22,27 +22,24 @@ package tod.gui.controlflow;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.ComponentSampleModel;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.Scrollable;
 
 import tod.core.database.browser.BrowserUtils;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.Stepper;
+import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
@@ -58,8 +55,8 @@ import tod.gui.eventlist.MuralScroller.UnitScroll;
 import tod.gui.formatter.EventFormatter;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.seed.Seed;
+import tod.gui.view.IEventListView;
 import tod.gui.view.LogView;
-import zz.csg.api.GraphicUtils;
 import zz.csg.display.GraphicPanel;
 import zz.utils.SimpleAction;
 import zz.utils.notification.IEvent;
@@ -69,7 +66,7 @@ import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.PropertyListener;
 import zz.utils.ui.UIUtils;
 
-public class CFlowView extends LogView
+public class CFlowView extends LogView implements IEventListView
 {
 	public static final boolean SHOW_PARENT_FRAMES = false;
 	
@@ -336,7 +333,11 @@ public class CFlowView extends LogView
 	private void showEvent (ILogEvent aEvent)
 	{
 		IBehaviorCallEvent theCurrentParent = getSeed().pParentEvent().get();
-		if (! aEvent.getParentPointer().equals(theCurrentParent.getPointer()))
+		ExternalPointer theParentPointer = theCurrentParent != null ?
+				theCurrentParent.getPointer()
+				: null;
+				
+		if (! aEvent.getParentPointer().equals(theParentPointer))
 		{
 			getSeed().pParentEvent().set(aEvent.getParent());
 		}
@@ -378,48 +379,6 @@ public class CFlowView extends LogView
 		itsSeed.pParentEvent().removeListener(itsParentListener);
 	}
 	
-//	/**
-//	 * Returns the path to the deepest {@link IParentEvent} whose span contains 
-//	 * both specified timestamps.
-//	 */
-//	private List<IParentEvent> getPathForRange(double aT1, double aT2)
-//	{
-//		IParentEvent theRoot = (IParentEvent) itsBrowser.getRoot();
-//		List<IParentEvent> thePath = new ArrayList<IParentEvent>();
-//		computePathForRange(thePath, theRoot, aT1, aT2);
-//		return thePath;
-//	}
-//
-//	private void computePathForRange(
-//			List<IParentEvent> aPath, 
-//			IParentEvent aRoot, 
-//			double aT1, 
-//			double aT2)
-//	{
-//		aPath.add(aRoot);
-//		
-//		for (ILogEvent theChild : aRoot.getChildren())
-//		{
-//			if (theChild instanceof IParentEvent)
-//			{
-//				IParentEvent theContainer = (IParentEvent) theChild;
-//				if (theContainer.getFirstTimestamp() <= aT1 && theContainer.getLastTimestamp() >= aT2)
-//				{
-//					computePathForRange(aPath, theContainer, aT1, aT2);
-//					break;
-//				}
-//			}
-//		}
-//	}
-//	
-//	/**
-//	 * Returns the path to the deepest {@link IParentEvent} whose span contains 
-//	 * the specified timestamp.
-//	 */
-//	private List<IParentEvent> getPathForTimestamp(double aT)
-//	{
-//		return getPathForRange(aT, aT);
-//	}
 	
 	public void selectEvent(ILogEvent aEvent)
 	{
@@ -431,6 +390,18 @@ public class CFlowView extends LogView
 		ILogEvent theSelectedEvent = itsSeed.pSelectedEvent().get();
 		return theSelectedEvent != null && theSelectedEvent.equals(aEvent);
 	}
+	
+	public IEventBrowser getEventBrowser()
+	{
+		IBehaviorCallEvent theCurrentParent = getSeed().pParentEvent().get();
+		return theCurrentParent.getChildrenBrowser();
+	}
+	
+	public ILogEvent getSelectedEvent()
+	{
+		return getSeed().pSelectedEvent().get();
+	}
+	
 	
 	private static class MyScrollPane extends JScrollPane
 	{

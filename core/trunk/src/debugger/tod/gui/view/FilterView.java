@@ -35,17 +35,14 @@ import tod.gui.seed.FilterSeed;
 import tod.gui.view.event.EventView;
 import tod.gui.view.event.EventViewFactory;
 import zz.utils.properties.IProperty;
-import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.PropertyListener;
-import zz.utils.properties.PropertyUtils;
-import zz.utils.ui.StackLayout;
 
 /**
  * A view component that displays a list of events 
  * based on a {@link tod.core.database.browser.IEventFilter}
  * @author gpothier
  */
-public class FilterView extends LogView 
+public class FilterView extends LogView implements IEventListView
 {
 	private FilterSeed itsSeed;
 	
@@ -115,4 +112,21 @@ public class FilterView extends LogView
 		revalidate();
 		repaint();
 	}
+
+	public IEventBrowser getEventBrowser()
+	{
+		return getLogBrowser().createBrowser(itsSeed.getFilter());
+	}
+
+	public ILogEvent getSelectedEvent()
+	{
+		return itsList.pSelectedEvent().get();
+	}
+
+	public void selectEvent(ILogEvent aEvent)
+	{
+		itsList.pSelectedEvent().set(aEvent);
+	}
+	
+	
 }

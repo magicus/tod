@@ -69,17 +69,26 @@ public class LogViewBrowserNavigator extends BrowserNavigator<LogViewSeed>
 				getCurrentSeed().activate();
 				LogView theComponent = getCurrentSeed().getComponent();
 				itsViewContainer.add(theComponent);
+				viewChanged(theComponent);
 			}
 			catch (Exception e)
 			{
 				e.printStackTrace();
 			}
 		}
+		else viewChanged(null);
 		
 		itsViewContainer.revalidate();
 		itsViewContainer.repaint();
 		itsViewContainer.validate();
 	}
 	
+	/**
+	 * Called when a new view is displayed. Does
+	 * nothing by default.
+	 */
+	protected void viewChanged(LogView theView)
+	{
+	}
 
 }
