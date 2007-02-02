@@ -25,9 +25,11 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import tod.agent.DebugFlags;
-import tod.core.bci.NativeAgentPeer;
+import tod.core.database.structure.HostInfo;
 
 /**
  * Receives log events from a logged application through a socket and
@@ -36,12 +38,14 @@ import tod.core.bci.NativeAgentPeer;
  * or to wait for incoming connections from applications
  * @author gpothier
  */
-public abstract class LogReceiver extends Thread
+public abstract class LogReceiver 
 {
+	private boolean itsStarted = false;
+	
 	/**
-	 * Name of the host that sends events
+	 * Identification of the host that sends events
 	 */
-	private String itsHostName;
+	private HostInfo itsHostInfo;
 	
 	private boolean itsEof = false;
 	
@@ -54,17 +58,64 @@ public abstract class LogReceiver extends Thread
 	
 	private final InputStream itsInStream;
 	private final OutputStream itsOutStream;
+
+	private DataInputStream itsDataStream;
 	
-	public LogReceiver(InputStream aInStream, OutputStream aOutStream, boolean aStart)
+	public LogReceiver(
+			HostInfo aHostInfo,
+			InputStream aInStream, 
+			OutputStream aOutStream, 
+			boolean aStart)
 	{
+		itsHostInfo = aHostInfo;
 		itsInStream = aInStream;
 		itsOutStream = aOutStream;
+		
+		itsDataStream = new DataInputStream(itsInStream);
+		
+		ReceiverThread.getInstance().register(this);
 		if (aStart) start();
+	}
+	
+	public void start()
+	{
+		itsStarted = true;
+		synchronized (ReceiverThread.getInstance())
+		{
+			ReceiverThread.getInstance().notifyAll();
+		}
+	}
+	
+	public void disconnect()
+	{
+		try
+		{
+			itsInStream.close();
+			itsOutStream.close();
+			eof();
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	private boolean isStarted()
+	{
+		return itsStarted;
 	}
 	
 	public void setMonitor(ILogReceiverMonitor aMonitor)
 	{
 		itsMonitor = aMonitor;
+	}	
+	
+	/**
+	 * Returns the identification of the currently connected host.
+	 */
+	public HostInfo getHostInfo()
+	{
+		return itsHostInfo;
 	}
 
 	/**
@@ -73,12 +124,12 @@ public abstract class LogReceiver extends Thread
 	 */
 	public String getHostName()
 	{
-		return itsHostName;
+		return itsHostInfo.getName();
 	}
 	
 	private synchronized void setHostName(String aHostName)
 	{
-		itsHostName = aHostName;
+		itsHostInfo.setName(aHostName);
 		notifyAll();
 	}
 	
@@ -96,13 +147,18 @@ public abstract class LogReceiver extends Thread
 	{
 		try
 		{
-			while (itsHostName == null) wait();
-			return itsHostName;
+			while (getHostName() == null) wait();
+			return getHostName();
 		}
 		catch (InterruptedException e)
 		{
 			throw new RuntimeException(e);
 		}
+	}
+	
+	public boolean isEof()
+	{
+		return itsEof;
 	}
 	
 	/**
@@ -127,68 +183,141 @@ public abstract class LogReceiver extends Thread
 	{
 		return itsMessageCount;
 	}
-
-	@Override
-	public void run()
+	
+	/**
+	 * Processes currently pending data.
+	 * @return Whether there was data to process.
+	 */
+	private boolean process() throws IOException
 	{
 		try
 		{
-			DataInputStream theStream = new DataInputStream(itsInStream);
-			
-			setHostName(theStream.readUTF());
-			
+			if (itsDataStream.available() == 0) return false;
+		}
+		catch (IOException e1)
+		{
+			eof();
+		}
+		
+		if (getHostName() == null)
+		{
+			setHostName(itsDataStream.readUTF());
 			if (itsMonitor != null) itsMonitor.started();
-			
-			while (true)
+		}
+		
+		while(itsDataStream.available() > 0)
+		{
+			try
 			{
-				try
+				byte theCommand = itsDataStream.readByte();
+				
+				MessageType theType = MessageType.VALUES[theCommand];
+				readPacket(itsDataStream, theType);
+				
+				itsMessageCount++;
+				
+				if (itsMonitor != null 
+						&& DebugFlags.RECEIVER_PRINT_COUNTS > 0 
+						&& itsMessageCount % 65536 == 0)
 				{
-					byte theCommand = theStream.readByte();
-					
-					if (theCommand == NativeAgentPeer.INSTRUMENT_CLASS)
-					{
-						throw new RuntimeException();
-//							RemoteInstrumenter.processInstrumentClassCommand(
-//									itsInstrumenter,
-//									itsStream,
-//									theOutputStream,
-//									null);
-					}
-					else
-					{
-						MessageType theType = MessageType.VALUES[theCommand];
-						readPacket(theStream, theType);
-					}
-					
-					itsMessageCount++;
-					
-					if (itsMonitor != null 
-							&& DebugFlags.RECEIVER_PRINT_COUNTS > 0 
-							&& itsMessageCount % 100000 == 0)
-					{
-						itsMonitor.processedMessages(itsMessageCount);
-					}
-
-				}
-				catch (EOFException e)
-				{
-					System.err.println("LogReceiver: EOF");
-					eof();
-					break;
+					itsMonitor.processedMessages(itsMessageCount);
 				}
 			}
+			catch (EOFException e)
+			{
+				System.err.println("LogReceiver: EOF");
+				eof();
+				break;
+			}
 		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
+		
+		return true;
 	}
 
+	/**
+	 * Read and interpret an incoming packet.
+	 */
 	protected abstract void readPacket(DataInputStream aStream, MessageType aType) throws IOException;
 	
 	public interface ILogReceiverMonitor
 	{
 		public void started();
 		public void processedMessages(long aCount);
+	}
+	
+	/**
+	 * This is the thread that actually processes the streams.
+	 * Having a unique thread permits to avoid synchronization
+	 * problems further in the stream.
+	 * @author gpothier
+	 */
+	private static class ReceiverThread extends Thread
+	{
+		private static ReceiverThread INSTANCE = new ReceiverThread();
+
+		public static ReceiverThread getInstance()
+		{
+			return INSTANCE;
+		}
+
+		private ReceiverThread()
+		{
+			super("LogReceiver.ReceiverThread");
+			start();
+		}
+		
+		private List<LogReceiver> itsReceivers = new ArrayList<LogReceiver>();
+		
+		public synchronized void register(LogReceiver aReceiver)
+		{
+			itsReceivers.add(aReceiver);
+			notifyAll();
+		}
+		
+		@Override
+		public void run()
+		{
+			try
+			{
+				int theWait = 1;
+				while(true)
+				{
+					// We don't use an iterator so as to avoid concurrent modif. exceptions
+					for(int i=0;i<itsReceivers.size();i++)
+					{
+						LogReceiver theReceiver = itsReceivers.get(i);
+						if (! theReceiver.isStarted()) continue;
+						
+						try
+						{
+							if (theReceiver.process()) theWait = 1;
+						}
+						catch (IOException e)
+						{
+							System.err.println("Exception while processing receiver of "+theReceiver.getHostName());
+							e.printStackTrace();
+						}
+						
+						if (theReceiver.isEof()) itsReceivers.remove(i);
+					}
+					
+					if (theWait > 1) 
+					{
+						synchronized (this)
+						{
+							wait(theWait);
+						}
+						theWait = 1;
+					}
+					
+					theWait *= 2;
+					theWait = Math.min(theWait, 100);
+				}
+			}
+			catch (InterruptedException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
 	}
 }

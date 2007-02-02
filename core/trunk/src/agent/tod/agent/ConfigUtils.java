@@ -28,6 +28,7 @@ public class ConfigUtils
 	public static boolean readBoolean (String aPropertyName, boolean aDefault)
 	{
 		String theString = System.getProperty(aPropertyName);
+		System.out.println(aPropertyName+"="+theString);
 		return theString != null ? Boolean.parseBoolean(theString) : aDefault;
 	}
 	
@@ -37,6 +38,7 @@ public class ConfigUtils
 	public static int readInt (String aPropertyName, int aDefault)
 	{
 		String theString = System.getProperty(aPropertyName);
+		System.out.println(aPropertyName+"="+theString);
 		return theString != null ? Integer.parseInt(theString) : aDefault;
 	}
 	
@@ -56,14 +58,15 @@ public class ConfigUtils
 	 */
 	public static long readSize (String aPropertyName, String aDefault)
 	{
-		String theValue = readString(aPropertyName, aDefault);
+		String theString = readString(aPropertyName, aDefault);
+		System.out.println(aPropertyName+"="+theString);
 		long theFactor = 1;
-		if (theValue.endsWith("k")) theFactor = 1024;
-		else if (theValue.endsWith("m")) theFactor = 1024*1024;
-		else if (theValue.endsWith("g")) theFactor = 1024*1024*1024;
-		if (theFactor != 1) theValue = theValue.substring(0, theValue.length()-1);
+		if (theString.endsWith("k")) theFactor = 1024;
+		else if (theString.endsWith("m")) theFactor = 1024*1024;
+		else if (theString.endsWith("g")) theFactor = 1024*1024*1024;
+		if (theFactor != 1) theString = theString.substring(0, theString.length()-1);
 		
-		return Long.parseLong(theValue)*theFactor;
+		return Long.parseLong(theString)*theFactor;
 	}
 	
 

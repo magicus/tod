@@ -24,8 +24,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -45,10 +43,12 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import tod.agent.AgentConfig;
 import tod.agent.DebugFlags;
 import tod.core.bci.IInstrumenter;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILocationStore;
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.HostInfo;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
@@ -71,9 +71,12 @@ import tod.impl.dbgrid.gridimpl.IGridImplementationFactory;
 import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
 import tod.impl.dbgrid.queries.EventCondition;
+import tod.utils.TODUtils;
+import tod.utils.pipe.PipedInputStream2;
+import tod.utils.pipe.PipedOutputStream2;
 import tod.utils.remote.RILocationsRepository;
 import tod.utils.remote.RemoteLocationsRepository;
-import zz.utils.Task;
+import zz.utils.ITask;
 import zz.utils.Utils;
 
 /**
@@ -140,6 +143,11 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	private Map<String, PrintWriter> itsMonitorLogs = new HashMap<String, PrintWriter>();
 	
 	/**
+	 * A log browser for {@link #exec(ITask)}.
+	 */
+	private ILogBrowser itsLocalLogBrowser;
+	
+	/**
 	 * Creates a master with a single database node.
 	 */
 	public GridMaster(
@@ -154,6 +162,8 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		itsLocationStore = aLocationStore;
 		itsRemoteLocationsRepository = new RemoteLocationsRepository(itsLocationStore);
 
+		itsLocalLogBrowser = new GridLogBrowser(this);
+		
 		try
 		{
 			IGridImplementationFactory theFactory = GridImpl.getFactory(itsConfig);
@@ -161,10 +171,10 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			itsRootDispatcher = theDispatcher;
 			itsLeafDispatchers.add(theDispatcher);
 		
-			PipedInputStream theDispatcherIn = new PipedInputStream();
-			PipedInputStream theNodeIn = new PipedInputStream();
-			PipedOutputStream theDispatcherOut = new PipedOutputStream(theNodeIn);
-			PipedOutputStream theNodeOut = new PipedOutputStream(theDispatcherIn);
+			PipedInputStream2 theDispatcherIn = new PipedInputStream2();
+			PipedInputStream2 theNodeIn = new PipedInputStream2();
+			PipedOutputStream2 theDispatcherOut = new PipedOutputStream2(theNodeIn);
+			PipedOutputStream2 theNodeOut = new PipedOutputStream2(theDispatcherIn);
 			
 			theDispatcher.acceptChild(
 					"db-0", 
@@ -206,9 +216,11 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		itsLocationStore = aLocationStore;
 		itsRemoteLocationsRepository = new RemoteLocationsRepository(itsLocationStore);
 		
+		itsLocalLogBrowser = new GridLogBrowser(this);
+
 		try
 		{
-			if (aExpectedNodes > 0) 
+			if (aExpectedNodes > 0 && DebuggerGridConfig.CHECK_SAME_HOST) 
 			{
 				itsNodeHosts.add(InetAddress.getLocalHost().getHostName());
 				itsPreNodeHosts.add(InetAddress.getLocalHost().getHostName());
@@ -349,6 +361,8 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	{
 		Timer theTimer = new Timer(true);
 		theTimer.schedule(new DataUpdater(), 5000, 3000);
+		
+		System.out.println("[GridMaster] Ready!");
 	}
 	
 	/**
@@ -465,7 +479,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		NodeRole theRole;
 		
 		if (itsPreNodes < itsExpectedNodes 
-				&& (! DebugFlags.GRID_CHECK_NODE_HOST || itsPreNodeHosts.add(aHostName)))
+				&& (! DebuggerGridConfig.CHECK_SAME_HOST || itsPreNodeHosts.add(aHostName)))
 		{
 			itsPreNodes++;
 			theRole = NodeRole.DATABASE;
@@ -526,7 +540,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		if (itsExpectedNodes > 0 && itsNodes.size() >= itsExpectedNodes) 
 			throw new NodeRejectedException("Maximum number of nodes reached");
 		
-		if (DebugFlags.GRID_CHECK_NODE_HOST && ! itsNodeHosts.add(aHostname)) 
+		if (DebuggerGridConfig.CHECK_SAME_HOST && ! itsNodeHosts.add(aHostname)) 
 			throw new NodeRejectedException("Refused node from same host");
 		
 		int theId = itsNodes.size()+1;
@@ -666,7 +680,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	
 	public Object getRegisteredObject(final long aId)
 	{
-		List<Object> theResults = Utils.fork(itsLeafDispatchers, new Task<RILeafDispatcher, Object>()
+		List<Object> theResults = Utils.fork(itsLeafDispatchers, new ITask<RILeafDispatcher, Object>()
 				{
 					public Object run(RILeafDispatcher aInput)
 					{
@@ -714,10 +728,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 
 	}
 
-	/**
-	 * For testing only
-	 */
-	public ILocationStore _getLocationStore()
+	public ILocationStore getLocationStore()
 	{
 		return itsLocationStore;
 	}
@@ -728,6 +739,10 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		return itsRemoteLocationsRepository;
 	}
 
+	public <O> O exec(ITask<ILogBrowser, O> aTask)
+	{
+		return aTask.run(itsLocalLogBrowser);
+	}
 
 	/**
 	 * A timer task that periodically updates aggregate data,
@@ -763,7 +778,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 
 	private class MyTODServer extends TODServer
 	{
-		private int itsHostId = 1;
+		private int itsCurrentHostId = 1;
 		
 		public MyTODServer(TODConfig aConfig, IInstrumenter aInstrumenter)
 		{
@@ -773,17 +788,23 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		@Override
 		protected LogReceiver createReceiver(Socket aSocket)
 		{
-			HostInfo theHostInfo = new HostInfo(itsHostId++);
+			HostInfo theHostInfo = new HostInfo(itsCurrentHostId++);
 			registerHost(theHostInfo);
 			
 			try
 			{
-				return itsRootDispatcher.createLogReceiver(
+				LogReceiver theReceiver = itsRootDispatcher.createLogReceiver(
 						theHostInfo,
 						GridMaster.this,
-						new BufferedInputStream(aSocket.getInputStream()),
-						new BufferedOutputStream(aSocket.getOutputStream()),
+						new BufferedInputStream(
+								aSocket.getInputStream(), 
+								AgentConfig.COLLECTOR_BUFFER_SIZE*2),
+						new BufferedOutputStream(
+								aSocket.getOutputStream(), 
+								AgentConfig.COLLECTOR_BUFFER_SIZE*2),
 						true);
+				
+				return theReceiver;
 			}
 			catch (IOException e)
 			{
@@ -792,9 +813,8 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		}
 		
 		@Override
-		protected void flush()
+		protected void disconnected()
 		{
-			super.flush();
 			GridMaster.this.flush();
 		}
 	}
@@ -853,5 +873,12 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			return itsHosts;
 		}
 	}
-	
+
+	public static void main(String[] args) throws Exception
+	{
+		LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
+		Registry theRegistry = LocateRegistry.getRegistry("localhost");
+		TODUtils.setupMaster(theRegistry, args);
+		System.out.println("Master ready.");
+	}
 }

@@ -20,21 +20,38 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.session;
 
-import java.net.URI;
-
-public interface ISessionFactory
+/**
+ * Contains the information necessary for a client VM to connect to
+ * the log collector.
+ * @author gpothier
+ */
+public class ConnectionInfo
 {
-	/**
-	 * Loads an existing session.
-	 */
-	public ISession loadSession(URI aLocation);
+	private String itsHostName;
+	private int itsLogReceiverPort;
+	private int itsNativePort;
 	
-	/**
-	 * Creates a new session at the given location.
-	 */
-	public ISession createSession(
-			URI aLocation,
-			String aGlobalWorkingSet,
-			String aIdentificationWorkingSet,
-			String aTraceWorkingSet);
+	public ConnectionInfo(String aHostName, int aLogReceiverPort, int aNativePort)
+	{
+		itsHostName = aHostName;
+		itsLogReceiverPort = aLogReceiverPort;
+		itsNativePort = aNativePort;
+	}
+
+	public String getHostName()
+	{
+		return itsHostName;
+	}
+
+	public int getLogReceiverPort()
+	{
+		return itsLogReceiverPort;
+	}
+
+	public int getNativePort()
+	{
+		return itsNativePort;
+	}
+	
+	
 }

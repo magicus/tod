@@ -33,6 +33,7 @@ import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import zz.utils.ITask;
 
 /**
  * Interface to the trace database.
@@ -90,6 +91,11 @@ public interface ILogBrowser
 	 * (index 0) is null.
 	 */
 	public Iterable<IHostInfo> getHosts();
+	
+	/**
+	 * Returns the host with the given name.
+	 */
+	public IHostInfo getHost(String aName);
 	
 	/**
 	 * Returns the registered object (eg. string) that corresponds to the
@@ -192,8 +198,8 @@ public interface ILogBrowser
 	public IEventFilter createHostFilter (IHostInfo aHost);
 	
 	/**
-	 * Creates a filter that accepts only the events that occurr
-	 * in a specific thread.
+	 * Creates a filter that accepts only the events that occur
+	 * in a specific thread (taking into account the host).
 	 */
 	public IEventFilter createThreadFilter (IThreadInfo aThread);
 	
@@ -232,4 +238,12 @@ public interface ILogBrowser
 	 */
 	public IVariablesInspector createVariablesInspector (IBehaviorCallEvent aEvent);
 	
+	/**
+	 * Executes the given task as close as possible to the database.
+	 * This is useful for remote log browser implementations.
+	 * This is comparable to a stored procedure.
+	 * @param <O> Return type of the task
+	 * @return The value returned by the task.
+	 */
+	public <O> O exec(ITask<ILogBrowser, O> aTask);
 }

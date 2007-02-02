@@ -22,6 +22,7 @@ package tod.core.transport;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 
 import tod.core.BehaviorKind;
@@ -196,8 +197,12 @@ public class CollectorPacketReader
 				}
 				catch (ClassNotFoundException e)
 				{
-					System.err.println("Warning - class no found: "+e.getMessage());
+//					System.err.println("Warning - class no found: "+e.getMessage());
 					theObject = "Unknown ("+e.getMessage()+")";
+				}
+				catch (InvalidClassException e)
+				{
+					theObject = "Unknown ("+e.getMessage()+")";					
 				}
 				
 				aCollector.register(theObjectId, theObject);
@@ -234,7 +239,7 @@ public class CollectorPacketReader
 	
 	public static void readInstantiation(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
-		aStream.readInt(); // Packet size
+		int theSize = aStream.readInt(); // Packet size
 		aCollector.instantiation(
 				aStream.readInt(),
 				aStream.readLong(),

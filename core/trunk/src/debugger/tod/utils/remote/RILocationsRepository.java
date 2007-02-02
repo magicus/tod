@@ -38,18 +38,12 @@ import tod.core.database.structure.TypeInfo;
  */
 public interface RILocationsRepository extends Remote
 {
+	public void addListener(RILocationsRepositoryListener aListener) throws RemoteException;
+	
 	public ITypeInfo getType(int aId) throws RemoteException;
 	public ITypeInfo getType(String aName) throws RemoteException;
 	public IFieldInfo getField(int aFieldId) throws RemoteException;
-	public IFieldInfo getField(ITypeInfo aType, String aName, boolean aSearchAncestors) throws RemoteException;
 	public IBehaviorInfo getBehavior(int aBehaviorId) throws RemoteException;
-	public IBehaviorInfo getBehavior(
-			ITypeInfo aType, 
-			String aName, 
-			String aSignature, 
-			boolean aSearchAncestors) throws RemoteException;
-	public ITypeInfo[] getArgumentTypes(String aSignature) throws RemoteException;
-	public TypeInfo getReturnType(String aSignature) throws RemoteException;
 	public Iterable<ITypeInfo> getTypes() throws RemoteException;
 	public Iterable<IBehaviorInfo> getBehaviours() throws RemoteException;
 	public Iterable<IFieldInfo> getFields() throws RemoteException;

@@ -18,44 +18,34 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.core.session;
+package tod.utils;
 
-import java.net.URI;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 
-import tod.core.config.TODConfig;
-
-public abstract class AbstractSession implements ISession
+public class RMITest
 {
-	private TODConfig itsConfig;
-	private final URI itsUri;
+	public static void main(String[] args) throws Exception
+	{
+		LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
+		Registry theRegistry = LocateRegistry.getRegistry("localhost");
 
-	public AbstractSession(URI aUri, TODConfig aConfig)
-	{
-		itsUri = aUri;
-		itsConfig = aConfig;
-	}
-
-	public URI getUri()
-	{
-		return itsUri;
-	}
-
-	public TODConfig getConfig()
-	{
-		return itsConfig;
-	} 
-	
-	public void setConfig(TODConfig aConfig)
-	{
-		itsConfig = aConfig;
-	}
-
-	public ConnectionInfo getConnectionInfo()
-	{
-		return new ConnectionInfo(
-				getConfig().get(TODConfig.COLLECTOR_HOST), 
-				getConfig().get(TODConfig.COLLECTOR_JAVA_PORT),
-				getConfig().get(TODConfig.COLLECTOR_NATIVE_PORT));
+		MyRemote theRemote = new MyRemote();
+		
+		System.out.println("Binding...");
+		theRegistry.rebind("test", theRemote);
+		System.out.println("Bound");
+		
+		System.exit(0);
 	}
 	
+	private static class MyRemote extends UnicastRemoteObject
+	{
+		protected MyRemote() throws RemoteException
+		{
+			super();
+		}
+	}
 }

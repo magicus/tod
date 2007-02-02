@@ -21,6 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid;
 
 import java.net.URI;
+import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -28,6 +29,7 @@ import java.rmi.registry.Registry;
 
 import javax.swing.JComponent;
 
+import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.session.AbstractSession;
 import tod.impl.dbgrid.gui.GridConsole;
@@ -38,19 +40,33 @@ public class RemoteGridSession extends AbstractSession
 	private RIGridMaster itsMaster;
 	private GridLogBrowser itsBrowser;
 	
-	public RemoteGridSession(URI aUri) throws RemoteException, NotBoundException
+	public RemoteGridSession(URI aUri, TODConfig aConfig)
 	{
-		super(aUri);
-		
-		if (! TOD_GRID_SCHEME.equals(aUri.getScheme())) 
-			throw new IllegalArgumentException("Invalid URI: "+aUri);
-		
-		String theHost = aUri.getHost();
-		int thePort = aUri.getPort();
-		
-		Registry theRegistry = LocateRegistry.getRegistry(theHost, thePort);
-		itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
-		itsBrowser = new GridLogBrowser(itsMaster);
+		super(aUri, aConfig);
+		init();
+	}
+	
+	private void init() 
+	{
+		try
+		{
+			String theHost = getConfig().get(TODConfig.COLLECTOR_HOST);
+			
+			Registry theRegistry = LocateRegistry.getRegistry(theHost);
+			itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
+			itsBrowser = new GridLogBrowser(itsMaster);
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	@Override
+	public void setConfig(TODConfig aConfig)
+	{
+		super.setConfig(aConfig);
+		init();
 	}
 	
 	public void disconnect()
@@ -71,7 +87,7 @@ public class RemoteGridSession extends AbstractSession
 
 	public String getCachedClassesPath()
 	{
-		throw new UnsupportedOperationException();
+		return null;
 	}
 
 	public ILogBrowser getLogBrowser()

@@ -31,6 +31,7 @@ import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Probe;
 import zz.utils.bit.BitStruct;
 import zz.utils.cache.MRUBuffer;
+import zz.utils.cache.SyncMRUBuffer;
 import static tod.impl.dbgrid.DebuggerGridConfig.*;
 
 /**
@@ -211,7 +212,7 @@ public abstract class IndexSet<T extends IndexTuple>
 		return getClass().getSimpleName()+": "+itsName;
 	}
 	
-	private static class IndexManager extends MRUBuffer<Integer, MyHierarchicalIndex>
+	private static class IndexManager extends SyncMRUBuffer<Integer, MyHierarchicalIndex>
 	{
 		private static IndexManager INSTANCE = new IndexManager();
 
@@ -222,7 +223,7 @@ public abstract class IndexSet<T extends IndexTuple>
 
 		private IndexManager()
 		{
-			super((int) (DB_PAGE_BUFFER_SIZE/DB_PAGE_SIZE), false);
+			super((int) ((DB_PAGE_BUFFER_SIZE/DB_PAGE_SIZE) / 3), false);
 		}
 		
 		@Override

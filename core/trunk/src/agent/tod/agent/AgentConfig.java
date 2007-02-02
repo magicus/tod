@@ -63,6 +63,10 @@ public class AgentConfig
 	public static final long TIMESTAMP_ADJUST_MASK = pow2(TIMESTAMP_ADJUST_INACCURACY+TIMESTAMP_ADJUST_SHIFT)-1;
 	
 	/**
+	 * Size of {@link SocketCollector} buffer. 
+	 */
+	public static final int COLLECTOR_BUFFER_SIZE = 32768;
+	/**
 	 * Copied from zz.utils.
 	 * Can't depend on it. 
 	 */

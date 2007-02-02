@@ -47,6 +47,7 @@ import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.RIGridMaster;
 import tod.impl.dbgrid.bench.BenchBase.BenchResults;
+import tod.utils.TODUtils;
 import zz.utils.Utils;
 
 public class GridQuery
@@ -58,7 +59,7 @@ public class GridQuery
 		String theFileName = DebuggerGridConfig.STORE_EVENTS_FILE;
 		final File theFile = new File(theFileName);
 		
-		final GridMaster theMaster = Fixtures.setupMaster(theRegistry, args);
+		final GridMaster theMaster = TODUtils.setupMaster(theRegistry, args);
 		
 		final long[] theEventsCount = new long[1];
 		BenchResults theReplayTime = BenchBase.benchmark(new Runnable()

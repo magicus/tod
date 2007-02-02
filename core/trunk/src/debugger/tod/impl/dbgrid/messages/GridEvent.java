@@ -144,7 +144,6 @@ public abstract class GridEvent extends GridMessage
 	 */
 	protected void initEvent(GridLogBrowser aBrowser, Event aEvent)
 	{
-		aEvent.setHost(aBrowser.getHost(getHost()));
 		aEvent.setThread(aBrowser.getThread(getHost(), getThread()));
 		aEvent.setTimestamp(getTimestamp());
 		aEvent.setDepth(getDepth());

@@ -107,6 +107,7 @@ public class ObjectsDatabase
 	
 	protected Object decode(byte[] aData)
 	{
+		assert aData.length > 0;
 		try
 		{
 			ByteArrayInputStream theStream = new ByteArrayInputStream(aData);
@@ -130,6 +131,7 @@ public class ObjectsDatabase
 	
 	public void store(long aId, byte[] aData)
 	{
+		assert aData.length > 0;
 		if (aId < itsLastRecordedId)
 		{
 			itsDroppedObjects++;
@@ -157,7 +159,7 @@ public class ObjectsDatabase
 		int theRemaining = theStorageSize*4;
 		int theWritten = 0;
 		while (theRemaining > 0)
-		{
+		{			
 			// Determine available space in current page, keeping 64 bits
 			// for next-page pointer
 			int theSpaceInPage = itsCurrentPage.getSize()-8-itsCurrentOffset;
@@ -173,6 +175,8 @@ public class ObjectsDatabase
 					thePageData,
 					itsCurrentOffset/4,
 					theAmountToCopy/4);
+			
+			itsCurrentPage.modified();
 			
 			theRemaining -= theAmountToCopy;
 			itsCurrentOffset += theAmountToCopy;
@@ -191,6 +195,8 @@ public class ObjectsDatabase
 				itsCurrentPage = theNextPage;
 				itsCurrentOffset = 0;
 			}
+			
+			itsCurrentPage.use();
 		}
 	}
 	

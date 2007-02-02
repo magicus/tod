@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
+import java.net.URI;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -31,6 +32,7 @@ import tod.core.LocationRegisterer;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.session.AbstractSession;
+import tod.core.session.ConnectionInfo;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
 import tod.impl.dbgrid.dispatch.DatabaseNode;
@@ -45,9 +47,9 @@ public class LocalGridSession extends AbstractSession
 	private GridMaster itsMaster;
 	private GridLogBrowser itsBrowser;
 	
-	private LocalGridSession(TODConfig aConfig) throws RemoteException
+	public LocalGridSession(URI aUri, TODConfig aConfig) throws RemoteException
 	{
-		super(null);
+		super(aUri, aConfig);
 
 		LocationRegisterer theRegistrer = new LocationRegisterer();
 		
@@ -124,17 +126,5 @@ public class LocalGridSession extends AbstractSession
         }
 
         return theRegistry;
-	}
-
-	public static LocalGridSession create(TODConfig aConfig) 
-	{
-		try
-		{
-			return new LocalGridSession(aConfig);
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
 	}
 }

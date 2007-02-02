@@ -24,6 +24,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import tod.core.database.browser.IEventBrowser;
+import tod.core.database.event.ILogEvent;
 import tod.impl.dbgrid.messages.GridEvent;
 
 /**
@@ -42,6 +43,7 @@ public interface RIEventIterator extends Remote
 	 */
 	public void setPreviousTimestamp (long aTimestamp) throws RemoteException;
 
+	
 	/**
 	 * Fetches events following the cursor position, and updates the cursor.
 	 * @param aCount Maximum number of events to fetch.

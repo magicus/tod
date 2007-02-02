@@ -22,14 +22,25 @@ package tod.utils.remote;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import tod.core.ILocationRegisterer;
 import tod.core.ILocationRegisterer.Stats;
 import tod.core.database.browser.ILocationsRepository;
+import tod.core.database.structure.BehaviorInfo;
+import tod.core.database.structure.ClassInfo;
+import tod.core.database.structure.FieldInfo;
 import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.TypeInfo;
+import tod.core.database.structure.UnknownTypeInfo;
+import zz.utils.Utils;
 
 /**
  * Remote object that mimics a {@link ILocationsRepository}.
@@ -42,29 +53,63 @@ implements RILocationsRepository
 {
 	private ILocationsRepository itsDelegate;
 	
+	private List<RILocationsRepositoryListener> itsListeners = 
+		new ArrayList<RILocationsRepositoryListener>();
+	
 	public RemoteLocationsRepository(ILocationsRepository aDelegate) throws RemoteException
 	{
 		itsDelegate = aDelegate;
+		
+		Thread theNotifierThread = new Thread("RemoteLocationsRepository.Notifier")
+		{
+			private ILocationRegisterer.Stats itsLastStats;
+			
+			@Override
+			public void run()
+			{
+				try
+				{
+					while(true)
+					{
+						Stats theStats = itsDelegate.getStats();
+						if (! theStats.equals(itsLastStats)) fireChanged(theStats);
+						itsLastStats = theStats;
+						sleep(1000);
+					}
+				}
+				catch (InterruptedException e)
+				{
+					throw new RuntimeException(e);
+				}
+			}
+		};
+		theNotifierThread.setDaemon(true);
+		theNotifierThread.start();
 	}
 
-	public ITypeInfo[] getArgumentTypes(String aSignature)
+	public void addListener(RILocationsRepositoryListener aListener) throws RemoteException
 	{
-		return itsDelegate.getArgumentTypes(aSignature);
+		itsListeners.add(aListener);
 	}
 	
-	public TypeInfo getReturnType(String aSignature) 
+	protected void fireChanged(Stats aStats)
 	{
-		return itsDelegate.getReturnType(aSignature);
+		for (RILocationsRepositoryListener theListener : itsListeners)
+		{
+			try
+			{
+				theListener.changed(aStats);
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
 	}
 
 	public IBehaviorInfo getBehavior(int aBehaviorId)
 	{
 		return itsDelegate.getBehavior(aBehaviorId);
-	}
-
-	public IBehaviorInfo getBehavior(ITypeInfo aType, String aName, String aSignature, boolean aSearchAncestors)
-	{
-		return itsDelegate.getBehavior(aType, aName, aSignature, aSearchAncestors);
 	}
 
 	public Iterable<IBehaviorInfo> getBehaviours()
@@ -80,11 +125,6 @@ implements RILocationsRepository
 	public IFieldInfo getField(int aFieldId)
 	{
 		return itsDelegate.getField(aFieldId);
-	}
-
-	public IFieldInfo getField(ITypeInfo aType, String aName, boolean aSearchAncestors)
-	{
-		return itsDelegate.getField(aType, aName, aSearchAncestors);
 	}
 
 	public Iterable<IFieldInfo> getFields()
@@ -120,181 +160,196 @@ implements RILocationsRepository
 	/**
 	 * Creates a local locations repository that delegates to a remote one.
 	 */
-	public static ILocationsRepository createRepository(final RILocationsRepository aRepository)
+	public static ILocationsRepository createRepository(RILocationsRepository aRepository)
 	{
 		assert aRepository != null;
-		return new ILocationsRepository()
+		try
 		{
-			public ITypeInfo[] getArgumentTypes(String aSignature)
-			{
-				try
-				{
-					return aRepository.getArgumentTypes(aSignature);
-				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
-			}
+			return new MyRepository(aRepository);
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	private static class MyRepository extends UnicastRemoteObject
+	implements ILocationsRepository, RILocationsRepositoryListener
+	{
+		private RILocationsRepository itsRepository;
+		
+		private List<ITypeInfo> itsTypes = new ArrayList<ITypeInfo>();
+		private Map<String, ITypeInfo> itsTypesMap = new HashMap<String, ITypeInfo>();
+		
+		private List<IBehaviorInfo> itsBehaviors = new ArrayList<IBehaviorInfo>();
+		private List<IFieldInfo> itsFields = new ArrayList<IFieldInfo>();
+
+		private Stats itsLastStats = new Stats(0, 0, 0); 
+		private boolean itsTypesUpToDate = false;
+		private boolean itsBehaviorsUpToDate = false;
+		private boolean itsFieldsUpToDate = false;
+		
+		public MyRepository(RILocationsRepository aRepository) throws RemoteException
+		{
+			itsRepository = aRepository;
+			itsRepository.addListener(this);
 			
-			public TypeInfo getReturnType(String aSignature)
+			// Init types
+			System.out.println("[RemoteLocationsRepository] Fecthing types...");
+			for(ITypeInfo theType : itsRepository.getTypes())
 			{
-				try
+				if (theType == null) continue;
+				
+				Utils.listSet(itsTypes, theType.getId(), theType);
+				itsTypesMap.put(theType.getName(), theType);
+				
+				if (theType instanceof IClassInfo)
 				{
-					return aRepository.getReturnType(aSignature);
-				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
+					IClassInfo theClass = (IClassInfo) theType;
+					
+					for (IBehaviorInfo theBehavior : theClass.getBehaviors())
+					{
+						Utils.listSet(itsBehaviors, theBehavior.getId(), theBehavior);
+					}
+					
+					for (IFieldInfo theField : theClass.getFields())
+					{
+						Utils.listSet(itsFields, theField.getId(), theField);
+					}
 				}
 			}
 
-			public IBehaviorInfo getBehavior(int aBehaviorId)
-			{
-				try
-				{
-					return aRepository.getBehavior(aBehaviorId);
-				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
-			}
+			System.out.println("[RemoteLocationsRepository] Done.");
+		}
+		
+		public void changed(Stats aStats)
+		{
+			if (aStats.nTypes != itsLastStats.nTypes) itsTypesUpToDate = false;
+			if (aStats.nBehaviors != itsLastStats.nBehaviors) itsBehaviorsUpToDate = false;
+			if (aStats.nFields != itsLastStats.nFields) itsFieldsUpToDate = false;
+			itsLastStats = aStats;
+		}
+		
+		private <T> T get(List<T> aList, int aIndex)
+		{
+			if (aList.size() > aIndex) return aList.get(aIndex);
+			else return null;
+		}
 
-			public IBehaviorInfo getBehavior(ITypeInfo aType, String aName, String aSignature, boolean aSearchAncestors)
-			{
-				try
-				{
-					return aRepository.getBehavior(aType, aName, aSignature, aSearchAncestors);
-				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
-			}
-
-			public Iterable<IBehaviorInfo> getBehaviours()
-			{
-				try
-				{
-					return aRepository.getBehaviours();
-				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
-			}
-
-			public Iterable<ITypeInfo> getTypes()
-			{
-				try
-				{
-					return aRepository.getTypes();
-				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
-			}
-
-			public IFieldInfo getField(int aFieldId)
-			{
-				try
-				{
-					return aRepository.getField(aFieldId);
-				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
-			}
-
-			public IFieldInfo getField(ITypeInfo aType, String aName, boolean aSearchAncestors)
-			{
-				try
-				{
-					return aRepository.getField(aType, aName, aSearchAncestors);
-				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
-			}
-
-			public Iterable<IFieldInfo> getFields()
-			{
-				try
-				{
-					return aRepository.getFields();
-				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
-			}
-
-			public Iterable<String> getFiles()
-			{
-				try
-				{
-					return aRepository.getFiles();
-				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
-			}
-
-			public ITypeInfo getType(int aId)
-			{
-				try
-				{
-					return aRepository.getType(aId);
-				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
-			}
+		public IBehaviorInfo getBehavior(int aBehaviorId)
+		{
+			if (aBehaviorId <= 0) return null;
 			
-			public Iterable<ILocationInfo> getLocations()
+			try
 			{
-				try
+				IBehaviorInfo theBehavior = get(itsBehaviors, aBehaviorId);
+				if (theBehavior == null)
 				{
-					return aRepository.getLocations();
+					theBehavior = itsRepository.getBehavior(aBehaviorId);
+					assert theBehavior.getId() == aBehaviorId;
+					Utils.listSet(itsBehaviors, aBehaviorId, theBehavior);
 				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
+				
+				return theBehavior;
 			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
 
-			public ITypeInfo getType(String aName)
+		public IFieldInfo getField(int aFieldId)
+		{
+			try
 			{
-				try
+				IFieldInfo theField = get(itsFields, aFieldId);
+				if (theField == null)
 				{
-					return aRepository.getType(aName);
+					theField = itsRepository.getField(aFieldId);
+					assert theField.getId() == aFieldId;
+					Utils.listSet(itsFields, aFieldId, theField);
 				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
+				
+				return theField;
 			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
 
-			public Stats getStats()
+		public ITypeInfo getType(int aTypeId)
+		{
+			try
 			{
-				try
+				ITypeInfo theType = get(itsTypes, aTypeId);
+				if (theType == null)
 				{
-					return aRepository.getStats();
+					theType = itsRepository.getType(aTypeId);
+					assert theType.getId() == aTypeId;
+					Utils.listSet(itsTypes, aTypeId, theType);
+					itsTypesMap.put(theType.getName(), theType);
 				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
+				
+				return theType;
 			}
-			
-			
-		};
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		
+		public ITypeInfo getType(String aName)
+		{
+			try
+			{
+				ITypeInfo theType = itsTypesMap.get(aName);
+				if (theType == null)
+				{
+					theType = itsRepository.getType(aName);
+					assert theType.getName().equals(aName);
+					Utils.listSet(itsTypes, theType.getId(), theType);
+					itsTypesMap.put(theType.getName(), theType);
+				}
+				
+				return theType;
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		public Iterable<ILocationInfo> getLocations()
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		public Iterable<IFieldInfo> getFields()
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		public Iterable<String> getFiles()
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		public Iterable<IBehaviorInfo> getBehaviours()
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		public Iterable<ITypeInfo> getTypes()
+		{
+			throw new UnsupportedOperationException();
+		}
+
+
+		public Stats getStats()
+		{
+			return itsLastStats;
+		}		
 	}
 
 }

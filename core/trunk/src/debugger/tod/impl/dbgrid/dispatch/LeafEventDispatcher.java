@@ -33,6 +33,7 @@ import tod.agent.DebugFlags;
 import tod.core.ILogCollector;
 import tod.core.database.browser.ILocationStore;
 import tod.core.database.browser.ILocationsRepository;
+import tod.core.database.structure.HostInfo;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.ThreadInfo;
 import tod.core.transport.CollectorLogReceiver;
@@ -128,7 +129,7 @@ implements RILeafDispatcher, ReorderingBufferListener
 	
 	@Override
 	public LogReceiver createLogReceiver(
-			IHostInfo aHostInfo, 
+			HostInfo aHostInfo, 
 			GridMaster aMaster,
 			InputStream aInStream,
 			OutputStream aOutStream, boolean aStartImmediately)
@@ -141,9 +142,10 @@ implements RILeafDispatcher, ReorderingBufferListener
 		
 		if (DebugFlags.COLLECTOR_LOG) theCollector = new PrintThroughCollector(
 				theCollector,
-				aMaster._getLocationStore());
+				aMaster.getLocationStore());
 		
 		return new CollectorLogReceiver(
+				aHostInfo,
 				theCollector,
 				itsLocationStore,
 				aInStream,

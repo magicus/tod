@@ -29,6 +29,7 @@ import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.GridMaster;
 import tod.utils.StoreTODServer;
+import tod.utils.TODUtils;
 
 /**
  * Reads events stored on the disk by a {@link StoreTODServer}
@@ -44,7 +45,7 @@ public class GridReplay
 		String theFileName = DebuggerGridConfig.STORE_EVENTS_FILE;
 		File theFile = new File(theFileName);
 		
-		GridMaster theMaster = Fixtures.setupMaster(theRegistry, args);
+		GridMaster theMaster = TODUtils.setupMaster(theRegistry, args);
 		
 		long t0 = System.currentTimeMillis();
 		long theCount = Fixtures.replay(theFile, theMaster);

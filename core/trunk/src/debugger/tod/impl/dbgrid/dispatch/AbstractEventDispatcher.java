@@ -33,13 +33,13 @@ import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
 
-import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.HostInfo;
 import tod.core.transport.LogReceiver;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.NodeException;
 import zz.utils.Future;
-import zz.utils.Task;
+import zz.utils.ITask;
 import zz.utils.Utils;
 import zz.utils.net.Server;
 import zz.utils.net.Server.ServerAdress;
@@ -189,7 +189,7 @@ implements RIEventDispatcher
 	 * start its thread. This is for testing only.
 	 */
 	public abstract LogReceiver createLogReceiver(
-			IHostInfo aHostInfo, 
+			HostInfo aHostInfo, 
 			GridMaster aMaster, 
 			InputStream aInStream,
 			OutputStream aOutStream, 
@@ -200,7 +200,7 @@ implements RIEventDispatcher
 	 * complete the task.
 	 * @return The result returned by each node.
 	 */
-	private <T> List<T> fork(final Task<DispatchNodeProxy, T> aTask)
+	private <T> List<T> fork(final ITask<DispatchNodeProxy, T> aTask)
 	{
 		return Utils.fork(itsChildren, aTask);
 	}
@@ -212,7 +212,7 @@ implements RIEventDispatcher
 	{
 		System.out.println("Event dispatcher: clearing...");
 		
-		fork(new Task<DispatchNodeProxy, Object>() {
+		fork(new ITask<DispatchNodeProxy, Object>() {
 			public Object run(DispatchNodeProxy aProxy)
 			{
 				aProxy.clear();
@@ -231,7 +231,7 @@ implements RIEventDispatcher
 	{
 		System.out.println("[AbstractEventDispatcher] Flushing...");
 
-		List<Integer> theResults = fork(new Task<DispatchNodeProxy, Integer>() {
+		List<Integer> theResults = fork(new ITask<DispatchNodeProxy, Integer>() {
 			public Integer run(DispatchNodeProxy aProxy)
 			{
 				return aProxy.flush();

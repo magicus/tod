@@ -38,6 +38,7 @@ import tod.core.server.CollectorTODServer;
 import tod.core.server.ICollectorFactory;
 import tod.core.server.TODServer;
 import tod.core.session.AbstractSession;
+import tod.core.session.ConnectionInfo;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
 import tod.impl.local.LocalBrowser;
@@ -56,7 +57,7 @@ public class CountTODServer extends AbstractSession
 	
 	public CountTODServer(TODConfig aConfig, URI aUri)
 	{
-		super(aUri);
+		super(aUri, aConfig);
 		itsLocationRegistrer = new DummyLocationRegisterer();
 		itsBrowser = new LocalBrowser(itsLocationRegistrer);
 		
@@ -138,10 +139,6 @@ public class CountTODServer extends AbstractSession
 			
 			itsCollectors.add(theCollector);
 			return theCollector;
-		}
-		
-		public void flushAll()
-		{
 		}
 	}
 	

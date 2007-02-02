@@ -27,6 +27,7 @@ import java.io.OutputStream;
 
 import tod.core.ILocationRegisterer;
 import tod.core.ILogCollector;
+import tod.core.database.structure.HostInfo;
 
 /**
  * A {@link LogReceiver} that reads packets through a 
@@ -38,29 +39,31 @@ public class CollectorLogReceiver extends LogReceiver
 {
 	private final ILogCollector itsCollector;
 	private final ILocationRegisterer itsLocationRegistrer;
-
+	
 	/**
 	 * Connects to an already running aplication through the specified socket.
 	 * @param aSocket The socket used to connect.
 	 * @param aCollector The collector to which the events are forwarded.
 	 */
 	public CollectorLogReceiver(
+			HostInfo aHostInfo,
 			ILogCollector aCollector,
 			ILocationRegisterer aLocationRegistrer,
 			InputStream aInStream,
 			OutputStream aOutStream)
 	{
-		this(aCollector, aLocationRegistrer, aInStream, aOutStream, true);
+		this(aHostInfo, aCollector, aLocationRegistrer, aInStream, aOutStream, true);
 	}
 		
 	public CollectorLogReceiver(
+			HostInfo aHostInfo,
 			ILogCollector aCollector,
 			ILocationRegisterer aLocationRegistrer,
 			InputStream aInStream,
 			OutputStream aOutStream,
 			boolean aStart)
 	{
-		super(aInStream, aOutStream, false);
+		super(aHostInfo, aInStream, aOutStream, false);
 		itsCollector = aCollector;
 		itsLocationRegistrer = aLocationRegistrer;
 		if (aStart) start();

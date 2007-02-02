@@ -116,6 +116,8 @@ static void bciConnect(char* host, int port, char* hostname)
 	
 	int s = socket(AF_INET, SOCK_STREAM, 0);
 	if (s < 0) fatal_error("socket\n");
+	
+	printf("Connecting to %s:%d\n", host, port);
 	int r = connect(s, (sockaddr*) &sin, sizeof(sin));
 	if (r < 0) fatal_ioerror("Cannot connect to instrumentation server");
 	

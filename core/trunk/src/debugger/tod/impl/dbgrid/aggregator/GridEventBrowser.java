@@ -216,42 +216,38 @@ implements IEventBrowser
 
 	public boolean setNextEvent(ILogEvent aEvent)
 	{
-		setNextTimestamp(aEvent.getTimestamp());
-		while(hasNext())
+		try
 		{
-			ILogEvent theNext = next();
+			boolean theResult = itsAggregator.setNextEvent(
+					checkTimestamp(aEvent.getTimestamp()),
+					aEvent.getHost().getId(),
+					aEvent.getThread().getId());
+			reset();
 			
-			if (theNext.getTimestamp() > aEvent.getTimestamp()) break;
-			
-			if (aEvent.equals(theNext))
-			{
-				previous();
-				return true;
-			}
+			return theResult;
 		}
-
-		setNextTimestamp(aEvent.getTimestamp());
-		return false;
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	public boolean setPreviousEvent(ILogEvent aEvent)
 	{
-		setPreviousTimestamp(aEvent.getTimestamp());
-		while(hasPrevious())
+		try
 		{
-			ILogEvent thePrevious = previous();
+			boolean theResult = itsAggregator.setPreviousEvent(
+					checkTimestamp(aEvent.getTimestamp()),
+					aEvent.getHost().getId(),
+					aEvent.getThread().getId());
+			reset();
 			
-			if (thePrevious.getTimestamp() < aEvent.getTimestamp()) break;
-			
-			if (aEvent.equals(thePrevious)) 
-			{
-				next();
-				return true;
-			}
+			return theResult;
 		}
-		
-		setPreviousTimestamp(aEvent.getTimestamp());
-		return false;		
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**

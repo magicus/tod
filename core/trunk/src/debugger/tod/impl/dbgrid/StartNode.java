@@ -44,6 +44,7 @@ public class StartNode
 	 */
 	public static void askRoleToMaster() throws Exception
 	{
+		System.out.println("StartNode");
 		Registry theRegistry = LocateRegistry.getRegistry(DebuggerGridConfig.MASTER_HOST);
 		RIGridMaster theMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
 

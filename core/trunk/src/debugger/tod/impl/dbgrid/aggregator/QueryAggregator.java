@@ -25,6 +25,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import tod.core.database.event.ILogEvent;
 import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.BufferedBidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
@@ -142,6 +143,52 @@ implements RIQueryAggregator
 			if (theNext.getTimestamp() > aTimestamp) return;
 		}
 	}
+	
+	public boolean setNextEvent(long aTimestamp, int aHostId, int aThreadId)
+	{
+		setNextTimestamp(aTimestamp);
+		while(itsMergeIterator.hasNext())
+		{
+			GridEvent theNext = itsMergeIterator.next();
+			
+			if (theNext.getTimestamp() > aTimestamp) break;
+			
+			if (theNext.getTimestamp() == aTimestamp
+					&& theNext.getHost() == aHostId
+					&& theNext.getThread() == aThreadId)
+			{
+				itsMergeIterator.previous();
+				return true;
+			}
+		}
+
+		setNextTimestamp(aTimestamp);
+		return false;
+	}
+
+	public boolean setPreviousEvent(long aTimestamp, int aHostId, int aThreadId)
+	{
+		setPreviousTimestamp(aTimestamp);
+		while(itsMergeIterator.hasPrevious())
+		{
+			GridEvent thePrevious = itsMergeIterator.previous();
+			
+			if (thePrevious.getTimestamp() < aTimestamp) break;
+			
+			if (thePrevious.getTimestamp() == aTimestamp
+					&& thePrevious.getHost() == aHostId
+					&& thePrevious.getThread() == aThreadId) 
+			{
+				itsMergeIterator.next();
+				return true;
+			}
+		}
+		
+		setPreviousTimestamp(aTimestamp);
+		return false;		
+	}
+
+	
 	
 	public long[] getEventCounts(
 			final long aT1,

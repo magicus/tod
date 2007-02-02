@@ -34,7 +34,34 @@ import tod.agent.ConfigUtils;
  */
 public class TODConfig
 {
+	/**
+	 * Defines levels of "detail" for configuration options.
+	 * @author gpothier
+	 */
+	public static enum ConfigLevel
+	{
+		NORMAL(1), ADVANCED(2), DEBUG(3), NEVER(Integer.MAX_VALUE);
+		
+		private int itsValue;
+
+		private ConfigLevel(int aValue)
+		{
+			itsValue = aValue;
+		}
+
+		/**
+		 * Whether this level also includes the specified level.
+		 * eg. {@link #DEBUG} includes {@link #NORMAL} but
+		 * the opposite is false.
+		 */
+		public boolean accept(ConfigLevel aLevel)
+		{
+			return aLevel.itsValue <= itsValue;
+		}
+	}
+	
 	public static final IntegerItem AGENT_VERBOSE = new IntegerItem(
+			ConfigLevel.ADVANCED,
 			"agent.verbose",
 			"Agent - verbose",
 			"Defines the verbosity level of the native agent. " +
@@ -42,6 +69,7 @@ public class TODConfig
 			ConfigUtils.readInt("agent-verbose", 0));
 	
 	public static final BooleanItem AGENT_SKIP_CORE_CLASSE = new BooleanItem(
+			ConfigLevel.DEBUG,
 			"agent.skipCoreClasses",
 			"Agent - skip core classes",
 			"If true, the agent will not instrument core classes, independently of " +
@@ -49,12 +77,14 @@ public class TODConfig
 			true);
 	
 	public static final StringItem AGENT_CACHE_PATH = new StringItem(
+			ConfigLevel.NORMAL,
 			"agent.cachePath",
 			"Agent - class cache path",
 			"Defines the path where the native agent stores instrumented classes.",
 			ConfigUtils.readString("classes-cache-path", "/tmp/tod"));
 	
 	public static final BooleanItem AGENT_CAPTURE_EXCEPTIONS = new BooleanItem(
+			ConfigLevel.DEBUG,
 			"agent.captureExceptions",
 			"Agent - capture exceptions",
 			"If true, the native agent sets up a callback that captures " +
@@ -62,12 +92,14 @@ public class TODConfig
 			true);
 	
 	public static final StringItem INSTRUMENTER_LOCATIONS_FILE = new StringItem(
+			ConfigLevel.NORMAL,
 			"instrumenter.locationsFile",
 			"Instrumenter - locations file",
 			"Defines the file that contains location data for the debugged application.",
 			ConfigUtils.readString("locations-file", "/tmp/tod/tod-locations"));
 	
 	public static final StringItem SCOPE_GLOBAL_FILTER = new StringItem(
+			ConfigLevel.DEBUG,
 			"scope.globalFilter",
 			"Scope - global filter",
 			"Global class filter for instrumentation. " +
@@ -78,6 +110,7 @@ public class TODConfig
 			"[-tod.agent.** -tod.core.**]");
 	
 	public static final StringItem SCOPE_TRACE_FILTER = new StringItem(
+			ConfigLevel.NORMAL,
 			"scope.traceFilter",
 			"Scope - trace filter",
 			"Tracing class filter for instrumentation. " +
@@ -85,19 +118,29 @@ public class TODConfig
 			"but are registered in the structure database.",
 			ConfigUtils.readString("trace-filter", "[-java.** -javax.** -sun.** -com.sun.**]"));
 	
+	public static final StringItem CLIENT_HOST_NAME = new StringItem(
+			ConfigLevel.NORMAL,
+			"client.hostname",
+			"Client - host name",
+			"Host name given to the debugged program's JVM.",
+			"tod-1");
+	
 	public static final StringItem COLLECTOR_HOST = new StringItem(
+			ConfigLevel.DEBUG,
 			"collector.host",
 			"Collector - host",
 			"Host to which the debugged program should send events.",
 			"localhost");
 	
 	public static final IntegerItem COLLECTOR_JAVA_PORT = new IntegerItem(
+			ConfigLevel.DEBUG,
 			"collector.javaPort",
 			"Collector - Java port",
 			"Port to which the Java portion of the TOD agent should connect.",
 			8058);
 	
 	public static final IntegerItem COLLECTOR_NATIVE_PORT = new IntegerItem(
+			ConfigLevel.DEBUG,
 			"collector.nativePort",
 			"Collector - native port",
 			"Port to which the native portion of the TOD agent should connect.",
@@ -107,6 +150,7 @@ public class TODConfig
 	public static final String GRID_IMPL_GROUPED_INDEXES = "grpIdx";
 	
 	public static final StringItem GRID_IMPLEMENTATION = new StringItem(
+			ConfigLevel.ADVANCED,
 			"grid.impl",
 			"Grid implementation",
 			"Specifies the type of grid implementation. One of:\n" +
@@ -117,6 +161,32 @@ public class TODConfig
 					"are available.",
 			ConfigUtils.readString("grid-impl", GRID_IMPL_UNIFORM));
 	
+	public static final String SESSION_MEMORY = "memory";
+	public static final String SESSION_LOCAL = "local";
+	public static final String SESSION_REMOTE = "remote";
+	
+	public static final StringItem SESSION_TYPE = new StringItem(
+			ConfigLevel.NORMAL,
+			"session.type",
+			"Session type",
+			"Specifies the type of database to use for the debugging " +
+			"session. One of:\n" +
+			" - "+SESSION_MEMORY+": Events are stored in memory, " +
+					"in the Eclipse process. " +
+					"This is the less scalable option. The maximum number " +
+					"of events depends on the amount of heap memory allocated " +
+					"the the JVM that runs Eclipse.\n" +
+			" - "+SESSION_LOCAL+": Events are stored on the hard disk. " +
+					"This option provides good scalability but " +
+					"performance may be a problem for large traces.\n" +
+			" - "+SESSION_REMOTE+": Events are stored in a dedicated " +
+					"distributed database. " +
+					"This option provides good scalability and performance " +
+					"(depending on the size of the database cluster). " +
+					"The database cluster must be set up and the " +
+					"'Collector host' option must indicate the name of " +
+					"the grid master.\n",
+			ConfigUtils.readString("session-type", SESSION_LOCAL));
 	
 	/**
 	 * Contains all available configuration items.
@@ -253,14 +323,22 @@ public class TODConfig
 	
 	public static class Item<T>
 	{
+		private final ConfigLevel itsLevel;
 		private final ItemType<T> itsType;
 		private final String itsName;
 		private final String itsDescription;
 		private final T itsDefault;
 		private final String itsKey;
 		
-		public Item(ItemType<T> aType, String aKey, String aName, String aDescription, T aDefault)
+		public Item(
+				ConfigLevel aLevel, 
+				ItemType<T> aType, 
+				String aKey, 
+				String aName, 
+				String aDescription, 
+				T aDefault)
 		{
+			itsLevel = aLevel;
 			itsType = aType;
 			itsKey = aKey;
 			itsName = aName;
@@ -312,25 +390,40 @@ public class TODConfig
 	
 	public static class BooleanItem extends Item<Boolean>
 	{
-		public BooleanItem(String aKey, String aName, String aDescription, Boolean aDefault)
+		public BooleanItem(
+				ConfigLevel aLevel,
+				String aKey, 
+				String aName, 
+				String aDescription, 
+				Boolean aDefault)
 		{
-			super(ItemType.ITEM_TYPE_BOOLEAN, aKey, aName, aDescription, aDefault);
+			super(aLevel, ItemType.ITEM_TYPE_BOOLEAN, aKey, aName, aDescription, aDefault);
 		}
 	}
 	
 	public static class StringItem extends Item<String>
 	{
-		public StringItem(String aKey, String aName, String aDescription, String aDefault)
+		public StringItem(
+				ConfigLevel aLevel, 
+				String aKey,
+				String aName, 
+				String aDescription, 
+				String aDefault)
 		{
-			super(ItemType.ITEM_TYPE_STRING, aKey, aName, aDescription, aDefault);
+			super(aLevel, ItemType.ITEM_TYPE_STRING, aKey, aName, aDescription, aDefault);
 		}
 	}
 	
 	public static class IntegerItem extends Item<Integer>
 	{
-		public IntegerItem(String aKey, String aName, String aDescription, Integer aDefault)
+		public IntegerItem(
+				ConfigLevel aLevel, 
+				String aKey, 
+				String aName, 
+				String aDescription, 
+				Integer aDefault)
 		{
-			super(ItemType.ITEM_TYPE_INTEGER, aKey, aName, aDescription, aDefault);
+			super(aLevel, ItemType.ITEM_TYPE_INTEGER, aKey, aName, aDescription, aDefault);
 		}
 	}
 }

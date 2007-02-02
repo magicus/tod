@@ -24,6 +24,8 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
 import tod.impl.dbgrid.aggregator.QueryAggregator;
@@ -37,6 +39,7 @@ import tod.impl.dbgrid.monitoring.Monitor.KeyMonitorData;
 import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.utils.remote.RILocationsRepository;
+import zz.utils.ITask;
 
 /**
  * Remote interface of the grid master.
@@ -152,6 +155,11 @@ public interface RIGridMaster extends Remote
 	 */
 	public Object getRegisteredObject(long aId) throws RemoteException;
 
+	/**
+	 * See {@link ILogBrowser#exec(ITask)}
+	 */
+	public <O> O exec(ITask<ILogBrowser, O> aTask) throws RemoteException;
+	
 	/**
 	 * Enumerates the different kinds of roles of the nodes in the debugging grid.
 	 * @author gpothier

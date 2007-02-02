@@ -31,11 +31,13 @@ import tod.Util;
 import tod.core.ILocationRegisterer.Stats;
 import tod.core.database.browser.ILocationStore;
 import tod.core.database.browser.ILocationsRepository;
+import tod.core.database.browser.LocationUtils;
 import tod.core.database.structure.ArrayTypeInfo;
 import tod.core.database.structure.BehaviorInfo;
 import tod.core.database.structure.ClassInfo;
 import tod.core.database.structure.FieldInfo;
 import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ITypeInfo;
@@ -149,26 +151,6 @@ public class LocationRegisterer implements ILocationStore
 		return new FieldInfo(aId, aTypeInfo, aName);
 	}
 
-	public TypeInfo[] getArgumentTypes(String aSignature)
-	{
-		Type[] theASMArgumentTypes = Type.getArgumentTypes(aSignature);
-		TypeInfo[] theArgumentTypes = new TypeInfo[theASMArgumentTypes.length];
-		
-		for (int i = 0; i < theASMArgumentTypes.length; i++)
-		{
-			Type theASMType = theASMArgumentTypes[i];
-			theArgumentTypes[i] = getType(theASMType.getClassName());
-		}
-		
-		return theArgumentTypes;
-	}
-
-	public TypeInfo getReturnType(String aSignature)
-	{
-		Type theASMReturnType = Type.getReturnType(aSignature);
-		return getType(theASMReturnType.getClassName());
-	}
-	
 	/**
 	 * Factory method for constructor info.
 	 */
@@ -188,8 +170,8 @@ public class LocationRegisterer implements ILocationStore
 				aTypeInfo,
 				aName,
 				aSignature,
-				getArgumentTypes(aSignature),
-				getReturnType(aSignature),
+				LocationUtils.getArgumentTypes(this, aSignature),
+				LocationUtils.getReturnType(this, aSignature),
 				aLineNumberTable,
 				aLocalVariableTable);
 	}
@@ -316,48 +298,6 @@ public class LocationRegisterer implements ILocationStore
 	public Iterable<String> getFiles()
 	{
 		return itsFiles;
-	}
-	
-	public IBehaviorInfo getBehavior(
-			ITypeInfo aType, 
-			String aName, 
-			String aSignature, 
-			boolean aSearchAncestors)
-	{
-		ClassInfo theClassInfo = (ClassInfo) aType;
-		ITypeInfo[] theArgumentTypes = getArgumentTypes(aSignature);
-		
-		while (theClassInfo != null)
-		{
-			IBehaviorInfo theBehavior = theClassInfo.getBehavior(aName, theArgumentTypes);
-			if (theBehavior != null) return theBehavior;
-			
-			if (! aSearchAncestors) return null;
-			
-			theClassInfo = theClassInfo.getSupertype();
-		}
-
-		return null;
-	}
-
-	public IFieldInfo getField(
-			ITypeInfo aType, 
-			String aName,
-			boolean aSearchAncestors)
-	{
-		ClassInfo theClassInfo = (ClassInfo) aType;
-		
-		while (theClassInfo != null)
-		{
-			IFieldInfo theField = theClassInfo.getField(aName);
-			if (theField != null) return theField;
-			
-			if (! aSearchAncestors) return null;
-			
-			theClassInfo = theClassInfo.getSupertype();
-		}
-
-		return null;
 	}
 	
 	public Iterable<ILocationInfo> getLocations()

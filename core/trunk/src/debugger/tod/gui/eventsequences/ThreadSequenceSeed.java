@@ -30,12 +30,12 @@ import tod.gui.view.LogView;
  */
 public class ThreadSequenceSeed implements IEventSequenceSeed
 {
-	private ILogBrowser itsTrace;
+	private ILogBrowser itsLogBrowser;
 	private IThreadInfo itsThread;
 
 	public ThreadSequenceSeed(ILogBrowser aTrace, IThreadInfo aThread)
 	{
-		itsTrace = aTrace;
+		itsLogBrowser = aTrace;
 		itsThread = aThread;
 	}
 
@@ -46,7 +46,7 @@ public class ThreadSequenceSeed implements IEventSequenceSeed
 
 	public ILogBrowser getLogBrowser()
 	{
-		return itsTrace;
+		return itsLogBrowser;
 	}
 
 	public ThreadSequenceView createView(LogView aLogView)

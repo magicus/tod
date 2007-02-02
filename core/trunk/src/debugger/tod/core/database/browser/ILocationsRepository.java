@@ -55,44 +55,14 @@ public interface ILocationsRepository
 	public IFieldInfo getField(int aFieldId);
 	
 	/**
-	 * Retrieves a field given a type and a name.
-	 * @param aSearchAncestors If false, the field will be searched only in the
-	 * specified type. If true, the field will also be searched in ancestors. In the case
-	 * of private fields, the first (closest to specified type) matching field is returned. 
-	 */
-	public IFieldInfo getField(ITypeInfo aType, String aName, boolean aSearchAncestors);
-	
-	/**
 	 * Returns all registered fields.
 	 */
 	public Iterable<IFieldInfo> getFields();
 	
-
-
 	/**
 	 * Retrieves a behavior given its id.
 	 */
 	public IBehaviorInfo getBehavior(int aBehaviorId);
-	
-	/**
-	 * Searches a behavior in the given type
-	 * @param aSearchAncestors See {@link #getField(ITypeInfo, String, boolean)}.
-	 */
-	public IBehaviorInfo getBehavior(
-			ITypeInfo aType, 
-			String aName, 
-			String aSignature, 
-			boolean aSearchAncestors);
-	
-	/**
-	 * Returns the argument types that correspond to the given behavior signature. 
-	 */
-	public ITypeInfo[] getArgumentTypes(String aSignature);
-	
-	/**
-	 * Determines a TOD return type given a method signature
-	 */
-	public TypeInfo getReturnType(String aSignature);
 	
 	/**
 	 * Returns all registered behaviours.

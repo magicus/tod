@@ -23,6 +23,7 @@ package tod.impl.dbgrid.aggregator;
 import java.rmi.RemoteException;
 
 import tod.core.database.browser.IEventBrowser;
+import tod.core.database.event.ILogEvent;
 import tod.impl.dbgrid.db.RIEventIterator;
 
 /**
@@ -31,6 +32,17 @@ import tod.impl.dbgrid.db.RIEventIterator;
  */
 public interface RIQueryAggregator extends RIEventIterator
 {
+	/**
+	 * Semantics matches {@link IEventBrowser#setNextEvent(ILogEvent)}
+	 */
+	public boolean setNextEvent (long aTimestamp, int aHostId, int aThreadId) throws RemoteException;
+	
+	/**
+	 * Semantics matches {@link IEventBrowser#setPreviousEvent(ILogEvent)}
+	 */
+	public boolean setPreviousEvent (long aTimestamp, int aHostId, int aThreadId) throws RemoteException;
+
+	
 	/**
 	 * Semantic matches {@link IEventBrowser#getEventCounts(long, long, int)}
 	 */

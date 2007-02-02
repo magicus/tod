@@ -20,14 +20,12 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.server;
 
+import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import tod.core.ILocationRegisterer;
-import tod.core.LocationRegisterer;
 import tod.core.bci.IInstrumenter;
 import tod.core.bci.NativeAgentPeer;
 import tod.core.config.TODConfig;
@@ -49,8 +47,8 @@ public abstract class TODServer
 	
 	private ILocationRegisterer itsLocationRegistrer;
 	
-	private List<NativeAgentPeer> itsNativePeers = new ArrayList<NativeAgentPeer>();
-	private Map<String, LogReceiver> itsReceivers = new HashMap<String, LogReceiver>();
+	private Map<String, ClientConnection> itsConnections = 
+		new HashMap<String, ClientConnection>();
 	
 	private LogReceiverServer itsReceiverServer;
 	private NativePeerServer itsNativePeerServer;
@@ -86,65 +84,78 @@ public abstract class TODServer
 	}
 
 	/**
-	 * This method is called when the connection with the target VM is lost.
+	 * This method is called when target VMs are disconnected.
 	 */
 	protected void disconnected()
 	{
 	}
 
-	private LogReceiver getReceiver(String aHostName)
-	{
-		return itsReceivers.get(aHostName);
-	}
-	
 	/**
 	 * Creates a receiver for a host.
 	 */
 	protected abstract LogReceiver createReceiver(Socket aSocket);
 	
 	/**
-	 * Flushes buffers.
+	 * Disconnects from the given host
 	 */
-	protected void flush()
+	protected synchronized void disconnect(String aHostname)
 	{
-		for(LogReceiver theReceiver : itsReceivers.values())
-		{
-			try
-			{
-				theReceiver.interrupt();
-				theReceiver.join();
-			}
-			catch (InterruptedException e)
-			{
-				throw new RuntimeException(e);
-			}
-		}
+		ClientConnection theConnection = itsConnections.get(aHostname);
+		assert theConnection != null;
+		
+		LogReceiver theReceiver = theConnection.getLogReceiver();
+		theReceiver.disconnect();
+		itsConnections.remove(aHostname);
+		if (itsConnections.size() == 0) disconnected();
 	}
 	
-	protected void acceptJavaConnection(Socket aSocket)
+	protected synchronized void acceptJavaConnection(Socket aSocket)
 	{
 		LogReceiver theReceiver = createReceiver(aSocket);
 		
 		String theHostName = theReceiver.waitHostName();
-		itsReceivers.put(theHostName, theReceiver);
-		
+		if (itsConnections.containsKey(theHostName))
+		{
+			try
+			{
+				aSocket.close();
+				throw new RuntimeException("Host already connected: "+theHostName);
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		itsConnections.put(theHostName, new ClientConnection(theReceiver));
 		System.out.println("Accepted (java) connection from "+theHostName);
+
+		notifyAll();
 	}
 	
-	protected void acceptNativeConnection(Socket aSocket)
+	protected synchronized void acceptNativeConnection(Socket aSocket)
 	{
-		NativeAgentPeer thePeer = new MyNativePeer(aSocket)
+		try
 		{
-			@Override
-			protected void disconnected()
+			NativeAgentPeer thePeer = new MyNativePeer(aSocket);
+			String theHostName = thePeer.waitHostName();
+			
+			while(true)
 			{
-				super.disconnected();
-				TODServer.this.disconnected();
+				ClientConnection theConnection = itsConnections.get(theHostName);
+				if (theConnection == null) wait();
+				else
+				{
+					theConnection.setNativeAgentPeer(thePeer);
+					break;
+				}
 			}
-		};
-		itsNativePeers.add(thePeer);
-		
-		System.out.println("Accepted (native) connection from "+thePeer.waitHostName());
+			
+			System.out.println("Accepted (native) connection from "+theHostName);
+		}
+		catch (InterruptedException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 	
 	/**
@@ -194,11 +205,18 @@ public abstract class TODServer
 		@Override
 		protected void processFlush()
 		{
-			System.out.println("[TODServer.MyNativePeer] Flushing...");
-			flush();
-			System.out.println("[TODServer.MyNativePeer] Done.");
+			disconnected();
 		}
 		
+		@Override
+		protected void disconnected()
+		{
+			if (getHostName() != null)
+			{
+				TODServer.this.disconnect(getHostName());
+				super.disconnected();
+			}
+		}
 	}
 	
 	private static class SynchronizedInstrumenter implements IInstrumenter
@@ -214,6 +232,38 @@ public abstract class TODServer
 		{
 			return itsDelegate.instrumentClass(aClassName, aBytecode);
 		}
+	}
+	
+	/**
+	 * Groups both connection entities of a client (log receiver
+	 * and native peer).
+	 * @author gpothier
+	 */
+	private static class ClientConnection
+	{
+		private LogReceiver itsLogReceiver;
+		private NativeAgentPeer itsNativeAgentPeer;
+		
+		public ClientConnection(LogReceiver aLogReceiver)
+		{
+			itsLogReceiver = aLogReceiver;
+		}
+
+		public NativeAgentPeer getNativeAgentPeer()
+		{
+			return itsNativeAgentPeer;
+		}
+
+		public void setNativeAgentPeer(NativeAgentPeer aNativeAgentPeer)
+		{
+			itsNativeAgentPeer = aNativeAgentPeer;
+		}
+
+		public LogReceiver getLogReceiver()
+		{
+			return itsLogReceiver;
+		}
+
 	}
 
 }

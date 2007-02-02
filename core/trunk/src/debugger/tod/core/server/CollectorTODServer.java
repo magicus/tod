@@ -29,6 +29,7 @@ import tod.core.ILocationRegisterer;
 import tod.core.LocationRegisterer;
 import tod.core.bci.IInstrumenter;
 import tod.core.config.TODConfig;
+import tod.core.database.structure.HostInfo;
 import tod.core.transport.CollectorLogReceiver;
 import tod.core.transport.LogReceiver;
 
@@ -38,6 +39,8 @@ import tod.core.transport.LogReceiver;
  */
 public class CollectorTODServer extends TODServer
 {
+	private int itsCurrentHostId = 1;
+
 	private ICollectorFactory itsCollectorFactory;
 
 	public CollectorTODServer(
@@ -56,6 +59,7 @@ public class CollectorTODServer extends TODServer
 		try
 		{
 			return new CollectorLogReceiver(
+					new HostInfo(itsCurrentHostId++),
 					itsCollectorFactory.create(),
 					LocationRegisterer.createSynchronizedRegistrer(getLocationRegistrer()),
 					new BufferedInputStream(aSocket.getInputStream()), 
@@ -73,12 +77,5 @@ public class CollectorTODServer extends TODServer
 		{
 			throw new RuntimeException(e);
 		}
-	}
-
-	@Override
-	protected void flush()
-	{
-		super.flush();
-		itsCollectorFactory.flushAll();
 	}
 }

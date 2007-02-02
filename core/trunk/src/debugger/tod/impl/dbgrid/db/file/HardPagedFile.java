@@ -43,6 +43,7 @@ import zz.utils.Stack;
 import zz.utils.Utils;
 import zz.utils.bit.ByteBitStruct;
 import zz.utils.cache.MRUBuffer;
+import zz.utils.cache.SyncMRUBuffer;
 import zz.utils.list.NakedLinkedList.Entry;
 
 /**
@@ -65,10 +66,14 @@ public class HardPagedFile extends PageBank
 	private long itsWrittenPagesCount;
 	private long itsReadPagesCount;
 	
+	private String itsName;
+	
 	public HardPagedFile(File aFile, int aPageSize) throws FileNotFoundException
 	{
-		Monitor.getInstance().register(this);
 		assert itsPageSize % 4 == 0;
+		
+		itsName = aFile.getName();
+		Monitor.getInstance().register(this);
 	
 		itsPageSize = aPageSize;
 		aFile.delete();
@@ -146,8 +151,11 @@ public class HardPagedFile extends PageBank
 	public Page get(long aPageId)
 	{
 		PageKey theKey = new PageKey(this, aPageId);
-		PageData theData = itsPageDataManager.get(theKey, false);
-		return theData != null ? theData.getAttachedPage() : new Page(theKey);
+		synchronized (itsPageDataManager)
+		{
+			PageData theData = itsPageDataManager.get(theKey, false);
+			return theData != null ? theData.getAttachedPage() : new Page(theKey);
+		}
 	}
 	
 	@Override
@@ -185,11 +193,15 @@ public class HardPagedFile extends PageBank
 	 */
 	public Page create()
 	{
-		itsPagesCount++;
-		long thePageId = itsPagesCount-1;
-		Entry<PageData> theData = itsPageDataManager.create(this, thePageId);
-		Page thePage = new Page(theData);
-		return thePage;
+		synchronized (itsPageDataManager)
+		{
+			itsPagesCount++;
+			long thePageId = itsPagesCount-1;
+			
+			Entry<PageData> theData = itsPageDataManager.create(this, thePageId);
+			Page thePage = new Page(theData);			
+			return thePage; 
+		}
 	}
 	
 	private int[] loadPageData(long aId)
@@ -232,6 +244,12 @@ public class HardPagedFile extends PageBank
 		{
 			throw new RuntimeException(e);
 		}
+	}
+
+	@Override
+	public String toString()
+	{
+		return getClass().getSimpleName()+" ["+itsName+"]";
 	}
 	
 	private class FileAccessor extends Thread
@@ -340,7 +358,7 @@ public class HardPagedFile extends PageBank
 	 * Ensures that all dirty pages are saved before 
 	 * @author gpothier
 	 */
-	private static class PageDataManager extends MRUBuffer<PageKey, PageData>
+	private static class PageDataManager extends SyncMRUBuffer<PageKey, PageData>
 	{
 		private Stack<int[]> itsFreeBuffers = new ArrayStack<int[]>();
 		private long itsCurrentSpace = 0;
@@ -353,7 +371,7 @@ public class HardPagedFile extends PageBank
 			Monitor.getInstance().register(this);
 		}
 		
-		public int[] getFreeBuffer()
+		public synchronized int[] getFreeBuffer()
 		{
 			if (itsFreeBuffers.isEmpty()) 
 			{
@@ -363,13 +381,13 @@ public class HardPagedFile extends PageBank
 			else return itsFreeBuffers.pop();
 		}
 		
-		private void addFreeBuffer(int[] aBuffer)
+		private synchronized void addFreeBuffer(int[] aBuffer)
 		{
 			Utils.memset(aBuffer, 0);
 			itsFreeBuffers.push(aBuffer);
 		}
 		
-		public Entry<PageData> create(HardPagedFile aFile, long aId)
+		public synchronized Entry<PageData> create(HardPagedFile aFile, long aId)
 		{
 			assert aFile.getPageSize() == itsPageSize;
 			
@@ -383,7 +401,6 @@ public class HardPagedFile extends PageBank
 		@Override
 		protected void dropped(PageData aPageData)
 		{
-			aPageData.store();
 			addFreeBuffer(aPageData.detach());
 		}
 
@@ -481,32 +498,30 @@ public class HardPagedFile extends PageBank
 			itsDirty = true;
 		}
 		
+		public synchronized void attach(Page aPage)
+		{
+			itsAttachedPages.add(aPage);
+			if (itsAttachedPages.size() > 1)
+			{
+				System.err.println(String.format(
+					"Warning: page %s attached %d times",
+					getKey(),
+					itsAttachedPages.size()));
+			}
+		}
+		
 		/**
-		 * Stores this page data if necessary.
+		 * Stores this page data if necessary, and
+		 * detaches this page data from its pages, so that it can be reclaimed.
 		 */
-		public void store() 
+		public synchronized int[] detach()
 		{
 			if (itsDirty)
 			{
 				itsKey.store(itsData);
 				itsDirty = false;
 			}
-		}
-		
-		public void attach(Page aPage)
-		{
-			itsAttachedPages.add(aPage);
-			if (itsAttachedPages.size() > 1) System.err.println(String.format(
-					"Warning: page %d attached %d times",
-					getKey().getPageId(),
-					itsAttachedPages.size()));
-		}
-		
-		/**
-		 * Detaches this page data from its pages, so that it can be reclaimed.
-		 */
-		public int[] detach()
-		{
+			
 			for (Page thePage : itsAttachedPages)
 			{
 				thePage.clearData();
@@ -574,12 +589,21 @@ public class HardPagedFile extends PageBank
 			return getFile().getPageSize();
 		}
 		
+		/**
+		 * Obtains the data buffer of this page.
+		 * Warning: clients modifying this buffer directly instead of using
+		 * {@link #asBitStruct()} must call {@link #modified()} to notify the
+		 * system that the page needs to be saved.
+		 */
 		public int[] getData()
 		{
 			if (itsData == null)
 			{
-				itsData = itsPageDataManager.getEntry(getKey());
-				itsData.getValue().attach(this);
+				synchronized (itsPageDataManager)
+				{
+					itsData = itsPageDataManager.getEntry(getKey());
+					itsData.getValue().attach(this);
+				}
 			}
 			return itsData.getValue().getData();
 		}
@@ -589,7 +613,7 @@ public class HardPagedFile extends PageBank
 			itsData = null;
 		}
 		
-		void modified()
+		public void modified()
 		{
 			if (itsData == null) throw new IllegalStateException("Trying to modify an absent page...");
 			itsData.getValue().markDirty();

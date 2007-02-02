@@ -108,12 +108,6 @@ public class DebugFlags
 	public static final int RECEIVER_PRINT_COUNTS = 100000;
 	
 	/**
-	 * Whether the grid master should prevent multiple database nodes
-	 * on the same host.
-	 */
-	public static final boolean GRID_CHECK_NODE_HOST = true;
-	
-	/**
 	 * If true, hierarchical dispatching parameters are
 	 * tweaked so that there is one internal dispatcher, one
 	 * leaf dispatcher and one db node.

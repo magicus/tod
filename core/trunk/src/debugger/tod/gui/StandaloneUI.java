@@ -21,6 +21,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui;
 
 import java.net.URI;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -43,23 +45,23 @@ public class StandaloneUI extends JPanel
 	{
 		TODConfig theConfig = new TODConfig();
 		String theScheme = aUri != null ? aUri.getScheme() : null;
-		if (RemoteGridSession.TOD_GRID_SCHEME.equals(theScheme))
+		try
 		{
-			try
+			if (RemoteGridSession.TOD_GRID_SCHEME.equals(theScheme))
 			{
-				itsSession = new RemoteGridSession(aUri);
+				itsSession = new RemoteGridSession(aUri, theConfig);
 			}
-			catch (Exception e)
+			else
 			{
-				throw new RuntimeException(e);
+				itsSession = new LocalGridSession(aUri, theConfig);
 			}
+			
+			createUI();
 		}
-		else
+		catch (Exception e)
 		{
-			itsSession = LocalGridSession.create(theConfig);
+			throw new RuntimeException(e);
 		}
-		
-		createUI();
 	}
 
 	private void createUI()

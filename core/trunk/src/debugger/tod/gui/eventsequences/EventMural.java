@@ -714,7 +714,15 @@ public class EventMural extends SVGGraphicContainer
 					ImageUpdateRequest theRequest = itsRequestsQueue.take();
 					long t0 = System.currentTimeMillis();
 					System.out.println("[EventMural.Updater] Processing request: "+theRequest);
-					doUpdateImage(theRequest.mural, theRequest.display);
+					try
+					{
+						doUpdateImage(theRequest.mural, theRequest.display);
+					}
+					catch (Exception e)
+					{
+						System.err.println("Exception in EventMural.Updater:");
+						e.printStackTrace();
+					}
 					long t1 = System.currentTimeMillis();
 					float t = (t1-t0)/1000f;
 					System.out.println("[EventMural.Updater] Finished request in "+t+"s.");

@@ -13,7 +13,7 @@ deploy()
 	 gpothier@$HOST::tod
 }
 
-deploy syntagma.dim.uchile.cl "$*" || exit 10
-#deploy dichato "$*" || exit 11
+#deploy syntagma.dim.uchile.cl "$*" || exit 10
+deploy dichato "$*" || exit 11
 
 exit 0

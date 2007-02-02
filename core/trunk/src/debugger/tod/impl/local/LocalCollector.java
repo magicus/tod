@@ -100,7 +100,6 @@ public class LocalCollector extends EventCollector
 		BehaviorCallEvent theParentEvent = aThread.peekParent();
 //		assert theParentEvent == null || theParentEvent.getTimestamp() == aParentTimestamp;
 		
-		aEvent.setHost(getHost());
 		aEvent.setThread(aThread);
 		aEvent.setDepth(aDepth);
 		

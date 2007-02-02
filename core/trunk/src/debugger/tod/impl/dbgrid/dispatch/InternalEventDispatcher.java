@@ -33,7 +33,7 @@ import java.rmi.RemoteException;
 import tod.agent.DebugFlags;
 import tod.core.BehaviorKind;
 import tod.core.ILocationRegisterer;
-import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.HostInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ThreadInfo;
 import tod.core.transport.CollectorPacketReader;
@@ -93,7 +93,7 @@ implements RIInternalDispatcher
 
 	@Override
 	public LogReceiver createLogReceiver(
-			IHostInfo aHostInfo, 
+			HostInfo aHostInfo, 
 			GridMaster aMaster, 
 			InputStream aInStream,
 			OutputStream aOutStream, 
@@ -128,18 +128,16 @@ implements RIInternalDispatcher
 		 */
 		private GridMaster itsMaster;
 
-		private IHostInfo itsHostInfo;
 
 		public ForwardingLogReceiver(
 				GridMaster aMaster,
-				IHostInfo aHostInfo,
+				HostInfo aHostInfo,
 				InputStream aInStream,
 				OutputStream aOutStream,
 				boolean aStart)
 		{
-			super(aInStream, aOutStream, false);
+			super(aHostInfo, aInStream, aOutStream, false);
 			itsMaster = aMaster;
-			itsHostInfo = aHostInfo;
 			if (aStart) start();
 		}
 
@@ -186,7 +184,7 @@ implements RIInternalDispatcher
 
 			if (itsMaster != null)
 			{
-				ThreadInfo theThreadInfo = new ThreadInfo(itsHostInfo, theId, theJVMId, theName);
+				ThreadInfo theThreadInfo = new ThreadInfo(getHostInfo(), theId, theJVMId, theName);
 				itsMaster.registerThread(theThreadInfo);
 			}
 		}

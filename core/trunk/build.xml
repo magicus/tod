@@ -117,6 +117,7 @@
         	<arg value="${build.dir}"/>
         	<arg value="${lib.dir}"/>
         	<arg value="${scripts.dir}"/>
+        	<arg value="*.so"/>
     	</exec>
     </target>
 	

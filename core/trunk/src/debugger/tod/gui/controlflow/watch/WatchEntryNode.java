@@ -64,7 +64,7 @@ public class WatchEntryNode<E> extends SVGGraphicContainer
 		createUI();
 		
 		aJobProcessor.submit(
-				new JobProcessor.Job()
+				new JobProcessor.Job<Object>()
 				{
 					@Override
 					public Object run()

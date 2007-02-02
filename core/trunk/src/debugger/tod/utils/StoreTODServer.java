@@ -108,10 +108,6 @@ public class StoreTODServer extends CollectorTODServer
 		{
 			return null;
 		}
-
-		public void flushAll()
-		{
-		}
 	}
 	
 	public static void main(String[] args)

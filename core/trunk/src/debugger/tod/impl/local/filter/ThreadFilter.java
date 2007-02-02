@@ -30,16 +30,19 @@ import tod.impl.local.LocalBrowser;
  */
 public class ThreadFilter extends AbstractStatelessFilter
 {
+	private int itsHostId;
 	private int itsThreadId;
 	
-	public ThreadFilter(LocalBrowser aBrowser, int aThreadId)
+	public ThreadFilter(LocalBrowser aBrowser, int aHostId, int aThreadId)
 	{
 		super (aBrowser);
+		itsHostId = aHostId;
 		itsThreadId = aThreadId;
 	}
 	
 	public boolean accept(ILogEvent aEvent)
 	{
-		return aEvent.getThread().getId() == itsThreadId;
+		return aEvent.getThread().getId() == itsThreadId
+				&& aEvent.getHost().getId() == itsHostId;
 	}
 }

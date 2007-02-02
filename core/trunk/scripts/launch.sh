@@ -2,6 +2,7 @@
 
 case "$1" in
 	"session"	) MAIN="tod.impl.dbgrid.GridSession";;
+	"master"	) MAIN="tod.impl.dbgrid.GridMaster";;
 	"node"		) MAIN="tod.impl.dbgrid.StartNode";;
 	"store"		) MAIN="tod.utils.StoreTODServer";;
 	"replay"	) MAIN="tod.impl.dbgrid.bench.GridReplay";;
@@ -27,6 +28,7 @@ VMARGS="$VMARGS -Dlocations-file=$LOCATIONS_FILE"
 VMARGS="$VMARGS -Dpage-buffer-size=$PAGE_BUFFER_SIZE"
 VMARGS="$VMARGS -Dtask-id=$TASK_ID"
 VMARGS="$VMARGS -Dgrid-impl=$GRID_IMPL"
+VMARGS="$VMARGS -Dcheck-same-host=$CHECK_SAME_HOST"
 VMARGS="$VMARGS $EXTRA_JVM_ARGS"
 
 if [ -n "$JDWP_PORT" ]

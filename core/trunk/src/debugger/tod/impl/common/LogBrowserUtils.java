@@ -20,7 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.common;
 
-import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
@@ -43,9 +42,7 @@ public class LogBrowserUtils
 	 */
 	public static ILogEvent getEvent(ILogBrowser aLogBrowser, ExternalPointer aPointer)
 	{
-		ICompoundFilter theFilter = aLogBrowser.createIntersectionFilter(
-				aLogBrowser.createHostFilter(aPointer.host),
-				aLogBrowser.createThreadFilter(aPointer.thread));
+		IEventFilter theFilter = aLogBrowser.createThreadFilter(aPointer.thread);
 		
 		IEventBrowser theBrowser = aLogBrowser.createBrowser(theFilter);
 		theBrowser.setNextTimestamp(aPointer.timestamp);
@@ -53,7 +50,6 @@ public class LogBrowserUtils
 		{
 			ILogEvent theEvent = theBrowser.next();
 			
-			assert theEvent.getHost().equals(aPointer.host);
 			assert theEvent.getThread().equals(aPointer.thread);
 			if (theEvent.getTimestamp() == aPointer.timestamp) return theEvent;
 		}

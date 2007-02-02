@@ -195,8 +195,10 @@ public interface ILocationRegisterer
 		}
 	}
 
-	public static class Stats
+	public static class Stats implements Serializable
 	{
+		private static final long serialVersionUID = -2910977890794945414L;
+		
 		public final int nTypes;
 		public final int nBehaviors;
 		public final int nFields;
@@ -217,6 +219,32 @@ public interface ILocationRegisterer
 					nBehaviors,
 					nFields);
 		}
+
+		@Override
+		public int hashCode()
+		{
+			final int PRIME = 31;
+			int result = 1;
+			result = PRIME * result + nBehaviors;
+			result = PRIME * result + nFields;
+			result = PRIME * result + nTypes;
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			final Stats other = (Stats) obj;
+			if (nBehaviors != other.nBehaviors) return false;
+			if (nFields != other.nFields) return false;
+			if (nTypes != other.nTypes) return false;
+			return true;
+		}
+		
+		
 	}
 
 }

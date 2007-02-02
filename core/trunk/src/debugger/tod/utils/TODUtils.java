@@ -20,12 +20,22 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.utils;
 
+import java.io.File;
+import java.rmi.registry.Registry;
+
+import tod.core.LocationRegisterer;
+import tod.core.config.TODConfig;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.gui.seed.FilterSeed;
 import tod.gui.seed.LogViewSeed;
+import tod.impl.bci.asm.ASMDebuggerConfig;
+import tod.impl.bci.asm.ASMInstrumenter;
+import tod.impl.bci.asm.ASMLocationPool;
+import tod.impl.dbgrid.GridMaster;
+import tod.impl.dbgrid.gridimpl.GridImpl;
 
 public class TODUtils
 {
@@ -50,5 +60,62 @@ public class TODUtils
 		}
 		else return null;
 	}
+
+	/**
+	 * Standard setup of a grid master that waits for a number
+	 * of database nodes to connect
+	 */
+	public static GridMaster setupMaster(Registry aRegistry, String[] args) throws Exception
+	{
+		int theExpectedNodes = 0;
+		if (args.length > 0)
+		{
+			theExpectedNodes = Integer.parseInt(args[0]);
+		}
+		
+		return setupMaster(aRegistry, theExpectedNodes);
+	}
+		
+	/**
+	 * Standard setup of a grid master that waits for a number
+	 * of database nodes to connect
+	 */
+	public static GridMaster setupMaster(Registry aRegistry, int aExpectedNodes) throws Exception
+	{
+		return setupMaster(new TODConfig(), aRegistry, aExpectedNodes);
+	}
+	
+	public static GridMaster setupMaster(
+			TODConfig aConfig,
+			Registry aRegistry,
+			int aExpectedNodes) throws Exception
+	{
+		System.out.println("Expecting "+aExpectedNodes+" nodes");
+		
+		LocationRegisterer theRegistrer = new LocationRegisterer();
+		
+		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(
+				aConfig,
+				theRegistrer);
+
+		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theDebuggerConfig);
+
+		GridMaster theMaster = new GridMaster(
+				aConfig, 
+				theRegistrer, 
+				theInstrumenter,
+				aExpectedNodes);
+		
+		System.out.println("Binding master...");
+		aRegistry.rebind(GridMaster.RMI_ID, theMaster);
+		System.out.println("Bound master");
+		
+		theMaster.waitReady();
+
+		if (aExpectedNodes == 0) GridImpl.getFactory(aConfig).createNode(true);
+
+		return theMaster;
+	}
+	
 
 }

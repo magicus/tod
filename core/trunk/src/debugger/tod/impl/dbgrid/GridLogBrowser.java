@@ -29,6 +29,7 @@ import java.util.Map;
 
 import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.browser.ICompoundFilter;
+import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.browser.ILogBrowser;
@@ -36,6 +37,7 @@ import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.IVariablesInspector;
 import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
 import tod.core.database.structure.IBehaviorInfo;
@@ -66,8 +68,9 @@ import tod.impl.dbgrid.queries.ThreadCondition;
 import tod.impl.dbgrid.queries.TypeCondition;
 import tod.impl.dbgrid.queries.VariableCondition;
 import tod.utils.remote.RemoteLocationsRepository;
+import zz.utils.ITask;
 import zz.utils.Utils;
-import zz.utils.cache.MRUBuffer;
+import zz.utils.cache.SyncMRUBuffer;
 
 /**
  * Implementation of {@link ILogBrowser} for the grid backend.
@@ -87,12 +90,21 @@ implements ILogBrowser, RIGridMasterListener
 	private long itsLastTimestamp;
 	private List<IThreadInfo> itsThreads;
 	private List<IHostInfo> itsHosts;
+	private Map<String, IHostInfo> itsHostsMap = new HashMap<String, IHostInfo>();
 	private Map<Integer, HostThreadsList> itsHostThreadsLists = new HashMap<Integer, HostThreadsList>();
 	
 	private List<IGridBrowserListener> itsListeners = new ArrayList<IGridBrowserListener>();
 	
 	private TypeCache itsTypeCache = new TypeCache();
 
+	public GridLogBrowser(GridMaster aMaster) throws RemoteException
+	{
+		itsMaster = aMaster;
+		itsMaster.addListener(this);
+		
+		itsLocationsRepository = aMaster.getLocationStore();
+	}
+	
 	public GridLogBrowser(RIGridMaster aMaster) throws RemoteException
 	{
 		itsMaster = aMaster;
@@ -218,7 +230,9 @@ implements ILogBrowser, RIGridMasterListener
 
 	public IEventFilter createThreadFilter(IThreadInfo aThread)
 	{
-		return new ThreadCondition(aThread.getId());
+		return createIntersectionFilter(
+				new ThreadCondition(aThread.getId()),
+				new HostCondition(aThread.getHost().getId()));
 	}
 
 	public IEventFilter createDepthFilter(int aDepth)
@@ -316,10 +330,12 @@ implements ILogBrowser, RIGridMasterListener
 			if (itsHosts == null) 
 			{
 				itsHosts = new ArrayList<IHostInfo>();
+				itsHostsMap = new HashMap<String, IHostInfo>();
 				List<IHostInfo> theHosts = itsMaster.getHosts();
 				for (IHostInfo theHost : theHosts)
 				{
 					Utils.listSet(itsHosts, theHost.getId(), theHost);
+					itsHostsMap.put(theHost.getName(), theHost);
 				}
 			}
 		}
@@ -345,6 +361,12 @@ implements ILogBrowser, RIGridMasterListener
 		return getHosts0().get(aId);
 	}
 	
+	public IHostInfo getHost(String aName)
+	{
+		getHosts0(); // lazy init
+		return itsHostsMap.get(aName);
+	}
+
 	public IThreadInfo getThread(int aHostId, int aThreadId)
 	{
 		getThreads(); // Lazy init of thread lists
@@ -415,6 +437,7 @@ implements ILogBrowser, RIGridMasterListener
 			itsLastTimestamp = itsMaster.getLastTimestamp();
 			itsThreads = null; // lazy
 			itsHosts = null; // lazy		
+			itsHostsMap = null; // lazy
 		}
 		catch (RemoteException e)
 		{
@@ -437,31 +460,20 @@ implements ILogBrowser, RIGridMasterListener
 		fireMonitorData(aNodeId, aData);
 	}
 
-	/**
-	 * A MRU buffer that keep track of events identified by their
-	 * external identifier.
-	 * @author gpothier
-	 */
-	private class EventsBuffer extends MRUBuffer<byte[], ILogEvent>
+	public <O> O exec(ITask<ILogBrowser, O> aTask)
 	{
-		public EventsBuffer()
+		try
 		{
-			super(128);
+			return itsMaster.exec(aTask);
 		}
-
-		@Override
-		protected ILogEvent fetch(byte[] aId)
+		catch (RemoteException e)
 		{
-			return null;
-		}
-
-		@Override
-		protected byte[] getKey(ILogEvent aValue)
-		{
-			return null;
+			throw new RuntimeException(e);
 		}
 	}
-	
+
+
+
 	private static class HostThreadsList
 	{
 		private IHostInfo itsHost;
@@ -504,7 +516,7 @@ implements ILogBrowser, RIGridMasterListener
 	 * see {@link GridObjectInspector#getType()}
 	 * @author gpothier
 	 */
-	public class TypeCache extends MRUBuffer<ObjectId, TypeCacheEntry>
+	public class TypeCache extends SyncMRUBuffer<ObjectId, TypeCacheEntry>
 	{
 		public TypeCache()
 		{

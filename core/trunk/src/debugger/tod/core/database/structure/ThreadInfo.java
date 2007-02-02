@@ -79,6 +79,7 @@ public class ThreadInfo implements IThreadInfo, Serializable
 	{
 		final int PRIME = 31;
 		int result = 1;
+		result = PRIME * result + ((itsHost == null) ? 0 : itsHost.hashCode());
 		result = PRIME * result + itsId;
 		return result;
 	}
@@ -90,9 +91,15 @@ public class ThreadInfo implements IThreadInfo, Serializable
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
 		final ThreadInfo other = (ThreadInfo) obj;
+		if (itsHost == null)
+		{
+			if (other.itsHost != null) return false;
+		}
+		else if (!itsHost.equals(other.itsHost)) return false;
 		if (itsId != other.itsId) return false;
 		return true;
 	}
+
 	
 	
 

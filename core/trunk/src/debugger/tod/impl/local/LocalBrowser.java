@@ -62,11 +62,13 @@ import tod.impl.local.filter.TargetFilter;
 import tod.impl.local.filter.ThreadFilter;
 import tod.impl.local.filter.UnionFilter;
 import tod.impl.local.filter.VariableWriteFilter;
+import zz.utils.ITask;
 
 public class LocalBrowser implements ILogBrowser
 {
 	private EventList itsEvents = new EventList();
 	private List<IHostInfo> itsHosts = new ArrayList<IHostInfo>();
+	private Map<String, IHostInfo> itsHostsMap = new HashMap<String, IHostInfo>();
 	private List<IThreadInfo> itsThreads = new ArrayList<IThreadInfo>();
 	private final ILocationsRepository itsLocationsRepository;
 	
@@ -105,6 +107,7 @@ public class LocalBrowser implements ILogBrowser
 	public void addHost(IHostInfo aHost)
 	{
 		itsHosts.add(aHost);
+		itsHostsMap.put(aHost.getName(), aHost);
 	}
 
 	public void clear()
@@ -226,7 +229,10 @@ public class LocalBrowser implements ILogBrowser
 
 	public IEventFilter createThreadFilter(IThreadInfo aThreadInfo)
 	{
-		return new ThreadFilter(this, aThreadInfo.getId());
+		return new ThreadFilter(
+				this, 
+				aThreadInfo.getHost().getId(), 
+				aThreadInfo.getId());
 	}
 	
 	public IEventFilter createDepthFilter(int aDepth)
@@ -268,5 +274,17 @@ public class LocalBrowser implements ILogBrowser
 	{
 		return itsHosts;
 	}
+
+	public IHostInfo getHost(String aName)
+	{
+		return itsHostsMap.get(aName);
+	}
+
+	public <O> O exec(ITask<ILogBrowser, O> aTask)
+	{
+		return aTask.run(this);
+	}
+	
+	
 	
 }

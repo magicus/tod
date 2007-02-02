@@ -37,7 +37,6 @@ public abstract class Event implements ICallerSideEvent
 	
 	private long itsTimestamp;
 	
-	private IHostInfo itsHost;
 	private IThreadInfo itsThread;
 	
 	private IBehaviorInfo itsOperationBehavior; 
@@ -60,7 +59,7 @@ public abstract class Event implements ICallerSideEvent
 
 	public ExternalPointer getPointer()
 	{
-		return new ExternalPointer(getHost(), getThread(), getTimestamp());
+		return new ExternalPointer(getThread(), getTimestamp());
 	}
 	
 	public int getDepth()
@@ -86,7 +85,7 @@ public abstract class Event implements ICallerSideEvent
 	
 	public ExternalPointer getParentPointer()
 	{
-		return new ExternalPointer(getHost(), getThread(), itsParentTimestamp);
+		return new ExternalPointer(getThread(), itsParentTimestamp);
 	}
 
 	public void setParentTimestamp(long aTimestamp)
@@ -107,12 +106,7 @@ public abstract class Event implements ICallerSideEvent
 	
 	public IHostInfo getHost()
 	{
-		return itsHost;
-	}
-
-	public void setHost(IHostInfo aHost)
-	{
-		itsHost = aHost;
+		return getThread().getHost();
 	}
 
 	public long getTimestamp()
@@ -150,7 +144,6 @@ public abstract class Event implements ICallerSideEvent
 	{
 		final int PRIME = 31;
 		int result = 1;
-		result = PRIME * result + ((itsHost == null) ? 0 : itsHost.hashCode());
 		result = PRIME * result + ((itsLogBrowser == null) ? 0 : itsLogBrowser.hashCode());
 		result = PRIME * result + ((itsThread == null) ? 0 : itsThread.hashCode());
 		result = PRIME * result + (int) (itsTimestamp ^ (itsTimestamp >>> 32));
@@ -164,11 +157,6 @@ public abstract class Event implements ICallerSideEvent
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
 		final Event other = (Event) obj;
-		if (itsHost == null)
-		{
-			if (other.itsHost != null) return false;
-		}
-		else if (!itsHost.equals(other.itsHost)) return false;
 		if (itsLogBrowser == null)
 		{
 			if (other.itsLogBrowser != null) return false;
@@ -182,6 +170,6 @@ public abstract class Event implements ICallerSideEvent
 		if (itsTimestamp != other.itsTimestamp) return false;
 		return true;
 	}
-	
+
 	
 }

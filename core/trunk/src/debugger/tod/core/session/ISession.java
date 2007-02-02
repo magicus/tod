@@ -24,11 +24,17 @@ import java.net.URI;
 
 import javax.swing.JComponent;
 
+import tod.core.config.TODConfig;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.browser.ILogBrowser;
 
 public interface ISession
 {
+	/**
+	 * Reconfigures this session.
+	 */
+	public void setConfig(TODConfig aConfig);
+	
 	/**
 	 * Returns a resource identifier for this session, that can be used to retrieve
 	 * previous sessions.
@@ -38,12 +44,18 @@ public interface ISession
 	public ILogBrowser getLogBrowser();
 	
 	/**
+	 * Returns the information that permits to client VMs to connect
+	 * to the log collector.
+	 */
+	public ConnectionInfo getConnectionInfo();
+	
+	/**
 	 * Returns the path where the agent caches instrumented classes
 	 */
 	public String getCachedClassesPath();
 	
 	/**
-	 * Disconnects this session from the target VM, if it is connected 
+	 * Disconnects this session from the target VMs, if it is connected 
 	 */
 	public void disconnect();
 	

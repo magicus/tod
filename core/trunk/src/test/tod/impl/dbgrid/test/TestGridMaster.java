@@ -59,7 +59,7 @@ public class TestGridMaster
 	@Test public void test() throws RemoteException
 	{
 		GridMaster theMaster = Fixtures.setupLocalMaster();
-		LocationRegisterer theStore = (LocationRegisterer) theMaster._getLocationStore();
+		LocationRegisterer theStore = (LocationRegisterer) theMaster.getLocationStore();
 		theStore._clear();
 		
 		for (int i=1;i<=100;i++) 

@@ -18,44 +18,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.core.session;
+package tod.utils.remote;
 
-import java.net.URI;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 
-import tod.core.config.TODConfig;
+import tod.core.ILocationRegisterer.Stats;
 
-public abstract class AbstractSession implements ISession
+/**
+ * A listener that is notified when the contents of a locations repository
+ * changes.
+ * @author gpothier
+ */
+public interface RILocationsRepositoryListener extends Remote
 {
-	private TODConfig itsConfig;
-	private final URI itsUri;
-
-	public AbstractSession(URI aUri, TODConfig aConfig)
-	{
-		itsUri = aUri;
-		itsConfig = aConfig;
-	}
-
-	public URI getUri()
-	{
-		return itsUri;
-	}
-
-	public TODConfig getConfig()
-	{
-		return itsConfig;
-	} 
-	
-	public void setConfig(TODConfig aConfig)
-	{
-		itsConfig = aConfig;
-	}
-
-	public ConnectionInfo getConnectionInfo()
-	{
-		return new ConnectionInfo(
-				getConfig().get(TODConfig.COLLECTOR_HOST), 
-				getConfig().get(TODConfig.COLLECTOR_JAVA_PORT),
-				getConfig().get(TODConfig.COLLECTOR_NATIVE_PORT));
-	}
-	
+	public void changed(Stats aStats) throws RemoteException;
 }

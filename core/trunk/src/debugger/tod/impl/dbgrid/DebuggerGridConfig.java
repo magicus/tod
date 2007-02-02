@@ -246,6 +246,14 @@ public class DebuggerGridConfig
 	public static final String PARAM_STORE_EVENTS_FILE = "events-file";
 	public static String STORE_EVENTS_FILE;
 	
+	public static final String PARAM_CHECK_SAME_HOST = "check-same-host";
+	
+	/**
+	 * Whether the grid master should prevent multiple database nodes
+	 * on the same host.
+	 */
+	public static boolean CHECK_SAME_HOST;
+	
 
 	
 	static
@@ -255,6 +263,7 @@ public class DebuggerGridConfig
 		MASTER_HOST = ConfigUtils.readString(PARAM_MASTER_HOST, "localhost");
 		NODE_DATA_DIR = ConfigUtils.readString(PARAM_NODE_DATA_DIR, "/tmp/tod");
 		STORE_EVENTS_FILE = ConfigUtils.readString(PARAM_STORE_EVENTS_FILE, "events-raw.bin");
+		CHECK_SAME_HOST = ConfigUtils.readBoolean(PARAM_CHECK_SAME_HOST, true);
 	}
 
 }

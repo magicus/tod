@@ -102,6 +102,8 @@ implements RIDispatchNode
 	 */
 	public void connectToMaster() throws IOException, NotBoundException, AlreadyBoundException
 	{
+		System.out.println("[AbstractDispatchNode] connectToMaster");
+		
 		// Setup RMI connection
 		Registry theRegistry = LocateRegistry.getRegistry(DebuggerGridConfig.MASTER_HOST);
 		itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
@@ -157,7 +159,7 @@ implements RIDispatchNode
 	{
 		try
 		{
-			System.out.println("Connecting to dispatcher at "+aAdress.hostName);
+			System.out.println("[AbstractDispatchNode] Connecting to dispatcher at "+aAdress.hostName);
 			Socket theSocket = aAdress.connect();
 			DataOutputStream theStream = 
 				new DataOutputStream(theSocket.getOutputStream());
@@ -166,6 +168,7 @@ implements RIDispatchNode
 			theStream.flush();
 			
 			connectToDispatcher(theSocket);
+			System.out.println("[AbstractDispatchNode] Connected.");
 		}
 		catch (IOException e)
 		{

@@ -439,7 +439,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 	 */
 	class SocketThreadData extends ThreadData
 	{
-		private static final int BUFFER_SIZE = 32768;
+		private static final int BUFFER_SIZE = AgentConfig.COLLECTOR_BUFFER_SIZE;
 		
 		/**
 		 * A wrapper around {@link #itsBuffer}

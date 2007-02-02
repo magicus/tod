@@ -298,6 +298,16 @@ JNIEXPORT void JNICALL Java_tod_utils_NativeStream_i2b (
 	jint destOffset,
 	jint len)
 {
+	if (src == NULL)
+	{
+		throwEx(env, "java.lang.IllegalArgumentException", "Source is null");
+	}
+
+	if (dest == NULL)
+	{
+		throwEx(env, "java.lang.IllegalArgumentException", "Destination is null");
+	}
+
 	jint src_len = env->GetArrayLength(src); 
 	jint dest_len = env->GetArrayLength(dest); 
 	

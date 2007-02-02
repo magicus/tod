@@ -400,60 +400,6 @@ public class Fixtures
 		}
 	}
 	
-	/**
-	 * Standard setup of a grid master that waits for a number
-	 * of database nodes to connect
-	 */
-	public static GridMaster setupMaster(Registry aRegistry, String[] args) throws Exception
-	{
-		int theExpectedNodes = 0;
-		if (args.length > 0)
-		{
-			theExpectedNodes = Integer.parseInt(args[0]);
-		}
-		
-		return setupMaster(aRegistry, theExpectedNodes);
-	}
-		
-	/**
-	 * Standard setup of a grid master that waits for a number
-	 * of database nodes to connect
-	 */
-	public static GridMaster setupMaster(Registry aRegistry, int aExpectedNodes) throws Exception
-	{
-		return setupMaster(new TODConfig(), aRegistry, aExpectedNodes);
-	}
-	
-	public static GridMaster setupMaster(
-			TODConfig aConfig,
-			Registry aRegistry,
-			int aExpectedNodes) throws Exception
-	{
-		System.out.println("Expecting "+aExpectedNodes+" nodes");
-		
-		LocationRegisterer theLocationRegistrer = new LocationRegisterer();
-		
-		new ASMLocationPool(
-				theLocationRegistrer, 
-				new File(aConfig.get(TODConfig.INSTRUMENTER_LOCATIONS_FILE)));
-		
-		GridMaster theMaster = new GridMaster(
-				aConfig, 
-				theLocationRegistrer, 
-				null,
-				aExpectedNodes);
-		
-		aRegistry.bind(GridMaster.RMI_ID, theMaster);
-		
-		System.out.println("Bound master");
-		
-		theMaster.waitReady();
-
-		if (aExpectedNodes == 0) GridImpl.getFactory(aConfig).createNode(true);
-
-		return theMaster;
-	}
-	
 	public static long replay(
 			File aFile,
 			GridMaster aMaster) 

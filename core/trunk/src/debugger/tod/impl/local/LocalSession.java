@@ -36,6 +36,7 @@ import tod.core.server.CollectorTODServer;
 import tod.core.server.ICollectorFactory;
 import tod.core.server.TODServer;
 import tod.core.session.AbstractSession;
+import tod.core.session.ConnectionInfo;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
 import tod.utils.PrintThroughCollector;
@@ -48,9 +49,9 @@ public class LocalSession extends AbstractSession
 	private LocalBrowser itsBrowser;
 	private List<ILogCollector> itsCollectors = new ArrayList<ILogCollector>();
 	
-	public LocalSession(TODConfig aConfig, URI aUri)
+	public LocalSession(URI aUri, TODConfig aConfig)
 	{
-		super(aUri);
+		super(aUri, aConfig);
 		itsLocationRegistrer = new LocationRegisterer();
 		itsBrowser = new LocalBrowser(itsLocationRegistrer);
 		
@@ -91,6 +92,8 @@ public class LocalSession extends AbstractSession
 	{
 		return null;
 	}
+	
+
 
 	private class MyCollectorFactory implements ICollectorFactory
 	{
@@ -108,13 +111,6 @@ public class LocalSession extends AbstractSession
 			
 			itsCollectors.add(theCollector);
 			return theCollector;
-		}
-		
-		public void flushAll()
-		{
-			for (ILogCollector theCollector : itsCollectors)
-			{
-			}
 		}
 	}
 }

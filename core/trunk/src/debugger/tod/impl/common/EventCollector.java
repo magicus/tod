@@ -29,6 +29,7 @@ import org.objectweb.asm.Type;
 
 import tod.core.ILogCollector;
 import tod.core.database.browser.ILocationsRepository;
+import tod.core.database.browser.LocationUtils;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IHostInfo;
@@ -147,7 +148,7 @@ public abstract class EventCollector implements ILogCollector
 		{
 			IClassInfo theClass = (IClassInfo) theType;
 			
-			ITypeInfo[] theArgumentTypes = itsLocationsRepository.getArgumentTypes(aMethodSignature);
+			ITypeInfo[] theArgumentTypes = LocationUtils.getArgumentTypes(itsLocationsRepository, aMethodSignature);
 			IBehaviorInfo theBehavior = theClass.getBehavior(aMethodName, theArgumentTypes);
 
 			if (theBehavior == null) return; //TODO: don't do that...

@@ -30,10 +30,4 @@ import tod.core.ILogCollector;
 public interface ICollectorFactory
 {
 	public ILogCollector create();
-	
-	/**
-	 * Flushes all the collectors created by this factory. 
-	 * This method is called when the target VM terminates.
-	 */
-	public void flushAll();
 }
