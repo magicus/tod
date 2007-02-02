@@ -26,7 +26,6 @@
       </library>
       
       <!-- development -->
-      <!--
       <library name="../zz.utils/bin">
          <export name="*"/>
       </library>
@@ -36,10 +35,9 @@
       <library name="../zz.csg/bin">
          <export name="*"/>
       </library>
-      -->
       
       <!-- deployment -->
-      
+      <!--      
       <library name="lib/tod-agent.jar">
          <export name="*"/>
       </library>
@@ -52,6 +50,7 @@
       <library name="lib/zz.utils.jar">
          <export name="*"/>
       </library>
+      -->
    </runtime>
 
    <requires>

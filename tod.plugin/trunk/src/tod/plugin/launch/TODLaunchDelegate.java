@@ -33,6 +33,7 @@ import org.eclipse.jdt.launching.LibraryLocation;
 
 import tod.core.config.TODConfig;
 import tod.core.session.ClassCacheCleaner;
+import tod.core.session.ConnectionInfo;
 import tod.core.session.ISession;
 import tod.plugin.TODPlugin;
 import tod.plugin.TODSessionManager;
@@ -40,6 +41,8 @@ import zz.eclipse.utils.launcher.AbstractCustomLaunchConfigurationDelegate;
 
 public class TODLaunchDelegate extends AbstractCustomLaunchConfigurationDelegate
 {
+	private ISession itsSession;
+	
 	/**
 	 * Force running mode (debug/run).
 	 */
@@ -54,10 +57,12 @@ public class TODLaunchDelegate extends AbstractCustomLaunchConfigurationDelegate
 		aMonitor.subTask("Creating session");
 		
 		TODConfig theConfig = TODConfigLaunchTab.readConfig(aConfiguration);
-		ISession theSession = TODSessionManager.getInstance().createSession(
+		itsSession = TODSessionManager.getInstance().getSession(
 				aLaunch,
 				getJavaProject(aConfiguration),
 				theConfig);
+		
+		if (itsSession == null) return;
 		
 		try
 		{
@@ -75,19 +80,19 @@ public class TODLaunchDelegate extends AbstractCustomLaunchConfigurationDelegate
 			if (aMonitor.isCanceled()) return;		
 			aMonitor.subTask("Checking cached classes");
 			
-			ClassCacheCleaner.deleteUpdatedClasses(theSession, theBootpath, theClasspath);
+			ClassCacheCleaner.deleteUpdatedClasses(itsSession, theBootpath, theClasspath);
 			super.launch(aConfiguration, ILaunchManager.RUN_MODE, aLaunch, aMonitor, true);
 		}
 		catch (CoreException e)
 		{
 			System.out.println("Exception caught in launch, disconnecting session");
-			theSession.disconnect();
+			itsSession.disconnect();
 			throw e;
 		}
 		catch (RuntimeException e)
 		{
 			System.out.println("Exception caught in launch, disconnecting session");
-			theSession.disconnect();
+			itsSession.disconnect();
 			throw e;
 		}
 	}
@@ -108,10 +113,13 @@ public class TODLaunchDelegate extends AbstractCustomLaunchConfigurationDelegate
 		
 		TODConfig theConfig = TODConfigLaunchTab.readConfig(aConfiguration);
 		
-		theArguments.add("-Dcollector-host="+theConfig.get(TODConfig.COLLECTOR_HOST));
-		theArguments.add("-Dcollector-port="+theConfig.get(TODConfig.COLLECTOR_JAVA_PORT));
-		theArguments.add("-Dnative-port="+theConfig.get(TODConfig.COLLECTOR_NATIVE_PORT));
-		theArguments.add("-Dtod-host=tod-1");
+		ConnectionInfo theConnectionInfo = itsSession.getConnectionInfo();
+		
+		theArguments.add("-Dcollector-host="+theConnectionInfo.getHostName());
+		theArguments.add("-Dcollector-port="+theConnectionInfo.getLogReceiverPort());
+		theArguments.add("-Dnative-port="+theConnectionInfo.getNativePort());
+		
+		theArguments.add("-Dtod-host="+theConfig.get(TODConfig.CLIENT_HOST_NAME));
 		
 		return theArguments;
 	}

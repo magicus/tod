@@ -26,6 +26,7 @@ import java.util.Map;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 
 import tod.core.config.TODConfig;
 import tod.core.config.TODConfig.Item;
@@ -33,6 +34,7 @@ import tod.core.config.TODConfig.ItemType;
 import zz.eclipse.utils.launcher.options.AbstractItemControl;
 import zz.eclipse.utils.launcher.options.BooleanControl;
 import zz.eclipse.utils.launcher.options.IntegerControl;
+import zz.eclipse.utils.launcher.options.OptionsControl;
 import zz.eclipse.utils.launcher.options.OptionsTab;
 import zz.eclipse.utils.launcher.options.TextControl;
 
@@ -41,61 +43,23 @@ public class TODConfigLaunchTab extends OptionsTab<TODConfig.Item>
 	private static final String MAP_NAME = "tod.plugin.launch.OPTIONS_MAP"; //$NON-NLS-1$
 	
 	private static final Map<ItemType, ItemTypeHandler> HANDLERS = initHandlers();
-
-	public TODConfigLaunchTab()
-	{
-		super(TODConfig.ITEMS);
-	}
-
+	
 	public String getName()
 	{
 		return "TOD options";
 	}
-
+	
+	@Override
+	protected OptionsControl<Item> createOptionsControl(Composite aParent)
+	{
+		MyOptionsControl theOptionsControl = new MyOptionsControl(aParent);
+		return theOptionsControl;
+	}
+	
 	@Override
 	protected String getMapName()
 	{
 		return MAP_NAME;
-	}
-
-	@Override
-	public String getCaption(Item aItem)
-	{
-		return aItem.getName();
-	}
-
-	@Override
-	protected String getDefault(Item aItem)
-	{
-		return aItem.getOptionString(aItem.getDefault());
-	}
-
-	@Override
-	public String getDescription(Item aItem)
-	{
-		return aItem.getDescription();
-	}
-
-	@Override
-	protected String getKey(Item aItem)
-	{
-		return aItem.getKey();
-	}
-
-	private static ItemTypeHandler getHandler(Item aItem)
-	{
-		ItemTypeHandler theHandler = HANDLERS.get(aItem.getType());
-		if (theHandler == null) throw new RuntimeException("Handler not found for "+aItem+" ("+aItem.getType()+")");
-		return theHandler;
-	}
-	
-	@Override
-	protected AbstractItemControl<Item> createControl(
-			OptionsTab<Item> aOptionsTab,
-			Composite aParent, 
-			Item aItem)
-	{
-		return getHandler(aItem).createControl(aOptionsTab, aParent, aItem);
 	}
 
 
@@ -106,7 +70,7 @@ public class TODConfigLaunchTab extends OptionsTab<TODConfig.Item>
 		theMap.put(TODConfig.ItemType.ITEM_TYPE_STRING, new ItemTypeHandler()
 		{
 			@Override
-			public AbstractItemControl<Item> createControl(OptionsTab<Item> aOptionsTab, Composite aParent, Item aItem)
+			public AbstractItemControl<Item> createControl(OptionsControl<Item> aOptionsTab, Composite aParent, Item aItem)
 			{
 				return new TextControl<Item>(aParent, aOptionsTab, aItem);
 			}
@@ -115,7 +79,7 @@ public class TODConfigLaunchTab extends OptionsTab<TODConfig.Item>
 		theMap.put(TODConfig.ItemType.ITEM_TYPE_INTEGER, new ItemTypeHandler()
 		{
 			@Override
-			public AbstractItemControl<Item> createControl(OptionsTab<Item> aOptionsTab, Composite aParent, Item aItem)
+			public AbstractItemControl<Item> createControl(OptionsControl<Item> aOptionsTab, Composite aParent, Item aItem)
 			{
 				return new IntegerControl<Item>(aParent, aOptionsTab, aItem);
 			}
@@ -124,13 +88,70 @@ public class TODConfigLaunchTab extends OptionsTab<TODConfig.Item>
 		theMap.put(TODConfig.ItemType.ITEM_TYPE_BOOLEAN, new ItemTypeHandler()
 		{
 			@Override
-			public AbstractItemControl<Item> createControl(OptionsTab<Item> aOptionsTab, Composite aParent, Item aItem)
+			public AbstractItemControl<Item> createControl(OptionsControl<Item> aOptionsTab, Composite aParent, Item aItem)
 			{
 				return new BooleanControl<Item>(aParent, aOptionsTab, aItem);
 			}
 		});
 		
 		return theMap;
+	}
+	
+	private static ItemTypeHandler getHandler(Item aItem)
+	{
+		ItemTypeHandler theHandler = HANDLERS.get(aItem.getType());
+		if (theHandler == null) throw new RuntimeException("Handler not found for "+aItem+" ("+aItem.getType()+")");
+		return theHandler;
+	}
+	
+
+	
+	private class MyOptionsControl extends OptionsControl<TODConfig.Item>
+	{
+		public MyOptionsControl(Composite aParent)
+		{
+			super(aParent, 0, TODConfig.ITEMS);
+		}
+
+
+		@Override
+		public String getCaption(Item aItem)
+		{
+			return aItem.getName();
+		}
+
+		@Override
+		protected String getDefault(Item aItem)
+		{
+			return aItem.getOptionString(aItem.getDefault());
+		}
+
+		@Override
+		public String getDescription(Item aItem)
+		{
+			return aItem.getDescription();
+		}
+
+		@Override
+		protected String getKey(Item aItem)
+		{
+			return aItem.getKey();
+		}
+
+		@Override
+		protected AbstractItemControl<Item> createControl(
+				Composite aParent, 
+				Item aItem)
+		{
+			return getHandler(aItem).createControl(this, aParent, aItem);
+		}
+		
+		@Override
+		protected void contentChanged()
+		{
+			setDirty(true);
+			updateLaunchConfigurationDialog();
+		}
 	}
 	
 	/**
@@ -140,7 +161,7 @@ public class TODConfigLaunchTab extends OptionsTab<TODConfig.Item>
 	private static abstract class ItemTypeHandler
 	{
 		public abstract AbstractItemControl<Item> createControl(
-				OptionsTab<Item> aOptionsTab,
+				OptionsControl<Item> aOptionsTab,
 				Composite aParent, 
 				Item aItem);
 	}

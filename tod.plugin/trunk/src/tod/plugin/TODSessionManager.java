@@ -20,16 +20,20 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.plugin;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 
 import tod.core.config.TODConfig;
 import tod.core.session.ISession;
-import tod.impl.dbgrid.LocalGridSession;
-import tod.impl.local.LocalSession;
+import tod.core.session.SessionUtils;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
@@ -61,25 +65,118 @@ public class TODSessionManager
 	{
 		return pCurrentSession;
 	}
+	
+	/**
+	 * Returns a session suitable for a new launch.
+	 */
+	public DebuggingSession getSession(
+			ILaunch aLaunch,
+			IJavaProject aJavaProject,
+			TODConfig aConfig)
+	{
+		DebuggingSession theCurrentSession = pCurrentSession.get();
+		Class theSessionClass = SessionUtils.getSessionClass(aConfig);
+		
+		final String theHostName = aConfig.get(TODConfig.CLIENT_HOST_NAME);
+		if (theCurrentSession != null)
+		{
+			try
+			{
+				Class theCurrentSessionClass = theCurrentSession.getDelegate().getClass();
+				if (! theCurrentSessionClass.equals(theSessionClass))
+				{
+					final boolean[] theResult = new boolean[1];
+					Display.getDefault().syncExec(new Runnable()
+					{
+						public void run()
+						{
+							Shell theShell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+							theResult[0] = MessageDialog.openQuestion(
+									theShell, 
+									"Cannot reuse current session", 
+									"The current debugging session cannot be reused " +
+									"because the newly requested session is of another " +
+									"type. " +
+									"Launch anyway, resetting the current session?");
+						}
+					});
+					
+					if (! theResult[0]) return null;
+					theCurrentSession.getLogBrowser().clear();
+				}
+				else if (theCurrentSession.getLogBrowser().getHost(theHostName) != null)
+				{
+					final boolean[] theResult = new boolean[1];
+					Display.getDefault().syncExec(new Runnable()
+					{
+						public void run()
+						{
+							Shell theShell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+							theResult[0] = MessageDialog.openQuestion(
+									theShell, 
+									"Cannot reuse current session", 
+									"The current debugging session cannot be reused " +
+									"because it already contains a trace of host " +
+									"'"+theHostName+"'. " +
+									"Launch anyway, resetting the current session?");
+						}
+					});
+
+					if (! theResult[0]) return null;
+					theCurrentSession.getLogBrowser().clear();
+				}
+				else
+				{
+					// We can use the same session.
+					theCurrentSession.setConfig(aConfig);
+					return theCurrentSession;
+				}
+			}
+			catch (final Exception e)
+			{
+				final int[] theResult = new int[1];
+				Display.getDefault().syncExec(new Runnable()
+				{
+					public void run()
+					{
+						Shell theShell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+						theResult[0] = ErrorDialog.openError(
+								theShell, 
+								"Cannot reuse current session", 
+								"An error occurred while trying to reuse the " +
+								"current session. Drop the current session and " +
+								"create a new one?",
+								new Status(
+										IStatus.ERROR,
+										"tod.plugin",
+										0,
+										"Exception",
+										e));
+					}
+				});
+
+				if (theResult[0] == Dialog.CANCEL) return null;
+			}
+		}
+		
+		return createSession(aLaunch, aJavaProject, aConfig);
+	}
 
 	/**
 	 * Obtains a free, clean collector session.
 	 */
-	public DebuggingSession createSession(
+	private DebuggingSession createSession(
 			ILaunch aLaunch,
 			IJavaProject aJavaProject, 
 			TODConfig aConfig)
 	{
-		ISession theSession;
 		try
 		{
 			DebuggingSession thePreviousSession = pCurrentSession.get();
 			if (thePreviousSession != null) thePreviousSession.disconnect();
-			
-//			theSession = new LocalSession(aConfig, new URI("file:/home/gpothier/tmp/ASM"));
-			theSession = LocalGridSession.create(aConfig);
+
 			DebuggingSession theDebuggingSession = new DebuggingSession(
-					theSession,
+					SessionUtils.createSession(aConfig),
 					aLaunch,
 					aJavaProject);
 			

@@ -19,12 +19,10 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.eclipse.ui.texteditor.IUpdate;
 
 import tod.core.database.structure.IBehaviorInfo;
 import tod.plugin.DebuggingSession;
 import tod.plugin.TODPluginUtils;
-import tod.plugin.TODSessionManager;
 import tod.plugin.views.EventViewer;
 import tod.plugin.views.TraceNavigatorView;
 
@@ -123,7 +121,7 @@ public abstract class AbstractRulerAction extends Action //implements IUpdate
 	 */
 	protected DebuggingSession getSession()
 	{
-		return TODSessionManager.getInstance().pCurrentSession().get();
+		return getTraceNavigatorView(false).getCurrentSession();
 	}
 	
 	/**

@@ -96,6 +96,14 @@ public class TraceNavigatorView extends ViewPart implements ISelectionListener
 	}
 	
 	/**
+	 * Returns the currently selected session. 
+	 */
+	public DebuggingSession getCurrentSession()
+	{
+		return getMinerUI().getSession();
+	}
+	
+	/**
 	 * Called when the selected element in the workbench changes.
 	 */
 	public void selectionChanged(IWorkbenchPart aPart, ISelection aSelection)

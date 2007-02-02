@@ -37,11 +37,14 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.debug.core.IJavaClassObject;
 import org.eclipse.jdt.debug.core.IJavaClassType;
+import org.eclipse.jdt.debug.core.IJavaFieldVariable;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
 import org.eclipse.jdt.debug.core.IJavaVariable;
+import org.eclipse.jdt.internal.debug.core.model.JDIClassType;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.text.BadLocationException;
@@ -101,30 +104,6 @@ public class SourceRevealer
 			final String aTypeName, 
 			final int aLineNumber)
 	{
-//		getInstance().reveal (new Revealer()
-//				{
-//					public void reveal() throws CoreException, BadLocationException
-//					{
-//						IType theType = TODPluginUtils.getType(aJavaProject, aTypeName);
-//						if (theType == null) return;
-//
-//						final ICompilationUnit theCompilationUnit = theType.getCompilationUnit();
-//						
-//						IEditorPart theEditorPart = JavaUI.openInEditor(theCompilationUnit);
-//
-//						// Select precise line
-//						if (theEditorPart instanceof ITextEditor && aLineNumber >= 0)
-//						{
-//							ITextEditor theEditor = (ITextEditor) theEditorPart;
-//							
-//							IDocumentProvider provider = theEditor.getDocumentProvider();
-//							IDocument document = provider.getDocument(theEditor.getEditorInput());
-//							int start = document.getLineOffset(aLineNumber-1);
-//							theEditor.selectAndReveal(start, 0);
-//							
-//						}
-//					}
-//				});
 		getInstance().reveal (new Revealer()
 		{
 			public void reveal() 
@@ -175,12 +154,14 @@ public class SourceRevealer
 		private final int itsLineNumber;
 		
 		private FakeThread itsThread;
+		private FakeType itsType;
 
 		public FakeStackFrame(final String aTypeName, final int aLineNumber)
 		{
 			itsTypeName = aTypeName;
 			itsLineNumber = aLineNumber;
 			itsThread = new FakeThread(this);
+			itsType = new FakeType(this);
 		}
 		
 		public String getSourcePath() throws DebugException
@@ -233,10 +214,10 @@ public class SourceRevealer
 		{
 			return false;
 		}
-
+		
 		public IJavaReferenceType getReferenceType() throws DebugException
 		{
-			return null;
+			return itsType;
 		}
 
 		public boolean canStepInto()
@@ -634,6 +615,102 @@ public class SourceRevealer
 		{
 			throw new UnsupportedOperationException();
 		}
+	}
+	
+	private static class FakeType implements IJavaReferenceType
+	{
+		private FakeStackFrame itsFrame;
+
+		public FakeType(FakeStackFrame aFrame)
+		{
+			itsFrame = aFrame;
+		}
+
+		public String getDefaultStratum() throws DebugException
+		{
+			return "Java";
+		}
+
+		public String[] getAllFieldNames() throws DebugException
+		{
+			return null;
+		}
+
+		public String[] getAvailableStrata() throws DebugException
+		{
+			return null;
+		}
+
+		public IJavaObject getClassLoaderObject() throws DebugException
+		{
+			return null;
+		}
+
+		public IJavaClassObject getClassObject() throws DebugException
+		{
+			return null;
+		}
+
+		public String[] getDeclaredFieldNames() throws DebugException
+		{
+			return null;
+		}
+
+		public IJavaFieldVariable getField(String aName) throws DebugException
+		{
+			return null;
+		}
+
+		public String getGenericSignature() throws DebugException
+		{
+			return null;
+		}
+
+		public String getSourceName() throws DebugException
+		{
+			return null;
+		}
+
+		public String[] getSourceNames(String aStratum) throws DebugException
+		{
+			return null;
+		}
+
+		public String[] getSourcePaths(String aStratum) throws DebugException
+		{
+			return null;
+		}
+
+		public String getName() throws DebugException
+		{
+			return null;
+		}
+
+		public String getSignature() throws DebugException
+		{
+			return null;
+		}
+
+		public IDebugTarget getDebugTarget()
+		{
+			return null;
+		}
+
+		public ILaunch getLaunch()
+		{
+			return null;
+		}
+
+		public String getModelIdentifier()
+		{
+			return null;
+		}
+
+		public Object getAdapter(Class adapter)
+		{
+			return null;
+		}
+		
 	}
 }
 

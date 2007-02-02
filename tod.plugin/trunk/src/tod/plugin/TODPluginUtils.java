@@ -151,7 +151,7 @@ public class TODPluginUtils
 			
 		case Type.ARRAY:
 		{
-			String theClassName = theType.getClassName();
+			String theClassName = theType.getElementType().getClassName();
 			int theDimensions = theType.getDimensions();
 			return new ArrayTypeInfo(
 					aRepository.getType(theClassName),
