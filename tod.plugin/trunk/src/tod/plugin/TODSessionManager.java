@@ -144,8 +144,8 @@ public class TODSessionManager
 								theShell, 
 								"Cannot reuse current session", 
 								"An error occurred while trying to reuse the " +
-								"current session. Drop the current session and " +
-								"create a new one?",
+								"current session. The current session will be " +
+								"dropped",
 								new Status(
 										IStatus.ERROR,
 										"tod.plugin",
