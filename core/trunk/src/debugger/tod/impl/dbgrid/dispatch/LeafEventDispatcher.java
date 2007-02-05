@@ -28,6 +28,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.List;
 
 import tod.agent.DebugFlags;
 import tod.core.ILogCollector;
@@ -43,12 +45,15 @@ import tod.impl.dbgrid.GridEventCollector;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.db.ObjectsDatabase;
 import tod.impl.dbgrid.db.ObjectsReorderingBuffer;
+import tod.impl.dbgrid.db.ReorderedObjectsDatabase;
 import tod.impl.dbgrid.db.ObjectsReorderingBuffer.Entry;
 import tod.impl.dbgrid.db.ObjectsReorderingBuffer.ReorderingBufferListener;
 import tod.impl.dbgrid.messages.GridEvent;
+import tod.impl.dbgrid.messages.ObjectCodec;
 import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Probe;
 import tod.utils.PrintThroughCollector;
+import zz.utils.Utils;
 
 /**
  * A leaf event dispatcher in the dispatching hierarchy.
@@ -56,7 +61,7 @@ import tod.utils.PrintThroughCollector;
  * @author gpothier
  */
 public abstract class LeafEventDispatcher extends AbstractEventDispatcher
-implements RILeafDispatcher, ReorderingBufferListener
+implements RILeafDispatcher
 {
 	/**
 	 * A leaf dispatcher maintains a local copy of the location
@@ -70,49 +75,33 @@ implements RILeafDispatcher, ReorderingBufferListener
 	 */
 	private ILocationStore itsLocationStore;
 	
-	private ObjectsDatabase itsObjectsDatabase;
-	private long itsDroppedObjects = 0;
-	private long itsUnorderedObjects = 0;
-	private long itsProcessedObjects = 0;
-	private long itsLastAddedId;
-	private long itsLastProcessedId;	
+	private File itsObjectsDatabaseFile;
+	private List<ReorderedObjectsDatabase> itsObjectsDatabases = 
+		new ArrayList<ReorderedObjectsDatabase>();
 
-	private ObjectsReorderingBuffer itsReorderingBuffer = new ObjectsReorderingBuffer(this);
-	
-	/**
-	 * Creates a leaf dispatcher with a single local database node,
-	 * without using the registry.
-	 */
-	public LeafEventDispatcher(
-			ILocationStore aLocationStore,
-			DatabaseNode aDatabaseNode) throws RemoteException
-	{
-		super(false);
-		itsLocationStore = aLocationStore;
-		
-	}
-	
 	public LeafEventDispatcher(ILocationStore aLocationStore) throws RemoteException
 	{
 		super(true);
 		itsLocationStore = aLocationStore;
-		initDatabase();
-	}
-	
-	private void initDatabase()
-	{
-		if (itsObjectsDatabase != null)
-		{
-			itsObjectsDatabase.unregister();
-		}
 		
 		String thePrefix = DebuggerGridConfig.NODE_DATA_DIR;
 		File theParent = new File(thePrefix);
 		System.out.println("Using data directory: "+theParent);
 		
-		File theFile = new File(theParent, "objects.bin");
-		theFile.delete();
-		itsObjectsDatabase = new ObjectsDatabase(theFile);
+		itsObjectsDatabaseFile = new File(theParent, "objects.bin");
+
+		initDatabase();
+	}
+	
+	private void initDatabase()
+	{
+		for (ObjectsDatabase theDatabase : itsObjectsDatabases)
+		{
+			if (theDatabase != null) theDatabase.unregister();
+		}
+		
+		itsObjectsDatabases.clear();
+		itsObjectsDatabaseFile.delete();
 	}
 	
 	@Override
@@ -189,73 +178,56 @@ implements RILeafDispatcher, ReorderingBufferListener
 	
 	public void register(long aId, Object aObject)
 	{
-		if (aId < itsLastAddedId) itsUnorderedObjects++;
-		else itsLastAddedId = aId;
-		
-		Entry theEntry = new Entry(aId, aObject);
-		
-		if (DebugFlags.DISABLE_REORDER)
-		{
-			doRegister(theEntry);
-		}
-		else
-		{
-			while (itsReorderingBuffer.isFull()) doRegister(itsReorderingBuffer.pop());
-			itsReorderingBuffer.push(theEntry);
-		}
+		long theObjectId = ObjectCodec.getObjectId(aId);
+		int theHostId = ObjectCodec.getHostId(aId);
+		getObjectsDatabase(theHostId).store(theObjectId, aObject);
 	}
 	
-	private void doRegister(Entry aEntry)
+	/**
+	 * Retrieves the objects database that stores object for 
+	 * the given host id.
+	 * @param aHostId A host id, of those embedded in object
+	 * ids.
+	 */
+	private ReorderedObjectsDatabase getObjectsDatabase(int aHostId)
 	{
-		long theId = aEntry.id;
-		if (theId < itsLastProcessedId)
+		ReorderedObjectsDatabase theDatabase = null;
+		if (aHostId < itsObjectsDatabases.size())
 		{
-			objectDropped();
-			return;
+			theDatabase = itsObjectsDatabases.get(aHostId);
 		}
 		
-		itsLastProcessedId = theId;
+		if (theDatabase == null)
+		{
+			theDatabase = new ReorderedObjectsDatabase(itsObjectsDatabaseFile);
+			Utils.listSet(itsObjectsDatabases, aHostId, theDatabase);
+		}
 		
-		itsProcessedObjects++;
-		
-		itsObjectsDatabase.store(theId, aEntry.object);
+		return theDatabase;
 	}
+	
 	
 	@Override
 	public synchronized int flush()
 	{
-		int theCount = 0;
 		System.out.println("[LeafEventDispatcher] Flushing...");
-		while (! itsReorderingBuffer.isEmpty())
+		
+		int theCount = 0;
+		for (ReorderedObjectsDatabase theDatabase : itsObjectsDatabases)
 		{
-			doRegister(itsReorderingBuffer.pop());
-			theCount++;
+			if (theDatabase != null) theCount += theDatabase.flush();
 		}
+		
 		System.out.println("[LeafEventDispatcher] Flushed "+theCount+" objects.");
 
 		return super.flush() + theCount;
 	}
 	
-	@Probe(key = "Out of order objects", aggr = AggregationType.SUM)
-	public long getUnorderedEvents()
-	{
-		return itsUnorderedObjects;
-	}
-
-	@Probe(key = "DROPPED OBJECTS", aggr = AggregationType.SUM)
-	public long getDroppedEvents()
-	{
-		return itsDroppedObjects;
-	}
-	
-	public void objectDropped()
-	{
-		itsDroppedObjects++;
-	}
-	
 	public Object getRegisteredObject(long aId) 
 	{
-		return itsObjectsDatabase.load(aId);
+		long theObjectId = ObjectCodec.getObjectId(aId);
+		int theHostId = ObjectCodec.getHostId(aId);
+		return getObjectsDatabase(theHostId).load(theObjectId);
 	}
 
 

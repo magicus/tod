@@ -27,6 +27,7 @@ import static tod.impl.dbgrid.messages.ObjectCodec.writeObject;
 import tod.core.database.event.ILogEvent;
 import tod.impl.common.event.ArrayWriteEvent;
 import tod.impl.dbgrid.GridLogBrowser;
+import tod.impl.dbgrid.SplittedConditionHandler;
 import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.RoleIndexSet;
 import tod.impl.dbgrid.db.StdIndexSet;
@@ -162,19 +163,25 @@ public class GridArrayWriteEvent extends GridEvent
 	}
 	
 	@Override
-	public boolean matchIndexCondition(int aIndex)
+	public boolean matchIndexCondition(int aPart, int aPartialKey)
 	{
-		return aIndex == itsIndex;
+		return SplittedConditionHandler.INDEXES.match(aPart, aPartialKey, itsIndex);
 	}
 	
 	@Override
-	public boolean matchObjectCondition(int aObjectId, byte aRole)
+	public boolean matchObjectCondition(int aPart, int aPartialKey, byte aRole)
 	{
-		assert aObjectId != 0;
 		return ((aRole == RoleIndexSet.ROLE_OBJECT_VALUE  || aRole == RoleIndexSet.ROLE_OBJECT_ANY)
-					&& aObjectId == getObjectId(getValue(), false))
+					&& SplittedConditionHandler.OBJECTS.match(
+							aPart, 
+							aPartialKey, 
+							getObjectId(getValue(), false)))
+							
 			|| ((aRole == RoleIndexSet.ROLE_OBJECT_TARGET  || aRole == RoleIndexSet.ROLE_OBJECT_ANY)
-					&& aObjectId == getObjectId(getTarget(), false));
+					&& SplittedConditionHandler.OBJECTS.match(
+							aPart, 
+							aPartialKey, 
+							getObjectId(getTarget(), false)));
 	}
 
 	@Override

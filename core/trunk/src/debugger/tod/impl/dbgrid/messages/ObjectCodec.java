@@ -20,6 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.messages;
 
+import static tod.impl.dbgrid.DebuggerGridConfig.EVENT_HOST_BITS;
+import static tod.impl.dbgrid.DebuggerGridConfig.EVENT_HOST_MASK;
 import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.ObjectId.ObjectUID;
 import zz.utils.bit.BitStruct;
@@ -339,18 +341,34 @@ public class ObjectCodec
 	 * is not an {@link ObjectUID}. If false and the object is not an {@link ObjectUID},
 	 * the method returns 0;
 	 */
-	public static int getObjectId(Object aObject, boolean aFail)
+	public static long getObjectId(Object aObject, boolean aFail)
 	{
 		if (aObject instanceof ObjectId.ObjectUID)
 		{
 			ObjectId.ObjectUID theUid = (ObjectId.ObjectUID) aObject;
 			long theId = theUid.getId();
-			if ((theId & ~0xffffffffL) != 0) throw new RuntimeException("Object id overflow");
-			return (int) theId;
+			return theId;
 		}
 		else if (aFail) throw new RuntimeException("Not handled: "+aObject);
 		else return 0;
 	}
 	
+	/**
+	 * Returns the intra-host object id for the given object id.
+	 * See bci-agent.
+	 */
+	public static long getObjectId(long aId)
+	{
+		return  aId >>> EVENT_HOST_BITS;
+	}
+	
+	/**
+	 * Returns the host id for the given object id.
+	 * See bci-agent.
+	 */
+	public static int getHostId(long aId)
+	{
+		return (int) (aId & EVENT_HOST_MASK);
+	}
 
 }

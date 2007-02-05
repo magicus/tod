@@ -30,6 +30,7 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.impl.common.event.LocalVariableWriteEvent;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
+import tod.impl.dbgrid.SplittedConditionHandler;
 import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.RoleIndexSet;
 import tod.impl.dbgrid.db.StdIndexSet;
@@ -179,11 +180,13 @@ public class GridVariableWriteEvent extends GridEvent
 	}
 	
 	@Override
-	public boolean matchObjectCondition(int aObjectId, byte aRole)
+	public boolean matchObjectCondition(int aPart, int aPartialKey, byte aRole)
 	{
-		assert aObjectId != 0;
 		return ((aRole == RoleIndexSet.ROLE_OBJECT_VALUE || aRole == RoleIndexSet.ROLE_OBJECT_ANY)
-					&& aObjectId == getObjectId(getValue(), false));
+					&& SplittedConditionHandler.OBJECTS.match(
+							aPart, 
+							aPartialKey, 
+							getObjectId(getValue(), false)));
 	}
 
 	@Override

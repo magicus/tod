@@ -188,7 +188,7 @@ implements ReorderingBufferListener
 	private class DispatcherIndexes extends Indexes
 	{
 		@Override
-		public HierarchicalIndex<StdTuple> getArrayIndexIndex(int aIndex)
+		public HierarchicalIndex<StdTuple> getArrayIndexIndex(int aPart, int aIndex)
 		{
 			throw new UnsupportedOperationException();
 		}
@@ -224,7 +224,7 @@ implements ReorderingBufferListener
 		}
 
 		@Override
-		public HierarchicalIndex<RoleTuple> getObjectIndex(int aIndex)
+		public HierarchicalIndex<RoleTuple> getObjectIndex(int aPart, int aIndex)
 		{
 			throw new UnsupportedOperationException();
 		}
@@ -290,10 +290,10 @@ implements ReorderingBufferListener
 		}
 
 		@Override
-		public void indexObject(int aIndex, RoleTuple aTuple)
+		public void indexObject(long aIndex, RoleTuple aTuple)
 		{
-			GrpIdxDBNodeProxy theNode = getNode(aIndex % getChildrenCount());
-			theNode.pushIndexData(IndexKind.OBJECT, aIndex, aTuple);
+			GrpIdxDBNodeProxy theNode = getNode((int) (aIndex % getChildrenCount()));
+			theNode.pushIndexData(IndexKind.OBJECT, (int) aIndex, aTuple);
 		}
 
 		@Override

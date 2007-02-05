@@ -45,7 +45,7 @@ public class ObjectFormatter extends AbstractFormatter
 	}
 
 	/**
-	 * This method mimicks {@link Hyperlinks#object(tod.gui.IGUIManager, tod.core.database.browser.ILogBrowser, Object, zz.utils.ui.text.XFont)}
+	 * This method mimics {@link Hyperlinks#object(tod.gui.IGUIManager, tod.core.database.browser.ILogBrowser, Object, zz.utils.ui.text.XFont)}
 	 */
 	protected String getText(Object aObject, boolean aHtml)
 	{

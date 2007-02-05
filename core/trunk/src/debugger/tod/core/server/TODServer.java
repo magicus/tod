@@ -52,6 +52,8 @@ public abstract class TODServer
 	
 	private LogReceiverServer itsReceiverServer;
 	private NativePeerServer itsNativePeerServer;
+	
+	private int itsCurrentHostId = 1;
 
 	public TODServer(
 			TODConfig aConfig, 
@@ -88,6 +90,7 @@ public abstract class TODServer
 	 */
 	protected void disconnected()
 	{
+		itsCurrentHostId = 1;
 	}
 
 	/**
@@ -101,12 +104,16 @@ public abstract class TODServer
 	protected synchronized void disconnect(String aHostname)
 	{
 		ClientConnection theConnection = itsConnections.get(aHostname);
-		assert theConnection != null;
-		
-		LogReceiver theReceiver = theConnection.getLogReceiver();
-		theReceiver.disconnect();
-		itsConnections.remove(aHostname);
-		if (itsConnections.size() == 0) disconnected();
+
+		// The connection can be null if only the native agent
+		// was connected.
+		if (theConnection != null)
+		{
+			LogReceiver theReceiver = theConnection.getLogReceiver();
+			theReceiver.disconnect();
+			itsConnections.remove(aHostname);
+			if (itsConnections.size() == 0) disconnected();
+		}
 	}
 	
 	protected synchronized void acceptJavaConnection(Socket aSocket)
@@ -136,7 +143,7 @@ public abstract class TODServer
 	{
 		try
 		{
-			NativeAgentPeer thePeer = new MyNativePeer(aSocket);
+			NativeAgentPeer thePeer = new MyNativePeer(aSocket, itsCurrentHostId++);
 			String theHostName = thePeer.waitHostName();
 			
 			while(true)
@@ -197,9 +204,14 @@ public abstract class TODServer
 	
 	private class MyNativePeer extends NativeAgentPeer
 	{
-		public MyNativePeer(Socket aSocket)
+		public MyNativePeer(Socket aSocket, int aHostId)
 		{
-			super(itsConfig, aSocket, null, new SynchronizedInstrumenter(itsInstrumenter));
+			super(
+					itsConfig, 
+					aSocket, 
+					null, 
+					new SynchronizedInstrumenter(itsInstrumenter),
+					aHostId);
 		}
 		
 		@Override

@@ -24,6 +24,8 @@ import java.util.Iterator;
 
 import tod.impl.dbgrid.AbstractFilteredBidiIterator;
 import tod.impl.dbgrid.BidiIterator;
+import tod.impl.dbgrid.SplittedConditionHandler;
+import tod.impl.dbgrid.db.HierarchicalIndex;
 import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.RoleIndexSet;
 import tod.impl.dbgrid.db.RoleIndexSet.RoleTuple;
@@ -38,11 +40,18 @@ import zz.utils.AbstractFilteredIterator;
 public class ObjectCondition extends SimpleCondition
 {
 	private static final long serialVersionUID = 4506201457044007004L;
+	
+	/**
+	 * Part of the key handled by this condition.
+	 * @see SplittedConditionHandler 
+	 */
+	private int itsPart;
 	private int itsObjectId;
 	private byte itsRole;
 	
-	public ObjectCondition(int aObjectId, byte aRole)
+	public ObjectCondition(int aPart, int aObjectId, byte aRole)
 	{
+		itsPart = aPart;
 		itsObjectId = aObjectId;
 		itsRole = aRole;
 	}
@@ -50,8 +59,12 @@ public class ObjectCondition extends SimpleCondition
 	@Override
 	public BidiIterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
+		HierarchicalIndex<RoleTuple> theIndex = 
+			aIndexes.getObjectIndex(itsPart, itsObjectId);
+		
 		BidiIterator<RoleIndexSet.RoleTuple> theTupleIterator = 
-			aIndexes.getObjectIndex(itsObjectId).getTupleIterator(aTimestamp);
+			theIndex.getTupleIterator(aTimestamp);
+		
 		if (itsRole == RoleIndexSet.ROLE_OBJECT_ANY)
 		{
 			theTupleIterator = new AbstractFilteredBidiIterator<RoleTuple, RoleTuple>(theTupleIterator)
@@ -85,7 +98,7 @@ public class ObjectCondition extends SimpleCondition
 	@Override
 	public boolean _match(GridEvent aEvent)
 	{
-		return aEvent.matchObjectCondition(itsObjectId, itsRole);
+		return aEvent.matchObjectCondition(itsPart, itsObjectId, itsRole);
 	}
 	
 	@Override

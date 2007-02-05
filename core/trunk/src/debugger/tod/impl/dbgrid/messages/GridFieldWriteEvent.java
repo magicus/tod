@@ -28,6 +28,7 @@ import tod.core.database.event.ILogEvent;
 import tod.impl.common.event.FieldWriteEvent;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
+import tod.impl.dbgrid.SplittedConditionHandler;
 import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.RoleIndexSet;
 import tod.impl.dbgrid.db.StdIndexSet;
@@ -169,13 +170,19 @@ public class GridFieldWriteEvent extends GridEvent
 	}
 	
 	@Override
-	public boolean matchObjectCondition(int aObjectId, byte aRole)
+	public boolean matchObjectCondition(int aPart, int aPartialKey, byte aRole)
 	{
-		assert aObjectId != 0;
 		return ((aRole == RoleIndexSet.ROLE_OBJECT_VALUE  || aRole == RoleIndexSet.ROLE_OBJECT_ANY)
-					&& aObjectId == getObjectId(getValue(), false))
+					&& SplittedConditionHandler.OBJECTS.match(
+							aPart, 
+							aPartialKey, 
+							getObjectId(getValue(), false)))
+							
 			|| ((aRole == RoleIndexSet.ROLE_OBJECT_TARGET  || aRole == RoleIndexSet.ROLE_OBJECT_ANY)
-					&& aObjectId == getObjectId(getTarget(), false));
+					&& SplittedConditionHandler.OBJECTS.match(
+							aPart, 
+							aPartialKey, 
+							getObjectId(getTarget(), false)));
 	}
 
 	@Override

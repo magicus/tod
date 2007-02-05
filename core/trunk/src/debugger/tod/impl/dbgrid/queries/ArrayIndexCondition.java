@@ -22,6 +22,7 @@ package tod.impl.dbgrid.queries;
 
 
 import tod.impl.dbgrid.BidiIterator;
+import tod.impl.dbgrid.SplittedConditionHandler;
 import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.messages.GridEvent;
@@ -34,23 +35,25 @@ public class ArrayIndexCondition extends SimpleCondition
 {
 	private static final long serialVersionUID = -8729400513911498424L;
 	
+	private int itsPart;
 	private int itsIndex;
 
-	public ArrayIndexCondition(int aIndex)
+	public ArrayIndexCondition(int aPart, int aIndex)
 	{
+		itsPart = aPart;
 		itsIndex = aIndex;
 	}
 
 	@Override
 	public BidiIterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
-		return aIndexes.getArrayIndexIndex(itsIndex).getTupleIterator(aTimestamp);
+		return aIndexes.getArrayIndexIndex(itsPart, itsIndex).getTupleIterator(aTimestamp);
 	}
 
 	@Override
 	public boolean _match(GridEvent aEvent)
 	{
-		return aEvent.matchIndexCondition(itsIndex);
+		return aEvent.matchIndexCondition(itsPart, itsIndex);
 	}
 	
 	@Override

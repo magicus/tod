@@ -358,6 +358,8 @@ public class EventMural extends SVGGraphicContainer
 	
 	public static void paintMural (Graphics2D aGraphics, Rectangle aBounds, long[][] aValues, Color[] aColors)
 	{
+		if (aValues.length == 0) return;
+		
 		int theHeight = aBounds.height;
 		int theY = aBounds.y;
 		int bh = 4; // base height

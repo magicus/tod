@@ -33,6 +33,7 @@ import java.net.Socket;
 
 import tod.core.bci.IInstrumenter.InstrumentedClass;
 import tod.core.config.TODConfig;
+import tod.core.server.TODServer;
 import tod.core.transport.SocketThread;
 
 
@@ -66,23 +67,14 @@ public abstract class NativeAgentPeer extends SocketThread
 	 * Name of the connected host
 	 */
 	private String itsHostName;
-
-
+	
 	/**
-	 * Starts a peer that acts as a server, creating its own {@link ServerSocket}.
+	 * An id for the connected host, assigned by
+	 * the {@link TODServer}. It is not necessarily the same as the "official"
+	 * host id; it is used only to differentiate object ids from several hosts. 
 	 */
-	public NativeAgentPeer(
-			TODConfig aConfig,
-			int aPort, 
-			boolean aStartImmediately,
-			File aStoreClassesDir,
-			IInstrumenter aInstrumenter) throws IOException
-	{
-		super (new ServerSocket(aPort), aStartImmediately);
-		itsConfig = aConfig;
-		itsStoreClassesDir = aStoreClassesDir;
-		itsInstrumenter = aInstrumenter;
-	}
+	private int itsHostId;
+
 
 	/**
 	 * Starts a peer that uses an already connected socket.
@@ -91,12 +83,14 @@ public abstract class NativeAgentPeer extends SocketThread
 			TODConfig aConfig,
 			Socket aSocket,
 			File aStoreClassesDir,
-			IInstrumenter aInstrumenter)
+			IInstrumenter aInstrumenter,
+			int aHostId)
 	{
 		super (aSocket);
 		itsConfig = aConfig;
 		itsStoreClassesDir = aStoreClassesDir;
 		itsInstrumenter = aInstrumenter;
+		itsHostId = aHostId;
 	}
 	
 	/**
@@ -188,29 +182,36 @@ public abstract class NativeAgentPeer extends SocketThread
 			DataOutputStream aOutputStream) throws IOException
 	{
 		DataInputStream theStream = new DataInputStream(aInputStream);
+		DataOutputStream theOutStream = new DataOutputStream(aOutputStream);
+		
+		// Read host name
 		setHostName(theStream.readUTF());
+		
+		// Send host id
+		theOutStream.writeInt(itsHostId);
 
+		// Send remaining config
 		String theCachePath = itsConfig.get(TODConfig.AGENT_CACHE_PATH);
 		if (theCachePath != null)
 		{
-			aOutputStream.writeByte(SET_CACHE_PATH);
-			aOutputStream.writeUTF(theCachePath);
+			theOutStream.writeByte(SET_CACHE_PATH);
+			theOutStream.writeUTF(theCachePath);
 		}
 		
 		boolean theSkipCoreClasses = itsConfig.get(TODConfig.AGENT_SKIP_CORE_CLASSE);
-		aOutputStream.writeByte(SET_SKIP_CORE_CLASSES);
-		aOutputStream.writeByte(theSkipCoreClasses ? 1 : 0);
+		theOutStream.writeByte(SET_SKIP_CORE_CLASSES);
+		theOutStream.writeByte(theSkipCoreClasses ? 1 : 0);
 		
 		int theVerbosity = itsConfig.get(TODConfig.AGENT_VERBOSE);
-		aOutputStream.writeByte(SET_VERBOSE);
-		aOutputStream.writeByte((byte) theVerbosity);
+		theOutStream.writeByte(SET_VERBOSE);
+		theOutStream.writeByte((byte) theVerbosity);
 		
 		boolean theCaptureExceptions = itsConfig.get(TODConfig.AGENT_CAPTURE_EXCEPTIONS);
-		aOutputStream.writeByte(SET_CAPTURE_EXCEPTIONS);
-		aOutputStream.writeByte(theCaptureExceptions ? 1 : 0);
+		theOutStream.writeByte(SET_CAPTURE_EXCEPTIONS);
+		theOutStream.writeByte(theCaptureExceptions ? 1 : 0);
 		
-		aOutputStream.writeByte(CONFIG_DONE);
-		aOutputStream.flush();
+		theOutStream.writeByte(CONFIG_DONE);
+		theOutStream.flush();
 	}
 	
 	/**

@@ -257,7 +257,7 @@ public abstract class GridEvent extends GridMessage
 	/**
 	 * Whether this event matches a {@link ArrayIndexCondition}
 	 */
-	public boolean matchIndexCondition(int aIndex)
+	public boolean matchIndexCondition(int aPart, int aPartialKey)
 	{
 		return false;
 	}
@@ -273,7 +273,7 @@ public abstract class GridEvent extends GridMessage
 	/**
 	 * Whether this event matches a {@link ObjectCondition}
 	 */
-	public boolean matchObjectCondition(int aObjectId, byte aRole)
+	public boolean matchObjectCondition(int aPart, int aPartialKey, byte aRole)
 	{
 		return false;
 	}

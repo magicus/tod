@@ -25,6 +25,7 @@ import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_OBJECT_COUNT;
 import java.util.Random;
 
 import tod.impl.dbgrid.db.RoleIndexSet;
+import tod.impl.dbgrid.messages.ObjectCodec;
 import tod.impl.dbgrid.queries.BehaviorCondition;
 import tod.impl.dbgrid.queries.BytecodeLocationCondition;
 import tod.impl.dbgrid.queries.CompoundCondition;
@@ -92,7 +93,12 @@ public class ConditionGenerator
 		case 1: return new BytecodeLocationCondition(itsEventGenerator.genBytecodeIndex());
 		case 2: return new FieldCondition(itsEventGenerator.genFieldId());
 		case 3: return new HostCondition(itsEventGenerator.genHostId());
-		case 4: return new ObjectCondition(itsRandom.nextInt(STRUCTURE_OBJECT_COUNT), genObjectRole());
+		case 4:
+			long theId = itsRandom.nextLong() % (STRUCTURE_OBJECT_COUNT*1000);
+			return SplittedConditionHandler.OBJECTS.createCondition(
+					theId,
+					genObjectRole());
+			
 		case 5: return new ThreadCondition(itsEventGenerator.genThreadId());
 		case 6: return new TypeCondition(itsEventGenerator.genType());
 		case 7: return new VariableCondition(itsEventGenerator.genVariableId());

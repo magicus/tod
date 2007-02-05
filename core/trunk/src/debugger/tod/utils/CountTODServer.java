@@ -76,6 +76,7 @@ public class CountTODServer extends AbstractSession
 			@Override
 			protected void disconnected()
 			{
+				super.disconnected();
 				System.out.println("Event count: "+getCount());
 			}
 		};

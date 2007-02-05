@@ -28,6 +28,7 @@ import tod.core.database.event.ILogEvent;
 import tod.impl.common.event.ExceptionGeneratedEvent;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
+import tod.impl.dbgrid.SplittedConditionHandler;
 import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.RoleIndexSet;
 import zz.utils.bit.BitStruct;
@@ -134,10 +135,13 @@ public class GridExceptionGeneratedEvent extends GridEvent
 	}
 	
 	@Override
-	public boolean matchObjectCondition(int aObjectId, byte aRole)
+	public boolean matchObjectCondition(int aPart, int aPartialKey, byte aRole)
 	{
-		assert aObjectId != 0;
-		return (aRole == RoleIndexSet.ROLE_OBJECT_EXCEPTION && aObjectId == getObjectId(getException(), false));
+		return (aRole == RoleIndexSet.ROLE_OBJECT_EXCEPTION 
+				&& SplittedConditionHandler.OBJECTS.match(
+						aPart, 
+						aPartialKey, 
+						getObjectId(getException(), false)));
 	}
 
 	@Override

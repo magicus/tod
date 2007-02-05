@@ -110,7 +110,9 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 			{
 				itsExitEvent = null;
 			}
-			else if (itsCallInfo.lastChild != null && itsCallInfo.lastChild.equals(itsCallInfo.exitEvent))
+			else if (itsCallInfo.lastChild != null 
+					&& itsLastChild != null
+					&& itsCallInfo.lastChild.equals(itsCallInfo.exitEvent))
 			{
 				itsExitEvent = (IBehaviorExitEvent) itsLastChild;
 			}

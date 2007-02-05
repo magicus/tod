@@ -30,6 +30,7 @@ import java.io.Serializable;
 import tod.core.database.event.ILogEvent;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
+import tod.impl.dbgrid.SplittedConditionHandler;
 import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.RoleIndexSet;
 import tod.impl.dbgrid.event.BehaviorCallEvent;
@@ -265,25 +266,43 @@ public class GridBehaviorCallEvent extends GridEvent
 	}
 	
 	@Override
-	public boolean matchObjectCondition(int aObjectId, byte aRole)
+	public boolean matchObjectCondition(int aPart, int aPartialKey, byte aRole)
 	{
-		assert aObjectId != 0;
-		
 		if ((aRole == RoleIndexSet.ROLE_OBJECT_TARGET
-					&& aObjectId == getObjectId(getTarget(), false))
-			|| (aRole >= 0 && aRole < getArguments().length && aObjectId == getObjectId(getArguments()[aRole], false)))
+					&& SplittedConditionHandler.OBJECTS.match(
+							aPart, 
+							aPartialKey, 
+							getObjectId(getTarget(), false)))
+							
+			|| (aRole >= 0 && aRole < getArguments().length 
+					&& SplittedConditionHandler.OBJECTS.match(
+							aPart, 
+							aPartialKey, 
+							getObjectId(getArguments()[aRole], false))))
 		{
 			return true;
 		}
 		
 		if (aRole == RoleIndexSet.ROLE_OBJECT_ANY)
 		{
-			if (aObjectId == getObjectId(getTarget(), false)) return true;
+			if (SplittedConditionHandler.OBJECTS.match(
+					aPart, 
+					aPartialKey, 
+					getObjectId(getTarget(), false)))
+			{
+				return true;
+			}
 			else
 			{
 				for (int i=0;i<getArguments().length;i++) 
 				{
-					if (aObjectId == getObjectId(getArguments()[i], false)) return true;
+					if (SplittedConditionHandler.OBJECTS.match(
+							aPart, 
+							aPartialKey, 
+							getObjectId(getArguments()[i], false)))
+					{
+						return true;
+					}
 				}
 				return false;
 			}

@@ -20,7 +20,12 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.structure;
 
+import static tod.impl.dbgrid.DebuggerGridConfig.EVENT_HOST_BITS;
+import static tod.impl.dbgrid.DebuggerGridConfig.EVENT_HOST_MASK;
+
 import java.io.Serializable;
+
+import tod.impl.dbgrid.messages.ObjectCodec;
 
 /**
  * Permits to identify an object.
@@ -76,7 +81,10 @@ public interface ObjectId extends Serializable
 		@Override
 		public String toString()
 		{
-			return "UID: "+itsId;
+			return "UID: "
+					+ObjectCodec.getObjectId(itsId)
+					+"."
+					+ObjectCodec.getHostId(itsId);
 		}
 	}
 	

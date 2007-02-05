@@ -815,6 +815,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		@Override
 		protected void disconnected()
 		{
+			super.disconnected();
 			GridMaster.this.flush();
 		}
 	}

@@ -149,8 +149,9 @@ implements ILogBrowser, RIGridMasterListener
 	
 	public IEventFilter createArgumentFilter(ObjectId aId)
 	{
-		int theId = ObjectCodec.getObjectId(aId, true);
-		return new ObjectCondition(theId, RoleIndexSet.ROLE_OBJECT_ANYARG);
+		return SplittedConditionHandler.OBJECTS.createCondition(
+				ObjectCodec.getObjectId(aId, true),
+				RoleIndexSet.ROLE_OBJECT_ANYARG);
 	}
 
 	public IEventFilter createLocationFilter(IBehaviorInfo aBehavior, int aBytecodeIndex)
@@ -195,9 +196,12 @@ implements ILogBrowser, RIGridMasterListener
 
 	public IEventFilter createInstantiationFilter(ObjectId aId)
 	{
-		int theId = ObjectCodec.getObjectId(aId, true);
+		Conjunction theObjectCondition = SplittedConditionHandler.OBJECTS.createCondition(
+				ObjectCodec.getObjectId(aId, true),
+				RoleIndexSet.ROLE_OBJECT_TARGET);
+		
 		return CompoundCondition.and(
-				new ObjectCondition(theId, RoleIndexSet.ROLE_OBJECT_TARGET),
+				theObjectCondition,
 				new TypeCondition(MessageType.INSTANTIATION));
 	}
 
@@ -213,14 +217,16 @@ implements ILogBrowser, RIGridMasterListener
 
 	public IEventFilter createTargetFilter(ObjectId aId)
 	{
-		int theId = ObjectCodec.getObjectId(aId, true);
-		return new ObjectCondition(theId, RoleIndexSet.ROLE_OBJECT_TARGET);
+		return SplittedConditionHandler.OBJECTS.createCondition(
+				ObjectCodec.getObjectId(aId, true),
+				RoleIndexSet.ROLE_OBJECT_TARGET);	
 	}
 
 	public IEventFilter createObjectFilter(ObjectId aId)
 	{
-		int theId = ObjectCodec.getObjectId(aId, true);
-		return new ObjectCondition(theId, RoleIndexSet.ROLE_OBJECT_ANY);
+		return SplittedConditionHandler.OBJECTS.createCondition(
+				ObjectCodec.getObjectId(aId, true),
+				RoleIndexSet.ROLE_OBJECT_ANY);
 	}
 	
 	public IEventFilter createHostFilter(IHostInfo aHost)

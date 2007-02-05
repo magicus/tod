@@ -30,6 +30,8 @@ import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_OBJECT_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_THREADS_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_TYPE_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_VAR_COUNT;
+import tod.impl.dbgrid.DebuggerGridConfig;
+import tod.impl.dbgrid.SplittedConditionHandler;
 import tod.impl.dbgrid.db.RoleIndexSet.RoleTuple;
 import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.db.file.HardPagedFile;
@@ -53,8 +55,8 @@ public class Indexes
 	/**
 	 * Index for array indexes 
 	 */
-	private StdIndexSet itsArrayIndexIndex;
-	private ObjectIndexSet itsObjectIndex;
+	private StdIndexSet[] itsArrayIndexIndexes;
+	private ObjectIndexSet[] itsObjectIndexes;
 	
 	/**
 	 * Protected constructor for subclasses. Does not initialize indexes.
@@ -73,8 +75,19 @@ public class Indexes
 		itsBehaviorIndex = new RoleIndexSet("behavior", aFile, STRUCTURE_BEHAVIOR_COUNT+1);
 		itsFieldIndex = new StdIndexSet("field", aFile, STRUCTURE_FIELD_COUNT+1);
 		itsVariableIndex = new StdIndexSet("variable", aFile, STRUCTURE_VAR_COUNT+1);
-		itsArrayIndexIndex = new StdIndexSet("index", aFile, STRUCTURE_ARRAY_INDEX_COUNT+1);
-		itsObjectIndex = new ObjectIndexSet("object", aFile, STRUCTURE_OBJECT_COUNT+1);
+
+		
+		itsArrayIndexIndexes = new StdIndexSet[DebuggerGridConfig.INDEX_ARRAY_INDEX_PARTS.length];
+		for (int i=0;i<itsArrayIndexIndexes.length;i++)
+		{
+			itsArrayIndexIndexes[i] = new StdIndexSet("index-"+i, aFile, STRUCTURE_ARRAY_INDEX_COUNT+1);
+		}
+		
+		itsObjectIndexes = new ObjectIndexSet[DebuggerGridConfig.INDEX_OBJECT_PARTS.length];
+		for (int i=0;i<itsObjectIndexes.length;i++)
+		{
+			itsObjectIndexes[i] = new ObjectIndexSet("object-"+i, aFile, STRUCTURE_OBJECT_COUNT+1);
+		}
 	}
 	
 	/**
@@ -90,8 +103,16 @@ public class Indexes
 		itsBehaviorIndex.unregister();
 		itsFieldIndex.unregister();
 		itsVariableIndex.unregister();
-		itsArrayIndexIndex.unregister();
-		itsObjectIndex.unregister();
+
+		for (int i=0;i<itsArrayIndexIndexes.length;i++)
+		{
+			itsArrayIndexIndexes[i].unregister();
+		}
+		
+		for (int i=0;i<itsObjectIndexes.length;i++)
+		{
+			itsObjectIndexes[i].unregister();
+		}
 	}
 	
 	public void indexType(int aIndex, StdTuple aTuple)
@@ -176,28 +197,28 @@ public class Indexes
 	
 	public void indexArrayIndex(int aIndex, StdTuple aTuple)
 	{
-		itsArrayIndexIndex.addTuple(aIndex, aTuple);
+		SplittedConditionHandler.INDEXES.index(aIndex, aTuple, itsArrayIndexIndexes);
 	}
 	
-	public HierarchicalIndex<StdTuple> getArrayIndexIndex(int aIndex)
+	public HierarchicalIndex<StdTuple> getArrayIndexIndex(int aPart, int aPartialKey)
 	{
-		return itsArrayIndexIndex.getIndex(aIndex);
+		return itsArrayIndexIndexes[aPart].getIndex(aPartialKey);
 	}
 	
 	public void indexObject(Object aObject, RoleTuple aTuple)
 	{
-		int theId = ObjectCodec.getObjectId(aObject, false);
+		long theId = ObjectCodec.getObjectId(aObject, false);
 		indexObject(theId, aTuple);
 	}
 
-	public void indexObject(int aIndex, RoleTuple aTuple)
+	public void indexObject(long aIndex, RoleTuple aTuple)
 	{
-		itsObjectIndex.addTuple(aIndex, aTuple);
+		SplittedConditionHandler.OBJECTS.index(aIndex, aTuple, itsObjectIndexes);
 	}
 	
-	public HierarchicalIndex<RoleTuple> getObjectIndex(int aIndex)
+	public HierarchicalIndex<RoleTuple> getObjectIndex(int aPart, int aPartialKey)
 	{
-		return itsObjectIndex.getIndex(aIndex);
+		return itsObjectIndexes[aPart].getIndex(aPartialKey);
 	}
 	
 }

@@ -36,7 +36,9 @@ public class DebuggerGridConfig
 	/**
 	 * Number of bits used to represent the host of an event.
 	 */
-	public static final int EVENT_HOST_BITS = 10;
+	public static final int EVENT_HOST_BITS = 8;
+	
+	public static final long EVENT_HOST_MASK = BitUtils.pow2(EVENT_HOST_BITS)-1;
 	
 	/**
 	 * Number of bits used to represent the thread of an event.
@@ -141,13 +143,25 @@ public class DebuggerGridConfig
 	/**
 	 * Maximum number of objects 
 	 */
-	public static final int STRUCTURE_OBJECT_COUNT = 2000000;
+	public static final int STRUCTURE_OBJECT_COUNT = BitUtils.pow2i(14);
 	
 	/**
 	 * Maximum number of array indexes.
 	 */
-	public static final int STRUCTURE_ARRAY_INDEX_COUNT = 1000000;
+	public static final int STRUCTURE_ARRAY_INDEX_COUNT = BitUtils.pow2i(14);
+	
+	/**
+	 * Number of partitions of key values for the objects index.
+	 * @see SplittedConditionHandler
+	 */
+	public static final int[] INDEX_OBJECT_PARTS = {14, 14};
 
+	/**
+	 * Number of partitions of key values for the array index index.
+	 * @see SplittedConditionHandler
+	 */
+	public static final int[] INDEX_ARRAY_INDEX_PARTS = {14, 14};
+	
 
 	/**
 	 * Number of bits used to represent the message type
