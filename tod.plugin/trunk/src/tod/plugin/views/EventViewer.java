@@ -20,17 +20,18 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.plugin.views;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JComponent;
+
 import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.JavaModelException;
 
-import tod.core.database.browser.ICompoundFilter;
-import tod.core.database.browser.IEventFilter;
 import tod.core.database.event.ILogEvent;
-import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.gui.MinerUI;
-import tod.gui.seed.FilterSeed;
 import tod.gui.seed.LogViewSeed;
 import tod.gui.seed.LogViewSeedFactory;
 import tod.plugin.DebuggingSession;
@@ -58,6 +59,32 @@ public class EventViewer extends MinerUI
 	protected DebuggingSession getSession()
 	{
 		return TODSessionManager.getInstance().pCurrentSession().get();
+	}
+	
+	@Override
+	protected JComponent createToolbar()
+	{
+		JComponent theToolbar = super.createToolbar();
+		
+		// Add a button that permits to jump to the exceptions view.
+		JButton theKillSessionButton = new JButton("Drop session");
+		theKillSessionButton.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent aE)
+			{
+				TODSessionManager.getInstance().killSession();
+			}
+		});
+		theKillSessionButton.setToolTipText(
+				"<html>" +
+				"<b>Drop current session.</b> Clears all recorded event <br>" +
+				"and starts a new, clean session.");
+		
+		theToolbar.add(theKillSessionButton);
+		
+
+		
+		return theToolbar;
 	}
 	
 	public void showElement (IJavaElement aElement)

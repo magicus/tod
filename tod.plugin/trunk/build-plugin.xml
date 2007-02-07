@@ -11,7 +11,6 @@
         <property name="tod.dir" value="${basedir}/../TOD"/>
         <property name="zz.utils.dir" value="${basedir}/../zz.utils"/>
         <property name="zz.eclipse.utils.dir" value="${basedir}/../zz.eclipse.utils"/>
-        <property name="zz.csg.dir" value="${basedir}/../zz.csg"/>
     	
     	<property name="eclipse.home" value="/home/gpothier/apps/eclipse-3.2.1"/>
     	
@@ -111,16 +110,5 @@
 	</target>
 	
 
-	<target name="dep.zz.csg" depends="init">
-		<ant 
-			antfile="${zz.csg.dir}/build.xml" 
-			dir="${zz.csg.dir}" 
-			target="jar"
-			inheritall="false"/>
-		<copy todir="lib">
-			<fileset dir="${zz.csg.dir}/build" includes="zz.csg.jar"/>
-		</copy>
-	</target>
-	
-	<target name="dep.all" depends="dep.tod, dep.zz.utils, dep.zz.csg, dep.zz.eclipse.utils"/>
+	<target name="dep.all" depends="dep.tod, dep.zz.utils, dep.zz.eclipse.utils"/>
 </project>

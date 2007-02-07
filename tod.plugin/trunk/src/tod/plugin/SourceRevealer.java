@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.plugin;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
@@ -220,6 +221,36 @@ public class SourceRevealer
 			return itsType;
 		}
 
+		public String getReceivingTypeName() throws DebugException
+		{
+			return itsTypeName;
+		}
+		
+		public String getMethodName() throws DebugException
+		{
+			return null;
+		}
+
+		public List getArgumentTypeNames() throws DebugException
+		{
+			return Collections.EMPTY_LIST;
+		}
+
+		public boolean wereLocalsAvailable()
+		{
+			return false;
+		}
+
+		public boolean isNative() throws DebugException
+		{
+			return false;
+		}
+
+		public boolean isOutOfSynch() throws DebugException
+		{
+			return false;
+		}
+
 		public boolean canStepInto()
 		{
 			throw new UnsupportedOperationException();
@@ -325,11 +356,6 @@ public class SourceRevealer
 			throw new UnsupportedOperationException();
 		}
 
-		public List getArgumentTypeNames() throws DebugException
-		{
-			throw new UnsupportedOperationException();
-		}
-
 		public IJavaClassType getDeclaringType() throws DebugException
 		{
 			throw new UnsupportedOperationException();
@@ -341,16 +367,6 @@ public class SourceRevealer
 		}
 
 		public IJavaVariable[] getLocalVariables() throws DebugException
-		{
-			throw new UnsupportedOperationException();
-		}
-
-		public String getMethodName() throws DebugException
-		{
-			throw new UnsupportedOperationException();
-		}
-
-		public String getReceivingTypeName() throws DebugException
 		{
 			throw new UnsupportedOperationException();
 		}
@@ -385,16 +401,6 @@ public class SourceRevealer
 			throw new UnsupportedOperationException();
 		}
 
-		public boolean isNative() throws DebugException
-		{
-			throw new UnsupportedOperationException();
-		}
-
-		public boolean isOutOfSynch() throws DebugException
-		{
-			throw new UnsupportedOperationException();
-		}
-
 		public boolean isStaticInitializer() throws DebugException
 		{
 			throw new UnsupportedOperationException();
@@ -411,11 +417,6 @@ public class SourceRevealer
 		}
 
 		public boolean supportsDropToFrame()
-		{
-			throw new UnsupportedOperationException();
-		}
-
-		public boolean wereLocalsAvailable()
 		{
 			throw new UnsupportedOperationException();
 		}

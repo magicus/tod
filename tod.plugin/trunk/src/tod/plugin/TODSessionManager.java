@@ -47,7 +47,25 @@ public class TODSessionManager
 {
 	private static TODSessionManager INSTANCE = new TODSessionManager();
 	
-	private IRWProperty<DebuggingSession> pCurrentSession = new SimpleRWProperty<DebuggingSession>(this);
+	private IRWProperty<DebuggingSession> pCurrentSession = new SimpleRWProperty<DebuggingSession>(this)
+	{
+		@Override
+		protected void changed(DebuggingSession aOldValue, DebuggingSession aNewValue)
+		{
+			if (aOldValue != null) 
+			{
+				try
+				{
+					aOldValue.disconnect();
+				}
+				catch (RuntimeException e)
+				{
+					System.err.println("[TODSessionManager] Error while disconnecting:");
+					e.printStackTrace();
+				}
+			}
+		}
+	};
 	
 	public static TODSessionManager getInstance()
 	{
@@ -64,6 +82,14 @@ public class TODSessionManager
 	public IProperty<DebuggingSession> pCurrentSession()
 	{
 		return pCurrentSession;
+	}
+	
+	/**
+	 * Drops the current session.
+	 */
+	public void killSession()
+	{
+		pCurrentSession.set(null);
 	}
 	
 	/**
@@ -172,9 +198,6 @@ public class TODSessionManager
 	{
 		try
 		{
-			DebuggingSession thePreviousSession = pCurrentSession.get();
-			if (thePreviousSession != null) thePreviousSession.disconnect();
-
 			DebuggingSession theDebuggingSession = new DebuggingSession(
 					SessionUtils.createSession(aConfig),
 					aLaunch,

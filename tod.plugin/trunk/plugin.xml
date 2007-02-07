@@ -32,9 +32,6 @@
       <library name="../TOD/bin">
          <export name="*"/>
       </library>
-      <library name="../zz.csg/bin">
-         <export name="*"/>
-      </library>
       
       <!-- deployment -->
       <!--      
@@ -42,9 +39,6 @@
          <export name="*"/>
       </library>
       <library name="lib/tod-debugger.jar">
-         <export name="*"/>
-      </library>
-      <library name="lib/zz.csg.jar">
          <export name="*"/>
       </library>
       <library name="lib/zz.utils.jar">
