@@ -24,12 +24,13 @@ import static tod.gui.FontConfig.STD_FONT;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
-import java.awt.geom.AffineTransform;
 import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
@@ -45,13 +46,9 @@ import tod.gui.Hyperlinks.ISeedFactory;
 import tod.gui.controlflow.CFlowView;
 import tod.gui.seed.LogViewSeedFactory;
 import tod.gui.seed.Seed;
-import zz.csg.api.IRectangularGraphicObject;
-import zz.csg.api.layout.SequenceLayout;
-import zz.csg.api.layout.StackLayout;
-import zz.csg.display.GraphicPanel;
-import zz.csg.impl.SVGGraphicContainer;
-import zz.csg.impl.figures.SVGFlowText;
 import zz.utils.SimpleAction;
+import zz.utils.ui.GridStackLayout;
+import zz.utils.ui.ZLabel;
 
 /**
  * A panel that shows the contents of a stack frame or of an object.
@@ -62,8 +59,8 @@ public class WatchPanel extends JPanel
 	private CFlowView itsView;
 	private MySeedFactory itsSeedFactory = new MySeedFactory();
 	private WatchBrowserNavigator itsBrowserNavigator;
-	private GraphicPanel itsGraphicPanel;
 	private JobProcessor itsJobProcessor;
+	private JScrollPane itsScrollPane;
 	
 	public WatchPanel(CFlowView aView)
 	{
@@ -93,9 +90,9 @@ public class WatchPanel extends JPanel
 		
 		add(theToolbar, BorderLayout.NORTH);
 		
-		itsGraphicPanel = new GraphicPanel();
-		itsGraphicPanel.setTransform(new AffineTransform());
-		add(new JScrollPane(itsGraphicPanel), BorderLayout.CENTER);
+		itsScrollPane = new JScrollPane();
+		itsScrollPane.getViewport().setBackground(Color.WHITE);
+		add(itsScrollPane, BorderLayout.CENTER);
 		
 		showStackFrame();
 	}
@@ -159,19 +156,18 @@ public class WatchPanel extends JPanel
 	{
 		getJobProcessor().cancelAll();
 				
-		final SVGGraphicContainer theContainer = new SVGGraphicContainer();
+		final JPanel theContainer = new JPanel(new GridStackLayout(1, 0, 0, true, false));
+		theContainer.setOpaque(false);
 		
-		theContainer.pChildren().add(aProvider.buildTitle(getJobProcessor()));
+		theContainer.add(aProvider.buildTitle(getJobProcessor()));
 		
 		ObjectId theCurrentObject = aProvider.getCurrentObject();
 		if (theCurrentObject != null)
 		{
-			theContainer.pChildren().add(buildCurrentObjectLine(theCurrentObject));
+			theContainer.add(buildCurrentObjectLine(theCurrentObject));
 		}
 				
-		theContainer.setLayoutManager(new StackLayout());
-		
-		getJobProcessor().submit(new JobProcessor.Job()
+		getJobProcessor().submit(new JobProcessor.Job<Object>()
 		{
 			@Override
 			public Object run()
@@ -179,33 +175,35 @@ public class WatchPanel extends JPanel
 				List<E> theEntries = aProvider.getEntries();
 				if (theEntries == null) return null;
 				
-				theContainer.disableUpdate();
 				for (E theEntry : theEntries)
 				{
 					if ("this".equals(aProvider.getEntryName(theEntry))) continue;
 					
-					theContainer.pChildren().add(new WatchEntryNode<E>(
+					theContainer.add(new WatchEntryNode<E>(
 							itsSeedFactory,
 							itsView.getLogBrowser(),
 							getJobProcessor(),
 							aProvider,
 							theEntry));
 				}
-				theContainer.enableUpdate();
+				
+				theContainer.revalidate();
+				theContainer.repaint();
 				return null;
 			}
 		});
 		
-		itsGraphicPanel.setRootNode(theContainer);
+		itsScrollPane.setViewportView(theContainer);
 	}
 	
-	private IRectangularGraphicObject buildCurrentObjectLine(ObjectId aCurrentObject)
+	private JComponent buildCurrentObjectLine(ObjectId aCurrentObject)
 	{
-		SVGGraphicContainer theContainer = new SVGGraphicContainer();
+		JPanel theContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		theContainer.setOpaque(false);
 		
-		theContainer.pChildren().add(SVGFlowText.create("this = ", STD_FONT, Color.BLACK));
+		theContainer.add(ZLabel.create("this = ", STD_FONT, Color.BLACK));
 		
-		theContainer.pChildren().add(Hyperlinks.object(
+		theContainer.add(Hyperlinks.object(
 				itsSeedFactory,
 				itsView.getLogBrowser(), 
 				getJobProcessor(),
@@ -213,7 +211,6 @@ public class WatchPanel extends JPanel
 				aCurrentObject,
 				STD_FONT));
 		
-		theContainer.setLayoutManager(new SequenceLayout());
 		return theContainer;		
 		
 	}

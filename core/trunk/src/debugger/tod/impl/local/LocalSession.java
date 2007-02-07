@@ -70,7 +70,7 @@ public class LocalSession extends AbstractSession
 	
 	public void disconnect()
 	{
-		itsServer.disconnect();
+		itsServer.stop();
 	}
 	
 	public void flush()

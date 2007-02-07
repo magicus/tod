@@ -21,21 +21,13 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.controlflow;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
-import tod.core.database.browser.BrowserUtils;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.Stepper;
@@ -47,20 +39,16 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.gui.IGUIManager;
+import tod.gui.MinerUI;
 import tod.gui.Hyperlinks.ISeedFactory;
 import tod.gui.controlflow.tree.CFlowTree;
 import tod.gui.controlflow.watch.WatchPanel;
-import tod.gui.eventlist.MuralScroller;
-import tod.gui.eventlist.MuralScroller.UnitScroll;
 import tod.gui.formatter.EventFormatter;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.seed.Seed;
 import tod.gui.view.IEventListView;
 import tod.gui.view.LogView;
-import zz.csg.display.GraphicPanel;
 import zz.utils.SimpleAction;
-import zz.utils.notification.IEvent;
-import zz.utils.notification.IEventListener;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.PropertyListener;
@@ -69,27 +57,22 @@ import zz.utils.ui.UIUtils;
 public class CFlowView extends LogView implements IEventListView
 {
 	public static final boolean SHOW_PARENT_FRAMES = false;
+	private static final String PROPERTY_SPLITTER_POS = "cflowView.splitterPos";
+
 	
 	private CFlowSeed itsSeed;
-	private CFlowTree itsCFlowTree;
-	
 	private EventFormatter itsFormatter;
-	
 	private Stepper itsStepper;
 	
-	private GraphicPanel itsTreePanel;
+	private CFlowTree itsCFlowTree;
 	private WatchPanel itsWatchPanel;
-	
-	private MuralScroller itsScroller;
-	
-	private boolean itsUpdated = false;
 	
 	private IPropertyListener<ILogEvent> itsSelectedEventListener = new PropertyListener<ILogEvent>()
 	{
 		@Override
 		public void propertyChanged(IProperty<ILogEvent> aProperty, ILogEvent aOldValue, ILogEvent aNewValue)
 		{
-			itsTreePanel.repaint();
+			itsCFlowTree.repaint();
 			update();
 		}
 	};
@@ -143,73 +126,9 @@ public class CFlowView extends LogView implements IEventListView
 		// Create tree panel
 		itsCFlowTree = new CFlowTree(this);
 		
-		itsTreePanel = new GraphicPanel()
-		{
-			@Override
-			public boolean getScrollableTracksViewportHeight()
-			{
-				return true;
-			}
-			
-			@Override
-			public boolean getScrollableTracksViewportWidth()
-			{
-				return false;
-			}
-		};
-		itsTreePanel.setTransform(new AffineTransform());
-		itsTreePanel.setRootNode(itsCFlowTree);
-		
-		itsScroller = new MuralScroller();
-		itsScroller.eUnitScroll().addListener(new IEventListener<UnitScroll>()
-				{
-					public void fired(IEvent< ? extends UnitScroll> aEvent, UnitScroll aData)
-					{
-						switch (aData)
-						{
-						case UP:
-							itsCFlowTree.backward(1);
-							break;
-							
-						case DOWN:
-							itsCFlowTree.forward(1);
-							break;
-						}
-					}
-				});
-		itsScroller.pTrackScroll().addHardListener(new PropertyListener<Long>()
-				{
-					@Override
-					public void propertyChanged(IProperty<Long> aProperty, Long aOldValue, Long aNewValue)
-					{
-						itsCFlowTree.setTimestamp(aNewValue);
-					}
-				});
-		
-		JScrollPane theTreeScrollPane = new MyScrollPane(itsTreePanel);
-		theTreeScrollPane.setWheelScrollingEnabled(false);
-		
-		theTreeScrollPane.addComponentListener(new ComponentAdapter()
-		{
-			@Override
-			public void componentResized(ComponentEvent aE)
-			{
-				itsCFlowTree.setSize(
-						itsCFlowTree.pBounds().get().getWidth(), 
-						itsTreePanel.getHeight());
-				itsCFlowTree.update();
-			}
-		});
-		
-
-		
-		JPanel theCFlowTreePanel = new JPanel(new BorderLayout());
-		theCFlowTreePanel.add(theTreeScrollPane, BorderLayout.CENTER);
-		theCFlowTreePanel.add(itsScroller, BorderLayout.EAST);
-		
 		JPanel theCFlowPanel = new JPanel(new BorderLayout());
 //		theCFlowPanel.add(theTreeScrollPane, BorderLayout.CENTER);
-		theCFlowPanel.add(theCFlowTreePanel, BorderLayout.CENTER);
+		theCFlowPanel.add(itsCFlowTree, BorderLayout.CENTER);
 		theCFlowPanel.add(createToolbar(), BorderLayout.NORTH);
 		
 		// Create watch panel
@@ -310,11 +229,6 @@ public class CFlowView extends LogView implements IEventListView
 
 
 		itsCFlowTree.setParent(theParentEvent);
-		IEventBrowser theBrowser = theParentEvent.getChildrenBrowser();
-		itsScroller.set(
-				theBrowser, 
-				BrowserUtils.getFirstTimestamp(theBrowser),
-				BrowserUtils.getLastTimestamp(theBrowser));
 	}
 	
 	private void update()
@@ -344,19 +258,9 @@ public class CFlowView extends LogView implements IEventListView
 		
 		getSeed().pSelectedEvent().set(aEvent);
 		
-		Rectangle2D theBounds = itsCFlowTree.makeVisible(aEvent);
-		if (theBounds != null)
-		{
-			Rectangle thePixelBounds = itsTreePanel.localToPixel(
-					itsTreePanel.getRootNode().getContext(), 
-					itsCFlowTree, 
-					theBounds);
-			
-			thePixelBounds.x -= 50;
-			itsTreePanel.scrollRectToVisible(thePixelBounds);
-		}
+		itsCFlowTree.makeVisible(aEvent);
 	}
-		
+
 	@Override
 	public void addNotify()
 	{
@@ -365,7 +269,11 @@ public class CFlowView extends LogView implements IEventListView
 		itsSeed.pRootEvent().addHardListener(itsRootEventListener);
 		itsSeed.pParentEvent().addHardListener(itsParentListener);
 		
-		itsSplitPane.setDividerLocation(400);
+		int theSplitterPos = MinerUI.getIntProperty(
+				getGUIManager(), 
+				PROPERTY_SPLITTER_POS, 400);
+		
+		itsSplitPane.setDividerLocation(theSplitterPos);
 		
 		update();
 	}
@@ -377,6 +285,11 @@ public class CFlowView extends LogView implements IEventListView
 		itsSeed.pSelectedEvent().removeListener(itsSelectedEventListener);
 		itsSeed.pRootEvent().removeListener(itsRootEventListener);
 		itsSeed.pParentEvent().removeListener(itsParentListener);
+		
+		getGUIManager().setProperty(
+				PROPERTY_SPLITTER_POS, 
+				""+itsSplitPane.getDividerLocation());
+		
 	}
 	
 	
@@ -402,15 +315,6 @@ public class CFlowView extends LogView implements IEventListView
 		return getSeed().pSelectedEvent().get();
 	}
 	
-	
-	private static class MyScrollPane extends JScrollPane
-	{
-		private MyScrollPane(Component aView)
-		{
-			super(aView, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-			getViewport().setBackground(GraphicPanel.BACKGROUND_PAINT);
-		}
-	}
 	
 	private class CFlowSeedFactory implements ISeedFactory
 	{

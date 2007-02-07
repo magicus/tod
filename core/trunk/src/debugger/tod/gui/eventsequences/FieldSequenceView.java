@@ -21,6 +21,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.eventsequences;
 
 import java.awt.Color;
+import java.awt.FlowLayout;
+
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
@@ -28,14 +32,12 @@ import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMemberInfo;
+import tod.gui.FontConfig;
 import tod.gui.IGUIManager;
 import tod.gui.SVGHyperlink;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.view.LogView;
-import zz.csg.api.IRectangularGraphicObject;
-import zz.csg.api.layout.SequenceLayout;
-import zz.csg.impl.SVGGraphicContainer;
-import zz.csg.impl.figures.SVGFlowText;
+import zz.utils.ui.ZLabel;
 
 public class FieldSequenceView extends AbstractMemberSequenceView
 {
@@ -56,16 +58,15 @@ public class FieldSequenceView extends AbstractMemberSequenceView
 	}
 
 	@Override
-	protected IRectangularGraphicObject getBaloon(ILogEvent aEvent)
+	protected JComponent getBaloon(ILogEvent aEvent)
 	{
 		IFieldWriteEvent theEvent = (IFieldWriteEvent) aEvent;
 		return createFieldWriteBaloon(theEvent);
 	}
 	
-	private IRectangularGraphicObject createFieldWriteBaloon(IFieldWriteEvent aEvent)
+	private JComponent createFieldWriteBaloon(IFieldWriteEvent aEvent)
 	{
-		SVGGraphicContainer theContainer = new SVGGraphicContainer();
-		theContainer.setLayoutManager(new SequenceLayout());
+		JPanel theContainer = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
 		// Create hyperlink to call event
 		IGUIManager theGUIManager = getLogView().getGUIManager();
@@ -73,13 +74,13 @@ public class FieldSequenceView extends AbstractMemberSequenceView
 
 		CFlowSeed theSeed = new CFlowSeed(theGUIManager, theLog, aEvent);
 		SVGHyperlink theHyperlink = SVGHyperlink.create(theSeed, "set", 10, Color.BLUE);
-		theContainer.pChildren().add (theHyperlink);
+		theContainer.add (theHyperlink);
 		
 		// Colon
-		theContainer.pChildren().add (SVGFlowText.create(": ", 10, Color.BLACK));
+		theContainer.add (ZLabel.create(": ", FontConfig.TINY_FONT, Color.BLACK));
 		
 		// Value
-		theContainer.pChildren().add(createBaloon(aEvent.getValue()));
+		theContainer.add(createBaloon(aEvent.getValue()));
 		
 		return theContainer;
 	}

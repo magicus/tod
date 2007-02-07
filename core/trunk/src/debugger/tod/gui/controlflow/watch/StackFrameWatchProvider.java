@@ -23,7 +23,11 @@ package tod.gui.controlflow.watch;
 import static tod.gui.FontConfig.STD_HEADER_FONT;
 
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.util.List;
+
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 
 import tod.Util;
 import tod.core.ILocationRegisterer.LocalVariableInfo;
@@ -34,13 +38,10 @@ import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IWriteEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ObjectId;
+import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
-import tod.gui.SVGUtils;
-import zz.csg.api.IRectangularGraphicObject;
-import zz.csg.api.layout.SequenceLayout;
-import zz.csg.impl.SVGGraphicContainer;
-import zz.csg.impl.figures.SVGFlowText;
+import zz.utils.ui.ZLabel;
 
 /**
  * Watch provider for stack frame reconstitution
@@ -100,13 +101,13 @@ public class StackFrameWatchProvider implements IWatchProvider<LocalVariableInfo
 		return itsInspector;
 	}
 
-	public IRectangularGraphicObject buildTitle(JobProcessor aJobProcessor)
+	public JComponent buildTitle(JobProcessor aJobProcessor)
 	{
 		IBehaviorCallEvent theParentEvent = getParentEvent();
 
 		if (itsIndirectParent)
 		{
-			return SVGUtils.createMessage(
+			return GUIUtils.createMessage(
 					"Variable information not available", 
 					Color.DARK_GRAY,
 					"Cause: missing control flow information, check working set.",
@@ -114,7 +115,7 @@ public class StackFrameWatchProvider implements IWatchProvider<LocalVariableInfo
 		}
 		else if (itsInvalid)
 		{
-			return SVGUtils.createMessage(
+			return GUIUtils.createMessage(
 					"Variable information not available", 
 					Color.DARK_GRAY,
 					"Cause: the currently selected event is a control flow root.",
@@ -124,15 +125,14 @@ public class StackFrameWatchProvider implements IWatchProvider<LocalVariableInfo
 		{
 			IBehaviorInfo theBehavior = theParentEvent.getExecutedBehavior();
 			
-			SVGGraphicContainer theContainer = new SVGGraphicContainer();
-			
+			JPanel theContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+			theContainer.setOpaque(false);
+
 			if (theBehavior != null)
 			{
-				theContainer.pChildren().add(SVGFlowText.create("Behavior: ", STD_HEADER_FONT, Color.BLACK));
-				theContainer.pChildren().add(Hyperlinks.behavior(itsWatchPanel.getLogViewSeedFactory(), theBehavior, STD_HEADER_FONT));
-				theContainer.pChildren().add(SVGFlowText.create(" ("+Util.getPrettyName(theBehavior.getType().getName())+")", STD_HEADER_FONT, Color.BLACK));
-
-				theContainer.setLayoutManager(new SequenceLayout());
+				theContainer.add(ZLabel.create("Behavior: ", STD_HEADER_FONT, Color.BLACK));
+				theContainer.add(Hyperlinks.behavior(itsWatchPanel.getLogViewSeedFactory(), theBehavior, STD_HEADER_FONT));
+				theContainer.add(ZLabel.create(" ("+Util.getPrettyName(theBehavior.getType().getName())+")", STD_HEADER_FONT, Color.BLACK));
 			}
 			
 			return theContainer;

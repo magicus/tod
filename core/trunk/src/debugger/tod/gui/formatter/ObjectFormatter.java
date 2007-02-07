@@ -20,16 +20,11 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.formatter;
 
-import java.awt.Color;
-
 import tod.Util;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.gui.Hyperlinks;
-import tod.gui.SVGHyperlink;
-import tod.gui.seed.ObjectInspectorSeed;
-import zz.csg.impl.figures.SVGFlowText;
 import zz.utils.AbstractFormatter;
 
 /**

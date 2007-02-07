@@ -20,20 +20,13 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.kit;
 
-import java.awt.Color;
-
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.gui.JobProcessor;
-import tod.gui.SVGHyperlink;
-import tod.gui.Hyperlinks.ISeedFactory;
 import tod.gui.JobProcessor.IJobListener;
 import tod.gui.JobProcessor.Job;
 import tod.gui.seed.Seed;
-import zz.csg.api.IRectangularGraphicObject;
-import zz.csg.api.figures.IGOFlowText.DefaultSizeComputer;
-import zz.csg.impl.figures.SVGFlowText;
 import zz.utils.ui.text.XFont;
 
 /**
@@ -42,7 +35,7 @@ import zz.utils.ui.text.XFont;
  * {@link JobProcessor}.
  * @author gpothier
  */
-public class ObjectHyperlink extends SVGHyperlink
+public class ObjectHyperlink extends SeedLinkLabel
 implements IJobListener<ITypeInfo>
 {
 	private final ObjectId itsObject;
@@ -54,12 +47,8 @@ implements IJobListener<ITypeInfo>
 			ObjectId aObject, 
 			XFont aFont)
 	{
+		super("... (" + aObject + ")", aSeed);
 		itsObject = aObject;
-		
-		setSeed(aSeed);
-		pStrokePaint().set(Color.BLUE);
-		pFont().set(aFont);
-		setSizeComputer(DefaultSizeComputer.getInstance());
 		
 		Job<ITypeInfo> theJob = new Job<ITypeInfo>()
 		{
@@ -71,14 +60,11 @@ implements IJobListener<ITypeInfo>
 		};
 		
 		aJobProcessor.submit(theJob, this);
-
-		String theText = "... (" + aObject + ")";
-		pText().set(theText);
 	}
 
 	public void jobFinished(ITypeInfo aType)
 	{
 		String theText = aType.getName() + " (" + itsObject + ")";
-		pText().set(theText);
+		setText(theText);
 	}
 }

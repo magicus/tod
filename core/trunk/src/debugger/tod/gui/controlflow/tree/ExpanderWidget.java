@@ -21,46 +21,38 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.controlflow.tree;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.event.MouseEvent;
-import java.awt.geom.Area;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
+import java.awt.Dimension;
+import java.awt.Graphics;
 
-import zz.csg.api.GraphicObjectContext;
-import zz.csg.api.IDisplay;
-import zz.csg.impl.AbstractRectangularGraphicObject;
-import zz.utils.properties.IRWProperty;
-import zz.utils.properties.SimpleRWProperty;
-import zz.utils.ui.UIUtils;
+import javax.swing.JPanel;
 
 /**
  * A widget that permits dive into the event to which it is
  * attached
  * @author gpothier
  */
-public class ExpanderWidget extends AbstractRectangularGraphicObject
+public class ExpanderWidget extends JPanel
 {
-	public static final double WIDTH = 10;
-	public static final double THICKNESS = 4;
-	
-	private Color itsColor;
+	public static final int WIDTH = 10;
+	public static final int THICKNESS = 4;
 	
 	public ExpanderWidget(Color aColor)
 	{
-		itsColor = aColor;
+		setForeground(aColor);
+		setOpaque(false);
+		setPreferredSize(new Dimension(WIDTH, 1));
 	}
 
 	@Override
-	protected void paintTransformed(IDisplay aDisplay, GraphicObjectContext aContext, Graphics2D aGraphics, Area aVisibleArea)
+	protected void paintComponent(Graphics aG)
 	{
-		Rectangle2D theBounds = pBounds().get();
+		super.paintComponent(aG);
 
-		aGraphics.setColor(itsColor);
-		aGraphics.fill(new Rectangle2D.Double(
-				theBounds.getX() + theBounds.getWidth()/2 - THICKNESS/2, 
-				theBounds.getY() + 1,
+		aG.setColor(getForeground());
+		aG.fillRect(
+				getWidth()/2 - THICKNESS/2, 
+				1,
 				THICKNESS,
-				theBounds.getHeight() - 2));
+				getHeight() - 2);
 	}
 }

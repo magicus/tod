@@ -28,8 +28,7 @@ import tod.gui.FontConfig;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
-import zz.csg.api.layout.SequenceLayout;
-import zz.csg.impl.figures.SVGFlowText;
+import zz.utils.ui.ZLabel;
 
 public class ExceptionGeneratedNode extends AbstractEventNode
 {
@@ -44,14 +43,12 @@ public class ExceptionGeneratedNode extends AbstractEventNode
 		
 		itsEvent = aEvent;
 
-		setLayoutManager(new SequenceLayout());
-		
-		pChildren().add(SVGFlowText.create(
+		add(ZLabel.create(
 				"Exception: ", 
 				FontConfig.STD_FONT, 
 				Color.RED));
 		
-		pChildren().add(Hyperlinks.object(
+		add(Hyperlinks.object(
 				getSeedFactory(), 
 				getLogBrowser(),
 				getJobProcessor(),

@@ -22,17 +22,17 @@ package tod.gui;
 
 import java.awt.Color;
 
+import javax.swing.JComponent;
+
 import tod.Util;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
-import tod.gui.kit.ObjectHyperlink;
 import tod.gui.seed.LogViewSeedFactory;
 import tod.gui.seed.Seed;
-import zz.csg.api.IRectangularGraphicObject;
-import zz.csg.impl.figures.SVGFlowText;
+import zz.utils.ui.ZLabel;
 import zz.utils.ui.text.XFont;
 
 /**
@@ -42,7 +42,7 @@ import zz.utils.ui.text.XFont;
  */
 public class Hyperlinks
 {
-	public static IRectangularGraphicObject history(
+	public static JComponent history(
 			LogViewSeedFactory aFactory,
 			ObjectId aObject,
 			XFont aFont)
@@ -54,7 +54,7 @@ public class Hyperlinks
 				Color.BLUE);
 	}
 	
-	public static IRectangularGraphicObject type (
+	public static JComponent type (
 			ISeedFactory aSeedFactory, 
 			ITypeInfo aType, 
 			XFont aFont)
@@ -66,7 +66,7 @@ public class Hyperlinks
 				Color.BLUE);
 	}
 	
-	public static IRectangularGraphicObject behavior(
+	public static JComponent behavior(
 			ISeedFactory aSeedFactory,
 			IBehaviorInfo aBehavior,
 			XFont aFont)
@@ -81,7 +81,7 @@ public class Hyperlinks
 	/**
 	 * An hyperlink that jumps to the cflow of the given event.
 	 */
-	public static IRectangularGraphicObject event(
+	public static JComponent event(
 			ISeedFactory aSeedFactory, 
 			String aText,
 			ILogEvent aEvent, 
@@ -94,7 +94,7 @@ public class Hyperlinks
 				Color.BLUE);
 	}
 	
-	public static IRectangularGraphicObject object(
+	public static JComponent object(
 			ISeedFactory aSeedFactory, 
 			ILogBrowser aLogBrowser, 
 			JobProcessor aJobProcessor,
@@ -110,7 +110,7 @@ public class Hyperlinks
 	 * be displayed as "this" 
 	 * @param aObject The object to link to.
 	 */
-	public static IRectangularGraphicObject object(
+	public static JComponent object(
 			ISeedFactory aSeedFactory,
 			ILogBrowser aLogBrowser,
 			JobProcessor aJobProcessor,
@@ -156,7 +156,7 @@ public class Hyperlinks
 		else if (aObject instanceof String)
 		{
 			String theString = (String) aObject;
-			return SVGFlowText.create("\""+theString+"\"", aFont, Color.GRAY);
+			return ZLabel.create("\""+theString+"\"", aFont, Color.GRAY);
 		}
 		else if (aObject instanceof Throwable)
 		{
@@ -169,12 +169,11 @@ public class Hyperlinks
 				theBuilder.append(theThrowable.getMessage());
 				theBuilder.append(')');
 			}
-			return SVGFlowText.create(theBuilder.toString(), aFont, Color.RED);
+			return ZLabel.create(theBuilder.toString(), aFont, Color.RED);
 		}
 		else 
 		{
-			SVGFlowText theFlowText = SVGFlowText.create(""+aObject, aFont, Color.GRAY);
-			return theFlowText;
+			return ZLabel.create(""+aObject, aFont, Color.GRAY);
 		}
 
 		

@@ -20,19 +20,29 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.controlflow.tree;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Graphics2D;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.LayoutManager;
+import java.awt.Rectangle;
 import java.awt.event.MouseWheelEvent;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Area;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
+import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.Scrollable;
+import javax.swing.SwingConstants;
+
+import tod.core.database.browser.BrowserUtils;
+import tod.core.database.browser.IEventBrowser;
 import tod.core.database.event.EventUtils;
 import tod.core.database.event.IArrayWriteEvent;
 import tod.core.database.event.IBehaviorCallEvent;
@@ -46,30 +56,29 @@ import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IMethodCallEvent;
 import tod.core.database.event.IParentEvent;
 import tod.gui.JobProcessor;
+import tod.gui.MinerUI;
 import tod.gui.controlflow.CFlowView;
 import tod.gui.eventlist.EventListCore;
-import zz.csg.ZInsets;
-import zz.csg.api.GraphicObjectContext;
-import zz.csg.api.IDisplay;
-import zz.csg.api.IGraphicContainer;
-import zz.csg.api.IGraphicObject;
-import zz.csg.api.IRectangularGraphicContainer;
-import zz.csg.api.IRectangularGraphicObject;
-import zz.csg.api.PickResult;
-import zz.csg.api.layout.SequenceLayout;
-import zz.csg.api.layout.StackLayout;
-import zz.csg.impl.SVGGraphicContainer;
+import tod.gui.eventlist.MuralScroller;
+import tod.gui.eventlist.MuralScroller.UnitScroll;
+import zz.utils.notification.IEvent;
+import zz.utils.notification.IEventListener;
 import zz.utils.properties.IProperty;
-import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.PropertyListener;
-import zz.utils.ui.HorizontalAlignment;
+import zz.utils.ui.GridStackLayout;
+import zz.utils.ui.StackLayout;
 
-public class CFlowTree extends SVGGraphicContainer
+public class CFlowTree extends JPanel
+implements MouseWheelListener
 {
+	private static final String PROPERTY_SPLITTER_POS = "cflowTree.splitterPos";
+	
 	private final CFlowView itsView;
 
 	private EventListCore itsCore;
-	private SVGGraphicContainer itsEventList;
+	private JPanel itsEventList;
+	
+	private MuralScroller itsScroller;
 	
 	private long itsFirstDisplayedTimestamp;
 	private long itsLastDisplayedTimestamp;
@@ -79,14 +88,15 @@ public class CFlowTree extends SVGGraphicContainer
 	 */
 	private Map<ILogEvent, AbstractEventNode> itsNodesMap = 
 		new HashMap<ILogEvent, AbstractEventNode>();
+
+	private JSplitPane itsSplitPane;
 	
 	public CFlowTree(CFlowView aView)
 	{
 		itsView = aView;
 		
-		IParentEvent theRoot = itsView.getSeed().pRootEvent().get();
-		itsCore = new EventListCore(theRoot.getChildrenBrowser(), 10);
 		createUI();
+		setParent(null);
 	}
 	
 	public JobProcessor getJobProcessor()
@@ -119,37 +129,23 @@ public class CFlowTree extends SVGGraphicContainer
 		getJobProcessor().release();
 	}
 
-	@Override
-	public void attached(GraphicObjectContext aContext)
+	public void setParent(IParentEvent aParentEvent)
 	{
-		super.attached(aContext);
-	}
-	
-	@Override
-	public void detached(GraphicObjectContext aContext)
-	{
-		super.detached(aContext);
-	}
-	
-	public void setParent(IParentEvent aEvent)
-	{
-		itsCore = new EventListCore(aEvent.getChildrenBrowser(), 10);
+		if (aParentEvent == null) aParentEvent = itsView.getSeed().pRootEvent().get();
+		itsCore = new EventListCore(aParentEvent.getChildrenBrowser(), 10);
+
+		IEventBrowser theBrowser = aParentEvent.getChildrenBrowser();
+		itsScroller.set(
+				theBrowser, 
+				BrowserUtils.getFirstTimestamp(theBrowser),
+				BrowserUtils.getLastTimestamp(theBrowser));
+
 		update();
 	}
 
-	public void update()
-	{
-		pChildren().clear();
-		createUI();
-		checkValid();
-		repaintAllContexts();
-	}
-	
 	private void updateList()
 	{
-		disableUpdate();
-		
-		itsEventList.pChildren().clear();
+		itsEventList.removeAll();
 		LinkedList<ILogEvent> theEvents = itsCore.getDisplayedEvents();
 		
 		Map<ILogEvent, AbstractEventNode> theOldMap = itsNodesMap;
@@ -162,60 +158,91 @@ public class CFlowTree extends SVGGraphicContainer
 			
 			if (theNode != null) 
 			{
-				itsEventList.pChildren().add(theNode);
+				itsEventList.add(theNode);
 				itsNodesMap.put(theEvent, theNode);
 			}
 		}
 		
-		enableUpdate();
-	}
-	
-	@Override
-	public void paint(IDisplay aDisplay, GraphicObjectContext aContext, Graphics2D aGraphics, Area aVisibleArea)
-	{
-		super.paint(aDisplay, aContext, aGraphics, aVisibleArea);
+		itsEventList.revalidate();
+		itsEventList.repaint();
 	}
 	
 	private void createUI()
 	{
-		IRectangularGraphicObject theStack = buildStack();
+		itsScroller = new MuralScroller();
 		
-		SVGGraphicContainer theContainer = new SVGGraphicContainer()
-		{
-			@Override
-			protected void paintBackground(IDisplay aDisplay, GraphicObjectContext aContext, Graphics2D aGraphics, Area aVisibleArea)
-			{
-				aGraphics.setColor(Color.ORANGE);
-				aGraphics.fill(pBounds().get());
-			}
-		};
-		theContainer.setSize(
-				theStack.getBounds(null).getHeight(), 
-				getBounds(null).getHeight());
-		theContainer.pChildren().add(theStack);
+		itsScroller.eUnitScroll().addListener(new IEventListener<UnitScroll>()
+				{
+					public void fired(IEvent< ? extends UnitScroll> aEvent, UnitScroll aData)
+					{
+						switch (aData)
+						{
+						case UP:
+							backward(1);
+							break;
+							
+						case DOWN:
+							forward(1);
+							break;
+						}
+					}
+				});
+		itsScroller.pTrackScroll().addHardListener(new PropertyListener<Long>()
+				{
+					@Override
+					public void propertyChanged(IProperty<Long> aProperty, Long aOldValue, Long aNewValue)
+					{
+						setTimestamp(aNewValue);
+					}
+				});
 		
-		AffineTransform theTransform = new AffineTransform();
-		theTransform.translate(0, pBounds().get().getHeight());
-		theTransform.rotate(-Math.PI/2);
-		theStack.pTransform().set(theTransform);
+		itsSplitPane = new JSplitPane();
+		setLayout(new StackLayout());
+		add(itsSplitPane);
 		
-		pChildren().add(theContainer);
+		itsEventList = new ScrollablePanel(new GridStackLayout(1, 0, 0, true, false));
+		itsEventList.setOpaque(false);
+		itsEventList.addMouseWheelListener(this);
+
 		
-		itsEventList = new SVGGraphicContainer();
+		JPanel theRightComponent = new JPanel(new BorderLayout());
+		theRightComponent.add(new MyScrollPane(itsEventList), BorderLayout.CENTER);
+		theRightComponent.add(itsScroller, BorderLayout.EAST);
+		itsSplitPane.setRightComponent(theRightComponent);
+	}
+	
+	@Override
+	public void addNotify()
+	{
+		super.addNotify();
+		int theSplitterPos = MinerUI.getIntProperty(
+				itsView.getGUIManager(), 
+				PROPERTY_SPLITTER_POS, 200);
+		itsSplitPane.setDividerLocation(theSplitterPos);
+	}
+	
+	@Override
+	public void removeNotify()
+	{
+		super.removeNotify();
+		itsView.getGUIManager().setProperty(
+				PROPERTY_SPLITTER_POS, 
+				""+itsSplitPane.getDividerLocation());
+	}
+	
+	private void update()
+	{
+		JComponent theStack = createStack();
+		theStack.setOpaque(false);
+		JScrollPane theScrollPane = new JScrollPane(theStack);
+		theScrollPane.getViewport().setBackground(Color.WHITE);
+		itsSplitPane.setLeftComponent(theScrollPane);
+		
 		itsNodesMap.clear();
-		itsEventList.setLayoutManager(new EventListLayout());
 		updateList();
-		pChildren().add(itsEventList);
-		
-		SequenceLayout theLayout = new SequenceLayout()
-		{
-			@Override
-			protected void resize(double aW, double aH)
-			{
-				super.resize(aW, pBounds().get().getHeight());
-			}
-		};
-		setLayoutManager(theLayout);
+				
+		revalidate();
+		repaint();
 	}
 	
 	public boolean isVisible(ILogEvent aEvent)
@@ -230,7 +257,7 @@ public class CFlowTree extends SVGGraphicContainer
 	 * @return The bounds of the graphic object that represent
 	 * the event.
 	 */
-	public Rectangle2D makeVisible(ILogEvent aEvent)
+	public void makeVisible(ILogEvent aEvent)
 	{
 		AbstractEventNode theNode = itsNodesMap.get(aEvent);
 		if (theNode == null)
@@ -240,8 +267,10 @@ public class CFlowTree extends SVGGraphicContainer
 			theNode = itsNodesMap.get(aEvent);
 		}
 		
-		if (theNode != null) return getDescendantBounds(theNode);
-		else return null;
+		if (theNode != null) 
+		{
+			theNode.scrollRectToVisible(theNode.getBounds());
+		}
 	}
 	
 	private IBehaviorCallEvent getCurrentParent()
@@ -249,34 +278,21 @@ public class CFlowTree extends SVGGraphicContainer
 		return itsView.getSeed().pParentEvent().get();
 	}
 	
-	@Override
-	public boolean mouseWheelMoved(GraphicObjectContext aContext, MouseWheelEvent aEvent, Point2D aPoint)
+	public void mouseWheelMoved(MouseWheelEvent aEvent)
 	{
+		System.out.println("CFlowTree.mouseWheelMoved()");
 		int theRotation = aEvent.getWheelRotation();
 		if (theRotation < 0) backward(1);
 		else if (theRotation > 0) forward(1);
-		
-		return true;
-	}
 
-	/**
-	 * We need to ensure that a click outside of a child node is captured
-	 * by this object.
-	 */
-	@Override
-	public PickResult pick(GraphicObjectContext aContext, Point2D aPoint)
-	{
-		PickResult theResult = super.pick(aContext, aPoint);
-		if (theResult != null) return theResult;
-		else if (isInside(aContext, aPoint)) return new PickResult(this, aContext);
-		else return null;
+		aEvent.consume();
 	}
 
 	
 	/**
 	 * Builds the stack of ancestor events.
 	 */
-	private IRectangularGraphicObject buildStack()
+	private JComponent createStack()
 	{
 		List<IBehaviorCallEvent> theAncestors = new ArrayList<IBehaviorCallEvent>();
 		IBehaviorCallEvent theCurrentParent = getCurrentParent();
@@ -286,24 +302,13 @@ public class CFlowTree extends SVGGraphicContainer
 			theCurrentParent = theCurrentParent.getParent();
 		}
 		
-		SVGGraphicContainer theContainer = new SVGGraphicContainer()
-		{
-			@Override
-			protected void paintBackground(IDisplay aDisplay, GraphicObjectContext aContext, Graphics2D aGraphics, Area aVisibleArea)
-			{
-				aGraphics.setColor(Color.PINK);
-				aGraphics.fill(pBounds().get());
-			}
-		};
-		if (theAncestors.size() > 0) for(int i=theAncestors.size()-1;i>=0;i--)
+		JPanel theContainer = new JPanel(new GridStackLayout(1, 0, 2, true, false));
+
+		if (theAncestors.size() > 0) for(int i=0;i<theAncestors.size();i++)
 		{
 			IBehaviorCallEvent theAncestor = theAncestors.get(i);
-			theContainer.pChildren().add(buildStackNode(theAncestor));
+			theContainer.add(buildStackNode(theAncestor));
 		}
-		theContainer.setLayoutManager(new StackLayout(
-				2, 
-				HorizontalAlignment.LEFT, 
-				ZInsets.EMPTY));
 		
 		return theContainer;
 	}
@@ -379,40 +384,72 @@ public class CFlowTree extends SVGGraphicContainer
 		else throw new RuntimeException("Not handled: "+aEvent);
 	}
 	
-	/**
-	 * Special layout manager for the event list. It updates the 
-	 * number of visible events.
-	 * @author gpothier
-	 */
-	private class EventListLayout extends StackLayout
+	private static class MyScrollPane extends JScrollPane
 	{
-
-		@Override
-		protected void layout(IGraphicContainer aContainer)
+		private MyScrollPane(Component aView)
 		{
-			super.layout(aContainer);
-			
-			double theHeight = pBounds().get().getHeight();
-
-			// Find first & last displayed timestamps.
-			long theFirst = 0;
-			long theLast = 0;
-			for (IGraphicObject theGraphicObject : aContainer.pChildren())
-			{
-				AbstractEventNode theNode = (AbstractEventNode) theGraphicObject;
-				long theTimestamp = theNode.getEvent().getTimestamp();
-				
-				if (theFirst == 0) theFirst = theTimestamp;
-				
-				Rectangle2D theBounds = theNode.getBounds(null);
-				theBounds = theNode.getTransformedBounds(theBounds);
-				
-				if (theBounds.getY() > theHeight) break;
-				theLast = theTimestamp;
-			}
-			
-			itsFirstDisplayedTimestamp = theFirst;
-			itsLastDisplayedTimestamp = theLast;
+			super(aView, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+			getViewport().setBackground(Color.WHITE);
+			setWheelScrollingEnabled(false);
 		}
 	}
+	
+
+	
+	private static class ScrollablePanel extends JPanel 
+	implements Scrollable
+	{
+		private ScrollablePanel(LayoutManager aLayout)
+		{
+			super(aLayout);
+			
+		}
+
+		public boolean getScrollableTracksViewportHeight()
+		{
+			return true;
+		}
+		
+		public boolean getScrollableTracksViewportWidth()
+		{
+			return false;
+		}
+
+		public Dimension getPreferredScrollableViewportSize()
+		{
+			return getPreferredSize();
+		}
+
+		public int getScrollableBlockIncrement(Rectangle aVisibleRect, int aOrientation, int aDirection)
+		{
+			switch (aOrientation)
+			{
+			case SwingConstants.HORIZONTAL:
+				return 80 * aVisibleRect.width / 100;
+				
+			case SwingConstants.VERTICAL:
+				return 80 * aVisibleRect.height / 100;
+				
+			default:
+				throw new RuntimeException();
+			}
+		}
+
+		public int getScrollableUnitIncrement(Rectangle aVisibleRect, int aOrientation, int aDirection)
+		{
+			switch (aOrientation)
+			{
+			case SwingConstants.HORIZONTAL:
+				return 10 * aVisibleRect.width / 100;
+				
+			case SwingConstants.VERTICAL:
+				return 10 * aVisibleRect.height / 100;
+				
+			default:
+				throw new RuntimeException();
+			}
+		}
+		
+	}
+	
 }

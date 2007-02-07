@@ -26,8 +26,6 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IThreadInfo;
 import tod.gui.IGUIManager;
-import tod.gui.formatter.EventFormatter;
-import tod.gui.kit.LinkLabel;
 import tod.gui.kit.SeedLinkLabel;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.seed.FilterSeed;
@@ -69,10 +67,10 @@ public abstract class EventView extends LogView
 
 		
 		// CFLow
-		LinkLabel theCFlowLabel = new SeedLinkLabel(
-				getGUIManager(), 
+		SeedLinkLabel theCFlowLabel = new SeedLinkLabel(
 				"View control flow", 
 				new CFlowSeed(getGUIManager(), getLogBrowser(), theEvent));
+		
 		add (theCFlowLabel);
 		
 	}

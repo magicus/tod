@@ -21,10 +21,11 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.controlflow.tree;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
+import java.awt.Graphics;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Area;
-import java.awt.geom.Point2D;
+
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 
 import tod.Util;
 import tod.core.database.event.IBehaviorCallEvent;
@@ -34,15 +35,9 @@ import tod.gui.FontConfig;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
 import tod.gui.seed.CFlowSeed;
-import zz.csg.api.GraphicObjectContext;
-import zz.csg.api.IDisplay;
-import zz.csg.api.IRectangularGraphicObject;
-import zz.csg.api.layout.SequenceLayout;
-import zz.csg.api.layout.StackLayout;
-import zz.csg.impl.SVGGraphicContainer;
-import zz.csg.impl.figures.SVGEllipse;
-import zz.csg.impl.figures.SVGFlowText;
+import zz.utils.ui.GridStackLayout;
 import zz.utils.ui.UIUtils;
+import zz.utils.ui.ZLabel;
 
 /**
  * Represents a stack item in the control flow.
@@ -105,72 +100,60 @@ public class StackNode extends AbstractCFlowNode
 //		
 //		theBuilder.append(")");
 
-		pChildren().add(SVGFlowText.create(
+		add(ZLabel.create(
 				Util.getPackageName(theType.getName()), 
 				FontConfig.TINY_FONT, 
 				Color.DARK_GRAY));
 		
-		pChildren().add(SVGFlowText.create(
+		add(ZLabel.create(
 				theBuilder.toString(), 
 				FontConfig.SMALL_FONT, 
 				Color.BLACK));
 		
 		if (! getEvent().isDirectParent())
 		{
-			pChildren().add(createDots());
+			add(createDots());
 		}
 		
-		setLayoutManager(new StackLayout());
+		setLayout(new GridStackLayout(1));
 	}
 	
-	private IRectangularGraphicObject createDots()
+	private JComponent createDots()
 	{
-		SVGGraphicContainer theContainer = new SVGGraphicContainer();
-		theContainer.pChildren().add(SVGEllipse.create(0, 0, 5, Color.BLACK));
-		theContainer.pChildren().add(SVGEllipse.create(0, 0, 5, Color.BLACK));
-		theContainer.pChildren().add(SVGEllipse.create(0, 0, 5, Color.BLACK));
-		
-		theContainer.setLayoutManager(new SequenceLayout(3));
-		return theContainer;
+		return new JLabel("...");
 	}
 	
 	@Override
-	protected void paintBackground(
-			IDisplay aDisplay, 
-			GraphicObjectContext aContext, 
-			Graphics2D aGraphics, 
-			Area aVisibleArea)
+	protected void paintComponent(Graphics aG)
 	{
 		Color theColor = Color.ORANGE;
 		if (itsMouseOver) theColor = UIUtils.getLighterColor(theColor);
-		aGraphics.setColor(theColor);
-		aGraphics.fill(pBounds().get());
+		aG.setColor(theColor);
+		aG.fillRect(0, 0, getWidth(), getHeight());
 	}
 
 	@Override
-	public void mouseEntered(GraphicObjectContext aContext, MouseEvent aEvent)
+	public void mouseEntered(MouseEvent aE)
 	{
 		itsMouseOver = true;
-		repaintAllContexts();
+		repaint();
 	}
 
+	
 	@Override
-	public void mouseExited(GraphicObjectContext aContext, MouseEvent aEvent)
+	public void mouseExited(MouseEvent aE)
 	{
 		itsMouseOver = false;
-		repaintAllContexts();
+		repaint();
 	}
 
 	@Override
-	public boolean mousePressed(GraphicObjectContext aContext, MouseEvent aEvent, Point2D aPoint)
+	public void mousePressed(MouseEvent aE)
 	{
 		CFlowSeed theSeed = getView().getSeed();
 		theSeed.pParentEvent().set(getEvent().getParent());
 		theSeed.pSelectedEvent().set(getEvent());
-		
-		return true;
+
+		aE.consume();
 	}
-	
-	
-	
 }

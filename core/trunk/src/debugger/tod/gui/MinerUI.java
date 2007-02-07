@@ -24,7 +24,13 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -33,7 +39,6 @@ import javax.swing.JPanel;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
-import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ILocationInfo;
@@ -46,7 +51,6 @@ import tod.gui.seed.ThreadsSeed;
 import tod.gui.view.IEventListView;
 import tod.gui.view.LogView;
 import tod.utils.TODUtils;
-import zz.utils.properties.ISetProperty;
 
 /**
  * @author gpothier
@@ -66,8 +70,12 @@ implements ILocationSelectionListener, IGUIManager
 	private JobProcessor itsJobProcessor = new JobProcessor();
 	private BookmarkPanel itsBookmarkPanel = new BookmarkPanel();
 	
+	private Properties itsProperties = new Properties();
+
+	
 	public MinerUI()
 	{
+		loadProperties(itsProperties);
 		createUI();
 	}
 	
@@ -102,11 +110,12 @@ implements ILocationSelectionListener, IGUIManager
 	protected void viewChanged(LogView aView)
 	{
 		itsBookmarkPanel.setView(aView);
+		saveProperties(itsProperties);
 	}
 	
 	protected abstract ISession getSession();
 	
-	private JComponent createToolbar()
+	protected JComponent createToolbar()
 	{
 		JPanel theToolbar = new JPanel();
 		
@@ -201,7 +210,8 @@ implements ILocationSelectionListener, IGUIManager
 	
 	protected void reset()
 	{
-		openSeed(new ThreadsSeed(this, getSession().getLogBrowser()), false);
+		ISession theSession = getSession();
+		if (theSession != null) openSeed(new ThreadsSeed(this, theSession.getLogBrowser()), false);
 	}
 
 
@@ -331,4 +341,83 @@ implements ILocationSelectionListener, IGUIManager
 	{
 		return getEventListView() != null;
 	}
+	
+	/**
+	 * Loads stored properties and place them in the given properties map.
+	 */
+	protected void loadProperties(Properties aProperties)
+	{
+		try
+		{
+			File theFile = new File("tod-properties.txt");
+			if (theFile.exists()) aProperties.load(new FileInputStream(theFile));
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Saves the given properties map.
+	 */
+	protected void saveProperties(Properties aProperties)
+	{
+		try
+		{
+			File theFile = new File("tod-properties.txt");
+			aProperties.store(new FileOutputStream(theFile), "TOD configuration");
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	public String getProperty(String aKey)
+	{
+		return itsProperties.getProperty(aKey);
+	}
+
+	public void setProperty(String aKey, String aValue)
+	{
+		itsProperties.setProperty(aKey, aValue);
+	}
+
+	/**
+	 * Utility method for {@link #getProperty(String)}
+	 */
+	public static boolean getBooleanProperty (
+			IGUIManager aGUIManager, 
+			String aPropertyName, 
+			boolean aDefault)
+	{
+		String theString = aGUIManager.getProperty(aPropertyName);
+		return theString != null ? Boolean.parseBoolean(theString) : aDefault;
+	}
+	
+	/**
+	 * Utility method for {@link #getProperty(String)}
+	 */
+	public static int getIntProperty (
+			IGUIManager aGUIManager, 
+			String aPropertyName, 
+			int aDefault)
+	{
+		String theString = aGUIManager.getProperty(aPropertyName);
+		return theString != null ? Integer.parseInt(theString) : aDefault;
+	}
+	
+	/**
+	 * Utility method for {@link #getProperty(String)}
+	 */
+	public static String getStringProperty (
+			IGUIManager aGUIManager, 
+			String aPropertyName, 
+			String aDefault)
+	{
+		String theString = aGUIManager.getProperty(aPropertyName);
+		return theString != null ? theString : aDefault;
+	}
+	
 }

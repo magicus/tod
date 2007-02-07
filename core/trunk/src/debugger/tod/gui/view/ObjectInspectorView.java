@@ -193,7 +193,6 @@ public class ObjectInspectorView extends LogView
 					getLogBrowser().createTargetFilter(theObject));
 			
 			itsTitlePanel.add (new SeedLinkLabel(
-					getGUIManager(), 
 					"Show all events", 
 					theShowEventsSeed));
 			
@@ -203,7 +202,6 @@ public class ObjectInspectorView extends LogView
 					getLogBrowser().createObjectFilter(theObject));
 			
 			itsTitlePanel.add (new SeedLinkLabel(
-					getGUIManager(), 
 					"Show history", 
 					theShowHistorySeed));
 						

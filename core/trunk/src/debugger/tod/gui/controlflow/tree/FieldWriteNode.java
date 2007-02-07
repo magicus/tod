@@ -29,8 +29,7 @@ import tod.gui.FontConfig;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
-import zz.csg.api.layout.SequenceLayout;
-import zz.csg.impl.figures.SVGFlowText;
+import zz.utils.ui.ZLabel;
 
 public class FieldWriteNode extends AbstractEventNode
 {
@@ -45,8 +44,6 @@ public class FieldWriteNode extends AbstractEventNode
 		
 		itsEvent = aEvent;
 
-		setLayoutManager(new SequenceLayout());
-		
 		Object theCurrentObject = null;
 		IBehaviorCallEvent theContainer = itsEvent.getParent();
 		if (theContainer != null)
@@ -54,7 +51,7 @@ public class FieldWriteNode extends AbstractEventNode
 			theCurrentObject = theContainer.getTarget();
 		}
 		
-		pChildren().add(Hyperlinks.object(
+		add(Hyperlinks.object(
 				getSeedFactory(),
 				getLogBrowser(), 
 				getJobProcessor(),
@@ -62,16 +59,16 @@ public class FieldWriteNode extends AbstractEventNode
 				itsEvent.getTarget(),
 				FontConfig.STD_FONT));
 		
-		pChildren().add(SVGFlowText.create(".", FontConfig.STD_FONT, Color.BLACK));
+		add(ZLabel.create(".", FontConfig.STD_FONT, Color.BLACK));
 		
-		pChildren().add(SVGFlowText.create(
+		add(ZLabel.create(
 				itsEvent.getField().getName(), 
 				FontConfig.STD_FONT, 
 				Color.BLACK));
 		
-		pChildren().add(SVGFlowText.create(" = ", FontConfig.STD_FONT, Color.BLACK));
+		add(ZLabel.create(" = ", FontConfig.STD_FONT, Color.BLACK));
 		
-		pChildren().add(Hyperlinks.object(
+		add(Hyperlinks.object(
 				getSeedFactory(),
 				getLogBrowser(),
 				getJobProcessor(), 

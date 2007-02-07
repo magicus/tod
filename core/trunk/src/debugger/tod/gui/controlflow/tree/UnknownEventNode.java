@@ -26,8 +26,7 @@ import tod.core.database.event.ILogEvent;
 import tod.gui.FontConfig;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
-import zz.csg.api.layout.SequenceLayout;
-import zz.csg.impl.figures.SVGFlowText;
+import zz.utils.ui.ZLabel;
 
 public class UnknownEventNode extends AbstractEventNode
 {
@@ -42,9 +41,7 @@ public class UnknownEventNode extends AbstractEventNode
 		
 		itsEvent = aEvent;
 
-		setLayoutManager(new SequenceLayout());
-		
-		pChildren().add(SVGFlowText.create("Unknown ("+aEvent+")", FontConfig.STD_FONT, Color.GRAY));
+		add(ZLabel.create("Unknown ("+aEvent+")", FontConfig.STD_FONT, Color.GRAY));
 	}
 	
 	@Override

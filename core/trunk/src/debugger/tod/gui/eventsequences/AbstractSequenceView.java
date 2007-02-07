@@ -20,11 +20,12 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.eventsequences;
 
-import java.awt.Color;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import javax.swing.JComponent;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.event.ILogEvent;
@@ -33,10 +34,9 @@ import tod.gui.IGUIManager;
 import tod.gui.Hyperlinks.ISeedFactory;
 import tod.gui.seed.LogViewSeedFactory;
 import tod.gui.view.LogView;
-import zz.csg.api.IDisplay;
-import zz.csg.api.IRectangularGraphicObject;
 import zz.utils.ItemAction;
 import zz.utils.properties.IRWProperty;
+import zz.utils.ui.Orientation;
 import zz.utils.ui.text.XFont;
 
 /**
@@ -88,7 +88,7 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 	 */
 	protected abstract List<BrowserData> getBrowsers();
 
-	public IRectangularGraphicObject getEventStripe()
+	public JComponent getEventStripe()
 	{
 		if (itsMural == null) 
 		{
@@ -153,15 +153,20 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 	 * right position.
 	 * @see EventMural#getBaloon(ILogEvent)
 	 */
-	protected IRectangularGraphicObject getBaloon(ILogEvent aEvent)
+	protected JComponent getBaloon(ILogEvent aEvent)
 	{
 		return null;
 	}
 
 	private class MyMural extends EventMural
 	{
+		private MyMural()
+		{
+			super(Orientation.HORIZONTAL);
+		}
+
 		@Override
-		protected IRectangularGraphicObject getBaloon(ILogEvent aEvent)
+		protected JComponent getBaloon(ILogEvent aEvent)
 		{
 			return AbstractSequenceView.this.getBaloon(aEvent);
 		}

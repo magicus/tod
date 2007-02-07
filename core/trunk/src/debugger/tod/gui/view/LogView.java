@@ -161,7 +161,7 @@ public abstract class LogView extends JPanel
 	 */
 	protected JComponent createTitledLink (String aTitle, String aLinkName, LogViewSeed aSeed)
 	{
-		return createTitledPanel(aTitle, new SeedLinkLabel(getGUIManager(), aLinkName, aSeed));
+		return createTitledPanel(aTitle, new SeedLinkLabel(aLinkName, aSeed));
 	}
 	
 	/**
@@ -201,7 +201,6 @@ public abstract class LogView extends JPanel
 					theObjectId);
 			
 			return new SeedLinkLabel (
-					getGUIManager(), 
 					itsObjectFormatter.getPlainText(aObject), 
 					theSeed);
 		}

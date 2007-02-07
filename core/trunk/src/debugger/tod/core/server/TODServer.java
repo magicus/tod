@@ -29,6 +29,7 @@ import tod.core.ILocationRegisterer;
 import tod.core.bci.IInstrumenter;
 import tod.core.bci.NativeAgentPeer;
 import tod.core.config.TODConfig;
+import tod.core.session.ConnectionInfo;
 import tod.core.transport.LogReceiver;
 import zz.utils.net.Server;
 
@@ -77,12 +78,25 @@ public abstract class TODServer
 	/**
 	 * Causes this server to stop accepting connections.
 	 */
-	public void disconnect()
+	public void stop()
 	{
 		System.out.println("Server disconnecting...");
 		itsReceiverServer.disconnect();
 		itsNativePeerServer.disconnect();
 		System.out.println("Server disconnected.");
+	}
+	
+	/**
+	 * Disconnects from all currently connected VMs.
+	 */
+	public synchronized void disconnect()
+	{
+		for(ClientConnection theConnection : itsConnections.values())
+		{
+			theConnection.getLogReceiver().disconnect();
+		}
+		itsConnections.clear();
+		disconnected();
 	}
 
 	/**

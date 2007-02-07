@@ -22,10 +22,11 @@ package tod.gui.controlflow.watch;
 
 import java.util.List;
 
+import javax.swing.JComponent;
+
 import tod.core.database.event.IWriteEvent;
 import tod.core.database.structure.ObjectId;
 import tod.gui.JobProcessor;
-import zz.csg.api.IRectangularGraphicObject;
 
 /**
  * Provider of watch data.
@@ -38,7 +39,7 @@ public interface IWatchProvider<E>
 	 * @param aJobProcessor A job processor that can be used if elements
 	 * of the title are to be created asynchronously.
 	 */
-	public IRectangularGraphicObject buildTitle(JobProcessor aJobProcessor);
+	public JComponent buildTitle(JobProcessor aJobProcessor);
 	
 	/**
 	 * Returns a current object. Currently this is only for

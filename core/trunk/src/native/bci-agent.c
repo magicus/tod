@@ -66,13 +66,14 @@ static jvmtiEnv *globalJvmti;
 // Configuration data
 static char* cfgCachePath = NULL;
 static int cfgSkipCoreClasses = 0;
-int cfgVerbose = 1;
+int cfgVerbose = 2;
 int cfgCaptureExceptions = 0;
 
 // System properties configuration data.
 static char* cfgHost = NULL;
 static char* cfgHostName = NULL;
 static int cfgNativePort = 0;
+static int cfgHostId = 0; // A host id assigned by the TODServer - not official.
 
 // Class and method references
 static jclass class_ExceptionGeneratedReceiver;
@@ -87,7 +88,7 @@ static jmethodID ignoredExceptionMethods[3];
 
 // Object Id mutex and current id value
 static pthread_mutex_t oidMutex = PTHREAD_MUTEX_INITIALIZER;
-static long oidCurrent = 1;
+static jlong oidCurrent = 1;
 
 // Mutex for class load callback
 static pthread_mutex_t loadMutex = PTHREAD_MUTEX_INITIALIZER;
@@ -128,6 +129,10 @@ static void bciConnect(char* host, int port, char* hostname)
 	if (cfgVerbose>=1) printf("Sending host name: %s\n", hostname);
 	writeUTF(SOCKET_OUT, hostname);
 	fflush(SOCKET_OUT);
+	
+	cfgHostId = readInt(SOCKET_IN);
+	if (cfgVerbose>=2) printf("Assigned host id: %ld\n", cfgHostId);
+	if ((cfgHostId & 0xff) != cfgHostId) fatal_error("Host id overflow\n");
 }
 
 
@@ -557,6 +562,7 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
 	jvmtiEnv *jvmti;
 	
 	printf("Loading BCI agent\n");
+	fflush(stdout);
 
 	/* Get JVMTI environment */
 	rc = vm->GetEnv((void **)&jvmti, JVMTI_VERSION);
@@ -631,14 +637,17 @@ Agent_OnUnload(JavaVM *vm)
 Returns the next free oid value.
 Thread-safe.
 */
-static long getNextOid()
+static jlong getNextOid()
 {
 	pthread_mutex_lock(&oidMutex);
-	long val = oidCurrent++;
-	if (val < 0) val = 0;
+	jlong val = oidCurrent++;
 	pthread_mutex_unlock(&oidMutex);
 	
-	if (val == 0) fatal_error("OID overflow");
+	// Include host id
+	val = (val << 8) | cfgHostId; 
+	
+	// We cannot use the 64th bit.
+	if (val >> 63 != 0) fatal_error("OID overflow");
 	return val;
 }
 

@@ -99,7 +99,7 @@ public class CountTODServer extends AbstractSession
 	
 	public void disconnect()
 	{
-		itsServer.disconnect();
+		itsServer.stop();
 	}
 	
 	public void flush()

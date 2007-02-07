@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.seed;
 
+import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IBehaviorExitEvent;
@@ -52,7 +53,10 @@ public class CFlowSeed extends LogViewSeed
 	private IRWProperty<IBehaviorCallEvent> pParentEvent = new SimpleRWProperty<IBehaviorCallEvent>(this);
 	private IRWProperty<IParentEvent> pRootEvent = new SimpleRWProperty<IParentEvent>(this);
 	
-	public CFlowSeed(IGUIManager aGUIManager, ILogBrowser aLog, ILogEvent aSelectedEvent)
+	public CFlowSeed(
+			IGUIManager aGUIManager, 
+			ILogBrowser aLog, 
+			ILogEvent aSelectedEvent)
 	{
 		this(aGUIManager, aLog, aSelectedEvent.getThread());
 		pSelectedEvent().set(aSelectedEvent);
@@ -65,7 +69,13 @@ public class CFlowSeed extends LogViewSeed
 		super(aGUIManager, aLog);
 		itsThread = aThread;
 
-		pRootEvent().set(aLog.getCFlowRoot(aThread));
+		IParentEvent theRoot = aLog.getCFlowRoot(aThread);
+		pRootEvent().set(theRoot);
+		IEventBrowser theChildrenBrowser = theRoot.getChildrenBrowser();
+		if (theChildrenBrowser.hasNext())
+		{
+			pSelectedEvent().set(theChildrenBrowser.next());
+		}
 	}
 
 

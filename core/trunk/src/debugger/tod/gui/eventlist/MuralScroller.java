@@ -25,10 +25,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -40,12 +36,12 @@ import javax.swing.plaf.basic.BasicArrowButton;
 import tod.core.database.browser.IEventBrowser;
 import tod.gui.BrowserData;
 import tod.gui.eventsequences.EventMural;
-import zz.csg.display.GraphicPanel;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.SimpleEvent;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
 import zz.utils.ui.Autorepeat;
+import zz.utils.ui.Orientation;
 
 /**
  * A widget that permits to scroll in an {@link IEventBrowser}.
@@ -101,26 +97,8 @@ public class MuralScroller extends JPanel
 
 	private void createUI()
 	{
-		itsMural = new EventMural();
-		
-		final GraphicPanel theMuralPanel = new GraphicPanel();
-		theMuralPanel.setRootNode(itsMural);
-		theMuralPanel.setPreferredSize(new Dimension(THICKNESS, 100));
-		
-		theMuralPanel.addComponentListener(new ComponentAdapter()
-		{
-			@Override
-			public void componentResized(ComponentEvent aE)
-			{
-				double w = THICKNESS;
-				double h = theMuralPanel.getHeight();
-				itsMural.pBounds().set(new Rectangle2D.Double(0, 0, h, w));
-				AffineTransform theTransform = new AffineTransform();
-				theTransform.translate(w, 0);
-				theTransform.rotate(Math.PI/2);
-				theMuralPanel.setTransform(theTransform);
-			}
-		});
+		itsMural = new EventMural(Orientation.VERTICAL);
+		itsMural.setPreferredSize(new Dimension(THICKNESS, 100));
 
 		// Setup slider
 		
@@ -139,7 +117,7 @@ public class MuralScroller extends JPanel
 		
 		// Setup center container (mural + cursor)
 		JPanel theCenterContainer = new JPanel(new BorderLayout());
-		theCenterContainer.add(theMuralPanel, BorderLayout.CENTER);
+		theCenterContainer.add(itsMural, BorderLayout.CENTER);
 		theCenterContainer.add(itsSlider, BorderLayout.WEST);
 		
 		// Setup main container (center + buttons)
@@ -179,7 +157,7 @@ public class MuralScroller extends JPanel
 		itsMural.pEnd().set(itsEnd);
 		itsMural.pEventBrowsers().clear();
 		itsMural.pEventBrowsers().add(new BrowserData(itsBrowser, Color.BLACK));
-		itsMural.repaintAllContexts();
+		itsMural.repaint();
 		
 		// Setup slider
 		long theDelta = itsEnd-itsStart;

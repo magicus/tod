@@ -7,7 +7,6 @@
 	<classpathentry kind="src" path="src/testcase"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="/zz.utils"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/zz.csg"/>
 	<classpathentry kind="lib" path="lib/asm-commons-2.1.jar" sourcepath="/home/gpothier/apps/java/asm-2.1/src.zip"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ASM"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>

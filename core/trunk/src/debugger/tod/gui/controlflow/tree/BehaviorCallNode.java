@@ -20,10 +20,15 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.controlflow.tree;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
+
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IBehaviorExitEvent;
@@ -33,23 +38,17 @@ import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
 import tod.gui.controlflow.CFlowViewUtils;
-import zz.csg.api.GraphicObjectContext;
-import zz.csg.api.IGraphicContainer;
-import zz.csg.api.IRectangularGraphicContainer;
-import zz.csg.api.IRectangularGraphicObject;
-import zz.csg.api.layout.AbstractSimpleLayout;
-import zz.csg.api.layout.SequenceLayout;
-import zz.csg.impl.SVGGraphicContainer;
-import zz.csg.impl.figures.SVGFlowText;
+import zz.utils.ui.GridStackLayout;
 import zz.utils.ui.UIUtils;
+import zz.utils.ui.ZLabel;
 import zz.utils.ui.text.XFont;
 
 public abstract class BehaviorCallNode extends AbstractEventNode
 {
 	private IBehaviorCallEvent itsEvent;
 	
-	private IRectangularGraphicObject itsHeader;
-	private IRectangularGraphicObject itsFooter;
+	private JComponent itsHeader;
+	private JComponent itsFooter;
 	private ExpanderWidget itsExpanderWidget;
 	
 	public BehaviorCallNode(
@@ -65,6 +64,7 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 
 	private void createUI()
 	{
+		setLayout(new BorderLayout(0, 0));
 		IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
 		
 		Color theExpanderColor;
@@ -74,25 +74,29 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 		if (!getEvent().hasRealChildren()) 
 			theExpanderColor = UIUtils.getLighterColor(theExpanderColor, 0.2f);
 		
-		itsExpanderWidget = new ExpanderWidget(theExpanderColor)
+		itsExpanderWidget = new ExpanderWidget(theExpanderColor);
+		itsExpanderWidget.addMouseListener(new MouseAdapter()
 		{
 			@Override
-			public boolean mousePressed(GraphicObjectContext aContext, MouseEvent aEvent, Point2D aPoint)
+			public void mousePressed(MouseEvent aE)
 			{
 				getView().getSeed().pParentEvent().set(getEvent());
-				return true;
+				aE.consume();
 			}
-		};
+		});
 		
-		pChildren().add(itsExpanderWidget);
+		add(itsExpanderWidget, BorderLayout.WEST);
+		
+		JPanel theContainer = new JPanel (new BorderLayout(0, 0));
+		theContainer.setOpaque(false);
 		
 		itsHeader = createHeader(FontConfig.STD_FONT);
 		itsFooter = createFooter(FontConfig.STD_FONT);
 		
-		pChildren().add(itsHeader);
-		pChildren().add(itsFooter);
+		theContainer.add(itsHeader, BorderLayout.NORTH);
+		theContainer.add(itsFooter, BorderLayout.SOUTH);
 		
-		setLayoutManager(new MyLayout());
+		add(theContainer, BorderLayout.CENTER);
 	}
 	
 	@Override
@@ -101,9 +105,10 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 		return itsEvent;
 	}
 	
-	protected IRectangularGraphicObject createHeader(XFont aFont)
+	protected JComponent createHeader(XFont aFont)
 	{
-		SVGGraphicContainer theContainer = new SVGGraphicContainer();
+		JPanel theContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		theContainer.setOpaque(false);
 		
 		fillHeaderPrefix(theContainer, aFont);
 		Object[] theArguments = getEvent().getArguments();
@@ -115,30 +120,40 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 				theArguments,
 				aFont);
 
-		theContainer.setLayoutManager(new SequenceLayout());
 		return theContainer;
 	}
 
-	
-	protected IRectangularGraphicObject createFooter(XFont aFont)
+	/**
+	 * Returns the result of the call.
+	 * By default, the result of the exit event.
+	 * @return
+	 */
+	protected Object getResult()
 	{
-		SVGGraphicContainer theContainer = new SVGGraphicContainer();
+		IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
+		return theExitEvent != null ? theExitEvent.getResult() : null;		
+	}
+	
+	protected JComponent createFooter(XFont aFont)
+	{
+		JPanel theContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		theContainer.setOpaque(false);
 
 		IBehaviorInfo theBehavior = getEvent().getExecutedBehavior();
 		if (theBehavior == null) theBehavior = getEvent().getCalledBehavior();
 		
 		IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
-		Object theResult = theExitEvent != null ? theExitEvent.getResult() : null;
+		Object theResult = getResult();
 		
 		if (theExitEvent == null)
 		{
-			theContainer.pChildren().add(SVGFlowText.create("Behavior never returned", aFont, Color.BLACK));
+			theContainer.add(ZLabel.create("Behavior never returned", aFont, Color.BLACK));
 		}
 		else if (theExitEvent.hasThrown())
 		{
-			theContainer.pChildren().add(SVGFlowText.create("Thrown ", aFont, Color.RED));
+			theContainer.add(ZLabel.create("Thrown ", aFont, Color.RED));
 
-			theContainer.pChildren().add(Hyperlinks.object(
+			theContainer.add(Hyperlinks.object(
 					getSeedFactory(), 
 					getLogBrowser(), 
 					getJobProcessor(),
@@ -151,24 +166,23 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 
 			if (theResult != null)
 			{
-				theContainer.pChildren().add(Hyperlinks.object(
+				theContainer.add(Hyperlinks.object(
 						getSeedFactory(), 
 						getLogBrowser(), 
 						getJobProcessor(),
-						theExitEvent.getResult(), 
+						theResult, 
 						aFont));
 			}
 			else if (theBehavior.getReturnType().isVoid())
 			{
-				theContainer.pChildren().add(SVGFlowText.create("void", aFont, Color.BLACK));
+				theContainer.add(ZLabel.create("void", aFont, Color.BLACK));
 			}
 			else 
 			{
-				theContainer.pChildren().add(SVGFlowText.create("null", aFont, Color.BLACK));
+				theContainer.add(ZLabel.create("null", aFont, Color.BLACK));
 			}
 		}
 		
-		theContainer.setLayoutManager(new SequenceLayout());
 		return theContainer;
 	}
 	
@@ -176,43 +190,14 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 	 * Adds the prefix to the header. Eg.: "new MyClass" or "MyClass.myMethod" 
 	 */
 	protected abstract void fillHeaderPrefix(
-			IRectangularGraphicContainer aContainer,
+			JComponent aContainer,
 			XFont aFont);
 	
 	/**
 	 * Adds the prefix to the footer. Eg.: "Created " or "Returned "
 	 */
 	protected abstract void fillFooterPrefix(
-			IRectangularGraphicContainer aContainer,
+			JComponent aContainer,
 			XFont aFont);
 	
-	
-	private class MyLayout extends AbstractSimpleLayout
-	{
-
-		@Override
-		protected void layout(IGraphicContainer aContainer)
-		{
-			assert aContainer == BehaviorCallNode.this;
-			
-			double theY = 0;
-
-			if (itsHeader != null)
-			{
-				itsHeader.pBounds().setPosition(ExpanderWidget.WIDTH, theY);
-				theY += itsHeader.pBounds().get().getHeight();
-			}				
-			
-			if (itsFooter != null)
-			{
-				itsFooter.pBounds().setPosition(ExpanderWidget.WIDTH, theY);
-				theY += itsFooter.pBounds().get().getHeight();
-			}
-			
-			itsExpanderWidget.pBounds().set(0, 0, ExpanderWidget.WIDTH, theY);
-			
-			Rectangle2D theBounds = computeBounds(null);
-			resize(theBounds.getWidth(), theBounds.getHeight());
-		}
-	}
 }

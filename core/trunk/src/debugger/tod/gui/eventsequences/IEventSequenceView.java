@@ -23,7 +23,8 @@ package tod.gui.eventsequences;
 import java.awt.Image;
 import java.util.Collection;
 
-import zz.csg.api.IRectangularGraphicObject;
+import javax.swing.JComponent;
+
 import zz.utils.ItemAction;
 import zz.utils.properties.IRWProperty;
 
@@ -51,7 +52,7 @@ public interface IEventSequenceView
 	/**
 	 * Returns the horizontal stripe that displays events.
 	 */
-	public IRectangularGraphicObject getEventStripe();
+	public JComponent getEventStripe();
 	
 	/**
 	 * Returns a collection of available actions for this sequence view.

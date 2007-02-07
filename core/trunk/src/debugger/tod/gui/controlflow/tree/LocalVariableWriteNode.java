@@ -28,8 +28,7 @@ import tod.gui.FontConfig;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
-import zz.csg.api.layout.SequenceLayout;
-import zz.csg.impl.figures.SVGFlowText;
+import zz.utils.ui.ZLabel;
 
 public class LocalVariableWriteNode extends AbstractEventNode
 {
@@ -44,16 +43,14 @@ public class LocalVariableWriteNode extends AbstractEventNode
 		
 		itsEvent = aEvent;
 
-		setLayoutManager(new SequenceLayout());
-		
-		pChildren().add(SVGFlowText.create(
+		add(ZLabel.create(
 				itsEvent.getVariable().getVariableName(),
 				FontConfig.STD_FONT,
 				Color.BLACK));
 		
-		pChildren().add(SVGFlowText.create(" = ", FontConfig.STD_FONT, Color.BLACK));
+		add(ZLabel.create(" = ", FontConfig.STD_FONT, Color.BLACK));
 		
-		pChildren().add(Hyperlinks.object(
+		add(Hyperlinks.object(
 				getSeedFactory(), 
 				getLogBrowser(),
 				getJobProcessor(),

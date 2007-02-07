@@ -23,15 +23,15 @@ package tod.gui.controlflow.tree;
 import java.awt.Color;
 import java.awt.Font;
 
+import javax.swing.JComponent;
+
 import tod.core.database.event.IBehaviorCallEvent;
-import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
-import zz.csg.api.IRectangularGraphicContainer;
-import zz.csg.impl.figures.SVGFlowText;
+import zz.utils.ui.ZLabel;
 import zz.utils.ui.text.XFont;
 
 public class MethodCallNode extends BehaviorCallNode
@@ -46,7 +46,7 @@ public class MethodCallNode extends BehaviorCallNode
 
 	@Override
 	protected void fillHeaderPrefix(
-			IRectangularGraphicContainer aContainer,
+			JComponent aContainer,
 			XFont aFont)
 	{
 //		IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
@@ -55,7 +55,7 @@ public class MethodCallNode extends BehaviorCallNode
 //				Color.RED
 //				: Color.BLACK;
 //		
-//		aContainer.pChildren().add(SVGFlowText.create(aPrefix, theFont, theColor));
+//		aContainer.add(ZLabel.create(aPrefix, theFont, theColor));
 
 		// Create behavior link
 		IBehaviorInfo theBehavior = getEvent().getExecutedBehavior();
@@ -66,17 +66,17 @@ public class MethodCallNode extends BehaviorCallNode
 		}
 		ITypeInfo theType = theBehavior.getType();
 		
-		aContainer.pChildren().add(Hyperlinks.type(getSeedFactory(), theType, aFont));
-		aContainer.pChildren().add(SVGFlowText.create(".", aFont, Color.BLACK));
-		aContainer.pChildren().add(Hyperlinks.behavior(getSeedFactory(), theBehavior, aFont));
+		aContainer.add(Hyperlinks.type(getSeedFactory(), theType, aFont));
+		aContainer.add(ZLabel.create(".", aFont, Color.BLACK));
+		aContainer.add(Hyperlinks.behavior(getSeedFactory(), theBehavior, aFont));
 	}
 	
 	@Override
 	protected void fillFooterPrefix(
-			IRectangularGraphicContainer aContainer,
+			JComponent aContainer,
 			XFont aFont)
 	{
-		aContainer.pChildren().add(SVGFlowText.create("Returned: ", aFont, Color.BLACK));
+		aContainer.add(ZLabel.create("Returned: ", aFont, Color.BLACK));
 	}
 
 

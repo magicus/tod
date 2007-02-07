@@ -24,23 +24,17 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
 
 import javax.swing.JPanel;
 
 import tod.gui.eventsequences.EventMural;
-import zz.csg.api.GraphicNode;
-import zz.csg.api.IGraphicObject;
-import zz.csg.display.GraphicPanel;
 import zz.utils.properties.IListProperty;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
 import zz.utils.ui.MouseModifiers;
+import zz.utils.ui.Orientation;
 import zz.utils.ui.StackLayout;
 import zz.utils.ui.UIUtils;
 
@@ -80,27 +74,14 @@ public class TimeScale extends JPanel
 	};
 	
 	private EventMural itsMural;
-	private GraphicPanel itsGraphicPanel;
 	
 	public TimeScale()
 	{
 		super (new StackLayout());
-		itsGraphicPanel = new GraphicPanel();
-		itsGraphicPanel.setTransform(new AffineTransform());
-		itsMural = new EventMural();
-		itsGraphicPanel.setRootNode(new GraphicNode<IGraphicObject>(itsMural));
+		itsMural = new EventMural(Orientation.HORIZONTAL);
 		
 		setPreferredSize(new Dimension(20, 30));
-		add (itsGraphicPanel);
-		
-		addComponentListener(new ComponentAdapter()
-				{
-					@Override
-					public void componentResized(ComponentEvent aE)
-					{
-						itsMural.pBounds().set(new Rectangle2D.Double(0, 0, getWidth(), getHeight()));
-					}
-				});
+		add (itsMural);
 		
 		addMouseWheelListener(new MouseWheelListener()
 				{

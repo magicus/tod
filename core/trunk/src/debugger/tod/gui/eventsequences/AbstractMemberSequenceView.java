@@ -22,14 +22,14 @@ package tod.gui.eventsequences;
 
 import java.awt.Color;
 
+import javax.swing.JComponent;
+
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.structure.IMemberInfo;
 import tod.gui.Hyperlinks;
-import tod.gui.IGUIManager;
 import tod.gui.view.LogView;
-import zz.csg.api.IRectangularGraphicObject;
 
 /**
  * Abstract base class for event sequence views that displays events relative to a class member.
@@ -60,7 +60,7 @@ public abstract class AbstractMemberSequenceView extends AbstractSingleBrowserSe
 	 * Helper method that creates a graphic object suitable for 
 	 * representing the given object.
 	 */
-	protected IRectangularGraphicObject createBaloon(Object aObject)
+	protected JComponent createBaloon(Object aObject)
 	{
 		LogView theLogView = getLogView();
 		ILogBrowser theLogBrowser = theLogView.getLogBrowser();

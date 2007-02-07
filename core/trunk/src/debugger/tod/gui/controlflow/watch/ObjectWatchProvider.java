@@ -24,7 +24,11 @@ import static tod.gui.FontConfig.STD_FONT;
 import static tod.gui.FontConfig.STD_HEADER_FONT;
 
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.util.List;
+
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
@@ -36,11 +40,7 @@ import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ObjectId;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
-import tod.gui.SVGUtils;
-import zz.csg.api.IRectangularGraphicObject;
-import zz.csg.api.layout.SequenceLayout;
-import zz.csg.impl.SVGGraphicContainer;
-import zz.csg.impl.figures.SVGFlowText;
+import zz.utils.ui.ZLabel;
 
 public class ObjectWatchProvider implements IWatchProvider<IFieldInfo>
 {
@@ -95,18 +95,19 @@ public class ObjectWatchProvider implements IWatchProvider<IFieldInfo>
 		return itsInspector;
 	}
 	
-	public IRectangularGraphicObject buildTitle(JobProcessor aJobProcessor)
+	public JComponent buildTitle(JobProcessor aJobProcessor)
 	{
-		SVGGraphicContainer theContainer = new SVGGraphicContainer();
+		JPanel theContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		theContainer.setOpaque(false);
 		
-		theContainer.pChildren().add(SVGFlowText.create(
+		theContainer.add(ZLabel.create(
 				"Object: ", 
 				STD_HEADER_FONT, 
 				Color.BLACK));
 		
 		if (itsObject != null)
 		{
-			theContainer.pChildren().add(Hyperlinks.object(
+			theContainer.add(Hyperlinks.object(
 					itsWatchPanel.getWatchSeedFactory(), 
 					itsLogBrowser, 
 					aJobProcessor,
@@ -115,29 +116,28 @@ public class ObjectWatchProvider implements IWatchProvider<IFieldInfo>
 		}
 		else
 		{
-			theContainer.pChildren().add(SVGFlowText.create(
+			theContainer.add(ZLabel.create(
 					"(static)", 
 					STD_HEADER_FONT, 
 					Color.GRAY));
 		}
 		
 		// Setup history link
-		theContainer.pChildren().add(SVGFlowText.create(
+		theContainer.add(ZLabel.create(
 				" (",
 				STD_FONT,
 				Color.BLACK));
 		
-		theContainer.pChildren().add(Hyperlinks.history(
+		theContainer.add(Hyperlinks.history(
 				itsWatchPanel.getLogViewSeedFactory(),
 				itsObject,
 				STD_FONT));
 		
-		theContainer.pChildren().add(SVGFlowText.create(
+		theContainer.add(ZLabel.create(
 				")",
 				STD_FONT,
 				Color.BLACK));
 		
-		theContainer.setLayoutManager(new SequenceLayout());
 		return theContainer;
 	}
 

@@ -21,6 +21,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.eventsequences;
 
 import java.awt.Color;
+import java.awt.FlowLayout;
+
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
@@ -28,14 +32,13 @@ import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IMemberInfo;
+import tod.gui.FontConfig;
 import tod.gui.IGUIManager;
 import tod.gui.SVGHyperlink;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.view.LogView;
-import zz.csg.api.IRectangularGraphicObject;
-import zz.csg.api.layout.SequenceLayout;
-import zz.csg.impl.SVGGraphicContainer;
-import zz.csg.impl.figures.SVGFlowText;
+import zz.utils.ui.ZLabel;
+import zz.utils.ui.text.XFont;
 
 public class MethodSequenceView extends AbstractMemberSequenceView
 {
@@ -56,7 +59,7 @@ public class MethodSequenceView extends AbstractMemberSequenceView
 	}
 
 	@Override
-	protected IRectangularGraphicObject getBaloon(ILogEvent aEvent)
+	protected JComponent getBaloon(ILogEvent aEvent)
 	{
 		if (aEvent instanceof IBehaviorCallEvent)
 		{
@@ -66,10 +69,10 @@ public class MethodSequenceView extends AbstractMemberSequenceView
 		else return null;
 	}
 	
-	private IRectangularGraphicObject createBehaviorCallBaloon (IBehaviorCallEvent aEvent)
+	private JComponent createBehaviorCallBaloon (IBehaviorCallEvent aEvent)
 	{
-		SVGGraphicContainer theContainer = new SVGGraphicContainer();
-		theContainer.setLayoutManager(new SequenceLayout());
+		XFont theFont = FontConfig.TINY_FONT;
+		JPanel theContainer = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
 		// Create hyperlink to call event
 		IGUIManager theGUIManager = getLogView().getGUIManager();
@@ -77,10 +80,10 @@ public class MethodSequenceView extends AbstractMemberSequenceView
 
 		CFlowSeed theSeed = new CFlowSeed(theGUIManager, theLog, aEvent);
 		SVGHyperlink theHyperlink = SVGHyperlink.create(theSeed, "call", 10, Color.BLUE);
-		theContainer.pChildren().add (theHyperlink);
+		theContainer.add (theHyperlink);
 		
 		// Open parenthesis
-		theContainer.pChildren().add (SVGFlowText.create(" (", 10, Color.BLACK));
+		theContainer.add (ZLabel.create(" (", theFont, Color.BLACK));
 		
 		// Create links of individual arguments
 		Object[] theArguments = aEvent.getArguments();
@@ -90,18 +93,18 @@ public class MethodSequenceView extends AbstractMemberSequenceView
 			if (theFirst) theFirst = false;
 			else
 			{
-				theContainer.pChildren().add (SVGFlowText.create(", ", 10, Color.BLACK));						
+				theContainer.add (ZLabel.create(", ", theFont, Color.BLACK));						
 			}
 			
-			theContainer.pChildren().add(createBaloon(theArgument));
+			theContainer.add(createBaloon(theArgument));
 		}
 		
 		// Close parenthesis
-		theContainer.pChildren().add (SVGFlowText.create(")", 10, Color.BLACK));
+		theContainer.add (ZLabel.create(")", theFont, Color.BLACK));
 
 		// Return value
-		theContainer.pChildren().add (SVGFlowText.create("return: ", 10, Color.BLACK));
-		theContainer.pChildren().add (createBaloon(aEvent.getExitEvent().getResult()));
+		theContainer.add (ZLabel.create("return: ", theFont, Color.BLACK));
+		theContainer.add (createBaloon(aEvent.getExitEvent().getResult()));
 		
 		return theContainer;
 		

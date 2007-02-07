@@ -69,6 +69,12 @@ public interface RIGridMaster extends Remote
 	public void flush() throws RemoteException;
 	
 	/**
+	 * Disconnects from currently connected debuggees.
+	 */
+	public void disconnect() throws RemoteException;
+
+	
+	/**
 	 * Nodes can call this method to determine the current needs
 	 * of the dispatcher: database nodes, leaf dispatcher nodes
 	 * or internal dispatcher nodes.

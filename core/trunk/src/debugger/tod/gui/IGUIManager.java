@@ -48,4 +48,18 @@ public interface IGUIManager
 	 * Returns a global job processor.
 	 */
 	public JobProcessor getJobProcessor();
+	
+	/**
+	 * Stores a persistent property, which can be retrieved
+	 * with {@link #getProperty(String)}.
+	 */
+	public void setProperty(String aKey, String aValue);
+	
+	/**
+	 * Retrieves a persistent property previously stored with 
+	 * {@link #setProperty(String, String)}.
+	 * @see MinerUI#getIntProperty(IGUIManager, String, int)
+	 * @see MinerUI#getBooleanProperty(IGUIManager, String, boolean)
+	 */
+	public String getProperty(String aKey);
 }

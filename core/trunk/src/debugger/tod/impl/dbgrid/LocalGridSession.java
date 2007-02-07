@@ -67,7 +67,7 @@ public class LocalGridSession extends AbstractSession
 	
 	public void disconnect()
 	{
-		itsMaster.disconnect();
+		itsMaster.stop();
 	}
 
 	public void flush()

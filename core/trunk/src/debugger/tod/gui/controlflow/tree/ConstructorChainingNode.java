@@ -21,16 +21,13 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.controlflow.tree;
 
 import java.awt.Color;
-import java.awt.Font;
+
+import javax.swing.JComponent;
 
 import tod.core.database.event.IBehaviorCallEvent;
-import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.ITypeInfo;
-import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
-import zz.csg.api.IRectangularGraphicContainer;
-import zz.csg.impl.figures.SVGFlowText;
+import zz.utils.ui.ZLabel;
 import zz.utils.ui.text.XFont;
 
 public class ConstructorChainingNode extends BehaviorCallNode
@@ -44,19 +41,20 @@ public class ConstructorChainingNode extends BehaviorCallNode
 		super(aView, aJobProcessor, aEvent);
 	}
 
+	@Override
 	protected void fillHeaderPrefix(
-			IRectangularGraphicContainer aContainer,
+			JComponent aContainer,
 			XFont aFont)
 	{
-		aContainer.pChildren().add(SVGFlowText.create("super", aFont, Color.BLACK));
+		aContainer.add(ZLabel.create("super", aFont, Color.BLACK));
 	}
 	
 	@Override
 	protected void fillFooterPrefix(
-			IRectangularGraphicContainer aContainer,
+			JComponent aContainer,
 			XFont aFont)
 	{
-		aContainer.pChildren().add(SVGFlowText.create("Returned: ", aFont, Color.BLACK));
+		aContainer.add(ZLabel.create("Returned: ", aFont, Color.BLACK));
 	}
 
 }

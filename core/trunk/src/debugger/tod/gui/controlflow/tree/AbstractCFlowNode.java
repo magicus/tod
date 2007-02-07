@@ -20,19 +20,29 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.controlflow.tree;
 
+import java.awt.FlowLayout;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
 import tod.core.database.browser.ILogBrowser;
 import tod.gui.IGUIManager;
 import tod.gui.JobProcessor;
 import tod.gui.Hyperlinks.ISeedFactory;
 import tod.gui.controlflow.CFlowView;
-import zz.csg.impl.SVGGraphicContainer;
 
 /**
  * Base for all the graphic objects used in the representation 
  * of the control flow
  * @author gpothier
  */
-public class AbstractCFlowNode extends SVGGraphicContainer
+public abstract class AbstractCFlowNode extends JPanel
+implements MouseListener, MouseMotionListener
 {
 	private final CFlowView itsView;
 	private final JobProcessor itsJobProcessor;
@@ -41,8 +51,12 @@ public class AbstractCFlowNode extends SVGGraphicContainer
 			CFlowView aView,
 			JobProcessor aJobProcessor)
 	{
+		super(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		itsView = aView;
 		itsJobProcessor = aJobProcessor;
+		
+		addMouseListener(this);
+		addMouseMotionListener(this);
 	}
 
 	public JobProcessor getJobProcessor()
@@ -68,6 +82,34 @@ public class AbstractCFlowNode extends SVGGraphicContainer
 	public CFlowView getView()
 	{
 		return itsView;
+	}
+
+	public void mouseClicked(MouseEvent aE)
+	{
+	}
+
+	public void mouseEntered(MouseEvent aE)
+	{
+	}
+
+	public void mouseExited(MouseEvent aE)
+	{
+	}
+
+	public void mousePressed(MouseEvent aE)
+	{
+	}
+
+	public void mouseReleased(MouseEvent aE)
+	{
+	}
+
+	public void mouseDragged(MouseEvent aE)
+	{
+	}
+
+	public void mouseMoved(MouseEvent aE)
+	{
 	}
 	
 

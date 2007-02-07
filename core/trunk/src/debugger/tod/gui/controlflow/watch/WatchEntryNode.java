@@ -23,22 +23,22 @@ package tod.gui.controlflow.watch;
 import static tod.gui.FontConfig.STD_FONT;
 
 import java.awt.Color;
+import java.awt.FlowLayout;
+
+import javax.swing.JPanel;
 
 import tod.core.database.browser.ILogBrowser;
-import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IWriteEvent;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.Hyperlinks.ISeedFactory;
-import zz.csg.api.layout.SequenceLayout;
-import zz.csg.impl.SVGGraphicContainer;
-import zz.csg.impl.figures.SVGFlowText;
+import zz.utils.ui.ZLabel;
 
 /**
  * Represents a watch entry (field or variable).
  * @author gpothier
  */
-public class WatchEntryNode<E> extends SVGGraphicContainer
+public class WatchEntryNode<E> extends JPanel
 {
 	private final JobProcessor itsJobProcessor;
 	private final ISeedFactory itsSeedFactory;
@@ -56,6 +56,8 @@ public class WatchEntryNode<E> extends SVGGraphicContainer
 			IWatchProvider<E> aProvider, 
 			E aEntry)
 	{
+		super(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		setOpaque(false);
 		itsJobProcessor = aJobProcessor;
 		itsSeedFactory = aSeedFactory;
 		itsLogBrowser = aLogBrowser;
@@ -70,8 +72,19 @@ public class WatchEntryNode<E> extends SVGGraphicContainer
 					public Object run()
 					{
 						itsSetter = itsProvider.getEntrySetter(itsEntry);
-						itsValue = itsProvider.getEntryValue(itsEntry);
-						updateUI();
+						if (itsSetter == null)
+						{
+							itsValue = itsProvider.getEntryValue(itsEntry);
+						}
+						else
+						{
+							itsValue = new Object[itsSetter.length];
+							for (int i=0;i<itsSetter.length;i++)
+							{
+								itsValue[i] = itsSetter[i].getValue();
+							}
+						}
+						updateValue();
 						return null;
 					}
 				});
@@ -79,22 +92,14 @@ public class WatchEntryNode<E> extends SVGGraphicContainer
 	
 	private void createUI()
 	{
-		disableUpdate();
-		
 		String theName = itsProvider.getEntryName(itsEntry);
-		pChildren().add(SVGFlowText.create(theName + " = ", STD_FONT, Color.BLACK));
-		
-		setLayoutManager(new SequenceLayout());
-
-		enableUpdate();
+		add(ZLabel.create(theName + " = ", STD_FONT, Color.BLACK));
 	}
 	
-	private void updateUI()
+	private void updateValue()
 	{
 		if (itsValue != null)
 		{
-			disableUpdate();
-			
 			boolean theFirst = true;
 			for (int i=0;i<itsValue.length;i++)
 			{
@@ -102,9 +107,9 @@ public class WatchEntryNode<E> extends SVGGraphicContainer
 				IWriteEvent theSetter = itsSetter != null ? itsSetter[i] : null;
 	
 				if (theFirst) theFirst = false;
-				else pChildren().add(SVGFlowText.create(" / ", STD_FONT, Color.BLACK));
+				else add(ZLabel.create(" / ", STD_FONT, Color.BLACK));
 				
-				pChildren().add(Hyperlinks.object(
+				add(Hyperlinks.object(
 						itsSeedFactory,
 						itsLogBrowser, 
 						itsJobProcessor,
@@ -114,19 +119,20 @@ public class WatchEntryNode<E> extends SVGGraphicContainer
 				
 				if (theSetter != null)
 				{
-					pChildren().add(SVGFlowText.create(" (", STD_FONT, Color.BLACK));
+					add(ZLabel.create(" (", STD_FONT, Color.BLACK));
 					
-					pChildren().add(Hyperlinks.event(
+					add(Hyperlinks.event(
 							itsSeedFactory,
 							"why?", 
 							theSetter, 
 							STD_FONT));
 					
-					pChildren().add(SVGFlowText.create(")", STD_FONT, Color.BLACK));
+					add(ZLabel.create(")", STD_FONT, Color.BLACK));
 				}
 			}
-			
-			enableUpdate();
+
+			revalidate();
+			repaint();
 		}		
 	}
 	

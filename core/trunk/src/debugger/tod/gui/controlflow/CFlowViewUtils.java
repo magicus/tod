@@ -21,21 +21,14 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.controlflow;
 
 import java.awt.Color;
-import java.awt.Font;
+
+import javax.swing.JPanel;
 
 import tod.core.database.browser.ILogBrowser;
-import tod.core.database.event.IBehaviorCallEvent;
-import tod.core.database.event.IBehaviorExitEvent;
-import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.ITypeInfo;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.Hyperlinks.ISeedFactory;
-import zz.csg.api.IGraphicContainer;
-import zz.csg.api.IRectangularGraphicObject;
-import zz.csg.api.layout.SequenceLayout;
-import zz.csg.impl.SVGGraphicContainer;
-import zz.csg.impl.figures.SVGFlowText;
+import zz.utils.ui.ZLabel;
 import zz.utils.ui.text.XFont;
 
 public class CFlowViewUtils
@@ -47,11 +40,11 @@ public class CFlowViewUtils
 			ISeedFactory aSeedFactory,
 			ILogBrowser aLogBrowser,
 			JobProcessor aJobProcessor,
-			IGraphicContainer aContainer,
+			JPanel aContainer,
 			Object[] aArguments, 
 			XFont aFont)
 	{
-		aContainer.pChildren().add(SVGFlowText.create("(", aFont, Color.BLACK));
+		aContainer.add(ZLabel.create("(", aFont, Color.BLACK));
 		
 		if (aArguments != null)
 		{
@@ -59,9 +52,9 @@ public class CFlowViewUtils
 			for (Object theArgument : aArguments)
 			{
 				if (theFirst) theFirst = false;
-				else aContainer.pChildren().add(SVGFlowText.create(", ", aFont, Color.BLACK));
+				else aContainer.add(ZLabel.create(", ", aFont, Color.BLACK));
 				
-				aContainer.pChildren().add(Hyperlinks.object(
+				aContainer.add(Hyperlinks.object(
 						aSeedFactory,
 						aLogBrowser,
 						aJobProcessor,
@@ -71,10 +64,10 @@ public class CFlowViewUtils
 		}
 		else
 		{
-			aContainer.pChildren().add(SVGFlowText.create("...", aFont, Color.BLACK));
+			aContainer.add(ZLabel.create("...", aFont, Color.BLACK));
 		}
 		
-		aContainer.pChildren().add(SVGFlowText.create(")", aFont, Color.BLACK));
+		aContainer.add(ZLabel.create(")", aFont, Color.BLACK));
 	}
 	
 

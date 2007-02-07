@@ -23,19 +23,14 @@ package tod.gui.eventsequences;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
 
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 
 import tod.gui.view.LogView;
-import zz.csg.api.IRectangularGraphicObject;
-import zz.csg.display.GraphicPanel;
 import zz.utils.ItemAction;
 import zz.utils.properties.ArrayListProperty;
 import zz.utils.properties.IListProperty;
@@ -78,9 +73,6 @@ public class SequenceViewsDock extends JPanel
 	
 	private JPanel itsViewsPanel;
 	
-	// TODO: Temp.
-	private GraphicPanel itsDisplay;
-
 	private final LogView itsLogView;
 	
 	public SequenceViewsDock(LogView aLogView)
@@ -94,10 +86,6 @@ public class SequenceViewsDock extends JPanel
 		setLayout(new BorderLayout());
 		itsViewsPanel = new JPanel (new GridStackLayout(1, 0, 0, true, false));
 		add (new JScrollPane(itsViewsPanel), BorderLayout.CENTER);
-		
-		itsDisplay = new GraphicPanel();
-		itsDisplay.setPreferredSize(new Dimension(1, 1));
-		add (itsDisplay, BorderLayout.SOUTH);
 	}
 
 
@@ -134,7 +122,7 @@ public class SequenceViewsDock extends JPanel
 	private class SequencePanel extends JPanel
 	{
 		private IEventSequenceView itsView;
-		private IRectangularGraphicObject itsStripe;
+		private JComponent itsStripe;
 		
 		/**
 		 * We keep references to connectors so that we can disconnect.
@@ -170,28 +158,8 @@ public class SequenceViewsDock extends JPanel
 			
 			itsStripe = itsView.getEventStripe();
 			
-			final GraphicPanel theStripePanel = new GraphicPanel();
-			theStripePanel.setTransform(new AffineTransform());
-			theStripePanel.setRootNode(itsStripe);
-			
-			add (theStripePanel, BorderLayout.CENTER);
-			
+			add (itsStripe, BorderLayout.CENTER);
 			add (createNorthPanel(), BorderLayout.NORTH);
-			
-			theStripePanel.addComponentListener(new ComponentAdapter()
-					{
-						@Override
-						public void componentResized(ComponentEvent aE)
-						{
-							Rectangle2D.Double theBounds = new Rectangle2D.Double(
-									0, 
-									0, 
-									theStripePanel.getWidth(), 
-									theStripePanel.getHeight());
-							
-							itsStripe.pBounds().set(theBounds);
-						}
-					});
 		}
 		
 		public JPanel createNorthPanel()

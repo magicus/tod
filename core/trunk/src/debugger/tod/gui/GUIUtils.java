@@ -18,32 +18,34 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.vbuilder;
+package tod.gui;
 
-import tod.core.database.structure.ObjectId;
-import zz.csg.api.IRectangularGraphicContainer;
+import java.awt.Color;
+
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+
+import zz.utils.ui.GridStackLayout;
+import zz.utils.ui.ZLabel;
 
 /**
- * A graphic node that represents a Java object. 
+ * Utility methods for creating common SVG components
  * @author gpothier
  */
-public interface IObjectNode extends IRectangularGraphicContainer
+public class GUIUtils
 {
-	/**
-	 * Returns the id of the represented object.
-	 */
-	public ObjectId getId();
-	
-	/**
-	 * Returns the cell that created this node.
-	 */
-	public Cell getCell();
+	public static JComponent createMessage(
+			String aHeader, 
+			Color aHeaderColor,
+			String aText, 
+			Color aTextColor)
+	{
+		// Create container
+		JPanel theContainer = new JPanel(new GridStackLayout(1, 0, 0, false, false));
+		
+		if (aHeader != null && aHeader.length() > 0)theContainer.add(ZLabel.create(aHeader, FontConfig.STD_HEADER_FONT, aHeaderColor));
+		if (aText != null && aText.length() > 0) theContainer.add(ZLabel.create(aText, FontConfig.STD_FONT, aTextColor));
 
-	public Object get(String aKey);
-	
-	public <T> T get(NodeAttribute<T> aAttribute);
-	
-	public Object set(String aKey, Object aValue);
-	
-	public <T> T set(NodeAttribute<T> aAttribute, T aValue);
+		return theContainer;
+	}
 }

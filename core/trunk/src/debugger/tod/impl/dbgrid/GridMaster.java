@@ -368,11 +368,16 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	/**
 	 * Stops accepting new connections from debuggees.
 	 */
+	public void stop()
+	{
+		itsServer.stop();
+	}
+
 	public void disconnect()
 	{
 		itsServer.disconnect();
 	}
-
+	
 	public void addListener(RIGridMasterListener aListener) 
 	{
 		itsListeners.add(aListener);

@@ -71,6 +71,15 @@ public class RemoteGridSession extends AbstractSession
 	
 	public void disconnect()
 	{
+		try
+		{
+			itsMaster.disconnect();
+			itsMaster.clear();
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 	
 	public void flush()

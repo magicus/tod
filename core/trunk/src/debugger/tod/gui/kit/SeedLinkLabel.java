@@ -20,29 +20,35 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.kit;
 
-import tod.gui.IGUIManager;
-import tod.gui.seed.LogViewSeed;
+import java.awt.Color;
+
+import tod.gui.FontConfig;
+import tod.gui.seed.Seed;
+import zz.utils.ui.ZHyperlink;
 
 /**
  * A hyperlink-like label, that permits to jump to a specific view.
  * @author gpothier
  */
-public class SeedLinkLabel extends LinkLabel
+public class SeedLinkLabel extends ZHyperlink
 {
 	/**
 	 * The seed to which to jump when this link is selected.
 	 */
-	private LogViewSeed itsTargetSeed;
+	private final Seed itsTargetSeed;
 	
-	public SeedLinkLabel(IGUIManager aGUIManager, String aText, LogViewSeed aTargetSeed)
+	public SeedLinkLabel(
+			String aText,
+			Seed aTargetSeed)
 	{
-		super(aGUIManager, aText);
+		super(aText, FontConfig.STD_FONT, Color.BLUE);
 		itsTargetSeed = aTargetSeed;
 	}
 	
-	protected void link(int aButton,int aClickCount,boolean aCtrl,boolean aShift,boolean aAlt)
+	@Override
+	protected void traverse()
 	{
-		getGUIManager().openSeed(itsTargetSeed, aCtrl);
+		itsTargetSeed.open();
 	}
 	
 }

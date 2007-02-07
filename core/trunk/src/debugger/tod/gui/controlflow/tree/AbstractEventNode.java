@@ -21,16 +21,12 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.controlflow.tree;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
+import java.awt.Graphics;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Area;
-import java.awt.geom.Point2D;
 
 import tod.core.database.event.ILogEvent;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
-import zz.csg.api.GraphicObjectContext;
-import zz.csg.api.IDisplay;
 
 public abstract class AbstractEventNode extends AbstractCFlowNode
 {
@@ -43,26 +39,25 @@ public abstract class AbstractEventNode extends AbstractCFlowNode
 	}
 
 	@Override
-	public boolean mousePressed(GraphicObjectContext aContext, MouseEvent aEvent, Point2D aPoint)
+	public void mousePressed(MouseEvent aE)
 	{
 		ILogEvent theMainEvent = getEvent();
 		if (theMainEvent != null)
 		{
 			getView().selectEvent(theMainEvent);
-			return true;			
+			aE.consume();			
 		}
-		else return false;
 	}
 	
 	@Override
-	protected void paintBackground(IDisplay aDisplay, GraphicObjectContext aContext, Graphics2D aGraphics, Area aVisibleArea)
+	protected void paintComponent(Graphics aG)
 	{
 		ILogEvent theMainEvent = getEvent();
-		if (theMainEvent != null && getView().isEventSelected(theMainEvent))
-		{
-			aGraphics.setColor(Color.YELLOW);
-			aGraphics.fill(aVisibleArea.getBounds2D());
-		}
+		boolean theSelected = theMainEvent != null 
+				&& getView().isEventSelected(theMainEvent);
+		
+		aG.setColor(theSelected ? Color.YELLOW : Color.WHITE);
+		aG.fillRect(0, 0, getWidth(), getHeight());
 	}
 
 	/**

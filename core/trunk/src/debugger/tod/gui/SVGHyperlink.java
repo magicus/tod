@@ -21,74 +21,30 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui;
 
 import java.awt.Color;
-import java.awt.event.MouseEvent;
-import java.awt.geom.Point2D;
 
 import tod.gui.seed.Seed;
-import zz.csg.api.GraphicObjectContext;
-import zz.csg.impl.figures.SVGFlowText;
-import zz.utils.ui.MouseModifiers;
+import zz.utils.ui.ZHyperlink;
 import zz.utils.ui.text.XFont;
 
-public class SVGHyperlink extends SVGFlowText
+public class SVGHyperlink extends ZHyperlink
 {
-	private static final boolean WITH_CTRL = false;
 	private Seed itsSeed;
-	private boolean itsMouseOver = false;
 	
-	public SVGHyperlink()
+	public SVGHyperlink(String aText, XFont aFont, Color aColor, Seed aSeed)
 	{
-	}
-
-	public SVGHyperlink(Seed aSeed)
-	{
+		super(aText, aFont, aColor);
 		itsSeed = aSeed;
 	}
-	
+
 	public void setSeed(Seed aSeed)
 	{
 		itsSeed = aSeed;
 	}
-
-	@Override
-	public void mouseEntered(GraphicObjectContext aContext, MouseEvent aEvent)
-	{
-		setMouseOver(! WITH_CTRL || MouseModifiers.hasCtrl(aEvent));
-	}
 	
 	@Override
-	public void mouseExited(GraphicObjectContext aContext, MouseEvent aEvent)
+	protected void traverse()
 	{
-		setMouseOver(false);
-	}
-	
-	@Override
-	public boolean mouseMoved(GraphicObjectContext aContext, MouseEvent aEvent, Point2D aPoint)
-	{
-		boolean theCtrl = ! WITH_CTRL || MouseModifiers.hasCtrl(aEvent); 
-		setMouseOver(theCtrl);
-		return theCtrl;
-	}
-	
-	private void setMouseOver(boolean aMouseOver)
-	{
-		if (itsMouseOver != aMouseOver)
-		{
-			XFont theFont = pFont().get();
-			pFont().set(new XFont(theFont.getAWTFont(), aMouseOver));
-			itsMouseOver = aMouseOver;
-		}
-	}
-	
-	@Override
-	public boolean mouseClicked(GraphicObjectContext aContext, MouseEvent aEvent, Point2D aPoint)
-	{
-		if (! WITH_CTRL || MouseModifiers.hasCtrl(aEvent))
-		{
-			itsSeed.open();
-			return true;
-		}
-		else return false;
+		itsSeed.open();
 	}
 	
 	/**
@@ -100,13 +56,11 @@ public class SVGHyperlink extends SVGFlowText
 			XFont aFont, 
 			Color aColor)
 	{
-		XFont theFont = aFont.isUnderline() ? new XFont(aFont.getAWTFont(), false) : aFont;
+		XFont theFont = aFont.isUnderline() ?
+				new XFont(aFont.getAWTFont(), false) 
+				: aFont;
 		
-		SVGHyperlink theHyperlink = new SVGHyperlink(aSeed);
-		theHyperlink.pText().set(aText);
-		theHyperlink.pStrokePaint().set(aColor);
-		theHyperlink.pFont().set(theFont);
-		theHyperlink.setSizeComputer(DefaultSizeComputer.getInstance());
+		SVGHyperlink theHyperlink = new SVGHyperlink(aText, theFont, aColor, aSeed);
 		
 		return theHyperlink;
 	}
