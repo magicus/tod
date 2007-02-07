@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.view;
 
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,8 @@ import javax.swing.JPanel;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.ObjectId;
+import tod.gui.FontConfig;
+import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
 import tod.gui.Hyperlinks.ISeedFactory;
 import tod.gui.formatter.EventFormatter;
@@ -41,6 +44,7 @@ import tod.gui.seed.LogViewSeed;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.ISetProperty;
 import zz.utils.properties.PropertyUtils;
+import zz.utils.ui.ZLabel;
 
 /**
  * Base class for views.
@@ -169,8 +173,8 @@ public abstract class LogView extends JPanel
 	 */
 	protected JComponent createTitledPanel (String aTitle, JComponent aComponent)
 	{
-		JPanel thePanel = new JPanel(new FlowLayout (FlowLayout.LEADING));
-		thePanel.add (new JLabel (aTitle));
+		JPanel thePanel = new JPanel(GUIUtils.createSequenceLayout());
+		thePanel.add (GUIUtils.createLabel(aTitle));
 		thePanel.add (aComponent);
 		
 		return thePanel;
@@ -183,7 +187,7 @@ public abstract class LogView extends JPanel
 	 */
 	protected JComponent createTitleLabel (String aTitle)
 	{
-		return new JLabel ("<html><font size='+1'>"+aTitle);
+		return ZLabel.create(aTitle, FontConfig.STD_HEADER_FONT, Color.BLACK);
 	}
 	
 	/**

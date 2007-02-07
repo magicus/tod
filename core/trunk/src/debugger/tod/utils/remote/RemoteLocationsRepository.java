@@ -102,7 +102,8 @@ implements RILocationsRepository
 			}
 			catch (RemoteException e)
 			{
-				throw new RuntimeException(e);
+				System.err.println("[RemoteLocationsRepository] Could not fire change event");
+				e.printStackTrace();
 			}
 		}
 	}

@@ -25,6 +25,7 @@ import java.awt.Color;
 import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.gui.FontConfig;
+import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
@@ -43,12 +44,8 @@ public class LocalVariableWriteNode extends AbstractEventNode
 		
 		itsEvent = aEvent;
 
-		add(ZLabel.create(
-				itsEvent.getVariable().getVariableName(),
-				FontConfig.STD_FONT,
-				Color.BLACK));
-		
-		add(ZLabel.create(" = ", FontConfig.STD_FONT, Color.BLACK));
+		add(GUIUtils.createLabel(itsEvent.getVariable().getVariableName()));
+		add(GUIUtils.createLabel(" = "));
 		
 		add(Hyperlinks.object(
 				getSeedFactory(), 

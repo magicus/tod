@@ -116,7 +116,14 @@ implements ILogBrowser, RIGridMasterListener
 
 	public void clear()
 	{
-		throw new UnsupportedOperationException();
+		try
+		{
+			itsMaster.clear();
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	

@@ -24,7 +24,6 @@ import static tod.gui.FontConfig.STD_FONT;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.util.List;
 
@@ -39,6 +38,7 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.gui.BrowserNavigator;
+import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
 import tod.gui.JobProcessor;
@@ -47,8 +47,6 @@ import tod.gui.controlflow.CFlowView;
 import tod.gui.seed.LogViewSeedFactory;
 import tod.gui.seed.Seed;
 import zz.utils.SimpleAction;
-import zz.utils.ui.GridStackLayout;
-import zz.utils.ui.ZLabel;
 
 /**
  * A panel that shows the contents of a stack frame or of an object.
@@ -156,7 +154,7 @@ public class WatchPanel extends JPanel
 	{
 		getJobProcessor().cancelAll();
 				
-		final JPanel theContainer = new JPanel(new GridStackLayout(1, 0, 0, true, false));
+		final JPanel theContainer = new JPanel(GUIUtils.createStackLayout());
 		theContainer.setOpaque(false);
 		
 		theContainer.add(aProvider.buildTitle(getJobProcessor()));
@@ -198,10 +196,10 @@ public class WatchPanel extends JPanel
 	
 	private JComponent buildCurrentObjectLine(ObjectId aCurrentObject)
 	{
-		JPanel theContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		JPanel theContainer = new JPanel(GUIUtils.createSequenceLayout());
 		theContainer.setOpaque(false);
 		
-		theContainer.add(ZLabel.create("this = ", STD_FONT, Color.BLACK));
+		theContainer.add(GUIUtils.createLabel("this = "));
 		
 		theContainer.add(Hyperlinks.object(
 				itsSeedFactory,

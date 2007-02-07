@@ -48,6 +48,14 @@ implements RIDatabaseNode
 	{
 	}
 	
+	@Override
+	public void clear()
+	{
+		itsEventsCount = 0;
+		itsFirstTimestamp = 0;
+		itsLastTimestamp = 0;
+	}
+	
 	/**
 	 * Subclasses should call this method whenever an event is stored
 	 * by this node in order to update statistics

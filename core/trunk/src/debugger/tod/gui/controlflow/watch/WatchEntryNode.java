@@ -29,6 +29,7 @@ import javax.swing.JPanel;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IWriteEvent;
+import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.Hyperlinks.ISeedFactory;
@@ -56,7 +57,7 @@ public class WatchEntryNode<E> extends JPanel
 			IWatchProvider<E> aProvider, 
 			E aEntry)
 	{
-		super(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		super(GUIUtils.createSequenceLayout());
 		setOpaque(false);
 		itsJobProcessor = aJobProcessor;
 		itsSeedFactory = aSeedFactory;
@@ -93,7 +94,7 @@ public class WatchEntryNode<E> extends JPanel
 	private void createUI()
 	{
 		String theName = itsProvider.getEntryName(itsEntry);
-		add(ZLabel.create(theName + " = ", STD_FONT, Color.BLACK));
+		add(GUIUtils.createLabel(theName + " = "));
 	}
 	
 	private void updateValue()
@@ -107,7 +108,7 @@ public class WatchEntryNode<E> extends JPanel
 				IWriteEvent theSetter = itsSetter != null ? itsSetter[i] : null;
 	
 				if (theFirst) theFirst = false;
-				else add(ZLabel.create(" / ", STD_FONT, Color.BLACK));
+				else add(GUIUtils.createLabel(" / "));
 				
 				add(Hyperlinks.object(
 						itsSeedFactory,
@@ -119,7 +120,7 @@ public class WatchEntryNode<E> extends JPanel
 				
 				if (theSetter != null)
 				{
-					add(ZLabel.create(" (", STD_FONT, Color.BLACK));
+					add(GUIUtils.createLabel(" ("));
 					
 					add(Hyperlinks.event(
 							itsSeedFactory,
@@ -127,7 +128,7 @@ public class WatchEntryNode<E> extends JPanel
 							theSetter, 
 							STD_FONT));
 					
-					add(ZLabel.create(")", STD_FONT, Color.BLACK));
+					add(GUIUtils.createLabel(")"));
 				}
 			}
 

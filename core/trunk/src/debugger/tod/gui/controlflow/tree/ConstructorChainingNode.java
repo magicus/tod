@@ -25,6 +25,7 @@ import java.awt.Color;
 import javax.swing.JComponent;
 
 import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.IConstructorChainingEvent;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
 import zz.utils.ui.ZLabel;
@@ -36,17 +37,42 @@ public class ConstructorChainingNode extends BehaviorCallNode
 	public ConstructorChainingNode(
 			CFlowView aView, 
 			JobProcessor aJobProcessor,
-			IBehaviorCallEvent aEvent)
+			IConstructorChainingEvent aEvent)
 	{
 		super(aView, aJobProcessor, aEvent);
 	}
 
 	@Override
+	protected IConstructorChainingEvent getEvent()
+	{
+		return (IConstructorChainingEvent) super.getEvent();
+	}
+	
+	@Override
 	protected void fillHeaderPrefix(
 			JComponent aContainer,
 			XFont aFont)
 	{
-		aContainer.add(ZLabel.create("super", aFont, Color.BLACK));
+		String theHeader;
+		switch(getEvent().getCallType())
+		{
+		case SUPER:
+			theHeader = "super";
+			break;
+			
+		case THIS:
+			theHeader = "this";
+			break;
+			
+		case UNKNOWN:
+			theHeader = "this/super";
+			break;
+			
+		default:
+			throw new RuntimeException("Not handled: "+getEvent().getCallType());
+		}
+		
+		aContainer.add(ZLabel.create(theHeader, aFont, Color.BLACK));
 	}
 	
 	@Override

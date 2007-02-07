@@ -86,6 +86,7 @@ public class UniformDatabaseNode extends DatabaseNode
 	
 	public void clear() 
 	{
+		super.clear();
 		initDatabase();
 	}
 	

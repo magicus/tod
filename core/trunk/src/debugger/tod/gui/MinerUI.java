@@ -212,6 +212,7 @@ implements ILocationSelectionListener, IGUIManager
 	{
 		ISession theSession = getSession();
 		if (theSession != null) openSeed(new ThreadsSeed(this, theSession.getLogBrowser()), false);
+		else openSeed(null, false);
 	}
 
 

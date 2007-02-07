@@ -25,8 +25,11 @@ import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.IConstructorChainingEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
+import tod.core.database.event.IConstructorChainingEvent.CallType;
+import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IThreadInfo;
 import tod.impl.common.event.Event;
 import tod.impl.local.event.RootEvent;
@@ -83,6 +86,23 @@ public class LogBrowserUtils
 		return theRoot;
 	}
 	
-
+	public static CallType isSuperCall(IConstructorChainingEvent aEvent)
+	{
+		IBehaviorInfo theExecutedBehavior = aEvent.getExecutedBehavior();
+		IBehaviorInfo theCallingBehavior = aEvent.getCallingBehavior();
+		if (theCallingBehavior == null
+				|| theExecutedBehavior == null) 
+		{
+			return CallType.UNKNOWN;
+		}
+		else if (theExecutedBehavior.getType().equals(theCallingBehavior.getType()))
+		{
+			return CallType.THIS;
+		}
+		else 
+		{
+			return CallType.SUPER;
+		}
+	}
 
 }

@@ -26,4 +26,17 @@ package tod.core.database.event;
  */
 public interface IConstructorChainingEvent extends IBehaviorCallEvent
 {
+	/**
+	 * Returns the type of this constructor chaining call.
+	 */
+	public CallType getCallType();
+	
+	/**
+	 * Describes the various possibilities of constructor chaining call.
+	 * @author gpothier
+	 */
+	public static enum CallType
+	{
+		SUPER, THIS, UNKNOWN;
+	}
 }

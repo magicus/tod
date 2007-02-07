@@ -30,6 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 
+import tod.gui.GUIUtils;
 import tod.gui.view.LogView;
 import zz.utils.ItemAction;
 import zz.utils.properties.ArrayListProperty;
@@ -84,7 +85,7 @@ public class SequenceViewsDock extends JPanel
 	private void createUI()
 	{
 		setLayout(new BorderLayout());
-		itsViewsPanel = new JPanel (new GridStackLayout(1, 0, 0, true, false));
+		itsViewsPanel = new JPanel (GUIUtils.createStackLayout());
 		add (new JScrollPane(itsViewsPanel), BorderLayout.CENTER);
 	}
 

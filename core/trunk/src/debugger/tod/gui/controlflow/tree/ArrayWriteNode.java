@@ -26,6 +26,7 @@ import tod.core.database.event.IArrayWriteEvent;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.gui.FontConfig;
+import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
@@ -52,9 +53,9 @@ public class ArrayWriteNode extends AbstractEventNode
 		}
 		
 		add(Hyperlinks.object(getSeedFactory(), getLogBrowser(), getJobProcessor(), theCurrentObject, itsEvent.getTarget(), FontConfig.STD_FONT));
-		add(ZLabel.create("[", FontConfig.STD_FONT, Color.BLACK));
-		add(ZLabel.create(""+itsEvent.getIndex(), FontConfig.STD_FONT, Color.BLACK));
-		add(ZLabel.create("] = ", FontConfig.STD_FONT, Color.BLACK));
+		add(GUIUtils.createLabel("["));
+		add(GUIUtils.createLabel(""+itsEvent.getIndex()));
+		add(GUIUtils.createLabel("] = "));
 		add(Hyperlinks.object(getSeedFactory(), getLogBrowser(), getJobProcessor(), theCurrentObject, itsEvent.getValue(), FontConfig.STD_FONT));
 	}
 	

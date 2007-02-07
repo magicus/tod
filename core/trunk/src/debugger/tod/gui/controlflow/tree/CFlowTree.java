@@ -55,6 +55,7 @@ import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IMethodCallEvent;
 import tod.core.database.event.IParentEvent;
+import tod.gui.GUIUtils;
 import tod.gui.JobProcessor;
 import tod.gui.MinerUI;
 import tod.gui.controlflow.CFlowView;
@@ -96,7 +97,7 @@ implements MouseWheelListener
 		itsView = aView;
 		
 		createUI();
-		setParent(null);
+		setParent(itsView.getSeed().pRootEvent().get());
 	}
 	
 	public JobProcessor getJobProcessor()
@@ -131,7 +132,6 @@ implements MouseWheelListener
 
 	public void setParent(IParentEvent aParentEvent)
 	{
-		if (aParentEvent == null) aParentEvent = itsView.getSeed().pRootEvent().get();
 		itsCore = new EventListCore(aParentEvent.getChildrenBrowser(), 10);
 
 		IEventBrowser theBrowser = aParentEvent.getChildrenBrowser();
@@ -200,7 +200,7 @@ implements MouseWheelListener
 		setLayout(new StackLayout());
 		add(itsSplitPane);
 		
-		itsEventList = new ScrollablePanel(new GridStackLayout(1, 0, 0, true, false));
+		itsEventList = new ScrollablePanel(GUIUtils.createStackLayout());
 		itsEventList.setOpaque(false);
 		itsEventList.addMouseWheelListener(this);
 
@@ -236,7 +236,10 @@ implements MouseWheelListener
 		theStack.setOpaque(false);
 		JScrollPane theScrollPane = new JScrollPane(theStack);
 		theScrollPane.getViewport().setBackground(Color.WHITE);
+		
+		int theDividerLocation = itsSplitPane.getDividerLocation();
 		itsSplitPane.setLeftComponent(theScrollPane);
+		itsSplitPane.setDividerLocation(theDividerLocation);
 		
 		itsNodesMap.clear();
 		updateList();
@@ -273,14 +276,13 @@ implements MouseWheelListener
 		}
 	}
 	
-	private IBehaviorCallEvent getCurrentParent()
+	private IParentEvent getCurrentParent()
 	{
 		return itsView.getSeed().pParentEvent().get();
 	}
 	
 	public void mouseWheelMoved(MouseWheelEvent aEvent)
 	{
-		System.out.println("CFlowTree.mouseWheelMoved()");
 		int theRotation = aEvent.getWheelRotation();
 		if (theRotation < 0) backward(1);
 		else if (theRotation > 0) forward(1);
@@ -294,20 +296,25 @@ implements MouseWheelListener
 	 */
 	private JComponent createStack()
 	{
-		List<IBehaviorCallEvent> theAncestors = new ArrayList<IBehaviorCallEvent>();
-		IBehaviorCallEvent theCurrentParent = getCurrentParent();
+		List<IParentEvent> theAncestors = new ArrayList<IParentEvent>();
+		IParentEvent theCurrentParent = getCurrentParent();
+		IParentEvent theLastAdded = null;
 		while (theCurrentParent != null)
 		{
 			theAncestors.add(theCurrentParent);
+			theLastAdded = theCurrentParent;
 			theCurrentParent = theCurrentParent.getParent();
 		}
+		
+		IParentEvent theRootEvent = itsView.getSeed().pRootEvent().get();
+		if (! theRootEvent.equals(theLastAdded)) theAncestors.add(theRootEvent);
 		
 		JPanel theContainer = new JPanel(new GridStackLayout(1, 0, 2, true, false));
 
 		if (theAncestors.size() > 0) for(int i=0;i<theAncestors.size();i++)
 		{
-			IBehaviorCallEvent theAncestor = theAncestors.get(i);
-			theContainer.add(buildStackNode(theAncestor));
+			IParentEvent theAncestor = theAncestors.get(i);
+			theContainer.add(buildStackNode(theAncestor, i==0));
 		}
 		
 		return theContainer;
@@ -364,22 +371,42 @@ implements MouseWheelListener
 
 
 	
-	private StackNode buildStackNode(IBehaviorCallEvent aEvent)
+	private AbstractStackNode buildStackNode(IParentEvent aEvent, boolean aCurrentFrame)
 	{
 //		JobProcessor theJobProcessor = getJobProcessor();
 		JobProcessor theJobProcessor = null;
 		
-		if (aEvent instanceof IMethodCallEvent)
+		if (aEvent == itsView.getSeed().pRootEvent().get())
 		{
-			return new StackNode(itsView, theJobProcessor, aEvent);
+			return new RootStackNode(
+					itsView,
+					theJobProcessor,
+					aEvent,
+					aCurrentFrame);
+		}
+		else if (aEvent instanceof IMethodCallEvent)
+		{
+			return new NormalStackNode(
+					itsView, 
+					theJobProcessor, 
+					(IMethodCallEvent) aEvent, 
+					aCurrentFrame);
 		}
 		else if (aEvent instanceof IInstantiationEvent)
 		{
-			return new StackNode(itsView, theJobProcessor, aEvent);
+			return new NormalStackNode(
+					itsView, 
+					theJobProcessor, 
+					(IInstantiationEvent) aEvent, 
+					aCurrentFrame);
 		}
 		else if (aEvent instanceof IConstructorChainingEvent)
 		{
-			return new StackNode(itsView, theJobProcessor, aEvent);
+			return new NormalStackNode(
+					itsView, 
+					theJobProcessor, 
+					(IConstructorChainingEvent) aEvent, 
+					aCurrentFrame);
 		}
 		else throw new RuntimeException("Not handled: "+aEvent);
 	}

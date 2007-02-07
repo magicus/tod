@@ -38,6 +38,7 @@ import tod.core.database.event.IWriteEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ObjectId;
+import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import zz.utils.ui.ZLabel;
@@ -97,7 +98,7 @@ public class ObjectWatchProvider implements IWatchProvider<IFieldInfo>
 	
 	public JComponent buildTitle(JobProcessor aJobProcessor)
 	{
-		JPanel theContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		JPanel theContainer = new JPanel(GUIUtils.createSequenceLayout());
 		theContainer.setOpaque(false);
 		
 		theContainer.add(ZLabel.create(
@@ -123,20 +124,14 @@ public class ObjectWatchProvider implements IWatchProvider<IFieldInfo>
 		}
 		
 		// Setup history link
-		theContainer.add(ZLabel.create(
-				" (",
-				STD_FONT,
-				Color.BLACK));
+		theContainer.add(GUIUtils.createLabel(" ("));
 		
 		theContainer.add(Hyperlinks.history(
 				itsWatchPanel.getLogViewSeedFactory(),
 				itsObject,
 				STD_FONT));
 		
-		theContainer.add(ZLabel.create(
-				")",
-				STD_FONT,
-				Color.BLACK));
+		theContainer.add(GUIUtils.createLabel(")"));
 		
 		return theContainer;
 	}

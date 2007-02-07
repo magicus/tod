@@ -41,12 +41,6 @@ class PipedInputStream2 extends InputStream {
     volatile boolean closedByReader = false;
     boolean connected = false;
 
-	/* REMIND: identification of the read and write sides needs to be
-	   more sophisticated.  Either using thread groups (but what about
-	   pipes within a thread?) or using finalization (but it may be a
-	   long time until the next GC). */
-    Thread readSide;
-
     /**
      * The size of the pipe's circular input buffer.
      * @since   JDK1.1
@@ -193,16 +187,12 @@ class PipedInputStream2 extends InputStream {
             throw new IOException("Pipe not connected");
         } else if (closedByWriter || closedByReader) {
 	    throw new IOException("Pipe closed");
-	} else if (readSide != null && !readSide.isAlive()) {
-            throw new IOException("Read end dead");
-        }
+	} 
     }
 
     private void awaitSpace() throws IOException {
 	while (in == out) {
-	    if ((readSide != null) && !readSide.isAlive()) {
-		throw new IOException("Pipe broken");
-	    }
+	    
 	    /* full: kick any waiting readers */
 	    notifyAll();
 	    try {
@@ -246,7 +236,6 @@ class PipedInputStream2 extends InputStream {
 	    throw new IOException("Pipe closed");
 	} 
 
-        readSide = Thread.currentThread();
 	while (in < 0) {
 	    if (closedByWriter) {
 		/* closed by writer, return EOF */

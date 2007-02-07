@@ -20,17 +20,15 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.view.event;
 
-import javax.swing.JLabel;
-
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IThreadInfo;
+import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
 import tod.gui.kit.SeedLinkLabel;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.seed.FilterSeed;
 import tod.gui.view.LogView;
-import zz.utils.ui.GridStackLayout;
 
 /**
  * Base class for event viewers. It sets a framework for the UI:
@@ -49,8 +47,8 @@ public abstract class EventView extends LogView
 	
 	public void init()
 	{
-		setLayout(new GridStackLayout(1, 0, 5, false, false));
-		add (createTitleLabel(getEventFormatter().getHtmlText(getEvent())));
+		setLayout(GUIUtils.createStackLayout());
+		add (createTitleLabel(getEventFormatter().getPlainText(getEvent())));
 		
 		ILogEvent theEvent = getEvent();
 		IThreadInfo theThreadInfo = theEvent.getThread();
@@ -63,10 +61,10 @@ public abstract class EventView extends LogView
 
 		add (createTitledPanel(
 				"Timestamp: ", 
-				new JLabel (""+theEvent.getTimestamp())));
+				GUIUtils.createLabel(""+theEvent.getTimestamp())));
 
 		
-		// CFLow
+		// CFlow
 		SeedLinkLabel theCFlowLabel = new SeedLinkLabel(
 				"View control flow", 
 				new CFlowSeed(getGUIManager(), getLogBrowser(), theEvent));

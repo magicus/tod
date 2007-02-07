@@ -26,6 +26,7 @@ import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.gui.FontConfig;
+import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
@@ -59,14 +60,9 @@ public class FieldWriteNode extends AbstractEventNode
 				itsEvent.getTarget(),
 				FontConfig.STD_FONT));
 		
-		add(ZLabel.create(".", FontConfig.STD_FONT, Color.BLACK));
-		
-		add(ZLabel.create(
-				itsEvent.getField().getName(), 
-				FontConfig.STD_FONT, 
-				Color.BLACK));
-		
-		add(ZLabel.create(" = ", FontConfig.STD_FONT, Color.BLACK));
+		add(GUIUtils.createLabel("."));
+		add(GUIUtils.createLabel(itsEvent.getField().getName()));
+		add(GUIUtils.createLabel(" = "));
 		
 		add(Hyperlinks.object(
 				getSeedFactory(),

@@ -34,6 +34,7 @@ import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.gui.FontConfig;
+import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
@@ -107,7 +108,7 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 	
 	protected JComponent createHeader(XFont aFont)
 	{
-		JPanel theContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		JPanel theContainer = new JPanel(GUIUtils.createSequenceLayout());
 		theContainer.setOpaque(false);
 		
 		fillHeaderPrefix(theContainer, aFont);
@@ -136,7 +137,7 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 	
 	protected JComponent createFooter(XFont aFont)
 	{
-		JPanel theContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		JPanel theContainer = new JPanel(GUIUtils.createSequenceLayout());
 		theContainer.setOpaque(false);
 
 		IBehaviorInfo theBehavior = getEvent().getExecutedBehavior();

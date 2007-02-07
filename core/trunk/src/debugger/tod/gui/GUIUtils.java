@@ -21,12 +21,15 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui;
 
 import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.LayoutManager;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import zz.utils.ui.GridStackLayout;
 import zz.utils.ui.ZLabel;
+import zz.utils.ui.text.XFont;
 
 /**
  * Utility methods for creating common SVG components
@@ -47,5 +50,31 @@ public class GUIUtils
 		if (aText != null && aText.length() > 0) theContainer.add(ZLabel.create(aText, FontConfig.STD_FONT, aTextColor));
 
 		return theContainer;
+	}
+	
+	/**
+	 * Creates a standard sequence layout.
+	 */
+	public static FlowLayout createSequenceLayout()
+	{
+		return new FlowLayout(FlowLayout.LEFT, 0, 0);
+	}
+	
+	/**
+	 * Creates a standard stack layout.
+	 */
+	public static LayoutManager createStackLayout()
+	{
+		return new GridStackLayout(1, 0, 0, true, false);
+	}
+	
+	public static ZLabel createLabel(String aText, XFont aFont, Color aColor)
+	{
+		return ZLabel.create(aText, aFont, aColor);
+	}
+	
+	public static ZLabel createLabel(String aText)
+	{
+		return createLabel(aText, FontConfig.STD_FONT, Color.BLACK);
 	}
 }

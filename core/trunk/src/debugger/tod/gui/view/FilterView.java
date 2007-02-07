@@ -21,6 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.view;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -30,6 +31,7 @@ import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.gui.IGUIManager;
+import tod.gui.MinerUI;
 import tod.gui.eventlist.EventList;
 import tod.gui.seed.FilterSeed;
 import tod.gui.view.event.EventView;
@@ -44,6 +46,7 @@ import zz.utils.properties.PropertyListener;
  */
 public class FilterView extends LogView implements IEventListView
 {
+	private static final String PROPERTY_SPLITTER_POS = "filterView.splitterPos";
 	private FilterSeed itsSeed;
 	
 	private JSplitPane itsSplitPane;
@@ -83,6 +86,7 @@ public class FilterView extends LogView implements IEventListView
 		itsSplitPane.setLeftComponent(itsList);
 		
 		itsScrollPane = new JScrollPane();
+		itsScrollPane.getViewport().setBackground(Color.WHITE);
 		itsSplitPane.setRightComponent(itsScrollPane);
 	}
 	
@@ -90,7 +94,22 @@ public class FilterView extends LogView implements IEventListView
 	public void addNotify()
 	{
 		super.addNotify();
-		itsSplitPane.setDividerLocation(400);
+		
+		int theSplitterPos = MinerUI.getIntProperty(
+				getGUIManager(), 
+				PROPERTY_SPLITTER_POS, 400);
+		
+		itsSplitPane.setDividerLocation(theSplitterPos);
+	}
+	
+	@Override
+	public void removeNotify()
+	{
+		super.removeNotify();
+		
+		getGUIManager().setProperty(
+				PROPERTY_SPLITTER_POS, 
+				""+itsSplitPane.getDividerLocation());
 	}
 	
 	private void setSelectedEvent (ILogEvent aEvent)

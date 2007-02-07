@@ -22,6 +22,7 @@ package tod.gui;
 
 import java.awt.Font;
 
+import zz.utils.ui.ZLabel;
 import zz.utils.ui.text.XFont;
 
 public class FontConfig

@@ -86,10 +86,10 @@ public class CFlowView extends LogView implements IEventListView
 		}
 	};
 	
-	private IPropertyListener<IBehaviorCallEvent> itsParentListener = new PropertyListener<IBehaviorCallEvent>()
+	private IPropertyListener<IParentEvent> itsParentListener = new PropertyListener<IParentEvent>()
 	{
 		@Override
-		public void propertyChanged(IProperty<IBehaviorCallEvent> aProperty, IBehaviorCallEvent aOldValue, IBehaviorCallEvent aNewValue)
+		public void propertyChanged(IProperty<IParentEvent> aProperty, IParentEvent aOldValue, IParentEvent aNewValue)
 		{
 			setParent(aNewValue);
 		}
@@ -183,7 +183,7 @@ public class CFlowView extends LogView implements IEventListView
 				}
 				else 
 				{
-					IBehaviorCallEvent theParentEvent = itsSeed.pParentEvent().get();
+					IParentEvent theParentEvent = itsSeed.pParentEvent().get();
 					if (theParentEvent != null)
 					{
 						itsSeed.pParentEvent().set(theParentEvent.getParent());
@@ -221,12 +221,11 @@ public class CFlowView extends LogView implements IEventListView
 		return theToolbar;
 	}
 	
-	private void setParent(IBehaviorCallEvent aEvent)
+	private void setParent(IParentEvent aEvent)
 	{
 		IParentEvent theParentEvent = aEvent != null ?
 				aEvent
 				: getSeed().pRootEvent().get();
-
 
 		itsCFlowTree.setParent(theParentEvent);
 	}
@@ -246,7 +245,7 @@ public class CFlowView extends LogView implements IEventListView
 	
 	private void showEvent (ILogEvent aEvent)
 	{
-		IBehaviorCallEvent theCurrentParent = getSeed().pParentEvent().get();
+		IParentEvent theCurrentParent = getSeed().pParentEvent().get();
 		ExternalPointer theParentPointer = theCurrentParent != null ?
 				theCurrentParent.getPointer()
 				: null;
@@ -306,7 +305,7 @@ public class CFlowView extends LogView implements IEventListView
 	
 	public IEventBrowser getEventBrowser()
 	{
-		IBehaviorCallEvent theCurrentParent = getSeed().pParentEvent().get();
+		IParentEvent theCurrentParent = getSeed().pParentEvent().get();
 		return theCurrentParent.getChildrenBrowser();
 	}
 	

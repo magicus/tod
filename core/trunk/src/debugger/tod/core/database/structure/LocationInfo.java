@@ -80,7 +80,8 @@ implements ILocationInfo, Serializable
 		if (aObj instanceof LocationInfo)
 		{
 			ILocationInfo theInfo = (ILocationInfo) aObj;
-			return theInfo.getClass().equals(getClass()) && theInfo.getId() == getId();
+			return theInfo.getClass().equals(getClass()) 
+					&& theInfo.getId() == getId();
 		}
 		else return false;
 	}

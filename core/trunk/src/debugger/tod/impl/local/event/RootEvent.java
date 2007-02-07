@@ -21,6 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.local.event;
 
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.ExternalPointer;
 
 /**
  * Serves as a fake event containing control flow roots
@@ -32,4 +33,18 @@ public class RootEvent extends BehaviorCallEvent
 	{
 		super(aLogBrowser);
 	}
+	
+	@Override
+	public BehaviorCallEvent getParent()
+	{
+		return null;
+	}
+	
+	@Override
+	public ExternalPointer getParentPointer()
+	{
+		return null;
+	}
+	
+	
 }

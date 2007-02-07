@@ -18,22 +18,29 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.dbgrid.event;
+package tod.gui.controlflow.tree;
 
-import tod.core.database.event.IConstructorChainingEvent;
-import tod.impl.common.LogBrowserUtils;
-import tod.impl.dbgrid.GridLogBrowser;
+import javax.swing.JComponent;
 
-public class ConstructorChainingEvent extends BehaviorCallEvent
-implements IConstructorChainingEvent
+import tod.core.database.event.IParentEvent;
+import tod.gui.GUIUtils;
+import tod.gui.JobProcessor;
+import tod.gui.controlflow.CFlowView;
+
+public class RootStackNode extends AbstractStackNode
 {
-	public ConstructorChainingEvent(GridLogBrowser aLogBrowser)
+	public RootStackNode(
+			CFlowView aView,
+			JobProcessor aJobProcessor, 
+			IParentEvent aEvent, 
+			boolean aCurrentStackFrame)
 	{
-		super(aLogBrowser);
+		super(aView, aJobProcessor, aEvent, aCurrentStackFrame);
 	}
 
-	public CallType getCallType()
+	@Override
+	protected JComponent createHeader()
 	{
-		return LogBrowserUtils.isSuperCall(this);
+		return GUIUtils.createLabel("Control flow root");
 	}
 }

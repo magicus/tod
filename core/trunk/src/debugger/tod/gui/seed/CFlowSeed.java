@@ -50,7 +50,7 @@ public class CFlowSeed extends LogViewSeed
 			super.set(aEvent);
 		}
 	};
-	private IRWProperty<IBehaviorCallEvent> pParentEvent = new SimpleRWProperty<IBehaviorCallEvent>(this);
+	private IRWProperty<IParentEvent> pParentEvent = new SimpleRWProperty<IParentEvent>(this);
 	private IRWProperty<IParentEvent> pRootEvent = new SimpleRWProperty<IParentEvent>(this);
 	
 	public CFlowSeed(
@@ -71,6 +71,7 @@ public class CFlowSeed extends LogViewSeed
 
 		IParentEvent theRoot = aLog.getCFlowRoot(aThread);
 		pRootEvent().set(theRoot);
+//		pParentEvent().set(theRoot);
 		IEventBrowser theChildrenBrowser = theRoot.getChildrenBrowser();
 		if (theChildrenBrowser.hasNext())
 		{
@@ -102,7 +103,7 @@ public class CFlowSeed extends LogViewSeed
 	/**
 	 * The current parent.
 	 */
-	public IRWProperty<IBehaviorCallEvent> pParentEvent()
+	public IRWProperty<IParentEvent> pParentEvent()
 	{
 		return pParentEvent;
 	}

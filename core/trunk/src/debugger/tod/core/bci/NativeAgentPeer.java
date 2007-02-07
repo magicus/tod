@@ -87,6 +87,7 @@ public abstract class NativeAgentPeer extends SocketThread
 			int aHostId)
 	{
 		super (aSocket);
+		assert aConfig != null;
 		itsConfig = aConfig;
 		itsStoreClassesDir = aStoreClassesDir;
 		itsInstrumenter = aInstrumenter;

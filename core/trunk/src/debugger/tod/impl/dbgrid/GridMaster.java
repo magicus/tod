@@ -93,7 +93,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	private TODConfig itsConfig;
 	private final IInstrumenter itsInstrumenter;
 
-	private List<RIGridMasterListener> itsListeners = new ArrayList<RIGridMasterListener>();
+	private List<ListenerData> itsListeners = new ArrayList<ListenerData>();
 	
 	private TODServer itsServer;
 	
@@ -380,15 +380,9 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	
 	public void addListener(RIGridMasterListener aListener) 
 	{
-		itsListeners.add(aListener);
-		try
-		{
-			aListener.eventsReceived();
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		} 
+		ListenerData theListenerData = new ListenerData(aListener);
+		itsListeners.add(theListenerData);
+		theListenerData.fireEventsReceived();
 	}
 	
 	public void pushMonitorData(String aNodeId, MonitorData aData)
@@ -413,8 +407,6 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		theWriter.println(Monitor.format(aData, false));
 		theWriter.flush();
 		
-		System.out.println("Received monitor data from node #"+aNodeId);
-		
 		fireMonitorData(aNodeId, aData);
 	}
 
@@ -424,16 +416,10 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	protected void fireEventsReceived() 
 	{
-		try
+		for (Iterator<ListenerData> theIterator = itsListeners.iterator(); theIterator.hasNext();)
 		{
-			for (RIGridMasterListener theListener : itsListeners)
-			{
-				theListener.eventsReceived();
-			}
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
+			ListenerData theListenerData = theIterator.next();
+			if (! theListenerData.fireEventsReceived()) theIterator.remove();
 		}
 	}
 	
@@ -443,16 +429,10 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	protected void fireMonitorData(String aNodeId, MonitorData aData) 
 	{
-		try
+		for (Iterator<ListenerData> theIterator = itsListeners.iterator(); theIterator.hasNext();)
 		{
-			for (RIGridMasterListener theListener : itsListeners)
-			{
-				theListener.monitorData(aNodeId, aData);
-			}
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
+			ListenerData theListenerData = theIterator.next();
+			if (! theListenerData.fireMonitorData(aNodeId, aData)) theIterator.remove();
 		}
 	}
 	
@@ -465,17 +445,10 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		System.err.println("Exception catched in master, will be forwarded to clients.");
 		aThrowable.printStackTrace();
 		
-		try
+		for (Iterator<ListenerData> theIterator = itsListeners.iterator(); theIterator.hasNext();)
 		{
-			for (RIGridMasterListener theListener : itsListeners)
-			{
-				theListener.exception(aThrowable);
-			}
-		}
-		catch (RemoteException e)
-		{
-			e.printStackTrace();
-			throw new RuntimeException(e);
+			ListenerData theListenerData = theIterator.next();
+			if (! theListenerData.fireException(aThrowable)) theIterator.remove();
 		}
 	}
 	
@@ -615,6 +588,8 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	public void clear() 
 	{
 		itsRootDispatcher.clear();
+		itsRegisterer.clear();
+		updateStats();
 	}
 	
 	/**
@@ -878,6 +853,12 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		{
 			return itsHosts;
 		}
+		
+		public void clear()
+		{
+			itsHosts.clear();
+			itsThreadsMap.clear();
+		}
 	}
 
 	public static void main(String[] args) throws Exception
@@ -886,5 +867,85 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		Registry theRegistry = LocateRegistry.getRegistry("localhost");
 		TODUtils.setupMaster(theRegistry, args);
 		System.out.println("Master ready.");
+	}
+	
+	/**
+	 * Data associated to listeners. Permits to identify and remove stale listeners. 
+	 * @author gpothier
+	 */
+	private static class ListenerData
+	{
+		private RIGridMasterListener itsListener;
+		private long itsFirstFailureTime;
+		
+		public ListenerData(RIGridMasterListener aListener)
+		{
+			itsListener = aListener;
+		}
+		
+		public boolean fireEventsReceived()
+		{
+			try
+			{
+				itsListener.eventsReceived();
+				return fire(false);
+			}
+			catch (RemoteException e)
+			{
+				return fire(true);
+			}
+		}
+		
+		public boolean fireException(Throwable aThrowable)
+		{
+			try
+			{
+				itsListener.exception(aThrowable);
+				return fire(false);
+			}
+			catch (RemoteException e)
+			{
+				return fire(true);
+			}
+		}
+		
+		public boolean fireMonitorData(String aNodeId, MonitorData aData)
+		{
+			try
+			{
+				itsListener.monitorData(aNodeId, aData);
+				return fire(false);
+			}
+			catch (RemoteException e)
+			{
+				return fire(true);
+			}
+		}
+		
+		/**
+		 * Returns false if the listener is no longer valid.
+		 */
+		private boolean fire(boolean aFailed)
+		{
+			if (aFailed)
+			{
+				long theTime = System.currentTimeMillis();
+				if (itsFirstFailureTime == 0)
+				{
+					itsFirstFailureTime = theTime;
+					return true;
+				}
+				else
+				{
+					long theDelta = theTime - itsFirstFailureTime;
+					return theDelta < 10000;
+				}
+			}
+			else
+			{
+				itsFirstFailureTime = 0;
+				return true;
+			}
+		}
 	}
 }

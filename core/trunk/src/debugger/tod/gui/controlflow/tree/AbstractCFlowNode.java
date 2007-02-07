@@ -31,6 +31,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import tod.core.database.browser.ILogBrowser;
+import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
 import tod.gui.JobProcessor;
 import tod.gui.Hyperlinks.ISeedFactory;
@@ -51,7 +52,7 @@ implements MouseListener, MouseMotionListener
 			CFlowView aView,
 			JobProcessor aJobProcessor)
 	{
-		super(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		super(GUIUtils.createSequenceLayout());
 		itsView = aView;
 		itsJobProcessor = aJobProcessor;
 		

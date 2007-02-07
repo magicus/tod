@@ -54,6 +54,7 @@ public class RemoteGridSession extends AbstractSession
 			
 			Registry theRegistry = LocateRegistry.getRegistry(theHost);
 			itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
+			itsMaster.clear();
 			itsBrowser = new GridLogBrowser(itsMaster);
 		}
 		catch (Exception e)
@@ -74,6 +75,7 @@ public class RemoteGridSession extends AbstractSession
 		try
 		{
 			itsMaster.disconnect();
+			itsMaster.flush();
 			itsMaster.clear();
 		}
 		catch (RemoteException e)

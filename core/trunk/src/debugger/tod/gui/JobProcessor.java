@@ -47,6 +47,7 @@ public class JobProcessor extends Thread
 	 */
 	public JobProcessor()
 	{
+		super("JobProcessor");
 		start();
 	}
 

@@ -125,7 +125,7 @@ public class StackFrameWatchProvider implements IWatchProvider<LocalVariableInfo
 		{
 			IBehaviorInfo theBehavior = theParentEvent.getExecutedBehavior();
 			
-			JPanel theContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+			JPanel theContainer = new JPanel(GUIUtils.createSequenceLayout());
 			theContainer.setOpaque(false);
 
 			if (theBehavior != null)
