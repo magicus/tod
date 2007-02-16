@@ -109,10 +109,15 @@ public class SourceRevealer
 		{
 			public void reveal() 
 			{
-				FakeStackFrame theArtifact = new FakeStackFrame(aTypeName, aLineNumber);
+				FakeStackFrame theArtifact = new FakeStackFrame(
+						aSession.getLaunch(),
+						aTypeName, 
+						aLineNumber);
+				
 				ISourceLookupResult theResult = DebugUITools.lookupSource(
 						theArtifact, 
 						aSession.getLaunch().getSourceLocator());
+				
 				DebugUITools.displaySource(theResult, JavaPlugin.getActivePage());
 			}
 		});
@@ -151,14 +156,19 @@ public class SourceRevealer
 	 */
 	private static class FakeStackFrame implements IJavaStackFrame
 	{
+		private final ILaunch itsLaunch;
 		private final String itsTypeName;
 		private final int itsLineNumber;
 		
 		private FakeThread itsThread;
 		private FakeType itsType;
 
-		public FakeStackFrame(final String aTypeName, final int aLineNumber)
+		public FakeStackFrame(
+				final ILaunch aLaunch, 
+				final String aTypeName, 
+				final int aLineNumber)
 		{
+			itsLaunch = aLaunch;
 			itsTypeName = aTypeName;
 			itsLineNumber = aLineNumber;
 			itsThread = new FakeThread(this);
@@ -251,6 +261,11 @@ public class SourceRevealer
 			return false;
 		}
 
+		public ILaunch getLaunch()
+		{
+			return itsLaunch;
+		}
+		
 		public boolean canStepInto()
 		{
 			throw new UnsupportedOperationException();
@@ -342,11 +357,6 @@ public class SourceRevealer
 		}
 
 		public IDebugTarget getDebugTarget()
-		{
-			throw new UnsupportedOperationException();
-		}
-
-		public ILaunch getLaunch()
 		{
 			throw new UnsupportedOperationException();
 		}
