@@ -14,6 +14,7 @@ CLASSPATH="$CLASSPATH:$BUILD_DIR/tod-agent.jar"
 CLASSPATH="$CLASSPATH:$BUILD_DIR/tod-debugger.jar"
 CLASSPATH="$CLASSPATH:$BUILD_DIR/tod-test.jar"
 CLASSPATH="$CLASSPATH:$LIB_DIR/zz.utils.jar"
+CLASSPATH="$CLASSPATH:$LIB_DIR/lucene-core-2.0.0.jar"
 
 export CLASSPATH
 
