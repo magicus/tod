@@ -22,6 +22,7 @@ package tod.impl.dbgrid.queries;
 
 
 import tod.impl.dbgrid.BidiIterator;
+import tod.impl.dbgrid.db.HierarchicalIndex;
 import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.messages.GridEvent;
@@ -44,6 +45,16 @@ public class HostCondition extends SimpleCondition
 	public BidiIterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
 	{
 		return aIndexes.getHostIndex(itsHost).getTupleIterator(aTimestamp);
+	}
+
+	
+	@Override
+	public long[] getEventCounts(Indexes aIndexes, long aT1, long aT2, int aSlotsCount, boolean aForceMergeCounts)
+	{
+		if (aForceMergeCounts) return super.getEventCounts(aIndexes, aT1, aT2, aSlotsCount, true);
+		
+		HierarchicalIndex<StdTuple> theIndex = aIndexes.getHostIndex(itsHost);
+		return theIndex.fastCountTuples(aT1, aT2, aSlotsCount);
 	}
 
 	@Override

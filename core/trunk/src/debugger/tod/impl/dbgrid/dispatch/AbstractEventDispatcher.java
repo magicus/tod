@@ -33,6 +33,7 @@ import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
 
+import tod.core.config.TODConfig;
 import tod.core.database.structure.HostInfo;
 import tod.core.transport.LogReceiver;
 import tod.impl.dbgrid.DebuggerGridConfig;
@@ -94,11 +95,9 @@ implements RIEventDispatcher
 	{
 		try
 		{
-			String theId = acceptChild(
+			acceptChild(
 					new BufferedInputStream(aSocket.getInputStream()),
 					new BufferedOutputStream(aSocket.getOutputStream()));
-			
-			System.out.println("Dispatcher accept node (socket): "+theId);
 		}
 		catch (IOException e)
 		{

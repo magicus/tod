@@ -119,10 +119,10 @@ public class Hyperlinks
 			XFont aFont)
 	{
 		// Check if this is a registered object.
-		if (aObject instanceof ObjectId.ObjectUID)
+		if (aObject instanceof ObjectId)
 		{
-			ObjectId.ObjectUID theObject = (ObjectId.ObjectUID) aObject;
-			Object theRegistered = aLogBrowser.getRegistered(theObject.getId());
+			ObjectId theObjectId = (ObjectId) aObject;
+			Object theRegistered = aLogBrowser.getRegistered(theObjectId);
 			if (theRegistered != null) aObject = theRegistered;
 		}
 		

@@ -54,7 +54,7 @@ public class FilterSeed extends LogViewSeed/*<FilterView>*/
 	
 	protected LogView requestComponent()
 	{
-		FilterView theView = new FilterView (getGUIManager(), getEventTrace(), this);
+		FilterView theView = new FilterView (getGUIManager(), getLogBrowser(), this);
 		theView.init();
 		return theView;
 	}

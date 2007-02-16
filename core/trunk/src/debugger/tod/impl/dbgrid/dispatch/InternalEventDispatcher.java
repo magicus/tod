@@ -33,6 +33,7 @@ import java.rmi.RemoteException;
 import tod.agent.DebugFlags;
 import tod.core.BehaviorKind;
 import tod.core.ILocationRegisterer;
+import tod.core.config.TODConfig;
 import tod.core.database.structure.HostInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ThreadInfo;

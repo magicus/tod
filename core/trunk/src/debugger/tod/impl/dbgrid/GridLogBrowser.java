@@ -50,6 +50,7 @@ import tod.core.database.structure.ObjectId;
 import tod.impl.common.LogBrowserUtils;
 import tod.impl.common.VariablesInspector;
 import tod.impl.dbgrid.aggregator.GridEventBrowser;
+import tod.impl.dbgrid.aggregator.StringHitsIterator;
 import tod.impl.dbgrid.db.RoleIndexSet;
 import tod.impl.dbgrid.messages.MessageType;
 import tod.impl.dbgrid.messages.ObjectCodec;
@@ -275,11 +276,11 @@ implements ILogBrowser, RIGridMasterListener
 		return theCompound;
 	}
 	
-	public Object getRegistered(long aId)
+	public Object getRegistered(ObjectId aId)
 	{
 		try
 		{
-			return itsMaster.getRegisteredObject(aId);
+			return itsMaster.getRegisteredObject(aId.getId());
 		}
 		catch (RemoteException e)
 		{
@@ -420,6 +421,24 @@ implements ILogBrowser, RIGridMasterListener
 		}
 		else throw new IllegalArgumentException("Not handled: "+aFilter);
 	}
+	
+	public IEventBrowser createBrowser()
+	{
+		Disjunction theDisjunction = new Disjunction();
+		for (IHostInfo theHost : getHosts())
+		{
+			if (theHost == null) continue;
+			theDisjunction.add(createHostFilter(theHost));
+		}
+		try
+		{
+			return new GlobalEventBrowser(this, theDisjunction);
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
 
 	public IParentEvent getCFlowRoot(IThreadInfo aThread)
 	{
@@ -441,6 +460,18 @@ implements ILogBrowser, RIGridMasterListener
 		return new VariablesInspector(aEvent);
 	}
 	
+	public BidiIterator<Long> searchStrings(String aSearchText)
+	{
+		try
+		{
+			return new StringHitsIterator(itsMaster.searchStrings(aSearchText));
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
 	private void updateStats()
 	{
 		try
@@ -550,4 +581,27 @@ implements ILogBrowser, RIGridMasterListener
 		
 	}
 	
+	/**
+	 * An event browser that returns all events.
+	 * @author gpothier
+	 */
+	private static class GlobalEventBrowser extends GridEventBrowser
+	{
+		public GlobalEventBrowser(
+				GridLogBrowser aBrowser, 
+				EventCondition aFilter) throws RemoteException
+		{
+			super(aBrowser, aFilter);
+		}
+
+		/**
+		 * Optimization: as this browser returns all events we don't need
+		 * a "real" intersection.
+		 */
+		@Override
+		public IEventBrowser createIntersection(IEventFilter aFilter)
+		{
+			return getLogBrowser().createBrowser(aFilter);
+		}
+	}
 }

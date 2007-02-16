@@ -18,32 +18,30 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.seed;
+package tod.impl.dbgrid.db;
 
-import tod.core.database.browser.ILogBrowser;
-import tod.gui.IGUIManager;
-import tod.gui.view.LogView;
-import tod.gui.view.ThreadsView;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 
 /**
- * This seed provides a view that lets the user browse all events that occured in
- * each thread.
+ * An iterator that buffers data into packets.
+ * @param <T> Should be an array type
  * @author gpothier
  */
-public class ThreadsSeed extends LogViewSeed
+public interface RIBufferIterator<T> extends Remote
 {
-
-	public ThreadsSeed(IGUIManager aGUIManager, ILogBrowser aLog)
-	{
-		super(aGUIManager, aLog);
-	}
-
-	@Override
-	protected LogView requestComponent()
-	{
-		ThreadsView theView = new ThreadsView(getGUIManager(), getLogBrowser(), this);
-		theView.init();
-		return theView;
-	}
+	/**
+	 * Fetches elements following the cursor position, and updates the cursor.
+	 * @param aCount Maximum number of elements to fetch.
+	 * @return The fetched elements, or null if there are no more events.
+	 */
+	public T next(int aCount) throws RemoteException;
+	
+	/**
+	 * Fetches elements preceeding the cursor position, and updates the cursor.
+	 * @param aCount Maximum number of elements to fetch.
+	 * @return The fetched elements, or null if there are no more events.
+	 */
+	public T previous(int aCount) throws RemoteException;
 
 }

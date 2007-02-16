@@ -24,7 +24,11 @@ import tod.impl.dbgrid.AbstractBidiIterator;
 import tod.impl.dbgrid.BidiIterator;
 
 /**
- * Base class for merge iterators. Maintains an array of head items,
+ * Base class for merge iterators. Merge iterators merge the elements
+ * provided by a number of source iterators, in ascending key order, where
+ * the key is a long. The source iterators must also provide their elements
+ * in ascending key order.
+ * This abstract class maintains an array of head items,
  * one for each source iterator.
  * @author gpothier
  */

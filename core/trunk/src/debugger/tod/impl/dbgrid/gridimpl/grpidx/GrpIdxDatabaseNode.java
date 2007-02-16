@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
+import tod.core.config.TODConfig;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.RoleIndexSet;

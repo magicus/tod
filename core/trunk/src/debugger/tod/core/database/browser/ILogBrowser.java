@@ -20,6 +20,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.browser;
 
+import java.rmi.RemoteException;
+import java.util.Iterator;
+
 import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
@@ -33,6 +36,9 @@ import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.impl.dbgrid.BidiIterator;
+import tod.impl.dbgrid.db.RIBufferIterator;
+import tod.impl.dbgrid.dispatch.RILeafDispatcher.StringSearchHit;
 import zz.utils.ITask;
 
 /**
@@ -101,13 +107,18 @@ public interface ILogBrowser
 	 * Returns the registered object (eg. string) that corresponds to the
 	 * given object id.
 	 */
-	public Object getRegistered(long aId);
+	public Object getRegistered(ObjectId aId);
 	
 	/**
 	 * Creates a browser that only reports events that pass a specific
 	 * filter.
 	 */
 	public IEventBrowser createBrowser (IEventFilter aFilter);
+	
+	/**
+	 * Creates a browser that reports all recorded events.
+	 */
+	public IEventBrowser createBrowser();
 	
 	/**
 	 * Creates an empty union filter.
@@ -237,6 +248,13 @@ public interface ILogBrowser
 	 * local variables at any point in time.
 	 */
 	public IVariablesInspector createVariablesInspector (IBehaviorCallEvent aEvent);
+	
+	/**
+	 * Searches a text in the registered strings.
+	 * @return An iterator that returns the ids of matching 
+	 * strings in order of relevance.
+	 */
+	public BidiIterator<Long> searchStrings(String aSearchText);
 	
 	/**
 	 * Executes the given task as close as possible to the database.

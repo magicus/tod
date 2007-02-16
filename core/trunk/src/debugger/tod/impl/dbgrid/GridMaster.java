@@ -56,7 +56,9 @@ import tod.core.server.TODServer;
 import tod.core.transport.LogReceiver;
 import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
+import tod.impl.dbgrid.aggregator.StringHitsAggregator;
 import tod.impl.dbgrid.db.NodeRejectedException;
+import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.dispatch.AbstractEventDispatcher;
 import tod.impl.dbgrid.dispatch.DatabaseNode;
 import tod.impl.dbgrid.dispatch.InternalEventDispatcher;
@@ -66,6 +68,7 @@ import tod.impl.dbgrid.dispatch.RIDispatchNode;
 import tod.impl.dbgrid.dispatch.RIEventDispatcher;
 import tod.impl.dbgrid.dispatch.RIInternalDispatcher;
 import tod.impl.dbgrid.dispatch.RILeafDispatcher;
+import tod.impl.dbgrid.dispatch.RILeafDispatcher.StringSearchHit;
 import tod.impl.dbgrid.gridimpl.GridImpl;
 import tod.impl.dbgrid.gridimpl.IGridImplementationFactory;
 import tod.impl.dbgrid.monitoring.Monitor;
@@ -250,7 +253,16 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			itsExpectedInternalDispatchers = theStructure.internalNodes;
 			itsExpectedLeafDispatchers = theStructure.leafNodes;			
 		}
-
+	}
+	
+	public TODConfig getConfig() 
+	{
+		return itsConfig;
+	}
+	
+	public void setConfig(TODConfig aConfig) 
+	{
+		itsConfig = aConfig;
 	}
 	
 	/**
@@ -287,6 +299,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 				assert itsExpectedInternalDispatchers == 0;
 				IGridImplementationFactory theFactory = GridImpl.getFactory(itsConfig);
 				LeafEventDispatcher theDispatcher = theFactory.createLeafDispatcher(false, itsLocationStore);
+				theDispatcher.connectToLocalMaster(this, "root");
 				itsRootDispatcher = theDispatcher;
 				itsLeafDispatchers.add(theDispatcher);
 			}
@@ -419,7 +432,11 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		for (Iterator<ListenerData> theIterator = itsListeners.iterator(); theIterator.hasNext();)
 		{
 			ListenerData theListenerData = theIterator.next();
-			if (! theListenerData.fireEventsReceived()) theIterator.remove();
+			if (! theListenerData.fireEventsReceived()) 
+			{
+				System.out.println("Removing stale listener");
+				theIterator.remove();
+			}
 		}
 	}
 	
@@ -432,7 +449,11 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		for (Iterator<ListenerData> theIterator = itsListeners.iterator(); theIterator.hasNext();)
 		{
 			ListenerData theListenerData = theIterator.next();
-			if (! theListenerData.fireMonitorData(aNodeId, aData)) theIterator.remove();
+			if (! theListenerData.fireMonitorData(aNodeId, aData)) 
+			{
+				System.out.println("Removing stale listener");
+				theIterator.remove();
+			}
 		}
 	}
 	
@@ -448,7 +469,11 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		for (Iterator<ListenerData> theIterator = itsListeners.iterator(); theIterator.hasNext();)
 		{
 			ListenerData theListenerData = theIterator.next();
-			if (! theListenerData.fireException(aThrowable)) theIterator.remove();
+			if (! theListenerData.fireException(aThrowable)) 
+			{
+				System.out.println("Removing stale listener");
+				theIterator.remove();
+			}
 		}
 	}
 	
@@ -568,6 +593,14 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	{
 		return itsNodes;
 	}
+	
+	/**
+	 * Returns the currently registered leaf dispatchers.
+	 */
+	public List<RILeafDispatcher> getLeafDispatchers()
+	{
+		return itsLeafDispatchers;
+	}
 
 	/**
 	 * Returns the number of registered nodes.
@@ -684,6 +717,11 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		}
 		
 		return theObject;
+	}
+	
+	public RIBufferIterator<StringSearchHit[]> searchStrings(String aSearchText) throws RemoteException
+	{
+		return new StringHitsAggregator(this, aSearchText);
 	}
 	
 	protected void updateStats()
@@ -938,6 +976,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 				else
 				{
 					long theDelta = theTime - itsFirstFailureTime;
+					System.out.println("Listener stale for "+theDelta+"ms");
 					return theDelta < 10000;
 				}
 			}

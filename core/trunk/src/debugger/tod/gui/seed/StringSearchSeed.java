@@ -23,27 +23,27 @@ package tod.gui.seed;
 import tod.core.database.browser.ILogBrowser;
 import tod.gui.IGUIManager;
 import tod.gui.view.LogView;
-import tod.gui.view.ThreadsView;
+import tod.gui.view.StringSearchView;
+import zz.utils.properties.IRWProperty;
+import zz.utils.properties.SimpleRWProperty;
 
-/**
- * This seed provides a view that lets the user browse all events that occured in
- * each thread.
- * @author gpothier
- */
-public class ThreadsSeed extends LogViewSeed
+public class StringSearchSeed extends LogViewSeed
 {
-
-	public ThreadsSeed(IGUIManager aGUIManager, ILogBrowser aLog)
+	private IRWProperty<String> pText = new SimpleRWProperty<String>();
+	
+	public StringSearchSeed(IGUIManager aGUIManager, ILogBrowser aLog)
 	{
 		super(aGUIManager, aLog);
+	}
+
+	public IRWProperty<String> pText()
+	{
+		return pText;
 	}
 
 	@Override
 	protected LogView requestComponent()
 	{
-		ThreadsView theView = new ThreadsView(getGUIManager(), getLogBrowser(), this);
-		theView.init();
-		return theView;
+		return new StringSearchView(getGUIManager(), getLogBrowser(), this);
 	}
-
 }

@@ -22,8 +22,6 @@ Contact: gpothier -at- dcc . uchile . cl
 */
 package tod.impl.dbgrid.gridimpl.uniform;
 
-import java.rmi.RemoteException;
-
 import tod.core.database.browser.ILocationStore;
 import tod.impl.dbgrid.dispatch.DatabaseNode;
 import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
@@ -35,7 +33,9 @@ public class UniformImplementationFactory implements IGridImplementationFactory
 	{
 		try
 		{
-			UniformEventDispatcher theDispatcher = new UniformEventDispatcher(aLocationStore);
+			UniformEventDispatcher theDispatcher = 
+				new UniformEventDispatcher(aLocationStore);
+			
 			if (aConnectToMaster) theDispatcher.connectToMaster();
 			return theDispatcher;
 		}

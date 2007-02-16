@@ -28,6 +28,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
 import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.gui.IGUIManager;
@@ -134,7 +135,10 @@ public class FilterView extends LogView implements IEventListView
 
 	public IEventBrowser getEventBrowser()
 	{
-		return getLogBrowser().createBrowser(itsSeed.getFilter());
+		IEventFilter theFilter = itsSeed.getFilter();
+		return theFilter != null ?
+				getLogBrowser().createBrowser(theFilter)
+				: getLogBrowser().createBrowser();
 	}
 
 	public ILogEvent getSelectedEvent()

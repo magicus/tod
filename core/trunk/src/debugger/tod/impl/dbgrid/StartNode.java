@@ -59,7 +59,7 @@ public class StartNode
 			return;
 		}
 		
-		TODConfig theConfig = new TODConfig();
+		TODConfig theConfig = theMaster.getConfig();
 		
 		switch(theRole)
 		{

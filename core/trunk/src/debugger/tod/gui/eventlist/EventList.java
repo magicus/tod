@@ -76,10 +76,17 @@ public class EventList extends JPanel
 		itsLogBrowser = aBrowser;
 		itsFilter = aFilter;
 		itsFormatter = new EventFormatter(itsLogBrowser);
-		itsCore = new EventListCore(itsLogBrowser.createBrowser(itsFilter), 10);
+		itsCore = new EventListCore(createBrowser(), 10);
 		
 		createUI();
 		update();
+	}
+	
+	private IEventBrowser createBrowser()
+	{
+		return itsFilter != null ?
+				itsLogBrowser.createBrowser(itsFilter)
+				: itsLogBrowser.createBrowser();
 	}
 
 	private long getFirstTimestamp()
@@ -102,7 +109,7 @@ public class EventList extends JPanel
 		setLayout(new BorderLayout());
 		
 		final MuralScroller theScroller = new MuralScroller(
-				itsLogBrowser.createBrowser(itsFilter), //We can't share the event browser 
+				createBrowser(), //We can't share the event browser 
 				getFirstTimestamp(), 
 				getLastTimestamp());
 

@@ -48,6 +48,7 @@ import tod.impl.common.LogBrowserUtils;
 import tod.impl.common.ObjectInspector;
 import tod.impl.common.VariablesInspector;
 import tod.impl.common.event.Event;
+import tod.impl.dbgrid.BidiIterator;
 import tod.impl.local.filter.AbstractFilter;
 import tod.impl.local.filter.BehaviorCallFilter;
 import tod.impl.local.filter.DepthFilter;
@@ -145,9 +146,9 @@ public class LocalBrowser implements ILogBrowser
 		itsRegisteredObjects.put(aObjectUID, aObject);
 	}
 	
-	public Object getRegistered(long aId)
+	public Object getRegistered(ObjectId aId)
 	{
-		return itsRegisteredObjects.get(aId);
+		return itsRegisteredObjects.get(aId.getId());
 	}
 
 	public IEventBrowser createBrowser (IEventFilter aFilter)
@@ -156,7 +157,11 @@ public class LocalBrowser implements ILogBrowser
 		return theFilter.createBrowser();
 	}
 	
-	
+	public IEventBrowser createBrowser()
+	{
+		return createBrowser(createIntersectionFilter());
+	}
+
 	public IEventFilter createArgumentFilter(ObjectId aId)
 	{
 		return null;
@@ -278,6 +283,11 @@ public class LocalBrowser implements ILogBrowser
 	public IHostInfo getHost(String aName)
 	{
 		return itsHostsMap.get(aName);
+	}
+	
+	public BidiIterator<Long> searchStrings(String aSearchText)
+	{
+		throw new UnsupportedOperationException();
 	}
 
 	public <O> O exec(ITask<ILogBrowser, O> aTask)

@@ -206,14 +206,12 @@ public class CollectorPacketReader
 				}
 				
 				aCollector.register(theObjectId, theObject);
-				return new ObjectId.ObjectUID(theObjectId);
+				return new ObjectId(theObjectId);
 				
 			case OBJECT_UID:
-				return new ObjectId.ObjectUID(aStream.readLong());
+				return new ObjectId(aStream.readLong());
 				
 			case OBJECT_HASH:
-				return new ObjectId.ObjectHash(aStream.readInt());
-				
 			default:
 				throw new RuntimeException("Unexpected message: "+theType);
 		}

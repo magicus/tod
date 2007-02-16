@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.config;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,8 +33,10 @@ import tod.agent.ConfigUtils;
  * Instances of this class contain configuration options for a TOD session.
  * @author gpothier
  */
-public class TODConfig
+public class TODConfig implements Serializable
 {
+	private static final long serialVersionUID = 4959079097346687404L;
+
 	/**
 	 * Defines levels of "detail" for configuration options.
 	 * @author gpothier
@@ -187,6 +190,14 @@ public class TODConfig
 					"'Collector host' option must indicate the name of " +
 					"the grid master.\n",
 			ConfigUtils.readString("session-type", SESSION_LOCAL));
+	
+	public static final BooleanItem INDEX_STRINGS = new BooleanItem(
+			ConfigLevel.NORMAL,
+			"index.strings",
+			"Index strings",
+			"Whether strings should be indexed by the database. " +
+			"This has an impact on overall recording performance.",
+			false);
 	
 	/**
 	 * Contains all available configuration items.

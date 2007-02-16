@@ -23,9 +23,6 @@ package tod.gui.controlflow.tree;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.LayoutManager;
-import java.awt.Rectangle;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
@@ -38,8 +35,6 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.Scrollable;
-import javax.swing.SwingConstants;
 
 import tod.core.database.browser.BrowserUtils;
 import tod.core.database.browser.IEventBrowser;
@@ -67,6 +62,7 @@ import zz.utils.notification.IEventListener;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.PropertyListener;
 import zz.utils.ui.GridStackLayout;
+import zz.utils.ui.ScrollablePanel;
 import zz.utils.ui.StackLayout;
 
 public class CFlowTree extends JPanel
@@ -200,7 +196,13 @@ implements MouseWheelListener
 		setLayout(new StackLayout());
 		add(itsSplitPane);
 		
-		itsEventList = new ScrollablePanel(GUIUtils.createStackLayout());
+		itsEventList = new ScrollablePanel(GUIUtils.createStackLayout())
+		{
+			public boolean getScrollableTracksViewportHeight()
+			{
+				return true;
+			}
+		};
 		itsEventList.setOpaque(false);
 		itsEventList.addMouseWheelListener(this);
 
@@ -309,7 +311,7 @@ implements MouseWheelListener
 		IParentEvent theRootEvent = itsView.getSeed().pRootEvent().get();
 		if (! theRootEvent.equals(theLastAdded)) theAncestors.add(theRootEvent);
 		
-		JPanel theContainer = new JPanel(new GridStackLayout(1, 0, 2, true, false));
+		JPanel theContainer = new ScrollablePanel(new GridStackLayout(1, 0, 2, true, false));
 
 		if (theAncestors.size() > 0) for(int i=0;i<theAncestors.size();i++)
 		{
@@ -419,64 +421,6 @@ implements MouseWheelListener
 			getViewport().setBackground(Color.WHITE);
 			setWheelScrollingEnabled(false);
 		}
-	}
-	
-
-	
-	private static class ScrollablePanel extends JPanel 
-	implements Scrollable
-	{
-		private ScrollablePanel(LayoutManager aLayout)
-		{
-			super(aLayout);
-			
-		}
-
-		public boolean getScrollableTracksViewportHeight()
-		{
-			return true;
-		}
-		
-		public boolean getScrollableTracksViewportWidth()
-		{
-			return false;
-		}
-
-		public Dimension getPreferredScrollableViewportSize()
-		{
-			return getPreferredSize();
-		}
-
-		public int getScrollableBlockIncrement(Rectangle aVisibleRect, int aOrientation, int aDirection)
-		{
-			switch (aOrientation)
-			{
-			case SwingConstants.HORIZONTAL:
-				return 80 * aVisibleRect.width / 100;
-				
-			case SwingConstants.VERTICAL:
-				return 80 * aVisibleRect.height / 100;
-				
-			default:
-				throw new RuntimeException();
-			}
-		}
-
-		public int getScrollableUnitIncrement(Rectangle aVisibleRect, int aOrientation, int aDirection)
-		{
-			switch (aOrientation)
-			{
-			case SwingConstants.HORIZONTAL:
-				return 10 * aVisibleRect.width / 100;
-				
-			case SwingConstants.VERTICAL:
-				return 10 * aVisibleRect.height / 100;
-				
-			default:
-				throw new RuntimeException();
-			}
-		}
-		
 	}
 	
 }

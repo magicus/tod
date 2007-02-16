@@ -20,9 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.structure;
 
-import static tod.impl.dbgrid.DebuggerGridConfig.EVENT_HOST_BITS;
-import static tod.impl.dbgrid.DebuggerGridConfig.EVENT_HOST_MASK;
-
 import java.io.Serializable;
 
 import tod.impl.dbgrid.messages.ObjectCodec;
@@ -39,93 +36,48 @@ import tod.impl.dbgrid.messages.ObjectCodec;
  * as several objects can have the same hash code.
  * @author gpothier
  */
-public interface ObjectId extends Serializable
+public class ObjectId implements Serializable
 {
+	private long itsId;
 	
-	public static class ObjectUID implements ObjectId
+	public ObjectId(long aId)
 	{
-		private long itsId;
-		
-		
-		public ObjectUID(long aId)
-		{
-			itsId = aId;
-		}
-		
-		public long getId()
-		{
-			return itsId;
-		}
-		
-		
-		@Override
-		public int hashCode()
-		{
-			final int PRIME = 31;
-			int result = 1;
-			result = PRIME * result + (int) (itsId ^ (itsId >>> 32));
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj)
-		{
-			if (this == obj) return true;
-			if (obj == null) return false;
-			if (getClass() != obj.getClass()) return false;
-			final ObjectUID other = (ObjectUID) obj;
-			if (itsId != other.itsId) return false;
-			return true;
-		}
-
-		@Override
-		public String toString()
-		{
-			return "UID: "
-					+ObjectCodec.getObjectId(itsId)
-					+"."
-					+ObjectCodec.getHostId(itsId);
-		}
+		itsId = aId;
 	}
 	
-	public static class ObjectHash implements ObjectId
+	public long getId()
 	{
-		private int itsHascode;
-		
-		public ObjectHash(int aHascode)
-		{
-			itsHascode = aHascode;
-		}
-		
-		public int getHascode()
-		{
-			return itsHascode;
-		}
-		
-		@Override
-		public int hashCode()
-		{
-			final int PRIME = 31;
-			int result = 1;
-			result = PRIME * result + itsHascode;
-			return result;
-		}
+		return itsId;
+	}
+	
+	
+	@Override
+	public int hashCode()
+	{
+		final int PRIME = 31;
+		int result = 1;
+		result = PRIME * result + (int) (itsId ^ (itsId >>> 32));
+		return result;
+	}
 
-		@Override
-		public boolean equals(Object obj)
-		{
-			if (this == obj) return true;
-			if (obj == null) return false;
-			if (getClass() != obj.getClass()) return false;
-			final ObjectHash other = (ObjectHash) obj;
-			if (itsHascode != other.itsHascode) return false;
-			return true;
-		}
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		ObjectId other = (ObjectId) obj;
+		if (itsId != other.itsId) return false;
+		return true;
+	}
 
-		@Override
-		public String toString()
-		{
-			return "Hash: "+itsHascode;
-		}
+	@Override
+	public String toString()
+	{
+		return "UID: "
+				+ObjectCodec.getObjectId(itsId)
+				+"."
+				+ObjectCodec.getHostId(itsId);
 	}
 }
+

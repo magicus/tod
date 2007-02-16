@@ -47,6 +47,8 @@ import tod.gui.controlflow.CFlowView;
 import tod.gui.seed.FilterSeed;
 import tod.gui.seed.LogViewSeed;
 import tod.gui.seed.LogViewSeedFactory;
+import tod.gui.seed.Seed;
+import tod.gui.seed.StringSearchSeed;
 import tod.gui.seed.ThreadsSeed;
 import tod.gui.view.IEventListView;
 import tod.gui.view.LogView;
@@ -164,6 +166,27 @@ implements ILocationSelectionListener, IGUIManager
 		
 		theToolbar.add(theExceptionsViewButton);
 		
+		// String search button
+		JButton theStringSearchButton = new JButton("Search string");
+		theStringSearchButton.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent aE)
+			{
+				ILogBrowser theLogBrowser = getSession().getLogBrowser();
+				
+				StringSearchSeed theSeed = new StringSearchSeed(
+						MinerUI.this,
+						theLogBrowser);
+				
+				openSeed(theSeed, false);			
+			}
+		});
+		theStringSearchButton.setToolTipText(
+				"<html>" +
+				"<b>Search in strings.</b> Search text in recorded strings.");
+		
+		theToolbar.add(theStringSearchButton);
+		
 		JButton theShowAllEventsButton = new JButton("(all events)");
 		theShowAllEventsButton.addActionListener(new ActionListener()
 		{
@@ -171,10 +194,7 @@ implements ILocationSelectionListener, IGUIManager
 			{
 				ILogBrowser theLogBrowser = getSession().getLogBrowser();
 				
-				FilterSeed theSeed = new FilterSeed(
-						MinerUI.this,
-						theLogBrowser,
-						theLogBrowser.createIntersectionFilter());
+				FilterSeed theSeed = new FilterSeed(MinerUI.this, theLogBrowser, null);
 				
 				openSeed(theSeed, false);			
 			}

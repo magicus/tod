@@ -22,6 +22,7 @@ package tod.gui.view.event;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
@@ -51,13 +52,19 @@ public abstract class EventView extends LogView
 		add (createTitleLabel(getEventFormatter().getPlainText(getEvent())));
 		
 		ILogEvent theEvent = getEvent();
-		IThreadInfo theThreadInfo = theEvent.getThread();
+		IThreadInfo theThread = theEvent.getThread();
+		IHostInfo theHost = theThread.getHost();
 		
-		// Thread & timestamp
+		// Thread, host & timestamp
 		add (createTitledLink(
-				"[" + theEvent.getDepth() + "] Thread: ", 
-				"\""+theThreadInfo.getName()+"\" ["+theThreadInfo.getId()+"]", 
-				new FilterSeed (getGUIManager(), getLogBrowser(), getLogBrowser().createThreadFilter(theThreadInfo))));
+				"Host: ", 
+				"\""+theHost.getName()+"\" ["+theHost.getId()+"]", 
+				new FilterSeed (getGUIManager(), getLogBrowser(), getLogBrowser().createHostFilter(theHost))));
+		
+		add (createTitledLink(
+				"(>" + theEvent.getDepth() + ") Thread: ", 
+				"\""+theThread.getName()+"\" ["+theThread.getId()+"]", 
+				new FilterSeed (getGUIManager(), getLogBrowser(), getLogBrowser().createThreadFilter(theThread))));
 
 		add (createTitledPanel(
 				"Timestamp: ", 

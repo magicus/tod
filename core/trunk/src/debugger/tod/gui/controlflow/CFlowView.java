@@ -21,6 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.controlflow;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 
 import javax.swing.JButton;
@@ -36,8 +37,12 @@ import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
 import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.gui.FontConfig;
+import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
 import tod.gui.MinerUI;
 import tod.gui.Hyperlinks.ISeedFactory;
@@ -53,6 +58,7 @@ import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.PropertyListener;
 import zz.utils.ui.UIUtils;
+import zz.utils.ui.ZLabel;
 
 public class CFlowView extends LogView implements IEventListView
 {
@@ -129,7 +135,30 @@ public class CFlowView extends LogView implements IEventListView
 		JPanel theCFlowPanel = new JPanel(new BorderLayout());
 //		theCFlowPanel.add(theTreeScrollPane, BorderLayout.CENTER);
 		theCFlowPanel.add(itsCFlowTree, BorderLayout.CENTER);
-		theCFlowPanel.add(createToolbar(), BorderLayout.NORTH);
+		
+		// Create title
+		JPanel theTitlePanel = new JPanel(GUIUtils.createStackLayout());
+		IThreadInfo theThread = getSeed().getThread();
+		IHostInfo theHost = theThread.getHost();
+		
+		theTitlePanel.add(ZLabel.create(
+				String.format(
+						"Host: \"%s\" [%d]",
+						theHost.getName(),
+						theHost.getId()),
+				FontConfig.SMALL_FONT,
+				Color.BLACK));
+
+		theTitlePanel.add(GUIUtils.createLabel(String.format(
+				"Thread: \"%s\" [%d]",
+				theThread.getName(),
+				theThread.getId())));
+		
+		JPanel theNorthPanel = new JPanel(new BorderLayout(0, 0));
+		theNorthPanel.add(theTitlePanel, BorderLayout.WEST);
+		theNorthPanel.add(createToolbar(), BorderLayout.CENTER);
+		
+		theCFlowPanel.add(theNorthPanel, BorderLayout.NORTH);
 		
 		// Create watch panel
 		itsWatchPanel = new WatchPanel(this);
@@ -149,7 +178,7 @@ public class CFlowView extends LogView implements IEventListView
 	private JComponent createToolbar()
 	{
 		JPanel theToolbar = new JPanel();
-		
+				
 		theToolbar.add(new JButton(new SimpleAction("|<", "Backward step over")
 		{
 			public void actionPerformed(ActionEvent aE)

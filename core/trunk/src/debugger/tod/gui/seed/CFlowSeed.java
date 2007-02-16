@@ -82,7 +82,7 @@ public class CFlowSeed extends LogViewSeed
 
 	protected LogView requestComponent()
 	{
-		CFlowView theView = new CFlowView(getGUIManager(), getEventTrace(), this);
+		CFlowView theView = new CFlowView(getGUIManager(), getLogBrowser(), this);
 		theView.init();
 		return theView;
 	}

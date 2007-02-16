@@ -31,6 +31,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.rmi.RemoteException;
 
+import tod.core.config.TODConfig;
 import tod.impl.dbgrid.NodeException;
 
 public abstract class DatabaseNode extends AbstractDispatchNode
@@ -42,8 +43,6 @@ implements RIDatabaseNode
 	private long itsFirstTimestamp = 0;
 	private long itsLastTimestamp = 0;
 
-
-	
 	public DatabaseNode() throws RemoteException
 	{
 	}

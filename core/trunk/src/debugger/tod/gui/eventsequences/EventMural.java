@@ -198,6 +198,15 @@ public class EventMural extends JPanel
 		itsUpdater.request(this);
 	}
 	
+	
+	/**
+	 * Whether or not event baloons should be displayed.
+	 */
+	public void setShowBaloons(boolean aShowBaloons)
+	{
+		itsShowBaloons = aShowBaloons;
+	}
+
 	/**
 	 * Updates the set of displayed baloons.
 	 */
@@ -316,11 +325,40 @@ public class EventMural extends JPanel
 			Rectangle aBounds,
 			long aT1,
 			long aT2,
-			BrowserData aBrowserData)
+			BrowserData aBrowserData,
+			boolean aSum)
 	{
-		paintMural(aGraphics, aBounds, aT1, aT2, Collections.singletonList(aBrowserData));
+		List<BrowserData> theData = Collections.singletonList(aBrowserData);
+		paintMural(aGraphics, aBounds, aT1, aT2, theData, aSum);
 	}
 
+	/**
+	 * @param aSum If true, values of each series are summed and the resulting
+	 * color is a proportional mix of all colors.
+	 * If false, the series are "stacked" using the painter's algorithm.
+	 */
+	public static void paintMural (
+			Graphics2D aGraphics, 
+			Rectangle aBounds,
+			long aT1,
+			long aT2,
+			Collection<BrowserData> aBrowserData,
+			boolean aSum)
+	{
+		if (aSum)
+		{
+			paintMural(aGraphics, aBounds, aT1, aT2, aBrowserData);
+		}
+		else
+		{
+			for (BrowserData theData : aBrowserData)
+			{
+				List<BrowserData> theList = Collections.singletonList(theData);
+				paintMural(aGraphics, aBounds, aT1, aT2, theList);
+			}
+		}
+	}
+	
 	public static void paintMural (
 			Graphics2D aGraphics, 
 			Rectangle aBounds,
@@ -720,7 +758,8 @@ public class EventMural extends JPanel
 					new Rectangle(0, 0, width, height), 
 					theStart, 
 					theEnd, 
-					aMural.pEventBrowsers());
+					aMural.pEventBrowsers(),
+					false);
 
 			theImageData.setUpToDate(true);
 			aMural.repaint();

@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.eventsequences;
 
+import java.awt.Component;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -73,8 +74,21 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 	{
 		return getLogView().getGUIManager();
 	}
+
+	/**
+	 * Same role as {@link Component#addNotify()}
+	 */
+	public void addNotify()
+	{
+	}
 	
-	
+	/**
+	 * Same role as {@link Component#removeNotify()}
+	 */
+	public void removeNotify()
+	{
+	}
+
 	/**
 	 * Returns a seed factory that create new log views.
 	 */
@@ -87,16 +101,26 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 	 * Abstract method that lets subclasses provide a {@link IEventBrowser}.
 	 */
 	protected abstract List<BrowserData> getBrowsers();
+	
+	/**
+	 * Update the mural to reflect changes in the borwsers.
+	 */
+	protected void update()
+	{
+		itsMural.pEventBrowsers().clear();
+		for(BrowserData theData : getBrowsers())
+		{
+			itsMural.pEventBrowsers().add(theData);			
+		}
+		
+	}
 
 	public JComponent getEventStripe()
 	{
 		if (itsMural == null) 
 		{
 			itsMural = new MyMural();
-			for(BrowserData theData : getBrowsers())
-			{
-				itsMural.pEventBrowsers().add(theData);			
-			}
+			update();
 		}
 		return itsMural;
 	}
@@ -169,6 +193,20 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 		protected JComponent getBaloon(ILogEvent aEvent)
 		{
 			return AbstractSequenceView.this.getBaloon(aEvent);
+		}
+		
+		@Override
+		public void addNotify()
+		{
+			super.addNotify();
+			AbstractSequenceView.this.addNotify();
+		}
+		
+		@Override
+		public void removeNotify()
+		{
+			super.removeNotify();
+			AbstractSequenceView.this.removeNotify();
 		}
 	}
 }

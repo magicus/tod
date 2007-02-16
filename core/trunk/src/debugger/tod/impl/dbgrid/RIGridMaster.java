@@ -24,6 +24,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
+import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.structure.IHostInfo;
@@ -31,10 +32,12 @@ import tod.core.database.structure.IThreadInfo;
 import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
 import tod.impl.dbgrid.db.NodeRejectedException;
+import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.dispatch.DatabaseNode;
 import tod.impl.dbgrid.dispatch.RIDispatchNode;
 import tod.impl.dbgrid.dispatch.RIDatabaseNode;
 import tod.impl.dbgrid.dispatch.RIEventDispatcher;
+import tod.impl.dbgrid.dispatch.RILeafDispatcher.StringSearchHit;
 import tod.impl.dbgrid.monitoring.Monitor.KeyMonitorData;
 import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
 import tod.impl.dbgrid.queries.EventCondition;
@@ -51,6 +54,16 @@ import zz.utils.ITask;
  */
 public interface RIGridMaster extends Remote
 {
+	/**
+	 * Returns the configuration of this master.
+	 */
+	public TODConfig getConfig() throws RemoteException;
+	
+	/**
+	 * Returns the configuration of this master.
+	 */
+	public void setConfig(TODConfig aConfig) throws RemoteException;
+	
 	/**
 	 * Adds a listener to this master.
 	 * Client: frontend
@@ -166,6 +179,12 @@ public interface RIGridMaster extends Remote
 	 */
 	public <O> O exec(ITask<ILogBrowser, O> aTask) throws RemoteException;
 	
+	/**
+	 * Searches a text in the registered strings.
+	 * @return An iterator that returns matching strings in order of relevance.
+	 */
+	public RIBufferIterator<StringSearchHit[]> searchStrings(String aSearchText) throws RemoteException;
+
 	/**
 	 * Enumerates the different kinds of roles of the nodes in the debugging grid.
 	 * @author gpothier

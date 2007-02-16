@@ -241,7 +241,7 @@ public class DebuggerGridConfig
 	/**
 	 * Number of children of dispatchers.
 	 */
-	public static final int DISPATCH_BRANCHING_FACTOR = 5;
+	public static final int DISPATCH_BRANCHING_FACTOR = 10;
 	
 	public static final String PARAM_DB_PAGE_BUFFER_SIZE = "page-buffer-size";
 	

@@ -28,11 +28,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 
 import tod.agent.DebugFlags;
 import tod.core.ILogCollector;
+import tod.core.config.TODConfig;
 import tod.core.database.browser.ILocationStore;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.HostInfo;
@@ -40,18 +42,16 @@ import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.ThreadInfo;
 import tod.core.transport.CollectorLogReceiver;
 import tod.core.transport.LogReceiver;
+import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridEventCollector;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.db.ObjectsDatabase;
-import tod.impl.dbgrid.db.ObjectsReorderingBuffer;
+import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.db.ReorderedObjectsDatabase;
-import tod.impl.dbgrid.db.ObjectsReorderingBuffer.Entry;
-import tod.impl.dbgrid.db.ObjectsReorderingBuffer.ReorderingBufferListener;
+import tod.impl.dbgrid.db.StringIndexer;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.ObjectCodec;
-import tod.impl.dbgrid.monitoring.AggregationType;
-import tod.impl.dbgrid.monitoring.Probe;
 import tod.utils.PrintThroughCollector;
 import zz.utils.Utils;
 
@@ -63,6 +63,7 @@ import zz.utils.Utils;
 public abstract class LeafEventDispatcher extends AbstractEventDispatcher
 implements RILeafDispatcher
 {
+	
 	/**
 	 * A leaf dispatcher maintains a local copy of the location
 	 * store for efficiency reasons.
@@ -76,9 +77,13 @@ implements RILeafDispatcher
 	private ILocationStore itsLocationStore;
 	
 	private File itsObjectsDatabaseFile;
+	private File itsStringIndexFile;
+	
 	private List<ReorderedObjectsDatabase> itsObjectsDatabases = 
 		new ArrayList<ReorderedObjectsDatabase>();
-
+	
+	private StringIndexer itsStringIndexer;
+	
 	public LeafEventDispatcher(ILocationStore aLocationStore) throws RemoteException
 	{
 		super(true);
@@ -89,8 +94,7 @@ implements RILeafDispatcher
 		System.out.println("Using data directory: "+theParent);
 		
 		itsObjectsDatabaseFile = new File(theParent, "objects.bin");
-
-		initDatabase();
+		itsStringIndexFile = new File(theParent, "strings");
 	}
 	
 	private void initDatabase()
@@ -102,6 +106,17 @@ implements RILeafDispatcher
 		
 		itsObjectsDatabases.clear();
 		itsObjectsDatabaseFile.delete();
+		
+		if (getConfig().get(TODConfig.INDEX_STRINGS))
+		{
+			System.out.println("[LeafEventDispatcher] Creating string indexer");
+			itsStringIndexer = new StringIndexer(getConfig(), itsStringIndexFile);
+		}
+		else
+		{
+			System.out.println("[LeafEventDispatcher] Not creating string indexer");
+			itsStringIndexer = null;
+		}
 	}
 	
 	@Override
@@ -181,6 +196,11 @@ implements RILeafDispatcher
 		long theObjectId = ObjectCodec.getObjectId(aId);
 		int theHostId = ObjectCodec.getHostId(aId);
 		getObjectsDatabase(theHostId).store(theObjectId, aObject);
+		
+		if (itsStringIndexer != null && (aObject instanceof String))
+		{
+			itsStringIndexer.register(aId, (String) aObject);
+		}
 	}
 	
 	/**
@@ -230,6 +250,16 @@ implements RILeafDispatcher
 		return getObjectsDatabase(theHostId).load(theObjectId);
 	}
 
+	public RIBufferIterator<StringSearchHit[]> searchStrings(String aText) throws RemoteException
+	{
+		if (itsStringIndexer != null)
+		{
+			return new BidiHitIterator(itsStringIndexer.search(aText));
+		}
+		else return null;
+	}
+
+
 
 	private static class MyCollector extends GridEventCollector
 	{
@@ -250,6 +280,79 @@ implements RILeafDispatcher
 		{
 			ThreadInfo theThread = createThreadInfo(getHost(), aThreadId, aJVMThreadId, aName);
 			itsMaster.registerThread(theThread);
+		}
+	}
+	
+	private static class BidiHitIterator extends UnicastRemoteObject
+	implements RIBufferIterator<StringSearchHit[]>
+	{
+		private BidiIterator<StringSearchHit> itsIterator;
+
+		public BidiHitIterator(BidiIterator<StringSearchHit> aIterator) throws RemoteException
+		{
+			itsIterator = aIterator;
+		}
+		
+		public StringSearchHit[] next(int aCount) 
+		{
+			StringSearchHit[] theArray = new StringSearchHit[aCount];
+			
+			int theCount = 0;
+			for (int i=0;i<aCount;i++)
+			{
+				if (itsIterator.hasNext()) 
+				{
+					theArray[i] = itsIterator.next();
+					theCount++;
+				}
+				else break;
+			}
+			
+			if (theCount == aCount)
+			{
+				return theArray;
+			}
+			else if (theCount > 0)
+			{
+				StringSearchHit[] theResult = new StringSearchHit[theCount];
+				System.arraycopy(theArray, 0, theResult, 0, theCount);
+				return theResult;
+			}
+			else return null;
+		}
+
+		public StringSearchHit[] previous(int aCount)
+		{
+			StringSearchHit[] theArray = new StringSearchHit[aCount];
+			
+			int theCount = 0;
+			for (int i=aCount-1;i>=0;i--)
+			{
+				if (itsIterator.hasPrevious()) 
+				{
+					theArray[i] = itsIterator.previous();
+					theCount++;
+				}
+				else break;
+			}
+			
+			if (theCount == aCount)
+			{
+				return theArray;
+			}
+			else if (theCount > 0)
+			{
+				StringSearchHit[] theResult = new StringSearchHit[theCount];
+				System.arraycopy(
+						theArray, 
+						aCount-theCount, 
+						theResult, 
+						0, 
+						theCount);
+				
+				return theResult;
+			}
+			else return null;
 		}
 	}
 }

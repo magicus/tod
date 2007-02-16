@@ -46,7 +46,7 @@ public abstract class LogViewSeed extends Seed
 		itsLog = aLog;
 	}
 	
-	protected ILogBrowser getEventTrace()
+	protected ILogBrowser getLogBrowser()
 	{
 		return itsLog;
 	}

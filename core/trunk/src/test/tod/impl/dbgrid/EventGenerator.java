@@ -266,7 +266,7 @@ public class EventGenerator
 	
 	public Object genObject()
 	{
-		return new ObjectId.ObjectUID(itsRandom.nextInt(itsObjectRange) + 1);
+		return new ObjectId(itsRandom.nextInt(itsObjectRange) + 1);
 	}
 	
 	public Object[] genArgs()

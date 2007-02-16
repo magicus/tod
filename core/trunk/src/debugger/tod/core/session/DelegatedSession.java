@@ -25,7 +25,6 @@ import java.net.URI;
 import javax.swing.JComponent;
 
 import tod.core.config.TODConfig;
-import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.browser.ILogBrowser;
 
 /**
@@ -46,9 +45,9 @@ public abstract class DelegatedSession implements ISession
 		return itsDelegate;
 	}
 
-	public void setConfig(TODConfig aConfig)
+	public TODConfig getConfig()
 	{
-		itsDelegate.setConfig(aConfig);
+		return itsDelegate.getConfig();
 	}
 
 	public void disconnect()

@@ -20,7 +20,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.dispatch;
 
+import java.io.Serializable;
 import java.rmi.RemoteException;
+
+import tod.impl.dbgrid.db.RIBufferIterator;
 
 public interface RILeafDispatcher extends RIEventDispatcher
 {
@@ -29,4 +32,44 @@ public interface RILeafDispatcher extends RIEventDispatcher
 	 * if not found.
 	 */
 	public Object getRegisteredObject(long aId) throws RemoteException;
+	
+	/**
+	 * Searches the strings that match the given text.
+	 * Returns an iterator of object ids of matching strings, ordered
+	 * by relevance.
+	 */
+	public RIBufferIterator<StringSearchHit[]> searchStrings(String aText) throws RemoteException;
+	
+	/**
+	 * Represents a search hit.
+	 * @author gpothier
+	 */
+	public static class StringSearchHit implements Serializable
+	{
+		private static final long serialVersionUID = 6477792385168896074L;
+		private long itsObjectId;
+		private long itsScore;
+		
+		public StringSearchHit(long aObjectId, long aScore)
+		{
+			itsObjectId = aObjectId;
+			itsScore = aScore;
+		}
+
+		public long getObjectId()
+		{
+			return itsObjectId;
+		}
+
+		public long getScore()
+		{
+			return itsScore;
+		}
+		
+		@Override
+		public String toString()
+		{
+			return "Hit: "+itsObjectId+" ("+itsScore+")";
+		}
+	}
 }

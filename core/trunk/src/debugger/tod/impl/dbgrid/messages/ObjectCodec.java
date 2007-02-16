@@ -23,7 +23,6 @@ package tod.impl.dbgrid.messages;
 import static tod.impl.dbgrid.DebuggerGridConfig.EVENT_HOST_BITS;
 import static tod.impl.dbgrid.DebuggerGridConfig.EVENT_HOST_MASK;
 import tod.core.database.structure.ObjectId;
-import tod.core.database.structure.ObjectId.ObjectUID;
 import zz.utils.bit.BitStruct;
 import zz.utils.bit.BitUtils;
 
@@ -71,13 +70,13 @@ public class ObjectCodec
 			{
 				long theUid = aStruct.readLong(64);
 				assert theUid != 0;
-				return new ObjectId.ObjectUID(theUid);
+				return new ObjectId(theUid);
 			}
 
 			@Override
 			public void writeObject(BitStruct aStruct, Object aObject)
 			{
-				ObjectId.ObjectUID theId = (ObjectUID) aObject;
+				ObjectId theId = (ObjectId) aObject;
 				long theUid = theId.getId();
 				assert theUid != 0;
 				aStruct.writeLong(theUid, 64);
@@ -298,7 +297,7 @@ public class ObjectCodec
 		else if (theClass == Integer.class) return ObjectType.INT;
 		else if (theClass == Long.class) return ObjectType.LONG;
 		else if (theClass == Short.class) return ObjectType.SHORT;
-		else if (theClass == ObjectId.ObjectUID.class) return ObjectType.UID;
+		else if (theClass == ObjectId.class) return ObjectType.UID;
 		else throw new RuntimeException("Not handled: "+aObject+" ("+theClass+")");
 	}
 	
@@ -343,11 +342,10 @@ public class ObjectCodec
 	 */
 	public static long getObjectId(Object aObject, boolean aFail)
 	{
-		if (aObject instanceof ObjectId.ObjectUID)
+		if (aObject instanceof ObjectId)
 		{
-			ObjectId.ObjectUID theUid = (ObjectId.ObjectUID) aObject;
-			long theId = theUid.getId();
-			return theId;
+			ObjectId theId = (ObjectId) aObject;
+			return theId.getId();
 		}
 		else if (aFail) throw new RuntimeException("Not handled: "+aObject);
 		else return 0;

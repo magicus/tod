@@ -31,9 +31,9 @@ import tod.core.database.browser.ILogBrowser;
 public interface ISession
 {
 	/**
-	 * Reconfigures this session.
+	 * Returns the current configuration of this session.
 	 */
-	public void setConfig(TODConfig aConfig);
+	public TODConfig getConfig();
 	
 	/**
 	 * Returns a resource identifier for this session, that can be used to retrieve

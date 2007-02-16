@@ -255,7 +255,7 @@ public class GridQuery
 		Random theRandom = new Random(0);
 		while(theMap.size() < aCount)
 		{
-			ObjectId theId = new ObjectId.ObjectUID(theRandom.nextInt(10000));
+			ObjectId theId = new ObjectId(theRandom.nextInt(10000));
 			IFieldInfo theField = getValidField(aBrowser, theId);
 			if (theField == null) continue;
 			
@@ -347,7 +347,7 @@ public class GridQuery
 			PrintWriter theWriter = new PrintWriter(new FileWriter("objects-refs.txt"));
 			for (long i=1;i<DebuggerGridConfig.STRUCTURE_OBJECT_COUNT;i++)
 			{
-				ObjectId theId = new ObjectId.ObjectUID(i);
+				ObjectId theId = new ObjectId(i);
 				IEventFilter theFilter = aBrowser.createObjectFilter(theId);
 				IEventBrowser theBrowser = aBrowser.createBrowser(theFilter);
 				

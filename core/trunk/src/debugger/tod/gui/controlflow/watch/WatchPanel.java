@@ -47,6 +47,7 @@ import tod.gui.controlflow.CFlowView;
 import tod.gui.seed.LogViewSeedFactory;
 import tod.gui.seed.Seed;
 import zz.utils.SimpleAction;
+import zz.utils.ui.ScrollablePanel;
 
 /**
  * A panel that shows the contents of a stack frame or of an object.
@@ -154,7 +155,7 @@ public class WatchPanel extends JPanel
 	{
 		getJobProcessor().cancelAll();
 				
-		final JPanel theContainer = new JPanel(GUIUtils.createStackLayout());
+		final JPanel theContainer = new ScrollablePanel(GUIUtils.createStackLayout());
 		theContainer.setOpaque(false);
 		
 		theContainer.add(aProvider.buildTitle(getJobProcessor()));

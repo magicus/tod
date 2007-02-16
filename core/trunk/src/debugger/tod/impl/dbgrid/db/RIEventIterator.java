@@ -31,7 +31,7 @@ import tod.impl.dbgrid.messages.GridEvent;
  * Remote interface for {@link NodeEventIterator}.
  * @author gpothier
  */
-public interface RIEventIterator extends Remote
+public interface RIEventIterator extends RIBufferIterator<GridEvent[]>
 {
 	/**
 	 * Semantics matches {@link IEventBrowser#setNextTimestamp(long)}
@@ -44,17 +44,4 @@ public interface RIEventIterator extends Remote
 	public void setPreviousTimestamp (long aTimestamp) throws RemoteException;
 
 	
-	/**
-	 * Fetches events following the cursor position, and updates the cursor.
-	 * @param aCount Maximum number of events to fetch.
-	 * @return The fetched events, or null if there are no more events.
-	 */
-	public GridEvent[] next(int aCount) throws RemoteException;
-	
-	/**
-	 * Fetches events preceeding the cursor position, and updates the cursor.
-	 * @param aCount Maximum number of events to fetch.
-	 * @return The fetched events, or null if there are no more events.
-	 */
-	public GridEvent[] previous(int aCount) throws RemoteException;
 }

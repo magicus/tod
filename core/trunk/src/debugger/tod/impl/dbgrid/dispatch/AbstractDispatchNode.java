@@ -32,6 +32,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.CountDownLatch;
 
+import tod.core.config.TODConfig;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.NodeException;
@@ -75,6 +76,18 @@ implements RIDispatchNode
 	{
 	}
 
+	public TODConfig getConfig()
+	{
+		try
+		{
+			return getMaster().getConfig();
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
 	/**
 	 * Returns the id of this node
 	 */

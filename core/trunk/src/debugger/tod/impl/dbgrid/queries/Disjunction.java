@@ -51,6 +51,29 @@ public class Disjunction extends CompoundCondition
 		
 		return IndexMerger.disjunction(theIterators);
 	}
+	
+	@Override
+	public long[] getEventCounts(Indexes aIndexes, long aT1, long aT2, int aSlotsCount, boolean aForceMergeCounts)
+	{
+		int theSize = getConditions().size();
+		
+		// Get sub counts
+		long[][] theCounts = new long[theSize][];
+		int i = 0;
+		for (EventCondition theCondition : getConditions())
+		{
+			theCounts[i++] = theCondition.getEventCounts(aIndexes, aT1, aT2, aSlotsCount, aForceMergeCounts);
+		}
+		
+		// Sum up
+		long[] theResult = new long[aSlotsCount];
+		for (i=0;i<theSize;i++)
+		{
+			for (int j=0;j<aSlotsCount;j++) theResult[j] += theCounts[i][j];
+		}
+		
+		return theResult;
+	}
 
 	@Override
 	public boolean _match(GridEvent aEvent)

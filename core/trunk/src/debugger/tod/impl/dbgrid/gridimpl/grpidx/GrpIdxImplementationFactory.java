@@ -33,6 +33,7 @@ public class GrpIdxImplementationFactory implements IGridImplementationFactory
 		try
 		{
 			GrpIdxEventDispatcher theDispatcher = new GrpIdxEventDispatcher(aLocationStore);
+			
 			if (aConnectToMaster) theDispatcher.connectToMaster();
 			return theDispatcher;
 		}

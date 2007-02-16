@@ -48,10 +48,10 @@ public class ObjectFormatter extends AbstractFormatter
 		Object theCurrentObject = null; 
 		
 		// Check if this is a registered object.
-		if (aObject instanceof ObjectId.ObjectUID)
+		if (aObject instanceof ObjectId)
 		{
-			ObjectId.ObjectUID theObject = (ObjectId.ObjectUID) aObject;
-			Object theRegistered = itsLogBrowser.getRegistered(theObject.getId());
+			ObjectId theObjectId = (ObjectId) aObject;
+			Object theRegistered = itsLogBrowser.getRegistered(theObjectId);
 			if (theRegistered != null) aObject = theRegistered;
 		}
 		

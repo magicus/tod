@@ -52,13 +52,13 @@ public class ObjectInspectorSeed extends LogViewSeed
 		super(aGUIManager, aLog);
 		itsInspectedObject = aInspectedObject;
 		
-		pSelectionStart().set(getEventTrace().getFirstTimestamp());
-		pSelectionEnd().set(getEventTrace().getLastTimestamp());
+		pSelectionStart().set(getLogBrowser().getFirstTimestamp());
+		pSelectionEnd().set(getLogBrowser().getLastTimestamp());
 	}
 	
 	protected LogView requestComponent()
 	{
-		ObjectInspectorView theView = new ObjectInspectorView (getGUIManager(), getEventTrace(), this);
+		ObjectInspectorView theView = new ObjectInspectorView (getGUIManager(), getLogBrowser(), this);
 		theView.init();
 		return theView;
 	}

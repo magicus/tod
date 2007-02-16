@@ -26,6 +26,7 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IConstructorChainingEvent;
+import tod.core.database.event.IExceptionGeneratedEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
 import tod.core.database.event.IConstructorChainingEvent.CallType;
@@ -78,9 +79,10 @@ public class LogBrowserUtils
 			ILogEvent theEvent = theBrowser.next();
 			theRoot.addChild((Event) theEvent);
 			
-			if (! (theEvent instanceof IBehaviorCallEvent))
+			if (! ((theEvent instanceof IBehaviorCallEvent) 
+					|| (theEvent instanceof IExceptionGeneratedEvent)))
 			{
-				System.err.println("[CFlowBrowser] Warning: bad event at level 1: "+theEvent);
+				System.err.println("[LogBrowserUtils] Warning: bad event at level 1: "+theEvent);
 			}
 		}
 		return theRoot;

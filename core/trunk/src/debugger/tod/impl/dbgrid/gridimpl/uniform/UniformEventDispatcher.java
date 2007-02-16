@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.rmi.RemoteException;
 
+import tod.core.config.TODConfig;
 import tod.core.database.browser.ILocationStore;
 import tod.impl.dbgrid.dispatch.DispatchNodeProxy;
 import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
