@@ -60,7 +60,7 @@ public class CFlowSeed extends LogViewSeed
 	{
 		this(aGUIManager, aLog, aSelectedEvent.getThread());
 		pSelectedEvent().set(aSelectedEvent);
-		pParentEvent().set(pSelectedEvent().get().getParent());
+		if (aSelectedEvent != null) pParentEvent().set(aSelectedEvent.getParent());
 	}
 
 	

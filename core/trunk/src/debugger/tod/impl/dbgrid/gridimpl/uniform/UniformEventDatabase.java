@@ -195,8 +195,9 @@ implements ReorderingBufferListener
 	
 	public void eventDropped()
 	{
+		System.err.println("WARNING: out of order event");
 //		System.err.println("****************** WARNING ********************\n" +
-//		"**********************************************\n" +
+//				"**********************************************\n" +
 ////throw new RuntimeException(
 //		"Out of order event: "+theTimestamp+"/"+itsLastProcessedTimestamp
 //		+" (#"+itsProcessedEventsCount+")"

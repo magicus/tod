@@ -20,23 +20,16 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.utils;
 
+import java.io.PrintStream;
+
 import tod.agent.AgentUtils;
 import tod.agent.DebugFlags;
 import tod.core.ILogCollector;
 import tod.core.Output;
-import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
-import tod.impl.common.event.ArrayWriteEvent;
-import tod.impl.common.event.BehaviorExitEvent;
-import tod.impl.common.event.ExceptionGeneratedEvent;
-import tod.impl.common.event.FieldWriteEvent;
-import tod.impl.common.event.LocalVariableWriteEvent;
-import tod.impl.common.event.OutputEvent;
-import tod.impl.local.event.ConstructorChainingEvent;
-import tod.impl.local.event.InstantiationEvent;
-import tod.impl.local.event.MethodCallEvent;
+import tod.core.database.structure.IHostInfo;
 import zz.utils.Utils;
 
 /**
@@ -45,11 +38,18 @@ import zz.utils.Utils;
  */
 public class PrintThroughCollector implements ILogCollector
 {
+	private static PrintStream itsPrintStream = DebugFlags.COLLECTOR_PRINT_STREAM;
+	
+	private IHostInfo itsHost;
 	private ILogCollector itsCollector;
 	private ILocationsRepository itsLocationsRepository;
 	
-	public PrintThroughCollector(ILogCollector aCollector, ILocationsRepository aLocationsRepository)
+	public PrintThroughCollector(
+			IHostInfo aHost, 
+			ILogCollector aCollector, 
+			ILocationsRepository aLocationsRepository)
 	{
+		itsHost = aHost;
 		itsCollector = aCollector;
 		itsLocationsRepository = aLocationsRepository;
 	}
@@ -63,8 +63,6 @@ public class PrintThroughCollector implements ILogCollector
 	{
 		return itsLocationsRepository.getField(aId);
 	}
-	
-
 	
 	private String formatBehavior(int aId)
 	{
@@ -317,13 +315,20 @@ public class PrintThroughCollector implements ILogCollector
 
 	private static String formatTimestamp(long aTimestamp)
 	{
-		return ""+aTimestamp;
-//		return AgentUtils.formatTimestamp(aParentTimestamp);
+		return DebugFlags.COLLECTOR_FORMAT_TIMESTAMPS ?
+				AgentUtils.formatTimestamp(aTimestamp)
+				: ""+aTimestamp;
 	}
 	
-	private static void print(int aDepth, String aString)
+	private void print(int aDepth, String aString)
 	{
-		System.out.print(Utils.indent(aString, aDepth, "  "));
+		synchronized (itsPrintStream)
+		{
+			itsPrintStream.print(Utils.indent(
+					"h" + itsHost.getId() + " - " + aString, 
+					aDepth, 
+					"  "));
+		}
 	}
 	
 }

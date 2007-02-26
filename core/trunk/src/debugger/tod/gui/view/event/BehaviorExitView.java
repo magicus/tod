@@ -61,15 +61,20 @@ public class BehaviorExitView extends EventView
 		
 		// Behaviour
 		ITypeInfo theTypeInfo = null;
-		IBehaviorInfo theExecutedBehavior = theParent.getExecutedBehavior();
-		if (theExecutedBehavior != null) theTypeInfo = theExecutedBehavior.getType();
-		else
+		if (theParent != null)
 		{
-			IBehaviorInfo theCalledBehavior = theParent.getCalledBehavior();
-			if (theCalledBehavior != null) theTypeInfo = theCalledBehavior.getType();
+			IBehaviorInfo theExecutedBehavior = theParent.getExecutedBehavior();
+			if (theExecutedBehavior != null) theTypeInfo = theExecutedBehavior.getType();
+			else
+			{
+				IBehaviorInfo theCalledBehavior = theParent.getCalledBehavior();
+				if (theCalledBehavior != null) theTypeInfo = theCalledBehavior.getType();
+			}
 		}
 		
-		String theTypeName = Util.getPrettyName(theTypeInfo.getName());
+		String theTypeName = theTypeInfo != null ? 
+				Util.getPrettyName(theTypeInfo.getName())
+				: "?";
 		
 //		add (createTitledLink(
 //				"Type: ", 
@@ -77,7 +82,10 @@ public class BehaviorExitView extends EventView
 //				LogViewSeedFactory.getDefaultSeed(getGUIManager(), getLogBrowser(), theTypeInfo)));
 		
 		// Target
-		add (createTitledPanel("Target: ", createInspectorLink(theParent.getTarget())));
+		if (theParent != null)
+		{
+			add (createTitledPanel("Target: ", createInspectorLink(theParent.getTarget())));
+		}
 		
 		// Result
 		add (createTitledPanel("Result: ", createInspectorLink(theEvent.getResult())));

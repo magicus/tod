@@ -40,7 +40,7 @@ public class AgentUtils
 		return aTimestamp >>> AgentConfig.TIMESTAMP_ADJUST_SHIFT;
 	}
 	
-	private static final boolean FORCE_FAST_TS = true;
+	private static final boolean FORCE_FAST_TS = false;
 	private static final boolean FORCE_FALSE_TS = false;
 	private static final int MAX_DTS = 10;
 	private static int dts = MAX_DTS;

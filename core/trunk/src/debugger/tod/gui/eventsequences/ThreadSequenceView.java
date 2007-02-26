@@ -67,7 +67,12 @@ public class ThreadSequenceView extends AbstractSingleBrowserSequenceView
 
 	public String getTitle()
 	{
-		return "Thread view - ["+getThread().getHost().getName()+"] \""+getThread().getName() + "\"";
+		return String.format(
+				"Thread view - %s [%d]/%s [%d]",
+				getThread().getName(),
+				getThread().getId(),
+				getThread().getHost().getName(),
+				getThread().getHost().getId());
 	}
 	
 	private class ShowCFlowAction extends ItemAction

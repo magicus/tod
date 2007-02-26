@@ -70,14 +70,24 @@ public class EventFormatter extends AbstractFormatter<ILogEvent>
 			IBehaviorExitEvent theEvent = (IBehaviorExitEvent) aEvent;
 			IBehaviorCallEvent theParent = theEvent.getParent();
 			
-			IBehaviorInfo theBehavior = theParent.getExecutedBehavior();
-			if (theBehavior == null) theBehavior = theParent.getCalledBehavior();
+			if (theParent != null)
+			{
+				IBehaviorInfo theBehavior = theParent.getExecutedBehavior();
+				if (theBehavior == null) theBehavior = theParent.getCalledBehavior();
+
+				return String.format(
+						"Return from %s.%s -> %s",
+						Util.getPrettyName(theBehavior.getType().getName()),
+		                theBehavior.getName(),
+		                theEvent.getResult());
+			}
+			else
+			{
+				return String.format(
+						"Return from ? -> %s",
+		                theEvent.getResult());
+			}
 			
-			return String.format(
-					"Return from %s.%s -> %s",
-					Util.getPrettyName(theBehavior.getType().getName()),
-	                theBehavior.getName(),
-	                theEvent.getResult());
 
 		}
 		else if (aEvent instanceof IFieldWriteEvent)

@@ -185,15 +185,18 @@ implements RIDatabaseNode
 			}
 			catch (Throwable e)
 			{
+				System.err.println("[DatabaseNode] Exception catched in DispatcherConnection");
+				e.printStackTrace();
+
 				try
 				{
+					itsInputStream.close();
 					getMaster().nodeException(new NodeException(getNodeId(), e));
 				}
-				catch (RemoteException e1)
+				catch (Exception e1)
 				{
 					throw new RuntimeException(e1);
 				}
-				e.printStackTrace();
 			}
 		}
 		

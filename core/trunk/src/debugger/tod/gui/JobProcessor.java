@@ -25,6 +25,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
+import zz.utils.ITask;
+
 /**
  * Permits to process jobs asynchronously. Clients submit jobs
  * and are notified upon completion. Jobs can also be cancelled.
@@ -88,40 +90,14 @@ public class JobProcessor extends Thread
 	}
 
 	/**
-	 * Causes the calling thread to wait until the job processor
-	 * finishes executing the current job, and to prevent the job
-	 * processor to process other jobs until a call to {@link #release()}. 
+	 * Executes a task once the job processor has finished executing
+	 * the current job. This method blocks until the job is finished. 
 	 */
-	public void acquire()
+	public <R> void runNow(Job<R> aJob)
 	{
-		getRoot().acquire0();
+		getRoot().runJob(aJob);
 	}
 	
-	private void acquire0()
-	{
-		try
-		{
-			itsSemaphore.acquire();
-		}
-		catch (InterruptedException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-
-	/**
-	 * See {@link #acquire()}.
-	 *
-	 */
-	public void release()
-	{
-		getRoot().release0();
-	}
-	
-	private void release0()
-	{
-		itsSemaphore.release();
-	}
 	
 	private JobProcessor getRoot()
 	{

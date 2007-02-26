@@ -35,6 +35,7 @@ import tod.agent.DebugFlags;
 import tod.core.HighLevelCollector;
 import tod.core.Output;
 import tod.core.EventInterpreter.ThreadData;
+import tod.core.transport.NakedLinkedList.Entry;
 
 /**
  * This collector sends the events to a socket.
@@ -44,7 +45,6 @@ import tod.core.EventInterpreter.ThreadData;
 public class SocketCollector extends HighLevelCollector<SocketCollector.SocketThreadData>
 {
 	private List<SocketThreadData> itsThreadDataList = new ArrayList<SocketThreadData>();
-	private NakedLinkedList<SocketThreadData> itsLRUList = new NakedLinkedList<SocketThreadData>();
 	private Sender itsSender;
 	private SenderThread itsSenderThread = new SenderThread();
 	
@@ -477,8 +477,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			itsDataOutputStream = new DataOutputStream(itsBuffer);
 			
 			// Add ourself to LRU list
-			itsEntry = itsLRUList.createEntry(this);
-			itsLRUList.addLast(itsEntry);
+			itsEntry = itsSenderThread.register(this);
 		}
 
 		public DataOutputStream packetStart(long aTimestamp)
@@ -519,6 +518,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		{
 			if (! itsShutDown && itsLog.size() > 0)
 			{
+//				System.out.println("Sending " + itsLog.size() + " bytes for "+getId());
 //				long theDeltaT = itsLastTimestamp-itsFirstTimestamp;
 //				itsBiggestDeltaT = Math.max(itsBiggestDeltaT, theDeltaT);
 //				System.out.println(String.format(
@@ -533,12 +533,13 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			}
 			
 			itsFirstTimestamp = itsLastTimestamp = 0;
-			
-			// Place ourself at the end of the LRU list
-			itsLRUList.remove(itsEntry);
-			itsLRUList.addLast(itsEntry);
 		}
 		
+		public NakedLinkedList.Entry<SocketThreadData> getEntry()
+		{
+			return itsEntry;
+		}
+
 		public void shutDown() 
 		{
 //			System.out.println(String.format(
@@ -618,10 +619,21 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 	 */
 	private class SenderThread extends Thread
 	{
+		private NakedLinkedList<SocketThreadData> itsLRUList = 
+			new NakedLinkedList<SocketThreadData>();
+		
 		public SenderThread()
 		{
 			setDaemon(true);
 			setPriority(MAX_PRIORITY);
+		}
+		
+		public synchronized Entry<SocketThreadData> register(SocketThreadData aData)
+		{
+			Entry<SocketThreadData> theEntry = itsLRUList.createEntry(aData);
+			itsLRUList.addLast(theEntry);
+			
+			return theEntry;
 		}
 		
 		@Override
@@ -633,14 +645,21 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 				{
 					if (itsLRUList.size() > 0)
 					{
-						SocketThreadData theFirst = itsLRUList.getFirst();
-//						System.out.println("Flushing "+theFirst.getId());
+						Entry<SocketThreadData> theFirstEntry;
+						
+						synchronized (this)
+						{
+							theFirstEntry = itsLRUList.getFirstEntry();
+							itsLRUList.remove(theFirstEntry);
+							itsLRUList.addLast(theFirstEntry);
+						}
+						
+						SocketThreadData theFirst = theFirstEntry.getValue();
+						
 						theFirst.send();
+						
 					}
-//					for(SocketThreadData theData : itsThreadDataList)
-//					{
-//						theData.send();
-//					}
+
 					Thread.sleep(10);
 				}
 			}

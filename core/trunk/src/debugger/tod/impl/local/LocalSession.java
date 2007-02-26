@@ -101,11 +101,13 @@ public class LocalSession extends AbstractSession
 
 		public ILogCollector create()
 		{
+			HostInfo theHost = new HostInfo(itsHostId++);
 			ILogCollector theCollector = new LocalCollector(
 					itsBrowser,
-					new HostInfo(itsHostId++));
+					theHost);
 			
 			if (DebugFlags.COLLECTOR_LOG) theCollector = new PrintThroughCollector(
+					theHost,
 					theCollector,
 					getLogBrowser().getLocationsRepository());
 			

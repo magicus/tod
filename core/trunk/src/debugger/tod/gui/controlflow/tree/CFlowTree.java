@@ -102,28 +102,46 @@ implements MouseWheelListener
 //		return null;
 	}
 
-	public void forward(int aCount)
+	public void forward(final int aCount)
 	{
-		getJobProcessor().acquire();
-		itsCore.forward(aCount);
-		updateList();
-		getJobProcessor().release();
+		getJobProcessor().runNow(new JobProcessor.Job<Object>()
+		{
+			@Override
+			public Object run()
+			{
+				itsCore.forward(aCount);
+				updateList();
+				return null;
+			}
+		});
 	}
 	
-	public void backward(int aCount)
+	public void backward(final int aCount)
 	{
-		getJobProcessor().acquire();
-		itsCore.backward(aCount);
-		updateList();
-		getJobProcessor().release();
+		getJobProcessor().runNow(new JobProcessor.Job<Object>()
+		{
+			@Override
+			public Object run()
+			{
+				itsCore.backward(aCount);
+				updateList();
+				return null;
+			}
+		});
 	}
 	
-	public void setTimestamp(long aTimestamp)
+	public void setTimestamp(final long aTimestamp)
 	{
-		getJobProcessor().acquire();
-		itsCore.setTimestamp(aTimestamp);
-		updateList();
-		getJobProcessor().release();
+		getJobProcessor().runNow(new JobProcessor.Job<Object>()
+		{
+			@Override
+			public Object run()
+			{
+				itsCore.setTimestamp(aTimestamp);
+				updateList();
+				return null;
+			}
+		});
 	}
 
 	public void setParent(IParentEvent aParentEvent)

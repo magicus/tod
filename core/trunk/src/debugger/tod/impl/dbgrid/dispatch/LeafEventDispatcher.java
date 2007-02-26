@@ -145,6 +145,7 @@ implements RILeafDispatcher
 				this);
 		
 		if (DebugFlags.COLLECTOR_LOG) theCollector = new PrintThroughCollector(
+				aHostInfo,
 				theCollector,
 				aMaster.getLocationStore());
 		

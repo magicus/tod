@@ -20,6 +20,11 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.agent;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+
 import tod.core.EventInterpreter;
 
 /**
@@ -80,6 +85,14 @@ public class DebugFlags
 	 * If true, the {@link EventInterpreter} prints all the events it receives
 	 */
 	public static final boolean EVENT_INTERPRETER_LOG = false;
+	
+	/**
+	 * Stream to which the {@link EventInterpreter} sends debug info.
+	 * Default is System.out
+	 */
+	public static final PrintStream EVENT_INTERPRETER_PRINT_STREAM =
+		System.out;
+//		createStream("eventInterpreter-" + AgentConfig.getHostName()+".log");
 
 	/**
 	 * Causes the high level collectors to ignore all events
@@ -95,6 +108,21 @@ public class DebugFlags
 	 * Causes the event collector to print the events it receives.
 	 */
 	public static final boolean COLLECTOR_LOG = false;
+	
+	/**
+	 * Stream to which the event collector sends debug info.
+	 * Default is System.out
+	 */
+	public static final PrintStream COLLECTOR_PRINT_STREAM =
+//		System.out;
+		createStream("collector.log");
+
+	
+	/**
+	 * Whether timestamps should be pretty printed if {@link #COLLECTOR_LOG}
+	 * is true.
+	 */
+	public static final boolean COLLECTOR_FORMAT_TIMESTAMPS = false;
 	
 	/**
 	 * If set to true, the local collector will actually store events.
@@ -113,6 +141,20 @@ public class DebugFlags
 	 * leaf dispatcher and one db node.
 	 */
 	public static final boolean DISPATCH_FAKE_1 = false;
+	
+	private static PrintStream createStream(String aName)
+	{
+		try
+		{
+			File theFile = new File(aName);
+			System.out.println(theFile.getAbsolutePath());
+			return new PrintStream(new FileOutputStream(theFile));
+		}
+		catch (FileNotFoundException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
 	
 	static
 	{

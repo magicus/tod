@@ -284,10 +284,10 @@ public abstract class GridEvent extends GridMessage
 	protected String toString0()
 	{
 		return String.format(
-				"h: %d, bc: %d, th: %d, t: %d",
+				"h: %d, th: %d, bc: %d, t: %d",
 				itsHost,
-				itsOperationBytecodeIndex,
 				itsThread,
+				itsOperationBytecodeIndex,
 				itsTimestamp); 
 	}
 }

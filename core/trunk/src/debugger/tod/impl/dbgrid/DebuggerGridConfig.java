@@ -93,7 +93,9 @@ public class DebuggerGridConfig
 	/**
 	 * Size of the {@link DatabaseNode} reordering event buffer
 	 */
-	public static final int DB_EVENT_BUFFER_SIZE = 100000;
+	public static int DB_EVENT_BUFFER_SIZE = 100000;
+	
+	public static int DB_PERTHREAD_BUFFER_SIZE = 100000;
 	
 	/**
 	 * Size of the object reordering buffer for {@link ObjectsDatabase}.

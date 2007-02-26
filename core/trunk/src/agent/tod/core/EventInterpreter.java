@@ -20,10 +20,14 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core;
 
+import static tod.agent.DebugFlags.DISABLE_INTERPRETER;
+import static tod.agent.DebugFlags.EVENT_INTERPRETER_LOG;
+
+import java.io.PrintStream;
 import java.util.StringTokenizer;
 
 import tod.agent.AgentUtils;
-import static tod.agent.DebugFlags.*;
+import tod.agent.DebugFlags;
 
 /**
  * Interprets low-level events sent by the instrumentation code and
@@ -36,6 +40,8 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 	{
 //		System.out.println("EventInterpreter loaded.");
 	}
+	
+	private static PrintStream itsPrintStream = DebugFlags.EVENT_INTERPRETER_PRINT_STREAM;
 	
 	private ThreadLocal<T> itsThreadInfos = new ThreadLocal<T>();
 	private HighLevelCollector<T> itsCollector;
@@ -224,7 +230,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 			System.err.println("Exit with exception:");
 			((Throwable) aException).printStackTrace();
 			
-			System.out.println(String.format(
+			itsPrintStream.println(String.format(
 				"logBehaviorExitWithException(%d, %d, %s)",
 				theTimestamp,
 				aBehaviorId,
@@ -237,7 +243,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		assert theFrame.behavior == aBehaviorId;
 		assert theFrame.directParent;
 		
-		if (EVENT_INTERPRETER_LOG) System.out.println(String.format(
+		if (EVENT_INTERPRETER_LOG) itsPrintStream.println(String.format(
 				" thread: %d, depth: %d\n frame: %s",
 				theThread.getId(),
 				theThread.getCurrentDepth(),
@@ -510,7 +516,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		
 		if (theFrame.entering)
 		{
-			System.out.println("[EventInterpreter] We missed something...");
+			itsPrintStream.println("[EventInterpreter] We missed something...");
 			System.err.println("[EventInterpreter] We missed something...");
 		}
 	}
@@ -838,7 +844,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 
 	private static void print(int aDepth, String aString)
 	{
-		System.out.println(indent(aString, aDepth, "  "));
+		itsPrintStream.println(indent(aString, aDepth, "  "));
 	}
 
 	/**
