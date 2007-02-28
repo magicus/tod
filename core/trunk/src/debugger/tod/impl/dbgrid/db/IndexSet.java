@@ -223,7 +223,7 @@ public abstract class IndexSet<T extends IndexTuple>
 
 		private IndexManager()
 		{
-			super((int) ((DB_PAGE_BUFFER_SIZE/DB_PAGE_SIZE) / 3), false);
+			super((int) ((DB_PAGE_BUFFER_SIZE/DB_PAGE_SIZE) / 1), false);
 		}
 		
 		@Override

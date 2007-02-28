@@ -38,18 +38,36 @@ public class EventReorderingBuffer
 	private RingBuffer<GridEvent> itsBuffer = new RingBuffer<GridEvent>(DebuggerGridConfig.DB_EVENT_BUFFER_SIZE);
 	private OutOfOrderBuffer itsOutOfOrderBuffer = new OutOfOrderBuffer();
 	
+//	private RingBuffer<GridEvent> itsGlobalDebugBuffer = new RingBuffer<GridEvent>(DebuggerGridConfig.DB_EVENT_BUFFER_SIZE*2);
+	
 	private ReorderingBufferListener itsListener;
 	
 	public EventReorderingBuffer(ReorderingBufferListener aListener)
 	{
 		itsListener = aListener;
 	}
+	
+//	private static void _pushTS(GridEvent aEvent, RingBuffer<GridEvent> aBuffer)
+//	{
+//		if (aBuffer.isFull()) aBuffer.remove();
+//		aBuffer.add(aEvent);
+//	}
+//	
+//	private static void _printBuffer(RingBuffer<GridEvent> aBuffer)
+//	{
+//		while (! aBuffer.isEmpty())
+//		{
+//			GridEvent theEvent = aBuffer.remove();
+//			System.out.println(theEvent.getHost()+"\t"+theEvent.getThread()+"\t"+theEvent.getTimestamp());
+//		}
+//	}
 
 	/**
 	 * Pushes an incoming event into this buffer.
 	 */
 	public void push(GridEvent aEvent)
 	{
+//		_pushTS(aEvent, itsGlobalDebugBuffer);
 		long theTimestamp = aEvent.getTimestamp();
 		if (theTimestamp < itsLastRetrieved)
 		{
@@ -120,12 +138,18 @@ public class EventReorderingBuffer
 	 */
 	private class OutOfOrderBuffer
 	{
+		private long itsAdded = 0;
+		private long itsRetrieved = 0;
+		
 		private List<List<PerThreadBuffer>> itsBuffers = 
 			new ArrayList<List<PerThreadBuffer>>();
 		
 		private GridEvent itsNextAvailable;
 		
 		private long itsLastRetrieved;
+		
+//		private RingBuffer<GridEvent> itsOoODebugBuffer = new RingBuffer<GridEvent>(1000);
+
 		
 		private List<PerThreadBuffer> getHostBuffers(int aHostId)
 		{
@@ -160,11 +184,18 @@ public class EventReorderingBuffer
 		
 		public void add(GridEvent aEvent)
 		{
+//			_pushTS(aEvent, itsOoODebugBuffer);
+			itsAdded++;
+			
 			PerThreadBuffer theBuffer = getBuffer(aEvent); 
 			theBuffer.add(aEvent);
 			assert aEvent.getTimestamp() > itsLastRetrieved;
 
-			if (itsNextAvailable == null) itsNextAvailable = aEvent;
+			if (itsNextAvailable == null ||
+					aEvent.getTimestamp() < itsNextAvailable.getTimestamp()) 
+			{
+				itsNextAvailable = aEvent;
+			}
 		}
 		
 		public boolean isEmpty()
@@ -181,13 +212,15 @@ public class EventReorderingBuffer
 		
 		public GridEvent next()
 		{
+			itsRetrieved++;
+			
 			// Advance the buffer that contained the next event
 			PerThreadBuffer theNextBuffer = getBuffer(itsNextAvailable);
 			GridEvent theNextEvent = theNextBuffer.remove();
 			assert theNextEvent == itsNextAvailable;
-			assert itsNextAvailable.getTimestamp() > itsLastRetrieved;
+			assert theNextEvent.getTimestamp() >= itsLastRetrieved;
 			
-			itsLastRetrieved = itsNextAvailable.getTimestamp();
+			itsLastRetrieved = theNextEvent.getTimestamp();
 
 			// Search next event
 			itsNextAvailable = null;
@@ -206,6 +239,20 @@ public class EventReorderingBuffer
 						itsNextAvailable = theEvent;
 					}
 				}
+			}
+			
+			if (itsNextAvailable != null && itsNextAvailable.getTimestamp() < itsLastRetrieved)
+			{
+				System.err.println(String.format(
+						"Error. last: %d, next: %d", 
+						itsLastRetrieved,
+						itsNextAvailable.getTimestamp()));
+				
+//				System.err.println("Global:");
+//				_printBuffer(itsGlobalDebugBuffer);
+//				
+//				System.err.println("OoO:");
+//				_printBuffer(itsOoODebugBuffer);
 			}
 			
 			return theNextEvent;

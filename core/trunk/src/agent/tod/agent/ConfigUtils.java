@@ -43,6 +43,16 @@ public class ConfigUtils
 	}
 	
 	/**
+	 * Reads a long from system properties.
+	 */
+	public static long readLong (String aPropertyName, long aDefault)
+	{
+		String theString = System.getProperty(aPropertyName);
+		System.out.println(aPropertyName+"="+theString);
+		return theString != null ? Long.parseLong(theString) : aDefault;
+	}
+	
+	/**
 	 * Reads a string from system properties.
 	 */
 	public static String readString (String aPropertyName, String aDefault)

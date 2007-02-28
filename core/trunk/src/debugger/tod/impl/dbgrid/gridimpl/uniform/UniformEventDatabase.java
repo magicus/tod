@@ -123,7 +123,7 @@ implements ReorderingBufferListener
 			long aT1, 
 			long aT2,
 			int aSlotsCount, 
-			boolean aForceMergeCounts) throws RemoteException
+			boolean aForceMergeCounts)
 	{
 		return aCondition.getEventCounts(getIndexes(), aT1, aT2, aSlotsCount, aForceMergeCounts);
 	}

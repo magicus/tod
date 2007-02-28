@@ -20,16 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.bench;
 
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-
-import tod.impl.dbgrid.EventGenerator;
-import tod.impl.dbgrid.Fixtures;
-import tod.impl.dbgrid.GridMaster;
-import tod.impl.dbgrid.bench.BenchBase.BenchResults;
-import tod.impl.dbgrid.dispatch.AbstractEventDispatcher;
-import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
-import tod.impl.dbgrid.messages.GridEvent;
+import tod.agent.DebugFlags;
 
 public class GridDispatch
 {
@@ -43,8 +34,8 @@ public class GridDispatch
 //		theExpectedNodes = Integer.parseInt(args[0]);
 //		theEventsCount = Integer.parseInt(args[1]);
 //		
-//		final GridMaster theMaster = Fixtures.setupMaster(theRegistry, theExpectedNodes);
-//		final AbstractEventDispatcher theDispatcher = theMaster.getDispatcher();
+//		final GridMaster theMaster = TODUtils.setupMaster(theRegistry, theExpectedNodes);
+//		final AbstractEventDispatcher theDispatcher = theMaster._getDispatcher();
 //		final EventGenerator theGenerator = BenchEventDatabase.createGenerator();
 //
 //		final int n = theEventsCount;

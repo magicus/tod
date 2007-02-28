@@ -283,7 +283,15 @@ public class HardPagedFile extends PageBank
 		public synchronized void read(long aId, int[] aBuffer) throws IOException
 		{
 			itsReadCount++;
-			assert itsFile.length() >= (aId+1) * itsPageSize;
+//			assert itsFile.length() >= (aId+1) * itsPageSize;
+			if (! (itsFile.length() >= (aId+1) * itsPageSize))
+			{
+				throw new RuntimeException(String.format(
+						"Read error: id: %d, l: %d",
+						aId,
+						itsFile.length()));
+			}
+					
 			itsFile.seek(aId * itsPageSize);
 			itsFile.readFully(itsReadByteBuffer);
 			

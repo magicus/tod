@@ -37,6 +37,7 @@ import java.util.List;
 import tod.core.LocationRegisterer;
 import tod.core.config.TODConfig;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.HostInfo;
 import tod.core.transport.LogReceiver;
 import tod.core.transport.LogReceiver.ILogReceiverMonitor;
 import tod.impl.bci.asm.ASMDebuggerConfig;
@@ -392,7 +393,9 @@ public class Fixtures
 			ASMInstrumenter theInstrumenter = new ASMInstrumenter(theDebuggerConfig);
 			
 			DatabaseNode theNode = GridImpl.getFactory(theConfig).createNode(false);
-			return new GridMaster(theConfig, theRegistrer, theInstrumenter, theNode, false);
+			GridMaster theMaster = new GridMaster(theConfig, theRegistrer, theInstrumenter, theNode, false);
+			theMaster.waitReady();
+			return theMaster;
 		}
 		catch (RemoteException e)
 		{
@@ -410,10 +413,11 @@ public class Fixtures
 		
 
 		LogReceiver theReceiver = aMaster._getDispatcher().createLogReceiver(
-				null, 
+				new HostInfo(1, null), 
 				aMaster, 
 				theStream,
-				null, false);
+				null, 
+				false);
 		
 		MyLogReceiverMonitor theMonitor = new MyLogReceiverMonitor();
 		theReceiver.setMonitor(theMonitor);

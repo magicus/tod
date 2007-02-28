@@ -124,7 +124,7 @@ public abstract class LogReceiver
 	 */
 	public String getHostName()
 	{
-		return itsHostInfo.getName();
+		return itsHostInfo != null ? itsHostInfo.getName() : null;
 	}
 	
 	private synchronized void setHostName(String aHostName)
@@ -205,7 +205,7 @@ public abstract class LogReceiver
 			if (itsMonitor != null) itsMonitor.started();
 		}
 		
-		while(itsDataStream.available() > 0)
+		while(itsDataStream.available() != 0)
 		{
 			try
 			{
@@ -216,9 +216,15 @@ public abstract class LogReceiver
 				
 				itsMessageCount++;
 				
+				if (itsMessageCount > DebugFlags.MAX_EVENTS)
+				{
+					eof();
+					break;
+				}
+				
 				if (itsMonitor != null 
 						&& DebugFlags.RECEIVER_PRINT_COUNTS > 0 
-						&& itsMessageCount % 65536 == 0)
+						&& itsMessageCount % DebugFlags.RECEIVER_PRINT_COUNTS == 0)
 				{
 					itsMonitor.processedMessages(itsMessageCount);
 				}

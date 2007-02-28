@@ -26,19 +26,15 @@ import java.util.List;
 
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
-import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
 import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
 import tod.impl.dbgrid.db.NodeRejectedException;
 import tod.impl.dbgrid.db.RIBufferIterator;
-import tod.impl.dbgrid.dispatch.DatabaseNode;
 import tod.impl.dbgrid.dispatch.RIDispatchNode;
-import tod.impl.dbgrid.dispatch.RIDatabaseNode;
-import tod.impl.dbgrid.dispatch.RIEventDispatcher;
 import tod.impl.dbgrid.dispatch.RILeafDispatcher.StringSearchHit;
-import tod.impl.dbgrid.monitoring.Monitor.KeyMonitorData;
+import tod.impl.dbgrid.dispatch.tree.DispatchTreeStructure;
 import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.utils.remote.RILocationsRepository;
@@ -94,7 +90,7 @@ public interface RIGridMaster extends Remote
 	 * Client: undetermined nodes.
 	 * @param aHostName The name of the host on which the node executes.
 	 */
-	public NodeRole getRoleForNode(String aHostName) throws RemoteException;
+	public DispatchTreeStructure.NodeRole getRoleForNode(String aHostName) throws RemoteException;
 	
 	/**
 	 * Registers a node so that it can be used by the grid.
@@ -185,12 +181,4 @@ public interface RIGridMaster extends Remote
 	 */
 	public RIBufferIterator<StringSearchHit[]> searchStrings(String aSearchText) throws RemoteException;
 
-	/**
-	 * Enumerates the different kinds of roles of the nodes in the debugging grid.
-	 * @author gpothier
-	 */
-	public enum NodeRole
-	{
-		DATABASE, LEAF_DISPATCHER, INTERNAL_DISPATCHER;
-	}
 }

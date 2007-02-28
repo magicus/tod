@@ -60,21 +60,13 @@ public class AgentConfig
 	/**
 	 * Mask of artificial timestamp bits.
 	 */
-	public static final long TIMESTAMP_ADJUST_MASK = pow2(TIMESTAMP_ADJUST_INACCURACY+TIMESTAMP_ADJUST_SHIFT)-1;
+	public static final long TIMESTAMP_ADJUST_MASK = 
+		BitUtilsLite.pow2(TIMESTAMP_ADJUST_INACCURACY+TIMESTAMP_ADJUST_SHIFT)-1;
 	
 	/**
 	 * Size of {@link SocketCollector} buffer. 
 	 */
 	public static final int COLLECTOR_BUFFER_SIZE = 32768;
-	/**
-	 * Copied from zz.utils.
-	 * Can't depend on it. 
-	 */
-	public static final long pow2(int aN)
-	{
-		return 1L << aN;
-	}
-
 
 
 	private static HighLevelCollector itsCollector;

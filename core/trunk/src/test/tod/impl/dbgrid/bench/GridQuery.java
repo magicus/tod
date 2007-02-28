@@ -171,7 +171,7 @@ public class GridQuery
 			{
 				for (IThreadInfo theThread: aBrowser.getThreads())
 				{
-					System.out.println("Retrieving counts for thread "+theThread.getId());
+					System.out.println("Retrieving counts for thread "+theThread.getId()+" of host "+theThread.getHost().getId());
 					
 					IEventFilter theFilter = aBrowser.createThreadFilter(theThread);
 					IEventBrowser theEventBrowser = aBrowser.createBrowser(theFilter);

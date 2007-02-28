@@ -164,7 +164,7 @@ implements RILeafDispatcher
 		try
 		{
 			createLogReceiver(
-					null, 
+					new HostInfo(0, null), // TODO: check this, do we correspond to a particular host? 
 					null, 
 					new BufferedInputStream(aSocket.getInputStream()), 
 					new BufferedOutputStream(aSocket.getOutputStream()), 

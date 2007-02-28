@@ -38,7 +38,12 @@ public class DebugFlags
 	/**
 	 * Causes database nodes to skip incoming events
 	 */
-	public static final boolean SKIP_EVENTS = false; 
+	public static final boolean SKIP_EVENTS = ConfigUtils.readBoolean("skip-events", false); 
+	
+	/**
+	 * Maximum number of events to process, or 0 for no limit.
+	 */
+	public static final long MAX_EVENTS = ConfigUtils.readLong("max-events", 0);
 	
 	/**
 	 * Causes database nodes to not reorder incoming events
@@ -133,7 +138,7 @@ public class DebugFlags
 	 * If not 0, {@link LogReceiver} prints received message counts
 	 * every {@link #RECEIVER_PRINT_COUNTS} messages.
 	 */
-	public static final int RECEIVER_PRINT_COUNTS = 100000;
+	public static final int RECEIVER_PRINT_COUNTS = (int) BitUtilsLite.pow2(20);
 	
 	/**
 	 * If true, hierarchical dispatching parameters are
@@ -141,6 +146,12 @@ public class DebugFlags
 	 * leaf dispatcher and one db node.
 	 */
 	public static final boolean DISPATCH_FAKE_1 = false;
+	
+	/**
+	 * Ignore host when filtering on threads.
+	 * Should not be used if more than one host is being debugged.
+	 */
+	public static final boolean IGNORE_HOST = ConfigUtils.readBoolean("ignore-host", false); 
 	
 	private static PrintStream createStream(String aName)
 	{
@@ -158,17 +169,18 @@ public class DebugFlags
 	
 	static
 	{
-		if (SKIP_EVENTS == true) System.err.println("Warning: SKIP_EVENTS (DebugFlags)");
-		if (DISABLE_REORDER == true) System.err.println("Warning: DISABLE_REORDER (DebugFlags)");
-		if (DISABLE_INDEXES == true) System.err.println("Warning: DISABLE_INDEXES (DebugFlags)");
-		if (DISABLE_STORE == true) System.err.println("Warning: DISABLE_STORE (DebugFlags)");
-		if (ALIAS_OBJECTS != 0) System.err.println("Warning: ALIAS_OBJECTS (DebugFlags)");
-		if (DISABLE_LOCATION_INDEX == true) System.err.println("Warning: DISABLE_LOCATION_INDEX (DebugFlags)");
-		if (DISABLE_USE_PAGES == true) System.err.println("Warning: DISABLE_USE_PAGES (DebugFlags)");
-		if (DISABLE_INTERPRETER == true) System.err.println("Warning: DISABLE_INTERPRETER (DebugFlags)");
-		if (COLLECTOR_IGNORE_ALL == true) System.err.println("Warning: COLLECTOR_IGNORE_ALL (DebugFlags)");
-		if (DISABLE_EVENT_SEND == true) System.err.println("Warning: DISABLE_EVENT_SEND (DebugFlags)");
-		if (LOCAL_COLLECTOR_STORE == false) System.err.println("Warning: LOCAL_COLLECTOR_STORE (DebugFlags)");
-		if (DISPATCH_FAKE_1 == true) System.err.println("Warning: DISPATCH_FAKE_1 (DebugFlags)");
+		if (SKIP_EVENTS == true) System.err.println("******* Warning: SKIP_EVENTS (DebugFlags)");
+		if (DISABLE_REORDER == true) System.err.println("******* Warning: DISABLE_REORDER (DebugFlags)");
+		if (DISABLE_INDEXES == true) System.err.println("******* Warning: DISABLE_INDEXES (DebugFlags)");
+		if (DISABLE_STORE == true) System.err.println("******* Warning: DISABLE_STORE (DebugFlags)");
+		if (ALIAS_OBJECTS != 0) System.err.println("******* Warning: ALIAS_OBJECTS (DebugFlags)");
+		if (DISABLE_LOCATION_INDEX == true) System.err.println("******* Warning: DISABLE_LOCATION_INDEX (DebugFlags)");
+		if (DISABLE_USE_PAGES == true) System.err.println("******* Warning: DISABLE_USE_PAGES (DebugFlags)");
+		if (DISABLE_INTERPRETER == true) System.err.println("******* Warning: DISABLE_INTERPRETER (DebugFlags)");
+		if (COLLECTOR_IGNORE_ALL == true) System.err.println("******* Warning: COLLECTOR_IGNORE_ALL (DebugFlags)");
+		if (DISABLE_EVENT_SEND == true) System.err.println("******* Warning: DISABLE_EVENT_SEND (DebugFlags)");
+		if (LOCAL_COLLECTOR_STORE == false) System.err.println("******* Warning: LOCAL_COLLECTOR_STORE (DebugFlags)");
+		if (DISPATCH_FAKE_1 == true) System.err.println("******* Warning: DISPATCH_FAKE_1 (DebugFlags)");
+		if (IGNORE_HOST == true) System.err.println("******* Warning: IGNORE_HOST (DebugFlags)");
 	}
 }

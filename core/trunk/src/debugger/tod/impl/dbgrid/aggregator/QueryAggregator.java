@@ -199,7 +199,6 @@ implements RIQueryAggregator
 //		System.out.println("Aggregating counts...");
 		
 		long t0 = System.currentTimeMillis();
-		long[] theCounts = new long[aSlotsCount];
 
 		// Sum results from all nodes.
 		List<RIDatabaseNode> theNodes = itsMaster.getNodes();
@@ -224,6 +223,7 @@ implements RIQueryAggregator
 			});
 		}
 		
+		long[] theCounts = new long[aSlotsCount];
 		for (Future<long[]> theFuture : theFutures)
 		{
 			long[] theNodeCounts = theFuture.get();

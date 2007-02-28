@@ -26,8 +26,8 @@ import java.rmi.registry.Registry;
 
 import tod.core.LocationRegisterer;
 import tod.core.config.TODConfig;
-import tod.impl.dbgrid.RIGridMaster.NodeRole;
 import tod.impl.dbgrid.dispatch.InternalEventDispatcher;
+import tod.impl.dbgrid.dispatch.tree.DispatchTreeStructure.NodeRole;
 import tod.impl.dbgrid.gridimpl.GridImpl;
 
 /**
@@ -50,6 +50,7 @@ public class StartNode
 
 		String theHostName = InetAddress.getLocalHost().getHostName();
 		
+		System.out.println("Asking role to master (hostname: "+theHostName+")");
 		NodeRole theRole = theMaster.getRoleForNode(theHostName);
 
 		System.out.println("Node role: "+theRole);
@@ -89,43 +90,43 @@ public class StartNode
 	 */
 	public static void determineRoleFromTaskId(int aTaskId, int aExpectedNodes) throws Exception
 	{
-		
-		System.out.println(String.format(
-				"StartNode [%d]: expecting %d database nodes.",
-				aTaskId,
-				aExpectedNodes));
-		
-		DispatchTreeStructure theStructure = DispatchTreeStructure.compute(aExpectedNodes);
-		System.out.println(theStructure);
-
-		TODConfig theConfig = new TODConfig();
-		
-		aTaskId -= 2; //first node has task id == 2
-		if (aTaskId < theStructure.databaseNodes)
-		{
-			System.out.println("Starting database node.");
-			GridImpl.getFactory(theConfig).createNode(true);
-			return;
-		}
-		
-		aTaskId -= theStructure.databaseNodes;
-		
-		if (aTaskId < theStructure.leafNodes)
-		{
-			System.out.println("Starting leaf dispatcher.");
-			GridImpl.getFactory(theConfig).createLeafDispatcher(true, new LocationRegisterer());
-			return;
-		}
-		
-		aTaskId -= theStructure.leafNodes;
-
-		if (aTaskId < theStructure.internalNodes)
-		{
-			System.out.println("Starting internal dispatcher.");
-			InternalEventDispatcher theDispatcher = new InternalEventDispatcher();
-			theDispatcher.connectToMaster();
-			return;
-		}
+//		
+//		System.out.println(String.format(
+//				"StartNode [%d]: expecting %d database nodes.",
+//				aTaskId,
+//				aExpectedNodes));
+//		
+//		DispatchTreeStructure theStructure = DispatchTreeStructure.compute(aExpectedNodes);
+//		System.out.println(theStructure);
+//
+//		TODConfig theConfig = new TODConfig();
+//		
+//		aTaskId -= 2; //first node has task id == 2
+//		if (aTaskId < theStructure.databaseNodes)
+//		{
+//			System.out.println("Starting database node.");
+//			GridImpl.getFactory(theConfig).createNode(true);
+//			return;
+//		}
+//		
+//		aTaskId -= theStructure.databaseNodes;
+//		
+//		if (aTaskId < theStructure.leafNodes)
+//		{
+//			System.out.println("Starting leaf dispatcher.");
+//			GridImpl.getFactory(theConfig).createLeafDispatcher(true, new LocationRegisterer());
+//			return;
+//		}
+//		
+//		aTaskId -= theStructure.leafNodes;
+//
+//		if (aTaskId < theStructure.internalNodes)
+//		{
+//			System.out.println("Starting internal dispatcher.");
+//			InternalEventDispatcher theDispatcher = new InternalEventDispatcher();
+//			theDispatcher.connectToMaster();
+//			return;
+//		}
 
 		throw new UnsupportedOperationException("Don't know what to do.");
 		

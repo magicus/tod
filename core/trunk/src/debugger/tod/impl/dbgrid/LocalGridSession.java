@@ -61,6 +61,7 @@ public class LocalGridSession extends AbstractSession
 		
 		DatabaseNode theNode = GridImpl.getFactory(aConfig).createNode(false);
 		itsMaster = new GridMaster(aConfig, theRegistrer, theInstrumenter, theNode, true);
+		itsMaster.waitReady();
 		
 		itsBrowser = new GridLogBrowser(itsMaster);
 	}

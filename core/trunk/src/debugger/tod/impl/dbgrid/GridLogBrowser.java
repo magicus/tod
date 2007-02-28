@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import tod.agent.DebugFlags;
 import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
@@ -244,9 +245,16 @@ implements ILogBrowser, RIGridMasterListener
 
 	public IEventFilter createThreadFilter(IThreadInfo aThread)
 	{
-		return createIntersectionFilter(
-				new ThreadCondition(aThread.getId()),
-				new HostCondition(aThread.getHost().getId()));
+		if (DebugFlags.IGNORE_HOST)
+		{
+			return new ThreadCondition(aThread.getId());
+		}
+		else
+		{
+			return createIntersectionFilter(
+					new ThreadCondition(aThread.getId()),
+					new HostCondition(aThread.getHost().getId()));
+		}
 	}
 
 	public IEventFilter createDepthFilter(int aDepth)

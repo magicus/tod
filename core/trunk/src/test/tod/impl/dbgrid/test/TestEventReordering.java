@@ -29,26 +29,38 @@ import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_OBJECT_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_THREADS_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_VAR_COUNT;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Random;
+import java.util.StringTokenizer;
 
 import junit.framework.Assert;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import tod.agent.DebugFlags;
+import tod.impl.common.event.FieldWriteEvent;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.EventGenerator;
 import tod.impl.dbgrid.db.EventReorderingBuffer;
 import tod.impl.dbgrid.db.EventReorderingBuffer.ReorderingBufferListener;
 import tod.impl.dbgrid.messages.GridEvent;
+import tod.impl.dbgrid.messages.GridFieldWriteEvent;
 
 public class TestEventReordering implements ReorderingBufferListener 
 {
 	private long itsLastProcessedTimestamp;
+	private boolean itsDropIsFailure;
 	
 	@Test public void test()
 	{
+		itsLastProcessedTimestamp = 0;
+		itsDropIsFailure = true;
+		
 		DebuggerGridConfig.DB_EVENT_BUFFER_SIZE = 50;
 		
 		EventReorderingBuffer theBuffer = new EventReorderingBuffer(this);
@@ -116,8 +128,33 @@ public class TestEventReordering implements ReorderingBufferListener
 	
 	public void eventDropped()
 	{
-		Assert.fail("eventDropped");
+		if (itsDropIsFailure) Assert.fail("eventDropped");
+		else System.out.println("eventDropped");
 	}
 	
-	
+	/**
+	 * This test creates events loaded from an actual trace that displayed
+	 * a bad behavior.
+	 */
+	@Test public void testFromTrace() throws IOException
+	{
+		itsLastProcessedTimestamp = 0;
+		itsDropIsFailure = false;
+		EventReorderingBuffer theBuffer = new EventReorderingBuffer(this);
+		
+		BufferedReader theReader = new BufferedReader(new FileReader("src/test/TestEventReordering-trace.txt"));
+		String theLine;
+		while((theLine = theReader.readLine()) != null)
+		{
+			StringTokenizer theTokenizer = new StringTokenizer(theLine);
+			int theHost = Integer.parseInt(theTokenizer.nextToken());
+			int theThread = Integer.parseInt(theTokenizer.nextToken());
+			long theTimestamp = Long.parseLong(theTokenizer.nextToken());
+			
+			GridEvent theEvent = new GridFieldWriteEvent(theHost, theThread, 0, theTimestamp, 0, 0, 0, 0, 0, 0);
+			
+			while (theBuffer.isFull()) processEvent(theBuffer.pop());
+			theBuffer.push(theEvent);
+		}
+	}
 }

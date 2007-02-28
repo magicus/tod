@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.utils;
 
+import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.FileDescriptor;
 import java.io.IOException;
@@ -72,7 +73,7 @@ public class NativeStream
 			int[] aDest,
 			int aDestOffset,
 			int aLength);
-	
+		
 	public static void i2b(int[] aSrc, byte[] aDest)
 	{
 		i2b(aSrc, 0, aDest, 0, aSrc.length*4);
@@ -90,6 +91,20 @@ public class NativeStream
 			byte[] aDest,
 			int aDestOffset,
 			int aLength);
+	
+	/**
+	 * Reads an int from the given byte array and returns it as an int.
+	 * Byte ordering is safe (compatible with {@link DataInputStream}).
+	 */
+	public static native int ba2i(byte[] aSrc);
+	
+	/**
+	 * Writes an int to the given byte array.
+	 * WARNING: NO CHECK IS PERFORMED ON THE ARRAY (SIZE, NULL...)
+	 * Byte ordering is safe (compatible with {@link DataInputStream}).
+	 */
+	public static native void i2ba(int aValue, byte[] aDest);
+
 	
 	static
 	{

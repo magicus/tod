@@ -20,7 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
-import static tod.impl.dbgrid.DebuggerGridConfig.DB_EVENTID_PAGE_BITS;
 import tod.agent.ConfigUtils;
 import tod.impl.dbgrid.db.HierarchicalIndex;
 import tod.impl.dbgrid.db.ObjectsDatabase;
@@ -243,7 +242,8 @@ public class DebuggerGridConfig
 	/**
 	 * Number of children of dispatchers.
 	 */
-	public static final int DISPATCH_BRANCHING_FACTOR = 10;
+	public static final int DISPATCH_BRANCHING_FACTOR = 
+		ConfigUtils.readInt("dispatch-branching-factor", 10);
 	
 	public static final String PARAM_DB_PAGE_BUFFER_SIZE = "page-buffer-size";
 	
@@ -251,35 +251,23 @@ public class DebuggerGridConfig
 	 * Maximum size allocated to page buffers.
 	 * See {@link HardPagedFile.PageDataManager}
 	 */
-	public static long DB_PAGE_BUFFER_SIZE;
+	public static final long DB_PAGE_BUFFER_SIZE = 
+		ConfigUtils.readSize(PARAM_DB_PAGE_BUFFER_SIZE, "100m");
 	
-	public static final String PARAM_MASTER_HOST = "master-host";
-	public static String MASTER_HOST;
+	public static final String MASTER_HOST =
+		ConfigUtils.readString("master-host", "localhost");
 	
-	public static final String PARAM_NODE_DATA_DIR = "node-data-dir";
-	public static String NODE_DATA_DIR;
+	public static final String NODE_DATA_DIR =
+		ConfigUtils.readString("node-data-dir", "/tmp/tod");
 	
-	public static final String PARAM_STORE_EVENTS_FILE = "events-file";
-	public static String STORE_EVENTS_FILE;
-	
-	public static final String PARAM_CHECK_SAME_HOST = "check-same-host";
+	public static final String STORE_EVENTS_FILE =
+		ConfigUtils.readString("events-file", "events-raw.bin");
 	
 	/**
 	 * Whether the grid master should prevent multiple database nodes
 	 * on the same host.
 	 */
-	public static boolean CHECK_SAME_HOST;
+	public static final boolean CHECK_SAME_HOST = 
+		ConfigUtils.readBoolean("check-same-host", true);
 	
-
-	
-	static
-	{
-		System.out.println("Loading db grid config");
-		DB_PAGE_BUFFER_SIZE = ConfigUtils.readSize(PARAM_DB_PAGE_BUFFER_SIZE, "100m");
-		MASTER_HOST = ConfigUtils.readString(PARAM_MASTER_HOST, "localhost");
-		NODE_DATA_DIR = ConfigUtils.readString(PARAM_NODE_DATA_DIR, "/tmp/tod");
-		STORE_EVENTS_FILE = ConfigUtils.readString(PARAM_STORE_EVENTS_FILE, "events-raw.bin");
-		CHECK_SAME_HOST = ConfigUtils.readBoolean(PARAM_CHECK_SAME_HOST, true);
-	}
-
 }

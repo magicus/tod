@@ -27,11 +27,14 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 import tod.core.transport.MessageType;
+import tod.utils.NativeStream;
 import zz.utils.Utils;
 
 public class DispatcherProxy extends DispatchNodeProxy
 {
 	private byte[] itsBuffer = new byte[1024];
+	
+	private byte[] itsIBBuffer = new byte[4];
 	
 	public DispatcherProxy(
 			RIDispatchNode aConnectable, 
@@ -50,8 +53,16 @@ public class DispatcherProxy extends DispatchNodeProxy
 		try
 		{
 			getOutStream().writeByte((byte) aType.ordinal());
-			int theSize = aStream.readInt();
-			getOutStream().writeInt(theSize);
+			
+			// Read packet size
+			aStream.readFully(itsIBBuffer);
+			int theSize = NativeStream.ba2i(itsIBBuffer);
+			
+			// Write packet size
+			getOutStream().write(itsIBBuffer);
+			
+//			int theSize = aStream.readInt();
+//			getOutStream().writeInt(theSize);
 
 			Utils.pipe(itsBuffer, aStream, getOutStream(), theSize);
 		}
