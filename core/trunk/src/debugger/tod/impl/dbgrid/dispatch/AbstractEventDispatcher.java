@@ -181,20 +181,6 @@ implements RIEventDispatcher
 	}
 	
 	/**
-	 * Creates a log receiver that is able to communicate directly
-	 * with this dispatcher. The grid master requests a log receiver
-	 * to its root dispatcher whenever a new client connects.
-	 * @param aStartImmediately Whether the receiver should immediately
-	 * start its thread. This is for testing only.
-	 */
-	public abstract LogReceiver createLogReceiver(
-			HostInfo aHostInfo, 
-			GridMaster aMaster, 
-			InputStream aInStream,
-			OutputStream aOutStream, 
-			boolean aStartImmediately);
-	
-	/**
 	 * Forks a task to all attached nodes, and returns when all nodes
 	 * complete the task.
 	 * @return The result returned by each node.

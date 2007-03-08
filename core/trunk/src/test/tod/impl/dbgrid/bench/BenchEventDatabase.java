@@ -31,26 +31,26 @@ import tod.impl.dbgrid.ConditionGenerator;
 import tod.impl.dbgrid.EventGenerator;
 import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.bench.BenchBase.BenchResults;
-import tod.impl.dbgrid.gridimpl.uniform.UniformEventDatabase;
+import tod.impl.dbgrid.db.EventDatabase;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
 
 public class BenchEventDatabase
 {
-	private UniformEventDatabase itsDatabase;
+	private EventDatabase itsDatabase;
 
 	public BenchEventDatabase()
 	{
 	}
 
-	public BenchEventDatabase(UniformEventDatabase aDatabase)
+	public BenchEventDatabase(EventDatabase aDatabase)
 	{
 		itsDatabase = aDatabase;
 	}
 
 	@Test public void test()  
 	{
-		itsDatabase = new UniformEventDatabase(0, new File("test.bin"));
+		itsDatabase = new EventDatabase(0, new File("test.bin"));
 		store();
 //		fetchSimple(1000);
 //		fetchCompound(100, 8);
@@ -181,7 +181,7 @@ public class BenchEventDatabase
 	
 	public static void main(String[] args) 
 	{
-		new BenchEventDatabase(new UniformEventDatabase(0, new File("test.bin"))).store();
+		new BenchEventDatabase(new EventDatabase(0, new File("test.bin"))).store();
 	}
 
 }

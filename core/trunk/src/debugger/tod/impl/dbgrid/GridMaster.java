@@ -57,8 +57,7 @@ import tod.impl.dbgrid.dispatch.AbstractEventDispatcher;
 import tod.impl.dbgrid.dispatch.DatabaseNode;
 import tod.impl.dbgrid.dispatch.RIDatabaseNode;
 import tod.impl.dbgrid.dispatch.RIDispatchNode;
-import tod.impl.dbgrid.dispatch.RILeafDispatcher;
-import tod.impl.dbgrid.dispatch.RILeafDispatcher.StringSearchHit;
+import tod.impl.dbgrid.dispatch.RIDatabaseNode.StringSearchHit;
 import tod.impl.dbgrid.dispatch.tree.DispatchTreeStructure;
 import tod.impl.dbgrid.dispatch.tree.LocalDispatchTreeStructure;
 import tod.impl.dbgrid.dispatch.tree.DispatchTreeStructure.NodeRole;
@@ -343,14 +342,6 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	}
 	
 	/**
-	 * Returns the currently registered leaf dispatchers.
-	 */
-	public List<RILeafDispatcher> getLeafDispatchers()
-	{
-		return itsDispatchTreeStructure.getLeafDispatchers();
-	}
-
-	/**
 	 * Returns the number of registered nodes.
 	 */
 	public int getNodeCount()
@@ -449,9 +440,9 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	
 	public Object getRegisteredObject(final long aId)
 	{
-		List<Object> theResults = Utils.fork(getLeafDispatchers(), new ITask<RILeafDispatcher, Object>()
+		List<Object> theResults = Utils.fork(getNodes(), new ITask<RIDatabaseNode, Object>()
 				{
-					public Object run(RILeafDispatcher aInput)
+					public Object run(RIDatabaseNode aInput)
 					{
 						try
 						{

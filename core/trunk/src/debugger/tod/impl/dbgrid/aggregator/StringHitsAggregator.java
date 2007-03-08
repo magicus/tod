@@ -30,9 +30,8 @@ import tod.impl.dbgrid.BufferedBidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.db.RIBufferIterator;
-import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
-import tod.impl.dbgrid.dispatch.RILeafDispatcher;
-import tod.impl.dbgrid.dispatch.RILeafDispatcher.StringSearchHit;
+import tod.impl.dbgrid.dispatch.RIDatabaseNode;
+import tod.impl.dbgrid.dispatch.RIDatabaseNode.StringSearchHit;
 import tod.impl.dbgrid.merge.DisjunctionIterator;
 import zz.utils.Future;
 
@@ -56,12 +55,12 @@ implements RIBufferIterator<StringSearchHit[]>
 	
 	private void initIterators()
 	{
-		final List<RILeafDispatcher> theDispatchers = itsMaster.getLeafDispatchers();
-		final SearchHitIterator[] theIterators = new SearchHitIterator[theDispatchers.size()];
+		final List<RIDatabaseNode> theNodes = itsMaster.getNodes();
+		final SearchHitIterator[] theIterators = new SearchHitIterator[theNodes.size()];
 		
 		List<Future<SearchHitIterator>> theFutures = new ArrayList<Future<SearchHitIterator>>();
 		
-		for (int i=0;i<theDispatchers.size();i++)
+		for (int i=0;i<theNodes.size();i++)
 		{
 			final int i0 = i;
 			theFutures.add(new Future<SearchHitIterator>()
@@ -69,8 +68,9 @@ implements RIBufferIterator<StringSearchHit[]>
 						@Override
 						protected SearchHitIterator fetch() throws Throwable
 						{
-							RILeafDispatcher theNode = theDispatchers.get(i0);
-							RIBufferIterator<StringSearchHit[]> theIterator = theNode.searchStrings(itsSearchText);
+							RIDatabaseNode theNode = theNodes.get(i0);
+							RIBufferIterator<StringSearchHit[]> theIterator = 
+								theNode.searchStrings(itsSearchText);
 							theIterators[i0] = new SearchHitIterator(theIterator);
 							
 							return theIterators[i0];

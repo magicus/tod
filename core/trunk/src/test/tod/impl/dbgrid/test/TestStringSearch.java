@@ -26,9 +26,8 @@ import org.junit.Test;
 
 import tod.core.config.TODConfig;
 import tod.impl.dbgrid.db.RIBufferIterator;
-import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
-import tod.impl.dbgrid.dispatch.RILeafDispatcher.StringSearchHit;
-import tod.impl.dbgrid.gridimpl.uniform.UniformEventDispatcher;
+import tod.impl.dbgrid.dispatch.DatabaseNode;
+import tod.impl.dbgrid.dispatch.RIDatabaseNode.StringSearchHit;
 
 public class TestStringSearch
 {
@@ -40,23 +39,23 @@ public class TestStringSearch
 	{
 		TODConfig theConfig = new TODConfig();
 		theConfig.set(TODConfig.INDEX_STRINGS, true);
-		LeafEventDispatcher theDispatcher = new UniformEventDispatcher(null);
+		DatabaseNode theNode = new DatabaseNode();
 
 		for (int i=0;i<STRINGS.length;i++)
 		{
-			theDispatcher.register(i, STRINGS[i]);
+			theNode.register(i, STRINGS[i]);
 		}
 		
-		search(theDispatcher, "Hello");
-		search(theDispatcher, "123");
-		search(theDispatcher, "Hello World");
-		search(theDispatcher, "H*lo");
+		search(theNode, "Hello");
+		search(theNode, "123");
+		search(theNode, "Hello World");
+		search(theNode, "H*lo");
 	}
 	
-	private void search(LeafEventDispatcher aDispatcher, String aText) throws RemoteException
+	private void search(DatabaseNode aNode, String aText) throws RemoteException
 	{
 		System.out.println("Search: "+aText);
-		printIterator(aDispatcher.searchStrings(aText));
+		printIterator(aNode.searchStrings(aText));
 		System.out.println("Done");
 	}
 	

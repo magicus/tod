@@ -29,7 +29,7 @@ import tod.agent.DebugFlags;
 import tod.impl.dbgrid.ConditionGenerator;
 import tod.impl.dbgrid.EventGenerator;
 import tod.impl.dbgrid.Fixtures;
-import tod.impl.dbgrid.gridimpl.uniform.UniformEventDatabase;
+import tod.impl.dbgrid.db.EventDatabase;
 import tod.impl.dbgrid.messages.MessageType;
 import tod.impl.dbgrid.queries.BehaviorCondition;
 import tod.impl.dbgrid.queries.CompoundCondition;
@@ -39,11 +39,11 @@ import tod.impl.dbgrid.queries.TypeCondition;
 
 public class TestDatabaseNode
 {
-	private UniformEventDatabase itsDatabase;
+	private EventDatabase itsDatabase;
 
 	@Before public void fill()
 	{
-itsDatabase = new UniformEventDatabase(0, new File("/tmp/tod/test.bin"));
+itsDatabase = new EventDatabase(0, new File("/tmp/tod/test.bin"));
 		EventGenerator theEventGenerator = createGenerator();
 		
 		System.out.println("filling...");

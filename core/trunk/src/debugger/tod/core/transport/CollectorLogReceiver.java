@@ -63,7 +63,19 @@ public class CollectorLogReceiver extends LogReceiver
 			OutputStream aOutStream,
 			boolean aStart)
 	{
-		super(aHostInfo, aInStream, aOutStream, false);
+		this(DEFAULT_THREAD, aHostInfo, aCollector, aLocationRegistrer, aInStream, aOutStream, aStart);
+	}
+	
+	public CollectorLogReceiver(
+			ReceiverThread aReceiverThread,
+			HostInfo aHostInfo,
+			ILogCollector aCollector,
+			ILocationRegisterer aLocationRegistrer,
+			InputStream aInStream,
+			OutputStream aOutStream,
+			boolean aStart)
+	{
+		super(aReceiverThread, aHostInfo, aInStream, aOutStream, false);
 		itsCollector = aCollector;
 		itsLocationRegistrer = aLocationRegistrer;
 		if (aStart) start();

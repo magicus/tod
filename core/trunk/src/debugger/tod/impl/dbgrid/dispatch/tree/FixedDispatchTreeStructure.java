@@ -63,7 +63,7 @@ public class FixedDispatchTreeStructure extends DispatchTreeStructure
 	
 	public FixedDispatchTreeStructure(Reader aReader)
 	{
-		super(0, 0, 0);
+		super(0, 0);
 		try
 		{
 			DocumentBuilder theBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -181,16 +181,8 @@ public class FixedDispatchTreeStructure extends DispatchTreeStructure
 		{
 			NodeRole theType;
 			
-			if (aNodeInfo.isLeafDispatcher())
-			{
-				theType = NodeRole.LEAF_DISPATCHER;
-				if (aParent != null) incExpectedLeafDispatchers();
-			}
-			else
-			{
-				theType = NodeRole.INTERNAL_DISPATCHER;
-				if (aParent != null) incExpectedInternalDispatchers();
-			}
+			theType = NodeRole.DISPATCHER;
+			if (aParent != null) incExpectedDispatchers();
 			
 			theNode = new DispatchNode(theType, aParent, theName);
 			
@@ -224,11 +216,6 @@ public class FixedDispatchTreeStructure extends DispatchTreeStructure
 			itsChildren.add(aChild);
 		}
 		
-		public boolean isLeafDispatcher()
-		{
-			return ! isDatabase() && itsChildren.get(0).isDatabase();
-		}
-		
 		public boolean isDatabase()
 		{
 			return itsChildren.size() == 0;
@@ -257,11 +244,10 @@ public class FixedDispatchTreeStructure extends DispatchTreeStructure
 			{
 			case DATABASE:
 				if (parent == null) throw new IllegalArgumentException("No parent for database node: "+name);
-				if (parent.type != NodeRole.LEAF_DISPATCHER) throw new IllegalArgumentException("Parent of " + name + "is a " + parent.type);
+				if (parent.type != NodeRole.DISPATCHER) throw new IllegalArgumentException("Parent of " + name + "is a " + parent.type);
 				break;
 				
-			case LEAF_DISPATCHER:
-			case INTERNAL_DISPATCHER:
+			case DISPATCHER:
 				if (parent != null && parent.type == NodeRole.DATABASE) throw new IllegalArgumentException("Parent of " + name + " is a DATABASE");
 				break;
 			

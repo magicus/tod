@@ -30,13 +30,10 @@ import javax.swing.JComponent;
 
 import tod.core.LocationRegisterer;
 import tod.core.config.TODConfig;
-import tod.core.database.browser.ILogBrowser;
 import tod.core.session.AbstractSession;
-import tod.core.session.ConnectionInfo;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
 import tod.impl.dbgrid.dispatch.DatabaseNode;
-import tod.impl.dbgrid.gridimpl.GridImpl;
 
 /**
  * A single-process grid session.
@@ -59,7 +56,7 @@ public class LocalGridSession extends AbstractSession
 
 		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theDebuggerConfig);
 		
-		DatabaseNode theNode = GridImpl.getFactory(aConfig).createNode(false);
+		DatabaseNode theNode = new DatabaseNode();
 		itsMaster = new GridMaster(aConfig, theRegistrer, theInstrumenter, theNode, true);
 		itsMaster.waitReady();
 		

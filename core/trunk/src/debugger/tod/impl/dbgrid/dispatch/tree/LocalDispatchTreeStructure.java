@@ -24,9 +24,7 @@ import java.io.IOException;
 
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.dispatch.DatabaseNode;
-import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
-import tod.impl.dbgrid.gridimpl.GridImpl;
-import tod.impl.dbgrid.gridimpl.IGridImplementationFactory;
+import tod.impl.dbgrid.dispatch.EventDispatcher;
 import tod.utils.pipe.PipedInputStream2;
 import tod.utils.pipe.PipedOutputStream2;
 
@@ -40,7 +38,7 @@ public class LocalDispatchTreeStructure extends DispatchTreeStructure
 
 	public LocalDispatchTreeStructure(DatabaseNode aDatabaseNode)
 	{
-		super(1, 0, 0);
+		super(1, 0);
 		itsDatabaseNode = aDatabaseNode;
 	}
 	
@@ -49,10 +47,9 @@ public class LocalDispatchTreeStructure extends DispatchTreeStructure
 	{
 		try
 		{
-			IGridImplementationFactory theFactory = GridImpl.getFactory(aMaster.getConfig());
-			LeafEventDispatcher theDispatcher = theFactory.createLeafDispatcher(false, aMaster.getLocationStore());
+			EventDispatcher theDispatcher = new EventDispatcher();
 			setRootDispatcher(theDispatcher);
-			getLeafDispatchers().add(theDispatcher);
+			getDispatchers().add(theDispatcher);
 		
 			PipedInputStream2 theDispatcherIn = new PipedInputStream2();
 			PipedInputStream2 theNodeIn = new PipedInputStream2();

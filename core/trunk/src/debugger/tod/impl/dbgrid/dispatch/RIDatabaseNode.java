@@ -20,13 +20,13 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.dispatch;
 
-import java.rmi.Remote;
+import java.io.Serializable;
 import java.rmi.RemoteException;
 
 import tod.core.database.browser.IEventBrowser;
+import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.db.RINodeEventIterator;
 import tod.impl.dbgrid.queries.EventCondition;
-import zz.utils.net.Server.ServerAdress;
 
 /**
  * Remote interface for {@link DatabaseNode}, used only
@@ -53,4 +53,51 @@ public interface RIDatabaseNode extends RIDispatchNode
 	public long getEventsCount() throws RemoteException;
 	public long getFirstTimestamp() throws RemoteException;
 	public long getLastTimestamp() throws RemoteException;
+	
+	/**
+	 * Returns an object registered by this dispatcher, or null
+	 * if not found.
+	 */
+	public Object getRegisteredObject(long aId) throws RemoteException;
+	
+	/**
+	 * Searches the strings that match the given text.
+	 * Returns an iterator of object ids of matching strings, ordered
+	 * by relevance.
+	 */
+	public RIBufferIterator<StringSearchHit[]> searchStrings(String aText) throws RemoteException;
+	
+	/**
+	 * Represents a search hit.
+	 * @author gpothier
+	 */
+	public static class StringSearchHit implements Serializable
+	{
+		private static final long serialVersionUID = 6477792385168896074L;
+		private long itsObjectId;
+		private long itsScore;
+		
+		public StringSearchHit(long aObjectId, long aScore)
+		{
+			itsObjectId = aObjectId;
+			itsScore = aScore;
+		}
+
+		public long getObjectId()
+		{
+			return itsObjectId;
+		}
+
+		public long getScore()
+		{
+			return itsScore;
+		}
+		
+		@Override
+		public String toString()
+		{
+			return "Hit: "+itsObjectId+" ("+itsScore+")";
+		}
+	}
+
 }

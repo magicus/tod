@@ -29,15 +29,11 @@ import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.RIGridMaster;
 import tod.impl.dbgrid.db.NodeRejectedException;
 import tod.impl.dbgrid.dispatch.AbstractEventDispatcher;
-import tod.impl.dbgrid.dispatch.InternalEventDispatcher;
-import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
+import tod.impl.dbgrid.dispatch.EventDispatcher;
 import tod.impl.dbgrid.dispatch.RIDatabaseNode;
 import tod.impl.dbgrid.dispatch.RIDispatchNode;
+import tod.impl.dbgrid.dispatch.RIDispatcher;
 import tod.impl.dbgrid.dispatch.RIEventDispatcher;
-import tod.impl.dbgrid.dispatch.RIInternalDispatcher;
-import tod.impl.dbgrid.dispatch.RILeafDispatcher;
-import tod.impl.dbgrid.gridimpl.GridImpl;
-import tod.impl.dbgrid.gridimpl.IGridImplementationFactory;
 
 
 /**
@@ -49,20 +45,17 @@ import tod.impl.dbgrid.gridimpl.IGridImplementationFactory;
  */
 public abstract class DispatchTreeStructure
 {
-	private int itsExpectedLeafDispatchers;
-	private int itsExpectedInternalDispatchers;
+	private int itsExpectedDispatchers;
 	private int itsExpectedDatabaseNodes;
 	
 	
 	private List<RIDatabaseNode> itsDatabaseNodes = new ArrayList<RIDatabaseNode>();
-	private List<RILeafDispatcher> itsLeafDispatchers = new ArrayList<RILeafDispatcher>();
-	private List<RIEventDispatcher> itsInternalDispatchers = new ArrayList<RIEventDispatcher>();
+	private List<RIEventDispatcher> itsDispatchers = new ArrayList<RIEventDispatcher>();
 	
 	private AbstractEventDispatcher itsRootDispatcher;
 	
 	/**
-	 * The different possible node roles (database, leaf dispatcher,
-	 * internal dispatcher).
+	 * The different possible node roles (database, dispatcher).
 	 * @author gpothier
 	 */
 	public static enum NodeRole
@@ -75,20 +68,12 @@ public abstract class DispatchTreeStructure
 				return aNode instanceof RIDatabaseNode;
 			}
 		}, 
-		LEAF_DISPATCHER()
+		DISPATCHER()
 		{
 			@Override
 			public boolean isCompatible(RIDispatchNode aNode)
 			{
-				return aNode instanceof RILeafDispatcher;
-			}
-		}, 
-		INTERNAL_DISPATCHER()
-		{
-			@Override
-			public boolean isCompatible(RIDispatchNode aNode)
-			{
-				return aNode instanceof RIInternalDispatcher;
+				return aNode instanceof RIDispatcher;
 			}
 		};
 		
@@ -102,11 +87,9 @@ public abstract class DispatchTreeStructure
 	
 	public DispatchTreeStructure(
 			int aExpectedDatabaseNodes,
-			int aExpectedLeafDispatchers,
-			int aExpectedInternalDispatchers)
+			int aExpectedDispatchers)
 	{
-		itsExpectedLeafDispatchers = aExpectedLeafDispatchers;
-		itsExpectedInternalDispatchers = aExpectedInternalDispatchers;
+		itsExpectedDispatchers = aExpectedDispatchers;
 		itsExpectedDatabaseNodes = aExpectedDatabaseNodes;
 	}
 
@@ -115,7 +98,7 @@ public abstract class DispatchTreeStructure
 	 */
 	public int total()
 	{
-		return itsExpectedLeafDispatchers+itsExpectedInternalDispatchers+itsExpectedDatabaseNodes;
+		return itsExpectedDispatchers+itsExpectedDatabaseNodes;
 	}
 
 	
@@ -136,14 +119,9 @@ public abstract class DispatchTreeStructure
 		return itsDatabaseNodes;
 	}
 
-	public List<RIEventDispatcher> getInternalDispatchers()
+	public List<RIEventDispatcher> getDispatchers()
 	{
-		return itsInternalDispatchers;
-	}
-
-	public List<RILeafDispatcher> getLeafDispatchers()
-	{
-		return itsLeafDispatchers;
+		return itsDispatchers;
 	}
 
 	public AbstractEventDispatcher getRootDispatcher()
@@ -161,14 +139,9 @@ public abstract class DispatchTreeStructure
 		itsExpectedDatabaseNodes++;
 	}
 
-	protected void incExpectedLeafDispatchers()
+	protected void incExpectedDispatchers()
 	{
-		itsExpectedLeafDispatchers++;
-	}
-	
-	protected void incExpectedInternalDispatchers()
-	{
-		itsExpectedInternalDispatchers++;
+		itsExpectedDispatchers++;
 	}
 	
 	protected int getExpectedDatabaseNodes()
@@ -176,14 +149,9 @@ public abstract class DispatchTreeStructure
 		return itsExpectedDatabaseNodes;
 	}
 
-	protected int getExpectedInternalDispatchers()
+	protected int getExpectedDispatchers()
 	{
-		return itsExpectedInternalDispatchers;
-	}
-
-	protected int getExpectedLeafDispatchers()
-	{
-		return itsExpectedLeafDispatchers;
+		return itsExpectedDispatchers;
 	}
 
 	/**
@@ -198,15 +166,10 @@ public abstract class DispatchTreeStructure
 			RIDatabaseNode theDatabaseNode = (RIDatabaseNode) aNode;
 			theId = registerDatabaseNode(theDatabaseNode, aHostname);
 		}
-		else if (aNode instanceof RILeafDispatcher)
+		else if (aNode instanceof RIDispatcher)
 		{
-			RILeafDispatcher theLeafDispatcher = (RILeafDispatcher) aNode;
-			theId = registerLeafDispatcher(theLeafDispatcher, aHostname);
-		}
-		else if (aNode instanceof RIInternalDispatcher)
-		{
-			RIInternalDispatcher theInternalDispatcher = (RIInternalDispatcher) aNode;
-			theId = registerInternalDispatcher(theInternalDispatcher, aHostname);
+			RIDispatcher theInternalDispatcher = (RIDispatcher) aNode;
+			theId = registerDispatcher(theInternalDispatcher, aHostname);
 		}
 		else throw new RuntimeException("Not handled: "+aNode);
 				
@@ -222,23 +185,12 @@ public abstract class DispatchTreeStructure
 		return "db-"+theId;
 	}
 	
-	protected String registerLeafDispatcher(
-			RILeafDispatcher aDispatcher, 
-			String aHostname) throws NodeRejectedException
-	{
-		int theId = itsLeafDispatchers.size()+1;
-		itsLeafDispatchers.add(aDispatcher);
-		System.out.println("Registered leaf dispatcher (RMI): "+theId+" from "+aHostname);
-		
-		return "leaf-"+theId;
-	}
-	
-	protected String registerInternalDispatcher(
+	protected String registerDispatcher(
 			RIEventDispatcher aDispatcher, 
 			String aHostname) throws NodeRejectedException
 	{
-		int theId = itsInternalDispatchers.size()+1;
-		itsInternalDispatchers.add(aDispatcher);
+		int theId = itsDispatchers.size()+1;
+		itsDispatchers.add(aDispatcher);
 		System.out.println("Registered internal dispatcher (RMI): "+theId+" from "+aHostname);
 		
 		return "internal-"+theId;
@@ -250,15 +202,13 @@ public abstract class DispatchTreeStructure
 	protected void waitNodes() throws InterruptedException
 	{
 		while (getDatabaseNodes().size() < getExpectedDatabaseNodes()
-				|| getLeafDispatchers().size() < getExpectedLeafDispatchers()
-				|| getInternalDispatchers().size() < getExpectedInternalDispatchers())
+				|| getDispatchers().size() < getExpectedDispatchers())
 		{
 			Thread.sleep(1000);
 			System.out.println(String.format(
-					"Found %d/%d nodes, %d/%d internal dispatchers, %d/%d leaf dispatchers.",
+					"Found %d/%d nodes, %d/%d internal dispatchers.",
 					getDatabaseNodes().size(), getExpectedDatabaseNodes(),
-					getInternalDispatchers().size(), getExpectedInternalDispatchers(),
-					getLeafDispatchers().size(), getExpectedLeafDispatchers()));
+					getDispatchers().size(), getExpectedDispatchers()));
 		}
 	}
 	
@@ -271,24 +221,11 @@ public abstract class DispatchTreeStructure
 	{
 		ILocationStore theLocationStore = aMaster.getLocationStore();
 		
-		// Create root dispatcher (local)
-		if (getExpectedLeafDispatchers() == 0)
-		{
-			assert getExpectedInternalDispatchers() == 0;
-			IGridImplementationFactory theFactory = GridImpl.getFactory(aMaster.getConfig());
-			LeafEventDispatcher theDispatcher = theFactory.createLeafDispatcher(false, theLocationStore);
-			theDispatcher.connectToLocalMaster(aMaster, "root");
-			setRootDispatcher(theDispatcher);
-			getLeafDispatchers().add(theDispatcher);
-		}
-		else
-		{
-			InternalEventDispatcher theDispatcher = new InternalEventDispatcher();
-			if (theLocationStore != null) theDispatcher.forwardLocations(theLocationStore.getLocations());
-			setRootDispatcher(theDispatcher);
-		}
-
+		EventDispatcher theDispatcher = new EventDispatcher();
+		if (theLocationStore != null) theDispatcher.forwardLocations(theLocationStore.getLocations());
+		setRootDispatcher(theDispatcher);
 	}
+	
 	/**
 	 * Waits until all nodes and dispatchers are properly connected.
 	 * @param aMaster The master that is using this {@link DispatchTreeStructure}.
@@ -299,11 +236,8 @@ public abstract class DispatchTreeStructure
 	public String toString()
 	{
 		return String.format(
-				"Tree structure: %d db nodes, %d leaf dispatch, %d internal dispatch",
+				"Tree structure: %d db nodes, %d dispatchers",
 				itsExpectedDatabaseNodes,
-				itsExpectedLeafDispatchers,
-				itsExpectedInternalDispatchers);
+				itsExpectedDispatchers);
 	}
-	
-
 }

@@ -29,6 +29,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 #include <netinet/in.h>
 #include <netdb.h>
 #include <pthread.h>
+#include <arpa/inet.h>
 
 #include <jni.h>
 
@@ -327,6 +328,35 @@ JNIEXPORT void JNICALL Java_tod_utils_NativeStream_i2b (
 	memcpy(d+destOffset, s+srcOffset, len);
 	
 	env->ReleasePrimitiveArrayCritical(src, s, 0);
+	env->ReleasePrimitiveArrayCritical(dest, d, 0);
+}
+
+JNIEXPORT jint JNICALL Java_tod_utils_NativeStream_ba2i (
+	JNIEnv * env, 
+	jclass cls, 
+	jbyteArray src)
+{
+	jint val;
+	jbyte * s = (jbyte *) env->GetPrimitiveArrayCritical(src, 0);
+	
+	memcpy(&val, s, 4);
+	
+	env->ReleasePrimitiveArrayCritical(src, s, 0);
+
+	return ntohl(val);
+}
+
+JNIEXPORT void JNICALL Java_tod_utils_NativeStream_i2ba (
+	JNIEnv * env, 
+	jclass cls, 
+	jint val,
+	jbyteArray dest)
+{
+	val = htonl(val);
+	jbyte * d = (jbyte *) env->GetPrimitiveArrayCritical(dest, 0);
+	
+	memcpy(d, &val, 4);
+	
 	env->ReleasePrimitiveArrayCritical(dest, d, 0);
 }
 

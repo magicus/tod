@@ -40,6 +40,10 @@ import tod.core.database.structure.HostInfo;
  */
 public abstract class LogReceiver 
 {
+	public static final ReceiverThread DEFAULT_THREAD = new ReceiverThread();
+	
+	private ReceiverThread itsReceiverThread;
+	
 	private boolean itsStarted = false;
 	
 	/**
@@ -67,22 +71,33 @@ public abstract class LogReceiver
 			OutputStream aOutStream, 
 			boolean aStart)
 	{
+		this(DEFAULT_THREAD, aHostInfo, aInStream, aOutStream, aStart);
+	}
+	
+	public LogReceiver(
+			ReceiverThread aReceiverThread,
+			HostInfo aHostInfo,
+			InputStream aInStream, 
+			OutputStream aOutStream, 
+			boolean aStart)
+	{
+		itsReceiverThread = aReceiverThread;
 		itsHostInfo = aHostInfo;
 		itsInStream = aInStream;
 		itsOutStream = aOutStream;
 		
 		itsDataStream = new DataInputStream(itsInStream);
 		
-		ReceiverThread.getInstance().register(this);
+		itsReceiverThread.register(this);
 		if (aStart) start();
 	}
 	
 	public void start()
 	{
 		itsStarted = true;
-		synchronized (ReceiverThread.getInstance())
+		synchronized (itsReceiverThread)
 		{
-			ReceiverThread.getInstance().notifyAll();
+			itsReceiverThread.notifyAll();
 		}
 	}
 	
@@ -204,7 +219,7 @@ public abstract class LogReceiver
 			setHostName(itsDataStream.readUTF());
 			if (itsMonitor != null) itsMonitor.started();
 		}
-		
+
 		while(itsDataStream.available() != 0)
 		{
 			try
@@ -216,7 +231,7 @@ public abstract class LogReceiver
 				
 				itsMessageCount++;
 				
-				if (itsMessageCount > DebugFlags.MAX_EVENTS)
+				if (DebugFlags.MAX_EVENTS > 0 && itsMessageCount > DebugFlags.MAX_EVENTS)
 				{
 					eof();
 					break;
@@ -264,16 +279,9 @@ public abstract class LogReceiver
 	 * problems further in the stream.
 	 * @author gpothier
 	 */
-	private static class ReceiverThread extends Thread
+	public static class ReceiverThread extends Thread
 	{
-		private static ReceiverThread INSTANCE = new ReceiverThread();
-
-		public static ReceiverThread getInstance()
-		{
-			return INSTANCE;
-		}
-
-		private ReceiverThread()
+		public ReceiverThread()
 		{
 			super("LogReceiver.ReceiverThread");
 			start();
@@ -320,7 +328,6 @@ public abstract class LogReceiver
 						{
 							wait(theWait);
 						}
-						theWait = 1;
 					}
 					
 					theWait *= 2;

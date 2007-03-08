@@ -32,9 +32,11 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
 import tod.impl.dbgrid.GridMaster;
+import tod.impl.dbgrid.dispatch.DatabaseNode;
 import tod.impl.dbgrid.dispatch.tree.DispatchTreeStructure;
 import tod.impl.dbgrid.dispatch.tree.DynamicDispatchTreeStructure;
 import tod.impl.dbgrid.dispatch.tree.FixedDispatchTreeStructure;
+import tod.impl.dbgrid.dispatch.tree.LocalDispatchTreeStructure;
 
 public class TODUtils
 {
@@ -68,20 +70,21 @@ public class TODUtils
 	{
 		DispatchTreeStructure theDispatchTreeStructure;
 		
-		if (args.length == 4)
+		if (args.length == 3)
 		{
 			// The first arg is the total number of nodes, used by the scripts
 			int theTotal = Integer.parseInt(args[0]);
 			int theExpectedNodes = Integer.parseInt(args[1]);
-			int theExpectedLeafDispatchers = Integer.parseInt(args[2]);
-			int theExpectedInternalDispatchers = Integer.parseInt(args[3]);
+			int theExpectedInternalDispatchers = Integer.parseInt(args[2]);
 
-			if (theTotal != theExpectedNodes + theExpectedLeafDispatchers + theExpectedInternalDispatchers)
+			if (theTotal != theExpectedNodes + theExpectedInternalDispatchers)
 			{
 				throw new IllegalArgumentException();
 			}
 			
-			theDispatchTreeStructure = new DynamicDispatchTreeStructure(theExpectedNodes, theExpectedLeafDispatchers, theExpectedInternalDispatchers);
+			theDispatchTreeStructure = new DynamicDispatchTreeStructure(
+					theExpectedNodes, 
+					theExpectedInternalDispatchers);
 		}
 		else if (args.length == 1)
 		{
@@ -90,11 +93,22 @@ public class TODUtils
 			
 			if (DebugFlags.DISPATCH_FAKE_1)
 			{
-				theDispatchTreeStructure = new DynamicDispatchTreeStructure(1, 1, 0);
+				theDispatchTreeStructure = new DynamicDispatchTreeStructure(1, 0);
 			}
 			else if (theTotalNodes == 0)
 			{
-				theDispatchTreeStructure = new DynamicDispatchTreeStructure(0, 0, 0);
+				TODConfig theConfig = new TODConfig();
+				LocationRegisterer theRegistrer = new LocationRegisterer();
+				
+				ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(
+						theConfig,
+						theRegistrer);
+
+				ASMInstrumenter theInstrumenter = new ASMInstrumenter(theDebuggerConfig);
+				DatabaseNode theNode = new DatabaseNode();
+				GridMaster theMaster = new GridMaster(theConfig, theRegistrer, theInstrumenter, theNode, true);
+				theMaster.waitReady();
+				return theMaster;
 			}
 			else
 			{

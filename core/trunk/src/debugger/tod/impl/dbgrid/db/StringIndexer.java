@@ -27,7 +27,6 @@ import java.util.NoSuchElementException;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharTokenizer;
-import org.apache.lucene.analysis.LowerCaseTokenizer;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Tokenizer;
@@ -43,7 +42,7 @@ import org.apache.lucene.search.Searcher;
 
 import tod.core.config.TODConfig;
 import tod.impl.dbgrid.BidiIterator;
-import tod.impl.dbgrid.dispatch.RILeafDispatcher.StringSearchHit;
+import tod.impl.dbgrid.dispatch.RIDatabaseNode.StringSearchHit;
 import zz.utils.Utils;
 
 public class StringIndexer

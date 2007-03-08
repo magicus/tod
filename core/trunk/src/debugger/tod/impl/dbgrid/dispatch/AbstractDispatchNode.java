@@ -22,6 +22,8 @@ package tod.impl.dbgrid.dispatch;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.rmi.AlreadyBoundException;
@@ -33,6 +35,8 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.CountDownLatch;
 
 import tod.core.config.TODConfig;
+import tod.core.database.structure.HostInfo;
+import tod.core.transport.LogReceiver;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.NodeException;
@@ -100,6 +104,21 @@ implements RIDispatchNode
 	{
 		return itsMaster;
 	}
+
+	/**
+	 * Creates a log receiver that is able to communicate directly
+	 * with this dispatcher. The grid master requests a log receiver
+	 * to its root dispatcher whenever a new client connects.
+	 * @param aStartImmediately Whether the receiver should immediately
+	 * start its thread. This is for testing only.
+	 */
+	public abstract LogReceiver createLogReceiver(
+			HostInfo aHostInfo, 
+			GridMaster aMaster, 
+			InputStream aInStream,
+			OutputStream aOutStream, 
+			boolean aStartImmediately);
+	
 
 	public void connectToLocalMaster(GridMaster aMaster, String aId)
 	{
@@ -172,6 +191,8 @@ implements RIDispatchNode
 	{
 		try
 		{
+			waitConnectedToMaster();
+			
 			System.out.println("[AbstractDispatchNode] Connecting to dispatcher at "+aAdress.hostName);
 			Socket theSocket = aAdress.connect();
 			DataOutputStream theStream = 

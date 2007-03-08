@@ -25,7 +25,7 @@ import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.IHostInfo;
 import tod.impl.common.EventCollector;
 import tod.impl.dbgrid.dispatch.AbstractEventDispatcher;
-import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
+import tod.impl.dbgrid.dispatch.DatabaseNode;
 import tod.impl.dbgrid.messages.GridArrayWriteEvent;
 import tod.impl.dbgrid.messages.GridBehaviorCallEvent;
 import tod.impl.dbgrid.messages.GridBehaviorExitEvent;
@@ -45,7 +45,7 @@ import tod.impl.dbgrid.messages.MessageType;
  */
 public class GridEventCollector extends EventCollector
 {
-	private final LeafEventDispatcher itsDispatcher;
+	private final DatabaseNode itsDatabaseNode;
 	
 	/**
 	 * Number of events received by this collector
@@ -70,15 +70,15 @@ public class GridEventCollector extends EventCollector
 	public GridEventCollector(
 			IHostInfo aHost,
 			ILocationsRepository aLocationsRepository,
-			LeafEventDispatcher aDispatcher)
+			DatabaseNode aDispatcher)
 	{
 		super(aHost, aLocationsRepository);
-		itsDispatcher = aDispatcher;
+		itsDatabaseNode = aDispatcher;
 	}
 
 	private void dispatch(GridEvent aEvent)
 	{
-		itsDispatcher.dispatchEvent(aEvent);
+		itsDatabaseNode.pushEvent(aEvent);
 		itsEventsCount++;
 	}
 	
@@ -333,6 +333,6 @@ public class GridEventCollector extends EventCollector
 
 	public void register(long aObjectUID, Object aObject)
 	{
-		itsDispatcher.register(aObjectUID, aObject);
+		itsDatabaseNode.register(aObjectUID, aObject);
 	}
 }

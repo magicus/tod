@@ -25,7 +25,6 @@ import static tod.impl.dbgrid.DebuggerGridConfig.DISPATCH_BRANCHING_FACTOR;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Set;
 
@@ -33,13 +32,9 @@ import tod.agent.DebugFlags;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.db.NodeRejectedException;
-import tod.impl.dbgrid.dispatch.InternalEventDispatcher;
-import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
 import tod.impl.dbgrid.dispatch.RIDatabaseNode;
+import tod.impl.dbgrid.dispatch.RIDispatchNode;
 import tod.impl.dbgrid.dispatch.RIEventDispatcher;
-import tod.impl.dbgrid.dispatch.RILeafDispatcher;
-import tod.impl.dbgrid.gridimpl.GridImpl;
-import tod.impl.dbgrid.gridimpl.IGridImplementationFactory;
 import zz.utils.Utils;
 
 /**
@@ -54,8 +49,7 @@ public class DynamicDispatchTreeStructure extends DispatchTreeStructure
 	 * (see {@link #getRoleForNode(String)}).
 	 */
 	private int itsPreDatabase;
-	private int itsPreLeafDispatchers;
-	private int itsPreInternalDispatchers;
+	private int itsPreDispatchers;
 
 	private Set<String> itsNodeHosts = new HashSet<String>();
 	
@@ -65,9 +59,9 @@ public class DynamicDispatchTreeStructure extends DispatchTreeStructure
 	 */
 	private Set<String> itsPreNodeHosts = new HashSet<String>();
 	
-	public DynamicDispatchTreeStructure(int aDatabaseNodes, int aLeafNodes, int aInternalNodes)
+	public DynamicDispatchTreeStructure(int aDatabaseNodes, int aDispatchers)
 	{
-		super(aDatabaseNodes, aLeafNodes, aInternalNodes);
+		super(aDatabaseNodes, aDispatchers);
 		
 		try
 		{
@@ -92,18 +86,13 @@ public class DynamicDispatchTreeStructure extends DispatchTreeStructure
 		if (itsPreDatabase < getExpectedDatabaseNodes() 
 				&& (! DebuggerGridConfig.CHECK_SAME_HOST || itsPreNodeHosts.add(aHostName)))
 		{
-			itsPreDatabase++;
 			theRole = NodeRole.DATABASE;
+			itsPreDatabase++;
 		}
-		else if (itsPreLeafDispatchers < getExpectedLeafDispatchers())
+		else if (itsPreDispatchers < getExpectedDispatchers())
 		{
-			itsPreLeafDispatchers++;
-			theRole = NodeRole.LEAF_DISPATCHER; 
-		}
-		else if (itsPreInternalDispatchers < getExpectedInternalDispatchers())
-		{
-			itsPreInternalDispatchers++;
-			theRole = NodeRole.INTERNAL_DISPATCHER;
+			theRole = NodeRole.DISPATCHER;
+			itsPreDispatchers++;
 		}
 		else theRole = null;
 		
@@ -122,30 +111,17 @@ public class DynamicDispatchTreeStructure extends DispatchTreeStructure
 					: DebuggerGridConfig.DISPATCH_BRANCHING_FACTOR;
 			
 			// Queue of nodes that must be connected to a parent.
-			LinkedList<RIEventDispatcher> theChildrenQueue =
-				new LinkedList<RIEventDispatcher>();
+			LinkedList<RIDispatchNode> theChildrenQueue =
+				new LinkedList<RIDispatchNode>();
 			
-			// Connect nodes to leaf dispatchers
-			Iterator<RIDatabaseNode> theNodesIterator = getDatabaseNodes().iterator();
-			for (RIEventDispatcher theDispatcher : getLeafDispatchers())
-			{
-				for(int i=0;i<theBranchingFactor && theNodesIterator.hasNext();i++)
-				{
-					RIDatabaseNode theNode = theNodesIterator.next();
-					theNode.connectToDispatcher(theDispatcher.getAdress());
-				}
-				
-				// Start by queing all leaf dispatchers
-				if (theDispatcher != getRootDispatcher())
-					theChildrenQueue.add(theDispatcher);
-			}
-			
-			// Connect internal dispatchers
+			Utils.fillCollection(theChildrenQueue, getDatabaseNodes());
+
+			// Queue of parents.
 			LinkedList<RIEventDispatcher> theParentsQueue =
 				new LinkedList<RIEventDispatcher>();
 			
-			Utils.fillCollection(theParentsQueue, getInternalDispatchers());
-			theParentsQueue.add(getRootDispatcher());
+			Utils.fillCollection(theParentsQueue, getDispatchers());
+			theParentsQueue.addFirst(getRootDispatcher());
 			
 			while (! theParentsQueue.isEmpty())
 			{
@@ -153,7 +129,7 @@ public class DynamicDispatchTreeStructure extends DispatchTreeStructure
 				
 				for(int i=0;i<theBranchingFactor && !theChildrenQueue.isEmpty();i++)
 				{
-					RIEventDispatcher theChild = theChildrenQueue.removeLast();
+					RIDispatchNode theChild = theChildrenQueue.removeLast();
 					theChild.connectToDispatcher(theParent.getAdress());
 				}
 				
@@ -180,24 +156,14 @@ public class DynamicDispatchTreeStructure extends DispatchTreeStructure
 		return super.registerDatabaseNode(aNode, aHostname);
 	}
 	
-	protected String registerLeafDispatcher(
-			RILeafDispatcher aDispatcher, 
-			String aHostname) throws NodeRejectedException
-	{
-		if (getLeafDispatchers().size() >= getExpectedLeafDispatchers()) 
-			throw new NodeRejectedException("Maximum number of leaf dispatchers reached");
-
-		return super.registerLeafDispatcher(aDispatcher, aHostname);
-	}
-	
-	protected String registerInternalDispatcher(
+	protected String registerDispatcher(
 			RIEventDispatcher aDispatcher, 
 			String aHostname) throws NodeRejectedException
 	{
-		if (getInternalDispatchers().size() >= getExpectedInternalDispatchers()) 
+		if (getDispatchers().size() >= getExpectedDispatchers()) 
 			throw new NodeRejectedException("Maximum number of internal dispatchers reached");
 		
-		return super.registerInternalDispatcher(aDispatcher, aHostname);
+		return super.registerDispatcher(aDispatcher, aHostname);
 	}
 	
 
@@ -220,16 +186,13 @@ public class DynamicDispatchTreeStructure extends DispatchTreeStructure
 	
 	public static DispatchTreeStructure compute(int aDatabaseNodes)
 	{
-		int theLeafNodes = (aDatabaseNodes+DISPATCH_BRANCHING_FACTOR-1)/DISPATCH_BRANCHING_FACTOR;
-		if (theLeafNodes == 1) return new DynamicDispatchTreeStructure(aDatabaseNodes, 0, 0);
-		
-		int theTotalInternalNodes = 0;
-		int theInternalNodes = (theLeafNodes+DISPATCH_BRANCHING_FACTOR-1)/DISPATCH_BRANCHING_FACTOR;
+		int theTotalDispatchers = 0;
+		int theDispatchers = (aDatabaseNodes+DISPATCH_BRANCHING_FACTOR-1)/DISPATCH_BRANCHING_FACTOR;
 		while (true)
 		{
-			if (theInternalNodes == 1) return new DynamicDispatchTreeStructure(aDatabaseNodes, theLeafNodes, theTotalInternalNodes);
-			theTotalInternalNodes += theInternalNodes;
-			theInternalNodes = (theInternalNodes+DISPATCH_BRANCHING_FACTOR-1)/DISPATCH_BRANCHING_FACTOR;
+			if (theDispatchers == 1) return new DynamicDispatchTreeStructure(aDatabaseNodes, theTotalDispatchers);
+			theTotalDispatchers += theDispatchers;
+			theDispatchers = (theDispatchers+DISPATCH_BRANCHING_FACTOR-1)/DISPATCH_BRANCHING_FACTOR;
 		}
 	}
 	

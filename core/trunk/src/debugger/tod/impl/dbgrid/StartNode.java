@@ -26,9 +26,9 @@ import java.rmi.registry.Registry;
 
 import tod.core.LocationRegisterer;
 import tod.core.config.TODConfig;
-import tod.impl.dbgrid.dispatch.InternalEventDispatcher;
+import tod.impl.dbgrid.dispatch.DatabaseNode;
+import tod.impl.dbgrid.dispatch.EventDispatcher;
 import tod.impl.dbgrid.dispatch.tree.DispatchTreeStructure.NodeRole;
-import tod.impl.dbgrid.gridimpl.GridImpl;
 
 /**
  * Main class for starting nodes of the dispatching tree.
@@ -66,20 +66,16 @@ public class StartNode
 		{
 		case DATABASE:
 			System.out.println("Starting database node.");
-			GridImpl.getFactory(theConfig).createNode(true);
+			DatabaseNode theNode = new DatabaseNode();
+			theNode.connectToMaster();
 			break;
 			
-		case INTERNAL_DISPATCHER:
+		case DISPATCHER:
 			System.out.println("Starting internal dispatcher.");
-			InternalEventDispatcher theDispatcher = new InternalEventDispatcher();
+			EventDispatcher theDispatcher = new EventDispatcher();
 			theDispatcher.connectToMaster();
 			break;
 			
-		case LEAF_DISPATCHER:
-			System.out.println("Starting leaf dispatcher.");
-			GridImpl.getFactory(theConfig).createLeafDispatcher(true, new LocationRegisterer());
-			break;
-
 		default: throw new RuntimeException("Not handled: "+theRole); 
 		}
 	}

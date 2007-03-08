@@ -20,13 +20,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.browser;
 
-import java.rmi.RemoteException;
-import java.util.Iterator;
-
 import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
-import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
 import tod.core.database.structure.IBehaviorInfo;
@@ -37,8 +33,6 @@ import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.impl.dbgrid.BidiIterator;
-import tod.impl.dbgrid.db.RIBufferIterator;
-import tod.impl.dbgrid.dispatch.RILeafDispatcher.StringSearchHit;
 import zz.utils.ITask;
 
 /**

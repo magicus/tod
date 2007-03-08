@@ -30,27 +30,18 @@ import org.junit.Test;
 
 import tod.core.BehaviorKind;
 import tod.core.LocationRegisterer;
-import tod.core.config.TODConfig;
 import tod.core.database.browser.IEventBrowser;
-import tod.core.database.browser.IEventFilter;
-import tod.core.database.browser.ILocationStore;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.HostInfo;
-import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.ThreadInfo;
-import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.ConditionGenerator;
 import tod.impl.dbgrid.EventGenerator;
 import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.GridMaster;
-import tod.impl.dbgrid.LocalGridSession;
-import tod.impl.dbgrid.RIGridMaster;
 import tod.impl.dbgrid.aggregator.GridEventBrowser;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
-import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
-import tod.impl.dbgrid.gridimpl.uniform.UniformEventDatabase;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
 
