@@ -27,19 +27,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import tod.core.ILocationRegisterer;
-import tod.core.ILocationRegisterer.Stats;
 import tod.core.database.browser.ILocationsRepository;
-import tod.core.database.structure.BehaviorInfo;
-import tod.core.database.structure.ClassInfo;
-import tod.core.database.structure.FieldInfo;
+import tod.core.database.browser.ILocationsRepository.Stats;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ITypeInfo;
-import tod.core.database.structure.TypeInfo;
-import tod.core.database.structure.UnknownTypeInfo;
 import zz.utils.Utils;
 
 /**
@@ -62,7 +56,7 @@ implements RILocationsRepository
 		
 		Thread theNotifierThread = new Thread("RemoteLocationsRepository.Notifier")
 		{
-			private ILocationRegisterer.Stats itsLastStats;
+			private ILocationsRepository.Stats itsLastStats;
 			
 			@Override
 			public void run()

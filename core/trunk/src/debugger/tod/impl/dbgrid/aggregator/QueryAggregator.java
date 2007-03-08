@@ -72,12 +72,21 @@ implements RIQueryAggregator
 						protected EventIterator fetch() throws Throwable
 						{
 							RIDatabaseNode theNode = theNodes.get(i0);
-							RINodeEventIterator theIterator = theNode.getIterator(itsCondition);
-							
-							theIterator.setNextTimestamp(aTimestamp);
-							theIterators[i0] = new EventIterator(theIterator);
-							
-							return theIterators[i0];
+							try
+							{
+								RINodeEventIterator theIterator = theNode.getIterator(itsCondition);
+								
+								theIterator.setNextTimestamp(aTimestamp);
+								theIterators[i0] = new EventIterator(theIterator);
+								
+								return theIterators[i0];
+							}
+							catch (Exception e)
+							{
+								throw new RuntimeException(
+										"Exception catched in initIterators for node "+theNode.getNodeId(), 
+										e);
+							}
 						}
 					});
 			
@@ -212,13 +221,20 @@ implements RIQueryAggregator
 				@Override
 				protected long[] fetch() throws Throwable
 				{
-					long[] theEventCounts = theNode0.getEventCounts(
-							itsCondition,
-							aT1,
-							aT2, 
-							aSlotsCount,
-							aForceMergeCounts);
-					return theEventCounts;
+					try
+					{
+						long[] theEventCounts = theNode0.getEventCounts(
+								itsCondition,
+								aT1,
+								aT2, 
+								aSlotsCount,
+								aForceMergeCounts);
+						return theEventCounts;
+					}
+					catch (Exception e)
+					{
+						throw new RuntimeException("Exception in node "+theNode0.getNodeId(), e);
+					}
 				}
 			});
 		}

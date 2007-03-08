@@ -175,7 +175,7 @@ public abstract class LogReceiver
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	/**
 	 * Returns the total number of messages received by this receiver.
 	 */
@@ -232,6 +232,13 @@ public abstract class LogReceiver
 			catch (EOFException e)
 			{
 				System.err.println("LogReceiver: EOF");
+				eof();
+				break;
+			}
+			catch (Exception e)
+			{
+				System.err.println("Exception in LogReceiver.process:");
+				e.printStackTrace();
 				eof();
 				break;
 			}

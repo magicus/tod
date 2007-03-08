@@ -164,15 +164,10 @@ public class TupleWriter<T>
 		itsCurrentPage = aPage;
 		itsCurrentStruct = itsCurrentPage.asBitStruct();
 		itsCurrentStruct.setPos(aPos);
+		
+		// We mark the page as modified to ensure that it is properly written
+		// the the disk, even if it is blank.
+		itsCurrentPage.modified();
 	}
 	
-	/**
-	 * Sets the current struct, taking the struct's current position
-	 * and page.
-	 */
-	protected void setCurrentStruct(PageBitStruct aStruct)
-	{
-		itsCurrentStruct = aStruct;
-		itsCurrentPage = itsCurrentStruct.getPage();
-	}
 }

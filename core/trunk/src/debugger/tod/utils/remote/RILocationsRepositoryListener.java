@@ -23,7 +23,7 @@ package tod.utils.remote;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import tod.core.ILocationRegisterer.Stats;
+import tod.core.database.browser.ILocationsRepository.Stats;
 
 /**
  * A listener that is notified when the contents of a locations repository

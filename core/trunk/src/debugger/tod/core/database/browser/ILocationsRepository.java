@@ -20,12 +20,12 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.browser;
 
-import tod.core.ILocationRegisterer.Stats;
+import java.io.Serializable;
+
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ITypeInfo;
-import tod.core.database.structure.TypeInfo;
 
 /**
  * Permits to obtain the location info objects that have been registered during a 
@@ -84,6 +84,58 @@ public interface ILocationsRepository
 	 */
 	public Iterable<ILocationInfo> getLocations();
 	
+	public static class Stats implements Serializable
+	{
+		private static final long serialVersionUID = -2910977890794945414L;
+		
+		public final int nTypes;
+		public final int nBehaviors;
+		public final int nFields;
+
+		public Stats(int aTypes, int aBehaviors, int aFields)
+		{
+			nTypes = aTypes;
+			nBehaviors = aBehaviors;
+			nFields = aFields;
+		}
+		
+		@Override
+		public String toString()
+		{
+			return String.format(
+					"Location repository stats: %d types, %d behaviors, %d fields",
+					nTypes,
+					nBehaviors,
+					nFields);
+		}
+
+		@Override
+		public int hashCode()
+		{
+			final int PRIME = 31;
+			int result = 1;
+			result = PRIME * result + nBehaviors;
+			result = PRIME * result + nFields;
+			result = PRIME * result + nTypes;
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			final Stats other = (Stats) obj;
+			if (nBehaviors != other.nBehaviors) return false;
+			if (nFields != other.nFields) return false;
+			if (nTypes != other.nTypes) return false;
+			return true;
+		}
+		
+		
+	}
+
 
 	
 }

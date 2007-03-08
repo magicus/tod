@@ -32,7 +32,9 @@ import tod.impl.dbgrid.db.file.HardPagedFile;
 import tod.impl.dbgrid.db.file.IndexTuple;
 import tod.impl.dbgrid.db.file.IndexTupleCodec;
 import tod.impl.dbgrid.db.file.HardPagedFile.Page;
+import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Monitor;
+import tod.impl.dbgrid.monitoring.Probe;
 import tod.utils.NativeStream;
 import zz.utils.bit.BitStruct;
 import static tod.impl.dbgrid.DebuggerGridConfig.*;
@@ -63,6 +65,8 @@ public class ObjectsDatabase
 	 * Offset in the current page, in bytes.
 	 */
 	private int itsCurrentOffset;
+	
+	private long itsObjectsCount = 0;
 	
 	public ObjectsDatabase(File aFile)
 	{
@@ -131,6 +135,8 @@ public class ObjectsDatabase
 	
 	public void store(long aId, byte[] aData)
 	{
+		itsObjectsCount++;
+		
 		assert aData.length > 0;
 		if (aId < itsLastRecordedId)
 		{
@@ -262,6 +268,12 @@ public class ObjectsDatabase
 		byte[] theData = new byte[theDataSize];
 		NativeStream.i2b(itsIntBuffer, 0, theData, 0, theDataSize);
 		return decode(theData);
+	}
+	
+	@Probe(key = "objects count", aggr = AggregationType.SUM)
+	public long getObjectsCount()
+	{
+		return itsObjectsCount;
 	}
 	
 	/**

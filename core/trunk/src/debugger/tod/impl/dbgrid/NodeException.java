@@ -36,4 +36,9 @@ public class NodeException extends RuntimeException
 		super("Exception occurred in node "+aNodeId, aCause);
 		itsNodeId = aNodeId;
 	}
+
+	public String getNodeId()
+	{
+		return itsNodeId;
+	}
 }

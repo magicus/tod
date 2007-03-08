@@ -245,6 +245,13 @@ public class DebuggerGridConfig
 	public static final int DISPATCH_BRANCHING_FACTOR = 
 		ConfigUtils.readInt("dispatch-branching-factor", 10);
 	
+	/**
+	 * Number of consecutive packets to send to children in the dispatch 
+	 * round-robin scheme.
+	 */
+	public static final int DISPATCH_BATCH_SIZE =
+		ConfigUtils.readInt("dispatch-batch-size", 32);
+	
 	public static final String PARAM_DB_PAGE_BUFFER_SIZE = "page-buffer-size";
 	
 	/**

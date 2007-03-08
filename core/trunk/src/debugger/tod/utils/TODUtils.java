@@ -140,6 +140,8 @@ public class TODUtils
 				aConfig,
 				theRegistrer);
 
+		System.out.println(theRegistrer.getStats());
+		
 		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theDebuggerConfig);
 
 		GridMaster theMaster = new GridMaster(

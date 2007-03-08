@@ -190,8 +190,8 @@ implements RIDatabaseNode
 
 				try
 				{
-					itsInputStream.close();
 					getMaster().nodeException(new NodeException(getNodeId(), e));
+					itsInputStream.close();
 				}
 				catch (Exception e1)
 				{

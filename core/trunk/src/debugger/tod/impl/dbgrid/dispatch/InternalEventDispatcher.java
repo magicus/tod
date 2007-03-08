@@ -41,16 +41,12 @@ import tod.core.transport.CollectorPacketReader;
 import tod.core.transport.CollectorPacketWriter;
 import tod.core.transport.LogReceiver;
 import tod.core.transport.MessageType;
+import static tod.impl.dbgrid.DebuggerGridConfig.*;
 import tod.impl.dbgrid.GridMaster;
 
 public class InternalEventDispatcher extends AbstractEventDispatcher
 implements RIInternalDispatcher
 {
-	/**
-	 * Current child in the round-robin scheme.
-	 */
-	private int itsCurrentChild = 0;
-
 	private ILocationRegisterer itsForwardingRegistrer = new ForwardingRegisterer();
 
 	public InternalEventDispatcher() throws RemoteException
@@ -128,7 +124,11 @@ implements RIInternalDispatcher
 		 * thread registration to the master.
 		 */
 		private GridMaster itsMaster;
-
+		
+		/**
+		 * Current child in the round-robin scheme.
+		 */
+		private int itsCurrentChild = 0;
 
 		public ForwardingLogReceiver(
 				GridMaster aMaster,
@@ -141,10 +141,11 @@ implements RIInternalDispatcher
 			itsMaster = aMaster;
 			if (aStart) start();
 		}
-
+		
 		@Override
 		protected void readPacket(DataInputStream aStream, MessageType aType) throws IOException
 		{
+			checkNodeException();
 			switch (aType)
 			{
 			case INSTANTIATION:
@@ -156,8 +157,12 @@ implements RIInternalDispatcher
 			case LOCAL_VARIABLE_WRITE:
 			case OUTPUT:
 			case EXCEPTION:
-				DispatcherProxy theProxy = (DispatcherProxy) getChild(itsCurrentChild);
-				itsCurrentChild = (itsCurrentChild + 1) % getChildrenCount();
+				DispatcherProxy theProxy = (DispatcherProxy) getChild(itsCurrentChild / DISPATCH_BATCH_SIZE);
+				
+				// The following code is 5 times faster than using a modulo.
+				// (Pentium M 2ghz)
+				itsCurrentChild++;
+				if (itsCurrentChild >= (getChildrenCount() * DISPATCH_BATCH_SIZE)) itsCurrentChild = 0;
 
 				theProxy.forwardPacket(aType, aStream);
 				if (DebugFlags.DISPATCH_FAKE_1) theProxy.getOutStream().flush();

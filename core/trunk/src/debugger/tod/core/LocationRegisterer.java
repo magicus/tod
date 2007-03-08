@@ -25,27 +25,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.objectweb.asm.Type;
-
 import tod.Util;
-import tod.core.ILocationRegisterer.Stats;
 import tod.core.database.browser.ILocationStore;
-import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.browser.LocationUtils;
 import tod.core.database.structure.ArrayTypeInfo;
 import tod.core.database.structure.BehaviorInfo;
 import tod.core.database.structure.ClassInfo;
 import tod.core.database.structure.FieldInfo;
 import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.PrimitiveTypeInfo;
 import tod.core.database.structure.TypeInfo;
 import tod.core.database.structure.UnknownTypeInfo;
-import zz.utils.IteratorsIterator;
-import zz.utils.Utils;
 /**
  * This class permits to register location ids.
  * @author gpothier

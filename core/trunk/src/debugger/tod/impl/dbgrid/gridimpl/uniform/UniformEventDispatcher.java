@@ -31,6 +31,7 @@ import tod.impl.dbgrid.dispatch.DispatchNodeProxy;
 import tod.impl.dbgrid.dispatch.LeafEventDispatcher;
 import tod.impl.dbgrid.dispatch.RIDispatchNode;
 import tod.impl.dbgrid.messages.GridEvent;
+import static tod.impl.dbgrid.DebuggerGridConfig.*;
 
 /**
  * This implementation of the dispatcher forwards each received event
@@ -65,13 +66,13 @@ public class UniformEventDispatcher extends LeafEventDispatcher
 	@Override
 	protected void dispatchEvent0(GridEvent aEvent)
 	{
-		UniformDBNodeProxy theProxy = getNode(itsCurrentNode);
+		UniformDBNodeProxy theProxy = getNode(itsCurrentNode / DISPATCH_BATCH_SIZE);
 		theProxy.pushEvent(aEvent);
 		
 		// The following code is 5 times faster than using a modulo.
 		// (Pentium M 2ghz)
 		itsCurrentNode++;
-		if (itsCurrentNode >= getChildrenCount()) itsCurrentNode = 0;
+		if (itsCurrentNode >= (getChildrenCount() * DISPATCH_BATCH_SIZE)) itsCurrentNode = 0;
 	}
 	
 }

@@ -162,13 +162,21 @@ public class UniformDatabaseNode extends DatabaseNode
 		NativeStream.b2i(itsByteBuffer, itsBuffer);
 		itsStruct.reset();
 		
-		itsReceivedMessages += theCount;
 
 		for (int i=0;i<theCount;i++)
 		{
-			GridEvent theEvent = (GridEvent) GridMessage.read(itsStruct);
-			itsDatabase.push(theEvent);
+			GridEvent theEvent;
+			try
+			{
+				theEvent = (GridEvent) GridMessage.read(itsStruct);
+				itsDatabase.push(theEvent);
+			}
+			catch (Exception e)
+			{
+				throw new RuntimeException("Exception in pushEvents ("+itsReceivedMessages+")", e);
+			}
 			eventStored(theEvent.getTimestamp());
+			itsReceivedMessages++;
 		}
 	}
 

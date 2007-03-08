@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.agent.DebugFlags;
+import tod.core.ILocationRegisterer;
 import tod.core.ILogCollector;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILocationStore;
@@ -356,4 +357,5 @@ implements RILeafDispatcher
 			else return null;
 		}
 	}
+	
 }

@@ -24,6 +24,7 @@ import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_BUFFER_SIZE;
 import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_POINTER_BITS;
 import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_SIZE;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -31,6 +32,7 @@ import java.io.RandomAccessFile;
 import java.lang.ref.ReferenceQueue;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.PriorityQueue;
 
 import tod.agent.DebugFlags;
 import tod.impl.dbgrid.db.file.PageBank.Page;
@@ -55,29 +57,32 @@ public class HardPagedFile extends PageBank
 	private static PageDataManager itsPageDataManager = 
 		new PageDataManager(DB_PAGE_SIZE, (int) (DB_PAGE_BUFFER_SIZE/DB_PAGE_SIZE));
 	
-	private FileAccessor itsFileAccessor;
-	private int itsPageSize;
+	private final FileAccessor itsFileAccessor;
+	private final int itsPageSize;
+	
+	/**
+	 * Mapping of logical page ids to physical page offsets.
+	 * TODO: Temporary. This should be stored on the disk.
+	 */
+	private int[] itsPhysicalPage = new int[10000000];
 	
 	/**
 	 * Number of pages currently in the file.
 	 */
 	private long itsPagesCount;
 	
-	private long itsWrittenPagesCount;
-	private long itsReadPagesCount;
-	
 	private String itsName;
 	
 	public HardPagedFile(File aFile, int aPageSize) throws FileNotFoundException
 	{
-		assert itsPageSize % 4 == 0;
+		assert aPageSize % 4 == 0;
 		
 		itsName = aFile.getName();
 		Monitor.getInstance().register(this);
 	
 		itsPageSize = aPageSize;
 		aFile.delete();
-		itsFileAccessor = new FileAccessor (new RandomAccessFile(aFile, "rw"));
+		itsFileAccessor = new FileAccessor (aFile);
 		itsPagesCount = 0;
 	}
 	
@@ -121,28 +126,20 @@ public class HardPagedFile extends PageBank
 		return itsPagesCount * itsPageSize;
 	}
 	
-	@Probe(key = "file written bytes", aggr = AggregationType.SUM)
-	public long getWrittenBytes()
+	/**
+	 * Returns the actual file size.
+	 */
+	@Probe(key = "file size", aggr = AggregationType.SUM)
+	public long getFileSize()
 	{
-		return itsWrittenPagesCount * itsPageSize;
-	}
-
-	@Probe(key = "file read bytes", aggr = AggregationType.SUM)
-	public long getReadBytes()
-	{
-		return itsReadPagesCount * itsPageSize;
-	}
-	
-	@Probe(key = "file written pages", aggr = AggregationType.SUM)
-	public long getWrittenPages()
-	{
-		return itsWrittenPagesCount;
-	}
-	
-	@Probe(key = "file read pages", aggr = AggregationType.SUM)
-	public long getReadPages()
-	{
-		return itsReadPagesCount;
+		try
+		{
+			return itsFileAccessor.itsFile.length();
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 	
 	/**
@@ -218,8 +215,6 @@ public class HardPagedFile extends PageBank
 				itsFileAccessor.read(aId, theBuffer);
 			}
 			
-			itsReadPagesCount++;
-			
 			return theBuffer;
 		}
 		catch (IOException e)
@@ -237,8 +232,6 @@ public class HardPagedFile extends PageBank
 			{
 				itsFileAccessor.write(aId, aData);
 			}
-			
-			itsWrittenPagesCount++;
 		}
 		catch (IOException e)
 		{
@@ -254,21 +247,26 @@ public class HardPagedFile extends PageBank
 	
 	private class FileAccessor extends Thread
 	{
-		private RandomAccessFile itsFile;
+		private final RandomAccessFile itsFile;
 
-		private byte[] itsReadByteBuffer;
-		private byte[] itsWriteByteBuffer;
+		private final byte[] itsReadByteBuffer;
+		private final byte[] itsWriteByteBuffer;
 		private long itsPageId;
 		private IOException itsException;
 		
 		private long itsReadCount = 0;
 		private long itsWriteCount = 0;
-
-		public FileAccessor(RandomAccessFile aFile)
+		
+		private long itsLastAccessedPage = -1;
+		private long itsPageScattering = 0;
+		
+		private int itsPid = 1;
+		
+		public FileAccessor(File aFile) throws FileNotFoundException
 		{
 			Monitor.getInstance().register(this);
+			itsFile = new RandomAccessFile(aFile, "rw");
 			
-			itsFile = aFile;
 			itsReadByteBuffer = new byte[itsPageSize];
 			itsWriteByteBuffer = new byte[itsPageSize];
 			itsPageId = -1;
@@ -282,24 +280,85 @@ public class HardPagedFile extends PageBank
 		
 		public synchronized void read(long aId, int[] aBuffer) throws IOException
 		{
+			aId = itsPhysicalPage[(int) aId];
+			
+			updateScattering(aId);
+			
 			itsReadCount++;
 //			assert itsFile.length() >= (aId+1) * itsPageSize;
 			if (! (itsFile.length() >= (aId+1) * itsPageSize))
 			{
 				throw new RuntimeException(String.format(
-						"Read error: id: %d, l: %d",
+						"Read error: id: %d, page size: %d, storage: %d, length: %d",
 						aId,
+						itsPageSize,
+						getStorageSpace(),
 						itsFile.length()));
 			}
 					
-			itsFile.seek(aId * itsPageSize);
-			itsFile.readFully(itsReadByteBuffer);
+			long theOffset = aId * itsPageSize;
+			
+			// Sometimes the readFully operation fails for no appearant reason, so we try
+			// a brute-force workaround...
+			int theRetries = 0;
+			while(true)
+			{
+				try
+				{
+					itsFile.seek(theOffset);
+					itsFile.readFully(itsReadByteBuffer);
+					break;
+				}
+				catch (EOFException e)
+				{
+					System.err.println(String.format(
+							"Read error: id: %d, page size: %d, storage: %d, length: %d, offset: %d, retry: %d",
+							aId,
+							itsPageSize,
+							getStorageSpace(),
+							itsFile.length(),
+							theOffset,
+							theRetries));
+					
+					try
+					{
+						Thread.sleep(500);
+					}
+					catch (InterruptedException e1)
+					{
+						throw new RuntimeException(e1);
+					}
+					
+					theRetries++;
+					if (theRetries == 50) throw e;
+				}
+			}
 			
 			NativeStream.b2i(itsReadByteBuffer, aBuffer);
 		}
 		
+		private void updateScattering(long aId)
+		{
+			if (itsLastAccessedPage >= 0)
+			{
+				long theDistance = Math.abs(itsLastAccessedPage - aId);
+				itsPageScattering += theDistance;
+			}
+			itsLastAccessedPage = aId;			
+		}
+		
 		public synchronized void write(long aId, int[] aData) throws IOException
 		{
+			int thePid = itsPhysicalPage[(int) aId];
+			if (thePid == 0)
+			{
+				thePid = itsPid++;
+				itsPhysicalPage[(int) aId] = thePid;
+			}
+			aId = thePid;
+			
+			updateScattering(aId);
+			
 			itsWriteCount++;
 			if (DebugFlags.DISABLE_ASYNC_WRITES)
 			{
@@ -354,10 +413,40 @@ public class HardPagedFile extends PageBank
 			}
 		}
 		
+		@Probe(key = "file written bytes", aggr = AggregationType.SUM)
+		public long getWrittenBytes()
+		{
+			return itsWriteCount * itsPageSize;
+		}
+
+		@Probe(key = "file read bytes", aggr = AggregationType.SUM)
+		public long getReadBytes()
+		{
+			return itsReadCount * itsPageSize;
+		}
+		
+		@Probe(key = "file written pages", aggr = AggregationType.SUM)
+		public long getWrittenPages()
+		{
+			return itsWriteCount;
+		}
+		
+		@Probe(key = "file read pages", aggr = AggregationType.SUM)
+		public long getReadPages()
+		{
+			return itsReadCount;
+		}
+		
 		@Probe(key = "read/write ratio (%)", aggr = AggregationType.AVG)
-		public float getWrittenPages()
+		public float getRatio()
 		{
 			return 100f*itsReadCount/itsWriteCount;
+		}
+		
+		@Probe(key = "page access scattering", aggr = AggregationType.SUM)
+		public float getScattering()
+		{
+			return 1f * itsPageScattering / (itsReadCount+itsWriteCount);
 		}
 	}
 	

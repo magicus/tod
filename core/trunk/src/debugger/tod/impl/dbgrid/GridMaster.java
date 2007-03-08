@@ -326,6 +326,11 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	
 	public synchronized void nodeException(NodeException aException) 
 	{
+		System.err.println(String.format(
+				"Received exception %s from node %s",
+				aException.getMessage(),
+				aException.getNodeId()));
+		
 		getRootDispatcher().nodeException(aException);
 	}
 	

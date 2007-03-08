@@ -70,9 +70,9 @@ public class GridQuery
 				{
 					theEventsCount[0] = Fixtures.replay(theFile, theMaster);
 				}
-				catch (IOException e)
+				catch (Exception e)
 				{
-					throw new RuntimeException(e);
+					e.printStackTrace();
 				}
 			}
 		});
