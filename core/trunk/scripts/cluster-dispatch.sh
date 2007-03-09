@@ -8,4 +8,5 @@
 #$ -N dispatch
 #$ -S /bin/sh
 
-./cluster-base.sh "./start-dispatch.sh" $1 $2
+[ $SGE_TASK_ID -ne 1 ] && export EXTRA_JVM_ARGS="$EXTRA_JVM_ARGS -Dskip-events=true"
+./cluster-base.sh "./start-replay.sh" $*

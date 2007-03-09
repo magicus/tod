@@ -8,4 +8,4 @@
 #$ -N replay
 #$ -S /bin/sh
 
-./cluster-base.sh "./start-replay.sh" $1 
+./cluster-base.sh "./start-replay.sh" $*

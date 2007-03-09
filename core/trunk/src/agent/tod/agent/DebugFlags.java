@@ -41,6 +41,11 @@ public class DebugFlags
 	public static final boolean SKIP_EVENTS = ConfigUtils.readBoolean("skip-events", false); 
 	
 	/**
+	 * Causes database nodes to skip incoming objects
+	 */
+	public static final boolean SKIP_OBJECTS = ConfigUtils.readBoolean("skip-objects", false); 
+	
+	/**
 	 * Maximum number of events to process, or 0 for no limit.
 	 */
 	public static final long MAX_EVENTS = ConfigUtils.readLong("max-events", 0);

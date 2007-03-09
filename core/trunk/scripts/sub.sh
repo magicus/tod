@@ -14,10 +14,10 @@ echo NODES: $NODES SF: $SF SN: $SEC_NODES
 
 if [ -n "$SYNTAGMASTER" ] 
 then
-	echo "syntagma" > master-host
-	qsub -t 2-$((SEC_NODES+1)):1 ./cluster-$SCRIPT.sh $NODES
-	./start-$SCRIPT.sh $NODES
+	echo "$SYNTAGMASTER" > master-host
+	qsub -t 2-$((SEC_NODES+1)):1 ./cluster-$SCRIPT.sh $NODES $3 $4 $5
+	./start-$SCRIPT.sh $NODES $3 $4 $5
 else
-	qsub -t 1-$((SEC_NODES+1)):1 ./cluster-$SCRIPT.sh $NODES
+	qsub -t 1-$((SEC_NODES+1)):1 ./cluster-$SCRIPT.sh $NODES $3 $4 $5
 fi
 

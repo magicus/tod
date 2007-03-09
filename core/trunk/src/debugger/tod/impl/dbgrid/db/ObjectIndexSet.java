@@ -32,7 +32,6 @@ import tod.impl.dbgrid.monitoring.Probe;
  */
 public class ObjectIndexSet extends RoleIndexSet
 {
-	private long itsMaxId = 0;
 	
 	public ObjectIndexSet(String aName, HardPagedFile aFile, int aIndexCount)
 	{
@@ -43,7 +42,6 @@ public class ObjectIndexSet extends RoleIndexSet
 	@Override
 	public void addTuple(int aIndex, RoleTuple aTuple)
 	{
-		itsMaxId = Math.max(itsMaxId, aIndex);
 		if (DebugFlags.ALIAS_OBJECTS > 0)
 		{
 			aIndex = ((aIndex-1) % DebugFlags.ALIAS_OBJECTS) + 1;
@@ -52,10 +50,5 @@ public class ObjectIndexSet extends RoleIndexSet
 		super.addTuple(aIndex, aTuple);
 	}
 	
-	@Probe(key = "max object id", aggr = AggregationType.MAX)
-	public long getMaxObjectId()
-	{
-		return itsMaxId;
-	}
 
 }

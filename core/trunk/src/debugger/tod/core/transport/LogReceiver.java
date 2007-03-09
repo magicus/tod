@@ -30,6 +30,7 @@ import java.util.List;
 
 import tod.agent.DebugFlags;
 import tod.core.database.structure.HostInfo;
+import tod.impl.dbgrid.DebuggerGridConfig;
 
 /**
  * Receives log events from a logged application through a socket and
@@ -205,6 +206,15 @@ public abstract class LogReceiver
 	 */
 	private boolean process() throws IOException
 	{
+		if (DebugFlags.SKIP_EVENTS)
+		{
+			byte[] theBuffer = new byte[4096];
+			while(true)
+			{
+				itsDataStream.read(theBuffer);
+			}
+		}
+		
 		try
 		{
 			if (itsDataStream.available() == 0) return false;

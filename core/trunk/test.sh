@@ -5,6 +5,7 @@ CLASSPATH=./bin:../zz.utils/bin
 
 HOST=localhost
 #HOST=syntagma.dim.uchile.cl
+#HOST=padme
 
 
 VMARGS=''
@@ -14,7 +15,7 @@ VMARGS="$VMARGS -Dcollector-host=$HOST -Dcollector-port=8058 -Dnative-port=8059 
 VMARGS="$VMARGS -Dcollector-type=socket"
 VMARGS="$VMARGS -Xbootclasspath/p:./build/tod-agent.jar" 
 #VMARGS="$VMARGS -ea" 
-#VMARGS="$VMARGS -server" 
+VMARGS="$VMARGS -server" 
 VMARGS="$VMARGS -Xmx384m" 
 VMARGS="$VMARGS -XX:MaxPermSize=128m"
 #VMARGS="$VMARGS -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"

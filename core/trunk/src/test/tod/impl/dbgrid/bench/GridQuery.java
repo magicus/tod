@@ -172,7 +172,8 @@ public class GridQuery
 				for (IThreadInfo theThread: aBrowser.getThreads())
 				{
 					System.out.println("Retrieving counts for thread "+theThread.getId()+" of host "+theThread.getHost().getId());
-					
+
+					long t0 = System.currentTimeMillis();
 					IEventFilter theFilter = aBrowser.createThreadFilter(theThread);
 					IEventBrowser theEventBrowser = aBrowser.createBrowser(theFilter);
 					
@@ -190,7 +191,10 @@ public class GridQuery
 						theCounts[i] += l;
 					}
 	
-					System.out.println("  Event count: "+theCount);
+					long t1 = System.currentTimeMillis();
+					long t = t1-t0;
+					
+					System.out.println("  Event count: "+theCount+", time: "+t+"ms");
 				}
 			}
 		});

@@ -36,6 +36,9 @@ import tod.impl.dbgrid.db.RoleIndexSet.RoleTuple;
 import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.db.file.HardPagedFile;
 import tod.impl.dbgrid.messages.ObjectCodec;
+import tod.impl.dbgrid.monitoring.AggregationType;
+import tod.impl.dbgrid.monitoring.Monitor;
+import tod.impl.dbgrid.monitoring.Probe;
 
 /**
  * Groups all the indexes maintained by a database node.
@@ -58,6 +61,9 @@ public class Indexes
 	private StdIndexSet[] itsArrayIndexIndexes;
 	private ObjectIndexSet[] itsObjectIndexes;
 	
+	private long itsMaxObjectId = 0;
+
+	
 	/**
 	 * Protected constructor for subclasses. Does not initialize indexes.
 	 */
@@ -67,6 +73,8 @@ public class Indexes
 	
 	public Indexes(HardPagedFile aFile)
 	{
+		Monitor.getInstance().register(this);
+		
 		itsTypeIndex = new StdIndexSet("type", aFile, STRUCTURE_TYPE_COUNT+1);
 		itsHostIndex = new StdIndexSet("host", aFile, STRUCTURE_HOSTS_COUNT+1);
 		itsThreadIndex = new StdIndexSet("thread", aFile, STRUCTURE_THREADS_COUNT+1);
@@ -213,6 +221,7 @@ public class Indexes
 
 	public void indexObject(long aIndex, RoleTuple aTuple)
 	{
+		itsMaxObjectId = Math.max(itsMaxObjectId, aIndex);
 		SplittedConditionHandler.OBJECTS.index(aIndex, aTuple, itsObjectIndexes);
 	}
 	
@@ -221,4 +230,9 @@ public class Indexes
 		return itsObjectIndexes[aPart].getIndex(aPartialKey);
 	}
 	
+	@Probe(key = "max object id", aggr = AggregationType.MAX)
+	public long getMaxObjectId()
+	{
+		return itsMaxObjectId;
+	}
 }

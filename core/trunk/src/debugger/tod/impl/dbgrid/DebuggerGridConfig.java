@@ -129,7 +129,7 @@ public class DebuggerGridConfig
 	/**
 	 * Maximum number of behaviors
 	 */
-	public static final int STRUCTURE_BEHAVIOR_COUNT = 100000;
+	public static final int STRUCTURE_BEHAVIOR_COUNT = 200000;
 
 	/**
 	 * Maximum number of fields
@@ -243,7 +243,7 @@ public class DebuggerGridConfig
 	 * Number of children of dispatchers.
 	 */
 	public static final int DISPATCH_BRANCHING_FACTOR = 
-		ConfigUtils.readInt("dispatch-branching-factor", 10);
+		ConfigUtils.readInt("dispatch-branching-factor", 0);
 	
 	/**
 	 * Number of consecutive packets to send to children in the dispatch 

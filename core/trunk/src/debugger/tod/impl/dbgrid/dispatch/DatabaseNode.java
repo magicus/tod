@@ -303,6 +303,8 @@ implements RIDatabaseNode
 
 	public void register(long aId, Object aObject)
 	{
+		if (DebugFlags.SKIP_OBJECTS) return;
+		
 		long theObjectId = ObjectCodec.getObjectId(aId);
 		int theHostId = ObjectCodec.getHostId(aId);
 		getObjectsDatabase(theHostId).store(theObjectId, aObject);
@@ -338,9 +340,12 @@ implements RIDatabaseNode
 	
 	public Object getRegisteredObject(long aId) 
 	{
+		if (DebugFlags.SKIP_OBJECTS) return null;
+		
 		long theObjectId = ObjectCodec.getObjectId(aId);
 		int theHostId = ObjectCodec.getHostId(aId);
-		return getObjectsDatabase(theHostId).load(theObjectId);
+		ReorderedObjectsDatabase theObjectsDatabase = getObjectsDatabase(theHostId);
+		return theObjectsDatabase != null ? theObjectsDatabase.load(theObjectId) : null;
 	}
 
 	public RIBufferIterator<StringSearchHit[]> searchStrings(String aText) throws RemoteException

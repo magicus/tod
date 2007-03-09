@@ -123,6 +123,11 @@ public abstract class SplittedConditionHandler<T extends IndexTuple>
 			theKey >>>= theBits;
 		}
 		
+		if (theKey != 0)
+		{
+			throw new RuntimeException("Key overflow: "+aKey);
+		}
+		
 		return theParts;
 	}
 	

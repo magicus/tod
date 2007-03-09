@@ -26,7 +26,7 @@ export CLASSPATH
 
 [ -n "$PAGE_BUFFER_SIZE" ] || export PAGE_BUFFER_SIZE=200m
 [ -n "$JVM_HEAP_SIZE_SIZE" ] || export JVM_HEAP_SIZE_SIZE=500m
-[ -n "$SUB_FACTOR" ] || export SUB_FACTOR="15/10"
+[ -n "$SUB_FACTOR" ] || export SUB_FACTOR="1"
 [ -n "$GRID_IMPL" ] || export GRID_IMPL="uniform"
 
 [ -n "$CHECK_SAME_HOST" ] || export CHECK_SAME_HOST="false"

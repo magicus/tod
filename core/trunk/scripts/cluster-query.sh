@@ -8,4 +8,4 @@
 #$ -N query
 #$ -S /bin/sh
 
-./cluster-base.sh "./start-query.sh" $1 
+./cluster-base.sh "./start-query.sh" $*

@@ -10,7 +10,7 @@ then
 	MASTER_HOST=`hostname`
 	echo $MASTER_HOST > master-host
 	echo Starting master, host: $MASTER_HOST
-	./$1 $2 $3
+	./$1 "$2" "$3" "$4" "$5" "$6"
 	rm master-host
 else
 	echo NODE

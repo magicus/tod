@@ -106,9 +106,8 @@ public class DynamicDispatchTreeStructure extends DispatchTreeStructure
 			waitNodes();
 			createRootDispatcher(aMaster);
 
-			int theBranchingFactor = DebugFlags.DISPATCH_FAKE_1 ? 
-					1 
-					: DebuggerGridConfig.DISPATCH_BRANCHING_FACTOR;
+			int theBranchingFactor = DebugFlags.DISPATCH_FAKE_1 ? 1 : DISPATCH_BRANCHING_FACTOR;
+			if (theBranchingFactor == 0) theBranchingFactor = Integer.MAX_VALUE;
 			
 			// Queue of nodes that must be connected to a parent.
 			LinkedList<RIDispatchNode> theChildrenQueue =
@@ -186,11 +185,15 @@ public class DynamicDispatchTreeStructure extends DispatchTreeStructure
 	
 	public static DispatchTreeStructure compute(int aDatabaseNodes)
 	{
+		if (DISPATCH_BRANCHING_FACTOR == 0) return new DynamicDispatchTreeStructure(aDatabaseNodes, 0);
+		
 		int theTotalDispatchers = 0;
 		int theDispatchers = (aDatabaseNodes+DISPATCH_BRANCHING_FACTOR-1)/DISPATCH_BRANCHING_FACTOR;
 		while (true)
 		{
-			if (theDispatchers == 1) return new DynamicDispatchTreeStructure(aDatabaseNodes, theTotalDispatchers);
+			if (theDispatchers == 1) return new DynamicDispatchTreeStructure(
+					aDatabaseNodes, 
+					theTotalDispatchers);
 			theTotalDispatchers += theDispatchers;
 			theDispatchers = (theDispatchers+DISPATCH_BRANCHING_FACTOR-1)/DISPATCH_BRANCHING_FACTOR;
 		}
