@@ -20,14 +20,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.dispatch;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Socket;
 
 /**
  * Proxy for nodes in the dispatching tree (dispatchers or database nodes)
@@ -53,22 +49,14 @@ public abstract class DispatchNodeProxy
 	
 	private RIDispatchNode itsConnectable;
 	
-	private final DataOutputStream itsOutStream;
-	private final DataInputStream itsInStream;
-
 	private final String itsNodeId;
 	
 	public DispatchNodeProxy(
 			RIDispatchNode aConnectable,
-			InputStream aInputStream,
-			OutputStream aOutputStream,
 			String aNodeId)
 	{
 		itsConnectable = aConnectable;
 		itsNodeId = aNodeId;
-		
-		itsOutStream = new DataOutputStream(aOutputStream);
-		itsInStream = new DataInputStream(aInputStream);
 	}
 
 	public String getNodeId()
@@ -81,15 +69,9 @@ public abstract class DispatchNodeProxy
 		return itsConnectable;
 	}
 
-	protected DataInputStream getInStream()
-	{
-		return itsInStream;
-	}
+	protected abstract DataInputStream getInStream();
 
-	protected DataOutputStream getOutStream()
-	{
-		return itsOutStream;
-	}
+	protected abstract DataOutputStream getOutStream();
 
 
 	/**

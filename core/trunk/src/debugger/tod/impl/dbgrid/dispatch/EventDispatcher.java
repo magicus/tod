@@ -126,9 +126,13 @@ implements RIDispatcher
 		private GridMaster itsMaster;
 		
 		/**
-		 * Current child in the round-robin scheme.
+		 * Remaining packets to process before changing to another child
 		 */
-		private int itsCurrentChild = 0;
+		private int itsPacketsBeforeChange = 0;
+//		private int itsCurrentChild = 0;
+		
+		private DispatcherProxy itsCurrentChild;
+		private int itsCurrentChildIndex;
 
 		public ForwardingLogReceiver(
 				GridMaster aMaster,
@@ -140,6 +144,34 @@ implements RIDispatcher
 			super(aHostInfo, aInStream, aOutStream, false);
 			itsMaster = aMaster;
 			if (aStart) start();
+		}
+		
+		private DispatcherProxy getNextChild()
+		{
+			if (itsPacketsBeforeChange == 0)
+			{
+//				int theMinChild = Integer.MAX_VALUE;
+//				itsCurrentChild = null;
+//				for(DispatchNodeProxy theProxy0 : getChildren())
+//				{
+//					DispatcherProxy theProxy = (DispatcherProxy) theProxy0;
+//					int theSize = theProxy.getQueueSize();
+//					if (theSize < theMinChild)
+//					{
+//						itsCurrentChild = theProxy;
+//						theMinChild = theSize;
+//						if (theSize == 0) break; // If the child is empty there is no need to continue searching
+//					}
+//				}
+				
+				itsCurrentChild = (DispatcherProxy) getChild(itsCurrentChildIndex);
+				itsCurrentChildIndex = (itsCurrentChildIndex+1) % getChildrenCount();
+				
+				itsPacketsBeforeChange = DISPATCH_BATCH_SIZE;
+			}
+			
+			itsPacketsBeforeChange --;
+			return itsCurrentChild;
 		}
 		
 		@Override
@@ -157,13 +189,7 @@ implements RIDispatcher
 			case LOCAL_VARIABLE_WRITE:
 			case OUTPUT:
 			case EXCEPTION:
-				DispatcherProxy theProxy = (DispatcherProxy) getChild(itsCurrentChild / DISPATCH_BATCH_SIZE);
-				
-				// The following code is 5 times faster than using a modulo.
-				// (Pentium M 2ghz)
-				itsCurrentChild++;
-				if (itsCurrentChild >= (getChildrenCount() * DISPATCH_BATCH_SIZE)) itsCurrentChild = 0;
-
+				DispatcherProxy theProxy = getNextChild();
 				theProxy.forwardPacket(aType, aStream);
 				if (DebugFlags.DISPATCH_FAKE_1) theProxy.getOutStream().flush();
 				break;

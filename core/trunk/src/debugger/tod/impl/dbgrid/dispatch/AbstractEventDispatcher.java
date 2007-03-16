@@ -95,9 +95,12 @@ implements RIEventDispatcher
 	{
 		try
 		{
+//			acceptChild(
+//					new BufferedInputStream(aSocket.getInputStream()),
+//					new BufferedOutputStream(aSocket.getOutputStream()));
 			acceptChild(
-					new BufferedInputStream(aSocket.getInputStream()),
-					new BufferedOutputStream(aSocket.getOutputStream()));
+					aSocket.getInputStream(),
+					aSocket.getOutputStream());
 		}
 		catch (IOException e)
 		{

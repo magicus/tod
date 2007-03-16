@@ -100,11 +100,12 @@ public class GridQuery
 		benchCounts(theBrowser, theFirstTimestamp, theLastTimestamp, theSlots, true);
 		
 		System.out.println("\nPerforming count benchmarks --- pass #2\n");
+		System.out.println("(skipped)");
 		
-		long[] theFastCounts = benchCounts(theBrowser, theFirstTimestamp, theLastTimestamp, theSlots, false);
-		long[] theMergeCounts = benchCounts(theBrowser, theFirstTimestamp, theLastTimestamp, theSlots, true);
-		
-		printDistortion(theMergeCounts, theFastCounts);
+//		long[] theFastCounts = benchCounts(theBrowser, theFirstTimestamp, theLastTimestamp, theSlots, false);
+//		long[] theMergeCounts = benchCounts(theBrowser, theFirstTimestamp, theLastTimestamp, theSlots, true);
+//		
+//		printDistortion(theMergeCounts, theFastCounts);
 		
 		benchCursors(theBrowser, 1, 1000);
 		benchCursors(theBrowser, 1000, 100);

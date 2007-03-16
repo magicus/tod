@@ -250,7 +250,7 @@ public class DebuggerGridConfig
 	 * round-robin scheme.
 	 */
 	public static final int DISPATCH_BATCH_SIZE =
-		ConfigUtils.readInt("dispatch-batch-size", 32);
+		ConfigUtils.readInt("dispatch-batch-size", 1024);
 	
 	public static final String PARAM_DB_PAGE_BUFFER_SIZE = "page-buffer-size";
 	

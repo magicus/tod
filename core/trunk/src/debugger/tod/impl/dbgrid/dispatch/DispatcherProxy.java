@@ -21,19 +21,24 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.dispatch;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.LinkedList;
 
 import tod.core.transport.MessageType;
 import tod.utils.NativeStream;
+import zz.utils.ArrayStack;
 import zz.utils.Utils;
 
 public class DispatcherProxy extends DispatchNodeProxy
 {
+	private BufferedSender itsSender;
+	private BSOutputStream itsOut;
+	private DataOutputStream itsDataOut;
 	private byte[] itsBuffer = new byte[1024];
-	
 	private byte[] itsIBBuffer = new byte[4];
 	
 	public DispatcherProxy(
@@ -42,7 +47,31 @@ public class DispatcherProxy extends DispatchNodeProxy
 			OutputStream aOutputStream,
 			String aNodeId)
 	{
-		super(aConnectable, aInputStream, aOutputStream, aNodeId);
+		super(aConnectable, aNodeId);
+		itsSender = new BufferedSender(aOutputStream);
+		itsOut = new BSOutputStream(itsSender);
+		itsDataOut = new DataOutputStream(itsOut);
+	}
+	
+	@Override
+	protected DataInputStream getInStream()
+	{
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	protected DataOutputStream getOutStream()
+	{
+		return itsDataOut;
+	}
+	
+	/**
+	 * Returns the number of bytes queued in this proxy.
+	 * This can be used for load balancing.
+	 */
+	public int getQueueSize()
+	{
+		return itsSender.getQueueSize();
 	}
 	
 	/**
@@ -52,19 +81,19 @@ public class DispatcherProxy extends DispatchNodeProxy
 	{
 		try
 		{
-			getOutStream().writeByte((byte) aType.ordinal());
+			itsOut.write(aType.ordinal());
 			
 			// Read packet size
 			aStream.readFully(itsIBBuffer);
 			int theSize = NativeStream.ba2i(itsIBBuffer);
 			
 			// Write packet size
-			getOutStream().write(itsIBBuffer);
+			itsOut.write(itsIBBuffer);
 			
 //			int theSize = aStream.readInt();
 //			getOutStream().writeInt(theSize);
 
-			Utils.pipe(itsBuffer, aStream, getOutStream(), theSize);
+			Utils.pipe(itsBuffer, aStream, itsOut, theSize);
 		}
 		catch (IOException e)
 		{
@@ -101,4 +130,195 @@ public class DispatcherProxy extends DispatchNodeProxy
 	}
 	
 	
+	/**
+	 * Sends buffers of data to the remote end. Buffers are queued and send
+	 * asynchronously.
+	 * @author gpothier
+	 */
+	private static class BufferedSender extends Thread
+	{
+		private OutputStream itsStream;
+		
+		private LinkedList<Buffer> itsQueue = new LinkedList<Buffer>();
+		private ArrayStack<Buffer> itsFreeBuffers = new ArrayStack<Buffer>();
+		private int itsSize;
+		
+		public BufferedSender(OutputStream aStream)
+		{
+			itsStream = aStream;
+			for (int i=0;i<1024;i++) itsFreeBuffers.push(new Buffer(new byte[4096]));
+			start();
+		}
+
+		public Buffer getFreeBuffer()
+		{
+			synchronized(itsFreeBuffers)
+			{
+				try
+				{
+					while (itsFreeBuffers.isEmpty()) itsFreeBuffers.wait();
+					Buffer theBuffer = itsFreeBuffers.pop();
+					assert theBuffer.length == 0;
+					return theBuffer;
+				}
+				catch (InterruptedException e)
+				{
+					throw new RuntimeException(e);
+				}
+			}
+		}
+		
+		private void addFreeBuffer(Buffer aBuffer)
+		{
+			synchronized (itsFreeBuffers)
+			{
+				aBuffer.reset();
+				itsFreeBuffers.push(aBuffer);
+				itsFreeBuffers.notifyAll();
+			}
+		}
+		
+		public synchronized void pushBuffer(Buffer aBuffer)
+		{
+			itsQueue.addLast(aBuffer);
+			itsSize += aBuffer.length;
+			notifyAll();
+		}
+		
+		private synchronized Buffer popBuffer()
+		{
+			try
+			{
+				while(itsQueue.isEmpty()) wait();
+				Buffer theBuffer = itsQueue.removeFirst();
+				itsSize -= theBuffer.length;
+				notifyAll();
+				return theBuffer;
+			}
+			catch (InterruptedException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		/**
+		 * Returns the number of bytes queued in this sender.
+		 */
+		protected int getQueueSize()
+		{
+			return itsSize;
+		}
+		
+		public synchronized void waitFlushed()
+		{
+			try
+			{
+				while(! itsQueue.isEmpty()) wait();
+			}
+			catch (InterruptedException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		
+		@Override
+		public void run()
+		{
+			try
+			{
+				while(true)
+				{
+					Buffer theBuffer = popBuffer();
+					itsStream.write(theBuffer.data, 0, theBuffer.length);
+					if (theBuffer.flush) itsStream.flush();
+					else addFreeBuffer(theBuffer);
+				}
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+	}
+	
+	private static class Buffer
+	{
+		public final byte[] data;
+		
+		/**
+		 * Amount of data used.
+		 */
+		public int length = 0;
+		
+		/**
+		 * Whether this buffer is a flush marker
+		 */
+		public boolean flush = false; 
+		
+		public Buffer(byte[] aData)
+		{
+			data = aData;
+		}
+		
+		public void reset()
+		{
+			length = 0;
+			flush = false;
+		}
+	}
+	
+	/**
+	 * An output stream that writes data to buffers of a {@link BufferedSender}.
+	 * @author gpothier
+	 */
+	private static class BSOutputStream extends OutputStream
+	{
+		private BufferedSender itsSender;
+		
+		private Buffer itsCurrentBuffer;
+		
+		public BSOutputStream(BufferedSender aSender)
+		{
+			itsSender = aSender;
+			newBuffer();
+		}
+		
+		private void newBuffer()
+		{
+			if (itsCurrentBuffer != null) itsSender.pushBuffer(itsCurrentBuffer);
+			itsCurrentBuffer = itsSender.getFreeBuffer();
+		}
+
+		@Override
+		public void write(byte[] aB, int aOff, int aLen) 
+		{
+			int theRemaining = aLen;
+			int theOffset = aOff;
+			while(theRemaining > 0)
+			{
+				int theChunk = Math.min(theRemaining, itsCurrentBuffer.data.length-itsCurrentBuffer.length);
+				System.arraycopy(aB, theOffset, itsCurrentBuffer.data, itsCurrentBuffer.length, theChunk);
+				itsCurrentBuffer.length += theChunk;
+				theOffset += theChunk;
+				theRemaining -= theChunk;
+				if (itsCurrentBuffer.length == itsCurrentBuffer.data.length) newBuffer();
+			}
+		}
+
+		@Override
+		public void write(int aB) 
+		{
+			itsCurrentBuffer.data[itsCurrentBuffer.length++] = (byte) aB;
+		}
+		
+		@Override
+		public void flush() 
+		{
+			itsCurrentBuffer.flush = true;
+			itsSender.pushBuffer(itsCurrentBuffer);
+			itsCurrentBuffer = null;
+			itsSender.waitFlushed();
+			newBuffer();
+		}
+	}
 }
