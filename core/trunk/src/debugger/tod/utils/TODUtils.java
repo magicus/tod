@@ -107,6 +107,10 @@ public class TODUtils
 				ASMInstrumenter theInstrumenter = new ASMInstrumenter(theDebuggerConfig);
 				DatabaseNode theNode = new DatabaseNode();
 				GridMaster theMaster = new GridMaster(theConfig, theRegistrer, theInstrumenter, theNode, true);
+				System.out.println("Binding master...");
+				aRegistry.rebind(GridMaster.RMI_ID, theMaster);
+				System.out.println("Bound master");
+
 				theMaster.waitReady();
 				return theMaster;
 			}

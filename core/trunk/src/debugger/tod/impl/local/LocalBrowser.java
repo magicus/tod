@@ -290,9 +290,9 @@ public class LocalBrowser implements ILogBrowser
 		throw new UnsupportedOperationException();
 	}
 
-	public <O> O exec(ITask<ILogBrowser, O> aTask)
+	public <O> O exec(Query<O> aQuery)
 	{
-		return aTask.run(this);
+		return aQuery.run(this);
 	}
 	
 	

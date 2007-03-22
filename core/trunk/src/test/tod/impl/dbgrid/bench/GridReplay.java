@@ -21,6 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.bench;
 
 import java.io.File;
+import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
@@ -40,6 +41,12 @@ public class GridReplay
 {
 	public static void main(String[] args) throws Exception
 	{
+		replay(args);
+//		System.exit(0);
+	}
+	
+	public static GridMaster replay(String[] args) throws Exception
+	{
 		Registry theRegistry = LocateRegistry.createRegistry(1099);
 		
 		String theFileName = DebuggerGridConfig.STORE_EVENTS_FILE;
@@ -53,7 +60,8 @@ public class GridReplay
 		float dt = (t1-t0)/1000f;
 		float theEpS = theCount/dt;
 		System.out.println("Events: "+theCount+" time: "+dt+"s rate: "+theEpS+"ev/s");
-//		System.exit(0);
+		
+		return theMaster;
 	}
 
 }

@@ -25,6 +25,8 @@ import static tod.gui.FontConfig.STD_FONT;
 import java.awt.Color;
 import java.awt.FlowLayout;
 
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import tod.core.database.browser.ILogBrowser;
@@ -49,6 +51,8 @@ public class WatchEntryNode<E> extends JPanel
 	
 	private Object[] itsValue;
 	private IWriteEvent[] itsSetter;
+	
+	private JComponent itsPlaceHolder;
 
 	public WatchEntryNode(
 			ISeedFactory aSeedFactory,
@@ -95,10 +99,13 @@ public class WatchEntryNode<E> extends JPanel
 	{
 		String theName = itsProvider.getEntryName(itsEntry);
 		add(GUIUtils.createLabel(theName + " = "));
+		itsPlaceHolder = GUIUtils.createLabel("...");
+		add(itsPlaceHolder);
 	}
 	
 	private void updateValue()
 	{
+		remove(itsPlaceHolder);
 		if (itsValue != null)
 		{
 			boolean theFirst = true;

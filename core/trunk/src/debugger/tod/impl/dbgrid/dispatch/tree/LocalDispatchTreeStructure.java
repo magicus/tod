@@ -21,12 +21,18 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.dispatch.tree;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.rmi.RemoteException;
 
+import tod.core.database.structure.HostInfo;
+import tod.core.transport.LogReceiver;
 import tod.impl.dbgrid.GridMaster;
+import tod.impl.dbgrid.dispatch.AbstractEventDispatcher;
 import tod.impl.dbgrid.dispatch.DatabaseNode;
-import tod.impl.dbgrid.dispatch.EventDispatcher;
-import tod.utils.pipe.PipedInputStream2;
-import tod.utils.pipe.PipedOutputStream2;
+import tod.impl.dbgrid.dispatch.DispatchNodeProxy;
+import tod.impl.dbgrid.dispatch.RIDispatchNode;
 
 /**
  * A dispatch tree structure for local, single-node situations.
@@ -47,25 +53,11 @@ public class LocalDispatchTreeStructure extends DispatchTreeStructure
 	{
 		try
 		{
-			EventDispatcher theDispatcher = new EventDispatcher();
+			FakeDispatcher theDispatcher = new FakeDispatcher();
 			setRootDispatcher(theDispatcher);
 			getDispatchers().add(theDispatcher);
 		
-			PipedInputStream2 theDispatcherIn = new PipedInputStream2();
-			PipedInputStream2 theNodeIn = new PipedInputStream2();
-			PipedOutputStream2 theDispatcherOut = new PipedOutputStream2(theNodeIn);
-			PipedOutputStream2 theNodeOut = new PipedOutputStream2(theDispatcherIn);
-			
-			theDispatcher.acceptChild(
-					"db-0", 
-					itsDatabaseNode, 
-					theDispatcherIn, 
-					theDispatcherOut);
-			
-			itsDatabaseNode.connectToLocalDispatcher(theNodeIn, theNodeOut);
-			
 			itsDatabaseNode.connectToLocalMaster(aMaster, "db-0");
-			theDispatcher.connectToLocalMaster(aMaster, "leaf-0");
 			
 			getDatabaseNodes().add(itsDatabaseNode);
 		}
@@ -85,6 +77,47 @@ public class LocalDispatchTreeStructure extends DispatchTreeStructure
 	public int total()
 	{
 		return 0;
+	}
+	
+	private class FakeDispatcher extends AbstractEventDispatcher
+	{
+		public FakeDispatcher() throws RemoteException
+		{
+			super(false);
+		}
+
+		@Override
+		protected DispatchNodeProxy createProxy(RIDispatchNode aConnectable, InputStream aInputStream, OutputStream aOutputStream, String aId)
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		protected void connectToDispatcher(Socket aSocket)
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public LogReceiver createLogReceiver(HostInfo aHostInfo, GridMaster aMaster, InputStream aInStream, OutputStream aOutStream, boolean aStartImmediately)
+		{
+			return itsDatabaseNode.createLogReceiver(aHostInfo, aMaster, aInStream, aOutStream, aStartImmediately);
+		}
+
+		@Override
+		public synchronized void clear()
+		{
+			itsDatabaseNode.clear();
+		}
+
+		@Override
+		public synchronized int flush()
+		{
+			return itsDatabaseNode.flush();
+		}
+		
+		
+		
 	}
 	
 	

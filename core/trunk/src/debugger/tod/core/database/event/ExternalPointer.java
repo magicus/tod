@@ -72,6 +72,16 @@ public class ExternalPointer implements Serializable
 		if (timestamp != other.timestamp) return false;
 		return true;
 	}
+	
+	@Override
+	public String toString()
+	{
+		return String.format(
+				"ExternalPointer [host: %d, thread: %d, ts: %d]", 
+				thread.getHost().getId(),
+				thread.getId(),
+				timestamp);
+	}
 
 }
 

@@ -48,11 +48,4 @@ public interface RIDispatchNode extends Remote
 	 */
 	public void clear() throws RemoteException;
 	
-	/**
-	 * Flushes all buffered data.
-	 * @return The number of flushed events.
-	 */
-	public int flush() throws RemoteException;
-	
-
 }

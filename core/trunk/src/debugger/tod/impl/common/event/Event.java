@@ -106,7 +106,8 @@ public abstract class Event implements ICallerSideEvent
 	
 	public IHostInfo getHost()
 	{
-		return getThread().getHost();
+		IThreadInfo theThread = getThread();
+		return theThread != null ? theThread.getHost() : null;
 	}
 
 	public long getTimestamp()
@@ -171,5 +172,14 @@ public abstract class Event implements ICallerSideEvent
 		return true;
 	}
 
-	
+	@Override
+	public String toString()
+	{
+		return String.format(
+				"Event [kind: %s, host: %s, thread: %s, depth: %d]",
+				getClass().getSimpleName(),
+				getHost(),
+				getThread(),
+				getDepth());
+	}
 }

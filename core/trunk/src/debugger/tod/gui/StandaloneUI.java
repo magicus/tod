@@ -49,7 +49,8 @@ public class StandaloneUI extends JPanel
 		{
 			if (RemoteGridSession.TOD_GRID_SCHEME.equals(theScheme))
 			{
-				itsSession = new RemoteGridSession(aUri, theConfig);
+				theConfig.set(TODConfig.COLLECTOR_HOST, aUri.getHost());
+				itsSession = new RemoteGridSession(aUri, theConfig, true);
 			}
 			else
 			{

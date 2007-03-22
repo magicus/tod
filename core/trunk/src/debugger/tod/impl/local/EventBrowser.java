@@ -37,18 +37,20 @@ public class EventBrowser implements IEventBrowser
 {
 	private final ILogBrowser itsLogBrowser;
 	
-	private List<ILogEvent> itsEvents = new ArrayList<ILogEvent>();
+	private final List<ILogEvent> itsEvents;
 	private int itsIndex;
 	
 	public EventBrowser(ILogBrowser aLogBrowser, List<ILogEvent> aEvents)
 	{
 		itsLogBrowser = aLogBrowser;
+		assert aEvents != null;
 		itsEvents = aEvents;
 	}
 	
 	public EventBrowser(ILogBrowser aLogBrowser, EventList aEventList, AbstractFilter aFilter)
 	{
 		itsLogBrowser = aLogBrowser;
+		itsEvents = new ArrayList<ILogEvent>();
 		for (int i=0;i<aEventList.size();i++)
 		{
 			ILogEvent theEvent = aEventList.get(i);
@@ -199,6 +201,16 @@ public class EventBrowser implements IEventBrowser
 		}
 		
 		return new EventBrowser(itsLogBrowser, theEvents);
+	}
+
+	public long getFirstTimestamp()
+	{
+		return getEvent(0).getTimestamp();
+	}
+
+	public long getLastTimestamp()
+	{
+		return getEvent((int) (getEventCount()-1)).getTimestamp();
 	}
 	
 	

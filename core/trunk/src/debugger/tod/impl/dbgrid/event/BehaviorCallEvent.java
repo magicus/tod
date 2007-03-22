@@ -26,13 +26,13 @@ import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.browser.ILogBrowser.Query;
 import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IThreadInfo;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.aggregator.GridEventBrowser;
-import zz.utils.ITask;
 
 public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCallEvent
 {
@@ -62,9 +62,15 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 	/**
 	 * Initialize exit event and hasRealChildren flag.
 	 */
-	private void initChildren()
+	private synchronized void initChildren()
 	{
-		itsCallInfo = getLogBrowser().exec(new CallInfoBuilder(getPointer()));		
+		System.out.println("[initChildren] For event: "+getPointer());
+		{
+			long t0 = System.currentTimeMillis();
+			itsCallInfo = getLogBrowser().exec(new CallInfoBuilder(getPointer()));
+			long t = System.currentTimeMillis() - t0;
+			System.out.println("[initChildren] executed in " + t + "ms");
+		}				
 	}
 
 	public boolean hasRealChildren()
@@ -125,26 +131,37 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 		return itsExitEvent;
 	}
 	
-	
-	private static class CallInfoBuilder 
-	implements ITask<ILogBrowser, CallInfo>, Serializable
+	/**
+	 * Retrieves exit event and if there are real children.
+	 * @author gpothier
+	 */
+	private static class CallInfoBuilder extends Query<CallInfo>
 	{
 		private static final long serialVersionUID = -4193913344574735748L;
 		
-		private ExternalPointer itsEvent;
+		private final ExternalPointer itsEventPointer;
+		
+		/**
+		 * If the exit event is found the result of this query is immutable;
+		 * otherwise it might change as the database is updated.
+		 */
+		private boolean itsExitEventFound = false;
 
-		public CallInfoBuilder(ExternalPointer aEvent)
+		public CallInfoBuilder(ExternalPointer aEventPointer)
 		{
-			itsEvent = aEvent;
+			itsEventPointer = aEventPointer;
 		}
 
 		public CallInfo run(ILogBrowser aLogBrowser)
 		{
-			ILogEvent theCallEvent = aLogBrowser.getEvent(itsEvent);
+			long t0 = System.currentTimeMillis();
+			ILogEvent theCallEvent = aLogBrowser.getEvent(itsEventPointer);
 			long theTimestamp = theCallEvent.getTimestamp();
 			int theDepth = theCallEvent.getDepth();
 			IThreadInfo theThread = theCallEvent.getThread();
-			
+
+			long t1 = System.currentTimeMillis();
+
 			ILogEvent theFirstChild = null;
 			ILogEvent theLastChild = null;
 			IBehaviorExitEvent theExitEvent = null;
@@ -159,6 +176,7 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 			IEventBrowser theBrowser = aLogBrowser.createBrowser(theFilter);
 			boolean theFound = theBrowser.setPreviousEvent(theCallEvent);
 			assert theFound;
+			long t2 = System.currentTimeMillis();
 			
 			if (theBrowser.hasNext())
 			{
@@ -202,6 +220,8 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 				}
 			}
 			
+			long t3 = System.currentTimeMillis();
+
 			// Find out if we have real children
 			theFilter = aLogBrowser.createIntersectionFilter(
 					aLogBrowser.createThreadFilter(theThread),
@@ -209,6 +229,8 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 			
 			theBrowser = aLogBrowser.createBrowser(theFilter);
 			theBrowser.setPreviousEvent(theCallEvent);
+			long t4 = System.currentTimeMillis();
+
 			if (theBrowser.hasNext())
 			{
 				ILogEvent theEvent = theBrowser.next();
@@ -219,11 +241,54 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 			}
 			else theHasRealChildren = false;
 			
+			long t5 = System.currentTimeMillis();
+
+			System.out.println(String.format(
+					"[CallInfoBuilder] timings: %d %d %d %d %d - total %d",
+					t1-t0,
+					t2-t1,
+					t3-t2,
+					t4-t3,
+					t5-t4,
+					t5-t0));
+			
+			itsExitEventFound = theExitEvent != null;
+			
 			return new CallInfo(
 					theFirstChild != null ? theFirstChild.getPointer() : null,
 					theLastChild != null ? theLastChild.getPointer() : null,
 					theExitEvent != null ? theExitEvent.getPointer() : null,
 					theHasRealChildren);
+		}
+
+		@Override
+		public boolean recomputeOnUpdate()
+		{
+			return ! itsExitEventFound;
+		}
+
+		@Override
+		public int hashCode()
+		{
+			final int PRIME = 31;
+			int result = 1;
+			result = PRIME * result + ((itsEventPointer == null) ? 0 : itsEventPointer.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			final CallInfoBuilder other = (CallInfoBuilder) obj;
+			if (itsEventPointer == null)
+			{
+				if (other.itsEventPointer != null) return false;
+			}
+			else if (!itsEventPointer.equals(other.itsEventPointer)) return false;
+			return true;
 		}
 		
 	}

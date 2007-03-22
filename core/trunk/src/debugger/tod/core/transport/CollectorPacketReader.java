@@ -188,7 +188,9 @@ public class CollectorPacketReader
 				return new Double (aStream.readDouble());
 				
 			case REGISTERED:
+			{
 				long theObjectId = aStream.readLong();
+				theObjectId >>>= 8; // TODO: temp for bench
 				ObjectInputStream theStream = new ObjectInputStream(aStream);
 				Object theObject;
 				try
@@ -208,9 +210,13 @@ public class CollectorPacketReader
 				
 				aCollector.register(theObjectId, theObject);
 				return new ObjectId(theObjectId);
-				
+			}	
 			case OBJECT_UID:
-				return new ObjectId(aStream.readLong());
+			{
+				long theObjectId = aStream.readLong();
+				theObjectId >>>= 8; // TODO: temp for bench
+				return new ObjectId(theObjectId);
+			}
 				
 			case OBJECT_HASH:
 			default:

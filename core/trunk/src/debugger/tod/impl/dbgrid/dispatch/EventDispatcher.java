@@ -20,7 +20,7 @@
  */
 package tod.impl.dbgrid.dispatch;
 
-import static tod.impl.dbgrid.DebuggerGridConfig.DISPATCH_BATCH_SIZE;
+import static tod.impl.dbgrid.DebuggerGridConfig.*;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -150,22 +150,27 @@ implements RIDispatcher
 		{
 			if (itsPacketsBeforeChange == 0)
 			{
-//				int theMinChild = Integer.MAX_VALUE;
-//				itsCurrentChild = null;
-//				for(DispatchNodeProxy theProxy0 : getChildren())
-//				{
-//					DispatcherProxy theProxy = (DispatcherProxy) theProxy0;
-//					int theSize = theProxy.getQueueSize();
-//					if (theSize < theMinChild)
-//					{
-//						itsCurrentChild = theProxy;
-//						theMinChild = theSize;
-//						if (theSize == 0) break; // If the child is empty there is no need to continue searching
-//					}
-//				}
-				
-				itsCurrentChild = (DispatcherProxy) getChild(itsCurrentChildIndex);
-				itsCurrentChildIndex = (itsCurrentChildIndex+1) % getChildrenCount();
+				if (LOAD_BALANCING)
+				{
+					int theMinChild = Integer.MAX_VALUE;
+					itsCurrentChild = null;
+					for(DispatchNodeProxy theProxy0 : getChildren())
+					{
+						DispatcherProxy theProxy = (DispatcherProxy) theProxy0;
+						int theSize = theProxy.getQueueSize();
+						if (theSize < theMinChild)
+						{
+							itsCurrentChild = theProxy;
+							theMinChild = theSize;
+							if (theSize == 0) break; // If the child is empty there is no need to continue searching
+						}
+					}
+				}
+				else
+				{
+					itsCurrentChild = (DispatcherProxy) getChild(itsCurrentChildIndex);
+					itsCurrentChildIndex = (itsCurrentChildIndex+1) % getChildrenCount();
+				}
 				
 				itsPacketsBeforeChange = DISPATCH_BATCH_SIZE;
 			}
@@ -174,6 +179,12 @@ implements RIDispatcher
 			return itsCurrentChild;
 		}
 		
+		@Override
+		protected int flush()
+		{
+			throw new UnsupportedOperationException(); //For now there is no hierarchical dispatch.
+		}
+
 		@Override
 		protected void readPacket(DataInputStream aStream, MessageType aType) throws IOException
 		{

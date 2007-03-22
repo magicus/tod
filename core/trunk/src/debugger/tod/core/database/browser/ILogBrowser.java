@@ -20,6 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.browser;
 
+import java.io.Serializable;
+
 import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
@@ -146,6 +148,7 @@ public interface ILogBrowser
 	 * Creates a filter that accepts only the instantiation of the 
 	 * given object. Note that in the case of ambiguous object id,
 	 * the filter can accept various instantiation events.
+	 * @deprecated This is very slow - check {@link IObjectInspector#getInstantiationEvent()}
 	 */
 	public IEventFilter createInstantiationFilter (ObjectId aObjectId);
 	
@@ -257,5 +260,25 @@ public interface ILogBrowser
 	 * @param <O> Return type of the task
 	 * @return The value returned by the task.
 	 */
-	public <O> O exec(ITask<ILogBrowser, O> aTask);
+	public <O> O exec(Query<O> aQuery);
+	
+	/**
+	 * A query that is executable by the database.
+	 * Queries that need to support proper caching of results 
+	 * should implement {@link #hashCode()} and {@link #equals(Object)}.
+	 * @see ILogBrowser#exec(ITask)
+	 * @author gpothier
+	 */
+	public abstract class Query<O> implements ITask<ILogBrowser, O>, Serializable
+	{
+		/**
+		 * If true, this query should be recomputed if the database has been updated.
+		 * Otherwise its result is assumed to be valid even if the database is 
+		 * updated after the query is executed.
+		 */
+		public boolean recomputeOnUpdate()
+		{
+			return false;
+		}
+	}
 }

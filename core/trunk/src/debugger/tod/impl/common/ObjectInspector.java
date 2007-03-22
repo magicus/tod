@@ -57,6 +57,9 @@ public class ObjectInspector implements IObjectInspector
 	private Map<IMemberInfo, IEventFilter> itsFiltersMap = new HashMap<IMemberInfo, IEventFilter>();
 	private ITypeInfo itsType;
 	
+	private IInstantiationEvent itsInstantiationEvent;
+	private boolean itsInstantiationEventValid = false;
+	
 	private long itsTimestamp;
 
 	public ObjectInspector(ILogBrowser aEventTrace, ObjectId aObjectId)
@@ -81,31 +84,56 @@ public class ObjectInspector implements IObjectInspector
 		return itsObjectId;
 	}
 	
-	public ITypeInfo getType()
+	public IInstantiationEvent getInstantiationEvent()
 	{
-		if (itsType == null) 
+		if (itsInstantiationEvent == null) 
 		{
-			IEventFilter theFilter = itsLogBrowser.createInstantiationFilter(getObject());
+			IEventFilter theFilter = itsLogBrowser.createObjectFilter(getObject());
 			IEventBrowser theBrowser = itsLogBrowser.createBrowser(theFilter);
 			
-			if (theBrowser.hasNext())
+			// Instantiation is the first event if it has been captured
+			// Check for timestamp because of concurrency & accuracy of timer.
+			long theTimestamp = 0;
+			while (theBrowser.hasNext())
 			{
-				IInstantiationEvent theEvent = (IInstantiationEvent) theBrowser.next();
-				itsType = theEvent.getType();
+				ILogEvent theEvent = theBrowser.next();
+				if (theTimestamp == 0) theTimestamp = theEvent.getTimestamp();
+				else if (theTimestamp != theEvent.getTimestamp()) break;
+				
+				if (theEvent instanceof IInstantiationEvent)
+				{
+					itsInstantiationEvent = (IInstantiationEvent) theEvent;
+					break;
+				}
+			}
+		}
+		return itsInstantiationEvent;
+		
+	}
+	
+	public ITypeInfo getType()
+	{
+		if (itsType == null)
+		{
+			IInstantiationEvent theInstantiationEvent = getInstantiationEvent();
+			
+			if (theInstantiationEvent != null)
+			{
+				itsType = theInstantiationEvent.getType();
 			}
 			else
 			{
 				// Try to guess type
-				theFilter = itsLogBrowser.createIntersectionFilter(
+				IEventFilter theFilter = itsLogBrowser.createIntersectionFilter(
 						itsLogBrowser.createTargetFilter(itsObjectId),
 						itsLogBrowser.createFieldWriteFilter());
 				
-				theBrowser = itsLogBrowser.createBrowser(theFilter);
+				IEventBrowser theBrowser = itsLogBrowser.createBrowser(theFilter);
 				if (theBrowser.hasNext())
 				{
 					IFieldWriteEvent theEvent = (IFieldWriteEvent) theBrowser.next();
 					IClassInfo theClass = theEvent.getField().getType();
-					return theClass.createUncertainClone();
+					itsType = theClass.createUncertainClone();
 				}
 				else itsType = new ClassInfo(-1, "Unknown"); 
 			}
@@ -246,7 +274,7 @@ public class ObjectInspector implements IObjectInspector
 				
 				theFilter = itsLogBrowser.createIntersectionFilter(
 						itsLogBrowser.createFieldFilter(theField),
-						itsLogBrowser.createFieldWriteFilter(),
+//						itsLogBrowser.createFieldWriteFilter(),
 						itsLogBrowser.createTargetFilter(itsObjectId));
 			}
 			else if (aMember instanceof IBehaviorInfo)
@@ -255,7 +283,6 @@ public class ObjectInspector implements IObjectInspector
 
 				theFilter = itsLogBrowser.createIntersectionFilter(
 						itsLogBrowser.createBehaviorCallFilter(theBehavior),
-//						itsLog.createFieldWriteFilter(),
 						itsLogBrowser.createTargetFilter(itsObjectId));
 				
 			}

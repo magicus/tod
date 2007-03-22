@@ -60,7 +60,7 @@ public class Stepper
 		aBrowser.setPreviousEvent(itsCurrentEvent);
 		do
 		{
-			itsCurrentEvent = aBrowser.next();		
+			itsCurrentEvent = aBrowser.hasNext() ? aBrowser.next() : null;		
 		} while (itsCurrentEvent instanceof IBehaviorExitEvent);
 	}
 	
@@ -69,7 +69,7 @@ public class Stepper
 		aBrowser.setNextEvent(itsCurrentEvent);
 		do
 		{
-			itsCurrentEvent = aBrowser.previous();
+			itsCurrentEvent = aBrowser.hasPrevious() ? aBrowser.previous() : null;
 		} while (itsCurrentEvent instanceof IBehaviorExitEvent);
 	}
 

@@ -25,6 +25,7 @@ import java.util.NoSuchElementException;
 
 import tod.impl.dbgrid.AbstractBidiIterator;
 import tod.impl.dbgrid.BidiIterator;
+import tod.impl.dbgrid.db.HierarchicalIndex;
 import tod.impl.dbgrid.db.file.PageBank.Page;
 import tod.impl.dbgrid.db.file.PageBank.PageBitStruct;
 
@@ -41,27 +42,41 @@ import tod.impl.dbgrid.db.file.PageBank.PageBitStruct;
  * and any positive value is the actual page id plus one.
  * @author gpothier
  */
-public class TupleIterator<T> extends AbstractBidiIterator<T>
+public class TupleIterator<T extends IndexTuple> extends AbstractBidiIterator<T>
 {
+	private final HierarchicalIndex itsIndex;
 	private PageBank itsBank;
 	private TupleCodec<T> itsTupleCodec;
 	
 	private PageBitStruct itsStruct;
 	
 	/**
+	 * The first tuple of the current page
+	 */
+	private T itsFirstTuple;
+	
+	/**
+	 * The last tuple of the current page
+	 */
+	private T itsLastTuple;
+	
+	/**
 	 * Creates an exhausted iterator.
 	 */
-	public TupleIterator()
+	public TupleIterator(HierarchicalIndex aIndex)
 	{
 		super (true);
+		itsIndex = aIndex;
 	}
 
-	public TupleIterator(PageBank aBank, TupleCodec<T> aTupleCodec, PageBitStruct aStruct)
+	public TupleIterator(HierarchicalIndex aIndex, PageBank aBank, TupleCodec<T> aTupleCodec, PageBitStruct aStruct)
 	{
 		super (false);
+		itsIndex = aIndex;
 		itsBank = aBank;
 		itsTupleCodec = aTupleCodec;
 		itsStruct = aStruct;
+		readBounds();
 	}
 	
 	private int getPagePointerSize()
@@ -72,6 +87,45 @@ public class TupleIterator<T> extends AbstractBidiIterator<T>
 	private int getTupleSize()
 	{
 		return itsTupleCodec.getTupleSize();
+	}
+	
+	/**
+	 * Reads first and last tuple of the current page.
+	 */
+	private void readBounds()
+	{
+		int thePos = itsStruct.getPos();
+		
+		itsStruct.setPos(0);
+		itsFirstTuple = itsTupleCodec.read(itsStruct);
+
+		int theTupleBits = itsStruct.getTotalBits()-2*getPagePointerSize();
+		int theTupleCount = theTupleBits/getTupleSize();
+		itsStruct.setPos((theTupleCount-1)*getTupleSize());
+
+		itsLastTuple = itsTupleCodec.read(itsStruct);
+		
+		itsStruct.setPos(thePos);		
+	}
+	
+	public T getFirstTuple()
+	{
+		return itsFirstTuple;
+	}
+
+	public T getLastTuple()
+	{
+		return itsLastTuple;
+	}
+
+	/**
+	 * Returns an iterator that is positioned
+	 * so that the key of the next returned tuple
+	 * is the first that is greater or equal to the specified key
+	 */
+	public TupleIterator<T> iteratorNextKey(long aKey)
+	{
+		return itsIndex.getTupleIterator(aKey);
 	}
 	
 	@Override
@@ -91,6 +145,7 @@ public class TupleIterator<T> extends AbstractBidiIterator<T>
 			if (thePointer != 0)
 			{
 				itsStruct = itsBank.get(thePointer - 1).asBitStruct();
+				readBounds();
 			}
 			else
 			{
@@ -135,6 +190,7 @@ public class TupleIterator<T> extends AbstractBidiIterator<T>
 			{
 				itsStruct = itsBank.get(thePointer - 1).asBitStruct();
 				itsStruct.setPos(theTupleBits - theTupleBits % getTupleSize());
+				readBounds();
 			}
 			else
 			{

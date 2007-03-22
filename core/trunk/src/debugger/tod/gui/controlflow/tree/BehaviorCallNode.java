@@ -39,6 +39,7 @@ import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
 import tod.gui.controlflow.CFlowViewUtils;
+import zz.utils.Future;
 import zz.utils.ui.GridStackLayout;
 import zz.utils.ui.UIUtils;
 import zz.utils.ui.ZLabel;
@@ -51,6 +52,10 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 	private JComponent itsHeader;
 	private JComponent itsFooter;
 	private ExpanderWidget itsExpanderWidget;
+
+	private JPanel itsContainer;
+	private boolean itsUIReady = false;
+	private boolean itsMustUpdate = false;
 	
 	public BehaviorCallNode(
 			CFlowView aView,
@@ -60,22 +65,28 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 		super (aView, aJobProcessor);
 		
 		itsEvent = aEvent;
+		
+		// Asynchronously request exit event
+		getJobProcessor().submit(new JobProcessor.Job<Object>()
+				{
+					@Override
+					public Object run()
+					{
+						getEvent().getExitEvent(); // This call caches the event
+						update();
+						return null;
+					}
+				});
+		
 		createUI();
 	}
 
-	private void createUI()
+	private synchronized void createUI()
 	{
 		setLayout(new BorderLayout(0, 0));
-		IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
+		// TODO: asynchronous
 		
-		Color theExpanderColor;
-		if (theExitEvent == null) theExpanderColor = Color.BLACK;
-		else theExpanderColor = theExitEvent.hasThrown() ? Color.RED : Color.BLUE;
-		
-		if (!getEvent().hasRealChildren()) 
-			theExpanderColor = UIUtils.getLighterColor(theExpanderColor, 0.2f);
-		
-		itsExpanderWidget = new ExpanderWidget(theExpanderColor);
+		itsExpanderWidget = new ExpanderWidget(Color.PINK);
 		itsExpanderWidget.addMouseListener(new MouseAdapter()
 		{
 			@Override
@@ -88,16 +99,47 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 		
 		add(itsExpanderWidget, BorderLayout.WEST);
 		
-		JPanel theContainer = new JPanel (new BorderLayout(0, 0));
-		theContainer.setOpaque(false);
+		itsContainer = new JPanel (new BorderLayout(0, 0));
+		itsContainer.setOpaque(false);
 		
 		itsHeader = createHeader(FontConfig.STD_FONT);
+		itsContainer.add(itsHeader, BorderLayout.NORTH);
+		
+		itsFooter = GUIUtils.createLabel("...");
+		itsContainer.add(itsFooter, BorderLayout.SOUTH);
+		
+		add(itsContainer, BorderLayout.CENTER);
+		itsUIReady = true;
+		if (itsMustUpdate) update();
+	}
+	
+	/**
+	 * Updates the UI after the exit event has been found.
+	 */
+	private synchronized void update()
+	{
+		if (! itsUIReady) 
+		{
+			itsMustUpdate = true;
+			return;
+		}
+		
+		Color theExpanderColor;
+		IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
+		if (theExitEvent == null) theExpanderColor = Color.BLACK;
+		else theExpanderColor = theExitEvent.hasThrown() ? Color.RED : Color.BLUE;
+		
+		if (!getEvent().hasRealChildren()) 
+			theExpanderColor = UIUtils.getLighterColor(theExpanderColor, 0.2f);
+		
+		itsExpanderWidget.setColor(theExpanderColor);
+
+		itsContainer.remove(itsFooter);
 		itsFooter = createFooter(FontConfig.STD_FONT);
+		itsContainer.add(itsFooter, BorderLayout.SOUTH);
 		
-		theContainer.add(itsHeader, BorderLayout.NORTH);
-		theContainer.add(itsFooter, BorderLayout.SOUTH);
-		
-		add(theContainer, BorderLayout.CENTER);
+		revalidate();
+		repaint();
 	}
 	
 	@Override
@@ -112,15 +154,15 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 		theContainer.setOpaque(false);
 		
 		fillHeaderPrefix(theContainer, aFont);
-		Object[] theArguments = getEvent().getArguments();
-		CFlowViewUtils.addArguments(
-				getSeedFactory(), 
-				getLogBrowser(), 
-				getJobProcessor(),
-				theContainer,
-				theArguments,
-				aFont);
-
+//		Object[] theArguments = getEvent().getArguments();
+//		CFlowViewUtils.addArguments(
+//				getSeedFactory(), 
+//				getLogBrowser(), 
+//				getJobProcessor(),
+//				theContainer,
+//				theArguments,
+//				aFont);
+//
 		return theContainer;
 	}
 

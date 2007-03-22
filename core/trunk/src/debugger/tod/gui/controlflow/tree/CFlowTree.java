@@ -36,11 +36,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
-import tod.core.database.browser.BrowserUtils;
-import tod.core.database.browser.IEventBrowser;
 import tod.core.database.event.EventUtils;
 import tod.core.database.event.IArrayWriteEvent;
-import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.IConstructorChainingEvent;
 import tod.core.database.event.IExceptionGeneratedEvent;
@@ -137,8 +134,10 @@ implements MouseWheelListener
 			@Override
 			public Object run()
 			{
+				System.out.println("[CFlowTree.setTimestamp] Updating...");
 				itsCore.setTimestamp(aTimestamp);
 				updateList();
+				System.out.println("[CFlowTree.setTimestamp] Done...");
 				return null;
 			}
 		});
@@ -148,11 +147,10 @@ implements MouseWheelListener
 	{
 		itsCore = new EventListCore(aParentEvent.getChildrenBrowser(), 10);
 
-		IEventBrowser theBrowser = aParentEvent.getChildrenBrowser();
 		itsScroller.set(
-				theBrowser, 
-				BrowserUtils.getFirstTimestamp(theBrowser),
-				BrowserUtils.getLastTimestamp(theBrowser));
+				aParentEvent.getChildrenBrowser(),  // Cannot reuse the browser passed to EventListCore
+				aParentEvent.getFirstTimestamp(),
+				aParentEvent.getLastTimestamp());
 
 		update();
 	}
@@ -342,8 +340,8 @@ implements MouseWheelListener
 	
 	private AbstractEventNode buildEventNode(ILogEvent aEvent)
 	{
-//		JobProcessor theJobProcessor = getJobProcessor();
-		JobProcessor theJobProcessor = null;
+		JobProcessor theJobProcessor = getJobProcessor();
+//		JobProcessor theJobProcessor = null;
 		
 		if (aEvent instanceof IFieldWriteEvent)
 		{

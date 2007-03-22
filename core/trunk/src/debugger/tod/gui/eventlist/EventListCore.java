@@ -22,7 +22,6 @@ package tod.gui.eventlist;
 
 import java.util.LinkedList;
 
-import tod.core.database.browser.BrowserUtils;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.event.ILogEvent;
 
@@ -68,8 +67,8 @@ public class EventListCore
 		itsVisibleEvents = aVisibleEvents;
 		
 		// Find timestamps of first and last event
-		itsFirstTimestamp = BrowserUtils.getFirstTimestamp(aBrowser);
-		itsLastTimestamp = BrowserUtils.getLastTimestamp(aBrowser);
+		itsFirstTimestamp = aBrowser.getFirstTimestamp();
+		itsLastTimestamp = aBrowser.getLastTimestamp();
 		
 		setTimestamp(itsFirstTimestamp);		
 	}

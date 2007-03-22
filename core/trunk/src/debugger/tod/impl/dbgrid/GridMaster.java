@@ -236,7 +236,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		}
 		
 		theWriter.println();
-		theWriter.println(Monitor.format(aData, false));
+		theWriter.println(Monitor.format(aData, true));
 		theWriter.flush();
 		
 		fireMonitorData(aNodeId, aData);
@@ -407,7 +407,9 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 
 	public List<IThreadInfo> getThreads()
 	{
-		return itsRegisterer.getThreads();
+		List<IThreadInfo> theThreads = itsRegisterer.getThreads();
+		System.out.println("[GridMaster] getThreads - will return "+theThreads.size()+" threads.");
+		return theThreads;
 	}
 	
 	public List<IHostInfo> getHosts()

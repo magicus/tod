@@ -1,0 +1,3 @@
+#TOD configuration
+#Thu Mar 22 18:59:12 CLT 2007
+filterView.splitterPos=400

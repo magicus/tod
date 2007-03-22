@@ -71,6 +71,12 @@ public class CollectorTODServer extends TODServer
 					super.eof();
 					CollectorTODServer.this.disconnected();
 				}
+
+				@Override
+				protected int flush()
+				{
+					throw new UnsupportedOperationException();
+				}
 			};
 		}
 		catch (IOException e)

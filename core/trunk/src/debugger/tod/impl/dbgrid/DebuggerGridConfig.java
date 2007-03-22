@@ -155,7 +155,7 @@ public class DebuggerGridConfig
 	 * Number of partitions of key values for the objects index.
 	 * @see SplittedConditionHandler
 	 */
-	public static final int[] INDEX_OBJECT_PARTS = {14, 14};
+	public static final int[] INDEX_OBJECT_PARTS = {12, 12};
 
 	/**
 	 * Number of partitions of key values for the array index index.
@@ -237,7 +237,7 @@ public class DebuggerGridConfig
 	/**
 	 * Number of events to fetch at a time 
 	 */
-	public static final int QUERY_ITERATOR_BUFFER_SIZE = 10;
+	public static final int QUERY_ITERATOR_BUFFER_SIZE = 1;
 	
 	/**
 	 * Number of children of dispatchers.
@@ -250,7 +250,7 @@ public class DebuggerGridConfig
 	 * round-robin scheme.
 	 */
 	public static final int DISPATCH_BATCH_SIZE =
-		ConfigUtils.readInt("dispatch-batch-size", 1024);
+		ConfigUtils.readInt("dispatch-batch-size", 128);
 	
 	public static final String PARAM_DB_PAGE_BUFFER_SIZE = "page-buffer-size";
 	
@@ -276,5 +276,8 @@ public class DebuggerGridConfig
 	 */
 	public static final boolean CHECK_SAME_HOST = 
 		ConfigUtils.readBoolean("check-same-host", true);
+	
+	public static final boolean LOAD_BALANCING =
+		ConfigUtils.readBoolean("load-balancing", false);
 	
 }

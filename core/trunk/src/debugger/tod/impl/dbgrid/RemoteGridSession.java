@@ -39,10 +39,12 @@ public class RemoteGridSession extends AbstractSession
 	public static final String TOD_GRID_SCHEME = "tod-grid";
 	private RIGridMaster itsMaster;
 	private GridLogBrowser itsBrowser;
+	private boolean itsUseExisting;
 	
-	public RemoteGridSession(URI aUri, TODConfig aConfig)
+	public RemoteGridSession(URI aUri, TODConfig aConfig, boolean aUseExisting)
 	{
 		super(aUri, aConfig);
+		itsUseExisting = aUseExisting;
 		init();
 	}
 	
@@ -55,7 +57,7 @@ public class RemoteGridSession extends AbstractSession
 			Registry theRegistry = LocateRegistry.getRegistry(theHost);
 			itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
 			itsMaster.setConfig(getConfig());
-			itsMaster.clear();
+			if (! itsUseExisting) itsMaster.clear();
 			itsBrowser = new GridLogBrowser(itsMaster);
 		}
 		catch (Exception e)

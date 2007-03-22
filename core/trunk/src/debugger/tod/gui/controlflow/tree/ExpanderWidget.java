@@ -42,6 +42,11 @@ public class ExpanderWidget extends JPanel
 		setOpaque(false);
 		setPreferredSize(new Dimension(WIDTH, 1));
 	}
+	
+	public void setColor(Color aColor)
+	{
+		setForeground(aColor);
+	}
 
 	@Override
 	protected void paintComponent(Graphics aG)

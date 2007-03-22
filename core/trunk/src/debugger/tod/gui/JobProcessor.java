@@ -25,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
+import zz.utils.Future;
 import zz.utils.ITask;
 
 /**
@@ -87,6 +88,16 @@ public class JobProcessor extends Thread
 	public <R> void submit(Job<R> aJob)
 	{
 		submit(aJob, null);
+	}
+	
+	/**
+	 * Returns a Future whose value is retrieved by the specified job. 
+	 */
+	public <R> Future<R> getFuture(Job<R> aJob)
+	{
+		FutureJob<R> theFuture = new FutureJob<R>();
+		submit(aJob, theFuture);
+		return theFuture;
 	}
 
 	/**
@@ -275,5 +286,24 @@ public class JobProcessor extends Thread
 	public interface IJobListener<R>
 	{
 		public void jobFinished(R aResult);
+	}
+	
+	private static class FutureJob<R> extends Future<R> implements IJobListener<R>
+	{
+		public FutureJob()
+		{
+			super(false);
+		}
+		
+		public void jobFinished(R aResult)
+		{
+			done(aResult);
+		}
+
+		@Override
+		protected R fetch() throws Throwable
+		{
+			throw new UnsupportedOperationException();
+		}
 	}
 }

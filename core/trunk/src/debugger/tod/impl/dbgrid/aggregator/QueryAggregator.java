@@ -25,6 +25,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import tod.agent.DebugFlags;
 import tod.core.database.event.ILogEvent;
 import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.BufferedBidiIterator;
@@ -144,12 +145,13 @@ implements RIQueryAggregator
 	{
 		initIterators(aTimestamp);
 		GridEvent theNext = itsMergeIterator.peekNext();
+		
 		if (theNext != null && theNext.getTimestamp() > aTimestamp) return;
 		
 		while(itsMergeIterator.hasNext())
 		{
 			theNext = itsMergeIterator.next();
-			if (theNext.getTimestamp() > aTimestamp) return;
+			if (theNext.getTimestamp() > aTimestamp) break;
 		}
 	}
 	
@@ -163,7 +165,7 @@ implements RIQueryAggregator
 			if (theNext.getTimestamp() > aTimestamp) break;
 			
 			if (theNext.getTimestamp() == aTimestamp
-					&& theNext.getHost() == aHostId
+					&& (DebugFlags.IGNORE_HOST || theNext.getHost() == aHostId)
 					&& theNext.getThread() == aThreadId)
 			{
 				itsMergeIterator.previous();
@@ -185,7 +187,7 @@ implements RIQueryAggregator
 			if (thePrevious.getTimestamp() < aTimestamp) break;
 			
 			if (thePrevious.getTimestamp() == aTimestamp
-					&& thePrevious.getHost() == aHostId
+					&& (DebugFlags.IGNORE_HOST || thePrevious.getHost() == aHostId)
 					&& thePrevious.getThread() == aThreadId) 
 			{
 				itsMergeIterator.next();
@@ -328,6 +330,12 @@ implements RIQueryAggregator
 			return aItem1.getHost() == aItem2.getHost()
 				&& aItem1.getThread() == aItem2.getThread()
 				&& aItem1.getTimestamp() == aItem2.getTimestamp();
+		}
+		
+		@Override
+		protected boolean parallelFetch()
+		{
+			return true;
 		}
 	}
 }

@@ -99,7 +99,7 @@ public class TODConfig implements Serializable
 			"instrumenter.locationsFile",
 			"Instrumenter - locations file",
 			"Defines the file that contains location data for the debugged application.",
-			ConfigUtils.readString("locations-file", "/tmp/tod/tod-locations"));
+			ConfigUtils.readString("locations-file", "~/tmp/tod/locations.bin"));
 	
 	public static final StringItem SCOPE_GLOBAL_FILTER = new StringItem(
 			ConfigLevel.DEBUG,

@@ -125,4 +125,14 @@ public interface IEventBrowser
 	 * browser's filter and the specified filter.
 	 */
 	public IEventBrowser createIntersection(IEventFilter aFilter);
+	
+	/**
+	 * Returns the timestamp of the first event that can be returned by this browser.
+	 */
+	public long getFirstTimestamp();
+	
+	/**
+	 * Returns the timestamp of the last event that can be returned by this browser.
+	 */
+	public long getLastTimestamp();
 }

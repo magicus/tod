@@ -104,6 +104,8 @@ public abstract class BehaviorCallEvent extends Event implements IBehaviorCallEv
 
 	public long getLastTimestamp()
 	{
-		return getExitEvent().getTimestamp();
+		IBehaviorExitEvent theExitEvent = getExitEvent();
+		if (theExitEvent != null) return theExitEvent.getTimestamp();
+		else return getChildrenBrowser().getLastTimestamp();
 	}
 }

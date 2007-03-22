@@ -20,9 +20,12 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.merge;
 
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
 
 import tod.impl.dbgrid.BidiIterator;
+import tod.impl.dbgrid.db.file.IndexTuple;
+import zz.utils.ITask;
 
 /**
  * Conjunction (boolean AND) merge iterator.
@@ -38,6 +41,7 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 	@Override
 	protected T fetchNext()
 	{
+		List<T> theBuffer = new ArrayList<T>(getHeadCount());
 		T theResult = null;
 		boolean theMatch;
 		do
@@ -47,13 +51,16 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 			T theRefItem = null;
 			int theMinTimestampHead = -1;
 			long theMinTimestamp = Long.MAX_VALUE;
+			long theMaxTimestamp = 0;
 
+			List<T> theHeads = getNextHeads(theBuffer);
+			
 			// Check if current head set is a match (ie. all head tuples point
 			// to the same event).
 			// At the same time find the head that has the minimum timestamp
 			for (int i = 0; i < getHeadCount(); i++)
 			{
-				T theItem = getNextHead(i);
+				T theItem = theHeads.get(i);
 				if (theItem == null) return null;
 
 				if (theRefItem == null) theRefItem = theItem;
@@ -65,16 +72,24 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 					theMinTimestamp = theTimestamp;
 					theMinTimestampHead = i;
 				}
+				if (theTimestamp > theMaxTimestamp) theMaxTimestamp = theTimestamp;
 			}
 
 			if (theMatch)
 			{
 				theResult = theRefItem;
-				for (int i = 0; i < getHeadCount(); i++) moveNext(i);
+				fork(theBuffer, new ITask<Integer, T>()
+						{
+							public T run(Integer aIndex)
+							{
+								moveNext(aIndex);
+								return null;
+							}
+						});
 			}
 			else
 			{
-				moveNext(theMinTimestampHead);
+				moveForward(theMinTimestampHead, theMaxTimestamp);
 			}
 		}
 		while (!theMatch);
@@ -85,6 +100,7 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 	@Override
 	protected T fetchPrevious()
 	{
+		List<T> theBuffer = new ArrayList<T>(getHeadCount());
 		T theResult = null;
 		boolean theMatch;
 		do
@@ -94,13 +110,16 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 			T theRefItem = null;
 			int theMaxTimestampHead = -1;
 			long theMaxTimestamp = 0;
+			long theMinTimestamp = Long.MAX_VALUE;
+			
+			List<T> theHeads = getPreviousHeads(theBuffer);
 
 			// Check if current head set is a match (ie. all head tuples point
 			// to the same event).
 			// At the same time find the head that has the maximum timestamp
 			for (int i = 0; i < getHeadCount(); i++)
 			{
-				T theItem = getPreviousHead(i);
+				T theItem = theHeads.get(i);
 				if (theItem == null) return null;
 
 				if (theRefItem == null) theRefItem = theItem;
@@ -112,16 +131,25 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 					theMaxTimestamp = theTimestamp;
 					theMaxTimestampHead = i;
 				}
+				if (theTimestamp < theMinTimestamp) theMinTimestamp = theTimestamp;
 			}
 
 			if (theMatch)
 			{
 				theResult = theRefItem;
-				for (int i = 0; i < getHeadCount(); i++) movePrevious(i);
+				fork(theBuffer, new ITask<Integer, T>()
+						{
+							public T run(Integer aIndex)
+							{
+								movePrevious(aIndex);
+								return null;
+							}
+						});
+
 			}
 			else
 			{
-				movePrevious(theMaxTimestampHead);
+				moveBackward(theMaxTimestampHead, theMinTimestamp);
 			}
 		}
 		while (!theMatch);

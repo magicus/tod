@@ -22,9 +22,11 @@ package tod.impl.dbgrid.aggregator;
 
 import java.rmi.RemoteException;
 
+import tod.agent.DebugFlags;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IThreadInfo;
 import tod.impl.dbgrid.BufferedBidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
@@ -42,7 +44,7 @@ implements IEventBrowser
 	private final GridLogBrowser itsBrowser;
 	private final EventCondition itsFilter;
 	
-	private RIQueryAggregator itsAggregator;
+	private final RIQueryAggregator itsAggregator;
 	
 	private ILogEvent itsFirstEvent;
 	private ILogEvent itsLastEvent;
@@ -52,6 +54,7 @@ implements IEventBrowser
 		itsBrowser = aBrowser;
 		itsFilter = aFilter;
 		itsAggregator = itsBrowser.getMaster().createAggregator(aFilter);
+		assert itsAggregator != null;
 		reset();
 	}
 	
@@ -220,7 +223,7 @@ implements IEventBrowser
 		{
 			boolean theResult = itsAggregator.setNextEvent(
 					checkTimestamp(aEvent.getTimestamp()),
-					aEvent.getHost().getId(),
+					DebugFlags.IGNORE_HOST ? 0 : aEvent.getHost().getId(),
 					aEvent.getThread().getId());
 			reset();
 			
@@ -236,10 +239,14 @@ implements IEventBrowser
 	{
 		try
 		{
+			long theTimestamp = checkTimestamp(aEvent.getTimestamp());
+			int theHostId = DebugFlags.IGNORE_HOST ? 0 : aEvent.getHost().getId();
+			IThreadInfo theThread = aEvent.getThread();
+			int theThreadId = theThread.getId();
 			boolean theResult = itsAggregator.setPreviousEvent(
-					checkTimestamp(aEvent.getTimestamp()),
-					aEvent.getHost().getId(),
-					aEvent.getThread().getId());
+					theTimestamp,
+					theHostId,
+					theThreadId);
 			reset();
 			
 			return theResult;
@@ -294,6 +301,11 @@ implements IEventBrowser
 			throw new RuntimeException(e);
 		}
 	}
+	
+	public IEventBrowser clone()
+	{
+		return itsBrowser.createBrowser(itsFilter);
+	}
 
 	public IEventBrowser createIntersection(IEventFilter aFilter)
 	{
@@ -305,6 +317,50 @@ implements IEventBrowser
 		
 		return theBrowser;
 	}
+
+	public long getFirstTimestamp()
+	{
+		return itsFirstEvent != null ?
+				itsFirstEvent.getTimestamp()
+				: getFirstTimestamp(clone());
+	}
+
+	public long getLastTimestamp()
+	{
+		return itsLastEvent != null ?
+				itsLastEvent.getTimestamp()
+				: getLastTimestamp(clone());
+	}
+	
+	/**
+	 * Returns the timestamp of the first event available to the 
+	 * given browser, or 0 if there is no event. 
+	 */
+	private static long getFirstTimestamp(IEventBrowser aBrowser)
+	{
+		aBrowser.setNextTimestamp(0);
+		if (aBrowser.hasNext())
+		{
+			return aBrowser.next().getTimestamp();
+		}
+		else return 0;
+	}
+	
+	/**
+	 * Returns the timestamp of the last event available to the 
+	 * given browser, or 0 if there is no event. 
+	 */
+	private static long getLastTimestamp(IEventBrowser aBrowser)
+	{
+		aBrowser.setPreviousTimestamp(Long.MAX_VALUE);
+		if (aBrowser.hasPrevious())
+		{
+			return aBrowser.previous().getTimestamp();
+		}
+		else return 0;
+	}
+
+
 	
 	
 }

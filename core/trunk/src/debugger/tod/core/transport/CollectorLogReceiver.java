@@ -35,7 +35,7 @@ import tod.core.database.structure.HostInfo;
  * {@link ILogCollector}.
  * @author gpothier
  */
-public class CollectorLogReceiver extends LogReceiver
+public abstract class CollectorLogReceiver extends LogReceiver
 {
 	private final ILogCollector itsCollector;
 	private final ILocationRegisterer itsLocationRegistrer;

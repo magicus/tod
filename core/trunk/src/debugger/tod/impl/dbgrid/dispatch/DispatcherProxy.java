@@ -25,9 +25,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Socket;
 import java.util.LinkedList;
 
+import tod.core.transport.LogReceiver;
 import tod.core.transport.MessageType;
 import tod.utils.NativeStream;
 import zz.utils.ArrayStack;
@@ -38,6 +38,7 @@ public class DispatcherProxy extends DispatchNodeProxy
 	private BufferedSender itsSender;
 	private BSOutputStream itsOut;
 	private DataOutputStream itsDataOut;
+	private DataInputStream itsDataIn;
 	private byte[] itsBuffer = new byte[1024];
 	private byte[] itsIBBuffer = new byte[4];
 	
@@ -48,15 +49,16 @@ public class DispatcherProxy extends DispatchNodeProxy
 			String aNodeId)
 	{
 		super(aConnectable, aNodeId);
-		itsSender = new BufferedSender(aOutputStream);
+		itsSender = new BufferedSender(aNodeId, aOutputStream);
 		itsOut = new BSOutputStream(itsSender);
 		itsDataOut = new DataOutputStream(itsOut);
+		itsDataIn = new DataInputStream(aInputStream);
 	}
 	
 	@Override
 	protected DataInputStream getInStream()
 	{
-		throw new UnsupportedOperationException();
+		return itsDataIn;
 	}
 	
 	@Override
@@ -107,7 +109,7 @@ public class DispatcherProxy extends DispatchNodeProxy
 		try
 		{
 			getOutStream().flush();
-			getConnectable().flush();
+			getConnectable().clear();
 		}
 		catch (IOException e)
 		{
@@ -120,8 +122,14 @@ public class DispatcherProxy extends DispatchNodeProxy
 	{
 		try
 		{
+			System.out.println("[DispatcherProxy] Flushing "+getNodeId()+"...");
+			getOutStream().writeByte(LogReceiver.CMD_FLUSH);
 			getOutStream().flush();
-			return getConnectable().flush();
+			System.out.println("[DispatcherProxy] Waiting response for "+getNodeId()+"...");
+			int theCount = getInStream().readInt();
+			System.out.println("[DispatcherProxy] Flushed "+theCount+" events on "+getNodeId());
+			
+			return theCount;
 		}
 		catch (IOException e)
 		{
@@ -143,8 +151,13 @@ public class DispatcherProxy extends DispatchNodeProxy
 		private ArrayStack<Buffer> itsFreeBuffers = new ArrayStack<Buffer>();
 		private int itsSize;
 		
-		public BufferedSender(OutputStream aStream)
+		private boolean itsFlushed = true;
+
+		private final String itsNodeId;
+		
+		public BufferedSender(String aNodeId, OutputStream aStream)
 		{
+			itsNodeId = aNodeId;
 			itsStream = aStream;
 			for (int i=0;i<1024;i++) itsFreeBuffers.push(new Buffer(new byte[4096]));
 			start();
@@ -158,7 +171,7 @@ public class DispatcherProxy extends DispatchNodeProxy
 				{
 					while (itsFreeBuffers.isEmpty()) itsFreeBuffers.wait();
 					Buffer theBuffer = itsFreeBuffers.pop();
-					assert theBuffer.length == 0;
+					theBuffer.reset();
 					return theBuffer;
 				}
 				catch (InterruptedException e)
@@ -172,7 +185,6 @@ public class DispatcherProxy extends DispatchNodeProxy
 		{
 			synchronized (itsFreeBuffers)
 			{
-				aBuffer.reset();
 				itsFreeBuffers.push(aBuffer);
 				itsFreeBuffers.notifyAll();
 			}
@@ -209,11 +221,23 @@ public class DispatcherProxy extends DispatchNodeProxy
 			return itsSize;
 		}
 		
-		public synchronized void waitFlushed()
+		public void waitFlushed()
 		{
 			try
 			{
-				while(! itsQueue.isEmpty()) wait();
+				synchronized (itsStream)
+				{
+					int s = getQueueSize();
+					long t0 = System.currentTimeMillis();
+					while(! itsFlushed) itsStream.wait();					
+					long t1 = System.currentTimeMillis();
+					float t = (t1-t0)/1000f;
+					System.out.println(String.format(
+							"[BufferedSender] Flushed %d bytes in %.2fs for node %s ",
+							s,
+							t,
+							itsNodeId));
+				}
 			}
 			catch (InterruptedException e)
 			{
@@ -230,7 +254,16 @@ public class DispatcherProxy extends DispatchNodeProxy
 				{
 					Buffer theBuffer = popBuffer();
 					itsStream.write(theBuffer.data, 0, theBuffer.length);
-					if (theBuffer.flush) itsStream.flush();
+					if (theBuffer.flush)
+					{
+						synchronized (itsStream)
+						{
+							itsFlushed = false;
+							itsStream.flush();
+							itsFlushed = true;
+							itsStream.notifyAll();
+						}
+					}
 					else addFreeBuffer(theBuffer);
 				}
 			}

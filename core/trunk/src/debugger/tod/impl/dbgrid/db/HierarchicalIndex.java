@@ -198,17 +198,6 @@ public class HierarchicalIndex<T extends IndexTuple>
 	}
 	
 	/**
-	 * Returns an iterator over the tuples of the given page
-	 */
-	public TupleIterator<IndexTuple> getTupleIterator(Page aPage, int aLevel)
-	{
-		return new TupleIterator(
-				getFile(), 
-				aLevel > 0 ? InternalTupleCodec.getInstance() : getTupleCodec(), 
-				aPage.asBitStruct());
-	}
-	
-	/**
 	 * Returns an iterator that returns all tuples whose key
 	 * is greater than or equal to the specified key.
 	 * @param aKey Requested first key, or 0 to start
@@ -224,7 +213,11 @@ public class HierarchicalIndex<T extends IndexTuple>
 		if (aKey == 0)
 		{
 			PageBitStruct theBitStruct = getFile().get(itsFirstLeafPageId).asBitStruct();
-			return new TupleIterator<T>(getFile(), getTupleCodec(), theBitStruct);
+			return new TupleIterator<T>(
+					this,
+					getFile(), 
+					getTupleCodec(), 
+					theBitStruct);
 		}
 		else
 		{
@@ -246,7 +239,11 @@ public class HierarchicalIndex<T extends IndexTuple>
 					// The first tuple of this index is after the specified key
 					thePage = getFile().get(itsFirstLeafPageId);
 					PageBitStruct theBitStruct = thePage.asBitStruct();
-					return new TupleIterator<T>(getFile(), getTupleCodec(), theBitStruct);
+					return new TupleIterator<T>(
+							this,
+							getFile(), 
+							getTupleCodec(), 
+							theBitStruct);
 				}
 				
 				thePage = getFile().get(theTuple.getPagePointer());
@@ -271,7 +268,12 @@ public class HierarchicalIndex<T extends IndexTuple>
 			}
 
 			theBitStruct.setPos(theIndex * getTupleCodec().getTupleSize());
-			TupleIterator<T> theIterator = new TupleIterator<T>(getFile(), getTupleCodec(), theBitStruct);
+			TupleIterator<T> theIterator = new TupleIterator<T>(
+					this,
+					getFile(), 
+					getTupleCodec(), 
+					theBitStruct);
+			
 			T theTuple = theIterator.peekNext();
 			if (theIterator.hasNext() && theTuple.getKey() < aKey)
 				theIterator.next();
@@ -325,8 +327,8 @@ public class HierarchicalIndex<T extends IndexTuple>
 	private TupleIterator<? extends IndexTuple> createTupleIterator(PageBitStruct aPage, int aLevel)
 	{
 		return aLevel > 0 ?
-				new TupleIterator<InternalTuple>(getFile(), InternalTupleCodec.getInstance(), aPage)
-				: new TupleIterator<T>(getFile(), getTupleCodec(), aPage);
+				new TupleIterator<InternalTuple>(this, getFile(), InternalTupleCodec.getInstance(), aPage)
+				: new TupleIterator<T>(this, getFile(), getTupleCodec(), aPage);
 	}
 	
 	private String printIndex()
@@ -341,6 +343,7 @@ public class HierarchicalIndex<T extends IndexTuple>
 			theBuilder.append("Level "+theLevel+"\n");
 			
 			TupleIterator<InternalTuple> theIterator = new TupleIterator<InternalTuple>(
+					this,
 					getFile(), 
 					InternalTupleCodec.getInstance(), 
 					theCurrentPage.asBitStruct());

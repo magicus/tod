@@ -21,6 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.core.transport;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +31,6 @@ import java.util.List;
 
 import tod.agent.DebugFlags;
 import tod.core.database.structure.HostInfo;
-import tod.impl.dbgrid.DebuggerGridConfig;
 
 /**
  * Receives log events from a logged application through a socket and
@@ -41,6 +41,14 @@ import tod.impl.dbgrid.DebuggerGridConfig;
  */
 public abstract class LogReceiver 
 {
+	/**
+	 * This command flushes all buffered events and indexes.
+	 * args: none
+	 * return:
+	 *  number of flushed events: int
+	 */
+	public static final byte CMD_FLUSH = 101;
+	
 	public static final ReceiverThread DEFAULT_THREAD = new ReceiverThread();
 	
 	private ReceiverThread itsReceiverThread;
@@ -64,7 +72,8 @@ public abstract class LogReceiver
 	private final InputStream itsInStream;
 	private final OutputStream itsOutStream;
 
-	private DataInputStream itsDataStream;
+	private DataInputStream itsDataIn;
+	private DataOutputStream itsDataOut;
 	
 	public LogReceiver(
 			HostInfo aHostInfo,
@@ -87,7 +96,8 @@ public abstract class LogReceiver
 		itsInStream = aInStream;
 		itsOutStream = aOutStream;
 		
-		itsDataStream = new DataInputStream(itsInStream);
+		itsDataIn = new DataInputStream(itsInStream);
+		itsDataOut = new DataOutputStream(itsOutStream);
 		
 		itsReceiverThread.register(this);
 		if (aStart) start();
@@ -211,13 +221,13 @@ public abstract class LogReceiver
 			byte[] theBuffer = new byte[4096];
 			while(true)
 			{
-				itsDataStream.read(theBuffer);
+				itsDataIn.read(theBuffer);
 			}
 		}
 		
 		try
 		{
-			if (itsDataStream.available() == 0) return false;
+			if (itsDataIn.available() == 0) return false;
 		}
 		catch (IOException e1)
 		{
@@ -226,32 +236,41 @@ public abstract class LogReceiver
 		
 		if (getHostName() == null)
 		{
-			setHostName(itsDataStream.readUTF());
+			setHostName(itsDataIn.readUTF());
 			if (itsMonitor != null) itsMonitor.started();
 		}
 
-		while(itsDataStream.available() != 0)
+		while(itsDataIn.available() != 0)
 		{
 			try
 			{
-				byte theCommand = itsDataStream.readByte();
+				byte theCommand = itsDataIn.readByte();
 				
-				MessageType theType = MessageType.VALUES[theCommand];
-				readPacket(itsDataStream, theType);
-				
-				itsMessageCount++;
-				
-				if (DebugFlags.MAX_EVENTS > 0 && itsMessageCount > DebugFlags.MAX_EVENTS)
+				if (theCommand == CMD_FLUSH)
 				{
-					eof();
-					break;
+					int theCount = flush();
+					itsDataOut.writeInt(theCount);
+					itsDataOut.flush();
 				}
-				
-				if (itsMonitor != null 
-						&& DebugFlags.RECEIVER_PRINT_COUNTS > 0 
-						&& itsMessageCount % DebugFlags.RECEIVER_PRINT_COUNTS == 0)
+				else
 				{
-					itsMonitor.processedMessages(itsMessageCount);
+					MessageType theType = MessageType.VALUES[theCommand];
+					readPacket(itsDataIn, theType);
+					
+					itsMessageCount++;
+					
+					if (DebugFlags.MAX_EVENTS > 0 && itsMessageCount > DebugFlags.MAX_EVENTS)
+					{
+						eof();
+						break;
+					}
+					
+					if (itsMonitor != null 
+							&& DebugFlags.RECEIVER_PRINT_COUNTS > 0 
+							&& itsMessageCount % DebugFlags.RECEIVER_PRINT_COUNTS == 0)
+					{
+						itsMonitor.processedMessages(itsMessageCount);
+					}
 				}
 			}
 			catch (EOFException e)
@@ -276,6 +295,12 @@ public abstract class LogReceiver
 	 * Read and interpret an incoming packet.
 	 */
 	protected abstract void readPacket(DataInputStream aStream, MessageType aType) throws IOException;
+	
+	/**
+	 * Flushes buffered events.
+	 * @return Number of flushed events
+	 */
+	protected abstract int flush();
 	
 	public interface ILogReceiverMonitor
 	{

@@ -31,21 +31,6 @@ import java.io.OutputStream;
  */
 public abstract class DispatchNodeProxy
 {
-	/**
-	 * This command flushes all buffered events and indexes.
-	 * args: none
-	 * return:
-	 *  number of flushed events: int
-	 */
-	public static final byte CMD_FLUSH = 101;
-	
-	/**
-	 * This command causes the database node to clear its db
-	 * arts: none
-	 * return:
-	 * 	1 (constant): int
-	 */
-	public static final byte CMD_CLEAR = 102;
 	
 	private RIDispatchNode itsConnectable;
 	

@@ -20,7 +20,15 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.merge;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import tod.impl.dbgrid.BidiIterator;
+import tod.impl.dbgrid.db.RINodeEventIterator;
+import tod.impl.dbgrid.dispatch.RIDatabaseNode;
+import zz.utils.Future;
+import zz.utils.ITask;
+import zz.utils.Utils;
 
 /**
  * A disjunction (boolean OR) merge iterator.
@@ -33,16 +41,20 @@ public abstract class DisjunctionIterator<T> extends MergeIterator<T>
 		super(aIterators);
 	}
 	
+	
 	@Override
 	protected T fetchNext()
 	{
+		List<T> theBuffer = new ArrayList<T>(getHeadCount());
 		T theMinTimestampItem = null;
 		long theMinTimestamp = Long.MAX_VALUE;
 
+		List<T> theHeads = getNextHeads(theBuffer);
+		
 		// Find the item with the minimum timestamp
 		for (int i = 0; i < getHeadCount(); i++)
 		{
-			T theItem = getNextHead(i);
+			T theItem = theHeads.get(i);
 
 			if (theItem != null)
 			{
@@ -58,15 +70,20 @@ public abstract class DisjunctionIterator<T> extends MergeIterator<T>
 		if (theMinTimestampItem == null) return null;
 
 		// Move all heads that point to the same event
-		for (int i = 0; i < getHeadCount(); i++)
-		{
-			T theItem = getNextHead(i);
+		final T theMinTimestampItem0 = theMinTimestampItem;
+		fork(theBuffer, new ITask<Integer, T>()
+				{
+					public T run(Integer aIndex)
+					{
+						T theItem = getNextHead(aIndex);
 
-			if (theItem != null && sameEvent(theMinTimestampItem, theItem))
-			{
-				moveNext(i);
-			}
-		}
+						if (theItem != null && sameEvent(theMinTimestampItem0, theItem))
+						{
+							moveNext(aIndex);
+						}
+						return null;
+					}
+				});
 
 		return theMinTimestampItem;
 	}
@@ -74,13 +91,16 @@ public abstract class DisjunctionIterator<T> extends MergeIterator<T>
 	@Override
 	protected T fetchPrevious()
 	{
+		List<T> theBuffer = new ArrayList<T>(getHeadCount());
 		T theMaxTimestampItem = null;
 		long theMaxTimestamp = 0;
 
+		List<T> theHeads = getPreviousHeads(theBuffer);
+		
 		// Find the item with the maximum timestamp
 		for (int i = 0; i < getHeadCount(); i++)
 		{
-			T theItem = getPreviousHead(i);
+			T theItem = theHeads.get(i);
 
 			if (theItem != null)
 			{
@@ -96,15 +116,20 @@ public abstract class DisjunctionIterator<T> extends MergeIterator<T>
 		if (theMaxTimestampItem == null) return null;
 
 		// Move all heads that point to the same event
-		for (int i = 0; i < getHeadCount(); i++)
-		{
-			T theItem = getPreviousHead(i);
+		final T theMaxTimestampItem0 = theMaxTimestampItem;
+		fork(theBuffer, new ITask<Integer, T>()
+				{
+					public T run(Integer aIndex)
+					{
+						T theItem = getPreviousHead(aIndex);
 
-			if (theItem != null && sameEvent(theMaxTimestampItem, theItem))
-			{
-				movePrevious(i);
-			}
-		}
+						if (theItem != null && sameEvent(theMaxTimestampItem0, theItem))
+						{
+							movePrevious(aIndex);
+						}
+						return null;
+					}
+				});
 
 		return theMaxTimestampItem;
 	}

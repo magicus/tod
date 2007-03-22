@@ -18,40 +18,26 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.core.database.browser;
+package tod.impl.dbgrid.bench;
 
-/**
- * Utility methods for log/event browsers
- * @author gpothier
- */
-public class BrowserUtils
+import tod.core.database.browser.IEventBrowser;
+import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.IParentEvent;
+import tod.core.database.structure.IThreadInfo;
+import tod.core.database.structure.ThreadInfo;
+import tod.impl.dbgrid.GridLogBrowser;
+import tod.impl.dbgrid.GridMaster;
+
+public class TestSeek
 {
-	/**
-	 * Returns the timestamp of the first event available to the 
-	 * given browser, or 0 if there is no event. 
-	 */
-	public static long getFirstTimestamp(IEventBrowser aBrowser)
+	public static void main(String[] args) throws Exception
 	{
-		aBrowser.setNextTimestamp(0);
-		if (aBrowser.hasNext())
-		{
-			return aBrowser.next().getTimestamp();
-		}
-		else return 0;
+		GridMaster theMaster = GridReplay.replay(args);
+		GridLogBrowser theBrowser = new GridLogBrowser(theMaster);
+		IThreadInfo theThread = theBrowser.getThread(0, 1);
+		IParentEvent theRoot = theBrowser.getCFlowRoot(theThread);
+		IEventBrowser theEventBrowser = theRoot.getChildrenBrowser();
+		IBehaviorCallEvent theCall = (IBehaviorCallEvent) theEventBrowser.next();
+		theCall.getExitEvent();
 	}
-	
-	/**
-	 * Returns the timestamp of the last event available to the 
-	 * given browser, or 0 if there is no event. 
-	 */
-	public static long getLastTimestamp(IEventBrowser aBrowser)
-	{
-		aBrowser.setPreviousTimestamp(Long.MAX_VALUE);
-		if (aBrowser.hasPrevious())
-		{
-			return aBrowser.previous().getTimestamp();
-		}
-		else return 0;
-	}
-
 }

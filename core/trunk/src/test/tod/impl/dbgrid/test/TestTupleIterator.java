@@ -51,7 +51,7 @@ public class TestTupleIterator
 			theWriter.add(new StdTuple(i, i));
 		}
 		
-		TupleIterator<StdTuple> theIterator = new TupleIterator<StdTuple>(thePagedFile, theCodec, theFirstPage.asBitStruct());
+		TupleIterator<StdTuple> theIterator = new TupleIterator<StdTuple>(null, thePagedFile, theCodec, theFirstPage.asBitStruct());
 		
 		// From start, iterate until end
 		assertTrue(theIterator.hasNext());

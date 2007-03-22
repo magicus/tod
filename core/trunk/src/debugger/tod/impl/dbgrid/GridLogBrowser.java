@@ -68,8 +68,8 @@ import tod.impl.dbgrid.queries.ThreadCondition;
 import tod.impl.dbgrid.queries.TypeCondition;
 import tod.impl.dbgrid.queries.VariableCondition;
 import tod.utils.remote.RemoteLocationsRepository;
-import zz.utils.ITask;
 import zz.utils.Utils;
+import zz.utils.cache.MRUBuffer;
 import zz.utils.cache.SyncMRUBuffer;
 
 /**
@@ -96,6 +96,7 @@ implements ILogBrowser, RIGridMasterListener
 	private List<IGridBrowserListener> itsListeners = new ArrayList<IGridBrowserListener>();
 	
 	private TypeCache itsTypeCache = new TypeCache();
+	private QueryResultCache itsQueryResultCache = new QueryResultCache();
 
 	public GridLogBrowser(GridMaster aMaster) throws RemoteException
 	{
@@ -112,6 +113,8 @@ implements ILogBrowser, RIGridMasterListener
 		
 		itsLocationsRepository = RemoteLocationsRepository.createRepository(
 				itsMaster.getLocationsRepository());
+		
+		System.out.println("[GridLogBrowser] Instantiated.");
 	}
 
 	public void clear()
@@ -325,11 +328,12 @@ implements ILogBrowser, RIGridMasterListener
 				for (IThreadInfo theThread : itsThreads)
 				{
 					IHostInfo theHost = theThread.getHost();
-					HostThreadsList theList = itsHostThreadsLists.get(theHost.getId());
+					int theHostId = DebugFlags.IGNORE_HOST ? 0 : theHost.getId();
+					HostThreadsList theList = itsHostThreadsLists.get(theHostId);
 					if (theList == null)
 					{
 						theList = new HostThreadsList(theHost);
-						itsHostThreadsLists.put(theHost.getId(), theList);
+						itsHostThreadsLists.put(theHostId, theList);
 					}
 					
 					theList.add(theThread);
@@ -390,7 +394,7 @@ implements ILogBrowser, RIGridMasterListener
 	public IThreadInfo getThread(int aHostId, int aThreadId)
 	{
 		getThreads(); // Lazy init of thread lists
-		HostThreadsList theList = itsHostThreadsLists.get(aHostId);
+		HostThreadsList theList = itsHostThreadsLists.get(DebugFlags.IGNORE_HOST ? 0 : aHostId);
 		if (theList == null) return null;
 		
 		return theList.get(aThreadId);
@@ -510,16 +514,9 @@ implements ILogBrowser, RIGridMasterListener
 		fireMonitorData(aNodeId, aData);
 	}
 
-	public <O> O exec(ITask<ILogBrowser, O> aTask)
+	public <O> O exec(Query<O> aQuery)
 	{
-		try
-		{
-			return itsMaster.exec(aTask);
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		return itsQueryResultCache.getResult(aQuery);
 	}
 
 
@@ -609,5 +606,65 @@ implements ILogBrowser, RIGridMasterListener
 		{
 			return getLogBrowser().createBrowser(aFilter);
 		}
+	}
+	
+	private static class QueryCacheEntry
+	{
+		private final Query query;
+		
+		private final Object result;
+		
+		/**
+		 * Number of events in the database when the query was executed.
+		 */
+		private final long eventCount;
+
+		public QueryCacheEntry(Query aQuery, Object aResult, long aEventCount)
+		{
+			query = aQuery;
+			result = aResult;
+			eventCount = aEventCount;
+		}
+	}
+	
+	private class QueryResultCache extends MRUBuffer<Query, QueryCacheEntry>
+	{
+		public QueryResultCache()
+		{
+			super(1000);
+			
+		}
+		
+		@Override
+		protected Query getKey(QueryCacheEntry aValue)
+		{
+			return aValue.query;
+		}
+
+		@Override
+		protected QueryCacheEntry fetch(Query aQuery)
+		{
+			try
+			{
+				Object theResult = itsMaster.exec(aQuery);
+				return new QueryCacheEntry(aQuery, theResult, itsEventsCount);
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		
+		public <O> O getResult(Query<O> aQuery)
+		{
+			QueryCacheEntry theEntry = get(aQuery);
+			if (aQuery.recomputeOnUpdate() && theEntry.eventCount != itsEventsCount)
+			{
+				drop(aQuery);
+				theEntry = get(aQuery);
+			}
+			return (O) theEntry.result;
+		}
+		
 	}
 }
