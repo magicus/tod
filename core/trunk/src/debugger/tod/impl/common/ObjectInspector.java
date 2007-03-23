@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import tod.agent.DebugFlags;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
@@ -121,7 +122,7 @@ public class ObjectInspector implements IObjectInspector
 			{
 				itsType = theInstantiationEvent.getType();
 			}
-			else
+			else if (DebugFlags.TRY_GUESS_TYPE)
 			{
 				// Try to guess type
 				IEventFilter theFilter = itsLogBrowser.createIntersectionFilter(
@@ -135,8 +136,9 @@ public class ObjectInspector implements IObjectInspector
 					IClassInfo theClass = theEvent.getField().getType();
 					itsType = theClass.createUncertainClone();
 				}
-				else itsType = new ClassInfo(-1, "Unknown"); 
 			}
+			
+			if (itsType == null) itsType = new ClassInfo(-1, "Unknown");
 		}
 		return itsType;
 	}

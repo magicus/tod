@@ -122,7 +122,7 @@ public class EventMural extends JPanel
 	 */
 	private ImageData itsImage; 
 	
-	private boolean itsShowBaloons = true;
+	private boolean itsShowBaloons = false;
 	
 	private Timer itsTimer;
 

@@ -26,6 +26,7 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 
 import tod.core.EventInterpreter;
+import tod.impl.common.ObjectInspector;
 
 /**
  * This class groups severla flags that are used to
@@ -157,6 +158,11 @@ public class DebugFlags
 	 * Should not be used if more than one host is being debugged.
 	 */
 	public static final boolean IGNORE_HOST = ConfigUtils.readBoolean("ignore-host", false); 
+	
+	/**
+	 * Whether {@link ObjectInspector} should try to guess the type of unknown objects
+	 */
+	public static final boolean TRY_GUESS_TYPE = ConfigUtils.readBoolean("try-guess-type", false);
 	
 	private static PrintStream createStream(String aName)
 	{

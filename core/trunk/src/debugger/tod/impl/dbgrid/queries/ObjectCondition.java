@@ -104,7 +104,7 @@ public class ObjectCondition extends SimpleCondition
 	@Override
 	protected String toString(int aIndent)
 	{
-		return String.format("ObjectId = %d (role %d)", itsObjectId, itsRole);
+		return String.format("ObjectId/%d = %d (role %d)", itsPart, itsObjectId, itsRole);
 	}
 
 }

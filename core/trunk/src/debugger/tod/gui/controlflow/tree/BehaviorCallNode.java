@@ -29,6 +29,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IBehaviorExitEvent;
@@ -73,7 +74,7 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 					public Object run()
 					{
 						getEvent().getExitEvent(); // This call caches the event
-						update();
+						postUpdate();
 						return null;
 					}
 				});
@@ -84,7 +85,6 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 	private synchronized void createUI()
 	{
 		setLayout(new BorderLayout(0, 0));
-		// TODO: asynchronous
 		
 		itsExpanderWidget = new ExpanderWidget(Color.PINK);
 		itsExpanderWidget.addMouseListener(new MouseAdapter()
@@ -111,6 +111,21 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 		add(itsContainer, BorderLayout.CENTER);
 		itsUIReady = true;
 		if (itsMustUpdate) update();
+	}
+	
+	/**
+	 * Posts an update request to be executed by the swing thread.
+	 *
+	 */
+	private void postUpdate()
+	{
+		SwingUtilities.invokeLater(new Runnable()
+		{
+			public void run()
+			{
+				update();
+			}
+		});
 	}
 	
 	/**

@@ -10,9 +10,7 @@ case "$1" in
 	"nodestore"	) MAIN="tod.impl.dbgrid.bench.BenchDatabaseNode";;
 	"dispatch"	) MAIN="tod.impl.dbgrid.bench.GridDispatch";;
 	"netbench"	) MAIN="tod.impl.dbgrid.bench.NetBench";;
-	*			)
-		echo Not recognized: $1
-		exit 1;;
+	*		) MAIN=$1;;
 esac
 	
 VMARGS=''

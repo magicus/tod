@@ -20,6 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.structure;
 
+import java.util.Comparator;
+
 public interface IThreadInfo
 {
 	/**
@@ -39,4 +41,27 @@ public interface IThreadInfo
 
 	public String getName();
 
+	/**
+	 * A comparator that compares thread ids.
+	 * @author gpothier
+	 */
+	public static class ThreadIdComparator implements Comparator<IThreadInfo>
+	{
+		private static ThreadIdComparator INSTANCE = new ThreadIdComparator();
+
+		public static ThreadIdComparator getInstance()
+		{
+			return INSTANCE;
+		}
+
+		private ThreadIdComparator()
+		{
+		}
+		
+		public int compare(IThreadInfo aO1, IThreadInfo aO2)
+		{
+			return aO1.getId() - aO2.getId();
+		}
+		
+	}
 }

@@ -33,7 +33,7 @@ import tod.core.database.event.ILogEvent;
  */
 public class EventListCore
 {
-	private final IEventBrowser itsBrowser;
+	private IEventBrowser itsBrowser;
 	
 	private long itsFirstTimestamp;
 	private long itsLastTimestamp;
@@ -63,14 +63,8 @@ public class EventListCore
 	 */
 	public EventListCore(IEventBrowser aBrowser, int aVisibleEvents)
 	{
-		itsBrowser = aBrowser;
 		itsVisibleEvents = aVisibleEvents;
-		
-		// Find timestamps of first and last event
-		itsFirstTimestamp = aBrowser.getFirstTimestamp();
-		itsLastTimestamp = aBrowser.getLastTimestamp();
-		
-		setTimestamp(itsFirstTimestamp);		
+		setBrowser(aBrowser);		
 	}
 	
 	public long getFirstTimestamp()
@@ -78,32 +72,14 @@ public class EventListCore
 		return itsFirstTimestamp;
 	}
 
-	public void setFirstTimestamp(long aFirstTimestamp)
-	{
-//		itsFirstTimestamp = aFirstTimestamp;
-		throw new UnsupportedOperationException();
-	}
-
 	public long getLastTimestamp()
 	{
 		return itsLastTimestamp;
 	}
 
-	public void setLastTimestamp(long aLastTimestamp)
-	{
-//		itsLastTimestamp = aLastTimestamp;
-		throw new UnsupportedOperationException();
-	}
-
 	public int getVisibleEvents()
 	{
 		return itsVisibleEvents;
-	}
-
-	public void setVisibleEvents(int aVisibleEvents)
-	{
-//		itsVisibleEvents = aVisibleEvents;
-		throw new UnsupportedOperationException();
 	}
 
 	/**
@@ -114,6 +90,19 @@ public class EventListCore
 		return itsDisplayedEvents;
 	}
 
+	/**
+	 * Resets this list core with the given browser and first timestamp.
+	 */
+	public void setBrowser(IEventBrowser aBrowser)
+	{
+		itsBrowser = aBrowser;
+		
+		itsFirstTimestamp = itsBrowser.getFirstTimestamp();
+		itsLastTimestamp = itsBrowser.getLastTimestamp();
+
+		setTimestamp(itsFirstTimestamp);
+	}
+	
 	/**
 	 * Updates the displayed events so that the first displayed
 	 * event is at or immediately after the specified timestamp. 
@@ -230,5 +219,40 @@ public class EventListCore
 		{
 			backward();
 		}		
+	}
+	
+	/**
+	 * Augments the number of visible events by one, and returns the last visible event.
+	 */
+	public ILogEvent incVisibleEvents()
+	{
+		while (itsCurrentDelta < itsVisibleEvents)
+		{
+			if (! itsBrowser.hasNext()) break;
+			
+			ILogEvent theEvent = itsBrowser.next();
+			
+			// Check consistency
+			if (itsDisplayedEvents.size() > itsCurrentDelta)
+			{
+				ILogEvent theDisplayedEvent = itsDisplayedEvents.get(itsCurrentDelta);
+				assert theDisplayedEvent.getPointer().equals(theEvent.getPointer());
+			}
+			
+			itsCurrentDelta++;
+		}
+
+		if (itsCurrentDelta < itsVisibleEvents) return null;
+		
+		itsVisibleEvents++;
+		if (itsBrowser.hasNext())
+		{
+			ILogEvent theEvent = itsBrowser.next();
+			itsCurrentDelta++;
+			
+			itsDisplayedEvents.addLast(theEvent);
+			return theEvent;
+		}
+		else return null;
 	}
 }

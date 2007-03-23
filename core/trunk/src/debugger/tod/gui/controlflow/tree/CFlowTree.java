@@ -35,6 +35,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.SwingUtilities;
 
 import tod.core.database.event.EventUtils;
 import tod.core.database.event.IArrayWriteEvent;
@@ -85,6 +86,8 @@ implements MouseWheelListener
 
 	private JSplitPane itsSplitPane;
 	
+	private int itsSubmittedJobs = 0;
+	
 	public CFlowTree(CFlowView aView)
 	{
 		itsView = aView;
@@ -101,13 +104,17 @@ implements MouseWheelListener
 
 	public void forward(final int aCount)
 	{
-		getJobProcessor().runNow(new JobProcessor.Job<Object>()
+		if (itsSubmittedJobs > 5) return;
+		
+		itsSubmittedJobs++;
+		getJobProcessor().submit(new JobProcessor.Job<Object>()
 		{
 			@Override
 			public Object run()
 			{
 				itsCore.forward(aCount);
-				updateList();
+				itsSubmittedJobs--;
+				if (itsSubmittedJobs == 0) postUpdateList();
 				return null;
 			}
 		});
@@ -115,13 +122,17 @@ implements MouseWheelListener
 	
 	public void backward(final int aCount)
 	{
+		if (itsSubmittedJobs > 5) return;
+		
+		itsSubmittedJobs++;
 		getJobProcessor().runNow(new JobProcessor.Job<Object>()
 		{
 			@Override
 			public Object run()
 			{
 				itsCore.backward(aCount);
-				updateList();
+				itsSubmittedJobs--;
+				if (itsSubmittedJobs == 0) postUpdateList();
 				return null;
 			}
 		});
@@ -129,14 +140,14 @@ implements MouseWheelListener
 	
 	public void setTimestamp(final long aTimestamp)
 	{
-		getJobProcessor().runNow(new JobProcessor.Job<Object>()
+		getJobProcessor().submit(new JobProcessor.Job<Object>()
 		{
 			@Override
 			public Object run()
 			{
 				System.out.println("[CFlowTree.setTimestamp] Updating...");
 				itsCore.setTimestamp(aTimestamp);
-				updateList();
+				postUpdateList();
 				System.out.println("[CFlowTree.setTimestamp] Done...");
 				return null;
 			}
@@ -145,7 +156,8 @@ implements MouseWheelListener
 
 	public void setParent(IParentEvent aParentEvent)
 	{
-		itsCore = new EventListCore(aParentEvent.getChildrenBrowser(), 10);
+		if (itsCore == null) itsCore = new EventListCore(aParentEvent.getChildrenBrowser(), 10);
+		else itsCore.setBrowser(aParentEvent.getChildrenBrowser());
 
 		itsScroller.set(
 				aParentEvent.getChildrenBrowser(),  // Cannot reuse the browser passed to EventListCore
@@ -154,7 +166,22 @@ implements MouseWheelListener
 
 		update();
 	}
-
+	
+	/**
+	 * Posts an {@link #updateList()} request to be executed by the
+	 * swing thread.
+	 */
+	private void postUpdateList()
+	{
+		SwingUtilities.invokeLater(new Runnable()
+		{
+			public void run()
+			{
+				updateList();
+			}
+		});
+	}
+	
 	private void updateList()
 	{
 		itsEventList.removeAll();
@@ -163,6 +190,9 @@ implements MouseWheelListener
 		Map<ILogEvent, AbstractEventNode> theOldMap = itsNodesMap;
 		itsNodesMap = new HashMap<ILogEvent, AbstractEventNode>();
 		
+		int theChildrenHeight = 0;
+		int theTotalHeight = getHeight();
+		
 		for (ILogEvent theEvent : theEvents)
 		{
 			AbstractEventNode theNode = theOldMap.get(theEvent);
@@ -170,10 +200,27 @@ implements MouseWheelListener
 			
 			if (theNode != null) 
 			{
+				theChildrenHeight += theNode.getPreferredSize().height;
 				itsEventList.add(theNode);
 				itsNodesMap.put(theEvent, theNode);
 			}
 		}
+		
+		while (theChildrenHeight < theTotalHeight)
+		{
+			ILogEvent theEvent = itsCore.incVisibleEvents();
+			if (theEvent == null) break;
+			AbstractEventNode theNode = theOldMap.get(theEvent);
+			if (theNode == null) theNode = buildEventNode(theEvent);
+			
+			if (theNode != null) 
+			{
+				theChildrenHeight += theNode.getPreferredSize().height;
+				itsEventList.add(theNode);
+				itsNodesMap.put(theEvent, theNode);
+			}
+		}
+		
 		
 		itsEventList.revalidate();
 		itsEventList.repaint();
@@ -260,7 +307,7 @@ implements MouseWheelListener
 		itsSplitPane.setDividerLocation(theDividerLocation);
 		
 		itsNodesMap.clear();
-		updateList();
+//		updateList();
 				
 		revalidate();
 		repaint();

@@ -23,7 +23,10 @@ package tod.gui.view;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JLabel;
@@ -35,6 +38,7 @@ import tod.gui.IGUIManager;
 import tod.gui.eventsequences.SequenceViewsDock;
 import tod.gui.eventsequences.ThreadSequenceSeed;
 import tod.gui.seed.ThreadsSeed;
+import zz.utils.Utils;
 
 /**
  * A view that lets the user select a thread and displays all the events 
@@ -99,7 +103,11 @@ public class ThreadsView extends LogView
 			
 			itsEventsCountLabel.setText("Events registered: "+theCount);
 			
-			for (IThreadInfo theThread : getLogBrowser().getThreads())
+			List<IThreadInfo> theThreads = new ArrayList<IThreadInfo>();
+			Utils.fillCollection(theThreads, getLogBrowser().getThreads());
+			Collections.sort(theThreads, IThreadInfo.ThreadIdComparator.getInstance());
+			
+			for (IThreadInfo theThread : theThreads)
 			{
 				ThreadSequenceSeed theSeed = itsSeedsMap.get(theThread);
 				if (theSeed == null)
