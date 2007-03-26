@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 
+import tod.agent.DebugFlags;
 import tod.core.BehaviorKind;
 import tod.core.ILocationRegisterer;
 import tod.core.ILogCollector;
@@ -32,6 +33,7 @@ import tod.core.Output;
 import tod.core.ILocationRegisterer.LineNumberInfo;
 import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.structure.ObjectId;
+import tod.impl.dbgrid.DebuggerGridConfig;
 
 public class CollectorPacketReader
 {
@@ -190,7 +192,7 @@ public class CollectorPacketReader
 			case REGISTERED:
 			{
 				long theObjectId = aStream.readLong();
-				theObjectId >>>= 8; // TODO: temp for bench
+				if (DebugFlags.IGNORE_HOST) theObjectId >>>= DebuggerGridConfig.EVENT_HOST_BITS;
 				ObjectInputStream theStream = new ObjectInputStream(aStream);
 				Object theObject;
 				try
@@ -214,7 +216,7 @@ public class CollectorPacketReader
 			case OBJECT_UID:
 			{
 				long theObjectId = aStream.readLong();
-				theObjectId >>>= 8; // TODO: temp for bench
+				if (DebugFlags.IGNORE_HOST) theObjectId >>>= DebuggerGridConfig.EVENT_HOST_BITS;
 				return new ObjectId(theObjectId);
 			}
 				

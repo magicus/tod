@@ -120,12 +120,12 @@ public class FixedDispatchTreeStructure extends DispatchTreeStructure
 	}
 
 	@Override
-	public void waitReady(GridMaster aMaster)
+	protected void waitReady0()
 	{
 		try
 		{
 			waitNodes();
-			createRootDispatcher(aMaster);
+			createRootDispatcher();
 			itsRoot.node = getRootDispatcher();
 			
 			for (DispatchNode theNode : itsNodes)

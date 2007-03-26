@@ -42,14 +42,15 @@ public class LocalDispatchTreeStructure extends DispatchTreeStructure
 {
 	private final DatabaseNode itsDatabaseNode;
 
-	public LocalDispatchTreeStructure(DatabaseNode aDatabaseNode)
+	public LocalDispatchTreeStructure(GridMaster aMaster, DatabaseNode aDatabaseNode)
 	{
 		super(1, 0);
+		setMaster(aMaster);
 		itsDatabaseNode = aDatabaseNode;
 	}
 	
 	@Override
-	public void waitReady(GridMaster aMaster)
+	protected void waitReady0()
 	{
 		try
 		{
@@ -57,7 +58,7 @@ public class LocalDispatchTreeStructure extends DispatchTreeStructure
 			setRootDispatcher(theDispatcher);
 			getDispatchers().add(theDispatcher);
 		
-			itsDatabaseNode.connectToLocalMaster(aMaster, "db-0");
+			itsDatabaseNode.connectToLocalMaster(getMaster(), "db-0");
 			
 			getDatabaseNodes().add(itsDatabaseNode);
 		}
@@ -65,6 +66,12 @@ public class LocalDispatchTreeStructure extends DispatchTreeStructure
 		{
 			throw new RuntimeException(e);
 		}
+	}
+	
+	@Override
+	protected void forwardLocations()
+	{
+		// Do nothing here, the database node shares the locations store with the master.
 	}
 
 	@Override

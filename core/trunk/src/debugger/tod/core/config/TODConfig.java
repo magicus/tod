@@ -119,7 +119,7 @@ public class TODConfig implements Serializable
 			"Tracing class filter for instrumentation. " +
 			"Classes that do no pass this filter are not instrumented " +
 			"but are registered in the structure database.",
-			ConfigUtils.readString("trace-filter", "[-java.** -javax.** -sun.** -com.sun.**]"));
+			ConfigUtils.readString("trace-filter", "[-java.** -javax.** -sun.** -com.sun.** -org.ietf.jgss.** -org.omg.** -org.w3c.** -org.xml.**]"));
 	
 	public static final StringItem CLIENT_HOST_NAME = new StringItem(
 			ConfigLevel.NORMAL,

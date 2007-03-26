@@ -22,6 +22,7 @@ package tod.core.database.structure;
 
 import java.io.Serializable;
 
+import tod.agent.DebugFlags;
 import tod.impl.dbgrid.messages.ObjectCodec;
 
 /**
@@ -74,10 +75,9 @@ public class ObjectId implements Serializable
 	@Override
 	public String toString()
 	{
-		return "UID: "
-				+ObjectCodec.getObjectId(itsId)
-				+"."
-				+ObjectCodec.getHostId(itsId);
+		return DebugFlags.IGNORE_HOST ?
+				"UID: " +ObjectCodec.getObjectId(itsId)
+				: "UID: " +ObjectCodec.getObjectId(itsId) +"." +ObjectCodec.getHostId(itsId);
 	}
 }
 

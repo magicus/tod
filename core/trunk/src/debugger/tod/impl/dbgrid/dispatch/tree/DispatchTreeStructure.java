@@ -45,6 +45,8 @@ import tod.impl.dbgrid.dispatch.RIEventDispatcher;
  */
 public abstract class DispatchTreeStructure
 {
+	private GridMaster itsMaster;
+	
 	private int itsExpectedDispatchers;
 	private int itsExpectedDatabaseNodes;
 	
@@ -91,6 +93,20 @@ public abstract class DispatchTreeStructure
 	{
 		itsExpectedDispatchers = aExpectedDispatchers;
 		itsExpectedDatabaseNodes = aExpectedDatabaseNodes;
+	}
+	
+	/**
+	 * Sets the master that owns this DTS. Can be done only once.
+	 */
+	public void setMaster(GridMaster aMaster)
+	{
+		assert itsMaster == null;
+		itsMaster = aMaster;
+	}
+
+	protected GridMaster getMaster()
+	{
+		return itsMaster;
 	}
 
 	/**
@@ -217,20 +233,30 @@ public abstract class DispatchTreeStructure
 	 * Creates the appropriate root dispatcher according to the
 	 * number of expected nodes.
 	 */
-	protected void createRootDispatcher(GridMaster aMaster) throws RemoteException
+	protected void createRootDispatcher() throws RemoteException
 	{
-		ILocationStore theLocationStore = aMaster.getLocationStore();
-		
-		EventDispatcher theDispatcher = new EventDispatcher();
-		if (theLocationStore != null) theDispatcher.forwardLocations(theLocationStore.getLocations());
-		setRootDispatcher(theDispatcher);
+		setRootDispatcher(new EventDispatcher());
+	}
+	
+	/**
+	 * Forwards already-registered locations to connected nodes.
+	 */
+	protected void forwardLocations()
+	{
+		ILocationStore theLocationStore = itsMaster.getLocationStore();
+		((EventDispatcher) getRootDispatcher()).forwardLocations(theLocationStore.getLocations());		
 	}
 	
 	/**
 	 * Waits until all nodes and dispatchers are properly connected.
-	 * @param aMaster The master that is using this {@link DispatchTreeStructure}.
 	 */
-	public abstract void waitReady(GridMaster aMaster);
+	public final void waitReady()
+	{
+		waitReady0();
+		forwardLocations();
+	}
+	
+	protected abstract void waitReady0();
 
 	@Override
 	public String toString()

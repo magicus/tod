@@ -81,10 +81,10 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 	
 	public IEventBrowser getChildrenBrowser()
 	{
+		if (itsCallInfo == null) initChildren();
+		
 		if (itsFirstChild == null || itsLastChild == null)
 		{
-			if (itsCallInfo == null) initChildren();
-			
 			itsFirstChild = itsCallInfo.firstChild != null ?
 					getLogBrowser().getEvent(itsCallInfo.firstChild)
 					: null;

@@ -39,7 +39,7 @@ import tod.core.database.structure.ITypeInfo;
 public class VariablesInspector implements IVariablesInspector
 {
 	private final IBehaviorCallEvent itsBehaviorCall;
-	private IEventBrowser itsChildrenBrowser;
+	private final IEventBrowser itsChildrenBrowser;
 	private ILogEvent itsCurrentEvent;
 	private List<LocalVariableInfo> itsVariables;
 	
@@ -47,7 +47,9 @@ public class VariablesInspector implements IVariablesInspector
 	{
 //		assert aBehaviorCall.isDirectParent();
 		itsBehaviorCall = aBehaviorCall.isDirectParent() ? aBehaviorCall : null;
-		itsChildrenBrowser = itsBehaviorCall != null ? itsBehaviorCall.getChildrenBrowser() : null;
+		itsChildrenBrowser = itsBehaviorCall != null && itsBehaviorCall.hasRealChildren() ? 
+				itsBehaviorCall.getChildrenBrowser() 
+				: null;
 	}
 
 	public IBehaviorCallEvent getBehaviorCall()
@@ -95,7 +97,7 @@ public class VariablesInspector implements IVariablesInspector
 
 	public Object[] getEntryValue(LocalVariableInfo aVariable)
 	{
-		if (getBehaviorCall() == null) return null;
+		if (itsChildrenBrowser == null) return null;
 		
 		ILogBrowser theLogBrowser = itsChildrenBrowser.getLogBrowser();
 		IEventFilter theFilter = theLogBrowser.createVariableWriteFilter(aVariable);
@@ -131,7 +133,7 @@ public class VariablesInspector implements IVariablesInspector
 	
 	public ILocalVariableWriteEvent[] getEntrySetter(LocalVariableInfo aVariable)
 	{
-		if (getBehaviorCall() == null) return null;
+		if (itsChildrenBrowser == null) return null;
 		
 		ILogBrowser theLogBrowser = itsChildrenBrowser.getLogBrowser();
 		IEventFilter theFilter = theLogBrowser.createVariableWriteFilter(aVariable);

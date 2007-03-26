@@ -115,7 +115,6 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 	
 	/**
 	 * Posts an update request to be executed by the swing thread.
-	 *
 	 */
 	private void postUpdate()
 	{

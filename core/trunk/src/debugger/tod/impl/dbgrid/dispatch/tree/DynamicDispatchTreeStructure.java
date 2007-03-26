@@ -99,12 +99,13 @@ public class DynamicDispatchTreeStructure extends DispatchTreeStructure
 		return theRole;
 	}
 	
-	public void waitReady(GridMaster aMaster)
+	@Override
+	protected void waitReady0()
 	{
 		try
 		{
 			waitNodes();
-			createRootDispatcher(aMaster);
+			createRootDispatcher();
 
 			int theBranchingFactor = DebugFlags.DISPATCH_FAKE_1 ? 1 : DISPATCH_BRANCHING_FACTOR;
 			if (theBranchingFactor == 0) theBranchingFactor = Integer.MAX_VALUE;

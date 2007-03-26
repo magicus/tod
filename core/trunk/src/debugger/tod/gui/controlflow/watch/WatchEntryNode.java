@@ -28,6 +28,7 @@ import java.awt.FlowLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IWriteEvent;
@@ -89,7 +90,7 @@ public class WatchEntryNode<E> extends JPanel
 								itsValue[i] = itsSetter[i].getValue();
 							}
 						}
-						updateValue();
+						postUpdateValue();
 						return null;
 					}
 				});
@@ -101,6 +102,20 @@ public class WatchEntryNode<E> extends JPanel
 		add(GUIUtils.createLabel(theName + " = "));
 		itsPlaceHolder = GUIUtils.createLabel("...");
 		add(itsPlaceHolder);
+	}
+	
+	/**
+	 * Posts an update request to be executed by the swing thread.
+	 */
+	private void postUpdateValue()
+	{
+		SwingUtilities.invokeLater(new Runnable()
+		{
+			public void run()
+			{
+				updateValue();
+			}
+		});
 	}
 	
 	private void updateValue()

@@ -22,6 +22,7 @@ package tod.impl.dbgrid.messages;
 
 import static tod.impl.dbgrid.DebuggerGridConfig.EVENT_HOST_BITS;
 import static tod.impl.dbgrid.DebuggerGridConfig.EVENT_HOST_MASK;
+import tod.agent.DebugFlags;
 import tod.core.database.structure.ObjectId;
 import zz.utils.bit.BitStruct;
 import zz.utils.bit.BitUtils;
@@ -357,7 +358,7 @@ public class ObjectCodec
 	 */
 	public static long getObjectId(long aId)
 	{
-		return  aId >>> EVENT_HOST_BITS;
+		return DebugFlags.IGNORE_HOST ? aId : aId >>> EVENT_HOST_BITS;
 	}
 	
 	/**
@@ -366,7 +367,7 @@ public class ObjectCodec
 	 */
 	public static int getHostId(long aId)
 	{
-		return (int) (aId & EVENT_HOST_MASK);
+		return DebugFlags.IGNORE_HOST ? 0 : (int) (aId & EVENT_HOST_MASK);
 	}
 
 }

@@ -126,7 +126,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		itsConfig = aConfig;
 		itsInstrumenter = aInstrumenter;
 		itsLocationStore = aLocationStore;
-		itsDispatchTreeStructure = new LocalDispatchTreeStructure(aDatabaseNode);
+		itsDispatchTreeStructure = new LocalDispatchTreeStructure(this, aDatabaseNode);
 		itsRemoteLocationsRepository = new RemoteLocationsRepository(itsLocationStore);
 
 		itsLocalLogBrowser = new GridLogBrowser(this);
@@ -150,6 +150,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		itsInstrumenter = aInstrumenter;
 		itsLocationStore = aLocationStore;
 		itsDispatchTreeStructure = aTreeStructure;
+		itsDispatchTreeStructure.setMaster(this);
 		itsRemoteLocationsRepository = new RemoteLocationsRepository(itsLocationStore);
 		
 		itsLocalLogBrowser = new GridLogBrowser(this);
@@ -181,7 +182,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	public void waitReady()
 	{
-		itsDispatchTreeStructure.waitReady(this);
+		itsDispatchTreeStructure.waitReady();
 		if (itsStartServer) itsServer = createServer();
 		ready();
 	}

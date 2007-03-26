@@ -72,13 +72,12 @@ implements RIDatabaseNode
 	private long itsLastTimestamp = 0;
 	
 	/**
-	 * A leaf dispatcher maintains a local copy of the location
+	 * A database node maintains a local copy of the location
 	 * store for efficiency reasons.
 	 * The registerer (actually the repository) is needed for
 	 * exceptions processing.
-	 * If the root dispatcher is a leaf, the location store
-	 * is shared with that of the master. Otherwise each leaf dispatcher
-	 * has its own store.
+	 * In a local setup the location store is shared with that of the master.
+	 * Otherwise each node has its own store.
 	 * @see EventCollector#exception(int, long, short, long, String, String, String, int, Object).
 	 */
 	private ILocationStore itsLocationStore;
@@ -92,17 +91,21 @@ implements RIDatabaseNode
 	
 	private StringIndexer itsStringIndexer;
 
-	public DatabaseNode() throws RemoteException
+	public DatabaseNode(ILocationStore aStore) throws RemoteException
 	{
-		itsLocationStore = new LocationRegisterer();
-		
+		itsLocationStore = aStore;
+
 		String thePrefix = DebuggerGridConfig.NODE_DATA_DIR;
 		File theParent = new File(thePrefix);
 		System.out.println("Using data directory: "+theParent);
 		
 		itsObjectsDatabaseFile = new File(theParent, "objects.bin");
 		itsStringIndexFile = new File(theParent, "strings");
-
+	}
+	
+	public DatabaseNode() throws RemoteException
+	{
+		this(new LocationRegisterer());
 	}
 	
 	@Override

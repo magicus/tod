@@ -516,8 +516,17 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		
 		if (theFrame.entering)
 		{
-			itsPrintStream.println("[EventInterpreter] We missed something...");
-			System.err.println("[EventInterpreter] We missed something...");
+			long theTimestamp = AgentUtils.timestamp();
+			theTimestamp = theThread.transformTimestamp(theTimestamp);
+			
+			String theMessage = String.format(
+					"[EventInterpreter] Unexpected dry after (check trace scope) - thread: %d, p.ts: %d, ts: %d",
+					theThread.getId(),
+					theFrame.parentTimestamp,
+					theTimestamp);
+			
+			itsPrintStream.println(theMessage);
+			System.err.println(theMessage);
 		}
 	}
 	
@@ -749,8 +758,10 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 			{
 				System.err.println(String.format(
 						"EventInterpreter.getNextSerial: Out of order on single thread, BUG! (current: %s, previous: %s) tid: %02d",
-						AgentUtils.formatTimestamp(aTimestamp),
-						AgentUtils.formatTimestamp(itsLastTimestamp),
+//						AgentUtils.formatTimestamp(aTimestamp),
+//						AgentUtils.formatTimestamp(itsLastTimestamp),
+						AgentUtils.transformTimestamp(aTimestamp, (byte) 0),
+						AgentUtils.transformTimestamp(itsLastTimestamp, (byte) 0),
 						itsId));
 				
 				itsSerial = 0;

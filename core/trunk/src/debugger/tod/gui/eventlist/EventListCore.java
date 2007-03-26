@@ -20,10 +20,13 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.eventlist;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.event.ILogEvent;
+import zz.utils.Utils;
 
 /**
  * Implements the logic of {@link IEventBrowser}-based event lists.
@@ -84,16 +87,19 @@ public class EventListCore
 
 	/**
 	 * Returns the list of events that should be displayed.
+	 * The returned list is a copy.
 	 */
-	public LinkedList<ILogEvent> getDisplayedEvents()
+	public synchronized List<ILogEvent> getDisplayedEvents()
 	{
-		return itsDisplayedEvents;
+		List<ILogEvent> theEvents = new ArrayList<ILogEvent>(itsDisplayedEvents.size());
+		Utils.fillCollection(theEvents, itsDisplayedEvents);
+		return theEvents;
 	}
 
 	/**
 	 * Resets this list core with the given browser and first timestamp.
 	 */
-	public void setBrowser(IEventBrowser aBrowser)
+	public synchronized void setBrowser(IEventBrowser aBrowser)
 	{
 		itsBrowser = aBrowser;
 		
@@ -107,7 +113,7 @@ public class EventListCore
 	 * Updates the displayed events so that the first displayed
 	 * event is at or immediately after the specified timestamp. 
 	 */
-	public void setTimestamp(long aTimestamp)
+	public synchronized void setTimestamp(long aTimestamp)
 	{
 		itsDisplayedEvents.clear();
 		
@@ -121,7 +127,7 @@ public class EventListCore
 		}
 	}
 	
-	private void backward()
+	private synchronized void backward()
 	{
 		while (itsCurrentDelta > 0)
 		{
@@ -147,7 +153,7 @@ public class EventListCore
 		}
 	}
 	
-	private void forward()
+	private synchronized void forward()
 	{
 		while (itsCurrentDelta < itsVisibleEvents)
 		{
@@ -201,7 +207,7 @@ public class EventListCore
 	 * Moves the displayed events list forward by the specified number
 	 * of events
 	 */
-	public void forward(int aCount)
+	public synchronized void forward(int aCount)
 	{
 		for (int i=0;i<aCount;i++)
 		{
@@ -213,7 +219,7 @@ public class EventListCore
 	 * Moves the displayed events list backward by the specified number
 	 * of events
 	 */
-	public void backward(int aCount)
+	public synchronized void backward(int aCount)
 	{
 		for (int i=0;i<aCount;i++)
 		{
@@ -224,7 +230,7 @@ public class EventListCore
 	/**
 	 * Augments the number of visible events by one, and returns the last visible event.
 	 */
-	public ILogEvent incVisibleEvents()
+	public synchronized ILogEvent incVisibleEvents()
 	{
 		while (itsCurrentDelta < itsVisibleEvents)
 		{

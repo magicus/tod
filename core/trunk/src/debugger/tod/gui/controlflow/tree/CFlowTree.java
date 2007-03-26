@@ -185,7 +185,7 @@ implements MouseWheelListener
 	private void updateList()
 	{
 		itsEventList.removeAll();
-		LinkedList<ILogEvent> theEvents = itsCore.getDisplayedEvents();
+		List<ILogEvent> theEvents = itsCore.getDisplayedEvents();
 		
 		Map<ILogEvent, AbstractEventNode> theOldMap = itsNodesMap;
 		itsNodesMap = new HashMap<ILogEvent, AbstractEventNode>();

@@ -32,6 +32,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
@@ -60,6 +61,9 @@ public class WatchPanel extends JPanel
 	private WatchBrowserNavigator itsBrowserNavigator;
 	private JobProcessor itsJobProcessor;
 	private JScrollPane itsScrollPane;
+	private JPanel itsEntriesContainer;
+	private IWatchProvider itsProvider;
+	private List itsEntries;
 	
 	public WatchPanel(CFlowView aView)
 	{
@@ -151,19 +155,20 @@ public class WatchPanel extends JPanel
 	/**
 	 * Shows the watch data obtained from the specified provider.
 	 */
-	public <E> void showWatch(final IWatchProvider<E> aProvider)
+	public <E> void showWatch(IWatchProvider<E> aProvider)
 	{
+		itsProvider = aProvider;
 		getJobProcessor().cancelAll();
 				
-		final JPanel theContainer = new ScrollablePanel(GUIUtils.createStackLayout());
-		theContainer.setOpaque(false);
+		itsEntriesContainer = new ScrollablePanel(GUIUtils.createStackLayout());
+		itsEntriesContainer.setOpaque(false);
 		
-		theContainer.add(aProvider.buildTitle(getJobProcessor()));
+		itsEntriesContainer.add(aProvider.buildTitle(getJobProcessor()));
 		
 		ObjectId theCurrentObject = aProvider.getCurrentObject();
 		if (theCurrentObject != null)
 		{
-			theContainer.add(buildCurrentObjectLine(theCurrentObject));
+			itsEntriesContainer.add(buildCurrentObjectLine(theCurrentObject));
 		}
 				
 		getJobProcessor().submit(new JobProcessor.Job<Object>()
@@ -171,28 +176,42 @@ public class WatchPanel extends JPanel
 			@Override
 			public Object run()
 			{
-				List<E> theEntries = aProvider.getEntries();
-				if (theEntries == null) return null;
-				
-				for (E theEntry : theEntries)
-				{
-					if ("this".equals(aProvider.getEntryName(theEntry))) continue;
-					
-					theContainer.add(new WatchEntryNode<E>(
-							itsSeedFactory,
-							itsView.getLogBrowser(),
-							getJobProcessor(),
-							aProvider,
-							theEntry));
-				}
-				
-				theContainer.revalidate();
-				theContainer.repaint();
+				itsEntries = itsProvider.getEntries();
+				postUpdateEntries();
 				return null;
 			}
 		});
 		
-		itsScrollPane.setViewportView(theContainer);
+		itsScrollPane.setViewportView(itsEntriesContainer);
+	}
+	
+	private void postUpdateEntries()
+	{
+		SwingUtilities.invokeLater(new Runnable()
+		{
+			public void run()
+			{
+				updateEntries();
+			}
+		});
+	}
+	
+	private void updateEntries()
+	{
+		if (itsEntries != null) for (Object theEntry : itsEntries)
+		{
+			if ("this".equals(itsProvider.getEntryName(theEntry))) continue;
+			
+			itsEntriesContainer.add(new WatchEntryNode(
+					itsSeedFactory,
+					itsView.getLogBrowser(),
+					getJobProcessor(),
+					itsProvider,
+					theEntry));
+		}
+		
+		itsEntriesContainer.revalidate();
+		itsEntriesContainer.repaint();		
 	}
 	
 	private JComponent buildCurrentObjectLine(ObjectId aCurrentObject)

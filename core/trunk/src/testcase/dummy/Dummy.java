@@ -26,9 +26,18 @@ import java.util.Random;
 
 public class Dummy
 {
-	public static void main(String[] args)
+	public static void main(String[] args) throws InterruptedException
 	{
 		System.out.println("Dummy");
+		try
+		{
+			if (true) throw new RuntimeException("Plop");
+		}
+		catch (RuntimeException e)
+		{
+			Thread.sleep(100);
+			System.exit(0);
+		}
 		int j;
 		
 		long t0 = System.currentTimeMillis();
