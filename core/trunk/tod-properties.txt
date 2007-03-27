@@ -1,5 +1,5 @@
 #TOD configuration
-#Mon Mar 26 17:56:03 CLT 2007
-filterView.splitterPos=668
-cflowTree.splitterPos=200
+#Tue Mar 27 10:51:37 CLT 2007
+filterView.splitterPos=768
+cflowTree.splitterPos=320
 cflowView.splitterPos=814

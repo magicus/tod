@@ -3,9 +3,9 @@
 AGENT=./libbci-agent.so
 CLASSPATH=./bin:../zz.utils/bin
 
-HOST=localhost
+#HOST=localhost
 #HOST=syntagma.dim.uchile.cl
-#HOST=padme
+HOST=padme.dcc.uchile.cl
 
 
 VMARGS=''
@@ -18,10 +18,11 @@ VMARGS="$VMARGS -Xbootclasspath/p:./build/tod-agent.jar"
 VMARGS="$VMARGS -server" 
 VMARGS="$VMARGS -Xmx384m" 
 VMARGS="$VMARGS -XX:MaxPermSize=128m"
+VMARGS="$VMARGS -Dagent-verbose=3"
 #VMARGS="$VMARGS -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"
 
-java $VMARGS -cp ./bin dummy.Dummy
-#~/apps/eclipse-3.2.1-tod/eclipse -data ~/eclipse/ws-tod -consolelog -vmargs $VMARGS
+#java $VMARGS -cp ./bin dummy.Dummy
+~/apps/eclipse-3.2.1-tod/eclipse -data ~/eclipse/ws-tod -consolelog -vmargs $VMARGS
 #java $VMARGS -cp ./bin calls.Main
 
 

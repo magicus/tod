@@ -237,7 +237,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		}
 		
 		theWriter.println();
-		theWriter.println(Monitor.format(aData, true));
+		theWriter.println(Monitor.format(aData, false));
 		theWriter.flush();
 		
 		fireMonitorData(aNodeId, aData);

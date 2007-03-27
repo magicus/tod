@@ -41,10 +41,11 @@ public class AgentUtils
 	}
 	
 	private static final boolean FORCE_FAST_TS = false;
+	private static final boolean DISABLE_FAST_TS = true;
 	private static final boolean FORCE_FALSE_TS = false;
 	private static final int MAX_DTS = 10;
-	private static int dts = MAX_DTS;
-	private static long ts;
+	private static volatile int dts = MAX_DTS;
+	private static volatile long ts;
 	
 	/**
 	 * Returns the current timestamp.
@@ -64,6 +65,7 @@ public class AgentUtils
 	public static long timestamp_fast()
 	{
 		if (FORCE_FALSE_TS) return timestamp_false();
+		if (DISABLE_FAST_TS) return timestamp();
 		if (dts++ >= MAX_DTS)
 		{
 			dts = 0;

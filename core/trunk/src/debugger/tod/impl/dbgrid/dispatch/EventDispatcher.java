@@ -154,9 +154,9 @@ implements RIDispatcher
 				{
 					int theMinChild = Integer.MAX_VALUE;
 					itsCurrentChild = null;
-					for(DispatchNodeProxy theProxy0 : getChildren())
+					for(int i=0;i<getChildrenCount();i++)
 					{
-						DispatcherProxy theProxy = (DispatcherProxy) theProxy0;
+						DispatcherProxy theProxy = (DispatcherProxy) getChild((i+itsCurrentChildIndex) % getChildrenCount());
 						int theSize = theProxy.getQueueSize();
 						if (theSize < theMinChild)
 						{
@@ -165,6 +165,9 @@ implements RIDispatcher
 							if (theSize == 0) break; // If the child is empty there is no need to continue searching
 						}
 					}
+					// We need a bit of round robin in order to properly balance the
+					// dispatch under light load.
+					itsCurrentChildIndex++; 
 				}
 				else
 				{

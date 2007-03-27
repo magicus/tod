@@ -92,9 +92,11 @@ public class DebuggerGridConfig
 	/**
 	 * Size of the {@link DatabaseNode} reordering event buffer
 	 */
-	public static int DB_EVENT_BUFFER_SIZE = 100000;
+	public static int DB_REORDER_BUFFER_SIZE = 
+		ConfigUtils.readInt("reorder-buffer-size", 100000);
 	
-	public static int DB_PERTHREAD_BUFFER_SIZE = 100000;
+	public static int DB_PERTHREAD_REORDER_BUFFER_SIZE = 
+		ConfigUtils.readInt("perthread-reorder-buffer-size", DB_REORDER_BUFFER_SIZE);
 	
 	/**
 	 * Size of the object reordering buffer for {@link ObjectsDatabase}.
@@ -252,14 +254,12 @@ public class DebuggerGridConfig
 	public static final int DISPATCH_BATCH_SIZE =
 		ConfigUtils.readInt("dispatch-batch-size", 128);
 	
-	public static final String PARAM_DB_PAGE_BUFFER_SIZE = "page-buffer-size";
-	
 	/**
 	 * Maximum size allocated to page buffers.
 	 * See {@link HardPagedFile.PageDataManager}
 	 */
 	public static final long DB_PAGE_BUFFER_SIZE = 
-		ConfigUtils.readSize(PARAM_DB_PAGE_BUFFER_SIZE, "100m");
+		ConfigUtils.readSize("page-buffer-size", "100m");
 	
 	public static final String MASTER_HOST =
 		ConfigUtils.readString("master-host", "localhost");

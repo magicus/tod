@@ -25,6 +25,7 @@ import java.util.List;
 
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.messages.GridEvent;
+import tod.impl.dbgrid.monitoring.Monitor;
 import zz.utils.RingBuffer;
 
 /**
@@ -35,7 +36,7 @@ public class EventReorderingBuffer
 {
 	private long itsLastPushed;
 	private long itsLastRetrieved;
-	private RingBuffer<GridEvent> itsBuffer = new RingBuffer<GridEvent>(DebuggerGridConfig.DB_EVENT_BUFFER_SIZE);
+	private RingBuffer<GridEvent> itsBuffer = new RingBuffer<GridEvent>(DebuggerGridConfig.DB_REORDER_BUFFER_SIZE);
 	private OutOfOrderBuffer itsOutOfOrderBuffer = new OutOfOrderBuffer();
 	
 //	private RingBuffer<GridEvent> itsGlobalDebugBuffer = new RingBuffer<GridEvent>(DebuggerGridConfig.DB_EVENT_BUFFER_SIZE*2);
@@ -270,7 +271,7 @@ public class EventReorderingBuffer
 		
 		public PerThreadBuffer()
 		{
-			super(DebuggerGridConfig.DB_PERTHREAD_BUFFER_SIZE);
+			super(DebuggerGridConfig.DB_PERTHREAD_REORDER_BUFFER_SIZE);
 		}
 		
 		public void add(GridEvent aEvent)

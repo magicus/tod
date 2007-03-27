@@ -61,7 +61,7 @@ public class TestEventReordering implements ReorderingBufferListener
 		itsLastProcessedTimestamp = 0;
 		itsDropIsFailure = true;
 		
-		DebuggerGridConfig.DB_EVENT_BUFFER_SIZE = 50;
+		DebuggerGridConfig.DB_REORDER_BUFFER_SIZE = 50;
 		
 		EventReorderingBuffer theBuffer = new EventReorderingBuffer(this);
 		EventGenerator theGenerator = new EventGenerator(

@@ -341,6 +341,7 @@ public class DispatcherProxy extends DispatchNodeProxy
 		@Override
 		public void write(int aB) 
 		{
+			if (itsCurrentBuffer.length == itsCurrentBuffer.data.length) newBuffer();
 			itsCurrentBuffer.data[itsCurrentBuffer.length++] = (byte) aB;
 		}
 		
