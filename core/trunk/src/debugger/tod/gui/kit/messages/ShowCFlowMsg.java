@@ -21,40 +21,26 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.kit.messages;
 
 import tod.core.database.event.ILogEvent;
-import tod.core.database.structure.ObjectId;
 
 /**
- * A message that transmits a request to show an object
+ * Request to show the control flow of a given event
  * @author gpothier
  */
-public class ShowObjectMessage extends Message
+public class ShowCFlowMsg extends Message
 {
-	public static final String ID = "tod.showObject";
-	
-	/**
-	 * The object to show.
-	 */
-	private final ObjectId itsObjectId;
-	
-	/**
-	 * The reference event that indicates which version of the object must be shown.
-	 */
-	private final ILogEvent itsRefEvent;
+	public static final String ID = "tod.showCFlow";
 
-	public ShowObjectMessage(ObjectId aObjectId, ILogEvent aRefEvent)
+	private final ILogEvent itsEvent;
+
+	public ShowCFlowMsg(ILogEvent aEvent)
 	{
 		super(ID);
-		itsObjectId = aObjectId;
-		itsRefEvent = aRefEvent;
+		itsEvent = aEvent;
 	}
 
-	public ObjectId getObjectId()
+	public ILogEvent getEvent()
 	{
-		return itsObjectId;
+		return itsEvent;
 	}
 
-	public ILogEvent getRefEvent()
-	{
-		return itsRefEvent;
-	}
 }

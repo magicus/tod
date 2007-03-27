@@ -124,12 +124,7 @@ public class ObjectWatchProvider implements IWatchProvider<IFieldInfo>
 		
 		// Setup history link
 		theContainer.add(GUIUtils.createLabel(" ("));
-		
-		theContainer.add(Hyperlinks.history(
-				itsWatchPanel.getLogViewSeedFactory(),
-				itsObject,
-				STD_FONT));
-		
+		theContainer.add(Hyperlinks.history(itsObject, STD_FONT));
 		theContainer.add(GUIUtils.createLabel(")"));
 		
 		return theContainer;

@@ -32,8 +32,6 @@ import tod.core.database.browser.IEventBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
-import tod.gui.Hyperlinks.ISeedFactory;
-import tod.gui.seed.LogViewSeedFactory;
 import tod.gui.view.LogView;
 import zz.utils.ItemAction;
 import zz.utils.properties.IRWProperty;
@@ -55,14 +53,10 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 	
 	private Collection<ItemAction> itsBaseActions;
 	
-	private ISeedFactory itsSeedFactory;
 	
 	public AbstractSequenceView(LogView aLogView)
 	{
 		itsLogView = aLogView;
-		itsSeedFactory = new LogViewSeedFactory(
-				getLogView().getGUIManager(), 
-				getLogView().getLogBrowser());
 	}
 
 	public LogView getLogView()
@@ -89,13 +83,6 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 	{
 	}
 
-	/**
-	 * Returns a seed factory that create new log views.
-	 */
-	public ISeedFactory getSeedFactory()
-	{
-		return itsSeedFactory;
-	}
 
 	/**
 	 * Abstract method that lets subclasses provide a {@link IEventBrowser}.

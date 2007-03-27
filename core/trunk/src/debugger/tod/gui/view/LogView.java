@@ -21,7 +21,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.view;
 
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,14 +33,13 @@ import tod.core.database.structure.ObjectId;
 import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
-import tod.gui.Hyperlinks.ISeedFactory;
 import tod.gui.formatter.EventFormatter;
 import tod.gui.formatter.ObjectFormatter;
 import tod.gui.kit.BusOwnerPanel;
 import tod.gui.kit.SeedLinkLabel;
+import tod.gui.seed.LogViewSeed;
 import tod.gui.seed.LogViewSeedFactory;
 import tod.gui.seed.ObjectInspectorSeed;
-import tod.gui.seed.LogViewSeed;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.ISetProperty;
 import zz.utils.properties.PropertyUtils;
@@ -62,8 +60,6 @@ public abstract class LogView extends BusOwnerPanel
 	private ObjectFormatter itsObjectFormatter;
 	private EventFormatter itsEventFormatter;
 	
-	private LogViewSeedFactory itsLogViewSeedFactory;
-
 	
 	public LogView(IGUIManager aGUIManager, ILogBrowser aLog)
 	{
@@ -71,7 +67,6 @@ public abstract class LogView extends BusOwnerPanel
 		itsLog = aLog;
 		itsObjectFormatter = new ObjectFormatter(itsLog);
 		itsEventFormatter = new EventFormatter(itsLog);
-		itsLogViewSeedFactory = new LogViewSeedFactory(getGUIManager(), getLogBrowser());
 	}
 	
 	@Override
@@ -126,14 +121,6 @@ public abstract class LogView extends BusOwnerPanel
 		return itsGUIManager;
 	}
 	
-	/**
-	 * Returns a {@link LogViewSeedFactory} suitable for this log view.
-	 */
-	public LogViewSeedFactory getLogViewSeedFactory()
-	{
-		return itsLogViewSeedFactory;
-	}
-
 	/**
 	 * Returns an event formatter that can be used in the context
 	 * of this view.

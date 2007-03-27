@@ -44,6 +44,12 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.session.ISession;
 import tod.gui.controlflow.CFlowView;
+import tod.gui.kit.Bus;
+import tod.gui.kit.BusOwnerPanel;
+import tod.gui.kit.IBusListener;
+import tod.gui.kit.messages.ShowCFlowMsg;
+import tod.gui.kit.messages.ShowObjectHistoryMsg;
+import tod.gui.seed.CFlowSeed;
 import tod.gui.seed.FilterSeed;
 import tod.gui.seed.LogViewSeed;
 import tod.gui.seed.LogViewSeedFactory;
@@ -57,7 +63,7 @@ import tod.utils.TODUtils;
 /**
  * @author gpothier
  */
-public abstract class MinerUI extends JPanel 
+public abstract class MinerUI extends BusOwnerPanel
 implements ILocationSelectionListener, IGUIManager
 {
 	private LogViewBrowserNavigator itsNavigator = new LogViewBrowserNavigator()
@@ -68,6 +74,36 @@ implements ILocationSelectionListener, IGUIManager
 			MinerUI.this.viewChanged(aTheView);
 		}
 	};
+	
+	private IBusListener<ShowObjectHistoryMsg> itsShowObjectHistoryListener = new IBusListener<ShowObjectHistoryMsg>()
+	{
+		public boolean processMessage(ShowObjectHistoryMsg aMessage)
+		{
+			FilterSeed theSeed = new FilterSeed(
+					MinerUI.this, 
+					getLogBrowser(), 
+					getLogBrowser().createObjectFilter(aMessage.getObjectId()));
+			
+			openSeed(theSeed, false);
+			return true;
+		}
+	};
+	
+	private IBusListener<ShowCFlowMsg> itsShowCFlowListener = new IBusListener<ShowCFlowMsg>()
+	{
+		public boolean processMessage(ShowCFlowMsg aMessage)
+		{
+			CFlowSeed theSeed = new CFlowSeed(
+					MinerUI.this, 
+					getLogBrowser(),
+					aMessage.getEvent());
+			
+			openSeed(theSeed, false);
+			return true;
+		}
+	};
+
+	
 	
 	private JobProcessor itsJobProcessor = new JobProcessor();
 	private BookmarkPanel itsBookmarkPanel = new BookmarkPanel();
@@ -81,7 +117,7 @@ implements ILocationSelectionListener, IGUIManager
 		createUI();
 	}
 	
-	protected ILogBrowser getBrowser()
+	protected ILogBrowser getLogBrowser()
 	{
 		return getSession().getLogBrowser();
 	}
@@ -107,6 +143,22 @@ implements ILocationSelectionListener, IGUIManager
 		
 		add (theCenterPanel, BorderLayout.CENTER);
 		theNavButtonsPanel.add (createToolbar());
+	}
+	
+	@Override
+	public void addNotify()
+	{
+		super.addNotify();
+		Bus.getBus(this).subscribe(ShowObjectHistoryMsg.ID, itsShowObjectHistoryListener);
+		Bus.getBus(this).subscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
+	}
+	
+	@Override
+	public void removeNotify()
+	{
+		super.removeNotify();
+		Bus.getBus(this).unsubscribe(ShowObjectHistoryMsg.ID, itsShowObjectHistoryListener);
+		Bus.getBus(this).unsubscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
 	}
 
 	protected void viewChanged(LogView aView)
@@ -260,13 +312,13 @@ implements ILocationSelectionListener, IGUIManager
 	public void showEventsForLine(IBehaviorInfo aBehavior, int aLine)
 	{
 		IEventFilter theFilter = TODUtils.getLocationFilter(
-				getBrowser(), 
+				getLogBrowser(), 
 				aBehavior, 
 				aLine);
 		
 		if (theFilter != null)
 		{
-			LogViewSeed theSeed = new FilterSeed(this, getBrowser(), theFilter);
+			LogViewSeed theSeed = new FilterSeed(this, getLogBrowser(), theFilter);
 			openSeed(theSeed, false);				
 		}
 	}

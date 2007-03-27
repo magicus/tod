@@ -62,7 +62,7 @@ public class Bus
 		List<IBusListener> theListeners = itsListeners.get(aMessage.getId());
 		if (theListeners != null) for (IBusListener theListener : theListeners)
 		{
-			theListener.processMessage(aMessage);
+			if (theListener.processMessage(aMessage)) return;
 		}
 			
 		

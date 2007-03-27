@@ -66,9 +66,9 @@ public class MethodCallNode extends BehaviorCallNode
 		}
 		ITypeInfo theType = theBehavior.getType();
 		
-		aContainer.add(Hyperlinks.type(getSeedFactory(), theType, aFont));
+		aContainer.add(Hyperlinks.type(theType, aFont));
 		aContainer.add(ZLabel.create(".", aFont, Color.BLACK));
-		aContainer.add(Hyperlinks.behavior(getSeedFactory(), theBehavior, aFont));
+		aContainer.add(Hyperlinks.behavior(theBehavior, aFont));
 	}
 	
 	@Override

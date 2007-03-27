@@ -18,11 +18,43 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.kit;
+package tod.gui.kit.messages;
 
-import tod.gui.kit.messages.Message;
+import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.ObjectId;
 
-public interface IBusListener<M extends Message>
+/**
+ * A message that transmits a request to show an object
+ * @author gpothier
+ */
+public class ShowObjectMsg extends Message
 {
-	public boolean processMessage(M aMessage);
+	public static final String ID = "tod.showObject";
+	
+	/**
+	 * The object to show.
+	 */
+	private final ObjectId itsObjectId;
+	
+	/**
+	 * The reference event that indicates which version of the object must be shown.
+	 */
+	private final ILogEvent itsRefEvent;
+
+	public ShowObjectMsg(ObjectId aObjectId, ILogEvent aRefEvent)
+	{
+		super(ID);
+		itsObjectId = aObjectId;
+		itsRefEvent = aRefEvent;
+	}
+
+	public ObjectId getObjectId()
+	{
+		return itsObjectId;
+	}
+
+	public ILogEvent getRefEvent()
+	{
+		return itsRefEvent;
+	}
 }

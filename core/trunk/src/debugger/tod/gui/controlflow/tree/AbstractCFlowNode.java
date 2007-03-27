@@ -20,21 +20,16 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.controlflow.tree;
 
-import java.awt.FlowLayout;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
 import tod.gui.JobProcessor;
-import tod.gui.Hyperlinks.ISeedFactory;
 import tod.gui.controlflow.CFlowView;
 
 /**
@@ -65,11 +60,6 @@ implements MouseListener, MouseMotionListener
 		return itsJobProcessor;
 	}
 
-	public ISeedFactory getSeedFactory()
-	{
-		return itsView.getLogViewSeedFactory();
-	}
-	
 	public IGUIManager getGUIManager()
 	{
 		return itsView.getGUIManager();

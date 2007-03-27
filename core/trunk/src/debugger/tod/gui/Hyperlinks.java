@@ -30,8 +30,11 @@ import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
-import tod.gui.kit.messages.ShowObjectMessage;
-import tod.gui.seed.LogViewSeedFactory;
+import tod.gui.kit.messages.ShowBehaviorMsg;
+import tod.gui.kit.messages.ShowCFlowMsg;
+import tod.gui.kit.messages.ShowObjectHistoryMsg;
+import tod.gui.kit.messages.ShowObjectMsg;
+import tod.gui.kit.messages.ShowTypeMsg;
 import tod.gui.seed.Seed;
 import zz.utils.ui.ZLabel;
 import zz.utils.ui.text.XFont;
@@ -43,37 +46,28 @@ import zz.utils.ui.text.XFont;
  */
 public class Hyperlinks
 {
-	public static JComponent history(
-			LogViewSeedFactory aFactory,
-			ObjectId aObject,
-			XFont aFont)
+	public static JComponent history(ObjectId aObject, XFont aFont)
 	{
-		return SeedHyperlink.create(
-				aFactory.objectHistory(aObject),
+		return MessageHyperlink.create(
+				new ShowObjectHistoryMsg(aObject),
 				"history",
 				aFont,
 				Color.BLUE);
 	}
 	
-	public static JComponent type (
-			ISeedFactory aSeedFactory, 
-			ITypeInfo aType, 
-			XFont aFont)
+	public static JComponent type (ITypeInfo aType, XFont aFont)
 	{
-		return SeedHyperlink.create(
-				aSeedFactory.typeSeed(aType),
+		return MessageHyperlink.create(
+				new ShowTypeMsg(aType),
 				aType.getName(), 
 				aFont, 
 				Color.BLUE);
 	}
 	
-	public static JComponent behavior(
-			ISeedFactory aSeedFactory,
-			IBehaviorInfo aBehavior,
-			XFont aFont)
+	public static JComponent behavior(IBehaviorInfo aBehavior, XFont aFont)
 	{
-		return SeedHyperlink.create(
-				aSeedFactory.behaviorSeed(aBehavior), 
+		return MessageHyperlink.create(
+				new ShowBehaviorMsg(aBehavior), 
 				Util.getPrettyName(aBehavior.getName()),
 				aFont, 
 				Color.BLUE);		
@@ -82,14 +76,10 @@ public class Hyperlinks
 	/**
 	 * An hyperlink that jumps to the cflow of the given event.
 	 */
-	public static JComponent event(
-			ISeedFactory aSeedFactory, 
-			String aText,
-			ILogEvent aEvent, 
-			XFont aFont)
+	public static JComponent event(String aText, ILogEvent aEvent, XFont aFont)
 	{
-		return SeedHyperlink.create(
-				aSeedFactory.cflowSeed(aEvent), 
+		return MessageHyperlink.create(
+				new ShowCFlowMsg(aEvent), 
 				aText,
 				aFont, 
 				Color.BLUE);
@@ -149,7 +139,7 @@ public class Hyperlinks
 			}
 			
 			return MessageHyperlink.create(
-					new ShowObjectMessage(theId, aRefEvent), 
+					new ShowObjectMsg(theId, aRefEvent), 
 					theText, 
 					aFont, 
 					Color.BLUE);
@@ -180,10 +170,4 @@ public class Hyperlinks
 		
 	}
 	
-	public interface ISeedFactory
-	{
-		public Seed cflowSeed(ILogEvent aEvent);
-		public Seed behaviorSeed(IBehaviorInfo aBehavior);
-		public Seed typeSeed(ITypeInfo aType);
-	}
 }

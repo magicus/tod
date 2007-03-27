@@ -23,60 +23,24 @@ package tod.gui.seed;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
-import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ITypeInfo;
-import tod.core.database.structure.ObjectId;
 import tod.gui.IGUIManager;
-import tod.gui.Hyperlinks.ISeedFactory;
 
 /**
  * A factory of {@link LogViewSeed}s.
  * 
  * @author gpothier
  */
-public class LogViewSeedFactory implements ISeedFactory
+public class LogViewSeedFactory 
 {
-	private IGUIManager itsManager;
-	private ILogBrowser itsLogBrowser;
-
-	public LogViewSeedFactory(IGUIManager aManager, ILogBrowser aLogBrowser)
-	{
-		itsManager = aManager;
-		itsLogBrowser = aLogBrowser;
-	}
-
-	public Seed behaviorSeed(IBehaviorInfo aBehavior)
-	{
-		return null;
-	}
-
-	public Seed cflowSeed(ILogEvent aEvent)
-	{
-		return new CFlowSeed(itsManager, itsLogBrowser, aEvent);
-	}
-
-	public Seed typeSeed(ITypeInfo aType)
-	{
-		return null;
-	}
-
 	private static LogViewSeed createSeed(IGUIManager aGUIManager, ILogBrowser aLog, IEventFilter aFilter)
 	{
 		return new FilterSeed(aGUIManager, aLog, aFilter);
 	}
 	
-	public Seed objectHistory(ObjectId aObject)
-	{
-		return new FilterSeed(
-				itsManager, 
-				itsLogBrowser, 
-				itsLogBrowser.createObjectFilter(aObject));
-
-	}
-
 	/**
 	 * Returns a seed that can be used to view the events that are related to
 	 * the specified location info.

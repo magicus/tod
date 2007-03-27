@@ -67,7 +67,7 @@ public class InstantiationNode extends BehaviorCallNode
 		}
 		ITypeInfo theType = theBehavior.getType();
 		
-		aContainer.add(Hyperlinks.type(getSeedFactory(), theType, aFont));
+		aContainer.add(Hyperlinks.type(theType, aFont));
 	}
 	
 	@Override

@@ -31,7 +31,6 @@ import tod.core.database.event.IWriteEvent;
 import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
-import tod.gui.Hyperlinks.ISeedFactory;
 
 /**
  * Represents a watch entry (field or variable).
@@ -40,7 +39,6 @@ import tod.gui.Hyperlinks.ISeedFactory;
 public class WatchEntryNode<E> extends JPanel
 {
 	private final JobProcessor itsJobProcessor;
-	private final ISeedFactory itsSeedFactory;
 	private final ILogBrowser itsLogBrowser;
 	private final IWatchProvider<E> itsProvider;
 	private final E itsEntry;
@@ -51,7 +49,6 @@ public class WatchEntryNode<E> extends JPanel
 	private JComponent itsPlaceHolder;
 
 	public WatchEntryNode(
-			ISeedFactory aSeedFactory,
 			ILogBrowser aLogBrowser,
 			JobProcessor aJobProcessor,
 			IWatchProvider<E> aProvider, 
@@ -60,7 +57,6 @@ public class WatchEntryNode<E> extends JPanel
 		super(GUIUtils.createSequenceLayout());
 		setOpaque(false);
 		itsJobProcessor = aJobProcessor;
-		itsSeedFactory = aSeedFactory;
 		itsLogBrowser = aLogBrowser;
 		itsProvider = aProvider;
 		itsEntry = aEntry;
@@ -138,13 +134,7 @@ public class WatchEntryNode<E> extends JPanel
 				if (theSetter != null)
 				{
 					add(GUIUtils.createLabel(" ("));
-					
-					add(Hyperlinks.event(
-							itsSeedFactory,
-							"why?", 
-							theSetter, 
-							STD_FONT));
-					
+					add(Hyperlinks.event("why?", theSetter, STD_FONT));
 					add(GUIUtils.createLabel(")"));
 				}
 			}

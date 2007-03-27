@@ -35,21 +35,16 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
 import tod.core.database.event.ILogEvent;
-import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.gui.BrowserNavigator;
 import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
 import tod.gui.JobProcessor;
-import tod.gui.Hyperlinks.ISeedFactory;
 import tod.gui.controlflow.CFlowView;
 import tod.gui.kit.Bus;
 import tod.gui.kit.IBusListener;
-import tod.gui.kit.messages.ShowObjectMessage;
-import tod.gui.seed.LogViewSeedFactory;
-import tod.gui.seed.Seed;
+import tod.gui.kit.messages.ShowObjectMsg;
 import zz.utils.SimpleAction;
 import zz.utils.ui.ScrollablePanel;
 
@@ -60,7 +55,6 @@ import zz.utils.ui.ScrollablePanel;
 public class WatchPanel extends JPanel
 {
 	private CFlowView itsView;
-	private MySeedFactory itsSeedFactory = new MySeedFactory();
 	private WatchBrowserNavigator itsBrowserNavigator;
 	private JobProcessor itsJobProcessor;
 	private JScrollPane itsScrollPane;
@@ -68,15 +62,17 @@ public class WatchPanel extends JPanel
 	private IWatchProvider itsProvider;
 	private List itsEntries;
 	
-	private IBusListener<ShowObjectMessage> itsShowObjectListener = new IBusListener<ShowObjectMessage>()
+	private IBusListener<ShowObjectMsg> itsShowObjectListener = new IBusListener<ShowObjectMsg>()
 	{
-		public void processMessage(ShowObjectMessage aMessage)
+		public boolean processMessage(ShowObjectMsg aMessage)
 		{
 			openWatch(new ObjectWatchSeed(
 					WatchPanel.this, 
 					getView().getLogBrowser(), 
 					aMessage.getRefEvent(), 
 					aMessage.getObjectId()));
+			
+			return true;
 		}
 	};
 	
@@ -127,7 +123,7 @@ public class WatchPanel extends JPanel
 		if (itsJobProcessor == null) 
 			itsJobProcessor = new JobProcessor(getGUIManager().getJobProcessor());
 		
-		Bus.getBus(this).subscribe(ShowObjectMessage.ID, itsShowObjectListener);
+		Bus.getBus(this).subscribe(ShowObjectMsg.ID, itsShowObjectListener);
 	}
 	
 	@Override
@@ -136,7 +132,7 @@ public class WatchPanel extends JPanel
 		super.removeNotify();
 		itsJobProcessor.detach();
 		itsJobProcessor = null;
-		Bus.getBus(this).unsubscribe(ShowObjectMessage.ID, itsShowObjectListener);
+		Bus.getBus(this).unsubscribe(ShowObjectMsg.ID, itsShowObjectListener);
 	}
 	
 	public IGUIManager getGUIManager()
@@ -163,16 +159,6 @@ public class WatchPanel extends JPanel
 				itsView.getLogBrowser(),
 				theRefEvent));
 
-	}
-	
-	public LogViewSeedFactory getLogViewSeedFactory()
-	{
-		return itsView.getLogViewSeedFactory();
-	}
-	
-	public ISeedFactory getWatchSeedFactory()
-	{
-		return itsSeedFactory;
 	}
 	
 	public void openWatch(WatchSeed aSeed)
@@ -231,7 +217,6 @@ public class WatchPanel extends JPanel
 			if ("this".equals(itsProvider.getEntryName(theEntry))) continue;
 			
 			itsEntriesContainer.add(new WatchEntryNode(
-					itsSeedFactory,
 					itsView.getLogBrowser(),
 					getJobProcessor(),
 					itsProvider,
@@ -258,32 +243,6 @@ public class WatchPanel extends JPanel
 				STD_FONT));
 		
 		return theContainer;		
-		
-	}
-	
-	private class MySeedFactory implements ISeedFactory
-	{
-		public Seed behaviorSeed(IBehaviorInfo aBehavior)
-		{
-			return getLogViewSeedFactory().behaviorSeed(aBehavior);
-		}
-
-		public Seed cflowSeed(final ILogEvent aEvent)
-		{
-			return new Seed()
-			{
-				@Override
-				public void open()
-				{
-					itsView.getSeed().pSelectedEvent().set(aEvent);
-				}
-			};
-		}
-
-		public Seed typeSeed(ITypeInfo aType)
-		{
-			return getLogViewSeedFactory().typeSeed(aType);
-		}
 		
 	}
 	

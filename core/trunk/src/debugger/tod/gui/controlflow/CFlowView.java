@@ -33,24 +33,21 @@ import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.Stepper;
 import tod.core.database.event.ExternalPointer;
-import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
-import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
-import tod.core.database.structure.ITypeInfo;
-import tod.core.database.structure.ObjectId;
 import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
 import tod.gui.MinerUI;
-import tod.gui.Hyperlinks.ISeedFactory;
 import tod.gui.controlflow.tree.CFlowTree;
 import tod.gui.controlflow.watch.WatchPanel;
 import tod.gui.formatter.EventFormatter;
+import tod.gui.kit.Bus;
+import tod.gui.kit.IBusListener;
+import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.seed.CFlowSeed;
-import tod.gui.seed.Seed;
 import tod.gui.view.IEventListView;
 import tod.gui.view.LogView;
 import zz.utils.SimpleAction;
@@ -101,6 +98,14 @@ public class CFlowView extends LogView implements IEventListView
 		}
 	};
 	
+	private IBusListener<ShowCFlowMsg> itsShowCFlowListener = new IBusListener<ShowCFlowMsg>()
+	{
+		public boolean processMessage(ShowCFlowMsg aMessage)
+		{
+			showEvent(aMessage.getEvent());
+			return true;
+		}
+	};
 
 
 	private JSplitPane itsSplitPane;
@@ -113,6 +118,7 @@ public class CFlowView extends LogView implements IEventListView
 
 		itsStepper = new Stepper(getLogBrowser(), itsSeed.getThread());
 	}
+	
 
 	public CFlowSeed getSeed()
 	{
@@ -303,6 +309,8 @@ public class CFlowView extends LogView implements IEventListView
 		
 		itsSplitPane.setDividerLocation(theSplitterPos);
 		
+		Bus.getBus(this).subscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
+		
 		update();
 	}
 	
@@ -318,6 +326,7 @@ public class CFlowView extends LogView implements IEventListView
 				PROPERTY_SPLITTER_POS, 
 				""+itsSplitPane.getDividerLocation());
 		
+		Bus.getBus(this).unsubscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
 	}
 	
 	
@@ -344,29 +353,4 @@ public class CFlowView extends LogView implements IEventListView
 	}
 	
 	
-	private class CFlowSeedFactory implements ISeedFactory
-	{
-
-		public Seed behaviorSeed(IBehaviorInfo aBehavior)
-		{
-			return null;
-		}
-
-		public Seed cflowSeed(final ILogEvent aEvent)
-		{
-			return new Seed()
-			{
-				public void open()
-				{
-					showEvent(aEvent);
-				}
-			};
-		}
-
-		public Seed typeSeed(ITypeInfo aType)
-		{
-			return null;
-		}
-		
-	}
 }
