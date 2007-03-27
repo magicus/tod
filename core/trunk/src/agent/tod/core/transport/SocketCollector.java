@@ -657,7 +657,6 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 						SocketThreadData theFirst = theFirstEntry.getValue();
 						
 						theFirst.send();
-						
 					}
 
 					Thread.sleep(10);
