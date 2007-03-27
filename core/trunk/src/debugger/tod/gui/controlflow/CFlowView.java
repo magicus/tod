@@ -363,11 +363,6 @@ public class CFlowView extends LogView implements IEventListView
 			};
 		}
 
-		public Seed objectSeed(ObjectId aObjectId)
-		{
-			return null;
-		}
-
 		public Seed typeSeed(ITypeInfo aType)
 		{
 			return null;

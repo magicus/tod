@@ -25,9 +25,9 @@ import java.awt.Color;
 import javax.swing.JPanel;
 
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.IBehaviorCallEvent;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
-import tod.gui.Hyperlinks.ISeedFactory;
 import zz.utils.ui.ZLabel;
 import zz.utils.ui.text.XFont;
 
@@ -37,10 +37,10 @@ public class CFlowViewUtils
 	 * Adds the hyperlinks representing the behavior's arguments to the given container.
 	 */
 	public static void addArguments(
-			ISeedFactory aSeedFactory,
 			ILogBrowser aLogBrowser,
 			JobProcessor aJobProcessor,
 			JPanel aContainer,
+			IBehaviorCallEvent aRefEvent,
 			Object[] aArguments, 
 			XFont aFont)
 	{
@@ -55,10 +55,10 @@ public class CFlowViewUtils
 				else aContainer.add(ZLabel.create(", ", aFont, Color.BLACK));
 				
 				aContainer.add(Hyperlinks.object(
-						aSeedFactory,
 						aLogBrowser,
 						aJobProcessor,
 						theArgument, 
+						aRefEvent,
 						aFont));
 			}
 		}

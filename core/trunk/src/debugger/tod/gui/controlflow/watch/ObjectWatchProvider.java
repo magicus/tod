@@ -24,7 +24,6 @@ import static tod.gui.FontConfig.STD_FONT;
 import static tod.gui.FontConfig.STD_HEADER_FONT;
 
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.util.List;
 
 import javax.swing.JComponent;
@@ -109,10 +108,10 @@ public class ObjectWatchProvider implements IWatchProvider<IFieldInfo>
 		if (itsObject != null)
 		{
 			theContainer.add(Hyperlinks.object(
-					itsWatchPanel.getWatchSeedFactory(), 
 					itsLogBrowser, 
 					aJobProcessor,
-					itsObject, 
+					itsObject,
+					itsRefEvent,
 					STD_HEADER_FONT));
 		}
 		else
@@ -139,6 +138,11 @@ public class ObjectWatchProvider implements IWatchProvider<IFieldInfo>
 	public ObjectId getCurrentObject()
 	{
 		return null;
+	}
+	
+	public ILogEvent getRefEvent()
+	{
+		return itsRefEvent;
 	}
 
 	public List<IFieldInfo> getEntries()

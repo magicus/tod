@@ -22,11 +22,7 @@ package tod.gui.controlflow.watch;
 
 import static tod.gui.FontConfig.STD_FONT;
 
-import java.awt.Color;
-import java.awt.FlowLayout;
-
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
@@ -36,7 +32,6 @@ import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.Hyperlinks.ISeedFactory;
-import zz.utils.ui.ZLabel;
 
 /**
  * Represents a watch entry (field or variable).
@@ -133,11 +128,11 @@ public class WatchEntryNode<E> extends JPanel
 				else add(GUIUtils.createLabel(" / "));
 				
 				add(Hyperlinks.object(
-						itsSeedFactory,
 						itsLogBrowser, 
 						itsJobProcessor,
 						itsProvider.getCurrentObject(),
 						theValue,
+						itsProvider.getRefEvent(),
 						STD_FONT));
 				
 				if (theSetter != null)
@@ -153,10 +148,10 @@ public class WatchEntryNode<E> extends JPanel
 					add(GUIUtils.createLabel(")"));
 				}
 			}
-
-			revalidate();
-			repaint();
 		}		
+
+		revalidate();
+		repaint();
 	}
 	
 	

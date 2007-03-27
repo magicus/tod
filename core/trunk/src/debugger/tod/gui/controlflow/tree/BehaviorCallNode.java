@@ -22,12 +22,10 @@ package tod.gui.controlflow.tree;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
@@ -39,9 +37,6 @@ import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
-import tod.gui.controlflow.CFlowViewUtils;
-import zz.utils.Future;
-import zz.utils.ui.GridStackLayout;
 import zz.utils.ui.UIUtils;
 import zz.utils.ui.ZLabel;
 import zz.utils.ui.text.XFont;
@@ -211,10 +206,10 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 			theContainer.add(ZLabel.create("Thrown ", aFont, Color.RED));
 
 			theContainer.add(Hyperlinks.object(
-					getSeedFactory(), 
 					getLogBrowser(), 
 					getJobProcessor(),
-					theExitEvent.getResult(), 
+					theExitEvent.getResult(),
+					theExitEvent,
 					aFont));
 		}
 		else
@@ -224,10 +219,10 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 			if (theResult != null)
 			{
 				theContainer.add(Hyperlinks.object(
-						getSeedFactory(), 
 						getLogBrowser(), 
 						getJobProcessor(),
-						theResult, 
+						theResult,
+						theExitEvent,
 						aFont));
 			}
 			else if (theBehavior.getReturnType().isVoid())

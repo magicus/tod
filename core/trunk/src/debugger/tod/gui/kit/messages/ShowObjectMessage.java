@@ -18,43 +18,43 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow.tree;
+package tod.gui.kit.messages;
 
-import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
-import tod.gui.FontConfig;
-import tod.gui.GUIUtils;
-import tod.gui.Hyperlinks;
-import tod.gui.JobProcessor;
-import tod.gui.controlflow.CFlowView;
+import tod.core.database.structure.ObjectId;
 
-public class LocalVariableWriteNode extends AbstractEventNode
+/**
+ * A message that transmits a request to show an object
+ * @author gpothier
+ */
+public class ShowObjectMessage extends Message
 {
-	private ILocalVariableWriteEvent itsEvent;
-
-	public LocalVariableWriteNode(
-			CFlowView aView,
-			JobProcessor aJobProcessor,
-			ILocalVariableWriteEvent aEvent)
-	{
-		super(aView, aJobProcessor);
-		
-		itsEvent = aEvent;
-
-		add(GUIUtils.createLabel(itsEvent.getVariable().getVariableName()));
-		add(GUIUtils.createLabel(" = "));
-		
-		add(Hyperlinks.object(
-				getLogBrowser(),
-				getJobProcessor(),
-				itsEvent.getValue(),
-				itsEvent,
-				FontConfig.STD_FONT));
-	}
+	public static final String ID = "tod.showObject";
 	
-	@Override
-	protected ILogEvent getEvent()
+	/**
+	 * The object to show.
+	 */
+	private final ObjectId itsObjectId;
+	
+	/**
+	 * The reference event that indicates which version of the object must be shown.
+	 */
+	private final ILogEvent itsRefEvent;
+
+	public ShowObjectMessage(ObjectId aObjectId, ILogEvent aRefEvent)
 	{
-		return itsEvent;
+		super(ID);
+		itsObjectId = aObjectId;
+		itsRefEvent = aRefEvent;
+	}
+
+	public ObjectId getObjectId()
+	{
+		return itsObjectId;
+	}
+
+	public ILogEvent getRefEvent()
+	{
+		return itsRefEvent;
 	}
 }

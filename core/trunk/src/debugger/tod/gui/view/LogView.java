@@ -37,6 +37,7 @@ import tod.gui.IGUIManager;
 import tod.gui.Hyperlinks.ISeedFactory;
 import tod.gui.formatter.EventFormatter;
 import tod.gui.formatter.ObjectFormatter;
+import tod.gui.kit.BusOwnerPanel;
 import tod.gui.kit.SeedLinkLabel;
 import tod.gui.seed.LogViewSeedFactory;
 import tod.gui.seed.ObjectInspectorSeed;
@@ -51,7 +52,7 @@ import zz.utils.ui.ZLabel;
  * @see tod.gui.seed.LogViewSeed
  * @author gpothier
  */
-public abstract class LogView extends JPanel
+public abstract class LogView extends BusOwnerPanel
 {
 	private final ILogBrowser itsLog;
 	private final IGUIManager itsGUIManager;

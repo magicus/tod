@@ -34,7 +34,7 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IMemberInfo;
 import tod.gui.FontConfig;
 import tod.gui.IGUIManager;
-import tod.gui.SVGHyperlink;
+import tod.gui.SeedHyperlink;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.view.LogView;
 import zz.utils.ui.ZLabel;
@@ -79,7 +79,7 @@ public class MethodSequenceView extends AbstractMemberSequenceView
 		ILogBrowser theLog = getLogView().getLogBrowser();
 
 		CFlowSeed theSeed = new CFlowSeed(theGUIManager, theLog, aEvent);
-		SVGHyperlink theHyperlink = SVGHyperlink.create(theSeed, "call", 10, Color.BLUE);
+		SeedHyperlink theHyperlink = SeedHyperlink.create(theSeed, "call", 10, Color.BLUE);
 		theContainer.add (theHyperlink);
 		
 		// Open parenthesis

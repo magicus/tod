@@ -30,6 +30,7 @@ import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.gui.kit.messages.ShowObjectMessage;
 import tod.gui.seed.LogViewSeedFactory;
 import tod.gui.seed.Seed;
 import zz.utils.ui.ZLabel;
@@ -47,7 +48,7 @@ public class Hyperlinks
 			ObjectId aObject,
 			XFont aFont)
 	{
-		return SVGHyperlink.create(
+		return SeedHyperlink.create(
 				aFactory.objectHistory(aObject),
 				"history",
 				aFont,
@@ -59,7 +60,7 @@ public class Hyperlinks
 			ITypeInfo aType, 
 			XFont aFont)
 	{
-		return SVGHyperlink.create(
+		return SeedHyperlink.create(
 				aSeedFactory.typeSeed(aType),
 				aType.getName(), 
 				aFont, 
@@ -71,7 +72,7 @@ public class Hyperlinks
 			IBehaviorInfo aBehavior,
 			XFont aFont)
 	{
-		return SVGHyperlink.create(
+		return SeedHyperlink.create(
 				aSeedFactory.behaviorSeed(aBehavior), 
 				Util.getPrettyName(aBehavior.getName()),
 				aFont, 
@@ -87,7 +88,7 @@ public class Hyperlinks
 			ILogEvent aEvent, 
 			XFont aFont)
 	{
-		return SVGHyperlink.create(
+		return SeedHyperlink.create(
 				aSeedFactory.cflowSeed(aEvent), 
 				aText,
 				aFont, 
@@ -95,27 +96,27 @@ public class Hyperlinks
 	}
 	
 	public static JComponent object(
-			ISeedFactory aSeedFactory, 
 			ILogBrowser aLogBrowser, 
 			JobProcessor aJobProcessor,
 			Object aObject,
+			ILogEvent aRefEvent,
 			XFont aFont)
 	{
-		return object(aSeedFactory, aLogBrowser, aJobProcessor, null, aObject, aFont);
+		return object(aLogBrowser, aJobProcessor, null, aObject, aRefEvent, aFont);
 	}
 	
 	/**
-	 * Creates a hyperlink that permits to jump to an object inspector. 
+	 * Creates a hyperlink that permits to show an object. 
 	 * @param aCurrentObject If provided, reference to the current object will
 	 * be displayed as "this" 
 	 * @param aObject The object to link to.
 	 */
 	public static JComponent object(
-			ISeedFactory aSeedFactory,
 			ILogBrowser aLogBrowser,
 			JobProcessor aJobProcessor,
 			Object aCurrentObject, 
 			Object aObject, 
+			ILogEvent aRefEvent,
 			XFont aFont)
 	{
 		// Check if this is a registered object.
@@ -147,8 +148,8 @@ public class Hyperlinks
 				theText = theType.getName() + " (" + theId + ")";
 			}
 			
-			return SVGHyperlink.create(
-					aSeedFactory.objectSeed(theId), 
+			return MessageHyperlink.create(
+					new ShowObjectMessage(theId, aRefEvent), 
 					theText, 
 					aFont, 
 					Color.BLUE);
@@ -181,7 +182,6 @@ public class Hyperlinks
 	
 	public interface ISeedFactory
 	{
-		public Seed objectSeed(ObjectId aObjectId);
 		public Seed cflowSeed(ILogEvent aEvent);
 		public Seed behaviorSeed(IBehaviorInfo aBehavior);
 		public Seed typeSeed(ITypeInfo aType);

@@ -49,10 +49,10 @@ public class ExceptionGeneratedNode extends AbstractEventNode
 				Color.RED));
 		
 		add(Hyperlinks.object(
-				getSeedFactory(), 
 				getLogBrowser(),
 				getJobProcessor(),
-				itsEvent.getException(), 
+				itsEvent.getException(),
+				itsEvent,
 				FontConfig.STD_FONT));
 	}
 	

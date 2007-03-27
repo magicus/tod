@@ -148,6 +148,11 @@ public class StackFrameWatchProvider implements IWatchProvider<LocalVariableInfo
 				: null;
 	}
 
+	public ILogEvent getRefEvent()
+	{
+		return itsRefEvent;
+	}
+	
 	public List<LocalVariableInfo> getEntries()
 	{
 		if (itsInvalid) return null;

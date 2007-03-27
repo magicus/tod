@@ -45,6 +45,9 @@ import tod.gui.IGUIManager;
 import tod.gui.JobProcessor;
 import tod.gui.Hyperlinks.ISeedFactory;
 import tod.gui.controlflow.CFlowView;
+import tod.gui.kit.Bus;
+import tod.gui.kit.IBusListener;
+import tod.gui.kit.messages.ShowObjectMessage;
 import tod.gui.seed.LogViewSeedFactory;
 import tod.gui.seed.Seed;
 import zz.utils.SimpleAction;
@@ -65,6 +68,18 @@ public class WatchPanel extends JPanel
 	private IWatchProvider itsProvider;
 	private List itsEntries;
 	
+	private IBusListener<ShowObjectMessage> itsShowObjectListener = new IBusListener<ShowObjectMessage>()
+	{
+		public void processMessage(ShowObjectMessage aMessage)
+		{
+			openWatch(new ObjectWatchSeed(
+					WatchPanel.this, 
+					getView().getLogBrowser(), 
+					aMessage.getRefEvent(), 
+					aMessage.getObjectId()));
+		}
+	};
+	
 	public WatchPanel(CFlowView aView)
 	{
 		itsView = aView;
@@ -72,7 +87,12 @@ public class WatchPanel extends JPanel
 		itsBrowserNavigator = new WatchBrowserNavigator();
 		createUI();
 	}
-
+	
+	public CFlowView getView()
+	{
+		return itsView;
+	}
+	
 	private void createUI()
 	{
 		setLayout(new BorderLayout());
@@ -106,6 +126,8 @@ public class WatchPanel extends JPanel
 		super.addNotify();
 		if (itsJobProcessor == null) 
 			itsJobProcessor = new JobProcessor(getGUIManager().getJobProcessor());
+		
+		Bus.getBus(this).subscribe(ShowObjectMessage.ID, itsShowObjectListener);
 	}
 	
 	@Override
@@ -114,6 +136,7 @@ public class WatchPanel extends JPanel
 		super.removeNotify();
 		itsJobProcessor.detach();
 		itsJobProcessor = null;
+		Bus.getBus(this).unsubscribe(ShowObjectMessage.ID, itsShowObjectListener);
 	}
 	
 	public IGUIManager getGUIManager()
@@ -150,6 +173,11 @@ public class WatchPanel extends JPanel
 	public ISeedFactory getWatchSeedFactory()
 	{
 		return itsSeedFactory;
+	}
+	
+	public void openWatch(WatchSeed aSeed)
+	{
+		itsBrowserNavigator.open(aSeed);
 	}
 	
 	/**
@@ -222,11 +250,11 @@ public class WatchPanel extends JPanel
 		theContainer.add(GUIUtils.createLabel("this = "));
 		
 		theContainer.add(Hyperlinks.object(
-				itsSeedFactory,
 				itsView.getLogBrowser(), 
 				getJobProcessor(),
 				null,
 				aCurrentObject,
+				itsProvider.getRefEvent(),
 				STD_FONT));
 		
 		return theContainer;		
@@ -250,15 +278,6 @@ public class WatchPanel extends JPanel
 					itsView.getSeed().pSelectedEvent().set(aEvent);
 				}
 			};
-		}
-
-		public Seed objectSeed(final ObjectId aObjectId)
-		{
-			return new ObjectWatchSeed(
-					WatchPanel.this,
-					itsView.getLogBrowser(),
-					itsView.getSeed().pSelectedEvent().get(),
-					aObjectId);
 		}
 
 		public Seed typeSeed(ITypeInfo aType)

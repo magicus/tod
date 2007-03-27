@@ -58,11 +58,6 @@ public class LogViewSeedFactory implements ISeedFactory
 		return new CFlowSeed(itsManager, itsLogBrowser, aEvent);
 	}
 
-	public Seed objectSeed(ObjectId aObjectId)
-	{
-		return new ObjectInspectorSeed(itsManager, itsLogBrowser, aObjectId);
-	}
-
 	public Seed typeSeed(ITypeInfo aType)
 	{
 		return null;

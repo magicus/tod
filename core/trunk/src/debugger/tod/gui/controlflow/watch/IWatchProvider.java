@@ -24,6 +24,7 @@ import java.util.List;
 
 import javax.swing.JComponent;
 
+import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IWriteEvent;
 import tod.core.database.structure.ObjectId;
 import tod.gui.JobProcessor;
@@ -46,6 +47,11 @@ public interface IWatchProvider<E>
 	 * stack frame reconstitution, represents the "this" variable.
 	 */
 	public ObjectId getCurrentObject();
+	
+	/**
+	 * Returns the event that serves as a temporal reference for the watched objects.
+	 */
+	public ILogEvent getRefEvent();
 	
 	/**
 	 * Returns the list of available entries.

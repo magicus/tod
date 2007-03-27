@@ -20,8 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.controlflow.tree;
 
-import java.awt.Color;
-
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILogEvent;
@@ -30,7 +28,6 @@ import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
-import zz.utils.ui.ZLabel;
 
 public class FieldWriteNode extends AbstractEventNode
 {
@@ -53,11 +50,11 @@ public class FieldWriteNode extends AbstractEventNode
 		}
 		
 		add(Hyperlinks.object(
-				getSeedFactory(),
 				getLogBrowser(), 
 				getJobProcessor(),
 				theCurrentObject, 
 				itsEvent.getTarget(),
+				itsEvent,
 				FontConfig.STD_FONT));
 		
 		add(GUIUtils.createLabel("."));
@@ -65,11 +62,11 @@ public class FieldWriteNode extends AbstractEventNode
 		add(GUIUtils.createLabel(" = "));
 		
 		add(Hyperlinks.object(
-				getSeedFactory(),
 				getLogBrowser(),
 				getJobProcessor(), 
 				theCurrentObject,
 				itsEvent.getValue(),
+				itsEvent,
 				FontConfig.STD_FONT));
 	}
 	

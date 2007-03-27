@@ -22,36 +22,39 @@ package tod.gui;
 
 import java.awt.Color;
 
-import tod.gui.seed.Seed;
+import tod.gui.kit.Bus;
+import tod.gui.kit.messages.Message;
 import zz.utils.ui.ZHyperlink;
 import zz.utils.ui.text.XFont;
 
-public class SVGHyperlink extends ZHyperlink
+public class MessageHyperlink extends ZHyperlink
 {
-	private Seed itsSeed;
+	private Message itsMessage;
 	
-	public SVGHyperlink(String aText, XFont aFont, Color aColor, Seed aSeed)
+	public MessageHyperlink(String aText, XFont aFont, Color aColor, Message aMessage)
 	{
 		super(aText, aFont, aColor);
-		itsSeed = aSeed;
+		itsMessage = aMessage;
 	}
 
-	public void setSeed(Seed aSeed)
-	{
-		itsSeed = aSeed;
-	}
 	
+	public void setMessage(Message aMessage)
+	{
+		itsMessage = aMessage;
+	}
+
+
 	@Override
 	protected void traverse()
 	{
-		itsSeed.open();
+		Bus.getBus(this).postMessage(itsMessage);
 	}
 	
 	/**
 	 * Creates a new flow text with default size computer.
 	 */
-	public static SVGHyperlink create(
-			Seed aSeed, 
+	public static MessageHyperlink create(
+			Message aMessage, 
 			String aText, 
 			XFont aFont, 
 			Color aColor)
@@ -60,7 +63,7 @@ public class SVGHyperlink extends ZHyperlink
 				new XFont(aFont.getAWTFont(), false) 
 				: aFont;
 		
-		SVGHyperlink theHyperlink = new SVGHyperlink(aText, theFont, aColor, aSeed);
+		MessageHyperlink theHyperlink = new MessageHyperlink(aText, theFont, aColor, aMessage);
 		
 		return theHyperlink;
 	}
@@ -68,18 +71,18 @@ public class SVGHyperlink extends ZHyperlink
 	/**
 	 * Creates a new flow text with default size computer and font.
 	 */
-	public static SVGHyperlink create(Seed aSeed, String aText, Color aColor)
+	public static MessageHyperlink create(Message aMessage, String aText, Color aColor)
 	{
-		return create(aSeed, aText, XFont.DEFAULT_XUNDERLINED, aColor);
+		return create(aMessage, aText, XFont.DEFAULT_XUNDERLINED, aColor);
 	}
 
 	/**
 	 * Creates a new flow text with default size computer and default font
 	 * of the given size.
 	 */
-	public static SVGHyperlink create(Seed aSeed, String aText, float aFontSize, Color aColor)
+	public static MessageHyperlink create(Message aMessage, String aText, float aFontSize, Color aColor)
 	{
-		return create(aSeed, aText, XFont.DEFAULT_XUNDERLINED.deriveFont(aFontSize), aColor);
+		return create(aMessage, aText, XFont.DEFAULT_XUNDERLINED.deriveFont(aFontSize), aColor);
 	}
 
 }

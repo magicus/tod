@@ -34,7 +34,7 @@ import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMemberInfo;
 import tod.gui.FontConfig;
 import tod.gui.IGUIManager;
-import tod.gui.SVGHyperlink;
+import tod.gui.SeedHyperlink;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.view.LogView;
 import zz.utils.ui.ZLabel;
@@ -73,7 +73,7 @@ public class FieldSequenceView extends AbstractMemberSequenceView
 		ILogBrowser theLog = getLogView().getLogBrowser();
 
 		CFlowSeed theSeed = new CFlowSeed(theGUIManager, theLog, aEvent);
-		SVGHyperlink theHyperlink = SVGHyperlink.create(theSeed, "set", 10, Color.BLUE);
+		SeedHyperlink theHyperlink = SeedHyperlink.create(theSeed, "set", 10, Color.BLUE);
 		theContainer.add (theHyperlink);
 		
 		// Colon
