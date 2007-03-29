@@ -20,7 +20,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.transport;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
@@ -88,6 +90,10 @@ public class CollectorPacketReader
 				
 			case EXCEPTION:
 				readException(aStream, aCollector);
+				break;
+				
+			case REGISTERED:
+				readRegistered(aStream, aCollector);
 				break;
 				
 			case REGISTER_THREAD:
@@ -160,6 +166,36 @@ public class CollectorPacketReader
         return theArguments;
     }
     
+	private static void readRegistered (DataInputStream aStream, ILogCollector aCollector) throws IOException
+	{
+		int theSize = aStream.readInt(); // Packet size
+		byte[] theBuffer = new byte[theSize];
+		aStream.readFully(theBuffer);
+		
+		DataInputStream theStream = new DataInputStream(new ByteArrayInputStream(theBuffer));
+		
+		long theObjectId = theStream.readLong();
+		if (DebugFlags.IGNORE_HOST) theObjectId >>>= DebuggerGridConfig.EVENT_HOST_BITS;
+		ObjectInputStream theObjectStream = new ObjectInputStream(theStream);
+		Object theObject;
+		try
+		{
+			theObject = theObjectStream.readObject();
+		}
+		catch (ClassNotFoundException e)
+		{
+//			System.err.println("Warning - class no found: "+e.getMessage());
+			theObject = "Unknown ("+e.getMessage()+")";
+		}
+		catch (InvalidClassException e)
+		{
+			System.err.println("Warning - invalid class: "+e.getMessage());
+			theObject = "Unknown ("+e.getMessage()+")";					
+		}
+		
+		aCollector.register(theObjectId, theObject);
+	}
+	
 	private static Object readValue (DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
 		MessageType theType = readMessageType(aStream);

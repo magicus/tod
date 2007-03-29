@@ -48,6 +48,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 	private Sender itsSender;
 	private SenderThread itsSenderThread = new SenderThread();
 	
+	
 	public SocketCollector(String aHostname, int aPort) throws IOException 
 	{
 		this (new Socket(aHostname, aPort));
@@ -90,10 +91,9 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = aThread.packetStart(aTimestamp);
+        	CollectorPacketWriter theWriter = aThread.packetStart(aTimestamp);
         	
-        	CollectorPacketWriter.sendBehaviorExit(
-        			theStream,
+        	theWriter.sendBehaviorExit(
         			aThread.getId(),
         			aParentTimestamp,
         			aDepth,
@@ -127,10 +127,9 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = aThread.packetStart(aTimestamp);
+        	CollectorPacketWriter theWriter = aThread.packetStart(aTimestamp);
         	
-        	CollectorPacketWriter.sendException(
-        			theStream,
+        	theWriter.sendException(
         			aThread.getId(),
         			aParentTimestamp,
         			aDepth,
@@ -164,10 +163,9 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = aThread.packetStart(aTimestamp);
+        	CollectorPacketWriter theWriter = aThread.packetStart(aTimestamp);
         	
-        	CollectorPacketWriter.sendFieldWrite(
-        			theStream, 
+        	theWriter.sendFieldWrite(
         			aThread.getId(),
         			aParentTimestamp,
         			aDepth,
@@ -202,10 +200,9 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = aThread.packetStart(aTimestamp);
+        	CollectorPacketWriter theWriter = aThread.packetStart(aTimestamp);
         	
-        	CollectorPacketWriter.sendArrayWrite(
-        			theStream, 
+        	theWriter.sendArrayWrite(
         			aThread.getId(),
         			aParentTimestamp,
         			aDepth,
@@ -240,10 +237,9 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = aThread.packetStart(aTimestamp);
+        	CollectorPacketWriter theWriter = aThread.packetStart(aTimestamp);
         	
-        	CollectorPacketWriter.sendInstantiation(
-        			theStream,
+        	theWriter.sendInstantiation(
         			aThread.getId(),
         			aParentTimestamp,
         			aDepth,
@@ -277,10 +273,9 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = aThread.packetStart(aTimestamp);
+        	CollectorPacketWriter theWriter = aThread.packetStart(aTimestamp);
         	
-        	CollectorPacketWriter.sendLocalWrite(
-        			theStream,
+        	theWriter.sendLocalWrite(
         			aThread.getId(), 
         			aParentTimestamp,
         			aDepth,
@@ -314,10 +309,9 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = aThread.packetStart(aTimestamp);
+        	CollectorPacketWriter theWriter = aThread.packetStart(aTimestamp);
         	
-        	CollectorPacketWriter.sendMethodCall(
-        			theStream,
+        	theWriter.sendMethodCall(
         			aThread.getId(), 
         			aParentTimestamp,
         			aDepth,
@@ -349,10 +343,9 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = aThread.packetStart(aTimestamp);
+        	CollectorPacketWriter theWriter = aThread.packetStart(aTimestamp);
         	
-        	CollectorPacketWriter.sendOutput(
-        			theStream, 
+        	theWriter.sendOutput(
         			aThread.getId(),
         			aParentTimestamp,
         			aDepth,
@@ -385,10 +378,9 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = aThread.packetStart(aTimestamp);
+        	CollectorPacketWriter theWriter = aThread.packetStart(aTimestamp);
         	
-        	CollectorPacketWriter.sendSuperCall(
-        			theStream,
+        	theWriter.sendSuperCall(
         			aThread.getId(),
         			aParentTimestamp,
         			aDepth,
@@ -415,8 +407,8 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		if (aThread.isSending()) return;
         try
         {
-        	DataOutputStream theStream = aThread.packetStart(0);
-        	CollectorPacketWriter.sendThread(theStream, aThread.getId(), aJVMThreadId, aName);
+        	CollectorPacketWriter theWriter = aThread.packetStart(0);
+        	theWriter.sendThread(aThread.getId(), aJVMThreadId, aName);
             aThread.packetEnd();
         }
         catch (IOException e)
@@ -444,17 +436,20 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		/**
 		 * A wrapper around {@link #itsBuffer}
 		 */
-		private DataOutputStream itsDataOutputStream;
+		private final DataOutputStream itsDataOutputStream;
+
+		private final CollectorPacketWriter itsWriter;
+
 		
 		/**
 		 * In construction packet buffer
 		 */
-		private ByteArrayOutputStream itsBuffer;
+		private final ByteArrayOutputStream itsBuffer;
 		
 		/**
 		 * Full packets buffer
 		 */
-		private ByteArrayOutputStream itsLog;
+		private final ByteArrayOutputStream itsLog;
 		
 		private boolean itsSending = false;
 		
@@ -475,12 +470,13 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			itsBuffer = new ByteArrayOutputStream();
 			itsLog = new ByteArrayOutputStream(BUFFER_SIZE);
 			itsDataOutputStream = new DataOutputStream(itsBuffer);
+			itsWriter = new CollectorPacketWriter(itsDataOutputStream);
 			
 			// Add ourself to LRU list
 			itsEntry = itsSenderThread.register(this);
 		}
 
-		public DataOutputStream packetStart(long aTimestamp)
+		public CollectorPacketWriter packetStart(long aTimestamp)
 		{
 			if (itsSending) throw new RuntimeException();
 			itsSending = true;
@@ -488,7 +484,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			if (itsFirstTimestamp == 0) itsFirstTimestamp = aTimestamp;
 			if (aTimestamp != 0) itsLastTimestamp = aTimestamp;
 			
-			return itsDataOutputStream;
+			return itsWriter;
 		}
 		
 		public boolean isSending()

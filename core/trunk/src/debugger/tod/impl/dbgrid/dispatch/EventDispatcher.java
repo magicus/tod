@@ -203,6 +203,7 @@ implements RIDispatcher
 			case LOCAL_VARIABLE_WRITE:
 			case OUTPUT:
 			case EXCEPTION:
+			case REGISTERED:
 				DispatcherProxy theProxy = getNextChild();
 				theProxy.forwardPacket(aType, aStream);
 				if (DebugFlags.DISPATCH_FAKE_1) theProxy.getOutStream().flush();
