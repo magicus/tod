@@ -92,7 +92,7 @@ public class EventViewer extends MinerUI
 		try
 		{
 			ILocationInfo theLocationInfo = TODPluginUtils.getLocationInfo(getSession(), aElement);
-			LogViewSeed theSeed = LogViewSeedFactory.getDefaultSeed(this, getBrowser(), theLocationInfo);
+			LogViewSeed theSeed = LogViewSeedFactory.getDefaultSeed(this, getLogBrowser(), theLocationInfo);
 			openSeed(theSeed, false);
 		}
 		catch (JavaModelException e)
