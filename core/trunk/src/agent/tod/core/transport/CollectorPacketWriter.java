@@ -47,7 +47,7 @@ public class CollectorPacketWriter
 	 * Note: There is space for a hard-coded number of entries that
 	 * should "be enough for everybody". 
 	 */
-	private final ObjectEntry[] itsRegisteredObjects = new ObjectEntry[1024];
+	private final ObjectEntry[] itsRegisteredObjects = new ObjectEntry[64];
 	
 	/**
 	 * Number of entries in {@link #itsRegisteredObjects}.

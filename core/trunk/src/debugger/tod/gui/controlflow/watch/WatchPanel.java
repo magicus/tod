@@ -42,6 +42,7 @@ import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
+import tod.gui.kit.AsyncPanel;
 import tod.gui.kit.Bus;
 import tod.gui.kit.IBusListener;
 import tod.gui.kit.messages.ShowObjectMsg;
@@ -58,7 +59,6 @@ public class WatchPanel extends JPanel
 	private WatchBrowserNavigator itsBrowserNavigator;
 	private JobProcessor itsJobProcessor;
 	private JScrollPane itsScrollPane;
-	private JPanel itsEntriesContainer;
 	private IWatchProvider itsProvider;
 	private List itsEntries;
 	
@@ -174,57 +174,43 @@ public class WatchPanel extends JPanel
 		itsProvider = aProvider;
 		getJobProcessor().cancelAll();
 				
-		itsEntriesContainer = new ScrollablePanel(GUIUtils.createStackLayout());
-		itsEntriesContainer.setOpaque(false);
+		JPanel theEntriesPanel = new ScrollablePanel(GUIUtils.createStackLayout());
+		theEntriesPanel.setOpaque(false);
 		
-		itsEntriesContainer.add(aProvider.buildTitle(getJobProcessor()));
+		theEntriesPanel.add(aProvider.buildTitle(getJobProcessor()));
 		
 		ObjectId theCurrentObject = aProvider.getCurrentObject();
 		if (theCurrentObject != null)
 		{
-			itsEntriesContainer.add(buildCurrentObjectLine(theCurrentObject));
+			theEntriesPanel.add(buildCurrentObjectLine(theCurrentObject));
 		}
 				
-		getJobProcessor().submit(new JobProcessor.Job<Object>()
+		theEntriesPanel.add(new AsyncPanel(getJobProcessor())
 		{
 			@Override
-			public Object run()
+			protected void runJob()
 			{
 				itsEntries = itsProvider.getEntries();
-				postUpdateEntries();
-				return null;
 			}
-		});
-		
-		itsScrollPane.setViewportView(itsEntriesContainer);
-	}
-	
-	private void postUpdateEntries()
-	{
-		SwingUtilities.invokeLater(new Runnable()
-		{
-			public void run()
+
+			@Override
+			protected void update()
 			{
-				updateEntries();
+				setLayout(GUIUtils.createStackLayout());
+				if (itsEntries != null) for (Object theEntry : itsEntries)
+				{
+					if ("this".equals(itsProvider.getEntryName(theEntry))) continue;
+					
+					add(new WatchEntryNode(
+							itsView.getLogBrowser(),
+							getJobProcessor(),
+							itsProvider,
+							theEntry));
+				}
 			}
 		});
-	}
-	
-	private void updateEntries()
-	{
-		if (itsEntries != null) for (Object theEntry : itsEntries)
-		{
-			if ("this".equals(itsProvider.getEntryName(theEntry))) continue;
-			
-			itsEntriesContainer.add(new WatchEntryNode(
-					itsView.getLogBrowser(),
-					getJobProcessor(),
-					itsProvider,
-					theEntry));
-		}
-		
-		itsEntriesContainer.revalidate();
-		itsEntriesContainer.repaint();		
+
+		itsScrollPane.setViewportView(theEntriesPanel);
 	}
 	
 	private JComponent buildCurrentObjectLine(ObjectId aCurrentObject)

@@ -22,15 +22,14 @@ package tod.gui.controlflow.watch;
 
 import static tod.gui.FontConfig.STD_FONT;
 
-import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IWriteEvent;
 import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
+import tod.gui.kit.AsyncPanel;
 
 /**
  * Represents a watch entry (field or variable).
@@ -46,8 +45,6 @@ public class WatchEntryNode<E> extends JPanel
 	private Object[] itsValue;
 	private IWriteEvent[] itsSetter;
 	
-	private JComponent itsPlaceHolder;
-
 	public WatchEntryNode(
 			ILogBrowser aLogBrowser,
 			JobProcessor aJobProcessor,
@@ -61,87 +58,65 @@ public class WatchEntryNode<E> extends JPanel
 		itsProvider = aProvider;
 		itsEntry = aEntry;
 		createUI();
-		
-		aJobProcessor.submit(
-				new JobProcessor.Job<Object>()
-				{
-					@Override
-					public Object run()
-					{
-						itsSetter = itsProvider.getEntrySetter(itsEntry);
-						if (itsSetter == null)
-						{
-							itsValue = itsProvider.getEntryValue(itsEntry);
-						}
-						else
-						{
-							itsValue = new Object[itsSetter.length];
-							for (int i=0;i<itsSetter.length;i++)
-							{
-								itsValue[i] = itsSetter[i].getValue();
-							}
-						}
-						postUpdateValue();
-						return null;
-					}
-				});
 	}
 	
 	private void createUI()
 	{
 		String theName = itsProvider.getEntryName(itsEntry);
 		add(GUIUtils.createLabel(theName + " = "));
-		itsPlaceHolder = GUIUtils.createLabel("...");
-		add(itsPlaceHolder);
-	}
-	
-	/**
-	 * Posts an update request to be executed by the swing thread.
-	 */
-	private void postUpdateValue()
-	{
-		SwingUtilities.invokeLater(new Runnable()
+		add(new AsyncPanel(itsJobProcessor)
 		{
-			public void run()
+			@Override
+			protected void runJob()
 			{
-				updateValue();
-			}
-		});
-	}
-	
-	private void updateValue()
-	{
-		remove(itsPlaceHolder);
-		if (itsValue != null)
-		{
-			boolean theFirst = true;
-			for (int i=0;i<itsValue.length;i++)
-			{
-				Object theValue = itsValue[i];
-				IWriteEvent theSetter = itsSetter != null ? itsSetter[i] : null;
-	
-				if (theFirst) theFirst = false;
-				else add(GUIUtils.createLabel(" / "));
-				
-				add(Hyperlinks.object(
-						itsLogBrowser, 
-						itsJobProcessor,
-						itsProvider.getCurrentObject(),
-						theValue,
-						itsProvider.getRefEvent(),
-						STD_FONT));
-				
-				if (theSetter != null)
+				itsSetter = itsProvider.getEntrySetter(itsEntry);
+				if (itsSetter == null)
 				{
-					add(GUIUtils.createLabel(" ("));
-					add(Hyperlinks.event("why?", theSetter, STD_FONT));
-					add(GUIUtils.createLabel(")"));
+					itsValue = itsProvider.getEntryValue(itsEntry);
+				}
+				else
+				{
+					itsValue = new Object[itsSetter.length];
+					for (int i=0;i<itsSetter.length;i++)
+					{
+						itsValue[i] = itsSetter[i].getValue();
+					}
 				}
 			}
-		}		
 
-		revalidate();
-		repaint();
+			@Override
+			protected void update()
+			{
+				if (itsValue != null)
+				{
+					boolean theFirst = true;
+					for (int i=0;i<itsValue.length;i++)
+					{
+						Object theValue = itsValue[i];
+						IWriteEvent theSetter = itsSetter != null ? itsSetter[i] : null;
+			
+						if (theFirst) theFirst = false;
+						else add(GUIUtils.createLabel(" / "));
+						
+						add(Hyperlinks.object(
+								itsLogBrowser, 
+								itsJobProcessor,
+								itsProvider.getCurrentObject(),
+								theValue,
+								itsProvider.getRefEvent(),
+								STD_FONT));
+						
+						if (theSetter != null)
+						{
+							add(GUIUtils.createLabel(" ("));
+							add(Hyperlinks.event("why?", theSetter, STD_FONT));
+							add(GUIUtils.createLabel(")"));
+						}
+					}
+				}
+			}
+			
+		});
 	}
 	
 	

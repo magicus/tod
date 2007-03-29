@@ -36,6 +36,8 @@ import tod.agent.ConfigUtils;
 public class TODConfig implements Serializable
 {
 	private static final long serialVersionUID = 4959079097346687404L;
+	
+	private static final String HOME = System.getProperty("user.home");
 
 	/**
 	 * Defines levels of "detail" for configuration options.
@@ -84,7 +86,7 @@ public class TODConfig implements Serializable
 			"agent.cachePath",
 			"Agent - class cache path",
 			"Defines the path where the native agent stores instrumented classes.",
-			ConfigUtils.readString("classes-cache-path", "/tmp/tod"));
+			ConfigUtils.readString("classes-cache-path", HOME+"/tmp/tod"));
 	
 	public static final BooleanItem AGENT_CAPTURE_EXCEPTIONS = new BooleanItem(
 			ConfigLevel.DEBUG,
@@ -99,7 +101,7 @@ public class TODConfig implements Serializable
 			"instrumenter.locationsFile",
 			"Instrumenter - locations file",
 			"Defines the file that contains location data for the debugged application.",
-			ConfigUtils.readString("locations-file", "~/tmp/tod/locations.bin"));
+			ConfigUtils.readString("locations-file", HOME+"/tmp/tod/locations.bin"));
 	
 	public static final StringItem SCOPE_GLOBAL_FILTER = new StringItem(
 			ConfigLevel.DEBUG,
