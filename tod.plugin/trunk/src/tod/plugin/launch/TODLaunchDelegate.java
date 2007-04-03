@@ -81,7 +81,7 @@ public class TODLaunchDelegate extends AbstractCustomLaunchConfigurationDelegate
 			aMonitor.subTask("Checking cached classes");
 			
 			ClassCacheCleaner.deleteUpdatedClasses(itsSession, theBootpath, theClasspath);
-			super.launch(aConfiguration, ILaunchManager.RUN_MODE, aLaunch, aMonitor, true);
+			super.launch(aConfiguration, ILaunchManager.DEBUG_MODE, aLaunch, aMonitor, true);
 		}
 		catch (CoreException e)
 		{
