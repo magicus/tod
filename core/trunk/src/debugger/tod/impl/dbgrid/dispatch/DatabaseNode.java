@@ -65,8 +65,6 @@ implements RIDatabaseNode
 {
 //	private static final ReceiverThread NODE_THREAD = new ReceiverThread();
 	
-	private int itsFlushed = 0;
-	
 	private long itsEventsCount = 0;
 	private long itsFirstTimestamp = 0;
 	private long itsLastTimestamp = 0;
@@ -172,7 +170,6 @@ implements RIDatabaseNode
 	@Override
 	public int flush()
 	{
-		itsFlushed = 1;
 		int theObjectsCount = 0;
 		
 		System.out.println("[DatabaseNode] Flushing...");
@@ -187,8 +184,6 @@ implements RIDatabaseNode
 		int theEventsCount = itsEventsDatabase.flush();
 		
 		System.out.println("[DatabaseNode] Flushed "+theEventsCount+" events");
-		
-		itsFlushed = 2;
 		
 		return theObjectsCount+theEventsCount;
 	}
@@ -215,9 +210,6 @@ implements RIDatabaseNode
 	
 	public void pushEvent(GridEvent aEvent)
 	{
-		if (itsFlushed > 0) System.err.println("[DatabaseNode] Flushed: "+itsFlushed);
-			
-		
 		// The GridEventCollector uses a pool of events
 		// we cannot hold references to those events
 		aEvent = (GridEvent) aEvent.clone(); 

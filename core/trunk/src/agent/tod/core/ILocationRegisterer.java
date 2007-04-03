@@ -1,4 +1,4 @@
-/*
+ /*
 TOD - Trace Oriented Debugger.
 Copyright (C) 2006 Guillaume Pothier (gpothier@dcc.uchile.cl)
 
@@ -95,6 +95,12 @@ public interface ILocationRegisterer
 		public short getStartPc()
 		{
 			return itsStartPc;
+		}
+		
+		@Override
+		public String toString()
+		{
+			return String.format("line %d - pc %d", itsLineNumber, itsStartPc);
 		}
 	}
 

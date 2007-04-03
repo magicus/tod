@@ -298,7 +298,7 @@ public class HardPagedFile extends PageBank
 					
 			long theOffset = aId * itsPageSize;
 			
-			// Sometimes the readFully operation fails for no appearant reason, so we try
+			// Sometimes the readFully operation fails for no apparent reason, so we try
 			// a brute-force workaround...
 			int theRetries = 0;
 			while(true)

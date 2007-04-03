@@ -41,31 +41,40 @@ import tod.impl.dbgrid.dispatch.DatabaseNode;
  */
 public class LocalGridSession extends AbstractSession
 {
-	private GridMaster itsMaster;
-	private GridLogBrowser itsBrowser;
+	private static GridMaster itsMaster;
+	private static GridLogBrowser itsBrowser;
 	
 	public LocalGridSession(URI aUri, TODConfig aConfig) throws RemoteException
 	{
 		super(aUri, aConfig);
 
-		LocationRegisterer theRegistrer = new LocationRegisterer();
-		
-		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(
-				aConfig,
-				theRegistrer);
-
-		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theDebuggerConfig);
-		
-		DatabaseNode theNode = new DatabaseNode();
-		itsMaster = new GridMaster(aConfig, theRegistrer, theInstrumenter, theNode, true);
-		itsMaster.waitReady();
-		
-		itsBrowser = new GridLogBrowser(itsMaster);
+		if (itsMaster == null)
+		{
+			LocationRegisterer theRegistrer = new LocationRegisterer();
+			
+			ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(
+					aConfig,
+					theRegistrer);
+	
+			ASMInstrumenter theInstrumenter = new ASMInstrumenter(theDebuggerConfig);
+			
+			DatabaseNode theNode = new DatabaseNode(theRegistrer);
+			itsMaster = new GridMaster(aConfig, theRegistrer, theInstrumenter, theNode, true);
+			itsMaster.waitReady();
+			
+			itsBrowser = new GridLogBrowser(itsMaster);
+		}
+		else 
+		{
+			itsMaster.clear();
+		}
 	}
 	
 	public void disconnect()
 	{
-		itsMaster.stop();
+		itsMaster.disconnect();
+		itsMaster.flush();
+		itsMaster.clear();
 	}
 
 	public void flush()

@@ -135,16 +135,5 @@
 	</target>
 	
 	
-	<target name="dep.zz.csg" depends="init">
-		<ant 
-			antfile="${zz.csg.dir}/build.xml" 
-			dir="${zz.csg.dir}" 
-			target="jar"
-			inheritall="false"/>
-		<copy todir="lib">
-			<fileset dir="${zz.csg.dir}/build" includes="zz.csg.jar"/>
-		</copy>
-	</target>
-	
-	<target name="dep.all" depends="dep.zz.utils, dep.zz.csg"/>
+	<target name="dep.all" depends="dep.zz.utils"/>
 </project>

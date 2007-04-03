@@ -216,10 +216,10 @@ public class JobProcessor extends Thread
 			itsSemaphore.acquire();
 			aJob.doRun();
 		}
-		catch (Exception e)
+		catch (Throwable t)
 		{
 			System.err.println("[JobUpdater] Exception in Job: "+aJob);
-			e.printStackTrace();
+			t.printStackTrace();
 		}
 		finally
 		{

@@ -105,6 +105,7 @@ public class GridEventCollector extends EventCollector
 			int aOperationBytecodeIndex,
 			Object aException)
 	{
+		System.out.println("GridEventCollector.exception()");
 		itsExceptionEvent.set(
 				getHostId(),
 				aThreadId, 

@@ -301,7 +301,11 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		
 		// We check if we really entered in the current parent, or
 		// if some exception prevented the call from succeeding.
-		if (theFrame.entering) theThread.popFrame();
+		if (theFrame.entering) 
+		{
+			theThread.popFrame();
+			theDepth--;
+		}
 
 		itsCollector.exception(
 				theThread,

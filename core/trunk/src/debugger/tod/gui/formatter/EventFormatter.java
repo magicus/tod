@@ -24,6 +24,7 @@ import java.util.Arrays;
 
 import tod.Util;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.IArrayWriteEvent;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.IExceptionGeneratedEvent;
@@ -87,8 +88,6 @@ public class EventFormatter extends AbstractFormatter<ILogEvent>
 						"Return from ? -> %s",
 		                theEvent.getResult());
 			}
-			
-
 		}
 		else if (aEvent instanceof IFieldWriteEvent)
 		{
@@ -116,6 +115,16 @@ public class EventFormatter extends AbstractFormatter<ILogEvent>
 		{
 			IExceptionGeneratedEvent theEvent = (IExceptionGeneratedEvent) aEvent;
 			return "Exception thrown: "+formatObject(theEvent.getException());
+		}
+		else if (aEvent instanceof IArrayWriteEvent)
+		{
+			IArrayWriteEvent theEvent = (IArrayWriteEvent) aEvent;
+			
+			return String.format(
+					"%s[%d] = %s",
+					formatObject(theEvent.getTarget()),
+					theEvent.getIndex(),
+					formatObject(theEvent.getValue()));
 		}
 		else return ""+aEvent;
 	}

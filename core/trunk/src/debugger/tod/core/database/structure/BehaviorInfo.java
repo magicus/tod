@@ -127,14 +127,18 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
         {
         	int theStart = 0;
         	int theEnd = 0;
+        	int theLastLine = 0;
             for (LineNumberInfo theInfo : itsLineNumberTable)
 			{
-            	if (theInfo.getLineNumber() <= aLine) theStart = theInfo.getStartPc();
-            	if (theInfo.getLineNumber() > aLine)
+            	short theLineNumber = theInfo.getLineNumber();
+            	if (theLineNumber > aLine || theLineNumber < theLastLine)
             	{
             		theEnd = theInfo.getStartPc();
             		break;
             	}
+            	if (theLineNumber <= aLine) theStart = theInfo.getStartPc();
+            	
+            	theLastLine = theLineNumber;
 			}
             
             // TODO: do something to include only valid bytecode indexes.

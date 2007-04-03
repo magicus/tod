@@ -27,7 +27,6 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IBehaviorExitEvent;
@@ -37,6 +36,7 @@ import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
+import tod.gui.controlflow.CFlowViewUtils;
 import tod.gui.kit.AsyncPanel;
 import zz.utils.ui.StackLayout;
 import zz.utils.ui.UIUtils;
@@ -125,15 +125,15 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 		theContainer.setOpaque(false);
 		
 		fillHeaderPrefix(theContainer, aFont);
-//		Object[] theArguments = getEvent().getArguments();
-//		CFlowViewUtils.addArguments(
-//				getSeedFactory(), 
-//				getLogBrowser(), 
-//				getJobProcessor(),
-//				theContainer,
-//				theArguments,
-//				aFont);
-//
+		Object[] theArguments = getEvent().getArguments();
+		CFlowViewUtils.addArguments(
+				getLogBrowser(), 
+				getJobProcessor(),
+				theContainer,
+				getEvent(),
+				theArguments,
+				aFont);
+
 		return theContainer;
 	}
 
