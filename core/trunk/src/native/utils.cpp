@@ -20,7 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 
 #include <vector>
@@ -40,74 +39,85 @@ void fatal_ioerror(char* message)
 	exit(-1);
 }
 
-void writeByte(FILE* f, int i)
+void writeByte(STREAM* f, int i)
 {
-	fputc(i & 0xff, f);
+	f->put((char) (i & 0xff));
 }
 
-void writeShort(FILE* f, int v)
+void writeShort(STREAM* f, int v)
 {
-	fputc(0xff & (v >> 8), f);
-	fputc(0xff & v, f);
+	char buf[2];
+	buf[0] = 0xff & (v >> 8);
+	buf[1] = 0xff & v;
+	f->write(buf, 2);
 }
 
-void writeInt(FILE* f, int v)
+void writeInt(STREAM* f, int v)
 {
-	fputc(0xff & (v >> 24), f);
-	fputc(0xff & (v >> 16), f);
-	fputc(0xff & (v >> 8), f);
-	fputc(0xff & v, f);
+	char buf[4];
+	buf[0] = 0xff & (v >> 24);
+	buf[1] = 0xff & (v >> 16);
+	buf[2] = 0xff & (v >> 8);
+	buf[3] = 0xff & v;
+	f->write(buf, 4);
 }
 
-void writeLong(FILE* f, jlong v)
+void writeLong(STREAM* f, jlong v)
 {
-	fputc(0xff & (v >> 56), f);
-	fputc(0xff & (v >> 48), f);
-	fputc(0xff & (v >> 40), f);
-	fputc(0xff & (v >> 32), f);
-	fputc(0xff & (v >> 24), f);
-	fputc(0xff & (v >> 16), f);
-	fputc(0xff & (v >> 8), f);
-	fputc(0xff & v, f);
+	char buf[8];
+	buf[0] = 0xff & (v >> 56);
+	buf[1] = 0xff & (v >> 48);
+	buf[2] = 0xff & (v >> 40);
+	buf[3] = 0xff & (v >> 32);
+	buf[4] = 0xff & (v >> 24);
+	buf[5] = 0xff & (v >> 16);
+	buf[6] = 0xff & (v >> 8);
+	buf[7] = 0xff & v;
+	f->write(buf, 8);
 }
 
-int readByte(FILE* f)
+int readByte(STREAM* f)
 {
-	return fgetc(f);
+	return f->get();
 }
 
-int readShort(FILE* f)
+int readShort(STREAM* f)
 {
-	int a = fgetc(f);
-	int b = fgetc(f);
+	char buf[2];
+	f->read(buf, 2);
 	
-	return (((a & 0xff) << 8) | (b & 0xff));
+	return (((buf[0] & 0xff) << 8) | (buf[1] & 0xff));
 }
 
-int readInt(FILE* f)
+int readInt(STREAM* f)
 {
-	int a = fgetc(f);
-	int b = fgetc(f);
-	int c = fgetc(f);
-	int d = fgetc(f);
+	char buf[4];
+	f->read(buf, 4);
 	
-	return (((a & 0xff) << 24) | ((b & 0xff) << 16) | ((c & 0xff) << 8) | (d & 0xff));
+	return (((buf[0] & 0xff) << 24) 
+		| ((buf[1] & 0xff) << 16) 
+		| ((buf[2] & 0xff) << 8) 
+		| (buf[3] & 0xff));
 }
 
-void writeUTF(FILE* f, const char* s)
+void writeUTF(STREAM* f, const char* s)
 {
 	int len = strlen(s);
 	writeShort(f, len);
-	fputs(s, f);
+	f->write(s, len);
 }
 
-char* readUTF(FILE* f)
+char* readUTF(STREAM* f)
 {
 	int len = readShort(f);
 	char* s = (char*) malloc(len+1);
-	fread(s, 1, len, f);
+	f->read(s, len);
 	s[len] = 0;
 	
 	return s;
 }
 
+void flush(STREAM* f)
+{
+	f->flush();
+}

@@ -46,8 +46,10 @@ public class CollectorPacketWriter
 	 * List of registered objects that must be sent.
 	 * Note: There is space for a hard-coded number of entries that
 	 * should "be enough for everybody". 
+	 * Note that if only exception events are enabled this array
+	 * will overflow.
 	 */
-	private final ObjectEntry[] itsRegisteredObjects = new ObjectEntry[64];
+	private final ObjectEntry[] itsRegisteredObjects = new ObjectEntry[1024];
 	
 	/**
 	 * Number of entries in {@link #itsRegisteredObjects}.
@@ -281,7 +283,9 @@ public class CollectorPacketWriter
 		
 		itsBuffer.writeTo(itsStream);
 		
-		sendRegisteredObjects();
+		// We don't send registered objects here because it seems to cause
+		// a bad interaction with the native side.
+//		sendRegisteredObjects();
 	}
 	
 	public void sendOutput(

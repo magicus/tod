@@ -22,61 +22,71 @@ package games.snake2;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.geom.Ellipse2D;
 
-public class Bug extends FreeEntity 
+public class Apple extends FreeEntity
 {
-	public static final float RADIUS = 2;
-	private static final Color COLOR = Color.BLACK;
+	private static final float RADIUS = 15;
 	
-	private int itsMaxAge;
+	private static final int RIPE_AGE = 100;
+	private static final int ROTTEN_AGE = 500;
+	private static final int BLAST_AGE = 1000;
+
 	private int itsAge;
 
-	public Bug(Universe aUniverse)
+	public Apple(Universe aUniverse)
 	{
 		super(aUniverse);
-		itsMaxAge = 500 + (int) (500 * Math.random());
 	}
 
 	@Override
 	public void updatePosition()
 	{
 		itsAge++;
-		if (itsAge > itsMaxAge) getUniverse().bugDied(this);
+		if (itsAge > BLAST_AGE) getUniverse().appleBlast(this);
 		super.updatePosition();
-	}
-	
-	@Override
-	public UVector getForceFor(String aField, Entity e)
-	{
-		if ("bugRepell".equals(aField))
-		{
-			return ForceUtils.repell(getPos(), RADIUS*4, e.getPos());
-		}
-		return super.getForceFor(aField, e);
 	}
 	
 	@Override
 	protected UVector getForces()
 	{
-		return UVector.sum(
-				getUniverse().getForce("matter", this),
-				getUniverse().getForce("snakeTail", this),
-				getUniverse().getForce("bugRepell", this),
-				viscosity(0.85f));
+		return UVector.NULL;
 	}
 
 	@Override
-	public float ennemyWeight()
-	{
-		return 1;
-	}
-	
-	@Override
 	public void draw(Graphics2D g)
 	{
-		UPoint p = getPos();
-		g.setColor(COLOR);
-		g.fill(new Ellipse2D.Float(p.x-RADIUS, p.y-RADIUS, RADIUS*2, RADIUS*2));
+		if (itsAge < RIPE_AGE)
+		{
+			// Not ripe
+			DrawUtils.drawBall(g, getPos(), RADIUS, Color.GREEN);
+		}
+		else if (itsAge < ROTTEN_AGE)
+		{
+			// Ripe
+			DrawUtils.drawBall(g, getPos(), RADIUS, Color.RED);
+		}
+		else
+		{
+			// Rotten
+			DrawUtils.drawBall(g, getPos(), RADIUS, Color.BLACK);
+		}
+	}
+
+	public void eat()
+	{
+		if (itsAge < RIPE_AGE)
+		{
+			// Not ripe
+		}
+		else if (itsAge < ROTTEN_AGE)
+		{
+			// Ripe
+			getUniverse().appleEat(this);
+		}
+		else
+		{
+			// Rotten
+			getUniverse().appleBlast(this);
+		}
 	}
 }

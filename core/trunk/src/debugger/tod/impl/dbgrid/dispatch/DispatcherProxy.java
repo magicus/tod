@@ -29,6 +29,7 @@ import java.util.LinkedList;
 
 import tod.core.transport.LogReceiver;
 import tod.core.transport.MessageType;
+import tod.utils.ArrayCast;
 import tod.utils.NativeStream;
 import zz.utils.ArrayStack;
 import zz.utils.Utils;
@@ -87,7 +88,7 @@ public class DispatcherProxy extends DispatchNodeProxy
 			
 			// Read packet size
 			aStream.readFully(itsIBBuffer);
-			int theSize = NativeStream.ba2i(itsIBBuffer);
+			int theSize = ArrayCast.ba2i(itsIBBuffer);
 			
 			// Write packet size
 			itsOut.write(itsIBBuffer);

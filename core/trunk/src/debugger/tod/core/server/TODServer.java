@@ -160,10 +160,10 @@ public abstract class TODServer
 			NativeAgentPeer thePeer = new MyNativePeer(aSocket, itsCurrentHostId++);
 			String theHostName = thePeer.waitHostName();
 			
-			while(true)
+			while(! aSocket.isClosed())
 			{
 				ClientConnection theConnection = itsConnections.get(theHostName);
-				if (theConnection == null) wait();
+				if (theConnection == null) wait(1000);
 				else
 				{
 					theConnection.setNativeAgentPeer(thePeer);

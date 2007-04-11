@@ -20,33 +20,21 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package games.snake2;
 
-import games.snake.Snake;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.geom.Ellipse2D;
 
-import javax.swing.JFrame;
-
-public class Play
+public class DrawUtils
 {
-	private static Universe createUniverse()
+	public static void drawBall(Graphics2D g, UPoint p, float r, Color aColor)
 	{
-		Universe theUniverse = new Universe();
-		theUniverse.setupSnake();
-		
-//		for (int i=0;i<50;i++)
-//		{
-//			Bug theBug = new Bug(theUniverse);
-//			theBug.setPos(UPoint.random(500, 500));
-//			theUniverse.add(theBug);
-//		}
-//		
-		return theUniverse;
+		drawBall(g, p.x, p.y, r, aColor);
 	}
 	
-	public static void main(String[] args)
+	public static void drawBall(Graphics2D g, float x, float y, float r, Color aColor)
 	{
-		JFrame theFrame = new JFrame("Snake 2!");
-		theFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		theFrame.setContentPane(createUniverse());
-		theFrame.pack();
-		theFrame.setVisible(true);
+		g.setColor(aColor);
+		g.fill(new Ellipse2D.Float(x-r, y-r, r*2, r*2));
 	}
+	
 }

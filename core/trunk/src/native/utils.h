@@ -23,20 +23,28 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 
 #include <stdio.h>
 #include <jni.h>
+#include <iostream>
+#include <boost/thread/recursive_mutex.hpp>
 
+
+typedef boost::recursive_mutex t_mutex;
+typedef boost::recursive_mutex::scoped_lock t_lock;
+
+typedef std::iostream STREAM;
 
 void fatal_error(char*);
 void fatal_ioerror(char*);
 
-void writeByte(FILE* f, int i);
-void writeShort(FILE* f, int v);
-void writeInt(FILE* f, int v);
-void writeLong(FILE* f, jlong v);
-int readByte(FILE* f);
-int readShort(FILE* f);
-int readInt(FILE* f);
-void writeUTF(FILE* f, const char* s);
-char* readUTF(FILE* f);
+void writeByte(STREAM* f, int i);
+void writeShort(STREAM* f, int v);
+void writeInt(STREAM* f, int v);
+void writeLong(STREAM* f, jlong v);
+int readByte(STREAM* f);
+int readShort(STREAM* f);
+int readInt(STREAM* f);
+void writeUTF(STREAM* f, const char* s);
+char* readUTF(STREAM* f);
+void flush(STREAM* f);
 
 
 #endif

@@ -66,4 +66,9 @@ public class UPoint
 	{
 		return (p1.x-p2.x)*(p1.x-p2.x) + (p1.y-p2.y)*(p1.y-p2.y);
 	}
+	
+	public static UPoint random(float w, float h)
+	{
+		return new UPoint((float) (Math.random()*w), (float) (Math.random()*h));
+	}
 }

@@ -32,6 +32,7 @@ import javax.swing.JPanel;
 public class Universe extends JPanel implements Runnable
 {
 	private List<Entity> itsEntities = new ArrayList<Entity>();
+	private List<Apple> itsApples = new ArrayList<Apple>();
 	private List<Runnable> itsUpdates = new ArrayList<Runnable>();
 	
 	private int itsSnakeSize = 25;
@@ -69,7 +70,41 @@ public class Universe extends JPanel implements Runnable
 			theRing.setPos(new UPoint((float) (Math.random()*500), (float) (Math.random()*500)));
 			add(theRing);
 		}
-
+	}
+	
+	public void addBugs(int aCount, UPoint p)
+	{
+		for (int i=0;i<aCount;i++)
+		{
+			Bug theBug = new Bug(this);
+			float dx = (float) (Math.random()*10 - 5);
+			float dy = (float) (Math.random()*10 - 5);
+			theBug.setPos(new UPoint(p.x + dx, p.y + dy));
+			add(theBug);
+		}
+	}
+	
+	public void appleBlast(final Apple aApple)
+	{
+		postUpdate(new Runnable()
+		{
+			public void run()
+			{
+				removeApple(aApple);
+				addBugs(20, aApple.getPos());
+			}
+		});
+	}
+	
+	public void appleEat(final Apple aApple)
+	{
+		postUpdate(new Runnable()
+		{
+			public void run()
+			{
+				removeApple(aApple);
+			}
+		});		
 	}
 	
 	/**
@@ -87,6 +122,31 @@ public class Universe extends JPanel implements Runnable
 		return w;
 	}
 	
+	public void addApple()
+	{
+		Apple theApple = new Apple(this);
+		theApple.setPos(UPoint.random(500, 500));
+		
+		itsApples.add(theApple);
+		add(theApple);
+	}
+	
+	public void removeApple(Apple aApple)
+	{
+		itsApples.remove(aApple);
+		remove(aApple);
+	}
+	
+	public Apple getAppleAt(UPoint p, float r)
+	{
+		float rSq = r*r;
+		for (Apple theApple : itsApples)
+		{
+			if (UPoint.distSq(p, theApple.getPos()) < rSq) return theApple;
+		}
+		return null;
+	}
+	
 	public void ringLost(final SnakeBodyRing aRing)
 	{
 		postUpdate(new Runnable()
@@ -97,6 +157,18 @@ public class Universe extends JPanel implements Runnable
 				itsSnakeSize--;
 			}
 		});
+	}
+	
+	public void bugDied(final Bug aBug)
+	{
+		postUpdate(new Runnable()
+		{
+			public void run()
+			{
+				remove(aBug);
+			}
+		});
+		
 	}
 	
 	public synchronized void add(Entity e) 
@@ -124,6 +196,15 @@ public class Universe extends JPanel implements Runnable
 		for (Entity theEntity : itsEntities) theEntity.updatePosition();
 		for (Runnable theUpdate : itsUpdates) theUpdate.run();
 		itsUpdates.clear();
+		
+		// Add apples
+		if (itsApples.size() < 4)
+		{
+			if (Math.random() < 0.01)
+			{
+				addApple();
+			}
+		}
 	}
 	
 	public UVector getForce(String aField, Entity e)

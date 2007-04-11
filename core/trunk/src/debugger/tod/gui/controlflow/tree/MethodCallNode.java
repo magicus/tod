@@ -45,39 +45,57 @@ public class MethodCallNode extends BehaviorCallNode
 	}
 
 	@Override
-	protected void fillHeaderPrefix(
-			JComponent aContainer,
-			XFont aFont)
+	protected JComponent createBehaviorName()
 	{
-//		IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
-//
-//		Color theColor = theExitEvent != null && theExitEvent.hasThrown() ?
-//				Color.RED
-//				: Color.BLACK;
-//		
-//		aContainer.add(ZLabel.create(aPrefix, theFont, theColor));
-
-		// Create behavior link
-		IBehaviorInfo theBehavior = getEvent().getExecutedBehavior();
-		if (theBehavior == null)
-		{
-			aFont = aFont.deriveFont(Font.ITALIC, aFont.getAWTFont().getSize2D());
-			theBehavior = getEvent().getCalledBehavior();
-		}
-		ITypeInfo theType = theBehavior.getType();
-		
-		aContainer.add(Hyperlinks.type(theType, aFont));
-		aContainer.add(ZLabel.create(".", aFont, Color.BLACK));
-		aContainer.add(Hyperlinks.behavior(theBehavior, aFont));
+		return null;
 	}
-	
+
 	@Override
-	protected void fillFooterPrefix(
-			JComponent aContainer,
-			XFont aFont)
+	protected JComponent createFullView()
 	{
-		aContainer.add(ZLabel.create("Returned: ", aFont, Color.BLACK));
+		return null;
 	}
 
+	@Override
+	protected JComponent createShortView()
+	{
+		return null;
+	}
+
+//	@Override
+//	protected void fillHeaderPrefix(
+//			JComponent aContainer,
+//			XFont aFont)
+//	{
+////		IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
+////
+////		Color theColor = theExitEvent != null && theExitEvent.hasThrown() ?
+////				Color.RED
+////				: Color.BLACK;
+////		
+////		aContainer.add(ZLabel.create(aPrefix, theFont, theColor));
+//
+//		// Create behavior link
+//		IBehaviorInfo theBehavior = getEvent().getExecutedBehavior();
+//		if (theBehavior == null)
+//		{
+//			aFont = aFont.deriveFont(Font.ITALIC, aFont.getAWTFont().getSize2D());
+//			theBehavior = getEvent().getCalledBehavior();
+//		}
+//		ITypeInfo theType = theBehavior.getType();
+//		
+//		aContainer.add(Hyperlinks.type(theType, aFont));
+//		aContainer.add(ZLabel.create(".", aFont, Color.BLACK));
+//		aContainer.add(Hyperlinks.behavior(theBehavior, aFont));
+//	}
+//	
+//	@Override
+//	protected void fillFooterPrefix(
+//			JComponent aContainer,
+//			XFont aFont)
+//	{
+//		aContainer.add(ZLabel.create("Returned: ", aFont, Color.BLACK));
+//	}
+//
 
 }

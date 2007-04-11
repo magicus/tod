@@ -39,6 +39,7 @@ import tod.impl.dbgrid.db.file.PageBank.Page;
 import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Probe;
+import tod.utils.ArrayCast;
 import tod.utils.NativeStream;
 import zz.utils.ArrayStack;
 import zz.utils.Stack;
@@ -334,7 +335,7 @@ public class HardPagedFile extends PageBank
 				}
 			}
 			
-			NativeStream.b2i(itsReadByteBuffer, aBuffer);
+			ArrayCast.b2i(itsReadByteBuffer, aBuffer);
 		}
 		
 		private void updateScattering(long aId)
@@ -362,7 +363,7 @@ public class HardPagedFile extends PageBank
 			itsWriteCount++;
 			if (DebugFlags.DISABLE_ASYNC_WRITES)
 			{
-				NativeStream.i2b(aData, itsWriteByteBuffer);
+				ArrayCast.i2b(aData, itsWriteByteBuffer);
 				itsFile.seek(aId * itsPageSize);
 				itsFile.write(itsWriteByteBuffer);
 				return;
@@ -372,7 +373,7 @@ public class HardPagedFile extends PageBank
 			{
 				while (itsPageId >= 0) wait();
 				itsPageId = aId;
-				NativeStream.i2b(aData, itsWriteByteBuffer);
+				ArrayCast.i2b(aData, itsWriteByteBuffer);
 				IOException theException = itsException;
 				itsException = null;
 				notifyAll();
@@ -631,7 +632,7 @@ public class HardPagedFile extends PageBank
 		}
 		
 		/**
-		 * Returns the currently attached {@link Page}.
+		 * Returns the first currently attached {@link Page}.
 		 */
 		public Page getAttachedPage()
 		{

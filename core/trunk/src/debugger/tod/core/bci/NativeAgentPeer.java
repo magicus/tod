@@ -186,7 +186,9 @@ public abstract class NativeAgentPeer extends SocketThread
 		DataOutputStream theOutStream = new DataOutputStream(aOutputStream);
 		
 		// Read host name
-		setHostName(theStream.readUTF());
+		String theHostName = theStream.readUTF();
+		setHostName(theHostName);
+		System.out.println("[NativeAgentPeer] Received host name: '"+theHostName+"'");
 		
 		// Send host id
 		theOutStream.writeInt(itsHostId);

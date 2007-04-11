@@ -20,6 +20,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.db;
 
+import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_BYTEOFFSET_BITS;
+import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_POINTER_BITS;
+import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_SIZE;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -35,9 +39,9 @@ import tod.impl.dbgrid.db.file.HardPagedFile.Page;
 import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Probe;
+import tod.utils.ArrayCast;
 import tod.utils.NativeStream;
 import zz.utils.bit.BitStruct;
-import static tod.impl.dbgrid.DebuggerGridConfig.*;
 
 /**
  * A database for storing registered objects.
@@ -160,7 +164,7 @@ public class ObjectsDatabase
 		}
 		
 		itsIntBuffer[0] = theDataSize;
-		NativeStream.b2i(aData, 0, itsIntBuffer, 1, theDataSize);
+		ArrayCast.b2i(aData, 0, itsIntBuffer, 1, theDataSize);
 
 		int theRemaining = theStorageSize*4;
 		int theWritten = 0;
@@ -266,7 +270,7 @@ public class ObjectsDatabase
 		}
 		
 		byte[] theData = new byte[theDataSize];
-		NativeStream.i2b(itsIntBuffer, 0, theData, 0, theDataSize);
+		ArrayCast.i2b(itsIntBuffer, 0, theData, 0, theDataSize);
 		return decode(theData);
 	}
 	

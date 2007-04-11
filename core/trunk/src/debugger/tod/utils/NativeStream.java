@@ -55,57 +55,6 @@ public class NativeStream
 	protected static native int recv(int aFD, int[] aBuffer, int aSize);
 	protected static native int send(int aFD, int[] aBuffer, int aSize);
 
-	public static void b2i(byte[] aSrc, int[] aDest)
-	{
-		b2i(aSrc, 0, aDest, 0, aSrc.length);
-	}
-	
-	
-	/**
-	 * Copies the data from the source byte array to the dest int array
-	 * @param aSrcOffset Offset of the first source array slot.
-	 * @param aDestOffset Offset of the first dest array slot.
-	 * @param aLength Number of bytes to copy.
-	 */
-	public static native void b2i(
-			byte[] aSrc,
-			int aSrcOffset,
-			int[] aDest,
-			int aDestOffset,
-			int aLength);
-		
-	public static void i2b(int[] aSrc, byte[] aDest)
-	{
-		i2b(aSrc, 0, aDest, 0, aSrc.length*4);
-	}
-	
-	/**
-	 * Copies the data from the source int array to the dest byte array
-	 * @param aSrcOffset Offset of the first source array slot.
-	 * @param aDestOffset Offset of the first dest array slot.
-	 * @param aLength Number of bytes to copy.
-	 */
-	public static native void i2b(
-			int[] aSrc,
-			int aSrcOffset,
-			byte[] aDest,
-			int aDestOffset,
-			int aLength);
-	
-	/**
-	 * Reads an int from the given byte array and returns it as an int.
-	 * Byte ordering is safe (compatible with {@link DataInputStream}).
-	 */
-	public static native int ba2i(byte[] aSrc);
-	
-	/**
-	 * Writes an int to the given byte array.
-	 * WARNING: NO CHECK IS PERFORMED ON THE ARRAY (SIZE, NULL...)
-	 * Byte ordering is safe (compatible with {@link DataInputStream}).
-	 */
-	public static native void i2ba(int aValue, byte[] aDest);
-
-	
 	static
 	{
 		System.loadLibrary("native-stream");

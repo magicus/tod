@@ -59,6 +59,7 @@ public class ConfigUtils
 	{
 		String theString = System.getProperty(aPropertyName);
 		System.out.println(aPropertyName+"="+theString);
+		if (theString != null && theString.length() == 0) return null;
 		return theString != null ? theString : aDefault;
 	}
 	

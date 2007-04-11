@@ -112,8 +112,7 @@ public class SnakeBodyRing extends FreeEntity implements ISnakePart
 	public void draw(Graphics2D g)
 	{
 		UPoint p = getPos();
-		g.setColor(COLOR);
-		g.fill(new Ellipse2D.Float(p.x-itsRadius, p.y-itsRadius, itsRadius*2, itsRadius*2));
+		DrawUtils.drawBall(g, p, itsRadius, COLOR);
 	}
 	
 	

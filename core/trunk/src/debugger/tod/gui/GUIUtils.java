@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.LayoutManager;
@@ -66,6 +67,14 @@ public class GUIUtils
 	public static LayoutManager createStackLayout()
 	{
 		return new GridStackLayout(1, 0, 0, true, false);
+	}
+	
+	/**
+	 * Creates a standard border layout.
+	 */
+	public static LayoutManager createBorderLayout()
+	{
+		return new BorderLayout(0, 0);
 	}
 	
 	public static ZLabel createLabel(String aText, XFont aFont, Color aColor)

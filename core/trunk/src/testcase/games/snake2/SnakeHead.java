@@ -130,6 +130,12 @@ public class SnakeHead extends FreeEntity implements ISnakePart
 			
 		if (itsDirection.normSq() < RADIUS*RADIUS) itsObjective = null;
 		
+		Apple theAppleAt = getUniverse().getAppleAt(getPos(), RADIUS);
+		if (theAppleAt != null)
+		{
+			theAppleAt.eat();
+		}
+		
 		super.updatePosition();
 	}
 	

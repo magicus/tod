@@ -20,16 +20,19 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.controlflow.tree;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 
-import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IConstructorChainingEvent;
+import tod.gui.FontConfig;
+import tod.gui.GUIUtils;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
+import zz.utils.ui.WrappedFlowLayout;
 import zz.utils.ui.ZLabel;
-import zz.utils.ui.text.XFont;
 
 public class ConstructorChainingNode extends BehaviorCallNode
 {
@@ -49,9 +52,13 @@ public class ConstructorChainingNode extends BehaviorCallNode
 	}
 	
 	@Override
-	protected void fillHeaderPrefix(
-			JComponent aContainer,
-			XFont aFont)
+	protected JComponent createBehaviorName()
+	{
+		return null;
+	}
+	
+	@Override
+	protected JComponent createBehaviorNamePrefix()
 	{
 		String theHeader;
 		switch(getEvent().getCallType())
@@ -72,15 +79,34 @@ public class ConstructorChainingNode extends BehaviorCallNode
 			throw new RuntimeException("Not handled: "+getEvent().getCallType());
 		}
 		
-		aContainer.add(ZLabel.create(theHeader, aFont, Color.BLACK));
+		return ZLabel.create(theHeader, FontConfig.STD_FONT, Color.BLACK);
 	}
-	
+
 	@Override
-	protected void fillFooterPrefix(
-			JComponent aContainer,
-			XFont aFont)
+	protected JComponent createFullView()
 	{
-		aContainer.add(ZLabel.create("Returned: ", aFont, Color.BLACK));
+		JPanel thePanel = new JPanel(GUIUtils.createBorderLayout());
+		thePanel.setOpaque(false);
+		
+		thePanel.add(createPackageName(), BorderLayout.NORTH);
+		thePanel.add(createResult(), BorderLayout.SOUTH);
+		
+		JPanel theCenterPanel = new JPanel(new WrappedFlowLayout());
+		theCenterPanel.setOpaque(false);
+		
+		
+		
+		return thePanel;
+	}
+
+	@Override
+	protected JComponent createShortView()
+	{
+		JPanel thePanel = new JPanel(GUIUtils.createBorderLayout());
+		thePanel.setOpaque(false);
+		
+		
+		return thePanel;
 	}
 
 }

@@ -52,31 +52,49 @@ public class InstantiationNode extends BehaviorCallNode
 	}
 	
 	@Override
-	protected void fillHeaderPrefix(
-			JComponent aContainer,
-			XFont aFont)
+	protected JComponent createBehaviorName()
 	{
-		aContainer.add(ZLabel.create("new ", aFont, Color.BLACK));
+		return null;
+	}
 
-		// Create behavior link
-		IBehaviorInfo theBehavior = getEvent().getExecutedBehavior();
-		if (theBehavior == null)
-		{
-			aFont = aFont.deriveFont(Font.ITALIC, aFont.getAWTFont().getSize2D());
-			theBehavior = getEvent().getCalledBehavior();
-		}
-		ITypeInfo theType = theBehavior.getType();
-		
-		aContainer.add(Hyperlinks.type(theType, aFont));
-	}
-	
 	@Override
-	protected void fillFooterPrefix(
-			JComponent aContainer,
-			XFont aFont)
+	protected JComponent createFullView()
 	{
-		aContainer.add(ZLabel.create("Created: ", aFont, Color.BLACK));
+		return null;
 	}
+
+	@Override
+	protected JComponent createShortView()
+	{
+		return null;
+	}
+
+//	@Override
+//	protected void fillHeaderPrefix(
+//			JComponent aContainer,
+//			XFont aFont)
+//	{
+//		aContainer.add(ZLabel.create("new ", aFont, Color.BLACK));
+//
+//		// Create behavior link
+//		IBehaviorInfo theBehavior = getEvent().getExecutedBehavior();
+//		if (theBehavior == null)
+//		{
+//			aFont = aFont.deriveFont(Font.ITALIC, aFont.getAWTFont().getSize2D());
+//			theBehavior = getEvent().getCalledBehavior();
+//		}
+//		ITypeInfo theType = theBehavior.getType();
+//		
+//		aContainer.add(Hyperlinks.type(theType, aFont));
+//	}
+//	
+//	@Override
+//	protected void fillFooterPrefix(
+//			JComponent aContainer,
+//			XFont aFont)
+//	{
+//		aContainer.add(ZLabel.create("Created: ", aFont, Color.BLACK));
+//	}
 
 	@Override
 	protected Object getResult()

@@ -113,6 +113,15 @@ public abstract class SocketThread extends Thread
 					e.printStackTrace();
 				}
 				
+				try
+				{
+					itsSocket.close();
+				}
+				catch (IOException e)
+				{
+					throw new RuntimeException(e);
+				}
+				
 				disconnected();
 				Thread.sleep (500);
 				if (itsServerSocket != null) itsSocket = null;

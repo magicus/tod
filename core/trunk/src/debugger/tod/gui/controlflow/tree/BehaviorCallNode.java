@@ -26,8 +26,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JComponent;
-import javax.swing.JPanel;
+import javax.swing.JToolTip;
 
+import tod.Util;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.structure.IBehaviorInfo;
@@ -36,9 +37,7 @@ import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
-import tod.gui.controlflow.CFlowViewUtils;
 import tod.gui.kit.AsyncPanel;
-import zz.utils.ui.StackLayout;
 import zz.utils.ui.UIUtils;
 import zz.utils.ui.ZLabel;
 import zz.utils.ui.text.XFont;
@@ -77,40 +76,14 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 		
 		add(itsExpanderWidget, BorderLayout.WEST);
 		
-		JComponent theContainer = new JPanel (new BorderLayout(0, 0));
-		theContainer.setOpaque(false);
-		
-		JComponent theHeader = createHeader(FontConfig.STD_FONT);
-		theContainer.add(theHeader, BorderLayout.NORTH);
-		
-		JComponent theFooter = new AsyncPanel(getJobProcessor())
-		{
-			@Override
-			protected void runJob()
-			{
-				getEvent().getExitEvent(); // This call caches the event
-			}
-
-			@Override
-			protected void update()
-			{
-				Color theExpanderColor;
-				IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
-				if (theExitEvent == null) theExpanderColor = Color.BLACK;
-				else theExpanderColor = theExitEvent.hasThrown() ? Color.RED : Color.BLUE;
-				
-				if (!getEvent().hasRealChildren()) 
-					theExpanderColor = UIUtils.getLighterColor(theExpanderColor, 0.2f);
-				
-				itsExpanderWidget.setColor(theExpanderColor);
-
-				setLayout(new StackLayout());
-				add(createFooter(FontConfig.STD_FONT));
-			}
-		};
-		theContainer.add(theFooter, BorderLayout.SOUTH);
-		
-		add(theContainer, BorderLayout.CENTER);
+		add(createShortView(), BorderLayout.CENTER);
+	}
+	
+	@Override
+	public JToolTip createToolTip()
+	{
+		System.out.println("BehaviorCallNode.createToolTip()");
+		return super.createToolTip();
 	}
 	
 	@Override
@@ -119,24 +92,6 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 		return itsEvent;
 	}
 	
-	protected JComponent createHeader(XFont aFont)
-	{
-		JPanel theContainer = new JPanel(GUIUtils.createSequenceLayout());
-		theContainer.setOpaque(false);
-		
-		fillHeaderPrefix(theContainer, aFont);
-		Object[] theArguments = getEvent().getArguments();
-		CFlowViewUtils.addArguments(
-				getLogBrowser(), 
-				getJobProcessor(),
-				theContainer,
-				getEvent(),
-				theArguments,
-				aFont);
-
-		return theContainer;
-	}
-
 	/**
 	 * Returns the result of the call.
 	 * By default, the result of the exit event.
@@ -148,70 +103,170 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 		return theExitEvent != null ? theExitEvent.getResult() : null;		
 	}
 	
-	protected JComponent createFooter(XFont aFont)
+	protected IBehaviorInfo getBehavior()
 	{
-		JPanel theContainer = new JPanel(GUIUtils.createSequenceLayout());
-		theContainer.setOpaque(false);
-
 		IBehaviorInfo theBehavior = getEvent().getExecutedBehavior();
 		if (theBehavior == null) theBehavior = getEvent().getCalledBehavior();
 		
-		IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
-		Object theResult = getResult();
-		
-		if (theExitEvent == null)
-		{
-			theContainer.add(ZLabel.create("Behavior never returned", aFont, Color.BLACK));
-		}
-		else if (theExitEvent.hasThrown())
-		{
-			theContainer.add(ZLabel.create("Thrown ", aFont, Color.RED));
-
-			theContainer.add(Hyperlinks.object(
-					getLogBrowser(), 
-					getJobProcessor(),
-					theExitEvent.getResult(),
-					theExitEvent,
-					aFont));
-		}
-		else
-		{
-			fillFooterPrefix(theContainer, aFont);
-
-			if (theResult != null)
-			{
-				theContainer.add(Hyperlinks.object(
-						getLogBrowser(), 
-						getJobProcessor(),
-						theResult,
-						theExitEvent,
-						aFont));
-			}
-			else if (theBehavior.getReturnType().isVoid())
-			{
-				theContainer.add(ZLabel.create("void", aFont, Color.BLACK));
-			}
-			else 
-			{
-				theContainer.add(ZLabel.create("null", aFont, Color.BLACK));
-			}
-		}
-		
-		return theContainer;
+		return theBehavior;
 	}
 	
 	/**
-	 * Adds the prefix to the header. Eg.: "new MyClass" or "MyClass.myMethod" 
+	 * Adds the components corresponding to the arguments of the call
+	 * (short version).
+	 * @param aComponent
 	 */
-	protected abstract void fillHeaderPrefix(
-			JComponent aContainer,
-			XFont aFont);
+	protected void fillShortArgs(JComponent aContainer)
+	{
+		Object[] theArguments = getEvent().getArguments();
+
+		XFont theFont = FontConfig.STD_FONT;
+		aContainer.add(ZLabel.create("(", theFont, Color.BLACK));
+		
+		if (theArguments != null)
+		{
+			boolean theFirst = true;
+			for (Object theArgument : theArguments)
+			{
+				if (theFirst) theFirst = false;
+				else aContainer.add(ZLabel.create(", ", theFont, Color.BLACK));
+				
+				aContainer.add(Hyperlinks.object(
+						getLogBrowser(),
+						getJobProcessor(),
+						theArgument, 
+						getEvent(),
+						theFont));
+			}
+		}
+		else if (! getBehavior().getReturnType().isVoid())
+		{
+			aContainer.add(ZLabel.create("...", theFont, Color.BLACK));
+		}
+		
+		aContainer.add(ZLabel.create(")", theFont, Color.BLACK));
+
+	}
 	
 	/**
-	 * Adds the prefix to the footer. Eg.: "Created " or "Returned "
+	 * Adds the components corresponding to the arguments of the call
+	 * (full version).
+	 * @param aComponent
 	 */
-	protected abstract void fillFooterPrefix(
-			JComponent aContainer,
-			XFont aFont);
+	protected void fillFullArgs(JComponent aComponent)
+	{
+		fillShortArgs(aComponent);
+	}
 	
+	/**
+	 * Creates a summarized view of the event
+	 */
+	protected abstract JComponent createShortView();
+	
+	/**
+	 * Creates a complete view of the event.
+	 */
+	protected abstract JComponent createFullView();
+	
+	protected abstract JComponent createBehaviorName();
+	
+	/**
+	 * Returns a component that contains a prefix for the behavior name,
+	 * such as "new "
+	 * @return
+	 */
+	protected JComponent createBehaviorNamePrefix()
+	{
+		return null;
+	}
+	
+	/**
+	 * Returns a component that contains a prefix for the result,
+	 * such as "Returned " or "Created ".
+	 */
+	protected JComponent createResultPrefix()
+	{
+		return null;
+	}
+	
+	protected JComponent createPackageName()
+	{
+		return GUIUtils.createLabel(
+				Util.getPackageName(getBehavior().getType().getName()), 
+				FontConfig.SMALL_FONT, 
+				Color.BLACK);
+	}
+	
+	protected JComponent createResult()
+	{
+		return new AsyncPanel(getJobProcessor())
+		{
+			@Override
+			protected void runJob()
+			{
+				getEvent().getExitEvent(); // This call caches call information
+			}
+
+			@Override
+			protected void update()
+			{
+				IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
+				Object theResult = getResult();
+				IBehaviorInfo theBehavior = getBehavior();
+				XFont theFont = FontConfig.STD_FONT;
+				
+				// Set final expander color.
+				Color theExpanderColor;
+				if (theExitEvent == null) theExpanderColor = Color.BLACK;
+				else theExpanderColor = theExitEvent.hasThrown() ? Color.RED : Color.BLUE;
+				
+				if (!getEvent().hasRealChildren()) 
+					theExpanderColor = UIUtils.getLighterColor(theExpanderColor, 0.2f);
+				
+				itsExpanderWidget.setColor(theExpanderColor);
+
+				// Add result components
+				setLayout(GUIUtils.createSequenceLayout());
+				
+				if (theExitEvent == null)
+				{
+					add(ZLabel.create("Behavior never returned", theFont, Color.BLACK));
+				}
+				else if (theExitEvent.hasThrown())
+				{
+					add(ZLabel.create("Thrown ", theFont, Color.RED));
+
+					add(Hyperlinks.object(
+							getLogBrowser(), 
+							getJobProcessor(),
+							theExitEvent.getResult(),
+							theExitEvent,
+							theFont));
+				}
+				else
+				{
+					JComponent thePrefix = createResultPrefix();
+					if (thePrefix != null) add(thePrefix);
+
+					if (theResult != null)
+					{
+						add(Hyperlinks.object(
+								getLogBrowser(), 
+								getJobProcessor(),
+								theResult,
+								theExitEvent,
+								theFont));
+					}
+					else if (theBehavior.getReturnType().isVoid())
+					{
+						add(ZLabel.create("void", theFont, Color.BLACK));
+					}
+					else 
+					{
+						add(ZLabel.create("null", theFont, Color.BLACK));
+					}
+				}
+			}
+		};
+	}
 }
