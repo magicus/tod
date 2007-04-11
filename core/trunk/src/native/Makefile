@@ -1,8 +1,4 @@
 
-bci-agent-objects = bci-agent.o utils.o md5.o
-nc-objects = CBuffer.o NativeCollector.o utils.o CThreadData.o md5.o
-native-stream-objects = native-stream.o
-array-cast-objects = array-cast.o
 
 ifeq ($(PLATFORM), win32)
 	WINBASE = ~/vm
@@ -18,6 +14,7 @@ ifeq ($(PLATFORM), win32)
 	LIBEXT = dll
 	
 else
+	PLATFORM = linux
 	LDFLAGS += -lboost_thread -lboost_filesystem
 	
 	CXXFLAGS += -I $(JAVA_HOME)/include/ -I $(JAVA_HOME)/include/linux/
@@ -28,46 +25,63 @@ endif
 
 CXXFLAGS += -O3
 
+bci-agent-objects = \
+	$(PLATFORM)/bci-agent.o \
+	$(PLATFORM)/utils.o \
+	$(PLATFORM)/md5.o
+	
+array-cast-objects = \
+	$(PLATFORM)/array-cast.o
+	
+#nc-objects = CBuffer.o NativeCollector.o utils.o CThreadData.o md5.o
+#native-stream-objects = native-stream.o
 
 ##############
 
 all: bci-agent array-cast
 
-bci-agent: $(bci-agent-objects)
-	$(CXX) -shared -o ../../$(LIBPREFIX)bci-agent.$(LIBEXT) $(bci-agent-objects) $(LDFLAGS)
+bci-agent: dirs $(bci-agent-objects)
+	$(CXX) -shared -o $(PLATFORM)/$(LIBPREFIX)bci-agent.$(LIBEXT) $(bci-agent-objects) $(LDFLAGS)
+	cp $(PLATFORM)/$(LIBPREFIX)bci-agent.$(LIBEXT) ../..
 	
-native-stream: $(native-stream-objects)
-	$(CXX) -shared -o ../../$(LIBPREFIX)native-stream.$(LIBEXT) $(native-stream-objects) $(LDFLAGS)
+# native-stream: $(native-stream-objects)
+# 	$(CXX) -shared -o ../../$(LIBPREFIX)native-stream.$(LIBEXT) $(native-stream-objects) $(LDFLAGS)
 	
-array-cast: $(array-cast-objects)
-	$(CXX) -shared -o ../../$(LIBPREFIX)array-cast.$(LIBEXT) $(array-cast-objects) $(LDFLAGS)
+array-cast: dirs $(array-cast-objects)
+	$(CXX) -shared -o $(PLATFORM)/$(LIBPREFIX)array-cast.$(LIBEXT) $(array-cast-objects) $(LDFLAGS)
+	cp $(PLATFORM)/$(LIBPREFIX)array-cast.$(LIBEXT) ../..
 	
+dirs:
+	mkdir -p $(PLATFORM)
+
+
 clean:
-	rm -f *.o *.obj ../../libbci-agent.so ../../libnative-stream.so ../../bci-agent.dll ../../native-stream.dll
+	rm -f ../../libbci-agent.so ../../libnative-stream.so ../../bci-agent.dll ../../native-stream.dll
+	rm -rf linux win32
 
 ############## 
 
-CBuffer.o: CBuffer.cpp CBuffer.h
-	$(CXX) -shared -c $(CXXFLAGS) CBuffer.cpp -o CBuffer.o
+$(PLATFORM)/CBuffer.o: CBuffer.cpp CBuffer.h
+	$(CXX) -shared -c $(CXXFLAGS) CBuffer.cpp -o $(PLATFORM)/CBuffer.o
 	
-CThreadData.o: CThreadData.cpp CThreadData.h
-	$(CXX) -shared -c $(CXXFLAGS) CThreadData.cpp -o CThreadData.o
+$(PLATFORM)/CThreadData.o: CThreadData.cpp CThreadData.h
+	$(CXX) -shared -c $(CXXFLAGS) CThreadData.cpp -o $(PLATFORM)/CThreadData.o
 
-NativeCollector.o: NativeCollector.cpp tod_core_transport_NativeCollector.h
-	$(CXX) -shared -c $(CXXFLAGS) NativeCollector.cpp -o NativeCollector.o
+$(PLATFORM)/NativeCollector.o: NativeCollector.cpp tod_core_transport_NativeCollector.h
+	$(CXX) -shared -c $(CXXFLAGS) NativeCollector.cpp -o $(PLATFORM)/NativeCollector.o
 
-bci-agent.o: bci-agent.cpp tod_core_ObjectIdentity.h
-	$(CXX) -shared -c $(CXXFLAGS) bci-agent.cpp -o bci-agent.o
+$(PLATFORM)/bci-agent.o: bci-agent.cpp tod_core_ObjectIdentity.h
+	$(CXX) -shared -c $(CXXFLAGS) bci-agent.cpp -o $(PLATFORM)/bci-agent.o
 	
-utils.o: utils.cpp utils.h
-	$(CXX) -shared -c $(CXXFLAGS) utils.cpp -o utils.o
+$(PLATFORM)/utils.o: utils.cpp utils.h
+	$(CXX) -shared -c $(CXXFLAGS) utils.cpp -o $(PLATFORM)/utils.o
 	
-md5.o: md5.cpp md5.h
-	$(CXX) -shared -c $(CXXFLAGS) md5.cpp -o md5.o
+$(PLATFORM)/md5.o: md5.cpp md5.h
+	$(CXX) -shared -c $(CXXFLAGS) md5.cpp -o $(PLATFORM)/md5.o
 	
-native-stream.o: native-stream.cpp
-	$(CXX) -shared -c $(CXXFLAGS) native-stream.cpp -o native-stream.o
+$(PLATFORM)/native-stream.o: native-stream.cpp
+	$(CXX) -shared -c $(CXXFLAGS) native-stream.cpp -o $(PLATFORM)/native-stream.o
 
-array-cast.o: array-cast.cpp
-	$(CXX) -shared -c $(CXXFLAGS) array-cast.cpp -o array-cast.o
+$(PLATFORM)/array-cast.o: array-cast.cpp
+	$(CXX) -shared -c $(CXXFLAGS) array-cast.cpp -o $(PLATFORM)/array-cast.o
 
