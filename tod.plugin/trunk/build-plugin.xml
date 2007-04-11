@@ -84,7 +84,7 @@
 			inheritall="false"/>
 		<copy todir="lib">
 			<fileset dir="${tod.dir}/build" includes="tod-debugger.jar tod-agent.jar"/>
-			<fileset dir="${tod.dir}" includes="*.so"/>
+			<fileset dir="${tod.dir}" includes="*.so *.dll"/>
 		</copy>
 	</target>
 	
