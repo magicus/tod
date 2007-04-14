@@ -96,7 +96,7 @@ public class TODPluginUtils
 						theMethod.getParameterTypes(), 
 						theType);
 				
-				if (theMethodName.equals(Util.getSimpleName(theTypeName))) 
+				if (theMethodName.equals(Util.getSimpleInnermostName(theTypeName))) 
 					theMethodName = "<init>";
 				
 				return theTypeInfo.getBehavior(theMethodName, theArgumentTypes);
