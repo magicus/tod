@@ -159,6 +159,7 @@ public class EventBrowser implements IEventBrowser
 
 	public long[] getEventCounts(long aT1, long aT2, int aSlotsCount, boolean aForceMergeCounts)
 	{
+		assert aT2 >= aT1;
 		long[] theCounts = new long[aSlotsCount];
 		
 		for (ILogEvent theEvent : itsEvents)

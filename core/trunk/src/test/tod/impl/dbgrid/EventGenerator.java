@@ -25,7 +25,6 @@ import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_BEHAVIOR_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_BYTECODE_LOCS_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_DEPTH_RANGE;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_FIELD_COUNT;
-import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_HOSTS_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_OBJECT_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_THREADS_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_VAR_COUNT;
@@ -49,7 +48,6 @@ public class EventGenerator
 	private TimestampGenerator itsTimestampGenerator;
 	private TimestampGenerator itsParentTimestampGenerator;
 	
-	private int itsHostsRange;
 	private int itsThreadsRange;
 	private int itsDepthRange;
 	private int itsBytecodeRange;
@@ -62,7 +60,6 @@ public class EventGenerator
 
 	public EventGenerator(
 			long aSeed,
-			int aHostsRange, 
 			int aThreadsRange, 
 			int aDepthRange, 
 			int aBytecodeRange, 
@@ -75,7 +72,6 @@ public class EventGenerator
 		itsTimestampGenerator = new TimestampGenerator(aSeed);		
 		itsParentTimestampGenerator = new TimestampGenerator(aSeed);		
 		
-		itsHostsRange = aHostsRange;
 		itsThreadsRange = aThreadsRange;
 		itsDepthRange = aDepthRange;
 		itsBytecodeRange = aBytecodeRange;
@@ -89,7 +85,6 @@ public class EventGenerator
 	{
 		this(
 				aSeed, 
-				STRUCTURE_HOSTS_COUNT, 
 				STRUCTURE_THREADS_COUNT,
 				STRUCTURE_DEPTH_RANGE,
 				STRUCTURE_BYTECODE_LOCS_COUNT,
@@ -106,7 +101,6 @@ public class EventGenerator
 		{
 		case BEHAVIOR_EXIT:
 			return new GridBehaviorExitEvent(
-					genHostId(),
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
@@ -119,7 +113,6 @@ public class EventGenerator
 			
 		case SUPER_CALL:
 			return new GridBehaviorCallEvent(
-					genHostId(),
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
@@ -135,7 +128,6 @@ public class EventGenerator
 			
 		case EXCEPTION_GENERATED:
 			return new GridExceptionGeneratedEvent(
-					genHostId(),
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
@@ -146,7 +138,6 @@ public class EventGenerator
 			
 		case FIELD_WRITE:
 			return new GridFieldWriteEvent(
-					genHostId(),
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
@@ -159,7 +150,6 @@ public class EventGenerator
 			
 		case INSTANTIATION:
 			return new GridBehaviorCallEvent(
-					genHostId(),
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
@@ -175,7 +165,6 @@ public class EventGenerator
 			
 		case LOCAL_VARIABLE_WRITE:
 			return new GridVariableWriteEvent(
-					genHostId(),
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
@@ -187,7 +176,6 @@ public class EventGenerator
 			
 		case METHOD_CALL:
 			return new GridBehaviorCallEvent(
-					genHostId(),
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
@@ -203,7 +191,6 @@ public class EventGenerator
 		
 		case ARRAY_WRITE:
 			return new GridArrayWriteEvent(
-					genHostId(),
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
@@ -227,11 +214,6 @@ public class EventGenerator
 	public long genParentTimestamp()
 	{
 		return itsParentTimestampGenerator.next();
-	}
-	
-	public int genHostId()
-	{
-		return itsRandom.nextInt(itsHostsRange) + 1;
 	}
 	
 	public int genThreadId()

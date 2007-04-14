@@ -28,6 +28,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 #include <jvmti.h>
 
 #include "utils.h"
+#include "jniutils.h"
 #include "md5.h"
 
 #include <vector>
@@ -43,59 +44,61 @@ using asio::ip::tcp;
 namespace fs = boost::filesystem;
 
 // Outgoing commands
-static const char EXCEPTION_GENERATED = 20;
-static const char INSTRUMENT_CLASS = 50;
-static const char FLUSH = 99;
+const char EXCEPTION_GENERATED = 20;
+const char INSTRUMENT_CLASS = 50;
+const char FLUSH = 99;
 
-static const char OBJECT_HASH = 1;
-static const char OBJECT_UID = 2;
+const char OBJECT_HASH = 1;
+const char OBJECT_UID = 2;
 
 // Incoming commands
-static const char SET_CACHE_PATH = 80;
-static const char SET_SKIP_CORE_CLASSES = 81;
-static const char SET_VERBOSE = 82;
-static const char SET_CAPTURE_EXCEPTIONS = 83;
-static const char CONFIG_DONE = 90;
+const char SET_CACHE_PATH = 80;
+const char SET_SKIP_CORE_CLASSES = 81;
+const char SET_VERBOSE = 82;
+const char SET_CAPTURE_EXCEPTIONS = 83;
+const char SET_HOST_BITS = 84;
+const char CONFIG_DONE = 90;
 
-static int VM_STARTED = 0;
-static STREAM* gSocket;
+int VM_STARTED = 0;
+STREAM* gSocket;
 
 // Pointer to our JVMTI environment, to be able to use it in pure JNI calls
-static jvmtiEnv *globalJvmti;
+jvmtiEnv *globalJvmti;
 
 // Configuration data
-static char* cfgCachePath = NULL;
-static int cfgSkipCoreClasses = 0;
-static int cfgVerbose = 2;
-static int cfgCaptureExceptions = 0;
+char* cfgCachePath = NULL;
+int cfgSkipCoreClasses = 0;
+int cfgVerbose = 2;
+int cfgCaptureExceptions = 0;
+int cfgHostBits = 8; // Number of bits used to encode host id.
+
+int cfgHostId = 0; // A host id assigned by the TODServer - not official.
+
 
 // System properties configuration data.
-static char* cfgHost = NULL;
-static char* cfgHostName = NULL;
-static char* cfgNativePort = NULL;
-static int cfgHostId = 0; // A host id assigned by the TODServer - not official.
+char* propHost = NULL;
+char* propHostName = NULL;
+char* propNativePort = NULL;
 
 // Class and method references
-static jclass class_ExceptionGeneratedReceiver;
-static jmethodID method_ExceptionGeneratedReceiver_exceptionGenerated;
-static int isInExceptionCb = 0;
+StaticVoidMethod* ExceptionGeneratedReceiver_exceptionGenerated;
+int isInExceptionCb = 0;
 
-static jclass class_TracedMethods;
-static jmethodID method_TracedMethods_setTraced;
+StaticVoidMethod* TracedMethods_setTraced;
 
 // Method IDs for methods whose exceptions are ignored
-static jmethodID ignoredExceptionMethods[3];
+jmethodID ignoredExceptionMethods[3];
 
 // Object Id mutex and current id value
-static t_mutex oidMutex;
-static jlong oidCurrent = 1;
+t_mutex oidMutex;
+jlong oidCurrent = 1;
 
 // Mutex for class load callback
-static t_mutex loadMutex;
+t_mutex loadMutex;
 
 // This vector holds traced methods ids for methods
 // that are registered prior to VM initialization.
-static std::vector<int> tmpTracedMethods;
+std::vector<int> tmpTracedMethods;
 
 #ifdef __cplusplus
 extern "C" {
@@ -121,7 +124,7 @@ void bciConnect(char* host, char* port, char* hostname)
 	
 	cfgHostId = readInt(gSocket);
 	if (cfgVerbose>=2) printf("Assigned host id: %ld\n", cfgHostId);
-	if ((cfgHostId & 0xff) != cfgHostId) fatal_error("Host id overflow\n");
+	fflush(stdout);
 }
 
 
@@ -195,8 +198,17 @@ void bciConfigure()
 				cfgCaptureExceptions = readByte(gSocket);
 				printf("Capture exceptions: %s\n", cfgCaptureExceptions ? "Yes" : "No");
 				break;
+				
+			case SET_HOST_BITS:
+				cfgHostBits = readByte(gSocket);
+				printf("Host bits: %d\n", cfgHostBits);
+				break;
 
 			case CONFIG_DONE:
+				// Check host id vs host bits
+				int mask = (1 << cfgHostBits) - 1;
+				if ((cfgHostId & mask) != cfgHostId) fatal_error("Host id overflow\n");
+				
 				printf("Config done.\n");
 				return;
 		}
@@ -206,12 +218,8 @@ void bciConfigure()
 
 void registerTracedMethod(JNIEnv* jni, int tracedMethod)
 {
-	jni->CallStaticVoidMethod(
-		class_TracedMethods, 
-		method_TracedMethods_setTraced,
-		tracedMethod);
-		
-	if (cfgVerbose>=3) printf("Registering traced method: %d\n", tracedMethod);
+	TracedMethods_setTraced->invoke(jni, tracedMethod);
+	if (cfgVerbose>=3) printf("Registered traced method: %d\n", tracedMethod);
 }
 
 /**
@@ -455,16 +463,12 @@ void initExceptionClasses(JNIEnv* jni)
 {
 	// Initialize the classes and method ids that will be used
 	// for exception processing
-	if (cfgVerbose>=2) printf("Loading (jni) tod.agent.ExceptionGeneratedReceiver\n");
-	class_ExceptionGeneratedReceiver = jni->FindClass("tod/agent/ExceptionGeneratedReceiver");
-	if (class_ExceptionGeneratedReceiver == NULL) printf("Could not load ExceptionGeneratedReceiver!\n");
-	class_ExceptionGeneratedReceiver = (jclass) jni->NewGlobalRef(class_ExceptionGeneratedReceiver);
-	method_ExceptionGeneratedReceiver_exceptionGenerated = 
-		jni->GetStaticMethodID(
-			class_ExceptionGeneratedReceiver,
-			"exceptionGenerated", 
-			"(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Throwable;)V");
-	
+	ExceptionGeneratedReceiver_exceptionGenerated = new StaticVoidMethod(
+		jni, 
+		"tod/agent/ExceptionGeneratedReceiver",
+		"exceptionGenerated", 
+		"(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Throwable;)V");
+		
 	// init ignored methods
 	int i=0;
 	ignoreMethod(jni, i++, "java/lang/ClassLoader", "findBootstrapClass", "(Ljava/lang/String;)Ljava/lang/Class;");
@@ -487,7 +491,7 @@ void JNICALL cbException(
 	if (cfgCaptureExceptions == 0) return;
 	if (VM_STARTED == 0) return;
 	
-	if (! class_ExceptionGeneratedReceiver)
+	if (! ExceptionGeneratedReceiver_exceptionGenerated)
 	{
 		isInExceptionCb = true;
 		initExceptionClasses(jni);
@@ -520,9 +524,8 @@ void JNICALL cbException(
 	
 	if (cfgVerbose>=1) printf("Exception generated: %s, %s, %s, %d\n", methodName, methodSignature, methodDeclaringClassSignature, bytecodeIndex);
 	
-	jni->CallStaticVoidMethod(
-		class_ExceptionGeneratedReceiver, 
-		method_ExceptionGeneratedReceiver_exceptionGenerated,
+	ExceptionGeneratedReceiver_exceptionGenerated->invoke(
+		jni,
 		jni->NewStringUTF(methodName),
 		jni->NewStringUTF(methodSignature),
 		jni->NewStringUTF(methodDeclaringClassSignature),
@@ -545,12 +548,7 @@ void JNICALL cbVMStart(
 	
 	// Initialize the classes and method ids that will be used
 	// for registering traced methods
-	if (cfgVerbose>=2) printf("Loading (jni) tod.agent.TracedMethods\n");
-	class_TracedMethods = jni->FindClass("tod/agent/TracedMethods");
-	if (class_TracedMethods == NULL) printf("Could not load TracedMethods!\n");
-	class_TracedMethods = (jclass) jni->NewGlobalRef(class_TracedMethods);
-	method_TracedMethods_setTraced = jni->GetStaticMethodID(class_TracedMethods, "setTraced", "(I)V");
-	if (method_TracedMethods_setTraced == NULL) printf("Could not find setTraced!\n");
+	TracedMethods_setTraced = new StaticVoidMethod(jni, "tod/agent/TracedMethods", "setTraced", "(I)V");
 	
 	if (cfgVerbose>=1) printf("VMStart - done\n");
 	fflush(stdout);
@@ -582,13 +580,13 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
 	globalJvmti = jvmti;
 	
 	// Retrieve system properties
-	err = jvmti->GetSystemProperty("collector-host", &cfgHost);
+	err = jvmti->GetSystemProperty("collector-host", &propHost);
 	check_jvmti_error(jvmti, err, "GetSystemProperty (collector-host)");
 	
-	err = jvmti->GetSystemProperty("tod-host", &cfgHostName);
+	err = jvmti->GetSystemProperty("tod-host", &propHostName);
 	check_jvmti_error(jvmti, err, "GetSystemProperty (tod-host)");
 	
-	err = jvmti->GetSystemProperty("native-port", &cfgNativePort);
+	err = jvmti->GetSystemProperty("native-port", &propNativePort);
 	check_jvmti_error(jvmti, err, "GetSystemProperty (native-port)");
 	
 	// Set capabilities
@@ -615,7 +613,7 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
 	enable_event(jvmti, JVMTI_EVENT_EXCEPTION);
 	enable_event(jvmti, JVMTI_EVENT_VM_START);
 	
-	bciConnect(cfgHost, cfgNativePort, cfgHostName);
+	bciConnect(propHost, propNativePort, propHostName);
 	bciConfigure();
 
 	fflush(stdout);
@@ -650,7 +648,7 @@ jlong getNextOid()
 	}
 	
 	// Include host id
-	val = (val << 8) | cfgHostId; 
+	val = (val << cfgHostBits) | cfgHostId; 
 	
 	// We cannot use the 64th bit.
 	if (val >> 63 != 0) fatal_error("OID overflow");
@@ -681,6 +679,13 @@ JNIEXPORT jlong JNICALL Java_tod_core_ObjectIdentity_get
 	check_jvmti_error(jvmti, err, "SetTag");
 	
 	return -tag;
+}
+
+
+JNIEXPORT jint JNICALL Java_tod_core_EventInterpreter_getHostId
+	(JNIEnv * jni, jclass)
+{
+	return cfgHostId;
 }
 
 #ifdef __cplusplus

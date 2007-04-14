@@ -24,8 +24,12 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JToolTip;
 
 import tod.Util;
@@ -38,28 +42,37 @@ import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
 import tod.gui.kit.AsyncPanel;
+import tod.gui.kit.OptionManager;
+import tod.gui.kit.StdOptions;
+import zz.utils.properties.IProperty;
+import zz.utils.properties.IPropertyListener;
+import zz.utils.properties.IRWProperty;
+import zz.utils.properties.SimplePropertyListener;
+import zz.utils.properties.SimpleRWProperty;
+import zz.utils.ui.StackLayout;
 import zz.utils.ui.UIUtils;
+import zz.utils.ui.WrappedFlowLayout;
 import zz.utils.ui.ZLabel;
 import zz.utils.ui.text.XFont;
 
 public abstract class BehaviorCallNode extends AbstractEventNode
 {
+	
 	private IBehaviorCallEvent itsEvent;
 	
 	private ExpanderWidget itsExpanderWidget;
-
+	
 	public BehaviorCallNode(
 			CFlowView aView,
 			JobProcessor aJobProcessor,
 			IBehaviorCallEvent aEvent)
 	{
 		super (aView, aJobProcessor);
-		
 		itsEvent = aEvent;
 		createUI();
 	}
-
-	private synchronized void createUI()
+	
+	protected synchronized void createUI()
 	{
 		setLayout(new BorderLayout(0, 0));
 		
@@ -83,7 +96,7 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 	public JToolTip createToolTip()
 	{
 		System.out.println("BehaviorCallNode.createToolTip()");
-		return super.createToolTip();
+		return new MyToolTip();
 	}
 	
 	@Override
@@ -136,7 +149,8 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 						getJobProcessor(),
 						theArgument, 
 						getEvent(),
-						theFont));
+						theFont,
+						showPackageNames()));
 			}
 		}
 		else if (! getBehavior().getReturnType().isVoid())
@@ -161,19 +175,44 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 	/**
 	 * Creates a summarized view of the event
 	 */
-	protected abstract JComponent createShortView();
+	protected JComponent createShortView()
+	{
+		return createFullView();
+	}
 	
 	/**
 	 * Creates a complete view of the event.
 	 */
-	protected abstract JComponent createFullView();
+	protected JComponent createFullView()
+	{
+		JPanel thePanel = new JPanel(new WrappedFlowLayout());
+		thePanel.setOpaque(false);
+		
+		
+		JComponent theNamePrefix = createBehaviorNamePrefix();
+		if (theNamePrefix != null) thePanel.add(theNamePrefix);
+		if (showPackageNames()) thePanel.add(createPackageName());
+		thePanel.add(createBehaviorName());
+		fillFullArgs(thePanel);
+		
+		thePanel.add(GUIUtils.createLabel("->"));
+		thePanel.add(createResult());
+		
+		return thePanel;
+	}
 	
-	protected abstract JComponent createBehaviorName();
+	/**
+	 * Creates a component that displays the behavior name.
+	 */
+	protected JComponent createBehaviorName()
+	{
+		IBehaviorInfo theBehavior = getBehavior();
+		return GUIUtils.createLabel(theBehavior.getName());
+	}
 	
 	/**
 	 * Returns a component that contains a prefix for the behavior name,
 	 * such as "new "
-	 * @return
 	 */
 	protected JComponent createBehaviorNamePrefix()
 	{
@@ -241,7 +280,8 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 							getJobProcessor(),
 							theExitEvent.getResult(),
 							theExitEvent,
-							theFont));
+							theFont,
+							showPackageNames()));
 				}
 				else
 				{
@@ -255,7 +295,8 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 								getJobProcessor(),
 								theResult,
 								theExitEvent,
-								theFont));
+								theFont,
+								showPackageNames()));
 					}
 					else if (theBehavior.getReturnType().isVoid())
 					{
@@ -268,5 +309,21 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 				}
 			}
 		};
+	}
+	
+	private class MyToolTip extends JToolTip
+	{
+		
+		public MyToolTip()
+		{
+			setLayout(new StackLayout());
+			add(new JLabel("toto"));
+		}
+
+		@Override
+		public String getUIClassID()
+		{
+			return "ComponentUI";
+		}
 	}
 }

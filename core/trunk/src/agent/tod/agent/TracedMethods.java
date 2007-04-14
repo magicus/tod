@@ -37,7 +37,7 @@ public class TracedMethods
 	{
 		if (aId >= traced.length)
 		{
-			boolean[] room = new boolean[traced.length*2];
+			boolean[] room = new boolean[aId*2];
 			System.arraycopy(traced, 0, room, 0, traced.length);
 			System.out.println("Reallocated TracedMethods: "+room.length);
 			traced = room;

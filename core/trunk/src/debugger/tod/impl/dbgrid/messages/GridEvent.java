@@ -41,11 +41,10 @@ public abstract class GridEvent extends GridMessage
 {
 	/**
 	 * We can find the parent event using only its timestamp,
-	 * as it necessarily belongs to the same (host, thread) as this
+	 * as it necessarily belongs to the same thread as this
 	 * event
 	 */
 	private long itsParentTimestamp;
-	private int itsHost;
 	private int itsThread;
 	private int itsDepth;
 	private long itsTimestamp;
@@ -59,7 +58,6 @@ public abstract class GridEvent extends GridMessage
 
 	public GridEvent(BitStruct aBitStruct)
 	{
-		itsHost = aBitStruct.readInt(DebuggerGridConfig.EVENT_HOST_BITS);
 		itsThread = aBitStruct.readInt(DebuggerGridConfig.EVENT_THREAD_BITS);
 		itsDepth = aBitStruct.readInt(DebuggerGridConfig.EVENT_DEPTH_BITS);
 		itsTimestamp = aBitStruct.readLong(DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
@@ -76,7 +74,6 @@ public abstract class GridEvent extends GridMessage
 	}
 	
 	protected void set(
-			int aHost, 
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
@@ -84,7 +81,6 @@ public abstract class GridEvent extends GridMessage
 			int aOperationBytecodeIndex, 
 			long aParentTimestamp)
 	{
-		itsHost = aHost;
 		itsThread = aThread;
 		itsDepth = aDepth;
 		itsTimestamp = aTimestamp;
@@ -105,7 +101,6 @@ public abstract class GridEvent extends GridMessage
 	public void writeTo(BitStruct aBitStruct)
 	{
 		super.writeTo(aBitStruct);
-		aBitStruct.writeInt(getHost(), DebuggerGridConfig.EVENT_HOST_BITS);
 		aBitStruct.writeInt(getThread(), DebuggerGridConfig.EVENT_THREAD_BITS);
 		aBitStruct.writeInt(getDepth(), DebuggerGridConfig.EVENT_DEPTH_BITS);
 		aBitStruct.writeLong(getTimestamp(), DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
@@ -123,7 +118,6 @@ public abstract class GridEvent extends GridMessage
 	public int getBitCount()
 	{
 		int theCount = super.getBitCount();
-		theCount += DebuggerGridConfig.EVENT_HOST_BITS;
 		theCount += DebuggerGridConfig.EVENT_THREAD_BITS;
 		theCount += DebuggerGridConfig.EVENT_DEPTH_BITS;
 		theCount += DebuggerGridConfig.EVENT_TIMESTAMP_BITS;
@@ -145,7 +139,7 @@ public abstract class GridEvent extends GridMessage
 	 */
 	protected void initEvent(GridLogBrowser aBrowser, Event aEvent)
 	{
-		IThreadInfo theThread = aBrowser.getThread(getHost(), getThread());
+		IThreadInfo theThread = aBrowser.getThread(getThread());
 		assert theThread != null;
 		aEvent.setThread(theThread);
 		aEvent.setTimestamp(getTimestamp());
@@ -168,11 +162,6 @@ public abstract class GridEvent extends GridMessage
 		return getEventType();
 	}
 	
-	public int getHost()
-	{
-		return itsHost;
-	}
-
 	public int getOperationBytecodeIndex()
 	{
 		return itsOperationBytecodeIndex;
@@ -226,9 +215,6 @@ public abstract class GridEvent extends GridMessage
 			if (getOperationBytecodeIndex() >= 0)
 				aIndexes.indexLocation(getOperationBytecodeIndex(), TUPLE);
 		}
-		
-		if (getHost() > 0) 
-			aIndexes.indexHost(getHost(), TUPLE);
 		
 		if (getThread() > 0) 
 			aIndexes.indexThread(getThread(), TUPLE);
@@ -287,8 +273,7 @@ public abstract class GridEvent extends GridMessage
 	protected String toString0()
 	{
 		return String.format(
-				"h: %d, th: %d, bc: %d, t: %d",
-				itsHost,
+				"th: %d, bc: %d, t: %d",
 				itsThread,
 				itsOperationBytecodeIndex,
 				itsTimestamp); 

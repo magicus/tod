@@ -107,7 +107,6 @@ public class GridEventCollector extends EventCollector
 	{
 		System.out.println("GridEventCollector.exception()");
 		itsExceptionEvent.set(
-				getHostId(),
 				aThreadId, 
 				aDepth,
 				aTimestamp,
@@ -132,7 +131,6 @@ public class GridEventCollector extends EventCollector
 			Object aResult)
 	{
 		itsExitEvent.set(
-				getHostId(), 
 				aThreadId, 
 				aDepth, 
 				aTimestamp, 
@@ -159,7 +157,6 @@ public class GridEventCollector extends EventCollector
 			Object aValue)
 	{
 		itsFieldWriteEvent.set(
-				getHostId(),
 				aThreadId, 
 				aDepth,
 				aTimestamp,
@@ -185,7 +182,6 @@ public class GridEventCollector extends EventCollector
 			Object aValue)
 	{
 		itsArrayWriteEvent.set(
-				getHostId(),
 				aThreadId, 
 				aDepth,
 				aTimestamp,
@@ -214,7 +210,6 @@ public class GridEventCollector extends EventCollector
 			Object[] aArguments)
 	{
 		itsCallEvent.set(
-				getHostId(), 
 				aThreadId, 
 				aDepth, 
 				aTimestamp,
@@ -243,7 +238,6 @@ public class GridEventCollector extends EventCollector
 			Object aValue)
 	{
 		itsVariableWriteEvent.set(
-				getHostId(), 
 				aThreadId,
 				aDepth, 
 				aTimestamp,
@@ -271,7 +265,6 @@ public class GridEventCollector extends EventCollector
 			Object[] aArguments)
 	{
 		itsCallEvent.set(
-				getHostId(),  
 				aThreadId, 
 				aDepth, 
 				aTimestamp,
@@ -315,7 +308,6 @@ public class GridEventCollector extends EventCollector
 			Object[] aArguments)
 	{
 		itsCallEvent.set(
-				getHostId(), 
 				aThreadId, 
 				aDepth, 
 				aTimestamp,

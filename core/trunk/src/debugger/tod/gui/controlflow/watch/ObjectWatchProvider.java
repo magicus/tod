@@ -65,6 +65,11 @@ public class ObjectWatchProvider implements IWatchProvider<IFieldInfo>
 		itsRefEvent = aRefEvent;
 		itsObject = aObject;
 	}
+	
+	protected boolean showPackageNames()
+	{
+		return itsWatchPanel.showPackageNames();
+	}
 
 	private IObjectInspector getInspector()
 	{
@@ -112,7 +117,8 @@ public class ObjectWatchProvider implements IWatchProvider<IFieldInfo>
 					aJobProcessor,
 					itsObject,
 					itsRefEvent,
-					STD_HEADER_FONT));
+					STD_HEADER_FONT,
+					showPackageNames()));
 		}
 		else
 		{

@@ -39,7 +39,7 @@ import zz.utils.properties.SimpleRWProperty;
  */
 public class CFlowSeed extends LogViewSeed
 {
-	private final IThreadInfo itsThread;
+	private IThreadInfo itsThread;
 	
 	private IRWProperty<ILogEvent> pSelectedEvent = new SimpleRWProperty<ILogEvent>(this)
 	{
@@ -47,6 +47,7 @@ public class CFlowSeed extends LogViewSeed
 		public void set(ILogEvent aEvent)
 		{
 			if (aEvent instanceof IBehaviorExitEvent) aEvent = aEvent.getParent();
+			itsThread = aEvent.getThread();
 			super.set(aEvent);
 		}
 	};

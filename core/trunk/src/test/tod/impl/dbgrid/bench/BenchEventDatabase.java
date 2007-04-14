@@ -58,7 +58,7 @@ public class BenchEventDatabase
 	
 	public static EventGenerator createGenerator()
 	{
-		return new EventGenerator(0, 100, 100, 100, 100, 100, 100, 100, 100);
+		return new EventGenerator(100, 100, 100, 100, 100, 100, 100, 100);
 	}
 	
 	void store()

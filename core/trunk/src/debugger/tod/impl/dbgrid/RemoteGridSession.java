@@ -39,7 +39,16 @@ public class RemoteGridSession extends AbstractSession
 	public static final String TOD_GRID_SCHEME = "tod-grid";
 	private RIGridMaster itsMaster;
 	private GridLogBrowser itsBrowser;
+	
+	/**
+	 * If false the remote master is cleared before use.
+	 */
 	private boolean itsUseExisting;
+	
+	public RemoteGridSession(URI aUri, TODConfig aConfig)
+	{
+		this(aUri, aConfig, false);
+	}
 	
 	public RemoteGridSession(URI aUri, TODConfig aConfig, boolean aUseExisting)
 	{

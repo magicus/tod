@@ -31,6 +31,7 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import tod.agent.AgentConfig;
 import tod.core.bci.IInstrumenter.InstrumentedClass;
 import tod.core.config.TODConfig;
 import tod.core.server.TODServer;
@@ -53,6 +54,7 @@ public abstract class NativeAgentPeer extends SocketThread
 	public static final byte SET_SKIP_CORE_CLASSES = 81;
 	public static final byte SET_VERBOSE = 82;
 	public static final byte SET_CAPTURE_EXCEPTIONS = 83;
+	public static final byte SET_HOST_BITS = 84;
 
 	public static final byte CONFIG_DONE = 90;
 	
@@ -212,6 +214,10 @@ public abstract class NativeAgentPeer extends SocketThread
 		boolean theCaptureExceptions = itsConfig.get(TODConfig.AGENT_CAPTURE_EXCEPTIONS);
 		theOutStream.writeByte(SET_CAPTURE_EXCEPTIONS);
 		theOutStream.writeByte(theCaptureExceptions ? 1 : 0);
+		
+		int theHostBits = AgentConfig.HOST_BITS;
+		theOutStream.writeByte(SET_HOST_BITS);
+		theOutStream.writeByte(theHostBits);
 		
 		theOutStream.writeByte(CONFIG_DONE);
 		theOutStream.flush();

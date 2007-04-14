@@ -39,6 +39,7 @@ public class WatchEntryNode<E> extends JPanel
 {
 	private final JobProcessor itsJobProcessor;
 	private final ILogBrowser itsLogBrowser;
+	private final WatchPanel itsWatchPanel;
 	private final IWatchProvider<E> itsProvider;
 	private final E itsEntry;
 	
@@ -48,10 +49,12 @@ public class WatchEntryNode<E> extends JPanel
 	public WatchEntryNode(
 			ILogBrowser aLogBrowser,
 			JobProcessor aJobProcessor,
+			WatchPanel aWatchPanel,
 			IWatchProvider<E> aProvider, 
 			E aEntry)
 	{
 		super(GUIUtils.createSequenceLayout());
+		itsWatchPanel = aWatchPanel;
 		setOpaque(false);
 		itsJobProcessor = aJobProcessor;
 		itsLogBrowser = aLogBrowser;
@@ -60,6 +63,11 @@ public class WatchEntryNode<E> extends JPanel
 		createUI();
 	}
 	
+	protected boolean showPackageNames()
+	{
+		return itsWatchPanel.showPackageNames();
+	}
+
 	private void createUI()
 	{
 		String theName = itsProvider.getEntryName(itsEntry);
@@ -104,7 +112,8 @@ public class WatchEntryNode<E> extends JPanel
 								itsProvider.getCurrentObject(),
 								theValue,
 								itsProvider.getRefEvent(),
-								STD_FONT));
+								STD_FONT,
+								showPackageNames()));
 						
 						if (theSetter != null)
 						{

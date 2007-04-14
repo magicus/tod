@@ -42,7 +42,8 @@ public class CFlowViewUtils
 			JPanel aContainer,
 			IBehaviorCallEvent aRefEvent,
 			Object[] aArguments, 
-			XFont aFont)
+			XFont aFont,
+			boolean aShowPackageNames)
 	{
 		aContainer.add(ZLabel.create("(", aFont, Color.BLACK));
 		
@@ -59,7 +60,8 @@ public class CFlowViewUtils
 						aJobProcessor,
 						theArgument, 
 						aRefEvent,
-						aFont));
+						aFont,
+						aShowPackageNames));
 			}
 		}
 		else

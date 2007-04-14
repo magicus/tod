@@ -138,7 +138,10 @@ public abstract class AbstractBidiIterator<T> implements BidiIterator<T>
 		itsOffset = 0;
 		
 		if (! itsNextReady) readNext();
-		if (itsNext == null) throw new NoSuchElementException();
+		if (itsNext == null) 
+		{
+			throw new NoSuchElementException();
+		}
 		
 		T theResult = itsNext;
 		itsNextReady = false;

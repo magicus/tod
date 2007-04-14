@@ -63,7 +63,6 @@ import tod.impl.dbgrid.queries.DepthCondition;
 import tod.impl.dbgrid.queries.Disjunction;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.impl.dbgrid.queries.FieldCondition;
-import tod.impl.dbgrid.queries.HostCondition;
 import tod.impl.dbgrid.queries.ThreadCondition;
 import tod.impl.dbgrid.queries.TypeCondition;
 import tod.impl.dbgrid.queries.VariableCondition;
@@ -88,10 +87,13 @@ implements ILogBrowser, RIGridMasterListener
 	private long itsEventsCount;
 	private long itsFirstTimestamp;
 	private long itsLastTimestamp;
+	
 	private List<IThreadInfo> itsThreads;
+	private List<IThreadInfo> itsPackedThreads;
 	private List<IHostInfo> itsHosts;
+	private List<IHostInfo> itsPackedHosts;
+	
 	private Map<String, IHostInfo> itsHostsMap = new HashMap<String, IHostInfo>();
-	private Map<Integer, HostThreadsList> itsHostThreadsLists = new HashMap<Integer, HostThreadsList>();
 	
 	private List<IGridBrowserListener> itsListeners = new ArrayList<IGridBrowserListener>();
 	
@@ -241,21 +243,20 @@ implements ILogBrowser, RIGridMasterListener
 	
 	public IEventFilter createHostFilter(IHostInfo aHost)
 	{
-		return new HostCondition(aHost.getId());
+		Iterable<IThreadInfo> theThreads = aHost.getThreads();
+		CompoundCondition theCompound = new Disjunction();
+		
+		for (IThreadInfo theThread : theThreads) 
+		{
+			theCompound.add(createThreadFilter(theThread));
+		}
+		
+		return theCompound;
 	}
 
 	public IEventFilter createThreadFilter(IThreadInfo aThread)
 	{
-		if (DebugFlags.IGNORE_HOST)
-		{
-			return new ThreadCondition(aThread.getId());
-		}
-		else
-		{
-			return createIntersectionFilter(
-					new ThreadCondition(aThread.getId()),
-					new HostCondition(aThread.getHost().getId()));
-		}
+		return new ThreadCondition(aThread.getId());
 	}
 
 	public IEventFilter createDepthFilter(int aDepth)
@@ -319,31 +320,21 @@ implements ILogBrowser, RIGridMasterListener
 	{
 		try
 		{
-			if (itsThreads == null)
+			if (itsThreads == null) 
 			{
-				itsThreads = itsMaster.getThreads();
-				
-				// Update per-host threads list
-				itsHostThreadsLists.clear();
-				for (IThreadInfo theThread : itsThreads)
+				itsThreads = new ArrayList<IThreadInfo>();
+				itsPackedThreads = itsMaster.getThreads();
+				for (IThreadInfo theThread : itsPackedThreads)
 				{
-					IHostInfo theHost = theThread.getHost();
-					int theHostId = DebugFlags.IGNORE_HOST ? 0 : theHost.getId();
-					HostThreadsList theList = itsHostThreadsLists.get(theHostId);
-					if (theList == null)
-					{
-						theList = new HostThreadsList(theHost);
-						itsHostThreadsLists.put(theHostId, theList);
-					}
-					
-					theList.add(theThread);
-				}
+					Utils.listSet(itsThreads, theThread.getId(), theThread);
+				}				
 			}
 		}
 		catch (RemoteException e)
 		{
 			throw new RuntimeException(e);
 		}
+		
 		return itsThreads;
 	}
 	
@@ -354,9 +345,8 @@ implements ILogBrowser, RIGridMasterListener
 			if (itsHosts == null) 
 			{
 				itsHosts = new ArrayList<IHostInfo>();
-				itsHostsMap = new HashMap<String, IHostInfo>();
-				List<IHostInfo> theHosts = itsMaster.getHosts();
-				for (IHostInfo theHost : theHosts)
+				itsPackedHosts = itsMaster.getHosts();
+				for (IHostInfo theHost : itsPackedHosts)
 				{
 					Utils.listSet(itsHosts, theHost.getId(), theHost);
 					itsHostsMap.put(theHost.getName(), theHost);
@@ -367,17 +357,20 @@ implements ILogBrowser, RIGridMasterListener
 		{
 			throw new RuntimeException(e);
 		}
+		
 		return itsHosts;
 	}
 	
 	public Iterable<IThreadInfo> getThreads()
 	{
-		return getThreads0();
+		getThreads0();
+		return itsPackedThreads;
 	}
 	
 	public Iterable<IHostInfo> getHosts()
 	{
-		return getHosts0();
+		getHosts0();
+		return itsPackedHosts;
 	}
 	
 	public IHostInfo getHost(int aId)
@@ -391,13 +384,9 @@ implements ILogBrowser, RIGridMasterListener
 		return itsHostsMap.get(aName);
 	}
 
-	public IThreadInfo getThread(int aHostId, int aThreadId)
+	public IThreadInfo getThread(int aThreadId)
 	{
-		getThreads(); // Lazy init of thread lists
-		HostThreadsList theList = itsHostThreadsLists.get(DebugFlags.IGNORE_HOST ? 0 : aHostId);
-		if (theList == null) return null;
-		
-		return theList.get(aThreadId);
+		return getThreads0().get(aThreadId);
 	}
 
 	public ILogEvent getEvent(ExternalPointer aPointer)
@@ -435,10 +424,9 @@ implements ILogBrowser, RIGridMasterListener
 	public IEventBrowser createBrowser()
 	{
 		Disjunction theDisjunction = new Disjunction();
-		for (IHostInfo theHost : getHosts())
+		for (IThreadInfo theThread : getThreads())
 		{
-			if (theHost == null) continue;
-			theDisjunction.add(createHostFilter(theHost));
+			theDisjunction.add(createThreadFilter(theThread));
 		}
 		try
 		{
@@ -521,27 +509,6 @@ implements ILogBrowser, RIGridMasterListener
 
 
 
-	private static class HostThreadsList
-	{
-		private IHostInfo itsHost;
-		private List<IThreadInfo> itsThreads = new ArrayList<IThreadInfo>();
-		
-		public HostThreadsList(IHostInfo aHost)
-		{
-			itsHost = aHost;
-		}
-		
-		public void add(IThreadInfo aThread)
-		{
-			Utils.listSet(itsThreads, aThread.getId(), aThread);
-		}
-		
-		public IThreadInfo get(int aIndex)
-		{
-			return itsThreads.get(aIndex);
-		}
-	}
-	
 	/**
 	 * @see TypeCache
 	 * @author gpothier

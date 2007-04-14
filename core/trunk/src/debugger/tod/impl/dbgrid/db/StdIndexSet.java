@@ -98,6 +98,17 @@ public class StdIndexSet extends IndexSet<StdIndexSet.StdTuple>
 		{
 			return itsEventPointer;
 		}
+		
+		@Override
+		public boolean equals(Object aObj)
+		{
+			if (aObj instanceof StdTuple)
+			{
+				StdTuple theOther = (StdTuple) aObj;
+				return theOther.getEventPointer() == getEventPointer();
+			}
+			else return false;
+		}
 	}
 
 }

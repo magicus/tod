@@ -38,9 +38,12 @@ public class LocalVariableWriteNode extends AbstractEventNode
 			ILocalVariableWriteEvent aEvent)
 	{
 		super(aView, aJobProcessor);
-		
 		itsEvent = aEvent;
-
+		createUI();
+	}
+	
+	protected void createUI()
+	{
 		add(GUIUtils.createLabel(itsEvent.getVariable().getVariableName()));
 		add(GUIUtils.createLabel(" = "));
 		
@@ -49,7 +52,8 @@ public class LocalVariableWriteNode extends AbstractEventNode
 				getJobProcessor(),
 				itsEvent.getValue(),
 				itsEvent,
-				FontConfig.STD_FONT));
+				FontConfig.STD_FONT,
+				showPackageNames()));
 	}
 	
 	@Override

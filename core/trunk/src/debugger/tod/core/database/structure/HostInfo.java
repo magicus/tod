@@ -21,6 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.core.database.structure;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * Holds information about a debugged host.
@@ -30,6 +31,8 @@ public class HostInfo implements IHostInfo, Serializable
 {
 	private int itsId;
 	private String itsName;
+	
+	private ArrayList<IThreadInfo> itsThreads = new ArrayList<IThreadInfo>();
 	
 	public HostInfo(int aId)
 	{
@@ -55,6 +58,16 @@ public class HostInfo implements IHostInfo, Serializable
 	public void setName(String aName)
 	{
 		itsName = aName;
+	}
+	
+	public void addThread(IThreadInfo aThread)
+	{
+		itsThreads.add(aThread);
+	}
+	
+	public Iterable<IThreadInfo> getThreads()
+	{
+		return itsThreads;
 	}
 
 	@Override

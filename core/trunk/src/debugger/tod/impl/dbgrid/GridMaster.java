@@ -101,7 +101,8 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	private final DispatchTreeStructure itsDispatchTreeStructure;
 	
 	
-	private ThreadHostRegisterer itsRegisterer = new ThreadHostRegisterer();
+	private List<IThreadInfo> itsThreads = new ArrayList<IThreadInfo>();
+	private List<IHostInfo> itsHosts = new ArrayList<IHostInfo>();
 
 	/**
 	 * Maps node ids to {@link PrintWriter} objects that write to a log file
@@ -369,7 +370,8 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	public void clear() 
 	{
 		getRootDispatcher().clear();
-		itsRegisterer.clear();
+		itsThreads.clear();
+		itsHosts.clear();
 		updateStats();
 	}
 	
@@ -388,7 +390,8 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	public void registerThread(IThreadInfo aThreadInfo)
 	{
-		itsRegisterer.registerThread(aThreadInfo);
+		itsThreads.add(aThreadInfo);
+		((HostInfo) aThreadInfo.getHost()).addThread(aThreadInfo);
 	}
 
 	/**
@@ -398,24 +401,18 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	public void registerHost(IHostInfo aHostInfo)
 	{
-		itsRegisterer.registerHost(aHostInfo);
+		itsHosts.add(aHostInfo);
 	}
 	
-	public IThreadInfo getThread(int aHostId, long aJVMThreadId)
-	{
-		return itsRegisterer.getThread(aHostId, aJVMThreadId);
-	}
-
 	public List<IThreadInfo> getThreads()
 	{
-		List<IThreadInfo> theThreads = itsRegisterer.getThreads();
-		System.out.println("[GridMaster] getThreads - will return "+theThreads.size()+" threads.");
-		return theThreads;
+		System.out.println("[GridMaster] getThreads - will return "+itsThreads.size()+" threads.");
+		return itsThreads;
 	}
 	
 	public List<IHostInfo> getHosts()
 	{
-		return itsRegisterer.getHosts();
+		return itsHosts;
 	}
 
 	public RIQueryAggregator createAggregator(EventCondition aCondition) throws RemoteException
@@ -588,67 +585,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		}
 	}
 	
-	/**
-	 * Utility class that registers threads and hosts detected by
-	 * the root dispatcher.
-	 * @author gpothier
-	 */
-	private static class ThreadHostRegisterer
-	{
-		private Map<Integer, Map<Long, IThreadInfo>> itsThreadsMap =
-			new HashMap<Integer, Map<Long,IThreadInfo>>();
-		
-		private List<IHostInfo> itsHosts = new ArrayList<IHostInfo>();
-		
-		public void registerThread(IThreadInfo aThreadInfo)
-		{
-			IHostInfo theHost = aThreadInfo.getHost();
-			int theHostId = theHost != null ? theHost.getId() : 0;
-			long theJVMId = aThreadInfo.getJVMId();
-			Map<Long, IThreadInfo> theHostMap = itsThreadsMap.get(theHostId);
-			if (theHostMap == null)
-			{
-				theHostMap = new HashMap<Long, IThreadInfo>();
-				itsThreadsMap.put(theHostId, theHostMap);
-			}
-			
-			theHostMap.put(theJVMId, aThreadInfo);
-		}
-		
-		public IThreadInfo getThread(int aHostId, long aJVMThreadId)
-		{
-			Map<Long, IThreadInfo> theHostMap = itsThreadsMap.get(aHostId);
-			if (theHostMap == null) return null;
-			return theHostMap.get(aJVMThreadId);
-		}
-		
-		public List<IThreadInfo> getThreads()
-		{
-			List<IThreadInfo> theThreads = new ArrayList<IThreadInfo>();
-			for (Map<Long, IThreadInfo> theHostMap : itsThreadsMap.values())
-			{
-				Utils.fillCollection(theThreads, theHostMap.values());
-			}
-			return theThreads;
-		}
-		
-		public void registerHost(IHostInfo aHostInfo)
-		{
-			itsHosts.add(aHostInfo);
-		}
-		
-		public List<IHostInfo> getHosts()
-		{
-			return itsHosts;
-		}
-		
-		public void clear()
-		{
-			itsHosts.clear();
-			itsThreadsMap.clear();
-		}
-	}
-
+	
 	public static void main(String[] args) throws Exception
 	{
 		LocateRegistry.createRegistry(Registry.REGISTRY_PORT);

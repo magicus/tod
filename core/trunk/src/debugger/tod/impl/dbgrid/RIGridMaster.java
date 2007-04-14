@@ -118,24 +118,17 @@ public interface RIGridMaster extends Remote
 	 * Client: frontend 
 	 */
 	public RIQueryAggregator createAggregator(EventCondition aCondition) throws RemoteException;
-	
-	/**
-	 * Returns the internal thread id corresponding to the given thread
-	 * on the given host.
-	 * Client: frontend 
-	 */
-	public IThreadInfo getThread(int aHostId, long aThreadId) throws RemoteException;
-	
+		
 	/**
 	 * Returns all the threads registered during the execution of the
-	 * debugged program.
+	 * debugged program, in no particular order.
 	 * Client: frontend 
 	 */
 	public List<IThreadInfo> getThreads() throws RemoteException;
 	
 	/**
 	 * Returns all the hosts registered during the execution of the
-	 * debugged program.
+	 * debugged program, in no particular order.
 	 * Client: frontend 
 	 */
 	public List<IHostInfo> getHosts() throws RemoteException;

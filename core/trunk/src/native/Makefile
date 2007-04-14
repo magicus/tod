@@ -4,8 +4,8 @@ ifeq ($(PLATFORM), win32)
 	WINBASE = ~/vm
 	CXX = i586-mingw32msvc-g++
 	CXXFLAGS += -I $(WINBASE)/boost/include/boost-1_33_1 -I $(WINBASE)/asio/include
-	LDFLAGS += -L $(WINBASE)/boost/lib
-	LDFLAGS += -lboost_thread-gcc-mt-1_33_1 -lboost_filesystem-gcc-mt-1_33_1 -lws2_32 -Wl,--add-stdcall-alias
+	LDFLAGS_BOOST += -L $(WINBASE)/boost/lib
+	LDFLAGS_BOOST += -lboost_thread-gcc-mt-1_33_1 -lboost_filesystem-gcc-mt-1_33_1 -lws2_32 -Wl,--add-stdcall-alias
 	
 	JAVA_HOME = $(WINBASE)/java
 	CXXFLAGS += -I $(JAVA_HOME)/include/ -I $(JAVA_HOME)/include/win32/
@@ -15,7 +15,7 @@ ifeq ($(PLATFORM), win32)
 	
 else
 	PLATFORM = linux
-	LDFLAGS += -lboost_thread -lboost_filesystem
+	LDFLAGS_BOOST += -lboost_thread -lboost_filesystem
 	
 	CXXFLAGS += -I $(JAVA_HOME)/include/ -I $(JAVA_HOME)/include/linux/
 	
@@ -26,9 +26,10 @@ endif
 CXXFLAGS += -O3
 
 bci-agent-objects = \
-	$(PLATFORM)/bci-agent.o \
 	$(PLATFORM)/utils.o \
-	$(PLATFORM)/md5.o
+	$(PLATFORM)/jniutils.o \
+	$(PLATFORM)/md5.o \
+	$(PLATFORM)/bci-agent.o 
 	
 array-cast-objects = \
 	$(PLATFORM)/array-cast.o
@@ -41,7 +42,7 @@ array-cast-objects = \
 all: bci-agent array-cast
 
 bci-agent: dirs $(bci-agent-objects)
-	$(CXX) -shared -o $(PLATFORM)/$(LIBPREFIX)bci-agent.$(LIBEXT) $(bci-agent-objects) $(LDFLAGS)
+	$(CXX) -shared -o $(PLATFORM)/$(LIBPREFIX)bci-agent.$(LIBEXT) $(bci-agent-objects) $(LDFLAGS) $(LDFLAGS_BOOST)
 	cp $(PLATFORM)/$(LIBPREFIX)bci-agent.$(LIBEXT) ../..
 	
 # native-stream: $(native-stream-objects)
@@ -70,11 +71,14 @@ $(PLATFORM)/CThreadData.o: CThreadData.cpp CThreadData.h
 $(PLATFORM)/NativeCollector.o: NativeCollector.cpp tod_core_transport_NativeCollector.h
 	$(CXX) -shared -c $(CXXFLAGS) NativeCollector.cpp -o $(PLATFORM)/NativeCollector.o
 
-$(PLATFORM)/bci-agent.o: bci-agent.cpp tod_core_ObjectIdentity.h
+$(PLATFORM)/bci-agent.o: bci-agent.cpp tod_core_ObjectIdentity.h utils.h jniutils.h
 	$(CXX) -shared -c $(CXXFLAGS) bci-agent.cpp -o $(PLATFORM)/bci-agent.o
 	
 $(PLATFORM)/utils.o: utils.cpp utils.h
 	$(CXX) -shared -c $(CXXFLAGS) utils.cpp -o $(PLATFORM)/utils.o
+	
+$(PLATFORM)/jniutils.o: jniutils.cpp jniutils.h
+	$(CXX) -shared -c $(CXXFLAGS) jniutils.cpp -o $(PLATFORM)/jniutils.o
 	
 $(PLATFORM)/md5.o: md5.cpp md5.h
 	$(CXX) -shared -c $(CXXFLAGS) md5.cpp -o $(PLATFORM)/md5.o

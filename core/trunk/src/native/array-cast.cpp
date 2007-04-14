@@ -20,7 +20,7 @@ void throwEx(JNIEnv * env, const char* name, const char* msg)
  * Method:    b2i
  * Signature: ([B[I)V
  */
-JNIEXPORT void JNICALL Java_tod_utils_NativeStream_b2i (
+JNIEXPORT void JNICALL Java_tod_utils_ArrayCast_b2i (
 	JNIEnv * env, 
 	jclass cls, 
 	jbyteArray src, 
@@ -56,7 +56,7 @@ JNIEXPORT void JNICALL Java_tod_utils_NativeStream_b2i (
  * Method:    i2b
  * Signature: ([I[B)V
  */
-JNIEXPORT void JNICALL Java_tod_utils_NativeStream_i2b (
+JNIEXPORT void JNICALL Java_tod_utils_ArrayCast_i2b (
 	JNIEnv * env, 
 	jclass cls, 
 	jintArray src, 
@@ -97,7 +97,7 @@ JNIEXPORT void JNICALL Java_tod_utils_NativeStream_i2b (
 	env->ReleasePrimitiveArrayCritical(dest, d, 0);
 }
 
-JNIEXPORT jint JNICALL Java_tod_utils_NativeStream_ba2i (
+JNIEXPORT jint JNICALL Java_tod_utils_ArrayCast_ba2i (
 	JNIEnv * env, 
 	jclass cls, 
 	jbyteArray src)
@@ -112,7 +112,7 @@ JNIEXPORT jint JNICALL Java_tod_utils_NativeStream_ba2i (
 	return ntohl(val);
 }
 
-JNIEXPORT void JNICALL Java_tod_utils_NativeStream_i2ba (
+JNIEXPORT void JNICALL Java_tod_utils_ArrayCast_i2ba (
 	JNIEnv * env, 
 	jclass cls, 
 	jint val,

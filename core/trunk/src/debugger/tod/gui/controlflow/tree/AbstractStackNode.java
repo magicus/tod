@@ -76,7 +76,7 @@ public abstract class AbstractStackNode extends AbstractCFlowNode
 
 	protected abstract JComponent createHeader();
 	
-	private void createUI()
+	protected void createUI()
 	{
 		setLayout(GUIUtils.createStackLayout());
 

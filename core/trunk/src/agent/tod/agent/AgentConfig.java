@@ -48,6 +48,13 @@ public class AgentConfig
 	public static final String PARAM_HOST = "tod-host";
 	
 	/**
+	 * Number of bits used to represent the host of an event.
+	 */
+	public static final int HOST_BITS = 8;
+	
+	public static final long HOST_MASK = BitUtilsLite.pow2(HOST_BITS)-1;
+	
+	/**
 	 * Number of bits to shift timestamp values.
 	 */
 	public static final int TIMESTAMP_ADJUST_SHIFT = 8;
@@ -93,26 +100,16 @@ public class AgentConfig
 	 */
 	private static int itsNativePort;
 	
+	private static String itsCollectorType;
+	
 	
 	static
 	{
-		String theCollectorType = ConfigUtils.readString(PARAM_COLLECTOR_TYPE, PARAM_COLLECTOR_TYPE_SOCKET);
+		itsCollectorType = ConfigUtils.readString(PARAM_COLLECTOR_TYPE, PARAM_COLLECTOR_TYPE_SOCKET);
 		itsEventsPort = ConfigUtils.readInt(PARAM_COLLECTOR_PORT, 8058);
 		itsNativePort = ConfigUtils.readInt(PARAM_NATIVE_PEER_PORT, 8059);
 		itsHost = ConfigUtils.readString(PARAM_COLLECTOR_HOST, "localhost");
 		itsHostName = ConfigUtils.readString(PARAM_HOST, "noname");
-		
-		if (PARAM_COLLECTOR_TYPE_DUMMY.equals(theCollectorType))
-			itsCollector = createDummyCollector();
-		else if (PARAM_COLLECTOR_TYPE_SOCKET.equals(theCollectorType)) 
-			itsCollector = createSocketCollector();
-		else if (PARAM_COLLECTOR_TYPE_NATIVE.equals(theCollectorType)) 
-			itsCollector = createNativeCollector();
-		else 
-			throw new RuntimeException("Unknown collector type: "+theCollectorType);
-		
-		itsInterpreter = new EventInterpreter(itsCollector);
-		
 	}
 	
 	private static HighLevelCollector createDummyCollector()
@@ -142,6 +139,19 @@ public class AgentConfig
 	
 	public static EventInterpreter getInterpreter()
 	{
+		if (itsInterpreter == null)
+		{
+			if (PARAM_COLLECTOR_TYPE_DUMMY.equals(itsCollectorType))
+				itsCollector = createDummyCollector();
+			else if (PARAM_COLLECTOR_TYPE_SOCKET.equals(itsCollectorType)) 
+				itsCollector = createSocketCollector();
+			else if (PARAM_COLLECTOR_TYPE_NATIVE.equals(itsCollectorType)) 
+				itsCollector = createNativeCollector();
+			else 
+				throw new RuntimeException("Unknown collector type: "+itsCollectorType);
+			
+			itsInterpreter = new EventInterpreter(itsCollector);			
+		}
 		return itsInterpreter;
 	}
 
@@ -172,7 +182,7 @@ public class AgentConfig
 	{
 		return itsNativePort;
 	}
-	
+
 	
 	
 }

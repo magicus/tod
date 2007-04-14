@@ -223,7 +223,6 @@ implements IEventBrowser
 		{
 			boolean theResult = itsAggregator.setNextEvent(
 					checkTimestamp(aEvent.getTimestamp()),
-					DebugFlags.IGNORE_HOST ? 0 : aEvent.getHost().getId(),
 					aEvent.getThread().getId());
 			reset();
 			
@@ -240,13 +239,9 @@ implements IEventBrowser
 		try
 		{
 			long theTimestamp = checkTimestamp(aEvent.getTimestamp());
-			int theHostId = DebugFlags.IGNORE_HOST ? 0 : aEvent.getHost().getId();
 			IThreadInfo theThread = aEvent.getThread();
 			int theThreadId = theThread.getId();
-			boolean theResult = itsAggregator.setPreviousEvent(
-					theTimestamp,
-					theHostId,
-					theThreadId);
+			boolean theResult = itsAggregator.setPreviousEvent(theTimestamp, theThreadId);
 			reset();
 			
 			return theResult;

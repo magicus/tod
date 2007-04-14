@@ -46,6 +46,8 @@ import tod.gui.controlflow.watch.WatchPanel;
 import tod.gui.formatter.EventFormatter;
 import tod.gui.kit.Bus;
 import tod.gui.kit.IBusListener;
+import tod.gui.kit.OptionManager;
+import tod.gui.kit.StdOptions;
 import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.view.IEventListView;
@@ -53,7 +55,10 @@ import tod.gui.view.LogView;
 import zz.utils.SimpleAction;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
+import zz.utils.properties.IRWProperty;
 import zz.utils.properties.PropertyListener;
+import zz.utils.properties.SimplePropertyListener;
+import zz.utils.properties.SimpleRWProperty;
 import zz.utils.ui.UIUtils;
 import zz.utils.ui.ZLabel;
 
@@ -62,6 +67,11 @@ public class CFlowView extends LogView implements IEventListView
 	public static final boolean SHOW_PARENT_FRAMES = false;
 	private static final String PROPERTY_SPLITTER_POS = "cflowView.splitterPos";
 
+	/**
+	 * Target for the show package names option.
+	 */
+	public static final String SHOW_PACKAGE_NAMES_TARGET = "Events";
+
 	
 	private CFlowSeed itsSeed;
 	private EventFormatter itsFormatter;
@@ -69,6 +79,9 @@ public class CFlowView extends LogView implements IEventListView
 	
 	private CFlowTree itsCFlowTree;
 	private WatchPanel itsWatchPanel;
+	
+	private ZLabel itsHostLabel;
+	private ZLabel itsThreadLabel;
 	
 	private IPropertyListener<ILogEvent> itsSelectedEventListener = new PropertyListener<ILogEvent>()
 	{
@@ -106,7 +119,17 @@ public class CFlowView extends LogView implements IEventListView
 			return true;
 		}
 	};
-
+	
+	
+	private IRWProperty<Boolean> itsShowPackages;
+	private IPropertyListener<Boolean> itsShowPackagesListener = new SimplePropertyListener<Boolean>()
+	{
+		@Override
+		protected void changed(IProperty<Boolean> aProperty)
+		{
+			//TODO: re-create UI
+		}
+	};
 
 	private JSplitPane itsSplitPane;
 	
@@ -119,7 +142,6 @@ public class CFlowView extends LogView implements IEventListView
 		itsStepper = new Stepper(getLogBrowser(), itsSeed.getThread());
 	}
 	
-
 	public CFlowSeed getSeed()
 	{
 		return itsSeed;
@@ -144,21 +166,12 @@ public class CFlowView extends LogView implements IEventListView
 		
 		// Create title
 		JPanel theTitlePanel = new JPanel(GUIUtils.createStackLayout());
-		IThreadInfo theThread = getSeed().getThread();
-		IHostInfo theHost = theThread.getHost();
 		
-		theTitlePanel.add(ZLabel.create(
-				String.format(
-						"Host: \"%s\" [%d]",
-						theHost.getName(),
-						theHost.getId()),
-				FontConfig.SMALL_FONT,
-				Color.BLACK));
-
-		theTitlePanel.add(GUIUtils.createLabel(String.format(
-				"Thread: \"%s\" [%d]",
-				theThread.getName(),
-				theThread.getId())));
+		itsHostLabel = ZLabel.create("", FontConfig.SMALL_FONT, Color.BLACK);
+		itsThreadLabel = GUIUtils.createLabel("");
+		
+		theTitlePanel.add(itsHostLabel);
+		theTitlePanel.add(itsThreadLabel);
 		
 		JPanel theNorthPanel = new JPanel(new BorderLayout(0, 0));
 		theNorthPanel.add(theTitlePanel, BorderLayout.WEST);
@@ -176,8 +189,6 @@ public class CFlowView extends LogView implements IEventListView
 		
 		add(itsSplitPane, BorderLayout.CENTER);
 		
-		setParent(getSeed().pParentEvent().get());
-		update();
 	}
 	
 	
@@ -267,6 +278,25 @@ public class CFlowView extends LogView implements IEventListView
 	
 	private void update()
 	{
+		IThreadInfo theThread = getSeed().getThread();
+		IHostInfo theHost = theThread.getHost();
+		
+		itsHostLabel.setText(String.format(
+				"Host: \"%s\" [%d]",
+				theHost.getName(),
+				theHost.getId()));
+		
+		itsHostLabel.revalidate();
+		itsHostLabel.repaint();
+		
+		itsThreadLabel.setText(String.format(
+				"Thread: \"%s\" [%d]",
+				theThread.getName(),
+				theThread.getId()));
+		
+		itsThreadLabel.revalidate();
+		itsThreadLabel.repaint();
+
 		ILogEvent theSelectedEvent = itsSeed.pSelectedEvent().get();
 		
 		if (theSelectedEvent != null)
@@ -311,6 +341,16 @@ public class CFlowView extends LogView implements IEventListView
 		
 		Bus.getBus(this).subscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
 		
+		itsShowPackages = OptionManager.get(this).getProperty(
+				StdOptions.SHOW_PACKAGE_NAMES, 
+				SHOW_PACKAGE_NAMES_TARGET);
+		
+		if (itsShowPackages == null) itsShowPackages = new SimpleRWProperty<Boolean>(null, false);
+		
+		itsShowPackages.addHardListener(itsShowPackagesListener);
+		
+		setParent(getSeed().pParentEvent().get());
+		
 		update();
 	}
 	
@@ -327,8 +367,20 @@ public class CFlowView extends LogView implements IEventListView
 				""+itsSplitPane.getDividerLocation());
 		
 		Bus.getBus(this).unsubscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
+		itsShowPackages.removeListener(itsShowPackagesListener);
+
 	}
 	
+	/**
+	 * Whether package names should be dosplayed.
+	 */
+	public boolean showPackageNames()
+	{
+//		return itsShowPackages.get();
+		return false;
+	}
+	
+
 	
 	public void selectEvent(ILogEvent aEvent)
 	{

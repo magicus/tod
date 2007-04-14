@@ -43,7 +43,7 @@ public class TestDatabaseNode
 
 	@Before public void fill()
 	{
-itsDatabase = new EventDatabase(0, new File("/tmp/tod/test.bin"));
+		itsDatabase = new EventDatabase(0, new File("test.bin"));
 		EventGenerator theEventGenerator = createGenerator();
 		
 		System.out.println("filling...");
@@ -96,7 +96,7 @@ itsDatabase = new EventDatabase(0, new File("/tmp/tod/test.bin"));
 	
 	private EventGenerator createGenerator()
 	{
-		return new EventGenerator(0, 100, 100, 100, 100, 100, 100, 100, 100);
+		return new EventGenerator(100, 100, 100, 100, 100, 100, 100, 100);
 	}
 	
 }

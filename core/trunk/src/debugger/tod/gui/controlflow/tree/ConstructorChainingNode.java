@@ -54,12 +54,6 @@ public class ConstructorChainingNode extends BehaviorCallNode
 	@Override
 	protected JComponent createBehaviorName()
 	{
-		return null;
-	}
-	
-	@Override
-	protected JComponent createBehaviorNamePrefix()
-	{
 		String theHeader;
 		switch(getEvent().getCallType())
 		{
@@ -81,32 +75,5 @@ public class ConstructorChainingNode extends BehaviorCallNode
 		
 		return ZLabel.create(theHeader, FontConfig.STD_FONT, Color.BLACK);
 	}
-
-	@Override
-	protected JComponent createFullView()
-	{
-		JPanel thePanel = new JPanel(GUIUtils.createBorderLayout());
-		thePanel.setOpaque(false);
-		
-		thePanel.add(createPackageName(), BorderLayout.NORTH);
-		thePanel.add(createResult(), BorderLayout.SOUTH);
-		
-		JPanel theCenterPanel = new JPanel(new WrappedFlowLayout());
-		theCenterPanel.setOpaque(false);
-		
-		
-		
-		return thePanel;
-	}
-
-	@Override
-	protected JComponent createShortView()
-	{
-		JPanel thePanel = new JPanel(GUIUtils.createBorderLayout());
-		thePanel.setOpaque(false);
-		
-		
-		return thePanel;
-	}
-
+	
 }

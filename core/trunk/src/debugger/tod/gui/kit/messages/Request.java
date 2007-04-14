@@ -18,26 +18,37 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.dbgrid.bench;
+package tod.gui.kit.messages;
 
-import tod.core.database.browser.IEventBrowser;
-import tod.core.database.event.IBehaviorCallEvent;
-import tod.core.database.event.IParentEvent;
-import tod.core.database.structure.IThreadInfo;
-import tod.core.database.structure.ThreadInfo;
-import tod.impl.dbgrid.GridLogBrowser;
-import tod.impl.dbgrid.GridMaster;
+import java.util.ArrayList;
+import java.util.List;
 
-public class TestSeek
+/**
+ * A message that permits to obtain a return value.
+ * @author gpothier
+ */
+public class Request<R> extends Message
 {
-	public static void main(String[] args) throws Exception
+	private List<R> itsResults = new ArrayList<R>(); 
+	
+	public Request(String aId)
 	{
-		GridMaster theMaster = GridReplay.replay(args);
-		GridLogBrowser theBrowser = new GridLogBrowser(theMaster);
-		IThreadInfo theThread = theBrowser.getThread(1);
-		IParentEvent theRoot = theBrowser.getCFlowRoot(theThread);
-		IEventBrowser theEventBrowser = theRoot.getChildrenBrowser();
-		IBehaviorCallEvent theCall = (IBehaviorCallEvent) theEventBrowser.next();
-		theCall.getExitEvent();
+		super(aId);
+	}
+	
+	public void addResult(R aResult)
+	{
+		itsResults.add(aResult);
+	}
+	
+	public Iterable<R> getResults()
+	{
+		return itsResults;
+	}
+
+	public R getResult()
+	{
+		if (itsResults.size() != 1) throw new RuntimeException("Expected exactly one result, got "+itsResults.size());
+		return itsResults.get(0);
 	}
 }

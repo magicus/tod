@@ -39,9 +39,12 @@ public class ArrayWriteNode extends AbstractEventNode
 			IArrayWriteEvent aEvent)
 	{
 		super(aView, aJobProcessor);
-		
 		itsEvent = aEvent;
-
+		createUI();
+	}
+	
+	protected void createUI()
+	{
 		Object theCurrentObject = null;
 		IBehaviorCallEvent theContainer = itsEvent.getParent();
 		if (theContainer != null)
@@ -55,7 +58,8 @@ public class ArrayWriteNode extends AbstractEventNode
 				theCurrentObject, 
 				itsEvent.getTarget(),
 				itsEvent,
-				FontConfig.STD_FONT));
+				FontConfig.STD_FONT,
+				showPackageNames()));
 		
 		add(GUIUtils.createLabel("["));
 		add(GUIUtils.createLabel(""+itsEvent.getIndex()));
@@ -67,7 +71,8 @@ public class ArrayWriteNode extends AbstractEventNode
 				theCurrentObject, 
 				itsEvent.getValue(), 
 				itsEvent,
-				FontConfig.STD_FONT));
+				FontConfig.STD_FONT,
+				showPackageNames()));
 	}
 	
 	@Override

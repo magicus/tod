@@ -54,7 +54,7 @@ implements MouseListener, MouseMotionListener
 		addMouseListener(this);
 		addMouseMotionListener(this);
 	}
-
+	
 	public JobProcessor getJobProcessor()
 	{
 		return itsJobProcessor;

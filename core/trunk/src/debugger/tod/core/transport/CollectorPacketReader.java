@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 
+import tod.agent.AgentConfig;
 import tod.agent.DebugFlags;
 import tod.core.BehaviorKind;
 import tod.core.ILocationRegisterer;
@@ -35,7 +36,6 @@ import tod.core.Output;
 import tod.core.ILocationRegisterer.LineNumberInfo;
 import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.structure.ObjectId;
-import tod.impl.dbgrid.DebuggerGridConfig;
 
 public class CollectorPacketReader
 {
@@ -175,7 +175,7 @@ public class CollectorPacketReader
 		DataInputStream theStream = new DataInputStream(new ByteArrayInputStream(theBuffer));
 		
 		long theObjectId = theStream.readLong();
-		if (DebugFlags.IGNORE_HOST) theObjectId >>>= DebuggerGridConfig.EVENT_HOST_BITS;
+		if (DebugFlags.IGNORE_HOST) theObjectId >>>= AgentConfig.HOST_BITS;
 		ObjectInputStream theObjectStream = new ObjectInputStream(theStream);
 		Object theObject;
 		try
@@ -228,7 +228,7 @@ public class CollectorPacketReader
 			case REGISTERED:
 			{
 				long theObjectId = aStream.readLong();
-				if (DebugFlags.IGNORE_HOST) theObjectId >>>= DebuggerGridConfig.EVENT_HOST_BITS;
+				if (DebugFlags.IGNORE_HOST) theObjectId >>>= AgentConfig.HOST_BITS;
 				ObjectInputStream theStream = new ObjectInputStream(aStream);
 				Object theObject;
 				try
@@ -252,7 +252,7 @@ public class CollectorPacketReader
 			case OBJECT_UID:
 			{
 				long theObjectId = aStream.readLong();
-				if (DebugFlags.IGNORE_HOST) theObjectId >>>= DebuggerGridConfig.EVENT_HOST_BITS;
+				if (DebugFlags.IGNORE_HOST) theObjectId >>>= AgentConfig.HOST_BITS;
 				return new ObjectId(theObjectId);
 			}
 				

@@ -56,6 +56,19 @@ public class Util
 		return theName.replace('$', '.');
 	}
 	
+	public static String getSimpleInnermostName(String aFullyQualifiedName)
+	{
+		int theIndex = Math.max(
+				aFullyQualifiedName.lastIndexOf('.'),
+				aFullyQualifiedName.lastIndexOf('$'));
+		
+		String theName = theIndex == -1 ?
+				aFullyQualifiedName
+				: aFullyQualifiedName.substring(theIndex+1);
+		
+		return theName;
+	}
+	
 	/**
 	 * Returns the name of the class,
 	 * with the '$' changed to a '.' in the case

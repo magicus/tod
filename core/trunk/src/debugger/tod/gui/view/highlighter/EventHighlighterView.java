@@ -201,8 +201,6 @@ public abstract class EventHighlighterView extends LogView
 			
 			for(IHostInfo theHost : getLogBrowser().getHosts())
 			{
-				if (theHost == null) continue;
-				
 				IEventFilter theFilter = getLogBrowser().createHostFilter(theHost);
 				itsDock.pSeeds().add(new HighlighterSequenceSeed(
 						theHost.getName(),
@@ -220,8 +218,6 @@ public abstract class EventHighlighterView extends LogView
 			
 			for(IThreadInfo theThread : getLogBrowser().getThreads())
 			{
-				if (theThread == null) continue;
-				
 				IEventFilter theFilter = getLogBrowser().createThreadFilter(theThread);
 				itsDock.pSeeds().add(new HighlighterSequenceSeed(
 						"["+theThread.getHost().getName()+"] \""+theThread.getName() + "\"",

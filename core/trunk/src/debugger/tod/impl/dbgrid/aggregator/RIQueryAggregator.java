@@ -35,12 +35,12 @@ public interface RIQueryAggregator extends RIEventIterator
 	/**
 	 * Semantics matches {@link IEventBrowser#setNextEvent(ILogEvent)}
 	 */
-	public boolean setNextEvent (long aTimestamp, int aHostId, int aThreadId) throws RemoteException;
+	public boolean setNextEvent (long aTimestamp, int aThreadId) throws RemoteException;
 	
 	/**
 	 * Semantics matches {@link IEventBrowser#setPreviousEvent(ILogEvent)}
 	 */
-	public boolean setPreviousEvent (long aTimestamp, int aHostId, int aThreadId) throws RemoteException;
+	public boolean setPreviousEvent (long aTimestamp, int aThreadId) throws RemoteException;
 
 	
 	/**

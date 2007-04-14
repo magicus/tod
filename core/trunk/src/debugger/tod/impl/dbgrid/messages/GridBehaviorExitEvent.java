@@ -54,7 +54,6 @@ public class GridBehaviorExitEvent extends GridEvent
 	}
 
 	public GridBehaviorExitEvent(
-			int aHost, 
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
@@ -65,7 +64,7 @@ public class GridBehaviorExitEvent extends GridEvent
 			Object aResult, 
 			int aBehaviorId)
 	{
-		set(aHost, aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aParentTimestamp, aHasThrown, aResult, aBehaviorId);
+		set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aParentTimestamp, aHasThrown, aResult, aBehaviorId);
 	}
 
 	public GridBehaviorExitEvent(BitStruct aBitStruct)
@@ -77,7 +76,6 @@ public class GridBehaviorExitEvent extends GridEvent
 	}
 
 	public void set(
-			int aHost, 
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
@@ -88,7 +86,7 @@ public class GridBehaviorExitEvent extends GridEvent
 			Object aResult, 
 			int aBehaviorId)
 	{
-		super.set(aHost, aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aParentTimestamp);
+		super.set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aParentTimestamp);
 		itsHasThrown = aHasThrown;
 		itsResult = aResult;
 		itsBehaviorId = aBehaviorId;

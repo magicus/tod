@@ -21,6 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid;
 
 import tod.agent.ConfigUtils;
+import tod.core.config.TODConfig;
 import tod.impl.dbgrid.db.HierarchicalIndex;
 import tod.impl.dbgrid.db.ObjectsDatabase;
 import tod.impl.dbgrid.db.file.HardPagedFile;
@@ -32,13 +33,8 @@ import zz.utils.bit.BitUtils;
 
 public class DebuggerGridConfig
 {
-	/**
-	 * Number of bits used to represent the host of an event.
-	 */
-	public static final int EVENT_HOST_BITS = 8;
-	
-	public static final long EVENT_HOST_MASK = BitUtils.pow2(EVENT_HOST_BITS)-1;
-	
+	private static final String HOME = System.getProperty("user.home");
+
 	/**
 	 * Number of bits used to represent the thread of an event.
 	 */
@@ -109,11 +105,6 @@ public class DebuggerGridConfig
 	public static final int STRUCTURE_TYPE_COUNT = 40000;
 
 	/**
-	 * Maximum number of hosts
-	 */
-	public static final int STRUCTURE_HOSTS_COUNT = 100;
-
-	/**
 	 * Maximum number of threads
 	 */
 	public static final int STRUCTURE_THREADS_COUNT = 10000;
@@ -175,7 +166,6 @@ public class DebuggerGridConfig
 	 * Number of bits necessary to represent an external event pointer.
 	 */
 	public static final int EVENTID_POINTER_SIZE = 
-		+DebuggerGridConfig.EVENT_HOST_BITS
 		+DebuggerGridConfig.EVENT_THREAD_BITS
 		+DebuggerGridConfig.EVENT_TIMESTAMP_BITS;
 
@@ -265,7 +255,7 @@ public class DebuggerGridConfig
 		ConfigUtils.readString("master-host", "localhost");
 	
 	public static final String NODE_DATA_DIR =
-		ConfigUtils.readString("node-data-dir", "/tmp/tod");
+		ConfigUtils.readString("node-data-dir", HOME+"/tmp/tod");
 	
 	public static final String STORE_EVENTS_FILE =
 		ConfigUtils.readString("events-file", "events-raw.bin");

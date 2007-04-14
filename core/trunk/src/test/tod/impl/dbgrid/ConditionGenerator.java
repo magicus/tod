@@ -25,7 +25,6 @@ import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_OBJECT_COUNT;
 import java.util.Random;
 
 import tod.impl.dbgrid.db.RoleIndexSet;
-import tod.impl.dbgrid.messages.ObjectCodec;
 import tod.impl.dbgrid.queries.BehaviorCondition;
 import tod.impl.dbgrid.queries.BytecodeLocationCondition;
 import tod.impl.dbgrid.queries.CompoundCondition;
@@ -34,8 +33,6 @@ import tod.impl.dbgrid.queries.DepthCondition;
 import tod.impl.dbgrid.queries.Disjunction;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.impl.dbgrid.queries.FieldCondition;
-import tod.impl.dbgrid.queries.HostCondition;
-import tod.impl.dbgrid.queries.ObjectCondition;
 import tod.impl.dbgrid.queries.ThreadCondition;
 import tod.impl.dbgrid.queries.TypeCondition;
 import tod.impl.dbgrid.queries.VariableCondition;
@@ -87,22 +84,21 @@ public class ConditionGenerator
 	
 	public EventCondition nextSimpleCondition()
 	{
-		switch(itsRandom.nextInt(9))
+		switch(itsRandom.nextInt(8))
 		{
 		case 0: return new BehaviorCondition(itsEventGenerator.genBehaviorId(), genBehaviorRole());
 		case 1: return new BytecodeLocationCondition(itsEventGenerator.genBytecodeIndex());
 		case 2: return new FieldCondition(itsEventGenerator.genFieldId());
-		case 3: return new HostCondition(itsEventGenerator.genHostId());
-		case 4:
-			long theId = itsRandom.nextLong() % (STRUCTURE_OBJECT_COUNT*1000);
+		case 3:
+			long theId = itsRandom.nextInt(STRUCTURE_OBJECT_COUNT-1) + 1;
 			return SplittedConditionHandler.OBJECTS.createCondition(
 					theId,
 					genObjectRole());
 			
-		case 5: return new ThreadCondition(itsEventGenerator.genThreadId());
-		case 6: return new TypeCondition(itsEventGenerator.genType());
-		case 7: return new VariableCondition(itsEventGenerator.genVariableId());
-		case 8: return new DepthCondition(itsEventGenerator.genDepth());
+		case 4: return new ThreadCondition(itsEventGenerator.genThreadId());
+		case 5: return new TypeCondition(itsEventGenerator.genType());
+		case 6: return new VariableCondition(itsEventGenerator.genVariableId());
+		case 7: return new DepthCondition(itsEventGenerator.genDepth());
 		default: throw new RuntimeException("Not handled");
 		}
 	}

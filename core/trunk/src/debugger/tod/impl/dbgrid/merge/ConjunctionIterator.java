@@ -64,7 +64,7 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 				if (theItem == null) return null;
 
 				if (theRefItem == null) theRefItem = theItem;
-				else if (! sameEvent(theRefItem, theItem)) theMatch = false;
+				else if (! sameItem(theRefItem, theItem)) theMatch = false;
 
 				long theTimestamp = getKey(theItem);
 				if (theTimestamp < theMinTimestamp)
@@ -123,7 +123,7 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 				if (theItem == null) return null;
 
 				if (theRefItem == null) theRefItem = theItem;
-				else if (! sameEvent(theRefItem, theItem)) theMatch = false;
+				else if (! sameItem(theRefItem, theItem)) theMatch = false;
 
 				long theTimestamp = getKey(theItem);
 				if (theTimestamp > theMaxTimestamp)

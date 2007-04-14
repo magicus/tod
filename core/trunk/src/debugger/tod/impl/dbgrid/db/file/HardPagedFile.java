@@ -452,6 +452,14 @@ public class HardPagedFile extends PageBank
 	}
 	
 	/**
+	 * Clears all cached pages.
+	 */
+	public static void clearCache()
+	{
+		itsPageDataManager.dropAll();
+	}
+	
+	/**
 	 * Manages the collections of {@link PageData} instances.
 	 * Ensures that all dirty pages are saved before 
 	 * @author gpothier

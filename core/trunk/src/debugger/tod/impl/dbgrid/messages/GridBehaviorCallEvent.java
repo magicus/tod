@@ -61,7 +61,6 @@ public class GridBehaviorCallEvent extends GridEvent
 	}
 
 	public GridBehaviorCallEvent(
-			int aHost, 
 			int aThread,
 			int aDepth,
 			long aTimestamp, 
@@ -75,7 +74,7 @@ public class GridBehaviorCallEvent extends GridEvent
 			int aExecutedBehaviorId, 
 			Object aTarget)
 	{
-		set(aHost, aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aParentTimestamp, aType, aDirectParent, aArguments, aCalledBehaviorId, aExecutedBehaviorId, aTarget);
+		set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aParentTimestamp, aType, aDirectParent, aArguments, aCalledBehaviorId, aExecutedBehaviorId, aTarget);
 	}
 
 	public GridBehaviorCallEvent(BitStruct aBitStruct, MessageType aType)
@@ -94,7 +93,6 @@ public class GridBehaviorCallEvent extends GridEvent
 	}
 	
 	public void set(
-			int aHost, 
 			int aThread,
 			int aDepth,
 			long aTimestamp, 
@@ -108,7 +106,7 @@ public class GridBehaviorCallEvent extends GridEvent
 			int aExecutedBehaviorId, 
 			Object aTarget)
 	{
-		super.set(aHost, aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aParentTimestamp);
+		super.set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aParentTimestamp);
 		itsType = (byte) aType.ordinal();
 		itsDirectParent = aDirectParent;
 		itsArguments = aArguments;

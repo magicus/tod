@@ -26,6 +26,7 @@ import static tod.agent.DebugFlags.EVENT_INTERPRETER_LOG;
 import java.io.PrintStream;
 import java.util.StringTokenizer;
 
+import tod.agent.AgentConfig;
 import tod.agent.AgentUtils;
 import tod.agent.DebugFlags;
 
@@ -43,15 +44,40 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 	
 	private static PrintStream itsPrintStream = DebugFlags.EVENT_INTERPRETER_PRINT_STREAM;
 	
-	private ThreadLocal<T> itsThreadInfos = new ThreadLocal<T>();
+	private ThreadLocal<T> itsThreadData = new ThreadLocal<T>() 
+	{
+		@Override
+		protected T initialValue()
+		{
+			return createThreadData();
+		}
+	};
 	private HighLevelCollector<T> itsCollector;
 	
 	private static int itsCurrentThreadId = 1;
 	
+	private int itsHostId;
+	
 	public EventInterpreter(HighLevelCollector<T> aCollector)
 	{
 		itsCollector = aCollector;
+		
+		try
+		{
+			itsHostId = getHostId();
+			if ((itsHostId & ~AgentConfig.HOST_MASK) != 0) 
+				throw new RuntimeException("Host id overflow");
+		}
+		catch (UnsatisfiedLinkError e)
+		{
+			itsHostId = -1;
+		}
 	}
+	
+	/**
+	 * Retrieves the host id that was sent to the native agent.
+	 */
+	public static native int getHostId ();
 
 	private synchronized int getNextThreadId()
 	{
@@ -61,20 +87,19 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 	private T createThreadData()
 	{
 		Thread theCurrentThread = Thread.currentThread();
-		long theId = theCurrentThread.getId();
-		T theData = itsCollector.createThreadData(getNextThreadId());
-		itsThreadInfos.set(theData);
+		long theJvmId = theCurrentThread.getId();
+		int theId = (getNextThreadId() << AgentConfig.HOST_BITS) | itsHostId;
+		T theData = itsCollector.createThreadData(theId);
+		itsThreadData.set(theData);
 		
-		itsCollector.thread(theData, theId, theCurrentThread.getName());
+		itsCollector.thread(theData, theJvmId, theCurrentThread.getName());
 		
 		return theData;
 	}
 	
 	private T getThreadData()
 	{
-		T theData = itsThreadInfos.get();
-		if (theData == null) theData = createThreadData();
-		return theData;
+		return itsThreadData.get();
 	}
 
 	private String getObjectId(Object aObject)

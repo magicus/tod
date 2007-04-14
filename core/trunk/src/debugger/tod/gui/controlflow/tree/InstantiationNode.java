@@ -20,18 +20,23 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.controlflow.tree;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IInstantiationEvent;
 import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.ITypeInfo;
+import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
+import zz.utils.ui.WrappedFlowLayout;
 import zz.utils.ui.ZLabel;
 import zz.utils.ui.text.XFont;
 
@@ -52,54 +57,27 @@ public class InstantiationNode extends BehaviorCallNode
 	}
 	
 	@Override
+	protected JComponent createBehaviorNamePrefix()
+	{
+		return GUIUtils.createLabel("new ");
+	}
+	
+	@Override
 	protected JComponent createBehaviorName()
 	{
-		return null;
+		IClassInfo theType = getBehavior().getType();
+		return GUIUtils.createLabel(theType.getName());
 	}
-
+	
 	@Override
-	protected JComponent createFullView()
+	protected JComponent createResultPrefix()
 	{
-		return null;
+		return GUIUtils.createLabel("Created ");
 	}
-
-	@Override
-	protected JComponent createShortView()
-	{
-		return null;
-	}
-
-//	@Override
-//	protected void fillHeaderPrefix(
-//			JComponent aContainer,
-//			XFont aFont)
-//	{
-//		aContainer.add(ZLabel.create("new ", aFont, Color.BLACK));
-//
-//		// Create behavior link
-//		IBehaviorInfo theBehavior = getEvent().getExecutedBehavior();
-//		if (theBehavior == null)
-//		{
-//			aFont = aFont.deriveFont(Font.ITALIC, aFont.getAWTFont().getSize2D());
-//			theBehavior = getEvent().getCalledBehavior();
-//		}
-//		ITypeInfo theType = theBehavior.getType();
-//		
-//		aContainer.add(Hyperlinks.type(theType, aFont));
-//	}
-//	
-//	@Override
-//	protected void fillFooterPrefix(
-//			JComponent aContainer,
-//			XFont aFont)
-//	{
-//		aContainer.add(ZLabel.create("Created: ", aFont, Color.BLACK));
-//	}
 
 	@Override
 	protected Object getResult()
 	{
 		return getEvent().getInstance();
 	}
-
 }

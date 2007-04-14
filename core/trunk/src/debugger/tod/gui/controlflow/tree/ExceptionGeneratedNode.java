@@ -40,9 +40,12 @@ public class ExceptionGeneratedNode extends AbstractEventNode
 			IExceptionGeneratedEvent aEvent)
 	{
 		super(aView, aJobProcessor);
-		
 		itsEvent = aEvent;
-
+		createUI();
+	}
+	
+	protected void createUI()
+	{
 		add(ZLabel.create(
 				"Exception: ", 
 				FontConfig.STD_FONT, 
@@ -53,7 +56,8 @@ public class ExceptionGeneratedNode extends AbstractEventNode
 				getJobProcessor(),
 				itsEvent.getException(),
 				itsEvent,
-				FontConfig.STD_FONT));
+				FontConfig.STD_FONT,
+				showPackageNames()));
 	}
 	
 	@Override

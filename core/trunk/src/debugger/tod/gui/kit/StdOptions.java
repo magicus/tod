@@ -18,26 +18,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.dbgrid.bench;
+package tod.gui.kit;
 
-import tod.core.database.browser.IEventBrowser;
-import tod.core.database.event.IBehaviorCallEvent;
-import tod.core.database.event.IParentEvent;
-import tod.core.database.structure.IThreadInfo;
-import tod.core.database.structure.ThreadInfo;
-import tod.impl.dbgrid.GridLogBrowser;
-import tod.impl.dbgrid.GridMaster;
+import tod.gui.kit.OptionManager.BooleanOptionDef;
 
-public class TestSeek
+/**
+ * A few standard options
+ * @author gpothier
+ */
+public class StdOptions
 {
-	public static void main(String[] args) throws Exception
-	{
-		GridMaster theMaster = GridReplay.replay(args);
-		GridLogBrowser theBrowser = new GridLogBrowser(theMaster);
-		IThreadInfo theThread = theBrowser.getThread(1);
-		IParentEvent theRoot = theBrowser.getCFlowRoot(theThread);
-		IEventBrowser theEventBrowser = theRoot.getChildrenBrowser();
-		IBehaviorCallEvent theCall = (IBehaviorCallEvent) theEventBrowser.next();
-		theCall.getExitEvent();
-	}
+	public static final BooleanOptionDef SHOW_PACKAGE_NAMES = new BooleanOptionDef("Show package names");
 }

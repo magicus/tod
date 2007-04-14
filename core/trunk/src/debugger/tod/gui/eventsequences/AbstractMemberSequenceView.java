@@ -71,6 +71,7 @@ public abstract class AbstractMemberSequenceView extends AbstractSingleBrowserSe
 				itsInspector.getObject(), 
 				aObject, 
 				null,
-				FONT);
+				FONT,
+				true);
 	}
 }

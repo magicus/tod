@@ -20,8 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.messages;
 
-import static tod.impl.dbgrid.DebuggerGridConfig.EVENT_HOST_BITS;
-import static tod.impl.dbgrid.DebuggerGridConfig.EVENT_HOST_MASK;
+import tod.agent.AgentConfig;
 import tod.agent.DebugFlags;
 import tod.core.database.structure.ObjectId;
 import zz.utils.bit.BitStruct;
@@ -358,7 +357,7 @@ public class ObjectCodec
 	 */
 	public static long getObjectId(long aId)
 	{
-		return DebugFlags.IGNORE_HOST ? aId : aId >>> EVENT_HOST_BITS;
+		return DebugFlags.IGNORE_HOST ? aId : aId >>> AgentConfig.HOST_BITS;
 	}
 	
 	/**
@@ -367,7 +366,7 @@ public class ObjectCodec
 	 */
 	public static int getHostId(long aId)
 	{
-		return DebugFlags.IGNORE_HOST ? 0 : (int) (aId & EVENT_HOST_MASK);
+		return DebugFlags.IGNORE_HOST ? 0 : (int) (aId & AgentConfig.HOST_MASK);
 	}
 
 }

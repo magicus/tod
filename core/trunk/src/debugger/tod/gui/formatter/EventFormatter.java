@@ -61,7 +61,8 @@ public class EventFormatter extends AbstractFormatter<ILogEvent>
 			if (theBehavior == null) theBehavior = theEvent.getCalledBehavior();
 			
 			return String.format(
-					"%s.%s (%s)",
+					"[%s] %s.%s (%s)",
+					aEvent.getClass().getSimpleName(),
 					Util.getPrettyName(theBehavior.getType().getName()),
 	                theBehavior.getName(),
 	                formatArgs(theEvent.getArguments()));

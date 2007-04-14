@@ -22,6 +22,7 @@ package tod.impl.dbgrid.db;
 
 import tod.impl.dbgrid.AbstractFilteredBidiIterator;
 import tod.impl.dbgrid.BidiIterator;
+import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.db.file.HardPagedFile;
 import tod.impl.dbgrid.db.file.IndexTupleCodec;
 import tod.impl.dbgrid.db.file.TupleCodec;
@@ -198,5 +199,23 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.RoleTuple>
 		{
 			return itsRole;
 		}
+		
+		@Override
+		public boolean equals(Object aObj)
+		{
+			if (aObj instanceof RoleTuple)
+			{
+				RoleTuple theOther = (RoleTuple) aObj;
+				return theOther.getEventPointer() == getEventPointer()
+						&& theOther.getRole() == getRole();
+			}
+			else if (aObj instanceof StdTuple)
+			{
+				StdTuple theOther = (StdTuple) aObj;
+				return theOther.getEventPointer() == getEventPointer();
+			}
+			else return false;
+		}
+
 	}
 }

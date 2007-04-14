@@ -26,5 +26,10 @@ public interface IHostInfo
 	public int getId();
 
 	public String getName();
+	
+	/**
+	 * Returns all the threads of this host.
+	 */
+	public Iterable<IThreadInfo> getThreads();
 
 }

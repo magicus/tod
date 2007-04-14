@@ -47,6 +47,8 @@ import tod.gui.controlflow.CFlowView;
 import tod.gui.kit.Bus;
 import tod.gui.kit.BusOwnerPanel;
 import tod.gui.kit.IBusListener;
+import tod.gui.kit.OptionManager;
+import tod.gui.kit.messages.GetOptionManager;
 import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.kit.messages.ShowObjectHistoryMsg;
 import tod.gui.seed.CFlowSeed;
@@ -103,10 +105,19 @@ implements ILocationSelectionListener, IGUIManager
 		}
 	};
 
-	
+	private IBusListener<GetOptionManager> itsGetOptionManagerListener = new IBusListener<GetOptionManager>()
+	{
+		public boolean processMessage(GetOptionManager aMessage)
+		{
+			aMessage.addResult(itsRootOptionManager);
+			return true;
+		}
+	};
 	
 	private JobProcessor itsJobProcessor = new JobProcessor();
 	private BookmarkPanel itsBookmarkPanel = new BookmarkPanel();
+	
+	private OptionManager itsRootOptionManager = new OptionManager(this, null);
 	
 	private Properties itsProperties = new Properties();
 
@@ -151,6 +162,7 @@ implements ILocationSelectionListener, IGUIManager
 		super.addNotify();
 		Bus.getBus(this).subscribe(ShowObjectHistoryMsg.ID, itsShowObjectHistoryListener);
 		Bus.getBus(this).subscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
+		Bus.getBus(this).subscribe(GetOptionManager.ID, itsGetOptionManagerListener);
 	}
 	
 	@Override
@@ -159,6 +171,7 @@ implements ILocationSelectionListener, IGUIManager
 		super.removeNotify();
 		Bus.getBus(this).unsubscribe(ShowObjectHistoryMsg.ID, itsShowObjectHistoryListener);
 		Bus.getBus(this).unsubscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
+		Bus.getBus(this).unsubscribe(GetOptionManager.ID, itsGetOptionManagerListener);
 	}
 
 	protected void viewChanged(LogView aView)

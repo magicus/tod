@@ -83,14 +83,12 @@ public interface ILogBrowser
 	public ILocationsRepository getLocationsRepository ();
 	
 	/**
-	 * Returns all registered threads.
+	 * Returns all registered threads, in no particular order.
 	 */
 	public Iterable<IThreadInfo> getThreads();
 	
 	/**
-	 * Returns all registered hosts.
-	 * The list can be indexed by host id, which also means that the first element
-	 * (index 0) is null.
+	 * Returns all registered hosts, in no particular order.
 	 */
 	public Iterable<IHostInfo> getHosts();
 	
@@ -199,7 +197,6 @@ public interface ILogBrowser
 	 */
 	public IEventFilter createObjectFilter(ObjectId aId);
 
-	
 	/**
 	 * Creates a filter that accepts only events on the given host.
 	 */

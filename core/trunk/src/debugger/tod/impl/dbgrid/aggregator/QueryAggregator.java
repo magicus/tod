@@ -25,8 +25,6 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import tod.agent.DebugFlags;
-import tod.core.database.event.ILogEvent;
 import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.BufferedBidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
@@ -155,7 +153,7 @@ implements RIQueryAggregator
 		}
 	}
 	
-	public boolean setNextEvent(long aTimestamp, int aHostId, int aThreadId)
+	public boolean setNextEvent(long aTimestamp, int aThreadId)
 	{
 		setNextTimestamp(aTimestamp);
 		while(itsMergeIterator.hasNext())
@@ -165,7 +163,6 @@ implements RIQueryAggregator
 			if (theNext.getTimestamp() > aTimestamp) break;
 			
 			if (theNext.getTimestamp() == aTimestamp
-					&& (DebugFlags.IGNORE_HOST || theNext.getHost() == aHostId)
 					&& theNext.getThread() == aThreadId)
 			{
 				itsMergeIterator.previous();
@@ -177,7 +174,7 @@ implements RIQueryAggregator
 		return false;
 	}
 
-	public boolean setPreviousEvent(long aTimestamp, int aHostId, int aThreadId)
+	public boolean setPreviousEvent(long aTimestamp, int aThreadId)
 	{
 		setPreviousTimestamp(aTimestamp);
 		while(itsMergeIterator.hasPrevious())
@@ -187,7 +184,6 @@ implements RIQueryAggregator
 			if (thePrevious.getTimestamp() < aTimestamp) break;
 			
 			if (thePrevious.getTimestamp() == aTimestamp
-					&& (DebugFlags.IGNORE_HOST || thePrevious.getHost() == aHostId)
 					&& thePrevious.getThread() == aThreadId) 
 			{
 				itsMergeIterator.next();
@@ -327,8 +323,7 @@ implements RIQueryAggregator
 		@Override
 		protected boolean sameEvent(GridEvent aItem1, GridEvent aItem2)
 		{
-			return aItem1.getHost() == aItem2.getHost()
-				&& aItem1.getThread() == aItem2.getThread()
+			return aItem1.getThread() == aItem2.getThread()
 				&& aItem1.getTimestamp() == aItem2.getTimestamp();
 		}
 		

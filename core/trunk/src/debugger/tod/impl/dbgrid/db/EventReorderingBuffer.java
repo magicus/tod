@@ -25,7 +25,6 @@ import java.util.List;
 
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.messages.GridEvent;
-import tod.impl.dbgrid.monitoring.Monitor;
 import zz.utils.RingBuffer;
 
 /**
@@ -142,45 +141,31 @@ public class EventReorderingBuffer
 		private long itsAdded = 0;
 		private long itsRetrieved = 0;
 		
-		private List<List<PerThreadBuffer>> itsBuffers = 
-			new ArrayList<List<PerThreadBuffer>>();
+		private List<PerThreadBuffer> itsBuffers = 
+			new ArrayList<PerThreadBuffer>();
 		
 		private GridEvent itsNextAvailable;
 		
 		private long itsLastRetrieved;
 		
 //		private RingBuffer<GridEvent> itsOoODebugBuffer = new RingBuffer<GridEvent>(1000);
-
 		
-		private List<PerThreadBuffer> getHostBuffers(int aHostId)
+		private PerThreadBuffer getBuffer(int aThreadId)
 		{
-			List<PerThreadBuffer> theBuffers = null; 
-			while (itsBuffers.size() < aHostId+1)
-			{
-				theBuffers = new ArrayList<PerThreadBuffer>();
-				itsBuffers.add(theBuffers);
-			}
-			if (theBuffers == null) theBuffers = itsBuffers.get(aHostId);
-			return theBuffers;
-		}
-		
-		private PerThreadBuffer getBuffer(int aHostId, int aThreadId)
-		{
-			List<PerThreadBuffer> theBuffers = getHostBuffers(aHostId);
 			PerThreadBuffer theBuffer = null; 
-			while (theBuffers.size() < aThreadId+1)
+			while (itsBuffers.size() < aThreadId+1)
 			{
 				theBuffer = new PerThreadBuffer();
-				theBuffers.add(theBuffer);
+				itsBuffers.add(theBuffer);
 			}
-			if (theBuffer == null) theBuffer = theBuffers.get(aThreadId);
+			if (theBuffer == null) theBuffer = itsBuffers.get(aThreadId);
 			
 			return theBuffer;
 		}
 		
 		private PerThreadBuffer getBuffer(GridEvent aEvent)
 		{
-			return getBuffer(aEvent.getHost(), aEvent.getThread());
+			return getBuffer(aEvent.getThread());
 		}
 		
 		public void add(GridEvent aEvent)
@@ -226,19 +211,16 @@ public class EventReorderingBuffer
 			// Search next event
 			itsNextAvailable = null;
 			long theNextTimestamp = Long.MAX_VALUE;
-			for (List<PerThreadBuffer> theBuffers : itsBuffers)
+			for (PerThreadBuffer theBuffer : itsBuffers)
 			{
-				for (PerThreadBuffer theBuffer : theBuffers)
+				if (theBuffer == null || theBuffer.isEmpty()) continue;
+				
+				GridEvent theEvent = theBuffer.peek();
+				long theTimestamp = theEvent.getTimestamp();
+				if (theTimestamp < theNextTimestamp)
 				{
-					if (theBuffer == null || theBuffer.isEmpty()) continue;
-					
-					GridEvent theEvent = theBuffer.peek();
-					long theTimestamp = theEvent.getTimestamp();
-					if (theTimestamp < theNextTimestamp)
-					{
-						theNextTimestamp = theTimestamp;
-						itsNextAvailable = theEvent;
-					}
+					theNextTimestamp = theTimestamp;
+					itsNextAvailable = theEvent;
 				}
 			}
 			

@@ -91,9 +91,6 @@ implements MouseWheelListener
 	public CFlowTree(CFlowView aView)
 	{
 		itsView = aView;
-		
-		createUI();
-		setParent(itsView.getSeed().pRootEvent().get());
 	}
 	
 	public JobProcessor getJobProcessor()
@@ -271,7 +268,8 @@ implements MouseWheelListener
 
 		
 		JPanel theRightComponent = new JPanel(new BorderLayout());
-		theRightComponent.add(new MyScrollPane(itsEventList), BorderLayout.CENTER);
+//		theRightComponent.add(new MyScrollPane(itsEventList), BorderLayout.CENTER);
+		theRightComponent.add(itsEventList, BorderLayout.CENTER);
 		theRightComponent.add(itsScroller, BorderLayout.EAST);
 		itsSplitPane.setRightComponent(theRightComponent);
 	}
@@ -280,6 +278,10 @@ implements MouseWheelListener
 	public void addNotify()
 	{
 		super.addNotify();
+		
+		createUI();
+		setParent(itsView.getSeed().pRootEvent().get());
+		
 		int theSplitterPos = MinerUI.getIntProperty(
 				itsView.getGUIManager(), 
 				PROPERTY_SPLITTER_POS, 200);

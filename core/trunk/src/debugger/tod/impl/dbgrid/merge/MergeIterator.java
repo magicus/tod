@@ -182,6 +182,16 @@ public abstract class MergeIterator<T> extends AbstractBidiIterator<T>
 	 * Indicates if the specified items represent the same event.
 	 */
 	protected abstract boolean sameEvent(T aItem1, T aItem2);
+	
+	/**
+	 * Indicates if the specified items are the same.
+	 * This is potentially more restrictive than {@link #sameEvent(Object, Object)},
+	 * for example for role tuples the role equality is checked.
+	 */
+	protected boolean sameItem(T aItem1, T aItem2)
+	{
+		return aItem1.equals(aItem2);
+	}
 
 	protected T getNextHead(int aHead)
 	{

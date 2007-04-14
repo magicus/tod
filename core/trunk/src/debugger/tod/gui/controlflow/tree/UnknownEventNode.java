@@ -38,10 +38,13 @@ public class UnknownEventNode extends AbstractEventNode
 			ILogEvent aEvent)
 	{
 		super(aView, aJobProcessor);
-		
 		itsEvent = aEvent;
-
-		add(ZLabel.create("Unknown ("+aEvent+")", FontConfig.STD_FONT, Color.GRAY));
+		createUI();
+	}
+	
+	protected void createUI()
+	{
+		add(ZLabel.create("Unknown ("+getEvent()+")", FontConfig.STD_FONT, Color.GRAY));
 	}
 	
 	@Override

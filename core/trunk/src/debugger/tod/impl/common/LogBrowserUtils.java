@@ -23,6 +23,7 @@ package tod.impl.common;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.browser.IObjectInspector;
 import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IConstructorChainingEvent;
@@ -32,6 +33,8 @@ import tod.core.database.event.IParentEvent;
 import tod.core.database.event.IConstructorChainingEvent.CallType;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IThreadInfo;
+import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.ObjectId;
 import tod.impl.common.event.Event;
 import tod.impl.local.event.RootEvent;
 
@@ -67,6 +70,7 @@ public class LogBrowserUtils
 	public static IParentEvent createCFlowRoot(ILogBrowser aBrowser, IThreadInfo aThread)
 	{
 		RootEvent theRoot = new RootEvent(aBrowser);
+		theRoot.setTimestamp(aBrowser.getFirstTimestamp());
 		
 		IEventFilter theFilter = aBrowser.createIntersectionFilter(
 				aBrowser.createThreadFilter(aThread),

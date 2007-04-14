@@ -35,7 +35,6 @@ import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.kit.messages.ShowObjectHistoryMsg;
 import tod.gui.kit.messages.ShowObjectMsg;
 import tod.gui.kit.messages.ShowTypeMsg;
-import tod.gui.seed.Seed;
 import zz.utils.ui.ZLabel;
 import zz.utils.ui.text.XFont;
 
@@ -90,9 +89,10 @@ public class Hyperlinks
 			JobProcessor aJobProcessor,
 			Object aObject,
 			ILogEvent aRefEvent,
-			XFont aFont)
+			XFont aFont,
+			boolean aShowPackageNames)
 	{
-		return object(aLogBrowser, aJobProcessor, null, aObject, aRefEvent, aFont);
+		return object(aLogBrowser, aJobProcessor, null, aObject, aRefEvent, aFont, aShowPackageNames);
 	}
 	
 	/**
@@ -107,7 +107,8 @@ public class Hyperlinks
 			Object aCurrentObject, 
 			Object aObject, 
 			ILogEvent aRefEvent,
-			XFont aFont)
+			XFont aFont,
+			boolean aShowPackageNames)
 	{
 		// Check if this is a registered object.
 		if (aObject instanceof ObjectId)
@@ -135,7 +136,8 @@ public class Hyperlinks
 			else 
 			{
 				ITypeInfo theType = aLogBrowser.createObjectInspector(theId).getType();
-				theText = theType.getName() + " (" + theId + ")";
+				String theName = aShowPackageNames ? theType.getName() : Util.getSimpleName(theType.getName());
+				theText = theName + " (" + theId + ")";
 			}
 			
 			return MessageHyperlink.create(

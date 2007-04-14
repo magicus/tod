@@ -54,6 +54,7 @@ import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.db.RINodeEventIterator;
 import tod.impl.dbgrid.db.ReorderedObjectsDatabase;
 import tod.impl.dbgrid.db.StringIndexer;
+import tod.impl.dbgrid.db.file.HardPagedFile;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.ObjectCodec;
 import tod.impl.dbgrid.queries.EventCondition;
@@ -88,6 +89,8 @@ implements RIDatabaseNode
 		new ArrayList<ReorderedObjectsDatabase>();
 	
 	private StringIndexer itsStringIndexer;
+	
+	private FlusherThread itsFlusherThread = new FlusherThread();
 
 	public DatabaseNode(ILocationStore aStore) throws RemoteException
 	{
@@ -120,6 +123,8 @@ implements RIDatabaseNode
 		{
 			itsEventsDatabase.unregister();
 		}
+		
+		HardPagedFile.clearCache(); //TODO: only clear pages of current database
 		
 		String thePrefix = DebuggerGridConfig.NODE_DATA_DIR;
 		File theParent = new File(thePrefix);
@@ -168,7 +173,7 @@ implements RIDatabaseNode
 	}
 	
 	@Override
-	public int flush()
+	public synchronized int flush()
 	{
 		int theObjectsCount = 0;
 		
@@ -208,7 +213,7 @@ implements RIDatabaseNode
 		return itsEventsDatabase.getIterator(aCondition);
 	}
 	
-	public void pushEvent(GridEvent aEvent)
+	public synchronized void pushEvent(GridEvent aEvent)
 	{
 		// The GridEventCollector uses a pool of events
 		// we cannot hold references to those events
@@ -222,6 +227,8 @@ implements RIDatabaseNode
 		// (Pentium M 2ghz)
 		if (itsFirstTimestamp == 0) itsFirstTimestamp = theTimestamp;
 		if (itsLastTimestamp < theTimestamp) itsLastTimestamp = theTimestamp;
+		
+		itsFlusherThread.active();
 	}
 	
 	public long getEventsCount()
@@ -469,5 +476,56 @@ implements RIDatabaseNode
 		}
 	}
 	
+	/**
+	 * This thread flushes the database when no event has been added
+	 * for some period of time.
+	 * @author gpothier
+	 */
+	private class FlusherThread extends Thread
+	{
+		private boolean itsActive = false;
+		private boolean itsFlushed = true;
+		
+		public FlusherThread()
+		{
+			start();
+		}
+		
+		/**
+		 * Notifies the thread that event recording is active,
+		 * and therefore flushing should be postponed.
+		 */
+		public synchronized void active()
+		{
+			itsActive = true;
+			itsFlushed = false;
+		}
+		
+		@Override
+		public synchronized void run()
+		{
+			try
+			{
+				while(true)
+				{
+					wait(2000);
+					
+					if (! itsActive)
+					{
+						if (! itsFlushed)
+						{
+							flush();
+							itsFlushed = true;
+						}
+					}
+					itsActive = false;
+				}
+			}
+			catch (InterruptedException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+	}
 
 }

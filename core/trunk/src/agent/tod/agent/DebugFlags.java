@@ -48,7 +48,7 @@ public class DebugFlags
 	/**
 	 * Maximum number of events to process, or 0 for no limit.
 	 */
-	public static final long MAX_EVENTS = ConfigUtils.readLong("max-events", 0);
+	public static long MAX_EVENTS = ConfigUtils.readLong("max-events", 0);
 	
 	/**
 	 * Causes database nodes to not reorder incoming events

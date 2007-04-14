@@ -38,6 +38,14 @@ public abstract class AbstractEventNode extends AbstractCFlowNode
 		super(aView, aJobProcessor);
 	}
 
+	/**
+	 * Whether package names should be displayed.
+	 */
+	protected boolean showPackageNames()
+	{
+		return getView().showPackageNames();
+	}
+	
 	@Override
 	public void mousePressed(MouseEvent aE)
 	{

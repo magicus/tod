@@ -81,7 +81,14 @@ public class WatchPanel extends JPanel
 		itsView = aView;
 		itsJobProcessor = new JobProcessor(getGUIManager().getJobProcessor());
 		itsBrowserNavigator = new WatchBrowserNavigator();
-		createUI();
+	}
+	
+	/**
+	 * Whether package names should be displayed.
+	 */
+	protected boolean showPackageNames()
+	{
+		return getView().showPackageNames();
 	}
 	
 	public CFlowView getView()
@@ -124,6 +131,8 @@ public class WatchPanel extends JPanel
 			itsJobProcessor = new JobProcessor(getGUIManager().getJobProcessor());
 		
 		Bus.getBus(this).subscribe(ShowObjectMsg.ID, itsShowObjectListener);
+		
+		createUI();
 	}
 	
 	@Override
@@ -204,6 +213,7 @@ public class WatchPanel extends JPanel
 					add(new WatchEntryNode(
 							itsView.getLogBrowser(),
 							getJobProcessor(),
+							WatchPanel.this,
 							itsProvider,
 							theEntry));
 				}
@@ -226,7 +236,8 @@ public class WatchPanel extends JPanel
 				null,
 				aCurrentObject,
 				itsProvider.getRefEvent(),
-				STD_FONT));
+				STD_FONT,
+				showPackageNames()));
 		
 		return theContainer;		
 		

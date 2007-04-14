@@ -24,5 +24,10 @@ import tod.gui.kit.messages.Message;
 
 public interface IBusListener<M extends Message>
 {
+	/**
+	 * Processes the given message
+	 * @return True if the message is consumed by this listener (ie. the
+	 * message should not be passed to other listeners).
+	 */
 	public boolean processMessage(M aMessage);
 }

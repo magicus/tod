@@ -25,7 +25,6 @@ import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_BEHAVIOR_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_BYTECODE_LOCS_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_DEPTH_RANGE;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_FIELD_COUNT;
-import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_HOSTS_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_OBJECT_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_THREADS_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_TYPE_COUNT;
@@ -47,7 +46,6 @@ import tod.impl.dbgrid.monitoring.Probe;
 public class Indexes
 {
 	private StdIndexSet itsTypeIndex;
-	private StdIndexSet itsHostIndex;
 	private StdIndexSet itsThreadIndex;
 	private StdIndexSet itsDepthIndex;
 	private StdIndexSet itsLocationIndex;
@@ -76,7 +74,6 @@ public class Indexes
 		Monitor.getInstance().register(this);
 		
 		itsTypeIndex = new StdIndexSet("type", aFile, STRUCTURE_TYPE_COUNT+1);
-		itsHostIndex = new StdIndexSet("host", aFile, STRUCTURE_HOSTS_COUNT+1);
 		itsThreadIndex = new StdIndexSet("thread", aFile, STRUCTURE_THREADS_COUNT+1);
 		itsDepthIndex = new StdIndexSet("depth", aFile, STRUCTURE_DEPTH_RANGE+1);
 		itsLocationIndex = new StdIndexSet("bytecodeLoc.", aFile, STRUCTURE_BYTECODE_LOCS_COUNT+1);
@@ -104,7 +101,6 @@ public class Indexes
 	public void unregister()
 	{
 		itsTypeIndex.unregister();
-		itsHostIndex.unregister();
 		itsThreadIndex.unregister();
 		itsDepthIndex.unregister();
 		itsLocationIndex.unregister();
@@ -131,16 +127,6 @@ public class Indexes
 	public HierarchicalIndex<StdTuple> getTypeIndex(int aIndex)
 	{
 		return itsTypeIndex.getIndex(aIndex);
-	}
-	
-	public void indexHost(int aIndex, StdTuple aTuple)
-	{
-		itsHostIndex.addTuple(aIndex, aTuple);
-	}
-	
-	public HierarchicalIndex<StdTuple> getHostIndex(int aIndex)
-	{
-		return itsHostIndex.getIndex(aIndex);
 	}
 	
 	public void indexThread(int aIndex, StdTuple aTuple)

@@ -48,7 +48,6 @@ public class NormalStackNode extends AbstractStackNode
 			boolean aCurrentStackFrame)
 	{
 		super(aView, aJobProcessor, aEvent, aCurrentStackFrame);
-		
 	}
 
 	@Override
