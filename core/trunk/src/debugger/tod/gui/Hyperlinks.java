@@ -30,6 +30,11 @@ import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.gui.kit.Bus;
+import tod.gui.kit.html.HtmlElement;
+import tod.gui.kit.html.HtmlLink;
+import tod.gui.kit.html.HtmlText;
+import tod.gui.kit.messages.Message;
 import tod.gui.kit.messages.ShowBehaviorMsg;
 import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.kit.messages.ShowObjectHistoryMsg;
@@ -45,54 +50,43 @@ import zz.utils.ui.text.XFont;
  */
 public class Hyperlinks
 {
-	public static JComponent history(ObjectId aObject, XFont aFont)
+	public static final HtmlLabelFactory HTML = new HtmlLabelFactory();
+	public static final SwingLabelFactory SWING = new SwingLabelFactory();
+	
+	public static <T> T history(LabelFactory<T> aFactory, ObjectId aObject)
 	{
-		return MessageHyperlink.create(
-				new ShowObjectHistoryMsg(aObject),
-				"history",
-				aFont,
-				Color.BLUE);
+		return aFactory.createLink("history", new ShowObjectHistoryMsg(aObject));
 	}
 	
-	public static JComponent type (ITypeInfo aType, XFont aFont)
+	public static <T> T type (LabelFactory<T> aFactory, ITypeInfo aType)
 	{
-		return MessageHyperlink.create(
-				new ShowTypeMsg(aType),
-				aType.getName(), 
-				aFont, 
-				Color.BLUE);
+		return aFactory.createLink(aType.getName(), new ShowTypeMsg(aType));
 	}
 	
-	public static JComponent behavior(IBehaviorInfo aBehavior, XFont aFont)
+	public static <T> T behavior(LabelFactory<T> aFactory, IBehaviorInfo aBehavior)
 	{
-		return MessageHyperlink.create(
-				new ShowBehaviorMsg(aBehavior), 
+		return aFactory.createLink(
 				Util.getPrettyName(aBehavior.getName()),
-				aFont, 
-				Color.BLUE);		
+				new ShowBehaviorMsg(aBehavior));		
 	}
 	
 	/**
 	 * An hyperlink that jumps to the cflow of the given event.
 	 */
-	public static JComponent event(String aText, ILogEvent aEvent, XFont aFont)
+	public static <T> T event(LabelFactory<T> aFactory, String aText, ILogEvent aEvent)
 	{
-		return MessageHyperlink.create(
-				new ShowCFlowMsg(aEvent), 
-				aText,
-				aFont, 
-				Color.BLUE);
+		return aFactory.createLink(aText, new ShowCFlowMsg(aEvent));
 	}
 	
-	public static JComponent object(
+	public static <T> T object(
+			LabelFactory<T> aFactory, 
 			ILogBrowser aLogBrowser, 
 			JobProcessor aJobProcessor,
 			Object aObject,
 			ILogEvent aRefEvent,
-			XFont aFont,
 			boolean aShowPackageNames)
 	{
-		return object(aLogBrowser, aJobProcessor, null, aObject, aRefEvent, aFont, aShowPackageNames);
+		return object(aFactory, aLogBrowser, aJobProcessor, null, aObject, aRefEvent, aShowPackageNames);
 	}
 	
 	/**
@@ -101,13 +95,13 @@ public class Hyperlinks
 	 * be displayed as "this" 
 	 * @param aObject The object to link to.
 	 */
-	public static JComponent object(
+	public static <T> T object(
+			LabelFactory<T> aFactory, 
 			ILogBrowser aLogBrowser,
 			JobProcessor aJobProcessor,
 			Object aCurrentObject, 
 			Object aObject, 
 			ILogEvent aRefEvent,
-			XFont aFont,
 			boolean aShowPackageNames)
 	{
 		// Check if this is a registered object.
@@ -140,16 +134,12 @@ public class Hyperlinks
 				theText = theName + " (" + theId + ")";
 			}
 			
-			return MessageHyperlink.create(
-					new ShowObjectMsg(theId, aRefEvent), 
-					theText, 
-					aFont, 
-					Color.BLUE);
+			return aFactory.createLink(theText, new ShowObjectMsg(theId, aRefEvent));
 		}
 		else if (aObject instanceof String)
 		{
 			String theString = (String) aObject;
-			return ZLabel.create("\""+theString+"\"", aFont, Color.GRAY);
+			return aFactory.createText("\""+theString+"\"", Color.GRAY);
 		}
 		else if (aObject instanceof Throwable)
 		{
@@ -162,14 +152,54 @@ public class Hyperlinks
 				theBuilder.append(theThrowable.getMessage());
 				theBuilder.append(')');
 			}
-			return ZLabel.create(theBuilder.toString(), aFont, Color.RED);
+			return aFactory.createText(theBuilder.toString(), Color.RED);
 		}
 		else 
 		{
-			return ZLabel.create(""+aObject, aFont, Color.GRAY);
+			return aFactory.createText(""+aObject, Color.GRAY);
+		}
+	}
+	
+	private static abstract class LabelFactory<T>
+	{
+		public abstract T createLink(String aLabel, Message aMessage);
+		public abstract T createText(String alabel, Color aColor);
+	}
+	
+	private static class SwingLabelFactory extends LabelFactory<JComponent>
+	{
+		@Override
+		public JComponent createLink(String aLabel, Message aMessage)
+		{
+			return MessageHyperlink.create(aMessage, aLabel, FontConfig.STD_FONT, Color.BLUE);		}
+
+		@Override
+		public JComponent createText(String alabel, Color aColor)
+		{
+			return ZLabel.create(alabel, FontConfig.STD_FONT, aColor);
+		}
+	}
+	
+	private static class HtmlLabelFactory extends LabelFactory<HtmlElement>
+	{
+
+		@Override
+		public HtmlElement createLink(String aLabel, final Message aMessage)
+		{
+			return new HtmlLink(aLabel)
+			{
+				public void traverse()
+				{
+					Bus.getBus(getComponent()).postMessage(aMessage);				
+				}
+			};
 		}
 
-		
+		@Override
+		public HtmlElement createText(String alabel, Color aColor)
+		{
+			return new HtmlText(alabel, aColor);
+		}
 	}
 	
 }

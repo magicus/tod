@@ -18,21 +18,49 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui;
+package tod.gui.kit.html;
 
-import java.awt.Font;
+import java.util.List;
 
-import zz.utils.ui.ZLabel;
-import zz.utils.ui.text.XFont;
+import javax.swing.JComponent;
 
-public class FontConfig
+public abstract class HtmlElement
 {
-	public static final XFont STD_FONT = XFont.DEFAULT_XPLAIN.deriveFont(15);
-	public static final XFont STD_HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, 15);
-	public static final XFont SMALL_FONT = XFont.DEFAULT_XPLAIN.deriveFont(12);
-	public static final XFont TINY_FONT = XFont.DEFAULT_XPLAIN.deriveFont(10);
+	private HtmlDoc itsDoc;
+	private String itsId;
+
+	protected JComponent getComponent()
+	{
+		return getDoc().getComponent();
+	}
 	
-	public static final int SMALL = 70;
-	public static final int NORMAL = 100;
-	public static final int BIG = 150;
+	public void setDoc(HtmlDoc aDoc)
+	{
+		itsDoc = aDoc;
+		itsId = itsDoc != null ? itsDoc.createId() : null;
+	}
+	
+	protected String getId()
+	{
+		return itsId;
+	}
+
+	public HtmlDoc getDoc()
+	{
+		return itsDoc;
+	}
+	
+	/**
+	 * Transforms this element into a string
+	 */
+	public abstract void render(StringBuilder aBuilder);
+	
+	/**
+	 * Updates the document to reflect changes in this element
+	 */
+	protected void update()
+	{
+		HtmlDoc theDoc = getDoc();
+		if (theDoc != null) theDoc.update(this);
+	}
 }

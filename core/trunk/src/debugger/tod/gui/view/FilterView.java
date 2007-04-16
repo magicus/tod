@@ -34,6 +34,7 @@ import tod.core.database.event.ILogEvent;
 import tod.gui.IGUIManager;
 import tod.gui.MinerUI;
 import tod.gui.eventlist.EventList;
+import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import tod.gui.seed.FilterSeed;
 import tod.gui.view.event.EventView;
 import tod.gui.view.event.EventViewFactory;
@@ -146,7 +147,7 @@ public class FilterView extends LogView implements IEventListView
 		return itsList.pSelectedEvent().get();
 	}
 
-	public void selectEvent(ILogEvent aEvent)
+	public void selectEvent(ILogEvent aEvent, SelectionMethod aMethod)
 	{
 		itsList.pSelectedEvent().set(aEvent);
 	}

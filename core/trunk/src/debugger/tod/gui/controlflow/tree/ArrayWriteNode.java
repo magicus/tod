@@ -23,11 +23,11 @@ package tod.gui.controlflow.tree;
 import tod.core.database.event.IArrayWriteEvent;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
-import tod.gui.FontConfig;
-import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
+import tod.gui.kit.html.HtmlBody;
+import tod.gui.kit.html.HtmlText;
 
 public class ArrayWriteNode extends AbstractEventNode
 {
@@ -43,7 +43,8 @@ public class ArrayWriteNode extends AbstractEventNode
 		createUI();
 	}
 	
-	protected void createUI()
+	@Override
+	protected void createHtmlUI(HtmlBody aBody)
 	{
 		Object theCurrentObject = null;
 		IBehaviorCallEvent theContainer = itsEvent.getParent();
@@ -52,26 +53,24 @@ public class ArrayWriteNode extends AbstractEventNode
 			theCurrentObject = theContainer.getTarget();
 		}
 		
-		add(Hyperlinks.object(
+		aBody.add(Hyperlinks.object(
+				Hyperlinks.HTML,
 				getLogBrowser(), 
 				getJobProcessor(), 
 				theCurrentObject, 
 				itsEvent.getTarget(),
 				itsEvent,
-				FontConfig.STD_FONT,
 				showPackageNames()));
+
+		aBody.addText("[" + itsEvent.getIndex() + "] = ");
 		
-		add(GUIUtils.createLabel("["));
-		add(GUIUtils.createLabel(""+itsEvent.getIndex()));
-		add(GUIUtils.createLabel("] = "));
-		
-		add(Hyperlinks.object(
+		aBody.add(Hyperlinks.object(
+				Hyperlinks.HTML,
 				getLogBrowser(), 
 				getJobProcessor(), 
 				theCurrentObject, 
 				itsEvent.getValue(), 
 				itsEvent,
-				FontConfig.STD_FONT,
 				showPackageNames()));
 	}
 	

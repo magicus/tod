@@ -66,12 +66,12 @@ public abstract class AbstractMemberSequenceView extends AbstractSingleBrowserSe
 		ILogBrowser theLogBrowser = theLogView.getLogBrowser();
 			
 		return Hyperlinks.object(
+				Hyperlinks.SWING, 
 				theLogBrowser, 
 				getGUIManager().getJobProcessor(),
 				itsInspector.getObject(), 
 				aObject, 
 				null,
-				FONT,
 				true);
 	}
 }

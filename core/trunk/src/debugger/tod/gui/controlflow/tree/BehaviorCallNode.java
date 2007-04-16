@@ -24,12 +24,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.List;
 
-import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JToolTip;
 
 import tod.Util;
@@ -41,18 +37,14 @@ import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
-import tod.gui.kit.AsyncPanel;
-import tod.gui.kit.OptionManager;
-import tod.gui.kit.StdOptions;
-import zz.utils.properties.IProperty;
-import zz.utils.properties.IPropertyListener;
-import zz.utils.properties.IRWProperty;
-import zz.utils.properties.SimplePropertyListener;
-import zz.utils.properties.SimpleRWProperty;
+import tod.gui.kit.html.AsyncHtmlGroup;
+import tod.gui.kit.html.HtmlBody;
+import tod.gui.kit.html.HtmlElement;
+import tod.gui.kit.html.HtmlGroup;
+import tod.gui.kit.html.HtmlParentElement;
+import tod.gui.kit.html.HtmlText;
 import zz.utils.ui.StackLayout;
 import zz.utils.ui.UIUtils;
-import zz.utils.ui.WrappedFlowLayout;
-import zz.utils.ui.ZLabel;
 import zz.utils.ui.text.XFont;
 
 public abstract class BehaviorCallNode extends AbstractEventNode
@@ -72,9 +64,9 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 		createUI();
 	}
 	
-	protected synchronized void createUI()
+	protected void createUI()
 	{
-		setLayout(new BorderLayout(0, 0));
+		super.createUI();
 		
 		itsExpanderWidget = new ExpanderWidget(Color.GRAY);
 		itsExpanderWidget.addMouseListener(new MouseAdapter()
@@ -88,8 +80,13 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 		});
 		
 		add(itsExpanderWidget, BorderLayout.WEST);
-		
-		add(createShortView(), BorderLayout.CENTER);
+	}
+	
+	@Override
+	protected void createHtmlUI(HtmlBody aBody)
+	{
+		if (isSelected()) createFullView(aBody);
+		else createShortView(aBody);
 	}
 	
 	@Override
@@ -129,12 +126,12 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 	 * (short version).
 	 * @param aComponent
 	 */
-	protected void fillShortArgs(JComponent aContainer)
+	protected void fillShortArgs(HtmlParentElement aParent)
 	{
 		Object[] theArguments = getEvent().getArguments();
 
 		XFont theFont = FontConfig.STD_FONT;
-		aContainer.add(ZLabel.create("(", theFont, Color.BLACK));
+		aParent.addText("(");
 		
 		if (theArguments != null)
 		{
@@ -142,23 +139,23 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 			for (Object theArgument : theArguments)
 			{
 				if (theFirst) theFirst = false;
-				else aContainer.add(ZLabel.create(", ", theFont, Color.BLACK));
+				else aParent.addText(", ");
 				
-				aContainer.add(Hyperlinks.object(
+				aParent.add(Hyperlinks.object(
+						Hyperlinks.HTML,
 						getLogBrowser(),
 						getJobProcessor(),
 						theArgument, 
 						getEvent(),
-						theFont,
 						showPackageNames()));
 			}
 		}
 		else if (! getBehavior().getReturnType().isVoid())
 		{
-			aContainer.add(ZLabel.create("...", theFont, Color.BLACK));
+			aParent.addText("...");
 		}
 		
-		aContainer.add(ZLabel.create(")", theFont, Color.BLACK));
+		aParent.addText(")");
 
 	}
 	
@@ -167,54 +164,68 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 	 * (full version).
 	 * @param aComponent
 	 */
-	protected void fillFullArgs(JComponent aComponent)
+	protected void fillFullArgs(HtmlParentElement aParent)
 	{
-		fillShortArgs(aComponent);
+		fillShortArgs(aParent);
 	}
 	
 	/**
 	 * Creates a summarized view of the event
 	 */
-	protected JComponent createShortView()
+	protected void createShortView(HtmlParentElement aParent)
 	{
-		return createFullView();
+		HtmlElement theNamePrefix = createBehaviorNamePrefix();
+		if (theNamePrefix != null) aParent.add(theNamePrefix);
+		aParent.add(createShortBehaviorName());
+		fillShortArgs(aParent);
+		
+		aParent.add(createResult(" ->"));
 	}
 	
 	/**
 	 * Creates a complete view of the event.
 	 */
-	protected JComponent createFullView()
+	protected void createFullView(HtmlParentElement aParent)
 	{
-		JPanel thePanel = new JPanel(new WrappedFlowLayout());
-		thePanel.setOpaque(false);
+		HtmlElement theNamePrefix = createBehaviorNamePrefix();
+		if (theNamePrefix != null) aParent.add(theNamePrefix);
+		aParent.add(createFullBehaviorName());
+		fillFullArgs(aParent);
 		
+		aParent.addBr();
 		
-		JComponent theNamePrefix = createBehaviorNamePrefix();
-		if (theNamePrefix != null) thePanel.add(theNamePrefix);
-		if (showPackageNames()) thePanel.add(createPackageName());
-		thePanel.add(createBehaviorName());
-		fillFullArgs(thePanel);
+		aParent.addText("On: ");
 		
-		thePanel.add(GUIUtils.createLabel("->"));
-		thePanel.add(createResult());
+		Object theTarget = getEvent().getTarget();
+		if (theTarget == null) aParent.addText(" (static)");
+		else aParent.add(Hyperlinks.object(
+				Hyperlinks.HTML,
+				getLogBrowser(),
+				getJobProcessor(),
+				theTarget, 
+				getEvent(),
+				showPackageNames()));
 		
-		return thePanel;
+		aParent.addBr();
+
+		aParent.add(createResult(getResultPrefix() + ":"));
 	}
 	
 	/**
 	 * Creates a component that displays the behavior name.
 	 */
-	protected JComponent createBehaviorName()
-	{
-		IBehaviorInfo theBehavior = getBehavior();
-		return GUIUtils.createLabel(theBehavior.getName());
-	}
+	protected abstract HtmlElement createShortBehaviorName();
+	
+	/**
+	 * Creates a component that displays the behavior name.
+	 */
+	protected abstract HtmlElement createFullBehaviorName();
 	
 	/**
 	 * Returns a component that contains a prefix for the behavior name,
 	 * such as "new "
 	 */
-	protected JComponent createBehaviorNamePrefix()
+	protected HtmlElement createBehaviorNamePrefix()
 	{
 		return null;
 	}
@@ -223,22 +234,22 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 	 * Returns a component that contains a prefix for the result,
 	 * such as "Returned " or "Created ".
 	 */
-	protected JComponent createResultPrefix()
+	protected String getResultPrefix()
 	{
-		return null;
+		return "";
 	}
 	
-	protected JComponent createPackageName()
+	protected HtmlElement createPackageName()
 	{
-		return GUIUtils.createLabel(
+		return HtmlText.create(
 				Util.getPackageName(getBehavior().getType().getName()), 
-				FontConfig.SMALL_FONT, 
+				FontConfig.SMALL, 
 				Color.BLACK);
 	}
 	
-	protected JComponent createResult()
+	protected HtmlElement createResult(final String aResultPrefix)
 	{
-		return new AsyncPanel(getJobProcessor())
+		return new AsyncHtmlGroup(getJobProcessor(), aResultPrefix + " ...")
 		{
 			@Override
 			protected void runJob()
@@ -247,12 +258,11 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 			}
 
 			@Override
-			protected void update()
+			protected void updateUI()
 			{
 				IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
 				Object theResult = getResult();
 				IBehaviorInfo theBehavior = getBehavior();
-				XFont theFont = FontConfig.STD_FONT;
 				
 				// Set final expander color.
 				Color theExpanderColor;
@@ -265,46 +275,42 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 				itsExpanderWidget.setColor(theExpanderColor);
 
 				// Add result components
-				setLayout(GUIUtils.createSequenceLayout());
 				
 				if (theExitEvent == null)
 				{
-					add(ZLabel.create("Behavior never returned", theFont, Color.BLACK));
+					add(HtmlText.create(" [Behavior never returned]"));
 				}
 				else if (theExitEvent.hasThrown())
 				{
-					add(ZLabel.create("Thrown ", theFont, Color.RED));
+					add(HtmlText.create("["));
+					add(HtmlText.create("Thrown ", FontConfig.NORMAL, Color.RED));
+					add(HtmlText.create("]"));
 
 					add(Hyperlinks.object(
+							Hyperlinks.HTML,
 							getLogBrowser(), 
 							getJobProcessor(),
 							theExitEvent.getResult(),
 							theExitEvent,
-							theFont,
 							showPackageNames()));
 				}
 				else
 				{
-					JComponent thePrefix = createResultPrefix();
-					if (thePrefix != null) add(thePrefix);
-
 					if (theResult != null)
 					{
+						add(HtmlText.create(aResultPrefix + " "));						
 						add(Hyperlinks.object(
+								Hyperlinks.HTML,
 								getLogBrowser(), 
 								getJobProcessor(),
 								theResult,
 								theExitEvent,
-								theFont,
 								showPackageNames()));
 					}
-					else if (theBehavior.getReturnType().isVoid())
+					else if (! theBehavior.getReturnType().isVoid())
 					{
-						add(ZLabel.create("void", theFont, Color.BLACK));
-					}
-					else 
-					{
-						add(ZLabel.create("null", theFont, Color.BLACK));
+						add(HtmlText.create(aResultPrefix + " "));						
+						add(HtmlText.create("null"));
 					}
 				}
 			}

@@ -31,18 +31,16 @@ import tod.core.database.structure.IThreadInfo;
 public class Stepper
 {
 	private ILogBrowser itsBrowser;
-	private IThreadInfo itsThread;
 	private ILogEvent itsCurrentEvent;
 
-	public Stepper(ILogBrowser aBrowser, IThreadInfo aThread)
+	public Stepper(ILogBrowser aBrowser)
 	{
 		itsBrowser = aBrowser;
-		itsThread = aThread;
 	}
 
 	public IThreadInfo getThread()
 	{
-		return itsThread;
+		return getCurrentEvent().getThread();
 	}
 
 	public ILogEvent getCurrentEvent()
@@ -75,25 +73,25 @@ public class Stepper
 
 	public void forwardStepInto()
 	{
-		forward(itsBrowser.createBrowser(itsBrowser.createThreadFilter(itsThread)));
+		forward(itsBrowser.createBrowser(itsBrowser.createThreadFilter(getThread())));
 	}
 	
 	public void backwardStepInto()
 	{
-		backward(itsBrowser.createBrowser(itsBrowser.createThreadFilter(itsThread)));
+		backward(itsBrowser.createBrowser(itsBrowser.createThreadFilter(getThread())));
 	}
 	
 	public void forwardStepOver()
 	{
 		forward(itsBrowser.createBrowser(itsBrowser.createIntersectionFilter(
-				itsBrowser.createThreadFilter(itsThread),
+				itsBrowser.createThreadFilter(getThread()),
 				itsBrowser.createDepthFilter(itsCurrentEvent.getDepth()))));
 	}
 	
 	public void backwardStepOver()
 	{
 		backward(itsBrowser.createBrowser(itsBrowser.createIntersectionFilter(
-				itsBrowser.createThreadFilter(itsThread),
+				itsBrowser.createThreadFilter(getThread()),
 				itsBrowser.createDepthFilter(itsCurrentEvent.getDepth()))));
 	}
 	

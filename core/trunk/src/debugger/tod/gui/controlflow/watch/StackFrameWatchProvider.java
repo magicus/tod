@@ -23,7 +23,6 @@ package tod.gui.controlflow.watch;
 import static tod.gui.FontConfig.STD_HEADER_FONT;
 
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.util.List;
 
 import javax.swing.JComponent;
@@ -131,7 +130,7 @@ public class StackFrameWatchProvider implements IWatchProvider<LocalVariableInfo
 			if (theBehavior != null)
 			{
 				theContainer.add(ZLabel.create("Behavior: ", STD_HEADER_FONT, Color.BLACK));
-				theContainer.add(Hyperlinks.behavior(theBehavior, STD_HEADER_FONT));
+				theContainer.add(Hyperlinks.behavior(Hyperlinks.SWING, theBehavior));
 				theContainer.add(ZLabel.create(" ("+Util.getPrettyName(theBehavior.getType().getName())+")", STD_HEADER_FONT, Color.BLACK));
 			}
 			

@@ -231,12 +231,12 @@ public class WatchPanel extends JPanel
 		theContainer.add(GUIUtils.createLabel("this = "));
 		
 		theContainer.add(Hyperlinks.object(
+				Hyperlinks.SWING, 
 				itsView.getLogBrowser(), 
 				getJobProcessor(),
 				null,
 				aCurrentObject,
 				itsProvider.getRefEvent(),
-				STD_FONT,
 				showPackageNames()));
 		
 		return theContainer;		

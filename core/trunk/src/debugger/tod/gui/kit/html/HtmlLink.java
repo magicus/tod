@@ -18,21 +18,34 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui;
+package tod.gui.kit.html;
 
-import java.awt.Font;
-
-import zz.utils.ui.ZLabel;
-import zz.utils.ui.text.XFont;
-
-public class FontConfig
+public abstract class HtmlLink extends HtmlElement implements IHyperlinkListener
 {
-	public static final XFont STD_FONT = XFont.DEFAULT_XPLAIN.deriveFont(15);
-	public static final XFont STD_HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, 15);
-	public static final XFont SMALL_FONT = XFont.DEFAULT_XPLAIN.deriveFont(12);
-	public static final XFont TINY_FONT = XFont.DEFAULT_XPLAIN.deriveFont(10);
+	private String itsText;
 	
-	public static final int SMALL = 70;
-	public static final int NORMAL = 100;
-	public static final int BIG = 150;
+	public HtmlLink(String aText)
+	{
+		itsText = aText;
+	}
+	
+	@Override
+	public void setDoc(HtmlDoc aDoc)
+	{
+		if (getDoc() != null) getDoc().unregisterListener(getId());
+		super.setDoc(aDoc);
+		if (getDoc() != null) getDoc().registerListener(getId(), this);
+	}
+	
+	@Override
+	public void render(StringBuilder aBuilder)
+	{
+		aBuilder.append("<a href='");
+		aBuilder.append(getId());
+		aBuilder.append("' id='");
+		aBuilder.append(getId());
+		aBuilder.append("'>");
+		aBuilder.append(itsText);
+		aBuilder.append("</a>");
+	}
 }

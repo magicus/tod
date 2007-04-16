@@ -28,7 +28,8 @@ import tod.gui.FontConfig;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
-import zz.utils.ui.ZLabel;
+import tod.gui.kit.html.HtmlBody;
+import tod.gui.kit.html.HtmlText;
 
 public class ExceptionGeneratedNode extends AbstractEventNode
 {
@@ -44,19 +45,16 @@ public class ExceptionGeneratedNode extends AbstractEventNode
 		createUI();
 	}
 	
-	protected void createUI()
+	@Override
+	protected void createHtmlUI(HtmlBody aBody)
 	{
-		add(ZLabel.create(
-				"Exception: ", 
-				FontConfig.STD_FONT, 
-				Color.RED));
-		
-		add(Hyperlinks.object(
+		aBody.add(HtmlText.create("Exception: ", FontConfig.NORMAL, Color.RED));
+		aBody.add(Hyperlinks.object(
+				Hyperlinks.HTML,
 				getLogBrowser(),
 				getJobProcessor(),
 				itsEvent.getException(),
 				itsEvent,
-				FontConfig.STD_FONT,
 				showPackageNames()));
 	}
 	

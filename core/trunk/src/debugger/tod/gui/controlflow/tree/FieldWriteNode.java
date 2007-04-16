@@ -23,11 +23,10 @@ package tod.gui.controlflow.tree;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILogEvent;
-import tod.gui.FontConfig;
-import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
+import tod.gui.kit.html.HtmlBody;
 
 public class FieldWriteNode extends AbstractEventNode
 {
@@ -43,7 +42,8 @@ public class FieldWriteNode extends AbstractEventNode
 		createUI();
 	}
 	
-	protected void createUI()
+	@Override
+	protected void createHtmlUI(HtmlBody aBody)
 	{
 		Object theCurrentObject = null;
 		IBehaviorCallEvent theContainer = itsEvent.getParent();
@@ -52,26 +52,26 @@ public class FieldWriteNode extends AbstractEventNode
 			theCurrentObject = theContainer.getTarget();
 		}
 		
-		add(Hyperlinks.object(
+		aBody.add(Hyperlinks.object(
+				Hyperlinks.HTML,
 				getLogBrowser(), 
 				getJobProcessor(),
 				theCurrentObject, 
 				itsEvent.getTarget(),
 				itsEvent,
-				FontConfig.STD_FONT,
 				showPackageNames()));
 		
-		add(GUIUtils.createLabel("."));
-		add(GUIUtils.createLabel(itsEvent.getField().getName()));
-		add(GUIUtils.createLabel(" = "));
+		aBody.addText(".");
+		aBody.addText(itsEvent.getField().getName());
+		aBody.addText(" = ");
 		
-		add(Hyperlinks.object(
+		aBody.add(Hyperlinks.object(
+				Hyperlinks.HTML,
 				getLogBrowser(),
 				getJobProcessor(), 
 				theCurrentObject,
 				itsEvent.getValue(),
 				itsEvent,
-				FontConfig.STD_FONT,
 				showPackageNames()));
 	}
 	

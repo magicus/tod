@@ -592,7 +592,7 @@ public class GridQuery
 		if (! theEventBrowser.hasNext()) return null;
 		ILogEvent theEvent = theEventBrowser.next();
 		
-		Stepper theStepper = new Stepper(aBrowser, aThread);
+		Stepper theStepper = new Stepper(aBrowser);
 		theStepper.setCurrentEvent(theEvent);
 		
 		int n = 0;

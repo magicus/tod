@@ -36,6 +36,8 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
+import org.apache.lucene.util.SmallFloat;
+
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
@@ -51,6 +53,8 @@ import tod.gui.kit.OptionManager;
 import tod.gui.kit.messages.GetOptionManager;
 import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.kit.messages.ShowObjectHistoryMsg;
+import tod.gui.kit.messages.EventSelectedMsg.SM_ShowNextForLine;
+import tod.gui.kit.messages.EventSelectedMsg.SM_ShowPreviousForLine;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.seed.FilterSeed;
 import tod.gui.seed.LogViewSeed;
@@ -388,7 +392,7 @@ implements ILocationSelectionListener, IGUIManager
 		if (theBrowser.hasNext())
 		{
 			ILogEvent theEvent = theBrowser.next();
-			theView.selectEvent(theEvent);
+			theView.selectEvent(theEvent, new SM_ShowNextForLine(aBehavior, aLine));
 		}
 	}
 	
@@ -408,7 +412,7 @@ implements ILocationSelectionListener, IGUIManager
 		if (theBrowser.hasPrevious())
 		{
 			ILogEvent theEvent = theBrowser.previous();
-			theView.selectEvent(theEvent);
+			theView.selectEvent(theEvent, new SM_ShowPreviousForLine(aBehavior, aLine));
 		}
 	}
 	

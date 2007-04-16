@@ -20,8 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.controlflow.watch;
 
-import static tod.gui.FontConfig.STD_FONT;
-
 import javax.swing.JPanel;
 
 import tod.core.database.browser.ILogBrowser;
@@ -107,24 +105,23 @@ public class WatchEntryNode<E> extends JPanel
 						else add(GUIUtils.createLabel(" / "));
 						
 						add(Hyperlinks.object(
+								Hyperlinks.SWING, 
 								itsLogBrowser, 
 								itsJobProcessor,
 								itsProvider.getCurrentObject(),
 								theValue,
 								itsProvider.getRefEvent(),
-								STD_FONT,
 								showPackageNames()));
 						
 						if (theSetter != null)
 						{
 							add(GUIUtils.createLabel(" ("));
-							add(Hyperlinks.event("why?", theSetter, STD_FONT));
+							add(Hyperlinks.event(Hyperlinks.SWING, "why?", theSetter));
 							add(GUIUtils.createLabel(")"));
 						}
 					}
 				}
 			}
-			
 		});
 	}
 	

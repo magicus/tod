@@ -20,25 +20,14 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.controlflow.tree;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Font;
-
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-
+import tod.Util;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IInstantiationEvent;
-import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
-import tod.core.database.structure.ITypeInfo;
-import tod.gui.GUIUtils;
-import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
-import zz.utils.ui.WrappedFlowLayout;
-import zz.utils.ui.ZLabel;
-import zz.utils.ui.text.XFont;
+import tod.gui.kit.html.HtmlElement;
+import tod.gui.kit.html.HtmlText;
 
 public class InstantiationNode extends BehaviorCallNode
 {
@@ -57,22 +46,31 @@ public class InstantiationNode extends BehaviorCallNode
 	}
 	
 	@Override
-	protected JComponent createBehaviorNamePrefix()
+	protected HtmlElement createBehaviorNamePrefix()
 	{
-		return GUIUtils.createLabel("new ");
+		return HtmlText.create("new ");
 	}
 	
 	@Override
-	protected JComponent createBehaviorName()
+	protected HtmlElement createFullBehaviorName()
+	{
+		return createShortBehaviorName();
+	}
+	
+	@Override
+	protected HtmlElement createShortBehaviorName()
 	{
 		IClassInfo theType = getBehavior().getType();
-		return GUIUtils.createLabel(theType.getName());
+		return HtmlText.create(
+				showPackageNames() ? 
+						theType.getName()
+						: Util.getSimpleInnermostName(theType.getName()));
 	}
 	
 	@Override
-	protected JComponent createResultPrefix()
+	protected String getResultPrefix()
 	{
-		return GUIUtils.createLabel("Created ");
+		return "Created";
 	}
 
 	@Override

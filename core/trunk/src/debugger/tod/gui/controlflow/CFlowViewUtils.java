@@ -56,11 +56,11 @@ public class CFlowViewUtils
 				else aContainer.add(ZLabel.create(", ", aFont, Color.BLACK));
 				
 				aContainer.add(Hyperlinks.object(
+						Hyperlinks.SWING, 
 						aLogBrowser,
 						aJobProcessor,
 						theArgument, 
 						aRefEvent,
-						aFont,
 						aShowPackageNames));
 			}
 		}

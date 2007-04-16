@@ -113,11 +113,11 @@ public class ObjectWatchProvider implements IWatchProvider<IFieldInfo>
 		if (itsObject != null)
 		{
 			theContainer.add(Hyperlinks.object(
+					Hyperlinks.SWING, 
 					itsLogBrowser, 
 					aJobProcessor,
 					itsObject,
 					itsRefEvent,
-					STD_HEADER_FONT,
 					showPackageNames()));
 		}
 		else
@@ -130,7 +130,7 @@ public class ObjectWatchProvider implements IWatchProvider<IFieldInfo>
 		
 		// Setup history link
 		theContainer.add(GUIUtils.createLabel(" ("));
-		theContainer.add(Hyperlinks.history(itsObject, STD_FONT));
+		theContainer.add(Hyperlinks.history(Hyperlinks.SWING, itsObject));
 		theContainer.add(GUIUtils.createLabel(")"));
 		
 		return theContainer;

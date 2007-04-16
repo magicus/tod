@@ -26,7 +26,8 @@ import tod.core.database.event.ILogEvent;
 import tod.gui.FontConfig;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
-import zz.utils.ui.ZLabel;
+import tod.gui.kit.html.HtmlBody;
+import tod.gui.kit.html.HtmlText;
 
 public class UnknownEventNode extends AbstractEventNode
 {
@@ -42,9 +43,10 @@ public class UnknownEventNode extends AbstractEventNode
 		createUI();
 	}
 	
-	protected void createUI()
+	@Override
+	protected void createHtmlUI(HtmlBody aBody)
 	{
-		add(ZLabel.create("Unknown ("+getEvent()+")", FontConfig.STD_FONT, Color.GRAY));
+		aBody.add(HtmlText.create("Unknown ("+getEvent()+")", FontConfig.NORMAL, Color.GRAY));
 	}
 	
 	@Override

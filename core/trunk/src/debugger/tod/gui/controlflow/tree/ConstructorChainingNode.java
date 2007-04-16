@@ -23,14 +23,16 @@ package tod.gui.controlflow.tree;
 import java.awt.BorderLayout;
 import java.awt.Color;
 
-import javax.swing.JComponent;
 import javax.swing.JPanel;
+
 
 import tod.core.database.event.IConstructorChainingEvent;
 import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
+import tod.gui.kit.html.HtmlElement;
+import tod.gui.kit.html.HtmlText;
 import zz.utils.ui.WrappedFlowLayout;
 import zz.utils.ui.ZLabel;
 
@@ -52,7 +54,13 @@ public class ConstructorChainingNode extends BehaviorCallNode
 	}
 	
 	@Override
-	protected JComponent createBehaviorName()
+	protected HtmlElement createFullBehaviorName()
+	{
+		return createShortBehaviorName();
+	}
+	
+	@Override
+	protected HtmlElement createShortBehaviorName()
 	{
 		String theHeader;
 		switch(getEvent().getCallType())
@@ -73,7 +81,7 @@ public class ConstructorChainingNode extends BehaviorCallNode
 			throw new RuntimeException("Not handled: "+getEvent().getCallType());
 		}
 		
-		return ZLabel.create(theHeader, FontConfig.STD_FONT, Color.BLACK);
+		return HtmlText.create(theHeader);
 	}
 	
 }

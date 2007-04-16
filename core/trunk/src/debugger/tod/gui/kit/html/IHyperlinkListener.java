@@ -18,21 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui;
+package tod.gui.kit.html;
 
-import java.awt.Font;
-
-import zz.utils.ui.ZLabel;
-import zz.utils.ui.text.XFont;
-
-public class FontConfig
+/**
+ * Interface for elements that need to be notified of hyperlink traversals.
+ * @author gpothier
+ */
+public interface IHyperlinkListener
 {
-	public static final XFont STD_FONT = XFont.DEFAULT_XPLAIN.deriveFont(15);
-	public static final XFont STD_HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, 15);
-	public static final XFont SMALL_FONT = XFont.DEFAULT_XPLAIN.deriveFont(12);
-	public static final XFont TINY_FONT = XFont.DEFAULT_XPLAIN.deriveFont(10);
-	
-	public static final int SMALL = 70;
-	public static final int NORMAL = 100;
-	public static final int BIG = 150;
+	public void traverse();
 }

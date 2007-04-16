@@ -18,21 +18,48 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui;
+package tod.gui.kit.html;
 
-import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 
-import zz.utils.ui.ZLabel;
-import zz.utils.ui.text.XFont;
+import javax.swing.JTextPane;
 
-public class FontConfig
+public class HtmlComponent extends JTextPane
 {
-	public static final XFont STD_FONT = XFont.DEFAULT_XPLAIN.deriveFont(15);
-	public static final XFont STD_HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, 15);
-	public static final XFont SMALL_FONT = XFont.DEFAULT_XPLAIN.deriveFont(12);
-	public static final XFont TINY_FONT = XFont.DEFAULT_XPLAIN.deriveFont(10);
+	private HtmlDoc itsDoc;
+
+	public HtmlComponent()
+	{
+		setEditable(false);
+	}
 	
-	public static final int SMALL = 70;
-	public static final int NORMAL = 100;
-	public static final int BIG = 150;
+	public void setDoc(HtmlDoc aDoc)
+	{
+		if (itsDoc != null) 
+		{
+			itsDoc.setComponent(null);
+			removeHyperlinkListener(itsDoc);
+		}
+		
+		itsDoc = aDoc;
+		
+		if (itsDoc != null)
+		{
+			itsDoc.setComponent(this);
+			setEditorKit(itsDoc.getEditorKit());
+			setDocument(itsDoc.createDocument());
+			addHyperlinkListener(itsDoc);
+		}
+	}
+
+	@Override
+	protected void paintComponent(Graphics g)
+	{
+		Graphics2D g2 = (Graphics2D) g;
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		super.paintComponent(g2);
+	}
+
 }

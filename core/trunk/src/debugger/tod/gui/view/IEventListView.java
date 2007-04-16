@@ -22,6 +22,7 @@ package tod.gui.view;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.event.ILogEvent;
+import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 
 /**
  * Interface for views that represent an event list in some form.
@@ -43,5 +44,5 @@ public interface IEventListView
 	/**
 	 * Selects (and makes visible) the specified event.
 	 */
-	public void selectEvent(ILogEvent aEvent);
+	public void selectEvent(ILogEvent aEvent, SelectionMethod aMethod);
 }

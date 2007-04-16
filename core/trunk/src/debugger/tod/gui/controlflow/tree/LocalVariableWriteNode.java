@@ -22,11 +22,10 @@ package tod.gui.controlflow.tree;
 
 import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
-import tod.gui.FontConfig;
-import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
+import tod.gui.kit.html.HtmlBody;
 
 public class LocalVariableWriteNode extends AbstractEventNode
 {
@@ -42,17 +41,18 @@ public class LocalVariableWriteNode extends AbstractEventNode
 		createUI();
 	}
 	
-	protected void createUI()
+	@Override
+	protected void createHtmlUI(HtmlBody aBody)
 	{
-		add(GUIUtils.createLabel(itsEvent.getVariable().getVariableName()));
-		add(GUIUtils.createLabel(" = "));
+		aBody.addText(itsEvent.getVariable().getVariableName());
+		aBody.addText(" = ");
 		
-		add(Hyperlinks.object(
+		aBody.add(Hyperlinks.object(
+				Hyperlinks.HTML,
 				getLogBrowser(),
 				getJobProcessor(),
 				itsEvent.getValue(),
 				itsEvent,
-				FontConfig.STD_FONT,
 				showPackageNames()));
 	}
 	

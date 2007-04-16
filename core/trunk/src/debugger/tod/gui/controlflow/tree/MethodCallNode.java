@@ -24,9 +24,10 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 
+
+import tod.Util;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
@@ -34,6 +35,9 @@ import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
+import tod.gui.kit.html.HtmlElement;
+import tod.gui.kit.html.HtmlGroup;
+import tod.gui.kit.html.HtmlText;
 import zz.utils.ui.WrappedFlowLayout;
 import zz.utils.ui.ZLabel;
 import zz.utils.ui.text.XFont;
@@ -48,46 +52,29 @@ public class MethodCallNode extends BehaviorCallNode
 		super(aView, aJobProcessor, aEvent);
 	}
 
-	@Override
-	protected JComponent createResultPrefix()
+	protected HtmlElement createShortBehaviorName()
 	{
-		return GUIUtils.createLabel("Returned ");
+		IBehaviorInfo theBehavior = getBehavior();
+		return HtmlText.create(theBehavior.getName());
 	}
 	
-//	@Override
-//	protected void fillHeaderPrefix(
-//			JComponent aContainer,
-//			XFont aFont)
-//	{
-////		IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
-////
-////		Color theColor = theExitEvent != null && theExitEvent.hasThrown() ?
-////				Color.RED
-////				: Color.BLACK;
-////		
-////		aContainer.add(ZLabel.create(aPrefix, theFont, theColor));
-//
-//		// Create behavior link
-//		IBehaviorInfo theBehavior = getEvent().getExecutedBehavior();
-//		if (theBehavior == null)
-//		{
-//			aFont = aFont.deriveFont(Font.ITALIC, aFont.getAWTFont().getSize2D());
-//			theBehavior = getEvent().getCalledBehavior();
-//		}
-//		ITypeInfo theType = theBehavior.getType();
-//		
-//		aContainer.add(Hyperlinks.type(theType, aFont));
-//		aContainer.add(ZLabel.create(".", aFont, Color.BLACK));
-//		aContainer.add(Hyperlinks.behavior(theBehavior, aFont));
-//	}
-//	
-//	@Override
-//	protected void fillFooterPrefix(
-//			JComponent aContainer,
-//			XFont aFont)
-//	{
-//		aContainer.add(ZLabel.create("Returned: ", aFont, Color.BLACK));
-//	}
-//
+	protected HtmlElement createFullBehaviorName()
+	{
+		HtmlGroup theGroup = new HtmlGroup();
+		IBehaviorInfo theBehavior = getBehavior();
+		if (showPackageNames()) theGroup.add(createPackageName());
+		theGroup.addText(Util.getSimpleName(getBehavior().getType().getName()));
+		theGroup.addText(".");
+		theGroup.addText(theBehavior.getName());
+		
+		return theGroup;
+	}
+
+	@Override
+	protected String getResultPrefix()
+	{
+		return "Returned";
+	}
+	
 
 }

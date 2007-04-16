@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui;
 
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 
 import javax.swing.ImageIcon;
@@ -28,20 +29,43 @@ import zz.utils.ui.ResourceUtils;
 
 public class Resources
 {
-//	public static final ImageIcon ICON_FORWARD_STEP_INTO = loadIcon("forwardStepInto.png");
-//	public static final ImageIcon ICON_BACKWARD_STEP_INTO = loadIcon("backwardStepInto.png");
-//	public static final ImageIcon ICON_FORWARD_STEP_OVER = loadIcon("forwardStepOver.png");
-//	public static final ImageIcon ICON_BACKWARD_STEP_OVER = loadIcon("backwardStepOver.png");
-//	public static final ImageIcon ICON_STEP_OUT = loadIcon("stepOut.png");
+	public static final ImageResource ICON_FORWARD_STEP_INTO = loadIcon("forwardStepInto.png");
+	public static final ImageResource ICON_BACKWARD_STEP_INTO = loadIcon("backwardStepInto.png");
+	public static final ImageResource ICON_FORWARD_STEP_OVER = loadIcon("forwardStepOver.png");
+	public static final ImageResource ICON_BACKWARD_STEP_OVER = loadIcon("backwardStepOver.png");
+	public static final ImageResource ICON_STEP_OUT = loadIcon("stepOut.png");
 	
-	private static ImageIcon loadIcon (String aName)
+	private static ImageResource loadIcon (String aName)
 	{
-		return ResourceUtils.loadIconResource(Resources.class, aName);
+		return new ImageResource(ResourceUtils.loadImageResource(Resources.class, aName));
 	}
 	
-	private static BufferedImage loadImage (String aName)
+	public static class ImageResource
 	{
-		return ResourceUtils.loadImageResource(Resources.class, aName);
+		private BufferedImage itsImage;
+
+		public ImageResource(BufferedImage aImage)
+		{
+			itsImage = aImage;
+		}
+		
+		public ImageIcon asIcon(int aSize)
+		{
+			int theWidth = itsImage.getWidth();
+			int theHeight = itsImage.getHeight();
+			int theSide = Math.max(theWidth, theHeight);
+			
+			if (theSide != aSize)
+			{
+				float theRatio = 1f * aSize / theSide;
+				Image theImage = itsImage.getScaledInstance(
+						(int) (theWidth*theRatio), 
+						(int) (theHeight*theRatio), 
+						Image.SCALE_SMOOTH);
+				return new ImageIcon(theImage);
+			}
+			else return new ImageIcon(itsImage);
+		}
 	}
 
 }

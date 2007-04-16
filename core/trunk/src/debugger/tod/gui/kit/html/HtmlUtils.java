@@ -18,21 +18,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui;
+package tod.gui.kit.html;
 
-import java.awt.Font;
+import java.awt.Color;
 
-import zz.utils.ui.ZLabel;
-import zz.utils.ui.text.XFont;
-
-public class FontConfig
+public class HtmlUtils
 {
-	public static final XFont STD_FONT = XFont.DEFAULT_XPLAIN.deriveFont(15);
-	public static final XFont STD_HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, 15);
-	public static final XFont SMALL_FONT = XFont.DEFAULT_XPLAIN.deriveFont(12);
-	public static final XFont TINY_FONT = XFont.DEFAULT_XPLAIN.deriveFont(10);
-	
-	public static final int SMALL = 70;
-	public static final int NORMAL = 100;
-	public static final int BIG = 150;
+	/**
+	 * Converts an awt {@link Color} to an html color string.
+	 */
+	public static String toString(Color aColor)
+	{
+		StringBuilder theBuilder = new StringBuilder('#');
+		theBuilder.append(Integer.toHexString(aColor.getRed()+0x100).substring(1));
+		theBuilder.append(Integer.toHexString(aColor.getGreen()+0x100).substring(1));
+		theBuilder.append(Integer.toHexString(aColor.getBlue()+0x100).substring(1));
+		
+		return theBuilder.toString();
+	}
 }

@@ -18,21 +18,43 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui;
+package tod.gui.kit.html;
 
-import java.awt.Font;
+import tod.gui.FontConfig;
 
-import zz.utils.ui.ZLabel;
-import zz.utils.ui.text.XFont;
-
-public class FontConfig
+public class HtmlGroup extends HtmlParentElement
 {
-	public static final XFont STD_FONT = XFont.DEFAULT_XPLAIN.deriveFont(15);
-	public static final XFont STD_HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, 15);
-	public static final XFont SMALL_FONT = XFont.DEFAULT_XPLAIN.deriveFont(12);
-	public static final XFont TINY_FONT = XFont.DEFAULT_XPLAIN.deriveFont(10);
+	/**
+	 * Relative font size, in percent. 
+	 */
+	private int itsFontSize;
+
+	public HtmlGroup()
+	{
+		this(100);
+	}
 	
-	public static final int SMALL = 70;
-	public static final int NORMAL = 100;
-	public static final int BIG = 150;
+	public HtmlGroup(int aFontSize)
+	{
+		itsFontSize = aFontSize;
+	}
+
+	@Override
+	protected String getTag()
+	{
+		return "span";
+	}
+
+	@Override
+	protected void renderAttributes(StringBuilder aBuilder)
+	{
+		if (itsFontSize != FontConfig.NORMAL)
+		{
+			aBuilder.append("style='font-size: ");
+			aBuilder.append(itsFontSize);
+			aBuilder.append("%;'");
+		}
+	}
+	
+	
 }
