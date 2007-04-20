@@ -22,6 +22,7 @@ package tod.impl.dbgrid.db;
 
 import tod.impl.dbgrid.AbstractFilteredBidiIterator;
 import tod.impl.dbgrid.BidiIterator;
+import tod.impl.dbgrid.db.IndexSet.IndexManager;
 import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.db.file.HardPagedFile;
 import tod.impl.dbgrid.db.file.IndexTupleCodec;
@@ -59,9 +60,13 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.RoleTuple>
 	
 	public static final IndexTupleCodec<RoleTuple> TUPLE_CODEC = new RoleTupleCodec();
 	
-	public RoleIndexSet(String aName, HardPagedFile aFile, int aIndexCount)
+	public RoleIndexSet(
+			String aName, 
+			IndexManager aIndexManager,
+			HardPagedFile aFile, 
+			int aIndexCount)
 	{
-		super(aName, aFile, aIndexCount);
+		super(aName, aIndexManager, aFile, aIndexCount);
 	}
 	
 	@Override

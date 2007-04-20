@@ -41,6 +41,7 @@ import static tod.impl.dbgrid.DebuggerGridConfig.*;
  */
 public abstract class IndexSet<T extends IndexTuple>
 {
+	
 	/**
 	 * This dummy entry is used in {@link #itsIndexes} to differenciate
 	 * entries that never existed (null  value) from entries that were
@@ -48,24 +49,25 @@ public abstract class IndexSet<T extends IndexTuple>
 	 */
 	private static Entry DISCARDED_ENTRY = new Entry(null);
 	
-	private Entry<MyHierarchicalIndex<T>>[] itsIndexes;
+	private final IndexManager itsIndexManager;
+	private final Entry<MyHierarchicalIndex<T>>[] itsIndexes;
 	
 	/**
 	 * The page ids of all the pages that are used to store discarded indexes.
 	 */
-	private long[] itsIndexPages;
+	private final long[] itsIndexPages;
 	
 	/**
 	 * Number of discarded indexes that fit in a page. 
 	 */
-	private int itsIndexesPerPage;
+	private final int itsIndexesPerPage;
 	
 	/**
 	 * Name of this index set (for monitoring)
 	 */
 	private final String itsName;
 	
-	private HardPagedFile itsFile;
+	private final HardPagedFile itsFile;
 	
 	private int itsIndexCount = 0;
 	
@@ -73,9 +75,14 @@ public abstract class IndexSet<T extends IndexTuple>
 	private int itsLoadCount = 0;
 
 	
-	public IndexSet(String aName, HardPagedFile aFile, int aIndexCount)
+	public IndexSet(
+			String aName,
+			IndexManager aIndexManager,
+			HardPagedFile aFile, 
+			int aIndexCount)
 	{
 		itsName = aName;
+		itsIndexManager = aIndexManager;
 		itsFile = aFile;
 		itsIndexes = new Entry[aIndexCount];
 		
@@ -143,7 +150,7 @@ public abstract class IndexSet<T extends IndexTuple>
 		}
 		else theIndex = theEntry.getValue();
 		
-		IndexManager.getInstance().use((Entry) theEntry);
+		itsIndexManager.use((Entry) theEntry);
 		
 		return theIndex;
 	}
@@ -212,16 +219,14 @@ public abstract class IndexSet<T extends IndexTuple>
 		return getClass().getSimpleName()+": "+itsName;
 	}
 	
-	private static class IndexManager extends SyncMRUBuffer<Integer, MyHierarchicalIndex>
+	/**
+	 * The index manager ensures that least-frequently-used indexes
+	 * are discarded so that they do not waste memory.
+	 * @author gpothier
+	 */
+	public static class IndexManager extends SyncMRUBuffer<Integer, MyHierarchicalIndex>
 	{
-		private static IndexManager INSTANCE = new IndexManager();
-
-		public static IndexManager getInstance()
-		{
-			return INSTANCE;
-		}
-
-		private IndexManager()
+		public IndexManager()
 		{
 			super((int) ((DB_PAGE_BUFFER_SIZE/DB_PAGE_SIZE) / 1), false);
 		}

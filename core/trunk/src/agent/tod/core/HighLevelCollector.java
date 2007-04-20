@@ -136,4 +136,12 @@ public abstract class HighLevelCollector<T extends ThreadData>
 			T aThread, 
 			long aJVMThreadId,
 			String aName);
+	
+	/**
+	 * Sends a request to clear the database.
+	 * @param aThread The thread that sends the request. The database will
+	 * be cleared for all threads, but it is necessary that a particular thread
+	 * send the request.
+	 */
+	protected abstract void clear(T aThread);
 }

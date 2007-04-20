@@ -41,14 +41,6 @@ import tod.core.database.structure.HostInfo;
  */
 public abstract class LogReceiver 
 {
-	/**
-	 * This command flushes all buffered events and indexes.
-	 * args: none
-	 * return:
-	 *  number of flushed events: int
-	 */
-	public static final byte CMD_FLUSH = 101;
-	
 	public static final ReceiverThread DEFAULT_THREAD = new ReceiverThread();
 	
 	private ReceiverThread itsReceiverThread;
@@ -246,11 +238,16 @@ public abstract class LogReceiver
 			{
 				byte theCommand = itsDataIn.readByte();
 				
-				if (theCommand == CMD_FLUSH)
+				if (theCommand == MessageType.CMD_FLUSH)
 				{
 					int theCount = flush();
 					itsDataOut.writeInt(theCount);
 					itsDataOut.flush();
+				}
+				else if (theCommand == MessageType.CMD_CLEAR)
+				{
+					flush();
+					clear();
 				}
 				else
 				{
@@ -301,6 +298,11 @@ public abstract class LogReceiver
 	 * @return Number of flushed events
 	 */
 	protected abstract int flush();
+	
+	/**
+	 * Clears the database.
+	 */
+	protected abstract void clear();
 	
 	public interface ILogReceiverMonitor
 	{

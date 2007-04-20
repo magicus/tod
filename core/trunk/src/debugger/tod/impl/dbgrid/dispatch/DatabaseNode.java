@@ -474,6 +474,12 @@ implements RIDatabaseNode
 		{
 			return DatabaseNode.this.flush();
 		}
+		
+		@Override
+		protected void clear()
+		{
+			DatabaseNode.this.clear();
+		}
 	}
 	
 	/**

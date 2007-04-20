@@ -31,6 +31,7 @@ import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_TYPE_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_VAR_COUNT;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.SplittedConditionHandler;
+import tod.impl.dbgrid.db.IndexSet.IndexManager;
 import tod.impl.dbgrid.db.RoleIndexSet.RoleTuple;
 import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.db.file.HardPagedFile;
@@ -45,6 +46,8 @@ import tod.impl.dbgrid.monitoring.Probe;
  */
 public class Indexes
 {
+	private IndexManager itsIndexManager = new IndexManager();	
+	
 	private StdIndexSet itsTypeIndex;
 	private StdIndexSet itsThreadIndex;
 	private StdIndexSet itsDepthIndex;
@@ -73,25 +76,25 @@ public class Indexes
 	{
 		Monitor.getInstance().register(this);
 		
-		itsTypeIndex = new StdIndexSet("type", aFile, STRUCTURE_TYPE_COUNT+1);
-		itsThreadIndex = new StdIndexSet("thread", aFile, STRUCTURE_THREADS_COUNT+1);
-		itsDepthIndex = new StdIndexSet("depth", aFile, STRUCTURE_DEPTH_RANGE+1);
-		itsLocationIndex = new StdIndexSet("bytecodeLoc.", aFile, STRUCTURE_BYTECODE_LOCS_COUNT+1);
-		itsBehaviorIndex = new RoleIndexSet("behavior", aFile, STRUCTURE_BEHAVIOR_COUNT+1);
-		itsFieldIndex = new StdIndexSet("field", aFile, STRUCTURE_FIELD_COUNT+1);
-		itsVariableIndex = new StdIndexSet("variable", aFile, STRUCTURE_VAR_COUNT+1);
+		itsTypeIndex = new StdIndexSet("type", itsIndexManager, aFile, STRUCTURE_TYPE_COUNT+1);
+		itsThreadIndex = new StdIndexSet("thread", itsIndexManager, aFile, STRUCTURE_THREADS_COUNT+1);
+		itsDepthIndex = new StdIndexSet("depth", itsIndexManager, aFile, STRUCTURE_DEPTH_RANGE+1);
+		itsLocationIndex = new StdIndexSet("bytecodeLoc.", itsIndexManager, aFile, STRUCTURE_BYTECODE_LOCS_COUNT+1);
+		itsBehaviorIndex = new RoleIndexSet("behavior", itsIndexManager, aFile, STRUCTURE_BEHAVIOR_COUNT+1);
+		itsFieldIndex = new StdIndexSet("field", itsIndexManager, aFile, STRUCTURE_FIELD_COUNT+1);
+		itsVariableIndex = new StdIndexSet("variable", itsIndexManager, aFile, STRUCTURE_VAR_COUNT+1);
 
 		
 		itsArrayIndexIndexes = new StdIndexSet[DebuggerGridConfig.INDEX_ARRAY_INDEX_PARTS.length];
 		for (int i=0;i<itsArrayIndexIndexes.length;i++)
 		{
-			itsArrayIndexIndexes[i] = new StdIndexSet("index-"+i, aFile, STRUCTURE_ARRAY_INDEX_COUNT+1);
+			itsArrayIndexIndexes[i] = new StdIndexSet("index-"+i, itsIndexManager, aFile, STRUCTURE_ARRAY_INDEX_COUNT+1);
 		}
 		
 		itsObjectIndexes = new ObjectIndexSet[DebuggerGridConfig.INDEX_OBJECT_PARTS.length];
 		for (int i=0;i<itsObjectIndexes.length;i++)
 		{
-			itsObjectIndexes[i] = new ObjectIndexSet("object-"+i, aFile, STRUCTURE_OBJECT_COUNT+1);
+			itsObjectIndexes[i] = new ObjectIndexSet("object-"+i, itsIndexManager, aFile, STRUCTURE_OBJECT_COUNT+1);
 		}
 	}
 	
@@ -100,6 +103,8 @@ public class Indexes
 	 */
 	public void unregister()
 	{
+		Monitor.getInstance().unregister(this);
+
 		itsTypeIndex.unregister();
 		itsThreadIndex.unregister();
 		itsDepthIndex.unregister();

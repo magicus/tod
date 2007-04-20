@@ -152,6 +152,11 @@ public class NativeCollector extends HighLevelCollector<NativeCollector.NativeTh
 		thread(aThread.getId(), aJVMThreadId, aName);
 	}
 
+	@Override
+	protected void clear(NativeThreadData aThread)
+	{
+		throw new UnsupportedOperationException();
+	}
 
 	static class NativeThreadData extends ThreadData
 	{

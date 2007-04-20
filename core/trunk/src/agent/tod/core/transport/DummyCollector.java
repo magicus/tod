@@ -106,4 +106,9 @@ public class DummyCollector extends HighLevelCollector<ThreadData>
 	protected void thread(ThreadData aThread, long aJVMThreadId, String aName)
 	{
 	}
+	
+	@Override
+	protected void clear(ThreadData aThread)
+	{
+	}
 }

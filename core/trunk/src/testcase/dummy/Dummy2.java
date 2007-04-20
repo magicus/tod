@@ -18,42 +18,33 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.dbgrid.db;
+package dummy;
 
-import tod.agent.DebugFlags;
-import tod.impl.dbgrid.db.IndexSet.IndexManager;
-import tod.impl.dbgrid.db.file.HardPagedFile;
-import tod.impl.dbgrid.messages.ObjectCodec;
-import tod.impl.dbgrid.monitoring.AggregationType;
-import tod.impl.dbgrid.monitoring.Probe;
+import tod.agent.TOD;
 
-/**
- * An index set specialized for objects.
- * @author gpothier
- */
-public class ObjectIndexSet extends RoleIndexSet
+public class Dummy2
 {
-	
-	public ObjectIndexSet(
-			String aName, 
-			IndexManager aIndexManager,
-			HardPagedFile aFile, 
-			int aIndexCount)
+	public static void main(String[] args)
 	{
-		super(aName, aIndexManager, aFile, aIndexCount);
-		
-	}
-
-	@Override
-	public void addTuple(int aIndex, RoleTuple aTuple)
-	{
-		if (DebugFlags.ALIAS_OBJECTS > 0)
+		for(int i=0;i<100;i++)
 		{
-			aIndex = ((aIndex-1) % DebugFlags.ALIAS_OBJECTS) + 1;
+			System.out.println(i);
+			dummy1();
+			System.out.println("Clearing DB...");
+			TOD.clearDatabase();
 		}
-		
-		super.addTuple(aIndex, aTuple);
 	}
 	
-
+	public static void dummy1()
+	{
+		for(int i=0;i<100000;i++) 
+		{
+			foo(i);
+		}
+	}
+	
+	public static void foo(int i)
+	{
+		int j = i*2;
+	}
 }

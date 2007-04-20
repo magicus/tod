@@ -18,42 +18,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.dbgrid.db;
-
-import tod.agent.DebugFlags;
-import tod.impl.dbgrid.db.IndexSet.IndexManager;
-import tod.impl.dbgrid.db.file.HardPagedFile;
-import tod.impl.dbgrid.messages.ObjectCodec;
-import tod.impl.dbgrid.monitoring.AggregationType;
-import tod.impl.dbgrid.monitoring.Probe;
+package tod.agent;
 
 /**
- * An index set specialized for objects.
+ * Entry point for debugged applications that need to control
+ * the activity of TOD.
  * @author gpothier
  */
-public class ObjectIndexSet extends RoleIndexSet
+public class TOD
 {
-	
-	public ObjectIndexSet(
-			String aName, 
-			IndexManager aIndexManager,
-			HardPagedFile aFile, 
-			int aIndexCount)
+	/**
+	 * Clears all previously recorded events.
+	 */
+	public static void clearDatabase()
 	{
-		super(aName, aIndexManager, aFile, aIndexCount);
-		
+		AgentConfig.getInterpreter().clear();
 	}
-
-	@Override
-	public void addTuple(int aIndex, RoleTuple aTuple)
-	{
-		if (DebugFlags.ALIAS_OBJECTS > 0)
-		{
-			aIndex = ((aIndex-1) % DebugFlags.ALIAS_OBJECTS) + 1;
-		}
-		
-		super.addTuple(aIndex, aTuple);
-	}
-	
-
 }

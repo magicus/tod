@@ -29,6 +29,7 @@ import java.util.StringTokenizer;
 import tod.agent.AgentConfig;
 import tod.agent.AgentUtils;
 import tod.agent.DebugFlags;
+import tod.core.transport.CollectorPacketWriter;
 
 /**
  * Interprets low-level events sent by the instrumentation code and
@@ -663,6 +664,16 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				aData);
 	}
 
+	/**
+	 * Sends a request to clear the database.
+	 */
+	public void clear()
+	{
+		if (DISABLE_INTERPRETER) return;
+		T theThread = getThreadData();
+		itsCollector.clear(theThread);
+	}
+	
 	public static class ThreadData 
 	{
 		/**

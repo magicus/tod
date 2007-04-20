@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.db;
 
+import tod.impl.dbgrid.db.IndexSet.IndexManager;
 import tod.impl.dbgrid.db.file.HardPagedFile;
 import tod.impl.dbgrid.db.file.IndexTuple;
 import tod.impl.dbgrid.db.file.IndexTupleCodec;
@@ -30,9 +31,13 @@ public class StdIndexSet extends IndexSet<StdIndexSet.StdTuple>
 {
 	public static final IndexTupleCodec TUPLE_CODEC = new StdTupleCodec();
 	
-	public StdIndexSet(String aName, HardPagedFile aFile, int aIndexCount)
+	public StdIndexSet(
+			String aName, 
+			IndexManager aIndexManager,
+			HardPagedFile aFile, 
+			int aIndexCount)
 	{
-		super(aName, aFile, aIndexCount);
+		super(aName, aIndexManager, aFile, aIndexCount);
 	}
 	
 	@Override

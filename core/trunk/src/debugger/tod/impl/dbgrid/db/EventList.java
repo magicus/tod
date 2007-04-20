@@ -80,7 +80,7 @@ public class EventList
 	
 	public void unregister()
 	{
-		Monitor.getInstance().register(this);
+		Monitor.getInstance().unregister(this);
 	}
 
 	/**

@@ -187,6 +187,12 @@ implements RIDispatcher
 		{
 			throw new UnsupportedOperationException(); //For now there is no hierarchical dispatch.
 		}
+		
+		@Override
+		protected void clear()
+		{
+			throw new UnsupportedOperationException();
+		}
 
 		@Override
 		protected void readPacket(DataInputStream aStream, MessageType aType) throws IOException

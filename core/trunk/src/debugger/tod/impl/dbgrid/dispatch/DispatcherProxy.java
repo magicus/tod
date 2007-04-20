@@ -124,7 +124,7 @@ public class DispatcherProxy extends DispatchNodeProxy
 		try
 		{
 			System.out.println("[DispatcherProxy] Flushing "+getNodeId()+"...");
-			getOutStream().writeByte(LogReceiver.CMD_FLUSH);
+			getOutStream().writeByte(MessageType.CMD_FLUSH);
 			getOutStream().flush();
 			System.out.println("[DispatcherProxy] Waiting response for "+getNodeId()+"...");
 			int theCount = getInStream().readInt();

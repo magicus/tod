@@ -36,7 +36,7 @@ public enum MessageType
 	LOCAL_VARIABLE_WRITE,
 	OUTPUT,
 	
-	//Arguments
+	// Arguments
 	OBJECT_ARRAY, SIMPLE_OBJECT, NONE,
 	
 	// Argument values
@@ -52,5 +52,21 @@ public enum MessageType
 	 * Cached values; call to values() is costly. 
 	 */
 	public static final MessageType[] VALUES = values();
+	
+	/**
+	 * This command flushes all buffered events and indexes.
+	 * args: none
+	 * return:
+	 *  number of flushed events: int
+	 */
+	public static final byte CMD_FLUSH = 101;
+	
+	/**
+	 * This command clears the database.
+	 * args: none
+	 * return: none
+	 */
+	public static final byte CMD_CLEAR = 102;
+	
 	
 }

@@ -77,6 +77,12 @@ public class CollectorTODServer extends TODServer
 				{
 					throw new UnsupportedOperationException();
 				}
+				
+				@Override
+				protected void clear()
+				{
+					throw new UnsupportedOperationException();
+				}
 			};
 		}
 		catch (IOException e)

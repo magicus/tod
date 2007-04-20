@@ -323,6 +323,11 @@ public class CollectorPacketWriter
 		
 		sendRegisteredObjects();
 	}
+	
+	public void sendClear() throws IOException
+	{
+		itsStream.writeByte(MessageType.CMD_CLEAR);
+	}
 
 	public static void sendRegisterType(
 			DataOutputStream aStream,
@@ -406,7 +411,7 @@ public class CollectorPacketWriter
 		aStream.writeInt(aFileId);
 		aStream.writeUTF(aFileName);
 	}
-
+	
 	private void sendStd(
 			DataOutputStream aStream,
 			int aThreadId, 

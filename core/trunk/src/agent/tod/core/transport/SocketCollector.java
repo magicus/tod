@@ -417,6 +417,23 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
         }
 	}
 	
+	@Override
+	protected void clear(SocketThreadData aThread)
+	{
+		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
+		assert ! aThread.isSending();
+        try
+        {
+        	CollectorPacketWriter theWriter = aThread.packetStart(0);
+        	theWriter.sendClear();
+            aThread.packetEnd();
+        }
+        catch (IOException e)
+        {
+        	throw new RuntimeException(e);
+        }
+	}
+	
 	private long itsBiggestDeltaT;
 
 	
@@ -620,6 +637,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		
 		public SenderThread()
 		{
+			super("SenderThread");
 			setDaemon(true);
 			setPriority(MAX_PRIORITY);
 		}
