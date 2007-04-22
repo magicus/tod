@@ -4,8 +4,7 @@ ifeq ($(PLATFORM), win32)
 	WINBASE = ~/vm
 	CXX = i586-mingw32msvc-g++
 	CXXFLAGS += -I $(WINBASE)/boost/include/boost-1_33_1 -I $(WINBASE)/asio/include
-	LDFLAGS_BOOST += -L $(WINBASE)/boost/lib
-	LDFLAGS_BOOST += -lboost_thread-gcc-mt-1_33_1 -lboost_filesystem-gcc-mt-1_33_1 -lws2_32 -Wl,--add-stdcall-alias
+	LDFLAGS_BOOST += -L $(WINBASE)/boost/lib -lws2_32 -Wl,--add-stdcall-alias
 	
 	JAVA_HOME = $(WINBASE)/java
 	CXXFLAGS += -I $(JAVA_HOME)/include/ -I $(JAVA_HOME)/include/win32/
@@ -15,7 +14,6 @@ ifeq ($(PLATFORM), win32)
 	
 else
 	PLATFORM = linux
-	LDFLAGS_BOOST += -lboost_thread -lboost_filesystem
 	
 	CXXFLAGS += -I $(JAVA_HOME)/include/ -I $(JAVA_HOME)/include/linux/
 	
@@ -24,12 +22,13 @@ else
 endif
 
 CXXFLAGS += -O3
+LDFLAGS_BOOST += -lboost_thread-gcc-mt-1_33_1 -lboost_filesystem-gcc-mt-1_33_1 
 
 bci-agent-objects = \
+	$(PLATFORM)/bci-agent.o \
 	$(PLATFORM)/utils.o \
-	$(PLATFORM)/jniutils.o \
-	$(PLATFORM)/md5.o \
-	$(PLATFORM)/bci-agent.o 
+ 	$(PLATFORM)/jniutils.o \
+ 	$(PLATFORM)/md5.o
 	
 array-cast-objects = \
 	$(PLATFORM)/array-cast.o
