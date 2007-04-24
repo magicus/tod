@@ -85,6 +85,7 @@ StaticVoidMethod* ExceptionGeneratedReceiver_exceptionGenerated;
 int isInExceptionCb = 0;
 
 StaticVoidMethod* TracedMethods_setTraced;
+StaticVoidMethod* TOD_enable;
 
 // Method IDs for methods whose exceptions are ignored
 jmethodID ignoredExceptionMethods[3];
@@ -549,6 +550,9 @@ void JNICALL cbVMStart(
 	// Initialize the classes and method ids that will be used
 	// for registering traced methods
 	TracedMethods_setTraced = new StaticVoidMethod(jni, "tod/agent/TracedMethods", "setTraced", "(I)V");
+	
+	TOD_enable = new StaticVoidMethod(jni, "tod/agent/AgentReady", "enable", "()V");
+	TOD_enable->invoke(jni);
 	
 	if (cfgVerbose>=1) printf("VMStart - done\n");
 	fflush(stdout);
