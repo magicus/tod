@@ -4,7 +4,9 @@ ifeq ($(PLATFORM), win32)
 	WINBASE = ~/vm
 	CXX = i586-mingw32msvc-g++
 	CXXFLAGS += -I $(WINBASE)/boost/include/boost-1_33_1 -I $(WINBASE)/asio/include
-	LDFLAGS_BOOST += -L $(WINBASE)/boost/lib -lws2_32 -Wl,--add-stdcall-alias
+	
+	LDFLAGS_BOOST += -L $(WINBASE)/boost/lib
+	LDFLAGS += -lws2_32 -Wl,--add-stdcall-alias
 	
 	JAVA_HOME = $(WINBASE)/java
 	CXXFLAGS += -I $(JAVA_HOME)/include/ -I $(JAVA_HOME)/include/win32/

@@ -37,6 +37,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 #include <fstream>
 #include <asio.hpp>
 #include <boost/filesystem/convenience.hpp>
+#include <boost/thread/tss.hpp>
 
 // Build: g++ -shared -o ../../libbci-agent.so -I $JAVA_HOME/include/ -I $JAVA_HOME/include/linux/ bci-agent.c
 
@@ -82,7 +83,8 @@ char* propNativePort = NULL;
 
 // Class and method references
 StaticVoidMethod* ExceptionGeneratedReceiver_exceptionGenerated;
-int isInExceptionCb = 0;
+int isInitializingExceptionMethods = 0;
+boost::thread_specific_ptr<bool> isInExceptionCb;
 
 StaticVoidMethod* TracedMethods_setTraced;
 StaticVoidMethod* TOD_enable;
@@ -487,16 +489,18 @@ void JNICALL cbException(
 	jmethodID catch_method,
 	jlocation catch_location)
 {
-	if (isInExceptionCb) return;
+	if (! isInExceptionCb.get()) isInExceptionCb.reset(new bool(false));
+	
+	if (isInitializingExceptionMethods) return; // Check if we are in the lazy init process
 	
 	if (cfgCaptureExceptions == 0) return;
 	if (VM_STARTED == 0) return;
 	
 	if (! ExceptionGeneratedReceiver_exceptionGenerated)
 	{
-		isInExceptionCb = true;
+		isInitializingExceptionMethods = true;
 		initExceptionClasses(jni);
-		isInExceptionCb = false;
+		isInitializingExceptionMethods = false;
 	}
 	
 	if (cfgVerbose>=3) printf("Exception detected by native agent.\n");
@@ -505,6 +509,14 @@ void JNICALL cbException(
 	{
 		if (method == ignoredExceptionMethods[i]) return;
 	}
+	
+	if (*isInExceptionCb)
+	{
+		jni->FatalError("Recursive exeception event - probable cause is that the connection to the TOD database has been lost. Exiting.\n");
+	}
+	
+	*isInExceptionCb = true;
+
 	
 	char* methodName;
 	char* methodSignature;
@@ -533,11 +545,19 @@ void JNICALL cbException(
 		bytecodeIndex,
  		exception);
 
-
 	// Free buffers
 	jvmti->Deallocate((unsigned char*) methodName);
 	jvmti->Deallocate((unsigned char*) methodSignature);
 	jvmti->Deallocate((unsigned char*) methodDeclaringClassSignature);
+	
+	jthrowable ex = jni->ExceptionOccurred();
+	if (ex)
+	{
+		jni->ExceptionDescribe();
+		jni->FatalError("Exception detected while processing exeception event. Exiting.\n");
+	}
+	
+	*isInExceptionCb = false;
 }
 
 
