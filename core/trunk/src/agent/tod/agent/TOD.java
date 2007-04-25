@@ -27,11 +27,26 @@ package tod.agent;
  */
 public class TOD
 {
+	static
+	{
+		if (AgentReady.isEnabled()) System.out.println("[TOD] Native agent detected.");
+		else System.out.println("[TOD] Native agent not detected.");
+	}
+	
 	/**
 	 * Clears all previously recorded events.
 	 */
 	public static void clearDatabase()
 	{
-		AgentConfig.getInterpreter().clear();
+		if (AgentReady.isEnabled()) 
+		{
+			System.out.println("[TOD] Sending clearDatabase request...");
+			AgentConfig.getInterpreter().clear();
+			System.out.println("[TOD] clearDatabase request done.");
+		}
+		else
+		{
+			System.out.println("[TOD] Ignoring clearDatabase request: native agent not detected.");
+		}
 	}
 }

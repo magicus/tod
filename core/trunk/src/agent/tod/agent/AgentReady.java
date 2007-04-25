@@ -23,4 +23,22 @@ package tod.agent;
 public class AgentReady
 {
 	public static boolean READY = false;
+	
+	private static boolean ENABLED = false;
+	
+	/**
+	 * Called by the native agent.
+	 */
+	private static void enable()
+	{
+		ENABLED = true;
+	}
+	
+	/**
+	 * Whether the native agent is enabled.
+	 */
+	public static boolean isEnabled()
+	{
+		return ENABLED;
+	}
 }

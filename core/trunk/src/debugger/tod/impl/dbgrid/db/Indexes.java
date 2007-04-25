@@ -29,6 +29,12 @@ import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_OBJECT_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_THREADS_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_TYPE_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_VAR_COUNT;
+
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.SplittedConditionHandler;
 import tod.impl.dbgrid.db.IndexSet.IndexManager;
@@ -39,6 +45,7 @@ import tod.impl.dbgrid.messages.ObjectCodec;
 import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Probe;
+import zz.utils.bit.BitUtils;
 
 /**
  * Groups all the indexes maintained by a database node.
@@ -84,44 +91,105 @@ public class Indexes
 		itsFieldIndex = new StdIndexSet("field", itsIndexManager, aFile, STRUCTURE_FIELD_COUNT+1);
 		itsVariableIndex = new StdIndexSet("variable", itsIndexManager, aFile, STRUCTURE_VAR_COUNT+1);
 
+		itsArrayIndexIndexes = createSplitIndex(
+				"index", 
+				StdIndexSet.class, 
+				DebuggerGridConfig.INDEX_ARRAY_INDEX_PARTS,
+				aFile);
 		
-		itsArrayIndexIndexes = new StdIndexSet[DebuggerGridConfig.INDEX_ARRAY_INDEX_PARTS.length];
-		for (int i=0;i<itsArrayIndexIndexes.length;i++)
+		itsObjectIndexes = createSplitIndex(
+				"object",
+				ObjectIndexSet.class,
+				DebuggerGridConfig.INDEX_OBJECT_PARTS,
+				aFile);
+		
+//		itsArrayIndexIndexes = new StdIndexSet[DebuggerGridConfig.INDEX_ARRAY_INDEX_PARTS.length];
+//		for (int i=0;i<itsArrayIndexIndexes.length;i++)
+//		{
+//			itsArrayIndexIndexes[i] = new StdIndexSet("index-"+i, itsIndexManager, aFile, STRUCTURE_ARRAY_INDEX_COUNT+1);
+//		}
+//		
+//		itsObjectIndexes = new ObjectIndexSet[DebuggerGridConfig.INDEX_OBJECT_PARTS.length];
+//		for (int i=0;i<itsObjectIndexes.length;i++)
+//		{
+//			int theBits = DebuggerGridConfig.INDEX_OBJECT_PARTS[i];
+//			itsObjectIndexes[i] = new ObjectIndexSet(
+//					"object-"+i, 
+//					itsIndexManager, 
+//					aFile, 
+//					STRUCTURE_OBJECT_COUNT+1);
+//		}
+	}
+	
+	/**
+	 * Creates all the sub indexes for a split index.
+	 * @param aName Name base of the indexes
+	 * @param aIndexClass Class of each index
+	 */
+	private <T extends IndexSet> T[] createSplitIndex(
+			String aName,
+			Class<T> aIndexClass, 
+			int[] aParts,
+			HardPagedFile aFile)
+	{
+		try
 		{
-			itsArrayIndexIndexes[i] = new StdIndexSet("index-"+i, itsIndexManager, aFile, STRUCTURE_ARRAY_INDEX_COUNT+1);
+			Constructor<T> theConstructor = aIndexClass.getConstructor(
+					String.class,
+					IndexManager.class,
+					HardPagedFile.class, 
+					int.class);
+			
+			T[] theResult = (T[]) Array.newInstance(aIndexClass, aParts.length);
+			for (int i=0;i<aParts.length;i++)
+			{
+				int theBits = aParts[i];
+				theResult[i] = theConstructor.newInstance(
+						aName+"-"+i, 
+						itsIndexManager, 
+						aFile, 
+						BitUtils.pow2i(theBits)+1);
+			}
+			
+			return theResult;
 		}
-		
-		itsObjectIndexes = new ObjectIndexSet[DebuggerGridConfig.INDEX_OBJECT_PARTS.length];
-		for (int i=0;i<itsObjectIndexes.length;i++)
+		catch (InvocationTargetException e)
 		{
-			itsObjectIndexes[i] = new ObjectIndexSet("object-"+i, itsIndexManager, aFile, STRUCTURE_OBJECT_COUNT+1);
+			throw new RuntimeException(e.getCause());
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException(e);
 		}
 	}
 	
 	/**
+	 * Recursively disposes this object.
 	 * Unregister all the indexes from the monitor.
 	 */
-	public void unregister()
+	public void dispose()
 	{
 		Monitor.getInstance().unregister(this);
 
-		itsTypeIndex.unregister();
-		itsThreadIndex.unregister();
-		itsDepthIndex.unregister();
-		itsLocationIndex.unregister();
-		itsBehaviorIndex.unregister();
-		itsFieldIndex.unregister();
-		itsVariableIndex.unregister();
+		itsTypeIndex.dispose();
+		itsThreadIndex.dispose();
+		itsDepthIndex.dispose();
+		itsLocationIndex.dispose();
+		itsBehaviorIndex.dispose();
+		itsFieldIndex.dispose();
+		itsVariableIndex.dispose();
 
 		for (int i=0;i<itsArrayIndexIndexes.length;i++)
 		{
-			itsArrayIndexIndexes[i].unregister();
+			itsArrayIndexIndexes[i].dispose();
 		}
 		
 		for (int i=0;i<itsObjectIndexes.length;i++)
 		{
-			itsObjectIndexes[i].unregister();
+			itsObjectIndexes[i].dispose();
 		}
+		
+		itsIndexManager.dispose();
 	}
 	
 	public void indexType(int aIndex, StdTuple aTuple)

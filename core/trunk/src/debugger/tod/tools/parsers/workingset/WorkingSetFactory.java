@@ -49,11 +49,12 @@ public class WorkingSetFactory
      */
     public static AbstractClassSet createClassSet(String aClassName) throws ParseException
     {
-        if (aClassName.endsWith(".**")) return new RecursivePackageSet(aClassName.substring(0, aClassName.length() - 3));
-        else if (aClassName.endsWith(".*")) return new SinglePackageSet(
-                                                                        aClassName.substring(0, aClassName.length() - 2));
-        else if (aClassName.endsWith(".")) throw new ParseException("class/package name cannot end with '.': "
-                                                                    + aClassName);
+        if (aClassName.endsWith(".**")) 
+        	return new RecursivePackageSet(aClassName.substring(0, aClassName.length() - 3));
+        else if (aClassName.endsWith(".*")) 
+        	return new SinglePackageSet(aClassName.substring(0, aClassName.length() - 2));
+        else if (aClassName.endsWith(".")) 
+        	throw new ParseException("class/package name cannot end with '.': "+ aClassName);
         else return new SingleClassSet(aClassName);
     }
 }

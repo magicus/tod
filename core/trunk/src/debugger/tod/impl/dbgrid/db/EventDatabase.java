@@ -73,7 +73,6 @@ public class EventDatabase implements ReorderingBufferListener
 		try
 		{
 			itsFile = new HardPagedFile(aFile, DB_PAGE_SIZE);
-			
 			itsEventList = new EventList(aNodeId, itsFile);
 			itsIndexes = new Indexes(itsFile);
 		}
@@ -84,14 +83,15 @@ public class EventDatabase implements ReorderingBufferListener
 	}
 
 	/**
-	 * Causes this database to recursively unregister from the monitor.
+	 * Recursively disposes this database.
+	 * Amongst other things, unregister from the monitor.
 	 */
-	public void unregister()
+	public void dispose()
 	{
 		Monitor.getInstance().unregister(this);
-		itsFile.unregister();
-		itsEventList.unregister();
-		itsIndexes.unregister();
+		itsFile.dispose();
+		itsEventList.dispose();
+		itsIndexes.dispose();
 	}
 
 	public Indexes getIndexes()

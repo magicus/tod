@@ -95,7 +95,7 @@ public abstract class IndexSet<T extends IndexTuple>
 		Monitor.getInstance().register(this);
 	}
 	
-	public void unregister()
+	public void dispose()
 	{
 		Monitor.getInstance().unregister(this);		
 	}
@@ -229,6 +229,14 @@ public abstract class IndexSet<T extends IndexTuple>
 		public IndexManager()
 		{
 			super((int) ((DB_PAGE_BUFFER_SIZE/DB_PAGE_SIZE) / 1), false);
+		}
+		
+		/**
+		 * Disposes this index manager by dropping all entries.
+		 */
+		public void dispose()
+		{
+			dropAll();
 		}
 		
 		@Override

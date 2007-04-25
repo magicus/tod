@@ -185,13 +185,22 @@ implements RIDispatcher
 		@Override
 		protected int flush()
 		{
-			throw new UnsupportedOperationException(); //For now there is no hierarchical dispatch.
+			int theTotal = 0;
+			for (DispatchNodeProxy theProxy : getChildren()) 
+			{
+				theTotal += theProxy.flush();
+			}
+			
+			return theTotal;
 		}
 		
 		@Override
 		protected void clear()
 		{
-			throw new UnsupportedOperationException();
+			for (DispatchNodeProxy theProxy : getChildren()) 
+			{
+				theProxy.clear();
+			}
 		}
 
 		@Override
@@ -221,6 +230,7 @@ implements RIDispatcher
 				break;
 
 			default:
+				// Registrations are forwarded to all nodes.
 				CollectorPacketReader.readPacket(aStream, itsForwardingRegistrer, aType);
 				break;
 

@@ -116,16 +116,20 @@ implements RIDatabaseNode
 		initDatabase();
 	}
 	
-	private void initDatabase()
+	private synchronized void initDatabase()
 	{
-		// Init events database
-		if (itsEventsDatabase != null)
-		{
-			itsEventsDatabase.unregister();
-		}
-		
 		HardPagedFile.clearCache(); //TODO: only clear pages of current database
 		
+		if (itsEventsDatabase != null)
+		{
+			itsEventsDatabase.dispose();
+			
+			// We detach the database so that its space can be reclaimed while
+			// we create the new one.
+			itsEventsDatabase = null; 
+		}
+		
+		// Init events database
 		String thePrefix = DebuggerGridConfig.NODE_DATA_DIR;
 		File theParent = new File(thePrefix);
 		System.out.println("Using data directory: "+theParent);
@@ -213,21 +217,25 @@ implements RIDatabaseNode
 		return itsEventsDatabase.getIterator(aCondition);
 	}
 	
-	public synchronized void pushEvent(GridEvent aEvent)
+	public void pushEvent(GridEvent aEvent)
 	{
-		// The GridEventCollector uses a pool of events
-		// we cannot hold references to those events
-		aEvent = (GridEvent) aEvent.clone(); 
-		itsEventsDatabase.push(aEvent);
+		synchronized (this)
+		{
+			// The GridEventCollector uses a pool of events
+			// we cannot hold references to those events
+			aEvent = (GridEvent) aEvent.clone(); 
+			itsEventsDatabase.push(aEvent);
 
-		long theTimestamp = aEvent.getTimestamp();
-		itsEventsCount++;
+			long theTimestamp = aEvent.getTimestamp();
+			itsEventsCount++;
+			
+			// The following code is a bit faster than using min & max
+			// (Pentium M 2ghz)
+			if (itsFirstTimestamp == 0) itsFirstTimestamp = theTimestamp;
+			if (itsLastTimestamp < theTimestamp) itsLastTimestamp = theTimestamp;			
+		}
 		
-		// The following code is a bit faster than using min & max
-		// (Pentium M 2ghz)
-		if (itsFirstTimestamp == 0) itsFirstTimestamp = theTimestamp;
-		if (itsLastTimestamp < theTimestamp) itsLastTimestamp = theTimestamp;
-		
+		// This must be outside the lock otherwise it might deadlock.
 		itsFlusherThread.active();
 	}
 	
@@ -494,6 +502,7 @@ implements RIDatabaseNode
 		
 		public FlusherThread()
 		{
+			super("FlusherThread");
 			start();
 		}
 		

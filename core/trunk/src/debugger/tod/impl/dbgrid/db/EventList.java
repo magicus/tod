@@ -78,7 +78,7 @@ public class EventList
 		itsFirstPageId = itsCurrentBitStruct.getPage().getPageId();
 	}
 	
-	public void unregister()
+	public void dispose()
 	{
 		Monitor.getInstance().unregister(this);
 	}

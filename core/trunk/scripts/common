@@ -18,6 +18,9 @@ CLASSPATH="$CLASSPATH:$LIB_DIR/lucene-core-2.0.0.jar"
 
 export CLASSPATH
 
+[ -n "$LOCAL_STORAGE" ] || export LOCAL_STORAGE=~/tmp
+[ -n "$SHARED_STORAGE" ] || export SHARED_STORAGE=~/tmp
+
 [ -n "$MASTER_HOST" ] || export MASTER_HOST=localhost
 
 [ -n "$DATA_DIR" ] || export DATA_DIR=$LOCAL_STORAGE/tod

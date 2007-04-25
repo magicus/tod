@@ -87,10 +87,10 @@ public class HardPagedFile extends PageBank
 		itsPagesCount = 0;
 	}
 	
-	public void unregister()
+	public void dispose()
 	{
 		Monitor.getInstance().unregister(this);
-		itsFileAccessor.unregister();
+		itsFileAccessor.dispose();
 	}
 
 	/**
@@ -248,6 +248,7 @@ public class HardPagedFile extends PageBank
 	
 	private class FileAccessor extends Thread
 	{
+		private boolean itsDisposed = false;
 		private final RandomAccessFile itsFile;
 
 		private final byte[] itsReadByteBuffer;
@@ -274,13 +275,23 @@ public class HardPagedFile extends PageBank
 			if (! DebugFlags.DISABLE_ASYNC_WRITES) start();
 		}
 		
-		public void unregister()
+		public void dispose()
 		{
-			Monitor.getInstance().unregister(this);			
+			Monitor.getInstance().unregister(this);
+			try
+			{
+				itsFile.close();
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
+			}
+			itsDisposed = true;
 		}
 		
 		public synchronized void read(long aId, int[] aBuffer) throws IOException
 		{
+			assert ! itsDisposed;
 			aId = itsPhysicalPage[(int) aId];
 			
 			updateScattering(aId);
@@ -350,6 +361,8 @@ public class HardPagedFile extends PageBank
 		
 		public synchronized void write(long aId, int[] aData) throws IOException
 		{
+			assert ! itsDisposed;
+
 			int thePid = itsPhysicalPage[(int) aId];
 			if (thePid == 0)
 			{
@@ -391,7 +404,7 @@ public class HardPagedFile extends PageBank
 		{
 			try
 			{
-				while (true)
+				while (! itsDisposed)
 				{
 					while (itsPageId < 0) wait();
 					try
@@ -461,7 +474,7 @@ public class HardPagedFile extends PageBank
 	
 	/**
 	 * Manages the collections of {@link PageData} instances.
-	 * Ensures that all dirty pages are saved before 
+	 * Ensures that dirty pages are saved before being discarded.
 	 * @author gpothier
 	 */
 	private static class PageDataManager extends SyncMRUBuffer<PageKey, PageData>

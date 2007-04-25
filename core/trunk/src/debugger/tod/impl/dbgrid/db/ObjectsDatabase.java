@@ -94,7 +94,7 @@ public class ObjectsDatabase
 	public void unregister()
 	{
 		Monitor.getInstance().unregister(this);
-		itsFile.unregister();
+		itsFile.dispose();
 	}
 	
 	protected byte[] encode(Object aObject)
