@@ -20,118 +20,209 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
-import javax.swing.JComponent;
-
-import tod.core.LocationRegisterer;
 import tod.core.config.TODConfig;
-import tod.core.session.AbstractSession;
-import tod.impl.bci.asm.ASMDebuggerConfig;
-import tod.impl.bci.asm.ASMInstrumenter;
-import tod.impl.dbgrid.dispatch.DatabaseNode;
 
 /**
- * A single-process grid session.
+ * A single-process grid session, running in a separate vm.
  * @author gpothier
  */
-public class LocalGridSession extends AbstractSession
+public class LocalGridSession extends RemoteGridSession
 {
-	private static GridMaster itsMaster;
-	private static GridLogBrowser itsBrowser;
+	public static String cp = ".";
+	public static String lib = ".";
+
+	private static Process itsProcess;
 	
-	public LocalGridSession(URI aUri, TODConfig aConfig) throws RemoteException
+	static
+	{
+		Runtime.getRuntime().addShutdownHook(new Thread()
+		{
+			@Override
+			public void run()
+			{
+				if (itsProcess != null) itsProcess.destroy();
+			}
+		});
+	}
+
+	public LocalGridSession(URI aUri, TODConfig aConfig, boolean aUseExisting)
+	{
+		super(aUri, aConfig, aUseExisting);
+	}
+
+	public LocalGridSession(URI aUri, TODConfig aConfig)
 	{
 		super(aUri, aConfig);
+	}
 
-		if (itsMaster == null)
-		{
-			LocationRegisterer theRegistrer = new LocationRegisterer();
-			
-			ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(
-					aConfig,
-					theRegistrer);
+	@Override
+	protected String getHost()
+	{
+		return "localhost";
+	}
 	
-			ASMInstrumenter theInstrumenter = new ASMInstrumenter(theDebuggerConfig);
+	private String getJavaExecutable()
+	{
+		String theOs = System.getProperty("os.name");
+		
+		String theJVM = System.getProperty("java.home")+"/bin/java";
+		if (theOs.contains("Windows")) theJVM += "w.exe";
 			
-			DatabaseNode theNode = new DatabaseNode(theRegistrer);
-			itsMaster = new GridMaster(aConfig, theRegistrer, theInstrumenter, theNode, true);
-			itsMaster.waitReady();
-			
-			itsBrowser = new GridLogBrowser(itsMaster);
-		}
-		else 
+		return theJVM;
+	}
+	
+	private void createProcess()
+	{
+		try
 		{
-			itsMaster.clear();
+			if (itsProcess != null) itsProcess.destroy();
+			
+			Long theHeapSize = getConfig().get(TODConfig.LOCAL_SESSION_HEAP);
+			String theJVM = getJavaExecutable();
+			ProcessBuilder theBuilder = new ProcessBuilder(
+					theJVM,
+					"-Xmx"+theHeapSize,
+					"-Djava.library.path="+lib,
+					"-cp", cp,
+					"-Dmaster-host=localhost",
+					"-Dpage-buffer-size="+(theHeapSize/2),
+					"tod.impl.dbgrid.GridMaster",
+					"0");
+			
+			theBuilder.redirectErrorStream(false);
+			
+			itsProcess = theBuilder.start();
+			ProcessOutWatcher theWatcher = new ProcessOutWatcher(itsProcess.getInputStream());
+			ProcessErrGrabber theGrabber = new ProcessErrGrabber(itsProcess.getErrorStream());
+
+			boolean theReady = theWatcher.waitReady();
+			if (! theReady)
+			{
+				throw new RuntimeException("Could not start event database:\n"+theGrabber.getText());
+			}
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException(e);
 		}
 	}
 	
+	@Override
+	protected void init()
+	{
+		createProcess();
+		super.init();
+	}
+	
+	@Override
 	public void disconnect()
 	{
-		itsMaster.disconnect();
-		itsMaster.flush();
-		itsMaster.clear();
-	}
-
-	public void flush()
-	{
-		itsMaster.flush();
-	}
-
-	public String getCachedClassesPath()
-	{
-		return null;
-	}
-
-	public GridMaster getMaster()
-	{
-		return itsMaster;
-	}
-
-	public GridLogBrowser getLogBrowser()
-	{
-		return itsBrowser;
-	}
-
-	public JComponent createConsole()
-	{
-		return null;
+		createProcess();
 	}
 	
-	private Registry getRegistry()
+	/**
+	 * A thread that monitors the JVM process' output stream
+	 * @author gpothier
+	 */
+	private static class ProcessOutWatcher extends Thread
 	{
-        // Check if we use an existing registry of if we create a new one.
-        Registry theRegistry = null;
-        try
+		private InputStream itsStream;
+		private boolean itsReady = false;
+		private CountDownLatch itsLatch = new CountDownLatch(1);
+		
+		public ProcessOutWatcher(InputStream aStream)
 		{
-        	theRegistry = LocateRegistry.getRegistry(Registry.REGISTRY_PORT);
-			if (theRegistry != null) theRegistry.unbind("dummy");
+			super("LocalGridSession - Output Watcher");
+			itsStream = aStream;
+			start();
 		}
-		catch (RemoteException e)
+
+		@Override
+		public void run()
 		{
-            theRegistry = null;
-		}
-        catch(NotBoundException e)
-        {
-            // Ignore - we were able to reach the registry, which is all we wanted
-        }
-        
-        if (theRegistry == null) 
-        {
-            try
+			try
 			{
-				theRegistry = LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
+				BufferedReader theReader = new BufferedReader(new InputStreamReader(itsStream));
+				while(true)
+				{
+					String theLine = theReader.readLine();
+					if (theLine == null) break;
+					System.out.println("[GridMaster process] "+theLine);
+					if (theLine.startsWith(GridMaster.READY_STRING)) 
+					{
+						itsReady = true;
+						itsLatch.countDown();
+						break;
+					}
+				}
 			}
-			catch (RemoteException e)
+			catch (IOException e)
 			{
 				throw new RuntimeException(e);
 			}
-        }
+		}
+		
+		/**
+		 * Waits until the Grid master is ready, or a timeout occurs
+		 * @return Whether the grid master is ready. 
+		 */
+		public boolean waitReady()
+		{
+			try
+			{
+				itsLatch.await(3, TimeUnit.SECONDS);
+				interrupt();
+				return itsReady;
+			}
+			catch (InterruptedException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+	}
+	
+	private static class ProcessErrGrabber extends Thread
+	{
+		private InputStream itsStream;
+		private StringBuilder itsBuilder = new StringBuilder();
 
-        return theRegistry;
+		public ProcessErrGrabber(InputStream aStream)
+		{
+			super("LocalGridSession - Error grabber");
+			itsStream = aStream;
+			start();
+		}
+		
+		@Override
+		public void run()
+		{
+			try
+			{
+				BufferedReader theReader = new BufferedReader(new InputStreamReader(itsStream));
+				while(true)
+				{
+					String theLine = theReader.readLine();
+					if (theLine == null) break;
+					itsBuilder.append("> "+theLine+"\n");
+				}
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		
+		public String getText()
+		{
+			return itsBuilder.toString();
+		}
 	}
 }

@@ -22,6 +22,8 @@ package tod.impl.dbgrid.aggregator;
 
 import java.rmi.RemoteException;
 
+import reflex.lib.pom.POMSynchronizedClass;
+import reflex.lib.pom.POMSynchronizedMethod;
 import tod.agent.DebugFlags;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
@@ -30,6 +32,7 @@ import tod.core.database.structure.IThreadInfo;
 import tod.impl.dbgrid.BufferedBidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
+import tod.impl.dbgrid.Scheduler;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
 
@@ -38,6 +41,10 @@ import tod.impl.dbgrid.queries.EventCondition;
  * of a {@link QueryAggregator}.
  * @author gpothier
  */
+@POMSynchronizedClass(
+		schedulerClass = Scheduler.class, 
+		groupDefClass = Scheduler.class,
+		syncAll = false)
 public class GridEventBrowser extends BufferedBidiIterator<ILogEvent[], ILogEvent>
 implements IEventBrowser
 {
@@ -74,6 +81,7 @@ implements IEventBrowser
 	}
 	
 	@Override
+	@POMSynchronizedMethod
 	protected ILogEvent[] fetchNextBuffer()
 	{
 		try
@@ -89,6 +97,7 @@ implements IEventBrowser
 	}
 	
 	@Override
+	@POMSynchronizedMethod
 	protected ILogEvent[] fetchPreviousBuffer()
 	{
 		try
@@ -198,6 +207,7 @@ implements IEventBrowser
 		return getEventCounts(aT1, aT2, 1, aForceMergeCounts)[0];
 	}
 
+	@POMSynchronizedMethod
 	public long[] getEventCounts(long aT1, long aT2, int aSlotsCount, boolean aForceMergeCounts)
 	{
 		try
@@ -217,6 +227,7 @@ implements IEventBrowser
 		}
 	}
 
+	@POMSynchronizedMethod
 	public boolean setNextEvent(ILogEvent aEvent)
 	{
 		try
@@ -234,6 +245,7 @@ implements IEventBrowser
 		}
 	}
 
+	@POMSynchronizedMethod
 	public boolean setPreviousEvent(ILogEvent aEvent)
 	{
 		try
@@ -271,6 +283,7 @@ implements IEventBrowser
 		return aTimestamp;
 	}
 	
+	@POMSynchronizedMethod
 	public void setNextTimestamp(long aTimestamp)
 	{
 		try
@@ -284,6 +297,7 @@ implements IEventBrowser
 		}
 	}
 
+	@POMSynchronizedMethod
 	public void setPreviousTimestamp(long aTimestamp)
 	{
 		try

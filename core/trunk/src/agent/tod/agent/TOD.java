@@ -49,4 +49,21 @@ public class TOD
 			System.out.println("[TOD] Ignoring clearDatabase request: native agent not detected.");
 		}
 	}
+	
+	/**
+	 * Flushes buffered events.
+	 */
+	public static void flushEvents()
+	{
+		if (AgentReady.isEnabled()) 
+		{
+			System.out.println("[TOD] Sending flushEvents request...");
+			AgentConfig.getInterpreter().flush();
+			System.out.println("[TOD] flushEvents request done.");
+		}
+		else
+		{
+			System.out.println("[TOD] Ignoring flushEvents request: native agent not detected.");
+		}
+	}
 }

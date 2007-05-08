@@ -135,7 +135,7 @@ public class GridExceptionGeneratedEvent extends GridEvent
 	@Override
 	public boolean matchObjectCondition(int aPart, int aPartialKey, byte aRole)
 	{
-		return (aRole == RoleIndexSet.ROLE_OBJECT_EXCEPTION 
+		return ((aRole == RoleIndexSet.ROLE_OBJECT_EXCEPTION || aRole == RoleIndexSet.ROLE_OBJECT_ANY) 
 				&& SplittedConditionHandler.OBJECTS.match(
 						aPart, 
 						aPartialKey, 

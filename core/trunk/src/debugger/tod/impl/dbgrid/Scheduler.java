@@ -18,44 +18,44 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package dummy;
+package tod.impl.dbgrid;
 
-import tod.agent.TOD;
+import reflex.lib.pom.POMGroupDef;
+import reflex.lib.pom.POMScheduler;
+import reflex.lib.pom.Request;
 
-public class Dummy2
+/**
+ * This POM scheduler ensures that all calls to the database are serialized.
+ * @author gpothier
+ */
+public class Scheduler extends POMScheduler implements POMGroupDef
 {
-	public static void main(String[] args)
-	{
-		for(int i=0;i<10;i++)
-		{
-			System.out.println(i);
-			dummy1();
-			System.out.println("Clearing DB...");
-			TOD.clearDatabase();
-		}
-	}
+	private boolean itsWorking = false;
 	
-	public static void dummy1()
+	@Override
+	protected void schedule()
 	{
-		for(int i=0;i<1000;i++) 
-		{
-			foo(i);
-		}
+		if (! itsWorking) itsWorking = executeOldest();
 	}
-	
-	public static void foo(int i)
-	{
-		int j = i*2;
-	}
-	
-	public static class Moo
-	{
-		private String s;
 
-		public Moo(String aS)
-		{
-			s = aS;
-		}
-		
+	@Override
+	protected void leave(Request aReq)
+	{
+		itsWorking = false;
 	}
+	
+	@Override
+	protected void scheduling(Request aReq)
+	{
+		System.out.println(String.format(
+				"Scheduler (%s) - executing %s.",
+				this,
+				aReq));
+	}
+	
+	public Object getGroup(Object aObject)
+	{
+		return "dbgrid";
+	}
+
 }

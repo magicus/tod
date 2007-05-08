@@ -45,16 +45,16 @@ public abstract class DisjunctionIterator<T> extends MergeIterator<T>
 	@Override
 	protected T fetchNext()
 	{
-		List<T> theBuffer = new ArrayList<T>(getHeadCount());
+		T[] theBuffer = (T[]) new Object[getHeadCount()];
 		T theMinTimestampItem = null;
 		long theMinTimestamp = Long.MAX_VALUE;
 
-		List<T> theHeads = getNextHeads(theBuffer);
+		T[] theHeads = peekNextHeads(theBuffer);
 		
 		// Find the item with the minimum timestamp
 		for (int i = 0; i < getHeadCount(); i++)
 		{
-			T theItem = theHeads.get(i);
+			T theItem = theHeads[i];
 
 			if (theItem != null)
 			{
@@ -75,7 +75,7 @@ public abstract class DisjunctionIterator<T> extends MergeIterator<T>
 				{
 					public T run(Integer aIndex)
 					{
-						T theItem = getNextHead(aIndex);
+						T theItem = peekNextHead(aIndex);
 
 						if (theItem != null && sameEvent(theMinTimestampItem0, theItem))
 						{
@@ -91,16 +91,16 @@ public abstract class DisjunctionIterator<T> extends MergeIterator<T>
 	@Override
 	protected T fetchPrevious()
 	{
-		List<T> theBuffer = new ArrayList<T>(getHeadCount());
+		T[] theBuffer = (T[]) new Object[getHeadCount()];
 		T theMaxTimestampItem = null;
 		long theMaxTimestamp = 0;
 
-		List<T> theHeads = getPreviousHeads(theBuffer);
+		T[] theHeads = peekPreviousHeads(theBuffer);
 		
 		// Find the item with the maximum timestamp
 		for (int i = 0; i < getHeadCount(); i++)
 		{
-			T theItem = theHeads.get(i);
+			T theItem = theHeads[i];
 
 			if (theItem != null)
 			{
@@ -121,7 +121,7 @@ public abstract class DisjunctionIterator<T> extends MergeIterator<T>
 				{
 					public T run(Integer aIndex)
 					{
-						T theItem = getPreviousHead(aIndex);
+						T theItem = peekPreviousHead(aIndex);
 
 						if (theItem != null && sameEvent(theMaxTimestampItem0, theItem))
 						{

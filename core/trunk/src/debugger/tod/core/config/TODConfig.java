@@ -193,6 +193,13 @@ public class TODConfig implements Serializable
 					"the grid master.\n",
 			ConfigUtils.readString("session-type", SESSION_LOCAL));
 	
+	public static final SizeItem LOCAL_SESSION_HEAP = new SizeItem(
+			ConfigLevel.NORMAL,
+			"local.session.heap",
+			"Local session heap size",
+			"Specifies the amount of heap memory to allocate for local debugging session.",
+			ConfigUtils.readSize("local-session-heap", "128m"));
+	
 	public static final BooleanItem INDEX_STRINGS = new BooleanItem(
 			ConfigLevel.NORMAL,
 			"index.strings",
@@ -318,6 +325,26 @@ public class TODConfig implements Serializable
 			}
 		};
 		
+		public static final ItemType<Long> ITEM_TYPE_SIZE = new ItemType<Long>()
+		{
+			@Override
+			public String getName()
+			{
+				return "boolean";
+			}
+			
+			@Override
+			public String getString(Long aValue)
+			{
+				return Long.toString(aValue);
+			}
+
+			@Override
+			public Long getValue(String aString)
+			{
+				return ConfigUtils.readSize(aString);
+			}
+		};
 
 		
 		public abstract String getName();
@@ -437,6 +464,19 @@ public class TODConfig implements Serializable
 				Integer aDefault)
 		{
 			super(aLevel, ItemType.ITEM_TYPE_INTEGER, aKey, aName, aDescription, aDefault);
+		}
+	}
+	
+	public static class SizeItem extends Item<Long>
+	{
+		public SizeItem(
+				ConfigLevel aLevel, 
+				String aKey, 
+				String aName, 
+				String aDescription, 
+				Long aDefault)
+		{
+			super(aLevel, ItemType.ITEM_TYPE_SIZE, aKey, aName, aDescription, aDefault);
 		}
 	}
 }

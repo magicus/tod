@@ -23,13 +23,14 @@ package tod.impl.dbgrid.gui;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
-import tod.impl.dbgrid.GridLogBrowser;
-import tod.impl.dbgrid.IGridBrowserListener;
+import tod.impl.dbgrid.RIGridMaster;
+import tod.impl.dbgrid.RIGridMasterListener;
 import tod.impl.dbgrid.monitoring.MonitorUI;
 import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
 import zz.utils.ListMap;
@@ -40,9 +41,13 @@ import zz.utils.SimpleAction;
  * @author gpothier
  */
 public class GridConsole extends JPanel
-implements IGridBrowserListener
 {
-	private GridLogBrowser itsBrowser;
+	static
+	{
+		System.out.println("GridConsole loaded by: "+GridConsole.class.getClassLoader());
+	}
+	
+	private RIGridMaster itsMaster;
 	private MonitorUI itsMonitorUI;
 
 	/**
@@ -51,12 +56,19 @@ implements IGridBrowserListener
 	private ListMap<String, MonitorData> itsMonitorData = 
 		new ListMap<String, MonitorData>();
 	
-	public GridConsole(GridLogBrowser aBrowser)
+	public GridConsole(RIGridMaster aMaster)
 	{
-		itsBrowser = aBrowser;
+		itsMaster = aMaster;
 		createUI();
 		
-		itsBrowser.addListener(this);
+		try
+		{
+			itsMaster.addListener(new MasterListener());
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 	
 
@@ -78,7 +90,7 @@ implements IGridBrowserListener
 			{
 				try
 				{
-					itsBrowser.getMaster().clear();
+					itsMaster.clear();
 				}
 				catch (RemoteException e)
 				{
@@ -92,12 +104,33 @@ implements IGridBrowserListener
 		return theToolbar;
 	}
 
-
 	public void monitorData(String aNodeId, MonitorData aData)
 	{
 		itsMonitorData.add(aNodeId, aData);
 		itsMonitorUI.setData(aData);
 	}
 	
-	
+	private class MasterListener extends UnicastRemoteObject
+	implements RIGridMasterListener
+	{
+		private static final long serialVersionUID = -1912140049548993769L;
+
+		public MasterListener() throws RemoteException
+		{
+		}
+
+		public void eventsReceived()
+		{
+		}
+
+		public void exception(Throwable aThrowable)
+		{
+		}
+
+		public void monitorData(String aNodeId, MonitorData aData) 
+		{
+			GridConsole.this.monitorData(aNodeId, aData);
+		}
+		
+	}
 }

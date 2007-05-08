@@ -25,6 +25,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import tod.impl.dbgrid.AbstractBidiIterator;
 import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.BufferedBidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
@@ -46,7 +47,7 @@ implements RIQueryAggregator
 {
 	private final GridMaster itsMaster;
 	private final EventCondition itsCondition;
-	private MergeIterator itsMergeIterator;
+	private AbstractBidiIterator<GridEvent> itsMergeIterator;
 
 	public QueryAggregator(GridMaster aMaster, EventCondition aCondition) throws RemoteException
 	{
@@ -58,43 +59,62 @@ implements RIQueryAggregator
 	private void initIterators(final long aTimestamp)
 	{
 		final List<RIDatabaseNode> theNodes = itsMaster.getNodes();
-		final EventIterator[] theIterators = new EventIterator[theNodes.size()];
 		
-		List<Future<EventIterator>> theFutures = new ArrayList<Future<EventIterator>>();
-		
-		for (int i=0;i<theNodes.size();i++)
+		if (theNodes.size() == 1)
 		{
-			final int i0 = i;
-			theFutures.add(new Future<EventIterator>()
-					{
-						@Override
-						protected EventIterator fetch() throws Throwable
-						{
-							RIDatabaseNode theNode = theNodes.get(i0);
-							try
-							{
-								RINodeEventIterator theIterator = theNode.getIterator(itsCondition);
-								
-								theIterator.setNextTimestamp(aTimestamp);
-								theIterators[i0] = new EventIterator(theIterator);
-								
-								return theIterators[i0];
-							}
-							catch (Exception e)
-							{
-								throw new RuntimeException(
-										"Exception catched in initIterators for node "+theNode.getNodeId(), 
-										e);
-							}
-						}
-					});
-			
+			// Don't use futures if there is only one node.
+			try
+			{
+				RIDatabaseNode theNode = theNodes.get(0);
+				RINodeEventIterator theIterator = theNode.getIterator(itsCondition);
+				theIterator.setNextTimestamp(aTimestamp);
+				itsMergeIterator = new EventIterator(theIterator);
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
 		}
-
-		// Ensure all futures have completed
-		for (Future<EventIterator> theFuture : theFutures) theFuture.get();
+		else
+		{
+			final EventIterator[] theIterators = new EventIterator[theNodes.size()];
+			List<Future<EventIterator>> theFutures = new ArrayList<Future<EventIterator>>();
+			
+			for (int i=0;i<theNodes.size();i++)
+			{
+				final int i0 = i;
+				theFutures.add(new Future<EventIterator>()
+						{
+							@Override
+							protected EventIterator fetch() throws Throwable
+							{
+								RIDatabaseNode theNode = theNodes.get(i0);
+								try
+								{
+									RINodeEventIterator theIterator = theNode.getIterator(itsCondition);
+									
+									theIterator.setNextTimestamp(aTimestamp);
+									theIterators[i0] = new EventIterator(theIterator);
+									
+									return theIterators[i0];
+								}
+								catch (Exception e)
+								{
+									throw new RuntimeException(
+											"Exception catched in initIterators for node "+theNode.getNodeId(), 
+											e);
+								}
+							}
+						});
+				
+			}
+	
+			// Ensure all futures have completed
+			for (Future<EventIterator> theFuture : theFutures) theFuture.get();
+			
+			itsMergeIterator = new MyMergeIterator(theIterators);
+		}
 		
-		itsMergeIterator = new MergeIterator(theIterators);
 	}
 
 	private static GridEvent[] toArray(List<GridEvent> aList)
@@ -307,9 +327,9 @@ implements RIQueryAggregator
 	 * The iterator that merges results from all the nodes
 	 * @author gpothier
 	 */
-	private static class MergeIterator extends DisjunctionIterator<GridEvent>
+	private static class MyMergeIterator extends DisjunctionIterator<GridEvent>
 	{
-		public MergeIterator(BidiIterator<GridEvent>[] aIterators)
+		public MyMergeIterator(BidiIterator<GridEvent>[] aIterators)
 		{
 			super(aIterators);
 		}

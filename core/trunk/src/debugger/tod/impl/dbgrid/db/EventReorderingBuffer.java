@@ -26,6 +26,7 @@ import java.util.List;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.messages.GridEvent;
 import zz.utils.RingBuffer;
+import zz.utils.Utils;
 
 /**
  * A buffer that permits to reorder incoming events.
@@ -153,12 +154,20 @@ public class EventReorderingBuffer
 		private PerThreadBuffer getBuffer(int aThreadId)
 		{
 			PerThreadBuffer theBuffer = null; 
-			while (itsBuffers.size() < aThreadId+1)
+			if (itsBuffers.size() < aThreadId+1)
 			{
 				theBuffer = new PerThreadBuffer();
-				itsBuffers.add(theBuffer);
+				Utils.listSet(itsBuffers, aThreadId, theBuffer);
 			}
-			if (theBuffer == null) theBuffer = itsBuffers.get(aThreadId);
+			else
+			{
+				theBuffer = itsBuffers.get(aThreadId);
+				if (theBuffer == null)
+				{
+					theBuffer = new PerThreadBuffer();
+					itsBuffers.set(aThreadId, theBuffer);
+				}
+			}
 			
 			return theBuffer;
 		}

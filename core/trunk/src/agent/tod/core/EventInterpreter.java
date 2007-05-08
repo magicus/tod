@@ -674,6 +674,15 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		itsCollector.clear(theThread);
 	}
 	
+	/**
+	 * Sends a request to flush buffered events
+	 */
+	public void flush()
+	{
+		if (DISABLE_INTERPRETER) return;
+		throw new UnsupportedOperationException();
+	}
+	
 	public static class ThreadData 
 	{
 		/**

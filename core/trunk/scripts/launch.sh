@@ -27,7 +27,7 @@ VMARGS="$VMARGS -Dpage-buffer-size=$PAGE_BUFFER_SIZE"
 VMARGS="$VMARGS -Dtask-id=$TASK_ID"
 VMARGS="$VMARGS -Dgrid-impl=$GRID_IMPL"
 VMARGS="$VMARGS -Dcheck-same-host=$CHECK_SAME_HOST"
-VMARGS="$VMARGS $EXTRA_JVM_ARGS"
+#VMARGS="$VMARGS $EXTRA_JVM_ARGS"
 
 if [ -n "$JDWP_PORT" ]
 then
@@ -36,4 +36,4 @@ fi
 
 echo Host: `hostname`
 #$JAVA_HOME/bin/java -version 
-$JAVA_HOME/bin/java $VMARGS $MAIN $2 $3 $4 $5
+$JAVA_HOME/bin/java $VMARGS $EXTRA_JVM_ARGS $MAIN $2 $3 $4 $5

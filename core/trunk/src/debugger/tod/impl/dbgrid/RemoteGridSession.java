@@ -21,8 +21,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid;
 
 import java.net.URI;
-import java.rmi.AccessException;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -38,7 +36,7 @@ public class RemoteGridSession extends AbstractSession
 {
 	public static final String TOD_GRID_SCHEME = "tod-grid";
 	private RIGridMaster itsMaster;
-	private GridLogBrowser itsBrowser;
+	private ILogBrowser itsBrowser;
 	
 	/**
 	 * If false the remote master is cleared before use.
@@ -57,18 +55,31 @@ public class RemoteGridSession extends AbstractSession
 		init();
 	}
 	
-	private void init() 
+	protected String getHost()
+	{
+		return getConfig().get(TODConfig.COLLECTOR_HOST);
+	}
+	
+	protected void init() 
 	{
 		try
 		{
-			String theHost = getConfig().get(TODConfig.COLLECTOR_HOST);
+			String theHost = getHost();
 			
 			Registry theRegistry = LocateRegistry.getRegistry(theHost);
 			itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
 			itsMaster.setConfig(getConfig());
 			if (! itsUseExisting) itsMaster.clear();
+			
+//			itsBrowser = (ILogBrowser) ReflexBridge.create(
+//					"tod.impl.dbgrid.GridLogBrowser", 
+//					new Class[] {RIGridMaster.class},
+//					itsMaster);
+		
 			itsBrowser = new GridLogBrowser(itsMaster);
 		}
+		
+		
 		catch (Exception e)
 		{
 			throw new RuntimeException(e);
@@ -120,7 +131,7 @@ public class RemoteGridSession extends AbstractSession
 
 	public JComponent createConsole()
 	{
-		return new GridConsole(itsBrowser);
+		return new GridConsole(itsMaster);
 	}
 	
 	

@@ -71,13 +71,18 @@ public class ConfigUtils
 	{
 		String theString = readString(aPropertyName, aDefault);
 		System.out.println(aPropertyName+"="+theString);
+		return readSize(theString);
+	}
+	
+	public static long readSize(String aSize)
+	{
 		long theFactor = 1;
-		if (theString.endsWith("k")) theFactor = 1024;
-		else if (theString.endsWith("m")) theFactor = 1024*1024;
-		else if (theString.endsWith("g")) theFactor = 1024*1024*1024;
-		if (theFactor != 1) theString = theString.substring(0, theString.length()-1);
+		if (aSize.endsWith("k")) theFactor = 1024;
+		else if (aSize.endsWith("m")) theFactor = 1024*1024;
+		else if (aSize.endsWith("g")) theFactor = 1024*1024*1024;
+		if (theFactor != 1) aSize = aSize.substring(0, aSize.length()-1);
 		
-		return Long.parseLong(theString)*theFactor;
+		return Long.parseLong(aSize)*theFactor;
 	}
 	
 

@@ -3,9 +3,9 @@
 AGENT=./libbci-agent.so
 CLASSPATH=./bin:../zz.utils/bin
 
-#HOST=localhost
+HOST=localhost
 #HOST=syntagma.dim.uchile.cl
-HOST=padme.dcc.uchile.cl
+#HOST=padme.dcc.uchile.cl
 
 
 VMARGS=''

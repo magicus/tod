@@ -18,44 +18,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package dummy;
+package tod.gui.kit.services;
 
-import tod.agent.TOD;
+import tod.core.database.event.ILogEvent;
+import zz.utils.properties.IRWProperty;
 
-public class Dummy2
+/**
+ * A service that permits to get/set the current event.
+ * @author gpothier
+ */
+public interface ICurrentEventService extends IRWProperty<ILogEvent>
 {
-	public static void main(String[] args)
-	{
-		for(int i=0;i<10;i++)
-		{
-			System.out.println(i);
-			dummy1();
-			System.out.println("Clearing DB...");
-			TOD.clearDatabase();
-		}
-	}
-	
-	public static void dummy1()
-	{
-		for(int i=0;i<1000;i++) 
-		{
-			foo(i);
-		}
-	}
-	
-	public static void foo(int i)
-	{
-		int j = i*2;
-	}
-	
-	public static class Moo
-	{
-		private String s;
-
-		public Moo(String aS)
-		{
-			s = aS;
-		}
-		
-	}
 }

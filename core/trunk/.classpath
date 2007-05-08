@@ -12,5 +12,6 @@
 	<classpathentry kind="lib" path="lib/lucene-core-2.0.0.jar" sourcepath="/lucene/src/java"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ASM"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/pom"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

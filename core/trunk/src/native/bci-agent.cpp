@@ -305,7 +305,7 @@ void JNICALL cbClassFileLoadHook(
 		int l = strlen(name);
 		char escapedName[l+1];
 		strcpy(escapedName, name);
-		for(int i=0;i<l;i++) if (escapedName[i] == '$') escapedName[i] = '-';
+		for(int i=0;i<l;i++) if (escapedName[i] == '$') escapedName[i] = '_';
 		
 		snprintf(cacheFileName, sizeof(cacheFileName), "%s/%s.%s.class", cfgCachePath, escapedName, md5String);
 		snprintf(tracedCacheFileName, sizeof(tracedCacheFileName), "%s/%s.%s.tm", cfgCachePath, escapedName, md5String);

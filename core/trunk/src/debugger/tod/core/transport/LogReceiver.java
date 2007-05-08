@@ -240,12 +240,14 @@ public abstract class LogReceiver
 				
 				if (theCommand == MessageType.CMD_FLUSH)
 				{
+					System.out.println("[LogReceiver] Received flush request.");
 					int theCount = flush();
 					itsDataOut.writeInt(theCount);
 					itsDataOut.flush();
 				}
 				else if (theCommand == MessageType.CMD_CLEAR)
 				{
+					System.out.println("[LogReceiver] Received clear request.");
 					flush();
 					clear();
 				}

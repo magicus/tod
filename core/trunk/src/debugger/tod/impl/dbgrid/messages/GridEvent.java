@@ -39,6 +39,12 @@ import zz.utils.bit.BitUtils;
 
 public abstract class GridEvent extends GridMessage
 {
+	static
+	{
+		System.out.println("GridEvent loaded by: "+GridEvent.class.getClassLoader());
+	}
+	
+	
 	/**
 	 * We can find the parent event using only its timestamp,
 	 * as it necessarily belongs to the same thread as this

@@ -47,7 +47,7 @@ public abstract class MergeIterator<T> extends AbstractBidiIterator<T>
 					{
 						public T run(Integer aIndex)
 						{
-							return getPreviousHead(aIndex);
+							return peekPreviousHead(aIndex);
 						}
 					};
 					
@@ -55,17 +55,17 @@ public abstract class MergeIterator<T> extends AbstractBidiIterator<T>
 					{
 						public T run(Integer aIndex)
 						{
-							return getNextHead(aIndex);
+							return peekNextHead(aIndex);
 						}
 					};
 					
-	private final List<Integer> INDEXES;
+	private final Integer[] INDEXES;
 
 	public MergeIterator(BidiIterator<T>[] aIterators)
 	{
 		itsIterators = aIterators;
-		INDEXES = new ArrayList<Integer>(getHeadCount());
-		for(int i=0;i<getHeadCount();i++) INDEXES.add(i);
+		INDEXES = new Integer[getHeadCount()];
+		for(int i=0;i<getHeadCount();i++) INDEXES[i] = i;
 	}
 	
 	/**
@@ -193,22 +193,22 @@ public abstract class MergeIterator<T> extends AbstractBidiIterator<T>
 		return aItem1.equals(aItem2);
 	}
 
-	protected T getNextHead(int aHead)
+	protected T peekNextHead(int aHead)
 	{
 		return itsIterators[aHead].peekNext();
 	}
 	
-	protected List<T> getNextHeads(List<T> aBuffer)
+	protected T[] peekNextHeads(T[] aBuffer)
 	{
 		return fork(aBuffer, NEXT_HEAD);
 	}
 
-	protected T getPreviousHead(int aHead)
+	protected T peekPreviousHead(int aHead)
 	{
 		return itsIterators[aHead].peekPrevious();
 	}
 	
-	protected List<T> getPreviousHeads(List<T> aBuffer)
+	protected T[] peekPreviousHeads(T[] aBuffer)
 	{
 		return fork(aBuffer, PREV_HEAD);
 	}
@@ -220,7 +220,7 @@ public abstract class MergeIterator<T> extends AbstractBidiIterator<T>
 	 * @param aBuffer A buffer to use to store the results, used if possible.
 	 * @return The result of each task, in the same order as the heads.
 	 */
-	protected List<T> fork(List<T> aBuffer, ITask<Integer, T> aTask)
+	protected T[] fork(T[] aBuffer, ITask<Integer, T> aTask)
 	{
 		if (parallelFetch())
 		{
@@ -228,7 +228,7 @@ public abstract class MergeIterator<T> extends AbstractBidiIterator<T>
 		}
 		else
 		{
-			for(int i=0;i<getHeadCount();i++) Utils.listSet(aBuffer, i, aTask.run(i));
+			for(int i=0;i<getHeadCount();i++) aBuffer[i] = aTask.run(INDEXES[i]);
 			return aBuffer;
 		}
 	}
@@ -240,4 +240,76 @@ public abstract class MergeIterator<T> extends AbstractBidiIterator<T>
 	{
 		return false;
 	}
+	
+	/**
+	 * Abstracts the direction of navigation primitives
+	 * @author gpothier
+	 */
+	protected abstract class Nav
+	{
+		private Nav()
+		{
+		}
+		
+		public abstract T[] peekHeads(T[] aBuffer);
+		public abstract T peekHead(int aHeadIndex);
+		public abstract boolean move(int aHeadIndex);
+		public abstract void move(int aHeadIndex, long aKey);
+	}
+	
+	protected final Nav FORWARD = new Nav()
+	{
+		@Override
+		public void move(int aHeadIndex, long aKey)
+		{
+			moveForward(aHeadIndex, aKey);
+		}
+
+		@Override
+		public boolean move(int aHeadIndex)
+		{
+			return moveNext(aHeadIndex);
+		}
+
+		@Override
+		public T peekHead(int aHeadIndex)
+		{
+			return peekNextHead(aHeadIndex);
+		}
+
+		@Override
+		public T[] peekHeads(T[] aBuffer)
+		{
+			return peekNextHeads(aBuffer);
+		}
+	};
+	
+	protected final Nav BACKWARD = new Nav()
+	{			
+		@Override
+		public void move(int aHeadIndex, long aKey)
+		{
+			moveBackward(aHeadIndex, aKey);
+		}
+
+		@Override
+		public boolean move(int aHeadIndex)
+		{
+			return movePrevious(aHeadIndex);
+		}
+
+		@Override
+		public T peekHead(int aHeadIndex)
+		{
+			return peekPreviousHead(aHeadIndex);
+		}
+
+		@Override
+		public T[] peekHeads(T[] aBuffer)
+		{
+			return peekPreviousHeads(aBuffer);
+		}
+	};
+	
+
 }

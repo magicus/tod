@@ -27,7 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import tod.agent.DebugFlags;
+import reflex.lib.pom.POMSynchronizedClass;
+import reflex.lib.pom.POMSynchronizedMethod;
 import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
@@ -78,9 +79,20 @@ import zz.utils.cache.SyncMRUBuffer;
  * Note: it is remote because it must be accessed by the master.
  * @author gpothier
  */
+@POMSynchronizedClass(
+		schedulerClass = Scheduler.class, 
+		groupDefClass = Scheduler.class,
+		syncAll = false)
 public class GridLogBrowser extends UnicastRemoteObject
 implements ILogBrowser, RIGridMasterListener
 {
+	static
+	{
+		System.out.println("GridLogBrowser loaded by: "+GridLogBrowser.class.getClassLoader());
+	}
+	
+	private static final long serialVersionUID = -5101014933784311102L;
+
 	private RIGridMaster itsMaster;
 	private ILocationsRepository itsLocationsRepository;
 	
@@ -119,6 +131,7 @@ implements ILogBrowser, RIGridMasterListener
 		System.out.println("[GridLogBrowser] Instantiated.");
 	}
 
+	@POMSynchronizedMethod
 	public void clear()
 	{
 		try
@@ -286,6 +299,7 @@ implements ILogBrowser, RIGridMasterListener
 		return theCompound;
 	}
 	
+	@POMSynchronizedMethod
 	public Object getRegistered(ObjectId aId)
 	{
 		try
@@ -316,48 +330,52 @@ implements ILogBrowser, RIGridMasterListener
 		return itsLastTimestamp;
 	}
 	
-	private List<IThreadInfo> getThreads0()
+	@POMSynchronizedMethod
+	private void fetchThreads()
 	{
 		try
 		{
-			if (itsThreads == null) 
+			itsThreads = new ArrayList<IThreadInfo>();
+			itsPackedThreads = itsMaster.getThreads();
+			for (IThreadInfo theThread : itsPackedThreads)
 			{
-				itsThreads = new ArrayList<IThreadInfo>();
-				itsPackedThreads = itsMaster.getThreads();
-				for (IThreadInfo theThread : itsPackedThreads)
-				{
-					Utils.listSet(itsThreads, theThread.getId(), theThread);
-				}				
-			}
+				Utils.listSet(itsThreads, theThread.getId(), theThread);
+			}				
 		}
 		catch (RemoteException e)
 		{
 			throw new RuntimeException(e);
 		}
-		
+	}
+	
+	private List<IThreadInfo> getThreads0()
+	{
+		if (itsThreads == null) fetchThreads();
 		return itsThreads;
+	}
+	
+	@POMSynchronizedMethod
+	private void fetchHosts()
+	{
+		try
+		{
+			itsHosts = new ArrayList<IHostInfo>();
+			itsPackedHosts = itsMaster.getHosts();
+			for (IHostInfo theHost : itsPackedHosts)
+			{
+				Utils.listSet(itsHosts, theHost.getId(), theHost);
+				itsHostsMap.put(theHost.getName(), theHost);
+			}
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}		
 	}
 	
 	private List<IHostInfo> getHosts0()
 	{
-		try
-		{
-			if (itsHosts == null) 
-			{
-				itsHosts = new ArrayList<IHostInfo>();
-				itsPackedHosts = itsMaster.getHosts();
-				for (IHostInfo theHost : itsPackedHosts)
-				{
-					Utils.listSet(itsHosts, theHost.getId(), theHost);
-					itsHostsMap.put(theHost.getName(), theHost);
-				}
-			}
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
-		
+		if (itsHosts == null) fetchHosts();
 		return itsHosts;
 	}
 	
@@ -458,6 +476,7 @@ implements ILogBrowser, RIGridMasterListener
 		return new VariablesInspector(aEvent);
 	}
 	
+	@POMSynchronizedMethod
 	public BidiIterator<Long> searchStrings(String aSearchText)
 	{
 		try
@@ -470,6 +489,7 @@ implements ILogBrowser, RIGridMasterListener
 		}
 	}
 
+	@POMSynchronizedMethod
 	private void updateStats()
 	{
 		try
@@ -479,7 +499,7 @@ implements ILogBrowser, RIGridMasterListener
 			itsLastTimestamp = itsMaster.getLastTimestamp();
 			itsThreads = null; // lazy
 			itsHosts = null; // lazy		
-			itsHostsMap = null; // lazy
+			itsHostsMap.clear(); // lazy
 		}
 		catch (RemoteException e)
 		{

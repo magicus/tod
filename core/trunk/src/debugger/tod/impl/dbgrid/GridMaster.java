@@ -80,6 +80,7 @@ import zz.utils.Utils;
 public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 {
 	public static final String RMI_ID = "GridMaster";
+	public static final String READY_STRING = "[GridMaster] Ready.";
 	
 	private TODConfig itsConfig;
 	private final IInstrumenter itsInstrumenter;
@@ -196,7 +197,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		Timer theTimer = new Timer(true);
 		theTimer.schedule(new DataUpdater(), 5000, 3000);
 		
-		System.out.println("[GridMaster] Ready!");
+		System.out.println(READY_STRING);
 	}
 	
 	/**
@@ -417,6 +418,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 
 	public RIQueryAggregator createAggregator(EventCondition aCondition) throws RemoteException
 	{
+		System.out.println("[GridMaster] Creating aggregator for conditions: "+aCondition);
 		return new QueryAggregator(this, aCondition);
 	}
 	

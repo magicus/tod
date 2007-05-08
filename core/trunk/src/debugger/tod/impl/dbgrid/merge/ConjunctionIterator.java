@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.impl.dbgrid.BidiIterator;
-import tod.impl.dbgrid.db.file.IndexTuple;
+import tod.impl.dbgrid.merge.MergeIterator.Nav;
 import zz.utils.ITask;
 
 /**
@@ -33,6 +33,24 @@ import zz.utils.ITask;
  */
 public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 {
+	private ThreadLocal<ForwardFetcher> itsForwardFetchers = new ThreadLocal<ForwardFetcher>()
+	{
+		@Override
+		protected ForwardFetcher initialValue()
+		{
+			return new ForwardFetcher(getHeadCount());
+		}
+	};
+	
+	private ThreadLocal<BackwardFetcher> itsBackwardFetchers = new ThreadLocal<BackwardFetcher>()
+	{
+		@Override
+		protected BackwardFetcher initialValue()
+		{
+			return new BackwardFetcher(getHeadCount());
+		}
+	};
+	
 	public ConjunctionIterator(BidiIterator<T>[] aIterators)
 	{
 		super(aIterators);
@@ -41,119 +59,282 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 	@Override
 	protected T fetchNext()
 	{
-		List<T> theBuffer = new ArrayList<T>(getHeadCount());
-		T theResult = null;
-		boolean theMatch;
-		do
-		{
-			theMatch = true;
-
-			T theRefItem = null;
-			int theMinTimestampHead = -1;
-			long theMinTimestamp = Long.MAX_VALUE;
-			long theMaxTimestamp = 0;
-
-			List<T> theHeads = getNextHeads(theBuffer);
-			
-			// Check if current head set is a match (ie. all head tuples point
-			// to the same event).
-			// At the same time find the head that has the minimum timestamp
-			for (int i = 0; i < getHeadCount(); i++)
-			{
-				T theItem = theHeads.get(i);
-				if (theItem == null) return null;
-
-				if (theRefItem == null) theRefItem = theItem;
-				else if (! sameItem(theRefItem, theItem)) theMatch = false;
-
-				long theTimestamp = getKey(theItem);
-				if (theTimestamp < theMinTimestamp)
-				{
-					theMinTimestamp = theTimestamp;
-					theMinTimestampHead = i;
-				}
-				if (theTimestamp > theMaxTimestamp) theMaxTimestamp = theTimestamp;
-			}
-
-			if (theMatch)
-			{
-				theResult = theRefItem;
-				fork(theBuffer, new ITask<Integer, T>()
-						{
-							public T run(Integer aIndex)
-							{
-								moveNext(aIndex);
-								return null;
-							}
-						});
-			}
-			else
-			{
-				moveForward(theMinTimestampHead, theMaxTimestamp);
-			}
-		}
-		while (!theMatch);
-
-		return theResult;
+		return itsForwardFetchers.get().fetch();
 	}
-
+	
 	@Override
 	protected T fetchPrevious()
 	{
-		List<T> theBuffer = new ArrayList<T>(getHeadCount());
-		T theResult = null;
-		boolean theMatch;
-		do
+		return itsBackwardFetchers.get().fetch();
+	}
+	
+	/**
+	 * Helper class for implementing fetch operations. Most of the 
+	 * direction-related code is abstracted with the {@link Nav} class.
+	 * Instances of this class are be obtained through Thread-Local Storage,
+	 * so it is safe to store temporary data in fields.
+	 * @author gpothier
+	 */
+	private abstract class Fetcher
+	{
+		private final Nav itsDirection;
+		
+		/**
+		 * Buffer for current head values
+		 */
+		private final T[] itsHeadBuffer;
+		
+		/**
+		 * Buffers used to store previous tuples when all tuples point to the
+		 * same event but for different roles.
+		 */
+		private final List<T>[] itsBackBuffers;
+		
+		public Fetcher(Nav aDirection, int aHeadCount)
 		{
-			theMatch = true;
-
-			T theRefItem = null;
-			int theMaxTimestampHead = -1;
-			long theMaxTimestamp = 0;
-			long theMinTimestamp = Long.MAX_VALUE;
-			
-			List<T> theHeads = getPreviousHeads(theBuffer);
-
-			// Check if current head set is a match (ie. all head tuples point
-			// to the same event).
-			// At the same time find the head that has the maximum timestamp
-			for (int i = 0; i < getHeadCount(); i++)
+			itsDirection = aDirection;
+			itsHeadBuffer = (T[]) new Object[aHeadCount];
+			itsBackBuffers = new List[aHeadCount];
+			for (int i=0;i<aHeadCount;i++) itsBackBuffers[i] = new ArrayList<T>();
+		}
+		
+		private void clearBackBuffers()
+		{
+			for (int i=0;i<itsBackBuffers.length;i++)
 			{
-				T theItem = theHeads.get(i);
-				if (theItem == null) return null;
-
-				if (theRefItem == null) theRefItem = theItem;
-				else if (! sameItem(theRefItem, theItem)) theMatch = false;
-
-				long theTimestamp = getKey(theItem);
-				if (theTimestamp > theMaxTimestamp)
-				{
-					theMaxTimestamp = theTimestamp;
-					theMaxTimestampHead = i;
-				}
-				if (theTimestamp < theMinTimestamp) theMinTimestamp = theTimestamp;
-			}
-
-			if (theMatch)
-			{
-				theResult = theRefItem;
-				fork(theBuffer, new ITask<Integer, T>()
-						{
-							public T run(Integer aIndex)
-							{
-								movePrevious(aIndex);
-								return null;
-							}
-						});
-
-			}
-			else
-			{
-				moveBackward(theMaxTimestampHead, theMinTimestamp);
+				itsBackBuffers[i].clear();
 			}
 		}
-		while (!theMatch);
+		
+		public T fetch()
+		{
+			T theResult = null;
+			boolean theMatch;
+			do
+			{
+				theMatch = true;
+				boolean theSameEvent = true;
 
-		return theResult;
+				T theRefTuple = null;
+				initTimestamps();
+
+				T[] theHeads = itsDirection.peekHeads(itsHeadBuffer);
+				
+				// Check if current head set is a match (ie. all head tuples point
+				// to the same event).
+				// At the same time find the head that has the minimum/maximum timestamp
+				for (int i = 0; i < getHeadCount(); i++)
+				{
+					T theItem = theHeads[i];
+					if (theItem == null) return null;
+
+					if (theRefTuple == null) theRefTuple = theItem;
+					else 
+					{
+						if (! sameItem(theRefTuple, theItem)) theMatch = false;
+						if (! sameEvent(theRefTuple, theItem)) theSameEvent = false;
+					}
+
+					long theTimestamp = getKey(theItem);
+					registerTimestamp(i, theTimestamp);
+				}
+
+				if (theMatch)
+				{
+					// Current head set matched: advance all heads.
+					theResult = theRefTuple;
+					fork(itsHeadBuffer, new ITask<Integer, T>()
+							{
+								public T run(Integer aIndex)
+								{
+									itsDirection.move(aIndex);
+									return null;
+								}
+							});
+				}
+				else
+				{
+					if (theSameEvent)
+					{
+						T theTuple = fetchSameEvent(theHeads);
+						if (theTuple != null) return theTuple;
+					}
+					
+					itsDirection.move(getSelectedHead(), getGoalTimestamp());
+				}
+			}
+			while (!theMatch);
+
+			return theResult;
+		}
+		
+		/**
+		 * Handles the case in which all head tuples point to the same event but with
+		 * a different role.
+		 * In this case, all the tuples that refer to the same event are fetched, and
+		 * a match is searched amongst them.
+		 */
+		private T fetchSameEvent(T[] aHeads)
+		{
+			clearBackBuffers();
+			T theRefTuple = aHeads[0];
+			
+			// Read the heads that point to the same event.
+			int theSmallestHeadSize = Integer.MAX_VALUE;
+			int theSmallestHead = -1;
+			for(int i=0;i<getHeadCount();i++)
+			{
+				while(true)
+				{
+					T theTuple = itsDirection.peekHead(i);
+					if (theTuple == null) break;
+					if (! sameEvent(theRefTuple, theTuple)) break;
+					
+					itsBackBuffers[i].add(theTuple);
+					itsDirection.move(i);
+				}
+				
+				int theHeadSize = itsBackBuffers[i].size();
+				if (theHeadSize < theSmallestHeadSize)
+				{
+					theSmallestHeadSize = theHeadSize;
+					theSmallestHead = i;
+				}
+			}
+			
+			// Check if there is a match
+			for (int i=0;i<theSmallestHeadSize;i++)
+			{
+				boolean theMatch = true;
+				T theTuple = itsBackBuffers[theSmallestHead].get(i);
+				for (int h=0;h<getHeadCount();h++)
+				{
+					if (h == i) continue;
+					if (! hasTuple(theTuple, itsBackBuffers[h]))
+					{
+						theMatch = false;
+						break;
+					}
+				}
+				if (theMatch) return theTuple;
+			}
+			
+			return null;
+		}
+
+		/**
+		 * Determines whether the specified list of tuples contains a tuple
+		 * that is identical to the given reference tuple.
+		 */
+		private boolean hasTuple(T aRefTuple, List<T> aList)
+		{
+			for (T theTuple : aList)
+			{
+				if (sameItem(aRefTuple, theTuple)) return true;
+			}
+			return false;
+		}
+
+		protected abstract void initTimestamps();
+		protected abstract void registerTimestamp(int aHead, long aTimestamp);
+		
+		/**
+		 * Returns the index of the head that was selected for advancing
+		 */
+		protected abstract int getSelectedHead();
+		
+		/**
+		 * Returns the timestamp to which the selected head should be advanced.
+		 */
+		protected abstract long getGoalTimestamp();
+		
+	}
+	
+	private class ForwardFetcher extends Fetcher
+	{
+		private int itsMinTimestampHead;
+		private long itsMinTimestamp;
+		private long itsMaxTimestamp;
+
+		public ForwardFetcher(int aHeadCount)
+		{
+			super(FORWARD, aHeadCount);
+			
+		}
+
+		@Override
+		protected void initTimestamps()
+		{
+			itsMinTimestampHead = -1;
+			itsMinTimestamp = Long.MAX_VALUE;
+			itsMaxTimestamp = 0;
+		}
+
+		@Override
+		protected void registerTimestamp(int aHead, long aTimestamp)
+		{
+			if (aTimestamp < itsMinTimestamp)
+			{
+				itsMinTimestamp = aTimestamp;
+				itsMinTimestampHead = aHead;
+			}
+			if (aTimestamp > itsMaxTimestamp) itsMaxTimestamp = aTimestamp;
+		}
+		
+		@Override
+		protected long getGoalTimestamp()
+		{
+			return itsMaxTimestamp;
+		}
+
+		@Override
+		protected int getSelectedHead()
+		{
+			return itsMinTimestampHead;
+		}
+	}
+	
+	private class BackwardFetcher extends Fetcher
+	{
+		private int itsMaxTimestampHead;
+		private long itsMaxTimestamp;
+		private long itsMinTimestamp;
+
+		public BackwardFetcher(int aHeadCount)
+		{
+			super(BACKWARD, aHeadCount);
+		}
+
+		@Override
+		protected void initTimestamps()
+		{
+			itsMaxTimestampHead = -1;
+			itsMaxTimestamp = 0;
+			itsMinTimestamp = Long.MAX_VALUE;
+		}
+
+		@Override
+		protected void registerTimestamp(int aHead, long aTimestamp)
+		{
+			if (aTimestamp > itsMaxTimestamp)
+			{
+				itsMaxTimestamp = aTimestamp;
+				itsMaxTimestampHead = aHead;
+			}
+			if (aTimestamp < itsMinTimestamp) itsMinTimestamp = aTimestamp;
+		}
+		
+		@Override
+		protected long getGoalTimestamp()
+		{
+			return itsMinTimestamp;
+		}
+
+		@Override
+		protected int getSelectedHead()
+		{
+			return itsMaxTimestampHead;
+		}
+
 	}
 }

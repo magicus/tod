@@ -89,6 +89,7 @@ public class ObjectInspector implements IObjectInspector
 	{
 		if (itsInstantiationEvent == null) 
 		{
+			System.out.println("[ObjectInspector] Retrieving instantiation event for object: "+getObject());
 			IEventFilter theFilter = itsLogBrowser.createObjectFilter(getObject());
 			IEventBrowser theBrowser = itsLogBrowser.createBrowser(theFilter);
 			
