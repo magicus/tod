@@ -20,11 +20,22 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.plugin;
 
+import java.io.File;
+import java.lang.instrument.ClassFileTransformer;
+import java.lang.reflect.Method;
+
+import javassist.ClassPool;
+
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
+import reflex.Run;
+import reflex.core.model.RAnnotationImpl;
+import reflex.run.agent.ReflexAgent;
+import reflex.run.common.RunningEnvironment;
+import tod.impl.dbgrid.LocalGridSession;
 import zz.eclipse.utils.EclipseUtils;
 
 /**
@@ -51,10 +62,29 @@ public class TODPlugin extends AbstractUIPlugin
 	public void start(BundleContext context) throws Exception
 	{
 		super.start(context);
-//		Class.forName("org.objectweb.asm.commons.EmptyVisitor");
-//		Class.forName("tod.core.ObjectIdentity");
-//		Class.forName("tod.core.session.ISession");
-//		Class.forName("zz.eclipse.utils.EclipseUtils");
+
+		Class theRBClass = Class.forName("tod.plugin.ReflexBridge", true, ClassLoader.getSystemClassLoader());
+		Method theGIMethod = theRBClass.getMethod("getInstance");
+		Object theInstance = theGIMethod.invoke(null);
+		Method theSTMethod = theRBClass.getMethod("setTransformer", ClassFileTransformer.class);
+		String theArgs = "-lp reflex.lib.pom.POMConfig --working-set [+tod.impl.dbgrid.GridLogBrowser,+tod.impl.dbgrid.GridEventBrowser]";
+		theSTMethod.invoke(theInstance, ReflexAgent.createTransformer(theArgs));
+		
+		String theBase = getLibraryPath();
+		ClassPool thePool = RunningEnvironment.get().getClassPool();
+		thePool.appendClassPath(theBase+"/reflex-core.jar");
+		thePool.appendClassPath(theBase+"/pom.jar");
+		thePool.appendClassPath(theBase+"/zz.utils.jar");
+		thePool.appendClassPath(theBase+"/tod-debugger.jar");
+
+		LocalGridSession.cp = 
+			theBase+"/tod-debugger.jar"+File.pathSeparator
+			+theBase+"/tod-agent.jar"+File.pathSeparator
+			+theBase+"/asm-2.1.jar"+File.pathSeparator
+			+theBase+"/asm-commons-2.1.jar"+File.pathSeparator
+			+theBase+"/zz.utils.jar";
+		
+		LocalGridSession.lib = theBase;
 	}
 
 	/**

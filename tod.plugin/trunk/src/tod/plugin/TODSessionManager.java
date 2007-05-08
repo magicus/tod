@@ -137,6 +137,7 @@ public class TODSessionManager
 			}
 			catch (Exception e)
 			{
+				e.printStackTrace();
 				if (! msgError(e)) return null;
 			}
 		}

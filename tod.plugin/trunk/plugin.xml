@@ -3,7 +3,7 @@
 <plugin
    id="tod.plugin"
    name="TOD Eclipse Plugin"
-   version="0.2.1.2"
+   version="0.4.2.5"
    provider-name="DCC - Universidad de Chile"
    class="tod.plugin.TODPlugin">
 
@@ -25,17 +25,27 @@
          </export>
       </library>
       
-      <!-- development -->
-      <!--      
+      <!-- the DEV/DEPLOY in-out markers are used by a perl script, don't remove -->
+      <!-- DEV-in -->
       <library name="../zz.utils/bin">
          <export name="*"/>
       </library>
       <library name="../TOD/bin">
          <export name="*"/>
       </library>
-      -->
+
+      <library name="lib/javassist.jar">
+         <export name="*"/>
+      </library>
+      <library name="../reflex/bin">
+         <export name="*"/>
+      </library>
+      <library name="../pom/bin">
+         <export name="*"/>
+      </library>
+      <!-- DEV-out -->
       
-      <!-- deployment -->
+      <!-- DEPLOY-in     
       <library name="lib/tod-agent.jar">
          <export name="*"/>
       </library>
@@ -45,6 +55,16 @@
       <library name="lib/zz.utils.jar">
          <export name="*"/>
       </library>
+      <library name="lib/javassist.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/reflex-core.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/pom.jar">
+         <export name="*"/>
+      </library>
+      DEPLOY-out -->
    </runtime>
 
    <requires>

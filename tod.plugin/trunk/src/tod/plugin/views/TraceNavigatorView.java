@@ -23,11 +23,15 @@ package tod.plugin.views;
 import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.Panel;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISelectionListener;
@@ -38,6 +42,7 @@ import org.eclipse.ui.part.ViewPart;
 import tod.core.database.event.ILogEvent;
 import tod.plugin.DebuggingSession;
 import tod.plugin.TODPluginUtils;
+import zz.utils.ui.StackLayout;
 
 /**
  * This view is the trace navigator.
@@ -67,12 +72,26 @@ public class TraceNavigatorView extends ViewPart implements ISelectionListener
 		ISelectionService theSelectionService = getViewSite().getWorkbenchWindow().getSelectionService();
 		theSelectionService.addPostSelectionListener(this);
 		
-		Composite theEmbedded = new Composite(parent, SWT.EMBEDDED | SWT.CENTER);
+		final Composite theEmbedded = new Composite(parent, SWT.EMBEDDED | SWT.CENTER);
 		parent.setLayout(new FillLayout());
 		
 		itsFrame = SWT_AWT.new_Frame(theEmbedded);
 		Panel theRootPanel = new Panel(new BorderLayout());
+		itsFrame.setLayout(new StackLayout());
 		itsFrame.add(theRootPanel);
+
+		theEmbedded.addControlListener(new ControlListener()
+		{
+			public void controlMoved(ControlEvent aE)
+			{
+			}
+
+			public void controlResized(ControlEvent aE)
+			{
+				itsFrame.setSize(theEmbedded.getSize().x, theEmbedded.getSize().y);
+			}
+			
+		});
 		
 		itsEventViewer = new EventViewer(this);
 		theRootPanel.add(itsEventViewer);

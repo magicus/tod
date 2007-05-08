@@ -1,52 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project default="plugin" name="TOD plugin">
-	
-	
-    <target name="init">
-    	<property name="build.dir" value="${basedir}/build"/>
-    	<property name="lib.dir" value="${basedir}/lib"/>
-    	<property name="plugin.dir" value="${build.dir}/tod.plugin"/>
-    	<property name="classes.dir" value="${basedir}/classes"/>
-    	<property name="src.dir" value="${basedir}/src"/>
-        <property name="tod.dir" value="${basedir}/../TOD"/>
-        <property name="zz.utils.dir" value="${basedir}/../zz.utils"/>
-        <property name="zz.eclipse.utils.dir" value="${basedir}/../zz.eclipse.utils"/>
-    	
-    	<property name="eclipse.home" value="/home/gpothier/apps/eclipse-3.2.1"/>
-    	
-        <path id="default.classpath">
-            <pathelement path="${lib.dir}/zz.utils.jar"/>
-            <pathelement path="${lib.dir}/tod-debugger.jar"/>
-            <pathelement path="${lib.dir}/tod-agent.jar"/>
-            <pathelement path="${lib.dir}/asm-2.1.jar"/>
-            <pathelement path="${lib.dir}/asm-commons-2.1.jar"/>
-        	<pathelement path="${zz.eclipse.utils.dir}/build/zz.eclipse.utils/plugin.jar"/>
-        	<fileset dir="${eclipse.home}/plugins">
-        		<include name="**/*.jar"/>
-        	</fileset>
-        </path>
 
-    </target>
-	
-	<target name="plugin_export" depends="init, dep.all">
-		<mkdir dir="${build.dir}"/>
-		
-		<pde.exportPlugins 
-			destination="${build.dir}" 
-			exportSource="false" 
-			exportType="zip" 
-			filename="tod.plugin.zip" 
-			plugins="tod.plugin,zz.eclipse.utils" 
-			useJARFormat="false"/>
+
+	<target name="init">
+		<property name="build.dir" value="${basedir}/build"/>
+		<property name="lib.dir" value="${basedir}/lib"/>
+		<property name="plugin.dir" value="${build.dir}/tod.plugin"/>
+		<property name="classes.dir" value="${basedir}/classes"/>
+		<property name="src.dir" value="${basedir}/src"/>
+
+		<property name="tod.dir" value="${basedir}/../TOD"/>
+		<property name="zz.utils.dir" value="${basedir}/../zz.utils"/>
+		<property name="zz.eclipse.utils.dir" value="${basedir}/../zz.eclipse.utils"/>
+		<property name="reflex.dir" value="${basedir}/../reflex"/>
+		<property name="pom.dir" value="${basedir}/../pom"/>
+
+		<property name="eclipse.home" value="/home/gpothier/apps/eclipse-3.2.1"/>
+
+		<path id="default.classpath">
+			<pathelement path="${lib.dir}/zz.utils.jar"/>
+			<pathelement path="${lib.dir}/tod-debugger.jar"/>
+			<pathelement path="${lib.dir}/tod-agent.jar"/>
+			<pathelement path="${lib.dir}/asm-2.1.jar"/>
+			<pathelement path="${lib.dir}/asm-commons-2.1.jar"/>
+			<pathelement path="${lib.dir}/reflex-core.jar"/>
+			<pathelement path="${zz.eclipse.utils.dir}/build/zz.eclipse.utils/plugin.jar"/>
+			<fileset dir="${eclipse.home}/plugins">
+				<include name="**/*.jar"/>
+			</fileset>
+		</path>
+
 	</target>
-	
+
 	<target name="clean" depends="init">
 		<delete failonerror="false">
 			<fileset dir="${classes.dir}"/>
 			<fileset dir="${build.dir}"/>
 		</delete>
 	</target>
-	
+
 	<target name="compile" depends="init, dep.all">
 		<mkdir dir="${classes.dir}"/>
 		<javac srcdir="${src.dir}"
@@ -56,26 +48,39 @@
 	      	deprecation="on"
 			classpathref="default.classpath"/>
 	</target>
-	
+
 	<target name="jar" depends="init, compile">
 		<delete failonerror="false">
 			<fileset dir="${plugin.dir}"/>
 		</delete>
-		
+
 		<mkdir dir="${plugin.dir}"/>
-		
+
 		<jar jarfile="${plugin.dir}/plugin.jar" index="true">
 			<fileset dir="${classes.dir}" />
 		</jar>
-		
+
+		<jar destfile="${build.dir}/reflex-bridge.jar" 
+			basedir="${classes.dir}"
+			includes="tod/plugin/ReflexBridge.class">
+
+			<manifest>
+				<attribute name="Premain-Class" value="tod.plugin.ReflexBridge" />
+			</manifest>
+
+		</jar>
+
+
+
 	</target>
-	
+
 	<target name="plugin" depends="init, jar">
 		<copy todir="${plugin.dir}">
-			<fileset dir="${basedir}" includes="plugin.xml lib/* icons/*"/>
+			<fileset dir="${basedir}" includes="lib/* icons/*" />
 		</copy>
+		<exec executable="./mkDeployPlugin.pl" />
 	</target>
-	
+
 	<target name="dep.tod" depends="init">
 		<ant 
 			antfile="${tod.dir}/build.xml" 
@@ -87,7 +92,7 @@
 			<fileset dir="${tod.dir}" includes="*.so *.dll"/>
 		</copy>
 	</target>
-	
+
 	<target name="dep.zz.utils" depends="init">
 		<ant 
 			antfile="${zz.utils.dir}/build.xml" 
@@ -99,7 +104,7 @@
 			<fileset dir="${zz.utils.dir}/build" includes="zz.utils.jar"/>
 		</copy>
 	</target>
-	
+
 	<target name="dep.zz.eclipse.utils" depends="init">
 		<ant 
 			antfile="${zz.eclipse.utils.dir}/build-plugin.xml" 
@@ -108,7 +113,33 @@
 			inheritall="false"/>
 		<echo message="Finished building zz.utils"/>
 	</target>
-	
 
-	<target name="dep.all" depends="dep.tod, dep.zz.utils, dep.zz.eclipse.utils"/>
+	<target name="dep.reflex" depends="init">
+		<echo message="Building reflex..."/>
+		<ant 
+			antfile="${reflex.dir}/build.xml" 
+			dir="${reflex.dir}" 
+			target="jar"
+			inheritall="false"/>
+		<echo message="Finished building reflex"/>
+		<copy todir="lib">
+			<fileset dir="${reflex.dir}/build" includes="reflex-core.jar"/>
+		</copy>
+	</target>
+
+	<target name="dep.pom" depends="init">
+		<echo message="Building pom..."/>
+		<ant 
+			antfile="${pom.dir}/build.xml" 
+			dir="${pom.dir}" 
+			target="jar"
+			inheritall="false"/>
+		<echo message="Finished building pom"/>
+		<copy todir="lib">
+			<fileset dir="${pom.dir}/build" includes="pom.jar"/>
+		</copy>
+	</target>
+
+
+	<target name="dep.all" depends="dep.tod, dep.zz.utils, dep.zz.eclipse.utils, dep.reflex, dep.pom"/>
 </project>

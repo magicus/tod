@@ -76,6 +76,15 @@ public class TODConfigLaunchTab extends OptionsTab<TODConfig.Item>
 			}
 		});
 		
+		theMap.put(TODConfig.ItemType.ITEM_TYPE_SIZE, new ItemTypeHandler()
+		{
+			@Override
+			public AbstractItemControl<Item> createControl(OptionsControl<Item> aOptionsTab, Composite aParent, Item aItem)
+			{
+				return new TextControl<Item>(aParent, aOptionsTab, aItem);
+			}
+		});
+		
 		theMap.put(TODConfig.ItemType.ITEM_TYPE_INTEGER, new ItemTypeHandler()
 		{
 			@Override
