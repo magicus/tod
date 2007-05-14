@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import tod.Util;
 import tod.agent.AgentConfig;
 import tod.core.bci.IInstrumenter;
 import tod.core.config.TODConfig;
@@ -90,6 +91,11 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	private final boolean itsStartServer;
 	private TODServer itsServer;
 	
+	/**
+	 * Set by {@link #keepAlive()}
+	 */
+	private long itsLastKeepAlive = System.currentTimeMillis();
+	
 	
 	private ILocationStore itsLocationStore;
 	private RemoteLocationsRepository itsRemoteLocationsRepository;
@@ -134,6 +140,8 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		itsLocalLogBrowser = new GridLogBrowser(this);
 		
 		itsStartServer = aStartServer;	
+		
+		createTimeoutThread();
 	}
 	
 	
@@ -158,6 +166,17 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		itsLocalLogBrowser = new GridLogBrowser(this);
 		
 		itsStartServer = true;
+
+		createTimeoutThread();
+	}
+	
+	private void createTimeoutThread()
+	{
+		Integer theTimeout = getConfig().get(TODConfig.MASTER_TIMEOUT);
+		if (theTimeout != null && theTimeout > 0)
+		{
+			new TimeoutThread(theTimeout*1000).start();
+		}
 	}
 	
 	public TODConfig getConfig() 
@@ -198,6 +217,11 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		theTimer.schedule(new DataUpdater(), 5000, 3000);
 		
 		System.out.println(READY_STRING);
+	}
+	
+	public void keepAlive()
+	{
+		itsLastKeepAlive = System.currentTimeMillis();
 	}
 	
 	/**
@@ -314,7 +338,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		// Register the node in the RMI registry.
 		try
 		{
-			Registry theRegistry = LocateRegistry.getRegistry(DebuggerGridConfig.MASTER_HOST);
+			Registry theRegistry = LocateRegistry.getRegistry(DebuggerGridConfig.MASTER_HOST, Util.TOD_REGISTRY_PORT);
 			theRegistry.bind(theId, aNode);
 		}
 		catch (Exception e)
@@ -590,8 +614,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	
 	public static void main(String[] args) throws Exception
 	{
-		LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
-		Registry theRegistry = LocateRegistry.getRegistry("localhost");
+		Registry theRegistry = Util.getRegistry();
 		TODUtils.setupMaster(theRegistry, args);
 		System.out.println("Master ready.");
 	}
@@ -676,4 +699,44 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			}
 		}
 	}
+	
+	/**
+	 * This thread is in charge of exiting the database when no client is connected
+	 * for a long time.
+	 * @author gpothier
+	 */
+	private class TimeoutThread extends Thread
+	{
+		private long itsTimeout;
+		
+		public TimeoutThread(long aTimeout)
+		{
+			itsTimeout = aTimeout;
+		}
+
+		@Override
+		public void run()
+		{
+			System.out.println("[GridMaster] Timeout thread started.");
+			try
+			{
+				while(true)
+				{
+					long theDelta = System.currentTimeMillis() - itsLastKeepAlive;
+					if (theDelta > itsTimeout)
+					{
+						System.out.println("[GridMaster] Timeout, exiting");
+						System.exit(0);
+					}
+					
+					Thread.sleep(5000);
+				}
+			}
+			catch (InterruptedException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+	}
+
 }

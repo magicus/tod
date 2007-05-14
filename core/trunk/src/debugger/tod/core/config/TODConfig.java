@@ -208,6 +208,14 @@ public class TODConfig implements Serializable
 			"This has an impact on overall recording performance.",
 			false);
 	
+	public static final IntegerItem MASTER_TIMEOUT = new IntegerItem(
+			ConfigLevel.ADVANCED,
+			"master.timeout",
+			"Master timeout",
+			"The time (in seconds) the database should wait for clients to connect" +
+			"before exiting. A value of 0 means no timeout.",
+			ConfigUtils.readInt("master-timeout", 0));
+	
 	/**
 	 * Contains all available configuration items.
 	 */

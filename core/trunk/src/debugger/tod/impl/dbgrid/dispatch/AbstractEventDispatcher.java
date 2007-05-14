@@ -33,6 +33,7 @@ import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
 
+import tod.Util;
 import tod.core.config.TODConfig;
 import tod.core.database.structure.HostInfo;
 import tod.core.transport.LogReceiver;
@@ -117,7 +118,7 @@ implements RIEventDispatcher
 			DataInputStream theStream = new DataInputStream(aInputStream);
 			String theId = theStream.readUTF();
 			
-			Registry theRegistry = LocateRegistry.getRegistry(DebuggerGridConfig.MASTER_HOST);
+			Registry theRegistry = LocateRegistry.getRegistry(DebuggerGridConfig.MASTER_HOST, Util.TOD_REGISTRY_PORT);
 			RIDispatchNode theNode = (RIDispatchNode) theRegistry.lookup(theId);
 
 			acceptChild(theId, theNode, aInputStream, aOutputStream);

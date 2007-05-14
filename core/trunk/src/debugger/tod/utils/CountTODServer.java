@@ -121,6 +121,11 @@ public class CountTODServer extends AbstractSession
 		return null;
 	}
 	
+	public boolean isAlive()
+	{
+		return true;
+	}
+	
 	public long getCount()
 	{
 		long theCount = 0;

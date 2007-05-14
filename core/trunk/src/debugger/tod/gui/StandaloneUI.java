@@ -29,6 +29,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
+import tod.ReflexRiver;
 import tod.core.config.TODConfig;
 import tod.core.database.event.ILogEvent;
 import tod.core.session.ISession;
@@ -93,6 +94,7 @@ public class StandaloneUI extends JPanel
 	
 	public static void main(String[] args)
 	{
+		ReflexRiver.setup();
 		URI theUri = args.length > 0 ? URI.create(args[0]) : null;
 		
 		JFrame theFrame = new JFrame("TOD");

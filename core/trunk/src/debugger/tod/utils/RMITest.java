@@ -25,11 +25,13 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+import tod.Util;
+
 public class RMITest
 {
 	public static void main(String[] args) throws Exception
 	{
-		LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
+		LocateRegistry.createRegistry(Util.TOD_REGISTRY_PORT);
 		Registry theRegistry = LocateRegistry.getRegistry("localhost");
 
 		MyRemote theRemote = new MyRemote();

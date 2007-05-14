@@ -174,4 +174,10 @@ public interface RIGridMaster extends Remote
 	 */
 	public RIBufferIterator<StringSearchHit[]> searchStrings(String aSearchText) throws RemoteException;
 
+	/**
+	 * If the {@link TODConfig#MASTER_TIMEOUT} configuration attribute is set,
+	 * the clients must periodically call this method to prevent the grid master from
+	 * shutting down.
+	 */
+	public void keepAlive() throws RemoteException;
 }

@@ -68,6 +68,7 @@ public abstract class TODServer
 		
 		itsReceiverServer = new LogReceiverServer();
 		itsNativePeerServer = new NativePeerServer();
+		
 	}
 	
 	public ILocationRegisterer getLocationRegistrer()
@@ -105,6 +106,15 @@ public abstract class TODServer
 	protected void disconnected()
 	{
 		itsCurrentHostId = 1;
+	}
+
+	/**
+	 * This method is called when a client connects to the server when there
+	 * are no open connections (ie, when the server passes from the "no client
+	 * connected" state to the "client(s) connected" state).
+	 */
+	protected void connected()
+	{
 	}
 
 	/**

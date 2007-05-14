@@ -34,6 +34,7 @@
             <pathelement path="${lib.dir}/reflex-core.jar"/>
             <pathelement path="${lib.dir}/javassist.jar"/>
             <pathelement path="${lib.dir}/pom.jar"/>
+            <pathelement path="${lib.dir}/javafxrt.jar"/>
         </path>
     	
         <path id="test.classpath">
@@ -41,6 +42,7 @@
         	<pathelement path="${classes-agent.dir}"/>
         	<pathelement path="${classes-debugger.dir}"/>
             <pathelement path="${lib.dir}/junit-4.1.jar"/>
+            <pathelement path="${lib.dir}/pom.jar"/>
         </path>
 
     </target>
@@ -50,9 +52,10 @@
             <fileset dir="${build.dir}"/>
             <fileset dir="${classes-agent.dir}"/>
             <fileset dir="${classes-debugger.dir}"/>
+            <fileset dir="${classes-test.dir}"/>
+            <fileset dir="${classes-testcase.dir}"/>
         	
         	<fileset file="${lib.dir}/zz.utils.jar"/>
-            <fileset dir="${zzu.classes.dir}"/>
         </delete>
     </target>
 
@@ -120,6 +123,18 @@
 		<jar destfile="${build.dir}/tod-debugger.jar" basedir="${classes-debugger.dir}"/>
 		<jar destfile="${build.dir}/tod-test.jar" basedir="${classes-test.dir}"/>
 		<jar destfile="${build.dir}/tod-testcase.jar" basedir="${classes-testcase.dir}"/>
+		
+		<jar destfile="${build.dir}/reflex-bridge.jar" 
+			basedir="${classes-debugger.dir}"
+			includes="tod/ReflexBridge.class">
+
+			<manifest>
+				<attribute name="Premain-Class" value="tod.ReflexBridge" />
+			</manifest>
+
+		</jar>
+
+
 	</target>
 	
     <target name="deploy" depends="jar" >

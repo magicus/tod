@@ -93,7 +93,10 @@ public class LocalSession extends AbstractSession
 		return null;
 	}
 	
-
+	public boolean isAlive()
+	{
+		return true;
+	}
 
 	private class MyCollectorFactory implements ICollectorFactory
 	{

@@ -84,4 +84,9 @@ public abstract class DelegatedSession implements ISession
 	{
 		return itsDelegate.getConnectionInfo();
 	}
+	
+	public boolean isAlive()
+	{
+		return itsDelegate.isAlive();
+	}
 }

@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.rmi.RemoteException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -52,6 +53,8 @@ public class LocalGridSession extends RemoteGridSession
 			}
 		});
 	}
+	
+	private KeepAliveThread itsKeepAliveThread = new KeepAliveThread();
 
 	public LocalGridSession(URI aUri, TODConfig aConfig, boolean aUseExisting)
 	{
@@ -83,6 +86,8 @@ public class LocalGridSession extends RemoteGridSession
 	{
 		try
 		{
+//			Util.getRegistry();
+			
 			if (itsProcess != null) itsProcess.destroy();
 			
 			Long theHeapSize = getConfig().get(TODConfig.LOCAL_SESSION_HEAP);
@@ -93,6 +98,7 @@ public class LocalGridSession extends RemoteGridSession
 					"-Djava.library.path="+lib,
 					"-cp", cp,
 					"-Dmaster-host=localhost",
+					"-Dmaster-timeout=10",
 					"-Dpage-buffer-size="+(theHeapSize/2),
 					"tod.impl.dbgrid.GridMaster",
 					"0");
@@ -156,7 +162,7 @@ public class LocalGridSession extends RemoteGridSession
 					String theLine = theReader.readLine();
 					if (theLine == null) break;
 					System.out.println("[GridMaster process] "+theLine);
-					if (theLine.startsWith(GridMaster.READY_STRING)) 
+					if (theLine.startsWith(GridMaster.READY_STRING))  
 					{
 						itsReady = true;
 						itsLatch.countDown();
@@ -178,7 +184,7 @@ public class LocalGridSession extends RemoteGridSession
 		{
 			try
 			{
-				itsLatch.await(3, TimeUnit.SECONDS);
+				itsLatch.await(10, TimeUnit.SECONDS);
 				interrupt();
 				return itsReady;
 			}
@@ -223,6 +229,42 @@ public class LocalGridSession extends RemoteGridSession
 		public String getText()
 		{
 			return itsBuilder.toString();
+		}
+	}
+	
+	private class KeepAliveThread extends Thread
+	{
+		public KeepAliveThread()
+		{
+			super("KeepAliveThread");
+			start();
+		}
+
+		@Override
+		public void run()
+		{
+			try
+			{
+				while(true)
+				{
+					RIGridMaster theMaster = getMaster();
+					try
+					{
+						if (theMaster != null) theMaster.keepAlive();
+					}
+					catch (RemoteException e)
+					{
+						e.printStackTrace();
+						reset();
+						break;
+					}
+					Thread.sleep(2000);
+				}
+			}
+			catch (InterruptedException e)
+			{
+				throw new RuntimeException(e);
+			}
 		}
 	}
 }

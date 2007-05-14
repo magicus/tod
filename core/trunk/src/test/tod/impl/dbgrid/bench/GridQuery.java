@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import tod.Util;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
@@ -60,7 +61,7 @@ public class GridQuery
 {
 	public static void main(String[] args) throws Exception
 	{
-		Registry theRegistry = LocateRegistry.createRegistry(1099);
+		Registry theRegistry = LocateRegistry.createRegistry(Util.TOD_REGISTRY_PORT);
 		
 		String theFileName = DebuggerGridConfig.STORE_EVENTS_FILE;
 		final File theFile = new File(theFileName);

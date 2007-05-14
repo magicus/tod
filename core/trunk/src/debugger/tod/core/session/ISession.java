@@ -68,4 +68,11 @@ public interface ISession
 	 * Creates a console that can be used to control this session.
 	 */
 	public JComponent createConsole();
+	
+	/**
+	 * Returns true if this session is still alive.
+	 * A dead session is usually the consequence of a communication error
+	 * with the database. 
+	 */
+	public boolean isAlive();
 }

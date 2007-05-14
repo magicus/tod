@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+import tod.Util;
 import tod.core.ILogCollector;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.Fixtures;
@@ -47,7 +48,7 @@ public class GridReplay
 	
 	public static GridMaster replay(String[] args) throws Exception
 	{
-		Registry theRegistry = LocateRegistry.createRegistry(1099);
+		Registry theRegistry = LocateRegistry.createRegistry(Util.TOD_REGISTRY_PORT);
 		
 		String theFileName = DebuggerGridConfig.STORE_EVENTS_FILE;
 		File theFile = new File(theFileName);

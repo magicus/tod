@@ -34,6 +34,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.CountDownLatch;
 
+import tod.Util;
 import tod.core.config.TODConfig;
 import tod.core.database.structure.HostInfo;
 import tod.core.transport.LogReceiver;
@@ -137,7 +138,7 @@ implements RIDispatchNode
 		System.out.println("[AbstractDispatchNode] connectToMaster");
 		
 		// Setup RMI connection
-		Registry theRegistry = LocateRegistry.getRegistry(DebuggerGridConfig.MASTER_HOST);
+		Registry theRegistry = LocateRegistry.getRegistry(DebuggerGridConfig.MASTER_HOST, Util.TOD_REGISTRY_PORT);
 		itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
 
 		try

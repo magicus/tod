@@ -27,6 +27,7 @@ import java.rmi.registry.Registry;
 
 import javax.swing.JComponent;
 
+import tod.Util;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.session.AbstractSession;
@@ -66,7 +67,7 @@ public class RemoteGridSession extends AbstractSession
 		{
 			String theHost = getHost();
 			
-			Registry theRegistry = LocateRegistry.getRegistry(theHost);
+			Registry theRegistry = LocateRegistry.getRegistry(theHost, Util.TOD_REGISTRY_PORT);
 			itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
 			itsMaster.setConfig(getConfig());
 			if (! itsUseExisting) itsMaster.clear();
@@ -78,8 +79,6 @@ public class RemoteGridSession extends AbstractSession
 		
 			itsBrowser = new GridLogBrowser(itsMaster);
 		}
-		
-		
 		catch (Exception e)
 		{
 			throw new RuntimeException(e);
@@ -134,5 +133,32 @@ public class RemoteGridSession extends AbstractSession
 		return new GridConsole(itsMaster);
 	}
 	
+	protected RIGridMaster getMaster()
+	{
+		return itsMaster;
+	}
+
+	protected void reset()
+	{
+		itsMaster = null;
+		itsBrowser = null;
+	}
 	
+	public boolean isAlive()
+	{
+		if (itsMaster != null)
+		{
+			try
+			{
+				itsMaster.keepAlive();
+				return true;
+			}
+			catch (RemoteException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		
+		return false;
+	}
 }

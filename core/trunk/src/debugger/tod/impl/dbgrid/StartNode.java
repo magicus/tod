@@ -24,6 +24,7 @@ import java.net.InetAddress;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+import tod.Util;
 import tod.core.LocationRegisterer;
 import tod.core.config.TODConfig;
 import tod.impl.dbgrid.dispatch.DatabaseNode;
@@ -45,7 +46,7 @@ public class StartNode
 	public static void askRoleToMaster() throws Exception
 	{
 		System.out.println("StartNode");
-		Registry theRegistry = LocateRegistry.getRegistry(DebuggerGridConfig.MASTER_HOST);
+		Registry theRegistry = LocateRegistry.getRegistry(DebuggerGridConfig.MASTER_HOST, Util.TOD_REGISTRY_PORT);
 		RIGridMaster theMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
 
 		String theHostName = InetAddress.getLocalHost().getHostName();
