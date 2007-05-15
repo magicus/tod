@@ -35,6 +35,7 @@ import reflex.Run;
 import reflex.core.model.RAnnotationImpl;
 import reflex.run.agent.ReflexAgent;
 import reflex.run.common.RunningEnvironment;
+import tod.ReflexRiver;
 import tod.impl.dbgrid.LocalGridSession;
 import zz.eclipse.utils.EclipseUtils;
 
@@ -63,27 +64,40 @@ public class TODPlugin extends AbstractUIPlugin
 	{
 		super.start(context);
 
-		Class theRBClass = Class.forName("tod.plugin.ReflexBridge", true, ClassLoader.getSystemClassLoader());
-		Method theGIMethod = theRBClass.getMethod("getInstance");
-		Object theInstance = theGIMethod.invoke(null);
-		Method theSTMethod = theRBClass.getMethod("setTransformer", ClassFileTransformer.class);
-		String theArgs = "-lp reflex.lib.pom.POMConfig --working-set [+tod.impl.dbgrid.GridLogBrowser,+tod.impl.dbgrid.GridEventBrowser]";
-		theSTMethod.invoke(theInstance, ReflexAgent.createTransformer(theArgs));
+		ReflexRiver.setup();
 		
 		String theBase = getLibraryPath();
 		ClassPool thePool = RunningEnvironment.get().getClassPool();
-		thePool.appendClassPath(theBase+"/reflex-core.jar");
-		thePool.appendClassPath(theBase+"/pom.jar");
-		thePool.appendClassPath(theBase+"/zz.utils.jar");
-		thePool.appendClassPath(theBase+"/tod-debugger.jar");
-
-		LocalGridSession.cp = 
-			theBase+"/tod-debugger.jar"+File.pathSeparator
-			+theBase+"/tod-agent.jar"+File.pathSeparator
-			+theBase+"/asm-2.1.jar"+File.pathSeparator
-			+theBase+"/asm-commons-2.1.jar"+File.pathSeparator
-			+theBase+"/zz.utils.jar";
 		
+		String theDevPath = System.getProperty("dev.path");
+		if (theDevPath == null)
+		{
+			thePool.appendClassPath(theBase+"/reflex-core.jar");
+			thePool.appendClassPath(theBase+"/pom.jar");
+			thePool.appendClassPath(theBase+"/zz.utils.jar");
+			thePool.appendClassPath(theBase+"/tod-debugger.jar");
+
+			LocalGridSession.cp = 
+				theBase+"/tod-debugger.jar"+File.pathSeparator
+				+theBase+"/tod-agent.jar"+File.pathSeparator
+				+theBase+"/asm-2.1.jar"+File.pathSeparator
+				+theBase+"/asm-commons-2.1.jar"+File.pathSeparator
+				+theBase+"/zz.utils.jar";
+		}
+		else
+		{
+			thePool.appendClassPath(theDevPath+"/reflex/bin");
+			thePool.appendClassPath(theDevPath+"/pom/bin");
+			thePool.appendClassPath(theDevPath+"/zz.utils/bin");
+			thePool.appendClassPath(theDevPath+"/TOD/bin");			
+
+			LocalGridSession.cp = 
+				theDevPath+"/TOD/bin"+File.pathSeparator
+				+theBase+"/asm-2.1.jar"+File.pathSeparator
+				+theBase+"/asm-commons-2.1.jar"+File.pathSeparator
+				+theDevPath+"/zz.utils/bin";
+		}
+
 		LocalGridSession.lib = theBase;
 	}
 

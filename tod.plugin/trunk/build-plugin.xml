@@ -59,19 +59,6 @@
 		<jar jarfile="${plugin.dir}/plugin.jar" index="true">
 			<fileset dir="${classes.dir}" />
 		</jar>
-
-		<jar destfile="${build.dir}/reflex-bridge.jar" 
-			basedir="${classes.dir}"
-			includes="tod/plugin/ReflexBridge.class">
-
-			<manifest>
-				<attribute name="Premain-Class" value="tod.plugin.ReflexBridge" />
-			</manifest>
-
-		</jar>
-
-
-
 	</target>
 
 	<target name="plugin" depends="init, jar">

@@ -103,11 +103,14 @@ public class TODLaunchDelegate extends AbstractCustomLaunchConfigurationDelegate
 	{
 		List<String> theArguments = super.getAdditionalVMArguments(aConfiguration);
 		
+		String theLibraryPath = TODPlugin.getDefault().getLibraryPath();
+		
 		String theAgentPath = System.getProperty(
 				"bcilib.path",
-				TODPlugin.getDefault().getLibraryPath()+"/libbci-agent.so");
+				theLibraryPath+"/libbci-agent.so");
 		
 		theArguments.add("-agentpath:"+theAgentPath);
+		theArguments.add("-Djava.library.path="+theLibraryPath);
 		
 		theArguments.add("-noverify");
 		
