@@ -30,6 +30,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import tod.core.config.TODConfig;
+import tod.impl.dbgrid.aggregator.GridEventBrowser;
 
 /**
  * A single-process grid session, running in a separate vm.
@@ -99,9 +100,19 @@ public class LocalGridSession extends RemoteGridSession
 					"-cp", cp,
 					"-Dmaster-host=localhost",
 					"-Dmaster-timeout=10",
+					"-Dagent-verbose="+getConfig().get(TODConfig.AGENT_VERBOSE),
 					"-Dpage-buffer-size="+(theHeapSize/2),
 					"tod.impl.dbgrid.GridMaster",
 					"0");
+			
+			StringBuilder theCommand = new StringBuilder();
+			for (String theArg : theBuilder.command()) 
+			{
+				theCommand.append('"');
+				theCommand.append(theArg);
+				theCommand.append("\" ");
+			}
+			System.out.println("[LocalGridSession] Command: "+theCommand);
 			
 			theBuilder.redirectErrorStream(false);
 			
@@ -110,10 +121,13 @@ public class LocalGridSession extends RemoteGridSession
 			ProcessErrGrabber theGrabber = new ProcessErrGrabber(itsProcess.getErrorStream());
 
 			boolean theReady = theWatcher.waitReady();
+			
 			if (! theReady)
 			{
 				throw new RuntimeException("Could not start event database:\n"+theGrabber.getText());
 			}
+
+			theGrabber.stopCapture();
 		}
 		catch (Exception e)
 		{
@@ -124,6 +138,10 @@ public class LocalGridSession extends RemoteGridSession
 	@Override
 	protected void init()
 	{
+		// Load POM-synced classes (hack to avoid timeout)
+		System.out.println(GridLogBrowser.class);
+		System.out.println(GridEventBrowser.class);
+		
 		createProcess();
 		super.init();
 	}
@@ -166,7 +184,7 @@ public class LocalGridSession extends RemoteGridSession
 					{
 						itsReady = true;
 						itsLatch.countDown();
-						break;
+						System.out.println("[LocalGridSession] GridMaster process ready.");
 					}
 				}
 			}
@@ -207,6 +225,14 @@ public class LocalGridSession extends RemoteGridSession
 			start();
 		}
 		
+		/**
+		 * Stops capturing output, and prints it instead.
+		 */
+		public void stopCapture()
+		{
+			itsBuilder = null;
+		}
+		
 		@Override
 		public void run()
 		{
@@ -217,7 +243,10 @@ public class LocalGridSession extends RemoteGridSession
 				{
 					String theLine = theReader.readLine();
 					if (theLine == null) break;
-					itsBuilder.append("> "+theLine+"\n");
+					
+					StringBuilder theBuilder = itsBuilder; // To avoid concurrency issues
+					if (theBuilder != null) itsBuilder.append("> "+theLine+"\n");
+					else System.out.println("[GridMaster process - err] "+theLine);
 				}
 			}
 			catch (IOException e)

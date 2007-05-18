@@ -37,6 +37,9 @@ public class ReflexRiver
 	{
 		try
 		{
+			// We disable the plugin finding mechanism (it searches all of Eclipse plugins...)
+			System.setProperty("reflex.config.plugins.path", "");
+			
 			Class theRBClass = Class.forName("tod.ReflexBridge", true, ClassLoader.getSystemClassLoader());
 			Method theGIMethod = theRBClass.getMethod("getInstance");
 			Object theInstance = theGIMethod.invoke(null);

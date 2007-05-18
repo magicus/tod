@@ -146,19 +146,17 @@ public class RemoteGridSession extends AbstractSession
 	
 	public boolean isAlive()
 	{
-		if (itsMaster != null)
-		{
-			try
-			{
-				itsMaster.keepAlive();
-				return true;
-			}
-			catch (RemoteException e)
-			{
-				e.printStackTrace();
-			}
-		}
+		if (itsMaster == null || itsBrowser == null) return false;
 		
-		return false;
+		try
+		{
+			itsMaster.keepAlive();
+			return true;
+		}
+		catch (RemoteException e)
+		{
+			e.printStackTrace();
+			return false;
+		}
 	}
 }

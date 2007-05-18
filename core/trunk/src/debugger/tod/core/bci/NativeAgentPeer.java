@@ -31,6 +31,7 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import sun.management.FileSystem;
 import tod.agent.AgentConfig;
 import tod.core.bci.IInstrumenter.InstrumentedClass;
 import tod.core.config.TODConfig;
@@ -94,6 +95,10 @@ public abstract class NativeAgentPeer extends SocketThread
 		itsStoreClassesDir = aStoreClassesDir;
 		itsInstrumenter = aInstrumenter;
 		itsHostId = aHostId;
+		
+		// Check that the cache path we pass to the agent exists.
+		File theFile = new File(itsConfig.get(TODConfig.AGENT_CACHE_PATH));
+		theFile.mkdirs();
 	}
 	
 	/**

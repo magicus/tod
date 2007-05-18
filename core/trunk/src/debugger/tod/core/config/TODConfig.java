@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.config;
 
+import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -86,7 +87,9 @@ public class TODConfig implements Serializable
 			"agent.cachePath",
 			"Agent - class cache path",
 			"Defines the path where the native agent stores instrumented classes.",
-			ConfigUtils.readString("classes-cache-path", HOME+"/tmp/tod"));
+			ConfigUtils.readString(
+					"classes-cache-path", 
+					HOME+File.separatorChar+"tmp"+File.separatorChar+"tod"));
 	
 	public static final BooleanItem AGENT_CAPTURE_EXCEPTIONS = new BooleanItem(
 			ConfigLevel.DEBUG,
