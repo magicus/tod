@@ -46,6 +46,9 @@ bci-agent: dirs $(bci-agent-objects)
 	$(CXX) -shared -o $(PLATFORM)/$(LIBPREFIX)bci-agent.$(LIBEXT) $(bci-agent-objects) $(LDFLAGS) $(LDFLAGS_BOOST)
 	cp $(PLATFORM)/$(LIBPREFIX)bci-agent.$(LIBEXT) ../..
 	
+#pathtest: dirs $(PLATFORM)/pathtest.o
+#	$(CXX) -o $(PLATFORM)/pathtest $(PLATFORM)/pathtest.o $(LDFLAGS) $(LDFLAGS_BOOST)
+	
 # native-stream: $(native-stream-objects)
 # 	$(CXX) -shared -o ../../$(LIBPREFIX)native-stream.$(LIBEXT) $(native-stream-objects) $(LDFLAGS)
 	
@@ -89,4 +92,7 @@ $(PLATFORM)/native-stream.o: native-stream.cpp
 
 $(PLATFORM)/array-cast.o: array-cast.cpp
 	$(CXX) -shared -c $(CXXFLAGS) array-cast.cpp -o $(PLATFORM)/array-cast.o
+
+#$(PLATFORM)/pathtest.o: pathtest.cpp
+#	$(CXX) -shared -c $(CXXFLAGS) pathtest.cpp -o $(PLATFORM)/pathtest.o
 

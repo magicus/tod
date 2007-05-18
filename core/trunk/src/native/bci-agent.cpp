@@ -134,11 +134,10 @@ void bciConnect(char* host, char* port, char* hostname)
 /*
 * Tries to create all the directories denoted by the given name.
 */
-int mkdirs(char* name)
+int mkdirs(fs::path& p)
 {
 	try
 	{
-		fs::path p(name);
 		fs::create_directories(p.branch_path());
 		return 1;
 	}
@@ -295,13 +294,19 @@ void JNICALL cbClassFileLoadHook(
 	md5_sig_to_string(md5Buffer, md5String, 33);
 	if (cfgVerbose>=3) printf("MD5 sum: %s\n", md5String);
 	
-	// Compute cache file name	
-	char cacheFileName[2000];
-	char tracedCacheFileName[2000];
-	cacheFileName[0] = 0;
-	tracedCacheFileName[0] = 0;
+	// Compute cache file paths	
+	fs::path cacheFilePath;
+	fs::path tracedCacheFilePath;
+	
 	if (cfgCachePath != NULL)
 	{
+		char cacheFileName[2000];
+		char tracedCacheFileName[2000];
+		cacheFileName[0] = 0;
+		tracedCacheFileName[0] = 0;
+		
+		// Escape the class name, as all characters allowed for class names are
+		// not necessarily allowed for files on all platforms.
 		int l = strlen(name);
 		char escapedName[l+1];
 		strcpy(escapedName, name);
@@ -309,6 +314,14 @@ void JNICALL cbClassFileLoadHook(
 		
 		snprintf(cacheFileName, sizeof(cacheFileName), "%s/%s.%s.class", cfgCachePath, escapedName, md5String);
 		snprintf(tracedCacheFileName, sizeof(tracedCacheFileName), "%s/%s.%s.tm", cfgCachePath, escapedName, md5String);
+		
+		printf("Cache file name (orig.): %s\n", cacheFileName);
+		printf("well...\n");
+		cacheFilePath = fs::path(cacheFileName);
+		printf("ok...\n");
+		printf("Cache file name (native): %s\n", cacheFilePath.native_file_string().c_str());
+		tracedCacheFilePath = fs::path(tracedCacheFileName);
+		fflush(stdout);
 	}
 
 	// Check if we have a cached version
@@ -316,14 +329,14 @@ void JNICALL cbClassFileLoadHook(
 	{
 		if (cfgVerbose>=2) 
 		{
-			printf ("Looking for %s\n", cacheFileName);
+			printf ("Looking for %s\n", cacheFilePath.native_file_string().c_str());
 			fflush(stdout);
 		}
 		
 		// Check if length is 0
-		if (fs::exists(cacheFileName))
+		if (fs::exists(cacheFilePath.native_file_string()))
 		{
-			int len = fs::file_size(cacheFileName);
+			int len = fs::file_size(cacheFilePath);
 			
 			if (len == 0)
 			{
@@ -334,7 +347,7 @@ void JNICALL cbClassFileLoadHook(
 				std::fstream f;
 				
 				// Read class definition
-				f.open(cacheFileName, std::ios_base::in | std::ios_base::binary);
+				f.open(cacheFilePath.native_file_string().c_str(), std::ios_base::in | std::ios_base::binary);
 				if (f.fail()) fatal_error("Could not open class file");
 				
 				jvmtiError err = jvmti->Allocate(len, new_class_data);
@@ -347,7 +360,7 @@ void JNICALL cbClassFileLoadHook(
 				f.close();
 				
 				// Read traced methods array
-				f.open(tracedCacheFileName, std::ios_base::in | std::ios_base::binary);
+				f.open(tracedCacheFilePath.native_file_string().c_str(), std::ios_base::in | std::ios_base::binary);
 				if (f.fail()) fatal_error("Could not open traced methods file");
 				nTracedMethods = readInt(&f);
 				tracedMethods = new int[nTracedMethods];
@@ -405,13 +418,13 @@ void JNICALL cbClassFileLoadHook(
 			// Cache class
 			if (cfgCachePath != NULL)
 			{
-				if (cfgVerbose>=2) printf("Caching %s\n", cacheFileName);
-				if (! mkdirs(cacheFileName)) fatal_ioerror("Error in mkdirs");
+				if (cfgVerbose>=2) printf("Caching %s\n", cacheFilePath.native_file_string().c_str());
+				if (! mkdirs(cacheFilePath)) fatal_ioerror("Error in mkdirs");
 		
 				std::fstream f;
 				
 				// Cache bytecode
-				f.open(cacheFileName, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+				f.open(cacheFilePath.native_file_string().c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
 				if (f.fail()) fatal_ioerror("Opening cache class file for output");
 				f.write((char*) *new_class_data, len);
 				if (f.bad()) fatal_ioerror("Writing cached class");
@@ -420,7 +433,7 @@ void JNICALL cbClassFileLoadHook(
 				f.close();
 				
 				// Cache traced methods
-				f.open(tracedCacheFileName, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+				f.open(tracedCacheFilePath.native_file_string().c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
 				if (f.fail()) fatal_ioerror("Opening cache traced methods file for output");
 				writeInt(&f, nTracedMethods);
 				for (int i=0;i<nTracedMethods;i++) writeInt(&f, tracedMethods[i]);
@@ -433,10 +446,10 @@ void JNICALL cbClassFileLoadHook(
 		else if (cfgCachePath != NULL)
 		{
 			// Mark class as not instrumented.
-			if (cfgVerbose>=2) printf("Caching empty: %s\n", cacheFileName);
-			if (! mkdirs(cacheFileName)) fatal_ioerror("Error in mkdirs");
+			if (cfgVerbose>=2) printf("Caching empty: %s\n", cacheFilePath.native_file_string().c_str());
+			if (! mkdirs(cacheFilePath)) fatal_ioerror("Error in mkdirs");
 			
-			std::fstream f (cacheFileName, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+			std::fstream f (cacheFilePath.native_file_string().c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
 			if (f.fail()) fatal_ioerror("Opening cache class file for output");
 			f.flush();
 			f.close();
@@ -591,6 +604,8 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
 	jvmtiCapabilities capabilities;
 	jvmtiEnv *jvmti;
 	
+	fs::path::default_name_check(fs::no_check);
+
 	printf("Loading BCI agent - v2\n");
 	fflush(stdout);
 
