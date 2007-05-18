@@ -111,6 +111,7 @@ public class TODSessionManager
 		String theHostName = aConfig.get(TODConfig.CLIENT_HOST_NAME);
 		if (theCurrentSession != null)
 		{
+			assert theCurrentSession.getLogBrowser() != null;
 			try
 			{
 				Class theCurrentSessionClass = theCurrentSession.getDelegate().getClass();
