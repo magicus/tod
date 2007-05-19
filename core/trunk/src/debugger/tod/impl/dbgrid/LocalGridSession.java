@@ -124,7 +124,7 @@ public class LocalGridSession extends RemoteGridSession
 			
 			if (! theReady)
 			{
-				throw new RuntimeException("Could not start event database:\n"+theGrabber.getText());
+				throw new RuntimeException("Could not start event database:\n--\n"+theGrabber.getText()+"\n--");
 			}
 
 			theGrabber.stopCapture();
