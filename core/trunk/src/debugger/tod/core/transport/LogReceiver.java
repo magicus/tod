@@ -219,7 +219,11 @@ public abstract class LogReceiver
 		
 		try
 		{
-			if (itsDataIn.available() == 0) return false;
+			if (itsDataIn.available() == 0) 
+			{
+				if (DebugFlags.REPLAY_MODE) eof();
+				return false;
+			}
 		}
 		catch (IOException e1)
 		{

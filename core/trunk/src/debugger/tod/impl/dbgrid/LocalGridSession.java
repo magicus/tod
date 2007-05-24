@@ -102,6 +102,7 @@ public class LocalGridSession extends RemoteGridSession
 					"-Dmaster-timeout=10",
 					"-Dagent-verbose="+getConfig().get(TODConfig.AGENT_VERBOSE),
 					"-Dpage-buffer-size="+(theHeapSize/2),
+//					"-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000",
 					"tod.impl.dbgrid.GridMaster",
 					"0");
 			

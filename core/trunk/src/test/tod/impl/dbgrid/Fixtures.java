@@ -33,6 +33,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
+import tod.agent.DebugFlags;
 import tod.core.LocationRegisterer;
 import tod.core.config.TODConfig;
 import tod.core.database.event.ILogEvent;
@@ -405,6 +406,8 @@ public class Fixtures
 			GridMaster aMaster) 
 			throws IOException
 	{
+		DebugFlags.REPLAY_MODE = true;
+		
 		DataInputStream theStream = new DataInputStream(
 				new BufferedInputStream(new FileInputStream(aFile)));
 		

@@ -46,7 +46,7 @@ public class GridReplay
 //		System.exit(0);
 	}
 	
-	public static GridMaster replay(String[] args) throws Exception
+	public static GridMaster replay(String... args) throws Exception
 	{
 		Registry theRegistry = LocateRegistry.createRegistry(Util.TOD_REGISTRY_PORT);
 		

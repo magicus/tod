@@ -51,6 +51,11 @@ public class DebugFlags
 	public static long MAX_EVENTS = ConfigUtils.readLong("max-events", 0);
 	
 	/**
+	 * If true, then
+	 */
+	public static boolean REPLAY_MODE = ConfigUtils.readBoolean("replay-mode", false);
+	
+	/**
 	 * Causes database nodes to not reorder incoming events
 	 */
 	public static final boolean DISABLE_REORDER = false; 

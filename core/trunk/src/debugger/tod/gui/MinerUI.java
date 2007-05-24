@@ -35,6 +35,7 @@ import java.util.Properties;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 
 import org.apache.lucene.util.SmallFloat;
 
@@ -72,6 +73,19 @@ import tod.utils.TODUtils;
 public abstract class MinerUI extends BusOwnerPanel
 implements ILocationSelectionListener, IGUIManager
 {
+	static
+	{
+		try
+		{
+			UIManager.setLookAndFeel("org.jdesktop.swingx.plaf.nimbus.NimbusLookAndFeel");
+			System.out.println("Set Nimbus L&F");
+		}
+		catch (Exception e)
+		{
+			System.out.println("Could not set Nimbus L&F ("+e.getMessage()+")");
+		}
+	}
+	
 	private LogViewBrowserNavigator itsNavigator = new LogViewBrowserNavigator()
 	{
 		@Override
@@ -435,7 +449,7 @@ implements ILocationSelectionListener, IGUIManager
 	/**
 	 * Loads stored properties and place them in the given properties map.
 	 */
-	protected void loadProperties(Properties aProperties)
+	public static void loadProperties(Properties aProperties)
 	{
 		try
 		{
@@ -451,7 +465,7 @@ implements ILocationSelectionListener, IGUIManager
 	/**
 	 * Saves the given properties map.
 	 */
-	protected void saveProperties(Properties aProperties)
+	public static void saveProperties(Properties aProperties)
 	{
 		try
 		{
