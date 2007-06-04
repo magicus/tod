@@ -40,7 +40,7 @@ array-cast-objects = \
 
 ##############
 
-all: bci-agent array-cast
+all: bci-agent #array-cast
 
 bci-agent: dirs $(bci-agent-objects)
 	$(CXX) -shared -o $(PLATFORM)/$(LIBPREFIX)bci-agent.$(LIBEXT) $(bci-agent-objects) $(LDFLAGS) $(LDFLAGS_BOOST)

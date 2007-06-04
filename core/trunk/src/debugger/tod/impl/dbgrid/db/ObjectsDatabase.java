@@ -31,6 +31,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 
 import tod.impl.dbgrid.db.file.HardPagedFile;
 import tod.impl.dbgrid.db.file.IndexTuple;
@@ -39,8 +42,6 @@ import tod.impl.dbgrid.db.file.HardPagedFile.Page;
 import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Probe;
-import tod.utils.ArrayCast;
-import tod.utils.NativeStream;
 import zz.utils.bit.BitStruct;
 
 /**
@@ -58,7 +59,8 @@ public class ObjectsDatabase
 	private long itsLastRecordedId = 0;
 	private int itsDroppedObjects = 0; 
 	
-	private int[] itsIntBuffer = new int[256];
+	private ByteBuffer itsByteBuffer = ByteBuffer.allocate(0);
+	private IntBuffer itsIntBuffer = itsByteBuffer.asIntBuffer();
 	
 	/**
 	 * Current data page
@@ -97,6 +99,10 @@ public class ObjectsDatabase
 		itsFile.dispose();
 	}
 	
+	/**
+	 * Serializes the given object into an array of bytes so that
+	 * it can be stored.
+	 */
 	protected byte[] encode(Object aObject)
 	{
 		try
@@ -113,6 +119,9 @@ public class ObjectsDatabase
 		}
 	}
 	
+	/**
+	 * Deserializes an object previously serialized by {@link #encode(Object)}.
+	 */
 	protected Object decode(byte[] aData)
 	{
 		assert aData.length > 0;
@@ -132,11 +141,30 @@ public class ObjectsDatabase
 		}
 	}
 	
+	/**
+	 * Stores an object into the database. The object is serialized by {@link #encode(Object)}
+	 * prior to storage.
+	 * @param aId Id of the object to store.
+	 * @param aObject The object to store.
+	 */
 	public void store(long aId, Object aObject)
 	{
 		store(aId, encode(aObject));
 	}
 	
+	private void checkBufferSize(int aSize)
+	{
+		if (itsIntBuffer.capacity() < aSize)
+		{
+			itsByteBuffer = ByteBuffer.allocate(4*Math.max(itsIntBuffer.capacity()*2, aSize));
+			itsByteBuffer.order(ByteOrder.nativeOrder());
+			itsIntBuffer = itsByteBuffer.asIntBuffer();
+		}
+	}
+	
+	/**
+	 * Stores an already-serialized object into the database.
+	 */
 	public void store(long aId, byte[] aData)
 	{
 		itsObjectsCount++;
@@ -157,17 +185,15 @@ public class ObjectsDatabase
 		int theDataSize = aData.length;
 		int theStorageSize = 1 + (theDataSize+3)/4;
 		
-		// Check we have enough space in int buffer
-		if (itsIntBuffer.length < theStorageSize)
-		{
-			itsIntBuffer = new int[Math.max(itsIntBuffer.length*2, theStorageSize)];
-		}
+		checkBufferSize(theStorageSize);
 		
-		itsIntBuffer[0] = theDataSize;
-		ArrayCast.b2i(aData, 0, itsIntBuffer, 1, theDataSize);
+		itsIntBuffer.position(0);
+		itsIntBuffer.put(theDataSize);
+		itsByteBuffer.position(4);
+		itsByteBuffer.put(aData);
 
+		itsIntBuffer.position(0);
 		int theRemaining = theStorageSize*4;
-		int theWritten = 0;
 		while (theRemaining > 0)
 		{			
 			// Determine available space in current page, keeping 64 bits
@@ -179,18 +205,12 @@ public class ObjectsDatabase
 			assert theAmountToCopy % 4 == 0;
 			assert itsCurrentOffset % 4 == 0;
 			
-			System.arraycopy(
-					itsIntBuffer, 
-					theWritten/4, 
-					thePageData,
-					itsCurrentOffset/4,
-					theAmountToCopy/4);
+			itsIntBuffer.get(thePageData, itsCurrentOffset/4, theAmountToCopy/4);
 			
 			itsCurrentPage.modified();
 			
 			theRemaining -= theAmountToCopy;
 			itsCurrentOffset += theAmountToCopy;
-			theWritten += theAmountToCopy;
 			
 			if (theAmountToCopy == theSpaceInPage)
 			{
@@ -210,6 +230,10 @@ public class ObjectsDatabase
 		}
 	}
 	
+	/**
+	 * Loads an object from the database.
+	 * @param aId Id of the object to load.
+	 */
 	public Object load(long aId)
 	{
 		ObjectPointerTuple theTuple = itsindex.getTupleAt(aId, true);
@@ -223,16 +247,12 @@ public class ObjectsDatabase
 
 		int theStorageSize = (theDataSize+3)/4;
 		
-		// Check we have enough space in int buffer
-		if (itsIntBuffer.length < theStorageSize)
-		{
-			itsIntBuffer = new int[Math.max(itsIntBuffer.length*2, theStorageSize)];
-		}
+		checkBufferSize(theStorageSize);
 
 		theOffset += 4;
 		
+		itsIntBuffer.position(0);
 		int theRemaining = theStorageSize*4;
-		int theRead = 0;
 		while (theRemaining > 0)
 		{
 			// Determine available space in current page, keeping 64 bits
@@ -244,16 +264,10 @@ public class ObjectsDatabase
 			assert theAmountToCopy % 4 == 0;
 			assert theOffset % 4 == 0;
 			
-			if (theAmountToCopy > 0) System.arraycopy(
-					thePageData,
-					theOffset/4,
-					itsIntBuffer, 
-					theRead/4, 
-					theAmountToCopy/4);
+			if (theAmountToCopy > 0) itsIntBuffer.put(thePageData, theOffset/4, theAmountToCopy/4); 
 			
 			theRemaining -= theAmountToCopy;
 			theOffset += theAmountToCopy;
-			theRead += theAmountToCopy;
 			
 			if (theRemaining > 0)
 			{
@@ -269,9 +283,7 @@ public class ObjectsDatabase
 			}
 		}
 		
-		byte[] theData = new byte[theDataSize];
-		ArrayCast.i2b(itsIntBuffer, 0, theData, 0, theDataSize);
-		return decode(theData);
+		return decode(itsByteBuffer.array());
 	}
 	
 	@Probe(key = "objects count", aggr = AggregationType.SUM)

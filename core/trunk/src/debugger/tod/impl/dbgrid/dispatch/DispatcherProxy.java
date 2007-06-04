@@ -25,6 +25,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.LinkedList;
 
 import tod.core.transport.LogReceiver;
@@ -41,7 +43,14 @@ public class DispatcherProxy extends DispatchNodeProxy
 	private DataOutputStream itsDataOut;
 	private DataInputStream itsDataIn;
 	private byte[] itsBuffer = new byte[1024];
-	private byte[] itsIBBuffer = new byte[4];
+	private ByteBuffer itsIBBuffer;
+	private byte[] itsIBArray;
+	
+	{
+		itsIBBuffer = ByteBuffer.allocate(4);
+		itsIBBuffer.order(ByteOrder.nativeOrder());
+		itsIBArray = itsIBBuffer.array();
+	}
 	
 	public DispatcherProxy(
 			RIDispatchNode aConnectable, 
@@ -87,15 +96,12 @@ public class DispatcherProxy extends DispatchNodeProxy
 			itsOut.write(aType.ordinal());
 			
 			// Read packet size
-			aStream.readFully(itsIBBuffer);
-			int theSize = ArrayCast.ba2i(itsIBBuffer);
+			aStream.readFully(itsIBArray);
+			int theSize = itsIBBuffer.getInt(0);
 			
 			// Write packet size
-			itsOut.write(itsIBBuffer);
+			itsOut.write(itsIBArray);
 			
-//			int theSize = aStream.readInt();
-//			getOutStream().writeInt(theSize);
-
 			Utils.pipe(itsBuffer, aStream, itsOut, theSize);
 		}
 		catch (IOException e)

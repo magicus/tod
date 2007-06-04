@@ -29,23 +29,19 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.lang.ref.ReferenceQueue;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.PriorityQueue;
 
 import tod.agent.DebugFlags;
-import tod.impl.dbgrid.db.file.PageBank.Page;
 import tod.impl.dbgrid.monitoring.AggregationType;
 import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Probe;
-import tod.utils.ArrayCast;
-import tod.utils.NativeStream;
 import zz.utils.ArrayStack;
 import zz.utils.Stack;
 import zz.utils.Utils;
-import zz.utils.bit.ByteBitStruct;
-import zz.utils.cache.MRUBuffer;
 import zz.utils.cache.SyncMRUBuffer;
 import zz.utils.list.NakedLinkedList.Entry;
 
@@ -251,8 +247,8 @@ public class HardPagedFile extends PageBank
 		private boolean itsDisposed = false;
 		private final RandomAccessFile itsFile;
 
-		private final byte[] itsReadByteBuffer;
-		private final byte[] itsWriteByteBuffer;
+		private ByteBuffer itsByteBuffer;
+		private IntBuffer itsIntBuffer;
 		private long itsPageId;
 		private IOException itsException;
 		
@@ -269,8 +265,10 @@ public class HardPagedFile extends PageBank
 			Monitor.getInstance().register(this);
 			itsFile = new RandomAccessFile(aFile, "rw");
 			
-			itsReadByteBuffer = new byte[itsPageSize];
-			itsWriteByteBuffer = new byte[itsPageSize];
+			itsByteBuffer = ByteBuffer.allocate(itsPageSize);
+			itsByteBuffer.order(ByteOrder.nativeOrder());
+			itsIntBuffer = itsByteBuffer.asIntBuffer();
+			
 			itsPageId = -1;
 			if (! DebugFlags.DISABLE_ASYNC_WRITES) start();
 		}
@@ -318,7 +316,7 @@ public class HardPagedFile extends PageBank
 				try
 				{
 					itsFile.seek(theOffset);
-					itsFile.readFully(itsReadByteBuffer);
+					itsFile.readFully(itsByteBuffer.array());
 					break;
 				}
 				catch (EOFException e)
@@ -346,7 +344,8 @@ public class HardPagedFile extends PageBank
 				}
 			}
 			
-			ArrayCast.b2i(itsReadByteBuffer, aBuffer);
+			itsIntBuffer.position(0);
+			itsIntBuffer.get(aBuffer);
 		}
 		
 		private void updateScattering(long aId)
@@ -376,9 +375,10 @@ public class HardPagedFile extends PageBank
 			itsWriteCount++;
 			if (DebugFlags.DISABLE_ASYNC_WRITES)
 			{
-				ArrayCast.i2b(aData, itsWriteByteBuffer);
+				itsIntBuffer.position(0);
+				itsIntBuffer.put(aData);
 				itsFile.seek(aId * itsPageSize);
-				itsFile.write(itsWriteByteBuffer);
+				itsFile.write(itsByteBuffer.array());
 				return;
 			}
 			
@@ -386,7 +386,8 @@ public class HardPagedFile extends PageBank
 			{
 				while (itsPageId >= 0) wait();
 				itsPageId = aId;
-				ArrayCast.i2b(aData, itsWriteByteBuffer);
+				itsIntBuffer.position(0);
+				itsIntBuffer.put(aData);
 				IOException theException = itsException;
 				itsException = null;
 				notifyAll();
@@ -410,7 +411,7 @@ public class HardPagedFile extends PageBank
 					try
 					{
 						itsFile.seek(itsPageId * itsPageSize);
-						itsFile.write(itsWriteByteBuffer);
+						itsFile.write(itsByteBuffer.array());
 					}
 					catch (IOException e)
 					{
