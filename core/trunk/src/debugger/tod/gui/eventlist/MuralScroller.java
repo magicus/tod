@@ -79,7 +79,7 @@ public class MuralScroller extends JPanel
 	private boolean itsUpdating = false;
 		
 	/**
-	 * If p is the position of the sliderm the timestamp t is:
+	 * If p is the position of the slider the timestamp t is:
 	 * p*{@link #itsSliderFactor} + {@link #itsStart} 
 	 */
 	private long itsSliderFactor;

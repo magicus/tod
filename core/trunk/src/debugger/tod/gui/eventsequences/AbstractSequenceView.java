@@ -169,7 +169,7 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 		return null;
 	}
 
-	private class MyMural extends EventMural
+	private class MyMural extends BaloonMural
 	{
 		private MyMural()
 		{

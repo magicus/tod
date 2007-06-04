@@ -21,6 +21,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui;
 
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.session.ISession;
 import tod.gui.seed.LogViewSeed;
 
 /**
@@ -62,4 +64,27 @@ public interface IGUIManager
 	 * @see MinerUI#getBooleanProperty(IGUIManager, String, boolean)
 	 */
 	public String getProperty(String aKey);
+	
+	/**
+	 * Returns the current debugging session.
+	 */
+	public ISession getSession();
+	
+	public void showNextEventForLine(IBehaviorInfo aBehavior, int aLine);
+	public void showPreviousEventForLine(IBehaviorInfo aBehavior, int aLine);
+	
+	/**
+	 * Whether the "Show next event for line" action should be enabled.
+	 */
+	public boolean canShowNextEventForLine();
+
+	/**
+	 * Whether the "Show previous event for line" action should be enabled.
+	 */
+	public boolean canShowPreviousEventForLine();
+
+	/**
+	 * Shows a list of all the events that occurred at the specified line.
+	 */
+	public void showEventsForLine(IBehaviorInfo aBehavior, int aLine);
 }

@@ -33,6 +33,13 @@ public class Util
 {
 	public static final int TOD_REGISTRY_PORT = 10098;
 	
+	/**
+	 * Path to the development eclipse workspace.
+	 * It is used during development to avoid rebuilding jars. 
+	 * If null, the development workspace is not available.
+	 */
+	public static final String workspacePath = System.getProperty("dev.path");
+	
 	public static void ensureSize (List<?> aList, int aSize)
 	{
 		while (aList.size() <= aSize) aList.add (null);

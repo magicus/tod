@@ -21,8 +21,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui;
 
 import java.net.URI;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -81,8 +79,7 @@ public class StandaloneUI extends JPanel
 
 	private class MyTraceView extends MinerUI
 	{
-		@Override
-		protected ISession getSession()
+		public ISession getSession()
 		{
 			return itsSession;
 		}

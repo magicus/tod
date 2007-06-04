@@ -197,9 +197,7 @@ implements ILocationSelectionListener, IGUIManager
 		itsBookmarkPanel.setView(aView);
 		saveProperties(itsProperties);
 	}
-	
-	protected abstract ISession getSession();
-	
+		
 	protected JComponent createToolbar()
 	{
 		JPanel theToolbar = new JPanel();
