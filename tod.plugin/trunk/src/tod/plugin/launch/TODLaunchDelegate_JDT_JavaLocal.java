@@ -11,6 +11,9 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
+import tod.plugin.launch.TODLaunchDelegate_Base.JDTSourceRevealer;
+import tod.plugin.launch.TODLaunchDelegate_Base.SourceRevealer;
+
 /**
  * Launch delegate for launch type: org.eclipse.jdt.launching.localJavaApplication
  * @author gpothier
@@ -30,7 +33,8 @@ public class TODLaunchDelegate_JDT_JavaLocal extends JavaLaunchDelegate
 		try
 		{
 			IJavaProject theJavaProject = getJavaProject(aConfiguration);
-			if (TODLaunchDelegate_Base.setup(theJavaProject, aConfiguration, aLaunch))
+			SourceRevealer theRevealer = new JDTSourceRevealer(aLaunch, theJavaProject);
+			if (TODLaunchDelegate_Base.setup(theRevealer, aConfiguration, aLaunch))
 			{
 				super.launch(aConfiguration, TODLaunchDelegate_Base.MODE, aLaunch, aMonitor);
 			}

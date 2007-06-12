@@ -36,6 +36,7 @@ import org.eclipse.ui.PlatformUI;
 import tod.core.config.TODConfig;
 import tod.core.session.ISession;
 import tod.core.session.SessionUtils;
+import tod.plugin.launch.TODLaunchDelegate_Base.SourceRevealer;
 import zz.utils.Utils;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IRWProperty;
@@ -101,7 +102,7 @@ public class TODSessionManager
 	 */
 	public DebuggingSession getSession(
 			ILaunch aLaunch,
-			IJavaProject aJavaProject,
+			SourceRevealer aGotoSourceDelegate,
 			TODConfig aConfig)
 	{
 		DebuggingSession theCurrentSession = pCurrentSession.get();
@@ -144,7 +145,7 @@ public class TODSessionManager
 			}
 		}
 		
-		return createSession(aLaunch, aJavaProject, aConfig);
+		return createSession(aLaunch, aGotoSourceDelegate, aConfig);
 	}
 
 	
@@ -220,7 +221,7 @@ public class TODSessionManager
 	 */
 	private DebuggingSession createSession(
 			ILaunch aLaunch,
-			IJavaProject aJavaProject, 
+			SourceRevealer aGotoSourceDelegate, 
 			TODConfig aConfig)
 	{
 		try
@@ -228,7 +229,7 @@ public class TODSessionManager
 			DebuggingSession theDebuggingSession = new DebuggingSession(
 					SessionUtils.createSession(aConfig),
 					aLaunch,
-					aJavaProject);
+					aGotoSourceDelegate);
 			
 			pCurrentSession.set(theDebuggingSession);
 			return theDebuggingSession;

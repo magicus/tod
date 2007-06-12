@@ -44,6 +44,8 @@ import org.eclipse.jdt.debug.core.IJavaFieldVariable;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
+import org.eclipse.jdt.debug.core.IJavaThread;
+import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 import org.eclipse.jdt.internal.debug.core.model.JDIClassType;
@@ -53,6 +55,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.omg.CosNaming.IstringHelper;
@@ -61,16 +64,16 @@ import org.omg.CosNaming.IstringHelper;
  * Utility class that permits to asynchronously reveal particualr source locations
  * @author gpothier
  */
-public class SourceRevealer
+public class SourceRevealerUtils
 {
-	private static SourceRevealer INSTANCE = new SourceRevealer();
+	private static SourceRevealerUtils INSTANCE = new SourceRevealerUtils();
 
-	public static SourceRevealer getInstance()
+	public static SourceRevealerUtils getInstance()
 	{
 		return INSTANCE;
 	}
 
-	private SourceRevealer()
+	private SourceRevealerUtils()
 	{
 	}
 	
@@ -101,8 +104,11 @@ public class SourceRevealer
 		}
 	}
 	
+	/**
+	 * Reveal the source code using Debug API. Only for JDT projects.
+	 */
 	public static void reveal (
-			final DebuggingSession aSession, 
+			final ILaunch aLaunch, 
 			final String aTypeName, 
 			final int aLineNumber)
 	{
@@ -111,19 +117,22 @@ public class SourceRevealer
 			public void reveal() 
 			{
 				FakeStackFrame theArtifact = new FakeStackFrame(
-						aSession.getLaunch(),
+						aLaunch,
 						aTypeName, 
 						aLineNumber);
 				
 				ISourceLookupResult theResult = DebugUITools.lookupSource(
 						theArtifact, 
-						aSession.getLaunch().getSourceLocator());
+						aLaunch.getSourceLocator());
 				
 				DebugUITools.displaySource(theResult, JavaPlugin.getActivePage());
 			}
 		});
 	}
 	
+	/**
+	 * Opens a given method. Should be safe for JDT and PDE projects. 
+	 */
 	public static void reveal (
 			final IJavaProject aJavaProject, 
 			final String aTypeName, 
@@ -139,9 +148,37 @@ public class SourceRevealer
 						IMethod theMethod = theType.getMethod(aMethodName, null);
 						if (theMethod == null) return;
 						
-						JavaUI.openInEditor(theMethod);
+						JavaUI.openInEditor(theMethod, false, true);
 					}
 				});
+	}
+	
+	/**
+	 * Opens a given location. Should be safe for JDT and PDE projects. 
+	 */
+	public static void reveal (
+			final IJavaProject aJavaProject, 
+			final String aTypeName, 
+			final int aLineNumber)
+	{
+		getInstance().reveal (new Revealer()
+		{
+			public void reveal() throws CoreException, BadLocationException
+			{
+				IType theType = TODPluginUtils.getType(aJavaProject, aTypeName);
+				if (theType == null) return;
+				
+				IEditorPart theEditor = JavaUI.openInEditor(theType, false, false);
+				if (theEditor instanceof ITextEditor)
+				{
+					ITextEditor theTextEditor = (ITextEditor) theEditor;
+					IDocumentProvider theProvider= theTextEditor.getDocumentProvider();
+					IDocument theDocument = theProvider.getDocument(theTextEditor.getEditorInput());
+					int theStart= theDocument.getLineOffset(aLineNumber);
+					theTextEditor.selectAndReveal(theStart, 0);
+				}
+			}
+		});
 	}
 	
 	private interface Revealer
@@ -162,7 +199,7 @@ public class SourceRevealer
 		private final int itsLineNumber;
 		
 		private FakeThread itsThread;
-		private FakeType itsType;
+		private FakeReferenceType itsType;
 
 		public FakeStackFrame(
 				final ILaunch aLaunch, 
@@ -173,7 +210,7 @@ public class SourceRevealer
 			itsTypeName = aTypeName;
 			itsLineNumber = aLineNumber;
 			itsThread = new FakeThread(this);
-			itsType = new FakeType(this);
+			itsType = new FakeReferenceType(this);
 		}
 		
 		public String getSourcePath() throws DebugException
@@ -639,11 +676,11 @@ public class SourceRevealer
 		}
 	}
 	
-	private static class FakeType implements IJavaReferenceType
+	private static class FakeReferenceType implements IJavaReferenceType
 	{
 		private FakeStackFrame itsFrame;
 
-		public FakeType(FakeStackFrame aFrame)
+		public FakeReferenceType(FakeStackFrame aFrame)
 		{
 			itsFrame = aFrame;
 		}
@@ -737,8 +774,8 @@ public class SourceRevealer
 		{
 			return null;
 		}
-		
 	}
+	
 }
 
 

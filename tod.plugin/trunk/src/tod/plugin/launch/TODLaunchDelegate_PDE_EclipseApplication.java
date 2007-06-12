@@ -9,8 +9,12 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.pde.ui.launcher.EclipseApplicationLaunchConfiguration;
+
+import tod.plugin.launch.TODLaunchDelegate_Base.PDESourceRevealer;
+import tod.plugin.launch.TODLaunchDelegate_Base.SourceRevealer;
 
 /**
  * Launch delegate for configuration type: org.eclipse.pde.ui.RuntimeWorkbench
@@ -32,17 +36,8 @@ extends EclipseApplicationLaunchConfiguration
 		try
 		{
 			IProject[] theProjects = getProjectsForProblemSearch(aConfiguration, aMode);
-			IJavaProject theJavaProject = null;
-			for (IProject theProject : theProjects)
-			{
-				if (theProject instanceof IJavaProject)
-				{
-					theJavaProject = (IJavaProject) theProject;
-					break;
-				}
-			}
-			
-			if (TODLaunchDelegate_Base.setup(theJavaProject, aConfiguration, aLaunch))
+			SourceRevealer theRevealer = new PDESourceRevealer(aLaunch, theProjects);
+			if (TODLaunchDelegate_Base.setup(theRevealer, aConfiguration, aLaunch))
 			{
 				super.launch(aConfiguration, TODLaunchDelegate_Base.MODE, aLaunch, aMonitor);
 			}

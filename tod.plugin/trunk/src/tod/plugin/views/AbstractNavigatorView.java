@@ -24,7 +24,6 @@ import org.eclipse.ui.part.ViewPart;
 import tod.core.database.event.ILogEvent;
 import tod.gui.IGUIManager;
 import tod.plugin.DebuggingSession;
-import tod.plugin.TODPluginUtils;
 import zz.utils.ui.StackLayout;
 
 public abstract class AbstractNavigatorView extends ViewPart implements ISelectionListener
@@ -118,7 +117,7 @@ public abstract class AbstractNavigatorView extends ViewPart implements ISelecti
 	    if (itsMoving) return;
 	    itsMoving = true;
 
-		TODPluginUtils.gotoSource(aSession, aEvent);
+	    aSession.gotoSource(aEvent);
 	    
 	    itsMoving = false;
 	}

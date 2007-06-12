@@ -23,25 +23,31 @@ package tod.plugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.jdt.core.IJavaProject;
 
+import tod.core.database.event.ILogEvent;
 import tod.core.session.DelegatedSession;
 import tod.core.session.ISession;
+import tod.plugin.launch.TODLaunchDelegate_Base.SourceRevealer;
 
 public class DebuggingSession extends DelegatedSession
 {
-	private ILaunch itsLaunch;
-	private IJavaProject itsJavaProject;
+	private final ILaunch itsLaunch;
+	private final SourceRevealer itsGotoSourceDelegate;
 
-	public DebuggingSession(ISession aDelegate, ILaunch aLaunch, IJavaProject aJavaProject)
+	public DebuggingSession(
+			ISession aDelegate, 
+			ILaunch aLaunch, 
+			SourceRevealer aGotoSourceDelegate)
 	{
 		super(aDelegate);
 		itsLaunch = aLaunch;
-		itsJavaProject = aJavaProject;
+		itsGotoSourceDelegate = aGotoSourceDelegate;
 	}
 
-	public IJavaProject getJavaProject()
+	public void gotoSource(ILogEvent aEvent)
 	{
-		return itsJavaProject;
+		if (itsGotoSourceDelegate != null) itsGotoSourceDelegate.gotoSource(aEvent);
 	}
+	
 
 	public ILaunch getLaunch()
 	{

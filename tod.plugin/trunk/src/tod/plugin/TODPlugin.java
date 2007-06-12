@@ -21,26 +21,19 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.plugin;
 
 import java.io.File;
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.reflect.Method;
 
 import javassist.ClassPool;
 import javassist.LoaderClassPath;
 
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jdt.internal.launching.LaunchingPlugin;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
-import reflex.Run;
-import reflex.core.model.RAnnotationImpl;
-import reflex.run.agent.ReflexAgent;
 import reflex.run.common.RunningEnvironment;
 import tod.ReflexRiver;
 import tod.Util;
 import tod.impl.dbgrid.LocalGridSession;
-import tod.plugin.launch.ReflexLaunchHack;
 import zz.eclipse.utils.EclipseUtils;
 
 /**

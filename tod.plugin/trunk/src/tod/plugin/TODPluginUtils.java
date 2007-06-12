@@ -254,44 +254,6 @@ public class TODPluginUtils
 		return theCollector.getResults();
 	}
 	
-	public static void gotoSource (DebuggingSession aSession, ILogEvent aEvent)
-	{
-		if (aEvent instanceof ICallerSideEvent)
-		{
-			ICallerSideEvent theEvent = (ICallerSideEvent) aEvent;
-			gotoSource(aSession, theEvent);
-		}
-		else if (aEvent instanceof IBehaviorCallEvent)
-		{
-			IBehaviorCallEvent theEvent = (IBehaviorCallEvent) aEvent;
-			gotoSource(aSession, theEvent.getExecutedBehavior());
-		}
-	}
-	
-	public static void gotoSource (DebuggingSession aSession, ICallerSideEvent aEvent)
-	{
-		IBehaviorCallEvent theParent = aEvent.getParent();
-	    if (theParent == null) return;
-	    
-	    int theBytecodeIndex = aEvent.getOperationBytecodeIndex();
-	    IBehaviorInfo theBehavior = theParent.getExecutedBehavior();
-	    if (theBehavior == null) return;
-	    
-	    int theLineNumber = theBehavior.getLineNumber(theBytecodeIndex);
-	    ITypeInfo theType = theBehavior.getType();
-	    
-	    String theTypeName = theType.getName();
-	    SourceRevealer.reveal(aSession, theTypeName, theLineNumber);
-	}
-	
-	public static void gotoSource (DebuggingSession aSession, IBehaviorInfo aBehavior)
-	{
-		SourceRevealer.reveal(
-				aSession.getJavaProject(), 
-				aBehavior.getType().getName(), 
-				aBehavior.getName());
-	}
-
 	public static IType getType (IJavaProject aJavaProject, String aTypeName) throws CoreException
 	{
 		// Search Java type
