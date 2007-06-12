@@ -20,10 +20,13 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import tod.agent.ConfigUtils;
 import tod.core.database.structure.IBehaviorInfo;
+import tod.gui.IGUIManager;
 import tod.plugin.DebuggingSession;
 import tod.plugin.TODPluginUtils;
-import tod.plugin.views.EventViewer;
+import tod.plugin.views.AbstractNavigatorView;
+import tod.plugin.views.TraceNavigatorFXView;
 import tod.plugin.views.TraceNavigatorView;
 
 public abstract class AbstractRulerAction extends Action //implements IUpdate
@@ -63,15 +66,18 @@ public abstract class AbstractRulerAction extends Action //implements IUpdate
 	/**
 	 * Find and give focus to the trace navigator view.
 	 */
-	protected TraceNavigatorView getTraceNavigatorView(boolean aShow)
+	protected AbstractNavigatorView getTraceNavigatorView(boolean aShow)
 	{
 		try
 		{
+			String theViewId = ConfigUtils.readString("tod.plugin-view", TraceNavigatorView.VIEW_ID);
+			
 			IWorkbenchWindow theWindow = getEditor().getSite().getWorkbenchWindow();
 			IWorkbenchPage thePage = theWindow.getActivePage();
-			TraceNavigatorView theView = (TraceNavigatorView) (aShow ?
-					thePage.showView(TraceNavigatorView.VIEW_ID)
-					: thePage.findView(TraceNavigatorView.VIEW_ID));
+
+			AbstractNavigatorView theView = (AbstractNavigatorView) (aShow ?
+					thePage.showView(theViewId)
+					: thePage.findView(theViewId));
 
 			return theView;
 		}
@@ -81,9 +87,9 @@ public abstract class AbstractRulerAction extends Action //implements IUpdate
 		}
 	}
 	
-	protected EventViewer getMinerUI(boolean aShow)
+	protected IGUIManager getGUIManager(boolean aShow)
 	{
-		return getTraceNavigatorView(aShow).getMinerUI();
+		return getTraceNavigatorView(aShow).getGUIManager();
 	}
 
 	/**
@@ -121,7 +127,7 @@ public abstract class AbstractRulerAction extends Action //implements IUpdate
 	 */
 	protected DebuggingSession getSession()
 	{
-		return getTraceNavigatorView(false).getCurrentSession();
+		return (DebuggingSession) getGUIManager(false).getSession();
 	}
 	
 	/**

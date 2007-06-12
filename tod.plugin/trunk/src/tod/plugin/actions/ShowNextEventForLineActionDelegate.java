@@ -28,13 +28,13 @@ public class ShowNextEventForLineActionDelegate extends AbstractRulerActionDeleg
 		@Override
 		public void run()
 		{
-			getMinerUI(true).showNextEventForLine(getCurrentBehavior(), getCurrentLine());
+			getGUIManager(true).showNextEventForLine(getCurrentBehavior(), getCurrentLine());
 		}
 		
 		@Override
 		protected boolean shouldEnable()
 		{
-			return getCurrentMethod() != null && getMinerUI(false).canShowNextEventForLine();
+			return getCurrentMethod() != null && getGUIManager(false).canShowNextEventForLine();
 		}
 	}
 

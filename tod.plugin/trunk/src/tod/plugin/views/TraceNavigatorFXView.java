@@ -25,22 +25,22 @@ import javax.swing.JComponent;
 import tod.gui.IGUIManager;
 
 /**
- * This view is the trace navigator.
+ * New view of the trace navigator using JavaFX.
  * @author gpothier
  */
-public class TraceNavigatorView extends AbstractNavigatorView
+public class TraceNavigatorFXView extends AbstractNavigatorView
 {
 	/**
 	 * Id of the view as defined in plugin.xml
 	 */
-	public static final String VIEW_ID = "tod.plugin.views.TraceNavigatorView";
+	public static final String VIEW_ID = "tod.plugin.views.TraceNavigatorFXView";
 	
-	private EventViewer itsEventViewer;
+	private EventViewerFX itsEventViewer;
 	
 	@Override
 	protected JComponent createComponent()
 	{
-		itsEventViewer = new EventViewer(this);
+		itsEventViewer = new EventViewerFX();
 		return itsEventViewer;
 	}
 
@@ -49,6 +49,4 @@ public class TraceNavigatorView extends AbstractNavigatorView
 	{
 		return itsEventViewer;
 	}
-	
-		
 }

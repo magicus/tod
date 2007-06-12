@@ -37,7 +37,7 @@ public class ShowEventsForLineActionDelegate extends AbstractRulerActionDelegate
 		@Override
 		public void run()
 		{
-			getMinerUI(true).showEventsForLine(getCurrentBehavior(), getCurrentLine());
+			getGUIManager(true).showEventsForLine(getCurrentBehavior(), getCurrentLine());
 		}
 		
 		@Override

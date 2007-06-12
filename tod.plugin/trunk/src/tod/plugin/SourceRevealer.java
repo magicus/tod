@@ -44,6 +44,7 @@ import org.eclipse.jdt.debug.core.IJavaFieldVariable;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
+import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 import org.eclipse.jdt.internal.debug.core.model.JDIClassType;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
@@ -490,6 +491,16 @@ public class SourceRevealer
 		{
 			throw new UnsupportedOperationException();
 		}
+
+		public boolean canForceReturn()
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		public void forceReturn(IJavaValue aValue) throws DebugException
+		{
+			throw new UnsupportedOperationException();
+		}
 	}
 	
 	private static class FakeThread implements IThread
@@ -718,6 +729,11 @@ public class SourceRevealer
 		}
 
 		public Object getAdapter(Class adapter)
+		{
+			return null;
+		}
+
+		public IJavaObject[] getInstances(long aMax) throws DebugException
 		{
 			return null;
 		}

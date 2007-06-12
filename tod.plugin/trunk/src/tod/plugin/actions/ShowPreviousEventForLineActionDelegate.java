@@ -28,13 +28,13 @@ public class ShowPreviousEventForLineActionDelegate extends AbstractRulerActionD
 		@Override
 		public void run()
 		{
-			getMinerUI(true).showPreviousEventForLine(getCurrentBehavior(), getCurrentLine());
+			getGUIManager(true).showPreviousEventForLine(getCurrentBehavior(), getCurrentLine());
 		}
 		
 		@Override
 		protected boolean shouldEnable()
 		{
-			return getCurrentMethod() != null && getMinerUI(false).canShowPreviousEventForLine();
+			return getCurrentMethod() != null && getGUIManager(false).canShowPreviousEventForLine();
 		}
 	}
 }

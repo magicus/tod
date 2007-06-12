@@ -56,7 +56,7 @@ public class EventViewer extends MinerUI
 				});
 	}
 
-	protected DebuggingSession getSession()
+	public DebuggingSession getSession()
 	{
 		return TODSessionManager.getInstance().pCurrentSession().get();
 	}

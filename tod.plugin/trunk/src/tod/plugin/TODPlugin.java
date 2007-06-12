@@ -25,8 +25,10 @@ import java.lang.instrument.ClassFileTransformer;
 import java.lang.reflect.Method;
 
 import javassist.ClassPool;
+import javassist.LoaderClassPath;
 
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.internal.launching.LaunchingPlugin;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
@@ -36,7 +38,9 @@ import reflex.core.model.RAnnotationImpl;
 import reflex.run.agent.ReflexAgent;
 import reflex.run.common.RunningEnvironment;
 import tod.ReflexRiver;
+import tod.Util;
 import tod.impl.dbgrid.LocalGridSession;
+import tod.plugin.launch.ReflexLaunchHack;
 import zz.eclipse.utils.EclipseUtils;
 
 /**
@@ -64,18 +68,19 @@ public class TODPlugin extends AbstractUIPlugin
 	{
 		super.start(context);
 
+//		ReflexLaunchHack.setupReflex();
 		ReflexRiver.setup();
 		
 		String theBase = getLibraryPath();
 		ClassPool thePool = RunningEnvironment.get().getClassPool();
 		
-		String theDevPath = System.getProperty("dev.path");
+		String theDevPath = Util.workspacePath;
 		if (theDevPath == null)
 		{
-			thePool.appendClassPath(theBase+"/reflex-core.jar");
-			thePool.appendClassPath(theBase+"/pom.jar");
-			thePool.appendClassPath(theBase+"/zz.utils.jar");
-			thePool.appendClassPath(theBase+"/tod-debugger.jar");
+//			thePool.appendClassPath(theBase+"/reflex-core.jar");
+//			thePool.appendClassPath(theBase+"/pom.jar");
+//			thePool.appendClassPath(theBase+"/zz.utils.jar");
+//			thePool.appendClassPath(theBase+"/tod-debugger.jar");
 
 			LocalGridSession.cp = 
 				theBase+"/tod-debugger.jar"+File.pathSeparator
@@ -86,10 +91,10 @@ public class TODPlugin extends AbstractUIPlugin
 		}
 		else
 		{
-			thePool.appendClassPath(theDevPath+"/reflex/bin");
-			thePool.appendClassPath(theDevPath+"/pom/bin");
-			thePool.appendClassPath(theDevPath+"/zz.utils/bin");
-			thePool.appendClassPath(theDevPath+"/TOD/bin");			
+//			thePool.appendClassPath(theDevPath+"/reflex/bin");
+//			thePool.appendClassPath(theDevPath+"/pom/bin");
+//			thePool.appendClassPath(theDevPath+"/zz.utils/bin");
+//			thePool.appendClassPath(theDevPath+"/TOD/bin");			
 
 			LocalGridSession.cp = 
 				theDevPath+"/TOD/bin"+File.pathSeparator
@@ -97,7 +102,10 @@ public class TODPlugin extends AbstractUIPlugin
 				+theBase+"/asm-commons-2.1.jar"+File.pathSeparator
 				+theDevPath+"/zz.utils/bin";
 		}
-
+		
+		ClassLoader theLoader = Thread.currentThread().getContextClassLoader();
+		thePool.appendClassPath(new LoaderClassPath(theLoader));
+		
 		LocalGridSession.lib = theBase;
 	}
 

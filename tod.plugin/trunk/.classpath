@@ -8,5 +8,6 @@
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/TOD"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/zz.utils"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/tod-fx"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

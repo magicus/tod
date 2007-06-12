@@ -105,7 +105,7 @@ public class TODSessionManager
 			TODConfig aConfig)
 	{
 		DebuggingSession theCurrentSession = pCurrentSession.get();
-		if (theCurrentSession != null && ! theCurrentSession.isAlive()) pCurrentSession.set(null);
+		if (theCurrentSession != null && ! theCurrentSession.isAlive()) theCurrentSession = null;
 		Class theSessionClass = SessionUtils.getSessionClass(aConfig);
 		
 		String theHostName = aConfig.get(TODConfig.CLIENT_HOST_NAME);

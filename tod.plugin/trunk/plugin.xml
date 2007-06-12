@@ -15,16 +15,27 @@
          <export name="*"/>
       </library>
       <library name="lib/asm-2.1.jar">
-         <export
-               name="*">
+         <export name="*">
          </export>
       </library>
       <library name="lib/asm-commons-2.1.jar">
-         <export
-               name="*">
+         <export name="*">
          </export>
       </library>
+      <library name="lib/javassist.jar">
+         <export name="*"/>
+      </library>
       
+      <library name="lib/javafxrt.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/swing-layout.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/Filters.jar">
+         <export name="*"/>
+      </library>
+
       <!-- the DEV/DEPLOY in-out markers are used by a perl script, don't remove -->
       <!-- DEV-in -->
       <library name="../zz.utils/bin">
@@ -33,8 +44,7 @@
       <library name="../TOD/bin">
          <export name="*"/>
       </library>
-
-      <library name="lib/javassist.jar">
+      <library name="../tod-fx/bin">
          <export name="*"/>
       </library>
       <library name="../reflex/bin">
@@ -53,9 +63,6 @@
          <export name="*"/>
       </library>
       <library name="lib/zz.utils.jar">
-         <export name="*"/>
-      </library>
-      <library name="lib/javassist.jar">
          <export name="*"/>
       </library>
       <library name="lib/reflex-core.jar">
@@ -78,6 +85,9 @@
       <import plugin="org.eclipse.ui.workbench.texteditor"/>
       <import plugin="zz.eclipse.utils"/>
       <import plugin="org.eclipse.jdt.debug"/>
+      <import plugin="org.eclipse.jdt.junit"/>
+      <import plugin="org.eclipse.jdt.junit.runtime"/>
+      <import plugin="org.eclipse.pde.ui"/>
    </requires>
 
    <extension
@@ -91,6 +101,11 @@
             class="tod.plugin.views.TraceNavigatorView"
             id="tod.plugin.views.TraceNavigatorView"
             name="Trace Navigator"/>
+      <view
+            category="tod.plugin"
+            class="tod.plugin.views.TraceNavigatorFXView"
+            id="tod.plugin.views.TraceNavigatorFXView"
+            name="Trace Navigator (JavaFX)"/>
    </extension>
    <extension
          point="org.eclipse.debug.core.launchModes">
@@ -129,17 +144,36 @@
    <extension
          point="org.eclipse.debug.core.launchDelegates">
       <launchDelegate
-            delegate="tod.plugin.launch.TODLaunchDelegate"
-            id="tod.plugin.launchDelegate.tod"
+            delegate="tod.plugin.launch.TODLaunchDelegate_JDT_JavaLocal"
+            id="tod.plugin.launchDelegate.JDT_JavaLocal"
             modes="tod"
             type="org.eclipse.jdt.launching.localJavaApplication"/>
+      <launchDelegate
+            delegate="tod.plugin.launch.TODLaunchDelegate_PDE_EclipseApplication"
+            id="tod.plugin.launchDelegate.PDE_EclipseApplication"
+            modes="tod"
+            type="org.eclipse.pde.ui.RuntimeWorkbench"/>
+      <launchDelegate
+            delegate="tod.plugin.launch.TODLaunchDelegate_JDT_JUnit"
+            id="tod.plugin.launchDelegate.JDT_JUnit"
+            modes="tod"
+            type="org.eclipse.jdt.junit.launchconfig"/>
+            
    </extension>
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
       <launchConfigurationTabGroup
-            class="tod.plugin.launch.TODLaunchTabGroup"
-            id="tod.plugin.launchConfigurationTabGroup.localJavaApplication"
+            class="tod.plugin.launch.TODLaunchTabGroup_JDT_JavaLocal"
+            id="tod.plugin.launchConfigurationTabGroup.JDT_JavaLocal"
             type="org.eclipse.jdt.launching.localJavaApplication"/>
+      <launchConfigurationTabGroup
+            class="tod.plugin.launch.TODLaunchTabGroup_PDE_EclipseApplication"
+            id="tod.plugin.launchConfigurationTabGroup.PDE_EclipseApplication"
+            type="org.eclipse.pde.ui.RuntimeWorkbench"/>
+      <launchConfigurationTabGroup
+            class="tod.plugin.launch.TODLaunchTabGroup_JDT_JUnit"
+            id="tod.plugin.launchConfigurationTabGroup.JDT_JUnit"
+            type="org.eclipse.jdt.junit.launchconfig"/>
    </extension>
    <extension
          point="org.eclipse.debug.core.launchConfigurationComparators">

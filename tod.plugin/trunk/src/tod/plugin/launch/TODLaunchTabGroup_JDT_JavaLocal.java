@@ -32,7 +32,7 @@ import org.eclipse.jdt.debug.ui.launchConfigurations.JavaClasspathTab;
 import org.eclipse.jdt.debug.ui.launchConfigurations.JavaJRETab;
 import org.eclipse.jdt.debug.ui.launchConfigurations.JavaMainTab;
 
-public class TODLaunchTabGroup extends AbstractLaunchConfigurationTabGroup {
+public class TODLaunchTabGroup_JDT_JavaLocal extends AbstractLaunchConfigurationTabGroup {
 
 	/**
 	 * @see ILaunchConfigurationTabGroup#createTabs(ILaunchConfigurationDialog, String)
