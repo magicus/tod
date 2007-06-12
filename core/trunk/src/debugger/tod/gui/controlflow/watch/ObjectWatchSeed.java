@@ -28,17 +28,22 @@ public class ObjectWatchSeed extends WatchSeed
 {
 	private ObjectId itsObject;
 	
-	public ObjectWatchSeed(WatchPanel aWatchPanel, ILogBrowser aLogBrowser, ILogEvent aRefEvent, ObjectId aObject)
+	public ObjectWatchSeed(
+			String aTitle,
+			WatchPanel aWatchPanel, 
+			ILogBrowser aLogBrowser,
+			ILogEvent aRefEvent,
+			ObjectId aObject)
 	{
-		super(aWatchPanel, aLogBrowser, aRefEvent);
+		super(aTitle, aWatchPanel, aLogBrowser, aRefEvent);
 		itsObject = aObject;
 	}
 
 	@Override
-	public IWatchProvider createProvider()
+	public AbstractWatchProvider createProvider()
 	{
 		return new ObjectWatchProvider(
-				getWatchPanel(), 
+				getTitle(),
 				getLogBrowser(),
 				getRefEvent(),
 				itsObject);

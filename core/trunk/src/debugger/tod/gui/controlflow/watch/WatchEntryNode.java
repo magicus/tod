@@ -27,19 +27,20 @@ import tod.core.database.event.IWriteEvent;
 import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
+import tod.gui.controlflow.watch.AbstractWatchProvider.Entry;
 import tod.gui.kit.AsyncPanel;
 
 /**
  * Represents a watch entry (field or variable).
  * @author gpothier
  */
-public class WatchEntryNode<E> extends JPanel
+public class WatchEntryNode extends JPanel
 {
 	private final JobProcessor itsJobProcessor;
 	private final ILogBrowser itsLogBrowser;
 	private final WatchPanel itsWatchPanel;
-	private final IWatchProvider<E> itsProvider;
-	private final E itsEntry;
+	private final AbstractWatchProvider itsProvider;
+	private final Entry itsEntry;
 	
 	private Object[] itsValue;
 	private IWriteEvent[] itsSetter;
@@ -48,8 +49,8 @@ public class WatchEntryNode<E> extends JPanel
 			ILogBrowser aLogBrowser,
 			JobProcessor aJobProcessor,
 			WatchPanel aWatchPanel,
-			IWatchProvider<E> aProvider, 
-			E aEntry)
+			AbstractWatchProvider aProvider, 
+			Entry aEntry)
 	{
 		super(GUIUtils.createSequenceLayout());
 		itsWatchPanel = aWatchPanel;
@@ -68,17 +69,17 @@ public class WatchEntryNode<E> extends JPanel
 
 	private void createUI()
 	{
-		String theName = itsProvider.getEntryName(itsEntry);
+		String theName = itsEntry.getName();
 		add(GUIUtils.createLabel(theName + " = "));
 		add(new AsyncPanel(itsJobProcessor)
 		{
 			@Override
 			protected void runJob()
 			{
-				itsSetter = itsProvider.getEntrySetter(itsEntry);
+				itsSetter = itsEntry.getSetter();
 				if (itsSetter == null)
 				{
-					itsValue = itsProvider.getEntryValue(itsEntry);
+					itsValue = itsEntry.getValue();
 				}
 				else
 				{

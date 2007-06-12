@@ -118,11 +118,6 @@ public class RemoteGridSession extends AbstractSession
 		}
 	}
 
-	public String getCachedClassesPath()
-	{
-		return null;
-	}
-
 	public ILogBrowser getLogBrowser()
 	{
 		return itsBrowser;

@@ -26,16 +26,16 @@ import tod.core.database.event.ILogEvent;
 public class StackFrameWatchSeed extends WatchSeed
 {
 
-	public StackFrameWatchSeed(WatchPanel aWatchPanel, ILogBrowser aLogBrowser, ILogEvent aRefEvent)
+	public StackFrameWatchSeed(String aTitle, WatchPanel aWatchPanel, ILogBrowser aLogBrowser, ILogEvent aRefEvent)
 	{
-		super(aWatchPanel, aLogBrowser, aRefEvent);
+		super(aTitle, aWatchPanel, aLogBrowser, aRefEvent);
 	}
 
 	@Override
-	public IWatchProvider createProvider()
+	public AbstractWatchProvider createProvider()
 	{
 		return new StackFrameWatchProvider(
-				getWatchPanel(),
+				getTitle(),
 				getLogBrowser(),
 				getRefEvent());
 	}

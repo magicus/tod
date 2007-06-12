@@ -91,6 +91,8 @@ public class LocalGridSession extends RemoteGridSession
 			
 			if (itsProcess != null) itsProcess.destroy();
 			
+			boolean theJDWP = false;
+			
 			Long theHeapSize = getConfig().get(TODConfig.LOCAL_SESSION_HEAP);
 			String theJVM = getJavaExecutable();
 			ProcessBuilder theBuilder = new ProcessBuilder(
@@ -98,11 +100,12 @@ public class LocalGridSession extends RemoteGridSession
 					"-Xmx"+theHeapSize,
 					"-Djava.library.path="+lib,
 					"-cp", cp,
-					"-Dmaster-host=localhost",
-					"-Dmaster-timeout=10",
-					"-Dagent-verbose="+getConfig().get(TODConfig.AGENT_VERBOSE),
+					"-Dmaster-host=localhost",					
 					"-Dpage-buffer-size="+(theHeapSize/2),
-//					"-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000",
+					TODConfig.MASTER_TIMEOUT.javaOpt(10),
+					TODConfig.AGENT_VERBOSE.javaOpt(getConfig()),
+					TODConfig.SCOPE_TRACE_FILTER.javaOpt(getConfig()),
+//					theJDWP ? "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000" : "",
 					"tod.impl.dbgrid.GridMaster",
 					"0");
 			

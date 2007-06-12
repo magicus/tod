@@ -60,11 +60,6 @@ public abstract class DelegatedSession implements ISession
 		itsDelegate.flush();
 	}
 
-	public String getCachedClassesPath()
-	{
-		return itsDelegate.getCachedClassesPath();
-	}
-
 	public ILogBrowser getLogBrowser()
 	{
 		return itsDelegate.getLogBrowser();

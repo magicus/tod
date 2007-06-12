@@ -23,6 +23,7 @@ package tod.gui.controlflow.watch;
 import static tod.gui.FontConfig.STD_HEADER_FONT;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JComponent;
@@ -46,9 +47,8 @@ import zz.utils.ui.ZLabel;
  * Watch provider for stack frame reconstitution
  * @author gpothier
  */
-public class StackFrameWatchProvider implements IWatchProvider<LocalVariableInfo>
+public class StackFrameWatchProvider extends AbstractWatchProvider
 {
-	private final WatchPanel itsWatchPanel;
 	private final ILogBrowser itsLogBrowser;
 	private final ILogEvent itsRefEvent;
 	
@@ -57,10 +57,14 @@ public class StackFrameWatchProvider implements IWatchProvider<LocalVariableInfo
 	private boolean itsIndirectParent = false;
 
 	private IVariablesInspector itsInspector;
+	private List<Entry> itsEntries;
 	
-	public StackFrameWatchProvider(WatchPanel aWatchPanel, ILogBrowser aLogBrowser, ILogEvent aRefEvent)
+	public StackFrameWatchProvider(
+			String aTitle,
+			ILogBrowser aLogBrowser, 
+			ILogEvent aRefEvent)
 	{
-		itsWatchPanel = aWatchPanel;
+		super(aTitle);
 		itsLogBrowser = aLogBrowser;
 		itsRefEvent = aRefEvent;
 	}
@@ -100,7 +104,7 @@ public class StackFrameWatchProvider implements IWatchProvider<LocalVariableInfo
 		return itsInspector;
 	}
 
-	public JComponent buildTitle(JobProcessor aJobProcessor)
+	public JComponent buildTitleComponent(JobProcessor aJobProcessor)
 	{
 		IBehaviorCallEvent theParentEvent = getParentEvent();
 
@@ -152,29 +156,46 @@ public class StackFrameWatchProvider implements IWatchProvider<LocalVariableInfo
 		return itsRefEvent;
 	}
 	
-	public List<LocalVariableInfo> getEntries()
+	public List<Entry> getEntries()
 	{
 		if (itsInvalid) return null;
-		return getInspector().getVariables();
+		if (itsEntries == null)
+		{
+			List<LocalVariableInfo> theVariables = getInspector().getVariables();
+			itsEntries = new ArrayList<Entry>();
+			for (LocalVariableInfo theLocalVariable : theVariables)
+			{
+				itsEntries.add(new LocalVariableEntry(theLocalVariable));
+			}
+		}
+		return itsEntries;
 	}
 
-	public String getEntryName(LocalVariableInfo aEntry)
+	private class LocalVariableEntry extends Entry
 	{
-		if (itsInvalid) return null;
-		return aEntry.getVariableName();
-	}
+		private LocalVariableInfo itsLocalVariable;
 
-	public IWriteEvent[] getEntrySetter(LocalVariableInfo aEntry)
-	{
-		if (itsInvalid) return null;
-		return getInspector().getEntrySetter(aEntry);
-	}
+		public LocalVariableEntry(LocalVariableInfo aLocalVariable)
+		{
+			itsLocalVariable = aLocalVariable;
+		}
+		
+		public String getName()
+		{
+			if (itsInvalid) return null;
+			return itsLocalVariable.getVariableName();
+		}
 
-	public Object[] getEntryValue(LocalVariableInfo aEntry)
-	{
-		if (itsInvalid) return null;
-		return getInspector().getEntryValue(aEntry);
+		public IWriteEvent[] getSetter()
+		{
+			if (itsInvalid) return null;
+			return getInspector().getEntrySetter(itsLocalVariable);
+		}
+
+		public Object[] getValue()
+		{
+			if (itsInvalid) return null;
+			return getInspector().getEntryValue(itsLocalVariable);
+		}
 	}
-	
-	
 }

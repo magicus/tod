@@ -20,10 +20,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.controlflow.watch;
 
-import static tod.gui.FontConfig.STD_FONT;
 import static tod.gui.FontConfig.STD_HEADER_FONT;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JComponent;
@@ -42,9 +42,8 @@ import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
 import zz.utils.ui.ZLabel;
 
-public class ObjectWatchProvider implements IWatchProvider<IFieldInfo>
+public class ObjectWatchProvider extends AbstractWatchProvider
 {
-	private final WatchPanel itsWatchPanel;
 	private final ILogBrowser itsLogBrowser;
 	private final ILogEvent itsRefEvent;
 	private final ObjectId itsObject;
@@ -53,14 +52,15 @@ public class ObjectWatchProvider implements IWatchProvider<IFieldInfo>
 	private boolean itsInvalid = false;
 	
 	private IObjectInspector itsInspector;
+	private List<Entry> itsEntries;
 	
 	public ObjectWatchProvider(
-			WatchPanel aWatchPanel,
+			String aTitle,
 			ILogBrowser aLogBrowser, 
 			ILogEvent aRefEvent,
 			ObjectId aObject)
 	{
-		itsWatchPanel = aWatchPanel;
+		super(aTitle);
 		itsLogBrowser = aLogBrowser;
 		itsRefEvent = aRefEvent;
 		itsObject = aObject;
@@ -68,7 +68,7 @@ public class ObjectWatchProvider implements IWatchProvider<IFieldInfo>
 	
 	protected boolean showPackageNames()
 	{
-		return itsWatchPanel.showPackageNames();
+		return false;
 	}
 
 	private IObjectInspector getInspector()
@@ -100,7 +100,7 @@ public class ObjectWatchProvider implements IWatchProvider<IFieldInfo>
 		return itsInspector;
 	}
 	
-	public JComponent buildTitle(JobProcessor aJobProcessor)
+	public JComponent buildTitleComponent(JobProcessor aJobProcessor)
 	{
 		JPanel theContainer = new JPanel(GUIUtils.createSequenceLayout());
 		theContainer.setOpaque(false);
@@ -135,7 +135,7 @@ public class ObjectWatchProvider implements IWatchProvider<IFieldInfo>
 		
 		return theContainer;
 	}
-
+	
 	public ObjectId getCurrentObject()
 	{
 		return null;
@@ -146,25 +146,42 @@ public class ObjectWatchProvider implements IWatchProvider<IFieldInfo>
 		return itsRefEvent;
 	}
 
-	public List<IFieldInfo> getEntries()
+	public List<Entry> getEntries()
 	{
-		return getInspector().getFields();
+		if (itsEntries == null)
+		{
+			List<IFieldInfo> theFields = getInspector().getFields();
+			itsEntries = new ArrayList<Entry>(theFields.size());
+			for (IFieldInfo theField : theFields)
+			{
+				itsEntries.add(new ObjectEntry(theField));
+			}
+		}
+		return itsEntries;
 	}
 
-	public String getEntryName(IFieldInfo aEntry)
+	private class ObjectEntry extends Entry
 	{
-		return aEntry.getName();
-	}
+		private IFieldInfo itsField;
 
-	public IWriteEvent[] getEntrySetter(IFieldInfo aEntry)
-	{
-		return getInspector().getEntrySetter(aEntry);
-	}
+		public ObjectEntry(IFieldInfo aField)
+		{
+			itsField = aField;
+		}
+		
+		public String getName()
+		{
+			return itsField.getName();
+		}
 
-	public Object[] getEntryValue(IFieldInfo aEntry)
-	{
-		return getInspector().getEntryValue(aEntry);
-	}
-	
+		public IWriteEvent[] getSetter()
+		{
+			return getInspector().getEntrySetter(itsField);
+		}
 
+		public Object[] getValue()
+		{
+			return getInspector().getEntryValue(itsField);
+		}
+	}
 }

@@ -32,6 +32,11 @@ public class ShowObjectMsg extends Message
 	public static final String ID = "tod.showObject";
 	
 	/**
+	 * A title for the object.
+	 */
+	private final String itsTitle;
+	
+	/**
 	 * The object to show.
 	 */
 	private final ObjectId itsObjectId;
@@ -41,13 +46,19 @@ public class ShowObjectMsg extends Message
 	 */
 	private final ILogEvent itsRefEvent;
 
-	public ShowObjectMsg(ObjectId aObjectId, ILogEvent aRefEvent)
+	public ShowObjectMsg(String aTitle, ObjectId aObjectId, ILogEvent aRefEvent)
 	{
 		super(ID);
+		itsTitle = aTitle;
 		itsObjectId = aObjectId;
 		itsRefEvent = aRefEvent;
 	}
 
+	public String getTitle()
+	{
+		return itsTitle;
+	}
+	
 	public ObjectId getObjectId()
 	{
 		return itsObjectId;

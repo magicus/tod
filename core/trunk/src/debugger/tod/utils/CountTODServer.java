@@ -106,11 +106,6 @@ public class CountTODServer extends AbstractSession
 	{
 	}
 
-	public String getCachedClassesPath()
-	{
-		return null;
-	}
-
 	public ILogBrowser getLogBrowser()
 	{
 		return itsBrowser;

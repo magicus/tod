@@ -21,8 +21,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod;
 
 import java.lang.instrument.ClassFileTransformer;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import reflex.run.agent.ReflexAgent;
 
@@ -33,6 +34,47 @@ import reflex.run.agent.ReflexAgent;
  */
 public class ReflexRiver
 {
+	/**
+	 * Config classes to use.
+	 */
+	private static List<String> itsConfigClasses = new ArrayList<String>();
+	
+	/**
+	 * Working set entries to use. First level is additive.
+	 */
+	private static List<String> itsWSEntries = new ArrayList<String>();
+	
+	static
+	{
+		itsConfigClasses.add("reflex.lib.pom.POMConfig");
+		itsWSEntries.add("+tod.impl.dbgrid.GridLogBrowser");
+		itsWSEntries.add("+tod.impl.dbgrid.GridEventBrowser");
+	}
+	
+	/**
+	 * Adds the specified classes to the reflex configuration.
+	 * This method must be called before {@link #setup()}.
+	 */
+	public static void addConfigClasses(Class... aClasses)
+	{
+		for (Class theClass : aClasses) itsConfigClasses.add(theClass.getName());
+	}
+	
+	/**
+	 * Adds working set entries to the reflex configuration.
+	 * First level is additive, ie. the first entry starts with a "+".
+	 * This method must be called before {@link #setup()}.
+	 */
+	public static void addWSEntries(String... aEntries)
+	{
+		for (String theEntry : aEntries) itsWSEntries.add(theEntry);
+	}
+	
+	/**
+	 * Setup ReflexBridge.
+	 * @param aConfigClasses Additional Reflex configuration classes
+	 * @param aWSEntries Additional working set entries.
+	 */
 	public static void setup()
 	{
 		try
@@ -44,8 +86,26 @@ public class ReflexRiver
 			Method theGIMethod = theRBClass.getMethod("getInstance");
 			Object theInstance = theGIMethod.invoke(null);
 			Method theSTMethod = theRBClass.getMethod("setTransformer", ClassFileTransformer.class);
-			String theArgs = "-lp reflex.lib.pom.POMConfig --working-set [+tod.impl.dbgrid.GridLogBrowser,+tod.impl.dbgrid.GridEventBrowser]";
-//		String theArgs = "-lp reflex.lib.pom.POMConfig --working-set [+tod.impl.dbgrid.Toto]";
+			
+			StringBuilder theConfigBuilder = new StringBuilder();
+			for (String theClass : itsConfigClasses)
+			{
+				theConfigBuilder.append(',');
+				theConfigBuilder.append(theClass);
+			}
+			
+			StringBuilder theWSBuilder = new StringBuilder();
+			
+			for (String theEntry : itsWSEntries)
+			{
+				theWSBuilder.append(',');
+				theWSBuilder.append(theEntry);
+			}
+			
+			String theArgs = 
+				"-lp " + theConfigBuilder.toString().substring(1) +
+				" --working-set [" + theWSBuilder.toString().substring(1) + "]";
+			
 			theSTMethod.invoke(theInstance, ReflexAgent.createTransformer(theArgs));
 		}
 		catch (Exception e)

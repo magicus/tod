@@ -78,11 +78,6 @@ public class LocalSession extends AbstractSession
 		// Nothing to do here.
 	}
 
-	public String getCachedClassesPath()
-	{
-		return null;
-	}
-
 	public ILogBrowser getLogBrowser()
 	{
 		return itsBrowser;

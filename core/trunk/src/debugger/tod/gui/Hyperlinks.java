@@ -41,7 +41,6 @@ import tod.gui.kit.messages.ShowObjectHistoryMsg;
 import tod.gui.kit.messages.ShowObjectMsg;
 import tod.gui.kit.messages.ShowTypeMsg;
 import zz.utils.ui.ZLabel;
-import zz.utils.ui.text.XFont;
 
 /**
  * This class contains static methods that created standard
@@ -134,7 +133,7 @@ public class Hyperlinks
 				theText = theName + " (" + theId + ")";
 			}
 			
-			return aFactory.createLink(theText, new ShowObjectMsg(theId, aRefEvent));
+			return aFactory.createLink(theText, new ShowObjectMsg(theText, theId, aRefEvent));
 		}
 		else if (aObject instanceof String)
 		{

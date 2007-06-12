@@ -50,11 +50,6 @@ public interface ISession
 	public ConnectionInfo getConnectionInfo();
 	
 	/**
-	 * Returns the path where the agent caches instrumented classes
-	 */
-	public String getCachedClassesPath();
-	
-	/**
 	 * Disconnects this session from the target VMs, if it is connected 
 	 */
 	public void disconnect();

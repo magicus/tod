@@ -68,15 +68,15 @@ public class TODConfig implements Serializable
 	
 	public static final IntegerItem AGENT_VERBOSE = new IntegerItem(
 			ConfigLevel.ADVANCED,
-			"agent.verbose",
+			"agent-verbose",
 			"Agent - verbose",
 			"Defines the verbosity level of the native agent. " +
 			"0 means minimal verbosity, greater values increase verbosity.",
-			ConfigUtils.readInt("agent-verbose", 0));
+			0);
 	
 	public static final BooleanItem AGENT_SKIP_CORE_CLASSE = new BooleanItem(
 			ConfigLevel.DEBUG,
-			"agent.skipCoreClasses",
+			"agent-skipCoreClasses",
 			"Agent - skip core classes",
 			"If true, the agent will not instrument core classes, independently of " +
 			"class filter settings.",
@@ -84,16 +84,14 @@ public class TODConfig implements Serializable
 	
 	public static final StringItem AGENT_CACHE_PATH = new StringItem(
 			ConfigLevel.NORMAL,
-			"agent.cachePath",
+			"classes-cache-path",
 			"Agent - class cache path",
 			"Defines the path where the native agent stores instrumented classes.",
-			ConfigUtils.readString(
-					"classes-cache-path", 
-					HOME+File.separatorChar+"tmp"+File.separatorChar+"tod"));
+			HOME+File.separatorChar+"tmp"+File.separatorChar+"tod");
 	
 	public static final BooleanItem AGENT_CAPTURE_EXCEPTIONS = new BooleanItem(
 			ConfigLevel.DEBUG,
-			"agent.captureExceptions",
+			"agent-captureExceptions",
 			"Agent - capture exceptions",
 			"If true, the native agent sets up a callback that captures " +
 			"exceptions.",
@@ -101,14 +99,14 @@ public class TODConfig implements Serializable
 	
 	public static final StringItem INSTRUMENTER_LOCATIONS_FILE = new StringItem(
 			ConfigLevel.NORMAL,
-			"instrumenter.locationsFile",
+			"locations-file",
 			"Instrumenter - locations file",
 			"Defines the file that contains location data for the debugged application.",
-			ConfigUtils.readString("locations-file", HOME+"/tmp/tod/locations.bin"));
+			HOME+"/tmp/tod/locations.bin");
 	
 	public static final StringItem SCOPE_GLOBAL_FILTER = new StringItem(
 			ConfigLevel.DEBUG,
-			"scope.globalFilter",
+			"scope-globalFilter",
 			"Scope - global filter",
 			"Global class filter for instrumentation. " +
 			"Used mainly to shield TOD agent classes from instrumentation. " +
@@ -119,37 +117,37 @@ public class TODConfig implements Serializable
 	
 	public static final StringItem SCOPE_TRACE_FILTER = new StringItem(
 			ConfigLevel.NORMAL,
-			"scope.traceFilter",
+			"trace-filter",
 			"Scope - trace filter",
 			"Tracing class filter for instrumentation. " +
 			"Classes that do no pass this filter are not instrumented " +
 			"but are registered in the structure database.",
-			ConfigUtils.readString("trace-filter", "[-java.** -javax.** -sun.** -com.sun.** -org.ietf.jgss.** -org.omg.** -org.w3c.** -org.xml.**]"));
+			"[-java.** -javax.** -sun.** -com.sun.** -org.ietf.jgss.** -org.omg.** -org.w3c.** -org.xml.**]");
 	
 	public static final StringItem CLIENT_HOST_NAME = new StringItem(
 			ConfigLevel.NORMAL,
-			"client.hostname",
+			"client-hostname",
 			"Client - host name",
 			"Host name given to the debugged program's JVM.",
 			"tod-1");
 	
 	public static final StringItem COLLECTOR_HOST = new StringItem(
 			ConfigLevel.DEBUG,
-			"collector.host",
+			"collector-host",
 			"Collector - host",
 			"Host to which the debugged program should send events.",
 			"localhost");
 	
 	public static final IntegerItem COLLECTOR_JAVA_PORT = new IntegerItem(
 			ConfigLevel.DEBUG,
-			"collector.javaPort",
+			"collector-javaPort",
 			"Collector - Java port",
 			"Port to which the Java portion of the TOD agent should connect.",
 			8058);
 	
 	public static final IntegerItem COLLECTOR_NATIVE_PORT = new IntegerItem(
 			ConfigLevel.DEBUG,
-			"collector.nativePort",
+			"collector-nativePort",
 			"Collector - native port",
 			"Port to which the native portion of the TOD agent should connect.",
 			8059);
@@ -159,7 +157,7 @@ public class TODConfig implements Serializable
 	
 	public static final StringItem GRID_IMPLEMENTATION = new StringItem(
 			ConfigLevel.ADVANCED,
-			"grid.impl",
+			"grid-impl",
 			"Grid implementation",
 			"Specifies the type of grid implementation. One of:\n" +
 			" - "+GRID_IMPL_UNIFORM+": each index can be split across all nodes. " +
@@ -175,7 +173,7 @@ public class TODConfig implements Serializable
 	
 	public static final StringItem SESSION_TYPE = new StringItem(
 			ConfigLevel.NORMAL,
-			"session.type",
+			"session-type",
 			"Session type",
 			"Specifies the type of database to use for the debugging " +
 			"session. One of:\n" +
@@ -198,14 +196,14 @@ public class TODConfig implements Serializable
 	
 	public static final SizeItem LOCAL_SESSION_HEAP = new SizeItem(
 			ConfigLevel.NORMAL,
-			"local.session.heap",
+			"localSessionHeap",
 			"Local session heap size",
 			"Specifies the amount of heap memory to allocate for local debugging session.",
-			ConfigUtils.readSize("local-session-heap", "128m"));
+			"256m");
 	
 	public static final BooleanItem INDEX_STRINGS = new BooleanItem(
 			ConfigLevel.NORMAL,
-			"index.strings",
+			"index-strings",
 			"Index strings",
 			"Whether strings should be indexed by the database. " +
 			"This has an impact on overall recording performance.",
@@ -213,11 +211,11 @@ public class TODConfig implements Serializable
 	
 	public static final IntegerItem MASTER_TIMEOUT = new IntegerItem(
 			ConfigLevel.ADVANCED,
-			"master.timeout",
+			"master-timeout",
 			"Master timeout",
 			"The time (in seconds) the database should wait for clients to connect" +
 			"before exiting. A value of 0 means no timeout.",
-			ConfigUtils.readInt("master-timeout", 0));
+			0);
 	
 	/**
 	 * Contains all available configuration items.
@@ -268,8 +266,6 @@ public class TODConfig implements Serializable
 				aItem.getOptionValue(theString)
 				: aItem.getDefault();
 	}
-	
-	
 	
 	public static abstract class ItemType<T>
 	{
@@ -437,6 +433,27 @@ public class TODConfig implements Serializable
 		{
 			return itsType.getValue(aString);
 		}
+		
+		/**
+		 * Returns a java option string representing the specified value.
+		 * Eg.: -Dxxx=yyy
+		 */
+		public String javaOpt(T aValue)
+		{
+			return "-D"+getKey()+"="+getOptionString(aValue);
+		}
+		
+		/**
+		 * Creates a java option representing the value of this item in
+		 * the specified config.
+		 * Eg.: -Dxxx=yyy
+		 */
+		public String javaOpt(TODConfig aConfig)
+		{
+			return javaOpt(aConfig.get(this));
+		}
+
+		
 	}
 	
 	public static class BooleanItem extends Item<Boolean>
@@ -448,7 +465,13 @@ public class TODConfig implements Serializable
 				String aDescription, 
 				Boolean aDefault)
 		{
-			super(aLevel, ItemType.ITEM_TYPE_BOOLEAN, aKey, aName, aDescription, aDefault);
+			super(
+					aLevel, 
+					ItemType.ITEM_TYPE_BOOLEAN, 
+					aKey, 
+					aName, 
+					aDescription,
+					ConfigUtils.readBoolean(aKey, aDefault));
 		}
 	}
 	
@@ -461,7 +484,13 @@ public class TODConfig implements Serializable
 				String aDescription, 
 				String aDefault)
 		{
-			super(aLevel, ItemType.ITEM_TYPE_STRING, aKey, aName, aDescription, aDefault);
+			super(
+					aLevel, 
+					ItemType.ITEM_TYPE_STRING,
+					aKey, 
+					aName,
+					aDescription,
+					ConfigUtils.readString(aKey, aDefault));
 		}
 	}
 	
@@ -474,7 +503,13 @@ public class TODConfig implements Serializable
 				String aDescription, 
 				Integer aDefault)
 		{
-			super(aLevel, ItemType.ITEM_TYPE_INTEGER, aKey, aName, aDescription, aDefault);
+			super(
+					aLevel, 
+					ItemType.ITEM_TYPE_INTEGER, 
+					aKey, 
+					aName, 
+					aDescription, 
+					ConfigUtils.readInt(aKey, aDefault));
 		}
 	}
 	
@@ -485,9 +520,15 @@ public class TODConfig implements Serializable
 				String aKey, 
 				String aName, 
 				String aDescription, 
-				Long aDefault)
+				String aDefault)
 		{
-			super(aLevel, ItemType.ITEM_TYPE_SIZE, aKey, aName, aDescription, aDefault);
+			super(
+					aLevel,
+					ItemType.ITEM_TYPE_SIZE, 
+					aKey, 
+					aName, 
+					aDescription, 
+					ConfigUtils.readSize(aKey, aDefault));
 		}
 	}
 }

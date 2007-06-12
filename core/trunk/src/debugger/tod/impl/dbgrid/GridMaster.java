@@ -239,9 +239,11 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	
 	public void addListener(RIGridMasterListener aListener) 
 	{
+		System.out.println("[GridMaster] addListener...");
 		ListenerData theListenerData = new ListenerData(aListener);
 		itsListeners.add(theListenerData);
-		theListenerData.fireEventsReceived();
+//		theListenerData.fireEventsReceived();
+		System.out.println("[GridMaster] addListener done.");
 	}
 	
 	public void pushMonitorData(String aNodeId, MonitorData aData)

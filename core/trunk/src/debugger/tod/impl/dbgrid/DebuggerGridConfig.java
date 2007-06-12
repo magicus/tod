@@ -249,7 +249,14 @@ public class DebuggerGridConfig
 	 * See {@link HardPagedFile.PageDataManager}
 	 */
 	public static final long DB_PAGE_BUFFER_SIZE = 
-		ConfigUtils.readSize("page-buffer-size", "100m");
+		ConfigUtils.readSize("page-buffer-size", getDefaultPageBufferSize());
+	
+	private static String getDefaultPageBufferSize()
+	{
+		int theSize = (int) (Runtime.getRuntime().maxMemory() / (1024*1024));
+		int theBufferSize = theSize * 6 / 10;
+		return theBufferSize + "m";
+	}
 	
 	public static final String MASTER_HOST =
 		ConfigUtils.readString("master-host", "localhost");

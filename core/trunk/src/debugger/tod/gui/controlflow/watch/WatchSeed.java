@@ -26,18 +26,29 @@ import tod.gui.seed.Seed;
 
 public abstract class WatchSeed extends Seed
 {
+	private String itsTitle;
 	private WatchPanel itsWatchPanel;
 	private ILogBrowser itsLogBrowser;
 	private ILogEvent itsRefEvent;
 	
 
-	public WatchSeed(WatchPanel aWatchPanel, ILogBrowser aLogBrowser, ILogEvent aRefEvent)
+	public WatchSeed(
+			String aTitle,
+			WatchPanel aWatchPanel, 
+			ILogBrowser aLogBrowser, 
+			ILogEvent aRefEvent)
 	{
+		itsTitle = aTitle;
 		itsWatchPanel = aWatchPanel;
 		itsLogBrowser = aLogBrowser;
 		itsRefEvent = aRefEvent;
 	}
 
+	public String getTitle()
+	{
+		return itsTitle;
+	}
+	
 	public WatchPanel getWatchPanel()
 	{
 		return itsWatchPanel;
@@ -59,5 +70,5 @@ public abstract class WatchSeed extends Seed
 		itsWatchPanel.showWatch(createProvider());
 	}
 	
-	public abstract IWatchProvider createProvider();
+	public abstract AbstractWatchProvider createProvider();
 }

@@ -20,8 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.controlflow.watch;
 
-import static tod.gui.FontConfig.STD_FONT;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -32,7 +30,6 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
 
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.ObjectId;
@@ -42,6 +39,7 @@ import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
+import tod.gui.controlflow.watch.AbstractWatchProvider.Entry;
 import tod.gui.kit.AsyncPanel;
 import tod.gui.kit.Bus;
 import tod.gui.kit.IBusListener;
@@ -59,14 +57,15 @@ public class WatchPanel extends JPanel
 	private WatchBrowserNavigator itsBrowserNavigator;
 	private JobProcessor itsJobProcessor;
 	private JScrollPane itsScrollPane;
-	private IWatchProvider itsProvider;
-	private List itsEntries;
+	private AbstractWatchProvider itsProvider;
+	private List<Entry> itsEntries;
 	
 	private IBusListener<ShowObjectMsg> itsShowObjectListener = new IBusListener<ShowObjectMsg>()
 	{
 		public boolean processMessage(ShowObjectMsg aMessage)
 		{
 			openWatch(new ObjectWatchSeed(
+					aMessage.getTitle(),
 					WatchPanel.this, 
 					getView().getLogBrowser(), 
 					aMessage.getRefEvent(), 
@@ -164,6 +163,7 @@ public class WatchPanel extends JPanel
 		if (theRefEvent == null) return;
 		
 		itsBrowserNavigator.open(new StackFrameWatchSeed(
+				"frame",
 				WatchPanel.this,
 				itsView.getLogBrowser(),
 				theRefEvent));
@@ -178,7 +178,7 @@ public class WatchPanel extends JPanel
 	/**
 	 * Shows the watch data obtained from the specified provider.
 	 */
-	public <E> void showWatch(IWatchProvider<E> aProvider)
+	public <E> void showWatch(AbstractWatchProvider aProvider)
 	{
 		itsProvider = aProvider;
 		getJobProcessor().cancelAll();
@@ -186,7 +186,7 @@ public class WatchPanel extends JPanel
 		JPanel theEntriesPanel = new ScrollablePanel(GUIUtils.createStackLayout());
 		theEntriesPanel.setOpaque(false);
 		
-		theEntriesPanel.add(aProvider.buildTitle(getJobProcessor()));
+		theEntriesPanel.add(aProvider.buildTitleComponent(getJobProcessor()));
 		
 		ObjectId theCurrentObject = aProvider.getCurrentObject();
 		if (theCurrentObject != null)
@@ -206,9 +206,9 @@ public class WatchPanel extends JPanel
 			protected void update()
 			{
 				setLayout(GUIUtils.createStackLayout());
-				if (itsEntries != null) for (Object theEntry : itsEntries)
+				if (itsEntries != null) for (Entry theEntry : itsEntries)
 				{
-					if ("this".equals(itsProvider.getEntryName(theEntry))) continue;
+					if ("this".equals(theEntry.getName())) continue;
 					
 					add(new WatchEntryNode(
 							itsView.getLogBrowser(),
