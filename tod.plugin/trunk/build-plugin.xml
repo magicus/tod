@@ -46,7 +46,7 @@
 			destdir="${classes.dir}"
 			debug="true"
 	      	deprecation="on"
-			exclude="tod/plugin/fxviews/**"
+			excludes="tod/plugin/fxviews/**"
 			classpathref="default.classpath"/>
 	</target>
 
