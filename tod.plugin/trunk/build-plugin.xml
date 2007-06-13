@@ -46,8 +46,10 @@
 			destdir="${classes.dir}"
 			debug="true"
 	      	deprecation="on"
-			excludes="tod/plugin/fxviews/**"
-			classpathref="default.classpath"/>
+			classpathref="default.classpath">
+			
+			<exclude name="tod/plugin/fxviews/**/*"/>
+		</javac>
 	</target>
 
 	<target name="jar" depends="init, compile">

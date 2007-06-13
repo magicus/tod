@@ -25,7 +25,6 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.gui.IGUIManager;
 import tod.plugin.DebuggingSession;
 import tod.plugin.TODPluginUtils;
-import tod.plugin.fxviews.TraceNavigatorFXView;
 import tod.plugin.views.AbstractNavigatorView;
 import tod.plugin.views.TraceNavigatorView;
 
