@@ -50,6 +50,7 @@ import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 import org.eclipse.jdt.internal.debug.core.model.JDIClassType;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
+import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -148,7 +149,10 @@ public class SourceRevealerUtils
 						IMethod theMethod = theType.getMethod(aMethodName, null);
 						if (theMethod == null) return;
 						
-						JavaUI.openInEditor(theMethod, false, true);
+						// Eclipse 3.3 only
+//						JavaUI.openInEditor(theMethod, false, true);
+						
+						EditorUtility.openInEditor(theMethod, false);
 					}
 				});
 	}
@@ -168,7 +172,10 @@ public class SourceRevealerUtils
 				IType theType = TODPluginUtils.getType(aJavaProject, aTypeName);
 				if (theType == null) return;
 				
-				IEditorPart theEditor = JavaUI.openInEditor(theType, false, false);
+				// Eclipse 3.3 only
+//				IEditorPart theEditor = JavaUI.openInEditor(theType, false, false);
+				
+				IEditorPart theEditor = EditorUtility.openInEditor(theType, false);
 				if (theEditor instanceof ITextEditor)
 				{
 					ITextEditor theTextEditor = (ITextEditor) theEditor;
