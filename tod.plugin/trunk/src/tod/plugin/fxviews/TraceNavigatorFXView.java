@@ -18,11 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.plugin.views;
+package tod.plugin.fxviews;
 
 import javax.swing.JComponent;
 
 import tod.gui.IGUIManager;
+import tod.plugin.views.AbstractNavigatorView;
 
 /**
  * New view of the trace navigator using JavaFX.

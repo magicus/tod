@@ -103,7 +103,7 @@
             name="Trace Navigator"/>
       <view
             category="tod.plugin"
-            class="tod.plugin.views.TraceNavigatorFXView"
+            class="tod.plugin.fxviews.TraceNavigatorFXView"
             id="tod.plugin.views.TraceNavigatorFXView"
             name="Trace Navigator (JavaFX)"/>
    </extension>

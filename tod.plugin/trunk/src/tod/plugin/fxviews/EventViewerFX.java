@@ -1,7 +1,7 @@
 /*
  * Created on May 28, 2007
  */
-package tod.plugin.views;
+package tod.plugin.fxviews;
 
 import tod.fxgui.FXGUI;
 import tod.plugin.DebuggingSession;
