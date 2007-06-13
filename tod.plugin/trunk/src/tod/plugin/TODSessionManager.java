@@ -36,7 +36,6 @@ import org.eclipse.ui.PlatformUI;
 import tod.core.config.TODConfig;
 import tod.core.session.ISession;
 import tod.core.session.SessionUtils;
-import tod.plugin.launch.TODLaunchDelegate_Base.SourceRevealer;
 import zz.utils.Utils;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IRWProperty;

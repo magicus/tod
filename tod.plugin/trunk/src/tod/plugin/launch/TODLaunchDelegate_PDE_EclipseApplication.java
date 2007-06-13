@@ -13,8 +13,9 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.pde.ui.launcher.EclipseApplicationLaunchConfiguration;
 
-import tod.plugin.launch.TODLaunchDelegate_Base.PDESourceRevealer;
-import tod.plugin.launch.TODLaunchDelegate_Base.SourceRevealer;
+import tod.plugin.GenericSourceRevealer;
+import tod.plugin.SourceRevealer;
+
 
 /**
  * Launch delegate for configuration type: org.eclipse.pde.ui.RuntimeWorkbench
@@ -36,7 +37,7 @@ extends EclipseApplicationLaunchConfiguration
 		try
 		{
 			IProject[] theProjects = getProjectsForProblemSearch(aConfiguration, aMode);
-			SourceRevealer theRevealer = new PDESourceRevealer(aLaunch, theProjects);
+			SourceRevealer theRevealer = new GenericSourceRevealer(aLaunch, theProjects);
 			if (TODLaunchDelegate_Base.setup(theRevealer, aConfiguration, aLaunch))
 			{
 				super.launch(aConfiguration, TODLaunchDelegate_Base.MODE, aLaunch, aMonitor);

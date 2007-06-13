@@ -26,7 +26,6 @@ import org.eclipse.jdt.core.IJavaProject;
 import tod.core.database.event.ILogEvent;
 import tod.core.session.DelegatedSession;
 import tod.core.session.ISession;
-import tod.plugin.launch.TODLaunchDelegate_Base.SourceRevealer;
 
 public class DebuggingSession extends DelegatedSession
 {

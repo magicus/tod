@@ -11,8 +11,9 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.junit.launcher.JUnitLaunchConfigurationDelegate;
 import org.eclipse.jdt.launching.IVMRunner;
 
-import tod.plugin.launch.TODLaunchDelegate_Base.JDTSourceRevealer;
-import tod.plugin.launch.TODLaunchDelegate_Base.SourceRevealer;
+import tod.plugin.GenericSourceRevealer;
+import tod.plugin.SourceRevealer;
+
 
 /**
  * Launch delegate for config type: org.eclipse.jdt.junit.launchconfig
@@ -33,7 +34,7 @@ public class TODLaunchDelegate_JDT_JUnit extends JUnitLaunchConfigurationDelegat
 		try
 		{
 			IJavaProject theJavaProject = getJavaProject(aConfiguration);
-			SourceRevealer theRevealer = new JDTSourceRevealer(aLaunch, theJavaProject);
+			SourceRevealer theRevealer = new GenericSourceRevealer(aLaunch, theJavaProject);
 			if (TODLaunchDelegate_Base.setup(theRevealer, aConfiguration, aLaunch))
 			{
 				super.launch(aConfiguration, TODLaunchDelegate_Base.MODE, aLaunch, aMonitor);

@@ -232,7 +232,7 @@ public class TODPluginUtils
 			int aKind) throws CoreException
 	{
 		SearchPattern thePattern = SearchPattern.createPattern(
-				aName, 
+				aName.replace('$', '.'), 
 				aKind,
 				IJavaSearchConstants.DECLARATIONS, 
 				SearchPattern.R_EXACT_MATCH);
