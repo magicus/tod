@@ -131,5 +131,5 @@
 	</target>
 
 
-	<target name="dep.all" depends="dep.tod, dep.zz.utils, dep.zz.eclipse.utils, dep.reflex, dep.pom"/>
+	<target name="dep.all" depends="dep.tod, dep.zz.utils, dep.zz.eclipse.utils"/>
 </project>

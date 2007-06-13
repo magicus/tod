@@ -185,5 +185,5 @@
 	</target>
 	
 	
-	<target name="dep.all" depends="dep.zz.utils, dep.reflex, dep.pom"/>
+	<target name="dep.all" depends="dep.zz.utils"/>
 </project>
