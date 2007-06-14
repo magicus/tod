@@ -23,21 +23,21 @@ import tod.plugin.TODPlugin;
 import tod.plugin.TODSessionManager;
 import zz.utils.Utils;
 
-public class TODLaunchDelegate_Base 
+public class LaunchUtils 
 {
 	public static final String MODE = ILaunchManager.DEBUG_MODE;
 
 	private static final ThreadLocal<LaunchInfo> itsInfo = new ThreadLocal<LaunchInfo>();
 
 	public static boolean setup(
-			SourceRevealer aGotoSourceDelegate,
+			SourceRevealer aSourceRevealer,
 			ILaunchConfiguration aConfiguration, 
 			ILaunch aLaunch) throws CoreException
 	{
 		TODConfig theConfig = TODConfigLaunchTab.readConfig(aConfiguration);
 		ISession theSession = TODSessionManager.getInstance().getSession(
 				aLaunch,
-				aGotoSourceDelegate,
+				aSourceRevealer,
 				theConfig);
 		
 		itsInfo.set(new LaunchInfo(theSession, aConfiguration));

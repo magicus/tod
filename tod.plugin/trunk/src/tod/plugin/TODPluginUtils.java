@@ -38,9 +38,15 @@ import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchParticipant;
 import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.internal.Workbench;
 import org.objectweb.asm.Type;
 
 import tod.Util;
+import tod.agent.ConfigUtils;
 import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
@@ -53,6 +59,8 @@ import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.PrimitiveTypeInfo;
 import tod.core.session.ISession;
+import tod.plugin.views.AbstractNavigatorView;
+import tod.plugin.views.TraceNavigatorView;
 
 /**
  * Utilities for the TOD plugin
@@ -263,6 +271,40 @@ public class TODPluginUtils
 		else return null;
 	}
 	
+	/**
+	 * Find and optionally gives focus to the trace navigator view.
+	 */
+	public static AbstractNavigatorView getTraceNavigatorView(final boolean aShow)
+	{
+		final AbstractNavigatorView[] theResult = new AbstractNavigatorView[1];
+		Display.getDefault().syncExec(new Runnable ()
+		{
+			public void run()
+			{
+				try
+				{
+					String theViewId = ConfigUtils.readString("tod.plugin-view", TraceNavigatorView.VIEW_ID);
+					
+					IWorkbenchWindow theWindow = Workbench.getInstance().getActiveWorkbenchWindow();
+					IWorkbenchPage thePage = theWindow.getActivePage();
+			
+					AbstractNavigatorView theView = (AbstractNavigatorView) (aShow ?
+							thePage.showView(theViewId)
+							: thePage.findView(theViewId));
+			
+					theResult[0] = theView;
+				}
+				catch (PartInitException e)
+				{
+					throw new RuntimeException(e);
+				}
+			}
+		});
+		
+		return theResult[0];
+	}
+
+
 	
 //	public static void gotoSource (IJavaProject aJavaProject, String aTypeName, final int aLineNumber)
 //	{

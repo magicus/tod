@@ -101,7 +101,7 @@ public class TODSessionManager
 	 */
 	public DebuggingSession getSession(
 			ILaunch aLaunch,
-			SourceRevealer aGotoSourceDelegate,
+			SourceRevealer aSourceRevealer,
 			TODConfig aConfig)
 	{
 		DebuggingSession theCurrentSession = pCurrentSession.get();
@@ -144,7 +144,7 @@ public class TODSessionManager
 			}
 		}
 		
-		return createSession(aLaunch, aGotoSourceDelegate, aConfig);
+		return createSession(aLaunch, aSourceRevealer, aConfig);
 	}
 
 	
@@ -220,7 +220,7 @@ public class TODSessionManager
 	 */
 	private DebuggingSession createSession(
 			ILaunch aLaunch,
-			SourceRevealer aGotoSourceDelegate, 
+			SourceRevealer aSourceRevealer, 
 			TODConfig aConfig)
 	{
 		try
@@ -228,7 +228,7 @@ public class TODSessionManager
 			DebuggingSession theDebuggingSession = new DebuggingSession(
 					SessionUtils.createSession(aConfig),
 					aLaunch,
-					aGotoSourceDelegate);
+					aSourceRevealer);
 			
 			pCurrentSession.set(theDebuggingSession);
 			return theDebuggingSession;

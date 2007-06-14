@@ -62,33 +62,10 @@ public abstract class AbstractRulerAction extends Action //implements IUpdate
 //		setEnabled(true);
 	}
 
-	/**
-	 * Find and give focus to the trace navigator view.
-	 */
-	protected AbstractNavigatorView getTraceNavigatorView(boolean aShow)
-	{
-		try
-		{
-			String theViewId = ConfigUtils.readString("tod.plugin-view", TraceNavigatorView.VIEW_ID);
-			
-			IWorkbenchWindow theWindow = getEditor().getSite().getWorkbenchWindow();
-			IWorkbenchPage thePage = theWindow.getActivePage();
-
-			AbstractNavigatorView theView = (AbstractNavigatorView) (aShow ?
-					thePage.showView(theViewId)
-					: thePage.findView(theViewId));
-
-			return theView;
-		}
-		catch (PartInitException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
 	
 	protected IGUIManager getGUIManager(boolean aShow)
 	{
-		return getTraceNavigatorView(aShow).getGUIManager();
+		return TODPluginUtils.getTraceNavigatorView(aShow).getGUIManager();
 	}
 
 	/**

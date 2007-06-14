@@ -24,7 +24,7 @@ public class TODLaunchDelegate_JDT_JavaLocal extends JavaLaunchDelegate
 	@Override
 	public IVMRunner getVMRunner(ILaunchConfiguration aConfiguration, String aMode) throws CoreException
 	{
-		return TODLaunchDelegate_Base.getVMRunner(super.getVMRunner(aConfiguration, aMode));
+		return LaunchUtils.getVMRunner(super.getVMRunner(aConfiguration, aMode));
 	}
 	
 	@Override
@@ -35,14 +35,14 @@ public class TODLaunchDelegate_JDT_JavaLocal extends JavaLaunchDelegate
 		{
 			IJavaProject theJavaProject = getJavaProject(aConfiguration);
 			SourceRevealer theRevealer = new GenericSourceRevealer(aLaunch, theJavaProject);
-			if (TODLaunchDelegate_Base.setup(theRevealer, aConfiguration, aLaunch))
+			if (LaunchUtils.setup(theRevealer, aConfiguration, aLaunch))
 			{
-				super.launch(aConfiguration, TODLaunchDelegate_Base.MODE, aLaunch, aMonitor);
+				super.launch(aConfiguration, LaunchUtils.MODE, aLaunch, aMonitor);
 			}
 		}
 		finally
 		{
-			TODLaunchDelegate_Base.tearDown();
+			LaunchUtils.tearDown();
 		}
 	}
 }

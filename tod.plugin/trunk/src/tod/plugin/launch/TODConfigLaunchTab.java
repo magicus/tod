@@ -20,7 +20,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.plugin.launch;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
@@ -43,6 +45,13 @@ public class TODConfigLaunchTab extends OptionsTab<TODConfig.Item>
 	private static final String MAP_NAME = "tod.plugin.launch.OPTIONS_MAP"; //$NON-NLS-1$
 	
 	private static final Map<ItemType, ItemTypeHandler> HANDLERS = initHandlers();
+	
+	private TODConfig.Item[] itsExcludedItems;
+	
+	public TODConfigLaunchTab(TODConfig.Item... aExcludedItems) 
+	{
+		itsExcludedItems = aExcludedItems;
+	}
 	
 	public String getName()
 	{
@@ -113,13 +122,30 @@ public class TODConfigLaunchTab extends OptionsTab<TODConfig.Item>
 		return theHandler;
 	}
 	
-
+	private TODConfig.Item[] getItems()
+	{
+		List<TODConfig.Item> theItems = new ArrayList<Item>();
+		for (Item theItem : TODConfig.ITEMS)
+		{
+			if (! isExcluded(theItem)) theItems.add(theItem);
+		}
+		return theItems.toArray(new TODConfig.Item[theItems.size()]);
+	}
+	
+	private boolean isExcluded(TODConfig.Item aItem)
+	{
+		for (TODConfig.Item theItem : itsExcludedItems)
+		{
+			if (aItem == theItem) return true;
+		}
+		return false;
+	}
 	
 	private class MyOptionsControl extends OptionsControl<TODConfig.Item>
 	{
 		public MyOptionsControl(Composite aParent)
 		{
-			super(aParent, 0, TODConfig.ITEMS);
+			super(aParent, 0, getItems());
 		}
 
 

@@ -108,22 +108,6 @@
             name="Trace Navigator (JavaFX)"/>
    </extension>
    <extension
-         point="org.eclipse.debug.core.launchModes">
-      <launchMode
-            label="Debug with TOD"
-            mode="tod"/>
-   </extension>
-   <extension
-         point="org.eclipse.debug.ui.launchGroups">
-      <launchGroup
-            bannerImage="icons/t.png"
-            id="tod.plugin.launchGroup.tod"
-            image="icons/t.png"
-            label="Debug with TOD"
-            mode="tod"
-            title="TOD launch group title"/>
-   </extension>
-   <extension
          point="org.eclipse.ui.actionSets">
       <actionSet
             id="tod.plugin.actionSet"
@@ -140,49 +124,6 @@
                style="pulldown"
                toolbarPath="org.eclipse.debug.ui.launchActionSet/debug"/>
       </actionSet>
-   </extension>
-   <extension
-         point="org.eclipse.debug.core.launchDelegates">
-      <launchDelegate
-            delegate="tod.plugin.launch.TODLaunchDelegate_JDT_JavaLocal"
-            id="tod.plugin.launchDelegate.JDT_JavaLocal"
-            modes="tod"
-            type="org.eclipse.jdt.launching.localJavaApplication"/>
-      <launchDelegate
-            delegate="tod.plugin.launch.TODLaunchDelegate_PDE_EclipseApplication"
-            id="tod.plugin.launchDelegate.PDE_EclipseApplication"
-            modes="tod"
-            type="org.eclipse.pde.ui.RuntimeWorkbench"/>
-      <launchDelegate
-            delegate="tod.plugin.launch.TODLaunchDelegate_JDT_JUnit"
-            id="tod.plugin.launchDelegate.JDT_JUnit"
-            modes="tod"
-            type="org.eclipse.jdt.junit.launchconfig"/>
-            
-   </extension>
-   <extension
-         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
-      <launchConfigurationTabGroup
-            class="tod.plugin.launch.TODLaunchTabGroup_JDT_JavaLocal"
-            id="tod.plugin.launchConfigurationTabGroup.JDT_JavaLocal"
-            type="org.eclipse.jdt.launching.localJavaApplication"/>
-      <launchConfigurationTabGroup
-            class="tod.plugin.launch.TODLaunchTabGroup_PDE_EclipseApplication"
-            id="tod.plugin.launchConfigurationTabGroup.PDE_EclipseApplication"
-            type="org.eclipse.pde.ui.RuntimeWorkbench"/>
-      <launchConfigurationTabGroup
-            class="tod.plugin.launch.TODLaunchTabGroup_JDT_JUnit"
-            id="tod.plugin.launchConfigurationTabGroup.JDT_JUnit"
-            type="org.eclipse.jdt.junit.launchconfig"/>
-   </extension>
-   <extension
-         point="org.eclipse.debug.core.launchConfigurationComparators">
-      <launchConfigurationComparator
-            attribute="tod.plugin.launch.OPTIONS_MAP"
-            class="zz.eclipse.utils.launcher.options.OptionsMapComparator"
-            id="tod.plugin.launch.OPTIONS_MAP">
-         
-      </launchConfigurationComparator>
    </extension>
    <extension
          point="org.eclipse.ui.editorActions">
@@ -251,6 +192,82 @@
                menubarPath="tod.plugin.ClassFileTODRulerMenu/events"/>
                
       </viewerContribution>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.launchModes">
+      <launchMode
+            label="Debug with TOD"
+            mode="tod"/>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchGroups">
+      <launchGroup
+            bannerImage="icons/t.png"
+            id="tod.plugin.launchGroup.tod"
+            image="icons/t.png"
+            label="Debug with TOD"
+            mode="tod"
+            title="TOD launch group title"/>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.launchDelegates">
+      <launchDelegate
+            delegate="tod.plugin.launch.TODLaunchDelegate_JDT_JavaLocal"
+            id="tod.plugin.launchDelegate.JDT_JavaLocal"
+            modes="tod"
+            type="org.eclipse.jdt.launching.localJavaApplication"/>
+      <launchDelegate
+            delegate="tod.plugin.launch.TODLaunchDelegate_PDE_EclipseApplication"
+            id="tod.plugin.launchDelegate.PDE_EclipseApplication"
+            modes="tod"
+            type="org.eclipse.pde.ui.RuntimeWorkbench"/>
+      <launchDelegate
+            delegate="tod.plugin.launch.TODLaunchDelegate_JDT_JUnit"
+            id="tod.plugin.launchDelegate.JDT_JUnit"
+            modes="tod"
+            type="org.eclipse.jdt.junit.launchconfig"/>
+            
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="tod.plugin.launch.TODLaunchTabGroup_JDT_JavaLocal"
+            id="tod.plugin.launchConfigurationTabGroup.JDT_JavaLocal"
+            type="org.eclipse.jdt.launching.localJavaApplication"/>
+      <launchConfigurationTabGroup
+            class="tod.plugin.launch.TODLaunchTabGroup_PDE_EclipseApplication"
+            id="tod.plugin.launchConfigurationTabGroup.PDE_EclipseApplication"
+            type="org.eclipse.pde.ui.RuntimeWorkbench"/>
+      <launchConfigurationTabGroup
+            class="tod.plugin.launch.TODLaunchTabGroup_JDT_JUnit"
+            id="tod.plugin.launchConfigurationTabGroup.JDT_JUnit"
+            type="org.eclipse.jdt.junit.launchconfig"/>
+      <launchConfigurationTabGroup
+            class="tod.plugin.launch.ConnectToDatabaseLaunchTabGroup"
+            description="Configure database connection"
+            id="tod.plugin.launchConfigurationTabGroup.ConnectToDatabase"
+            type="tod.plugin.launch.connectToExistingDatabase">
+      </launchConfigurationTabGroup>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationComparators">
+      <launchConfigurationComparator
+            attribute="tod.plugin.launch.OPTIONS_MAP"
+            class="zz.eclipse.utils.launcher.options.OptionsMapComparator"
+            id="tod.plugin.launch.OPTIONS_MAP">
+         
+      </launchConfigurationComparator>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="tod.plugin.launch.ConnectToDatabaseLaunchDelegate"
+            delegateDescription="Connects to an existing database without actually launching a program."
+            delegateName="Connect to Database launcher"
+            id="tod.plugin.launch.connectToExistingDatabase"
+            modes="tod,run"
+            name="Connect to Database">
+      </launchConfigurationType>
    </extension>
 
 </plugin>
