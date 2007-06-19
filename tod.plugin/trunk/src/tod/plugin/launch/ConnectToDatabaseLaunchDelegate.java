@@ -13,6 +13,7 @@ import org.eclipse.jdt.launching.AbstractJavaLaunchConfigurationDelegate;
 
 import tod.core.config.TODConfig;
 import tod.core.session.ISession;
+import tod.impl.dbgrid.RemoteGridSession;
 import tod.plugin.GenericSourceRevealer;
 import tod.plugin.SourceRevealer;
 import tod.plugin.TODPlugin;
@@ -32,16 +33,16 @@ public class ConnectToDatabaseLaunchDelegate extends AbstractJavaLaunchConfigura
 		TODConfig theConfig = TODConfigLaunchTab.readConfig(aConfiguration);
 		
 		theConfig.set(TODConfig.COLLECTOR_HOST, getAddress(aConfiguration));
-		theConfig.set(TODConfig.SESSION_TYPE, TODConfig.SESSION_REMOTE);
 		
 		aMonitor.worked(1);
 		IJavaProject theJavaProject = getJavaProject(aConfiguration);
 		SourceRevealer theRevealer = new GenericSourceRevealer(aLaunch, theJavaProject);
 		
-		ISession theSession = TODSessionManager.getInstance().getSession(
+		ISession theSession = new RemoteGridSession(null, theConfig, true); 
+		TODSessionManager.getInstance().setSession(
 				aLaunch,
 				theRevealer,
-				theConfig);
+				theSession);
 
 		TODPluginUtils.getTraceNavigatorView(true);
 		aMonitor.done();

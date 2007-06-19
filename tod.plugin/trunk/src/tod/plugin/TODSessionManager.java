@@ -215,6 +215,25 @@ public class TODSessionManager
 		return theResult[0] != Dialog.CANCEL;
 	}
 	
+	public DebuggingSession setSession(
+			ILaunch aLaunch,
+			SourceRevealer aSourceRevealer,
+			ISession aSession)
+	{
+		if (aSession instanceof DebuggingSession)
+		{
+			throw new IllegalArgumentException();
+		}
+		
+		DebuggingSession theDebuggingSession = new DebuggingSession(
+				aSession,
+				aLaunch,
+				aSourceRevealer);
+		
+		pCurrentSession.set(theDebuggingSession);
+		return theDebuggingSession;
+	}
+	
 	/**
 	 * Obtains a free, clean collector session.
 	 */
@@ -223,21 +242,7 @@ public class TODSessionManager
 			SourceRevealer aSourceRevealer, 
 			TODConfig aConfig)
 	{
-		try
-		{
-			DebuggingSession theDebuggingSession = new DebuggingSession(
-					SessionUtils.createSession(aConfig),
-					aLaunch,
-					aSourceRevealer);
-			
-			pCurrentSession.set(theDebuggingSession);
-			return theDebuggingSession;
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
-		
+		return setSession(aLaunch, aSourceRevealer, SessionUtils.createSession(aConfig));
 	}
 	
 	

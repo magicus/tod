@@ -3,6 +3,7 @@
  */
 package tod.plugin.launch;
 
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,11 +14,14 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 
 import tod.core.config.TODConfig;
 import tod.core.session.ConnectionInfo;
 import tod.core.session.ISession;
-import tod.plugin.DebuggingSession;
 import tod.plugin.SourceRevealer;
 import tod.plugin.TODPlugin;
 import tod.plugin.TODSessionManager;
@@ -35,10 +39,24 @@ public class LaunchUtils
 			ILaunch aLaunch) throws CoreException
 	{
 		TODConfig theConfig = TODConfigLaunchTab.readConfig(aConfiguration);
-		ISession theSession = TODSessionManager.getInstance().getSession(
-				aLaunch,
-				aSourceRevealer,
-				theConfig);
+		ISession theSession = null;
+		try
+		{
+			theSession = TODSessionManager.getInstance().getSession(
+					aLaunch,
+					aSourceRevealer,
+					theConfig);
+		}
+		catch (Exception e)
+		{
+			TODPlugin.getDefault().logError("Could not create session", e);
+			Throwable theCause = Utils.getRootCause(e);
+			if (theCause instanceof ConnectException)
+			{
+				msgConnectionProblem(theConfig);
+			}
+			else throw new RuntimeException(e);
+		}
 		
 		itsInfo.set(new LaunchInfo(theSession, aConfiguration));
 		
@@ -50,6 +68,41 @@ public class LaunchUtils
 		itsInfo.set(null);
 	}
 	
+	private static void msgConnectionProblem(TODConfig aConfig)
+	{
+		String theMessage;
+		String theSessionType = aConfig.get(TODConfig.SESSION_TYPE);
+		
+		if (TODConfig.SESSION_REMOTE.equals(theSessionType))
+		{
+			theMessage = "No debugging session could be created because of a connection " +
+			"error. Check that the database host settings are correct, " +
+			"and that the database is up and running.";
+		}
+		else if (TODConfig.SESSION_LOCAL.equals(theSessionType))
+		{
+			theMessage = "Could not connect to the local database session. " +
+					"This could be caused by a timeout error " +
+					"if your machine is under load, please retry. " +
+					"If the error persists check the Eclipse log.";
+		}
+		else 
+		{
+			theMessage = "Undertermined connection problem. " +
+					"Check Eclipse log for details.";
+		}
+		
+		final String theMessage0 = theMessage;
+		Display.getDefault().syncExec(new Runnable()
+		{
+			public void run()
+			{
+				Shell theShell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+				MessageDialog.openError(theShell, "Cannot connect", theMessage0);
+			}
+		});
+	}
+		
 	public static IVMRunner getVMRunner(IVMRunner aDelegate) 
 	{
 		return new DelegatedRunner(aDelegate, itsInfo.get());
@@ -88,7 +141,9 @@ public class LaunchUtils
 		theArguments.add("-Dcollector-port="+theConnectionInfo.getLogReceiverPort());
 		theArguments.add("-Dnative-port="+theConnectionInfo.getNativePort());
 		
-		theArguments.add("-Dtod-host="+theConfig.get(TODConfig.CLIENT_HOST_NAME));
+		theArguments.add(TODConfig.CLIENT_HOST_NAME.javaOpt(theConfig));
+		theArguments.add(TODConfig.AGENT_CACHE_PATH.javaOpt(theConfig));
+		theArguments.add(TODConfig.AGENT_VERBOSE.javaOpt(theConfig));
 		
 		return theArguments;
 	}
