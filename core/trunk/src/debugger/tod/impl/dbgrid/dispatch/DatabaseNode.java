@@ -141,7 +141,7 @@ implements RIDatabaseNode
 		// Init objects database
 		for (ObjectsDatabase theDatabase : itsObjectsDatabases)
 		{
-			if (theDatabase != null) theDatabase.unregister();
+			if (theDatabase != null) theDatabase.dispose();
 		}
 		
 		itsObjectsDatabases.clear();

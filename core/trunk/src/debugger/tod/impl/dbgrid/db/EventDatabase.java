@@ -89,9 +89,9 @@ public class EventDatabase implements ReorderingBufferListener
 	public void dispose()
 	{
 		Monitor.getInstance().unregister(this);
-		itsFile.dispose();
 		itsEventList.dispose();
 		itsIndexes.dispose();
+		itsFile.dispose();
 	}
 
 	public Indexes getIndexes()

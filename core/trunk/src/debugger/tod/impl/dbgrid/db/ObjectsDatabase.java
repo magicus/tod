@@ -93,7 +93,7 @@ public class ObjectsDatabase
 		}
 	}
 	
-	public void unregister()
+	public void dispose()
 	{
 		Monitor.getInstance().unregister(this);
 		itsFile.dispose();

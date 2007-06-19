@@ -21,8 +21,8 @@ VMARGS="$VMARGS -XX:MaxPermSize=128m"
 VMARGS="$VMARGS -Dagent-verbose=3"
 #VMARGS="$VMARGS -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"
 
-#java $VMARGS -cp ./bin dummy.Dummy
-java $VMARGS -cp "../../runtime-EclipseApplication(1)/TODTest/bin/":lib/zz.utils.jar imageviewer2.ImageViewer $1
+java $VMARGS -cp ./bin dummy.Dummy
+#java $VMARGS -cp "../../runtime-EclipseApplication(1)/TODTest/bin/":lib/zz.utils.jar imageviewer2.ImageViewer $1
 #java $VMARGS -cp ./bin dummy.Dummy2
 #~/apps/eclipse-3.2.1-tod/eclipse -data ~/eclipse/ws-tod -consolelog -vmargs $VMARGS
 #java $VMARGS -cp ./bin calls.Main

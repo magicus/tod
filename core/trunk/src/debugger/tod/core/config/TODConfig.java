@@ -21,20 +21,25 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.core.config;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import tod.agent.ConfigUtils;
+import zz.utils.PublicCloneable;
 
 /**
  * Instances of this class contain configuration options for a TOD session.
  * @author gpothier
  */
-public class TODConfig implements Serializable
+public class TODConfig extends PublicCloneable implements Serializable
 {
 	private static final long serialVersionUID = 4959079097346687404L;
 	
@@ -84,7 +89,7 @@ public class TODConfig implements Serializable
 	
 	public static final StringItem AGENT_CACHE_PATH = new StringItem(
 			ConfigLevel.NORMAL,
-			"classes-cache-path",
+			"agent-cache-path",
 			"Agent - class cache path",
 			"Defines the path where the native agent stores instrumented classes.",
 			HOME+File.separatorChar+"tmp"+File.separatorChar+"tod");
@@ -246,7 +251,7 @@ public class TODConfig implements Serializable
 		}
 	}
 	
-	private Map<String, String> itsMap = new HashMap<String, String>();
+	private HashMap<String, String> itsMap = new HashMap<String, String>();
 	
 	/**
 	 * Sets the value for an option item
@@ -265,6 +270,14 @@ public class TODConfig implements Serializable
 		return theString != null ?
 				aItem.getOptionValue(theString)
 				: aItem.getDefault();
+	}
+
+	@Override
+	public TODConfig clone()
+	{
+		TODConfig theClone = (TODConfig) super.clone();
+		theClone.itsMap = (HashMap<String, String>) itsMap.clone();
+		return theClone;
 	}
 	
 	public static abstract class ItemType<T>
@@ -530,5 +543,41 @@ public class TODConfig implements Serializable
 					aDescription, 
 					ConfigUtils.readSize(aKey, aDefault));
 		}
+	}
+	
+	/**
+	 * Reads a {@link TODConfig} from a properties file.
+	 */
+	public static TODConfig fromProperties(File aFile)
+	{
+		try
+		{
+			Properties theProperties = new Properties();
+			theProperties.load(new FileInputStream(aFile));
+			return fromProperties(theProperties);
+		}
+		catch (FileNotFoundException e)
+		{
+			System.err.println("File not found: "+aFile+", using default configuration.");
+			return new TODConfig();
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	/**
+	 * Reads a {@link TODConfig} from a properties file.
+	 */
+	public static TODConfig fromProperties(Properties aProperties)
+	{
+		TODConfig theConfig = new TODConfig();
+		for(Item theItem : ITEMS)
+		{
+			String theValue = aProperties.getProperty(theItem.getKey());
+			if (theValue != null) theConfig.set(theItem, theItem.getOptionValue(theValue));
+		}
+		return theConfig;
 	}
 }

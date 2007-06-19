@@ -602,6 +602,7 @@ public class HierarchicalIndex<T extends IndexTuple>
 		
 		public TupleCounter(long aK1, long aK2, int aSlotsCount)
 		{
+			if (aK1 >= aK2) throw new IllegalArgumentException();
 			itsK1 = aK1;
 			itsK2 = aK2;
 			itsSlotsCount = aSlotsCount;

@@ -40,6 +40,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 #include <boost/thread/tss.hpp>
 
 // Build: g++ -shared -o ../../libbci-agent.so -I $JAVA_HOME/include/ -I $JAVA_HOME/include/linux/ bci-agent.c
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 using asio::ip::tcp;
 namespace fs = boost::filesystem;
@@ -53,9 +56,7 @@ const char OBJECT_HASH = 1;
 const char OBJECT_UID = 2;
 
 // Incoming commands
-const char SET_CACHE_PATH = 80;
 const char SET_SKIP_CORE_CLASSES = 81;
-const char SET_VERBOSE = 82;
 const char SET_CAPTURE_EXCEPTIONS = 83;
 const char SET_HOST_BITS = 84;
 const char CONFIG_DONE = 90;
@@ -67,9 +68,7 @@ STREAM* gSocket;
 jvmtiEnv *globalJvmti;
 
 // Configuration data
-char* cfgCachePath = NULL;
 int cfgSkipCoreClasses = 0;
-int cfgVerbose = 2;
 int cfgCaptureExceptions = 0;
 int cfgHostBits = 8; // Number of bits used to encode host id.
 
@@ -80,6 +79,9 @@ int cfgHostId = 0; // A host id assigned by the TODServer - not official.
 char* propHost = NULL;
 char* propHostName = NULL;
 char* propNativePort = NULL;
+char* propCachePath = NULL;
+char* _propVerbose = NULL;
+int propVerbose = 2;
 
 // Class and method references
 StaticVoidMethod* ExceptionGeneratedReceiver_exceptionGenerated;
@@ -103,9 +105,6 @@ t_mutex loadMutex;
 // that are registered prior to VM initialization.
 std::vector<int> tmpTracedMethods;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 
 /*
@@ -115,18 +114,18 @@ hostname: name of this host, sent to the peer.
 */
 void bciConnect(char* host, char* port, char* hostname)
 {
-	printf("Connecting to %s:%s\n", host, port);
+	if (propVerbose >=1) printf("Connecting to %s:%s\n", host, port);
 	fflush(stdout);
 	gSocket = new tcp::iostream(host, port);
 	if (gSocket->fail()) fatal_error("Could not connect.\n");
 	
 	// Send host name
-	if (cfgVerbose>=1) printf("Sending host name: %s\n", hostname);
+	if (propVerbose>=1) printf("Sending host name: %s\n", hostname);
 	writeUTF(gSocket, hostname);
 	flush(gSocket);
 	
 	cfgHostId = readInt(gSocket);
-	if (cfgVerbose>=2) printf("Assigned host id: %ld\n", cfgHostId);
+	if (propVerbose>=2) printf("Assigned host id: %ld\n", cfgHostId);
 	fflush(stdout);
 }
 
@@ -181,29 +180,19 @@ void bciConfigure()
 		int cmd = readByte(gSocket);
 		switch(cmd)
 		{
-			case SET_CACHE_PATH:
-				cfgCachePath = readUTF(gSocket);
-				printf("Setting cache path: %s\n", cfgCachePath);
-				break;
-				
 			case SET_SKIP_CORE_CLASSES:
 				cfgSkipCoreClasses = readByte(gSocket);
-				printf("Skipping core classes: %s\n", cfgSkipCoreClasses ? "Yes" : "No");
+				if (propVerbose >= 1) printf("Skipping core classes: %s\n", cfgSkipCoreClasses ? "Yes" : "No");
 				break;
 
-			case SET_VERBOSE:
-				cfgVerbose = readByte(gSocket);
-				printf("Verbosity: %d\n", cfgVerbose);
-				break;
-				
 			case SET_CAPTURE_EXCEPTIONS:
 				cfgCaptureExceptions = readByte(gSocket);
-				printf("Capture exceptions: %s\n", cfgCaptureExceptions ? "Yes" : "No");
+				if (propVerbose >= 1) printf("Capture exceptions: %s\n", cfgCaptureExceptions ? "Yes" : "No");
 				break;
 				
 			case SET_HOST_BITS:
 				cfgHostBits = readByte(gSocket);
-				printf("Host bits: %d\n", cfgHostBits);
+				if (propVerbose >= 1) printf("Host bits: %d\n", cfgHostBits);
 				break;
 
 			case CONFIG_DONE:
@@ -211,7 +200,7 @@ void bciConfigure()
 				int mask = (1 << cfgHostBits) - 1;
 				if ((cfgHostId & mask) != cfgHostId) fatal_error("Host id overflow\n");
 				
-				printf("Config done.\n");
+				if (propVerbose >= 1) printf("Config done.\n");
 				return;
 		}
 	}
@@ -221,7 +210,7 @@ void bciConfigure()
 void registerTracedMethod(JNIEnv* jni, int tracedMethod)
 {
 	TracedMethods_setTraced->invoke(jni, tracedMethod);
-	if (cfgVerbose>=3) printf("Registered traced method: %d\n", tracedMethod);
+	if (propVerbose>=3) printf("Registered traced method: %d\n", tracedMethod);
 }
 
 /**
@@ -229,7 +218,7 @@ Registers the traced methods that were registered in tmpTracedMethods
 */ 
 void registerTmpTracedMethods(JNIEnv* jni)
 {
-	if (cfgVerbose>=1) printf("Registering %d buffered traced methods\n", tmpTracedMethods.size());
+	if (propVerbose>=1) printf("Registering %d buffered traced methods\n", tmpTracedMethods.size());
 	std::vector<int>::iterator iter = tmpTracedMethods.begin();
 	std::vector<int>::iterator end = tmpTracedMethods.end();
 	
@@ -245,7 +234,7 @@ void registerTracedMethods(JNIEnv* jni, int nTracedMethods, int* tracedMethods)
 {
 	if (VM_STARTED)
 	{
-		if (cfgVerbose>=1 && nTracedMethods>0) printf("Registering %d traced methods\n", nTracedMethods);
+		if (propVerbose>=1 && nTracedMethods>0) printf("Registering %d traced methods\n", nTracedMethods);
 		for (int i=0;i<nTracedMethods;i++)
 		{
 			registerTracedMethod(jni, tracedMethods[i]);
@@ -253,7 +242,7 @@ void registerTracedMethods(JNIEnv* jni, int nTracedMethods, int* tracedMethods)
 	}
 	else
 	{
-		if (cfgVerbose>=1 && nTracedMethods>0) printf("Buffering %d traced methods, will register later\n", nTracedMethods);
+		if (propVerbose>=1 && nTracedMethods>0) printf("Buffering %d traced methods, will register later\n", nTracedMethods);
 		for (int i=0;i<nTracedMethods;i++)
 		{
 			tmpTracedMethods.push_back(tracedMethods[i]);
@@ -282,7 +271,7 @@ void JNICALL cbClassFileLoadHook(
 			|| strncmp("com/sun/", name, 8) == 0 
 		)) return;
 
-	if (cfgVerbose>=1) printf("Loading (hook) %s\n", name);
+	if (propVerbose>=1) printf("Loading (hook) %s\n", name);
 	
 	int* tracedMethods = NULL;
 	int nTracedMethods = 0;
@@ -292,13 +281,13 @@ void JNICALL cbClassFileLoadHook(
 	char md5String[33];
 	md5_buffer((const char *) class_data, class_data_len, md5Buffer);
 	md5_sig_to_string(md5Buffer, md5String, 33);
-	if (cfgVerbose>=3) printf("MD5 sum: %s\n", md5String);
+	if (propVerbose>=3) printf("MD5 sum: %s\n", md5String);
 	
 	// Compute cache file paths	
 	fs::path cacheFilePath;
 	fs::path tracedCacheFilePath;
 	
-	if (cfgCachePath != NULL)
+	if (propCachePath != NULL)
 	{
 		char cacheFileName[2000];
 		char tracedCacheFileName[2000];
@@ -312,22 +301,18 @@ void JNICALL cbClassFileLoadHook(
 		strcpy(escapedName, name);
 		for(int i=0;i<l;i++) if (escapedName[i] == '$') escapedName[i] = '_';
 		
-		snprintf(cacheFileName, sizeof(cacheFileName), "%s/%s.%s.class", cfgCachePath, escapedName, md5String);
-		snprintf(tracedCacheFileName, sizeof(tracedCacheFileName), "%s/%s.%s.tm", cfgCachePath, escapedName, md5String);
+		snprintf(cacheFileName, sizeof(cacheFileName), "%s/%s.%s.class", propCachePath, escapedName, md5String);
+		snprintf(tracedCacheFileName, sizeof(tracedCacheFileName), "%s/%s.%s.tm", propCachePath, escapedName, md5String);
 		
-		printf("Cache file name (orig.): %s\n", cacheFileName);
-		printf("well...\n");
 		cacheFilePath = fs::path(cacheFileName);
-		printf("ok...\n");
-		printf("Cache file name (native): %s\n", cacheFilePath.native_file_string().c_str());
 		tracedCacheFilePath = fs::path(tracedCacheFileName);
 		fflush(stdout);
 	}
 
 	// Check if we have a cached version
-	if (cfgCachePath != NULL)
+	if (propCachePath != NULL)
 	{
-		if (cfgVerbose>=2) 
+		if (propVerbose>=2) 
 		{
 			printf ("Looking for %s\n", cacheFilePath.native_file_string().c_str());
 			fflush(stdout);
@@ -340,7 +325,7 @@ void JNICALL cbClassFileLoadHook(
 			
 			if (len == 0)
 			{
-				if (cfgVerbose>=2) printf ("Using original\n");
+				if (propVerbose>=2) printf ("Using original\n");
 			}
 			else
 			{
@@ -356,7 +341,7 @@ void JNICALL cbClassFileLoadHook(
 		
 				f.read((char*) *new_class_data, len);
 				if (f.eof()) fatal_ioerror("EOF on read from class file");
-				if (cfgVerbose>=2) printf("Class definition uploaded from cache.\n");
+				if (propVerbose>=2) printf("Class definition uploaded from cache.\n");
 				f.close();
 				
 				// Read traced methods array
@@ -376,7 +361,7 @@ void JNICALL cbClassFileLoadHook(
 		}
 		else
 		{
-			if (cfgVerbose>=2) 
+			if (propVerbose>=2) 
 			{
 				printf ("Class not found in cache.\n");
 				fflush(stdout);
@@ -402,23 +387,23 @@ void JNICALL cbClassFileLoadHook(
 		
 		if (len > 0)
 		{
-			if (cfgVerbose>=2) printf("Redefining %s...\n", name);
+			if (propVerbose>=2) printf("Redefining %s...\n", name);
 			jvmtiError err = jvmti->Allocate(len, new_class_data);
 			check_jvmti_error(jvmti, err, "Allocate");
 			*new_class_data_len = len;
 			
 			gSocket->read((char*) *new_class_data, len);
 			if (gSocket->eof()) fatal_ioerror("fread");
-			if (cfgVerbose>=2) printf("Class definition uploaded.\n");
+			if (propVerbose>=2) printf("Class definition uploaded.\n");
 			
 			nTracedMethods = readInt(gSocket);
 			tracedMethods = new int[nTracedMethods];
 			for (int i=0;i<nTracedMethods;i++) tracedMethods[i] = readInt(gSocket);
 			
 			// Cache class
-			if (cfgCachePath != NULL)
+			if (propCachePath != NULL)
 			{
-				if (cfgVerbose>=2) printf("Caching %s\n", cacheFilePath.native_file_string().c_str());
+				if (propVerbose>=2) printf("Caching %s\n", cacheFilePath.native_file_string().c_str());
 				if (! mkdirs(cacheFilePath)) fatal_ioerror("Error in mkdirs");
 		
 				std::fstream f;
@@ -440,20 +425,20 @@ void JNICALL cbClassFileLoadHook(
 				f.flush();
 				f.close();
 				
-				if (cfgVerbose>=2) printf("Cached.\n");
+				if (propVerbose>=2) printf("Cached.\n");
 			}
 		}
-		else if (cfgCachePath != NULL)
+		else if (propCachePath != NULL)
 		{
 			// Mark class as not instrumented.
-			if (cfgVerbose>=2) printf("Caching empty: %s\n", cacheFilePath.native_file_string().c_str());
+			if (propVerbose>=2) printf("Caching empty: %s\n", cacheFilePath.native_file_string().c_str());
 			if (! mkdirs(cacheFilePath)) fatal_ioerror("Error in mkdirs");
 			
 			std::fstream f (cacheFilePath.native_file_string().c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
 			if (f.fail()) fatal_ioerror("Opening cache class file for output");
 			f.flush();
 			f.close();
-			if (cfgVerbose>=2) printf("Cached empty.\n");
+			if (propVerbose>=2) printf("Cached empty.\n");
 		}
 	}
 	
@@ -464,7 +449,7 @@ void JNICALL cbClassFileLoadHook(
 
 void ignoreMethod(JNIEnv* jni, int index, char* className, char* methodName, char* signature)
 {
-	if (cfgVerbose>=2) printf("Loading (jni-ignore) %s\n", className);
+	if (propVerbose>=2) printf("Loading (jni-ignore) %s\n", className);
 	jclass clazz = jni->FindClass(className);
 	if (clazz == NULL) printf("Could not load %s\n", className);
 	jmethodID method = jni->GetMethodID(clazz, methodName, signature);
@@ -516,7 +501,7 @@ void JNICALL cbException(
 		isInitializingExceptionMethods = false;
 	}
 	
-	if (cfgVerbose>=3) printf("Exception detected by native agent.\n");
+	if (propVerbose>=3) printf("Exception detected by native agent.\n");
 	
 	for (int i=0;i<sizeof(ignoredExceptionMethods);i++)
 	{
@@ -548,7 +533,7 @@ void JNICALL cbException(
 	jvmti->GetJLocationFormat(&locationFormat);
 	if (locationFormat == JVMTI_JLOCATION_JVMBCI) bytecodeIndex = (int) location;
 	
-	if (cfgVerbose>=1) printf("Exception generated: %s, %s, %s, %d\n", methodName, methodSignature, methodDeclaringClassSignature, bytecodeIndex);
+	if (propVerbose>=1) printf("Exception generated: %s, %s, %s, %d\n", methodName, methodSignature, methodDeclaringClassSignature, bytecodeIndex);
 	
 	ExceptionGeneratedReceiver_exceptionGenerated->invoke(
 		jni,
@@ -578,7 +563,7 @@ void JNICALL cbVMStart(
 	jvmtiEnv *jvmti,
 	JNIEnv* jni)
 {
-	if (cfgVerbose>=1) printf("VMStart\n");
+	if (propVerbose>=1) printf("VMStart\n");
 	
 	// Initialize the classes and method ids that will be used
 	// for registering traced methods
@@ -587,7 +572,7 @@ void JNICALL cbVMStart(
 	TOD_enable = new StaticVoidMethod(jni, "tod/agent/AgentReady", "enable", "()V");
 	TOD_enable->invoke(jni);
 	
-	if (cfgVerbose>=1) printf("VMStart - done\n");
+	if (propVerbose>=1) printf("VMStart - done\n");
 	fflush(stdout);
 	
 	VM_STARTED = 1;
@@ -609,7 +594,7 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
 	printf("Loading BCI agent - v2\n");
 	fflush(stdout);
 
-	/* Get JVMTI environment */
+	// Get JVMTI environment 
 	rc = vm->GetEnv((void **)&jvmti, JVMTI_VERSION);
 	if (rc != JNI_OK) {
 		fprintf(stderr, "ERROR: Unable to create jvmtiEnv, GetEnv failed, error=%d\n", rc);
@@ -619,14 +604,44 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
 	globalJvmti = jvmti;
 	
 	// Retrieve system properties
+	err = jvmti->GetSystemProperty("agent-verbose", &_propVerbose);
+	if (err != JVMTI_ERROR_NOT_AVAILABLE)
+	{
+		check_jvmti_error(jvmti, err, "GetSystemProperty (agent-verbose)");
+		propVerbose = atoi(_propVerbose);
+		printf("Property: agent-verbose=%d\n", propVerbose);
+	}
+	else
+	{
+		propVerbose = 0;
+		printf("agent-verbose property not specified, going silent.\n");
+	}
+	
 	err = jvmti->GetSystemProperty("collector-host", &propHost);
 	check_jvmti_error(jvmti, err, "GetSystemProperty (collector-host)");
+	if (propVerbose>=1) printf("Property: collector-host=%s\n", propHost);
 	
-	err = jvmti->GetSystemProperty("tod-host", &propHostName);
-	check_jvmti_error(jvmti, err, "GetSystemProperty (tod-host)");
+	err = jvmti->GetSystemProperty("agent-cache-path", &propCachePath);
+	if (err != JVMTI_ERROR_NOT_AVAILABLE)
+	{
+		check_jvmti_error(jvmti, err, "GetSystemProperty (agent-cache-path)");
+		if (propVerbose>=1) printf("Property: agent-cache-path=%s\n", propCachePath);
+	}
+	
+	err = jvmti->GetSystemProperty("client-hostname", &propHostName);
+	if (err != JVMTI_ERROR_NOT_AVAILABLE)
+	{
+		check_jvmti_error(jvmti, err, "GetSystemProperty (client-hostname)");
+		if (propVerbose>=1) printf("Property: client-hostname=%s\n", propHostName);
+	}
+	else
+	{
+		propHostName = "no-name";
+	}
 	
 	err = jvmti->GetSystemProperty("native-port", &propNativePort);
 	check_jvmti_error(jvmti, err, "GetSystemProperty (native-port)");
+	if (propVerbose>=1) printf("Property: native-port=%s\n", propNativePort);
 	
 	// Set capabilities
 	err = jvmti->GetCapabilities(&capabilities);
@@ -667,7 +682,7 @@ Agent_OnUnload(JavaVM *vm)
 	{
 		writeByte(gSocket, FLUSH);
 		flush(gSocket);
-		if (cfgVerbose>=1) printf("Sent flush\n");
+		if (propVerbose>=1) printf("Sent flush\n");
 	}
 }
 

@@ -51,9 +51,7 @@ public abstract class NativeAgentPeer extends SocketThread
 	public static final byte OBJECT_HASH = 1;
 	public static final byte OBJECT_UID = 2;
 	
-	public static final byte SET_CACHE_PATH = 80;
 	public static final byte SET_SKIP_CORE_CLASSES = 81;
-	public static final byte SET_VERBOSE = 82;
 	public static final byte SET_CAPTURE_EXCEPTIONS = 83;
 	public static final byte SET_HOST_BITS = 84;
 
@@ -201,20 +199,9 @@ public abstract class NativeAgentPeer extends SocketThread
 		theOutStream.writeInt(itsHostId);
 
 		// Send remaining config
-		String theCachePath = itsConfig.get(TODConfig.AGENT_CACHE_PATH);
-		if (theCachePath != null)
-		{
-			theOutStream.writeByte(SET_CACHE_PATH);
-			theOutStream.writeUTF(theCachePath);
-		}
-		
 		boolean theSkipCoreClasses = itsConfig.get(TODConfig.AGENT_SKIP_CORE_CLASSE);
 		theOutStream.writeByte(SET_SKIP_CORE_CLASSES);
 		theOutStream.writeByte(theSkipCoreClasses ? 1 : 0);
-		
-		int theVerbosity = itsConfig.get(TODConfig.AGENT_VERBOSE);
-		theOutStream.writeByte(SET_VERBOSE);
-		theOutStream.writeByte((byte) theVerbosity);
 		
 		boolean theCaptureExceptions = itsConfig.get(TODConfig.AGENT_CAPTURE_EXCEPTIONS);
 		theOutStream.writeByte(SET_CAPTURE_EXCEPTIONS);

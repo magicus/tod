@@ -226,6 +226,8 @@ public abstract class IndexSet<T extends IndexTuple>
 	 */
 	public static class IndexManager extends SyncMRUBuffer<Integer, MyHierarchicalIndex>
 	{
+		private boolean itsDisposed = false;
+		
 		public IndexManager()
 		{
 			super((int) ((DB_PAGE_BUFFER_SIZE/DB_PAGE_SIZE) / 1), false);
@@ -236,13 +238,22 @@ public abstract class IndexSet<T extends IndexTuple>
 		 */
 		public void dispose()
 		{
+			itsDisposed = true;
 			dropAll();
 		}
 		
 		@Override
 		protected void dropped(MyHierarchicalIndex aValue)
 		{
+			if (itsDisposed) return;
 			aValue.getIndexSet().discardIndex(aValue.getIndex());
+		}
+		
+		@Override
+		public Entry<MyHierarchicalIndex> getEntry(Integer aKey, boolean aFetch)
+		{
+			if (itsDisposed) throw new IllegalStateException();
+			return super.getEntry(aKey, aFetch);
 		}
 
 		@Override

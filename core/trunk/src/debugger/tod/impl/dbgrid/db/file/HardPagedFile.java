@@ -17,7 +17,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
-*/
+ */
 package tod.impl.dbgrid.db.file;
 
 import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_BUFFER_SIZE;
@@ -69,7 +69,9 @@ public class HardPagedFile extends PageBank
 	private long itsPagesCount;
 	
 	private String itsName;
-	
+
+	private int itsNum = num();
+
 	public HardPagedFile(File aFile, int aPageSize) throws FileNotFoundException
 	{
 		assert aPageSize % 4 == 0;
@@ -79,8 +81,15 @@ public class HardPagedFile extends PageBank
 	
 		itsPageSize = aPageSize;
 		aFile.delete();
-		itsFileAccessor = new FileAccessor (aFile);
+		itsFileAccessor = new FileAccessor(aFile);
 		itsPagesCount = 0;
+	}
+
+	private static int n = 1;
+
+	private static synchronized int num()
+	{
+		return n++;
 	}
 	
 	public void dispose()
@@ -108,7 +117,7 @@ public class HardPagedFile extends PageBank
 	/**
 	 * Returns the number of allocated pages.
 	 */
-	@Probe(key="file page count", aggr=AggregationType.SUM)
+	@Probe(key = "file page count", aggr = AggregationType.SUM)
 	public long getPagesCount()
 	{
 		return itsPagesCount;
@@ -239,7 +248,7 @@ public class HardPagedFile extends PageBank
 	@Override
 	public String toString()
 	{
-		return getClass().getSimpleName()+" ["+itsName+"]";
+		return getClass().getSimpleName() + " [" + itsName + "-" + itsNum + "]";
 	}
 	
 	private class FileAccessor extends Thread
@@ -285,6 +294,7 @@ public class HardPagedFile extends PageBank
 				throw new RuntimeException(e);
 			}
 			itsDisposed = true;
+			System.out.println("[FileAccessor] Disposed ("+HardPagedFile.this+")");
 		}
 		
 		public synchronized void read(long aId, int[] aBuffer) throws IOException
@@ -311,7 +321,7 @@ public class HardPagedFile extends PageBank
 			// Sometimes the readFully operation fails for no apparent reason, so we try
 			// a brute-force workaround...
 			int theRetries = 0;
-			while(true)
+			while (true)
 			{
 				try
 				{
@@ -346,6 +356,7 @@ public class HardPagedFile extends PageBank
 			
 			itsIntBuffer.position(0);
 			itsIntBuffer.get(aBuffer);
+			
 		}
 		
 		private void updateScattering(long aId)
@@ -355,7 +366,7 @@ public class HardPagedFile extends PageBank
 				long theDistance = Math.abs(itsLastAccessedPage - aId);
 				itsPageScattering += theDistance;
 			}
-			itsLastAccessedPage = aId;			
+			itsLastAccessedPage = aId;
 		}
 		
 		public synchronized void write(long aId, int[] aData) throws IOException
@@ -493,7 +504,7 @@ public class HardPagedFile extends PageBank
 		
 		public synchronized int[] getFreeBuffer()
 		{
-			if (itsFreeBuffers.isEmpty()) 
+			if (itsFreeBuffers.isEmpty())
 			{
 				itsCurrentSpace += itsPageSize;
 				return new int[itsPageSize/4];
@@ -536,7 +547,7 @@ public class HardPagedFile extends PageBank
 			return aValue.getKey();
 		}
 
-		@Probe(key="page manager space", aggr=AggregationType.SUM)
+		@Probe(key = "page manager space", aggr = AggregationType.SUM)
 		public long getCurrentSpace()
 		{
 			return itsCurrentSpace;

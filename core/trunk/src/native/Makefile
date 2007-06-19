@@ -29,8 +29,8 @@ LDFLAGS_BOOST += -lboost_thread-gcc-mt-1_33_1 -lboost_filesystem-gcc-mt-1_33_1
 bci-agent-objects = \
 	$(PLATFORM)/bci-agent.o \
 	$(PLATFORM)/utils.o \
- 	$(PLATFORM)/jniutils.o \
- 	$(PLATFORM)/md5.o
+ 	$(PLATFORM)/md5.o \
+ 	$(PLATFORM)/jniutils.o 
 	
 array-cast-objects = \
 	$(PLATFORM)/array-cast.o

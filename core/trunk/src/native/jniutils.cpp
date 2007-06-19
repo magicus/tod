@@ -3,7 +3,7 @@
 
 #include "jniutils.h"
 
-extern int cfgVerbose;
+extern int propVerbose;
 
 template <class R>
 StaticMethod<R>::StaticMethod(
@@ -12,7 +12,7 @@ StaticMethod<R>::StaticMethod(
 	char* aMethodName, 
 	char* aMethodSignature)
 {
-	if (cfgVerbose>=2) printf("Loading (jni) %s\n", aClassName);
+	if (propVerbose>=2) printf("Loading (jni) %s\n", aClassName);
 	jclass theClass = jni->FindClass(aClassName);
 	if (theClass == NULL) printf("Could not load %s!\n", aClassName);
 	itsClass = (jclass) jni->NewGlobalRef(theClass);
