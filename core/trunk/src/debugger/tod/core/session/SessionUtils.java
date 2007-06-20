@@ -39,7 +39,7 @@ public class SessionUtils
 	 * Returns the class of session that should be created for the
 	 * specified config.
 	 */
-	public static Class getSessionClass(TODConfig aConfig)
+	public static Class<? extends ISession> getSessionClass(TODConfig aConfig)
 	{
 		String theType = aConfig.get(TODConfig.SESSION_TYPE);
 		if (TODConfig.SESSION_MEMORY.equals(theType)) return LocalSession.class;

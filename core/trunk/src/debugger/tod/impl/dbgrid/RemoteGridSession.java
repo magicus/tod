@@ -56,6 +56,10 @@ public class RemoteGridSession extends AbstractSession
 		init();
 	}
 	
+	/**
+	 * Returns the host to connect to.
+	 * By default, the host specified in the config by {@link TODConfig#COLLECTOR_HOST}.
+	 */
 	protected String getHost()
 	{
 		return getConfig().get(TODConfig.COLLECTOR_HOST);

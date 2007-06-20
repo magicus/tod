@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import tod.agent.AgentConfig;
 import tod.agent.ConfigUtils;
 import zz.utils.PublicCloneable;
 
@@ -131,7 +132,7 @@ public class TODConfig extends PublicCloneable implements Serializable
 	
 	public static final StringItem CLIENT_HOST_NAME = new StringItem(
 			ConfigLevel.NORMAL,
-			"client-hostname",
+			AgentConfig.PARAM_HOST,
 			"Client - host name",
 			"Host name given to the debugged program's JVM.",
 			"tod-1");

@@ -273,6 +273,7 @@ public class EventMural extends JPanel
 			long aT2,
 			Collection<BrowserData> aBrowserData)
 	{
+		if (aT1 == aT2) return;
 		long[][] theValues = new long[aBrowserData.size()][];
 		Color[] theColors = new Color[aBrowserData.size()];
 		

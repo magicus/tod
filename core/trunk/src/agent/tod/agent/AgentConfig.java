@@ -45,7 +45,7 @@ public class AgentConfig
 	/**
 	 * This parameter defines the name of the host the agent runs on.
 	 */
-	public static final String PARAM_HOST = "tod-host";
+	public static final String PARAM_HOST = "client-hostname";
 	
 	/**
 	 * Number of bits used to represent the host of an event.
