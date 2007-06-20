@@ -44,7 +44,14 @@ public class TODConnectLaunchTab extends AbstractJavaMainTab
 	 */
 	public void createControl(Composite parent) {
 		Font font = parent.getFont();
-		Composite comp = SWTFactory.createComposite(parent, font, 1, 1, GridData.FILL_BOTH);
+		
+    	Composite comp = new Composite(parent, SWT.NONE);
+    	comp.setLayout(new GridLayout(1, false));
+    	comp.setFont(font);
+    	GridData gd = new GridData(GridData.FILL_BOTH);
+		gd.horizontalSpan = 1;
+		comp.setLayoutData(gd);
+		
 		GridLayout layout = new GridLayout();
 		layout.verticalSpacing = 0;
 		comp.setLayout(layout);
@@ -55,7 +62,7 @@ public class TODConnectLaunchTab extends AbstractJavaMainTab
 		group.setText("Connection properties");
 		group.setLayout(new GridLayout(2, false));
 		group.setFont(parent.getFont());
-    	GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+    	gd = new GridData(GridData.FILL_HORIZONTAL);
 		gd.horizontalSpan = 1;
 		group.setLayoutData(gd);
 
