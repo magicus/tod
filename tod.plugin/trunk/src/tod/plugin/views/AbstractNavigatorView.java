@@ -3,32 +3,18 @@
  */
 package tod.plugin.views;
 
-import java.awt.BorderLayout;
-import java.awt.Frame;
-import java.awt.Panel;
-
-import javax.swing.JComponent;
-
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.awt.SWT_AWT;
-import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.ControlListener;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.part.ViewPart;
 
 import tod.core.database.event.ILogEvent;
 import tod.gui.IGUIManager;
 import tod.plugin.DebuggingSession;
-import zz.utils.ui.StackLayout;
 
-public abstract class AbstractNavigatorView extends ViewPart implements ISelectionListener
+public abstract class AbstractNavigatorView extends AbstractAWTView implements ISelectionListener
 {
-	private Frame itsFrame;
 	
 	/**
 	 * This flag permits to avoid infinite recursion or misbehaviors
@@ -43,31 +29,8 @@ public abstract class AbstractNavigatorView extends ViewPart implements ISelecti
 		ISelectionService theSelectionService = getViewSite().getWorkbenchWindow().getSelectionService();
 		theSelectionService.addPostSelectionListener(this);
 		
-		final Composite theEmbedded = new Composite(parent, SWT.EMBEDDED | SWT.CENTER);
-		parent.setLayout(new FillLayout());
-		
-		itsFrame = SWT_AWT.new_Frame(theEmbedded);
-		Panel theRootPanel = new Panel(new BorderLayout());
-		itsFrame.setLayout(new StackLayout());
-		itsFrame.add(theRootPanel);
-
-		theEmbedded.addControlListener(new ControlListener()
-		{
-			public void controlMoved(ControlEvent aE)
-			{
-			}
-
-			public void controlResized(ControlEvent aE)
-			{
-				itsFrame.setSize(theEmbedded.getSize().x, theEmbedded.getSize().y);
-			}
-			
-		});
-		
-		theRootPanel.add(createComponent());
+		super.createPartControl(parent);
 	}
-	
-	protected abstract JComponent createComponent();
 	
 	public abstract IGUIManager getGUIManager();
 	
@@ -78,11 +41,6 @@ public abstract class AbstractNavigatorView extends ViewPart implements ISelecti
 		theSelectionService.removePostSelectionListener(this);
 	}
 	
-	@Override
-	public void setFocus()
-	{
-	}
-
 	/**
 	 * Called when the selected element in the workbench changes.
 	 */

@@ -106,6 +106,12 @@
             class="tod.plugin.fxviews.TraceNavigatorFXView"
             id="tod.plugin.views.TraceNavigatorFXView"
             name="Trace Navigator (JavaFX)"/>
+      <view
+            category="tod.plugin"
+            class="tod.plugin.views.DBProcessView"
+            id="tod.plugin.views.DBProcessView"
+            name="Database management">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.actionSets">

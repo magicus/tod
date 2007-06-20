@@ -104,6 +104,7 @@ public class TODSessionManager
 			SourceRevealer aSourceRevealer,
 			TODConfig aConfig)
 	{
+		pCurrentSession.set(null); // TODO: remove this and make session reuse work.
 		DebuggingSession theCurrentSession = pCurrentSession.get();
 		if (theCurrentSession != null && ! theCurrentSession.isAlive()) theCurrentSession = null;
 		Class theSessionClass = SessionUtils.getSessionClass(aConfig);

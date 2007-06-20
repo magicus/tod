@@ -25,6 +25,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaModelException;
@@ -34,6 +35,8 @@ import tod.core.database.structure.ILocationInfo;
 import tod.gui.MinerUI;
 import tod.gui.seed.LogViewSeed;
 import tod.gui.seed.LogViewSeedFactory;
+import tod.impl.dbgrid.DBProcessManager;
+import tod.impl.dbgrid.DBProcessManager.IDBProcessListener;
 import tod.plugin.DebuggingSession;
 import tod.plugin.TODPluginUtils;
 import tod.plugin.TODSessionManager;
@@ -51,9 +54,17 @@ public class EventViewer extends MinerUI
 				{
 					public void propertyChanged(IProperty<DebuggingSession> aProperty, DebuggingSession aOldValue, DebuggingSession aNewValue)
 					{
-						reset();
+						SwingUtilities.invokeLater(new Runnable()
+						{
+							public void run()
+							{
+								reset();
+							}
+						});
 					}
 				});
+
+		reset();
 	}
 
 	public DebuggingSession getSession()

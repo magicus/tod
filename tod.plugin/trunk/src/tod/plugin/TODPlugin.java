@@ -33,7 +33,7 @@ import org.osgi.framework.BundleContext;
 import reflex.run.common.RunningEnvironment;
 import tod.ReflexRiver;
 import tod.Util;
-import tod.impl.dbgrid.LocalGridSession;
+import tod.impl.dbgrid.DBProcessManager;
 import zz.eclipse.utils.EclipseUtils;
 
 /**
@@ -75,7 +75,7 @@ public class TODPlugin extends AbstractUIPlugin
 //			thePool.appendClassPath(theBase+"/zz.utils.jar");
 //			thePool.appendClassPath(theBase+"/tod-debugger.jar");
 
-			LocalGridSession.cp = 
+			DBProcessManager.cp = 
 				theBase+"/tod-debugger.jar"+File.pathSeparator
 				+theBase+"/tod-agent.jar"+File.pathSeparator
 				+theBase+"/asm-2.1.jar"+File.pathSeparator
@@ -89,7 +89,7 @@ public class TODPlugin extends AbstractUIPlugin
 //			thePool.appendClassPath(theDevPath+"/zz.utils/bin");
 //			thePool.appendClassPath(theDevPath+"/TOD/bin");			
 
-			LocalGridSession.cp = 
+			DBProcessManager.cp = 
 				theDevPath+"/TOD/bin"+File.pathSeparator
 				+theBase+"/asm-2.1.jar"+File.pathSeparator
 				+theBase+"/asm-commons-2.1.jar"+File.pathSeparator
@@ -99,7 +99,7 @@ public class TODPlugin extends AbstractUIPlugin
 		ClassLoader theLoader = Thread.currentThread().getContextClassLoader();
 		thePool.appendClassPath(new LoaderClassPath(theLoader));
 		
-		LocalGridSession.lib = theBase;
+		DBProcessManager.lib = theBase;
 	}
 
 	/**
