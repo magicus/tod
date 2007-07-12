@@ -27,8 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import reflex.lib.pom.POMSynchronizedClass;
-import reflex.lib.pom.POMSynchronizedMethod;
+import reflex.lib.pom.POMSyncClass;
+import reflex.lib.pom.POMSync;
 import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
@@ -79,9 +79,9 @@ import zz.utils.cache.SyncMRUBuffer;
  * Note: it is remote because it must be accessed by the master.
  * @author gpothier
  */
-@POMSynchronizedClass(
-		schedulerClass = Scheduler.class, 
-		groupDefClass = Scheduler.class,
+@POMSyncClass(
+		scheduler = Scheduler.class, 
+		group = Scheduler.class,
 		syncAll = false)
 public class GridLogBrowser extends UnicastRemoteObject
 implements ILogBrowser, RIGridMasterListener
@@ -131,7 +131,7 @@ implements ILogBrowser, RIGridMasterListener
 		System.out.println("[GridLogBrowser] Instantiated.");
 	}
 
-	@POMSynchronizedMethod
+	@POMSync
 	public void clear()
 	{
 		try
@@ -299,7 +299,7 @@ implements ILogBrowser, RIGridMasterListener
 		return theCompound;
 	}
 	
-	@POMSynchronizedMethod
+	@POMSync
 	public Object getRegistered(ObjectId aId)
 	{
 		try
@@ -330,7 +330,7 @@ implements ILogBrowser, RIGridMasterListener
 		return itsLastTimestamp;
 	}
 	
-	@POMSynchronizedMethod
+	@POMSync
 	private void fetchThreads()
 	{
 		try
@@ -354,7 +354,7 @@ implements ILogBrowser, RIGridMasterListener
 		return itsThreads;
 	}
 	
-	@POMSynchronizedMethod
+	@POMSync
 	private void fetchHosts()
 	{
 		try
@@ -476,7 +476,7 @@ implements ILogBrowser, RIGridMasterListener
 		return new VariablesInspector(aEvent);
 	}
 	
-	@POMSynchronizedMethod
+	@POMSync
 	public BidiIterator<Long> searchStrings(String aSearchText)
 	{
 		try
@@ -489,7 +489,7 @@ implements ILogBrowser, RIGridMasterListener
 		}
 	}
 
-	@POMSynchronizedMethod
+	@POMSync
 	private void updateStats()
 	{
 		try

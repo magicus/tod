@@ -22,8 +22,8 @@ package tod.impl.dbgrid.aggregator;
 
 import java.rmi.RemoteException;
 
-import reflex.lib.pom.POMSynchronizedClass;
-import reflex.lib.pom.POMSynchronizedMethod;
+import reflex.lib.pom.POMSyncClass;
+import reflex.lib.pom.POMSync;
 import tod.agent.DebugFlags;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
@@ -41,9 +41,9 @@ import tod.impl.dbgrid.queries.EventCondition;
  * of a {@link QueryAggregator}.
  * @author gpothier
  */
-@POMSynchronizedClass(
-		schedulerClass = Scheduler.class, 
-		groupDefClass = Scheduler.class,
+@POMSyncClass(
+		scheduler = Scheduler.class, 
+		group = Scheduler.class,
 		syncAll = false)
 public class GridEventBrowser extends BufferedBidiIterator<ILogEvent[], ILogEvent>
 implements IEventBrowser
@@ -81,7 +81,7 @@ implements IEventBrowser
 	}
 	
 	@Override
-	@POMSynchronizedMethod
+	@POMSync
 	protected ILogEvent[] fetchNextBuffer()
 	{
 		try
@@ -97,7 +97,7 @@ implements IEventBrowser
 	}
 	
 	@Override
-	@POMSynchronizedMethod
+	@POMSync
 	protected ILogEvent[] fetchPreviousBuffer()
 	{
 		try
@@ -207,7 +207,7 @@ implements IEventBrowser
 		return getEventCounts(aT1, aT2, 1, aForceMergeCounts)[0];
 	}
 
-	@POMSynchronizedMethod
+	@POMSync
 	public long[] getEventCounts(long aT1, long aT2, int aSlotsCount, boolean aForceMergeCounts)
 	{
 		try
@@ -227,7 +227,7 @@ implements IEventBrowser
 		}
 	}
 
-	@POMSynchronizedMethod
+	@POMSync
 	public boolean setNextEvent(ILogEvent aEvent)
 	{
 		try
@@ -245,7 +245,7 @@ implements IEventBrowser
 		}
 	}
 
-	@POMSynchronizedMethod
+	@POMSync
 	public boolean setPreviousEvent(ILogEvent aEvent)
 	{
 		try
@@ -283,7 +283,7 @@ implements IEventBrowser
 		return aTimestamp;
 	}
 	
-	@POMSynchronizedMethod
+	@POMSync
 	public void setNextTimestamp(long aTimestamp)
 	{
 		try
@@ -297,7 +297,7 @@ implements IEventBrowser
 		}
 	}
 
-	@POMSynchronizedMethod
+	@POMSync
 	public void setPreviousTimestamp(long aTimestamp)
 	{
 		try

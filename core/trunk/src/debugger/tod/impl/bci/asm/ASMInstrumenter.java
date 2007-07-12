@@ -47,11 +47,11 @@ public class ASMInstrumenter implements IInstrumenter
 		if (! BCIUtils.acceptClass(aName, itsConfig.getGlobalSelector())) return null;
     	
     	ClassReader theReader = new ClassReader(aBytecode);
-    	ClassWriter theWriter = new ClassWriter(true);
+    	ClassWriter theWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
     	
     	// Pass 1: collect method info 
     	InfoCollector theInfoCollector = new InfoCollector();
-    	theReader.accept(theInfoCollector, true);
+    	theReader.accept(theInfoCollector, ClassReader.SKIP_DEBUG);
     	
     	List<Integer> theTracedMethods = new ArrayList<Integer>();
     	
@@ -62,7 +62,7 @@ public class ASMInstrumenter implements IInstrumenter
     			theWriter,
     			theTracedMethods);
     	
-    	theReader.accept(theVisitor, false);
+    	theReader.accept(theVisitor, 0);
     	
         return theVisitor.isModified() && !  theVisitor.hasOverflow() 
         	? new InstrumentedClass(theWriter.toByteArray(), theTracedMethods) 

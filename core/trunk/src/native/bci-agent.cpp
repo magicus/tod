@@ -580,6 +580,9 @@ void JNICALL cbVMStart(
 	registerTmpTracedMethods(jni);
 }
 
+/**
+ * JVMTI initialization
+ */
 JNIEXPORT jint JNICALL 
 Agent_OnLoad(JavaVM *vm, char *options, void *reserved) 
 {
@@ -685,6 +688,13 @@ Agent_OnUnload(JavaVM *vm)
 		if (propVerbose>=1) printf("Sent flush\n");
 	}
 }
+
+/**
+ * JVMPI initialization
+ */
+// jint JNICALL JVM_OnLoad(JavaVM *jvm, char *options, void *reserved)
+// {
+// }
 
 
 //************************************************************************************
