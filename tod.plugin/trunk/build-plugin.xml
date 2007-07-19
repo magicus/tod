@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project default="plugin" name="TOD plugin">
 
-
 	<target name="init">
 		<property name="build.dir" value="${basedir}/build"/>
 		<property name="lib.dir" value="${basedir}/lib"/>
