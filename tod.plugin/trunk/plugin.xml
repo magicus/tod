@@ -232,7 +232,6 @@
             id="tod.plugin.launchDelegate.JDT_JUnit"
             modes="tod"
             type="org.eclipse.jdt.junit.launchconfig"/>
-            
    </extension>
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
@@ -252,8 +251,7 @@
             class="tod.plugin.launch.ConnectToDatabaseLaunchTabGroup"
             description="Configure database connection"
             id="tod.plugin.launchConfigurationTabGroup.ConnectToDatabase"
-            type="tod.plugin.launch.connectToExistingDatabase">
-      </launchConfigurationTabGroup>
+            type="tod.plugin.launch.connectToExistingDatabase"/>
    </extension>
    <extension
          point="org.eclipse.debug.core.launchConfigurationComparators">
