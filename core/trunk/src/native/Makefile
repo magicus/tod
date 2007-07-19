@@ -1,40 +1,57 @@
 
+BOOST_VERSION = 1_33_1
+BOOST_FLAVOR = gcc-mt
+SHARED_MAGIC = -shared
 
 ifeq ($(PLATFORM), win32)
 	WINBASE = ~/vm
 	CXX = i586-mingw32msvc-g++
-	CXXFLAGS += -I $(WINBASE)/boost/include/boost-1_33_1 -I $(WINBASE)/asio/include
-	
+	CXXFLAGS += -I $(WINBASE)/boost/include/boost-$(BOOST_VERSION) -I $(WINBASE)/asio/include
+
 	LDFLAGS_BOOST += -L $(WINBASE)/boost/lib
 	LDFLAGS += -lws2_32 -Wl,--add-stdcall-alias
-	
+
 	JAVA_HOME = $(WINBASE)/java
 	CXXFLAGS += -I $(JAVA_HOME)/include/ -I $(JAVA_HOME)/include/win32/
-	
+
 	LIBPREFIX =
 	LIBEXT = dll
-	
-else
+endif
+
+ifeq ($(PLATFORM), macos)
+	BOOST_VERSION = 1_34
+	BOOST_FLAVOR = mt
+	SHARED_MAGIC = -dynamiclib
+	#CXX = g++-4.0
+	CXXFLAGS += -I /usr/local/include/boost-$(BOOST_VERSION) -I /USERDISK/develop/asio-0.3.7/include/
+
+	CXXFLAGS += -I $(JAVA_HOME)/Headers/ 
+
+	LIBPREFIX = lib
+	LIBEXT = dylib
+endif
+
+ifeq ($(PLATFORM), )
 	PLATFORM = linux
-	
+
 	CXXFLAGS += -I $(JAVA_HOME)/include/ -I $(JAVA_HOME)/include/linux/
-	
+
 	LIBPREFIX = lib
 	LIBEXT = so
 endif
 
-CXXFLAGS += -O3
-LDFLAGS_BOOST += -lboost_thread-gcc-mt-1_33_1 -lboost_filesystem-gcc-mt-1_33_1 
+CXXFLAGS += -O3 -Wno-long-double
+LDFLAGS_BOOST += -lboost_thread-$(BOOST_FLAVOR)-$(BOOST_VERSION) -lboost_filesystem-$(BOOST_FLAVOR)-$(BOOST_VERSION) 
 
 bci-agent-objects = \
 	$(PLATFORM)/bci-agent.o \
 	$(PLATFORM)/utils.o \
- 	$(PLATFORM)/md5.o \
- 	$(PLATFORM)/jniutils.o 
-	
+	$(PLATFORM)/md5.o \
+	$(PLATFORM)/jniutils.o 
+
 array-cast-objects = \
 	$(PLATFORM)/array-cast.o
-	
+
 #nc-objects = CBuffer.o NativeCollector.o utils.o CThreadData.o md5.o
 #native-stream-objects = native-stream.o
 
@@ -43,56 +60,56 @@ array-cast-objects = \
 all: bci-agent #array-cast
 
 bci-agent: dirs $(bci-agent-objects)
-	$(CXX) -shared -o $(PLATFORM)/$(LIBPREFIX)bci-agent.$(LIBEXT) $(bci-agent-objects) $(LDFLAGS) $(LDFLAGS_BOOST)
+	$(CXX) $(SHARED_MAGIC) -o $(PLATFORM)/$(LIBPREFIX)bci-agent.$(LIBEXT) $(bci-agent-objects) $(LDFLAGS) $(LDFLAGS_BOOST)
 	cp $(PLATFORM)/$(LIBPREFIX)bci-agent.$(LIBEXT) ../..
-	
+
 #pathtest: dirs $(PLATFORM)/pathtest.o
 #	$(CXX) -o $(PLATFORM)/pathtest $(PLATFORM)/pathtest.o $(LDFLAGS) $(LDFLAGS_BOOST)
-	
+
 # native-stream: $(native-stream-objects)
-# 	$(CXX) -shared -o ../../$(LIBPREFIX)native-stream.$(LIBEXT) $(native-stream-objects) $(LDFLAGS)
-	
+# 	$(CXX) $(SHARED_MAGIC) -o ../../$(LIBPREFIX)native-stream.$(LIBEXT) $(native-stream-objects) $(LDFLAGS)
+
 array-cast: dirs $(array-cast-objects)
-	$(CXX) -shared -o $(PLATFORM)/$(LIBPREFIX)array-cast.$(LIBEXT) $(array-cast-objects) $(LDFLAGS)
+	$(CXX) $(SHARED_MAGIC) -o $(PLATFORM)/$(LIBPREFIX)array-cast.$(LIBEXT) $(array-cast-objects) $(LDFLAGS)
 	cp $(PLATFORM)/$(LIBPREFIX)array-cast.$(LIBEXT) ../..
-	
+
 dirs:
 	mkdir -p $(PLATFORM)
 
 
 clean:
 	rm -f ../../libbci-agent.so ../../libnative-stream.so ../../bci-agent.dll ../../native-stream.dll
-	rm -rf linux win32
+	rm -rf linux win32 macos
 
 ############## 
 
 $(PLATFORM)/CBuffer.o: CBuffer.cpp CBuffer.h
-	$(CXX) -shared -c $(CXXFLAGS) CBuffer.cpp -o $(PLATFORM)/CBuffer.o
-	
+	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) CBuffer.cpp -o $(PLATFORM)/CBuffer.o
+
 $(PLATFORM)/CThreadData.o: CThreadData.cpp CThreadData.h
-	$(CXX) -shared -c $(CXXFLAGS) CThreadData.cpp -o $(PLATFORM)/CThreadData.o
+	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) CThreadData.cpp -o $(PLATFORM)/CThreadData.o
 
 $(PLATFORM)/NativeCollector.o: NativeCollector.cpp tod_core_transport_NativeCollector.h
-	$(CXX) -shared -c $(CXXFLAGS) NativeCollector.cpp -o $(PLATFORM)/NativeCollector.o
+	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) NativeCollector.cpp -o $(PLATFORM)/NativeCollector.o
 
 $(PLATFORM)/bci-agent.o: bci-agent.cpp tod_core_ObjectIdentity.h utils.h jniutils.h
-	$(CXX) -shared -c $(CXXFLAGS) bci-agent.cpp -o $(PLATFORM)/bci-agent.o
-	
+	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) bci-agent.cpp -o $(PLATFORM)/bci-agent.o
+
 $(PLATFORM)/utils.o: utils.cpp utils.h
-	$(CXX) -shared -c $(CXXFLAGS) utils.cpp -o $(PLATFORM)/utils.o
-	
+	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) utils.cpp -o $(PLATFORM)/utils.o
+
 $(PLATFORM)/jniutils.o: jniutils.cpp jniutils.h
-	$(CXX) -shared -c $(CXXFLAGS) jniutils.cpp -o $(PLATFORM)/jniutils.o
-	
+	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) jniutils.cpp -o $(PLATFORM)/jniutils.o
+
 $(PLATFORM)/md5.o: md5.cpp md5.h
-	$(CXX) -shared -c $(CXXFLAGS) md5.cpp -o $(PLATFORM)/md5.o
-	
+	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) md5.cpp -o $(PLATFORM)/md5.o
+
 $(PLATFORM)/native-stream.o: native-stream.cpp
-	$(CXX) -shared -c $(CXXFLAGS) native-stream.cpp -o $(PLATFORM)/native-stream.o
+	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) native-stream.cpp -o $(PLATFORM)/native-stream.o
 
 $(PLATFORM)/array-cast.o: array-cast.cpp
-	$(CXX) -shared -c $(CXXFLAGS) array-cast.cpp -o $(PLATFORM)/array-cast.o
+	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) array-cast.cpp -o $(PLATFORM)/array-cast.o
 
 #$(PLATFORM)/pathtest.o: pathtest.cpp
-#	$(CXX) -shared -c $(CXXFLAGS) pathtest.cpp -o $(PLATFORM)/pathtest.o
+#	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) pathtest.cpp -o $(PLATFORM)/pathtest.o
 

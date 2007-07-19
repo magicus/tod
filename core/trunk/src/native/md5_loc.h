@@ -44,7 +44,7 @@
 #define SWAP(n)	(n)
 #endif
 
-#if defined(__sparc) || defined(__powerpc__)
+#if defined(__sparc) || defined(__powerpc__) || defined(__POWERPC__) || defined(__ppc__) || defined(__PPC__) 
 /*
  * big endian - big is better
  */
