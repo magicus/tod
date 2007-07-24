@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
+	<classpathentry excluding="tod/plugin/fxviews/" kind="src" path="src"/>
 	<classpathentry exported="true" kind="lib" path="lib/log4j.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/TOD"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/zz.utils"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/tod-fx"/>
 	<classpathentry kind="lib" path="lib/asm-3.0.jar"/>
 	<classpathentry kind="lib" path="lib/asm-commons-3.0.jar"/>
+	<classpathentry kind="lib" path="lib/javassist.jar"/>
+	<classpathentry kind="lib" path="lib/pom.jar"/>
+	<classpathentry kind="lib" path="lib/reflex-core.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

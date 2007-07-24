@@ -78,8 +78,8 @@ public class TODPlugin extends AbstractUIPlugin
 			DBProcessManager.cp = 
 				theBase+"/tod-debugger.jar"+File.pathSeparator
 				+theBase+"/tod-agent.jar"+File.pathSeparator
-				+theBase+"/asm-2.1.jar"+File.pathSeparator
-				+theBase+"/asm-commons-2.1.jar"+File.pathSeparator
+				+theBase+"/asm-3.0.jar"+File.pathSeparator
+				+theBase+"/asm-commons-3.0.jar"+File.pathSeparator
 				+theBase+"/zz.utils.jar";
 		}
 		else
@@ -91,8 +91,8 @@ public class TODPlugin extends AbstractUIPlugin
 
 			DBProcessManager.cp = 
 				theDevPath+"/TOD/bin"+File.pathSeparator
-				+theBase+"/asm-2.1.jar"+File.pathSeparator
-				+theBase+"/asm-commons-2.1.jar"+File.pathSeparator
+				+theBase+"/asm-3.0.jar"+File.pathSeparator
+				+theBase+"/asm-commons-3.0.jar"+File.pathSeparator
 				+theDevPath+"/zz.utils/bin";
 		}
 		

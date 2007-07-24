@@ -110,22 +110,27 @@ public class LaunchUtils
 	
 	protected static List<String> getAdditionalVMArguments(LaunchInfo aInfo) throws CoreException
 	{
-        List<String> theArguments = new ArrayList<String>();
+		String theLibraryPath = TODPlugin.getDefault().getLibraryPath();
+
+		List<String> theArguments = new ArrayList<String>();
         
         // Boot class path
 		String theAgentPath = System.getProperty(
 				"agent.path",
-				TODPlugin.getDefault().getLibraryPath()+"/tod-agent.jar");
+				theLibraryPath+"/tod-agent.jar");
         
         theArguments.add ("-Xbootclasspath/p:"+theAgentPath);
 		
-        
-		String theLibraryPath = TODPlugin.getDefault().getLibraryPath();
-		
 		// Native agent
+        String theLibName = null;
+		String theOs = System.getProperty("os.name");
+		if (theOs.contains("Windows")) theLibName = "bci-agent.dll";
+		else if (theOs.contains("Mac")) theLibName = "libbci-agent.dylib";
+		else theLibName = "libbci-agent.so";
+
 		String theNativeAgentPath = System.getProperty(
 				"bcilib.path",
-				theLibraryPath+"/libbci-agent.so");
+				theLibraryPath+"/"+theLibName);
 		
 		theArguments.add("-agentpath:"+theNativeAgentPath);
 		theArguments.add("-Djava.library.path="+theLibraryPath);
