@@ -34,9 +34,7 @@ ifeq ($(PLATFORM), macos)
 	LIBEXT = dylib
 endif
 
-ifeq ($(PLATFORM), )
-	PLATFORM = linux
-
+ifeq ($(PLATFORM), linux)
 	CXXFLAGS += -I $(JAVA_HOME)/include/ -I $(JAVA_HOME)/include/linux/
 
 	LIBPREFIX = lib
