@@ -22,8 +22,9 @@ ifeq ($(PLATFORM), macos)
 	BOOST_VERSION = 1_34
 	BOOST_FLAVOR = mt
 	SHARED_MAGIC = -dynamiclib
-	#CXX = g++-4.0
 	CXXFLAGS += -I /usr/local/include/boost-$(BOOST_VERSION) -I /USERDISK/develop/asio-0.3.7/include/
+	
+	CXXFLAGS += -Wno-long-double
 
 	CXXFLAGS += -I $(JAVA_HOME)/Headers/ 
 	CXXFLAGS += -arch ppc -arch i386 
@@ -42,7 +43,7 @@ ifeq ($(PLATFORM), )
 	LIBEXT = so
 endif
 
-CXXFLAGS += -O3 -Wno-long-double
+CXXFLAGS += -O3 
 LDFLAGS_BOOST += -lboost_thread-$(BOOST_FLAVOR)-$(BOOST_VERSION) -lboost_filesystem-$(BOOST_FLAVOR)-$(BOOST_VERSION) 
 
 bci-agent-objects = \
