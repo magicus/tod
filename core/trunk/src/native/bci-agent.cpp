@@ -564,6 +564,7 @@ void JNICALL cbVMStart(
 	JNIEnv* jni)
 {
 	if (propVerbose>=1) printf("VMStart\n");
+	fflush(stdout);
 	
 	// Initialize the classes and method ids that will be used
 	// for registering traced methods
@@ -666,7 +667,7 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
 	check_jvmti_error(jvmti, err, "SetEventCallbacks");
 	
 	// Enable events
-	enable_event(jvmti, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK);
+ 	enable_event(jvmti, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK);
 	enable_event(jvmti, JVMTI_EVENT_EXCEPTION);
 	enable_event(jvmti, JVMTI_EVENT_VM_START);
 	

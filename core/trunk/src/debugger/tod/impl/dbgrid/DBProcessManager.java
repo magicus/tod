@@ -245,7 +245,7 @@ public class DBProcessManager
 				theCommand.append(theArg);
 				theCommand.append("\" ");
 			}
-			System.out.println("[LocalGridSession] Command: "+theCommand);
+			System.out.println("[DBProcessManager] Command: "+theCommand);
 			
 			theBuilder.redirectErrorStream(false);
 			

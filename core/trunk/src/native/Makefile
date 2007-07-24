@@ -26,6 +26,8 @@ ifeq ($(PLATFORM), macos)
 	CXXFLAGS += -I /usr/local/include/boost-$(BOOST_VERSION) -I /USERDISK/develop/asio-0.3.7/include/
 
 	CXXFLAGS += -I $(JAVA_HOME)/Headers/ 
+	CXXFLAGS += -arch ppc -arch i386 
+	#CXXFLAGS += -arch ppc64 -arch x86_64
 
 	LIBPREFIX = lib
 	LIBEXT = dylib
