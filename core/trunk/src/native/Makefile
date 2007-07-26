@@ -42,7 +42,10 @@ ifeq ($(PLATFORM), linux)
 endif
 
 CXXFLAGS += -O3 
-LDFLAGS_BOOST += -lboost_thread-$(BOOST_FLAVOR)-$(BOOST_VERSION) -lboost_filesystem-$(BOOST_FLAVOR)-$(BOOST_VERSION) 
+LDFLAGS_BOOST += \
+	-static-libgcc \
+	-Wl,-Bstatic -lboost_thread-$(BOOST_FLAVOR)-$(BOOST_VERSION) \
+	-Wl,-Bstatic -lboost_filesystem-$(BOOST_FLAVOR)-$(BOOST_VERSION)
 
 bci-agent-objects = \
 	$(PLATFORM)/bci-agent.o \

@@ -595,7 +595,7 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
 	
 	fs::path::default_name_check(fs::no_check);
 
-	printf("Loading BCI agent - v2\n");
+	printf("Loading BCI agent - v2.1\n");
 	fflush(stdout);
 
 	// Get JVMTI environment 
