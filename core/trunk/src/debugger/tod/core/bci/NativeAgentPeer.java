@@ -54,6 +54,7 @@ public abstract class NativeAgentPeer extends SocketThread
 	public static final byte SET_SKIP_CORE_CLASSES = 81;
 	public static final byte SET_CAPTURE_EXCEPTIONS = 83;
 	public static final byte SET_HOST_BITS = 84;
+	public static final byte SET_WORKING_SET = 85;
 
 	public static final byte CONFIG_DONE = 90;
 	
@@ -210,6 +211,10 @@ public abstract class NativeAgentPeer extends SocketThread
 		int theHostBits = AgentConfig.HOST_BITS;
 		theOutStream.writeByte(SET_HOST_BITS);
 		theOutStream.writeByte(theHostBits);
+		
+		String theWorkingSet = itsConfig.get(TODConfig.SCOPE_TRACE_FILTER);
+		theOutStream.writeByte(SET_WORKING_SET);
+		theOutStream.writeUTF(theWorkingSet);
 		
 		theOutStream.writeByte(CONFIG_DONE);
 		theOutStream.flush();

@@ -22,6 +22,8 @@ package tod.core.bci;
 
 import java.util.List;
 
+import tod.core.config.TODConfig;
+
 public interface IInstrumenter
 {
     /**
@@ -31,6 +33,18 @@ public interface IInstrumenter
      * @return New bytecode, or null if no instrumentation is performed.
      */
 	public InstrumentedClass instrumentClass (String aClassName, byte[] aBytecode);
+	
+	/**
+	 * Changes the current trace working set.
+	 * @see TODConfig#SCOPE_TRACE_FILTER
+	 */
+	public void setTraceWorkingSet(String aWorkingSet);
+
+	/**
+	 * Sets the current global working set.
+	 * @see TODConfig#SCOPE_GLOBAL_FILTER
+	 */
+	public void setGlobalWorkingSet(String aWorkingSet);
 	
 	/**
 	 * Aggregates the results of class instrumentation

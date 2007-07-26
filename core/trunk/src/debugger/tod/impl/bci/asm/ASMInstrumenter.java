@@ -41,6 +41,18 @@ public class ASMInstrumenter implements IInstrumenter
 	{
 		itsConfig = aConfig;
 	}
+	
+	public void setTraceWorkingSet(String aWorkingSet)
+	{
+		itsConfig.setTraceWorkingSet(aWorkingSet);
+	}
+	
+	public void setGlobalWorkingSet(String aWorkingSet)
+	{
+		itsConfig.setGlobalWorkingSet(aWorkingSet);
+	}
+	
+
 
 	public InstrumentedClass instrumentClass (String aName, byte[] aBytecode)
     {

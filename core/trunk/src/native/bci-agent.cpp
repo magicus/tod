@@ -59,6 +59,7 @@ const char OBJECT_UID = 2;
 const char SET_SKIP_CORE_CLASSES = 81;
 const char SET_CAPTURE_EXCEPTIONS = 83;
 const char SET_HOST_BITS = 84;
+const char SET_WORKING_SET = 85;
 const char CONFIG_DONE = 90;
 
 int VM_STARTED = 0;
@@ -71,8 +72,8 @@ jvmtiEnv *globalJvmti;
 int cfgSkipCoreClasses = 0;
 int cfgCaptureExceptions = 0;
 int cfgHostBits = 8; // Number of bits used to encode host id.
-
 int cfgHostId = 0; // A host id assigned by the TODServer - not official.
+char* cfgWorkingSet = "undefined"; // The current working set of instrumentation
 
 
 // System properties configuration data.
@@ -82,6 +83,9 @@ char* propNativePort = NULL;
 char* propCachePath = NULL;
 char* _propVerbose = NULL;
 int propVerbose = 2;
+
+// directory prefix for the class cache. It is the MD5 sum of the working set.
+char* classCachePrefix = NULL;
 
 // Class and method references
 StaticVoidMethod* ExceptionGeneratedReceiver_exceptionGenerated;
@@ -195,10 +199,24 @@ void bciConfigure()
 				if (propVerbose >= 1) printf("Host bits: %d\n", cfgHostBits);
 				break;
 
+			case SET_WORKING_SET:
+				cfgWorkingSet = readUTF(gSocket);
+				if (propVerbose >= 1) printf("Working set: %s\n", cfgWorkingSet);
+				break;
+
 			case CONFIG_DONE:
 				// Check host id vs host bits
 				int mask = (1 << cfgHostBits) - 1;
 				if ((cfgHostId & mask) != cfgHostId) fatal_error("Host id overflow\n");
+				
+				// Compute md5 sum of working set.
+				char md5Buffer[16];
+				char* md5String = (char*) malloc(33);
+				md5_buffer(cfgWorkingSet, strlen(cfgWorkingSet), md5Buffer);
+				md5_sig_to_string(md5Buffer, md5String, 33);
+
+				classCachePrefix = md5String;
+				if (propVerbose >= 1) printf("Class cache prefix: %s\n", classCachePrefix);
 				
 				if (propVerbose >= 1) printf("Config done.\n");
 				return;
@@ -301,8 +319,11 @@ void JNICALL cbClassFileLoadHook(
 		strcpy(escapedName, name);
 		for(int i=0;i<l;i++) if (escapedName[i] == '$') escapedName[i] = '_';
 		
-		snprintf(cacheFileName, sizeof(cacheFileName), "%s/%s.%s.class", propCachePath, escapedName, md5String);
-		snprintf(tracedCacheFileName, sizeof(tracedCacheFileName), "%s/%s.%s.tm", propCachePath, escapedName, md5String);
+		snprintf(cacheFileName, sizeof(cacheFileName), "%s/%s/%s.%s.class", 
+			propCachePath, classCachePrefix, escapedName, md5String);
+			
+		snprintf(tracedCacheFileName, sizeof(tracedCacheFileName), "%s/%s/%s.%s.tm", 
+			propCachePath, classCachePrefix, escapedName, md5String);
 		
 		cacheFilePath = fs::path(cacheFileName);
 		tracedCacheFilePath = fs::path(tracedCacheFileName);

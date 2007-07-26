@@ -1,7 +1,8 @@
-<project name="TOD" default="compile" basedir=".">
+<project name="TOD" default="jar" basedir=".">
 
     <target name="init">
-
+		<property name="version" value="dev"/>
+    	
         <property name="build.dir" value="${basedir}/build"/>
         <property name="scripts.dir" value="${basedir}/scripts"/>
         <property name="lib.dir" value="${basedir}/lib"/>
@@ -133,8 +134,22 @@
 			</manifest>
 
 		</jar>
+	</target>
+	
+	<target name="release-db" depends="jar">
+		<zip destfile="${build.dir}/tod-db.zip">
+			<zipfileset dir="." prefix="tod-${version}"
+				includes="scripts/**, build/tod-*.jar, lib/*.jar"/>
+		</zip>
 
-
+		<tar destfile="${build.dir}/tod-db.tar.gz" compression="gzip">
+			<tarfileset dir="." prefix="tod-${version}" mode="755"
+				includes="scripts/*.sh"/>
+			
+			<tarfileset dir="." prefix="tod-${version}"
+				includes="scripts/**, build/tod-*.jar, lib/*.jar"
+				excludes="scripts/*.sh, scripts/collector.log"/>
+		</tar>
 	</target>
 	
     <target name="deploy" depends="jar" >

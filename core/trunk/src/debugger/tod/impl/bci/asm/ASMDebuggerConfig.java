@@ -49,22 +49,33 @@ public class ASMDebuggerConfig
 		itsLocationRegistrer = aLocationRegistrer;
 		
 		File theLocationsFile = new File(aConfig.get(TODConfig.INSTRUMENTER_LOCATIONS_FILE));
-		String theGlobalWorkingSet = aConfig.get(TODConfig.SCOPE_GLOBAL_FILTER); 
-		String theTraceWorkingSet = aConfig.get(TODConfig.SCOPE_TRACE_FILTER);
-		
-		
 		// Setup selectors
+		setGlobalWorkingSet(aConfig.get(TODConfig.SCOPE_GLOBAL_FILTER));
+		setTraceWorkingSet(aConfig.get(TODConfig.SCOPE_TRACE_FILTER));
+		
+		itsLocationPool = new ASMLocationPool(itsLocationRegistrer, theLocationsFile);
+	}
+	
+	private ClassSelector parseWorkingSet(String aWorkingSet)
+	{
 		try
 		{
-			itsGlobalSelector = WorkingSetFactory.parseWorkingSet(theGlobalWorkingSet);
-			itsTraceSelector = WorkingSetFactory.parseWorkingSet(theTraceWorkingSet);
+			return WorkingSetFactory.parseWorkingSet(aWorkingSet);
 		}
 		catch (ParseException e)
 		{
-			throw new RuntimeException("Cannot setup selectors", e);
+			throw new RuntimeException("Cannot parse selector: "+aWorkingSet, e);
 		}
-		
-		itsLocationPool = new ASMLocationPool(itsLocationRegistrer, theLocationsFile);
+	}
+	
+	public void setTraceWorkingSet(String aWorkingSet)
+	{
+		itsTraceSelector = parseWorkingSet(aWorkingSet);
+	}
+	
+	public void setGlobalWorkingSet(String aWorkingSet)
+	{
+		itsGlobalSelector = parseWorkingSet(aWorkingSet);
 	}
 	
 	/**

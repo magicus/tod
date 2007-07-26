@@ -187,6 +187,10 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	public void setConfig(TODConfig aConfig) 
 	{
 		itsConfig = aConfig;
+		
+		itsServer.setConfig(aConfig);
+		itsInstrumenter.setGlobalWorkingSet(aConfig.get(TODConfig.SCOPE_GLOBAL_FILTER));
+		itsInstrumenter.setTraceWorkingSet(aConfig.get(TODConfig.SCOPE_TRACE_FILTER));
 	}
 	
 	/**

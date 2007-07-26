@@ -42,7 +42,7 @@ import zz.utils.net.Server;
  */
 public abstract class TODServer
 {
-	private final TODConfig itsConfig;
+	private TODConfig itsConfig;
 	
 	private IInstrumenter itsInstrumenter;
 	
@@ -68,7 +68,11 @@ public abstract class TODServer
 		
 		itsReceiverServer = new LogReceiverServer();
 		itsNativePeerServer = new NativePeerServer();
-		
+	}
+	
+	public void setConfig(TODConfig aConfig)
+	{
+		itsConfig = aConfig;
 	}
 	
 	public ILocationRegisterer getLocationRegistrer()
@@ -267,6 +271,16 @@ public abstract class TODServer
 		public synchronized InstrumentedClass instrumentClass(String aClassName, byte[] aBytecode)
 		{
 			return itsDelegate.instrumentClass(aClassName, aBytecode);
+		}
+
+		public synchronized void setGlobalWorkingSet(String aWorkingSet)
+		{
+			itsDelegate.setGlobalWorkingSet(aWorkingSet);
+		}
+
+		public synchronized void setTraceWorkingSet(String aWorkingSet)
+		{
+			itsDelegate.setTraceWorkingSet(aWorkingSet);
 		}
 	}
 	
