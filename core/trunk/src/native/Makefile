@@ -32,6 +32,9 @@ ifeq ($(PLATFORM), macos)
 	CXXFLAGS += -arch ppc -arch i386 
 	#CXXFLAGS += -arch ppc64 -arch x86_64
 
+	LDFLAGS += -arch ppc -arch i386 
+	#LDFLAGS += -arch ppc64 -arch x86_64
+
 	LIBPREFIX = lib
 	LIBEXT = dylib
 endif
