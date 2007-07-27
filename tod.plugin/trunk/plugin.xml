@@ -3,7 +3,7 @@
 <plugin
    id="tod.plugin"
    name="TOD Eclipse Plugin"
-   version="0.5"
+   version="0.5.10"
    provider-name="DCC - Universidad de Chile"
    class="tod.plugin.TODPlugin">
 
@@ -116,9 +116,9 @@
             visible="true">
          <action
                class="tod.plugin.actions.TODDebugToolbarAction"
-               disabledIcon="icons/t.png"
+               disabledIcon="icons/launch.png"
                hoverIcon="icons/t.png"
-               icon="icons/t.png"
+               icon="icons/launch.png"
                id="tod.plugin.debug"
                label="Debug with TOD"
                state="true"
@@ -203,9 +203,9 @@
    <extension
          point="org.eclipse.debug.ui.launchGroups">
       <launchGroup
-            bannerImage="icons/t.png"
+            bannerImage="icons/launch.png"
             id="tod.plugin.launchGroup.tod"
-            image="icons/t.png"
+            image="icons/launch.png"
             label="Debug with TOD"
             mode="tod"
             title="TOD launch group title"/>
