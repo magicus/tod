@@ -2,6 +2,7 @@
 BOOST_VERSION = 1_33_1
 BOOST_FLAVOR = gcc-mt
 SHARED_MAGIC = -shared
+STATIC_MAGIC = -Wl,-Bstatic 
 
 ifeq ($(PLATFORM), win32)
 	WINBASE = ~/vm
@@ -19,10 +20,11 @@ ifeq ($(PLATFORM), win32)
 endif
 
 ifeq ($(PLATFORM), macos)
-	BOOST_VERSION = 1_34
+	BOOST_VERSION = 1_34_1
 	BOOST_FLAVOR = mt
 	SHARED_MAGIC = -dynamiclib
-	CXXFLAGS += -I /usr/local/include/boost-$(BOOST_VERSION) -I /USERDISK/develop/asio-0.3.7/include/
+	STATIC_MAGIC = 
+	CXXFLAGS += -I /usr/local/include/boost-$(BOOST_VERSION) -I /usr/local/include/asio-0.3.8rc3/
 	
 	CXXFLAGS += -Wno-long-double
 
@@ -44,8 +46,8 @@ endif
 CXXFLAGS += -O3 
 LDFLAGS_BOOST += \
 	-static-libgcc \
-	-Wl,-Bstatic -lboost_thread-$(BOOST_FLAVOR)-$(BOOST_VERSION) \
-	-Wl,-Bstatic -lboost_filesystem-$(BOOST_FLAVOR)-$(BOOST_VERSION)
+	$(STATIC_MAGIC) -lboost_thread-$(BOOST_FLAVOR)-$(BOOST_VERSION) \
+	$(STATIC_MAGIC) -lboost_filesystem-$(BOOST_FLAVOR)-$(BOOST_VERSION)
 
 bci-agent-objects = \
 	$(PLATFORM)/bci-agent.o \
