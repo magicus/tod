@@ -1,10 +1,11 @@
 
-BOOST_VERSION = 1_33_1
-BOOST_FLAVOR = gcc-mt
+BOOST_VERSION = 1_34_1
 SHARED_MAGIC = -shared
 STATIC_MAGIC = -Wl,-Bstatic 
 
 ifeq ($(PLATFORM), win32)
+	BOOST_FLAVOR = mgw34-mt
+	
 	WINBASE = ~/vm
 	CXX = i586-mingw32msvc-g++
 	CXXFLAGS += -I $(WINBASE)/boost/include/boost-$(BOOST_VERSION) -I $(WINBASE)/asio/include
@@ -20,7 +21,6 @@ ifeq ($(PLATFORM), win32)
 endif
 
 ifeq ($(PLATFORM), macos)
-	BOOST_VERSION = 1_34_1
 	BOOST_FLAVOR = mt
 	SHARED_MAGIC = -dynamiclib
 	STATIC_MAGIC = 
@@ -40,7 +40,10 @@ ifeq ($(PLATFORM), macos)
 endif
 
 ifeq ($(PLATFORM), linux)
+	BOOST_FLAVOR = gcc41-mt
+	
 	CXXFLAGS += -I $(JAVA_HOME)/include/ -I $(JAVA_HOME)/include/linux/
+	LDFLAGS += -static-libgcc 
 
 	LIBPREFIX = lib
 	LIBEXT = so
@@ -48,7 +51,6 @@ endif
 
 CXXFLAGS += -O3 
 LDFLAGS_BOOST += \
-	-static-libgcc \
 	$(STATIC_MAGIC) -lboost_thread-$(BOOST_FLAVOR)-$(BOOST_VERSION) \
 	$(STATIC_MAGIC) -lboost_filesystem-$(BOOST_FLAVOR)-$(BOOST_VERSION)
 

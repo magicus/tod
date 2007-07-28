@@ -774,6 +774,15 @@ JNIEXPORT jint JNICALL Java_tod_core_EventInterpreter_getHostId
 	return cfgHostId;
 }
 
+#ifdef WIN32
+void tss_cleanup_implemented(void)
+{
+	// Avoid link error in win32
+	// Not that this is not a good solution and probably causes some leaks.
+	// See http://boost.org/doc/html/thread/release_notes.html#thread.release_notes.boost_1_32_0.change_log.static_link
+}
+#endif
+
 #ifdef __cplusplus
 }
 #endif
