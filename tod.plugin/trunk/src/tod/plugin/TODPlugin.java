@@ -26,13 +26,18 @@ import javassist.ClassPool;
 import javassist.LoaderClassPath;
 
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 import reflex.run.common.RunningEnvironment;
 import tod.ReflexRiver;
 import tod.Util;
+import tod.core.config.TODConfig;
 import tod.impl.dbgrid.DBProcessManager;
 import zz.eclipse.utils.EclipseUtils;
 
@@ -62,7 +67,15 @@ public class TODPlugin extends AbstractUIPlugin
 		super.start(context);
 
 //		ReflexLaunchHack.setupReflex();
-		ReflexRiver.setup();
+		try
+		{
+			ReflexRiver.setup();
+		}
+		catch (Exception e)
+		{
+			msgBridgeProblem();
+			throw new RuntimeException("Reflex bridge not detected", e);
+		}
 		
 		String theBase = getLibraryPath();
 		ClassPool thePool = RunningEnvironment.get().getClassPool();
@@ -110,6 +123,32 @@ public class TODPlugin extends AbstractUIPlugin
 		super.stop(context);
 		plugin = null;
 	}
+	
+	private void msgBridgeProblem()
+	{
+		Display.getDefault().syncExec(new Runnable()
+		{
+			public void run()
+			{
+				String theArgs = System.getProperty("eclipse.vmargs");
+				String thePath = getLibraryPath() + "/reflex-bridge.jar"; 
+				
+				String theMessage = "Eclipse must be launched with special JVM arguments " +
+						"for TOD to work. Check that your eclipse.ini file (in the Eclipse " +
+						"installation directory) contains the following text:\n" +
+						"-javaagent:" + thePath + "\n" +
+						"If you launch Eclipse with a custom launch script and the script " +
+						"passes -vmargs to the Eclipse launcher, add the above argument " +
+						"right after -vmargs.\n" +
+						"The current vmargs are: "+theArgs;
+
+				Shell theShell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+				MessageDialog.openError(theShell, "TOD plugin - Reflex Bridge not found", theMessage);
+			}
+		});
+	}
+		
+
 
 	/**
 	 * Returns the shared instance.
