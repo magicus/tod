@@ -18,18 +18,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.bci.asm;
+package tod.experiments;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
+import tod.impl.bci.asm.ASMInstrumenter;
+import tod.impl.dbgrid.Fixtures;
+import zz.utils.Utils;
 
-
-public class ASMInstrumenterTest
+public class Instrument
 {
-	public static void main(String[] args) throws URISyntaxException
+	public static void main(String[] args) throws FileNotFoundException, IOException
 	{
-//		new ASMLocalSession(new URI("file:/home/gpothier/tmp/ASM"), null, null, null);
-//		new ASMLocalSession(null, null, null, null);
+		String theClassFile = args[0];
+		ASMInstrumenter theInstrumenter = Fixtures.createInstrumenter();
+		theInstrumenter.instrumentClass(
+				"test", 
+				Utils.readInputStream_byte(new FileInputStream(theClassFile)));
 	}
+	
 }

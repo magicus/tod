@@ -122,10 +122,5 @@ public class LocalDispatchTreeStructure extends DispatchTreeStructure
 		{
 			return itsDatabaseNode.flush();
 		}
-		
-		
-		
 	}
-	
-	
 }

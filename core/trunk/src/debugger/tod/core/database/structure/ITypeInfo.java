@@ -20,6 +20,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.structure;
 
+/**
+ * Represents a Java type (class, interface, primitive type).
+ * @author gpothier
+ */
 public interface ITypeInfo extends ILocationInfo
 {
 	/**

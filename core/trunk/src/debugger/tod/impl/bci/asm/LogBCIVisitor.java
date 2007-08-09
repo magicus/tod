@@ -22,6 +22,7 @@ package tod.impl.bci.asm;
 
 import java.util.List;
 
+import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassAdapter;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Label;
@@ -206,6 +207,12 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 					itsMethodId);
 			
 			if (LOG>=2) System.out.println("Processing method "+itsMethodInfo.getName()+itsMethodInfo.getDescriptor());
+		}
+		
+		@Override
+		public void visitAttribute(Attribute aAttr)
+		{
+			super.visitAttribute(aAttr);
 		}
 
 		@Override

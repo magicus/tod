@@ -20,9 +20,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.structure;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import tod.core.BehaviorKind;
-import tod.core.ILocationRegisterer;
-import tod.core.ILocationRegisterer.LineNumberInfo;
 import tod.core.ILocationRegisterer.LocalVariableInfo;
 
 public interface IBehaviorInfo extends IMemberInfo
@@ -63,6 +64,14 @@ public interface IBehaviorInfo extends IMemberInfo
      */
     public int getLineNumber (int aBytecodeIndex);
     
+    /**
+     * Returns the tag associated to the specified bytecode.
+     * @param aType The type of requested tag (one of the constants in {@link BytecodeTagType}).
+     * @param aBytecodeIndex The index of the bytecode.
+     * @return The value of the tag, or null if not found.
+     */
+    public <T> T getTag(BytecodeTagType<T> aType, int aBytecodeIndex);
+    
 	/**
 	 * Returns an array of all valid bytecode locations corresponding
 	 * to the specified line in this method.
@@ -72,7 +81,7 @@ public interface IBehaviorInfo extends IMemberInfo
 	 * available.
 	 */
 	public int[] getBytecodeLocations(int aLine);
-    
+	
     public LocalVariableInfo[] getLocalVariables();
     
     /**
@@ -89,5 +98,47 @@ public interface IBehaviorInfo extends IMemberInfo
      * Indicates if this behavior is static.
      */
     public boolean isStatic();
+
+    /**
+     * An enumeration of all possible bytecode tag types.
+     * Bytecode tags are information associated to each bytecode in a behavior.
+     * @author gpothier
+     */
+    public static class BytecodeTagType<T>
+    {
+    	public static final BytecodeTagType<Integer> SOURCE_POSITION = new BytecodeTagType<Integer>();
+    	public static final BytecodeTagType<BytecodeRole> BYTECODE_ROLE = new BytecodeTagType<BytecodeRole>();
+    }
     
+    /**
+     * Enumerates the different possible roles of a bytecode. For instance, base code
+     * which comes straight from a class source file, or inlined adviced code produced
+     * by a weaver.
+     * @author gpothier
+     */
+    public enum BytecodeRole
+    {
+    	BASE_CODE,
+    	
+    	WOVEN_CODE,
+    	ASPECTJ_CODE(WOVEN_CODE),
+    	
+    	ADVICE_ARG_SETUP(ASPECTJ_CODE),
+    	ADVICE_TEST(ASPECTJ_CODE),
+    	INLINED_ADVICE(ASPECTJ_CODE);
+    	
+    	private final BytecodeRole itsParentRole;
+    	private final List<BytecodeRole> itsChildrenRoles = new ArrayList<BytecodeRole>();
+    	
+    	BytecodeRole()
+		{
+    		itsParentRole = null;
+		}
+    	
+    	BytecodeRole(BytecodeRole aParentRole)
+    	{
+    		itsParentRole = aParentRole;
+    		itsParentRole.itsChildrenRoles.add(this);
+    	}
+    }
 }

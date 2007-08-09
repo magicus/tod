@@ -73,7 +73,7 @@ implements RIDatabaseNode
 	/**
 	 * A database node maintains a local copy of the location
 	 * store for efficiency reasons.
-	 * The registerer (actually the repository) is needed for
+	 * The location store (actually the repository) is needed for
 	 * exceptions processing.
 	 * In a local setup the location store is shared with that of the master.
 	 * Otherwise each node has its own store.

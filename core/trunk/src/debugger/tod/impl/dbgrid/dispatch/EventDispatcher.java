@@ -263,8 +263,12 @@ implements RIDispatcher
 	 */
 	private class ForwardingRegisterer implements ILocationRegisterer
 	{
-		public void registerBehavior(BehaviorKind aBehaviourType, int aBehaviourId, int aTypeId,
-				String aBehaviourName, String aSignature)
+		public void registerBehavior(
+				BehaviorKind aBehaviourType, 
+				int aBehaviourId, 
+				int aTypeId,
+				String aBehaviourName, 
+				String aSignature)
 		{
 			try
 			{
@@ -285,7 +289,9 @@ implements RIDispatcher
 			}
 		}
 
-		public void registerBehaviorAttributes(int aBehaviourId, LineNumberInfo[] aLineNumberTable,
+		public void registerBehaviorAttributes(
+				int aBehaviourId, 
+				LineNumberInfo[] aLineNumberTable,
 				LocalVariableInfo[] aLocalVariableTable)
 		{
 			try

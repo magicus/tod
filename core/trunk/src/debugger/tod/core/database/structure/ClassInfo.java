@@ -25,6 +25,10 @@ import java.util.Map;
 
 import tod.core.ILocationRegisterer;
 
+/**
+ * Default implementation of {@link IClassInfo}.
+ * @author gpothier
+ */
 public class ClassInfo extends TypeInfo implements IClassInfo
 {
 	private ClassInfo itsSupertype;

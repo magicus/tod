@@ -63,11 +63,6 @@ public abstract class EventCollector implements ILogCollector
 		itsLocationsRepository = aLocationsRepository;
 	}
 
-	public ILocationsRepository getLocationsRepository()
-	{
-		return itsLocationsRepository;
-	}
-
 	/**
 	 * Returns the host associated with this collector.
 	 */

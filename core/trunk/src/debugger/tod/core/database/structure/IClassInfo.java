@@ -20,6 +20,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.structure;
 
+/**
+ * Represents a Java class
+ * @author gpothier
+ */
 public interface IClassInfo extends ITypeInfo
 {
 	public IClassInfo getSupertype();

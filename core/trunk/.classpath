@@ -8,12 +8,11 @@
 	<classpathentry kind="src" path="src/testcase"/>
 	<classpathentry exported="true" kind="src" path="/zz.utils"/>
 	<classpathentry kind="lib" path="lib/lucene-core-2.0.0.jar" sourcepath="/lucene/src/java"/>
-	<classpathentry kind="lib" path="lib/asm-commons-3.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/asm-3.0.jar"/>
 	<classpathentry kind="lib" path="lib/javassist.jar"/>
 	<classpathentry kind="lib" path="lib/pom.jar"/>
 	<classpathentry kind="lib" path="lib/reflex-core.jar"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ASM"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

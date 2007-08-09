@@ -22,6 +22,7 @@ package tod.core.bci;
 
 import java.util.List;
 
+import tod.agent.TracedMethods;
 import tod.core.config.TODConfig;
 
 public interface IInstrumenter
@@ -58,7 +59,8 @@ public interface IInstrumenter
 		public final byte[] bytecode;
 		
 		/**
-		 * List of ids of the methods that were instrumented
+		 * List of ids of the methods that were instrumented.
+		 * @see TracedMethods
 		 */
 		public final List<Integer> tracedMethods;
 

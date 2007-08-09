@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.agent.DebugFlags;
+import tod.core.ILocationRegisterer;
 import tod.core.LocationRegisterer;
 import tod.core.config.TODConfig;
 import tod.core.database.event.ILogEvent;
@@ -52,6 +53,7 @@ import tod.impl.dbgrid.dispatch.DatabaseNode;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.impl.dbgrid.test.TestHierarchicalIndex;
+import tod.impl.local.LocalBrowser;
 import zz.utils.bit.BitStruct;
 import zz.utils.bit.IntBitStruct;
 
@@ -432,6 +434,21 @@ public class Fixtures
 		theMonitor.processedMessages(theReceiver.getMessageCount());
 		
 		return theReceiver.getMessageCount();
+	}
+
+	/**
+	 * Creates a functional {@link ASMInstrumenter}.
+	 * @return
+	 */
+	public static ASMInstrumenter createInstrumenter()
+	{
+		ILocationRegisterer theLocationRegistrer = new LocationRegisterer();
+		
+		ASMDebuggerConfig theConfig = new ASMDebuggerConfig(
+				new TODConfig(),
+				theLocationRegistrer);
+
+		return new ASMInstrumenter(theConfig);
 	}
 	
 	private static class MyLogReceiverMonitor implements ILogReceiverMonitor

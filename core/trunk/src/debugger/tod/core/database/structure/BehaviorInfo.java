@@ -21,12 +21,15 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.core.database.structure;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import tod.core.BehaviorKind;
 import tod.core.ILocationRegisterer;
 import tod.core.ILocationRegisterer.LineNumberInfo;
 import tod.core.ILocationRegisterer.LocalVariableInfo;
+import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
 
 
 /**
@@ -40,6 +43,7 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 	private final String itsSignature;
 	private final ITypeInfo[] itsArgumentTypes;
 	private final ITypeInfo itsReturnType;
+	private final Map<BytecodeTagType, Object> itsTagsMap = new HashMap<BytecodeTagType, Object>();
 
 	private ILocationRegisterer.LineNumberInfo[] itsLineNumberTable;
 	private ILocationRegisterer.LocalVariableInfo[] itsLocalVariableTable;
@@ -148,6 +152,12 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
             return theResult;
         }
         else return null;
+	}
+	
+	public <T> T getTag(BytecodeTagType<T> aType, int aBytecodeIndex)
+	{
+		T[] theTags = (T[]) itsTagsMap.get(aType);
+		return theTags != null ? theTags[aBytecodeIndex] : null;
 	}
 
 	public LocalVariableInfo[] getLocalVariables()
