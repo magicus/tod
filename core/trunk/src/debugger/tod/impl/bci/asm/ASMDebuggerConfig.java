@@ -22,9 +22,10 @@ package tod.impl.bci.asm;
 
 import java.io.File;
 
-import tod.core.ILocationRegisterer;
 import tod.core.config.ClassSelector;
 import tod.core.config.TODConfig;
+import tod.core.database.browser.ILocationRegisterer;
+import tod.core.database.structure.IStructureDatabase;
 import tod.tools.parsers.ParseException;
 import tod.tools.parsers.workingset.WorkingSetFactory;
 
@@ -32,7 +33,7 @@ public class ASMDebuggerConfig
 {
 	public static final String PARAM_COLLECTOR_PORT = "collector-port";
 	
-	private final ILocationRegisterer itsLocationRegistrer;
+	private final IStructureDatabase itsStructureDatabase;
 	private ClassSelector itsGlobalSelector;
 	private ClassSelector itsTraceSelector;
 	
@@ -44,9 +45,9 @@ public class ASMDebuggerConfig
 	 */
 	public ASMDebuggerConfig(
 			TODConfig aConfig,
-			ILocationRegisterer aLocationRegistrer)
+			IStructureDatabase aStructureDatabase)
 	{
-		itsLocationRegistrer = aLocationRegistrer;
+		itsStructureDatabase = aStructureDatabase;
 		
 		File theLocationsFile = new File(aConfig.get(TODConfig.INSTRUMENTER_LOCATIONS_FILE));
 		// Setup selectors

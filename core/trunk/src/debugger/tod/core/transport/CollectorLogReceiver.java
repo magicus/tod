@@ -25,9 +25,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import tod.core.ILocationRegisterer;
 import tod.core.ILogCollector;
-import tod.core.database.structure.HostInfo;
+import tod.core.database.browser.ILocationRegisterer;
+import tod.impl.database.structure.standard.HostInfo;
 
 /**
  * A {@link LogReceiver} that reads packets through a 

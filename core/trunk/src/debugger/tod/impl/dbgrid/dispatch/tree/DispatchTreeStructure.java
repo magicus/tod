@@ -243,6 +243,8 @@ public abstract class DispatchTreeStructure
 	 */
 	protected void forwardLocations()
 	{
+		// TODO: do this another way (send only the necessary information,
+		// ie. class and method ids.)
 		ILocationStore theLocationStore = itsMaster.getLocationStore();
 		((EventDispatcher) getRootDispatcher()).forwardLocations(theLocationStore.getLocations());		
 	}

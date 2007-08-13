@@ -1,4 +1,4 @@
- /*
+/*
 TOD - Trace Oriented Debugger.
 Copyright (C) 2006 Guillaume Pothier (gpothier@dcc.uchile.cl)
 
@@ -18,60 +18,116 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.core;
+package tod.core.database.structure;
 
 import java.io.Serializable;
 
 
 /**
- * Interface for objects that collect static code information, such as
- * methods, classes, fields, etc.
+ * Permits to obtain the location info objects that have been registered during a 
+ * {@link tod.core.session.ISession}.
  * @author gpothier
  */
-public interface ILocationRegisterer 
+public interface ILocationsRepository
 {
-	
-	public void registerFile (
-			int aFileId,
-			String aFileName);
-	
-	public void registerType (
-			int aTypeId,
-			String aTypeName,
-			int aSupertypeId,
-			int[] aInterfaceIds);
+	/**
+	 * Retrieves a type given its id.
+	 */
+	public ITypeInfo getType(int aId);
 	
 	/**
-	 * Registers a behavior.
-	 * @param aBehaviourType Type of behavior (constructor, static init, method)
-	 * @param aBehaviourId Id assigned to the behavior
-	 * @param aTypeId Id of the type that declares the behavior
-	 * @param aBehaviourName Name of the behavior
-	 * @param aSignature JVM signature of the method.
+	 * Returns the type object that corresponds to the given name.
 	 */
-	public void registerBehavior (
-			BehaviorKind aBehaviourType,
-			int aBehaviourId,
-			int aTypeId,
-			String aBehaviourName,
-			String aSignature);
+	public ITypeInfo getType(String aName);
+	
+	/**
+	 * Returns all registered types.
+	 */
+	public Iterable<ITypeInfo> getTypes();
+	
+	/**
+	 * Retrieves a field given its id.
+	 */
+	public IFieldInfo getField(int aFieldId);
+	
+	/**
+	 * Returns all registered fields.
+	 */
+	public Iterable<IFieldInfo> getFields();
+	
+	/**
+	 * Retrieves a behavior given its id.
+	 */
+	public IBehaviorInfo getBehavior(int aBehaviorId);
+	
+	/**
+	 * Returns all registered behaviours.
+	 */
+	public Iterable<IBehaviorInfo> getBehaviours();
+	
+	/**
+	 * Returns all registered files.
+	 */
+	public Iterable<String> getFiles();
+	
+	/**
+	 * Returns statistics about registered locations
+	 */
+	public Stats getStats();
+	
+	public static class Stats implements Serializable
+	{
+		private static final long serialVersionUID = -2910977890794945414L;
+		
+		public final int nTypes;
+		public final int nBehaviors;
+		public final int nFields;
+
+		public Stats(int aTypes, int aBehaviors, int aFields)
+		{
+			nTypes = aTypes;
+			nBehaviors = aBehaviors;
+			nFields = aFields;
+		}
+		
+		@Override
+		public String toString()
+		{
+			return String.format(
+					"Location repository stats: %d types, %d behaviors, %d fields",
+					nTypes,
+					nBehaviors,
+					nFields);
+		}
+
+		@Override
+		public int hashCode()
+		{
+			final int PRIME = 31;
+			int result = 1;
+			result = PRIME * result + nBehaviors;
+			result = PRIME * result + nFields;
+			result = PRIME * result + nTypes;
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			final Stats other = (Stats) obj;
+			if (nBehaviors != other.nBehaviors) return false;
+			if (nFields != other.nFields) return false;
+			if (nTypes != other.nTypes) return false;
+			return true;
+		}
+		
+		
+	}
 
 	/**
-	 * Registers additional attributes of a behavior.
-	 * These attributes cannot be registered at the same time the behavior is registered
-	 * because the information might be unstable at that time.
-	 */
-	public void registerBehaviorAttributes (
-			int aBehaviourId,
-			LineNumberInfo[] aLineNumberTable,
-			LocalVariableInfo[] aLocalVariableTable);
-	
-	public void registerField (
-			int aFieldId,
-			int aTypeId,
-			String aFieldName);
-	
-    /**
 	 * Represents an entry of a method's LineNumberTable attribute.
 	 * @see http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#22856 
 	 * @author gpothier
@@ -80,18 +136,18 @@ public interface ILocationRegisterer
 	{
 		private short itsStartPc;
 		private short itsLineNumber;
-
+	
 		public LineNumberInfo(short aStartPc, short aLineNumber)
 		{
 			itsStartPc = aStartPc;
 			itsLineNumber = aLineNumber;
 		}
-
+	
 		public short getLineNumber()
 		{
 			return itsLineNumber;
 		}
-
+	
 		public short getStartPc()
 		{
 			return itsStartPc;
@@ -116,7 +172,7 @@ public interface ILocationRegisterer
 		private String itsVariableName;
 		private String itsVariableTypeName;
 		private short itsIndex;
-
+	
 		public LocalVariableInfo(short aStartPc, short aLength, String aVariableName, String aVariableTypeName,
 				short aIndex)
 		{
@@ -126,7 +182,7 @@ public interface ILocationRegisterer
 			itsVariableTypeName = aVariableTypeName;
 			itsIndex = aIndex;
 		}
-
+	
 		/**
 		 * Index of the local variable's storage in the frame's local variables array
 		 * @return
@@ -135,7 +191,7 @@ public interface ILocationRegisterer
 		{
 			return itsIndex;
 		}
-
+	
 		/**
 		 * Index of first bytecoed where this local variable can be used.
 		 */
@@ -143,7 +199,7 @@ public interface ILocationRegisterer
 		{
 			return itsStartPc;
 		}
-
+	
 		/**
 		 * Length of the bytecode span where this variable can be used.
 		 */
@@ -151,7 +207,7 @@ public interface ILocationRegisterer
 		{
 			return itsLength;
 		}
-
+	
 		/**
 		 * Name of the variable.
 		 */
@@ -159,7 +215,7 @@ public interface ILocationRegisterer
 		{
 			return itsVariableName;
 		}
-
+	
 		/**
 		 * Variable's type name.
 		 */
@@ -167,7 +223,7 @@ public interface ILocationRegisterer
 		{
 			return itsVariableTypeName;
 		}
-
+	
 		/**
 		 * Indicates if this entry matches the local variable at the specified index
 		 * for the specified bytecode position
@@ -178,7 +234,7 @@ public interface ILocationRegisterer
 		{
 			return aIndex == getIndex() && available(aPc);
 		}
-
+	
 		/**
 		 * Indicates if this entry is available at the specified bytecode position.
 		 * @param aPc A position in the bytecode where the variable is used.
@@ -201,4 +257,6 @@ public interface ILocationRegisterer
 		}
 	}
 
+
+	
 }

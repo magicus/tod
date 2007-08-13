@@ -36,8 +36,8 @@ import java.util.concurrent.CountDownLatch;
 
 import tod.Util;
 import tod.core.config.TODConfig;
-import tod.core.database.structure.HostInfo;
 import tod.core.transport.LogReceiver;
+import tod.impl.database.structure.standard.HostInfo;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.NodeException;

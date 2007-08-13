@@ -18,33 +18,52 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.core.database.structure;
+package tod.impl.database.structure.standard;
 
-import tod.core.ILocationRegisterer;
-import tod.core.database.browser.ILocationsRepository;
+import tod.core.database.structure.IArrayTypeInfo;
+import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.ITypeInfo;
 
-/**
- * Aggregates the information a {@link ILogCollector collector}
- * receives about a field.
- * @author gpothier
- */
-public class FieldInfo extends MemberInfo implements IFieldInfo
+public class ArrayTypeInfo extends TypeInfo implements IArrayTypeInfo
 {
-
-	public FieldInfo(int aId, IClassInfo aTypeInfo, String aName)
-	{
-		super(aId, aTypeInfo, aName);
-	}
-
+	private ITypeInfo itsElementType;
+	private int itsDimensions;
 	
-	@Override
-	public String toString()
+	public ArrayTypeInfo(IStructureDatabase aDatabase, ITypeInfo aElementType, int aDimensions)
 	{
-		return "Field ("+getId()+", "+getName()+")";
+		super(aDatabase, -1);
+		itsElementType = aElementType;
+		itsDimensions = aDimensions;
 	}
 
-	public void register(ILocationRegisterer aRegistrer)
+	public int getDimensions()
 	{
-		aRegistrer.registerField(getId(), getType().getId(), getName());
+		return itsDimensions;
 	}
+
+	public ITypeInfo getElementType()
+	{
+		return itsElementType;
+	}
+
+	public int getSize()
+	{
+		return 1;
+	}
+
+	public boolean isArray()
+	{
+		return true;
+	}
+
+	public boolean isPrimitive()
+	{
+		return false;
+	}
+
+	public boolean isVoid()
+	{
+		return false;
+	}
+	
 }

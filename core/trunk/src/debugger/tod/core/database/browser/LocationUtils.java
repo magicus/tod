@@ -25,8 +25,9 @@ import org.objectweb.asm.Type;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.ILocationsRepository;
 import tod.core.database.structure.ITypeInfo;
-import tod.core.database.structure.TypeInfo;
+import tod.impl.database.structure.standard.TypeInfo;
 
 /**
  * Utilities related to {@link ILocationsRepository}

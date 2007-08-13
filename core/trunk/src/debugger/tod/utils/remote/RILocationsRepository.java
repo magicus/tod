@@ -23,12 +23,12 @@ package tod.utils.remote;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import tod.core.database.browser.ILocationsRepository;
-import tod.core.database.browser.ILocationsRepository.Stats;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.ILocationsRepository;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.ILocationsRepository.Stats;
 
 /**
  * A clone of {@link ILocationsRepository} that is used to create a remotely
@@ -48,7 +48,4 @@ public interface RILocationsRepository extends Remote
 	public Iterable<IFieldInfo> getFields() throws RemoteException;
 	public Iterable<String> getFiles() throws RemoteException;
 	public Stats getStats() throws RemoteException;
-	public Iterable<ILocationInfo> getLocations() throws RemoteException;
-	
-
 }

@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import tod.core.ILocationRegisterer.LineNumberInfo;
-import tod.core.ILocationRegisterer.LocalVariableInfo;
+import tod.core.database.browser.ILocationRegisterer.LineNumberInfo;
+import tod.core.database.browser.ILocationRegisterer.LocalVariableInfo;
 import tod.impl.bci.asm.InfoCollector.StoreInfo;
 
 public class ASMMethodInfo

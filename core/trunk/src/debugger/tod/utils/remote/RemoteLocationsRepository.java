@@ -27,13 +27,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import tod.core.database.browser.ILocationsRepository;
-import tod.core.database.browser.ILocationsRepository.Stats;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.ILocationsRepository;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.ILocationsRepository.Stats;
 import zz.utils.Utils;
 
 /**
@@ -137,11 +137,6 @@ implements RILocationsRepository
 		return itsDelegate.getType(aId);
 	}
 
-	public Iterable<ILocationInfo> getLocations() 
-	{
-		return itsDelegate.getLocations();
-	}
-	
 	public ITypeInfo getType(String aName)
 	{
 		return itsDelegate.getType(aName);

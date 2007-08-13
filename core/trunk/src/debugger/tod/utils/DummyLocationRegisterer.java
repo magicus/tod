@@ -21,14 +21,14 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.utils;
 
 import tod.core.BehaviorKind;
-import tod.core.ILocationRegisterer;
+import tod.core.database.browser.ILocationRegisterer;
 import tod.core.database.browser.ILocationStore;
-import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.ILocationsRepository;
 import tod.core.database.structure.ITypeInfo;
-import tod.core.database.structure.TypeInfo;
+import tod.impl.database.structure.standard.TypeInfo;
 
 public class DummyLocationRegisterer 
 implements ILocationStore

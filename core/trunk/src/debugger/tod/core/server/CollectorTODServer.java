@@ -25,13 +25,14 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-import tod.core.ILocationRegisterer;
 import tod.core.LocationRegisterer;
 import tod.core.bci.IInstrumenter;
 import tod.core.config.TODConfig;
-import tod.core.database.structure.HostInfo;
+import tod.core.database.browser.ILocationRegisterer;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.transport.CollectorLogReceiver;
 import tod.core.transport.LogReceiver;
+import tod.impl.database.structure.standard.HostInfo;
 
 /**
  * A TOD server that uses a {@link CollectorLogReceiver}
@@ -46,10 +47,10 @@ public class CollectorTODServer extends TODServer
 	public CollectorTODServer(
 			TODConfig aConfig, 
 			IInstrumenter aInstrumenter, 
-			ILocationRegisterer aLocationRegistrer,
+			IStructureDatabase aStructureDatabase,
 			ICollectorFactory aCollectorFactory)
 	{
-		super(aConfig, aInstrumenter, aLocationRegistrer);
+		super(aConfig, aInstrumenter, aStructureDatabase);
 		itsCollectorFactory = aCollectorFactory;
 	}
 

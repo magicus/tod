@@ -25,10 +25,11 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-import tod.core.ILocationRegisterer;
 import tod.core.bci.IInstrumenter;
 import tod.core.bci.NativeAgentPeer;
 import tod.core.config.TODConfig;
+import tod.core.database.browser.ILocationRegisterer;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.session.ConnectionInfo;
 import tod.core.transport.LogReceiver;
 import zz.utils.net.Server;
@@ -46,7 +47,7 @@ public abstract class TODServer
 	
 	private IInstrumenter itsInstrumenter;
 	
-	private ILocationRegisterer itsLocationRegistrer;
+	private IStructureDatabase itsStructureDatabase;
 	
 	private Map<String, ClientConnection> itsConnections = 
 		new HashMap<String, ClientConnection>();
@@ -59,12 +60,12 @@ public abstract class TODServer
 	public TODServer(
 			TODConfig aConfig, 
 			IInstrumenter aInstrumenter,
-			ILocationRegisterer aRegistrer)
+			IStructureDatabase aStructureDatabase)
 	{
 		itsConfig = aConfig;
 		itsInstrumenter = aInstrumenter;
 		
-		itsLocationRegistrer = aRegistrer;
+		itsStructureDatabase = aStructureDatabase;
 		
 		itsReceiverServer = new LogReceiverServer();
 		itsNativePeerServer = new NativePeerServer();
@@ -75,9 +76,9 @@ public abstract class TODServer
 		itsConfig = aConfig;
 	}
 	
-	public ILocationRegisterer getLocationRegistrer()
+	public IStructureDatabase getStructureDatabase()
 	{
-		return itsLocationRegistrer;
+		return itsStructureDatabase;
 	}
 
 	/**
@@ -172,7 +173,8 @@ public abstract class TODServer
 		try
 		{
 			NativeAgentPeer thePeer = new MyNativePeer(aSocket, itsCurrentHostId++);
-			String theHostName = thePeer.waitHostName();
+			thePeer.waitConfigured();
+			String theHostName = thePeer.getHostName();
 			
 			while(! aSocket.isClosed())
 			{

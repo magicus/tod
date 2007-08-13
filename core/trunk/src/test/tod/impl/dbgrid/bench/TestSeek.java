@@ -24,7 +24,7 @@ import tod.core.database.browser.IEventBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IParentEvent;
 import tod.core.database.structure.IThreadInfo;
-import tod.core.database.structure.ThreadInfo;
+import tod.impl.database.structure.standard.ThreadInfo;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.GridMaster;
 

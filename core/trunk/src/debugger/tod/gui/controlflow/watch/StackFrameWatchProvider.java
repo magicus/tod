@@ -30,9 +30,9 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import tod.Util;
-import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IVariablesInspector;
+import tod.core.database.browser.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IWriteEvent;

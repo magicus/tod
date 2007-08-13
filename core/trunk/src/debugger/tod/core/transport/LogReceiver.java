@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.agent.DebugFlags;
-import tod.core.database.structure.HostInfo;
+import tod.impl.database.structure.standard.HostInfo;
 
 /**
  * Receives log events from a logged application through a socket and

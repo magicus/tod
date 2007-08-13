@@ -25,13 +25,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.util.Map;
 
-import tod.core.BehaviorKind;
 import tod.core.ObjectIdentity;
 import tod.core.Output;
-import static tod.core.ILocationRegisterer.LineNumberInfo;
-import static tod.core.ILocationRegisterer.LocalVariableInfo;
 
 /**
  * Provides the methods used to encode streamed log data.
@@ -329,88 +325,6 @@ public class CollectorPacketWriter
 		itsStream.writeByte(MessageType.CMD_CLEAR);
 	}
 
-	public static void sendRegisterType(
-			DataOutputStream aStream,
-			int aTypeId,
-			String aTypeName,
-			int aSupertypeId, 
-			int[] aInterfaceIds) throws IOException
-	{
-		sendMessageType(aStream, MessageType.REGISTER_CLASS);
-		aStream.writeInt(aTypeId);
-		aStream.writeUTF(aTypeName);
-		aStream.writeInt(aSupertypeId);
-		aStream.writeByte(aInterfaceIds != null ? (byte) aInterfaceIds.length : 0);
-		if (aInterfaceIds != null) for (int theId : aInterfaceIds) aStream.writeInt(theId);
-	}
-	
-    
-    public static void sendRegisterBehavior(
-			DataOutputStream aStream,
-    		BehaviorKind aBehaviourType,
-            int aBehaviourId, 
-            int aTypeId,
-            String aBehaviourName,
-            String aSignature) throws IOException
-    {
-		sendMessageType(aStream, MessageType.REGISTER_BEHAVIOR);
-		aStream.writeByte((byte) aBehaviourType.ordinal());
-		aStream.writeInt(aBehaviourId);
-		aStream.writeInt(aTypeId);
-		aStream.writeUTF(aBehaviourName);
-		aStream.writeUTF(aSignature);
-	}
-	
-    public static void sendRegisterBehaviorAttributes(
-			DataOutputStream aStream,
-    		int aBehaviourId, 
-    		LineNumberInfo[] aLineNumberTable, 
-    		LocalVariableInfo[] aLocalVariableTable) throws IOException
-    {
-		sendMessageType(aStream, MessageType.REGISTER_BEHAVIOR_ATTRIBUTES);
-		aStream.writeInt(aBehaviourId);
-		
-		// Send line number table
-		aStream.writeInt(aLineNumberTable != null ? aLineNumberTable.length : 0);
-		if (aLineNumberTable != null) for (LineNumberInfo theLineNumberInfo : aLineNumberTable)
-		{
-			aStream.writeShort(theLineNumberInfo.getStartPc());
-			aStream.writeShort(theLineNumberInfo.getLineNumber());
-		}
-		
-		// Send local variable table
-		aStream.writeInt(aLocalVariableTable != null ? aLocalVariableTable.length : 0);
-		if (aLocalVariableTable != null) for (LocalVariableInfo theLocalVariableInfo : aLocalVariableTable)
-		{
-			aStream.writeShort(theLocalVariableInfo.getStartPc());
-			aStream.writeShort(theLocalVariableInfo.getLength());
-			aStream.writeUTF(theLocalVariableInfo.getVariableName());
-			aStream.writeUTF(theLocalVariableInfo.getVariableTypeName());
-			aStream.writeShort(theLocalVariableInfo.getIndex());
-		}
-    }
-    
-	public static void sendRegisterField(
-			DataOutputStream aStream,
-			int aFieldId, 
-			int aClassId, 
-			String aFieldName) throws IOException
-	{
-		sendMessageType(aStream, MessageType.REGISTER_FIELD);
-		aStream.writeInt(aFieldId);
-		aStream.writeInt(aClassId);
-		aStream.writeUTF(aFieldName);
-	}
-	
-	public static void sendRegisterFile(
-			DataOutputStream aStream,
-			int aFileId,
-			String aFileName) throws IOException
-	{
-		sendMessageType(aStream, MessageType.REGISTER_FILE);
-		aStream.writeInt(aFileId);
-		aStream.writeUTF(aFileName);
-	}
 	
 	private void sendStd(
 			DataOutputStream aStream,

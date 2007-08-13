@@ -34,14 +34,14 @@ import java.rmi.RemoteException;
 
 import tod.agent.DebugFlags;
 import tod.core.BehaviorKind;
-import tod.core.ILocationRegisterer;
-import tod.core.database.structure.HostInfo;
+import tod.core.database.browser.ILocationRegisterer;
 import tod.core.database.structure.ILocationInfo;
-import tod.core.database.structure.ThreadInfo;
 import tod.core.transport.CollectorPacketReader;
 import tod.core.transport.CollectorPacketWriter;
 import tod.core.transport.LogReceiver;
 import tod.core.transport.MessageType;
+import tod.impl.database.structure.standard.HostInfo;
+import tod.impl.database.structure.standard.ThreadInfo;
 import tod.impl.dbgrid.GridMaster;
 
 public class EventDispatcher extends AbstractEventDispatcher

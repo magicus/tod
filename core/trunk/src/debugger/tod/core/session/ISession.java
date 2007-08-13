@@ -25,8 +25,8 @@ import java.net.URI;
 import javax.swing.JComponent;
 
 import tod.core.config.TODConfig;
-import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.ILocationsRepository;
 
 public interface ISession
 {

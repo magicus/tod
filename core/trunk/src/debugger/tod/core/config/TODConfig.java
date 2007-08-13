@@ -110,6 +110,13 @@ public class TODConfig extends PublicCloneable implements Serializable
 			"Defines the file that contains location data for the debugged application.",
 			HOME+"/tmp/tod/locations.bin");
 	
+	public static final StringItem INSTRUMENTER_CLASSES_DIR = new StringItem(
+			ConfigLevel.DEBUG,
+			"instrumenter-classesDir",
+			"Instrumenter - classes directory",
+			"If defined, a directory where the instrumenter stores instrumented classes.",
+			"");
+	
 	public static final StringItem SCOPE_GLOBAL_FILTER = new StringItem(
 			ConfigLevel.DEBUG,
 			"scope-globalFilter",

@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
@@ -35,6 +34,7 @@ import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.ILocationsRepository.LocalVariableInfo;
 
 public class VariablesInspector implements IVariablesInspector
 {

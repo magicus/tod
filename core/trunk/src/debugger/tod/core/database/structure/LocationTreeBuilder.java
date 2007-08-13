@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import tod.core.database.browser.ILocationsRepository;
 
 
 /**

@@ -26,8 +26,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.rmi.RemoteException;
 
-import tod.core.database.structure.HostInfo;
 import tod.core.transport.LogReceiver;
+import tod.impl.database.structure.standard.HostInfo;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.dispatch.AbstractEventDispatcher;
 import tod.impl.dbgrid.dispatch.DatabaseNode;

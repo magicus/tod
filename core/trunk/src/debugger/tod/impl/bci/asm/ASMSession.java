@@ -27,8 +27,8 @@ import java.net.URI;
 
 import tod.core.ILogCollector;
 import tod.core.bci.NativeAgentPeer;
-import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.ILocationsRepository;
 import tod.core.session.AbstractSession;
 import tod.core.transport.LogReceiver;
 

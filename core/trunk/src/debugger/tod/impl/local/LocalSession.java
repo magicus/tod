@@ -31,7 +31,6 @@ import tod.core.ILogCollector;
 import tod.core.LocationRegisterer;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
-import tod.core.database.structure.HostInfo;
 import tod.core.server.CollectorTODServer;
 import tod.core.server.ICollectorFactory;
 import tod.core.server.TODServer;
@@ -39,6 +38,7 @@ import tod.core.session.AbstractSession;
 import tod.core.session.ConnectionInfo;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
+import tod.impl.database.structure.standard.HostInfo;
 import tod.utils.PrintThroughCollector;
 
 public class LocalSession extends AbstractSession

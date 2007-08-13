@@ -39,7 +39,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 #include <boost/filesystem/convenience.hpp>
 #include <boost/thread/tss.hpp>
 
-// Build: g++ -shared -o ../../libbci-agent.so -I $JAVA_HOME/include/ -I $JAVA_HOME/include/linux/ bci-agent.c
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -60,6 +59,7 @@ const char SET_SKIP_CORE_CLASSES = 81;
 const char SET_CAPTURE_EXCEPTIONS = 83;
 const char SET_HOST_BITS = 84;
 const char SET_WORKING_SET = 85;
+const char SET_STRUCTDB_ID = 86;
 const char CONFIG_DONE = 90;
 
 int VM_STARTED = 0;
@@ -74,6 +74,7 @@ int cfgCaptureExceptions = 0;
 int cfgHostBits = 8; // Number of bits used to encode host id.
 int cfgHostId = 0; // A host id assigned by the TODServer - not official.
 char* cfgWorkingSet = "undefined"; // The current working set of instrumentation
+char* cfgStructDbId = "undefined"; // The id of the structure database used by the peer
 
 
 // System properties configuration data.
@@ -84,7 +85,7 @@ char* propCachePath = NULL;
 char* _propVerbose = NULL;
 int propVerbose = 2;
 
-// directory prefix for the class cache. It is the MD5 sum of the working set.
+// directory prefix for the class cache. It is the MD5 sum of (working set, struct db id).
 char* classCachePrefix = NULL;
 
 // Class and method references
@@ -177,6 +178,7 @@ void enable_event(jvmtiEnv *jvmti, jvmtiEvent event)
 	check_jvmti_error(jvmti, err, "SetEventNotificationMode");
 }
 
+
 void bciConfigure()
 {
 	while(true)
@@ -204,18 +206,26 @@ void bciConfigure()
 				if (propVerbose >= 1) printf("Working set: %s\n", cfgWorkingSet);
 				break;
 
+			case SET_STRUCTDB_ID:
+				cfgStructDbId = readUTF(gSocket);
+				if (propVerbose >= 1) printf("Structure database id.: %s\n", cfgStructDbId);
+				break;
+
 			case CONFIG_DONE:
 				// Check host id vs host bits
 				int mask = (1 << cfgHostBits) - 1;
-				if ((cfgHostId & mask) != cfgHostId) fatal_error("Host id overflow\n");
+				if ((cfgHostId & mask) != cfgHostId) fatal_error("Host id overflow.\n");
 				
-				// Compute md5 sum of working set.
+				// Compute class cache prefix
+				char* sigSrc[strlen(cfgWorkingSet)+strlen(cfgStructDbId)+1];
+				snprintf(sigSrc, sizeof(sigSrc), "%s/%s", cfgWorkingSet, cfgStructDbId);
+				if (propVerbose >= 1) printf("Computing class cache prefix from: %s\n", sigSrc);
+				
 				char md5Buffer[16];
-				char* md5String = (char*) malloc(33);
-				md5_buffer(cfgWorkingSet, strlen(cfgWorkingSet), md5Buffer);
-				md5_sig_to_string(md5Buffer, md5String, 33);
+				classCachePrefix = (char*) malloc(33);
+				md5_buffer(sigSrc, strlen(sigSrc), md5Buffer);
+				md5_sig_to_string(md5Buffer, classCachePrefix, 33);
 
-				classCachePrefix = md5String;
 				if (propVerbose >= 1) printf("Class cache prefix: %s\n", classCachePrefix);
 				
 				if (propVerbose >= 1) printf("Config done.\n");
@@ -277,8 +287,10 @@ void JNICALL cbClassFileLoadHook(
 	jint* new_class_data_len, unsigned char** new_class_data) 
 {
 	if (strncmp("tod/core/", name, 9) == 0 
-		|| strncmp("tod/agent/", name, 10) == 0
-		) return;
+		|| strncmp("tod/agent/", name, 10) == 0)
+	{
+		return;
+	}
 
 
 	if (cfgSkipCoreClasses 

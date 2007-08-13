@@ -34,15 +34,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.agent.DebugFlags;
-import tod.core.ILocationRegisterer;
 import tod.core.LocationRegisterer;
 import tod.core.config.TODConfig;
+import tod.core.database.browser.ILocationRegisterer;
 import tod.core.database.event.ILogEvent;
-import tod.core.database.structure.HostInfo;
 import tod.core.transport.LogReceiver;
 import tod.core.transport.LogReceiver.ILogReceiverMonitor;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
+import tod.impl.database.structure.standard.HostInfo;
 import tod.impl.dbgrid.db.EventDatabase;
 import tod.impl.dbgrid.db.EventList;
 import tod.impl.dbgrid.db.HierarchicalIndex;

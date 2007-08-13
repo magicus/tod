@@ -22,7 +22,6 @@ package tod.core.database.browser;
 
 import java.io.Serializable;
 
-import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
@@ -31,9 +30,11 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.ILocationsRepository;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.core.database.structure.ILocationsRepository.LocalVariableInfo;
 import tod.impl.dbgrid.BidiIterator;
 import zz.utils.ITask;
 

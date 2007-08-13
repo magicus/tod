@@ -22,36 +22,29 @@ package tod.core.transport;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 
 import tod.agent.AgentConfig;
 import tod.agent.DebugFlags;
-import tod.core.BehaviorKind;
-import tod.core.ILocationRegisterer;
 import tod.core.ILogCollector;
 import tod.core.Output;
-import tod.core.ILocationRegisterer.LineNumberInfo;
-import tod.core.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.structure.ObjectId;
 
 public class CollectorPacketReader
 {
 	public static void readPacket(
 			DataInputStream aStream, 
-			ILogCollector aCollector,
-			ILocationRegisterer aLocationRegistrer) throws IOException
+			ILogCollector aCollector) throws IOException
 	{
 		MessageType theCommand = readMessageType(aStream);
-		readPacket(aStream, aCollector, aLocationRegistrer, theCommand);
+		readPacket(aStream, aCollector, theCommand);
 	}
 	
 	public static void readPacket(
 			DataInputStream aStream,
 			ILogCollector aCollector, 
-			ILocationRegisterer aLocationRegistrer,
 			MessageType aCommand) throws IOException
 	{
 		switch (aCommand)
@@ -102,50 +95,8 @@ public class CollectorPacketReader
 				
 
 			default:
-				readPacket(aStream, aLocationRegistrer, aCommand);
+				throw new RuntimeException("Unexpected message: "+aCommand);
 		}
-
-	}
-	
-	public static void readPacket(
-			DataInputStream aStream, 
-			ILocationRegisterer aRegistrer) throws IOException
-	{
-		MessageType theCommand = readMessageType(aStream);
-		readPacket(aStream, aRegistrer, theCommand);
-	}
-	
-	public static void readPacket(
-			DataInputStream aStream,
-			ILocationRegisterer aRegistrer, 
-			MessageType aCommand) throws IOException
-	{
-		switch (aCommand)
-		{
-		case REGISTER_CLASS:
-			readClass(aStream, aRegistrer);
-			break;
-			
-		case REGISTER_BEHAVIOR:
-			readBehaviour(aStream, aRegistrer);
-			break;
-			
-		case REGISTER_BEHAVIOR_ATTRIBUTES:
-			readBehaviourAttributes(aStream, aRegistrer);
-			break;
-			
-		case REGISTER_FIELD:
-			readField(aStream, aRegistrer);
-			break;
-			
-		case REGISTER_FILE:
-			readFile(aStream, aRegistrer);
-			break;
-			
-		default:
-			throw new RuntimeException("Unexpected message: "+aCommand);
-		}
-		
 	}
 	
 	private static MessageType readMessageType (DataInputStream aStream) throws IOException
@@ -418,76 +369,4 @@ public class CollectorPacketReader
         return theBytes;
     }
     
-	public static void readClass(DataInputStream aStream, ILocationRegisterer aRegistrer) throws IOException
-	{
-		int theClassId = aStream.readInt();
-		String theName = aStream.readUTF();
-		
-		int theSupertypeId = aStream.readInt();
-		
-		byte theInterfacesCount = aStream.readByte();
-		int[] theInterfaceIds = theInterfacesCount > 0 ? new int[theInterfacesCount] : null;
-		for (int i = 0; i < theInterfacesCount; i++)
-		{
-			theInterfaceIds[i] = aStream.readInt();
-		}
-		
-		aRegistrer.registerType(theClassId, theName, theSupertypeId, theInterfaceIds);
-	}
-	
-	public static void readFile(DataInputStream aStream, ILocationRegisterer aRegistrer) throws IOException
-	{
-		int theFileId = aStream.readInt();
-		String theName = aStream.readUTF();
-		aRegistrer.registerFile(theFileId, theName);
-	}
-	
-	public static void readBehaviour (DataInputStream aStream, ILocationRegisterer aRegistrer) throws IOException
-	{
-		BehaviorKind theType = BehaviorKind.VALUES[aStream.readByte()];
-		int theId = aStream.readInt();
-		int theClassId = aStream.readInt();
-		String theName = aStream.readUTF();
-		String theSignature = aStream.readUTF();
-		
-        aRegistrer.registerBehavior(theType, theId, theClassId, theName, theSignature);
-	}
-
-	public static void readBehaviourAttributes (DataInputStream aStream, ILocationRegisterer aRegistrer) throws IOException
-	{
-		int theId = aStream.readInt();
-		
-		int theLineNumberTableLength = aStream.readInt();
-		LineNumberInfo[] theLineNumberTable = new LineNumberInfo[theLineNumberTableLength];
-		for (int i = 0; i < theLineNumberTable.length; i++)
-		{
-			short theStartPc = aStream.readShort();
-			short theLineNumber = aStream.readShort();
-			theLineNumberTable[i] = new LineNumberInfo(theStartPc, theLineNumber);
-		}
-		
-		int theLocalVariableTableLength = aStream.readInt();
-		LocalVariableInfo[] theLocalVariableTable = new LocalVariableInfo[theLocalVariableTableLength];
-		for (int i = 0; i < theLocalVariableTable.length; i++)
-		{
-			short theStartPc = aStream.readShort();
-			short theLength = aStream.readShort();
-			String theVariableName = aStream.readUTF();
-			String theVariableTypeName = aStream.readUTF();
-			short theIndex = aStream.readShort();
-			theLocalVariableTable[i] = new LocalVariableInfo(theStartPc, theLength, theVariableName, theVariableTypeName, theIndex);
-		}
-		
-		aRegistrer.registerBehaviorAttributes(theId, theLineNumberTable, theLocalVariableTable);
-	}
-	
-	public static void readField (DataInputStream aStream, ILocationRegisterer aRegistrer) throws IOException
-	{
-		int theId = aStream.readInt();
-		int theClassId = aStream.readInt();
-		String theName = aStream.readUTF();
-		
-		aRegistrer.registerField(theId, theClassId, theName);
-	}
-	
 }

@@ -24,7 +24,7 @@ import static tod.impl.dbgrid.messages.ObjectCodec.getObjectBits;
 import static tod.impl.dbgrid.messages.ObjectCodec.getObjectId;
 import static tod.impl.dbgrid.messages.ObjectCodec.readObject;
 import static tod.impl.dbgrid.messages.ObjectCodec.writeObject;
-import tod.core.ILocationRegisterer.LocalVariableInfo;
+import tod.core.database.browser.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.impl.common.event.LocalVariableWriteEvent;

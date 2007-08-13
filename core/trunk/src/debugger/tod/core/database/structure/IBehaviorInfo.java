@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.core.BehaviorKind;
-import tod.core.ILocationRegisterer.LocalVariableInfo;
+import tod.core.database.structure.ILocationsRepository.LocalVariableInfo;
 
 public interface IBehaviorInfo extends IMemberInfo
 {

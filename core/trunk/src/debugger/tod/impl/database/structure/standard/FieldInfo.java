@@ -18,43 +18,31 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.core.database.structure;
+package tod.impl.database.structure.standard;
 
-import tod.core.ILocationRegisterer;
+import tod.core.ILogCollector;
+import tod.core.database.structure.IClassInfo;
+import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.IStructureDatabase;
 
 /**
- * Information for types that are not known o the instrumenter.
+ * Aggregates the information a {@link ILogCollector collector}
+ * receives about a field.
  * @author gpothier
  */
-public class UnknownTypeInfo extends TypeInfo
+public class FieldInfo extends MemberInfo implements IFieldInfo
 {
-	public UnknownTypeInfo(int aId, String aName)
+
+	public FieldInfo(IStructureDatabase aDatabase, int aId, IClassInfo aTypeInfo, String aName)
 	{
-		super(aId, aName);
+		super(aDatabase, aId, aTypeInfo, aName);
 	}
 
-	public int getSize()
-	{
-		return 1;
-	}
-
-	public boolean isArray()
-	{
-		return false;
-	}
-
-	public boolean isPrimitive()
-	{
-		return false;
-	}
-
-	public boolean isVoid()
-	{
-		return false;
-	}
 	
-	public void register(ILocationRegisterer aRegistrer)
+	@Override
+	public String toString()
 	{
-		throw new UnsupportedOperationException();
+		return "Field ("+getId()+", "+getName()+")";
 	}
+
 }

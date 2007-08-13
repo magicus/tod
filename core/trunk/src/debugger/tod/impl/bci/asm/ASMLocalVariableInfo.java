@@ -22,7 +22,7 @@ package tod.impl.bci.asm;
 
 import org.objectweb.asm.Label;
 
-import tod.core.ILocationRegisterer.LocalVariableInfo;
+import tod.core.database.browser.ILocationRegisterer.LocalVariableInfo;
 
 /**
  * Represents an entry of a method's LocalVariableTable attribute. 

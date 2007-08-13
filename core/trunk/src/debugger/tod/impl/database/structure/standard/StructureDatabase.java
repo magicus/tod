@@ -18,42 +18,53 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.common.event;
+package tod.impl.database.structure.standard;
 
-import tod.core.database.browser.ILogBrowser;
-import tod.core.database.event.ILocalVariableWriteEvent;
-import tod.core.database.structure.ILocationsRepository.LocalVariableInfo;
+import tod.core.database.structure.IClassInfo;
+import tod.core.database.structure.IStructureDatabase;
 
 /**
+ * Standard implementation of {@link IStructureDatabase}
  * @author gpothier
  */
-public class LocalVariableWriteEvent extends Event implements ILocalVariableWriteEvent
+public class StructureDatabase implements IStructureDatabase
 {
-	private LocalVariableInfo itsVariable;
-	private Object itsValue;
+	private final String itsId;
+	private int itsNextFreeClassId;
+	private int itsNextFreeBehaviorId;
+	private int itsNextFreeFieldId;
 	
-	public LocalVariableWriteEvent(ILogBrowser aLogBrowser)
+	public StructureDatabase(String aId)
 	{
-		super(aLogBrowser);
-	}
-
-	public LocalVariableInfo getVariable()
-	{
-		return itsVariable;
-	}
-
-	public void setVariable(LocalVariableInfo aVariable)
-	{
-		itsVariable = aVariable;
-	}
-
-	public Object getValue()
-	{
-		return itsValue;
+		itsId = aId;
 	}
 	
-	public void setValue(Object aValue)
+	public String getId()
 	{
-		itsValue = aValue;
+		return itsId;
 	}
+
+	private synchronized int nextClassId()
+	{
+		return itsNextFreeClassId++;
+	}
+	
+	private synchronized int nextBehaviorId()
+	{
+		return itsNextFreeBehaviorId++;
+	}
+	
+	private synchronized int nextFieldId()
+	{
+		return itsNextFreeFieldId++;
+	}
+	
+	
+	
+	public ClassInfo createClass(String aName)
+	{
+		ClassInfo theClass = new ClassInfo(this, nextClassId(), aName);
+		return theClass;
+	}
+
 }

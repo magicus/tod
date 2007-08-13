@@ -20,7 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.event;
 
-import tod.core.ILocationRegisterer;
+import tod.core.database.structure.ILocationsRepository.LocalVariableInfo;
 
 /**
  * @author gpothier
@@ -30,7 +30,7 @@ public interface ILocalVariableWriteEvent extends ICallerSideEvent, IWriteEvent
 	/**
 	 * The written variable
 	 */
-	public ILocationRegisterer.LocalVariableInfo getVariable();
+	public LocalVariableInfo getVariable();
 	
 	/**
 	 * Returns the value written to the local variable.

@@ -28,14 +28,14 @@ import java.util.Map;
 import org.objectweb.asm.Type;
 
 import tod.core.ILogCollector;
-import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.browser.LocationUtils;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.ILocationsRepository;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
-import tod.core.database.structure.ThreadInfo;
+import tod.impl.database.structure.standard.ThreadInfo;
 import zz.utils.Utils;
 
 /**

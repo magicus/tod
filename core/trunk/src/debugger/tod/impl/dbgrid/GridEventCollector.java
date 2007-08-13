@@ -21,8 +21,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid;
 
 import tod.core.Output;
-import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.ILocationsRepository;
 import tod.impl.common.EventCollector;
 import tod.impl.dbgrid.dispatch.AbstractEventDispatcher;
 import tod.impl.dbgrid.dispatch.DatabaseNode;

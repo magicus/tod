@@ -18,11 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.core.database.structure;
+package tod.impl.database.structure.standard;
 
 import java.io.Serializable;
 
-import tod.core.database.browser.ILocationsRepository;
+import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.IStructureDatabase;
+
 import zz.utils.PublicCloneable;
 
 /**
@@ -32,16 +34,19 @@ import zz.utils.PublicCloneable;
 public abstract class LocationInfo extends PublicCloneable 
 implements ILocationInfo, Serializable
 {
+	private final IStructureDatabase itsDatabase;
 	private final int itsId;
 	private String itsName;
 	
-	public LocationInfo(int aId)
+	public LocationInfo(IStructureDatabase aDatabase, int aId)
 	{
+		itsDatabase = aDatabase;
 		itsId = aId;
 	}
 
-	public LocationInfo(int aId, String aName)
+	public LocationInfo(IStructureDatabase aDatabase, int aId, String aName)
 	{
+		itsDatabase = aDatabase;
 		itsId = aId;
 		setName(aName);
 	}
@@ -56,6 +61,11 @@ implements ILocationInfo, Serializable
 		return itsName;
 	}
 
+	public IStructureDatabase getDatabase()
+	{
+		return itsDatabase;
+	}
+	
 	/**
 	 * This is used for defered type registration.
 	 */ 

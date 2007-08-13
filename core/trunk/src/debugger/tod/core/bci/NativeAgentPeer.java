@@ -28,10 +28,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.ServerSocket;
 import java.net.Socket;
 
-import sun.management.FileSystem;
 import tod.agent.AgentConfig;
 import tod.core.bci.IInstrumenter.InstrumentedClass;
 import tod.core.config.TODConfig;
@@ -55,14 +53,19 @@ public abstract class NativeAgentPeer extends SocketThread
 	public static final byte SET_CAPTURE_EXCEPTIONS = 83;
 	public static final byte SET_HOST_BITS = 84;
 	public static final byte SET_WORKING_SET = 85;
+	public static final byte SET_STRUCTDB_ID = 86;
 
 	public static final byte CONFIG_DONE = 90;
 	
 	private final TODConfig itsConfig;
 	
-	private final File itsStoreClassesDir;
 	private final IInstrumenter itsInstrumenter;
 	
+	/**
+	 * This flags is set to true when the connection to the agent is entirely
+	 * set up.
+	 * @see #waitConfigured()
+	 */
 	private boolean itsConfigured = false;
 	
 	/**
@@ -76,7 +79,19 @@ public abstract class NativeAgentPeer extends SocketThread
 	 * host id; it is used only to differentiate object ids from several hosts. 
 	 */
 	private int itsHostId;
-
+	
+	/**
+	 * Id of the structure database.
+	 */
+	private String itsStructureDatabaseId;
+	
+	/**
+	 * Directory where instrumented classes are stored, or null if 
+	 * classes should not be stored.
+	 * Class storage is for debugging only.
+	 */
+	private File itsStoreClassesDir;
+	
 
 	/**
 	 * Starts a peer that uses an already connected socket.
@@ -84,16 +99,21 @@ public abstract class NativeAgentPeer extends SocketThread
 	public NativeAgentPeer(
 			TODConfig aConfig,
 			Socket aSocket,
-			File aStoreClassesDir,
+			String aStructureDatabaseId,
 			IInstrumenter aInstrumenter,
 			int aHostId)
 	{
 		super (aSocket);
 		assert aConfig != null;
 		itsConfig = aConfig;
-		itsStoreClassesDir = aStoreClassesDir;
+		itsStructureDatabaseId = aStructureDatabaseId;
 		itsInstrumenter = aInstrumenter;
 		itsHostId = aHostId;
+		
+		String theStoreClassesDir = itsConfig.get(TODConfig.INSTRUMENTER_CLASSES_DIR);
+		itsStoreClassesDir = theStoreClassesDir != null && theStoreClassesDir.length() > 0 ?
+				new File(theStoreClassesDir)
+				: null;
 		
 		// Check that the cache path we pass to the agent exists.
 		File theFile = new File(itsConfig.get(TODConfig.AGENT_CACHE_PATH));
@@ -103,28 +123,29 @@ public abstract class NativeAgentPeer extends SocketThread
 	/**
 	 * Returns the name of the currently connected host, or null
 	 * if there is no connected host.
+	 * This method should be called only after the connection is set up
+	 * (see {@link #waitConfigured()}).
 	 */
 	public String getHostName()
 	{
 		return itsHostName;
 	}
 	
-	private synchronized void setHostName(String aHostName)
+	private synchronized void setConfigured()
 	{
-		itsHostName = aHostName;
+		itsConfigured = true;
 		notifyAll();
 	}
 	
 	/**
-	 * Waits until the host name is available, and returns it.
-	 * See {@link #getHostName()}
+	 * Waits until the connection is completely set up.
+	 * After this method returns the host name ({@link #getHostName()})
 	 */
-	public synchronized String waitHostName()
+	public synchronized void waitConfigured()
 	{
 		try
 		{
-			while (itsHostName == null) wait();
-			return itsHostName;
+			while (! itsConfigured) wait();
 		}
 		catch (InterruptedException e)
 		{
@@ -142,7 +163,7 @@ public abstract class NativeAgentPeer extends SocketThread
 		if (! itsConfigured)
 		{
 			processConfig(theInputStream, theOutputStream);
-			itsConfigured = true;
+			setConfigured();
 		}
 		
 		int theCommand = theInputStream.readByte();
@@ -152,7 +173,8 @@ public abstract class NativeAgentPeer extends SocketThread
 	@Override
 	protected void disconnected()
 	{
-		setHostName(null);
+		itsHostName = null;
+		setConfigured();
 	}
 	
 	protected final void processCommand (
@@ -166,8 +188,7 @@ public abstract class NativeAgentPeer extends SocketThread
 			processInstrumentClassCommand(
 					itsInstrumenter, 
 					aInputStream, 
-					aOutputStream, 
-					itsStoreClassesDir);
+					aOutputStream);
 			
 			break;
 			
@@ -188,13 +209,12 @@ public abstract class NativeAgentPeer extends SocketThread
 			DataInputStream aInputStream, 
 			DataOutputStream aOutputStream) throws IOException
 	{
-		DataInputStream theStream = new DataInputStream(aInputStream);
+		DataInputStream theInStream = new DataInputStream(aInputStream);
 		DataOutputStream theOutStream = new DataOutputStream(aOutputStream);
 		
 		// Read host name
-		String theHostName = theStream.readUTF();
-		setHostName(theHostName);
-		System.out.println("[NativeAgentPeer] Received host name: '"+theHostName+"'");
+		itsHostName = theInStream.readUTF();
+		System.out.println("[NativeAgentPeer] Received host name: '"+itsHostName+"'");
 		
 		// Send host id
 		theOutStream.writeInt(itsHostId);
@@ -216,6 +236,9 @@ public abstract class NativeAgentPeer extends SocketThread
 		theOutStream.writeByte(SET_WORKING_SET);
 		theOutStream.writeUTF(theWorkingSet);
 		
+		theOutStream.writeByte(SET_STRUCTDB_ID);
+		theOutStream.writeUTF(itsStructureDatabaseId);
+		
 		theOutStream.writeByte(CONFIG_DONE);
 		theOutStream.flush();
 	}
@@ -234,11 +257,10 @@ public abstract class NativeAgentPeer extends SocketThread
 	 * @param aStoreClassesDir If not null, instrumented classes will be stored in
 	 * the directory denoted by this file.
 	 */
-	public static void processInstrumentClassCommand(
+	public void processInstrumentClassCommand(
 			IInstrumenter aInstrumenter,
 			DataInputStream aInputStream, 
-			DataOutputStream aOutputStream,
-			File aStoreClassesDir) throws IOException
+			DataOutputStream aOutputStream) throws IOException
 	{
 		String theClassName = aInputStream.readUTF();
 		int theLength = aInputStream.readInt();
@@ -251,9 +273,9 @@ public abstract class NativeAgentPeer extends SocketThread
 		{
 			System.out.println("Instrumented");
 			
-			if (aStoreClassesDir != null)
+			if (itsStoreClassesDir != null)
 			{
-				File theFile = new File (aStoreClassesDir, theClassName+".class");
+				File theFile = new File (itsStoreClassesDir, theClassName+".class");
 				theFile.getParentFile().mkdirs();
 				theFile.createNewFile();
 				FileOutputStream theFileOutputStream = new FileOutputStream(theFile);

@@ -33,8 +33,7 @@ import java.util.Set;
 import org.objectweb.asm.Type;
 
 import tod.core.BehaviorKind;
-import tod.core.ILocationRegisterer;
-import tod.core.bci.LocationPoolPersister;
+import tod.core.database.browser.ILocationRegisterer;
 import tod.core.database.structure.ILocationInfo;
 
 public class ASMLocationPool

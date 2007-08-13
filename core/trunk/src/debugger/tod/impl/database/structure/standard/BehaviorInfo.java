@@ -18,18 +18,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.core.database.structure;
+package tod.impl.database.structure.standard;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import tod.core.BehaviorKind;
-import tod.core.ILocationRegisterer;
-import tod.core.ILocationRegisterer.LineNumberInfo;
-import tod.core.ILocationRegisterer.LocalVariableInfo;
-import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.ILocationsRepository.LineNumberInfo;
+import tod.core.database.structure.ILocationsRepository.LocalVariableInfo;
 
 
 /**
@@ -45,10 +44,11 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 	private final ITypeInfo itsReturnType;
 	private final Map<BytecodeTagType, Object> itsTagsMap = new HashMap<BytecodeTagType, Object>();
 
-	private ILocationRegisterer.LineNumberInfo[] itsLineNumberTable;
-	private ILocationRegisterer.LocalVariableInfo[] itsLocalVariableTable;
+	private LineNumberInfo[] itsLineNumberTable;
+	private LocalVariableInfo[] itsLocalVariableTable;
 
 	public BehaviorInfo(
+			IStructureDatabase aDatabase, 
 			BehaviorKind aBehaviourKind, 
 			int aId, 
 			ClassInfo aType, 
@@ -56,10 +56,10 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 			String aSignature,
 			ITypeInfo[] aArgumentTypes,
 			ITypeInfo aReturnType,
-			ILocationRegisterer.LineNumberInfo[] aLineNumberTable,
-			ILocationRegisterer.LocalVariableInfo[] aLocalVariableTable)
+			LineNumberInfo[] aLineNumberTable,
+			LocalVariableInfo[] aLocalVariableTable)
 	{
-		super(aId, aType, aName);
+		super(aDatabase, aId, aType, aName);
 		itsSignature = aSignature;
 		itsArgumentTypes = aArgumentTypes;
 		itsReturnType = aReturnType;
@@ -69,8 +69,8 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 	}
 	
 	public void setAttributes (
-			ILocationRegisterer.LineNumberInfo[] aLineNumberTable,
-			ILocationRegisterer.LocalVariableInfo[] aLocalVariableTable)
+			LineNumberInfo[] aLineNumberTable,
+			LocalVariableInfo[] aLocalVariableTable)
 	{
 		itsLineNumberTable = aLineNumberTable;
 		itsLocalVariableTable = aLocalVariableTable;
@@ -188,9 +188,4 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 		return "Behavior ("+getId()+", "+getName()+") of "+getType();
 	}
 	
-	public void register(ILocationRegisterer aRegistrer)
-	{
-		aRegistrer.registerBehavior(getBehaviourKind(), getId(), getType().getId(), getName(), itsSignature);
-		aRegistrer.registerBehaviorAttributes(getId(), itsLineNumberTable, itsLocalVariableTable);
-	}
 }

@@ -39,7 +39,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
-import tod.core.database.browser.ILocationsRepository;
+import tod.core.database.structure.ILocationsRepository;
 import tod.core.database.structure.LocationTreeBuilder;
 import tod.core.database.structure.LocationTreeBuilder.Node;
 

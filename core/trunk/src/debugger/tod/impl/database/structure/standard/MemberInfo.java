@@ -18,31 +18,30 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.core.database.structure;
+package tod.impl.database.structure.standard;
 
-import tod.core.database.browser.ILocationsRepository;
+import tod.core.database.structure.IClassInfo;
+import tod.core.database.structure.IMemberInfo;
+import tod.core.database.structure.IStructureDatabase;
+
 
 /**
- * Description of a type. This is an abstract class;
- * there are concrete subclasses for class, interface,
- * primitive type and array type.
+ * Aggregates the information a {@link ILogCollector collector}
+ * receives about a type member (method, constructor, field).
  * @author gpothier
  */
-public abstract class TypeInfo extends LocationInfo implements ITypeInfo
+public abstract class MemberInfo extends LocationInfo implements IMemberInfo
 {
-	public TypeInfo(int aId, String aName)
+	private IClassInfo itsType;
+	
+	public MemberInfo(IStructureDatabase aDatabase, int aId, IClassInfo aTypeInfo, String aName)
 	{
-		super(aId, aName);
-	}
-
-	public TypeInfo(int aId)
-	{
-		super(aId);
+		super(aDatabase, aId, aName);
+		itsType = aTypeInfo;
 	}
 	
-	@Override
-	public String toString()
+	public IClassInfo getType()
 	{
-		return "Type ("+getId()+", "+getName()+")";
-	}
+		return itsType;
+	}	
 }

@@ -26,19 +26,20 @@ import java.util.List;
 import java.util.Map;
 
 import tod.Util;
+import tod.core.database.browser.ILocationRegisterer;
 import tod.core.database.browser.ILocationStore;
 import tod.core.database.browser.LocationUtils;
-import tod.core.database.structure.ArrayTypeInfo;
-import tod.core.database.structure.BehaviorInfo;
-import tod.core.database.structure.ClassInfo;
-import tod.core.database.structure.FieldInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ITypeInfo;
-import tod.core.database.structure.PrimitiveTypeInfo;
-import tod.core.database.structure.TypeInfo;
-import tod.core.database.structure.UnknownTypeInfo;
+import tod.impl.database.structure.standard.ArrayTypeInfo;
+import tod.impl.database.structure.standard.BehaviorInfo;
+import tod.impl.database.structure.standard.ClassInfo;
+import tod.impl.database.structure.standard.FieldInfo;
+import tod.impl.database.structure.standard.PrimitiveTypeInfo;
+import tod.impl.database.structure.standard.TypeInfo;
+import tod.impl.database.structure.standard.UnknownTypeInfo;
 /**
  * This class permits to register location ids.
  * @author gpothier

@@ -18,31 +18,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.core.database.structure;
+package tod.impl.database.structure.standard;
 
-import tod.core.ILocationRegisterer;
-import tod.core.database.browser.ILocationsRepository;
+import tod.core.database.structure.IStructureDatabase;
 
-public class ArrayTypeInfo extends TypeInfo implements IArrayTypeInfo
+/**
+ * Information for types that are not known o the instrumenter.
+ * @author gpothier
+ */
+public class UnknownTypeInfo extends TypeInfo
 {
-	private ITypeInfo itsElementType;
-	private int itsDimensions;
-	
-	public ArrayTypeInfo(ITypeInfo aElementType, int aDimensions)
+	public UnknownTypeInfo(IStructureDatabase aDatabase, int aId, String aName)
 	{
-		super(-1);
-		itsElementType = aElementType;
-		itsDimensions = aDimensions;
-	}
-
-	public int getDimensions()
-	{
-		return itsDimensions;
-	}
-
-	public ITypeInfo getElementType()
-	{
-		return itsElementType;
+		super(aDatabase, aId, aName);
 	}
 
 	public int getSize()
@@ -52,7 +40,7 @@ public class ArrayTypeInfo extends TypeInfo implements IArrayTypeInfo
 
 	public boolean isArray()
 	{
-		return true;
+		return false;
 	}
 
 	public boolean isPrimitive()
@@ -64,10 +52,4 @@ public class ArrayTypeInfo extends TypeInfo implements IArrayTypeInfo
 	{
 		return false;
 	}
-	
-	public void register(ILocationRegisterer aRegistrer)
-	{
-		throw new UnsupportedOperationException();
-	}
-	
 }

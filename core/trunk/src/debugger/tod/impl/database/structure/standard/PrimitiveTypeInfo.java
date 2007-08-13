@@ -18,10 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.core.database.structure;
+package tod.impl.database.structure.standard;
 
-import tod.core.ILocationRegisterer;
-import tod.core.database.browser.ILocationsRepository;
+import tod.core.database.structure.IPrimitiveTypeInfo;
 
 public class PrimitiveTypeInfo extends TypeInfo implements IPrimitiveTypeInfo
 {
@@ -43,7 +42,7 @@ public class PrimitiveTypeInfo extends TypeInfo implements IPrimitiveTypeInfo
 
 	public PrimitiveTypeInfo(String aName, int aSize)
 	{
-		super(-1, aName);
+		super(null, -1, aName);
 		itsSize = aSize;
 	}
 
@@ -65,10 +64,5 @@ public class PrimitiveTypeInfo extends TypeInfo implements IPrimitiveTypeInfo
 	public boolean isVoid()
 	{
 		return "void".equals(getName());
-	}
-	
-	public void register(ILocationRegisterer aRegistrer)
-	{
-		throw new UnsupportedOperationException();
 	}
 }

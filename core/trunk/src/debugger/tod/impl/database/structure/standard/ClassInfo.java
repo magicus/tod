@@ -18,12 +18,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.core.database.structure;
+package tod.impl.database.structure.standard;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import tod.core.ILocationRegisterer;
+import tod.core.database.browser.ILocationRegisterer;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IClassInfo;
+import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.ITypeInfo;
 
 /**
  * Default implementation of {@link IClassInfo}.
@@ -37,27 +42,49 @@ public class ClassInfo extends TypeInfo implements IClassInfo
 	private Map<String, IFieldInfo> itsFieldsMap = new HashMap<String, IFieldInfo>();
 	private Map<String, IBehaviorInfo> itsBehaviorsMap = new HashMap<String, IBehaviorInfo>();
 	
+	/**
+	 * Whether this class info can be disposed.
+	 * At the start of the system,
+	 * and when all debugged VMs are disconnected from the database,
+	 * every class is marked disposable.
+	 * Once operation starts, classes are marked not disposable
+	 * as they are used or added to the database. This permits to free the space
+	 * used by old versions of classes that are not used anymore, while preserving
+	 * various versions when classes are redefined at runtime.
+	 */
+	private boolean itsDisposable = false;
 
-	public ClassInfo(int aId)
+	public ClassInfo(IStructureDatabase aDatabase, int aId)
 	{
-		super(aId);
+		super(aDatabase, aId);
 	}
 
-	public ClassInfo(int aId, String aName)
+	public ClassInfo(IStructureDatabase aDatabase, int aId, String aName)
 	{
-		this (aId, aName, null, null);
+		this (aDatabase, aId, aName, null, null);
 	}
 	
 	public ClassInfo(
+			IStructureDatabase aDatabase, 
 			int aId, 
 			String aName, 
 			ClassInfo aSupertype,
 			ClassInfo[] aInterfaces)
 	{
-		super(aId, aName);
+		super(aDatabase, aId, aName);
 		
 		itsSupertype = aSupertype;
 		itsInterfaces = aInterfaces;
+	}
+
+	public boolean isDisposable()
+	{
+		return itsDisposable;
+	}
+
+	public void setDisposable(boolean aDisposable)
+	{
+		itsDisposable = aDisposable;
 	}
 
 	/**
@@ -158,26 +185,6 @@ public class ClassInfo extends TypeInfo implements IClassInfo
 	public String toString()
 	{
 		return "Class ("+getId()+", "+getName()+")";
-	}
-	
-	public void register(ILocationRegisterer aRegistrer)
-	{
-		int theInterfaceCount = getInterfaces() != null ?
-				getInterfaces().length
-				: 0;
-				
-		int[] theInterfaceIds = new int[theInterfaceCount];
-				    
-		for(int i=0;i<theInterfaceCount;i++)
-		{
-			theInterfaceIds[i] = getInterfaces()[i].getId();
-		}
-		
-		aRegistrer.registerType(
-				getId(), 
-				getName(), 
-				getSupertype() != null ? getSupertype().getId() : 0, 
-				theInterfaceIds);
 	}
 	
 	

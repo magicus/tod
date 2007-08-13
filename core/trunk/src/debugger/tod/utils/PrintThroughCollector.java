@@ -26,10 +26,10 @@ import tod.agent.AgentUtils;
 import tod.agent.DebugFlags;
 import tod.core.ILogCollector;
 import tod.core.Output;
-import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.ILocationsRepository;
 import zz.utils.Utils;
 
 /**
