@@ -47,18 +47,18 @@ import org.objectweb.asm.Type;
 
 import tod.Util;
 import tod.agent.ConfigUtils;
-import tod.core.database.browser.ILocationsRepository;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ICallerSideEvent;
 import tod.core.database.event.ILogEvent;
-import tod.core.database.structure.ArrayTypeInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.ILocationsRepository;
 import tod.core.database.structure.ITypeInfo;
-import tod.core.database.structure.PrimitiveTypeInfo;
 import tod.core.session.ISession;
+import tod.impl.database.structure.standard.ArrayTypeInfo;
+import tod.impl.database.structure.standard.PrimitiveTypeInfo;
 import tod.plugin.views.AbstractNavigatorView;
 import tod.plugin.views.TraceNavigatorView;
 
