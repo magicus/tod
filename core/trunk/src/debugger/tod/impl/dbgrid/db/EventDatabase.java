@@ -197,13 +197,6 @@ public class EventDatabase implements ReorderingBufferListener
 	public void eventDropped()
 	{
 		System.err.println("WARNING: out of order event - dropped");
-//		System.err.println("****************** WARNING ********************\n" +
-//				"**********************************************\n" +
-////throw new RuntimeException(
-//		"Out of order event: "+theTimestamp+"/"+itsLastProcessedTimestamp
-//		+" (#"+itsProcessedEventsCount+")"
-//		+" (buffer size: "+itsEventBuffer.getCapacity()+")");
-		
 		itsDroppedEvents++;
 	}
 	

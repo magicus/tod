@@ -197,7 +197,7 @@ public class TODUtils
 	public static BehaviorInfo createBehaviorInfo(IBehaviorInfo aBehavior)
 	{
 		return new BehaviorInfo(
-				aBehavior.getClass().getName(),
+				aBehavior.getType().getName(),
 				aBehavior.getName(),
 				aBehavior.getSignature(),
 				aBehavior.getId());

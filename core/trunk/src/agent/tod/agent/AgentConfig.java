@@ -57,7 +57,7 @@ public class AgentConfig
 	/**
 	 * Number of bits to shift timestamp values.
 	 */
-	public static final int TIMESTAMP_ADJUST_SHIFT = 8;
+	public static final int TIMESTAMP_ADJUST_SHIFT = 4;
 	
 	/**
 	 * Number of bits of original timestamp values that are considered inaccurate.
