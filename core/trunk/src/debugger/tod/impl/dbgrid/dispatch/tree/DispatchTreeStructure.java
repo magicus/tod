@@ -239,23 +239,11 @@ public abstract class DispatchTreeStructure
 	}
 	
 	/**
-	 * Forwards already-registered locations to connected nodes.
-	 */
-	protected void forwardLocations()
-	{
-		// TODO: do this another way (send only the necessary information,
-		// ie. class and method ids.)
-		ILocationStore theLocationStore = itsMaster.getLocationStore();
-		((EventDispatcher) getRootDispatcher()).forwardLocations(theLocationStore.getLocations());		
-	}
-	
-	/**
 	 * Waits until all nodes and dispatchers are properly connected.
 	 */
 	public final void waitReady()
 	{
 		waitReady0();
-		forwardLocations();
 	}
 	
 	protected abstract void waitReady0();

@@ -24,28 +24,30 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
-import tod.core.database.structure.ILocationInfo;
-import tod.core.database.structure.ILocationsRepository;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
-import tod.core.database.structure.ILocationsRepository.Stats;
+import tod.core.database.structure.IStructureDatabase.Stats;
 
 /**
- * A clone of {@link ILocationsRepository} that is used to create a remotely
+ * A clone of {@link IStructureDatabase} that is used to create a remotely
  * accessible locations repository.
  * @author gpothier
  */
-public interface RILocationsRepository extends Remote
+public interface RIStructureDatabase extends Remote
 {
-	public void addListener(RILocationsRepositoryListener aListener) throws RemoteException;
+	public void addListener(RIStructureDatabaseListener aListener) throws RemoteException;
 	
-	public ITypeInfo getType(int aId) throws RemoteException;
-	public ITypeInfo getType(String aName) throws RemoteException;
-	public IFieldInfo getField(int aFieldId) throws RemoteException;
-	public IBehaviorInfo getBehavior(int aBehaviorId) throws RemoteException;
-	public Iterable<ITypeInfo> getTypes() throws RemoteException;
-	public Iterable<IBehaviorInfo> getBehaviours() throws RemoteException;
-	public Iterable<IFieldInfo> getFields() throws RemoteException;
-	public Iterable<String> getFiles() throws RemoteException;
+	public String getId() throws RemoteException;
+	public IClassInfo getClass(String aName, String aChecksum, boolean aFailIfAbsent) throws RemoteException;
+	public IClassInfo[] getClasses(String aName) throws RemoteException;
+	public IClassInfo[] getClasses() throws RemoteException;
+	public IClassInfo getClass(String aName, boolean aFailIfAbsent) throws RemoteException;
+	public IClassInfo getClass(int aId, boolean aFailIfAbsent) throws RemoteException;
+	public ITypeInfo getType(String aName, boolean aFailIfAbsent) throws RemoteException;
+	public IFieldInfo getField(int aId, boolean aFailIfAbsent) throws RemoteException;
+	public IBehaviorInfo getBehavior(int aId, boolean aFailIfAbsent) throws RemoteException;
+	public IClassInfo getNewClass(String aName) throws RemoteException;
 	public Stats getStats() throws RemoteException;
 }

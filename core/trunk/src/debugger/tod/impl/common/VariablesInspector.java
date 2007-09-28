@@ -34,7 +34,7 @@ import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
-import tod.core.database.structure.ILocationsRepository.LocalVariableInfo;
+import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 
 public class VariablesInspector implements IVariablesInspector
 {

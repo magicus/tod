@@ -30,7 +30,6 @@ import java.util.List;
 import javax.swing.JComponent;
 
 import tod.core.ILogCollector;
-import tod.core.LocationRegisterer;
 import tod.core.Output;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
@@ -38,7 +37,6 @@ import tod.core.server.CollectorTODServer;
 import tod.core.server.ICollectorFactory;
 import tod.core.server.TODServer;
 import tod.core.session.AbstractSession;
-import tod.core.session.ConnectionInfo;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
 import tod.impl.local.LocalBrowser;
@@ -50,7 +48,7 @@ import tod.impl.local.LocalBrowser;
 public class CountTODServer extends AbstractSession
 {
 	private TODServer itsServer;
-	private DummyLocationRegisterer itsLocationRegistrer;
+	private DummyStructureDatabase itsStructureDatabase;
 	
 	private LocalBrowser itsBrowser;
 	private List<CountCollector> itsCollectors = new ArrayList<CountCollector>();
@@ -58,19 +56,19 @@ public class CountTODServer extends AbstractSession
 	public CountTODServer(TODConfig aConfig, URI aUri)
 	{
 		super(aUri, aConfig);
-		itsLocationRegistrer = new DummyLocationRegisterer();
-		itsBrowser = new LocalBrowser(itsLocationRegistrer);
+		itsStructureDatabase = new DummyStructureDatabase();
+		itsBrowser = new LocalBrowser(itsStructureDatabase);
 		
-		ASMDebuggerConfig theConfig = new ASMDebuggerConfig(
-				aConfig,
-				itsLocationRegistrer);
+		ASMDebuggerConfig theConfig = new ASMDebuggerConfig(aConfig);
 
-		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theConfig);
+		ASMInstrumenter theInstrumenter = new ASMInstrumenter(
+				itsStructureDatabase, 
+				theConfig);
 		
 		itsServer = new CollectorTODServer(
 				aConfig,
 				theInstrumenter,
-				new LocationRegisterer(),
+				itsStructureDatabase,
 				new MyCollectorFactory())
 		{
 			@Override

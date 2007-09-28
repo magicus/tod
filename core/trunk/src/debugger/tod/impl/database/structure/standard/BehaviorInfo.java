@@ -25,10 +25,9 @@ import java.util.Map;
 
 import tod.core.BehaviorKind;
 import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
-import tod.core.database.structure.ILocationsRepository.LineNumberInfo;
-import tod.core.database.structure.ILocationsRepository.LocalVariableInfo;
+import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
+import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 
 
 /**
@@ -37,7 +36,10 @@ import tod.core.database.structure.ILocationsRepository.LocalVariableInfo;
  */
 public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 {
-	private final BehaviorKind itsBehaviourKind;
+	private static final long serialVersionUID = 8645425455286128491L;
+	
+	private BehaviorKind itsBehaviourKind;
+	private HasTrace itsHasTrace = HasTrace.UNKNOWN;
 	
 	private final String itsSignature;
 	private final ITypeInfo[] itsArgumentTypes;
@@ -48,24 +50,30 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 	private LocalVariableInfo[] itsLocalVariableTable;
 
 	public BehaviorInfo(
-			IStructureDatabase aDatabase, 
-			BehaviorKind aBehaviourKind, 
+			StructureDatabase aDatabase, 
 			int aId, 
 			ClassInfo aType, 
 			String aName,
 			String aSignature,
 			ITypeInfo[] aArgumentTypes,
-			ITypeInfo aReturnType,
-			LineNumberInfo[] aLineNumberTable,
-			LocalVariableInfo[] aLocalVariableTable)
+			ITypeInfo aReturnType)
 	{
 		super(aDatabase, aId, aType, aName);
 		itsSignature = aSignature;
 		itsArgumentTypes = aArgumentTypes;
 		itsReturnType = aReturnType;
-		itsBehaviourKind = aBehaviourKind;
-		itsLineNumberTable = aLineNumberTable;
-		itsLocalVariableTable = aLocalVariableTable;
+	}
+	
+	public void setup(
+			boolean aTraced,
+			BehaviorKind aKind,
+			LineNumberInfo[] aLineNumberInfos,
+			LocalVariableInfo[] aLocalVariableInfos)
+	{
+		itsHasTrace = aTraced ? HasTrace.YES : HasTrace.NO;
+		itsBehaviourKind = aKind;
+		itsLineNumberTable = aLineNumberInfos;
+		itsLocalVariableTable = aLocalVariableInfos;
 	}
 	
 	public void setAttributes (
@@ -76,6 +84,11 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 		itsLocalVariableTable = aLocalVariableTable;
 	}
 	
+	public HasTrace hasTrace()
+	{
+		return itsHasTrace;
+	}
+	
 	public BehaviorKind getBehaviourKind()
 	{
 		return itsBehaviourKind;
@@ -84,6 +97,11 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 	public ITypeInfo[] getArgumentTypes()
 	{
 		return itsArgumentTypes;
+	}
+	
+	public String getSignature()
+	{
+		return itsSignature;
 	}
 
 	public ITypeInfo getReturnType()

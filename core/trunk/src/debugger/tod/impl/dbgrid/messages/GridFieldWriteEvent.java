@@ -112,7 +112,7 @@ public class GridFieldWriteEvent extends GridEvent
 	{
 		FieldWriteEvent theEvent = new FieldWriteEvent(aBrowser);
 		initEvent(aBrowser, theEvent);
-		theEvent.setField(aBrowser.getLocationsRepository().getField(getFieldId()));
+		theEvent.setField(aBrowser.getStructureDatabase().getField(getFieldId(), true));
 		theEvent.setTarget(getTarget());
 		theEvent.setValue(getValue());
 		return theEvent;

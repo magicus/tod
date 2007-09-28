@@ -22,13 +22,15 @@ package tod.core.database.browser;
 
 
 import tod.core.BehaviorKind;
-import tod.core.database.structure.ILocationsRepository.LineNumberInfo;
-import tod.core.database.structure.ILocationsRepository.LocalVariableInfo;
+import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
+import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 
 
 /**
  * Interface for objects that collect static code information, such as
  * methods, classes, fields, etc.
+ * @deprecated Replaced by {@link IStructureDatabase}
  * @author gpothier
  */
 public interface ILocationRegisterer 

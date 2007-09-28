@@ -86,7 +86,7 @@ char* _propVerbose = NULL;
 int propVerbose = 2;
 
 // directory prefix for the class cache. It is the MD5 sum of (working set, struct db id).
-char* classCachePrefix = NULL;
+char* classCachePrefix = "bad";
 
 // Class and method references
 StaticVoidMethod* ExceptionGeneratedReceiver_exceptionGenerated;
@@ -217,14 +217,16 @@ void bciConfigure()
 				if ((cfgHostId & mask) != cfgHostId) fatal_error("Host id overflow.\n");
 				
 				// Compute class cache prefix
-				char* sigSrc[strlen(cfgWorkingSet)+strlen(cfgStructDbId)+1];
-				snprintf(sigSrc, sizeof(sigSrc), "%s/%s", cfgWorkingSet, cfgStructDbId);
+				int len = strlen(cfgWorkingSet)+strlen(cfgStructDbId)+2;
+				char* sigSrc = (char*) malloc(len);
+				snprintf(sigSrc, len, "%s/%s", cfgWorkingSet, cfgStructDbId);
 				if (propVerbose >= 1) printf("Computing class cache prefix from: %s\n", sigSrc);
 				
 				char md5Buffer[16];
 				classCachePrefix = (char*) malloc(33);
 				md5_buffer(sigSrc, strlen(sigSrc), md5Buffer);
 				md5_sig_to_string(md5Buffer, classCachePrefix, 33);
+				free(sigSrc);
 
 				if (propVerbose >= 1) printf("Class cache prefix: %s\n", classCachePrefix);
 				

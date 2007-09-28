@@ -24,13 +24,20 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.omg.CORBA.UNKNOWN;
 
+import tod.Util;
 import tod.agent.AgentReady;
 import tod.agent.ExceptionGeneratedReceiver;
 import tod.agent.TracedMethods;
 import tod.core.BehaviorCallType;
 import tod.core.EventInterpreter;
+import tod.core.database.browser.LocationUtils;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IClassInfo;
+import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.IBehaviorInfo.HasTrace;
 
 /**
  * Provides all the methods that perform the insertion
@@ -39,11 +46,11 @@ import tod.core.EventInterpreter;
  */
 public class ASMBehaviorInstrumenter implements Opcodes
 {
+	private final IStructureDatabase itsStructureDatabase;
+	private final IBehaviorInfo itsBehavior;
 	private final ASMBehaviorCallInstrumenter itsBehaviorCallInstrumenter;
 	private final MethodVisitor mv;
-	private final ASMLocationPool itsLocationPool;
 	private final ASMMethodInfo itsMethodInfo;
-	private final int itsMethodId;
 	private final ASMDebuggerConfig itsConfig;
 	
 	/**
@@ -60,33 +67,20 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	
 	public ASMBehaviorInstrumenter(
 			ASMDebuggerConfig aConfig,
-			MethodVisitor mv, 
-			ASMLocationPool aLocationPool,
-			ASMMethodInfo aMethodInfo,
-			int aMethodId)
+			MethodVisitor mv,
+			IBehaviorInfo aBehavior,
+			ASMMethodInfo aMethodInfo)
 	{
 		itsConfig = aConfig;
 		this.mv = mv;
-		itsLocationPool = aLocationPool;
+		itsBehavior = aBehavior;
+		itsStructureDatabase = itsBehavior.getDatabase();
 		itsMethodInfo = aMethodInfo;
-		itsMethodId = aMethodId;
-		itsBehaviorCallInstrumenter = new ASMBehaviorCallInstrumenter(mv, this, aMethodId);
+		itsBehaviorCallInstrumenter = new ASMBehaviorCallInstrumenter(mv, this, itsBehavior.getId());
 		
 		itsFirstFreeVar = itsMethodInfo.getMaxLocals();
 		itsReturnLocationVar = itsFirstFreeVar;
 		itsFirstFreeVar += 2;
-	}
-	
-	/**
-	 * Indicates if the given class has (or will have) tracing instrumentation.
-	 */
-	private HasTrace hasTrace(String aClassName, int aMethodId)
-	{
-		if (itsLocationPool.isTraced(aMethodId)) return HasTrace.YES;
-		else if (BCIUtils.acceptClass(aClassName, itsConfig.getGlobalSelector())
-			&& BCIUtils.acceptClass(aClassName, itsConfig.getTraceSelector()))
-			return HasTrace.UNKNOWN;
-		else return HasTrace.NO;
 	}
 	
 	/**
@@ -162,7 +156,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		mv.visitLabel(l);
 		int theBytecodeIndex = l.getOffset();
 		
-		BCIUtils.pushOperationLocation(mv, itsMethodId, theBytecodeIndex);
+		BCIUtils.pushOperationLocation(mv, itsBehavior.getId(), theBytecodeIndex);
 		mv.visitVarInsn(LSTORE, itsReturnLocationVar);
 		
 		mv.visitJumpInsn(GOTO, itsReturnHookLabel);
@@ -178,7 +172,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		createArgsArray(theArgumentTypes, theArrayVar, theFirstArgVar, false);
 
 		invokeLogBehaviorEnter(
-				itsMethodId,
+				itsBehavior.getId(),
 				aCallType,
 				itsMethodInfo.isStatic() ? -1 : 0,
 				theArrayVar);
@@ -201,19 +195,14 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitVarInsn(ASTORE, itsFirstFreeVar);
 		
-		invokeLogBehaviorExit(itsMethodId, itsFirstFreeVar);
+		invokeLogBehaviorExit(itsBehavior.getId(), itsFirstFreeVar);
 	}
 	
 	public void behaviorExitWithException()
 	{
 		mv.visitInsn(DUP);
 		mv.visitVarInsn(ASTORE, itsFirstFreeVar);
-		invokeLogBehaviorExitWithException(itsMethodId, itsFirstFreeVar);
-	}
-	
-	private static enum HasTrace
-	{
-		YES, NO, UNKNOWN;
+		invokeLogBehaviorExitWithException(itsBehavior.getId(), itsFirstFreeVar);
 	}
 	
 	public void methodCall(
@@ -223,18 +212,16 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			String aDesc,
 			BehaviorCallType aCallType)
 	{
-		int theCalledTypeId = itsLocationPool.getTypeId(aOwner);
-		int theCalledMethodId = itsLocationPool.getBehaviorId(
-				theCalledTypeId, 
-				aName, 
-				aDesc,
-				aOpcode == INVOKESTATIC);
+		boolean theStatic = aOpcode == INVOKESTATIC;
 		
+		IClassInfo theOwner = itsStructureDatabase.getNewClass(Util.jvmToScreen(aOwner));
+		IBehaviorInfo theCalledBehavior = theOwner.getNewBehavior(aName, aDesc);
+
 		itsBehaviorCallInstrumenter.setup(
 				itsFirstFreeVar,
-				theCalledMethodId,
+				theCalledBehavior.getId(),
 				aDesc,
-				aOpcode == INVOKESTATIC);
+				theStatic);
 		
 		
 		// Note: a class that has trace might inherit methods from
@@ -246,7 +233,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		// Support for the YES case is somewhat limited because it is
 		// restricted to methods of classes that have already been
 		// instrumented.
-		HasTrace theHasTrace = hasTrace(aOwner, theCalledMethodId);
+		HasTrace theHasTrace = theCalledBehavior.hasTrace();
 		
 		Label theElse = new Label();
 		Label theEndif = new Label();
@@ -255,7 +242,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		{
 			// Runtime check for trace info
 			
-			BCIUtils.pushInt(mv, theCalledMethodId);
+			BCIUtils.pushInt(mv, theCalledBehavior.getId());
 			
 			mv.visitMethodInsn(
 					INVOKESTATIC, 
@@ -356,36 +343,6 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		itsBehaviorCallInstrumenter.pushArgs();
 	}
 	
-	private void handleAfterUnknownCall()
-	{
-		
-	}
-	
-	private void handleAfterTracedCall()
-	{
-		itsBehaviorCallInstrumenter.callLogAfterBehaviorCallDry();						
-	}
-	
-	private void handleAfterNonTracedCall()
-	{
-		itsBehaviorCallInstrumenter.callLogAfterMethodCall();
-	}
-	
-	private void handleAfterUnknownCallEx()
-	{
-		
-	}
-	
-	private void handleAfterTracedCallEx()
-	{
-		
-	}
-	
-	private void handleAfterNonTracedCallEx()
-	{
-		itsBehaviorCallInstrumenter.callLogAfterMethodCallWithException();
-	}
-	
 	public void fieldWrite(
 			int aOpcode, 
 			String aOwner, 
@@ -393,9 +350,13 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			String aDesc)
 	{
 		boolean theStatic = aOpcode == PUTSTATIC;
-		int theTypeId = itsLocationPool.getTypeId(aOwner);
-		int theFieldId = itsLocationPool.getFieldId(theTypeId, aName, aDesc);
-		Type theType = Type.getType(aDesc);
+
+		IClassInfo theOwner = itsStructureDatabase.getClass(aOwner, true);
+
+		ITypeInfo theType = itsStructureDatabase.getNewType(aDesc);
+		IFieldInfo theField = theOwner.getNewField(aName, theType);
+		
+		Type theASMType = Type.getType(aDesc);
 		
 		Label l = new Label();
 		mv.visitLabel(l);
@@ -420,15 +381,15 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	
 		// Store parameters
 		
-		mv.visitVarInsn(theType.getOpcode(ISTORE), theValueVar);
+		mv.visitVarInsn(theASMType.getOpcode(ISTORE), theValueVar);
 		if (! theStatic) mv.visitVarInsn(ASTORE, theTargetVar);
 		
 		// Call log method
-		invokeLogFieldWrite(theBytecodeIndex, theFieldId, theTargetVar, theType, theValueVar);
+		invokeLogFieldWrite(theBytecodeIndex, theField.getId(), theTargetVar, theASMType, theValueVar);
 		
 		// Push parameters back to stack
 		if (! theStatic) mv.visitVarInsn(ALOAD, theTargetVar);
-		mv.visitVarInsn(theType.getOpcode(ILOAD), theValueVar);
+		mv.visitVarInsn(theASMType.getOpcode(ILOAD), theValueVar);
 
 		mv.visitFieldInsn(aOpcode, aOwner, aName, aDesc);
 	}
@@ -563,7 +524,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		pushStdLogArgs();
 	
 		// ->operation location
-		BCIUtils.pushOperationLocation(mv, itsMethodId, aBytecodeIndex);
+		BCIUtils.pushOperationLocation(mv, itsBehavior.getId(), aBytecodeIndex);
 		
 		// ->method id
 		BCIUtils.pushInt(mv, aMethodId);
@@ -606,7 +567,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		pushDryLogArgs();
 		
 		// ->operation location
-		BCIUtils.pushOperationLocation(mv, itsMethodId, aBytecodeIndex);
+		BCIUtils.pushOperationLocation(mv, itsBehavior.getId(), aBytecodeIndex);
 		
 		// ->method id
 		BCIUtils.pushInt(mv, aMethodId);
@@ -643,7 +604,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		pushStdLogArgs();
 		
 		// ->operation location
-		BCIUtils.pushOperationLocation(mv, itsMethodId, aBytecodeIndex);
+		BCIUtils.pushOperationLocation(mv, itsBehavior.getId(), aBytecodeIndex);
 		
 		// ->method id
 		BCIUtils.pushInt(mv, aMethodId);
@@ -700,7 +661,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		pushStdLogArgs();
 		
 		// ->operation location
-		BCIUtils.pushOperationLocation(mv, itsMethodId, aBytecodeIndex);
+		BCIUtils.pushOperationLocation(mv, itsBehavior.getId(), aBytecodeIndex);
 		
 		// ->method id
 		BCIUtils.pushInt(mv, aMethodId);
@@ -738,7 +699,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		pushStdLogArgs();
 		
 		// ->operation location
-		BCIUtils.pushOperationLocation(mv, itsMethodId, aBytecodeIndex);
+		BCIUtils.pushOperationLocation(mv, itsBehavior.getId(), aBytecodeIndex);
 		
 		// ->field id
 		BCIUtils.pushInt(mv, aFieldId);
@@ -777,7 +738,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		pushStdLogArgs();
 		
 		// ->operation location
-		BCIUtils.pushOperationLocation(mv, itsMethodId, aBytecodeIndex);
+		BCIUtils.pushOperationLocation(mv, itsBehavior.getId(), aBytecodeIndex);
 		
 		// ->target
 		mv.visitVarInsn(ALOAD, aTargetVar);
@@ -814,7 +775,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		pushStdLogArgs();
 		
 		// ->operation location
-		BCIUtils.pushOperationLocation(mv, itsMethodId, aBytecodeIndex);
+		BCIUtils.pushOperationLocation(mv, itsBehavior.getId(), aBytecodeIndex);
 		
 		// ->variable id
 		BCIUtils.pushInt(mv, aVariableId);

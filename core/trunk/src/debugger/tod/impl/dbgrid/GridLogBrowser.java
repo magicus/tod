@@ -27,15 +27,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import reflex.lib.pom.POMSyncClass;
 import reflex.lib.pom.POMSync;
+import reflex.lib.pom.POMSyncClass;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.IVariablesInspector;
-import tod.core.database.browser.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
@@ -44,10 +43,11 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IHostInfo;
-import tod.core.database.structure.ILocationsRepository;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.impl.common.LogBrowserUtils;
 import tod.impl.common.VariablesInspector;
 import tod.impl.dbgrid.aggregator.GridEventBrowser;
@@ -67,7 +67,7 @@ import tod.impl.dbgrid.queries.FieldCondition;
 import tod.impl.dbgrid.queries.ThreadCondition;
 import tod.impl.dbgrid.queries.TypeCondition;
 import tod.impl.dbgrid.queries.VariableCondition;
-import tod.utils.remote.RemoteLocationsRepository;
+import tod.utils.remote.RemoteStructureDatabase;
 import zz.utils.Utils;
 import zz.utils.cache.MRUBuffer;
 import zz.utils.cache.SyncMRUBuffer;
@@ -94,7 +94,7 @@ implements ILogBrowser, RIGridMasterListener
 	private static final long serialVersionUID = -5101014933784311102L;
 
 	private RIGridMaster itsMaster;
-	private ILocationsRepository itsLocationsRepository;
+	private IStructureDatabase itsStructureDatabase;
 	
 	private long itsEventsCount;
 	private long itsFirstTimestamp;
@@ -111,24 +111,37 @@ implements ILogBrowser, RIGridMasterListener
 	
 	private TypeCache itsTypeCache = new TypeCache();
 	private QueryResultCache itsQueryResultCache = new QueryResultCache();
-
-	public GridLogBrowser(GridMaster aMaster) throws RemoteException
+	
+	
+	
+	private GridLogBrowser(
+			RIGridMaster aMaster,
+			IStructureDatabase aStructureDatabase) throws RemoteException
 	{
 		itsMaster = aMaster;
-		itsMaster.addListener(this);
-		
-		itsLocationsRepository = aMaster.getLocationStore();
+		itsMaster.addListener(this);		
+		itsStructureDatabase = aStructureDatabase;
+
+		System.out.println("[GridLogBrowser] Instantiated.");
 	}
 	
-	public GridLogBrowser(RIGridMaster aMaster) throws RemoteException
+	public static GridLogBrowser createLocal(GridMaster aMaster) 
 	{
-		itsMaster = aMaster;
-		itsMaster.addListener(this);
-		
-		itsLocationsRepository = RemoteLocationsRepository.createRepository(
-				itsMaster.getLocationsRepository());
-		
-		System.out.println("[GridLogBrowser] Instantiated.");
+		try
+		{
+			return new GridLogBrowser(aMaster, aMaster.getStructureDatabase());
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public static GridLogBrowser createRemote(RIGridMaster aMaster) throws RemoteException
+	{
+		return new GridLogBrowser(
+				aMaster, 
+				RemoteStructureDatabase.createDatabase(aMaster.getRemoteStructureDatabase()));
 	}
 
 	@POMSync
@@ -412,9 +425,10 @@ implements ILogBrowser, RIGridMasterListener
 		return LogBrowserUtils.getEvent(this, aPointer);
 	}
 
-	public ILocationsRepository getLocationsRepository()
+	
+	public IStructureDatabase getStructureDatabase()
 	{
-		return itsLocationsRepository;
+		return itsStructureDatabase;
 	}
 	
 	public RIGridMaster getMaster()

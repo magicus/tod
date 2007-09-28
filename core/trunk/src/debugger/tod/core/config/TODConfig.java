@@ -103,12 +103,12 @@ public class TODConfig extends PublicCloneable implements Serializable
 			"exceptions.",
 			true);
 	
-	public static final StringItem INSTRUMENTER_LOCATIONS_FILE = new StringItem(
+	public static final StringItem STRUCTURE_DATABASE_LOCATION = new StringItem(
 			ConfigLevel.NORMAL,
-			"locations-file",
-			"Instrumenter - locations file",
-			"Defines the file that contains location data for the debugged application.",
-			HOME+"/tmp/tod/locations.bin");
+			"structure-db-loc",
+			"Structure database - location",
+			"Directory where the structure database is stored.",
+			HOME+"/tmp/tod/locations");
 	
 	public static final StringItem INSTRUMENTER_CLASSES_DIR = new StringItem(
 			ConfigLevel.DEBUG,

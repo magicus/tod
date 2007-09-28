@@ -25,9 +25,8 @@ import org.objectweb.asm.Type;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
-import tod.core.database.structure.ILocationsRepository;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
-import tod.impl.database.structure.standard.TypeInfo;
 
 /**
  * Utilities related to {@link ILocationsRepository}
@@ -39,8 +38,9 @@ public class LocationUtils
 	 * Returns the argument types that correspond to the given behavior signature. 
 	 */
 	public static ITypeInfo[] getArgumentTypes(
-			ILocationsRepository aRepository,
-			String aSignature)
+			IStructureDatabase aDatabase,
+			String aSignature,
+			boolean aCreateIfMissing)
 	{
 		Type[] theASMArgumentTypes = Type.getArgumentTypes(aSignature);
 		ITypeInfo[] theArgumentTypes = new ITypeInfo[theASMArgumentTypes.length];
@@ -48,7 +48,10 @@ public class LocationUtils
 		for (int i = 0; i < theASMArgumentTypes.length; i++)
 		{
 			Type theASMType = theASMArgumentTypes[i];
-			theArgumentTypes[i] = aRepository.getType(theASMType.getClassName());
+			theArgumentTypes[i] = aCreateIfMissing ?
+					aDatabase.getNewType(theASMType.getDescriptor())
+					: aDatabase.getType(theASMType.getDescriptor(), true);
+			
 		}
 		
 		return theArgumentTypes;
@@ -59,11 +62,14 @@ public class LocationUtils
 	 * Determines a TOD return type given a method signature
 	 */
 	public static ITypeInfo getReturnType(
-			ILocationsRepository aRepository,
-			String aSignature)
+			IStructureDatabase aDatabase,
+			String aSignature,
+			boolean aCreateIfMissing)
 	{
-		Type theASMReturnType = Type.getReturnType(aSignature);
-		return aRepository.getType(theASMReturnType.getClassName());
+		Type theASMType = Type.getReturnType(aSignature);
+		return aCreateIfMissing ?
+				aDatabase.getNewType(theASMType.getDescriptor())
+				: aDatabase.getType(theASMType.getDescriptor(), true);
 	}
 	
 	
@@ -100,23 +106,22 @@ public class LocationUtils
 	 * @param aSearchAncestors See {@link #getField(ITypeInfo, String, boolean)}.
 	 */
 	public IBehaviorInfo getBehavior(
-			ILocationsRepository aRepository,
-			ITypeInfo aType, 
+			IStructureDatabase aDatabase,
+			IClassInfo aClass, 
 			String aName, 
 			String aSignature, 
 			boolean aSearchAncestors)
 	{
-		IClassInfo theClassInfo = (IClassInfo) aType;
-		ITypeInfo[] theArgumentTypes = getArgumentTypes(aRepository, aSignature);
+		ITypeInfo[] theArgumentTypes = getArgumentTypes(aDatabase, aSignature, false);
 		
-		while (theClassInfo != null)
+		while (aClass != null)
 		{
-			IBehaviorInfo theBehavior = theClassInfo.getBehavior(aName, theArgumentTypes);
+			IBehaviorInfo theBehavior = aClass.getBehavior(aName, theArgumentTypes);
 			if (theBehavior != null) return theBehavior;
 			
 			if (! aSearchAncestors) return null;
 			
-			theClassInfo = theClassInfo.getSupertype();
+			aClass = aClass.getSupertype();
 		}
 
 		return null;

@@ -81,7 +81,7 @@ public class RemoteGridSession extends AbstractSession
 //					new Class[] {RIGridMaster.class},
 //					itsMaster);
 		
-			itsBrowser = new GridLogBrowser(itsMaster);
+			itsBrowser = GridLogBrowser.createRemote(itsMaster);
 		}
 		catch (Exception e)
 		{

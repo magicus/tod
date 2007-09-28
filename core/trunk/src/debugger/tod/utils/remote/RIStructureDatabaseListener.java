@@ -18,19 +18,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.core.database.browser;
+package tod.utils.remote;
 
-import tod.core.database.structure.ILocationsRepository;
-import tod.core.database.structure.IStructureDatabase;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 
+import tod.core.database.structure.IStructureDatabase.Stats;
 
 /**
- * This interface only extends {@link ILocationsRepository}
- * and {@link ILocationRegisterer}.
- * @deprecated Replaced by {@link IStructureDatabase}
+ * A listener that is notified when the contents of a locations repository
+ * changes.
  * @author gpothier
  */
-public interface ILocationStore extends ILocationsRepository, ILocationRegisterer
+public interface RIStructureDatabaseListener extends Remote
 {
-
+	public void changed(Stats aStats) throws RemoteException;
 }

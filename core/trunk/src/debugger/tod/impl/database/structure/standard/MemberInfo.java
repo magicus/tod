@@ -34,7 +34,7 @@ public abstract class MemberInfo extends LocationInfo implements IMemberInfo
 {
 	private IClassInfo itsType;
 	
-	public MemberInfo(IStructureDatabase aDatabase, int aId, IClassInfo aTypeInfo, String aName)
+	public MemberInfo(StructureDatabase aDatabase, int aId, IClassInfo aTypeInfo, String aName)
 	{
 		super(aDatabase, aId, aName);
 		itsType = aTypeInfo;

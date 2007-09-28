@@ -31,7 +31,6 @@ import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.IVariablesInspector;
-import tod.core.database.browser.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
@@ -40,14 +39,18 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IHostInfo;
-import tod.core.database.structure.ILocationsRepository;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.core.database.structure.IStructureDatabase.IBehaviorListener;
+import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.impl.common.LogBrowserUtils;
 import tod.impl.common.ObjectInspector;
 import tod.impl.common.VariablesInspector;
 import tod.impl.common.event.Event;
+import tod.impl.database.structure.standard.ExceptionResolver;
+import tod.impl.database.structure.standard.ExceptionResolver.BehaviorInfo;
 import tod.impl.dbgrid.BidiIterator;
 import tod.impl.local.filter.AbstractFilter;
 import tod.impl.local.filter.BehaviorCallFilter;
@@ -63,7 +66,7 @@ import tod.impl.local.filter.TargetFilter;
 import tod.impl.local.filter.ThreadFilter;
 import tod.impl.local.filter.UnionFilter;
 import tod.impl.local.filter.VariableWriteFilter;
-import zz.utils.ITask;
+import tod.utils.TODUtils;
 
 public class LocalBrowser implements ILogBrowser
 {
@@ -71,7 +74,19 @@ public class LocalBrowser implements ILogBrowser
 	private List<IHostInfo> itsHosts = new ArrayList<IHostInfo>();
 	private Map<String, IHostInfo> itsHostsMap = new HashMap<String, IHostInfo>();
 	private List<IThreadInfo> itsThreads = new ArrayList<IThreadInfo>();
-	private final ILocationsRepository itsLocationsRepository;
+	private IStructureDatabase itsStructureDatabase;
+	private ExceptionResolver itsExceptionResolver = new ExceptionResolver();
+
+	
+	private final IBehaviorListener itsBehaviorListener = new IBehaviorListener()
+	{
+		public void behaviorRegistered(IBehaviorInfo aBehavior)
+		{
+			BehaviorInfo theBehaviorInfo = TODUtils.createBehaviorInfo(aBehavior);
+			itsExceptionResolver.registerBehavior(theBehaviorInfo);
+		}
+	};
+	
 	
 	/**
 	 * Temporary. Holds registered objects.
@@ -80,14 +95,20 @@ public class LocalBrowser implements ILogBrowser
 	
 
 	
-	public LocalBrowser(ILocationsRepository aLocationsRepository)
+	public LocalBrowser(IStructureDatabase aStructureDatabase)
 	{
-		itsLocationsRepository = aLocationsRepository;
+		itsStructureDatabase = aStructureDatabase;
+		itsStructureDatabase.addBehaviorListener(itsBehaviorListener);
 	}
 
-	public ILocationsRepository getLocationsRepository()
+	public IStructureDatabase getStructureDatabase()
 	{
-		return itsLocationsRepository;
+		return itsStructureDatabase;
+	}
+	
+	public ExceptionResolver getExceptionResolver()
+	{
+		return itsExceptionResolver;
 	}
 
 	public Iterable<IThreadInfo> getThreads()

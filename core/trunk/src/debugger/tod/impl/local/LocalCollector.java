@@ -20,13 +20,12 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.local;
 
-import tod.agent.AgentUtils;
 import tod.agent.DebugFlags;
 import tod.core.Output;
-import tod.core.database.browser.ILocationRegisterer.LocalVariableInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.impl.common.EventCollector;
 import tod.impl.common.event.ArrayWriteEvent;
 import tod.impl.common.event.BehaviorExitEvent;
@@ -56,7 +55,7 @@ public class LocalCollector extends EventCollector
 	
 	public LocalCollector(LocalBrowser aBrowser, IHostInfo aHost)
 	{
-		super(aHost, aBrowser.getLocationsRepository());
+		super(aHost, aBrowser.getExceptionResolver());
 		itsBrowser = aBrowser;
 		itsBrowser.addHost(aHost);
 	}
@@ -68,12 +67,12 @@ public class LocalCollector extends EventCollector
 	
 	private IBehaviorInfo getBehavior(int aId)
 	{
-		return itsBrowser.getLocationsRepository().getBehavior(aId);
+		return itsBrowser.getStructureDatabase().getBehavior(aId, true);
 	}
 	
 	private IFieldInfo getField(int aId)
 	{
-		return itsBrowser.getLocationsRepository().getField(aId);
+		return itsBrowser.getStructureDatabase().getField(aId, true);
 	}
 	
 	@Override

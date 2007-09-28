@@ -24,10 +24,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.core.BehaviorKind;
-import tod.core.database.structure.ILocationsRepository.LocalVariableInfo;
+import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
+import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 
 public interface IBehaviorInfo extends IMemberInfo
 {
+	/**
+	 * Sets up the attributes of this behavior.
+	 * This method should be called only once.
+	 */
+	public void setup(
+			boolean aTraced,
+			BehaviorKind aKind,
+			LineNumberInfo[] aLineNumberInfos,
+			LocalVariableInfo[] aLocalVariableInfos);
+	
+	/**
+	 * Whether this behavior is traced, ie. emits at least behavior
+	 * enter and behavior exit events.
+	 * The possible values are YES, NO and UNKNOWN, the latter being returned
+	 * when the behavior has been created but not yet set up.
+	 */
+	public HasTrace hasTrace();
+	
 	/**
 	 * Indicates the kind of behavior represented by this object
 	 * (method, constructor, etc.)
@@ -39,6 +58,11 @@ public interface IBehaviorInfo extends IMemberInfo
 	 * Returns the types of the arguments to this behavior
 	 */
 	public ITypeInfo[] getArgumentTypes();
+	
+	/**
+	 * Returns the JVM signature of this behavior.
+	 */
+	public String getSignature();
 
 	/**
 	 * Returns the type of the return value of this behavior. 
@@ -141,4 +165,11 @@ public interface IBehaviorInfo extends IMemberInfo
     		itsParentRole.itsChildrenRoles.add(this);
     	}
     }
+    
+	public enum HasTrace
+	{
+		YES, NO, UNKNOWN;
+	}
+	
+ 
 }

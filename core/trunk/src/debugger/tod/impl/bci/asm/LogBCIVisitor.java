@@ -30,7 +30,11 @@ import org.objectweb.asm.MethodAdapter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
+import tod.Util;
 import tod.core.BehaviorCallType;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IClassInfo;
+import tod.core.database.structure.IStructureDatabase;
 import zz.utils.ArrayStack;
 import zz.utils.Stack;
 
@@ -65,13 +69,15 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 	
 	private boolean itsOverflow = false;
 	
-	private String itsTypeName;
-	private int itsSupertypeId;
-	private int itsTypeId;
+	private IClassInfo itsClassInfo;
+	private IClassInfo itsSuperclass;
+	private String itsChecksum;
+	
 
 	private final InfoCollector itsInfoCollector;
 	private int itsCurrentMethodIndex = 0;
 
+	private final IStructureDatabase itsDatabase;
 	private final ASMDebuggerConfig itsConfig;
 
 	/**
@@ -79,14 +85,19 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 	 */
 	private final List<Integer> itsTracedMethods;
 
+
 	
 	public LogBCIVisitor(
+			IStructureDatabase aDatabase,
 			ASMDebuggerConfig aConfig,
 			InfoCollector aInfoCollector, 
 			ClassVisitor aVisitor, 
+			String aChecksum,
 			List<Integer> aTracedMethods)
 	{
 		super(aVisitor);
+		itsDatabase = aDatabase;
+		itsChecksum = aChecksum;
 		itsInfoCollector = aInfoCollector;
 		itsConfig = aConfig;
 		itsTracedMethods = aTracedMethods;
@@ -110,11 +121,6 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		itsModified = true;
 	}
 	
-	private ASMLocationPool getLocationPool()
-	{
-		return itsConfig.getLocationPool();
-	}
-	
 	@Override
 	public void visit(
 			int aVersion, 
@@ -124,28 +130,24 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			String aSuperName, 
 			String[] aInterfaces)
 	{
-//		if (LOG>=1) System.out.println("Processing "+aName);
+		itsInterface = BCIUtils.isInterface(access);
+		itsClassInfo = itsDatabase.getNewClass(Util.jvmToScreen(aName));
+		itsSuperclass = itsInterface || aSuperName == null ? 
+				null
+				: itsDatabase.getNewClass(Util.jvmToScreen(aSuperName));
 		
-		// Register type
-		itsTypeName = aName;
-		itsTypeId = getLocationPool().getTypeId(aName);
-		
-		itsSupertypeId = BCIUtils.isInterface(access) || aSuperName == null ? 
-				-1
-				: getLocationPool().getTypeId(aSuperName);
-		
-		int[] theInterfaceIds = new int[aInterfaces != null ? aInterfaces.length : 0];
+		IClassInfo[] theInterfaces = new IClassInfo[aInterfaces != null ? aInterfaces.length : 0];
 		if (aInterfaces != null) for (int i = 0; i < aInterfaces.length; i++)
 		{
 			String theInterface = aInterfaces[i];
-			theInterfaceIds[i] = getLocationPool().getTypeId(theInterface);
+			theInterfaces[i] = itsDatabase.getNewClass(Util.jvmToScreen(theInterface));
 		}
 		
-		getLocationPool().registerType(itsTypeId, itsTypeName, itsSupertypeId, theInterfaceIds);
-		
 		// Check if we should trace operations in the class
-		itsInterface = BCIUtils.isInterface(access);
-		itsTrace = BCIUtils.acceptClass(aName, itsConfig.getTraceSelector());
+		itsTrace = BCIUtils.acceptClass(aName, itsConfig.getGlobalSelector())
+				&& BCIUtils.acceptClass(aName, itsConfig.getTraceSelector());
+			
+		itsClassInfo.setup(itsInterface, itsTrace, itsChecksum, theInterfaces, itsSuperclass);
 		
 		if (! itsInterface && itsTrace) markModified();
 		
@@ -180,31 +182,27 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		private ASMMethodInfo itsMethodInfo;
 		private ASMBehaviorInstrumenter itsInstrumenter;
 		
-		private int itsMethodId;
+		private IBehaviorInfo itsBehavior;
 		private int itsStoreIndex = 0;
 
 		public BCIMethodVisitor(MethodVisitor mv, ASMMethodInfo aMethodInfo)
 		{
 			super (mv);
 			itsMethodInfo = aMethodInfo;
-			itsMethodId = getLocationPool().getBehaviorId(
-					itsTypeId,
+			itsBehavior = itsClassInfo.getNewBehavior(
 					itsMethodInfo.getName(),
-					itsMethodInfo.getDescriptor(),
-					aMethodInfo.isStatic());
+					itsMethodInfo.getDescriptor());
 			
 			if (itsTrace)
 			{
-				itsTracedMethods.add(itsMethodId);
-				getLocationPool().setTraced(itsMethodId);
+				itsTracedMethods.add(itsBehavior.getId());
 			}
 			
 			itsInstrumenter = new ASMBehaviorInstrumenter(
 					itsConfig,
 					mv, 
-					getLocationPool(), 
-					itsMethodInfo,
-					itsMethodId);
+					itsBehavior,
+					itsMethodInfo);
 			
 			if (LOG>=2) System.out.println("Processing method "+itsMethodInfo.getName()+itsMethodInfo.getDescriptor());
 		}
@@ -351,7 +349,12 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		@Override
 		public void visitEnd()
 		{
-			getLocationPool().registerBehaviorAttributes(itsMethodId, itsMethodInfo);
+			itsBehavior.setup(
+					itsTrace,
+					itsMethodInfo.getKind(),
+					itsMethodInfo.createLineNumberTable(), 
+					itsMethodInfo.createLocalVariableTable());
+
 			super.visitEnd();
 		}
 	}
@@ -365,7 +368,8 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		
 		public InstantiationInfo(String aTypeDesc)
 		{
-			itsInstantiatedTypeId = getLocationPool().getTypeId(aTypeDesc);
+			IClassInfo theClass = itsDatabase.getNewClass(Util.jvmToScreen(aTypeDesc));
+			itsInstantiatedTypeId = theClass.getId();
 		}
 
 		public int getInstantiatedTypeId()
@@ -412,12 +416,14 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			{
 				// We are invoking a constructor.
 				
-				int theCalledTypeId = getLocationPool().getTypeId(aOwner);
+				IClassInfo theClass = itsDatabase.getNewClass(Util.jvmToScreen(aOwner));
+				int theCalledTypeId = theClass.getId();
 				
 				if ("<init>".equals(itsMethodInfo.getName()))
 				{
 					// We are in a constructor
-					if (theCalledTypeId == itsSupertypeId || theCalledTypeId == itsTypeId)
+					if (theCalledTypeId == itsClassInfo.getSupertype().getId() 
+							|| theCalledTypeId == itsClassInfo.getId())
 					{
 						// Potential call to super or this
 						InstantiationInfo theInfo = itsInstantiationInfoStack.peek();

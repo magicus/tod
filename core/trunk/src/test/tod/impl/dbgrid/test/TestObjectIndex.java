@@ -30,23 +30,13 @@ import tod.agent.DebugFlags;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.event.IFieldWriteEvent;
-import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
-import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.GridMaster;
-import tod.impl.dbgrid.SplittedConditionHandler;
 import tod.impl.dbgrid.aggregator.GridEventBrowser;
-import tod.impl.dbgrid.db.EventDatabase;
-import tod.impl.dbgrid.db.RoleIndexSet;
-import tod.impl.dbgrid.messages.GridEvent;
-import tod.impl.dbgrid.messages.GridFieldWriteEvent;
-import tod.impl.dbgrid.messages.ObjectCodec;
-import tod.impl.dbgrid.queries.Conjunction;
-import tod.impl.dbgrid.queries.ObjectCondition;
 import tod.utils.TODUtils;
 
 /**
@@ -62,8 +52,8 @@ public class TestObjectIndex
 		Fixtures.replay(new File("src/test/test-objects.bin"), theMaster);
 		theMaster.flush();
 		
-		GridLogBrowser theLogBrowser = new GridLogBrowser(theMaster);
-		IBehaviorInfo theBehavior = theMaster.getLocationsRepository().getBehavior(71);
+		GridLogBrowser theLogBrowser = GridLogBrowser.createLocal(theMaster);
+		IBehaviorInfo theBehavior = theMaster.getStructureDatabase().getBehavior(71, true);
 		
 		IEventFilter theFilter = TODUtils.getLocationFilter(theLogBrowser, theBehavior, 48);
 		

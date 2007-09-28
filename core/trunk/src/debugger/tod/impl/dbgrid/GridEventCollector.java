@@ -21,8 +21,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid;
 
 import tod.core.Output;
+import tod.core.database.structure.IExceptionResolver;
 import tod.core.database.structure.IHostInfo;
-import tod.core.database.structure.ILocationsRepository;
 import tod.impl.common.EventCollector;
 import tod.impl.dbgrid.dispatch.AbstractEventDispatcher;
 import tod.impl.dbgrid.dispatch.DatabaseNode;
@@ -69,10 +69,10 @@ public class GridEventCollector extends EventCollector
 	
 	public GridEventCollector(
 			IHostInfo aHost,
-			ILocationsRepository aLocationsRepository,
+			IExceptionResolver aExceptionResolver,
 			DatabaseNode aDispatcher)
 	{
-		super(aHost, aLocationsRepository);
+		super(aHost, aExceptionResolver);
 		itsDatabaseNode = aDispatcher;
 	}
 

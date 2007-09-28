@@ -28,13 +28,14 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 import tod.core.ILogCollector;
-import tod.core.LocationRegisterer;
 import tod.core.bci.IInstrumenter;
 import tod.core.config.TODConfig;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.server.CollectorTODServer;
 import tod.core.server.ICollectorFactory;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
+import tod.impl.database.structure.standard.StructureDatabase;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import zz.utils.Utils;
 
@@ -49,9 +50,10 @@ public class StoreTODServer extends CollectorTODServer
 	public StoreTODServer(
 			TODConfig aConfig, 
 			IInstrumenter aInstrumenter,
+			IStructureDatabase aStructureDatabase,
 			ICollectorFactory aCollectorFactory)
 	{
-		super(aConfig, aInstrumenter, new LocationRegisterer(), aCollectorFactory);
+		super(aConfig, aInstrumenter, aStructureDatabase, aCollectorFactory);
 	}
 
 	@Override
@@ -113,19 +115,18 @@ public class StoreTODServer extends CollectorTODServer
 	public static void main(String[] args)
 	{
 		TODConfig theConfig = new TODConfig();
-		LocationRegisterer theLocationRegistrer = new LocationRegisterer();
+		IStructureDatabase theStructureDatabase = StructureDatabase.create("StoreTODServer");
 		
-		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(
-				theConfig,
-				theLocationRegistrer);
+		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(theConfig);
 		
-		System.out.println(theLocationRegistrer.getStats());
+//		System.out.println(theStructureDatabase.getStats());
 
-		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theDebuggerConfig);
+		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theStructureDatabase, theDebuggerConfig);
 		
 		new StoreTODServer(
 				theConfig, 
 				theInstrumenter,
+				theStructureDatabase,
 				new DummyCollectorFactory()); 
 	}
 

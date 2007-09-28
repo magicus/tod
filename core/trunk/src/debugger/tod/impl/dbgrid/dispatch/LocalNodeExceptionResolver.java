@@ -18,19 +18,30 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.core.database.browser;
+package tod.impl.dbgrid.dispatch;
 
-import tod.core.database.structure.ILocationsRepository;
-import tod.core.database.structure.IStructureDatabase;
-
+import tod.core.database.structure.IExceptionResolver;
+import tod.impl.dbgrid.GridMaster;
 
 /**
- * This interface only extends {@link ILocationsRepository}
- * and {@link ILocationRegisterer}.
- * @deprecated Replaced by {@link IStructureDatabase}
+ * This is a "fake" exception resolver that simply delegates
+ * to the grid master's resolver.
  * @author gpothier
  */
-public interface ILocationStore extends ILocationsRepository, ILocationRegisterer
+public class LocalNodeExceptionResolver implements IExceptionResolver
 {
+	private final DatabaseNode itsNode;
+	private GridMaster itsMaster;
+	
+	public LocalNodeExceptionResolver(DatabaseNode aNode)
+	{
+		itsNode = aNode;
+	}
+
+	public int getBehaviorId(String aClassName, String aMethodName, String aMethodSignature)
+	{
+		if (itsMaster == null) itsMaster = (GridMaster) itsNode.getMaster();
+		return itsMaster.getBehaviorId(aClassName, aMethodName, aMethodSignature);
+	}
 
 }

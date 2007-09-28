@@ -28,7 +28,7 @@ import tod.core.database.structure.IStructureDatabase;
  */
 public class UnknownTypeInfo extends TypeInfo
 {
-	public UnknownTypeInfo(IStructureDatabase aDatabase, int aId, String aName)
+	public UnknownTypeInfo(StructureDatabase aDatabase, int aId, String aName)
 	{
 		super(aDatabase, aId, aName);
 	}

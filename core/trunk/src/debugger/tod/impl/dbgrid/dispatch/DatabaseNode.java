@@ -34,16 +34,15 @@ import java.util.List;
 
 import tod.agent.DebugFlags;
 import tod.core.ILogCollector;
-import tod.core.LocationRegisterer;
 import tod.core.config.TODConfig;
-import tod.core.database.browser.ILocationRegisterer;
-import tod.core.database.browser.ILocationStore;
+import tod.core.database.structure.IExceptionResolver;
 import tod.core.database.structure.IHostInfo;
-import tod.core.database.structure.ILocationsRepository;
 import tod.core.transport.CollectorLogReceiver;
 import tod.core.transport.LogReceiver;
+import tod.impl.database.structure.standard.ExceptionResolver;
 import tod.impl.database.structure.standard.HostInfo;
 import tod.impl.database.structure.standard.ThreadInfo;
+import tod.impl.database.structure.standard.ExceptionResolver.BehaviorInfo;
 import tod.impl.dbgrid.BidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridEventCollector;
@@ -71,15 +70,13 @@ implements RIDatabaseNode
 	private long itsLastTimestamp = 0;
 	
 	/**
-	 * A database node maintains a local copy of the location
-	 * store for efficiency reasons.
-	 * The location store (actually the repository) is needed for
-	 * exceptions processing.
-	 * In a local setup the location store is shared with that of the master.
-	 * Otherwise each node has its own store.
+	 * A database node maintains a local copy of the exception resolver
+	 * for efficiency reasons.
+	 * In a local setup the exception resolver is shared with that of the master.
+	 * Otherwise each node has its own resolver.
 	 * @see EventCollector#exception(int, long, short, long, String, String, String, int, Object).
 	 */
-	private ILocationStore itsLocationStore;
+	private IExceptionResolver itsExceptionResolver;
 	
 	private EventDatabase itsEventsDatabase;
 	private File itsObjectsDatabaseFile;
@@ -92,10 +89,8 @@ implements RIDatabaseNode
 	
 	private FlusherThread itsFlusherThread = new FlusherThread();
 
-	public DatabaseNode(ILocationStore aStore) throws RemoteException
+	private DatabaseNode() throws RemoteException
 	{
-		itsLocationStore = aStore;
-
 		String thePrefix = DebuggerGridConfig.NODE_DATA_DIR;
 		File theParent = new File(thePrefix);
 		System.out.println("Using data directory: "+theParent);
@@ -104,9 +99,28 @@ implements RIDatabaseNode
 		itsStringIndexFile = new File(theParent, "strings");
 	}
 	
-	public DatabaseNode() throws RemoteException
+	/**
+	 * Creates a node that will work with a local master.
+	 */
+	public static DatabaseNode createLocalNode()
 	{
-		this(new LocationRegisterer());
+		try
+		{
+			DatabaseNode theNode = new DatabaseNode();
+			theNode.itsExceptionResolver = new LocalNodeExceptionResolver(theNode);
+			return theNode;
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public static DatabaseNode createRemoteNode() throws RemoteException
+	{
+		DatabaseNode theNode = new DatabaseNode();
+		theNode.itsExceptionResolver = new NodeExceptionResolver(theNode);
+		return theNode;
 	}
 	
 	@Override
@@ -217,6 +231,15 @@ implements RIDatabaseNode
 		return itsEventsDatabase.getIterator(aCondition);
 	}
 	
+	public void registerBehaviors(BehaviorInfo[] aBehaviorInfos)
+	{
+		if (itsExceptionResolver instanceof ExceptionResolver)
+		{
+			ExceptionResolver theResolver = (ExceptionResolver) itsExceptionResolver;
+			theResolver.registerBehaviors(aBehaviorInfos);
+		}
+	}
+	
 	public void pushEvent(GridEvent aEvent)
 	{
 		synchronized (this)
@@ -266,19 +289,18 @@ implements RIDatabaseNode
 		ILogCollector theCollector = new MyCollector(
 				aMaster,
 				aHostInfo,
-				itsLocationStore,
+				itsExceptionResolver,
 				this);
 		
-		if (DebugFlags.COLLECTOR_LOG) theCollector = new PrintThroughCollector(
-				aHostInfo,
-				theCollector,
-				aMaster.getLocationStore());
+//		if (DebugFlags.COLLECTOR_LOG) theCollector = new PrintThroughCollector(
+//				aHostInfo,
+//				theCollector,
+//				aMaster.getLocationStore());
 		
 		return new MyReceiver(
 //				NODE_THREAD,
 				aHostInfo,
 				theCollector,
-				itsLocationStore,
 				aInStream,
 				aOutStream,
 				aStartImmediately);
@@ -455,10 +477,10 @@ implements RIDatabaseNode
 		public MyCollector(
 				GridMaster aMaster, 
 				IHostInfo aHost, 
-				ILocationsRepository aLocationsRepository,
+				IExceptionResolver aExceptionResolver,
 				DatabaseNode aNode)
 		{
-			super(aHost, aLocationsRepository, aNode);
+			super(aHost, aExceptionResolver, aNode);
 			itsMaster = aMaster;
 		}
 
@@ -472,9 +494,9 @@ implements RIDatabaseNode
 	
 	private class MyReceiver extends CollectorLogReceiver
 	{
-		public MyReceiver(HostInfo aHostInfo, ILogCollector aCollector, ILocationRegisterer aLocationRegistrer, InputStream aInStream, OutputStream aOutStream, boolean aStart)
+		public MyReceiver(HostInfo aHostInfo, ILogCollector aCollector, InputStream aInStream, OutputStream aOutStream, boolean aStart)
 		{
-			super(aHostInfo, aCollector, aLocationRegistrer, aInStream, aOutStream, aStart);
+			super(aHostInfo, aCollector, aInStream, aOutStream, aStart);
 		}
 
 		@Override

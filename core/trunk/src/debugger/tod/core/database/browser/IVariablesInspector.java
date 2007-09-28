@@ -24,7 +24,7 @@ import java.util.List;
 
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.ILocationsRepository.LocalVariableInfo;
+import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 
 /**
  * Permits to determine the value of local variables during a method execution.

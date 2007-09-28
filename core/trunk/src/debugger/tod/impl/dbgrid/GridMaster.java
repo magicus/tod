@@ -42,13 +42,17 @@ import tod.Util;
 import tod.agent.AgentConfig;
 import tod.core.bci.IInstrumenter;
 import tod.core.config.TODConfig;
-import tod.core.database.browser.ILocationStore;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.IThreadInfo;
+import tod.core.database.structure.IStructureDatabase.IBehaviorListener;
 import tod.core.server.TODServer;
 import tod.core.transport.LogReceiver;
+import tod.impl.database.structure.standard.ExceptionResolver;
 import tod.impl.database.structure.standard.HostInfo;
+import tod.impl.database.structure.standard.ExceptionResolver.BehaviorInfo;
 import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
 import tod.impl.dbgrid.aggregator.StringHitsAggregator;
@@ -66,8 +70,8 @@ import tod.impl.dbgrid.monitoring.Monitor;
 import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.utils.TODUtils;
-import tod.utils.remote.RILocationsRepository;
-import tod.utils.remote.RemoteLocationsRepository;
+import tod.utils.remote.RIStructureDatabase;
+import tod.utils.remote.RemoteStructureDatabase;
 import zz.utils.ITask;
 import zz.utils.Utils;
 
@@ -97,8 +101,9 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	private long itsLastKeepAlive = System.currentTimeMillis();
 	
 	
-	private ILocationStore itsLocationStore;
-	private RemoteLocationsRepository itsRemoteLocationsRepository;
+	private IStructureDatabase itsStructureDatabase;
+	private ExceptionResolver itsExceptionResolver = new ExceptionResolver();
+	private RemoteStructureDatabase itsRemoteStructureDatabase;
 	
 	private long itsEventsCount;
 	private long itsFirstTimestamp;
@@ -121,27 +126,65 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	private ILogBrowser itsLocalLogBrowser;
 	
-	/**
-	 * Creates a master with a single database node.
-	 */
-	public GridMaster(
+	private final IBehaviorListener itsBehaviorListener = new IBehaviorListener()
+	{
+		public void behaviorRegistered(IBehaviorInfo aBehavior)
+		{
+			BehaviorInfo theBehaviorInfo = TODUtils.createBehaviorInfo(aBehavior);
+			try
+			{
+				for (RIDatabaseNode theNode : getNodes())
+				{
+					theNode.registerBehaviors(new BehaviorInfo[] { theBehaviorInfo });
+				}
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
+			itsExceptionResolver.registerBehavior(theBehaviorInfo);
+		}
+	};
+	
+	private GridMaster(
 			TODConfig aConfig, 
-			ILocationStore aLocationStore, 
+			IStructureDatabase aStructureDatabase, 
 			IInstrumenter aInstrumenter,
-			DatabaseNode aDatabaseNode,
+			DispatchTreeStructure aDispatchTreeStructure,
 			boolean aStartServer) throws RemoteException
 	{
 		itsConfig = aConfig;
 		itsInstrumenter = aInstrumenter;
-		itsLocationStore = aLocationStore;
-		itsDispatchTreeStructure = new LocalDispatchTreeStructure(this, aDatabaseNode);
-		itsRemoteLocationsRepository = new RemoteLocationsRepository(itsLocationStore);
-
-		itsLocalLogBrowser = new GridLogBrowser(this);
+		itsStructureDatabase = aStructureDatabase;
+		itsStructureDatabase.addBehaviorListener(itsBehaviorListener);
+		itsRemoteStructureDatabase = new RemoteStructureDatabase(itsStructureDatabase);
 		
+		itsDispatchTreeStructure = aDispatchTreeStructure;
+		itsDispatchTreeStructure.setMaster(this);
+
 		itsStartServer = aStartServer;	
 		
+		itsLocalLogBrowser = GridLogBrowser.createLocal(this);
+		
 		createTimeoutThread();
+	}
+	
+	/**
+	 * Creates a master with a single database node.
+	 */
+	public static GridMaster createLocal(
+			TODConfig aConfig, 
+			IStructureDatabase aStructureDatabase, 
+			IInstrumenter aInstrumenter,
+			DatabaseNode aDatabaseNode,
+			boolean aStartServer) throws RemoteException
+	{
+		return new GridMaster(
+				aConfig, 
+				aStructureDatabase, 
+				aInstrumenter,
+				new LocalDispatchTreeStructure(aDatabaseNode),
+				aStartServer);
 	}
 	
 	
@@ -150,24 +193,18 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 * {@link #waitReady()} method should be called to wait for the nodes
 	 * to connect.
 	 */
-	public GridMaster(
+	public static GridMaster create(
 			TODConfig aConfig, 
-			ILocationStore aLocationStore, 
+			IStructureDatabase aStructureDatabase, 
 			IInstrumenter aInstrumenter,
 			DispatchTreeStructure aTreeStructure) throws RemoteException
 	{
-		itsConfig = aConfig;
-		itsInstrumenter = aInstrumenter;
-		itsLocationStore = aLocationStore;
-		itsDispatchTreeStructure = aTreeStructure;
-		itsDispatchTreeStructure.setMaster(this);
-		itsRemoteLocationsRepository = new RemoteLocationsRepository(itsLocationStore);
-		
-		itsLocalLogBrowser = new GridLogBrowser(this);
-		
-		itsStartServer = true;
-
-		createTimeoutThread();
+		return new GridMaster(
+				aConfig,
+				aStructureDatabase,
+				aInstrumenter,
+				aTreeStructure,
+				true);
 	}
 	
 	private void createTimeoutThread()
@@ -220,6 +257,27 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		Timer theTimer = new Timer(true);
 		theTimer.schedule(new DataUpdater(), 5000, 3000);
 		
+		// Forward already registered behaviors.
+		IBehaviorInfo[] theBehaviors = itsStructureDatabase.getBehaviors();
+		BehaviorInfo[] theBehaviorInfos = new BehaviorInfo[theBehaviors.length];
+		for (int i = 0; i < theBehaviors.length; i++)
+		{
+			theBehaviorInfos[i] = TODUtils.createBehaviorInfo(theBehaviors[i]);
+		}
+
+		try
+		{
+			for (RIDatabaseNode theNode : getNodes())
+			{
+				theNode.registerBehaviors(theBehaviorInfos);
+			}
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
+		itsExceptionResolver.registerBehaviors(theBehaviorInfos);
+
 		System.out.println(READY_STRING);
 	}
 	
@@ -274,7 +332,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		
 		fireMonitorData(aNodeId, aData);
 	}
-
+	
 	/**
 	 * Fires the {@link RIGridMasterListener#eventsReceived()} message
 	 * to all listeners.
@@ -524,19 +582,24 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		}
 
 	}
-
-	public ILocationStore getLocationStore()
+	
+	public IStructureDatabase getStructureDatabase()
 	{
-		return itsLocationStore;
+		return itsStructureDatabase;
+	}
+
+	public RIStructureDatabase getRemoteStructureDatabase() 
+	{
+		System.out.println("GridMaster.getStructureDatabase()");
+		return itsRemoteStructureDatabase;
 	}
 	
-	public RILocationsRepository getLocationsRepository() 
+	public int getBehaviorId(String aClassName, String aMethodName, String aMethodSignature)
 	{
-		System.out.println("GridMaster.getLocationsRepository()");
-		return itsRemoteLocationsRepository;
+		return itsExceptionResolver.getBehaviorId(aClassName, aMethodName, aMethodSignature);
 	}
 
-	public <O> O exec(ITask<ILogBrowser, O> aTask)
+	public <O> O exec(ITask<ILogBrowser, O> aTask) 
 	{
 		return aTask.run(itsLocalLogBrowser);
 	}
@@ -579,7 +642,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		
 		public MyTODServer(TODConfig aConfig, IInstrumenter aInstrumenter)
 		{
-			super(aConfig, aInstrumenter, itsLocationStore);
+			super(aConfig, aInstrumenter, itsStructureDatabase);
 		}
 
 		@Override

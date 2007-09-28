@@ -42,10 +42,9 @@ public class LocalDispatchTreeStructure extends DispatchTreeStructure
 {
 	private final DatabaseNode itsDatabaseNode;
 
-	public LocalDispatchTreeStructure(GridMaster aMaster, DatabaseNode aDatabaseNode)
+	public LocalDispatchTreeStructure(DatabaseNode aDatabaseNode)
 	{
 		super(1, 0);
-		setMaster(aMaster);
 		itsDatabaseNode = aDatabaseNode;
 	}
 	
@@ -68,12 +67,6 @@ public class LocalDispatchTreeStructure extends DispatchTreeStructure
 		}
 	}
 	
-	@Override
-	protected void forwardLocations()
-	{
-		// Do nothing here, the database node shares the locations store with the master.
-	}
-
 	@Override
 	public NodeRole getRoleForNode0(String aHostName)
 	{

@@ -32,12 +32,12 @@ import tod.core.database.structure.ITypeInfo;
  */
 public abstract class TypeInfo extends LocationInfo implements ITypeInfo
 {
-	public TypeInfo(IStructureDatabase aDatabase, int aId, String aName)
+	public TypeInfo(StructureDatabase aDatabase, int aId, String aName)
 	{
 		super(aDatabase, aId, aName);
 	}
 
-	public TypeInfo(IStructureDatabase aDatabase, int aId)
+	public TypeInfo(StructureDatabase aDatabase, int aId)
 	{
 		super(aDatabase, aId);
 	}

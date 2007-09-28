@@ -18,19 +18,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.utils.remote;
-
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-
-import tod.core.database.structure.ILocationsRepository.Stats;
+package tod.core.database.structure;
 
 /**
- * A listener that is notified when the contents of a locations repository
- * changes.
+ * Permits to resolve exception locations to behavior ids.
+ * This is in fact a very reduced view of the {@link IStructureDatabase},
+ * holding only class and behavior names.
  * @author gpothier
  */
-public interface RILocationsRepositoryListener extends Remote
+public interface IExceptionResolver
 {
-	public void changed(Stats aStats) throws RemoteException;
+	/**
+	 * Returns the id of the specified behavior
+	 * @param aMethodSignature JVM signature of the method.
+	 */
+	public int getBehaviorId(String aClassName, String aMethodName, String aMethodSignature);
 }

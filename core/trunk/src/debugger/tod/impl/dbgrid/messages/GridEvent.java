@@ -150,7 +150,7 @@ public abstract class GridEvent extends GridMessage
 		aEvent.setThread(theThread);
 		aEvent.setTimestamp(getTimestamp());
 		aEvent.setDepth(getDepth());
-		aEvent.setOperationBehavior(aBrowser.getLocationsRepository().getBehavior(getOperationBehaviorId()));
+		aEvent.setOperationBehavior(aBrowser.getStructureDatabase().getBehavior(getOperationBehaviorId(), true));
 		aEvent.setOperationBytecodeIndex(getOperationBytecodeIndex());
 		aEvent.setParentTimestamp(getParentTimestamp());
 	}

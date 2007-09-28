@@ -469,8 +469,8 @@ public class CollectorPacketWriter
 			DataOutputStream aStream,
 			long aOperationLocation) throws IOException
 	{
-		aStream.writeInt((int) (aOperationLocation >>> 16));
-		aStream.writeShort((short) (aOperationLocation & 0xffff));
+		aStream.writeInt((int) (aOperationLocation >>> 16)); // Behavior id
+		aStream.writeShort((short) (aOperationLocation & 0xffff)); // bytecode indexBehavior
 	}
 	
 

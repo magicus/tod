@@ -25,10 +25,8 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-import tod.core.LocationRegisterer;
 import tod.core.bci.IInstrumenter;
 import tod.core.config.TODConfig;
-import tod.core.database.browser.ILocationRegisterer;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.transport.CollectorLogReceiver;
 import tod.core.transport.LogReceiver;
@@ -62,7 +60,6 @@ public class CollectorTODServer extends TODServer
 			return new CollectorLogReceiver(
 					new HostInfo(itsCurrentHostId++),
 					itsCollectorFactory.create(),
-					LocationRegisterer.createSynchronizedRegistrer(getLocationRegistrer()),
 					new BufferedInputStream(aSocket.getInputStream()), 
 					new BufferedOutputStream(aSocket.getOutputStream()))
 			{

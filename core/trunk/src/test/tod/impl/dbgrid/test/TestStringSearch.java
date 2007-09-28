@@ -39,7 +39,7 @@ public class TestStringSearch
 	{
 		TODConfig theConfig = new TODConfig();
 		theConfig.set(TODConfig.INDEX_STRINGS, true);
-		DatabaseNode theNode = new DatabaseNode();
+		DatabaseNode theNode = DatabaseNode.createLocalNode();
 
 		for (int i=0;i<STRINGS.length;i++)
 		{

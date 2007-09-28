@@ -20,7 +20,8 @@
  */
 package tod.impl.dbgrid.dispatch;
 
-import static tod.impl.dbgrid.DebuggerGridConfig.*;
+import static tod.impl.dbgrid.DebuggerGridConfig.DISPATCH_BATCH_SIZE;
+import static tod.impl.dbgrid.DebuggerGridConfig.LOAD_BALANCING;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -33,11 +34,6 @@ import java.net.Socket;
 import java.rmi.RemoteException;
 
 import tod.agent.DebugFlags;
-import tod.core.BehaviorKind;
-import tod.core.database.browser.ILocationRegisterer;
-import tod.core.database.structure.ILocationInfo;
-import tod.core.transport.CollectorPacketReader;
-import tod.core.transport.CollectorPacketWriter;
 import tod.core.transport.LogReceiver;
 import tod.core.transport.MessageType;
 import tod.impl.database.structure.standard.HostInfo;
@@ -47,23 +43,9 @@ import tod.impl.dbgrid.GridMaster;
 public class EventDispatcher extends AbstractEventDispatcher
 implements RIDispatcher
 {
-	private ILocationRegisterer itsForwardingRegistrer = new ForwardingRegisterer();
-
 	public EventDispatcher() throws RemoteException
 	{
 		super(true);
-	}
-
-	/**
-	 * Forwards the given location infos to the children. This method is used by
-	 * the master if this dispatcher is the root.
-	 */
-	public void forwardLocations(Iterable<ILocationInfo> aLocations)
-	{
-		for (ILocationInfo theLocation : aLocations)
-		{
-			theLocation.register(itsForwardingRegistrer);
-		}
 	}
 
 	@Override
@@ -230,10 +212,7 @@ implements RIDispatcher
 				break;
 
 			default:
-				// Registrations are forwarded to all nodes.
-				CollectorPacketReader.readPacket(aStream, itsForwardingRegistrer, aType);
-				break;
-
+				throw new RuntimeException("Not handled: "+aType);
 			}
 			
 		}
@@ -251,123 +230,6 @@ implements RIDispatcher
 				itsMaster.registerThread(theThreadInfo);
 			}
 		}
-	}
-
-	/**
-	 * A wrapper for the location registrer provided to the grid master. It
-	 * forwards registrations to the original registerer as well as to the root
-	 * dispatcher's registrer.
-	 * 
-	 * @see AbstractEventDispatcher#getLocationRegistrer()
-	 * @author gpothier
-	 */
-	private class ForwardingRegisterer implements ILocationRegisterer
-	{
-		public void registerBehavior(
-				BehaviorKind aBehaviourType, 
-				int aBehaviourId, 
-				int aTypeId,
-				String aBehaviourName, 
-				String aSignature)
-		{
-			try
-			{
-				for (DispatchNodeProxy theProxy : getChildren())
-				{
-					CollectorPacketWriter.sendRegisterBehavior(
-							theProxy.getOutStream(), 
-							aBehaviourType,
-							aBehaviourId,
-							aTypeId,
-							aBehaviourName, 
-							aSignature);
-				}
-			}
-			catch (IOException e)
-			{
-				throw new RuntimeException(e);
-			}
-		}
-
-		public void registerBehaviorAttributes(
-				int aBehaviourId, 
-				LineNumberInfo[] aLineNumberTable,
-				LocalVariableInfo[] aLocalVariableTable)
-		{
-			try
-			{
-				for (DispatchNodeProxy theProxy : getChildren())
-				{
-					CollectorPacketWriter.sendRegisterBehaviorAttributes(
-							theProxy.getOutStream(),
-							aBehaviourId,
-							aLineNumberTable, 
-							aLocalVariableTable);
-				}
-			}
-			catch (IOException e)
-			{
-				throw new RuntimeException(e);
-			}
-		}
-
-		public void registerField(int aFieldId, int aTypeId, String aFieldName)
-		{
-			try
-			{
-				for (DispatchNodeProxy theProxy : getChildren())
-				{
-					CollectorPacketWriter.sendRegisterField(
-							theProxy.getOutStream(),
-							aFieldId,
-							aTypeId, 
-							aFieldName);
-				}
-			}
-			catch (IOException e)
-			{
-				throw new RuntimeException(e);
-			}
-		}
-
-		public void registerFile(int aFileId, String aFileName)
-		{
-			try
-			{
-				for (DispatchNodeProxy theProxy : getChildren())
-				{
-					CollectorPacketWriter.sendRegisterFile(
-							theProxy.getOutStream(),
-							aFileId, 
-							aFileName);
-				}
-			}
-			catch (IOException e)
-			{
-				throw new RuntimeException(e);
-			}
-		}
-
-		public void registerType(int aTypeId, String aTypeName, int aSupertypeId, int[] aInterfaceIds)
-		{
-			try
-			{
-				for (DispatchNodeProxy theProxy : getChildren())
-				{
-					CollectorPacketWriter.sendRegisterType(
-							theProxy.getOutStream(), 
-							aTypeId, 
-							aTypeName,
-							aSupertypeId,
-							aInterfaceIds);
-				}
-			}
-			catch (IOException e)
-			{
-				throw new RuntimeException(e);
-			}
-		}
-
 	}
 
 }

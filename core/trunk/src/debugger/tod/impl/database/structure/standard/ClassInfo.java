@@ -23,12 +23,14 @@ package tod.impl.database.structure.standard;
 import java.util.HashMap;
 import java.util.Map;
 
-import tod.core.database.browser.ILocationRegisterer;
+import org.objectweb.asm.Type;
+
+import tod.core.database.browser.LocationUtils;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
-import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
+import tod.impl.database.structure.standard.StructureDatabase.ClassNameInfo;
 
 /**
  * Default implementation of {@link IClassInfo}.
@@ -36,8 +38,26 @@ import tod.core.database.structure.ITypeInfo;
  */
 public class ClassInfo extends TypeInfo implements IClassInfo
 {
-	private ClassInfo itsSupertype;
-	private ClassInfo[] itsInterfaces;
+	private static final long serialVersionUID = -2583314414851419966L;
+
+	private transient ClassNameInfo itsClassNameInfo;
+	
+	private boolean itsInScope;
+	private boolean itsInterface;
+	
+	private String itsChecksum;
+	
+	/**
+	 * Id of the supertype.
+	 * Important: we keep the id and not the object for serialization purposes.
+	 */
+	private int itsSupertypeId;
+	
+	/**
+	 * Ids of the interfaces implemented by this class.
+	 * Important: we keep the ids and not the objects for serialization purposes.
+	 */
+	private int[] itsInterfacesIds;
 	
 	private Map<String, IFieldInfo> itsFieldsMap = new HashMap<String, IFieldInfo>();
 	private Map<String, IBehaviorInfo> itsBehaviorsMap = new HashMap<String, IBehaviorInfo>();
@@ -53,28 +73,47 @@ public class ClassInfo extends TypeInfo implements IClassInfo
 	 * various versions when classes are redefined at runtime.
 	 */
 	private boolean itsDisposable = false;
-
-	public ClassInfo(IStructureDatabase aDatabase, int aId)
-	{
-		super(aDatabase, aId);
-	}
-
-	public ClassInfo(IStructureDatabase aDatabase, int aId, String aName)
-	{
-		this (aDatabase, aId, aName, null, null);
-	}
 	
-	public ClassInfo(
-			IStructureDatabase aDatabase, 
-			int aId, 
-			String aName, 
-			ClassInfo aSupertype,
-			ClassInfo[] aInterfaces)
+	private long itsStartTime;
+
+	public ClassInfo(StructureDatabase aDatabase, ClassNameInfo aClassNameInfo, String aName, int aId)
 	{
 		super(aDatabase, aId, aName);
-		
-		itsSupertype = aSupertype;
-		itsInterfaces = aInterfaces;
+		itsClassNameInfo = aClassNameInfo;
+	}
+
+	public void setup(
+			boolean aIsInterface, 
+			boolean aInScope, 
+			String aChecksum, 
+			IClassInfo[] aInterfaces, 
+			IClassInfo aSuperclass)
+	{
+		itsInterface = aIsInterface;
+		itsInScope = aInScope;
+		itsChecksum = aChecksum;
+		setInterfaces(aInterfaces);
+		setSupertype(aSuperclass);
+	}
+	
+	public boolean isInScope()
+	{
+		return itsInScope;
+	}
+	
+	public boolean isInterface()
+	{
+		return itsInterface;
+	}
+	
+	public long getStartTime()
+	{
+		return itsStartTime;
+	}
+	
+	public String getChecksum()
+	{
+		return itsChecksum;
 	}
 
 	public boolean isDisposable()
@@ -90,9 +129,10 @@ public class ClassInfo extends TypeInfo implements IClassInfo
 	/**
 	 * Registers the given field info object.
 	 */
-	public void register(IFieldInfo aFieldInfo)
+	public void register(IFieldInfo aField)
 	{
-		itsFieldsMap.put (aFieldInfo.getName(), aFieldInfo);
+		itsFieldsMap.put (aField.getName(), aField);
+		getDatabase().registerField(aField);
 	}
 	
 	/**
@@ -101,6 +141,7 @@ public class ClassInfo extends TypeInfo implements IClassInfo
 	public void register(IBehaviorInfo aBehavior)
 	{
 		itsBehaviorsMap.put(getKey(aBehavior), aBehavior);
+		getDatabase().registerBehavior(aBehavior);
 	}
 	
 	public IFieldInfo getField(String aName)
@@ -110,7 +151,45 @@ public class ClassInfo extends TypeInfo implements IClassInfo
 	
 	public IBehaviorInfo getBehavior(String aName, ITypeInfo[] aArgumentTypes)
 	{
-		return itsBehaviorsMap.get(getKey(aName, aArgumentTypes));
+		return itsBehaviorsMap.get(getBehaviorKey(aName, aArgumentTypes));
+	}
+	
+	public IBehaviorInfo getNewBehavior(String aName, String aDescriptor)
+	{
+		ITypeInfo[] theArgumentTypes = LocationUtils.getArgumentTypes(getDatabase(), aDescriptor, true);
+		ITypeInfo theReturnType = LocationUtils.getReturnType(getDatabase(), aDescriptor, true);
+		
+		IBehaviorInfo theBehavior = getBehavior(aName, theArgumentTypes);
+		if (theBehavior == null)
+		{
+			int theId = itsClassNameInfo.getBehaviorId(aName, theArgumentTypes);
+			theBehavior = new BehaviorInfo(
+					getDatabase(), 
+					theId,
+					this,
+					aName,
+					aDescriptor,
+					theArgumentTypes,
+					theReturnType);
+			
+			register(theBehavior);
+		}
+		
+		return theBehavior;
+	}
+	
+	public IFieldInfo getNewField(String aName, ITypeInfo aType)
+	{
+		IFieldInfo theField = getField(aName);
+		if (theField == null)
+		{
+			int theId = itsClassNameInfo.getFieldId(aName, aType);
+			theField = new FieldInfo(getDatabase(), theId, this, aName);
+			
+			register(theField);
+		}
+	
+		return theField;
 	}
 	
 	public Iterable<IFieldInfo> getFields()
@@ -123,24 +202,33 @@ public class ClassInfo extends TypeInfo implements IClassInfo
 		return itsBehaviorsMap.values();
 	}
 	
-	public ClassInfo[] getInterfaces()
+	public IClassInfo[] getInterfaces()
 	{
-		return itsInterfaces;
+		IClassInfo[] theResult = new ClassInfo[itsInterfacesIds.length];
+		for(int i=0;i<itsInterfacesIds.length;i++)
+		{
+			theResult[i] = getDatabase().getClass(itsInterfacesIds[i], true);
+		}
+		return theResult;
 	}
 
-	public void setInterfaces(ClassInfo[] aInterfaces)
+	private void setInterfaces(IClassInfo[] aInterfaces)
 	{
-		itsInterfaces = aInterfaces;
+		itsInterfacesIds = new int[aInterfaces.length];
+		for(int i=0;i<itsInterfacesIds.length;i++)
+		{
+			itsInterfacesIds[i] = aInterfaces[i].getId();
+		}		
 	}
 
-	public void setSupertype(ClassInfo aSupertype)
+	private void setSupertype(IClassInfo aSupertype)
 	{
-		itsSupertype = aSupertype;
+		itsSupertypeId = aSupertype != null ? aSupertype.getId() : 0;
 	}
 
-	public ClassInfo getSupertype()
+	public IClassInfo getSupertype()
 	{
-		return itsSupertype;
+		return itsSupertypeId != 0 ? getDatabase().getClass(itsSupertypeId, true) : null;
 	}
 
 	public int getSize()
@@ -162,16 +250,20 @@ public class ClassInfo extends TypeInfo implements IClassInfo
 	{
 		return false;
 	}
-
+	
 	private String getKey(IBehaviorInfo aBehavior)
 	{
-		return getKey(aBehavior.getName(), aBehavior.getArgumentTypes());
+		return getBehaviorKey(aBehavior.getName(), aBehavior.getArgumentTypes());
 	}
 	
-	private String getKey(String aName, ITypeInfo[] aArgumentTypes)
+	/**
+	 * Returns a key (signature) for identifying a behavior.
+	 */
+	public static String getBehaviorKey(String aName, ITypeInfo[] aArgumentTypes)
 	{
-		StringBuilder theBuilder = new StringBuilder();
+		StringBuilder theBuilder = new StringBuilder("b");
 		theBuilder.append(aName);
+		theBuilder.append('|');
 		for (ITypeInfo theType : aArgumentTypes)
 		{
 			theBuilder.append('|');
@@ -179,6 +271,14 @@ public class ClassInfo extends TypeInfo implements IClassInfo
 		}
 		
 		return theBuilder.toString();
+	}
+
+	/**
+	 * Returns a key (signature) for identifying a field.
+	 */
+	public static String getFieldKey(String aName, ITypeInfo aType)
+	{
+		return "f" + aName + "|" + aType.getName();
 	}
 	
 	@Override

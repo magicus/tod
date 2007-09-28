@@ -30,6 +30,8 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 
 import tod.core.bci.IInstrumenter;
+import tod.core.database.structure.IStructureDatabase;
+import zz.utils.Utils;
 
 /**
  * This class instruments classes of the application VM
@@ -38,10 +40,12 @@ import tod.core.bci.IInstrumenter;
  */
 public class ASMInstrumenter implements IInstrumenter
 {
+	private final IStructureDatabase itsDatabase;
 	private final ASMDebuggerConfig itsConfig;
 	
-	public ASMInstrumenter(ASMDebuggerConfig aConfig)
+	public ASMInstrumenter(IStructureDatabase aDatabase, ASMDebuggerConfig aConfig)
 	{
+		itsDatabase = aDatabase;
 		itsConfig = aConfig;
 	}
 	
@@ -61,6 +65,8 @@ public class ASMInstrumenter implements IInstrumenter
     {
 		if (! BCIUtils.acceptClass(aName, itsConfig.getGlobalSelector())) return null;
     	
+		String theChecksum = Utils.md5String(aBytecode);
+		
     	ClassReader theReader = new ClassReader(aBytecode);
     	ClassWriter theWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
     	
@@ -72,9 +78,11 @@ public class ASMInstrumenter implements IInstrumenter
     	
     	// Pass 2: actual instrumentation
     	LogBCIVisitor theVisitor = new LogBCIVisitor(
+    			itsDatabase,
     			itsConfig, 
     			theInfoCollector,
     			theWriter,
+    			theChecksum,
     			theTracedMethods);
     	
     	Attribute[] theAttributes = new Attribute[] {

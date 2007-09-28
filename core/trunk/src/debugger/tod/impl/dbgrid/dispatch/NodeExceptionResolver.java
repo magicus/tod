@@ -18,31 +18,39 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.database.structure.standard;
+package tod.impl.dbgrid.dispatch;
 
-import tod.core.ILogCollector;
-import tod.core.database.structure.IClassInfo;
-import tod.core.database.structure.IFieldInfo;
-import tod.core.database.structure.IStructureDatabase;
+import tod.impl.database.structure.standard.ExceptionResolver;
+import tod.impl.dbgrid.GridMaster;
 
 /**
- * Aggregates the information a {@link ILogCollector collector}
- * receives about a field.
+ * A "slave" exception resolver. If it cannot answer a query, it asks to
+ * the grid master and caches the result.
  * @author gpothier
  */
-public class FieldInfo extends MemberInfo implements IFieldInfo
+public class NodeExceptionResolver extends ExceptionResolver
 {
-
-	public FieldInfo(StructureDatabase aDatabase, int aId, IClassInfo aTypeInfo, String aName)
-	{
-		super(aDatabase, aId, aTypeInfo, aName);
-	}
+	private final DatabaseNode itsNode;
+	private GridMaster itsMaster;
 
 	
-	@Override
-	public String toString()
+	public NodeExceptionResolver(DatabaseNode aNode)
 	{
-		return "Field ("+getId()+", "+getName()+")";
+		itsNode = aNode;
 	}
 
+
+	@Override
+	public int getBehaviorId(String aClassName, String aMethodName, String aMethodSignature)
+	{
+		int theId = super.getBehaviorId(aClassName, aMethodName, aMethodSignature);
+		if (theId == 0)
+		{
+			if (itsMaster == null) itsMaster = (GridMaster) itsNode.getMaster();
+			theId = itsMaster.getBehaviorId(aClassName, aMethodName, aMethodSignature);
+			registerBehavior(aClassName, aMethodName, aMethodSignature, theId);
+		}
+		
+		return theId;
+	}
 }

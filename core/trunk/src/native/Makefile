@@ -1,5 +1,6 @@
 
 BOOST_VERSION = 1_34_1
+ASIO_VERSION = 0.3.8rc3
 SHARED_MAGIC = -shared
 STATIC_MAGIC = -Wl,-Bstatic 
 
@@ -24,7 +25,7 @@ ifeq ($(PLATFORM), macos)
 	BOOST_FLAVOR = mt
 	SHARED_MAGIC = -dynamiclib
 	STATIC_MAGIC = 
-	CXXFLAGS += -I /usr/local/include/boost-$(BOOST_VERSION) -I /usr/local/include/asio-0.3.8rc3/
+	CXXFLAGS += -I /usr/local/include/boost-$(BOOST_VERSION) -I /usr/local/include/asio-$(ASIO_VERSION)/
 	
 	CXXFLAGS += -Wno-long-double
 
@@ -41,6 +42,8 @@ endif
 
 ifeq ($(PLATFORM), linux)
 	BOOST_FLAVOR = gcc41-mt
+	
+	CXXFLAGS += -I /usr/include/boost-$(BOOST_VERSION) -I /usr/include/asio-$(ASIO_VERSION)/
 	
 	CXXFLAGS += -I $(JAVA_HOME)/include/ -I $(JAVA_HOME)/include/linux/
 	LDFLAGS += -static-libgcc 

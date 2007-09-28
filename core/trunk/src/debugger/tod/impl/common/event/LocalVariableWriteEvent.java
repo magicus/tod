@@ -22,7 +22,7 @@ package tod.impl.common.event;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILocalVariableWriteEvent;
-import tod.core.database.structure.ILocationsRepository.LocalVariableInfo;
+import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 
 /**
  * @author gpothier

@@ -34,15 +34,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.agent.DebugFlags;
-import tod.core.LocationRegisterer;
 import tod.core.config.TODConfig;
-import tod.core.database.browser.ILocationRegisterer;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.transport.LogReceiver;
 import tod.core.transport.LogReceiver.ILogReceiverMonitor;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
 import tod.impl.database.structure.standard.HostInfo;
+import tod.impl.database.structure.standard.StructureDatabase;
 import tod.impl.dbgrid.db.EventDatabase;
 import tod.impl.dbgrid.db.EventList;
 import tod.impl.dbgrid.db.HierarchicalIndex;
@@ -54,6 +54,7 @@ import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.impl.dbgrid.test.TestHierarchicalIndex;
 import tod.impl.local.LocalBrowser;
+import tod.utils.TODUtils;
 import zz.utils.bit.BitStruct;
 import zz.utils.bit.IntBitStruct;
 
@@ -383,19 +384,7 @@ public class Fixtures
 	{
 		try
 		{
-			TODConfig theConfig = new TODConfig();
-			LocationRegisterer theRegistrer = new LocationRegisterer();
-			
-			ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(
-					theConfig,
-					theRegistrer);
-
-			ASMInstrumenter theInstrumenter = new ASMInstrumenter(theDebuggerConfig);
-			
-			DatabaseNode theNode = new DatabaseNode();
-			GridMaster theMaster = new GridMaster(theConfig, theRegistrer, theInstrumenter, theNode, false);
-			theMaster.waitReady();
-			return theMaster;
+			return TODUtils.setupLocalMaster(null);
 		}
 		catch (RemoteException e)
 		{
@@ -442,13 +431,11 @@ public class Fixtures
 	 */
 	public static ASMInstrumenter createInstrumenter()
 	{
-		ILocationRegisterer theLocationRegistrer = new LocationRegisterer();
-		
-		ASMDebuggerConfig theConfig = new ASMDebuggerConfig(
-				new TODConfig(),
-				theLocationRegistrer);
+		TODConfig theConfig = new TODConfig();
+		IStructureDatabase theStructureDatabase = StructureDatabase.create("test");
+		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(theConfig);
 
-		return new ASMInstrumenter(theConfig);
+		return new ASMInstrumenter(theStructureDatabase, theDebuggerConfig);
 	}
 	
 	private static class MyLogReceiverMonitor implements ILogReceiverMonitor

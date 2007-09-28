@@ -32,12 +32,13 @@ import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
 import tod.impl.dbgrid.db.NodeRejectedException;
 import tod.impl.dbgrid.db.RIBufferIterator;
+import tod.impl.dbgrid.dispatch.NodeExceptionResolver;
 import tod.impl.dbgrid.dispatch.RIDispatchNode;
 import tod.impl.dbgrid.dispatch.RIDatabaseNode.StringSearchHit;
 import tod.impl.dbgrid.dispatch.tree.DispatchTreeStructure;
 import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
 import tod.impl.dbgrid.queries.EventCondition;
-import tod.utils.remote.RILocationsRepository;
+import tod.utils.remote.RIStructureDatabase;
 import zz.utils.ITask;
 
 /**
@@ -155,7 +156,7 @@ public interface RIGridMaster extends Remote
 	 * Returns a remote locations repository.
 	 * Client: frontend 
 	 */
-	public RILocationsRepository getLocationsRepository() throws RemoteException;
+	public RIStructureDatabase getRemoteStructureDatabase() throws RemoteException;
 
 	/**
 	 * Returns an object registered by the database, or null
@@ -180,4 +181,12 @@ public interface RIGridMaster extends Remote
 	 * shutting down.
 	 */
 	public void keepAlive() throws RemoteException;
+
+	/**
+	 * Returns the id of the specified behavior (for exception processing).
+	 * This metehod is called by the database nodes' exception resolver.
+	 * @see NodeExceptionResolver 
+	 */
+	public int getBehaviorId(String aClassName, String aMethodName, String aMethodSignature) throws RemoteException;
+
 }

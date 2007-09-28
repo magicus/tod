@@ -28,9 +28,9 @@ import javax.swing.JComponent;
 
 import tod.agent.DebugFlags;
 import tod.core.ILogCollector;
-import tod.core.LocationRegisterer;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.server.CollectorTODServer;
 import tod.core.server.ICollectorFactory;
 import tod.core.server.TODServer;
@@ -39,12 +39,13 @@ import tod.core.session.ConnectionInfo;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
 import tod.impl.database.structure.standard.HostInfo;
+import tod.impl.database.structure.standard.StructureDatabase;
 import tod.utils.PrintThroughCollector;
 
 public class LocalSession extends AbstractSession
 {
 	private TODServer itsServer;
-	private LocationRegisterer itsLocationRegistrer;
+	private IStructureDatabase itsStructureDatabase;
 	
 	private LocalBrowser itsBrowser;
 	private List<ILogCollector> itsCollectors = new ArrayList<ILogCollector>();
@@ -52,19 +53,16 @@ public class LocalSession extends AbstractSession
 	public LocalSession(URI aUri, TODConfig aConfig)
 	{
 		super(aUri, aConfig);
-		itsLocationRegistrer = new LocationRegisterer();
-		itsBrowser = new LocalBrowser(itsLocationRegistrer);
+		itsStructureDatabase = StructureDatabase.create("bouh");
+		itsBrowser = new LocalBrowser(itsStructureDatabase);
 		
-		ASMDebuggerConfig theConfig = new ASMDebuggerConfig(
-				aConfig,
-				itsLocationRegistrer);
-
-		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theConfig);
+		ASMDebuggerConfig theConfig = new ASMDebuggerConfig(aConfig);
+		ASMInstrumenter theInstrumenter = new ASMInstrumenter(itsStructureDatabase, theConfig);
 		
 		itsServer = new CollectorTODServer(
 				aConfig,
 				theInstrumenter,
-				new LocationRegisterer(),
+				itsStructureDatabase,
 				new MyCollectorFactory());
 	}
 	
@@ -107,7 +105,7 @@ public class LocalSession extends AbstractSession
 			if (DebugFlags.COLLECTOR_LOG) theCollector = new PrintThroughCollector(
 					theHost,
 					theCollector,
-					getLogBrowser().getLocationsRepository());
+					getLogBrowser().getStructureDatabase());
 			
 			itsCollectors.add(theCollector);
 			return theCollector;

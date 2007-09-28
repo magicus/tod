@@ -21,22 +21,24 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.utils;
 
 import java.io.FileReader;
+import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 
 import tod.agent.DebugFlags;
-import tod.core.LocationRegisterer;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IStructureDatabase;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
+import tod.impl.database.structure.standard.StructureDatabase;
+import tod.impl.database.structure.standard.ExceptionResolver.BehaviorInfo;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.dispatch.DatabaseNode;
 import tod.impl.dbgrid.dispatch.tree.DispatchTreeStructure;
 import tod.impl.dbgrid.dispatch.tree.DynamicDispatchTreeStructure;
 import tod.impl.dbgrid.dispatch.tree.FixedDispatchTreeStructure;
-import tod.impl.dbgrid.dispatch.tree.LocalDispatchTreeStructure;
 
 public class TODUtils
 {
@@ -97,22 +99,7 @@ public class TODUtils
 			}
 			else if (theTotalNodes == 0)
 			{
-				TODConfig theConfig = new TODConfig();
-				LocationRegisterer theRegistrer = new LocationRegisterer();
-				
-				ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(
-						theConfig,
-						theRegistrer);
-
-				ASMInstrumenter theInstrumenter = new ASMInstrumenter(theDebuggerConfig);
-				DatabaseNode theNode = new DatabaseNode(theRegistrer);
-				GridMaster theMaster = new GridMaster(theConfig, theRegistrer, theInstrumenter, theNode, true);
-				System.out.println("Binding master...");
-				aRegistry.rebind(GridMaster.RMI_ID, theMaster);
-				System.out.println("Bound master");
-
-				theMaster.waitReady();
-				return theMaster;
+				return setupLocalMaster(aRegistry);
 			}
 			else
 			{
@@ -134,6 +121,32 @@ public class TODUtils
 		return setupMaster(aRegistry, theDispatchTreeStructure); 
 	}
 		
+	public static GridMaster setupLocalMaster(Registry aRegistry) throws RemoteException
+	{
+		TODConfig theConfig = new TODConfig();
+		IStructureDatabase theStructureDatabase = StructureDatabase.create(theConfig);
+		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(theConfig);
+
+		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theStructureDatabase, theDebuggerConfig);
+		DatabaseNode theNode = DatabaseNode.createLocalNode();
+		GridMaster theMaster = GridMaster.createLocal(
+				theConfig, 
+				theStructureDatabase, 
+				theInstrumenter, 
+				theNode, 
+				true);
+		
+		if (aRegistry != null)
+		{
+			System.out.println("Binding master...");
+			aRegistry.rebind(GridMaster.RMI_ID, theMaster);
+			System.out.println("Bound master");
+		}
+
+		theMaster.waitReady();
+		return theMaster;
+	}
+	
 	/**
 	 * Standard setup of a grid master that waits for a number
 	 * of database nodes to connect
@@ -152,19 +165,16 @@ public class TODUtils
 	{
 		System.out.println("Dispatch structure: " + aDispatchTreeStructure);
 		
-		LocationRegisterer theRegistrer = new LocationRegisterer();
-		
-		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(
-				aConfig,
-				theRegistrer);
+		IStructureDatabase theStructureDatabase = StructureDatabase.create(aConfig);
+		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(aConfig);
 
-		System.out.println(theRegistrer.getStats());
+		System.out.println(theStructureDatabase.getStats());
 		
-		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theDebuggerConfig);
+		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theStructureDatabase, theDebuggerConfig);
 
-		GridMaster theMaster = new GridMaster(
+		GridMaster theMaster = GridMaster.create(
 				aConfig, 
-				theRegistrer, 
+				theStructureDatabase, 
 				theInstrumenter,
 				aDispatchTreeStructure);
 		
@@ -178,6 +188,19 @@ public class TODUtils
 //		if (aDispatchTreeStructure. == 0) GridImpl.getFactory(aConfig).createNode(true);
 
 		return theMaster;
+	}
+	
+	/**
+	 * Creates an exception resolver {@link BehaviorInfo} object 
+	 * describing the specified behavior.
+	 */
+	public static BehaviorInfo createBehaviorInfo(IBehaviorInfo aBehavior)
+	{
+		return new BehaviorInfo(
+				aBehavior.getClass().getName(),
+				aBehavior.getName(),
+				aBehavior.getSignature(),
+				aBehavior.getId());
 	}
 	
 

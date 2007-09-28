@@ -31,8 +31,9 @@ import tod.core.ILogCollector;
 import tod.core.database.browser.LocationUtils;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
+import tod.core.database.structure.IExceptionResolver;
 import tod.core.database.structure.IHostInfo;
-import tod.core.database.structure.ILocationsRepository;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.impl.database.structure.standard.ThreadInfo;
@@ -50,17 +51,16 @@ public abstract class EventCollector implements ILogCollector
 	/**
 	 * The host whose events are sent to this collector.
 	 */
-	private IHostInfo itsHost;
-	
-	private ILocationsRepository itsLocationsRepository;
+	private final IHostInfo itsHost;
+	private final IExceptionResolver itsExceptionResolver;
 	
 	private List<IThreadInfo> itsThreads = new ArrayList<IThreadInfo>();
 	private Map<Long, IThreadInfo> itsThreadsMap = new HashMap<Long, IThreadInfo>();
 	
-	public EventCollector(IHostInfo aHost, ILocationsRepository aLocationsRepository)
+	public EventCollector(IHostInfo aHost, IExceptionResolver aExceptionResolver)
 	{
 		itsHost = aHost;
-		itsLocationsRepository = aLocationsRepository;
+		itsExceptionResolver = aExceptionResolver;
 	}
 
 	/**
@@ -137,26 +137,16 @@ public abstract class EventCollector implements ILogCollector
 			Object aException)
 	{
 		String theClassName = Type.getType(aMethodDeclaringClassSignature).getClassName();
-		ITypeInfo theType = itsLocationsRepository.getType(theClassName);
-		
-		if (theType instanceof IClassInfo)
-		{
-			IClassInfo theClass = (IClassInfo) theType;
-			
-			ITypeInfo[] theArgumentTypes = LocationUtils.getArgumentTypes(itsLocationsRepository, aMethodSignature);
-			IBehaviorInfo theBehavior = theClass.getBehavior(aMethodName, theArgumentTypes);
+		int theId = itsExceptionResolver.getBehaviorId(theClassName, aMethodName, aMethodSignature);
 
-			if (theBehavior == null) return; //TODO: don't do that...
-			
-			exception(
-					aThreadId, 
-					aParentTimestamp, 
-					aDepth, 
-					aTimestamp, 
-					theBehavior.getId(), 
-					aOperationBytecodeIndex, 
-					aException);
-		}
+		exception(
+				aThreadId, 
+				aParentTimestamp, 
+				aDepth, 
+				aTimestamp, 
+				theId, 
+				aOperationBytecodeIndex, 
+				aException);
 	}
 
 	/**

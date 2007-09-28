@@ -28,9 +28,41 @@ package tod.core.database.structure;
 public interface IClassInfo extends ITypeInfo
 {
 	/**
+	 * Sets up the basic information about this class.
+	 * This operation can be performed only once (and throws
+	 * an exception if it is called more than once).
+	 */
+	public void setup(
+			boolean aIsInterface,
+			boolean aIsInScope,
+			String aChecksum, 
+			IClassInfo[] aInterfaces,
+			IClassInfo aSuperclass);
+	
+	/**
+	 * Whether this class represents an interface, or a class.
+	 */
+	public boolean isInterface();
+	
+	/**
+	 * Whether this class is in the instrumentation scope.
+	 */
+	public boolean isInScope();
+	
+	/**
 	 * Returns the MD5 checksum of the class' original bytecode.
 	 */
 	public String getChecksum();
+	
+	/**
+	 * Indicates the time at which this particular version
+	 * of the class has been loaded into the system.
+	 * This is important for cases where class redefinition is used.
+	 * TODO: Consolidate this. We should have a map of all currently connected
+	 * VMs with the version of the classes they use.
+	 * @return A timestamp, as measured by the debugged VM.
+	 */
+	public long getStartTime();
 	
 	/**
 	 * Returns the superclass of this class.
@@ -38,21 +70,11 @@ public interface IClassInfo extends ITypeInfo
 	public IClassInfo getSupertype();
 	
 	/**
-	 * Sets the superclass of this class.
-	 */
-	public void setSupertype(IClassInfo aClass);
-	
-	/**
 	 * Returns all the interfaces directly implemented by this class.
 	 * The returned list is immutable.
 	 */
 	public IClassInfo[] getInterfaces();
 	
-	/**
-	 * Sets the list of interfaces directly implemented by this class.
-	 */
-	public void setInterfaces(IClassInfo[] aInterfaces);
-
 	/**
 	 * Searches a field
 	 * @param aName Name of the searched field.
@@ -82,13 +104,22 @@ public interface IClassInfo extends ITypeInfo
 	public IClassInfo createUncertainClone();
 	
 	/**
-	 * Factory method that creates a new field info in this class.
+	 * This method either creates a new uninitialized behavior, or
+	 * returns the behavior of the specified name/descriptor.
+	 * If the behavior is created it is automatically assigned an id and added
+	 * to the database.
+	 * @param aDescriptor The descriptor (signature) of the behavior. 
+	 * For now this is the ASM-provided descriptor.
 	 */
-	public IFieldInfo createField(String aName);
+	public IBehaviorInfo getNewBehavior(String aName, String aDescriptor);
 	
 	/**
-	 * Factory method that creates a new behavior info in this class.
+	 * This method either creates a new uninitialized field, or 
+	 * returns the field that has the specified name.
+	 * if the field is created it is automatically assigned an id and added
+	 * to the database.
 	 */
-	public IBehaviorInfo createBehavior(String aName);
+	public IFieldInfo getNewField(String aName, ITypeInfo aType);
+
 
 }

@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import tod.core.ILogCollector;
-import tod.core.database.browser.ILocationRegisterer;
 import tod.impl.database.structure.standard.HostInfo;
 
 /**
@@ -38,7 +37,6 @@ import tod.impl.database.structure.standard.HostInfo;
 public abstract class CollectorLogReceiver extends LogReceiver
 {
 	private final ILogCollector itsCollector;
-	private final ILocationRegisterer itsLocationRegistrer;
 	
 	/**
 	 * Connects to an already running aplication through the specified socket.
@@ -48,36 +46,32 @@ public abstract class CollectorLogReceiver extends LogReceiver
 	public CollectorLogReceiver(
 			HostInfo aHostInfo,
 			ILogCollector aCollector,
-			ILocationRegisterer aLocationRegistrer,
 			InputStream aInStream,
 			OutputStream aOutStream)
 	{
-		this(aHostInfo, aCollector, aLocationRegistrer, aInStream, aOutStream, true);
+		this(aHostInfo, aCollector, aInStream, aOutStream, true);
 	}
 		
 	public CollectorLogReceiver(
 			HostInfo aHostInfo,
 			ILogCollector aCollector,
-			ILocationRegisterer aLocationRegistrer,
 			InputStream aInStream,
 			OutputStream aOutStream,
 			boolean aStart)
 	{
-		this(DEFAULT_THREAD, aHostInfo, aCollector, aLocationRegistrer, aInStream, aOutStream, aStart);
+		this(DEFAULT_THREAD, aHostInfo, aCollector, aInStream, aOutStream, aStart);
 	}
 	
 	public CollectorLogReceiver(
 			ReceiverThread aReceiverThread,
 			HostInfo aHostInfo,
 			ILogCollector aCollector,
-			ILocationRegisterer aLocationRegistrer,
 			InputStream aInStream,
 			OutputStream aOutStream,
 			boolean aStart)
 	{
 		super(aReceiverThread, aHostInfo, aInStream, aOutStream, false);
 		itsCollector = aCollector;
-		itsLocationRegistrer = aLocationRegistrer;
 		if (aStart) start();
 	}
 	
@@ -86,17 +80,11 @@ public abstract class CollectorLogReceiver extends LogReceiver
 		return itsCollector;
 	}
 	
-	public ILocationRegisterer getLocationRegistrer()
-	{
-		return itsLocationRegistrer;
-	}
-	
 	protected void readPacket(DataInputStream aStream, MessageType aType) throws IOException
 	{
 		CollectorPacketReader.readPacket(
 				aStream, 
 				getCollector(),
-				getLocationRegistrer(),
 				aType);		
 	}
 

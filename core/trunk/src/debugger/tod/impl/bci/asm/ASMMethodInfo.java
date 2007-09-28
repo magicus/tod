@@ -21,15 +21,11 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.bci.asm;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
-import tod.core.database.browser.ILocationRegisterer.LineNumberInfo;
-import tod.core.database.browser.ILocationRegisterer.LocalVariableInfo;
-import tod.impl.bci.asm.InfoCollector.StoreInfo;
+import tod.core.BehaviorKind;
+import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
+import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 
 public class ASMMethodInfo
 {
@@ -100,6 +96,13 @@ public class ASMMethodInfo
 	public boolean isStatic()
 	{
 		return itsStatic;
+	}
+	
+	public BehaviorKind getKind()
+	{
+		if ("<init>".equals(getName())) return BehaviorKind.CONSTRUCTOR;
+		else if ("<clinit>".equals(getName())) return BehaviorKind.STATIC_BLOCK;
+		else return isStatic() ? BehaviorKind.STATIC_METHOD : BehaviorKind.METHOD;
 	}
 	
 	public void addLineNumber (ASMLineNumberInfo aInfo)

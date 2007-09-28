@@ -24,37 +24,26 @@ import java.io.File;
 
 import tod.core.config.ClassSelector;
 import tod.core.config.TODConfig;
-import tod.core.database.browser.ILocationRegisterer;
-import tod.core.database.structure.IStructureDatabase;
 import tod.tools.parsers.ParseException;
 import tod.tools.parsers.workingset.WorkingSetFactory;
 
+/**
+ * Aggregates configuration information for the ASM instrumenter.
+ * @author gpothier
+ */
 public class ASMDebuggerConfig
 {
-	public static final String PARAM_COLLECTOR_PORT = "collector-port";
-	
-	private final IStructureDatabase itsStructureDatabase;
 	private ClassSelector itsGlobalSelector;
 	private ClassSelector itsTraceSelector;
-	
-	private ASMLocationPool itsLocationPool;
-
 	
 	/**
 	 * Creates a default debugger configuration.
 	 */
-	public ASMDebuggerConfig(
-			TODConfig aConfig,
-			IStructureDatabase aStructureDatabase)
+	public ASMDebuggerConfig(TODConfig aConfig)
 	{
-		itsStructureDatabase = aStructureDatabase;
-		
-		File theLocationsFile = new File(aConfig.get(TODConfig.INSTRUMENTER_LOCATIONS_FILE));
 		// Setup selectors
 		setGlobalWorkingSet(aConfig.get(TODConfig.SCOPE_GLOBAL_FILTER));
 		setTraceWorkingSet(aConfig.get(TODConfig.SCOPE_TRACE_FILTER));
-		
-		itsLocationPool = new ASMLocationPool(itsLocationRegistrer, theLocationsFile);
 	}
 	
 	private ClassSelector parseWorkingSet(String aWorkingSet)
@@ -95,10 +84,5 @@ public class ASMDebuggerConfig
 	public ClassSelector getGlobalSelector()
 	{
 		return itsGlobalSelector;
-	}
-	
-	public ASMLocationPool getLocationPool()
-	{
-		return itsLocationPool;
 	}
 }

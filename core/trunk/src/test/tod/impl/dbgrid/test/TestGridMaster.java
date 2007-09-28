@@ -28,12 +28,13 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import tod.core.BehaviorKind;
-import tod.core.LocationRegisterer;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IClassInfo;
+import tod.core.database.structure.IStructureDatabase;
 import tod.impl.database.structure.standard.HostInfo;
+import tod.impl.database.structure.standard.PrimitiveTypeInfo;
 import tod.impl.database.structure.standard.ThreadInfo;
 import tod.impl.dbgrid.ConditionGenerator;
 import tod.impl.dbgrid.EventGenerator;
@@ -50,8 +51,8 @@ public class TestGridMaster
 	@Test public void test() throws RemoteException
 	{
 		GridMaster theMaster = Fixtures.setupLocalMaster();
-		LocationRegisterer theStore = (LocationRegisterer) theMaster.getLocationStore();
-		theStore._clear();
+		IStructureDatabase theStructureDatabase = theMaster.getStructureDatabase();
+//		theStructureDatabase.clear();
 		
 		for (int i=1;i<=100;i++) 
 		{
@@ -63,11 +64,11 @@ public class TestGridMaster
 				theMaster.registerThread(new ThreadInfo(theHostInfo, j, j, ""+j));
 			}
 			
-			theStore.registerType(i, ""+i, 0, new int[] {});
-			theStore.registerBehavior(BehaviorKind.METHOD, i, 0, ""+i, "()V");
-			theStore.registerField(i, 0, ""+i);
+			IClassInfo theClass = theStructureDatabase.getNewClass("C"+i);
+			theClass.getNewBehavior("m"+i, "()V");
+			theClass.getNewField("f"+i, PrimitiveTypeInfo.BOOLEAN);
 		}
-		GridLogBrowser theLogBrowser = new GridLogBrowser(theMaster);
+		GridLogBrowser theLogBrowser = GridLogBrowser.createLocal(theMaster);
 
 		EventGenerator theEventGenerator = createGenerator();
 		

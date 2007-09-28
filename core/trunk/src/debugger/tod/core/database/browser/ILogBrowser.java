@@ -30,11 +30,11 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IHostInfo;
-import tod.core.database.structure.ILocationsRepository;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
-import tod.core.database.structure.ILocationsRepository.LocalVariableInfo;
+import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.impl.dbgrid.BidiIterator;
 import zz.utils.ITask;
 
@@ -78,10 +78,10 @@ public interface ILogBrowser
 	public ILogEvent getEvent(ExternalPointer aPointer);
 	
 	/**
-	 * Returns the registrer that maintains all location and
-	 * thread info.
+	 * Returns the database that holds structural information
+	 * about the debugged program.
 	 */
-	public ILocationsRepository getLocationsRepository ();
+	public IStructureDatabase getStructureDatabase();
 	
 	/**
 	 * Returns all registered threads, in no particular order.

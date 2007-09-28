@@ -69,6 +69,14 @@ public class Util
 		return theName.replace('$', '.');
 	}
 	
+	/**
+	 * Transforms a JVM class descriptor into a normal, source-level class name.
+	 */
+	public static String jvmToScreen(String aName)
+	{
+		return aName.replace('/', '.');
+	}
+	
 	public static String getSimpleInnermostName(String aFullyQualifiedName)
 	{
 		int theIndex = Math.max(

@@ -25,7 +25,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 import tod.Util;
-import tod.core.LocationRegisterer;
 import tod.core.config.TODConfig;
 import tod.impl.dbgrid.dispatch.DatabaseNode;
 import tod.impl.dbgrid.dispatch.EventDispatcher;
@@ -61,13 +60,11 @@ public class StartNode
 			return;
 		}
 		
-		TODConfig theConfig = theMaster.getConfig();
-		
 		switch(theRole)
 		{
 		case DATABASE:
 			System.out.println("Starting database node.");
-			DatabaseNode theNode = new DatabaseNode();
+			DatabaseNode theNode = DatabaseNode.createRemoteNode();
 			theNode.connectToMaster();
 			break;
 			

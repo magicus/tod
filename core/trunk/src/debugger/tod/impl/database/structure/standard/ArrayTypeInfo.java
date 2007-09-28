@@ -29,7 +29,7 @@ public class ArrayTypeInfo extends TypeInfo implements IArrayTypeInfo
 	private ITypeInfo itsElementType;
 	private int itsDimensions;
 	
-	public ArrayTypeInfo(IStructureDatabase aDatabase, ITypeInfo aElementType, int aDimensions)
+	public ArrayTypeInfo(StructureDatabase aDatabase, ITypeInfo aElementType, int aDimensions)
 	{
 		super(aDatabase, -1);
 		itsElementType = aElementType;

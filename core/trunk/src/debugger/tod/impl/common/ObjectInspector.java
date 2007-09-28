@@ -139,7 +139,7 @@ public class ObjectInspector implements IObjectInspector
 				}
 			}
 			
-			if (itsType == null) itsType = new ClassInfo(null, -1, "Unknown");
+			if (itsType == null) itsType = new ClassInfo(null, null, "Unknown", -1);
 		}
 		return itsType;
 	}

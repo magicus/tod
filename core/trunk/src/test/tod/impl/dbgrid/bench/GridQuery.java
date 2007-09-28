@@ -90,7 +90,7 @@ public class GridQuery
 		System.out.println("Looking up master in registry");
 		RIGridMaster theRemoteMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
 		
-		final GridLogBrowser theBrowser = new GridLogBrowser(theRemoteMaster);
+		final GridLogBrowser theBrowser = GridLogBrowser.createRemote(theRemoteMaster);
 		
 //		findObjects(theBrowser);
 		benchTrueQueries(theBrowser);

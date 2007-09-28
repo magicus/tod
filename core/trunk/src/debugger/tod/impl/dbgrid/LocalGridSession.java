@@ -33,6 +33,7 @@ import tod.impl.dbgrid.gui.GridConsole;
 
 /**
  * A single-process grid session, running in a separate vm.
+ * This class handles the creation of the database process.
  * @author gpothier
  */
 public class LocalGridSession extends AbstractSession
@@ -60,7 +61,7 @@ public class LocalGridSession extends AbstractSession
 		try
 		{
 			itsMaster = itsProcessManager.getMaster();
-			itsLogBrowser = new GridLogBrowser(itsMaster);
+			itsLogBrowser = GridLogBrowser.createRemote(itsMaster);
 		}
 		catch (RemoteException e)
 		{

@@ -239,7 +239,7 @@ public abstract class TODServer
 			super(
 					itsConfig, 
 					aSocket, 
-					null, 
+					itsStructureDatabase.getId(), 
 					new SynchronizedInstrumenter(itsInstrumenter),
 					aHostId);
 		}

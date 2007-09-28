@@ -22,7 +22,7 @@ package tod.impl.bci.asm;
 
 import org.objectweb.asm.Label;
 
-import tod.core.database.browser.ILocationRegisterer.LineNumberInfo;
+import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 
 /**
  * Represents an unresolved entry of a method's LineNumberTable attribute.

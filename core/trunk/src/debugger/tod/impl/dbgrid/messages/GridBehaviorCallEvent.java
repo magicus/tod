@@ -170,8 +170,8 @@ public class GridBehaviorCallEvent extends GridEvent
 		
 		initEvent(aBrowser, theEvent);
 		theEvent.setArguments(getArguments());
-		theEvent.setCalledBehavior(aBrowser.getLocationsRepository().getBehavior(getCalledBehaviorId()));
-		theEvent.setExecutedBehavior(aBrowser.getLocationsRepository().getBehavior(getExecutedBehaviorId()));
+		theEvent.setCalledBehavior(aBrowser.getStructureDatabase().getBehavior(getCalledBehaviorId(), false));
+		theEvent.setExecutedBehavior(aBrowser.getStructureDatabase().getBehavior(getExecutedBehaviorId(), false));
 		theEvent.setDirectParent(isDirectParent());
 		theEvent.setTarget(getTarget());
 		

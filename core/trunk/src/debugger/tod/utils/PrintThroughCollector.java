@@ -29,7 +29,7 @@ import tod.core.Output;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IHostInfo;
-import tod.core.database.structure.ILocationsRepository;
+import tod.core.database.structure.IStructureDatabase;
 import zz.utils.Utils;
 
 /**
@@ -40,28 +40,28 @@ public class PrintThroughCollector implements ILogCollector
 {
 	private static PrintStream itsPrintStream = DebugFlags.COLLECTOR_PRINT_STREAM;
 	
-	private IHostInfo itsHost;
-	private ILogCollector itsCollector;
-	private ILocationsRepository itsLocationsRepository;
+	private final IHostInfo itsHost;
+	private final ILogCollector itsCollector;
+	private final IStructureDatabase itsStructureDatabase;
 	
 	public PrintThroughCollector(
 			IHostInfo aHost, 
 			ILogCollector aCollector, 
-			ILocationsRepository aLocationsRepository)
+			IStructureDatabase aStructureDatabase)
 	{
 		itsHost = aHost;
 		itsCollector = aCollector;
-		itsLocationsRepository = aLocationsRepository;
+		itsStructureDatabase = aStructureDatabase;
 	}
 
 	private IBehaviorInfo getBehavior(int aId)
 	{
-		return itsLocationsRepository.getBehavior(aId);
+		return itsStructureDatabase.getBehavior(aId, true);
 	}
 	
 	private IFieldInfo getField(int aId)
 	{
-		return itsLocationsRepository.getField(aId);
+		return itsStructureDatabase.getField(aId, true);
 	}
 	
 	private String formatBehavior(int aId)
