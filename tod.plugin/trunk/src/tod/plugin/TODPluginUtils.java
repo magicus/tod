@@ -43,22 +43,15 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.internal.Workbench;
-import org.objectweb.asm.Type;
 
 import tod.Util;
 import tod.agent.ConfigUtils;
 import tod.core.database.browser.ILogBrowser;
-import tod.core.database.event.IBehaviorCallEvent;
-import tod.core.database.event.ICallerSideEvent;
-import tod.core.database.event.ILogEvent;
-import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.ILocationInfo;
-import tod.core.database.structure.ILocationsRepository;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.session.ISession;
-import tod.impl.database.structure.standard.ArrayTypeInfo;
-import tod.impl.database.structure.standard.PrimitiveTypeInfo;
 import tod.plugin.views.AbstractNavigatorView;
 import tod.plugin.views.TraceNavigatorView;
 
@@ -80,7 +73,7 @@ public class TODPluginUtils
 			IJavaElement aElement) throws JavaModelException
 	{
 		ILogBrowser theEventTrace = aSession.getLogBrowser();
-		ILocationsRepository theLocationTrace = theEventTrace.getLocationsRepository();
+		IStructureDatabase theStructureDatabase = theEventTrace.getStructureDatabase();
 		
 		if (aElement instanceof IMember)
 		{
@@ -90,36 +83,36 @@ public class TODPluginUtils
 			if (theType == null) return null;
 			
 			String theTypeName = theType.getFullyQualifiedName();
-			IClassInfo theTypeInfo = (IClassInfo) theLocationTrace.getType(theTypeName);
-			if (theTypeInfo == null) return null;
+			IClassInfo theClass = theStructureDatabase.getClass(theTypeName, false);
+			if (theClass == null) return null;
 			
-			System.out.println(theTypeInfo);
+			System.out.println(theClass);
 			
 			if (theMember instanceof IMethod)
 			{
 				IMethod theMethod = (IMethod) theMember;
 				String theMethodName = theMethod.getElementName();
 				ITypeInfo[] theArgumentTypes = getArgumentTypes(
-						theLocationTrace, 
+						theStructureDatabase, 
 						theMethod.getParameterTypes(), 
 						theType);
 				
 				if (theMethodName.equals(Util.getSimpleInnermostName(theTypeName))) 
 					theMethodName = "<init>";
 				
-				return theTypeInfo.getBehavior(theMethodName, theArgumentTypes);
+				return theClass.getBehavior(theMethodName, theArgumentTypes);
 			}
 			else if (theMember instanceof IInitializer)
 			{
 				IInitializer theInitializer = (IInitializer) theMember;
 				String theInitializerName = theInitializer.getElementName();
-				return theTypeInfo.getBehavior(theInitializerName, null);
+				return theClass.getBehavior(theInitializerName, null);
 			}
 			else if (theMember instanceof IField)
 			{
 				IField theField = (IField) theMember;
 				String theFieldName = theField.getElementName();
-				return theTypeInfo.getField(theFieldName);
+				return theClass.getField(theFieldName);
 			}
 		}
 		
@@ -127,7 +120,7 @@ public class TODPluginUtils
 	}
 	
 	public static ITypeInfo[] getArgumentTypes(
-			ILocationsRepository aRepository,
+			IStructureDatabase aStructureDatabase,
 			String[] aJDTSignatures,
 			IType aDeclaringType) throws JavaModelException
 	{
@@ -136,48 +129,19 @@ public class TODPluginUtils
 		
 		for (int i=0;i<theCount;i++)
 		{
-			theTypes[i] = getType(aRepository, aJDTSignatures[i], aDeclaringType);
+			theTypes[i] = getType(aStructureDatabase, aJDTSignatures[i], aDeclaringType);
 		}
 		
 		return theTypes;
 	}
 
 	public static ITypeInfo getType(
-			ILocationsRepository aRepository,
+			IStructureDatabase aStructureDatabase,
 			String aJDTSignature,
 			IType aDeclaringType) throws JavaModelException
 	{
 		String theTypeName = getResolvedTypeName(aJDTSignature, aDeclaringType);
-		Type theType = Type.getType(theTypeName);
-		switch(theType.getSort())
-		{
-		case Type.OBJECT:
-		{ 
-			String theClassName = theType.getClassName();
-			return aRepository.getType(theClassName);
-		}
-			
-		case Type.ARRAY:
-		{
-			String theClassName = theType.getElementType().getClassName();
-			int theDimensions = theType.getDimensions();
-			return new ArrayTypeInfo(
-					aRepository.getType(theClassName),
-					theDimensions);			
-		}
-		
-		case Type.BOOLEAN: return PrimitiveTypeInfo.BOOLEAN;
-		case Type.BYTE: return PrimitiveTypeInfo.BYTE;
-		case Type.CHAR: return PrimitiveTypeInfo.CHAR;
-		case Type.DOUBLE: return PrimitiveTypeInfo.DOUBLE;
-		case Type.FLOAT: return PrimitiveTypeInfo.FLOAT;
-		case Type.INT: return PrimitiveTypeInfo.INT;
-		case Type.LONG: return PrimitiveTypeInfo.LONG;
-		case Type.SHORT: return PrimitiveTypeInfo.SHORT;
-			
-		default:
-			throw new RuntimeException("Not handled: "+theType);
-		}
+		return aStructureDatabase.getType(theTypeName, true);
 	}
 	
 	/**
