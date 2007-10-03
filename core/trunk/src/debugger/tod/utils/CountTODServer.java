@@ -56,7 +56,7 @@ public class CountTODServer extends AbstractSession
 	public CountTODServer(TODConfig aConfig, URI aUri)
 	{
 		super(aUri, aConfig);
-		itsStructureDatabase = new DummyStructureDatabase();
+		itsStructureDatabase = DummyStructureDatabase.getInstance();
 		itsBrowser = new LocalBrowser(itsStructureDatabase);
 		
 		ASMDebuggerConfig theConfig = new ASMDebuggerConfig(aConfig);

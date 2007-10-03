@@ -52,6 +52,7 @@ import tod.core.server.TODServer;
 import tod.core.transport.LogReceiver;
 import tod.impl.database.structure.standard.ExceptionResolver;
 import tod.impl.database.structure.standard.HostInfo;
+import tod.impl.database.structure.standard.LocalExceptionResolver;
 import tod.impl.database.structure.standard.ExceptionResolver.BehaviorInfo;
 import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
@@ -102,7 +103,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	
 	
 	private IStructureDatabase itsStructureDatabase;
-	private ExceptionResolver itsExceptionResolver = new ExceptionResolver();
+	private ExceptionResolver itsExceptionResolver;
 	private RemoteStructureDatabase itsRemoteStructureDatabase;
 	
 	private long itsEventsCount;
@@ -142,7 +143,6 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			{
 				throw new RuntimeException(e);
 			}
-			itsExceptionResolver.registerBehavior(theBehaviorInfo);
 		}
 	};
 	
@@ -158,6 +158,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		itsStructureDatabase = aStructureDatabase;
 		itsStructureDatabase.addBehaviorListener(itsBehaviorListener);
 		itsRemoteStructureDatabase = new RemoteStructureDatabase(itsStructureDatabase);
+		itsExceptionResolver = new LocalExceptionResolver(itsStructureDatabase);
 		
 		itsDispatchTreeStructure = aDispatchTreeStructure;
 		itsDispatchTreeStructure.setMaster(this);
@@ -807,5 +808,4 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			}
 		}
 	}
-
 }

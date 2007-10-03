@@ -24,6 +24,12 @@ import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 
+/**
+ * Note: This class is not a {@link ISerializableLocationInfo}
+ * because it must be recreated at the destination rather than passed
+ * through the wire.
+ * @author gpothier
+ */
 public class ArrayTypeInfo extends TypeInfo implements IArrayTypeInfo
 {
 	private ITypeInfo itsElementType;

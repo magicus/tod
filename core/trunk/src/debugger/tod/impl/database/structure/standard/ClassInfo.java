@@ -20,23 +20,28 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.database.structure.standard;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import org.objectweb.asm.Type;
 
 import tod.core.database.browser.LocationUtils;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.IMemberInfo;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
 import tod.impl.database.structure.standard.StructureDatabase.ClassNameInfo;
+import zz.utils.Utils;
 
 /**
  * Default implementation of {@link IClassInfo}.
  * @author gpothier
  */
-public class ClassInfo extends TypeInfo implements IClassInfo
+public class ClassInfo extends TypeInfo 
+implements IClassInfo, ISerializableLocationInfo
 {
 	private static final long serialVersionUID = -2583314414851419966L;
 
@@ -76,9 +81,10 @@ public class ClassInfo extends TypeInfo implements IClassInfo
 	
 	private long itsStartTime;
 
-	public ClassInfo(StructureDatabase aDatabase, ClassNameInfo aClassNameInfo, String aName, int aId)
+	public ClassInfo(IStructureDatabase aDatabase, ClassNameInfo aClassNameInfo, String aName, int aId)
 	{
 		super(aDatabase, aId, aName);
+		assert aDatabase != null;
 		itsClassNameInfo = aClassNameInfo;
 	}
 
@@ -94,6 +100,34 @@ public class ClassInfo extends TypeInfo implements IClassInfo
 		itsChecksum = aChecksum;
 		setInterfaces(aInterfaces);
 		setSupertype(aSuperclass);
+	}
+	
+	/**
+	 * Same as {@link #getDatabase()} but casts to {@link StructureDatabase}.
+	 * This is only for registration methods, that are used only where the original
+	 * structure database exists.
+	 */
+	public StructureDatabase getStructureDatabase()
+	{
+		return (StructureDatabase) super.getDatabase();
+	}
+	
+	@Override
+	public void setDatabase(IStructureDatabase aDatabase)
+	{
+		super.setDatabase(aDatabase);
+		for (IMemberInfo theMember : getMembers())
+		{
+			((MemberInfo) theMember).setDatabase(aDatabase);
+		}
+	}
+	
+	protected IMemberInfo[] getMembers()
+	{
+		List<IMemberInfo> theMembers = new ArrayList<IMemberInfo>();
+		Utils.fillCollection(theMembers, itsBehaviorsMap.values());
+		Utils.fillCollection(theMembers, itsFieldsMap.values());
+		return theMembers.toArray(new IMemberInfo[theMembers.size()]);
 	}
 	
 	public boolean isInScope()
@@ -132,7 +166,7 @@ public class ClassInfo extends TypeInfo implements IClassInfo
 	public void register(IFieldInfo aField)
 	{
 		itsFieldsMap.put (aField.getName(), aField);
-		getDatabase().registerField(aField);
+		getStructureDatabase().registerField(aField);
 	}
 	
 	/**
@@ -141,7 +175,7 @@ public class ClassInfo extends TypeInfo implements IClassInfo
 	public void register(IBehaviorInfo aBehavior)
 	{
 		itsBehaviorsMap.put(getKey(aBehavior), aBehavior);
-		getDatabase().registerBehavior(aBehavior);
+		getStructureDatabase().registerBehavior(aBehavior);
 	}
 	
 	public IFieldInfo getField(String aName)
@@ -164,7 +198,7 @@ public class ClassInfo extends TypeInfo implements IClassInfo
 		{
 			int theId = itsClassNameInfo.getBehaviorId(aName, theArgumentTypes);
 			theBehavior = new BehaviorInfo(
-					getDatabase(), 
+					getStructureDatabase(), 
 					theId,
 					this,
 					aName,
@@ -184,7 +218,7 @@ public class ClassInfo extends TypeInfo implements IClassInfo
 		if (theField == null)
 		{
 			int theId = itsClassNameInfo.getFieldId(aName, aType);
-			theField = new FieldInfo(getDatabase(), theId, this, aName);
+			theField = new FieldInfo(getStructureDatabase(), theId, this, aName);
 			
 			register(theField);
 		}
@@ -204,6 +238,8 @@ public class ClassInfo extends TypeInfo implements IClassInfo
 	
 	public IClassInfo[] getInterfaces()
 	{
+		if (itsInterfacesIds == null) return new IClassInfo[0];
+		
 		IClassInfo[] theResult = new ClassInfo[itsInterfacesIds.length];
 		for(int i=0;i<itsInterfacesIds.length;i++)
 		{

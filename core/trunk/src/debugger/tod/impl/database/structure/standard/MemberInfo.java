@@ -20,9 +20,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.database.structure.standard;
 
+import tod.core.ILogCollector;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IMemberInfo;
-import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
 
 
 /**
@@ -30,7 +31,8 @@ import tod.core.database.structure.IStructureDatabase;
  * receives about a type member (method, constructor, field).
  * @author gpothier
  */
-public abstract class MemberInfo extends LocationInfo implements IMemberInfo
+public abstract class MemberInfo extends LocationInfo 
+implements IMemberInfo, ISerializableLocationInfo
 {
 	private IClassInfo itsType;
 	

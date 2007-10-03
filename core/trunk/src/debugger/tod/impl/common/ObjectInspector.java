@@ -40,6 +40,7 @@ import tod.core.database.structure.IMemberInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.impl.database.structure.standard.ClassInfo;
+import tod.utils.DummyStructureDatabase;
 import zz.utils.Utils;
 
 /**
@@ -139,7 +140,11 @@ public class ObjectInspector implements IObjectInspector
 				}
 			}
 			
-			if (itsType == null) itsType = new ClassInfo(null, null, "Unknown", -1);
+			if (itsType == null) itsType = new ClassInfo(
+					getLogBrowser().getStructureDatabase(), 
+					null, 
+					"Unknown", 
+					-1);
 		}
 		return itsType;
 	}

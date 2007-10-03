@@ -90,6 +90,14 @@ public interface IStructureDatabase
 	public IClassInfo[] getClasses();
 	
 	/**
+	 * This method either creates a new uninitialized class, or
+	 * returns the latest added class of the specified name.
+	 * If the class is created it is automatically assigned an id and added
+	 * to the database.
+	 */
+	public IClassInfo getNewClass(String aName);
+	
+	/**
 	 * Returns the type that corresponds to the given name. If the type 
 	 * corresponds to a class, returns the latest registered class info 
 	 * for this name.
@@ -123,14 +131,6 @@ public interface IStructureDatabase
 	 * Returns all the currently registered behaviors.
 	 */
 	public IBehaviorInfo[] getBehaviors();
-	
-	/**
-	 * This method either creates a new uninitialized class, or
-	 * returns the latest added class of the specified name.
-	 * If the class is created it is automatically assigned an id and added
-	 * to the database.
-	 */
-	public IClassInfo getNewClass(String aName);
 	
 	/**
 	 * Returns statistics about registered locations

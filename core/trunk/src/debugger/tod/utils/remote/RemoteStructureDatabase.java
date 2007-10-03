@@ -30,10 +30,11 @@ import java.util.Map;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
-import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.ILocationsRepository;
+import tod.core.database.structure.IMemberInfo;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
-import tod.core.database.structure.IStructureDatabase.IBehaviorListener;
+import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
 import tod.core.database.structure.IStructureDatabase.Stats;
 import tod.impl.database.structure.standard.StructureDatabase;
 import zz.utils.Utils;
@@ -175,6 +176,11 @@ implements RIStructureDatabase
 		}
 	}
 	
+	/**
+	 * Implementation of {@link IStructureDatabase} that fetches information
+	 * from the remote structure database.
+	 * @author gpothier
+	 */
 	private static class MyDatabase extends UnicastRemoteObject
 	implements IStructureDatabase, RIStructureDatabaseListener
 	{
@@ -204,21 +210,46 @@ implements RIStructureDatabase
 			System.out.println("[RemoteStructureDatabase] Fecthing classes...");
 			for(IClassInfo theClass : itsDatabase.getClasses())
 			{
-				Utils.listSet(itsClasses, theClass.getId(), theClass);
-				itsClassesMap.put(theClass.getName(), theClass);
-				
-				for (IBehaviorInfo theBehavior : theClass.getBehaviors())
-				{
-					Utils.listSet(itsBehaviors, theBehavior.getId(), theBehavior);
-				}
-				
-				for (IFieldInfo theField : theClass.getFields())
-				{
-					Utils.listSet(itsFields, theField.getId(), theField);
-				}
+				cacheClass(theClass);
 			}
 
 			System.out.println("[RemoteLocationsRepository] Done.");
+		}
+		
+		private void cacheClass(IClassInfo aClass)
+		{
+			// Rebind the class to this database if necessary.
+			if (aClass instanceof ISerializableLocationInfo)
+			{
+				ISerializableLocationInfo theLocation = (ISerializableLocationInfo) aClass;
+				theLocation.setDatabase(this);
+			}
+
+			Utils.listSet(itsClasses, aClass.getId(), aClass);
+			itsClassesMap.put(aClass.getName(), aClass);
+			
+			for (IBehaviorInfo theBehavior : aClass.getBehaviors())
+			{
+				Utils.listSet(itsBehaviors, theBehavior.getId(), theBehavior);
+			}
+			
+			for (IFieldInfo theField : aClass.getFields())
+			{
+				Utils.listSet(itsFields, theField.getId(), theField);
+			}
+		}
+		
+		/**
+		 * Caches the whole class containg the given member.
+		 */
+		private void cacheMember(IMemberInfo aMember)
+		{
+			IClassInfo theClass = aMember.getType();
+			if (Utils.listGet(itsClasses, theClass.getId()) != null)
+			{
+				throw new RuntimeException("Class already cached, should not happen.");
+			}
+			cacheClass(theClass);
 		}
 		
 		public String getId()
@@ -234,26 +265,20 @@ implements RIStructureDatabase
 			itsLastStats = aStats;
 		}
 		
-		private <T> T get(List<T> aList, int aIndex)
-		{
-			if (aList.size() > aIndex) return aList.get(aIndex);
-			else return null;
-		}
-
 		public IBehaviorInfo getBehavior(int aBehaviorId, boolean aFailIfAbsent)
 		{
 			if (aBehaviorId <= 0) return null;
 			
 			try
 			{
-				IBehaviorInfo theBehavior = get(itsBehaviors, aBehaviorId);
+				IBehaviorInfo theBehavior = Utils.listGet(itsBehaviors, aBehaviorId);
 				if (theBehavior == null)
 				{
 					theBehavior = itsDatabase.getBehavior(aBehaviorId, false);
 					if (theBehavior != null)
 					{
 						assert theBehavior.getId() == aBehaviorId;
-						Utils.listSet(itsBehaviors, aBehaviorId, theBehavior);
+						cacheMember(theBehavior);
 					}
 				}
 				
@@ -270,14 +295,14 @@ implements RIStructureDatabase
 		{
 			try
 			{
-				IFieldInfo theField = get(itsFields, aFieldId);
+				IFieldInfo theField = Utils.listGet(itsFields, aFieldId);
 				if (theField == null)
 				{
 					theField = itsDatabase.getField(aFieldId, false);
 					if (theField != null)
 					{
 						assert theField.getId() == aFieldId;
-						Utils.listSet(itsFields, aFieldId, theField);
+						cacheMember(theField);
 					}
 				}
 				
@@ -294,15 +319,14 @@ implements RIStructureDatabase
 		{
 			try
 			{
-				IClassInfo theClass = get(itsClasses, aClassId);
+				IClassInfo theClass = Utils.listGet(itsClasses, aClassId);
 				if (theClass == null)
 				{
 					theClass = itsDatabase.getClass(aClassId, false);
 					if (theClass != null)
 					{
 						assert theClass.getId() == aClassId;
-						Utils.listSet(itsClasses, aClassId, theClass);
-						itsClassesMap.put(theClass.getName(), theClass);
+						cacheClass(theClass);
 					}
 				}
 				

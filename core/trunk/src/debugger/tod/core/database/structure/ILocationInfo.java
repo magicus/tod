@@ -20,6 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.structure;
 
+import java.io.Serializable;
+
 
 /**
  * Base interface for location info (ie structural information). 
@@ -39,4 +41,17 @@ public interface ILocationInfo
 	 * Returns the database that owns this info.
 	 */
 	public IStructureDatabase getDatabase();
+	
+	/**
+	 * Interface for location info implementations that are serializable.
+	 * Such implementation should have their reference to the owner database
+	 * transient, so that upon arriving at a new location they can be bound
+	 * to a local database.
+	 * @author gpothier
+	 */
+	public interface ISerializableLocationInfo extends Serializable
+	{
+		public void setDatabase(IStructureDatabase aDatabase);
+	}
+
 }

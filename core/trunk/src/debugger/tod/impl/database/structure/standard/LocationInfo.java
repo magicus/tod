@@ -23,6 +23,7 @@ package tod.impl.database.structure.standard;
 import java.io.Serializable;
 
 import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.IStructureDatabase;
 import zz.utils.PublicCloneable;
 
 /**
@@ -32,17 +33,17 @@ import zz.utils.PublicCloneable;
 public abstract class LocationInfo extends PublicCloneable 
 implements ILocationInfo, Serializable
 {
-	private transient StructureDatabase itsDatabase;
+	private transient IStructureDatabase itsDatabase;
 	private final int itsId;
 	private String itsName;
 	
-	public LocationInfo(StructureDatabase aDatabase, int aId)
+	public LocationInfo(IStructureDatabase aDatabase, int aId)
 	{
 		itsDatabase = aDatabase;
 		itsId = aId;
 	}
 
-	public LocationInfo(StructureDatabase aDatabase, int aId, String aName)
+	public LocationInfo(IStructureDatabase aDatabase, int aId, String aName)
 	{
 		itsDatabase = aDatabase;
 		itsId = aId;
@@ -59,9 +60,15 @@ implements ILocationInfo, Serializable
 		return itsName;
 	}
 
-	public StructureDatabase getDatabase()
+	public IStructureDatabase getDatabase()
 	{
 		return itsDatabase;
+	}
+	
+	public void setDatabase(IStructureDatabase aDatabase)
+	{
+		assert itsDatabase == null;
+		itsDatabase = aDatabase;
 	}
 	
 	/**
@@ -93,4 +100,5 @@ implements ILocationInfo, Serializable
 		}
 		else return false;
 	}
+	
 }

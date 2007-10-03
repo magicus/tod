@@ -135,6 +135,19 @@ public abstract class SocketThread extends Thread
 		finally
 		{
 			System.out.println(getLabel()+": finished.");
+			
+			if (itsSocket != null)
+			{
+				try
+				{
+					itsSocket.close();
+				}
+				catch (IOException e)
+				{
+					throw new RuntimeException(e);
+				}
+			}
+			
 			if (itsServerSocket != null)
 			{
 				try

@@ -22,7 +22,7 @@ package tod.core.database.structure;
 
 
 /**
- * Represents a Java class (interfaces are not currently represented).
+ * Represents a Java class or interface.
  * @author gpothier
  */
 public interface IClassInfo extends ITypeInfo
@@ -40,7 +40,7 @@ public interface IClassInfo extends ITypeInfo
 			IClassInfo aSuperclass);
 	
 	/**
-	 * Whether this class represents an interface, or a class.
+	 * Whether this object represents an interface, or a class.
 	 */
 	public boolean isInterface();
 	

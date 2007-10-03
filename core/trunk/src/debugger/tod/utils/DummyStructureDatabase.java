@@ -30,7 +30,17 @@ import tod.core.database.structure.IStructureDatabase.IBehaviorListener;
 public class DummyStructureDatabase 
 implements IStructureDatabase
 {
+	private static DummyStructureDatabase INSTANCE = new DummyStructureDatabase();
 
+	public static DummyStructureDatabase getInstance()
+	{
+		return INSTANCE;
+	}
+
+	private DummyStructureDatabase()
+	{
+	}
+	
 	public IBehaviorInfo getBehavior(int aId, boolean aFailIfAbsent)
 	{
 		return null;

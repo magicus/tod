@@ -23,6 +23,7 @@ package tod.impl.dbgrid;
 import reflex.lib.pom.POMGroupDef;
 import reflex.lib.pom.POMScheduler;
 import reflex.lib.pom.Request;
+import reflex.lib.pom.RequestIterator;
 
 /**
  * This POM scheduler ensures that all calls to the database are serialized.
@@ -35,13 +36,22 @@ public class Scheduler extends POMScheduler implements POMGroupDef
 	@Override
 	protected void schedule()
 	{
+		System.out.println("Schedule... w: "+itsWorking);
+		RequestIterator theIterator = iterator();
+		while (theIterator.hasNext())
+		{
+			Request theRequest = theIterator.next();
+			System.out.println("Request: "+theRequest);
+		}
 		if (! itsWorking) itsWorking = executeOldest();
+		System.out.println("Schedule done.");
 	}
 
 	@Override
 	protected void leave(Request aReq)
 	{
 		itsWorking = false;
+		System.out.println("Scheduler.leave()");
 	}
 	
 	@Override

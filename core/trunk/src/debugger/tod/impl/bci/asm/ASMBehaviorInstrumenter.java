@@ -351,7 +351,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	{
 		boolean theStatic = aOpcode == PUTSTATIC;
 
-		IClassInfo theOwner = itsStructureDatabase.getClass(aOwner, true);
+		IClassInfo theOwner = itsStructureDatabase.getNewClass(Util.jvmToScreen(aOwner));
 
 		ITypeInfo theType = itsStructureDatabase.getNewType(aDesc);
 		IFieldInfo theField = theOwner.getNewField(aName, theType);

@@ -59,7 +59,7 @@ public class ExceptionGeneratedView extends EventView
 		
 		// Behaviour
 		IBehaviorInfo theBehavior = theEvent.getOperationBehavior();
-		String theBehaviorName = theBehavior.getName();
+		String theBehaviorName = theBehavior != null ? theBehavior.getName() : "<unknown>";
 		
 		LogViewSeed theSeed = LogViewSeedFactory.getDefaultSeed(
 				getGUIManager(), 

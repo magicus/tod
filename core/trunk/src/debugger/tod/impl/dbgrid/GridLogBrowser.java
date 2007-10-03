@@ -503,6 +503,19 @@ implements ILogBrowser, RIGridMasterListener
 		}
 	}
 
+	/**
+	 * Clears cached information so that they are lazily retrieved.
+	 */
+	private void clearStats()
+	{
+		itsEventsCount = 0;
+		itsFirstTimestamp = 0;
+		itsLastTimestamp = 0;
+		itsThreads = null;
+		itsHosts = null;
+		itsHostsMap.clear();
+	}
+	
 	@POMSync
 	private void updateStats()
 	{
@@ -511,9 +524,6 @@ implements ILogBrowser, RIGridMasterListener
 			itsEventsCount = itsMaster.getEventsCount();
 			itsFirstTimestamp = itsMaster.getFirstTimestamp();
 			itsLastTimestamp = itsMaster.getLastTimestamp();
-			itsThreads = null; // lazy
-			itsHosts = null; // lazy		
-			itsHostsMap.clear(); // lazy
 		}
 		catch (RemoteException e)
 		{
@@ -523,7 +533,7 @@ implements ILogBrowser, RIGridMasterListener
 
 	public void eventsReceived() 
 	{
-		updateStats();
+		clearStats();
 	}
 
 	public void exception(Throwable aThrowable) 

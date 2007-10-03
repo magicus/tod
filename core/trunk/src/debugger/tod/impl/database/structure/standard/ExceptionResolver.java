@@ -31,14 +31,23 @@ import tod.core.database.structure.IExceptionResolver;
  */
 public class ExceptionResolver implements IExceptionResolver
 {
-	private Map<String, ClassInfo> itsClasses = new HashMap<String, ClassInfo>();
+	private final Map<String, ClassInfo> itsClasses = new HashMap<String, ClassInfo>();
 	
 	public int getBehaviorId(String aClassName, String aMethodName, String aMethodSignature)
 	{
-		ClassInfo theClassInfo = itsClasses.get(aClassName);
-		if (theClassInfo == null) throw new RuntimeException("Behavior not found: "+aClassName+"."+aMethodName+"("+aMethodSignature+")");
+		ClassInfo theClassInfo = getClassInfo(aClassName);
+		if (theClassInfo == null) 
+		{
+			System.err.println("[ExceptionResolver] Behavior not found: "+aClassName+"."+aMethodName+"("+aMethodSignature+")");
+			return 0;
+		}
 		
 		return theClassInfo.getBehavior(aMethodName, aMethodSignature);
+	}
+
+	protected ClassInfo getClassInfo(String aClassName)
+	{
+		return itsClasses.get(aClassName);
 	}
 
 	/**
@@ -46,7 +55,7 @@ public class ExceptionResolver implements IExceptionResolver
 	 */
 	public void registerBehavior(String aClassName, String aMethodName, String aMethodSignature, int aId)
 	{
-		ClassInfo theClassInfo = itsClasses.get(aClassName);
+		ClassInfo theClassInfo = getClassInfo(aClassName);
 		if (theClassInfo == null)
 		{
 			theClassInfo = new ClassInfo(aClassName);
@@ -69,7 +78,7 @@ public class ExceptionResolver implements IExceptionResolver
 		}
 	}
 	
-	private static class ClassInfo
+	protected static class ClassInfo
 	{
 		private final String itsClassName;
 		private Map<String, Integer> itsBehaviorMap = new HashMap<String, Integer>();
