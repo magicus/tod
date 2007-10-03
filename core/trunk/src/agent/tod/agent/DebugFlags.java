@@ -35,6 +35,8 @@ import tod.core.EventInterpreter;
  */
 public class DebugFlags
 {
+	private static final String HOME = System.getProperty("user.home");	
+	
 	/**
 	 * Causes database nodes to skip incoming events
 	 */
@@ -130,7 +132,7 @@ public class DebugFlags
 	 */
 	public static final PrintStream COLLECTOR_PRINT_STREAM =
 //		System.out;
-		createStream("collector.log");
+		createStream(HOME+"/tmp/tod/collector.log");
 
 	
 	/**
