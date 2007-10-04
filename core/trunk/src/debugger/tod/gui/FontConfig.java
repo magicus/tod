@@ -27,12 +27,12 @@ import zz.utils.ui.text.XFont;
 
 public class FontConfig
 {
-	public static final XFont STD_FONT = XFont.DEFAULT_XPLAIN.deriveFont(15);
-	public static final XFont STD_HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, 15);
+	public static final XFont STD_FONT = XFont.DEFAULT_XPLAIN.deriveFont(13);
+	public static final XFont STD_HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, 13);
 	public static final XFont SMALL_FONT = XFont.DEFAULT_XPLAIN.deriveFont(12);
 	public static final XFont TINY_FONT = XFont.DEFAULT_XPLAIN.deriveFont(10);
 	
-	public static final int SMALL = 70;
-	public static final int NORMAL = 100;
-	public static final int BIG = 150;
+	public static final int SMALL = 60;
+	public static final int NORMAL = 80;
+	public static final int BIG = 100;
 }

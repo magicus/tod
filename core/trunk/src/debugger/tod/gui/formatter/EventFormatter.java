@@ -61,8 +61,8 @@ public class EventFormatter extends AbstractFormatter<ILogEvent>
 			if (theBehavior == null) theBehavior = theEvent.getCalledBehavior();
 			
 			return String.format(
-					"[%s] %s.%s (%s)",
-					aEvent.getClass().getSimpleName(),
+					"%s.%s (%s)",
+//					aEvent.getClass().getSimpleName(),
 					Util.getPrettyName(theBehavior.getType().getName()),
 	                theBehavior.getName(),
 	                formatArgs(theEvent.getArguments()));
@@ -115,7 +115,11 @@ public class EventFormatter extends AbstractFormatter<ILogEvent>
 		else if (aEvent instanceof IExceptionGeneratedEvent)
 		{
 			IExceptionGeneratedEvent theEvent = (IExceptionGeneratedEvent) aEvent;
-			return "Exception thrown: "+formatObject(theEvent.getException());
+			IBehaviorInfo theBehavior = theEvent.getOperationBehavior();
+			String theBehaviorName = theBehavior != null ? 
+					Util.getSimpleName(theBehavior.getType().getName()) + "." + theBehavior.getName() 
+					: "<unknown>"; 
+			return "Exception thrown in "+theBehaviorName+": "+formatObject(theEvent.getException());
 		}
 		else if (aEvent instanceof IArrayWriteEvent)
 		{

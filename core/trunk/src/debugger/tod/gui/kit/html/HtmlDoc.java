@@ -31,8 +31,11 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.StyleConstants;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
 
 public class HtmlDoc implements HyperlinkListener
 {
@@ -86,12 +89,11 @@ public class HtmlDoc implements HyperlinkListener
 		try
 		{
 			itsDocument = (HTMLDocument) itsEditorKit.createDefaultDocument();
-			
 			StringBuilder theBuilder = new StringBuilder("<html>");
 			if (itsRoot != null) itsRoot.render(theBuilder);
 			theBuilder.append("</html>");
 			itsEditorKit.read(new StringReader(theBuilder.toString()), itsDocument, 0);
-	
+
 			return itsDocument;
 		}
 		catch (IOException e)

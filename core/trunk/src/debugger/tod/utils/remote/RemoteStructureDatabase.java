@@ -87,6 +87,7 @@ implements RIStructureDatabase
 	public void addListener(RIStructureDatabaseListener aListener) throws RemoteException
 	{
 		itsListeners.add(aListener);
+		aListener.changed(null);
 	}
 	
 	protected void fireChanged(Stats aStats)
@@ -99,7 +100,7 @@ implements RIStructureDatabase
 			}
 			catch (RemoteException e)
 			{
-				System.err.println("[RemoteLocationsRepository] Could not fire change event");
+				System.err.println("[RemoteStructureDatabase] Could not fire change event:");
 				e.printStackTrace();
 			}
 		}
@@ -213,7 +214,7 @@ implements RIStructureDatabase
 				cacheClass(theClass);
 			}
 
-			System.out.println("[RemoteLocationsRepository] Done.");
+			System.out.println("[RemoteStructureDatabase] Done.");
 		}
 		
 		private void cacheClass(IClassInfo aClass)
@@ -259,6 +260,7 @@ implements RIStructureDatabase
 		
 		public void changed(Stats aStats)
 		{
+			if (aStats == null) return; // Just for testing 
 			if (aStats.nTypes != itsLastStats.nTypes) itsTypesUpToDate = false;
 			if (aStats.nBehaviors != itsLastStats.nBehaviors) itsBehaviorsUpToDate = false;
 			if (aStats.nFields != itsLastStats.nFields) itsFieldsUpToDate = false;

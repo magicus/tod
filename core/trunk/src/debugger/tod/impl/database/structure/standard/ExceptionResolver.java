@@ -42,7 +42,7 @@ public class ExceptionResolver implements IExceptionResolver
 			return 0;
 		}
 		
-		return theClassInfo.getBehavior(aMethodName, aMethodSignature);
+		return theClassInfo.getBehavior(aMethodName, aMethodSignature, true);
 	}
 
 	protected ClassInfo getClassInfo(String aClassName)
@@ -93,10 +93,10 @@ public class ExceptionResolver implements IExceptionResolver
 			itsBehaviorMap.put(getKey(aMethodName, aMethodSignature), aId);
 		}
 		
-		public int getBehavior(String aMethodName, String aMethodSignature)
+		public int getBehavior(String aMethodName, String aMethodSignature, boolean aFailIfAbsent)
 		{
 			Integer theId = itsBehaviorMap.get(getKey(aMethodName, aMethodSignature));
-			if (theId == null) throw new RuntimeException("Behavior not found in class: "+itsClassName+"."+aMethodName+"("+aMethodSignature+")");
+			if (theId == null && aFailIfAbsent) throw new RuntimeException("Behavior not found in class: "+itsClassName+"."+aMethodName+"("+aMethodSignature+")");
 
 			return theId != null ? theId : 0;
 		}

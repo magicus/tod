@@ -70,7 +70,17 @@ implements IBehaviorListener
 			theClassInfo = getClassInfo(aClassName);
 		}
 
-		return theClassInfo.getBehavior(aMethodName, aMethodSignature);
+		int theId = theClassInfo.getBehavior(aMethodName, aMethodSignature, false);
+		if (theId == 0)
+		{
+			IClassInfo theClass = itsStructureDatabase.getClass(aClassName, true);
+			
+			// This will register the behavior
+			theClass.getNewBehavior(aMethodName, aMethodSignature);
+			theId = theClassInfo.getBehavior(aMethodName, aMethodSignature, true);
+		}
+		
+		return theId;
 	}
-
+	
 }

@@ -38,7 +38,7 @@ public class HtmlText extends HtmlElement
 
 	public HtmlText(String aText)
 	{
-		this(aText, 100);
+		this(aText, FontConfig.NORMAL);
 	}
 	
 	public HtmlText(String aText, int aFontSize)
@@ -48,7 +48,7 @@ public class HtmlText extends HtmlElement
 	
 	public HtmlText(String aText, Color aColor)
 	{
-		this(aText, aColor, 100);
+		this(aText, aColor, FontConfig.NORMAL);
 	}
 	
 	public HtmlText(String aText, Color aColor, int aFontSize)
@@ -97,7 +97,7 @@ public class HtmlText extends HtmlElement
 	
 	public static HtmlText create(String aText)
 	{
-		return create(aText, 100, Color.BLACK);
+		return create(aText, FontConfig.NORMAL, Color.BLACK);
 	}
 
 	

@@ -20,13 +20,11 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.kit.html;
 
-public abstract class HtmlLink extends HtmlElement implements IHyperlinkListener
+public abstract class HtmlLink extends HtmlText implements IHyperlinkListener
 {
-	private String itsText;
-	
 	public HtmlLink(String aText)
 	{
-		itsText = aText;
+		super(aText);
 	}
 	
 	@Override
@@ -45,7 +43,7 @@ public abstract class HtmlLink extends HtmlElement implements IHyperlinkListener
 		aBuilder.append("' id='");
 		aBuilder.append(getId());
 		aBuilder.append("'>");
-		aBuilder.append(itsText);
+		super.render(aBuilder);
 		aBuilder.append("</a>");
 	}
 }

@@ -31,36 +31,45 @@ import reflex.lib.pom.RequestIterator;
  */
 public class Scheduler extends POMScheduler implements POMGroupDef
 {
-	private boolean itsWorking = false;
+	private Request itsExecutingRequest;
 	
+	public Scheduler()
+	{
+		new DeadlockDetectorThread().start();
+	}
+
 	@Override
 	protected void schedule()
 	{
-		System.out.println("Schedule... w: "+itsWorking);
+		System.out.println("[Scheduler] Schedule... req: "+itsExecutingRequest+" on "+Thread.currentThread().getName());
 		RequestIterator theIterator = iterator();
 		while (theIterator.hasNext())
 		{
 			Request theRequest = theIterator.next();
-			System.out.println("Request: "+theRequest);
+			System.out.println("[Scheduler] Request: "+theRequest);
 		}
-		if (! itsWorking) itsWorking = executeOldest();
-		System.out.println("Schedule done.");
-	}
-
-	@Override
-	protected void leave(Request aReq)
-	{
-		itsWorking = false;
-		System.out.println("Scheduler.leave()");
+		if (itsExecutingRequest == null) executeOldest();
+		System.out.println("[Scheduler] Schedule done on "+Thread.currentThread().getName());
 	}
 	
 	@Override
 	protected void scheduling(Request aReq)
 	{
 		System.out.println(String.format(
-				"Scheduler (%s) - executing %s.",
+				"[Scheduler] Scheduler (%s) - executing %s on "+Thread.currentThread().getName(),
 				this,
 				aReq));
+
+		if (itsExecutingRequest != null) throw new IllegalStateException();
+		itsExecutingRequest = aReq;
+	}
+	
+	@Override
+	protected void leave(Request aReq)
+	{
+		if (itsExecutingRequest != aReq) throw new IllegalStateException();
+		itsExecutingRequest = null;
+		System.out.println("[Scheduler] Scheduler.leave() on "+Thread.currentThread().getName());
 	}
 	
 	public Object getGroup(Object aObject)
@@ -68,4 +77,50 @@ public class Scheduler extends POMScheduler implements POMGroupDef
 		return "dbgrid";
 	}
 
+	private class DeadlockDetectorThread extends Thread
+	{
+		@Override
+		public void run()
+		{
+			try
+			{
+				Request theLastRequest = null;
+				int theCount = 0;
+				while(true)
+				{
+					if (itsExecutingRequest != null)
+					{
+						if (itsExecutingRequest == theLastRequest)
+						{
+							theCount++;
+							if (theCount > 10) deadlock();
+						}
+						else
+						{
+							theCount = 0;
+							theLastRequest = itsExecutingRequest;
+						}
+					}
+					else
+					{
+						theLastRequest = null;
+						theCount = 0;
+					}
+					Thread.sleep(1000);
+				}
+			}
+			catch (InterruptedException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		
+		private void deadlock()
+		{
+			System.out.println("[Scheduler] Deadlock detected");
+			System.out.println("  Current request: "+itsExecutingRequest+" on "+itsExecutingRequest.getThread());
+			System.out.println("  Attempting to interrupt.");
+			itsExecutingRequest.getThread().interrupt();
+		}
+	}
 }

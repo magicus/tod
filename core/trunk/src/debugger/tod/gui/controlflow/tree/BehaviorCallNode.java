@@ -53,6 +53,7 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 	private IBehaviorCallEvent itsEvent;
 	
 	private ExpanderWidget itsExpanderWidget;
+	private boolean itsExpanded = false;
 	
 	public BehaviorCallNode(
 			CFlowView aView,
@@ -74,7 +75,8 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 			@Override
 			public void mousePressed(MouseEvent aE)
 			{
-				getView().getSeed().pParentEvent().set(getEvent());
+				itsExpanded = ! itsExpanded;
+				updateHtml();
 				aE.consume();
 			}
 		});
@@ -83,9 +85,20 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 	}
 	
 	@Override
+	public void mouseClicked(MouseEvent aEvent)
+	{
+		super.mouseClicked(aEvent);
+		if (aEvent.getClickCount() == 2)
+		{
+			getView().getSeed().pParentEvent().set(getEvent());
+			aEvent.consume();
+		}
+	}
+	
+	@Override
 	protected void createHtmlUI(HtmlBody aBody)
 	{
-		if (isSelected()) createFullView(aBody);
+		if (itsExpanded) createFullView(aBody);
 		else createShortView(aBody);
 	}
 	
@@ -130,7 +143,6 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 	{
 		Object[] theArguments = getEvent().getArguments();
 
-		XFont theFont = FontConfig.STD_FONT;
 		aParent.addText("(");
 		
 		if (theArguments != null)
