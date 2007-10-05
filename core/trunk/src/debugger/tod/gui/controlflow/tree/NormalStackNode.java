@@ -42,12 +42,11 @@ import zz.utils.ui.ZLabel;
 public class NormalStackNode extends AbstractStackNode
 {
 	public NormalStackNode(
-			CFlowView aView, 
 			JobProcessor aJobProcessor, 
 			IBehaviorCallEvent aEvent,
 			boolean aCurrentStackFrame)
 	{
-		super(aView, aJobProcessor, aEvent, aCurrentStackFrame);
+		super(aJobProcessor, aEvent, aCurrentStackFrame);
 	}
 
 	@Override

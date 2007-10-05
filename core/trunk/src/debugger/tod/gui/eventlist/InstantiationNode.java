@@ -18,39 +18,36 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow.tree;
+package tod.gui.eventlist;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-
-import javax.swing.JPanel;
-
-
-import tod.core.database.event.IConstructorChainingEvent;
-import tod.gui.FontConfig;
-import tod.gui.GUIUtils;
+import tod.Util;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.IInstantiationEvent;
+import tod.core.database.structure.IClassInfo;
 import tod.gui.JobProcessor;
-import tod.gui.controlflow.CFlowView;
 import tod.gui.kit.html.HtmlElement;
 import tod.gui.kit.html.HtmlText;
-import zz.utils.ui.WrappedFlowLayout;
-import zz.utils.ui.ZLabel;
 
-public class ConstructorChainingNode extends BehaviorCallNode
+public class InstantiationNode extends BehaviorCallNode
 {
 
-	public ConstructorChainingNode(
-			CFlowView aView, 
-			JobProcessor aJobProcessor,
-			IConstructorChainingEvent aEvent)
+	public InstantiationNode(
+			EventListPanel aListPanel,
+			IBehaviorCallEvent aEvent)
 	{
-		super(aView, aJobProcessor, aEvent);
+		super(aListPanel, aEvent);
 	}
 
-	@Override
-	protected IConstructorChainingEvent getEvent()
+	public IInstantiationEvent getEvent()
 	{
-		return (IConstructorChainingEvent) super.getEvent();
+		return (IInstantiationEvent) super.getEvent();
+	}
+	
+	@Override
+	protected HtmlElement createBehaviorNamePrefix()
+	{
+		return HtmlText.create("new ");
 	}
 	
 	@Override
@@ -62,26 +59,22 @@ public class ConstructorChainingNode extends BehaviorCallNode
 	@Override
 	protected HtmlElement createShortBehaviorName()
 	{
-		String theHeader;
-		switch(getEvent().getCallType())
-		{
-		case SUPER:
-			theHeader = "super";
-			break;
-			
-		case THIS:
-			theHeader = "this";
-			break;
-			
-		case UNKNOWN:
-			theHeader = "this/super";
-			break;
-			
-		default:
-			throw new RuntimeException("Not handled: "+getEvent().getCallType());
-		}
-		
-		return HtmlText.create(theHeader);
+		IClassInfo theType = getBehavior().getType();
+		return HtmlText.create(
+				showPackageNames() ? 
+						theType.getName()
+						: Util.getSimpleInnermostName(theType.getName()));
 	}
 	
+	@Override
+	protected String getResultPrefix()
+	{
+		return "Created";
+	}
+
+	@Override
+	protected Object getResult()
+	{
+		return getEvent().getInstance();
+	}
 }

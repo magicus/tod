@@ -18,26 +18,26 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow.tree;
+package tod.gui.eventlist;
 
-import tod.core.database.event.IBehaviorCallEvent;
-import tod.core.database.event.IFieldWriteEvent;
+import java.awt.Color;
+
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
-import tod.gui.Hyperlinks;
+import tod.gui.FontConfig;
 import tod.gui.JobProcessor;
-import tod.gui.controlflow.CFlowView;
 import tod.gui.kit.html.HtmlBody;
+import tod.gui.kit.html.HtmlText;
 
-public class FieldWriteNode extends AbstractEventNode
+public class UnknownEventNode extends AbstractEventNode
 {
-	private IFieldWriteEvent itsEvent;
+	private ILogEvent itsEvent;
 
-	public FieldWriteNode(
-			CFlowView aView,
-			JobProcessor aJobProcessor,
-			IFieldWriteEvent aEvent)
+	public UnknownEventNode(
+			EventListPanel aListPanel,
+			ILogEvent aEvent)
 	{
-		super(aView, aJobProcessor);
+		super(aListPanel);
 		itsEvent = aEvent;
 		createUI();
 	}
@@ -45,34 +45,7 @@ public class FieldWriteNode extends AbstractEventNode
 	@Override
 	protected void createHtmlUI(HtmlBody aBody)
 	{
-		Object theCurrentObject = null;
-		IBehaviorCallEvent theContainer = itsEvent.getParent();
-		if (theContainer != null)
-		{
-			theCurrentObject = theContainer.getTarget();
-		}
-		
-		aBody.add(Hyperlinks.object(
-				Hyperlinks.HTML,
-				getLogBrowser(), 
-				getJobProcessor(),
-				theCurrentObject, 
-				itsEvent.getTarget(),
-				itsEvent,
-				showPackageNames()));
-		
-		aBody.addText(".");
-		aBody.addText(itsEvent.getField().getName());
-		aBody.addText(" = ");
-		
-		aBody.add(Hyperlinks.object(
-				Hyperlinks.HTML,
-				getLogBrowser(),
-				getJobProcessor(), 
-				theCurrentObject,
-				itsEvent.getValue(),
-				itsEvent,
-				showPackageNames()));
+		aBody.add(HtmlText.create("Unknown ("+getEvent()+")", FontConfig.NORMAL, Color.GRAY));
 	}
 	
 	@Override

@@ -18,28 +18,46 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow.tree;
+package tod.gui.eventlist;
 
-import javax.swing.JComponent;
-
-import tod.core.database.event.IParentEvent;
-import tod.gui.GUIUtils;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.ILocalVariableWriteEvent;
+import tod.core.database.event.ILogEvent;
+import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
-import tod.gui.controlflow.CFlowView;
+import tod.gui.kit.html.HtmlBody;
 
-public class RootStackNode extends AbstractStackNode
+public class LocalVariableWriteNode extends AbstractEventNode
 {
-	public RootStackNode(
-			JobProcessor aJobProcessor, 
-			IParentEvent aEvent, 
-			boolean aCurrentStackFrame)
-	{
-		super(aJobProcessor, aEvent, aCurrentStackFrame);
-	}
+	private ILocalVariableWriteEvent itsEvent;
 
-	@Override
-	protected JComponent createHeader()
+	public LocalVariableWriteNode(
+			EventListPanel aListPanel,
+			ILocalVariableWriteEvent aEvent)
 	{
-		return GUIUtils.createLabel("Control flow root");
+		super(aListPanel);
+		itsEvent = aEvent;
+		createUI();
+	}
+	
+	@Override
+	protected void createHtmlUI(HtmlBody aBody)
+	{
+		aBody.addText(itsEvent.getVariable().getVariableName());
+		aBody.addText(" = ");
+		
+		aBody.add(Hyperlinks.object(
+				Hyperlinks.HTML,
+				getLogBrowser(),
+				getJobProcessor(),
+				itsEvent.getValue(),
+				itsEvent,
+				showPackageNames()));
+	}
+	
+	@Override
+	protected ILogEvent getEvent()
+	{
+		return itsEvent;
 	}
 }

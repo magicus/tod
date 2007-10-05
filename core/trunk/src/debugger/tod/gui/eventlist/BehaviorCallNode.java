@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow.tree;
+package tod.gui.eventlist;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -29,23 +29,23 @@ import javax.swing.JLabel;
 import javax.swing.JToolTip;
 
 import tod.Util;
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.gui.FontConfig;
-import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
-import tod.gui.controlflow.CFlowView;
+import tod.gui.kit.Bus;
 import tod.gui.kit.html.AsyncHtmlGroup;
 import tod.gui.kit.html.HtmlBody;
 import tod.gui.kit.html.HtmlElement;
-import tod.gui.kit.html.HtmlGroup;
 import tod.gui.kit.html.HtmlParentElement;
 import tod.gui.kit.html.HtmlText;
+import tod.gui.kit.messages.EventActivatedMsg;
+import tod.gui.kit.messages.EventActivatedMsg.ActivationMethod;
 import zz.utils.ui.StackLayout;
 import zz.utils.ui.UIUtils;
-import zz.utils.ui.text.XFont;
 
 public abstract class BehaviorCallNode extends AbstractEventNode
 {
@@ -56,11 +56,10 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 	private boolean itsExpanded = false;
 	
 	public BehaviorCallNode(
-			CFlowView aView,
-			JobProcessor aJobProcessor,
+			EventListPanel aListPanel,
 			IBehaviorCallEvent aEvent)
 	{
-		super (aView, aJobProcessor);
+		super (aListPanel);
 		itsEvent = aEvent;
 		createUI();
 	}
@@ -90,7 +89,7 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 		super.mouseClicked(aEvent);
 		if (aEvent.getClickCount() == 2)
 		{
-			getView().getSeed().pParentEvent().set(getEvent());
+			Bus.getBus(this).postMessage(new EventActivatedMsg(getEvent(), ActivationMethod.DOUBLE_CLICK));
 			aEvent.consume();
 		}
 	}
@@ -254,7 +253,7 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 	protected HtmlElement createPackageName()
 	{
 		return HtmlText.create(
-				Util.getPackageName(getBehavior().getType().getName()), 
+				Util.getPackageName(getBehavior().getType().getName())+".", 
 				FontConfig.SMALL, 
 				Color.BLACK);
 	}

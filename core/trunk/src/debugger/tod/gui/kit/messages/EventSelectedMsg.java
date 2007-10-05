@@ -25,6 +25,10 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ObjectId;
 
+/**
+ * This message is sent when an event is selected in an event list.
+ * @author gpothier
+ */
 public class EventSelectedMsg extends Message
 {
 	public static final String ID = "tod.eventSelected";
@@ -64,6 +68,7 @@ public class EventSelectedMsg extends Message
 		public static final SelectionMethod BACKWARD_STEP_OVER = new SM_BackwardStepOver();
 		public static final SelectionMethod STEP_OUT = new SM_StepOut();
 		public static final SelectionMethod SELECT_IN_LIST = new SM_SelectInList();
+		public static final SelectionMethod SELECT_IN_CALL_STACK = new SM_SelectInCallStack();
 	}
 	
 	public static class SM_ForwardStepInto extends SelectionMethod
@@ -104,6 +109,13 @@ public class EventSelectedMsg extends Message
 	public static class SM_SelectInList extends SelectionMethod
 	{
 		private SM_SelectInList()
+		{
+		}
+	}
+	
+	public static class SM_SelectInCallStack extends SelectionMethod
+	{
+		private SM_SelectInCallStack()
 		{
 		}
 	}

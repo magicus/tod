@@ -18,25 +18,28 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow.tree;
+package tod.gui.eventlist;
 
-import tod.core.database.event.ILocalVariableWriteEvent;
+import java.awt.Color;
+
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.IExceptionGeneratedEvent;
 import tod.core.database.event.ILogEvent;
+import tod.gui.FontConfig;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
-import tod.gui.controlflow.CFlowView;
 import tod.gui.kit.html.HtmlBody;
+import tod.gui.kit.html.HtmlText;
 
-public class LocalVariableWriteNode extends AbstractEventNode
+public class ExceptionGeneratedNode extends AbstractEventNode
 {
-	private ILocalVariableWriteEvent itsEvent;
+	private IExceptionGeneratedEvent itsEvent;
 
-	public LocalVariableWriteNode(
-			CFlowView aView,
-			JobProcessor aJobProcessor,
-			ILocalVariableWriteEvent aEvent)
+	public ExceptionGeneratedNode(
+			EventListPanel aListPanel,
+			IExceptionGeneratedEvent aEvent)
 	{
-		super(aView, aJobProcessor);
+		super(aListPanel);
 		itsEvent = aEvent;
 		createUI();
 	}
@@ -44,14 +47,12 @@ public class LocalVariableWriteNode extends AbstractEventNode
 	@Override
 	protected void createHtmlUI(HtmlBody aBody)
 	{
-		aBody.addText(itsEvent.getVariable().getVariableName());
-		aBody.addText(" = ");
-		
+		aBody.add(HtmlText.create("Exception: ", FontConfig.NORMAL, Color.RED));
 		aBody.add(Hyperlinks.object(
 				Hyperlinks.HTML,
 				getLogBrowser(),
 				getJobProcessor(),
-				itsEvent.getValue(),
+				itsEvent.getException(),
 				itsEvent,
 				showPackageNames()));
 	}
@@ -61,4 +62,5 @@ public class LocalVariableWriteNode extends AbstractEventNode
 	{
 		return itsEvent;
 	}
+
 }

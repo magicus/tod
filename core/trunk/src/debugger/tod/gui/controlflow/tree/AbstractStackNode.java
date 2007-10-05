@@ -36,8 +36,12 @@ import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.JobProcessor;
 import tod.gui.controlflow.CFlowView;
+import tod.gui.kit.Bus;
+import tod.gui.kit.messages.EventSelectedMsg;
+import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import tod.gui.seed.CFlowSeed;
 import zz.utils.ui.GridStackLayout;
+import zz.utils.ui.MousePanel;
 import zz.utils.ui.UIUtils;
 import zz.utils.ui.ZLabel;
 
@@ -45,9 +49,10 @@ import zz.utils.ui.ZLabel;
  * Represents a stack item in the control flow.
  * @author gpothier
  */
-public abstract class AbstractStackNode extends AbstractCFlowNode
+public abstract class AbstractStackNode extends MousePanel
 {
-	private IParentEvent itsEvent;
+	private final JobProcessor itsJobProcessor;
+	private final IParentEvent itsEvent;
 	
 	/**
 	 * Indicates if this stack node corresponds to the currently
@@ -58,12 +63,11 @@ public abstract class AbstractStackNode extends AbstractCFlowNode
 	private boolean itsMouseOver = false;
 	
 	public AbstractStackNode(
-			CFlowView aView,
 			JobProcessor aJobProcessor,
 			IParentEvent aEvent,
 			boolean aCurrentStackFrame)
 	{
-		super(aView, aJobProcessor);
+		itsJobProcessor = aJobProcessor;
 		itsEvent = aEvent;
 		itsCurrentStackFrame = aCurrentStackFrame;
 		createUI();
@@ -123,9 +127,8 @@ public abstract class AbstractStackNode extends AbstractCFlowNode
 	{
 		if (! itsCurrentStackFrame)
 		{
-			CFlowSeed theSeed = getView().getSeed();
-			theSeed.pParentEvent().set(getEvent());
-			theSeed.pSelectedEvent().set(null);
+			Bus.getBus(this).postMessage(new EventSelectedMsg(getEvent(), SelectionMethod.SELECT_IN_CALL_STACK));
+			aE.consume();			
 		}
 
 		aE.consume();

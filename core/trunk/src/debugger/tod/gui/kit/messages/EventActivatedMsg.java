@@ -18,40 +18,54 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow.tree;
-
-import java.awt.Color;
+package tod.gui.kit.messages;
 
 import tod.core.database.event.ILogEvent;
-import tod.gui.FontConfig;
-import tod.gui.JobProcessor;
-import tod.gui.controlflow.CFlowView;
-import tod.gui.kit.html.HtmlBody;
-import tod.gui.kit.html.HtmlText;
 
-public class UnknownEventNode extends AbstractEventNode
+/**
+ * This message is sent when an event is activated (eg. double clicked).
+ * @author gpothier
+ */
+public class EventActivatedMsg extends Message
 {
-	private ILogEvent itsEvent;
+	public static final String ID = "tod.eventActivated";
 
-	public UnknownEventNode(
-			CFlowView aView,
-			JobProcessor aJobProcessor,
-			ILogEvent aEvent)
+	/**
+	 * The activated event.
+	 */
+	private final ILogEvent itsEvent;
+	
+	/**
+	 * The way the event was selected (selection, stepping...)
+	 */
+	private final ActivationMethod itsSelectionMethod;
+	
+	public EventActivatedMsg(ILogEvent aEvent, ActivationMethod aMethod)
 	{
-		super(aView, aJobProcessor);
+		super(ID);
 		itsEvent = aEvent;
-		createUI();
+		itsSelectionMethod = aMethod;
 	}
-	
-	@Override
-	protected void createHtmlUI(HtmlBody aBody)
-	{
-		aBody.add(HtmlText.create("Unknown ("+getEvent()+")", FontConfig.NORMAL, Color.GRAY));
-	}
-	
-	@Override
-	protected ILogEvent getEvent()
+
+	public ILogEvent getEvent()
 	{
 		return itsEvent;
+	}
+
+	public ActivationMethod getActivationMethod()
+	{
+		return itsSelectionMethod;
+	}
+
+	public static abstract class ActivationMethod
+	{
+		public static final ActivationMethod DOUBLE_CLICK = new AM_DoubleClick();
+	}
+	
+	public static class AM_DoubleClick extends ActivationMethod
+	{
+		private AM_DoubleClick()
+		{
+		}
 	}
 }

@@ -22,7 +22,6 @@ package tod.gui.seed;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
-import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
@@ -51,7 +50,7 @@ public class CFlowSeed extends LogViewSeed
 			super.set(aEvent);
 		}
 	};
-	private IRWProperty<IParentEvent> pParentEvent = new SimpleRWProperty<IParentEvent>(this);
+	
 	private IRWProperty<IParentEvent> pRootEvent = new SimpleRWProperty<IParentEvent>(this);
 	
 	public CFlowSeed(
@@ -61,7 +60,6 @@ public class CFlowSeed extends LogViewSeed
 	{
 		this(aGUIManager, aLog, aSelectedEvent.getThread());
 		pSelectedEvent().set(aSelectedEvent);
-		if (aSelectedEvent != null) pParentEvent().set(aSelectedEvent.getParent());
 	}
 
 	
@@ -100,15 +98,6 @@ public class CFlowSeed extends LogViewSeed
 	{
 		return pSelectedEvent;
 	}
-
-	/**
-	 * The current parent.
-	 */
-	public IRWProperty<IParentEvent> pParentEvent()
-	{
-		return pParentEvent;
-	}
-
 
 	/**
 	 * The event at the root of the CFlow tree. Ancestors of the root event

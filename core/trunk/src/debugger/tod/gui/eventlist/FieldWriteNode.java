@@ -18,27 +18,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow.tree;
+package tod.gui.eventlist;
 
-import tod.core.database.event.IArrayWriteEvent;
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
-import tod.gui.controlflow.CFlowView;
 import tod.gui.kit.html.HtmlBody;
-import tod.gui.kit.html.HtmlText;
 
-public class ArrayWriteNode extends AbstractEventNode
+public class FieldWriteNode extends AbstractEventNode
 {
-	private IArrayWriteEvent itsEvent;
+	private IFieldWriteEvent itsEvent;
 
-	public ArrayWriteNode(
-			CFlowView aView,
-			JobProcessor aJobProcessor,
-			IArrayWriteEvent aEvent)
+	public FieldWriteNode(
+			EventListPanel aListPanel,
+			IFieldWriteEvent aEvent)
 	{
-		super(aView, aJobProcessor);
+		super(aListPanel);
 		itsEvent = aEvent;
 		createUI();
 	}
@@ -56,20 +54,22 @@ public class ArrayWriteNode extends AbstractEventNode
 		aBody.add(Hyperlinks.object(
 				Hyperlinks.HTML,
 				getLogBrowser(), 
-				getJobProcessor(), 
+				getJobProcessor(),
 				theCurrentObject, 
 				itsEvent.getTarget(),
 				itsEvent,
 				showPackageNames()));
-
-		aBody.addText("[" + itsEvent.getIndex() + "] = ");
+		
+		aBody.addText(".");
+		aBody.addText(itsEvent.getField().getName());
+		aBody.addText(" = ");
 		
 		aBody.add(Hyperlinks.object(
 				Hyperlinks.HTML,
-				getLogBrowser(), 
+				getLogBrowser(),
 				getJobProcessor(), 
-				theCurrentObject, 
-				itsEvent.getValue(), 
+				theCurrentObject,
+				itsEvent.getValue(),
 				itsEvent,
 				showPackageNames()));
 	}

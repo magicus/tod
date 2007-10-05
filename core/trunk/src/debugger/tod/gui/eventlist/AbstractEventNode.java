@@ -18,79 +18,38 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow.tree;
+package tod.gui.eventlist;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.io.StringReader;
 
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.html.HTMLEditorKit;
 
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.gui.GUIUtils;
 import tod.gui.JobProcessor;
-import tod.gui.MinerUI;
-import tod.gui.controlflow.CFlowView;
 import tod.gui.kit.Bus;
-import tod.gui.kit.IBusListener;
-import tod.gui.kit.OptionManager;
-import tod.gui.kit.StdOptions;
 import tod.gui.kit.html.HtmlBody;
 import tod.gui.kit.html.HtmlComponent;
 import tod.gui.kit.html.HtmlDoc;
-import tod.gui.kit.html.HtmlElement;
 import tod.gui.kit.messages.EventSelectedMsg;
-import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
-import zz.utils.properties.SimpleRWProperty;
+import zz.utils.Utils;
+import zz.utils.ui.MousePanel;
 
-public abstract class AbstractEventNode extends AbstractCFlowNode
+public abstract class AbstractEventNode extends MousePanel
 {
+	private final EventListPanel itsListPanel;
+	
 	private HtmlComponent itsHtmlComponent;
 	private HtmlDoc itsDoc;
 	
-	private boolean itsWasSelected;
-	
-	private IBusListener<EventSelectedMsg> itsEventSelectedListener = new IBusListener<EventSelectedMsg>()
+	public AbstractEventNode(EventListPanel aListPanel)
 	{
-		public boolean processMessage(EventSelectedMsg aMessage)
-		{
-			if (aMessage.getEvent().equals(getEvent()))
-			{
-				if (! itsWasSelected)
-				{
-					selected();
-					itsWasSelected = true;
-				}
-			}
-			else
-			{
-				if (itsWasSelected)
-				{
-					deselected();
-					itsWasSelected = false;
-				}
-			}
-			return false;
-		}
-	};
-	
-
-
-	public AbstractEventNode(
-			CFlowView aView,
-			JobProcessor aJobProcessor)
-	{
-		super(aView, aJobProcessor);
+		itsListPanel = aListPanel;
 		
 		itsDoc = new HtmlDoc();
 		itsHtmlComponent = new HtmlComponent();
@@ -99,21 +58,21 @@ public abstract class AbstractEventNode extends AbstractCFlowNode
 		itsHtmlComponent.addMouseListener(this);
 	}
 
-	@Override
-	public void addNotify()
+	public EventListPanel getListPanel()
 	{
-		super.addNotify();
-		itsWasSelected = isSelected();
-		Bus.getBus(this).subscribe(EventSelectedMsg.ID, itsEventSelectedListener);
+		return itsListPanel;
 	}
 	
-	@Override
-	public void removeNotify()
+	public ILogBrowser getLogBrowser()
 	{
-		super.removeNotify();
-		Bus.getBus(this).unsubscribe(EventSelectedMsg.ID, itsEventSelectedListener);
+		return getListPanel().getLogBrowser();
 	}
-	
+
+	public JobProcessor getJobProcessor()
+	{
+		return getListPanel().getJobProcessor();
+	}
+
 	/**
 	 * Default UI creation. 
 	 * The html component is placed at the center of a {@link BorderLayout}.
@@ -149,16 +108,17 @@ public abstract class AbstractEventNode extends AbstractCFlowNode
 	 */
 	protected boolean showPackageNames()
 	{
-		return getView().showPackageNames();
+		return true;
 	}
 	
 	@Override
 	public void mousePressed(MouseEvent aE)
 	{
+		getListPanel().pSelectedEvent().set(getEvent());
 		ILogEvent theMainEvent = getEvent();
 		if (theMainEvent != null)
 		{
-			getView().selectEvent(theMainEvent, SelectionMethod.SELECT_IN_LIST);
+			Bus.getBus(this).postMessage(new EventSelectedMsg(theMainEvent, SelectionMethod.SELECT_IN_LIST));
 			aE.consume();			
 		}
 	}
@@ -168,7 +128,8 @@ public abstract class AbstractEventNode extends AbstractCFlowNode
 	 */
 	protected void selected()
 	{
-		updateHtml();
+//		updateHtml();
+		repaint();
 	}
 
 	/**
@@ -176,13 +137,13 @@ public abstract class AbstractEventNode extends AbstractCFlowNode
 	 */
 	protected void deselected()
 	{
-		updateHtml();
+//		updateHtml();
+		repaint();
 	}
 	
 	protected boolean isSelected()
 	{
-		ILogEvent theMainEvent = getEvent();
-		return theMainEvent != null && getView().isEventSelected(theMainEvent);
+		return Utils.equalOrBothNull(getEvent(), getListPanel().pSelectedEvent().get());
 	}
 	
 	@Override
@@ -203,23 +164,7 @@ public abstract class AbstractEventNode extends AbstractCFlowNode
 	 */
 	public AbstractEventNode getNode(ILogEvent aEvent)
 	{
-		if (aEvent == getEvent()) return this;
+		if (Utils.equalOrBothNull(aEvent, getEvent())) return this;
 		else return null;
 	}
-
-	private static class AAEditorPane extends JEditorPane
-	{
-		public AAEditorPane()
-		{
-		}
-
-		@Override
-		protected void paintComponent(Graphics g)
-		{
-			Graphics2D g2 = (Graphics2D) g;
-			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			super.paintComponent(g2);
-		}
-	}
-
 }

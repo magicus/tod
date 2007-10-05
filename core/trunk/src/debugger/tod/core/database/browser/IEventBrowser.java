@@ -23,6 +23,7 @@ package tod.core.database.browser;
 import java.util.List;
 
 import tod.core.database.event.ILogEvent;
+import zz.utils.IPublicCloneable;
 
 
 /**
@@ -33,7 +34,7 @@ import tod.core.database.event.ILogEvent;
  * {@link #setTimestamp(long)}
  * @author gpothier
  */
-public interface IEventBrowser
+public interface IEventBrowser extends IPublicCloneable
 {
 	/**
 	 * Returns the {@link ILogBrowser} that created this event browser.
@@ -135,4 +136,10 @@ public interface IEventBrowser
 	 * Returns the timestamp of the last event that can be returned by this browser.
 	 */
 	public long getLastTimestamp();
+	
+	/**
+	 * Returns a clone of this event browser.
+	 * The clone has the same set of events, but an independant position.
+	 */
+	public IEventBrowser clone();
 }

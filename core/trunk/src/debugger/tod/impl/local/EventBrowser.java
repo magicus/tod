@@ -29,11 +29,12 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.EventComparator;
 import tod.core.database.event.ILogEvent;
 import tod.impl.local.filter.AbstractFilter;
+import zz.utils.PublicCloneable;
 
 /**
  * @author gpothier
  */
-public class EventBrowser implements IEventBrowser
+public class EventBrowser extends PublicCloneable implements IEventBrowser
 {
 	private final ILogBrowser itsLogBrowser;
 	
@@ -214,6 +215,13 @@ public class EventBrowser implements IEventBrowser
 		return getEvent((int) (getEventCount()-1)).getTimestamp();
 	}
 	
+	@Override
+	public EventBrowser clone() 
+	{
+		EventBrowser theClone = (EventBrowser) super.clone();
+		theClone.itsIndex = 0;
+		return theClone;
+	}
 	
 	
 }

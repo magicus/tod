@@ -20,258 +20,85 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.controlflow.tree;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.SwingUtilities;
 
-import tod.core.database.event.EventUtils;
-import tod.core.database.event.IArrayWriteEvent;
-import tod.core.database.event.IBehaviorExitEvent;
-import tod.core.database.event.IConstructorChainingEvent;
-import tod.core.database.event.IExceptionGeneratedEvent;
-import tod.core.database.event.IFieldWriteEvent;
-import tod.core.database.event.IInstantiationEvent;
-import tod.core.database.event.ILocalVariableWriteEvent;
+import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
-import tod.core.database.event.IMethodCallEvent;
 import tod.core.database.event.IParentEvent;
-import tod.gui.GUIUtils;
 import tod.gui.JobProcessor;
 import tod.gui.MinerUI;
 import tod.gui.controlflow.CFlowView;
-import tod.gui.eventlist.EventListCore;
-import tod.gui.eventlist.MuralScroller;
-import tod.gui.eventlist.MuralScroller.UnitScroll;
-import zz.utils.notification.IEvent;
-import zz.utils.notification.IEventListener;
-import zz.utils.properties.IProperty;
-import zz.utils.properties.PropertyListener;
-import zz.utils.ui.GridStackLayout;
-import zz.utils.ui.ScrollablePanel;
+import tod.gui.eventlist.EventListPanel;
+import zz.utils.Utils;
+import zz.utils.properties.IRWProperty;
+import zz.utils.properties.PropertyUtils;
+import zz.utils.properties.SimpleRWProperty;
 import zz.utils.ui.StackLayout;
 
 public class CFlowTree extends JPanel
-implements MouseWheelListener
 {
 	private static final String PROPERTY_SPLITTER_POS = "cflowTree.splitterPos";
 	
 	private final CFlowView itsView;
-
-	private EventListCore itsCore;
-	private JPanel itsEventList;
-	
-	private MuralScroller itsScroller;
-	
-	private long itsFirstDisplayedTimestamp;
-	private long itsLastDisplayedTimestamp;
-	
-	/**
-	 * Maps currently displayed events to their graphic node.
-	 */
-	private Map<ILogEvent, AbstractEventNode> itsNodesMap = 
-		new HashMap<ILogEvent, AbstractEventNode>();
-
+	private CallStackPanel itsCallStackPanel;
+	private EventListPanel itsEventListPanel;
 	private JSplitPane itsSplitPane;
+	private IParentEvent itsCurrentParent;
 	
-	private int itsSubmittedJobs = 0;
+	private final IRWProperty<ILogEvent> pSelectedEvent = 
+		new SimpleRWProperty<ILogEvent>()
+		{
+			@Override
+			protected void changed(ILogEvent aOldValue, ILogEvent aNewValue)
+			{
+				IParentEvent theParent = aNewValue.getParent();
+				if (theParent == null) theParent = itsView.getSeed().pRootEvent().get();
+				
+				if (Utils.different(itsCurrentParent, theParent))
+				{
+					itsEventListPanel.setBrowser(theParent.getChildrenBrowser());
+					itsCurrentParent = theParent;
+				}
+				
+				// Only update call stack, as this property is connected to event list
+				itsCallStackPanel.setLeafEvent(aNewValue);
+			}
+		};
 	
 	public CFlowTree(CFlowView aView)
 	{
 		itsView = aView;
+		createUI();
 	}
 	
 	public JobProcessor getJobProcessor()
 	{
 		return itsView.getGUIManager().getJobProcessor();
-//		return null;
 	}
 
-	public void forward(final int aCount)
-	{
-		if (itsSubmittedJobs > 5) return;
-		
-		itsSubmittedJobs++;
-		getJobProcessor().submit(new JobProcessor.Job<Object>()
-		{
-			@Override
-			public Object run()
-			{
-				itsCore.forward(aCount);
-				itsSubmittedJobs--;
-				if (itsSubmittedJobs == 0) postUpdateList();
-				return null;
-			}
-		});
-	}
-	
-	public void backward(final int aCount)
-	{
-		if (itsSubmittedJobs > 5) return;
-		
-		itsSubmittedJobs++;
-		getJobProcessor().runNow(new JobProcessor.Job<Object>()
-		{
-			@Override
-			public Object run()
-			{
-				itsCore.backward(aCount);
-				itsSubmittedJobs--;
-				if (itsSubmittedJobs == 0) postUpdateList();
-				return null;
-			}
-		});
-	}
-	
-	public void setTimestamp(final long aTimestamp)
-	{
-		getJobProcessor().submit(new JobProcessor.Job<Object>()
-		{
-			@Override
-			public Object run()
-			{
-				System.out.println("[CFlowTree.setTimestamp] Updating...");
-				itsCore.setTimestamp(aTimestamp);
-				postUpdateList();
-				System.out.println("[CFlowTree.setTimestamp] Done...");
-				return null;
-			}
-		});
-	}
-
-	public void setParent(IParentEvent aParentEvent)
-	{
-		if (itsCore == null) itsCore = new EventListCore(aParentEvent.getChildrenBrowser(), 10);
-		else itsCore.setBrowser(aParentEvent.getChildrenBrowser());
-
-		itsScroller.set(
-				aParentEvent.getChildrenBrowser(),  // Cannot reuse the browser passed to EventListCore
-				aParentEvent.getFirstTimestamp(),
-				aParentEvent.getLastTimestamp());
-
-		update();
-	}
-	
 	/**
-	 * Posts an {@link #updateList()} request to be executed by the
-	 * swing thread.
+	 * This property corresponds to the currently selected event.
+	 * @return
 	 */
-	private void postUpdateList()
+	public IRWProperty<ILogEvent> pSelectedEvent()
 	{
-		SwingUtilities.invokeLater(new Runnable()
-		{
-			public void run()
-			{
-				updateList();
-			}
-		});
-	}
-	
-	private void updateList()
-	{
-		itsEventList.removeAll();
-		List<ILogEvent> theEvents = itsCore.getDisplayedEvents();
-		
-		Map<ILogEvent, AbstractEventNode> theOldMap = itsNodesMap;
-		itsNodesMap = new HashMap<ILogEvent, AbstractEventNode>();
-		
-		int theChildrenHeight = 0;
-		int theTotalHeight = getHeight();
-		
-		for (ILogEvent theEvent : theEvents)
-		{
-			AbstractEventNode theNode = theOldMap.get(theEvent);
-			if (theNode == null) theNode = buildEventNode(theEvent);
-			
-			if (theNode != null) 
-			{
-				theChildrenHeight += theNode.getPreferredSize().height;
-				itsEventList.add(theNode);
-				itsNodesMap.put(theEvent, theNode);
-			}
-		}
-		
-		while (theChildrenHeight < theTotalHeight)
-		{
-			ILogEvent theEvent = itsCore.incVisibleEvents();
-			if (theEvent == null) break;
-			AbstractEventNode theNode = theOldMap.get(theEvent);
-			if (theNode == null) theNode = buildEventNode(theEvent);
-			
-			if (theNode != null) 
-			{
-				theChildrenHeight += theNode.getPreferredSize().height;
-				itsEventList.add(theNode);
-				itsNodesMap.put(theEvent, theNode);
-			}
-		}
-		
-		
-		itsEventList.revalidate();
-		itsEventList.repaint();
+		return pSelectedEvent;
 	}
 	
 	private void createUI()
 	{
-		itsScroller = new MuralScroller();
-		
-		itsScroller.eUnitScroll().addListener(new IEventListener<UnitScroll>()
-				{
-					public void fired(IEvent< ? extends UnitScroll> aEvent, UnitScroll aData)
-					{
-						switch (aData)
-						{
-						case UP:
-							backward(1);
-							break;
-							
-						case DOWN:
-							forward(1);
-							break;
-						}
-					}
-				});
-		itsScroller.pTrackScroll().addHardListener(new PropertyListener<Long>()
-				{
-					@Override
-					public void propertyChanged(IProperty<Long> aProperty, Long aOldValue, Long aNewValue)
-					{
-						setTimestamp(aNewValue);
-					}
-				});
-		
 		itsSplitPane = new JSplitPane();
 		setLayout(new StackLayout());
 		add(itsSplitPane);
 		
-		itsEventList = new ScrollablePanel(GUIUtils.createStackLayout())
-		{
-			public boolean getScrollableTracksViewportHeight()
-			{
-				return true;
-			}
-		};
-		itsEventList.setOpaque(false);
-		itsEventList.addMouseWheelListener(this);
-
+		itsEventListPanel = new EventListPanel(itsView.getLogBrowser(), getJobProcessor()); 
+		itsSplitPane.setRightComponent(itsEventListPanel);
 		
-		JPanel theRightComponent = new JPanel(new BorderLayout());
-//		theRightComponent.add(new MyScrollPane(itsEventList), BorderLayout.CENTER);
-		theRightComponent.add(itsEventList, BorderLayout.CENTER);
-		theRightComponent.add(itsScroller, BorderLayout.EAST);
-		itsSplitPane.setRightComponent(theRightComponent);
+		PropertyUtils.connect(pSelectedEvent, itsEventListPanel.pSelectedEvent(), true);
+		
+		itsCallStackPanel = new CallStackPanel(itsView.getLogBrowser(), getJobProcessor());
+		itsSplitPane.setLeftComponent(itsCallStackPanel);
 	}
 	
 	@Override
@@ -279,15 +106,12 @@ implements MouseWheelListener
 	{
 		super.addNotify();
 		
-		createUI();
-		setParent(itsView.getSeed().pRootEvent().get());
-		
 		int theSplitterPos = MinerUI.getIntProperty(
 				itsView.getGUIManager(), 
 				PROPERTY_SPLITTER_POS, 200);
 		itsSplitPane.setDividerLocation(theSplitterPos);
 	}
-	
+
 	@Override
 	public void removeNotify()
 	{
@@ -297,31 +121,6 @@ implements MouseWheelListener
 				""+itsSplitPane.getDividerLocation());
 	}
 	
-	private void update()
-	{
-		JComponent theStack = createStack();
-		theStack.setOpaque(false);
-		JScrollPane theScrollPane = new JScrollPane(theStack);
-		theScrollPane.getViewport().setBackground(Color.WHITE);
-		
-		int theDividerLocation = itsSplitPane.getDividerLocation();
-		itsSplitPane.setLeftComponent(theScrollPane);
-		itsSplitPane.setDividerLocation(theDividerLocation);
-		
-		itsNodesMap.clear();
-//		updateList();
-				
-		revalidate();
-		repaint();
-	}
-	
-	public boolean isVisible(ILogEvent aEvent)
-	{
-		long theTimestamp = aEvent.getTimestamp();
-		return theTimestamp >= itsFirstDisplayedTimestamp 
-				&& theTimestamp <= itsLastDisplayedTimestamp;
-	}
-	
 	/**
 	 * Scrolls so that the given event is visible.
 	 * @return The bounds of the graphic object that represent
@@ -329,163 +128,7 @@ implements MouseWheelListener
 	 */
 	public void makeVisible(ILogEvent aEvent)
 	{
-		AbstractEventNode theNode = itsNodesMap.get(aEvent);
-		if (theNode == null)
-		{
-			setTimestamp(aEvent.getTimestamp());
-			backward(2);
-			theNode = itsNodesMap.get(aEvent);
-		}
-		
-		if (theNode != null) 
-		{
-			theNode.scrollRectToVisible(theNode.getBounds());
-		}
-	}
-	
-	private IParentEvent getCurrentParent()
-	{
-		return itsView.getSeed().pParentEvent().get();
-	}
-	
-	public void mouseWheelMoved(MouseWheelEvent aEvent)
-	{
-		int theRotation = aEvent.getWheelRotation();
-		if (theRotation < 0) backward(1);
-		else if (theRotation > 0) forward(1);
-
-		aEvent.consume();
-	}
-
-	
-	/**
-	 * Builds the stack of ancestor events.
-	 */
-	private JComponent createStack()
-	{
-		List<IParentEvent> theAncestors = new ArrayList<IParentEvent>();
-		IParentEvent theCurrentParent = getCurrentParent();
-		IParentEvent theLastAdded = null;
-		while (theCurrentParent != null)
-		{
-			theAncestors.add(theCurrentParent);
-			theLastAdded = theCurrentParent;
-			theCurrentParent = theCurrentParent.getParent();
-		}
-		
-		IParentEvent theRootEvent = itsView.getSeed().pRootEvent().get();
-		if (! theRootEvent.equals(theLastAdded)) theAncestors.add(theRootEvent);
-		
-		JPanel theContainer = new ScrollablePanel(new GridStackLayout(1, 0, 2, true, false));
-
-		if (theAncestors.size() > 0) for(int i=0;i<theAncestors.size();i++)
-		{
-			IParentEvent theAncestor = theAncestors.get(i);
-			theContainer.add(buildStackNode(theAncestor, i==0));
-		}
-		
-		return theContainer;
-	}
-	
-	private AbstractEventNode buildEventNode(ILogEvent aEvent)
-	{
-		JobProcessor theJobProcessor = getJobProcessor();
-//		JobProcessor theJobProcessor = null;
-		
-		if (aEvent instanceof IFieldWriteEvent)
-		{
-			IFieldWriteEvent theEvent = (IFieldWriteEvent) aEvent;
-			return new FieldWriteNode(itsView, theJobProcessor, theEvent);
-		}
-		else if (aEvent instanceof IArrayWriteEvent)
-		{
-			IArrayWriteEvent theEvent = (IArrayWriteEvent) aEvent;
-			return new ArrayWriteNode(itsView, theJobProcessor, theEvent);
-		}
-		else if (aEvent instanceof ILocalVariableWriteEvent)
-		{
-			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) aEvent;
-			return new LocalVariableWriteNode(itsView, theJobProcessor, theEvent);
-		}
-		else if (aEvent instanceof IExceptionGeneratedEvent)
-		{
-			IExceptionGeneratedEvent theEvent = (IExceptionGeneratedEvent) aEvent;
-			if (EventUtils.isIgnorableException(theEvent)) return null;
-			else return new ExceptionGeneratedNode(itsView, theJobProcessor, theEvent);
-		}
-		else if (aEvent instanceof IMethodCallEvent)
-		{
-			IMethodCallEvent theEvent = (IMethodCallEvent) aEvent;
-			return new MethodCallNode(itsView, theJobProcessor, theEvent);
-		}
-		else if (aEvent instanceof IInstantiationEvent)
-		{
-			IInstantiationEvent theEvent = (IInstantiationEvent) aEvent;
-			return new InstantiationNode(itsView, theJobProcessor, theEvent);
-		}
-		else if (aEvent instanceof IConstructorChainingEvent)
-		{
-			IConstructorChainingEvent theEvent = (IConstructorChainingEvent) aEvent;
-			return new ConstructorChainingNode(itsView, theJobProcessor, theEvent);
-		}
-		else if (aEvent instanceof IBehaviorExitEvent)
-		{
-			return null;
-		}
-
-		return new UnknownEventNode(itsView, theJobProcessor, aEvent);
-	}
-
-
-	
-	private AbstractStackNode buildStackNode(IParentEvent aEvent, boolean aCurrentFrame)
-	{
-//		JobProcessor theJobProcessor = getJobProcessor();
-		JobProcessor theJobProcessor = null;
-		
-		if (aEvent == itsView.getSeed().pRootEvent().get())
-		{
-			return new RootStackNode(
-					itsView,
-					theJobProcessor,
-					aEvent,
-					aCurrentFrame);
-		}
-		else if (aEvent instanceof IMethodCallEvent)
-		{
-			return new NormalStackNode(
-					itsView, 
-					theJobProcessor, 
-					(IMethodCallEvent) aEvent, 
-					aCurrentFrame);
-		}
-		else if (aEvent instanceof IInstantiationEvent)
-		{
-			return new NormalStackNode(
-					itsView, 
-					theJobProcessor, 
-					(IInstantiationEvent) aEvent, 
-					aCurrentFrame);
-		}
-		else if (aEvent instanceof IConstructorChainingEvent)
-		{
-			return new NormalStackNode(
-					itsView, 
-					theJobProcessor, 
-					(IConstructorChainingEvent) aEvent, 
-					aCurrentFrame);
-		}
-		else throw new RuntimeException("Not handled: "+aEvent);
-	}
-	
-	private static class MyScrollPane extends JScrollPane
-	{
-		private MyScrollPane(Component aView)
-		{
-			super(aView, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-			getViewport().setBackground(Color.WHITE);
-			setWheelScrollingEnabled(false);
-		}
+		itsEventListPanel.makeVisible(aEvent);
 	}
 	
 }

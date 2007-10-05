@@ -32,7 +32,6 @@ import javax.swing.JSplitPane;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.Stepper;
-import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
 import tod.core.database.structure.IHostInfo;
@@ -50,7 +49,6 @@ import tod.gui.kit.IBusListener;
 import tod.gui.kit.OptionManager;
 import tod.gui.kit.StdOptions;
 import tod.gui.kit.messages.EventSelectedMsg;
-import tod.gui.kit.messages.GetOptionManager;
 import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import tod.gui.seed.CFlowSeed;
@@ -61,8 +59,10 @@ import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.PropertyListener;
+import zz.utils.properties.PropertyUtils;
 import zz.utils.properties.SimplePropertyListener;
 import zz.utils.properties.SimpleRWProperty;
+import zz.utils.properties.PropertyUtils.Connector;
 import zz.utils.ui.UIUtils;
 import zz.utils.ui.ZLabel;
 
@@ -76,7 +76,6 @@ public class CFlowView extends LogView implements IEventListView
 	 */
 	public static final String SHOW_PACKAGE_NAMES_TARGET = "Events";
 
-	
 	private CFlowSeed itsSeed;
 	private EventFormatter itsFormatter;
 	private Stepper itsStepper;
@@ -87,12 +86,13 @@ public class CFlowView extends LogView implements IEventListView
 	private ZLabel itsHostLabel;
 	private ZLabel itsThreadLabel;
 	
+	private Connector<ILogEvent> itsSelectedEventConnector;
+	
 	private IPropertyListener<ILogEvent> itsSelectedEventListener = new PropertyListener<ILogEvent>()
 	{
 		@Override
 		public void propertyChanged(IProperty<ILogEvent> aProperty, ILogEvent aOldValue, ILogEvent aNewValue)
 		{
-			itsCFlowTree.repaint();
 			update();
 		}
 	};
@@ -103,15 +103,6 @@ public class CFlowView extends LogView implements IEventListView
 		public void propertyChanged(IProperty<ILogEvent> aProperty, ILogEvent aOldValue, ILogEvent aNewValue)
 		{
 			update();
-		}
-	};
-	
-	private IPropertyListener<IParentEvent> itsParentListener = new PropertyListener<IParentEvent>()
-	{
-		@Override
-		public void propertyChanged(IProperty<IParentEvent> aProperty, IParentEvent aOldValue, IParentEvent aNewValue)
-		{
-			setParent(aNewValue);
 		}
 	};
 	
@@ -135,16 +126,6 @@ public class CFlowView extends LogView implements IEventListView
 		}
 	};
 	
-	private IBusListener<EventSelectedMsg> itsEventSelectedListener = new IBusListener<EventSelectedMsg>()
-	{
-		public boolean processMessage(EventSelectedMsg aMessage)
-		{
-			itsSeed.pSelectedEvent().set(aMessage.getEvent());
-			return false;
-		}
-	};
-	
-
 
 	private JSplitPane itsSplitPane;
 	
@@ -176,7 +157,6 @@ public class CFlowView extends LogView implements IEventListView
 		itsCFlowTree = new CFlowTree(this);
 		
 		JPanel theCFlowPanel = new JPanel(new BorderLayout());
-//		theCFlowPanel.add(theTreeScrollPane, BorderLayout.CENTER);
 		theCFlowPanel.add(itsCFlowTree, BorderLayout.CENTER);
 		
 		// Create title
@@ -248,14 +228,6 @@ public class CFlowView extends LogView implements IEventListView
 					itsStepper.stepOut();
 					selectEvent(itsStepper.getCurrentEvent(), SelectionMethod.STEP_OUT);				
 				}
-				else 
-				{
-					IParentEvent theParentEvent = itsSeed.pParentEvent().get();
-					if (theParentEvent != null)
-					{
-						itsSeed.pParentEvent().set(theParentEvent.getParent());
-					}
-				}
 			}
 		}));
 		
@@ -289,15 +261,6 @@ public class CFlowView extends LogView implements IEventListView
 		}
 		
 		return theToolbar;
-	}
-	
-	private void setParent(IParentEvent aEvent)
-	{
-		IParentEvent theParentEvent = aEvent != null ?
-				aEvent
-				: getSeed().pRootEvent().get();
-
-		itsCFlowTree.setParent(theParentEvent);
 	}
 	
 	private void update()
@@ -334,16 +297,6 @@ public class CFlowView extends LogView implements IEventListView
 	
 	private void showEvent (ILogEvent aEvent)
 	{
-		IParentEvent theCurrentParent = getSeed().pParentEvent().get();
-		ExternalPointer theParentPointer = theCurrentParent != null ?
-				theCurrentParent.getPointer()
-				: null;
-				
-		if (! aEvent.getParentPointer().equals(theParentPointer))
-		{
-			getSeed().pParentEvent().set(aEvent.getParent());
-		}
-		
 		getSeed().pSelectedEvent().set(aEvent);
 		
 		itsCFlowTree.makeVisible(aEvent);
@@ -354,8 +307,8 @@ public class CFlowView extends LogView implements IEventListView
 	{
 		super.addNotify();
 		itsSeed.pSelectedEvent().addHardListener(itsSelectedEventListener);
+		itsSelectedEventConnector = PropertyUtils.connect(itsSeed.pSelectedEvent(), itsCFlowTree.pSelectedEvent(), true);
 		itsSeed.pRootEvent().addHardListener(itsRootEventListener);
-		itsSeed.pParentEvent().addHardListener(itsParentListener);
 		
 		int theSplitterPos = MinerUI.getIntProperty(
 				getGUIManager(), 
@@ -364,7 +317,6 @@ public class CFlowView extends LogView implements IEventListView
 		itsSplitPane.setDividerLocation(theSplitterPos);
 		
 		Bus.getBus(this).subscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
-		Bus.getBus(this).subscribe(EventSelectedMsg.ID, itsEventSelectedListener);
 		
 		itsShowPackages = OptionManager.get(this).getProperty(
 				StdOptions.SHOW_PACKAGE_NAMES, 
@@ -374,8 +326,6 @@ public class CFlowView extends LogView implements IEventListView
 		
 		itsShowPackages.addHardListener(itsShowPackagesListener);
 		
-		setParent(getSeed().pParentEvent().get());
-		
 		update();
 	}
 	
@@ -384,15 +334,14 @@ public class CFlowView extends LogView implements IEventListView
 	{
 		super.removeNotify();
 		itsSeed.pSelectedEvent().removeListener(itsSelectedEventListener);
+		itsSelectedEventConnector.disconnect();
 		itsSeed.pRootEvent().removeListener(itsRootEventListener);
-		itsSeed.pParentEvent().removeListener(itsParentListener);
 		
 		getGUIManager().setProperty(
 				PROPERTY_SPLITTER_POS, 
 				""+itsSplitPane.getDividerLocation());
 		
 		Bus.getBus(this).unsubscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
-		Bus.getBus(this).unsubscribe(EventSelectedMsg.ID, itsEventSelectedListener);
 		itsShowPackages.removeListener(itsShowPackagesListener);
 
 	}
@@ -408,6 +357,7 @@ public class CFlowView extends LogView implements IEventListView
 	
 	public void selectEvent(ILogEvent aEvent, SelectionMethod aMethod)
 	{
+		getSeed().pSelectedEvent().set(aEvent);
 		Bus.getBus(CFlowView.this).postMessage(new EventSelectedMsg(aEvent, aMethod));
 	}
 	
@@ -419,8 +369,9 @@ public class CFlowView extends LogView implements IEventListView
 	
 	public IEventBrowser getEventBrowser()
 	{
-		IParentEvent theCurrentParent = getSeed().pParentEvent().get();
-		return theCurrentParent.getChildrenBrowser();
+		ILogEvent theSelectedEvent = getSeed().pSelectedEvent().get();
+		IParentEvent theParent = theSelectedEvent.getParent();
+		return theParent.getChildrenBrowser();
 	}
 	
 	public ILogEvent getSelectedEvent()

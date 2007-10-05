@@ -36,6 +36,7 @@ import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.impl.dbgrid.BidiIterator;
+import zz.utils.IPublicCloneable;
 import zz.utils.ITask;
 
 /**

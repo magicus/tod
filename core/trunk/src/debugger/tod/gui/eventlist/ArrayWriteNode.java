@@ -18,29 +18,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow.tree;
+package tod.gui.eventlist;
 
-import java.awt.Color;
-
-import tod.core.database.event.IExceptionGeneratedEvent;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.IArrayWriteEvent;
+import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
-import tod.gui.FontConfig;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
-import tod.gui.controlflow.CFlowView;
 import tod.gui.kit.html.HtmlBody;
-import tod.gui.kit.html.HtmlText;
 
-public class ExceptionGeneratedNode extends AbstractEventNode
+public class ArrayWriteNode extends AbstractEventNode
 {
-	private IExceptionGeneratedEvent itsEvent;
+	private IArrayWriteEvent itsEvent;
 
-	public ExceptionGeneratedNode(
-			CFlowView aView,
-			JobProcessor aJobProcessor,
-			IExceptionGeneratedEvent aEvent)
+	public ArrayWriteNode(
+			EventListPanel aListPanel,
+			IArrayWriteEvent aEvent)
 	{
-		super(aView, aJobProcessor);
+		super(aListPanel);
 		itsEvent = aEvent;
 		createUI();
 	}
@@ -48,12 +44,30 @@ public class ExceptionGeneratedNode extends AbstractEventNode
 	@Override
 	protected void createHtmlUI(HtmlBody aBody)
 	{
-		aBody.add(HtmlText.create("Exception: ", FontConfig.NORMAL, Color.RED));
+		Object theCurrentObject = null;
+		IBehaviorCallEvent theContainer = itsEvent.getParent();
+		if (theContainer != null)
+		{
+			theCurrentObject = theContainer.getTarget();
+		}
+		
 		aBody.add(Hyperlinks.object(
 				Hyperlinks.HTML,
-				getLogBrowser(),
-				getJobProcessor(),
-				itsEvent.getException(),
+				getLogBrowser(), 
+				getJobProcessor(), 
+				theCurrentObject, 
+				itsEvent.getTarget(),
+				itsEvent,
+				showPackageNames()));
+
+		aBody.addText("[" + itsEvent.getIndex() + "] = ");
+		
+		aBody.add(Hyperlinks.object(
+				Hyperlinks.HTML,
+				getLogBrowser(), 
+				getJobProcessor(), 
+				theCurrentObject, 
+				itsEvent.getValue(), 
 				itsEvent,
 				showPackageNames()));
 	}
@@ -63,5 +77,4 @@ public class ExceptionGeneratedNode extends AbstractEventNode
 	{
 		return itsEvent;
 	}
-
 }

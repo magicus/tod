@@ -26,6 +26,7 @@ import tod.core.database.event.ICallerSideEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
+import zz.utils.Utils;
 
 /**
  * Base class of all logged events.
@@ -152,23 +153,17 @@ public abstract class Event implements ICallerSideEvent
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public final boolean equals(Object obj)
 	{
 		if (this == obj) return true;
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
-		final Event other = (Event) obj;
-		if (itsLogBrowser == null)
-		{
-			if (other.itsLogBrowser != null) return false;
-		}
-		else if (!itsLogBrowser.equals(other.itsLogBrowser)) return false;
-		if (itsThread == null)
-		{
-			if (other.itsThread != null) return false;
-		}
-		else if (!itsThread.equals(other.itsThread)) return false;
+
+		Event other = (Event) obj;
+		if (Utils.different(itsLogBrowser, other.itsLogBrowser)) return false;
+		if (Utils.different(itsThread, other.itsThread)) return false;
 		if (itsTimestamp != other.itsTimestamp) return false;
+
 		return true;
 	}
 
