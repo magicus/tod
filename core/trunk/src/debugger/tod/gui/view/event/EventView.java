@@ -59,12 +59,20 @@ public abstract class EventView extends LogView
 		add (createTitledLink(
 				"Host: ", 
 				"\""+theHost.getName()+"\" ["+theHost.getId()+"]", 
-				new FilterSeed (getGUIManager(), getLogBrowser(), getLogBrowser().createHostFilter(theHost))));
+				new FilterSeed (
+						getGUIManager(), 
+						getLogBrowser(),
+						"All events of host: "+theHost.getName(),
+						getLogBrowser().createHostFilter(theHost))));
 		
 		add (createTitledLink(
 				"(>" + theEvent.getDepth() + ") Thread: ", 
 				"\""+theThread.getName()+"\" ["+theThread.getId()+"]", 
-				new FilterSeed (getGUIManager(), getLogBrowser(), getLogBrowser().createThreadFilter(theThread))));
+				new FilterSeed (
+						getGUIManager(),
+						getLogBrowser(), 
+						"All events of thread: "+theThread.getDescription(),
+						getLogBrowser().createThreadFilter(theThread))));
 
 		add (createTitledPanel(
 				"Timestamp: ", 

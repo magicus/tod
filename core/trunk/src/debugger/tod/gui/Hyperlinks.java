@@ -54,7 +54,7 @@ public class Hyperlinks
 	
 	public static <T> T history(LabelFactory<T> aFactory, ObjectId aObject)
 	{
-		return aFactory.createLink("history", new ShowObjectHistoryMsg(aObject));
+		return aFactory.createLink("show history", new ShowObjectHistoryMsg(aObject));
 	}
 	
 	public static <T> T type (LabelFactory<T> aFactory, ITypeInfo aType)

@@ -177,10 +177,10 @@ implements MouseWheelListener
 			@Override
 			public Object run()
 			{
-				System.out.println("[CFlowTree.setTimestamp] Updating...");
+				System.out.println("[EventListPanel.setTimestamp] Updating...");
 				itsCore.setTimestamp(aTimestamp);
 				postUpdateList();
-				System.out.println("[CFlowTree.setTimestamp] Done...");
+				System.out.println("[EventListPanel.setTimestamp] Done...");
 				return null;
 			}
 		});
@@ -226,7 +226,7 @@ implements MouseWheelListener
 		itsNodesMap = new HashMap<ILogEvent, AbstractEventNode>();
 		
 		int theChildrenHeight = 0;
-		int theTotalHeight = getHeight();
+		int theTotalHeight = itsEventsPanel.getHeight();
 		
 		for (ILogEvent theEvent : theEvents)
 		{

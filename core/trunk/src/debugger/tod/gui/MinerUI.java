@@ -38,9 +38,11 @@ import javax.swing.UIManager;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.browser.ObjectIdUtils;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.ObjectId;
 import tod.core.session.ISession;
 import tod.gui.controlflow.CFlowView;
 import tod.gui.kit.Bus;
@@ -94,10 +96,12 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 	{
 		public boolean processMessage(ShowObjectHistoryMsg aMessage)
 		{
+			ObjectId theObject = aMessage.getObjectId();
 			FilterSeed theSeed = new FilterSeed(
 					MinerUI.this, 
 					getLogBrowser(), 
-					getLogBrowser().createObjectFilter(aMessage.getObjectId()));
+					"History of object: "+ObjectIdUtils.getObjectDescription(getLogBrowser(), theObject, false),
+					getLogBrowser().createObjectFilter(theObject));
 			
 			openSeed(theSeed, false);
 			return true;
@@ -221,6 +225,7 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 				FilterSeed theSeed = new FilterSeed(
 						MinerUI.this,
 						theLogBrowser,
+						"All exceptions",
 						theLogBrowser.createExceptionGeneratedFilter());
 				
 				openSeed(theSeed, false);			
@@ -264,7 +269,11 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 			{
 				ILogBrowser theLogBrowser = getSession().getLogBrowser();
 				
-				FilterSeed theSeed = new FilterSeed(MinerUI.this, theLogBrowser, null);
+				FilterSeed theSeed = new FilterSeed(
+						MinerUI.this, 
+						theLogBrowser,
+						"All events",
+						null);
 				
 				openSeed(theSeed, false);			
 			}
@@ -336,7 +345,12 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 		
 		if (theFilter != null)
 		{
-			LogViewSeed theSeed = new FilterSeed(this, getLogBrowser(), theFilter);
+			LogViewSeed theSeed = new FilterSeed(
+					this, 
+					getLogBrowser(), 
+					"Events on line "+aLine+" of "+aBehavior.getName(),
+					theFilter);
+			
 			openSeed(theSeed, false);				
 		}
 	}

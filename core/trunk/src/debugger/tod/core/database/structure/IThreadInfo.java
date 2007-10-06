@@ -40,6 +40,11 @@ public interface IThreadInfo
 	public long getJVMId();
 
 	public String getName();
+	
+	/**
+	 * Returns a description of this thread.
+	 */
+	public String getDescription();
 
 	/**
 	 * A comparator that compares thread ids.

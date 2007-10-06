@@ -20,10 +20,14 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.seed;
 
+import java.awt.Color;
+
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
+import tod.gui.FontConfig;
 import tod.gui.IGUIManager;
+import tod.gui.kit.html.HtmlDoc;
 import tod.gui.view.FilterView;
 import tod.gui.view.LogView;
 import zz.utils.properties.IRWProperty;
@@ -36,7 +40,9 @@ import zz.utils.properties.SimpleRWProperty;
  */
 public class FilterSeed extends LogViewSeed/*<FilterView>*/
 {
-	private IEventFilter itsFilter;
+	private final IEventFilter itsBaseFilter;
+	private final HtmlDoc itsTitle;
+	
 	
 	/**
 	 * Timestamp of the first event displayed by this view.
@@ -44,12 +50,32 @@ public class FilterSeed extends LogViewSeed/*<FilterView>*/
 	private long itsTimestamp;
 	
 	private IRWProperty<ILogEvent> pSelectedEvent = new SimpleRWProperty<ILogEvent>(this);
+	
+	private IRWProperty<IEventFilter> pAdditionalFilter = new SimpleRWProperty<IEventFilter>(this);
 
 	
-	public FilterSeed(IGUIManager aGUIManager, ILogBrowser aLog, IEventFilter aFilter)
+	public FilterSeed(
+			IGUIManager aGUIManager, 
+			ILogBrowser aLog, 
+			String aTitle,
+			IEventFilter aBaseFilter)
+	{
+		this(
+				aGUIManager, 
+				aLog,
+				HtmlDoc.create("<b>"+aTitle+"</b>", FontConfig.BIG, Color.BLACK),
+				aBaseFilter);
+	}
+	
+	public FilterSeed(
+			IGUIManager aGUIManager, 
+			ILogBrowser aLog, 
+			HtmlDoc aTitle,
+			IEventFilter aBaseFilter)
 	{
 		super(aGUIManager, aLog);
-		itsFilter = aFilter;
+		itsTitle = aTitle;
+		itsBaseFilter = aBaseFilter;
 	}
 	
 	protected LogView requestComponent()
@@ -69,9 +95,14 @@ public class FilterSeed extends LogViewSeed/*<FilterView>*/
 		itsTimestamp = aTimestamp;
 	}
 	
-	public IEventFilter getFilter()
+	public IEventFilter getBaseFilter()
 	{
-		return itsFilter;
+		return itsBaseFilter;
+	}
+	
+	public HtmlDoc getTitle()
+	{
+		return itsTitle;
 	}
 	
 	/**

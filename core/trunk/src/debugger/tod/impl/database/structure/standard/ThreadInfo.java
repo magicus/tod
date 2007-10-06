@@ -71,6 +71,11 @@ public class ThreadInfo implements IThreadInfo, Serializable
 		itsName = aName;
 	}
 	
+	public String getDescription()
+	{
+		return getId()+" ["+getName()+"]";
+	}
+	
 	@Override
 	public String toString()
 	{

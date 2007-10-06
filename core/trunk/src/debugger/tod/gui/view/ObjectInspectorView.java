@@ -190,6 +190,7 @@ public class ObjectInspectorView extends LogView
 			FilterSeed theShowEventsSeed = new FilterSeed(
 					getGUIManager(), 
 					getLogBrowser(), 
+					"All events on object: "+theObject.getId(),
 					getLogBrowser().createTargetFilter(theObject));
 			
 			itsTitlePanel.add (new SeedLinkLabel(
@@ -199,6 +200,7 @@ public class ObjectInspectorView extends LogView
 			FilterSeed theShowHistorySeed = new FilterSeed(
 					getGUIManager(),
 					getLogBrowser(),
+					"History of object: "+theObject.getId(),
 					getLogBrowser().createObjectFilter(theObject));
 			
 			itsTitlePanel.add (new SeedLinkLabel(

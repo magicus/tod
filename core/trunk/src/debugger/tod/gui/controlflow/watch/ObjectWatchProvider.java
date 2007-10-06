@@ -102,17 +102,20 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 	
 	public JComponent buildTitleComponent(JobProcessor aJobProcessor)
 	{
-		JPanel theContainer = new JPanel(GUIUtils.createSequenceLayout());
+		JPanel theContainer = new JPanel(GUIUtils.createStackLayout());
 		theContainer.setOpaque(false);
 		
-		theContainer.add(ZLabel.create(
+		JPanel theObjectContainer = new JPanel(GUIUtils.createSequenceLayout());
+		theObjectContainer.setOpaque(false);
+		
+		theObjectContainer.add(ZLabel.create(
 				"Object: ", 
 				STD_HEADER_FONT, 
 				Color.BLACK));
 		
 		if (itsObject != null)
 		{
-			theContainer.add(Hyperlinks.object(
+			theObjectContainer.add(Hyperlinks.object(
 					Hyperlinks.SWING, 
 					itsLogBrowser, 
 					aJobProcessor,
@@ -122,16 +125,22 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 		}
 		else
 		{
-			theContainer.add(ZLabel.create(
+			theObjectContainer.add(ZLabel.create(
 					"(static)", 
 					STD_HEADER_FONT, 
 					Color.GRAY));
 		}
 		
+		JPanel theLinksContainer = new JPanel(GUIUtils.createSequenceLayout());
+		theLinksContainer.setOpaque(false);
+		
 		// Setup history link
-		theContainer.add(GUIUtils.createLabel(" ("));
-		theContainer.add(Hyperlinks.history(Hyperlinks.SWING, itsObject));
-		theContainer.add(GUIUtils.createLabel(")"));
+		theLinksContainer.add(GUIUtils.createLabel("("));
+		theLinksContainer.add(Hyperlinks.history(Hyperlinks.SWING, itsObject));
+		theLinksContainer.add(GUIUtils.createLabel(")"));
+		
+		theContainer.add(theObjectContainer);
+		theContainer.add(theLinksContainer);
 		
 		return theContainer;
 	}

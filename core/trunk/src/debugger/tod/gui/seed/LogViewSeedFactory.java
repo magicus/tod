@@ -20,7 +20,6 @@
  */
 package tod.gui.seed;
 
-import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IBehaviorInfo;
@@ -36,36 +35,51 @@ import tod.gui.IGUIManager;
  */
 public class LogViewSeedFactory 
 {
-	private static LogViewSeed createSeed(IGUIManager aGUIManager, ILogBrowser aLog, IEventFilter aFilter)
+	private static LogViewSeed createSeed(
+			IGUIManager aGUIManager,
+			ILogBrowser aLog,
+			String aTitle,
+			IEventFilter aFilter)
 	{
-		return new FilterSeed(aGUIManager, aLog, aFilter);
+		return new FilterSeed(aGUIManager, aLog, aTitle, aFilter);
 	}
 	
 	/**
 	 * Returns a seed that can be used to view the events that are related to
 	 * the specified location info.
 	 */
-	public static LogViewSeed getDefaultSeed(IGUIManager aGUIManager, ILogBrowser aLog, ILocationInfo aInfo)
+	public static LogViewSeed getDefaultSeed(
+			IGUIManager aGUIManager,
+			ILogBrowser aLog,
+			ILocationInfo aInfo)
 	{
 		if (aInfo instanceof ITypeInfo)
 		{
 			ITypeInfo theTypeInfo = (ITypeInfo) aInfo;
-			return createSeed(aGUIManager, aLog, aLog.createInstantiationsFilter(theTypeInfo));
+			return createSeed(
+					aGUIManager, 
+					aLog,
+					"Instantiations of "+theTypeInfo.getName(),
+					aLog.createInstantiationsFilter(theTypeInfo));
 		}
 		else if (aInfo instanceof IBehaviorInfo)
 		{
 			IBehaviorInfo theBehaviourInfo = (IBehaviorInfo) aInfo;
-			return createSeed(aGUIManager, aLog, aLog.createBehaviorCallFilter(theBehaviourInfo));
+			return createSeed(
+					aGUIManager, 
+					aLog, 
+					"Calls of "+theBehaviourInfo.getName(),
+					aLog.createBehaviorCallFilter(theBehaviourInfo));
 		}
 		else if (aInfo instanceof IFieldInfo)
 		{
 			IFieldInfo theFieldInfo = (IFieldInfo) aInfo;
 
-			ICompoundFilter theFilter = aLog.createIntersectionFilter();
-			theFilter.add(aLog.createFieldWriteFilter());
-			theFilter.add(aLog.createFieldFilter(theFieldInfo));
-
-			return createSeed(aGUIManager, aLog, theFilter);
+			return createSeed(
+					aGUIManager, 
+					aLog, 
+					"Assignments of "+theFieldInfo.getName(),
+					aLog.createFieldFilter(theFieldInfo));
 		}
 		else return null;
 	}

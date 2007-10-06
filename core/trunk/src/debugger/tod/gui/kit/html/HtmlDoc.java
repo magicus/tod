@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.kit.html;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -36,6 +37,8 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
+
+import tod.gui.FontConfig;
 
 public class HtmlDoc implements HyperlinkListener
 {
@@ -170,5 +173,27 @@ public class HtmlDoc implements HyperlinkListener
 		String theId = aEvent.getDescription();
 		IHyperlinkListener theListener = itsHyperlinkListeners.get(theId);
 		if (theListener != null) theListener.traverse();
+	}
+	
+	/**
+	 * Creates a simple document whose content is the given string.
+	 */
+	public static HtmlDoc create(String aText)
+	{
+		return create(aText, FontConfig.NORMAL, Color.BLACK);
+	}
+	
+	/**
+	 * Creates a simple document whose content is the given string, 
+	 * with the specified font size and color.
+	 */
+	public static HtmlDoc create(String aText, int aFontSize, Color aColor)
+	{
+		HtmlDoc theDoc = new HtmlDoc();
+		HtmlBody theBody = theDoc.getRoot();
+		
+		theBody.add(HtmlText.create(aText, aFontSize, aColor));
+		
+		return theDoc;
 	}
 }

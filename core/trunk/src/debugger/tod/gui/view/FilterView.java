@@ -23,9 +23,12 @@ package tod.gui.view;
 import java.awt.BorderLayout;
 import java.awt.Color;
 
-import javax.swing.JPanel;
+import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
@@ -35,6 +38,8 @@ import tod.gui.IGUIManager;
 import tod.gui.MinerUI;
 import tod.gui.eventlist.EventListPanel;
 import tod.gui.kit.Options;
+import tod.gui.kit.html.HtmlComponent;
+import tod.gui.kit.html.HtmlDoc;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import tod.gui.seed.FilterSeed;
 import tod.gui.view.event.EventView;
@@ -56,6 +61,7 @@ public class FilterView extends LogView implements IEventListView
 	private JScrollPane itsScrollPane;
 
 	private EventListPanel itsListPanel;
+	private HtmlComponent itsTitleComponent;
 	
 	public FilterView(IGUIManager aGUIManager, ILogBrowser aLog, FilterSeed aSeed)
 	{
@@ -81,7 +87,7 @@ public class FilterView extends LogView implements IEventListView
 		itsListPanel = new EventListPanel (
 				getLogBrowser(), 
 				getJobProcessor(), 
-				itsSeed.getFilter());
+				itsSeed.getBaseFilter());
 		
 		itsListPanel.pSelectedEvent().addHardListener(new PropertyListener<ILogEvent>()
 				{
@@ -94,6 +100,9 @@ public class FilterView extends LogView implements IEventListView
 		
 		setLayout(new BorderLayout());
 		add (itsSplitPane, BorderLayout.CENTER);
+		itsTitleComponent = new HtmlComponent(itsSeed.getTitle());
+		itsTitleComponent.setOpaque(false);
+		add(itsTitleComponent, BorderLayout.NORTH);
 		
 		itsSplitPane.setLeftComponent(itsListPanel);
 		
@@ -112,6 +121,15 @@ public class FilterView extends LogView implements IEventListView
 				PROPERTY_SPLITTER_POS, 400);
 		
 		itsSplitPane.setDividerLocation(theSplitterPos);
+
+		// Workaround for SWT_AWT problem
+		SwingUtilities.invokeLater(new Runnable()
+		{
+			public void run()
+			{
+				validate();
+			}
+		});
 	}
 	
 	@Override
@@ -146,7 +164,7 @@ public class FilterView extends LogView implements IEventListView
 
 	public IEventBrowser getEventBrowser()
 	{
-		IEventFilter theFilter = itsSeed.getFilter();
+		IEventFilter theFilter = itsSeed.getBaseFilter();
 		return theFilter != null ?
 				getLogBrowser().createBrowser(theFilter)
 				: getLogBrowser().createBrowser();

@@ -35,6 +35,12 @@ public class HtmlComponent extends JTextPane
 		setEditable(false);
 	}
 	
+	public HtmlComponent(HtmlDoc aDoc)
+	{
+		this();
+		setDoc(aDoc);
+	}
+	
 	public void setDoc(HtmlDoc aDoc)
 	{
 		if (itsDoc != null) 
@@ -53,7 +59,7 @@ public class HtmlComponent extends JTextPane
 			addHyperlinkListener(itsDoc);
 		}
 	}
-
+	
 	@Override
 	protected void paintComponent(Graphics g)
 	{

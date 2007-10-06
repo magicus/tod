@@ -225,6 +225,24 @@ implements RIStructureDatabase
 				ISerializableLocationInfo theLocation = (ISerializableLocationInfo) aClass;
 				theLocation.setDatabase(this);
 			}
+			
+			// If a version of the class is already cached, purge it.
+			IClassInfo theCachedClass = Utils.listGet(itsClasses, aClass.getId());
+			if (theCachedClass != null)
+			{
+				System.out.println("[RemoteStructureDatabase] Class already cached: "+theCachedClass);
+				for (IBehaviorInfo theBehavior : theCachedClass.getBehaviors())
+				{
+					System.out.println("[RemoteStructureDatabase] Purging: "+theBehavior);
+					Utils.listSet(itsBehaviors, theBehavior.getId(), null);
+				}
+				
+				for (IFieldInfo theField : theCachedClass.getFields())
+				{
+					System.out.println("[RemoteStructureDatabase] Purging: "+theField);
+					Utils.listSet(itsFields, theField.getId(), null);
+				}
+			}
 
 			Utils.listSet(itsClasses, aClass.getId(), aClass);
 			itsClassesMap.put(aClass.getName(), aClass);
@@ -246,10 +264,6 @@ implements RIStructureDatabase
 		private void cacheMember(IMemberInfo aMember)
 		{
 			IClassInfo theClass = aMember.getType();
-			if (Utils.listGet(itsClasses, theClass.getId()) != null)
-			{
-				throw new RuntimeException("Class already cached, should not happen.");
-			}
 			cacheClass(theClass);
 		}
 		

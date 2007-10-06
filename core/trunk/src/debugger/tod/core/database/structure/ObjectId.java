@@ -51,6 +51,15 @@ public class ObjectId implements Serializable
 		return itsId;
 	}
 	
+	/**
+	 * Returns a human-readable description of this object id.
+	 */
+	public String getDescription()
+	{
+		return DebugFlags.IGNORE_HOST ?
+				"" +ObjectCodec.getObjectId(itsId)
+				: ObjectCodec.getObjectId(itsId) +"." +ObjectCodec.getHostId(itsId);
+	}
 	
 	@Override
 	public int hashCode()

@@ -109,7 +109,11 @@ public class ThreadSequenceView extends AbstractSingleBrowserSequenceView
 		public void actionPerformed(ActionEvent aE)
 		{
 			IEventFilter theFilter = getLogBrowser().createThreadFilter(getThread());
-			FilterSeed theSeed = new FilterSeed(getGUIManager(), getLogBrowser(), theFilter);
+			FilterSeed theSeed = new FilterSeed(
+					getGUIManager(), 
+					getLogBrowser(), 
+					"All events of thread "+getThread().getName(),
+					theFilter);
 			getGUIManager().openSeed(theSeed, false);
 		}
 	}
