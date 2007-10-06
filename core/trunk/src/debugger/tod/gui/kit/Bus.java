@@ -39,7 +39,7 @@ public class Bus
 	/**
 	 * Returns the bus that should be used by the given component.
 	 */
-	public static Bus getBus(Component aComponent)
+	public static Bus get(Component aComponent)
 	{
 		while(true)
 		{
@@ -76,7 +76,7 @@ public class Bus
 		}
 			
 		
-		if (itsOwner != null) getBus(itsOwner.getParent()).postMessage(aMessage);
+		if (itsOwner != null) get(itsOwner.getParent()).postMessage(aMessage);
 	}
 	
 	/**

@@ -47,7 +47,7 @@ public class MessageHyperlink extends ZHyperlink
 	@Override
 	protected void traverse()
 	{
-		Bus.getBus(this).postMessage(itsMessage);
+		Bus.get(this).postMessage(itsMessage);
 	}
 	
 	/**

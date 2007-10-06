@@ -20,7 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.kit;
 
-import tod.gui.kit.OptionManager.BooleanOptionDef;
+import tod.gui.kit.Options.BooleanOptionDef;
 
 /**
  * A few standard options
@@ -29,4 +29,7 @@ import tod.gui.kit.OptionManager.BooleanOptionDef;
 public class StdOptions
 {
 	public static final BooleanOptionDef SHOW_PACKAGE_NAMES = new BooleanOptionDef("Show package names");
+	
+	public static final BooleanOptionDef EXCEPTION_EVENTS_RED = new BooleanOptionDef("Show exception events in red");
+	public static final BooleanOptionDef SHOW_EVENTS_LOCATION = new BooleanOptionDef("Show event location");
 }

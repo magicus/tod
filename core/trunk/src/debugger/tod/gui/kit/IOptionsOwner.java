@@ -18,16 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.kit.messages;
+package tod.gui.kit;
 
-import tod.gui.kit.OptionManager;
-
-public class GetOptionManager extends Request<OptionManager>
+/**
+ * Interface for components that own an {@link Options} object
+ * @author gpothier
+ */
+public interface IOptionsOwner
 {
-	public static final String ID = "tod.getOptionManager";
-
-	public GetOptionManager()
-	{
-		super(ID);
-	}
+	public Options getOptions();
 }

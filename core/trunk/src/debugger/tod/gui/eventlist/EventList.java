@@ -39,6 +39,7 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.gui.eventlist.MuralScroller.UnitScroll;
 import tod.gui.formatter.EventFormatter;
+import tod.gui.kit.Options;
 import zz.utils.Utils;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;

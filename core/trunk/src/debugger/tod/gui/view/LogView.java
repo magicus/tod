@@ -33,9 +33,12 @@ import tod.core.database.structure.ObjectId;
 import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
+import tod.gui.JobProcessor;
 import tod.gui.formatter.EventFormatter;
 import tod.gui.formatter.ObjectFormatter;
 import tod.gui.kit.BusOwnerPanel;
+import tod.gui.kit.IOptionsOwner;
+import tod.gui.kit.Options;
 import tod.gui.kit.SeedLinkLabel;
 import tod.gui.seed.LogViewSeed;
 import tod.gui.seed.LogViewSeedFactory;
@@ -51,6 +54,7 @@ import zz.utils.ui.ZLabel;
  * @author gpothier
  */
 public abstract class LogView extends BusOwnerPanel
+implements IOptionsOwner
 {
 	private final ILogBrowser itsLog;
 	private final IGUIManager itsGUIManager;
@@ -60,13 +64,36 @@ public abstract class LogView extends BusOwnerPanel
 	private ObjectFormatter itsObjectFormatter;
 	private EventFormatter itsEventFormatter;
 	
+	private Options itsOptions;
 	
 	public LogView(IGUIManager aGUIManager, ILogBrowser aLog)
 	{
 		itsGUIManager = aGUIManager;
+		itsOptions = new Options(itsGUIManager, getOptionsName(), itsGUIManager.getOptions());
+		initOptions(itsOptions);
 		itsLog = aLog;
 		itsObjectFormatter = new ObjectFormatter(itsLog);
 		itsEventFormatter = new EventFormatter(itsLog);
+	}
+	
+	/**
+	 * Returns the name under which the options of this view are stored.
+	 */
+	protected String getOptionsName()
+	{
+		return getClass().getSimpleName();
+	}
+
+	/**
+	 * Subclasses can override this method to add options to the options set.
+	 */
+	protected void initOptions(Options aOptions)
+	{
+	}
+	
+	public Options getOptions()
+	{
+		return itsOptions;
 	}
 	
 	@Override
@@ -120,6 +147,15 @@ public abstract class LogView extends BusOwnerPanel
 	{
 		return itsGUIManager;
 	}
+	
+	/**
+	 * Helper method to obtain the default job processor for this view.
+	 */
+	public JobProcessor getJobProcessor()
+	{
+		return getGUIManager().getJobProcessor();
+	}
+
 	
 	/**
 	 * Returns an event formatter that can be used in the context

@@ -89,7 +89,7 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 		super.mouseClicked(aEvent);
 		if (aEvent.getClickCount() == 2)
 		{
-			Bus.getBus(this).postMessage(new EventActivatedMsg(getEvent(), ActivationMethod.DOUBLE_CLICK));
+			Bus.get(this).postMessage(new EventActivatedMsg(getEvent(), ActivationMethod.DOUBLE_CLICK));
 			aEvent.consume();
 		}
 	}

@@ -43,10 +43,11 @@ import tod.gui.MinerUI;
 import tod.gui.Resources;
 import tod.gui.controlflow.tree.CFlowTree;
 import tod.gui.controlflow.watch.WatchPanel;
+import tod.gui.eventlist.EventListPanel;
 import tod.gui.formatter.EventFormatter;
 import tod.gui.kit.Bus;
 import tod.gui.kit.IBusListener;
-import tod.gui.kit.OptionManager;
+import tod.gui.kit.Options;
 import tod.gui.kit.StdOptions;
 import tod.gui.kit.messages.EventSelectedMsg;
 import tod.gui.kit.messages.ShowCFlowMsg;
@@ -59,10 +60,7 @@ import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.PropertyListener;
-import zz.utils.properties.PropertyUtils;
 import zz.utils.properties.SimplePropertyListener;
-import zz.utils.properties.SimpleRWProperty;
-import zz.utils.properties.PropertyUtils.Connector;
 import zz.utils.ui.UIUtils;
 import zz.utils.ui.ZLabel;
 
@@ -70,11 +68,6 @@ public class CFlowView extends LogView implements IEventListView
 {
 	public static final boolean SHOW_PARENT_FRAMES = false;
 	private static final String PROPERTY_SPLITTER_POS = "cflowView.splitterPos";
-
-	/**
-	 * Target for the show package names option.
-	 */
-	public static final String SHOW_PACKAGE_NAMES_TARGET = "Events";
 
 	private CFlowSeed itsSeed;
 	private EventFormatter itsFormatter;
@@ -85,8 +78,6 @@ public class CFlowView extends LogView implements IEventListView
 	
 	private ZLabel itsHostLabel;
 	private ZLabel itsThreadLabel;
-	
-	private Connector<ILogEvent> itsSelectedEventConnector;
 	
 	private IPropertyListener<ILogEvent> itsSelectedEventListener = new PropertyListener<ILogEvent>()
 	{
@@ -298,16 +289,21 @@ public class CFlowView extends LogView implements IEventListView
 	private void showEvent (ILogEvent aEvent)
 	{
 		getSeed().pSelectedEvent().set(aEvent);
-		
-		itsCFlowTree.makeVisible(aEvent);
 	}
 
 	@Override
+	protected void initOptions(Options aOptions)
+	{
+		super.initOptions(aOptions);
+		aOptions.addOption(StdOptions.SHOW_PACKAGE_NAMES, true);
+		EventListPanel.createDefaultOptions(aOptions, true, false);
+	}
+	
+	@Override
 	public void addNotify()
 	{
-		super.addNotify();
 		itsSeed.pSelectedEvent().addHardListener(itsSelectedEventListener);
-		itsSelectedEventConnector = PropertyUtils.connect(itsSeed.pSelectedEvent(), itsCFlowTree.pSelectedEvent(), true);
+		connect(itsSeed.pSelectedEvent(), itsCFlowTree.pSelectedEvent(), true);
 		itsSeed.pRootEvent().addHardListener(itsRootEventListener);
 		
 		int theSplitterPos = MinerUI.getIntProperty(
@@ -316,16 +312,12 @@ public class CFlowView extends LogView implements IEventListView
 		
 		itsSplitPane.setDividerLocation(theSplitterPos);
 		
-		Bus.getBus(this).subscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
+		Bus.get(this).subscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
 		
-		itsShowPackages = OptionManager.get(this).getProperty(
-				StdOptions.SHOW_PACKAGE_NAMES, 
-				SHOW_PACKAGE_NAMES_TARGET);
-		
-		if (itsShowPackages == null) itsShowPackages = new SimpleRWProperty<Boolean>(null, false);
-		
+		itsShowPackages = Options.get(this).getProperty(StdOptions.SHOW_PACKAGE_NAMES);
 		itsShowPackages.addHardListener(itsShowPackagesListener);
 		
+		super.addNotify();
 		update();
 	}
 	
@@ -334,14 +326,13 @@ public class CFlowView extends LogView implements IEventListView
 	{
 		super.removeNotify();
 		itsSeed.pSelectedEvent().removeListener(itsSelectedEventListener);
-		itsSelectedEventConnector.disconnect();
 		itsSeed.pRootEvent().removeListener(itsRootEventListener);
 		
 		getGUIManager().setProperty(
 				PROPERTY_SPLITTER_POS, 
 				""+itsSplitPane.getDividerLocation());
 		
-		Bus.getBus(this).unsubscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
+		Bus.get(this).unsubscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
 		itsShowPackages.removeListener(itsShowPackagesListener);
 
 	}
@@ -358,7 +349,7 @@ public class CFlowView extends LogView implements IEventListView
 	public void selectEvent(ILogEvent aEvent, SelectionMethod aMethod)
 	{
 		getSeed().pSelectedEvent().set(aEvent);
-		Bus.getBus(CFlowView.this).postMessage(new EventSelectedMsg(aEvent, aMethod));
+		Bus.get(CFlowView.this).postMessage(new EventSelectedMsg(aEvent, aMethod));
 	}
 	
 	public boolean isEventSelected(ILogEvent aEvent)

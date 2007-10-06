@@ -74,7 +74,7 @@ public class CFlowTree extends JPanel
 	
 	public JobProcessor getJobProcessor()
 	{
-		return itsView.getGUIManager().getJobProcessor();
+		return itsView.getJobProcessor();
 	}
 
 	/**

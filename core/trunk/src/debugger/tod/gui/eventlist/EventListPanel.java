@@ -32,6 +32,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.EventUtils;
 import tod.core.database.event.IArrayWriteEvent;
@@ -46,6 +47,9 @@ import tod.core.database.event.IMethodCallEvent;
 import tod.gui.GUIUtils;
 import tod.gui.JobProcessor;
 import tod.gui.eventlist.MuralScroller.UnitScroll;
+import tod.gui.kit.Options;
+import tod.gui.kit.StdOptions;
+import tod.gui.kit.Options.OptionDef;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;
 import zz.utils.properties.IProperty;
@@ -99,21 +103,22 @@ implements MouseWheelListener
 	{
 		itsLogBrowser = aLogBrowser;
 		itsJobProcessor = aJobProcessor;
-	}
-	
-	@Override
-	public void addNotify()
-	{
-		super.addNotify();
 		createUI();
-//		Bus.getBus(this).subscribe(EventSelectedMsg.ID, itsEventSelectedListener);
 	}
 	
-	@Override
-	public void removeNotify()
+	/**
+	 * Creates an event list that shows all the event selected by the specified 
+	 * filter, or all the events of the database if the filter is null.
+	 */
+	public EventListPanel(ILogBrowser aLogBrowser, JobProcessor aJobProcessor, IEventFilter aEventFilter)
 	{
-		super.removeNotify();
-//		Bus.getBus(this).unsubscribe(EventSelectedMsg.ID, itsEventSelectedListener);
+		this(aLogBrowser, aJobProcessor);
+		
+		IEventBrowser theEventBrowser = aEventFilter != null ? 
+				aLogBrowser.createBrowser(aEventFilter) 
+				: aLogBrowser.createBrowser();
+				
+		setBrowser(theEventBrowser);
 	}
 	
 	public JobProcessor getJobProcessor()
@@ -408,4 +413,24 @@ implements MouseWheelListener
 
 		return new UnknownEventNode(this, aEvent);
 	}
+	
+	public <T> T getCurrentValue(OptionDef<T> aDef)
+	{
+		return Options.get(this).getProperty(aDef).get();
+	}
+	
+	/**
+	 * Places all the options necessary to operate an {@link EventListPanel}
+	 * into the specified options container.
+	 */
+	public static void createDefaultOptions(
+			Options aOptions,
+			boolean aShowExceptionsInRed,
+			boolean aShowEventsLocation)
+	{
+		aOptions.addOption(StdOptions.EXCEPTION_EVENTS_RED, aShowExceptionsInRed);
+		aOptions.addOption(StdOptions.SHOW_EVENTS_LOCATION, aShowEventsLocation);
+	}
+	
+
 }

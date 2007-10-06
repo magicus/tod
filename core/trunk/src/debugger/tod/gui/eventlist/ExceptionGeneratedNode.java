@@ -22,12 +22,16 @@ package tod.gui.eventlist;
 
 import java.awt.Color;
 
+import tod.Util;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IExceptionGeneratedEvent;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IBehaviorInfo;
 import tod.gui.FontConfig;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
+import tod.gui.kit.Options;
+import tod.gui.kit.StdOptions;
 import tod.gui.kit.html.HtmlBody;
 import tod.gui.kit.html.HtmlText;
 
@@ -47,7 +51,13 @@ public class ExceptionGeneratedNode extends AbstractEventNode
 	@Override
 	protected void createHtmlUI(HtmlBody aBody)
 	{
-		aBody.add(HtmlText.create("Exception: ", FontConfig.NORMAL, Color.RED));
+		boolean theRed = getListPanel().getCurrentValue(StdOptions.EXCEPTION_EVENTS_RED);
+		
+		aBody.add(HtmlText.create(
+				"Exception: ", 
+				FontConfig.NORMAL, 
+				theRed ? Color.RED : Color.BLACK));
+		
 		aBody.add(Hyperlinks.object(
 				Hyperlinks.HTML,
 				getLogBrowser(),
@@ -55,10 +65,21 @@ public class ExceptionGeneratedNode extends AbstractEventNode
 				itsEvent.getException(),
 				itsEvent,
 				showPackageNames()));
+
+		boolean theLocation = getListPanel().getCurrentValue(StdOptions.SHOW_EVENTS_LOCATION);
+		if (theLocation)
+		{
+			IBehaviorInfo theBehavior = getEvent().getOperationBehavior();
+			String theBehaviorName = theBehavior != null ? 
+					Util.getSimpleName(theBehavior.getType().getName()) + "." + theBehavior.getName() 
+					: "<unknown>"; 
+			
+			aBody.addText(" (in "+theBehaviorName+")");
+		}
 	}
 	
 	@Override
-	protected ILogEvent getEvent()
+	protected IExceptionGeneratedEvent getEvent()
 	{
 		return itsEvent;
 	}

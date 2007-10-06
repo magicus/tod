@@ -26,9 +26,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
@@ -36,8 +34,6 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
-
-import org.apache.lucene.util.SmallFloat;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
@@ -50,8 +46,8 @@ import tod.gui.controlflow.CFlowView;
 import tod.gui.kit.Bus;
 import tod.gui.kit.BusOwnerPanel;
 import tod.gui.kit.IBusListener;
-import tod.gui.kit.OptionManager;
-import tod.gui.kit.messages.GetOptionManager;
+import tod.gui.kit.IOptionsOwner;
+import tod.gui.kit.Options;
 import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.kit.messages.ShowObjectHistoryMsg;
 import tod.gui.kit.messages.EventSelectedMsg.SM_ShowNextForLine;
@@ -60,7 +56,6 @@ import tod.gui.seed.CFlowSeed;
 import tod.gui.seed.FilterSeed;
 import tod.gui.seed.LogViewSeed;
 import tod.gui.seed.LogViewSeedFactory;
-import tod.gui.seed.Seed;
 import tod.gui.seed.StringSearchSeed;
 import tod.gui.seed.ThreadsSeed;
 import tod.gui.view.IEventListView;
@@ -71,7 +66,7 @@ import tod.utils.TODUtils;
  * @author gpothier
  */
 public abstract class MinerUI extends BusOwnerPanel
-implements ILocationSelectionListener, IGUIManager
+implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 {
 	static
 	{
@@ -123,19 +118,10 @@ implements ILocationSelectionListener, IGUIManager
 		}
 	};
 
-	private IBusListener<GetOptionManager> itsGetOptionManagerListener = new IBusListener<GetOptionManager>()
-	{
-		public boolean processMessage(GetOptionManager aMessage)
-		{
-			aMessage.addResult(itsRootOptionManager);
-			return true;
-		}
-	};
-	
 	private JobProcessor itsJobProcessor = new JobProcessor();
 	private BookmarkPanel itsBookmarkPanel = new BookmarkPanel();
 	
-	private OptionManager itsRootOptionManager = new OptionManager(this, null);
+	private Options itsRootOptions = new Options(this, "root", null);
 	
 	private Properties itsProperties = new Properties();
 
@@ -178,20 +164,23 @@ implements ILocationSelectionListener, IGUIManager
 	public void addNotify()
 	{
 		super.addNotify();
-		Bus.getBus(this).subscribe(ShowObjectHistoryMsg.ID, itsShowObjectHistoryListener);
-		Bus.getBus(this).subscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
-		Bus.getBus(this).subscribe(GetOptionManager.ID, itsGetOptionManagerListener);
+		Bus.get(this).subscribe(ShowObjectHistoryMsg.ID, itsShowObjectHistoryListener);
+		Bus.get(this).subscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
 	}
 	
 	@Override
 	public void removeNotify()
 	{
 		super.removeNotify();
-		Bus.getBus(this).unsubscribe(ShowObjectHistoryMsg.ID, itsShowObjectHistoryListener);
-		Bus.getBus(this).unsubscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
-		Bus.getBus(this).unsubscribe(GetOptionManager.ID, itsGetOptionManagerListener);
+		Bus.get(this).unsubscribe(ShowObjectHistoryMsg.ID, itsShowObjectHistoryListener);
+		Bus.get(this).unsubscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
 	}
 
+	public Options getOptions()
+	{
+		return itsRootOptions;
+	}
+	
 	protected void viewChanged(LogView aView)
 	{
 		itsBookmarkPanel.setView(aView);

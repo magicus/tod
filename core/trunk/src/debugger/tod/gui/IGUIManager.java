@@ -23,6 +23,7 @@ package tod.gui;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.session.ISession;
+import tod.gui.kit.Options;
 import tod.gui.seed.LogViewSeed;
 
 /**
@@ -87,4 +88,9 @@ public interface IGUIManager
 	 * Shows a list of all the events that occurred at the specified line.
 	 */
 	public void showEventsForLine(IBehaviorInfo aBehavior, int aLine);
+	
+	/**
+	 * Returns the global GUI options of this GUI manager.
+	 */
+	public Options getOptions();
 }

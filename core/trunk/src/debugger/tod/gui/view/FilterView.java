@@ -33,7 +33,8 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.gui.IGUIManager;
 import tod.gui.MinerUI;
-import tod.gui.eventlist.EventList;
+import tod.gui.eventlist.EventListPanel;
+import tod.gui.kit.Options;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import tod.gui.seed.FilterSeed;
 import tod.gui.view.event.EventView;
@@ -54,8 +55,7 @@ public class FilterView extends LogView implements IEventListView
 	private JSplitPane itsSplitPane;
 	private JScrollPane itsScrollPane;
 
-	private EventList itsList;
-	private JPanel itsEventViewHolder;
+	private EventListPanel itsListPanel;
 	
 	public FilterView(IGUIManager aGUIManager, ILogBrowser aLog, FilterSeed aSeed)
 	{
@@ -63,17 +63,27 @@ public class FilterView extends LogView implements IEventListView
 		itsSeed = aSeed;
 		
 		createUI ();
-		connect(itsSeed.pSelectedEvent(), itsList.pSelectedEvent(), true);
+		connect(itsSeed.pSelectedEvent(), itsListPanel.pSelectedEvent(), true);
 	}
 
+	@Override
+	protected void initOptions(Options aOptions)
+	{
+		super.initOptions(aOptions);
+		EventListPanel.createDefaultOptions(aOptions, false, true);
+	}
+	
 	private void createUI()
 	{
 		itsSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		itsSplitPane.setResizeWeight(0.5);
 		
-		itsList = new EventList (getLogBrowser(), itsSeed.getFilter());
+		itsListPanel = new EventListPanel (
+				getLogBrowser(), 
+				getJobProcessor(), 
+				itsSeed.getFilter());
 		
-		itsList.pSelectedEvent().addHardListener(new PropertyListener<ILogEvent>()
+		itsListPanel.pSelectedEvent().addHardListener(new PropertyListener<ILogEvent>()
 				{
 					@Override
 					public void propertyChanged(IProperty<ILogEvent> aProperty, ILogEvent aOldValue, ILogEvent aNewValue)
@@ -85,7 +95,7 @@ public class FilterView extends LogView implements IEventListView
 		setLayout(new BorderLayout());
 		add (itsSplitPane, BorderLayout.CENTER);
 		
-		itsSplitPane.setLeftComponent(itsList);
+		itsSplitPane.setLeftComponent(itsListPanel);
 		
 		itsScrollPane = new JScrollPane();
 		itsScrollPane.getViewport().setBackground(Color.WHITE);
@@ -144,12 +154,12 @@ public class FilterView extends LogView implements IEventListView
 
 	public ILogEvent getSelectedEvent()
 	{
-		return itsList.pSelectedEvent().get();
+		return itsListPanel.pSelectedEvent().get();
 	}
 
 	public void selectEvent(ILogEvent aEvent, SelectionMethod aMethod)
 	{
-		itsList.pSelectedEvent().set(aEvent);
+		itsListPanel.pSelectedEvent().set(aEvent);
 	}
 	
 	

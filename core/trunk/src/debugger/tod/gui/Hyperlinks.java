@@ -189,7 +189,7 @@ public class Hyperlinks
 			{
 				public void traverse()
 				{
-					Bus.getBus(getComponent()).postMessage(aMessage);				
+					Bus.get(getComponent()).postMessage(aMessage);				
 				}
 			};
 		}

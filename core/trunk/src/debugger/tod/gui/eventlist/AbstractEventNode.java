@@ -118,7 +118,7 @@ public abstract class AbstractEventNode extends MousePanel
 		ILogEvent theMainEvent = getEvent();
 		if (theMainEvent != null)
 		{
-			Bus.getBus(this).postMessage(new EventSelectedMsg(theMainEvent, SelectionMethod.SELECT_IN_LIST));
+			Bus.get(this).postMessage(new EventSelectedMsg(theMainEvent, SelectionMethod.SELECT_IN_LIST));
 			aE.consume();			
 		}
 	}

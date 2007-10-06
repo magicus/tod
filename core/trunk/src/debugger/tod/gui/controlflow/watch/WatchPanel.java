@@ -129,7 +129,7 @@ public class WatchPanel extends JPanel
 		if (itsJobProcessor == null) 
 			itsJobProcessor = new JobProcessor(getGUIManager().getJobProcessor());
 		
-		Bus.getBus(this).subscribe(ShowObjectMsg.ID, itsShowObjectListener);
+		Bus.get(this).subscribe(ShowObjectMsg.ID, itsShowObjectListener);
 		
 		createUI();
 	}
@@ -140,7 +140,7 @@ public class WatchPanel extends JPanel
 		super.removeNotify();
 		itsJobProcessor.detach();
 		itsJobProcessor = null;
-		Bus.getBus(this).unsubscribe(ShowObjectMsg.ID, itsShowObjectListener);
+		Bus.get(this).unsubscribe(ShowObjectMsg.ID, itsShowObjectListener);
 	}
 	
 	public IGUIManager getGUIManager()
