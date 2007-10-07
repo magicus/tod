@@ -34,8 +34,16 @@ public class VariableWriteFilter extends AbstractStatelessFilter
 	private LocalVariableInfo itsVariable;
 	
 	/**
-	 * Creates a filter that accepts only the field write events 
-	 * for a particular field.
+	 * Creates a filter that accepts only the variable write events. 
+	 */
+	public VariableWriteFilter(LocalBrowser aBrowser)
+	{
+		this(aBrowser, null);
+	}
+	
+	/**
+	 * Creates a filter that accepts only the variable write events 
+	 * for a particular variable.
 	 */
 	public VariableWriteFilter(LocalBrowser aBrowser, LocalVariableInfo aVariable)
 	{
@@ -48,7 +56,7 @@ public class VariableWriteFilter extends AbstractStatelessFilter
 		if (aEvent instanceof ILocalVariableWriteEvent)
 		{
 			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) aEvent;
-			return theEvent.getVariable().getIndex() == itsVariable.getIndex();
+			return itsVariable == null || theEvent.getVariable().getIndex() == itsVariable.getIndex();
 		}
 		else return false;
 	}

@@ -176,6 +176,16 @@ public interface ILogBrowser
 	
 	/**
 	 * Creates a filter that accepts only local variable write events
+	 */
+	public IEventFilter createVariableWriteFilter ();
+
+	/**
+	 * Creates a filter that accepts only array write events
+	 */
+	public IEventFilter createArrayWriteFilter ();
+	
+	/**
+	 * Creates a filter that accepts only local variable write events
 	 * of the specified variable.
 	 */
 	public IEventFilter createVariableWriteFilter(LocalVariableInfo aVariable);
@@ -185,6 +195,18 @@ public interface ILogBrowser
 	 * is the specified object reference.
 	 */
 	public IEventFilter createTargetFilter (ObjectId aId);
+	
+	/**
+	 * Creates a filter that accepts only the events whose value
+	 * is the specified object reference.
+	 */
+	public IEventFilter createValueFilter (ObjectId aId);
+	
+	/**
+	 * Creates a filter that accepts only the events whose result
+	 * is the specified object reference.
+	 */
+	public IEventFilter createResultFilter (ObjectId aId);
 	
 	/**
 	 * Creates a filter that accepts only the events 

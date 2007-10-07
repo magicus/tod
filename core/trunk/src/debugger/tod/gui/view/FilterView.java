@@ -23,12 +23,9 @@ package tod.gui.view;
 import java.awt.BorderLayout;
 import java.awt.Color;
 
-import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
@@ -39,7 +36,6 @@ import tod.gui.MinerUI;
 import tod.gui.eventlist.EventListPanel;
 import tod.gui.kit.Options;
 import tod.gui.kit.html.HtmlComponent;
-import tod.gui.kit.html.HtmlDoc;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import tod.gui.seed.FilterSeed;
 import tod.gui.view.event.EventView;
@@ -61,7 +57,6 @@ public class FilterView extends LogView implements IEventListView
 	private JScrollPane itsScrollPane;
 
 	private EventListPanel itsListPanel;
-	private HtmlComponent itsTitleComponent;
 	
 	public FilterView(IGUIManager aGUIManager, ILogBrowser aLog, FilterSeed aSeed)
 	{
@@ -100,9 +95,9 @@ public class FilterView extends LogView implements IEventListView
 		
 		setLayout(new BorderLayout());
 		add (itsSplitPane, BorderLayout.CENTER);
-		itsTitleComponent = new HtmlComponent(itsSeed.getTitle());
-		itsTitleComponent.setOpaque(false);
-		add(itsTitleComponent, BorderLayout.NORTH);
+		HtmlComponent theTitleComponent = new HtmlComponent(itsSeed.getTitle());
+		theTitleComponent.setOpaque(false);
+		add(theTitleComponent, BorderLayout.NORTH);
 		
 		itsSplitPane.setLeftComponent(itsListPanel);
 		
@@ -114,6 +109,8 @@ public class FilterView extends LogView implements IEventListView
 	@Override
 	public void addNotify()
 	{
+		connect(itsSeed.pSelectedEvent(), itsListPanel.pSelectedEvent(), true);
+
 		super.addNotify();
 		
 		int theSplitterPos = MinerUI.getIntProperty(
@@ -121,15 +118,6 @@ public class FilterView extends LogView implements IEventListView
 				PROPERTY_SPLITTER_POS, 400);
 		
 		itsSplitPane.setDividerLocation(theSplitterPos);
-
-		// Workaround for SWT_AWT problem
-		SwingUtilities.invokeLater(new Runnable()
-		{
-			public void run()
-			{
-				validate();
-			}
-		});
 	}
 	
 	@Override
@@ -172,12 +160,12 @@ public class FilterView extends LogView implements IEventListView
 
 	public ILogEvent getSelectedEvent()
 	{
-		return itsListPanel.pSelectedEvent().get();
+		return itsSeed.pSelectedEvent().get();
 	}
 
 	public void selectEvent(ILogEvent aEvent, SelectionMethod aMethod)
 	{
-		itsListPanel.pSelectedEvent().set(aEvent);
+		itsSeed.pSelectedEvent().set(aEvent);
 	}
 	
 	

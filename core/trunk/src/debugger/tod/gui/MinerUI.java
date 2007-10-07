@@ -58,6 +58,7 @@ import tod.gui.seed.CFlowSeed;
 import tod.gui.seed.FilterSeed;
 import tod.gui.seed.LogViewSeed;
 import tod.gui.seed.LogViewSeedFactory;
+import tod.gui.seed.ObjectHistorySeed;
 import tod.gui.seed.StringSearchSeed;
 import tod.gui.seed.ThreadsSeed;
 import tod.gui.view.IEventListView;
@@ -97,11 +98,10 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 		public boolean processMessage(ShowObjectHistoryMsg aMessage)
 		{
 			ObjectId theObject = aMessage.getObjectId();
-			FilterSeed theSeed = new FilterSeed(
+			ObjectHistorySeed theSeed = new ObjectHistorySeed(
 					MinerUI.this, 
 					getLogBrowser(), 
-					"History of object: "+ObjectIdUtils.getObjectDescription(getLogBrowser(), theObject, false),
-					getLogBrowser().createObjectFilter(theObject));
+					theObject);
 			
 			openSeed(theSeed, false);
 			return true;

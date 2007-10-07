@@ -266,43 +266,35 @@ public class GridBehaviorCallEvent extends GridEvent
 	@Override
 	public boolean matchObjectCondition(int aPart, int aPartialKey, byte aRole)
 	{
-		if ((aRole == RoleIndexSet.ROLE_OBJECT_TARGET
+		if ((aRole == RoleIndexSet.ROLE_OBJECT_TARGET || aRole == RoleIndexSet.ROLE_OBJECT_ANY)
 					&& SplittedConditionHandler.OBJECTS.match(
 							aPart, 
 							aPartialKey, 
 							getObjectId(getTarget(), false)))
+		{
+			return true;
+		}
 							
-			|| (aRole >= 0 && aRole < getArguments().length 
+		if (aRole >= 0 && aRole < getArguments().length 
 					&& SplittedConditionHandler.OBJECTS.match(
 							aPart, 
 							aPartialKey, 
-							getObjectId(getArguments()[aRole], false))))
+							getObjectId(getArguments()[aRole], false)))
 		{
 			return true;
 		}
 		
-		if (aRole == RoleIndexSet.ROLE_OBJECT_ANY)
+		if (aRole == RoleIndexSet.ROLE_OBJECT_ANY || aRole == RoleIndexSet.ROLE_OBJECT_ANYARG)
 		{
-			if (SplittedConditionHandler.OBJECTS.match(
-					aPart, 
-					aPartialKey, 
-					getObjectId(getTarget(), false)))
+			for (int i=0;i<getArguments().length;i++) 
 			{
-				return true;
-			}
-			else
-			{
-				for (int i=0;i<getArguments().length;i++) 
+				if (SplittedConditionHandler.OBJECTS.match(
+						aPart, 
+						aPartialKey, 
+						getObjectId(getArguments()[i], false)))
 				{
-					if (SplittedConditionHandler.OBJECTS.match(
-							aPart, 
-							aPartialKey, 
-							getObjectId(getArguments()[i], false)))
-					{
-						return true;
-					}
+					return true;
 				}
-				return false;
 			}
 		}
 		

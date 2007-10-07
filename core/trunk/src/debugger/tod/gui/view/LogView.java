@@ -112,6 +112,12 @@ implements IOptionsOwner
 			for (PropertyUtils.Connector theConnector : itsConnectors) theConnector.disconnect();
 	}
 	
+	@Override
+	public boolean isValidateRoot()
+	{
+		return true;
+	}
+	
 	/**
 	 * Prepares a connection between two properties. 
 	 * The connection is effective only once this component is shown. 

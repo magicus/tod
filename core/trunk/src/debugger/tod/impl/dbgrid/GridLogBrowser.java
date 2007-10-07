@@ -192,6 +192,20 @@ implements ILogBrowser, RIGridMasterListener
 				RoleIndexSet.ROLE_OBJECT_ANYARG);
 	}
 
+	public IEventFilter createValueFilter(ObjectId aId)
+	{
+		return SplittedConditionHandler.OBJECTS.createCondition(
+				ObjectCodec.getObjectId(aId, true),
+				RoleIndexSet.ROLE_OBJECT_VALUE);
+	}
+	
+	public IEventFilter createResultFilter(ObjectId aId)
+	{
+		return SplittedConditionHandler.OBJECTS.createCondition(
+				ObjectCodec.getObjectId(aId, true),
+				RoleIndexSet.ROLE_OBJECT_RESULT);
+	}
+	
 	public IEventFilter createLocationFilter(IBehaviorInfo aBehavior, int aBytecodeIndex)
 	{
 		return CompoundCondition.and(
@@ -227,6 +241,16 @@ implements ILogBrowser, RIGridMasterListener
 		return new TypeCondition(MessageType.FIELD_WRITE);
 	}
 
+	public IEventFilter createVariableWriteFilter()
+	{
+		return new TypeCondition(MessageType.LOCAL_VARIABLE_WRITE);
+	}
+	
+	public IEventFilter createArrayWriteFilter()
+	{
+		return new TypeCondition(MessageType.ARRAY_WRITE);
+	}
+	
 	public IEventFilter createVariableWriteFilter(LocalVariableInfo aVariable)
 	{
 		return new VariableCondition(aVariable.getIndex());

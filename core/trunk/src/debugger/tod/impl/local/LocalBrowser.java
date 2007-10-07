@@ -218,6 +218,16 @@ public class LocalBrowser implements ILogBrowser
 		return new FieldWriteFilter(this);
 	}
 	
+	public IEventFilter createVariableWriteFilter()
+	{
+		return new VariableWriteFilter(this);
+	}
+	
+	public IEventFilter createArrayWriteFilter()
+	{
+		throw new UnsupportedOperationException();
+	}
+	
 	public IEventFilter createVariableWriteFilter(LocalVariableInfo aVariable)
 	{
 		return new VariableWriteFilter(this, aVariable);
@@ -248,6 +258,16 @@ public class LocalBrowser implements ILogBrowser
 		return new TargetFilter(this, aId);
 	}
 	
+	public IEventFilter createResultFilter(ObjectId aId)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	public IEventFilter createValueFilter(ObjectId aId)
+	{
+		throw new UnsupportedOperationException();
+	}
+
 	public IEventFilter createObjectFilter(ObjectId aId)
 	{
 		return new ObjectFilter(this, aId);
