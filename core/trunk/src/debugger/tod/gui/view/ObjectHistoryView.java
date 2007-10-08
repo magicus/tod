@@ -56,6 +56,16 @@ public class ObjectHistoryView extends LogView implements IEventListView
 
 	private IEventFilter itsCurrentFilter;
 	
+	private IPropertyListener<ILogEvent> itsSelectedEventListener = new PropertyListener<ILogEvent>()
+	{
+		@Override
+		public void propertyChanged(IProperty<ILogEvent> aProperty, ILogEvent aOldValue, ILogEvent aNewValue)
+		{
+			if (aNewValue != null) getGUIManager().gotoEvent(aNewValue);
+		}
+	};
+
+
 	private IPropertyListener<Boolean> itsFlagsListener = new PropertyListener<Boolean>()
 	{
 		@Override
@@ -189,6 +199,8 @@ public class ObjectHistoryView extends LogView implements IEventListView
 		
 		super.addNotify();
 		
+		itsSeed.pSelectedEvent().addHardListener(itsSelectedEventListener);
+		
 		itsSeed.pShowKind_ArrayWrite().addHardListener(itsFlagsListener);
 		itsSeed.pShowKind_BehaviorCall().addHardListener(itsFlagsListener);
 		itsSeed.pShowKind_Exception().addHardListener(itsFlagsListener);
@@ -206,6 +218,8 @@ public class ObjectHistoryView extends LogView implements IEventListView
 	{
 		super.removeNotify();
 		
+		itsSeed.pSelectedEvent().removeListener(itsSelectedEventListener);
+
 		itsSeed.pShowKind_ArrayWrite().removeListener(itsFlagsListener);
 		itsSeed.pShowKind_BehaviorCall().removeListener(itsFlagsListener);
 		itsSeed.pShowKind_Exception().removeListener(itsFlagsListener);

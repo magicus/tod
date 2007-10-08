@@ -23,6 +23,7 @@ package tod.impl.database.structure.standard;
 import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
 
 /**
  * Note: This class is not a {@link ISerializableLocationInfo}
@@ -32,14 +33,21 @@ import tod.core.database.structure.ITypeInfo;
  */
 public class ArrayTypeInfo extends TypeInfo implements IArrayTypeInfo
 {
-	private ITypeInfo itsElementType;
-	private int itsDimensions;
+	private final ITypeInfo itsElementType;
+	private final int itsDimensions;
 	
-	public ArrayTypeInfo(StructureDatabase aDatabase, ITypeInfo aElementType, int aDimensions)
+	public ArrayTypeInfo(IStructureDatabase aDatabase, ITypeInfo aElementType, int aDimensions)
 	{
-		super(aDatabase, -1);
+		super(aDatabase, -1, aElementType.getName()+getBrackets(aDimensions));
 		itsElementType = aElementType;
 		itsDimensions = aDimensions;
+	}
+	
+	private static String getBrackets(int aDimensions)
+	{
+		StringBuilder theBuilder = new StringBuilder();
+		for(int i=0;i<aDimensions;i++) theBuilder.append("[]");
+		return theBuilder.toString();
 	}
 
 	public int getDimensions()

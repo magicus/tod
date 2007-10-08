@@ -23,16 +23,17 @@ package tod.impl.bci.asm;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 
+import javassist.bytecode.Opcode;
+
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import tod.agent.AgentConfig;
 import tod.core.EventInterpreter;
-import tod.core.HighLevelCollector;
 import tod.core.config.ClassSelector;
-import tod.core.transport.CollectorPacketReader;
 import tod.core.transport.CollectorPacketWriter;
+import tod.impl.database.structure.standard.PrimitiveTypeInfo;
 
 public class BCIUtils implements Opcodes
 {
@@ -363,6 +364,26 @@ public class BCIUtils implements Opcodes
 		case Type.INT: return Type.getType(int.class);
 		case Type.LONG: return Type.getType(long.class);
 		case Type.SHORT: return Type.getType(short.class);
+		default: return null;
+		}
+	}
+	
+	/**
+	 * Returns the primitive type that corresponds to the given operand
+	 * @param aOperand {@link Opcode#T_BOOLEAN} etc.
+	 */
+	public static PrimitiveTypeInfo getPrimitiveType(int aOperand)
+	{
+		switch (aOperand) 
+		{
+		case Opcode.T_BOOLEAN: return PrimitiveTypeInfo.BOOLEAN;
+		case Opcode.T_BYTE: return PrimitiveTypeInfo.BYTE;
+		case Opcode.T_CHAR: return PrimitiveTypeInfo.CHAR;
+		case Opcode.T_DOUBLE: return PrimitiveTypeInfo.DOUBLE;
+		case Opcode.T_FLOAT: return PrimitiveTypeInfo.FLOAT;
+		case Opcode.T_INT: return PrimitiveTypeInfo.INT;
+		case Opcode.T_LONG: return PrimitiveTypeInfo.LONG;
+		case Opcode.T_SHORT: return PrimitiveTypeInfo.SHORT;
 		default: return null;
 		}
 	}

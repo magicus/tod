@@ -53,7 +53,12 @@ public class DebuggerGridConfig
 	/**
 	 * Number of bits used to represent a behavior id in an event.
 	 */
-	public static final int EVENT_BEHAVIOR_BITS = 16; 
+	public static final int EVENT_BEHAVIOR_BITS = 16;
+	
+	/**
+	 * Number of bits used to represent a type id in an event.
+	 */
+	public static final int EVENT_TYPE_BITS = 16; 
 	
 	/**
 	 * Number of bits used to represent a field id in an event.

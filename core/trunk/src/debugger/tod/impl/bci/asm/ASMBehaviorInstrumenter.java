@@ -31,7 +31,6 @@ import tod.agent.ExceptionGeneratedReceiver;
 import tod.agent.TracedMethods;
 import tod.core.BehaviorCallType;
 import tod.core.EventInterpreter;
-import tod.core.database.browser.LocationUtils;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
@@ -438,6 +437,46 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				aVar);
 	}
 
+	public void newArray(NewArrayClosure aClosure, int aBaseTypeId)
+	{
+		Label l = new Label();
+		mv.visitLabel(l);
+		int theBytecodeIndex = l.getOffset();
+
+		// :: size
+		
+		int theCurrentVar = itsFirstFreeVar;
+		int theSizeVar;
+		int theTargetVar;
+		
+		theSizeVar = theCurrentVar++;
+		theTargetVar = theCurrentVar++;
+		
+		// Store size
+		mv.visitVarInsn(ISTORE, theSizeVar);
+		
+		// Reload size
+		mv.visitVarInsn(ILOAD, theSizeVar);
+	
+		// Perform new array
+		aClosure.proceed(mv);
+		
+		// :: array
+		
+		// Store target
+		mv.visitVarInsn(ASTORE, theTargetVar);
+		
+		// Reload target
+		mv.visitVarInsn(ALOAD, theTargetVar);
+
+		// Call log method (if no exception occurred)
+		invokeLogNewArray(
+				theBytecodeIndex, 
+				theTargetVar, 
+				aBaseTypeId, 
+				theSizeVar);
+	}
+	
 	public void arrayWrite(int aOpcode)
 	{
 		int theSort = BCIUtils.getSort(aOpcode);
@@ -446,7 +485,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		Label l = new Label();
 		mv.visitLabel(l);
 		int theBytecodeIndex = l.getOffset();
-
+		
 		// :: array ref, index, value
 		
 		int theCurrentVar = itsFirstFreeVar;
@@ -469,7 +508,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		mv.visitVarInsn(ALOAD, theTargetVar);
 		mv.visitVarInsn(ILOAD, theIndexVar);
 		mv.visitVarInsn(theType.getOpcode(ILOAD), theValueVar);
-	
+		
 		// Perform store
 		mv.visitInsn(aOpcode);
 		
@@ -721,6 +760,42 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		mv.visitLabel(l);
 	}
 
+	public void invokeLogNewArray(
+			int aBytecodeIndex, 
+			int aTargetVar,
+			int aBaseTypeId,
+			int aSizeVar)
+	{
+		Label l = new Label();
+		if (LogBCIVisitor.ENABLE_READY_CHECK)
+		{
+			mv.visitFieldInsn(GETSTATIC, Type.getInternalName(AgentReady.class), "READY", "Z");
+			mv.visitJumpInsn(IFEQ, l);
+		}
+		
+		pushStdLogArgs();
+		
+		// ->operation location
+		BCIUtils.pushOperationLocation(mv, itsBehavior.getId(), aBytecodeIndex);
+		
+		// ->target
+		mv.visitVarInsn(ALOAD, aTargetVar);
+		
+		// ->type id
+		BCIUtils.pushInt(mv, aBaseTypeId);
+		
+		// ->size
+		mv.visitVarInsn(ILOAD, aSizeVar);
+		
+		mv.visitMethodInsn(
+				INVOKEVIRTUAL, 
+				Type.getInternalName(EventInterpreter.class), 
+				"logNewArray", 
+				"(JLjava/lang/Object;II)V");
+		
+		mv.visitLabel(l);
+	}
+	
 	public void invokeLogArrayWrite(
 			int aBytecodeIndex, 
 			int aTargetVar,
@@ -754,7 +829,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				INVOKEVIRTUAL, 
 				Type.getInternalName(EventInterpreter.class), 
 				"logArrayWrite", 
-				"(JLjava/lang/Object;ILjava/lang/Object;)V");
+		"(JLjava/lang/Object;ILjava/lang/Object;)V");
 		
 		mv.visitLabel(l);
 	}
@@ -927,6 +1002,44 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			mv.visitVarInsn(ASTORE, aArrayVar); // ::
 		}
 	}
+
+	/**
+	 * Creates a {@link NewArrayClosure} for the NEWARRAY opcode.
+	 */
+	public static NewArrayClosure createNewArrayClosure(final int aOperand)
+	{
+		return new NewArrayClosure()
+		{
+			@Override
+			public void proceed(MethodVisitor mv)
+			{
+				mv.visitIntInsn(NEWARRAY, aOperand);
+			}
+		};
+	}
 	
+	/**
+	 * Creates a {@link NewArrayClosure} for the ANEWARRAY opcode.
+	 */
+	public static NewArrayClosure createNewArrayClosure(final String aDesc)
+	{
+		return new NewArrayClosure()
+		{
+			@Override
+			public void proceed(MethodVisitor mv)
+			{
+				mv.visitTypeInsn(ANEWARRAY, aDesc);
+			}
+		};
+	}
+	
+	/**
+	 * A closure for generating the bytecode for NEWARRAY instructions.
+	 * @author gpothier
+	 */
+	public static abstract class NewArrayClosure
+	{
+		public abstract void proceed(MethodVisitor mv);
+	}
 
 }

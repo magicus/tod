@@ -31,6 +31,7 @@ import java.util.Map;
 import org.objectweb.asm.Type;
 
 import tod.core.config.TODConfig;
+import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
@@ -272,6 +273,18 @@ public class StructureDatabase implements IStructureDatabase
 		return getType(this, aName, false, aFailIfAbsent);
 	}
 	
+	public IArrayTypeInfo getArrayType(ITypeInfo aBaseType, int aDimensions)
+	{
+		return new ArrayTypeInfo(this, aBaseType, aDimensions);
+	}
+
+
+	public ITypeInfo getType(int aId, boolean aFailIfAbsent)
+	{
+		if (aId > 0 && aId <= PrimitiveTypeInfo.TYPES.length) return PrimitiveTypeInfo.get(aId);
+		else return getClass(aId, aFailIfAbsent);
+	}
+
 	public static ITypeInfo getType(
 			IStructureDatabase aStructureDatabase, 
 			String aName, 
@@ -360,7 +373,10 @@ public class StructureDatabase implements IStructureDatabase
 	{
 		private static final long serialVersionUID = -8031089051309554360L;
 		
-		private int itsNextFreeClassId = 1;
+		/**
+		 * Ids below 100 are reserved; Ids 1 to 9 are for primitive types.
+		 */
+		private int itsNextFreeClassId = 100;
 		private int itsNextFreeBehaviorId = 1;
 		private int itsNextFreeFieldId = 1;
 

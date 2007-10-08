@@ -198,6 +198,12 @@ public class CountTODServer extends AbstractSession
 //			if (CALL_SUPER) super.methodCall(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
 		}
 
+		public void newArray(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
+				int aOperationBehaviorId, int aOperationBytecodeIndex, Object aTarget, int aBaseTypeId, int aSize)
+		{
+			itsCount++;
+		}
+
 		public void output(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, Output aOutput, byte[] aData)
 		{
 			itsCount++;

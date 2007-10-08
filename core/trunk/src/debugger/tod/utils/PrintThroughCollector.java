@@ -152,6 +152,30 @@ public class PrintThroughCollector implements ILogCollector
 		itsCollector.fieldWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aFieldId, aTarget, aValue);
 	}
 	
+	public void newArray(
+			int aThreadId, 
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp,
+			int aOperationBehaviorId,
+			int aOperationBytecodeIndex,
+			Object aTarget, 
+			int aBaseTypeId, 
+			int aSize)
+	{
+		print(aDepth, String.format(
+				"newArray     (thread: %d, p.ts: %s, depth: %d, ts: %s, target: %s, bt: %d, dim: %d",
+				aThreadId,
+				formatTimestamp(aParentTimestamp),
+				aDepth,
+				formatTimestamp(aTimestamp),
+				aTarget,
+				aBaseTypeId,
+				aSize));
+		
+		itsCollector.newArray(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aTarget, aBaseTypeId, aSize);
+	}
+
 	public void arrayWrite(
 			int aThreadId, 
 			long aParentTimestamp, 

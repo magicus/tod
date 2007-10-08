@@ -94,6 +94,16 @@ public abstract class HighLevelCollector<T extends ThreadData>
 			Object aTarget,
 			Object aValue);
 	
+	protected abstract void newArray(
+			T aThread, 
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp, 
+			long aOperationLocation,
+			Object aTarget,
+			int aBaseTypeId,
+			int aSize);
+	
 	protected abstract void arrayWrite(
 			T aThread, 
 			long aParentTimestamp,

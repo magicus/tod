@@ -87,6 +87,17 @@ public interface ILogCollector
 			Object aTarget,
 			Object aValue);
 	
+	public void newArray(
+			int aThreadId, 
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp, 
+			int aOperationBehaviorId,
+			int aOperationBytecodeIndex,
+			Object aTarget,
+			int aBaseTypeId,
+			int aSize);
+	
 	public void arrayWrite(
 			int aThreadId, 
 			long aParentTimestamp,

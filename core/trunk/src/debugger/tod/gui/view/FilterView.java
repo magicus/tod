@@ -41,6 +41,7 @@ import tod.gui.seed.FilterSeed;
 import tod.gui.view.event.EventView;
 import tod.gui.view.event.EventViewFactory;
 import zz.utils.properties.IProperty;
+import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.PropertyListener;
 
 /**
@@ -57,6 +58,17 @@ public class FilterView extends LogView implements IEventListView
 	private JScrollPane itsScrollPane;
 
 	private EventListPanel itsListPanel;
+	
+	private IPropertyListener<ILogEvent> itsSelectedEventListener = new PropertyListener<ILogEvent>()
+	{
+		@Override
+		public void propertyChanged(IProperty<ILogEvent> aProperty, ILogEvent aOldValue, ILogEvent aNewValue)
+		{
+			if (aNewValue != null) getGUIManager().gotoEvent(aNewValue);
+		}
+	};
+
+
 	
 	public FilterView(IGUIManager aGUIManager, ILogBrowser aLog, FilterSeed aSeed)
 	{
@@ -79,10 +91,7 @@ public class FilterView extends LogView implements IEventListView
 		itsSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		itsSplitPane.setResizeWeight(0.5);
 		
-		itsListPanel = new EventListPanel (
-				getLogBrowser(), 
-				getJobProcessor(), 
-				itsSeed.getBaseFilter());
+		itsListPanel = new EventListPanel (getLogBrowser(), getJobProcessor()); 
 		
 		itsListPanel.pSelectedEvent().addHardListener(new PropertyListener<ILogEvent>()
 				{
@@ -113,6 +122,10 @@ public class FilterView extends LogView implements IEventListView
 
 		super.addNotify();
 		
+		itsSeed.pSelectedEvent().addHardListener(itsSelectedEventListener);
+		
+		itsListPanel.setBrowser(itsSeed.getBaseFilter());
+		
 		int theSplitterPos = MinerUI.getIntProperty(
 				getGUIManager(), 
 				PROPERTY_SPLITTER_POS, 400);
@@ -125,6 +138,8 @@ public class FilterView extends LogView implements IEventListView
 	{
 		super.removeNotify();
 		
+		itsSeed.pSelectedEvent().removeListener(itsSelectedEventListener);
+
 		getGUIManager().setProperty(
 				PROPERTY_SPLITTER_POS, 
 				""+itsSplitPane.getDividerLocation());

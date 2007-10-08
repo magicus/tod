@@ -213,6 +213,29 @@ public class CollectorPacketWriter
 		sendRegisteredObjects();
 	}
 	
+	public void sendNewArray(
+			int aThreadId,
+			long aParentTimestamp,
+			int aDepth,
+			long aTimestamp, 
+			long aOperationLocation,
+			Object aTarget,
+			int aBaseTypeId,
+			int aSize) throws IOException
+	{
+		sendMessageType(itsStream, MessageType.NEW_ARRAY);
+
+		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
+		sendOperationLocation(itsBuffer, aOperationLocation);
+		sendValue(itsBuffer, aTarget);
+		itsBuffer.writeInt(aBaseTypeId);
+		itsBuffer.writeInt(aSize);
+		
+		itsBuffer.writeTo(itsStream);
+		
+		sendRegisteredObjects();
+	}
+	
 	public void sendArrayWrite(
 			int aThreadId,
 			long aParentTimestamp,
@@ -222,9 +245,9 @@ public class CollectorPacketWriter
 			Object aTarget,
 			int aIndex,
 			Object aValue) throws IOException
-	{
+			{
 		sendMessageType(itsStream, MessageType.ARRAY_WRITE);
-
+		
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
 		sendOperationLocation(itsBuffer, aOperationLocation);
 		sendValue(itsBuffer, aTarget);
@@ -234,7 +257,7 @@ public class CollectorPacketWriter
 		itsBuffer.writeTo(itsStream);
 		
 		sendRegisteredObjects();
-	}
+			}
 	
 	public void sendLocalWrite(
 			int aThreadId, 

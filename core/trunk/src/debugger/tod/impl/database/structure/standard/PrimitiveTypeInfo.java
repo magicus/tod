@@ -24,15 +24,15 @@ import tod.core.database.structure.IPrimitiveTypeInfo;
 
 public class PrimitiveTypeInfo extends TypeInfo implements IPrimitiveTypeInfo
 {
-	public static final PrimitiveTypeInfo VOID = new PrimitiveTypeInfo("void", 0);
-	public static final PrimitiveTypeInfo BOOLEAN = new PrimitiveTypeInfo("boolean", 1);
-	public static final PrimitiveTypeInfo INT = new PrimitiveTypeInfo("int", 1);
-	public static final PrimitiveTypeInfo LONG = new PrimitiveTypeInfo("long", 2);
-	public static final PrimitiveTypeInfo BYTE = new PrimitiveTypeInfo("byte", 1);
-	public static final PrimitiveTypeInfo SHORT = new PrimitiveTypeInfo("short", 1);
-	public static final PrimitiveTypeInfo CHAR = new PrimitiveTypeInfo("char", 1);
-	public static final PrimitiveTypeInfo DOUBLE = new PrimitiveTypeInfo("double", 2);
-	public static final PrimitiveTypeInfo FLOAT = new PrimitiveTypeInfo("float", 1);
+	public static final PrimitiveTypeInfo VOID = new PrimitiveTypeInfo("void", 0, 1);
+	public static final PrimitiveTypeInfo BOOLEAN = new PrimitiveTypeInfo("boolean", 1, 2);
+	public static final PrimitiveTypeInfo INT = new PrimitiveTypeInfo("int", 1, 3);
+	public static final PrimitiveTypeInfo LONG = new PrimitiveTypeInfo("long", 2, 4);
+	public static final PrimitiveTypeInfo BYTE = new PrimitiveTypeInfo("byte", 1, 5);
+	public static final PrimitiveTypeInfo SHORT = new PrimitiveTypeInfo("short", 1, 6);
+	public static final PrimitiveTypeInfo CHAR = new PrimitiveTypeInfo("char", 1, 7);
+	public static final PrimitiveTypeInfo DOUBLE = new PrimitiveTypeInfo("double", 2, 8);
+	public static final PrimitiveTypeInfo FLOAT = new PrimitiveTypeInfo("float", 1, 9);
 
 	public static final PrimitiveTypeInfo[] TYPES = {
 		VOID, BOOLEAN, INT, LONG, BYTE, SHORT, CHAR, DOUBLE, FLOAT
@@ -40,9 +40,9 @@ public class PrimitiveTypeInfo extends TypeInfo implements IPrimitiveTypeInfo
 	
 	private final int itsSize;
 
-	public PrimitiveTypeInfo(String aName, int aSize)
+	public PrimitiveTypeInfo(String aName, int aSize, int aId)
 	{
-		super(null, -1, aName);
+		super(null, aId, aName);
 		itsSize = aSize;
 	}
 
@@ -64,5 +64,14 @@ public class PrimitiveTypeInfo extends TypeInfo implements IPrimitiveTypeInfo
 	public boolean isVoid()
 	{
 		return "void".equals(getName());
+	}
+	
+	/**
+	 * Returns the type info corresponding to the specified id.
+	 * Note that in a structure database, ids 1 to 9 are for primitive types.
+	 */
+	public static PrimitiveTypeInfo get(int aId)
+	{
+		return TYPES[aId-1];
 	}
 }

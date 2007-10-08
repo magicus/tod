@@ -20,7 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.transport;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -186,6 +185,42 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 	
 
 	@Override
+	protected void newArray(
+			SocketThreadData aThread,
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp,
+			long aOperationLocation,
+			Object aTarget,
+			int aBaseTypeId, 
+			int aSize)
+	{
+		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
+		if (aThread.isSending()) return;
+        try
+        {
+        	CollectorPacketWriter theWriter = aThread.packetStart(aTimestamp);
+        	
+        	theWriter.sendNewArray(
+        			aThread.getId(),
+        			aParentTimestamp,
+        			aDepth,
+        			aTimestamp,
+        			aOperationLocation,
+        			aTarget,
+        			aBaseTypeId,
+        			aSize);
+        	
+            aThread.packetEnd();
+        }
+        catch (IOException e)
+        {
+        	throw new RuntimeException(e);
+        }
+	}
+
+	
+	@Override
 	protected void arrayWrite(
 			SocketThreadData aThread,
 			long aParentTimestamp,
@@ -198,28 +233,28 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 	{
 		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
 		if (aThread.isSending()) return;
-        try
-        {
-        	CollectorPacketWriter theWriter = aThread.packetStart(aTimestamp);
-        	
-        	theWriter.sendArrayWrite(
-        			aThread.getId(),
-        			aParentTimestamp,
-        			aDepth,
-        			aTimestamp,
-        			aOperationLocation,
-        			aTarget,
-        			aIndex,
-        			aValue);
-        	
-            aThread.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
+		try
+		{
+			CollectorPacketWriter theWriter = aThread.packetStart(aTimestamp);
+			
+			theWriter.sendArrayWrite(
+					aThread.getId(),
+					aParentTimestamp,
+					aDepth,
+					aTimestamp,
+					aOperationLocation,
+					aTarget,
+					aIndex,
+					aValue);
+			
+			aThread.packetEnd();
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
-
+	
 	@Override
 	protected void instantiation(
 			SocketThreadData aThread,

@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.utils;
 
+import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
@@ -110,6 +111,16 @@ implements IStructureDatabase
 	}
 
 	public ITypeInfo getNewType(String aName)
+	{
+		return null;
+	}
+
+	public IArrayTypeInfo getArrayType(ITypeInfo aBaseType, int aDimensions)
+	{
+		return null;
+	}
+
+	public ITypeInfo getType(int aId, boolean aFailIfAbsent)
 	{
 		return null;
 	}

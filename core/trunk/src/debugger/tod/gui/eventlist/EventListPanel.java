@@ -113,12 +113,7 @@ implements MouseWheelListener
 	public EventListPanel(ILogBrowser aLogBrowser, JobProcessor aJobProcessor, IEventFilter aEventFilter)
 	{
 		this(aLogBrowser, aJobProcessor);
-		
-		IEventBrowser theEventBrowser = aEventFilter != null ? 
-				aLogBrowser.createBrowser(aEventFilter) 
-				: aLogBrowser.createBrowser();
-				
-		setBrowser(theEventBrowser);
+		setBrowser(aEventFilter);
 	}
 	
 	public JobProcessor getJobProcessor()
@@ -187,7 +182,18 @@ implements MouseWheelListener
 	}
 
 	/**
-	 * Sets the log browser that provides the content to this list.
+	 * Convenience method to set the event browser (see {@link #setBrowser(IEventBrowser)}).
+	 * @param aEventFilter A filter, or null for all events,
+	 */
+	public void setBrowser(IEventFilter aEventFilter)
+	{
+		setBrowser(aEventFilter != null ? 
+				getLogBrowser().createBrowser(aEventFilter) 
+				: getLogBrowser().createBrowser());
+	}
+	
+	/**
+	 * Sets the event browser that provides the content to this list.
 	 */
 	public void setBrowser(IEventBrowser aEventBrowser)
 	{

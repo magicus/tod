@@ -30,6 +30,8 @@ import tod.impl.local.LocalBrowser;
 public class InstantiationEvent extends BehaviorCallEvent 
 implements IInstantiationEvent
 {
+	private ITypeInfo itsType;
+	
 	public InstantiationEvent(LocalBrowser aLogBrowser)
 	{
 		super(aLogBrowser);
@@ -45,10 +47,19 @@ implements IInstantiationEvent
 		setTarget(aInstance);
 	}
 	
+	public void setType(ITypeInfo aType)
+	{
+		itsType = aType;
+	}
+
 	public ITypeInfo getType()
 	{
-		return getExecutedBehavior() != null ? 
-				getExecutedBehavior().getType()
-				: getCalledBehavior().getType();
+		if (itsType == null)
+		{
+			return getExecutedBehavior() != null ? 
+					getExecutedBehavior().getType()
+					: getCalledBehavior().getType();
+		}
+		else return itsType;
 	}
 }

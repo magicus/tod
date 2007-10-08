@@ -69,6 +69,10 @@ public class CollectorPacketReader
                 readFieldWrite(aStream, aCollector);
                 break;
                 
+			case NEW_ARRAY:
+				readNewArray(aStream, aCollector);
+				break;
+				
 			case ARRAY_WRITE:
 				readArrayWrite(aStream, aCollector);
 				break;
@@ -294,6 +298,21 @@ public class CollectorPacketReader
 				aStream.readInt(),
 				readValue(aStream, aCollector),
 				readValue(aStream, aCollector));
+	}
+	
+	public static void readNewArray(DataInputStream aStream, ILogCollector aCollector) throws IOException
+	{
+		int theSize = aStream.readInt(); // Packet size
+		aCollector.newArray(
+				aStream.readInt(),
+				aStream.readLong(),
+				aStream.readShort(),
+				aStream.readLong(),
+				aStream.readInt(),
+				aStream.readShort(),
+				readValue(aStream, aCollector),
+				aStream.readInt(),
+				aStream.readInt());
 	}
 	
 	public static void readArrayWrite(DataInputStream aStream, ILogCollector aCollector) throws IOException

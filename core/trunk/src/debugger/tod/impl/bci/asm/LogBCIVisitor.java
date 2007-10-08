@@ -35,6 +35,7 @@ import tod.core.BehaviorCallType;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.ITypeInfo;
 import zz.utils.ArrayStack;
 import zz.utils.Stack;
 
@@ -216,7 +217,12 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		@Override
 		public void visitTypeInsn(int aOpcode, String aDesc)
 		{
-			mv.visitTypeInsn(aOpcode, aDesc);
+			if (itsTrace && aOpcode == ANEWARRAY && TRACE_ARRAY)
+			{
+				ITypeInfo theType = itsDatabase.getNewType('L'+aDesc+';');
+				itsInstrumenter.newArray(ASMBehaviorInstrumenter.createNewArrayClosure(aDesc), theType.getId());
+			}
+			else mv.visitTypeInsn(aOpcode, aDesc);
 		}
 		
 		public void visitSuperOrThisCallInsn(int aOpcode, String aOwner, String aName, String aDesc)
@@ -304,6 +310,16 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			else super.visitInsn(aOpcode);
 		}
 		
+		@Override
+		public void visitIntInsn(int aOpcode, int aOperand)
+		{
+			if (itsTrace && aOpcode == NEWARRAY && TRACE_ARRAY)
+			{
+				ITypeInfo theType = BCIUtils.getPrimitiveType(aOperand);
+				itsInstrumenter.newArray(ASMBehaviorInstrumenter.createNewArrayClosure(aOperand), theType.getId());
+			}
+			else super.visitIntInsn(aOpcode, aOperand);
+		}
 		
 		/**
 		 * Check if we must insert entry hooks. 
@@ -411,8 +427,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		@Override
 		public void visitMethodInsn(int aOpcode, String aOwner, String aName, String aDesc)
 		{
-			if (aOpcode == INVOKESPECIAL 
-					&& "<init>".equals(aName))
+			if (aOpcode == INVOKESPECIAL && "<init>".equals(aName))
 			{
 				// We are invoking a constructor.
 				

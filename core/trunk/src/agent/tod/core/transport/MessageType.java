@@ -27,6 +27,7 @@ public enum MessageType
 {
 	// Events
 	INSTANTIATION,
+	NEW_ARRAY,
 	SUPER_CALL,
 	METHOD_CALL,
 	BEHAVIOR_EXIT,

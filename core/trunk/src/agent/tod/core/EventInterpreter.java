@@ -29,7 +29,6 @@ import java.util.StringTokenizer;
 import tod.agent.AgentConfig;
 import tod.agent.AgentUtils;
 import tod.agent.DebugFlags;
-import tod.core.transport.CollectorPacketWriter;
 
 /**
  * Interprets low-level events sent by the instrumentation code and
@@ -381,6 +380,43 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				aValue);
 	}
 	
+	public void logNewArray(
+			long aOperationLocation, 
+			Object aTarget,
+			int aBaseTypeId,
+			int aSize)
+	{
+		if (DISABLE_INTERPRETER) return;
+		long theTimestamp = AgentUtils.timestamp_fast();
+		T theThread = getThreadData();
+		theTimestamp = theThread.transformTimestamp(theTimestamp);
+		
+		FrameInfo theFrame = theThread.currentFrame();
+		
+		short theDepth = theThread.getCurrentDepth();
+		if (EVENT_INTERPRETER_LOG) print(theDepth, String.format(
+				"logNewArray(%d, %d, %s, %d, %d)\n thread: %d, depth: %d\n frame: %s",
+				theTimestamp,
+				aOperationLocation,
+				getObjectId(aTarget),
+				aBaseTypeId,
+				aSize,
+				theThread.getId(),
+				theDepth,
+				theFrame));
+		
+		itsCollector.newArray(
+				theThread,
+				theFrame.parentTimestamp,
+				theDepth,
+				theTimestamp,
+				aOperationLocation,
+				aTarget,
+				aBaseTypeId,
+				aSize);
+	}
+	
+
 	public void logArrayWrite(
 			long aOperationLocation, 
 			Object aTarget,

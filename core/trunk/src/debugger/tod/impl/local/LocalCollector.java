@@ -22,9 +22,11 @@ package tod.impl.local;
 
 import tod.agent.DebugFlags;
 import tod.core.Output;
+import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.impl.common.EventCollector;
 import tod.impl.common.event.ArrayWriteEvent;
@@ -73,6 +75,11 @@ public class LocalCollector extends EventCollector
 	private IFieldInfo getField(int aId)
 	{
 		return itsBrowser.getStructureDatabase().getField(aId, true);
+	}
+	
+	private ITypeInfo getType(int aId)
+	{
+		return itsBrowser.getStructureDatabase().getType(aId, true);
 	}
 	
 	@Override
@@ -184,6 +191,31 @@ public class LocalCollector extends EventCollector
 		addEvent(theEvent);
 	}
 	
+	public void newArray(
+			int aThreadId, 
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp, 
+			int aOperationBehaviorId,
+			int aOperationBytecodeIndex,
+			Object aTarget, 
+			int aBaseTypeId,
+			int aSize)
+	{
+		InstantiationEvent theEvent = new InstantiationEvent(itsBrowser);
+		LocalThreadInfo theThread = getThread(aThreadId);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex);
+
+		theEvent.setTarget(aTarget);
+		ITypeInfo theBaseType = getType(aBaseTypeId);
+		IArrayTypeInfo theType = itsBrowser.getStructureDatabase().getArrayType(theBaseType, 1);
+		theEvent.setType(theType);
+		
+		theEvent.setArguments(new Object[] { aSize });
+		
+		addEvent(theEvent);
+	}
+
 	public void arrayWrite(
 			int aThreadId, 
 			long aParentTimestamp, 

@@ -48,20 +48,31 @@ implements Serializable
 		{
 		case BEHAVIOR_EXIT:
 			return new GridBehaviorExitEvent(aBitStruct);
+			
 		case SUPER_CALL:
 			return new GridBehaviorCallEvent(aBitStruct, MessageType.SUPER_CALL);
+			
 		case EXCEPTION_GENERATED:
 			return new GridExceptionGeneratedEvent(aBitStruct);
+			
 		case FIELD_WRITE:
 			return new GridFieldWriteEvent(aBitStruct);
+			
+		case NEW_ARRAY:
+			return new GridNewArrayEvent(aBitStruct);
+			
 		case ARRAY_WRITE:
 			return new GridArrayWriteEvent(aBitStruct);
+			
 		case INSTANTIATION:
 			return new GridBehaviorCallEvent(aBitStruct, MessageType.INSTANTIATION);
+			
 		case LOCAL_VARIABLE_WRITE:
 			return new GridVariableWriteEvent(aBitStruct);
+			
 		case METHOD_CALL:
 			return new GridBehaviorCallEvent(aBitStruct, MessageType.METHOD_CALL);
+			
 		default: throw new RuntimeException("Not handled: "+theType); 
 		}
 	}

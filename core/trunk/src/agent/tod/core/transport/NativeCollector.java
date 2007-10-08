@@ -100,6 +100,13 @@ public class NativeCollector extends HighLevelCollector<NativeCollector.NativeTh
 	
 	
 	@Override
+	protected void newArray(NativeThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
+			long aOperationLocation, Object aTarget, int aBaseTypeId, int aSize)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	protected void arrayWrite(NativeThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
 			long aOperationLocation, Object aTarget, int aIndex, Object aValue)
 	{

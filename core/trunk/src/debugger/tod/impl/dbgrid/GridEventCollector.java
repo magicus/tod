@@ -32,6 +32,7 @@ import tod.impl.dbgrid.messages.GridBehaviorExitEvent;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.GridExceptionGeneratedEvent;
 import tod.impl.dbgrid.messages.GridFieldWriteEvent;
+import tod.impl.dbgrid.messages.GridNewArrayEvent;
 import tod.impl.dbgrid.messages.GridOutputEvent;
 import tod.impl.dbgrid.messages.GridVariableWriteEvent;
 import tod.impl.dbgrid.messages.MessageType;
@@ -63,6 +64,7 @@ public class GridEventCollector extends EventCollector
 	private final GridExceptionGeneratedEvent itsExceptionEvent = new GridExceptionGeneratedEvent();
 	private final GridFieldWriteEvent itsFieldWriteEvent = new GridFieldWriteEvent();
 	private final GridArrayWriteEvent itsArrayWriteEvent = new GridArrayWriteEvent();
+	private final GridNewArrayEvent itsNewArrayEvent = new GridNewArrayEvent();
 	private final GridOutputEvent itsOutputEvent = new GridOutputEvent();
 	private final GridVariableWriteEvent itsVariableWriteEvent = new GridVariableWriteEvent();
 	
@@ -170,6 +172,33 @@ public class GridEventCollector extends EventCollector
 		dispatch(itsFieldWriteEvent);
 	}
 	
+	
+	
+	public void newArray(
+			int aThreadId,
+			long aParentTimestamp,
+			short aDepth, 
+			long aTimestamp, 
+			int aOperationBehaviorId,
+			int aOperationBytecodeIndex,
+			Object aTarget, 
+			int aBaseTypeId,
+			int aSize)
+	{
+		itsNewArrayEvent.set(
+				aThreadId, 
+				aDepth,
+				aTimestamp,
+				aOperationBehaviorId,
+				aOperationBytecodeIndex,
+				aParentTimestamp,
+				aTarget,
+				aBaseTypeId,
+				aSize);
+		
+		dispatch(itsNewArrayEvent);
+	}
+
 	public void arrayWrite(
 			int aThreadId,
 			long aParentTimestamp,

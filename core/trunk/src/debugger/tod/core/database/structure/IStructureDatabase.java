@@ -106,6 +106,20 @@ public interface IStructureDatabase
 	 * is not found. Otherwise, returns null if the requested element is not found.
 	 */
 	public ITypeInfo getType(String aName, boolean aFailIfAbsent);
+
+	/**
+	 * Returns the type corresponding to the specified id. This can either be a class
+	 * or a primitive type. Array types have no id and therefore can't be retrieved
+	 * through this method.
+	 * @param aFailIfAbsent If true, the method throws an exception if the requested element
+	 * is not found. Otherwise, returns null if the requested element is not found.
+	 */
+	public ITypeInfo getType(int aId, boolean aFailIfAbsent);
+	
+	/**
+	 * Creates (or obtains a cached) array type.
+	 */
+	public IArrayTypeInfo getArrayType(ITypeInfo aBaseType, int aDimensions);
 	
 	/**
 	 * Same as {@link #getType(String, boolean)}, but if the type is a class and
