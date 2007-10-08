@@ -35,7 +35,9 @@ import tod.gui.kit.Bus;
 import tod.gui.kit.html.HtmlBody;
 import tod.gui.kit.html.HtmlComponent;
 import tod.gui.kit.html.HtmlDoc;
+import tod.gui.kit.messages.EventActivatedMsg;
 import tod.gui.kit.messages.EventSelectedMsg;
+import tod.gui.kit.messages.EventActivatedMsg.ActivationMethod;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import zz.utils.Utils;
 import zz.utils.ui.MousePanel;
@@ -112,14 +114,18 @@ public abstract class AbstractEventNode extends MousePanel
 	}
 	
 	@Override
-	public void mousePressed(MouseEvent aE)
+	public void mousePressed(MouseEvent aEvent)
 	{
 		getListPanel().pSelectedEvent().set(getEvent());
-		ILogEvent theMainEvent = getEvent();
-		if (theMainEvent != null)
+		ILogEvent theEvent = getEvent();
+
+		Bus.get(this).postMessage(new EventSelectedMsg(theEvent, SelectionMethod.SELECT_IN_LIST));
+		aEvent.consume();			
+		
+		if (aEvent.getClickCount() == 2)
 		{
-			Bus.get(this).postMessage(new EventSelectedMsg(theMainEvent, SelectionMethod.SELECT_IN_LIST));
-			aE.consume();			
+			Bus.get(this).postMessage(new EventActivatedMsg(getEvent(), ActivationMethod.DOUBLE_CLICK));
+			getListPanel().eventActivated(getEvent());
 		}
 	}
 	

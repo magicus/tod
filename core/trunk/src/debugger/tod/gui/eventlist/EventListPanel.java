@@ -52,6 +52,8 @@ import tod.gui.kit.StdOptions;
 import tod.gui.kit.Options.OptionDef;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;
+import zz.utils.notification.IFireableEvent;
+import zz.utils.notification.SimpleEvent;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.PropertyListener;
@@ -83,6 +85,8 @@ implements MouseWheelListener
 			}
 		};
 	
+	private final IFireableEvent<ILogEvent> eEventActivated = new SimpleEvent<ILogEvent>();
+		
 	/**
 	 * Maps currently displayed events to their graphic node.
 	 */
@@ -363,6 +367,23 @@ implements MouseWheelListener
 	public IRWProperty<ILogEvent> pSelectedEvent()
 	{
 		return pSelectedEvent;
+	}
+	
+	/**
+	 * An event that is fired when a log event of this list is activated,
+	 * ie. double clicked.
+	 */
+	public IEvent<ILogEvent> eEventActivated()
+	{
+		return eEventActivated;
+	}
+	
+	/**
+	 * Used by the nodes to notify activation.
+	 */
+	void eventActivated(ILogEvent aEvent)
+	{
+		eEventActivated.fire(aEvent);
 	}
 	
 	public void mouseWheelMoved(MouseWheelEvent aEvent)

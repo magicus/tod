@@ -48,7 +48,12 @@ public class EventViewFactory
 	{
 		EventView theView = null;
 		
-		if (aEvent instanceof IBehaviorCallEvent)
+		if (aEvent instanceof IInstantiationEvent)
+		{
+			IInstantiationEvent theEvent = (IInstantiationEvent) aEvent;
+			theView = new InstantiationView (aGUIManager, aLog, theEvent);
+		}
+		else if (aEvent instanceof IBehaviorCallEvent)
 		{
 			IBehaviorCallEvent theEvent = (IBehaviorCallEvent) aEvent;
 			theView = new BehaviorCallView (aGUIManager, aLog, theEvent);
@@ -57,11 +62,6 @@ public class EventViewFactory
 		{
 			IBehaviorExitEvent theEvent = (IBehaviorExitEvent) aEvent;
 			theView = new BehaviorExitView(aGUIManager, aLog, theEvent);
-		}
-		else if (aEvent instanceof IInstantiationEvent)
-		{
-			IInstantiationEvent theEvent = (IInstantiationEvent) aEvent;
-			theView = new InstantiationView (aGUIManager, aLog, theEvent);
 		}
 		else if (aEvent instanceof IFieldWriteEvent)
 		{

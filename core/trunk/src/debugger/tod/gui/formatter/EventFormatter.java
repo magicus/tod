@@ -29,6 +29,7 @@ import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.IExceptionGeneratedEvent;
 import tod.core.database.event.IFieldWriteEvent;
+import tod.core.database.event.IInstantiationEvent;
 import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IOutputEvent;
@@ -53,7 +54,16 @@ public class EventFormatter extends AbstractFormatter<ILogEvent>
 
 	protected String getText(ILogEvent aEvent, boolean aHtml)
 	{
-		if (aEvent instanceof IBehaviorCallEvent)
+		if (aEvent instanceof IInstantiationEvent)
+		{
+			IInstantiationEvent theEvent = (IInstantiationEvent) aEvent;
+			
+			return String.format(
+					"%s (%s)",
+					Util.getPrettyName(theEvent.getType().getName()),
+	                formatArgs(theEvent.getArguments()));
+		}
+		else if (aEvent instanceof IBehaviorCallEvent)
 		{
 			IBehaviorCallEvent theEvent = (IBehaviorCallEvent) aEvent;
 			

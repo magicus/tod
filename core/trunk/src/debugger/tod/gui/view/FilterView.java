@@ -34,12 +34,16 @@ import tod.core.database.event.ILogEvent;
 import tod.gui.IGUIManager;
 import tod.gui.MinerUI;
 import tod.gui.eventlist.EventListPanel;
+import tod.gui.kit.Bus;
 import tod.gui.kit.Options;
 import tod.gui.kit.html.HtmlComponent;
+import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import tod.gui.seed.FilterSeed;
 import tod.gui.view.event.EventView;
 import tod.gui.view.event.EventViewFactory;
+import zz.utils.notification.IEvent;
+import zz.utils.notification.IEventListener;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.PropertyListener;
@@ -93,6 +97,15 @@ public class FilterView extends LogView implements IEventListView
 		
 		itsListPanel = new EventListPanel (getLogBrowser(), getJobProcessor()); 
 		
+		itsListPanel.eEventActivated().addListener(new IEventListener<ILogEvent>()
+				{
+					public void fired(IEvent< ? extends ILogEvent> aEvent, ILogEvent aData)
+					{
+						Bus.get(FilterView.this).postMessage(new ShowCFlowMsg(aData));
+					}
+				});
+		
+
 		itsListPanel.pSelectedEvent().addHardListener(new PropertyListener<ILogEvent>()
 				{
 					@Override

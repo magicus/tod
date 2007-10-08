@@ -38,11 +38,15 @@ import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
 import tod.gui.eventlist.EventListPanel;
+import tod.gui.kit.Bus;
 import tod.gui.kit.Options;
 import tod.gui.kit.html.HtmlComponent;
 import tod.gui.kit.html.HtmlDoc;
+import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import tod.gui.seed.ObjectHistorySeed;
+import zz.utils.notification.IEvent;
+import zz.utils.notification.IEventListener;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.PropertyListener;
@@ -94,6 +98,14 @@ public class ObjectHistoryView extends LogView implements IEventListView
 	private void createUI()
 	{
 		itsListPanel = new EventListPanel (getLogBrowser(), getJobProcessor());
+		
+		itsListPanel.eEventActivated().addListener(new IEventListener<ILogEvent>()
+				{
+					public void fired(IEvent< ? extends ILogEvent> aEvent, ILogEvent aData)
+					{
+						Bus.get(ObjectHistoryView.this).postMessage(new ShowCFlowMsg(aData));
+					}
+				});
 		
 //		itsListPanel.pSelectedEvent().addHardListener(new PropertyListener<ILogEvent>()
 //				{

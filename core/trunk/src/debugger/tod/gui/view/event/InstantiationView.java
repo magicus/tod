@@ -22,6 +22,7 @@ package tod.gui.view.event;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IInstantiationEvent;
+import tod.core.database.structure.ITypeInfo;
 import tod.gui.IGUIManager;
 
 /**
@@ -47,4 +48,9 @@ public class InstantiationView extends BehaviorCallView
 		add (createTitledPanel("Created instance: ", createInspectorLink(getEvent().getInstance())));
 	}
 
+	@Override
+	protected ITypeInfo getType()
+	{
+		return getEvent().getType();
+	}
 }

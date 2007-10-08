@@ -84,17 +84,6 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 	}
 	
 	@Override
-	public void mouseClicked(MouseEvent aEvent)
-	{
-		super.mouseClicked(aEvent);
-		if (aEvent.getClickCount() == 2)
-		{
-			Bus.get(this).postMessage(new EventActivatedMsg(getEvent(), ActivationMethod.DOUBLE_CLICK));
-			aEvent.consume();
-		}
-	}
-	
-	@Override
 	protected void createHtmlUI(HtmlBody aBody)
 	{
 		if (itsExpanded) createFullView(aBody);

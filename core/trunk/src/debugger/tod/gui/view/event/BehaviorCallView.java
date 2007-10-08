@@ -58,16 +58,7 @@ public class BehaviorCallView extends EventView
 		IBehaviorCallEvent theEvent = getEvent();
 		
 		// Behaviour
-		ITypeInfo theTypeInfo = null;
-		IBehaviorInfo theExecutedBehavior = theEvent.getExecutedBehavior();
-		if (theExecutedBehavior != null) theTypeInfo = theExecutedBehavior.getType();
-		else
-		{
-			IBehaviorInfo theCalledBehavior = theEvent.getCalledBehavior();
-			if (theCalledBehavior != null) theTypeInfo = theCalledBehavior.getType();
-		}
-		
-		String theTypeName = Util.getPrettyName(theTypeInfo.getName());
+		String theTypeName = Util.getPrettyName(getType().getName());
 		
 //		add (createTitledLink(
 //				"Type: ", 
@@ -76,5 +67,19 @@ public class BehaviorCallView extends EventView
 		
 		// Target
 		add (createTitledPanel("Target: ", createInspectorLink(theEvent.getTarget())));
+	}
+	
+	protected ITypeInfo getType()
+	{
+		ITypeInfo theTypeInfo = null;
+		IBehaviorInfo theExecutedBehavior = getEvent().getExecutedBehavior();
+		if (theExecutedBehavior != null) theTypeInfo = theExecutedBehavior.getType();
+		else
+		{
+			IBehaviorInfo theCalledBehavior = getEvent().getCalledBehavior();
+			if (theCalledBehavior != null) theTypeInfo = theCalledBehavior.getType();
+		}
+
+		return theTypeInfo;
 	}
 }
