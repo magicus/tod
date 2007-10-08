@@ -23,7 +23,9 @@ package tod.gui.view;
 import java.awt.BorderLayout;
 import java.awt.Color;
 
+import javax.swing.BorderFactory;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
@@ -33,6 +35,7 @@ import tod.core.database.browser.ObjectIdUtils;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.ObjectId;
 import tod.gui.FontConfig;
+import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
 import tod.gui.eventlist.EventListPanel;
 import tod.gui.kit.Options;
@@ -43,6 +46,7 @@ import tod.gui.seed.ObjectHistorySeed;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.PropertyListener;
+import zz.utils.ui.PropertyEditor;
 
 public class ObjectHistoryView extends LogView implements IEventListView
 {
@@ -102,6 +106,13 @@ public class ObjectHistoryView extends LogView implements IEventListView
 		
 		theTitleComponent.setOpaque(false);
 		add(theTitleComponent, BorderLayout.NORTH);
+		
+		JScrollPane theScrollPane = new JScrollPane(
+				new FlagsPanel(), 
+				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
+				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		
+		add(theScrollPane, BorderLayout.WEST);
 		
 		updateFilter();
 	}
@@ -225,9 +236,83 @@ public class ObjectHistoryView extends LogView implements IEventListView
 	}
 	
 
-	private static class FlagsPanel extends JPanel
+	private class FlagsPanel extends JPanel
 	{
-		
+		public FlagsPanel()
+		{
+			createUI();
+		}
+
+		private void createUI()
+		{
+			JPanel theRolePanel = new JPanel(GUIUtils.createStackLayout());
+			theRolePanel.setBorder(BorderFactory.createTitledBorder("Object role"));
+			
+			theRolePanel.add(PropertyEditor.createCheckBox(
+					itsSeed.pShowRole_Arg(), 
+					"Argument",
+					"<html>" +
+					"<b>Argument role.</b> Selects events where the object <br>" +
+					"appears as one of the arguments of a behavior call."));
+			
+			theRolePanel.add(PropertyEditor.createCheckBox(
+					itsSeed.pShowRole_Result(), 
+					"Result",
+					"<html>" +
+					"<b>Result role.</b> Selects events where the object <br>" +
+					"is the result of a behavior call."));
+			
+			theRolePanel.add(PropertyEditor.createCheckBox(
+					itsSeed.pShowRole_Target(), 
+					"Target",
+					"<html>" +
+					"<b>Target role.</b> Selects events where the object <br>" +
+					"is the target of a behavior call, field write or array write."));
+			
+			theRolePanel.add(PropertyEditor.createCheckBox(
+					itsSeed.pShowRole_Value(), 
+					"Value",
+					"<html>" +
+					"<b>Value role.</b> Selects events where the object <br>" +
+					"is the value written into a field, local variable or array."));
+			
+			JPanel theKindPanel = new JPanel(GUIUtils.createStackLayout());
+			theKindPanel.setBorder(BorderFactory.createTitledBorder("Event kind"));
+			
+			theKindPanel.add(PropertyEditor.createCheckBox(
+					itsSeed.pShowKind_ArrayWrite(), 
+					"Array write",
+					"<html>" +
+					"<b>Array write kind.</b> Selects array write events"));
+			
+			theKindPanel.add(PropertyEditor.createCheckBox(
+					itsSeed.pShowKind_BehaviorCall(), 
+					"Behavior call",
+					"<html>" +
+					"<b>Behavior call kind.</b> Selects behavior call events"));
+			
+			theKindPanel.add(PropertyEditor.createCheckBox(
+					itsSeed.pShowKind_Exception(), 
+					"Exception",
+					"<html>" +
+					"<b>Exception kind.</b> Selects exception events"));
+			
+			theKindPanel.add(PropertyEditor.createCheckBox(
+					itsSeed.pShowKind_FieldWrite(), 
+					"Field write",
+					"<html>" +
+					"<b>Field write kind.</b> Selects field write events"));
+			
+			theKindPanel.add(PropertyEditor.createCheckBox(
+					itsSeed.pShowKind_LocalWrite(), 
+					"Local variable write",
+					"<html>" +
+					"<b>Local variable write kind.</b> Selects local variable write events"));
+
+			setLayout(GUIUtils.createStackLayout());
+			add(theRolePanel);
+			add(theKindPanel);
+		}
 	}
 }
 

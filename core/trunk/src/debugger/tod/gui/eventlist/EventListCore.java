@@ -122,7 +122,8 @@ public class EventListCore
 		
 		for(int i=0;i<itsVisibleEvents && itsBrowser.hasNext();i++)
 		{
-			itsDisplayedEvents.add(itsBrowser.next());
+			ILogEvent theEvent = itsBrowser.next();
+			itsDisplayedEvents.add(theEvent);
 			itsCurrentDelta++;
 		}
 	}

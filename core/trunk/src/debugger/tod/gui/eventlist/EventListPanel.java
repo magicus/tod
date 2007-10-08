@@ -309,7 +309,7 @@ implements MouseWheelListener
 	private void update()
 	{
 		itsNodesMap.clear();
-//		updateList();
+		updateList();
 				
 		revalidate();
 		repaint();
