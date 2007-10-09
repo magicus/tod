@@ -3,6 +3,8 @@
  */
 package tod.plugin.actions;
 
+import javax.swing.SwingUtilities;
+
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.source.IVerticalRulerInfo;
 import org.eclipse.ui.texteditor.AbstractRulerActionDelegate;
@@ -28,7 +30,13 @@ public class ShowNextEventForLineActionDelegate extends AbstractRulerActionDeleg
 		@Override
 		public void run()
 		{
-			getGUIManager(true).showNextEventForLine(getCurrentBehavior(), getCurrentLine());
+			SwingUtilities.invokeLater(new Runnable()
+			{
+				public void run()
+				{
+					getGUIManager(true).showNextEventForLine(getCurrentBehavior(), getCurrentLine());
+				}
+			});
 		}
 		
 		@Override

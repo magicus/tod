@@ -155,6 +155,11 @@
                label="Show events in TOD"
                menubarPath="tod.plugin.CompilationUnitTODRulerMenu/events"/>
          <action
+               class="tod.plugin.actions.ShowExceptionsForLineActionDelegate"
+               id="tod.plugin.actions.CompilationUnitRulerPopupActions.ShowExceptionsForLineActionDelegate"
+               label="Show exceptions in TOD"
+               menubarPath="tod.plugin.CompilationUnitTODRulerMenu/events"/>
+         <action
                class="tod.plugin.actions.ShowNextEventForLineActionDelegate"
                id="tod.plugin.actions.CompilationUnitRulerPopupActions.ShowNextEventForLineAction"
                label="Next event for line"
