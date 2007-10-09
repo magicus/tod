@@ -21,9 +21,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.database.structure.standard;
 
 import tod.core.ILogCollector;
-import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.ITypeInfo;
 
 /**
  * Aggregates the information a {@link ILogCollector collector}
@@ -33,7 +33,7 @@ import tod.core.database.structure.IStructureDatabase;
 public class FieldInfo extends MemberInfo implements IFieldInfo
 {
 
-	public FieldInfo(StructureDatabase aDatabase, int aId, IClassInfo aTypeInfo, String aName)
+	public FieldInfo(IStructureDatabase aDatabase, int aId, ITypeInfo aTypeInfo, String aName)
 	{
 		super(aDatabase, aId, aTypeInfo, aName);
 	}

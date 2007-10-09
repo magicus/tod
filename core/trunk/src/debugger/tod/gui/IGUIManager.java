@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui;
 
+import tod.core.database.browser.IEventFilter;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.session.ISession;
@@ -86,8 +87,9 @@ public interface IGUIManager
 
 	/**
 	 * Shows a list of all the events that occurred at the specified line.
+	 * @param aFilter An optional additional filter.
 	 */
-	public void showEventsForLine(IBehaviorInfo aBehavior, int aLine);
+	public void showEventsForLine(IBehaviorInfo aBehavior, int aLine, IEventFilter aFilter);
 	
 	/**
 	 * Returns the global GUI options of this GUI manager.

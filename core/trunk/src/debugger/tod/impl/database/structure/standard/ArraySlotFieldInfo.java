@@ -20,31 +20,39 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.database.structure.standard;
 
-import tod.core.ILogCollector;
-import tod.core.database.structure.IMemberInfo;
+import tod.core.database.structure.IArraySlotFieldInfo;
+import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IStructureDatabase;
-import tod.core.database.structure.ITypeInfo;
-import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
 
-
-/**
- * Aggregates the information a {@link ILogCollector collector}
- * receives about a type member (method, constructor, field).
- * @author gpothier
- */
-public abstract class MemberInfo extends LocationInfo 
-implements IMemberInfo, ISerializableLocationInfo
+public class ArraySlotFieldInfo extends FieldInfo
+implements IArraySlotFieldInfo
 {
-	private ITypeInfo itsType;
-	
-	public MemberInfo(IStructureDatabase aDatabase, int aId, ITypeInfo aTypeInfo, String aName)
+	public ArraySlotFieldInfo(IStructureDatabase aDatabase, IArrayTypeInfo aType, int aIndex)
 	{
-		super(aDatabase, aId, aName);
-		itsType = aTypeInfo;
+		super(aDatabase, -aIndex-1, aType, null);
 	}
 	
-	public ITypeInfo getType()
+	@Override
+	public IArrayTypeInfo getType()
 	{
-		return itsType;
-	}	
+		return (IArrayTypeInfo) super.getType();
+	}
+	
+	@Override
+	public int getId()
+	{
+		return -1;
+	}
+	
+	public int getIndex()
+	{
+		return -super.getId()-1;
+	}
+	
+	@Override
+	public String getName()
+	{
+		return "["+getIndex()+"]";
+	}
+
 }

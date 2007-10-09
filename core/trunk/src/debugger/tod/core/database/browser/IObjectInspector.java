@@ -43,7 +43,6 @@ public interface IObjectInspector extends ICompoundInspector<IFieldInfo>
 	 */
 	public ObjectId getObject();
 	
-	
 	/**
 	 * Returns the event that corresponds to the instantiation of the
 	 * inspected object.

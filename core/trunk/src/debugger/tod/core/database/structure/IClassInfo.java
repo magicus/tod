@@ -98,12 +98,6 @@ public interface IClassInfo extends ITypeInfo
 	public Iterable<IBehaviorInfo> getBehaviors();
 	
 	/**
-	 * Creates a clone of this class info object that represents
-	 * uncertain information.
-	 */
-	public IClassInfo createUncertainClone();
-	
-	/**
 	 * This method either creates a new uninitialized behavior, or
 	 * returns the behavior of the specified name/descriptor.
 	 * If the behavior is created it is automatically assigned an id and added

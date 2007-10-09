@@ -25,6 +25,7 @@ import java.util.Map;
 
 import tod.core.BehaviorKind;
 import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
@@ -82,6 +83,12 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 	{
 		itsLineNumberTable = aLineNumberTable;
 		itsLocalVariableTable = aLocalVariableTable;
+	}
+	
+	@Override
+	public IClassInfo getType()
+	{
+		return (IClassInfo) super.getType();
 	}
 	
 	public HasTrace hasTrace()

@@ -336,18 +336,25 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 	/**
 	 * Shows a list of all the events that occurred at the specified line.
 	 */
-	public void showEventsForLine(IBehaviorInfo aBehavior, int aLine)
+	public void showEventsForLine(IBehaviorInfo aBehavior, int aLine, IEventFilter aFilter)
 	{
+		ILogBrowser theLogBrowser = getLogBrowser();
+		
 		IEventFilter theFilter = TODUtils.getLocationFilter(
-				getLogBrowser(), 
+				theLogBrowser, 
 				aBehavior, 
 				aLine);
 		
 		if (theFilter != null)
 		{
+			if (aFilter != null)
+			{
+				theFilter = theLogBrowser.createIntersectionFilter(theFilter, aFilter);
+			}
+			
 			LogViewSeed theSeed = new FilterSeed(
 					this, 
-					getLogBrowser(), 
+					theLogBrowser, 
 					"Events on line "+aLine+" of "+aBehavior.getName(),
 					theFilter);
 			

@@ -39,6 +39,7 @@ import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
+import tod.core.database.structure.IArraySlotFieldInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
@@ -233,7 +234,15 @@ implements ILogBrowser, RIGridMasterListener
 
 	public IEventFilter createFieldFilter(IFieldInfo aField)
 	{
-		return new FieldCondition(aField.getId());
+		if (aField instanceof IArraySlotFieldInfo)
+		{
+			IArraySlotFieldInfo theField = (IArraySlotFieldInfo) aField;
+			return SplittedConditionHandler.INDEXES.createCondition(theField.getIndex(), (byte) 0);
+		}
+		else
+		{
+			return new FieldCondition(aField.getId());
+		}
 	}
 
 	public IEventFilter createFieldWriteFilter()

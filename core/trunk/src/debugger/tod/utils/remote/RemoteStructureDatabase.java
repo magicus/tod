@@ -265,7 +265,7 @@ implements RIStructureDatabase
 		 */
 		private void cacheMember(IMemberInfo aMember)
 		{
-			IClassInfo theClass = aMember.getType();
+			IClassInfo theClass = (IClassInfo) aMember.getType();
 			cacheClass(theClass);
 		}
 		

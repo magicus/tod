@@ -18,33 +18,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.database.structure.standard;
-
-import tod.core.ILogCollector;
-import tod.core.database.structure.IMemberInfo;
-import tod.core.database.structure.IStructureDatabase;
-import tod.core.database.structure.ITypeInfo;
-import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
-
+package tod.core.database.structure;
 
 /**
- * Aggregates the information a {@link ILogCollector collector}
- * receives about a type member (method, constructor, field).
+ * A particular kind of {@link IFieldInfo} that represents a slot of an array
  * @author gpothier
  */
-public abstract class MemberInfo extends LocationInfo 
-implements IMemberInfo, ISerializableLocationInfo
+public interface IArraySlotFieldInfo extends IFieldInfo
 {
-	private ITypeInfo itsType;
+	/**
+	 * The type that contains an array slot is always an {@link IArrayTypeInfo}.
+	 */
+	public IArrayTypeInfo getType();
 	
-	public MemberInfo(IStructureDatabase aDatabase, int aId, ITypeInfo aTypeInfo, String aName)
-	{
-		super(aDatabase, aId, aName);
-		itsType = aTypeInfo;
-	}
-	
-	public ITypeInfo getType()
-	{
-		return itsType;
-	}	
+	/**
+	 * Returns the index of the array slot.
+	 */
+	public int getIndex();
 }

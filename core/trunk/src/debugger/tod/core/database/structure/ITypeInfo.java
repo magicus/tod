@@ -47,4 +47,12 @@ public interface ITypeInfo extends ILocationInfo
 	 * Indicates if ths type is the void type.
 	 */
 	public boolean isVoid();
+	
+	/**
+	 * Creates a clone of this type info object that represents
+	 * uncertain information.
+	 */
+	public IClassInfo createUncertainClone();
+	
+
 }

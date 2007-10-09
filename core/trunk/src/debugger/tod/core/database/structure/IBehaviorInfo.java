@@ -40,6 +40,11 @@ public interface IBehaviorInfo extends IMemberInfo
 			LocalVariableInfo[] aLocalVariableInfos);
 	
 	/**
+	 * The type of a behavior is always a class.
+	 */
+	public IClassInfo getType();
+	
+	/**
 	 * Whether this behavior is traced, ie. emits at least behavior
 	 * enter and behavior exit events.
 	 * The possible values are YES, NO and UNKNOWN, the latter being returned

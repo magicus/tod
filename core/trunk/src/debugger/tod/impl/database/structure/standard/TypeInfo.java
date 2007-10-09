@@ -42,6 +42,13 @@ public abstract class TypeInfo extends LocationInfo implements ITypeInfo
 		super(aDatabase, aId);
 	}
 	
+	public ClassInfo createUncertainClone()
+	{
+		ClassInfo theClone = (ClassInfo) super.clone();
+		theClone.changeName(getName()+ "?");
+		return theClone;
+	}
+
 	@Override
 	public String toString()
 	{

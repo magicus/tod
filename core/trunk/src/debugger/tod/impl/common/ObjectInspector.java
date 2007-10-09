@@ -33,14 +33,17 @@ import tod.core.database.browser.IObjectInspector;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.IInstantiationEvent;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.event.IWriteEvent;
+import tod.core.database.structure.IArraySlotFieldInfo;
+import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMemberInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.impl.database.structure.standard.ArraySlotFieldInfo;
 import tod.impl.database.structure.standard.ClassInfo;
-import tod.utils.DummyStructureDatabase;
 import zz.utils.Utils;
 
 /**
@@ -52,8 +55,8 @@ public class ObjectInspector implements IObjectInspector
 {
 	private final ILogBrowser itsLogBrowser;
 	private ObjectId itsObjectId;
-	private List<IMemberInfo> itsMembers;
-	private List<IFieldInfo> itsFields;
+	
+	private Delegate itsDelegate;
 	
 	private Map<IMemberInfo, IEventBrowser> itsBrowsersMap = new HashMap<IMemberInfo, IEventBrowser>();
 	private Map<IMemberInfo, IEventFilter> itsFiltersMap = new HashMap<IMemberInfo, IEventFilter>();
@@ -135,7 +138,7 @@ public class ObjectInspector implements IObjectInspector
 				if (theBrowser.hasNext())
 				{
 					IFieldWriteEvent theEvent = (IFieldWriteEvent) theBrowser.next();
-					IClassInfo theClass = theEvent.getField().getType();
+					ITypeInfo theClass = theEvent.getField().getType();
 					itsType = theClass.createUncertainClone();
 				}
 			}
@@ -149,55 +152,35 @@ public class ObjectInspector implements IObjectInspector
 		return itsType;
 	}
 	
-	/**
-	 * Recursively finds all inherited members of the inspected object.
-	 */
-	private void fillMembers (ITypeInfo aType)
+	protected Delegate getDelegate()
 	{
-		if (aType instanceof IClassInfo)
+		if (itsDelegate == null)
 		{
-			IClassInfo theClass = (IClassInfo) aType;
+			IInstantiationEvent theEvent = getInstantiationEvent();
+			ITypeInfo theType = theEvent.getType();
 			
-			Utils.fillCollection(itsMembers, theClass.getFields());
-			Utils.fillCollection(itsMembers, theClass.getBehaviors());
-
-			// Fill supertypes & interfaces, recursively
-			ITypeInfo theSupertype = theClass.getSupertype();
-			if (theSupertype != null) fillMembers(theSupertype);
-			ITypeInfo[] theInterfaces = theClass.getInterfaces();
-			if (theInterfaces != null) for (ITypeInfo theInterface : theInterfaces)
+			if (theType instanceof IArrayTypeInfo)
 			{
-				fillMembers(theInterface);
+				itsDelegate = new ArrayDelegate();
 			}
+			else if (theType instanceof IClassInfo)
+			{
+				itsDelegate = new ObjectDelegate();
+			}
+			else throw new RuntimeException("Not handled: "+theType);
 		}
+		
+		return itsDelegate;
 	}
 	
 	public List<IMemberInfo> getMembers()
 	{
-		if (itsMembers == null)
-		{
-			itsMembers = new ArrayList<IMemberInfo>();
-			fillMembers(getType());
-		}
-		return itsMembers;
+		return getDelegate().getMembers();
 	}
 	
 	public List<IFieldInfo> getFields()
 	{
-		if (itsFields == null)
-		{
-			itsFields = new ArrayList<IFieldInfo>();
-			
-			for (IMemberInfo theMember : getMembers())
-			{
-				if (theMember instanceof IFieldInfo)
-				{
-					IFieldInfo theField = (IFieldInfo) theMember;
-					itsFields.add (theField);
-				}
-			}
-		}
-		return itsFields;
+		return getDelegate().getFields();
 	}
 
 	public void setTimestamp(long aTimestamp)
@@ -222,7 +205,7 @@ public class ObjectInspector implements IObjectInspector
 
 	public Object[] getEntryValue(IFieldInfo aField)
 	{
-		IFieldWriteEvent[] theSetters = getEntrySetter(aField);
+		IWriteEvent[] theSetters = getEntrySetter(aField);
 		Object[] theResult = new Object[theSetters.length];
 		
 		for (int i = 0; i < theSetters.length; i++)
@@ -233,9 +216,9 @@ public class ObjectInspector implements IObjectInspector
 		return theResult;
 	}
 
-	public IFieldWriteEvent[] getEntrySetter(IFieldInfo aField)
+	public IWriteEvent[] getEntrySetter(IFieldInfo aField)
 	{
-		List<IFieldWriteEvent> theResult = new ArrayList<IFieldWriteEvent>();
+		List<IWriteEvent> theResult = new ArrayList<IWriteEvent>();
 		
 		IEventBrowser theBrowser = getBrowser(aField);
 		theBrowser.setPreviousTimestamp(itsTimestamp);
@@ -244,7 +227,7 @@ public class ObjectInspector implements IObjectInspector
 		
 		while (theBrowser.hasPrevious())
 		{
-			IFieldWriteEvent theEvent = (IFieldWriteEvent) theBrowser.previous();
+			IWriteEvent theEvent = (IWriteEvent) theBrowser.previous();
 			long theTimestamp = theEvent.getTimestamp();
 			
 			if (thePreviousTimestamp == -1) thePreviousTimestamp = theTimestamp;
@@ -253,7 +236,7 @@ public class ObjectInspector implements IObjectInspector
 			else break;
 		}
 		
-		return theResult.toArray(new IFieldWriteEvent[theResult.size()]);
+		return theResult.toArray(new IWriteEvent[theResult.size()]);
 	}
 
 	/**
@@ -276,26 +259,7 @@ public class ObjectInspector implements IObjectInspector
 		IEventFilter theFilter = itsFiltersMap.get(aMember);
 		if (theFilter == null)
 		{
-			if (aMember instanceof IFieldInfo)
-			{
-				IFieldInfo theField = (IFieldInfo) aMember;
-				
-				theFilter = itsLogBrowser.createIntersectionFilter(
-						itsLogBrowser.createFieldFilter(theField),
-//						itsLogBrowser.createFieldWriteFilter(),
-						itsLogBrowser.createTargetFilter(itsObjectId));
-			}
-			else if (aMember instanceof IBehaviorInfo)
-			{
-				IBehaviorInfo theBehavior = (IBehaviorInfo) aMember;
-
-				theFilter = itsLogBrowser.createIntersectionFilter(
-						itsLogBrowser.createBehaviorCallFilter(theBehavior),
-						itsLogBrowser.createTargetFilter(itsObjectId));
-				
-			}
-			else throw new RuntimeException("Not handled: "+aMember);
-			
+			theFilter = getDelegate().getFilter(aMember);
 			itsFiltersMap.put(aMember, theFilter);
 		}
 		
@@ -351,6 +315,142 @@ public class ObjectInspector implements IObjectInspector
 		theBrowser.setNextTimestamp(itsTimestamp);
 		ILogEvent theEvent = theBrowser.previous();
 		if (theEvent != null) setTimestamp(theEvent.getTimestamp());
+	}
+	
+	/**
+	 * The object inspector uses a delegate that permits to abstract away the 
+	 * differences between regular objects and arrays.
+	 * @author gpothier
+	 */
+	private abstract class Delegate
+	{
+		public abstract List<IMemberInfo> getMembers();
+		public abstract List<IFieldInfo> getFields();
+		public abstract IEventFilter getFilter(IMemberInfo aMember);
+	}
+	
+	private class ObjectDelegate extends Delegate
+	{
+		private List<IMemberInfo> itsMembers;
+		private List<IFieldInfo> itsFields;
+		
+		/**
+		 * Recursively finds all inherited members of the inspected object.
+		 */
+		private void fillMembers (List<IMemberInfo> aMembers, ITypeInfo aType)
+		{
+			if (aType instanceof IClassInfo)
+			{
+				IClassInfo theClass = (IClassInfo) aType;
+				
+				Utils.fillCollection(aMembers, theClass.getFields());
+				Utils.fillCollection(aMembers, theClass.getBehaviors());
+
+				// Fill supertypes & interfaces, recursively
+				ITypeInfo theSupertype = theClass.getSupertype();
+				if (theSupertype != null) fillMembers(aMembers, theSupertype);
+				ITypeInfo[] theInterfaces = theClass.getInterfaces();
+				if (theInterfaces != null) for (ITypeInfo theInterface : theInterfaces)
+				{
+					fillMembers(aMembers, theInterface);
+				}
+			}
+		}
+		
+		public List<IMemberInfo> getMembers()
+		{
+			if (itsMembers == null)
+			{
+				itsMembers = new ArrayList<IMemberInfo>();
+				fillMembers(itsMembers, getType());
+			}
+			return itsMembers;
+		}
+		
+		public List<IFieldInfo> getFields()
+		{
+			if (itsFields == null)
+			{
+				itsFields = new ArrayList<IFieldInfo>();
+				
+				for (IMemberInfo theMember : getMembers())
+				{
+					if (theMember instanceof IFieldInfo)
+					{
+						IFieldInfo theField = (IFieldInfo) theMember;
+						itsFields.add (theField);
+					}
+				}
+			}
+			return itsFields;
+		}
+		
+		public IEventFilter getFilter(IMemberInfo aMember)
+		{
+			IEventFilter theFilter;
+			
+			if (aMember instanceof IFieldInfo)
+			{
+				IFieldInfo theField = (IFieldInfo) aMember;
+				
+				theFilter = itsLogBrowser.createIntersectionFilter(
+						itsLogBrowser.createFieldFilter(theField),
+						itsLogBrowser.createTargetFilter(itsObjectId));
+			}
+			else if (aMember instanceof IBehaviorInfo)
+			{
+				IBehaviorInfo theBehavior = (IBehaviorInfo) aMember;
+
+				theFilter = itsLogBrowser.createIntersectionFilter(
+						itsLogBrowser.createBehaviorCallFilter(theBehavior),
+						itsLogBrowser.createTargetFilter(itsObjectId));
+				
+			}
+			else throw new RuntimeException("Not handled: "+aMember);
+			
+			return theFilter;
+		}
+	}
+	
+	private class ArrayDelegate extends Delegate
+	{
+		private List<IFieldInfo> itsFields;
+
+		@Override
+		public List<IMemberInfo> getMembers()
+		{
+			return (List) getFields();
+		}
+		
+		@Override
+		public List<IFieldInfo> getFields()
+		{
+			if (itsFields == null)
+			{
+				itsFields = new ArrayList<IFieldInfo>();
+				IInstantiationEvent theEvent = getInstantiationEvent();
+				int theSize = (Integer) theEvent.getArguments()[0];
+				
+				for (int i=0;i<theSize;i++)
+				{
+					itsFields.add(new ArraySlotFieldInfo(
+							getLogBrowser().getStructureDatabase(),
+							(IArrayTypeInfo) getType(),
+							i));
+				}
+			}
+			return itsFields;
+		}
+		
+		@Override
+		public IEventFilter getFilter(IMemberInfo aMember)
+		{
+			IArraySlotFieldInfo theField = (IArraySlotFieldInfo) aMember;
+			return itsLogBrowser.createIntersectionFilter(
+					itsLogBrowser.createFieldFilter(theField),
+					itsLogBrowser.createTargetFilter(itsObjectId));
+			
+		}
 	}
 	
 }

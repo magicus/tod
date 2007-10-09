@@ -20,26 +20,19 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.event;
 
-import tod.core.database.structure.IFieldInfo;
 
 /**
  * @author gpothier
  */
-public interface IArrayWriteEvent extends ICallerSideEvent
+public interface IArrayWriteEvent extends ICallerSideEvent, IWriteEvent
 {
 	/**
 	 * The array that is written
 	 */
 	public Object getTarget();
-
 	
 	/**
 	 * The written index
 	 */
 	public int getIndex();
-	
-	/**
-	 * Returns the value written to the array slot.
-	 */
-	public Object getValue();
 }
