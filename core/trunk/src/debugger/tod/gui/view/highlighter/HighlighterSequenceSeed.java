@@ -22,9 +22,9 @@ package tod.gui.view.highlighter;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
+import tod.gui.IGUIManager;
 import tod.gui.eventsequences.IEventSequenceSeed;
 import tod.gui.eventsequences.IEventSequenceView;
-import tod.gui.view.LogView;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
 
@@ -48,9 +48,9 @@ public class HighlighterSequenceSeed implements IEventSequenceSeed
 		pForegroundBrowser.set(aForegroundBrowser);
 	}
 
-	public IEventSequenceView createView(LogView aLogView)
+	public IEventSequenceView createView(IGUIManager aGUIManager)
 	{
-		return new HighlighterSequenceView(aLogView, this);
+		return new HighlighterSequenceView(aGUIManager, this);
 	}
 
 	public IRWProperty<IEventBrowser> pBackgroundBrowser()
@@ -74,7 +74,11 @@ public class HighlighterSequenceSeed implements IEventSequenceSeed
 	 */
 	public void setFilter(IEventFilter aFilter)
 	{
-		pForegroundBrowser().set(pBackgroundBrowser().get().createIntersection(aFilter));
+		IEventBrowser theEventBrowser = aFilter != null ? 
+				pBackgroundBrowser().get().createIntersection(aFilter)
+				: null;
+				
+		pForegroundBrowser().set(theEventBrowser);
 	}
 	
 	

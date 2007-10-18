@@ -52,6 +52,7 @@ import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.impl.common.LogBrowserUtils;
 import tod.impl.common.VariablesInspector;
 import tod.impl.dbgrid.aggregator.GridEventBrowser;
+import tod.impl.dbgrid.aggregator.IGridEventBrowser;
 import tod.impl.dbgrid.aggregator.StringHitsIterator;
 import tod.impl.dbgrid.db.RoleIndexSet;
 import tod.impl.dbgrid.messages.MessageType;
@@ -64,10 +65,12 @@ import tod.impl.dbgrid.queries.Conjunction;
 import tod.impl.dbgrid.queries.DepthCondition;
 import tod.impl.dbgrid.queries.Disjunction;
 import tod.impl.dbgrid.queries.EventCondition;
+import tod.impl.dbgrid.queries.EventIdCondition;
 import tod.impl.dbgrid.queries.FieldCondition;
 import tod.impl.dbgrid.queries.ThreadCondition;
 import tod.impl.dbgrid.queries.TypeCondition;
 import tod.impl.dbgrid.queries.VariableCondition;
+import tod.impl.local.filter.UnionFilter;
 import tod.utils.remote.RemoteStructureDatabase;
 import zz.utils.Utils;
 import zz.utils.cache.MRUBuffer;
@@ -85,7 +88,7 @@ import zz.utils.cache.SyncMRUBuffer;
 		group = Scheduler.class,
 		syncAll = false)
 public class GridLogBrowser extends UnicastRemoteObject
-implements ILogBrowser, RIGridMasterListener
+implements ILogBrowser, RIGridMasterListener, IScheduled
 {
 	static
 	{
@@ -145,6 +148,11 @@ implements ILogBrowser, RIGridMasterListener
 				RemoteStructureDatabase.createDatabase(aMaster.getRemoteStructureDatabase()));
 	}
 
+	public ILogBrowser getKey()
+	{
+		return this;
+	}
+	
 	@POMSync
 	public void clear()
 	{
@@ -312,6 +320,11 @@ implements ILogBrowser, RIGridMasterListener
 		
 		return theCompound;
 	}
+	
+	public IEventFilter createEventFilter(ILogEvent aEvent)
+	{
+		return new EventIdCondition(this, aEvent);
+	}
 
 	public IEventFilter createThreadFilter(IThreadInfo aThread)
 	{
@@ -323,19 +336,80 @@ implements ILogBrowser, RIGridMasterListener
 		return new DepthCondition(aDepth);
 	}
 
-	public ICompoundFilter createIntersectionFilter(IEventFilter... aFilters)
+	private List<EventIdCondition> getIdConditions(IEventFilter[] aFilters)
 	{
-		CompoundCondition theCompound = new Conjunction();
+		List<EventIdCondition> theIdConditions = new ArrayList<EventIdCondition>();
 		for (IEventFilter theFilter : aFilters)
 		{
-			theCompound.add(theFilter);
+			if (theFilter instanceof EventIdCondition)
+			{
+				EventIdCondition theCondition = (EventIdCondition) theFilter;
+				theIdConditions.add(theCondition);
+			}
+		}
+
+		return theIdConditions;
+	}
+	
+	private List<IEventFilter> getNonIdConditions(IEventFilter[] aFilters)
+	{
+		List<IEventFilter> theIdConditions = new ArrayList<IEventFilter>();
+		for (IEventFilter theFilter : aFilters)
+		{
+			if (theFilter instanceof EventIdCondition) continue;
+			theIdConditions.add(theFilter);
 		}
 		
-		return theCompound;
+		return theIdConditions;
+	}
+	
+	public ICompoundFilter createIntersectionFilter(IEventFilter... aFilters)
+	{
+		// If at least one filter is an EventIdCondition,
+		// we create the intersection "manually"
+		List<EventIdCondition> theIdConditions = getIdConditions(aFilters);
+		if (theIdConditions.size() > 0)
+		{
+			// Check that all event id conditions point to the same event
+			ILogEvent theEvent = null;
+			for (EventIdCondition theCondition : theIdConditions)
+			{
+				// An event id condition with a null event has an empty
+				// result set, so return an empty union filter.
+				if (theCondition.getEvent() == null) return theCondition;
+				
+				if (theEvent == null) theEvent = theCondition.getEvent();
+				else if (theEvent != theCondition.getEvent()) return new EventIdCondition(this, null);
+			}
+			
+			// Check that the rest of the filter also match the event
+			List<IEventFilter> theRemainingConditions = getNonIdConditions(aFilters);
+			ICompoundFilter theRemainingFilter = createIntersectionFilter(theRemainingConditions.toArray(new IEventFilter[theRemainingConditions.size()]));
+			IGridEventBrowser theRemainingBrowser = createBrowser(theRemainingFilter);
+			
+			if (LogBrowserUtils.hasEvent(theRemainingBrowser, theEvent)) 
+			{
+				return new EventIdCondition(this, theEvent);
+			}
+			else return new EventIdCondition(this, null);
+		}
+		else
+		{
+			CompoundCondition theCompound = new Conjunction();
+			for (IEventFilter theFilter : aFilters)
+			{
+				theCompound.add(theFilter);
+			}
+			
+			return theCompound;			
+		}		
 	}
 
 	public ICompoundFilter createUnionFilter(IEventFilter... aFilters)
 	{
+		List<EventIdCondition> theIdConditions = getIdConditions(aFilters);
+		if (theIdConditions.size() > 0) throw new UnsupportedOperationException();
+			
 		CompoundCondition theCompound = new Disjunction();
 		for (IEventFilter theFilter : aFilters)
 		{
@@ -469,7 +543,7 @@ implements ILogBrowser, RIGridMasterListener
 		return itsMaster;
 	}
 
-	public GridEventBrowser createBrowser(IEventFilter aFilter)
+	public IGridEventBrowser createBrowser(IEventFilter aFilter)
 	{
 		if (aFilter instanceof EventCondition)
 		{
@@ -482,6 +556,11 @@ implements ILogBrowser, RIGridMasterListener
 			{
 				throw new RuntimeException(e);
 			}
+		}
+		else if (aFilter instanceof EventIdCondition)
+		{
+			EventIdCondition theCondition = (EventIdCondition) aFilter;
+			return theCondition.createBrowser();
 		}
 		else throw new IllegalArgumentException("Not handled: "+aFilter);
 	}

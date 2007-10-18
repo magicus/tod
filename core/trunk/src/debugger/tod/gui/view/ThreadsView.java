@@ -67,7 +67,7 @@ public class ThreadsView extends LogView
 	
 	private void createUI()
 	{
-		itsDock = new SequenceViewsDock(this);
+		itsDock = new SequenceViewsDock(getGUIManager());
 		itsEventsCountLabel = new JLabel();
 		
 		setLayout(new BorderLayout());

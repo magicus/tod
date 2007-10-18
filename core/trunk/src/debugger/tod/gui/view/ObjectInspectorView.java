@@ -104,7 +104,7 @@ public class ObjectInspectorView extends LogView
 		add (theNorthPanel, BorderLayout.NORTH);
 		
 		// Setup center view
-		itsDock = new MembersDock(this);
+		itsDock = new MembersDock(getGUIManager());
 		add (itsDock, BorderLayout.CENTER);
 		
 		// These are hard connectors, as we are the owner of the timescale & dock

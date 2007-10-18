@@ -18,30 +18,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.eventsequences;
+package tod.impl.dbgrid.aggregator;
 
-import tod.core.database.browser.IObjectInspector;
-import tod.core.database.structure.IFieldInfo;
-import tod.gui.IGUIManager;
+import tod.core.database.browser.IEventBrowser;
+import tod.core.database.event.ILogEvent;
+import tod.impl.dbgrid.IGridBrowserListener;
 
 /**
- * Sequence seed for a particular field.
+ * Interface for event browsers of the grid implementation
  * @author gpothier
  */
-public class FieldSequenceSeed implements IEventSequenceSeed
+public interface IGridEventBrowser extends IEventBrowser
 {
-	private IFieldInfo itsField;
-	private final IObjectInspector itsInspector;
-
-	public FieldSequenceSeed(IObjectInspector aInspector, IFieldInfo aField)
-	{
-		itsInspector = aInspector;
-		itsField = aField;
-	}
-
-	public IEventSequenceView createView(IGUIManager aGUIManager)
-	{
-		return new FieldSequenceView(aGUIManager, itsInspector, itsField);
-	}
-
+	/**
+	 * Sets temporal bounds to this browser: no events before the first
+	 * event or past the last event will be returned.
+	 */
+	public void setBounds(ILogEvent aFirstEvent, ILogEvent aLastEvent);
 }

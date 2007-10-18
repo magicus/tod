@@ -170,6 +170,11 @@ public class DebugFlags
 	 */
 	public static final boolean TRY_GUESS_TYPE = ConfigUtils.readBoolean("try-guess-type", false);
 	
+	/**
+	 * Whether to show GUI items that are used for debugging.
+	 */
+	public static final boolean SHOW_DEBUG_GUI = ConfigUtils.readBoolean("show-debug-gui", false);
+	
 	private static PrintStream createStream(String aName)
 	{
 		try

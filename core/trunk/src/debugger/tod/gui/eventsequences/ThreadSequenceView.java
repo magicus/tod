@@ -21,16 +21,23 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.eventsequences;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.List;
 
+import tod.agent.DebugFlags;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
+import tod.gui.IGUIManager;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.seed.FilterSeed;
 import tod.gui.view.LogView;
 import zz.utils.ItemAction;
+import zz.utils.Utils;
 
 public class ThreadSequenceView extends AbstractSingleBrowserSequenceView
 {
@@ -38,13 +45,18 @@ public class ThreadSequenceView extends AbstractSingleBrowserSequenceView
 
 	private final ThreadSequenceSeed itsSeed;
 	
-	public ThreadSequenceView(LogView aLogView, ThreadSequenceSeed aSeed)
+	public ThreadSequenceView(IGUIManager aGUIManager, ThreadSequenceSeed aSeed)
 	{
-		super(aLogView, EVENT_COLOR);
+		super(aGUIManager, EVENT_COLOR);
 		itsSeed = aSeed;
 		
-		addBaseAction(new ShowCFlowAction());
-		addBaseAction(new ShowEventsAction());
+		if (DebugFlags.SHOW_DEBUG_GUI)
+		{
+			addBaseAction(new ShowCFlowAction());
+			addBaseAction(new ShowEventsAction());
+		}
+		
+		setMuralCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 	}
 
 	public ILogBrowser getLogBrowser()
@@ -58,6 +70,12 @@ public class ThreadSequenceView extends AbstractSingleBrowserSequenceView
 	}
 	
 	@Override
+	protected void muralClicked()
+	{
+		showCFlow();
+	}
+	
+	@Override
 	protected IEventBrowser getBrowser()
 	{
 		IEventFilter theFilter = getLogBrowser().createThreadFilter(getThread());
@@ -67,12 +85,31 @@ public class ThreadSequenceView extends AbstractSingleBrowserSequenceView
 
 	public String getTitle()
 	{
-		return String.format(
-				"Thread view - %s [%d]/%s [%d]",
-				getThread().getName(),
-				getThread().getId(),
-				getThread().getHost().getName(),
-				getThread().getHost().getId());
+		List<IHostInfo> theHosts = new ArrayList<IHostInfo>();
+		Utils.fillCollection(theHosts, getLogBrowser().getHosts());
+
+		if (theHosts.size() > 1)
+		{
+			return String.format(
+					"Thread \"%s\" [id %d] on host \"%s\" [id %d]",
+					getThread().getName(),
+					getThread().getId(),
+					getThread().getHost().getName(),
+					getThread().getHost().getId());
+		}
+		else
+		{
+			return String.format(
+					"Thread \"%s\" [id %d]",
+					getThread().getName(),
+					getThread().getId());
+		}
+	}
+	
+	protected void showCFlow()
+	{
+		CFlowSeed theSeed = new CFlowSeed(getGUIManager(), getLogBrowser(), getThread());
+		getGUIManager().openSeed(theSeed, false);
 	}
 	
 	private class ShowCFlowAction extends ItemAction
@@ -89,8 +126,7 @@ public class ThreadSequenceView extends AbstractSingleBrowserSequenceView
 		@Override
 		public void actionPerformed(ActionEvent aE)
 		{
-			CFlowSeed theSeed = new CFlowSeed(getGUIManager(), getLogBrowser(), getThread());
-			getGUIManager().openSeed(theSeed, false);
+			showCFlow();
 		}
 	}
 	

@@ -18,30 +18,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.eventsequences;
+package tod.impl.dbgrid;
 
-import tod.core.database.browser.IObjectInspector;
-import tod.core.database.structure.IFieldInfo;
-import tod.gui.IGUIManager;
+import tod.core.database.browser.ILogBrowser;
 
 /**
- * Sequence seed for a particular field.
+ * Interface for object that are supervised by {@link Scheduler}.
+ * This permits to perform grouping.
  * @author gpothier
  */
-public class FieldSequenceSeed implements IEventSequenceSeed
+public interface IScheduled
 {
-	private IFieldInfo itsField;
-	private final IObjectInspector itsInspector;
-
-	public FieldSequenceSeed(IObjectInspector aInspector, IFieldInfo aField)
-	{
-		itsInspector = aInspector;
-		itsField = aField;
-	}
-
-	public IEventSequenceView createView(IGUIManager aGUIManager)
-	{
-		return new FieldSequenceView(aGUIManager, itsInspector, itsField);
-	}
-
+	/**
+	 * Returns the key of the group to which this scheduled object belongs.
+	 */
+	public ILogBrowser getKey();
 }

@@ -22,7 +22,7 @@ package tod.gui.eventsequences;
 
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.structure.IBehaviorInfo;
-import tod.gui.view.LogView;
+import tod.gui.IGUIManager;
 
 /**
  * Sequence seed for a particular field.
@@ -39,9 +39,9 @@ public class MethodSequenceSeed implements IEventSequenceSeed
 		itsMethod = aMethod;
 	}
 
-	public IEventSequenceView createView(LogView aLogView)
+	public IEventSequenceView createView(IGUIManager aGUIManager)
 	{
-		return new MethodSequenceView(aLogView, itsInspector, itsMethod);
+		return new MethodSequenceView(aGUIManager, itsInspector, itsMethod);
 	}
 
 }

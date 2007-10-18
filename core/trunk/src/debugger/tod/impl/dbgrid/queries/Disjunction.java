@@ -34,7 +34,6 @@ import tod.impl.dbgrid.messages.GridEvent;
  */
 public class Disjunction extends CompoundCondition
 {
-
 	private static final long serialVersionUID = -259387225693471171L;
 
 	@Override

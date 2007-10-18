@@ -63,6 +63,22 @@ public class LogBrowserUtils
 
 		return null;
 	}
+	
+	/**
+	 * Indicates if the specified event is a member of the specified browser's 
+	 * result set.
+	 * This method might move the browser's event pointer.
+	 */
+	public static boolean hasEvent(IEventBrowser aBrowser, ILogEvent aEvent)
+	{
+		aBrowser.setNextEvent(aEvent);
+		if (aBrowser.hasNext())
+		{
+			ILogEvent theNext = aBrowser.next();
+			if (aEvent.equals(theNext)) return true;
+		}
+		return false;
+	}
 
 	/**
 	 * Iplementation of {@link ILogBrowser#getCFlowRoot(IThreadInfo)} 

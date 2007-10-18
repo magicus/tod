@@ -47,9 +47,9 @@ public class MethodSequenceView extends AbstractMemberSequenceView
 	private IBehaviorInfo itsMethod;
 
 	
-	public MethodSequenceView(LogView aLogView, IObjectInspector aInspector, IBehaviorInfo aMethod)
+	public MethodSequenceView(IGUIManager aGUIManager, IObjectInspector aInspector, IBehaviorInfo aMethod)
 	{
-		super(aLogView, METHOD_COLOR, aInspector);
+		super(aGUIManager, METHOD_COLOR, aInspector);
 		itsMethod = aMethod;
 	}
 
@@ -75,10 +75,7 @@ public class MethodSequenceView extends AbstractMemberSequenceView
 		JPanel theContainer = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
 		// Create hyperlink to call event
-		IGUIManager theGUIManager = getLogView().getGUIManager();
-		ILogBrowser theLog = getLogView().getLogBrowser();
-
-		CFlowSeed theSeed = new CFlowSeed(theGUIManager, theLog, aEvent);
+		CFlowSeed theSeed = new CFlowSeed(getGUIManager(), getLogBrowser(), aEvent);
 		SeedHyperlink theHyperlink = SeedHyperlink.create(theSeed, "call", 10, Color.BLUE);
 		theContainer.add (theHyperlink);
 		

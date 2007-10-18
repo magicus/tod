@@ -68,6 +68,7 @@ public class LogViewBrowserNavigator extends BrowserNavigator<LogViewSeed>
 			{
 				getCurrentSeed().activate();
 				LogView theComponent = getCurrentSeed().getComponent();
+				assert itsViewContainer.getComponentCount() == 0;
 				itsViewContainer.add(theComponent);
 				viewChanged(theComponent);
 			}

@@ -93,8 +93,6 @@ public class LocalBrowser implements ILogBrowser
 	 */
 	private Map<Long, Object> itsRegisteredObjects = new HashMap<Long, Object>();
 	
-
-	
 	public LocalBrowser(IStructureDatabase aStructureDatabase)
 	{
 		itsStructureDatabase = aStructureDatabase;
@@ -257,7 +255,12 @@ public class LocalBrowser implements ILogBrowser
 	{
 		return new TargetFilter(this, aId);
 	}
-	
+
+	public IEventFilter createEventFilter(ILogEvent aEvent)
+	{
+		throw new UnsupportedOperationException();
+	}
+
 	public IEventFilter createResultFilter(ObjectId aId)
 	{
 		throw new UnsupportedOperationException();

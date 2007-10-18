@@ -23,6 +23,7 @@ package tod.plugin.views;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
@@ -32,6 +33,7 @@ import org.eclipse.jdt.core.JavaModelException;
 
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.ILocationInfo;
+import tod.core.session.ISession;
 import tod.gui.MinerUI;
 import tod.gui.seed.LogViewSeed;
 import tod.gui.seed.LogViewSeedFactory;
@@ -40,6 +42,7 @@ import tod.impl.dbgrid.DBProcessManager.IDBProcessListener;
 import tod.plugin.DebuggingSession;
 import tod.plugin.TODPluginUtils;
 import tod.plugin.TODSessionManager;
+import zz.utils.SimpleAction;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.PropertyListener;
 
@@ -52,48 +55,50 @@ public class EventViewer extends MinerUI
 		itsTraceNavigatorView = aTraceNavigatorView;
 		TODSessionManager.getInstance().pCurrentSession().addHardListener(new PropertyListener<DebuggingSession>()
 				{
-					public void propertyChanged(IProperty<DebuggingSession> aProperty, DebuggingSession aOldValue, DebuggingSession aNewValue)
+					public void propertyChanged(
+							IProperty<DebuggingSession> aProperty, 
+							DebuggingSession aOldValue, 
+							final DebuggingSession aNewValue)
 					{
 						SwingUtilities.invokeLater(new Runnable()
 						{
 							public void run()
 							{
-								reset();
+								setSession(aNewValue);
 							}
 						});
 					}
 				});
 
-		reset();
-	}
-
-	public DebuggingSession getSession()
-	{
-		return TODSessionManager.getInstance().pCurrentSession().get();
+		setSession(TODSessionManager.getInstance().pCurrentSession().get());
 	}
 	
+	@Override
+	public DebuggingSession getSession()
+	{
+		return (DebuggingSession) super.getSession();
+	}
+
 	@Override
 	protected JComponent createToolbar()
 	{
 		JComponent theToolbar = super.createToolbar();
 		
 		// Add a button that permits to jump to the exceptions view.
-		JButton theKillSessionButton = new JButton("Drop session");
-		theKillSessionButton.addActionListener(new ActionListener()
+		Action theKillSessionAction = new SimpleAction(
+				"Drop session",
+				"<html>" +
+				"<b>Drop current session.</b> Clears all recorded event <br>" +
+				"and starts a new, clean session.")
 		{
 			public void actionPerformed(ActionEvent aE)
 			{
 				TODSessionManager.getInstance().killSession();
 			}
-		});
-		theKillSessionButton.setToolTipText(
-				"<html>" +
-				"<b>Drop current session.</b> Clears all recorded event <br>" +
-				"and starts a new, clean session.");
-		
-		theToolbar.add(theKillSessionButton);
-		
+		};
 
+		theToolbar.add(new JButton(theKillSessionAction));
+		registerAction(theKillSessionAction);
 		
 		return theToolbar;
 	}

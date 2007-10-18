@@ -31,6 +31,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 
 import tod.gui.GUIUtils;
+import tod.gui.IGUIManager;
 import tod.gui.view.LogView;
 import zz.utils.ItemAction;
 import zz.utils.properties.ArrayListProperty;
@@ -52,7 +53,7 @@ public class SequenceViewsDock extends JPanel
 		protected void elementAdded(int aIndex, IEventSequenceSeed aSeed)
 		{
 			// TODO: provide proper display
-			SequencePanel thePanel = new SequencePanel(aSeed.createView(getLogView()));
+			SequencePanel thePanel = new SequencePanel(aSeed.createView(getGUIManager()));
 			itsViewsPanel.add(thePanel, aIndex);
 			itsViewsPanel.revalidate();
 			itsViewsPanel.repaint();
@@ -74,11 +75,11 @@ public class SequenceViewsDock extends JPanel
 	
 	private JPanel itsViewsPanel;
 	
-	private final LogView itsLogView;
+	private final IGUIManager itsGUIManager;
 	
-	public SequenceViewsDock(LogView aLogView)
+	public SequenceViewsDock(IGUIManager aGUIManager)
 	{
-		itsLogView = aLogView;
+		itsGUIManager = aGUIManager;
 		createUI();
 	}
 	
@@ -89,10 +90,9 @@ public class SequenceViewsDock extends JPanel
 		add (new JScrollPane(itsViewsPanel), BorderLayout.CENTER);
 	}
 
-
-	public LogView getLogView()
+	public IGUIManager getGUIManager()
 	{
-		return itsLogView;
+		return itsGUIManager;
 	}
 
 	/**

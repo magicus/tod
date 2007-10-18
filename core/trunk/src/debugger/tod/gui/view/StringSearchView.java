@@ -42,12 +42,12 @@ import tod.core.database.structure.ObjectId;
 import tod.gui.IGUIManager;
 import tod.gui.MinerUI;
 import tod.gui.seed.StringSearchSeed;
-import tod.gui.view.highlighter.EventHighlighterView;
+import tod.gui.view.highlighter.EventHighlighter;
 import tod.impl.dbgrid.BidiIterator;
 import zz.utils.SimpleListModel;
 import zz.utils.ui.StackLayout;
 
-public class StringSearchView extends EventHighlighterView
+public class StringSearchView extends LogView
 {
 	private static final String PROPERTY_SPLITTER_POS = "StringSearchView.splitterPos";
 	
@@ -56,6 +56,8 @@ public class StringSearchView extends EventHighlighterView
 	private SimpleListModel itsResultsListModel;
 
 	private JList itsList;
+
+	private EventHighlighter itsEventHighlighter;
 
 	public StringSearchView(
 			IGUIManager aGUIManager, 
@@ -76,7 +78,7 @@ public class StringSearchView extends EventHighlighterView
 	{
 		itsSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		itsSplitPane.setLeftComponent(createSearchPane());
-		itsSplitPane.setRightComponent(createStripesPanel());
+		itsSplitPane.setRightComponent(createStripesPane());
 		
 		setLayout(new StackLayout());
 		add(itsSplitPane);
@@ -112,6 +114,12 @@ public class StringSearchView extends EventHighlighterView
 		return thePanel;
 	}
 	
+	private JComponent createStripesPane()
+	{
+		itsEventHighlighter = new EventHighlighter(getGUIManager(), getLogBrowser());
+		return itsEventHighlighter;
+	}
+	
 	private void highlight()
 	{
 		Object[] theValues = itsList.getSelectedValues();
@@ -126,7 +134,7 @@ public class StringSearchView extends EventHighlighterView
 		IEventFilter[] theFilterArray = theFilters.toArray(new IEventFilter[theFilters.size()]);
 		ICompoundFilter theFilter = getLogBrowser().createUnionFilter(theFilterArray);
 		
-		setFilter(theFilter);
+		itsEventHighlighter.setFilter(theFilter);
 	}
 	
 	private void search(String aText)

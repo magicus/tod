@@ -27,6 +27,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import tod.agent.DebugFlags;
+import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.event.IFieldWriteEvent;
@@ -36,7 +37,6 @@ import tod.core.database.structure.ObjectId;
 import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.GridMaster;
-import tod.impl.dbgrid.aggregator.GridEventBrowser;
 import tod.utils.TODUtils;
 
 /**
@@ -57,7 +57,7 @@ public class TestObjectIndex
 		
 		IEventFilter theFilter = TODUtils.getLocationFilter(theLogBrowser, theBehavior, 48);
 		
-		GridEventBrowser theBrowser = theLogBrowser.createBrowser(theFilter);
+		IEventBrowser theBrowser = theLogBrowser.createBrowser(theFilter);
 		for (int i=0;i<7;i++) theBrowser.next();
 		
 		IFieldWriteEvent theEvent = (IFieldWriteEvent) theBrowser.next();

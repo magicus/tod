@@ -46,9 +46,9 @@ public class FieldSequenceView extends AbstractMemberSequenceView
 	private IFieldInfo itsField;
 
 	
-	public FieldSequenceView(LogView aLogView, IObjectInspector aInspector, IFieldInfo aField)
+	public FieldSequenceView(IGUIManager aGUIManager, IObjectInspector aInspector, IFieldInfo aField)
 	{
-		super(aLogView, FIELD_COLOR, aInspector);
+		super(aGUIManager, FIELD_COLOR, aInspector);
 		itsField = aField;
 	}
 
@@ -69,10 +69,7 @@ public class FieldSequenceView extends AbstractMemberSequenceView
 		JPanel theContainer = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
 		// Create hyperlink to call event
-		IGUIManager theGUIManager = getLogView().getGUIManager();
-		ILogBrowser theLog = getLogView().getLogBrowser();
-
-		CFlowSeed theSeed = new CFlowSeed(theGUIManager, theLog, aEvent);
+		CFlowSeed theSeed = new CFlowSeed(getGUIManager(), getLogBrowser(), aEvent);
 		SeedHyperlink theHyperlink = SeedHyperlink.create(theSeed, "set", 10, Color.BLUE);
 		theContainer.add (theHyperlink);
 		

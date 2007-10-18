@@ -70,7 +70,6 @@ public class BrowserNavigator<S extends Seed>
 
 	/**
 	 * Jumps to the view that was active before jumping backwards
-	 *
 	 */
 	public void forward()
 	{
@@ -91,6 +90,17 @@ public class BrowserNavigator<S extends Seed>
 		if (itsCurrentSeed != null) itsBackwardSeeds.push(itsCurrentSeed);
 		itsForwardSeeds.clear();
 		setSeed(aSeed);
+		updateActions();
+	}
+	
+	/**
+	 * Clears the forward/backward history of this navigator.
+	 */
+	public void clear()
+	{
+		setSeed(null);
+		itsBackwardSeeds.clear();
+		itsForwardSeeds.clear();
 		updateActions();
 	}
 	

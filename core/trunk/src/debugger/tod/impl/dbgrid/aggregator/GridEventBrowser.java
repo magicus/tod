@@ -22,16 +22,17 @@ package tod.impl.dbgrid.aggregator;
 
 import java.rmi.RemoteException;
 
-import reflex.lib.pom.POMSyncClass;
 import reflex.lib.pom.POMSync;
-import tod.agent.DebugFlags;
+import reflex.lib.pom.POMSyncClass;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IThreadInfo;
 import tod.impl.dbgrid.BufferedBidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
+import tod.impl.dbgrid.IScheduled;
 import tod.impl.dbgrid.Scheduler;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
@@ -46,7 +47,7 @@ import tod.impl.dbgrid.queries.EventCondition;
 		group = Scheduler.class,
 		syncAll = false)
 public class GridEventBrowser extends BufferedBidiIterator<ILogEvent[], ILogEvent>
-implements IEventBrowser
+implements IGridEventBrowser, IScheduled
 {
 	private final GridLogBrowser itsBrowser;
 	private final EventCondition itsFilter;
@@ -65,10 +66,11 @@ implements IEventBrowser
 		reset();
 	}
 	
-	/**
-	 * Sets temporal bounds to this browser: no events before the first
-	 * event or past the last event will be returned.
-	 */
+	public ILogBrowser getKey()
+	{
+		return itsBrowser;
+	}
+	
 	public void setBounds(ILogEvent aFirstEvent, ILogEvent aLastEvent)
 	{
 		itsFirstEvent = aFirstEvent;
@@ -318,7 +320,7 @@ implements IEventBrowser
 
 	public IEventBrowser createIntersection(IEventFilter aFilter)
 	{
-		GridEventBrowser theBrowser = itsBrowser.createBrowser(itsBrowser.createIntersectionFilter(
+		IGridEventBrowser theBrowser = itsBrowser.createBrowser(itsBrowser.createIntersectionFilter(
 				itsFilter,
 				aFilter));
 		

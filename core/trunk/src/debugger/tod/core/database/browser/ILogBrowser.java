@@ -239,6 +239,11 @@ public interface ILogBrowser
 	public IEventFilter createDepthFilter(int aDepth);
 	
 	/**
+	 * Creates a filter that accepts only the specified event.
+	 */
+	public IEventFilter createEventFilter(ILogEvent aEvent);
+	
+	/**
 	 * Returns a synthetic parent event that contains the available root
 	 * events of the given thread.
 	 */

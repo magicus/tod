@@ -22,10 +22,10 @@ package tod.gui.eventsequences;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IThreadInfo;
-import tod.gui.view.LogView;
+import tod.gui.IGUIManager;
 
 /**
- * Sequence seed for a particular field.
+ * Sequence seed for a particular thread.
  * @author gpothier
  */
 public class ThreadSequenceSeed implements IEventSequenceSeed
@@ -49,9 +49,9 @@ public class ThreadSequenceSeed implements IEventSequenceSeed
 		return itsLogBrowser;
 	}
 
-	public ThreadSequenceView createView(LogView aLogView)
+	public ThreadSequenceView createView(IGUIManager aGUIManager)
 	{
-		return new ThreadSequenceView(aLogView, this);
+		return new ThreadSequenceView(aGUIManager, this);
 	}
 
 }

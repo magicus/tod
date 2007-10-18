@@ -26,6 +26,7 @@ import java.util.List;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.gui.BrowserData;
+import tod.gui.IGUIManager;
 import tod.gui.eventsequences.AbstractSequenceView;
 import tod.gui.view.LogView;
 import zz.utils.properties.IProperty;
@@ -51,9 +52,9 @@ public class HighlighterSequenceView extends AbstractSequenceView
 			}
 		};
 
-	public HighlighterSequenceView(LogView aLogView, HighlighterSequenceSeed aSeed)
+	public HighlighterSequenceView(IGUIManager aGUIManager, HighlighterSequenceSeed aSeed)
 	{
-		super(aLogView);
+		super(aGUIManager);
 		itsSeed = aSeed;
 	}
 
@@ -93,7 +94,7 @@ public class HighlighterSequenceView extends AbstractSequenceView
 		IEventBrowser theForegroundBrowser = getSeed().pForegroundBrowser().get();
 		if (theForegroundBrowser != null) 
 		{
-			theBrowsers.add (new BrowserData(theForegroundBrowser, Color.BLUE));
+			theBrowsers.add (new BrowserData(theForegroundBrowser, Color.BLUE.darker()));
 		}
 		
 		return theBrowsers;

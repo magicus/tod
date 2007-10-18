@@ -71,6 +71,7 @@ public class StandaloneUI extends JPanel
 		add (theTabbedPane);
 		
 		itsTraceView = new MyTraceView();
+		itsTraceView.setSession(itsSession);
 		theTabbedPane.addTab("Trace view", itsTraceView);
 		
 		JComponent theConsole = itsSession.createConsole();
@@ -79,11 +80,6 @@ public class StandaloneUI extends JPanel
 
 	private class MyTraceView extends MinerUI
 	{
-		public ISession getSession()
-		{
-			return itsSession;
-		}
-
 		public void gotoEvent(ILogEvent aEvent)
 		{
 		}

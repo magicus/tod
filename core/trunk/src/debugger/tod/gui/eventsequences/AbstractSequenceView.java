@@ -21,7 +21,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.eventsequences;
 
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Image;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -29,6 +32,7 @@ import java.util.List;
 import javax.swing.JComponent;
 
 import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
@@ -49,24 +53,23 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 	public static final XFont FONT = XFont.DEFAULT_XPLAIN.deriveFont(10);
 	
 	private MyMural itsMural;
-	private final LogView itsLogView;
+	private final IGUIManager itsGUIManager;
 	
 	private Collection<ItemAction> itsBaseActions;
 	
-	
-	public AbstractSequenceView(LogView aLogView)
+	public AbstractSequenceView(IGUIManager aManager)
 	{
-		itsLogView = aLogView;
+		itsGUIManager = aManager;
 	}
 
-	public LogView getLogView()
-	{
-		return itsLogView;
-	}
-	
 	public IGUIManager getGUIManager()
 	{
-		return getLogView().getGUIManager();
+		return itsGUIManager;
+	}
+	
+	public ILogBrowser getLogBrowser()
+	{
+		return getGUIManager().getSession().getLogBrowser();
 	}
 
 	/**
@@ -107,9 +110,32 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 		if (itsMural == null) 
 		{
 			itsMural = new MyMural();
+			itsMural.addMouseListener(new MouseAdapter()
+			{
+				@Override
+				public void mousePressed(MouseEvent aE)
+				{
+					muralClicked();
+				}
+			});
 			update();
 		}
 		return itsMural;
+	}
+
+	/**
+	 * Called when the mural is clicked, does nothing by default
+	 */
+	protected void muralClicked()
+	{
+	}
+	
+	/**
+	 * Sets the mouse cursor shape to use for the mural.
+	 */
+	protected void setMuralCursor(Cursor aCursor)
+	{
+		getEventStripe().setCursor(aCursor);
 	}
 	
 	public IRWProperty<Long> pStart()

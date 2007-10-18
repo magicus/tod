@@ -215,6 +215,11 @@ public class EventBrowser extends PublicCloneable implements IEventBrowser
 		return getEvent((int) (getEventCount()-1)).getTimestamp();
 	}
 	
+	protected List<ILogEvent> getEvents()
+	{
+		return itsEvents;
+	}
+	
 	@Override
 	public EventBrowser clone() 
 	{

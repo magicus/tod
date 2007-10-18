@@ -26,6 +26,7 @@ import java.util.List;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.gui.BrowserData;
+import tod.gui.IGUIManager;
 import tod.gui.view.LogView;
 
 /**
@@ -36,9 +37,9 @@ public abstract class AbstractSingleBrowserSequenceView extends AbstractSequence
 {
 	private final Color itsColor;
 
-	public AbstractSingleBrowserSequenceView(LogView aLogView, Color aColor)
+	public AbstractSingleBrowserSequenceView(IGUIManager aGUIManager, Color aColor)
 	{
-		super(aLogView);
+		super(aGUIManager);
 		itsColor = aColor;
 	}
 

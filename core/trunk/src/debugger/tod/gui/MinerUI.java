@@ -27,18 +27,22 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
+import tod.agent.DebugFlags;
+import tod.core.config.TODConfig;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
-import tod.core.database.browser.ObjectIdUtils;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ILocationInfo;
@@ -63,7 +67,10 @@ import tod.gui.seed.StringSearchSeed;
 import tod.gui.seed.ThreadsSeed;
 import tod.gui.view.IEventListView;
 import tod.gui.view.LogView;
+import tod.impl.dbgrid.Scheduler;
 import tod.utils.TODUtils;
+import zz.utils.SimpleAction;
+import zz.utils.ui.StackLayout;
 
 /**
  * @author gpothier
@@ -129,6 +136,19 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 	
 	private Properties itsProperties = new Properties();
 
+	/**
+	 * The currently used debugging session.
+	 */
+	private ISession itsSession;
+
+	private Action itsStringSearchAction;
+	
+	/**
+	 * We keep a list of all actions so that we can enable/disable all of them. 
+	 */
+	private List<Action> itsActions = new ArrayList<Action>();
+
+	private SchedulerMonitor itsSchedulerMonitor;
 	
 	public MinerUI()
 	{
@@ -152,7 +172,10 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 		
 		JPanel theCenterPanel = new JPanel (new BorderLayout());
 		
-		JPanel theNavButtonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
+		JPanel theNavButtonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+		
+		itsSchedulerMonitor = new SchedulerMonitor();
+		theNavButtonsPanel.add(itsSchedulerMonitor);
 		
 		theNavButtonsPanel.add (new JButton (itsNavigator.getBackwardAction()));
 		theNavButtonsPanel.add (new JButton (itsNavigator.getForwardAction()));
@@ -193,57 +216,67 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 		
 	protected JComponent createToolbar()
 	{
-		JPanel theToolbar = new JPanel();
+		JPanel theToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		
-		theToolbar.add(itsBookmarkPanel);
+		if (DebugFlags.SHOW_DEBUG_GUI)
+		{
+			theToolbar.add(itsBookmarkPanel);
+		}
 
 		// Add a button that permits to jump to the threads view.
-		JButton theThreadsViewButton = new JButton("View threads");
-		theThreadsViewButton.addActionListener(new ActionListener()
-				{
-					public void actionPerformed(ActionEvent aE)
-					{
-						reset();
-					}
-				});
-		theThreadsViewButton.setToolTipText(
+		Action theThreadsViewAction = new SimpleAction(
+				"View threads",
 				"<html>" +
 				"<b>Threads view.</b> This view presents an overview <br>" +
 				"of the activity of all the threads in the captured <br>" +
-				"execution trace.");
-		
-		theToolbar.add(theThreadsViewButton);
-
-		// Add a button that permits to jump to the exceptions view.
-		JButton theExceptionsViewButton = new JButton("View exceptions");
-		theExceptionsViewButton.addActionListener(new ActionListener()
+				"execution trace.")
 		{
 			public void actionPerformed(ActionEvent aE)
 			{
-				ILogBrowser theLogBrowser = getSession().getLogBrowser();
-				
-				FilterSeed theSeed = new FilterSeed(
-						MinerUI.this,
-						theLogBrowser,
-						"All exceptions",
-						theLogBrowser.createExceptionGeneratedFilter());
-				
-				openSeed(theSeed, false);			
+				showThreads();
 			}
-		});
-		theExceptionsViewButton.setToolTipText(
+			
+		};
+		
+		theToolbar.add(new JButton(theThreadsViewAction));
+		registerAction(theThreadsViewAction);
+
+		if (DebugFlags.SHOW_DEBUG_GUI)
+		{
+			// Add a button that permits to jump to the exceptions view.
+			Action theExceptionsViewAction = new SimpleAction(
+					"View exceptions",
+					"<html>" +
+					"<b>Exceptions view.</b> This view shows a list <br>" +
+					"of all the exceptions that occurred during the execution <br>" +
+					"of the program. Note that many of the exceptions shown <br>" +
+					"here are catched during the normal operation of the <br>" +
+					"program and therefore do not appear in the console.")
+			{
+				public void actionPerformed(ActionEvent aE)
+				{
+					ILogBrowser theLogBrowser = getSession().getLogBrowser();
+					
+					FilterSeed theSeed = new FilterSeed(
+							MinerUI.this,
+							theLogBrowser,
+							"All exceptions",
+							theLogBrowser.createExceptionGeneratedFilter());
+					
+					openSeed(theSeed, false);			
+				}
+			};
+			
+			theToolbar.add(new JButton(theExceptionsViewAction));
+			registerAction(theExceptionsViewAction);
+		}
+		
+		itsStringSearchAction = new SimpleAction(
+				"Search string",
 				"<html>" +
-				"<b>Exceptions view.</b> This view shows a list <br>" +
-				"of all the exceptions that occurred during the execution <br>" +
-				"of the program. Note that many of the exceptions shown <br>" +
-				"here are catched during the normal operation of the <br>" +
-				"program and therefore do not appear in the console.");
-		
-		theToolbar.add(theExceptionsViewButton);
-		
-		// String search button
-		JButton theStringSearchButton = new JButton("Search string");
-		theStringSearchButton.addActionListener(new ActionListener()
+				"<b>Search in strings.</b> Search text in recorded strings. <br>" +
+				"The <em>index strings</em> options must be enabled in the current <br>" +
+				"session for this option to be available")
 		{
 			public void actionPerformed(ActionEvent aE)
 			{
@@ -255,62 +288,98 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 				
 				openSeed(theSeed, false);			
 			}
-		});
-		theStringSearchButton.setToolTipText(
-				"<html>" +
-				"<b>Search in strings.</b> Search text in recorded strings.");
+		};
 		
-		theToolbar.add(theStringSearchButton);
+		theToolbar.add(new JButton(itsStringSearchAction));
 		
-		JButton theShowAllEventsButton = new JButton("(all events)");
-		theShowAllEventsButton.addActionListener(new ActionListener()
+		if (DebugFlags.SHOW_DEBUG_GUI)
 		{
-			public void actionPerformed(ActionEvent aE)
+			Action theShowAllEventsAction = new SimpleAction(
+					"(all events)",
+					"<html>" +
+					"<b>Show all events.</b> Shows a list of all the events <br>" +
+					"that were recorded. This is used for debugging TOD itself.")
 			{
-				ILogBrowser theLogBrowser = getSession().getLogBrowser();
-				
-				FilterSeed theSeed = new FilterSeed(
-						MinerUI.this, 
-						theLogBrowser,
-						"All events",
-						null);
-				
-				openSeed(theSeed, false);			
-			}
-		});
-		
-		theShowAllEventsButton.setToolTipText(
-				"<html>" +
-				"<b>Show all events.</b> Shows a list of all the events <br>" +
-				"that were recorded. This is used for debugging TOD itself.");
-		
-		theToolbar.add(theShowAllEventsButton);
-		
-		// Adds a button that permits to flush buffers
-		JButton theFlushButton = new JButton("Flush");
-		theFlushButton.addActionListener(new ActionListener()
+				public void actionPerformed(ActionEvent aE)
 				{
-					public void actionPerformed(ActionEvent aE)
-					{
-						getSession().flush();
-					}
-				});
+					ILogBrowser theLogBrowser = getSession().getLogBrowser();
+					
+					FilterSeed theSeed = new FilterSeed(
+							MinerUI.this, 
+							theLogBrowser,
+							"All events",
+							null);
+					
+					openSeed(theSeed, false);			
+				}
+			};
+			
+			theToolbar.add(new JButton(theShowAllEventsAction));
+			registerAction(theShowAllEventsAction);
+		}
 		
-		theFlushButton.setToolTipText(
-				"<html>" +
-				"<b>Flush buffered events.</b> Ensures that all buffered <br>" +
-				"events are sent to the database. Use this to start <br>" +
-				"debugging before the program terminates.");
-		
-		theToolbar.add(theFlushButton);
+		if (DebugFlags.SHOW_DEBUG_GUI)
+		{
+			// Adds a button that permits to flush buffers
+			Action theFlushAction = new SimpleAction(
+					"Flush",
+					"<html>" +
+					"<b>Flush buffered events.</b> Ensures that all buffered <br>" +
+					"events are sent to the database. Use this to start <br>" +
+					"debugging before the program terminates.")
+			{
+				public void actionPerformed(ActionEvent aE)
+				{
+					getSession().flush();
+				}
+			};
+			
+			theToolbar.add(new JButton(theFlushAction));
+			registerAction(theFlushAction);
+		}
 		
 		return theToolbar;
 	}
 	
-	protected void reset()
+	/**
+	 * Register an action to be automatically enabled/disabled when a session
+	 * is available/unavailable.
+	 */
+	protected void registerAction(Action aAction)
 	{
-		ISession theSession = getSession();
-		if (theSession != null) openSeed(new ThreadsSeed(this, theSession.getLogBrowser()), false);
+		itsActions.add(aAction);
+	}
+	
+	protected void setSession(ISession aSession)
+	{
+		itsSession = aSession;
+		itsNavigator.clear();
+		showThreads();
+		
+		if (itsSession == null)
+		{
+			itsStringSearchAction.setEnabled(false);
+			for (Action theAction : itsActions) theAction.setEnabled(false);
+			
+			itsSchedulerMonitor.setScheduler(null);
+		}
+		else
+		{
+			itsStringSearchAction.setEnabled(itsSession.getConfig().get(TODConfig.INDEX_STRINGS));
+			for (Action theAction : itsActions) theAction.setEnabled(true);
+			
+			itsSchedulerMonitor.setScheduler(Scheduler.get(itsSession.getLogBrowser()));
+		}
+	}
+	
+	public ISession getSession()
+	{
+		return itsSession;
+	}
+	
+	protected void showThreads()
+	{
+		if (itsSession != null) openSeed(new ThreadsSeed(this, itsSession.getLogBrowser()), false);
 		else openSeed(null, false);
 	}
 
@@ -532,4 +601,74 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 		return theString != null ? theString : aDefault;
 	}
 	
+	/**
+	 * A monitor component for a scheduler, that gives the user an indication
+	 * about the load of the underlying log browser.
+	 * @author gpothier
+	 */
+	private static class SchedulerMonitor extends JPanel
+	implements Runnable
+	{
+		private Scheduler itsScheduler;
+		private Thread itsThread;
+		private JLabel itsLabel;
+
+		public SchedulerMonitor()
+		{
+			itsThread = new Thread(this);
+			createUI();
+		}
+		
+		private void createUI()
+		{
+			itsLabel = new JLabel("mon.");
+			setLayout(new StackLayout());
+			add(itsLabel);
+		}
+		
+		public void setScheduler(Scheduler aScheduler)
+		{
+			itsScheduler = aScheduler;
+		}
+		
+		@Override
+		public void addNotify()
+		{
+			super.addNotify();
+			itsThread.start();
+		}
+		
+		@Override
+		public void removeNotify()
+		{
+			super.removeNotify();
+			itsThread.interrupt();
+		}
+		
+		public void run()
+		{
+			while(true)
+			{
+				if (itsScheduler == null)
+				{
+					itsLabel.setText("mon.");
+				}
+				else
+				{
+					int theQueueSize = itsScheduler.getQueueSize();
+					itsLabel.setText(""+theQueueSize);
+				}
+				
+				try
+				{
+					Thread.sleep(500);
+				}
+				catch (InterruptedException e)
+				{
+					break;
+				}
+			}
+		}	
+	}
+
 }

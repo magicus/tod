@@ -20,10 +20,19 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
+import java.util.Map;
+import java.util.WeakHashMap;
+
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
 import reflex.lib.pom.POMGroupDef;
 import reflex.lib.pom.POMScheduler;
 import reflex.lib.pom.Request;
 import reflex.lib.pom.RequestIterator;
+import tod.core.database.browser.ILogBrowser;
+import zz.utils.ui.StackLayout;
 
 /**
  * This POM scheduler ensures that all calls to the database are serialized.
@@ -31,13 +40,36 @@ import reflex.lib.pom.RequestIterator;
  */
 public class Scheduler extends POMScheduler implements POMGroupDef
 {
+	private static Map<ILogBrowser, Scheduler> itsGroupsMap = new WeakHashMap<ILogBrowser, Scheduler>();
+	
+	/**
+	 * Returns the scheduler used by the group whose key is the specified log browser.
+	 */
+	public static Scheduler get(ILogBrowser aLogBrowser)
+	{
+		return itsGroupsMap.get(aLogBrowser);
+	}
+	
 	private Request itsExecutingRequest;
+	private int itsQueueSize = 0;
 	
 	public Scheduler()
 	{
 		new DeadlockDetectorThread().start();
 	}
 
+	@Override
+	protected void setGroup(Object aGroup)
+	{
+		super.setGroup(aGroup);
+		itsGroupsMap.put((ILogBrowser) aGroup, this);
+	}
+	
+	public int getQueueSize()
+	{
+		return itsQueueSize;
+	}
+	
 	@Override
 	protected void schedule()
 	{
@@ -50,6 +82,8 @@ public class Scheduler extends POMScheduler implements POMGroupDef
 		}
 		if (itsExecutingRequest == null) executeOldest();
 		System.out.println("[Scheduler] Schedule done on "+Thread.currentThread().getName());
+		
+		itsQueueSize++;
 	}
 	
 	@Override
@@ -70,11 +104,14 @@ public class Scheduler extends POMScheduler implements POMGroupDef
 		if (itsExecutingRequest != aReq) throw new IllegalStateException();
 		itsExecutingRequest = null;
 		System.out.println("[Scheduler] Scheduler.leave() on "+Thread.currentThread().getName());
+		
+		itsQueueSize--;
 	}
 	
 	public Object getGroup(Object aObject)
 	{
-		return "dbgrid";
+		IScheduled theScheduled = (IScheduled) aObject;
+		return theScheduled.getKey();
 	}
 
 	private class DeadlockDetectorThread extends Thread

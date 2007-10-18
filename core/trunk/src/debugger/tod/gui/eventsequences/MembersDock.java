@@ -27,7 +27,7 @@ import tod.core.database.browser.IObjectInspector;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMemberInfo;
-import tod.gui.view.LogView;
+import tod.gui.IGUIManager;
 
 /**
  * A {@link tod.gui.eventsequences.SequenceViewsDock} specialized for displaying members of a type.
@@ -37,9 +37,9 @@ public class MembersDock extends SequenceViewsDock
 {
 	private Map<IMemberInfo, Integer> itsMembersMap = new HashMap<IMemberInfo, Integer>();
 	
-	public MembersDock(LogView aLogView)
+	public MembersDock(IGUIManager aGUIManager)
 	{
-		super (aLogView);
+		super (aGUIManager);
 	}
 
 	protected IEventSequenceSeed createSeed (IObjectInspector aInspector, IMemberInfo aMember)

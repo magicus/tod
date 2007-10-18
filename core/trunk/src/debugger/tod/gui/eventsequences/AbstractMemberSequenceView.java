@@ -29,6 +29,7 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.structure.IMemberInfo;
 import tod.gui.Hyperlinks;
+import tod.gui.IGUIManager;
 import tod.gui.view.LogView;
 
 /**
@@ -39,9 +40,9 @@ public abstract class AbstractMemberSequenceView extends AbstractSingleBrowserSe
 {
 	private final IObjectInspector itsInspector;
 	
-	public AbstractMemberSequenceView(LogView aLogView, Color aColor, IObjectInspector aInspector)
+	public AbstractMemberSequenceView(IGUIManager aGUIManager, Color aColor, IObjectInspector aInspector)
 	{
-		super(aLogView, aColor);
+		super(aGUIManager, aColor);
 		itsInspector = aInspector;
 	}
 
@@ -62,12 +63,9 @@ public abstract class AbstractMemberSequenceView extends AbstractSingleBrowserSe
 	 */
 	protected JComponent createBaloon(Object aObject)
 	{
-		LogView theLogView = getLogView();
-		ILogBrowser theLogBrowser = theLogView.getLogBrowser();
-			
 		return Hyperlinks.object(
 				Hyperlinks.SWING, 
-				theLogBrowser, 
+				getLogBrowser(), 
 				getGUIManager().getJobProcessor(),
 				itsInspector.getObject(), 
 				aObject, 

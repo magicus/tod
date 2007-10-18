@@ -25,7 +25,6 @@ import java.awt.Color;
 
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.SwingUtilities;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
@@ -42,6 +41,7 @@ import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import tod.gui.seed.FilterSeed;
 import tod.gui.view.event.EventView;
 import tod.gui.view.event.EventViewFactory;
+import tod.gui.view.highlighter.EventHighlighter;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;
 import zz.utils.properties.IProperty;
@@ -59,9 +59,9 @@ public class FilterView extends LogView implements IEventListView
 	private FilterSeed itsSeed;
 	
 	private JSplitPane itsSplitPane;
-	private JScrollPane itsScrollPane;
 
 	private EventListPanel itsListPanel;
+	private EventHighlighter itsEventHighlighter;
 	
 	private IPropertyListener<ILogEvent> itsSelectedEventListener = new PropertyListener<ILogEvent>()
 	{
@@ -69,10 +69,13 @@ public class FilterView extends LogView implements IEventListView
 		public void propertyChanged(IProperty<ILogEvent> aProperty, ILogEvent aOldValue, ILogEvent aNewValue)
 		{
 			if (aNewValue != null) getGUIManager().gotoEvent(aNewValue);
+			IEventFilter theFilter = aNewValue != null ?
+					getLogBrowser().createEventFilter(aNewValue)
+					: null;
+					
+			itsEventHighlighter.setFilter(theFilter);
 		}
 	};
-
-
 	
 	public FilterView(IGUIManager aGUIManager, ILogBrowser aLog, FilterSeed aSeed)
 	{
@@ -104,17 +107,7 @@ public class FilterView extends LogView implements IEventListView
 						Bus.get(FilterView.this).postMessage(new ShowCFlowMsg(aData));
 					}
 				});
-		
-
-		itsListPanel.pSelectedEvent().addHardListener(new PropertyListener<ILogEvent>()
-				{
-					@Override
-					public void propertyChanged(IProperty<ILogEvent> aProperty, ILogEvent aOldValue, ILogEvent aNewValue)
-					{
-						setSelectedEvent(aNewValue);
-					}
-				});
-		
+				
 		setLayout(new BorderLayout());
 		add (itsSplitPane, BorderLayout.CENTER);
 		HtmlComponent theTitleComponent = new HtmlComponent(itsSeed.getTitle());
@@ -123,9 +116,8 @@ public class FilterView extends LogView implements IEventListView
 		
 		itsSplitPane.setLeftComponent(itsListPanel);
 		
-		itsScrollPane = new JScrollPane();
-		itsScrollPane.getViewport().setBackground(Color.WHITE);
-		itsSplitPane.setRightComponent(itsScrollPane);
+		itsEventHighlighter = new EventHighlighter(getGUIManager(), getLogBrowser());
+		itsSplitPane.setRightComponent(itsEventHighlighter);
 	}
 	
 	@Override
@@ -158,26 +150,6 @@ public class FilterView extends LogView implements IEventListView
 				""+itsSplitPane.getDividerLocation());
 	}
 	
-	private void setSelectedEvent (ILogEvent aEvent)
-	{
-		if (aEvent != null)
-		{
-			EventView theView = EventViewFactory.createView(
-					getGUIManager(), 
-					getLogBrowser(),
-					aEvent);
-			
-			itsScrollPane.setViewportView(theView);
-		}
-		else
-		{
-			itsScrollPane.setViewportView(null);
-		}
-		
-		revalidate();
-		repaint();
-	}
-
 	public IEventBrowser getEventBrowser()
 	{
 		IEventFilter theFilter = itsSeed.getBaseFilter();
