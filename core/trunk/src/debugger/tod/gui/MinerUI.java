@@ -175,7 +175,10 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 		JPanel theNavButtonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
 		
 		itsSchedulerMonitor = new SchedulerMonitor();
-		theNavButtonsPanel.add(itsSchedulerMonitor);
+		if (DebugFlags.SHOW_DEBUG_GUI)
+		{
+			theNavButtonsPanel.add(itsSchedulerMonitor);
+		}
 		
 		theNavButtonsPanel.add (new JButton (itsNavigator.getBackwardAction()));
 		theNavButtonsPanel.add (new JButton (itsNavigator.getForwardAction()));

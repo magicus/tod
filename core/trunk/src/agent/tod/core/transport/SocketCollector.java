@@ -70,7 +70,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		SocketThreadData theData = new SocketThreadData(aId);
 		itsThreadDataList.add (theData);
 		
-		System.out.println("Created thread data ("+itsThreadDataList.size()+")");
+		System.out.println("[TOD] New thread detected ("+itsThreadDataList.size()+")");
 		
 		return theData;
 	}
@@ -491,7 +491,6 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		private final DataOutputStream itsDataOutputStream;
 
 		private final CollectorPacketWriter itsWriter;
-
 		
 		/**
 		 * In construction packet buffer
@@ -552,6 +551,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			{
 				itsDataOutputStream.flush();
 				int theRequestedSize = itsBuffer.size();
+//				System.out.println("[SocketCollector] Adding "+theRequestedSize+", total: "+itsLog.size());
 				if (itsLog.size() + theRequestedSize > BUFFER_SIZE) send();
 				if (! DebugFlags.DISABLE_EVENT_SEND) itsBuffer.writeTo(itsLog);
 				itsBuffer.reset();
@@ -566,7 +566,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		{
 			if (! itsShutDown && itsLog.size() > 0)
 			{
-//				System.out.println("Sending " + itsLog.size() + " bytes for "+getId());
+//				System.out.println("[SocketCollector] Sending " + itsLog.size() + " bytes for "+getId());
 //				long theDeltaT = itsLastTimestamp-itsFirstTimestamp;
 //				itsBiggestDeltaT = Math.max(itsBiggestDeltaT, theDeltaT);
 //				System.out.println(String.format(
@@ -590,10 +590,10 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 
 		public void shutDown() 
 		{
-//			System.out.println(String.format(
-//					"Shutting down thread %d, sending %d bytes",
-//					getId(),
-//					itsLog.size()));
+			System.out.println(String.format(
+					"[TOD] Flushing events for thread %d, sending %d bytes",
+					getId(),
+					itsLog.size()));
 			send();
 			itsShutDown = true;
 		}
@@ -649,14 +649,23 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		@Override
 		public void run()
 		{
-			System.out.println("SocketCollector: Shutting down");
+			System.out.println("[TOD] Flushing events...");
 			
 			if (itsThreadDataList == null) return;
-			
 			for (SocketThreadData theData : itsThreadDataList) theData.shutDown();
 			
-			System.out.println("SocketCollector: flushed all threads.");
+			try
+			{
+				Thread.sleep(1000);
+			}
+			catch (InterruptedException e)
+			{
+				throw new RuntimeException(e);
+			}
+			
+			System.out.println("[TOD] Shutting down.");
 		}
+		
 	}
 	
 	

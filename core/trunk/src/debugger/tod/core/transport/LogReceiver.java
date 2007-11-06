@@ -241,6 +241,7 @@ public abstract class LogReceiver
 			try
 			{
 				byte theCommand = itsDataIn.readByte();
+//				System.out.println("[LogReceiver] Command: "+theCommand);
 				
 				if (theCommand == MessageType.CMD_FLUSH)
 				{

@@ -28,7 +28,8 @@ public class AgentUtils
 	 */
 	public static long transformTimestamp(long aTimestamp, byte aSerial)
 	{
-		if (aSerial > AgentConfig.TIMESTAMP_ADJUST_MASK) throw new RuntimeException("Timestamp adjust overflow");
+//		System.out.println("AgentUtils.tt: "+aTimestamp);
+		if (aSerial > AgentConfig.TIMESTAMP_ADJUST_MASK) throw new RuntimeException("Timestamp adjust overflow (ts: "+aTimestamp+", s: "+aSerial+")");
 		
 		return ((aTimestamp << AgentConfig.TIMESTAMP_ADJUST_SHIFT)
 				& ~AgentConfig.TIMESTAMP_ADJUST_MASK)

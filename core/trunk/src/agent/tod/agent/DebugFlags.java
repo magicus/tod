@@ -180,7 +180,7 @@ public class DebugFlags
 		try
 		{
 			File theFile = new File(aName);
-			System.out.println(theFile.getAbsolutePath());
+//			System.out.println(theFile.getAbsolutePath());
 			return new PrintStream(new FileOutputStream(theFile));
 		}
 		catch (FileNotFoundException e)

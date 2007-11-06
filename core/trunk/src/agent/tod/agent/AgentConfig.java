@@ -114,13 +114,13 @@ public class AgentConfig
 	
 	private static HighLevelCollector createDummyCollector()
 	{
-		System.out.println("Using dummy collector.");
+		System.out.println("[TOD] AgentConfig: Using dummy collector.");
 		return new DummyCollector();
 	}
 	
 	private static HighLevelCollector createSocketCollector()
 	{
-		System.out.println("AgentConfig: Using socket collector ("+itsHost+":"+itsEventsPort+")");
+		System.out.println("[TOD] AgentConfig: Using socket collector ("+itsHost+":"+itsEventsPort+")");
 		try
 		{
 			return new SocketCollector(itsHost, itsEventsPort);
@@ -133,7 +133,7 @@ public class AgentConfig
 	
 	private static HighLevelCollector createNativeCollector()
 	{
-		System.out.println("AgentConfig: Using native collector ("+itsHost+":"+itsEventsPort+")");
+		System.out.println("[TOD] AgentConfig: Using native collector ("+itsHost+":"+itsEventsPort+")");
 		return new NativeCollector(itsHost, itsEventsPort);
 	}
 	

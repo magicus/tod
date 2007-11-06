@@ -190,7 +190,8 @@ public class CFlowView extends LogView implements IEventListView
 			{
 				itsStepper.setCurrentEvent(itsSeed.pSelectedEvent().get());
 				itsStepper.backwardStepOver();
-				selectEvent(itsStepper.getCurrentEvent(), SelectionMethod.BACKWARD_STEP_OVER);				
+				ILogEvent theEvent = itsStepper.getCurrentEvent();
+				if (theEvent != null) selectEvent(theEvent, SelectionMethod.BACKWARD_STEP_OVER);				
 			}
 		}));
 		
@@ -202,7 +203,8 @@ public class CFlowView extends LogView implements IEventListView
 			{
 				itsStepper.setCurrentEvent(itsSeed.pSelectedEvent().get());
 				itsStepper.backwardStepInto();
-				selectEvent(itsStepper.getCurrentEvent(), SelectionMethod.BACKWARD_STEP_INTO);				
+				ILogEvent theEvent = itsStepper.getCurrentEvent();
+				if (theEvent != null) selectEvent(theEvent, SelectionMethod.BACKWARD_STEP_INTO);				
 			}
 		}));
 		
@@ -217,7 +219,8 @@ public class CFlowView extends LogView implements IEventListView
 				{
 					itsStepper.setCurrentEvent(theSelectedEvent);
 					itsStepper.stepOut();
-					selectEvent(itsStepper.getCurrentEvent(), SelectionMethod.STEP_OUT);				
+					ILogEvent theEvent = itsStepper.getCurrentEvent();
+					if (theEvent != null) selectEvent(theEvent, SelectionMethod.STEP_OUT);				
 				}
 			}
 		}));
@@ -230,7 +233,8 @@ public class CFlowView extends LogView implements IEventListView
 			{
 				itsStepper.setCurrentEvent(itsSeed.pSelectedEvent().get());
 				itsStepper.forwardStepInto();
-				selectEvent(itsStepper.getCurrentEvent(), SelectionMethod.FORWARD_STEP_INTO);				
+				ILogEvent theEvent = itsStepper.getCurrentEvent();
+				if (theEvent != null) selectEvent(theEvent, SelectionMethod.FORWARD_STEP_INTO);				
 			}
 		}));
 		
@@ -242,7 +246,8 @@ public class CFlowView extends LogView implements IEventListView
 			{
 				itsStepper.setCurrentEvent(itsSeed.pSelectedEvent().get());
 				itsStepper.forwardStepOver();
-				selectEvent(itsStepper.getCurrentEvent(), SelectionMethod.FORWARD_STEP_OVER);				
+				ILogEvent theEvent = itsStepper.getCurrentEvent();
+				if (theEvent != null) selectEvent(theEvent, SelectionMethod.FORWARD_STEP_OVER);				
 			}
 		}));
 
