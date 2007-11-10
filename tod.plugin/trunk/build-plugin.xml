@@ -9,6 +9,7 @@
 		<property name="src.dir" value="${basedir}/src"/>
 
 		<property name="tod.dir" value="${basedir}/../TOD"/>
+		<property name="tod-dbgrid.dir" value="${basedir}/../TOD-dbgrid"/>
 		<property name="zz.utils.dir" value="${basedir}/../zz.utils"/>
 		<property name="zz.eclipse.utils.dir" value="${basedir}/../zz.eclipse.utils"/>
 		<property name="reflex.dir" value="${basedir}/../reflex"/>
@@ -20,6 +21,7 @@
 			<pathelement path="${lib.dir}/zz.utils.jar"/>
 			<pathelement path="${lib.dir}/tod-debugger.jar"/>
 			<pathelement path="${lib.dir}/tod-agent.jar"/>
+			<pathelement path="${lib.dir}/tod-dbgrid.jar"/>
 			<pathelement path="${lib.dir}/asm-3.0.jar"/>
 			<pathelement path="${lib.dir}/asm-commons-3.0.jar"/>
 			<pathelement path="${lib.dir}/reflex-core.jar"/>
@@ -83,6 +85,17 @@
 		</copy>
 	</target>
 
+	<target name="dep.tod-dbgrid" depends="init">
+		<ant 
+			antfile="${tod-dbgrid.dir}/build.xml" 
+			dir="${tod-dbgrid.dir}" 
+			target="jar"
+			inheritall="false"/>
+		<copy todir="lib">
+			<fileset dir="${tod-dbgrid.dir}/build" includes="tod-dbgrid.jar"/>
+		</copy>
+	</target>
+
 	<target name="dep.zz.utils" depends="init">
 		<ant 
 			antfile="${zz.utils.dir}/build.xml" 
@@ -131,5 +144,5 @@
 	</target>
 
 
-	<target name="dep.all" depends="dep.tod, dep.zz.utils, dep.zz.eclipse.utils"/>
+	<target name="dep.all" depends="dep.tod, dep.zz.utils, dep.zz.eclipse.utils, dep.tod-dbgrid"/>
 </project>

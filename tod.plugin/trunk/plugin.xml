@@ -51,6 +51,9 @@
       <library name="../TOD/bin">
          <export name="*"/>
       </library>
+      <library name="../TOD-dbgrid/bin">
+         <export name="*"/>
+      </library>
       <library name="../tod-fx/bin">
          <export name="*"/>
       </library>
@@ -61,6 +64,9 @@
          <export name="*"/>
       </library>
       <library name="lib/tod-debugger.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/tod-dbgrid.jar">
          <export name="*"/>
       </library>
       <library name="lib/zz.utils.jar">

@@ -11,5 +11,6 @@
 	<classpathentry kind="lib" path="lib/javassist.jar"/>
 	<classpathentry kind="lib" path="lib/pom.jar"/>
 	<classpathentry kind="lib" path="lib/reflex-core.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/TOD-dbgrid"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
