@@ -35,8 +35,7 @@ import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
-import tod.impl.dbgrid.BidiIterator;
-import zz.utils.IPublicCloneable;
+import tod.impl.database.IBidiIterator;
 import zz.utils.ITask;
 
 /**
@@ -277,7 +276,7 @@ public interface ILogBrowser
 	 * @return An iterator that returns the ids of matching 
 	 * strings in order of relevance.
 	 */
-	public BidiIterator<Long> searchStrings(String aSearchText);
+	public IBidiIterator<Long> searchStrings(String aSearchText);
 	
 	/**
 	 * Executes the given task as close as possible to the database.

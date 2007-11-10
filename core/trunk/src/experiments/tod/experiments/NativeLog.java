@@ -22,10 +22,9 @@ package tod.experiments;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 
-import tod.impl.dbgrid.bench.BenchBase;
-import tod.impl.dbgrid.bench.BenchBase.BenchResults;
+import tod.BenchBase;
+import tod.BenchBase.BenchResults;
 
 public class NativeLog
 {

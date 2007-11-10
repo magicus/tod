@@ -24,8 +24,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 
-import tod.impl.dbgrid.bench.BenchBase;
-import tod.impl.dbgrid.bench.BenchBase.BenchResults;
+import tod.BenchBase;
+import tod.BenchBase.BenchResults;
 import tod.utils.ArrayCast;
 
 public class ArrayCastTest

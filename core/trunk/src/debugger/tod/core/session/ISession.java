@@ -36,6 +36,11 @@ public interface ISession
 	public TODConfig getConfig();
 	
 	/**
+	 * Returns the monitor of this session.
+	 */
+	public ISessionMonitor getMonitor();
+	
+	/**
 	 * Returns a resource identifier for this session, that can be used to retrieve
 	 * previous sessions.
 	 * @see ISessionFactory#loadSession(URI);

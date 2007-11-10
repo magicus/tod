@@ -65,6 +65,11 @@ public abstract class DelegatedSession implements ISession
 		return itsDelegate.getLogBrowser();
 	}
 
+	public ISessionMonitor getMonitor()
+	{
+		return itsDelegate.getMonitor();
+	}
+
 	public URI getUri()
 	{
 		return itsDelegate.getUri();

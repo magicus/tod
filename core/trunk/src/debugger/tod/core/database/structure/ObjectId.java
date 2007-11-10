@@ -23,7 +23,7 @@ package tod.core.database.structure;
 import java.io.Serializable;
 
 import tod.agent.DebugFlags;
-import tod.impl.dbgrid.messages.ObjectCodec;
+import tod.utils.ObjectCodec;
 
 /**
  * Permits to identify an object.

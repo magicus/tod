@@ -24,8 +24,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import tod.core.config.TODConfig;
+import tod.core.database.structure.IStructureDatabase;
+import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
-import tod.impl.dbgrid.Fixtures;
+import tod.impl.database.structure.standard.StructureDatabase;
 import zz.utils.Utils;
 
 public class Instrument
@@ -33,10 +36,23 @@ public class Instrument
 	public static void main(String[] args) throws FileNotFoundException, IOException
 	{
 		String theClassFile = args[0];
-		ASMInstrumenter theInstrumenter = Fixtures.createInstrumenter();
+		ASMInstrumenter theInstrumenter = createInstrumenter();
 		theInstrumenter.instrumentClass(
 				"test", 
 				Utils.readInputStream_byte(new FileInputStream(theClassFile)));
+	}
+	
+	/**
+	 * Creates a functional {@link ASMInstrumenter}.
+	 * @return
+	 */
+	public static ASMInstrumenter createInstrumenter()
+	{
+		TODConfig theConfig = new TODConfig();
+		IStructureDatabase theStructureDatabase = StructureDatabase.create("test");
+		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(theConfig);
+
+		return new ASMInstrumenter(theStructureDatabase, theDebuggerConfig);
 	}
 	
 }

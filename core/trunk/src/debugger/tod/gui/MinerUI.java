@@ -23,7 +23,6 @@ package tod.gui;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -48,6 +47,7 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.session.ISession;
+import tod.core.session.ISessionMonitor;
 import tod.gui.controlflow.CFlowView;
 import tod.gui.kit.Bus;
 import tod.gui.kit.BusOwnerPanel;
@@ -67,7 +67,6 @@ import tod.gui.seed.StringSearchSeed;
 import tod.gui.seed.ThreadsSeed;
 import tod.gui.view.IEventListView;
 import tod.gui.view.LogView;
-import tod.impl.dbgrid.Scheduler;
 import tod.utils.TODUtils;
 import zz.utils.SimpleAction;
 import zz.utils.ui.StackLayout;
@@ -148,7 +147,7 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 	 */
 	private List<Action> itsActions = new ArrayList<Action>();
 
-	private SchedulerMonitor itsSchedulerMonitor;
+	private SessionMonitorUpdater itsSchedulerMonitor;
 	
 	public MinerUI()
 	{
@@ -174,7 +173,7 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 		
 		JPanel theNavButtonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
 		
-		itsSchedulerMonitor = new SchedulerMonitor();
+		itsSchedulerMonitor = new SessionMonitorUpdater();
 		if (DebugFlags.SHOW_DEBUG_GUI)
 		{
 			theNavButtonsPanel.add(itsSchedulerMonitor);
@@ -371,7 +370,7 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 			itsStringSearchAction.setEnabled(itsSession.getConfig().get(TODConfig.INDEX_STRINGS));
 			for (Action theAction : itsActions) theAction.setEnabled(true);
 			
-			itsSchedulerMonitor.setScheduler(Scheduler.get(itsSession.getLogBrowser()));
+			itsSchedulerMonitor.setScheduler(itsSession.getMonitor());
 		}
 	}
 	
@@ -609,14 +608,14 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 	 * about the load of the underlying log browser.
 	 * @author gpothier
 	 */
-	private static class SchedulerMonitor extends JPanel
+	private static class SessionMonitorUpdater extends JPanel
 	implements Runnable
 	{
-		private Scheduler itsScheduler;
+		private ISessionMonitor itsMonitor;
 		private Thread itsThread;
 		private JLabel itsLabel;
 
-		public SchedulerMonitor()
+		public SessionMonitorUpdater()
 		{
 			itsThread = new Thread(this);
 			createUI();
@@ -629,9 +628,9 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 			add(itsLabel);
 		}
 		
-		public void setScheduler(Scheduler aScheduler)
+		public void setScheduler(ISessionMonitor aScheduler)
 		{
-			itsScheduler = aScheduler;
+			itsMonitor = aScheduler;
 		}
 		
 		@Override
@@ -652,13 +651,13 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 		{
 			while(true)
 			{
-				if (itsScheduler == null)
+				if (itsMonitor == null)
 				{
 					itsLabel.setText("mon.");
 				}
 				else
 				{
-					int theQueueSize = itsScheduler.getQueueSize();
+					int theQueueSize = itsMonitor.getQueueSize();
 					itsLabel.setText(""+theQueueSize);
 				}
 				

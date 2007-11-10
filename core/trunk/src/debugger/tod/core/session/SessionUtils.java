@@ -21,12 +21,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.core.session;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 
 import tod.core.config.TODConfig;
-import tod.impl.dbgrid.LocalGridSession;
-import tod.impl.dbgrid.RemoteGridSession;
 import tod.impl.local.LocalSession;
 
 /**
@@ -42,10 +39,20 @@ public class SessionUtils
 	public static Class<? extends ISession> getSessionClass(TODConfig aConfig)
 	{
 		String theType = aConfig.get(TODConfig.SESSION_TYPE);
-		if (TODConfig.SESSION_MEMORY.equals(theType)) return LocalSession.class;
-		else if (TODConfig.SESSION_LOCAL.equals(theType)) return LocalGridSession.class;
-		else if (TODConfig.SESSION_REMOTE.equals(theType)) return RemoteGridSession.class;
+		String theClassName;
+		if (TODConfig.SESSION_MEMORY.equals(theType)) theClassName = LocalSession.class.getName();
+		else if (TODConfig.SESSION_LOCAL.equals(theType)) theClassName = "tod.impl.dbgrid.LocalGridSession";
+		else if (TODConfig.SESSION_REMOTE.equals(theType)) theClassName = "tod.impl.dbgrid.RemoteGridSession";
 		else throw new RuntimeException("Not handled: "+theType);
+
+		try
+		{
+			return (Class) Class.forName(theClassName);
+		}
+		catch (ClassNotFoundException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 	
 	/**

@@ -37,6 +37,7 @@ import tod.core.server.CollectorTODServer;
 import tod.core.server.ICollectorFactory;
 import tod.core.server.TODServer;
 import tod.core.session.AbstractSession;
+import tod.core.session.ISessionMonitor;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
 import tod.impl.local.LocalBrowser;
@@ -109,6 +110,11 @@ public class CountTODServer extends AbstractSession
 		return itsBrowser;
 	}
 	
+	public ISessionMonitor getMonitor()
+	{
+		throw new UnsupportedOperationException();
+	}
+
 	public JComponent createConsole()
 	{
 		return null;

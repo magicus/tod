@@ -31,8 +31,7 @@ import tod.ReflexRiver;
 import tod.core.config.TODConfig;
 import tod.core.database.event.ILogEvent;
 import tod.core.session.ISession;
-import tod.impl.dbgrid.LocalGridSession;
-import tod.impl.dbgrid.RemoteGridSession;
+import tod.core.session.SessionTypeManager;
 import zz.utils.ui.StackLayout;
 
 public class StandaloneUI extends JPanel
@@ -44,24 +43,8 @@ public class StandaloneUI extends JPanel
 	{
 		TODConfig theConfig = new TODConfig();
 		String theScheme = aUri != null ? aUri.getScheme() : null;
-		try
-		{
-			if (RemoteGridSession.TOD_GRID_SCHEME.equals(theScheme))
-			{
-				theConfig.set(TODConfig.COLLECTOR_HOST, aUri.getHost());
-				itsSession = new RemoteGridSession(aUri, theConfig, true);
-			}
-			else
-			{
-				itsSession = new LocalGridSession(aUri, theConfig);
-			}
-			
-			createUI();
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
+		itsSession = SessionTypeManager.getInstance().createSession(theScheme, aUri, theConfig);
+		createUI();
 	}
 
 	private void createUI()

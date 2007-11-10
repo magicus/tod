@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
+import tod.agent.ConfigUtils;
 import tod.core.ILogCollector;
 import tod.core.bci.IInstrumenter;
 import tod.core.config.TODConfig;
@@ -36,7 +37,6 @@ import tod.core.server.ICollectorFactory;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
 import tod.impl.database.structure.standard.StructureDatabase;
-import tod.impl.dbgrid.DebuggerGridConfig;
 import zz.utils.Utils;
 
 /**
@@ -45,6 +45,9 @@ import zz.utils.Utils;
  */
 public class StoreTODServer extends CollectorTODServer
 {
+	public static final String STORE_EVENTS_FILE =
+		ConfigUtils.readString("events-file", "events-raw.bin");
+	
 	private int itsConnectionNumber = 1;
 
 	public StoreTODServer(
@@ -59,7 +62,7 @@ public class StoreTODServer extends CollectorTODServer
 	@Override
 	protected void acceptJavaConnection(Socket aSocket)
 	{
-		String theFileName = DebuggerGridConfig.STORE_EVENTS_FILE;
+		String theFileName = STORE_EVENTS_FILE;
 		if (itsConnectionNumber > 1) theFileName += "."+itsConnectionNumber;
 
 		new LogWriter(new File(theFileName), aSocket);

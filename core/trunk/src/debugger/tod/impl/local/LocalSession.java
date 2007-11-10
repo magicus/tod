@@ -35,14 +35,14 @@ import tod.core.server.CollectorTODServer;
 import tod.core.server.ICollectorFactory;
 import tod.core.server.TODServer;
 import tod.core.session.AbstractSession;
-import tod.core.session.ConnectionInfo;
+import tod.core.session.ISessionMonitor;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
 import tod.impl.database.structure.standard.HostInfo;
 import tod.impl.database.structure.standard.StructureDatabase;
 import tod.utils.PrintThroughCollector;
 
-public class LocalSession extends AbstractSession
+public class LocalSession extends AbstractSession implements ISessionMonitor
 {
 	private TODServer itsServer;
 	private IStructureDatabase itsStructureDatabase;
@@ -81,6 +81,16 @@ public class LocalSession extends AbstractSession
 		return itsBrowser;
 	}
 	
+	public ISessionMonitor getMonitor()
+	{
+		return this;
+	}
+	
+	public int getQueueSize()
+	{
+		return 0;
+	}
+
 	public JComponent createConsole()
 	{
 		return null;

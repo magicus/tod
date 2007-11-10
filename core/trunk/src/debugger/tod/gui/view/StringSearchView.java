@@ -43,7 +43,7 @@ import tod.gui.IGUIManager;
 import tod.gui.MinerUI;
 import tod.gui.seed.StringSearchSeed;
 import tod.gui.view.highlighter.EventHighlighter;
-import tod.impl.dbgrid.BidiIterator;
+import tod.impl.database.IBidiIterator;
 import zz.utils.SimpleListModel;
 import zz.utils.ui.StackLayout;
 
@@ -139,7 +139,7 @@ public class StringSearchView extends LogView
 	
 	private void search(String aText)
 	{
-		BidiIterator<Long> theIterator = getLogBrowser().searchStrings(aText);
+		IBidiIterator<Long> theIterator = getLogBrowser().searchStrings(aText);
 		List<SearchResult> theList = new ArrayList<SearchResult>();
 		for(int i=0;i<100;i++)
 		{
