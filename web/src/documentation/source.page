@@ -1,0 +1,26 @@
+---
+title: Source code
+---
+h1. Source code
+
+h2. Access
+
+The source code of TOD is available through our Subversion repository (username/password: @guest@/@guest@). It is also possible to browse the source code "online":http://pleiad.dcc.uchile.cl/trac/tod/browser.
+ 
+h4. TOD core & Eclipse plugin
+ 
+"http://pleiad.dcc.uchile.cl/svn/tod/":http://pleiad.dcc.uchile.cl/svn/tod/
+
+h4. Additional libraries
+
+"http://stgo.dyndns.org/svn/gpothier/devel/zz.utils":http://stgo.dyndns.org/svn/gpothier/devel/zz.utils
+
+"http://stgo.dyndns.org/svn/gpothier/devel/zz.eclipse.utils":http://stgo.dyndns.org/svn/gpothier/devel/zz.eclipse.utils
+
+h2. License
+
+TOD and the TOD Eclipse plugin are distributed under the GPL v2.
+Additional libraries zz.utils and zz.eclipse.utils are in the public domain.
+External libraries have their own licenses.
+
+TOD uses an implementation of the MD5 algorithm “derived from the RSA Data Security, Inc. MD5 Message-Digest Algorithm”.
