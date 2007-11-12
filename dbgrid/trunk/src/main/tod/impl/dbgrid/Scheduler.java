@@ -23,23 +23,18 @@ package tod.impl.dbgrid;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
 import reflex.lib.pom.POMGroupDef;
-import reflex.lib.pom.POMScheduler;
+import reflex.lib.pom.ReentrantPOMScheduler;
 import reflex.lib.pom.Request;
 import reflex.lib.pom.RequestIterator;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.session.ISessionMonitor;
-import zz.utils.ui.StackLayout;
 
 /**
  * This POM scheduler ensures that all calls to the database are serialized.
  * @author gpothier
  */
-public class Scheduler extends POMScheduler 
+public class Scheduler extends ReentrantPOMScheduler 
 implements POMGroupDef, ISessionMonitor
 {
 	private static Map<ILogBrowser, Scheduler> itsGroupsMap = new WeakHashMap<ILogBrowser, Scheduler>();
@@ -91,13 +86,25 @@ implements POMGroupDef, ISessionMonitor
 	@Override
 	protected void scheduling(Request aReq)
 	{
-		System.out.println(String.format(
-				"[Scheduler] Scheduler (%s) - executing %s on "+Thread.currentThread().getName(),
-				this,
-				aReq));
+		if (aReq.isReentering())
+		{
+			System.out.println("");
 
-		if (itsExecutingRequest != null) throw new IllegalStateException();
-		itsExecutingRequest = aReq;
+			System.out.println(String.format(
+					"[Scheduler] Scheduler (%s) - reentering request %s on "+Thread.currentThread().getName(),
+					this,
+					aReq));
+		}
+		else
+		{
+			System.out.println(String.format(
+					"[Scheduler] Scheduler (%s) - executing %s on "+Thread.currentThread().getName(),
+					this,
+					aReq));
+	
+			if (itsExecutingRequest != null) throw new IllegalStateException();
+			itsExecutingRequest = aReq;
+		}
 	}
 	
 	@Override
@@ -118,6 +125,11 @@ implements POMGroupDef, ISessionMonitor
 
 	private class DeadlockDetectorThread extends Thread
 	{
+		public DeadlockDetectorThread()
+		{
+			super("DeadlockDetector");
+		}
+
 		@Override
 		public void run()
 		{

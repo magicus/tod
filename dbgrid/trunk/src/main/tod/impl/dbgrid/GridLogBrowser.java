@@ -29,6 +29,8 @@ import java.util.Map;
 
 import reflex.lib.pom.POMSync;
 import reflex.lib.pom.POMSyncClass;
+import reflex.lib.pom.impl.POMMetaobject;
+import reflex.lib.pom.impl.lock.LockPOMMetaobject;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
@@ -91,13 +93,20 @@ import zz.utils.cache.SyncMRUBuffer;
 public class GridLogBrowser extends UnicastRemoteObject
 implements ILogBrowser, RIGridMasterListener, IScheduled
 {
-	static
-	{
-		System.out.println("GridLogBrowser loaded by: "+GridLogBrowser.class.getClassLoader());
-	}
-	
 	private static final long serialVersionUID = -5101014933784311102L;
 
+	/**
+	 * Manual override of Reflex. We want to avoid the reflexBridge hassle, so
+	 * we call the MO manually.
+	 */
+	private Scheduler itsScheduler = new Scheduler();
+
+	/**
+	 * Manual override of Reflex. We want to avoid the reflexBridge hassle, so
+	 * we call the MO manually.
+	 */
+	private POMMetaobject itsMetaobject = new LockPOMMetaobject(itsScheduler);
+	
 	private RIGridMaster itsMaster;
 	private IStructureDatabase itsStructureDatabase;
 	
@@ -154,8 +163,26 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 		return this;
 	}
 	
+	public POMMetaobject getMetaobject()
+	{
+		return itsMetaobject;
+	}
+	
 	@POMSync
 	public void clear()
+	{
+		try
+		{
+			getMetaobject().callTrap(null, "clear");
+			clear0();
+		}
+		finally
+		{
+			getMetaobject().returnTrap();
+		}
+	}
+	
+	public void clear0()
 	{
 		try
 		{
@@ -425,6 +452,19 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 	{
 		try
 		{
+			getMetaobject().callTrap(null, "getRegistered");
+			return getRegistered0(aId);
+		}
+		finally
+		{
+			getMetaobject().returnTrap();
+		}		
+	}
+	
+	public Object getRegistered0(ObjectId aId)
+	{
+		try
+		{
 			return itsMaster.getRegisteredObject(aId.getId());
 		}
 		catch (RemoteException e)
@@ -456,6 +496,19 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 	{
 		try
 		{
+			getMetaobject().callTrap(null, "fetchThreads");
+			fetchThreads0();
+		}
+		finally
+		{
+			getMetaobject().returnTrap();
+		}
+	}
+	
+	private void fetchThreads0()
+	{
+		try
+		{
 			itsThreads = new ArrayList<IThreadInfo>();
 			itsPackedThreads = itsMaster.getThreads();
 			for (IThreadInfo theThread : itsPackedThreads)
@@ -477,6 +530,19 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 	
 	@POMSync
 	private void fetchHosts()
+	{
+		try
+		{
+			getMetaobject().callTrap(null, "fetchHosts");
+			fetchHosts0();
+		}
+		finally
+		{
+			getMetaobject().returnTrap();
+		}		
+	}
+	
+	private void fetchHosts0()
 	{
 		try
 		{
@@ -608,6 +674,19 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 	{
 		try
 		{
+			getMetaobject().callTrap(null, "searchStrings");
+			return searchStrings0(aSearchText);
+		}
+		finally
+		{
+			getMetaobject().returnTrap();
+		}
+	}
+	
+	public IBidiIterator<Long> searchStrings0(String aSearchText)
+	{
+		try
+		{
 			return new StringHitsIterator(itsMaster.searchStrings(aSearchText));
 		}
 		catch (RemoteException e)
@@ -631,6 +710,19 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 	
 	@POMSync
 	private void updateStats()
+	{
+		try
+		{
+			getMetaobject().callTrap(null, "updateStats");
+			updateStats0();
+		}
+		finally
+		{
+			getMetaobject().returnTrap();
+		}
+	}
+	
+	private void updateStats0()
 	{
 		try
 		{

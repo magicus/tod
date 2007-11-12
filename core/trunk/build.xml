@@ -125,6 +125,7 @@
 		<jar destfile="${build.dir}/tod-test.jar" basedir="${classes-test.dir}"/>
 		<jar destfile="${build.dir}/tod-testcase.jar" basedir="${classes-testcase.dir}"/>
 		
+		<!--
 		<jar destfile="${build.dir}/reflex-bridge.jar" 
 			basedir="${classes-debugger.dir}"
 			includes="tod/ReflexBridge.class">
@@ -134,6 +135,7 @@
 			</manifest>
 
 		</jar>
+		-->
 	</target>
 	
 	<target name="release-db" depends="jar">
