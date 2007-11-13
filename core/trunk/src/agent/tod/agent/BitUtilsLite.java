@@ -31,5 +31,20 @@ public class BitUtilsLite
 		return 1L << aN;
 	}
 
-
+	/**
+	 * Returns the base-2 logarithm of the argument
+	 */
+	public static final double log2(int aN)
+	{
+		return Math.log(aN)/Math.log(2);
+	}
+	
+	/**
+	 * Returns the smallest integer that is greater than the 
+	 * log of the specified number.
+	 */
+	public static final int log2ceil(int aN)
+	{
+		return (int) Math.ceil(log2(aN));
+	}
 }

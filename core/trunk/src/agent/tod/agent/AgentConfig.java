@@ -57,12 +57,12 @@ public class AgentConfig
 	/**
 	 * Number of bits to shift timestamp values.
 	 */
-	public static final int TIMESTAMP_ADJUST_SHIFT = 4;
+	public static final int TIMESTAMP_ADJUST_SHIFT = TimestampCalibration.shift;
 	
 	/**
 	 * Number of bits of original timestamp values that are considered inaccurate.
 	 */
-	public static final int TIMESTAMP_ADJUST_INACCURACY = 0;
+	public static final int TIMESTAMP_ADJUST_INACCURACY = TimestampCalibration.inaccuracy;
 	
 	/**
 	 * Mask of artificial timestamp bits.
