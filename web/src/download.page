@@ -21,26 +21,6 @@ h3. Unzip the plugin
 
 Unzip the contents of @tod.plugin_x.x.x.zip@ into your Eclipse installation directory. Ensure the files have been unzipped at the proper place: the @plugins@ directory of your Eclipse installation should now contain the @tod.plugin_x.x.x@, @tod.plugin.ajdt_x.x.x@ and @zz.eclipse.utils_1.0.0@ directories (in additions to the already installed plugins).
 
-h3. Setup the Reflex bridge.
-
-The current version of TOD uses "Reflex":http://pleiad.dcc.uchile.cl/reflex and "POM":http://pleiad.dcc.uchile.cl/research/software/pom for synchronization. We have not yet found a simple and elegant way to use Reflex from within an Eclipse plugin, therefore you have to do the following before being able to use the TOD Eclipse plugin:
-
-h4. Standard launcher
-
-If you launch Eclipse directly using the standard launcher, edit @eclipse.ini@ in your Eclipse installation directory and add the following line at the end, replacing @$ECLIPSE_HOME@ by your Eclipse installation path and using the correct plugin version number:
-
-<code>
-  -javaagent:$ECLIPSE_HOME/plugins/tod.plugin_x.x.x/lib/reflex-bridge.jar
-</code>
-
-h4. Custom launcher
-
-If you launch Eclipse with a custom script that passes "@-vmargs@" to the Eclipse launcher, add the same "@-javaagent:@" stance after "@-vmargs@" (the @-vmargs@ on the command line superseedes the one from @eclipse.ini@).
-
-h4. Check
-
-To check that the Reflex bridge is properly installed, launch Eclipse from the command line (on Windows, add the @-consolelog@ flag to see console messages). You should see a message saying "Reflex bridge loaded"; otherwise, have a look at the {link: documentation/troubleshooting.page} page, or seek help on the mailing list (see {link: contact.page}).
-
 h3. Install native library
 
 TOD uses a native agent to instrument the classes of the debugged program. Under Windows, the agent needs the @mingwm10.dll@ library, which must be copied from the plugin's lib directory to the system's libraries directory (usually c:\windows\system32).
