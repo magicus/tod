@@ -22,10 +22,8 @@ package tod.impl.dbgrid;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.util.List;
 
-import tod.impl.dbgrid.monitoring.Monitor.KeyMonitorData;
-import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
+import zz.utils.monitoring.Monitor.MonitorData;
 
 /**
  * A remote interface for a listener of {@link GridMaster}

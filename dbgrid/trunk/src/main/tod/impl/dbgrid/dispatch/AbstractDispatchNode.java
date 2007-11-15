@@ -43,8 +43,8 @@ import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.NodeException;
 import tod.impl.dbgrid.RIGridMaster;
 import tod.impl.dbgrid.db.NodeRejectedException;
-import tod.impl.dbgrid.monitoring.Monitor;
-import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
+import zz.utils.monitoring.Monitor;
+import zz.utils.monitoring.Monitor.MonitorData;
 import zz.utils.net.Server.ServerAdress;
 
 /**

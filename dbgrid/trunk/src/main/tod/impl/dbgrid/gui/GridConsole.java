@@ -31,10 +31,10 @@ import javax.swing.JPanel;
 
 import tod.impl.dbgrid.RIGridMaster;
 import tod.impl.dbgrid.RIGridMasterListener;
-import tod.impl.dbgrid.monitoring.MonitorUI;
-import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
 import zz.utils.ListMap;
 import zz.utils.SimpleAction;
+import zz.utils.monitoring.MonitorUI;
+import zz.utils.monitoring.Monitor.MonitorData;
 
 /**
  * Provides a monitoring console for the distributed database.

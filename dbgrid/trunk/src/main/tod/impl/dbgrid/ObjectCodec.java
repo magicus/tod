@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.utils;
+package tod.impl.dbgrid;
 
 import tod.agent.AgentConfig;
 import tod.agent.DebugFlags;
@@ -351,22 +351,4 @@ public class ObjectCodec
 		else return 0;
 	}
 	
-	/**
-	 * Returns the intra-host object id for the given object id.
-	 * See bci-agent.
-	 */
-	public static long getObjectId(long aId)
-	{
-		return DebugFlags.IGNORE_HOST ? aId : aId >>> AgentConfig.HOST_BITS;
-	}
-	
-	/**
-	 * Returns the host id for the given object id.
-	 * See bci-agent.
-	 */
-	public static int getHostId(long aId)
-	{
-		return DebugFlags.IGNORE_HOST ? 0 : (int) (aId & AgentConfig.HOST_MASK);
-	}
-
 }

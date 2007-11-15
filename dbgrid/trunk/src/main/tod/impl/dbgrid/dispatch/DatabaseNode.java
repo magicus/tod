@@ -37,6 +37,7 @@ import tod.core.ILogCollector;
 import tod.core.config.TODConfig;
 import tod.core.database.structure.IExceptionResolver;
 import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.ObjectId;
 import tod.core.transport.CollectorLogReceiver;
 import tod.core.transport.LogReceiver;
 import tod.impl.database.IBidiIterator;
@@ -56,8 +57,6 @@ import tod.impl.dbgrid.db.StringIndexer;
 import tod.impl.dbgrid.db.file.HardPagedFile;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
-import tod.utils.ObjectCodec;
-import tod.utils.PrintThroughCollector;
 import zz.utils.Utils;
 
 public class DatabaseNode extends AbstractDispatchNode
@@ -345,8 +344,8 @@ implements RIDatabaseNode
 	{
 		if (DebugFlags.SKIP_OBJECTS) return;
 		
-		long theObjectId = ObjectCodec.getObjectId(aId);
-		int theHostId = ObjectCodec.getHostId(aId);
+		long theObjectId = ObjectId.getObjectId(aId);
+		int theHostId = ObjectId.getHostId(aId);
 		getObjectsDatabase(theHostId).store(theObjectId, aObject);
 		
 		if (itsStringIndexer != null && (aObject instanceof String))
@@ -382,8 +381,8 @@ implements RIDatabaseNode
 	{
 		if (DebugFlags.SKIP_OBJECTS) return null;
 		
-		long theObjectId = ObjectCodec.getObjectId(aId);
-		int theHostId = ObjectCodec.getHostId(aId);
+		long theObjectId = ObjectId.getObjectId(aId);
+		int theHostId = ObjectId.getHostId(aId);
 		ReorderedObjectsDatabase theObjectsDatabase = getObjectsDatabase(theHostId);
 		return theObjectsDatabase != null ? theObjectsDatabase.load(theObjectId) : null;
 	}

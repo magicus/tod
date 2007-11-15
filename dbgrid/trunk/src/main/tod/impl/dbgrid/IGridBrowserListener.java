@@ -20,7 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
-import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
+import zz.utils.monitoring.Monitor.MonitorData;
 
 /**
  * Interface for listeners of a {@link GridLogBrowser}.

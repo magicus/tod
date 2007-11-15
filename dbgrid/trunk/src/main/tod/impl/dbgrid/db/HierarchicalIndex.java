@@ -35,12 +35,12 @@ import tod.impl.dbgrid.db.file.PageBank.Page;
 import tod.impl.dbgrid.db.file.PageBank.PageBitStruct;
 import tod.impl.dbgrid.db.file.TupleFinder.Match;
 import tod.impl.dbgrid.db.file.TupleFinder.NoMatch;
-import tod.impl.dbgrid.monitoring.AggregationType;
-import tod.impl.dbgrid.monitoring.Probe;
 import zz.utils.ArrayStack;
 import zz.utils.Stack;
 import zz.utils.bit.BitStruct;
 import zz.utils.bit.BitUtils;
+import zz.utils.monitoring.AggregationType;
+import zz.utils.monitoring.Probe;
 
 /**
  * Implementation of a hierarchical index on an attribute value,

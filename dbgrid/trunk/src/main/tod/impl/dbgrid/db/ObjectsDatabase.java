@@ -39,10 +39,10 @@ import tod.impl.dbgrid.db.file.HardPagedFile;
 import tod.impl.dbgrid.db.file.IndexTuple;
 import tod.impl.dbgrid.db.file.IndexTupleCodec;
 import tod.impl.dbgrid.db.file.HardPagedFile.Page;
-import tod.impl.dbgrid.monitoring.AggregationType;
-import tod.impl.dbgrid.monitoring.Monitor;
-import tod.impl.dbgrid.monitoring.Probe;
 import zz.utils.bit.BitStruct;
+import zz.utils.monitoring.AggregationType;
+import zz.utils.monitoring.Monitor;
+import zz.utils.monitoring.Probe;
 
 /**
  * A database for storing registered objects.

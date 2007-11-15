@@ -41,6 +41,7 @@ import tod.impl.dbgrid.messages.GridFieldWriteEvent;
 import tod.impl.dbgrid.messages.GridVariableWriteEvent;
 import tod.impl.dbgrid.messages.MessageType;
 import tod.impl.dbgrid.test.TestHierarchicalIndex.TimestampGenerator;
+import tod.impl.dbgrid.messages.GridNewArrayEvent;
 
 public class EventGenerator
 {
@@ -201,6 +202,19 @@ public class EventGenerator
 					itsRandom.nextInt(STRUCTURE_ARRAY_INDEX_COUNT),
 					genObject());
 			
+		case NEW_ARRAY:
+			return new GridNewArrayEvent(
+					genThreadId(),
+					genDepth(),
+					itsTimestampGenerator.next(),
+					genBehaviorId(),
+					genBytecodeIndex(),
+					genParentTimestamp(),
+					genObject(),
+					genFieldId(),
+					1000);
+			
+
 		default: throw new RuntimeException("Not handled: "+theType); 
 		}
 

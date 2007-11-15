@@ -59,7 +59,6 @@ import tod.impl.dbgrid.aggregator.IGridEventBrowser;
 import tod.impl.dbgrid.aggregator.StringHitsIterator;
 import tod.impl.dbgrid.db.RoleIndexSet;
 import tod.impl.dbgrid.messages.MessageType;
-import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
 import tod.impl.dbgrid.queries.BehaviorCondition;
 import tod.impl.dbgrid.queries.BytecodeLocationCondition;
 import tod.impl.dbgrid.queries.CompoundCondition;
@@ -72,12 +71,11 @@ import tod.impl.dbgrid.queries.FieldCondition;
 import tod.impl.dbgrid.queries.ThreadCondition;
 import tod.impl.dbgrid.queries.TypeCondition;
 import tod.impl.dbgrid.queries.VariableCondition;
-import tod.impl.local.filter.UnionFilter;
-import tod.utils.ObjectCodec;
 import tod.utils.remote.RemoteStructureDatabase;
 import zz.utils.Utils;
 import zz.utils.cache.MRUBuffer;
 import zz.utils.cache.SyncMRUBuffer;
+import zz.utils.monitoring.Monitor.MonitorData;
 
 /**
  * Implementation of {@link ILogBrowser} for the grid backend.

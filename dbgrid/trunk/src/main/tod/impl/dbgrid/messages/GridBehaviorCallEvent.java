@@ -20,13 +20,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.messages;
 
-import static tod.utils.ObjectCodec.getObjectBits;
-import static tod.utils.ObjectCodec.getObjectId;
-import static tod.utils.ObjectCodec.readObject;
-import static tod.utils.ObjectCodec.writeObject;
-
-import java.io.Serializable;
-
+import static tod.impl.dbgrid.ObjectCodec.getObjectBits;
+import static tod.impl.dbgrid.ObjectCodec.getObjectId;
+import static tod.impl.dbgrid.ObjectCodec.readObject;
+import static tod.impl.dbgrid.ObjectCodec.writeObject;
 import tod.core.database.event.ILogEvent;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;

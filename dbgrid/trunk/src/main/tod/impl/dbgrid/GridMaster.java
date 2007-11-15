@@ -67,14 +67,14 @@ import tod.impl.dbgrid.dispatch.RIDatabaseNode.StringSearchHit;
 import tod.impl.dbgrid.dispatch.tree.DispatchTreeStructure;
 import tod.impl.dbgrid.dispatch.tree.LocalDispatchTreeStructure;
 import tod.impl.dbgrid.dispatch.tree.DispatchTreeStructure.NodeRole;
-import tod.impl.dbgrid.monitoring.Monitor;
-import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.utils.TODUtils;
 import tod.utils.remote.RIStructureDatabase;
 import tod.utils.remote.RemoteStructureDatabase;
 import zz.utils.ITask;
 import zz.utils.Utils;
+import zz.utils.monitoring.Monitor;
+import zz.utils.monitoring.Monitor.MonitorData;
 
 /**
  * The entry point to the database grid.

@@ -21,11 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.db;
 
 import tod.agent.DebugFlags;
-import tod.impl.dbgrid.db.IndexSet.IndexManager;
 import tod.impl.dbgrid.db.file.HardPagedFile;
-import tod.impl.dbgrid.monitoring.AggregationType;
-import tod.impl.dbgrid.monitoring.Probe;
-import tod.utils.ObjectCodec;
 
 /**
  * An index set specialized for objects.

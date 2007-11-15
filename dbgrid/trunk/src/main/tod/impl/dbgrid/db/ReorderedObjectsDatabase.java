@@ -25,8 +25,8 @@ import java.io.File;
 import tod.agent.DebugFlags;
 import tod.impl.dbgrid.db.ObjectsReorderingBuffer.Entry;
 import tod.impl.dbgrid.db.ObjectsReorderingBuffer.ReorderingBufferListener;
-import tod.impl.dbgrid.monitoring.AggregationType;
-import tod.impl.dbgrid.monitoring.Probe;
+import zz.utils.monitoring.AggregationType;
+import zz.utils.monitoring.Probe;
 
 /**
  * An object database that uses a reordering buffer prior to

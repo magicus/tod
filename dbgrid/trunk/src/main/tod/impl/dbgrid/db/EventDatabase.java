@@ -32,10 +32,10 @@ import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.db.EventReorderingBuffer.ReorderingBufferListener;
 import tod.impl.dbgrid.db.file.HardPagedFile;
 import tod.impl.dbgrid.messages.GridEvent;
-import tod.impl.dbgrid.monitoring.AggregationType;
-import tod.impl.dbgrid.monitoring.Monitor;
-import tod.impl.dbgrid.monitoring.Probe;
 import tod.impl.dbgrid.queries.EventCondition;
+import zz.utils.monitoring.AggregationType;
+import zz.utils.monitoring.Monitor;
+import zz.utils.monitoring.Probe;
 
 /**
  * This class manages an event database for a debugging session.

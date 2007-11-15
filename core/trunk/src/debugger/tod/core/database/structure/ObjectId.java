@@ -22,8 +22,8 @@ package tod.core.database.structure;
 
 import java.io.Serializable;
 
+import tod.agent.AgentConfig;
 import tod.agent.DebugFlags;
-import tod.utils.ObjectCodec;
 
 /**
  * Permits to identify an object.
@@ -57,8 +57,8 @@ public class ObjectId implements Serializable
 	public String getDescription()
 	{
 		return DebugFlags.IGNORE_HOST ?
-				"" +ObjectCodec.getObjectId(itsId)
-				: ObjectCodec.getObjectId(itsId) +"." +ObjectCodec.getHostId(itsId);
+				"" +getObjectId(itsId)
+				: getObjectId(itsId) +"." +getHostId(itsId);
 	}
 	
 	@Override
@@ -85,8 +85,28 @@ public class ObjectId implements Serializable
 	public String toString()
 	{
 		return DebugFlags.IGNORE_HOST ?
-				"UID: " +ObjectCodec.getObjectId(itsId)
-				: "UID: " +ObjectCodec.getObjectId(itsId) +"." +ObjectCodec.getHostId(itsId);
+				"UID: " +getObjectId(itsId)
+				: "UID: " +getObjectId(itsId) +"." +getHostId(itsId);
 	}
+	
+	/**
+	 * Returns the intra-host object id for the given object id.
+	 * See bci-agent.
+	 */
+	public static long getObjectId(long aId)
+	{
+		return DebugFlags.IGNORE_HOST ? aId : aId >>> AgentConfig.HOST_BITS;
+	}
+	
+	/**
+	 * Returns the host id for the given object id.
+	 * See bci-agent.
+	 */
+	public static int getHostId(long aId)
+	{
+		return DebugFlags.IGNORE_HOST ? 0 : (int) (aId & AgentConfig.HOST_MASK);
+	}
+
+
 }
 

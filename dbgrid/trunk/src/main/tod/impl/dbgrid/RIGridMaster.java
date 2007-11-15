@@ -36,10 +36,10 @@ import tod.impl.dbgrid.dispatch.NodeExceptionResolver;
 import tod.impl.dbgrid.dispatch.RIDispatchNode;
 import tod.impl.dbgrid.dispatch.RIDatabaseNode.StringSearchHit;
 import tod.impl.dbgrid.dispatch.tree.DispatchTreeStructure;
-import tod.impl.dbgrid.monitoring.Monitor.MonitorData;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.utils.remote.RIStructureDatabase;
 import zz.utils.ITask;
+import zz.utils.monitoring.Monitor.MonitorData;
 
 /**
  * Remote interface of the grid master.
