@@ -35,6 +35,7 @@ import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.db.EventDatabase;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
+import zz.utils.monitoring.Monitor;
 
 public class BenchEventDatabase
 {
@@ -72,7 +73,7 @@ public class BenchEventDatabase
 		{
 			public void run()
 			{
-				Fixtures.fillDatabase(itsDatabase, theGenerator, 10*1000*1000);
+				Fixtures.fillDatabase(itsDatabase, theGenerator, 3000000);
 				itsDatabase.flush();
 			}
 		});
@@ -89,6 +90,9 @@ public class BenchEventDatabase
 		System.out.println("Storage space: "+theStorage);
 		System.out.println("MB/s: "+theMBs);
 		System.out.println("event/s: "+theEvents);
+		
+		Monitor.getInstance().print(false);
+
 	}
 
 	private void fetchCompound(int aCount, int aMaxClauses)

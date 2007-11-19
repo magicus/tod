@@ -20,10 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.queries;
 
-import java.util.Iterator;
-
+import tod.impl.database.AbstractFilteredBidiIterator;
 import tod.impl.database.IBidiIterator;
-import tod.impl.dbgrid.AbstractFilteredBidiIterator;
 import tod.impl.dbgrid.SplittedConditionHandler;
 import tod.impl.dbgrid.db.HierarchicalIndex;
 import tod.impl.dbgrid.db.Indexes;
@@ -31,7 +29,6 @@ import tod.impl.dbgrid.db.RoleIndexSet;
 import tod.impl.dbgrid.db.RoleIndexSet.RoleTuple;
 import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.messages.GridEvent;
-import zz.utils.AbstractFilteredIterator;
 
 /**
  * Represents a condition on an object, with a corresponding role.

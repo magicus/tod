@@ -25,8 +25,8 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import tod.impl.database.BufferedBidiIterator;
 import tod.impl.database.IBidiIterator;
-import tod.impl.dbgrid.BufferedBidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.db.RIBufferIterator;

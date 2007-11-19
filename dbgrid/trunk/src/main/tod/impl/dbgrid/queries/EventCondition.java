@@ -21,18 +21,15 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.queries;
 
 import java.io.Serializable;
-import java.rmi.RemoteException;
-import java.util.Iterator;
 
 import tod.core.database.browser.IEventFilter;
+import tod.impl.database.AbstractFilteredBidiIterator;
 import tod.impl.database.IBidiIterator;
-import tod.impl.dbgrid.AbstractFilteredBidiIterator;
 import tod.impl.dbgrid.db.EventList;
 import tod.impl.dbgrid.db.EventsCounter;
 import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.messages.GridEvent;
-import zz.utils.AbstractFilteredIterator;
 
 /**
  * Represents a boolean filtering condition on event attributes.

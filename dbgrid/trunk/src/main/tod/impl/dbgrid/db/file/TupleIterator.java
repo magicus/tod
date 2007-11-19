@@ -20,11 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.db.file;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-
-import tod.impl.database.IBidiIterator;
-import tod.impl.dbgrid.AbstractBidiIterator;
+import tod.impl.database.AbstractBidiIterator;
 import tod.impl.dbgrid.db.HierarchicalIndex;
 import tod.impl.dbgrid.db.file.PageBank.Page;
 import tod.impl.dbgrid.db.file.PageBank.PageBitStruct;

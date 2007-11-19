@@ -18,9 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.dbgrid;
+package tod.impl.database;
 
-import tod.impl.database.IBidiIterator;
 import zz.utils.AbstractFilteredIterator;
 
 /**

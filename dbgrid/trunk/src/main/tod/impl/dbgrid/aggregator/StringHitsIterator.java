@@ -22,7 +22,7 @@ package tod.impl.dbgrid.aggregator;
 
 import java.rmi.RemoteException;
 
-import tod.impl.dbgrid.BufferedBidiIterator;
+import tod.impl.database.BufferedBidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.dispatch.RIDatabaseNode.StringSearchHit;

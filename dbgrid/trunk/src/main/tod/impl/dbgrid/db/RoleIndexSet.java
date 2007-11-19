@@ -20,9 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.db;
 
+import tod.impl.database.AbstractFilteredBidiIterator;
 import tod.impl.database.IBidiIterator;
-import tod.impl.dbgrid.AbstractFilteredBidiIterator;
-import tod.impl.dbgrid.db.IndexSet.IndexManager;
 import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.db.file.HardPagedFile;
 import tod.impl.dbgrid.db.file.IndexTupleCodec;

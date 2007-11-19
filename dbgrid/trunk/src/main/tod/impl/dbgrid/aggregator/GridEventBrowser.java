@@ -30,7 +30,7 @@ import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IThreadInfo;
-import tod.impl.dbgrid.BufferedBidiIterator;
+import tod.impl.database.BufferedBidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.IScheduled;

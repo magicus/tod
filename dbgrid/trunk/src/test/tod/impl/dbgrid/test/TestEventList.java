@@ -44,6 +44,7 @@ public class TestEventList
 	{
 		EventList theEventList = Fixtures.createEventList();
 		Fixtures.fillEventList(theEventList, new EventGenerator(0), aCount);
+		System.out.println("Filled event list: "+theEventList.getPageCount()+" pages.");
 		checkEventList(theEventList, new EventGenerator(0), aCount);
 	}
 	
