@@ -148,6 +148,19 @@ public class HardPagedFile extends PageBank
 		}
 	}
 	
+	@Probe(key = "buffer count", aggr = AggregationType.MAX)
+	public long getBufferCount()
+	{
+		return (int) (DB_PAGE_BUFFER_SIZE/DB_PAGE_SIZE);
+	}
+	
+	@Probe(key = "buffer space", aggr = AggregationType.MAX)
+	public long getBufferSpace()
+	{
+		return getBufferCount()*itsPageSize;
+	}
+	
+
 	/**
 	 * Returns a particular page of this file.
 	 */
