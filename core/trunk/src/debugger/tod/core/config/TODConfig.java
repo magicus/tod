@@ -230,6 +230,13 @@ public class TODConfig extends PublicCloneable implements Serializable
 			"before exiting. A value of 0 means no timeout.",
 			0);
 	
+	public static final IntegerItem DB_PROCESS_TIMEOUT = new IntegerItem(
+			ConfigLevel.ADVANCED,
+			"db-process-timeout",
+			"Database process timeout",
+			"The time (in seconds) the debugger should wait for the database process to start.",
+			30);
+	
 	/**
 	 * Contains all available configuration items.
 	 */
