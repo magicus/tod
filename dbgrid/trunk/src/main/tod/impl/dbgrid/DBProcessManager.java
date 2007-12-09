@@ -391,7 +391,7 @@ public class DBProcessManager
 		{
 			try
 			{
-				itsLatch.await(10, TimeUnit.SECONDS);
+				itsLatch.await(itsConfig.get(TODConfig.DB_PROCESS_TIMEOUT), TimeUnit.SECONDS);
 				interrupt();
 				return itsReady;
 			}
