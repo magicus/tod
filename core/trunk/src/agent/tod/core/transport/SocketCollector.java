@@ -70,7 +70,11 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		SocketThreadData theData = new SocketThreadData(aId);
 		itsThreadDataList.add (theData);
 		
-		System.out.println("[TOD] New thread detected ("+itsThreadDataList.size()+")");
+		System.out.println("[TOD] New thread detected ("
+				+itsThreadDataList.size()
+				+" - '"
+				+Thread.currentThread().getName()
+				+"')");
 		
 		return theData;
 	}
@@ -590,10 +594,11 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 
 		public void shutDown() 
 		{
-			System.out.println(String.format(
-					"[TOD] Flushing events for thread %d, sending %d bytes",
-					getId(),
-					itsLog.size()));
+			System.out.println("[TOD] Flushing events for thread " +
+					getId() +
+					", sending " +
+					itsLog.size() +
+					" bytes");
 			send();
 			itsShutDown = true;
 		}
@@ -646,6 +651,11 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 		
 	private class MyShutdownHook extends Thread
 	{
+		public MyShutdownHook() 
+		{
+			super("Shutdown hook (SocketCollector)");
+		}
+
 		@Override
 		public void run()
 		{
@@ -656,6 +666,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			
 			try
 			{
+				// Allow some time for buffers to be sent
 				Thread.sleep(1000);
 			}
 			catch (InterruptedException e)
