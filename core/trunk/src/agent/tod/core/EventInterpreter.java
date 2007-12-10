@@ -486,6 +486,9 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				aValue);
 	}
 	
+	/**
+	 * Dry version
+	 */
 	public void logBeforeBehaviorCall(
 			long aOperationLocation, 
 			int aBehaviorId,
@@ -502,7 +505,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		{
 			short theDepth = theThread.getCurrentDepth();
 			print(theDepth, String.format(
-					"logBeforeBehaviorCall(%d, %d, %s)\n thread: %d, depth: %d\n frame: %s",
+					"logBeforeBehaviorCallDry(%d, %d, %s)\n thread: %d, depth: %d\n frame: %s",
 					aOperationLocation,
 					aBehaviorId,
 					aCallType,
@@ -563,6 +566,9 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		theThread.pushFrame(false, aBehaviorId, false, theTimestamp, null, -1);
 	}
 
+	/**
+	 * Dry version
+	 */
 	public void logAfterBehaviorCall()
 	{
 		if (DISABLE_INTERPRETER) return;
@@ -574,7 +580,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		{
 			short theDepth = theThread.getCurrentDepth();
 			print(theDepth, String.format(
-					"logAfterBehaviorCall()\n thread: %d, depth: %d\n frame: %s",
+					"logAfterBehaviorCallDry()\n thread: %d, depth: %d\n frame: %s",
 					theThread.getId(),
 					theDepth,
 					theFrame));

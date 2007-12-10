@@ -239,6 +239,11 @@ public class ASMBehaviorInstrumenter implements Opcodes
 
 		if (theHasTrace == HasTrace.UNKNOWN)
 		{
+			// Force class load
+			
+			mv.visitLdcInsn(Type.getObjectType(aOwner));
+			mv.visitInsn(POP);
+			
 			// Runtime check for trace info
 			
 			BCIUtils.pushInt(mv, theCalledBehavior.getId());

@@ -29,6 +29,7 @@ import javax.swing.JLabel;
 import javax.swing.JToolTip;
 
 import tod.Util;
+import tod.agent.DebugFlags;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IBehaviorExitEvent;
@@ -178,7 +179,10 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 		if (theNamePrefix != null) aParent.add(theNamePrefix);
 		aParent.add(createShortBehaviorName());
 		fillShortArgs(aParent);
-		
+		if (DebugFlags.SHOW_DEBUG_GUI)
+		{
+			aParent.add(HtmlText.create("("+itsEvent.getTimestamp()+")"));
+		}
 		aParent.add(createResult(" ->"));
 	}
 	
