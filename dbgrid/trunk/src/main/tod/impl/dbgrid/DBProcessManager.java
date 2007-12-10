@@ -79,7 +79,7 @@ public class DBProcessManager
 	private KeepAliveThread itsKeepAliveThread;
 	private boolean itsAlive = false;
 	
-	private Thread itsShutdownHook = new Thread()
+	private Thread itsShutdownHook = new Thread("Shutdown hook (DBProcessManager)")
 	{
 		@Override
 		public void run()
@@ -98,8 +98,8 @@ public class DBProcessManager
 	@Override
 	protected void finalize() throws Throwable
 	{
-		itsShutdownHook.run();
 		Runtime.getRuntime().removeShutdownHook(itsShutdownHook);
+		itsShutdownHook.run();
 	}
 	
 	public void addListener(IDBProcessListener aListener) 
@@ -251,6 +251,7 @@ public class DBProcessManager
 			
 			setAlive(true);
 			printOutput("--- Starting process...");
+			printOutput("Classpath: "+cp);
 			itsProcess = theBuilder.start();
 			ProcessOutWatcher theWatcher = new ProcessOutWatcher(itsProcess.getInputStream());
 			ProcessErrGrabber theGrabber = new ProcessErrGrabber(itsProcess.getErrorStream());
