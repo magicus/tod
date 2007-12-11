@@ -21,6 +21,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.controlflow.tree;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +40,7 @@ import tod.core.database.event.IParentEvent;
 import tod.gui.JobProcessor;
 import zz.utils.Utils;
 import zz.utils.ui.GridStackLayout;
+import zz.utils.ui.MousePanel;
 import zz.utils.ui.ScrollablePanel;
 import zz.utils.ui.StackLayout;
 
@@ -140,12 +144,13 @@ public class CallStackPanel extends JPanel
 		
 		JPanel theContainer = new ScrollablePanel(new GridStackLayout(1, 0, 2, true, false));
 
+		
 		if (theAncestors.size() > 0) for(int i=0;i<theAncestors.size();i++)
 		{
 			IParentEvent theAncestor = theAncestors.get(i);
 			theContainer.add(buildStackNode(theAncestor, i==0));
 		}
-		
+
 		return theContainer;
 	}
 	

@@ -77,9 +77,14 @@ public class GUIUtils
 		return new BorderLayout(0, 0);
 	}
 	
+	/**
+	 * return a label that delegates mouse events to its parents 
+	 */
 	public static ZLabel createLabel(String aText, XFont aFont, Color aColor)
 	{
-		return ZLabel.create(aText, aFont, aColor);
+		ZLabel theLabel = ZLabel.create(aText, aFont, aColor);
+		theLabel.setDelagatingToParent(true);
+		return theLabel;
 	}
 	
 	public static ZLabel createLabel(String aText)
