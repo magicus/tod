@@ -32,6 +32,7 @@ import javax.swing.JSplitPane;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.Stepper;
+import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
 import tod.core.database.structure.IHostInfo;
@@ -101,7 +102,12 @@ public class CFlowView extends LogView implements IEventListView
 	{
 		public boolean processMessage(ShowCFlowMsg aMessage)
 		{
-			showEvent(aMessage.getEvent());
+			ILogEvent theEvent = aMessage.getEvent();
+			if (theEvent instanceof IBehaviorCallEvent) 
+			{
+				IBehaviorCallEvent theCall = (IBehaviorCallEvent) theEvent;
+				if (theCall.hasRealChildren()) forwardStepInto();
+			}
 			return true;
 		}
 	};
@@ -177,21 +183,62 @@ public class CFlowView extends LogView implements IEventListView
 		
 	}
 	
+	private void backwardStepOver() 
+	{
+		itsStepper.setCurrentEvent(itsSeed.pSelectedEvent().get());
+		itsStepper.backwardStepOver();
+		ILogEvent theEvent = itsStepper.getCurrentEvent();
+		if (theEvent != null) selectEvent(theEvent, SelectionMethod.BACKWARD_STEP_OVER);
+	}
 	
+
+	private void backwardStepInto() 
+	{
+		itsStepper.setCurrentEvent(itsSeed.pSelectedEvent().get());
+		itsStepper.backwardStepInto();
+		ILogEvent theEvent = itsStepper.getCurrentEvent();
+		if (theEvent != null) selectEvent(theEvent, SelectionMethod.BACKWARD_STEP_INTO);
+	}
+	
+	private void stepOut() 
+	{
+		ILogEvent theSelectedEvent = itsSeed.pSelectedEvent().get();
+		if (theSelectedEvent != null)
+		{
+			itsStepper.setCurrentEvent(theSelectedEvent);
+			itsStepper.stepOut();
+			ILogEvent theEvent = itsStepper.getCurrentEvent();
+			if (theEvent != null) selectEvent(theEvent, SelectionMethod.STEP_OUT);				
+		}
+	}
+
+	private void forwardStepInto() 
+	{
+		itsStepper.setCurrentEvent(itsSeed.pSelectedEvent().get());
+		itsStepper.forwardStepInto();
+		ILogEvent theEvent = itsStepper.getCurrentEvent();
+		if (theEvent != null) selectEvent(theEvent, SelectionMethod.FORWARD_STEP_INTO);
+	}
+
+	private void forwardStepOver() 
+	{
+		itsStepper.setCurrentEvent(itsSeed.pSelectedEvent().get());
+		itsStepper.forwardStepOver();
+		ILogEvent theEvent = itsStepper.getCurrentEvent();
+		if (theEvent != null) selectEvent(theEvent, SelectionMethod.FORWARD_STEP_OVER);
+	}
+
 	private JComponent createToolbar()
 	{
 		JPanel theToolbar = new JPanel();
 				
 		theToolbar.add(new JButton(new SimpleAction(
 				Resources.ICON_BACKWARD_STEP_OVER.asIcon(20), 
-		"Backward step over")
+				"Backward step over")
 		{
 			public void actionPerformed(ActionEvent aE)
 			{
-				itsStepper.setCurrentEvent(itsSeed.pSelectedEvent().get());
-				itsStepper.backwardStepOver();
-				ILogEvent theEvent = itsStepper.getCurrentEvent();
-				if (theEvent != null) selectEvent(theEvent, SelectionMethod.BACKWARD_STEP_OVER);				
+				backwardStepOver();				
 			}
 		}));
 		
@@ -201,10 +248,7 @@ public class CFlowView extends LogView implements IEventListView
 		{
 			public void actionPerformed(ActionEvent aE)
 			{
-				itsStepper.setCurrentEvent(itsSeed.pSelectedEvent().get());
-				itsStepper.backwardStepInto();
-				ILogEvent theEvent = itsStepper.getCurrentEvent();
-				if (theEvent != null) selectEvent(theEvent, SelectionMethod.BACKWARD_STEP_INTO);				
+				backwardStepInto();				
 			}
 		}));
 		
@@ -214,14 +258,7 @@ public class CFlowView extends LogView implements IEventListView
 		{
 			public void actionPerformed(ActionEvent aE)
 			{
-				ILogEvent theSelectedEvent = itsSeed.pSelectedEvent().get();
-				if (theSelectedEvent != null)
-				{
-					itsStepper.setCurrentEvent(theSelectedEvent);
-					itsStepper.stepOut();
-					ILogEvent theEvent = itsStepper.getCurrentEvent();
-					if (theEvent != null) selectEvent(theEvent, SelectionMethod.STEP_OUT);				
-				}
+				stepOut();
 			}
 		}));
 		
@@ -231,10 +268,7 @@ public class CFlowView extends LogView implements IEventListView
 		{
 			public void actionPerformed(ActionEvent aE)
 			{
-				itsStepper.setCurrentEvent(itsSeed.pSelectedEvent().get());
-				itsStepper.forwardStepInto();
-				ILogEvent theEvent = itsStepper.getCurrentEvent();
-				if (theEvent != null) selectEvent(theEvent, SelectionMethod.FORWARD_STEP_INTO);				
+				forwardStepInto();				
 			}
 		}));
 		
@@ -244,11 +278,9 @@ public class CFlowView extends LogView implements IEventListView
 		{
 			public void actionPerformed(ActionEvent aE)
 			{
-				itsStepper.setCurrentEvent(itsSeed.pSelectedEvent().get());
-				itsStepper.forwardStepOver();
-				ILogEvent theEvent = itsStepper.getCurrentEvent();
-				if (theEvent != null) selectEvent(theEvent, SelectionMethod.FORWARD_STEP_OVER);				
+				forwardStepOver();				
 			}
+
 		}));
 
 		for (int i=0;i<theToolbar.getComponentCount();i++)
@@ -374,6 +406,7 @@ public class CFlowView extends LogView implements IEventListView
 	{
 		return getSeed().pSelectedEvent().get();
 	}
+
 	
 	
 }

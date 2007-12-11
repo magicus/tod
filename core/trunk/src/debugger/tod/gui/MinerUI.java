@@ -72,6 +72,7 @@ import zz.utils.SimpleAction;
 import zz.utils.ui.StackLayout;
 
 /**
+ * Main GUI window.
  * @author gpothier
  */
 public abstract class MinerUI extends BusOwnerPanel

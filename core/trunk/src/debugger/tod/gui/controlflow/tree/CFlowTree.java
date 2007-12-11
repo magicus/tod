@@ -30,7 +30,12 @@ import tod.gui.JobProcessor;
 import tod.gui.MinerUI;
 import tod.gui.controlflow.CFlowView;
 import tod.gui.eventlist.EventListPanel;
+import tod.gui.kit.Bus;
+import tod.gui.kit.messages.ShowCFlowMsg;
+import tod.gui.view.FilterView;
 import zz.utils.Utils;
+import zz.utils.notification.IEvent;
+import zz.utils.notification.IEventListener;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.PropertyUtils;
 import zz.utils.properties.SimpleRWProperty;
@@ -92,7 +97,16 @@ public class CFlowTree extends JPanel
 		setLayout(new StackLayout());
 		add(itsSplitPane);
 		
-		itsEventListPanel = new EventListPanel(itsView.getLogBrowser(), getJobProcessor()); 
+		itsEventListPanel = new EventListPanel(itsView.getLogBrowser(), getJobProcessor());
+		
+		itsEventListPanel.eEventActivated().addListener(new IEventListener<ILogEvent>()
+				{
+					public void fired(IEvent< ? extends ILogEvent> aEvent, ILogEvent aData)
+					{
+						Bus.get(CFlowTree.this).postMessage(new ShowCFlowMsg(aData));
+					}
+				});
+		
 		itsSplitPane.setRightComponent(itsEventListPanel);
 		
 		PropertyUtils.connect(pSelectedEvent, itsEventListPanel.pSelectedEvent(), true);

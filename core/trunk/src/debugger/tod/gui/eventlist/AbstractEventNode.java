@@ -118,7 +118,6 @@ public abstract class AbstractEventNode extends MousePanel
 	{
 		getListPanel().pSelectedEvent().set(getEvent());
 		ILogEvent theEvent = getEvent();
-
 		Bus.get(this).postMessage(new EventSelectedMsg(theEvent, SelectionMethod.SELECT_IN_LIST));
 		aEvent.consume();			
 		
