@@ -43,7 +43,6 @@ public class TracedMethods
 			traced = room;
 		}
 		
-		System.out.println("[TOD] TracedMethods.setTraced: "+aId);
 		traced[aId] = true;
 	}
 	
