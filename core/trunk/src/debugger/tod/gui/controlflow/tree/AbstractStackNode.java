@@ -25,25 +25,15 @@ import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 
-import tod.Util;
-import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IParentEvent;
-import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.ITypeInfo;
-import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.JobProcessor;
-import tod.gui.controlflow.CFlowView;
 import tod.gui.kit.Bus;
 import tod.gui.kit.messages.EventSelectedMsg;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
-import tod.gui.seed.CFlowSeed;
-import zz.utils.ui.GridStackLayout;
 import zz.utils.ui.MousePanel;
 import zz.utils.ui.UIUtils;
-import zz.utils.ui.ZLabel;
 
 /**
  * Represents a stack item in the control flow.
@@ -86,10 +76,14 @@ public abstract class AbstractStackNode extends MousePanel
 
 		if (! getEvent().isDirectParent())
 		{
-			add(createDots());
+			JComponent theDots = createDots();
+			theDots.addMouseListener(this);
+			add(theDots);
 		}		
 		
-		add(createHeader());
+		JComponent theHeader = createHeader();
+		theHeader.addMouseListener(this);
+		add(theHeader);
 	}
 	
 	private JComponent createDots()
@@ -102,7 +96,8 @@ public abstract class AbstractStackNode extends MousePanel
 	{
 		Color theColor = Color.ORANGE;
 		if (itsCurrentStackFrame) theColor = theColor.darker();
-		if (! itsMouseOver || itsCurrentStackFrame) theColor = UIUtils.getLighterColor(theColor);
+		if (! itsMouseOver || itsCurrentStackFrame) 
+			theColor = UIUtils.getLighterColor(theColor);
 		aG.setColor(theColor);
 		aG.fillRect(0, 0, getWidth(), getHeight());
 	}

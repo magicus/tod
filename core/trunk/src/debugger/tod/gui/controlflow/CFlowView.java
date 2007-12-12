@@ -121,7 +121,7 @@ public class CFlowView extends LogView implements IEventListView
 		}
 	};
 	
-	
+
 	private IRWProperty<Boolean> itsShowPackages;
 	private IPropertyListener<Boolean> itsShowPackagesListener = new SimplePropertyListener<Boolean>()
 	{

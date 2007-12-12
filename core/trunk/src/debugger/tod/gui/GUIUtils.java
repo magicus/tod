@@ -83,7 +83,6 @@ public class GUIUtils
 	public static ZLabel createLabel(String aText, XFont aFont, Color aColor)
 	{
 		ZLabel theLabel = ZLabel.create(aText, aFont, aColor);
-		theLabel.setDelagatingToParent(true);
 		return theLabel;
 	}
 	

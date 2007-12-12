@@ -94,15 +94,19 @@ public class NormalStackNode extends AbstractStackNode
 //		
 //		theBuilder.append(")");
 
-		add(ZLabel.create(
+		ZLabel theLabel1 = ZLabel.create(
 				Util.getPackageName(theType.getName()), 
 				FontConfig.TINY_FONT, 
-				Color.DARK_GRAY));
+				Color.DARK_GRAY);
+		theLabel1.addMouseListener(this);
+		add(theLabel1);
 		
-		add(ZLabel.create(
+		ZLabel theLabel2 = ZLabel.create(
 				theBuilder.toString(), 
 				FontConfig.SMALL_FONT, 
-				Color.BLACK));
+				Color.BLACK);
+		theLabel2.addMouseListener(this);
+		add(theLabel2);
 		
 		return theContainer;
 	}
