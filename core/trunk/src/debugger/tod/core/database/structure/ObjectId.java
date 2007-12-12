@@ -39,6 +39,8 @@ import tod.agent.DebugFlags;
  */
 public class ObjectId implements Serializable
 {
+	private static final long serialVersionUID = 8201251692076120987L;
+
 	private long itsId;
 	
 	public ObjectId(long aId)
