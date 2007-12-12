@@ -102,13 +102,22 @@ public class CFlowView extends LogView implements IEventListView
 	{
 		public boolean processMessage(ShowCFlowMsg aMessage)
 		{
-			ILogEvent theEvent = aMessage.getEvent();
-			if (theEvent instanceof IBehaviorCallEvent) 
-			{
-				IBehaviorCallEvent theCall = (IBehaviorCallEvent) theEvent;
-				if (theCall.hasRealChildren()) forwardStepInto();
-			}
+			showEvent(aMessage.getEvent());
 			return true;
+		}
+	};
+	
+	private IBusListener<EventSelectedMsg> itsEventSelectedListener = new IBusListener<EventSelectedMsg>()
+	{
+		public boolean processMessage(EventSelectedMsg aMessage)
+		{
+			if (aMessage.getSelectionMethod() == SelectionMethod.SELECT_IN_CALL_STACK)
+			{
+				showEvent(aMessage.getEvent());
+				return true;
+			}
+			
+			return false;
 		}
 	};
 	
@@ -212,12 +221,20 @@ public class CFlowView extends LogView implements IEventListView
 		}
 	}
 
-	private void forwardStepInto() 
+	/**
+	 * Perform a step into action on the specified event.
+	 */
+	public void forwardStepInto(ILogEvent aEvent)
 	{
-		itsStepper.setCurrentEvent(itsSeed.pSelectedEvent().get());
+		itsStepper.setCurrentEvent(aEvent);
 		itsStepper.forwardStepInto();
 		ILogEvent theEvent = itsStepper.getCurrentEvent();
 		if (theEvent != null) selectEvent(theEvent, SelectionMethod.FORWARD_STEP_INTO);
+	}
+	
+	private void forwardStepInto() 
+	{
+		forwardStepInto(itsSeed.pSelectedEvent().get());
 	}
 
 	private void forwardStepOver() 
@@ -350,6 +367,7 @@ public class CFlowView extends LogView implements IEventListView
 		itsSplitPane.setDividerLocation(theSplitterPos);
 		
 		Bus.get(this).subscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
+		Bus.get(this).subscribe(EventSelectedMsg.ID, itsEventSelectedListener);
 		
 		itsShowPackages = Options.get(this).getProperty(StdOptions.SHOW_PACKAGE_NAMES);
 		itsShowPackages.addHardListener(itsShowPackagesListener);
@@ -370,8 +388,9 @@ public class CFlowView extends LogView implements IEventListView
 				""+itsSplitPane.getDividerLocation());
 		
 		Bus.get(this).unsubscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
+		Bus.get(this).unsubscribe(EventSelectedMsg.ID, itsEventSelectedListener);
+		
 		itsShowPackages.removeListener(itsShowPackagesListener);
-
 	}
 	
 	/**

@@ -128,7 +128,6 @@ public abstract class AbstractStackNode extends MousePanel
 		if (! itsCurrentStackFrame)
 		{
 			Bus.get(this).postMessage(new EventSelectedMsg(getEvent(), SelectionMethod.SELECT_IN_CALL_STACK));
-			aE.consume();			
 		}
 
 		aE.consume();

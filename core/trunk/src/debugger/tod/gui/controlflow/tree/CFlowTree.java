@@ -103,7 +103,11 @@ public class CFlowTree extends JPanel
 				{
 					public void fired(IEvent< ? extends ILogEvent> aEvent, ILogEvent aData)
 					{
-						Bus.get(CFlowTree.this).postMessage(new ShowCFlowMsg(aData));
+						if (aData instanceof IBehaviorCallEvent) 
+						{
+							IBehaviorCallEvent theCall = (IBehaviorCallEvent) aData;
+							if (theCall.hasRealChildren()) itsView.forwardStepInto(aData);
+						}
 					}
 				});
 		

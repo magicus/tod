@@ -23,7 +23,8 @@ package tod.gui.kit.messages;
 import tod.core.database.event.ILogEvent;
 
 /**
- * Request to show the control flow of a given event
+ * Request to show the control flow of a given event. Shows (or updates) a control flow view with
+ * the given event highlighted.
  * @author gpothier
  */
 public class ShowCFlowMsg extends Message
