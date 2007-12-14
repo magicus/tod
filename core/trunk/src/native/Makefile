@@ -45,10 +45,7 @@ ifeq ($(PLATFORM), linux)
 	
 	CXXFLAGS += -I /usr/include/boost-$(BOOST_VERSION) -I /usr/include/asio-$(ASIO_VERSION)/
 	
-	
-	JNI_INC = -I $(JAVA_HOME)/include/ -I $(JAVA_HOME)/include/linux/
-	GCJ_INC = -I /usr/include/c++/4.2 -I /usr/lib/gcc/i486-linux-gnu/4.2/include
-
+	CXXFLAGS += -I $(JAVA_HOME)/include/ -I $(JAVA_HOME)/include/linux/
 	LDFLAGS += -static-libgcc 
 
 	LIBPREFIX = lib
@@ -65,11 +62,6 @@ bci-agent-objects = \
 	$(PLATFORM)/utils.o \
 	$(PLATFORM)/md5.o \
 	$(PLATFORM)/jniutils.o 
-	
-tod-agent-objects = \
-	$(PLATFORM)/tod-agent-skel.o \
-	$(PLATFORM)/tod-agent-bridge.o \
-	
 
 array-cast-objects = \
 	$(PLATFORM)/array-cast.o
@@ -84,10 +76,6 @@ all: bci-agent #array-cast
 bci-agent: dirs $(bci-agent-objects)
 	$(CXX) $(SHARED_MAGIC) -o $(PLATFORM)/$(LIBPREFIX)bci-agent.$(LIBEXT) $(bci-agent-objects) $(LDFLAGS) $(LDFLAGS_BOOST)
 	cp $(PLATFORM)/$(LIBPREFIX)bci-agent.$(LIBEXT) ../..
-
-tod-agent: dirs $(tod-agent-objects)
-	gcj $(SHARED_MAGIC) -o $(PLATFORM)/$(LIBPREFIX)tod-agent.$(LIBEXT) $(tod-agent-objects) $(LDFLAGS) $(LDFLAGS_BOOST)
-	cp $(PLATFORM)/$(LIBPREFIX)tod-agent.$(LIBEXT) ../..
 
 #pathtest: dirs $(PLATFORM)/pathtest.o
 #	$(CXX) -o $(PLATFORM)/pathtest $(PLATFORM)/pathtest.o $(LDFLAGS) $(LDFLAGS_BOOST)
@@ -119,13 +107,13 @@ $(PLATFORM)/NativeCollector.o: NativeCollector.cpp tod_core_transport_NativeColl
 	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) NativeCollector.cpp -o $(PLATFORM)/NativeCollector.o
 
 $(PLATFORM)/bci-agent.o: bci-agent.cpp tod_core_ObjectIdentity.h utils.h jniutils.h
-	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) $(JNI_INC) bci-agent.cpp -o $(PLATFORM)/bci-agent.o
+	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) bci-agent.cpp -o $(PLATFORM)/bci-agent.o
 
 $(PLATFORM)/utils.o: utils.cpp utils.h
 	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) utils.cpp -o $(PLATFORM)/utils.o
 
 $(PLATFORM)/jniutils.o: jniutils.cpp jniutils.h
-	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) $(JNI_INC) jniutils.cpp -o $(PLATFORM)/jniutils.o
+	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) jniutils.cpp -o $(PLATFORM)/jniutils.o
 
 $(PLATFORM)/md5.o: md5.cpp md5.h
 	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) md5.cpp -o $(PLATFORM)/md5.o
@@ -138,10 +126,4 @@ $(PLATFORM)/array-cast.o: array-cast.cpp
 
 #$(PLATFORM)/pathtest.o: pathtest.cpp
 #	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) pathtest.cpp -o $(PLATFORM)/pathtest.o
-
-$(PLATFORM)/tod-agent-skel.o: tod-agent-skel.cpp utils.h
-	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) $(JNI_INC) tod-agent-skel.cpp -o $(PLATFORM)/tod-agent-skel.o
-
-$(PLATFORM)/tod-agent-bridge.o: tod-agent-bridge.cpp utils.h
-	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) $(GCJ_INC) tod-agent-bridge.cpp -o $(PLATFORM)/tod-agent-bridge.o
 
