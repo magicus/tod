@@ -52,14 +52,17 @@ public abstract class AbstractStackNode extends MousePanel
 
 	private boolean itsMouseOver = false;
 	
+	private CallStackPanel itsCallStackPanel;
+	
 	public AbstractStackNode(
 			JobProcessor aJobProcessor,
 			IParentEvent aEvent,
-			boolean aCurrentStackFrame)
+			boolean aCurrentStackFrame, CallStackPanel aCallStackPanel)
 	{
 		itsJobProcessor = aJobProcessor;
 		itsEvent = aEvent;
 		itsCurrentStackFrame = aCurrentStackFrame;
+		itsCallStackPanel = aCallStackPanel;
 		createUI();
 	}
 
@@ -122,9 +125,13 @@ public abstract class AbstractStackNode extends MousePanel
 	{
 		if (! itsCurrentStackFrame)
 		{
-			Bus.get(this).postMessage(new EventSelectedMsg(getEvent(), SelectionMethod.SELECT_IN_CALL_STACK));
+			//removed old behavior
+			//Bus.get(this).postMessage(new EventSelectedMsg(getEvent(), SelectionMethod.SELECT_IN_CALL_STACK));
+			itsCallStackPanel.selectChildOf(itsEvent);
+						
 		}
-
+		
+		
 		aE.consume();
 	}
 }

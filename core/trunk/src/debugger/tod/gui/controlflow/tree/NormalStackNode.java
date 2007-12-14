@@ -44,9 +44,9 @@ public class NormalStackNode extends AbstractStackNode
 	public NormalStackNode(
 			JobProcessor aJobProcessor, 
 			IBehaviorCallEvent aEvent,
-			boolean aCurrentStackFrame)
+			boolean aCurrentStackFrame, CallStackPanel aCallStackPanel)
 	{
-		super(aJobProcessor, aEvent, aCurrentStackFrame);
+		super(aJobProcessor, aEvent, aCurrentStackFrame, aCallStackPanel);
 	}
 
 	@Override

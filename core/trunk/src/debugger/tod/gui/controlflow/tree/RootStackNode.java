@@ -32,9 +32,9 @@ public class RootStackNode extends AbstractStackNode
 	public RootStackNode(
 			JobProcessor aJobProcessor, 
 			IParentEvent aEvent, 
-			boolean aCurrentStackFrame)
+			boolean aCurrentStackFrame, CallStackPanel aCallStackPanel)
 	{
-		super(aJobProcessor, aEvent, aCurrentStackFrame);
+		super(aJobProcessor, aEvent, aCurrentStackFrame, aCallStackPanel);
 	}
 
 	@Override
