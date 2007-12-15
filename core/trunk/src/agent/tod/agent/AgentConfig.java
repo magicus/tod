@@ -114,7 +114,7 @@ public class AgentConfig
 		itsEventsPort = ConfigUtils.readInt(PARAM_COLLECTOR_PORT, 8058);
 		itsNativePort = ConfigUtils.readInt(PARAM_NATIVE_PEER_PORT, 8059);
 		itsHost = ConfigUtils.readString(PARAM_COLLECTOR_HOST, "localhost");
-		itsHostName = ConfigUtils.readString(PARAM_HOST, "noname");
+		itsHostName = ConfigUtils.readString(PARAM_HOST, "no-name");
 	}
 	
 	private static HighLevelCollector createDummyCollector()

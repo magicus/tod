@@ -48,11 +48,20 @@ public class ExceptionGeneratedReceiver
 			int aOperationBytecodeIndex,
 			Throwable aThrowable)
 	{
-		if (AgentReady.READY) AgentConfig.getInterpreter().logExceptionGenerated(
-				aMethodName,
-				aMethodSignature, 
-				aMethodDeclaringClassSignature,
-				aOperationBytecodeIndex, 
-				aThrowable);
+		try
+		{
+			if (AgentReady.READY) AgentConfig.getInterpreter().logExceptionGenerated(
+					aMethodName,
+					aMethodSignature, 
+					aMethodDeclaringClassSignature,
+					aOperationBytecodeIndex, 
+					aThrowable);
+		}
+		catch (Throwable e)
+		{
+			System.err.println("[TOD] Exception in ExceptionGeneratedReceiver.exceptionGenerated:");
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 }
