@@ -136,7 +136,16 @@ public abstract class EventCollector implements ILogCollector
 			int aOperationBytecodeIndex,
 			Object aException)
 	{
-		String theClassName = Type.getType(aMethodDeclaringClassSignature).getClassName();
+		String theClassName;
+		try
+		{
+			theClassName = Type.getType(aMethodDeclaringClassSignature).getClassName();
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException("Bad declaring class signature: "+aMethodDeclaringClassSignature, e);
+		}
+		
 		int theId = itsExceptionResolver.getBehaviorId(theClassName, aMethodName, aMethodSignature);
 
 		exception(

@@ -34,6 +34,11 @@ import tod.core.transport.SocketCollector;
  */
 public class AgentConfig
 {
+//	static
+//	{
+//		System.out.println("AgentConfig loaded by: "+AgentConfig.class.getClassLoader());
+//	}
+//	
 	public static final String PARAM_COLLECTOR_HOST = "collector-host";
 	public static final String PARAM_COLLECTOR_PORT = "collector-port";
 	public static final String PARAM_NATIVE_PEER_PORT = "native-port";
@@ -141,6 +146,7 @@ public class AgentConfig
 	{
 		if (itsInterpreter == null)
 		{
+//			System.out.println("Collector type: "+itsCollectorType);
 			if (PARAM_COLLECTOR_TYPE_DUMMY.equals(itsCollectorType))
 				itsCollector = createDummyCollector();
 			else if (PARAM_COLLECTOR_TYPE_SOCKET.equals(itsCollectorType)) 

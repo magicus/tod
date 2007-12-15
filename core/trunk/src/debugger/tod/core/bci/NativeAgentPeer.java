@@ -271,7 +271,7 @@ public abstract class NativeAgentPeer extends SocketThread
 		InstrumentedClass theInstrumentedClass = aInstrumenter.instrumentClass(theClassName, theBytecode);
 		if (theInstrumentedClass != null)
 		{
-			System.out.println("Instrumented");
+			System.out.println("Instrumented (size: "+theInstrumentedClass.bytecode.length+")");
 			
 			if (itsStoreClassesDir != null)
 			{
