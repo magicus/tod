@@ -19,6 +19,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 
+import tod.core.config.DeploymentConfig;
 import tod.core.config.TODConfig;
 import tod.core.session.ConnectionInfo;
 import tod.core.session.ISession;
@@ -123,10 +124,11 @@ public class LaunchUtils
 		
 		// Native agent
         String theLibName = null;
+        String theAgentName = DeploymentConfig.getNativeAgentName();
 		String theOs = System.getProperty("os.name");
-		if (theOs.contains("Windows")) theLibName = "bci-agent.dll";
-		else if (theOs.contains("Mac")) theLibName = "libbci-agent.dylib";
-		else theLibName = "libbci-agent.so";
+		if (theOs.contains("Windows")) theLibName = theAgentName+".dll";
+		else if (theOs.contains("Mac")) theLibName = "lib"+theAgentName+".dylib";
+		else theLibName = "lib"+theAgentName+".so";
 
 		String theNativeAgentPath = System.getProperty(
 				"bcilib.path",
