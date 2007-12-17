@@ -63,39 +63,46 @@ public class ASMInstrumenter implements IInstrumenter
 
 	public InstrumentedClass instrumentClass (String aName, byte[] aBytecode)
     {
-		if (! BCIUtils.acceptClass(aName, itsConfig.getGlobalSelector())) return null;
-    	
-		String theChecksum = Utils.md5String(aBytecode);
-		
-    	ClassReader theReader = new ClassReader(aBytecode);
-    	ClassWriter theWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-    	
-    	// Pass 1: collect method info 
-    	InfoCollector theInfoCollector = new InfoCollector();
-    	theReader.accept(theInfoCollector, ClassReader.SKIP_DEBUG);
-    	
-    	List<Integer> theTracedMethods = new ArrayList<Integer>();
-    	
-    	// Pass 2: actual instrumentation
-    	LogBCIVisitor theVisitor = new LogBCIVisitor(
-    			itsDatabase,
-    			itsConfig, 
-    			theInfoCollector,
-    			theWriter,
-    			theChecksum,
-    			theTracedMethods);
-    	
-    	Attribute[] theAttributes = new Attribute[] {
-    			new SootAttribute("ca.mcgill.sable.InstructionKind"),
-    			new SootAttribute("ca.mcgill.sable.InstructionShadow"),
-    			new SootAttribute("ca.mcgill.sable.InstructionSource"),
-    	};
-    	
-    	theReader.accept(theVisitor, theAttributes, 0);
-    	
-        return theVisitor.isModified() && !  theVisitor.hasOverflow() 
-        	? new InstrumentedClass(theWriter.toByteArray(), theTracedMethods) 
-        	: null;
+		try
+		{
+			if (! BCIUtils.acceptClass(aName, itsConfig.getGlobalSelector())) return null;
+			
+			String theChecksum = Utils.md5String(aBytecode);
+			
+			ClassReader theReader = new ClassReader(aBytecode);
+			ClassWriter theWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+			
+			// Pass 1: collect method info 
+			InfoCollector theInfoCollector = new InfoCollector();
+			theReader.accept(theInfoCollector, ClassReader.SKIP_DEBUG);
+			
+			List<Integer> theTracedMethods = new ArrayList<Integer>();
+			
+			// Pass 2: actual instrumentation
+			LogBCIVisitor theVisitor = new LogBCIVisitor(
+					itsDatabase,
+					itsConfig, 
+					theInfoCollector,
+					theWriter,
+					theChecksum,
+					theTracedMethods);
+			
+			Attribute[] theAttributes = new Attribute[] {
+					new SootAttribute("ca.mcgill.sable.InstructionKind"),
+					new SootAttribute("ca.mcgill.sable.InstructionShadow"),
+					new SootAttribute("ca.mcgill.sable.InstructionSource"),
+			};
+			
+			theReader.accept(theVisitor, theAttributes, 0);
+			
+			return theVisitor.isModified() && !  theVisitor.hasOverflow() 
+				? new InstrumentedClass(theWriter.toByteArray(), theTracedMethods) 
+				: null;
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException("Error encountered while instrumenting "+aName, e);
+		}
     }
 
 	/**
