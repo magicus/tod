@@ -28,6 +28,7 @@ import javax.swing.JComponent;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.session.AbstractSession;
+import tod.core.session.ConnectionInfo;
 import tod.core.session.ISessionMonitor;
 import tod.impl.dbgrid.aggregator.GridEventBrowser;
 import tod.impl.dbgrid.gui.GridConsole;
@@ -112,4 +113,12 @@ public class LocalGridSession extends AbstractSession
 		return itsProcessManager.isAlive();
 	}
 	
+	@Override
+	public ConnectionInfo getConnectionInfo()
+	{
+		return new ConnectionInfo(
+				"localhost", 
+				getConfig().get(TODConfig.COLLECTOR_JAVA_PORT),
+				getConfig().get(TODConfig.COLLECTOR_NATIVE_PORT));
+	}
 }
