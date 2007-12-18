@@ -20,7 +20,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.database.structure.standard;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import tod.core.BehaviorKind;
@@ -47,6 +49,7 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 	private final ITypeInfo itsReturnType;
 	private final Map<BytecodeTagType, Object> itsTagsMap = new HashMap<BytecodeTagType, Object>();
 
+	private int itsCodeSize;
 	private LineNumberInfo[] itsLineNumberTable;
 	private LocalVariableInfo[] itsLocalVariableTable;
 
@@ -68,21 +71,15 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 	public void setup(
 			boolean aTraced,
 			BehaviorKind aKind,
+			int aCodeSize,
 			LineNumberInfo[] aLineNumberInfos,
 			LocalVariableInfo[] aLocalVariableInfos)
 	{
 		itsHasTrace = aTraced ? HasTrace.YES : HasTrace.NO;
 		itsBehaviourKind = aKind;
+		itsCodeSize = aCodeSize;
 		itsLineNumberTable = aLineNumberInfos;
 		itsLocalVariableTable = aLocalVariableInfos;
-	}
-	
-	public void setAttributes (
-			LineNumberInfo[] aLineNumberTable,
-			LocalVariableInfo[] aLocalVariableTable)
-	{
-		itsLineNumberTable = aLineNumberTable;
-		itsLocalVariableTable = aLocalVariableTable;
 	}
 	
 	@Override
@@ -134,6 +131,11 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
                 : null;
     }
     
+    public int getCodeSize()
+    {
+    	return itsCodeSize;
+    }
+    
     public int getLineNumber (int aBytecodeIndex)
     {
         if (itsLineNumberTable != null && itsLineNumberTable.length > 0)
@@ -150,29 +152,50 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
         else return -1;
     }
     
+    /**
+     * Adds a range of numbers to the list.
+     * @param aStart First number to add, inclusive
+     * @param aEnd Last number to add, exclusive.
+     */
+    private void addRange(List<Integer> aList, int aStart, int aEnd)
+    {
+    	for(int i=aStart;i<aEnd;i++) aList.add(i);
+    }
+    
 	public int[] getBytecodeLocations(int aLine)
 	{
         if (itsLineNumberTable != null && itsLineNumberTable.length > 0)
         {
-        	int theStart = 0;
-        	int theEnd = 0;
-        	int theLastLine = 0;
+        	List<Integer> theLocations = new ArrayList<Integer>();
+
+        	int thePreviousPc = -1;
+        	int theCurrentLine = -1;
             for (LineNumberInfo theInfo : itsLineNumberTable)
-			{
-            	short theLineNumber = theInfo.getLineNumber();
-            	if (theLineNumber > aLine || theLineNumber < theLastLine)
+            {
+            	if (thePreviousPc == -1)
             	{
-            		theEnd = theInfo.getStartPc();
-            		break;
+            		thePreviousPc = theInfo.getStartPc();
+            		theCurrentLine = theInfo.getLineNumber();
+            		continue;
             	}
-            	if (theLineNumber <= aLine) theStart = theInfo.getStartPc();
             	
-            	theLastLine = theLineNumber;
-			}
+            	if (theCurrentLine == aLine)
+            	{
+            		addRange(theLocations, thePreviousPc, theInfo.getStartPc());
+            	}
+
+            	thePreviousPc = theInfo.getStartPc();
+            	theCurrentLine = theInfo.getLineNumber();
+            }
+            
+            if (theCurrentLine == aLine)
+            {
+            	addRange(theLocations, thePreviousPc, getCodeSize());
+            }
             
             // TODO: do something to include only valid bytecode indexes.
-            int[] theResult = new int[theEnd-theStart];
-            for (int i=theStart;i<theEnd;i++) theResult[i-theStart] = i;
+            int[] theResult = new int[theLocations.size()];
+            for (int i=0;i<theResult.length;i++) theResult[i] = theLocations.get(i);
             
             return theResult;
         }

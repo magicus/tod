@@ -36,6 +36,7 @@ public class ASMMethodInfo
 	
 	private int itsNextFreeVariable;
 	
+	private int itsCodeSize;
 	private List<ASMLineNumberInfo> itsLineNumberInfo = new ArrayList<ASMLineNumberInfo>();
 	private List<ASMLocalVariableInfo> itsLocalVariableInfo = new ArrayList<ASMLocalVariableInfo>();
 	
@@ -105,6 +106,16 @@ public class ASMMethodInfo
 		else return isStatic() ? BehaviorKind.STATIC_METHOD : BehaviorKind.METHOD;
 	}
 	
+	public int getCodeSize()
+	{
+		return itsCodeSize;
+	}
+
+	public void setCodeSize(int aCodeSize)
+	{
+		itsCodeSize = aCodeSize;
+	}
+
 	public void addLineNumber (ASMLineNumberInfo aInfo)
 	{
 		itsLineNumberInfo.add(aInfo);

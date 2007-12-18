@@ -36,6 +36,7 @@ public interface IBehaviorInfo extends IMemberInfo
 	public void setup(
 			boolean aTraced,
 			BehaviorKind aKind,
+			int aCodeSize,
 			LineNumberInfo[] aLineNumberInfos,
 			LocalVariableInfo[] aLocalVariableInfos);
 	
@@ -92,6 +93,11 @@ public interface IBehaviorInfo extends IMemberInfo
      * according to the line number table. If the table is not available, returns -1.
      */
     public int getLineNumber (int aBytecodeIndex);
+    
+    /**
+     * Returns the size of the bytecode of the method (after instrumentation).
+     */
+    public int getCodeSize();
     
     /**
      * Returns the tag associated to the specified bytecode.

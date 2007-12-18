@@ -338,11 +338,13 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		{
 			Label theLabel = new Label();
 			mv.visitLabel(theLabel);
-			if (theLabel.getOffset() > 65535) 
+			int theCodeSize = theLabel.getOffset();
+			if (theCodeSize > 65535) 
 			{
 				System.err.println("Method size overflow: "+itsMethodInfo.getName());
 				itsOverflow = true;
 			}
+			itsMethodInfo.setCodeSize(theCodeSize);
 			
 			if (itsTrace && TRACE_ENVELOPPE) itsInstrumenter.endHooks();			
 			super.visitMaxs(aMaxStack, aMaxLocals);
@@ -368,6 +370,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			itsBehavior.setup(
 					itsTrace,
 					itsMethodInfo.getKind(),
+					itsMethodInfo.getCodeSize(),
 					itsMethodInfo.createLineNumberTable(), 
 					itsMethodInfo.createLocalVariableTable());
 
