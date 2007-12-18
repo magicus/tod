@@ -89,6 +89,8 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 	{
 		if (itsExpanded) createFullView(aBody);
 		else createShortView(aBody);
+		
+		createDebugInfo(aBody);
 	}
 	
 	@Override
@@ -179,10 +181,6 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 		if (theNamePrefix != null) aParent.add(theNamePrefix);
 		aParent.add(createShortBehaviorName());
 		fillShortArgs(aParent);
-		if (DebugFlags.SHOW_DEBUG_GUI)
-		{
-			aParent.add(HtmlText.create("("+itsEvent.getTimestamp()+")"));
-		}
 		aParent.add(createResult(" ->"));
 	}
 	

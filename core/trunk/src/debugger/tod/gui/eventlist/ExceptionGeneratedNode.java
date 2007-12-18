@@ -76,6 +76,8 @@ public class ExceptionGeneratedNode extends AbstractEventNode
 			
 			aBody.addText(" (in "+theBehaviorName+")");
 		}
+				
+		createDebugInfo(aBody);
 	}
 	
 	@Override

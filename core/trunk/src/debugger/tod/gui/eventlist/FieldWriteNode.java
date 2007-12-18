@@ -72,6 +72,8 @@ public class FieldWriteNode extends AbstractEventNode
 				itsEvent.getValue(),
 				itsEvent,
 				showPackageNames()));
+
+		createDebugInfo(aBody);
 	}
 	
 	@Override

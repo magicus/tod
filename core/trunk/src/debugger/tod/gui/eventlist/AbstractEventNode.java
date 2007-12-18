@@ -27,7 +27,9 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JComponent;
 
+import tod.agent.DebugFlags;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.ICallerSideEvent;
 import tod.core.database.event.ILogEvent;
 import tod.gui.GUIUtils;
 import tod.gui.JobProcessor;
@@ -35,6 +37,9 @@ import tod.gui.kit.Bus;
 import tod.gui.kit.html.HtmlBody;
 import tod.gui.kit.html.HtmlComponent;
 import tod.gui.kit.html.HtmlDoc;
+import tod.gui.kit.html.HtmlElement;
+import tod.gui.kit.html.HtmlParentElement;
+import tod.gui.kit.html.HtmlText;
 import tod.gui.kit.messages.EventActivatedMsg;
 import tod.gui.kit.messages.EventSelectedMsg;
 import tod.gui.kit.messages.EventActivatedMsg.ActivationMethod;
@@ -95,6 +100,27 @@ public abstract class AbstractEventNode extends MousePanel
 	}
 	
 	protected abstract void createHtmlUI(HtmlBody aBody);
+	
+	/**
+	 * Adds debugging info to the given element, if debugging info is enabled.
+	 */
+	protected void createDebugInfo(HtmlParentElement aParent)
+	{
+		if (DebugFlags.SHOW_DEBUG_GUI)
+		{
+			String theLocation = "?";
+			if (getEvent() instanceof ICallerSideEvent)
+			{
+				ICallerSideEvent theCallerSideEvent = (ICallerSideEvent) getEvent();
+				theLocation = ""+theCallerSideEvent.getOperationBytecodeIndex();
+			}
+			
+			aParent.add(HtmlText.createf(
+					"(ts: %d, loc: %s)",
+					getEvent().getTimestamp(),
+					theLocation));
+		}
+	}
 	
 	/**
 	 * Returns the component that displays the html text.

@@ -46,6 +46,7 @@ public class UnknownEventNode extends AbstractEventNode
 	protected void createHtmlUI(HtmlBody aBody)
 	{
 		aBody.add(HtmlText.create("Unknown ("+getEvent()+")", FontConfig.NORMAL, Color.GRAY));
+		createDebugInfo(aBody);
 	}
 	
 	@Override

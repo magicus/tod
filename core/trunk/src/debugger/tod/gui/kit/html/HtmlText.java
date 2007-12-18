@@ -99,6 +99,14 @@ public class HtmlText extends HtmlElement
 	{
 		return create(aText, FontConfig.NORMAL, Color.BLACK);
 	}
+	
+	/**
+	 * Creates a new html text element using {@link String#format(String, Object...)}.
+	 */
+	public static HtmlText createf(String aFormat, Object... aArgs)
+	{
+		return create(String.format(aFormat, aArgs));
+	}
 
 	
 }
