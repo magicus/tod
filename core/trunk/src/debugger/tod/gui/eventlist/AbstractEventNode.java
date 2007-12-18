@@ -116,7 +116,7 @@ public abstract class AbstractEventNode extends MousePanel
 			}
 			
 			aParent.add(HtmlText.createf(
-					"(ts: %d, loc: %s)",
+					" (ts: %d, loc: %s)",
 					getEvent().getTimestamp(),
 					theLocation));
 		}
