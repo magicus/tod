@@ -29,7 +29,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 
 void fatal_error(char* message)
 {
-	printf(message);
+	fprintf(stderr, message);
 	exit(-1);
 }
 

@@ -268,7 +268,19 @@ public abstract class NativeAgentPeer extends SocketThread
 		aInputStream.readFully(theBytecode);
 		
 		System.out.print("Instrumenting "+theClassName+"... ");
-		InstrumentedClass theInstrumentedClass = aInstrumenter.instrumentClass(theClassName, theBytecode);
+		InstrumentedClass theInstrumentedClass = null;
+		String theError = null;
+		try
+		{
+			theInstrumentedClass = aInstrumenter.instrumentClass(theClassName, theBytecode);
+		}
+		catch (Exception e)
+		{
+			System.err.println("Error during instrumentation, reporting to client: ");
+			e.printStackTrace();
+			theError = e.getMessage();
+		}
+
 		if (theInstrumentedClass != null)
 		{
 			System.out.println("Instrumented (size: "+theInstrumentedClass.bytecode.length+")");
@@ -298,13 +310,18 @@ public abstract class NativeAgentPeer extends SocketThread
 				aOutputStream.writeInt(theId);
 			}
 		}
+		else if (theError != null)
+		{
+			aOutputStream.writeInt(-1);
+			aOutputStream.writeUTF(theError);
+		}
 		else
 		{
 			System.out.println("Not instrumented");
 			aOutputStream.writeInt(0);
 		}
-		aOutputStream.flush();
 		
+		aOutputStream.flush();
 	}
 	
 }

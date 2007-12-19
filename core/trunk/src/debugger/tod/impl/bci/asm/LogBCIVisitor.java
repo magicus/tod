@@ -68,8 +68,6 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 	private boolean itsTrace;
 	private boolean itsInterface;
 	
-	private boolean itsOverflow = false;
-	
 	private IClassInfo itsClassInfo;
 	private IClassInfo itsSuperclass;
 	private String itsChecksum;
@@ -104,11 +102,6 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		itsTracedMethods = aTracedMethods;
 	}
 
-	public boolean hasOverflow()
-	{
-		return itsOverflow;
-	}
-	
 	/**
 	 * Indicates if this visitor modified the original class.
 	 */
@@ -342,7 +335,13 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			if (theCodeSize > 65535) 
 			{
 				System.err.println("Method size overflow: "+itsMethodInfo.getName());
-				itsOverflow = true;
+				
+				throw new RuntimeException(String.format(
+						"[TOD] Fatal error: method %s.%s is too large to be instrumented. \n" +
+						"Please exclude %s from scope and retry.",
+						itsClassInfo.getName(),
+						itsMethodInfo.getName(),
+						itsClassInfo.getName()));
 			}
 			itsMethodInfo.setCodeSize(theCodeSize);
 			

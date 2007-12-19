@@ -463,7 +463,7 @@ void JNICALL cbClassFileLoadHook(
 				if (propVerbose>=2) printf("Cached.\n");
 			}
 		}
-		else if (propCachePath != NULL)
+		else if (len == 0 && propCachePath != NULL)
 		{
 			// Mark class as not instrumented.
 			if (propVerbose>=2) printf("Caching empty: %s\n", cacheFilePath.native_file_string().c_str());
@@ -474,6 +474,11 @@ void JNICALL cbClassFileLoadHook(
 			f.flush();
 			f.close();
 			if (propVerbose>=2) printf("Cached empty.\n");
+		}
+		else if (len == -1)
+		{
+			char* errorString = readUTF(gSocket);
+			fatal_error(errorString);
 		}
 	}
 	
