@@ -148,6 +148,8 @@ public class CollectorPacketReader
 			theObject = "Unknown ("+e.getMessage()+")";					
 		}
 		
+		System.out.println("Received object: "+theObject+", id: "+theObjectId);
+		
 		aCollector.register(theObjectId, theObject);
 	}
 	

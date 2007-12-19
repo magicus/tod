@@ -31,34 +31,20 @@ import tod.core.Output;
 
 /**
  * Provides the methods used to encode streamed log data.
- * Non-static methods are not thread-safe
+ * Non-static methods are not thread-safe, but {@link SocketCollector}
+ * maintains one {@link CollectorPacketWriter} per thread.
  */
 public class CollectorPacketWriter
 {
 	private final MyBuffer itsBuffer = new MyBuffer();
 	private final DataOutputStream itsStream;
 	
-	/**
-	 * List of registered objects that must be sent.
-	 * Note: There is space for a hard-coded number of entries that
-	 * should "be enough for everybody". 
-	 * Note that if only exception events are enabled this array
-	 * will overflow.
-	 */
-	private final ObjectEntry[] itsRegisteredObjects = new ObjectEntry[1024];
-	
-	/**
-	 * Number of entries in {@link #itsRegisteredObjects}.
-	 */
-	private int itsRegisteredObjectsCount = 0;
+	RegisteredObjectsStack itsRegisteredObjectsStack = new RegisteredObjectsStack();
+	DeferredObjectsStack itsDeferredObjectsStack = new DeferredObjectsStack();
 	
 	public CollectorPacketWriter(DataOutputStream aStream)
 	{
 		itsStream = aStream;
-		for (int i = 0; i < itsRegisteredObjects.length; i++)
-		{
-			itsRegisteredObjects[i] = new ObjectEntry();
-		}
 	}
 
 	private void sendMethodCall(
@@ -81,12 +67,32 @@ public class CollectorPacketWriter
 		itsBuffer.writeBoolean(aDirectParent);
 		itsBuffer.writeInt(aCalledBehavior);
 		itsBuffer.writeInt(aExecutedBehavior);
-		sendValue(itsBuffer, aTarget);
+		
+		if (aMessageType == MessageType.INSTANTIATION && shouldSendByValue(aTarget))
+		{
+			// Ensure that the sending of the object's value is deferred:
+			// otherwise we serialize an object that is not completely
+			// initialized (eg. new String(byteArray, 5, 10)).
+			sendValue(itsBuffer, aTarget, aTimestamp);
+		}
+		else
+		{
+			sendValue(itsBuffer, aTarget);
+		}
+		
 		sendArguments(itsBuffer, aArguments);
 		
 		itsBuffer.writeTo(itsStream);
 		
 		sendRegisteredObjects();
+	}
+	
+	/**
+	 * Determines if the given object should be sent by value.
+	 */
+	private boolean shouldSendByValue(Object aObject)
+	{
+		return (aObject instanceof String) || (aObject instanceof Throwable);
 	}
 	
 	public void sendMethodCall(
@@ -186,6 +192,13 @@ public class CollectorPacketWriter
 		sendValue(itsBuffer, aResult);
 		
 		itsBuffer.writeTo(itsStream);
+		
+		if (itsDeferredObjectsStack.isAvailable(aParentTimestamp))
+		{
+			DeferredObjectEntry theEntry = itsDeferredObjectsStack.pop();
+			System.out.println("Sending deferred object: "+theEntry.id);
+			sendRegisteredObject(theEntry.id, theEntry.object);
+		}
 		
 		sendRegisteredObjects();
 	}
@@ -380,6 +393,11 @@ public class CollectorPacketWriter
 	
 	private void sendValue (DataOutputStream aStream, Object aValue) throws IOException
 	{
+		sendValue(aStream, aValue, -1);
+	}
+	
+	private void sendValue (DataOutputStream aStream, Object aValue, long aDefer) throws IOException
+	{
 		if (aValue == null)
 		{
 			sendMessageType(aStream, MessageType.NULL);
@@ -426,10 +444,9 @@ public class CollectorPacketWriter
 			sendMessageType(aStream, MessageType.DOUBLE);
 			aStream.writeDouble(theDouble.doubleValue());
 		}
-		else if ((aValue instanceof String)
-				|| (aValue instanceof Throwable))
+		else if (shouldSendByValue(aValue))
 		{
-			sendObject(aStream, aValue);
+			sendObject(aStream, aValue, aDefer);
 		}
 		else
 		{
@@ -437,17 +454,19 @@ public class CollectorPacketWriter
 			sendMessageType(aStream, MessageType.OBJECT_UID);
 			aStream.writeLong(Math.abs(theObjectId));
 		}
-//		else
-//		{
-//			int theHash = aValue.hashCode();
-//			sendMessageType(aStream, MessageType.OBJECT_HASH);
-//			aStream.writeInt(theHash);
-//		}
 	}
 	
 	
-	
-	private void sendObject(DataOutputStream aStream, Object aObject) throws IOException
+	/**
+	 * Sends an object by value. This method checks if the object already had an id.
+	 * If it didn't, it is placed on the registered objects stack so that
+	 * its value is sent when {@link #sendRegisteredObjects()} is called.
+	 * In any case, the id of the object is sent.
+	 * @param aDefer If positive, and if the object didn't have an id, the object is placed
+	 * on a defered objects stack instead of the registered objects stack. The value of this
+	 * parameter is the timestamp of the event that "request" the deferring.
+	 */
+	private void sendObject(DataOutputStream aStream, Object aObject, long aDefer) throws IOException
 	{
 		long theObjectId = ObjectIdentity.get(aObject);
 		
@@ -456,7 +475,16 @@ public class CollectorPacketWriter
 		{
 			// First time this object appears, register it.
 			theObjectId = -theObjectId;
-			itsRegisteredObjects[itsRegisteredObjectsCount++].set(theObjectId, aObject);
+			if (aDefer == -1)
+			{
+				itsRegisteredObjectsStack.push(theObjectId, aObject);
+				System.out.println("Registering: "+aObject+", id: "+theObjectId);
+			}
+			else
+			{
+				itsDeferredObjectsStack.push(aDefer, theObjectId, aObject);
+				System.out.println("Deferring: "+aObject+", id: "+theObjectId+", p.ts: "+aDefer);
+			}
 		}
 		
 		sendMessageType(aStream, MessageType.OBJECT_UID);
@@ -465,22 +493,29 @@ public class CollectorPacketWriter
 	
 	/**
 	 * Sends all pending registered objects.
-	 * @throws IOException
 	 */
 	private void sendRegisteredObjects() throws IOException
 	{
-		while (itsRegisteredObjectsCount > 0)
+		while (! itsRegisteredObjectsStack.isEmpty())
 		{
-			ObjectEntry theEntry = itsRegisteredObjects[--itsRegisteredObjectsCount];
-
-			sendMessageType(itsStream, MessageType.REGISTERED);
-			itsBuffer.writeLong(theEntry.id);
-			MyObjectOutputStream theStream = new MyObjectOutputStream(itsBuffer);
-			theStream.writeObject(theEntry.object);
-			theStream.drain();
-			
-			itsBuffer.writeTo(itsStream);
+			// Note: remember that this is thread-safe because SocketCollector has one
+			// CollectorPacketWriter per thread.
+			ObjectEntry theEntry = itsRegisteredObjectsStack.pop();
+			sendRegisteredObject(theEntry.id, theEntry.object);
 		}
+	}
+	
+	private void sendRegisteredObject(long aId, Object aObject) throws IOException
+	{
+		sendMessageType(itsStream, MessageType.REGISTERED);
+		itsBuffer.writeLong(aId);
+		MyObjectOutputStream theStream = new MyObjectOutputStream(itsBuffer);
+		theStream.writeObject(aObject);
+		theStream.drain();
+		
+		System.out.println("Sent: "+aObject+", id: "+aId);
+		
+		itsBuffer.writeTo(itsStream);
 	}
 
 	private static void sendMessageType (DataOutputStream aStream, MessageType aMessageType) throws IOException
@@ -537,6 +572,50 @@ public class CollectorPacketWriter
 		}
 	}
 	
+	/**
+	 * A stack of objects pending to be sent.
+	 * @author gpothier
+	 */
+	private static class RegisteredObjectsStack
+	{
+		/**
+		 * List of registered objects that must be sent.
+		 * Note: There is space for a hard-coded number of entries that
+		 * should "be enough for everybody". 
+		 * Note that if only exception events are enabled this array
+		 * will overflow.
+		 */
+		private final ObjectEntry[] itsObjects = new ObjectEntry[1024];
+		
+		/**
+		 * Number of entries in {@link #itsObjects}.
+		 */
+		private int itsSize = 0;
+
+		public RegisteredObjectsStack()
+		{
+			for (int i = 0; i < itsObjects.length; i++)
+			{
+				itsObjects[i] = new ObjectEntry();
+			}
+		}
+		
+		public void push(long aId, Object aObject)
+		{
+			itsObjects[itsSize++].set(aId, aObject);
+		}
+		
+		public boolean isEmpty()
+		{
+			return itsSize == 0;
+		}
+		
+		public ObjectEntry pop()
+		{
+			return itsObjects[--itsSize];
+		}
+	}
+	
 	private static class ObjectEntry
 	{
 		public long id;
@@ -548,4 +627,74 @@ public class CollectorPacketWriter
 			object = aObject;
 		}
 	}
+
+	/**
+	 * A stack of objects whose registration is deferred.
+	 * When we detect the instantiation of an object that is sent by value,
+	 * 
+	 * @author gpothier
+	 */
+	private static class DeferredObjectsStack
+	{
+		/**
+		 * List of registered objects that must be sent.
+		 * Note: There is space for a hard-coded number of entries that
+		 * should "be enough for everybody". 
+		 * Note that if only exception events are enabled this array
+		 * will overflow.
+		 */
+		private final DeferredObjectEntry[] itsObjects = new DeferredObjectEntry[1024];
+		
+		/**
+		 * Number of entries in {@link #itsObjects}.
+		 */
+		private int itsSize = 0;
+
+		public DeferredObjectsStack()
+		{
+			for (int i = 0; i < itsObjects.length; i++)
+			{
+				itsObjects[i] = new DeferredObjectEntry();
+			}
+		}
+		
+		public void push(long aParentTimestamp, long aId, Object aObject)
+		{
+			itsObjects[itsSize++].set(aParentTimestamp, aId, aObject);
+		}
+		
+		public boolean isEmpty()
+		{
+			return itsSize == 0;
+		}
+		
+		/**
+		 * Determines if the element at the top of the stack has the specified parent timestamp.
+		 */
+		public boolean isAvailable(long aParentTimestamp)
+		{
+			if (isEmpty()) return false;
+			return itsObjects[itsSize-1].parentTimestamp == aParentTimestamp;
+		}
+		
+		public DeferredObjectEntry pop()
+		{
+			return itsObjects[--itsSize];
+		}
+	}
+	
+	private static class DeferredObjectEntry
+	{
+		public long parentTimestamp;
+		public long id;
+		public Object object;
+		
+		public void set(long aParentTimestamp, long aId, Object aObject)
+		{
+			parentTimestamp = aParentTimestamp;
+			id = aId;
+			object = aObject;
+		}
+	}
+
 }
