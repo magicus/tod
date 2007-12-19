@@ -196,7 +196,7 @@ public class CollectorPacketWriter
 		if (itsDeferredObjectsStack.isAvailable(aParentTimestamp))
 		{
 			DeferredObjectEntry theEntry = itsDeferredObjectsStack.pop();
-			System.out.println("Sending deferred object: "+theEntry.id);
+//			System.out.println("Sending deferred object: "+theEntry.id);
 			sendRegisteredObject(theEntry.id, theEntry.object);
 		}
 		
@@ -478,12 +478,12 @@ public class CollectorPacketWriter
 			if (aDefer == -1)
 			{
 				itsRegisteredObjectsStack.push(theObjectId, aObject);
-				System.out.println("Registering: "+aObject+", id: "+theObjectId);
+//				System.out.println("Registering: "+aObject+", id: "+theObjectId);
 			}
 			else
 			{
 				itsDeferredObjectsStack.push(aDefer, theObjectId, aObject);
-				System.out.println("Deferring: "+aObject+", id: "+theObjectId+", p.ts: "+aDefer);
+//				System.out.println("Deferring: "+aObject+", id: "+theObjectId+", p.ts: "+aDefer);
 			}
 		}
 		
@@ -510,14 +510,14 @@ public class CollectorPacketWriter
 		sendMessageType(itsStream, MessageType.REGISTERED);
 		itsBuffer.writeLong(aId);
 		MyObjectOutputStream theStream = new MyObjectOutputStream(itsBuffer);
-		theStream.writeObject(aObject);
+		theStream.writeObject(ObjectValue.ensurePortable(aObject));
 		theStream.drain();
 		
-		System.out.println("Sent: "+aObject+", id: "+aId);
+//		System.out.println("Sent: "+aObject+", id: "+aId);
 		
 		itsBuffer.writeTo(itsStream);
 	}
-
+	
 	private static void sendMessageType (DataOutputStream aStream, MessageType aMessageType) throws IOException
 	{
 		aStream.writeByte(aMessageType.ordinal());	

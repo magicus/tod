@@ -30,6 +30,7 @@ import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.core.transport.ObjectValue;
 import tod.gui.kit.Bus;
 import tod.gui.kit.html.HtmlElement;
 import tod.gui.kit.html.HtmlLink;
@@ -152,6 +153,33 @@ public class Hyperlinks
 				theBuilder.append(')');
 			}
 			return aFactory.createText(theBuilder.toString(), Color.RED);
+		}
+		else if (aObject instanceof ObjectValue)
+		{
+			ObjectValue theObjectValue = (ObjectValue) aObject;
+			
+			if (theObjectValue.isThrowable())
+			{
+				StringBuilder theBuilder = new StringBuilder();
+				theBuilder.append(theObjectValue.getClassName());
+				
+				theBuilder.append(" (");
+				theBuilder.append(theObjectValue.getFieldValue("detailMessage"));
+				theBuilder.append(')');
+
+				return aFactory.createText(theBuilder.toString(), Color.RED);
+			}
+			else
+			{
+				StringBuilder theBuilder = new StringBuilder();
+				theBuilder.append(theObjectValue.getClassName());
+				
+				theBuilder.append(" !(");
+				theBuilder.append(theObjectValue.asString());
+				theBuilder.append(')');
+
+				return aFactory.createText(theBuilder.toString(), Color.BLACK);
+			}
 		}
 		else 
 		{
