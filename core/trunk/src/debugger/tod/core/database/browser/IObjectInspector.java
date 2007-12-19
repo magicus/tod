@@ -77,6 +77,7 @@ public interface IObjectInspector extends ICompoundInspector<IFieldInfo>
 	/**
 	 * Returns a filter on field write or behavior call events for the specified member
 	 * of the inspected object.
+	 * @return The filter, or null if the information is not available.
 	 */
 	public IEventFilter getFilter (IMemberInfo aMemberInfo);
 	

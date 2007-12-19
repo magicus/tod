@@ -21,6 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.common;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,7 +95,7 @@ public class ObjectInspector implements IObjectInspector
 		if (itsInstantiationEvent == null) 
 		{
 			System.out.println("[ObjectInspector] Retrieving instantiation event for object: "+getObject());
-			IEventFilter theFilter = itsLogBrowser.createObjectFilter(getObject());
+			IEventFilter theFilter = itsLogBrowser.createTargetFilter(getObject());
 			IEventBrowser theBrowser = itsLogBrowser.createBrowser(theFilter);
 			
 			// Instantiation is the first event if it has been captured
@@ -157,17 +158,21 @@ public class ObjectInspector implements IObjectInspector
 		if (itsDelegate == null)
 		{
 			IInstantiationEvent theEvent = getInstantiationEvent();
-			ITypeInfo theType = theEvent.getType();
-			
-			if (theType instanceof IArrayTypeInfo)
+			if (theEvent == null) itsDelegate = UNAVAILABLE;
+			else
 			{
-				itsDelegate = new ArrayDelegate();
+				ITypeInfo theType = theEvent.getType();
+				
+				if (theType instanceof IArrayTypeInfo)
+				{
+					itsDelegate = new ArrayDelegate();
+				}
+				else if (theType instanceof IClassInfo)
+				{
+					itsDelegate = new ObjectDelegate();
+				}
+				else throw new RuntimeException("Not handled: "+theType);
 			}
-			else if (theType instanceof IClassInfo)
-			{
-				itsDelegate = new ObjectDelegate();
-			}
-			else throw new RuntimeException("Not handled: "+theType);
 		}
 		
 		return itsDelegate;
@@ -175,12 +180,14 @@ public class ObjectInspector implements IObjectInspector
 	
 	public List<IMemberInfo> getMembers()
 	{
-		return getDelegate().getMembers();
+		Delegate theDelegate = getDelegate();
+		return theDelegate != UNAVAILABLE ? theDelegate.getMembers() : Collections.EMPTY_LIST;
 	}
 	
 	public List<IFieldInfo> getFields()
 	{
-		return getDelegate().getFields();
+		Delegate theDelegate = getDelegate();
+		return theDelegate != UNAVAILABLE ? theDelegate.getFields() : Collections.EMPTY_LIST;
 	}
 
 	public void setTimestamp(long aTimestamp)
@@ -259,7 +266,8 @@ public class ObjectInspector implements IObjectInspector
 		IEventFilter theFilter = itsFiltersMap.get(aMember);
 		if (theFilter == null)
 		{
-			theFilter = getDelegate().getFilter(aMember);
+			Delegate theDelegate = getDelegate();
+			theFilter = theDelegate != UNAVAILABLE ? theDelegate.getFilter(aMember) : null;
 			itsFiltersMap.put(aMember, theFilter);
 		}
 		
@@ -317,15 +325,48 @@ public class ObjectInspector implements IObjectInspector
 		if (theEvent != null) setTimestamp(theEvent.getTimestamp());
 	}
 	
+	private static final Delegate UNAVAILABLE = new Delegate()
+	{
+
+		@Override
+		public List<IFieldInfo> getFields()
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public IEventFilter getFilter(IMemberInfo aMember)
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public List<IMemberInfo> getMembers()
+		{
+			throw new UnsupportedOperationException();
+		}
+	};
+	
 	/**
 	 * The object inspector uses a delegate that permits to abstract away the 
 	 * differences between regular objects and arrays.
 	 * @author gpothier
 	 */
-	private abstract class Delegate
+	private static abstract class Delegate
 	{
+		/**
+		 * Delegate method for {@link ObjectInspector#getMembers()}
+		 */
 		public abstract List<IMemberInfo> getMembers();
+
+		/**
+		 * Delegate method for {@link ObjectInspector#getFields()}
+		 */
 		public abstract List<IFieldInfo> getFields();
+
+		/**
+		 * Delegate method for {@link ObjectInspector#getFilter(IMemberInfo)}
+		 */
 		public abstract IEventFilter getFilter(IMemberInfo aMember);
 	}
 	
