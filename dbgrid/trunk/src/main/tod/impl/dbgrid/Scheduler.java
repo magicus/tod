@@ -168,10 +168,14 @@ implements POMGroupDef, ISessionMonitor
 		
 		private void deadlock()
 		{
-			System.out.println("[Scheduler] Deadlock detected");
-			System.out.println("  Current request: "+itsExecutingRequest+" on "+itsExecutingRequest.getThread());
-			System.out.println("  Attempting to interrupt.");
-			itsExecutingRequest.getThread().interrupt();
+			Request theRequest = itsExecutingRequest;
+			if (theRequest != null)
+			{
+				System.out.println("[Scheduler] Deadlock detected");
+				System.out.println("  Current request: "+theRequest+" on "+theRequest.getThread());
+				System.out.println("  Attempting to interrupt.");
+				theRequest.getThread().interrupt();
+			}
 		}
 	}
 }
