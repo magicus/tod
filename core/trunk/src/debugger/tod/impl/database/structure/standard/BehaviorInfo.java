@@ -66,6 +66,13 @@ public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
 		itsSignature = aSignature;
 		itsArgumentTypes = aArgumentTypes;
 		itsReturnType = aReturnType;
+		
+//		System.out.println(String.format(
+//				"[Struct] behavior info [id: %d, sig: %s.%s(%s)]",
+//				aId,
+//				aType.getName(),
+//				aName,
+//				aSignature));
 	}
 	
 	public void setup(

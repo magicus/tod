@@ -86,6 +86,8 @@ implements IClassInfo, ISerializableLocationInfo
 		super(aDatabase, aId, aName);
 		assert aDatabase != null;
 		itsClassNameInfo = aClassNameInfo;
+		
+//		System.out.println(String.format("[Struct] class info [id: %d, name: %s]", aId, aName));
 	}
 
 	public void setup(
