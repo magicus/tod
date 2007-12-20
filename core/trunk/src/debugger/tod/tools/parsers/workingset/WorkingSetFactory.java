@@ -29,6 +29,20 @@ import tod.tools.parsers.WorkingSetParser;
 /**
  * This class parses working sets for {@link reflex.std.run.WorkingSetHandler}
  * 
+ * 
+ * Pseudo Grammar for working set parsing is:
+ *  _classSet = _simpleSet | _coumpoundSet
+ *  _simpleSet = _className   -> new SimpleClassSet(_className)
+ *  _className =  id(.id)*(."*"("*")?)?
+ *  _coumpoundSet =  [ (_op)+ ]   -> new CoupoundSet(_op)
+ *  _op = "+" classSet (":" classSet)*    -> new  SetOperation("+", listOfClassSet)
+ *        | -> new  SetOperation("+", listOfClassSet)
+ * 
+ * 
+ *   If the first operation is an include, default is accept nothing
+ *   If the first operation is an exclude, default is accept all.
+ * 
+ * 
  * @author gpothier
  */
 public class WorkingSetFactory

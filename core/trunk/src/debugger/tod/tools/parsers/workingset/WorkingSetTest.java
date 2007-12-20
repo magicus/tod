@@ -20,25 +20,24 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
  */
 package tod.tools.parsers.workingset;
 
-/**
- * This class set accepts a single class
- */
-public class SingleClassSet extends AbstractClassSet
+public class WorkingSetTest
 {
-	private String itsClassName;
 
-	public SingleClassSet(String aName)
+	public static void main(String[] args)
 	{
-		itsClassName = aName;
+		try
+		{
+			AbstractClassSet theClassSet = WorkingSetFactory.parseWorkingSet("[-sun.**]");
+			System.out.println(theClassSet.accept("java/net/URLClassLoader$1"));
+			System.out.println(theClassSet.accept("sun/misc/Resource"));
+			System.out.println(theClassSet.accept("sun.misc.Resource"));
+			System.out.println(theClassSet.accept("Dummy"));
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+
 	}
 
-	public boolean accept(String aClassname)
-	{
-		return itsClassName.equals(aClassname);
-	}
-
-	public String toString()
-	{
-		return "single class Set: "+itsClassName;
-	}
 }
