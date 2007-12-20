@@ -35,6 +35,7 @@ public class TODUtils
 			IBehaviorInfo aBehavior, 
 			int aLine)
 	{
+		if (aBehavior == null) return null;
 		int[] theLocations = aBehavior.getBytecodeLocations(aLine);
 		if (theLocations != null && theLocations.length>0)
 		{
