@@ -55,6 +55,11 @@ public interface IStructureDatabase
 	public String getId();
 	
 	/**
+	 * Returns a class info that represents an unknown class.
+	 */
+	public IClassInfo getUnknownClass();
+	
+	/**
 	 * Returns the information for a class of the given name and checksum.
 	 * @param aFailIfAbsent If true, the method throws an exception if the requested element
 	 * is not found. Otherwise, returns null if the requested element is not found.
@@ -90,14 +95,6 @@ public interface IStructureDatabase
 	public IClassInfo[] getClasses();
 	
 	/**
-	 * This method either creates a new uninitialized class, or
-	 * returns the latest added class of the specified name.
-	 * If the class is created it is automatically assigned an id and added
-	 * to the database.
-	 */
-	public IClassInfo getNewClass(String aName);
-	
-	/**
 	 * Returns the type that corresponds to the given name. If the type 
 	 * corresponds to a class, returns the latest registered class info 
 	 * for this name.
@@ -120,12 +117,6 @@ public interface IStructureDatabase
 	 * Creates (or obtains a cached) array type.
 	 */
 	public IArrayTypeInfo getArrayType(ITypeInfo aBaseType, int aDimensions);
-	
-	/**
-	 * Same as {@link #getType(String, boolean)}, but if the type is a class and
-	 * does not exist, it is created as by {@link #getNewClass(String)}.
-	 */
-	public ITypeInfo getNewType(String aName);
 	
 	/**
 	 * Returns the field that corresponds to the given id.

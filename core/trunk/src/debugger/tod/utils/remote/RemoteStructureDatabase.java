@@ -32,11 +32,14 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMemberInfo;
+import tod.core.database.structure.IMutableClassInfo;
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
 import tod.core.database.structure.IStructureDatabase.Stats;
 import tod.impl.database.structure.standard.ArrayTypeInfo;
+import tod.impl.database.structure.standard.ClassInfo;
 import tod.impl.database.structure.standard.PrimitiveTypeInfo;
 import tod.impl.database.structure.standard.StructureDatabase;
 import zz.utils.Utils;
@@ -148,14 +151,9 @@ implements RIStructureDatabase
 		return itsDelegate.getId();
 	}
 
-	public IClassInfo getNewClass(String aName)
-	{
-		return itsDelegate.getNewClass(aName);
-	}
-
 	public Stats getStats()
 	{
-		return null;
+		return itsDelegate.getStats();
 	}
 
 	public ITypeInfo getType(String aName, boolean aFailIfAbsent)
@@ -185,12 +183,14 @@ implements RIStructureDatabase
 	 * @author gpothier
 	 */
 	private static class MyDatabase extends UnicastRemoteObject
-	implements IStructureDatabase, RIStructureDatabaseListener
+	implements IMutableStructureDatabase, RIStructureDatabaseListener
 	{
 		private RIStructureDatabase itsDatabase;
 		
-		private List<IClassInfo> itsClasses = new ArrayList<IClassInfo>();
-		private Map<String, IClassInfo> itsClassesMap = new HashMap<String, IClassInfo>();
+		private List<IMutableClassInfo> itsClasses = new ArrayList<IMutableClassInfo>();
+		private Map<String, IMutableClassInfo> itsClassesMap = new HashMap<String, IMutableClassInfo>();
+		
+		private IClassInfo itsUnknownClass = new ClassInfo(this, null, "Unknown", -1);
 		
 		private List<IBehaviorInfo> itsBehaviors = new ArrayList<IBehaviorInfo>();
 		private List<IFieldInfo> itsFields = new ArrayList<IFieldInfo>();
@@ -213,13 +213,13 @@ implements RIStructureDatabase
 			System.out.println("[RemoteStructureDatabase] Fecthing classes...");
 			for(IClassInfo theClass : itsDatabase.getClasses())
 			{
-				cacheClass(theClass);
+				cacheClass((IMutableClassInfo) theClass);
 			}
 
 			System.out.println("[RemoteStructureDatabase] Done.");
 		}
 		
-		private void cacheClass(IClassInfo aClass)
+		private void cacheClass(IMutableClassInfo aClass)
 		{
 			// Rebind the class to this database if necessary.
 			if (aClass instanceof ISerializableLocationInfo)
@@ -265,7 +265,7 @@ implements RIStructureDatabase
 		 */
 		private void cacheMember(IMemberInfo aMember)
 		{
-			IClassInfo theClass = (IClassInfo) aMember.getType();
+			IMutableClassInfo theClass = (IMutableClassInfo) aMember.getType();
 			cacheClass(theClass);
 		}
 		
@@ -281,6 +281,18 @@ implements RIStructureDatabase
 			if (aStats.nBehaviors != itsLastStats.nBehaviors) itsBehaviorsUpToDate = false;
 			if (aStats.nFields != itsLastStats.nFields) itsFieldsUpToDate = false;
 			itsLastStats = aStats;
+		}
+		
+		private void updateStats()
+		{
+			try
+			{
+				itsLastStats = itsDatabase.getStats();
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
 		}
 		
 		public IBehaviorInfo getBehavior(int aBehaviorId, boolean aFailIfAbsent)
@@ -333,14 +345,14 @@ implements RIStructureDatabase
 			}
 		}
 
-		public IClassInfo getClass(int aClassId, boolean aFailIfAbsent)
+		public IMutableClassInfo getClass(int aClassId, boolean aFailIfAbsent)
 		{
 			try
 			{
-				IClassInfo theClass = Utils.listGet(itsClasses, aClassId);
+				IMutableClassInfo theClass = Utils.listGet(itsClasses, aClassId);
 				if (theClass == null)
 				{
-					theClass = itsDatabase.getClass(aClassId, false);
+					theClass = (IMutableClassInfo) itsDatabase.getClass(aClassId, false);
 					if (theClass != null)
 					{
 						assert theClass.getId() == aClassId;
@@ -357,6 +369,11 @@ implements RIStructureDatabase
 			}
 		}
 		
+		public IClassInfo getUnknownClass()
+		{
+			return itsUnknownClass;
+		}
+
 		public IArrayTypeInfo getArrayType(ITypeInfo aBaseType, int aDimensions)
 		{
 			return new ArrayTypeInfo(this, aBaseType, aDimensions);
@@ -394,14 +411,14 @@ implements RIStructureDatabase
 			throw new UnsupportedOperationException();
 		}
 
-		public IClassInfo getClass(String aName, boolean aFailIfAbsent)
+		public IMutableClassInfo getClass(String aName, boolean aFailIfAbsent)
 		{
 			try
 			{
-				IClassInfo theClass = itsClassesMap.get(aName);
+				IMutableClassInfo theClass = itsClassesMap.get(aName);
 				if (theClass == null)
 				{
-					theClass = itsDatabase.getClass(aName, false);
+					theClass = (IMutableClassInfo) itsDatabase.getClass(aName, false);
 					if (theClass != null)
 					{
 						Utils.listSet(itsClasses, theClass.getId(), theClass);
@@ -425,7 +442,14 @@ implements RIStructureDatabase
 
 		public IClassInfo[] getClasses()
 		{
-			throw new UnsupportedOperationException();
+			updateStats();
+			List<IClassInfo> theClasses = new ArrayList<IClassInfo>();
+			for (int i=StructureDatabase.FIRST_CLASS_ID;i<getStats().nTypes;i++)
+			{
+				IMutableClassInfo theClass = getClass(i, false);
+				if (theClass != null) theClasses.add(theClass);
+			}
+			return theClasses.toArray(new IClassInfo[theClasses.size()]);
 		}
 
 		public IClassInfo[] getClasses(String aName)
@@ -433,7 +457,7 @@ implements RIStructureDatabase
 			return null;
 		}
 
-		public IClassInfo getNewClass(String aName)
+		public IMutableClassInfo getNewClass(String aName)
 		{
 			throw new UnsupportedOperationException();
 		}

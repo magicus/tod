@@ -18,40 +18,43 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.database.structure.standard;
+package tod.gui.seed;
 
-import tod.core.database.structure.IMutableStructureDatabase;
-import tod.core.database.structure.ITypeInfo;
-
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.ILocationInfo;
+import tod.gui.IGUIManager;
+import tod.gui.view.structure.StructureView;
+import zz.utils.properties.IRWProperty;
+import zz.utils.properties.SimpleRWProperty;
 
 /**
- * Description of a type. This is an abstract class;
- * there are concrete subclasses for class, interface,
- * primitive type and array type.
+ * Seed for {@link StructureView}
  * @author gpothier
  */
-public abstract class TypeInfo extends LocationInfo implements ITypeInfo
+public class StructureSeed extends LogViewSeed
 {
-	public TypeInfo(IMutableStructureDatabase aDatabase, int aId, String aName)
-	{
-		super(aDatabase, aId, aName);
-	}
+	private final IRWProperty<ILocationInfo> pSelectedLocation = new SimpleRWProperty<ILocationInfo>();
 
-	public TypeInfo(IMutableStructureDatabase aDatabase, int aId)
+	public StructureSeed(IGUIManager aGUIManager, ILogBrowser aLog)
 	{
-		super(aDatabase, aId);
+		super(aGUIManager, aLog);
 	}
 	
-	public ClassInfo createUncertainClone()
+	/**
+	 * This property defines the currently selected location (class, method, etc.).
+	 */
+	public IRWProperty<ILocationInfo> pSelectedLocation()
 	{
-		ClassInfo theClone = (ClassInfo) super.clone();
-		theClone.changeName(getName()+ "?");
-		return theClone;
+		return pSelectedLocation;
 	}
 
 	@Override
-	public String toString()
+	protected StructureView requestComponent()
 	{
-		return "Type ("+getId()+", "+getName()+")";
+		StructureView theView = new StructureView(getGUIManager(), getLogBrowser(), this);
+		theView.init();
+		return theView;
 	}
+	
+	
 }

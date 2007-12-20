@@ -23,7 +23,8 @@ package tod.impl.database.structure.standard;
 import java.io.Serializable;
 
 import tod.core.database.structure.ILocationInfo;
-import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.IMutableLocationInfo;
+import tod.core.database.structure.IMutableStructureDatabase;
 import zz.utils.PublicCloneable;
 
 /**
@@ -31,19 +32,19 @@ import zz.utils.PublicCloneable;
  * @author gpothier
  */
 public abstract class LocationInfo extends PublicCloneable 
-implements ILocationInfo, Serializable
+implements IMutableLocationInfo, Serializable
 {
-	private transient IStructureDatabase itsDatabase;
+	private transient IMutableStructureDatabase itsDatabase;
 	private final int itsId;
 	private String itsName;
 	
-	public LocationInfo(IStructureDatabase aDatabase, int aId)
+	public LocationInfo(IMutableStructureDatabase aDatabase, int aId)
 	{
 		itsDatabase = aDatabase;
 		itsId = aId;
 	}
 
-	public LocationInfo(IStructureDatabase aDatabase, int aId, String aName)
+	public LocationInfo(IMutableStructureDatabase aDatabase, int aId, String aName)
 	{
 		itsDatabase = aDatabase;
 		itsId = aId;
@@ -60,12 +61,12 @@ implements ILocationInfo, Serializable
 		return itsName;
 	}
 
-	public IStructureDatabase getDatabase()
+	public IMutableStructureDatabase getDatabase()
 	{
 		return itsDatabase;
 	}
 	
-	public void setDatabase(IStructureDatabase aDatabase)
+	public void setDatabase(IMutableStructureDatabase aDatabase)
 	{
 		assert itsDatabase == null;
 		itsDatabase = aDatabase;

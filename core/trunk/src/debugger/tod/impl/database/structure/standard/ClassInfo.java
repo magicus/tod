@@ -30,7 +30,10 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMemberInfo;
-import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.IMutableBehaviorInfo;
+import tod.core.database.structure.IMutableClassInfo;
+import tod.core.database.structure.IMutableFieldInfo;
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
 import tod.impl.database.structure.standard.StructureDatabase.ClassNameInfo;
@@ -41,11 +44,13 @@ import zz.utils.Utils;
  * @author gpothier
  */
 public class ClassInfo extends TypeInfo 
-implements IClassInfo, ISerializableLocationInfo
+implements IMutableClassInfo, ISerializableLocationInfo
 {
 	private static final long serialVersionUID = -2583314414851419966L;
 
 	private transient ClassNameInfo itsClassNameInfo;
+	
+	private byte[] itsBytecode;
 	
 	private boolean itsInScope;
 	private boolean itsInterface;
@@ -64,8 +69,11 @@ implements IClassInfo, ISerializableLocationInfo
 	 */
 	private int[] itsInterfacesIds;
 	
-	private Map<String, IFieldInfo> itsFieldsMap = new HashMap<String, IFieldInfo>();
-	private Map<String, IBehaviorInfo> itsBehaviorsMap = new HashMap<String, IBehaviorInfo>();
+	private Map<String, IMutableFieldInfo> itsFieldsMap = 
+		new HashMap<String, IMutableFieldInfo>();
+	
+	private Map<String, IMutableBehaviorInfo> itsBehaviorsMap = 
+		new HashMap<String, IMutableBehaviorInfo>();
 	
 	/**
 	 * Whether this class info can be disposed.
@@ -81,7 +89,7 @@ implements IClassInfo, ISerializableLocationInfo
 	
 	private long itsStartTime;
 
-	public ClassInfo(IStructureDatabase aDatabase, ClassNameInfo aClassNameInfo, String aName, int aId)
+	public ClassInfo(IMutableStructureDatabase aDatabase, ClassNameInfo aClassNameInfo, String aName, int aId)
 	{
 		super(aDatabase, aId, aName);
 		assert aDatabase != null;
@@ -104,6 +112,11 @@ implements IClassInfo, ISerializableLocationInfo
 		setSupertype(aSuperclass);
 	}
 	
+	public void setBytecode(byte[] aBytecode)
+	{
+		itsBytecode = aBytecode;
+	}
+	
 	/**
 	 * Same as {@link #getDatabase()} but casts to {@link StructureDatabase}.
 	 * This is only for registration methods, that are used only where the original
@@ -115,13 +128,18 @@ implements IClassInfo, ISerializableLocationInfo
 	}
 	
 	@Override
-	public void setDatabase(IStructureDatabase aDatabase)
+	public void setDatabase(IMutableStructureDatabase aDatabase)
 	{
 		super.setDatabase(aDatabase);
 		for (IMemberInfo theMember : getMembers())
 		{
 			((MemberInfo) theMember).setDatabase(aDatabase);
 		}
+	}
+	
+	public byte[] getBytecode()
+	{
+		return itsBytecode;
 	}
 	
 	protected IMemberInfo[] getMembers()
@@ -165,7 +183,7 @@ implements IClassInfo, ISerializableLocationInfo
 	/**
 	 * Registers the given field info object.
 	 */
-	public void register(IFieldInfo aField)
+	public void register(IMutableFieldInfo aField)
 	{
 		itsFieldsMap.put (aField.getName(), aField);
 		getStructureDatabase().registerField(aField);
@@ -174,28 +192,28 @@ implements IClassInfo, ISerializableLocationInfo
 	/**
 	 * Registers the given behavior info object.
 	 */
-	public void register(IBehaviorInfo aBehavior)
+	public void register(IMutableBehaviorInfo aBehavior)
 	{
 		itsBehaviorsMap.put(getKey(aBehavior), aBehavior);
 		getStructureDatabase().registerBehavior(aBehavior);
 	}
 	
-	public IFieldInfo getField(String aName)
+	public IMutableFieldInfo getField(String aName)
 	{
 		return itsFieldsMap.get(aName);
 	}
 	
-	public IBehaviorInfo getBehavior(String aName, ITypeInfo[] aArgumentTypes)
+	public IMutableBehaviorInfo getBehavior(String aName, ITypeInfo[] aArgumentTypes)
 	{
 		return itsBehaviorsMap.get(getBehaviorKey(aName, aArgumentTypes));
 	}
 	
-	public IBehaviorInfo getNewBehavior(String aName, String aDescriptor)
+	public IMutableBehaviorInfo getNewBehavior(String aName, String aDescriptor)
 	{
-		ITypeInfo[] theArgumentTypes = LocationUtils.getArgumentTypes(getDatabase(), aDescriptor, true);
-		ITypeInfo theReturnType = LocationUtils.getReturnType(getDatabase(), aDescriptor, true);
+		ITypeInfo[] theArgumentTypes = LocationUtils.getArgumentTypes(getDatabase(), aDescriptor);
+		ITypeInfo theReturnType = LocationUtils.getReturnType(getDatabase(), aDescriptor);
 		
-		IBehaviorInfo theBehavior = getBehavior(aName, theArgumentTypes);
+		IMutableBehaviorInfo theBehavior = getBehavior(aName, theArgumentTypes);
 		if (theBehavior == null)
 		{
 			int theId = itsClassNameInfo.getBehaviorId(aName, theArgumentTypes);
@@ -214,9 +232,9 @@ implements IClassInfo, ISerializableLocationInfo
 		return theBehavior;
 	}
 	
-	public IFieldInfo getNewField(String aName, ITypeInfo aType)
+	public IMutableFieldInfo getNewField(String aName, ITypeInfo aType)
 	{
-		IFieldInfo theField = getField(aName);
+		IMutableFieldInfo theField = getField(aName);
 		if (theField == null)
 		{
 			int theId = itsClassNameInfo.getFieldId(aName, aType);
@@ -230,12 +248,12 @@ implements IClassInfo, ISerializableLocationInfo
 	
 	public Iterable<IFieldInfo> getFields()
 	{
-		return itsFieldsMap.values();
+		return (Iterable) itsFieldsMap.values();
 	}
 	
 	public Iterable<IBehaviorInfo> getBehaviors()
 	{
-		return itsBehaviorsMap.values();
+		return (Iterable) itsBehaviorsMap.values();
 	}
 	
 	public IClassInfo[] getInterfaces()

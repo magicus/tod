@@ -24,12 +24,12 @@ import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
-import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.IMutableClassInfo;
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
-import tod.core.database.structure.IStructureDatabase.IBehaviorListener;
 
 public class DummyStructureDatabase 
-implements IStructureDatabase
+implements IMutableStructureDatabase
 {
 	private static DummyStructureDatabase INSTANCE = new DummyStructureDatabase();
 
@@ -56,7 +56,7 @@ implements IStructureDatabase
 		return null;
 	}
 
-	public IClassInfo getNewClass(String aName)
+	public IMutableClassInfo getNewClass(String aName)
 	{
 		return null;
 	}
@@ -65,17 +65,22 @@ implements IStructureDatabase
 	{
 	}
 
-	public IClassInfo getClass(int aId, boolean aFailIfAbsent)
+	public IMutableClassInfo getClass(int aId, boolean aFailIfAbsent)
 	{
 		return null;
 	}
 
-	public IClassInfo getClass(String aName, boolean aFailIfAbsent)
+	public IMutableClassInfo getClass(String aName, boolean aFailIfAbsent)
 	{
 		return null;
 	}
 
 	public IClassInfo getClass(String aName, String aChecksum, boolean aFailIfAbsent)
+	{
+		return null;
+	}
+
+	public IClassInfo getUnknownClass()
 	{
 		return null;
 	}

@@ -25,6 +25,7 @@ import org.objectweb.asm.Type;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 
@@ -39,8 +40,7 @@ public class LocationUtils
 	 */
 	public static ITypeInfo[] getArgumentTypes(
 			IStructureDatabase aDatabase,
-			String aSignature,
-			boolean aCreateIfMissing)
+			String aSignature)
 	{
 		Type[] theASMArgumentTypes = Type.getArgumentTypes(aSignature);
 		ITypeInfo[] theArgumentTypes = new ITypeInfo[theASMArgumentTypes.length];
@@ -48,28 +48,55 @@ public class LocationUtils
 		for (int i = 0; i < theASMArgumentTypes.length; i++)
 		{
 			Type theASMType = theASMArgumentTypes[i];
-			theArgumentTypes[i] = aCreateIfMissing ?
-					aDatabase.getNewType(theASMType.getDescriptor())
-					: aDatabase.getType(theASMType.getDescriptor(), true);
-			
+			theArgumentTypes[i] = aDatabase.getType(theASMType.getDescriptor(), true);
 		}
 		
 		return theArgumentTypes;
 	}
 
+	/**
+	 * Returns the argument types that correspond to the given behavior signature. 
+	 * If some type is not found in the database it is created.
+	 */
+	public static ITypeInfo[] getArgumentTypes(
+			IMutableStructureDatabase aDatabase,
+			String aSignature)
+	{
+		Type[] theASMArgumentTypes = Type.getArgumentTypes(aSignature);
+		ITypeInfo[] theArgumentTypes = new ITypeInfo[theASMArgumentTypes.length];
+		
+		for (int i = 0; i < theASMArgumentTypes.length; i++)
+		{
+			Type theASMType = theASMArgumentTypes[i];
+			theArgumentTypes[i] = aDatabase.getNewType(theASMType.getDescriptor());
+					
+		}
+		
+		return theArgumentTypes;
+	}
+	
 
 	/**
 	 * Determines a TOD return type given a method signature
 	 */
 	public static ITypeInfo getReturnType(
 			IStructureDatabase aDatabase,
-			String aSignature,
-			boolean aCreateIfMissing)
+			String aSignature)
 	{
 		Type theASMType = Type.getReturnType(aSignature);
-		return aCreateIfMissing ?
-				aDatabase.getNewType(theASMType.getDescriptor())
-				: aDatabase.getType(theASMType.getDescriptor(), true);
+		return aDatabase.getType(theASMType.getDescriptor(), true);
+	}
+	
+	/**
+	 * Determines a TOD return type given a method signature
+	 * If some type is not found in the database it is created.
+	 */
+	public static ITypeInfo getReturnType(
+			IMutableStructureDatabase aDatabase,
+			String aSignature)
+	{
+		Type theASMType = Type.getReturnType(aSignature);
+		return aDatabase.getNewType(theASMType.getDescriptor());
 	}
 	
 	
@@ -112,7 +139,7 @@ public class LocationUtils
 			String aSignature, 
 			boolean aSearchAncestors)
 	{
-		ITypeInfo[] theArgumentTypes = getArgumentTypes(aDatabase, aSignature, false);
+		ITypeInfo[] theArgumentTypes = getArgumentTypes(aDatabase, aSignature);
 		
 		while (aClass != null)
 		{

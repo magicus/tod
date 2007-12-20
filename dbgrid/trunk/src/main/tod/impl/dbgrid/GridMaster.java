@@ -45,7 +45,7 @@ import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IHostInfo;
-import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.IStructureDatabase.IBehaviorListener;
 import tod.core.server.TODServer;
@@ -102,7 +102,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	private long itsLastKeepAlive = System.currentTimeMillis();
 	
 	
-	private IStructureDatabase itsStructureDatabase;
+	private IMutableStructureDatabase itsStructureDatabase;
 	private ExceptionResolver itsExceptionResolver;
 	private RemoteStructureDatabase itsRemoteStructureDatabase;
 	
@@ -148,7 +148,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	
 	private GridMaster(
 			TODConfig aConfig, 
-			IStructureDatabase aStructureDatabase, 
+			IMutableStructureDatabase aStructureDatabase, 
 			IInstrumenter aInstrumenter,
 			DispatchTreeStructure aDispatchTreeStructure,
 			boolean aStartServer) throws RemoteException
@@ -175,7 +175,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	public static GridMaster createLocal(
 			TODConfig aConfig, 
-			IStructureDatabase aStructureDatabase, 
+			IMutableStructureDatabase aStructureDatabase, 
 			IInstrumenter aInstrumenter,
 			DatabaseNode aDatabaseNode,
 			boolean aStartServer) throws RemoteException
@@ -196,7 +196,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	public static GridMaster create(
 			TODConfig aConfig, 
-			IStructureDatabase aStructureDatabase, 
+			IMutableStructureDatabase aStructureDatabase, 
 			IInstrumenter aInstrumenter,
 			DispatchTreeStructure aTreeStructure) throws RemoteException
 	{
@@ -584,7 +584,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 
 	}
 	
-	public IStructureDatabase getStructureDatabase()
+	public IMutableStructureDatabase getStructureDatabase()
 	{
 		return itsStructureDatabase;
 	}

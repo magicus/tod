@@ -34,6 +34,9 @@ import tod.Util;
 import tod.core.BehaviorCallType;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
+import tod.core.database.structure.IMutableBehaviorInfo;
+import tod.core.database.structure.IMutableClassInfo;
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import zz.utils.ArrayStack;
@@ -68,7 +71,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 	private boolean itsTrace;
 	private boolean itsInterface;
 	
-	private IClassInfo itsClassInfo;
+	private IMutableClassInfo itsClassInfo;
 	private IClassInfo itsSuperclass;
 	private String itsChecksum;
 	
@@ -76,7 +79,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 	private final InfoCollector itsInfoCollector;
 	private int itsCurrentMethodIndex = 0;
 
-	private final IStructureDatabase itsDatabase;
+	private final IMutableStructureDatabase itsDatabase;
 	private final ASMDebuggerConfig itsConfig;
 
 	/**
@@ -87,7 +90,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 
 	
 	public LogBCIVisitor(
-			IStructureDatabase aDatabase,
+			IMutableStructureDatabase aDatabase,
 			ASMDebuggerConfig aConfig,
 			InfoCollector aInfoCollector, 
 			ClassVisitor aVisitor, 
@@ -148,6 +151,11 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		super.visit(aVersion, access, aName, aSignature, aSuperName, aInterfaces);
 	}
 	
+	public IMutableClassInfo getClassInfo()
+	{
+		return itsClassInfo;
+	}
+	
 	@Override
 	public MethodVisitor visitMethod(
 			int access, 
@@ -176,7 +184,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		private ASMMethodInfo itsMethodInfo;
 		private ASMBehaviorInstrumenter itsInstrumenter;
 		
-		private IBehaviorInfo itsBehavior;
+		private IMutableBehaviorInfo itsBehavior;
 		private int itsStoreIndex = 0;
 
 		public BCIMethodVisitor(MethodVisitor mv, ASMMethodInfo aMethodInfo)

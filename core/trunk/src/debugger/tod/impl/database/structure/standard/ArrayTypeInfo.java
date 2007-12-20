@@ -21,9 +21,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.database.structure.standard;
 
 import tod.core.database.structure.IArrayTypeInfo;
-import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
-import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
 
 /**
  * Note: This class is not a {@link ISerializableLocationInfo}
@@ -36,7 +35,7 @@ public class ArrayTypeInfo extends TypeInfo implements IArrayTypeInfo
 	private final ITypeInfo itsElementType;
 	private final int itsDimensions;
 	
-	public ArrayTypeInfo(IStructureDatabase aDatabase, ITypeInfo aElementType, int aDimensions)
+	public ArrayTypeInfo(IMutableStructureDatabase aDatabase, ITypeInfo aElementType, int aDimensions)
 	{
 		super(aDatabase, -1, aElementType.getName()+getBrackets(aDimensions));
 		itsElementType = aElementType;

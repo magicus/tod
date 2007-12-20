@@ -23,22 +23,33 @@ package tod.impl.database.structure.standard;
 import tod.core.database.structure.IArraySlotFieldInfo;
 import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.ITypeInfo;
 
-public class ArraySlotFieldInfo extends FieldInfo
+public class ArraySlotFieldInfo 
 implements IArraySlotFieldInfo
 {
+	private transient IStructureDatabase itsDatabase;
+	private final int itsId;
+	private final IArrayTypeInfo itsType;
+
+	
 	public ArraySlotFieldInfo(IStructureDatabase aDatabase, IArrayTypeInfo aType, int aIndex)
 	{
-		super(aDatabase, -aIndex-1, aType, null);
+		itsDatabase = aDatabase;
+		itsId = -aIndex-1;
+		itsType = aType;
 	}
 	
-	@Override
+	public IStructureDatabase getDatabase()
+	{
+		return itsDatabase;
+	}
+
 	public IArrayTypeInfo getType()
 	{
-		return (IArrayTypeInfo) super.getType();
+		return itsType;
 	}
 	
-	@Override
 	public int getId()
 	{
 		return -1;
@@ -46,10 +57,9 @@ implements IArraySlotFieldInfo
 	
 	public int getIndex()
 	{
-		return -super.getId()-1;
+		return -itsId-1;
 	}
 	
-	@Override
 	public String getName()
 	{
 		return "["+getIndex()+"]";

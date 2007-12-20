@@ -64,6 +64,7 @@ import tod.gui.seed.LogViewSeed;
 import tod.gui.seed.LogViewSeedFactory;
 import tod.gui.seed.ObjectHistorySeed;
 import tod.gui.seed.StringSearchSeed;
+import tod.gui.seed.StructureSeed;
 import tod.gui.seed.ThreadsSeed;
 import tod.gui.view.IEventListView;
 import tod.gui.view.LogView;
@@ -320,6 +321,26 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 			theToolbar.add(new JButton(theShowAllEventsAction));
 			registerAction(theShowAllEventsAction);
 		}
+		
+		// Add a button that shows the structure view
+		Action theStructureViewAction = new SimpleAction(
+				"View classes",
+				"<html>" +
+				"<b>Structure view.</b> This view presents the structure <br>" +
+				"database.")
+		{
+			public void actionPerformed(ActionEvent aE)
+			{
+				ILogBrowser theLogBrowser = getSession().getLogBrowser();
+				StructureSeed theSeed = new StructureSeed(MinerUI.this, theLogBrowser);
+				openSeed(theSeed, false);			
+			}
+			
+		};
+		
+		theToolbar.add(new JButton(theStructureViewAction));
+		registerAction(theStructureViewAction);
+
 		
 		if (DebugFlags.SHOW_DEBUG_GUI)
 		{

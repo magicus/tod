@@ -30,17 +30,6 @@ import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 public interface IBehaviorInfo extends IMemberInfo
 {
 	/**
-	 * Sets up the attributes of this behavior.
-	 * This method should be called only once.
-	 */
-	public void setup(
-			boolean aTraced,
-			BehaviorKind aKind,
-			int aCodeSize,
-			LineNumberInfo[] aLineNumberInfos,
-			LocalVariableInfo[] aLocalVariableInfos);
-	
-	/**
 	 * The type of a behavior is always a class.
 	 */
 	public IClassInfo getType();

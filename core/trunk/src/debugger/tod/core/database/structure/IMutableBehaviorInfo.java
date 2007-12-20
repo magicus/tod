@@ -18,31 +18,28 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.database.structure.standard;
+package tod.core.database.structure;
 
-import tod.core.ILogCollector;
-import tod.core.database.structure.IMutableFieldInfo;
-import tod.core.database.structure.IMutableStructureDatabase;
-import tod.core.database.structure.ITypeInfo;
+import tod.core.BehaviorKind;
+import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
+import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 
 /**
- * Aggregates the information a {@link ILogCollector collector}
- * receives about a field.
+ * Writable extension of {@link IBehaviorInfo}
  * @author gpothier
  */
-public class FieldInfo extends MemberInfo implements IMutableFieldInfo
+public interface IMutableBehaviorInfo extends IBehaviorInfo, IMutableLocationInfo
 {
-
-	public FieldInfo(IMutableStructureDatabase aDatabase, int aId, ITypeInfo aTypeInfo, String aName)
-	{
-		super(aDatabase, aId, aTypeInfo, aName);
-	}
-
+	/**
+	 * Sets up the attributes of this behavior.
+	 * This method should be called only once.
+	 */
+	public void setup(
+			boolean aTraced,
+			BehaviorKind aKind,
+			int aCodeSize,
+			LineNumberInfo[] aLineNumberInfos,
+			LocalVariableInfo[] aLocalVariableInfos);
 	
-	@Override
-	public String toString()
-	{
-		return "Field ("+getId()+", "+getName()+")";
-	}
 
 }

@@ -31,8 +31,8 @@ import org.junit.Test;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
-import tod.core.database.structure.IClassInfo;
-import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.IMutableClassInfo;
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.impl.database.structure.standard.HostInfo;
 import tod.impl.database.structure.standard.PrimitiveTypeInfo;
 import tod.impl.database.structure.standard.ThreadInfo;
@@ -51,7 +51,7 @@ public class TestGridMaster
 	@Test public void test() throws RemoteException
 	{
 		GridMaster theMaster = Fixtures.setupLocalMaster();
-		IStructureDatabase theStructureDatabase = theMaster.getStructureDatabase();
+		IMutableStructureDatabase theStructureDatabase = theMaster.getStructureDatabase();
 //		theStructureDatabase.clear();
 		
 		for (int i=1;i<=100;i++) 
@@ -64,7 +64,7 @@ public class TestGridMaster
 				theMaster.registerThread(new ThreadInfo(theHostInfo, j, j, ""+j));
 			}
 			
-			IClassInfo theClass = theStructureDatabase.getNewClass("C"+i);
+			IMutableClassInfo theClass = theStructureDatabase.getNewClass("C"+i);
 			theClass.getNewBehavior("m"+i, "()V");
 			theClass.getNewField("f"+i, PrimitiveTypeInfo.BOOLEAN);
 		}

@@ -26,9 +26,11 @@ import java.util.List;
 import java.util.Map;
 
 import tod.core.BehaviorKind;
-import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
+import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
+import tod.core.database.structure.IBehaviorInfo.HasTrace;
 import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 
@@ -37,7 +39,7 @@ import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
  * Base class for behaviour (method/constructor) information.
  * @author gpothier
  */
-public class BehaviorInfo extends MemberInfo implements IBehaviorInfo
+public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 {
 	private static final long serialVersionUID = 8645425455286128491L;
 	

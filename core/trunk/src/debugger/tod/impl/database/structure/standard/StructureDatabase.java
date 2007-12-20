@@ -35,6 +35,8 @@ import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.IMutableClassInfo;
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import zz.utils.Utils;
@@ -43,8 +45,13 @@ import zz.utils.Utils;
  * Standard implementation of {@link IStructureDatabase}
  * @author gpothier
  */
-public class StructureDatabase implements IStructureDatabase
+public class StructureDatabase implements IMutableStructureDatabase
 {
+	/**
+	 * Class ids below this value are reserved.
+	 */
+	public static final int FIRST_CLASS_ID = 100;
+	
 	private final String itsId;
 	
 	/**
@@ -71,6 +78,8 @@ public class StructureDatabase implements IStructureDatabase
 	
 	private List<IBehaviorListener> itsBehaviorListeners =
 		new ArrayList<IBehaviorListener>();
+	
+	private IClassInfo itsUnknownClass = new ClassInfo(this, null, "Unknown", -1);
 	
 	protected StructureDatabase(String aId, File aFile, Ids aIds)
 	{
@@ -169,6 +178,11 @@ public class StructureDatabase implements IStructureDatabase
 		
 		return null;
 	}
+	
+	public IClassInfo getUnknownClass()
+	{
+		return itsUnknownClass;
+	}
 
 	public ClassInfo getClass(String aName, boolean aFailIfAbsent)
 	{
@@ -244,7 +258,7 @@ public class StructureDatabase implements IStructureDatabase
 		fireBehaviorRegistered(aBehavior);
 	}
 
-	public IClassInfo getClass(int aId, boolean aFailIfAbsent)
+	public IMutableClassInfo getClass(int aId, boolean aFailIfAbsent)
 	{
 		ClassInfo theClass = Utils.listGet(itsClasses, aId);
 		if (theClass == null && aFailIfAbsent) throw new RuntimeException("Class not found: "+aId);
@@ -286,7 +300,7 @@ public class StructureDatabase implements IStructureDatabase
 	}
 
 	public static ITypeInfo getType(
-			IStructureDatabase aStructureDatabase, 
+			IMutableStructureDatabase aStructureDatabase, 
 			String aName, 
 			boolean aCreateIfAbsent, 
 			boolean aFailIfAbsent)
@@ -374,9 +388,9 @@ public class StructureDatabase implements IStructureDatabase
 		private static final long serialVersionUID = -8031089051309554360L;
 		
 		/**
-		 * Ids below 100 are reserved; Ids 1 to 9 are for primitive types.
+		 * Ids below FIRST_CLASS_ID are reserved; Ids 1 to 9 are for primitive types.
 		 */
-		private int itsNextFreeClassId = 100;
+		private int itsNextFreeClassId = FIRST_CLASS_ID;
 		private int itsNextFreeBehaviorId = 1;
 		private int itsNextFreeFieldId = 1;
 

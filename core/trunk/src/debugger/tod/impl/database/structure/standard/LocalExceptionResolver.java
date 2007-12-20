@@ -21,7 +21,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.database.structure.standard;
 
 import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.IClassInfo;
+import tod.core.database.structure.IMutableClassInfo;
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.IStructureDatabase.IBehaviorListener;
 import tod.utils.TODUtils;
@@ -38,9 +39,9 @@ import tod.utils.TODUtils;
 public class LocalExceptionResolver extends ExceptionResolver
 implements IBehaviorListener
 {
-	private final IStructureDatabase itsStructureDatabase;
+	private final IMutableStructureDatabase itsStructureDatabase;
 
-	public LocalExceptionResolver(IStructureDatabase aStructureDatabase)
+	public LocalExceptionResolver(IMutableStructureDatabase aStructureDatabase)
 	{
 		itsStructureDatabase = aStructureDatabase;
 		itsStructureDatabase.addBehaviorListener(this);
@@ -58,7 +59,7 @@ implements IBehaviorListener
 		ClassInfo theClassInfo = getClassInfo(aClassName);
 		if (theClassInfo == null) 
 		{
-			IClassInfo theClass = itsStructureDatabase.getNewClass(aClassName);
+			IMutableClassInfo theClass = itsStructureDatabase.getNewClass(aClassName);
 			
 			// This will register both the class and the behavior
 			theClass.getNewBehavior(aMethodName, aMethodSignature);
@@ -68,7 +69,7 @@ implements IBehaviorListener
 		int theId = theClassInfo.getBehavior(aMethodName, aMethodSignature, false);
 		if (theId == 0)
 		{
-			IClassInfo theClass = itsStructureDatabase.getClass(aClassName, true);
+			IMutableClassInfo theClass = itsStructureDatabase.getClass(aClassName, true);
 			
 			// This will register the behavior
 			theClass.getNewBehavior(aMethodName, aMethodSignature);

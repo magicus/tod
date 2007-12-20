@@ -28,16 +28,9 @@ package tod.core.database.structure;
 public interface IClassInfo extends ITypeInfo
 {
 	/**
-	 * Sets up the basic information about this class.
-	 * This operation can be performed only once (and throws
-	 * an exception if it is called more than once).
+	 * Returns the bytecode of the (instrumented version of the) class.
 	 */
-	public void setup(
-			boolean aIsInterface,
-			boolean aIsInScope,
-			String aChecksum, 
-			IClassInfo[] aInterfaces,
-			IClassInfo aSuperclass);
+	public byte[] getBytecode();
 	
 	/**
 	 * Whether this object represents an interface, or a class.
@@ -97,23 +90,5 @@ public interface IClassInfo extends ITypeInfo
 	 */
 	public Iterable<IBehaviorInfo> getBehaviors();
 	
-	/**
-	 * This method either creates a new uninitialized behavior, or
-	 * returns the behavior of the specified name/descriptor.
-	 * If the behavior is created it is automatically assigned an id and added
-	 * to the database.
-	 * @param aDescriptor The descriptor (signature) of the behavior. 
-	 * For now this is the ASM-provided descriptor.
-	 */
-	public IBehaviorInfo getNewBehavior(String aName, String aDescriptor);
-	
-	/**
-	 * This method either creates a new uninitialized field, or 
-	 * returns the field that has the specified name.
-	 * if the field is created it is automatically assigned an id and added
-	 * to the database.
-	 */
-	public IFieldInfo getNewField(String aName, ITypeInfo aType);
-
 
 }

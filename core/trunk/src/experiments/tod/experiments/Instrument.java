@@ -25,7 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import tod.core.config.TODConfig;
-import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
 import tod.impl.database.structure.standard.StructureDatabase;
@@ -49,7 +49,7 @@ public class Instrument
 	public static ASMInstrumenter createInstrumenter()
 	{
 		TODConfig theConfig = new TODConfig();
-		IStructureDatabase theStructureDatabase = StructureDatabase.create("test");
+		IMutableStructureDatabase theStructureDatabase = StructureDatabase.create("test");
 		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(theConfig);
 
 		return new ASMInstrumenter(theStructureDatabase, theDebuggerConfig);

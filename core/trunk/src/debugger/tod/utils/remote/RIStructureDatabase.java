@@ -48,6 +48,5 @@ public interface RIStructureDatabase extends Remote
 	public ITypeInfo getType(String aName, boolean aFailIfAbsent) throws RemoteException;
 	public IFieldInfo getField(int aId, boolean aFailIfAbsent) throws RemoteException;
 	public IBehaviorInfo getBehavior(int aId, boolean aFailIfAbsent) throws RemoteException;
-	public IClassInfo getNewClass(String aName) throws RemoteException;
 	public Stats getStats() throws RemoteException;
 }

@@ -30,7 +30,7 @@ import tod.agent.DebugFlags;
 import tod.core.ILogCollector;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
-import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.server.CollectorTODServer;
 import tod.core.server.ICollectorFactory;
 import tod.core.server.TODServer;
@@ -45,7 +45,7 @@ import tod.utils.PrintThroughCollector;
 public class LocalSession extends AbstractSession implements ISessionMonitor
 {
 	private TODServer itsServer;
-	private IStructureDatabase itsStructureDatabase;
+	private IMutableStructureDatabase itsStructureDatabase;
 	
 	private LocalBrowser itsBrowser;
 	private List<ILogCollector> itsCollectors = new ArrayList<ILogCollector>();

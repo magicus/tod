@@ -31,10 +31,10 @@ import tod.agent.ExceptionGeneratedReceiver;
 import tod.agent.TracedMethods;
 import tod.core.BehaviorCallType;
 import tod.core.EventInterpreter;
-import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
-import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.IMutableBehaviorInfo;
+import tod.core.database.structure.IMutableClassInfo;
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.IBehaviorInfo.HasTrace;
 
@@ -45,8 +45,8 @@ import tod.core.database.structure.IBehaviorInfo.HasTrace;
  */
 public class ASMBehaviorInstrumenter implements Opcodes
 {
-	private final IStructureDatabase itsStructureDatabase;
-	private final IBehaviorInfo itsBehavior;
+	private final IMutableStructureDatabase itsStructureDatabase;
+	private final IMutableBehaviorInfo itsBehavior;
 	private final ASMBehaviorCallInstrumenter itsBehaviorCallInstrumenter;
 	private final MethodVisitor mv;
 	private final ASMMethodInfo itsMethodInfo;
@@ -67,7 +67,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	public ASMBehaviorInstrumenter(
 			ASMDebuggerConfig aConfig,
 			MethodVisitor mv,
-			IBehaviorInfo aBehavior,
+			IMutableBehaviorInfo aBehavior,
 			ASMMethodInfo aMethodInfo)
 	{
 		itsConfig = aConfig;
@@ -213,8 +213,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	{
 		boolean theStatic = aOpcode == INVOKESTATIC;
 		
-		IClassInfo theOwner = itsStructureDatabase.getNewClass(Util.jvmToScreen(aOwner));
-		IBehaviorInfo theCalledBehavior = theOwner.getNewBehavior(aName, aDesc);
+		IMutableClassInfo theOwner = itsStructureDatabase.getNewClass(Util.jvmToScreen(aOwner));
+		IMutableBehaviorInfo theCalledBehavior = theOwner.getNewBehavior(aName, aDesc);
 
 		itsBehaviorCallInstrumenter.setup(
 				itsFirstFreeVar,
@@ -355,7 +355,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	{
 		boolean theStatic = aOpcode == PUTSTATIC;
 
-		IClassInfo theOwner = itsStructureDatabase.getNewClass(Util.jvmToScreen(aOwner));
+		IMutableClassInfo theOwner = itsStructureDatabase.getNewClass(Util.jvmToScreen(aOwner));
 
 		ITypeInfo theType = itsStructureDatabase.getNewType(aDesc);
 		IFieldInfo theField = theOwner.getNewField(aName, theType);

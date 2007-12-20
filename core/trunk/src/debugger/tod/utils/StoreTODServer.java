@@ -31,6 +31,7 @@ import tod.agent.ConfigUtils;
 import tod.core.ILogCollector;
 import tod.core.bci.IInstrumenter;
 import tod.core.config.TODConfig;
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.server.CollectorTODServer;
 import tod.core.server.ICollectorFactory;
@@ -118,7 +119,7 @@ public class StoreTODServer extends CollectorTODServer
 	public static void main(String[] args)
 	{
 		TODConfig theConfig = new TODConfig();
-		IStructureDatabase theStructureDatabase = StructureDatabase.create("StoreTODServer");
+		IMutableStructureDatabase theStructureDatabase = StructureDatabase.create("StoreTODServer");
 		
 		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(theConfig);
 		

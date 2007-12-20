@@ -9,6 +9,7 @@ import java.rmi.registry.Registry;
 
 import tod.agent.DebugFlags;
 import tod.core.config.TODConfig;
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
@@ -80,7 +81,7 @@ public class DBGridUtils
 	public static GridMaster setupLocalMaster(Registry aRegistry) throws RemoteException
 	{
 		TODConfig theConfig = new TODConfig();
-		IStructureDatabase theStructureDatabase = StructureDatabase.create(theConfig);
+		IMutableStructureDatabase theStructureDatabase = StructureDatabase.create(theConfig);
 		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(theConfig);
 
 		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theStructureDatabase, theDebuggerConfig);
@@ -121,7 +122,7 @@ public class DBGridUtils
 	{
 		System.out.println("Dispatch structure: " + aDispatchTreeStructure);
 		
-		IStructureDatabase theStructureDatabase = StructureDatabase.create(aConfig);
+		IMutableStructureDatabase theStructureDatabase = StructureDatabase.create(aConfig);
 		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(aConfig);
 
 		System.out.println(theStructureDatabase.getStats());

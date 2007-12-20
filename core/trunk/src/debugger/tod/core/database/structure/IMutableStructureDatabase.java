@@ -20,38 +20,35 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.structure;
 
-import java.io.Serializable;
-
-
 /**
- * Base interface for location info (ie structural information). 
- * Locations can be types, fields or methods
+ * Writable extension of {@link IStructureDatabase}.
  * @author gpothier
  */
-public interface ILocationInfo
+public interface IMutableStructureDatabase extends IStructureDatabase
 {
 	/**
-	 * Returns the id of this location.
+	 * This method either creates a new uninitialized class, or
+	 * returns the latest added class of the specified name.
+	 * If the class is created it is automatically assigned an id and added
+	 * to the database.
 	 */
-	public int getId();
+	public IMutableClassInfo getNewClass(String aName);
+	
+	/**
+	 * Same as {@link #getType(String, boolean)}, but if the type is a class and
+	 * does not exist, it is created as by {@link #getNewClass(String)}.
+	 */
+	public ITypeInfo getNewType(String aName);
+	
+	/**
+	 * Override so as to provide mutable version.
+	 */
+	public IMutableClassInfo getClass(String aName, boolean aFailIfAbsent);
+	
+	/**
+	 * Override so as to provide mutable version.
+	 */
+	public IMutableClassInfo getClass(int aId, boolean aFailIfAbsent);
 
-	public String getName();
-	
-	/**
-	 * Returns the database that owns this info.
-	 */
-	public IStructureDatabase getDatabase();
-	
-	/**
-	 * Interface for location info implementations that are serializable.
-	 * Such implementation should have their reference to the owner database
-	 * transient, so that upon arriving at a new location they can be bound
-	 * to a local database.
-	 * @author gpothier
-	 */
-	public interface ISerializableLocationInfo extends Serializable
-	{
-		public void setDatabase(IMutableStructureDatabase aDatabase);
-	}
 
 }

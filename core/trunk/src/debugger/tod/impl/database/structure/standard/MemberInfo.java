@@ -22,7 +22,7 @@ package tod.impl.database.structure.standard;
 
 import tod.core.ILogCollector;
 import tod.core.database.structure.IMemberInfo;
-import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
 
@@ -37,7 +37,7 @@ implements IMemberInfo, ISerializableLocationInfo
 {
 	private ITypeInfo itsType;
 	
-	public MemberInfo(IStructureDatabase aDatabase, int aId, ITypeInfo aTypeInfo, String aName)
+	public MemberInfo(IMutableStructureDatabase aDatabase, int aId, ITypeInfo aTypeInfo, String aName)
 	{
 		super(aDatabase, aId, aName);
 		itsType = aTypeInfo;
