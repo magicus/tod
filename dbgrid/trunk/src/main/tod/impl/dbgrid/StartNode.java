@@ -46,7 +46,7 @@ public class StartNode
 	{
 		System.out.println("StartNode");
 		Registry theRegistry = LocateRegistry.getRegistry(DebuggerGridConfig.MASTER_HOST, Util.TOD_REGISTRY_PORT);
-		RIGridMaster theMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
+		RIGridMaster theMaster = (RIGridMaster) theRegistry.lookup(GridMaster.getRMIId(new TODConfig()));
 
 		String theHostName = InetAddress.getLocalHost().getHostName();
 		

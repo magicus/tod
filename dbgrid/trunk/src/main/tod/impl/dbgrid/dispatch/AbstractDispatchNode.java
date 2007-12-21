@@ -139,7 +139,9 @@ implements RIDispatchNode
 		
 		// Setup RMI connection
 		Registry theRegistry = LocateRegistry.getRegistry(DebuggerGridConfig.MASTER_HOST, Util.TOD_REGISTRY_PORT);
-		itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
+		
+		// We use a temp config because we cannot yet obtain the config from the master
+		itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.getRMIId(new TODConfig()));
 
 		try
 		{

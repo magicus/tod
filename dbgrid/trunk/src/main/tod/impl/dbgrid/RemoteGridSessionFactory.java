@@ -35,6 +35,7 @@ public class RemoteGridSessionFactory implements ISessionFactory
 	public ISession create(URI aUri, TODConfig aConfig)
 	{
 		aConfig.set(TODConfig.COLLECTOR_HOST, aUri.getHost());
+		if (aUri.getPort() > 0) aConfig.set(TODConfig.COLLECTOR_JAVA_PORT, aUri.getPort());
 		return new RemoteGridSession(aUri, aConfig, true);
 	}
 }

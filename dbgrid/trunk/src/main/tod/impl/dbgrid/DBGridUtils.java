@@ -96,7 +96,7 @@ public class DBGridUtils
 		if (aRegistry != null)
 		{
 			System.out.println("Binding master...");
-			aRegistry.rebind(GridMaster.RMI_ID, theMaster);
+			aRegistry.rebind(GridMaster.getRMIId(theConfig), theMaster);
 			System.out.println("Bound master");
 		}
 
@@ -136,7 +136,7 @@ public class DBGridUtils
 				aDispatchTreeStructure);
 		
 		System.out.println("Binding master...");
-		aRegistry.rebind(GridMaster.RMI_ID, theMaster);
+		aRegistry.rebind(GridMaster.getRMIId(aConfig), theMaster);
 		System.out.println("Bound master");
 		
 		theMaster.waitReady();

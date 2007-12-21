@@ -15,7 +15,7 @@
 		<property name="reflex.dir" value="${basedir}/../reflex"/>
 		<property name="pom.dir" value="${basedir}/../pom"/>
 
-		<property name="eclipse.home" value="/home/gpothier/apps/eclipse-3.3"/>
+		<property name="eclipse.home" value="/home/gpothier/apps/eclipse-3.3.1.1"/>
 
 		<path id="default.classpath">
 			<pathelement path="${lib.dir}/zz.utils.jar"/>

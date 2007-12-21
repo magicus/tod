@@ -1,7 +1,10 @@
 #TOD configuration
-#Sat Oct 06 16:38:47 CLT 2007
+#Fri Dec 21 18:20:08 GMT-04:00 2007
 cflowTree.splitterPos=224
 filterView.splitterPos=545
+[Options]/CFlowView/Show\ event\ location=false
 [Options]/FilterView/Show\ exception\ events\ in\ red=false
 [Options]/FilterView/Show\ event\ location=true
+[Options]/CFlowView/Show\ exception\ events\ in\ red=true
+[Options]/CFlowView/Show\ package\ names=true
 cflowView.splitterPos=778

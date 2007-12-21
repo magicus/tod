@@ -85,7 +85,6 @@ import zz.utils.monitoring.Monitor.MonitorData;
  */
 public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 {
-	public static final String RMI_ID = "GridMaster";
 	public static final String READY_STRING = "[GridMaster] Ready.";
 	
 	private TODConfig itsConfig;
@@ -687,6 +686,14 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		Registry theRegistry = Util.getRegistry();
 		DBGridUtils.setupMaster(theRegistry, args);
 		System.out.println("Master ready.");
+	}
+	
+	/**
+	 * Returns the RMI id to use to bind/fetch a master given a config.
+	 */
+	public static String getRMIId(TODConfig aConfig)
+	{
+		return "GridMaster-"+aConfig.get(TODConfig.COLLECTOR_JAVA_PORT);
 	}
 	
 	/**

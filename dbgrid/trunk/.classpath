@@ -5,8 +5,8 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/TOD"/>
 	<classpathentry kind="lib" path="lib/lucene-core-2.0.0.jar"/>
-	<classpathentry kind="lib" path="lib/pom.jar" sourcepath="/pom"/>
-	<classpathentry kind="lib" path="lib/reflex-core.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/pom.jar" sourcepath="/pom"/>
+	<classpathentry exported="true" kind="lib" path="lib/reflex-core.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

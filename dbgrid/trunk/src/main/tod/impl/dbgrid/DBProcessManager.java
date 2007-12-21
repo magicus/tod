@@ -286,7 +286,7 @@ public class DBProcessManager
 		try
 		{
 			Registry theRegistry = LocateRegistry.getRegistry("localhost", Util.TOD_REGISTRY_PORT);
-			itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
+			itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.getRMIId(getConfig()));
 			itsMaster.setConfig(getConfig());
 		}
 		catch (Exception e)

@@ -4,7 +4,6 @@
 		<property name="version" value="dev"/>
     	
         <property name="build.dir" value="${basedir}/build"/>
-        <property name="scripts.dir" value="${basedir}/scripts"/>
         <property name="lib.dir" value="${basedir}/lib"/>
         <property name="src-agent.dir" value="${basedir}/src/agent"/>
         <property name="src-debugger.dir" value="${basedir}/src/debugger"/>
@@ -137,32 +136,7 @@
 		</jar>
 		-->
 	</target>
-	
-	<target name="release-db" depends="jar">
-		<zip destfile="${build.dir}/tod-db.zip">
-			<zipfileset dir="." prefix="tod-${version}"
-				includes="scripts/**, build/tod-*.jar, lib/*.jar"/>
-		</zip>
-
-		<tar destfile="${build.dir}/tod-db.tar.gz" compression="gzip">
-			<tarfileset dir="." prefix="tod-${version}" mode="755"
-				includes="scripts/*.sh"/>
-			
-			<tarfileset dir="." prefix="tod-${version}"
-				includes="scripts/**, build/tod-*.jar, lib/*.jar"
-				excludes="scripts/*.sh, scripts/collector.log"/>
-		</tar>
-	</target>
-	
-    <target name="deploy" depends="jar" >
-        <exec executable="${scripts.dir}/deploy.sh" failonerror="true" output="rsync.log">
-        	<arg value="${build.dir}"/>
-        	<arg value="${lib.dir}"/>
-        	<arg value="${scripts.dir}"/>
-        	<arg value="*.so"/>
-    	</exec>
-    </target>
-	
+		
 	<target name="dep.zz.utils" depends="init">
 		<ant 
 			antfile="${zz.utils.dir}/build.xml" 

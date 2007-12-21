@@ -74,7 +74,7 @@ public class RemoteGridSession extends AbstractSession
 			String theHost = getHost();
 			
 			Registry theRegistry = LocateRegistry.getRegistry(theHost, Util.TOD_REGISTRY_PORT);
-			itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
+			itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.getRMIId(getConfig()));
 			itsMaster.setConfig(getConfig());
 			if (! itsUseExisting) itsMaster.clear();
 			

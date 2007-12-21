@@ -36,6 +36,7 @@ import tod.BenchBase;
 import tod.Util;
 import tod.BenchBase.BenchResults;
 import tod.agent.ConfigUtils;
+import tod.core.config.TODConfig;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
@@ -93,7 +94,7 @@ public class GridQuery
 		System.out.println("Replayed "+theEventsCount[0]+" events: "+theEpS+"ev/s");
 
 		System.out.println("Looking up master in registry");
-		RIGridMaster theRemoteMaster = (RIGridMaster) theRegistry.lookup(GridMaster.RMI_ID);
+		RIGridMaster theRemoteMaster = (RIGridMaster) theRegistry.lookup(GridMaster.getRMIId(new TODConfig()));
 		
 		final GridLogBrowser theBrowser = GridLogBrowser.createRemote(theRemoteMaster);
 		

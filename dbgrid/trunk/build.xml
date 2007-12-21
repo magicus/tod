@@ -3,6 +3,7 @@
     <target name="init">
 		<property name="version" value="dev"/>
     	
+        <property name="scripts.dir" value="${basedir}/scripts"/>
         <property name="build.dir" value="${basedir}/build"/>
         <property name="lib.dir" value="${basedir}/lib"/>
         <property name="src-main.dir" value="${basedir}/src/main"/>
