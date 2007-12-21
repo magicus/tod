@@ -234,6 +234,8 @@ public class DBProcessManager
 					TODConfig.AGENT_VERBOSE.javaOpt(getConfig()),
 					TODConfig.SCOPE_TRACE_FILTER.javaOpt(getConfig()),
 					TODConfig.CLIENT_HOST_NAME.javaOpt(getConfig()),
+					TODConfig.COLLECTOR_JAVA_PORT.javaOpt(getConfig()),
+					TODConfig.COLLECTOR_NATIVE_PORT.javaOpt(getConfig()),
 //					theJDWP ? "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000" : "",
 					"tod.impl.dbgrid.GridMaster",
 					"0");
