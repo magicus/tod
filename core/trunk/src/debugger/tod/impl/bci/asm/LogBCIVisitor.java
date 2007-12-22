@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.bci.asm;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.objectweb.asm.Attribute;
@@ -39,6 +40,9 @@ import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
+import tod.impl.bci.asm.ASMInstrumenter.SootInstructionKindTagger;
+import tod.impl.bci.asm.ASMInstrumenter.TaggingAttribute;
+import tod.impl.database.structure.standard.TagMap;
 import zz.utils.ArrayStack;
 import zz.utils.Stack;
 
@@ -86,7 +90,6 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 	 * This list will be filled with the ids of traced methods.
 	 */
 	private final List<Integer> itsTracedMethods;
-
 
 	
 	public LogBCIVisitor(
@@ -186,7 +189,9 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		
 		private IMutableBehaviorInfo itsBehavior;
 		private int itsStoreIndex = 0;
-
+		
+		private TaggingAttribute itsInstructionKindAttr;
+		
 		public BCIMethodVisitor(MethodVisitor mv, ASMMethodInfo aMethodInfo)
 		{
 			super (mv);
@@ -212,7 +217,14 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		@Override
 		public void visitAttribute(Attribute aAttr)
 		{
-			super.visitAttribute(aAttr);
+			if (ASMInstrumenter.ATTR_INSTRUCTION_KIND.equals(aAttr.type))
+			{
+				itsInstructionKindAttr = (TaggingAttribute) aAttr;
+			}
+			else
+			{
+				super.visitAttribute(aAttr);
+			}
 		}
 
 		@Override
@@ -374,12 +386,21 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		@Override
 		public void visitEnd()
 		{
+			TagMap theTagMap = new TagMap();
+			
+			itsInstrumenter.fillTagMap(theTagMap);
+			
+			if (itsInstructionKindAttr != null) itsInstructionKindAttr.fillTagMap(
+					theTagMap,
+					SootInstructionKindTagger.getInstance());
+			
 			itsBehavior.setup(
 					itsTrace,
 					itsMethodInfo.getKind(),
 					itsMethodInfo.getCodeSize(),
 					itsMethodInfo.createLineNumberTable(), 
-					itsMethodInfo.createLocalVariableTable());
+					itsMethodInfo.createLocalVariableTable(),
+					theTagMap);
 
 			super.visitEnd();
 		}

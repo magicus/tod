@@ -32,6 +32,11 @@ public class UnknownTypeInfo extends TypeInfo
 	{
 		super(aDatabase, aId, aName);
 	}
+	
+	public String getJvmName()
+	{
+		return "Unknown!";
+	}
 
 	public int getSize()
 	{

@@ -21,16 +21,12 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.database.structure.standard;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import tod.core.BehaviorKind;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
-import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
-import tod.core.database.structure.IBehaviorInfo.HasTrace;
 import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 
@@ -49,11 +45,11 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 	private final String itsSignature;
 	private final ITypeInfo[] itsArgumentTypes;
 	private final ITypeInfo itsReturnType;
-	private final Map<BytecodeTagType, Object> itsTagsMap = new HashMap<BytecodeTagType, Object>();
 
 	private int itsCodeSize;
 	private LineNumberInfo[] itsLineNumberTable;
 	private LocalVariableInfo[] itsLocalVariableTable;
+	private TagMap itsTagMap;
 
 	public BehaviorInfo(
 			StructureDatabase aDatabase, 
@@ -82,13 +78,15 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 			BehaviorKind aKind,
 			int aCodeSize,
 			LineNumberInfo[] aLineNumberInfos,
-			LocalVariableInfo[] aLocalVariableInfos)
+			LocalVariableInfo[] aLocalVariableInfos,
+			TagMap aTagMap)
 	{
 		itsHasTrace = aTraced ? HasTrace.YES : HasTrace.NO;
 		itsBehaviourKind = aKind;
 		itsCodeSize = aCodeSize;
 		itsLineNumberTable = aLineNumberInfos;
 		itsLocalVariableTable = aLocalVariableInfos;
+		itsTagMap = aTagMap;
 	}
 	
 	@Override
@@ -213,8 +211,7 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 	
 	public <T> T getTag(BytecodeTagType<T> aType, int aBytecodeIndex)
 	{
-		T[] theTags = (T[]) itsTagsMap.get(aType);
-		return theTags != null ? theTags[aBytecodeIndex] : null;
+		return itsTagMap.getTag(aType, aBytecodeIndex);
 	}
 
 	public LocalVariableInfo[] getLocalVariables()

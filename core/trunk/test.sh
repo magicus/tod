@@ -1,7 +1,7 @@
 #! /bin/sh
 
-AGENT=../TOD-agng/libtod-agent.so
-#AGENT=./libbci-agent.so
+# AGENT=../TOD-agng/libtod-agent.so
+AGENT=./libbci-agent.so
 #CLASSPATH=./bin:../zz.utils/bin
 
 HOST=localhost
@@ -20,9 +20,10 @@ VMARGS="$VMARGS -server"
 VMARGS="$VMARGS -Xmx384m" 
 VMARGS="$VMARGS -XX:MaxPermSize=128m"
 VMARGS="$VMARGS -Dagent-verbose=3"
+VMARGS="$VMARGS -Dagent-cache-path=/home/gpothier/tmp/tod"
 #VMARGS="$VMARGS -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"
 
-java $VMARGS -cp ./bin dummy.Dummy
+#java $VMARGS -cp ./bin dummy.Dummy
 # echo "set args $VMARGS -cp ./bin dummy.Dummy" > gdb.cmd
 # gdb -x gdb.cmd java
 
@@ -42,6 +43,7 @@ java $VMARGS -cp ./bin dummy.Dummy
 # gdb -x gdb.cmd /home/gpothier/apps/java/jdk1.5.0_08/bin/java 
 #java $VMARGS -cp ./bin calls.Main
 
+java $VMARGS -cp ../../runtime-EclipseApplication2/AspectJTODTest/taggedbin Foo
 
 #Machines:
 # ireul

@@ -27,6 +27,12 @@ package tod.core.database.structure;
 public interface ITypeInfo extends ILocationInfo
 {
 	/**
+	 * Returns the JVM type name for this type.
+	 * Eg. "Ljava/lang/Object;", "I", ...
+	 */
+	public String getJvmName();
+	
+	/**
 	 * Returns the number of JVM stack slots that an object of
 	 * this type occupies.
 	 * For instance, object reference is 1, long and double are 2, void is 0.

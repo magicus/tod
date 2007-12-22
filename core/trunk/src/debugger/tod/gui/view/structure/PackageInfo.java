@@ -18,30 +18,32 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.core.database.structure;
+package tod.gui.view.structure;
 
-import tod.core.BehaviorKind;
-import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
-import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
-import tod.impl.database.structure.standard.TagMap;
+import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.IStructureDatabase;
 
-/**
- * Writable extension of {@link IBehaviorInfo}
- * @author gpothier
- */
-public interface IMutableBehaviorInfo extends IBehaviorInfo, IMutableLocationInfo
+public class PackageInfo implements ILocationInfo
 {
-	/**
-	 * Sets up the attributes of this behavior.
-	 * This method should be called only once.
-	 */
-	public void setup(
-			boolean aTraced,
-			BehaviorKind aKind,
-			int aCodeSize,
-			LineNumberInfo[] aLineNumberInfos,
-			LocalVariableInfo[] aLocalVariableInfos,
-			TagMap aTagMap);
-	
+	private String itsName;
 
+	public PackageInfo(String aName)
+	{
+		itsName = aName;
+	}
+
+	public IStructureDatabase getDatabase()
+	{
+		return null;
+	}
+
+	public int getId()
+	{
+		return 0;
+	}
+
+	public String getName()
+	{
+		return itsName;
+	}
 }

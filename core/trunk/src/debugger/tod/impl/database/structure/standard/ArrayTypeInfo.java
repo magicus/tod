@@ -42,6 +42,11 @@ public class ArrayTypeInfo extends TypeInfo implements IArrayTypeInfo
 		itsDimensions = aDimensions;
 	}
 	
+	public String getJvmName()
+	{
+		throw new UnsupportedOperationException();
+	}
+	
 	private static String getBrackets(int aDimensions)
 	{
 		StringBuilder theBuilder = new StringBuilder();

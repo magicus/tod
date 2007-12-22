@@ -20,21 +20,26 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.view.structure;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeSelectionModel;
 
+import tod.Util;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.IMemberInfo;
 import tod.core.database.structure.IStructureDatabase;
 import tod.gui.IGUIManager;
 import tod.gui.MinerUI;
@@ -70,7 +75,19 @@ public class StructureView extends LogView
 	{
 		itsTree = new JTree(createTreeModel());
 		itsTree.setCellRenderer(new MyRenderer());
-		itsInfoHolder = new JPanel();
+		itsTree.setShowsRootHandles(false);
+		
+		itsTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+		itsTree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener()
+		{
+			public void valueChanged(TreeSelectionEvent aEvent)
+			{
+				LocationNode theNode = (LocationNode) aEvent.getPath().getLastPathComponent();
+				showNode(theNode.getLocation());
+			}
+		});
+		
+		itsInfoHolder = new JPanel(new StackLayout());
 		
 		itsSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		itsSplitPane.setResizeWeight(0.5);
@@ -91,7 +108,7 @@ public class StructureView extends LogView
 			@Override
 			protected SimpleTreeNode<ILocationInfo> createRoot()
 			{
-				return new PackageNode(this, new PackageInfo("root!"));
+				return new PackageNode(this, new PackageInfo("Classes"));
 			}
 		};
 		PackageNode theRoot = (PackageNode) theTree.getRoot();
@@ -121,6 +138,29 @@ public class StructureView extends LogView
 		
 		return new SwingTreeModel(theTree);
 	}
+	
+	/**
+	 * Shows the information corresponding to the given node.
+	 */
+	private void showNode(ILocationInfo aLocation)
+	{
+		if (aLocation instanceof IBehaviorInfo)
+		{
+			IBehaviorInfo theBehavior = (IBehaviorInfo) aLocation;
+			showPanel(new BehaviorPanel(theBehavior));
+		}
+	}
+	
+	/**
+	 * Changes the currently displayed info panel
+	 */
+	private void showPanel(JComponent aComponent)
+	{
+		itsInfoHolder.removeAll();
+		itsInfoHolder.add(aComponent);
+		itsInfoHolder.revalidate();
+		itsInfoHolder.repaint();
+	}
 
 	@Override
 	public void addNotify()
@@ -144,142 +184,6 @@ public class StructureView extends LogView
 				""+itsSplitPane.getDividerLocation());
 	}
 	
-	private static class PackageNode extends SimpleTreeNode<ILocationInfo>
-	{
-		public PackageNode(SimpleTree<ILocationInfo> aTree, PackageInfo aValue)
-		{
-			super(aTree, false);
-			pValue().set(aValue);
-		}
-		
-		/**
-		 * Retrieves the package node corresponding to the given name,
-		 * creating it if needed.
-		 */
-		public PackageNode getPackageNode(String aName)
-		{
-			int theIndex = Collections.binarySearch(
-					pChildren().get(),
-					aName, 
-					PackageComparator.PACKAGE);
-			
-			if (theIndex >= 0) 
-			{
-				// return existing node
-				return (PackageNode) pChildren().get(theIndex);
-			}
-			else
-			{
-				// create new node
-				PackageInfo thePackage = new PackageInfo(aName);
-				PackageNode theNode = new PackageNode(getTree(), thePackage);
-				pChildren().add(-theIndex-1, theNode);
-				return theNode;
-			}
-		}
-		
-		/**
-		 * Retrieves the class node corresponding to the given name.
-		 */
-		public ClassNode getClassNode(String aName)
-		{
-			int theIndex = Collections.binarySearch(
-					pChildren().get(), 
-					aName,
-					PackageComparator.CLASS);
-			
-			if (theIndex < 0) throw new RuntimeException("Class node not found: "+aName); 
-			return (ClassNode) pChildren().get(theIndex);
-		}
-		
-		/**
-		 * Adds a new class node
-		 */
-		public ClassNode addClassNode(IClassInfo aClassInfo)
-		{
-			int theIndex = Collections.binarySearch(
-					pChildren().get(), 
-					aClassInfo.getName(),
-					PackageComparator.CLASS);
-			
-			if (theIndex >= 0) throw new RuntimeException("Class node already exists: "+aClassInfo); 
-
-			ClassNode theNode = new ClassNode(getTree(), aClassInfo);
-			pChildren().add(-theIndex-1, theNode);
-			return theNode;
-		}
-		
-	}
-	
-	private static class ClassNode extends SimpleTreeNode<ILocationInfo>
-	{
-		public ClassNode(SimpleTree<ILocationInfo> aTree, IClassInfo aClassInfo)
-		{
-			super(aTree, false);
-			pValue().set(aClassInfo);
-		}
-	}
-
-	
-	private static class PackageInfo implements ILocationInfo
-	{
-		private String itsName;
-
-		public PackageInfo(String aName)
-		{
-			itsName = aName;
-		}
-
-		public IStructureDatabase getDatabase()
-		{
-			return null;
-		}
-
-		public int getId()
-		{
-			return 0;
-		}
-
-		public String getName()
-		{
-			return itsName;
-		}
-	}
-	
-	/**
-	 * Compares packages and classes.
-	 * Packages are always before classes, otherwise lexicographic order is used.
-	 * @author gpothier
-	 */
-	private static class PackageComparator implements Comparator
-	{
-		public static PackageComparator PACKAGE = new PackageComparator(true);
-		public static PackageComparator CLASS = new PackageComparator(false);
-
-		/**
-		 * If true, compares against package names (package names always appear before
-		 * class names).
-		 */
-		private boolean itsForPackage;
-		
-		private PackageComparator(boolean aForPackage)
-		{
-			itsForPackage = aForPackage;
-		}
-		
-		public int compare(Object o1, Object o2)
-		{
-			SimpleTreeNode<ILocationInfo> node = (SimpleTreeNode<ILocationInfo>) o1;
-			String name = (String) o2;
-			
-			ILocationInfo l = node.pValue().get();
-			boolean p = l instanceof PackageInfo;
-			
-			if (p != itsForPackage) return p ? 1 : -1;
-			else return l.getName().compareTo(name);
-		}
-	}
-
 	/**
 	 * Renderer for the classes tree.
 	 * @author gpothier
@@ -290,7 +194,21 @@ public class StructureView extends LogView
 		protected String getName(SimpleTreeNode<ILocationInfo> aNode)
 		{
 			ILocationInfo theLocation = aNode.pValue().get();
-			return theLocation.getName();
+			
+			if (theLocation instanceof IClassInfo)
+			{
+				IClassInfo theClass = (IClassInfo) theLocation;
+				return Util.getSimpleName(theClass.getName());
+			}
+			else if (theLocation instanceof IMemberInfo)
+			{
+				IMemberInfo theMember = (IMemberInfo) theLocation;
+				return Util.getFullName(theMember);
+			}
+			else
+			{
+				return theLocation.getName();
+			}
 		}
 		
 	}

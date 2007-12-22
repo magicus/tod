@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.structure;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -128,10 +129,24 @@ public interface IBehaviorInfo extends IMemberInfo
      * Bytecode tags are information associated to each bytecode in a behavior.
      * @author gpothier
      */
-    public static class BytecodeTagType<T>
+    public static class BytecodeTagType<T> 
     {
-    	public static final BytecodeTagType<Integer> SOURCE_POSITION = new BytecodeTagType<Integer>();
-    	public static final BytecodeTagType<BytecodeRole> BYTECODE_ROLE = new BytecodeTagType<BytecodeRole>();
+    	public static final BytecodeTagType<Integer> SOURCE_POSITION = new BytecodeTagType<Integer>("srcPos");
+    	public static final BytecodeTagType<BytecodeRole> BYTECODE_ROLE = new BytecodeTagType<BytecodeRole>("role");
+    	
+    	public static final BytecodeTagType[] ALL = {SOURCE_POSITION, BYTECODE_ROLE};
+    	
+    	private final String itsName;
+
+		public BytecodeTagType(String aName)
+		{
+			itsName = aName;
+		}
+		
+		public String getName()
+		{
+			return itsName;
+		}
     }
     
     /**
@@ -140,15 +155,22 @@ public interface IBehaviorInfo extends IMemberInfo
      * by a weaver.
      * @author gpothier
      */
-    public enum BytecodeRole
+    public enum BytecodeRole 
     {
+    	UNKNOWN,
     	BASE_CODE,
     	
     	WOVEN_CODE,
     	ASPECTJ_CODE(WOVEN_CODE),
     	
+    	/**
+    	 * Code inserted by TOD during the instrumentation
+    	 */
+    	TOD_CODE(WOVEN_CODE),
+    	
     	ADVICE_ARG_SETUP(ASPECTJ_CODE),
     	ADVICE_TEST(ASPECTJ_CODE),
+    	ADVICE_EXECUTE(ASPECTJ_CODE),
     	INLINED_ADVICE(ASPECTJ_CODE);
     	
     	private final BytecodeRole itsParentRole;

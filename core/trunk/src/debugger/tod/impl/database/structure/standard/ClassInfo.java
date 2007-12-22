@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.objectweb.asm.Type;
+
 import tod.core.database.browser.LocationUtils;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
@@ -49,6 +51,7 @@ implements IMutableClassInfo, ISerializableLocationInfo
 	private static final long serialVersionUID = -2583314414851419966L;
 
 	private transient ClassNameInfo itsClassNameInfo;
+	private String itsJvmName;
 	
 	private byte[] itsBytecode;
 	
@@ -94,10 +97,16 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		super(aDatabase, aId, aName);
 		assert aDatabase != null;
 		itsClassNameInfo = aClassNameInfo;
+		itsJvmName = Type.getObjectType(getName().replace('.', '/')).getDescriptor();
 		
 //		System.out.println(String.format("[Struct] class info [id: %d, name: %s]", aId, aName));
 	}
 
+	public String getJvmName()
+	{
+		return itsJvmName;
+	}
+	
 	public void setup(
 			boolean aIsInterface, 
 			boolean aInScope, 

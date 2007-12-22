@@ -20,32 +20,41 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.database.structure.standard;
 
+import org.objectweb.asm.Type;
+
 import tod.core.database.structure.IPrimitiveTypeInfo;
 
 public class PrimitiveTypeInfo extends TypeInfo implements IPrimitiveTypeInfo
 {
-	public static final PrimitiveTypeInfo VOID = new PrimitiveTypeInfo("void", 0, 1);
-	public static final PrimitiveTypeInfo BOOLEAN = new PrimitiveTypeInfo("boolean", 1, 2);
-	public static final PrimitiveTypeInfo INT = new PrimitiveTypeInfo("int", 1, 3);
-	public static final PrimitiveTypeInfo LONG = new PrimitiveTypeInfo("long", 2, 4);
-	public static final PrimitiveTypeInfo BYTE = new PrimitiveTypeInfo("byte", 1, 5);
-	public static final PrimitiveTypeInfo SHORT = new PrimitiveTypeInfo("short", 1, 6);
-	public static final PrimitiveTypeInfo CHAR = new PrimitiveTypeInfo("char", 1, 7);
-	public static final PrimitiveTypeInfo DOUBLE = new PrimitiveTypeInfo("double", 2, 8);
-	public static final PrimitiveTypeInfo FLOAT = new PrimitiveTypeInfo("float", 1, 9);
+	public static final PrimitiveTypeInfo VOID = new PrimitiveTypeInfo("void", Type.VOID_TYPE, 0, 1);
+	public static final PrimitiveTypeInfo BOOLEAN = new PrimitiveTypeInfo("boolean", Type.BOOLEAN_TYPE, 1, 2);
+	public static final PrimitiveTypeInfo INT = new PrimitiveTypeInfo("int", Type.INT_TYPE, 1, 3);
+	public static final PrimitiveTypeInfo LONG = new PrimitiveTypeInfo("long", Type.LONG_TYPE, 2, 4);
+	public static final PrimitiveTypeInfo BYTE = new PrimitiveTypeInfo("byte", Type.BYTE_TYPE, 1, 5);
+	public static final PrimitiveTypeInfo SHORT = new PrimitiveTypeInfo("short", Type.SHORT_TYPE, 1, 6);
+	public static final PrimitiveTypeInfo CHAR = new PrimitiveTypeInfo("char", Type.CHAR_TYPE, 1, 7);
+	public static final PrimitiveTypeInfo DOUBLE = new PrimitiveTypeInfo("double", Type.DOUBLE_TYPE, 2, 8);
+	public static final PrimitiveTypeInfo FLOAT = new PrimitiveTypeInfo("float", Type.FLOAT_TYPE, 1, 9);
 
 	public static final PrimitiveTypeInfo[] TYPES = {
 		VOID, BOOLEAN, INT, LONG, BYTE, SHORT, CHAR, DOUBLE, FLOAT
 	};
 	
 	private final int itsSize;
+	private final String itsJvmName;
 
-	public PrimitiveTypeInfo(String aName, int aSize, int aId)
+	public PrimitiveTypeInfo(String aName, Type aAsmType, int aSize, int aId)
 	{
 		super(null, aId, aName);
+		itsJvmName = aAsmType.getDescriptor();
 		itsSize = aSize;
 	}
 
+	public String getJvmName()
+	{
+		return itsJvmName;
+	}
+	
 	public int getSize()
 	{
 		return itsSize;

@@ -66,6 +66,11 @@ implements IMutableLocationInfo, Serializable
 		return itsDatabase;
 	}
 	
+	public IMutableStructureDatabase _getMutableDatabase()
+	{
+		return getDatabase();
+	}
+	
 	public void setDatabase(IMutableStructureDatabase aDatabase)
 	{
 		assert itsDatabase == null;

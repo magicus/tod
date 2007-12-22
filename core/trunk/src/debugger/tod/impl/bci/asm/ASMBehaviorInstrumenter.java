@@ -36,7 +36,12 @@ import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
+import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
 import tod.core.database.structure.IBehaviorInfo.HasTrace;
+import tod.impl.bci.asm.ASMInstrumenter.CodeRange;
+import tod.impl.bci.asm.ASMInstrumenter.RangeManager;
+import tod.impl.database.structure.standard.TagMap;
 
 /**
  * Provides all the methods that perform the insertion
@@ -62,6 +67,12 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	private Label itsFinallyHookLabel;
 	private Label itsCodeStartLabel;
 
+	/**
+	 * A list of code ranges that corresponds to instrumentation instructions
+	 * added by TOD.
+	 */
+	private final RangeManager itsInstrumentationRanges;
+
 
 	
 	public ASMBehaviorInstrumenter(
@@ -73,13 +84,32 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		itsConfig = aConfig;
 		this.mv = mv;
 		itsBehavior = aBehavior;
-		itsStructureDatabase = itsBehavior.getDatabase();
+		
+		itsInstrumentationRanges = new RangeManager(mv);
+		
+		// TODO: _getMutableDatabase is a workaround for a jdk compiler bug
+		itsStructureDatabase = itsBehavior._getMutableDatabase();
 		itsMethodInfo = aMethodInfo;
 		itsBehaviorCallInstrumenter = new ASMBehaviorCallInstrumenter(mv, this, itsBehavior.getId());
 		
 		itsFirstFreeVar = itsMethodInfo.getMaxLocals();
 		itsReturnLocationVar = itsFirstFreeVar;
 		itsFirstFreeVar += 2;
+	}
+	
+	/**
+	 * Fills the provided tag map with the instrumentation tags
+	 */
+	public void fillTagMap(TagMap aTagMap)
+	{
+		for (CodeRange theRange : itsInstrumentationRanges.getRanges())
+		{
+			aTagMap.putTagRange(
+					BytecodeTagType.BYTECODE_ROLE, 
+					BytecodeRole.TOD_CODE, 
+					theRange.start.getOffset(),
+					theRange.end.getOffset());
+		}
 	}
 	
 	/**
@@ -91,6 +121,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	 */
 	public void insertEntryHooks()
 	{
+		itsInstrumentationRanges.start();
+		
 		itsReturnHookLabel = new Label();
 		itsFinallyHookLabel = new Label();
 		itsCodeStartLabel = new Label();
@@ -139,6 +171,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		mv.visitInsn(ATHROW);
 
 		mv.visitLabel(itsCodeStartLabel);
+		
+		itsInstrumentationRanges.end();
 	}
 	
 	public void endHooks()
@@ -201,6 +235,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	{
 		mv.visitInsn(DUP);
 		mv.visitVarInsn(ASTORE, itsFirstFreeVar);
+		
 		invokeLogBehaviorExitWithException(itsBehavior.getId(), itsFirstFreeVar);
 	}
 	
@@ -236,6 +271,9 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		Label theElse = new Label();
 		Label theEndif = new Label();
+		
+		itsInstrumentationRanges.start();
+		boolean theOriginalDone = false; // We must have exactly one original method call not tagged as TOD_CODE
 
 		if (theHasTrace == HasTrace.UNKNOWN)
 		{
@@ -262,8 +300,13 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			// Handle before method call
 			itsBehaviorCallInstrumenter.callLogBeforeBehaviorCallDry(aCallType);
 			
+			itsInstrumentationRanges.end();
+			theOriginalDone = true;
+			
 			// Do the original call
 			mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
+			
+			itsInstrumentationRanges.start();
 			
 			// Handle after method call
 			itsBehaviorCallInstrumenter.callLogAfterBehaviorCallDry();						
@@ -290,8 +333,12 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			
 			mv.visitLabel(theBefore);
 			
+			if (! theOriginalDone) itsInstrumentationRanges.end();
+			
 			// Do the original call
 			mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
+			
+			if (! theOriginalDone) itsInstrumentationRanges.start();
 			
 			mv.visitLabel(theAfter);
 			
@@ -314,38 +361,10 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		{
 			mv.visitLabel(theEndif);
 		}
-	}
-	
-	private void handleBeforeUnknownCall(BehaviorCallType aCallType)
-	{
-		mv.visitMethodInsn(
-				INVOKESTATIC, 
-				Type.getInternalName(TracedMethods.class), 
-				"isTraced", 
-				"(I)Z");
-		Label lb = new Label();
-		Label lbe = new Label();
 		
-		mv.visitJumpInsn(IFEQ, lb);
-		handleBeforeTracedCall(aCallType);
-		mv.visitJumpInsn(GOTO, lbe);
-		mv.visitLabel(lb);
-		handleBeforeNonTracedCall(aCallType);
-		mv.visitLabel(lbe);
+		itsInstrumentationRanges.end();
 	}
 	
-	private void handleBeforeTracedCall(BehaviorCallType aCallType)
-	{
-		itsBehaviorCallInstrumenter.callLogBeforeBehaviorCallDry(aCallType);		
-	}
-	
-	private void handleBeforeNonTracedCall(BehaviorCallType aCallType)
-	{
-		itsBehaviorCallInstrumenter.storeArgsToLocals();
-		itsBehaviorCallInstrumenter.createArgsArray();
-		itsBehaviorCallInstrumenter.callLogBeforeMethodCall(aCallType);
-		itsBehaviorCallInstrumenter.pushArgs();
-	}
 	
 	public void fieldWrite(
 			int aOpcode, 
@@ -381,6 +400,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			theValueVar = theCurrentVar++;
 		}
 		
+		itsInstrumentationRanges.start();
+		
 		// :: [target], value
 	
 		// Store parameters
@@ -394,7 +415,10 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		// Push parameters back to stack
 		if (! theStatic) mv.visitVarInsn(ALOAD, theTargetVar);
 		mv.visitVarInsn(theASMType.getOpcode(ILOAD), theValueVar);
+		
+		itsInstrumentationRanges.end();
 
+		// Do the original operation
 		mv.visitFieldInsn(aOpcode, aOwner, aName, aDesc);
 	}
 	
@@ -413,12 +437,16 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		// Perform store
 		mv.visitVarInsn(aOpcode, aVar);
 		
+		itsInstrumentationRanges.start();
+		
 		// Call log method
 		invokeLogLocalVariableWrite(
 				theBytecodeIndex, 
 				aVar, 
 				BCIUtils.getType(theSort), 
 				aVar);
+		
+		itsInstrumentationRanges.end();
 	}
 	
 	public void variableInc(
@@ -434,12 +462,16 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		// Perform store
 		mv.visitIincInsn(aVar, aIncrement);
 		
+		itsInstrumentationRanges.start();
+		
 		// Call log method
 		invokeLogLocalVariableWrite(
 				theBytecodeIndex, 
 				aVar, 
 				BCIUtils.getType(Type.INT), 
 				aVar);
+		
+		itsInstrumentationRanges.end();
 	}
 
 	public void newArray(NewArrayClosure aClosure, int aBaseTypeId)
@@ -448,6 +480,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		mv.visitLabel(l);
 		int theBytecodeIndex = l.getOffset();
 
+		itsInstrumentationRanges.start();
+		
 		// :: size
 		
 		int theCurrentVar = itsFirstFreeVar;
@@ -463,8 +497,12 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		// Reload size
 		mv.visitVarInsn(ILOAD, theSizeVar);
 	
+		itsInstrumentationRanges.end();
+		
 		// Perform new array
 		aClosure.proceed(mv);
+		
+		itsInstrumentationRanges.start();
 		
 		// :: array
 		
@@ -480,6 +518,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				theTargetVar, 
 				aBaseTypeId, 
 				theSizeVar);
+		
+		itsInstrumentationRanges.end();
 	}
 	
 	public void arrayWrite(int aOpcode)
@@ -490,6 +530,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		Label l = new Label();
 		mv.visitLabel(l);
 		int theBytecodeIndex = l.getOffset();
+		
+		itsInstrumentationRanges.start();
 		
 		// :: array ref, index, value
 		
@@ -514,8 +556,12 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		mv.visitVarInsn(ILOAD, theIndexVar);
 		mv.visitVarInsn(theType.getOpcode(ILOAD), theValueVar);
 		
+		itsInstrumentationRanges.end();
+		
 		// Perform store
 		mv.visitInsn(aOpcode);
+		
+		itsInstrumentationRanges.start();
 		
 		// Call log method (if no exception occurred)
 		invokeLogArrayWrite(
@@ -524,6 +570,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				theIndexVar, 
 				theType, 
 				theValueVar);
+		
+		itsInstrumentationRanges.end();
 	}
 	
 

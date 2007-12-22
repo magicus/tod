@@ -28,9 +28,13 @@ import org.objectweb.asm.ByteVector;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
 
 import tod.core.bci.IInstrumenter;
 import tod.core.database.structure.IMutableStructureDatabase;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
+import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
+import tod.impl.database.structure.standard.TagMap;
 import zz.utils.Utils;
 
 /**
@@ -40,6 +44,9 @@ import zz.utils.Utils;
  */
 public class ASMInstrumenter implements IInstrumenter
 {
+	public static final String ATTR_INSTRUCTION_SOURCE = "ca.mcgill.sable.InstructionSource";
+	public static final String ATTR_INSTRUCTION_SHADOW = "ca.mcgill.sable.InstructionShadow";
+	public static final String ATTR_INSTRUCTION_KIND = "ca.mcgill.sable.InstructionKind";
 	private final IMutableStructureDatabase itsDatabase;
 	private final ASMDebuggerConfig itsConfig;
 	
@@ -86,16 +93,16 @@ public class ASMInstrumenter implements IInstrumenter
 				theTracedMethods);
 		
 		Attribute[] theAttributes = new Attribute[] {
-				new TaggingAttribute("ca.mcgill.sable.InstructionKind"),
-				new TaggingAttribute("ca.mcgill.sable.InstructionShadow"),
-				new TaggingAttribute("ca.mcgill.sable.InstructionSource"),
+				new TaggingAttribute(ATTR_INSTRUCTION_KIND),
+				new TaggingAttribute(ATTR_INSTRUCTION_SHADOW),
+				new TaggingAttribute(ATTR_INSTRUCTION_SOURCE),
 		};
 		
 		theReader.accept(theVisitor, theAttributes, 0);
 		
 		byte[] theBytecode = theWriter.toByteArray();
 		
-		theVisitor.getClassInfo().setBytecode(aBytecode);
+		theVisitor.getClassInfo().setBytecode(theBytecode);
 		
 		return theVisitor.isModified()  
 			? new InstrumentedClass(theBytecode, theTracedMethods) 
@@ -123,6 +130,22 @@ public class ASMInstrumenter implements IInstrumenter
 		{
 			super(aType);
 			itsEntries = aEntries;
+		}
+		
+		/**
+		 * Fills the given tagmap with information about this attribute's tags.
+		 * @param aTagMap
+		 */
+		public void fillTagMap(TagMap aTagMap, Tagger aTagger)
+		{
+			for (Entry theEntry : itsEntries)
+			{
+				for (BytecodeTagType theType : BytecodeTagType.ALL)
+				{
+					Object theTag = aTagger.getTag(theType, theEntry.v);
+					if (theTag != null) aTagMap.putTag(theType, theTag, theEntry.label.getOffset());
+				}
+			}
 		}
 		
 		@Override
@@ -197,4 +220,107 @@ public class ASMInstrumenter implements IInstrumenter
 			}
 		}
 	}
+	
+	/**
+	 * Implements the mechanism to transform soot attributes into tod tags.
+	 * @author gpothier
+	 */
+	public static abstract class Tagger
+	{
+		public abstract <T> T getTag(BytecodeTagType<T> aType, int aValue);
+		
+	}
+
+	/**
+	 * Handles the instruction kind soot tag provided by the abc compiler.
+	 * It indicates the role of each bytecode
+	 * @author gpothier
+	 */
+	public static class SootInstructionKindTagger extends Tagger
+	{
+		private static SootInstructionKindTagger INSTANCE = new SootInstructionKindTagger();
+
+		public static SootInstructionKindTagger getInstance()
+		{
+			return INSTANCE;
+		}
+
+		private SootInstructionKindTagger()
+		{
+		}
+
+		@Override
+		public <T> T getTag(BytecodeTagType<T> aType, int aValue)
+		{
+			if (aType == BytecodeTagType.BYTECODE_ROLE)
+			{
+				// Constants come from abc.weaving.tagkit.InstructionKindTag
+				switch (aValue)
+				{
+				case 0: return (T) BytecodeRole.BASE_CODE;
+				case 1: return (T) BytecodeRole.ADVICE_EXECUTE;
+				case 2: return (T) BytecodeRole.ADVICE_ARG_SETUP;
+				case 3: return (T) BytecodeRole.ADVICE_TEST;
+				case 36: return (T) BytecodeRole.INLINED_ADVICE;
+				default: return (T) BytecodeRole.UNKNOWN;
+				}
+			}
+			else return null;
+		}
+		
+	}
+	
+	/**
+	 * Represents a range of bytecodes.
+	 * @author gpothier
+	 */
+	public static class CodeRange
+	{
+		public final Label start;
+		public final Label end;
+		
+		public CodeRange(Label aStart, Label aEnd)
+		{
+			start = aStart;
+			end = aEnd;
+		}
+	}
+	
+	/**
+	 * Eases the creation of code ranges.
+	 * @author gpothier
+	 */
+	public static class RangeManager
+	{
+		private final MethodVisitor mv;
+		private final List<CodeRange> itsRanges = new ArrayList<CodeRange>();
+		private Label itsCurrentStart;
+		
+		public RangeManager(MethodVisitor aMv)
+		{
+			mv = aMv;
+		}
+		
+		public List<CodeRange> getRanges()
+		{
+			return itsRanges;
+		}
+
+		public void start()
+		{
+			assert itsCurrentStart == null;
+			itsCurrentStart = new Label();
+			mv.visitLabel(itsCurrentStart);
+		}
+		
+		public void end()
+		{
+			assert itsCurrentStart != null;
+			Label theEnd = new Label();
+			mv.visitLabel(theEnd);
+			itsRanges.add(new CodeRange(itsCurrentStart, theEnd));
+			itsCurrentStart = null;
+		}
+	}
+
 }

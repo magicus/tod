@@ -155,6 +155,23 @@ public class LocationUtils
 
 	}
 	
+	/**
+	 * Returns the JVM signature of the given behavior.
+	 * eg (Ljava/lang/Object;I)V
+	 */
+	public static String getDescriptor(IBehaviorInfo aBehavior)
+	{
+		StringBuilder theBuilder = new StringBuilder("(");
+		
+		for (ITypeInfo theType : aBehavior.getArgumentTypes())
+		{
+			theBuilder.append(theType.getJvmName());
+		}
 
+		theBuilder.append(')');
+		theBuilder.append(aBehavior.getReturnType().getJvmName());
+		
+		return theBuilder.toString();
+	}
 
 }

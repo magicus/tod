@@ -58,7 +58,7 @@ public class SessionTypeManager
 	 */
 	public void registerType(String aSchema, String aClassName)
 	{
-		SessionType theSessionType = new SessionType(aClassName, aSchema);
+		SessionType theSessionType = new SessionType(aSchema, aClassName);
 		itsSchemaMap.put(aSchema, theSessionType);
 	}
 	

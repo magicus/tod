@@ -31,4 +31,10 @@ public interface IMutableLocationInfo
 	 * Returns the database that contains this location info.
 	 */
 	public IMutableStructureDatabase getDatabase();
+	
+	/**
+	 * Same as {@link #getDatabase()}, exists only because of a JDK compiler bug.
+	 */
+	public IMutableStructureDatabase _getMutableDatabase();
+	
 }
