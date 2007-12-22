@@ -134,6 +134,10 @@ public class DebugFlags
 //		System.out;
 		createStream(HOME+"/tmp/tod/collector.log");
 
+	/**
+	 * Whether a message should be printed whenever a new behavior is registered
+	 */
+	public static final boolean LOG_REGISTERED_BEHAVIORS = false;
 	
 	/**
 	 * Whether timestamps should be pretty printed if {@link #COLLECTOR_LOG}
@@ -181,7 +185,8 @@ public class DebugFlags
 		{
 			File theFile = new File(aName);
 			theFile.delete();
-			theFile.getParentFile().mkdirs();
+			File theParentFile = theFile.getParentFile();
+			if (theParentFile != null) theParentFile.mkdirs();
 //			System.out.println(theFile.getAbsolutePath());
 			return new PrintStream(new FileOutputStream(theFile));
 		}

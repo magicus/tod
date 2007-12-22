@@ -30,6 +30,8 @@ import java.util.Map;
 
 import org.objectweb.asm.Type;
 
+import tod.Util;
+import tod.agent.DebugFlags;
 import tod.core.config.TODConfig;
 import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IBehaviorInfo;
@@ -255,6 +257,14 @@ public class StructureDatabase implements IMutableStructureDatabase
 	public void registerBehavior(IBehaviorInfo aBehavior)
 	{
 		Utils.listSet(itsBehaviors, aBehavior.getId(), (BehaviorInfo) aBehavior);
+		if (DebugFlags.LOG_REGISTERED_BEHAVIORS) 
+		{
+			System.out.println(String.format(
+					"Reg.b. %d: %s.%s",
+					aBehavior.getId(),
+					aBehavior.getType().getName(),
+					Util.getFullName(aBehavior)));
+		}
 		fireBehaviorRegistered(aBehavior);
 	}
 

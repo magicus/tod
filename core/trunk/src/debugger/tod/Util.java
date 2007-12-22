@@ -26,6 +26,11 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.List;
 
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.IMemberInfo;
+import tod.core.database.structure.ITypeInfo;
+
 /**
  * @author gpothier
  */
@@ -135,5 +140,43 @@ public class Util
 
         return theRegistry;
 	}
+	
+	/**
+	 * Returns the name of the behavior plus its arguments.
+	 */
+	public static String getFullName(IBehaviorInfo aBehavior)
+	{
+		StringBuilder theBuilder = new StringBuilder(aBehavior.getName());
+		theBuilder.append('(');
+		boolean theFirst = true;
+		for (ITypeInfo theType : aBehavior.getArgumentTypes())
+		{
+			if (theFirst) theFirst = false;
+			else theBuilder.append(", ");
+			theBuilder.append(theType.getName());
+		}
+		theBuilder.append(')');
+		return theBuilder.toString();
+	}
+	
+	/**
+	 * Returns the full name of the given member, including the parameters if
+	 * it is a behavior. 
+	 */
+	public static String getFullName(IMemberInfo aMember)
+	{
+		if (aMember instanceof IBehaviorInfo)
+		{
+			IBehaviorInfo theBehavior = (IBehaviorInfo) aMember;
+			return getFullName(theBehavior);
+		}
+		else if (aMember instanceof IFieldInfo)
+		{
+			IFieldInfo theField = (IFieldInfo) aMember;
+			return theField.getName();
+		}
+		else throw new RuntimeException("Not handled: "+aMember);
+	}
+	
 
 }

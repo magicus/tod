@@ -575,10 +575,10 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		// Nothing to do here, maybe we don't need this message
 		T theThread = getThreadData();
 		FrameInfo theFrame = theThread.currentFrame();
+		short theDepth = theThread.getCurrentDepth();
 		
 		if (EVENT_INTERPRETER_LOG)
 		{
-			short theDepth = theThread.getCurrentDepth();
 			print(theDepth, String.format(
 					"logAfterBehaviorCallDry()\n thread: %d, depth: %d\n frame: %s",
 					theThread.getId(),
@@ -599,6 +599,13 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 			
 			itsPrintStream.println(theMessage);
 			System.err.println(theMessage);
+
+			theThread.popFrame();
+			
+			// Send message anyway, although there is a lot of missing info
+			String s = new String("?");
+			logBeforeBehaviorCall(-1, theFrame.behavior, BehaviorCallType.METHOD_CALL, s, null);
+			logAfterBehaviorCall(-1, theFrame.behavior, s, s);
 		}
 	}
 	
