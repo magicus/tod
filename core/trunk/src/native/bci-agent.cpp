@@ -299,7 +299,7 @@ void JNICALL cbClassFileLoadHook(
 		&& (
 			strncmp("java/", name, 5) == 0 
 			|| strncmp("sun/", name, 4) == 0
-			|| strncmp("javax/", name, 6) == 0 
+// 			|| strncmp("javax/", name, 6) == 0 
 			|| strncmp("com/sun/", name, 8) == 0 
 		)) return;
 
