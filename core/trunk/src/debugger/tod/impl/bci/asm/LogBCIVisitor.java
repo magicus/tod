@@ -388,11 +388,12 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		{
 			TagMap theTagMap = new TagMap();
 			
-			itsInstrumenter.fillTagMap(theTagMap);
-			
 			if (itsInstructionKindAttr != null) itsInstructionKindAttr.fillTagMap(
 					theTagMap,
+					itsMethodInfo.getCodeSize(),
 					SootInstructionKindTagger.getInstance());
+			
+			itsInstrumenter.fillTagMap(theTagMap);
 			
 			itsBehavior.setup(
 					itsTrace,

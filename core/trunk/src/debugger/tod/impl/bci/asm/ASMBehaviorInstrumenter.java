@@ -73,7 +73,6 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	 */
 	private final RangeManager itsInstrumentationRanges;
 
-
 	
 	public ASMBehaviorInstrumenter(
 			ASMDebuggerConfig aConfig,

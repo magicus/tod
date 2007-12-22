@@ -34,6 +34,7 @@ import tod.core.bci.IInstrumenter;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
+import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.impl.database.structure.standard.TagMap;
 import zz.utils.Utils;
 
@@ -136,15 +137,34 @@ public class ASMInstrumenter implements IInstrumenter
 		 * Fills the given tagmap with information about this attribute's tags.
 		 * @param aTagMap
 		 */
-		public void fillTagMap(TagMap aTagMap, Tagger aTagger)
+		public void fillTagMap(TagMap aTagMap, int aCodeSize, Tagger aTagger)
 		{
-			for (Entry theEntry : itsEntries)
+			for (BytecodeTagType theType : BytecodeTagType.ALL)
 			{
-				for (BytecodeTagType theType : BytecodeTagType.ALL)
+				int theCurrentPc = 0;
+				int theCurrentValue = -1;
+				
+				for (Entry theEntry : itsEntries)
 				{
-					Object theTag = aTagger.getTag(theType, theEntry.v);
-					if (theTag != null) aTagMap.putTag(theType, theTag, theEntry.label.getOffset());
+					Object theTag = aTagger.getTag(theType, theCurrentValue);
+					int theNextPc = theEntry.label.getOffset();
+					if (theTag != null) aTagMap.putTagRange(
+							theType, 
+							theTag, 
+							theCurrentPc,
+							theNextPc);
+					
+					theCurrentPc = theNextPc;
+					theCurrentValue = theEntry.v;
 				}
+				
+				Object theTag = aTagger.getTag(theType, theCurrentValue);
+				int theNextPc = aCodeSize;
+				if (theTag != null) aTagMap.putTagRange(
+						theType, 
+						theTag, 
+						theCurrentPc,
+						theNextPc);
 			}
 		}
 		

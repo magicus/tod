@@ -6,6 +6,7 @@ import tod.Util;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.IMemberInfo;
 import zz.utils.tree.SimpleTreeNode;
 
 /**
@@ -35,7 +36,7 @@ public class MemberComparator implements Comparator
 		
 		ILocationInfo l = node.pValue().get();
 		boolean f = l instanceof IFieldInfo;
-		String n1 = Util.getFullName((IBehaviorInfo) l);
+		String n1 = Util.getFullName((IMemberInfo) l);
 			
 		String n2 = (String) o2;
 		
