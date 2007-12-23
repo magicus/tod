@@ -75,7 +75,7 @@ int cfgHostBits = 8; // Number of bits used to encode host id.
 int cfgHostId = 0; // A host id assigned by the TODServer - not official.
 char* cfgWorkingSet = "undefined"; // The current working set of instrumentation
 char* cfgStructDbId = "undefined"; // The id of the structure database used by the peer
-
+int cfgDebugTOD = 0; // set to 1 if we want to optimize agent class filtering for debugging tod
 
 // System properties configuration data.
 char* propHost = NULL;
@@ -288,26 +288,42 @@ void JNICALL cbClassFileLoadHook(
 	jint class_data_len, const unsigned char* class_data,
 	jint* new_class_data_len, unsigned char** new_class_data) 
 {
-	if (strncmp("tod/core/", name, 9) == 0 
-		|| strncmp("tod/agent/", name, 10) == 0)
+		
+	if ( cfgDebugTOD == 1 )
 	{
-		return;
+		if ( !(strncmp("tod/", name, 4) == 0) && !(strncmp("zz/", name, 3) == 0) )
+		{
+			return;
+		}	
+
+		if (strncmp("tod/core/", name, 9) == 0 
+			|| strncmp("tod/agent/", name, 10) == 0)
+		{
+			return;
+		}
+	}
+	else
+	{	 
+		if (strncmp("tod/core/", name, 9) == 0 
+			|| strncmp("tod/agent/", name, 10) == 0)
+			{
+				return;
+			}
+
+		if (cfgSkipCoreClasses 
+			&& (
+				strncmp("java/", name, 5) == 0 
+				|| strncmp("sun/", name, 4) == 0
+	// 			|| strncmp("javax/", name, 6) == 0 
+				|| strncmp("com/sun/", name, 8) == 0 
+			)) return;
 	}
 
-
-	if (cfgSkipCoreClasses 
-		&& (
-			strncmp("java/", name, 5) == 0 
-			|| strncmp("sun/", name, 4) == 0
-// 			|| strncmp("javax/", name, 6) == 0 
-			|| strncmp("com/sun/", name, 8) == 0 
-		)) return;
-
-	if (propVerbose>=1) printf("Loading (hook) %s\n", name);
+	if (propVerbose>=0) printf("Loading (hook) %s\n", name);
 	
 	int* tracedMethods = NULL;
 	int nTracedMethods = 0;
-	
+					
 	// Compute MD5 sum
 	char md5Buffer[16];
 	char md5String[33];
@@ -636,6 +652,7 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
 	fs::path::default_name_check(fs::no_check);
 
 	printf("Loading BCI agent - v2.2\n");
+	if (cfgDebugTOD == 1) printf(">>>>WARNING hard filtering for debugging TOD is on \n");
 	fflush(stdout);
 
 	// Get JVMTI environment 

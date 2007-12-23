@@ -817,7 +817,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 				BehaviorCallType aCallType, 
 				long aOperationLocation)
 		{
-			assert aCallType != null;
+//			assert aCallType != null;
 			FrameInfo theFrame = getFreeFrame();
 			theFrame.entering = aEntering;
 			theFrame.behavior = aBehavior;

@@ -105,7 +105,7 @@ public class StructureView extends LogView
 		
 		SimpleTree<ILocationInfo> theTree = new SimpleTree<ILocationInfo>()
 		{
-			@Override
+			
 			protected SimpleTreeNode<ILocationInfo> createRoot()
 			{
 				return new PackageNode(this, new PackageInfo("Classes"));
