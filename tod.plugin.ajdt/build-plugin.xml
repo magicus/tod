@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project default="plugin" name="TOD AJDT plugin">
 
-
-	<target name="init">
+	<target name="settings">
+		<property file="../tod.plugin/ant.settings"/>
+		<fail message="Please copy ant.settings.template to ant.settings (in tod.plugin), and set the variables in it."/>
+	</target>	
+	
+	<target name="init" depends="settings">
 		<property name="build.dir" value="${basedir}/build"/>
 		<property name="lib.dir" value="${basedir}/lib"/>
 		<property name="plugin.dir" value="${build.dir}/tod.plugin.ajdt"/>
@@ -13,8 +17,6 @@
 		<property name="zz.utils.dir" value="${basedir}/../zz.utils"/>
 		<property name="zz.eclipse.utils.dir" value="${basedir}/../zz.eclipse.utils"/>
 		<property name="tod.plugin.dir" value="${basedir}/../tod.plugin"/>
-
-		<property name="eclipse.home" value="/home/gpothier/apps/eclipse-3.3"/>
 
 		<path id="default.classpath">
 			<pathelement path="${lib.dir}/tod-debugger.jar"/>
