@@ -23,6 +23,7 @@ import tod.core.config.DeploymentConfig;
 import tod.core.config.TODConfig;
 import tod.core.session.ConnectionInfo;
 import tod.core.session.ISession;
+import tod.core.session.SessionCreationException;
 import tod.plugin.SourceRevealer;
 import tod.plugin.TODPlugin;
 import tod.plugin.TODSessionManager;
@@ -50,18 +51,32 @@ public class LaunchUtils
 		}
 		catch (Exception e)
 		{
-			TODPlugin.getDefault().logError("Could not create session", e);
-			Throwable theCause = Utils.getRootCause(e);
-			if (theCause instanceof ConnectException)
-			{
-				msgConnectionProblem(theConfig);
-			}
-			else throw new RuntimeException(e);
+			TODPlugin.logError("Could not create session", e);
+			handleException(theConfig, e);
 		}
 		
 		itsInfo.set(new LaunchInfo(theSession, aConfiguration));
 		
 		return theSession != null;
+	}
+	
+	private static void handleException(TODConfig aConfig, Exception e)
+	{
+		ConnectException theConnectException = Utils.findAncestorException(ConnectException.class, e);
+		if (theConnectException != null) 
+		{
+			msgConnectionProblem(aConfig);
+			return;
+		}
+		
+		SessionCreationException theSessionCreationException = Utils.findAncestorException(SessionCreationException.class, e);
+		if (theSessionCreationException != null)
+		{
+			msgProblem("Cannot create session", e.getMessage());
+			return;
+		}
+		
+		throw new RuntimeException(e);
 	}
 	
 	public static void tearDown()
@@ -93,17 +108,24 @@ public class LaunchUtils
 					"Check Eclipse log for details.";
 		}
 		
-		final String theMessage0 = theMessage;
+		msgProblem("Cannot connect", theMessage);
+	}
+		
+	/**
+	 * Displays an error message
+	 */
+	private static void msgProblem(final String aTitle, final String aMessage)
+	{
 		Display.getDefault().syncExec(new Runnable()
 		{
 			public void run()
 			{
 				Shell theShell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-				MessageDialog.openError(theShell, "Cannot connect", theMessage0);
+				MessageDialog.openError(theShell, aTitle, aMessage);
 			}
 		});
 	}
-		
+	
 	public static IVMRunner getVMRunner(IVMRunner aDelegate) 
 	{
 		return new DelegatedRunner(aDelegate, itsInfo.get());

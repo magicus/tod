@@ -25,6 +25,7 @@ import java.net.URI;
 
 import tod.core.config.TODConfig;
 import tod.impl.local.LocalSession;
+import zz.utils.Utils;
 
 /**
  * Utilies to manage sessions.
@@ -70,7 +71,9 @@ public class SessionUtils
 		}
 		catch (Exception e)
 		{
-			throw new RuntimeException(e);
+			throw new SessionCreationException(
+					"Cannot create session: "+Utils.getRootCause(e).getMessage(), 
+					e);
 		}
 	}
 	

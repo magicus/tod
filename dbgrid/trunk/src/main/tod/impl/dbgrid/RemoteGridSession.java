@@ -22,6 +22,7 @@ package tod.impl.dbgrid;
 
 import java.net.URI;
 import java.rmi.RemoteException;
+import java.rmi.UnknownHostException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
@@ -85,6 +86,10 @@ public class RemoteGridSession extends AbstractSession
 		
 			itsBrowser = GridLogBrowser.createRemote(itsMaster);
 			itsMonitor = Scheduler.get(itsBrowser);
+		}
+		catch (UnknownHostException e)
+		{
+			throw new RuntimeException("Unknown host: "+e.getCause().getMessage());
 		}
 		catch (Exception e)
 		{
