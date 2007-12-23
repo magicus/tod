@@ -1,6 +1,6 @@
 
 BOOST_VERSION = 1_34_1
-ASIO_VERSION = 0.3.8rc3
+ASIO_VERSION = 
 SHARED_MAGIC = -shared
 STATIC_MAGIC = -Wl,-Bstatic 
 
@@ -43,7 +43,7 @@ endif
 ifeq ($(PLATFORM), linux)
 	BOOST_FLAVOR = gcc41-mt
 	
-	CXXFLAGS += -I /usr/include/boost-$(BOOST_VERSION) -I /usr/include/asio-$(ASIO_VERSION)/
+	CXXFLAGS += -I /usr/include/boost/ -I /usr/include/asio/
 	
 	CXXFLAGS += -I $(JAVA_HOME)/include/ -I $(JAVA_HOME)/include/linux/
 	LDFLAGS += -static-libgcc 
