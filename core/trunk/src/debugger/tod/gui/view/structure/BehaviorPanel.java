@@ -38,6 +38,45 @@ import zz.utils.ui.StackLayout;
  */
 public class BehaviorPanel extends JPanel
 {
+	private static Column cPc = new Column("pc", 50)
+	{
+		@Override
+		public Object getValue(Instruction aInstruction, IBehaviorInfo aBehavior)
+		{
+			return aInstruction.pc;
+		}
+	};
+	
+	private static Column cLine = new Column("line", 50)
+	{
+		@Override
+		public Object getValue(Instruction aInstruction, IBehaviorInfo aBehavior)
+		{
+			return "";
+		}
+	};
+	
+	private static Column cRole = new TagColumn("role", 150, BytecodeTagType.BYTECODE_ROLE);
+	private static Column cShadow = new TagColumn("shadow", 50, BytecodeTagType.INSTR_SHADOW);
+	private static Column cSource = new TagColumn("source", 50, BytecodeTagType.INSTR_SOURCE);
+	
+	private static Column cCode = new Column("code", 500)
+	{
+		@Override
+		public Object getValue(Instruction aInstruction, IBehaviorInfo aBehavior)
+		{
+			return aInstruction.text;
+		}
+	};
+
+	/**
+	 * The columns displayed by the table.
+	 */
+	private static Column[] columns = {cPc, cLine, cRole, cShadow, cSource, cCode};
+	
+	/**
+	 * The inspected behavior.
+	 */
 	private final IBehaviorInfo itsBehavior;
 
 	public BehaviorPanel(IBehaviorInfo aBehavior)
@@ -52,10 +91,9 @@ public class BehaviorPanel extends JPanel
 		JTable theTable = new JTable(new MyTableModel(itsBehavior, theDisassembled.getInstructions()));
 		theTable.setShowHorizontalLines(false);
 		theTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-		theTable.getColumnModel().getColumn(0).setPreferredWidth(50);
-		theTable.getColumnModel().getColumn(1).setPreferredWidth(50);
-		theTable.getColumnModel().getColumn(2).setPreferredWidth(50);
-		theTable.getColumnModel().getColumn(3).setPreferredWidth(500);
+		
+		for (int i=0;i<columns.length;i++) 
+			theTable.getColumnModel().getColumn(i).setPreferredWidth(columns[i].width);
 		
 		setLayout(new StackLayout());
 		add(new JScrollPane(theTable));
@@ -63,8 +101,6 @@ public class BehaviorPanel extends JPanel
 	
 	private static class MyTableModel extends AbstractTableModel
 	{
-		private static String[] columnNames = {"pc", "line", "tags", "code"};
-		
 		private IBehaviorInfo itsBehavior;
 		private Instruction[] itsInstructions;
 		
@@ -76,13 +112,13 @@ public class BehaviorPanel extends JPanel
 
 		public int getColumnCount()
 		{
-			return 4;
+			return columns.length;
 		}
 
 		@Override
 		public String getColumnName(int aColumn)
 		{
-			return columnNames[aColumn];
+			return columns[aColumn].name;
 		}
 		
 		public int getRowCount()
@@ -93,34 +129,55 @@ public class BehaviorPanel extends JPanel
 		public Object getValueAt(int aRowIndex, int aColumnIndex)
 		{
 			Instruction theInstruction = itsInstructions[aRowIndex];
-			switch(aColumnIndex)
-			{
-			case 0: return theInstruction.pc;
-			case 1: return "?";
-			case 2: return getTags(theInstruction);
-			case 3: return theInstruction.text;
-			default: throw new RuntimeException("Not handled: "+aColumnIndex);
-			}
+			return columns[aColumnIndex].getValue(theInstruction, itsBehavior);
 		}
 		
-		private String getTags(Instruction aInstruction)
+	}
+	
+	/**
+	 * Column descriptor for the table.
+	 * Contains the static info (name, width) and also permits to
+	 * retrieve the cell content for a given {@link Instruction}.
+	 * @author gpothier
+	 */
+	private static abstract class Column
+	{
+		public final String name;
+		public final int width;
+		
+		public Column(String aName, int aWidth)
 		{
-			StringBuilder theBuilder = new StringBuilder();
-			
-			boolean theFirst = true;
-			for (BytecodeTagType theType : BytecodeTagType.ALL)
-			{
-				Object theTag = itsBehavior.getTag(theType, aInstruction.pc);
-				if (theTag != null)
-				{
-					if (theFirst) theFirst = false;
-					else theBuilder.append(", ");
-					
-					theBuilder.append(theTag);
-				}
-			}
-			
-			return theBuilder.toString();
+			name = aName;
+			width = aWidth;
+		}
+		
+		public abstract Object getValue(Instruction aInstruction, IBehaviorInfo aBehavior);
+	}
+	
+	/**
+	 * A column that show tags.
+	 * @author gpothier
+	 */
+	private static  class TagColumn<T> extends Column
+	{
+		private BytecodeTagType<T> itsType;
+		
+		public TagColumn(String aName, int aWidth, BytecodeTagType<T> aType)
+		{
+			super(aName, aWidth);
+			itsType = aType;
+		}
+
+		@Override
+		public Object getValue(Instruction aInstruction, IBehaviorInfo aBehavior)
+		{
+			T theTag = aBehavior.getTag(itsType, aInstruction.pc);
+			return theTag != null ? getValue(theTag) : null;
+		}
+		
+		protected Object getValue(T aTag)
+		{
+			return aTag.toString();
 		}
 	}
 }

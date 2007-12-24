@@ -20,7 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.bci.asm;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.objectweb.asm.Attribute;
@@ -32,16 +31,12 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 import tod.Util;
-import tod.core.BehaviorCallType;
-import tod.core.database.structure.IBehaviorInfo;
+import tod.agent.BehaviorCallType;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
-import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
-import tod.impl.bci.asm.ASMInstrumenter.SootInstructionKindTagger;
-import tod.impl.bci.asm.ASMInstrumenter.TaggingAttribute;
 import tod.impl.database.structure.standard.TagMap;
 import zz.utils.ArrayStack;
 import zz.utils.Stack;
@@ -191,6 +186,8 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		private int itsStoreIndex = 0;
 		
 		private TaggingAttribute itsInstructionKindAttr;
+		private TaggingAttribute itsInstructionShadowAttr;
+		private TaggingAttribute itsInstructionSourceAttr;
 		
 		public BCIMethodVisitor(MethodVisitor mv, ASMMethodInfo aMethodInfo)
 		{
@@ -220,6 +217,14 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			if (ASMInstrumenter.ATTR_INSTRUCTION_KIND.equals(aAttr.type))
 			{
 				itsInstructionKindAttr = (TaggingAttribute) aAttr;
+			}
+			else if (ASMInstrumenter.ATTR_INSTRUCTION_SHADOW.equals(aAttr.type))
+			{
+				itsInstructionShadowAttr = (TaggingAttribute) aAttr;
+			}
+			else if (ASMInstrumenter.ATTR_INSTRUCTION_SHADOW.equals(aAttr.type))
+			{
+				itsInstructionSourceAttr = (TaggingAttribute) aAttr;				
 			}
 			else
 			{
@@ -386,15 +391,27 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		@Override
 		public void visitEnd()
 		{
+			// Prepare tags
 			TagMap theTagMap = new TagMap();
 			
 			if (itsInstructionKindAttr != null) itsInstructionKindAttr.fillTagMap(
 					theTagMap,
 					itsMethodInfo.getCodeSize(),
-					SootInstructionKindTagger.getInstance());
+					Tagger.INSTRUCTION_KIND);
+			
+			if (itsInstructionShadowAttr != null) itsInstructionShadowAttr.fillTagMap(
+					theTagMap,
+					itsMethodInfo.getCodeSize(),
+					Tagger.INSTRUCTION_SHADOW);
+			
+			if (itsInstructionSourceAttr != null) itsInstructionSourceAttr.fillTagMap(
+					theTagMap,
+					itsMethodInfo.getCodeSize(),
+					Tagger.INSTRUCTION_SOURCE);
 			
 			itsInstrumenter.fillTagMap(theTagMap);
 			
+			// Setup behavior info
 			itsBehavior.setup(
 					itsTrace,
 					itsMethodInfo.getKind(),

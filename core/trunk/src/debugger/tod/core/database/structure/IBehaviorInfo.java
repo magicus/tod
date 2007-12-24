@@ -24,7 +24,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import tod.core.BehaviorKind;
+import tod.agent.BehaviorKind;
 import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 
@@ -133,8 +133,10 @@ public interface IBehaviorInfo extends IMemberInfo
     {
     	public static final BytecodeTagType<Integer> SOURCE_POSITION = new BytecodeTagType<Integer>("srcPos");
     	public static final BytecodeTagType<BytecodeRole> BYTECODE_ROLE = new BytecodeTagType<BytecodeRole>("role");
+    	public static final BytecodeTagType<Integer> INSTR_SHADOW = new BytecodeTagType<Integer>("shadow");
+    	public static final BytecodeTagType<Integer> INSTR_SOURCE = new BytecodeTagType<Integer>("source");
     	
-    	public static final BytecodeTagType[] ALL = {SOURCE_POSITION, BYTECODE_ROLE};
+    	public static final BytecodeTagType[] ALL = {SOURCE_POSITION, BYTECODE_ROLE, INSTR_SHADOW, INSTR_SOURCE};
     	
     	private final String itsName;
 
