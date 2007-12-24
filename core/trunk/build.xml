@@ -5,28 +5,23 @@
     	
         <property name="build.dir" value="${basedir}/build"/>
         <property name="lib.dir" value="${basedir}/lib"/>
-        <property name="src-agent.dir" value="${basedir}/src/agent"/>
         <property name="src-debugger.dir" value="${basedir}/src/debugger"/>
         <property name="src-test.dir" value="${basedir}/src/test"/>
         <property name="src-testcase.dir" value="${basedir}/src/testcase"/>
         <property name="resources.dir" value="${basedir}/resources"/>
-        <property name="classes-agent.dir" value="${basedir}/classes-agent"/>
         <property name="classes-debugger.dir" value="${basedir}/classes-debugger"/>
         <property name="classes-test.dir" value="${basedir}/classes-test"/>
         <property name="classes-testcase.dir" value="${basedir}/classes-testcase"/>
     	
+        <property name="tod-agent.dir" value="${basedir}/../TOD-agent"/>
         <property name="zz.utils.dir" value="${basedir}/../zz.utils"/>
         <property name="reflex.dir" value="${basedir}/../reflex"/>
         <property name="pom.dir" value="${basedir}/../pom"/>
 
     	
-        <path id="agent.classpath">
-            <pathelement path="${lib.dir}/asm-all-3.0.jar"/>
-        </path>
-    	
         <path id="debugger.classpath">
             <pathelement path="${lib.dir}/zz.utils.jar"/>
-        	<pathelement path="${classes-agent.dir}"/>
+        	<pathelement path="${lib.dir}/tod-agent.jar"/>
             <pathelement path="${lib.dir}/asm-all-3.0.jar"/>
             <pathelement path="${lib.dir}/lucene-core-2.0.0.jar"/>
             <pathelement path="${lib.dir}/reflex-core.jar"/>
@@ -37,7 +32,7 @@
     	
         <path id="test.classpath">
             <pathelement path="${lib.dir}/zz.utils.jar"/>
-        	<pathelement path="${classes-agent.dir}"/>
+        	<pathelement path="${lib.dir}/tod-agent.jar"/>
         	<pathelement path="${classes-debugger.dir}"/>
             <pathelement path="${lib.dir}/junit-4.1.jar"/>
             <pathelement path="${lib.dir}/pom.jar"/>
@@ -48,25 +43,16 @@
     <target name="clean" depends="init">
         <delete includeemptydirs="true" failonerror="false">
             <fileset dir="${build.dir}"/>
-            <fileset dir="${classes-agent.dir}"/>
             <fileset dir="${classes-debugger.dir}"/>
             <fileset dir="${classes-test.dir}"/>
             <fileset dir="${classes-testcase.dir}"/>
         	
         	<fileset file="${lib.dir}/zz.utils.jar"/>
+        	<fileset file="${lib.dir}/tod-agent.jar"/>
         </delete>
     </target>
 
-    <target name="compile-agent" depends="init, dep.all">
-        <mkdir dir="${classes-agent.dir}"/>
-        <javac compiler="javac1.5" source="1.5" target="1.5"
-        	debug="yes" nowarn="yes"
-            srcdir="${src-agent.dir}"
-            destdir="${classes-agent.dir}"
-            classpathref="agent.classpath"/>
-    </target>
-
-    <target name="compile-debugger" depends="init, dep.all, compile-agent">
+    <target name="compile-debugger" depends="init, dep.all">
         <mkdir dir="${classes-debugger.dir}"/>
     	
         <javac 
@@ -80,7 +66,7 @@
     	</copy>
     </target>
 	
-    <target name="compile-test" depends="init, dep.all, compile-agent, compile-debugger">
+    <target name="compile-test" depends="init, dep.all, compile-debugger">
         <mkdir dir="${classes-test.dir}"/>
         <javac 
         	debug="yes" nowarn="yes"
@@ -98,7 +84,7 @@
             classpathref="debugger.classpath"/>
     </target>
 	
-	<target name="compile" depends="compile-agent, compile-debugger, compile-test, compile-testcase"/>
+	<target name="compile" depends="dep.all, compile-debugger, compile-test, compile-testcase"/>
 	
 	<target name="rmic" depends="compile">
 		<rmic 
@@ -117,7 +103,6 @@
 
 	<target name="jar" depends="compile">
         <mkdir dir="${build.dir}"/>
-		<jar destfile="${build.dir}/tod-agent.jar" basedir="${classes-agent.dir}"/>
 		<jar destfile="${build.dir}/tod-debugger.jar" basedir="${classes-debugger.dir}"/>
 		<jar destfile="${build.dir}/tod-test.jar" basedir="${classes-test.dir}"/>
 		<jar destfile="${build.dir}/tod-testcase.jar" basedir="${classes-testcase.dir}"/>
@@ -144,6 +129,18 @@
 		<echo message="Finished building zz.utils"/>
 		<copy todir="lib">
 			<fileset dir="${zz.utils.dir}/build" includes="zz.utils.jar"/>
+		</copy>
+	</target>
+	
+	<target name="dep.tod-agent" depends="init">
+		<ant 
+			antfile="${tod-agent.dir}/build.xml" 
+			dir="${tod-agent.dir}" 
+			target="jar"
+			inheritall="false"/>
+		<echo message="Finished building tod-agent"/>
+		<copy todir="lib">
+			<fileset dir="${tod-agent.dir}/build" includes="tod-agent.jar"/>
 		</copy>
 	</target>
 	
@@ -174,5 +171,5 @@
 	</target>
 	
 	
-	<target name="dep.all" depends="dep.zz.utils"/>
+	<target name="dep.all" depends="dep.zz.utils, dep.tod-agent"/>
 </project>

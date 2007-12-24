@@ -35,7 +35,6 @@ import java.util.Random;
 import tod.BenchBase;
 import tod.Util;
 import tod.BenchBase.BenchResults;
-import tod.agent.ConfigUtils;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
@@ -57,6 +56,7 @@ import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.RIGridMaster;
+import tod.utils.ConfigUtils;
 import zz.utils.ITask;
 import zz.utils.Utils;
 

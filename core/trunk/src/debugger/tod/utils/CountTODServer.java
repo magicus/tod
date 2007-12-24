@@ -29,8 +29,8 @@ import java.util.List;
 
 import javax.swing.JComponent;
 
+import tod.agent.Output;
 import tod.core.ILogCollector;
-import tod.core.Output;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.server.CollectorTODServer;

@@ -27,7 +27,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import tod.agent.ConfigUtils;
 import tod.core.ILogCollector;
 import tod.core.bci.IInstrumenter;
 import tod.core.config.TODConfig;

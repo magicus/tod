@@ -25,7 +25,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-import tod.core.BehaviorCallType;
+import tod.agent.BehaviorCallType;
 
 public class ASMBehaviorCallInstrumenter implements Opcodes
 {

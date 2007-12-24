@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src/agent"/>
 	<classpathentry kind="src" path="resources"/>
 	<classpathentry kind="src" path="src/debugger"/>
 	<classpathentry kind="src" path="src/test"/>
@@ -12,5 +11,6 @@
 	<classpathentry kind="lib" path="lib/javassist.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/reflex-core.jar"/>
 	<classpathentry kind="lib" path="lib/asm-all-3.0.jar" sourcepath="/ASM/src"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/TOD-agent"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

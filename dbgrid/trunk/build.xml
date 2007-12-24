@@ -12,6 +12,7 @@
         <property name="classes-test.dir" value="${basedir}/classes-test"/>
     	
         <property name="zz.utils.dir" value="${basedir}/../zz.utils"/>
+        <property name="tod-agent.dir" value="${basedir}/../TOD-agent"/>
         <property name="reflex.dir" value="${basedir}/../reflex"/>
         <property name="pom.dir" value="${basedir}/../pom"/>
         <property name="tod.dir" value="${basedir}/../TOD"/>
@@ -114,6 +115,18 @@
 		</copy>
 	</target>
 	
+	<target name="dep.tod-agent" depends="init">
+		<ant 
+			antfile="${tod-agent.dir}/build.xml" 
+			dir="${tod-agent.dir}" 
+			target="jar"
+			inheritall="false"/>
+		<echo message="Finished building tod-agent"/>
+		<copy todir="lib">
+			<fileset dir="${tod-agent.dir}/build" includes="tod-agent.jar"/>
+		</copy>
+	</target>	
+	
 	<target name="dep.reflex" depends="init">
 		<echo message="Building reflex..."/>
 		<ant 
@@ -154,5 +167,5 @@
 	</target>
 	
 	
-	<target name="dep.all" depends="dep.zz.utils, dep.tod"/>
+	<target name="dep.all" depends="dep.zz.utils, dep.tod-agent, dep.tod"/>
 </project>

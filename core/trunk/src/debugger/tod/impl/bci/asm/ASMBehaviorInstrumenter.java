@@ -27,10 +27,10 @@ import org.objectweb.asm.Type;
 
 import tod.Util;
 import tod.agent.AgentReady;
+import tod.agent.BehaviorCallType;
+import tod.agent.EventInterpreter;
 import tod.agent.ExceptionGeneratedReceiver;
 import tod.agent.TracedMethods;
-import tod.core.BehaviorCallType;
-import tod.core.EventInterpreter;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.IMutableClassInfo;

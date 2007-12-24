@@ -3,7 +3,7 @@
 <plugin
    id="tod.plugin"
    name="TOD Eclipse Plugin"
-   version="0.5.10"
+   version="0.5.16"
    provider-name="DCC - Universidad de Chile"
    class="tod.plugin.TODPlugin">
 
@@ -14,11 +14,7 @@
       <library name="lib/log4j.jar">
          <export name="*"/>
       </library>
-      <library name="lib/asm-3.0.jar">
-         <export name="*">
-         </export>
-      </library>
-      <library name="lib/asm-commons-3.0.jar">
+      <library name="lib/asm-all-3.0.jar">
          <export name="*">
          </export>
       </library>

@@ -23,7 +23,7 @@ package tod.impl.database.structure.standard;
 import java.util.ArrayList;
 import java.util.List;
 
-import tod.core.BehaviorKind;
+import tod.agent.BehaviorKind;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;

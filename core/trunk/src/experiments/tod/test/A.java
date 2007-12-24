@@ -20,7 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.test;
 
-import tod.core.BehaviorCallType;
+import tod.agent.BehaviorCallType;
 
 public class A
 {

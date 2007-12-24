@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import tod.agent.transport.MessageType;
 import tod.core.ILogCollector;
 import tod.impl.database.structure.standard.HostInfo;
 

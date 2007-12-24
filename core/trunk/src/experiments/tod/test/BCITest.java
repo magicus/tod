@@ -24,7 +24,7 @@ import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
-import tod.core.ObjectIdentity;
+import tod.agent.ObjectIdentity;
 
 
 public class BCITest

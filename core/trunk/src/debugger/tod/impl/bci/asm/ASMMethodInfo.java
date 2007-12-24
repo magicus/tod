@@ -23,7 +23,7 @@ package tod.impl.bci.asm;
 import java.util.ArrayList;
 import java.util.List;
 
-import tod.core.BehaviorKind;
+import tod.agent.BehaviorKind;
 import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 

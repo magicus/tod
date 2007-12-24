@@ -30,9 +30,9 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import tod.agent.AgentConfig;
-import tod.core.EventInterpreter;
+import tod.agent.EventInterpreter;
+import tod.agent.transport.CollectorPacketWriter;
 import tod.core.config.ClassSelector;
-import tod.core.transport.CollectorPacketWriter;
 import tod.impl.database.structure.standard.PrimitiveTypeInfo;
 
 public class BCIUtils implements Opcodes

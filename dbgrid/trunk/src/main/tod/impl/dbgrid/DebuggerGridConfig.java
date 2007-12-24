@@ -20,8 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
-import tod.agent.ConfigUtils;
-import tod.core.config.TODConfig;
 import tod.impl.dbgrid.db.HierarchicalIndex;
 import tod.impl.dbgrid.db.ObjectsDatabase;
 import tod.impl.dbgrid.db.file.HardPagedFile;
@@ -29,6 +27,7 @@ import tod.impl.dbgrid.db.file.TupleIterator;
 import tod.impl.dbgrid.db.file.TupleWriter;
 import tod.impl.dbgrid.dispatch.DatabaseNode;
 import tod.impl.dbgrid.messages.MessageType;
+import tod.utils.ConfigUtils;
 import zz.utils.bit.BitUtils;
 
 public class DebuggerGridConfig

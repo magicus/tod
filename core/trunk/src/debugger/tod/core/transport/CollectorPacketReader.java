@@ -28,8 +28,9 @@ import java.io.ObjectInputStream;
 
 import tod.agent.AgentConfig;
 import tod.agent.DebugFlags;
+import tod.agent.Output;
+import tod.agent.transport.MessageType;
 import tod.core.ILogCollector;
-import tod.core.Output;
 import tod.core.database.structure.ObjectId;
 
 public class CollectorPacketReader

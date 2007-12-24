@@ -6,11 +6,10 @@
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/TOD"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/zz.utils"/>
-	<classpathentry kind="lib" path="lib/asm-3.0.jar"/>
-	<classpathentry kind="lib" path="lib/asm-commons-3.0.jar"/>
 	<classpathentry kind="lib" path="lib/javassist.jar"/>
 	<classpathentry kind="lib" path="lib/pom.jar"/>
 	<classpathentry kind="lib" path="lib/reflex-core.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/TOD-dbgrid"/>
+	<classpathentry kind="lib" path="lib/asm-all-3.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

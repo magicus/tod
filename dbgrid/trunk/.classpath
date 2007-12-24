@@ -8,5 +8,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/pom.jar" sourcepath="/pom"/>
 	<classpathentry exported="true" kind="lib" path="lib/reflex-core.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.1.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/TOD-agent"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

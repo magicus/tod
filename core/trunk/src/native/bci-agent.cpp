@@ -296,16 +296,14 @@ void JNICALL cbClassFileLoadHook(
 			return;
 		}	
 
-		if (strncmp("tod/core/", name, 9) == 0 
-			|| strncmp("tod/agent/", name, 10) == 0)
+		if (strncmp("tod/agent/", name, 10) == 0)
 		{
 			return;
 		}
 	}
 	else
 	{	 
-		if (strncmp("tod/core/", name, 9) == 0 
-			|| strncmp("tod/agent/", name, 10) == 0)
+		if (strncmp("tod/agent/", name, 10) == 0)
 			{
 				return;
 			}
@@ -782,7 +780,7 @@ jlong getNextOid()
  * Method: get
  * Signature: (Ljava/lang/Object;)J
  */
-JNIEXPORT jlong JNICALL Java_tod_core_ObjectIdentity_get
+JNIEXPORT jlong JNICALL Java_tod_agent_ObjectIdentity_get
 	(JNIEnv * jni, jclass, jobject obj)
 {
 	jvmtiError err;
@@ -804,7 +802,7 @@ JNIEXPORT jlong JNICALL Java_tod_core_ObjectIdentity_get
 }
 
 
-JNIEXPORT jint JNICALL Java_tod_core_EventInterpreter_getHostId
+JNIEXPORT jint JNICALL Java_tod_agent_EventInterpreter_getHostId
 	(JNIEnv * jni, jclass)
 {
 	return cfgHostId;

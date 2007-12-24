@@ -25,7 +25,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
-import tod.core.EventInterpreter;
 
 /**
  * This class groups severla flags that are used to

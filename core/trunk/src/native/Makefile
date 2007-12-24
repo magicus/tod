@@ -96,7 +96,7 @@ clean:
 # $(PLATFORM)/NativeCollector.o: NativeCollector.cpp tod_core_transport_NativeCollector.h
 # 	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) NativeCollector.cpp -o $(PLATFORM)/NativeCollector.o
 
-$(PLATFORM)/bci-agent.o: bci-agent.cpp tod_core_ObjectIdentity.h utils.h jniutils.h
+$(PLATFORM)/bci-agent.o: bci-agent.cpp utils.h jniutils.h
 	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) bci-agent.cpp -o $(PLATFORM)/bci-agent.o
 
 $(PLATFORM)/utils.o: utils.cpp utils.h

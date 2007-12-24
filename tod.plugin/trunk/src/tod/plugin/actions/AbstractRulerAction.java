@@ -15,18 +15,12 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.source.IVerticalRulerInfo;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import tod.agent.ConfigUtils;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.gui.IGUIManager;
 import tod.plugin.DebuggingSession;
 import tod.plugin.TODPluginUtils;
-import tod.plugin.views.AbstractNavigatorView;
-import tod.plugin.views.TraceNavigatorView;
 
 public abstract class AbstractRulerAction extends Action //implements IUpdate
 {

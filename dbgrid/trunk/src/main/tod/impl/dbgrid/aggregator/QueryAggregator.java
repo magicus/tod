@@ -256,15 +256,23 @@ implements RIQueryAggregator
 				}
 			});
 		}
-		
+
+		long theTotal = 0;
 		long[] theCounts = new long[aSlotsCount];
 		for (Future<long[]> theFuture : theFutures)
 		{
 			long[] theNodeCounts = theFuture.get();
-			for(int i=0;i<aSlotsCount;i++) theCounts[i] += theNodeCounts[i];
+			for(int i=0;i<aSlotsCount;i++) 
+			{
+				long c = theNodeCounts[i];
+				theCounts[i] += c;
+				theTotal += c;
+			}
 		}
 		
 		long t1 = System.currentTimeMillis();
+		
+		System.out.println("Computed counts for "+itsCondition+" - found: "+theTotal);
 		
 //		System.out.println("Computed counts in "+(t1-t0)+"ms.");
 		

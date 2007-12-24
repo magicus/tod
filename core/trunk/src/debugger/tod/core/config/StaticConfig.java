@@ -20,13 +20,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.config;
 
-import java.io.IOException;
-
-import tod.agent.ConfigUtils;
 import tod.core.config.ClassSelector.AllCS;
 import tod.core.config.ClassSelector.WorkingSetClassSelector;
-import tod.core.transport.SocketCollector;
 import tod.tools.parsers.ParseException;
+import tod.utils.ConfigUtils;
 
 /**
  * Permits to define the static configuration of the logging

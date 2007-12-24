@@ -45,7 +45,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.internal.Workbench;
 
 import tod.Util;
-import tod.agent.ConfigUtils;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.ILocationInfo;
@@ -54,6 +53,7 @@ import tod.core.database.structure.ITypeInfo;
 import tod.core.session.ISession;
 import tod.plugin.views.AbstractNavigatorView;
 import tod.plugin.views.TraceNavigatorView;
+import tod.utils.ConfigUtils;
 
 /**
  * Utilities for the TOD plugin

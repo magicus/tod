@@ -23,7 +23,7 @@ package tod.core.config;
 import java.util.EnumMap;
 import java.util.Map;
 
-import tod.core.Output;
+import tod.agent.Output;
 
 
 /**

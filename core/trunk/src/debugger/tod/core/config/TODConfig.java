@@ -29,11 +29,10 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import tod.agent.AgentConfig;
-import tod.agent.ConfigUtils;
+import tod.utils.ConfigUtils;
 import zz.utils.PublicCloneable;
 
 /**

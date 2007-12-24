@@ -22,11 +22,9 @@ package tod.agent;
 
 import java.io.IOException;
 
-import tod.core.EventInterpreter;
-import tod.core.HighLevelCollector;
-import tod.core.transport.DummyCollector;
-import tod.core.transport.NativeCollector;
-import tod.core.transport.SocketCollector;
+import tod.agent.transport.DummyCollector;
+import tod.agent.transport.NativeCollector;
+import tod.agent.transport.SocketCollector;
 
 /**
  * Configuration of the agent in the target VM. 

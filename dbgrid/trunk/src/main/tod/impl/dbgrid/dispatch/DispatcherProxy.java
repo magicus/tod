@@ -29,8 +29,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.LinkedList;
 
+import tod.agent.transport.MessageType;
 import tod.core.transport.LogReceiver;
-import tod.core.transport.MessageType;
 import tod.utils.ArrayCast;
 import tod.utils.NativeStream;
 import zz.utils.ArrayStack;
