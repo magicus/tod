@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 case "$1" in
 	"session"	) MAIN="tod.impl.dbgrid.GridSession";;
