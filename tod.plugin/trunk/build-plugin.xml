@@ -16,6 +16,7 @@
 		<property name="src.dir" value="${basedir}/src"/>
 
 		<property name="tod.dir" value="${basedir}/../TOD"/>
+		<property name="tod-agent.dir" value="${basedir}/../TOD-agent"/>
 		<property name="tod-dbgrid.dir" value="${basedir}/../TOD-dbgrid"/>
 		<property name="zz.utils.dir" value="${basedir}/../zz.utils"/>
 		<property name="zz.eclipse.utils.dir" value="${basedir}/../zz.eclipse.utils"/>
@@ -100,6 +101,18 @@
 			<fileset dir="${tod-dbgrid.dir}/build" includes="tod-dbgrid.jar"/>
 		</copy>
 	</target>
+	
+	<target name="dep.tod-agent" depends="init">
+		<ant 
+			antfile="${tod-agent.dir}/build.xml" 
+			dir="${tod-agent.dir}" 
+			target="jar"
+			inheritall="false"/>
+		<echo message="Finished building tod-agent"/>
+		<copy todir="lib">
+			<fileset dir="${tod-agent.dir}/build" includes="tod-agent.jar"/>
+		</copy>
+	</target>		
 
 	<target name="dep.zz.utils" depends="init">
 		<ant 
@@ -149,5 +162,5 @@
 	</target>
 
 
-	<target name="dep.all" depends="dep.tod, dep.zz.utils, dep.zz.eclipse.utils, dep.tod-dbgrid"/>
+	<target name="dep.all" depends="dep.tod-agent, dep.tod, dep.zz.utils, dep.zz.eclipse.utils, dep.tod-dbgrid"/>
 </project>
