@@ -22,7 +22,6 @@ package tod.impl.common.event;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IExceptionGeneratedEvent;
-import tod.core.database.structure.IBehaviorInfo;
 
 /**
  * @author gpothier

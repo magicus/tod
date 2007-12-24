@@ -32,14 +32,12 @@ import javax.swing.JToolBar;
 
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
-import tod.gui.view.LogView;
 import zz.utils.ItemAction;
 import zz.utils.properties.ArrayListProperty;
 import zz.utils.properties.IListProperty;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.PropertyUtils;
 import zz.utils.properties.SimpleRWProperty;
-import zz.utils.ui.GridStackLayout;
 
 /**
  * A component that displays a stack of event views.

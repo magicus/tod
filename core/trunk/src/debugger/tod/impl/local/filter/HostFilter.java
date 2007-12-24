@@ -22,7 +22,6 @@ package tod.impl.local.filter;
 
 import tod.core.database.event.ILogEvent;
 import tod.impl.local.LocalBrowser;
-import tod.impl.local.LocalBrowser;
 
 public class HostFilter extends AbstractStatelessFilter
 {

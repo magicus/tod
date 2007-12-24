@@ -33,8 +33,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.rmi.RemoteException;
 
-import tod.agent.DebugFlags;
 import tod.agent.transport.MessageType;
+import tod.core.DebugFlags;
 import tod.core.transport.LogReceiver;
 import tod.impl.database.structure.standard.HostInfo;
 import tod.impl.database.structure.standard.ThreadInfo;

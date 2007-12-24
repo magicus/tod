@@ -25,7 +25,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.ButtonGroup;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
@@ -37,7 +36,6 @@ import tod.gui.IGUIManager;
 import tod.gui.MinerUI;
 import tod.gui.eventsequences.IEventSequenceSeed;
 import tod.gui.eventsequences.SequenceViewsDock;
-import tod.gui.view.LogView;
 
 public class EventHighlighter extends JPanel
 implements ActionListener

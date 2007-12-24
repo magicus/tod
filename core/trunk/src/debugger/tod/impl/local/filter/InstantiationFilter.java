@@ -25,7 +25,6 @@ import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.impl.local.LocalBrowser;
-import tod.impl.local.LocalBrowser;
 
 /**
  * Instantiation-related filter.

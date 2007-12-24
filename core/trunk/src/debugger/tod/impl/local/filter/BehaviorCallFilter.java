@@ -24,7 +24,6 @@ import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.impl.local.LocalBrowser;
-import tod.impl.local.LocalBrowser;
 
 /**
  * A filter that accepts only behavior calls (before and after).

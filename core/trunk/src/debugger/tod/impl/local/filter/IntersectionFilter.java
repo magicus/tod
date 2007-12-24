@@ -25,7 +25,6 @@ import java.util.List;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.event.ILogEvent;
 import tod.impl.local.LocalBrowser;
-import tod.impl.local.LocalBrowser;
 
 /**
  * A compound filter that corresponds to the logical intersection of

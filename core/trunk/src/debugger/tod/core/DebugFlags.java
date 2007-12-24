@@ -18,16 +18,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.agent;
+package tod.core;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
+import tod.core.transport.LogReceiver;
+import tod.impl.common.ObjectInspector;
+import tod.utils.ConfigUtils;
+import zz.utils.bit.BitUtils;
+
 
 /**
- * This class groups severla flags that are used to
+ * This class groups several flags that are used to
  * disable certain features for testing purposes.
  * 
  * @author gpothier
@@ -39,22 +44,22 @@ public class DebugFlags
 	/**
 	 * Causes database nodes to skip incoming events
 	 */
-	public static final boolean SKIP_EVENTS = AgentUtils.readBoolean("skip-events", false); 
+	public static final boolean SKIP_EVENTS = ConfigUtils.readBoolean("skip-events", false); 
 	
 	/**
 	 * Causes database nodes to skip incoming objects
 	 */
-	public static final boolean SKIP_OBJECTS = AgentUtils.readBoolean("skip-objects", false); 
+	public static final boolean SKIP_OBJECTS = ConfigUtils.readBoolean("skip-objects", false); 
 	
 	/**
 	 * Maximum number of events to process, or 0 for no limit.
 	 */
-	public static long MAX_EVENTS = AgentUtils.readLong("max-events", 0);
+	public static long MAX_EVENTS = ConfigUtils.readLong("max-events", 0);
 	
 	/**
 	 * If true, then
 	 */
-	public static boolean REPLAY_MODE = AgentUtils.readBoolean("replay-mode", false);
+	public static boolean REPLAY_MODE = ConfigUtils.readBoolean("replay-mode", false);
 	
 	/**
 	 * Causes database nodes to not reorder incoming events
@@ -93,34 +98,6 @@ public class DebugFlags
 	public static final boolean DISABLE_USE_PAGES = false;
 
 	/**
-	 * Causes the {@link EventInterpreter} to ignore all events
-	 */
-	public static final boolean DISABLE_INTERPRETER = false;
-
-	/**
-	 * If true, the {@link EventInterpreter} prints all the events it receives
-	 */
-	public static final boolean EVENT_INTERPRETER_LOG = false;
-	
-	/**
-	 * Stream to which the {@link EventInterpreter} sends debug info.
-	 * Default is System.out
-	 */
-	public static final PrintStream EVENT_INTERPRETER_PRINT_STREAM =
-		System.out;
-//		createStream("eventInterpreter-" + AgentConfig.getHostName()+".log");
-
-	/**
-	 * Causes the high level collectors to ignore all events
-	 */
-	public static final boolean COLLECTOR_IGNORE_ALL = false;
-
-	/**
-	 * Causes the socket collector to not send events
-	 */
-	public static final boolean DISABLE_EVENT_SEND = false;
-
-	/**
 	 * Causes the event collector to print the events it receives.
 	 */
 	public static final boolean COLLECTOR_LOG = false;
@@ -153,7 +130,7 @@ public class DebugFlags
 	 * If not 0, {@link LogReceiver} prints received message counts
 	 * every {@link #RECEIVER_PRINT_COUNTS} messages.
 	 */
-	public static final int RECEIVER_PRINT_COUNTS = (int) BitUtilsLite.pow2(20);
+	public static final int RECEIVER_PRINT_COUNTS = (int) BitUtils.pow2(20);
 	
 	/**
 	 * If true, hierarchical dispatching parameters are
@@ -166,17 +143,17 @@ public class DebugFlags
 	 * Ignore host when filtering on threads.
 	 * Should not be used if more than one host is being debugged.
 	 */
-	public static final boolean IGNORE_HOST = AgentUtils.readBoolean("ignore-host", false); 
+	public static final boolean IGNORE_HOST = ConfigUtils.readBoolean("ignore-host", false); 
 	
 	/**
 	 * Whether {@link ObjectInspector} should try to guess the type of unknown objects
 	 */
-	public static final boolean TRY_GUESS_TYPE = AgentUtils.readBoolean("try-guess-type", false);
+	public static final boolean TRY_GUESS_TYPE = ConfigUtils.readBoolean("try-guess-type", false);
 	
 	/**
 	 * Whether to show GUI items that are used for debugging.
 	 */
-	public static final boolean SHOW_DEBUG_GUI = AgentUtils.readBoolean("show-debug-gui", false);
+	public static final boolean SHOW_DEBUG_GUI = ConfigUtils.readBoolean("show-debug-gui", false);
 	
 	private static PrintStream createStream(String aName)
 	{
@@ -204,9 +181,6 @@ public class DebugFlags
 		if (ALIAS_OBJECTS != 0) System.err.println("******* Warning: ALIAS_OBJECTS (DebugFlags)");
 		if (DISABLE_LOCATION_INDEX == true) System.err.println("******* Warning: DISABLE_LOCATION_INDEX (DebugFlags)");
 		if (DISABLE_USE_PAGES == true) System.err.println("******* Warning: DISABLE_USE_PAGES (DebugFlags)");
-		if (DISABLE_INTERPRETER == true) System.err.println("******* Warning: DISABLE_INTERPRETER (DebugFlags)");
-		if (COLLECTOR_IGNORE_ALL == true) System.err.println("******* Warning: COLLECTOR_IGNORE_ALL (DebugFlags)");
-		if (DISABLE_EVENT_SEND == true) System.err.println("******* Warning: DISABLE_EVENT_SEND (DebugFlags)");
 		if (LOCAL_COLLECTOR_STORE == false) System.err.println("******* Warning: LOCAL_COLLECTOR_STORE (DebugFlags)");
 		if (DISPATCH_FAKE_1 == true) System.err.println("******* Warning: DISPATCH_FAKE_1 (DebugFlags)");
 		if (IGNORE_HOST == true) System.err.println("******* Warning: IGNORE_HOST (DebugFlags)");

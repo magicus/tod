@@ -22,7 +22,6 @@ package tod.impl.local.filter;
 
 import tod.core.database.event.ILogEvent;
 import tod.impl.local.LocalBrowser;
-import tod.impl.local.LocalBrowser;
 
 /**
  * Accepts only events of a given thread.

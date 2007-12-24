@@ -25,13 +25,11 @@ import java.io.File;
 import org.junit.Before;
 import org.junit.Test;
 
-import tod.agent.DebugFlags;
 import tod.impl.dbgrid.ConditionGenerator;
 import tod.impl.dbgrid.EventGenerator;
 import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.db.EventDatabase;
 import tod.impl.dbgrid.messages.MessageType;
-import tod.impl.dbgrid.queries.BehaviorCondition;
 import tod.impl.dbgrid.queries.CompoundCondition;
 import tod.impl.dbgrid.queries.Disjunction;
 import tod.impl.dbgrid.queries.EventCondition;

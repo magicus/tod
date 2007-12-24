@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import zz.utils.Future;
-import zz.utils.ITask;
 
 /**
  * Permits to process jobs asynchronously. Clients submit jobs

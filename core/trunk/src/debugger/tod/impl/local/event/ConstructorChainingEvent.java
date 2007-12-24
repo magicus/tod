@@ -21,7 +21,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.local.event;
 
 import tod.core.database.event.IConstructorChainingEvent;
-import tod.core.database.event.IConstructorChainingEvent.CallType;
 import tod.impl.common.LogBrowserUtils;
 import tod.impl.local.LocalBrowser;
 

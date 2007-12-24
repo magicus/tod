@@ -29,8 +29,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import tod.agent.DebugFlags;
 import tod.agent.transport.MessageType;
+import tod.core.DebugFlags;
 import tod.impl.database.structure.standard.HostInfo;
 
 /**

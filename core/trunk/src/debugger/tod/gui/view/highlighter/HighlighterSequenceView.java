@@ -28,7 +28,6 @@ import tod.core.database.browser.IEventBrowser;
 import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
 import tod.gui.eventsequences.AbstractSequenceView;
-import tod.gui.view.LogView;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.PropertyListener;

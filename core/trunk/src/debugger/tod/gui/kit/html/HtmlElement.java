@@ -20,8 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.kit.html;
 
-import java.util.List;
-
 import javax.swing.JComponent;
 
 public abstract class HtmlElement

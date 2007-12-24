@@ -29,9 +29,6 @@ import javax.swing.JComponent;
 import tod.core.database.event.IParentEvent;
 import tod.gui.GUIUtils;
 import tod.gui.JobProcessor;
-import tod.gui.kit.Bus;
-import tod.gui.kit.messages.EventSelectedMsg;
-import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import zz.utils.ui.MousePanel;
 import zz.utils.ui.UIUtils;
 

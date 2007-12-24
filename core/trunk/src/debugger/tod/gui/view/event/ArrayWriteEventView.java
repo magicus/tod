@@ -22,7 +22,6 @@ package tod.gui.view.event;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IArrayWriteEvent;
-import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.gui.IGUIManager;
 

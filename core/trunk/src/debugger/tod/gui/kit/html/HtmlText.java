@@ -23,8 +23,6 @@ package tod.gui.kit.html;
 import java.awt.Color;
 
 import tod.gui.FontConfig;
-import zz.utils.ui.ZLabel;
-import zz.utils.ui.text.XFont;
 
 public class HtmlText extends HtmlElement
 {

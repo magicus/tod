@@ -23,14 +23,10 @@ package tod.gui.eventlist;
 import java.awt.Color;
 
 import tod.Util;
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IExceptionGeneratedEvent;
-import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.gui.FontConfig;
 import tod.gui.Hyperlinks;
-import tod.gui.JobProcessor;
-import tod.gui.kit.Options;
 import tod.gui.kit.StdOptions;
 import tod.gui.kit.html.HtmlBody;
 import tod.gui.kit.html.HtmlText;

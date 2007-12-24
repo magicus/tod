@@ -26,7 +26,7 @@ import java.util.List;
 
 import javax.swing.JComponent;
 
-import tod.agent.DebugFlags;
+import tod.core.DebugFlags;
 import tod.core.ILogCollector;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;

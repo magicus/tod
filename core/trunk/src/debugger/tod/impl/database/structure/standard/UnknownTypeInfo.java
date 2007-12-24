@@ -20,7 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.database.structure.standard;
 
-import tod.core.database.structure.IStructureDatabase;
 
 /**
  * Information for types that are not known o the instrumenter.

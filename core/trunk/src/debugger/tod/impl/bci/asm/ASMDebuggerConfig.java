@@ -20,8 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.bci.asm;
 
-import java.io.File;
-
 import tod.core.config.ClassSelector;
 import tod.core.config.TODConfig;
 import tod.tools.parsers.ParseException;

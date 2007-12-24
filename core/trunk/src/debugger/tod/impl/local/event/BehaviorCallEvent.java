@@ -29,7 +29,6 @@ import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
 import tod.impl.common.event.Event;
 import tod.impl.local.EventBrowser;
-import tod.impl.local.LocalBrowser;
 
 public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCallEvent 
 {

@@ -29,22 +29,16 @@ import javax.swing.JLabel;
 import javax.swing.JToolTip;
 
 import tod.Util;
-import tod.agent.DebugFlags;
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.gui.FontConfig;
 import tod.gui.Hyperlinks;
-import tod.gui.JobProcessor;
-import tod.gui.kit.Bus;
 import tod.gui.kit.html.AsyncHtmlGroup;
 import tod.gui.kit.html.HtmlBody;
 import tod.gui.kit.html.HtmlElement;
 import tod.gui.kit.html.HtmlParentElement;
 import tod.gui.kit.html.HtmlText;
-import tod.gui.kit.messages.EventActivatedMsg;
-import tod.gui.kit.messages.EventActivatedMsg.ActivationMethod;
 import zz.utils.ui.StackLayout;
 import zz.utils.ui.UIUtils;
 

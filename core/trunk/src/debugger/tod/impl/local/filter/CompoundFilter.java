@@ -27,7 +27,6 @@ import java.util.List;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventFilter;
 import tod.impl.local.LocalBrowser;
-import tod.impl.local.LocalBrowser;
 
 /**
  * Base class for filters that are compound of other filters.

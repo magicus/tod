@@ -20,12 +20,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.eventlist;
 
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IArrayWriteEvent;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.gui.Hyperlinks;
-import tod.gui.JobProcessor;
 import tod.gui.kit.html.HtmlBody;
 
 public class ArrayWriteNode extends AbstractEventNode

@@ -22,10 +22,8 @@ package tod.gui.eventlist;
 
 import java.awt.Color;
 
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.gui.FontConfig;
-import tod.gui.JobProcessor;
 import tod.gui.kit.html.HtmlBody;
 import tod.gui.kit.html.HtmlText;
 

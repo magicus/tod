@@ -23,7 +23,6 @@ package tod.impl.local.filter;
 import tod.core.database.browser.IEventBrowser;
 import tod.impl.local.EventBrowser;
 import tod.impl.local.LocalBrowser;
-import tod.impl.local.LocalBrowser;
 
 /**
  * A stateless filter is determined only by a condition.

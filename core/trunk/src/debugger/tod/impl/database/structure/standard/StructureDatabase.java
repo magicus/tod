@@ -31,7 +31,7 @@ import java.util.Map;
 import org.objectweb.asm.Type;
 
 import tod.Util;
-import tod.agent.DebugFlags;
+import tod.core.DebugFlags;
 import tod.core.config.TODConfig;
 import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IBehaviorInfo;

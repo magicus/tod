@@ -3,7 +3,6 @@ package tod.gui.view.structure;
 import java.util.Comparator;
 
 import tod.Util;
-import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.IMemberInfo;

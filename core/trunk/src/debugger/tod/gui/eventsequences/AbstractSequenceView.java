@@ -36,7 +36,6 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
-import tod.gui.view.LogView;
 import zz.utils.ItemAction;
 import zz.utils.properties.IRWProperty;
 import zz.utils.ui.Orientation;

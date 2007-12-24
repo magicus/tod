@@ -7,10 +7,9 @@ import java.io.FileReader;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 
-import tod.agent.DebugFlags;
+import tod.core.DebugFlags;
 import tod.core.config.TODConfig;
 import tod.core.database.structure.IMutableStructureDatabase;
-import tod.core.database.structure.IStructureDatabase;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
 import tod.impl.database.structure.standard.StructureDatabase;

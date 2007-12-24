@@ -31,9 +31,6 @@ import org.objectweb.asm.MethodVisitor;
 
 import tod.core.bci.IInstrumenter;
 import tod.core.database.structure.IMutableStructureDatabase;
-import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
-import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
-import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import zz.utils.Utils;
 
 /**

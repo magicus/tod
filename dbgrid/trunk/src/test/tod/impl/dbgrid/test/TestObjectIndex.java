@@ -26,7 +26,7 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import tod.agent.DebugFlags;
+import tod.core.DebugFlags;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.IObjectInspector;

@@ -23,8 +23,8 @@ package tod.utils;
 import java.io.PrintStream;
 
 import tod.agent.AgentUtils;
-import tod.agent.DebugFlags;
 import tod.agent.Output;
+import tod.core.DebugFlags;
 import tod.core.ILogCollector;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;

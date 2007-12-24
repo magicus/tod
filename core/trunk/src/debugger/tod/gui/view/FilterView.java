@@ -21,9 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.view;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 
-import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
 import tod.core.database.browser.IEventBrowser;
@@ -39,8 +37,6 @@ import tod.gui.kit.html.HtmlComponent;
 import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import tod.gui.seed.FilterSeed;
-import tod.gui.view.event.EventView;
-import tod.gui.view.event.EventViewFactory;
 import tod.gui.view.highlighter.EventHighlighter;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;

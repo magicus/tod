@@ -20,7 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.bench;
 
-import tod.agent.DebugFlags;
 
 public class GridDispatch
 {

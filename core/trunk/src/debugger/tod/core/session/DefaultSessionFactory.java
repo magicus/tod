@@ -20,7 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.session;
 
-import java.net.URI;
 
 public class DefaultSessionFactory //implements ISessionFactory
 {

@@ -25,7 +25,6 @@ import java.util.Collections;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.ILocationInfo;
 import zz.utils.tree.SimpleTree;
-import zz.utils.tree.SimpleTreeNode;
 
 public class PackageNode extends LocationNode
 {

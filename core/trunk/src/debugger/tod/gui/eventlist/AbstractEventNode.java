@@ -27,7 +27,7 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JComponent;
 
-import tod.agent.DebugFlags;
+import tod.core.DebugFlags;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ICallerSideEvent;
 import tod.core.database.event.ILogEvent;
@@ -37,7 +37,6 @@ import tod.gui.kit.Bus;
 import tod.gui.kit.html.HtmlBody;
 import tod.gui.kit.html.HtmlComponent;
 import tod.gui.kit.html.HtmlDoc;
-import tod.gui.kit.html.HtmlElement;
 import tod.gui.kit.html.HtmlParentElement;
 import tod.gui.kit.html.HtmlText;
 import tod.gui.kit.messages.EventActivatedMsg;

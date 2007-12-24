@@ -23,7 +23,7 @@ package tod.core.database.structure;
 import java.io.Serializable;
 
 import tod.agent.AgentConfig;
-import tod.agent.DebugFlags;
+import tod.core.DebugFlags;
 
 /**
  * Permits to identify an object.

@@ -30,7 +30,7 @@ import java.util.List;
 
 import tod.agent.AgentConfig;
 import tod.agent.AgentReady;
-import tod.agent.DebugFlags;
+import tod.agent.AgentDebugFlags;
 import tod.agent.HighLevelCollector;
 import tod.agent.Output;
 import tod.agent.EventInterpreter.ThreadData;
@@ -90,7 +90,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			boolean aHasThrown,
 			Object aResult)
 	{
-		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
+		if (AgentDebugFlags.COLLECTOR_IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -126,7 +126,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			int aOperationBytecodeIndex,
 			Object aException)
 	{
-		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
+		if (AgentDebugFlags.COLLECTOR_IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -162,7 +162,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			Object aTarget, 
 			Object aValue)
 	{
-		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
+		if (AgentDebugFlags.COLLECTOR_IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -199,7 +199,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			int aBaseTypeId, 
 			int aSize)
 	{
-		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
+		if (AgentDebugFlags.COLLECTOR_IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -235,7 +235,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			int aIndex, 
 			Object aValue)
 	{
-		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
+		if (AgentDebugFlags.COLLECTOR_IGNORE_ALL) return;
 		if (aThread.isSending()) return;
 		try
 		{
@@ -272,7 +272,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			Object aTarget,
 			Object[] aArguments)
 	{
-		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
+		if (AgentDebugFlags.COLLECTOR_IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -308,7 +308,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			int aVariableId,
 			Object aValue)
 	{
-		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
+		if (AgentDebugFlags.COLLECTOR_IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -344,7 +344,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			Object aTarget, 
 			Object[] aArguments)
 	{
-		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
+		if (AgentDebugFlags.COLLECTOR_IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -378,7 +378,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			Output aOutput,
 			byte[] aData)
 	{
-		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
+		if (AgentDebugFlags.COLLECTOR_IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -413,7 +413,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			Object aTarget,
 			Object[] aArguments)
 	{
-		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
+		if (AgentDebugFlags.COLLECTOR_IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -442,7 +442,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 	@Override
 	protected void thread(SocketThreadData aThread, long aJVMThreadId, String aName)
 	{
-		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
+		if (AgentDebugFlags.COLLECTOR_IGNORE_ALL) return;
 		if (aThread.isSending()) return;
         try
         {
@@ -459,7 +459,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 	@Override
 	protected void clear(SocketThreadData aThread)
 	{
-		if (DebugFlags.COLLECTOR_IGNORE_ALL) return;
+		if (AgentDebugFlags.COLLECTOR_IGNORE_ALL) return;
 		assert ! aThread.isSending();
         try
         {
@@ -557,7 +557,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 				int theRequestedSize = itsBuffer.size();
 //				System.out.println("[SocketCollector] Adding "+theRequestedSize+", total: "+itsLog.size());
 				if (itsLog.size() + theRequestedSize > BUFFER_SIZE) send();
-				if (! DebugFlags.DISABLE_EVENT_SEND) itsBuffer.writeTo(itsLog);
+				if (! AgentDebugFlags.DISABLE_EVENT_SEND) itsBuffer.writeTo(itsLog);
 				itsBuffer.reset();
 			}
 			catch (IOException e)

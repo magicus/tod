@@ -22,6 +22,7 @@ package tod.impl.database.structure.standard;
 
 import java.io.Serializable;
 
+import tod.core.ILogCollector;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
 

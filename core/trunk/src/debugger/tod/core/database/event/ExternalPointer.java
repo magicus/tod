@@ -23,7 +23,6 @@ package tod.core.database.event;
 import java.io.Serializable;
 
 import tod.core.database.browser.ILogBrowser;
-import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
 
 

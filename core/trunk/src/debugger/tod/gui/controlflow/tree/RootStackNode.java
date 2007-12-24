@@ -25,7 +25,6 @@ import javax.swing.JComponent;
 import tod.core.database.event.IParentEvent;
 import tod.gui.GUIUtils;
 import tod.gui.JobProcessor;
-import tod.gui.controlflow.CFlowView;
 
 public class RootStackNode extends AbstractStackNode
 {

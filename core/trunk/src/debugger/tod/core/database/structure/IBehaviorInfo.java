@@ -20,12 +20,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.structure;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import tod.agent.BehaviorKind;
-import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 
 public interface IBehaviorInfo extends IMemberInfo

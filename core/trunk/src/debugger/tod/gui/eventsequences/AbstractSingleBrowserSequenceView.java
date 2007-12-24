@@ -27,7 +27,6 @@ import java.util.List;
 import tod.core.database.browser.IEventBrowser;
 import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
-import tod.gui.view.LogView;
 
 /**
  * A browser sequence view for a single browser.

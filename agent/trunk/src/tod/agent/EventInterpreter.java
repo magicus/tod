@@ -20,8 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.agent;
 
-import static tod.agent.DebugFlags.DISABLE_INTERPRETER;
-import static tod.agent.DebugFlags.EVENT_INTERPRETER_LOG;
+import static tod.agent.AgentDebugFlags.DISABLE_INTERPRETER;
+import static tod.agent.AgentDebugFlags.EVENT_INTERPRETER_LOG;
 
 import java.io.PrintStream;
 import java.util.StringTokenizer;
@@ -39,7 +39,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 //		System.out.println("EventInterpreter loaded.");
 	}
 	
-	private static PrintStream itsPrintStream = DebugFlags.EVENT_INTERPRETER_PRINT_STREAM;
+	private static PrintStream itsPrintStream = AgentDebugFlags.EVENT_INTERPRETER_PRINT_STREAM;
 	
 	private ThreadLocal<T> itsThreadData = new ThreadLocal<T>() 
 	{

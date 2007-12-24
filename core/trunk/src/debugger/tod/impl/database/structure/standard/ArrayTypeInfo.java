@@ -23,6 +23,7 @@ package tod.impl.database.structure.standard;
 import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
 
 /**
  * Note: This class is not a {@link ISerializableLocationInfo}

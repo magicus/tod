@@ -35,7 +35,7 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import tod.agent.DebugFlags;
+import tod.core.DebugFlags;
 import zz.utils.ArrayStack;
 import zz.utils.Stack;
 import zz.utils.Utils;

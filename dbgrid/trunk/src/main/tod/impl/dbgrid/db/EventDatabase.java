@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Comparator;
 
-import tod.agent.DebugFlags;
+import tod.core.DebugFlags;
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.db.EventReorderingBuffer.ReorderingBufferListener;
 import tod.impl.dbgrid.db.file.HardPagedFile;

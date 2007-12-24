@@ -22,7 +22,7 @@ package tod.impl.dbgrid.db;
 
 import java.io.File;
 
-import tod.agent.DebugFlags;
+import tod.core.DebugFlags;
 import tod.impl.dbgrid.db.ObjectsReorderingBuffer.Entry;
 import tod.impl.dbgrid.db.ObjectsReorderingBuffer.ReorderingBufferListener;
 import zz.utils.monitoring.AggregationType;

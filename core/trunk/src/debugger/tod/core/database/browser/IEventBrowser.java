@@ -20,8 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.browser;
 
-import java.util.List;
-
 import tod.core.database.event.ILogEvent;
 import zz.utils.IPublicCloneable;
 

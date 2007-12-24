@@ -26,7 +26,6 @@ import java.awt.FlowLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILogEvent;
@@ -36,7 +35,6 @@ import tod.gui.FontConfig;
 import tod.gui.IGUIManager;
 import tod.gui.SeedHyperlink;
 import tod.gui.seed.CFlowSeed;
-import tod.gui.view.LogView;
 import zz.utils.ui.ZLabel;
 
 public class FieldSequenceView extends AbstractMemberSequenceView

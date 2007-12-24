@@ -32,7 +32,6 @@ import tod.core.database.structure.ITypeInfo;
 import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.JobProcessor;
-import tod.gui.controlflow.CFlowView;
 import zz.utils.ui.ZLabel;
 
 /**

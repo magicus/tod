@@ -21,16 +21,13 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.view.structure;
 
 import java.util.Collections;
-import java.util.Comparator;
 
 import tod.Util;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ILocationInfo;
-import tod.core.database.structure.IMemberInfo;
 import zz.utils.tree.SimpleTree;
-import zz.utils.tree.SimpleTreeNode;
 
 public class ClassNode extends LocationNode
 {

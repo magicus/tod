@@ -27,7 +27,6 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
-import tod.ReflexRiver;
 import tod.core.config.TODConfig;
 import tod.core.database.event.ILogEvent;
 import tod.core.session.ISession;

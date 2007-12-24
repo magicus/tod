@@ -32,7 +32,6 @@ import javax.swing.JPanel;
 
 import tod.core.database.event.ILogEvent;
 import tod.gui.kit.messages.EventSelectedMsg;
-import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import tod.gui.view.IEventListView;
 import tod.gui.view.LogView;
 import zz.utils.SimpleComboBoxModel;
