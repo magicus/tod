@@ -348,13 +348,13 @@ implements RIDatabaseNode
 	}
 	
 
-	public void register(long aId, Object aObject)
+	public void register(long aId, Object aObject, long aTimestamp)
 	{
 		if (DebugFlags.SKIP_OBJECTS) return;
 		
 		long theObjectId = ObjectId.getObjectId(aId);
 		int theHostId = ObjectId.getHostId(aId);
-		getObjectsDatabase(theHostId).store(theObjectId, aObject);
+		getObjectsDatabase(theHostId).store(theObjectId, aObject, aTimestamp);
 		
 		if (itsStringIndexer != null && (aObject instanceof String))
 		{
@@ -519,6 +519,8 @@ implements RIDatabaseNode
 		}
 	}
 	
+	
+	
 	/**
 	 * This thread flushes the database when no event has been added
 	 * for some period of time.
@@ -553,7 +555,7 @@ implements RIDatabaseNode
 				while(true)
 				{
 					wait(2000);
-					
+
 					if (! itsActive)
 					{
 						if (! itsFlushed)
@@ -561,6 +563,25 @@ implements RIDatabaseNode
 							flush();
 							itsFlushed = true;
 						}
+					}
+					else
+					{
+						// Flush oldest event if the newest was created more than 2s after
+						int theCount = 0;
+						while (itsEventsDatabase.isNextEventFlushable(2000000000)) 
+						{
+							itsEventsDatabase.flushOldestEvent();
+							theCount++;
+						}
+						// Flush oldest object if the newest was created more than 2s after
+						for (ReorderedObjectsDatabase theDatabase : itsObjectsDatabases)
+							if (theDatabase != null)
+								while (theDatabase.isNextEventFlushable(2000000000)) 
+									{
+										theDatabase.flushOldestEvent();
+										theCount++;
+									}
+						System.out.println("Flushing "+theCount+" events and  objects older than 2s");
 					}
 					itsActive = false;
 				}

@@ -353,8 +353,8 @@ public class GridEventCollector extends EventCollector
 		dispatch(itsCallEvent);
 	}
 
-	public void register(long aObjectUID, Object aObject)
+	public void register(long aObjectUID, Object aObject, long aTimestamp)
 	{
-		itsDatabaseNode.register(aObjectUID, aObject);
+		itsDatabaseNode.register(aObjectUID, aObject, aTimestamp);
 	}
 }

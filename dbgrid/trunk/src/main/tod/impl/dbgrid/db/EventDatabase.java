@@ -168,7 +168,7 @@ public class EventDatabase implements ReorderingBufferListener
 	 * after this method is called.
 	 */
 	public int flush()
-	{
+		{
 		int theCount = 0;
 		System.out.println("[EventDatabase] Flushing...");
 		while (! itsReorderingBuffer.isEmpty())
@@ -177,6 +177,19 @@ public class EventDatabase implements ReorderingBufferListener
 			theCount++;
 		}
 		System.out.println("[EventDatabase] Flushed "+theCount+" events.");
+		return theCount;
+	}
+	
+	/**
+	 * return 0 if the Buffer is empty else return 1
+	 * @return
+	 */
+	public int flushOldestEvent(){
+		int theCount = 0;
+		if (!itsReorderingBuffer.isEmpty()){
+			processEvent(itsReorderingBuffer.pop());
+			theCount++;
+		}
 		return theCount;
 	}
 	
@@ -199,6 +212,18 @@ public class EventDatabase implements ReorderingBufferListener
 		System.err.println("WARNING: out of order event - dropped");
 		itsDroppedEvents++;
 	}
+	
+	/**
+	 * define if the difference between the oldest event of the buffer
+	 *  and the newest is more than aDelay (in nanosecond)
+	 * @param aDelay
+	 * @return
+	 */
+	public boolean isNextEventFlushable(long aDelay){
+		return itsReorderingBuffer.isNextEventFlushable(aDelay) ;
+	}
+	
+	
 	
 	private void processEvent(GridEvent aEvent)
 	{

@@ -75,7 +75,7 @@ int cfgHostBits = 8; // Number of bits used to encode host id.
 int cfgHostId = 0; // A host id assigned by the TODServer - not official.
 char* cfgWorkingSet = "undefined"; // The current working set of instrumentation
 char* cfgStructDbId = "undefined"; // The id of the structure database used by the peer
-int cfgDebugTOD = 0; // set to 1 if we want to optimize agent class filtering for debugging tod
+int cfgDebugTOD = 1; // set to 1 if we want to optimize agent class filtering for debugging tod
 
 // System properties configuration data.
 char* propHost = NULL;

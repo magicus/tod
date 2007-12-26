@@ -131,6 +131,7 @@ public class CollectorPacketReader
 		DataInputStream theStream = new DataInputStream(new ByteArrayInputStream(theBuffer));
 		
 		long theObjectId = theStream.readLong();
+		long theObjectTimestamp = theStream.readLong();
 		if (DebugFlags.IGNORE_HOST) theObjectId >>>= AgentConfig.HOST_BITS;
 		ObjectInputStream theObjectStream = new ObjectInputStream(theStream);
 		Object theObject;
@@ -149,9 +150,9 @@ public class CollectorPacketReader
 			theObject = "Unknown ("+e.getMessage()+")";					
 		}
 		
-		System.out.println("Received object: "+theObject+", id: "+theObjectId);
+		System.out.println("Received object: "+theObject+", id: "+theObjectId +", id: "+theObjectTimestamp);
 		
-		aCollector.register(theObjectId, theObject);
+		aCollector.register(theObjectId, theObject, theObjectTimestamp);
 	}
 	
 	private static Object readValue (DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -187,6 +188,7 @@ public class CollectorPacketReader
 			{
 				long theObjectId = aStream.readLong();
 				if (DebugFlags.IGNORE_HOST) theObjectId >>>= AgentConfig.HOST_BITS;
+				long theObjectTimestamp = aStream.readLong();
 				ObjectInputStream theStream = new ObjectInputStream(aStream);
 				Object theObject;
 				try
@@ -204,7 +206,7 @@ public class CollectorPacketReader
 					theObject = "Unknown ("+e.getMessage()+")";					
 				}
 				
-				aCollector.register(theObjectId, theObject);
+				aCollector.register(theObjectId, theObject,theObjectTimestamp);
 				return new ObjectId(theObjectId);
 			}	
 			case OBJECT_UID:

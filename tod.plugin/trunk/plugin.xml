@@ -11,6 +11,11 @@
       <library name="plugin.jar">
          <export name="*"/>
       </library>
+ 	  <library name="lib/asm-all-3.0.jar">
+       <export
+             name="*">
+       </export>
+      </library>
       <library name="lib/log4j.jar">
          <export name="*"/>
       </library>
@@ -25,9 +30,6 @@
          <export name="*"/>
       </library>
       <library name="lib/Filters.jar">
-         <export name="*"/>
-      </library>
- 	  <library name="lib/asm-all-3.0.jar">
          <export name="*"/>
       </library>
       <library name="lib/reflex-core.jar">

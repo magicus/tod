@@ -104,6 +104,35 @@ public class EventReorderingBuffer
 	}
 
 	/**
+	 * return the timestamp of the oldest (next ordered) event in the buffer
+	 * @return
+	 */
+	public long getNextAvailableTimestamp(){
+		long theResult;
+		if (itsBuffer.isEmpty())
+		{
+			theResult = itsOutOfOrderBuffer.getNextAvailable();
+		}
+		else
+		{
+			GridEvent theInOrderEvent = itsBuffer.peek();
+			long theNextOutOfOrder = itsOutOfOrderBuffer.getNextAvailable();
+			theResult = Math.min(theNextOutOfOrder, theInOrderEvent.getTimestamp());
+		}
+		return theResult;
+	}
+	
+	
+	/**
+	 * define if the difference between the oldest event of the buffer and the newest is more than aDelay (in nanosecond)
+	 * @param aDelay
+	 * @return
+	 */
+	public boolean isNextEventFlushable(long aDelay){
+		return (itsLastPushed - getNextAvailableTimestamp())> aDelay ;
+	}
+	
+	/**
 	 * Retrieves the next ordered event.
 	 */
 	public GridEvent pop()
@@ -198,6 +227,11 @@ public class EventReorderingBuffer
 			return itsNextAvailable == null;
 		}
 		
+		
+		
+		/**
+		 * Returns the timestamp of the first available event, or {@link Long#MAX_VALUE} if none is available
+		 */
 		public long getNextAvailable()
 		{
 			return itsNextAvailable != null

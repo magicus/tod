@@ -149,5 +149,5 @@ public interface ILogCollector
 	/**
 	 * Registers an object whose state cannot be otherwise determined (eg String, Exception)
 	 */
-	public void register(long aObjectUID, Object aObject);
+	public void register(long aObjectUID, Object aObject, long aTimestamp);
 }

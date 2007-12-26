@@ -51,12 +51,12 @@ implements ReorderingBufferListener
 		super(aFile);
 	}
 
-	public void store(long aId, Object aObject)
+	public void store(long aId, Object aObject, long aTimestamp)
 	{
 		if (aId < itsLastAddedId) itsUnorderedObjects++;
 		else itsLastAddedId = aId;
 		
-		Entry theEntry = new Entry(aId, aObject);
+		Entry theEntry = new Entry(aId, aObject, aTimestamp);
 		
 		if (DebugFlags.DISABLE_REORDER)
 		{
@@ -99,6 +99,31 @@ implements ReorderingBufferListener
 		return theCount;
 	}
 
+	/**
+	 * return 0 if the Buffer is empty else return 1
+	 * @return
+	 */
+	public synchronized  int flushOldestEvent(){
+		int theCount = 0;
+		if (!itsReorderingBuffer.isEmpty())
+		{
+			doStore(itsReorderingBuffer.pop());
+			theCount++;
+		}
+		return theCount;
+	}
+	
+	/**
+	 * define if the difference between the oldest event of the buffer
+	 *  and the newest is more than aDelay (in nanosecond)
+	 * @param aDelay
+	 * @return
+	 */
+	public boolean isNextEventFlushable(long aDelay){
+		return itsReorderingBuffer.isNextEventFlushable(aDelay) ;
+	}
+	
+	
 	@Probe(key = "Out of order objects", aggr = AggregationType.SUM)
 	public long getUnorderedEvents()
 	{

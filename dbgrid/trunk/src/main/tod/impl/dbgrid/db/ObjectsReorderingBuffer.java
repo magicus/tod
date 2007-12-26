@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.PriorityQueue;
 
 import tod.impl.dbgrid.DebuggerGridConfig;
+import tod.impl.dbgrid.messages.GridEvent;
 import zz.utils.RingBuffer;
 
 /**
@@ -62,6 +63,37 @@ public class ObjectsReorderingBuffer
 		}
 	}
 
+	/**
+	 * define if the difference between the oldest event of the buffer and the newest is more than aDelay (in nanosecond)
+	 * @param aDelay
+	 * @return
+	 */
+	public boolean isNextEventFlushable(long aDelay){
+		return (itsLastPushed - getNextAvailableTimestamp())> aDelay ;
+	}
+
+	
+	/**
+	 * return the timestamp of the oldest (next ordered) event in the buffer
+	 * @return
+	 */
+	public long getNextAvailableTimestamp(){
+		long theResult;
+		if (itsBuffer.isEmpty())
+		{
+			theResult = itsOutOfOrderBuffer.peek().itsTimestamp;
+		}
+		else
+		{
+			long theInOrderEvent = itsBuffer.peek().itsTimestamp;
+			long theNextOutOfOrder = itsOutOfOrderBuffer.peek().itsTimestamp;
+			theResult = Math.min(theNextOutOfOrder, theInOrderEvent);
+		}
+		return theResult;
+	}
+	
+	
+	
 	/**
 	 * Returns true if an event is available on output.
 	 * if an event is available it should be immediately retrieved,
@@ -108,11 +140,13 @@ public class ObjectsReorderingBuffer
 	{
 		public final long id;
 		public final Object object;
+		public final long itsTimestamp;
 		
-		public Entry(final long aId, final Object aObject)
+		public Entry(final long aId, final Object aObject, final long aTimestamp)
 		{
 			id = aId;
 			object = aObject;
+			itsTimestamp = aTimestamp;
 		}
 	}
 	

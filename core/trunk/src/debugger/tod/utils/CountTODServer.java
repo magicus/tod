@@ -222,7 +222,7 @@ public class CountTODServer extends AbstractSession
 //			if (CALL_SUPER) super.superCall(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
 		}
 
-		public void register(long aObjectUID, Object aObject)
+		public void register(long aObjectUID, Object aObject, long aTimestamp)
 		{
 //			if (CALL_SUPER) super.register(aObjectUID, aObject);
 		}

@@ -369,8 +369,9 @@ public class LocalCollector extends EventCollector
 		itsBrowser.addThread(aThread);
 	}
 	
-	public void register(long aObjectUID, Object aObject)
+	public void register(long aObjectUID, Object aObject, long aTimestamp)
 	{
+		//timestamp is not necessary in local version
 		itsBrowser.register(aObjectUID, aObject);
 	}
 	

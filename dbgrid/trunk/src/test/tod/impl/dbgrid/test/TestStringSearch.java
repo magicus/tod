@@ -43,7 +43,7 @@ public class TestStringSearch
 
 		for (int i=0;i<STRINGS.length;i++)
 		{
-			theNode.register(i, STRINGS[i]);
+			theNode.register(i, STRINGS[i], i);
 		}
 		
 		search(theNode, "Hello");
