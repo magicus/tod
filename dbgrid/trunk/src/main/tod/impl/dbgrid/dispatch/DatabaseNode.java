@@ -59,6 +59,11 @@ import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
 import zz.utils.Utils;
 
+/**
+ * Performs the indexing of events and handles queries for a single database node.
+ * 
+ * @author gpothier
+ */
 public class DatabaseNode extends AbstractDispatchNode
 implements RIDatabaseNode
 {
@@ -239,6 +244,9 @@ implements RIDatabaseNode
 		}
 	}
 	
+	/**
+	 * Adds an event to the database.
+	 */
 	public void pushEvent(GridEvent aEvent)
 	{
 		synchronized (this)
