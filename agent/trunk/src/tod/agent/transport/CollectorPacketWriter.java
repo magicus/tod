@@ -17,7 +17,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
- */
+*/
 package tod.agent.transport;
 
 import java.io.ByteArrayOutputStream;
@@ -34,22 +34,32 @@ import tod.agent.Output;
  * not thread-safe, but {@link SocketCollector} maintains one
  * {@link CollectorPacketWriter} per thread.
  */
-public class CollectorPacketWriter {
+public class CollectorPacketWriter
+{
 	private final MyBuffer itsBuffer = new MyBuffer();
 	private final DataOutputStream itsStream;
-
+	
 	RegisteredObjectsStack itsRegisteredObjectsStack = new RegisteredObjectsStack();
 	DeferredObjectsStack itsDeferredObjectsStack = new DeferredObjectsStack();
-
-	public CollectorPacketWriter(DataOutputStream aStream) {
+	
+	public CollectorPacketWriter(DataOutputStream aStream)
+	{
 		itsStream = aStream;
 	}
 
-	private void sendMethodCall(MessageType aMessageType, int aThreadId,
-			long aParentTimestamp, int aDepth, long aTimestamp,
-			long aOperationLocation, boolean aDirectParent,
-			int aCalledBehavior, int aExecutedBehavior, Object aTarget,
-			Object[] aArguments) throws IOException {
+	private void sendMethodCall(
+			MessageType aMessageType, 
+			int aThreadId,
+			long aParentTimestamp,
+			int aDepth,
+			long aTimestamp, 
+			long aOperationLocation,
+			boolean aDirectParent,
+			int aCalledBehavior,
+			int aExecutedBehavior, 
+			Object aTarget, 
+			Object[] aArguments) throws IOException
+	{
 		sendMessageType(itsStream, aMessageType);
 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
@@ -58,17 +68,19 @@ public class CollectorPacketWriter {
 		itsBuffer.writeInt(aCalledBehavior);
 		itsBuffer.writeInt(aExecutedBehavior);
 
-		if (aMessageType == MessageType.INSTANTIATION
-				&& shouldSendByValue(aTarget)) {
+		if (aMessageType == MessageType.INSTANTIATION && shouldSendByValue(aTarget))
+		{
 			// Ensure that the sending of the object's value is deferred:
 			// otherwise we serialize an object that is not completely
 			// initialized (eg. new String(byteArray, 5, 10)).
 			sendValue(itsBuffer, aTarget, aTimestamp, aTimestamp);
-		} else {
+		}
+		else
+		{
 			sendValue(itsBuffer, aTarget, aTimestamp);
 		}
 
-		sendArguments(itsBuffer, aArguments,aTimestamp);
+		sendArguments(itsBuffer, aArguments, aTimestamp);
 
 		itsBuffer.writeTo(itsStream);
 
@@ -78,41 +90,99 @@ public class CollectorPacketWriter {
 	/**
 	 * Determines if the given object should be sent by value.
 	 */
-	private boolean shouldSendByValue(Object aObject) {
+	private boolean shouldSendByValue(Object aObject)
+	{
 		return (aObject instanceof String) || (aObject instanceof Throwable);
 	}
 
-	public void sendMethodCall(int aThreadId, long aParentTimestamp,
-			int aDepth, long aTimestamp, long aOperationLocation,
-			boolean aDirectParent, int aCalledBehavior, int aExecutedBehavior,
-			Object aTarget, Object[] aArguments) throws IOException {
-		sendMethodCall(MessageType.METHOD_CALL, aThreadId, aParentTimestamp,
-				aDepth, aTimestamp, aOperationLocation, aDirectParent,
-				aCalledBehavior, aExecutedBehavior, aTarget, aArguments);
+	public void sendMethodCall(
+			int aThreadId,
+			long aParentTimestamp,
+			int aDepth, 
+			long aTimestamp,
+			long aOperationLocation,
+			boolean aDirectParent,
+			int aCalledBehavior,
+			int aExecutedBehavior,
+			Object aTarget,
+			Object[] aArguments) throws IOException
+	{
+		sendMethodCall(
+				MessageType.METHOD_CALL, 
+				aThreadId,
+				aParentTimestamp,
+				aDepth, 
+				aTimestamp, 
+				aOperationLocation,
+				aDirectParent, 
+				aCalledBehavior,
+				aExecutedBehavior,
+				aTarget,
+				aArguments);
 	}
 
-	public void sendInstantiation(int aThreadId, long aParentTimestamp,
-			int aDepth, long aTimestamp, long aOperationLocation,
-			boolean aDirectParent, int aCalledBehavior, int aExecutedBehavior,
-			Object aTarget, Object[] aArguments) throws IOException {
-		sendMethodCall(MessageType.INSTANTIATION, aThreadId, aParentTimestamp,
-				aDepth, aTimestamp, aOperationLocation, aDirectParent,
-				aCalledBehavior, aExecutedBehavior, aTarget, aArguments);
+	public void sendInstantiation(
+			int aThreadId,
+			long aParentTimestamp,
+			int aDepth, 
+			long aTimestamp,
+			long aOperationLocation,
+			boolean aDirectParent,
+			int aCalledBehavior,
+			int aExecutedBehavior,
+			Object aTarget,
+			Object[] aArguments) throws IOException
+	{
+		sendMethodCall(
+				MessageType.INSTANTIATION,
+				aThreadId,
+				aParentTimestamp,
+				aDepth, 
+				aTimestamp, 
+				aOperationLocation,
+				aDirectParent, 
+				aCalledBehavior, 
+				aExecutedBehavior, 
+				aTarget, 
+				aArguments);
 	}
 
-	public void sendSuperCall(int aThreadId, long aParentTimestamp, int aDepth,
-			long aTimestamp, long aOperationLocation, boolean aDirectParent,
-			int aCalledBehavior, int aExecutedBehavior, Object aTarget,
-			Object[] aArguments) throws IOException {
-		sendMethodCall(MessageType.SUPER_CALL, aThreadId, aParentTimestamp,
-				aDepth, aTimestamp, aOperationLocation, aDirectParent,
-				aCalledBehavior, aExecutedBehavior, aTarget, aArguments);
+	public void sendSuperCall(
+			int aThreadId,
+			long aParentTimestamp,
+			int aDepth, 
+			long aTimestamp,
+			long aOperationLocation,
+			boolean aDirectParent, 
+			int aCalledBehavior,
+			int aExecutedBehavior,
+			Object aTarget,
+			Object[] aArguments) throws IOException
+	{
+		sendMethodCall(
+				MessageType.SUPER_CALL,
+				aThreadId,
+				aParentTimestamp,
+				aDepth, 
+				aTimestamp, 
+				aOperationLocation,
+				aDirectParent, 
+				aCalledBehavior,
+				aExecutedBehavior,
+				aTarget, 
+				aArguments);
 	}
 
-	public void sendBehaviorExit(int aThreadId, long aParentTimestamp,
-			int aDepth, long aTimestamp, long aOperationLocation,
-			int aBehaviorId, boolean aHasThrown, Object aResult)
-			throws IOException {
+	public void sendBehaviorExit(
+			int aThreadId,
+			long aParentTimestamp, 
+			int aDepth, 
+			long aTimestamp,
+			long aOperationLocation,
+			int aBehaviorId, 
+			boolean aHasThrown,
+			Object aResult) throws IOException
+	{
 		sendMessageType(itsStream, MessageType.BEHAVIOR_EXIT);
 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
@@ -123,7 +193,8 @@ public class CollectorPacketWriter {
 
 		itsBuffer.writeTo(itsStream);
 
-		if (itsDeferredObjectsStack.isAvailable(aParentTimestamp)) {
+		if (itsDeferredObjectsStack.isAvailable(aParentTimestamp))
+		{
 			DeferredObjectEntry theEntry = itsDeferredObjectsStack.pop();
 			// System.out.println("Sending deferred object: "+theEntry.id);
 			sendRegisteredObject(theEntry.id, theEntry.object, theEntry.itsTimestamp);
@@ -132,10 +203,16 @@ public class CollectorPacketWriter {
 		sendRegisteredObjects();
 	}
 
-	public void sendFieldWrite(int aThreadId, long aParentTimestamp,
-			int aDepth, long aTimestamp, long aOperationLocation,
-			int aFieldLocationId, Object aTarget, Object aValue)
-			throws IOException {
+	public void sendFieldWrite(
+			int aThreadId,
+			long aParentTimestamp,
+			int aDepth,
+			long aTimestamp,
+			long aOperationLocation,
+			int aFieldLocationId,
+			Object aTarget, 
+			Object aValue) throws IOException
+	{
 		sendMessageType(itsStream, MessageType.FIELD_WRITE);
 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
@@ -149,9 +226,16 @@ public class CollectorPacketWriter {
 		sendRegisteredObjects();
 	}
 
-	public void sendNewArray(int aThreadId, long aParentTimestamp, int aDepth,
-			long aTimestamp, long aOperationLocation, Object aTarget,
-			int aBaseTypeId, int aSize) throws IOException {
+	public void sendNewArray(
+			int aThreadId, 
+			long aParentTimestamp,
+			int aDepth, 
+			long aTimestamp,
+			long aOperationLocation, 
+			Object aTarget,
+			int aBaseTypeId,
+			int aSize) throws IOException
+	{
 		sendMessageType(itsStream, MessageType.NEW_ARRAY);
 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
@@ -165,14 +249,21 @@ public class CollectorPacketWriter {
 		sendRegisteredObjects();
 	}
 
-	public void sendArrayWrite(int aThreadId, long aParentTimestamp,
-			int aDepth, long aTimestamp, long aOperationLocation,
-			Object aTarget, int aIndex, Object aValue) throws IOException {
+	public void sendArrayWrite(
+			int aThreadId,
+			long aParentTimestamp, 
+			int aDepth,
+			long aTimestamp,
+			long aOperationLocation,
+			Object aTarget,
+			int aIndex, 
+			Object aValue) throws IOException
+	{
 		sendMessageType(itsStream, MessageType.ARRAY_WRITE);
 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
 		sendOperationLocation(itsBuffer, aOperationLocation);
-		sendValue(itsBuffer, aTarget,aTimestamp);
+		sendValue(itsBuffer, aTarget, aTimestamp);
 		itsBuffer.writeInt(aIndex);
 		sendValue(itsBuffer, aValue, aTimestamp);
 
@@ -181,25 +272,38 @@ public class CollectorPacketWriter {
 		sendRegisteredObjects();
 	}
 
-	public void sendLocalWrite(int aThreadId, long aParentTimestamp,
-			int aDepth, long aTimestamp, long aOperationLocation,
-			int aVariableId, Object aValue) throws IOException {
+	public void sendLocalWrite(
+			int aThreadId,
+			long aParentTimestamp,
+			int aDepth, 
+			long aTimestamp,
+			long aOperationLocation, 
+			int aVariableId,
+			Object aValue) throws IOException
+	{
 		sendMessageType(itsStream, MessageType.LOCAL_VARIABLE_WRITE);
 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
 		sendOperationLocation(itsBuffer, aOperationLocation);
 		itsBuffer.writeInt(aVariableId);
-		sendValue(itsBuffer, aValue,aTimestamp);
+		sendValue(itsBuffer, aValue, aTimestamp);
 
 		itsBuffer.writeTo(itsStream);
 
 		sendRegisteredObjects();
 	}
 
-	public void sendException(int aThreadId, long aParentTimestamp, int aDepth,
-			long aTimestamp, String aMethodName, String aMethodSignature,
-			String aMethodDeclaringClassSignature, int aOperationBytecodeIndex,
-			Object aException) throws IOException {
+	public void sendException(
+			int aThreadId,
+			long aParentTimestamp,
+			int aDepth,
+			long aTimestamp,
+			String aMethodName,
+			String aMethodSignature, 
+			String aMethodDeclaringClassSignature, 
+			int aOperationBytecodeIndex,
+			Object aException) throws IOException
+	{
 		sendMessageType(itsStream, MessageType.EXCEPTION);
 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
@@ -207,7 +311,7 @@ public class CollectorPacketWriter {
 		itsBuffer.writeUTF(aMethodSignature);
 		itsBuffer.writeUTF(aMethodDeclaringClassSignature);
 		itsBuffer.writeShort(aOperationBytecodeIndex);
-		sendValue(itsBuffer, aException,aTimestamp);
+		sendValue(itsBuffer, aException, aTimestamp);
 
 		itsBuffer.writeTo(itsStream);
 
@@ -216,8 +320,14 @@ public class CollectorPacketWriter {
 		// sendRegisteredObjects();
 	}
 
-	public void sendOutput(int aThreadId, long aParentTimestamp, int aDepth,
-			long aTimestamp, Output aOutput, byte[] aData) throws IOException {
+	public void sendOutput(
+			int aThreadId,
+			long aParentTimestamp,
+			int aDepth, 
+			long aTimestamp,
+			Output aOutput,
+			byte[] aData) throws IOException
+	{
 		sendMessageType(itsStream, MessageType.OUTPUT);
 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
@@ -230,8 +340,11 @@ public class CollectorPacketWriter {
 		sendRegisteredObjects();
 	}
 
-	public void sendThread(int aThreadId, long aJVMThreadId, String aName)
-			throws IOException {
+	public void sendThread(
+			int aThreadId, 
+			long aJVMThreadId,
+			String aName) throws IOException
+	{
 		sendMessageType(itsStream, MessageType.REGISTER_THREAD);
 
 		itsBuffer.writeInt(aThreadId);
@@ -243,13 +356,18 @@ public class CollectorPacketWriter {
 		sendRegisteredObjects();
 	}
 
-	public void sendClear() throws IOException {
+	public void sendClear() throws IOException
+	{
 		itsStream.writeByte(MessageType.CMD_CLEAR);
 	}
 
-	private void sendStd(DataOutputStream aStream, int aThreadId,
-			long aParentTimestamp, int aDepth, long aTimestamp)
-			throws IOException {
+	private void sendStd(
+			DataOutputStream aStream,
+			int aThreadId, 
+			long aParentTimestamp,
+			int aDepth,
+			long aTimestamp) throws IOException
+	{
 		aStream.writeInt(aThreadId);
 		aStream.writeLong(aParentTimestamp);
 		aStream.writeShort(aDepth);
@@ -260,55 +378,76 @@ public class CollectorPacketWriter {
 	 * Sends an argument to the socket. This method handles arrays, single
 	 * objects or null values.
 	 */
-	private void sendArguments(DataOutputStream aStream, Object[] aArguments, long aTimestamp)
-			throws IOException {
+	private void sendArguments(
+			DataOutputStream aStream, 
+			Object[] aArguments, 
+			long aTimestamp) throws IOException
+	{
 		aStream.writeInt(aArguments != null ? aArguments.length : 0);
 
-		if (aArguments != null)
-			for (Object theArgument : aArguments)
-				sendValue(aStream, theArgument,aTimestamp);
+		if (aArguments != null) for (Object theArgument : aArguments)
+			sendValue(aStream, theArgument, aTimestamp);
 	}
 
-	private void sendValue(DataOutputStream aStream, Object aValue, long aTimestamp)
-			throws IOException {
-		sendValue(aStream, aValue, aTimestamp, aTimestamp -1);
+	private void sendValue(DataOutputStream aStream, Object aValue, long aTimestamp) throws IOException
+	{
+		sendValue(aStream, aValue, aTimestamp, -1);
 	}
 
-	private void sendValue(DataOutputStream aStream, Object aValue, long aTimestamp, long aDefer)
-			throws IOException {
-		if (aValue == null) {
+	private void sendValue(DataOutputStream aStream, Object aValue, long aTimestamp, long aDefer) throws IOException
+	{
+		if (aValue == null)
+		{
 			sendMessageType(aStream, MessageType.NULL);
-		} else if (aValue instanceof Boolean) {
+		}
+		else if (aValue instanceof Boolean)
+		{
 			Boolean theBoolean = (Boolean) aValue;
 			sendMessageType(aStream, MessageType.BOOLEAN);
 			aStream.writeByte(theBoolean.booleanValue() ? 1 : 0);
-		} else if (aValue instanceof Byte) {
+		}
+		else if (aValue instanceof Byte)
+		{
 			Byte theByte = (Byte) aValue;
 			sendMessageType(aStream, MessageType.BYTE);
 			aStream.writeByte(theByte.byteValue());
-		} else if (aValue instanceof Character) {
+		}
+		else if (aValue instanceof Character)
+		{
 			Character theCharacter = (Character) aValue;
 			sendMessageType(aStream, MessageType.CHAR);
 			aStream.writeChar(theCharacter.charValue());
-		} else if (aValue instanceof Integer) {
+		}
+		else if (aValue instanceof Integer)
+		{
 			Integer theInteger = (Integer) aValue;
 			sendMessageType(aStream, MessageType.INT);
 			aStream.writeInt(theInteger.intValue());
-		} else if (aValue instanceof Long) {
+		}
+		else if (aValue instanceof Long)
+		{
 			Long theLong = (Long) aValue;
 			sendMessageType(aStream, MessageType.LONG);
 			aStream.writeLong(theLong.longValue());
-		} else if (aValue instanceof Float) {
+		}
+		else if (aValue instanceof Float)
+		{
 			Float theFloat = (Float) aValue;
 			sendMessageType(aStream, MessageType.FLOAT);
 			aStream.writeFloat(theFloat.floatValue());
-		} else if (aValue instanceof Double) {
+		}
+		else if (aValue instanceof Double)
+		{
 			Double theDouble = (Double) aValue;
 			sendMessageType(aStream, MessageType.DOUBLE);
 			aStream.writeDouble(theDouble.doubleValue());
-		} else if (shouldSendByValue(aValue)) {
+		}
+		else if (shouldSendByValue(aValue))
+		{
 			sendObject(aStream, aValue, aTimestamp, aDefer);
-		} else {
+		}
+		else
+		{
 			long theObjectId = ObjectIdentity.get(aValue);
 			sendMessageType(aStream, MessageType.OBJECT_UID);
 			aStream.writeLong(Math.abs(theObjectId));
@@ -327,22 +466,26 @@ public class CollectorPacketWriter {
 	 *            objects stack. The value of this parameter is the timestamp of
 	 *            the event that "request" the deferring.
 	 */
-	private void sendObject(DataOutputStream aStream, Object aObject,
-			long aTimestamp, long aDefer) throws IOException {
+	private void sendObject(DataOutputStream aStream, Object aObject, long aTimestamp, long aDefer) throws IOException
+	{
 		long theObjectId = ObjectIdentity.get(aObject);
 
 		assert theObjectId != 0;
-		if (theObjectId < 0) {
+		if (theObjectId < 0)
+		{
 			// First time this object appears, register it.
 			theObjectId = -theObjectId;
-			if (aDefer == -1) {
+			if (aDefer == -1)
+			{
 				// add the time stamp for flushing purpose in ObjectDatabase
-				itsRegisteredObjectsStack.push(theObjectId, aObject,aTimestamp);
+				itsRegisteredObjectsStack.push(theObjectId, aObject, aTimestamp);
 				// System.out.println("Registering: "+aObject+", id:
 				// "+theObjectId);
-			} else {
+			}
+			else
+			{
 				// add the time stamp for flushing purpose in ObjectDatabase
-				itsDeferredObjectsStack.push(aDefer, theObjectId, aObject,aTimestamp);
+				itsDeferredObjectsStack.push(aDefer, theObjectId, aObject, aTimestamp);
 				// System.out.println("Deferring: "+aObject+", id:
 				// "+theObjectId+", p.ts: "+aDefer);
 			}
@@ -355,18 +498,19 @@ public class CollectorPacketWriter {
 	/**
 	 * Sends all pending registered objects.
 	 */
-	private void sendRegisteredObjects() throws IOException {
-		while (!itsRegisteredObjectsStack.isEmpty()) {
-			// Note: remember that this is thread-safe because SocketCollector
-			// has one
+	private void sendRegisteredObjects() throws IOException
+	{
+		while (!itsRegisteredObjectsStack.isEmpty())
+		{
+			// Note: remember that this is thread-safe because SocketCollector has one
 			// CollectorPacketWriter per thread.
 			ObjectEntry theEntry = itsRegisteredObjectsStack.pop();
-			sendRegisteredObject(theEntry.id, theEntry.object,theEntry.itsTimestamp);
+			sendRegisteredObject(theEntry.id, theEntry.object, theEntry.timestamp);
 		}
 	}
 
-	private void sendRegisteredObject(long aId, Object aObject, long aTimestamp)
-			throws IOException {
+	private void sendRegisteredObject(long aId, Object aObject, long aTimestamp) throws IOException
+	{
 		sendMessageType(itsStream, MessageType.REGISTERED);
 		itsBuffer.writeLong(aId);
 		itsBuffer.writeLong(aTimestamp);
@@ -377,25 +521,27 @@ public class CollectorPacketWriter {
 		itsBuffer.writeTo(itsStream);
 	}
 
-	private static void sendMessageType(DataOutputStream aStream,
-			MessageType aMessageType) throws IOException {
+	private static void sendMessageType(DataOutputStream aStream, MessageType aMessageType) throws IOException
+	{
 		aStream.writeByte(aMessageType.ordinal());
 	}
 
-	private void sendOperationLocation(DataOutputStream aStream,
-			long aOperationLocation) throws IOException {
+	private void sendOperationLocation(DataOutputStream aStream, long aOperationLocation) throws IOException
+	{
 		aStream.writeInt((int) (aOperationLocation >>> 16)); // Behavior id
-		aStream.writeShort((short) (aOperationLocation & 0xffff)); // bytecode
-		// indexBehavior
+		aStream.writeShort((short) (aOperationLocation & 0xffff)); // bytecode indexBehavior
 	}
 
-	private static class MyObjectOutputStream extends ObjectOutputStream {
-		public MyObjectOutputStream(OutputStream aOut) throws IOException {
+	private static class MyObjectOutputStream extends ObjectOutputStream
+	{
+		public MyObjectOutputStream(OutputStream aOut) throws IOException
+		{
 			super(aOut);
 		}
 
 		@Override
-		public void drain() throws IOException {
+		public void drain() throws IOException
+		{
 			super.drain();
 		}
 	}
@@ -405,15 +551,18 @@ public class CollectorPacketWriter {
 	 * 
 	 * @author gpothier
 	 */
-	private static class MyBuffer extends DataOutputStream {
-		public MyBuffer() {
+	private static class MyBuffer extends DataOutputStream
+	{
+		public MyBuffer()
+		{
 			super(new ByteArrayOutputStream());
 		}
 
 		/**
 		 * Writes the size of the buffer and its content to the given stream.
 		 */
-		public void writeTo(DataOutputStream aStream) throws IOException {
+		public void writeTo(DataOutputStream aStream) throws IOException
+		{
 			flush();
 			ByteArrayOutputStream theByteOut = (ByteArrayOutputStream) out;
 			aStream.writeInt(theByteOut.size());
@@ -427,7 +576,8 @@ public class CollectorPacketWriter {
 	 * 
 	 * @author gpothier
 	 */
-	private static class RegisteredObjectsStack {
+	private static class RegisteredObjectsStack
+	{
 		/**
 		 * List of registered objects that must be sent. Note: There is space
 		 * for a hard-coded number of entries that should "be enough for
@@ -441,34 +591,41 @@ public class CollectorPacketWriter {
 		 */
 		private int itsSize = 0;
 
-		public RegisteredObjectsStack() {
-			for (int i = 0; i < itsObjects.length; i++) {
+		public RegisteredObjectsStack()
+		{
+			for (int i = 0; i < itsObjects.length; i++)
+			{
 				itsObjects[i] = new ObjectEntry();
 			}
 		}
 
-		public void push(long aId, Object aObject,long aTimestamp) {
-			itsObjects[itsSize++].set(aId, aObject,aTimestamp);
+		public void push(long aId, Object aObject, long aTimestamp)
+		{
+			itsObjects[itsSize++].set(aId, aObject, aTimestamp);
 		}
 
-		public boolean isEmpty() {
+		public boolean isEmpty()
+		{
 			return itsSize == 0;
 		}
 
-		public ObjectEntry pop() {
+		public ObjectEntry pop()
+		{
 			return itsObjects[--itsSize];
 		}
 	}
 
-	private static class ObjectEntry {
+	private static class ObjectEntry
+	{
 		public long id;
 		public Object object;
-		public long itsTimestamp;
+		public long timestamp;
 
-		public void set(long aId, Object aObject, long aTimestamp) {
+		public void set(long aId, Object aObject, long aTimestamp)
+		{
 			id = aId;
 			object = aObject;
-			itsTimestamp = aTimestamp;
+			timestamp = aTimestamp;
 		}
 	}
 
@@ -478,7 +635,8 @@ public class CollectorPacketWriter {
 	 * 
 	 * @author gpothier
 	 */
-	private static class DeferredObjectsStack {
+	private static class DeferredObjectsStack
+	{
 		/**
 		 * List of registered objects that must be sent. Note: There is space
 		 * for a hard-coded number of entries that should "be enough for
@@ -492,17 +650,21 @@ public class CollectorPacketWriter {
 		 */
 		private int itsSize = 0;
 
-		public DeferredObjectsStack() {
-			for (int i = 0; i < itsObjects.length; i++) {
+		public DeferredObjectsStack()
+		{
+			for (int i = 0; i < itsObjects.length; i++)
+			{
 				itsObjects[i] = new DeferredObjectEntry();
 			}
 		}
 
-		public void push(long aParentTimestamp, long aId, Object aObject, long aTimestamp) {
-			itsObjects[itsSize++].set(aParentTimestamp, aId, aObject,aTimestamp);
+		public void push(long aParentTimestamp, long aId, Object aObject, long aTimestamp)
+		{
+			itsObjects[itsSize++].set(aParentTimestamp, aId, aObject, aTimestamp);
 		}
 
-		public boolean isEmpty() {
+		public boolean isEmpty()
+		{
 			return itsSize == 0;
 		}
 
@@ -510,24 +672,30 @@ public class CollectorPacketWriter {
 		 * Determines if the element at the top of the stack has the specified
 		 * parent timestamp.
 		 */
-		public boolean isAvailable(long aParentTimestamp) {
-			if (isEmpty())
-				return false;
+		public boolean isAvailable(long aParentTimestamp)
+		{
+			if (isEmpty()) return false;
 			return itsObjects[itsSize - 1].parentTimestamp == aParentTimestamp;
 		}
 
-		public DeferredObjectEntry pop() {
+		public DeferredObjectEntry pop()
+		{
 			return itsObjects[--itsSize];
 		}
 	}
 
-	private static class DeferredObjectEntry {
+	private static class DeferredObjectEntry
+	{
 		public long parentTimestamp;
+
 		public long id;
+
 		public Object object;
+
 		public long itsTimestamp;
 
-		public void set(long aParentTimestamp, long aId, Object aObject, long aTimestamp) {
+		public void set(long aParentTimestamp, long aId, Object aObject, long aTimestamp)
+		{
 			parentTimestamp = aParentTimestamp;
 			id = aId;
 			object = aObject;
