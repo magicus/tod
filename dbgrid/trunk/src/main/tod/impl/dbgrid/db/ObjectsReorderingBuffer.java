@@ -17,7 +17,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
-*/
+ */
 package tod.impl.dbgrid.db;
 
 import java.util.Comparator;
@@ -29,17 +29,20 @@ import zz.utils.RingBuffer;
 
 /**
  * A buffer that permits to reoder slightly out-of-order objects.
+ * 
  * @see ObjectsDatabase
  * @author gpothier
  */
 public class ObjectsReorderingBuffer
 {
 	private long itsLastPushed;
+
 	private RingBuffer<Entry> itsBuffer = new RingBuffer<Entry>(DebuggerGridConfig.DB_OBJECTS_BUFFER_SIZE);
+
 	private PriorityQueue<Entry> itsOutOfOrderBuffer = new PriorityQueue<Entry>(100, EntryComparator.getInstance());
-	
+
 	private ReorderingBufferListener itsListener;
-	
+
 	public ObjectsReorderingBuffer(ReorderingBufferListener aListener)
 	{
 		itsListener = aListener;
@@ -64,46 +67,49 @@ public class ObjectsReorderingBuffer
 	}
 
 	/**
-	 * define if the difference between the oldest event of the buffer and the newest is more than aDelay (in nanosecond)
+	 * define if the difference between the oldest event of the buffer and the
+	 * newest is more than aDelay (in nanosecond)
+	 * 
 	 * @param aDelay
 	 * @return
 	 */
-	public boolean isNextEventFlushable(long aDelay){
-		return (itsLastPushed - getNextAvailableTimestamp())> aDelay ;
+	public boolean isNextEventFlushable(long aDelay)
+	{
+		long theNextAvailableTimestamp = getNextAvailableTimestamp();
+		if (theNextAvailableTimestamp == -1) return false;
+		return (itsLastPushed - theNextAvailableTimestamp) > aDelay;
 	}
 
-	
 	/**
 	 * return the timestamp of the oldest (next ordered) event in the buffer
+	 * return -1 if no more event are available
+	 * 
 	 * @return
 	 */
-	public long getNextAvailableTimestamp(){
-		long theResult;
-		if (itsBuffer.isEmpty())
-		{
-			theResult = itsOutOfOrderBuffer.peek().itsTimestamp;
-		}
-		else
-		{
-			long theInOrderEvent = itsBuffer.peek().itsTimestamp;
-			long theNextOutOfOrder = itsOutOfOrderBuffer.peek().itsTimestamp;
-			theResult = Math.min(theNextOutOfOrder, theInOrderEvent);
-		}
-		return theResult;
+	public long getNextAvailableTimestamp()
+	{
+		long theInOrderEvent;
+		long theNextOutOfOrder;
+
+		if (!itsBuffer.isEmpty()) theInOrderEvent = itsBuffer.peek().itsTimestamp;
+		else theInOrderEvent = -1;
+		if (!itsOutOfOrderBuffer.isEmpty()) theNextOutOfOrder = itsOutOfOrderBuffer.peek().itsTimestamp;
+		else theNextOutOfOrder = -1;
+
+		if (theNextOutOfOrder == -1) return theInOrderEvent;
+		if (theInOrderEvent == -1) return theNextOutOfOrder;
+		return Math.min(theNextOutOfOrder, theInOrderEvent);
 	}
-	
-	
-	
+
 	/**
-	 * Returns true if an event is available on output.
-	 * if an event is available it should be immediately retrieved,
-	 * before a new event is pushed.
+	 * Returns true if an event is available on output. if an event is available
+	 * it should be immediately retrieved, before a new event is pushed.
 	 */
 	public boolean isFull()
 	{
 		return itsBuffer.isFull();
 	}
-	
+
 	public boolean isEmpty()
 	{
 		return itsBuffer.isEmpty() && itsOutOfOrderBuffer.isEmpty();
@@ -134,14 +140,15 @@ public class ObjectsReorderingBuffer
 			}
 		}
 	}
-	
 
 	public static class Entry
 	{
 		public final long id;
+
 		public final Object object;
+
 		public final long itsTimestamp;
-		
+
 		public Entry(final long aId, final Object aObject, final long aTimestamp)
 		{
 			id = aId;
@@ -149,7 +156,7 @@ public class ObjectsReorderingBuffer
 			itsTimestamp = aTimestamp;
 		}
 	}
-	
+
 	private static class EntryComparator implements Comparator<Entry>
 	{
 		private static EntryComparator INSTANCE = new EntryComparator();
@@ -167,13 +174,13 @@ public class ObjectsReorderingBuffer
 		{
 			long theId1 = aO1.id;
 			long theId2 = aO2.id;
-			
+
 			if (theId1 < theId2) return -1;
 			else if (theId1 == theId2) return 0;
 			else return 1;
 		}
 	}
-	
+
 	public interface ReorderingBufferListener
 	{
 		/**
