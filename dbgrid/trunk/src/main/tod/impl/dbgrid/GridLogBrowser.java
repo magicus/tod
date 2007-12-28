@@ -97,7 +97,8 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 	 * Manual override of Reflex. We want to avoid the reflexBridge hassle, so
 	 * we call the MO manually.
 	 */
-	private Scheduler itsScheduler = new Scheduler();
+	private Scheduler itsScheduler = 
+		new Scheduler();
 
 	/**
 	 * Manual override of Reflex. We want to avoid the reflexBridge hassle, so
@@ -133,7 +134,7 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 		itsMaster = aMaster;
 		itsMaster.addListener(this);		
 		itsStructureDatabase = aStructureDatabase;
-
+		itsScheduler.setGroup(this);
 		System.out.println("[GridLogBrowser] Instantiated.");
 	}
 	
