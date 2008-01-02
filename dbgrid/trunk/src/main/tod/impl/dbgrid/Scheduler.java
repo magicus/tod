@@ -77,10 +77,12 @@ implements POMGroupDef, ISessionMonitor
 			Request theRequest = theIterator.next();
 			System.out.println("[Scheduler] Request: "+theRequest);
 		}
-		if (itsExecutingRequest == null) executeOldest();
-		System.out.println("[Scheduler] Schedule done on "+Thread.currentThread().getName());
+		if (itsExecutingRequest == null) {
+			executeOldest();
+			System.out.println("[Scheduler] Schedule done on "+Thread.currentThread().getName());
+			itsQueueSize++;
+		}
 		
-		itsQueueSize++;
 	}
 	
 	@Override
