@@ -49,7 +49,10 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.RoleTuple>
 	public static final byte ROLE_BEHAVIOR_EXIT = 4;
 	public static final byte ROLE_BEHAVIOR_OPERATION = 5;
 	
-	
+	/**
+	 * Roles are negative unless when it deals with arguments. In this case, 
+	 * role value is the argument position.
+	 */
 	public static final byte ROLE_OBJECT_TARGET = -1;
 	public static final byte ROLE_OBJECT_VALUE = -2;
 	public static final byte ROLE_OBJECT_RESULT = -3;
