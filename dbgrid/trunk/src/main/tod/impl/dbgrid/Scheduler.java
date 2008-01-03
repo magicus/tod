@@ -48,7 +48,7 @@ implements POMGroupDef, ISessionMonitor
 	}
 	
 	private Request itsExecutingRequest;
-	private int itsQueueSize = 0;
+	private int itsActiveTaskCount = 0;
 	
 	public Scheduler()
 	{
@@ -64,7 +64,7 @@ implements POMGroupDef, ISessionMonitor
 	
 	public int getQueueSize()
 	{
-		return itsQueueSize;
+		return super.getQueueSize()+itsActiveTaskCount;
 	}
 	
 	@Override
@@ -80,7 +80,7 @@ implements POMGroupDef, ISessionMonitor
 		if (itsExecutingRequest == null) {
 			executeOldest();
 			System.out.println("[Scheduler] Schedule done on "+Thread.currentThread().getName());
-			itsQueueSize++;
+			itsActiveTaskCount++; 
 		}
 		
 	}
@@ -116,7 +116,7 @@ implements POMGroupDef, ISessionMonitor
 		itsExecutingRequest = null;
 		System.out.println("[Scheduler] Scheduler.leave() on "+Thread.currentThread().getName());
 		
-		itsQueueSize--;
+		itsActiveTaskCount--;
 	}
 	
 	public Object getGroup(Object aObject)
