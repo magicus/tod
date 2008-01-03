@@ -31,6 +31,11 @@ import org.objectweb.asm.MethodVisitor;
 
 import tod.core.bci.IInstrumenter;
 import tod.core.database.structure.IMutableStructureDatabase;
+import tod.impl.bci.asm.attributes.AspectInfoAttribute;
+import tod.impl.bci.asm.attributes.SootInlineAttribute;
+import tod.impl.bci.asm.attributes.SootInstructionKindAttribute;
+import tod.impl.bci.asm.attributes.SootInstructionShadowAttribute;
+import tod.impl.bci.asm.attributes.SootInstructionSourceAttribute;
 import zz.utils.Utils;
 
 /**
@@ -40,9 +45,6 @@ import zz.utils.Utils;
  */
 public class ASMInstrumenter implements IInstrumenter
 {
-	public static final String ATTR_INSTRUCTION_SOURCE = "ca.mcgill.sable.InstructionSource";
-	public static final String ATTR_INSTRUCTION_SHADOW = "ca.mcgill.sable.InstructionShadow";
-	public static final String ATTR_INSTRUCTION_KIND = "ca.mcgill.sable.InstructionKind";
 	private final IMutableStructureDatabase itsDatabase;
 	private final ASMDebuggerConfig itsConfig;
 	
@@ -89,9 +91,11 @@ public class ASMInstrumenter implements IInstrumenter
 				theTracedMethods);
 		
 		Attribute[] theAttributes = new Attribute[] {
-				new TaggingAttribute(ATTR_INSTRUCTION_KIND),
-				new TaggingAttribute(ATTR_INSTRUCTION_SHADOW),
-				new TaggingAttribute(ATTR_INSTRUCTION_SOURCE),
+				new SootInstructionKindAttribute(),
+				new SootInstructionShadowAttribute(),
+				new SootInstructionSourceAttribute(),
+				new SootInlineAttribute(),
+				new AspectInfoAttribute(null),
 		};
 		
 		theReader.accept(theVisitor, theAttributes, 0);

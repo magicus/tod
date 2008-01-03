@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.bci.asm;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.objectweb.asm.Attribute;
@@ -37,6 +38,8 @@ import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.analysis.DisassembledBehavior.Instruction;
+import tod.impl.bci.asm.attributes.SootAttribute;
 import tod.impl.database.structure.standard.TagMap;
 import zz.utils.ArrayStack;
 import zz.utils.Stack;
@@ -149,6 +152,12 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		super.visit(aVersion, access, aName, aSignature, aSuperName, aInterfaces);
 	}
 	
+	@Override
+	public void visitAttribute(Attribute aAttr)
+	{
+		super.visitAttribute(aAttr);
+	}
+
 	public IMutableClassInfo getClassInfo()
 	{
 		return itsClassInfo;
@@ -185,9 +194,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		private IMutableBehaviorInfo itsBehavior;
 		private int itsStoreIndex = 0;
 		
-		private TaggingAttribute itsInstructionKindAttr;
-		private TaggingAttribute itsInstructionShadowAttr;
-		private TaggingAttribute itsInstructionSourceAttr;
+		private List<SootAttribute> itsSootAttributes = new ArrayList<SootAttribute>();
 		
 		public BCIMethodVisitor(MethodVisitor mv, ASMMethodInfo aMethodInfo)
 		{
@@ -214,17 +221,10 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		@Override
 		public void visitAttribute(Attribute aAttr)
 		{
-			if (ASMInstrumenter.ATTR_INSTRUCTION_KIND.equals(aAttr.type))
+			if (aAttr instanceof SootAttribute)
 			{
-				itsInstructionKindAttr = (TaggingAttribute) aAttr;
-			}
-			else if (ASMInstrumenter.ATTR_INSTRUCTION_SHADOW.equals(aAttr.type))
-			{
-				itsInstructionShadowAttr = (TaggingAttribute) aAttr;
-			}
-			else if (ASMInstrumenter.ATTR_INSTRUCTION_SHADOW.equals(aAttr.type))
-			{
-				itsInstructionSourceAttr = (TaggingAttribute) aAttr;				
+				SootAttribute theAttribute = (SootAttribute) aAttr;
+				itsSootAttributes.add(theAttribute);
 			}
 			else
 			{
@@ -394,20 +394,10 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			// Prepare tags
 			TagMap theTagMap = new TagMap();
 			
-			if (itsInstructionKindAttr != null) itsInstructionKindAttr.fillTagMap(
-					theTagMap,
-					itsMethodInfo.getCodeSize(),
-					Tagger.INSTRUCTION_KIND);
-			
-			if (itsInstructionShadowAttr != null) itsInstructionShadowAttr.fillTagMap(
-					theTagMap,
-					itsMethodInfo.getCodeSize(),
-					Tagger.INSTRUCTION_SHADOW);
-			
-			if (itsInstructionSourceAttr != null) itsInstructionSourceAttr.fillTagMap(
-					theTagMap,
-					itsMethodInfo.getCodeSize(),
-					Tagger.INSTRUCTION_SOURCE);
+			for (SootAttribute theAttribute : itsSootAttributes)
+			{
+				theAttribute.fillTagMap(theTagMap, itsMethodInfo.getCodeSize());
+			}
 			
 			itsInstrumenter.fillTagMap(theTagMap);
 			

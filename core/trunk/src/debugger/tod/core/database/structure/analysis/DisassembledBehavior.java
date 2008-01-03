@@ -59,12 +59,21 @@ public class DisassembledBehavior
 		 */
 		public final int pc;
 		
+		/**
+		 * Bytecode mnemonic and arguments in human-readable form
+		 */
 		public final String text;
+		
+		/**
+		 * Whether this instruction is actually a label.
+		 */
+		public final boolean label;
 
-		public Instruction(int aPc, String aText)
+		public Instruction(int aPc, String aText, boolean aLabel)
 		{
 			pc = aPc;
 			text = aText;
+			label = aLabel;
 		}
 		
 		@Override

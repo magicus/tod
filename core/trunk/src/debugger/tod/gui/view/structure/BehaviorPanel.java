@@ -26,6 +26,7 @@ import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
 import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
 import tod.core.database.structure.analysis.DisassembledBehavior;
 import tod.core.database.structure.analysis.Disassembler;
@@ -56,9 +57,9 @@ public class BehaviorPanel extends JPanel
 		}
 	};
 	
-	private static Column cRole = new TagColumn("role", 150, BytecodeTagType.BYTECODE_ROLE);
-	private static Column cShadow = new TagColumn("shadow", 50, BytecodeTagType.INSTR_SHADOW);
-	private static Column cSource = new TagColumn("source", 50, BytecodeTagType.INSTR_SOURCE);
+	private static Column cRole = new TagColumn<BytecodeRole>("role", 150, BytecodeTagType.BYTECODE_ROLE);
+	private static Column cShadow = new IntTagColumn("shadow", 50, BytecodeTagType.INSTR_SHADOW);
+	private static Column cSource = new IntTagColumn("source", 50, BytecodeTagType.INSTR_SOURCE);
 	
 	private static Column cCode = new Column("code", 500)
 	{
@@ -129,7 +130,8 @@ public class BehaviorPanel extends JPanel
 		public Object getValueAt(int aRowIndex, int aColumnIndex)
 		{
 			Instruction theInstruction = itsInstructions[aRowIndex];
-			return columns[aColumnIndex].getValue(theInstruction, itsBehavior);
+			if (theInstruction.label) return aColumnIndex == 1 ? theInstruction.text : "";
+			else return columns[aColumnIndex].getValue(theInstruction, itsBehavior);
 		}
 		
 	}
@@ -158,7 +160,7 @@ public class BehaviorPanel extends JPanel
 	 * A column that show tags.
 	 * @author gpothier
 	 */
-	private static  class TagColumn<T> extends Column
+	private static class TagColumn<T> extends Column
 	{
 		private BytecodeTagType<T> itsType;
 		
@@ -179,5 +181,21 @@ public class BehaviorPanel extends JPanel
 		{
 			return aTag.toString();
 		}
+	}
+	
+	private static class IntTagColumn extends TagColumn<Integer>
+	{
+		public IntTagColumn(String aName, int aWidth, BytecodeTagType<Integer> aType)
+		{
+			super(aName, aWidth, aType);
+		}
+
+		@Override
+		protected Object getValue(Integer aTag)
+		{
+			int v = aTag;
+			return v != -1 ? v : "";
+		}
+		
 	}
 }

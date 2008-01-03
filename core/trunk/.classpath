@@ -10,7 +10,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/javassist.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/reflex-core.jar"/>
-	<classpathentry kind="lib" path="lib/asm-all-3.0.jar" sourcepath="/ASM/src"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/TOD-agent"/>
+	<classpathentry kind="lib" path="lib/asm-all-3.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

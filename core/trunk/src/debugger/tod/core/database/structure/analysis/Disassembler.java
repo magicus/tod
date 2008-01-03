@@ -124,7 +124,12 @@ public class Disassembler
 		
 		private void addInstruction(int aPc)
 		{
-			itsInstructions.add(new Instruction(aPc, buf.toString().trim()));
+			itsInstructions.add(new Instruction(aPc, buf.toString().trim(), false));
+		}
+		
+		private void addLabel(int aPc)
+		{
+			itsInstructions.add(new Instruction(aPc, buf.toString().trim(), true));
 		}
 		
 		@Override
@@ -228,7 +233,7 @@ public class Disassembler
 		{
 			int thePc = getPc();
 			super.visitLabel(aLabel);
-			addInstruction(thePc);
+			addLabel(thePc);
 		}
 		
 		
