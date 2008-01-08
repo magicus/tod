@@ -31,7 +31,7 @@ package tod.agent;
  */
 public class TracedMethods
 {
-	public static boolean[] traced = new boolean[10000];
+	private static boolean[] traced = new boolean[10000];
 	
 	public static final void setTraced(int aId)
 	{
@@ -43,11 +43,13 @@ public class TracedMethods
 			traced = room;
 		}
 		
+		//System.out.println("Marking traced: "+aId);
 		traced[aId] = true;
 	}
 	
 	public static final boolean isTraced(int aId)
 	{
+		//System.out.println("isTraced: "+aId);
 		return aId >= traced.length ? false : traced[aId];
 	}
 }
