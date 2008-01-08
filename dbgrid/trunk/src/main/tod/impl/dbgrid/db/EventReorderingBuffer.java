@@ -148,13 +148,13 @@ public class EventReorderingBuffer
 	public GridEvent pop()
 	{
 		GridEvent theResult;
-		if (itsBuffer.isEmpty())
+		GridEvent theInOrderEvent = itsBuffer.peek();
+		if (theInOrderEvent == null)
 		{
 			theResult = itsOutOfOrderBuffer.next();
 		}
 		else
 		{
-			GridEvent theInOrderEvent = itsBuffer.peek();
 			long theNextOutOfOrder = itsOutOfOrderBuffer.getNextAvailable();
 			if (theNextOutOfOrder < theInOrderEvent.getTimestamp())
 			{

@@ -504,7 +504,7 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 		}
 	}
 	
-	private void fetchThreads0()
+	private synchronized void fetchThreads0()
 	{
 		try
 		{
@@ -541,7 +541,7 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 		}		
 	}
 	
-	private void fetchHosts0()
+	private synchronized void fetchHosts0()
 	{
 		try
 		{
@@ -697,7 +697,7 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 	/**
 	 * Clears cached information so that they are lazily retrieved.
 	 */
-	private void clearStats()
+	private synchronized void clearStats()
 	{
 		itsEventsCount = 0;
 		itsFirstTimestamp = 0;
