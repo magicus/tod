@@ -113,6 +113,7 @@ public class SourceRevealerUtils
 			final String aTypeName, 
 			final int aLineNumber)
 	{
+		System.out.println("SourceRevealerUtils.reveal(ILaunch, String, int)"+aTypeName+" "+aLineNumber);
 		getInstance().reveal (new Revealer()
 		{
 			public void reveal() 
@@ -139,6 +140,7 @@ public class SourceRevealerUtils
 			final String aTypeName, 
 			final String aMethodName)
 	{
+		System.out.println("SourceRevealerUtils.reveal(IJavaProject, String, String)" +aTypeName +" "+aMethodName);
 		getInstance().reveal (new Revealer()
 				{
 					public void reveal() throws CoreException, BadLocationException
@@ -150,9 +152,9 @@ public class SourceRevealerUtils
 						if (theMethod == null) return;
 						
 						// Eclipse 3.3 only
-//						JavaUI.openInEditor(theMethod, false, true);
+						JavaUI.openInEditor(theMethod, false, true);
 						
-						EditorUtility.openInEditor(theMethod, false);
+			//			EditorUtility.openInEditor(theMethod, false);
 					}
 				});
 	}
@@ -165,6 +167,7 @@ public class SourceRevealerUtils
 			final String aTypeName, 
 			final int aLineNumber)
 	{
+		System.out.println("SourceRevealerUtils.reveal(IJavaProject, String, int)" +aTypeName +" "+aLineNumber );
 		getInstance().reveal (new Revealer()
 		{
 			public void reveal() throws CoreException, BadLocationException
@@ -173,9 +176,9 @@ public class SourceRevealerUtils
 				if (theType == null) return;
 				
 				// Eclipse 3.3 only
-//				IEditorPart theEditor = JavaUI.openInEditor(theType, false, false);
+				IEditorPart theEditor = JavaUI.openInEditor(theType, false, false);
 				
-				IEditorPart theEditor = EditorUtility.openInEditor(theType, false);
+	//			IEditorPart theEditor = EditorUtility.openInEditor(theType, false);
 				if (theEditor instanceof ITextEditor)
 				{
 					ITextEditor theTextEditor = (ITextEditor) theEditor;
