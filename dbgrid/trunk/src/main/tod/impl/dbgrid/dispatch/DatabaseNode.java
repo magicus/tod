@@ -215,6 +215,11 @@ implements RIDatabaseNode
 		return theObjectsCount+theEventsCount;
 	}
 	
+	public synchronized void flushOldestEvent()
+	{
+		itsEventsDatabase.flushOldestEvent();
+	}
+	
 	public long[] getEventCounts(
 			EventCondition aCondition, 
 			long aT1, 
@@ -570,7 +575,7 @@ implements RIDatabaseNode
 						int theCount = 0;
 						while (itsEventsDatabase.isNextEventFlushable(2000000000)) 
 						{
-							itsEventsDatabase.flushOldestEvent();
+							flushOldestEvent();
 							theCount++;
 						}
 						// Flush oldest object if the newest was created more than 2s after

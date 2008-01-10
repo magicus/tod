@@ -181,8 +181,8 @@ public class EventDatabase implements ReorderingBufferListener
 	}
 	
 	/**
-	 * return 0 if the Buffer is empty else return 1
-	 * @return
+	 * Flushes the oldest available event.
+	 * Returns 0 if the Buffer was empty, otherwise returns 1 if an event was indeed flushed.
 	 */
 	public int flushOldestEvent(){
 		int theCount = 0;
