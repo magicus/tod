@@ -179,36 +179,51 @@ public abstract class PageBank
 		@Override
 		public void writeBoolean(boolean aValue)
 		{
-			super.writeBoolean(aValue);
-			getPage().modified();
+			synchronized (getPage())
+			{
+				super.writeBoolean(aValue);
+				getPage().modified();
+			}
 		}
 
 		@Override
 		public void writeBytes(byte[] aBytes, int aBitCount)
 		{
-			super.writeBytes(aBytes, aBitCount);
-			getPage().modified();
+			synchronized (getPage())
+			{
+				super.writeBytes(aBytes, aBitCount);
+				getPage().modified();
+			}
 		}
 
 		@Override
 		public void writeBytes(byte[] aBytes)
 		{
-			super.writeBytes(aBytes);
-			getPage().modified();
+			synchronized (getPage())
+			{
+				super.writeBytes(aBytes);
+				getPage().modified();
+			}
 		}
 
 		@Override
 		public void writeInt(int aValue, int aBitCount)
 		{
-			super.writeInt(aValue, aBitCount);
-			getPage().modified();
+			synchronized (getPage())
+			{
+				super.writeInt(aValue, aBitCount);
+				getPage().modified();
+			}
 		}
 
 		@Override
 		public void writeLong(long aValue, int aBitCount)
 		{
-			super.writeLong(aValue, aBitCount);
-			getPage().modified();
+			synchronized (getPage())
+			{
+				super.writeLong(aValue, aBitCount);
+				getPage().modified();
+			}
 		}
 	}
 }

@@ -739,7 +739,7 @@ public class HardPagedFile extends PageBank
 		 * {@link #asBitStruct()} must call {@link #modified()} to notify the
 		 * system that the page needs to be saved.
 		 */
-		public int[] getData()
+		public synchronized int[] getData()
 		{
 			if (itsData == null)
 			{
@@ -752,19 +752,19 @@ public class HardPagedFile extends PageBank
 			return itsData.getValue().getData();
 		}
 		
-		void clearData()
+		synchronized void  clearData()
 		{
 			itsData = null;
 		}
 		
-		public void modified()
+		public synchronized void modified()
 		{
 			if (itsData == null) throw new IllegalStateException("Trying to modify an absent page...");
 			itsData.getValue().markDirty();
 		}
 		
 		@Override
-		public void use()
+		public synchronized void use()
 		{
 			if (! DebugFlags.DISABLE_USE_PAGES && itsData != null) 
 				itsPageDataManager.use(itsData);
