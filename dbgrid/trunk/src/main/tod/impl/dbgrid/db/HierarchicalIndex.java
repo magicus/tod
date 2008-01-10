@@ -304,7 +304,7 @@ public class HierarchicalIndex<T extends IndexTuple>
 	private boolean checkTimestamp(T aTuple)
 	{
 		long theKey = aTuple.getKey();
-		assert theKey >= itsLastKey;
+		assert theKey > itsLastKey;
 		itsLastKey = theKey;
 		return true;
 	}
