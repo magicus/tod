@@ -25,6 +25,7 @@ import java.net.URI;
 
 import tod.core.config.TODConfig;
 import tod.impl.local.LocalSession;
+import tod.utils.CountTODServer;
 import zz.utils.Utils;
 
 /**
@@ -44,6 +45,7 @@ public class SessionUtils
 		if (TODConfig.SESSION_MEMORY.equals(theType)) theClassName = LocalSession.class.getName();
 		else if (TODConfig.SESSION_LOCAL.equals(theType)) theClassName = "tod.impl.dbgrid.LocalGridSession";
 		else if (TODConfig.SESSION_REMOTE.equals(theType)) theClassName = "tod.impl.dbgrid.RemoteGridSession";
+		else if (TODConfig.SESSION_COUNT.equals(theType)) theClassName = CountTODServer.class.getName();
 		else throw new RuntimeException("Not handled: "+theType);
 
 		try

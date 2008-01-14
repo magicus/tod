@@ -33,6 +33,7 @@ import tod.agent.Output;
 import tod.core.ILogCollector;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.server.CollectorTODServer;
 import tod.core.server.ICollectorFactory;
 import tod.core.server.TODServer;
@@ -40,6 +41,7 @@ import tod.core.session.AbstractSession;
 import tod.core.session.ISessionMonitor;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
+import tod.impl.database.structure.standard.StructureDatabase;
 import tod.impl.local.LocalBrowser;
 
 /**
@@ -49,15 +51,15 @@ import tod.impl.local.LocalBrowser;
 public class CountTODServer extends AbstractSession
 {
 	private TODServer itsServer;
-	private DummyStructureDatabase itsStructureDatabase;
+	private IMutableStructureDatabase itsStructureDatabase;
 	
 	private LocalBrowser itsBrowser;
 	private List<CountCollector> itsCollectors = new ArrayList<CountCollector>();
 	
-	public CountTODServer(TODConfig aConfig, URI aUri)
+	public CountTODServer(URI aUri, TODConfig aConfig)
 	{
 		super(aUri, aConfig);
-		itsStructureDatabase = DummyStructureDatabase.getInstance();
+		itsStructureDatabase = StructureDatabase.create(aConfig);
 		itsBrowser = new LocalBrowser(itsStructureDatabase);
 		
 		ASMDebuggerConfig theConfig = new ASMDebuggerConfig(aConfig);
@@ -80,20 +82,6 @@ public class CountTODServer extends AbstractSession
 			}
 		};
 		
-		try
-		{
-			BufferedReader theReader = new BufferedReader(new InputStreamReader(System.in));
-			while(true)
-			{
-				String s = theReader.readLine();
-				if ("q".equals(s)) return;
-				System.out.println("Event count: "+getCount());				
-			}
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
 	}
 	
 	public void disconnect()
@@ -236,7 +224,23 @@ public class CountTODServer extends AbstractSession
 	public static void main(String[] args)
 	{
 		TODConfig theConfig = new TODConfig();
-		new CountTODServer(theConfig, null);
+		CountTODServer theServer = new CountTODServer(null, theConfig);
+		
+		try
+		{
+			BufferedReader theReader = new BufferedReader(new InputStreamReader(System.in));
+			while(true)
+			{
+				String s = theReader.readLine();
+				if ("q".equals(s)) return;
+				System.out.println("Event count: "+theServer.getCount());				
+			}
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+
 	}
 
 }

@@ -97,7 +97,7 @@ implements IMutableStructureDatabase
 
 	public String getId()
 	{
-		return null;
+		return "dummy";
 	}
 
 	public ITypeInfo getType(String aName, boolean aFailIfAbsent)

@@ -18,48 +18,31 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package dummy;
+package tod.experiments;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.Random;
 
-public class Dummy
+public class Timing2
 {
-	public static void main(String[] args) throws InterruptedException
+	public static void main(String[] args) throws IOException
 	{
-		System.out.println("Dummy");
-//		try
-//		{
-//			if (true) throw new RuntimeException("Plop");
-//		}
-//		catch (RuntimeException e)
-//		{
-//			Thread.sleep(100);
-//			System.exit(0);
-//		}
-		int j;
+		System.out.println("Hello World");
 		
 		long t0 = System.currentTimeMillis();
-		
-		Object[] theObjects = new Object[100];
-		for(int i=0;i<theObjects.length;i++) theObjects[i] = new Object();
-		
-		Random theRandom = new Random(0);
-		for(int i=0;i<2000000;i++)
+		int j = 1;
+		for(int i=0;i<100000000;i++)
 		{
-			j = i*2;
-			foo(theObjects[theRandom.nextInt(theObjects.length)], j);
-			if (i % 1000000 == 0) System.out.println(i);
+			j = j*i + i + foo(j);
 		}
-		
 		long t1 = System.currentTimeMillis();
-		System.out.println("Time: "+(t1-t0));
+		
+		System.out.println(t1-t0);
+		System.out.println(j);
 	}
 	
-	public static int foo(Object o, long b)
+	private static int foo(int i)
 	{
-		long c = o.hashCode()+b;
-		return (int)(c/2);
+		return i*2;
 	}
+
 }

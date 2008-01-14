@@ -182,6 +182,7 @@ public class TODConfig extends PublicCloneable implements Serializable
 	public static final String SESSION_MEMORY = "memory";
 	public static final String SESSION_LOCAL = "local";
 	public static final String SESSION_REMOTE = "remote";
+	public static final String SESSION_COUNT = "count";
 	
 	public static final StringItem SESSION_TYPE = new StringItem(
 			ConfigLevel.NORMAL,
