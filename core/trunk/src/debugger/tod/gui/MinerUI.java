@@ -437,14 +437,14 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 				theLogBrowser, 
 				aBehavior, 
 				aLine);
-		
+	
 		if (theFilter != null)
 		{
 			if (aFilter != null)
 			{
 				theFilter = theLogBrowser.createIntersectionFilter(theFilter, aFilter);
 			}
-			
+			TODUtils.logf(0,"Trying to show events for filter %s",theFilter.getClass());
 			LogViewSeed theSeed = new FilterSeed(
 					this, 
 					theLogBrowser, 
@@ -452,7 +452,7 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 					theFilter);
 			
 			openSeed(theSeed, false);				
-		}
+		} else TODUtils.logf(0,"No filter created for line %s",aLine);
 	}
 	
 	/**

@@ -61,6 +61,8 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.omg.CosNaming.IstringHelper;
 
+import tod.utils.TODUtils;
+
 /**
  * Utility class that permits to asynchronously reveal particualr source locations
  * @author gpothier
@@ -113,7 +115,7 @@ public class SourceRevealerUtils
 			final String aTypeName, 
 			final int aLineNumber)
 	{
-		System.out.println("SourceRevealerUtils.reveal(ILaunch, String, int)"+aTypeName+" "+aLineNumber);
+		TODUtils.log(1,"[SourceRevealerUtils.reveal(ILaunch, String, int)]"+aTypeName+" "+aLineNumber);
 		getInstance().reveal (new Revealer()
 		{
 			public void reveal() 
@@ -136,25 +138,34 @@ public class SourceRevealerUtils
 	 * Opens a given method. Should be safe for JDT and PDE projects. 
 	 */
 	public static void reveal (
-			final IJavaProject aJavaProject, 
+			final List<IJavaProject> aJavaProject, 
 			final String aTypeName, 
 			final String aMethodName)
 	{
-		System.out.println("SourceRevealerUtils.reveal(IJavaProject, String, String)" +aTypeName +" "+aMethodName);
+		TODUtils.log(1,"[SourceRevealerUtils.reveal(IJavaProject, String, String)]" +aTypeName +" "+aMethodName);
 		getInstance().reveal (new Revealer()
 				{
 					public void reveal() throws CoreException, BadLocationException
 					{
 						IType theType = TODPluginUtils.getType(aJavaProject, aTypeName);
-						if (theType == null) return;
+						if (theType == null) {
+							TODUtils.logf(0, "The type %s has not been found in the available sources " +
+									"of the Eclipse workspace.\n Path were " +
+									"to find the sources was: %s", aTypeName, aJavaProject);
+							return;
+						}
 						
 						IMethod theMethod = theType.getMethod(aMethodName, null);
-						if (theMethod == null) return;
+						if (theMethod == null){
+							TODUtils.logf(0, "The method %s of type %s has not been found in the available sources " +
+									"of the Eclipse workspace.", aMethodName, aTypeName);
+							return;
+						}
 						
 						// Eclipse 3.3 only
-						JavaUI.openInEditor(theMethod, false, true);
+					//	JavaUI.openInEditor(theMethod, false, true);
 						
-			//			EditorUtility.openInEditor(theMethod, false);
+						EditorUtility.openInEditor(theMethod, false);
 					}
 				});
 	}
@@ -163,22 +174,27 @@ public class SourceRevealerUtils
 	 * Opens a given location. Should be safe for JDT and PDE projects. 
 	 */
 	public static void reveal (
-			final IJavaProject aJavaProject, 
+			final List<IJavaProject> aJavaProject, 
 			final String aTypeName, 
 			final int aLineNumber)
 	{
-		System.out.println("SourceRevealerUtils.reveal(IJavaProject, String, int)" +aTypeName +" "+aLineNumber );
+		TODUtils.log(1,"[SourceRevealerUtils.reveal(IJavaProject, String, int)]" +aTypeName +" "+aLineNumber );
 		getInstance().reveal (new Revealer()
 		{
 			public void reveal() throws CoreException, BadLocationException
 			{
 				IType theType = TODPluginUtils.getType(aJavaProject, aTypeName);
-				if (theType == null) return;
+				if (theType == null) {
+					TODUtils.logf(0, "The type %s has not been found in the available sources " +
+							"of the Eclipse workspace.\n Path were " +
+							"to find the sources was: %s", aTypeName, aJavaProject);
+					return;
+				}
 				
 				// Eclipse 3.3 only
-				IEditorPart theEditor = JavaUI.openInEditor(theType, false, false);
+				//IEditorPart theEditor = JavaUI.openInEditor(theType, false, false);
 				
-	//			IEditorPart theEditor = EditorUtility.openInEditor(theType, false);
+				IEditorPart theEditor = EditorUtility.openInEditor(theType, false);
 				if (theEditor instanceof ITextEditor)
 				{
 					ITextEditor theTextEditor = (ITextEditor) theEditor;

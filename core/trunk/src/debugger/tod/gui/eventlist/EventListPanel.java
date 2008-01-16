@@ -53,6 +53,7 @@ import tod.gui.eventlist.MuralScroller.UnitScroll;
 import tod.gui.kit.Options;
 import tod.gui.kit.StdOptions;
 import tod.gui.kit.Options.OptionDef;
+import tod.utils.TODUtils;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;
 import zz.utils.notification.IFireableEvent;
@@ -179,10 +180,10 @@ implements MouseWheelListener
 			@Override
 			public Object run()
 			{
-				System.out.println("[EventListPanel.setTimestamp] Updating...");
+				TODUtils.log(1,"[EventListPanel.setTimestamp] Updating...");
 				itsCore.setTimestamp(aTimestamp);
 				postUpdateList();
-				System.out.println("[EventListPanel.setTimestamp] Done...");
+				TODUtils.log(1,"[EventListPanel.setTimestamp] Done...");
 				return null;
 			}
 		});

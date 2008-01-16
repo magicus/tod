@@ -20,6 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.agent;
 
+
+
 /**
  * This class performs some calibration of the timestamp parameters
  * @author gpothier
@@ -49,7 +51,7 @@ public class TimestampCalibration
 		for (int i=0;i<10;i++)
 		{
 			long d = getTimestampDelta();
-//			System.out.println("[TOD] Delay: "+d+"ns.");
+			System.out.println("[TOD] Delay: "+d+"ns.");
 			total += d;
 			c++;
 		}

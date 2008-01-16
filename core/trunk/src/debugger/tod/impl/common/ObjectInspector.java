@@ -44,6 +44,7 @@ import tod.core.database.structure.IMemberInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.impl.database.structure.standard.ArraySlotFieldInfo;
+import tod.utils.TODUtils;
 import zz.utils.Utils;
 
 /**
@@ -93,7 +94,7 @@ public class ObjectInspector implements IObjectInspector
 	{
 		if (itsInstantiationEvent == null) 
 		{
-			System.out.println("[ObjectInspector] Retrieving instantiation event for object: "+getObject());
+			TODUtils.log(1,"[ObjectInspector] Retrieving instantiation event for object: "+getObject());
 			IEventFilter theFilter = itsLogBrowser.createTargetFilter(getObject());
 			IEventBrowser theBrowser = itsLogBrowser.createBrowser(theFilter);
 			

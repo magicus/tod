@@ -45,6 +45,7 @@ import javax.swing.Timer;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.gui.BrowserData;
+import tod.utils.TODUtils;
 import zz.utils.Cleaner;
 import zz.utils.properties.ArrayListProperty;
 import zz.utils.properties.IListProperty;
@@ -380,7 +381,7 @@ public class EventMural extends JPanel
 				{
 					EventMural theRequest = itsRequestsQueue.take();
 					long t0 = System.currentTimeMillis();
-					System.out.println("[EventMural.Updater] Processing request: "+theRequest);
+					TODUtils.log(1,"[EventMural.Updater] Processing request: "+theRequest);
 					try
 					{
 						doUpdateImage(theRequest);
@@ -392,7 +393,7 @@ public class EventMural extends JPanel
 					}
 					long t1 = System.currentTimeMillis();
 					float t = (t1-t0)/1000f;
-					System.out.println("[EventMural.Updater] Finished request in "+t+"s.");
+					TODUtils.log(1,"[EventMural.Updater] Finished request in "+t+"s.");
 					
 					itsCurrentRequests.remove(theRequest);
 				}

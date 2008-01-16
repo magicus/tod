@@ -29,6 +29,7 @@ import reflex.lib.pom.Request;
 import reflex.lib.pom.RequestIterator;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.session.ISessionMonitor;
+import tod.utils.TODUtils;
 
 /**
  * This POM scheduler ensures that all calls to the database are serialized.
@@ -70,16 +71,17 @@ implements POMGroupDef, ISessionMonitor
 	@Override
 	protected void schedule()
 	{
-		System.out.println("[Scheduler] Schedule... req: "+itsExecutingRequest+" on "+Thread.currentThread().getName());
+		
+		TODUtils.log(1,"[Scheduler] Schedule... req: "+itsExecutingRequest+" on "+Thread.currentThread().getName());
 		RequestIterator theIterator = iterator();
 		while (theIterator.hasNext())
 		{
 			Request theRequest = theIterator.next();
-			System.out.println("[Scheduler] Request: "+theRequest);
+			TODUtils.log(1,"[Scheduler] Request: "+theRequest);
 		}
 		if (itsExecutingRequest == null) {
 			executeOldest();
-			System.out.println("[Scheduler] Schedule done on "+Thread.currentThread().getName());
+			TODUtils.log(1,"[Scheduler] Schedule done on "+Thread.currentThread().getName());
 			itsActiveTaskCount++; 
 		}
 		
@@ -92,18 +94,18 @@ implements POMGroupDef, ISessionMonitor
 		{
 			System.out.println("");
 
-			System.out.println(String.format(
+			TODUtils.logf(1,
 					"[Scheduler] Scheduler (%s) - reentering request %s on "+Thread.currentThread().getName(),
 					this,
-					aReq));
+					aReq);
+					
 		}
 		else
 		{
-			System.out.println(String.format(
+			TODUtils.logf(1,
 					"[Scheduler] Scheduler (%s) - executing %s on "+Thread.currentThread().getName(),
 					this,
-					aReq));
-	
+					aReq);
 			if (itsExecutingRequest != null) throw new IllegalStateException();
 			itsExecutingRequest = aReq;
 		}
@@ -114,7 +116,7 @@ implements POMGroupDef, ISessionMonitor
 	{
 		if (itsExecutingRequest != aReq) throw new IllegalStateException();
 		itsExecutingRequest = null;
-		System.out.println("[Scheduler] Scheduler.leave() on "+Thread.currentThread().getName());
+		TODUtils.log(1,"[Scheduler] Scheduler.leave() on "+Thread.currentThread().getName());
 		
 		itsActiveTaskCount--;
 	}
@@ -173,9 +175,9 @@ implements POMGroupDef, ISessionMonitor
 			Request theRequest = itsExecutingRequest;
 			if (theRequest != null)
 			{
-				System.out.println("[Scheduler] Deadlock detected");
-				System.out.println("  Current request: "+theRequest+" on "+theRequest.getThread());
-				System.out.println("  Attempting to interrupt.");
+				TODUtils.log(0,"[Scheduler] Deadlock detected");
+				TODUtils.log(0,"  Current request: "+theRequest+" on "+theRequest.getThread());
+				TODUtils.log(0,"  Attempting to interrupt.");
 				theRequest.getThread().interrupt();
 			}
 		}

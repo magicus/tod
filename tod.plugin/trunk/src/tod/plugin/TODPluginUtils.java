@@ -54,6 +54,7 @@ import tod.core.session.ISession;
 import tod.plugin.views.AbstractNavigatorView;
 import tod.plugin.views.TraceNavigatorView;
 import tod.utils.ConfigUtils;
+import tod.utils.TODUtils;
 
 /**
  * Utilities for the TOD plugin
@@ -72,6 +73,7 @@ public class TODPluginUtils
 			ISession aSession,
 			IJavaElement aElement) throws JavaModelException
 	{
+		if (aSession == null) TODUtils.log(0,"Trying to show event while no session is available.");
 		ILogBrowser theEventTrace = aSession.getLogBrowser();
 		IStructureDatabase theStructureDatabase = theEventTrace.getStructureDatabase();
 		
@@ -86,7 +88,7 @@ public class TODPluginUtils
 			IClassInfo theClass = theStructureDatabase.getClass(theTypeName, false);
 			if (theClass == null) return null;
 			
-			System.out.println(theClass);
+			TODUtils.logf(0, "Trying to show events for class %s of id %s",theClass.getName(),theClass.getId());
 			
 			if (theMember instanceof IMethod)
 			{
@@ -199,7 +201,7 @@ public class TODPluginUtils
 	 * Searches for declarations of the given name and kind in the whole workspace. 
 	 */
 	public static List searchDeclarations (
-			IJavaProject aJavaProject, 
+			List<IJavaProject> aJavaProject, 
 			String aName,
 			int aKind) throws CoreException
 	{
@@ -210,7 +212,7 @@ public class TODPluginUtils
 				SearchPattern.R_EXACT_MATCH);
 
 		IJavaSearchScope theScope = SearchEngine.createJavaSearchScope(
-				new IJavaElement[] {aJavaProject}, 
+				aJavaProject.toArray(new IJavaElement[aJavaProject.size()]), 
 				true);
 		
 		SearchEngine theSearchEngine = new SearchEngine();
@@ -226,7 +228,7 @@ public class TODPluginUtils
 		return theCollector.getResults();
 	}
 	
-	public static IType getType (IJavaProject aJavaProject, String aTypeName) throws CoreException
+	public static IType getType (List<IJavaProject> aJavaProject, String aTypeName) throws CoreException
 	{
 		// Search Java type
 		List theList = searchDeclarations(aJavaProject, aTypeName, IJavaSearchConstants.TYPE);
