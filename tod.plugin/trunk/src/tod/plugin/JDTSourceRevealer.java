@@ -3,6 +3,9 @@
  */
 package tod.plugin;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.jdt.core.IJavaProject;
 
@@ -10,15 +13,15 @@ import tod.core.database.structure.IBehaviorInfo;
 
 public class JDTSourceRevealer extends SourceRevealer
 {
-	private IJavaProject itsJavaProject;
+	private List<IJavaProject> itsJavaProject = new ArrayList<IJavaProject>();
 	
 	public JDTSourceRevealer(ILaunch aLaunch, IJavaProject aJavaProject)
 	{
 		super(aLaunch);
-		itsJavaProject = aJavaProject;
+		itsJavaProject.add( aJavaProject);
 	}
 
-	protected IJavaProject getJavaProject()
+	protected List<IJavaProject> getJavaProject()
 	{
 		return itsJavaProject;
 	}

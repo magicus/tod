@@ -33,6 +33,7 @@ import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IThreadInfo;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.aggregator.IGridEventBrowser;
+import tod.utils.TODUtils;
 
 public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCallEvent
 {
@@ -64,12 +65,12 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 	 */
 	private synchronized void initChildren()
 	{
-		System.out.println("[initChildren] For event: "+getPointer());
+		TODUtils.log(1,"[initChildren] For event: "+getPointer());
 		{
 			long t0 = System.currentTimeMillis();
 			itsCallInfo = getLogBrowser().exec(new CallInfoBuilder(getPointer()));
 			long t = System.currentTimeMillis() - t0;
-			System.out.println("[initChildren] executed in " + t + "ms");
+			TODUtils.log(1,"[initChildren] executed in " + t + "ms");
 		}				
 	}
 
@@ -190,9 +191,9 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 				assert theFound;
 				
 				ILogEvent theEvent = theBrowser.previous();
-				assert theEvent.getDepth() == theDepth+1;
-				assert theEvent.getTimestamp() >= theTimestamp;
-				assert theEvent.getParentPointer().timestamp == theTimestamp;
+				assert theEvent.getDepth() == theDepth+1: "Event depth Issue: " + theEvent.getDepth() +" while parent depth is "+theDepth;
+				assert theEvent.getTimestamp() >= theTimestamp : "Event TimeStamp issue: " +theEvent.getTimestamp() +" while parent timestamp is " +theTimestamp ;
+				assert theEvent.getParentPointer().timestamp == theTimestamp : "Parent TimeStamp issue: " +theEvent.getTimestamp() +" while parent timestamp should be " +theTimestamp ;
 				
 				theLastChild = theEvent;
 				if (theEvent instanceof IBehaviorExitEvent)
@@ -243,14 +244,14 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 			
 			long t5 = System.currentTimeMillis();
 
-			System.out.println(String.format(
+			TODUtils.logf(1,
 					"[CallInfoBuilder] timings: %d %d %d %d %d - total %d",
 					t1-t0,
 					t2-t1,
 					t3-t2,
 					t4-t3,
 					t5-t4,
-					t5-t0));
+					t5-t0);
 			
 			itsExitEventFound = theExitEvent != null;
 			
