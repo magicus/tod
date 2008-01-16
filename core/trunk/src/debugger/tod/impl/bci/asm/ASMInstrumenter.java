@@ -30,6 +30,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 
 import tod.core.bci.IInstrumenter;
+import tod.core.config.TODConfig;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.impl.bci.asm.attributes.AspectInfoAttribute;
 import tod.impl.bci.asm.attributes.SootInlineAttribute;
@@ -102,7 +103,8 @@ public class ASMInstrumenter implements IInstrumenter
 		
 		byte[] theBytecode = theWriter.toByteArray();
 		
-		theVisitor.getClassInfo().setBytecode(theBytecode);
+		if (itsConfig.getTODConfig().get(TODConfig.WITH_ASPECTS).booleanValue())
+			theVisitor.getClassInfo().setBytecode(theBytecode);
 		
 		return theVisitor.isModified()  
 			? new InstrumentedClass(theBytecode, theTracedMethods) 

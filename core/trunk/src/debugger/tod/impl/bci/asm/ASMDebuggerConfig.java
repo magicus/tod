@@ -33,12 +33,13 @@ public class ASMDebuggerConfig
 {
 	private ClassSelector itsGlobalSelector;
 	private ClassSelector itsTraceSelector;
-	
+	private TODConfig itsTODConfig;
 	/**
 	 * Creates a default debugger configuration.
 	 */
 	public ASMDebuggerConfig(TODConfig aConfig)
 	{
+		itsTODConfig = aConfig;
 		// Setup selectors
 		setGlobalWorkingSet(aConfig.get(TODConfig.SCOPE_GLOBAL_FILTER));
 		setTraceWorkingSet(aConfig.get(TODConfig.SCOPE_TRACE_FILTER));
@@ -82,5 +83,10 @@ public class ASMDebuggerConfig
 	public ClassSelector getGlobalSelector()
 	{
 		return itsGlobalSelector;
+	}
+
+	public TODConfig getTODConfig()
+	{
+		return itsTODConfig;
 	}
 }

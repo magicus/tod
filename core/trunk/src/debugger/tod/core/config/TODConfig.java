@@ -41,6 +41,10 @@ import zz.utils.PublicCloneable;
  */
 public class TODConfig extends PublicCloneable implements Serializable
 {
+	
+	public static int TOD_VERBOSE = Integer.parseInt(System.getProperty("tod-verbose","0"));
+
+	
 	private static final long serialVersionUID = 4959079097346687404L;
 	
 	private static final String HOME = System.getProperty("user.home");
@@ -237,6 +241,14 @@ public class TODConfig extends PublicCloneable implements Serializable
 			"The time (in seconds) the debugger should wait for the database process to start.",
 			30);
 	
+	public static final BooleanItem WITH_ASPECTS = new BooleanItem(
+			ConfigLevel.ADVANCED,
+			"with-aspects",
+			"Include aspect info",
+			"Whether information used by the TOD extension for AspectJ, such as behavior bytecode " +
+			"and TagMap, should be included in behavior infos.",
+			false);
+	
 	/**
 	 * Contains all available configuration items.
 	 */
@@ -294,6 +306,9 @@ public class TODConfig extends PublicCloneable implements Serializable
 		theClone.itsMap = (HashMap<String, String>) itsMap.clone();
 		return theClone;
 	}
+	
+	
+	
 	
 	public static abstract class ItemType<T>
 	{
@@ -595,4 +610,8 @@ public class TODConfig extends PublicCloneable implements Serializable
 		}
 		return theConfig;
 	}
+	
+	
+	
+	
 }
