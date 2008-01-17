@@ -149,6 +149,15 @@ public class CollectorPacketReader
 			System.err.println("Warning - invalid class: "+e.getMessage());
 			theObject = "Unknown ("+e.getMessage()+")";					
 		}
+		catch (Throwable e)
+		{
+			System.err.println("Error while deserializing object id: "+theObjectId+": ");
+			e.printStackTrace();
+			System.err.println(" packet size: "+theSize);
+			for(int i=0;i<theSize;i++) System.err.print(Integer.toHexString(theBuffer[i])+" ");			
+			System.err.println();
+			theObject = "Deserialization error";
+		}
 		
 		System.out.println("Received object: "+theObject+", id: "+theObjectId +", id: "+theObjectTimestamp);
 		
@@ -185,30 +194,31 @@ public class CollectorPacketReader
 				return new Double (aStream.readDouble());
 				
 			case REGISTERED:
-			{
-				long theObjectId = aStream.readLong();
-				if (DebugFlags.IGNORE_HOST) theObjectId >>>= AgentConfig.HOST_BITS;
-				long theObjectTimestamp = aStream.readLong();
-				ObjectInputStream theStream = new ObjectInputStream(aStream);
-				Object theObject;
-				try
-				{
-					theObject = theStream.readObject();
-				}
-				catch (ClassNotFoundException e)
-				{
-//					System.err.println("Warning - class no found: "+e.getMessage());
-					theObject = "Unknown ("+e.getMessage()+")";
-				}
-				catch (InvalidClassException e)
-				{
-					System.err.println("Warning - invalid class (might corrupt event stream): "+e.getMessage());
-					theObject = "Unknown ("+e.getMessage()+")";					
-				}
-				
-				aCollector.register(theObjectId, theObject,theObjectTimestamp);
-				return new ObjectId(theObjectId);
-			}	
+				throw new UnsupportedOperationException();
+//			{
+//				long theObjectId = aStream.readLong();
+//				if (DebugFlags.IGNORE_HOST) theObjectId >>>= AgentConfig.HOST_BITS;
+//				long theObjectTimestamp = aStream.readLong();
+//				ObjectInputStream theStream = new ObjectInputStream(aStream);
+//				Object theObject;
+//				try
+//				{
+//					theObject = theStream.readObject();
+//				}
+//				catch (ClassNotFoundException e)
+//				{
+////					System.err.println("Warning - class no found: "+e.getMessage());
+//					theObject = "Unknown ("+e.getMessage()+")";
+//				}
+//				catch (InvalidClassException e)
+//				{
+//					System.err.println("Warning - invalid class (might corrupt event stream): "+e.getMessage());
+//					theObject = "Unknown ("+e.getMessage()+")";					
+//				}
+//				
+//				aCollector.register(theObjectId, theObject,theObjectTimestamp);
+//				return new ObjectId(theObjectId);
+//			}	
 			case OBJECT_UID:
 			{
 				long theObjectId = aStream.readLong();
