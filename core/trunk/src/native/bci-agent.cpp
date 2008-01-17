@@ -75,7 +75,8 @@ int cfgHostBits = 8; // Number of bits used to encode host id.
 int cfgHostId = 0; // A host id assigned by the TODServer - not official.
 char* cfgWorkingSet = "undefined"; // The current working set of instrumentation
 char* cfgStructDbId = "undefined"; // The id of the structure database used by the peer
-int cfgDebugTOD = 1; // set to 1 if we want to optimize agent class filtering for debugging tod
+int cfgDebugTOD = 0; // set to 1 for optimizing agent class filtering for debugging tod
+int cfgObfuscation = 0; // set to 1 ofuscated version of the agent: package tod.agentX instead of tod.agent
 
 // System properties configuration data.
 char* propHost = NULL;
@@ -288,7 +289,21 @@ void JNICALL cbClassFileLoadHook(
 	jint class_data_len, const unsigned char* class_data,
 	jint* new_class_data_len, unsigned char** new_class_data) 
 {
-		
+	
+	if (cfgObfuscation == 1)
+	{
+		if (strncmp("tod/agentX/", name, 11) == 0)
+		{
+			return;
+		}
+	}
+	else
+	{
+		if (strncmp("tod/agent/", name, 10) == 0)
+		{
+			return;
+		}
+	}
 	if ( cfgDebugTOD == 1 )
 	{
 		if ( !(strncmp("tod/", name, 4) == 0) && !(strncmp("zz/", name, 3) == 0) )
@@ -296,18 +311,9 @@ void JNICALL cbClassFileLoadHook(
 			return;
 		}	
 
-		if (strncmp("tod/agent/", name, 10) == 0)
-		{
-			return;
-		}
 	}
 	else
 	{	 
-		if (strncmp("tod/agent/", name, 10) == 0)
-			{
-				return;
-			}
-
 		if (cfgSkipCoreClasses 
 			&& (
 				strncmp("java/", name, 5) == 0 
@@ -317,7 +323,7 @@ void JNICALL cbClassFileLoadHook(
 			)) return;
 	}
 
-	if (propVerbose>=0) printf("Loading (hook) %s\n", name);
+	if (propVerbose>=1) printf("Loading (hook) %s\n", name);
 	
 	int* tracedMethods = NULL;
 	int nTracedMethods = 0;
@@ -518,12 +524,18 @@ void initExceptionClasses(JNIEnv* jni)
 {
 	// Initialize the classes and method ids that will be used
 	// for exception processing
+	
+	if (cfgObfuscation ==1 ) 
 	ExceptionGeneratedReceiver_exceptionGenerated = new StaticVoidMethod(
+		jni, 
+		"tod/agentX/ExceptionGeneratedReceiver",
+		"exceptionGenerated", 
+		"(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Throwable;)V");
+	else 	ExceptionGeneratedReceiver_exceptionGenerated = new StaticVoidMethod(
 		jni, 
 		"tod/agent/ExceptionGeneratedReceiver",
 		"exceptionGenerated", 
 		"(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Throwable;)V");
-		
 	// init ignored methods
 	int i=0;
 	ignoreMethod(jni, i++, "java/lang/ClassLoader", "findBootstrapClass", "(Ljava/lang/String;)Ljava/lang/Class;");
@@ -622,9 +634,18 @@ void JNICALL cbVMStart(
 	
 	// Initialize the classes and method ids that will be used
 	// for registering traced methods
-	TracedMethods_setTraced = new StaticVoidMethod(jni, "tod/agent/TracedMethods", "setTraced", "(I)V");
 	
-	TOD_enable = new StaticVoidMethod(jni, "tod/agent/AgentReady", "enable", "()V");
+if (cfgObfuscation == 1)	
+	{
+		TracedMethods_setTraced = new StaticVoidMethod(jni, "tod/agentX/TracedMethods", "setTraced", "(I)V");
+		TOD_enable = new StaticVoidMethod(jni, "tod/agentX/AgentReady", "enable", "()V");
+	}
+	else 
+	{
+		TracedMethods_setTraced = new StaticVoidMethod(jni, "tod/agent/TracedMethods", "setTraced", "(I)V");
+		TOD_enable = new StaticVoidMethod(jni, "tod/agent/AgentReady", "enable", "()V");
+		
+	}
 	TOD_enable->invoke(jni);
 	
 	if (propVerbose>=1) printf("VMStart - done\n");
@@ -651,6 +672,7 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
 
 	printf("Loading BCI agent - v2.2\n");
 	if (cfgDebugTOD == 1) printf(">>>>WARNING hard filtering for debugging TOD is on \n");
+	if (cfgObfuscation == 1) printf(">>>>WARNING obfuscation form agent package to agentX is considered \n");
 	fflush(stdout);
 
 	// Get JVMTI environment 
@@ -803,6 +825,37 @@ JNIEXPORT jlong JNICALL Java_tod_agent_ObjectIdentity_get
 
 
 JNIEXPORT jint JNICALL Java_tod_agent_EventInterpreter_getHostId
+	(JNIEnv * jni, jclass)
+{
+	return cfgHostId;
+}
+
+
+
+JNIEXPORT jlong JNICALL Java_tod_agentX_ObjectIdentity_get
+	(JNIEnv * jni, jclass, jobject obj)
+{
+	jvmtiError err;
+	jvmtiEnv *jvmti = globalJvmti;
+	jlong tag;
+	
+	err = jvmti->GetTag(obj, &tag);
+	check_jvmti_error(jvmti, err, "GetTag");
+	
+	if (tag != 0) return tag;
+	
+	// Not tagged yet, assign an oid.
+	tag = getNextOid();
+	
+	err = jvmti->SetTag(obj, tag);
+	check_jvmti_error(jvmti, err, "SetTag");
+	
+	return -tag;
+}
+
+
+
+JNIEXPORT jint JNICALL Java_tod_agentX_EventInterpreter_getHostId
 	(JNIEnv * jni, jclass)
 {
 	return cfgHostId;
