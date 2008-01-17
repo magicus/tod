@@ -111,7 +111,7 @@ public class TestEventReordering implements ReorderingBufferListener
 		long theTimestamp = aEvent.getTimestamp();
 		if (theTimestamp < itsLastProcessedTimestamp)
 		{
-			eventDropped();
+			eventDropped(itsLastProcessedTimestamp-theTimestamp);
 			return;
 		}
 		
@@ -119,7 +119,7 @@ public class TestEventReordering implements ReorderingBufferListener
 	}
 	
 	
-	public void eventDropped()
+	public void eventDropped(long aDela)
 	{
 		if (itsDropIsFailure) Assert.fail("eventDropped");
 		else System.out.println("eventDropped");
