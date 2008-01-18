@@ -31,6 +31,7 @@ public class AgentReady
 	 */
 	private static void enable()
 	{
+		System.out.println("AgentReady.enable()");
 		ENABLED = true;
 	}
 	
