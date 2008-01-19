@@ -209,18 +209,23 @@ public abstract class LogReceiver
 	 */
 	private boolean process() throws IOException
 	{
+		return process(itsDataIn, itsDataOut);
+	}
+	
+	protected boolean process(DataInputStream aDataIn, DataOutputStream aDataOut) throws IOException
+	{
 		if (DebugFlags.SKIP_EVENTS)
 		{
 			byte[] theBuffer = new byte[4096];
 			while(true)
 			{
-				itsDataIn.read(theBuffer);
+				aDataIn.read(theBuffer);
 			}
 		}
 		
 		try
 		{
-			if (itsDataIn.available() == 0) 
+			if (aDataIn.available() == 0) 
 			{
 				if (DebugFlags.REPLAY_MODE) eof();
 				return false;
@@ -233,23 +238,23 @@ public abstract class LogReceiver
 		
 		if (getHostName() == null)
 		{
-			setHostName(itsDataIn.readUTF());
+			setHostName(aDataIn.readUTF());
 			if (itsMonitor != null) itsMonitor.started();
 		}
 
-		while(itsDataIn.available() != 0)
+		while(aDataIn.available() != 0)
 		{
 			try
 			{
-				byte theCommand = itsDataIn.readByte();
+				byte theCommand = aDataIn.readByte();
 //				System.out.println("[LogReceiver] Command: "+theCommand);
 				
 				if (theCommand == MessageType.CMD_FLUSH)
 				{
 					System.out.println("[LogReceiver] Received flush request.");
 					int theCount = flush();
-					itsDataOut.writeInt(theCount);
-					itsDataOut.flush();
+					aDataOut.writeInt(theCount);
+					aDataOut.flush();
 				}
 				else if (theCommand == MessageType.CMD_CLEAR)
 				{
@@ -260,7 +265,7 @@ public abstract class LogReceiver
 				else
 				{
 					MessageType theType = MessageType.VALUES[theCommand];
-					readPacket(itsDataIn, theType);
+					readPacket(aDataIn, theType);
 					
 					itsMessageCount++;
 					

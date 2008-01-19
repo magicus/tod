@@ -49,10 +49,11 @@ public class GridExceptionGeneratedEvent extends GridEvent
 			long aTimestamp, 
 			int aOperationBehaviorId,
 			int aOperationBytecodeIndex, 
+			int aAdviceSourceId,
 			long aParentTimestamp,
 			Object aException)
 	{
-		set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aParentTimestamp, aException);
+		set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp, aException);
 	}
 
 	public GridExceptionGeneratedEvent(BitStruct aBitStruct)
@@ -68,10 +69,11 @@ public class GridExceptionGeneratedEvent extends GridEvent
 			long aTimestamp, 
 			int aOperationBehaviorId,
 			int aOperationBytecodeIndex, 
+			int aAdviceSourceId,
 			long aParentTimestamp,
 			Object aException)
 	{
-		super.set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aParentTimestamp);
+		super.set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp);
 		itsException = aException;
 	}
 

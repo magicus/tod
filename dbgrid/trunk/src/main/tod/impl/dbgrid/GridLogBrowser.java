@@ -51,6 +51,7 @@ import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
+import tod.core.session.ISession;
 import tod.impl.common.LogBrowserUtils;
 import tod.impl.common.VariablesInspector;
 import tod.impl.database.IBidiIterator;
@@ -59,6 +60,7 @@ import tod.impl.dbgrid.aggregator.IGridEventBrowser;
 import tod.impl.dbgrid.aggregator.StringHitsIterator;
 import tod.impl.dbgrid.db.RoleIndexSet;
 import tod.impl.dbgrid.messages.MessageType;
+import tod.impl.dbgrid.queries.AdviceSourceIdCondition;
 import tod.impl.dbgrid.queries.BehaviorCondition;
 import tod.impl.dbgrid.queries.BytecodeLocationCondition;
 import tod.impl.dbgrid.queries.CompoundCondition;
@@ -93,6 +95,8 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 {
 	private static final long serialVersionUID = -5101014933784311102L;
 
+	private final ISession itsSession;
+	
 	/**
 	 * Manual override of Reflex. We want to avoid the reflexBridge hassle, so
 	 * we call the MO manually.
@@ -128,9 +132,11 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 	
 	
 	private GridLogBrowser(
+			ISession aSession,
 			RIGridMaster aMaster,
 			IStructureDatabase aStructureDatabase) throws RemoteException
 	{
+		itsSession = aSession;
 		itsMaster = aMaster;
 		itsMaster.addListener(this);		
 		itsStructureDatabase = aStructureDatabase;
@@ -138,11 +144,11 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 		System.out.println("[GridLogBrowser] Instantiated.");
 	}
 	
-	public static GridLogBrowser createLocal(GridMaster aMaster) 
+	public static GridLogBrowser createLocal(ISession aSession, GridMaster aMaster) 
 	{
 		try
 		{
-			return new GridLogBrowser(aMaster, aMaster.getStructureDatabase());
+			return new GridLogBrowser(aSession, aMaster, aMaster.getStructureDatabase());
 		}
 		catch (RemoteException e)
 		{
@@ -150,13 +156,19 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 		}
 	}
 	
-	public static GridLogBrowser createRemote(RIGridMaster aMaster) throws RemoteException
+	public static GridLogBrowser createRemote(ISession aSession, RIGridMaster aMaster) throws RemoteException
 	{
 		return new GridLogBrowser(
+				aSession,
 				aMaster, 
 				RemoteStructureDatabase.createDatabase(aMaster.getRemoteStructureDatabase()));
 	}
 
+	public ISession getSession()
+	{
+		return itsSession;
+	}
+	
 	public ILogBrowser getKey()
 	{
 		return this;
@@ -290,6 +302,11 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 		return new TypeCondition(MessageType.LOCAL_VARIABLE_WRITE);
 	}
 	
+	public IEventFilter createAdviceSourceIdFilter(int aAdviceSourceId)
+	{
+		return new AdviceSourceIdCondition(aAdviceSourceId);
+	}
+
 	public IEventFilter createArrayWriteFilter()
 	{
 		return new TypeCondition(MessageType.ARRAY_WRITE);

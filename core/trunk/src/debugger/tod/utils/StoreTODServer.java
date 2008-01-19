@@ -118,7 +118,7 @@ public class StoreTODServer extends CollectorTODServer
 	public static void main(String[] args)
 	{
 		TODConfig theConfig = new TODConfig();
-		IMutableStructureDatabase theStructureDatabase = StructureDatabase.create("StoreTODServer");
+		IMutableStructureDatabase theStructureDatabase = StructureDatabase.create(theConfig, "StoreTODServer");
 		
 		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(theConfig);
 		

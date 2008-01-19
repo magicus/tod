@@ -26,6 +26,7 @@ import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_DEPTH_RANGE;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_FIELD_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_OBJECT_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_VAR_COUNT;
+import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_ADVICE_SRC_ID_COUNT;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -64,6 +65,7 @@ public class TestEventReordering implements ReorderingBufferListener
 				STRUCTURE_DEPTH_RANGE,
 				STRUCTURE_BYTECODE_LOCS_COUNT,
 				STRUCTURE_BEHAVIOR_COUNT,
+				STRUCTURE_ADVICE_SRC_ID_COUNT,
 				STRUCTURE_FIELD_COUNT,
 				STRUCTURE_VAR_COUNT,
 				STRUCTURE_OBJECT_COUNT);
@@ -144,7 +146,7 @@ public class TestEventReordering implements ReorderingBufferListener
 			int theThread = Integer.parseInt(theTokenizer.nextToken());
 			long theTimestamp = Long.parseLong(theTokenizer.nextToken());
 			
-			GridEvent theEvent = new GridFieldWriteEvent(theThread, 0, theTimestamp, 0, 0, 0, 0, 0, 0);
+			GridEvent theEvent = new GridFieldWriteEvent(theThread, 0, theTimestamp, 0, 0, 0, 0, 0, 0, 0);
 			
 			while (theBuffer.isFull()) processEvent(theBuffer.pop());
 			theBuffer.push(theEvent);

@@ -28,6 +28,7 @@ import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_FIELD_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_OBJECT_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_THREADS_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_VAR_COUNT;
+import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_ADVICE_SRC_ID_COUNT;
 
 import java.util.Random;
 
@@ -52,6 +53,7 @@ public class EventGenerator
 	private int itsThreadsRange;
 	private int itsDepthRange;
 	private int itsBytecodeRange;
+	private int itsAdviceSourceIdRange;
 	private int itsBehaviorRange;
 	private int itsFieldRange;
 	private int itsVariableRange;
@@ -65,6 +67,7 @@ public class EventGenerator
 			int aDepthRange, 
 			int aBytecodeRange, 
 			int aBehaviorRange, 
+			int aAdviceSourceIdRange, 
 			int aFieldRange, 
 			int aVariableRange, 
 			int aObjectRange)
@@ -77,6 +80,7 @@ public class EventGenerator
 		itsDepthRange = aDepthRange;
 		itsBytecodeRange = aBytecodeRange;
 		itsBehaviorRange = aBehaviorRange;
+		itsAdviceSourceIdRange = aAdviceSourceIdRange;
 		itsFieldRange = aFieldRange;
 		itsVariableRange = aVariableRange;
 		itsObjectRange = aObjectRange;
@@ -90,6 +94,7 @@ public class EventGenerator
 				STRUCTURE_DEPTH_RANGE,
 				STRUCTURE_BYTECODE_LOCS_COUNT,
 				STRUCTURE_BEHAVIOR_COUNT,
+				STRUCTURE_ADVICE_SRC_ID_COUNT,
 				STRUCTURE_FIELD_COUNT,
 				STRUCTURE_VAR_COUNT,
 				STRUCTURE_OBJECT_COUNT);
@@ -107,6 +112,7 @@ public class EventGenerator
 					itsTimestampGenerator.next(),
 					genBehaviorId(),
 					genBytecodeIndex(),
+					genAdviceSourceId(),
 					genParentTimestamp(),
 					itsRandom.nextBoolean(),
 					genObject(),
@@ -119,6 +125,7 @@ public class EventGenerator
 					itsTimestampGenerator.next(),
 					genBehaviorId(),
 					genBytecodeIndex(),
+					genAdviceSourceId(),
 					genParentTimestamp(),
 					MessageType.SUPER_CALL,
 					itsRandom.nextBoolean(),
@@ -134,6 +141,7 @@ public class EventGenerator
 					itsTimestampGenerator.next(),
 					genBehaviorId(),
 					genBytecodeIndex(),
+					genAdviceSourceId(),
 					genParentTimestamp(),
 					genObject());
 			
@@ -144,6 +152,7 @@ public class EventGenerator
 					itsTimestampGenerator.next(),
 					genBehaviorId(),
 					genBytecodeIndex(),
+					genAdviceSourceId(),
 					genParentTimestamp(),
 					genFieldId(),
 					genObject(),
@@ -156,6 +165,7 @@ public class EventGenerator
 					itsTimestampGenerator.next(),
 					genBehaviorId(),
 					genBytecodeIndex(),
+					genAdviceSourceId(),
 					genParentTimestamp(),
 					MessageType.INSTANTIATION,
 					itsRandom.nextBoolean(),
@@ -171,6 +181,7 @@ public class EventGenerator
 					itsTimestampGenerator.next(),
 					genBehaviorId(),
 					genBytecodeIndex(),
+					genAdviceSourceId(),
 					genParentTimestamp(),
 					genVariableId(),
 					genObject());
@@ -182,6 +193,7 @@ public class EventGenerator
 					itsTimestampGenerator.next(),
 					genBehaviorId(),
 					genBytecodeIndex(),
+					genAdviceSourceId(),
 					genParentTimestamp(),
 					MessageType.METHOD_CALL,
 					itsRandom.nextBoolean(),
@@ -197,6 +209,7 @@ public class EventGenerator
 					itsTimestampGenerator.next(),
 					genBehaviorId(),
 					genBytecodeIndex(),
+					genAdviceSourceId(),
 					genParentTimestamp(),
 					genObject(),
 					itsRandom.nextInt(STRUCTURE_ARRAY_INDEX_COUNT),
@@ -209,6 +222,7 @@ public class EventGenerator
 					itsTimestampGenerator.next(),
 					genBehaviorId(),
 					genBytecodeIndex(),
+					genAdviceSourceId(),
 					genParentTimestamp(),
 					genObject(),
 					genFieldId(),
@@ -258,6 +272,11 @@ public class EventGenerator
 	public int genBytecodeIndex()
 	{
 		return itsRandom.nextInt(itsBytecodeRange);
+	}
+	
+	public int genAdviceSourceId()
+	{
+		return itsRandom.nextInt(itsAdviceSourceIdRange);
 	}
 	
 	public Object genObject()

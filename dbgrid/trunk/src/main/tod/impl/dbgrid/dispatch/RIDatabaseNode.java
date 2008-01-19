@@ -24,7 +24,6 @@ import java.io.Serializable;
 import java.rmi.RemoteException;
 
 import tod.core.database.browser.IEventBrowser;
-import tod.impl.database.structure.standard.ExceptionResolver;
 import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.db.RINodeEventIterator;
 import tod.impl.dbgrid.queries.EventCondition;
@@ -67,12 +66,6 @@ public interface RIDatabaseNode extends RIDispatchNode
 	 * by relevance.
 	 */
 	public RIBufferIterator<StringSearchHit[]> searchStrings(String aText) throws RemoteException;
-	
-	/**
-	 * Registers a batch of behaviors (for exception processing).
-	 * The grid master should send all known behaviors when the node connects.
-	 */
-	public void registerBehaviors(ExceptionResolver.BehaviorInfo[] aBehaviorInfos) throws RemoteException;
 	
 	/**
 	 * Represents a search hit.

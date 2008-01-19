@@ -24,9 +24,14 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.LayoutManager;
+import java.util.HashMap;
+import java.util.Map;
 
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 
 import zz.utils.ui.GridStackLayout;
 import zz.utils.ui.ZLabel;
@@ -38,6 +43,9 @@ import zz.utils.ui.text.XFont;
  */
 public class GUIUtils
 {
+	private static final int ROLE_ICON_HEIGHT = 15;
+	public static Map<BytecodeRole, ImageIcon> itsRoleIconMap;
+	
 	public static JComponent createMessage(
 			String aHeader, 
 			Color aHeaderColor,
@@ -89,5 +97,22 @@ public class GUIUtils
 	public static ZLabel createLabel(String aText)
 	{
 		return createLabel(aText, FontConfig.STD_FONT, Color.BLACK);
+	}
+	
+	/**
+	 * Returns the icon corresponding to a given bytecode role.
+	 */
+	public static ImageIcon getRoleIcon(BytecodeRole aRole)
+	{
+		if (itsRoleIconMap == null)
+		{
+			itsRoleIconMap = new HashMap<BytecodeRole, ImageIcon>();
+			itsRoleIconMap.put(BytecodeRole.ADVICE_ARG_SETUP, Resources.ICON_ROLE_CONTEXT_EXPOSURE.asIconH(ROLE_ICON_HEIGHT));
+			itsRoleIconMap.put(BytecodeRole.ADVICE_EXECUTE, Resources.ICON_ROLE_ADVICE_EXECUTION.asIconH(ROLE_ICON_HEIGHT));
+			itsRoleIconMap.put(BytecodeRole.ADVICE_TEST, Resources.ICON_ROLE_RESIDUE_EVALUATION.asIconH(ROLE_ICON_HEIGHT));
+			itsRoleIconMap.put(BytecodeRole.INLINED_ADVICE, Resources.ICON_ROLE_ADVICE_EXECUTION.asIconH(ROLE_ICON_HEIGHT));
+		}
+		
+		return itsRoleIconMap.get(aRole);
 	}
 }

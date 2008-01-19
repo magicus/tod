@@ -53,8 +53,8 @@ public class LocalSession extends AbstractSession implements ISessionMonitor
 	public LocalSession(URI aUri, TODConfig aConfig)
 	{
 		super(aUri, aConfig);
-		itsStructureDatabase = StructureDatabase.create("bouh");
-		itsBrowser = new LocalBrowser(itsStructureDatabase);
+		itsStructureDatabase = StructureDatabase.create(aConfig, "bouh");
+		itsBrowser = new LocalBrowser(this, itsStructureDatabase);
 		
 		ASMDebuggerConfig theConfig = new ASMDebuggerConfig(aConfig);
 		ASMInstrumenter theInstrumenter = new ASMInstrumenter(itsStructureDatabase, theConfig);

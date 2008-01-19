@@ -52,7 +52,7 @@ public class TestObjectIndex
 		Fixtures.replay(new File("src/test/test-objects.bin"), theMaster);
 		theMaster.flush();
 		
-		GridLogBrowser theLogBrowser = GridLogBrowser.createLocal(theMaster);
+		GridLogBrowser theLogBrowser = GridLogBrowser.createLocal(null, theMaster);
 		IBehaviorInfo theBehavior = theMaster.getStructureDatabase().getBehavior(71, true);
 		
 		IEventFilter theFilter = TODUtils.getLocationFilter(theLogBrowser, theBehavior, 48);

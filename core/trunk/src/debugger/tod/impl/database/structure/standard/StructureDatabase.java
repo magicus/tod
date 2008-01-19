@@ -54,6 +54,8 @@ public class StructureDatabase implements IMutableStructureDatabase
 	 */
 	public static final int FIRST_CLASS_ID = 100;
 	
+	private final TODConfig itsConfig;
+	
 	private final String itsId;
 	
 	/**
@@ -74,28 +76,30 @@ public class StructureDatabase implements IMutableStructureDatabase
 	private final Map<String, ClassNameInfo> itsClassNameInfos =
 		new HashMap<String, ClassNameInfo>(1000);
 	
-	private List<BehaviorInfo> itsBehaviors = new ArrayList<BehaviorInfo>(10000);
-	private List<FieldInfo> itsFields = new ArrayList<FieldInfo>(10000);
-	private List<ClassInfo> itsClasses = new ArrayList<ClassInfo>(1000);
+	private final List<BehaviorInfo> itsBehaviors = new ArrayList<BehaviorInfo>(10000);
+	private final List<FieldInfo> itsFields = new ArrayList<FieldInfo>(10000);
+	private final List<ClassInfo> itsClasses = new ArrayList<ClassInfo>(1000);
 	
-	private List<IBehaviorListener> itsBehaviorListeners =
-		new ArrayList<IBehaviorListener>();
+	private final List<ProbeInfo> itsProbes;
 	
-	private IClassInfo itsUnknownClass = new ClassInfo(this, null, "Unknown", -1);
+	private final IClassInfo itsUnknownClass = new ClassInfo(this, null, "Unknown", -1);
 	
-	protected StructureDatabase(String aId, File aFile, Ids aIds)
+	protected StructureDatabase(TODConfig aConfig, String aId, File aFile, Ids aIds)
 	{
+		itsConfig = aConfig;
 		itsId = aId;
 		itsFile = aFile;
 		itsIds = aIds;
+		itsProbes = new ArrayList<ProbeInfo>(10000);
+		itsProbes.add(null);
 	}
 
 	/**
 	 * Creates a non-persistent structure database.
 	 */
-	public static StructureDatabase create(String aId)
+	public static StructureDatabase create(TODConfig aConfig, String aId)
 	{
-		return new StructureDatabase(aId, null, new Ids());
+		return new StructureDatabase(aConfig, aId, null, new Ids());
 	}
 	
 	/**
@@ -104,7 +108,7 @@ public class StructureDatabase implements IMutableStructureDatabase
 	public static StructureDatabase create(TODConfig aConfig)
 	{
 		File theFile = new File(aConfig.get(TODConfig.STRUCTURE_DATABASE_LOCATION));
-		return create(theFile);
+		return create(aConfig, theFile);
 	}
 	
 	/**
@@ -112,7 +116,7 @@ public class StructureDatabase implements IMutableStructureDatabase
 	 * @param aFile Location where the structure database must be stored.
 	 * The file should not exist.
 	 */
-	public static StructureDatabase create(File aFile)
+	public static StructureDatabase create(TODConfig aConfig, File aFile)
 	{
 		try
 		{
@@ -124,7 +128,7 @@ public class StructureDatabase implements IMutableStructureDatabase
 			
 			Utils.writeObject(theId, new File(aFile, "id"));
 			
-			StructureDatabase theDatabase = new StructureDatabase(theId, aFile, new Ids());
+			StructureDatabase theDatabase = new StructureDatabase(aConfig, theId, aFile, new Ids());
 			theDatabase.save();
 			return theDatabase;
 		}
@@ -143,7 +147,9 @@ public class StructureDatabase implements IMutableStructureDatabase
 		{
 			String theId = (String) Utils.readObject(new File(aFile, "id"));
 			Ids theIds = (Ids) Utils.readObject(new File(aFile, "ids"));
-			return new StructureDatabase(theId, aFile, theIds);
+			// TODO: read config
+//			return new StructureDatabase(null, theId, aFile, theIds);
+			throw new UnsupportedOperationException();
 		}
 		catch (Exception e)
 		{
@@ -168,6 +174,11 @@ public class StructureDatabase implements IMutableStructureDatabase
 	public String getId()
 	{
 		return itsId;
+	}
+	
+	public TODConfig getConfig()
+	{
+		return itsConfig;
 	}
 
 	public IClassInfo getClass(String aName, String aChecksum, boolean aFailIfAbsent)
@@ -265,7 +276,6 @@ public class StructureDatabase implements IMutableStructureDatabase
 					aBehavior.getType().getName(),
 					Util.getFullName(aBehavior)));
 		}
-		fireBehaviorRegistered(aBehavior);
 	}
 
 	public IMutableClassInfo getClass(int aId, boolean aFailIfAbsent)
@@ -375,23 +385,32 @@ public class StructureDatabase implements IMutableStructureDatabase
 		return new Stats(itsClasses.size(), itsBehaviors.size(), itsFields.size());
 	}
 	
-	public void addBehaviorListener(IBehaviorListener aListener)
+	public int getBehaviorId(String aClassName, String aMethodName, String aMethodSignature)
 	{
-		itsBehaviorListeners.add(aListener);
+		return StructureDatabaseUtils.getBehaviorId(this, aClassName, aMethodName, aMethodSignature);
+	}
+	
+	public ProbeInfo getProbeInfo(int aProbeId)
+	{
+		return itsProbes.get(aProbeId);
 	}
 
-	public void removeBehaviorListener(IBehaviorListener aListener)
+	public int addProbe(int aBehaviorId, int aBytecodeIndex, int aAdviceSourceId)
 	{
-		itsBehaviorListeners.remove(aListener);
+		itsProbes.add(new ProbeInfo(aBehaviorId, aBytecodeIndex, aAdviceSourceId));
+		return itsProbes.size()-1;
+	}
+	
+	public void setProbe(int aProbeId, int aBehaviorId, int aBytecodeIndex, int aAdviceSourceId)
+	{
+		itsProbes.set(aProbeId, new ProbeInfo(aBehaviorId, aBytecodeIndex, aAdviceSourceId));
 	}
 
-	protected void fireBehaviorRegistered(IBehaviorInfo aBehavior)
+	public int getProbeCount()
 	{
-		for (IBehaviorListener theListener : itsBehaviorListeners)
-		{
-			theListener.behaviorRegistered(aBehavior);
-		}
+		return itsProbes.size();
 	}
+
 
 	private static class Ids implements Serializable
 	{

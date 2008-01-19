@@ -28,8 +28,8 @@ import java.util.Map;
 import org.objectweb.asm.Type;
 
 import tod.core.ILogCollector;
-import tod.core.database.structure.IExceptionResolver;
 import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.IThreadInfo;
 import tod.impl.database.structure.standard.ThreadInfo;
 import zz.utils.Utils;
@@ -47,15 +47,15 @@ public abstract class EventCollector implements ILogCollector
 	 * The host whose events are sent to this collector.
 	 */
 	private final IHostInfo itsHost;
-	private final IExceptionResolver itsExceptionResolver;
+	private final IStructureDatabase itsStructureDatabase;
 	
 	private List<IThreadInfo> itsThreads = new ArrayList<IThreadInfo>();
 	private Map<Long, IThreadInfo> itsThreadsMap = new HashMap<Long, IThreadInfo>();
 	
-	public EventCollector(IHostInfo aHost, IExceptionResolver aExceptionResolver)
+	public EventCollector(IHostInfo aHost, IStructureDatabase aStructureDatabase)
 	{
 		itsHost = aHost;
-		itsExceptionResolver = aExceptionResolver;
+		itsStructureDatabase = aStructureDatabase;
 	}
 
 	/**
@@ -141,7 +141,7 @@ public abstract class EventCollector implements ILogCollector
 			throw new RuntimeException("Bad declaring class signature: "+aMethodDeclaringClassSignature, e);
 		}
 		
-		int theId = itsExceptionResolver.getBehaviorId(theClassName, aMethodName, aMethodSignature);
+		int theId = itsStructureDatabase.getBehaviorId(theClassName, aMethodName, aMethodSignature);
 
 		exception(
 				aThreadId, 

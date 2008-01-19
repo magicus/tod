@@ -109,8 +109,7 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp, 
 			short aDepth,
 			long aTimestamp,
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex, 
+			int aProbeId, 
 			int aBehaviorId,
 			boolean aHasThrown, 
 			Object aResult)
@@ -125,7 +124,7 @@ public class PrintThroughCollector implements ILogCollector
 				aHasThrown,
 				aResult));
 
-		itsCollector.behaviorExit(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aBehaviorId, aHasThrown, aResult);
+		itsCollector.behaviorExit(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aBehaviorId, aHasThrown, aResult);
 	}
 
 	public void fieldWrite(
@@ -133,8 +132,7 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp, 
 			short aDepth,
 			long aTimestamp,
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex,
+			int aProbeId,
 			int aFieldId,
 			Object aTarget, 
 			Object aValue)
@@ -149,7 +147,7 @@ public class PrintThroughCollector implements ILogCollector
 				aTarget,
 				aValue));
 
-		itsCollector.fieldWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aFieldId, aTarget, aValue);
+		itsCollector.fieldWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aFieldId, aTarget, aValue);
 	}
 	
 	public void newArray(
@@ -157,8 +155,7 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex,
+			int aProbeId,
 			Object aTarget, 
 			int aBaseTypeId, 
 			int aSize)
@@ -173,7 +170,7 @@ public class PrintThroughCollector implements ILogCollector
 				aBaseTypeId,
 				aSize));
 		
-		itsCollector.newArray(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aTarget, aBaseTypeId, aSize);
+		itsCollector.newArray(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aTarget, aBaseTypeId, aSize);
 	}
 
 	public void arrayWrite(
@@ -181,8 +178,7 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex,
+			int aProbeId,
 			Object aTarget, 
 			int aIndex, 
 			Object aValue)
@@ -197,7 +193,7 @@ public class PrintThroughCollector implements ILogCollector
 				aIndex,
 				aValue));
 		
-		itsCollector.arrayWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aTarget, aIndex, aValue);
+		itsCollector.arrayWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aTarget, aIndex, aValue);
 	}
 
 	public void instantiation(
@@ -205,8 +201,7 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex, 
+			int aProbeId, 
 			boolean aDirectParent, 
 			int aCalledBehaviorId, 
 			int aExecutedBehaviorId,
@@ -225,7 +220,7 @@ public class PrintThroughCollector implements ILogCollector
 				aTarget,
 				aArguments));
 
-		itsCollector.instantiation(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
+		itsCollector.instantiation(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
 	}
 
 	public void localWrite(
@@ -233,8 +228,7 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex,
+			int aProbeId,
 			int aVariableId, 
 			Object aValue)
 	{
@@ -247,7 +241,7 @@ public class PrintThroughCollector implements ILogCollector
 				aVariableId,
 				aValue));
 
-		itsCollector.localWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aVariableId, aValue);
+		itsCollector.localWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aVariableId, aValue);
 	}
 
 	public void methodCall(
@@ -255,8 +249,7 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp,
 			short aDepth, 
 			long aTimestamp,
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex, 
+			int aProbeId, 
 			boolean aDirectParent, 
 			int aCalledBehaviorId,
 			int aExecutedBehaviorId,
@@ -264,7 +257,7 @@ public class PrintThroughCollector implements ILogCollector
 			Object[] aArguments)
 	{
 		print(aDepth, String.format(
-				"methodCall   (thread: %d, p.ts: %s, depth: %d, ts: %s, direct: %s, c.bid: %s, e.bid: %s, target: %s, args: %s, bci: %d)",
+				"methodCall   (thread: %d, p.ts: %s, depth: %d, ts: %s, direct: %s, c.bid: %s, e.bid: %s, target: %s, args: %s)",
 				aThreadId,
 				formatTimestamp(aParentTimestamp),
 				aDepth,
@@ -273,10 +266,9 @@ public class PrintThroughCollector implements ILogCollector
 				formatBehavior(aCalledBehaviorId),
 				formatBehavior(aExecutedBehaviorId),
 				aTarget,
-				aArguments,
-				aOperationBytecodeIndex));
+				aArguments));
 
-		itsCollector.methodCall(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
+		itsCollector.methodCall(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
 	}
 
 	public void output(
@@ -304,8 +296,7 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex,
+			int aProbeId,
 			boolean aDirectParent, 
 			int aCalledBehaviorId,
 			int aExecutedBehaviorId,
@@ -324,7 +315,7 @@ public class PrintThroughCollector implements ILogCollector
 				aTarget,
 				aArguments));
 
-		itsCollector.superCall(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
+		itsCollector.superCall(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
 	}
 
 	public void register(long aObjectUID, Object aObject, long aTimestamp)

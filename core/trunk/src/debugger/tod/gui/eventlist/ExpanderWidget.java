@@ -40,7 +40,7 @@ public class ExpanderWidget extends JPanel
 	{
 		setForeground(aColor);
 		setOpaque(false);
-		setPreferredSize(new Dimension(WIDTH, 1));
+		setPreferredSize(new Dimension(WIDTH, 10));
 	}
 	
 	public void setColor(Color aColor)

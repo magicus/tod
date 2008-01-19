@@ -58,6 +58,7 @@ public abstract class GridEvent extends GridMessage
 	
 	private int itsOperationBehaviorId;
 	private int itsOperationBytecodeIndex;
+	private int itsAdviceSourceId;
 	
 	public GridEvent()
 	{
@@ -70,6 +71,7 @@ public abstract class GridEvent extends GridMessage
 		itsTimestamp = aBitStruct.readLong(DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
 		itsOperationBehaviorId = readShort(aBitStruct, DebuggerGridConfig.EVENT_BEHAVIOR_BITS);
 		itsOperationBytecodeIndex = readShort(aBitStruct, DebuggerGridConfig.EVENT_BYTECODE_LOCATION_BITS);
+		itsAdviceSourceId = readShort(aBitStruct, DebuggerGridConfig.EVENT_ADVICE_SRC_ID_BITS);
 		
 		itsParentTimestamp = aBitStruct.readLong(DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
 	}
@@ -86,6 +88,7 @@ public abstract class GridEvent extends GridMessage
 			long aTimestamp, 
 			int aOperationBehaviorId,
 			int aOperationBytecodeIndex, 
+			int aAdviceSourceId,
 			long aParentTimestamp)
 	{
 		itsThread = aThread;
@@ -97,6 +100,7 @@ public abstract class GridEvent extends GridMessage
 			System.out.println("GridEvent.set()");
 		}
 		itsOperationBytecodeIndex = aOperationBytecodeIndex;
+		itsAdviceSourceId = aAdviceSourceId;
 		itsParentTimestamp = aParentTimestamp;
 	}
 
@@ -113,6 +117,7 @@ public abstract class GridEvent extends GridMessage
 		aBitStruct.writeLong(getTimestamp(), DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
 		aBitStruct.writeInt(getOperationBehaviorId(), DebuggerGridConfig.EVENT_BEHAVIOR_BITS);
 		aBitStruct.writeInt(getOperationBytecodeIndex(), DebuggerGridConfig.EVENT_BYTECODE_LOCATION_BITS);
+		aBitStruct.writeInt(getAdviceSourceId(), DebuggerGridConfig.EVENT_ADVICE_SRC_ID_BITS);
 		
 		aBitStruct.writeLong(getParentTimestamp(), DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
 	}
@@ -130,6 +135,7 @@ public abstract class GridEvent extends GridMessage
 		theCount += DebuggerGridConfig.EVENT_TIMESTAMP_BITS;
 		theCount += DebuggerGridConfig.EVENT_BEHAVIOR_BITS;
 		theCount += DebuggerGridConfig.EVENT_BYTECODE_LOCATION_BITS;
+		theCount += DebuggerGridConfig.EVENT_ADVICE_SRC_ID_BITS;
 		theCount += DebuggerGridConfig.EVENT_TIMESTAMP_BITS;
 		
 		return theCount;
@@ -160,6 +166,7 @@ public abstract class GridEvent extends GridMessage
 		aEvent.setOperationBehavior(theOperationBehavior); 
 		
 		aEvent.setOperationBytecodeIndex(getOperationBytecodeIndex());
+		aEvent.setAdviceSourceId(getAdviceSourceId());
 		aEvent.setParentTimestamp(getParentTimestamp());
 	}
 	
@@ -184,6 +191,11 @@ public abstract class GridEvent extends GridMessage
 	public int getOperationBehaviorId()
 	{
 		return itsOperationBehaviorId;
+	}
+	
+	public int getAdviceSourceId()
+	{
+		return itsAdviceSourceId;
 	}
 
 	public long getParentTimestamp()
@@ -229,6 +241,9 @@ public abstract class GridEvent extends GridMessage
 			if (getOperationBytecodeIndex() >= 0)
 				aIndexes.indexLocation(getOperationBytecodeIndex(), TUPLE);
 		}
+		
+		if (getAdviceSourceId() >= 0)
+			aIndexes.indexAdviceSourceId(getAdviceSourceId(), TUPLE);
 		
 		if (getThread() > 0) 
 			aIndexes.indexThread(getThread(), TUPLE);

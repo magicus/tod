@@ -26,7 +26,6 @@ import tod.core.config.TODConfig;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IBehaviorInfo;
-import tod.impl.database.structure.standard.ExceptionResolver.BehaviorInfo;
 
 public class TODUtils
 {
@@ -53,22 +52,6 @@ public class TODUtils
 		}
 		else return null;
 	}
-
-	
-	/**
-	 * Creates an exception resolver {@link BehaviorInfo} object 
-	 * describing the specified behavior.
-	 */
-	public static BehaviorInfo createBehaviorInfo(IBehaviorInfo aBehavior)
-	{
-		return new BehaviorInfo(
-				aBehavior.getType().getName(),
-				aBehavior.getName(),
-				aBehavior.getSignature(),
-				aBehavior.getId());
-	}
-	
-
 	/**
 	 * Prints the specified message if the current verbosity level is >= the
 	 * specified level.

@@ -25,12 +25,20 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 
 import tod.core.DebugFlags;
+import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ICallerSideEvent;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
+import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
 import tod.gui.GUIUtils;
 import tod.gui.JobProcessor;
 import tod.gui.kit.Bus;
@@ -50,6 +58,7 @@ public abstract class AbstractEventNode extends MousePanel
 {
 	private final EventListPanel itsListPanel;
 	
+	private JComponent itsGutter;
 	private HtmlComponent itsHtmlComponent;
 	private HtmlDoc itsDoc;
 	
@@ -63,7 +72,7 @@ public abstract class AbstractEventNode extends MousePanel
 		itsHtmlComponent.setDoc(itsDoc);
 		itsHtmlComponent.addMouseListener(this);
 	}
-
+	
 	public EventListPanel getListPanel()
 	{
 		return itsListPanel;
@@ -72,6 +81,11 @@ public abstract class AbstractEventNode extends MousePanel
 	public ILogBrowser getLogBrowser()
 	{
 		return getListPanel().getLogBrowser();
+	}
+	
+	public TODConfig getConfig()
+	{
+		return getLogBrowser().getSession().getConfig();
 	}
 
 	public JobProcessor getJobProcessor()
@@ -88,6 +102,47 @@ public abstract class AbstractEventNode extends MousePanel
 		setLayout(GUIUtils.createBorderLayout());
 		add(getHTMLComponent(), BorderLayout.CENTER);
 		updateHtml();
+		setupRoleIcons();
+	}
+	
+	private void setupRoleIcons()
+	{
+		if (! getConfig().get(TODConfig.WITH_ASPECTS)) return;
+
+		if (getEvent() instanceof ICallerSideEvent)
+		{
+			ICallerSideEvent theEvent = (ICallerSideEvent) getEvent();
+			
+			IBehaviorInfo theBehavior = theEvent.getOperationBehavior();
+			if (theBehavior == null) return;
+			
+			int theBytecodeIndex = theEvent.getOperationBytecodeIndex();
+			
+			BytecodeRole theRole = theBehavior.getTag(BytecodeTagType.ROLE, theBytecodeIndex);
+			if (theRole == null) return;
+
+			ImageIcon theIcon = GUIUtils.getRoleIcon(theRole);
+			if (theIcon == null) return;
+
+			addToGutter(new JLabel(theIcon));
+		}
+	}
+	
+	/**
+	 * Adds a component to this node's gutter.
+	 */
+	protected void addToGutter(JComponent aComponent)
+	{
+		if (itsGutter == null)
+		{
+			itsGutter = new Box(BoxLayout.X_AXIS);
+			itsGutter.setOpaque(false);
+			add(itsGutter, BorderLayout.WEST);
+		}
+		
+		itsGutter.add(aComponent);
+		revalidate();
+		repaint();
 	}
 	
 	protected void updateHtml()
@@ -114,12 +169,20 @@ public abstract class AbstractEventNode extends MousePanel
 				theLocation = ""+theCallerSideEvent.getOperationBytecodeIndex();
 			}
 			
+			int theSourceId = -1;
+			if (getEvent() instanceof ICallerSideEvent)
+			{
+				ICallerSideEvent theCallerSideEvent = (ICallerSideEvent) getEvent();
+				theSourceId = theCallerSideEvent.getAdviceSourceId();
+			}
+			
 			aParent.add(HtmlText.createf(
-					" (ts: %d, loc: %s, th: %d, d: %d)",
+					" (ts: %d, loc: %s, th: %d, d: %d, asid: %d)",
 					getEvent().getTimestamp(),
 					theLocation,
 					getEvent().getThread().getId(),
-					getEvent().getDepth()));
+					getEvent().getDepth(),
+					theSourceId));
 		}
 	}
 	

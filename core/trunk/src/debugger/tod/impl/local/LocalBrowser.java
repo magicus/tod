@@ -43,16 +43,15 @@ import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
-import tod.core.database.structure.IStructureDatabase.IBehaviorListener;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
+import tod.core.session.ISession;
 import tod.impl.common.LogBrowserUtils;
 import tod.impl.common.ObjectInspector;
 import tod.impl.common.VariablesInspector;
 import tod.impl.common.event.Event;
 import tod.impl.database.IBidiIterator;
-import tod.impl.database.structure.standard.ExceptionResolver;
-import tod.impl.database.structure.standard.ExceptionResolver.BehaviorInfo;
 import tod.impl.local.filter.AbstractFilter;
+import tod.impl.local.filter.AdviceSourceIdFilter;
 import tod.impl.local.filter.BehaviorCallFilter;
 import tod.impl.local.filter.DepthFilter;
 import tod.impl.local.filter.ExceptionGeneratedFilter;
@@ -66,49 +65,37 @@ import tod.impl.local.filter.TargetFilter;
 import tod.impl.local.filter.ThreadFilter;
 import tod.impl.local.filter.UnionFilter;
 import tod.impl.local.filter.VariableWriteFilter;
-import tod.utils.TODUtils;
 
 public class LocalBrowser implements ILogBrowser
 {
-	private EventList itsEvents = new EventList();
-	private List<IHostInfo> itsHosts = new ArrayList<IHostInfo>();
-	private Map<String, IHostInfo> itsHostsMap = new HashMap<String, IHostInfo>();
-	private List<IThreadInfo> itsThreads = new ArrayList<IThreadInfo>();
-	private IStructureDatabase itsStructureDatabase;
-	private ExceptionResolver itsExceptionResolver = new ExceptionResolver();
-
-	
-	private final IBehaviorListener itsBehaviorListener = new IBehaviorListener()
-	{
-		public void behaviorRegistered(IBehaviorInfo aBehavior)
-		{
-			BehaviorInfo theBehaviorInfo = TODUtils.createBehaviorInfo(aBehavior);
-			itsExceptionResolver.registerBehavior(theBehaviorInfo);
-		}
-	};
-	
+	private final ISession itsSession;
+	private final EventList itsEvents = new EventList();
+	private final List<IHostInfo> itsHosts = new ArrayList<IHostInfo>();
+	private final Map<String, IHostInfo> itsHostsMap = new HashMap<String, IHostInfo>();
+	private final List<IThreadInfo> itsThreads = new ArrayList<IThreadInfo>();
+	private final IStructureDatabase itsStructureDatabase;
 	
 	/**
 	 * Temporary. Holds registered objects.
 	 */
 	private Map<Long, Object> itsRegisteredObjects = new HashMap<Long, Object>();
 	
-	public LocalBrowser(IStructureDatabase aStructureDatabase)
+	public LocalBrowser(ISession aSession, IStructureDatabase aStructureDatabase)
 	{
+		itsSession = aSession;
 		itsStructureDatabase = aStructureDatabase;
-		itsStructureDatabase.addBehaviorListener(itsBehaviorListener);
 	}
 
+	public ISession getSession()
+	{
+		return itsSession;
+	}
+	
 	public IStructureDatabase getStructureDatabase()
 	{
 		return itsStructureDatabase;
 	}
 	
-	public ExceptionResolver getExceptionResolver()
-	{
-		return itsExceptionResolver;
-	}
-
 	public Iterable<IThreadInfo> getThreads()
 	{
 		return itsThreads;
@@ -194,6 +181,11 @@ public class LocalBrowser implements ILogBrowser
 	public IEventFilter createLocationFilter(IBehaviorInfo aBehavior, int aBytecodeIndex)
 	{
 		return new OperationLocationFilter(this, aBehavior, aBytecodeIndex);
+	}
+
+	public IEventFilter createAdviceSourceIdFilter(int aAdviceSourceId)
+	{
+		return new AdviceSourceIdFilter(this, aAdviceSourceId);
 	}
 
 	public IEventFilter createBehaviorCallFilter()

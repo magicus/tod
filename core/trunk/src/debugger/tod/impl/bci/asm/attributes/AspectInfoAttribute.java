@@ -29,6 +29,8 @@ import java.util.Map;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.Label;
 
+import tod.core.database.structure.SourceRange;
+
 /**
  * A class-level attribute that contains information about the advice source ids
  * used in a class.
@@ -37,19 +39,19 @@ import org.objectweb.asm.Label;
  */
 public class AspectInfoAttribute extends DataAttribute
 {
-	private Map<Integer, Position> itsAdviceInfoMap;
+	private Map<Integer, SourceRange> itsAdviceMap;
 	
 	
-	public AspectInfoAttribute(Map<Integer, Position> aAdviceInfoMap)
+	public AspectInfoAttribute(Map<Integer, SourceRange> aAdviceInfoMap)
 	{
 		super("zz.abc.AspectInfoAttr");
-		itsAdviceInfoMap = aAdviceInfoMap;
+		itsAdviceMap = aAdviceInfoMap;
 	}
 
 	@Override
 	protected Attribute read(DataInputStream aStream, Label[] aLabels) throws IOException
 	{
-		Map<Integer, Position> theMap = new HashMap<Integer, Position>();
+		Map<Integer, SourceRange> theMap = new HashMap<Integer, SourceRange>();
 		int theCount = aStream.readInt();
 		
 		for(int i=0;i<theCount;i++)
@@ -61,7 +63,7 @@ public class AspectInfoAttribute extends DataAttribute
 			int theEndLine = aStream.readInt();
 			int theEndColumn = aStream.readInt();
 			
-			theMap.put(theId, new Position(
+			theMap.put(theId, new SourceRange(
 					theSourceFile, 
 					theStartLine, 
 					theStartColumn, 
@@ -77,26 +79,9 @@ public class AspectInfoAttribute extends DataAttribute
 	{
 		throw new UnsupportedOperationException();
 	}
-
-	/**
-	 * Corresponds to Soot's Position class
-	 * @author gpothier
-	 */
-	public static class Position
+	
+	public Map<Integer, SourceRange> getAdviceMap()
 	{
-		public final String sourceFile;
-		public final int startLine;
-		public final int startColumn;
-		public final int endLine;
-		public final int endColumn;
-		
-		public Position(String aSourceFile, int aStartLine, int aStartColumn, int aEndLine, int aEndColumn)
-		{
-			sourceFile = aSourceFile;
-			startLine = aStartLine;
-			startColumn = aStartColumn;
-			endLine = aEndLine;
-			endColumn = aEndColumn;
-		}
+		return itsAdviceMap;
 	}
 }

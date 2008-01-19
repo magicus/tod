@@ -18,30 +18,24 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.dbgrid.dispatch;
+package tod.core.database.event;
 
-import tod.core.database.structure.IExceptionResolver;
-import tod.impl.dbgrid.GridMaster;
+import tod.core.database.structure.IArrayTypeInfo;
 
 /**
- * This is a "fake" exception resolver that simply delegates
- * to the grid master's resolver.
+ * This event corresponds to the creation of an array.
+ * The array can be obtained through {@link ICreationEvent#getInstance()}
  * @author gpothier
  */
-public class LocalNodeExceptionResolver implements IExceptionResolver
+public interface INewArrayEvent extends ICallerSideEvent, ICreationEvent
 {
-	private final DatabaseNode itsNode;
-	private GridMaster itsMaster;
+	/**
+	 * Returns the type of the array.
+	 */
+	public IArrayTypeInfo getType();
 	
-	public LocalNodeExceptionResolver(DatabaseNode aNode)
-	{
-		itsNode = aNode;
-	}
-
-	public int getBehaviorId(String aClassName, String aMethodName, String aMethodSignature)
-	{
-		if (itsMaster == null) itsMaster = (GridMaster) itsNode.getMaster();
-		return itsMaster.getBehaviorId(aClassName, aMethodName, aMethodSignature);
-	}
-
+	/**
+	 * Returns the size of the newly created array.
+	 */
+	public int getArraySize();
 }

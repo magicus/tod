@@ -32,7 +32,6 @@ import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
 import tod.impl.dbgrid.db.NodeRejectedException;
 import tod.impl.dbgrid.db.RIBufferIterator;
-import tod.impl.dbgrid.dispatch.NodeExceptionResolver;
 import tod.impl.dbgrid.dispatch.RIDispatchNode;
 import tod.impl.dbgrid.dispatch.RIDatabaseNode.StringSearchHit;
 import tod.impl.dbgrid.dispatch.tree.DispatchTreeStructure;

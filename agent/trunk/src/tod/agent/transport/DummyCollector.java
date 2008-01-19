@@ -40,7 +40,7 @@ public class DummyCollector extends HighLevelCollector<ThreadData>
 
 	@Override
 	protected void behaviorExit(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
-			long aOperationLocation, int aBehaviorId, boolean aHasThrown, Object aResult)
+			int aProbeId, int aBehaviorId, boolean aHasThrown, Object aResult)
 	{
 	}
 
@@ -59,38 +59,38 @@ public class DummyCollector extends HighLevelCollector<ThreadData>
 
 	@Override
 	protected void fieldWrite(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
-			long aOperationLocation, int aFieldId, Object aTarget, Object aValue)
+			int aProbeId, int aFieldId, Object aTarget, Object aValue)
 	{
 	}
 	
 	@Override
 	protected void newArray(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
-			long aOperationLocation, Object aTarget, int aBaseTypeId, int aSize)
+			int aProbeId, Object aTarget, int aBaseTypeId, int aSize)
 	{
 	}
 
 	@Override
 	protected void arrayWrite(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
-			long aOperationLocation, Object aTarget, int aIndex, Object aValue)
+			int aProbeId, Object aTarget, int aIndex, Object aValue)
 	{
 	}
 
 	@Override
 	protected void instantiation(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
-			long aOperationLocation, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
+			int aProbeId, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
 			Object aTarget, Object[] aArguments)
 	{
 	}
 
 	@Override
 	protected void localWrite(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
-			long aOperationLocation, int aVariableId, Object aValue)
+			int aProbeId, int aVariableId, Object aValue)
 	{
 	}
 
 	@Override
 	protected void methodCall(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
-			long aOperationLocation, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
+			int aProbeId, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
 			Object aTarget, Object[] aArguments)
 	{
 	}
@@ -103,7 +103,7 @@ public class DummyCollector extends HighLevelCollector<ThreadData>
 
 	@Override
 	protected void superCall(ThreadData aThread, long aParentTimestamp, short aDepth, long aTimestamp,
-			long aOperationLocation, boolean aDirectParent, int aCalledBehaviorid, int aExecutedBehaviorId,
+			int aProbeId, boolean aDirectParent, int aCalledBehaviorid, int aExecutedBehaviorId,
 			Object aTarget, Object[] aArguments)
 	{
 	}

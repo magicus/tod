@@ -42,6 +42,7 @@ public abstract class Event implements ICallerSideEvent
 	
 	private IBehaviorInfo itsOperationBehavior; 
 	private int itsOperationBytecodeIndex;
+	private int itsAdviceSourceId;
 	
 	private long itsParentTimestamp;
 	private BehaviorCallEvent itsParent;
@@ -139,6 +140,16 @@ public abstract class Event implements ICallerSideEvent
 	public void setOperationBytecodeIndex(int aOperationBytecodeIndex)
 	{
 		itsOperationBytecodeIndex = aOperationBytecodeIndex;
+	}
+
+	public int getAdviceSourceId()
+	{
+		return itsAdviceSourceId;
+	}
+
+	public void setAdviceSourceId(int aAdviceSourceId)
+	{
+		itsAdviceSourceId = aAdviceSourceId;
 	}
 
 	@Override

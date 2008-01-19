@@ -45,4 +45,9 @@ public interface ICallerSideEvent extends ILogEvent
 	 */
 	public IBehaviorInfo getOperationBehavior();
 
+	/**
+	 * Returns the advice source id of the advice that caused the generation of the
+	 * code that generated the event.
+	 */
+	public int getAdviceSourceId();
 }

@@ -52,12 +52,13 @@ public class GridFieldWriteEvent extends GridEvent
 			long aTimestamp, 
 			int aOperationBehaviorId,
 			int aOperationBytecodeIndex, 
+			int aAdviceSourceId,
 			long aParentTimestamp,
 			int aFieldId, 
 			Object aTarget, 
 			Object aValue)
 	{
-		set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aParentTimestamp, aFieldId, aTarget, aValue);
+		set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp, aFieldId, aTarget, aValue);
 	}
 
 	public GridFieldWriteEvent(BitStruct aBitStruct)
@@ -75,12 +76,13 @@ public class GridFieldWriteEvent extends GridEvent
 			long aTimestamp, 
 			int aOperationBehaviorId,
 			int aOperationBytecodeIndex, 
+			int aAdviceSourceId,
 			long aParentTimestamp,
 			int aFieldId, 
 			Object aTarget, 
 			Object aValue)
 	{
-		super.set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aParentTimestamp);
+		super.set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp);
 		itsFieldId = aFieldId;
 		itsTarget = aTarget;
 		itsValue = aValue;

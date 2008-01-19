@@ -50,7 +50,7 @@ public class SootInlineAttribute extends SootAttribute<InlineData>
 	protected void fillTagMap(TagMap aTagMap, int aStart, int aEnd, InlineData aValue)
 	{
 		aTagMap.putTagRange(BytecodeTagType.INSTR_SHADOW, aValue.shadow, aStart, aEnd);
-		aTagMap.putTagRange(BytecodeTagType.INSTR_SOURCE, aValue.source, aStart, aEnd);
+		aTagMap.putTagRange(BytecodeTagType.ADVICE_SOURCE_ID, aValue.source, aStart, aEnd);
 	}
 
 	@Override

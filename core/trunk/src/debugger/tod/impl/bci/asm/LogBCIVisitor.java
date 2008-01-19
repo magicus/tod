@@ -33,12 +33,13 @@ import org.objectweb.asm.Opcodes;
 
 import tod.Util;
 import tod.agent.BehaviorCallType;
+import tod.core.config.TODConfig;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
-import tod.core.database.structure.analysis.DisassembledBehavior.Instruction;
+import tod.impl.bci.asm.attributes.AspectInfoAttribute;
 import tod.impl.bci.asm.attributes.SootAttribute;
 import tod.impl.database.structure.standard.TagMap;
 import zz.utils.ArrayStack;
@@ -80,7 +81,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 
 	private final InfoCollector itsInfoCollector;
 	private int itsCurrentMethodIndex = 0;
-
+	
 	private final IMutableStructureDatabase itsDatabase;
 	private final ASMDebuggerConfig itsConfig;
 
@@ -119,6 +120,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		itsModified = true;
 	}
 	
+	
 	@Override
 	public void visit(
 			int aVersion, 
@@ -142,8 +144,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		}
 		
 		// Check if we should trace operations in the class
-		itsTrace = BCIUtils.acceptClass(aName, itsConfig.getGlobalSelector())
-				&& BCIUtils.acceptClass(aName, itsConfig.getTraceSelector());
+		itsTrace = itsConfig.isInScope(aName);
 			
 		itsClassInfo.setup(itsInterface, itsTrace, itsChecksum, theInterfaces, itsSuperclass);
 		
@@ -155,7 +156,12 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 	@Override
 	public void visitAttribute(Attribute aAttr)
 	{
-		super.visitAttribute(aAttr);
+		if (aAttr instanceof AspectInfoAttribute)
+		{
+			AspectInfoAttribute theAttribute = (AspectInfoAttribute) aAttr;
+			itsClassInfo.setAdviceSourceMap(theAttribute.getAdviceMap());
+		}
+		else super.visitAttribute(aAttr);
 	}
 
 	public IMutableClassInfo getClassInfo()
@@ -392,14 +398,20 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		public void visitEnd()
 		{
 			// Prepare tags
-			TagMap theTagMap = new TagMap();
+			TagMap theTagMap = null;
 			
-			for (SootAttribute theAttribute : itsSootAttributes)
+			if (itsConfig.getTODConfig().get(TODConfig.WITH_ASPECTS))
 			{
-				theAttribute.fillTagMap(theTagMap, itsMethodInfo.getCodeSize());
+				theTagMap = new TagMap();
+				
+				for (SootAttribute theAttribute : itsSootAttributes)
+				{
+					theAttribute.fillTagMap(theTagMap, itsMethodInfo.getCodeSize());
+				}
+				
+				itsInstrumenter.fillTagMap(theTagMap);
+				itsInstrumenter.updateProbes(theTagMap);
 			}
-			
-			itsInstrumenter.fillTagMap(theTagMap);
 			
 			// Setup behavior info
 			itsBehavior.setup(

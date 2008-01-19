@@ -84,6 +84,17 @@ public class ASMDebuggerConfig
 	{
 		return itsGlobalSelector;
 	}
+	
+	/**
+	 * Indicates wether the given class name is in the instrumentation scope
+	 * (both in the global selector and in the trace selector).
+	 */
+	public boolean isInScope(String aClassName)
+	{
+		return BCIUtils.acceptClass(aClassName, getGlobalSelector())
+			&& BCIUtils.acceptClass(aClassName, getTraceSelector());
+	}
+
 
 	public TODConfig getTODConfig()
 	{

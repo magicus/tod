@@ -35,6 +35,7 @@ import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
+import tod.core.session.ISession;
 import tod.impl.database.IBidiIterator;
 import zz.utils.ITask;
 
@@ -52,6 +53,11 @@ import zz.utils.ITask;
  */
 public interface ILogBrowser
 {
+	/**
+	 * Returns the session to which this log browser pertains.
+	 */
+	public ISession getSession();
+	
 	/**
 	 * Clears all the events and other information from this log.
 	 */
@@ -127,10 +133,15 @@ public interface ILogBrowser
 
 	/**
 	 * Creates a filter that accepts only events that occured at a particular 
-	 * location in the source code, indicate by a behavior and a bytecode index
+	 * location in the source code, indicated by a behavior and a bytecode index
 	 * within this behavior.
 	 */
 	public IEventFilter createLocationFilter(IBehaviorInfo aBehavior, int aBytecodeIndex);
+	
+	/**
+	 * Creates a filter that accepts only events that have the specified advice source id.
+	 */
+	public IEventFilter createAdviceSourceIdFilter(int aAdviceSourceId);
 	
 	/**
 	 * Creates a filter that accepts only behavior call events

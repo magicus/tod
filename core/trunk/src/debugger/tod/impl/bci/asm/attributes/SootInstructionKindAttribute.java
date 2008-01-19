@@ -45,7 +45,7 @@ public class SootInstructionKindAttribute extends SootIntAttribute
 	@Override
 	protected void fillTagMap(TagMap aTagMap, int aStart, int aEnd, Integer aValue)
 	{
-		aTagMap.putTagRange(BytecodeTagType.BYTECODE_ROLE, getRole(aValue), aStart, aEnd);
+		aTagMap.putTagRange(BytecodeTagType.ROLE, getRole(aValue), aStart, aEnd);
 	}
 	
 	/**

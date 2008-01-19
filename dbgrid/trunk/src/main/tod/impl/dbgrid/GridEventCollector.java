@@ -21,8 +21,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid;
 
 import tod.agent.Output;
-import tod.core.database.structure.IExceptionResolver;
 import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.impl.common.EventCollector;
 import tod.impl.dbgrid.dispatch.AbstractEventDispatcher;
 import tod.impl.dbgrid.dispatch.DatabaseNode;
@@ -67,15 +68,17 @@ public class GridEventCollector extends EventCollector
 	private final GridNewArrayEvent itsNewArrayEvent = new GridNewArrayEvent();
 	private final GridOutputEvent itsOutputEvent = new GridOutputEvent();
 	private final GridVariableWriteEvent itsVariableWriteEvent = new GridVariableWriteEvent();
+	private final IStructureDatabase itsStructureDatabase;
 	
 	
 	public GridEventCollector(
 			IHostInfo aHost,
-			IExceptionResolver aExceptionResolver,
+			IStructureDatabase aStructureDatabase,
 			DatabaseNode aDispatcher)
 	{
-		super(aHost, aExceptionResolver);
+		super(aHost, aStructureDatabase);
 		itsDatabaseNode = aDispatcher;
+		itsStructureDatabase = itsDatabaseNode.getStructureDatabase();
 	}
 
 	private void dispatch(GridEvent aEvent)
@@ -92,9 +95,13 @@ public class GridEventCollector extends EventCollector
 		return itsEventsCount;
 	}
 	
-	private int getHostId()
+	/**
+	 * Returns the probe info corresponding to the given probe id.
+	 */
+	private final ProbeInfo getProbeInfo(int aProbeId)
 	{
-		return getHost().getId();
+		if (aProbeId == -1) return ProbeInfo.NULL;
+		else return itsStructureDatabase.getProbeInfo(aProbeId);
 	}
 
 	@Override
@@ -114,6 +121,7 @@ public class GridEventCollector extends EventCollector
 				aTimestamp,
 				aBehaviorId,
 				aOperationBytecodeIndex,
+				-1, //TODO: retrieve the tag from the structure database.
 				aParentTimestamp, 
 				aException);
 		
@@ -126,18 +134,20 @@ public class GridEventCollector extends EventCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex,
+			int aProbeId,
 			int aBehaviorId,
 			boolean aHasThrown, 
 			Object aResult)
 	{
+		ProbeInfo theProbeInfo = getProbeInfo(aProbeId);
+		
 		itsExitEvent.set(
 				aThreadId, 
 				aDepth, 
 				aTimestamp, 
-				aOperationBehaviorId,
-				aOperationBytecodeIndex,
+				theProbeInfo.behaviorId,
+				theProbeInfo.bytecodeIndex,
+				theProbeInfo.adviceSourceId,
 				aParentTimestamp, 
 				aHasThrown,
 				aResult,
@@ -152,18 +162,20 @@ public class GridEventCollector extends EventCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex,
+			int aProbeId,
 			int aFieldId,
 			Object aTarget,
 			Object aValue)
 	{
+		ProbeInfo theProbeInfo = getProbeInfo(aProbeId);
+
 		itsFieldWriteEvent.set(
 				aThreadId, 
 				aDepth,
 				aTimestamp,
-				aOperationBehaviorId,
-				aOperationBytecodeIndex,
+				theProbeInfo.behaviorId,
+				theProbeInfo.bytecodeIndex,
+				theProbeInfo.adviceSourceId,
 				aParentTimestamp,
 				aFieldId, 
 				aTarget, 
@@ -179,18 +191,20 @@ public class GridEventCollector extends EventCollector
 			long aParentTimestamp,
 			short aDepth, 
 			long aTimestamp, 
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex,
+			int aProbeId,
 			Object aTarget, 
 			int aBaseTypeId,
 			int aSize)
 	{
+		ProbeInfo theProbeInfo = getProbeInfo(aProbeId);
+
 		itsNewArrayEvent.set(
 				aThreadId, 
 				aDepth,
 				aTimestamp,
-				aOperationBehaviorId,
-				aOperationBytecodeIndex,
+				theProbeInfo.behaviorId,
+				theProbeInfo.bytecodeIndex,
+				theProbeInfo.adviceSourceId,
 				aParentTimestamp,
 				aTarget,
 				aBaseTypeId,
@@ -204,18 +218,20 @@ public class GridEventCollector extends EventCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex,
+			int aProbeId,
 			Object aTarget, 
 			int aIndex, 
 			Object aValue)
 	{
+		ProbeInfo theProbeInfo = getProbeInfo(aProbeId);
+
 		itsArrayWriteEvent.set(
 				aThreadId, 
 				aDepth,
 				aTimestamp,
-				aOperationBehaviorId,
-				aOperationBytecodeIndex,
+				theProbeInfo.behaviorId,
+				theProbeInfo.bytecodeIndex,
+				theProbeInfo.adviceSourceId,
 				aParentTimestamp,
 				aTarget,
 				aIndex,
@@ -230,20 +246,22 @@ public class GridEventCollector extends EventCollector
 			long aParentTimestamp,
 			short aDepth, 
 			long aTimestamp,
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex,
+			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehavior,
 			int aExecutedBehavior,
 			Object aTarget,
 			Object[] aArguments)
 	{
+		ProbeInfo theProbeInfo = getProbeInfo(aProbeId);
+
 		itsCallEvent.set(
 				aThreadId, 
 				aDepth, 
 				aTimestamp,
-				aOperationBehaviorId,
-				aOperationBytecodeIndex,
+				theProbeInfo.behaviorId,
+				theProbeInfo.bytecodeIndex,
+				theProbeInfo.adviceSourceId,
 				aParentTimestamp,
 				MessageType.INSTANTIATION, 
 				aDirectParent, 
@@ -261,17 +279,19 @@ public class GridEventCollector extends EventCollector
 			long aParentTimestamp, 
 			short aDepth,
 			long aTimestamp,
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex,
+			int aProbeId,
 			int aVariableId,
 			Object aValue)
 	{
+		ProbeInfo theProbeInfo = getProbeInfo(aProbeId);
+
 		itsVariableWriteEvent.set(
 				aThreadId,
 				aDepth, 
 				aTimestamp,
-				aOperationBehaviorId,
-				aOperationBytecodeIndex,
+				theProbeInfo.behaviorId,
+				theProbeInfo.bytecodeIndex,
+				theProbeInfo.adviceSourceId,
 				aParentTimestamp,
 				aVariableId, 
 				aValue);
@@ -285,20 +305,22 @@ public class GridEventCollector extends EventCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex,
+			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehavior,
 			int aExecutedBehavior,
 			Object aTarget,
 			Object[] aArguments)
 	{
+		ProbeInfo theProbeInfo = getProbeInfo(aProbeId);
+
 		itsCallEvent.set(
 				aThreadId, 
 				aDepth, 
 				aTimestamp,
-				aOperationBehaviorId,
-				aOperationBytecodeIndex,
+				theProbeInfo.behaviorId,
+				theProbeInfo.bytecodeIndex,
+				theProbeInfo.adviceSourceId,
 				aParentTimestamp,
 				MessageType.METHOD_CALL, 
 				aDirectParent, 
@@ -328,20 +350,22 @@ public class GridEventCollector extends EventCollector
 			long aParentTimestamp,
 			short aDepth, 
 			long aTimestamp,
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex,
+			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehavior, 
 			int aExecutedBehavior,
 			Object aTarget, 
 			Object[] aArguments)
 	{
+		ProbeInfo theProbeInfo = getProbeInfo(aProbeId);
+
 		itsCallEvent.set(
 				aThreadId, 
 				aDepth, 
 				aTimestamp,
-				aOperationBehaviorId,
-				aOperationBytecodeIndex,
+				theProbeInfo.behaviorId,
+				theProbeInfo.bytecodeIndex,
+				theProbeInfo.adviceSourceId,
 				aParentTimestamp,
 				MessageType.SUPER_CALL, 
 				aDirectParent, 

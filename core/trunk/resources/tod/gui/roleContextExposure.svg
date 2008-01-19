@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="20.00001"
+   height="15"
+   id="svg2269"
+   sodipodi:version="0.32"
+   inkscape:version="0.45.1"
+   version="1.0"
+   sodipodi:docbase="/home/gpothier/eclipse/workbench-3.1/TOD/resources/tod/gui"
+   sodipodi:docname="roleContextExposure.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   inkscape:export-filename="/home/gpothier/eclipse/workbench-3.1/TOD/resources/tod/gui/roleContextExposure.png"
+   inkscape:export-xdpi="192"
+   inkscape:export-ydpi="192">
+  <defs
+     id="defs2271" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     gridtolerance="10000"
+     guidetolerance="10"
+     objecttolerance="10"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="25.2"
+     inkscape:cx="10.000005"
+     inkscape:cy="7.5"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     inkscape:window-width="783"
+     inkscape:window-height="590"
+     inkscape:window-x="889"
+     inkscape:window-y="384" />
+  <metadata
+     id="metadata2274">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-365,-524.86218)">
+    <g
+       transform="matrix(0.7934856,0,0,0.7934856,505.0192,503.52209)"
+       id="g3325">
+      <path
+         id="path3179"
+         d="M -175.83078,32.565292 L -170.78974,27.524243 L -151.8858,27.524243 L -151.8858,40.126866 L -156.92685,45.167915 L -156.92685,32.565292"
+         style="fill:#e1cd8a;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.26026225;stroke-linecap:butt;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <rect
+         y="32.565292"
+         x="-175.8308"
+         height="12.602623"
+         width="18.903934"
+         id="rect3177"
+         style="opacity:1;fill:#e1cd8a;fill-opacity:1;stroke:#000000;stroke-width:1.26026225;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <path
+         id="path3181"
+         d="M -156.92685,32.565292 L -151.8858,27.524243"
+         style="fill:none;fill-opacity:0.75;fill-rule:evenodd;stroke:#000000;stroke-width:1.26026225px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    </g>
+  </g>
+</svg>

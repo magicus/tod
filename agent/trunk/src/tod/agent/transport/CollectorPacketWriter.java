@@ -53,7 +53,7 @@ public class CollectorPacketWriter
 			long aParentTimestamp,
 			int aDepth,
 			long aTimestamp, 
-			long aOperationLocation,
+			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehavior,
 			int aExecutedBehavior, 
@@ -63,7 +63,7 @@ public class CollectorPacketWriter
 		sendMessageType(itsStream, aMessageType);
 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
-		sendOperationLocation(itsBuffer, aOperationLocation);
+		itsBuffer.writeInt(aProbeId);
 		itsBuffer.writeBoolean(aDirectParent);
 		itsBuffer.writeInt(aCalledBehavior);
 		itsBuffer.writeInt(aExecutedBehavior);
@@ -100,7 +100,7 @@ public class CollectorPacketWriter
 			long aParentTimestamp,
 			int aDepth, 
 			long aTimestamp,
-			long aOperationLocation,
+			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehavior,
 			int aExecutedBehavior,
@@ -113,7 +113,7 @@ public class CollectorPacketWriter
 				aParentTimestamp,
 				aDepth, 
 				aTimestamp, 
-				aOperationLocation,
+				aProbeId,
 				aDirectParent, 
 				aCalledBehavior,
 				aExecutedBehavior,
@@ -126,7 +126,7 @@ public class CollectorPacketWriter
 			long aParentTimestamp,
 			int aDepth, 
 			long aTimestamp,
-			long aOperationLocation,
+			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehavior,
 			int aExecutedBehavior,
@@ -139,7 +139,7 @@ public class CollectorPacketWriter
 				aParentTimestamp,
 				aDepth, 
 				aTimestamp, 
-				aOperationLocation,
+				aProbeId,
 				aDirectParent, 
 				aCalledBehavior, 
 				aExecutedBehavior, 
@@ -152,7 +152,7 @@ public class CollectorPacketWriter
 			long aParentTimestamp,
 			int aDepth, 
 			long aTimestamp,
-			long aOperationLocation,
+			int aProbeId,
 			boolean aDirectParent, 
 			int aCalledBehavior,
 			int aExecutedBehavior,
@@ -165,7 +165,7 @@ public class CollectorPacketWriter
 				aParentTimestamp,
 				aDepth, 
 				aTimestamp, 
-				aOperationLocation,
+				aProbeId,
 				aDirectParent, 
 				aCalledBehavior,
 				aExecutedBehavior,
@@ -178,7 +178,7 @@ public class CollectorPacketWriter
 			long aParentTimestamp, 
 			int aDepth, 
 			long aTimestamp,
-			long aOperationLocation,
+			int aProbeId,
 			int aBehaviorId, 
 			boolean aHasThrown,
 			Object aResult) throws IOException
@@ -186,7 +186,7 @@ public class CollectorPacketWriter
 		sendMessageType(itsStream, MessageType.BEHAVIOR_EXIT);
 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
-		sendOperationLocation(itsBuffer, aOperationLocation);
+		itsBuffer.writeInt(aProbeId);
 		itsBuffer.writeInt(aBehaviorId);
 		itsBuffer.writeBoolean(aHasThrown);
 		sendValue(itsBuffer, aResult, aTimestamp);
@@ -208,7 +208,7 @@ public class CollectorPacketWriter
 			long aParentTimestamp,
 			int aDepth,
 			long aTimestamp,
-			long aOperationLocation,
+			int aProbeId,
 			int aFieldLocationId,
 			Object aTarget, 
 			Object aValue) throws IOException
@@ -216,7 +216,7 @@ public class CollectorPacketWriter
 		sendMessageType(itsStream, MessageType.FIELD_WRITE);
 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
-		sendOperationLocation(itsBuffer, aOperationLocation);
+		itsBuffer.writeInt(aProbeId);
 		itsBuffer.writeInt(aFieldLocationId);
 		sendValue(itsBuffer, aTarget, aTimestamp);
 		sendValue(itsBuffer, aValue, aTimestamp);
@@ -231,7 +231,7 @@ public class CollectorPacketWriter
 			long aParentTimestamp,
 			int aDepth, 
 			long aTimestamp,
-			long aOperationLocation, 
+			int aProbeId, 
 			Object aTarget,
 			int aBaseTypeId,
 			int aSize) throws IOException
@@ -239,7 +239,7 @@ public class CollectorPacketWriter
 		sendMessageType(itsStream, MessageType.NEW_ARRAY);
 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
-		sendOperationLocation(itsBuffer, aOperationLocation);
+		itsBuffer.writeInt(aProbeId);
 		sendValue(itsBuffer, aTarget, aTimestamp);
 		itsBuffer.writeInt(aBaseTypeId);
 		itsBuffer.writeInt(aSize);
@@ -254,7 +254,7 @@ public class CollectorPacketWriter
 			long aParentTimestamp, 
 			int aDepth,
 			long aTimestamp,
-			long aOperationLocation,
+			int aProbeId,
 			Object aTarget,
 			int aIndex, 
 			Object aValue) throws IOException
@@ -262,7 +262,7 @@ public class CollectorPacketWriter
 		sendMessageType(itsStream, MessageType.ARRAY_WRITE);
 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
-		sendOperationLocation(itsBuffer, aOperationLocation);
+		itsBuffer.writeInt(aProbeId);
 		sendValue(itsBuffer, aTarget, aTimestamp);
 		itsBuffer.writeInt(aIndex);
 		sendValue(itsBuffer, aValue, aTimestamp);
@@ -277,14 +277,14 @@ public class CollectorPacketWriter
 			long aParentTimestamp,
 			int aDepth, 
 			long aTimestamp,
-			long aOperationLocation, 
+			int aProbeId, 
 			int aVariableId,
 			Object aValue) throws IOException
 	{
 		sendMessageType(itsStream, MessageType.LOCAL_VARIABLE_WRITE);
 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
-		sendOperationLocation(itsBuffer, aOperationLocation);
+		itsBuffer.writeInt(aProbeId);
 		itsBuffer.writeInt(aVariableId);
 		sendValue(itsBuffer, aValue, aTimestamp);
 
@@ -524,12 +524,6 @@ public class CollectorPacketWriter
 	private static void sendMessageType(DataOutputStream aStream, MessageType aMessageType) throws IOException
 	{
 		aStream.writeByte(aMessageType.ordinal());
-	}
-
-	private void sendOperationLocation(DataOutputStream aStream, long aOperationLocation) throws IOException
-	{
-		aStream.writeInt((int) (aOperationLocation >>> 16)); // Behavior id
-		aStream.writeShort((short) (aOperationLocation & 0xffff)); // bytecode indexBehavior
 	}
 
 	private static class MyObjectOutputStream extends ObjectOutputStream

@@ -90,5 +90,11 @@ public interface IClassInfo extends ITypeInfo
 	 */
 	public Iterable<IBehaviorInfo> getBehaviors();
 	
-
+	/**
+	 * Returns the location of the source code that defines the advice with
+	 * the specified id.
+	 * @param aAdviceId An advice id found in one of the behaviors of this class.
+	 * @return The source range, or null if not available.
+	 */
+	public SourceRange getAdviceSource(int aAdviceId);
 }

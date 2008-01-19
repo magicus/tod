@@ -22,6 +22,8 @@ package tod.core.database.structure;
 
 import java.io.Serializable;
 
+import tod.core.config.TODConfig;
+
 /**
  * The structure database contains static information about the
  * debugged program. In particular, it contains a list of types
@@ -53,6 +55,11 @@ public interface IStructureDatabase
 	 * Returns the unique identifier of this database. 
 	 */
 	public String getId();
+	
+	/**
+	 * Returns the configuration used by this structure database.
+	 */
+	public TODConfig getConfig();
 	
 	/**
 	 * Returns a class info that represents an unknown class.
@@ -138,16 +145,27 @@ public interface IStructureDatabase
 	public IBehaviorInfo[] getBehaviors();
 	
 	/**
+	 * Returns the id of the specified behavior. This method is used for resolving 
+	 * exceptions.
+	 * @param aMethodSignature JVM signature of the method.
+	 */
+	public int getBehaviorId(String aClassName, String aMethodName, String aMethodSignature);
+	
+	/**
+	 * Returns the {@link ProbeInfo} corresponding to the given probe id.
+	 */
+	public ProbeInfo getProbeInfo(int aProbeId);
+	
+	/**
+	 * Returns the number of installed probes.
+	 */
+	public int getProbeCount();
+	
+
+	/**
 	 * Returns statistics about registered locations
 	 */
 	public Stats getStats();
-	
-	/**
-	 * Adds a listener that is notified whenever a behavior is registered.
-	 */
-	public void addBehaviorListener(IBehaviorListener aListener);
-	
-	public void removeBehaviorListener(IBehaviorListener aListener);
 	
 	public static class Stats implements Serializable
 	{
@@ -335,12 +353,45 @@ public interface IStructureDatabase
 	}
 
 	/**
-	 * Interface for listeners interested in newly registered behaviors.
-	 * Primarily intented for {@link IExceptionResolver}.
+	 * Contains the information for a given probe.
+	 * A probe is a point of instrumentation in the code.
 	 * @author gpothier
 	 */
-	public interface IBehaviorListener
+	public static class ProbeInfo implements Serializable
 	{
-		public void behaviorRegistered(IBehaviorInfo aBehavior);
+		private static final long serialVersionUID = -2555314414321419466L;
+		
+		public static final ProbeInfo NULL = new ProbeInfo(-1, -1, -1);
+
+		/**
+		 * Id of the behavior that contains the probe.
+		 */
+		public final int behaviorId;
+		
+		/**
+		 * Bytecode location of the probe.
+		 */
+		public final int bytecodeIndex;
+		
+		/**
+		 * Id of the advice that caused the generation of the code in which
+		 * lies the probe.
+		 * This is for the AspectJ extension of TOD.
+		 */
+		public final int adviceSourceId;
+
+		public ProbeInfo(int aBehaviorId, int aBytecodeIndex, int aAdviceSourceId)
+		{
+			adviceSourceId = aAdviceSourceId;
+			behaviorId = aBehaviorId;
+			bytecodeIndex = aBytecodeIndex;
+		}
+
+		@Override
+		public String toString()
+		{
+			return "bid: "+behaviorId+", bi: "+bytecodeIndex+", aid: "+adviceSourceId;
+		}
 	}
+
 }

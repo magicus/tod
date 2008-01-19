@@ -158,6 +158,8 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 			long t0 = System.currentTimeMillis();
 			ILogEvent theCallEvent = aLogBrowser.getEvent(itsEventPointer);
 			long theTimestamp = theCallEvent.getTimestamp();
+			assert theTimestamp == itsEventPointer.timestamp;
+			
 			int theDepth = theCallEvent.getDepth();
 			IThreadInfo theThread = theCallEvent.getThread();
 
@@ -191,7 +193,11 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 				assert theFound;
 				
 				ILogEvent theEvent = theBrowser.previous();
-				assert theEvent.getDepth() == theDepth+1: "Event depth Issue: " + theEvent.getDepth() +" while parent depth is "+theDepth;
+				assert theEvent.getDepth() == theDepth+1 : 
+					String.format("Event depth issue for %d (theEvent.getDepth(): %d, theDepth: %d)",
+							theTimestamp,
+							theEvent.getDepth(),
+							theDepth);
 				assert theEvent.getTimestamp() >= theTimestamp : "Event TimeStamp issue: " +theEvent.getTimestamp() +" while parent timestamp is " +theTimestamp ;
 				assert theEvent.getParentPointer().timestamp == theTimestamp : "Parent TimeStamp issue: " +theEvent.getTimestamp() +" while parent timestamp should be " +theTimestamp ;
 				

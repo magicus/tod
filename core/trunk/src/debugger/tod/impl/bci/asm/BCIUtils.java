@@ -152,26 +152,6 @@ public class BCIUtils implements Opcodes
 		aVisitor.visitLdcInsn(new Long(aValue));
 	}
 	
-	public static void pushOperationLocation(
-			MethodVisitor aVisitor, 
-			int aBehaviorId, 
-			int aBytecodeIndex)
-	{
-		pushLong(aVisitor, operationLocation(aBehaviorId, aBytecodeIndex));
-	}
-	
-	/**
-	 * Pushes the collector taken from the {@link tod.agent.AgentConfig} onto the stack
-	 */
-	public static void pushCollector(MethodVisitor aVisitor)
-	{
-		aVisitor.visitMethodInsn(
-				INVOKESTATIC, 
-				Type.getInternalName(AgentConfig.class), 
-				"getInterpreter", 
-				"()"+Type.getDescriptor(EventInterpreter.class));
-	}
-	
 	/**
 	 * Produces code that wrap primitive types in their corresponding objects.
 	 */

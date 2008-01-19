@@ -48,6 +48,7 @@ import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.session.AbstractSession;
+import tod.core.session.ISession;
 import tod.core.session.ISessionMonitor;
 import tod.gui.MinerUI;
 import tod.gui.seed.StructureSeed;
@@ -61,8 +62,8 @@ public class ABCTags
 {
 	public static void main(String[] args) throws Exception
 	{
-		StructureDatabase theStructureDatabase = StructureDatabase.create("abc");
 		TODConfig theConfig = new TODConfig();
+		StructureDatabase theStructureDatabase = StructureDatabase.create(theConfig, "abc");
 		theConfig.set(TODConfig.SCOPE_TRACE_FILTER, "[+xys]");
 		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(theConfig);
 		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theStructureDatabase, theDebuggerConfig);
@@ -149,12 +150,22 @@ public class ABCTags
 			itsStructureDatabase = aStructureDatabase;
 		}
 
+		public ISession getSession()
+		{
+			throw new UnsupportedOperationException();
+		}
+
 		public IStructureDatabase getStructureDatabase()
 		{
 			return itsStructureDatabase;
 		}
 
 		public void clear()
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		public IEventFilter createAdviceSourceIdFilter(int aAdviceSourceId)
 		{
 			throw new UnsupportedOperationException();
 		}

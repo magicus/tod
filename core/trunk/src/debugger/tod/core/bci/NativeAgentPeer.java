@@ -103,7 +103,7 @@ public abstract class NativeAgentPeer extends SocketThread
 			IInstrumenter aInstrumenter,
 			int aHostId)
 	{
-		super (aSocket);
+		super (aSocket, false);
 		assert aConfig != null;
 		itsConfig = aConfig;
 		itsStructureDatabaseId = aStructureDatabaseId;
@@ -118,6 +118,8 @@ public abstract class NativeAgentPeer extends SocketThread
 		// Check that the cache path we pass to the agent exists.
 		File theFile = new File(itsConfig.get(TODConfig.AGENT_CACHE_PATH));
 		theFile.mkdirs();
+		
+		start();
 	}
 	
 	/**

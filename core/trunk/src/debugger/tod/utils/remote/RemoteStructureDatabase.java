@@ -27,27 +27,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import tod.core.config.TODConfig;
 import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
-import tod.core.database.structure.ILocationsRepository;
 import tod.core.database.structure.IMemberInfo;
 import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.core.database.structure.IStructureDatabase.Stats;
 import tod.impl.database.structure.standard.ArrayTypeInfo;
 import tod.impl.database.structure.standard.ClassInfo;
 import tod.impl.database.structure.standard.PrimitiveTypeInfo;
 import tod.impl.database.structure.standard.StructureDatabase;
+import tod.impl.database.structure.standard.StructureDatabaseUtils;
 import zz.utils.Utils;
 
 /**
- * Remote object that mimics a {@link ILocationsRepository}.
- * Use {@link #createRepository(RIStructureDatabase)} on the client
+ * Remote object that mimics a {@link IStructureDatabase}.
+ * Use {@link #createDatabase(RIStructureDatabase)} on the client
  * to obtain the actual repository.
  * @author gpothier
  */
@@ -55,13 +57,17 @@ public class RemoteStructureDatabase extends UnicastRemoteObject
 implements RIStructureDatabase
 {
 	private IStructureDatabase itsDelegate;
+	private IMutableStructureDatabase itsMutableDelegate;
 	
 	private List<RIStructureDatabaseListener> itsListeners = 
 		new ArrayList<RIStructureDatabaseListener>();
 	
-	public RemoteStructureDatabase(IStructureDatabase aDelegate) throws RemoteException
+	private RemoteStructureDatabase(
+			IStructureDatabase aDelegate,
+			IMutableStructureDatabase aMutableStructureDatabase) throws RemoteException
 	{
 		itsDelegate = aDelegate;
+		itsMutableDelegate = aMutableStructureDatabase;
 		
 		Thread theNotifierThread = new Thread("RemoteStructureDatabase.Notifier")
 		{
@@ -89,7 +95,23 @@ implements RIStructureDatabase
 		theNotifierThread.setDaemon(true);
 		theNotifierThread.start();
 	}
+	
+	/**
+	 * Creates a {@link RemoteStructureDatabase} for a non-mutable structure database.
+	 */
+	public static RemoteStructureDatabase create(IStructureDatabase aStructureDatabase) throws RemoteException
+	{
+		return new RemoteStructureDatabase(aStructureDatabase, null);
+	}
 
+	/**
+	 * Creates a {@link RemoteStructureDatabase} for a mutable structure database.
+	 */
+	public static RemoteStructureDatabase createMutable(IMutableStructureDatabase aStructureDatabase) throws RemoteException
+	{
+		return new RemoteStructureDatabase(aStructureDatabase, aStructureDatabase);
+	}
+	
 	public void addListener(RIStructureDatabaseListener aListener) throws RemoteException
 	{
 		itsListeners.add(aListener);
@@ -126,6 +148,11 @@ implements RIStructureDatabase
 	{
 		return itsDelegate.getClass(aName, aFailIfAbsent);
 	}
+	
+	public IClassInfo getNewClass(String aName)
+	{
+		return itsMutableDelegate.getNewClass(aName);
+	}
 
 	public IClassInfo getClass(String aName, String aChecksum, boolean aFailIfAbsent)
 	{
@@ -147,6 +174,11 @@ implements RIStructureDatabase
 		return itsDelegate.getField(aId, aFailIfAbsent);
 	}
 
+	public TODConfig getConfig() 
+	{
+		return itsDelegate.getConfig();
+	}
+
 	public String getId()
 	{
 		return itsDelegate.getId();
@@ -160,6 +192,21 @@ implements RIStructureDatabase
 	public ITypeInfo getType(String aName, boolean aFailIfAbsent)
 	{
 		return null;
+	}
+
+	/**
+	 * Returns the missing probe infos, given that we already have some of them.
+	 */
+	public ProbeInfo[] getProbeInfos(int aAvailableCount) throws RemoteException
+	{
+		int theCount = itsDelegate.getProbeCount();
+		int theMissing = theCount-aAvailableCount;
+		if (theMissing == 0) return null;
+		
+		ProbeInfo[] theResult = new ProbeInfo[theMissing];
+		for (int i=0;i<theMissing;i++) theResult[i] = itsDelegate.getProbeInfo(i+aAvailableCount);
+		
+		return theResult;
 	}
 
 	/**
@@ -201,6 +248,9 @@ implements RIStructureDatabase
 		private boolean itsBehaviorsUpToDate = false;
 		private boolean itsFieldsUpToDate = false;
 		
+		private List<ProbeInfo> itsProbes = new ArrayList<ProbeInfo>();
+		
+		private final TODConfig itsConfig;
 		private final String itsId;
 		
 		public MyDatabase(RIStructureDatabase aDatabase) throws RemoteException
@@ -208,6 +258,7 @@ implements RIStructureDatabase
 			itsDatabase = aDatabase;
 			itsDatabase.addListener(this);
 			
+			itsConfig = aDatabase.getConfig();
 			itsId = aDatabase.getId();
 			
 			// Load existing classes
@@ -275,6 +326,11 @@ implements RIStructureDatabase
 			return itsId;
 		}
 		
+		public TODConfig getConfig()
+		{
+			return itsConfig;
+		}
+
 		public void changed(Stats aStats)
 		{
 			if (aStats == null) return; // Just for testing 
@@ -397,16 +453,6 @@ implements RIStructureDatabase
 			return itsLastStats;
 		}		
 		
-		public void addBehaviorListener(IBehaviorListener aListener)
-		{
-			throw new UnsupportedOperationException();
-		}
-		
-		public void removeBehaviorListener(IBehaviorListener aListener)
-		{
-			throw new UnsupportedOperationException();
-		}
-
 		public IBehaviorInfo[] getBehaviors()
 		{
 			throw new UnsupportedOperationException();
@@ -420,11 +466,7 @@ implements RIStructureDatabase
 				if (theClass == null)
 				{
 					theClass = (IMutableClassInfo) itsDatabase.getClass(aName, false);
-					if (theClass != null)
-					{
-						Utils.listSet(itsClasses, theClass.getId(), theClass);
-						itsClassesMap.put(theClass.getName(), theClass);
-					}
+					if (theClass != null) cacheClass(theClass);
 				}
 				
 				if (theClass == null && aFailIfAbsent) throw new RuntimeException("Class not found: "+aName);
@@ -460,7 +502,20 @@ implements RIStructureDatabase
 
 		public IMutableClassInfo getNewClass(String aName)
 		{
-			throw new UnsupportedOperationException();
+			try
+			{
+				IMutableClassInfo theClass = itsClassesMap.get(aName);
+				if (theClass == null)
+				{
+					theClass = (IMutableClassInfo) itsDatabase.getNewClass(aName);
+					cacheClass(theClass);
+				}
+				return theClass;
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
 		}
 
 		public ITypeInfo getNewType(String aName)
@@ -468,7 +523,43 @@ implements RIStructureDatabase
 			throw new UnsupportedOperationException();
 		}
 		
+		public int getBehaviorId(String aClassName, String aMethodName, String aMethodSignature)
+		{
+			return StructureDatabaseUtils.getBehaviorId(this, aClassName, aMethodName, aMethodSignature);
+		}
 		
+		public ProbeInfo getProbeInfo(int aProbeId)
+		{
+			if (aProbeId >= itsProbes.size())
+			{
+				// Fetch missing probes
+				try
+				{
+					ProbeInfo[] theProbeInfos = itsDatabase.getProbeInfos(itsProbes.size());
+					for (ProbeInfo theProbeInfo : theProbeInfos) itsProbes.add(theProbeInfo);
+				}
+				catch (RemoteException e)
+				{
+					throw new RuntimeException(e);
+				}
+			}
+			return itsProbes.get(aProbeId);
+		}
+
+		public int getProbeCount()
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		public int addProbe(int aBehaviorId, int aBytecodeIndex, int aAdviceSourceId)
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		public void setProbe(int aProbeId, int aBehaviorId, int aBytecodeIndex, int aAdviceSourceId)
+		{
+			throw new UnsupportedOperationException();
+		}
 	}
 
 }

@@ -22,7 +22,7 @@ package tod.core.database.browser;
 
 import java.util.List;
 
-import tod.core.database.event.IInstantiationEvent;
+import tod.core.database.event.ICreationEvent;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMemberInfo;
 import tod.core.database.structure.ITypeInfo;
@@ -44,10 +44,10 @@ public interface IObjectInspector extends ICompoundInspector<IFieldInfo>
 	public ObjectId getObject();
 	
 	/**
-	 * Returns the event that corresponds to the instantiation of the
+	 * Returns the event that corresponds to the creation of the
 	 * inspected object.
 	 */
-	public IInstantiationEvent getInstantiationEvent();
+	public ICreationEvent getCreationEvent();
 	
 	/**
 	 * Returns the type descriptor of the object.

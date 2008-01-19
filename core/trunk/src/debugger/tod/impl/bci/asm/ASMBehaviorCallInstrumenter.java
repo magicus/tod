@@ -38,7 +38,13 @@ public class ASMBehaviorCallInstrumenter implements Opcodes
 	private Type itsReturnType;
 
 	private int itsOperationBehaviorId;
-	private int itsBytecodeIndex;
+	
+	/**
+	 * The label that corresponds to the actual call instruction.
+	 * The client should provide a label to the call instrumenter,
+	 * and visit the label just prior to the actual call.
+	 */
+	private Label itsOriginalInstructionLabel;
 	
 	private int itsFirstVar;
 	private int itsAfterArgumentsVar;
@@ -57,6 +63,7 @@ public class ASMBehaviorCallInstrumenter implements Opcodes
 	}
 
 	public void setup(
+			Label aLabel,
 			int aMaxLocals,
 			int aMethodId, 
 			String aDesc, 
@@ -68,9 +75,7 @@ public class ASMBehaviorCallInstrumenter implements Opcodes
 		itsArgTypes = Type.getArgumentTypes(aDesc);
 		itsReturnType = Type.getReturnType(aDesc);
 		
-		Label l = new Label();
-		mv.visitLabel(l);
-		itsBytecodeIndex = l.getOffset();
+		itsOriginalInstructionLabel = aLabel;
 		
 		itsAfterArgumentsVar = -1;
 		itsTargetVar = -1;
@@ -123,7 +128,7 @@ public class ASMBehaviorCallInstrumenter implements Opcodes
 	public void callLogBeforeMethodCall(BehaviorCallType aCallType)
 	{
 		itsInstrumenter.invokeLogBeforeBehaviorCall(
-				itsBytecodeIndex, 
+				itsOriginalInstructionLabel, 
 				itsMethodId, 
 				aCallType,
 				itsStatic ? -1 : itsTargetVar, 
@@ -136,8 +141,8 @@ public class ASMBehaviorCallInstrumenter implements Opcodes
 	 */
 	public void callLogBeforeBehaviorCallDry(BehaviorCallType aCallType)
 	{
-		itsInstrumenter.invokeLogBeforeBehaviorCall(
-				itsBytecodeIndex, 
+		itsInstrumenter.invokeLogBeforeBehaviorCallDry(
+				itsOriginalInstructionLabel, 
 				itsMethodId,
 				aCallType);
 	}
@@ -183,7 +188,7 @@ public class ASMBehaviorCallInstrumenter implements Opcodes
 		// :: [result]
 		
 		itsInstrumenter.invokeLogAfterBehaviorCall(
-				itsBytecodeIndex, 
+				itsOriginalInstructionLabel, 
 				itsMethodId, 
 				itsStatic ? -1 : itsTargetVar, 
 				itsArrayVar);
@@ -203,7 +208,7 @@ public class ASMBehaviorCallInstrumenter implements Opcodes
 		// :: [exception]
 		
 		itsInstrumenter.invokeLogAfterBehaviorCallWithException(
-				itsBytecodeIndex, 
+				itsOriginalInstructionLabel, 
 				itsMethodId, 
 				itsStatic ? -1 : itsTargetVar, 
 				itsArrayVar);
@@ -215,7 +220,7 @@ public class ASMBehaviorCallInstrumenter implements Opcodes
 	 */
 	public void callLogAfterBehaviorCallDry()
 	{
-		itsInstrumenter.invokeLogAfterBehaviorCall();
+		itsInstrumenter.invokeLogAfterBehaviorCallDry();
 	}
 	
 	

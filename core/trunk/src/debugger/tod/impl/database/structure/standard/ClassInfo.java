@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.objectweb.asm.Type;
 
+import tod.core.config.TODConfig;
 import tod.core.database.browser.LocationUtils;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
@@ -37,6 +38,7 @@ import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableFieldInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
 import tod.impl.database.structure.standard.StructureDatabase.ClassNameInfo;
 import zz.utils.Utils;
@@ -77,6 +79,12 @@ implements IMutableClassInfo, ISerializableLocationInfo
 	
 	private Map<String, IMutableBehaviorInfo> itsBehaviorsMap = 
 		new HashMap<String, IMutableBehaviorInfo>();
+	
+	/**
+	 * Maps advice source ids (see {@link IBehaviorInfo.BytecodeTagType#ADVICE_SOURCE_ID})
+	 * with their position.
+	 */
+	private Map<Integer, SourceRange> itsAdviceSourceMap;
 	
 	/**
 	 * Whether this class info can be disposed.
@@ -347,6 +355,16 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		return "f" + aName + "|" + aType.getName();
 	}
 	
+	public void setAdviceSourceMap(Map<Integer, SourceRange> aMap)
+	{
+		itsAdviceSourceMap = aMap;
+	}
+
+	public SourceRange getAdviceSource(int aAdviceId)
+	{
+		return itsAdviceSourceMap != null ? itsAdviceSourceMap.get(aAdviceId) : null;
+	}
+
 	@Override
 	public String toString()
 	{

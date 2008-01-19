@@ -75,6 +75,11 @@ public class DebuggerGridConfig
 	public static final int EVENT_BYTECODE_LOCATION_BITS = 16; 
 	
 	/**
+	 * Number of bits used to represent the advice source id of an event
+	 */
+	public static final int EVENT_ADVICE_SRC_ID_BITS = 16; 
+	
+	/**
 	 * Number of bits used to represent the number of arguments of a behavior call.
 	 */
 	public static final int EVENT_ARGS_COUNT_BITS = 8; 
@@ -128,6 +133,11 @@ public class DebuggerGridConfig
 	 */
 	public static final int STRUCTURE_BEHAVIOR_COUNT = 200000;
 
+	/**
+	 * Maximum number of advice source ids.
+	 */
+	public static final int STRUCTURE_ADVICE_SRC_ID_COUNT = 10000;
+	
 	/**
 	 * Maximum number of fields
 	 */

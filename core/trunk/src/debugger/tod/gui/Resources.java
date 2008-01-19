@@ -34,6 +34,11 @@ public class Resources
 	public static final ImageResource ICON_FORWARD_STEP_OVER = loadIcon("forwardStepOver.png");
 	public static final ImageResource ICON_BACKWARD_STEP_OVER = loadIcon("backwardStepOver.png");
 	public static final ImageResource ICON_STEP_OUT = loadIcon("stepOut.png");
+		
+	public static final ImageResource ICON_ROLE_ADVICE_EXECUTION = loadIcon("roleAdviceExecution.png");
+	public static final ImageResource ICON_ROLE_ASPECT_INSTANCE_SELECTION = loadIcon("roleAspectInstanceSelection.png");
+	public static final ImageResource ICON_ROLE_CONTEXT_EXPOSURE = loadIcon("roleContextExposure.png");
+	public static final ImageResource ICON_ROLE_RESIDUE_EVALUATION = loadIcon("roleResidueEvaluation.png");
 	
 	private static ImageResource loadIcon (String aName)
 	{
@@ -58,10 +63,34 @@ public class Resources
 			if (theSide != aSize)
 			{
 				float theRatio = 1f * aSize / theSide;
+				
 				Image theImage = itsImage.getScaledInstance(
 						(int) (theWidth*theRatio), 
 						(int) (theHeight*theRatio), 
 						Image.SCALE_SMOOTH);
+				
+				return new ImageIcon(theImage);
+			}
+			else return new ImageIcon(itsImage);
+		}
+		
+		/**
+		 * Returns an icon of the specified height.
+		 */
+		public ImageIcon asIconH(int aHeight)
+		{
+			int theWidth = itsImage.getWidth();
+			int theHeight = itsImage.getHeight();
+			
+			if (theHeight != aHeight)
+			{
+				float theRatio = 1f * aHeight / theHeight;
+				
+				Image theImage = itsImage.getScaledInstance(
+						(int) (theWidth*theRatio), 
+						(int) (theHeight*theRatio), 
+						Image.SCALE_SMOOTH);
+				
 				return new ImageIcon(theImage);
 			}
 			else return new ImageIcon(itsImage);

@@ -20,6 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.structure;
 
+import java.util.Map;
+
 /**
  * Represents an in-construction {@link IClassInfo}.
  * @author gpothier
@@ -61,5 +63,8 @@ public interface IMutableClassInfo extends IClassInfo, IMutableLocationInfo
 	 */
 	public IMutableFieldInfo getNewField(String aName, ITypeInfo aType);
 
-
+	/**
+	 * Sets the map that maps advice ids to source ranges.
+	 */
+	public void setAdviceSourceMap(Map<Integer, SourceRange> aMap);
 }

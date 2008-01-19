@@ -31,9 +31,11 @@ import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
+import tod.core.database.event.ICreationEvent;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.IInstantiationEvent;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.event.INewArrayEvent;
 import tod.core.database.event.IWriteEvent;
 import tod.core.database.structure.IArraySlotFieldInfo;
 import tod.core.database.structure.IArrayTypeInfo;
@@ -63,8 +65,8 @@ public class ObjectInspector implements IObjectInspector
 	private Map<IMemberInfo, IEventFilter> itsFiltersMap = new HashMap<IMemberInfo, IEventFilter>();
 	private ITypeInfo itsType;
 	
-	private IInstantiationEvent itsInstantiationEvent;
-	private boolean itsInstantiationEventValid = false;
+	private ICreationEvent itsCreationEvent;
+	private boolean itsCreationEventValid = false;
 	
 	private long itsTimestamp;
 
@@ -90,15 +92,16 @@ public class ObjectInspector implements IObjectInspector
 		return itsObjectId;
 	}
 	
-	public IInstantiationEvent getInstantiationEvent()
+	
+	public ICreationEvent getCreationEvent()
 	{
-		if (itsInstantiationEvent == null) 
+		if (itsCreationEvent == null) 
 		{
-			TODUtils.log(1,"[ObjectInspector] Retrieving instantiation event for object: "+getObject());
+			TODUtils.log(1,"[ObjectInspector] Retrieving creation event for object: "+getObject());
 			IEventFilter theFilter = itsLogBrowser.createTargetFilter(getObject());
 			IEventBrowser theBrowser = itsLogBrowser.createBrowser(theFilter);
 			
-			// Instantiation is the first event if it has been captured
+			// Creation is the first event if it has been captured
 			// Check for timestamp because of concurrency & accuracy of timer.
 			long theTimestamp = 0;
 			while (theBrowser.hasNext())
@@ -107,14 +110,14 @@ public class ObjectInspector implements IObjectInspector
 				if (theTimestamp == 0) theTimestamp = theEvent.getTimestamp();
 				else if (theTimestamp != theEvent.getTimestamp()) break;
 				
-				if (theEvent instanceof IInstantiationEvent)
+				if (theEvent instanceof ICreationEvent)
 				{
-					itsInstantiationEvent = (IInstantiationEvent) theEvent;
+					itsCreationEvent = (ICreationEvent) theEvent;
 					break;
 				}
 			}
 		}
-		return itsInstantiationEvent;
+		return itsCreationEvent;
 		
 	}
 	
@@ -122,11 +125,11 @@ public class ObjectInspector implements IObjectInspector
 	{
 		if (itsType == null)
 		{
-			IInstantiationEvent theInstantiationEvent = getInstantiationEvent();
+			ICreationEvent theCreationEvent = getCreationEvent();
 			
-			if (theInstantiationEvent != null)
+			if (theCreationEvent != null)
 			{
-				itsType = theInstantiationEvent.getType();
+				itsType = theCreationEvent.getType();
 			}
 			else if (DebugFlags.TRY_GUESS_TYPE)
 			{
@@ -154,11 +157,11 @@ public class ObjectInspector implements IObjectInspector
 	{
 		if (itsDelegate == null)
 		{
-			IInstantiationEvent theEvent = getInstantiationEvent();
-			if (theEvent == null) itsDelegate = UNAVAILABLE;
+			ICreationEvent theCreationEvent = getCreationEvent();
+			if (theCreationEvent == null) itsDelegate = UNAVAILABLE;
 			else
 			{
-				ITypeInfo theType = theEvent.getType();
+				ITypeInfo theType = theCreationEvent.getType();
 				
 				if (theType instanceof IArrayTypeInfo)
 				{
@@ -466,8 +469,8 @@ public class ObjectInspector implements IObjectInspector
 			if (itsFields == null)
 			{
 				itsFields = new ArrayList<IFieldInfo>();
-				IInstantiationEvent theEvent = getInstantiationEvent();
-				int theSize = (Integer) theEvent.getArguments()[0];
+				INewArrayEvent theEvent = (INewArrayEvent) getCreationEvent();
+				int theSize = theEvent.getArraySize();
 				
 				for (int i=0;i<theSize;i++)
 				{

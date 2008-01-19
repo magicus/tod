@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.utils;
 
+import tod.core.config.TODConfig;
 import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
@@ -42,13 +43,19 @@ implements IMutableStructureDatabase
 	{
 	}
 	
+	public TODConfig getConfig()
+	{
+		return null;
+	}
+
 	public IBehaviorInfo getBehavior(int aId, boolean aFailIfAbsent)
 	{
 		return null;
 	}
 
-	public void addBehaviorListener(IBehaviorListener aListener)
+	public int getBehaviorId(String aClassName, String aMethodName, String aMethodSignature)
 	{
+		return 0;
 	}
 
 	public IBehaviorInfo[] getBehaviors()
@@ -59,10 +66,6 @@ implements IMutableStructureDatabase
 	public IMutableClassInfo getNewClass(String aName)
 	{
 		return null;
-	}
-
-	public void removeBehaviorListener(IBehaviorListener aListener)
-	{
 	}
 
 	public IMutableClassInfo getClass(int aId, boolean aFailIfAbsent)
@@ -128,6 +131,25 @@ implements IMutableStructureDatabase
 	public ITypeInfo getType(int aId, boolean aFailIfAbsent)
 	{
 		return null;
+	}
+
+	public int addProbe(int aBehaviorId, int aBytecodeIndex, int aAdviceSourceId)
+	{
+		return 0;
+	}
+
+	public void setProbe(int aProbeId, int aBehaviorId, int aBytecodeIndex, int aAdviceSourceId)
+	{
+	}
+
+	public ProbeInfo getProbeInfo(int aProbeId)
+	{
+		return null;
+	}
+
+	public int getProbeCount()
+	{
+		return 0;
 	}
 
 }

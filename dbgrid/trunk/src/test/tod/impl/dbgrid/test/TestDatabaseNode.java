@@ -94,7 +94,7 @@ public class TestDatabaseNode
 	
 	private EventGenerator createGenerator()
 	{
-		return new EventGenerator(100, 100, 100, 100, 100, 100, 100, 100);
+		return new EventGenerator(100, 100, 100, 100, 100, 100, 100, 100, 100);
 	}
 	
 }

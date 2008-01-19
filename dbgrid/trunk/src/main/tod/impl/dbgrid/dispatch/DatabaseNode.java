@@ -35,19 +35,18 @@ import java.util.List;
 import tod.core.DebugFlags;
 import tod.core.ILogCollector;
 import tod.core.config.TODConfig;
-import tod.core.database.structure.IExceptionResolver;
 import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ObjectId;
 import tod.core.transport.CollectorLogReceiver;
 import tod.core.transport.LogReceiver;
 import tod.impl.database.IBidiIterator;
-import tod.impl.database.structure.standard.ExceptionResolver;
 import tod.impl.database.structure.standard.HostInfo;
 import tod.impl.database.structure.standard.ThreadInfo;
-import tod.impl.database.structure.standard.ExceptionResolver.BehaviorInfo;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridEventCollector;
 import tod.impl.dbgrid.GridMaster;
+import tod.impl.dbgrid.RIGridMaster;
 import tod.impl.dbgrid.db.EventDatabase;
 import tod.impl.dbgrid.db.ObjectsDatabase;
 import tod.impl.dbgrid.db.RIBufferIterator;
@@ -57,6 +56,7 @@ import tod.impl.dbgrid.db.StringIndexer;
 import tod.impl.dbgrid.db.file.HardPagedFile;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
+import tod.utils.remote.RemoteStructureDatabase;
 import zz.utils.Utils;
 
 /**
@@ -74,13 +74,12 @@ implements RIDatabaseNode
 	private long itsLastTimestamp = 0;
 	
 	/**
-	 * A database node maintains a local copy of the exception resolver
-	 * for efficiency reasons.
-	 * In a local setup the exception resolver is shared with that of the master.
-	 * Otherwise each node has its own resolver.
-	 * @see EventCollector#exception(int, long, short, long, String, String, String, int, Object).
+	 * The database node needs the structure database for the following:
+	 * <li> Exception resolving
+	 * (see EventCollector#exception(int, long, short, long, String, String, String, int, Object)).
+	 * <li> Finding location of events.
 	 */
-	private IExceptionResolver itsExceptionResolver;
+	private IStructureDatabase itsStructureDatabase;
 	
 	private EventDatabase itsEventsDatabase;
 	private File itsObjectsDatabaseFile;
@@ -110,9 +109,7 @@ implements RIDatabaseNode
 	{
 		try
 		{
-			DatabaseNode theNode = new DatabaseNode();
-			theNode.itsExceptionResolver = new LocalNodeExceptionResolver(theNode);
-			return theNode;
+			return new DatabaseNode();
 		}
 		catch (RemoteException e)
 		{
@@ -122,15 +119,32 @@ implements RIDatabaseNode
 	
 	public static DatabaseNode createRemoteNode() throws RemoteException
 	{
-		DatabaseNode theNode = new DatabaseNode();
-		theNode.itsExceptionResolver = new NodeExceptionResolver(theNode);
-		return theNode;
+		return new DatabaseNode();
 	}
 	
 	@Override
 	protected void connectedToMaster()
 	{
 		super.connectedToMaster();
+		RIGridMaster theMaster = getMaster();
+		if (theMaster instanceof GridMaster)
+		{
+			// This is the case where the master is local.
+			GridMaster theLocalMaster = (GridMaster) theMaster;
+			itsStructureDatabase = theLocalMaster.getStructureDatabase();
+		}
+		else
+		{
+			try
+			{
+				itsStructureDatabase = 
+					RemoteStructureDatabase.createDatabase(theMaster.getRemoteStructureDatabase());
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
 		initDatabase();
 	}
 	
@@ -181,6 +195,14 @@ implements RIDatabaseNode
 	{
 		int theNodeIndex = Integer.parseInt(getNodeId().substring(3));
 		return new EventDatabase(theNodeIndex, aFile);
+	}
+	
+	/**
+	 * Returns the structure database used by this node.
+	 */
+	public IStructureDatabase getStructureDatabase()
+	{
+		return itsStructureDatabase;
 	}
 
 	
@@ -240,15 +262,6 @@ implements RIDatabaseNode
 		return itsEventsDatabase.getIterator(aCondition);
 	}
 	
-	public void registerBehaviors(BehaviorInfo[] aBehaviorInfos)
-	{
-		if (itsExceptionResolver instanceof ExceptionResolver)
-		{
-			ExceptionResolver theResolver = (ExceptionResolver) itsExceptionResolver;
-			theResolver.registerBehaviors(aBehaviorInfos);
-		}
-	}
-	
 	/**
 	 * Adds an event to the database.
 	 */
@@ -301,7 +314,7 @@ implements RIDatabaseNode
 		ILogCollector theCollector = new MyCollector(
 				aMaster,
 				aHostInfo,
-				itsExceptionResolver,
+				itsStructureDatabase,
 				this);
 		
 //		if (DebugFlags.COLLECTOR_LOG) theCollector = new PrintThroughCollector(
@@ -489,10 +502,10 @@ implements RIDatabaseNode
 		public MyCollector(
 				GridMaster aMaster, 
 				IHostInfo aHost, 
-				IExceptionResolver aExceptionResolver,
+				IStructureDatabase aStructureDatabase,
 				DatabaseNode aNode)
 		{
-			super(aHost, aExceptionResolver, aNode);
+			super(aHost, aStructureDatabase, aNode);
 			itsMaster = aMaster;
 		}
 

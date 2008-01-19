@@ -23,7 +23,6 @@ package tod.agent;
 import java.io.IOException;
 
 import tod.agent.transport.DummyCollector;
-import tod.agent.transport.NativeCollector;
 import tod.agent.transport.SocketCollector;
 
 /**
@@ -43,7 +42,6 @@ public class AgentConfig
 	public static final String PARAM_COLLECTOR_TYPE = "collector-type";
 	public static final String PARAM_COLLECTOR_TYPE_SOCKET = "socket";
 	public static final String PARAM_COLLECTOR_TYPE_DUMMY = "dummy";
-	public static final String PARAM_COLLECTOR_TYPE_NATIVE= "native";
 	
 	/**
 	 * This parameter defines the name of the host the agent runs on.
@@ -134,12 +132,6 @@ public class AgentConfig
 		}
 	}
 	
-	private static HighLevelCollector createNativeCollector()
-	{
-		System.out.println("[TOD] AgentConfig: Using native collector ("+itsHost+":"+itsEventsPort+")");
-		return new NativeCollector(itsHost, itsEventsPort);
-	}
-	
 	public static EventInterpreter getInterpreter()
 	{
 		if (itsInterpreter == null)
@@ -149,8 +141,6 @@ public class AgentConfig
 				itsCollector = createDummyCollector();
 			else if (PARAM_COLLECTOR_TYPE_SOCKET.equals(itsCollectorType)) 
 				itsCollector = createSocketCollector();
-			else if (PARAM_COLLECTOR_TYPE_NATIVE.equals(itsCollectorType)) 
-				itsCollector = createNativeCollector();
 			else 
 				throw new RuntimeException("Unknown collector type: "+itsCollectorType);
 			

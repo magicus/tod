@@ -130,11 +130,20 @@ public interface IBehaviorInfo extends IMemberInfo
     public static class BytecodeTagType<T> 
     {
     	public static final BytecodeTagType<Integer> SOURCE_POSITION = new BytecodeTagType<Integer>("srcPos");
-    	public static final BytecodeTagType<BytecodeRole> BYTECODE_ROLE = new BytecodeTagType<BytecodeRole>("role");
-    	public static final BytecodeTagType<Integer> INSTR_SHADOW = new BytecodeTagType<Integer>("shadow");
-    	public static final BytecodeTagType<Integer> INSTR_SOURCE = new BytecodeTagType<Integer>("source");
     	
-    	public static final BytecodeTagType[] ALL = {SOURCE_POSITION, BYTECODE_ROLE, INSTR_SHADOW, INSTR_SOURCE};
+    	/**
+    	 * The role of the bytecode (eg. base code, advice, arg. setup...)
+    	 */
+    	public static final BytecodeTagType<BytecodeRole> ROLE = new BytecodeTagType<BytecodeRole>("role");
+    	public static final BytecodeTagType<Integer> INSTR_SHADOW = new BytecodeTagType<Integer>("shadow");
+    	
+    	/**
+    	 * The id of the advice that caused the generation of the bytecode, if any.
+    	 * More information about the advice can be obtained through {@link IClassInfo#getAdviceSource(int)}
+    	 */
+    	public static final BytecodeTagType<Integer> ADVICE_SOURCE_ID = new BytecodeTagType<Integer>("source");
+    	
+    	public static final BytecodeTagType[] ALL = {SOURCE_POSITION, ROLE, INSTR_SHADOW, ADVICE_SOURCE_ID};
     	
     	private final String itsName;
 

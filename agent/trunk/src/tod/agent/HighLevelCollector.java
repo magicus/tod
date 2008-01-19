@@ -43,7 +43,7 @@ public abstract class HighLevelCollector<T extends ThreadData>
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp, 
-			long aOperationLocation,
+			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehaviorId,
 			int aExecutedBehaviorId,
@@ -55,7 +55,7 @@ public abstract class HighLevelCollector<T extends ThreadData>
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp, 
-			long aOperationLocation,
+			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehaviorId,
 			int aExecutedBehaviorId,
@@ -67,7 +67,7 @@ public abstract class HighLevelCollector<T extends ThreadData>
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp, 
-			long aOperationLocation,
+			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehaviorid,
 			int aExecutedBehaviorId,
@@ -79,7 +79,7 @@ public abstract class HighLevelCollector<T extends ThreadData>
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp, 
-			long aOperationLocation,
+			int aProbeId,
 			int aBehaviorId,
 			boolean aHasThrown,
 			Object aResult);
@@ -89,7 +89,7 @@ public abstract class HighLevelCollector<T extends ThreadData>
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp, 
-			long aOperationLocation,
+			int aProbeId,
 			int aFieldId,
 			Object aTarget,
 			Object aValue);
@@ -99,7 +99,7 @@ public abstract class HighLevelCollector<T extends ThreadData>
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp, 
-			long aOperationLocation,
+			int aProbeId,
 			Object aTarget,
 			int aBaseTypeId,
 			int aSize);
@@ -109,7 +109,7 @@ public abstract class HighLevelCollector<T extends ThreadData>
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp, 
-			long aOperationLocation,
+			int aProbeId,
 			Object aTarget,
 			int aIndex,
 			Object aValue);
@@ -119,7 +119,7 @@ public abstract class HighLevelCollector<T extends ThreadData>
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			long aOperationLocation,
+			int aProbeId,
 			int aVariableId,
 			Object aValue);
 	

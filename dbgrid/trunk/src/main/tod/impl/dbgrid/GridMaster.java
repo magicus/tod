@@ -43,17 +43,12 @@ import tod.agent.AgentConfig;
 import tod.core.bci.IInstrumenter;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
-import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IThreadInfo;
-import tod.core.database.structure.IStructureDatabase.IBehaviorListener;
 import tod.core.server.TODServer;
 import tod.core.transport.LogReceiver;
-import tod.impl.database.structure.standard.ExceptionResolver;
 import tod.impl.database.structure.standard.HostInfo;
-import tod.impl.database.structure.standard.LocalExceptionResolver;
-import tod.impl.database.structure.standard.ExceptionResolver.BehaviorInfo;
 import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
 import tod.impl.dbgrid.aggregator.StringHitsAggregator;
@@ -68,7 +63,6 @@ import tod.impl.dbgrid.dispatch.tree.DispatchTreeStructure;
 import tod.impl.dbgrid.dispatch.tree.LocalDispatchTreeStructure;
 import tod.impl.dbgrid.dispatch.tree.DispatchTreeStructure.NodeRole;
 import tod.impl.dbgrid.queries.EventCondition;
-import tod.utils.TODUtils;
 import tod.utils.remote.RIStructureDatabase;
 import tod.utils.remote.RemoteStructureDatabase;
 import zz.utils.ITask;
@@ -102,7 +96,6 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	
 	
 	private IMutableStructureDatabase itsStructureDatabase;
-	private ExceptionResolver itsExceptionResolver;
 	private RemoteStructureDatabase itsRemoteStructureDatabase;
 	
 	private long itsEventsCount;
@@ -126,25 +119,6 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	private ILogBrowser itsLocalLogBrowser;
 	
-	private final IBehaviorListener itsBehaviorListener = new IBehaviorListener()
-	{
-		public void behaviorRegistered(IBehaviorInfo aBehavior)
-		{
-			BehaviorInfo theBehaviorInfo = TODUtils.createBehaviorInfo(aBehavior);
-			try
-			{
-				for (RIDatabaseNode theNode : getNodes())
-				{
-					theNode.registerBehaviors(new BehaviorInfo[] { theBehaviorInfo });
-				}
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
-		}
-	};
-	
 	private GridMaster(
 			TODConfig aConfig, 
 			IMutableStructureDatabase aStructureDatabase, 
@@ -155,16 +129,14 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		itsConfig = aConfig;
 		itsInstrumenter = aInstrumenter;
 		itsStructureDatabase = aStructureDatabase;
-		itsStructureDatabase.addBehaviorListener(itsBehaviorListener);
-		itsRemoteStructureDatabase = new RemoteStructureDatabase(itsStructureDatabase);
-		itsExceptionResolver = new LocalExceptionResolver(itsStructureDatabase);
+		itsRemoteStructureDatabase = RemoteStructureDatabase.createMutable(itsStructureDatabase);
 		
 		itsDispatchTreeStructure = aDispatchTreeStructure;
 		itsDispatchTreeStructure.setMaster(this);
 
 		itsStartServer = aStartServer;	
 		
-		itsLocalLogBrowser = GridLogBrowser.createLocal(this);
+		itsLocalLogBrowser = GridLogBrowser.createLocal(null, this);
 		
 		createTimeoutThread();
 	}
@@ -257,27 +229,6 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		Timer theTimer = new Timer(true);
 		theTimer.schedule(new DataUpdater(), 5000, 3000);
 		
-		// Forward already registered behaviors.
-		IBehaviorInfo[] theBehaviors = itsStructureDatabase.getBehaviors();
-		BehaviorInfo[] theBehaviorInfos = new BehaviorInfo[theBehaviors.length];
-		for (int i = 0; i < theBehaviors.length; i++)
-		{
-			theBehaviorInfos[i] = TODUtils.createBehaviorInfo(theBehaviors[i]);
-		}
-
-		try
-		{
-			for (RIDatabaseNode theNode : getNodes())
-			{
-				theNode.registerBehaviors(theBehaviorInfos);
-			}
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
-		itsExceptionResolver.registerBehaviors(theBehaviorInfos);
-
 		System.out.println(READY_STRING);
 	}
 	
@@ -596,7 +547,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	
 	public int getBehaviorId(String aClassName, String aMethodName, String aMethodSignature)
 	{
-		return itsExceptionResolver.getBehaviorId(aClassName, aMethodName, aMethodSignature);
+		return itsStructureDatabase.getBehaviorId(aClassName, aMethodName, aMethodSignature);
 	}
 
 	public <O> O exec(ITask<ILogBrowser, O> aTask) 

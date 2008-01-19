@@ -59,6 +59,7 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 		createUI();
 	}
 	
+	@Override
 	protected void createUI()
 	{
 		super.createUI();
@@ -75,7 +76,7 @@ public abstract class BehaviorCallNode extends AbstractEventNode
 			}
 		});
 		
-		add(itsExpanderWidget, BorderLayout.WEST);
+		addToGutter(itsExpanderWidget);
 	}
 	
 	@Override

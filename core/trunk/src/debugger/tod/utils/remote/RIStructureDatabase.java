@@ -23,11 +23,13 @@ package tod.utils.remote;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+import tod.core.config.TODConfig;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.core.database.structure.IStructureDatabase.Stats;
 
 /**
@@ -39,14 +41,17 @@ public interface RIStructureDatabase extends Remote
 {
 	public void addListener(RIStructureDatabaseListener aListener) throws RemoteException;
 	
+	public TODConfig getConfig() throws RemoteException;
 	public String getId() throws RemoteException;
 	public IClassInfo getClass(String aName, String aChecksum, boolean aFailIfAbsent) throws RemoteException;
 	public IClassInfo[] getClasses(String aName) throws RemoteException;
 	public IClassInfo[] getClasses() throws RemoteException;
 	public IClassInfo getClass(String aName, boolean aFailIfAbsent) throws RemoteException;
 	public IClassInfo getClass(int aId, boolean aFailIfAbsent) throws RemoteException;
+	public IClassInfo getNewClass(String aName) throws RemoteException;
 	public ITypeInfo getType(String aName, boolean aFailIfAbsent) throws RemoteException;
 	public IFieldInfo getField(int aId, boolean aFailIfAbsent) throws RemoteException;
 	public IBehaviorInfo getBehavior(int aId, boolean aFailIfAbsent) throws RemoteException;
 	public Stats getStats() throws RemoteException;
+	public ProbeInfo[] getProbeInfos(int aAvailableCount) throws RemoteException;
 }

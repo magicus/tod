@@ -242,7 +242,6 @@ public class CollectorPacketReader
 				aStream.readShort(),
 				aStream.readLong(),
 				aStream.readInt(),
-				aStream.readShort(),
 				aStream.readBoolean(),
 				aStream.readInt(),
 				aStream.readInt(),
@@ -259,7 +258,6 @@ public class CollectorPacketReader
 				aStream.readShort(),
 				aStream.readLong(),
 				aStream.readInt(),
-				aStream.readShort(),
 				aStream.readBoolean(),
 				aStream.readInt(),
 				aStream.readInt(),
@@ -276,7 +274,6 @@ public class CollectorPacketReader
 				aStream.readShort(),
 				aStream.readLong(),
 				aStream.readInt(),
-				aStream.readShort(),
 				aStream.readBoolean(),
 				aStream.readInt(),
 				aStream.readInt(),
@@ -294,7 +291,6 @@ public class CollectorPacketReader
 				aStream.readShort(),
 				aStream.readLong(),
 				aStream.readInt(),
-				aStream.readShort(),
 				aStream.readInt(),
 				aStream.readBoolean(),
 				readValue(aStream, aCollector));
@@ -309,7 +305,6 @@ public class CollectorPacketReader
 				aStream.readShort(),
 				aStream.readLong(),
 				aStream.readInt(),
-				aStream.readShort(),
 				aStream.readInt(),
 				readValue(aStream, aCollector),
 				readValue(aStream, aCollector));
@@ -324,7 +319,6 @@ public class CollectorPacketReader
 				aStream.readShort(),
 				aStream.readLong(),
 				aStream.readInt(),
-				aStream.readShort(),
 				readValue(aStream, aCollector),
 				aStream.readInt(),
 				aStream.readInt());
@@ -339,7 +333,6 @@ public class CollectorPacketReader
 				aStream.readShort(),
 				aStream.readLong(),
 				aStream.readInt(),
-				aStream.readShort(),
 				readValue(aStream, aCollector),
 				aStream.readInt(),
 				readValue(aStream, aCollector));
@@ -354,7 +347,6 @@ public class CollectorPacketReader
 				aStream.readShort(),
 				aStream.readLong(),
 				aStream.readInt(),
-				aStream.readShort(),
 				aStream.readInt(),
 				readValue(aStream, aCollector));
 	}

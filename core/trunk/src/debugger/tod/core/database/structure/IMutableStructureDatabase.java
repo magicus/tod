@@ -50,5 +50,13 @@ public interface IMutableStructureDatabase extends IStructureDatabase
 	 */
 	public IMutableClassInfo getClass(int aId, boolean aFailIfAbsent);
 
-
+	/**
+	 * Creates a new probe and returns its id. 
+	 */
+	public int addProbe(int aBehaviorId, int aBytecodeIndex, int aAdviceSourceId);
+	
+	/**
+	 * Changes the probe info for the given id.
+	 */
+	public void setProbe(int aProbeId, int aBehaviorId, int aBytecodeIndex, int aAdviceSourceId);
 }

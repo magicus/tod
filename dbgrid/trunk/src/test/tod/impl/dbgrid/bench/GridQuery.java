@@ -42,6 +42,7 @@ import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.Stepper;
+import tod.core.database.event.ICreationEvent;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.IInstantiationEvent;
 import tod.core.database.event.ILogEvent;
@@ -96,7 +97,7 @@ public class GridQuery
 		System.out.println("Looking up master in registry");
 		RIGridMaster theRemoteMaster = (RIGridMaster) theRegistry.lookup(GridMaster.getRMIId(new TODConfig()));
 		
-		final GridLogBrowser theBrowser = GridLogBrowser.createRemote(theRemoteMaster);
+		final GridLogBrowser theBrowser = GridLogBrowser.createRemote(null, theRemoteMaster);
 		
 //		findObjects(theBrowser);
 		benchTrueQueries(theBrowser);
@@ -655,8 +656,8 @@ public class GridQuery
 		IObjectInspector theInspector = aBrowser.createObjectInspector(new ObjectId(aId));
 		long t0 = System.currentTimeMillis();
 		
-		IInstantiationEvent theInstantiationEvent = theInspector.getInstantiationEvent();
-		if (theInstantiationEvent == null)
+		ICreationEvent theCreationEventEvent = theInspector.getCreationEvent();
+		if (theCreationEventEvent == null)
 		{
 			System.out.println("  Instantiation event not found for: "+aId);
 			return null;
@@ -674,7 +675,7 @@ public class GridQuery
 		
 		System.out.println("  Retrieved fields for obj "+aId+"("+theType+"): "+t+"ms, "+theFields.size()+" fields");
 		
-		final long theFirstTimestamp = theInstantiationEvent.getTimestamp();
+		final long theFirstTimestamp = theCreationEventEvent.getTimestamp();
 		final long theLastTimestamp = aBrowser.getLastTimestamp();
 		final long theTimeSpan = theLastTimestamp-theFirstTimestamp;
 		

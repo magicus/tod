@@ -18,19 +18,28 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.core.database.structure;
+package tod.impl.database.structure.standard;
+
+import tod.core.database.structure.IMutableBehaviorInfo;
+import tod.core.database.structure.IMutableClassInfo;
+import tod.core.database.structure.IMutableStructureDatabase;
+import tod.core.database.structure.IStructureDatabase;
 
 /**
- * Permits to resolve exception locations to behavior ids.
- * This is in fact a very reduced view of the {@link IStructureDatabase},
- * holding only class and behavior names.
+ * Utilities for implementing {@link IStructureDatabase}
  * @author gpothier
  */
-public interface IExceptionResolver
+public class StructureDatabaseUtils
 {
-	/**
-	 * Returns the id of the specified behavior
-	 * @param aMethodSignature JVM signature of the method.
-	 */
-	public int getBehaviorId(String aClassName, String aMethodName, String aMethodSignature);
+	public static int getBehaviorId(
+			IMutableStructureDatabase aStructureDatabase, 
+			String aClassName, 
+			String aMethodName, 
+			String aMethodSignature)
+	{
+		IMutableClassInfo theClass = aStructureDatabase.getNewClass(aClassName);
+		IMutableBehaviorInfo theBehavior = theClass.getNewBehavior(aMethodName, aMethodSignature);
+		return theBehavior.getId();
+	}
+
 }

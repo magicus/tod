@@ -133,7 +133,7 @@ implements RIDispatchNode
 	 * Establishes the initial connection between this node and the
 	 * {@link GridMaster} through RMI.
 	 */
-	public void connectToMaster() throws IOException, NotBoundException, AlreadyBoundException
+	public void connectToMaster() throws IOException, NotBoundException
 	{
 		System.out.println("[AbstractDispatchNode] connectToMaster");
 		
@@ -145,7 +145,7 @@ implements RIDispatchNode
 
 		try
 		{
-			itsNodeId = itsMaster.registerNode(this, InetAddress.getLocalHost().getHostName());
+			itsNodeId = getMaster().registerNode(this, InetAddress.getLocalHost().getHostName());
 			connectedToMaster();
 		}
 		catch (NodeRejectedException e)
@@ -233,12 +233,12 @@ implements RIDispatchNode
 						try
 						{
 							MonitorData theData = Monitor.getInstance().collectData();
-							itsMaster.pushMonitorData(getNodeId(), theData);
+							getMaster().pushMonitorData(getNodeId(), theData);
 							sleep(10000);
 						}
 						catch (InterruptedException e)
 						{
-							itsMaster.nodeException(new NodeException(getNodeId(), e));
+							getMaster().nodeException(new NodeException(getNodeId(), e));
 						}
 					}
 				}

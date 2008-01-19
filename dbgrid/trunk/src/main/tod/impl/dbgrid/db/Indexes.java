@@ -27,6 +27,7 @@ import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_FIELD_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_THREADS_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_TYPE_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_VAR_COUNT;
+import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_ADVICE_SRC_ID_COUNT;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -57,6 +58,7 @@ public class Indexes
 	private StdIndexSet itsDepthIndex;
 	private StdIndexSet itsLocationIndex;
 	private RoleIndexSet itsBehaviorIndex;
+	private StdIndexSet itsAdviceSourceIdIndex;
 	private StdIndexSet itsFieldIndex;
 	private StdIndexSet itsVariableIndex;
 	
@@ -84,6 +86,7 @@ public class Indexes
 		itsThreadIndex = new StdIndexSet("thread", itsIndexManager, aFile, STRUCTURE_THREADS_COUNT+1);
 		itsDepthIndex = new StdIndexSet("depth", itsIndexManager, aFile, STRUCTURE_DEPTH_RANGE+1);
 		itsLocationIndex = new StdIndexSet("bytecodeLoc.", itsIndexManager, aFile, STRUCTURE_BYTECODE_LOCS_COUNT+1);
+		itsAdviceSourceIdIndex = new StdIndexSet("advice src id", itsIndexManager, aFile, STRUCTURE_ADVICE_SRC_ID_COUNT+1);
 		itsBehaviorIndex = new RoleIndexSet("behavior", itsIndexManager, aFile, STRUCTURE_BEHAVIOR_COUNT+1);
 		itsFieldIndex = new StdIndexSet("field", itsIndexManager, aFile, STRUCTURE_FIELD_COUNT+1);
 		itsVariableIndex = new StdIndexSet("variable", itsIndexManager, aFile, STRUCTURE_VAR_COUNT+1);
@@ -172,6 +175,7 @@ public class Indexes
 		itsThreadIndex.dispose();
 		itsDepthIndex.dispose();
 		itsLocationIndex.dispose();
+		itsAdviceSourceIdIndex.dispose();
 		itsBehaviorIndex.dispose();
 		itsFieldIndex.dispose();
 		itsVariableIndex.dispose();
@@ -227,6 +231,16 @@ public class Indexes
 	public HierarchicalIndex<StdTuple> getLocationIndex(int aIndex)
 	{
 		return itsLocationIndex.getIndex(aIndex);
+	}
+	
+	public void indexAdviceSourceId(int aIndex, StdTuple aTuple)
+	{
+		itsAdviceSourceIdIndex.addTuple(aIndex, aTuple);
+	}
+	
+	public HierarchicalIndex<StdTuple> getAdviceSourceIdIndex(int aIndex)
+	{
+		return itsAdviceSourceIdIndex.getIndex(aIndex);
 	}
 	
 	public void indexBehavior(int aIndex, RoleTuple aTuple)

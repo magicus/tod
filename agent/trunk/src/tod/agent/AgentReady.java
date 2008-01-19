@@ -31,7 +31,7 @@ public class AgentReady
 	 */
 	private static void enable()
 	{
-		System.out.println("AgentReady.enable()");
+		// Don't use System.out here, it is still null when this method is called...
 		ENABLED = true;
 	}
 	

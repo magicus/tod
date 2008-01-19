@@ -64,8 +64,6 @@ public class ASMInstrumenter implements IInstrumenter
 	{
 		itsConfig.setGlobalWorkingSet(aWorkingSet);
 	}
-	
-
 
 	public InstrumentedClass instrumentClass (String aName, byte[] aBytecode)
     {
@@ -103,7 +101,7 @@ public class ASMInstrumenter implements IInstrumenter
 		
 		byte[] theBytecode = theWriter.toByteArray();
 		
-		if (itsConfig.getTODConfig().get(TODConfig.WITH_ASPECTS).booleanValue())
+		if (itsConfig.getTODConfig().get(TODConfig.WITH_ASPECTS))
 			theVisitor.getClassInfo().setBytecode(theBytecode);
 		
 		return theVisitor.isModified()  

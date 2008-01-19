@@ -47,6 +47,7 @@ import tod.core.database.event.IInstantiationEvent;
 import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IMethodCallEvent;
+import tod.core.database.event.INewArrayEvent;
 import tod.gui.GUIUtils;
 import tod.gui.JobProcessor;
 import tod.gui.eventlist.MuralScroller.UnitScroll;
@@ -450,6 +451,11 @@ implements MouseWheelListener
 		{
 			IInstantiationEvent theEvent = (IInstantiationEvent) aEvent;
 			return new InstantiationNode(this, theEvent);
+		}
+		else if (aEvent instanceof INewArrayEvent)
+		{
+			INewArrayEvent theEvent = (INewArrayEvent) aEvent;
+			return new NewArrayNode(this, theEvent);
 		}
 		else if (aEvent instanceof IConstructorChainingEvent)
 		{

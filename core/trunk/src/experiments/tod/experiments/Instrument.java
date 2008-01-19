@@ -49,7 +49,7 @@ public class Instrument
 	public static ASMInstrumenter createInstrumenter()
 	{
 		TODConfig theConfig = new TODConfig();
-		IMutableStructureDatabase theStructureDatabase = StructureDatabase.create("test");
+		IMutableStructureDatabase theStructureDatabase = StructureDatabase.create(theConfig, "test");
 		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(theConfig);
 
 		return new ASMInstrumenter(theStructureDatabase, theDebuggerConfig);

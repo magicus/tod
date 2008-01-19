@@ -85,7 +85,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			long aOperationLocation, 
+			int aProbeId, 
 			int aBehaviorId,
 			boolean aHasThrown,
 			Object aResult)
@@ -101,7 +101,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
         			aParentTimestamp,
         			aDepth,
         			aTimestamp,
-        			aOperationLocation, 
+        			aProbeId, 
         			aBehaviorId,
         			aHasThrown,
         			aResult);
@@ -157,7 +157,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			long aOperationLocation,
+			int aProbeId,
 			int aFieldLocationId,
 			Object aTarget, 
 			Object aValue)
@@ -173,7 +173,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
         			aParentTimestamp,
         			aDepth,
         			aTimestamp,
-        			aOperationLocation,
+        			aProbeId,
         			aFieldLocationId,
         			aTarget,
         			aValue);
@@ -194,7 +194,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			long aOperationLocation,
+			int aProbeId,
 			Object aTarget,
 			int aBaseTypeId, 
 			int aSize)
@@ -210,7 +210,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
         			aParentTimestamp,
         			aDepth,
         			aTimestamp,
-        			aOperationLocation,
+        			aProbeId,
         			aTarget,
         			aBaseTypeId,
         			aSize);
@@ -230,7 +230,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			long aOperationLocation,
+			int aProbeId,
 			Object aTarget,
 			int aIndex, 
 			Object aValue)
@@ -246,7 +246,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 					aParentTimestamp,
 					aDepth,
 					aTimestamp,
-					aOperationLocation,
+					aProbeId,
 					aTarget,
 					aIndex,
 					aValue);
@@ -265,7 +265,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			long aParentTimestamp, 
 			short aDepth,
 			long aTimestamp, 
-			long aOperationLocation,
+			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehavior, 
 			int aExecutedBehavior, 
@@ -283,7 +283,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
         			aParentTimestamp,
         			aDepth,
         			aTimestamp, 
-        			aOperationLocation, 
+        			aProbeId, 
         			aDirectParent,
         			aCalledBehavior,
         			aExecutedBehavior,
@@ -304,7 +304,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			long aParentTimestamp,
 			short aDepth, 
 			long aTimestamp,
-			long aOperationLocation,
+			int aProbeId,
 			int aVariableId,
 			Object aValue)
 	{
@@ -319,7 +319,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
         			aParentTimestamp,
         			aDepth,
         			aTimestamp,
-        			aOperationLocation, 
+        			aProbeId, 
         			aVariableId, 
         			aValue);
         	
@@ -337,7 +337,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			long aOperationLocation,
+			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehavior,
 			int aExecutedBehavior,
@@ -355,7 +355,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
         			aParentTimestamp,
         			aDepth,
         			aTimestamp,
-        			aOperationLocation,
+        			aProbeId,
         			aDirectParent, 
         			aCalledBehavior,
         			aExecutedBehavior,
@@ -406,7 +406,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			long aParentTimestamp,
 			short aDepth, 
 			long aTimestamp,
-			long aOperationLocation,
+			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehavior,
 			int aExecutedBehavior,
@@ -424,7 +424,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
         			aParentTimestamp,
         			aDepth,
         			aTimestamp, 
-        			aOperationLocation,
+        			aProbeId,
         			aDirectParent,
         			aCalledBehavior, 
         			aExecutedBehavior, 

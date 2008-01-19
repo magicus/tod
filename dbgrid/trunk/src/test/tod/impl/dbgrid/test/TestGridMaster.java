@@ -68,7 +68,7 @@ public class TestGridMaster
 			theClass.getNewBehavior("m"+i, "()V");
 			theClass.getNewField("f"+i, PrimitiveTypeInfo.BOOLEAN);
 		}
-		GridLogBrowser theLogBrowser = GridLogBrowser.createLocal(theMaster);
+		GridLogBrowser theLogBrowser = GridLogBrowser.createLocal(null, theMaster);
 
 		EventGenerator theEventGenerator = createGenerator();
 		
@@ -234,7 +234,7 @@ public class TestGridMaster
 	
 	private EventGenerator createGenerator()
 	{
-		return new EventGenerator(100, 100, 100, 100, 100, 100, 100, 100);
+		return new EventGenerator(100, 100, 100, 100, 100, 100, 100, 100, 100);
 	}
 	
 }

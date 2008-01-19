@@ -27,13 +27,13 @@ import static tod.impl.dbgrid.ObjectCodec.writeObject;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.ITypeInfo;
+import tod.impl.common.event.NewArrayEvent;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.SplittedConditionHandler;
 import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.RoleIndexSet;
 import tod.impl.dbgrid.db.StdIndexSet;
-import tod.impl.dbgrid.event.InstantiationEvent;
 import zz.utils.bit.BitStruct;
 
 public class GridNewArrayEvent extends GridEvent
@@ -54,12 +54,13 @@ public class GridNewArrayEvent extends GridEvent
 			long aTimestamp, 
 			int aOperationBehaviorId,
 			int aOperationBytecodeIndex, 
+			int aAdviceSourceId,
 			long aParentTimestamp,
 			Object aTarget,
 			int aBaseTypeId,
 			int aSize)
 	{
-		set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aParentTimestamp, aTarget, aBaseTypeId, aSize);
+		set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp, aTarget, aBaseTypeId, aSize);
 	}
 
 	public GridNewArrayEvent(BitStruct aBitStruct)
@@ -77,12 +78,13 @@ public class GridNewArrayEvent extends GridEvent
 			long aTimestamp, 
 			int aOperationBehaviorId,
 			int aOperationBytecodeIndex, 
+			int aAdviceSourceId,
 			long aParentTimestamp,
 			Object aTarget,
 			int aBaseTypeId,
 			int aSize)
 	{
-		super.set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aParentTimestamp);
+		super.set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp);
 		itsTarget = aTarget;
 		itsBaseTypeId = aBaseTypeId;
 		itsSize = aSize;
@@ -112,15 +114,15 @@ public class GridNewArrayEvent extends GridEvent
 	@Override
 	public ILogEvent toLogEvent(GridLogBrowser aBrowser)
 	{
-		InstantiationEvent theEvent = new InstantiationEvent(aBrowser);
+		NewArrayEvent theEvent = new NewArrayEvent(aBrowser);
 		initEvent(aBrowser, theEvent);
-		theEvent.setTarget(getTarget());
+		theEvent.setInstance(getTarget());
 		
 		ITypeInfo theBaseType = aBrowser.getStructureDatabase().getType(getBaseTypeId(), false);
 		IArrayTypeInfo theType = aBrowser.getStructureDatabase().getArrayType(theBaseType, 1);
 
 		theEvent.setType(theType);
-		theEvent.setArguments(new Object[] { getSize() });
+		theEvent.setArraySize(getSize());
 		
 		return theEvent;
 	}

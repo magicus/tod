@@ -60,7 +60,7 @@ public class CountTODServer extends AbstractSession
 	{
 		super(aUri, aConfig);
 		itsStructureDatabase = StructureDatabase.create(aConfig);
-		itsBrowser = new LocalBrowser(itsStructureDatabase);
+		itsBrowser = new LocalBrowser(this, itsStructureDatabase);
 		
 		ASMDebuggerConfig theConfig = new ASMDebuggerConfig(aConfig);
 
@@ -150,13 +150,13 @@ public class CountTODServer extends AbstractSession
 			return itsCount;
 		}
 
-		public void arrayWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aOperationBehaviorId, int aOperationBytecodeIndex, Object aTarget, int aIndex, Object aValue)
+		public void arrayWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId, Object aTarget, int aIndex, Object aValue)
 		{
 			itsCount++;
 //			if (CALL_SUPER) super.arrayWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aTarget, aIndex, aValue);
 		}
 
-		public void behaviorExit(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aOperationBehaviorId, int aOperationBytecodeIndex, int aBehaviorId, boolean aHasThrown, Object aResult)
+		public void behaviorExit(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId, int aBehaviorId, boolean aHasThrown, Object aResult)
 		{
 			itsCount++;
 //			if (CALL_SUPER) super.behaviorExit(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aBehaviorId, aHasThrown, aResult);
@@ -168,32 +168,32 @@ public class CountTODServer extends AbstractSession
 //			if (CALL_SUPER) super.exception(aThreadId, aParentTimestamp, aDepth, aTimestamp, aDepth, aOperationBytecodeIndex, aException);
 		}
 
-		public void fieldWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aOperationBehaviorId, int aOperationBytecodeIndex, int aFieldId, Object aTarget, Object aValue)
+		public void fieldWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId, int aFieldId, Object aTarget, Object aValue)
 		{
 			itsCount++;
 //			if (CALL_SUPER) super.fieldWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aFieldId, aTarget, aValue);
 		}
 
-		public void instantiation(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aOperationBehaviorId, int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId, Object aTarget, Object[] aArguments)
+		public void instantiation(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId, Object aTarget, Object[] aArguments)
 		{
 			itsCount++;
 //			if (CALL_SUPER) super.instantiation(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
 		}
 
-		public void localWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aOperationBehaviorId, int aOperationBytecodeIndex, int aVariableId, Object aValue)
+		public void localWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId, int aVariableId, Object aValue)
 		{
 			itsCount++;
 //			if (CALL_SUPER) super.localWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aVariableId, aValue);
 		}
 
-		public void methodCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aOperationBehaviorId, int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId, Object aTarget, Object[] aArguments)
+		public void methodCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId, Object aTarget, Object[] aArguments)
 		{
 			itsCount++;
 //			if (CALL_SUPER) super.methodCall(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
 		}
 
 		public void newArray(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-				int aOperationBehaviorId, int aOperationBytecodeIndex, Object aTarget, int aBaseTypeId, int aSize)
+				int aProbeId, Object aTarget, int aBaseTypeId, int aSize)
 		{
 			itsCount++;
 		}
@@ -204,7 +204,7 @@ public class CountTODServer extends AbstractSession
 //			if (CALL_SUPER) super.output(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOutput, aData);
 		}
 
-		public void superCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aOperationBehaviorId, int aOperationBytecodeIndex, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId, Object aTarget, Object[] aArguments)
+		public void superCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId, Object aTarget, Object[] aArguments)
 		{
 			itsCount++;
 //			if (CALL_SUPER) super.superCall(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);

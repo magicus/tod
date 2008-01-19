@@ -33,7 +33,7 @@ public class TestSeek
 	public static void main(String[] args) throws Exception
 	{
 		GridMaster theMaster = GridReplay.replay(args);
-		GridLogBrowser theBrowser = GridLogBrowser.createLocal(theMaster);
+		GridLogBrowser theBrowser = GridLogBrowser.createLocal(null, theMaster);
 		IThreadInfo theThread = theBrowser.getThread(1);
 		IParentEvent theRoot = theBrowser.getCFlowRoot(theThread);
 		IEventBrowser theEventBrowser = theRoot.getChildrenBrowser();

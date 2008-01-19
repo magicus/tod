@@ -64,7 +64,7 @@ public class LocalGridSession extends AbstractSession
 		try
 		{
 			itsMaster = itsProcessManager.getMaster();
-			itsLogBrowser = GridLogBrowser.createRemote(itsMaster);
+			itsLogBrowser = GridLogBrowser.createRemote(this, itsMaster);
 			itsMonitor = Scheduler.get(itsLogBrowser);
 		}
 		catch (RemoteException e)

@@ -57,9 +57,9 @@ public class BehaviorPanel extends JPanel
 		}
 	};
 	
-	private static Column cRole = new TagColumn<BytecodeRole>("role", 150, BytecodeTagType.BYTECODE_ROLE);
+	private static Column cRole = new TagColumn<BytecodeRole>("role", 150, BytecodeTagType.ROLE);
 	private static Column cShadow = new IntTagColumn("shadow", 50, BytecodeTagType.INSTR_SHADOW);
-	private static Column cSource = new IntTagColumn("source", 50, BytecodeTagType.INSTR_SOURCE);
+	private static Column cSource = new IntTagColumn("source", 50, BytecodeTagType.ADVICE_SOURCE_ID);
 	
 	private static Column cCode = new Column("code", 500)
 	{
