@@ -34,7 +34,6 @@ import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.sourcelookup.ISourceLookupResult;
-import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
@@ -44,23 +43,18 @@ import org.eclipse.jdt.debug.core.IJavaFieldVariable;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
-import org.eclipse.jdt.debug.core.IJavaThread;
-import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
-import org.eclipse.jdt.internal.debug.core.model.JDIClassType;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
-import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.omg.CosNaming.IstringHelper;
 
+import tod.core.database.structure.SourceRange;
 import tod.utils.TODUtils;
 
 /**
@@ -110,20 +104,17 @@ public class SourceRevealerUtils
 	/**
 	 * Reveal the source code using Debug API. Only for JDT projects.
 	 */
-	public static void reveal (
-			final ILaunch aLaunch, 
-			final String aTypeName, 
-			final int aLineNumber)
+	public static void reveal (final ILaunch aLaunch, final SourceRange aSourceRange)
 	{
-		TODUtils.log(1,"[SourceRevealerUtils.reveal(ILaunch, String, int)]"+aTypeName+" "+aLineNumber);
+		TODUtils.log(1,"[SourceRevealerUtils.reveal(ILaunch, String, int)]"+aSourceRange);
 		getInstance().reveal (new Revealer()
 		{
 			public void reveal() 
 			{
 				FakeStackFrame theArtifact = new FakeStackFrame(
 						aLaunch,
-						aTypeName, 
-						aLineNumber);
+						aSourceRange.sourceFile, 
+						aSourceRange.startLine);
 				
 				ISourceLookupResult theResult = DebugUITools.lookupSource(
 						theArtifact, 
@@ -175,19 +166,18 @@ public class SourceRevealerUtils
 	 */
 	public static void reveal (
 			final List<IJavaProject> aJavaProject, 
-			final String aTypeName, 
-			final int aLineNumber)
+			final SourceRange aSourceRange)
 	{
-		TODUtils.log(1,"[SourceRevealerUtils.reveal(IJavaProject, String, int)]" +aTypeName +" "+aLineNumber );
+		TODUtils.log(1,"[SourceRevealerUtils.reveal(IJavaProject, String, int)]" +aSourceRange);
 		getInstance().reveal (new Revealer()
 		{
 			public void reveal() throws CoreException, BadLocationException
 			{
-				IType theType = TODPluginUtils.getType(aJavaProject, aTypeName);
+				IType theType = TODPluginUtils.getType(aJavaProject, aSourceRange.sourceFile);
 				if (theType == null) {
 					TODUtils.logf(0, "The type %s has not been found in the available sources " +
 							"of the Eclipse workspace.\n Path were " +
-							"to find the sources was: %s", aTypeName, aJavaProject);
+							"to find the sources was: %s", aSourceRange.sourceFile, aJavaProject);
 					return;
 				}
 				
@@ -200,7 +190,7 @@ public class SourceRevealerUtils
 					ITextEditor theTextEditor = (ITextEditor) theEditor;
 					IDocumentProvider theProvider= theTextEditor.getDocumentProvider();
 					IDocument theDocument = theProvider.getDocument(theTextEditor.getEditorInput());
-					int theStart= theDocument.getLineOffset(aLineNumber);
+					int theStart = theDocument.getLineOffset(aSourceRange.startLine);
 					theTextEditor.selectAndReveal(theStart, 0);
 				}
 			}

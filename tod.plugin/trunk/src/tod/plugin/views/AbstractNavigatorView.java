@@ -10,6 +10,7 @@ import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchPart;
 
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.SourceRange;
 import tod.gui.IGUIManager;
 import tod.plugin.DebuggingSession;
 
@@ -70,12 +71,12 @@ public abstract class AbstractNavigatorView extends AbstractAWTView implements I
 		itsMoving = false;
 	}
 	
-	public void gotoEvent(DebuggingSession aSession, ILogEvent aEvent)
+	public void gotoEvent(DebuggingSession aSession, SourceRange aSourceRange)
 	{
 	    if (itsMoving) return;
 	    itsMoving = true;
 
-	    aSession.gotoSource(aEvent);
+	    aSession.gotoSource(aSourceRange);
 	    
 	    itsMoving = false;
 	}

@@ -269,7 +269,7 @@ public abstract class NativeAgentPeer extends SocketThread
 		byte[] theBytecode = new byte[theLength];
 		aInputStream.readFully(theBytecode);
 		
-		System.out.print("Instrumenting "+theClassName+"... ");
+		System.out.println("Instrumenting "+theClassName+"... ");
 		InstrumentedClass theInstrumentedClass = null;
 		String theError = null;
 		try

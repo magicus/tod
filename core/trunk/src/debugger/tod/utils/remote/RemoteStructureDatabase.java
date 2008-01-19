@@ -455,7 +455,14 @@ implements RIStructureDatabase
 		
 		public IBehaviorInfo[] getBehaviors()
 		{
-			throw new UnsupportedOperationException();
+			updateStats();
+			List<IBehaviorInfo> theBehaviors = new ArrayList<IBehaviorInfo>();
+			for (int i=1;i<getStats().nBehaviors;i++)
+			{
+				IBehaviorInfo theBehavior = getBehavior(i, false);
+				if (theBehavior != null) theBehaviors.add(theBehavior);
+			}
+			return theBehaviors.toArray(new IBehaviorInfo[theBehaviors.size()]);
 		}
 
 		public IMutableClassInfo getClass(String aName, boolean aFailIfAbsent)

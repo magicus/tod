@@ -17,6 +17,14 @@ public class SourceRange implements Serializable
 	public final int endLine;
 	public final int endColumn;
 	
+	/**
+	 * Creates a source range for a single line
+	 */
+	public SourceRange(String aSourceFile, int aLine)
+	{
+		this(aSourceFile, aLine, 1, aLine, 1);
+	}
+	
 	public SourceRange(String aSourceFile, int aStartLine, int aStartColumn, int aEndLine, int aEndColumn)
 	{
 		sourceFile = aSourceFile;
@@ -24,5 +32,11 @@ public class SourceRange implements Serializable
 		startColumn = aStartColumn;
 		endLine = aEndLine;
 		endColumn = aEndColumn;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return String.format("%s:%d (%d,%d-%d,%d)", sourceFile, startLine, startLine, startColumn, endLine, endColumn);
 	}
 }

@@ -211,7 +211,7 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 	
 	public <T> T getTag(BytecodeTagType<T> aType, int aBytecodeIndex)
 	{
-		return itsTagMap.getTag(aType, aBytecodeIndex);
+		return itsTagMap != null ? itsTagMap.getTag(aType, aBytecodeIndex) : null;
 	}
 
 	public LocalVariableInfo[] getLocalVariables()
@@ -226,12 +226,12 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 
     public boolean isStaticInit()
     {
-    	return getBehaviourKind() == BehaviorKind.STATIC_BLOCK;
+    	return getBehaviourKind() == BehaviorKind.STATIC_INIT;
     }
     
     public boolean isStatic()
     {
-    	return getBehaviourKind() == BehaviorKind.STATIC_BLOCK
+    	return getBehaviourKind() == BehaviorKind.STATIC_INIT
     		|| getBehaviourKind() == BehaviorKind.STATIC_METHOD;
     }
     

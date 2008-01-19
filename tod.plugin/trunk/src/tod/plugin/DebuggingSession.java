@@ -21,9 +21,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.plugin;
 
 import org.eclipse.debug.core.ILaunch;
-import org.eclipse.jdt.core.IJavaProject;
 
-import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.SourceRange;
 import tod.core.session.DelegatedSession;
 import tod.core.session.ISession;
 
@@ -42,9 +41,9 @@ public class DebuggingSession extends DelegatedSession
 		itsGotoSourceDelegate = aGotoSourceDelegate;
 	}
 
-	public void gotoSource(ILogEvent aEvent)
+	public void gotoSource(SourceRange aSourceRange)
 	{
-		if (itsGotoSourceDelegate != null) itsGotoSourceDelegate.gotoSource(aEvent);
+		if (itsGotoSourceDelegate != null) itsGotoSourceDelegate.gotoSource(aSourceRange);
 	}
 	
 

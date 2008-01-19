@@ -226,6 +226,7 @@ public class DBProcessManager
 			ProcessBuilder theBuilder = new ProcessBuilder(
 					theJVM,
 					"-Xmx"+theHeapSize,
+					"-ea",
 					"-Djava.library.path="+lib,
 					"-cp", cp,
 					"-Dmaster-host=localhost",					
@@ -236,6 +237,7 @@ public class DBProcessManager
 					TODConfig.CLIENT_HOST_NAME.javaOpt(getConfig()),
 					TODConfig.COLLECTOR_JAVA_PORT.javaOpt(getConfig()),
 					TODConfig.COLLECTOR_NATIVE_PORT.javaOpt(getConfig()),
+					TODConfig.WITH_ASPECTS.javaOpt(getConfig()),
 //					theJDWP ? "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000" : "",
 					"tod.impl.dbgrid.GridMaster",
 					"0");
@@ -437,6 +439,7 @@ public class DBProcessManager
 					if (theLine == null) break;
 
 					printError(theLine);
+					System.err.println("[GridMaster process] "+theLine);
 
 					StringBuilder theBuilder = itsBuilder; // To avoid concurrency issues
 					if (theBuilder != null) itsBuilder.append("> "+theLine+"\n");

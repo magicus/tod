@@ -28,7 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
 import tod.core.config.TODConfig;
-import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.SourceRange;
 import tod.core.session.ISession;
 import tod.core.session.SessionTypeManager;
 import zz.utils.ui.StackLayout;
@@ -62,7 +62,7 @@ public class StandaloneUI extends JPanel
 
 	private class MyTraceView extends MinerUI
 	{
-		public void gotoEvent(ILogEvent aEvent)
+		public void gotoSource(SourceRange aSourceRange)
 		{
 		}
 	}

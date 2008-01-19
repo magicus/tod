@@ -284,6 +284,7 @@ public class GridEventCollector extends EventCollector
 			Object aValue)
 	{
 		ProbeInfo theProbeInfo = getProbeInfo(aProbeId);
+		assert theProbeInfo.behaviorId >= 0 : "Probe has no behavior: "+aProbeId;
 
 		itsVariableWriteEvent.set(
 				aThreadId,

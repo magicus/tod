@@ -31,6 +31,7 @@ import javax.swing.JSplitPane;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.browser.LocationUtils;
 import tod.core.database.browser.Stepper;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
@@ -336,7 +337,7 @@ public class CFlowView extends LogView implements IEventListView
 			showEvent(theSelectedEvent);
 		}
 		
-		if (theSelectedEvent != null) getGUIManager().gotoEvent(theSelectedEvent);
+		LocationUtils.gotoSource(getGUIManager(), theSelectedEvent);
 	}
 	
 	private void showEvent (ILogEvent aEvent)

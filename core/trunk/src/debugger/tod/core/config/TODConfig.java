@@ -41,9 +41,7 @@ import zz.utils.PublicCloneable;
  */
 public class TODConfig extends PublicCloneable implements Serializable
 {
-	
-	public static int TOD_VERBOSE = Integer.parseInt(System.getProperty("tod-verbose","0"));
-
+	public static int TOD_VERBOSE = ConfigUtils.readInt("tod-verbose", 0);
 	
 	private static final long serialVersionUID = 4959079097346687404L;
 	

@@ -21,8 +21,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui;
 
 import tod.core.database.browser.IEventFilter;
-import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.SourceRange;
 import tod.core.session.ISession;
 import tod.gui.kit.Options;
 import tod.gui.seed.LogViewSeed;
@@ -46,7 +46,7 @@ public interface IGUIManager
 	/**
 	 * Shows the location of the specified event in the source code.
 	 */
-	public void gotoEvent (ILogEvent aEvent);
+	public void gotoSource (SourceRange aSourceRange);
 	
 	/**
 	 * Returns a global job processor.

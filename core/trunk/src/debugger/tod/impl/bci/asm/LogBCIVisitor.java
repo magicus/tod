@@ -410,8 +410,9 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 				}
 				
 				itsInstrumenter.fillTagMap(theTagMap);
-				itsInstrumenter.updateProbes(theTagMap);
 			}
+			
+			itsInstrumenter.updateProbes(theTagMap);
 			
 			// Setup behavior info
 			itsBehavior.setup(

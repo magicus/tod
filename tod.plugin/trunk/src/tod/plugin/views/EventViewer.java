@@ -31,8 +31,8 @@ import javax.swing.SwingUtilities;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaModelException;
 
-import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.SourceRange;
 import tod.core.session.ISession;
 import tod.gui.MinerUI;
 import tod.gui.seed.LogViewSeed;
@@ -117,8 +117,8 @@ public class EventViewer extends MinerUI
 		}
 	}
 	
-	public void gotoEvent(ILogEvent aEvent)
+	public void gotoSource(SourceRange aSourceRange)
 	{
-	    itsTraceNavigatorView.gotoEvent(getSession(), aEvent);
+	    itsTraceNavigatorView.gotoEvent(getSession(), aSourceRange);
 	}
 }

@@ -12,6 +12,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 
 import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.SourceRange;
 
 public class GenericSourceRevealer extends SourceRevealer
 {
@@ -36,11 +37,11 @@ public class GenericSourceRevealer extends SourceRevealer
 	}
 
 	@Override
-	protected void gotoSource(String aTypeName, int aLineNumber)
+	protected void gotoSource(SourceRange aSourceRange)
 	{
 		if (!itsJavaProject.isEmpty())
 		{
-			SourceRevealerUtils.reveal(itsJavaProject, aTypeName, aLineNumber-1);
+			SourceRevealerUtils.reveal(itsJavaProject, aSourceRange);
 		}
 	}
 	

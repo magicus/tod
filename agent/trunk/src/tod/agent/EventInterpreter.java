@@ -105,7 +105,26 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		else return ""+Math.abs(ObjectIdentity.get(aObject));
 	}
 	
+	public void logClInitEnter(
+			int aBehaviorId, 
+			BehaviorCallType aCallType,
+			Object aObject, 
+			Object[] aArguments)
+	{
+		logBehaviorEnter(true, aBehaviorId, aCallType, aObject, aArguments);
+	}
+	
 	public void logBehaviorEnter(
+			int aBehaviorId, 
+			BehaviorCallType aCallType,
+			Object aObject, 
+			Object[] aArguments)
+	{
+		logBehaviorEnter(false, aBehaviorId, aCallType, aObject, aArguments);
+	}
+	
+	private void logBehaviorEnter(
+			boolean aClInit,
 			int aBehaviorId, 
 			BehaviorCallType aCallType,
 			Object aObject, 
@@ -118,7 +137,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		
 		FrameInfo theFrame = theThread.currentFrame();
 		
-		if (theFrame.entering)
+		if (theFrame.entering && ! aClInit)
 		{
 			// We come from instrumented code, ie. before/enter scheme
 			// Part of the event info is available in the frame, but the
@@ -169,6 +188,16 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 			// Or it is an implicit call (eg. static initializer) in the direct
 			// control flow of an instrumented method.
 			
+			int theProbeId = -1;
+			
+			// If the current frame corresponds to a dry call, adjust the depth
+			// (it means we enter an implicit clinit).
+			if (theFrame.entering) 
+			{
+				theThread.incDepthAdjust();
+				theProbeId = theFrame.probeId;
+			}
+			
 			short theDepth = (short) theThread.getCurrentDepth();
 			
 			if (EVENT_INTERPRETER_LOG) print(theDepth, String.format(
@@ -189,7 +218,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 					theFrame.parentTimestamp,
 					theDepth,
 					theTimestamp,
-					-1,
+					theProbeId,
 					true,
 					0,
 					aBehaviorId,
@@ -200,7 +229,24 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		}
 	}
 
+	public void logClInitExit(
+			int aProbeId, 
+			int aBehaviorId,
+			Object aResult)
+	{
+		logBehaviorExit(true, aProbeId, aBehaviorId, aResult);
+	}
+	
 	public void logBehaviorExit(
+			int aProbeId, 
+			int aBehaviorId,
+			Object aResult)
+	{
+		logBehaviorExit(false, aProbeId, aBehaviorId, aResult);		
+	}
+	
+	private void logBehaviorExit(
+			boolean aClInit,
 			int aProbeId, 
 			int aBehaviorId,
 			Object aResult)
@@ -209,12 +255,16 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		long theTimestamp = AgentUtils.timestamp();
 		T theThread = getThreadData();
 		theTimestamp = theThread.transformTimestamp(theTimestamp);
-		
 
 		FrameInfo theFrame = theThread.popFrame();
 		short theDepth = (short) (theThread.getCurrentDepth()+1);
 		assert theFrame.behavior == aBehaviorId;
 		assert theFrame.directParent;
+		
+		if (aClInit && theThread.currentFrame().entering)
+		{
+			theThread.decDepthAdjust();
+		}
 		
 		if (EVENT_INTERPRETER_LOG) print(theDepth, String.format(
 				"logBehaviorExit(%d, %d, %d, %s)\n thread: %d, depth: %d\n frame: %s",
@@ -764,6 +814,12 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 		 * are caused by the instrumentation.
 		 */
 		private boolean itsIgnoreNextException = false;
+		
+		/**
+		 * We need to adjust the depth given to events for the case of a dry before
+		 * followed by an implicit clinit execution.
+		 */
+		private int itsDepthAdjust = 0;
 
 		
 		public ThreadData(int aId)
@@ -842,10 +898,26 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 			return itsStack[itsStackSize-1];
 		}
 		
+		/**
+		 * Returns the current depth of the call stack, minus the depth adjustment.
+		 */
 		public short getCurrentDepth()
 		{
-			return (short) itsStackSize;
+			return (short) (itsStackSize - itsDepthAdjust);
 		}
+		
+		public void incDepthAdjust()
+		{
+			itsDepthAdjust++;
+		}
+		
+		public void decDepthAdjust()
+		{
+			assert itsDepthAdjust > 0;
+			itsDepthAdjust--;
+		}
+		
+		
 		
 		private byte getNextSerial(long aTimestamp)
 		{

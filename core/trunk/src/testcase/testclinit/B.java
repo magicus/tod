@@ -18,33 +18,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.agent;
+package testclinit;
 
-/**
- * An enumeration of the various behaviour types.
- * @author gpothier
- */
-public enum BehaviorKind
+public class B
 {
-	METHOD("method"), 
-	STATIC_METHOD("static method"), 
-	CONSTRUCTOR("constructor"), 
-	STATIC_INIT("static block");
+	public static int X = 12;
 	
-	private String itsName;
-	
-	BehaviorKind (String aName)
+	public static void bar()
 	{
-		itsName = aName;
+		System.out.println("bar");
 	}
 	
-	public String getName ()
+	public void foo()
 	{
-		return itsName;
+		System.out.println("foo");
 	}
-
-	/**
-	 * Cached values; call to values() is costly. 
-	 */
-	public static final BehaviorKind[] VALUES = values();
 }

@@ -102,7 +102,7 @@ public class ASMMethodInfo
 	public BehaviorKind getKind()
 	{
 		if ("<init>".equals(getName())) return BehaviorKind.CONSTRUCTOR;
-		else if ("<clinit>".equals(getName())) return BehaviorKind.STATIC_BLOCK;
+		else if ("<clinit>".equals(getName())) return BehaviorKind.STATIC_INIT;
 		else return isStatic() ? BehaviorKind.STATIC_METHOD : BehaviorKind.METHOD;
 	}
 	

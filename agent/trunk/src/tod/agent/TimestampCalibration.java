@@ -51,7 +51,7 @@ public class TimestampCalibration
 		for (int i=0;i<10;i++)
 		{
 			long d = getTimestampDelta();
-			System.out.println("[TOD] Delay: "+d+"ns.");
+//			System.out.println("[TOD] Delay: "+d+"ns.");
 			total += d;
 			c++;
 		}

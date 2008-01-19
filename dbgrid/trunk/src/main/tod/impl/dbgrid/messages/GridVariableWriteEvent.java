@@ -85,6 +85,7 @@ public class GridVariableWriteEvent extends GridEvent
 			int aVariableId, 
 			Object aValue)
 	{
+		assert aOperationBehaviorId >= 0;
 		super.set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp);
 		itsVariableId = aVariableId;
 		itsValue = aValue;
@@ -117,6 +118,7 @@ public class GridVariableWriteEvent extends GridEvent
 		theEvent.setValue(getValue());
 		
 		IBehaviorInfo theBehavior = theEvent.getOperationBehavior();
+		assert theBehavior != null : "Null behavior for event "+this;
 		
 		LocalVariableInfo theInfo = theBehavior.getLocalVariableInfo(
 				getOperationBytecodeIndex(), 

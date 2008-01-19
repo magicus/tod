@@ -32,6 +32,7 @@ import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.browser.LocationUtils;
 import tod.core.database.browser.ObjectIdUtils;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.ObjectId;
@@ -73,7 +74,7 @@ public class ObjectHistoryView extends LogView implements IEventListView
 		@Override
 		public void propertyChanged(IProperty<ILogEvent> aProperty, ILogEvent aOldValue, ILogEvent aNewValue)
 		{
-			if (aNewValue != null) getGUIManager().gotoEvent(aNewValue);
+			LocationUtils.gotoSource(getGUIManager(), aNewValue);
 			IEventFilter theFilter = aNewValue != null ?
 					getLogBrowser().createEventFilter(aNewValue)
 					: null;

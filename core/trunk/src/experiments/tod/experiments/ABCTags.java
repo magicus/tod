@@ -46,6 +46,7 @@ import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.session.AbstractSession;
 import tod.core.session.ISession;
@@ -94,7 +95,7 @@ public class ABCTags
 			setSession(new DummySession(aConfig, URI.create("dummy:dummy"), aLogBrowser));
 		}
 		
-		public void gotoEvent(ILogEvent aEvent)
+		public void gotoSource(SourceRange aSourceRange)
 		{
 		}
 	}

@@ -29,6 +29,7 @@ import tod.Util;
 import tod.agent.AgentConfig;
 import tod.agent.AgentReady;
 import tod.agent.BehaviorCallType;
+import tod.agent.BehaviorKind;
 import tod.agent.EventInterpreter;
 import tod.agent.ExceptionGeneratedReceiver;
 import tod.agent.TracedMethods;
@@ -45,6 +46,7 @@ import tod.impl.bci.asm.ASMInstrumenter.CodeRange;
 import tod.impl.bci.asm.ASMInstrumenter.RangeManager;
 import tod.impl.bci.asm.ProbesManager.TmpProbeInfo;
 import tod.impl.database.structure.standard.TagMap;
+import tod.utils.TODUtils;
 
 /**
  * Provides all the methods that perform the insertion
@@ -130,7 +132,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	/**
 	 * Updates the probes used in the behavior:
 	 * <li> Resolve bytecode indexes
-	 * <li> Include advice source id information.
+	 * <li> Include advice source id information (if tagmap is specified).
 	 */
 	public void updateProbes(TagMap aTagMap)
 	{
@@ -139,9 +141,9 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		{
 			int theBytecodeIndex = theProbe.label.getOffset();
 			
-			Integer theAdviceSourceId = aTagMap.getTag(
+			Integer theAdviceSourceId = aTagMap != null ? aTagMap.getTag(
 					BytecodeTagType.ADVICE_SOURCE_ID, 
-					theBytecodeIndex);
+					theBytecodeIndex) : null;
 			
 			itsStructureDatabase.setProbe(
 					theProbe.id, 
@@ -264,6 +266,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 
 		invokeLogBehaviorEnter(
 				itsBehavior.getId(),
+				"<clinit>".equals(itsBehavior.getName()),
 				aCallType,
 				itsMethodInfo.isStatic() ? -1 : 0,
 				theArrayVar);
@@ -286,7 +289,10 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitVarInsn(ASTORE, itsFirstFreeVar);
 		
-		invokeLogBehaviorExit(itsBehavior.getId(), itsFirstFreeVar);
+		invokeLogBehaviorExit(
+				itsBehavior.getId(), 
+				"<clinit>".equals(itsBehavior.getName()),
+				itsFirstFreeVar);
 	}
 	
 	public void behaviorExitWithException()
@@ -992,7 +998,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	}
 
 	public void invokeLogBehaviorEnter (
-			int aMethodId, 
+			int aMethodId,
+			boolean aClInit,
 			BehaviorCallType aCallType,
 			int aTargetVar, 
 			int aArgsArrayVar)
@@ -1026,13 +1033,16 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		mv.visitMethodInsn(
 				Opcodes.INVOKEVIRTUAL, 
 				Type.getInternalName(EventInterpreter.class), 
-				"logBehaviorEnter", 
+				aClInit ? "logClInitEnter" : "logBehaviorEnter", 
 				"(I"+Type.getDescriptor(BehaviorCallType.class)+"Ljava/lang/Object;[Ljava/lang/Object;)V");	
 	
 		mv.visitLabel(l);
 	}
 
-	public void invokeLogBehaviorExit (int aMethodId, int aResultVar)
+	public void invokeLogBehaviorExit (
+			int aMethodId, 
+			boolean aClInit,
+			int aResultVar)
 	{
 		Label l = new Label();
 		if (LogBCIVisitor.ENABLE_READY_CHECK)
@@ -1055,7 +1065,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		mv.visitMethodInsn(
 				Opcodes.INVOKEVIRTUAL, 
 				Type.getInternalName(EventInterpreter.class), 
-				"logBehaviorExit", 
+				aClInit ? "logClInitExit" : "logBehaviorExit", 
 				"(IILjava/lang/Object;)V");	
 	
 		mv.visitLabel(l);

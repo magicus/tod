@@ -22,6 +22,9 @@ package tod.core.database.browser;
 
 import org.objectweb.asm.Type;
 
+import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.ICallerSideEvent;
+import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
@@ -29,9 +32,12 @@ import tod.core.database.structure.ILocationsRepository;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.SourceRange;
+import tod.gui.IGUIManager;
+import tod.utils.TODUtils;
 
 /**
- * Utilities related to {@link ILocationsRepository}
+ * Utilities related to {@link IStructureDatabase}
  * @author gpothier
  */
 public class LocationUtils
@@ -174,5 +180,39 @@ public class LocationUtils
 		
 		return theBuilder.toString();
 	}
+
+	/**
+	 * Returns the source range corresponding to the given event.
+	 */
+	public static SourceRange getSourceRange (ILogEvent aEvent)
+	{
+		if (aEvent instanceof ICallerSideEvent)
+		{
+			ICallerSideEvent theEvent = (ICallerSideEvent) aEvent;
+			IBehaviorCallEvent theParent = theEvent.getParent();
+		    if (theParent == null) return null;
+		    
+		    int theBytecodeIndex = theEvent.getOperationBytecodeIndex();
+		    IBehaviorInfo theBehavior = theParent.getExecutedBehavior();
+		    if (theBehavior == null) return null;
+		    
+		    int theLineNumber = theBehavior.getLineNumber(theBytecodeIndex);
+		    ITypeInfo theType = theBehavior.getType();
+		    
+		    String theTypeName = theType.getName();
+		    return new SourceRange(theTypeName, theLineNumber);
+		}
+		else return null;
+	}
+	
+	/**
+	 * Tries to show the source code for the given event in the gui manager.
+	 */
+	public static void gotoSource(IGUIManager aGUIManager, ILogEvent aEvent)
+	{
+		SourceRange theSourceRange = LocationUtils.getSourceRange(aEvent);
+		if (theSourceRange != null) aGUIManager.gotoSource(theSourceRange);
+	}
+
 
 }

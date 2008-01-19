@@ -27,6 +27,7 @@ import javax.swing.JSplitPane;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.browser.LocationUtils;
 import tod.core.database.event.ILogEvent;
 import tod.gui.IGUIManager;
 import tod.gui.MinerUI;
@@ -64,7 +65,7 @@ public class FilterView extends LogView implements IEventListView
 		@Override
 		public void propertyChanged(IProperty<ILogEvent> aProperty, ILogEvent aOldValue, ILogEvent aNewValue)
 		{
-			if (aNewValue != null) getGUIManager().gotoEvent(aNewValue);
+			LocationUtils.gotoSource(getGUIManager(), aNewValue);
 			IEventFilter theFilter = aNewValue != null ?
 					getLogBrowser().createEventFilter(aNewValue)
 					: null;
