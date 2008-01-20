@@ -18,27 +18,38 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow.tree;
+package tod.core.database.browser;
 
-import javax.swing.JComponent;
-
-import tod.core.database.event.IParentEvent;
-import tod.gui.GUIUtils;
-import tod.gui.JobProcessor;
-
-public class RootStackNode extends AbstractStackNode
+public class ShadowId
 {
-	public RootStackNode(
-			JobProcessor aJobProcessor, 
-			IParentEvent aEvent, 
-			boolean aCurrentStackFrame, CallStackPanel aCallStackPanel)
+	public final int shadowId;
+	public final int adviceSourceId;
+	
+	public ShadowId(int aAdviceSourceId, int aShadowId)
 	{
-		super(aJobProcessor, aEvent, aCurrentStackFrame, aCallStackPanel);
+		adviceSourceId = aAdviceSourceId;
+		shadowId = aShadowId;
 	}
 
 	@Override
-	protected JComponent createHeader()
+	public int hashCode()
 	{
-		return GUIUtils.createLabel("Control flow root");
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + adviceSourceId;
+		result = prime * result + shadowId;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		ShadowId other = (ShadowId) obj;
+		if (adviceSourceId != other.adviceSourceId) return false;
+		if (shadowId != other.shadowId) return false;
+		return true;
 	}
 }

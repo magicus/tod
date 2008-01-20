@@ -18,38 +18,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.eventlist;
+package tod.gui.kit;
 
-import java.awt.Color;
+import tod.gui.eventlist.IntimacyLevel;
 
-import tod.core.database.event.ILogEvent;
-import tod.gui.FontConfig;
-import tod.gui.kit.html.HtmlBody;
-import tod.gui.kit.html.HtmlText;
-
-public class UnknownEventNode extends AbstractSimpleEventNode
+/**
+ * Defines commonly used property ids.
+ * @author gpothier
+ */
+public class StdProperties
 {
-	private ILogEvent itsEvent;
-
-	public UnknownEventNode(
-			EventListPanel aListPanel,
-			ILogEvent aEvent)
-	{
-		super(aListPanel);
-		itsEvent = aEvent;
-		createUI();
-	}
-	
-	@Override
-	protected void createHtmlUI(HtmlBody aBody)
-	{
-		aBody.add(HtmlText.create("Unknown ("+getEvent()+")", FontConfig.NORMAL, Color.GRAY));
-		createDebugInfo(aBody);
-	}
-	
-	@Override
-	protected ILogEvent getEvent()
-	{
-		return itsEvent;
-	}
+	public static final PropertyId<IntimacyLevel> INTIMACY_LEVEL = new PropertyId<IntimacyLevel>("IntimacyLevel");
 }

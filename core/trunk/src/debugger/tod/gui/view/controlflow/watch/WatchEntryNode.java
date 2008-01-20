@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow.watch;
+package tod.gui.view.controlflow.watch;
 
 import javax.swing.JPanel;
 
@@ -27,8 +27,8 @@ import tod.core.database.event.IWriteEvent;
 import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.JobProcessor;
-import tod.gui.controlflow.watch.AbstractWatchProvider.Entry;
 import tod.gui.kit.AsyncPanel;
+import tod.gui.view.controlflow.watch.AbstractWatchProvider.Entry;
 
 /**
  * Represents a watch entry (field or variable).

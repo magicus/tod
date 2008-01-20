@@ -79,7 +79,7 @@ public class StructureView extends LogView
 		
 		itsSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		itsSplitPane.setResizeWeight(0.5);
-		itsSplitPane.setLeftComponent(new JScrollPane(theSelectorPanel));
+		itsSplitPane.setLeftComponent(theSelectorPanel);
 		itsSplitPane.setRightComponent(itsInfoHolder);
 		
 		setLayout(new StackLayout());

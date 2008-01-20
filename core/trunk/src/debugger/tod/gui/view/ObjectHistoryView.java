@@ -114,7 +114,7 @@ public class ObjectHistoryView extends LogView implements IEventListView
 		itsSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		itsSplitPane.setResizeWeight(0.5);
 		
-		itsListPanel = new EventListPanel (getLogBrowser(), getJobProcessor());
+		itsListPanel = new EventListPanel (getBus(), getLogBrowser(), getJobProcessor());
 		
 		itsListPanel.eEventActivated().addListener(new IEventListener<ILogEvent>()
 				{

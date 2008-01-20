@@ -18,35 +18,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow.watch;
+package tod.gui.kit;
 
-import tod.core.database.browser.ILogBrowser;
-import tod.core.database.event.ILogEvent;
-import tod.core.database.structure.ObjectId;
-
-public class ObjectWatchSeed extends WatchSeed
+/**
+ * Identifies a property in a bus.
+ * @author gpothier
+ */
+public class PropertyId<T>
 {
-	private ObjectId itsObject;
+	private String itsName;
+
+	public PropertyId(String aName)
+	{
+		itsName = aName;
+	}
 	
-	public ObjectWatchSeed(
-			String aTitle,
-			WatchPanel aWatchPanel, 
-			ILogBrowser aLogBrowser,
-			ILogEvent aRefEvent,
-			ObjectId aObject)
-	{
-		super(aTitle, aWatchPanel, aLogBrowser, aRefEvent);
-		itsObject = aObject;
-	}
-
 	@Override
-	public AbstractWatchProvider createProvider()
+	public String toString()
 	{
-		return new ObjectWatchProvider(
-				getTitle(),
-				getLogBrowser(),
-				getRefEvent(),
-				itsObject);
+		return itsName;
 	}
-
+	
 }

@@ -95,6 +95,28 @@ public class Resources
 			}
 			else return new ImageIcon(itsImage);
 		}
+		
+		/**
+		 * Returns an icon of the specified width.
+		 */
+		public ImageIcon asIconW(int aWidth)
+		{
+			int theWidth = itsImage.getWidth();
+			int theHeight = itsImage.getHeight();
+			
+			if (theWidth != aWidth)
+			{
+				float theRatio = 1f * aWidth / theWidth;
+				
+				Image theImage = itsImage.getScaledInstance(
+						(int) (theWidth*theRatio), 
+						(int) (theHeight*theRatio), 
+						Image.SCALE_SMOOTH);
+				
+				return new ImageIcon(theImage);
+			}
+			else return new ImageIcon(itsImage);
+		}
 	}
 
 }

@@ -18,57 +18,35 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow.watch;
+package tod.gui.view.controlflow.watch;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
-import tod.gui.seed.Seed;
+import tod.core.database.structure.ObjectId;
 
-public abstract class WatchSeed extends Seed
+public class ObjectWatchSeed extends WatchSeed
 {
-	private String itsTitle;
-	private WatchPanel itsWatchPanel;
-	private ILogBrowser itsLogBrowser;
-	private ILogEvent itsRefEvent;
+	private ObjectId itsObject;
 	
-
-	public WatchSeed(
+	public ObjectWatchSeed(
 			String aTitle,
 			WatchPanel aWatchPanel, 
-			ILogBrowser aLogBrowser, 
-			ILogEvent aRefEvent)
+			ILogBrowser aLogBrowser,
+			ILogEvent aRefEvent,
+			ObjectId aObject)
 	{
-		itsTitle = aTitle;
-		itsWatchPanel = aWatchPanel;
-		itsLogBrowser = aLogBrowser;
-		itsRefEvent = aRefEvent;
-	}
-
-	public String getTitle()
-	{
-		return itsTitle;
-	}
-	
-	public WatchPanel getWatchPanel()
-	{
-		return itsWatchPanel;
-	}
-
-	public ILogBrowser getLogBrowser()
-	{
-		return itsLogBrowser;
-	}
-
-	public ILogEvent getRefEvent()
-	{
-		return itsRefEvent;
+		super(aTitle, aWatchPanel, aLogBrowser, aRefEvent);
+		itsObject = aObject;
 	}
 
 	@Override
-	public void open()
+	public AbstractWatchProvider createProvider()
 	{
-		itsWatchPanel.showWatch(createProvider());
+		return new ObjectWatchProvider(
+				getTitle(),
+				getLogBrowser(),
+				getRefEvent(),
+				itsObject);
 	}
-	
-	public abstract AbstractWatchProvider createProvider();
+
 }

@@ -18,26 +18,52 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow.watch;
+package tod.gui.kit;
 
-import tod.core.database.browser.ILogBrowser;
-import tod.core.database.event.ILogEvent;
+import java.awt.LayoutManager;
 
-public class StackFrameWatchSeed extends WatchSeed
+import javax.swing.JPanel;
+
+import zz.utils.ui.MousePanel;
+
+/**
+ * A panel that has a bus (but does not own it)
+ * @author gpothier
+ */
+public class BusPanel extends MousePanel
 {
+	private final Bus itsBus;
 
-	public StackFrameWatchSeed(String aTitle, WatchPanel aWatchPanel, ILogBrowser aLogBrowser, ILogEvent aRefEvent)
+	public BusPanel(Bus aBus)
 	{
-		super(aTitle, aWatchPanel, aLogBrowser, aRefEvent);
+		itsBus = aBus;
 	}
 
-	@Override
-	public AbstractWatchProvider createProvider()
+	public BusPanel(LayoutManager aLayout, Bus aBus)
 	{
-		return new StackFrameWatchProvider(
-				getTitle(),
-				getLogBrowser(),
-				getRefEvent());
+		super(aLayout);
+		itsBus = aBus;
 	}
 
+	public BusPanel(boolean aIsDoubleBuffered, Bus aBus)
+	{
+		super(aIsDoubleBuffered);
+		itsBus = aBus;
+	}
+
+	public BusPanel(LayoutManager aLayout, boolean aIsDoubleBuffered, Bus aBus)
+	{
+		super(aLayout, aIsDoubleBuffered);
+		itsBus = aBus;
+	}
+
+	/**
+	 * Returns the bus used by this panel.
+	 */
+	public Bus getBus()
+	{
+		return itsBus;
+	}
+	
+	
 }

@@ -18,46 +18,26 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.eventlist;
+package tod.gui.view.controlflow.watch;
 
-import tod.core.database.event.ILocalVariableWriteEvent;
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
-import tod.gui.Hyperlinks;
-import tod.gui.kit.html.HtmlBody;
 
-public class LocalVariableWriteNode extends AbstractSimpleEventNode
+public class StackFrameWatchSeed extends WatchSeed
 {
-	private ILocalVariableWriteEvent itsEvent;
 
-	public LocalVariableWriteNode(
-			EventListPanel aListPanel,
-			ILocalVariableWriteEvent aEvent)
+	public StackFrameWatchSeed(String aTitle, WatchPanel aWatchPanel, ILogBrowser aLogBrowser, ILogEvent aRefEvent)
 	{
-		super(aListPanel);
-		itsEvent = aEvent;
-		createUI();
+		super(aTitle, aWatchPanel, aLogBrowser, aRefEvent);
 	}
-	
+
 	@Override
-	protected void createHtmlUI(HtmlBody aBody)
+	public AbstractWatchProvider createProvider()
 	{
-		aBody.addText(itsEvent.getVariable().getVariableName());
-		aBody.addText(" = ");
-		
-		aBody.add(Hyperlinks.object(
-				Hyperlinks.HTML,
+		return new StackFrameWatchProvider(
+				getTitle(),
 				getLogBrowser(),
-				getJobProcessor(),
-				itsEvent.getValue(),
-				itsEvent,
-				showPackageNames()));
+				getRefEvent());
+	}
 
-		createDebugInfo(aBody);
-	}
-	
-	@Override
-	protected ILogEvent getEvent()
-	{
-		return itsEvent;
-	}
 }

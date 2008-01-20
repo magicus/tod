@@ -20,44 +20,30 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.eventlist;
 
-import tod.core.database.event.ILocalVariableWriteEvent;
-import tod.core.database.event.ILogEvent;
-import tod.gui.Hyperlinks;
-import tod.gui.kit.html.HtmlBody;
+import tod.core.database.browser.GroupingEventBrowser.EventGroup;
 
-public class LocalVariableWriteNode extends AbstractSimpleEventNode
+/**
+ * Base class for nodes that represent groups of events
+ * @author gpothier
+ */
+public abstract class AbstractEventGroupNode<K> extends AbstractEventNode
 {
-	private ILocalVariableWriteEvent itsEvent;
+	private EventGroup<K> itsGroup;
 
-	public LocalVariableWriteNode(
-			EventListPanel aListPanel,
-			ILocalVariableWriteEvent aEvent)
+	public AbstractEventGroupNode(EventListPanel aListPanel, EventGroup<K> aGroup)
 	{
 		super(aListPanel);
-		itsEvent = aEvent;
-		createUI();
+		itsGroup = aGroup;
+	}
+	
+	public EventGroup<K> getGroup()
+	{
+		return itsGroup;
 	}
 	
 	@Override
-	protected void createHtmlUI(HtmlBody aBody)
+	protected EventGroup<K> getEvent()
 	{
-		aBody.addText(itsEvent.getVariable().getVariableName());
-		aBody.addText(" = ");
-		
-		aBody.add(Hyperlinks.object(
-				Hyperlinks.HTML,
-				getLogBrowser(),
-				getJobProcessor(),
-				itsEvent.getValue(),
-				itsEvent,
-				showPackageNames()));
-
-		createDebugInfo(aBody);
-	}
-	
-	@Override
-	protected ILogEvent getEvent()
-	{
-		return itsEvent;
+		return itsGroup;
 	}
 }

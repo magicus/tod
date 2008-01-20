@@ -42,7 +42,7 @@ import tod.gui.kit.html.HtmlText;
 import zz.utils.ui.StackLayout;
 import zz.utils.ui.UIUtils;
 
-public abstract class BehaviorCallNode extends AbstractEventNode
+public abstract class BehaviorCallNode extends AbstractSimpleEventNode
 {
 	
 	private IBehaviorCallEvent itsEvent;

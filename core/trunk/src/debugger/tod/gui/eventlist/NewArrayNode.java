@@ -25,7 +25,7 @@ import tod.core.database.event.INewArrayEvent;
 import tod.gui.Hyperlinks;
 import tod.gui.kit.html.HtmlBody;
 
-public class NewArrayNode extends AbstractEventNode
+public class NewArrayNode extends AbstractSimpleEventNode
 {
 	private INewArrayEvent itsEvent;
 

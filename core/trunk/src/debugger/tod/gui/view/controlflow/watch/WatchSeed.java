@@ -18,46 +18,57 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.eventlist;
+package tod.gui.view.controlflow.watch;
 
-import tod.core.database.event.ILocalVariableWriteEvent;
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
-import tod.gui.Hyperlinks;
-import tod.gui.kit.html.HtmlBody;
+import tod.gui.seed.Seed;
 
-public class LocalVariableWriteNode extends AbstractSimpleEventNode
+public abstract class WatchSeed extends Seed
 {
-	private ILocalVariableWriteEvent itsEvent;
+	private String itsTitle;
+	private WatchPanel itsWatchPanel;
+	private ILogBrowser itsLogBrowser;
+	private ILogEvent itsRefEvent;
+	
 
-	public LocalVariableWriteNode(
-			EventListPanel aListPanel,
-			ILocalVariableWriteEvent aEvent)
+	public WatchSeed(
+			String aTitle,
+			WatchPanel aWatchPanel, 
+			ILogBrowser aLogBrowser, 
+			ILogEvent aRefEvent)
 	{
-		super(aListPanel);
-		itsEvent = aEvent;
-		createUI();
+		itsTitle = aTitle;
+		itsWatchPanel = aWatchPanel;
+		itsLogBrowser = aLogBrowser;
+		itsRefEvent = aRefEvent;
+	}
+
+	public String getTitle()
+	{
+		return itsTitle;
 	}
 	
-	@Override
-	protected void createHtmlUI(HtmlBody aBody)
+	public WatchPanel getWatchPanel()
 	{
-		aBody.addText(itsEvent.getVariable().getVariableName());
-		aBody.addText(" = ");
-		
-		aBody.add(Hyperlinks.object(
-				Hyperlinks.HTML,
-				getLogBrowser(),
-				getJobProcessor(),
-				itsEvent.getValue(),
-				itsEvent,
-				showPackageNames()));
+		return itsWatchPanel;
+	}
 
-		createDebugInfo(aBody);
+	public ILogBrowser getLogBrowser()
+	{
+		return itsLogBrowser;
+	}
+
+	public ILogEvent getRefEvent()
+	{
+		return itsRefEvent;
+	}
+
+	@Override
+	public void open()
+	{
+		itsWatchPanel.showWatch(createProvider());
 	}
 	
-	@Override
-	protected ILogEvent getEvent()
-	{
-		return itsEvent;
-	}
+	public abstract AbstractWatchProvider createProvider();
 }

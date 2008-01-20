@@ -31,7 +31,7 @@ import tod.gui.kit.StdOptions;
 import tod.gui.kit.html.HtmlBody;
 import tod.gui.kit.html.HtmlText;
 
-public class ExceptionGeneratedNode extends AbstractEventNode
+public class ExceptionGeneratedNode extends AbstractSimpleEventNode
 {
 	private IExceptionGeneratedEvent itsEvent;
 

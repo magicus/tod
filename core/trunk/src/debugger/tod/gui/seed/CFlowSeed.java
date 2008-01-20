@@ -27,8 +27,8 @@ import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
 import tod.core.database.structure.IThreadInfo;
 import tod.gui.IGUIManager;
-import tod.gui.controlflow.CFlowView;
 import tod.gui.view.LogView;
+import tod.gui.view.controlflow.CFlowView;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
 

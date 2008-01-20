@@ -28,6 +28,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.ObjectId;
 import tod.gui.FontConfig;
@@ -151,6 +152,11 @@ implements IOptionsOwner
 	public IGUIManager getGUIManager()
 	{
 		return itsGUIManager;
+	}
+	
+	public TODConfig getConfig()
+	{
+		return getGUIManager().getSession().getConfig();
 	}
 	
 	/**

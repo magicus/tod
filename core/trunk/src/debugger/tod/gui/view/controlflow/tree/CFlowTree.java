@@ -18,18 +18,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow.tree;
+package tod.gui.view.controlflow.tree;
 
-import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
+import tod.core.config.TODConfig;
+import tod.core.database.browser.GroupingEventBrowser;
+import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.JoinpointShadowGroupingDefinition;
+import tod.core.database.browser.ShadowId;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
 import tod.gui.JobProcessor;
 import tod.gui.MinerUI;
-import tod.gui.controlflow.CFlowView;
 import tod.gui.eventlist.EventListPanel;
+import tod.gui.kit.BusPanel;
+import tod.gui.view.controlflow.CFlowView;
 import zz.utils.Utils;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;
@@ -38,7 +43,7 @@ import zz.utils.properties.PropertyUtils;
 import zz.utils.properties.SimpleRWProperty;
 import zz.utils.ui.StackLayout;
 
-public class CFlowTree extends JPanel
+public class CFlowTree extends BusPanel
 {
 	private static final String PROPERTY_SPLITTER_POS = "cflowTree.splitterPos";
 	
@@ -59,7 +64,17 @@ public class CFlowTree extends JPanel
 				
 				if (Utils.different(itsCurrentParent, theParent))
 				{
-					itsEventListPanel.setBrowser(theParent.getChildrenBrowser());
+					IEventBrowser theBrowser = theParent.getChildrenBrowser();
+					
+					if (itsView.getConfig().get(TODConfig.WITH_ASPECTS))
+					{
+						theBrowser = new GroupingEventBrowser<ShadowId>(
+								theBrowser,
+								JoinpointShadowGroupingDefinition.getInstance(),
+								true);
+					}
+					
+					itsEventListPanel.setBrowser(theBrowser);
 					itsCurrentParent = theParent;
 				}
 				
@@ -70,6 +85,7 @@ public class CFlowTree extends JPanel
 	
 	public CFlowTree(CFlowView aView)
 	{
+		super(aView.getBus());
 		itsView = aView;
 		createUI();
 	}
@@ -94,7 +110,7 @@ public class CFlowTree extends JPanel
 		setLayout(new StackLayout());
 		add(itsSplitPane);
 		
-		itsEventListPanel = new EventListPanel(itsView.getLogBrowser(), getJobProcessor());
+		itsEventListPanel = new EventListPanel(getBus(), itsView.getLogBrowser(), getJobProcessor());
 		
 		itsEventListPanel.eEventActivated().addListener(new IEventListener<ILogEvent>()
 				{

@@ -20,6 +20,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.browser;
 
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+
 import org.objectweb.asm.Type;
 
 import tod.core.database.event.IBehaviorCallEvent;
@@ -33,6 +36,9 @@ import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.SourceRange;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
+import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
+import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
 import tod.utils.TODUtils;
 
@@ -214,5 +220,23 @@ public class LocationUtils
 		if (theSourceRange != null) aGUIManager.gotoSource(theSourceRange);
 	}
 
+	/**
+	 * Returns the role of the given event.
+	 */
+	public static BytecodeRole getEventRole(ILogEvent aEvent)
+	{
+		if (aEvent instanceof ICallerSideEvent)
+		{
+			ICallerSideEvent theEvent = (ICallerSideEvent) aEvent;
+			
+			IBehaviorInfo theBehavior = theEvent.getOperationBehavior();
+			if (theBehavior == null) return null;
+			
+			int theBytecodeIndex = theEvent.getOperationBytecodeIndex();
+			
+			return theBehavior.getTag(BytecodeTagType.ROLE, theBytecodeIndex);
+		}
+		else return null;
+	}
 
 }

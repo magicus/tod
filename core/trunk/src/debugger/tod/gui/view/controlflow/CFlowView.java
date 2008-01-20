@@ -18,10 +18,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow;
+package tod.gui.view.controlflow;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 
 import javax.swing.JButton;
@@ -29,6 +30,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
+import tod.core.config.TODConfig;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.LocationUtils;
@@ -40,28 +42,32 @@ import tod.core.database.structure.IThreadInfo;
 import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
+import tod.gui.IntimacyLevelSelector;
 import tod.gui.MinerUI;
 import tod.gui.Resources;
-import tod.gui.controlflow.tree.CFlowTree;
-import tod.gui.controlflow.watch.WatchPanel;
 import tod.gui.eventlist.EventListPanel;
+import tod.gui.eventlist.IntimacyLevel;
 import tod.gui.formatter.EventFormatter;
 import tod.gui.kit.Bus;
 import tod.gui.kit.IBusListener;
 import tod.gui.kit.Options;
 import tod.gui.kit.StdOptions;
+import tod.gui.kit.StdProperties;
 import tod.gui.kit.messages.EventSelectedMsg;
 import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.view.IEventListView;
 import tod.gui.view.LogView;
+import tod.gui.view.controlflow.tree.CFlowTree;
+import tod.gui.view.controlflow.watch.WatchPanel;
 import zz.utils.SimpleAction;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.PropertyListener;
 import zz.utils.properties.SimplePropertyListener;
+import zz.utils.properties.SimpleRWProperty;
 import zz.utils.ui.UIUtils;
 import zz.utils.ui.ZLabel;
 
@@ -190,6 +196,10 @@ public class CFlowView extends LogView implements IEventListView
 		
 		add(itsSplitPane, BorderLayout.CENTER);
 		
+		getBus().putProperty(
+				StdProperties.INTIMACY_LEVEL, 
+				new SimpleRWProperty<IntimacyLevel>(this, IntimacyLevel.FULL), 
+				true);
 	}
 	
 	private void backwardStepOver() 
@@ -248,6 +258,12 @@ public class CFlowView extends LogView implements IEventListView
 	private JComponent createToolbar()
 	{
 		JPanel theToolbar = new JPanel();
+		
+		// Setup intimacy level selector
+		if (getConfig().get(TODConfig.WITH_ASPECTS))
+		{
+			theToolbar.add(new IntimacyLevelSelector());
+		}
 				
 		theToolbar.add(new JButton(new SimpleAction(
 				Resources.ICON_BACKWARD_STEP_OVER.asIcon(20), 
@@ -302,7 +318,12 @@ public class CFlowView extends LogView implements IEventListView
 
 		for (int i=0;i<theToolbar.getComponentCount();i++)
 		{
-			((JButton) theToolbar.getComponent(i)).setMargin(UIUtils.NULL_INSETS);
+			Component theComponent = theToolbar.getComponent(i);
+			if (theComponent instanceof JButton)
+			{
+				JButton theButton = (JButton) theComponent;
+				theButton.setMargin(UIUtils.NULL_INSETS);
+			}
 		}
 		
 		return theToolbar;

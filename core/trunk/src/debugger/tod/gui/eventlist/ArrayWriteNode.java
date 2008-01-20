@@ -26,7 +26,7 @@ import tod.core.database.event.ILogEvent;
 import tod.gui.Hyperlinks;
 import tod.gui.kit.html.HtmlBody;
 
-public class ArrayWriteNode extends AbstractEventNode
+public class ArrayWriteNode extends AbstractSimpleEventNode
 {
 	private IArrayWriteEvent itsEvent;
 

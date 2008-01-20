@@ -42,6 +42,7 @@ import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
 import tod.gui.GUIUtils;
 import tod.gui.JobProcessor;
 import tod.gui.kit.Bus;
+import tod.gui.kit.BusPanel;
 import tod.gui.kit.html.HtmlBody;
 import tod.gui.kit.html.HtmlComponent;
 import tod.gui.kit.html.HtmlDoc;
@@ -54,23 +55,21 @@ import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import zz.utils.Utils;
 import zz.utils.ui.MousePanel;
 
-public abstract class AbstractEventNode extends MousePanel
+/**
+ * Base class for all event nodes.
+ * @author gpothier
+ */
+public abstract class AbstractEventNode extends BusPanel
 {
 	private final EventListPanel itsListPanel;
 	
+	private JComponent itsCaption;
 	private JComponent itsGutter;
-	private HtmlComponent itsHtmlComponent;
-	private HtmlDoc itsDoc;
 	
 	public AbstractEventNode(EventListPanel aListPanel)
 	{
+		super(aListPanel.getBus());
 		itsListPanel = aListPanel;
-		
-		itsDoc = new HtmlDoc();
-		itsHtmlComponent = new HtmlComponent();
-		itsHtmlComponent.setOpaque(false);
-		itsHtmlComponent.setDoc(itsDoc);
-		itsHtmlComponent.addMouseListener(this);
 	}
 	
 	public EventListPanel getListPanel()
@@ -100,32 +99,28 @@ public abstract class AbstractEventNode extends MousePanel
 	protected void createUI()
 	{
 		setLayout(GUIUtils.createBorderLayout());
-		add(getHTMLComponent(), BorderLayout.CENTER);
-		updateHtml();
-		setupRoleIcons();
+		removeAll();
+		itsGutter = null;
+		itsCaption = null;
+		add(getCenterComponent(), BorderLayout.CENTER);
 	}
 	
-	private void setupRoleIcons()
+	
+	/**
+	 * Adds a component to this node's gutter.
+	 */
+	protected void addToCaption(JComponent aComponent)
 	{
-		if (! getConfig().get(TODConfig.WITH_ASPECTS)) return;
-
-		if (getEvent() instanceof ICallerSideEvent)
+		if (itsCaption == null)
 		{
-			ICallerSideEvent theEvent = (ICallerSideEvent) getEvent();
-			
-			IBehaviorInfo theBehavior = theEvent.getOperationBehavior();
-			if (theBehavior == null) return;
-			
-			int theBytecodeIndex = theEvent.getOperationBytecodeIndex();
-			
-			BytecodeRole theRole = theBehavior.getTag(BytecodeTagType.ROLE, theBytecodeIndex);
-			if (theRole == null) return;
-
-			ImageIcon theIcon = GUIUtils.getRoleIcon(theRole);
-			if (theIcon == null) return;
-
-			addToGutter(new JLabel(theIcon));
+			itsCaption = new Box(BoxLayout.X_AXIS);
+			itsCaption.setOpaque(false);
+			add(itsCaption, BorderLayout.NORTH);
 		}
+		
+		itsCaption.add(aComponent);
+		revalidate();
+		repaint();
 	}
 	
 	/**
@@ -145,55 +140,12 @@ public abstract class AbstractEventNode extends MousePanel
 		repaint();
 	}
 	
-	protected void updateHtml()
-	{
-		HtmlBody theBody = itsDoc.getRoot();
-		theBody.clear();
-		createHtmlUI(theBody);
-		itsDoc.update(theBody);
-	}
-	
-	protected abstract void createHtmlUI(HtmlBody aBody);
-	
-	/**
-	 * Adds debugging info to the given element, if debugging info is enabled.
-	 */
-	protected void createDebugInfo(HtmlParentElement aParent)
-	{
-		if (DebugFlags.SHOW_DEBUG_GUI)
-		{
-			String theLocation = "?";
-			if (getEvent() instanceof ICallerSideEvent)
-			{
-				ICallerSideEvent theCallerSideEvent = (ICallerSideEvent) getEvent();
-				theLocation = ""+theCallerSideEvent.getOperationBytecodeIndex();
-			}
-			
-			int theSourceId = -1;
-			if (getEvent() instanceof ICallerSideEvent)
-			{
-				ICallerSideEvent theCallerSideEvent = (ICallerSideEvent) getEvent();
-				theSourceId = theCallerSideEvent.getAdviceSourceId();
-			}
-			
-			aParent.add(HtmlText.createf(
-					" (ts: %d, loc: %s, th: %d, d: %d, asid: %d)",
-					getEvent().getTimestamp(),
-					theLocation,
-					getEvent().getThread().getId(),
-					getEvent().getDepth(),
-					theSourceId));
-		}
-	}
 	
 	/**
 	 * Returns the component that displays the html text.
 	 * Subclasses should use this method when they create their GUI.
 	 */
-	protected JComponent getHTMLComponent()
-	{
-		return itsHtmlComponent;
-	}
+	protected abstract JComponent getCenterComponent();
 	
 	/**
 	 * Whether package names should be displayed.
@@ -203,51 +155,6 @@ public abstract class AbstractEventNode extends MousePanel
 		return true;
 	}
 	
-	@Override
-	public void mousePressed(MouseEvent aEvent)
-	{
-		getListPanel().pSelectedEvent().set(getEvent());
-		ILogEvent theEvent = getEvent();
-		Bus.get(this).postMessage(new EventSelectedMsg(theEvent, SelectionMethod.SELECT_IN_LIST));
-		aEvent.consume();			
-		
-		if (aEvent.getClickCount() == 2)
-		{
-			Bus.get(this).postMessage(new EventActivatedMsg(getEvent(), ActivationMethod.DOUBLE_CLICK));
-			getListPanel().eventActivated(getEvent());
-		}
-	}
-	
-	/**
-	 * Called when this event is selected.
-	 */
-	protected void selected()
-	{
-//		updateHtml();
-		repaint();
-	}
-
-	/**
-	 * Called when this node is deselected.
-	 */
-	protected void deselected()
-	{
-//		updateHtml();
-		repaint();
-	}
-	
-	protected boolean isSelected()
-	{
-		return Utils.equalOrBothNull(getEvent(), getListPanel().pSelectedEvent().get());
-	}
-	
-	@Override
-	protected void paintComponent(Graphics aG)
-	{
-		aG.setColor(isSelected() ? Color.YELLOW : Color.WHITE);
-		aG.fillRect(0, 0, getWidth(), getHeight());
-	}
-
 	/**
 	 * Returns the event that corresponds to this node.
 	 */

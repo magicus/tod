@@ -31,6 +31,8 @@ import java.util.Map;
 
 import tod.gui.kit.messages.Message;
 import zz.utils.ListMap;
+import zz.utils.properties.IProperty;
+import zz.utils.properties.IRWProperty;
 
 public class Bus
 {
@@ -57,6 +59,7 @@ public class Bus
 	
 	private ListMap<String, IBusListener> itsListeners = new ListMap<String, IBusListener>();
 	private Map<Class, AbstractServiceInfo> itsServices = new HashMap<Class, AbstractServiceInfo>();
+	private Map<PropertyId, PropertyHolder> itsProperties = new HashMap<PropertyId, PropertyHolder>();
 	
 	public Bus(Component aOwner)
 	{
@@ -90,6 +93,47 @@ public class Bus
 	public void unsubscribe(String aId, IBusListener aListener)
 	{
 		itsListeners.remove(aId, aListener);
+	}
+	
+	/**
+	 * Puts a property in this bus.
+	 * @param aId An identifier for the property
+	 * @param aProperty The property
+	 * @param aRw Whether other bus clients can obtain a {@link IRWProperty} for the
+	 * property, or only a {@link IProperty}.
+	 */
+	public <T> void putProperty(PropertyId<T> aId, IRWProperty<T> aProperty, boolean aRw)
+	{
+		PropertyHolder theOld = itsProperties.put(aId, new PropertyHolder(aProperty, aRw));
+		if (theOld != null) throw new RuntimeException("Property already present: "+aId);
+	}
+	
+	public <T> void removeProperty(PropertyId<T> aId)
+	{
+		itsProperties.remove(aId);
+	}
+	
+	/**
+	 * Returns a previously registered property.
+	 * @see #putProperty(String, IRWProperty, boolean)
+	 */
+	public <T> IProperty<T> getProperty(PropertyId<T> aId)
+	{
+		PropertyHolder theHolder = itsProperties.get(aId);
+		return theHolder != null ? theHolder.property : null;
+	}
+	
+	/**
+	 * Returns a previously registered property. This method fails if the property was
+	 * not registered as RW.
+	 * @see #putProperty(String, IRWProperty, boolean)
+	 */	
+	public <T> IRWProperty<T> getRWProperty(PropertyId<T> aId)
+	{
+		PropertyHolder theHolder = itsProperties.get(aId);
+		if (theHolder == null) return null;
+		if (! theHolder.rw) throw new RuntimeException("Property is not writable");
+		return theHolder.property;
 	}
 	
 	/**
@@ -226,6 +270,18 @@ public class Bus
 		public T getProxy()
 		{
 			return itsProxy;
+		}
+	}
+	
+	private static class PropertyHolder
+	{
+		public final IRWProperty property;
+		public final boolean rw;
+		
+		public PropertyHolder(IRWProperty aProperty, boolean aRw)
+		{
+			property = aProperty;
+			rw = aRw;
 		}
 	}
 }

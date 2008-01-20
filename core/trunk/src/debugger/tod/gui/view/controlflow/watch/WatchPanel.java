@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.controlflow.watch;
+package tod.gui.view.controlflow.watch;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -38,12 +38,13 @@ import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
 import tod.gui.JobProcessor;
-import tod.gui.controlflow.CFlowView;
-import tod.gui.controlflow.watch.AbstractWatchProvider.Entry;
 import tod.gui.kit.AsyncPanel;
 import tod.gui.kit.Bus;
+import tod.gui.kit.BusPanel;
 import tod.gui.kit.IBusListener;
 import tod.gui.kit.messages.ShowObjectMsg;
+import tod.gui.view.controlflow.CFlowView;
+import tod.gui.view.controlflow.watch.AbstractWatchProvider.Entry;
 import zz.utils.SimpleAction;
 import zz.utils.ui.ScrollablePanel;
 
@@ -51,7 +52,7 @@ import zz.utils.ui.ScrollablePanel;
  * A panel that shows the contents of a stack frame or of an object.
  * @author gpothier
  */
-public class WatchPanel extends JPanel
+public class WatchPanel extends BusPanel
 {
 	private CFlowView itsView;
 	private WatchBrowserNavigator itsBrowserNavigator;
@@ -77,6 +78,7 @@ public class WatchPanel extends JPanel
 	
 	public WatchPanel(CFlowView aView)
 	{
+		super(aView.getBus());
 		itsView = aView;
 		itsJobProcessor = new JobProcessor(getGUIManager().getJobProcessor());
 		itsBrowserNavigator = new WatchBrowserNavigator();

@@ -18,46 +18,27 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.eventlist;
+package tod.gui.view.controlflow.tree;
 
-import tod.core.database.event.ILocalVariableWriteEvent;
-import tod.core.database.event.ILogEvent;
-import tod.gui.Hyperlinks;
-import tod.gui.kit.html.HtmlBody;
+import javax.swing.JComponent;
 
-public class LocalVariableWriteNode extends AbstractSimpleEventNode
+import tod.core.database.event.IParentEvent;
+import tod.gui.GUIUtils;
+import tod.gui.JobProcessor;
+
+public class RootStackNode extends AbstractStackNode
 {
-	private ILocalVariableWriteEvent itsEvent;
-
-	public LocalVariableWriteNode(
-			EventListPanel aListPanel,
-			ILocalVariableWriteEvent aEvent)
+	public RootStackNode(
+			JobProcessor aJobProcessor, 
+			IParentEvent aEvent, 
+			boolean aCurrentStackFrame, CallStackPanel aCallStackPanel)
 	{
-		super(aListPanel);
-		itsEvent = aEvent;
-		createUI();
+		super(aJobProcessor, aEvent, aCurrentStackFrame, aCallStackPanel);
 	}
-	
-	@Override
-	protected void createHtmlUI(HtmlBody aBody)
-	{
-		aBody.addText(itsEvent.getVariable().getVariableName());
-		aBody.addText(" = ");
-		
-		aBody.add(Hyperlinks.object(
-				Hyperlinks.HTML,
-				getLogBrowser(),
-				getJobProcessor(),
-				itsEvent.getValue(),
-				itsEvent,
-				showPackageNames()));
 
-		createDebugInfo(aBody);
-	}
-	
 	@Override
-	protected ILogEvent getEvent()
+	protected JComponent createHeader()
 	{
-		return itsEvent;
+		return GUIUtils.createLabel("Control flow root");
 	}
 }

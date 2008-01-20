@@ -26,7 +26,7 @@ import tod.core.database.event.ILogEvent;
 import tod.gui.Hyperlinks;
 import tod.gui.kit.html.HtmlBody;
 
-public class FieldWriteNode extends AbstractEventNode
+public class FieldWriteNode extends AbstractSimpleEventNode
 {
 	private IFieldWriteEvent itsEvent;
 

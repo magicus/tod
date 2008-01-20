@@ -37,6 +37,8 @@ import javax.swing.SwingUtilities;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.browser.ShadowId;
+import tod.core.database.browser.GroupingEventBrowser.EventGroup;
 import tod.core.database.event.EventUtils;
 import tod.core.database.event.IArrayWriteEvent;
 import tod.core.database.event.IBehaviorExitEvent;
@@ -51,6 +53,8 @@ import tod.core.database.event.INewArrayEvent;
 import tod.gui.GUIUtils;
 import tod.gui.JobProcessor;
 import tod.gui.eventlist.MuralScroller.UnitScroll;
+import tod.gui.kit.Bus;
+import tod.gui.kit.BusPanel;
 import tod.gui.kit.Options;
 import tod.gui.kit.StdOptions;
 import tod.gui.kit.Options.OptionDef;
@@ -65,7 +69,7 @@ import zz.utils.properties.PropertyListener;
 import zz.utils.properties.SimpleRWProperty;
 import zz.utils.ui.ScrollablePanel;
 
-public class EventListPanel extends JPanel
+public class EventListPanel extends BusPanel
 implements MouseWheelListener
 {
 	private final ILogBrowser itsLogBrowser;
@@ -108,8 +112,9 @@ implements MouseWheelListener
 //		}
 //	};
 	
-	public EventListPanel(ILogBrowser aLogBrowser, JobProcessor aJobProcessor)
+	public EventListPanel(Bus aBus, ILogBrowser aLogBrowser, JobProcessor aJobProcessor)
 	{
+		super(aBus);
 		itsLogBrowser = aLogBrowser;
 		itsJobProcessor = aJobProcessor;
 		createUI();
@@ -119,9 +124,9 @@ implements MouseWheelListener
 	 * Creates an event list that shows all the event selected by the specified 
 	 * filter, or all the events of the database if the filter is null.
 	 */
-	public EventListPanel(ILogBrowser aLogBrowser, JobProcessor aJobProcessor, IEventFilter aEventFilter)
+	public EventListPanel(Bus aBus, ILogBrowser aLogBrowser, JobProcessor aJobProcessor, IEventFilter aEventFilter)
 	{
-		this(aLogBrowser, aJobProcessor);
+		this(aBus, aLogBrowser, aJobProcessor);
 		setBrowser(aEventFilter);
 	}
 	
@@ -134,7 +139,7 @@ implements MouseWheelListener
 	{
 		return itsLogBrowser;
 	}
-
+	
 	public void forward(final int aCount)
 	{
 		if (itsCore == null) return;
@@ -421,55 +426,76 @@ implements MouseWheelListener
 	
 	private AbstractEventNode buildEventNode(ILogEvent aEvent)
 	{
+		return buildEventNode(this, aEvent);
+	}
+	
+	public static AbstractEventNode buildEventNode(EventListPanel aListPanel, ILogEvent aEvent)
+	{
 		if (aEvent instanceof IFieldWriteEvent)
 		{
 			IFieldWriteEvent theEvent = (IFieldWriteEvent) aEvent;
-			return new FieldWriteNode(this, theEvent);
+			return new FieldWriteNode(aListPanel, theEvent);
 		}
 		else if (aEvent instanceof IArrayWriteEvent)
 		{
 			IArrayWriteEvent theEvent = (IArrayWriteEvent) aEvent;
-			return new ArrayWriteNode(this, theEvent);
+			return new ArrayWriteNode(aListPanel, theEvent);
 		}
 		else if (aEvent instanceof ILocalVariableWriteEvent)
 		{
 			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) aEvent;
-			return new LocalVariableWriteNode(this, theEvent);
+			return new LocalVariableWriteNode(aListPanel, theEvent);
 		}
 		else if (aEvent instanceof IExceptionGeneratedEvent)
 		{
 			IExceptionGeneratedEvent theEvent = (IExceptionGeneratedEvent) aEvent;
 			if (EventUtils.isIgnorableException(theEvent)) return null;
-			else return new ExceptionGeneratedNode(this, theEvent);
+			else return new ExceptionGeneratedNode(aListPanel, theEvent);
 		}
 		else if (aEvent instanceof IMethodCallEvent)
 		{
 			IMethodCallEvent theEvent = (IMethodCallEvent) aEvent;
-			return new MethodCallNode(this, theEvent);
+			return new MethodCallNode(aListPanel, theEvent);
 		}
 		else if (aEvent instanceof IInstantiationEvent)
 		{
 			IInstantiationEvent theEvent = (IInstantiationEvent) aEvent;
-			return new InstantiationNode(this, theEvent);
+			return new InstantiationNode(aListPanel, theEvent);
 		}
 		else if (aEvent instanceof INewArrayEvent)
 		{
 			INewArrayEvent theEvent = (INewArrayEvent) aEvent;
-			return new NewArrayNode(this, theEvent);
+			return new NewArrayNode(aListPanel, theEvent);
 		}
 		else if (aEvent instanceof IConstructorChainingEvent)
 		{
 			IConstructorChainingEvent theEvent = (IConstructorChainingEvent) aEvent;
-			return new ConstructorChainingNode(this, theEvent);
+			return new ConstructorChainingNode(aListPanel, theEvent);
 		}
 		else if (aEvent instanceof IBehaviorExitEvent)
 		{
 			return null;
 		}
+		else if (aEvent instanceof EventGroup)
+		{
+			EventGroup theEventGroup = (EventGroup) aEvent;
+			return buildEventGroupNode(aListPanel, theEventGroup);
+		}
 
-		return new UnknownEventNode(this, aEvent);
+		return new UnknownEventNode(aListPanel, aEvent);
 	}
 	
+	private static AbstractEventNode buildEventGroupNode(EventListPanel aListPanel, EventGroup aEventGroup)
+	{
+		Object theGroupKey = aEventGroup.getGroupKey();
+		if (theGroupKey instanceof ShadowId)
+		{
+			return new ShadowGroupNode(aListPanel, aEventGroup);
+		}
+		
+		return new UnknownEventNode(aListPanel, aEventGroup);
+	}
+
 	public <T> T getCurrentValue(OptionDef<T> aDef)
 	{
 		return Options.get(this).getProperty(aDef).get();
