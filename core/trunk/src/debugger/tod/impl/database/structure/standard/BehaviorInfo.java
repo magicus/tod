@@ -26,6 +26,7 @@ import java.util.List;
 import tod.agent.BehaviorKind;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IMutableBehaviorInfo;
+import tod.core.database.structure.IShareableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
@@ -47,12 +48,18 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 	private final ITypeInfo itsReturnType;
 
 	private int itsCodeSize;
-	private LineNumberInfo[] itsLineNumberTable;
-	private LocalVariableInfo[] itsLocalVariableTable;
-	private TagMap itsTagMap;
+	
+	private boolean itsHasLineNumberTable = false;
+	private transient LineNumberInfo[] itsLineNumberTable;
+	
+	private boolean itsHasLocalVariableTable = false;
+	private transient LocalVariableInfo[] itsLocalVariableTable;
+	
+	private boolean itsHasTagMap = false;
+	private transient TagMap itsTagMap;
 
 	public BehaviorInfo(
-			StructureDatabase aDatabase, 
+			IShareableStructureDatabase aDatabase, 
 			int aId, 
 			ClassInfo aType, 
 			String aName,
@@ -84,9 +91,15 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 		itsHasTrace = aTraced ? HasTrace.YES : HasTrace.NO;
 		itsBehaviourKind = aKind;
 		itsCodeSize = aCodeSize;
+		
 		itsLineNumberTable = aLineNumberInfos;
+		itsHasLineNumberTable = itsLineNumberTable != null;
+		
 		itsLocalVariableTable = aLocalVariableInfos;
+		itsHasLocalVariableTable = itsLocalVariableTable != null;
+		
 		itsTagMap = aTagMap;
+		itsHasTagMap = itsTagMap != null;
 	}
 	
 	@Override
@@ -123,9 +136,9 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 	public LocalVariableInfo getLocalVariableInfo (int aPc, int aIndex)
 	{
 		int thePc = aPc+35; // 35 is the size of our instrumentation
-    	if (itsLocalVariableTable != null) for (int i=0; i<itsLocalVariableTable.length; i++)
+    	if (itsHasLocalVariableTable) for (int i=0; i<getLocalVariables().length; i++)
     	{
-    	    LocalVariableInfo theInfo = itsLocalVariableTable[i];
+    	    LocalVariableInfo theInfo = getLocalVariables()[i];
     		if (theInfo.match(thePc, aIndex)) return theInfo;
     	}
     	return null;
@@ -133,8 +146,8 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
     
     public LocalVariableInfo getLocalVariableInfo (int aSymbolIndex)
     {
-        return itsLocalVariableTable != null && aSymbolIndex < itsLocalVariableTable.length ?
-                itsLocalVariableTable[aSymbolIndex]
+        return itsHasLocalVariableTable && aSymbolIndex < getLocalVariables().length ?
+        		getLocalVariables()[aSymbolIndex]
                 : null;
     }
     
@@ -145,11 +158,11 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
     
     public int getLineNumber (int aBytecodeIndex)
     {
-        if (itsLineNumberTable != null && itsLineNumberTable.length > 0)
+        if (itsHasLineNumberTable && getLineNumberTable().length > 0)
         {
-        	int theResult = itsLineNumberTable[0].getLineNumber();
+        	int theResult = getLineNumberTable()[0].getLineNumber();
             
-            for (LineNumberInfo theInfo : itsLineNumberTable)
+            for (LineNumberInfo theInfo : getLineNumberTable())
 			{
                 if (aBytecodeIndex < theInfo.getStartPc()) break;
                 theResult = theInfo.getLineNumber();
@@ -171,13 +184,13 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
     
 	public int[] getBytecodeLocations(int aLine)
 	{
-        if (itsLineNumberTable != null && itsLineNumberTable.length > 0)
+        if (itsHasLineNumberTable && getLineNumberTable().length > 0)
         {
         	List<Integer> theLocations = new ArrayList<Integer>();
 
         	int thePreviousPc = -1;
         	int theCurrentLine = -1;
-            for (LineNumberInfo theInfo : itsLineNumberTable)
+            for (LineNumberInfo theInfo : getLineNumberTable())
             {
             	if (thePreviousPc == -1)
             	{
@@ -211,14 +224,54 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 	
 	public <T> T getTag(BytecodeTagType<T> aType, int aBytecodeIndex)
 	{
-		return itsTagMap != null ? itsTagMap.getTag(aType, aBytecodeIndex) : null;
+		return itsHasTagMap ? getTagMap().getTag(aType, aBytecodeIndex) : null;
 	}
 
-	public LocalVariableInfo[] getLocalVariables()
+	public LocalVariableInfo[] _getLocalVariables()
     {
     	return itsLocalVariableTable;
     }
+	
+	public LocalVariableInfo[] getLocalVariables()
+	{
+		if (itsLocalVariableTable == null && itsHasLocalVariableTable)
+		{
+			assert ! isOriginal();
+			itsLocalVariableTable = getDatabase()._getBehaviorLocalVariableInfo(getId());
+		}
+		return itsLocalVariableTable;
+	}
+	
+	LineNumberInfo[] _getLineNumberTable()
+	{
+		return itsLineNumberTable;
+	}
+	
+	private LineNumberInfo[] getLineNumberTable()
+	{
+		if (itsLineNumberTable == null && itsHasLineNumberTable)
+		{
+			assert ! isOriginal();
+			itsLineNumberTable = getDatabase()._getBehaviorLineNumberInfo(getId());
+		}
+		return itsLineNumberTable;
+	}
+	
+	TagMap _getTagMap()
+	{
+		return itsTagMap;
+	}
     
+	private TagMap getTagMap()
+	{
+		if (itsTagMap == null && itsHasTagMap)
+		{
+			assert ! isOriginal();
+			itsTagMap = getDatabase()._getBehaviorTagMap(getId());
+		}
+		return itsTagMap;
+	}
+	
     public boolean isConstructor()
     {
     	return getBehaviourKind() == BehaviorKind.CONSTRUCTOR;

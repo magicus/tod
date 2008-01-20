@@ -639,7 +639,8 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 			theTimestamp = theThread.transformTimestamp(theTimestamp);
 			
 			String theMessage = String.format(
-					"[EventInterpreter] Unexpected dry after (check trace scope) - thread: %d, p.ts: %d, ts: %d",
+					"[EventInterpreter] Unexpected dry after (check trace scope) - bid: %d, thread: %d, p.ts: %d, ts: %d",
+					theFrame.behavior,
 					theThread.getId(),
 					theFrame.parentTimestamp,
 					theTimestamp);
@@ -650,7 +651,7 @@ public final class EventInterpreter<T extends EventInterpreter.ThreadData>
 			theThread.popFrame();
 			
 			// Send message anyway, although there is a lot of missing info
-			String s = new String("?");
+			String s = new String("<?TOD?-dry>");
 			logBeforeBehaviorCall(-1, theFrame.behavior, BehaviorCallType.METHOD_CALL, s, null);
 			logAfterBehaviorCall(-1, theFrame.behavior, s, s);
 		}

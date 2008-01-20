@@ -37,17 +37,23 @@ import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.IMutableClassInfo;
+import tod.core.database.structure.IMutableFieldInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
+import tod.core.database.structure.IShareableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.SourceRange;
+import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
+import tod.utils.remote.RemoteStructureDatabase;
 import zz.utils.Utils;
 
 /**
  * Standard implementation of {@link IStructureDatabase}
  * @author gpothier
  */
-public class StructureDatabase implements IMutableStructureDatabase
+public class StructureDatabase implements IShareableStructureDatabase
 {
 	/**
 	 * Class ids below this value are reserved.
@@ -248,7 +254,7 @@ public class StructureDatabase implements IMutableStructureDatabase
 		return theClass;
 	}
 	
-	public IBehaviorInfo getBehavior(int aId, boolean aFailIfAbsent)
+	public BehaviorInfo getBehavior(int aId, boolean aFailIfAbsent)
 	{
 		BehaviorInfo theBehavior = Utils.listGet(itsBehaviors, aId);
 		if (theBehavior == null && aFailIfAbsent) throw new RuntimeException("Behavior not found: "+aId);
@@ -278,14 +284,14 @@ public class StructureDatabase implements IMutableStructureDatabase
 		}
 	}
 
-	public IMutableClassInfo getClass(int aId, boolean aFailIfAbsent)
+	public ClassInfo getClass(int aId, boolean aFailIfAbsent)
 	{
 		ClassInfo theClass = Utils.listGet(itsClasses, aId);
 		if (theClass == null && aFailIfAbsent) throw new RuntimeException("Class not found: "+aId);
 		return theClass;
 	}
 
-	public IFieldInfo getField(int aId, boolean aFailIfAbsent)
+	public FieldInfo getField(int aId, boolean aFailIfAbsent)
 	{
 		FieldInfo theField = Utils.listGet(itsFields, aId);
 		if (theField == null && aFailIfAbsent) throw new RuntimeException("Field not found: "+aId);
@@ -410,7 +416,81 @@ public class StructureDatabase implements IMutableStructureDatabase
 	{
 		return itsProbes.size();
 	}
+	
+	/**
+	 * This method is used to retrieve the value of transient fields on the remote side
+	 * (see {@link RemoteStructureDatabase}).
+	 */
+	public byte[] _getClassBytecode(int aClassId)
+	{
+		return getClass(aClassId, true)._getBytecode();
+	}
+	
+	/**
+	 * This method is used to retrieve the value of transient fields on the remote side
+	 * (see {@link RemoteStructureDatabase}).
+	 */
+	public Map<String, IMutableFieldInfo> _getClassFieldMap(int aClassId)
+	{
+		return getClass(aClassId, true)._getFieldsMap();
+	}
+	
+	/**
+	 * This method is used to retrieve the value of transient fields on the remote side
+	 * (see {@link RemoteStructureDatabase}).
+	 */
+	public Map<String, IMutableBehaviorInfo> _getClassBehaviorsMap(int aClassId)
+	{
+		return getClass(aClassId, true)._getBehaviorsMap();
+	}
 
+	/**
+	 * This method is used to retrieve the value of transient fields on the remote side
+	 * (see {@link RemoteStructureDatabase}).
+	 */
+	public Map<Integer, SourceRange> _getClassAdviceSourceMap(int aClassId)
+	{
+		return getClass(aClassId, true)._getAdviceSourceMap();
+	}
+	
+	/**
+	 * This method is used to retrieve the value of transient fields on the remote side
+	 * (see {@link RemoteStructureDatabase}).
+	 */
+	public LocalVariableInfo[] _getBehaviorLocalVariableInfo(int aBehaviorId)
+	{
+		return getBehavior(aBehaviorId, true)._getLocalVariables();
+	}
+	
+	/**
+	 * This method is used to retrieve the value of transient fields on the remote side
+	 * (see {@link RemoteStructureDatabase}).
+	 */
+	public LineNumberInfo[] _getBehaviorLineNumberInfo(int aBehaviorId)
+	{
+		return getBehavior(aBehaviorId, true)._getLineNumberTable();
+	}
+	
+	/**
+	 * This method is used to retrieve the value of transient fields on the remote side
+	 * (see {@link RemoteStructureDatabase}).
+	 */
+	public TagMap _getBehaviorTagMap(int aBehaviorId)
+	{
+		return getBehavior(aBehaviorId, true)._getTagMap();
+	}
+	
+	public IClassInfo _getBehaviorClass(int aBehaviorId, boolean aFailIfAbsent)
+	{
+		BehaviorInfo theBehavior = getBehavior(aBehaviorId, aFailIfAbsent);
+		return theBehavior != null ? theBehavior.getType() : null;
+	}
+
+	public IClassInfo _getFieldClass(int aFieldId, boolean aFailIfAbsent)
+	{
+		FieldInfo theField = getField(aFieldId, aFailIfAbsent);
+		return theField != null ? theField.getType() : null;
+	}
 
 	private static class Ids implements Serializable
 	{

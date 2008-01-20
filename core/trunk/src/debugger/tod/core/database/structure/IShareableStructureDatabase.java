@@ -20,38 +20,24 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.structure;
 
-import java.io.Serializable;
+import java.util.Map;
 
+import tod.impl.database.structure.standard.TagMap;
 
 /**
- * Base interface for location info (ie structural information). 
- * Locations can be types, fields or methods
+ * Not to be used by clients.
+ * Provides additional methods used to synchronize remote structure databases.
  * @author gpothier
  */
-public interface ILocationInfo
+public interface IShareableStructureDatabase extends IMutableStructureDatabase
 {
-	/**
-	 * Returns the id of this location.
-	 */
-	public int getId();
-
-	public String getName();
-	
-	/**
-	 * Returns the database that owns this info.
-	 */
-	public IStructureDatabase getDatabase();
-	
-	/**
-	 * Interface for location info implementations that are serializable.
-	 * Such implementation should have their reference to the owner database
-	 * transient, so that upon arriving at a new location they can be bound
-	 * to a local database.
-	 * @author gpothier
-	 */
-	public interface ISerializableLocationInfo extends Serializable, ILocationInfo
-	{
-		public void setDatabase(IShareableStructureDatabase aDatabase);
-	}
-
+	public byte[] _getClassBytecode(int aClassId);
+	public Map<String, IMutableFieldInfo> _getClassFieldMap(int aClassId);
+	public Map<String, IMutableBehaviorInfo> _getClassBehaviorsMap(int aClassId);
+	public Map<Integer, SourceRange> _getClassAdviceSourceMap(int aClassId);
+	public LocalVariableInfo[] _getBehaviorLocalVariableInfo(int aBehaviorId);
+	public LineNumberInfo[] _getBehaviorLineNumberInfo(int aBehaviorId);
+	public TagMap _getBehaviorTagMap(int aBehaviorId);
+	public IClassInfo _getBehaviorClass(int aBehaviorId, boolean aFailIfAbsent);
+	public IClassInfo _getFieldClass(int aFieldId, boolean aFailIdAbsent);
 }

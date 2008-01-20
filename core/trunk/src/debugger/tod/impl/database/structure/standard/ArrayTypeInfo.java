@@ -22,6 +22,7 @@ package tod.impl.database.structure.standard;
 
 import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
+import tod.core.database.structure.IShareableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
 
@@ -36,7 +37,7 @@ public class ArrayTypeInfo extends TypeInfo implements IArrayTypeInfo
 	private final ITypeInfo itsElementType;
 	private final int itsDimensions;
 	
-	public ArrayTypeInfo(IMutableStructureDatabase aDatabase, ITypeInfo aElementType, int aDimensions)
+	public ArrayTypeInfo(IShareableStructureDatabase aDatabase, ITypeInfo aElementType, int aDimensions)
 	{
 		super(aDatabase, -1, aElementType.getName()+getBrackets(aDimensions));
 		itsElementType = aElementType;

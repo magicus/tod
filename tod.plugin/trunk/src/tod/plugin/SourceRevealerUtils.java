@@ -190,7 +190,7 @@ public class SourceRevealerUtils
 					ITextEditor theTextEditor = (ITextEditor) theEditor;
 					IDocumentProvider theProvider= theTextEditor.getDocumentProvider();
 					IDocument theDocument = theProvider.getDocument(theTextEditor.getEditorInput());
-					int theStart = theDocument.getLineOffset(aSourceRange.startLine);
+					int theStart = theDocument.getLineOffset(aSourceRange.startLine-1);
 					theTextEditor.selectAndReveal(theStart, 0);
 				}
 			}

@@ -22,15 +22,22 @@ package tod.utils.remote;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.Map;
 
 import tod.core.config.TODConfig;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.IMutableBehaviorInfo;
+import tod.core.database.structure.IMutableFieldInfo;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.SourceRange;
+import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
+import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.core.database.structure.IStructureDatabase.Stats;
+import tod.impl.database.structure.standard.TagMap;
 
 /**
  * A clone of {@link IStructureDatabase} that is used to create a remotely
@@ -50,8 +57,16 @@ public interface RIStructureDatabase extends Remote
 	public IClassInfo getClass(int aId, boolean aFailIfAbsent) throws RemoteException;
 	public IClassInfo getNewClass(String aName) throws RemoteException;
 	public ITypeInfo getType(String aName, boolean aFailIfAbsent) throws RemoteException;
-	public IFieldInfo getField(int aId, boolean aFailIfAbsent) throws RemoteException;
-	public IBehaviorInfo getBehavior(int aId, boolean aFailIfAbsent) throws RemoteException;
 	public Stats getStats() throws RemoteException;
 	public ProbeInfo[] getProbeInfos(int aAvailableCount) throws RemoteException;
+	
+	public byte[] _getClassBytecode(int aClassId) throws RemoteException;
+	public Map<String, IMutableFieldInfo> _getClassFieldMap(int aClassId) throws RemoteException;
+	public Map<String, IMutableBehaviorInfo> _getClassBehaviorsMap(int aClassId) throws RemoteException;
+	public Map<Integer, SourceRange> _getClassAdviceSourceMap(int aClassId) throws RemoteException;
+	public LocalVariableInfo[] _getBehaviorLocalVariableInfo(int aBehaviorId) throws RemoteException;
+	public LineNumberInfo[] _getBehaviorLineNumberInfo(int aBehaviorId) throws RemoteException;
+	public TagMap _getBehaviorTagMap(int aBehaviorId) throws RemoteException;
+	public IClassInfo _getBehaviorClass(int aBehaviorId, boolean aFailIfAbsent) throws RemoteException;
+	public IClassInfo _getFieldClass(int aFieldId, boolean aFailIfAbsent) throws RemoteException;
 }

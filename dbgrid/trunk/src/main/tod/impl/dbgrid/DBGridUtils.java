@@ -80,7 +80,7 @@ public class DBGridUtils
 	public static GridMaster setupLocalMaster(Registry aRegistry) throws RemoteException
 	{
 		TODConfig theConfig = new TODConfig();
-		IMutableStructureDatabase theStructureDatabase = StructureDatabase.create(theConfig);
+		StructureDatabase theStructureDatabase = StructureDatabase.create(theConfig);
 		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(theConfig);
 
 		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theStructureDatabase, theDebuggerConfig);
@@ -121,7 +121,7 @@ public class DBGridUtils
 	{
 		System.out.println("Dispatch structure: " + aDispatchTreeStructure);
 		
-		IMutableStructureDatabase theStructureDatabase = StructureDatabase.create(aConfig);
+		StructureDatabase theStructureDatabase = StructureDatabase.create(aConfig);
 		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(aConfig);
 
 		System.out.println(theStructureDatabase.getStats());

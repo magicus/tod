@@ -20,7 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.database.structure.standard;
 
-import tod.core.database.structure.IMutableStructureDatabase;
+import tod.core.database.structure.IShareableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 
 
@@ -32,12 +32,12 @@ import tod.core.database.structure.ITypeInfo;
  */
 public abstract class TypeInfo extends LocationInfo implements ITypeInfo
 {
-	public TypeInfo(IMutableStructureDatabase aDatabase, int aId, String aName)
+	public TypeInfo(IShareableStructureDatabase aDatabase, int aId, String aName)
 	{
 		super(aDatabase, aId, aName);
 	}
 
-	public TypeInfo(IMutableStructureDatabase aDatabase, int aId)
+	public TypeInfo(IShareableStructureDatabase aDatabase, int aId)
 	{
 		super(aDatabase, aId);
 	}

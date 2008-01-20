@@ -25,6 +25,7 @@ import java.io.Serializable;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.IMutableLocationInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
+import tod.core.database.structure.IShareableStructureDatabase;
 import zz.utils.PublicCloneable;
 
 /**
@@ -34,21 +35,36 @@ import zz.utils.PublicCloneable;
 public abstract class LocationInfo extends PublicCloneable 
 implements IMutableLocationInfo, Serializable
 {
-	private transient IMutableStructureDatabase itsDatabase;
+	/**
+	 * A flag that can be used to check if this location info is local or remote. 
+	 */
+	private transient Boolean itsOriginal;
+	private transient IShareableStructureDatabase itsDatabase;
 	private final int itsId;
 	private String itsName;
 	
-	public LocationInfo(IMutableStructureDatabase aDatabase, int aId)
+	public LocationInfo(IShareableStructureDatabase aDatabase, int aId)
 	{
+		itsOriginal = true;
 		itsDatabase = aDatabase;
 		itsId = aId;
 	}
 
-	public LocationInfo(IMutableStructureDatabase aDatabase, int aId, String aName)
+	public LocationInfo(IShareableStructureDatabase aDatabase, int aId, String aName)
 	{
+		itsOriginal = true;
 		itsDatabase = aDatabase;
 		itsId = aId;
 		setName(aName);
+	}
+	
+	/**
+	 * Whether this location info is the original.
+	 * @return True if original, false if remote version
+	 */
+	protected boolean isOriginal()
+	{
+		return itsOriginal != null;
 	}
 	
 	public int getId()
@@ -61,17 +77,17 @@ implements IMutableLocationInfo, Serializable
 		return itsName;
 	}
 
-	public IMutableStructureDatabase getDatabase()
+	public IShareableStructureDatabase getDatabase()
 	{
 		return itsDatabase;
 	}
 	
-	public IMutableStructureDatabase _getMutableDatabase()
+	public IShareableStructureDatabase _getMutableDatabase()
 	{
 		return getDatabase();
 	}
 	
-	public void setDatabase(IMutableStructureDatabase aDatabase)
+	public void setDatabase(IShareableStructureDatabase aDatabase)
 	{
 		assert itsDatabase == null;
 		itsDatabase = aDatabase;

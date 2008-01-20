@@ -25,7 +25,7 @@ package tod.core.database.structure;
  * Permits to obtain the mutable database.
  * @author gpothier
  */
-public interface IMutableLocationInfo
+public interface IMutableLocationInfo extends ILocationInfo
 {
 	/**
 	 * Returns the database that contains this location info.

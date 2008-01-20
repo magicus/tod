@@ -23,6 +23,7 @@ package tod.impl.database.structure.standard;
 import tod.core.ILogCollector;
 import tod.core.database.structure.IMemberInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
+import tod.core.database.structure.IShareableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
 
@@ -35,16 +36,16 @@ import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
 public abstract class MemberInfo extends LocationInfo 
 implements IMemberInfo, ISerializableLocationInfo
 {
-	private ITypeInfo itsType;
+	private int itsTypeId;
 	
-	public MemberInfo(IMutableStructureDatabase aDatabase, int aId, ITypeInfo aTypeInfo, String aName)
+	public MemberInfo(IShareableStructureDatabase aDatabase, int aId, ITypeInfo aType, String aName)
 	{
 		super(aDatabase, aId, aName);
-		itsType = aTypeInfo;
+		itsTypeId = aType.getId();
 	}
 	
 	public ITypeInfo getType()
 	{
-		return itsType;
+		return getDatabase().getType(itsTypeId, true);
 	}	
 }

@@ -20,6 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.database.structure.standard;
 
+import tod.core.database.structure.IShareableStructureDatabase;
+
 
 /**
  * Information for types that are not known o the instrumenter.
@@ -27,7 +29,7 @@ package tod.impl.database.structure.standard;
  */
 public class UnknownTypeInfo extends TypeInfo
 {
-	public UnknownTypeInfo(StructureDatabase aDatabase, int aId, String aName)
+	public UnknownTypeInfo(IShareableStructureDatabase aDatabase, int aId, String aName)
 	{
 		super(aDatabase, aId, aName);
 	}

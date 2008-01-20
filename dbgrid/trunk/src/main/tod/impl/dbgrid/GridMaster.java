@@ -49,6 +49,7 @@ import tod.core.database.structure.IThreadInfo;
 import tod.core.server.TODServer;
 import tod.core.transport.LogReceiver;
 import tod.impl.database.structure.standard.HostInfo;
+import tod.impl.database.structure.standard.StructureDatabase;
 import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
 import tod.impl.dbgrid.aggregator.StringHitsAggregator;
@@ -121,7 +122,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	
 	private GridMaster(
 			TODConfig aConfig, 
-			IMutableStructureDatabase aStructureDatabase, 
+			StructureDatabase aStructureDatabase, 
 			IInstrumenter aInstrumenter,
 			DispatchTreeStructure aDispatchTreeStructure,
 			boolean aStartServer) throws RemoteException
@@ -129,7 +130,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		itsConfig = aConfig;
 		itsInstrumenter = aInstrumenter;
 		itsStructureDatabase = aStructureDatabase;
-		itsRemoteStructureDatabase = RemoteStructureDatabase.createMutable(itsStructureDatabase);
+		itsRemoteStructureDatabase = RemoteStructureDatabase.create(aStructureDatabase, true);
 		
 		itsDispatchTreeStructure = aDispatchTreeStructure;
 		itsDispatchTreeStructure.setMaster(this);
@@ -146,7 +147,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	public static GridMaster createLocal(
 			TODConfig aConfig, 
-			IMutableStructureDatabase aStructureDatabase, 
+			StructureDatabase aStructureDatabase, 
 			IInstrumenter aInstrumenter,
 			DatabaseNode aDatabaseNode,
 			boolean aStartServer) throws RemoteException
@@ -167,7 +168,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	public static GridMaster create(
 			TODConfig aConfig, 
-			IMutableStructureDatabase aStructureDatabase, 
+			StructureDatabase aStructureDatabase, 
 			IInstrumenter aInstrumenter,
 			DispatchTreeStructure aTreeStructure) throws RemoteException
 	{

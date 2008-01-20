@@ -32,12 +32,17 @@ import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
-import tod.core.database.structure.IMemberInfo;
+import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.IMutableClassInfo;
-import tod.core.database.structure.IMutableStructureDatabase;
+import tod.core.database.structure.IMutableFieldInfo;
+import tod.core.database.structure.IShareableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
+import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
+import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.core.database.structure.IStructureDatabase.Stats;
 import tod.impl.database.structure.standard.ArrayTypeInfo;
@@ -45,6 +50,7 @@ import tod.impl.database.structure.standard.ClassInfo;
 import tod.impl.database.structure.standard.PrimitiveTypeInfo;
 import tod.impl.database.structure.standard.StructureDatabase;
 import tod.impl.database.structure.standard.StructureDatabaseUtils;
+import tod.impl.database.structure.standard.TagMap;
 import zz.utils.Utils;
 
 /**
@@ -56,18 +62,20 @@ import zz.utils.Utils;
 public class RemoteStructureDatabase extends UnicastRemoteObject
 implements RIStructureDatabase
 {
-	private IStructureDatabase itsDelegate;
-	private IMutableStructureDatabase itsMutableDelegate;
+	private IShareableStructureDatabase itsSource;
+	
+	/**
+	 * Whether mutations are authorized.
+	 */
+	private boolean itsMutable;
 	
 	private List<RIStructureDatabaseListener> itsListeners = 
 		new ArrayList<RIStructureDatabaseListener>();
 	
-	private RemoteStructureDatabase(
-			IStructureDatabase aDelegate,
-			IMutableStructureDatabase aMutableStructureDatabase) throws RemoteException
+	private RemoteStructureDatabase(IShareableStructureDatabase aSource, boolean aMutable) throws RemoteException
 	{
-		itsDelegate = aDelegate;
-		itsMutableDelegate = aMutableStructureDatabase;
+		itsSource = aSource;
+		itsMutable = aMutable;
 		
 		Thread theNotifierThread = new Thread("RemoteStructureDatabase.Notifier")
 		{
@@ -80,7 +88,7 @@ implements RIStructureDatabase
 				{
 					while(true)
 					{
-						Stats theStats = itsDelegate.getStats();
+						Stats theStats = itsSource.getStats();
 						if (! theStats.equals(itsLastStats)) fireChanged(theStats);
 						itsLastStats = theStats;
 						sleep(1000);
@@ -97,21 +105,16 @@ implements RIStructureDatabase
 	}
 	
 	/**
-	 * Creates a {@link RemoteStructureDatabase} for a non-mutable structure database.
+	 * Creates a {@link RemoteStructureDatabase} for a local structure database.
+	 * @param aMutable Whether the remote client should be able to perform mutation operations. 
 	 */
-	public static RemoteStructureDatabase create(IStructureDatabase aStructureDatabase) throws RemoteException
+	public static RemoteStructureDatabase create(
+			IShareableStructureDatabase aStructureDatabase,
+			boolean aMutable) throws RemoteException
 	{
-		return new RemoteStructureDatabase(aStructureDatabase, null);
+		return new RemoteStructureDatabase(aStructureDatabase, aMutable);
 	}
 
-	/**
-	 * Creates a {@link RemoteStructureDatabase} for a mutable structure database.
-	 */
-	public static RemoteStructureDatabase createMutable(IMutableStructureDatabase aStructureDatabase) throws RemoteException
-	{
-		return new RemoteStructureDatabase(aStructureDatabase, aStructureDatabase);
-	}
-	
 	public void addListener(RIStructureDatabaseListener aListener) throws RemoteException
 	{
 		itsListeners.add(aListener);
@@ -134,59 +137,50 @@ implements RIStructureDatabase
 		}
 	}
 	
-	public IBehaviorInfo getBehavior(int aId, boolean aFailIfAbsent)
-	{
-		return itsDelegate.getBehavior(aId, aFailIfAbsent);
-	}
-
 	public IClassInfo getClass(int aId, boolean aFailIfAbsent)
 	{
-		return itsDelegate.getClass(aId, aFailIfAbsent);
+		return itsSource.getClass(aId, aFailIfAbsent);
 	}
 
 	public IClassInfo getClass(String aName, boolean aFailIfAbsent)
 	{
-		return itsDelegate.getClass(aName, aFailIfAbsent);
+		return itsSource.getClass(aName, aFailIfAbsent);
 	}
 	
 	public IClassInfo getNewClass(String aName)
 	{
-		return itsMutableDelegate.getNewClass(aName);
+		if (! itsMutable) throw new UnsupportedOperationException("Not mutable");
+		return itsSource.getNewClass(aName);
 	}
 
 	public IClassInfo getClass(String aName, String aChecksum, boolean aFailIfAbsent)
 	{
-		return itsDelegate.getClass(aName, aChecksum, aFailIfAbsent);
+		return itsSource.getClass(aName, aChecksum, aFailIfAbsent);
 	}
 
 	public IClassInfo[] getClasses(String aName)
 	{
-		return itsDelegate.getClasses(aName);
+		return itsSource.getClasses(aName);
 	}
 
 	public IClassInfo[] getClasses() throws RemoteException
 	{
-		return itsDelegate.getClasses();
-	}
-
-	public IFieldInfo getField(int aId, boolean aFailIfAbsent)
-	{
-		return itsDelegate.getField(aId, aFailIfAbsent);
+		return itsSource.getClasses();
 	}
 
 	public TODConfig getConfig() 
 	{
-		return itsDelegate.getConfig();
+		return itsSource.getConfig();
 	}
 
 	public String getId()
 	{
-		return itsDelegate.getId();
+		return itsSource.getId();
 	}
 
 	public Stats getStats()
 	{
-		return itsDelegate.getStats();
+		return itsSource.getStats();
 	}
 
 	public ITypeInfo getType(String aName, boolean aFailIfAbsent)
@@ -199,14 +193,59 @@ implements RIStructureDatabase
 	 */
 	public ProbeInfo[] getProbeInfos(int aAvailableCount) throws RemoteException
 	{
-		int theCount = itsDelegate.getProbeCount();
+		int theCount = itsSource.getProbeCount();
 		int theMissing = theCount-aAvailableCount;
 		if (theMissing == 0) return null;
 		
 		ProbeInfo[] theResult = new ProbeInfo[theMissing];
-		for (int i=0;i<theMissing;i++) theResult[i] = itsDelegate.getProbeInfo(i+aAvailableCount);
+		for (int i=0;i<theMissing;i++) theResult[i] = itsSource.getProbeInfo(i+aAvailableCount);
 		
 		return theResult;
+	}
+
+	public LineNumberInfo[] _getBehaviorLineNumberInfo(int aBehaviorId)
+	{
+		return itsSource._getBehaviorLineNumberInfo(aBehaviorId);
+	}
+
+	public LocalVariableInfo[] _getBehaviorLocalVariableInfo(int aBehaviorId) 
+	{
+		return itsSource._getBehaviorLocalVariableInfo(aBehaviorId);
+	}
+
+	public TagMap _getBehaviorTagMap(int aBehaviorId) 
+	{
+		return itsSource._getBehaviorTagMap(aBehaviorId);
+	}
+
+	public Map<Integer, SourceRange> _getClassAdviceSourceMap(int aClassId)
+	{
+		return itsSource._getClassAdviceSourceMap(aClassId);
+	}
+
+	public Map<String, IMutableBehaviorInfo> _getClassBehaviorsMap(int aClassId) 
+	{
+		return itsSource._getClassBehaviorsMap(aClassId);
+	}
+
+	public byte[] _getClassBytecode(int aClassId) 
+	{
+		return itsSource._getClassBytecode(aClassId);
+	}
+
+	public Map<String, IMutableFieldInfo> _getClassFieldMap(int aClassId) 
+	{
+		return itsSource._getClassFieldMap(aClassId);
+	}
+
+	public IClassInfo _getBehaviorClass(int aBehaviorId, boolean aFailIfAbsent)
+	{
+		return itsSource._getBehaviorClass(aBehaviorId, aFailIfAbsent);
+	}
+	
+	public IClassInfo _getFieldClass(int aFieldId, boolean aFailIfAbsent) throws RemoteException
+	{
+		return itsSource._getFieldClass(aFieldId, aFailIfAbsent);
 	}
 
 	/**
@@ -231,7 +270,7 @@ implements RIStructureDatabase
 	 * @author gpothier
 	 */
 	private static class MyDatabase extends UnicastRemoteObject
-	implements IMutableStructureDatabase, RIStructureDatabaseListener
+	implements IShareableStructureDatabase, RIStructureDatabaseListener
 	{
 		private RIStructureDatabase itsDatabase;
 		
@@ -261,65 +300,82 @@ implements RIStructureDatabase
 			itsConfig = aDatabase.getConfig();
 			itsId = aDatabase.getId();
 			
-			// Load existing classes
-			System.out.println("[RemoteStructureDatabase] Fecthing classes...");
-			for(IClassInfo theClass : itsDatabase.getClasses())
-			{
-				cacheClass((IMutableClassInfo) theClass);
-			}
+//			// Load existing classes
+//			System.out.println("[RemoteStructureDatabase] Fecthing classes...");
+//			for(IClassInfo theClass : itsDatabase.getClasses())
+//			{
+//				cacheClass((IMutableClassInfo) theClass);
+//			}
 
 			System.out.println("[RemoteStructureDatabase] Done.");
 		}
 		
-		private void cacheClass(IMutableClassInfo aClass)
+		/**
+		 * Rebinds the given location info to this database,
+		 * @param aLocation
+		 */
+		private void rebind(ILocationInfo aLocation)
 		{
-			// Rebind the class to this database if necessary.
-			if (aClass instanceof ISerializableLocationInfo)
+			if (aLocation instanceof ISerializableLocationInfo)
 			{
-				ISerializableLocationInfo theLocation = (ISerializableLocationInfo) aClass;
+				ISerializableLocationInfo theLocation = (ISerializableLocationInfo) aLocation;
+				assert aLocation.getDatabase() == null;
 				theLocation.setDatabase(this);
 			}
+			else assert false;
+		}
+		
+		private void cacheClass(IMutableClassInfo aClass, boolean aCacheMembers)
+		{
 			
 			// If a version of the class is already cached, purge it.
 			IClassInfo theCachedClass = Utils.listGet(itsClasses, aClass.getId());
-			if (theCachedClass != null)
-			{
-				System.out.println("[RemoteStructureDatabase] Class already cached: "+theCachedClass);
-				for (IBehaviorInfo theBehavior : theCachedClass.getBehaviors())
-				{
-					System.out.println("[RemoteStructureDatabase] Purging: "+theBehavior);
-					Utils.listSet(itsBehaviors, theBehavior.getId(), null);
-				}
-				
-				for (IFieldInfo theField : theCachedClass.getFields())
-				{
-					System.out.println("[RemoteStructureDatabase] Purging: "+theField);
-					Utils.listSet(itsFields, theField.getId(), null);
-				}
-			}
+			assert theCachedClass == null : aClass.getId();
+//			if (theCachedClass != null)
+//			{
+//				System.out.println("[RemoteStructureDatabase] Class already cached: "+theCachedClass);
+//				for (IBehaviorInfo theBehavior : theCachedClass.getBehaviors())
+//				{
+//					System.out.println("[RemoteStructureDatabase] Purging: "+theBehavior);
+//					Utils.listSet(itsBehaviors, theBehavior.getId(), null);
+//				}
+//				
+//				for (IFieldInfo theField : theCachedClass.getFields())
+//				{
+//					System.out.println("[RemoteStructureDatabase] Purging: "+theField);
+//					Utils.listSet(itsFields, theField.getId(), null);
+//				}
+//			}
 
 			Utils.listSet(itsClasses, aClass.getId(), aClass);
 			itsClassesMap.put(aClass.getName(), aClass);
+			rebind(aClass);
 			
-			for (IBehaviorInfo theBehavior : aClass.getBehaviors())
+			if (aCacheMembers)
 			{
-				Utils.listSet(itsBehaviors, theBehavior.getId(), theBehavior);
-			}
-			
-			for (IFieldInfo theField : aClass.getFields())
-			{
-				Utils.listSet(itsFields, theField.getId(), theField);
+				aClass.getBehaviors();
+				aClass.getFields();
 			}
 		}
 		
-		/**
-		 * Caches the whole class containg the given member.
-		 */
-		private void cacheMember(IMemberInfo aMember)
+		private void cacheBehavior(IBehaviorInfo aBehavior)
 		{
-			IMutableClassInfo theClass = (IMutableClassInfo) aMember.getType();
-			cacheClass(theClass);
+			IBehaviorInfo theBehavior = Utils.listGet(itsBehaviors, aBehavior.getId());
+			assert theBehavior == null : aBehavior.getId();
+			
+			Utils.listSet(itsBehaviors, aBehavior.getId(), aBehavior);
+			rebind(aBehavior);
 		}
+
+		private void cacheField(IFieldInfo aField)
+		{
+			IFieldInfo theField = Utils.listGet(itsFields, aField.getId());
+			assert theField == null : aField.getId();
+			
+			Utils.listSet(itsFields, aField.getId(), aField);
+			rebind(aField);
+		}
+		
 		
 		public String getId()
 		{
@@ -361,11 +417,11 @@ implements RIStructureDatabase
 				IBehaviorInfo theBehavior = Utils.listGet(itsBehaviors, aBehaviorId);
 				if (theBehavior == null)
 				{
-					theBehavior = itsDatabase.getBehavior(aBehaviorId, false);
-					if (theBehavior != null)
+					IMutableClassInfo theClass = (IMutableClassInfo) itsDatabase._getBehaviorClass(aBehaviorId, aFailIfAbsent);
+					if (theClass != null)
 					{
-						assert theBehavior.getId() == aBehaviorId;
-						cacheMember(theBehavior);
+						cacheClass(theClass, true);
+						theBehavior = Utils.listGet(itsBehaviors, aBehaviorId);
 					}
 				}
 				
@@ -385,11 +441,11 @@ implements RIStructureDatabase
 				IFieldInfo theField = Utils.listGet(itsFields, aFieldId);
 				if (theField == null)
 				{
-					theField = itsDatabase.getField(aFieldId, false);
-					if (theField != null)
+					IMutableClassInfo theClass = (IMutableClassInfo) itsDatabase._getFieldClass(aFieldId, aFailIfAbsent);
+					if (theClass != null)
 					{
-						assert theField.getId() == aFieldId;
-						cacheMember(theField);
+						cacheClass(theClass, true);
+						theField = Utils.listGet(itsFields, aFieldId);
 					}
 				}
 				
@@ -413,7 +469,7 @@ implements RIStructureDatabase
 					if (theClass != null)
 					{
 						assert theClass.getId() == aClassId;
-						cacheClass(theClass);
+						cacheClass(theClass, false);
 					}
 				}
 				
@@ -473,7 +529,7 @@ implements RIStructureDatabase
 				if (theClass == null)
 				{
 					theClass = (IMutableClassInfo) itsDatabase.getClass(aName, false);
-					if (theClass != null) cacheClass(theClass);
+					if (theClass != null) cacheClass(theClass, false);
 				}
 				
 				if (theClass == null && aFailIfAbsent) throw new RuntimeException("Class not found: "+aName);
@@ -515,7 +571,7 @@ implements RIStructureDatabase
 				if (theClass == null)
 				{
 					theClass = (IMutableClassInfo) itsDatabase.getNewClass(aName);
-					cacheClass(theClass);
+					cacheClass(theClass, false);
 				}
 				return theClass;
 			}
@@ -567,6 +623,120 @@ implements RIStructureDatabase
 		{
 			throw new UnsupportedOperationException();
 		}
+
+		public LineNumberInfo[] _getBehaviorLineNumberInfo(int aBehaviorId)
+		{
+			try
+			{
+				return itsDatabase._getBehaviorLineNumberInfo(aBehaviorId);
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		public LocalVariableInfo[] _getBehaviorLocalVariableInfo(int aBehaviorId)
+		{
+			try
+			{
+				return itsDatabase._getBehaviorLocalVariableInfo(aBehaviorId);
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		public TagMap _getBehaviorTagMap(int aBehaviorId)
+		{
+			try
+			{
+				return itsDatabase._getBehaviorTagMap(aBehaviorId);
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		public Map<Integer, SourceRange> _getClassAdviceSourceMap(int aClassId)
+		{
+			try
+			{
+				return itsDatabase._getClassAdviceSourceMap(aClassId);
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		public Map<String, IMutableBehaviorInfo> _getClassBehaviorsMap(int aClassId)
+		{
+			try
+			{
+				Map<String, IMutableBehaviorInfo> theMap = itsDatabase._getClassBehaviorsMap(aClassId);
+				for (IMutableBehaviorInfo theBehavior : theMap.values()) cacheBehavior(theBehavior);
+				return theMap;
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		public Map<String, IMutableFieldInfo> _getClassFieldMap(int aClassId)
+		{
+			try
+			{
+				Map<String, IMutableFieldInfo> theMap = itsDatabase._getClassFieldMap(aClassId);
+				for (IMutableFieldInfo theField : theMap.values()) cacheField(theField);
+				return theMap;
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		public byte[] _getClassBytecode(int aClassId)
+		{
+			try
+			{
+				return itsDatabase._getClassBytecode(aClassId);
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		public IClassInfo _getBehaviorClass(int aBehaviorId, boolean aFailIfAbsent)
+		{
+			try
+			{
+				return itsDatabase._getBehaviorClass(aBehaviorId, aFailIfAbsent);
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		public IClassInfo _getFieldClass(int aFieldId, boolean aFailIfAbsent)
+		{
+			try
+			{
+				return itsDatabase._getFieldClass(aFieldId, aFailIfAbsent);
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		
+		
 	}
 
 }

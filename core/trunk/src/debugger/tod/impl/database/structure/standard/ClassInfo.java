@@ -37,6 +37,7 @@ import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableFieldInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
+import tod.core.database.structure.IShareableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
@@ -55,7 +56,8 @@ implements IMutableClassInfo, ISerializableLocationInfo
 	private transient ClassNameInfo itsClassNameInfo;
 	private String itsJvmName;
 	
-	private byte[] itsBytecode;
+	private boolean itsHasBytecode = false;
+	private transient byte[] itsBytecode;
 	
 	private boolean itsInScope;
 	private boolean itsInterface;
@@ -74,17 +76,19 @@ implements IMutableClassInfo, ISerializableLocationInfo
 	 */
 	private int[] itsInterfacesIds;
 	
-	private Map<String, IMutableFieldInfo> itsFieldsMap = 
+	private transient Map<String, IMutableFieldInfo> itsFieldsMap = 
 		new HashMap<String, IMutableFieldInfo>();
 	
-	private Map<String, IMutableBehaviorInfo> itsBehaviorsMap = 
+	private transient Map<String, IMutableBehaviorInfo> itsBehaviorsMap = 
 		new HashMap<String, IMutableBehaviorInfo>();
+	
+	private boolean itsHasAdviceSourceMap = false;
 	
 	/**
 	 * Maps advice source ids (see {@link IBehaviorInfo.BytecodeTagType#ADVICE_SOURCE_ID})
 	 * with their position.
 	 */
-	private Map<Integer, SourceRange> itsAdviceSourceMap;
+	private transient Map<Integer, SourceRange> itsAdviceSourceMap;
 	
 	/**
 	 * Whether this class info can be disposed.
@@ -100,7 +104,7 @@ implements IMutableClassInfo, ISerializableLocationInfo
 	
 	private long itsStartTime;
 
-	public ClassInfo(IMutableStructureDatabase aDatabase, ClassNameInfo aClassNameInfo, String aName, int aId)
+	public ClassInfo(IShareableStructureDatabase aDatabase, ClassNameInfo aClassNameInfo, String aName, int aId)
 	{
 		super(aDatabase, aId, aName);
 		assert aDatabase != null;
@@ -130,9 +134,27 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		setSupertype(aSuperclass);
 	}
 	
+	byte[] _getBytecode()
+	{
+		return itsBytecode;
+	}
+	
+	public byte[] getBytecode()
+	{
+		if (itsBytecode == null && itsHasBytecode)
+		{
+			assert ! isOriginal();
+			itsBytecode = getDatabase()._getClassBytecode(getId());
+		}
+		return itsBytecode;
+	}
+	
+
 	public void setBytecode(byte[] aBytecode)
 	{
+		assert isOriginal();
 		itsBytecode = aBytecode;
+		itsHasBytecode = itsBytecode != null;
 	}
 	
 	/**
@@ -145,26 +167,11 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		return (StructureDatabase) super.getDatabase();
 	}
 	
-	@Override
-	public void setDatabase(IMutableStructureDatabase aDatabase)
-	{
-		super.setDatabase(aDatabase);
-		for (IMemberInfo theMember : getMembers())
-		{
-			((MemberInfo) theMember).setDatabase(aDatabase);
-		}
-	}
-	
-	public byte[] getBytecode()
-	{
-		return itsBytecode;
-	}
-	
 	protected IMemberInfo[] getMembers()
 	{
 		List<IMemberInfo> theMembers = new ArrayList<IMemberInfo>();
-		Utils.fillCollection(theMembers, itsBehaviorsMap.values());
-		Utils.fillCollection(theMembers, itsFieldsMap.values());
+		Utils.fillCollection(theMembers, getBehaviorsMap().values());
+		Utils.fillCollection(theMembers, getFieldsMap().values());
 		return theMembers.toArray(new IMemberInfo[theMembers.size()]);
 	}
 	
@@ -203,7 +210,7 @@ implements IMutableClassInfo, ISerializableLocationInfo
 	 */
 	public void register(IMutableFieldInfo aField)
 	{
-		itsFieldsMap.put (aField.getName(), aField);
+		getFieldsMap().put (aField.getName(), aField);
 		getStructureDatabase().registerField(aField);
 	}
 	
@@ -212,18 +219,48 @@ implements IMutableClassInfo, ISerializableLocationInfo
 	 */
 	public void register(IMutableBehaviorInfo aBehavior)
 	{
-		itsBehaviorsMap.put(getKey(aBehavior), aBehavior);
+		getBehaviorsMap().put(getKey(aBehavior), aBehavior);
 		getStructureDatabase().registerBehavior(aBehavior);
 	}
 	
 	public IMutableFieldInfo getField(String aName)
 	{
-		return itsFieldsMap.get(aName);
+		return getFieldsMap().get(aName);
+	}
+	
+	Map<String, IMutableFieldInfo> _getFieldsMap()
+	{
+		return itsFieldsMap;
+	}
+	
+	private Map<String, IMutableFieldInfo> getFieldsMap()
+	{
+		if (itsFieldsMap == null)
+		{
+			assert ! isOriginal();
+			itsFieldsMap = getDatabase()._getClassFieldMap(getId());
+		}
+		return itsFieldsMap;
 	}
 	
 	public IMutableBehaviorInfo getBehavior(String aName, ITypeInfo[] aArgumentTypes)
 	{
-		return itsBehaviorsMap.get(getBehaviorKey(aName, aArgumentTypes));
+		return getBehaviorsMap().get(getBehaviorKey(aName, aArgumentTypes));
+	}
+	
+	Map<String, IMutableBehaviorInfo> _getBehaviorsMap()
+	{
+		return itsBehaviorsMap;
+	}
+	
+	private Map<String, IMutableBehaviorInfo> getBehaviorsMap()
+	{
+		if (itsBehaviorsMap == null)
+		{
+			assert ! isOriginal();
+			itsBehaviorsMap = getDatabase()._getClassBehaviorsMap(getId());
+		}
+		return itsBehaviorsMap;
 	}
 	
 	public IMutableBehaviorInfo getNewBehavior(String aName, String aDescriptor)
@@ -266,12 +303,12 @@ implements IMutableClassInfo, ISerializableLocationInfo
 	
 	public Iterable<IFieldInfo> getFields()
 	{
-		return (Iterable) itsFieldsMap.values();
+		return (Iterable) getFieldsMap().values();
 	}
 	
 	public Iterable<IBehaviorInfo> getBehaviors()
 	{
-		return (Iterable) itsBehaviorsMap.values();
+		return (Iterable) getBehaviorsMap().values();
 	}
 	
 	public IClassInfo[] getInterfaces()
@@ -355,14 +392,33 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		return "f" + aName + "|" + aType.getName();
 	}
 	
-	public void setAdviceSourceMap(Map<Integer, SourceRange> aMap)
+	private Map<Integer, SourceRange> getAdviceSourceMap()
 	{
-		itsAdviceSourceMap = aMap;
+		if (itsAdviceSourceMap == null && itsHasAdviceSourceMap)
+		{
+			assert ! isOriginal();
+			itsAdviceSourceMap = getDatabase()._getClassAdviceSourceMap(getId());
+		}
+		return itsAdviceSourceMap;
+
 	}
 
+	public void setAdviceSourceMap(Map<Integer, SourceRange> aMap)
+	{
+		assert isOriginal(); 
+		itsAdviceSourceMap = aMap;
+		itsHasAdviceSourceMap = itsAdviceSourceMap != null;
+	}
+	
 	public SourceRange getAdviceSource(int aAdviceId)
 	{
-		return itsAdviceSourceMap != null ? itsAdviceSourceMap.get(aAdviceId) : null;
+		Map<Integer, SourceRange> theMap = getAdviceSourceMap();
+		return theMap != null ? theMap.get(aAdviceId) : null;
+	}
+	
+	Map<Integer, SourceRange> _getAdviceSourceMap()
+	{
+		return itsAdviceSourceMap;
 	}
 
 	@Override
