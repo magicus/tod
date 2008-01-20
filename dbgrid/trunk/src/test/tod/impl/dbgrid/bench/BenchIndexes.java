@@ -26,11 +26,11 @@ import org.junit.Test;
 
 import tod.BenchBase;
 import tod.BenchBase.BenchResults;
+import tod.core.database.TimestampGenerator;
 import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.db.HierarchicalIndex;
 import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.test.TestHierarchicalIndex;
-import tod.impl.dbgrid.test.TestHierarchicalIndex.TimestampGenerator;
 
 public class BenchIndexes
 {

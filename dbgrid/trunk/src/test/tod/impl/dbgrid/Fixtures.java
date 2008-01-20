@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.core.DebugFlags;
+import tod.core.database.TimestampGenerator;
 import tod.core.database.event.ILogEvent;
 import tod.core.transport.LogReceiver;
 import tod.core.transport.LogReceiver.ILogReceiverMonitor;
@@ -47,7 +48,6 @@ import tod.impl.dbgrid.db.StdIndexSet;
 import tod.impl.dbgrid.db.file.HardPagedFile;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
-import tod.impl.dbgrid.test.TestHierarchicalIndex;
 import zz.utils.bit.BitStruct;
 import zz.utils.bit.IntBitStruct;
 
@@ -140,7 +140,7 @@ public class Fixtures
 	 */
 	public static void fillStdIndex(
 			HierarchicalIndex<StdIndexSet.StdTuple> aIndex, 
-			TestHierarchicalIndex.TimestampGenerator aGenerator,
+			TimestampGenerator aGenerator,
 			long aTupleCount)
 	{
 		for (long i=0;i<aTupleCount;i++)
@@ -157,7 +157,7 @@ public class Fixtures
 	 */
 	public static void fillRoleIndex(
 			HierarchicalIndex<RoleIndexSet.RoleTuple> aIndex, 
-			TestHierarchicalIndex.TimestampGenerator aGenerator,
+			TimestampGenerator aGenerator,
 			long aTupleCount)
 	{
 		for (long i=0;i<aTupleCount;i++)
