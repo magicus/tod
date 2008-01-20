@@ -14,7 +14,6 @@
 # 
 # WINBASE=
 
-echo Including environment from $(ENV_DEF)
 include $(ENV_DEF)
 
 SHARED_MAGIC = -shared
