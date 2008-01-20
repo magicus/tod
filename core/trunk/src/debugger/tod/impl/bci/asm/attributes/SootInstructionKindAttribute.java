@@ -55,13 +55,18 @@ public class SootInstructionKindAttribute extends SootIntAttribute
 	private static BytecodeRole getRole(int aSootConstant) 
 	{
 		// Constants come from abc.weaving.tagkit.InstructionKindTag
+		System.out.println(aSootConstant);
 		switch (aSootConstant)
 		{
 		case 0: return BytecodeRole.BASE_CODE;
 		case 1: return BytecodeRole.ADVICE_EXECUTE;
 		case 2: return BytecodeRole.ADVICE_ARG_SETUP;
+		case 4: return BytecodeRole.AFTER_THROWING_HANDLER;
+		case 5: return BytecodeRole.EXCEPTION_SOFTENER;
 		case 3: return BytecodeRole.ADVICE_TEST;
 		case 36: return BytecodeRole.INLINED_ADVICE;
+		case 41: return BytecodeRole.CONTEXT_EXPOSURE;
+		case 42: return BytecodeRole.PARAMETER_BACKUP;
 		default: return BytecodeRole.UNKNOWN;
 		}
 	}

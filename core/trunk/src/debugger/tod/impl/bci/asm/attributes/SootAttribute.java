@@ -145,5 +145,11 @@ public abstract class SootAttribute<V> extends DataAttribute
 			label = aLabel;
 			v = aV;
 		}
+		
+		@Override
+		public String toString()
+		{
+			return label+"->"+v;
+		}
 	}
 }

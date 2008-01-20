@@ -159,7 +159,7 @@ public class CollectorPacketReader
 			theObject = "Deserialization error";
 		}
 		
-		System.out.println("Received object: "+theObject+", id: "+theObjectId +", id: "+theObjectTimestamp);
+//		System.out.println("Received object: "+theObject+", id: "+theObjectId +", ts: "+theObjectTimestamp);
 		
 		aCollector.register(theObjectId, theObject, theObjectTimestamp);
 	}

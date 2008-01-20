@@ -20,6 +20,13 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.view.structure;
 
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -31,6 +38,9 @@ import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
 import tod.core.database.structure.analysis.DisassembledBehavior;
 import tod.core.database.structure.analysis.Disassembler;
 import tod.core.database.structure.analysis.DisassembledBehavior.Instruction;
+import zz.utils.properties.IRWProperty;
+import zz.utils.properties.SimpleRWProperty;
+import zz.utils.ui.PropertyEditor;
 import zz.utils.ui.StackLayout;
 
 /**
@@ -80,24 +90,63 @@ public class BehaviorPanel extends JPanel
 	 */
 	private final IBehaviorInfo itsBehavior;
 
+	private DisassembledBehavior itsDisassembled;
+
+	private JTable itsTable;
+
+	private IRWProperty<Boolean> pShowTODInstructions = new SimpleRWProperty<Boolean>(this, false)
+	{
+		@Override
+		protected void changed(Boolean aOldValue, Boolean aNewValue)
+		{
+			updateInstructions();
+		}
+	};
+
 	public BehaviorPanel(IBehaviorInfo aBehavior)
 	{
 		itsBehavior = aBehavior;
+		itsDisassembled = Disassembler.disassemble(itsBehavior);
 		createUI();
 	}
 
 	private void createUI()
 	{
-		DisassembledBehavior theDisassembled = Disassembler.disassemble(itsBehavior);
-		JTable theTable = new JTable(new MyTableModel(itsBehavior, theDisassembled.getInstructions()));
-		theTable.setShowHorizontalLines(false);
-		theTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+		itsTable = new JTable();
+		itsTable.setShowHorizontalLines(false);
+		itsTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 		
+		setLayout(new BorderLayout());
+		
+		add(new JScrollPane(itsTable), BorderLayout.CENTER);
+		
+		JPanel theNorth = new JPanel();
+		theNorth.add(PropertyEditor.createCheckBox(pShowTODInstructions, "Show TOD instructions"));
+		add(theNorth, BorderLayout.NORTH);
+		
+		updateInstructions();
+	}
+	
+	private void updateInstructions()
+	{
+		Instruction[] theInstructions = itsDisassembled.getInstructions();
+		
+		if (! pShowTODInstructions.get())
+		{
+			// Filter TOD instructions
+			List<Instruction> theFilteredInstructions = new ArrayList<Instruction>();
+			for (Instruction theInstruction : theInstructions)
+			{
+				BytecodeRole theRole = itsBehavior.getTag(BytecodeTagType.ROLE, theInstruction.pc);
+				if (theRole != BytecodeRole.TOD_CODE) theFilteredInstructions.add(theInstruction);
+			}
+			theInstructions = theFilteredInstructions.toArray(new Instruction[theFilteredInstructions.size()]);
+		}
+		
+		itsTable.setModel(new MyTableModel(itsBehavior, theInstructions));
+
 		for (int i=0;i<columns.length;i++) 
-			theTable.getColumnModel().getColumn(i).setPreferredWidth(columns[i].width);
-		
-		setLayout(new StackLayout());
-		add(new JScrollPane(theTable));
+			itsTable.getColumnModel().getColumn(i).setPreferredWidth(columns[i].width);
 	}
 	
 	private static class MyTableModel extends AbstractTableModel
