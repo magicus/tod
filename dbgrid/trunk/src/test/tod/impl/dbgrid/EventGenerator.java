@@ -32,6 +32,7 @@ import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_ADVICE_SRC_ID_COUNT;
 
 import java.util.Random;
 
+import tod.core.database.TimestampGenerator;
 import tod.core.database.structure.ObjectId;
 import tod.impl.dbgrid.messages.GridArrayWriteEvent;
 import tod.impl.dbgrid.messages.GridBehaviorCallEvent;
@@ -41,7 +42,6 @@ import tod.impl.dbgrid.messages.GridExceptionGeneratedEvent;
 import tod.impl.dbgrid.messages.GridFieldWriteEvent;
 import tod.impl.dbgrid.messages.GridVariableWriteEvent;
 import tod.impl.dbgrid.messages.MessageType;
-import tod.impl.dbgrid.test.TestHierarchicalIndex.TimestampGenerator;
 import tod.impl.dbgrid.messages.GridNewArrayEvent;
 
 public class EventGenerator
