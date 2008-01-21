@@ -327,26 +327,6 @@ implements RIStructureDatabase
 		
 		private void cacheClass(IMutableClassInfo aClass, boolean aCacheMembers)
 		{
-			
-			// If a version of the class is already cached, purge it.
-			IClassInfo theCachedClass = Utils.listGet(itsClasses, aClass.getId());
-			assert theCachedClass == null : aClass.getId();
-//			if (theCachedClass != null)
-//			{
-//				System.out.println("[RemoteStructureDatabase] Class already cached: "+theCachedClass);
-//				for (IBehaviorInfo theBehavior : theCachedClass.getBehaviors())
-//				{
-//					System.out.println("[RemoteStructureDatabase] Purging: "+theBehavior);
-//					Utils.listSet(itsBehaviors, theBehavior.getId(), null);
-//				}
-//				
-//				for (IFieldInfo theField : theCachedClass.getFields())
-//				{
-//					System.out.println("[RemoteStructureDatabase] Purging: "+theField);
-//					Utils.listSet(itsFields, theField.getId(), null);
-//				}
-//			}
-
 			Utils.listSet(itsClasses, aClass.getId(), aClass);
 			itsClassesMap.put(aClass.getName(), aClass);
 			rebind(aClass);
@@ -361,7 +341,6 @@ implements RIStructureDatabase
 		private void cacheBehavior(IBehaviorInfo aBehavior)
 		{
 			IBehaviorInfo theBehavior = Utils.listGet(itsBehaviors, aBehavior.getId());
-			assert theBehavior == null : aBehavior.getId();
 			
 			Utils.listSet(itsBehaviors, aBehavior.getId(), aBehavior);
 			rebind(aBehavior);
@@ -370,7 +349,6 @@ implements RIStructureDatabase
 		private void cacheField(IFieldInfo aField)
 		{
 			IFieldInfo theField = Utils.listGet(itsFields, aField.getId());
-			assert theField == null : aField.getId();
 			
 			Utils.listSet(itsFields, aField.getId(), aField);
 			rebind(aField);
@@ -628,6 +606,7 @@ implements RIStructureDatabase
 		{
 			try
 			{
+				System.out.println("Retrieving line number info for behavior: "+aBehaviorId);
 				return itsDatabase._getBehaviorLineNumberInfo(aBehaviorId);
 			}
 			catch (RemoteException e)
@@ -640,6 +619,7 @@ implements RIStructureDatabase
 		{
 			try
 			{
+				System.out.println("Retrieving local variable info for behavior: "+aBehaviorId);
 				return itsDatabase._getBehaviorLocalVariableInfo(aBehaviorId);
 			}
 			catch (RemoteException e)
@@ -652,6 +632,7 @@ implements RIStructureDatabase
 		{
 			try
 			{
+				System.out.println("Retrieving tag map for behavior: "+aBehaviorId);
 				return itsDatabase._getBehaviorTagMap(aBehaviorId);
 			}
 			catch (RemoteException e)
@@ -664,6 +645,7 @@ implements RIStructureDatabase
 		{
 			try
 			{
+				System.out.println("Retrieving advice source map for class: "+aClassId);
 				return itsDatabase._getClassAdviceSourceMap(aClassId);
 			}
 			catch (RemoteException e)
@@ -676,6 +658,7 @@ implements RIStructureDatabase
 		{
 			try
 			{
+				System.out.println("Retrieving behavior map for class: "+aClassId);
 				Map<String, IMutableBehaviorInfo> theMap = itsDatabase._getClassBehaviorsMap(aClassId);
 				for (IMutableBehaviorInfo theBehavior : theMap.values()) cacheBehavior(theBehavior);
 				return theMap;
@@ -690,6 +673,7 @@ implements RIStructureDatabase
 		{
 			try
 			{
+				System.out.println("Retrieving field map for class: "+aClassId);
 				Map<String, IMutableFieldInfo> theMap = itsDatabase._getClassFieldMap(aClassId);
 				for (IMutableFieldInfo theField : theMap.values()) cacheField(theField);
 				return theMap;
@@ -704,6 +688,7 @@ implements RIStructureDatabase
 		{
 			try
 			{
+				System.out.println("Retrieving bytecode for class: "+aClassId);
 				return itsDatabase._getClassBytecode(aClassId);
 			}
 			catch (RemoteException e)

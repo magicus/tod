@@ -69,6 +69,8 @@ public class Disassembler
 		IClassInfo theClass = aBehavior.getType();
 		byte[] theBytecode = theClass.getBytecode();
 		
+		if (theBytecode == null) return null;
+		
 		ClassReader cr = new ClassReader(theBytecode);
 		ClassNode cn = new ClassNode();
 		cr.accept(cn, 0);

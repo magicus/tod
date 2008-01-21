@@ -192,6 +192,12 @@ public class EventMural extends JPanel
 	@Override
 	protected void paintComponent(Graphics aGraphics)
 	{
+		if (pEventBrowsers().isEmpty()) 
+		{
+			super.paintComponent(aGraphics);
+			return;
+		}
+		
 		// Paint mural image
 		ImageData theImageData = itsImage;
 		

@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -38,6 +39,7 @@ import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
 import tod.core.database.structure.analysis.DisassembledBehavior;
 import tod.core.database.structure.analysis.Disassembler;
 import tod.core.database.structure.analysis.DisassembledBehavior.Instruction;
+import tod.gui.GUIUtils;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
 import zz.utils.ui.PropertyEditor;
@@ -93,6 +95,7 @@ public class BehaviorPanel extends JPanel
 	private DisassembledBehavior itsDisassembled;
 
 	private JTable itsTable;
+	private JLabel itsTitleLabel;
 
 	private IRWProperty<Boolean> pShowTODInstructions = new SimpleRWProperty<Boolean>(this, false)
 	{
@@ -112,6 +115,10 @@ public class BehaviorPanel extends JPanel
 
 	private void createUI()
 	{
+		String theTitle = ""+itsBehavior.getType().getName()+"."+itsBehavior.getName();
+		if (itsDisassembled == null) theTitle += " - bytecode unavailable";
+		itsTitleLabel = new JLabel(theTitle);
+		
 		itsTable = new JTable();
 		itsTable.setShowHorizontalLines(false);
 		itsTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
@@ -120,8 +127,13 @@ public class BehaviorPanel extends JPanel
 		
 		add(new JScrollPane(itsTable), BorderLayout.CENTER);
 		
-		JPanel theNorth = new JPanel();
-		theNorth.add(PropertyEditor.createCheckBox(pShowTODInstructions, "Show TOD instructions"));
+		JPanel theNorth = new JPanel(GUIUtils.createSequenceLayout());
+		theNorth.add(itsTitleLabel);
+		
+		if (itsDisassembled != null)
+		{
+			theNorth.add(PropertyEditor.createCheckBox(pShowTODInstructions, "Show TOD instructions"));
+		}
 		add(theNorth, BorderLayout.NORTH);
 		
 		updateInstructions();
@@ -129,6 +141,7 @@ public class BehaviorPanel extends JPanel
 	
 	private void updateInstructions()
 	{
+		if (itsDisassembled == null) return;
 		Instruction[] theInstructions = itsDisassembled.getInstructions();
 		
 		if (! pShowTODInstructions.get())

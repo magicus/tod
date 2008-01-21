@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.view.structure;
 
+import java.awt.Dimension;
 import java.util.StringTokenizer;
 
 import javax.swing.AbstractListModel;
@@ -28,7 +29,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTree;
-import javax.swing.ListModel;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeModel;
@@ -122,7 +122,6 @@ public class LocationSelectorPanel extends JPanel
 			
 			SimpleTree<ILocationInfo> theTree = new SimpleTree<ILocationInfo>()
 			{
-				
 				protected SimpleTreeNode<ILocationInfo> createRoot()
 				{
 					return new PackageNode(this, new PackageInfo("Classes"));
@@ -199,8 +198,21 @@ public class LocationSelectorPanel extends JPanel
 
 		private void createUI()
 		{
-			JList theList = new JList();
-			theList.setModel(new BehaviorListModel(getStructureDatabase()));
+			final BehaviorListModel theListModel = new BehaviorListModel(getStructureDatabase());
+			
+			JList theList = new JList()
+			{
+				@Override
+				public Dimension getPreferredSize()
+				{
+					theListModel.setHideAway(true);
+					Dimension thePreferredSize = super.getPreferredSize();
+					theListModel.setHideAway(false);
+					return thePreferredSize;
+				}
+			};
+			
+			theList.setModel(theListModel);
 		
 			setLayout(new StackLayout());
 			add(new JScrollPane(theList));
@@ -211,23 +223,39 @@ public class LocationSelectorPanel extends JPanel
 	private static class BehaviorListModel extends AbstractListModel
 	{
 		private IStructureDatabase itsStructureDatabase;
-		private IBehaviorInfo[] itsBehaviors;
+		private int itsSize;
+		
+		/**
+		 * This flag permits to simulate we are empty
+		 * during the call to getPreferredSize, otherwise the full
+		 * model is scanned.
+		 */
+		private boolean itsHideAway = false;
 		
 		public BehaviorListModel(IStructureDatabase aStructureDatabase)
 		{
 			itsStructureDatabase = aStructureDatabase;
-			itsBehaviors = itsStructureDatabase.getBehaviors();
+			itsSize = itsStructureDatabase.getStats().nBehaviors;
+		}
+
+		public void setHideAway(boolean aHideAway)
+		{
+			itsHideAway = aHideAway;
 		}
 
 		public Object getElementAt(int aIndex)
 		{
-			IBehaviorInfo theBehavior = itsBehaviors[aIndex];
-			return ""+theBehavior.getId()+" "+theBehavior.getType().getName()+"."+theBehavior.getName();
+			if (itsHideAway) return "A";
+			
+			IBehaviorInfo theBehavior = itsStructureDatabase.getBehavior(aIndex, false);
+			return theBehavior != null ?
+					""+aIndex+" "+theBehavior.getType().getName()+"."+theBehavior.getName()
+					: ""+aIndex;
 		}
 
 		public int getSize()
 		{
-			return itsBehaviors.length;
+			return itsSize;
 		}
 		
 	}

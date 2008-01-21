@@ -36,6 +36,10 @@ import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
 public abstract class MemberInfo extends LocationInfo 
 implements IMemberInfo, ISerializableLocationInfo
 {
+	/**
+	 * We keep the type id instead of actual type in order to simplify
+	 * the handling of remote structure databases.
+	 */
 	private int itsTypeId;
 	
 	public MemberInfo(IShareableStructureDatabase aDatabase, int aId, ITypeInfo aType, String aName)

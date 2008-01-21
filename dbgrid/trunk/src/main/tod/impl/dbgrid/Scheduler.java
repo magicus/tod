@@ -161,7 +161,7 @@ implements POMGroupDef, ISessionMonitor
 						theLastRequest = null;
 						theCount = 0;
 					}
-					Thread.sleep(1000);
+					Thread.sleep(5000);
 				}
 			}
 			catch (InterruptedException e)
@@ -177,8 +177,10 @@ implements POMGroupDef, ISessionMonitor
 			{
 				TODUtils.log(0,"[Scheduler] Deadlock detected");
 				TODUtils.log(0,"  Current request: "+theRequest+" on "+theRequest.getThread());
-				TODUtils.log(0,"  Attempting to interrupt.");
-				theRequest.getThread().interrupt();
+				
+				// Removed that: might terminate the JobProcessor thread (gp)
+//				TODUtils.log(0,"  Attempting to interrupt.");
+//				theRequest.getThread().interrupt();
 			}
 		}
 	}

@@ -84,7 +84,7 @@ public class HtmlText extends HtmlElement
 		}
 		
 		aBuilder.append("'>");
-		aBuilder.append(escapeHTML(itsText));
+		aBuilder.append(itsText);
 		aBuilder.append("</span>");
 	}
 	

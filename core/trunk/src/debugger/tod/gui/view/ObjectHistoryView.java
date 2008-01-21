@@ -169,60 +169,53 @@ public class ObjectHistoryView extends LogView implements IEventListView
 		ObjectId theObject = itsSeed.getObject();
 		
 		// Setup role filter
-		ICompoundFilter theRoleFilter = getLogBrowser().createUnionFilter();
+		IEventFilter theRoleFilter;
 		
-		if (itsSeed.pShowRole_Arg().get())
+		Boolean r_arg = itsSeed.pShowRole_Arg().get();
+		Boolean r_result = itsSeed.pShowRole_Result().get();
+		Boolean r_target = itsSeed.pShowRole_Target().get();
+		Boolean r_value = itsSeed.pShowRole_Value().get();
+		
+		if (r_arg && r_result && r_target && r_value)
 		{
-			theRoleFilter.add(getLogBrowser().createArgumentFilter(theObject));
+			theRoleFilter = getLogBrowser().createObjectFilter(theObject);
 		}
-		
-		if (itsSeed.pShowRole_Result().get())
+		else
 		{
-			theRoleFilter.add(getLogBrowser().createResultFilter(theObject));
-		}
-		
-		if (itsSeed.pShowRole_Target().get())
-		{
-			theRoleFilter.add(getLogBrowser().createTargetFilter(theObject));
-		}
-		
-		if (itsSeed.pShowRole_Value().get())
-		{
-			theRoleFilter.add(getLogBrowser().createValueFilter(theObject));
+			ICompoundFilter theCompound = getLogBrowser().createUnionFilter();
+			if (r_arg) theCompound.add(getLogBrowser().createArgumentFilter(theObject));
+			if (r_result) theCompound.add(getLogBrowser().createResultFilter(theObject));
+			if (r_target) theCompound.add(getLogBrowser().createTargetFilter(theObject));
+			if (r_value) theCompound.add(getLogBrowser().createValueFilter(theObject));
+			theRoleFilter = theCompound;
 		}
 
 		// Setup kind filter
-		ICompoundFilter theKindFilter = getLogBrowser().createUnionFilter();
-		
-		if (itsSeed.pShowKind_ArrayWrite().get())
+		Boolean k_arrayWrite = itsSeed.pShowKind_ArrayWrite().get();
+		Boolean k_behaviorCall = itsSeed.pShowKind_BehaviorCall().get();
+		Boolean k_exception = itsSeed.pShowKind_Exception().get();
+		Boolean k_fieldWrite = itsSeed.pShowKind_FieldWrite().get();
+		Boolean k_localWrite = itsSeed.pShowKind_LocalWrite().get();
+
+		if (k_arrayWrite && k_behaviorCall && k_exception && k_fieldWrite && k_localWrite)
 		{
-			theKindFilter.add(getLogBrowser().createArrayWriteFilter());
+			// If all kinds are selected, there is no need to filter
+			itsCurrentFilter = theRoleFilter;
 		}
-		
-		if (itsSeed.pShowKind_BehaviorCall().get())
+		else
 		{
-			theKindFilter.add(getLogBrowser().createBehaviorCallFilter());
+			ICompoundFilter theKindFilter = getLogBrowser().createUnionFilter();
+			if (k_arrayWrite) theKindFilter.add(getLogBrowser().createArrayWriteFilter());
+			if (k_behaviorCall) theKindFilter.add(getLogBrowser().createBehaviorCallFilter());
+			if (k_exception) theKindFilter.add(getLogBrowser().createExceptionGeneratedFilter());
+			if (k_fieldWrite) theKindFilter.add(getLogBrowser().createFieldWriteFilter());
+			if (k_localWrite) theKindFilter.add(getLogBrowser().createVariableWriteFilter());
+			
+			itsCurrentFilter = getLogBrowser().createIntersectionFilter(
+					theRoleFilter,
+					theKindFilter);
 		}
-		
-		if (itsSeed.pShowKind_Exception().get())
-		{
-			theKindFilter.add(getLogBrowser().createExceptionGeneratedFilter());
-		}
-		
-		if (itsSeed.pShowKind_FieldWrite().get())
-		{
-			theKindFilter.add(getLogBrowser().createFieldWriteFilter());
-		}
-		
-		if (itsSeed.pShowKind_LocalWrite().get())
-		{
-			theKindFilter.add(getLogBrowser().createVariableWriteFilter());
-		}
-		
-		itsCurrentFilter = getLogBrowser().createIntersectionFilter(
-				theRoleFilter,
-				theKindFilter);
-		
+			
 		itsListPanel.setBrowser(getEventBrowser());
 	}
 	

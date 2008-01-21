@@ -58,10 +58,10 @@ public class InstantiationNode extends BehaviorCallNode
 	protected HtmlElement createShortBehaviorName()
 	{
 		ITypeInfo theType = getEvent().getType();
-		return HtmlText.create(
+		return HtmlText.create(HtmlText.escapeHTML(
 				showPackageNames() ? 
 						theType.getName()
-						: Util.getSimpleInnermostName(theType.getName()));
+						: Util.getSimpleInnermostName(theType.getName())));
 	}
 	
 	@Override

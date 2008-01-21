@@ -33,6 +33,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicArrowButton;
 
+import tod.core.DebugFlags;
 import tod.core.database.browser.IEventBrowser;
 import tod.gui.BrowserData;
 import tod.gui.eventsequences.EventMural;
@@ -153,11 +154,14 @@ public class MuralScroller extends JPanel
 		itsEnd = aEnd;
 
 		// Setup mural
-		itsMural.pStart().set(itsStart);
-		itsMural.pEnd().set(itsEnd);
-		itsMural.pEventBrowsers().clear();
-		itsMural.pEventBrowsers().add(new BrowserData(itsBrowser, Color.BLACK));
-		itsMural.repaint();
+		if (DebugFlags.COMPUTE_SCROLLER_MURALS)
+		{
+			itsMural.pStart().set(itsStart);
+			itsMural.pEnd().set(itsEnd);
+			itsMural.pEventBrowsers().clear();
+			itsMural.pEventBrowsers().add(new BrowserData(itsBrowser, Color.BLACK));
+			itsMural.repaint();
+		}
 		
 		// Setup slider
 		long theDelta = itsEnd-itsStart;
