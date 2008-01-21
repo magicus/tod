@@ -1,4 +1,4 @@
-from tod.gui.formatter import *;
+from tod.tools.formatting import *;
 
 class TODObject:
     "A reconstituted TOD object"

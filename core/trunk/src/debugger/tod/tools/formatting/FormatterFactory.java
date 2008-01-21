@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.formatter;
+package tod.tools.formatting;
 
 import java.io.IOException;
 
@@ -29,18 +29,22 @@ import org.python.util.PythonInterpreter;
 
 import zz.utils.Utils;
 
-public class CustomFormatter
+/**
+ * This factory creates formatters for reconstituted objects.
+ * A formatter is a snippet of Python code.
+ * @author gpothier
+ */
+public class FormatterFactory
 {
 	public static void main(String[] args) 
 	{
 		IPyObjectFormatter theFormatter = getInstance().createFormatter("return 'x: '+o.x+', y: '+o.y");
 		System.out.println(theFormatter.format(new ReconstitutedObject(null, 0)));
-
 	}
 	
-	private static CustomFormatter INSTANCE = new CustomFormatter();
+	private static FormatterFactory INSTANCE = new FormatterFactory();
 
-	public static CustomFormatter getInstance()
+	public static FormatterFactory getInstance()
 	{
 		return INSTANCE;
 	}
@@ -48,12 +52,12 @@ public class CustomFormatter
 	private IPyFormatterFactory itsFactory;
 	private PythonInterpreter itsInterpreter;
 
-	private CustomFormatter()
+	private FormatterFactory()
 	{
 		try
 		{
 			System.setProperty("python.home", "/home/gpothier/tmp/tod");
-			String theScript = Utils.readInputStream(CustomFormatter.class.getResourceAsStream("formatter.py"));
+			String theScript = Utils.readInputStream(FormatterFactory.class.getResourceAsStream("formatter.py"));
 			itsInterpreter = new PythonInterpreter();
 			itsInterpreter.setLocals(new PyStringMap());
 			itsInterpreter.exec(theScript);
@@ -67,6 +71,15 @@ public class CustomFormatter
 		}
 	}
 	
+	/**
+	 * Creates a formatter using the provided Python code snippet. Within the snippet, the
+	 * following variables are available:
+	 * <li> o: a proxy to the reconstituted object. Use o.n to access the value of field n of o.
+	 * Example:
+	 * <code>  
+	 * return "x: "+o.x+", y: "+o.y
+	 * </code>
+	 */
 	public IPyObjectFormatter createFormatter(String aFunctionBody)
 	{
 		String theDef = "def func(o):\n\t"+aFunctionBody;

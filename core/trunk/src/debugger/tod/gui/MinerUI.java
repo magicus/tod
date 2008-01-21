@@ -592,10 +592,7 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 	/**
 	 * Utility method for {@link #getProperty(String)}
 	 */
-	public static boolean getBooleanProperty (
-			IGUIManager aGUIManager, 
-			String aPropertyName, 
-			boolean aDefault)
+	public static boolean getBooleanProperty (IGUIManager aGUIManager, String aPropertyName, boolean aDefault)
 	{
 		String theString = aGUIManager.getProperty(aPropertyName);
 		return theString != null ? Boolean.parseBoolean(theString) : aDefault;
@@ -604,10 +601,7 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 	/**
 	 * Utility method for {@link #getProperty(String)}
 	 */
-	public static int getIntProperty (
-			IGUIManager aGUIManager, 
-			String aPropertyName, 
-			int aDefault)
+	public static int getIntProperty (IGUIManager aGUIManager, String aPropertyName, int aDefault)
 	{
 		String theString = aGUIManager.getProperty(aPropertyName);
 		return theString != null ? Integer.parseInt(theString) : aDefault;
@@ -616,13 +610,18 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 	/**
 	 * Utility method for {@link #getProperty(String)}
 	 */
-	public static String getStringProperty (
-			IGUIManager aGUIManager, 
-			String aPropertyName, 
-			String aDefault)
+	public static String getStringProperty (IGUIManager aGUIManager, String aPropertyName, String aDefault)
 	{
 		String theString = aGUIManager.getProperty(aPropertyName);
 		return theString != null ? theString : aDefault;
+	}
+	
+	/**
+	 * Retrieves a serialized object.
+	 */
+	public static Object getObjectProperty(IGUIManager aManager, String aPropertyName, Object aDefault)
+	{
+		throw new UnsupportedOperationException();
 	}
 	
 	/**

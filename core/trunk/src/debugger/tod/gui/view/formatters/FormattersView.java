@@ -18,11 +18,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.formatter;
+package tod.gui.view.formatters;
 
-import org.python.core.PyFunction;
+import tod.core.database.browser.ILogBrowser;
+import tod.gui.IGUIManager;
+import tod.gui.view.LogView;
 
-public interface IPyFormatterFactory
+/**
+ * This view permits to edit the set of available formatters.
+ * @author gpothier
+ */
+public class FormattersView extends LogView
 {
-	public IPyObjectFormatter create(PyFunction aFunction);
+
+	public FormattersView(IGUIManager aGUIManager, ILogBrowser aLog)
+	{
+		super(aGUIManager, aLog);
+	}
+
 }
