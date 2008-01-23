@@ -34,6 +34,7 @@ import tod.core.database.structure.ITypeInfo;
  */
 public class FieldInfo extends MemberInfo implements IMutableFieldInfo
 {
+	private static final long serialVersionUID = 1642825455287392890L;
 
 	public FieldInfo(IShareableStructureDatabase aDatabase, int aId, ITypeInfo aTypeInfo, String aName)
 	{

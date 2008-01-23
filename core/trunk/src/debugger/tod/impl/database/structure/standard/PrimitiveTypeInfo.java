@@ -26,6 +26,8 @@ import tod.core.database.structure.IPrimitiveTypeInfo;
 
 public class PrimitiveTypeInfo extends TypeInfo implements IPrimitiveTypeInfo
 {
+	private static final long serialVersionUID = 2145422655286109651L;
+	
 	public static final PrimitiveTypeInfo VOID = new PrimitiveTypeInfo("void", Type.VOID_TYPE, 0, 1);
 	public static final PrimitiveTypeInfo BOOLEAN = new PrimitiveTypeInfo("boolean", Type.BOOLEAN_TYPE, 1, 2);
 	public static final PrimitiveTypeInfo INT = new PrimitiveTypeInfo("int", Type.INT_TYPE, 1, 3);
