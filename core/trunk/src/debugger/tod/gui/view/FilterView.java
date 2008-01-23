@@ -30,10 +30,10 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.LocationUtils;
 import tod.core.database.event.ILogEvent;
 import tod.gui.IGUIManager;
-import tod.gui.MinerUI;
 import tod.gui.eventlist.EventListPanel;
 import tod.gui.kit.Bus;
 import tod.gui.kit.Options;
+import tod.gui.kit.SavedSplitPane;
 import tod.gui.kit.html.HtmlComponent;
 import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
@@ -55,8 +55,6 @@ public class FilterView extends LogView implements IEventListView
 	private static final String PROPERTY_SPLITTER_POS = "filterView.splitterPos";
 	private FilterSeed itsSeed;
 	
-	private JSplitPane itsSplitPane;
-
 	private EventListPanel itsListPanel;
 	private EventHighlighter itsEventHighlighter;
 	
@@ -92,8 +90,8 @@ public class FilterView extends LogView implements IEventListView
 	
 	private void createUI()
 	{
-		itsSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-		itsSplitPane.setResizeWeight(0.5);
+		JSplitPane theSplitPane = new SavedSplitPane(JSplitPane.HORIZONTAL_SPLIT, getGUIManager(), PROPERTY_SPLITTER_POS);
+		theSplitPane.setResizeWeight(0.5);
 		
 		itsListPanel = new EventListPanel (getBus(), getLogBrowser(), getJobProcessor()); 
 		
@@ -106,15 +104,15 @@ public class FilterView extends LogView implements IEventListView
 				});
 				
 		setLayout(new BorderLayout());
-		add (itsSplitPane, BorderLayout.CENTER);
+		add (theSplitPane, BorderLayout.CENTER);
 		HtmlComponent theTitleComponent = new HtmlComponent(itsSeed.getTitle());
 		theTitleComponent.setOpaque(false);
 		add(theTitleComponent, BorderLayout.NORTH);
 		
-		itsSplitPane.setLeftComponent(itsListPanel);
+		theSplitPane.setLeftComponent(itsListPanel);
 		
 		itsEventHighlighter = new EventHighlighter(getGUIManager(), getLogBrowser());
-		itsSplitPane.setRightComponent(itsEventHighlighter);
+		theSplitPane.setRightComponent(itsEventHighlighter);
 	}
 	
 	@Override
@@ -127,12 +125,6 @@ public class FilterView extends LogView implements IEventListView
 		itsSeed.pSelectedEvent().addHardListener(itsSelectedEventListener);
 		
 		itsListPanel.setBrowser(itsSeed.getBaseFilter());
-		
-		int theSplitterPos = MinerUI.getIntProperty(
-				getGUIManager(), 
-				PROPERTY_SPLITTER_POS, 400);
-		
-		itsSplitPane.setDividerLocation(theSplitterPos);
 	}
 	
 	@Override
@@ -141,10 +133,6 @@ public class FilterView extends LogView implements IEventListView
 		super.removeNotify();
 		
 		itsSeed.pSelectedEvent().removeListener(itsSelectedEventListener);
-
-		getGUIManager().setProperty(
-				PROPERTY_SPLITTER_POS, 
-				""+itsSplitPane.getDividerLocation());
 	}
 	
 	public IEventBrowser getEventBrowser()

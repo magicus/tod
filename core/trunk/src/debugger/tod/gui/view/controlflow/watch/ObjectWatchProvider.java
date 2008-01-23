@@ -94,7 +94,7 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 				itsInspector = itsLogBrowser.createClassInspector(theBehavior.getType());
 			}
 			
-			itsInspector.setCurrentEvent(itsRefEvent);
+			itsInspector.setReferenceEvent(itsRefEvent);
 		}
 		
 		return itsInspector;

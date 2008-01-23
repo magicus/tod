@@ -27,6 +27,8 @@ import org.python.core.PyObject;
 import org.python.core.PyStringMap;
 import org.python.util.PythonInterpreter;
 
+import tod.core.database.browser.IObjectInspector;
+
 import zz.utils.Utils;
 
 /**
@@ -38,8 +40,9 @@ public class FormatterFactory
 {
 	public static void main(String[] args) 
 	{
-		IPyObjectFormatter theFormatter = getInstance().createFormatter("return 'x: '+o.x+', y: '+o.y");
-		System.out.println(theFormatter.format(new ReconstitutedObject(null, 0)));
+		String theCode = "return 'o.x: '+o.x+', o.x.y: '+o.x.y+', o.y: '+o.y";
+		IPyObjectFormatter theFormatter = getInstance().createFormatter(theCode);
+		System.out.println(theFormatter.format(new ReconstitutedObject(null)));
 	}
 	
 	private static FormatterFactory INSTANCE = new FormatterFactory();
@@ -71,6 +74,16 @@ public class FormatterFactory
 		}
 	}
 	
+	Object createTODObject(ReconstitutedObject aObject)
+	{
+		return itsFactory.createTODObject(aObject);
+	}
+	
+	Object wrap(IObjectInspector aInspector)
+	{
+		return createTODObject(new ReconstitutedObject(aInspector));
+	}
+	
 	/**
 	 * Creates a formatter using the provided Python code snippet. Within the snippet, the
 	 * following variables are available:
@@ -86,6 +99,6 @@ public class FormatterFactory
 		itsInterpreter.exec(theDef);
 		PyFunction theFunction = (PyFunction) itsInterpreter.get("func");
 		
-		return itsFactory.create(theFunction);
+		return itsFactory.createFormatter(theFunction);
 	}
 }

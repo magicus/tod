@@ -40,7 +40,7 @@ public class VariablesInspector implements IVariablesInspector
 {
 	private final IBehaviorCallEvent itsBehaviorCall;
 	private final IEventBrowser itsChildrenBrowser;
-	private ILogEvent itsCurrentEvent;
+	private ILogEvent itsReferenceEvent;
 	private List<LocalVariableInfo> itsVariables;
 	
 	public VariablesInspector(IBehaviorCallEvent aBehaviorCall)
@@ -84,15 +84,15 @@ public class VariablesInspector implements IVariablesInspector
 		return theResult;
 	}
 	
-	public void setCurrentEvent(ILogEvent aEvent)
+	public void setReferenceEvent(ILogEvent aEvent)
 	{
 		if (getBehaviorCall() == null) return;
-		itsCurrentEvent = aEvent;
+		itsReferenceEvent = aEvent;
 	}
 
-	public ILogEvent getCurrentEvent()
+	public ILogEvent getReferenceEvent()
 	{
-		return itsCurrentEvent;
+		return itsReferenceEvent;
 	}
 
 	public Object[] getEntryValue(LocalVariableInfo aVariable)
@@ -103,7 +103,7 @@ public class VariablesInspector implements IVariablesInspector
 		IEventFilter theFilter = theLogBrowser.createVariableWriteFilter(aVariable);
 		IEventBrowser theBrowser = itsChildrenBrowser.createIntersection(theFilter);
 		
-		theBrowser.setNextEvent(itsCurrentEvent);
+		theBrowser.setNextEvent(itsReferenceEvent);
 		while (theBrowser.hasPrevious())
 		{
 			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) theBrowser.previous();
@@ -139,7 +139,7 @@ public class VariablesInspector implements IVariablesInspector
 		IEventFilter theFilter = theLogBrowser.createVariableWriteFilter(aVariable);
 		IEventBrowser theBrowser = itsChildrenBrowser.createIntersection(theFilter);
 		
-		theBrowser.setNextEvent(itsCurrentEvent);
+		theBrowser.setNextEvent(itsReferenceEvent);
 		while (theBrowser.hasPrevious())
 		{
 			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) theBrowser.previous();

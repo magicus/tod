@@ -51,6 +51,7 @@ import tod.gui.formatter.EventFormatter;
 import tod.gui.kit.Bus;
 import tod.gui.kit.IBusListener;
 import tod.gui.kit.Options;
+import tod.gui.kit.SavedSplitPane;
 import tod.gui.kit.StdOptions;
 import tod.gui.kit.StdProperties;
 import tod.gui.kit.messages.EventSelectedMsg;
@@ -139,8 +140,6 @@ public class CFlowView extends LogView implements IEventListView
 	};
 	
 
-	private JSplitPane itsSplitPane;
-	
 	public CFlowView(IGUIManager aGUIManager, ILogBrowser aLogBrowser, CFlowSeed aSeed)
 	{
 		super (aGUIManager, aLogBrowser);
@@ -189,12 +188,12 @@ public class CFlowView extends LogView implements IEventListView
 		// Create watch panel
 		itsWatchPanel = new WatchPanel(this);
 
-		itsSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-		itsSplitPane.setResizeWeight(0.5);
-		itsSplitPane.setLeftComponent(theCFlowPanel);
-		itsSplitPane.setRightComponent(itsWatchPanel);
+		JSplitPane theSplitPane = new SavedSplitPane(JSplitPane.HORIZONTAL_SPLIT, getGUIManager(), PROPERTY_SPLITTER_POS);
+		theSplitPane.setResizeWeight(0.5);
+		theSplitPane.setLeftComponent(theCFlowPanel);
+		theSplitPane.setRightComponent(itsWatchPanel);
 		
-		add(itsSplitPane, BorderLayout.CENTER);
+		add(theSplitPane, BorderLayout.CENTER);
 		
 		getBus().putProperty(
 				StdProperties.INTIMACY_LEVEL, 
@@ -381,12 +380,6 @@ public class CFlowView extends LogView implements IEventListView
 		connect(itsSeed.pSelectedEvent(), itsCFlowTree.pSelectedEvent(), true);
 		itsSeed.pRootEvent().addHardListener(itsRootEventListener);
 		
-		int theSplitterPos = MinerUI.getIntProperty(
-				getGUIManager(), 
-				PROPERTY_SPLITTER_POS, 400);
-		
-		itsSplitPane.setDividerLocation(theSplitterPos);
-		
 		Bus.get(this).subscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
 		Bus.get(this).subscribe(EventSelectedMsg.ID, itsEventSelectedListener);
 		
@@ -403,10 +396,6 @@ public class CFlowView extends LogView implements IEventListView
 		super.removeNotify();
 		itsSeed.pSelectedEvent().removeListener(itsSelectedEventListener);
 		itsSeed.pRootEvent().removeListener(itsRootEventListener);
-		
-		getGUIManager().setProperty(
-				PROPERTY_SPLITTER_POS, 
-				""+itsSplitPane.getDividerLocation());
 		
 		Bus.get(this).unsubscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
 		Bus.get(this).unsubscribe(EventSelectedMsg.ID, itsEventSelectedListener);

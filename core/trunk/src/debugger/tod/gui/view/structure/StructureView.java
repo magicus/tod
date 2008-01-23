@@ -20,34 +20,18 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.view.structure;
 
-import java.util.StringTokenizer;
-
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTree;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreeSelectionModel;
 
-import tod.Util;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.ILocationInfo;
-import tod.core.database.structure.IMemberInfo;
-import tod.core.database.structure.IStructureDatabase;
 import tod.gui.IGUIManager;
-import tod.gui.MinerUI;
+import tod.gui.kit.SavedSplitPane;
 import tod.gui.seed.StructureSeed;
 import tod.gui.view.LogView;
-import zz.utils.tree.SimpleTree;
-import zz.utils.tree.SimpleTreeNode;
-import zz.utils.tree.SwingTreeModel;
 import zz.utils.ui.StackLayout;
-import zz.utils.ui.UniversalRenderer;
 
 /**
  * Provides access to the structural database.
@@ -58,8 +42,6 @@ public class StructureView extends LogView
 	private static final String PROPERTY_SPLITTER_POS = "structureView.splitterPos";
 	private final StructureSeed itsSeed;
 	private JPanel itsInfoHolder;
-	private JSplitPane itsSplitPane;
-
 	
 	public StructureView(IGUIManager aGUIManager, ILogBrowser aLog, StructureSeed aSeed)
 	{
@@ -77,13 +59,13 @@ public class StructureView extends LogView
 		
 		itsInfoHolder = new JPanel(new StackLayout());
 		
-		itsSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-		itsSplitPane.setResizeWeight(0.5);
-		itsSplitPane.setLeftComponent(theSelectorPanel);
-		itsSplitPane.setRightComponent(itsInfoHolder);
+		JSplitPane theSplitPane = new SavedSplitPane(JSplitPane.HORIZONTAL_SPLIT, getGUIManager(), PROPERTY_SPLITTER_POS);
+		theSplitPane.setResizeWeight(0.5);
+		theSplitPane.setLeftComponent(theSelectorPanel);
+		theSplitPane.setRightComponent(itsInfoHolder);
 		
 		setLayout(new StackLayout());
-		add(itsSplitPane);
+		add(theSplitPane);
 	}
 	
 	/**
@@ -107,27 +89,5 @@ public class StructureView extends LogView
 		itsInfoHolder.add(aComponent);
 		itsInfoHolder.revalidate();
 		itsInfoHolder.repaint();
-	}
-
-	@Override
-	public void addNotify()
-	{
-		int theSplitterPos = MinerUI.getIntProperty(
-				getGUIManager(), 
-				PROPERTY_SPLITTER_POS, 400);
-		
-		itsSplitPane.setDividerLocation(theSplitterPos);
-		
-		super.addNotify();
-	}
-	
-	@Override
-	public void removeNotify()
-	{
-		super.removeNotify();
-		
-		getGUIManager().setProperty(
-				PROPERTY_SPLITTER_POS, 
-				""+itsSplitPane.getDividerLocation());
 	}
 }

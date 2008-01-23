@@ -43,6 +43,7 @@ import tod.gui.MinerUI;
 import tod.gui.eventlist.EventListPanel;
 import tod.gui.kit.Bus;
 import tod.gui.kit.Options;
+import tod.gui.kit.SavedSplitPane;
 import tod.gui.kit.html.HtmlComponent;
 import tod.gui.kit.html.HtmlDoc;
 import tod.gui.kit.messages.ShowCFlowMsg;
@@ -61,8 +62,6 @@ public class ObjectHistoryView extends LogView implements IEventListView
 	private static final String PROPERTY_SPLITTER_POS = "objectHistoryView.splitterPos";
 
 	private final ObjectHistorySeed itsSeed;
-
-	private JSplitPane itsSplitPane;
 
 	private EventListPanel itsListPanel;
 	private EventHighlighter itsEventHighlighter;
@@ -111,8 +110,8 @@ public class ObjectHistoryView extends LogView implements IEventListView
 	
 	private void createUI()
 	{
-		itsSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-		itsSplitPane.setResizeWeight(0.5);
+		JSplitPane theSplitPane = new SavedSplitPane(JSplitPane.HORIZONTAL_SPLIT, getGUIManager(), PROPERTY_SPLITTER_POS);
+		theSplitPane.setResizeWeight(0.5);
 		
 		itsListPanel = new EventListPanel (getBus(), getLogBrowser(), getJobProcessor());
 		
@@ -132,10 +131,10 @@ public class ObjectHistoryView extends LogView implements IEventListView
 //					}
 //				});
 
-		itsSplitPane.setLeftComponent(itsListPanel);
+		theSplitPane.setLeftComponent(itsListPanel);
 		
 		setLayout(new BorderLayout());
-		add (itsSplitPane, BorderLayout.CENTER);
+		add (theSplitPane, BorderLayout.CENTER);
 		
 		String theTitle = ObjectIdUtils.getObjectDescription(
 				getLogBrowser(), 
@@ -158,7 +157,7 @@ public class ObjectHistoryView extends LogView implements IEventListView
 		updateFilter();
 		
 		itsEventHighlighter = new EventHighlighter(getGUIManager(), getLogBrowser());
-		itsSplitPane.setRightComponent(itsEventHighlighter);
+		theSplitPane.setRightComponent(itsEventHighlighter);
 	}
 	
 	/**
@@ -238,12 +237,6 @@ public class ObjectHistoryView extends LogView implements IEventListView
 		itsSeed.pShowRole_Result().addHardListener(itsFlagsListener);
 		itsSeed.pShowRole_Target().addHardListener(itsFlagsListener);
 		itsSeed.pShowRole_Value().addHardListener(itsFlagsListener);
-		
-		int theSplitterPos = MinerUI.getIntProperty(
-				getGUIManager(), 
-				PROPERTY_SPLITTER_POS, 400);
-		
-		itsSplitPane.setDividerLocation(theSplitterPos);		
 	}
 	
 	@Override
@@ -263,10 +256,6 @@ public class ObjectHistoryView extends LogView implements IEventListView
 		itsSeed.pShowRole_Result().removeListener(itsFlagsListener);
 		itsSeed.pShowRole_Target().removeListener(itsFlagsListener);
 		itsSeed.pShowRole_Value().removeListener(itsFlagsListener);
-		
-		getGUIManager().setProperty(
-				PROPERTY_SPLITTER_POS, 
-				""+itsSplitPane.getDividerLocation());		
 	}
 	
 	public IEventBrowser getEventBrowser()

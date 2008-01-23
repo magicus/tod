@@ -97,7 +97,7 @@ public class StackFrameWatchProvider extends AbstractWatchProvider
 			if (theParentEvent != null)
 			{
 				itsInspector = itsLogBrowser.createVariablesInspector(theParentEvent);
-				itsInspector.setCurrentEvent(itsRefEvent);
+				itsInspector.setReferenceEvent(itsRefEvent);
 			}
 		}
 		

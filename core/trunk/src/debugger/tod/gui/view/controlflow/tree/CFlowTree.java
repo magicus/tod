@@ -31,9 +31,9 @@ import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
 import tod.gui.JobProcessor;
-import tod.gui.MinerUI;
 import tod.gui.eventlist.EventListPanel;
 import tod.gui.kit.BusPanel;
+import tod.gui.kit.SavedSplitPane;
 import tod.gui.view.controlflow.CFlowView;
 import zz.utils.Utils;
 import zz.utils.notification.IEvent;
@@ -50,7 +50,6 @@ public class CFlowTree extends BusPanel
 	private final CFlowView itsView;
 	private CallStackPanel itsCallStackPanel;
 	private EventListPanel itsEventListPanel;
-	private JSplitPane itsSplitPane;
 	private IParentEvent itsCurrentParent;
 	
 	private final IRWProperty<ILogEvent> pSelectedEvent = 
@@ -106,9 +105,9 @@ public class CFlowTree extends BusPanel
 	
 	private void createUI()
 	{
-		itsSplitPane = new JSplitPane();
+		JSplitPane theSplitPane = new SavedSplitPane(itsView.getGUIManager(), PROPERTY_SPLITTER_POS);
 		setLayout(new StackLayout());
-		add(itsSplitPane);
+		add(theSplitPane);
 		
 		itsEventListPanel = new EventListPanel(getBus(), itsView.getLogBrowser(), getJobProcessor());
 		
@@ -124,32 +123,12 @@ public class CFlowTree extends BusPanel
 					}
 				});
 		
-		itsSplitPane.setRightComponent(itsEventListPanel);
+		theSplitPane.setRightComponent(itsEventListPanel);
 		
 		PropertyUtils.connect(pSelectedEvent, itsEventListPanel.pSelectedEvent(), true);
 		
 		itsCallStackPanel = new CallStackPanel(itsView.getLogBrowser(), getJobProcessor());
-		itsSplitPane.setLeftComponent(itsCallStackPanel);
-	}
-	
-	@Override
-	public void addNotify()
-	{
-		super.addNotify();
-		
-		int theSplitterPos = MinerUI.getIntProperty(
-				itsView.getGUIManager(), 
-				PROPERTY_SPLITTER_POS, 200);
-		itsSplitPane.setDividerLocation(theSplitterPos);
-	}
-
-	@Override
-	public void removeNotify()
-	{
-		super.removeNotify();
-		itsView.getGUIManager().setProperty(
-				PROPERTY_SPLITTER_POS, 
-				""+itsSplitPane.getDividerLocation());
+		theSplitPane.setLeftComponent(itsCallStackPanel);
 	}
 	
 	/**

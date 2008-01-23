@@ -40,7 +40,7 @@ import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.ObjectId;
 import tod.gui.IGUIManager;
-import tod.gui.MinerUI;
+import tod.gui.kit.SavedSplitPane;
 import tod.gui.seed.StringSearchSeed;
 import tod.gui.view.highlighter.EventHighlighter;
 import tod.impl.database.IBidiIterator;
@@ -52,7 +52,6 @@ public class StringSearchView extends LogView
 	private static final String PROPERTY_SPLITTER_POS = "StringSearchView.splitterPos";
 	
 	private StringSearchSeed itsSeed;
-	private JSplitPane itsSplitPane;
 	private SimpleListModel itsResultsListModel;
 
 	private JList itsList;
@@ -76,12 +75,12 @@ public class StringSearchView extends LogView
 	
 	private void createUI()
 	{
-		itsSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-		itsSplitPane.setLeftComponent(createSearchPane());
-		itsSplitPane.setRightComponent(createStripesPane());
+		JSplitPane theSplitPane = new SavedSplitPane(JSplitPane.HORIZONTAL_SPLIT, getGUIManager(), PROPERTY_SPLITTER_POS);
+		theSplitPane.setLeftComponent(createSearchPane());
+		theSplitPane.setRightComponent(createStripesPane());
 		
 		setLayout(new StackLayout());
-		add(itsSplitPane);
+		add(theSplitPane);
 	}
 	
 	private JComponent createSearchPane()
@@ -148,29 +147,6 @@ public class StringSearchView extends LogView
 		}
 		
 		itsResultsListModel.setList(theList);
-	}
-	
-	
-	@Override
-	public void addNotify()
-	{
-		super.addNotify();
-		
-		int theSplitterPos = MinerUI.getIntProperty(
-				getGUIManager(), 
-				PROPERTY_SPLITTER_POS, 400);
-		
-		itsSplitPane.setDividerLocation(theSplitterPos);
-	}
-	
-	@Override
-	public void removeNotify()
-	{
-		super.removeNotify();
-		
-		getGUIManager().setProperty(
-				PROPERTY_SPLITTER_POS, 
-				""+itsSplitPane.getDividerLocation());
 	}
 	
 	/**

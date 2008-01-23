@@ -23,9 +23,14 @@ package tod.gui;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -69,6 +74,7 @@ import tod.gui.view.IEventListView;
 import tod.gui.view.LogView;
 import tod.gui.view.controlflow.CFlowView;
 import tod.utils.TODUtils;
+import zz.utils.Base64;
 import zz.utils.SimpleAction;
 import zz.utils.ui.StackLayout;
 
@@ -621,7 +627,42 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 	 */
 	public static Object getObjectProperty(IGUIManager aManager, String aPropertyName, Object aDefault)
 	{
-		throw new UnsupportedOperationException();
+		try
+		{
+			String theString = aManager.getProperty(aPropertyName);
+			if (theString == null) return aDefault;
+			
+			byte[] theByteArray = Base64.decode(theString);
+			ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(theByteArray));
+			return ois.readObject();
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	/**
+	 * Saves a serialized object into a property.
+	 */
+	public static void setObjectProperty(IGUIManager aManager, String aPropertyName, Object aValue)
+	{
+		try
+		{
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			oos.writeObject(aValue);
+			oos.flush();
+			
+			byte[] theByteArray = baos.toByteArray();
+			String theString = Base64.encodeBytes(theByteArray);
+			
+			aManager.setProperty(aPropertyName, theString);
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 	
 	/**

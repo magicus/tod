@@ -44,7 +44,6 @@ import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.Stepper;
 import tod.core.database.event.ICreationEvent;
 import tod.core.database.event.IFieldWriteEvent;
-import tod.core.database.event.IInstantiationEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
@@ -698,7 +697,11 @@ public class GridQuery
 	{
 		long t0 = System.currentTimeMillis();
 		
-		aInspector.setTimestamp(aTimestamp);
+		IEventBrowser theBrowser = aInspector.getLogBrowser().createBrowser();
+		theBrowser.setNextTimestamp(aTimestamp);
+		ILogEvent theEvent = theBrowser.next();
+		
+		aInspector.setReferenceEvent(theEvent);
 		List<IFieldInfo> theFields = aInspector.getFields();
 		
 		for (IFieldInfo theField : theFields)

@@ -20,7 +20,11 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.tools.formatting;
 
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
+import tod.core.database.structure.IClassInfo;
+import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.ObjectId;
 
 /**
  * Represents an object of the debugged VM at a given point in time.
@@ -28,19 +32,36 @@ import tod.core.database.browser.IObjectInspector;
  */
 public class ReconstitutedObject
 {
-	private IObjectInspector itsInspector;
-	private long itsTimestamp;
-
+	private final IObjectInspector itsInspector;
+	private final IClassInfo itsClass;
 	
-	public ReconstitutedObject(IObjectInspector aInspector, long aTimestamp)
+	public ReconstitutedObject(IObjectInspector aInspector)
 	{
 		itsInspector = aInspector;
-		itsTimestamp = aTimestamp;
+		itsClass = (IClassInfo) itsInspector.getType();
 	}
 
-
-	public String get(String aFieldName)
+	public Object get(String aFieldName)
 	{
-		return "We had..."+aFieldName;
+		IFieldInfo theField = itsClass.getField(aFieldName);
+		Object[] theEntryValues = itsInspector.getEntryValue(theField);
+		if (theEntryValues == null || theEntryValues.length > 1) throw new RuntimeException("What do we do? "+theEntryValues);
+		
+		Object theValue = theEntryValues[0];
+		if (theValue instanceof ObjectId)
+		{
+			ObjectId theObjectId = (ObjectId) theValue;
+			ILogBrowser theLogBrowser = itsInspector.getLogBrowser();
+			IObjectInspector theInspector = theLogBrowser.createObjectInspector(theObjectId);
+			return FormatterFactory.getInstance().wrap(theInspector);
+		}
+		else return theValue;
+	}
+	
+	@Override
+	public String toString()
+	{
+		if (itsInspector == null) return "Reconstitution of null";
+		return "Reconstitution of "+itsInspector.getObject()+" at "+itsInspector.getReferenceEvent().getTimestamp();
 	}
 }

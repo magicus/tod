@@ -33,7 +33,6 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.event.ICreationEvent;
 import tod.core.database.event.IFieldWriteEvent;
-import tod.core.database.event.IInstantiationEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.INewArrayEvent;
 import tod.core.database.event.IWriteEvent;
@@ -68,7 +67,10 @@ public class ObjectInspector implements IObjectInspector
 	private ICreationEvent itsCreationEvent;
 	private boolean itsCreationEventValid = false;
 	
-	private long itsTimestamp;
+	/**
+	 * The event relative to which values are reconstituted.
+	 */
+	private ILogEvent itsReferenceEvent;
 
 	public ObjectInspector(ILogBrowser aEventTrace, ObjectId aObjectId)
 	{
@@ -82,7 +84,7 @@ public class ObjectInspector implements IObjectInspector
 		itsType = aClass;
 	}
 	
-	protected ILogBrowser getLogBrowser()
+	public ILogBrowser getLogBrowser()
 	{
 		return itsLogBrowser;
 	}
@@ -190,19 +192,14 @@ public class ObjectInspector implements IObjectInspector
 		return theDelegate != UNAVAILABLE ? theDelegate.getFields() : Collections.EMPTY_LIST;
 	}
 
-	public void setTimestamp(long aTimestamp)
+	public void setReferenceEvent(ILogEvent aEvent)
 	{
-		itsTimestamp = aTimestamp;
-	}
-	
-	public void setCurrentEvent(ILogEvent aEvent)
-	{
-		setTimestamp(aEvent.getTimestamp());
+		itsReferenceEvent = aEvent;
 	}
 
-	public long getTimestamp()
+	public ILogEvent getReferenceEvent()
 	{
-		return itsTimestamp;
+		return itsReferenceEvent;
 	}
 	
 	public ILogEvent getCurrentEvent()
@@ -228,7 +225,7 @@ public class ObjectInspector implements IObjectInspector
 		List<IWriteEvent> theResult = new ArrayList<IWriteEvent>();
 		
 		IEventBrowser theBrowser = getBrowser(aField);
-		theBrowser.setPreviousTimestamp(itsTimestamp);
+		theBrowser.setPreviousEvent(itsReferenceEvent);
 		
 		long thePreviousTimestamp = -1;
 		
@@ -298,31 +295,31 @@ public class ObjectInspector implements IObjectInspector
 	public boolean hasNext(IMemberInfo aMember)
 	{
 		IEventBrowser theBrowser = getBrowser(aMember);
-		theBrowser.setPreviousTimestamp(itsTimestamp);
+		theBrowser.setPreviousEvent(itsReferenceEvent);
 		return theBrowser.hasNext();
 	}
 	
 	public void stepToNext(IMemberInfo aMember)
 	{
 		IEventBrowser theBrowser = getBrowser(aMember);
-		theBrowser.setPreviousTimestamp(itsTimestamp);
+		theBrowser.setPreviousEvent(itsReferenceEvent);
 		ILogEvent theEvent = theBrowser.next();
-		if (theEvent != null) setTimestamp(theEvent.getTimestamp());
+		if (theEvent != null) setReferenceEvent(theEvent);
 	}
 	
 	public boolean hasPrevious(IMemberInfo aMember)
 	{
 		IEventBrowser theBrowser = getBrowser(aMember);
-		theBrowser.setNextTimestamp(itsTimestamp);
+		theBrowser.setNextEvent(itsReferenceEvent);
 		return theBrowser.hasPrevious();
 	}
 	
 	public void stepToPrevious(IMemberInfo aMember)
 	{
 		IEventBrowser theBrowser = getBrowser(aMember);
-		theBrowser.setNextTimestamp(itsTimestamp);
+		theBrowser.setNextEvent(itsReferenceEvent);
 		ILogEvent theEvent = theBrowser.previous();
-		if (theEvent != null) setTimestamp(theEvent.getTimestamp());
+		if (theEvent != null) setReferenceEvent(theEvent);
 	}
 	
 	private static final Delegate UNAVAILABLE = new Delegate()

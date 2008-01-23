@@ -23,6 +23,7 @@ package tod.core.database.browser;
 import java.util.List;
 
 import tod.core.database.event.ICreationEvent;
+import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMemberInfo;
 import tod.core.database.structure.ITypeInfo;
@@ -38,6 +39,11 @@ import tod.core.database.structure.ObjectId;
  */
 public interface IObjectInspector extends ICompoundInspector<IFieldInfo>
 {
+	/**
+	 * Returns the log browser that created this inspector.
+	 */
+	public ILogBrowser getLogBrowser();
+	
 	/**
 	 * Returns the identifier of the inspected object.
 	 */
@@ -63,16 +69,6 @@ public interface IObjectInspector extends ICompoundInspector<IFieldInfo>
 	 * Retrieves all the field descriptors of the inspected object.
 	 */
 	public List<IFieldInfo> getFields();
-	
-	/**
-	 * Sets the current timestamp of this inspector.
-	 */
-	public void setTimestamp (long aTimestamp);
-	
-	/**
-	 * Returns the current timestamp of this inspector
-	 */
-	public long getTimestamp ();
 	
 	/**
 	 * Returns a filter on field write or behavior call events for the specified member

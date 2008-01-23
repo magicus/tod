@@ -31,17 +31,18 @@ import tod.core.database.event.IWriteEvent;
 public interface ICompoundInspector<E>
 {
 	/**
-	 * Returns the current event of this inspector.
-	 */
-	public ILogEvent getCurrentEvent();
-	
-	/**
-	 * Sets the current event of this inspector. Values of entries 
+	 * Sets the reference event of this inspector. Values of entries 
 	 * obtained by {@link #getEntryValue(Object)} 
 	 * are the values they had at the moment
-	 * the current event was executed.
+	 * the reference event was executed.
 	 */
-	public void setCurrentEvent (ILogEvent aEvent);
+	public void setReferenceEvent (ILogEvent aEvent);
+	
+	/**
+	 * Returns the current reference event of this inspector.
+	 * Values are reconstituted at the time the reference event occurred.
+	 */
+	public ILogEvent getReferenceEvent();
 	
 	/**
 	 * Returns the possible values of the specified entry at the time the 

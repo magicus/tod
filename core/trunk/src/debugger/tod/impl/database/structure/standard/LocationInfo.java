@@ -22,9 +22,7 @@ package tod.impl.database.structure.standard;
 
 import java.io.Serializable;
 
-import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.IMutableLocationInfo;
-import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IShareableStructureDatabase;
 import zz.utils.PublicCloneable;
 
@@ -106,21 +104,32 @@ implements IMutableLocationInfo, Serializable
 	{
 		itsName = aName;
 	}
-	
-	/**
-	 * Two location info are equal if they have the same class and
-	 * the same id.
-	 */
+
 	@Override
-	public final boolean equals(Object aObj)
+	public final int hashCode()
 	{
-		if (aObj instanceof LocationInfo)
-		{
-			ILocationInfo theInfo = (ILocationInfo) aObj;
-			return theInfo.getClass().equals(getClass()) 
-					&& theInfo.getId() == getId();
-		}
-		else return false;
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((itsDatabase == null) ? 0 : itsDatabase.hashCode());
+		result = prime * result + itsId;
+		return result;
 	}
+
+	@Override
+	public final boolean equals(Object obj)
+	{
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		final LocationInfo other = (LocationInfo) obj;
+		if (itsDatabase == null)
+		{
+			if (other.itsDatabase != null) return false;
+		}
+		else if (!itsDatabase.equals(other.itsDatabase)) return false;
+		if (itsId != other.itsId) return false;
+		return true;
+	}
+	
 	
 }

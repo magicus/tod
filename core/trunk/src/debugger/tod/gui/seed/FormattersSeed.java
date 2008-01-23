@@ -18,12 +18,38 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.tools.formatting;
+package tod.gui.seed;
 
-import org.python.core.PyFunction;
+import tod.core.database.browser.ILogBrowser;
+import tod.gui.IGUIManager;
+import tod.gui.view.LogView;
+import tod.gui.view.formatters.FormattersView;
+import zz.utils.properties.IRWProperty;
+import zz.utils.properties.SimpleRWProperty;
 
-public interface IPyFormatterFactory
+/**
+ * This seed permits to display the {@link FormattersView}.
+ * @author gpothier
+ */
+public class FormattersSeed extends LogViewSeed
 {
-	public IPyObjectFormatter createFormatter(PyFunction aFunction);
-	public Object createTODObject(ReconstitutedObject aObject);
+	private IRWProperty<String> pCurrentFormatter = new SimpleRWProperty<String>();
+
+	public FormattersSeed(IGUIManager aGUIManager, ILogBrowser aLog)
+	{
+		super(aGUIManager, aLog);
+	}
+
+	@Override
+	protected LogView requestComponent()
+	{
+		return new FormattersView(getGUIManager(), getLogBrowser(), this);
+	}
+
+	public IRWProperty<String> pCurrentFormatter()
+	{
+		return pCurrentFormatter;
+	}
+	
+	
 }

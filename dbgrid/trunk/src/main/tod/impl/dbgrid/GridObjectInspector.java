@@ -40,7 +40,7 @@ public class GridObjectInspector extends ObjectInspector
 		super(aEventTrace, aObjectId);
 	}
 
-	protected GridLogBrowser getLogBrowser()
+	public GridLogBrowser getLogBrowser()
 	{
 		return (GridLogBrowser) super.getLogBrowser();
 	}

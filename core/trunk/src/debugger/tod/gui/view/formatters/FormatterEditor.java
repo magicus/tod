@@ -18,12 +18,32 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.tools.formatting;
+package tod.gui.view.formatters;
 
-import org.python.core.PyFunction;
+import javax.swing.JPanel;
 
-public interface IPyFormatterFactory
+import tod.core.database.structure.IStructureDatabase;
+import tod.gui.formatter.CustomObjectFormatter;
+
+/**
+ * Editor for a {@link CustomObjectFormatter}.
+ * @author gpothier
+ */
+public class FormatterEditor extends JPanel
 {
-	public IPyObjectFormatter createFormatter(PyFunction aFunction);
-	public Object createTODObject(ReconstitutedObject aObject);
+	private final IStructureDatabase itsStructureDatabase;
+	private final CustomObjectFormatter itsFormatter;
+	
+	public FormatterEditor(IStructureDatabase aStructureDatabase, CustomObjectFormatter aFormatter)
+	{
+		itsStructureDatabase = aStructureDatabase;
+		itsFormatter = aFormatter;
+		createUI();
+	}
+
+	private void createUI()
+	{
+	}
+	
+	
 }
