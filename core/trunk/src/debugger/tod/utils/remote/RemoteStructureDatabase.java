@@ -510,7 +510,7 @@ implements RIStructureDatabase
 					if (theClass != null) cacheClass(theClass, false);
 				}
 				
-				if (theClass == null && aFailIfAbsent) throw new RuntimeException("Class not found: "+aName);
+				if (theClass == null && aFailIfAbsent) throw new RuntimeException("Class not found in database: "+aName);
 				return theClass;
 			}
 			catch (RemoteException e)
