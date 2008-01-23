@@ -69,7 +69,7 @@ public class GridNewArrayEvent extends GridEvent
 
 		itsTarget = readObject(aBitStruct);
 		itsBaseTypeId = aBitStruct.readInt(DebuggerGridConfig.EVENT_TYPE_BITS);
-		itsSize = aBitStruct.readInt(8);
+		itsSize = aBitStruct.readInt(32);
 	}
 
 	public void set(
@@ -96,7 +96,7 @@ public class GridNewArrayEvent extends GridEvent
 		super.writeTo(aBitStruct);
 		writeObject(aBitStruct, getTarget());
 		aBitStruct.writeInt(getBaseTypeId(), DebuggerGridConfig.EVENT_TYPE_BITS);
-		aBitStruct.writeInt(getSize(), 8);
+		aBitStruct.writeInt(getSize(), 32);
 	}
 
 	@Override
@@ -106,7 +106,7 @@ public class GridNewArrayEvent extends GridEvent
 		
 		theCount += getObjectBits(getTarget());
 		theCount += DebuggerGridConfig.EVENT_TYPE_BITS;
-		theCount += 8;
+		theCount += 32;
 		
 		return theCount;
 	}
