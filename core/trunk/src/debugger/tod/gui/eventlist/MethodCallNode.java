@@ -49,7 +49,7 @@ public class MethodCallNode extends BehaviorCallNode
 		if (showPackageNames()) theGroup.add(createPackageName());
 		theGroup.addText(Util.getSimpleName(getBehavior().getType().getName()));
 		theGroup.addText(".");
-		theGroup.addText(theBehavior.getName());
+		theGroup.addText(HtmlText.escapeHTML(theBehavior.getName()));
 		
 		return theGroup;
 	}
