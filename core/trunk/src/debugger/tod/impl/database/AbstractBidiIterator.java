@@ -111,6 +111,11 @@ public abstract class AbstractBidiIterator<T> implements IBidiIterator<T>
 		return peekNext() != null;
 	}
 
+	public int getOffset()
+	{
+		return itsOffset;
+	}
+	
 	public T peekNext()
 	{
 		if (itsOffset == -1) 
