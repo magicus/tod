@@ -1,4 +1,4 @@
-from tod.tools.formatting import *;
+from tod.tools.formatting import IPyObjectFormatter, IPyFormatterFactory;
 
 class TODObject:
     "A reconstituted TOD object"
