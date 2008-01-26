@@ -8,6 +8,7 @@ import java.awt.Frame;
 import java.awt.Panel;
 
 import javax.swing.JComponent;
+import javax.swing.JRootPane;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
@@ -33,7 +34,7 @@ public abstract class AbstractAWTView extends ViewPart
 		Panel theRootPanel = new Panel(new BorderLayout());
 		itsFrame.setLayout(new StackLayout());
 		itsFrame.add(theRootPanel);
-
+		
 		theEmbedded.addControlListener(new ControlListener()
 		{
 			public void controlMoved(ControlEvent aE)
@@ -44,10 +45,37 @@ public abstract class AbstractAWTView extends ViewPart
 			{
 				itsFrame.setSize(theEmbedded.getSize().x, theEmbedded.getSize().y);
 			}
-			
 		});
-		
-		theRootPanel.add(createComponent());
+
+		JRootPane theRootPane = new JRootPane();
+		theRootPanel.add(theRootPane);
+		theRootPane.getContentPane().add(createComponent());
+	}
+	
+	public void hop()
+	{
+//		itsFrame = SWT_AWT.new_Frame(theEmbedded);
+////		itsFrame.setLayout(new StackLayout());
+//		
+//		JRootPane theRootPane = new JRootPane();
+//		itsFrame.add(theRootPane);
+//		java.awt.Container theContentPane = theRootPane.getContentPane();
+//
+//		theContentPane.add(createComponent());
+//
+////		theEmbedded.addControlListener(new ControlListener()
+////		{
+////			public void controlMoved(ControlEvent aE)
+////			{
+////			}
+////
+////			public void controlResized(ControlEvent aE)
+////			{
+////				itsFrame.setSize(theEmbedded.getSize().x, theEmbedded.getSize().y);
+////			}
+////		});
+////		
+//		
 	}
 	
 	protected abstract JComponent createComponent();

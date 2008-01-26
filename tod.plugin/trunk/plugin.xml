@@ -22,6 +22,16 @@
       <library name="lib/javassist.jar">
          <export name="*"/>
       </library>
+      <!--
+      <library name="lib/jython-2.2.1.jar">
+         <export name="*"/>
+      </library>
+      -->
+      
+      <library name="../Jython-svn/bin">
+         <export name="*"/>
+      </library>
+      
       
       <library name="lib/javafxrt.jar">
          <export name="*"/>

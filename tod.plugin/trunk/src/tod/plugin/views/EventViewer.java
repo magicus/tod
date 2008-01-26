@@ -21,11 +21,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.plugin.views;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.Action;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
 import org.eclipse.jdt.core.IJavaElement;
@@ -33,12 +31,9 @@ import org.eclipse.jdt.core.JavaModelException;
 
 import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.SourceRange;
-import tod.core.session.ISession;
 import tod.gui.MinerUI;
 import tod.gui.seed.LogViewSeed;
 import tod.gui.seed.LogViewSeedFactory;
-import tod.impl.dbgrid.DBProcessManager;
-import tod.impl.dbgrid.DBProcessManager.IDBProcessListener;
 import tod.plugin.DebuggingSession;
 import tod.plugin.TODPluginUtils;
 import tod.plugin.TODSessionManager;
@@ -80,12 +75,12 @@ public class EventViewer extends MinerUI
 	}
 
 	@Override
-	protected JComponent createToolbar()
+	protected void createActions(ActionToolbar aToolbar, ActionCombo aActionCombo)
 	{
-		JComponent theToolbar = super.createToolbar();
+		super.createActions(aToolbar, aActionCombo);
 		
 		// Add a button that permits to jump to the exceptions view.
-		Action theKillSessionAction = new SimpleAction(
+		aActionCombo.add(new MyAction(
 				"Drop session",
 				"<html>" +
 				"<b>Drop current session.</b> Clears all recorded event <br>" +
@@ -95,12 +90,7 @@ public class EventViewer extends MinerUI
 			{
 				TODSessionManager.getInstance().killSession();
 			}
-		};
-
-		theToolbar.add(new JButton(theKillSessionAction));
-		registerAction(theKillSessionAction);
-		
-		return theToolbar;
+		});
 	}
 	
 	public void showElement (IJavaElement aElement)
