@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.view.structure;
+package tod.gui.locationselector;
 
 import java.util.Collections;
 
@@ -31,9 +31,9 @@ import zz.utils.tree.SimpleTree;
 
 public class ClassNode extends LocationNode
 {
-	public ClassNode(SimpleTree<ILocationInfo> aTree, IClassInfo aClass)
+	public ClassNode(SimpleTree<ILocationInfo> aTree, IClassInfo aClass, boolean aShowMembers)
 	{
-		super(aTree, false, aClass);
+		super(aTree, ! aShowMembers, aClass);
 	}
 
 	public IClassInfo getClassInfo()
@@ -45,6 +45,7 @@ public class ClassNode extends LocationNode
 	protected void init()
 	{
 		System.out.println("Init for "+getClassInfo());
+		
 		for(IBehaviorInfo theBehavior : getClassInfo().getBehaviors())
 			addBehaviorNode(theBehavior);
 

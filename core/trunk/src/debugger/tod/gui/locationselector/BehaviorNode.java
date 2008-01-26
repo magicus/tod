@@ -18,22 +18,24 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.view.structure;
+package tod.gui.locationselector;
 
+import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ILocationInfo;
-import tod.core.database.structure.IMemberInfo;
 import zz.utils.tree.SimpleTree;
 
-public class MemberNode extends LocationNode
+public class BehaviorNode extends MemberNode
 {
 
-	public MemberNode(SimpleTree<ILocationInfo> aTree, IMemberInfo aMember)
+	public BehaviorNode(SimpleTree<ILocationInfo> aTree, IBehaviorInfo aBehavior)
 	{
-		super(aTree, true, aMember);
+		super(aTree, aBehavior);
+	}
+
+	public IBehaviorInfo getBehavior()
+	{
+		return (IBehaviorInfo) getMember();
 	}
 	
-	public IMemberInfo getMember()
-	{
-		return (IMemberInfo) getLocation();
-	}
+	
 }

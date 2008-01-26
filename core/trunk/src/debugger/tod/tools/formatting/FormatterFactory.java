@@ -28,6 +28,7 @@ import org.python.core.PyStringMap;
 import org.python.util.PythonInterpreter;
 
 import tod.core.database.browser.IObjectInspector;
+import tod.gui.IGUIManager;
 
 import zz.utils.Utils;
 
@@ -42,7 +43,7 @@ public class FormatterFactory
 	{
 		String theCode = "return 'o.x: '+o.x+', o.x.y: '+o.x.y+', o.y: '+o.y";
 		IPyObjectFormatter theFormatter = getInstance().createFormatter(theCode);
-		System.out.println(theFormatter.format(new ReconstitutedObject(null)));
+		System.out.println(theFormatter.format(new ReconstitutedObject(null, null)));
 	}
 	
 	private static FormatterFactory INSTANCE = new FormatterFactory();
@@ -79,9 +80,9 @@ public class FormatterFactory
 		return itsFactory.createTODObject(aObject);
 	}
 	
-	Object wrap(IObjectInspector aInspector)
+	Object wrap(IGUIManager aGUIManager, IObjectInspector aInspector)
 	{
-		return createTODObject(new ReconstitutedObject(aInspector));
+		return createTODObject(new ReconstitutedObject(aGUIManager, aInspector));
 	}
 	
 	/**

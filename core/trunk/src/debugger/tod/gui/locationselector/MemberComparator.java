@@ -1,4 +1,4 @@
-package tod.gui.view.structure;
+package tod.gui.locationselector;
 
 import java.util.Comparator;
 

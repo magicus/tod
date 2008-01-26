@@ -26,6 +26,7 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IWriteEvent;
 import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
+import tod.gui.IGUIManager;
 import tod.gui.JobProcessor;
 import tod.gui.kit.AsyncPanel;
 import tod.gui.view.controlflow.watch.AbstractWatchProvider.Entry;
@@ -37,7 +38,8 @@ import tod.gui.view.controlflow.watch.AbstractWatchProvider.Entry;
 public class WatchEntryNode extends JPanel
 {
 	private final JobProcessor itsJobProcessor;
-	private final ILogBrowser itsLogBrowser;
+	
+	private final IGUIManager itsGUIManager;
 	private final WatchPanel itsWatchPanel;
 	private final AbstractWatchProvider itsProvider;
 	private final Entry itsEntry;
@@ -46,7 +48,7 @@ public class WatchEntryNode extends JPanel
 	private IWriteEvent[] itsSetter;
 	
 	public WatchEntryNode(
-			ILogBrowser aLogBrowser,
+			IGUIManager aGUIManager,
 			JobProcessor aJobProcessor,
 			WatchPanel aWatchPanel,
 			AbstractWatchProvider aProvider, 
@@ -56,7 +58,7 @@ public class WatchEntryNode extends JPanel
 		itsWatchPanel = aWatchPanel;
 		setOpaque(false);
 		itsJobProcessor = aJobProcessor;
-		itsLogBrowser = aLogBrowser;
+		itsGUIManager = aGUIManager;
 		itsProvider = aProvider;
 		itsEntry = aEntry;
 		createUI();
@@ -107,7 +109,7 @@ public class WatchEntryNode extends JPanel
 						
 						add(Hyperlinks.object(
 								Hyperlinks.SWING, 
-								itsLogBrowser, 
+								itsGUIManager, 
 								itsJobProcessor,
 								itsProvider.getCurrentObject(),
 								theValue,

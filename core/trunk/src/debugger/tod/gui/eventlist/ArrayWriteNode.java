@@ -51,8 +51,8 @@ public class ArrayWriteNode extends AbstractSimpleEventNode
 		
 		aBody.add(Hyperlinks.object(
 				Hyperlinks.HTML,
-				getLogBrowser(), 
-				getJobProcessor(), 
+				getGUIManager(),
+				getJobProcessor(),
 				theCurrentObject, 
 				itsEvent.getTarget(),
 				itsEvent,
@@ -62,8 +62,8 @@ public class ArrayWriteNode extends AbstractSimpleEventNode
 		
 		aBody.add(Hyperlinks.object(
 				Hyperlinks.HTML,
-				getLogBrowser(), 
-				getJobProcessor(), 
+				getGUIManager(),
+				getJobProcessor(),
 				theCurrentObject, 
 				itsEvent.getValue(), 
 				itsEvent,

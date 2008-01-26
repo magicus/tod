@@ -29,8 +29,11 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.gui.IGUIManager;
 import tod.gui.kit.SavedSplitPane;
+import tod.gui.locationselector.LocationSelectorPanel;
 import tod.gui.seed.StructureSeed;
 import tod.gui.view.LogView;
+import zz.utils.properties.PropertyUtils;
+import zz.utils.properties.PropertyUtils.Connector;
 import zz.utils.ui.StackLayout;
 
 /**
@@ -42,6 +45,8 @@ public class StructureView extends LogView
 	private static final String PROPERTY_SPLITTER_POS = "structureView.splitterPos";
 	private final StructureSeed itsSeed;
 	private JPanel itsInfoHolder;
+	private LocationSelectorPanel itsSelectorPanel;
+	private Connector<ILocationInfo> itsConnector;
 	
 	public StructureView(IGUIManager aGUIManager, ILogBrowser aLog, StructureSeed aSeed)
 	{
@@ -49,23 +54,38 @@ public class StructureView extends LogView
 		itsSeed = aSeed;
 	}
 	
+	public StructureSeed getSeed()
+	{
+		return itsSeed;
+	}
+	
 	@Override
 	public void init()
 	{
-		LocationSelectorPanel theSelectorPanel = new LocationSelectorPanel(
-				getLogBrowser().getStructureDatabase(), 
-				this);
-		
-		
+		itsSelectorPanel = new LocationSelectorPanel(getLogBrowser().getStructureDatabase(), true);
 		itsInfoHolder = new JPanel(new StackLayout());
 		
 		JSplitPane theSplitPane = new SavedSplitPane(JSplitPane.HORIZONTAL_SPLIT, getGUIManager(), PROPERTY_SPLITTER_POS);
 		theSplitPane.setResizeWeight(0.5);
-		theSplitPane.setLeftComponent(theSelectorPanel);
+		theSplitPane.setLeftComponent(itsSelectorPanel);
 		theSplitPane.setRightComponent(itsInfoHolder);
 		
 		setLayout(new StackLayout());
 		add(theSplitPane);
+	}
+	
+	@Override
+	public void addNotify()
+	{
+		super.addNotify();
+		itsConnector = PropertyUtils.connect(getSeed().pSelectedLocation(), itsSelectorPanel.pSelectedLocation(), true);
+	}
+	
+	@Override
+	public void removeNotify()
+	{
+		super.removeNotify();
+		itsConnector.disconnect();
 	}
 	
 	/**

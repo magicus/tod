@@ -63,7 +63,7 @@ public abstract class AbstractMemberSequenceView extends AbstractSingleBrowserSe
 	{
 		return Hyperlinks.object(
 				Hyperlinks.SWING, 
-				getLogBrowser(), 
+				getGUIManager(), 
 				getGUIManager().getJobProcessor(),
 				itsInspector.getObject(), 
 				aObject, 

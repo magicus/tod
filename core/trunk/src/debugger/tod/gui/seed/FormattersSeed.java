@@ -43,7 +43,9 @@ public class FormattersSeed extends LogViewSeed
 	@Override
 	protected LogView requestComponent()
 	{
-		return new FormattersView(getGUIManager(), getLogBrowser(), this);
+		FormattersView theView = new FormattersView(getGUIManager(), getLogBrowser(), this);
+		theView.init();
+		return theView;
 	}
 
 	public IRWProperty<String> pCurrentFormatter()

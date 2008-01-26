@@ -40,6 +40,7 @@ import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
+import tod.gui.IGUIManager;
 import tod.gui.JobProcessor;
 import zz.utils.ui.ZLabel;
 
@@ -49,7 +50,6 @@ import zz.utils.ui.ZLabel;
  */
 public class StackFrameWatchProvider extends AbstractWatchProvider
 {
-	private final ILogBrowser itsLogBrowser;
 	private final ILogEvent itsRefEvent;
 	
 	private IBehaviorCallEvent itsParentEvent;
@@ -60,12 +60,11 @@ public class StackFrameWatchProvider extends AbstractWatchProvider
 	private List<Entry> itsEntries;
 	
 	public StackFrameWatchProvider(
+			IGUIManager aGUIManager, 
 			String aTitle,
-			ILogBrowser aLogBrowser, 
 			ILogEvent aRefEvent)
 	{
-		super(aTitle);
-		itsLogBrowser = aLogBrowser;
+		super(aGUIManager, aTitle);
 		itsRefEvent = aRefEvent;
 	}
 
@@ -96,7 +95,7 @@ public class StackFrameWatchProvider extends AbstractWatchProvider
 			IBehaviorCallEvent theParentEvent = getParentEvent();
 			if (theParentEvent != null)
 			{
-				itsInspector = itsLogBrowser.createVariablesInspector(theParentEvent);
+				itsInspector = getLogBrowser().createVariablesInspector(theParentEvent);
 				itsInspector.setReferenceEvent(itsRefEvent);
 			}
 		}

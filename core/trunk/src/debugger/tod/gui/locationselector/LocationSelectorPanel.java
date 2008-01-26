@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.view.structure;
+package tod.gui.locationselector;
 
 import java.awt.Dimension;
 import java.util.StringTokenizer;
@@ -40,6 +40,8 @@ import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.IMemberInfo;
 import tod.core.database.structure.IStructureDatabase;
+import zz.utils.properties.IRWProperty;
+import zz.utils.properties.SimpleRWProperty;
 import zz.utils.tree.SimpleTree;
 import zz.utils.tree.SimpleTreeNode;
 import zz.utils.tree.SwingTreeModel;
@@ -52,13 +54,14 @@ import zz.utils.ui.UniversalRenderer;
  */
 public class LocationSelectorPanel extends JPanel
 {
-	private final StructureView itsStructureView;
+	private final IRWProperty<ILocationInfo> pSelectedLocation = new SimpleRWProperty<ILocationInfo>();
 	private final IStructureDatabase itsStructureDatabase;
+	private final boolean itsShowMembers;
 	
-	public LocationSelectorPanel(IStructureDatabase aStructureDatabase, StructureView aStructureView)
+	public LocationSelectorPanel(IStructureDatabase aStructureDatabase, boolean aShowMembers)
 	{
 		itsStructureDatabase = aStructureDatabase;
-		itsStructureView = aStructureView;
+		itsShowMembers = aShowMembers;
 		createUI();
 	}
 
@@ -78,9 +81,20 @@ public class LocationSelectorPanel extends JPanel
 		return itsStructureDatabase;
 	}
 	
+	/**
+	 * The property that contains the currently selected location node.
+	 */
+	public IRWProperty<ILocationInfo> pSelectedLocation()
+	{
+		return pSelectedLocation;
+	}
+	
+	/**
+	 * Called when the user selects a location.
+	 */
 	public void show(ILocationInfo aLocation)
 	{
-		itsStructureView.showNode(aLocation);
+		pSelectedLocation.set(aLocation);
 	}
 	
 	/**
@@ -89,7 +103,6 @@ public class LocationSelectorPanel extends JPanel
 	 */
 	private class TreeSelector extends JPanel
 	{
-
 		public TreeSelector()
 		{
 			createUI();
@@ -146,7 +159,7 @@ public class LocationSelectorPanel extends JPanel
 					else
 					{
 						// We reached the class name
-						theCurrentNode.addClassNode(theClass);
+						theCurrentNode.addClassNode(theClass, itsShowMembers);
 					}
 					
 				}

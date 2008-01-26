@@ -202,6 +202,11 @@ public class ObjectInspector implements IObjectInspector
 		return itsReferenceEvent;
 	}
 	
+	private void checkReferenceEvent()
+	{
+		if (itsReferenceEvent == null) throw new IllegalStateException("No reference event");
+	}
+	
 	public ILogEvent getCurrentEvent()
 	{
 		throw new UnsupportedOperationException();
@@ -222,6 +227,7 @@ public class ObjectInspector implements IObjectInspector
 
 	public IWriteEvent[] getEntrySetter(IFieldInfo aField)
 	{
+		checkReferenceEvent();
 		List<IWriteEvent> theResult = new ArrayList<IWriteEvent>();
 		
 		IEventBrowser theBrowser = getBrowser(aField);
@@ -294,6 +300,7 @@ public class ObjectInspector implements IObjectInspector
 	
 	public boolean hasNext(IMemberInfo aMember)
 	{
+		checkReferenceEvent();
 		IEventBrowser theBrowser = getBrowser(aMember);
 		theBrowser.setPreviousEvent(itsReferenceEvent);
 		return theBrowser.hasNext();
@@ -301,6 +308,7 @@ public class ObjectInspector implements IObjectInspector
 	
 	public void stepToNext(IMemberInfo aMember)
 	{
+		checkReferenceEvent();
 		IEventBrowser theBrowser = getBrowser(aMember);
 		theBrowser.setPreviousEvent(itsReferenceEvent);
 		ILogEvent theEvent = theBrowser.next();
@@ -309,6 +317,7 @@ public class ObjectInspector implements IObjectInspector
 	
 	public boolean hasPrevious(IMemberInfo aMember)
 	{
+		checkReferenceEvent();
 		IEventBrowser theBrowser = getBrowser(aMember);
 		theBrowser.setNextEvent(itsReferenceEvent);
 		return theBrowser.hasPrevious();
@@ -316,6 +325,7 @@ public class ObjectInspector implements IObjectInspector
 	
 	public void stepToPrevious(IMemberInfo aMember)
 	{
+		checkReferenceEvent();
 		IEventBrowser theBrowser = getBrowser(aMember);
 		theBrowser.setNextEvent(itsReferenceEvent);
 		ILogEvent theEvent = theBrowser.previous();

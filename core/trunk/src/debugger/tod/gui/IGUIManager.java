@@ -24,6 +24,7 @@ import tod.core.database.browser.IEventFilter;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.SourceRange;
 import tod.core.session.ISession;
+import tod.gui.formatter.CustomFormatterRegistry;
 import tod.gui.kit.Options;
 import tod.gui.seed.LogViewSeed;
 
@@ -52,6 +53,11 @@ public interface IGUIManager
 	 * Returns a global job processor.
 	 */
 	public JobProcessor getJobProcessor();
+	
+	/**
+	 * Returns the registry of custom object formatters.
+	 */
+	public CustomFormatterRegistry getCustomFormatterRegistry();
 	
 	/**
 	 * Stores a persistent property, which can be retrieved

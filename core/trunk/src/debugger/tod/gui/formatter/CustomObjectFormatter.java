@@ -24,9 +24,9 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.structure.ITypeInfo;
+import tod.gui.IGUIManager;
 import tod.tools.formatting.FormatterFactory;
 import tod.tools.formatting.IPyObjectFormatter;
 import tod.tools.formatting.ReconstitutedObject;
@@ -92,6 +92,7 @@ public class CustomObjectFormatter implements Serializable
 	public void setShortCode(String aShortCode)
 	{
 		itsShortCode = aShortCode;
+		itsPyShortFormatter = null;
 	}
 
 	public String getLongCode()
@@ -102,6 +103,7 @@ public class CustomObjectFormatter implements Serializable
 	public void setLongCode(String aLongCode)
 	{
 		itsLongCode = aLongCode;
+		itsPyLongFormatter = null;
 	}
 
 	public Iterable<String> getRecognizedTypes()
@@ -141,17 +143,17 @@ public class CustomObjectFormatter implements Serializable
 	/**
 	 * Formats the given object, using the short formatter.
 	 */
-	public String formatShort(ILogBrowser aLogBrowser, IObjectInspector aInspector)
+	public String formatShort(IGUIManager aGUIManager, IObjectInspector aInspector)
 	{
-		return getFormatter(false).format(new ReconstitutedObject(aInspector));
+		return getFormatter(false).format(new ReconstitutedObject(aGUIManager, aInspector));
 	}
 	
 	/**
 	 * Formats the given object, using the long formatter.
 	 */
-	public String formatLong(ILogBrowser aLogBrowser, IObjectInspector aInspector)
+	public String formatLong(IGUIManager aGUIManager, IObjectInspector aInspector)
 	{
-		return getFormatter(true).format(new ReconstitutedObject(aInspector));
+		return getFormatter(true).format(new ReconstitutedObject(aGUIManager, aInspector));
 	}
 	
 }

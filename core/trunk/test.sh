@@ -43,12 +43,13 @@ VMARGS="$VMARGS -Dagent-cache-path=/home/gpothier/tmp/tod"
 # gdb -x gdb.cmd /home/gpothier/apps/java/jdk1.5.0_08/bin/java 
 #java $VMARGS -cp ./bin calls.Main
 
-java $VMARGS -cp ../../runtime-EclipseApplication2/AspectJTODTest/taggedbin Foo
+#java $VMARGS -cp ../../runtime-EclipseApplication2/AspectJTODTest/taggedbin Foo
 
 #java $VMARGS -cp ./bin tod.bench.overhead.Dummy
 
 #java $VMARGS -cp ./bin testclinit.A
 
+java $VMARGS -cp "../../runtime-EclipseApplication(1)/TODTest/bin/" tod.demo.format.A
 
 #java $VMARGS -cp "../../runtime-EclipseApplication(1)/TODTest/bin:lib/zz.utils.jar" imageviewer3/ImageViewer
 #Machines:

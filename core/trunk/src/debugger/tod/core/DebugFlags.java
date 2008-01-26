@@ -77,12 +77,6 @@ public class DebugFlags
 	public static final boolean DISABLE_STORE = false;
 	
 	/**
-	 * Artificially limits the number of of object indexes.
-	 * Set to 0 to disable the limit
-	 */
-	public static final int ALIAS_OBJECTS = 0;
-	
-	/**
 	 * Disables the bytecode location index.
 	 */
 	public static final boolean DISABLE_LOCATION_INDEX = false;
@@ -183,7 +177,6 @@ public class DebugFlags
 		if (DISABLE_REORDER == true) System.err.println("******* Warning: DISABLE_REORDER (DebugFlags)");
 		if (DISABLE_INDEXES == true) System.err.println("******* Warning: DISABLE_INDEXES (DebugFlags)");
 		if (DISABLE_STORE == true) System.err.println("******* Warning: DISABLE_STORE (DebugFlags)");
-		if (ALIAS_OBJECTS != 0) System.err.println("******* Warning: ALIAS_OBJECTS (DebugFlags)");
 		if (DISABLE_LOCATION_INDEX == true) System.err.println("******* Warning: DISABLE_LOCATION_INDEX (DebugFlags)");
 		if (DISABLE_USE_PAGES == true) System.err.println("******* Warning: DISABLE_USE_PAGES (DebugFlags)");
 		if (LOCAL_COLLECTOR_STORE == false) System.err.println("******* Warning: LOCAL_COLLECTOR_STORE (DebugFlags)");

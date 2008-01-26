@@ -24,7 +24,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import tod.Util;
+import tod.core.database.browser.IObjectInspector;
 import tod.core.database.structure.ITypeInfo;
+import tod.gui.IGUIManager;
 import zz.utils.ListMap;
 
 /**
@@ -46,15 +49,22 @@ public class CustomFormatterRegistry implements Serializable
 	 */
 	public CustomObjectFormatter getFormatter(ITypeInfo aType)
 	{
-		List<CustomObjectFormatter> theList = itsFormattersMap.get(aType.getId());
+		List<CustomObjectFormatter> theList = itsFormattersMap.get(aType.getName());
 		if (theList == null || theList.isEmpty()) return null;
 		else return theList.get(0);
+	}
+	
+	/**
+	 * Returns the list of formatters.
+	 */
+	public List<CustomObjectFormatter> getFormatters()
+	{
+		return itsFormatters;
 	}
 	
 	public CustomObjectFormatter createFormatter()
 	{
 		CustomObjectFormatter theFormatter = new CustomObjectFormatter(this);
-		itsFormatters.add(theFormatter);
 		return theFormatter;
 	}
 	
@@ -70,4 +80,29 @@ public class CustomFormatterRegistry implements Serializable
 	{
 		itsFormattersMap.remove(aType, aFormatter);
 	}
+	
+	/**
+	 * Formats the given object using the formatters/log browser of the given gui manager.
+	 */
+	public static String formatObjectShort(
+			IGUIManager aGUIManager, 
+			IObjectInspector aInspector,
+			boolean aShowPackageNames)
+	{
+		ITypeInfo theType = aInspector.getType();
+		
+		CustomFormatterRegistry theRegistry = aGUIManager.getCustomFormatterRegistry();
+		CustomObjectFormatter theFormatter = theRegistry.getFormatter(theType);
+		
+		if (theFormatter != null)
+		{
+			return theFormatter.formatShort(aGUIManager, aInspector);
+		}
+		else
+		{		
+			String theName = aShowPackageNames ? theType.getName() : Util.getSimpleName(theType.getName());
+			return theName + " (" + aInspector.getObject().getId() + ")";
+		}
+	}
+
 }

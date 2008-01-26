@@ -51,6 +51,7 @@ import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IMethodCallEvent;
 import tod.core.database.event.INewArrayEvent;
 import tod.gui.GUIUtils;
+import tod.gui.IGUIManager;
 import tod.gui.JobProcessor;
 import tod.gui.eventlist.MuralScroller.UnitScroll;
 import tod.gui.kit.Bus;
@@ -72,6 +73,7 @@ import zz.utils.ui.ScrollablePanel;
 public class EventListPanel extends BusPanel
 implements MouseWheelListener
 {
+	private final IGUIManager itsGUIManager;
 	private final ILogBrowser itsLogBrowser;
 	private final JobProcessor itsJobProcessor;
 	
@@ -112,9 +114,10 @@ implements MouseWheelListener
 //		}
 //	};
 	
-	public EventListPanel(Bus aBus, ILogBrowser aLogBrowser, JobProcessor aJobProcessor)
+	public EventListPanel(IGUIManager aGUIManager, Bus aBus, ILogBrowser aLogBrowser, JobProcessor aJobProcessor)
 	{
 		super(aBus);
+		itsGUIManager = aGUIManager;
 		itsLogBrowser = aLogBrowser;
 		itsJobProcessor = aJobProcessor;
 		createUI();
@@ -124,9 +127,9 @@ implements MouseWheelListener
 	 * Creates an event list that shows all the event selected by the specified 
 	 * filter, or all the events of the database if the filter is null.
 	 */
-	public EventListPanel(Bus aBus, ILogBrowser aLogBrowser, JobProcessor aJobProcessor, IEventFilter aEventFilter)
+	public EventListPanel(IGUIManager aGUIManager, Bus aBus, ILogBrowser aLogBrowser, JobProcessor aJobProcessor, IEventFilter aEventFilter)
 	{
-		this(aBus, aLogBrowser, aJobProcessor);
+		this(aGUIManager, aBus, aLogBrowser, aJobProcessor);
 		setBrowser(aEventFilter);
 	}
 	
@@ -138,6 +141,11 @@ implements MouseWheelListener
 	public ILogBrowser getLogBrowser()
 	{
 		return itsLogBrowser;
+	}
+	
+	public IGUIManager getGUIManager()
+	{
+		return itsGUIManager;
 	}
 	
 	public void forward(final int aCount)

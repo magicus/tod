@@ -20,7 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.eventlist;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -141,7 +140,7 @@ public abstract class BehaviorCallNode extends AbstractSimpleEventNode
 				
 				aParent.add(Hyperlinks.object(
 						Hyperlinks.HTML,
-						getLogBrowser(),
+						getGUIManager(),
 						getJobProcessor(),
 						theArgument, 
 						getEvent(),
@@ -197,7 +196,7 @@ public abstract class BehaviorCallNode extends AbstractSimpleEventNode
 		if (theTarget == null) aParent.addText(" (static)");
 		else aParent.add(Hyperlinks.object(
 				Hyperlinks.HTML,
-				getLogBrowser(),
+				getGUIManager(),
 				getJobProcessor(),
 				theTarget, 
 				getEvent(),
@@ -285,7 +284,7 @@ public abstract class BehaviorCallNode extends AbstractSimpleEventNode
 
 					add(Hyperlinks.object(
 							Hyperlinks.HTML,
-							getLogBrowser(), 
+							getGUIManager(),
 							getJobProcessor(),
 							theExitEvent.getResult(),
 							theExitEvent,
@@ -298,7 +297,7 @@ public abstract class BehaviorCallNode extends AbstractSimpleEventNode
 						add(HtmlText.create(aResultPrefix + " "));						
 						add(Hyperlinks.object(
 								Hyperlinks.HTML,
-								getLogBrowser(), 
+								getGUIManager(),
 								getJobProcessor(),
 								theResult,
 								theExitEvent,

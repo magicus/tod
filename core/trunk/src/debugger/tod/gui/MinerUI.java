@@ -21,14 +21,15 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -36,10 +37,16 @@ import java.util.List;
 import java.util.Properties;
 
 import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
 import javax.swing.UIManager;
 
 import tod.core.DebugFlags;
@@ -53,6 +60,7 @@ import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.session.ISession;
 import tod.core.session.ISessionMonitor;
+import tod.gui.formatter.CustomFormatterRegistry;
 import tod.gui.kit.Bus;
 import tod.gui.kit.BusOwnerPanel;
 import tod.gui.kit.IBusListener;
@@ -64,6 +72,7 @@ import tod.gui.kit.messages.EventSelectedMsg.SM_ShowNextForLine;
 import tod.gui.kit.messages.EventSelectedMsg.SM_ShowPreviousForLine;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.seed.FilterSeed;
+import tod.gui.seed.FormattersSeed;
 import tod.gui.seed.LogViewSeed;
 import tod.gui.seed.LogViewSeedFactory;
 import tod.gui.seed.ObjectHistorySeed;
@@ -76,7 +85,11 @@ import tod.gui.view.controlflow.CFlowView;
 import tod.utils.TODUtils;
 import zz.utils.Base64;
 import zz.utils.SimpleAction;
+import zz.utils.ui.GridStackLayout;
 import zz.utils.ui.StackLayout;
+import zz.utils.ui.UIUtils;
+import zz.utils.ui.UniversalRenderer;
+import zz.utils.ui.popup.ButtonPopupComponent;
 
 /**
  * Main GUI window.
@@ -97,6 +110,9 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 			System.out.println("Could not set Nimbus L&F ("+e.getMessage()+")");
 		}
 	}
+	
+	private static final String PROPERTY_REGISTRY = "minerUI.customFormatterRegistry";
+
 	
 	private LogViewBrowserNavigator itsNavigator = new LogViewBrowserNavigator()
 	{
@@ -139,6 +155,8 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 	private JobProcessor itsJobProcessor = new JobProcessor();
 	private BookmarkPanel itsBookmarkPanel = new BookmarkPanel();
 	
+	private CustomFormatterRegistry itsCustomFormatterRegistry;
+	
 	private Options itsRootOptions = new Options(this, "root", null);
 	
 	private Properties itsProperties = new Properties();
@@ -156,10 +174,18 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 	private List<Action> itsActions = new ArrayList<Action>();
 
 	private SessionMonitorUpdater itsSchedulerMonitor;
+
+	private ActionToolbar itsToolbar;
+
+	private ActionCombo itsActionCombo;
 	
 	public MinerUI()
 	{
 		loadProperties(itsProperties);
+		
+		itsCustomFormatterRegistry = (CustomFormatterRegistry) MinerUI.getObjectProperty(this, PROPERTY_REGISTRY, null);
+		if (itsCustomFormatterRegistry == null) itsCustomFormatterRegistry = new CustomFormatterRegistry();
+
 		createUI();
 	}
 	
@@ -171,6 +197,11 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 	public JobProcessor getJobProcessor()
 	{
 		return itsJobProcessor;
+	}
+	
+	public CustomFormatterRegistry getCustomFormatterRegistry()
+	{
+		return itsCustomFormatterRegistry;
 	}
 
 	private void createUI()
@@ -211,6 +242,12 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 		super.removeNotify();
 		Bus.get(this).unsubscribe(ShowObjectHistoryMsg.ID, itsShowObjectHistoryListener);
 		Bus.get(this).unsubscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
+		saveFormatters();
+	}
+	
+	private void saveFormatters()
+	{
+		MinerUI.setObjectProperty(this, PROPERTY_REGISTRY, itsCustomFormatterRegistry);
 	}
 
 	public Options getOptions()
@@ -221,21 +258,36 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 	protected void viewChanged(LogView aView)
 	{
 		itsBookmarkPanel.setView(aView);
+		saveFormatters();
 		saveProperties(itsProperties);
 	}
 		
-	protected JComponent createToolbar()
+	private JComponent createToolbar()
 	{
-		JPanel theToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		itsToolbar = new ActionToolbar();
+		itsActionCombo = new ActionCombo();
 		
+		createActions(itsToolbar, itsActionCombo);
+		
+		itsToolbar.add(itsActionCombo);
+		return itsToolbar;
+	}
+
+	/**
+	 * Creates all the actions available to the user in the toolbar
+	 * @param aToolbar The main toolbar to which actions should be added
+	 * @param aActionCombo An action combo for extra actions
+	 */
+	protected void createActions(ActionToolbar aToolbar, ActionCombo aActionCombo)
+	{
 		if (DebugFlags.SHOW_DEBUG_GUI)
 		{
-			theToolbar.add(itsBookmarkPanel);
+			aToolbar.add(itsBookmarkPanel);
 		}
 
 		// Add a button that permits to jump to the threads view.
-		Action theThreadsViewAction = new SimpleAction(
-				"View threads",
+		aToolbar.add(new MyAction(
+				"Threads",
 				"<html>" +
 				"<b>Threads view.</b> This view presents an overview <br>" +
 				"of the activity of all the threads in the captured <br>" +
@@ -246,41 +298,33 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 				showThreads();
 			}
 			
-		};
-		
-		theToolbar.add(new JButton(theThreadsViewAction));
-		registerAction(theThreadsViewAction);
+		});
 
-		if (DebugFlags.SHOW_DEBUG_GUI)
+		// Add a button that permits to jump to the exceptions view.
+		aToolbar.add(new MyAction(
+				"Exceptions",
+				"<html>" +
+				"<b>Exceptions view.</b> This view shows a list <br>" +
+				"of all the exceptions that occurred during the execution <br>" +
+				"of the program. Note that many of the exceptions shown <br>" +
+				"here are catched during the normal operation of the <br>" +
+				"program and therefore do not appear in the console.")
 		{
-			// Add a button that permits to jump to the exceptions view.
-			Action theExceptionsViewAction = new SimpleAction(
-					"View exceptions",
-					"<html>" +
-					"<b>Exceptions view.</b> This view shows a list <br>" +
-					"of all the exceptions that occurred during the execution <br>" +
-					"of the program. Note that many of the exceptions shown <br>" +
-					"here are catched during the normal operation of the <br>" +
-					"program and therefore do not appear in the console.")
+			public void actionPerformed(ActionEvent aE)
 			{
-				public void actionPerformed(ActionEvent aE)
-				{
-					ILogBrowser theLogBrowser = getSession().getLogBrowser();
-					
-					FilterSeed theSeed = new FilterSeed(
-							MinerUI.this,
-							theLogBrowser,
-							"All exceptions",
-							theLogBrowser.createExceptionGeneratedFilter());
-					
-					openSeed(theSeed, false);			
-				}
-			};
-			
-			theToolbar.add(new JButton(theExceptionsViewAction));
-			registerAction(theExceptionsViewAction);
-		}
+				ILogBrowser theLogBrowser = getSession().getLogBrowser();
+				
+				FilterSeed theSeed = new FilterSeed(
+						MinerUI.this,
+						theLogBrowser,
+						"All exceptions",
+						theLogBrowser.createExceptionGeneratedFilter());
+				
+				openSeed(theSeed, false);			
+			}
+		});
 		
+		// the string search action should not be registered as other actions
 		itsStringSearchAction = new SimpleAction(
 				"Search string",
 				"<html>" +
@@ -300,11 +344,11 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 			}
 		};
 		
-		theToolbar.add(new JButton(itsStringSearchAction));
+		aToolbar.add(itsStringSearchAction);
 		
 		if (DebugFlags.SHOW_DEBUG_GUI)
 		{
-			Action theShowAllEventsAction = new SimpleAction(
+			aActionCombo.add(new MyAction(
 					"(all events)",
 					"<html>" +
 					"<b>Show all events.</b> Shows a list of all the events <br>" +
@@ -322,14 +366,11 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 					
 					openSeed(theSeed, false);			
 				}
-			};
-			
-			theToolbar.add(new JButton(theShowAllEventsAction));
-			registerAction(theShowAllEventsAction);
+			});
 		}
 		
 		// Add a button that shows the structure view
-		Action theStructureViewAction = new SimpleAction(
+		aToolbar.add(new MyAction(
 				"View classes",
 				"<html>" +
 				"<b>Structure view.</b> This view presents the structure <br>" +
@@ -342,16 +383,28 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 				openSeed(theSeed, false);			
 			}
 			
-		};
-		
-		theToolbar.add(new JButton(theStructureViewAction));
-		registerAction(theStructureViewAction);
+		});
 
+		// Show formatters action
+		aActionCombo.add(new MyAction(
+				"Edit formatters",
+				"<html>" +
+				"<b>Edit formatters.</b> Permits to create and manage custom object formatters <br>" +
+				"database.")
+		{
+			public void actionPerformed(ActionEvent aE)
+			{
+				ILogBrowser theLogBrowser = getSession().getLogBrowser();
+				FormattersSeed theSeed = new FormattersSeed(MinerUI.this, theLogBrowser);
+				openSeed(theSeed, false);			
+			}
+			
+		});
 		
 		if (DebugFlags.SHOW_DEBUG_GUI)
 		{
 			// Adds a button that permits to flush buffers
-			Action theFlushAction = new SimpleAction(
+			aActionCombo.add(new MyAction(
 					"Flush",
 					"<html>" +
 					"<b>Flush buffered events.</b> Ensures that all buffered <br>" +
@@ -362,13 +415,8 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 				{
 					getSession().flush();
 				}
-			};
-			
-			theToolbar.add(new JButton(theFlushAction));
-			registerAction(theFlushAction);
+			});
 		}
-		
-		return theToolbar;
 	}
 	
 	/**
@@ -389,6 +437,7 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 		if (itsSession == null)
 		{
 			itsStringSearchAction.setEnabled(false);
+			itsActionCombo.setEnabled(false);
 			for (Action theAction : itsActions) theAction.setEnabled(false);
 			
 			itsSchedulerMonitor.setScheduler(null);
@@ -396,6 +445,7 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 		else
 		{
 			itsStringSearchAction.setEnabled(itsSession.getConfig().get(TODConfig.INDEX_STRINGS));
+			itsActionCombo.setEnabled(true);
 			for (Action theAction : itsActions) theAction.setEnabled(true);
 			
 			itsSchedulerMonitor.setScheduler(itsSession.getMonitor());
@@ -735,4 +785,110 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 		}	
 	}
 
+	/**
+	 * A kind of combo box that permits to access additional actions.
+	 * @author gpothier
+	 */
+	protected static class ActionCombo extends JPanel implements ActionListener
+	{
+		private JComboBox itsComboBox;
+		private DefaultComboBoxModel itsModel;
+		private Action itsTitleAction;
+
+		public ActionCombo()
+		{
+			createUI();
+		}
+
+		private void createUI()
+		{
+			itsModel = new DefaultComboBoxModel();
+			
+			itsTitleAction = new SimpleAction("More...")
+			{
+				public void actionPerformed(ActionEvent aE)
+				{
+				}
+			};
+			
+			itsModel.addElement(itsTitleAction);
+			
+			itsComboBox = new JComboBox(itsModel);
+			itsComboBox.addActionListener(this);
+			
+			itsComboBox.setRenderer(new UniversalRenderer<Action>()
+					{
+						@Override
+						protected String getName(Action aAction)
+						{
+							return (String) aAction.getValue(Action.NAME);
+						}
+					});
+			
+			setLayout(new StackLayout());
+			add(itsComboBox);
+		}
+		
+		public void add(Action aAction)
+		{
+			itsModel.addElement(aAction);
+		}
+		
+		@Override
+		public void setEnabled(boolean aEnabled)
+		{
+			itsComboBox.setEnabled(aEnabled);
+		}
+
+		public void actionPerformed(ActionEvent aE)
+		{
+			Action theAction = (Action) itsModel.getSelectedItem();
+			theAction.actionPerformed(aE);
+			itsModel.setSelectedItem(itsTitleAction);
+		}
+	}
+	
+	protected static class ActionToolbar extends JPanel
+	{
+		public ActionToolbar()
+		{
+			super(new FlowLayout(FlowLayout.LEFT));
+		}
+		
+		public void add(Action aAction)
+		{
+			add(new JButton(aAction));
+		}
+	}
+	
+	/**
+	 * A custom subclass of {@link SimpleAction} that registers itself to the UI.
+	 * @author gpothier
+	 */
+	protected abstract class MyAction extends SimpleAction
+	{
+		public MyAction(Icon aIcon, String aDescription)
+		{
+			super(aIcon, aDescription);
+			registerAction(this);
+		}
+
+		public MyAction(String aTitle, Icon aIcon, String aDescription)
+		{
+			super(aTitle, aIcon, aDescription);
+			registerAction(this);
+		}
+
+		public MyAction(String aTitle, String aDescription)
+		{
+			super(aTitle, aDescription);
+			registerAction(this);
+		}
+
+		public MyAction(String aTitle)
+		{
+			super(aTitle);
+			registerAction(this);
+		}
+	}
 }

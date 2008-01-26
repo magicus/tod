@@ -66,9 +66,9 @@ public class WatchPanel extends BusPanel
 		public boolean processMessage(ShowObjectMsg aMessage)
 		{
 			openWatch(new ObjectWatchSeed(
-					aMessage.getTitle(),
-					WatchPanel.this, 
-					getView().getLogBrowser(), 
+					getGUIManager(),
+					aMessage.getTitle(), 
+					WatchPanel.this,
 					aMessage.getRefEvent(), 
 					aMessage.getObjectId()));
 			
@@ -165,9 +165,9 @@ public class WatchPanel extends BusPanel
 		if (theRefEvent == null) return;
 		
 		itsBrowserNavigator.open(new StackFrameWatchSeed(
+				getGUIManager(),
 				"frame",
 				WatchPanel.this,
-				itsView.getLogBrowser(),
 				theRefEvent));
 
 	}
@@ -213,7 +213,7 @@ public class WatchPanel extends BusPanel
 					if ("this".equals(theEntry.getName())) continue;
 					
 					add(new WatchEntryNode(
-							itsView.getLogBrowser(),
+							getGUIManager(),
 							getJobProcessor(),
 							WatchPanel.this,
 							itsProvider,
@@ -234,9 +234,8 @@ public class WatchPanel extends BusPanel
 		
 		theContainer.add(Hyperlinks.object(
 				Hyperlinks.SWING, 
-				itsView.getLogBrowser(), 
+				getGUIManager(), 
 				getJobProcessor(),
-				null,
 				aCurrentObject,
 				itsProvider.getRefEvent(),
 				showPackageNames()));

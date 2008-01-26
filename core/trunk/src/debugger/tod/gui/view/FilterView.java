@@ -93,7 +93,7 @@ public class FilterView extends LogView implements IEventListView
 		JSplitPane theSplitPane = new SavedSplitPane(JSplitPane.HORIZONTAL_SPLIT, getGUIManager(), PROPERTY_SPLITTER_POS);
 		theSplitPane.setResizeWeight(0.5);
 		
-		itsListPanel = new EventListPanel (getBus(), getLogBrowser(), getJobProcessor()); 
+		itsListPanel = new EventListPanel (getGUIManager(), getBus(), getLogBrowser(), getJobProcessor()); 
 		
 		itsListPanel.eEventActivated().addListener(new IEventListener<ILogEvent>()
 				{

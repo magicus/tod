@@ -22,21 +22,22 @@ package tod.gui.view.controlflow.watch;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
+import tod.gui.IGUIManager;
 
 public class StackFrameWatchSeed extends WatchSeed
 {
 
-	public StackFrameWatchSeed(String aTitle, WatchPanel aWatchPanel, ILogBrowser aLogBrowser, ILogEvent aRefEvent)
+	public StackFrameWatchSeed(IGUIManager aGUIManager, String aTitle, WatchPanel aWatchPanel, ILogEvent aRefEvent)
 	{
-		super(aTitle, aWatchPanel, aLogBrowser, aRefEvent);
+		super(aTitle, aWatchPanel, aGUIManager, aRefEvent);
 	}
 
 	@Override
 	public AbstractWatchProvider createProvider()
 	{
 		return new StackFrameWatchProvider(
+				getGUIManager(),
 				getTitle(),
-				getLogBrowser(),
 				getRefEvent());
 	}
 

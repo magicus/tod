@@ -27,10 +27,13 @@ import javax.swing.JComponent;
 import tod.Util;
 import tod.agent.transport.ObjectValue;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.browser.IObjectInspector;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.gui.formatter.CustomFormatterRegistry;
+import tod.gui.formatter.CustomObjectFormatter;
 import tod.gui.kit.Bus;
 import tod.gui.kit.html.HtmlElement;
 import tod.gui.kit.html.HtmlLink;
@@ -52,6 +55,7 @@ public class Hyperlinks
 {
 	public static final HtmlLabelFactory HTML = new HtmlLabelFactory();
 	public static final SwingLabelFactory SWING = new SwingLabelFactory();
+	public static final TextLabelFactory TEXT = new TextLabelFactory();
 	
 	public static <T> T history(LabelFactory<T> aFactory, ObjectId aObject)
 	{
@@ -80,13 +84,13 @@ public class Hyperlinks
 	
 	public static <T> T object(
 			LabelFactory<T> aFactory, 
-			ILogBrowser aLogBrowser, 
+			IGUIManager aGUIManager,
 			JobProcessor aJobProcessor,
 			Object aObject,
 			ILogEvent aRefEvent,
 			boolean aShowPackageNames)
 	{
-		return object(aFactory, aLogBrowser, aJobProcessor, null, aObject, aRefEvent, aShowPackageNames);
+		return object(aFactory, aGUIManager, aJobProcessor, null, aObject, aRefEvent, aShowPackageNames);
 	}
 	
 	/**
@@ -97,18 +101,20 @@ public class Hyperlinks
 	 */
 	public static <T> T object(
 			LabelFactory<T> aFactory, 
-			ILogBrowser aLogBrowser,
+			IGUIManager aGUIManager,
 			JobProcessor aJobProcessor,
 			Object aCurrentObject, 
 			Object aObject, 
 			ILogEvent aRefEvent,
 			boolean aShowPackageNames)
 	{
+		ILogBrowser theLogBrowser = aGUIManager.getSession().getLogBrowser();
+		
 		// Check if this is a registered object.
 		if (aObject instanceof ObjectId)
 		{
 			ObjectId theObjectId = (ObjectId) aObject;
-			Object theRegistered = aLogBrowser.getRegistered(theObjectId);
+			Object theRegistered = theLogBrowser.getRegistered(theObjectId);
 			if (theRegistered != null) aObject = theRegistered;
 		}
 		
@@ -129,9 +135,12 @@ public class Hyperlinks
 //			}
 			else 
 			{
-				ITypeInfo theType = aLogBrowser.createObjectInspector(theId).getType();
-				String theName = aShowPackageNames ? theType.getName() : Util.getSimpleName(theType.getName());
-				theText = theName + " (" + theId + ")";
+				IObjectInspector theInspector = theLogBrowser.createObjectInspector(theId);
+				theInspector.setReferenceEvent(aRefEvent);
+				theText = CustomFormatterRegistry.formatObjectShort(
+						aGUIManager, 
+						theInspector, 
+						aShowPackageNames);
 			}
 			
 			return aFactory.createLink(theText, new ShowObjectMsg(theText, theId, aRefEvent));
@@ -190,7 +199,7 @@ public class Hyperlinks
 	private static abstract class LabelFactory<T>
 	{
 		public abstract T createLink(String aLabel, Message aMessage);
-		public abstract T createText(String alabel, Color aColor);
+		public abstract T createText(String aLabel, Color aColor);
 	}
 	
 	private static class SwingLabelFactory extends LabelFactory<JComponent>
@@ -201,9 +210,9 @@ public class Hyperlinks
 			return MessageHyperlink.create(aMessage, aLabel, FontConfig.STD_FONT, Color.BLUE);		}
 
 		@Override
-		public JComponent createText(String alabel, Color aColor)
+		public JComponent createText(String aLabel, Color aColor)
 		{
-			return ZLabel.create(alabel, FontConfig.STD_FONT, aColor);
+			return ZLabel.create(aLabel, FontConfig.STD_FONT, aColor);
 		}
 	}
 	
@@ -223,10 +232,27 @@ public class Hyperlinks
 		}
 
 		@Override
-		public HtmlElement createText(String alabel, Color aColor)
+		public HtmlElement createText(String aLabel, Color aColor)
 		{
-			return new HtmlText(alabel, aColor);
+			return new HtmlText(aLabel, aColor);
 		}
+	}
+	
+	private static class TextLabelFactory extends LabelFactory<String>
+	{
+
+		@Override
+		public String createLink(String aLabel, Message aMessage)
+		{
+			return aLabel;
+		}
+
+		@Override
+		public String createText(String aLabel, Color aColor)
+		{
+			return aLabel;
+		}
+		
 	}
 	
 }

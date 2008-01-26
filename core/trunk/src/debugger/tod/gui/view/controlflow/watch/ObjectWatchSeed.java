@@ -20,22 +20,22 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.view.controlflow.watch;
 
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.ObjectId;
+import tod.gui.IGUIManager;
 
 public class ObjectWatchSeed extends WatchSeed
 {
 	private ObjectId itsObject;
 	
 	public ObjectWatchSeed(
+			IGUIManager aGUIManager,
 			String aTitle,
-			WatchPanel aWatchPanel, 
-			ILogBrowser aLogBrowser,
+			WatchPanel aWatchPanel,
 			ILogEvent aRefEvent,
 			ObjectId aObject)
 	{
-		super(aTitle, aWatchPanel, aLogBrowser, aRefEvent);
+		super(aTitle, aWatchPanel, aGUIManager, aRefEvent);
 		itsObject = aObject;
 	}
 
@@ -43,8 +43,8 @@ public class ObjectWatchSeed extends WatchSeed
 	public AbstractWatchProvider createProvider()
 	{
 		return new ObjectWatchProvider(
+				getGUIManager(),
 				getTitle(),
-				getLogBrowser(),
 				getRefEvent(),
 				itsObject);
 	}

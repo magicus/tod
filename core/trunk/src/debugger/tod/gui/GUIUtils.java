@@ -34,6 +34,7 @@ import javax.swing.JPanel;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 
 import zz.utils.ui.GridStackLayout;
+import zz.utils.ui.StackLayout;
 import zz.utils.ui.ZLabel;
 import zz.utils.ui.text.XFont;
 
@@ -70,7 +71,8 @@ public class GUIUtils
 	}
 	
 	/**
-	 * Creates a standard stack layout.
+	 * Creates a standard stack layout (ie children are stacked vertically,
+	 * not like {@link StackLayout}).
 	 */
 	public static LayoutManager createStackLayout()
 	{

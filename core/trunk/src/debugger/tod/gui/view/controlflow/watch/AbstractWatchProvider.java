@@ -24,10 +24,13 @@ import java.util.List;
 
 import javax.swing.JComponent;
 
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IWriteEvent;
 import tod.core.database.structure.ObjectId;
+import tod.gui.IGUIManager;
 import tod.gui.JobProcessor;
+import tod.gui.formatter.CustomFormatterRegistry;
 
 /**
  * Provider of watch data.
@@ -35,11 +38,13 @@ import tod.gui.JobProcessor;
  */
 public abstract class AbstractWatchProvider
 {
-	private String itsTitle;
+	private final IGUIManager itsGUIManager;
+	private final String itsTitle;
 	
-	public AbstractWatchProvider(String aTitle)
+	public AbstractWatchProvider(IGUIManager aGUIManager, String aTitle)
 	{
 		itsTitle = aTitle;
+		itsGUIManager = aGUIManager;
 	}
 
 	/**
@@ -57,6 +62,17 @@ public abstract class AbstractWatchProvider
 		return itsTitle;
 	}
 	
+	public IGUIManager getGUIManager()
+	{
+		return itsGUIManager;
+	}
+	
+	public ILogBrowser getLogBrowser()
+	{
+		return getGUIManager().getSession().getLogBrowser();
+	}
+
+
 	/**
 	 * Returns a current object. Currently this is only for
 	 * stack frame reconstitution, represents the "this" variable.

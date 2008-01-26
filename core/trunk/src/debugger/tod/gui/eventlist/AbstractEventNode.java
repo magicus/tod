@@ -21,39 +21,20 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.eventlist;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.event.MouseEvent;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 
-import tod.core.DebugFlags;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
-import tod.core.database.event.ICallerSideEvent;
 import tod.core.database.event.ILogEvent;
-import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
-import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
 import tod.gui.GUIUtils;
+import tod.gui.IGUIManager;
 import tod.gui.JobProcessor;
-import tod.gui.kit.Bus;
+import tod.gui.formatter.CustomFormatterRegistry;
 import tod.gui.kit.BusPanel;
-import tod.gui.kit.html.HtmlBody;
-import tod.gui.kit.html.HtmlComponent;
-import tod.gui.kit.html.HtmlDoc;
-import tod.gui.kit.html.HtmlParentElement;
-import tod.gui.kit.html.HtmlText;
-import tod.gui.kit.messages.EventActivatedMsg;
-import tod.gui.kit.messages.EventSelectedMsg;
-import tod.gui.kit.messages.EventActivatedMsg.ActivationMethod;
-import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import zz.utils.Utils;
-import zz.utils.ui.MousePanel;
 
 /**
  * Base class for all event nodes.
@@ -92,6 +73,11 @@ public abstract class AbstractEventNode extends BusPanel
 		return getListPanel().getJobProcessor();
 	}
 
+	public IGUIManager getGUIManager()
+	{
+		return getListPanel().getGUIManager();
+	}
+	
 	/**
 	 * Default UI creation. 
 	 * The html component is placed at the center of a {@link BorderLayout}.

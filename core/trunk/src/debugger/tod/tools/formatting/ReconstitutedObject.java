@@ -25,6 +25,9 @@ import tod.core.database.browser.IObjectInspector;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ObjectId;
+import tod.gui.Hyperlinks;
+import tod.gui.IGUIManager;
+import tod.gui.formatter.CustomFormatterRegistry;
 
 /**
  * Represents an object of the debugged VM at a given point in time.
@@ -32,13 +35,15 @@ import tod.core.database.structure.ObjectId;
  */
 public class ReconstitutedObject
 {
+	private final IGUIManager itsGUIManager;
 	private final IObjectInspector itsInspector;
 	private final IClassInfo itsClass;
 	
-	public ReconstitutedObject(IObjectInspector aInspector)
+	public ReconstitutedObject(IGUIManager aGUIManager, IObjectInspector aInspector)
 	{
+		itsGUIManager = aGUIManager;
 		itsInspector = aInspector;
-		itsClass = (IClassInfo) itsInspector.getType();
+		itsClass = itsInspector != null ? (IClassInfo) itsInspector.getType() : null;
 	}
 
 	public Object get(String aFieldName)
@@ -48,14 +53,43 @@ public class ReconstitutedObject
 		if (theEntryValues == null || theEntryValues.length > 1) throw new RuntimeException("What do we do? "+theEntryValues);
 		
 		Object theValue = theEntryValues[0];
+		
+		ILogBrowser theLogBrowser = itsInspector.getLogBrowser();
+		
+		// Check if this is a registered object.
 		if (theValue instanceof ObjectId)
 		{
 			ObjectId theObjectId = (ObjectId) theValue;
-			ILogBrowser theLogBrowser = itsInspector.getLogBrowser();
-			IObjectInspector theInspector = theLogBrowser.createObjectInspector(theObjectId);
-			return FormatterFactory.getInstance().wrap(theInspector);
+			Object theRegistered = theLogBrowser.getRegistered(theObjectId);
+			if (theRegistered != null) theValue = theRegistered;
 		}
-		else return theValue;
+
+		if (theValue instanceof ObjectId)
+		{
+			ObjectId theObjectId = (ObjectId) theValue;
+			IObjectInspector theInspector = theLogBrowser.createObjectInspector(theObjectId);
+			theInspector.setReferenceEvent(itsInspector.getReferenceEvent());
+			return FormatterFactory.getInstance().wrap(itsGUIManager, theInspector);
+		}
+		else 
+		{
+			return Hyperlinks.object(
+					Hyperlinks.TEXT, 
+					itsGUIManager, 
+					itsGUIManager.getJobProcessor(),
+					null,
+					theValue,
+					itsInspector.getReferenceEvent(), 
+					false);
+		}
+	}
+	
+	/**
+	 * Formats this reconstituted object using the custom formatters.
+	 */
+	public String format()
+	{
+		return CustomFormatterRegistry.formatObjectShort(itsGUIManager, itsInspector, false);
 	}
 	
 	@Override

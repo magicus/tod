@@ -23,20 +23,19 @@ package tod.gui.view.formatters;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.gui.IGUIManager;
 import tod.gui.MinerUI;
 import tod.gui.formatter.CustomFormatterRegistry;
 import tod.gui.formatter.CustomObjectFormatter;
-import tod.gui.kit.Bus;
-import tod.gui.kit.Options;
 import tod.gui.kit.SavedSplitPane;
-import tod.gui.kit.StdOptions;
-import tod.gui.kit.messages.EventSelectedMsg;
-import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.seed.FormattersSeed;
 import tod.gui.view.LogView;
+import zz.utils.ui.StackLayout;
+import zz.utils.ui.UniversalRenderer;
 import zz.utils.ui.crmlist.AbstractJavaCRMListModel;
 import zz.utils.ui.crmlist.CRMList;
 import zz.utils.ui.crmlist.CRMListModel;
@@ -48,10 +47,10 @@ import zz.utils.ui.crmlist.CRMListModel;
 public class FormattersView extends LogView
 {
 	private static final String PROPERTY_SPLITTER_POS = "formattersView.splitterPos";
-	private static final String PROPERTY_REGISTRY = "formattersView.registry";
 
 	private final FormattersSeed itsSeed;
-	private CustomFormatterRegistry itsRegistry;
+	
+	private JPanel itsEditorHolder;
 	
 	public FormattersView(IGUIManager aGUIManager, ILogBrowser aLog, FormattersSeed aSeed)
 	{
@@ -73,27 +72,26 @@ public class FormattersView extends LogView
 		theSplitPane.setResizeWeight(0.5);
 		
 		theSplitPane.setLeftComponent(createSelector());
-	}
-	
-	@Override
-	public void addNotify()
-	{
-		super.addNotify();
 		
-		itsRegistry = (CustomFormatterRegistry) MinerUI.getObjectProperty(getGUIManager(), PROPERTY_REGISTRY, null);
-		if (itsRegistry == null) itsRegistry = new CustomFormatterRegistry();
+		itsEditorHolder = new JPanel(new StackLayout());
+		theSplitPane.setRightComponent(itsEditorHolder);
+		
+		setLayout(new StackLayout());
+		add(theSplitPane);
 	}
 	
-	@Override
-	public void removeNotify()
+	private void show(CustomObjectFormatter aFormatter)
 	{
-		super.removeNotify();
-		MinerUI.setObjectProperty(getGUIManager(), PROPERTY_REGISTRY, itsRegistry);
+		itsEditorHolder.removeAll();
+		itsEditorHolder.add(new FormatterEditor(getLogBrowser().getStructureDatabase(), aFormatter));
+		revalidate();
+		repaint();
 	}
 	
 	private JComponent createSelector()
 	{
-		CRMListModel theModel = new AbstractJavaCRMListModel<CustomObjectFormatter>()
+		final CustomFormatterRegistry theRegistry = getGUIManager().getCustomFormatterRegistry();
+		CRMListModel theModel = new AbstractJavaCRMListModel<CustomObjectFormatter>(theRegistry.getFormatters())
 		{
 
 			@Override
@@ -105,13 +103,13 @@ public class FormattersView extends LogView
 			@Override
 			protected CustomObjectFormatter newElement()
 			{
-				CustomObjectFormatter theFormatter = itsRegistry.createFormatter();
+				CustomObjectFormatter theFormatter = theRegistry.createFormatter();
 				theFormatter.setName("<New formatter>");
 				return theFormatter;
 			}
 		};
 		
-		CRMList theList = new CRMList(theModel)
+		final CRMList theList = new CRMList(theModel)
 		{
 			@Override
 			protected String getUpLabel()
@@ -125,6 +123,26 @@ public class FormattersView extends LogView
 				return null;
 			}
 		};
+		
+		theList.getSelectionModel().addListSelectionListener(new ListSelectionListener()
+		{
+			public void valueChanged(ListSelectionEvent aE)
+			{
+				if (! aE.getValueIsAdjusting())
+				{
+					FormattersView.this.show((CustomObjectFormatter) theList.getSelectedValue());
+				}
+			}
+		});
+		
+		theList.setCellRenderer(new UniversalRenderer<CustomObjectFormatter>()
+				{
+					@Override
+					protected String getName(CustomObjectFormatter aObject)
+					{
+						return aObject.getName();
+					}
+				});
 		
 		return theList;
 	}

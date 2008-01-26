@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.view.structure;
+package tod.gui.locationselector;
 
 import java.util.Collections;
 
@@ -76,7 +76,7 @@ public class PackageNode extends LocationNode
 	/**
 	 * Adds a new class node
 	 */
-	public ClassNode addClassNode(IClassInfo aClassInfo)
+	public ClassNode addClassNode(IClassInfo aClassInfo, boolean aShowMembers)
 	{
 		int theIndex = Collections.binarySearch(
 				pChildren().get(), 
@@ -85,7 +85,7 @@ public class PackageNode extends LocationNode
 		
 		if (theIndex >= 0) throw new RuntimeException("Class node already exists: "+aClassInfo); 
 
-		ClassNode theNode = new ClassNode(getTree(), aClassInfo);
+		ClassNode theNode = new ClassNode(getTree(), aClassInfo, aShowMembers);
 		pChildren().add(-theIndex-1, theNode);
 		return theNode;
 	}

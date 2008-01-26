@@ -54,8 +54,8 @@ public class NewArrayNode extends AbstractSimpleEventNode
 		
 		aBody.add(Hyperlinks.object(
 				Hyperlinks.HTML,
-				getLogBrowser(), 
-				getJobProcessor(), 
+				getGUIManager(),
+				getJobProcessor(),
 				theCurrentObject, 
 				itsEvent.getInstance(), 
 				itsEvent,

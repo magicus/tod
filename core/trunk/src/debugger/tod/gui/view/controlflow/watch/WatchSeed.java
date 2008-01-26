@@ -22,25 +22,26 @@ package tod.gui.view.controlflow.watch;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
+import tod.gui.IGUIManager;
 import tod.gui.seed.Seed;
 
 public abstract class WatchSeed extends Seed
 {
-	private String itsTitle;
-	private WatchPanel itsWatchPanel;
-	private ILogBrowser itsLogBrowser;
-	private ILogEvent itsRefEvent;
+	private final String itsTitle;
+	private final WatchPanel itsWatchPanel;
+	private final IGUIManager itsGUIManager;
+	private final ILogEvent itsRefEvent;
 	
 
 	public WatchSeed(
 			String aTitle,
 			WatchPanel aWatchPanel, 
-			ILogBrowser aLogBrowser, 
+			IGUIManager aGUIManager, 
 			ILogEvent aRefEvent)
 	{
 		itsTitle = aTitle;
 		itsWatchPanel = aWatchPanel;
-		itsLogBrowser = aLogBrowser;
+		itsGUIManager = aGUIManager;
 		itsRefEvent = aRefEvent;
 	}
 
@@ -54,11 +55,11 @@ public abstract class WatchSeed extends Seed
 		return itsWatchPanel;
 	}
 
-	public ILogBrowser getLogBrowser()
+	public IGUIManager getGUIManager()
 	{
-		return itsLogBrowser;
+		return itsGUIManager;
 	}
-
+	
 	public ILogEvent getRefEvent()
 	{
 		return itsRefEvent;

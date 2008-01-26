@@ -39,12 +39,12 @@ import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ObjectId;
 import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
+import tod.gui.IGUIManager;
 import tod.gui.JobProcessor;
 import zz.utils.ui.ZLabel;
 
 public class ObjectWatchProvider extends AbstractWatchProvider
 {
-	private final ILogBrowser itsLogBrowser;
 	private final ILogEvent itsRefEvent;
 	private final ObjectId itsObject;
 	
@@ -55,13 +55,12 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 	private List<Entry> itsEntries;
 	
 	public ObjectWatchProvider(
+			IGUIManager aGUIManager, 
 			String aTitle,
-			ILogBrowser aLogBrowser, 
 			ILogEvent aRefEvent,
 			ObjectId aObject)
 	{
-		super(aTitle);
-		itsLogBrowser = aLogBrowser;
+		super(aGUIManager, aTitle);
 		itsRefEvent = aRefEvent;
 		itsObject = aObject;
 	}
@@ -70,14 +69,14 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 	{
 		return false;
 	}
-
+	
 	private IObjectInspector getInspector()
 	{
 		if (itsInspector == null && ! itsInvalid)
 		{
 			if (itsObject != null)
 			{
-				itsInspector = itsLogBrowser.createObjectInspector(itsObject);
+				itsInspector = getLogBrowser().createObjectInspector(itsObject);
 			}
 			else
 			{
@@ -91,7 +90,7 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 				IBehaviorInfo theBehavior = theParent.getExecutedBehavior();
 				if (theBehavior == null) theBehavior = theParent.getCalledBehavior();
 				
-				itsInspector = itsLogBrowser.createClassInspector(theBehavior.getType());
+				itsInspector = getLogBrowser().createClassInspector(theBehavior.getType());
 			}
 			
 			itsInspector.setReferenceEvent(itsRefEvent);
@@ -117,7 +116,7 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 		{
 			theObjectContainer.add(Hyperlinks.object(
 					Hyperlinks.SWING, 
-					itsLogBrowser, 
+					getGUIManager(),
 					aJobProcessor,
 					itsObject,
 					itsRefEvent,

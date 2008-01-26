@@ -8,7 +8,7 @@ class TODObject:
         self.robj = robj
 
     def __str__(self):
-        return str(self.robj)
+        return self.robj.format()
     
     def __coerce__(self, other):
         return None

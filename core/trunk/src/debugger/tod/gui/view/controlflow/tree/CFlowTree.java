@@ -109,7 +109,11 @@ public class CFlowTree extends BusPanel
 		setLayout(new StackLayout());
 		add(theSplitPane);
 		
-		itsEventListPanel = new EventListPanel(getBus(), itsView.getLogBrowser(), getJobProcessor());
+		itsEventListPanel = new EventListPanel(
+				itsView.getGUIManager(), 
+				getBus(), 
+				itsView.getLogBrowser(), 
+				getJobProcessor());
 		
 		itsEventListPanel.eEventActivated().addListener(new IEventListener<ILogEvent>()
 				{
