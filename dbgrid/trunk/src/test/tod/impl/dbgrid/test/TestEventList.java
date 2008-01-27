@@ -20,7 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.test;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Iterator;
@@ -30,8 +29,8 @@ import org.junit.Test;
 import tod.impl.dbgrid.EventGenerator;
 import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.db.EventList;
+import tod.impl.dbgrid.messages.BitGridEvent;
 import tod.impl.dbgrid.messages.GridEvent;
-import zz.utils.bit.IntBitStruct;
 
 public class TestEventList
 {
@@ -64,10 +63,10 @@ public class TestEventList
 	{
 		for (long i=0;i<aCount;i++)
 		{
-			GridEvent theRefEvent = aGenerator.next();
+			BitGridEvent theRefEvent = aGenerator.next();
 			
 			if (! aIterator.hasNext()) fail("No more tuples");
-			GridEvent theEvent = aIterator.next();
+			BitGridEvent theEvent = (BitGridEvent) aIterator.next();
 			Fixtures.assertEquals(""+i, theRefEvent, theEvent);
 			
 			if (i % 1000000 == 0) System.out.println("v: "+i);
@@ -87,9 +86,9 @@ public class TestEventList
 		
 		for(int i=0;i<theCount;i++)
 		{
-			GridEvent theRefEvent = theGenerator.next();
+			BitGridEvent theRefEvent = theGenerator.next();
 			
-			GridEvent theEvent = theEventList.getEvent(theIds[i]);
+			BitGridEvent theEvent = (BitGridEvent) theEventList.getEvent(theIds[i]);
 			Fixtures.assertEquals(""+i, theRefEvent, theEvent);
 		}
 	}

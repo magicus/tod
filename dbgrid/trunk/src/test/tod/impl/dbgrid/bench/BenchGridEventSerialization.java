@@ -29,9 +29,8 @@ import org.junit.Test;
 import tod.BenchBase;
 import tod.BenchBase.BenchResults;
 import tod.impl.dbgrid.EventGenerator;
-import tod.impl.dbgrid.GridMaster;
+import tod.impl.dbgrid.messages.BitGridEvent;
 import tod.impl.dbgrid.messages.GridEvent;
-import tod.impl.dbgrid.messages.GridMessage;
 import zz.utils.bit.BitStruct;
 import zz.utils.bit.IntBitStruct;
 
@@ -94,11 +93,11 @@ public class BenchGridEventSerialization
 				for(int i=0;i<n;i++)
 				{
 					theBitStruct.reset();
-					GridEvent theEvent = theGenerator.next();
+					BitGridEvent theEvent = theGenerator.next();
 					theEvent.writeTo(theBitStruct);
 					
 					theBitStruct.reset();
-					GridMessage.read(theBitStruct);
+					BitGridEvent.read(theBitStruct);
 				}
 			}
 		});

@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
+import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_ADVICE_SRC_ID_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_ARRAY_INDEX_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_BEHAVIOR_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_BYTECODE_LOCS_COUNT;
@@ -28,21 +29,20 @@ import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_FIELD_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_OBJECT_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_THREADS_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_VAR_COUNT;
-import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_ADVICE_SRC_ID_COUNT;
 
 import java.util.Random;
 
 import tod.core.database.TimestampGenerator;
 import tod.core.database.structure.ObjectId;
+import tod.impl.dbgrid.messages.BitGridEvent;
 import tod.impl.dbgrid.messages.GridArrayWriteEvent;
 import tod.impl.dbgrid.messages.GridBehaviorCallEvent;
 import tod.impl.dbgrid.messages.GridBehaviorExitEvent;
-import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.GridExceptionGeneratedEvent;
 import tod.impl.dbgrid.messages.GridFieldWriteEvent;
+import tod.impl.dbgrid.messages.GridNewArrayEvent;
 import tod.impl.dbgrid.messages.GridVariableWriteEvent;
 import tod.impl.dbgrid.messages.MessageType;
-import tod.impl.dbgrid.messages.GridNewArrayEvent;
 
 public class EventGenerator
 {
@@ -100,7 +100,7 @@ public class EventGenerator
 				STRUCTURE_OBJECT_COUNT);
 	}
 	
-	public GridEvent next()
+	public BitGridEvent next()
 	{
 		MessageType theType = genType();
 		switch (theType)

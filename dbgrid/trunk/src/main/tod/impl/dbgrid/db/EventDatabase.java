@@ -31,6 +31,7 @@ import tod.core.DebugFlags;
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.db.EventReorderingBuffer.ReorderingBufferListener;
 import tod.impl.dbgrid.db.file.HardPagedFile;
+import tod.impl.dbgrid.messages.BitGridEvent;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
 import zz.utils.monitoring.AggregationType;
@@ -227,6 +228,8 @@ public class EventDatabase implements ReorderingBufferListener
 	
 	private void processEvent(GridEvent aEvent)
 	{
+		BitGridEvent theEvent = (BitGridEvent) aEvent;
+		
 		long theTimestamp = aEvent.getTimestamp();
 		if (theTimestamp < itsLastProcessedTimestamp)
 		{
@@ -238,7 +241,7 @@ public class EventDatabase implements ReorderingBufferListener
 		itsProcessedEventsCount++;
 		
 		long theId = itsEventList.add(aEvent);
-		if (! DebugFlags.DISABLE_INDEXES) aEvent.index(itsIndexes, theId);		
+		if (! DebugFlags.DISABLE_INDEXES) theEvent.index(itsIndexes, theId);		
 	}
 	
 	/**

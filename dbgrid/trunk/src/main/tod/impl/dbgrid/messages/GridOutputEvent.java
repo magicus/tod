@@ -26,7 +26,7 @@ import tod.impl.common.event.OutputEvent;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.db.Indexes;
 
-public class GridOutputEvent extends GridEvent
+public class GridOutputEvent extends BitGridEvent
 {
 	private static final long serialVersionUID = 2432106275871615061L;
 	

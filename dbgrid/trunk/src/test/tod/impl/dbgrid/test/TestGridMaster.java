@@ -43,6 +43,7 @@ import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.aggregator.GridEventBrowser;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
+import tod.impl.dbgrid.messages.BitGridEvent;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
 
@@ -123,11 +124,11 @@ public class TestGridMaster
 		int theMatched = 0;
 		for (int i=0;i<aCount;i++)
 		{
-			GridEvent theRefEvent = aReferenceGenerator.next();
+			BitGridEvent theRefEvent = aReferenceGenerator.next();
 			if (aCondition._match(theRefEvent))
 			{
 				GridEvent[] theBuffer = theAggregator.next(1);
-				GridEvent theTestedEvent = theBuffer[0]; 
+				BitGridEvent theTestedEvent = (BitGridEvent) theBuffer[0]; 
 				Fixtures.assertEquals(""+i, theRefEvent, theTestedEvent);
 				theMatched++;
 			}

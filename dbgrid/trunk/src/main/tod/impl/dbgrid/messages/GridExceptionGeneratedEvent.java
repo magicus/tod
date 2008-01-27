@@ -26,14 +26,13 @@ import static tod.impl.dbgrid.ObjectCodec.readObject;
 import static tod.impl.dbgrid.ObjectCodec.writeObject;
 import tod.core.database.event.ILogEvent;
 import tod.impl.common.event.ExceptionGeneratedEvent;
-import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.SplittedConditionHandler;
 import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.RoleIndexSet;
 import zz.utils.bit.BitStruct;
 
-public class GridExceptionGeneratedEvent extends GridEvent
+public class GridExceptionGeneratedEvent extends BitGridEvent
 {
 	private static final long serialVersionUID = 7070448347537157710L;
 	

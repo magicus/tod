@@ -28,8 +28,8 @@ import java.util.Iterator;
 import tod.impl.dbgrid.InternalPointer;
 import tod.impl.dbgrid.db.file.HardPagedFile;
 import tod.impl.dbgrid.db.file.HardPagedFile.PageBitStruct;
+import tod.impl.dbgrid.messages.BitGridEvent;
 import tod.impl.dbgrid.messages.GridEvent;
-import tod.impl.dbgrid.messages.GridMessage;
 import zz.utils.monitoring.AggregationType;
 import zz.utils.monitoring.Monitor;
 import zz.utils.monitoring.Probe;
@@ -85,7 +85,8 @@ public class EventList
 	 */
 	public long add(GridEvent aEvent)
 	{
-		int theRecordLength = DB_EVENT_SIZE_BITS + aEvent.getBitCount();
+		BitGridEvent theEvent = (BitGridEvent) aEvent;
+		int theRecordLength = DB_EVENT_SIZE_BITS + theEvent.getBitCount();
 		
 		// Check available space in current page (we must leave space for the next-page pointer)
 		int theTailSize = DB_EVENT_SIZE_BITS + DB_PAGE_POINTER_BITS;
@@ -125,7 +126,7 @@ public class EventList
 		
 		int p0 = itsCurrentBitStruct.getPos();
 		itsCurrentBitStruct.writeInt(theRecordLength, DB_EVENT_SIZE_BITS);
-		aEvent.writeTo(itsCurrentBitStruct);
+		theEvent.writeTo(itsCurrentBitStruct);
 		int p1 = itsCurrentBitStruct.getPos();
 		assert p1-p0 == theRecordLength;
 		
@@ -160,7 +161,7 @@ public class EventList
 			int theRecordLength = theBitStruct.readInt(DB_EVENT_SIZE_BITS);
 			if (theRecordLength == 0) break; // End-of-page marker.
 			
-			if (theCount == 0) return (GridEvent) GridMessage.read(theBitStruct);
+			if (theCount == 0) return BitGridEvent.read(theBitStruct);
 			
 			theBitStruct.skip(theRecordLength-DB_EVENT_SIZE_BITS);
 			theCount--;
@@ -242,7 +243,7 @@ public class EventList
 				}
 			} while (theRecordLength == 0); // We really should not loop more than once
 			
-			GridEvent theEvent = (GridEvent) GridMessage.read(itsPage);
+			GridEvent theEvent = BitGridEvent.read(itsPage);
 			
 			return theEvent;
 		}

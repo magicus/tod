@@ -66,7 +66,7 @@ public class Indexes
 	 * Index for array indexes 
 	 */
 	private StdIndexSet[] itsArrayIndexIndexes;
-	private ObjectIndexSet[] itsObjectIndexes;
+	private RoleIndexSet[] itsObjectIndexes;
 	
 	private long itsMaxObjectId = 0;
 
@@ -99,7 +99,7 @@ public class Indexes
 		
 		itsObjectIndexes = createSplitIndex(
 				"object",
-				ObjectIndexSet.class,
+				RoleIndexSet.class,
 				DebuggerGridConfig.INDEX_OBJECT_PARTS,
 				aFile);
 		

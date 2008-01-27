@@ -46,7 +46,7 @@ implements IEventFilter, Serializable
 	
 	/**
 	 * Creates an iterator over matching events, taking them from the specified
-	 * {@link EventList} and {@link Indexes}.
+	 * {@link EventList} and {@link BitIndexes}.
 	 */
 	public final IBidiIterator<GridEvent> createIterator(
 			final EventList aEventList,
@@ -71,7 +71,7 @@ implements IEventFilter, Serializable
 
 	/**
 	 * Creates an iterator over matching events, taking them from the specified
-	 * {@link EventList} and {@link Indexes}.
+	 * {@link EventList} and {@link BitIndexes}.
 	 */
 	public abstract IBidiIterator<StdTuple> createTupleIterator(
 			Indexes aIndexes,

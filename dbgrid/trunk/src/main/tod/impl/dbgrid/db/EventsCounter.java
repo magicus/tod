@@ -20,18 +20,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.db;
 
-import java.util.Iterator;
-
 import tod.core.database.browser.IEventBrowser;
-import tod.core.database.browser.ILogBrowser;
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
-import tod.impl.dbgrid.db.file.IndexTuple;
-import tod.impl.dbgrid.db.file.TupleIterator;
-import tod.impl.dbgrid.db.file.PageBank.Page;
 import tod.impl.dbgrid.queries.EventCondition;
-import zz.utils.ArrayStack;
-import zz.utils.Stack;
 
 /**
  * A helper class that computes event counts.

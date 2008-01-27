@@ -33,7 +33,7 @@ import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.RoleIndexSet;
 import zz.utils.bit.BitStruct;
 
-public class GridBehaviorExitEvent extends GridEvent
+public class GridBehaviorExitEvent extends BitGridEvent
 {
 	private static final long serialVersionUID = -5809462388785867681L;
 	

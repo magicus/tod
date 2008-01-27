@@ -36,7 +36,7 @@ import tod.impl.dbgrid.event.InstantiationEvent;
 import tod.impl.dbgrid.event.MethodCallEvent;
 import zz.utils.bit.BitStruct;
 
-public class GridBehaviorCallEvent extends GridEvent
+public class GridBehaviorCallEvent extends BitGridEvent
 {
 	private static final long serialVersionUID = -6294318569339045898L;
 	

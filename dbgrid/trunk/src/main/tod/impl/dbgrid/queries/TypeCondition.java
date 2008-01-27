@@ -24,8 +24,8 @@ package tod.impl.dbgrid.queries;
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
-import tod.impl.dbgrid.messages.MessageType;
 import tod.impl.dbgrid.messages.GridEvent;
+import tod.impl.dbgrid.messages.MessageType;
 
 /**
  * Represents a condition on event type.

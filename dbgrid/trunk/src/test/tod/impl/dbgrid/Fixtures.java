@@ -46,6 +46,7 @@ import tod.impl.dbgrid.db.HierarchicalIndex;
 import tod.impl.dbgrid.db.RoleIndexSet;
 import tod.impl.dbgrid.db.StdIndexSet;
 import tod.impl.dbgrid.db.file.HardPagedFile;
+import tod.impl.dbgrid.messages.BitGridEvent;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
 import zz.utils.bit.BitStruct;
@@ -245,7 +246,7 @@ public class Fixtures
 	/**
 	 * Checks that two events are equal.
 	 */
-	public static void assertEquals(String aMessage, GridEvent aRefEvent, GridEvent aEvent)
+	public static void assertEquals(String aMessage, BitGridEvent aRefEvent, BitGridEvent aEvent)
 	{
 		BitStruct theRefStruct = new IntBitStruct(1000);
 		BitStruct theStruct = new IntBitStruct(1000);
@@ -301,10 +302,10 @@ public class Fixtures
 		int theMatched = 0;
 		for (int i=0;i<aCount;i++)
 		{
-			GridEvent theRefEvent = aReferenceGenerator.next();
+			BitGridEvent theRefEvent = aReferenceGenerator.next();
 			if (aCondition._match(theRefEvent))
 			{
-				GridEvent theTestedEvent = aIterator.next(); 
+				BitGridEvent theTestedEvent = (BitGridEvent) aIterator.next(); 
 				Fixtures.assertEquals(""+i, theRefEvent, theTestedEvent);
 				theMatched++;
 //				System.out.println(i+"m");
@@ -322,24 +323,24 @@ public class Fixtures
 			EventGenerator aReferenceGenerator,
 			int aCount)
 	{
-		List<GridEvent> theEvents = new ArrayList<GridEvent>(aCount);
+		List<BitGridEvent> theEvents = new ArrayList<BitGridEvent>(aCount);
 
 		IBidiIterator<GridEvent> theIterator = aDatabase.evaluate(aCondition, 0);
 		while (theEvents.size() < aCount)
 		{
 			GridEvent theRefEvent = aReferenceGenerator.next();
-			if (aCondition._match(theRefEvent)) theEvents.add(theIterator.next());
+			if (aCondition._match(theRefEvent)) theEvents.add((BitGridEvent) theIterator.next());
 		}
 		
-		GridEvent theFirstEvent = theEvents.get(0);
+		BitGridEvent theFirstEvent = theEvents.get(0);
 		theIterator = aDatabase.evaluate(aCondition, theFirstEvent.getTimestamp());
-		assertEquals("first.a", theFirstEvent, theIterator.next());
-		assertEquals("first.b", theFirstEvent, theIterator.previous());
+		assertEquals("first.a", theFirstEvent, (BitGridEvent)theIterator.next());
+		assertEquals("first.b", theFirstEvent, (BitGridEvent)theIterator.previous());
 		
-		GridEvent theSecondEvent = theEvents.get(1);
+		BitGridEvent theSecondEvent = theEvents.get(1);
 		theIterator = aDatabase.evaluate(aCondition, theFirstEvent.getTimestamp()+1);
-		assertEquals("sec.a", theSecondEvent, theIterator.next());
-		assertEquals("sec.b", theSecondEvent, theIterator.previous());
+		assertEquals("sec.a", theSecondEvent, (BitGridEvent)theIterator.next());
+		assertEquals("sec.b", theSecondEvent, (BitGridEvent)theIterator.previous());
 		
 		theIterator = aDatabase.evaluate(aCondition, 0);
 		
@@ -350,17 +351,17 @@ public class Fixtures
 		{
 			for (int i=0;i<theDelta;i++)
 			{
-				GridEvent theRefEvent;
-				GridEvent theTestEvent;
+				BitGridEvent theRefEvent;
+				BitGridEvent theTestEvent;
 				if (theForward)
 				{
 					theRefEvent = theEvents.get(theIndex);
-					theTestEvent = theIterator.next();
+					theTestEvent = (BitGridEvent)theIterator.next();
 					theIndex++;
 				}
 				else
 				{
-					theTestEvent = theIterator.previous();
+					theTestEvent = (BitGridEvent)theIterator.previous();
 					theIndex--;
 					theRefEvent = theEvents.get(theIndex);
 				}
