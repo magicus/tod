@@ -75,10 +75,6 @@ implements Serializable
 		itsDepth = aDepth;
 		itsTimestamp = aTimestamp;
 		itsOperationBehaviorId = aOperationBehaviorId;
-		if (itsOperationBehaviorId == 65535)
-		{
-			System.out.println("GridEvent.set()");
-		}
 		itsOperationBytecodeIndex = aOperationBytecodeIndex;
 		itsAdviceSourceId = aAdviceSourceId;
 		itsParentTimestamp = aParentTimestamp;
