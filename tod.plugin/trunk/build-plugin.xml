@@ -30,6 +30,7 @@
 			<pathelement path="${lib.dir}/tod-dbgrid.jar"/>
 			<pathelement path="${lib.dir}/asm-all-3.0.jar"/>
 			<pathelement path="${lib.dir}/reflex-core.jar"/>
+			<pathelement path="${lib.dir}/jython-2.2.1.jar"/>
 			<pathelement path="${lib.dir}/javassist.jar"/>
 			<pathelement path="${zz.eclipse.utils.dir}/build/zz.eclipse.utils/plugin.jar"/>
 			<fileset dir="${eclipse.home}/plugins">
