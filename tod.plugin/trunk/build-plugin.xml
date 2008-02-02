@@ -76,7 +76,7 @@
 		<copy todir="${plugin.dir}">
 			<fileset dir="${basedir}" includes="lib/* icons/*" />
 		</copy>
-		<exec executable="./mkDeployPlugin.pl" />
+		<exec executable="${basedir}/mkDeployPlugin.pl" />
 	</target>
 
 	<target name="dep.tod" depends="init">
