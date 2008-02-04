@@ -37,6 +37,8 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
+
 import tod.Util;
 import tod.core.config.TODConfig;
 import zz.utils.StreamPipe;
@@ -218,7 +220,7 @@ public class DBProcessManager
 
 			if (itsProcess != null) itsProcess.destroy();
 			printOutput("--- Preparing...");
-			
+			cp += ":"+System.getenv("classpath");
 			boolean theJDWP = false;
 			
 			Long theHeapSize = getConfig().get(TODConfig.LOCAL_SESSION_HEAP);

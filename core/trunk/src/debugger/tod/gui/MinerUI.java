@@ -688,7 +688,10 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 		}
 		catch (Exception e)
 		{
-			throw new RuntimeException(e);
+			// avoid throwing new exception in case of new object format
+			//throw new RuntimeException(e);
+			e.printStackTrace();
+			return null;
 		}
 	}
 	
