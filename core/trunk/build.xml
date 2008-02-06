@@ -56,7 +56,7 @@
     <target name="compile-debugger" depends="init, dep.all">
         <mkdir dir="${classes-debugger.dir}"/>
     	
-        <javac 
+        <javac compiler="javac1.5" source="1.5" target="1.5"
         	debug="yes" nowarn="yes"
             srcdir="${src-debugger.dir}"
             destdir="${classes-debugger.dir}"
@@ -70,6 +70,7 @@
     <target name="compile-test" depends="init, dep.all, compile-debugger">
         <mkdir dir="${classes-test.dir}"/>
         <javac 
+        	compiler="javac1.5" source="1.5" target="1.5"
         	debug="yes" nowarn="yes"
             srcdir="${src-test.dir}"
             destdir="${classes-test.dir}"
@@ -78,7 +79,7 @@
 	
     <target name="compile-testcase" depends="init, dep.all">
         <mkdir dir="${classes-testcase.dir}"/>
-        <javac 
+        <javac compiler="javac1.5" source="1.5" target="1.5"
         	debug="yes" nowarn="yes"
             srcdir="${src-testcase.dir}"
             destdir="${classes-testcase.dir}"

@@ -53,7 +53,7 @@
     <target name="compile-main" depends="init, dep.all">
         <mkdir dir="${classes-main.dir}"/>
     	
-        <javac 
+        <javac compiler="javac1.5" source="1.5" target="1.5"
         	debug="yes" nowarn="yes"
             srcdir="${src-main.dir}"
             destdir="${classes-main.dir}"
@@ -63,7 +63,7 @@
 	
     <target name="compile-test" depends="init, dep.all, compile-main">
         <mkdir dir="${classes-test.dir}"/>
-        <javac 
+        <javac compiler="javac1.5" source="1.5" target="1.5"
         	debug="yes" nowarn="yes"
             srcdir="${src-test.dir}"
             destdir="${classes-test.dir}"

@@ -40,7 +40,7 @@
 
 	<target name="compile" depends="init">
 		<mkdir dir="${classes.dir}"/>
-		<javac srcdir="${src.dir}"
+		<javac compiler="javac1.5" source="1.5" target="1.5" srcdir="${src.dir}"
 			nowarn="true"
 			destdir="${classes.dir}"
 			debug="true"
