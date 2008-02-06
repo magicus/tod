@@ -690,7 +690,8 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 		{
 			// avoid throwing new exception in case of new object format
 			//throw new RuntimeException(e);
-			e.printStackTrace();
+			System.err.println("---- Problem while loading GUI properties "+aPropertyName);
+			//e.printStackTrace();
 			return null;
 		}
 	}

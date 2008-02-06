@@ -595,6 +595,13 @@ public class CollectorPacketWriter
 
 		public void push(long aId, Object aObject, long aTimestamp)
 		{
+			//TODO remove this 
+			if (itsSize>= itsObjects.length) {
+				System.out.println("---------WARNING");
+				for (int theI = 0; theI < itsObjects.length; theI++)
+					System.out.print(itsObjects[theI].object.getClass() +" ");
+			}
+			
 			itsObjects[itsSize++].set(aId, aObject, aTimestamp);
 		}
 
