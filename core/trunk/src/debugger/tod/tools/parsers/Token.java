@@ -20,13 +20,16 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.tools.parsers;
 
+import java.io.Serializable;
+
 /**
  * Describes the input token stream.
  */
 
-public class Token
+public class Token implements Serializable
 {
-
+	
+	
     /**
      * An integer that describes the kind of this token. This numbering system
      * is determined by JavaCCParser, and a table of these numbers is stored in
