@@ -306,18 +306,20 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	/**
 	 * Determines if the given behavior is traced.
 	 */
-	private HasTrace hasTrace(IBehaviorInfo aBehavior)
+	private HasTrace hasTrace(IBehaviorInfo aCalledBehavior)
 	{
-		// Note: It is possible that the called method is not traced
-		// but the actually executed method is. In this case, we will
-		// have duplicate events.
-		// On the other hand if the owner class is traced, 
-		// we are sure that the called method
-		// is also traced (if the filters respect our requirement that
-		// a traced class' subclasses must also be traced).
-
-		String theClassName = aBehavior.getType().getName();
-		return itsConfig.isInScope(theClassName) ? HasTrace.YES : HasTrace.NO;
+//		// If the target class is in scope, the method is traced.
+//		String theClassName = aCalledBehavior.getType().getName();
+//		if (itsConfig.isInScope(theClassName)) return HasTrace.YES;
+		
+		// Otherwise:
+		// A class that has trace might inherit methods from
+		// a non-traced superclass. Therefore we cannot be sure that
+		// the called method is indeed traced. On the other hand if the
+		// owner class has no trace, we are sure that the called method
+		// is also traced, if the filters respect our requirement that
+		// a traced class' subclasses must also be traced.
+		return aCalledBehavior.hasTrace();
 	}
 	
 	public void methodCall(
