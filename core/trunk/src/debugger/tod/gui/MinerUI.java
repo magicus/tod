@@ -103,11 +103,10 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 		try
 		{
 			UIManager.setLookAndFeel("org.jdesktop.swingx.plaf.nimbus.NimbusLookAndFeel");
-			System.out.println("Set Nimbus L&F");
 		}
 		catch (Exception e)
 		{
-			System.out.println("Could not set Nimbus L&F ("+e.getMessage()+")");
+			System.out.println("Could not set L&F ("+e.getMessage()+")");
 		}
 	}
 	

@@ -20,18 +20,35 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.eventsequences;
 
+import infovis.panel.dqinter.DoubleRangeSlider;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.Timer;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
+import tod.agent.AgentUtils;
+import tod.core.config.TODConfig;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.session.ISession;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
+import tod.utils.TODUtils;
 import zz.utils.ItemAction;
 import zz.utils.properties.ArrayListProperty;
 import zz.utils.properties.IListProperty;
@@ -51,25 +68,54 @@ public class SequenceViewsDock extends JPanel
 		protected void elementAdded(int aIndex, IEventSequenceSeed aSeed)
 		{
 			// TODO: provide proper display
-			SequencePanel thePanel = new SequencePanel(aSeed.createView(getGUIManager()));
+			IEventSequenceView theView = aSeed.createView(getGUIManager());
+			itsViews.add(aIndex, theView);
+			
+			SequencePanel thePanel = new SequencePanel(theView);
 			itsViewsPanel.add(thePanel, aIndex);
 			itsViewsPanel.revalidate();
 			itsViewsPanel.repaint();
+			
+			computeBounds();
 		}
 		
 		@Override
 		protected void elementRemoved(int aIndex, IEventSequenceSeed aSeed)
 		{
+			itsViews.remove(aIndex);
+			
 			itsViewsPanel.remove(aIndex);
 			itsViewsPanel.revalidate();
 			itsViewsPanel.repaint();
+			
+			computeBounds();
 		}
 	};
 	
-	private IRWProperty<Long> pStart = new SimpleRWProperty<Long>(this);
+	private List<IEventSequenceView> itsViews = new ArrayList<IEventSequenceView>();
 	
-	private IRWProperty<Long> pEnd = new SimpleRWProperty<Long>(this);
+	private IRWProperty<Long> pStart = new SimpleRWProperty<Long>(this)
+	{
+		@Override
+		protected void changed(Long aOldValue, Long aNewValue)
+		{
+			if (itsTimestampSlider != null && aNewValue != null) 
+				itsTimestampSlider.setRangeStart(aNewValue);
+		}
+	};
+	
+	private IRWProperty<Long> pEnd = new SimpleRWProperty<Long>(this)
+	{
+		@Override
+		protected void changed(Long aOldValue, Long aNewValue)
+		{
+			if (itsTimestampSlider != null && aNewValue != null)
+				itsTimestampSlider.setRangeEnd(aNewValue);
+		}
+	};
 
+	//slider with double handles defining the timestamp range in the murals
+	private TimestampRangeSlider itsTimestampSlider;
 	
 	private JPanel itsViewsPanel;
 	
@@ -86,6 +132,17 @@ public class SequenceViewsDock extends JPanel
 		setLayout(new BorderLayout());
 		itsViewsPanel = new JPanel (GUIUtils.createStackLayout());
 		add (new JScrollPane(itsViewsPanel), BorderLayout.CENTER);
+		
+		itsTimestampSlider = new TimestampRangeSlider();
+		add(itsTimestampSlider, BorderLayout.NORTH);
+		
+		new Timer(500, new ActionListener()
+		{
+			public void actionPerformed(ActionEvent aE)
+			{
+				computeBounds();
+			}
+		}).start();
 	}
 
 	public IGUIManager getGUIManager()
@@ -93,6 +150,27 @@ public class SequenceViewsDock extends JPanel
 		return itsGUIManager;
 	}
 
+	private void computeBounds()
+	{
+//		itsFirstTimestamp = Long.MAX_VALUE;
+//		itsLastTimestamp = 0;
+//		
+//		for (IEventSequenceView theView : itsViews)
+//		{
+//			itsFirstTimestamp = Math.min(itsFirstTimestamp, theView.getFirstTimestamp());
+//			itsLastTimestamp = Math.max(itsLastTimestamp, theView.getLastTimestamp());
+//		}
+		
+		ISession theSession = itsGUIManager.getSession();
+		if (theSession == null) return;
+		
+		ILogBrowser theBrowser = theSession.getLogBrowser();
+		long theFirstTimestamp = theBrowser.getFirstTimestamp();
+		long theLastTimestamp = theBrowser.getLastTimestamp();
+		
+		itsTimestampSlider.setLimits(theFirstTimestamp, theLastTimestamp);
+	}
+	
 	/**
 	 * First timestamp of the events displayed in the all the sequences of this dock.
 	 */
@@ -179,4 +257,174 @@ public class SequenceViewsDock extends JPanel
 		}
 	}
 	
+	/**
+	 * shows a range slider for timestamp 
+	 * it displays the fist and last timestamps above the slider 
+	 * and the first and last timestamps of the chosen range below the slider 
+	 * @author omotelet
+	 */
+	private class TimestampRangeSlider extends JPanel implements ChangeListener{
+
+		private DoubleRangeSlider itsSlider;
+		
+		private JLabel itsStartLabel = new JLabel();
+		private JLabel itsEndLabel= new JLabel();
+		private JLabel itsStartRangeLabel= new JLabel();
+		private JLabel itsEndRangeLabel= new JLabel();
+		
+		private long itsFirstTimestamp;
+		private long itsLastTimestamp;
+		private long itsRangeStart;
+		private long itsRangeEnd;
+		
+		public TimestampRangeSlider()
+		{
+			itsSlider = new DoubleRangeSlider(0, 1, 0, 1){
+				@Override
+				public String getToolTipText()
+				{
+					return "Modify the range in the slider in order to zoom in or out in the event murals";
+				} 
+			};
+			
+			itsSlider.getModel().addChangeListener(this);
+	
+			itsStartLabel.setText(0+"ms");
+			updateLastLabel();
+			updateRangeLabels();
+
+			initLayout();
+		}
+		
+		/**
+		 * Call this method when the limits (ie. first/last timestamps) have changed.
+		 */
+		public void setLimits(long aFirst, long aLast)
+		{
+			if (aFirst == itsFirstTimestamp && aLast == itsLastTimestamp) return;
+			
+			TODUtils.logf(0, "[TimestampRangeSlider] setLimits(%d, %d)...", aFirst, aLast);
+			TODUtils.logf(0, "[TimestampRangeSlider] range before[%d, %d]", itsRangeStart, itsRangeEnd);
+			if (itsRangeEnd == itsLastTimestamp) itsRangeEnd = aLast;
+			
+			itsFirstTimestamp = aFirst;
+			itsLastTimestamp = aLast;
+			
+			if (itsRangeStart < itsFirstTimestamp) itsRangeStart = itsFirstTimestamp;
+			if (itsRangeEnd > itsLastTimestamp) itsRangeEnd = itsLastTimestamp;
+
+			TODUtils.logf(0, "[TimestampRangeSlider] range after[%d, %d]", itsRangeStart, itsRangeEnd);
+			
+			long theDelta = itsLastTimestamp-itsFirstTimestamp;
+			
+			itsSlider.setLowValue(1.0*(itsRangeStart-itsFirstTimestamp)/theDelta);
+			itsSlider.setHighValue(1.0*(itsRangeEnd-itsFirstTimestamp)/theDelta);
+
+			updateRangeLabels();
+			updateLastLabel();
+			itsSlider.getModel().setValueIsAdjusting(false);
+			updateViews();
+			TODUtils.logf(0, "[TimestampRangeSlider] setLimits done.", aFirst, aLast);
+		}
+		
+		public void setRangeStart(long aStart)
+		{
+			long theDelta = itsLastTimestamp-itsFirstTimestamp;
+			if (theDelta == 0) return;
+			
+			if (aStart < itsFirstTimestamp) 
+			{
+				throw new RuntimeException("First: "+itsFirstTimestamp+", start: "+aStart);
+			}
+			itsSlider.setLowValue(1.0*(aStart-itsFirstTimestamp)/(theDelta));
+			updateRangeLabels();
+			
+			itsRangeStart = aStart;
+		}
+		
+		public void setRangeEnd(long aEnd)
+		{
+			long theDelta = itsLastTimestamp-itsFirstTimestamp;
+			if (theDelta == 0) return;
+			
+			itsSlider.setHighValue(1.0*(aEnd-itsFirstTimestamp)/(theDelta));
+			updateRangeLabels();
+			
+			itsRangeEnd = aEnd;
+		}
+		
+		private String formatTimestamp(long aTimestamp)
+		{
+			String theString = AgentUtils.formatTimestamp(aTimestamp);
+			return theString.substring(0, theString.length()-8)+"ms";
+		}
+		
+		private void updateRangeLabels()
+		{
+			double theLowValue = itsSlider.getLowValue();
+			double theLow = theLowValue*(itsLastTimestamp-itsFirstTimestamp);
+			itsRangeStart=(long) (itsFirstTimestamp + theLow);
+			double theHigh = itsSlider.getHighValue()*(itsLastTimestamp-itsFirstTimestamp);
+			itsRangeEnd=(long) (itsFirstTimestamp + theHigh);
+			
+			System.out.println("range: ["+itsRangeStart+"-"+itsRangeEnd+"]");
+			
+//			itsStartRangeLabel.setText((int)(theLow/1000000)+"ms <");
+//			itsEndRangeLabel.setText("< "+(int)(theHigh/1000000)+"ms");
+			itsStartRangeLabel.setText(formatTimestamp((long) theLow));
+			itsEndRangeLabel.setText(formatTimestamp((long) theHigh));
+		}
+		
+		private void updateLastLabel()
+		{
+			boolean rangeNeedUpdate = itsLastTimestamp == itsRangeEnd;
+			
+			itsEndLabel.setText(formatTimestamp(itsLastTimestamp-itsFirstTimestamp));
+			if (rangeNeedUpdate) updateViews();
+		}
+		
+		private void initLayout()
+		{
+			setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
+			itsSlider.setEnabled(true);	
+			
+			Font theDerivedFont = itsStartLabel.getFont().deriveFont(9f);
+			itsStartLabel.setFont(theDerivedFont);
+			itsEndLabel.setFont(theDerivedFont);
+			itsStartRangeLabel.setFont(theDerivedFont);
+			itsEndRangeLabel.setFont(theDerivedFont);
+			
+			Box theTopBox = Box.createHorizontalBox();
+			theTopBox.add(itsStartLabel);
+			theTopBox.add(Box.createHorizontalGlue());
+			theTopBox.add(itsStartRangeLabel);
+			theTopBox.add(Box.createHorizontalGlue());
+			theTopBox.add(itsEndRangeLabel);
+			theTopBox.add(Box.createHorizontalGlue());
+			theTopBox.add(itsEndLabel);
+			
+			add(theTopBox);
+			add(itsSlider);
+		}
+		
+		public void stateChanged(ChangeEvent aE)
+		{
+			updateRangeLabels();
+			updateViews();
+		}
+
+		private void updateViews()
+		{
+			if (!itsSlider.getModel().getValueIsAdjusting() && (itsRangeEnd-itsRangeStart) > 0)
+			{
+				TODUtils.logf(0, "[TimestampRangeSlider] updateViews(%d, %d)", itsRangeStart, itsRangeEnd);
+				pStart().set(itsRangeStart);
+				pEnd().set(itsRangeEnd);
+			}
+		}
+		
+		
+	}
+	
+
 }

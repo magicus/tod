@@ -24,6 +24,8 @@ import tod.core.database.browser.ILogBrowser;
 import tod.gui.IGUIManager;
 import tod.gui.view.LogView;
 import tod.gui.view.ThreadsView;
+import zz.utils.properties.IRWProperty;
+import zz.utils.properties.SimpleRWProperty;
 
 /**
  * This seed provides a view that lets the user browse all events that occured in
@@ -32,10 +34,21 @@ import tod.gui.view.ThreadsView;
  */
 public class ThreadsSeed extends LogViewSeed
 {
+	/**
+	 * Start of the displayed range.
+	 */
+	private IRWProperty<Long> pRangeStart = new SimpleRWProperty<Long>(this);
+	
+	/**
+	 * End of the displayed range.
+	 */
+	private IRWProperty<Long> pRangeEnd = new SimpleRWProperty<Long>(this);
 
 	public ThreadsSeed(IGUIManager aGUIManager, ILogBrowser aLog)
 	{
 		super(aGUIManager, aLog);
+		pRangeStart().set(aLog.getFirstTimestamp());
+		pRangeEnd().set(aLog.getLastTimestamp());
 	}
 
 	@Override
@@ -44,6 +57,16 @@ public class ThreadsSeed extends LogViewSeed
 		ThreadsView theView = new ThreadsView(getGUIManager(), getLogBrowser(), this);
 		theView.init();
 		return theView;
+	}
+
+	public IRWProperty<Long> pRangeStart()
+	{
+		return pRangeStart;
+	}
+
+	public IRWProperty<Long> pRangeEnd()
+	{
+		return pRangeEnd;
 	}
 
 }

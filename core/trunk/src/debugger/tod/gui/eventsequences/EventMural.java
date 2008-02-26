@@ -177,6 +177,7 @@ public class EventMural extends JPanel
 	protected void markDirty()
 	{
 		itsImageCleaner.markDirty();
+		System.out.println("[EventMural] markDirty");
 	}
 	
 	/**
@@ -184,7 +185,9 @@ public class EventMural extends JPanel
 	 */
 	protected void updateImage()
 	{
+		System.out.println("[EventMural] updateImage()");
 		if (! isReady()) return;
+		System.out.println("[EventMural] updateImage - requesting");
 		itsUpdater.request(this);
 	}
 	
@@ -288,6 +291,7 @@ public class EventMural extends JPanel
 		for (BrowserData theBrowserData : aBrowserData)
 		{
 			// TODO: check conversion
+			System.out.println("[EventMural] Requesting counts: "+aT1+"-"+aT2);
 			theValues[i] = theBrowserData.getBrowser().getEventCounts(aT1, aT2, aBounds.width, false);
 			theColors[i] = theBrowserData.getColor();
 			i++;
@@ -369,6 +373,7 @@ public class EventMural extends JPanel
 			{
 				if (! itsCurrentRequests.contains(aMural))
 				{
+					System.out.println("[ImageUpdater] adding request");
 					itsCurrentRequests.add(aMural);
 					itsRequestsQueue.put(aMural);
 				}
@@ -443,6 +448,8 @@ public class EventMural extends JPanel
 			theGraphics.fillRect(0, 0, u, v);
 			Long theStart = aMural.pStart().get();
 			Long theEnd = aMural.pEnd().get();
+			
+			System.out.println("[ImageUpdater] doUpdateImage ["+theStart+"-"+theEnd+"]");
 			
 			paintMural(
 					theGraphics, 
