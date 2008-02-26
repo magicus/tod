@@ -28,14 +28,12 @@ package tod.core.session;
 public class ConnectionInfo
 {
 	private String itsHostName;
-	private int itsLogReceiverPort;
-	private int itsNativePort;
+	private int itsPort;
 	
-	public ConnectionInfo(String aHostName, int aLogReceiverPort, int aNativePort)
+	public ConnectionInfo(String aHostName, int aPort)
 	{
 		itsHostName = aHostName;
-		itsLogReceiverPort = aLogReceiverPort;
-		itsNativePort = aNativePort;
+		itsPort = aPort;
 	}
 
 	public String getHostName()
@@ -43,15 +41,8 @@ public class ConnectionInfo
 		return itsHostName;
 	}
 
-	public int getLogReceiverPort()
+	public int getPort()
 	{
-		return itsLogReceiverPort;
+		return itsPort;
 	}
-
-	public int getNativePort()
-	{
-		return itsNativePort;
-	}
-	
-	
 }

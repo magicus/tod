@@ -68,7 +68,7 @@ public class LocalSession extends AbstractSession implements ISessionMonitor
 	
 	public void disconnect()
 	{
-		itsServer.stop();
+		itsServer.close();
 	}
 	
 	public void flush()

@@ -68,4 +68,15 @@ public interface IEventSequenceView
 	 * Returns the title of this sequence view.
 	 */
 	public String getTitle();
+	
+	/**
+	 * Returns the timestamp of the first event in this view.
+	 */
+	public long getFirstTimestamp();
+	
+	/**
+	 * Returns the timestamp of the last event in this view.
+	 */
+	public long getLastTimestamp();
+
 }

@@ -702,6 +702,7 @@ public class HierarchicalIndex<T extends IndexTuple>
 				
 				t = theStart;
 				int theSlot = (int)(((t - itsK1) * itsSlotsCount) / (itsK2 - itsK1));
+				if (theSlot < 0) continue;
 				if (theSlot >= itsSlotsCount) break;
 				
 				if (itsCurrentHeight == 0)

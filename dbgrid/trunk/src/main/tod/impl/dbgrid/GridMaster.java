@@ -243,7 +243,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	public void stop()
 	{
-		itsServer.stop();
+		itsServer.close();
 	}
 
 	public void disconnect()
@@ -645,7 +645,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	public static String getRMIId(TODConfig aConfig)
 	{
-		return "GridMaster-"+aConfig.get(TODConfig.COLLECTOR_JAVA_PORT);
+		return "GridMaster-"+aConfig.get(TODConfig.COLLECTOR_PORT);
 	}
 	
 	/**

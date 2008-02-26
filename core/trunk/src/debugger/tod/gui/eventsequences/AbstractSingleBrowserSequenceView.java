@@ -53,4 +53,15 @@ public abstract class AbstractSingleBrowserSequenceView extends AbstractSequence
 	 */
 	protected abstract IEventBrowser getBrowser();
 
+	public long getFirstTimestamp()
+	{
+		return getBrowser().getFirstTimestamp();
+	}
+
+	public long getLastTimestamp()
+	{
+		return getBrowser().getLastTimestamp();
+	}
+
+	
 }

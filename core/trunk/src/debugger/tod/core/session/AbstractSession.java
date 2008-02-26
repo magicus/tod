@@ -54,8 +54,7 @@ public abstract class AbstractSession implements ISession
 	{
 		return new ConnectionInfo(
 				getConfig().get(TODConfig.COLLECTOR_HOST), 
-				getConfig().get(TODConfig.COLLECTOR_JAVA_PORT),
-				getConfig().get(TODConfig.COLLECTOR_NATIVE_PORT));
+				getConfig().get(TODConfig.COLLECTOR_PORT));
 	}
 	
 }

@@ -109,7 +109,7 @@ public class TODSessionManager
 		if (theCurrentSession != null && ! theCurrentSession.isAlive()) theCurrentSession = null;
 		Class theSessionClass = SessionUtils.getSessionClass(aConfig);
 		
-		String theHostName = aConfig.get(TODConfig.CLIENT_HOST_NAME);
+		String theHostName = aConfig.get(TODConfig.CLIENT_NAME);
 		if (theCurrentSession != null)
 		{
 			assert theCurrentSession.getLogBrowser() != null;
@@ -250,7 +250,7 @@ public class TODSessionManager
 	private static final Set<TODConfig.Item> MODIFIABLE_ITEMS = (Set) Utils.createSet(
 			TODConfig.AGENT_VERBOSE,
 			TODConfig.INDEX_STRINGS,
-			TODConfig.CLIENT_HOST_NAME
+			TODConfig.CLIENT_NAME
 	);
 	
 	/**

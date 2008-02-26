@@ -236,9 +236,8 @@ public class DBProcessManager
 					TODConfig.MASTER_TIMEOUT.javaOpt(10),
 					TODConfig.AGENT_VERBOSE.javaOpt(getConfig()),
 					TODConfig.SCOPE_TRACE_FILTER.javaOpt(getConfig()),
-					TODConfig.CLIENT_HOST_NAME.javaOpt(getConfig()),
-					TODConfig.COLLECTOR_JAVA_PORT.javaOpt(getConfig()),
-					TODConfig.COLLECTOR_NATIVE_PORT.javaOpt(getConfig()),
+					TODConfig.CLIENT_NAME.javaOpt(getConfig()),
+					TODConfig.COLLECTOR_PORT.javaOpt(getConfig()),
 					TODConfig.WITH_ASPECTS.javaOpt(getConfig()),
 //					theJDWP ? "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000" : "",
 					"tod.impl.dbgrid.GridMaster",
@@ -374,8 +373,8 @@ public class DBProcessManager
 					if (theLine == null) break;
 
 					printOutput(theLine);
+//					System.out.println("[GridMaster process] "+theLine);
 					
-					System.out.println("[GridMaster process] "+theLine);
 					if (theLine.startsWith(GridMaster.READY_STRING))  
 					{
 						itsReady = true;

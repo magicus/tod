@@ -80,8 +80,8 @@ int cfgObfuscation = 0; // set to 1 ofuscated version of the agent: package tod.
 
 // System properties configuration data.
 char* propHost = NULL;
-char* propHostName = NULL;
-char* propNativePort = NULL;
+char* propClientName = NULL;
+char* propPort = NULL;
 char* propCachePath = NULL;
 char* _propVerbose = NULL;
 int propVerbose = 2;
@@ -118,16 +118,19 @@ Connects to the instrumenting host
 host: host to connect to
 hostname: name of this host, sent to the peer.
 */
-void bciConnect(char* host, char* port, char* hostname)
+void bciConnect(char* host, char* port, char* clientName)
 {
 	if (propVerbose >=1) printf("Connecting to %s:%s\n", host, port);
 	fflush(stdout);
 	gSocket = new tcp::iostream(host, port);
 	if (gSocket->fail()) fatal_error("Could not connect.\n");
 	
-	// Send host name
-	if (propVerbose>=1) printf("Sending host name: %s\n", hostname);
-	writeUTF(gSocket, hostname);
+	// Send signature (defined in AgentConfig)
+	writeInt(gSocket, 0x3a71be0);
+	
+	// Send client name
+	if (propVerbose>=1) printf("Sending client name: %s\n", clientName);
+	writeUTF(gSocket, clientName);
 	flush(gSocket);
 	
 	cfgHostId = readInt(gSocket);
@@ -709,20 +712,20 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
 		if (propVerbose>=1) printf("Property: agent-cache-path=%s\n", propCachePath);
 	}
 	
-	err = jvmti->GetSystemProperty("client-hostname", &propHostName);
+	err = jvmti->GetSystemProperty("client-name", &propClientName);
 	if (err != JVMTI_ERROR_NOT_AVAILABLE)
 	{
-		check_jvmti_error(jvmti, err, "GetSystemProperty (client-hostname)");
-		if (propVerbose>=1) printf("Property: client-hostname=%s\n", propHostName);
+		check_jvmti_error(jvmti, err, "GetSystemProperty (client-name)");
+		if (propVerbose>=1) printf("Property: client-name=%s\n", propClientName);
 	}
 	else
 	{
-		propHostName = "no-name";
+		propClientName = "no-name";
 	}
 	
-	err = jvmti->GetSystemProperty("native-port", &propNativePort);
-	check_jvmti_error(jvmti, err, "GetSystemProperty (native-port)");
-	if (propVerbose>=1) printf("Property: native-port=%s\n", propNativePort);
+	err = jvmti->GetSystemProperty("collector-port", &propPort);
+	check_jvmti_error(jvmti, err, "GetSystemProperty (collector-port)");
+	if (propVerbose>=1) printf("Property: collector-port=%s\n", propPort);
 	
 	// Set capabilities
 	err = jvmti->GetCapabilities(&capabilities);
@@ -748,7 +751,7 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
 	enable_event(jvmti, JVMTI_EVENT_EXCEPTION);
 	enable_event(jvmti, JVMTI_EVENT_VM_START);
 	
-	bciConnect(propHost, propNativePort, propHostName);
+	bciConnect(propHost, propPort, propClientName);
 	bciConfigure();
 
 	fflush(stdout);

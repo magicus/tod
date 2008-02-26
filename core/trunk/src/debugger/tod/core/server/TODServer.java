@@ -20,11 +20,13 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.server;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
+import tod.agent.AgentConfig;
 import tod.core.bci.IInstrumenter;
 import tod.core.bci.NativeAgentPeer;
 import tod.core.config.TODConfig;
@@ -39,7 +41,7 @@ import zz.utils.net.Server;
  * to delegates.
  * @author gpothier
  */
-public abstract class TODServer
+public abstract class TODServer extends Server
 {
 	private TODConfig itsConfig;
 	
@@ -50,9 +52,6 @@ public abstract class TODServer
 	private Map<String, ClientConnection> itsConnections = 
 		new HashMap<String, ClientConnection>();
 	
-	private LogReceiverServer itsReceiverServer;
-	private NativePeerServer itsNativePeerServer;
-	
 	private int itsCurrentHostId = 1;
 
 	public TODServer(
@@ -60,13 +59,12 @@ public abstract class TODServer
 			IInstrumenter aInstrumenter,
 			IStructureDatabase aStructureDatabase)
 	{
+		super(aConfig.get(TODConfig.COLLECTOR_PORT));
+
 		itsConfig = aConfig;
 		itsInstrumenter = aInstrumenter;
 		
 		itsStructureDatabase = aStructureDatabase;
-		
-		itsReceiverServer = new LogReceiverServer();
-		itsNativePeerServer = new NativePeerServer();
 	}
 	
 	public void setConfig(TODConfig aConfig)
@@ -82,11 +80,11 @@ public abstract class TODServer
 	/**
 	 * Causes this server to stop accepting connections.
 	 */
-	public void stop()
+	@Override
+	public void close()
 	{
 		System.out.println("Server disconnecting...");
-		itsReceiverServer.disconnect();
-		itsNativePeerServer.disconnect();
+		super.close();
 		System.out.println("Server disconnected.");
 	}
 	
@@ -143,6 +141,23 @@ public abstract class TODServer
 		}
 	}
 	
+	@Override
+	protected void accepted(Socket aSocket)
+	{
+		try
+		{
+			DataInputStream theStream = new DataInputStream(aSocket.getInputStream());
+			int theSignature = theStream.readInt();
+			if (theSignature == AgentConfig.CNX_NATIVE) acceptNativeConnection(aSocket);
+			else if (theSignature == AgentConfig.CNX_JAVA) acceptJavaConnection(aSocket);
+			else throw new RuntimeException("Bad signature: 0x"+Integer.toHexString(theSignature));
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
 	protected synchronized void acceptJavaConnection(Socket aSocket)
 	{
 		LogReceiver theReceiver = createReceiver(aSocket);
@@ -166,68 +181,40 @@ public abstract class TODServer
 		notifyAll();
 	}
 	
-	protected synchronized void acceptNativeConnection(Socket aSocket)
+	protected synchronized void acceptNativeConnection(final Socket aSocket)
 	{
-		try
+		Thread theThread = new Thread("Connection peering")
 		{
-			NativeAgentPeer thePeer = new MyNativePeer(aSocket, itsCurrentHostId++);
-			thePeer.waitConfigured();
-			String theHostName = thePeer.getHostName();
-			
-			while(! aSocket.isClosed())
+			@Override
+			public synchronized void run()
 			{
-				ClientConnection theConnection = itsConnections.get(theHostName);
-				if (theConnection == null) wait(1000);
-				else
+				try
 				{
-					theConnection.setNativeAgentPeer(thePeer);
-					break;
+					NativeAgentPeer thePeer = new MyNativePeer(aSocket, itsCurrentHostId++);
+					thePeer.waitConfigured();
+					String theHostName = thePeer.getHostName();
+					
+					while(! aSocket.isClosed())
+					{
+						ClientConnection theConnection = itsConnections.get(theHostName);
+						if (theConnection == null) wait(1000);
+						else
+						{
+							theConnection.setNativeAgentPeer(thePeer);
+							break;
+						}
+					}
+					
+					System.out.println("Accepted (native) connection from "+theHostName);
+				}
+				catch (InterruptedException e)
+				{
+					throw new RuntimeException(e);
 				}
 			}
-			
-			System.out.println("Accepted (native) connection from "+theHostName);
-		}
-		catch (InterruptedException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-	
-	/**
-	 * A server that creates a {@link LogReceiver} whenever a client
-	 * connects.
-	 */
-	private class LogReceiverServer extends Server
-	{
-		public LogReceiverServer()
-		{
-			super(itsConfig.get(TODConfig.COLLECTOR_JAVA_PORT));
-		}
-
-		@Override
-		protected void accepted(Socket aSocket)
-		{
-			acceptJavaConnection(aSocket);
-		}
-	}
-	
-	/**
-	 * A server that creates a {@link NativePeerServer} whenever a client
-	 * connects.
-	 * @author gpothier
-	 */
-	private class NativePeerServer extends Server
-	{
-		public NativePeerServer()
-		{
-			super(itsConfig.get(TODConfig.COLLECTOR_NATIVE_PORT));
-		}
-
-		@Override
-		protected void accepted(Socket aSocket)
-		{
-			acceptNativeConnection(aSocket);
-		}
+		};
+		theThread.setDaemon(true);
+		theThread.start();
 	}
 	
 	private class MyNativePeer extends NativeAgentPeer

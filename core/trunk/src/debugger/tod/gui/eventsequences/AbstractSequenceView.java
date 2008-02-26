@@ -183,6 +183,26 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 		return null;
 	}
 
+	public long getFirstTimestamp()
+	{
+		long theFirst = Long.MAX_VALUE;
+		for (BrowserData theData : getBrowsers())
+		{
+			theFirst = Math.min(theFirst, theData.getBrowser().getFirstTimestamp());
+		}
+		return theFirst;
+	}
+
+	public long getLastTimestamp()
+	{
+		long theLast = 0;
+		for (BrowserData theData : getBrowsers())
+		{
+			theLast = Math.max(theLast, theData.getBrowser().getLastTimestamp());
+		}
+		return theLast;
+	}
+
 	/**
 	 * Hook for subclasses to provide baloons. By returning a graphic object
 	 * for some events a subclass can cause the mural to display baloons at the 

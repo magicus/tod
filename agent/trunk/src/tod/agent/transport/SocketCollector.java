@@ -56,7 +56,7 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 	public SocketCollector(Socket aSocket)
 	{
 		itsSender = new Sender(aSocket);
-		itsSender.sendHostName();
+		itsSender.sendInit();
 		Runtime.getRuntime().addShutdownHook(new MyShutdownHook());
 		
 		itsSenderThread.start();
@@ -622,12 +622,16 @@ public class SocketCollector extends HighLevelCollector<SocketCollector.SocketTh
 			}
 		}
 		
-		public void sendHostName()
+		/**
+		 * Sends signature and client name
+		 */
+		public void sendInit()
 		{
 			try
 			{
 				DataOutputStream theStream = new DataOutputStream(itsOutputStream);
-				theStream.writeUTF(AgentConfig.getHostName());
+				theStream.writeInt(AgentConfig.CNX_JAVA);
+				theStream.writeUTF(AgentConfig.getClientName());
 			}
 			catch (IOException e)
 			{

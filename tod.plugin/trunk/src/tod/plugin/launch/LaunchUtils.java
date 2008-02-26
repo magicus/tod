@@ -167,10 +167,9 @@ public class LaunchUtils
 		ConnectionInfo theConnectionInfo = aInfo.session.getConnectionInfo();
 		
 		theArguments.add("-Dcollector-host="+theConnectionInfo.getHostName());
-		theArguments.add("-Dcollector-port="+theConnectionInfo.getLogReceiverPort());
-		theArguments.add("-Dnative-port="+theConnectionInfo.getNativePort());
+		theArguments.add("-Dcollector-port="+theConnectionInfo.getPort());
 		
-		theArguments.add(TODConfig.CLIENT_HOST_NAME.javaOpt(theConfig));
+		theArguments.add(TODConfig.CLIENT_NAME.javaOpt(theConfig));
 		theArguments.add(TODConfig.AGENT_CACHE_PATH.javaOpt(theConfig));
 		theArguments.add(TODConfig.AGENT_VERBOSE.javaOpt(theConfig));
 		

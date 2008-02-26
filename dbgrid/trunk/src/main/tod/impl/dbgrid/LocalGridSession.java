@@ -118,7 +118,6 @@ public class LocalGridSession extends AbstractSession
 	{
 		return new ConnectionInfo(
 				"localhost", 
-				getConfig().get(TODConfig.COLLECTOR_JAVA_PORT),
-				getConfig().get(TODConfig.COLLECTOR_NATIVE_PORT));
+				getConfig().get(TODConfig.COLLECTOR_PORT));
 	}
 }

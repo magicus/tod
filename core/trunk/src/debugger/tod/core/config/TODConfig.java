@@ -138,11 +138,11 @@ public class TODConfig extends PublicCloneable implements Serializable
 			"but are registered in the structure database.",
 			"[-java.** -javax.** -sun.** -com.sun.** -org.ietf.jgss.** -org.omg.** -org.w3c.** -org.xml.**]");
 	
-	public static final StringItem CLIENT_HOST_NAME = new StringItem(
+	public static final StringItem CLIENT_NAME = new StringItem(
 			ConfigLevel.NORMAL,
-			AgentConfig.PARAM_HOST,
-			"Client - host name",
-			"Host name given to the debugged program's JVM.",
+			AgentConfig.PARAM_CLIENT_NAME,
+			"Client - name",
+			"Name given to the debugged program's JVM.",
 			"tod-1");
 	
 	public static final StringItem COLLECTOR_HOST = new StringItem(
@@ -152,19 +152,12 @@ public class TODConfig extends PublicCloneable implements Serializable
 			"Host to which the debugged program should send events.",
 			"localhost");
 	
-	public static final IntegerItem COLLECTOR_JAVA_PORT = new IntegerItem(
+	public static final IntegerItem COLLECTOR_PORT = new IntegerItem(
 			ConfigLevel.DEBUG,
-			"collector-javaPort",
-			"Collector - Java port",
-			"Port to which the Java portion of the TOD agent should connect.",
+			"collector-port",
+			"Collector - listening port",
+			"Port to which the TOD agent should connect.",
 			8058);
-	
-	public static final IntegerItem COLLECTOR_NATIVE_PORT = new IntegerItem(
-			ConfigLevel.DEBUG,
-			"collector-nativePort",
-			"Collector - native port",
-			"Port to which the native portion of the TOD agent should connect.",
-			8059);
 	
 	public static final String GRID_IMPL_UNIFORM = "uniform";
 	public static final String GRID_IMPL_GROUPED_INDEXES = "grpIdx";

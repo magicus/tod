@@ -36,9 +36,18 @@ public class AgentConfig
 		System.out.println("AgentConfig loaded by: "+AgentConfig.class.getClassLoader());
 	}
 	
+	/**
+	 * Signature for connections from the native side.
+	 */
+	public static final int CNX_NATIVE = 0x3a71be0;
+	
+	/**
+	 * Signature for connections from the java side.
+	 */
+	public static final int CNX_JAVA = 0xcafe0;
+	
 	public static final String PARAM_COLLECTOR_HOST = "collector-host";
 	public static final String PARAM_COLLECTOR_PORT = "collector-port";
-	public static final String PARAM_NATIVE_PEER_PORT = "native-port";
 	public static final String PARAM_COLLECTOR_TYPE = "collector-type";
 	public static final String PARAM_COLLECTOR_TYPE_SOCKET = "socket";
 	public static final String PARAM_COLLECTOR_TYPE_DUMMY = "dummy";
@@ -46,7 +55,7 @@ public class AgentConfig
 	/**
 	 * This parameter defines the name of the host the agent runs on.
 	 */
-	public static final String PARAM_HOST = "client-hostname";
+	public static final String PARAM_CLIENT_NAME = "client-name";
 	
 	/**
 	 * Number of bits used to represent the host of an event.
@@ -82,24 +91,19 @@ public class AgentConfig
 	private static EventInterpreter itsInterpreter;
 	
 	/**
-	 * Name of this host.
+	 * Name of this client.
 	 */
-	private static String itsHostName;
+	private static String itsClientName;
 	
 	/**
-	 * Host to connect to.
+	 * Collector host to connect to.
 	 */
 	private static String itsHost;
 	
 	/**
 	 * Port to connect to for events.
 	 */
-	private static int itsEventsPort;
-	
-	/**
-	 * Port to connect to for native agent
-	 */
-	private static int itsNativePort;
+	private static int itsPort;
 	
 	private static String itsCollectorType;
 	
@@ -107,10 +111,9 @@ public class AgentConfig
 	static
 	{
 		itsCollectorType = AgentUtils.readString(PARAM_COLLECTOR_TYPE, PARAM_COLLECTOR_TYPE_SOCKET);
-		itsEventsPort = AgentUtils.readInt(PARAM_COLLECTOR_PORT, 8058);
-		itsNativePort = AgentUtils.readInt(PARAM_NATIVE_PEER_PORT, 8059);
+		itsPort = AgentUtils.readInt(PARAM_COLLECTOR_PORT, 8058);
 		itsHost = AgentUtils.readString(PARAM_COLLECTOR_HOST, "localhost");
-		itsHostName = AgentUtils.readString(PARAM_HOST, "no-name");
+		itsClientName = AgentUtils.readString(PARAM_CLIENT_NAME, "no-name");
 	}
 	
 	private static HighLevelCollector createDummyCollector()
@@ -121,10 +124,13 @@ public class AgentConfig
 	
 	private static HighLevelCollector createSocketCollector()
 	{
-		System.out.println("[TOD] AgentConfig: Using socket collector ("+itsHost+":"+itsEventsPort+")");
+		System.out.println("[TOD] AgentConfig: " +
+				"Using socket collector ("+itsHost+":"+itsPort+")" +
+				" - AgentConfig loaded by: "+AgentConfig.class.getClassLoader());
+		
 		try
 		{
-			return new SocketCollector(itsHost, itsEventsPort);
+			return new SocketCollector(itsHost, itsPort);
 		}
 		catch (IOException e)
 		{
@@ -157,9 +163,9 @@ public class AgentConfig
 		return itsCollector;
 	}
 
-	public static String getHostName()
+	public static String getClientName()
 	{
-		return itsHostName;
+		return itsClientName;
 	}
 
 	public static String getHost()
@@ -167,16 +173,8 @@ public class AgentConfig
 		return itsHost;
 	}
 
-	public static int getEventsPort()
+	public static int getPort()
 	{
-		return itsEventsPort;
+		return itsPort;
 	}
-
-	public static int getNativePort()
-	{
-		return itsNativePort;
-	}
-
-	
-	
 }
