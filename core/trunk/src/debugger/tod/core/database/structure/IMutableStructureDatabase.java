@@ -20,6 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.structure;
 
+import java.util.Map;
+
 /**
  * Writable extension of {@link IStructureDatabase}.
  * @author gpothier
@@ -59,4 +61,12 @@ public interface IMutableStructureDatabase extends IStructureDatabase
 	 * Changes the probe info for the given id.
 	 */
 	public void setProbe(int aProbeId, int aBehaviorId, int aBytecodeIndex, int aAdviceSourceId);
+	
+	/**
+	 * Sets the map that maps advice ids to source ranges for a given class.
+	 * Several calls with overlapping advice ids can be made, provided there is no
+	 * inconsistency.
+	 */
+	public void setAdviceSourceMap(Map<Integer, SourceRange> aMap);
+
 }

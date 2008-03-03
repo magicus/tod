@@ -34,7 +34,6 @@ public interface IShareableStructureDatabase extends IMutableStructureDatabase
 	public byte[] _getClassBytecode(int aClassId);
 	public Map<String, IMutableFieldInfo> _getClassFieldMap(int aClassId);
 	public Map<String, IMutableBehaviorInfo> _getClassBehaviorsMap(int aClassId);
-	public Map<Integer, SourceRange> _getClassAdviceSourceMap(int aClassId);
 	public LocalVariableInfo[] _getBehaviorLocalVariableInfo(int aBehaviorId);
 	public LineNumberInfo[] _getBehaviorLineNumberInfo(int aBehaviorId);
 	public TagMap _getBehaviorTagMap(int aBehaviorId);

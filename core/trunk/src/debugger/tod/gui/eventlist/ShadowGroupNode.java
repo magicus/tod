@@ -36,7 +36,7 @@ import tod.core.database.browser.ShadowId;
 import tod.core.database.browser.GroupingEventBrowser.EventGroup;
 import tod.core.database.event.ICallerSideEvent;
 import tod.core.database.event.ILogEvent;
-import tod.core.database.structure.IClassInfo;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.gui.GUIUtils;
@@ -113,8 +113,8 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 		if (theFirst instanceof ICallerSideEvent)
 		{
 			ICallerSideEvent theEvent = (ICallerSideEvent) theFirst;
-			IClassInfo theType = theEvent.getOperationBehavior().getType();
-			SourceRange theAdviceSource = theType.getAdviceSource(theShadowId.adviceSourceId);
+			IStructureDatabase theDatabase = theEvent.getOperationBehavior().getDatabase();
+			SourceRange theAdviceSource = theDatabase.getAdviceSource(theShadowId.adviceSourceId);
 			theAdvice = theAdviceSource.sourceFile+":"+theAdviceSource.startLine;
 		}
 		else theAdvice = "???";

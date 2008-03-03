@@ -41,6 +41,7 @@ import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
+import tod.core.database.structure.IStructureDatabase.AspectInfo;
 import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
@@ -203,6 +204,16 @@ implements RIStructureDatabase
 		return theResult;
 	}
 
+	public SourceRange getAdviceSource(int aAdviceId) 
+	{
+		return itsSource.getAdviceSource(aAdviceId);
+	}
+
+	public Map<String, AspectInfo> getAspectInfoMap() 
+	{
+		return itsSource.getAspectInfoMap();
+	}
+
 	public LineNumberInfo[] _getBehaviorLineNumberInfo(int aBehaviorId)
 	{
 		return itsSource._getBehaviorLineNumberInfo(aBehaviorId);
@@ -216,11 +227,6 @@ implements RIStructureDatabase
 	public TagMap _getBehaviorTagMap(int aBehaviorId) 
 	{
 		return itsSource._getBehaviorTagMap(aBehaviorId);
-	}
-
-	public Map<Integer, SourceRange> _getClassAdviceSourceMap(int aClassId)
-	{
-		return itsSource._getClassAdviceSourceMap(aClassId);
 	}
 
 	public Map<String, IMutableBehaviorInfo> _getClassBehaviorsMap(int aClassId) 
@@ -272,6 +278,8 @@ implements RIStructureDatabase
 	private static class MyDatabase extends UnicastRemoteObject
 	implements IShareableStructureDatabase, RIStructureDatabaseListener
 	{
+		private static final SourceRange NULL_RANGE = new SourceRange(null, 0, 0, 0, 0); 
+		
 		private RIStructureDatabase itsDatabase;
 		
 		private List<IMutableClassInfo> itsClasses = new ArrayList<IMutableClassInfo>();
@@ -288,6 +296,12 @@ implements RIStructureDatabase
 		private boolean itsFieldsUpToDate = false;
 		
 		private List<ProbeInfo> itsProbes = new ArrayList<ProbeInfo>();
+		
+		private Map<Integer, SourceRange> itsAdviceSourceMap = 
+			new HashMap<Integer, SourceRange>();
+		
+		private Map<String, AspectInfo> itsAspectInfoMap = 
+			new HashMap<String, AspectInfo>();
 		
 		private final TODConfig itsConfig;
 		private final String itsId;
@@ -602,6 +616,47 @@ implements RIStructureDatabase
 			throw new UnsupportedOperationException();
 		}
 
+		public void setAdviceSourceMap(Map<Integer, SourceRange> aMap)
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		public SourceRange getAdviceSource(int aAdviceId)
+		{
+			SourceRange theRange = itsAdviceSourceMap.get(aAdviceId);
+			if (theRange == null)	
+			{
+				try
+				{
+					theRange = itsDatabase.getAdviceSource(aAdviceId);
+					if (theRange == null) theRange = NULL_RANGE;
+					itsAdviceSourceMap.put(aAdviceId, theRange);
+				}
+				catch (RemoteException e)
+				{
+					throw new RuntimeException(e);
+				}
+			}
+			if (theRange == NULL_RANGE) theRange = null;
+			return theRange;
+		}
+		
+		public Map<String, AspectInfo> getAspectInfoMap()
+		{
+			if (itsAspectInfoMap == null)
+			{
+				try
+				{
+					itsAspectInfoMap = itsDatabase.getAspectInfoMap();
+				}
+				catch (RemoteException e)
+				{
+					throw new RuntimeException(e);
+				}
+			}
+			return itsAspectInfoMap;
+		}
+
 		public LineNumberInfo[] _getBehaviorLineNumberInfo(int aBehaviorId)
 		{
 			try
@@ -634,19 +689,6 @@ implements RIStructureDatabase
 			{
 				System.out.println("Retrieving tag map for behavior: "+aBehaviorId);
 				return itsDatabase._getBehaviorTagMap(aBehaviorId);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
-		}
-
-		public Map<Integer, SourceRange> _getClassAdviceSourceMap(int aClassId)
-		{
-			try
-			{
-				System.out.println("Retrieving advice source map for class: "+aClassId);
-				return itsDatabase._getClassAdviceSourceMap(aClassId);
 			}
 			catch (RemoteException e)
 			{

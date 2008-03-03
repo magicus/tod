@@ -159,7 +159,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		if (aAttr instanceof AspectInfoAttribute)
 		{
 			AspectInfoAttribute theAttribute = (AspectInfoAttribute) aAttr;
-			itsClassInfo.setAdviceSourceMap(theAttribute.getAdviceMap());
+			itsDatabase.setAdviceSourceMap(theAttribute.getAdviceMap());
 		}
 		else super.visitAttribute(aAttr);
 	}

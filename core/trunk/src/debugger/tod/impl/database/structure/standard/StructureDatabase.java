@@ -45,7 +45,9 @@ import tod.core.database.structure.IShareableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.SourceRange;
+import tod.core.database.structure.IStructureDatabase.AspectInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
+import tod.utils.TODUtils;
 import tod.utils.remote.RemoteStructureDatabase;
 import zz.utils.Utils;
 
@@ -87,6 +89,16 @@ public class StructureDatabase implements IShareableStructureDatabase
 	private final List<ClassInfo> itsClasses = new ArrayList<ClassInfo>(1000);
 	
 	private final List<ProbeInfo> itsProbes;
+	
+	/**
+	 * Maps advice source ids (see {@link IBehaviorInfo.BytecodeTagType#ADVICE_SOURCE_ID})
+	 * to their position in source code.
+	 */
+	private Map<Integer, SourceRange> itsAdviceSourceMap = 
+		new HashMap<Integer, SourceRange>();
+	
+	private Map<String, AspectInfo> itsAspectInfoMap = 
+		new HashMap<String, AspectInfo>();
 	
 	private final IClassInfo itsUnknownClass = new ClassInfo(this, null, "Unknown", -1);
 	
@@ -417,6 +429,49 @@ public class StructureDatabase implements IShareableStructureDatabase
 		return itsProbes.size();
 	}
 	
+	public SourceRange getAdviceSource(int aAdviceId)
+	{
+		return itsAdviceSourceMap.get(aAdviceId);
+	}
+	
+	public Map<String, AspectInfo> getAspectInfoMap()
+	{
+		return itsAspectInfoMap;
+	}
+
+	public void setAdviceSourceMap(Map<Integer, SourceRange> aMap)
+	{
+		for (Map.Entry<Integer, SourceRange> theEntry : aMap.entrySet())
+		{
+			int theId = theEntry.getKey();
+			SourceRange theRange = theEntry.getValue();
+			assert theRange != null;
+			
+			// Fill advice source map
+			SourceRange thePrevious = itsAdviceSourceMap.put(theId, theRange);
+			if (thePrevious != null && ! thePrevious.equals(theRange))
+			{
+				TODUtils.rtex(
+						"Advice source inconsistency for id %d (prev.: %s, new: %s)", 
+						theId,
+						thePrevious,
+						theRange);
+			}
+			
+			// Fill aspect info map
+			if (thePrevious == null)
+			{
+				AspectInfo theInfo = itsAspectInfoMap.get(theRange.sourceFile);
+				if (theInfo == null)
+				{
+					theInfo = new AspectInfo(theRange.sourceFile);
+					itsAspectInfoMap.put(theRange.sourceFile, theInfo);
+				}
+				theInfo.addAdviceId(theId);
+			}
+		}
+	}
+
 	/**
 	 * This method is used to retrieve the value of transient fields on the remote side
 	 * (see {@link RemoteStructureDatabase}).
@@ -444,15 +499,6 @@ public class StructureDatabase implements IShareableStructureDatabase
 		return getClass(aClassId, true)._getBehaviorsMap();
 	}
 
-	/**
-	 * This method is used to retrieve the value of transient fields on the remote side
-	 * (see {@link RemoteStructureDatabase}).
-	 */
-	public Map<Integer, SourceRange> _getClassAdviceSourceMap(int aClassId)
-	{
-		return getClass(aClassId, true)._getAdviceSourceMap();
-	}
-	
 	/**
 	 * This method is used to retrieve the value of transient fields on the remote side
 	 * (see {@link RemoteStructureDatabase}).

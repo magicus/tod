@@ -20,6 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.utils;
 
+import java.util.Map;
+
 import tod.core.config.TODConfig;
 import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IBehaviorInfo;
@@ -28,6 +30,7 @@ import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.SourceRange;
 
 public class DummyStructureDatabase 
 implements IMutableStructureDatabase
@@ -150,6 +153,20 @@ implements IMutableStructureDatabase
 	public int getProbeCount()
 	{
 		return 0;
+	}
+
+	public void setAdviceSourceMap(Map<Integer, SourceRange> aMap)
+	{
+	}
+
+	public SourceRange getAdviceSource(int aAdviceId)
+	{
+		return null;
+	}
+
+	public Map<String, AspectInfo> getAspectInfoMap()
+	{
+		return null;
 	}
 
 }

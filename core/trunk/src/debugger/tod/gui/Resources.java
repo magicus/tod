@@ -26,6 +26,7 @@ import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
 
 import zz.utils.ui.ResourceUtils;
+import zz.utils.ui.ResourceUtils.ImageResource;
 
 public class Resources
 {
@@ -42,81 +43,7 @@ public class Resources
 	
 	private static ImageResource loadIcon (String aName)
 	{
-		return new ImageResource(ResourceUtils.loadImageResource(Resources.class, aName));
+		return ResourceUtils.loadImageResource(Resources.class, aName);
 	}
 	
-	public static class ImageResource
-	{
-		private BufferedImage itsImage;
-
-		public ImageResource(BufferedImage aImage)
-		{
-			itsImage = aImage;
-		}
-		
-		public ImageIcon asIcon(int aSize)
-		{
-			int theWidth = itsImage.getWidth();
-			int theHeight = itsImage.getHeight();
-			int theSide = Math.max(theWidth, theHeight);
-			
-			if (theSide != aSize)
-			{
-				float theRatio = 1f * aSize / theSide;
-				
-				Image theImage = itsImage.getScaledInstance(
-						(int) (theWidth*theRatio), 
-						(int) (theHeight*theRatio), 
-						Image.SCALE_SMOOTH);
-				
-				return new ImageIcon(theImage);
-			}
-			else return new ImageIcon(itsImage);
-		}
-		
-		/**
-		 * Returns an icon of the specified height.
-		 */
-		public ImageIcon asIconH(int aHeight)
-		{
-			int theWidth = itsImage.getWidth();
-			int theHeight = itsImage.getHeight();
-			
-			if (theHeight != aHeight)
-			{
-				float theRatio = 1f * aHeight / theHeight;
-				
-				Image theImage = itsImage.getScaledInstance(
-						(int) (theWidth*theRatio), 
-						(int) (theHeight*theRatio), 
-						Image.SCALE_SMOOTH);
-				
-				return new ImageIcon(theImage);
-			}
-			else return new ImageIcon(itsImage);
-		}
-		
-		/**
-		 * Returns an icon of the specified width.
-		 */
-		public ImageIcon asIconW(int aWidth)
-		{
-			int theWidth = itsImage.getWidth();
-			int theHeight = itsImage.getHeight();
-			
-			if (theWidth != aWidth)
-			{
-				float theRatio = 1f * aWidth / theWidth;
-				
-				Image theImage = itsImage.getScaledInstance(
-						(int) (theWidth*theRatio), 
-						(int) (theHeight*theRatio), 
-						Image.SCALE_SMOOTH);
-				
-				return new ImageIcon(theImage);
-			}
-			else return new ImageIcon(itsImage);
-		}
-	}
-
 }

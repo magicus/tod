@@ -33,6 +33,7 @@ import tod.core.database.structure.IMutableFieldInfo;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.SourceRange;
+import tod.core.database.structure.IStructureDatabase.AspectInfo;
 import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
@@ -59,11 +60,12 @@ public interface RIStructureDatabase extends Remote
 	public ITypeInfo getType(String aName, boolean aFailIfAbsent) throws RemoteException;
 	public Stats getStats() throws RemoteException;
 	public ProbeInfo[] getProbeInfos(int aAvailableCount) throws RemoteException;
+	public SourceRange getAdviceSource(int aAdviceId) throws RemoteException;
+	public Map<String, AspectInfo> getAspectInfoMap() throws RemoteException;
 	
 	public byte[] _getClassBytecode(int aClassId) throws RemoteException;
 	public Map<String, IMutableFieldInfo> _getClassFieldMap(int aClassId) throws RemoteException;
 	public Map<String, IMutableBehaviorInfo> _getClassBehaviorsMap(int aClassId) throws RemoteException;
-	public Map<Integer, SourceRange> _getClassAdviceSourceMap(int aClassId) throws RemoteException;
 	public LocalVariableInfo[] _getBehaviorLocalVariableInfo(int aBehaviorId) throws RemoteException;
 	public LineNumberInfo[] _getBehaviorLineNumberInfo(int aBehaviorId) throws RemoteException;
 	public TagMap _getBehaviorTagMap(int aBehaviorId) throws RemoteException;

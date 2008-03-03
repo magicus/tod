@@ -82,14 +82,6 @@ implements IMutableClassInfo, ISerializableLocationInfo
 	private transient Map<String, IMutableBehaviorInfo> itsBehaviorsMap = 
 		new HashMap<String, IMutableBehaviorInfo>();
 	
-	private boolean itsHasAdviceSourceMap = false;
-	
-	/**
-	 * Maps advice source ids (see {@link IBehaviorInfo.BytecodeTagType#ADVICE_SOURCE_ID})
-	 * with their position.
-	 */
-	private transient Map<Integer, SourceRange> itsAdviceSourceMap;
-	
 	/**
 	 * Whether this class info can be disposed.
 	 * At the start of the system,
@@ -392,35 +384,6 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		return "f" + aName + "|" + aType.getName();
 	}
 	
-	private Map<Integer, SourceRange> getAdviceSourceMap()
-	{
-		if (itsAdviceSourceMap == null && itsHasAdviceSourceMap)
-		{
-			assert ! isOriginal();
-			itsAdviceSourceMap = getDatabase()._getClassAdviceSourceMap(getId());
-		}
-		return itsAdviceSourceMap;
-
-	}
-
-	public void setAdviceSourceMap(Map<Integer, SourceRange> aMap)
-	{
-		assert isOriginal(); 
-		itsAdviceSourceMap = aMap;
-		itsHasAdviceSourceMap = itsAdviceSourceMap != null;
-	}
-	
-	public SourceRange getAdviceSource(int aAdviceId)
-	{
-		Map<Integer, SourceRange> theMap = getAdviceSourceMap();
-		return theMap != null ? theMap.get(aAdviceId) : null;
-	}
-	
-	Map<Integer, SourceRange> _getAdviceSourceMap()
-	{
-		return itsAdviceSourceMap;
-	}
-
 	@Override
 	public String toString()
 	{

@@ -63,8 +63,4 @@ public interface IMutableClassInfo extends IClassInfo, IMutableLocationInfo
 	 */
 	public IMutableFieldInfo getNewField(String aName, ITypeInfo aType);
 
-	/**
-	 * Sets the map that maps advice ids to source ranges.
-	 */
-	public void setAdviceSourceMap(Map<Integer, SourceRange> aMap);
 }
