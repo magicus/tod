@@ -23,6 +23,9 @@ package tod.plugin;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.ILaunch;
@@ -56,6 +59,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import tod.core.database.structure.SourceRange;
 import tod.utils.TODUtils;
+import zz.eclipse.utils.EclipseUtils;
 
 /**
  * Utility class that permits to asynchronously reveal particualr source locations
@@ -165,7 +169,7 @@ public class SourceRevealerUtils
 	 * Opens a given location. Should be safe for JDT and PDE projects. 
 	 */
 	public static void reveal (
-			final List<IJavaProject> aJavaProject, 
+			final List<IJavaProject> aJavaProjects, 
 			final SourceRange aSourceRange)
 	{
 		TODUtils.log(1,"[SourceRevealerUtils.reveal(IJavaProject, String, int)]" +aSourceRange);
@@ -173,18 +177,37 @@ public class SourceRevealerUtils
 		{
 			public void reveal() throws CoreException, BadLocationException
 			{
-				IType theType = TODPluginUtils.getType(aJavaProject, aSourceRange.sourceFile);
-				if (theType == null) {
-					TODUtils.logf(0, "The type %s has not been found in the available sources " +
-							"of the Eclipse workspace.\n Path were " +
-							"to find the sources was: %s", aSourceRange.sourceFile, aJavaProject);
-					return;
+				IEditorPart theEditor = null;
+				if (aSourceRange.sourceFile.endsWith(".aj"))
+				{
+					// Hack for aspectj files.
+					for (IJavaProject theJavaProject : aJavaProjects)
+					{
+						IProject theProject = theJavaProject.getProject();
+						IFile[] theFiles = EclipseUtils.findFiles(theProject, aSourceRange.sourceFile);
+						if (theFiles.length > 0)
+						{
+							theEditor = EditorUtility.openInEditor(theFiles[0], false);
+							break;
+						}
+					}
+				}
+				else
+				{
+					IType theType = TODPluginUtils.getType(aJavaProjects, aSourceRange.sourceFile);
+					if (theType == null) {
+						TODUtils.logf(0, "The type %s has not been found in the available sources " +
+								"of the Eclipse workspace.\n Path were " +
+								"to find the sources was: %s", aSourceRange.sourceFile, aJavaProjects);
+						return;
+					}
+					
+					// Eclipse 3.3 only
+					//theEditor = JavaUI.openInEditor(theType, false, false);
+					
+					theEditor = EditorUtility.openInEditor(theType, false);
 				}
 				
-				// Eclipse 3.3 only
-				//IEditorPart theEditor = JavaUI.openInEditor(theType, false, false);
-				
-				IEditorPart theEditor = EditorUtility.openInEditor(theType, false);
 				if (theEditor instanceof ITextEditor)
 				{
 					ITextEditor theTextEditor = (ITextEditor) theEditor;

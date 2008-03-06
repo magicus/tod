@@ -12,6 +12,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.SourceRange;
 
+@Deprecated
 public class JDTSourceRevealer extends SourceRevealer
 {
 	private List<IJavaProject> itsJavaProject = new ArrayList<IJavaProject>();

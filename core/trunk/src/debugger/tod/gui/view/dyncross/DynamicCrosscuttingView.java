@@ -123,10 +123,17 @@ implements IListListener<Highlight>
 			@Override
 			public void mousePressed(MouseEvent aE)
 			{
-				if (aE.getClickCount() == 2)
+				if (aE.getButton() != MouseEvent.BUTTON1) return;
+				
+				JList theList = (JList) aE.getSource();
+				Highlight theHighlight = (Highlight) theList.getSelectedValue();
+
+				if (aE.getClickCount() == 1)
 				{
-					JList theList = (JList) aE.getSource();
-					Highlight theHighlight = (Highlight) theList.getSelectedValue();
+					theHighlight.gotoSource(getGUIManager());
+				}
+				else if (aE.getClickCount() == 2)
+				{
 					itsSeed.pHighlights.add(theHighlight);
 					
 					System.out.println("Events for: "+theHighlight);

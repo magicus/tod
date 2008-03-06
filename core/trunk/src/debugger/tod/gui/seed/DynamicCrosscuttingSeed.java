@@ -60,9 +60,15 @@ public class DynamicCrosscuttingSeed extends LogViewSeed
 		return theView;
 	}
 	
+	/**
+	 * Represents any kind of Aspect stuff that can be highlighted (full aspect,
+	 * or individual advice).
+	 * @author gpothier
+	 */
 	public static abstract class Highlight
 	{
 		public abstract IEventBrowser createBrowser(ILogBrowser aLogBrowser);
+		public abstract void gotoSource(IGUIManager aGUIManager);
 	}
 	
 	public static class AspectHighlight extends Highlight
@@ -88,6 +94,12 @@ public class DynamicCrosscuttingSeed extends LogViewSeed
 				theUnionFilter.add(aLogBrowser.createAdviceSourceIdFilter(theSourceId));
 			}
 			return aLogBrowser.createBrowser(theUnionFilter);
+		}
+		
+		@Override
+		public void gotoSource(IGUIManager aGUIManager)
+		{
+			aGUIManager.gotoSource(new SourceRange(itsAspectInfo.getSourceFile(), 1));
 		}
 
 		@Override
@@ -119,6 +131,12 @@ public class DynamicCrosscuttingSeed extends LogViewSeed
 		{
 			IEventFilter theFilter = aLogBrowser.createAdviceSourceIdFilter(itsAdviceSourceId);
 			return aLogBrowser.createBrowser(theFilter);
+		}
+
+		@Override
+		public void gotoSource(IGUIManager aGUIManager)
+		{
+			aGUIManager.gotoSource(itsAdviceSource);
 		}
 
 		@Override
