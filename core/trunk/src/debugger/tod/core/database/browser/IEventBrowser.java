@@ -51,6 +51,13 @@ public interface IEventBrowser extends IPublicCloneable
 	public ILogBrowser getLogBrowser();
 	
 	/**
+	 * Returns the filter that defines the events that can be retrieved through this
+	 * browser.
+	 * @see ILogBrowser#createBrowser(IEventFilter).
+	 */
+	public IEventFilter getFilter();
+	
+	/**
 	 * Returns the number of events that can be returned by this
 	 * browser.
 	 */

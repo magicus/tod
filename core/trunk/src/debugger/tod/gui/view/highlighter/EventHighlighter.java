@@ -43,10 +43,14 @@ import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
+import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
 import tod.gui.MinerUI;
 import tod.gui.eventsequences.IEventSequenceSeed;
 import tod.gui.eventsequences.SequenceViewsDock;
+import zz.utils.list.IList;
+import zz.utils.list.IListListener;
+import zz.utils.list.ZArrayList;
 
 public class EventHighlighter extends JPanel
 implements ActionListener
@@ -56,7 +60,28 @@ implements ActionListener
 	private final IGUIManager itsGUIManager;
 	private final ILogBrowser itsLogBrowser;
 	
-	private IEventFilter itsCurrentFilter;
+	public final IList<BrowserData> pHighlightBrowsers = new ZArrayList<BrowserData>()
+	{
+		@Override
+		protected void elementAdded(int aIndex, BrowserData aElement)
+		{
+			for (IEventSequenceSeed theSeed : itsDock.pSeeds())
+			{
+				HighlighterSequenceSeed theHighlighterSeed = (HighlighterSequenceSeed) theSeed;
+				theHighlighterSeed.pForegroundBrowsers.add(aIndex, aElement);
+			}
+		}
+		
+		@Override
+		protected void elementRemoved(int aIndex, BrowserData aElement)
+		{
+			for (IEventSequenceSeed theSeed : itsDock.pSeeds())
+			{
+				HighlighterSequenceSeed theHighlighterSeed = (HighlighterSequenceSeed) theSeed;
+				theHighlighterSeed.pForegroundBrowsers.remove(aIndex);
+			}
+		}
+	};
 	
 	private JRadioButton itsGlobalButton;
 	private JRadioButton itsPerHostButton;
@@ -150,6 +175,8 @@ implements ActionListener
 		theButtonsPanel.add(itsPerHostButton);
 		theButtonsPanel.add(itsPerThreadButton);
 		add(theButtonsPanel, BorderLayout.NORTH);			
+		
+		setupBrowsers();
 	}
 	
 	public void actionPerformed(ActionEvent aE)
@@ -183,8 +210,8 @@ implements ActionListener
 				"Global",
 				getLogBrowser().createBrowser(),
 				null));
-		
-		setFilter(itsCurrentFilter);
+
+		setupBrowsers();
 	}
 	
 	/**
@@ -203,7 +230,7 @@ implements ActionListener
 					null));				
 		}
 		
-		setFilter(itsCurrentFilter);
+		setupBrowsers();
 	}
 	
 	/**
@@ -222,19 +249,21 @@ implements ActionListener
 					null));				
 		}
 		
-		setFilter(itsCurrentFilter);
+		setupBrowsers();
 	}
-	
+
 	/**
-	 * Sets the filter of all stripes.
+	 * Initial forwarding of highlight browsers to the seeds.
 	 */
-	public void setFilter(IEventFilter aFilter)
+	private void setupBrowsers()
 	{
-		itsCurrentFilter = aFilter;
 		for (IEventSequenceSeed theSeed : itsDock.pSeeds())
 		{
 			HighlighterSequenceSeed theHighlighterSeed = (HighlighterSequenceSeed) theSeed;
-			theHighlighterSeed.setFilter(aFilter);
+			for (BrowserData theBrowserData : pHighlightBrowsers)
+			{
+				theHighlighterSeed.pForegroundBrowsers.add(theBrowserData);
+			}
 		}
 	}
 }

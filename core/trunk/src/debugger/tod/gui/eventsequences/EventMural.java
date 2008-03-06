@@ -37,11 +37,15 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.RenderingHints.Key;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.Collections;
@@ -248,18 +252,6 @@ public class EventMural extends JPanel
 		}
 	}
 
-	public static void paintMural (
-			Graphics2D aGraphics, 
-			Rectangle aBounds,
-			long aT1,
-			long aT2,
-			BrowserData aBrowserData,
-			boolean aSum)
-	{
-		List<BrowserData> theData = Collections.singletonList(aBrowserData);
-		paintMural(aGraphics, aBounds, aT1, aT2, theData, aSum);
-	}
-
 	/**
 	 * @param aSum If true, values of each series are summed and the resulting
 	 * color is a proportional mix of all colors.
@@ -273,27 +265,6 @@ public class EventMural extends JPanel
 			Collection<BrowserData> aBrowserData,
 			boolean aSum)
 	{
-		if (aSum)
-		{
-			paintMural(aGraphics, aBounds, aT1, aT2, aBrowserData);
-		}
-		else
-		{
-			for (BrowserData theData : aBrowserData)
-			{
-				List<BrowserData> theList = Collections.singletonList(theData);
-				paintMural(aGraphics, aBounds, aT1, aT2, theList);
-			}
-		}
-	}
-	
-	public static void paintMural (
-			Graphics2D aGraphics, 
-			Rectangle aBounds,
-			long aT1,
-			long aT2,
-			Collection<BrowserData> aBrowserData)
-	{
 		if (aT1 == aT2) return;
 		long[][] theValues = new long[aBrowserData.size()][];
 		Color[] theColors = new Color[aBrowserData.size()];
@@ -303,15 +274,23 @@ public class EventMural extends JPanel
 		{
 			// TODO: check conversion
 			System.out.println("[EventMural] Requesting counts: "+aT1+"-"+aT2);
-			theValues[i] = theBrowserData.getBrowser().getEventCounts(aT1, aT2, aBounds.width, false);
-			theColors[i] = theBrowserData.getColor();
+			theValues[i] = theBrowserData.browser.getEventCounts(aT1, aT2, aBounds.width, false);
+			theColors[i] = theBrowserData.color;
 			i++;
 		}
 		
-		paintMural(aGraphics, aBounds, theValues, theColors);
+		if (aSum) paintMuralAvg(aGraphics, aBounds, theValues, theColors);
+		else paintMuralStack(aGraphics, aBounds, theValues, theColors);
 	}
 	
-	public static void paintMural (Graphics2D aGraphics, Rectangle aBounds, long[][] aValues, Color[] aColors)
+	/**
+	 * Paints the mural, summing the values of all series and averaging the colors
+	 */
+	public static void paintMuralAvg(
+			Graphics2D aGraphics, 
+			Rectangle aBounds, 
+			long[][] aValues, 
+			Color[] aColors)
 	{
 		if (aValues.length == 0) return;
 		
@@ -319,12 +298,12 @@ public class EventMural extends JPanel
 		int theY = aBounds.y;
 		int bh = 4; // base height
 
-		int theMaxT = 0;
+		long theMaxT = 0;
 		
 		// Determine maximum value
 		for (int i = 0; i < aValues[0].length; i++)
 		{
-			int t = 0; 
+			long t = 0; 
 			for (int j = 0; j < aValues.length; j++) t += aValues[j][i];
 			theMaxT = Math.max(theMaxT, t);
 		}
@@ -357,10 +336,73 @@ public class EventMural extends JPanel
 			aGraphics.fillRect(aBounds.x + i, theY+theHeight-bh, 1, bh);
 			
 			// Draw proportional bar
-			int h = (theHeight-bh) * t / theMaxT;
+			int h = (int) ((theHeight-bh) * t / theMaxT);
 			aGraphics.setColor(c2);
 			aGraphics.fillRect(aBounds.x + i, theY+theHeight-bh-h, 1, h);
 		}
+	}
+	
+	private static final int MARK_HEIGHT = 5;
+	
+	/**
+	 * Paints the mural, overlaying, or stacking, all the series.
+	 */
+	public static void paintMuralStack (
+			Graphics2D aGraphics, 
+			Rectangle aBounds, 
+			long[][] aValues, 
+			Color[] aColors)
+	{
+		int theCount = aValues.length;
+		if (theCount == 0) return;
+		
+		int theHeight = aBounds.height-(MARK_HEIGHT*theCount);
+		int theY = aBounds.y;
+		
+		long theMaxT = 0;
+		
+		// Determine maximum value
+		for (int i = 0; i < aValues[0].length; i++)
+		{
+			for (int j = 0; j < aValues.length; j++) theMaxT = Math.max(theMaxT, aValues[j][i]);
+		}
+		
+		Object theOriginalAA = aGraphics.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
+		for (int i = 0; i < aValues[0].length; i++)
+		{
+			for (int j=0;j<theCount;j++)
+			{
+				long t = aValues[j][i];
+				Color c1 = aColors[j];
+				Color c2 = UIUtils.getLighterColor(c1);
+				
+				// Draw mark
+				if (t>0)
+				{
+					aGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+					aGraphics.setColor(c1);
+					aGraphics.fill(makeTriangle(aBounds.x + i, theY+theHeight+(j*MARK_HEIGHT), MARK_HEIGHT));
+				}
+				
+				// Draw proportional bar
+				aGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+				int h = (int) ((theHeight * t) / theMaxT);
+				aGraphics.setColor(c2);
+				aGraphics.fillRect(aBounds.x + i, theY+theHeight-h, 1, h);
+			}
+		}
+		aGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, theOriginalAA);
+	}
+	
+	private static Shape makeTriangle(float aX, float aY, float aW)
+	{
+		GeneralPath thePath = new GeneralPath();
+		thePath.moveTo(aX, aY);
+		thePath.lineTo(aX+(aW/2), aY+aW);
+		thePath.lineTo(aX-(aW/2), aY+aW);
+		thePath.closePath();
+		
+		return thePath;
 	}
 	
 	
@@ -434,6 +476,7 @@ public class EventMural extends JPanel
 			int u = aMural.itsOrientation.getU(width, height);
 			int v = aMural.itsOrientation.getV(width, height);
 			
+			// Ensure we have a fast image buffer
 			ImageData theImageData = aMural.itsImage;
 			BufferedImage theImage = theImageData != null ? theImageData.getImage() : null;
 			if (theImage == null 
@@ -445,7 +488,7 @@ public class EventMural extends JPanel
 				theImageData = new ImageData(theImage);
 				aMural.itsImage = theImageData;
 			}
-			
+			// Setup graphics
 			Graphics2D theGraphics = theImage.createGraphics();
 			if (aMural.itsOrientation == Orientation.VERTICAL)
 			{
@@ -462,6 +505,7 @@ public class EventMural extends JPanel
 			
 			System.out.println("[ImageUpdater] doUpdateImage ["+theStart+"-"+theEnd+"]");
 			
+			// Paint
 			paintMural(
 					theGraphics, 
 					new Rectangle(0, 0, u, v), 

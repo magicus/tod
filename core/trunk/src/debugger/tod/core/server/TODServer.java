@@ -43,6 +43,7 @@ import tod.core.bci.NativeAgentPeer;
 import tod.core.config.TODConfig;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.transport.LogReceiver;
+import tod.utils.TODUtils;
 import zz.utils.net.Server;
 
 /**
@@ -71,6 +72,7 @@ public abstract class TODServer extends Server
 			IStructureDatabase aStructureDatabase)
 	{
 		super(aConfig.get(TODConfig.COLLECTOR_PORT));
+		TODUtils.logf(0, "TODServer on port: %d", getPort());
 
 		itsConfig = aConfig;
 		itsInstrumenter = aInstrumenter;

@@ -47,6 +47,7 @@ import tod.core.database.browser.LocationUtils;
 import tod.core.database.browser.ObjectIdUtils;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.ObjectId;
+import tod.gui.BrowserData;
 import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
@@ -89,7 +90,10 @@ public class ObjectHistoryView extends LogView implements IEventListView
 					getLogBrowser().createEventFilter(aNewValue)
 					: null;
 					
-			itsEventHighlighter.setFilter(theFilter);
+			itsEventHighlighter.pHighlightBrowsers.clear();
+			itsEventHighlighter.pHighlightBrowsers.add(new BrowserData(
+					getLogBrowser().createBrowser(theFilter),
+					Color.BLUE));
 		}
 	};
 

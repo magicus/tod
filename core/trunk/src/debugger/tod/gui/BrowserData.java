@@ -43,22 +43,12 @@ import tod.core.database.browser.IEventBrowser;
  */
 public class BrowserData
 {
-	private IEventBrowser itsBrowser;
-	private Color itsColor;
+	public final IEventBrowser browser;
+	public final Color color;
 	
 	public BrowserData(IEventBrowser aBrowser, Color aColor)
 	{
-		itsBrowser = aBrowser;
-		itsColor = aColor;
-	}
-
-	public IEventBrowser getBrowser()
-	{
-		return itsBrowser;
-	}
-
-	public Color getColor()
-	{
-		return itsColor;
+		browser = aBrowser;
+		color = aColor;
 	}
 }

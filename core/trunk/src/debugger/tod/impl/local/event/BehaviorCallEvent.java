@@ -60,7 +60,7 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 
 	public IEventBrowser getChildrenBrowser()
 	{
-		return new EventBrowser(getLogBrowser(), itsChildren);
+		return new EventBrowser(getLogBrowser(), itsChildren, null);
 	}
 
 	public void addChild (Event aEvent)

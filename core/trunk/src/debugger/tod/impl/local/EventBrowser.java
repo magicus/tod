@@ -48,13 +48,15 @@ import zz.utils.PublicCloneable;
 public class EventBrowser extends PublicCloneable implements IEventBrowser
 {
 	private final ILogBrowser itsLogBrowser;
+	private final IEventFilter itsFilter;
 	
 	private final List<ILogEvent> itsEvents;
 	private int itsIndex;
 	
-	public EventBrowser(ILogBrowser aLogBrowser, List<ILogEvent> aEvents)
+	public EventBrowser(ILogBrowser aLogBrowser, List<ILogEvent> aEvents, IEventFilter aFilter)
 	{
 		itsLogBrowser = aLogBrowser;
+		itsFilter = aFilter;
 		assert aEvents != null;
 		itsEvents = aEvents;
 	}
@@ -62,6 +64,7 @@ public class EventBrowser extends PublicCloneable implements IEventBrowser
 	public EventBrowser(ILogBrowser aLogBrowser, EventList aEventList, AbstractFilter aFilter)
 	{
 		itsLogBrowser = aLogBrowser;
+		itsFilter = aFilter;
 		itsEvents = new ArrayList<ILogEvent>();
 		for (int i=0;i<aEventList.size();i++)
 		{
@@ -77,6 +80,11 @@ public class EventBrowser extends PublicCloneable implements IEventBrowser
 	public ILogBrowser getLogBrowser()
 	{
 		return itsLogBrowser;
+	}
+	
+	public IEventFilter getFilter()
+	{
+		return itsFilter;
 	}
 	
 	/**
@@ -213,7 +221,7 @@ public class EventBrowser extends PublicCloneable implements IEventBrowser
 			if (theFilter.accept(theEvent)) theEvents.add(theEvent);
 		}
 		
-		return new EventBrowser(itsLogBrowser, theEvents);
+		return new EventBrowser(itsLogBrowser, theEvents, null); //TODO If necessary replace null by correct filter
 	}
 
 	public long getFirstTimestamp()

@@ -69,6 +69,16 @@ public class GroupingEventBrowser<K> implements IEventBrowser
 		itsGroupDefinition = aGroupDefinition;
 		itsAllowSingletons = aAllowSingletons;
 	}
+	
+	public ILogBrowser getLogBrowser()
+	{
+		return itsSource.getLogBrowser();
+	}
+
+	public IEventFilter getFilter()
+	{
+		return itsSource.getFilter();
+	}
 
 	public IGroupDefinition<K> getGroupDefinition()
 	{
@@ -112,11 +122,6 @@ public class GroupingEventBrowser<K> implements IEventBrowser
 	public long getLastTimestamp()
 	{
 		return itsSource.getLastTimestamp();
-	}
-
-	public ILogBrowser getLogBrowser()
-	{
-		return itsSource.getLogBrowser();
 	}
 
 	public boolean hasNext()

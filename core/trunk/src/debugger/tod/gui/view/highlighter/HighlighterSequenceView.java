@@ -39,9 +39,10 @@ import tod.core.database.browser.IEventBrowser;
 import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
 import tod.gui.eventsequences.AbstractSequenceView;
+import zz.utils.list.IList;
+import zz.utils.list.IListListener;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
-import zz.utils.properties.PropertyListener;
 
 /**
  * A sequence view that displays a browser as background, which permits to
@@ -49,19 +50,10 @@ import zz.utils.properties.PropertyListener;
  * @author gpothier
  */
 public class HighlighterSequenceView extends AbstractSequenceView
+implements IPropertyListener, IListListener
 {
 	private HighlighterSequenceSeed itsSeed;
 	
-	private IPropertyListener<IEventBrowser> itsListener = 
-		new PropertyListener<IEventBrowser>()
-		{
-			@Override
-			public void propertyChanged(IProperty<IEventBrowser> aProperty, IEventBrowser aOldValue, IEventBrowser aNewValue)
-			{
-				update();
-			}
-		};
-
 	public HighlighterSequenceView(IGUIManager aGUIManager, HighlighterSequenceSeed aSeed)
 	{
 		super(aGUIManager);
@@ -78,16 +70,16 @@ public class HighlighterSequenceView extends AbstractSequenceView
 	public void addNotify()
 	{
 		super.addNotify();
-		getSeed().pBackgroundBrowser().addHardListener(itsListener);
-		getSeed().pForegroundBrowser().addHardListener(itsListener);
+		getSeed().pBackgroundBrowser.addHardListener(this);
+		getSeed().pForegroundBrowsers.addHardListener(this);
 	}
 	
 	@Override
 	public void removeNotify()
 	{
 		super.removeNotify();
-		getSeed().pBackgroundBrowser().removeListener(itsListener);
-		getSeed().pForegroundBrowser().removeListener(itsListener);
+		getSeed().pBackgroundBrowser.removeListener(this);
+		getSeed().pForegroundBrowsers.removeListener(this);
 	}
 
 	@Override
@@ -95,16 +87,17 @@ public class HighlighterSequenceView extends AbstractSequenceView
 	{
 		List<BrowserData> theBrowsers = new ArrayList<BrowserData>();
 		
-		IEventBrowser theBackgroundBrowser = getSeed().pBackgroundBrowser().get();
+		IEventBrowser theBackgroundBrowser = getSeed().pBackgroundBrowser.get();
 		if(theBackgroundBrowser != null)
 		{
-			theBrowsers.add (new BrowserData(theBackgroundBrowser, Color.LIGHT_GRAY));
+			theBrowsers.add (new BrowserData(theBackgroundBrowser, Color.BLACK));
 		}
 		
-		IEventBrowser theForegroundBrowser = getSeed().pForegroundBrowser().get();
-		if (theForegroundBrowser != null) 
+		for (BrowserData theBrowserData : getSeed().pForegroundBrowsers)
 		{
-			theBrowsers.add (new BrowserData(theForegroundBrowser, Color.BLUE.darker()));
+			theBrowsers.add (new BrowserData(
+					theBackgroundBrowser.createIntersection(theBrowserData.browser.getFilter()), 
+					theBrowserData.color));
 		}
 		
 		return theBrowsers;
@@ -114,6 +107,29 @@ public class HighlighterSequenceView extends AbstractSequenceView
 	public String getTitle()
 	{
 		return getSeed().getTitle();
+	}
+
+
+	public void propertyChanged(IProperty aProperty, Object aOldValue, Object aNewValue)
+	{
+		update();
+	}
+
+
+	public void propertyValueChanged(IProperty aProperty)
+	{
+	}
+
+
+	public void elementAdded(IList aList, int aIndex, Object aElement)
+	{
+		update();
+	}
+
+
+	public void elementRemoved(IList aList, int aIndex, Object aElement)
+	{
+		update();
 	}
 
 }

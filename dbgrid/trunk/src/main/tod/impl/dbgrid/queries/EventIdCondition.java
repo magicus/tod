@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import tod.core.database.browser.ICompoundFilter;
+import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
@@ -74,7 +75,7 @@ public class EventIdCondition implements IEventFilter, ICompoundFilter
 		throw new UnsupportedOperationException();
 	}
 
-	private static class MyBrowser extends EventBrowser implements IGridEventBrowser
+	private class MyBrowser extends EventBrowser implements IGridEventBrowser
 	{
 		/**
 		 * To simplify the implementation we only allow bounds to be set once.
@@ -83,7 +84,7 @@ public class EventIdCondition implements IEventFilter, ICompoundFilter
 		
 		public MyBrowser(ILogBrowser aLogBrowser, List<ILogEvent> aEvents)
 		{
-			super(aLogBrowser, aEvents);
+			super(aLogBrowser, aEvents, EventIdCondition.this);
 		}
 
 		public void setBounds(ILogEvent aFirstEvent, ILogEvent aLastEvent)
@@ -102,6 +103,12 @@ public class EventIdCondition implements IEventFilter, ICompoundFilter
 					theIterator.remove();
 				}
 			}
+		}
+		
+		@Override
+		public IEventBrowser createIntersection(IEventFilter aFilter)
+		{
+			throw new UnsupportedOperationException("Not implemented yet");
 		}
 	}
 }

@@ -311,8 +311,7 @@ implements RIStructureDatabase
 		private Map<Integer, SourceRange> itsAdviceSourceMap = 
 			new HashMap<Integer, SourceRange>();
 		
-		private Map<String, AspectInfo> itsAspectInfoMap = 
-			new HashMap<String, AspectInfo>();
+		private Map<String, AspectInfo> itsAspectInfoMap;
 		
 		private final TODConfig itsConfig;
 		private final String itsId;

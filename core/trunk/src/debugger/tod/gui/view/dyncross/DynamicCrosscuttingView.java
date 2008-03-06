@@ -31,6 +31,10 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.view.dyncross;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -38,20 +42,31 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 
+import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IStructureDatabase;
-import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.IStructureDatabase.AspectInfo;
+import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
 import tod.gui.kit.SavedSplitPane;
+import tod.gui.seed.DynamicCrosscuttingSeed;
+import tod.gui.seed.DynamicCrosscuttingSeed.AdviceHighlight;
+import tod.gui.seed.DynamicCrosscuttingSeed.AspectHighlight;
+import tod.gui.seed.DynamicCrosscuttingSeed.Highlight;
 import tod.gui.view.LogView;
+import tod.gui.view.highlighter.EventHighlighter;
 import zz.utils.SimpleListModel;
-import zz.utils.Utils;
+import zz.utils.list.IList;
+import zz.utils.list.IListListener;
 import zz.utils.ui.StackLayout;
 
 /**
@@ -60,10 +75,20 @@ import zz.utils.ui.StackLayout;
  * @author gpothier
  */
 public class DynamicCrosscuttingView extends LogView
+implements IListListener<Highlight>
 {
-	public DynamicCrosscuttingView(IGUIManager aGUIManager, ILogBrowser aLog)
+	private static final Color[] COLORS = {
+		Color.BLUE, Color.DARK_GRAY, Color.CYAN, Color.GREEN, Color.MAGENTA, Color.ORANGE,
+		Color.PINK, Color.RED, Color.WHITE, Color.YELLOW
+	};
+	
+	private final DynamicCrosscuttingSeed itsSeed;
+	private EventHighlighter itsHighlighter;
+	
+	public DynamicCrosscuttingView(IGUIManager aGUIManager, ILogBrowser aLog, DynamicCrosscuttingSeed aSeed)
 	{
 		super(aGUIManager, aLog);
+		itsSeed = aSeed;
 	}
 
 	@Override
@@ -75,16 +100,21 @@ public class DynamicCrosscuttingView extends LogView
 		Map<String, AspectInfo> theMap = theStructureDatabase.getAspectInfoMap();
 		
 		// Create aspects list
-		List<AspectInfo> theAspectsList = new ArrayList<AspectInfo>();
-		Utils.fillCollection(theAspectsList, theMap.values());
+		List<AspectHighlight> theAspectsList = new ArrayList<AspectHighlight>();
+		for (AspectInfo theAspectInfo : theMap.values())
+		{
+			theAspectsList.add(new AspectHighlight(theAspectInfo));
+		}
 		
 		// Create advices list
-		List<SourceRange> theAdvicesList = new ArrayList<SourceRange>();
-		for (AspectInfo theAspectInfo : theAspectsList)
+		List<AdviceHighlight> theAdvicesList = new ArrayList<AdviceHighlight>();
+		for (AspectHighlight theHighlight : theAspectsList)
 		{
-			for (int theAdviceSourceId : theAspectInfo.getAdviceIds())
+			for (int theAdviceSourceId : theHighlight.getAspectInfo().getAdviceIds())
 			{
-				theAdvicesList.add(theStructureDatabase.getAdviceSource(theAdviceSourceId));
+				theAdvicesList.add(new AdviceHighlight(
+						theAdviceSourceId,
+						theStructureDatabase.getAdviceSource(theAdviceSourceId)));
 			}
 		}
 		
@@ -96,11 +126,23 @@ public class DynamicCrosscuttingView extends LogView
 				if (aE.getClickCount() == 2)
 				{
 					JList theList = (JList) aE.getSource();
-					addHighlight((Highlight) theList.getSelectedValue());
+					Highlight theHighlight = (Highlight) theList.getSelectedValue();
+					itsSeed.pHighlights.add(theHighlight);
+					
+					System.out.println("Events for: "+theHighlight);
+					IEventBrowser theBrowser = theHighlight.createBrowser(getLogBrowser());
+					while (theBrowser.hasNext())
+					{
+						ILogEvent theEvent = theBrowser.next();
+						System.out.println(theEvent);
+					}
 				}
 			}
 		};
 		
+		JSplitPane theSplitPane = new SavedSplitPane(getGUIManager(), "dynamicCrosscuttingView.splitterPos");
+
+		// Left part
 		JList theAspectsJList = new JList(new SimpleListModel(theAspectsList));
 		JList theAdvicesJList = new JList(new SimpleListModel(theAdvicesList));
 		
@@ -111,32 +153,120 @@ public class DynamicCrosscuttingView extends LogView
 		theTabbedPane.addTab("Aspects", new JScrollPane(theAspectsJList));
 		theTabbedPane.addTab("Advices", new JScrollPane(theAdvicesJList));
 		
-		JSplitPane theSplitPane = new SavedSplitPane(getGUIManager(), "dynamicCrosscuttingView.splitterPos");
+		// Right part
+		JPanel theRightPanel = new JPanel(new BorderLayout());
+		theRightPanel.add(new LegendPanel(), BorderLayout.SOUTH);
+		
+		itsHighlighter = new EventHighlighter(getGUIManager(), getLogBrowser());
+		theRightPanel.add(itsHighlighter, BorderLayout.CENTER);
 		
 		theSplitPane.setLeftComponent(theTabbedPane);
+		theSplitPane.setRightComponent(theRightPanel);
 		
 		setLayout(new StackLayout());
 		add(theSplitPane);
+	
+		setupHighlights();
+	}
+	
+	@Override
+	public void addNotify()
+	{
+		super.addNotify();
+		itsSeed.pHighlights.addHardListener(this);
+	}
+	
+	@Override
+	public void removeNotify()
+	{
+		super.removeNotify();
+		itsSeed.pHighlights.removeListener(this);
+	}
+
+	/**
+	 * Initial setup of highlights
+	 */
+	private void setupHighlights()
+	{
+		int i=0;
+		for(Highlight theHighlight : itsSeed.pHighlights)
+		{
+			itsHighlighter.pHighlightBrowsers.add(new BrowserData(
+					theHighlight.createBrowser(getLogBrowser()),
+					COLORS[i]));
+		}
+	}
+	
+	public void elementAdded(IList<Highlight> aList, int aIndex, Highlight aElement)
+	{
+		itsHighlighter.pHighlightBrowsers.add(aIndex, new BrowserData(
+				aElement.createBrowser(getLogBrowser()),
+				COLORS[aIndex]));
+	}
+
+	public void elementRemoved(IList<Highlight> aList, int aIndex, Highlight aElement)
+	{
+		itsHighlighter.pHighlightBrowsers.remove(aIndex);
+	}
+
+	private class LegendPanel extends JPanel
+	implements IListListener<Highlight>
+	{
+		public LegendPanel()
+		{
+			super(new FlowLayout());
+			int i=0;
+			for(Highlight theHighlight : itsSeed.pHighlights)
+			{
+				add(new LegendItem(theHighlight, COLORS[i]));
+			}
+		}
+		
+		@Override
+		public void addNotify()
+		{
+			super.addNotify();
+			itsSeed.pHighlights.addHardListener(this);
+		}
+		
+		@Override
+		public void removeNotify()
+		{
+			super.removeNotify();
+			itsSeed.pHighlights.removeListener(this);
+		}
+
+		public void elementAdded(IList<Highlight> aList, int aIndex, Highlight aElement)
+		{
+			add(new LegendItem(aElement, COLORS[aIndex]), null, aIndex);
+			revalidate();
+			repaint();
+		}
+
+		public void elementRemoved(IList<Highlight> aList, int aIndex, Highlight aElement)
+		{
+			remove(aIndex);
+		}
 		
 	}
 	
-	private void addHighlight(Highlight aHighlight)
+	private static class LegendItem extends JPanel
 	{
+		private final Highlight itsHighlight;
 		
-	}
-	
-	private static abstract class Highlight
-	{
-		
-	}
-	
-	private static class AspectHighlight extends Highlight
-	{
-		
-	}
-	
-	private static class AdviceHighlight extends Highlight
-	{
-		
+		public LegendItem(Highlight aHighlight, Color aMarkColor)
+		{
+			super(new FlowLayout(FlowLayout.LEFT));
+			
+			itsHighlight = aHighlight;
+			
+			JPanel theColorPanel = new JPanel(null);
+			theColorPanel.setBackground(aMarkColor);
+			theColorPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+			theColorPanel.setPreferredSize(new Dimension(30, 20));
+			add(theColorPanel);
+			
+			add(new JLabel(itsHighlight.toString()));
+		}
 	}
 }

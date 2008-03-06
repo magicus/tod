@@ -72,7 +72,7 @@ public class TestGroupingEventBrowser
 			theGroups.put(theEvent, theGroup > 4 ? theGroup : null);
 		}
 		
-		IEventBrowser theSourceBrowser = new EventBrowser(null, theEvents);
+		IEventBrowser theSourceBrowser = new EventBrowser(null, theEvents, null);
 		
 		IGroupDefinition<Integer> theGroupDefinition = new IGroupDefinition<Integer>()
 		{

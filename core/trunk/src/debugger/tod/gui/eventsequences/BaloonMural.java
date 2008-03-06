@@ -90,7 +90,7 @@ public class BaloonMural extends EventMural
 		ArrayList<IEventBrowser> theBrowsers = new ArrayList<IEventBrowser>(pEventBrowsers().size());
 		for (BrowserData theBrowserData : pEventBrowsers())
 		{
-			theBrowsers.add (theBrowserData.getBrowser());
+			theBrowsers.add (theBrowserData.browser);
 		}
 		MultiBrowser theBrowser = new MultiBrowser(theBrowsers);
 		

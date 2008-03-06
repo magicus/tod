@@ -36,6 +36,8 @@ import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -49,6 +51,7 @@ import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
 import zz.utils.ItemAction;
 import zz.utils.properties.IRWProperty;
+import zz.utils.ui.MouseModifiers;
 import zz.utils.ui.Orientation;
 import zz.utils.ui.text.XFont;
 
@@ -128,9 +131,41 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 					muralClicked();
 				}
 			});
+			itsMural.addMouseWheelListener(new MouseWheelListener()
+			{
+				public void mouseWheelMoved(MouseWheelEvent aE)
+				{
+					System.out.println(".mouseWheelMoved: "+aE.getWheelRotation());
+					if (MouseModifiers.getModifiers(aE) == MouseModifiers.CTRL)
+					{
+						zoom(-aE.getWheelRotation(), aE.getX());
+					}
+				}
+			});
 			update();
 		}
 		return itsMural;
+	}
+	
+	protected void zoom(int aAmount, int aX)
+	{
+		if (aAmount == 0) return;
+		
+		Long t1 = pStart().get();
+		Long t2 = pEnd().get();
+		
+		long w = t2-t1;
+		
+		// The timestamp corresponding to the mouse cursor
+		long t = t1+(long)(1f*w*aX/itsMural.getWidth());
+		
+		long nw = aAmount < 0 ? 
+				(long) (w * Math.pow(2, -0.5*aAmount))
+				: (long) (w / Math.pow(2, 0.5*aAmount));
+			
+		long s = t - (t-t1)*nw/w;
+		pStart().set(s);
+		pEnd().set(s+nw);
 	}
 
 	/**
@@ -199,7 +234,7 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 		long theFirst = Long.MAX_VALUE;
 		for (BrowserData theData : getBrowsers())
 		{
-			theFirst = Math.min(theFirst, theData.getBrowser().getFirstTimestamp());
+			theFirst = Math.min(theFirst, theData.browser.getFirstTimestamp());
 		}
 		return theFirst;
 	}
@@ -209,7 +244,7 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 		long theLast = 0;
 		for (BrowserData theData : getBrowsers())
 		{
-			theLast = Math.max(theLast, theData.getBrowser().getLastTimestamp());
+			theLast = Math.max(theLast, theData.browser.getLastTimestamp());
 		}
 		return theLast;
 	}

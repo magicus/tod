@@ -32,6 +32,7 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.gui.view;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 
 import javax.swing.JSplitPane;
 
@@ -40,6 +41,7 @@ import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.LocationUtils;
 import tod.core.database.event.ILogEvent;
+import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
 import tod.gui.eventlist.EventListPanel;
 import tod.gui.kit.Bus;
@@ -79,7 +81,10 @@ public class FilterView extends LogView implements IEventListView
 					getLogBrowser().createEventFilter(aNewValue)
 					: null;
 					
-			itsEventHighlighter.setFilter(theFilter);
+			itsEventHighlighter.pHighlightBrowsers.clear();
+			itsEventHighlighter.pHighlightBrowsers.add(new BrowserData(
+					getLogBrowser().createBrowser(theFilter),
+					Color.BLUE));
 		}
 	};
 	

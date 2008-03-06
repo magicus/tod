@@ -438,6 +438,11 @@ public interface IStructureDatabase
 			itsSourceFile = aSourceFile;
 		}
 		
+		public String getSourceFile()
+		{
+			return itsSourceFile;
+		}
+		
 		/**
 		 * Internal method, don't use it.
 		 */

@@ -33,9 +33,12 @@ package tod.gui.view.highlighter;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
+import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
 import tod.gui.eventsequences.IEventSequenceSeed;
 import tod.gui.eventsequences.IEventSequenceView;
+import zz.utils.list.IList;
+import zz.utils.list.ZArrayList;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
 
@@ -43,20 +46,22 @@ public class HighlighterSequenceSeed implements IEventSequenceSeed
 {
 	private String itsTitle;
 	
-	private IRWProperty<IEventBrowser> pBackgroundBrowser =
+	public final IRWProperty<IEventBrowser> pBackgroundBrowser =
 		new SimpleRWProperty<IEventBrowser>();
 	
-	private IRWProperty<IEventBrowser> pForegroundBrowser =
-		new SimpleRWProperty<IEventBrowser>();
+	public final IList<BrowserData> pForegroundBrowsers =
+		new ZArrayList<BrowserData>();
 
 	public HighlighterSequenceSeed(
 			String aTitle,
 			IEventBrowser aBackgroundBrowser,
-			IEventBrowser aForegroundBrowser)
+			BrowserData... aForegroundBrowsers)
 	{
 		itsTitle = aTitle;
 		pBackgroundBrowser.set(aBackgroundBrowser);
-		pForegroundBrowser.set(aForegroundBrowser);
+		
+		if (aForegroundBrowsers != null) for (BrowserData theBrowserData : aForegroundBrowsers) 
+			pForegroundBrowsers.add(theBrowserData);
 	}
 
 	public IEventSequenceView createView(IGUIManager aGUIManager)
@@ -64,33 +69,8 @@ public class HighlighterSequenceSeed implements IEventSequenceSeed
 		return new HighlighterSequenceView(aGUIManager, this);
 	}
 
-	public IRWProperty<IEventBrowser> pBackgroundBrowser()
-	{
-		return pBackgroundBrowser;
-	}
-
-	public IRWProperty<IEventBrowser> pForegroundBrowser()
-	{
-		return pForegroundBrowser;
-	}
-	
 	public String getTitle()
 	{
 		return itsTitle;
 	}
-
-	/**
-	 * Sets the foreground browser to the intersection of the background
-	 * browser and the specified filter.
-	 */
-	public void setFilter(IEventFilter aFilter)
-	{
-		IEventBrowser theEventBrowser = aFilter != null ? 
-				pBackgroundBrowser().get().createIntersection(aFilter)
-				: null;
-				
-		pForegroundBrowser().set(theEventBrowser);
-	}
-	
-	
 }

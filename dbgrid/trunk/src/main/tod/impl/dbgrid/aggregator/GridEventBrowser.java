@@ -67,6 +67,16 @@ implements IGridEventBrowser, IScheduled
 		reset();
 	}
 	
+	public GridLogBrowser getLogBrowser()
+	{
+		return itsBrowser;
+	}
+	
+	public IEventFilter getFilter()
+	{
+		return itsFilter;
+	}
+	
 	public ILogBrowser getKey()
 	{
 		return itsBrowser;
@@ -81,11 +91,6 @@ implements IGridEventBrowser, IScheduled
 	{
 		itsFirstEvent = aFirstEvent;
 		itsLastEvent = aLastEvent;
-	}
-	
-	public GridLogBrowser getLogBrowser()
-	{
-		return itsBrowser;
 	}
 	
 	@Override

@@ -113,6 +113,13 @@ public class SequenceViewsDock extends JPanel
 			if (itsTimestampSlider != null && aNewValue != null) 
 				itsTimestampSlider.setRangeStart(aNewValue);
 		}
+		
+		@Override
+		protected Object canChange(Long aOldValue, Long aNewValue)
+		{
+			if (aNewValue < itsFirstTimestamp) return itsFirstTimestamp;
+			else return ACCEPT;
+		}
 	};
 	
 	private IRWProperty<Long> pEnd = new SimpleRWProperty<Long>(this)
@@ -123,6 +130,13 @@ public class SequenceViewsDock extends JPanel
 			if (itsTimestampSlider != null && aNewValue != null)
 				itsTimestampSlider.setRangeEnd(aNewValue);
 		}
+		
+		@Override
+		protected Object canChange(Long aOldValue, Long aNewValue)
+		{
+			if (aNewValue > itsLastTimestamp) return itsLastTimestamp;
+			else return ACCEPT;
+		}
 	};
 
 	//slider with double handles defining the timestamp range in the murals
@@ -131,6 +145,10 @@ public class SequenceViewsDock extends JPanel
 	private JPanel itsViewsPanel;
 	
 	private final IGUIManager itsGUIManager;
+
+	private long itsFirstTimestamp;
+
+	private long itsLastTimestamp;
 	
 	public SequenceViewsDock(IGUIManager aGUIManager)
 	{
@@ -176,10 +194,9 @@ public class SequenceViewsDock extends JPanel
 		if (theSession == null) return;
 		
 		ILogBrowser theBrowser = theSession.getLogBrowser();
-		long theFirstTimestamp = theBrowser.getFirstTimestamp();
-		long theLastTimestamp = theBrowser.getLastTimestamp();
-		
-		itsTimestampSlider.setLimits(theFirstTimestamp, theLastTimestamp);
+		itsFirstTimestamp = theBrowser.getFirstTimestamp();
+		itsLastTimestamp = theBrowser.getLastTimestamp();
+		itsTimestampSlider.setLimits(itsFirstTimestamp, itsLastTimestamp);
 	}
 	
 	/**

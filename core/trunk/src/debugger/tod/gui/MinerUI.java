@@ -32,7 +32,6 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -48,17 +47,13 @@ import java.util.List;
 import java.util.Properties;
 
 import javax.swing.Action;
-import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRootPane;
-import javax.swing.UIManager;
 
 import tod.core.DebugFlags;
 import tod.core.config.TODConfig;
@@ -82,6 +77,7 @@ import tod.gui.kit.messages.ShowObjectHistoryMsg;
 import tod.gui.kit.messages.EventSelectedMsg.SM_ShowNextForLine;
 import tod.gui.kit.messages.EventSelectedMsg.SM_ShowPreviousForLine;
 import tod.gui.seed.CFlowSeed;
+import tod.gui.seed.DynamicCrosscuttingSeed;
 import tod.gui.seed.FilterSeed;
 import tod.gui.seed.FormattersSeed;
 import tod.gui.seed.LogViewSeed;
@@ -96,11 +92,8 @@ import tod.gui.view.controlflow.CFlowView;
 import tod.utils.TODUtils;
 import zz.utils.Base64;
 import zz.utils.SimpleAction;
-import zz.utils.ui.GridStackLayout;
 import zz.utils.ui.StackLayout;
-import zz.utils.ui.UIUtils;
 import zz.utils.ui.UniversalRenderer;
-import zz.utils.ui.popup.ButtonPopupComponent;
 
 /**
  * Main GUI window.
@@ -113,7 +106,7 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 	{
 		try
 		{
-			UIManager.setLookAndFeel("org.jdesktop.swingx.plaf.nimbus.NimbusLookAndFeel");
+//			UIManager.setLookAndFeel("org.jdesktop.swingx.plaf.nimbus.NimbusLookAndFeel");
 		}
 		catch (Exception e)
 		{
@@ -410,6 +403,22 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 			}
 			
 		});
+		
+		// Show formatters action
+		aActionCombo.add(new MyAction(
+				"Dynamic crosscutting",
+				"<html>" +
+				"<b>Dynamic crosscutting.</b> Shows the crosscutting of aspects/advices with base code.")
+		{
+			public void actionPerformed(ActionEvent aE)
+			{
+				ILogBrowser theLogBrowser = getSession().getLogBrowser();
+				LogViewSeed theSeed = new DynamicCrosscuttingSeed(MinerUI.this, theLogBrowser);
+				openSeed(theSeed, false);			
+			}
+		});
+		
+
 		
 		if (DebugFlags.SHOW_DEBUG_GUI)
 		{

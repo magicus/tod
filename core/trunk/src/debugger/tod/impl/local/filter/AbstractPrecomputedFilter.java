@@ -61,7 +61,7 @@ public abstract class AbstractPrecomputedFilter extends AbstractFilter
 	
 	public IEventBrowser createBrowser()
 	{
-		return new EventBrowser(getBrowser(), itsEvents);
+		return new EventBrowser(getBrowser(), itsEvents, this);
 	}
 	
 	public boolean accept(ILogEvent aEvent)

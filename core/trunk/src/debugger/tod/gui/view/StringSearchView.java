@@ -32,6 +32,7 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.gui.view;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -50,6 +51,7 @@ import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.ObjectId;
+import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
 import tod.gui.kit.SavedSplitPane;
 import tod.gui.seed.StringSearchSeed;
@@ -144,7 +146,10 @@ public class StringSearchView extends LogView
 		IEventFilter[] theFilterArray = theFilters.toArray(new IEventFilter[theFilters.size()]);
 		ICompoundFilter theFilter = getLogBrowser().createUnionFilter(theFilterArray);
 		
-		itsEventHighlighter.setFilter(theFilter);
+		itsEventHighlighter.pHighlightBrowsers.clear();
+		itsEventHighlighter.pHighlightBrowsers.add(new BrowserData(
+				getLogBrowser().createBrowser(theFilter),
+				Color.BLUE));
 	}
 	
 	private void search(String aText)
