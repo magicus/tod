@@ -28,7 +28,7 @@
             <pathelement path="${lib.dir}/reflex-core.jar"/>
             <pathelement path="${lib.dir}/javassist.jar"/>
             <pathelement path="${lib.dir}/pom.jar"/>
-            <pathelement path="${lib.dir}/javafxrt.jar"/>
+            <pathelement path="${lib.dir}/infovis.jar"/>
         </path>
     	
         <path id="test.classpath">
