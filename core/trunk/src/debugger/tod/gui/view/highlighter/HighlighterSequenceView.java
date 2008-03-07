@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.core.database.browser.IEventBrowser;
+import tod.core.database.event.ILogEvent;
 import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
 import tod.gui.eventsequences.AbstractSequenceView;
@@ -109,6 +110,11 @@ implements IPropertyListener, IListListener
 		return getSeed().getTitle();
 	}
 
+	@Override
+	protected ILogEvent getEventAt(long aTimestamp, long aTolerance)
+	{
+		return getEventAt(itsSeed.pBackgroundBrowser.get().clone(), aTimestamp, aTolerance);
+	}
 
 	public void propertyChanged(IProperty aProperty, Object aOldValue, Object aNewValue)
 	{

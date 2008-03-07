@@ -87,8 +87,8 @@ public class BaloonMural extends EventMural
 		if (! isReady()) return;
 		
 		// Create the multibrowser.
-		ArrayList<IEventBrowser> theBrowsers = new ArrayList<IEventBrowser>(pEventBrowsers().size());
-		for (BrowserData theBrowserData : pEventBrowsers())
+		ArrayList<IEventBrowser> theBrowsers = new ArrayList<IEventBrowser>(pEventBrowsers.size());
+		for (BrowserData theBrowserData : pEventBrowsers)
 		{
 			theBrowsers.add (theBrowserData.browser);
 		}
@@ -98,8 +98,8 @@ public class BaloonMural extends EventMural
 		int w = getWidth();
 		int x = 0;
 		
-		long t1 = pStart().get();
-		long t2 = pEnd().get();
+		long t1 = pStart.get();
+		long t2 = pEnd.get();
 		
 		if (t1 == t2) return;
 		

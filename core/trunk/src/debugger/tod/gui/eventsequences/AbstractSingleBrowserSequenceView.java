@@ -36,6 +36,8 @@ import java.util.Collections;
 import java.util.List;
 
 import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.ILogEvent;
 import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
 
@@ -74,5 +76,10 @@ public abstract class AbstractSingleBrowserSequenceView extends AbstractSequence
 		return getBrowser().getLastTimestamp();
 	}
 
+	@Override
+	protected ILogEvent getEventAt(long aTimestamp, long aTolerance)
+	{
+		return getEventAt(getBrowser().clone(), aTimestamp, aTolerance);
+	}
 	
 }

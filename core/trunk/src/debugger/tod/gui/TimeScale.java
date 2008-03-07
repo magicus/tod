@@ -244,7 +244,7 @@ public class TimeScale extends JPanel
 	 */
 	public IRWProperty<Long> pStart ()
 	{
-		return itsMural.pStart();
+		return itsMural.pStart;
 	}
 	
 	/**
@@ -253,7 +253,7 @@ public class TimeScale extends JPanel
 	 */
 	public IRWProperty<Long> pEnd ()
 	{
-		return itsMural.pEnd();
+		return itsMural.pEnd;
 	}
 	
 	/**
@@ -262,7 +262,7 @@ public class TimeScale extends JPanel
 	 */
 	public IListProperty<BrowserData> pEventBrowsers ()
 	{
-		return itsMural.pEventBrowsers();
+		return itsMural.pEventBrowsers;
 	}
 	
 	

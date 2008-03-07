@@ -39,33 +39,38 @@ import java.awt.GraphicsConfiguration;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
-import java.awt.RenderingHints.Key;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import javax.swing.JPanel;
+import javax.swing.JLabel;
 import javax.swing.Timer;
 
 import tod.core.database.browser.IEventBrowser;
+import tod.core.database.event.ILogEvent;
 import tod.gui.BrowserData;
 import tod.utils.TODUtils;
 import zz.utils.Cleaner;
+import zz.utils.notification.IEvent;
+import zz.utils.notification.IFireableEvent;
+import zz.utils.notification.SimpleEvent;
 import zz.utils.properties.ArrayListProperty;
 import zz.utils.properties.IListProperty;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
+import zz.utils.ui.MouseModifiers;
+import zz.utils.ui.MouseWheelPanel;
 import zz.utils.ui.Orientation;
 import zz.utils.ui.UIUtils;
 
@@ -74,12 +79,15 @@ import zz.utils.ui.UIUtils;
  * of sequences of events.
  * @author gpothier
  */
-public class EventMural extends JPanel
+public class EventMural extends MouseWheelPanel
 {
 	private static final ImageUpdater itsUpdater = new ImageUpdater();
 	private final Orientation itsOrientation;
 	
-	private IRWProperty<Long> pStart = new SimpleRWProperty<Long>(this)
+	/**
+	 * The first timestamp of the displayed time range.
+	 */
+	public final IRWProperty<Long> pStart = new SimpleRWProperty<Long>(this)
 	{
 		@Override
 		protected void changed(Long aOldValue, Long aNewValue)
@@ -88,7 +96,10 @@ public class EventMural extends JPanel
 		}
 	};
 	
-	private IRWProperty<Long> pEnd = new SimpleRWProperty<Long>(this)
+	/**
+	 * The last timestamp of the displayed time range.
+	 */
+	public final IRWProperty<Long> pEnd = new SimpleRWProperty<Long>(this)
 	{
 		@Override
 		protected void changed(Long aOldValue, Long aNewValue)
@@ -97,7 +108,10 @@ public class EventMural extends JPanel
 		}
 	};
 	
-	private IListProperty<BrowserData> pEventBrowsers = new ArrayListProperty<BrowserData>(this)
+	/**
+	 * The list of event browsers displayed in this mural.
+	 */
+	public final IListProperty<BrowserData> pEventBrowsers = new ArrayListProperty<BrowserData>(this)
 	{
 		@Override
 		protected void contentChanged()
@@ -105,6 +119,17 @@ public class EventMural extends JPanel
 			markDirty();
 		}
 	};
+	
+	/**
+	 * This event is fired when the mural receices a click and has no 
+	 * associated action to perform.
+	 */
+	public final IEvent<MouseEvent> eClicked = new SimpleEvent<MouseEvent>(); 
+
+	/**
+	 * This event is fired when an event is clicked.
+	 */
+	public final IEvent<ILogEvent> eEventClicked = new SimpleEvent<ILogEvent>();
 	
 	private Cleaner itsImageCleaner = new Cleaner()
 	{
@@ -116,13 +141,23 @@ public class EventMural extends JPanel
 		}
 	};
 	
+	
 	/**
 	 * Mural image (one version per display).
 	 */
 	private ImageData itsImage; 
 	
+	/**
+	 * This timer permits to animate the mural while counts are being retrieved
+	 * from the db.
+	 */
 	private Timer itsTimer;
 
+	/**
+	 * The event whose details are currently displayed
+	 */
+	private ILogEvent itsCurrentEvent;
+	private JLabel itsCurrentEventLabel;
 	
 	public EventMural(Orientation aOrientation)
 	{
@@ -145,6 +180,10 @@ public class EventMural extends JPanel
 				markDirty();
 			}
 		});
+		
+		itsCurrentEventLabel = new JLabel();
+		itsCurrentEventLabel.setVisible(false);
+		add(itsCurrentEventLabel);
 	}
 
 	public EventMural(Orientation aOrientation, IEventBrowser aBrowser)
@@ -154,39 +193,12 @@ public class EventMural extends JPanel
 	}
 
 	/**
-	 * Returns the property that contains the starting timestamp of 
-	 * the displayed time range.
-	 */
-	public IRWProperty<Long> pStart ()
-	{
-		return pStart;
-	}
-	
-	/**
-	 * Returns the property that contains the ending timestamp of 
-	 * the displayed time range.
-	 */
-	public IRWProperty<Long> pEnd ()
-	{
-		return pEnd;
-	}
-	
-	/**
-	 * Returns the property that contains the list of event browsers
-	 * displayed in this timescale.
-	 */
-	public IListProperty<BrowserData> pEventBrowsers ()
-	{
-		return pEventBrowsers;
-	}
-	
-	/**
 	 * Returns true only if all required information is available (bounds, range, etc).
 	 */
 	protected boolean isReady()
 	{
-		return pStart().get() != null 
-			&& pEnd().get() != null;
+		return pStart.get() != null 
+			&& pEnd.get() != null;
 	}
 	
 	protected void markDirty()
@@ -210,7 +222,7 @@ public class EventMural extends JPanel
 	@Override
 	protected void paintComponent(Graphics aGraphics)
 	{
-		if (pEventBrowsers().isEmpty()) 
+		if (pEventBrowsers.isEmpty()) 
 		{
 			super.paintComponent(aGraphics);
 			return;
@@ -251,13 +263,124 @@ public class EventMural extends JPanel
 			itsTimer.start();
 		}
 	}
+	
+	protected IFireableEvent<MouseEvent> eClicked()
+	{
+		return (IFireableEvent<MouseEvent>) eClicked;
+	}
+	
+	protected IFireableEvent<ILogEvent> eEventClicked()
+	{
+		return (IFireableEvent<ILogEvent>) eEventClicked;
+	}
+	
+	private ILogEvent getEventAt(int aX)
+	{
+		if (! itsImage.isUpToDate()) return null;
+		
+		Long t1 = pStart.get();
+		Long t2 = pEnd.get();
+		
+		long w = t2-t1;
+		
+		// The timestamp corresponding to the mouse cursor
+		long t = t1+(long)(1f*w*aX/getWidth());
+		long d = (long)(2f*w/getWidth());
+
+		return getEventAt(t, d);
+	}
+	
+	/**
+	 * Returns the event for which details should be displayed at the specified timestamp.
+	 * Returns null by default.
+	 * @param aTimestamp The timestamp of the event to retrieve
+	 * @param aTolerance The allowed tolerance for the actual event timestamp
+	 */
+	protected ILogEvent getEventAt(long aTimestamp, long aTolerance)
+	{
+		return null;
+	}
+	
+	private void updateEventInfo(int aX)
+	{
+		ILogEvent theEvent = getEventAt(aX);
+		if (theEvent == itsCurrentEvent) return;
+		
+		itsCurrentEvent = theEvent;
+		if (theEvent == null) itsCurrentEventLabel.setVisible(false);
+		else
+		{
+			itsCurrentEventLabel.setText(itsCurrentEvent.toString());
+			Dimension theSize = itsCurrentEventLabel.getPreferredSize();
+			int theX = aX;
+			if (theX+theSize.width > getWidth()) theX = getWidth()-theSize.width;
+			if (theX < 0) theX = 0;
+			itsCurrentEventLabel.setBounds(theX, 5, theSize.width, theSize.height);
+			itsCurrentEventLabel.setVisible(true);
+		}
+		repaint();
+	}
+	
+	@Override
+	public void mouseMoved(MouseEvent aE)
+	{
+		if (MouseModifiers.getModifiers(aE) == MouseModifiers.CTRL)
+		{
+			updateEventInfo(aE.getX());
+		}
+	}
+	
+	@Override
+	public void mousePressed(MouseEvent aE)
+	{
+		MouseModifiers theModifiers = MouseModifiers.getModifiers(aE);
+		if (theModifiers == MouseModifiers.CTRL)
+		{
+			updateEventInfo(aE.getX());
+			if (itsCurrentEvent != null) eEventClicked().fire(itsCurrentEvent);
+		}
+		else eClicked().fire(aE);
+	}
+	
+	@Override
+	public void mouseWheelMoved(MouseWheelEvent aE)
+	{
+		System.out.println(".mouseWheelMoved: "+aE.getWheelRotation());
+		if (MouseModifiers.getModifiers(aE) == MouseModifiers.CTRL)
+		{
+			zoom(-aE.getWheelRotation(), aE.getX());
+		}
+	}
+
+	protected void zoom(int aAmount, int aX)
+	{
+		if (aAmount == 0) return;
+		
+		Long t1 = pStart.get();
+		Long t2 = pEnd.get();
+		
+		long w = t2-t1;
+		
+		// The timestamp corresponding to the mouse cursor
+		long t = t1+(long)(1f*w*aX/getWidth());
+		
+		long nw = aAmount < 0 ? 
+				(long) (w * Math.pow(2, -0.5*aAmount))
+				: (long) (w / Math.pow(2, 0.5*aAmount));
+			
+		long s = t - (t-t1)*nw/w;
+		pStart.set(s);
+		pEnd.set(s+nw);
+	}
+
+
 
 	/**
 	 * @param aSum If true, values of each series are summed and the resulting
 	 * color is a proportional mix of all colors.
 	 * If false, the series are "stacked" using the painter's algorithm.
 	 */
-	public static void paintMural (
+	public static long[][] paintMural (
 			Graphics2D aGraphics, 
 			Rectangle aBounds,
 			long aT1,
@@ -265,7 +388,7 @@ public class EventMural extends JPanel
 			Collection<BrowserData> aBrowserData,
 			boolean aSum)
 	{
-		if (aT1 == aT2) return;
+		if (aT1 == aT2) return null;
 		long[][] theValues = new long[aBrowserData.size()][];
 		Color[] theColors = new Color[aBrowserData.size()];
 		
@@ -281,6 +404,8 @@ public class EventMural extends JPanel
 		
 		if (aSum) paintMuralAvg(aGraphics, aBounds, theValues, theColors);
 		else paintMuralStack(aGraphics, aBounds, theValues, theColors);
+		
+		return theValues;
 	}
 	
 	/**
@@ -500,21 +625,22 @@ public class EventMural extends JPanel
 			}
 			theGraphics.setColor(Color.WHITE);
 			theGraphics.fillRect(0, 0, u, v);
-			Long theStart = aMural.pStart().get();
-			Long theEnd = aMural.pEnd().get();
+			Long theStart = aMural.pStart.get();
+			Long theEnd = aMural.pEnd.get();
 			
 			System.out.println("[ImageUpdater] doUpdateImage ["+theStart+"-"+theEnd+"]");
 			
 			// Paint
-			paintMural(
+			long[][] theValues = paintMural(
 					theGraphics, 
 					new Rectangle(0, 0, u, v), 
 					theStart, 
 					theEnd, 
-					aMural.pEventBrowsers(),
+					aMural.pEventBrowsers,
 					false);
 
 			theImageData.setUpToDate(true);
+			theImageData.setValues(theValues);
 			aMural.repaint();
 		}
 	}
@@ -522,6 +648,15 @@ public class EventMural extends JPanel
 	private static class ImageData
 	{
 		private BufferedImage itsImage;
+		
+		/**
+		 * The count values displayed in the image.
+		 */
+		private long[][] itsValues;
+		
+		/**
+		 * Whether the image/values are up to date.
+		 */
 		private boolean itsUpToDate;
 		
 		public ImageData(BufferedImage aImage)
@@ -544,7 +679,15 @@ public class EventMural extends JPanel
 		{
 			itsUpToDate = aUpToDate;
 		}
-		
-		
+
+		public long[][] getValues()
+		{
+			return itsValues;
+		}
+
+		public void setValues(long[][] aValues)
+		{
+			itsValues = aValues;
+		}
 	}
 }

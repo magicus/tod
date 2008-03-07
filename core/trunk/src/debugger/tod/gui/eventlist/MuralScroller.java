@@ -167,10 +167,10 @@ public class MuralScroller extends JPanel
 		// Setup mural
 		if (DebugFlags.COMPUTE_SCROLLER_MURALS)
 		{
-			itsMural.pStart().set(itsStart);
-			itsMural.pEnd().set(itsEnd);
-			itsMural.pEventBrowsers().clear();
-			itsMural.pEventBrowsers().add(new BrowserData(itsBrowser, Color.BLACK));
+			itsMural.pStart.set(itsStart);
+			itsMural.pEnd.set(itsEnd);
+			itsMural.pEventBrowsers.clear();
+			itsMural.pEventBrowsers.add(new BrowserData(itsBrowser, Color.BLACK));
 			itsMural.repaint();
 		}
 		

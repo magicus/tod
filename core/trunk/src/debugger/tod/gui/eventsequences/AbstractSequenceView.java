@@ -36,8 +36,6 @@ import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -49,9 +47,11 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
+import tod.gui.seed.CFlowSeed;
 import zz.utils.ItemAction;
+import zz.utils.notification.IEvent;
+import zz.utils.notification.IEventListener;
 import zz.utils.properties.IRWProperty;
-import zz.utils.ui.MouseModifiers;
 import zz.utils.ui.Orientation;
 import zz.utils.ui.text.XFont;
 
@@ -110,11 +110,8 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 	 */
 	protected void update()
 	{
-		itsMural.pEventBrowsers().clear();
-		for(BrowserData theData : getBrowsers())
-		{
-			itsMural.pEventBrowsers().add(theData);			
-		}
+		itsMural.pEventBrowsers.clear();
+		for(BrowserData theData : getBrowsers()) itsMural.pEventBrowsers.add(theData);			
 		
 	}
 
@@ -123,23 +120,19 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 		if (itsMural == null) 
 		{
 			itsMural = new MyMural();
-			itsMural.addMouseListener(new MouseAdapter()
+			itsMural.eClicked.addListener(new IEventListener<MouseEvent>()
 			{
-				@Override
-				public void mousePressed(MouseEvent aE)
+				public void fired(IEvent< ? extends MouseEvent> aEvent, MouseEvent aData)
 				{
 					muralClicked();
 				}
 			});
-			itsMural.addMouseWheelListener(new MouseWheelListener()
+			
+			itsMural.eEventClicked.addListener(new IEventListener<ILogEvent>()
 			{
-				public void mouseWheelMoved(MouseWheelEvent aE)
+				public void fired(IEvent< ? extends ILogEvent> aEvent, ILogEvent aData)
 				{
-					System.out.println(".mouseWheelMoved: "+aE.getWheelRotation());
-					if (MouseModifiers.getModifiers(aE) == MouseModifiers.CTRL)
-					{
-						zoom(-aE.getWheelRotation(), aE.getX());
-					}
+					eventClicked(aData);
 				}
 			});
 			update();
@@ -147,32 +140,19 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 		return itsMural;
 	}
 	
-	protected void zoom(int aAmount, int aX)
-	{
-		if (aAmount == 0) return;
-		
-		Long t1 = pStart().get();
-		Long t2 = pEnd().get();
-		
-		long w = t2-t1;
-		
-		// The timestamp corresponding to the mouse cursor
-		long t = t1+(long)(1f*w*aX/itsMural.getWidth());
-		
-		long nw = aAmount < 0 ? 
-				(long) (w * Math.pow(2, -0.5*aAmount))
-				: (long) (w / Math.pow(2, 0.5*aAmount));
-			
-		long s = t - (t-t1)*nw/w;
-		pStart().set(s);
-		pEnd().set(s+nw);
-	}
-
 	/**
 	 * Called when the mural is clicked, does nothing by default
 	 */
 	protected void muralClicked()
 	{
+	}
+
+	/**
+	 * Called when an event in the mural is clicked.
+	 */
+	protected void eventClicked(ILogEvent aEvent)
+	{
+		getGUIManager().openSeed(new CFlowSeed(getGUIManager(), getLogBrowser(), aEvent), false);
 	}
 	
 	/**
@@ -185,12 +165,12 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 	
 	public IRWProperty<Long> pStart()
 	{
-		return itsMural.pStart();
+		return itsMural.pStart;
 	}
 	
 	public IRWProperty<Long> pEnd()
 	{
-		return itsMural.pEnd();
+		return itsMural.pEnd;
 	}
 
 	/**
@@ -255,24 +235,49 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 	 * right position.
 	 * @see EventMural#getBaloon(ILogEvent)
 	 */
+	@Deprecated
 	protected JComponent getBaloon(ILogEvent aEvent)
 	{
 		return null;
 	}
+	
+	/**
+	 * Hook for subclasses to cause the mural to display/select a particular event for the given timestamp.
+	 */
+	protected ILogEvent getEventAt(long aTimestamp, long aTolerance)
+	{
+		return null;
+	}
+	
+	/**
+	 * Utility method that can be used in implementing {@link #getEventAt(long, long)}.
+	 * @param aTolerance TODO
+	 */
+	protected ILogEvent getEventAt(IEventBrowser aBrowser, long aTimestamp, long aTolerance)
+	{
+		aBrowser.setNextTimestamp(aTimestamp);
+		if (aBrowser.hasNext())
+		{
+			ILogEvent theEvent = aBrowser.next();
+			return Math.abs(theEvent.getTimestamp()-aTimestamp) < aTolerance ? theEvent : null;
+		}
+		else return null;
+	}
 
-	private class MyMural extends BaloonMural
+
+	private class MyMural extends EventMural
 	{
 		private MyMural()
 		{
 			super(Orientation.HORIZONTAL);
 		}
 
-		@Override
-		protected JComponent getBaloon(ILogEvent aEvent)
-		{
-			return AbstractSequenceView.this.getBaloon(aEvent);
-		}
-		
+//		@Override
+//		protected JComponent getBaloon(ILogEvent aEvent)
+//		{
+//			return AbstractSequenceView.this.getBaloon(aEvent);
+//		}
+//		
 		@Override
 		public void addNotify()
 		{
@@ -285,6 +290,13 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 		{
 			super.removeNotify();
 			AbstractSequenceView.this.removeNotify();
+		}
+		
+		
+		@Override
+		protected ILogEvent getEventAt(long aTimestamp, long aTolerance)
+		{
+			return AbstractSequenceView.this.getEventAt(aTimestamp, aTolerance);
 		}
 	}
 }
