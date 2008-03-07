@@ -87,7 +87,6 @@
 			inheritall="false"/>
 		<copy todir="lib">
 			<fileset dir="${tod.dir}/build" includes="tod-debugger.jar tod-agent.jar"/>
-			<fileset dir="${tod.dir}" includes="*.so *.dll"/>
 		</copy>
 	</target>
 
@@ -111,6 +110,7 @@
 		<echo message="Finished building tod-agent"/>
 		<copy todir="lib">
 			<fileset dir="${tod-agent.dir}/build" includes="tod-agent.jar"/>
+			<fileset dir="${tod-agent.dir}" includes="*.so *.dll"/>
 		</copy>
 	</target>		
 
