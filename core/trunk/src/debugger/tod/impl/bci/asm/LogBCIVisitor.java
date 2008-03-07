@@ -516,7 +516,8 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 				InstantiationInfo theInfo = itsInstantiationInfoStack.pop();
 				if (theInfo.getInstantiatedTypeId() != theCalledTypeId)
 					throw new RuntimeException(String.format(
-							"Type mismatch in %s (found %d, expected %d)",
+							"[LogBCIVisitor] Type mismatch in %s.%s (found %d, expected %d)",
+							itsClassInfo.getName(),
 							itsMethodInfo.getName(),
 							theCalledTypeId,
 							theInfo.getInstantiatedTypeId()));

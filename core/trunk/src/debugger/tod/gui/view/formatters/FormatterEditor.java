@@ -42,6 +42,7 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
@@ -144,6 +145,7 @@ public class FormatterEditor extends JPanel
 	public void removeNotify()
 	{
 		super.removeNotify();
+		itsFormatter.clearRecognizedTypes();
 		for (String theType : itsRecognizedTypes) itsFormatter.addRecognizedType(theType);
 	}
 	
@@ -236,7 +238,7 @@ public class FormatterEditor extends JPanel
 			});
 			
 			setLayout(new StackLayout());
-			add(itsTextArea);
+			add(new JScrollPane(itsTextArea));
 		}
 		
 		protected abstract String load();

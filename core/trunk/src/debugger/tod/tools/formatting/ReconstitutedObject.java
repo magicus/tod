@@ -39,6 +39,7 @@ import tod.core.database.structure.ObjectId;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
 import tod.gui.formatter.CustomFormatterRegistry;
+import zz.utils.Utils;
 
 /**
  * Represents an object of the debugged VM at a given point in time.
@@ -60,10 +61,16 @@ public class ReconstitutedObject
 	public Object get(String aFieldName)
 	{
 		IFieldInfo theField = itsClass.getField(aFieldName);
+		if (theField == null) 
+		{
+			if (itsClass.isInScope()) Utils.rtex("Field %s not found in class %s.", aFieldName, itsClass.getName());
+			else Utils.rtex("Class %s is not in scope, cannot access field %s.", itsClass.getName(), aFieldName);
+		}
+		
 		Object[] theEntryValues = itsInspector.getEntryValue(theField);
 		if (theEntryValues == null || theEntryValues.length > 1) throw new RuntimeException("What do we do? "+theEntryValues);
 		
-		Object theValue = theEntryValues[0];
+		Object theValue = theEntryValues.length == 1 ? theEntryValues[0] : null;
 		
 		ILogBrowser theLogBrowser = itsInspector.getLogBrowser();
 		
@@ -82,17 +89,18 @@ public class ReconstitutedObject
 			theInspector.setReferenceEvent(itsInspector.getReferenceEvent());
 			return FormatterFactory.getInstance().wrap(itsGUIManager, theInspector);
 		}
-		else 
+		else if (theValue != null)
 		{
 			return Hyperlinks.object(
 					Hyperlinks.TEXT, 
 					itsGUIManager, 
-					itsGUIManager.getJobProcessor(),
+					itsGUIManager != null ? itsGUIManager.getJobProcessor() : null,
 					null,
 					theValue,
 					itsInspector.getReferenceEvent(), 
 					false);
 		}
+		else return null;
 	}
 	
 	/**
@@ -101,6 +109,17 @@ public class ReconstitutedObject
 	public String format()
 	{
 		return CustomFormatterRegistry.formatObjectShort(itsGUIManager, itsInspector, false);
+	}
+	
+	@Override
+	public boolean equals(Object aObj)
+	{
+		if (aObj instanceof ReconstitutedObject)
+		{
+			ReconstitutedObject theOther = (ReconstitutedObject) aObj;
+			return theOther.itsInspector.getObject().equals(itsInspector.getObject());
+		}
+		else return false;
 	}
 	
 	@Override

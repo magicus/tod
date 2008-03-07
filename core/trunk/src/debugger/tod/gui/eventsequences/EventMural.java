@@ -507,13 +507,13 @@ public class EventMural extends MouseWheelPanel
 					aGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 					aGraphics.setColor(c1);
 					aGraphics.fill(makeTriangle(aBounds.x + i, theY+theHeight+(j*MARK_HEIGHT), MARK_HEIGHT));
+					
+					// Draw proportional bar
+					aGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+					int h = (int) ((theHeight * t) / theMaxT);
+					aGraphics.setColor(c2);
+					aGraphics.fillRect(aBounds.x + i, theY+theHeight-h, 1, h);
 				}
-				
-				// Draw proportional bar
-				aGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-				int h = (int) ((theHeight * t) / theMaxT);
-				aGraphics.setColor(c2);
-				aGraphics.fillRect(aBounds.x + i, theY+theHeight-h, 1, h);
 			}
 		}
 		aGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, theOriginalAA);

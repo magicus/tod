@@ -1,6 +1,7 @@
 from tod.tools.formatting import IPyObjectFormatter, IPyFormatterFactory;
 
 class TODObject:
+    
     "A reconstituted TOD object"
     robj = None
     
@@ -16,12 +17,22 @@ class TODObject:
     def __radd__(self, other):
         return other+str(self)
     
+    def __eq__(self, other):
+        if isinstance(other, TODObject):
+            return self.robj == other.robj
+        else:
+            return self is other
+    
+    def __ne__(self, other):
+        return not (self == other) 
+    
     def __getattr__(self, name):
         #print "get: "+name
         return self.robj.get(name)
     
 class PyObjectFormatter(IPyObjectFormatter):
-    "A function that takes a TODObject and returns a string"
+    
+    "A function that takes a TODObject and returns a representation of that object (string or otherwise)"
     func = None
     
     def __init__(self, func):
@@ -29,7 +40,7 @@ class PyObjectFormatter(IPyObjectFormatter):
     
     def format(self, robj):
         o = TODObject(robj)
-        return str(self.func(o))
+        return self.func(o)
     
 class PyFormatterFactory(IPyFormatterFactory):
     def createFormatter(self, func):

@@ -57,7 +57,7 @@ import tod.gui.kit.messages.ShowObjectMsg;
 import tod.gui.kit.messages.ShowTypeMsg;
 import zz.utils.ui.ZLabel;
 
-/**
+/** 
  * This class contains static methods that created standard
  * hyperlinks for types, methods, etc.
  * @author gpothier

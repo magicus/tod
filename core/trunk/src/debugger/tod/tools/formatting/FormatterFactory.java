@@ -69,9 +69,15 @@ public class FormatterFactory
 
 	private FormatterFactory()
 	{
+		String theTmpDir = System.getProperty("java.io.tmpdir");
+		System.setProperty("python.home", theTmpDir);
+		initFactory();
+	}
+	
+	private void initFactory()
+	{
 		try
 		{
-			System.setProperty("python.home", "/home/gpothier/tmp/tod");
 			String theScript = Utils.readInputStream(FormatterFactory.class.getResourceAsStream("formatter.py"));
 			itsInterpreter = new PythonInterpreter();
 			itsInterpreter.setLocals(new PyStringMap());
@@ -107,10 +113,14 @@ public class FormatterFactory
 	 */
 	public IPyObjectFormatter createFormatter(String aFunctionBody)
 	{
-		String theDef = "def func(o):\n\t"+aFunctionBody;
+//		initFactory(); // Temp. This is for debugging.
+		
+		String theImports = "from java.util import *\n";
+		String theDef = theImports+"def func(o):\n"+Utils.indent(aFunctionBody, 1, "\t");
 		itsInterpreter.exec(theDef);
 		PyFunction theFunction = (PyFunction) itsInterpreter.get("func");
 		
 		return itsFactory.createFormatter(theFunction);
 	}
+	
 }

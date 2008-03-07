@@ -462,7 +462,7 @@ public class StructureDatabase implements IShareableStructureDatabase
 			SourceRange thePrevious = itsAdviceSourceMap.put(theId, theRange);
 			if (thePrevious != null && ! thePrevious.equals(theRange))
 			{
-				TODUtils.rtex(
+				Utils.rtex(
 						"Advice source inconsistency for id %d (prev.: %s, new: %s)", 
 						theId,
 						thePrevious,

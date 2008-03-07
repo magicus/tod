@@ -33,6 +33,8 @@ package tod.gui.formatter;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.Set;
 
 import tod.core.database.browser.IObjectInspector;
@@ -41,6 +43,7 @@ import tod.gui.IGUIManager;
 import tod.tools.formatting.FormatterFactory;
 import tod.tools.formatting.IPyObjectFormatter;
 import tod.tools.formatting.ReconstitutedObject;
+import zz.utils.Utils;
 
 /**
  * An object formatter defined by the user.
@@ -122,6 +125,17 @@ public class CustomObjectFormatter implements Serializable
 		return itsRecognizedTypes;
 	}
 
+	public void clearRecognizedTypes()
+	{
+		Iterator<String> theIterator = itsRecognizedTypes.iterator();
+		while (theIterator.hasNext())
+		{
+			String theType = theIterator.next();
+			theIterator.remove();
+			itsRegistry.unregister(this, theType);
+		}
+	}
+	
 	public void addRecognizedType(String aType)
 	{
 		if (itsRecognizedTypes.add(aType)) itsRegistry.register(this, aType);
@@ -129,7 +143,7 @@ public class CustomObjectFormatter implements Serializable
 	
 	public void removeRecognizedType(String aType)
 	{
-		if (itsRecognizedTypes.remove(aType)) itsRegistry.register(this, aType);
+		if (itsRecognizedTypes.remove(aType)) itsRegistry.unregister(this, aType);
 	}
 	
 	/**
@@ -156,7 +170,7 @@ public class CustomObjectFormatter implements Serializable
 	 */
 	public String formatShort(IGUIManager aGUIManager, IObjectInspector aInspector)
 	{
-		return getFormatter(false).format(new ReconstitutedObject(aGUIManager, aInspector));
+		return format(false, aGUIManager, aInspector);
 	}
 	
 	/**
@@ -164,7 +178,30 @@ public class CustomObjectFormatter implements Serializable
 	 */
 	public String formatLong(IGUIManager aGUIManager, IObjectInspector aInspector)
 	{
-		return getFormatter(true).format(new ReconstitutedObject(aGUIManager, aInspector));
+		return format(true, aGUIManager, aInspector);
 	}
-	
+
+	private String format(boolean aLong, IGUIManager aGUIManager, IObjectInspector aInspector)
+	{
+		IPyObjectFormatter theFormatter;
+		try
+		{
+			theFormatter = getFormatter(true);
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			return "**Bad formatter: "+Utils.getRootCause(e).getMessage()+"**";
+		}
+		
+		try
+		{
+			return ""+theFormatter.format(new ReconstitutedObject(aGUIManager, aInspector));
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			return "**Formatting error: "+Utils.getRootCause(e).getMessage()+"**";
+		}
+	}
 }

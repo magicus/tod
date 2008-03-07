@@ -77,13 +77,5 @@ public class TODUtils
 		log(aLevel, String.format(aText, aArgs));
 	}
 	
-	/**
-	 * Helper method for throwing a formatted {@link RuntimeException}.
-	 */
-	public static void rtex(String aText, Object... aArgs)
-	{
-		throw new RuntimeException(String.format(aText, aArgs));
-	}
-	
 	
 }

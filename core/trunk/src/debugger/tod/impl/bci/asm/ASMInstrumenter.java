@@ -31,6 +31,8 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.bci.asm;
 
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,6 +41,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.util.TraceClassVisitor;
 
 import tod.core.bci.IInstrumenter;
 import tod.core.config.TODConfig;
@@ -79,6 +82,7 @@ public class ASMInstrumenter implements IInstrumenter
 	public InstrumentedClass instrumentClass (String aName, byte[] aBytecode)
     {
 		if (! BCIUtils.acceptClass(aName, itsConfig.getGlobalSelector())) return null;
+		if (aName.startsWith("sun/reflect/")) return null; // Strange things happen inside those classes...
 		
 		String theChecksum = Utils.md5String(aBytecode);
 		
@@ -108,7 +112,15 @@ public class ASMInstrumenter implements IInstrumenter
 				new AspectInfoAttribute(null),
 		};
 		
-		theReader.accept(theVisitor, theAttributes, 0);
+		try
+		{
+			theReader.accept(theVisitor, theAttributes, 0);
+		}
+		catch (RuntimeException e)
+		{
+			printClass(theReader);
+			throw e;
+		}
 		
 		byte[] theBytecode = theWriter.toByteArray();
 		
@@ -119,6 +131,11 @@ public class ASMInstrumenter implements IInstrumenter
 			? new InstrumentedClass(theBytecode, theTracedMethods) 
 			: null;
     }
+	
+	private void printClass(ClassReader aReader)
+	{
+		aReader.accept(new TraceClassVisitor(new PrintWriter(new OutputStreamWriter(System.err))), null, 0);
+	}
 
 	/**
 	 * Represents a range of bytecodes.

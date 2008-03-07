@@ -31,12 +31,11 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.tools.formatting;
 
-
 /**
  * Interface for the Python object formatter
  * @author gpothier
  */
 public interface IPyObjectFormatter
 {
-	public String format(ReconstitutedObject aReconstitutedObject);
+	public Object format(ReconstitutedObject aReconstitutedObject);
 }
