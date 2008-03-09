@@ -256,12 +256,36 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 	protected ILogEvent getEventAt(IEventBrowser aBrowser, long aTimestamp, long aTolerance)
 	{
 		aBrowser.setNextTimestamp(aTimestamp);
+		
+		ILogEvent theNext = null;
+		ILogEvent thePrev = null;
+		
 		if (aBrowser.hasNext())
 		{
-			ILogEvent theEvent = aBrowser.next();
-			return Math.abs(theEvent.getTimestamp()-aTimestamp) < aTolerance ? theEvent : null;
+			theNext = aBrowser.next();
+			aBrowser.previous();
 		}
-		else return null;
+		if (aBrowser.hasPrevious())
+		{
+			thePrev = aBrowser.previous();
+		}
+		
+		long tn = theNext != null ? theNext.getTimestamp() : Long.MAX_VALUE;
+		long tp = thePrev != null ? thePrev.getTimestamp() : Long.MIN_VALUE;
+		
+		long dn = Math.abs(tn-aTimestamp);
+		long dp = Math.abs(tp-aTimestamp);
+
+		if (dn < dp)
+		{
+			if (dn < aTolerance) return theNext;
+		}
+		else
+		{
+			if (dp < aTolerance) return thePrev;
+		}
+		
+		return null;
 	}
 
 
@@ -269,7 +293,7 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 	{
 		private MyMural()
 		{
-			super(Orientation.HORIZONTAL);
+			super(AbstractSequenceView.this.getGUIManager(), Orientation.HORIZONTAL);
 		}
 
 //		@Override

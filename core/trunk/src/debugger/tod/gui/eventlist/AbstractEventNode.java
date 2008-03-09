@@ -53,14 +53,20 @@ import zz.utils.Utils;
  */
 public abstract class AbstractEventNode extends BusPanel
 {
+	private final IGUIManager itsGUIManager;
 	private final EventListPanel itsListPanel;
 	
 	private JComponent itsCaption;
 	private JComponent itsGutter;
 	
-	public AbstractEventNode(EventListPanel aListPanel)
+	/**
+	 * We need to give the gui manager separate from the list panel
+	 * because the list panel can be null.
+	 */
+	public AbstractEventNode(IGUIManager aGUIManager, EventListPanel aListPanel)
 	{
-		super(aListPanel.getBus());
+		super(aListPanel != null ? aListPanel.getBus() : null);
+		itsGUIManager = aGUIManager;
 		itsListPanel = aListPanel;
 	}
 	
@@ -69,26 +75,30 @@ public abstract class AbstractEventNode extends BusPanel
 		return itsListPanel;
 	}
 	
+	public IGUIManager getGUIManager()
+	{
+		return itsGUIManager;
+	}
+	
 	public ILogBrowser getLogBrowser()
 	{
-		return getListPanel().getLogBrowser();
+		if (getGUIManager() == null) return null;
+		return getGUIManager().getSession().getLogBrowser();
 	}
 	
 	public TODConfig getConfig()
 	{
+		if (getLogBrowser() == null) return null;
 		return getLogBrowser().getSession().getConfig();
 	}
 
 	public JobProcessor getJobProcessor()
 	{
-		return getListPanel().getJobProcessor();
+		return getListPanel() != null ? 
+				getListPanel().getJobProcessor()
+				: getGUIManager().getJobProcessor();
 	}
 
-	public IGUIManager getGUIManager()
-	{
-		return getListPanel().getGUIManager();
-	}
-	
 	/**
 	 * Default UI creation. 
 	 * The html component is placed at the center of a {@link BorderLayout}.

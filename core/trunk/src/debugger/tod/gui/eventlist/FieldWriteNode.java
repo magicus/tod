@@ -35,6 +35,7 @@ import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.gui.Hyperlinks;
+import tod.gui.IGUIManager;
 import tod.gui.kit.html.HtmlBody;
 
 public class FieldWriteNode extends AbstractSimpleEventNode
@@ -42,10 +43,11 @@ public class FieldWriteNode extends AbstractSimpleEventNode
 	private IFieldWriteEvent itsEvent;
 
 	public FieldWriteNode(
+			IGUIManager aGUIManager, 
 			EventListPanel aListPanel,
 			IFieldWriteEvent aEvent)
 	{
-		super(aListPanel);
+		super(aGUIManager, aListPanel);
 		itsEvent = aEvent;
 		createUI();
 	}

@@ -39,6 +39,7 @@ import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
+import zz.utils.Utils;
 
 /**
  * An event browser that filters an original browser by grouping adjacent events
@@ -398,6 +399,25 @@ public class GroupingEventBrowser<K> implements IEventBrowser
 		public Iterable<ILogEvent> getEvents()
 		{
 			return itsEvents;
+		}
+		
+		@Override
+		public boolean equals(Object aObj)
+		{
+			if (aObj instanceof EventGroup)
+			{
+				EventGroup theOther = (EventGroup) aObj;
+				if (! Utils.equalOrBothNull(theOther.itsGroupKey, itsGroupKey)) return false;
+				if (theOther.itsEvents.size() != itsEvents.size()) return false;
+				
+				for(int i=0;i<itsEvents.size();i++)
+				{
+					if (! Utils.equalOrBothNull(theOther.itsEvents.get(i), itsEvents.get(i))) return false;
+				}
+				
+				return true;
+			}
+			else return false;
 		}
 		
 		public int getDepth()

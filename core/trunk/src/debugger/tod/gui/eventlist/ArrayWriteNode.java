@@ -35,6 +35,7 @@ import tod.core.database.event.IArrayWriteEvent;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.gui.Hyperlinks;
+import tod.gui.IGUIManager;
 import tod.gui.kit.html.HtmlBody;
 
 public class ArrayWriteNode extends AbstractSimpleEventNode
@@ -42,10 +43,11 @@ public class ArrayWriteNode extends AbstractSimpleEventNode
 	private IArrayWriteEvent itsEvent;
 
 	public ArrayWriteNode(
+			IGUIManager aGUIManager, 
 			EventListPanel aListPanel,
 			IArrayWriteEvent aEvent)
 	{
-		super(aListPanel);
+		super(aGUIManager, aListPanel);
 		itsEvent = aEvent;
 		createUI();
 	}

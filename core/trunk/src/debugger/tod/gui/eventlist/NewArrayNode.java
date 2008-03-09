@@ -34,6 +34,7 @@ package tod.gui.eventlist;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.INewArrayEvent;
 import tod.gui.Hyperlinks;
+import tod.gui.IGUIManager;
 import tod.gui.kit.html.HtmlBody;
 
 public class NewArrayNode extends AbstractSimpleEventNode
@@ -41,10 +42,11 @@ public class NewArrayNode extends AbstractSimpleEventNode
 	private INewArrayEvent itsEvent;
 
 	public NewArrayNode(
+			IGUIManager aGUIManager, 
 			EventListPanel aListPanel,
 			INewArrayEvent aEvent)
 	{
-		super(aListPanel);
+		super(aGUIManager, aListPanel);
 		itsEvent = aEvent;
 		createUI();
 	}

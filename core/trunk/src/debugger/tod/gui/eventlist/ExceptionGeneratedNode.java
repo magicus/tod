@@ -38,6 +38,7 @@ import tod.core.database.event.IExceptionGeneratedEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.gui.FontConfig;
 import tod.gui.Hyperlinks;
+import tod.gui.IGUIManager;
 import tod.gui.kit.StdOptions;
 import tod.gui.kit.html.HtmlBody;
 import tod.gui.kit.html.HtmlText;
@@ -47,10 +48,11 @@ public class ExceptionGeneratedNode extends AbstractSimpleEventNode
 	private IExceptionGeneratedEvent itsEvent;
 
 	public ExceptionGeneratedNode(
+			IGUIManager aGUIManager, 
 			EventListPanel aListPanel,
 			IExceptionGeneratedEvent aEvent)
 	{
-		super(aListPanel);
+		super(aGUIManager, aListPanel);
 		itsEvent = aEvent;
 		createUI();
 	}
@@ -58,7 +60,9 @@ public class ExceptionGeneratedNode extends AbstractSimpleEventNode
 	@Override
 	protected void createHtmlUI(HtmlBody aBody)
 	{
-		boolean theRed = getListPanel().getCurrentValue(StdOptions.EXCEPTION_EVENTS_RED);
+		boolean theRed = getListPanel() != null ?
+				getListPanel().getCurrentValue(StdOptions.EXCEPTION_EVENTS_RED)
+				: false;
 		
 		aBody.add(HtmlText.create(
 				"Exception: ", 
@@ -73,7 +77,10 @@ public class ExceptionGeneratedNode extends AbstractSimpleEventNode
 				itsEvent,
 				showPackageNames()));
 
-		boolean theLocation = getListPanel().getCurrentValue(StdOptions.SHOW_EVENTS_LOCATION);
+		boolean theLocation = getListPanel() != null ?
+				getListPanel().getCurrentValue(StdOptions.SHOW_EVENTS_LOCATION)
+				: false;
+				
 		if (theLocation)
 		{
 			IBehaviorInfo theBehavior = getEvent().getOperationBehavior();

@@ -47,6 +47,7 @@ import javax.swing.plaf.basic.BasicArrowButton;
 import tod.core.DebugFlags;
 import tod.core.database.browser.IEventBrowser;
 import tod.gui.BrowserData;
+import tod.gui.IGUIManager;
 import tod.gui.eventsequences.EventMural;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.SimpleEvent;
@@ -82,6 +83,7 @@ public class MuralScroller extends JPanel
 		}
 	};
 	
+	private final IGUIManager itsGUIManager;
 	private IEventBrowser itsBrowser;
 	
 	private EventMural itsMural;
@@ -96,20 +98,26 @@ public class MuralScroller extends JPanel
 	 */
 	private long itsSliderFactor;
 
-	public MuralScroller()
+	public MuralScroller(IGUIManager aGUIManager)
 	{
+		itsGUIManager = aGUIManager;
 		createUI();		
 	}
 	
-	public MuralScroller(IEventBrowser aBrowser, long aStart, long aEnd)
+	public MuralScroller(IGUIManager aGUIManager, IEventBrowser aBrowser, long aStart, long aEnd)
 	{
-		this();
+		this(aGUIManager);
 		set(aBrowser, aStart, aEnd);
 	}
 
+	public IGUIManager getGUIManager()
+	{
+		return itsGUIManager;
+	}
+	
 	private void createUI()
 	{
-		itsMural = new EventMural(Orientation.VERTICAL);
+		itsMural = new EventMural(getGUIManager(), Orientation.VERTICAL);
 		itsMural.setPreferredSize(new Dimension(THICKNESS, 100));
 
 		// Setup slider

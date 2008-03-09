@@ -104,7 +104,7 @@ public class ObjectInspectorView extends LogView
 		updateTitlePanel();
 		
 		// Setup time scale
-		itsTimeScale = new TimeScale();
+		itsTimeScale = new TimeScale(getGUIManager());
 		itsTimeScale.pStart().set(getLogBrowser().getFirstTimestamp());
 		itsTimeScale.pEnd().set(getLogBrowser().getLastTimestamp());
 		connect (itsSeed.pSelectionStart(), itsTimeScale.pSelectionStart(), true);

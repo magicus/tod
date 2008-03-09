@@ -34,6 +34,7 @@ package tod.gui.eventlist;
 import tod.Util;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.structure.IBehaviorInfo;
+import tod.gui.IGUIManager;
 import tod.gui.kit.html.HtmlElement;
 import tod.gui.kit.html.HtmlGroup;
 import tod.gui.kit.html.HtmlText;
@@ -41,16 +42,17 @@ import tod.gui.kit.html.HtmlText;
 public class MethodCallNode extends BehaviorCallNode
 {
 	public MethodCallNode(
+			IGUIManager aGUIManager, 
 			EventListPanel aListPanel,
 			IBehaviorCallEvent aEvent)
 	{
-		super(aListPanel, aEvent);
+		super(aGUIManager, aListPanel, aEvent);
 	}
 
 	protected HtmlElement createShortBehaviorName()
 	{
 		IBehaviorInfo theBehavior = getBehavior();
-		return HtmlText.create(theBehavior.getName());
+		return HtmlText.create(HtmlText.escapeHTML(theBehavior.getName()));
 	}
 	
 	protected HtmlElement createFullBehaviorName()

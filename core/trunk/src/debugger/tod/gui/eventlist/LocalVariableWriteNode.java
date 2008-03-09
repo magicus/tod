@@ -34,6 +34,7 @@ package tod.gui.eventlist;
 import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.gui.Hyperlinks;
+import tod.gui.IGUIManager;
 import tod.gui.kit.html.HtmlBody;
 
 public class LocalVariableWriteNode extends AbstractSimpleEventNode
@@ -41,10 +42,11 @@ public class LocalVariableWriteNode extends AbstractSimpleEventNode
 	private ILocalVariableWriteEvent itsEvent;
 
 	public LocalVariableWriteNode(
+			IGUIManager aGUIManager, 
 			EventListPanel aListPanel,
 			ILocalVariableWriteEvent aEvent)
 	{
-		super(aListPanel);
+		super(aGUIManager, aListPanel);
 		itsEvent = aEvent;
 		createUI();
 	}

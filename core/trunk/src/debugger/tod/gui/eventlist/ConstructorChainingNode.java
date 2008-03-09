@@ -32,6 +32,7 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.gui.eventlist;
 
 import tod.core.database.event.IConstructorChainingEvent;
+import tod.gui.IGUIManager;
 import tod.gui.kit.html.HtmlElement;
 import tod.gui.kit.html.HtmlText;
 
@@ -39,10 +40,11 @@ public class ConstructorChainingNode extends BehaviorCallNode
 {
 
 	public ConstructorChainingNode(
+			IGUIManager aGUIManager, 
 			EventListPanel aListPanel,
 			IConstructorChainingEvent aEvent)
 	{
-		super(aListPanel, aEvent);
+		super(aGUIManager, aListPanel, aEvent);
 	}
 
 	@Override

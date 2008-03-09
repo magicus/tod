@@ -46,6 +46,7 @@ import tod.core.database.browser.IEventBrowser;
 import tod.core.database.event.EventComparator;
 import tod.core.database.event.ILogEvent;
 import tod.gui.BrowserData;
+import tod.gui.IGUIManager;
 import zz.utils.Cleaner;
 import zz.utils.ui.Orientation;
 
@@ -62,14 +63,14 @@ public class BaloonMural extends EventMural
 		}
 	};
 
-	public BaloonMural(Orientation aOrientation)
+	public BaloonMural(IGUIManager aGUIManager, Orientation aOrientation)
 	{
-		super(aOrientation);
+		super(aGUIManager, aOrientation);
 	}
 
-	public BaloonMural(Orientation aOrientation, IEventBrowser aBrowser)
+	public BaloonMural(IGUIManager aGUIManager, Orientation aOrientation, IEventBrowser aBrowser)
 	{
-		super(aOrientation, aBrowser);
+		super(aGUIManager, aOrientation, aBrowser);
 	}
 
 	protected void markDirty()

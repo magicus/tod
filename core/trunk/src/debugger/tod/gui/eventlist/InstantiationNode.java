@@ -35,6 +35,7 @@ import tod.Util;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IInstantiationEvent;
 import tod.core.database.structure.ITypeInfo;
+import tod.gui.IGUIManager;
 import tod.gui.kit.html.HtmlElement;
 import tod.gui.kit.html.HtmlText;
 
@@ -42,10 +43,11 @@ public class InstantiationNode extends BehaviorCallNode
 {
 
 	public InstantiationNode(
+			IGUIManager aGUIManager, 
 			EventListPanel aListPanel,
 			IBehaviorCallEvent aEvent)
 	{
-		super(aListPanel, aEvent);
+		super(aGUIManager, aListPanel, aEvent);
 	}
 
 	public IInstantiationEvent getEvent()

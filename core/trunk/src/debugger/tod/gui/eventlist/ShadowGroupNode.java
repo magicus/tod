@@ -51,6 +51,7 @@ import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.gui.GUIUtils;
+import tod.gui.IGUIManager;
 import tod.gui.kit.StdProperties;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
@@ -77,9 +78,9 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 	
 
 	
-	public ShadowGroupNode(EventListPanel aListPanel, EventGroup<ShadowId> aGroup)
+	public ShadowGroupNode(IGUIManager aGUIManager, EventListPanel aListPanel, EventGroup<ShadowId> aGroup)
 	{
-		super(aListPanel, aGroup);
+		super(aGUIManager, aListPanel, aGroup);
 		itsIntimacyLevelProperty = getBus().getProperty(StdProperties.INTIMACY_LEVEL);
 		if (itsIntimacyLevelProperty != null)
 		{
@@ -148,7 +149,7 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 		JPanel thePanel = new JPanel(GUIUtils.createStackLayout());
 		for (ILogEvent theEvent : itsShownEvents)
 		{
-			AbstractEventNode theNode = EventListPanel.buildEventNode(getListPanel(), theEvent);
+			AbstractEventNode theNode = EventListPanel.buildEventNode(getGUIManager(), getListPanel(), theEvent);
 			thePanel.add(theNode);
 		}
 		return thePanel;

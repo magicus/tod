@@ -54,12 +54,20 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.text.StyledEditorKit.FontSizeAction;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.gui.BrowserData;
+import tod.gui.FontConfig;
+import tod.gui.IGUIManager;
+import tod.gui.Resources;
+import tod.gui.formatter.EventFormatter;
 import tod.utils.TODUtils;
 import zz.utils.Cleaner;
 import zz.utils.notification.IEvent;
@@ -69,8 +77,10 @@ import zz.utils.properties.ArrayListProperty;
 import zz.utils.properties.IListProperty;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
+import zz.utils.ui.GridStackLayout;
 import zz.utils.ui.MouseModifiers;
 import zz.utils.ui.MouseWheelPanel;
+import zz.utils.ui.NullLayout;
 import zz.utils.ui.Orientation;
 import zz.utils.ui.UIUtils;
 
@@ -141,6 +151,7 @@ public class EventMural extends MouseWheelPanel
 		}
 	};
 	
+	private final IGUIManager itsGUIManager;
 	
 	/**
 	 * Mural image (one version per display).
@@ -157,10 +168,12 @@ public class EventMural extends MouseWheelPanel
 	 * The event whose details are currently displayed
 	 */
 	private ILogEvent itsCurrentEvent;
-	private JLabel itsCurrentEventLabel;
+	private EventDetailsPanel itsCurrentEventPanel;
 	
-	public EventMural(Orientation aOrientation)
+	public EventMural(IGUIManager aGUIManager, Orientation aOrientation)
 	{
+		super(new NullLayout());
+		itsGUIManager = aGUIManager;
 		itsOrientation = aOrientation;
 		setPreferredSize(new Dimension(100, 20));
 		itsTimer = new Timer(100, new ActionListener()
@@ -181,14 +194,14 @@ public class EventMural extends MouseWheelPanel
 			}
 		});
 		
-		itsCurrentEventLabel = new JLabel();
-		itsCurrentEventLabel.setVisible(false);
-		add(itsCurrentEventLabel);
+		itsCurrentEventPanel = new EventDetailsPanel();
+		itsCurrentEventPanel.setVisible(false);
+		add(itsCurrentEventPanel);
 	}
 
-	public EventMural(Orientation aOrientation, IEventBrowser aBrowser)
+	public EventMural(IGUIManager aGUIManager, Orientation aOrientation, IEventBrowser aBrowser)
 	{
-		this(aOrientation);
+		this(aGUIManager, aOrientation);
 		pEventBrowsers.add(new BrowserData(aBrowser, Color.BLACK));
 	}
 
@@ -285,7 +298,7 @@ public class EventMural extends MouseWheelPanel
 		
 		// The timestamp corresponding to the mouse cursor
 		long t = t1+(long)(1f*w*aX/getWidth());
-		long d = (long)(2f*w/getWidth());
+		long d = (long)(5f*w/getWidth());
 
 		return getEventAt(t, d);
 	}
@@ -307,16 +320,24 @@ public class EventMural extends MouseWheelPanel
 		if (theEvent == itsCurrentEvent) return;
 		
 		itsCurrentEvent = theEvent;
-		if (theEvent == null) itsCurrentEventLabel.setVisible(false);
+		if (theEvent == null) itsCurrentEventPanel.setVisible(false);
 		else
 		{
-			itsCurrentEventLabel.setText(itsCurrentEvent.toString());
-			Dimension theSize = itsCurrentEventLabel.getPreferredSize();
-			int theX = aX;
+			// Find out event position.
+			long t = itsCurrentEvent.getTimestamp();
+			Long t1 = pStart.get();
+			Long t2 = pEnd.get();
+			
+			long w = t2-t1;
+
+			int theX = (int) ((t-t1)*getWidth()/w);
+			
+			itsCurrentEventPanel.setEvent(itsCurrentEvent);
+			Dimension theSize = itsCurrentEventPanel.getPreferredSize();
 			if (theX+theSize.width > getWidth()) theX = getWidth()-theSize.width;
 			if (theX < 0) theX = 0;
-			itsCurrentEventLabel.setBounds(theX, 5, theSize.width, theSize.height);
-			itsCurrentEventLabel.setVisible(true);
+			itsCurrentEventPanel.setBounds(theX, 5, theSize.width, theSize.height);
+			itsCurrentEventPanel.setVisible(true);
 		}
 		repaint();
 	}
@@ -688,6 +709,45 @@ public class EventMural extends MouseWheelPanel
 		public void setValues(long[][] aValues)
 		{
 			itsValues = aValues;
+		}
+	}
+	
+	private class EventDetailsPanel extends JPanel
+	{
+		private ILogEvent itsEvent;
+		
+		private JLabel itsKindLabel;
+		private JLabel itsThreadLabel;
+		private JLabel itsDetailsLabel;
+
+		private EventFormatter itsFormatter;
+
+		public EventDetailsPanel()
+		{
+			super(new GridStackLayout(1));
+			setOpaque(false);
+			setBorder(BorderFactory.createLineBorder(Color.black));
+			
+			itsKindLabel = new JLabel();
+			itsKindLabel.setFont(FontConfig.SMALL_FONT.getAWTFont());
+			
+			itsThreadLabel = new JLabel();
+			itsThreadLabel.setFont(FontConfig.SMALL_FONT.getAWTFont());
+			
+			itsDetailsLabel = new JLabel();
+			itsDetailsLabel.setFont(FontConfig.STD_FONT.getAWTFont());
+			
+			add(itsKindLabel);
+			add(itsThreadLabel);
+			add(itsDetailsLabel);
+			itsFormatter = new EventFormatter(itsGUIManager.getSession().getLogBrowser());
+		}
+		
+		public void setEvent(ILogEvent aEvent)
+		{
+			itsEvent = aEvent;
+			itsThreadLabel.setText("Thread: "+itsEvent.getThread().getName());
+			itsDetailsLabel.setText(itsFormatter.getHtmlText(itsEvent));
 		}
 	}
 }

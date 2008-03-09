@@ -35,6 +35,7 @@ import java.awt.Color;
 
 import tod.core.database.event.ILogEvent;
 import tod.gui.FontConfig;
+import tod.gui.IGUIManager;
 import tod.gui.kit.html.HtmlBody;
 import tod.gui.kit.html.HtmlText;
 
@@ -43,10 +44,11 @@ public class UnknownEventNode extends AbstractSimpleEventNode
 	private ILogEvent itsEvent;
 
 	public UnknownEventNode(
+			IGUIManager aGUIManager, 
 			EventListPanel aListPanel,
 			ILogEvent aEvent)
 	{
-		super(aListPanel);
+		super(aGUIManager, aListPanel);
 		itsEvent = aEvent;
 		createUI();
 	}

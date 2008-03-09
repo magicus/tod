@@ -52,6 +52,7 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
 import tod.gui.GUIUtils;
+import tod.gui.IGUIManager;
 import tod.gui.JobProcessor;
 import tod.gui.kit.Bus;
 import tod.gui.kit.html.HtmlBody;
@@ -75,9 +76,9 @@ public abstract class AbstractSimpleEventNode extends AbstractEventNode
 	private HtmlComponent itsHtmlComponent;
 	private HtmlDoc itsDoc;
 	
-	public AbstractSimpleEventNode(EventListPanel aListPanel)
+	public AbstractSimpleEventNode(IGUIManager aGUIManager, EventListPanel aListPanel)
 	{
-		super(aListPanel);
+		super(aGUIManager, aListPanel);
 		
 		itsDoc = new HtmlDoc();
 		itsHtmlComponent = new HtmlComponent();
@@ -172,6 +173,8 @@ public abstract class AbstractSimpleEventNode extends AbstractEventNode
 	@Override
 	public void mousePressed(MouseEvent aEvent)
 	{
+		if (getListPanel() == null) return;
+		
 		getListPanel().pSelectedEvent().set(getEvent());
 		ILogEvent theEvent = getEvent();
 		Bus.get(this).postMessage(new EventSelectedMsg(theEvent, SelectionMethod.SELECT_IN_LIST));
@@ -204,6 +207,7 @@ public abstract class AbstractSimpleEventNode extends AbstractEventNode
 	
 	protected boolean isSelected()
 	{
+		if (getListPanel() == null) return false;
 		return Utils.equalOrBothNull(getEvent(), getListPanel().pSelectedEvent().get());
 	}
 	

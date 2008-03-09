@@ -150,7 +150,7 @@ public class EventListCore
 			if (itsDisplayedEvents.size() > itsCurrentDelta)
 			{
 				ILogEvent theDisplayedEvent = itsDisplayedEvents.get(itsCurrentDelta);
-				assert theDisplayedEvent.getPointer().equals(theEvent.getPointer());
+				assert theDisplayedEvent.equals(theEvent);
 			}
 		}
 		
@@ -177,7 +177,7 @@ public class EventListCore
 			if (itsDisplayedEvents.size() > itsCurrentDelta)
 			{
 				ILogEvent theDisplayedEvent = itsDisplayedEvents.get(itsCurrentDelta);
-				assert theDisplayedEvent.getPointer().equals(theEvent.getPointer());
+				assert theDisplayedEvent.equals(theEvent);
 			}
 			
 			itsCurrentDelta++;
@@ -193,7 +193,7 @@ public class EventListCore
 			if (itsDisplayedEvents.size() > itsCurrentDelta)
 			{
 				ILogEvent theDisplayedEvent = itsDisplayedEvents.get(itsCurrentDelta);
-				assert theDisplayedEvent.getPointer().equals(theEvent.getPointer());
+				assert theDisplayedEvent.equals(theEvent);
 			}
 		}
 		
@@ -254,7 +254,7 @@ public class EventListCore
 			if (itsDisplayedEvents.size() > itsCurrentDelta)
 			{
 				ILogEvent theDisplayedEvent = itsDisplayedEvents.get(itsCurrentDelta);
-				assert theDisplayedEvent.getPointer().equals(theEvent.getPointer());
+				assert theDisplayedEvent.equals(theEvent);
 			}
 			
 			itsCurrentDelta++;

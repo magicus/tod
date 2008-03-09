@@ -302,7 +302,7 @@ implements MouseWheelListener
 	
 	private void createUI()
 	{
-		itsScroller = new MuralScroller();
+		itsScroller = new MuralScroller(getGUIManager());
 		
 		itsScroller.eUnitScroll().addListener(new IEventListener<UnitScroll>()
 				{
@@ -331,6 +331,7 @@ implements MouseWheelListener
 		
 		itsEventsPanel = new ScrollablePanel(GUIUtils.createStackLayout())
 		{
+			@Override
 			public boolean getScrollableTracksViewportHeight()
 			{
 				return true;
@@ -445,51 +446,54 @@ implements MouseWheelListener
 	
 	private AbstractEventNode buildEventNode(ILogEvent aEvent)
 	{
-		return buildEventNode(this, aEvent);
+		return buildEventNode(getGUIManager(), this, aEvent);
 	}
 	
-	public static AbstractEventNode buildEventNode(EventListPanel aListPanel, ILogEvent aEvent)
+	public static AbstractEventNode buildEventNode(
+			IGUIManager aGUIManager, 
+			EventListPanel aListPanel, 
+			ILogEvent aEvent)
 	{
 		if (aEvent instanceof IFieldWriteEvent)
 		{
 			IFieldWriteEvent theEvent = (IFieldWriteEvent) aEvent;
-			return new FieldWriteNode(aListPanel, theEvent);
+			return new FieldWriteNode(aGUIManager, aListPanel, theEvent);
 		}
 		else if (aEvent instanceof IArrayWriteEvent)
 		{
 			IArrayWriteEvent theEvent = (IArrayWriteEvent) aEvent;
-			return new ArrayWriteNode(aListPanel, theEvent);
+			return new ArrayWriteNode(aGUIManager, aListPanel, theEvent);
 		}
 		else if (aEvent instanceof ILocalVariableWriteEvent)
 		{
 			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) aEvent;
-			return new LocalVariableWriteNode(aListPanel, theEvent);
+			return new LocalVariableWriteNode(aGUIManager, aListPanel, theEvent);
 		}
 		else if (aEvent instanceof IExceptionGeneratedEvent)
 		{
 			IExceptionGeneratedEvent theEvent = (IExceptionGeneratedEvent) aEvent;
 			if (EventUtils.isIgnorableException(theEvent)) return null;
-			else return new ExceptionGeneratedNode(aListPanel, theEvent);
+			else return new ExceptionGeneratedNode(aGUIManager, aListPanel, theEvent);
 		}
 		else if (aEvent instanceof IMethodCallEvent)
 		{
 			IMethodCallEvent theEvent = (IMethodCallEvent) aEvent;
-			return new MethodCallNode(aListPanel, theEvent);
+			return new MethodCallNode(aGUIManager, aListPanel, theEvent);
 		}
 		else if (aEvent instanceof IInstantiationEvent)
 		{
 			IInstantiationEvent theEvent = (IInstantiationEvent) aEvent;
-			return new InstantiationNode(aListPanel, theEvent);
+			return new InstantiationNode(aGUIManager, aListPanel, theEvent);
 		}
 		else if (aEvent instanceof INewArrayEvent)
 		{
 			INewArrayEvent theEvent = (INewArrayEvent) aEvent;
-			return new NewArrayNode(aListPanel, theEvent);
+			return new NewArrayNode(aGUIManager, aListPanel, theEvent);
 		}
 		else if (aEvent instanceof IConstructorChainingEvent)
 		{
 			IConstructorChainingEvent theEvent = (IConstructorChainingEvent) aEvent;
-			return new ConstructorChainingNode(aListPanel, theEvent);
+			return new ConstructorChainingNode(aGUIManager, aListPanel, theEvent);
 		}
 		else if (aEvent instanceof IBehaviorExitEvent)
 		{
@@ -498,21 +502,21 @@ implements MouseWheelListener
 		else if (aEvent instanceof EventGroup)
 		{
 			EventGroup theEventGroup = (EventGroup) aEvent;
-			return buildEventGroupNode(aListPanel, theEventGroup);
+			return buildEventGroupNode(aGUIManager, aListPanel, theEventGroup);
 		}
 
-		return new UnknownEventNode(aListPanel, aEvent);
+		return new UnknownEventNode(aGUIManager, aListPanel, aEvent);
 	}
 	
-	private static AbstractEventNode buildEventGroupNode(EventListPanel aListPanel, EventGroup aEventGroup)
+	private static AbstractEventNode buildEventGroupNode(IGUIManager aGUIManager, EventListPanel aListPanel, EventGroup aEventGroup)
 	{
 		Object theGroupKey = aEventGroup.getGroupKey();
 		if (theGroupKey instanceof ShadowId)
 		{
-			return new ShadowGroupNode(aListPanel, aEventGroup);
+			return new ShadowGroupNode(aGUIManager, aListPanel, aEventGroup);
 		}
 		
-		return new UnknownEventNode(aListPanel, aEventGroup);
+		return new UnknownEventNode(aGUIManager, aListPanel, aEventGroup);
 	}
 
 	public <T> T getCurrentValue(OptionDef<T> aDef)

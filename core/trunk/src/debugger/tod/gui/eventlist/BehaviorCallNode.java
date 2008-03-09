@@ -44,6 +44,7 @@ import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.gui.FontConfig;
 import tod.gui.Hyperlinks;
+import tod.gui.IGUIManager;
 import tod.gui.kit.html.AsyncHtmlGroup;
 import tod.gui.kit.html.HtmlBody;
 import tod.gui.kit.html.HtmlElement;
@@ -61,10 +62,11 @@ public abstract class BehaviorCallNode extends AbstractSimpleEventNode
 	private boolean itsExpanded = false;
 	
 	public BehaviorCallNode(
+			IGUIManager aGUIManager, 
 			EventListPanel aListPanel,
 			IBehaviorCallEvent aEvent)
 	{
-		super (aListPanel);
+		super (aGUIManager, aListPanel);
 		itsEvent = aEvent;
 		createUI();
 	}
@@ -248,10 +250,9 @@ public abstract class BehaviorCallNode extends AbstractSimpleEventNode
 	
 	protected HtmlElement createPackageName()
 	{
-		return HtmlText.create(
-				Util.getPackageName(getBehavior().getType().getName())+".", 
-				FontConfig.SMALL, 
-				Color.BLACK);
+		String thePackageName = Util.getPackageName(getBehavior().getType().getName());
+		if (thePackageName.length() > 0) thePackageName += ".";
+		return HtmlText.create(thePackageName, FontConfig.SMALL, Color.BLACK);
 	}
 	
 	protected HtmlElement createResult(final String aResultPrefix)

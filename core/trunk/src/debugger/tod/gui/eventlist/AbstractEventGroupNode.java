@@ -32,6 +32,7 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.gui.eventlist;
 
 import tod.core.database.browser.GroupingEventBrowser.EventGroup;
+import tod.gui.IGUIManager;
 
 /**
  * Base class for nodes that represent groups of events
@@ -41,9 +42,9 @@ public abstract class AbstractEventGroupNode<K> extends AbstractEventNode
 {
 	private EventGroup<K> itsGroup;
 
-	public AbstractEventGroupNode(EventListPanel aListPanel, EventGroup<K> aGroup)
+	public AbstractEventGroupNode(IGUIManager aGUIManager, EventListPanel aListPanel, EventGroup<K> aGroup)
 	{
-		super(aListPanel);
+		super(aGUIManager, aListPanel);
 		itsGroup = aGroup;
 	}
 	
