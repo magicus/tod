@@ -58,6 +58,7 @@ public class TODPlugin extends AbstractUIPlugin
 	public TODPlugin()
 	{
 		plugin = this;
+		System.setProperty("swing.aatext", "true");
 	}
 
 	/**
