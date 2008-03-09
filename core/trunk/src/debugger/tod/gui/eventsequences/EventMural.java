@@ -376,6 +376,7 @@ public class EventMural extends MouseWheelPanel
 	protected void zoom(int aAmount, int aX)
 	{
 		if (aAmount == 0) return;
+		System.out.println("Amount: "+aAmount);
 		
 		Long t1 = pStart.get();
 		Long t2 = pEnd.get();
@@ -385,13 +386,12 @@ public class EventMural extends MouseWheelPanel
 		// The timestamp corresponding to the mouse cursor
 		long t = t1+(long)(1f*w*aX/getWidth());
 		
-		long nw = aAmount < 0 ? 
-				(long) (w * Math.pow(2, -0.5*aAmount))
-				: (long) (w / Math.pow(2, 0.5*aAmount));
+		float k = (float) Math.pow(2, -0.5*aAmount);
+		long nw = (long) (k*w);
 			
-		long s = t - (t-t1)*nw/w;
-		pStart.set(s);
+		long s = t - ((long) ((t-t1)*k));
 		pEnd.set(s+nw);
+		pStart.set(s);
 	}
 
 
