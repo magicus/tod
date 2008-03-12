@@ -40,7 +40,9 @@ Inc. MD5 Message-Digest Algorithm".
 
 void fatal_error(char* message)
 {
+	fprintf(stderr, "FATAL ERROR, ABORTING: ");
 	fprintf(stderr, message);
+	fprintf(stderr, "\n");
 	exit(-1);
 }
 
