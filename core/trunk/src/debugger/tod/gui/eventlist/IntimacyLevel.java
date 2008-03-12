@@ -48,11 +48,12 @@ public final class IntimacyLevel
 		BytecodeRole.ADVICE_EXECUTE,
 		BytecodeRole.ADVICE_TEST,
 	};
-	public static final IntimacyLevel FULL = new IntimacyLevel(ROLES);
+	
+	public static final IntimacyLevel FULL_INTIMACY = new IntimacyLevel(ROLES);
 	
 	public final Set<BytecodeRole> roles;
 	
-	public IntimacyLevel(BytecodeRole... aRoles)
+	private IntimacyLevel(BytecodeRole... aRoles)
 	{
 		roles = new HashSet<BytecodeRole>();
 		for (BytecodeRole theRole : aRoles) roles.add(theRole);
@@ -62,9 +63,7 @@ public final class IntimacyLevel
 	{
 		roles = aRoles;
 	}
-
-
-
+	
 	/**
 	 * Whether the given role should be shown in this intimacy level.
 	 */

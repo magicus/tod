@@ -33,6 +33,7 @@ package tod.gui.eventsequences;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Event;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
@@ -62,9 +63,13 @@ import javax.swing.Timer;
 import javax.swing.text.StyledEditorKit.FontSizeAction;
 
 import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.LocationUtils;
+import tod.core.database.event.ICallerSideEvent;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.gui.BrowserData;
 import tod.gui.FontConfig;
+import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
 import tod.gui.Resources;
 import tod.gui.formatter.EventFormatter;
@@ -83,6 +88,7 @@ import zz.utils.ui.MouseWheelPanel;
 import zz.utils.ui.NullLayout;
 import zz.utils.ui.Orientation;
 import zz.utils.ui.UIUtils;
+import zz.utils.ui.ResourceUtils.ImageResource;
 
 /**
  * A graphic object that represents a mural (see http://reflex.dcc.uchile.cl/?q=node/60) 
@@ -202,7 +208,7 @@ public class EventMural extends MouseWheelPanel
 	public EventMural(IGUIManager aGUIManager, Orientation aOrientation, IEventBrowser aBrowser)
 	{
 		this(aGUIManager, aOrientation);
-		pEventBrowsers.add(new BrowserData(aBrowser, Color.BLACK));
+		pEventBrowsers.add(new BrowserData(aBrowser));
 	}
 
 	/**
@@ -316,11 +322,15 @@ public class EventMural extends MouseWheelPanel
 	
 	private void updateEventInfo(int aX)
 	{
-		ILogEvent theEvent = getEventAt(aX);
-		if (theEvent == itsCurrentEvent) return;
+		setCurrentEvent(getEventAt(aX));
+	}
+	
+	public void setCurrentEvent(ILogEvent aEvent)
+	{
+		if (aEvent == itsCurrentEvent) return;
+		itsCurrentEvent = aEvent;
 		
-		itsCurrentEvent = theEvent;
-		if (theEvent == null) itsCurrentEventPanel.setVisible(false);
+		if (itsCurrentEvent == null) itsCurrentEventPanel.setVisible(false);
 		else
 		{
 			// Find out event position.
@@ -349,6 +359,13 @@ public class EventMural extends MouseWheelPanel
 		{
 			updateEventInfo(aE.getX());
 		}
+		else setCurrentEvent(null);
+	}
+
+	@Override
+	public void mouseExited(MouseEvent aE)
+	{
+		setCurrentEvent(null);
 	}
 	
 	@Override
@@ -412,6 +429,7 @@ public class EventMural extends MouseWheelPanel
 		if (aT1 == aT2) return null;
 		long[][] theValues = new long[aBrowserData.size()][];
 		Color[] theColors = new Color[aBrowserData.size()];
+		int[] theMarkSizes = new int[aBrowserData.size()];
 		
 		int i = 0;
 		for (BrowserData theBrowserData : aBrowserData)
@@ -420,11 +438,12 @@ public class EventMural extends MouseWheelPanel
 			System.out.println("[EventMural] Requesting counts: "+aT1+"-"+aT2);
 			theValues[i] = theBrowserData.browser.getEventCounts(aT1, aT2, aBounds.width, false);
 			theColors[i] = theBrowserData.color;
+			theMarkSizes[i] = theBrowserData.markSize;
 			i++;
 		}
 		
 		if (aSum) paintMuralAvg(aGraphics, aBounds, theValues, theColors);
-		else paintMuralStack(aGraphics, aBounds, theValues, theColors);
+		else paintMuralStack(aGraphics, aBounds, theValues, theColors, theMarkSizes);
 		
 		return theValues;
 	}
@@ -488,8 +507,6 @@ public class EventMural extends MouseWheelPanel
 		}
 	}
 	
-	private static final int MARK_HEIGHT = 5;
-	
 	/**
 	 * Paints the mural, overlaying, or stacking, all the series.
 	 */
@@ -497,12 +514,16 @@ public class EventMural extends MouseWheelPanel
 			Graphics2D aGraphics, 
 			Rectangle aBounds, 
 			long[][] aValues, 
-			Color[] aColors)
+			Color[] aColors,
+			int[] aMarkSizes)
 	{
 		int theCount = aValues.length;
 		if (theCount == 0) return;
 		
-		int theHeight = aBounds.height-(MARK_HEIGHT*theCount);
+		int theTotalMarkSize = 0;
+		for (int theSize : aMarkSizes) theTotalMarkSize += theSize;
+		
+		int theHeight = aBounds.height-theTotalMarkSize;
 		int theY = aBounds.y;
 		
 		long theMaxT = 0;
@@ -516,6 +537,7 @@ public class EventMural extends MouseWheelPanel
 		Object theOriginalAA = aGraphics.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
 		for (int i = 0; i < aValues[0].length; i++)
 		{
+			int theCurrentMarkY = theHeight;
 			for (int j=0;j<theCount;j++)
 			{
 				long t = aValues[j][i];
@@ -527,7 +549,7 @@ public class EventMural extends MouseWheelPanel
 				{
 					aGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 					aGraphics.setColor(c1);
-					aGraphics.fill(makeTriangle(aBounds.x + i, theY+theHeight+(j*MARK_HEIGHT), MARK_HEIGHT));
+					aGraphics.fill(makeTriangle(aBounds.x + i, theY+theCurrentMarkY, aMarkSizes[j]));
 					
 					// Draw proportional bar
 					aGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
@@ -535,6 +557,8 @@ public class EventMural extends MouseWheelPanel
 					aGraphics.setColor(c2);
 					aGraphics.fillRect(aBounds.x + i, theY+theHeight-h, 1, h);
 				}
+
+				theCurrentMarkY += aMarkSizes[j];
 			}
 		}
 		aGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, theOriginalAA);
@@ -725,7 +749,7 @@ public class EventMural extends MouseWheelPanel
 		public EventDetailsPanel()
 		{
 			super(new GridStackLayout(1));
-			setOpaque(false);
+			setBackground(Color.WHITE);
 			setBorder(BorderFactory.createLineBorder(Color.black));
 			
 			itsKindLabel = new JLabel();
@@ -748,6 +772,10 @@ public class EventMural extends MouseWheelPanel
 			itsEvent = aEvent;
 			itsThreadLabel.setText("Thread: "+itsEvent.getThread().getName());
 			itsDetailsLabel.setText(itsFormatter.getHtmlText(itsEvent));
+			
+			BytecodeRole theRole = LocationUtils.getEventRole(aEvent);
+			ImageResource theIcon = GUIUtils.getRoleIcon(theRole);
+			itsDetailsLabel.setIcon(theIcon != null ? theIcon.asIcon(15) : null);
 		}
 	}
 }

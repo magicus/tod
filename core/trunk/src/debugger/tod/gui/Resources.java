@@ -52,6 +52,8 @@ public class Resources
 	public static final ImageResource ICON_ROLE_CONTEXT_EXPOSURE = loadIcon("roleContextExposure.png");
 	public static final ImageResource ICON_ROLE_RESIDUE_EVALUATION = loadIcon("roleResidueEvaluation.png");
 	
+	public static final ImageResource ICON_FULL_OBLIVIOUISNESS = loadIcon("fullObliviousness.png");
+	
 	private static ImageResource loadIcon (String aName)
 	{
 		return ResourceUtils.loadImageResource(Resources.class, aName);

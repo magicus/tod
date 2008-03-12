@@ -38,6 +38,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.BoxLayout;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
@@ -57,6 +58,7 @@ import zz.utils.ui.UIUtils;
  */
 public class IntimacyLevelSelector extends JPanel
 {
+	private static final int ROLE_ICON_SIZE = 20;
 	private IRWProperty<IntimacyLevel> itsIntimacyLevelProperty;
 	
 	private IPropertyListener<IntimacyLevel> itsIntimacyListener = new PropertyListener<IntimacyLevel>()
@@ -75,7 +77,8 @@ public class IntimacyLevelSelector extends JPanel
 		}
 	};
 	
-	private JToggleButton[] itsButtons;
+	private JToggleButton itsFullObliviousnessButton;
+	private JToggleButton[] itsRoleButtons;
 	
 	public IntimacyLevelSelector()
 	{
@@ -87,14 +90,21 @@ public class IntimacyLevelSelector extends JPanel
 		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 		
 		BytecodeRole[] theRoles = IntimacyLevel.ROLES;
-		itsButtons = new JToggleButton[theRoles.length];
-		Insets theInsets = new Insets (3, 3, 3, 3);
+		
+		itsFullObliviousnessButton = new JToggleButton(Resources.ICON_FULL_OBLIVIOUISNESS.asIcon(ROLE_ICON_SIZE));
+		itsFullObliviousnessButton.setMargin(UIUtils.NULL_INSETS);
+		itsFullObliviousnessButton.addActionListener(itsButtonsListener);
+		add(itsFullObliviousnessButton);
+		
+		add(new JLabel(" "));
+		
+		itsRoleButtons = new JToggleButton[theRoles.length];
 		for(int i=0;i<theRoles.length;i++)
 		{
-			itsButtons[i] = new JToggleButton(GUIUtils.getRoleIcon(theRoles[i]));
-			itsButtons[i].setMargin(theInsets);
-			itsButtons[i].addActionListener(itsButtonsListener);
-			add(itsButtons[i]);
+			itsRoleButtons[i] = new JToggleButton(GUIUtils.getRoleIcon(theRoles[i]).asIcon(ROLE_ICON_SIZE));
+			itsRoleButtons[i].setMargin(UIUtils.NULL_INSETS);
+			itsRoleButtons[i].addActionListener(itsButtonsListener);
+			add(itsRoleButtons[i]);
 		}
 	}
 	
@@ -122,27 +132,40 @@ public class IntimacyLevelSelector extends JPanel
 	
 	private void updateState()
 	{
-		BytecodeRole[] theRoles = IntimacyLevel.ROLES;
 		IntimacyLevel theLevel = itsIntimacyLevelProperty.get();
-		for(int i=0;i<itsButtons.length;i++) 
+		if (theLevel == null)
 		{
-			itsButtons[i].setSelected(theLevel.showRole(theRoles[i]));
+			itsFullObliviousnessButton.setSelected(true);
+		}
+		else
+		{
+			itsFullObliviousnessButton.setSelected(false);
+
+			BytecodeRole[] theRoles = IntimacyLevel.ROLES;
+			for(int i=0;i<itsRoleButtons.length;i++) 
+			{
+				itsRoleButtons[i].setSelected(theLevel.showRole(theRoles[i]));
+			}
 		}
 	}
 	
 	private void updateProperty()
 	{
-		BytecodeRole[] theRoles = IntimacyLevel.ROLES;
-		Set<BytecodeRole> theSelectedRoles = new HashSet<BytecodeRole>();
-		for(int i=0;i<theRoles.length;i++) 
+		if (itsFullObliviousnessButton.isSelected()) itsIntimacyLevelProperty.set(null);
+		else
 		{
-			if (itsButtons[i].isSelected()) theSelectedRoles.add(theRoles[i]);
+			BytecodeRole[] theRoles = IntimacyLevel.ROLES;
+			Set<BytecodeRole> theSelectedRoles = new HashSet<BytecodeRole>();
+			for(int i=0;i<theRoles.length;i++) 
+			{
+				if (itsRoleButtons[i].isSelected()) theSelectedRoles.add(theRoles[i]);
+			}
+			
+			IntimacyLevel theLevel = itsIntimacyLevelProperty.get();
+			IntimacyLevel theNewLevel = new IntimacyLevel(theSelectedRoles);
+			
+			if (! theNewLevel.equals(theLevel)) itsIntimacyLevelProperty.set(theNewLevel);
 		}
-		
-		IntimacyLevel theLevel = itsIntimacyLevelProperty.get();
-		IntimacyLevel theNewLevel = new IntimacyLevel(theSelectedRoles);
-		
-		if (! theNewLevel.equals(theLevel)) itsIntimacyLevelProperty.set(theNewLevel);
 	}
 	
 }

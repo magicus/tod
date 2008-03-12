@@ -47,6 +47,7 @@ import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import zz.utils.ui.GridStackLayout;
 import zz.utils.ui.StackLayout;
 import zz.utils.ui.ZLabel;
+import zz.utils.ui.ResourceUtils.ImageResource;
 import zz.utils.ui.text.XFont;
 
 /**
@@ -55,8 +56,7 @@ import zz.utils.ui.text.XFont;
  */
 public class GUIUtils
 {
-	private static final int ROLE_ICON_WIDTH = 15;
-	public static Map<BytecodeRole, ImageIcon> itsRoleIconMap;
+	public static Map<BytecodeRole, ImageResource> itsRoleIconMap;
 	
 	public static JComponent createMessage(
 			String aHeader, 
@@ -115,15 +115,15 @@ public class GUIUtils
 	/**
 	 * Returns the icon corresponding to a given bytecode role.
 	 */
-	public static ImageIcon getRoleIcon(BytecodeRole aRole)
+	public static ImageResource getRoleIcon(BytecodeRole aRole)
 	{
 		if (itsRoleIconMap == null)
 		{
-			itsRoleIconMap = new HashMap<BytecodeRole, ImageIcon>();
-			itsRoleIconMap.put(BytecodeRole.ADVICE_ARG_SETUP, Resources.ICON_ROLE_CONTEXT_EXPOSURE.asIconW(ROLE_ICON_WIDTH));
-			itsRoleIconMap.put(BytecodeRole.ADVICE_EXECUTE, Resources.ICON_ROLE_ADVICE_EXECUTION.asIconW(ROLE_ICON_WIDTH));
-			itsRoleIconMap.put(BytecodeRole.ADVICE_TEST, Resources.ICON_ROLE_RESIDUE_EVALUATION.asIconW(ROLE_ICON_WIDTH));
-			itsRoleIconMap.put(BytecodeRole.INLINED_ADVICE, Resources.ICON_ROLE_ADVICE_EXECUTION.asIconW(ROLE_ICON_WIDTH));
+			itsRoleIconMap = new HashMap<BytecodeRole, ImageResource>();
+			itsRoleIconMap.put(BytecodeRole.ADVICE_ARG_SETUP, Resources.ICON_ROLE_CONTEXT_EXPOSURE);
+			itsRoleIconMap.put(BytecodeRole.ADVICE_EXECUTE, Resources.ICON_ROLE_ADVICE_EXECUTION);
+			itsRoleIconMap.put(BytecodeRole.ADVICE_TEST, Resources.ICON_ROLE_RESIDUE_EVALUATION);
+			itsRoleIconMap.put(BytecodeRole.INLINED_ADVICE, Resources.ICON_ROLE_ADVICE_EXECUTION);
 		}
 		
 		return itsRoleIconMap.get(aRole);

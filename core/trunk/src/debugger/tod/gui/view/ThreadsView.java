@@ -120,13 +120,13 @@ public class ThreadsView extends LogView
 
 	private void update()
 	{
-		long theCount = getLogBrowser().getEventsCount();
+		long theEventCount = getLogBrowser().getEventsCount();
 		
-		if (theCount != itsLastEventCount)
+		if (theEventCount != itsLastEventCount)
 		{
-			itsLastEventCount = theCount;
+			itsLastEventCount = theEventCount;
 			
-			itsEventsCountLabel.setText("Events registered: "+theCount);
+			itsEventsCountLabel.setText("Events registered: "+theEventCount);
 			
 			List<IThreadInfo> theThreads = new ArrayList<IThreadInfo>();
 			Utils.fillCollection(theThreads, getLogBrowser().getThreads());

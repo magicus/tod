@@ -200,7 +200,8 @@ implements IListListener<Highlight>
 		{
 			itsHighlighter.pHighlightBrowsers.add(new BrowserData(
 					theHighlight.createBrowser(getLogBrowser()),
-					COLORS[i]));
+					COLORS[i],
+					BrowserData.DEFAULT_MARK_SIZE*2));
 		}
 	}
 	
@@ -208,7 +209,8 @@ implements IListListener<Highlight>
 	{
 		itsHighlighter.pHighlightBrowsers.add(aIndex, new BrowserData(
 				aElement.createBrowser(getLogBrowser()),
-				COLORS[aIndex]));
+				COLORS[aIndex],
+				BrowserData.DEFAULT_MARK_SIZE*2));
 	}
 
 	public void elementRemoved(IList<Highlight> aList, int aIndex, Highlight aElement)

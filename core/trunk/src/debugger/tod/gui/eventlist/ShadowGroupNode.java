@@ -63,8 +63,11 @@ import zz.utils.properties.PropertyListener;
  */
 public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 {
+	private static final int ROLE_ICON_SIZE = 15;
+	
 	private Set<BytecodeRole> itsHiddenRoles = new HashSet<BytecodeRole>();
 	private List<ILogEvent> itsShownEvents = new ArrayList<ILogEvent>();
+	private boolean itsFullObliviousness;
 	
 	private IProperty<IntimacyLevel> itsIntimacyLevelProperty;
 	
@@ -96,8 +99,11 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 		
 		IntimacyLevel theIntimacyLevel = itsIntimacyLevelProperty != null ?
 				itsIntimacyLevelProperty.get()
-				: IntimacyLevel.FULL;
-		
+				: IntimacyLevel.FULL_INTIMACY;
+
+		itsFullObliviousness = theIntimacyLevel == null;
+		if (itsFullObliviousness) return; 
+				
 		for (ILogEvent theEvent : getGroup().getEvents())
 		{
 			BytecodeRole theRole = LocationUtils.getEventRole(theEvent);
@@ -116,6 +122,9 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 		super.createUI();
 		
 		setBorder(BorderFactory.createLineBorder(Color.BLACK));
+		
+		if (itsFullObliviousness) return;
+		
 		if (itsShownEvents.size() > 0) addToGutter(new JLabel("  "));
 		
 		String theAdvice;
@@ -138,7 +147,7 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 		{
 			if (itsHiddenRoles.contains(theRole))
 			{
-				addToCaption(new JLabel(GUIUtils.getRoleIcon(theRole)));
+				addToCaption(new JLabel(GUIUtils.getRoleIcon(theRole).asIcon(ROLE_ICON_SIZE)));
 			}
 		}
 	}

@@ -110,6 +110,9 @@ public abstract class AbstractEventNode extends BusPanel
 		itsGutter = null;
 		itsCaption = null;
 		add(getCenterComponent(), BorderLayout.CENTER);
+
+		revalidate();
+		repaint();
 	}
 	
 	

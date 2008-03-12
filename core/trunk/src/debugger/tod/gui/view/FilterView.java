@@ -84,7 +84,8 @@ public class FilterView extends LogView implements IEventListView
 			itsEventHighlighter.pHighlightBrowsers.clear();
 			itsEventHighlighter.pHighlightBrowsers.add(new BrowserData(
 					getLogBrowser().createBrowser(theFilter),
-					Color.BLUE));
+					Color.BLUE,
+					BrowserData.DEFAULT_MARK_SIZE));
 		}
 	};
 	

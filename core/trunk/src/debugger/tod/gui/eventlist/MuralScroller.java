@@ -178,7 +178,7 @@ public class MuralScroller extends JPanel
 			itsMural.pStart.set(itsStart);
 			itsMural.pEnd.set(itsEnd);
 			itsMural.pEventBrowsers.clear();
-			itsMural.pEventBrowsers.add(new BrowserData(itsBrowser, Color.BLACK));
+			itsMural.pEventBrowsers.add(new BrowserData(itsBrowser, Color.BLACK, 5));
 			itsMural.repaint();
 		}
 		

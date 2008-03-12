@@ -36,15 +36,11 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 
 import tod.core.DebugFlags;
 import tod.core.config.TODConfig;
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.LocationUtils;
 import tod.core.database.event.ICallerSideEvent;
 import tod.core.database.event.ILogEvent;
@@ -53,7 +49,6 @@ import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
-import tod.gui.JobProcessor;
 import tod.gui.kit.Bus;
 import tod.gui.kit.html.HtmlBody;
 import tod.gui.kit.html.HtmlComponent;
@@ -65,7 +60,7 @@ import tod.gui.kit.messages.EventSelectedMsg;
 import tod.gui.kit.messages.EventActivatedMsg.ActivationMethod;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import zz.utils.Utils;
-import zz.utils.ui.MousePanel;
+import zz.utils.ui.ResourceUtils.ImageResource;
 
 /**
  * Base class for simple event nodes that display a block of html.
@@ -73,6 +68,8 @@ import zz.utils.ui.MousePanel;
  */
 public abstract class AbstractSimpleEventNode extends AbstractEventNode
 {
+	private static final int ROLE_ICON_SIZE = 15;
+	
 	private HtmlComponent itsHtmlComponent;
 	private HtmlDoc itsDoc;
 	
@@ -104,10 +101,10 @@ public abstract class AbstractSimpleEventNode extends AbstractEventNode
 		BytecodeRole theRole = LocationUtils.getEventRole(getEvent());
 		if (theRole == null) return;
 
-		ImageIcon theIcon = GUIUtils.getRoleIcon(theRole);
+		ImageResource theIcon = GUIUtils.getRoleIcon(theRole);
 		if (theIcon == null) return;
 
-		addToGutter(new JLabel(theIcon));
+		addToGutter(new JLabel(theIcon.asIcon(ROLE_ICON_SIZE)));
 	}
 	
 	protected void updateHtml()

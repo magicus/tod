@@ -98,7 +98,8 @@ implements IPropertyListener, IListListener
 		{
 			theBrowsers.add (new BrowserData(
 					theBackgroundBrowser.createIntersection(theBrowserData.browser.getFilter()), 
-					theBrowserData.color));
+					theBrowserData.color,
+					theBrowserData.markSize));
 		}
 		
 		return theBrowsers;
