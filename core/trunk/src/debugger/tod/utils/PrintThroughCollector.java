@@ -339,6 +339,16 @@ public class PrintThroughCollector implements ILogCollector
 		itsCollector.thread(aThreadId, aJVMThreadId, aName);
 	}
 
+	public void clear()
+	{
+		itsCollector.clear();
+	}
+
+	public int flush()
+	{
+		return itsCollector.flush();
+	}
+
 	private static String formatTimestamp(long aTimestamp)
 	{
 		return DebugFlags.COLLECTOR_FORMAT_TIMESTAMPS ?

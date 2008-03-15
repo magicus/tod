@@ -51,6 +51,7 @@ import tod.gui.eventsequences.SequenceViewsDock;
 import zz.utils.list.IList;
 import zz.utils.list.IListListener;
 import zz.utils.list.ZArrayList;
+import zz.utils.properties.IRWProperty;
 
 public class EventHighlighter extends JPanel
 implements ActionListener
@@ -107,6 +108,16 @@ implements ActionListener
 	public ILogBrowser getLogBrowser()
 	{
 		return itsLogBrowser;
+	}
+	
+	public IRWProperty<Long> pStart()
+	{
+		return itsDock.pStart();
+	}
+	
+	public IRWProperty<Long> pEnd()
+	{
+		return itsDock.pEnd();
 	}
 	
 	/**

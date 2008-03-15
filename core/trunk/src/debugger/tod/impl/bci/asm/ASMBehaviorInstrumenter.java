@@ -41,7 +41,7 @@ import tod.agent.AgentConfig;
 import tod.agent.AgentReady;
 import tod.agent.BehaviorCallType;
 import tod.agent.BehaviorKind;
-import tod.agent.EventInterpreter;
+import tod.agent.EventCollector;
 import tod.agent.ExceptionGeneratedReceiver;
 import tod.agent.TracedMethods;
 import tod.core.database.structure.IBehaviorInfo;
@@ -53,6 +53,7 @@ import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
 import tod.core.database.structure.IBehaviorInfo.HasTrace;
+import tod.core.transport.EventInterpreter;
 import tod.impl.bci.asm.ASMInstrumenter.CodeRange;
 import tod.impl.bci.asm.ASMInstrumenter.RangeManager;
 import tod.impl.bci.asm.ProbesManager.TmpProbeInfo;
@@ -83,7 +84,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	/**
 	 * Index of the variable that stores the event interpreter.
 	 */
-	private int itsInterpreterVar;
+	private int itsCollectorVar;
 	private int itsFirstFreeVar;
 	
 	private Label itsReturnHookLabel;
@@ -121,7 +122,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		itsFirstFreeVar += 1;
 		
 		// Allocate space for interpreter var
-		itsInterpreterVar = itsFirstFreeVar;
+		itsCollectorVar = itsFirstFreeVar;
 		itsFirstFreeVar += 1;
 	}
 	
@@ -195,9 +196,9 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		mv.visitMethodInsn(
 				INVOKESTATIC, 
 				Type.getInternalName(AgentConfig.class), 
-				"getInterpreter", 
-				"()"+Type.getDescriptor(EventInterpreter.class));
-		mv.visitVarInsn(ASTORE, itsInterpreterVar);
+				"getCollector", 
+				"()"+Type.getDescriptor(EventCollector.class));
+		mv.visitVarInsn(ASTORE, itsCollectorVar);
 		
 		
 		// Call logBehaviorEnter
@@ -673,7 +674,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	public void pushStdLogArgs()
 	{
 		// ->target collector
-		mv.visitVarInsn(ALOAD, itsInterpreterVar);
+		mv.visitVarInsn(ALOAD, itsCollectorVar);
 	}
 
 	/**
@@ -685,7 +686,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	public void pushDryLogArgs()
 	{
 		// ->target collector
-		mv.visitVarInsn(ALOAD, itsInterpreterVar);
+		mv.visitVarInsn(ALOAD, itsCollectorVar);
 	}
 	
 	public void invokeLogBeforeBehaviorCall(
@@ -726,7 +727,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
-				Type.getInternalName(EventInterpreter.class), 
+				Type.getInternalName(EventCollector.class), 
 				"logBeforeBehaviorCall", 
 				"(II"+Type.getDescriptor(BehaviorCallType.class)+"Ljava/lang/Object;[Ljava/lang/Object;)V");
 		
@@ -762,7 +763,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
-				Type.getInternalName(EventInterpreter.class), 
+				Type.getInternalName(EventCollector.class), 
 				"logBeforeBehaviorCallDry", 
 				"(II"+Type.getDescriptor(BehaviorCallType.class)+")V");
 		
@@ -799,7 +800,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
-				Type.getInternalName(EventInterpreter.class), 
+				Type.getInternalName(EventCollector.class), 
 				"logAfterBehaviorCall", 
 				"(IILjava/lang/Object;Ljava/lang/Object;)V");
 		
@@ -819,7 +820,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
-				Type.getInternalName(EventInterpreter.class), 
+				Type.getInternalName(EventCollector.class), 
 				"logAfterBehaviorCallDry", 
 				"()V");
 		
@@ -856,7 +857,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
-				Type.getInternalName(EventInterpreter.class), 
+				Type.getInternalName(EventCollector.class), 
 				"logAfterBehaviorCallWithException", 
 				"(IILjava/lang/Object;Ljava/lang/Object;)V");
 		
@@ -895,7 +896,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
-				Type.getInternalName(EventInterpreter.class), 
+				Type.getInternalName(EventCollector.class), 
 				"logFieldWrite", 
 				"(IILjava/lang/Object;Ljava/lang/Object;)V");
 		
@@ -931,7 +932,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
-				Type.getInternalName(EventInterpreter.class), 
+				Type.getInternalName(EventCollector.class), 
 				"logNewArray", 
 				"(ILjava/lang/Object;II)V");
 		
@@ -969,7 +970,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
-				Type.getInternalName(EventInterpreter.class), 
+				Type.getInternalName(EventCollector.class), 
 				"logArrayWrite", 
 				"(ILjava/lang/Object;ILjava/lang/Object;)V");
 		
@@ -1003,7 +1004,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
-				Type.getInternalName(EventInterpreter.class), 
+				Type.getInternalName(EventCollector.class), 
 				"logLocalVariableWrite", 
 				"(IILjava/lang/Object;)V");
 		
@@ -1045,7 +1046,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitMethodInsn(
 				Opcodes.INVOKEVIRTUAL, 
-				Type.getInternalName(EventInterpreter.class), 
+				Type.getInternalName(EventCollector.class), 
 				aClInit ? "logClInitEnter" : "logBehaviorEnter", 
 				"(I"+Type.getDescriptor(BehaviorCallType.class)+"Ljava/lang/Object;[Ljava/lang/Object;)V");	
 	
@@ -1077,7 +1078,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 
 		mv.visitMethodInsn(
 				Opcodes.INVOKEVIRTUAL, 
-				Type.getInternalName(EventInterpreter.class), 
+				Type.getInternalName(EventCollector.class), 
 				aClInit ? "logClInitExit" : "logBehaviorExit", 
 				"(IILjava/lang/Object;)V");	
 	
@@ -1103,7 +1104,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitMethodInsn(
 				Opcodes.INVOKEVIRTUAL, 
-				Type.getInternalName(EventInterpreter.class), 
+				Type.getInternalName(EventCollector.class), 
 				"logBehaviorExitWithException", 
 				"(ILjava/lang/Object;)V");	
 		

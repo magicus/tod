@@ -78,7 +78,7 @@ public class DynamicCrosscuttingView extends LogView
 implements IListListener<Highlight>
 {
 	private static final Color[] COLORS = {
-		Color.BLUE, Color.DARK_GRAY, Color.CYAN, Color.GREEN, Color.MAGENTA, Color.ORANGE,
+		Color.BLUE, Color.CYAN, Color.GREEN, Color.MAGENTA, Color.ORANGE,
 		Color.PINK, Color.RED, Color.WHITE, Color.YELLOW
 	};
 	
@@ -174,6 +174,9 @@ implements IListListener<Highlight>
 		add(theSplitPane);
 	
 		setupHighlights();
+		
+		connect(itsSeed.pStart, itsHighlighter.pStart(), true);
+		connect(itsSeed.pEnd, itsHighlighter.pEnd(), true);
 	}
 	
 	@Override
@@ -200,7 +203,7 @@ implements IListListener<Highlight>
 		{
 			itsHighlighter.pHighlightBrowsers.add(new BrowserData(
 					theHighlight.createBrowser(getLogBrowser()),
-					COLORS[i],
+					COLORS[i++],
 					BrowserData.DEFAULT_MARK_SIZE*2));
 		}
 	}
@@ -227,7 +230,7 @@ implements IListListener<Highlight>
 			int i=0;
 			for(Highlight theHighlight : itsSeed.pHighlights)
 			{
-				add(new LegendItem(theHighlight, COLORS[i]));
+				add(new LegendItem(theHighlight, COLORS[i++]));
 			}
 		}
 		

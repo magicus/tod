@@ -90,6 +90,7 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 	 */
 	public void addNotify()
 	{
+		update();
 	}
 	
 	/**

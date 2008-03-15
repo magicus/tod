@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.agent.transport;
+package tod.core.transport;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -28,27 +28,36 @@ import java.io.OutputStream;
 
 import tod.agent.ObjectIdentity;
 import tod.agent.Output;
+import tod.agent.transport.Commands;
+import tod.agent.transport.HighLevelEventType;
+import tod.agent.transport.ObjectValue;
+import tod.agent.transport.ValueType;
 
 /**
  * Provides the methods used to encode streamed log data. Non-static methods are
  * not thread-safe, but {@link SocketCollector} maintains one
- * {@link CollectorPacketWriter} per thread.
+ * {@link HighLevelEventWriter} per thread.
  */
-public class CollectorPacketWriter
+public class HighLevelEventWriter
 {
 	private final MyBuffer itsBuffer = new MyBuffer();
-	private final DataOutputStream itsStream;
+	private DataOutputStream itsStream;
 	
 	RegisteredObjectsStack itsRegisteredObjectsStack = new RegisteredObjectsStack();
 	DeferredObjectsStack itsDeferredObjectsStack = new DeferredObjectsStack();
 	
-	public CollectorPacketWriter(DataOutputStream aStream)
+	public HighLevelEventWriter(DataOutputStream aStream)
+	{
+		itsStream = aStream;
+	}
+	
+	public void setStream(DataOutputStream aStream)
 	{
 		itsStream = aStream;
 	}
 
 	private void sendMethodCall(
-			MessageType aMessageType, 
+			HighLevelEventType aMessageType, 
 			int aThreadId,
 			long aParentTimestamp,
 			int aDepth,
@@ -60,7 +69,7 @@ public class CollectorPacketWriter
 			Object aTarget, 
 			Object[] aArguments) throws IOException
 	{
-		sendMessageType(itsStream, aMessageType);
+		sendEventType(itsStream, aMessageType);
 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
 		itsBuffer.writeInt(aProbeId);
@@ -68,7 +77,7 @@ public class CollectorPacketWriter
 		itsBuffer.writeInt(aCalledBehavior);
 		itsBuffer.writeInt(aExecutedBehavior);
 
-		if (aMessageType == MessageType.INSTANTIATION && shouldSendByValue(aTarget))
+		if (aMessageType == HighLevelEventType.INSTANTIATION && shouldSendByValue(aTarget))
 		{
 			// Ensure that the sending of the object's value is deferred:
 			// otherwise we serialize an object that is not completely
@@ -108,7 +117,7 @@ public class CollectorPacketWriter
 			Object[] aArguments) throws IOException
 	{
 		sendMethodCall(
-				MessageType.METHOD_CALL, 
+				HighLevelEventType.METHOD_CALL, 
 				aThreadId,
 				aParentTimestamp,
 				aDepth, 
@@ -134,7 +143,7 @@ public class CollectorPacketWriter
 			Object[] aArguments) throws IOException
 	{
 		sendMethodCall(
-				MessageType.INSTANTIATION,
+				HighLevelEventType.INSTANTIATION,
 				aThreadId,
 				aParentTimestamp,
 				aDepth, 
@@ -160,7 +169,7 @@ public class CollectorPacketWriter
 			Object[] aArguments) throws IOException
 	{
 		sendMethodCall(
-				MessageType.SUPER_CALL,
+				HighLevelEventType.SUPER_CALL,
 				aThreadId,
 				aParentTimestamp,
 				aDepth, 
@@ -183,7 +192,7 @@ public class CollectorPacketWriter
 			boolean aHasThrown,
 			Object aResult) throws IOException
 	{
-		sendMessageType(itsStream, MessageType.BEHAVIOR_EXIT);
+		sendEventType(itsStream, HighLevelEventType.BEHAVIOR_EXIT);
 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
 		itsBuffer.writeInt(aProbeId);
@@ -213,7 +222,7 @@ public class CollectorPacketWriter
 			Object aTarget, 
 			Object aValue) throws IOException
 	{
-		sendMessageType(itsStream, MessageType.FIELD_WRITE);
+		sendEventType(itsStream, HighLevelEventType.FIELD_WRITE);
 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
 		itsBuffer.writeInt(aProbeId);
@@ -236,7 +245,7 @@ public class CollectorPacketWriter
 			int aBaseTypeId,
 			int aSize) throws IOException
 	{
-		sendMessageType(itsStream, MessageType.NEW_ARRAY);
+		sendEventType(itsStream, HighLevelEventType.NEW_ARRAY);
 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
 		itsBuffer.writeInt(aProbeId);
@@ -259,7 +268,7 @@ public class CollectorPacketWriter
 			int aIndex, 
 			Object aValue) throws IOException
 	{
-		sendMessageType(itsStream, MessageType.ARRAY_WRITE);
+		sendEventType(itsStream, HighLevelEventType.ARRAY_WRITE);
 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
 		itsBuffer.writeInt(aProbeId);
@@ -281,7 +290,7 @@ public class CollectorPacketWriter
 			int aVariableId,
 			Object aValue) throws IOException
 	{
-		sendMessageType(itsStream, MessageType.LOCAL_VARIABLE_WRITE);
+		sendEventType(itsStream, HighLevelEventType.LOCAL_VARIABLE_WRITE);
 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
 		itsBuffer.writeInt(aProbeId);
@@ -304,7 +313,7 @@ public class CollectorPacketWriter
 			int aOperationBytecodeIndex,
 			Object aException) throws IOException
 	{
-		sendMessageType(itsStream, MessageType.EXCEPTION);
+		sendEventType(itsStream, HighLevelEventType.EXCEPTION);
 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
 		itsBuffer.writeUTF(aMethodName);
@@ -328,7 +337,7 @@ public class CollectorPacketWriter
 			Output aOutput,
 			byte[] aData) throws IOException
 	{
-		sendMessageType(itsStream, MessageType.OUTPUT);
+		sendEventType(itsStream, HighLevelEventType.OUTPUT);
 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
 		itsBuffer.writeByte((byte) aOutput.ordinal());
@@ -345,7 +354,7 @@ public class CollectorPacketWriter
 			long aJVMThreadId,
 			String aName) throws IOException
 	{
-		sendMessageType(itsStream, MessageType.REGISTER_THREAD);
+		sendEventType(itsStream, HighLevelEventType.REGISTER_THREAD);
 
 		itsBuffer.writeInt(aThreadId);
 		itsBuffer.writeLong(aJVMThreadId);
@@ -358,7 +367,7 @@ public class CollectorPacketWriter
 
 	public void sendClear() throws IOException
 	{
-		itsStream.writeByte(MessageType.CMD_CLEAR);
+		sendCommand(itsStream, Commands.CMD_CLEAR);
 	}
 
 	private void sendStd(
@@ -398,48 +407,48 @@ public class CollectorPacketWriter
 	{
 		if (aValue == null)
 		{
-			sendMessageType(aStream, MessageType.NULL);
+			sendValueType(aStream, ValueType.NULL);
 		}
 		else if (aValue instanceof Boolean)
 		{
 			Boolean theBoolean = (Boolean) aValue;
-			sendMessageType(aStream, MessageType.BOOLEAN);
+			sendValueType(aStream, ValueType.BOOLEAN);
 			aStream.writeByte(theBoolean.booleanValue() ? 1 : 0);
 		}
 		else if (aValue instanceof Byte)
 		{
 			Byte theByte = (Byte) aValue;
-			sendMessageType(aStream, MessageType.BYTE);
+			sendValueType(aStream, ValueType.BYTE);
 			aStream.writeByte(theByte.byteValue());
 		}
 		else if (aValue instanceof Character)
 		{
 			Character theCharacter = (Character) aValue;
-			sendMessageType(aStream, MessageType.CHAR);
+			sendValueType(aStream, ValueType.CHAR);
 			aStream.writeChar(theCharacter.charValue());
 		}
 		else if (aValue instanceof Integer)
 		{
 			Integer theInteger = (Integer) aValue;
-			sendMessageType(aStream, MessageType.INT);
+			sendValueType(aStream, ValueType.INT);
 			aStream.writeInt(theInteger.intValue());
 		}
 		else if (aValue instanceof Long)
 		{
 			Long theLong = (Long) aValue;
-			sendMessageType(aStream, MessageType.LONG);
+			sendValueType(aStream, ValueType.LONG);
 			aStream.writeLong(theLong.longValue());
 		}
 		else if (aValue instanceof Float)
 		{
 			Float theFloat = (Float) aValue;
-			sendMessageType(aStream, MessageType.FLOAT);
+			sendValueType(aStream, ValueType.FLOAT);
 			aStream.writeFloat(theFloat.floatValue());
 		}
 		else if (aValue instanceof Double)
 		{
 			Double theDouble = (Double) aValue;
-			sendMessageType(aStream, MessageType.DOUBLE);
+			sendValueType(aStream, ValueType.DOUBLE);
 			aStream.writeDouble(theDouble.doubleValue());
 		}
 		else if (shouldSendByValue(aValue))
@@ -449,7 +458,7 @@ public class CollectorPacketWriter
 		else
 		{
 			long theObjectId = ObjectIdentity.get(aValue);
-			sendMessageType(aStream, MessageType.OBJECT_UID);
+			sendValueType(aStream, ValueType.OBJECT_UID);
 			aStream.writeLong(Math.abs(theObjectId));
 		}
 	}
@@ -491,7 +500,7 @@ public class CollectorPacketWriter
 			}
 		}
 
-		sendMessageType(aStream, MessageType.OBJECT_UID);
+		sendValueType(aStream, ValueType.OBJECT_UID);
 		aStream.writeLong(theObjectId);
 	}
 
@@ -511,7 +520,7 @@ public class CollectorPacketWriter
 
 	private void sendRegisteredObject(long aId, Object aObject, long aTimestamp) throws IOException
 	{
-		sendMessageType(itsStream, MessageType.REGISTERED);
+		sendCommand(itsStream, Commands.CMD_REGISTER);
 		itsBuffer.writeLong(aId);
 		itsBuffer.writeLong(aTimestamp);
 		MyObjectOutputStream theStream = new MyObjectOutputStream(itsBuffer);
@@ -521,10 +530,21 @@ public class CollectorPacketWriter
 		itsBuffer.writeTo(itsStream);
 	}
 
-	private static void sendMessageType(DataOutputStream aStream, MessageType aMessageType) throws IOException
+	private static void sendEventType(DataOutputStream aStream, HighLevelEventType aMessageType) throws IOException
 	{
 		aStream.writeByte(aMessageType.ordinal());
 	}
+
+	private static void sendValueType(DataOutputStream aStream, ValueType aType) throws IOException
+	{
+		aStream.writeByte(aType.ordinal());
+	}
+	
+	private static void sendCommand(DataOutputStream aStream, Commands aCommands) throws IOException
+	{
+		aStream.writeByte(aCommands.ordinal() + Commands.BASE);
+	}
+	
 
 	private static class MyObjectOutputStream extends ObjectOutputStream
 	{

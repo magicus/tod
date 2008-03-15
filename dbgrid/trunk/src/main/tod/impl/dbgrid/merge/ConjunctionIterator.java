@@ -114,6 +114,7 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 			{
 				theMatch = true;
 				boolean theSameEvent = true;
+				boolean theSameKey = true;
 
 				T theRefTuple = null;
 				initTimestamps();
@@ -133,6 +134,7 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 					{
 						if (! sameItem(theRefTuple, theItem)) theMatch = false;
 						if (! sameEvent(theRefTuple, theItem)) theSameEvent = false;
+						if (! sameKey(theRefTuple, theItem)) theSameKey = false;
 					}
 
 					long theTimestamp = getKey(theItem);
@@ -160,7 +162,8 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 						if (theTuple != null) return theTuple;
 					}
 					
-					itsDirection.move(getSelectedHead(), getGoalTimestamp());
+					if (! theSameKey) itsDirection.move(getSelectedHead(), getGoalTimestamp());
+					else itsDirection.move(getSelectedHead());
 				}
 			}
 			while (!theMatch);

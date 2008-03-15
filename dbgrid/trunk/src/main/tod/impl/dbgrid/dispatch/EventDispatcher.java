@@ -33,8 +33,15 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.rmi.RemoteException;
 
-import tod.agent.transport.MessageType;
+import com.sun.org.apache.bcel.internal.generic.LLOAD;
+
+import tod.agent.Output;
+import tod.agent.transport.Commands;
+import tod.agent.transport.LowLevelEventType;
 import tod.core.DebugFlags;
+import tod.core.ILogCollector;
+import tod.core.transport.CollectorLogReceiver;
+import tod.core.transport.HighLevelEventWriter;
 import tod.core.transport.LogReceiver;
 import tod.impl.database.structure.standard.HostInfo;
 import tod.impl.database.structure.standard.ThreadInfo;
@@ -78,7 +85,7 @@ implements RIDispatcher
 			OutputStream aOutStream, 
 			boolean aStartImmediately)
 	{
-		return new ForwardingLogReceiver(aMaster, aHostInfo, aInStream, aOutStream, aStartImmediately);
+		return new DispatchingLogReceiver(aMaster, aHostInfo, aInStream, aOutStream, aStartImmediately);
 	}
 
 	@Override
@@ -99,7 +106,7 @@ implements RIDispatcher
 		}
 	}
 
-	private class ForwardingLogReceiver extends LogReceiver
+	private class DispatchingLogReceiver extends CollectorLogReceiver
 	{
 		/**
 		 * Grid master, if we are the root dispatcher. In this case we forward
@@ -116,16 +123,22 @@ implements RIDispatcher
 		private DispatcherProxy itsCurrentChild;
 		private int itsCurrentChildIndex;
 
-		public ForwardingLogReceiver(
+		public DispatchingLogReceiver(
 				GridMaster aMaster,
 				HostInfo aHostInfo,
 				InputStream aInStream,
 				OutputStream aOutStream,
 				boolean aStart)
 		{
-			super(aHostInfo, aInStream, aOutStream, false);
+			super(aHostInfo, aInStream, aOutStream, false, new TransmitterLogCollector());
 			itsMaster = aMaster;
 			if (aStart) start();
+		}
+		
+		@Override
+		public TransmitterLogCollector getCollector()
+		{
+			return (TransmitterLogCollector) super.getCollector();
 		}
 		
 		private DispatcherProxy getNextChild()
@@ -165,7 +178,7 @@ implements RIDispatcher
 		}
 		
 		@Override
-		protected int flush()
+		protected int processFlush()
 		{
 			int theTotal = 0;
 			for (DispatchNodeProxy theProxy : getChildren()) 
@@ -177,46 +190,37 @@ implements RIDispatcher
 		}
 		
 		@Override
-		protected void clear()
+		protected void processClear()
 		{
 			for (DispatchNodeProxy theProxy : getChildren()) 
 			{
 				theProxy.clear();
 			}
 		}
-
+		
 		@Override
-		protected void readPacket(DataInputStream aStream, MessageType aType) throws IOException
+		protected void processRegister(DataInputStream aStream) throws IOException
 		{
-			checkNodeException();
-			switch (aType)
-			{
-			case INSTANTIATION:
-			case SUPER_CALL:
-			case METHOD_CALL:
-			case BEHAVIOR_EXIT:
-			case FIELD_WRITE:
-			case ARRAY_WRITE:
-			case LOCAL_VARIABLE_WRITE:
-			case OUTPUT:
-			case EXCEPTION:
-			case REGISTERED:
-				DispatcherProxy theProxy = getNextChild();
-				theProxy.forwardPacket(aType, aStream);
-				if (DebugFlags.DISPATCH_FAKE_1) theProxy.getOutStream().flush();
-				break;
-				
-			case REGISTER_THREAD:
-				// Thread registration is not forwarded.
-				readThread(aStream);
-				break;
-
-			default:
-				throw new RuntimeException("Not handled: "+aType);
-			}
-			
+			DispatcherProxy theProxy = getNextChild();
+			theProxy.forwardPacket((byte) (Commands.BASE + Commands.CMD_REGISTER.ordinal()), aStream);
+			if (DebugFlags.DISPATCH_FAKE_1) theProxy.getOutStream().flush();
 		}
 
+		@Override
+		protected void processEvent(LowLevelEventType aType, DataInputStream aStream) throws IOException
+		{
+			if (aType == LowLevelEventType.REGISTER_THREAD)
+			{
+				// Thread registration is not forwarded.
+				readThread(aStream);
+			}
+			else
+			{
+				getCollector().setCurrentProxy(getNextChild());
+				super.processEvent(aType, aStream);
+			}
+		}
+		
 		private void readThread(DataInputStream aStream) throws IOException
 		{
 			int theSize = aStream.readInt();
@@ -230,6 +234,178 @@ implements RIDispatcher
 				itsMaster.registerThread(theThreadInfo);
 			}
 		}
+	}
+	
+	/**
+	 * This log collector resends serialized the events.
+	 * @author gpothier
+	 */
+	private static class TransmitterLogCollector implements ILogCollector
+	{
+		private final HighLevelEventWriter itsWriter = new HighLevelEventWriter(null);
+		private DispatcherProxy itsCurrentProxy;
+		
+		public void setCurrentProxy(DispatcherProxy aCurrentProxy)
+		{
+			itsCurrentProxy = aCurrentProxy;
+			itsWriter.setStream(itsCurrentProxy.getOutStream());
+		}
+
+		public void arrayWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId,
+				Object aTarget, int aIndex, Object aValue)
+		{
+			try
+			{
+				itsWriter.sendArrayWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aTarget, aIndex, aValue);
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		public void behaviorExit(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId,
+				int aBehaviorId, boolean aHasThrown, Object aResult)
+		{
+			try
+			{
+				itsWriter.sendBehaviorExit(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aBehaviorId, aHasThrown, aResult);
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		public void clear()
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		public void exception(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, String aMethodName,
+				String aMethodSignature, String aMethodDeclaringClassSignature, int aOperationBytecodeIndex,
+				Object aException)
+		{
+			try
+			{
+				itsWriter.sendException(aThreadId, aParentTimestamp, aDepth, aTimestamp, aMethodName, aMethodSignature, aMethodDeclaringClassSignature, aOperationBytecodeIndex, aException);
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		public void fieldWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId,
+				int aFieldId, Object aTarget, Object aValue)
+		{
+			try
+			{
+				itsWriter.sendFieldWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aFieldId, aTarget, aValue);
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		public int flush()
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		public void instantiation(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId,
+				boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId, Object aTarget,
+				Object[] aArguments)
+		{
+			try
+			{
+				itsWriter.sendInstantiation(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		public void localWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId,
+				int aVariableId, Object aValue)
+		{
+			try
+			{
+				itsWriter.sendLocalWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aVariableId, aValue);
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		public void methodCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId,
+				boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId, Object aTarget,
+				Object[] aArguments)
+		{
+			try
+			{
+				itsWriter.sendMethodCall(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		public void newArray(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId,
+				Object aTarget, int aBaseTypeId, int aSize)
+		{
+			try
+			{
+				itsWriter.sendNewArray(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aTarget, aBaseTypeId, aSize);
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		public void output(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, Output aOutput,
+				byte[] aData)
+		{
+			try
+			{
+				itsWriter.sendOutput(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOutput, aData);
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		public void register(long aObjectUID, Object aObject, long aTimestamp)
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		public void superCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId,
+				boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId, Object aTarget,
+				Object[] aArguments)
+		{
+			try
+			{
+				itsWriter.sendSuperCall(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		public void thread(int aThreadId, long aJVMThreadId, String aName)
+		{
+			throw new UnsupportedOperationException();
+		}
+		
+		
 	}
 
 }

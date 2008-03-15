@@ -31,11 +31,12 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core;
 
-import tod.agent.HighLevelCollector;
 import tod.agent.Output;
+import tod.agent.transport.HighLevelEventType;
 
 /**
- * Interface for incoming events. It closely matches {@link HighLevelCollector}.
+ * Interface for incoming events. It is able to process high-level events
+ * ({@link HighLevelEventType}).
  * @author gpothier
  */
 public interface ILogCollector
@@ -153,4 +154,15 @@ public interface ILogCollector
 	 * Registers an object whose state cannot be otherwise determined (eg String, Exception)
 	 */
 	public void register(long aObjectUID, Object aObject, long aTimestamp);
+	
+	/**
+	 * Clears the database.
+	 */
+	public void clear();
+	
+	/**
+	 * Flushes buffered events.
+	 */
+	public int flush();
+	
 }

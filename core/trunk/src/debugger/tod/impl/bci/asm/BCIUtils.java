@@ -41,25 +41,13 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import tod.agent.AgentConfig;
-import tod.agent.EventInterpreter;
-import tod.agent.transport.CollectorPacketWriter;
 import tod.core.config.ClassSelector;
+import tod.core.transport.HighLevelEventWriter;
+import tod.core.transport.EventInterpreter;
 import tod.impl.database.structure.standard.PrimitiveTypeInfo;
 
 public class BCIUtils implements Opcodes
 {
-	/**
-	 * Creates a "packed" operation location.
-	 * @see CollectorPacketWriter#sendOperationLocation
-	 */
-	public static long operationLocation(int aBehaviorId, int aBytecodeIndex)
-	{
-		long l = 0;
-		l |= aBytecodeIndex & 0xffff;
-		l |= aBehaviorId << 16;
-		return l;
-	}
-	
 	/**
 	 * Return the normal Java class name corresponding to the given internal name
 	 */

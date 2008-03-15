@@ -43,6 +43,9 @@ import tod.gui.kit.SavedSplitPane;
 import tod.gui.locationselector.LocationSelectorPanel;
 import tod.gui.seed.StructureSeed;
 import tod.gui.view.LogView;
+import zz.utils.properties.IProperty;
+import zz.utils.properties.IPropertyListener;
+import zz.utils.properties.PropertyListener;
 import zz.utils.properties.PropertyUtils;
 import zz.utils.properties.PropertyUtils.Connector;
 import zz.utils.ui.StackLayout;
@@ -57,7 +60,14 @@ public class StructureView extends LogView
 	private final StructureSeed itsSeed;
 	private JPanel itsInfoHolder;
 	private LocationSelectorPanel itsSelectorPanel;
-	private Connector<ILocationInfo> itsConnector;
+	
+	private IPropertyListener<ILocationInfo> itsSelectedLocationListener = new PropertyListener<ILocationInfo>()
+	{
+		public void propertyChanged(IProperty<ILocationInfo> aProperty, ILocationInfo aOldValue, ILocationInfo aNewValue)
+		{
+			showNode(aNewValue);
+		}
+	};
 	
 	public StructureView(IGUIManager aGUIManager, ILogBrowser aLog, StructureSeed aSeed)
 	{
@@ -83,20 +93,22 @@ public class StructureView extends LogView
 		
 		setLayout(new StackLayout());
 		add(theSplitPane);
+		
+		connect(getSeed().pSelectedLocation(), itsSelectorPanel.pSelectedLocation(), true);
 	}
 	
 	@Override
 	public void addNotify()
 	{
 		super.addNotify();
-		itsConnector = PropertyUtils.connect(getSeed().pSelectedLocation(), itsSelectorPanel.pSelectedLocation(), true);
+		getSeed().pSelectedLocation().addHardListener(itsSelectedLocationListener);
 	}
 	
 	@Override
 	public void removeNotify()
 	{
 		super.removeNotify();
-		itsConnector.disconnect();
+		getSeed().pSelectedLocation().removeListener(itsSelectedLocationListener);
 	}
 	
 	/**

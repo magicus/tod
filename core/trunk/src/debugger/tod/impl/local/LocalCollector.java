@@ -400,6 +400,18 @@ public class LocalCollector extends EventCollector
 		itsBrowser.register(aObjectUID, aObject);
 	}
 	
+	public void clear()
+	{
+		itsBrowser.clear();
+	}
+
+	public int flush()
+	{
+		return 0;
+	}
+
+
+
 	private static class LocalThreadInfo extends ThreadInfo
 	{
 		private Stack<BehaviorCallEvent> itsParentsStack = new ArrayStack<BehaviorCallEvent>();

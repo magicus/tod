@@ -42,7 +42,7 @@ public class TOD
 		if (AgentReady.isEnabled()) 
 		{
 			System.out.println("[TOD] Sending clearDatabase request...");
-			AgentConfig.getInterpreter().clear();
+			AgentConfig.getCollector().clear();
 			System.out.println("[TOD] clearDatabase request done.");
 		}
 		else
@@ -59,7 +59,7 @@ public class TOD
 		if (AgentReady.isEnabled()) 
 		{
 			System.out.println("[TOD] Sending flushEvents request...");
-			AgentConfig.getInterpreter().flush();
+			AgentConfig.getCollector().flush();
 			System.out.println("[TOD] flushEvents request done.");
 		}
 		else

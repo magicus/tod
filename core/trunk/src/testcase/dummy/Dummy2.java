@@ -35,7 +35,7 @@ import tod.agent.TOD;
 
 public class Dummy2
 {
-	public static void main(String[] args)
+	public static void main(String[] args) throws InterruptedException
 	{
 		for(int i=0;i<10;i++)
 		{
@@ -44,11 +44,13 @@ public class Dummy2
 			System.out.println("Clearing DB...");
 			TOD.clearDatabase();
 		}
+		
+		Thread.sleep(1000000000);
 	}
 	
 	public static void dummy1()
 	{
-		for(int i=0;i<1000;i++) 
+		for(int i=0;i<10;i++) 
 		{
 			foo(i);
 		}

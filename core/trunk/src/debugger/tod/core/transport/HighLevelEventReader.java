@@ -31,35 +31,32 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.transport;
 
-import java.io.ByteArrayInputStream;
+import static tod.core.transport.ValueReader.readArguments;
+import static tod.core.transport.ValueReader.readValue;
+
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InvalidClassException;
-import java.io.ObjectInputStream;
 
-import tod.agent.AgentConfig;
 import tod.agent.Output;
-import tod.agent.transport.MessageType;
-import tod.core.DebugFlags;
+import tod.agent.transport.HighLevelEventType;
 import tod.core.ILogCollector;
-import tod.core.database.structure.ObjectId;
 
-public class CollectorPacketReader
+public class HighLevelEventReader
 {
 	public static void readPacket(
 			DataInputStream aStream, 
 			ILogCollector aCollector) throws IOException
 	{
-		MessageType theCommand = readMessageType(aStream);
+		HighLevelEventType theCommand = readEventType(aStream);
 		readPacket(aStream, aCollector, theCommand);
 	}
 	
 	public static void readPacket(
 			DataInputStream aStream,
 			ILogCollector aCollector, 
-			MessageType aCommand) throws IOException
+			HighLevelEventType aType) throws IOException
 	{
-		switch (aCommand)
+		switch (aType)
 		{
 			case INSTANTIATION:
                 readInstantiation(aStream, aCollector);
@@ -101,146 +98,20 @@ public class CollectorPacketReader
 				readException(aStream, aCollector);
 				break;
 				
-			case REGISTERED:
-				readRegistered(aStream, aCollector);
-				break;
-				
 			case REGISTER_THREAD:
 				readThread(aStream, aCollector);
 				break;
 				
 
 			default:
-				throw new RuntimeException("Unexpected message: "+aCommand);
+				throw new RuntimeException("Unexpected message: "+aType);
 		}
 	}
 	
-	private static MessageType readMessageType (DataInputStream aStream) throws IOException
+	private static HighLevelEventType readEventType (DataInputStream aStream) throws IOException
 	{
 		byte theByte = aStream.readByte();
-		return MessageType.VALUES[theByte];
-	}
-	
-    private static Object[] readArguments(DataInputStream aStream, ILogCollector aCollector) throws IOException
-    {
-        int theCount = aStream.readInt();
-        Object[] theArguments = new Object[theCount];
-        
-        for (int i=0;i<theCount;i++)
-        {
-            theArguments[i] = readValue(aStream, aCollector);
-        }
-        return theArguments;
-    }
-    
-	private static void readRegistered (DataInputStream aStream, ILogCollector aCollector) throws IOException
-	{
-		int theSize = aStream.readInt(); // Packet size
-		byte[] theBuffer = new byte[theSize];
-		aStream.readFully(theBuffer);
-		
-		DataInputStream theStream = new DataInputStream(new ByteArrayInputStream(theBuffer));
-		
-		long theObjectId = theStream.readLong();
-		long theObjectTimestamp = theStream.readLong();
-		if (DebugFlags.IGNORE_HOST) theObjectId >>>= AgentConfig.HOST_BITS;
-		ObjectInputStream theObjectStream = new ObjectInputStream(theStream);
-		Object theObject;
-		try
-		{
-			theObject = theObjectStream.readObject();
-		}
-		catch (ClassNotFoundException e)
-		{
-//			System.err.println("Warning - class no found: "+e.getMessage());
-			theObject = "Unknown ("+e.getMessage()+")";
-		}
-		catch (InvalidClassException e)
-		{
-			System.err.println("Warning - invalid class: "+e.getMessage());
-			theObject = "Unknown ("+e.getMessage()+")";					
-		}
-		catch (Throwable e)
-		{
-			System.err.println("Error while deserializing object id: "+theObjectId+": ");
-			e.printStackTrace();
-			System.err.println(" packet size: "+theSize);
-			for(int i=0;i<theSize;i++) System.err.print(Integer.toHexString(theBuffer[i])+" ");			
-			System.err.println();
-			theObject = "Deserialization error";
-		}
-		
-//		System.out.println("Received object: "+theObject+", id: "+theObjectId +", ts: "+theObjectTimestamp);
-		
-		aCollector.register(theObjectId, theObject, theObjectTimestamp);
-	}
-	
-	private static Object readValue (DataInputStream aStream, ILogCollector aCollector) throws IOException
-	{
-		MessageType theType = readMessageType(aStream);
-		switch (theType)
-		{
-			case NULL:
-				return null;
-				
-			case BOOLEAN:
-				return new Boolean (aStream.readByte() != 0);
-				
-			case BYTE:
-				return new Byte (aStream.readByte());
-				
-			case CHAR:
-				return new Character (aStream.readChar());
-				
-			case INT:
-				return new Integer (aStream.readInt());
-				
-			case LONG:
-				return new Long (aStream.readLong());
-				
-			case FLOAT:
-				return new Float (aStream.readFloat());
-				
-			case DOUBLE:
-				return new Double (aStream.readDouble());
-				
-			case REGISTERED:
-				throw new UnsupportedOperationException();
-//			{
-//				long theObjectId = aStream.readLong();
-//				if (DebugFlags.IGNORE_HOST) theObjectId >>>= AgentConfig.HOST_BITS;
-//				long theObjectTimestamp = aStream.readLong();
-//				ObjectInputStream theStream = new ObjectInputStream(aStream);
-//				Object theObject;
-//				try
-//				{
-//					theObject = theStream.readObject();
-//				}
-//				catch (ClassNotFoundException e)
-//				{
-////					System.err.println("Warning - class no found: "+e.getMessage());
-//					theObject = "Unknown ("+e.getMessage()+")";
-//				}
-//				catch (InvalidClassException e)
-//				{
-//					System.err.println("Warning - invalid class (might corrupt event stream): "+e.getMessage());
-//					theObject = "Unknown ("+e.getMessage()+")";					
-//				}
-//				
-//				aCollector.register(theObjectId, theObject,theObjectTimestamp);
-//				return new ObjectId(theObjectId);
-//			}	
-			case OBJECT_UID:
-			{
-				long theObjectId = aStream.readLong();
-				if (DebugFlags.IGNORE_HOST) theObjectId >>>= AgentConfig.HOST_BITS;
-				return new ObjectId(theObjectId);
-			}
-				
-			case OBJECT_HASH:
-			default:
-				throw new RuntimeException("Unexpected message: "+theType);
-		}
+		return HighLevelEventType.VALUES[theByte];
 	}
 	
 	
@@ -256,8 +127,8 @@ public class CollectorPacketReader
 				aStream.readBoolean(),
 				aStream.readInt(),
 				aStream.readInt(),
-				readValue(aStream, aCollector),
-				readArguments(aStream, aCollector));
+				readValue(aStream),
+				readArguments(aStream));
 	}
 	
 	public static void readInstantiation(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -272,8 +143,8 @@ public class CollectorPacketReader
 				aStream.readBoolean(),
 				aStream.readInt(),
 				aStream.readInt(),
-				readValue(aStream, aCollector),
-				readArguments(aStream, aCollector));
+				readValue(aStream),
+				readArguments(aStream));
 	}
 	
 	public static void readSuperCall(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -288,8 +159,8 @@ public class CollectorPacketReader
 				aStream.readBoolean(),
 				aStream.readInt(),
 				aStream.readInt(),
-				readValue(aStream, aCollector),
-				readArguments(aStream, aCollector));
+				readValue(aStream),
+				readArguments(aStream));
 
 	}
 	
@@ -304,7 +175,7 @@ public class CollectorPacketReader
 				aStream.readInt(),
 				aStream.readInt(),
 				aStream.readBoolean(),
-				readValue(aStream, aCollector));
+				readValue(aStream));
 	}
 	
 	public static void readFieldWrite(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -317,8 +188,8 @@ public class CollectorPacketReader
 				aStream.readLong(),
 				aStream.readInt(),
 				aStream.readInt(),
-				readValue(aStream, aCollector),
-				readValue(aStream, aCollector));
+				readValue(aStream),
+				readValue(aStream));
 	}
 	
 	public static void readNewArray(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -330,7 +201,7 @@ public class CollectorPacketReader
 				aStream.readShort(),
 				aStream.readLong(),
 				aStream.readInt(),
-				readValue(aStream, aCollector),
+				readValue(aStream),
 				aStream.readInt(),
 				aStream.readInt());
 	}
@@ -344,9 +215,9 @@ public class CollectorPacketReader
 				aStream.readShort(),
 				aStream.readLong(),
 				aStream.readInt(),
-				readValue(aStream, aCollector),
+				readValue(aStream),
 				aStream.readInt(),
-				readValue(aStream, aCollector));
+				readValue(aStream));
 	}
 	
 	public static void readLocalWrite(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -359,7 +230,7 @@ public class CollectorPacketReader
 				aStream.readLong(),
 				aStream.readInt(),
 				aStream.readInt(),
-				readValue(aStream, aCollector));
+				readValue(aStream));
 	}
 	
 	public static void readException(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -374,7 +245,7 @@ public class CollectorPacketReader
 				aStream.readUTF(),
 				aStream.readUTF(),
 				aStream.readShort(),
-				readValue(aStream, aCollector));
+				readValue(aStream));
 	}
 	
 	public static void readOutput(DataInputStream aStream, ILogCollector aCollector) throws IOException

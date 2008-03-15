@@ -117,6 +117,7 @@ public class SequenceViewsDock extends JPanel
 		@Override
 		protected Object canChange(Long aOldValue, Long aNewValue)
 		{
+			if (aNewValue == null) return REJECT;
 			if (aNewValue < itsFirstTimestamp) return itsFirstTimestamp;
 			else return ACCEPT;
 		}
@@ -134,6 +135,7 @@ public class SequenceViewsDock extends JPanel
 		@Override
 		protected Object canChange(Long aOldValue, Long aNewValue)
 		{
+			if (aNewValue == null) return REJECT;
 			if (aNewValue > itsLastTimestamp) return itsLastTimestamp;
 			else return ACCEPT;
 		}

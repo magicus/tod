@@ -230,6 +230,15 @@ public class CountTODServer extends AbstractSession
 		{
 //			if (CALL_SUPER) super.thread(aThreadId, aJVMThreadId, aName);
 		}
+
+		public void clear()
+		{
+		}
+
+		public int flush()
+		{
+			return 0;
+		}
 	}
 	
 	public static void main(String[] args)

@@ -180,6 +180,11 @@ public abstract class MergeIterator<T> extends AbstractBidiIterator<T>
 	 */
 	protected abstract boolean sameEvent(T aItem1, T aItem2);
 	
+	protected boolean sameKey(T aItem1, T aItem2)
+	{
+		return getKey(aItem1) == getKey(aItem2);
+	}
+	
 	/**
 	 * Indicates if the specified items are the same.
 	 * This is potentially more restrictive than {@link #sameEvent(Object, Object)},

@@ -382,4 +382,16 @@ public class GridEventCollector extends EventCollector
 	{
 		itsDatabaseNode.register(aObjectUID, aObject, aTimestamp);
 	}
+
+	public void clear()
+	{
+		itsDatabaseNode.clear();
+	}
+
+	public int flush()
+	{
+		return itsDatabaseNode.flush();
+	}
+	
+	
 }

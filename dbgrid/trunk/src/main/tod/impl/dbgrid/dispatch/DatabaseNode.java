@@ -521,17 +521,17 @@ implements RIDatabaseNode
 	{
 		public MyReceiver(HostInfo aHostInfo, ILogCollector aCollector, InputStream aInStream, OutputStream aOutStream, boolean aStart)
 		{
-			super(aHostInfo, aCollector, aInStream, aOutStream, aStart);
+			super(aHostInfo, aInStream, aOutStream, aStart, aCollector);
 		}
 
 		@Override
-		protected int flush()
+		protected int processFlush()
 		{
 			return DatabaseNode.this.flush();
 		}
 		
 		@Override
-		protected void clear()
+		protected void processClear()
 		{
 			DatabaseNode.this.clear();
 		}

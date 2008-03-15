@@ -22,9 +22,6 @@ package tod.agent;
 
 import java.io.IOException;
 
-import tod.agent.transport.DummyCollector;
-import tod.agent.transport.SocketCollector;
-
 /**
  * Configuration of the agent in the target VM. 
  * @author gpothier
@@ -48,9 +45,6 @@ public class AgentConfig
 	
 	public static final String PARAM_COLLECTOR_HOST = "collector-host";
 	public static final String PARAM_COLLECTOR_PORT = "collector-port";
-	public static final String PARAM_COLLECTOR_TYPE = "collector-type";
-	public static final String PARAM_COLLECTOR_TYPE_SOCKET = "socket";
-	public static final String PARAM_COLLECTOR_TYPE_DUMMY = "dummy";
 	
 	/**
 	 * This parameter defines the name of the host the agent runs on.
@@ -86,9 +80,7 @@ public class AgentConfig
 	public static final int COLLECTOR_BUFFER_SIZE = 32768;
 
 
-	private static HighLevelCollector itsCollector;
-	
-	private static EventInterpreter itsInterpreter;
+	private static EventCollector itsCollector;
 	
 	/**
 	 * Name of this client.
@@ -105,32 +97,18 @@ public class AgentConfig
 	 */
 	private static int itsPort;
 	
-	private static String itsCollectorType;
-	
-	
 	static
 	{
-		itsCollectorType = AgentUtils.readString(PARAM_COLLECTOR_TYPE, PARAM_COLLECTOR_TYPE_SOCKET);
 		itsPort = AgentUtils.readInt(PARAM_COLLECTOR_PORT, 8058);
 		itsHost = AgentUtils.readString(PARAM_COLLECTOR_HOST, "localhost");
 		itsClientName = AgentUtils.readString(PARAM_CLIENT_NAME, "no-name");
 	}
 	
-	private static HighLevelCollector createDummyCollector()
+	private static EventCollector createCollector()
 	{
-		System.out.println("[TOD] AgentConfig: Using dummy collector.");
-		return new DummyCollector();
-	}
-	
-	private static HighLevelCollector createSocketCollector()
-	{
-		System.out.println("[TOD] AgentConfig: " +
-				"Using socket collector ("+itsHost+":"+itsPort+")" +
-				" - AgentConfig loaded by: "+AgentConfig.class.getClassLoader());
-		
 		try
 		{
-			return new SocketCollector(itsHost, itsPort);
+			return new EventCollector(itsHost, itsPort);
 		}
 		catch (IOException e)
 		{
@@ -138,28 +116,12 @@ public class AgentConfig
 		}
 	}
 	
-	public static EventInterpreter getInterpreter()
+	public static EventCollector getCollector()
 	{
-		if (itsInterpreter == null)
+		if (itsCollector == null)
 		{
-//			System.out.println("Collector type: "+itsCollectorType);
-			if (PARAM_COLLECTOR_TYPE_DUMMY.equals(itsCollectorType))
-				itsCollector = createDummyCollector();
-			else if (PARAM_COLLECTOR_TYPE_SOCKET.equals(itsCollectorType)) 
-				itsCollector = createSocketCollector();
-			else 
-				throw new RuntimeException("Unknown collector type: "+itsCollectorType);
-			
-			itsInterpreter = new EventInterpreter(itsCollector);			
+			itsCollector = createCollector();			
 		}
-		return itsInterpreter;
-	}
-
-	/**
-	 * This method is called by instrumented code to obtain the current collector.
-	 */
-	public static HighLevelCollector getCollector()
-	{
 		return itsCollector;
 	}
 

@@ -97,5 +97,14 @@ public class DummyCollector implements ILogCollector
 	public void register(long aObjectUID, Object aObject, long aTimestamp)
 	{
 	}
+
+	public void clear()
+	{
+	}
+
+	public int flush()
+	{
+		return 0;
+	}
 	
 }

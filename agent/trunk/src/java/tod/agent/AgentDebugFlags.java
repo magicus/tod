@@ -25,7 +25,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
-
 /**
  * This class groups several flags that are used to
  * disable certain features for testing purposes.
@@ -37,12 +36,12 @@ public class AgentDebugFlags
 	/**
 	 * Causes the {@link EventInterpreter} to ignore all events
 	 */
-	public static final boolean DISABLE_INTERPRETER = false;
+	public static final boolean DISABLE_COLLECTOR = false;
 
 	/**
 	 * If true, the {@link EventInterpreter} prints all the events it receives
 	 */
-	public static final boolean EVENT_INTERPRETER_LOG = false;
+	public static final boolean COLLECTOR_LOG = false;
 	
 	/**
 	 * Stream to which the {@link EventInterpreter} sends debug info.
@@ -84,7 +83,7 @@ public class AgentDebugFlags
 
 	static
 	{
-		if (DISABLE_INTERPRETER == true) System.err.println("******* Warning: DISABLE_INTERPRETER (DebugFlags)");
+		if (DISABLE_COLLECTOR == true) System.err.println("******* Warning: DISABLE_INTERPRETER (DebugFlags)");
 		if (DISABLE_EVENT_SEND == true) System.err.println("******* Warning: DISABLE_EVENT_SEND (DebugFlags)");
 		if (COLLECTOR_IGNORE_ALL == true) System.err.println("******* Warning: COLLECTOR_IGNORE_ALL (DebugFlags)");
 	}

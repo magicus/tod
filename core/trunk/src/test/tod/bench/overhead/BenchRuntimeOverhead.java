@@ -42,7 +42,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import tod.agent.transport.MessageType;
+import tod.agent.transport.LowLevelEventType;
 import tod.core.bci.IInstrumenter;
 import tod.core.config.TODConfig;
 import tod.core.database.structure.IMutableStructureDatabase;
@@ -188,18 +188,25 @@ public class BenchRuntimeOverhead
 			}
 			
 			@Override
-			protected void clear()
+			protected void processClear()
 			{
+				throw new UnsupportedOperationException();
 			}
 
 			@Override
-			protected int flush()
+			protected int processFlush()
 			{
-				return 0;
+				throw new UnsupportedOperationException();
 			}
 
 			@Override
-			protected void readPacket(DataInputStream aStream, MessageType aType) throws IOException
+			protected void processEvent(LowLevelEventType aType, DataInputStream aStream) throws IOException
+			{
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			protected void processRegister(DataInputStream aStream) throws IOException
 			{
 				throw new UnsupportedOperationException();
 			}

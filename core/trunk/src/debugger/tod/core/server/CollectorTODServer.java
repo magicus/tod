@@ -70,27 +70,16 @@ public class CollectorTODServer extends TODServer
 		{
 			return new CollectorLogReceiver(
 					new HostInfo(itsCurrentHostId++),
-					itsCollectorFactory.create(),
 					new BufferedInputStream(aSocket.getInputStream()), 
-					new BufferedOutputStream(aSocket.getOutputStream()))
+					new BufferedOutputStream(aSocket.getOutputStream()),
+					true,
+					itsCollectorFactory.create())
 			{
 				@Override
 				protected synchronized void eof()
 				{
 					super.eof();
 					CollectorTODServer.this.disconnected();
-				}
-
-				@Override
-				protected int flush()
-				{
-					throw new UnsupportedOperationException();
-				}
-				
-				@Override
-				protected void clear()
-				{
-					throw new UnsupportedOperationException();
 				}
 			};
 		}

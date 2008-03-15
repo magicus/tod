@@ -29,10 +29,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.LinkedList;
 
-import tod.agent.transport.MessageType;
-import tod.core.transport.LogReceiver;
-import tod.utils.ArrayCast;
-import tod.utils.NativeStream;
+import tod.agent.transport.Commands;
 import zz.utils.ArrayStack;
 import zz.utils.Utils;
 
@@ -89,11 +86,11 @@ public class DispatcherProxy extends DispatchNodeProxy
 	/**
 	 * Transfers a packet to the child node.
 	 */
-	public void forwardPacket(MessageType aType, DataInputStream aStream)
+	public void forwardPacket(byte aMessage, DataInputStream aStream)
 	{
 		try
 		{
-			itsOut.write(aType.ordinal());
+			itsOut.write(aMessage);
 			
 			// Read packet size
 			aStream.readFully(itsIBArray);
@@ -130,7 +127,7 @@ public class DispatcherProxy extends DispatchNodeProxy
 		try
 		{
 			System.out.println("[DispatcherProxy] Flushing "+getNodeId()+"...");
-			getOutStream().writeByte(MessageType.CMD_FLUSH);
+			getOutStream().writeByte(Commands.BASE + Commands.CMD_FLUSH.ordinal());
 			getOutStream().flush();
 			System.out.println("[DispatcherProxy] Waiting response for "+getNodeId()+"...");
 			int theCount = getInStream().readInt();

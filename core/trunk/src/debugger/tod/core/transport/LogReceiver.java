@@ -40,15 +40,13 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import tod.agent.transport.MessageType;
+import tod.agent.transport.Commands;
+import tod.agent.transport.LowLevelEventType;
 import tod.core.DebugFlags;
 import tod.impl.database.structure.standard.HostInfo;
 
 /**
- * Receives log events from a logged application through a socket and
- * forwards them to a {@link tod.core.ILogCollector}.
- * It can be setup so that it connects to an already running application,
- * or to wait for incoming connections from applications
+ * Receives (low-level) events from the debugged application through a socket.
  * @author gpothier
  */
 public abstract class LogReceiver 
@@ -257,42 +255,56 @@ public abstract class LogReceiver
 		{
 			try
 			{
-				byte theCommand = aDataIn.readByte();
+				int theMessage = aDataIn.readByte();
 //				System.out.println("[LogReceiver] Command: "+theCommand);
-				
-				if (theCommand == MessageType.CMD_FLUSH)
+				itsMessageCount++;
+
+				if (DebugFlags.MAX_EVENTS > 0 && itsMessageCount > DebugFlags.MAX_EVENTS)
 				{
-					System.out.println("[LogReceiver] Received flush request.");
-					int theCount = flush();
-					aDataOut.writeInt(theCount);
-					aDataOut.flush();
+					eof();
+					break;
 				}
-				else if (theCommand == MessageType.CMD_CLEAR)
+
+				
+				if (theMessage >= Commands.BASE)
 				{
-					System.out.println("[LogReceiver] Received clear request.");
-					flush();
-					clear();
+					Commands theCommand = Commands.VALUES[theMessage-Commands.BASE];
+					switch (theCommand)
+					{
+					case CMD_FLUSH:
+						System.out.println("[LogReceiver] Received flush request.");
+						int theCount = processFlush();
+						aDataOut.writeInt(theCount);
+						aDataOut.flush();
+						break;
+						
+					case CMD_CLEAR:
+						System.out.println("[LogReceiver] Received clear request.");
+						processFlush();
+						processClear();
+						break;
+						
+					case CMD_REGISTER:
+						processRegister(aDataIn);
+						break;
+						
+					default: throw new RuntimeException("Not handled: "+theCommand); 
+					}
+
 				}
 				else
 				{
-					MessageType theType = MessageType.VALUES[theCommand];
-					readPacket(aDataIn, theType);
-					
-					itsMessageCount++;
-					
-					if (DebugFlags.MAX_EVENTS > 0 && itsMessageCount > DebugFlags.MAX_EVENTS)
-					{
-						eof();
-						break;
-					}
-					
-					if (itsMonitor != null 
-							&& DebugFlags.RECEIVER_PRINT_COUNTS > 0 
-							&& itsMessageCount % DebugFlags.RECEIVER_PRINT_COUNTS == 0)
-					{
-						itsMonitor.processedMessages(itsMessageCount);
-					}
+					LowLevelEventType theType = LowLevelEventType.VALUES[theMessage];
+					processEvent(theType, aDataIn);
 				}
+				
+				if (itsMonitor != null 
+						&& DebugFlags.RECEIVER_PRINT_COUNTS > 0 
+						&& itsMessageCount % DebugFlags.RECEIVER_PRINT_COUNTS == 0)
+				{
+					itsMonitor.processedMessages(itsMessageCount);
+				}
+
 			}
 			catch (EOFException e)
 			{
@@ -313,20 +325,25 @@ public abstract class LogReceiver
 	}
 
 	/**
-	 * Read and interpret an incoming packet.
+	 * Reads and processes an incoming event packet.
 	 */
-	protected abstract void readPacket(DataInputStream aStream, MessageType aType) throws IOException;
+	protected abstract void processEvent(LowLevelEventType aType, DataInputStream aStream) throws IOException;
+	
+	/**
+	 * Reads and processes an incoming registered object packet.
+	 */
+	protected abstract void processRegister(DataInputStream aStream) throws IOException;
 	
 	/**
 	 * Flushes buffered events.
 	 * @return Number of flushed events
 	 */
-	protected abstract int flush();
+	protected abstract int processFlush();
 	
 	/**
 	 * Clears the database.
 	 */
-	protected abstract void clear();
+	protected abstract void processClear();
 	
 	public interface ILogReceiverMonitor
 	{

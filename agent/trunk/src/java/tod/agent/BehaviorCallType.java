@@ -20,7 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.agent;
 
-import tod.agent.EventInterpreter.ThreadData;
 
 /**
  * Defines the various type of possible behavior call
@@ -28,105 +27,11 @@ import tod.agent.EventInterpreter.ThreadData;
  */
 public enum BehaviorCallType 
 {
-	METHOD_CALL()
-	{
-		public <T extends ThreadData> void call(
-				HighLevelCollector<T> aCollector,
-				T aThread, 
-				long aParentTimestamp,
-				short aDepth,
-				long aTimestamp, 
-				int aProbeId,
-				boolean aDirectParent,
-				int aCalledBehavior,
-				int aExecutedBehavior,
-				Object aTarget,
-				Object[] aArguments)
-		{
-			aCollector.methodCall(
-					aThread,
-					aParentTimestamp,
-					aDepth, 
-					aTimestamp,
-					aProbeId,
-					aDirectParent, 
-					aCalledBehavior, 
-					aExecutedBehavior, 
-					aTarget,
-					aArguments);
-		}
-	}, 
-	SUPER_CALL()
-	{
-		public <T extends ThreadData> void call(
-				HighLevelCollector<T> aCollector,
-				T aThread, 
-				long aParentTimestamp,
-				short aDepth,
-				long aTimestamp, 
-				int aProbeId,
-				boolean aDirectParent,
-				int aCalledBehavior,
-				int aExecutedBehavior,
-				Object aTarget,
-				Object[] aArguments)
-		{
-			aCollector.superCall(
-					aThread,
-					aParentTimestamp,
-					aDepth, 
-					aTimestamp,
-					aProbeId,
-					aDirectParent, 
-					aCalledBehavior, 
-					aExecutedBehavior, 
-					aTarget,
-					aArguments);
-		}
-	}, 
-	INSTANTIATION()
-	{
-		public <T extends ThreadData> void call(
-				HighLevelCollector<T> aCollector,
-				T aThread, 
-				long aParentTimestamp,
-				short aDepth,
-				long aTimestamp, 
-				int aProbeId,
-				boolean aDirectParent,
-				int aCalledBehavior,
-				int aExecutedBehavior,
-				Object aTarget,
-				Object[] aArguments)
-		{
-			aCollector.instantiation(
-					aThread,
-					aParentTimestamp,
-					aDepth, 
-					aTimestamp,
-					aProbeId,
-					aDirectParent, 
-					aCalledBehavior, 
-					aExecutedBehavior, 
-					aTarget,
-					aArguments);
-		}
-	};
+	METHOD_CALL, SUPER_CALL, INSTANTIATION;
 	
 	/**
-	 * Performs the appropriate call on the specified collector.
+	 * Cached values; call to values() is costly. 
 	 */
-	public abstract <T extends ThreadData> void call(
-			HighLevelCollector<T> aCollector,
-			T aThread,
-			long aParentTimestamp,
-			short aDepth,
-			long aTimestamp, 
-			int aProbeId,
-			boolean aDirectParent,
-			int aCalledBehavior,
-			int aExecutedBehavior,
-			Object aTarget,
-			Object[] aArguments);
-	
+	public static final BehaviorCallType[] VALUES = values();
+
 }

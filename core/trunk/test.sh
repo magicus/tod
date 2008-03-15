@@ -1,7 +1,7 @@
 #! /bin/sh
 
 # AGENT=../TOD-agng/libtod-agent.so
-AGENT=./libbci-agent.so
+AGENT=../TOD-agent/libbci-agent.so
 #CLASSPATH=./bin:../zz.utils/bin
 
 HOST=localhost
@@ -12,14 +12,14 @@ HOST=localhost
 VMARGS=''
 VMARGS="$VMARGS -agentpath:$AGENT"
 VMARGS="$VMARGS -noverify"
-VMARGS="$VMARGS -Dcollector-host=$HOST -Dcollector-port=8158 -Dnative-port=8159 -Dtod-host=tod-1"
+VMARGS="$VMARGS -Dcollector-host=$HOST -Dcollector-port=8058 -Dtod-host=tod-1"
 VMARGS="$VMARGS -Dcollector-type=socket"
 VMARGS="$VMARGS -Xbootclasspath/p:../TOD-agent/bin" 
 #VMARGS="$VMARGS -ea" 
 VMARGS="$VMARGS -server" 
 VMARGS="$VMARGS -Xmx384m" 
 VMARGS="$VMARGS -XX:MaxPermSize=128m"
-VMARGS="$VMARGS -Dagent-verbose=3"
+VMARGS="$VMARGS -Dagent-verbose=0"
 VMARGS="$VMARGS -Dagent-cache-path=/home/gpothier/tmp/tod"
 #VMARGS="$VMARGS -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"
 
@@ -32,7 +32,7 @@ VMARGS="$VMARGS -Dagent-cache-path=/home/gpothier/tmp/tod"
 #java $VMARGS -jar /home/gpothier/apps/jabref/JabRef-2.2.jar
 
 #java $VMARGS -cp "../../runtime-EclipseApplication(1)/TODTest/bin/":lib/zz.utils.jar imageviewer2.ImageViewer $1
-#java $VMARGS -cp ./bin dummy.Dummy2
+java $VMARGS -cp ./bin dummy.Dummy2
 
 #~/apps/eclipse-3.3.1.1/eclipse -vm /home/gpothier/apps/java/jdk1.5.0_08/bin/java -data ~/eclipse/ws-tod -consolelog -vmargs $VMARGS
 
@@ -49,7 +49,7 @@ VMARGS="$VMARGS -Dagent-cache-path=/home/gpothier/tmp/tod"
 
 #java $VMARGS -cp ./bin testclinit.A
 
-java $VMARGS -cp "../../runtime-EclipseApplication(1)/TODTest/bin/" tod.demo.format.A
+#java $VMARGS -cp "../../runtime-EclipseApplication(1)/TODTest/bin/" tod.demo.format.A
 
 #java $VMARGS -cp "../../runtime-EclipseApplication(1)/TODTest/bin:lib/zz.utils.jar" imageviewer3/ImageViewer
 #Machines:

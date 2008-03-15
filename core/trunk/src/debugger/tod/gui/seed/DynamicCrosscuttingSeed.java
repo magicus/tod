@@ -42,10 +42,14 @@ import tod.gui.view.LogView;
 import tod.gui.view.dyncross.DynamicCrosscuttingView;
 import zz.utils.list.IList;
 import zz.utils.list.ZArrayList;
+import zz.utils.properties.IRWProperty;
+import zz.utils.properties.SimpleRWProperty;
 
 public class DynamicCrosscuttingSeed extends LogViewSeed
 {
 	public final IList<Highlight> pHighlights = new ZArrayList<Highlight>();
+	public final IRWProperty<Long> pStart = new SimpleRWProperty<Long>();
+	public final IRWProperty<Long> pEnd = new SimpleRWProperty<Long>();
 
 	public DynamicCrosscuttingSeed(IGUIManager aGUIManager, ILogBrowser aLog)
 	{
