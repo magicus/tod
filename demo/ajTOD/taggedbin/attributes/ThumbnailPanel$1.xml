@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<attributes>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.soot.util.InPreinitializationTag@1e0c0b6" aType="InPreinitializationTag"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="SyntheticParamTag" aType="EnclosingTag"/>
+<text info="abc.soot.util.InPreinitializationTag@8c064f" aType="InPreinitializationTag"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="Synthetic" aType="SyntheticTag"/>
+</attribute>
+<attribute>
+<srcPos sline="26" eline="26" spos="10" epos="41"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="[e]" aType="ParamNamesTag"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="SyntheticParamTag" aType="EnclosingTag"/>
+</attribute>
+</attributes>

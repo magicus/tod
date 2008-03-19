@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<attributes>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@a3ed9f" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@a3ed9f" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@a3ed9f" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@a3ed9f" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@4c7788" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@4c7788" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@4c7788" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@4c7788" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.soot.util.InPreinitializationTag@5c775d" aType="InPreinitializationTag"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@4c7788" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@4c7788" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@4c7788" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@4c7788" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@4c7788" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@4c7788" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@4c7788" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="13" eline="24" spos="7" epos="1"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="[]" aType="ParamNamesTag"/>
+</attribute>
+<attribute>
+<srcPos sline="20" eline="20" spos="9" epos="34"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="[i]" aType="ParamNamesTag"/>
+</attribute>
+<attribute>
+<srcPos sline="13" eline="24" spos="7" epos="1"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="[]" aType="ParamNamesTag"/>
+</attribute>
+<attribute>
+<srcPos sline="13" eline="24" spos="7" epos="1"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="[]" aType="ParamNamesTag"/>
+</attribute>
+<attribute>
+<srcPos sline="16" eline="18" spos="1" epos="2"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="[i]" aType="ParamNamesTag"/>
+</attribute>
+</attributes>

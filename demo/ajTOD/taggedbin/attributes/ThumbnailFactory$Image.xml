@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<attributes>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1e3cabd" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.soot.util.InPreinitializationTag@1b4de03" aType="InPreinitializationTag"/>
+</attribute>
+<attribute>
+<srcPos sline="58" eline="58" spos="15" epos="27"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.soot.util.InPreinitializationTag@15bab52" aType="InPreinitializationTag"/>
+</attribute>
+<attribute>
+<srcPos sline="58" eline="58" spos="29" epos="48"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.soot.util.InPreinitializationTag@14cbf3f" aType="InPreinitializationTag"/>
+</attribute>
+<attribute>
+<srcPos sline="64" eline="64" spos="9" epos="28"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="[]" aType="ParamNamesTag"/>
+</attribute>
+<attribute>
+<srcPos sline="71" eline="71" spos="9" epos="40"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="[g]" aType="ParamNamesTag"/>
+</attribute>
+<attribute>
+<srcPos sline="58" eline="62" spos="9" epos="3"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="[aFile, image]" aType="ParamNamesTag"/>
+</attribute>
+</attributes>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<attributes>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.soot.util.InPreinitializationTag@f2794a" aType="InPreinitializationTag"/>
+</attribute>
+<attribute>
+<srcPos sline="81" eline="81" spos="14" epos="26"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.soot.util.InPreinitializationTag@f92541" aType="InPreinitializationTag"/>
+</attribute>
+<attribute>
+<srcPos sline="81" eline="81" spos="28" epos="39"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.soot.util.InPreinitializationTag@fcfd10" aType="InPreinitializationTag"/>
+</attribute>
+<attribute>
+<srcPos sline="81" eline="85" spos="9" epos="3"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="[aFile, text]" aType="ParamNamesTag"/>
+</attribute>
+<attribute>
+<srcPos sline="92" eline="92" spos="9" epos="40"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="[g]" aType="ParamNamesTag"/>
+</attribute>
+<attribute>
+<srcPos sline="87" eline="87" spos="9" epos="28"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="[]" aType="ParamNamesTag"/>
+</attribute>
+</attributes>

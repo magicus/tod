@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<attributes>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.soot.util.InPreinitializationTag@1802324" aType="InPreinitializationTag"/>
+</attribute>
+<attribute>
+<srcPos sline="9" eline="9" spos="14" epos="25"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.soot.util.InPreinitializationTag@1832ae6" aType="InPreinitializationTag"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1450701" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@1f8297b" aType="ca.mcgill.sable.InstructionShadow"/>
+<text info="abc.weaving.tagkit.InstructionSourceTag@16b4f5a" aType="ca.mcgill.sable.InstructionSource"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@269f76" aType="ca.mcgill.sable.InstructionShadow"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@1af3aa0" aType="ca.mcgill.sable.InstructionShadow"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@1321ed6" aType="ca.mcgill.sable.InstructionShadow"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@1321ed6" aType="ca.mcgill.sable.InstructionShadow"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@1321ed6" aType="ca.mcgill.sable.InstructionShadow"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@1321ed6" aType="ca.mcgill.sable.InstructionShadow"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1a0d62f" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@1f8297b" aType="ca.mcgill.sable.InstructionShadow"/>
+<text info="abc.weaving.tagkit.InstructionSourceTag@16b4f5a" aType="ca.mcgill.sable.InstructionSource"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1450701" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@1f8297b" aType="ca.mcgill.sable.InstructionShadow"/>
+<text info="abc.weaving.tagkit.InstructionSourceTag@16b4f5a" aType="ca.mcgill.sable.InstructionSource"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1450701" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@1f8297b" aType="ca.mcgill.sable.InstructionShadow"/>
+<text info="abc.weaving.tagkit.InstructionSourceTag@16b4f5a" aType="ca.mcgill.sable.InstructionSource"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@4dd5a1" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionSourceTag@186b2ca" aType="ca.mcgill.sable.InstructionSource"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@43f7d7" aType="ca.mcgill.sable.InstructionShadow"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@63430" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1450701" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@8a750a" aType="ca.mcgill.sable.InstructionShadow"/>
+<text info="abc.weaving.tagkit.InstructionSourceTag@9e6e0" aType="ca.mcgill.sable.InstructionSource"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@14b389" aType="ca.mcgill.sable.InstructionShadow"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@117280a" aType="ca.mcgill.sable.InstructionShadow"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@145a915" aType="ca.mcgill.sable.InstructionShadow"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@145a915" aType="ca.mcgill.sable.InstructionShadow"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@145a915" aType="ca.mcgill.sable.InstructionShadow"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1a0d62f" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@8a750a" aType="ca.mcgill.sable.InstructionShadow"/>
+<text info="abc.weaving.tagkit.InstructionSourceTag@9e6e0" aType="ca.mcgill.sable.InstructionSource"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1450701" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@8a750a" aType="ca.mcgill.sable.InstructionShadow"/>
+<text info="abc.weaving.tagkit.InstructionSourceTag@9e6e0" aType="ca.mcgill.sable.InstructionSource"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1450701" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@8a750a" aType="ca.mcgill.sable.InstructionShadow"/>
+<text info="abc.weaving.tagkit.InstructionSourceTag@9e6e0" aType="ca.mcgill.sable.InstructionSource"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@4dd5a1" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionSourceTag@5fada2" aType="ca.mcgill.sable.InstructionSource"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@1809715" aType="ca.mcgill.sable.InstructionShadow"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1450701" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@1ae30a" aType="ca.mcgill.sable.InstructionShadow"/>
+<text info="abc.weaving.tagkit.InstructionSourceTag@12fa9ae" aType="ca.mcgill.sable.InstructionSource"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@2ced7a" aType="ca.mcgill.sable.InstructionShadow"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@19af724" aType="ca.mcgill.sable.InstructionShadow"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@d75d4e" aType="ca.mcgill.sable.InstructionShadow"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@d75d4e" aType="ca.mcgill.sable.InstructionShadow"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@d75d4e" aType="ca.mcgill.sable.InstructionShadow"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@d75d4e" aType="ca.mcgill.sable.InstructionShadow"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1eb1670" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@d75d4e" aType="ca.mcgill.sable.InstructionShadow"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1a0d62f" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@1ae30a" aType="ca.mcgill.sable.InstructionShadow"/>
+<text info="abc.weaving.tagkit.InstructionSourceTag@12fa9ae" aType="ca.mcgill.sable.InstructionSource"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1450701" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@1ae30a" aType="ca.mcgill.sable.InstructionShadow"/>
+<text info="abc.weaving.tagkit.InstructionSourceTag@12fa9ae" aType="ca.mcgill.sable.InstructionSource"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@1450701" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@1ae30a" aType="ca.mcgill.sable.InstructionShadow"/>
+<text info="abc.weaving.tagkit.InstructionSourceTag@12fa9ae" aType="ca.mcgill.sable.InstructionSource"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@4dd5a1" aType="ca.mcgill.sable.InstructionKind"/>
+<text info="abc.weaving.tagkit.InstructionSourceTag@12edf9a" aType="ca.mcgill.sable.InstructionSource"/>
+<text info="abc.weaving.tagkit.InstructionShadowTag@5a3497" aType="ca.mcgill.sable.InstructionShadow"/>
+</attribute>
+<attribute>
+<srcPos sline="0" eline="0" spos="0" epos="0"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="abc.weaving.tagkit.InstructionKindTag@63430" aType="ca.mcgill.sable.InstructionKind"/>
+</attribute>
+<attribute>
+<srcPos sline="9" eline="12" spos="8" epos="2"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="[file]" aType="ParamNamesTag"/>
+</attribute>
+<attribute>
+<srcPos sline="19" eline="19" spos="8" epos="39"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="[g]" aType="ParamNamesTag"/>
+</attribute>
+<attribute>
+<srcPos sline="14" eline="14" spos="8" epos="27"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="[]" aType="ParamNamesTag"/>
+</attribute>
+<attribute>
+<srcPos sline="25" eline="25" spos="8" epos="45"/>
+<jmpPos sline="0" eline="0" spos="0" epos="0"/>
+<text info="[g, dim]" aType="ParamNamesTag"/>
+</attribute>
+</attributes>
