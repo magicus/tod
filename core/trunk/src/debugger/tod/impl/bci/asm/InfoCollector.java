@@ -36,10 +36,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.objectweb.asm.Attribute;
+import org.objectweb.asm.ClassAdapter;
+import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodAdapter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.EmptyVisitor;
+
+import tod.impl.bci.asm.attributes.SootAttribute;
+import tod.impl.database.structure.standard.TagMap;
+import zz.utils.Utils;
 
 
 /**
@@ -48,11 +56,16 @@ import org.objectweb.asm.commons.EmptyVisitor;
  * is done. 
  * @author gpothier
  */
-public class InfoCollector extends EmptyVisitor
+public class InfoCollector extends ClassAdapter
 {
 	private List<ASMMethodInfo> itsMethodsInfo = new ArrayList<ASMMethodInfo>();
 	private ASMMethodInfo itsCurrentMethodInfo;
 	
+	public InfoCollector()
+	{
+		super(new ClassWriter(0)); // The ClassWriter is necessary to obtain instructions' pcs.
+	}
+
 	public ASMMethodInfo getMethodInfo (int aIndex)
 	{
 		return itsMethodsInfo.get(aIndex);
@@ -61,9 +74,82 @@ public class InfoCollector extends EmptyVisitor
 	@Override
 	public MethodVisitor visitMethod(int access, String aName, String aDesc, String aSignature, String[] aExceptions)
 	{
+		MethodVisitor mv = super.visitMethod(access, aName, aDesc, aSignature, aExceptions);
 		itsCurrentMethodInfo = new ASMMethodInfo(aName, aDesc, BCIUtils.isStatic(access));
 		itsMethodsInfo.add(itsCurrentMethodInfo);
-		return new JSRAnalyserVisitor();
+		return new JSRAnalyser(new MethodAttributesCollector(new MyCounter(mv)));
+	}
+	
+	private class MethodAttributesCollector extends MethodAdapter
+	{
+		private List<SootAttribute> itsSootAttributes = new ArrayList<SootAttribute>();
+		private int itsCodeSize;
+		
+		public MethodAttributesCollector(MethodVisitor mv)
+		{
+			super(mv);
+		}
+
+		@Override
+		public void visitAttribute(Attribute aAttr)
+		{
+			if (aAttr instanceof SootAttribute)
+			{
+				SootAttribute theAttribute = (SootAttribute) aAttr;
+				itsSootAttributes.add(theAttribute);
+			}
+
+			super.visitAttribute(aAttr);
+		}
+		
+		@Override
+		public void visitMaxs(int aMaxStack, int aMaxLocals)
+		{
+			super.visitMaxs(aMaxStack, aMaxLocals);
+			Label theLabel = new Label();
+			mv.visitLabel(theLabel);
+			itsCodeSize = theLabel.getOffset();
+		}
+		
+		@Override
+		public void visitEnd()
+		{
+			super.visitEnd();
+			TagMap theTagMap = new TagMap();
+			
+			for (SootAttribute theAttribute : itsSootAttributes)
+			{
+				theAttribute.fillTagMap(theTagMap, itsCodeSize);
+			}
+			
+			itsCurrentMethodInfo.setTagMap(theTagMap);
+		}
+	}
+	
+	private class MyCounter extends InstructionCounterAdapter
+	{
+		private List<Integer> itsPcs = new ArrayList<Integer>();
+		
+		public MyCounter(MethodVisitor aMv)
+		{
+			super(aMv);
+			
+		}
+
+		@Override
+		protected void insn(int aRank, int aPc)
+		{
+			Utils.listSet(itsPcs, aRank, aPc);
+		}
+		
+		@Override
+		public void visitEnd()
+		{
+			super.visitEnd();
+			int[] theOriginalPcs = new int[itsPcs.size()];
+			for (int i=0;i<itsPcs.size();i++) theOriginalPcs[i] = itsPcs.get(i);
+			itsCurrentMethodInfo.setOriginalPc(theOriginalPcs);
+		}
 	}
 	
 	/**
@@ -72,17 +158,23 @@ public class InfoCollector extends EmptyVisitor
 	 * taken into account as a local variable store.
 	 * @author gpothier
 	 */
-	private class JSRAnalyserVisitor extends EmptyVisitor implements Opcodes
+	private class JSRAnalyser extends MethodAdapter implements Opcodes
 	{
 		private Label itsLastLabel;
 		
 		private Map<Label, StoreInfo> itsLabelToStoreInfo = new HashMap<Label, StoreInfo>();
 		private List<StoreInfo> itsStoreInfos = new ArrayList<StoreInfo>();
 
+		public JSRAnalyser(MethodVisitor mv)
+		{
+			super(mv);
+		}
+
 		@Override
 		public void visitMaxs(int aMaxStack, int aMaxLocals)
 		{
 			itsCurrentMethodInfo.setMaxLocals(aMaxLocals);
+			super.visitMaxs(aMaxStack, aMaxLocals);
 		}
 
 
@@ -97,72 +189,84 @@ public class InfoCollector extends EmptyVisitor
 //				System.out.println(" "+i+": "+theIgnoreStores[i]);
 			}
 			itsCurrentMethodInfo.setIgnoreStores(theIgnoreStores);
+			super.visitEnd();
 		}
 		
 		@Override
 		public void visitLabel(Label aLabel)
 		{
 			itsLastLabel = aLabel;
+			super.visitLabel(aLabel);
 		}
 
 		@Override
 		public void visitFieldInsn(int aOpcode, String aOwner, String aName, String aDesc)
 		{
 			itsLastLabel = null;
+			super.visitFieldInsn(aOpcode, aOwner, aName, aDesc);
 		}
 
 		@Override
 		public void visitIincInsn(int aVar, int aIncrement)
 		{
 			itsLastLabel = null;
+			super.visitIincInsn(aVar, aIncrement);
 		}
 
 		@Override
 		public void visitInsn(int aOpcode)
 		{
 			itsLastLabel = null;
+			super.visitInsn(aOpcode);
 		}
 
 		@Override
 		public void visitIntInsn(int aOpcode, int aOperand)
 		{
 			itsLastLabel = null;
+			super.visitIntInsn(aOpcode, aOperand);
 		}
 
 		@Override
 		public void visitLdcInsn(Object aCst)
 		{
 			itsLastLabel = null;
+			super.visitLdcInsn(aCst);
 		}
 
 		@Override
 		public void visitLookupSwitchInsn(Label aDflt, int[] aKeys, Label[] aLabels)
 		{
 			itsLastLabel = null;
+			super.visitLookupSwitchInsn(aDflt, aKeys, aLabels);
 		}
 
 		@Override
 		public void visitMethodInsn(int aOpcode, String aOwner, String aName, String aDesc)
 		{
 			itsLastLabel = null;
+			super.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
 		}
 
 		@Override
 		public void visitMultiANewArrayInsn(String aDesc, int aDims)
 		{
 			itsLastLabel = null;
+			super.visitMultiANewArrayInsn(aDesc, aDims);
 		}
 
 		@Override
 		public void visitTableSwitchInsn(int aMin, int aMax, Label aDflt, Label[] aLabels)
 		{
 			itsLastLabel = null;
+			super.visitTableSwitchInsn(aMin, aMax, aDflt, aLabels);
 		}
 
 		@Override
 		public void visitTypeInsn(int aOpcode, String aDesc)
 		{
 			itsLastLabel = null;
+			super.visitTypeInsn(aOpcode, aDesc);
 		}
 
 		@Override
@@ -172,6 +276,7 @@ public class InfoCollector extends EmptyVisitor
 			{
 				registerStore(itsLastLabel);
 			}
+			super.visitVarInsn(aOpcode, aVar);
 		}
 		
 		@Override
@@ -181,6 +286,7 @@ public class InfoCollector extends EmptyVisitor
 			{
 				ignoreStore(aLabel);
 			}
+			super.visitJumpInsn(aOpcode, aLabel);
 		}
 		
 	    /**
@@ -213,8 +319,6 @@ public class InfoCollector extends EmptyVisitor
 	    	}
 	    	itsStoreInfos.add(theStoreInfo);
 	    }
-	    
-
 	}
 	
 	/**

@@ -63,4 +63,10 @@ public class ShadowId
 		if (shadowId != other.shadowId) return false;
 		return true;
 	}
+	
+	@Override
+	public String toString()
+	{
+		return "srcId: "+adviceSourceId+", shId: "+shadowId;
+	}
 }

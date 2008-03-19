@@ -32,6 +32,7 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.gui.eventlist;
 
 import java.awt.Color;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -56,6 +57,7 @@ import tod.gui.kit.StdProperties;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.PropertyListener;
+import zz.utils.ui.ResourceUtils.ImageResource;
 
 /**
  * Represents a group of events that correspond to the same joinpoint shadow.
@@ -78,8 +80,6 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 			createUI();
 		}
 	};
-	
-
 	
 	public ShadowGroupNode(IGUIManager aGUIManager, EventListPanel aListPanel, EventGroup<ShadowId> aGroup)
 	{
@@ -115,6 +115,21 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 		}
 	}
 	
+	private SourceRange getSourceRange()
+	{
+		ShadowId theShadowId = getGroup().getGroupKey();
+		ILogEvent theFirst = getGroup().getFirst();
+		
+		if (theFirst instanceof ICallerSideEvent)
+		{
+			ICallerSideEvent theEvent = (ICallerSideEvent) theFirst;
+			IStructureDatabase theDatabase = theEvent.getOperationBehavior().getDatabase();
+			return theDatabase.getAdviceSource(theShadowId.adviceSourceId);
+		}
+		
+		return null;
+	}
+	
 	@Override
 	protected void createUI()
 	{
@@ -129,16 +144,10 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 		
 		String theAdvice;
 		
-		ShadowId theShadowId = getGroup().getGroupKey();
-		ILogEvent theFirst = getGroup().getFirst();
-		if (theFirst instanceof ICallerSideEvent)
-		{
-			ICallerSideEvent theEvent = (ICallerSideEvent) theFirst;
-			IStructureDatabase theDatabase = theEvent.getOperationBehavior().getDatabase();
-			SourceRange theAdviceSource = theDatabase.getAdviceSource(theShadowId.adviceSourceId);
-			theAdvice = theAdviceSource.sourceFile+":"+theAdviceSource.startLine;
-		}
-		else theAdvice = "???";
+		SourceRange theAdviceSource = getSourceRange();
+		theAdvice = theAdviceSource != null ?
+				theAdviceSource.sourceFile+":"+theAdviceSource.startLine
+				: "???";
 		
 		addToCaption(new JLabel(theAdvice+"  "));
 		
@@ -147,7 +156,10 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 		{
 			if (itsHiddenRoles.contains(theRole))
 			{
-				addToCaption(new JLabel(GUIUtils.getRoleIcon(theRole).asIcon(ROLE_ICON_SIZE)));
+				ImageResource theRoleIcon = GUIUtils.getRoleIcon(theRole);
+				addToCaption(theRoleIcon != null ?
+						new JLabel(theRoleIcon.asIcon(ROLE_ICON_SIZE))
+						: new JLabel("??-"+theRole));
 			}
 		}
 	}
@@ -162,5 +174,11 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 			thePanel.add(theNode);
 		}
 		return thePanel;
+	}
+	
+	@Override
+	public void mousePressed(MouseEvent aE)
+	{
+		getGUIManager().gotoSource(getSourceRange());
 	}
 }

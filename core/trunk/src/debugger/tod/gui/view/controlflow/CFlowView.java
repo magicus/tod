@@ -208,7 +208,7 @@ public class CFlowView extends LogView implements IEventListView
 		
 		getBus().putProperty(
 				StdProperties.INTIMACY_LEVEL, 
-				new SimpleRWProperty<IntimacyLevel>(this, IntimacyLevel.FULL_INTIMACY), 
+				new SimpleRWProperty<IntimacyLevel>(this, IntimacyLevel.FULL_OBLIVIOUSNESS), 
 				true);
 	}
 	

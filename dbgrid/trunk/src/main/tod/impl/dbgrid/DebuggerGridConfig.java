@@ -42,7 +42,7 @@ public class DebuggerGridConfig
 	/**
 	 * Number of bits used to represent the depth of an event.
 	 */
-	public static final int EVENT_DEPTH_BITS = 12;
+	public static final int EVENT_DEPTH_BITS = 16;
 	
 	/**
 	 * Number of bits used to represent the serial number of an event.

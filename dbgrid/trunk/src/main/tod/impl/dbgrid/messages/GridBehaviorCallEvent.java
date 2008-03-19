@@ -119,8 +119,8 @@ public class GridBehaviorCallEvent extends BitGridEvent
 	{
 		super.writeTo(aBitStruct);
 		
-		aBitStruct.writeInt(itsArguments.length, DebuggerGridConfig.EVENT_ARGS_COUNT_BITS);
-		for (Object theArgument : itsArguments) writeObject(aBitStruct, theArgument);
+		aBitStruct.writeInt(itsArguments != null ? itsArguments.length : 0, DebuggerGridConfig.EVENT_ARGS_COUNT_BITS);
+		if(itsArguments != null) for (Object theArgument : itsArguments) writeObject(aBitStruct, theArgument);
 		
 		aBitStruct.writeInt(getCalledBehaviorId(), DebuggerGridConfig.EVENT_BEHAVIOR_BITS);
 		aBitStruct.writeInt(getExecutedBehaviorId(), DebuggerGridConfig.EVENT_BEHAVIOR_BITS);
@@ -134,7 +134,7 @@ public class GridBehaviorCallEvent extends BitGridEvent
 		int theCount = super.getBitCount();
 		
 		theCount += DebuggerGridConfig.EVENT_ARGS_COUNT_BITS;
-		for (Object theArgument : itsArguments) theCount += getObjectBits(theArgument);
+		if (itsArguments != null) for (Object theArgument : itsArguments) theCount += getObjectBits(theArgument);
 		
 		theCount += DebuggerGridConfig.EVENT_BEHAVIOR_BITS;
 		theCount += DebuggerGridConfig.EVENT_BEHAVIOR_BITS;
@@ -236,7 +236,7 @@ public class GridBehaviorCallEvent extends BitGridEvent
 					TUPLE);
 		}
 		
-		for (int i = 0; i < itsArguments.length; i++)
+		if (itsArguments != null) for (int i = 0; i < itsArguments.length; i++)
 		{
 			Object theArgument = itsArguments[i];
 

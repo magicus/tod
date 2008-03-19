@@ -28,6 +28,8 @@ public interface ILowLevelCollector
 	public void logFieldWrite(int aThreadId, long aTimestamp, int aProbeId, int aFieldId, Object aTarget, Object aValue);
 	public void logNewArray(int aThreadId, long aTimestamp, int aProbeId, Object aTarget, int aBaseTypeId, int aSize);
 	public void logArrayWrite(int aThreadId, long aTimestamp, int aProbeId, Object aTarget, int aIndex, Object aValue);
+	
+	public void logInstanceOf(int aThreadId, long aTimestamp, int aProbeId, Object aObject, int aTypeId, boolean aResult);
 
 	public void logBeforeBehaviorCallDry(int aThreadId, long aTimestamp, int aProbeId, int aBehaviorId, BehaviorCallType aCallType);
 	public void logAfterBehaviorCallDry(int aThreadId, long aTimestamp);

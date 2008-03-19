@@ -521,7 +521,7 @@ implements RIDatabaseNode
 	{
 		public MyReceiver(HostInfo aHostInfo, ILogCollector aCollector, InputStream aInStream, OutputStream aOutStream, boolean aStart)
 		{
-			super(aHostInfo, aInStream, aOutStream, aStart, aCollector);
+			super(aHostInfo, aInStream, aOutStream, aStart, getStructureDatabase(), aCollector);
 		}
 
 		@Override

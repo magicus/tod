@@ -161,61 +161,67 @@ public class CountTODServer extends AbstractSession
 			return itsCount;
 		}
 
-		public void arrayWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId, Object aTarget, int aIndex, Object aValue)
+		public void arrayWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow, int aProbeId, Object aTarget, int aIndex, Object aValue)
 		{
 			itsCount++;
 //			if (CALL_SUPER) super.arrayWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aTarget, aIndex, aValue);
 		}
 
-		public void behaviorExit(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId, int aBehaviorId, boolean aHasThrown, Object aResult)
+		public void behaviorExit(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow, int aProbeId, int aBehaviorId, boolean aHasThrown, Object aResult)
 		{
 			itsCount++;
 //			if (CALL_SUPER) super.behaviorExit(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aBehaviorId, aHasThrown, aResult);
 		}
 
-		public void exception(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, String aMethodName, String aMethodSignature, String aMethodDeclaringClassSignature, int aOperationBytecodeIndex, Object aException)
+		public void exception(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow, String aMethodName, String aMethodSignature, String aMethodDeclaringClassSignature, int aOperationBytecodeIndex, Object aException)
 		{
 			itsCount++;
 //			if (CALL_SUPER) super.exception(aThreadId, aParentTimestamp, aDepth, aTimestamp, aDepth, aOperationBytecodeIndex, aException);
 		}
 
-		public void fieldWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId, int aFieldId, Object aTarget, Object aValue)
+		public void fieldWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow, int aProbeId, int aFieldId, Object aTarget, Object aValue)
 		{
 			itsCount++;
 //			if (CALL_SUPER) super.fieldWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aFieldId, aTarget, aValue);
 		}
 
-		public void instantiation(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId, Object aTarget, Object[] aArguments)
+		public void instantiation(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow, int aProbeId, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId, Object aTarget, Object[] aArguments)
 		{
 			itsCount++;
 //			if (CALL_SUPER) super.instantiation(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
 		}
 
-		public void localWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId, int aVariableId, Object aValue)
+		public void localWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow, int aProbeId, int aVariableId, Object aValue)
 		{
 			itsCount++;
 //			if (CALL_SUPER) super.localWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aVariableId, aValue);
 		}
 
-		public void methodCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId, Object aTarget, Object[] aArguments)
+		public void methodCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow, int aProbeId, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId, Object aTarget, Object[] aArguments)
 		{
 			itsCount++;
 //			if (CALL_SUPER) super.methodCall(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
 		}
 
 		public void newArray(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-				int aProbeId, Object aTarget, int aBaseTypeId, int aSize)
+				int aAdviceCFlow, int aProbeId, Object aTarget, int aBaseTypeId, int aSize)
 		{
 			itsCount++;
 		}
 
-		public void output(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, Output aOutput, byte[] aData)
+		public void instanceOf(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+				int aProbeId, Object aObject, int aTypeId, boolean aResult)
+		{
+			itsCount++;
+		}
+
+		public void output(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow, Output aOutput, byte[] aData)
 		{
 			itsCount++;
 //			if (CALL_SUPER) super.output(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOutput, aData);
 		}
 
-		public void superCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId, Object aTarget, Object[] aArguments)
+		public void superCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow, int aProbeId, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId, Object aTarget, Object[] aArguments)
 		{
 			itsCount++;
 //			if (CALL_SUPER) super.superCall(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOperationBytecodeIndex, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);

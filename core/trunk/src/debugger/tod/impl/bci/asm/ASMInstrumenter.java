@@ -41,6 +41,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.util.TraceClassVisitor;
 
 import tod.core.bci.IInstrumenter;
@@ -89,9 +90,17 @@ public class ASMInstrumenter implements IInstrumenter
 		ClassReader theReader = new ClassReader(aBytecode);
 		ClassWriter theWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 		
+		Attribute[] theAttributes = new Attribute[] {
+				new SootInstructionKindAttribute(),
+				new SootInstructionShadowAttribute(),
+				new SootInstructionSourceAttribute(),
+				new SootInlineAttribute(),
+				new AspectInfoAttribute(null),
+		};
+		
 		// Pass 1: collect method info 
 		InfoCollector theInfoCollector = new InfoCollector();
-		theReader.accept(theInfoCollector, ClassReader.SKIP_DEBUG);
+		theReader.accept(theInfoCollector, theAttributes, ClassReader.SKIP_DEBUG);
 		
 		List<Integer> theTracedMethods = new ArrayList<Integer>();
 		
@@ -103,14 +112,6 @@ public class ASMInstrumenter implements IInstrumenter
 				theWriter,
 				theChecksum,
 				theTracedMethods);
-		
-		Attribute[] theAttributes = new Attribute[] {
-				new SootInstructionKindAttribute(),
-				new SootInstructionShadowAttribute(),
-				new SootInstructionSourceAttribute(),
-				new SootInlineAttribute(),
-				new AspectInfoAttribute(null),
-		};
 		
 		try
 		{

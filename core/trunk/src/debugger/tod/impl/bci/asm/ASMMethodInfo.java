@@ -35,8 +35,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.agent.BehaviorKind;
+import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
 import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
+import tod.impl.bci.asm.attributes.SootAttribute;
+import tod.impl.database.structure.standard.TagMap;
 
 public class ASMMethodInfo
 {
@@ -51,12 +54,20 @@ public class ASMMethodInfo
 	private List<ASMLineNumberInfo> itsLineNumberInfo = new ArrayList<ASMLineNumberInfo>();
 	private List<ASMLocalVariableInfo> itsLocalVariableInfo = new ArrayList<ASMLocalVariableInfo>();
 	
+	
+	private TagMap itsTagMap;
+	
 	/**
 	 * An array of store operations to ignore.
 	 * The index is the rank of the store operation within the method.
 	 * @see InfoCollector.JSRAnalyserVisitor
 	 */
 	private boolean[] itsIgnoreStores;
+	
+	/**
+	 * Original pc of each instruction. Indexed by instruction rank.
+	 */
+	private int[] itsOriginalPc;
 	
 	public ASMMethodInfo(String aName, String aDescriptor, boolean aStatic)
 	{
@@ -186,4 +197,42 @@ public class ASMMethodInfo
     {
     	return itsIgnoreStores[aIndex];
     }
+    
+    public void setOriginalPc(int[] aOriginalPc)
+	{
+		itsOriginalPc = aOriginalPc;
+	}
+    
+    /**
+     * Returns the original Pc (bytecode index) of the nth instruction.
+     */
+    public int getOriginalPc(int aInstructionRank)
+    {
+    	return itsOriginalPc[aInstructionRank];
+    }
+
+    /**
+     * Returns the tag map of the original method, where all pcs are for the
+     * original method code.
+     */
+	public TagMap getOriginalTagMap()
+	{
+		return itsTagMap;
+	}
+
+	public void setTagMap(TagMap aTagMap)
+	{
+		itsTagMap = aTagMap;
+	}
+    
+	/**
+	 * Returns the tag of an instruction in the original method
+	 * @param aRank Original rank of the instruction.
+	 */
+    public <T> T getTag(BytecodeTagType<T> aType, int aRank)
+    {
+    	int thePc = itsOriginalPc[aRank];
+    	return itsTagMap.getTag(aType, thePc);
+    }
+    
 }

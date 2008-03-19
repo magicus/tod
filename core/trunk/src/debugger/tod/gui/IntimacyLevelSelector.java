@@ -136,6 +136,7 @@ public class IntimacyLevelSelector extends JPanel
 		if (theLevel == null)
 		{
 			itsFullObliviousnessButton.setSelected(true);
+			for(int i=0;i<itsRoleButtons.length;i++) itsRoleButtons[i].setEnabled(false);
 		}
 		else
 		{
@@ -144,6 +145,7 @@ public class IntimacyLevelSelector extends JPanel
 			BytecodeRole[] theRoles = IntimacyLevel.ROLES;
 			for(int i=0;i<itsRoleButtons.length;i++) 
 			{
+				itsRoleButtons[i].setEnabled(true);
 				itsRoleButtons[i].setSelected(theLevel.showRole(theRoles[i]));
 			}
 		}

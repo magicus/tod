@@ -38,55 +38,61 @@ public class DummyCollector implements ILogCollector
 {
 
 	public void behaviorExit(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aProbeId, int aBehaviorId, boolean aHasThrown, Object aResult)
+			int aAdviceCFlow, int aProbeId, int aBehaviorId, boolean aHasThrown, Object aResult)
 	{
 	}
 
-	public void exception(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, String aMethodName,
-			String aMethodSignature, String aMethodDeclaringClassSignature, int aOperationBytecodeIndex,
-			Object aException)
+	public void exception(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+			String aMethodName, String aMethodSignature, String aMethodDeclaringClassSignature,
+			int aOperationBytecodeIndex, Object aException)
 	{
 	}
 
 	public void fieldWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aProbeId, int aFieldId, Object aTarget, Object aValue)
+			int aAdviceCFlow, int aProbeId, int aFieldId, Object aTarget, Object aValue)
 	{
 	}
 
-	public void newArray(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId, Object aTarget, int aBaseTypeId, int aSize)
+	public void newArray(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow, int aProbeId, Object aTarget, int aBaseTypeId, int aSize)
 	{
 	}
 
 	public void arrayWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aProbeId, Object aTarget, int aIndex, Object aValue)
+			int aAdviceCFlow, int aProbeId, Object aTarget, int aIndex, Object aValue)
 	{
 	}
 
 	public void instantiation(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aProbeId, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
-			Object aTarget, Object[] aArguments)
+			int aAdviceCFlow, int aProbeId, boolean aDirectParent, int aCalledBehaviorId,
+			int aExecutedBehaviorId, Object aTarget, Object[] aArguments)
 	{
 	}
 
 	public void localWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aProbeId, int aVariableId, Object aValue)
+			int aAdviceCFlow, int aProbeId, int aVariableId, Object aValue)
 	{
 	}
 
 	public void methodCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aProbeId, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
-			Object aTarget, Object[] aArguments)
+			int aAdviceCFlow, int aProbeId, boolean aDirectParent, int aCalledBehaviorId,
+			int aExecutedBehaviorId, Object aTarget, Object[] aArguments)
 	{
 	}
 
-	public void output(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, Output aOutput,
-			byte[] aData)
+	public void output(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+			Output aOutput, byte[] aData)
 	{
 	}
 
 	public void superCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
-			int aProbeId, boolean aDirectParent, int aCalledBehaviorid, int aExecutedBehaviorId,
-			Object aTarget, Object[] aArguments)
+			int aAdviceCFlow, int aProbeId, boolean aDirectParent, int aCalledBehaviorid,
+			int aExecutedBehaviorId, Object aTarget, Object[] aArguments)
+	{
+	}
+
+
+	public void instanceOf(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+			int aProbeId, Object aObject, int aTypeId, boolean aResult)
 	{
 	}
 

@@ -29,75 +29,29 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.eventlist;
+package tod.core.database.event;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import tod.core.database.structure.ITypeInfo;
 
-import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 
 /**
- * Defines the level of intimacy for aspect debugging.
+ * Instanceof, only within pointcut residue evaluation.
  * @author gpothier
  */
-public final class IntimacyLevel
+public interface IInstanceOfEvent extends ICallerSideEvent
 {
-	public static final BytecodeRole[] ROLES = {
-		BytecodeRole.ADVICE_EXECUTE,
-		BytecodeRole.ADVICE_TEST,
-		BytecodeRole.CONTEXT_EXPOSURE,
-		BytecodeRole.ADVICE_ARG_SETUP,
-	};
-	
-	public static final IntimacyLevel FULL_INTIMACY = new IntimacyLevel(ROLES);
-	public static final IntimacyLevel FULL_OBLIVIOUSNESS = null;
-	
-	public final Set<BytecodeRole> roles;
-	
-	private IntimacyLevel(BytecodeRole... aRoles)
-	{
-		roles = new HashSet<BytecodeRole>();
-		for (BytecodeRole theRole : aRoles) roles.add(theRole);
-	}
-	
-	public IntimacyLevel(Set<BytecodeRole> aRoles)
-	{
-		roles = aRoles;
-	}
+	/**
+	 * The object that is tested (left hand argument of instanceof)
+	 */
+	public Object getObject();
 	
 	/**
-	 * Whether the given role should be shown in this intimacy level.
+	 * The tested type (right hand argument of instanceof).
 	 */
-	public boolean showRole(BytecodeRole aRole)
-	{
-		return roles.contains(aRole);
-	}
-
-	@Override
-	public int hashCode()
-	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((roles == null) ? 0 : roles.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj)
-	{
-		if (this == obj) return true;
-		if (obj == null) return false;
-		if (getClass() != obj.getClass()) return false;
-		IntimacyLevel other = (IntimacyLevel) obj;
-		if (roles == null)
-		{
-			if (other.roles != null) return false;
-		}
-		else if (!roles.equals(other.roles)) return false;
-		return true;
-	}
-
+	public ITypeInfo getTestedType();
 	
-	
+	/**
+	 * The result of the instanceof operator.
+	 */
+	public boolean getResult();
 }

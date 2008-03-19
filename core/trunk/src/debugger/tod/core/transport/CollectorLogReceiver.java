@@ -36,54 +36,33 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import tod.agent.transport.MessageType;
+import tod.agent.transport.LowLevelEventType;
 import tod.core.ILogCollector;
+import tod.core.database.structure.IStructureDatabase;
 import tod.impl.database.structure.standard.HostInfo;
 
 /**
- * A {@link LogReceiver} that reads packets through a 
- * {@link CollectorPacketReader} and forwards messages to a 
- * {@link ILogCollector}.
+ * A {@link LogReceiver} that uses an {@link EventInterpreter} to transform low-level events into
+ * high-level events. Leaves the responsibility of processing high-level events
+ * and value packets to subclasses.
  * @author gpothier
  */
-public abstract class CollectorLogReceiver extends LogReceiver
+public class CollectorLogReceiver extends LogReceiver
 {
 	private final ILogCollector itsCollector;
-	
-	/**
-	 * Connects to an already running aplication through the specified socket.
-	 * @param aSocket The socket used to connect.
-	 * @param aCollector The collector to which the events are forwarded.
-	 */
-	public CollectorLogReceiver(
-			HostInfo aHostInfo,
-			ILogCollector aCollector,
-			InputStream aInStream,
-			OutputStream aOutStream)
-	{
-		this(aHostInfo, aCollector, aInStream, aOutStream, true);
-	}
-		
-	public CollectorLogReceiver(
-			HostInfo aHostInfo,
-			ILogCollector aCollector,
-			InputStream aInStream,
-			OutputStream aOutStream,
-			boolean aStart)
-	{
-		this(DEFAULT_THREAD, aHostInfo, aCollector, aInStream, aOutStream, aStart);
-	}
+	private final EventInterpreter itsInterpreter;
 	
 	public CollectorLogReceiver(
-			ReceiverThread aReceiverThread,
-			HostInfo aHostInfo,
-			ILogCollector aCollector,
-			InputStream aInStream,
-			OutputStream aOutStream,
-			boolean aStart)
+			HostInfo aHostInfo, 
+			InputStream aInStream, 
+			OutputStream aOutStream, 
+			boolean aStart,
+			IStructureDatabase aStructureDatabase,
+			ILogCollector aCollector)
 	{
-		super(aReceiverThread, aHostInfo, aInStream, aOutStream, false);
+		super(aHostInfo, aInStream, aOutStream, false);
 		itsCollector = aCollector;
+		itsInterpreter = new EventInterpreter(aStructureDatabase, itsCollector);
 		if (aStart) start();
 	}
 	
@@ -91,13 +70,28 @@ public abstract class CollectorLogReceiver extends LogReceiver
 	{
 		return itsCollector;
 	}
-	
-	protected void readPacket(DataInputStream aStream, MessageType aType) throws IOException
+
+	@Override
+	protected void processEvent(LowLevelEventType aType, DataInputStream aStream) throws IOException
 	{
-		CollectorPacketReader.readPacket(
-				aStream, 
-				getCollector(),
-				aType);		
+		LowLevelEventReader.readEvent(aType, aStream, itsInterpreter);
+	}
+	
+	@Override
+	protected void processRegister(DataInputStream aStream) throws IOException
+	{
+		ValueReader.readRegistered(aStream, itsCollector);
 	}
 
+	@Override
+	protected void processClear()
+	{
+		itsCollector.clear();
+	}
+
+	@Override
+	protected int processFlush()
+	{
+		return itsCollector.flush();
+	}
 }

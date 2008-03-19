@@ -97,11 +97,11 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp, 
+			int aAdviceCFlow, 
 			String aMethodName, 
 			String aMethodSignature, 
 			String aMethodDeclaringClassSignature, 
-			int aOperationBytecodeIndex, 
-			Object aException)
+			int aOperationBytecodeIndex, Object aException)
 	{
 		print(aDepth, String.format(
 				"exception    (thread: %d, p.ts: %s, depth: %d, ts: %s, bid: %s, exc.: %s",
@@ -112,7 +112,7 @@ public class PrintThroughCollector implements ILogCollector
 				aMethodDeclaringClassSignature+"."+aMethodName+" "+aMethodSignature,
 				aException));
 
-		itsCollector.exception(aThreadId, aParentTimestamp, aDepth, aTimestamp, aMethodName, aMethodSignature, aMethodDeclaringClassSignature, aOperationBytecodeIndex, aException);
+		itsCollector.exception(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aMethodName, aMethodSignature, aMethodDeclaringClassSignature, aOperationBytecodeIndex, aException);
 	}
 
 	public void behaviorExit(
@@ -120,10 +120,10 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp, 
 			short aDepth,
 			long aTimestamp,
-			int aProbeId, 
-			int aBehaviorId,
-			boolean aHasThrown, 
-			Object aResult)
+			int aAdviceCFlow, 
+			int aProbeId,
+			int aBehaviorId, 
+			boolean aHasThrown, Object aResult)
 	{
 		print(aDepth, String.format(
 				"behaviorExit (thread: %d, p.ts: %s, depth: %d, ts: %s, bid: %s, thrown: %s, ret: %s",
@@ -135,7 +135,7 @@ public class PrintThroughCollector implements ILogCollector
 				aHasThrown,
 				aResult));
 
-		itsCollector.behaviorExit(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aBehaviorId, aHasThrown, aResult);
+		itsCollector.behaviorExit(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aBehaviorId, aHasThrown, aResult);
 	}
 
 	public void fieldWrite(
@@ -143,10 +143,10 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp, 
 			short aDepth,
 			long aTimestamp,
+			int aAdviceCFlow,
 			int aProbeId,
-			int aFieldId,
-			Object aTarget, 
-			Object aValue)
+			int aFieldId, 
+			Object aTarget, Object aValue)
 	{
 		print(aDepth, String.format(
 				"fieldWrite   (thread: %d, p.ts: %s, depth: %d, ts: %s, fid: %s, target: %s, val: %s",
@@ -158,7 +158,7 @@ public class PrintThroughCollector implements ILogCollector
 				aTarget,
 				aValue));
 
-		itsCollector.fieldWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aFieldId, aTarget, aValue);
+		itsCollector.fieldWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aFieldId, aTarget, aValue);
 	}
 	
 	public void newArray(
@@ -166,10 +166,10 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			int aProbeId,
+			int aAdviceCFlow,
+			int aProbeId, 
 			Object aTarget, 
-			int aBaseTypeId, 
-			int aSize)
+			int aBaseTypeId, int aSize)
 	{
 		print(aDepth, String.format(
 				"newArray     (thread: %d, p.ts: %s, depth: %d, ts: %s, target: %s, bt: %d, dim: %d",
@@ -181,7 +181,7 @@ public class PrintThroughCollector implements ILogCollector
 				aBaseTypeId,
 				aSize));
 		
-		itsCollector.newArray(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aTarget, aBaseTypeId, aSize);
+		itsCollector.newArray(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aTarget, aBaseTypeId, aSize);
 	}
 
 	public void arrayWrite(
@@ -189,10 +189,10 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
-			int aProbeId,
+			int aAdviceCFlow,
+			int aProbeId, 
 			Object aTarget, 
-			int aIndex, 
-			Object aValue)
+			int aIndex, Object aValue)
 	{
 		print(aDepth, String.format(
 				"arrayWrite   (thread: %d, p.ts: %s, depth: %d, ts: %s, target: %s, ind: %d, val: %s",
@@ -204,20 +204,45 @@ public class PrintThroughCollector implements ILogCollector
 				aIndex,
 				aValue));
 		
-		itsCollector.arrayWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aTarget, aIndex, aValue);
+		itsCollector.arrayWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aTarget, aIndex, aValue);
 	}
 
+	public void instanceOf(
+			int aThreadId, 
+			long aParentTimestamp, 
+			short aDepth, 
+			long aTimestamp,
+			int aAdviceCFlow,
+			int aProbeId, 
+			Object aObject, 
+			int aTypeId,
+			boolean aResult)
+	{
+		print(aDepth, String.format(
+				"instanceOf   (thread: %d, p.ts: %s, depth: %d, ts: %s, obj: %s, t: %d",
+				aThreadId,
+				formatTimestamp(aParentTimestamp),
+				aDepth,
+				formatTimestamp(aTimestamp),
+				aObject,
+				aTypeId));
+		
+		itsCollector.instanceOf(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aObject, aTypeId, aResult);
+	}
+
+
+	
 	public void instantiation(
 			int aThreadId, 
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
+			int aAdviceCFlow, 
 			int aProbeId, 
 			boolean aDirectParent, 
-			int aCalledBehaviorId, 
-			int aExecutedBehaviorId,
-			Object aTarget, 
-			Object[] aArguments)
+			int aCalledBehaviorId,
+			int aExecutedBehaviorId, 
+			Object aTarget, Object[] aArguments)
 	{
 		print(aDepth, String.format(
 				"instantiation(thread: %d, p.ts: %s, depth: %d, ts: %s, direct: %s, c.bid: %s, e.bid: %s, target: %s, args: %s",
@@ -231,7 +256,7 @@ public class PrintThroughCollector implements ILogCollector
 				aTarget,
 				aArguments));
 
-		itsCollector.instantiation(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
+		itsCollector.instantiation(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
 	}
 
 	public void localWrite(
@@ -239,9 +264,9 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
-			int aProbeId,
-			int aVariableId, 
-			Object aValue)
+			int aAdviceCFlow,
+			int aProbeId, 
+			int aVariableId, Object aValue)
 	{
 		print(aDepth, String.format(
 				"localWrite   (thread: %d, p.ts: %s, depth: %d, ts: %s, vid: %d, val: %s",
@@ -252,7 +277,7 @@ public class PrintThroughCollector implements ILogCollector
 				aVariableId,
 				aValue));
 
-		itsCollector.localWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aVariableId, aValue);
+		itsCollector.localWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aVariableId, aValue);
 	}
 
 	public void methodCall(
@@ -260,12 +285,12 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp,
 			short aDepth, 
 			long aTimestamp,
+			int aAdviceCFlow, 
 			int aProbeId, 
-			boolean aDirectParent, 
+			boolean aDirectParent,
 			int aCalledBehaviorId,
 			int aExecutedBehaviorId,
-			Object aTarget,
-			Object[] aArguments)
+			Object aTarget, Object[] aArguments)
 	{
 		print(aDepth, String.format(
 				"methodCall   (thread: %d, p.ts: %s, depth: %d, ts: %s, direct: %s, c.bid: %s, e.bid: %s, target: %s, args: %s)",
@@ -279,7 +304,7 @@ public class PrintThroughCollector implements ILogCollector
 				aTarget,
 				aArguments));
 
-		itsCollector.methodCall(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
+		itsCollector.methodCall(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
 	}
 
 	public void output(
@@ -287,8 +312,8 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
-			Output aOutput,
-			byte[] aData)
+			int aAdviceCFlow,
+			Output aOutput, byte[] aData)
 	{
 		print(aDepth, String.format(
 				"output       (thread: %d, p.ts: %s, depth: %d, ts: %s, out: %s, data: %s",
@@ -299,7 +324,7 @@ public class PrintThroughCollector implements ILogCollector
 				aOutput,
 				aData));
 
-		itsCollector.output(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOutput, aData);
+		itsCollector.output(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aOutput, aData);
 	}
 
 	public void superCall(
@@ -307,12 +332,12 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			int aProbeId,
-			boolean aDirectParent, 
+			int aAdviceCFlow,
+			int aProbeId, 
+			boolean aDirectParent,
 			int aCalledBehaviorId,
-			int aExecutedBehaviorId,
-			Object aTarget, 
-			Object[] aArguments)
+			int aExecutedBehaviorId, 
+			Object aTarget, Object[] aArguments)
 	{
 		print(aDepth, String.format(
 				"superCall    (thread: %d, p.ts: %s, depth: %d, ts: %s, direct: %s, c.bid: %s, e.bid: %s, target: %s, args: %s",
@@ -326,7 +351,7 @@ public class PrintThroughCollector implements ILogCollector
 				aTarget,
 				aArguments));
 
-		itsCollector.superCall(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
+		itsCollector.superCall(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
 	}
 
 	public void register(long aObjectUID, Object aObject, long aTimestamp)

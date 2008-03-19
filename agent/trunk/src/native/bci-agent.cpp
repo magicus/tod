@@ -837,8 +837,7 @@ JNIEXPORT jlong JNICALL Java_tod_agent_ObjectIdentity_get
 	return -tag;
 }
 
-
-JNIEXPORT jint JNICALL Java_tod_agent_EventInterpreter_getHostId
+JNIEXPORT jint JNICALL Java_tod_agent_EventCollector_getHostId
 	(JNIEnv * jni, jclass)
 {
 	return cfgHostId;
@@ -867,9 +866,7 @@ JNIEXPORT jlong JNICALL Java_tod_agentX_ObjectIdentity_get
 	return -tag;
 }
 
-
-
-JNIEXPORT jint JNICALL Java_tod_agentX_EventInterpreter_getHostId
+JNIEXPORT jint JNICALL Java_tod_agentX_EventCollector_getHostId
 	(JNIEnv * jni, jclass)
 {
 	return cfgHostId;

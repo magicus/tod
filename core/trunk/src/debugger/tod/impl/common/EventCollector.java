@@ -136,11 +136,11 @@ public abstract class EventCollector implements ILogCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
+			int aAdviceCFlow,
 			String aMethodName,
 			String aMethodSignature,
 			String aMethodDeclaringClassSignature,
-			int aOperationBytecodeIndex,
-			Object aException)
+			int aOperationBytecodeIndex, Object aException)
 	{
 		String theClassName;
 		try
@@ -165,7 +165,7 @@ public abstract class EventCollector implements ILogCollector
 	}
 
 	/**
-	 * Same as {@link #exception(int, short, long, byte, String, String, String, int, Object)},
+	 * Same as {@link #exception(int, short, long, byte, int, String, String, String, int, Object)},
 	 * with the behavior resolved.
 	 */
 	protected abstract void exception(

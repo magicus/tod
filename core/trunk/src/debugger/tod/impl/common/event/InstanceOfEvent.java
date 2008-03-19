@@ -29,75 +29,53 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.eventlist;
+package tod.impl.common.event;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
-import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.IInstanceOfEvent;
+import tod.core.database.structure.ITypeInfo;
 
 /**
- * Defines the level of intimacy for aspect debugging.
  * @author gpothier
  */
-public final class IntimacyLevel
+public class InstanceOfEvent extends Event implements IInstanceOfEvent
 {
-	public static final BytecodeRole[] ROLES = {
-		BytecodeRole.ADVICE_EXECUTE,
-		BytecodeRole.ADVICE_TEST,
-		BytecodeRole.CONTEXT_EXPOSURE,
-		BytecodeRole.ADVICE_ARG_SETUP,
-	};
+	private Object itsObject;
+	private ITypeInfo itsTestedType;
+	private boolean itsResult;
 	
-	public static final IntimacyLevel FULL_INTIMACY = new IntimacyLevel(ROLES);
-	public static final IntimacyLevel FULL_OBLIVIOUSNESS = null;
-	
-	public final Set<BytecodeRole> roles;
-	
-	private IntimacyLevel(BytecodeRole... aRoles)
+	public InstanceOfEvent(ILogBrowser aLogBrowser)
 	{
-		roles = new HashSet<BytecodeRole>();
-		for (BytecodeRole theRole : aRoles) roles.add(theRole);
-	}
-	
-	public IntimacyLevel(Set<BytecodeRole> aRoles)
-	{
-		roles = aRoles;
-	}
-	
-	/**
-	 * Whether the given role should be shown in this intimacy level.
-	 */
-	public boolean showRole(BytecodeRole aRole)
-	{
-		return roles.contains(aRole);
+		super(aLogBrowser);
 	}
 
-	@Override
-	public int hashCode()
+	public Object getObject()
 	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((roles == null) ? 0 : roles.hashCode());
-		return result;
+		return itsObject;
 	}
 
-	@Override
-	public boolean equals(Object obj)
+	public void setObject(Object aObject)
 	{
-		if (this == obj) return true;
-		if (obj == null) return false;
-		if (getClass() != obj.getClass()) return false;
-		IntimacyLevel other = (IntimacyLevel) obj;
-		if (roles == null)
-		{
-			if (other.roles != null) return false;
-		}
-		else if (!roles.equals(other.roles)) return false;
-		return true;
+		itsObject = aObject;
 	}
 
-	
-	
+	public ITypeInfo getTestedType()
+	{
+		return itsTestedType;
+	}
+
+	public void setTestedType(ITypeInfo aTestedType)
+	{
+		itsTestedType = aTestedType;
+	}
+
+	public boolean getResult()
+	{
+		return itsResult;
+	}
+
+	public void setResult(boolean aResult)
+	{
+		itsResult = aResult;
+	}
 }

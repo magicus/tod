@@ -664,6 +664,44 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		itsInstrumentationRanges.end();
 	}
 	
+	public void instanceOf(String aDesc, ITypeInfo aType)
+	{
+		Label theOriginalInstructionLabel = new Label();
+		
+		itsInstrumentationRanges.start();
+		
+		// :: object
+		
+		int theCurrentVar = itsFirstFreeVar;
+		int theObjectVar = theCurrentVar++;
+		int theResultVar = theCurrentVar++;
+		
+		// Store parameters
+		
+		mv.visitVarInsn(ASTORE, theObjectVar);
+		
+		// Reload parameters
+		mv.visitVarInsn(ALOAD, theObjectVar);
+		
+		itsInstrumentationRanges.end();
+		
+		// Perform original instanceof
+		mv.visitLabel(theOriginalInstructionLabel);
+		mv.visitTypeInsn(INSTANCEOF, aDesc);
+		
+		itsInstrumentationRanges.start();
+		
+		mv.visitVarInsn(ISTORE, theResultVar);
+		
+		// Call log method (if no exception occurred)
+		invokeLogInstanceOf(theOriginalInstructionLabel, theObjectVar, aType, theResultVar);
+		
+		// Reload result
+		mv.visitVarInsn(ILOAD, theResultVar);
+		
+		itsInstrumentationRanges.end();
+	}
+	
 
 	/**
 	 * Pushes standard method log args onto the stack:
@@ -973,6 +1011,42 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				Type.getInternalName(EventCollector.class), 
 				"logArrayWrite", 
 				"(ILjava/lang/Object;ILjava/lang/Object;)V");
+		
+		mv.visitLabel(l);
+	}
+	
+	public void invokeLogInstanceOf(
+			Label aOriginalInstructionLabel, 
+			int aObjectVar,
+			ITypeInfo aType,
+			int aResultVar)
+	{
+		Label l = new Label();
+		if (LogBCIVisitor.ENABLE_READY_CHECK)
+		{
+			mv.visitFieldInsn(GETSTATIC, Type.getInternalName(AgentReady.class), "READY", "Z");
+			mv.visitJumpInsn(IFEQ, l);
+		}
+		
+		pushStdLogArgs();
+		
+		// ->operation location
+		pushProbeId(aOriginalInstructionLabel);
+		
+		// ->object
+		mv.visitVarInsn(ALOAD, aObjectVar);
+		
+		// ->type id
+		BCIUtils.pushInt(mv, aType.getId());
+		
+		// ->result
+		mv.visitVarInsn(ILOAD, aResultVar);
+		
+		mv.visitMethodInsn(
+				INVOKEVIRTUAL, 
+				Type.getInternalName(EventCollector.class), 
+				"logInstanceOf",
+				"(ILjava/lang/Object;II)V");
 		
 		mv.visitLabel(l);
 	}

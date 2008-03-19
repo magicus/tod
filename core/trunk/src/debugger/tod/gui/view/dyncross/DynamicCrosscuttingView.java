@@ -136,13 +136,13 @@ implements IListListener<Highlight>
 				{
 					itsSeed.pHighlights.add(theHighlight);
 					
-					System.out.println("Events for: "+theHighlight);
-					IEventBrowser theBrowser = theHighlight.createBrowser(getLogBrowser());
-					while (theBrowser.hasNext())
-					{
-						ILogEvent theEvent = theBrowser.next();
-						System.out.println(theEvent);
-					}
+//					System.out.println("Events for: "+theHighlight);
+//					IEventBrowser theBrowser = theHighlight.createBrowser(getLogBrowser());
+//					while (theBrowser.hasNext())
+//					{
+//						ILogEvent theEvent = theBrowser.next();
+//						System.out.println(theEvent);
+//					}
 				}
 			}
 		};
@@ -204,7 +204,7 @@ implements IListListener<Highlight>
 			itsHighlighter.pHighlightBrowsers.add(new BrowserData(
 					theHighlight.createBrowser(getLogBrowser()),
 					COLORS[i++],
-					BrowserData.DEFAULT_MARK_SIZE*2));
+					BrowserData.DEFAULT_MARK_SIZE+1));
 		}
 	}
 	
@@ -213,7 +213,7 @@ implements IListListener<Highlight>
 		itsHighlighter.pHighlightBrowsers.add(aIndex, new BrowserData(
 				aElement.createBrowser(getLogBrowser()),
 				COLORS[aIndex],
-				BrowserData.DEFAULT_MARK_SIZE*2));
+				BrowserData.DEFAULT_MARK_SIZE+1));
 	}
 
 	public void elementRemoved(IList<Highlight> aList, int aIndex, Highlight aElement)

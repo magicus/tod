@@ -33,8 +33,6 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.rmi.RemoteException;
 
-import com.sun.org.apache.bcel.internal.generic.LLOAD;
-
 import tod.agent.Output;
 import tod.agent.transport.Commands;
 import tod.agent.transport.LowLevelEventType;
@@ -130,7 +128,7 @@ implements RIDispatcher
 				OutputStream aOutStream,
 				boolean aStart)
 		{
-			super(aHostInfo, aInStream, aOutStream, false, new TransmitterLogCollector());
+			super(aHostInfo, aInStream, aOutStream, false, aMaster.getStructureDatabase(), new TransmitterLogCollector());
 			itsMaster = aMaster;
 			if (aStart) start();
 		}
@@ -251,12 +249,12 @@ implements RIDispatcher
 			itsWriter.setStream(itsCurrentProxy.getOutStream());
 		}
 
-		public void arrayWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId,
-				Object aTarget, int aIndex, Object aValue)
+		public void arrayWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+				int aProbeId, Object aTarget, int aIndex, Object aValue)
 		{
 			try
 			{
-				itsWriter.sendArrayWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aTarget, aIndex, aValue);
+				itsWriter.sendArrayWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aTarget, aIndex, aValue);
 			}
 			catch (IOException e)
 			{
@@ -264,12 +262,25 @@ implements RIDispatcher
 			}
 		}
 
-		public void behaviorExit(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId,
-				int aBehaviorId, boolean aHasThrown, Object aResult)
+		public void instanceOf(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+				int aProbeId, Object aObject, int aTypeId, boolean aResult)
 		{
 			try
 			{
-				itsWriter.sendBehaviorExit(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aBehaviorId, aHasThrown, aResult);
+				itsWriter.sendInstanceOf(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aObject, aTypeId, aResult);
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		public void behaviorExit(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+				int aProbeId, int aBehaviorId, boolean aHasThrown, Object aResult)
+		{
+			try
+			{
+				itsWriter.sendBehaviorExit(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aBehaviorId, aHasThrown, aResult);
 			}
 			catch (IOException e)
 			{
@@ -282,13 +293,13 @@ implements RIDispatcher
 			throw new UnsupportedOperationException();
 		}
 
-		public void exception(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, String aMethodName,
-				String aMethodSignature, String aMethodDeclaringClassSignature, int aOperationBytecodeIndex,
-				Object aException)
+		public void exception(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+				String aMethodName, String aMethodSignature, String aMethodDeclaringClassSignature,
+				int aOperationBytecodeIndex, Object aException)
 		{
 			try
 			{
-				itsWriter.sendException(aThreadId, aParentTimestamp, aDepth, aTimestamp, aMethodName, aMethodSignature, aMethodDeclaringClassSignature, aOperationBytecodeIndex, aException);
+				itsWriter.sendException(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aMethodName, aMethodSignature, aMethodDeclaringClassSignature, aOperationBytecodeIndex, aException);
 			}
 			catch (IOException e)
 			{
@@ -296,12 +307,12 @@ implements RIDispatcher
 			}
 		}
 
-		public void fieldWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId,
-				int aFieldId, Object aTarget, Object aValue)
+		public void fieldWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+				int aProbeId, int aFieldId, Object aTarget, Object aValue)
 		{
 			try
 			{
-				itsWriter.sendFieldWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aFieldId, aTarget, aValue);
+				itsWriter.sendFieldWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aFieldId, aTarget, aValue);
 			}
 			catch (IOException e)
 			{
@@ -314,13 +325,13 @@ implements RIDispatcher
 			throw new UnsupportedOperationException();
 		}
 
-		public void instantiation(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId,
-				boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId, Object aTarget,
-				Object[] aArguments)
+		public void instantiation(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+				int aProbeId, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
+				Object aTarget, Object[] aArguments)
 		{
 			try
 			{
-				itsWriter.sendInstantiation(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
+				itsWriter.sendInstantiation(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
 			}
 			catch (IOException e)
 			{
@@ -328,12 +339,12 @@ implements RIDispatcher
 			}
 		}
 
-		public void localWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId,
-				int aVariableId, Object aValue)
+		public void localWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+				int aProbeId, int aVariableId, Object aValue)
 		{
 			try
 			{
-				itsWriter.sendLocalWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aVariableId, aValue);
+				itsWriter.sendLocalWrite(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aVariableId, aValue);
 			}
 			catch (IOException e)
 			{
@@ -341,13 +352,13 @@ implements RIDispatcher
 			}
 		}
 
-		public void methodCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId,
-				boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId, Object aTarget,
-				Object[] aArguments)
+		public void methodCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+				int aProbeId, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
+				Object aTarget, Object[] aArguments)
 		{
 			try
 			{
-				itsWriter.sendMethodCall(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
+				itsWriter.sendMethodCall(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
 			}
 			catch (IOException e)
 			{
@@ -355,12 +366,12 @@ implements RIDispatcher
 			}
 		}
 
-		public void newArray(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId,
-				Object aTarget, int aBaseTypeId, int aSize)
+		public void newArray(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+				int aProbeId, Object aTarget, int aBaseTypeId, int aSize)
 		{
 			try
 			{
-				itsWriter.sendNewArray(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aTarget, aBaseTypeId, aSize);
+				itsWriter.sendNewArray(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aTarget, aBaseTypeId, aSize);
 			}
 			catch (IOException e)
 			{
@@ -368,12 +379,12 @@ implements RIDispatcher
 			}
 		}
 
-		public void output(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, Output aOutput,
-				byte[] aData)
+		public void output(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+				Output aOutput, byte[] aData)
 		{
 			try
 			{
-				itsWriter.sendOutput(aThreadId, aParentTimestamp, aDepth, aTimestamp, aOutput, aData);
+				itsWriter.sendOutput(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aOutput, aData);
 			}
 			catch (IOException e)
 			{
@@ -386,13 +397,13 @@ implements RIDispatcher
 			throw new UnsupportedOperationException();
 		}
 
-		public void superCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aProbeId,
-				boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId, Object aTarget,
-				Object[] aArguments)
+		public void superCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+				int aProbeId, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
+				Object aTarget, Object[] aArguments)
 		{
 			try
 			{
-				itsWriter.sendSuperCall(aThreadId, aParentTimestamp, aDepth, aTimestamp, aProbeId, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
+				itsWriter.sendSuperCall(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
 			}
 			catch (IOException e)
 			{

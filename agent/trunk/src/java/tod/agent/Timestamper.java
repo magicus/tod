@@ -27,13 +27,19 @@ public class Timestamper extends Thread
 		{
 			while(true)
 			{
-				t = System.nanoTime() << AgentConfig.TIMESTAMP_ADJUST_SHIFT;
-				sleep(50);
+				update();
+				sleep(1);
 			}
 		}
-		catch (InterruptedException e)
+		catch (Exception e)
 		{
 			throw new RuntimeException(e);
 		}
+	}
+	
+	public static long update()
+	{
+		t = System.nanoTime() << AgentConfig.TIMESTAMP_ADJUST_SHIFT;
+		return t;
 	}
 }

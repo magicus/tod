@@ -37,6 +37,11 @@ public class Dummy2
 {
 	public static void main(String[] args) throws InterruptedException
 	{
+		Object o = args;
+		if (o instanceof Integer)
+		{
+			System.out.println("Dummy2.main()");
+		}
 		for(int i=0;i<10;i++)
 		{
 			System.out.println(i);

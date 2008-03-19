@@ -73,6 +73,7 @@ public class CollectorTODServer extends TODServer
 					new BufferedInputStream(aSocket.getInputStream()), 
 					new BufferedOutputStream(aSocket.getOutputStream()),
 					true,
+					getStructureDatabase(),
 					itsCollectorFactory.create())
 			{
 				@Override

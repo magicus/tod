@@ -56,6 +56,7 @@ import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.IConstructorChainingEvent;
 import tod.core.database.event.IExceptionGeneratedEvent;
 import tod.core.database.event.IFieldWriteEvent;
+import tod.core.database.event.IInstanceOfEvent;
 import tod.core.database.event.IInstantiationEvent;
 import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
@@ -468,6 +469,11 @@ implements MouseWheelListener
 		{
 			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) aEvent;
 			return new LocalVariableWriteNode(aGUIManager, aListPanel, theEvent);
+		}
+		else if (aEvent instanceof IInstanceOfEvent)
+		{
+			IInstanceOfEvent theEvent = (IInstanceOfEvent) aEvent;
+			return new InstanceOfNode(aGUIManager, aListPanel, theEvent);
 		}
 		else if (aEvent instanceof IExceptionGeneratedEvent)
 		{

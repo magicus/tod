@@ -31,7 +31,7 @@ public class TimestampCalibration
 	/**
 	 * Maximum number of events per second we want to be able to handle.
 	 */
-	private static final long evps = 1000000000;
+	private static final long evps = 1000*1000*1000;
 	
 	static
 	{

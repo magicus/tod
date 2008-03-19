@@ -46,6 +46,7 @@ import tod.impl.common.event.BehaviorExitEvent;
 import tod.impl.common.event.Event;
 import tod.impl.common.event.ExceptionGeneratedEvent;
 import tod.impl.common.event.FieldWriteEvent;
+import tod.impl.common.event.InstanceOfEvent;
 import tod.impl.common.event.LocalVariableWriteEvent;
 import tod.impl.common.event.OutputEvent;
 import tod.impl.database.structure.standard.ThreadInfo;
@@ -184,10 +185,10 @@ public class LocalCollector extends EventCollector
 			long aParentTimestamp, 
 			short aDepth,
 			long aTimestamp,
-			int aProbeId, 
-			int aBehaviorId,
-			boolean aHasThrown, 
-			Object aResult)
+			int aAdviceCFlow, 
+			int aProbeId,
+			int aBehaviorId, 
+			boolean aHasThrown, Object aResult)
 	{
 		BehaviorExitEvent theEvent = new BehaviorExitEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
@@ -206,10 +207,10 @@ public class LocalCollector extends EventCollector
 			long aParentTimestamp, 
 			short aDepth,
 			long aTimestamp,
+			int aAdviceCFlow,
 			int aProbeId,
-			int aFieldId,
-			Object aTarget, 
-			Object aValue)
+			int aFieldId, 
+			Object aTarget, Object aValue)
 	{
 		FieldWriteEvent theEvent = new FieldWriteEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
@@ -227,10 +228,10 @@ public class LocalCollector extends EventCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp, 
-			int aProbeId,
-			Object aTarget, 
-			int aBaseTypeId,
-			int aSize)
+			int aAdviceCFlow,
+			int aProbeId, 
+			Object aTarget,
+			int aBaseTypeId, int aSize)
 	{
 		InstantiationEvent theEvent = new InstantiationEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
@@ -251,10 +252,10 @@ public class LocalCollector extends EventCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
-			int aProbeId,
+			int aAdviceCFlow,
+			int aProbeId, 
 			Object aTarget, 
-			int aIndex, 
-			Object aValue)
+			int aIndex, Object aValue)
 	{
 		ArrayWriteEvent theEvent = new ArrayWriteEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
@@ -272,12 +273,12 @@ public class LocalCollector extends EventCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
+			int aAdviceCFlow, 
 			int aProbeId, 
 			boolean aDirectParent, 
-			int aCalledBehaviorId, 
-			int aExecutedBehaviorId,
-			Object aTarget, 
-			Object[] aArguments)
+			int aCalledBehaviorId,
+			int aExecutedBehaviorId, 
+			Object aTarget, Object[] aArguments)
 	{
 		InstantiationEvent theEvent = new InstantiationEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
@@ -299,9 +300,9 @@ public class LocalCollector extends EventCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
-			int aProbeId,
-			int aVariableId, 
-			Object aValue)
+			int aAdviceCFlow,
+			int aProbeId, 
+			int aVariableId, Object aValue)
 	{
 		LocalVariableWriteEvent theEvent = new LocalVariableWriteEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
@@ -317,18 +318,41 @@ public class LocalCollector extends EventCollector
 		
 		addEvent(theEvent);
 	}
+	
+	
+
+	public void instanceOf(
+			int aThreadId,
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp,
+			int aAdviceCFlow,
+			int aProbeId,
+			Object aObject,
+			int aTypeId,
+			boolean aResult)
+	{
+		InstanceOfEvent theEvent = new InstanceOfEvent(itsBrowser);
+		LocalThreadInfo theThread = getThread(aThreadId);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aProbeId);
+
+		theEvent.setObject(aObject);
+		theEvent.setTestedType(getType(aTypeId));
+		
+		addEvent(theEvent);
+	}
 
 	public void methodCall(
 			int aThreadId,
 			long aParentTimestamp,
 			short aDepth, 
 			long aTimestamp,
+			int aAdviceCFlow, 
 			int aProbeId, 
-			boolean aDirectParent, 
+			boolean aDirectParent,
 			int aCalledBehaviorId,
 			int aExecutedBehaviorId,
-			Object aTarget,
-			Object[] aArguments)
+			Object aTarget, Object[] aArguments)
 	{
 		MethodCallEvent theEvent = new MethodCallEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
@@ -349,8 +373,8 @@ public class LocalCollector extends EventCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
-			Output aOutput,
-			byte[] aData)
+			int aAdviceCFlow,
+			Output aOutput, byte[] aData)
 	{
 		OutputEvent theEvent = new OutputEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
@@ -367,12 +391,12 @@ public class LocalCollector extends EventCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			int aProbeId,
-			boolean aDirectParent, 
+			int aAdviceCFlow,
+			int aProbeId, 
+			boolean aDirectParent,
 			int aCalledBehaviorId,
-			int aExecutedBehaviorId,
-			Object aTarget, 
-			Object[] aArguments)
+			int aExecutedBehaviorId, 
+			Object aTarget, Object[] aArguments)
 	{
 		ConstructorChainingEvent theEvent = new ConstructorChainingEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);

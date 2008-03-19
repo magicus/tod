@@ -20,28 +20,14 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.agent.transport;
 
-import static tod.agent.transport.LowLevelEventType.AFTER_CALL;
-import static tod.agent.transport.LowLevelEventType.AFTER_CALL_DRY;
-import static tod.agent.transport.LowLevelEventType.AFTER_CALL_EXCEPTION;
-import static tod.agent.transport.LowLevelEventType.ARRAY_WRITE;
-import static tod.agent.transport.LowLevelEventType.BEFORE_CALL;
-import static tod.agent.transport.LowLevelEventType.BEFORE_CALL_DRY;
-import static tod.agent.transport.LowLevelEventType.BEHAVIOR_ENTER;
-import static tod.agent.transport.LowLevelEventType.BEHAVIOR_EXIT;
-import static tod.agent.transport.LowLevelEventType.BEHAVIOR_EXIT_EXCEPTION;
-import static tod.agent.transport.LowLevelEventType.CLINIT_ENTER;
-import static tod.agent.transport.LowLevelEventType.CLINIT_EXIT;
-import static tod.agent.transport.LowLevelEventType.EXCEPTION_GENERATED;
-import static tod.agent.transport.LowLevelEventType.FIELD_WRITE;
-import static tod.agent.transport.LowLevelEventType.LOCAL_VARIABLE_WRITE;
-import static tod.agent.transport.LowLevelEventType.NEW_ARRAY;
-import static tod.agent.transport.LowLevelEventType.REGISTER_THREAD;
-
+import static tod.agent.transport.LowLevelEventType.*;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+
+import com.sun.org.apache.bcel.internal.generic.INSTANCEOF;
 
 import tod.agent.BehaviorCallType;
 import tod.agent.EventCollector;
@@ -278,6 +264,26 @@ public class LowLevelEventWriter
 
 		itsBuffer.writeTo(itsStream);
 
+		sendRegisteredObjects();
+	}
+	
+	public void sendInstanceOf(
+			int aThreadId,
+			long aTimestamp,
+			int aProbeId, 
+			Object aObject,
+			int aTypeId,
+			boolean aResult) throws IOException
+	{
+		sendStd(INSTANCEOF, aThreadId, aTimestamp);
+		
+		itsBuffer.writeInt(aProbeId);
+		sendValue(itsBuffer, aObject, aTimestamp);
+		itsBuffer.writeInt(aTypeId);
+		itsBuffer.writeBoolean(aResult);
+		
+		itsBuffer.writeTo(itsStream);
+		
 		sendRegisteredObjects();
 	}
 	

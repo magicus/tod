@@ -20,6 +20,7 @@ public enum HighLevelEventType
 	FIELD_WRITE,
 	ARRAY_WRITE,
 	LOCAL_VARIABLE_WRITE,
+	INSTANCEOF,
 	OUTPUT,
 	
 	// Registering

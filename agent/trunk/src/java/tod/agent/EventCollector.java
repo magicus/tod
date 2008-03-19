@@ -502,13 +502,54 @@ public final class EventCollector
         }
         
 		if (AgentDebugFlags.COLLECTOR_LOG) printf(
-				"logArraye(th: %d, ts: %d, pid: %d, tgt: %s, i: %d, val: %s)",
+				"logArrayWrite(th: %d, ts: %d, pid: %d, tgt: %s, i: %d, val: %s)",
 				theThread.getId(),
 				theTimestamp,
 				aProbeId,
 				aTarget,
 				aIndex,
 				aValue);
+	}
+	
+	public void logInstanceOf(
+			int aProbeId, 
+			Object aObject,
+			int aTypeId,
+			int aResult)
+	{
+		if (AgentDebugFlags.COLLECTOR_IGNORE_ALL) return;
+		
+		ThreadData theThread = getThreadData();
+		long theTimestamp = theThread.timestamp();
+		
+		if (theThread.isSending()) return;
+		try
+		{
+			LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
+			
+			theWriter.sendInstanceOf(
+					theThread.getId(), 
+					theTimestamp,
+					aProbeId, 
+					aObject,
+					aTypeId,
+					aResult != 0);
+			
+			theThread.packetEnd();
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+		
+		if (AgentDebugFlags.COLLECTOR_LOG) printf(
+				"logInstanceOf(th: %d, ts: %d, pid: %d, obj: %s, t: %d, r: %s)",
+				theThread.getId(),
+				theTimestamp,
+				aProbeId,
+				aObject,
+				aTypeId,
+				aResult);
 	}
 	
 	public void logLocalVariableWrite(
@@ -816,6 +857,11 @@ public final class EventCollector
 		private long itsTimestamp = 0;
 		
 		/**
+		 * Number of events for which the timestamp was approximated.
+		 */
+		private int itsSeqCount = 0;
+		
+		/**
 		 * This flag permits to avoid reentrancy issues.
 		 */
 		private boolean itsInCFlow = false;
@@ -904,8 +950,25 @@ public final class EventCollector
 		public long timestamp()
 		{
 			long ts = Timestamper.t;
-			if (ts > itsTimestamp) itsTimestamp = ts;
-			else itsTimestamp++;
+			if (ts > itsTimestamp) 
+			{
+				itsTimestamp = ts;
+				itsSeqCount = 0;
+			}
+			else 
+			{
+				itsTimestamp += 3000;
+				itsSeqCount++;
+				if (itsSeqCount > 10)
+				{
+					ts = Timestamper.update();
+					if (ts > itsTimestamp) 
+					{
+						itsTimestamp = ts;
+						itsSeqCount = 0;
+					}
+				}
+			}
 			
 			return itsTimestamp;
 		}

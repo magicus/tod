@@ -31,73 +31,65 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.eventlist;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.awt.Color;
 
-import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
+import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.IInstanceOfEvent;
+import tod.core.database.event.ILogEvent;
+import tod.gui.Hyperlinks;
+import tod.gui.IGUIManager;
+import tod.gui.kit.html.HtmlBody;
+import tod.gui.kit.html.HtmlText;
 
-/**
- * Defines the level of intimacy for aspect debugging.
- * @author gpothier
- */
-public final class IntimacyLevel
+public class InstanceOfNode extends AbstractSimpleEventNode
 {
-	public static final BytecodeRole[] ROLES = {
-		BytecodeRole.ADVICE_EXECUTE,
-		BytecodeRole.ADVICE_TEST,
-		BytecodeRole.CONTEXT_EXPOSURE,
-		BytecodeRole.ADVICE_ARG_SETUP,
-	};
-	
-	public static final IntimacyLevel FULL_INTIMACY = new IntimacyLevel(ROLES);
-	public static final IntimacyLevel FULL_OBLIVIOUSNESS = null;
-	
-	public final Set<BytecodeRole> roles;
-	
-	private IntimacyLevel(BytecodeRole... aRoles)
-	{
-		roles = new HashSet<BytecodeRole>();
-		for (BytecodeRole theRole : aRoles) roles.add(theRole);
-	}
-	
-	public IntimacyLevel(Set<BytecodeRole> aRoles)
-	{
-		roles = aRoles;
-	}
-	
-	/**
-	 * Whether the given role should be shown in this intimacy level.
-	 */
-	public boolean showRole(BytecodeRole aRole)
-	{
-		return roles.contains(aRole);
-	}
+	private IInstanceOfEvent itsEvent;
 
-	@Override
-	public int hashCode()
+	public InstanceOfNode(
+			IGUIManager aGUIManager, 
+			EventListPanel aListPanel,
+			IInstanceOfEvent aEvent)
 	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((roles == null) ? 0 : roles.hashCode());
-		return result;
+		super(aGUIManager, aListPanel);
+		itsEvent = aEvent;
+		createUI();
 	}
-
+	
 	@Override
-	public boolean equals(Object obj)
+	protected void createHtmlUI(HtmlBody aBody)
 	{
-		if (this == obj) return true;
-		if (obj == null) return false;
-		if (getClass() != obj.getClass()) return false;
-		IntimacyLevel other = (IntimacyLevel) obj;
-		if (roles == null)
+		Object theCurrentObject = null;
+		IBehaviorCallEvent theContainer = itsEvent.getParent();
+		if (theContainer != null)
 		{
-			if (other.roles != null) return false;
+			theCurrentObject = theContainer.getTarget();
 		}
-		else if (!roles.equals(other.roles)) return false;
-		return true;
-	}
+		
+		aBody.add(Hyperlinks.object(
+				Hyperlinks.HTML,
+				getGUIManager(),
+				getJobProcessor(),
+				theCurrentObject, 
+				itsEvent.getObject(),
+				itsEvent,
+				showPackageNames()));
 
+		aBody.addText(" instanceof ");
+		
+		aBody.add(Hyperlinks.type(
+				Hyperlinks.HTML,
+				itsEvent.getTestedType()));
+		
+		aBody.addText(" -> ");
+		boolean theResult = itsEvent.getResult();
+		aBody.add(HtmlText.create(""+theResult, theResult ? Color.GREEN : Color.RED));
+		
+		createDebugInfo(aBody);
+	}
 	
-	
+	@Override
+	protected ILogEvent getEvent()
+	{
+		return itsEvent;
+	}
 }

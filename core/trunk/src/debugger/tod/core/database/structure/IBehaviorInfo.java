@@ -188,7 +188,7 @@ public interface IBehaviorInfo extends IMemberInfo
     	 */
     	TOD_CODE(WOVEN_CODE),
     	
-    	ADVICE_ARG_SETUP(ASPECTJ_CODE),
+    	ADVICE_ARG_SETUP(ASPECTJ_CODE), //aka aspect instance selection
     	CONTEXT_EXPOSURE(ASPECTJ_CODE),
     	PARAMETER_BACKUP(ASPECTJ_CODE),
     	ADVICE_TEST(ASPECTJ_CODE),

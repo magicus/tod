@@ -48,6 +48,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.HashSet;
@@ -97,6 +98,11 @@ import zz.utils.ui.ResourceUtils.ImageResource;
  */
 public class EventMural extends MouseWheelPanel
 {
+	/**
+	 * The width, in pixels, of each drawn bar.
+	 */
+	private static final int BAR_WIDTH = 3;
+	
 	private static final ImageUpdater itsUpdater = new ImageUpdater();
 	private final Orientation itsOrientation;
 	
@@ -395,6 +401,8 @@ public class EventMural extends MouseWheelPanel
 		if (aAmount == 0) return;
 		System.out.println("Amount: "+aAmount);
 		
+		setCurrentEvent(null);
+		
 		Long t1 = pStart.get();
 		Long t2 = pEnd.get();
 		
@@ -431,12 +439,14 @@ public class EventMural extends MouseWheelPanel
 		Color[] theColors = new Color[aBrowserData.size()];
 		int[] theMarkSizes = new int[aBrowserData.size()];
 		
+		int theSamplesCount = aBounds.width / BAR_WIDTH;
+		
 		int i = 0;
 		for (BrowserData theBrowserData : aBrowserData)
 		{
 			// TODO: check conversion
 			System.out.println("[EventMural] Requesting counts: "+aT1+"-"+aT2);
-			theValues[i] = theBrowserData.browser.getEventCounts(aT1, aT2, aBounds.width, false);
+			theValues[i] = theBrowserData.browser.getEventCounts(aT1, aT2, theSamplesCount, false);
 			theColors[i] = theBrowserData.color;
 			theMarkSizes[i] = theBrowserData.markSize;
 			i++;
@@ -508,9 +518,9 @@ public class EventMural extends MouseWheelPanel
 	}
 	
 	/**
-	 * Paints the mural, overlaying, or stacking, all the series.
+	 * Paints the mural, overlaying all the series.
 	 */
-	public static void paintMuralStack (
+	public static void paintMuralOverlay (
 			Graphics2D aGraphics, 
 			Rectangle aBounds, 
 			long[][] aValues, 
@@ -526,7 +536,7 @@ public class EventMural extends MouseWheelPanel
 		int theHeight = aBounds.height-theTotalMarkSize;
 		int theY = aBounds.y;
 		
-		long theMaxT = 0;
+		long theMaxT = 4; // We want to be able to see when a bar corresponds to only one event.
 		
 		// Determine maximum value
 		for (int i = 0; i < aValues[0].length; i++)
@@ -544,12 +554,12 @@ public class EventMural extends MouseWheelPanel
 				Color c1 = aColors[j];
 				Color c2 = UIUtils.getLighterColor(c1);
 				
-				// Draw mark
 				if (t>0)
 				{
+					// Draw mark
 					aGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 					aGraphics.setColor(c1);
-					aGraphics.fill(makeTriangle(aBounds.x + i, theY+theCurrentMarkY, aMarkSizes[j]));
+					aGraphics.fill(makeTriangle(aBounds.x + i, theY+theCurrentMarkY, aMarkSizes[j], 0));
 					
 					// Draw proportional bar
 					aGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
@@ -564,12 +574,110 @@ public class EventMural extends MouseWheelPanel
 		aGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, theOriginalAA);
 	}
 	
-	private static Shape makeTriangle(float aX, float aY, float aW)
+	/**
+	 * Paints the mural, stacking the series one above another.
+	 */
+	public static void paintMuralStack (
+			Graphics2D aGraphics, 
+			Rectangle aBounds, 
+			long[][] aValues, 
+			Color[] aColors,
+			int[] aMarkSizes)
+	{
+		int theCount = aValues.length;
+		if (theCount == 0) return;
+		
+		int theTotalMarkSize = 0;
+		for (int theSize : aMarkSizes) theTotalMarkSize += theSize;
+		
+		int theHeight = aBounds.height-theTotalMarkSize;
+		int theY = aBounds.y;
+		
+		long theMaxT = 4; // We want to be able to see when a bar corresponds to only one event.
+		
+		// Determine maximum value
+		for (int i = 0; i < aValues[0].length; i++)
+		{
+			long theTotal = 0;
+			for (int j = 0; j < aValues.length; j++) theTotal += aValues[j][i]; 
+			theMaxT = Math.max(theMaxT, theTotal);
+		}
+		
+		float theBarWidth = 1f*aBounds.width/aValues[0].length;
+		
+		Object theOriginalAA = aGraphics.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
+		aGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		for (int i = 0; i < aValues[0].length; i++)
+		{
+			float theX = aBounds.x + (i*theBarWidth);
+			
+			int theCurrentMarkY = theHeight;
+			float theCurrentBarHeight = 0;
+			
+			// Draw marks and compute total bar height
+			for (int j=0;j<theCount;j++)
+			{
+				long t = aValues[j][i];
+				
+				if (t>0)
+				{
+					aGraphics.setColor(aColors[j]);
+					
+					aGraphics.fill(makeTrapezoid(
+							theX+(theBarWidth/2), 
+							theY+theCurrentMarkY, 
+							j == 0 ? theBarWidth+4 : aMarkSizes[j], 
+							j== 0 ? theBarWidth : 0,
+							aMarkSizes[j]));
+					
+					float h = (theHeight * t) / theMaxT;
+					theCurrentBarHeight += h;
+				}
+				
+				theCurrentMarkY += aMarkSizes[j];
+			}
+			
+			// Draw proportional bars
+			for (int j=theCount-1;j>=0;j--)
+			{
+				long t = aValues[j][i];
+				
+				if (t>0)
+				{
+					float h = (theHeight * t) / theMaxT;
+					aGraphics.setColor(UIUtils.getLighterColor(aColors[j], 0.7f));
+					
+					aGraphics.fill(makeTriangle(
+							theX+(theBarWidth/2), 
+							theHeight-theCurrentBarHeight, 
+							theBarWidth, 
+							theCurrentBarHeight));
+					
+					theCurrentBarHeight -= h;
+				}
+			}
+		}
+		aGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, theOriginalAA);
+	}
+	
+	private static Shape makeTriangle(float aX, float aY, float aBaseW, float aHeight)
 	{
 		GeneralPath thePath = new GeneralPath();
 		thePath.moveTo(aX, aY);
-		thePath.lineTo(aX+(aW/2), aY+aW);
-		thePath.lineTo(aX-(aW/2), aY+aW);
+		thePath.lineTo(aX+(aBaseW/2), aY+aHeight);
+		thePath.lineTo(aX-(aBaseW/2), aY+aHeight);
+		thePath.closePath();
+		
+		return thePath;
+	}
+	
+	private static Shape makeTrapezoid(float aX, float aY, float aBaseW, float aTopW, float aHeight)
+	{
+		GeneralPath thePath = new GeneralPath();
+		thePath.moveTo(aX-(aTopW/2), aY);
+		thePath.lineTo(aX+(aTopW/2), aY);
+		thePath.lineTo(aX+(aBaseW/2), aY+aHeight);
+		thePath.lineTo(aX-(aBaseW/2), aY+aHeight);
 		thePath.closePath();
 		
 		return thePath;

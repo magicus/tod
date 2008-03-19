@@ -120,7 +120,8 @@ public class GUIUtils
 		if (itsRoleIconMap == null)
 		{
 			itsRoleIconMap = new HashMap<BytecodeRole, ImageResource>();
-			itsRoleIconMap.put(BytecodeRole.ADVICE_ARG_SETUP, Resources.ICON_ROLE_CONTEXT_EXPOSURE);
+			itsRoleIconMap.put(BytecodeRole.ADVICE_ARG_SETUP, Resources.ICON_ROLE_ASPECT_INSTANCE_SELECTION);
+			itsRoleIconMap.put(BytecodeRole.CONTEXT_EXPOSURE, Resources.ICON_ROLE_CONTEXT_EXPOSURE);
 			itsRoleIconMap.put(BytecodeRole.ADVICE_EXECUTE, Resources.ICON_ROLE_ADVICE_EXECUTION);
 			itsRoleIconMap.put(BytecodeRole.ADVICE_TEST, Resources.ICON_ROLE_RESIDUE_EVALUATION);
 			itsRoleIconMap.put(BytecodeRole.INLINED_ADVICE, Resources.ICON_ROLE_ADVICE_EXECUTION);

@@ -197,6 +197,7 @@ implements RIEventDispatcher
 	/**
 	 * Clears each child (node or dispatcher).
 	 */
+	@Override
 	public synchronized void clear()
 	{
 		System.out.println("Event dispatcher: clearing...");
@@ -216,6 +217,7 @@ implements RIEventDispatcher
 	 * Flushes all buffers so that events are sent to the nodes 
 	 * and stored.
 	 */
+	@Override
 	public synchronized int flush()
 	{
 		System.out.println("[AbstractEventDispatcher] Flushing...");

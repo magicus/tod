@@ -104,6 +104,11 @@ public class HtmlText extends HtmlElement
 		return new HtmlText(aText, aColor, aFontSize);
 	}
 	
+	public static HtmlText create(String aText, Color aColor)
+	{
+		return new HtmlText(aText, aColor, FontConfig.NORMAL);
+	}
+	
 	public static HtmlText create(String aText)
 	{
 		return create(aText, FontConfig.NORMAL, Color.BLACK);

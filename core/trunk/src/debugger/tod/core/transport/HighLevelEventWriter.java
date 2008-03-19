@@ -62,6 +62,7 @@ public class HighLevelEventWriter
 			long aParentTimestamp,
 			int aDepth,
 			long aTimestamp, 
+			int aAdviceCFlow,
 			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehavior,
@@ -71,7 +72,7 @@ public class HighLevelEventWriter
 	{
 		sendEventType(itsStream, aMessageType);
 
-		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
+		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow);
 		itsBuffer.writeInt(aProbeId);
 		itsBuffer.writeBoolean(aDirectParent);
 		itsBuffer.writeInt(aCalledBehavior);
@@ -109,6 +110,7 @@ public class HighLevelEventWriter
 			long aParentTimestamp,
 			int aDepth, 
 			long aTimestamp,
+			int aAdviceCFlow,
 			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehavior,
@@ -121,7 +123,8 @@ public class HighLevelEventWriter
 				aThreadId,
 				aParentTimestamp,
 				aDepth, 
-				aTimestamp, 
+				aTimestamp,
+				aAdviceCFlow,
 				aProbeId,
 				aDirectParent, 
 				aCalledBehavior,
@@ -135,6 +138,7 @@ public class HighLevelEventWriter
 			long aParentTimestamp,
 			int aDepth, 
 			long aTimestamp,
+			int aAdviceCFlow,
 			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehavior,
@@ -147,7 +151,8 @@ public class HighLevelEventWriter
 				aThreadId,
 				aParentTimestamp,
 				aDepth, 
-				aTimestamp, 
+				aTimestamp,
+				aAdviceCFlow,
 				aProbeId,
 				aDirectParent, 
 				aCalledBehavior, 
@@ -161,6 +166,7 @@ public class HighLevelEventWriter
 			long aParentTimestamp,
 			int aDepth, 
 			long aTimestamp,
+			int aAdviceCFlow,
 			int aProbeId,
 			boolean aDirectParent, 
 			int aCalledBehavior,
@@ -173,7 +179,8 @@ public class HighLevelEventWriter
 				aThreadId,
 				aParentTimestamp,
 				aDepth, 
-				aTimestamp, 
+				aTimestamp,
+				aAdviceCFlow,
 				aProbeId,
 				aDirectParent, 
 				aCalledBehavior,
@@ -187,6 +194,7 @@ public class HighLevelEventWriter
 			long aParentTimestamp, 
 			int aDepth, 
 			long aTimestamp,
+			int aAdviceCFlow,
 			int aProbeId,
 			int aBehaviorId, 
 			boolean aHasThrown,
@@ -194,7 +202,7 @@ public class HighLevelEventWriter
 	{
 		sendEventType(itsStream, HighLevelEventType.BEHAVIOR_EXIT);
 
-		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
+		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow);
 		itsBuffer.writeInt(aProbeId);
 		itsBuffer.writeInt(aBehaviorId);
 		itsBuffer.writeBoolean(aHasThrown);
@@ -217,6 +225,7 @@ public class HighLevelEventWriter
 			long aParentTimestamp,
 			int aDepth,
 			long aTimestamp,
+			int aAdviceCFlow,
 			int aProbeId,
 			int aFieldLocationId,
 			Object aTarget, 
@@ -224,7 +233,7 @@ public class HighLevelEventWriter
 	{
 		sendEventType(itsStream, HighLevelEventType.FIELD_WRITE);
 
-		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
+		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow);
 		itsBuffer.writeInt(aProbeId);
 		itsBuffer.writeInt(aFieldLocationId);
 		sendValue(itsBuffer, aTarget, aTimestamp);
@@ -240,6 +249,7 @@ public class HighLevelEventWriter
 			long aParentTimestamp,
 			int aDepth, 
 			long aTimestamp,
+			int aAdviceCFlow,
 			int aProbeId, 
 			Object aTarget,
 			int aBaseTypeId,
@@ -247,7 +257,7 @@ public class HighLevelEventWriter
 	{
 		sendEventType(itsStream, HighLevelEventType.NEW_ARRAY);
 
-		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
+		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow);
 		itsBuffer.writeInt(aProbeId);
 		sendValue(itsBuffer, aTarget, aTimestamp);
 		itsBuffer.writeInt(aBaseTypeId);
@@ -263,6 +273,7 @@ public class HighLevelEventWriter
 			long aParentTimestamp, 
 			int aDepth,
 			long aTimestamp,
+			int aAdviceCFlow,
 			int aProbeId,
 			Object aTarget,
 			int aIndex, 
@@ -270,7 +281,7 @@ public class HighLevelEventWriter
 	{
 		sendEventType(itsStream, HighLevelEventType.ARRAY_WRITE);
 
-		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
+		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow);
 		itsBuffer.writeInt(aProbeId);
 		sendValue(itsBuffer, aTarget, aTimestamp);
 		itsBuffer.writeInt(aIndex);
@@ -286,16 +297,41 @@ public class HighLevelEventWriter
 			long aParentTimestamp,
 			int aDepth, 
 			long aTimestamp,
+			int aAdviceCFlow,
 			int aProbeId, 
 			int aVariableId,
 			Object aValue) throws IOException
 	{
 		sendEventType(itsStream, HighLevelEventType.LOCAL_VARIABLE_WRITE);
 
-		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
+		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow);
 		itsBuffer.writeInt(aProbeId);
 		itsBuffer.writeInt(aVariableId);
 		sendValue(itsBuffer, aValue, aTimestamp);
+
+		itsBuffer.writeTo(itsStream);
+
+		sendRegisteredObjects();
+	}
+
+	public void sendInstanceOf(
+			int aThreadId,
+			long aParentTimestamp, 
+			int aDepth,
+			long aTimestamp,
+			int aAdviceCFlow,
+			int aProbeId,
+			Object aObject,
+			int aTypeId,
+			boolean aResult) throws IOException
+	{
+		sendEventType(itsStream, HighLevelEventType.INSTANCEOF);
+
+		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow);
+		itsBuffer.writeInt(aProbeId);
+		sendValue(itsBuffer, aObject, aTimestamp);
+		itsBuffer.writeInt(aTypeId);
+		itsBuffer.writeBoolean(aResult);
 
 		itsBuffer.writeTo(itsStream);
 
@@ -307,6 +343,7 @@ public class HighLevelEventWriter
 			long aParentTimestamp,
 			int aDepth,
 			long aTimestamp,
+			int aAdviceCFlow,
 			String aMethodName,
 			String aMethodSignature, 
 			String aMethodDeclaringClassSignature, 
@@ -315,7 +352,7 @@ public class HighLevelEventWriter
 	{
 		sendEventType(itsStream, HighLevelEventType.EXCEPTION);
 
-		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
+		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow);
 		itsBuffer.writeUTF(aMethodName);
 		itsBuffer.writeUTF(aMethodSignature);
 		itsBuffer.writeUTF(aMethodDeclaringClassSignature);
@@ -334,12 +371,13 @@ public class HighLevelEventWriter
 			long aParentTimestamp,
 			int aDepth, 
 			long aTimestamp,
+			int aAdviceCFlow,
 			Output aOutput,
 			byte[] aData) throws IOException
 	{
 		sendEventType(itsStream, HighLevelEventType.OUTPUT);
 
-		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp);
+		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow);
 		itsBuffer.writeByte((byte) aOutput.ordinal());
 		itsBuffer.writeInt(aData.length);
 		itsBuffer.write(aData);
@@ -375,12 +413,14 @@ public class HighLevelEventWriter
 			int aThreadId, 
 			long aParentTimestamp,
 			int aDepth,
-			long aTimestamp) throws IOException
+			long aTimestamp,
+			int aAdviceCFlow) throws IOException
 	{
 		aStream.writeInt(aThreadId);
 		aStream.writeLong(aParentTimestamp);
 		aStream.writeShort(aDepth);
 		aStream.writeLong(aTimestamp);
+		aStream.writeInt(aAdviceCFlow);
 	}
 
 	/**

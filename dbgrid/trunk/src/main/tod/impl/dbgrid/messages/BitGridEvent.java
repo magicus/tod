@@ -176,6 +176,9 @@ public abstract class BitGridEvent extends GridEvent
 		case LOCAL_VARIABLE_WRITE:
 			return new GridVariableWriteEvent(aBitStruct);
 			
+		case INSTANCEOF:
+			return new GridInstanceOfEvent(aBitStruct);
+			
 		case METHOD_CALL:
 			return new GridBehaviorCallEvent(aBitStruct, MessageType.METHOD_CALL);
 			

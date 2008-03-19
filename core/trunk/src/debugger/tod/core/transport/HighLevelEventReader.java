@@ -124,11 +124,11 @@ public class HighLevelEventReader
 				aStream.readShort(),
 				aStream.readLong(),
 				aStream.readInt(),
+				aStream.readInt(),
 				aStream.readBoolean(),
 				aStream.readInt(),
 				aStream.readInt(),
-				readValue(aStream),
-				readArguments(aStream));
+				readValue(aStream), readArguments(aStream));
 	}
 	
 	public static void readInstantiation(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -140,11 +140,11 @@ public class HighLevelEventReader
 				aStream.readShort(),
 				aStream.readLong(),
 				aStream.readInt(),
+				aStream.readInt(),
 				aStream.readBoolean(),
 				aStream.readInt(),
 				aStream.readInt(),
-				readValue(aStream),
-				readArguments(aStream));
+				readValue(aStream), readArguments(aStream));
 	}
 	
 	public static void readSuperCall(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -156,11 +156,11 @@ public class HighLevelEventReader
 				aStream.readShort(),
 				aStream.readLong(),
 				aStream.readInt(),
+				aStream.readInt(),
 				aStream.readBoolean(),
 				aStream.readInt(),
 				aStream.readInt(),
-				readValue(aStream),
-				readArguments(aStream));
+				readValue(aStream), readArguments(aStream));
 
 	}
 	
@@ -174,8 +174,8 @@ public class HighLevelEventReader
 				aStream.readLong(),
 				aStream.readInt(),
 				aStream.readInt(),
-				aStream.readBoolean(),
-				readValue(aStream));
+				aStream.readInt(),
+				aStream.readBoolean(), readValue(aStream));
 	}
 	
 	public static void readFieldWrite(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -188,8 +188,8 @@ public class HighLevelEventReader
 				aStream.readLong(),
 				aStream.readInt(),
 				aStream.readInt(),
-				readValue(aStream),
-				readValue(aStream));
+				aStream.readInt(),
+				readValue(aStream), readValue(aStream));
 	}
 	
 	public static void readNewArray(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -201,9 +201,9 @@ public class HighLevelEventReader
 				aStream.readShort(),
 				aStream.readLong(),
 				aStream.readInt(),
-				readValue(aStream),
 				aStream.readInt(),
-				aStream.readInt());
+				readValue(aStream),
+				aStream.readInt(), aStream.readInt());
 	}
 	
 	public static void readArrayWrite(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -215,9 +215,24 @@ public class HighLevelEventReader
 				aStream.readShort(),
 				aStream.readLong(),
 				aStream.readInt(),
+				aStream.readInt(),
+				readValue(aStream),
+				aStream.readInt(), readValue(aStream));
+	}
+	
+	public static void readInstanceOf(DataInputStream aStream, ILogCollector aCollector) throws IOException
+	{
+		int theSize = aStream.readInt(); // Packet size
+		aCollector.instanceOf(
+				aStream.readInt(),
+				aStream.readLong(),
+				aStream.readShort(),
+				aStream.readLong(),
+				aStream.readInt(),
+				aStream.readInt(),
 				readValue(aStream),
 				aStream.readInt(),
-				readValue(aStream));
+				aStream.readBoolean());
 	}
 	
 	public static void readLocalWrite(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -230,7 +245,7 @@ public class HighLevelEventReader
 				aStream.readLong(),
 				aStream.readInt(),
 				aStream.readInt(),
-				readValue(aStream));
+				aStream.readInt(), readValue(aStream));
 	}
 	
 	public static void readException(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -241,11 +256,11 @@ public class HighLevelEventReader
 				aStream.readLong(),
 				aStream.readShort(),
 				aStream.readLong(),
+				aStream.readInt(),
 				aStream.readUTF(),
 				aStream.readUTF(),
 				aStream.readUTF(),
-				aStream.readShort(),
-				readValue(aStream));
+				aStream.readShort(), readValue(aStream));
 	}
 	
 	public static void readOutput(DataInputStream aStream, ILogCollector aCollector) throws IOException
@@ -256,8 +271,8 @@ public class HighLevelEventReader
 				aStream.readLong(),
         		aStream.readShort(),
         		aStream.readLong(),
-                Output.VALUES[aStream.readByte()],
-                readBytes(aStream));
+				aStream.readInt(),
+                Output.VALUES[aStream.readByte()], readBytes(aStream));
 	}
 	
 	public static void readThread(DataInputStream aStream, ILogCollector aCollector) throws IOException

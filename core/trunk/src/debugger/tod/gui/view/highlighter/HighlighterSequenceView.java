@@ -91,7 +91,7 @@ implements IPropertyListener, IListListener
 		IEventBrowser theBackgroundBrowser = getSeed().pBackgroundBrowser.get();
 		if(theBackgroundBrowser != null)
 		{
-			theBrowsers.add (new BrowserData(theBackgroundBrowser, Color.BLACK));
+			theBrowsers.add (new BrowserData(theBackgroundBrowser, Color.GRAY));
 		}
 		
 		for (BrowserData theBrowserData : getSeed().pForegroundBrowsers)

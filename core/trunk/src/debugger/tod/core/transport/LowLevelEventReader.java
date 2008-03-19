@@ -67,6 +67,10 @@ public class LowLevelEventReader
 			readLocalVariableWrite(aStream, aCollector);
 			break;
 			
+		case INSTANCEOF:
+			readInstanceOf(aStream, aCollector);
+			break;
+			
 		case BEFORE_CALL_DRY:
 			readBeforeBehaviorCallDry(aStream, aCollector);
 			break;
@@ -193,6 +197,18 @@ public class LowLevelEventReader
 				readValue(aStream));
 	}
 
+	private static void readInstanceOf(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+	{
+		int theSize = aStream.readInt(); // Packet size
+		aCollector.logInstanceOf(
+				aStream.readInt(),
+				aStream.readLong(),
+				aStream.readInt(),
+				readValue(aStream),
+				aStream.readInt(),
+				aStream.readBoolean());
+	}
+	
 	private static void readNewArray(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
 	{
 		int theSize = aStream.readInt(); // Packet size

@@ -46,11 +46,12 @@ public interface ILogCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp, 
+			int aAdviceCFlow,
 			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehaviorId,
 			int aExecutedBehaviorId,
-			Object aTarget,
+			Object aTarget, 
 			Object[] aArguments);
 	
 	public void instantiation(
@@ -58,6 +59,7 @@ public interface ILogCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp, 
+			int aAdviceCFlow,
 			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehaviorId,
@@ -70,6 +72,7 @@ public interface ILogCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp, 
+			int aAdviceCFlow,
 			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehaviorId,
@@ -82,6 +85,7 @@ public interface ILogCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp, 
+			int aAdviceCFlow,
 			int aProbeId,
 			int aBehaviorId,
 			boolean aHasThrown,
@@ -92,6 +96,7 @@ public interface ILogCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp, 
+			int aAdviceCFlow,
 			int aProbeId,
 			int aFieldId,
 			Object aTarget,
@@ -102,9 +107,10 @@ public interface ILogCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp, 
+			int aAdviceCFlow,
 			int aProbeId,
 			Object aTarget,
-			int aBaseTypeId,
+			int aBaseTypeId, 
 			int aSize);
 	
 	public void arrayWrite(
@@ -112,9 +118,10 @@ public interface ILogCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp, 
+			int aAdviceCFlow,
 			int aProbeId,
 			Object aTarget,
-			int aIndex,
+			int aIndex, 
 			Object aValue);
 	
 	public void localWrite(
@@ -122,16 +129,29 @@ public interface ILogCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
+			int aAdviceCFlow,
 			int aProbeId,
-			int aVariableId,
+			int aVariableId, 
 			Object aValue);
+	
+	public void instanceOf(
+			int aThreadId, 
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp,
+			int aAdviceCFlow,
+			int aProbeId,
+			Object aObject, 
+			int aTypeId,
+			boolean aResult);
 	
 	public void exception(
 			int aThreadId, 
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			String aMethodName, 
+			int aAdviceCFlow, 
+			String aMethodName,
 			String aMethodSignature,
 			String aMethodDeclaringClassSignature,
 			int aOperationBytecodeIndex,
@@ -142,8 +162,8 @@ public interface ILogCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			Output aOutput,
-			byte[] aData);
+			int aAdviceCFlow,
+			Output aOutput, byte[] aData);
 	
 	public void thread(
 			int aThreadId, 

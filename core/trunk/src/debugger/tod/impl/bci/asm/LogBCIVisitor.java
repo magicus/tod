@@ -50,6 +50,8 @@ import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
+import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
 import tod.impl.bci.asm.attributes.AspectInfoAttribute;
 import tod.impl.bci.asm.attributes.SootAttribute;
 import tod.impl.database.structure.standard.TagMap;
@@ -196,15 +198,21 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 				&& (access & ACC_NATIVE) == 0
 				/*&& (access & ACC_ABSTRACT) == 0*/) 
 		{
-			return new InstantiationAnalyserVisitor (
-					new BCIMethodVisitor(mv, theMethodInfo), 
-					theMethodInfo);			
+			BCIMethodVisitor theMethodVisitor = new BCIMethodVisitor(mv, theMethodInfo);
+			
+			InstructionCounterAdapter theCounter = new InstructionCounterAdapter(
+					new InstantiationAnalyserVisitor (theMethodVisitor, theMethodInfo));	
+			
+			theMethodVisitor.setCounter(theCounter);
+			
+			return theCounter;
 		}
 		else return mv;
 	}
 	
 	private class BCIMethodVisitor extends MethodAdapter
 	{
+		private InstructionCounterAdapter itsCounter;
 		private ASMMethodInfo itsMethodInfo;
 		private ASMBehaviorInstrumenter itsInstrumenter;
 		
@@ -235,6 +243,11 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			if (LOG>=2) System.out.println("Processing method "+itsMethodInfo.getName()+itsMethodInfo.getDescriptor());
 		}
 		
+		public void setCounter(InstructionCounterAdapter aCounter)
+		{
+			itsCounter = aCounter;
+		}
+		
 		@Override
 		public void visitAttribute(Attribute aAttr)
 		{
@@ -248,7 +261,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 				super.visitAttribute(aAttr);
 			}
 		}
-
+		
 		@Override
 		public void visitTypeInsn(int aOpcode, String aDesc)
 		{
@@ -256,6 +269,18 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			{
 				ITypeInfo theType = itsDatabase.getNewType('L'+aDesc+';');
 				itsInstrumenter.newArray(ASMBehaviorInstrumenter.createNewArrayClosure(aDesc), theType.getId());
+			}
+			else if (itsTrace && aOpcode == INSTANCEOF)
+			{
+				int theRank = itsCounter.getCount();
+				BytecodeRole theRole = itsMethodInfo.getTag(BytecodeTagType.ROLE, theRank);
+				if (theRole == BytecodeRole.ADVICE_TEST)
+				{
+					// This instanceof is part of a residue evaluation
+					ITypeInfo theType = itsDatabase.getNewType('L'+aDesc+';');
+					itsInstrumenter.instanceOf(aDesc, theType);
+				}
+				else mv.visitTypeInsn(aOpcode, aDesc);
 			}
 			else mv.visitTypeInsn(aOpcode, aDesc);
 		}

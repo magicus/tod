@@ -40,6 +40,7 @@ import org.eclipse.debug.ui.sourcelookup.ISourceLookupResult;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.debug.core.IJavaClassObject;
 import org.eclipse.jdt.debug.core.IJavaClassType;
 import org.eclipse.jdt.debug.core.IJavaFieldVariable;
@@ -54,6 +55,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
@@ -177,36 +179,7 @@ public class SourceRevealerUtils
 		{
 			public void reveal() throws CoreException, BadLocationException
 			{
-				IEditorPart theEditor = null;
-				if (aSourceRange.sourceFile.endsWith(".aj"))
-				{
-					// Hack for aspectj files.
-					for (IJavaProject theJavaProject : aJavaProjects)
-					{
-						IProject theProject = theJavaProject.getProject();
-						IFile[] theFiles = EclipseUtils.findFiles(theProject, aSourceRange.sourceFile);
-						if (theFiles.length > 0)
-						{
-							theEditor = EditorUtility.openInEditor(theFiles[0], false);
-							break;
-						}
-					}
-				}
-				else
-				{
-					IType theType = TODPluginUtils.getType(aJavaProjects, aSourceRange.sourceFile);
-					if (theType == null) {
-						TODUtils.logf(0, "The type %s has not been found in the available sources " +
-								"of the Eclipse workspace.\n Path were " +
-								"to find the sources was: %s", aSourceRange.sourceFile, aJavaProjects);
-						return;
-					}
-					
-					// Eclipse 3.3 only
-					//theEditor = JavaUI.openInEditor(theType, false, false);
-					
-					theEditor = EditorUtility.openInEditor(theType, false);
-				}
+				IEditorPart theEditor = findEditor(aJavaProjects, aSourceRange);
 				
 				if (theEditor instanceof ITextEditor)
 				{
@@ -218,6 +191,51 @@ public class SourceRevealerUtils
 				}
 			}
 		});
+	}
+	
+	public static IFile findFile(List<IJavaProject> aJavaProjects, String aName) 
+	{
+		for (IJavaProject theJavaProject : aJavaProjects)
+		{
+			IProject theProject = theJavaProject.getProject();
+			IFile[] theFiles = EclipseUtils.findFiles(theProject, aName);
+			if (theFiles.length > 0) return theFiles[0];
+		}
+		
+		return null;
+	}
+	
+	public static IEditorPart findEditor(List<IJavaProject> aJavaProjects, SourceRange aSourceRange) throws CoreException
+	{
+		if (aSourceRange.sourceFile.endsWith(".aj"))
+		{
+			// Hack for aspectj files.
+			IFile theFile = findFile(aJavaProjects, aSourceRange.sourceFile);
+			return theFile != null ? EditorUtility.openInEditor(theFile, false) : null;
+		}
+		
+		IType theType = TODPluginUtils.getType(aJavaProjects, aSourceRange.sourceFile);
+		if (theType == null) 
+		{
+			// Another aspectj hack
+			String theName = aSourceRange.sourceFile;
+			int i = theName.lastIndexOf('.');
+			theName = theName.substring(i+1);
+			IFile theFile = findFile(aJavaProjects, theName+".aj");
+			if (theFile != null) return EditorUtility.openInEditor(theFile, false);
+			else
+			{
+				TODUtils.logf(0, "The type %s has not been found in the available sources " +
+						"of the Eclipse workspace.\n Path were " +
+						"to find the sources was: %s", aSourceRange.sourceFile, aJavaProjects);
+				return null;
+			}
+		}
+		
+		// Eclipse 3.3 only
+		//theEditor = JavaUI.openInEditor(theType, false, false);
+		
+		return EditorUtility.openInEditor(theType, false);
 	}
 	
 	private interface Revealer
