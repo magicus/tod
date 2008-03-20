@@ -1,7 +1,7 @@
 /**
  * 
  */
-package imageviewer3;
+package imageviewer2008;
 
 import java.awt.Color;
 import java.awt.Dimension;

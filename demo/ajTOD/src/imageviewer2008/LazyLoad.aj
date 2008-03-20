@@ -1,4 +1,4 @@
-package imageviewer3;
+package imageviewer2008;
 
 import java.awt.image.BufferedImage;
 
