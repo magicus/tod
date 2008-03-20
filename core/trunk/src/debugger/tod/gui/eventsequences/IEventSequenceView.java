@@ -61,6 +61,11 @@ public interface IEventSequenceView
 	public IRWProperty<Long> pEnd ();
 	
 	/**
+	 * Sets the timestamp bounds of this view.  
+	 */
+	public void setLimits(long aFirstTimestamp, long aLastTimestamp);	
+	
+	/**
 	 * Returns the horizontal stripe that displays events.
 	 */
 	public JComponent getEventStripe();

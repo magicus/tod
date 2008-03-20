@@ -85,6 +85,12 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 		return getGUIManager().getSession().getLogBrowser();
 	}
 
+	public void setLimits(long aFirstTimestamp, long aLastTimestamp)
+	{
+		getMural().setLimits(aFirstTimestamp, aLastTimestamp);
+	}
+	
+
 	/**
 	 * Same role as {@link Component#addNotify()}
 	 */
@@ -113,10 +119,9 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 	{
 		itsMural.pEventBrowsers.clear();
 		for(BrowserData theData : getBrowsers()) itsMural.pEventBrowsers.add(theData);			
-		
 	}
-
-	public JComponent getEventStripe()
+	
+	private MyMural getMural()
 	{
 		if (itsMural == null) 
 		{
@@ -139,6 +144,11 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 			update();
 		}
 		return itsMural;
+	}
+
+	public JComponent getEventStripe()
+	{
+		return getMural();
 	}
 	
 	/**
@@ -294,7 +304,7 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 	{
 		private MyMural()
 		{
-			super(AbstractSequenceView.this.getGUIManager(), Orientation.HORIZONTAL);
+			super(AbstractSequenceView.this.getGUIManager(), Orientation.HORIZONTAL, 0, Long.MAX_VALUE);
 		}
 
 //		@Override

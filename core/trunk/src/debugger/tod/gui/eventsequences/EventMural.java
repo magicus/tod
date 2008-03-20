@@ -37,6 +37,7 @@ import java.awt.Event;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
@@ -103,8 +104,22 @@ public class EventMural extends MouseWheelPanel
 	 */
 	private static final int BAR_WIDTH = 3;
 	
+	private static final int CLICK_THRESHOLD = 5*5;
+	
 	private static final ImageUpdater itsUpdater = new ImageUpdater();
 	private final Orientation itsOrientation;
+	
+	/**
+	 * First allowed timestamp
+	 */
+	private long itsFirstTimestamp;
+	
+	/**
+	 * Last allowed timestamp
+	 */
+	private long itsLastTimestamp;
+	
+
 	
 	/**
 	 * The first timestamp of the displayed time range.
@@ -162,6 +177,15 @@ public class EventMural extends MouseWheelPanel
 			repaint();
 		}
 	};
+
+
+	
+	/**
+	 * Set to the latest mouse press position
+	 */
+	private Point itsClickStart;
+	private Point itsZoomDirection;
+	private Timer itsZoomTimer;
 	
 	private final IGUIManager itsGUIManager;
 	
@@ -175,6 +199,12 @@ public class EventMural extends MouseWheelPanel
 	 * from the db.
 	 */
 	private Timer itsTimer;
+	
+	/**
+	 * We keep the last available image so that we can
+	 * repaint while a new image is being calculated
+	 */
+	private BufferedImage itsLastImage;
 
 	/**
 	 * The event whose details are currently displayed
@@ -182,11 +212,18 @@ public class EventMural extends MouseWheelPanel
 	private ILogEvent itsCurrentEvent;
 	private EventDetailsPanel itsCurrentEventPanel;
 	
-	public EventMural(IGUIManager aGUIManager, Orientation aOrientation)
+	public EventMural(
+			IGUIManager aGUIManager, 
+			Orientation aOrientation,
+			long aFirstTimestamp,
+			long aLastTimestamp)
 	{
 		super(new NullLayout());
 		itsGUIManager = aGUIManager;
 		itsOrientation = aOrientation;
+		itsFirstTimestamp = aFirstTimestamp;
+		itsLastTimestamp = aLastTimestamp;
+		
 		setPreferredSize(new Dimension(100, 20));
 		itsTimer = new Timer(100, new ActionListener()
 		{
@@ -196,6 +233,13 @@ public class EventMural extends MouseWheelPanel
 			}
 		});
 		itsTimer.setRepeats(false);
+		
+		itsZoomTimer = new Timer(100, new ActionListener() {
+			public void actionPerformed(ActionEvent aE)
+			{
+				updateZoom();
+			}
+		});
 		
 		addComponentListener(new ComponentAdapter()
 		{
@@ -211,12 +255,23 @@ public class EventMural extends MouseWheelPanel
 		add(itsCurrentEventPanel);
 	}
 
-	public EventMural(IGUIManager aGUIManager, Orientation aOrientation, IEventBrowser aBrowser)
+	public EventMural(
+			IGUIManager aGUIManager, 
+			Orientation aOrientation, 
+			IEventBrowser aBrowser,
+			long aFirstTimestamp,
+			long aLastTimestamp)
 	{
-		this(aGUIManager, aOrientation);
+		this(aGUIManager, aOrientation, aFirstTimestamp, aLastTimestamp);
 		pEventBrowsers.add(new BrowserData(aBrowser));
 	}
 
+	public void setLimits(long aFirstTimestamp, long aLastTimestamp)
+	{
+		itsFirstTimestamp = aFirstTimestamp;
+		itsLastTimestamp = aLastTimestamp;
+	}
+	
 	/**
 	 * Returns true only if all required information is available (bounds, range, etc).
 	 */
@@ -229,7 +284,7 @@ public class EventMural extends MouseWheelPanel
 	protected void markDirty()
 	{
 		itsImageCleaner.markDirty();
-		System.out.println("[EventMural] markDirty");
+		TODUtils.log(2, "[EventMural] markDirty");
 	}
 	
 	/**
@@ -237,9 +292,9 @@ public class EventMural extends MouseWheelPanel
 	 */
 	protected void updateImage()
 	{
-		System.out.println("[EventMural] updateImage()");
+		TODUtils.log(2, "[EventMural] updateImage()");
 		if (! isReady()) return;
-		System.out.println("[EventMural] updateImage - requesting");
+		TODUtils.log(2, "[EventMural] updateImage - requesting");
 		itsUpdater.request(this);
 	}
 	
@@ -256,20 +311,21 @@ public class EventMural extends MouseWheelPanel
 		// Paint mural image
 		ImageData theImageData = itsImage;
 		
-		boolean thePaintImage;
-		if (theImageData == null || ! theImageData.isUpToDate())
+		BufferedImage theImage = null;
+		if (theImageData == null || ! theImageData.isUpToDate()) updateImage();
+		else 
 		{
-			updateImage();
-			thePaintImage = false;
+			theImage = theImageData.getImage();
+			itsLastImage = theImage;
 		}
-		else thePaintImage = true;
+		
+		if (theImage == null && itsImageCleaner.dirtyTime() < 1000) theImage = itsLastImage;
 
 		int w = getWidth();
 		int h = getHeight();
 		
-		if (thePaintImage)
+		if (theImage != null)
 		{
-			BufferedImage theImage = theImageData.getImage();
 			aGraphics.drawImage(theImage, 0, 0, w, h, null);
 			if (theImage.getWidth() != w || theImage.getHeight() != h) markDirty();
 		}
@@ -286,6 +342,16 @@ public class EventMural extends MouseWheelPanel
 			aGraphics.fillRect(theX-theSize/2, theY-theSize/2, theSize, theSize);
 			
 			itsTimer.start();
+		}
+		
+		if (itsZoomDirection != null)
+		{
+			BufferedImage theMarker = Resources.ICON_ZOOMSCROLLMARKER.getImage();
+			aGraphics.drawImage(
+					theMarker, 
+					itsClickStart.x-theMarker.getWidth()/2,
+					itsClickStart.y-theMarker.getHeight()/2,
+					null);
 		}
 	}
 	
@@ -383,23 +449,82 @@ public class EventMural extends MouseWheelPanel
 			updateEventInfo(aE.getX());
 			if (itsCurrentEvent != null) eEventClicked().fire(itsCurrentEvent);
 		}
-		else eClicked().fire(aE);
+		else 
+		{
+			if (aE.getClickCount() == 2) eClicked().fire(aE);
+			itsClickStart = aE.getPoint();
+		}
+	}
+	
+	@Override
+	public void mouseDragged(MouseEvent aE)
+	{
+		if (itsClickStart != null)
+		{
+			if (itsZoomDirection == null)
+			{
+				if (itsClickStart.distanceSq(aE.getX(), aE.getY()) > CLICK_THRESHOLD)
+				{
+					itsZoomTimer.start();
+					itsZoomDirection = new Point();
+				}
+			}
+			
+			if (itsZoomDirection != null)
+			{
+				itsZoomDirection = new Point(aE.getX()-itsClickStart.x, aE.getY()-itsClickStart.y);				
+			}
+		}
+	}
+	
+	private void updateZoom()
+	{
+		int theDistance = (int) Math.sqrt(
+				itsZoomDirection.x*itsZoomDirection.x + itsZoomDirection.y*itsZoomDirection.y);
+		
+		theDistance -= 30;
+		if (theDistance < 0) return;
+		
+		double theAngle = Math.atan2(itsZoomDirection.y, itsZoomDirection.x);
+		
+		if (inAngleRange(theAngle, 0f, Math.PI/8)) scroll(theDistance/100f);
+		else if (inAngleRange(theAngle, -Math.PI/2, Math.PI/8)) zoom(theDistance/100f, itsClickStart.x);
+		else if (inAngleRange(theAngle, Math.PI, Math.PI/8)) scroll(-theDistance/100f);
+		else if (inAngleRange(theAngle, Math.PI/2, Math.PI/8)) zoom(-theDistance/100f, itsClickStart.x);
+	}
+	
+	private boolean inAngleRange(double aAngle, double aRef, double aTolerance)
+	{
+		double theDist = Math.abs(aAngle-aRef);
+		
+		while(theDist > Math.PI*2) theDist -= Math.PI*2;
+		return (theDist < aTolerance) || (Math.PI*2-theDist < aTolerance);
+	}
+	
+	@Override
+	public void mouseReleased(MouseEvent aE)
+	{
+		if (itsClickStart != null)
+		{
+			itsZoomTimer.stop();
+			itsClickStart = null;
+			itsZoomDirection = null;
+			repaint();
+		}
 	}
 	
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent aE)
 	{
-		System.out.println(".mouseWheelMoved: "+aE.getWheelRotation());
 		if (MouseModifiers.getModifiers(aE) == MouseModifiers.CTRL)
 		{
 			zoom(-aE.getWheelRotation(), aE.getX());
 		}
 	}
 
-	protected void zoom(int aAmount, int aX)
+	protected void zoom(float aAmount, int aX)
 	{
 		if (aAmount == 0) return;
-		System.out.println("Amount: "+aAmount);
 		
 		setCurrentEvent(null);
 		
@@ -411,11 +536,29 @@ public class EventMural extends MouseWheelPanel
 		// The timestamp corresponding to the mouse cursor
 		long t = t1+(long)(1f*w*aX/getWidth());
 		
-		float k = (float) Math.pow(2, -0.5*aAmount);
+		float k = (float) Math.pow(2, -0.5f*aAmount);
 		long nw = (long) (k*w);
 			
 		long s = t - ((long) ((t-t1)*k));
 		pEnd.set(s+nw);
+		pStart.set(s);
+	}
+	
+	protected void scroll(float aAmount)
+	{
+		if (aAmount == 0) return;
+
+		setCurrentEvent(null);
+		
+		Long t1 = pStart.get();
+		Long t2 = pEnd.get();
+		
+		long w = t2-t1;
+		long s = t1+(long)(aAmount*w/10f);
+		if (s < itsFirstTimestamp) s = itsFirstTimestamp;
+		if (itsLastTimestamp > 0 && s+w > itsLastTimestamp) s = itsLastTimestamp - w;
+
+		pEnd.set(s+w);
 		pStart.set(s);
 	}
 
@@ -445,7 +588,7 @@ public class EventMural extends MouseWheelPanel
 		for (BrowserData theBrowserData : aBrowserData)
 		{
 			// TODO: check conversion
-			System.out.println("[EventMural] Requesting counts: "+aT1+"-"+aT2);
+			TODUtils.log(2, "[EventMural] Requesting counts: "+aT1+"-"+aT2);
 			theValues[i] = theBrowserData.browser.getEventCounts(aT1, aT2, theSamplesCount, false);
 			theColors[i] = theBrowserData.color;
 			theMarkSizes[i] = theBrowserData.markSize;
@@ -704,7 +847,7 @@ public class EventMural extends MouseWheelPanel
 			{
 				if (! itsCurrentRequests.contains(aMural))
 				{
-					System.out.println("[ImageUpdater] adding request");
+					TODUtils.log(2, "[ImageUpdater] adding request");
 					itsCurrentRequests.add(aMural);
 					itsRequestsQueue.put(aMural);
 				}
@@ -723,7 +866,7 @@ public class EventMural extends MouseWheelPanel
 				{
 					EventMural theRequest = itsRequestsQueue.take();
 					long t0 = System.currentTimeMillis();
-					TODUtils.log(1,"[EventMural.Updater] Processing request: "+theRequest);
+					TODUtils.log(2,"[EventMural.Updater] Processing request: "+theRequest);
 					try
 					{
 						doUpdateImage(theRequest);
@@ -735,7 +878,7 @@ public class EventMural extends MouseWheelPanel
 					}
 					long t1 = System.currentTimeMillis();
 					float t = (t1-t0)/1000f;
-					TODUtils.log(1,"[EventMural.Updater] Finished request in "+t+"s.");
+					TODUtils.log(2,"[EventMural.Updater] Finished request in "+t+"s.");
 					
 					itsCurrentRequests.remove(theRequest);
 				}
@@ -781,7 +924,7 @@ public class EventMural extends MouseWheelPanel
 			Long theStart = aMural.pStart.get();
 			Long theEnd = aMural.pEnd.get();
 			
-			System.out.println("[ImageUpdater] doUpdateImage ["+theStart+"-"+theEnd+"]");
+			TODUtils.log(2, "[ImageUpdater] doUpdateImage ["+theStart+"-"+theEnd+"]");
 			
 			// Paint
 			long[][] theValues = paintMural(

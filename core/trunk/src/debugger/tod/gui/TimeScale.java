@@ -89,7 +89,7 @@ public class TimeScale extends JPanel
 	public TimeScale(IGUIManager aGUIManager)
 	{
 		super (new StackLayout());
-		itsMural = new EventMural(aGUIManager, Orientation.HORIZONTAL);
+		itsMural = new EventMural(aGUIManager, Orientation.HORIZONTAL, 0, Long.MAX_VALUE);
 		
 		setPreferredSize(new Dimension(20, 30));
 		add (itsMural);

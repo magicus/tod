@@ -54,6 +54,8 @@ public class Resources
 	
 	public static final ImageResource ICON_FULL_OBLIVIOUISNESS = loadIcon("fullObliviousness.png");
 	
+	public static final ImageResource ICON_ZOOMSCROLLMARKER = loadIcon("zoomScrollMarker.png");
+	
 	private static ImageResource loadIcon (String aName)
 	{
 		return ResourceUtils.loadImageResource(Resources.class, aName);

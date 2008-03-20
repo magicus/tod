@@ -117,7 +117,7 @@ public class MuralScroller extends JPanel
 	
 	private void createUI()
 	{
-		itsMural = new EventMural(getGUIManager(), Orientation.VERTICAL);
+		itsMural = new EventMural(getGUIManager(), Orientation.VERTICAL, 0, Long.MAX_VALUE);
 		itsMural.setPreferredSize(new Dimension(THICKNESS, 100));
 
 		// Setup slider
@@ -175,6 +175,7 @@ public class MuralScroller extends JPanel
 		// Setup mural
 		if (DebugFlags.COMPUTE_SCROLLER_MURALS)
 		{
+			itsMural.setLimits(aStart, aEnd);
 			itsMural.pStart.set(itsStart);
 			itsMural.pEnd.set(itsEnd);
 			itsMural.pEventBrowsers.clear();

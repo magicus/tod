@@ -149,7 +149,6 @@ public class SequenceViewsDock extends JPanel
 	private final IGUIManager itsGUIManager;
 
 	private long itsFirstTimestamp;
-
 	private long itsLastTimestamp;
 	
 	public SequenceViewsDock(IGUIManager aGUIManager)
@@ -199,6 +198,8 @@ public class SequenceViewsDock extends JPanel
 		itsFirstTimestamp = theBrowser.getFirstTimestamp();
 		itsLastTimestamp = theBrowser.getLastTimestamp();
 		itsTimestampSlider.setLimits(itsFirstTimestamp, itsLastTimestamp);
+		
+		for (IEventSequenceView theView : itsViews) theView.setLimits(itsFirstTimestamp, itsLastTimestamp);
 	}
 	
 	/**
@@ -263,6 +264,7 @@ public class SequenceViewsDock extends JPanel
 			setLayout(new BorderLayout(5, 0));
 			setPreferredSize(new Dimension(10, 80));
 			
+			itsView.setLimits(itsFirstTimestamp, itsLastTimestamp);
 			itsStripe = itsView.getEventStripe();
 			
 			add (itsStripe, BorderLayout.CENTER);
@@ -333,8 +335,8 @@ public class SequenceViewsDock extends JPanel
 		{
 			if (aFirst == itsFirstTimestamp && aLast == itsLastTimestamp) return;
 			
-			TODUtils.logf(0, "[TimestampRangeSlider] setLimits(%d, %d)...", aFirst, aLast);
-			TODUtils.logf(0, "[TimestampRangeSlider] range before[%d, %d]", itsRangeStart, itsRangeEnd);
+			TODUtils.logf(1, "[TimestampRangeSlider] setLimits(%d, %d)...", aFirst, aLast);
+			TODUtils.logf(1, "[TimestampRangeSlider] range before[%d, %d]", itsRangeStart, itsRangeEnd);
 			if (itsRangeEnd == itsLastTimestamp) itsRangeEnd = aLast;
 			
 			itsFirstTimestamp = aFirst;
@@ -343,7 +345,7 @@ public class SequenceViewsDock extends JPanel
 			if (itsRangeStart < itsFirstTimestamp) itsRangeStart = itsFirstTimestamp;
 			if (itsRangeEnd > itsLastTimestamp) itsRangeEnd = itsLastTimestamp;
 
-			TODUtils.logf(0, "[TimestampRangeSlider] range after[%d, %d]", itsRangeStart, itsRangeEnd);
+			TODUtils.logf(1, "[TimestampRangeSlider] range after[%d, %d]", itsRangeStart, itsRangeEnd);
 			
 			long theDelta = itsLastTimestamp-itsFirstTimestamp;
 			
@@ -397,7 +399,7 @@ public class SequenceViewsDock extends JPanel
 			double theHigh = itsSlider.getHighValue()*(itsLastTimestamp-itsFirstTimestamp);
 			itsRangeEnd=(long) (itsFirstTimestamp + theHigh);
 			
-			System.out.println("range: ["+itsRangeStart+"-"+itsRangeEnd+"]");
+			TODUtils.log(2, "range: ["+itsRangeStart+"-"+itsRangeEnd+"]");
 			
 //			itsStartRangeLabel.setText((int)(theLow/1000000)+"ms <");
 //			itsEndRangeLabel.setText("< "+(int)(theHigh/1000000)+"ms");

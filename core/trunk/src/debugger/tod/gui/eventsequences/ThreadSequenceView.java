@@ -65,8 +65,6 @@ public class ThreadSequenceView extends AbstractSingleBrowserSequenceView
 			addBaseAction(new ShowCFlowAction());
 			addBaseAction(new ShowEventsAction());
 		}
-		
-		setMuralCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 	}
 
 	public ILogBrowser getLogBrowser()

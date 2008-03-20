@@ -63,14 +63,23 @@ public class BaloonMural extends EventMural
 		}
 	};
 
-	public BaloonMural(IGUIManager aGUIManager, Orientation aOrientation)
+	public BaloonMural(
+			IGUIManager aGUIManager,
+			Orientation aOrientation,
+			long aFirstTimestamp,
+			long aLastTimestamp)
 	{
-		super(aGUIManager, aOrientation);
+		super(aGUIManager, aOrientation, aFirstTimestamp, aLastTimestamp);
 	}
 
-	public BaloonMural(IGUIManager aGUIManager, Orientation aOrientation, IEventBrowser aBrowser)
+	public BaloonMural(
+			IGUIManager aGUIManager, 
+			Orientation aOrientation,
+			IEventBrowser aBrowser,
+			long aFirstTimestamp,
+			long aLastTimestamp)
 	{
-		super(aGUIManager, aOrientation, aBrowser);
+		super(aGUIManager, aOrientation, aBrowser, aFirstTimestamp, aLastTimestamp);
 	}
 
 	protected void markDirty()

@@ -65,7 +65,8 @@ public abstract class AbstractStackNode extends MousePanel
 	public AbstractStackNode(
 			JobProcessor aJobProcessor,
 			IParentEvent aEvent,
-			boolean aCurrentStackFrame, CallStackPanel aCallStackPanel)
+			boolean aCurrentStackFrame, 
+			CallStackPanel aCallStackPanel)
 	{
 		itsJobProcessor = aJobProcessor;
 		itsEvent = aEvent;
@@ -77,6 +78,12 @@ public abstract class AbstractStackNode extends MousePanel
 	public IParentEvent getEvent()
 	{
 		return itsEvent;
+	}
+	
+	public void setCurrentStackFrame(boolean aCurrentStackFrame)
+	{
+		itsCurrentStackFrame = aCurrentStackFrame;
+		repaint();
 	}
 
 	protected abstract JComponent createHeader();
@@ -136,9 +143,7 @@ public abstract class AbstractStackNode extends MousePanel
 			//removed old behavior
 			//Bus.get(this).postMessage(new EventSelectedMsg(getEvent(), SelectionMethod.SELECT_IN_CALL_STACK));
 			itsCallStackPanel.selectChildOf(itsEvent);
-						
 		}
-		
 		
 		aE.consume();
 	}

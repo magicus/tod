@@ -75,6 +75,8 @@ public class CallStackPanel extends JPanel
 	 * Root of the control flow tree for the current leaf event
 	 */
 	private IParentEvent itsRootEvent;
+	
+	private List<AbstractStackNode> itsStackNodes = new ArrayList<AbstractStackNode>();
 
 	private JScrollPane itsScrollPane;
 
@@ -98,6 +100,8 @@ public class CallStackPanel extends JPanel
 	public void setLeafEvent(ILogEvent aEvent)
 	{
 		itsLeafEvent = aEvent;
+		
+		// Search if parent is already in the call stack
 		itsRootEvent = null;
 		update();
 	}
@@ -174,25 +178,29 @@ public class CallStackPanel extends JPanel
 	 */
 	private JComponent createStack()
 	{
-		List<IParentEvent> theAncestors = new ArrayList<IParentEvent>();
+		List<IParentEvent> theCallStack = new ArrayList<IParentEvent>();
 		IParentEvent theCurrentParent = getLeafEvent().getParent();
 		IParentEvent theLastAdded = null;
 		while (theCurrentParent != null)
 		{
-			theAncestors.add(theCurrentParent);
+			theCallStack.add(theCurrentParent);
 			theLastAdded = theCurrentParent;
 			theCurrentParent = theCurrentParent.getParent();
 		}
 
 		IParentEvent theRootEvent = getRootEvent();
-		if (!theRootEvent.equals(theLastAdded)) theAncestors.add(theRootEvent);
+		if (!theRootEvent.equals(theLastAdded)) theCallStack.add(theRootEvent);
 
+		itsStackNodes.clear();
+		
 		JPanel theContainer = new ScrollablePanel(new GridStackLayout(1, 0, 2, true, false));
 
-		if (theAncestors.size() > 0) for (int i = 0; i < theAncestors.size(); i++)
+		if (theCallStack.size() > 0) for (int i = 0; i < theCallStack.size(); i++)
 		{
-			IParentEvent theAncestor = theAncestors.get(i);
-			theContainer.add(buildStackNode(theAncestor, i == 0));
+			IParentEvent theAncestor = theCallStack.get(i);
+			AbstractStackNode theStackNode = buildStackNode(theAncestor, i == 0);
+			itsStackNodes.add(theStackNode);
+			theContainer.add(theStackNode);
 		}
 
 		return theContainer;
