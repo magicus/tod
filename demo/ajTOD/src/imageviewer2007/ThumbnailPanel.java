@@ -14,7 +14,7 @@ import javax.swing.JPanel;
 class ThumbnailPanel extends JPanel
 {
 	ImageViewer imageViewer;
-	FileData image;
+	ImageData image;
 
 	public ThumbnailPanel(ImageViewer viewer, String file) {
 		this.imageViewer = viewer;
@@ -29,7 +29,7 @@ class ThumbnailPanel extends JPanel
 		});
 	}
 	
-	public FileData getImage() {
+	public ImageData getImage() {
 		return image;
 	}
 	

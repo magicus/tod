@@ -1,18 +1,16 @@
 package imageviewer2007;
 
-import java.awt.Dimension;
 import java.awt.Graphics;
-
 import javax.swing.JPanel;
 
 public class PreviewPanel extends JPanel {
-	private FileData image;
+	private ImageData image;
 
-	public FileData getImage() {
+	public ImageData getImage() {
 		return image;
 	}
 
-	public void setImage(FileData image) {
+	public void setImage(ImageData image) {
 		this.image = image;
 		repaint();
 	}

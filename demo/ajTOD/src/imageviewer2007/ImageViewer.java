@@ -66,7 +66,7 @@ public class ImageViewer extends JPanel
 		}
 
 		JScrollPane theScrollPane = new JScrollPane(thePanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		theScrollPane.setPreferredSize(new Dimension(400, 300));
+		theScrollPane.setPreferredSize(new Dimension(600, 300));
 		
 		previewPanel = new PreviewPanel();
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT); 
@@ -95,7 +95,7 @@ public class ImageViewer extends JPanel
 		grabFocus();
 	}
 	
-	private void findIndex(FileData image) {
+	private void findIndex(ImageData image) {
 		for(int i=0;i<imagePanels.size();i++) {
 			ThumbnailPanel panel = (ThumbnailPanel) imagePanels.get(i);
 			if (panel.getImage() == image) {
@@ -105,13 +105,13 @@ public class ImageViewer extends JPanel
 		}
 	}
 	
-	public void select(FileData image)	{
+	public void select(ImageData image)	{
 		findIndex(image);
 		previewPanel.setImage(image);
 		repaint();
 	}
 
-	public FileData getSelected() {
+	public ImageData getSelected() {
 		return previewPanel.getImage();
 	}
 	

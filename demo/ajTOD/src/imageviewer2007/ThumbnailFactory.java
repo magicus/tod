@@ -11,7 +11,7 @@ public class ThumbnailFactory
 	/**
 	 * Creates a thumbnail of the specified file.
 	 */
-	public static FileData create(String file)
+	public static ImageData create(String file)
 	{
 		file = new File(ImageViewer.root, file).getPath();
 
@@ -19,10 +19,6 @@ public class ThumbnailFactory
 		if (file.endsWith(".jpg") || file.endsWith(".png"))
 		{
 			return new ImageData(file);
-		}
-		else if (file.endsWith(".txt"))
-		{
-			return new TextData(file);
 		}
 		else return null;
 	}

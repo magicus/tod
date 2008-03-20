@@ -12,15 +12,21 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-public class ImageData extends FileData
+public class ImageData 
 {
+	String file;
 	Image image;
 	Image thumbnail;
 
 	public ImageData(String aFile)
 	{
-		super(aFile);
+		file = aFile;
 		image = load();
+	}
+
+	public String getName()
+	{
+		return file;
 	}
 	
 	Image load()
@@ -33,7 +39,7 @@ public class ImageData extends FileData
 			return null;
 		}
 	}
-
+	
 	public Dimension getSize() {
 		int width = image.getWidth(null);
 		int height = image.getHeight(null);
