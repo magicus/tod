@@ -78,16 +78,6 @@ public class ImageViewer extends JPanel
 		splitPane.setRightComponent(previewPanel);
 		
 		splitPane.setDividerLocation(200);
-		
-		addKeyListener(new KeyAdapter()
-		{
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-					ThumbnailPanel panel = (ThumbnailPanel) imagePanels.get(++selectedIndex);
-					select(panel.getImage());
-				}
-			}
-		});
 	}
 	
 	public void addNotify() {

@@ -20,6 +20,6 @@ public class ThumbnailFactory
 		{
 			return new ImageData(file);
 		}
-		else return null;
+		else return new ImageData.UnknownData(file);
 	}
 }

@@ -12,8 +12,8 @@ public aspect LazyLoad {
 		return null;
 	}
 	
-	pointcut paint(ImageData i): execution(* ImageData.paintThumbnail(..))
-		&& this(i);
+	pointcut paint(ImageData i): 
+		execution(* ImageData.paintThumbnail(..)) && this(i);
 	
 	before(ImageData i): paint(i) {
 		if (i.image == null) 

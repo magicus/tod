@@ -79,12 +79,15 @@ public class ImageViewer extends JPanel
 		
 		splitPane.setDividerLocation(200);
 		
+		// support for space-key browsing
 		addKeyListener(new KeyAdapter()
 		{
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-					ThumbnailPanel panel = (ThumbnailPanel) imagePanels.get(++selectedIndex);
-					select(panel.getImage());
+					if(selectedIndex < imagePanels.size() - 1){
+						ThumbnailPanel panel = (ThumbnailPanel) imagePanels.get(++selectedIndex);
+						select(panel.getImage());	
+					}
 				}
 			}
 		});

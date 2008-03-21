@@ -66,7 +66,7 @@ public class ImageViewer extends JPanel
 		}
 
 		JScrollPane theScrollPane = new JScrollPane(thePanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		theScrollPane.setPreferredSize(new Dimension(400, 300));
+		theScrollPane.setPreferredSize(new Dimension(600, 300));
 		
 		previewPanel = new PreviewPanel();
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT); 
@@ -79,12 +79,15 @@ public class ImageViewer extends JPanel
 		
 		splitPane.setDividerLocation(200);
 		
+		// add support for space-key browsing
 		addKeyListener(new KeyAdapter()
 		{
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-					ThumbnailPanel panel = (ThumbnailPanel) imagePanels.get(++selectedIndex);
-					select(panel.getImage());
+					if(selectedIndex < imagePanels.size() - 1){
+						ThumbnailPanel panel = (ThumbnailPanel) imagePanels.get(++selectedIndex);
+						select(panel.getImage());	
+					}
 				}
 			}
 		});

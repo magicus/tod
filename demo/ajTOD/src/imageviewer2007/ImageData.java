@@ -60,4 +60,21 @@ public class ImageData
 	}
 	
 	
+	static class UnknownData extends ImageData {
+		public UnknownData(String file) {
+			super(file);
+		}
+		
+		Image load(){ 
+			return null;
+		} 
+
+		public void paintThumbnail(Graphics g) {
+			g.drawString("unknown!", 10, 10);
+		}
+		public void paint(Graphics g, Dimension dim) {
+			g.drawString("unknown!", 10, 10);
+		}
+	}
+	
 }
