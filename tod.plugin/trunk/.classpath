@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="tod/plugin/fxviews/" kind="src" path="src"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/TOD-dbgrid"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/TOD"/>
 	<classpathentry exported="true" kind="lib" path="lib/asm-all-3.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/log4j.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/TOD"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/zz.utils"/>
 	<classpathentry kind="lib" path="lib/javassist.jar"/>
 	<classpathentry kind="lib" path="lib/pom.jar"/>
 	<classpathentry kind="lib" path="lib/reflex-core.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/TOD-dbgrid"/>
 	<classpathentry kind="lib" path="lib/infovis.jar" sourcepath="/infovis-0.9beta2"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
