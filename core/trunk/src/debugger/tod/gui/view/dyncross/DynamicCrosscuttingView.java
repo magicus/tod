@@ -292,7 +292,7 @@ implements IListListener<Highlight>
 		@Override
 		protected void perThread()
 		{
-			setMuralPainter(new AdviceCFlowMuralPainter(null));
+			setMuralPainter(new AdviceCFlowMuralPainter(itsSeed.pHighlights));
 			super.perThread();
 		}
 	}

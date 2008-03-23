@@ -39,18 +39,20 @@ import java.util.Arrays;
 import java.util.List;
 
 import tod.core.database.browser.IEventBrowser;
+import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
 import tod.gui.BrowserData;
 import tod.gui.eventsequences.mural.AbstractMuralPainter;
 import tod.gui.seed.DynamicCrosscuttingSeed.Highlight;
-import zz.utils.properties.IListProperty;
+import zz.utils.list.IList;
 import zz.utils.ui.UIUtils;
 
 public class AdviceCFlowMuralPainter extends AbstractMuralPainter
 {
-	private IListProperty<Highlight> itsHighlightsProperty;
+	private IList<Highlight> itsHighlightsProperty;
 	
-	public AdviceCFlowMuralPainter(IListProperty<Highlight> aHighlightsProperty)
+	public AdviceCFlowMuralPainter(IList<Highlight> aHighlightsProperty)
 	{
 		itsHighlightsProperty = aHighlightsProperty;
 	}
@@ -133,6 +135,22 @@ public class AdviceCFlowMuralPainter extends AbstractMuralPainter
 					if (theBrowser.hasPrevious())
 					{
 						ILogEvent thePrevious = theBrowser.previous();
+						
+						// Check if the previous event is a return/after event that ends an advice cflow
+						if (thePrevious instanceof IBehaviorExitEvent)
+						{
+							IBehaviorCallEvent theCallEvent = 
+								(IBehaviorCallEvent) theBrowser.getLogBrowser().getEvent(thePrevious.getParentPointer());
+							
+							if (theCallEvent == null) continue;
+							
+							Highlight theHighlight = itsHighlightsProperty.get(k-1);
+							int[] theAdviceSrcIds = theHighlight.getAdviceSourceIds();
+							
+							int theCallAdviceSrcId = theCallEvent.getAdviceSourceId();
+							if (contains(theAdviceSrcIds, theCallAdviceSrcId)) continue;
+						}
+						
 						theBrowser.next();
 						ILogEvent theNext = theBrowser.hasNext() ? theBrowser.next() : null;
 						
@@ -211,4 +229,12 @@ public class AdviceCFlowMuralPainter extends AbstractMuralPainter
 		
 		return theValues;
 	}
+	
+	private static boolean contains(int[] aArray, int aValue)
+	{
+		for(int theValue : aArray) if (theValue == aValue) return true;
+		return false;
+	}
+	
+	
 }

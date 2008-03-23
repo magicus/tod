@@ -161,7 +161,7 @@ public abstract class Event implements ICallerSideEvent
 
 	public ProbeInfo getProbeInfo()
 	{
-		return itsLogBrowser.getStructureDatabase().getProbeInfo(getProbeId());
+		return getProbeId() > 0 ? itsLogBrowser.getStructureDatabase().getProbeInfo(getProbeId()) : null;
 	}
 	
 	public int getProbeId()

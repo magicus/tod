@@ -298,6 +298,7 @@ public final class EventInterpreter implements ILowLevelCollector
 		if (DISABLE_COLLECTOR) return;
 		ThreadData theThread = getThreadData(aThreadId);
 
+		int[] theAdviceCFlow = theThread.getAdviceCFlow(); // Must do that before popping frame
 		FrameInfo theFrame = theThread.popFrame();
 		short theDepth = (short) (theThread.getCurrentDepth()+1);
 		assert theFrame.behavior == aBehaviorId;
@@ -317,14 +318,14 @@ public final class EventInterpreter implements ILowLevelCollector
 				theThread.getId(),
 				theDepth,
 				theFrame,
-				IntArray.toList(theThread.getAdviceCFlow())));
+				IntArray.toList(theAdviceCFlow)));
 		
 		itsCollector.behaviorExit(
 				theThread.getId(),
 				theFrame.parentTimestamp,
 				theDepth,
 				aTimestamp,
-				theThread.getAdviceCFlow(),
+				theAdviceCFlow,
 				aProbeId,
 				aBehaviorId,
 				false, aResult);
@@ -354,6 +355,7 @@ public final class EventInterpreter implements ILowLevelCollector
 
 
 		
+		int[] theAdviceCFlow = theThread.getAdviceCFlow(); // Must do that before popping frame
 		FrameInfo theFrame = theThread.popFrame();
 		assert theFrame.behavior == aBehaviorId;
 		assert theFrame.directParent;
@@ -370,7 +372,7 @@ public final class EventInterpreter implements ILowLevelCollector
 				theFrame.parentTimestamp,
 				(short) (theThread.getCurrentDepth()+1), // The exit event is at the same depths as other children
 				aTimestamp,
-				theThread.getAdviceCFlow(),
+				theAdviceCFlow,
 				-1,
 				aBehaviorId,
 				true, aException);
@@ -391,6 +393,8 @@ public final class EventInterpreter implements ILowLevelCollector
 		FrameInfo theFrame = theThread.currentFrame();
 		short theDepth = theThread.getCurrentDepth();
 
+		int[] theAdviceCFlow = theThread.getAdviceCFlow(); // Must do that before popping frame.
+		
 		if (COLLECTOR_LOG) print(theDepth, String.format(
 				"logExceptionGenerated(%d, %s, %s, %s, %d, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
@@ -402,7 +406,7 @@ public final class EventInterpreter implements ILowLevelCollector
 				theThread.getId(),
 				theDepth,
 				theFrame,
-				IntArray.toList(theThread.getAdviceCFlow())));
+				IntArray.toList(theAdviceCFlow)));
 		
 		// We check if we really entered in the current parent, or
 		// if some exception prevented the call from succeeding.
@@ -417,7 +421,7 @@ public final class EventInterpreter implements ILowLevelCollector
 				theFrame.parentTimestamp,
 				theDepth,
 				aTimestamp,
-				theThread.getAdviceCFlow(),
+				theAdviceCFlow,
 				aMethodName,
 				aMethodSignature,
 				aMethodDeclaringClassSignature,
@@ -757,6 +761,7 @@ public final class EventInterpreter implements ILowLevelCollector
 		if (DISABLE_COLLECTOR) return;
 		ThreadData theThread = getThreadData(aThreadId);
 
+		int[] theAdviceCFlow = theThread.getAdviceCFlow(); // We must get that before popping the frame
 		FrameInfo theFrame = theThread.popFrame();
 		short theDepth = (short) (theThread.getCurrentDepth()+1);
 		assert theFrame.behavior == aBehaviorId;
@@ -771,14 +776,14 @@ public final class EventInterpreter implements ILowLevelCollector
 				theThread.getId(),
 				theDepth,
 				theFrame,
-				IntArray.toList(theThread.getAdviceCFlow())));
+				IntArray.toList(theAdviceCFlow)));
 		
 		itsCollector.behaviorExit(
 				theThread.getId(),
 				theFrame.parentTimestamp,
 				theDepth,
 				aTimestamp,
-				theThread.getAdviceCFlow(),
+				theAdviceCFlow,
 				aProbeId,
 				aBehaviorId,
 				false, aResult);
@@ -795,6 +800,7 @@ public final class EventInterpreter implements ILowLevelCollector
 		if (DISABLE_COLLECTOR) return;
 		ThreadData theThread = getThreadData(aThreadId);
 
+		int[] theAdviceCFlow = theThread.getAdviceCFlow(); //Must do that before popping frame
 		FrameInfo theFrame = theThread.popFrame();
 		short theDepth = (short) (theThread.getCurrentDepth()+1);
 		assert theFrame.behavior == aBehaviorId;
@@ -809,14 +815,14 @@ public final class EventInterpreter implements ILowLevelCollector
 				theThread.getId(),
 				theDepth,
 				theFrame,
-				IntArray.toList(theThread.getAdviceCFlow())));
+				IntArray.toList(theAdviceCFlow)));
 
 		itsCollector.behaviorExit(
 				theThread.getId(),
 				theFrame.parentTimestamp,
 				theDepth,
 				aTimestamp,
-				theThread.getAdviceCFlow(),
+				theAdviceCFlow,
 				aProbeId,
 				aBehaviorId,
 				true, aException);

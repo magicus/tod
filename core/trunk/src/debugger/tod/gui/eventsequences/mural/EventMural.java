@@ -389,8 +389,6 @@ public class EventMural extends MouseWheelPanel
 		long t = t1+(long)(1f*w*aX/getWidth());
 		long d = (long)(5f*w/getWidth());
 		
-		System.out.println("x: "+aX+", t: "+t);
-
 		return getEventAt(t, d);
 	}
 	
@@ -488,19 +486,27 @@ public class EventMural extends MouseWheelPanel
 	}
 	
 	/**
+	 * If the absolute value of value is less that limit, returns 0,
+	 * otherwise returns value +/- limit
+	 */
+	private static int towards0(int aValue, int aLimit) 
+	{
+		if (aValue > aLimit) return aValue-aLimit;
+		else if (aValue < -aLimit) return aValue+aLimit;
+		else return 0;
+	}
+	
+	/**
 	 * Called at a fixed rate while the mouse button is pressed
 	 */
 	private void updateZoom()
 	{
 		if (itsZoomDirection != null)
 		{
-			int theZoomCenter = (int) (itsClickStart.x+Math.pow(itsZoomDirection.x/10f, 3) * 10);
+//			int theZoomCenter = (int) (itsClickStart.x+Math.pow(itsZoomDirection.x/10f, 3) * 10);
 			
-			float theZoomAmount = Math.abs(itsZoomDirection.y) > 10 ?
-					-itsZoomDirection.y/200f
-					: 0f;
-			
-			float theScrollAmount = itsZoomDirection.x/100f;
+			float theZoomAmount = -towards0(itsZoomDirection.y, 10)/200f;
+			float theScrollAmount = towards0(itsZoomDirection.x, 10)/100f;
 			
 			zoomAndScroll(theZoomAmount, itsClickStart.x, theScrollAmount);
 			
