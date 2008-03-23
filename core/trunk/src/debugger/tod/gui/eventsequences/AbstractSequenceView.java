@@ -47,6 +47,7 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
+import tod.gui.eventsequences.mural.EventMural;
 import tod.gui.seed.CFlowSeed;
 import zz.utils.ItemAction;
 import zz.utils.notification.IEvent;
@@ -121,7 +122,7 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 		for(BrowserData theData : getBrowsers()) itsMural.pEventBrowsers.add(theData);			
 	}
 	
-	private MyMural getMural()
+	protected MyMural getMural()
 	{
 		if (itsMural == null) 
 		{
@@ -146,7 +147,7 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 		return itsMural;
 	}
 
-	public JComponent getEventStripe()
+	public EventMural getEventStripe()
 	{
 		return getMural();
 	}

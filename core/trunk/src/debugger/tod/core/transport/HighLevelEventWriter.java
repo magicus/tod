@@ -62,7 +62,7 @@ public class HighLevelEventWriter
 			long aParentTimestamp,
 			int aDepth,
 			long aTimestamp, 
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehavior,
@@ -110,7 +110,7 @@ public class HighLevelEventWriter
 			long aParentTimestamp,
 			int aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehavior,
@@ -138,7 +138,7 @@ public class HighLevelEventWriter
 			long aParentTimestamp,
 			int aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehavior,
@@ -166,7 +166,7 @@ public class HighLevelEventWriter
 			long aParentTimestamp,
 			int aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId,
 			boolean aDirectParent, 
 			int aCalledBehavior,
@@ -194,7 +194,7 @@ public class HighLevelEventWriter
 			long aParentTimestamp, 
 			int aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId,
 			int aBehaviorId, 
 			boolean aHasThrown,
@@ -225,7 +225,7 @@ public class HighLevelEventWriter
 			long aParentTimestamp,
 			int aDepth,
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId,
 			int aFieldLocationId,
 			Object aTarget, 
@@ -249,7 +249,7 @@ public class HighLevelEventWriter
 			long aParentTimestamp,
 			int aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId, 
 			Object aTarget,
 			int aBaseTypeId,
@@ -273,7 +273,7 @@ public class HighLevelEventWriter
 			long aParentTimestamp, 
 			int aDepth,
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId,
 			Object aTarget,
 			int aIndex, 
@@ -297,7 +297,7 @@ public class HighLevelEventWriter
 			long aParentTimestamp,
 			int aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId, 
 			int aVariableId,
 			Object aValue) throws IOException
@@ -319,7 +319,7 @@ public class HighLevelEventWriter
 			long aParentTimestamp, 
 			int aDepth,
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId,
 			Object aObject,
 			int aTypeId,
@@ -343,7 +343,7 @@ public class HighLevelEventWriter
 			long aParentTimestamp,
 			int aDepth,
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			String aMethodName,
 			String aMethodSignature, 
 			String aMethodDeclaringClassSignature, 
@@ -371,7 +371,7 @@ public class HighLevelEventWriter
 			long aParentTimestamp,
 			int aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			Output aOutput,
 			byte[] aData) throws IOException
 	{
@@ -414,13 +414,14 @@ public class HighLevelEventWriter
 			long aParentTimestamp,
 			int aDepth,
 			long aTimestamp,
-			int aAdviceCFlow) throws IOException
+			int[] aAdviceCFlow) throws IOException
 	{
 		aStream.writeInt(aThreadId);
 		aStream.writeLong(aParentTimestamp);
 		aStream.writeShort(aDepth);
 		aStream.writeLong(aTimestamp);
-		aStream.writeInt(aAdviceCFlow);
+		aStream.writeByte(aAdviceCFlow != null ? aAdviceCFlow.length : 0);
+		if (aAdviceCFlow != null) for (int theSrcId : aAdviceCFlow) aStream.writeShort(theSrcId);
 	}
 
 	/**

@@ -454,6 +454,11 @@ public class GroupingEventBrowser<K> implements IEventBrowser
 		{
 			throw new UnsupportedOperationException();
 		}
+
+		public int[] getAdviceCFlow()
+		{
+			throw new UnsupportedOperationException();
+		}
 	}
 
 }

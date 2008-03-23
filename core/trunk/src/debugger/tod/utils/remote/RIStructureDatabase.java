@@ -71,6 +71,7 @@ public interface RIStructureDatabase extends Remote
 	public ITypeInfo getType(String aName, boolean aFailIfAbsent) throws RemoteException;
 	public Stats getStats() throws RemoteException;
 	public ProbeInfo[] getProbeInfos(int aAvailableCount) throws RemoteException;
+	public int getNewExceptionProbeInfo(int aBehaviorId, int aBytecodeIndex) throws RemoteException;
 	public SourceRange getAdviceSource(int aAdviceId) throws RemoteException;
 	public Map<String, AspectInfo> getAspectInfoMap() throws RemoteException;
 	

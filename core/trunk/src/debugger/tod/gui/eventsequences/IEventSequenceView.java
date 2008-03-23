@@ -36,6 +36,8 @@ import java.util.Collection;
 
 import javax.swing.JComponent;
 
+import tod.gui.eventsequences.mural.EventMural;
+
 import zz.utils.ItemAction;
 import zz.utils.properties.IRWProperty;
 
@@ -68,7 +70,7 @@ public interface IEventSequenceView
 	/**
 	 * Returns the horizontal stripe that displays events.
 	 */
-	public JComponent getEventStripe();
+	public EventMural getEventStripe();
 	
 	/**
 	 * Returns a collection of available actions for this sequence view.

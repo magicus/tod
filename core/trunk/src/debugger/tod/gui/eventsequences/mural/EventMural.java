@@ -29,7 +29,7 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.eventsequences;
+package tod.gui.eventsequences.mural;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -53,6 +53,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -99,12 +100,8 @@ import zz.utils.ui.ResourceUtils.ImageResource;
  */
 public class EventMural extends MouseWheelPanel
 {
-	/**
-	 * The width, in pixels, of each drawn bar.
-	 */
-	private static final int BAR_WIDTH = 3;
-	
 	private static final int CLICK_THRESHOLD = 5*5;
+	private static final int ZOOM_MARK_COUNTDOWN = 4;
 	
 	private static final ImageUpdater itsUpdater = new ImageUpdater();
 	private final Orientation itsOrientation;
@@ -178,7 +175,7 @@ public class EventMural extends MouseWheelPanel
 		}
 	};
 
-
+	private AbstractMuralPainter itsMuralPainter = StackMuralPainter.getInstance();
 	
 	/**
 	 * Set to the latest mouse press position
@@ -186,6 +183,7 @@ public class EventMural extends MouseWheelPanel
 	private Point itsClickStart;
 	private Point itsZoomDirection;
 	private Timer itsZoomTimer;
+	private int itsZoomMarkCountdown = ZOOM_MARK_COUNTDOWN;
 	
 	private final IGUIManager itsGUIManager;
 	
@@ -199,6 +197,7 @@ public class EventMural extends MouseWheelPanel
 	 * from the db.
 	 */
 	private Timer itsTimer;
+	
 	
 	/**
 	 * We keep the last available image so that we can
@@ -272,6 +271,17 @@ public class EventMural extends MouseWheelPanel
 		itsLastTimestamp = aLastTimestamp;
 	}
 	
+	public AbstractMuralPainter getMuralPainter()
+	{
+		return itsMuralPainter;
+	}
+
+	public void setMuralPainter(AbstractMuralPainter aMuralPainter)
+	{
+		itsMuralPainter = aMuralPainter;
+		repaint();
+	}
+
 	/**
 	 * Returns true only if all required information is available (bounds, range, etc).
 	 */
@@ -344,7 +354,8 @@ public class EventMural extends MouseWheelPanel
 			itsTimer.start();
 		}
 		
-		if (itsZoomDirection != null)
+		// Draw zoom mark
+		if (itsZoomMarkCountdown == 0)
 		{
 			BufferedImage theMarker = Resources.ICON_ZOOMSCROLLMARKER.getImage();
 			aGraphics.drawImage(
@@ -377,6 +388,8 @@ public class EventMural extends MouseWheelPanel
 		// The timestamp corresponding to the mouse cursor
 		long t = t1+(long)(1f*w*aX/getWidth());
 		long d = (long)(5f*w/getWidth());
+		
+		System.out.println("x: "+aX+", t: "+t);
 
 		return getEventAt(t, d);
 	}
@@ -444,15 +457,23 @@ public class EventMural extends MouseWheelPanel
 	public void mousePressed(MouseEvent aE)
 	{
 		MouseModifiers theModifiers = MouseModifiers.getModifiers(aE);
-		if (theModifiers == MouseModifiers.CTRL)
+		if (aE.getButton() == MouseEvent.BUTTON1)
 		{
-			updateEventInfo(aE.getX());
-			if (itsCurrentEvent != null) eEventClicked().fire(itsCurrentEvent);
-		}
-		else 
-		{
-			if (aE.getClickCount() == 2) eClicked().fire(aE);
-			itsClickStart = aE.getPoint();
+			if (theModifiers == MouseModifiers.CTRL)
+			{
+				updateEventInfo(aE.getX());
+				if (itsCurrentEvent != null) eEventClicked().fire(itsCurrentEvent);
+			}
+			else 
+			{
+				if (aE.getClickCount() == 1) 
+				{
+					itsClickStart = aE.getPoint();
+					itsZoomMarkCountdown = ZOOM_MARK_COUNTDOWN;
+					itsZoomTimer.start();				
+				}
+				else if (aE.getClickCount() == 2) eClicked().fire(aE);
+			}
 		}
 	}
 	
@@ -461,36 +482,33 @@ public class EventMural extends MouseWheelPanel
 	{
 		if (itsClickStart != null)
 		{
-			if (itsZoomDirection == null)
-			{
-				if (itsClickStart.distanceSq(aE.getX(), aE.getY()) > CLICK_THRESHOLD)
-				{
-					itsZoomTimer.start();
-					itsZoomDirection = new Point();
-				}
-			}
-			
-			if (itsZoomDirection != null)
-			{
-				itsZoomDirection = new Point(aE.getX()-itsClickStart.x, aE.getY()-itsClickStart.y);				
-			}
+			itsZoomDirection = new Point(aE.getX()-itsClickStart.x, aE.getY()-itsClickStart.y);			
+			itsZoomMarkCountdown = 0;
 		}
 	}
 	
+	/**
+	 * Called at a fixed rate while the mouse button is pressed
+	 */
 	private void updateZoom()
 	{
-		int theDistance = (int) Math.sqrt(
-				itsZoomDirection.x*itsZoomDirection.x + itsZoomDirection.y*itsZoomDirection.y);
-		
-		theDistance -= 30;
-		if (theDistance < 0) return;
-		
-		double theAngle = Math.atan2(itsZoomDirection.y, itsZoomDirection.x);
-		
-		if (inAngleRange(theAngle, 0f, Math.PI/8)) scroll(theDistance/100f);
-		else if (inAngleRange(theAngle, -Math.PI/2, Math.PI/8)) zoom(theDistance/100f, itsClickStart.x);
-		else if (inAngleRange(theAngle, Math.PI, Math.PI/8)) scroll(-theDistance/100f);
-		else if (inAngleRange(theAngle, Math.PI/2, Math.PI/8)) zoom(-theDistance/100f, itsClickStart.x);
+		if (itsZoomDirection != null)
+		{
+			int theDistance = (int) Math.sqrt(
+					itsZoomDirection.x*itsZoomDirection.x + itsZoomDirection.y*itsZoomDirection.y);
+			
+			double theAngle = Math.atan2(itsZoomDirection.y, itsZoomDirection.x);
+			
+			if (inAngleRange(theAngle, 0f, Math.PI/8)) scroll(theDistance/100f);
+			else if (inAngleRange(theAngle, -Math.PI/2, Math.PI/8)) zoom(theDistance/100f, itsClickStart.x);
+			else if (inAngleRange(theAngle, Math.PI, Math.PI/8)) scroll(-theDistance/100f);
+			else if (inAngleRange(theAngle, Math.PI/2, Math.PI/8)) zoom(-theDistance/100f, itsClickStart.x);
+		}
+		else if (itsZoomMarkCountdown > 0)
+		{
+			itsZoomMarkCountdown--;
+			if (itsZoomMarkCountdown == 0) repaint();
+		}
 	}
 	
 	private boolean inAngleRange(double aAngle, double aRef, double aTolerance)
@@ -509,6 +527,7 @@ public class EventMural extends MouseWheelPanel
 			itsZoomTimer.stop();
 			itsClickStart = null;
 			itsZoomDirection = null;
+			itsZoomMarkCountdown = ZOOM_MARK_COUNTDOWN;
 			repaint();
 		}
 	}
@@ -538,6 +557,8 @@ public class EventMural extends MouseWheelPanel
 		
 		float k = (float) Math.pow(2, -0.5f*aAmount);
 		long nw = (long) (k*w);
+		
+		if (nw < 2) return;
 			
 		long s = t - ((long) ((t-t1)*k));
 		pEnd.set(s+nw);
@@ -563,268 +584,6 @@ public class EventMural extends MouseWheelPanel
 	}
 
 
-
-	/**
-	 * @param aSum If true, values of each series are summed and the resulting
-	 * color is a proportional mix of all colors.
-	 * If false, the series are "stacked" using the painter's algorithm.
-	 */
-	public static long[][] paintMural (
-			Graphics2D aGraphics, 
-			Rectangle aBounds,
-			long aT1,
-			long aT2,
-			Collection<BrowserData> aBrowserData,
-			boolean aSum)
-	{
-		if (aT1 == aT2) return null;
-		long[][] theValues = new long[aBrowserData.size()][];
-		Color[] theColors = new Color[aBrowserData.size()];
-		int[] theMarkSizes = new int[aBrowserData.size()];
-		
-		int theSamplesCount = aBounds.width / BAR_WIDTH;
-		
-		int i = 0;
-		for (BrowserData theBrowserData : aBrowserData)
-		{
-			// TODO: check conversion
-			TODUtils.log(2, "[EventMural] Requesting counts: "+aT1+"-"+aT2);
-			theValues[i] = theBrowserData.browser.getEventCounts(aT1, aT2, theSamplesCount, false);
-			theColors[i] = theBrowserData.color;
-			theMarkSizes[i] = theBrowserData.markSize;
-			i++;
-		}
-		
-		if (aSum) paintMuralAvg(aGraphics, aBounds, theValues, theColors);
-		else paintMuralStack(aGraphics, aBounds, theValues, theColors, theMarkSizes);
-		
-		return theValues;
-	}
-	
-	/**
-	 * Paints the mural, summing the values of all series and averaging the colors
-	 */
-	public static void paintMuralAvg(
-			Graphics2D aGraphics, 
-			Rectangle aBounds, 
-			long[][] aValues, 
-			Color[] aColors)
-	{
-		if (aValues.length == 0) return;
-		
-		int theHeight = aBounds.height;
-		int theY = aBounds.y;
-		int bh = 4; // base height
-
-		long theMaxT = 0;
-		
-		// Determine maximum value
-		for (int i = 0; i < aValues[0].length; i++)
-		{
-			long t = 0; 
-			for (int j = 0; j < aValues.length; j++) t += aValues[j][i];
-			theMaxT = Math.max(theMaxT, t);
-		}
-		
-		for (int i = 0; i < aValues[0].length; i++)
-		{
-			int t = 0; // Total for current column
-			int r = 0;
-			int g = 0;
-			int b = 0;
-			
-			for (int j = 0; j < aValues.length; j++)
-			{
-				long theValue = aValues[j][i];
-				Color theColor = aColors[j];
-				
-				t += theValue;
-				r += theValue * theColor.getRed();
-				g += theValue * theColor.getGreen();
-				b += theValue * theColor.getBlue();
-			}
-			
-			if (t == 0) continue;
-			
-			Color c1 = new Color(r/t, g/t, b/t);
-			Color c2 = UIUtils.getLighterColor(c1);
-
-			// Draw main bar
-			aGraphics.setColor(c1);
-			aGraphics.fillRect(aBounds.x + i, theY+theHeight-bh, 1, bh);
-			
-			// Draw proportional bar
-			int h = (int) ((theHeight-bh) * t / theMaxT);
-			aGraphics.setColor(c2);
-			aGraphics.fillRect(aBounds.x + i, theY+theHeight-bh-h, 1, h);
-		}
-	}
-	
-	/**
-	 * Paints the mural, overlaying all the series.
-	 */
-	public static void paintMuralOverlay (
-			Graphics2D aGraphics, 
-			Rectangle aBounds, 
-			long[][] aValues, 
-			Color[] aColors,
-			int[] aMarkSizes)
-	{
-		int theCount = aValues.length;
-		if (theCount == 0) return;
-		
-		int theTotalMarkSize = 0;
-		for (int theSize : aMarkSizes) theTotalMarkSize += theSize;
-		
-		int theHeight = aBounds.height-theTotalMarkSize;
-		int theY = aBounds.y;
-		
-		long theMaxT = 4; // We want to be able to see when a bar corresponds to only one event.
-		
-		// Determine maximum value
-		for (int i = 0; i < aValues[0].length; i++)
-		{
-			for (int j = 0; j < aValues.length; j++) theMaxT = Math.max(theMaxT, aValues[j][i]);
-		}
-		
-		Object theOriginalAA = aGraphics.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
-		for (int i = 0; i < aValues[0].length; i++)
-		{
-			int theCurrentMarkY = theHeight;
-			for (int j=0;j<theCount;j++)
-			{
-				long t = aValues[j][i];
-				Color c1 = aColors[j];
-				Color c2 = UIUtils.getLighterColor(c1);
-				
-				if (t>0)
-				{
-					// Draw mark
-					aGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-					aGraphics.setColor(c1);
-					aGraphics.fill(makeTriangle(aBounds.x + i, theY+theCurrentMarkY, aMarkSizes[j], 0));
-					
-					// Draw proportional bar
-					aGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-					int h = (int) ((theHeight * t) / theMaxT);
-					aGraphics.setColor(c2);
-					aGraphics.fillRect(aBounds.x + i, theY+theHeight-h, 1, h);
-				}
-
-				theCurrentMarkY += aMarkSizes[j];
-			}
-		}
-		aGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, theOriginalAA);
-	}
-	
-	/**
-	 * Paints the mural, stacking the series one above another.
-	 */
-	public static void paintMuralStack (
-			Graphics2D aGraphics, 
-			Rectangle aBounds, 
-			long[][] aValues, 
-			Color[] aColors,
-			int[] aMarkSizes)
-	{
-		int theCount = aValues.length;
-		if (theCount == 0) return;
-		
-		int theTotalMarkSize = 0;
-		for (int theSize : aMarkSizes) theTotalMarkSize += theSize;
-		
-		int theHeight = aBounds.height-theTotalMarkSize;
-		int theY = aBounds.y;
-		
-		long theMaxT = 4; // We want to be able to see when a bar corresponds to only one event.
-		
-		// Determine maximum value
-		for (int i = 0; i < aValues[0].length; i++)
-		{
-			long theTotal = 0;
-			for (int j = 0; j < aValues.length; j++) theTotal += aValues[j][i]; 
-			theMaxT = Math.max(theMaxT, theTotal);
-		}
-		
-		float theBarWidth = 1f*aBounds.width/aValues[0].length;
-		
-		Object theOriginalAA = aGraphics.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
-		aGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		for (int i = 0; i < aValues[0].length; i++)
-		{
-			float theX = aBounds.x + (i*theBarWidth);
-			
-			int theCurrentMarkY = theHeight;
-			float theCurrentBarHeight = 0;
-			
-			// Draw marks and compute total bar height
-			for (int j=0;j<theCount;j++)
-			{
-				long t = aValues[j][i];
-				
-				if (t>0)
-				{
-					aGraphics.setColor(aColors[j]);
-					
-					aGraphics.fill(makeTrapezoid(
-							theX+(theBarWidth/2), 
-							theY+theCurrentMarkY, 
-							j == 0 ? theBarWidth+4 : aMarkSizes[j], 
-							j== 0 ? theBarWidth : 0,
-							aMarkSizes[j]));
-					
-					float h = (theHeight * t) / theMaxT;
-					theCurrentBarHeight += h;
-				}
-				
-				theCurrentMarkY += aMarkSizes[j];
-			}
-			
-			// Draw proportional bars
-			for (int j=theCount-1;j>=0;j--)
-			{
-				long t = aValues[j][i];
-				
-				if (t>0)
-				{
-					float h = (theHeight * t) / theMaxT;
-					aGraphics.setColor(UIUtils.getLighterColor(aColors[j], 0.7f));
-					
-					aGraphics.fill(makeTriangle(
-							theX+(theBarWidth/2), 
-							theHeight-theCurrentBarHeight, 
-							theBarWidth, 
-							theCurrentBarHeight));
-					
-					theCurrentBarHeight -= h;
-				}
-			}
-		}
-		aGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, theOriginalAA);
-	}
-	
-	private static Shape makeTriangle(float aX, float aY, float aBaseW, float aHeight)
-	{
-		GeneralPath thePath = new GeneralPath();
-		thePath.moveTo(aX, aY);
-		thePath.lineTo(aX+(aBaseW/2), aY+aHeight);
-		thePath.lineTo(aX-(aBaseW/2), aY+aHeight);
-		thePath.closePath();
-		
-		return thePath;
-	}
-	
-	private static Shape makeTrapezoid(float aX, float aY, float aBaseW, float aTopW, float aHeight)
-	{
-		GeneralPath thePath = new GeneralPath();
-		thePath.moveTo(aX-(aTopW/2), aY);
-		thePath.lineTo(aX+(aTopW/2), aY);
-		thePath.lineTo(aX+(aBaseW/2), aY+aHeight);
-		thePath.lineTo(aX-(aBaseW/2), aY+aHeight);
-		thePath.closePath();
-		
-		return thePath;
-	}
 	
 	
 	private static class ImageUpdater extends Thread
@@ -871,7 +630,7 @@ public class EventMural extends MouseWheelPanel
 					{
 						doUpdateImage(theRequest);
 					}
-					catch (Exception e)
+					catch (Throwable e)
 					{
 						System.err.println("Exception in EventMural.Updater:");
 						e.printStackTrace();
@@ -927,13 +686,12 @@ public class EventMural extends MouseWheelPanel
 			TODUtils.log(2, "[ImageUpdater] doUpdateImage ["+theStart+"-"+theEnd+"]");
 			
 			// Paint
-			long[][] theValues = paintMural(
+			long[][] theValues = aMural.itsMuralPainter.paintMural(
 					theGraphics, 
 					new Rectangle(0, 0, u, v), 
-					theStart, 
-					theEnd, 
-					aMural.pEventBrowsers,
-					false);
+					(long) theStart, 
+					(long) theEnd, 
+					aMural.pEventBrowsers);
 
 			theImageData.setUpToDate(true);
 			theImageData.setValues(theValues);

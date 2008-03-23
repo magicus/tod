@@ -376,6 +376,11 @@ public class ABCTags
 		{
 			throw new UnsupportedOperationException();
 		}
+
+		public IEventFilter createAdviceCFlowFilter(int aAdviceSourceId)
+		{
+			throw new UnsupportedOperationException();
+		}
 		
 	}
 }

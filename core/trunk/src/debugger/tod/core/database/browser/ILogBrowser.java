@@ -155,6 +155,14 @@ public interface ILogBrowser
 	public IEventFilter createAdviceSourceIdFilter(int aAdviceSourceId);
 	
 	/**
+	 * Creates a filter that returns all the events that are in the cflow of a particular
+	 * advice.
+	 * Note that this is different from {@link #createAdviceSourceIdFilter(int)}, as the latter
+	 * only returns events that pertain to the join point shadow of a particular advice.
+	 */
+	public IEventFilter createAdviceCFlowFilter(int aAdviceSourceId);
+	
+	/**
 	 * Creates a filter that accepts only behavior call events
 	 * related to a specific behavior.
 	 */

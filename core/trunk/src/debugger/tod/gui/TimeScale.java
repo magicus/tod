@@ -40,7 +40,7 @@ import java.awt.event.MouseWheelListener;
 
 import javax.swing.JPanel;
 
-import tod.gui.eventsequences.EventMural;
+import tod.gui.eventsequences.mural.EventMural;
 import zz.utils.properties.IListProperty;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;

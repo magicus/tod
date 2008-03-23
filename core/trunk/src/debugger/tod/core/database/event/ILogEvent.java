@@ -86,4 +86,10 @@ public interface ILogEvent
 	 */
 	public IBehaviorCallEvent getParent();
 	
+	/**
+	 * Returns the stack of advices this event is in the cflow of.
+	 * @return An array of advice source ids, or null if not in the cflow of any advice.
+	 */
+	public int[] getAdviceCFlow();
+	
 }

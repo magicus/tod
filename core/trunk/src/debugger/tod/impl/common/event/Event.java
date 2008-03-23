@@ -31,12 +31,15 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.common.event;
 
+import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
+
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.ICallerSideEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import zz.utils.Utils;
 
 /**
@@ -50,10 +53,9 @@ public abstract class Event implements ICallerSideEvent
 	private long itsTimestamp;
 	
 	private IThreadInfo itsThread;
-	
-	private IBehaviorInfo itsOperationBehavior; 
-	private int itsOperationBytecodeIndex;
-	private int itsAdviceSourceId;
+
+	private int itsProbeId;
+	private int[] itsAdviceCFlow;
 	
 	private long itsParentTimestamp;
 	private BehaviorCallEvent itsParent;
@@ -135,32 +137,51 @@ public abstract class Event implements ICallerSideEvent
 	
 	public IBehaviorInfo getOperationBehavior()
 	{
-		return itsOperationBehavior;
-	}
-
-	public void setOperationBehavior(IBehaviorInfo aOperationBehavior)
-	{
-		itsOperationBehavior = aOperationBehavior;
+		ProbeInfo theProbeInfo = getProbeInfo();
+		return theProbeInfo != null ? 
+				itsLogBrowser.getStructureDatabase().getBehavior(theProbeInfo.behaviorId, true)
+				: null;
 	}
 
 	public int getOperationBytecodeIndex()
 	{
-		return itsOperationBytecodeIndex;
-	}
-
-	public void setOperationBytecodeIndex(int aOperationBytecodeIndex)
-	{
-		itsOperationBytecodeIndex = aOperationBytecodeIndex;
+		ProbeInfo theProbeInfo = getProbeInfo();
+		return theProbeInfo != null ? 
+				theProbeInfo.bytecodeIndex
+				: -1;
 	}
 
 	public int getAdviceSourceId()
 	{
-		return itsAdviceSourceId;
+		ProbeInfo theProbeInfo = getProbeInfo();
+		return theProbeInfo != null ? 
+				theProbeInfo.adviceSourceId
+				: -1;
 	}
 
-	public void setAdviceSourceId(int aAdviceSourceId)
+	public ProbeInfo getProbeInfo()
 	{
-		itsAdviceSourceId = aAdviceSourceId;
+		return itsLogBrowser.getStructureDatabase().getProbeInfo(getProbeId());
+	}
+	
+	public int getProbeId()
+	{
+		return itsProbeId;
+	}
+
+	public void setProbeId(int aProbeId)
+	{
+		itsProbeId = aProbeId;
+	}
+
+	public int[] getAdviceCFlow()
+	{
+		return itsAdviceCFlow;
+	}
+
+	public void setAdviceCFlow(int[] aAdviceCFlow)
+	{
+		itsAdviceCFlow = aAdviceCFlow;
 	}
 
 	@Override

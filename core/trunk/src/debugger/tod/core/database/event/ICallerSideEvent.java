@@ -32,6 +32,7 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.core.database.event;
 
 import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 
 
 /**
@@ -41,6 +42,11 @@ import tod.core.database.structure.IBehaviorInfo;
  */
 public interface ICallerSideEvent extends ILogEvent
 {
+	/**
+	 * Returns the information about the location of this event.
+	 */
+	public ProbeInfo getProbeInfo();
+	
 	/**
 	 * Bytecode index of the call within the calling behavior.
 	 * <br/>

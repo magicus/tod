@@ -47,10 +47,12 @@ import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableFieldInfo;
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IShareableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.SourceRange;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
 import tod.core.database.structure.IStructureDatabase.AspectInfo;
 import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
@@ -203,7 +205,7 @@ implements RIStructureDatabase
 	/**
 	 * Returns the missing probe infos, given that we already have some of them.
 	 */
-	public ProbeInfo[] getProbeInfos(int aAvailableCount) throws RemoteException
+	public ProbeInfo[] getProbeInfos(int aAvailableCount) 
 	{
 		int theCount = itsSource.getProbeCount();
 		int theMissing = theCount-aAvailableCount;
@@ -213,6 +215,13 @@ implements RIStructureDatabase
 		for (int i=0;i<theMissing;i++) theResult[i] = itsSource.getProbeInfo(i+aAvailableCount);
 		
 		return theResult;
+	}
+	
+	public int getNewExceptionProbeInfo(int aBehaviorId, int aBytecodeIndex)
+	{
+		if (! itsMutable) throw new UnsupportedOperationException("Not mutable");
+		ProbeInfo theProbeInfo = itsSource.getNewExceptionProbe(aBehaviorId, aBytecodeIndex);
+		return theProbeInfo.id;
 	}
 
 	public SourceRange getAdviceSource(int aAdviceId) 
@@ -269,6 +278,22 @@ implements RIStructureDatabase
 	 * Creates a local locations repository that delegates to a remote one.
 	 */
 	public static IStructureDatabase createDatabase(RIStructureDatabase aDatabase)
+	{
+		assert aDatabase != null;
+		try
+		{
+			return new MyDatabase(aDatabase);
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	/**
+	 * Creates a local locations repository that delegates to a remote one.
+	 */
+	public static IMutableStructureDatabase createMutableDatabase(RIStructureDatabase aDatabase)
 	{
 		assert aDatabase != null;
 		try
@@ -616,14 +641,27 @@ implements RIStructureDatabase
 			throw new UnsupportedOperationException();
 		}
 
-		public int addProbe(int aBehaviorId, int aBytecodeIndex, int aAdviceSourceId)
+		public int addProbe(int aBehaviorId, int aBytecodeIndex, BytecodeRole aRole, int aAdviceSourceId)
 		{
 			throw new UnsupportedOperationException();
 		}
 
-		public void setProbe(int aProbeId, int aBehaviorId, int aBytecodeIndex, int aAdviceSourceId)
+		public void setProbe(int aProbeId, int aBehaviorId, int aBytecodeIndex, BytecodeRole aRole, int aAdviceSourceId)
 		{
 			throw new UnsupportedOperationException();
+		}
+
+		public ProbeInfo getNewExceptionProbe(int aBehaviorId, int aBytecodeIndex)
+		{
+			try
+			{
+				int theProbeId = itsDatabase.getNewExceptionProbeInfo(aBehaviorId, aBytecodeIndex);
+				return getProbeInfo(theProbeId);
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
 		}
 
 		public void setAdviceSourceMap(Map<Integer, SourceRange> aMap)

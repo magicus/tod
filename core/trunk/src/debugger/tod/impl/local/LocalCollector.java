@@ -31,6 +31,8 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.local;
 
+import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
+
 import tod.agent.Output;
 import tod.core.DebugFlags;
 import tod.core.database.structure.IArrayTypeInfo;
@@ -113,8 +115,8 @@ public class LocalCollector extends EventCollector
 			long aParentTimestamp, 
 			short aDepth,
 			long aTimestamp, 
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex)
+			int[] aAdviceCFlow,
+			int aProbeId)
 	{
 		BehaviorCallEvent theParentEvent = aThread.peekParent();
 //		assert theParentEvent == null || theParentEvent.getTimestamp() == aParentTimestamp;
@@ -127,12 +129,8 @@ public class LocalCollector extends EventCollector
 				: 0);
 		
 		aEvent.setTimestamp(aTimestamp);
-		
-		aEvent.setOperationBehavior(aOperationBehaviorId != -1 ? 
-				getBehavior(aOperationBehaviorId) 
-				: null);
-		
-		aEvent.setOperationBytecodeIndex(aOperationBytecodeIndex);
+		aEvent.setAdviceCFlow(aAdviceCFlow);
+		aEvent.setProbeId(aProbeId);
 		
 		if (DebugFlags.LOCAL_COLLECTOR_STORE && theParentEvent != null) 
 		{
@@ -140,40 +138,21 @@ public class LocalCollector extends EventCollector
 		}
 	}
 
-	private void initEvent(
-			Event aEvent, 
-			LocalThreadInfo aThread, 
-			long aParentTimestamp, 
-			short aDepth,
-			long aTimestamp, 
-			int aProbeId)
-	{
-		ProbeInfo theProbeInfo = null;
-		
-		int theBehaviorId = -1;
-		int theBytecodeIndex = -1;
-		if (theProbeInfo != null)
-		{
-			theBehaviorId = theProbeInfo.behaviorId;
-			theBytecodeIndex = theProbeInfo.bytecodeIndex;
-		}
-		
-		initEvent(aEvent, aThread, aParentTimestamp, aDepth, aTimestamp, theBehaviorId, theBytecodeIndex);
-	}
-	
 	@Override
 	protected void exception(
 			int aThreadId, 
 			long aParentTimestamp, 
 			short aDepth,
 			long aTimestamp, 
+			int[] aAdviceCFlow, 
 			int aBehaviorId,
 			int aOperationBytecodeIndex, 
 			Object aException)
 	{
 		ExceptionGeneratedEvent theEvent = new ExceptionGeneratedEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
-		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aBehaviorId, aOperationBytecodeIndex);
+		ProbeInfo theProbeInfo = itsBrowser.getStructureDatabase().getNewExceptionProbe(aBehaviorId, aOperationBytecodeIndex);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, theProbeInfo.id);
 		
 		theEvent.setException(aException);
 		
@@ -185,14 +164,14 @@ public class LocalCollector extends EventCollector
 			long aParentTimestamp, 
 			short aDepth,
 			long aTimestamp,
-			int aAdviceCFlow, 
+			int[] aAdviceCFlow, 
 			int aProbeId,
 			int aBehaviorId, 
 			boolean aHasThrown, Object aResult)
 	{
 		BehaviorExitEvent theEvent = new BehaviorExitEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
-		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aProbeId);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId);
 		
 		theEvent.setHasThrown(aHasThrown);
 		theEvent.setResult(aResult);
@@ -207,14 +186,14 @@ public class LocalCollector extends EventCollector
 			long aParentTimestamp, 
 			short aDepth,
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId,
 			int aFieldId, 
 			Object aTarget, Object aValue)
 	{
 		FieldWriteEvent theEvent = new FieldWriteEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
-		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aProbeId);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId);
 
 		theEvent.setField(getField(aFieldId));
 		theEvent.setTarget(aTarget);
@@ -228,14 +207,14 @@ public class LocalCollector extends EventCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp, 
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId, 
 			Object aTarget,
 			int aBaseTypeId, int aSize)
 	{
 		InstantiationEvent theEvent = new InstantiationEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
-		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aProbeId);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId);
 
 		theEvent.setTarget(aTarget);
 		ITypeInfo theBaseType = getType(aBaseTypeId);
@@ -252,14 +231,14 @@ public class LocalCollector extends EventCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId, 
 			Object aTarget, 
 			int aIndex, Object aValue)
 	{
 		ArrayWriteEvent theEvent = new ArrayWriteEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
-		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aProbeId);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId);
 
 		theEvent.setTarget(aTarget);
 		theEvent.setIndex(aIndex);
@@ -273,7 +252,7 @@ public class LocalCollector extends EventCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow, 
+			int[] aAdviceCFlow, 
 			int aProbeId, 
 			boolean aDirectParent, 
 			int aCalledBehaviorId,
@@ -282,7 +261,7 @@ public class LocalCollector extends EventCollector
 	{
 		InstantiationEvent theEvent = new InstantiationEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
-		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aProbeId);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId);
 
 		theEvent.setDirectParent(aDirectParent);
 		theEvent.setCalledBehavior(getBehavior(aCalledBehaviorId));
@@ -300,13 +279,13 @@ public class LocalCollector extends EventCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId, 
 			int aVariableId, Object aValue)
 	{
 		LocalVariableWriteEvent theEvent = new LocalVariableWriteEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
-		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aProbeId);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId);
 
 		IBehaviorInfo theBehavior = theThread.peekParent().getExecutedBehavior();
 		LocalVariableInfo theInfo = theBehavior.getLocalVariableInfo(theEvent.getOperationBytecodeIndex(), aVariableId); 
@@ -326,7 +305,7 @@ public class LocalCollector extends EventCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId,
 			Object aObject,
 			int aTypeId,
@@ -334,7 +313,7 @@ public class LocalCollector extends EventCollector
 	{
 		InstanceOfEvent theEvent = new InstanceOfEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
-		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aProbeId);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId);
 
 		theEvent.setObject(aObject);
 		theEvent.setTestedType(getType(aTypeId));
@@ -347,7 +326,7 @@ public class LocalCollector extends EventCollector
 			long aParentTimestamp,
 			short aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow, 
+			int[] aAdviceCFlow, 
 			int aProbeId, 
 			boolean aDirectParent,
 			int aCalledBehaviorId,
@@ -356,7 +335,7 @@ public class LocalCollector extends EventCollector
 	{
 		MethodCallEvent theEvent = new MethodCallEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
-		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aProbeId);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId);
 
 		theEvent.setDirectParent(aDirectParent);
 		theEvent.setCalledBehavior(getBehavior(aCalledBehaviorId));
@@ -373,12 +352,13 @@ public class LocalCollector extends EventCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow,
-			Output aOutput, byte[] aData)
+			int[] aAdviceCFlow,
+			Output aOutput, 
+			byte[] aData)
 	{
 		OutputEvent theEvent = new OutputEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
-		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, -1, -1);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, -1);
 		
 		theEvent.setOutput(aOutput);
 		theEvent.setData(null); //TODO: fix
@@ -391,7 +371,7 @@ public class LocalCollector extends EventCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId, 
 			boolean aDirectParent,
 			int aCalledBehaviorId,
@@ -400,7 +380,7 @@ public class LocalCollector extends EventCollector
 	{
 		ConstructorChainingEvent theEvent = new ConstructorChainingEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
-		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aProbeId);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId);
 
 		theEvent.setDirectParent(aDirectParent);
 		theEvent.setCalledBehavior(getBehavior(aCalledBehaviorId));

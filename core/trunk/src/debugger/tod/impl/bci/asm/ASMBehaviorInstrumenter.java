@@ -40,7 +40,6 @@ import tod.Util;
 import tod.agent.AgentConfig;
 import tod.agent.AgentReady;
 import tod.agent.BehaviorCallType;
-import tod.agent.BehaviorKind;
 import tod.agent.EventCollector;
 import tod.agent.ExceptionGeneratedReceiver;
 import tod.agent.TracedMethods;
@@ -53,12 +52,10 @@ import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
 import tod.core.database.structure.IBehaviorInfo.HasTrace;
-import tod.core.transport.EventInterpreter;
 import tod.impl.bci.asm.ASMInstrumenter.CodeRange;
 import tod.impl.bci.asm.ASMInstrumenter.RangeManager;
 import tod.impl.bci.asm.ProbesManager.TmpProbeInfo;
 import tod.impl.database.structure.standard.TagMap;
-import tod.utils.TODUtils;
 
 /**
  * Provides all the methods that perform the insertion
@@ -153,14 +150,19 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		{
 			int theBytecodeIndex = theProbe.label.getOffset();
 			
-			Integer theAdviceSourceId = aTagMap != null ? aTagMap.getTag(
-					BytecodeTagType.ADVICE_SOURCE_ID, 
-					theBytecodeIndex) : null;
+			Integer theAdviceSourceId = aTagMap != null ? 
+					aTagMap.getTag(BytecodeTagType.ADVICE_SOURCE_ID, theBytecodeIndex) 
+					: null;
+					
+			BytecodeRole theRole = aTagMap != null ? 
+					aTagMap.getTag(BytecodeTagType.ROLE, theBytecodeIndex)
+					: null;
 			
 			itsStructureDatabase.setProbe(
 					theProbe.id, 
 					theBehaviorId, 
 					theBytecodeIndex, 
+					theRole,
 					theAdviceSourceId != null ? theAdviceSourceId : -1);
 		}
 	}

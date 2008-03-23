@@ -194,9 +194,7 @@ public class EventGenerator
 		theEvent.setThread(genThread());
 		theEvent.setDepth(genDepth());
 		theEvent.setTimestamp(itsTimestampGenerator.next());
-		theEvent.setOperationBehavior(genBehavior());
-		theEvent.setOperationBytecodeIndex(genBytecodeIndex());
-		theEvent.setAdviceSourceId(genAdviceSourceId());
+		theEvent.setProbeId(genProbeId());
 		theEvent.setParentTimestamp(genParentTimestamp());
 		
 		return theEvent;
@@ -220,6 +218,11 @@ public class EventGenerator
 	public int genDepth()
 	{
 		return itsRandom.nextInt(itsDepthRange);
+	}
+	
+	public int genProbeId()
+	{
+		return itsRandom.nextInt(itsBehaviorRange); //TODO: fix if necessary
 	}
 	
 	public IBehaviorInfo genBehavior()

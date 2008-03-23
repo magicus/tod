@@ -97,7 +97,7 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp, 
-			int aAdviceCFlow, 
+			int[] aAdviceCFlow, 
 			String aMethodName, 
 			String aMethodSignature, 
 			String aMethodDeclaringClassSignature, 
@@ -120,7 +120,7 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp, 
 			short aDepth,
 			long aTimestamp,
-			int aAdviceCFlow, 
+			int[] aAdviceCFlow, 
 			int aProbeId,
 			int aBehaviorId, 
 			boolean aHasThrown, Object aResult)
@@ -143,7 +143,7 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp, 
 			short aDepth,
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId,
 			int aFieldId, 
 			Object aTarget, Object aValue)
@@ -166,7 +166,7 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId, 
 			Object aTarget, 
 			int aBaseTypeId, int aSize)
@@ -189,7 +189,7 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId, 
 			Object aTarget, 
 			int aIndex, Object aValue)
@@ -212,7 +212,7 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId, 
 			Object aObject, 
 			int aTypeId,
@@ -237,7 +237,7 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow, 
+			int[] aAdviceCFlow, 
 			int aProbeId, 
 			boolean aDirectParent, 
 			int aCalledBehaviorId,
@@ -264,7 +264,7 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId, 
 			int aVariableId, Object aValue)
 	{
@@ -285,7 +285,7 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp,
 			short aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow, 
+			int[] aAdviceCFlow, 
 			int aProbeId, 
 			boolean aDirectParent,
 			int aCalledBehaviorId,
@@ -312,7 +312,7 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			Output aOutput, byte[] aData)
 	{
 		print(aDepth, String.format(
@@ -332,7 +332,7 @@ public class PrintThroughCollector implements ILogCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId, 
 			boolean aDirectParent,
 			int aCalledBehaviorId,

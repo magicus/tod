@@ -50,6 +50,7 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
@@ -62,6 +63,7 @@ import tod.impl.common.VariablesInspector;
 import tod.impl.common.event.Event;
 import tod.impl.database.IBidiIterator;
 import tod.impl.local.filter.AbstractFilter;
+import tod.impl.local.filter.AdviceCFlowFilter;
 import tod.impl.local.filter.AdviceSourceIdFilter;
 import tod.impl.local.filter.BehaviorCallFilter;
 import tod.impl.local.filter.DepthFilter;
@@ -84,14 +86,14 @@ public class LocalBrowser implements ILogBrowser
 	private final List<IHostInfo> itsHosts = new ArrayList<IHostInfo>();
 	private final Map<String, IHostInfo> itsHostsMap = new HashMap<String, IHostInfo>();
 	private final List<IThreadInfo> itsThreads = new ArrayList<IThreadInfo>();
-	private final IStructureDatabase itsStructureDatabase;
+	private final IMutableStructureDatabase itsStructureDatabase;
 	
 	/**
 	 * Temporary. Holds registered objects.
 	 */
 	private Map<Long, Object> itsRegisteredObjects = new HashMap<Long, Object>();
 	
-	public LocalBrowser(ISession aSession, IStructureDatabase aStructureDatabase)
+	public LocalBrowser(ISession aSession, IMutableStructureDatabase aStructureDatabase)
 	{
 		itsSession = aSession;
 		itsStructureDatabase = aStructureDatabase;
@@ -102,7 +104,7 @@ public class LocalBrowser implements ILogBrowser
 		return itsSession;
 	}
 	
-	public IStructureDatabase getStructureDatabase()
+	public IMutableStructureDatabase getStructureDatabase()
 	{
 		return itsStructureDatabase;
 	}
@@ -197,6 +199,11 @@ public class LocalBrowser implements ILogBrowser
 	public IEventFilter createAdviceSourceIdFilter(int aAdviceSourceId)
 	{
 		return new AdviceSourceIdFilter(this, aAdviceSourceId);
+	}
+
+	public IEventFilter createAdviceCFlowFilter(int aAdviceSourceId)
+	{
+		return new AdviceCFlowFilter(this, aAdviceSourceId);
 	}
 
 	public IEventFilter createBehaviorCallFilter()

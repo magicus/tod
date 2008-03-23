@@ -42,6 +42,7 @@ import tod.gui.view.LogView;
 import tod.gui.view.dyncross.DynamicCrosscuttingView;
 import zz.utils.list.IList;
 import zz.utils.list.ZArrayList;
+import zz.utils.primitive.IntArray;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
 
@@ -71,6 +72,7 @@ public class DynamicCrosscuttingSeed extends LogViewSeed
 	 */
 	public static abstract class Highlight
 	{
+		public abstract int[] getAdviceSourceIds();
 		public abstract IEventBrowser createBrowser(ILogBrowser aLogBrowser);
 		public abstract void gotoSource(IGUIManager aGUIManager);
 	}
@@ -90,12 +92,18 @@ public class DynamicCrosscuttingSeed extends LogViewSeed
 		}
 		
 		@Override
+		public int[] getAdviceSourceIds()
+		{
+			return IntArray.toIntArray(itsAspectInfo.getAdviceIds());
+		}
+		
+		@Override
 		public IEventBrowser createBrowser(ILogBrowser aLogBrowser)
 		{
 			ICompoundFilter theUnionFilter = aLogBrowser.createUnionFilter();
 			for (int theSourceId : itsAspectInfo.getAdviceIds())
 			{
-				theUnionFilter.add(aLogBrowser.createAdviceSourceIdFilter(theSourceId));
+				theUnionFilter.add(aLogBrowser.createAdviceCFlowFilter(theSourceId));
 			}
 			return aLogBrowser.createBrowser(theUnionFilter);
 		}
@@ -131,9 +139,17 @@ public class DynamicCrosscuttingSeed extends LogViewSeed
 		}
 		
 		@Override
+		public int[] getAdviceSourceIds()
+		{
+			int[] theResult = new int[1];
+			theResult[0] = itsAdviceSourceId;
+			return theResult;
+		}
+
+		@Override
 		public IEventBrowser createBrowser(ILogBrowser aLogBrowser)
 		{
-			IEventFilter theFilter = aLogBrowser.createAdviceSourceIdFilter(itsAdviceSourceId);
+			IEventFilter theFilter = aLogBrowser.createAdviceCFlowFilter(itsAdviceSourceId);
 			return aLogBrowser.createBrowser(theFilter);
 		}
 

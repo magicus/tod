@@ -114,6 +114,14 @@ public class HighLevelEventReader
 		return HighLevelEventType.VALUES[theByte];
 	}
 	
+	private static int[] readAdviceCFlow(DataInputStream aStream) throws IOException
+	{
+		int theSize = aStream.readByte();
+		if (theSize == 0) return null;
+		int[] theCFlow = new int[theSize];
+		for(int i=0;i<theSize;i++) theCFlow[i] = aStream.readShort();
+		return theCFlow;
+	}
 	
 	public static void readMethodCall(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
@@ -123,7 +131,7 @@ public class HighLevelEventReader
 				aStream.readLong(),
 				aStream.readShort(),
 				aStream.readLong(),
-				aStream.readInt(),
+				readAdviceCFlow(aStream),
 				aStream.readInt(),
 				aStream.readBoolean(),
 				aStream.readInt(),
@@ -139,7 +147,7 @@ public class HighLevelEventReader
 				aStream.readLong(),
 				aStream.readShort(),
 				aStream.readLong(),
-				aStream.readInt(),
+				readAdviceCFlow(aStream),
 				aStream.readInt(),
 				aStream.readBoolean(),
 				aStream.readInt(),
@@ -155,7 +163,7 @@ public class HighLevelEventReader
 				aStream.readLong(),
 				aStream.readShort(),
 				aStream.readLong(),
-				aStream.readInt(),
+				readAdviceCFlow(aStream),
 				aStream.readInt(),
 				aStream.readBoolean(),
 				aStream.readInt(),
@@ -172,7 +180,7 @@ public class HighLevelEventReader
 				aStream.readLong(),
 				aStream.readShort(),
 				aStream.readLong(),
-				aStream.readInt(),
+				readAdviceCFlow(aStream),
 				aStream.readInt(),
 				aStream.readInt(),
 				aStream.readBoolean(), readValue(aStream));
@@ -186,7 +194,7 @@ public class HighLevelEventReader
 				aStream.readLong(),
 				aStream.readShort(),
 				aStream.readLong(),
-				aStream.readInt(),
+				readAdviceCFlow(aStream),
 				aStream.readInt(),
 				aStream.readInt(),
 				readValue(aStream), readValue(aStream));
@@ -200,7 +208,7 @@ public class HighLevelEventReader
 				aStream.readLong(),
 				aStream.readShort(),
 				aStream.readLong(),
-				aStream.readInt(),
+				readAdviceCFlow(aStream),
 				aStream.readInt(),
 				readValue(aStream),
 				aStream.readInt(), aStream.readInt());
@@ -214,7 +222,7 @@ public class HighLevelEventReader
 				aStream.readLong(),
 				aStream.readShort(),
 				aStream.readLong(),
-				aStream.readInt(),
+				readAdviceCFlow(aStream),
 				aStream.readInt(),
 				readValue(aStream),
 				aStream.readInt(), readValue(aStream));
@@ -228,7 +236,7 @@ public class HighLevelEventReader
 				aStream.readLong(),
 				aStream.readShort(),
 				aStream.readLong(),
-				aStream.readInt(),
+				readAdviceCFlow(aStream),
 				aStream.readInt(),
 				readValue(aStream),
 				aStream.readInt(),
@@ -243,7 +251,7 @@ public class HighLevelEventReader
 				aStream.readLong(),
 				aStream.readShort(),
 				aStream.readLong(),
-				aStream.readInt(),
+				readAdviceCFlow(aStream),
 				aStream.readInt(),
 				aStream.readInt(), readValue(aStream));
 	}
@@ -256,7 +264,7 @@ public class HighLevelEventReader
 				aStream.readLong(),
 				aStream.readShort(),
 				aStream.readLong(),
-				aStream.readInt(),
+				readAdviceCFlow(aStream),
 				aStream.readUTF(),
 				aStream.readUTF(),
 				aStream.readUTF(),
@@ -271,7 +279,7 @@ public class HighLevelEventReader
 				aStream.readLong(),
         		aStream.readShort(),
         		aStream.readLong(),
-				aStream.readInt(),
+				readAdviceCFlow(aStream),
                 Output.VALUES[aStream.readByte()], readBytes(aStream));
 	}
 	

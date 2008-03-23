@@ -56,8 +56,10 @@ import tod.core.database.structure.IShareableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.SourceRange;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.AspectInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.utils.TODUtils;
 import tod.utils.remote.RemoteStructureDatabase;
 import zz.utils.Utils;
@@ -100,6 +102,8 @@ public class StructureDatabase implements IShareableStructureDatabase
 	private final List<ClassInfo> itsClasses = new ArrayList<ClassInfo>(1000);
 	
 	private final List<ProbeInfo> itsProbes;
+	
+	private final Map<Long, ProbeInfo> itsExceptionProbesMap = new HashMap<Long, ProbeInfo>();
 	
 	/**
 	 * Maps advice source ids (see {@link IBehaviorInfo.BytecodeTagType#ADVICE_SOURCE_ID})
@@ -424,15 +428,29 @@ public class StructureDatabase implements IShareableStructureDatabase
 		return itsProbes.get(aProbeId);
 	}
 
-	public int addProbe(int aBehaviorId, int aBytecodeIndex, int aAdviceSourceId)
+	public int addProbe(int aBehaviorId, int aBytecodeIndex, BytecodeRole aRole, int aAdviceSourceId)
 	{
-		itsProbes.add(new ProbeInfo(aBehaviorId, aBytecodeIndex, aAdviceSourceId));
-		return itsProbes.size()-1;
+		int theId = itsProbes.size(); // we add a null element in the constructor, so first id is 1
+		itsProbes.add(new ProbeInfo(theId, aBehaviorId, aBytecodeIndex, aRole, aAdviceSourceId));
+		return theId;
 	}
 	
-	public void setProbe(int aProbeId, int aBehaviorId, int aBytecodeIndex, int aAdviceSourceId)
+	public void setProbe(int aProbeId, int aBehaviorId, int aBytecodeIndex, BytecodeRole aRole, int aAdviceSourceId)
 	{
-		itsProbes.set(aProbeId, new ProbeInfo(aBehaviorId, aBytecodeIndex, aAdviceSourceId));
+		itsProbes.set(aProbeId, new ProbeInfo(aProbeId, aBehaviorId, aBytecodeIndex, aRole, aAdviceSourceId));
+	}
+
+	public ProbeInfo getNewExceptionProbe(int aBehaviorId, int aBytecodeIndex)
+	{
+		long theKey = (((long) aBehaviorId) << 32) | aBytecodeIndex;
+		ProbeInfo theProbe = itsExceptionProbesMap.get(theKey);
+		if (theProbe == null)
+		{
+			int theId = addProbe(aBehaviorId, aBytecodeIndex, null, -1);
+			theProbe = itsProbes.get(theId);
+			itsExceptionProbesMap.put(theKey, theProbe);
+		}
+		return theProbe;
 	}
 
 	public int getProbeCount()

@@ -35,6 +35,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -60,6 +61,7 @@ import tod.gui.kit.messages.EventSelectedMsg;
 import tod.gui.kit.messages.EventActivatedMsg.ActivationMethod;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import zz.utils.Utils;
+import zz.utils.primitive.IntArray;
 import zz.utils.ui.ResourceUtils.ImageResource;
 
 /**
@@ -174,6 +176,9 @@ public abstract class AbstractSimpleEventNode extends AbstractEventNode
 		
 		getListPanel().pSelectedEvent().set(getEvent());
 		ILogEvent theEvent = getEvent();
+		
+		System.out.println("cflow: "+IntArray.toList(theEvent.getAdviceCFlow()));
+		
 		Bus.get(this).postMessage(new EventSelectedMsg(theEvent, SelectionMethod.SELECT_IN_LIST));
 		aEvent.consume();			
 		

@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 import tod.core.config.TODConfig;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 
 /**
  * The structure database contains static information about the
@@ -390,8 +391,10 @@ public interface IStructureDatabase
 	{
 		private static final long serialVersionUID = -2555314414321419466L;
 		
-		public static final ProbeInfo NULL = new ProbeInfo(-1, -1, -1);
+		public static final ProbeInfo NULL = new ProbeInfo(-1, -1, -1, null, -1);
 
+		public final int id;
+		
 		/**
 		 * Id of the behavior that contains the probe.
 		 */
@@ -402,6 +405,8 @@ public interface IStructureDatabase
 		 */
 		public final int bytecodeIndex;
 		
+		public final BytecodeRole role;
+		
 		/**
 		 * Id of the advice that caused the generation of the code in which
 		 * lies the probe.
@@ -409,10 +414,12 @@ public interface IStructureDatabase
 		 */
 		public final int adviceSourceId;
 
-		public ProbeInfo(int aBehaviorId, int aBytecodeIndex, int aAdviceSourceId)
+		public ProbeInfo(int aId, int aBehaviorId, int aBytecodeIndex, BytecodeRole aRole, int aAdviceSourceId)
 		{
+			id = aId;
 			adviceSourceId = aAdviceSourceId;
 			behaviorId = aBehaviorId;
+			role = aRole;
 			bytecodeIndex = aBytecodeIndex;
 		}
 

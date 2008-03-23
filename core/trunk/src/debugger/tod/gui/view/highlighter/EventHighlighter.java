@@ -48,6 +48,7 @@ import tod.gui.IGUIManager;
 import tod.gui.MinerUI;
 import tod.gui.eventsequences.IEventSequenceSeed;
 import tod.gui.eventsequences.SequenceViewsDock;
+import tod.gui.eventsequences.mural.AbstractMuralPainter;
 import zz.utils.list.IList;
 import zz.utils.list.IListListener;
 import zz.utils.list.ZArrayList;
@@ -190,6 +191,11 @@ implements ActionListener
 		setupBrowsers();
 	}
 	
+	public void setMuralPainter(AbstractMuralPainter aMuralPainter)
+	{
+		itsDock.setMuralPainter(aMuralPainter);
+	}
+	
 	public void actionPerformed(ActionEvent aE)
 	{
 		Object theSource = aE.getSource();
@@ -211,53 +217,67 @@ implements ActionListener
 		else throw new RuntimeException("Not handled: "+theSource);
 	}
 	
+	protected IEventSequenceSeed createGlobalSeed()
+	{
+		return new HighlighterSequenceSeed("Global", getLogBrowser().createBrowser(), null);
+	}
+	
 	/**
 	 * Sets the global aggregation mode.
 	 */
-	private void global()
+	protected void global()
 	{
 		itsDock.pSeeds().clear();
-		itsDock.pSeeds().add(new HighlighterSequenceSeed(
-				"Global",
-				getLogBrowser().createBrowser(),
-				null));
+		itsDock.pSeeds().add(createGlobalSeed());
 
 		setupBrowsers();
 	}
 	
+	protected IEventSequenceSeed createHostSeed(IHostInfo aHost)
+	{
+		IEventFilter theFilter = getLogBrowser().createHostFilter(aHost);
+		return new HighlighterSequenceSeed(
+				aHost.getName(),
+				getLogBrowser().createBrowser(theFilter),
+				null);				
+		
+	}
+	
+	
 	/**
 	 * Sets the per host aggregation mode.
 	 */
-	private void perHost()
+	protected void perHost()
 	{
 		itsDock.pSeeds().clear();
 		
 		for(IHostInfo theHost : getLogBrowser().getHosts())
 		{
-			IEventFilter theFilter = getLogBrowser().createHostFilter(theHost);
-			itsDock.pSeeds().add(new HighlighterSequenceSeed(
-					theHost.getName(),
-					getLogBrowser().createBrowser(theFilter),
-					null));				
+			itsDock.pSeeds().add(createHostSeed(theHost));				
 		}
 		
 		setupBrowsers();
 	}
 	
+	protected IEventSequenceSeed createThreadSeed(IThreadInfo aThread)
+	{ 
+		IEventFilter theFilter = getLogBrowser().createThreadFilter(aThread);
+		return new HighlighterSequenceSeed(
+				"["+aThread.getHost().getName()+"] \""+aThread.getName() + "\"",
+				getLogBrowser().createBrowser(theFilter),
+				null);				
+	}
+	
 	/**
 	 * Sets the per thread aggregation mode.
 	 */
-	private void perThread()
+	protected void perThread()
 	{
 		itsDock.pSeeds().clear();
 		
 		for(IThreadInfo theThread : getLogBrowser().getThreads())
 		{
-			IEventFilter theFilter = getLogBrowser().createThreadFilter(theThread);
-			itsDock.pSeeds().add(new HighlighterSequenceSeed(
-					"["+theThread.getHost().getName()+"] \""+theThread.getName() + "\"",
-					getLogBrowser().createBrowser(theFilter),
-					null));				
+			itsDock.pSeeds().add(createThreadSeed(theThread));				
 		}
 		
 		setupBrowsers();

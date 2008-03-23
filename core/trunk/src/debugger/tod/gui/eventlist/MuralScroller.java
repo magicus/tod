@@ -48,7 +48,7 @@ import tod.core.DebugFlags;
 import tod.core.database.browser.IEventBrowser;
 import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
-import tod.gui.eventsequences.EventMural;
+import tod.gui.eventsequences.mural.EventMural;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.SimpleEvent;
 import zz.utils.properties.IRWProperty;

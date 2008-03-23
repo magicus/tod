@@ -34,9 +34,15 @@ import tod.agent.AgentUtils;
 import tod.agent.BehaviorCallType;
 import tod.agent.Output;
 import tod.core.ILogCollector;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import zz.utils.Utils;
+import zz.utils.primitive.IntArray;
+import zz.utils.primitive.IntStack;
 
 
 /**
@@ -78,13 +84,28 @@ public final class EventInterpreter implements ILowLevelCollector
 		return ""+aObject;
 	}
 
+	private IBehaviorInfo getBehavior(int aId)
+	{
+		return itsStructureDatabase.getBehavior(aId, true);
+	}
+	
+	private IFieldInfo getField(int aId)
+	{
+		return itsStructureDatabase.getField(aId, true);
+	}
+	
+	private ITypeInfo getType(int aId)
+	{
+		return itsStructureDatabase.getType(aId, true);
+	}
+	
 	private void call(
 			BehaviorCallType aCallType,
 			int aThreadId, 
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehaviorId,
@@ -160,15 +181,16 @@ public final class EventInterpreter implements ILowLevelCollector
 			short theDepth = (short) (theThread.getCurrentDepth()-1);
 			
 			if (COLLECTOR_LOG) print(theDepth, String.format(
-					"logBehaviorEnter(%d, %d, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s",
+					"logBehaviorEnter(%d, %s, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 					aTimestamp,
-					aBehaviorId,
+					getBehavior(aBehaviorId),
 					aCallType,
 					getObjectId(aObject),
 					Arrays.asList(aArguments),
 					theThread.getId(),
 					theDepth,
-					theFrame));
+					theFrame,
+					IntArray.toList(theThread.getAdviceCFlow())));
 
 
 			// Partial update of frame info. We must do it here to indicate
@@ -183,7 +205,7 @@ public final class EventInterpreter implements ILowLevelCollector
 					theFrame.parentTimestamp,
 					theDepth,
 					aTimestamp,
-					theFrame.adviceCFlow,
+					theThread.getAdviceCFlow(),
 					theFrame.probeId,
 					true,
 					theFrame.behavior,
@@ -216,15 +238,16 @@ public final class EventInterpreter implements ILowLevelCollector
 			short theDepth = (short) theThread.getCurrentDepth();
 			
 			if (COLLECTOR_LOG) print(theDepth, String.format(
-					"logBehaviorEnter(%d, %d, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s",
+					"logBehaviorEnter(%d, %s, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 					aTimestamp,
-					aBehaviorId,
+					getBehavior(aBehaviorId),
 					aCallType,
 					getObjectId(aObject),
 					aArguments,
 					theThread.getId(),
 					theDepth,
-					theFrame));
+					theFrame,
+					IntArray.toList(theThread.getAdviceCFlow())));
 			
 			
 			call(
@@ -233,7 +256,7 @@ public final class EventInterpreter implements ILowLevelCollector
 					theFrame.parentTimestamp,
 					theDepth,
 					aTimestamp,
-					theFrame.adviceCFlow,
+					theThread.getAdviceCFlow(),
 					theProbeId,
 					true,
 					0,
@@ -241,7 +264,7 @@ public final class EventInterpreter implements ILowLevelCollector
 					aObject,
 					aArguments);
 			
-			theThread.pushFrame(false, aBehaviorId, true, aTimestamp, null, theFrame.adviceCFlow, -1);
+			theThread.pushFrame(false, aBehaviorId, true, aTimestamp, null, -1);
 		}
 	}
 
@@ -286,21 +309,22 @@ public final class EventInterpreter implements ILowLevelCollector
 		}
 		
 		if (COLLECTOR_LOG) print(theDepth, String.format(
-				"logBehaviorExit(%d, %d, %d, %s)\n thread: %d, depth: %d\n frame: %s",
+				"logBehaviorExit(%d, %d, %s, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
 				aProbeId,
-				aBehaviorId,
+				getBehavior(aBehaviorId),
 				getObjectId(aResult),
 				theThread.getId(),
 				theDepth,
-				theFrame));
+				theFrame,
+				IntArray.toList(theThread.getAdviceCFlow())));
 		
 		itsCollector.behaviorExit(
 				theThread.getId(),
 				theFrame.parentTimestamp,
 				theDepth,
 				aTimestamp,
-				theFrame.adviceCFlow,
+				theThread.getAdviceCFlow(),
 				aProbeId,
 				aBehaviorId,
 				false, aResult);
@@ -346,7 +370,7 @@ public final class EventInterpreter implements ILowLevelCollector
 				theFrame.parentTimestamp,
 				(short) (theThread.getCurrentDepth()+1), // The exit event is at the same depths as other children
 				aTimestamp,
-				theFrame.adviceCFlow,
+				theThread.getAdviceCFlow(),
 				-1,
 				aBehaviorId,
 				true, aException);
@@ -368,7 +392,7 @@ public final class EventInterpreter implements ILowLevelCollector
 		short theDepth = theThread.getCurrentDepth();
 
 		if (COLLECTOR_LOG) print(theDepth, String.format(
-				"logExceptionGenerated(%d, %s, %s, %s, %d, %s)\n thread: %d, depth: %d\n frame: %s",
+				"logExceptionGenerated(%d, %s, %s, %s, %d, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
 				aMethodName,
 				aMethodSignature,
@@ -377,7 +401,8 @@ public final class EventInterpreter implements ILowLevelCollector
 				aException,
 				theThread.getId(),
 				theDepth,
-				theFrame));
+				theFrame,
+				IntArray.toList(theThread.getAdviceCFlow())));
 		
 		// We check if we really entered in the current parent, or
 		// if some exception prevented the call from succeeding.
@@ -392,7 +417,7 @@ public final class EventInterpreter implements ILowLevelCollector
 				theFrame.parentTimestamp,
 				theDepth,
 				aTimestamp,
-				theFrame.adviceCFlow,
+				theThread.getAdviceCFlow(),
 				aMethodName,
 				aMethodSignature,
 				aMethodDeclaringClassSignature,
@@ -414,22 +439,23 @@ public final class EventInterpreter implements ILowLevelCollector
 		short theDepth = theThread.getCurrentDepth();
 		
 		if (COLLECTOR_LOG) print(theDepth, String.format(
-				"logFieldWrite(%d, %d, %d, %s, %s)\n thread: %d, depth: %d\n frame: %s",
+				"logFieldWrite(%d, %d, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
 				aProbeId,
-				aFieldId,
+				getField(aFieldId),
 				getObjectId(aTarget),
 				getObjectId(aValue),
 				theThread.getId(),
 				theDepth,
-				theFrame));
+				theFrame,
+				IntArray.toList(theThread.getAdviceCFlow())));
 
 		itsCollector.fieldWrite(
 				theThread.getId(),
 				theFrame.parentTimestamp,
 				theDepth,
 				aTimestamp,
-				theFrame.adviceCFlow,
+				theThread.getAdviceCFlow(),
 				aProbeId,
 				aFieldId,
 				aTarget, aValue);
@@ -450,7 +476,7 @@ public final class EventInterpreter implements ILowLevelCollector
 		
 		short theDepth = theThread.getCurrentDepth();
 		if (COLLECTOR_LOG) print(theDepth, String.format(
-				"logNewArray(%d, %d, %s, %d, %d)\n thread: %d, depth: %d\n frame: %s",
+				"logNewArray(%d, %d, %s, %d, %d)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
 				aProbeId,
 				getObjectId(aTarget),
@@ -458,14 +484,15 @@ public final class EventInterpreter implements ILowLevelCollector
 				aSize,
 				theThread.getId(),
 				theDepth,
-				theFrame));
+				theFrame,
+				IntArray.toList(theThread.getAdviceCFlow())));
 		
 		itsCollector.newArray(
 				theThread.getId(),
 				theFrame.parentTimestamp,
 				theDepth,
 				aTimestamp,
-				theFrame.adviceCFlow,
+				theThread.getAdviceCFlow(),
 				aProbeId,
 				aTarget,
 				aBaseTypeId, aSize);
@@ -487,7 +514,7 @@ public final class EventInterpreter implements ILowLevelCollector
 		
 		short theDepth = theThread.getCurrentDepth();
 		if (COLLECTOR_LOG) print(theDepth, String.format(
-				"logArrayWrite(%d, %d, %s, %d, %s)\n thread: %d, depth: %d\n frame: %s",
+				"logArrayWrite(%d, %d, %s, %d, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
 				aProbeId,
 				getObjectId(aTarget),
@@ -495,14 +522,15 @@ public final class EventInterpreter implements ILowLevelCollector
 				getObjectId(aValue),
 				theThread.getId(),
 				theDepth,
-				theFrame));
+				theFrame,
+				IntArray.toList(theThread.getAdviceCFlow())));
 		
 		itsCollector.arrayWrite(
 				theThread.getId(),
 				theFrame.parentTimestamp,
 				theDepth,
 				aTimestamp,
-				theFrame.adviceCFlow,
+				theThread.getAdviceCFlow(),
 				aProbeId,
 				aTarget,
 				aIndex, aValue);
@@ -522,21 +550,22 @@ public final class EventInterpreter implements ILowLevelCollector
 		short theDepth = theThread.getCurrentDepth();
 		
 		if (COLLECTOR_LOG) print(theDepth, String.format(
-				"logLocalVariableWrite(%d, %d, %d, %s)\n thread: %d, depth: %d\n frame: %s",
+				"logLocalVariableWrite(%d, %d, %d, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
 				aProbeId,
 				aVariableId,
 				getObjectId(aValue),
 				theThread.getId(),
 				theDepth,
-				theFrame));
+				theFrame,
+				IntArray.toList(theThread.getAdviceCFlow())));
 		
 		itsCollector.localWrite(
 				theThread.getId(),
 				theFrame.parentTimestamp,
 				theDepth,
 				aTimestamp,
-				theFrame.adviceCFlow,
+				theThread.getAdviceCFlow(),
 				aProbeId,
 				aVariableId, aValue);
 	}
@@ -556,21 +585,22 @@ public final class EventInterpreter implements ILowLevelCollector
 		
 		short theDepth = theThread.getCurrentDepth();
 		if (COLLECTOR_LOG) print(theDepth, String.format(
-				"logInstanceOf(%d, %d, %s, %d)\n thread: %d, depth: %d\n frame: %s",
+				"logInstanceOf(%d, %d, %s, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
 				aProbeId,
 				getObjectId(aObject),
-				aTypeId,
+				getType(aTypeId),
 				theThread.getId(),
 				theDepth,
-				theFrame));
+				theFrame,
+				IntArray.toList(theThread.getAdviceCFlow())));
 		
 		itsCollector.instanceOf(
 				theThread.getId(),
 				theFrame.parentTimestamp,
 				theDepth,
 				aTimestamp,
-				theFrame.adviceCFlow,
+				theThread.getAdviceCFlow(),
 				aProbeId,
 				aObject,
 				aTypeId,
@@ -600,28 +630,24 @@ public final class EventInterpreter implements ILowLevelCollector
 		{
 			short theDepth = theThread.getCurrentDepth();
 			print(theDepth, String.format(
-					"logBeforeBehaviorCallDry(%d, %d, %s)\n thread: %d, depth: %d\n frame: %s",
+					"logBeforeBehaviorCallDry(%d, %s, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 					aProbeId,
-					aBehaviorId,
+					getBehavior(aBehaviorId),
 					aCallType,
 					theThread.getId(),
 					theDepth,
-					theFrame));
+					theFrame,
+					IntArray.toList(theThread.getAdviceCFlow())));
 		}
+
+		theFrame = theThread.pushFrame(true, aBehaviorId, true, theFrame.parentTimestamp, aCallType, aProbeId);
 		
 		ProbeInfo theProbeInfo = itsStructureDatabase.getProbeInfo(aProbeId);
-		int theAdviceCFlow = theProbeInfo.adviceSourceId > 0 ? 
-				theProbeInfo.adviceSourceId
-				: theFrame.adviceCFlow;
-
-		theThread.pushFrame(
-				true,
-				aBehaviorId, 
-				true, 
-				theFrame.parentTimestamp, 
-				aCallType, 
-				theAdviceCFlow,
-				aProbeId);
+		if (theProbeInfo.adviceSourceId > 0 && theProbeInfo.role == BytecodeRole.ADVICE_EXECUTE) 
+		{
+			theThread.getAdviceCFlowStack().push(theProbeInfo.adviceSourceId);
+			theFrame.popAdvice = theProbeInfo.adviceSourceId;
+		}
 	}
 	
 	public void logBeforeBehaviorCall(
@@ -640,16 +666,17 @@ public final class EventInterpreter implements ILowLevelCollector
 		short theDepth = theThread.getCurrentDepth();
 		
 		if (COLLECTOR_LOG) print(theDepth, String.format(
-				"logBeforeBehaviorCall(%d, %d, %d, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s",
+				"logBeforeBehaviorCall(%d, %d, %s, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
 				aProbeId,
-				aBehaviorId,
+				getBehavior(aBehaviorId),
 				aCallType,
 				getObjectId(aTarget),
 				Arrays.asList(aArguments),
 				theThread.getId(),
 				theDepth,
-				theFrame));
+				theFrame,
+				IntArray.toList(theThread.getAdviceCFlow())));
 		
 		call(
 				aCallType,
@@ -657,20 +684,22 @@ public final class EventInterpreter implements ILowLevelCollector
 				theFrame.parentTimestamp,
 				theDepth,
 				aTimestamp,
-				theFrame.adviceCFlow,
+				theThread.getAdviceCFlow(),
 				aProbeId,
 				false,
 				aBehaviorId,
 				0,
 				aTarget,
 				aArguments);
-		
+				
+		theFrame = theThread.pushFrame(false, aBehaviorId, false, aTimestamp, null, -1);
+
 		ProbeInfo theProbeInfo = itsStructureDatabase.getProbeInfo(aProbeId);
-		int theAdviceCFlow = theProbeInfo.adviceSourceId > 0 ? 
-				theProbeInfo.adviceSourceId
-				: theFrame.adviceCFlow;
-		
-		theThread.pushFrame(false, aBehaviorId, false, aTimestamp, null, theAdviceCFlow, -1);
+		if (theProbeInfo.adviceSourceId > 0 && theProbeInfo.role == BytecodeRole.ADVICE_EXECUTE) 
+		{
+			theThread.getAdviceCFlowStack().push(theProbeInfo.adviceSourceId);
+			theFrame.popAdvice = theProbeInfo.adviceSourceId;
+		}
 	}
 
 	/**
@@ -689,17 +718,18 @@ public final class EventInterpreter implements ILowLevelCollector
 		if (COLLECTOR_LOG)
 		{
 			print(theDepth, String.format(
-					"logAfterBehaviorCallDry()\n thread: %d, depth: %d\n frame: %s",
+					"logAfterBehaviorCallDry()\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 					theThread.getId(),
 					theDepth,
-					theFrame));
+					theFrame,
+					IntArray.toList(theThread.getAdviceCFlow())));
 		}
 		
 		if (theFrame.entering)
 		{
 			String theMessage = String.format(
-					"[EventInterpreter] Unexpected dry after (check trace scope) - bid: %d, thread: %d, p.ts: %d, ts: %d",
-					theFrame.behavior,
+					"[EventInterpreter] Unexpected dry after (check trace scope) - bid: %s, thread: %d, p.ts: %d, ts: %d",
+					getBehavior(theFrame.behavior),
 					theThread.getId(),
 					theFrame.parentTimestamp,
 					aTimestamp);
@@ -732,22 +762,23 @@ public final class EventInterpreter implements ILowLevelCollector
 		assert theFrame.behavior == aBehaviorId;
 		
 		if (COLLECTOR_LOG) print(theDepth, String.format(
-				"logAfterBehaviorCall(%d, %d, %d, %s, %s)\n thread: %d, depth: %d\n frame: %s",
+				"logAfterBehaviorCall(%d, %d, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
 				aProbeId,
-				aBehaviorId,
+				getBehavior(aBehaviorId),
 				getObjectId(aTarget),
 				getObjectId(aResult),
 				theThread.getId(),
 				theDepth,
-				theFrame));
+				theFrame,
+				IntArray.toList(theThread.getAdviceCFlow())));
 		
 		itsCollector.behaviorExit(
 				theThread.getId(),
 				theFrame.parentTimestamp,
 				theDepth,
 				aTimestamp,
-				theFrame.adviceCFlow,
+				theThread.getAdviceCFlow(),
 				aProbeId,
 				aBehaviorId,
 				false, aResult);
@@ -769,22 +800,23 @@ public final class EventInterpreter implements ILowLevelCollector
 		assert theFrame.behavior == aBehaviorId;
 		
 		if (COLLECTOR_LOG) print(theDepth, String.format(
-				"logAfterBehaviorCallWithException(%d, %d, %d, %s, %s)\n thread: %d, depth: %d\n frame: %s",
+				"logAfterBehaviorCallWithException(%d, %d, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
 				aProbeId,
-				aBehaviorId,
+				getBehavior(aBehaviorId),
 				getObjectId(aTarget),
 				aException,
 				theThread.getId(),
 				theDepth,
-				theFrame));
+				theFrame,
+				IntArray.toList(theThread.getAdviceCFlow())));
 
 		itsCollector.behaviorExit(
 				theThread.getId(),
 				theFrame.parentTimestamp,
 				theDepth,
 				aTimestamp,
-				theFrame.adviceCFlow,
+				theThread.getAdviceCFlow(),
 				aProbeId,
 				aBehaviorId,
 				true, aException);
@@ -803,20 +835,21 @@ public final class EventInterpreter implements ILowLevelCollector
 		short theDepth = theThread.getCurrentDepth();
 		
 		if (COLLECTOR_LOG) print(theDepth, String.format(
-				"logOutput(%d, %s, %s)\n thread: %d, depth: %d\n frame: %s",
+				"logOutput(%d, %s, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
 				aOutput,
 				aData,
 				theThread.getId(),
 				theDepth,
-				theFrame));
+				theFrame,
+				IntArray.toList(theThread.getAdviceCFlow())));
 
 		itsCollector.output(
 				theThread.getId(),
 				theFrame.parentTimestamp,
 				theDepth,
 				aTimestamp,
-				theFrame.adviceCFlow,
+				theThread.getAdviceCFlow(),
 				aOutput, aData);
 	}
 
@@ -834,6 +867,11 @@ public final class EventInterpreter implements ILowLevelCollector
 		private FrameInfo[] itsFreeFrames = new FrameInfo[10000];
 		private int itsFreeFramesSize;
 		
+		/**
+		 * The stack of advices the thread is in the cflow of. 
+		 */
+		private IntStack itsAdviceCFlow = new IntStack();
+		
 		private long itsLastTimestamp = 0;
 		
 		/**
@@ -846,7 +884,7 @@ public final class EventInterpreter implements ILowLevelCollector
 		public ThreadData(int aId)
 		{
 			itsId = aId;
-			pushFrame(false, 0, false, 0, null, -1, -1);
+			pushFrame(false, 0, false, 0, null, -1);
 		}
 		
 		public int getId()
@@ -869,7 +907,6 @@ public final class EventInterpreter implements ILowLevelCollector
 				boolean aDirectParent,
 				long aParentTimestamp,
 				BehaviorCallType aCallType,
-				int aAdviceCFlow,
 				int aProbeId)
 		{
 //			assert aCallType != null;
@@ -879,8 +916,8 @@ public final class EventInterpreter implements ILowLevelCollector
 			theFrame.directParent = aDirectParent;
 			theFrame.parentTimestamp = aParentTimestamp;
 			theFrame.callType = aCallType;
-			theFrame.adviceCFlow = aAdviceCFlow;
 			theFrame.probeId = aProbeId;
+			theFrame.popAdvice = -1;
 			
 			itsStack[itsStackSize++] = theFrame;
 //			if (itsStackSize % 10 == 0) System.out.println(itsStackSize);
@@ -893,6 +930,11 @@ public final class EventInterpreter implements ILowLevelCollector
 			FrameInfo theFrame = itsStack[--itsStackSize];
 			itsFreeFrames[itsFreeFramesSize++] = theFrame;
 
+			if (theFrame.popAdvice >= 0)
+			{
+				int thePopped = itsAdviceCFlow.pop();
+				assert thePopped == theFrame.popAdvice;
+			}
 			return theFrame;
 		}
 		
@@ -920,7 +962,15 @@ public final class EventInterpreter implements ILowLevelCollector
 			itsDepthAdjust--;
 		}
 		
+		public IntStack getAdviceCFlowStack()
+		{
+			return itsAdviceCFlow;
+		}
 		
+		public int[] getAdviceCFlow()
+		{
+			return itsAdviceCFlow.isEmpty() ? null : itsAdviceCFlow.toArray();
+		}
 	}
 
 	private static class FrameInfo
@@ -959,9 +1009,10 @@ public final class EventInterpreter implements ILowLevelCollector
 		public int probeId;
 		
 		/**
-		 * If != 0, the source id of the advice of which we are in the cflow. 
+		 * If >=0, when this frame is popped the advice cflow stack should be also popped,
+		 * (and the popped value should be the same as this field).
 		 */
-		public int adviceCFlow;
+		public int popAdvice;
 		
 		@Override
 		public String toString()

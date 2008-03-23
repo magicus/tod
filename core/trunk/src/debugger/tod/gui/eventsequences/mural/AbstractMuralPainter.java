@@ -29,62 +29,73 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.bci.asm;
+package tod.gui.eventsequences.mural;
 
-import java.util.ArrayList;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.geom.GeneralPath;
 import java.util.List;
 
-import org.objectweb.asm.Label;
+import tod.gui.BrowserData;
+import tod.utils.TODUtils;
 
-import tod.core.database.structure.IMutableStructureDatabase;
-
-/**
- * Manages the probes that are created during the 
- * instrumentation of a behavior.
- * The temporary probes created by this manager have a {@link Label}
- * instead of a concrete bytecode index so that the calculation
- * of the concrete bytecode index can be done after the instrumentation is
- * finished. 
- * @author gpothier
- */
-public class ProbesManager
+public abstract class AbstractMuralPainter
 {
-	private final IMutableStructureDatabase itsStructureDatabase;
-	private List<TmpProbeInfo> itsProbes = new ArrayList<TmpProbeInfo>();
-	
-	public ProbesManager(IMutableStructureDatabase aStructureDatabase)
-	{
-		itsStructureDatabase = aStructureDatabase;
-	}
-	
 	/**
-	 * Creates a new probe.
+	 * The width, in pixels, of each drawn bar.
 	 */
-	public int createProbe(Label aLabel)
-	{
-		int theId = itsStructureDatabase.addProbe(-1, -1, null, -1);
-		itsProbes.add(new TmpProbeInfo(theId, aLabel));
-		return theId;
-	}
+	private static final int BAR_WIDTH = 3;
 	
-	public List<TmpProbeInfo> getProbes()
-	{
-		return itsProbes;
-	}
-	
-	public static class TmpProbeInfo
-	{
-		public final int id;
-		public final Label label;
 
-		public TmpProbeInfo(int aId, Label aLabel)
+	public abstract long[][] paintMural(
+			Graphics2D aGraphics, 
+			Rectangle aBounds, 
+			long aT1, 
+			long aT2, 
+			List<BrowserData> aBrowserDatas);
+
+	protected static Shape makeTriangle(float aX, float aY, float aBaseW, float aHeight)
+	{
+		GeneralPath thePath = new GeneralPath();
+		thePath.moveTo(aX, aY);
+		thePath.lineTo(aX+(aBaseW/2), aY+aHeight);
+		thePath.lineTo(aX-(aBaseW/2), aY+aHeight);
+		thePath.closePath();
+		
+		return thePath;
+	}
+	
+	protected static Shape makeTrapezoid(float aX, float aY, float aBaseW, float aTopW, float aHeight)
+	{
+		GeneralPath thePath = new GeneralPath();
+		thePath.moveTo(aX-(aTopW/2), aY);
+		thePath.lineTo(aX+(aTopW/2), aY);
+		thePath.lineTo(aX+(aBaseW/2), aY+aHeight);
+		thePath.lineTo(aX-(aBaseW/2), aY+aHeight);
+		thePath.closePath();
+		
+		return thePath;
+	}
+	
+	protected long[][] getValues(Rectangle aBounds, long aT1, long aT2, List<BrowserData> aBrowserData)
+	{
+		if (aT1 == aT2) return null;
+		long[][] theValues = new long[aBrowserData.size()][];
+		
+		int theSamplesCount = aBounds.width / BAR_WIDTH;
+		
+		int i = 0;
+		for (BrowserData theBrowserData : aBrowserData)
 		{
-			id = aId;
-			label = aLabel;
+			// TODO: check conversion
+			TODUtils.log(2, "[EventMural] Requesting counts: "+aT1+"-"+aT2);
+			theValues[i] = theBrowserData.browser.getEventCounts(aT1, aT2, theSamplesCount, false);
+			i++;
 		}
+		
+		return theValues;
 	}
-
-
 
 
 }

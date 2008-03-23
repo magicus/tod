@@ -162,6 +162,11 @@ public class EventComparator implements Comparator<ILogEvent>
 			return null;
 		}
 
+		public int[] getAdviceCFlow()
+		{
+			return null;
+		}
+
 	}
 
 }

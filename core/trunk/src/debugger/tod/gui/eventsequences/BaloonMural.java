@@ -47,6 +47,7 @@ import tod.core.database.event.EventComparator;
 import tod.core.database.event.ILogEvent;
 import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
+import tod.gui.eventsequences.mural.EventMural;
 import zz.utils.Cleaner;
 import zz.utils.ui.Orientation;
 

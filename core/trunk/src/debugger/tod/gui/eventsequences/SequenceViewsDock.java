@@ -59,6 +59,8 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.session.ISession;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
+import tod.gui.eventsequences.mural.AbstractMuralPainter;
+import tod.gui.eventsequences.mural.EventMural;
 import tod.utils.TODUtils;
 import zz.utils.ItemAction;
 import zz.utils.properties.ArrayListProperty;
@@ -151,6 +153,11 @@ public class SequenceViewsDock extends JPanel
 	private long itsFirstTimestamp;
 	private long itsLastTimestamp;
 	
+	/**
+	 * An optional mural painter for the murals, to replace the default one.
+	 */
+	private AbstractMuralPainter itsMuralPainter;
+	
 	public SequenceViewsDock(IGUIManager aGUIManager)
 	{
 		itsGUIManager = aGUIManager;
@@ -180,6 +187,11 @@ public class SequenceViewsDock extends JPanel
 		return itsGUIManager;
 	}
 
+	public void setMuralPainter(AbstractMuralPainter aMuralPainter)
+	{
+		itsMuralPainter = aMuralPainter;
+	}
+	
 	private void computeBounds()
 	{
 //		itsFirstTimestamp = Long.MAX_VALUE;
@@ -230,7 +242,7 @@ public class SequenceViewsDock extends JPanel
 	private class SequencePanel extends JPanel
 	{
 		private IEventSequenceView itsView;
-		private JComponent itsStripe;
+		private EventMural itsStripe;
 		
 		/**
 		 * We keep references to connectors so that we can disconnect.
@@ -266,6 +278,8 @@ public class SequenceViewsDock extends JPanel
 			
 			itsView.setLimits(itsFirstTimestamp, itsLastTimestamp);
 			itsStripe = itsView.getEventStripe();
+			
+			if (itsMuralPainter != null) itsStripe.setMuralPainter(itsMuralPainter);
 			
 			add (itsStripe, BorderLayout.CENTER);
 			add (createNorthPanel(), BorderLayout.NORTH);

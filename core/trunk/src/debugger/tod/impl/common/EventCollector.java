@@ -136,7 +136,7 @@ public abstract class EventCollector implements ILogCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			String aMethodName,
 			String aMethodSignature,
 			String aMethodDeclaringClassSignature,
@@ -159,6 +159,7 @@ public abstract class EventCollector implements ILogCollector
 				aParentTimestamp, 
 				aDepth, 
 				aTimestamp, 
+				aAdviceCFlow,
 				theId, 
 				aOperationBytecodeIndex, 
 				aException);
@@ -173,6 +174,7 @@ public abstract class EventCollector implements ILogCollector
 			long aParentTimestamp, 
 			short aDepth,
 			long aTimestamp, 
+			int[] aAdviceCFlow, 
 			int aBehaviorId,
 			int aOperationBytecodeIndex,
 			Object aException);

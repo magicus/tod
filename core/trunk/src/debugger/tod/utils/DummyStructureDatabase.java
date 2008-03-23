@@ -42,6 +42,7 @@ import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.SourceRange;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 
 public class DummyStructureDatabase 
 implements IMutableStructureDatabase
@@ -147,12 +148,12 @@ implements IMutableStructureDatabase
 		return null;
 	}
 
-	public int addProbe(int aBehaviorId, int aBytecodeIndex, int aAdviceSourceId)
+	public int addProbe(int aBehaviorId, int aBytecodeIndex, BytecodeRole aRole, int aAdviceSourceId)
 	{
 		return 0;
 	}
 
-	public void setProbe(int aProbeId, int aBehaviorId, int aBytecodeIndex, int aAdviceSourceId)
+	public void setProbe(int aProbeId, int aBehaviorId, int aBytecodeIndex, BytecodeRole aRole, int aAdviceSourceId)
 	{
 	}
 
@@ -176,6 +177,11 @@ implements IMutableStructureDatabase
 	}
 
 	public Map<String, AspectInfo> getAspectInfoMap()
+	{
+		return null;
+	}
+
+	public ProbeInfo getNewExceptionProbe(int aBehaviorId, int aBytecodeIndex)
 	{
 		return null;
 	}

@@ -83,7 +83,7 @@ implements IListListener<Highlight>
 	};
 	
 	private final DynamicCrosscuttingSeed itsSeed;
-	private EventHighlighter itsHighlighter;
+	private MyHighlighter itsHighlighter;
 	
 	public DynamicCrosscuttingView(IGUIManager aGUIManager, ILogBrowser aLog, DynamicCrosscuttingSeed aSeed)
 	{
@@ -164,7 +164,7 @@ implements IListListener<Highlight>
 		JPanel theRightPanel = new JPanel(new BorderLayout());
 		theRightPanel.add(new LegendPanel(), BorderLayout.SOUTH);
 		
-		itsHighlighter = new EventHighlighter(getGUIManager(), getLogBrowser());
+		itsHighlighter = new MyHighlighter(getGUIManager(), getLogBrowser());
 		theRightPanel.add(itsHighlighter, BorderLayout.CENTER);
 		
 		theSplitPane.setLeftComponent(theTabbedPane);
@@ -279,6 +279,21 @@ implements IListListener<Highlight>
 			add(theColorPanel);
 			
 			add(new JLabel(itsHighlight.toString()));
+		}
+	}
+	
+	private class MyHighlighter extends EventHighlighter
+	{
+		public MyHighlighter(IGUIManager aGUIManager, ILogBrowser aLogBrowser)
+		{
+			super(aGUIManager, aLogBrowser);
+		}
+
+		@Override
+		protected void perThread()
+		{
+			setMuralPainter(new AdviceCFlowMuralPainter(null));
+			super.perThread();
 		}
 	}
 }

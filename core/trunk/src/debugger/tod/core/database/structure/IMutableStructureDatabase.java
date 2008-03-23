@@ -33,6 +33,8 @@ package tod.core.database.structure;
 
 import java.util.Map;
 
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
+
 /**
  * Writable extension of {@link IStructureDatabase}.
  * @author gpothier
@@ -66,12 +68,20 @@ public interface IMutableStructureDatabase extends IStructureDatabase
 	/**
 	 * Creates a new probe and returns its id. 
 	 */
-	public int addProbe(int aBehaviorId, int aBytecodeIndex, int aAdviceSourceId);
+	public int addProbe(int aBehaviorId, int aBytecodeIndex, BytecodeRole aRole, int aAdviceSourceId);
 	
 	/**
 	 * Changes the probe info for the given id.
 	 */
-	public void setProbe(int aProbeId, int aBehaviorId, int aBytecodeIndex, int aAdviceSourceId);
+	public void setProbe(int aProbeId, int aBehaviorId, int aBytecodeIndex, BytecodeRole aRole, int aAdviceSourceId);
+	
+	/**
+	 * Retrieves the probe at the given location, or create a new one if necessary.
+	 * The probes created by this method should only be used for exception processing
+	 * (when an exception generated event is received, we have no probe id, but we
+	 * have behavior and bytecode index).
+	 */
+	public ProbeInfo getNewExceptionProbe(int aBehaviorId, int aBytecodeIndex);
 	
 	/**
 	 * Sets the map that maps advice ids to source ranges for a given class.
