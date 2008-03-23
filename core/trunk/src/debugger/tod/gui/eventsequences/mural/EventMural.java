@@ -494,23 +494,16 @@ public class EventMural extends MouseWheelPanel
 	{
 		if (itsZoomDirection != null)
 		{
-			int theDistance = (int) Math.sqrt(
-					itsZoomDirection.x*itsZoomDirection.x + itsZoomDirection.y*itsZoomDirection.y);
+			int theZoomCenter = (int) (itsClickStart.x+Math.pow(itsZoomDirection.x/10f, 3) * 10);
 			
-			theDistance -= 5;
-			if (theDistance < 0) return;
+			float theZoomAmount = Math.abs(itsZoomDirection.y) > 10 ?
+					-itsZoomDirection.y/200f
+					: 0f;
 			
-			double theAngle = Math.atan2(itsZoomDirection.y, itsZoomDirection.x);
-			int theZoomCenterAdjust = (int) (Math.pow(itsZoomDirection.x/10f, 3) * 10);
+			float theScrollAmount = itsZoomDirection.x/100f;
 			
-			if (inAngleRange(theAngle, 0f, Math.PI/8)) 
-				scroll(theDistance/100f);
-			else if (inAngleRange(theAngle, -Math.PI/2, Math.PI/4)) 
-				zoom(theDistance/200f, itsClickStart.x+theZoomCenterAdjust);
-			else if (inAngleRange(theAngle, Math.PI, Math.PI/8)) 
-				scroll(-theDistance/100f);
-			else if (inAngleRange(theAngle, Math.PI/2, Math.PI/4))
-				zoom(-theDistance/200f, itsClickStart.x+theZoomCenterAdjust);
+			zoomAndScroll(theZoomAmount, itsClickStart.x, theScrollAmount);
+			
 		}
 		else if (itsZoomMarkCountdown > 0)
 		{
@@ -595,8 +588,34 @@ public class EventMural extends MouseWheelPanel
 		pStart.set(s);
 	}
 
+	protected void zoomAndScroll(float aZoomAmount, int aZoomCenter, float aScrollAmount)
+	{
+		if (aZoomAmount == 0 && aScrollAmount == 0) return;
 
-	
+		setCurrentEvent(null);
+		
+		Long t1 = pStart.get();
+		Long t2 = pEnd.get();
+		
+		long w = t2-t1;
+		
+		// The timestamp corresponding to the mouse cursor
+		double t = 1.0*w*aZoomCenter/getWidth();
+		
+		double k = Math.pow(2, -0.5*aZoomAmount);
+		double nw = k*w;
+		
+		if (nw < 2) return;
+		
+		double s = t - (t*k) + (aScrollAmount*w/10f); 
+		double t1p = s+t1;
+		
+		if (t1p < itsFirstTimestamp) t1p = itsFirstTimestamp;
+		if (itsLastTimestamp > 0 && t1p+nw > itsLastTimestamp) t1p = itsLastTimestamp - nw;
+		
+		pEnd.set((long)(t1p+nw));
+		pStart.set((long)t1p);
+	}
 	
 	private static class ImageUpdater extends Thread
 	{
