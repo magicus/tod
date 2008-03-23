@@ -4,11 +4,11 @@ import java.awt.image.BufferedImage;
 
 public aspect LazyLoad {
 	
-	pointcut init(): call(* ImageData.load())
+	pointcut load(): call(* ImageData.load())
 		&& withincode(ImageData.new(..));
 	
-	BufferedImage around(): init() {
-		System.out.println("Skipped load");
+	BufferedImage around(): load() {
+		System.out.println("Lazy: skip");
 		return null;
 	}
 	
@@ -18,6 +18,7 @@ public aspect LazyLoad {
 	before(ImageData i): paint(i) {
 		if (i.image == null) 
 		{
+			System.out.println("Lazy: load");
 			i.image = i.load();
 		}
 	}

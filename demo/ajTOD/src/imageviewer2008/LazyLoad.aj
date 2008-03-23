@@ -9,7 +9,6 @@ public aspect LazyLoad {
 	
 	
 	BufferedImage around(): init() {
-		System.out.println("Skipped load");
 		return null;
 	}
 	
