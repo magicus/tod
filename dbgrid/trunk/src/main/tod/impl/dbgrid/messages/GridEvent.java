@@ -22,28 +22,24 @@ package tod.impl.dbgrid.messages;
 
 import java.io.Serializable;
 
-import tod.core.DebugFlags;
 import tod.core.database.event.ILogEvent;
-import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.IThreadInfo;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.impl.common.event.Event;
-import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
-import tod.impl.dbgrid.db.Indexes;
-import tod.impl.dbgrid.db.RoleIndexSet;
-import tod.impl.dbgrid.db.StdIndexSet;
 import tod.impl.dbgrid.queries.ArrayIndexCondition;
 import tod.impl.dbgrid.queries.BehaviorCondition;
 import tod.impl.dbgrid.queries.FieldCondition;
 import tod.impl.dbgrid.queries.ObjectCondition;
 import tod.impl.dbgrid.queries.VariableCondition;
 import zz.utils.PublicCloneable;
-import zz.utils.bit.BitStruct;
-import zz.utils.bit.BitUtils;
 
 public abstract class GridEvent extends PublicCloneable 
 implements Serializable
 {
+	private transient IStructureDatabase itsStructureDatabase;
+	
 	/**
 	 * We can find the parent event using only its timestamp,
 	 * as it necessarily belongs to the same thread as this
@@ -53,30 +49,29 @@ implements Serializable
 	private int itsThread;
 	private int itsDepth;
 	private long itsTimestamp;
+
 	
-	private int itsOperationBehaviorId;
-	private int itsOperationBytecodeIndex;
-	private int itsAdviceSourceId;
+	private int itsProbeId;
+	private int[] itsAdviceCFlow;
 	
-	public GridEvent()
+	public GridEvent(IStructureDatabase aStructureDatabase)
 	{
+		itsStructureDatabase = aStructureDatabase;
 	}
 
 	protected void set(
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex, 
-			int aAdviceSourceId,
+			int[] aAdviceCFlow,
+			int aProbeId,
 			long aParentTimestamp)
 	{
 		itsThread = aThread;
 		itsDepth = aDepth;
 		itsTimestamp = aTimestamp;
-		itsOperationBehaviorId = aOperationBehaviorId;
-		itsOperationBytecodeIndex = aOperationBytecodeIndex;
-		itsAdviceSourceId = aAdviceSourceId;
+		itsAdviceCFlow = aAdviceCFlow;
+		itsProbeId = aProbeId;
 		itsParentTimestamp = aParentTimestamp;
 	}
 
@@ -97,17 +92,22 @@ implements Serializable
 		aEvent.setThread(theThread);
 		aEvent.setTimestamp(getTimestamp());
 		aEvent.setDepth(getDepth());
-		
-		int theOperationBehaviorId = getOperationBehaviorId();
-		IBehaviorInfo theOperationBehavior = theOperationBehaviorId > 0 ?
-				aBrowser.getStructureDatabase().getBehavior(theOperationBehaviorId, true) 
-				: null;// Null for root event
-				
-		aEvent.setOperationBehavior(theOperationBehavior); 
-		
-		aEvent.setOperationBytecodeIndex(getOperationBytecodeIndex());
-		aEvent.setAdviceSourceId(getAdviceSourceId());
+		aEvent.setProbeId(getProbeId()); 
+		aEvent.setAdviceCFlow(getAdviceCFlow());
 		aEvent.setParentTimestamp(getParentTimestamp());
+	}
+
+	/**
+	 * Should be used only when an event is deserialized.
+	 */
+	public void _setStructureDatabase(IStructureDatabase aStructureDatabase)
+	{
+		itsStructureDatabase = aStructureDatabase;
+	}
+	
+	public IStructureDatabase getStructureDatabase()
+	{
+		return itsStructureDatabase;
 	}
 	
 	/**
@@ -122,22 +122,24 @@ implements Serializable
 	{
 		return getEventType();
 	}
-	
-	public int getOperationBytecodeIndex()
-	{
-		return itsOperationBytecodeIndex;
-	}
 
-	public int getOperationBehaviorId()
+	public int getProbeId()
 	{
-		return itsOperationBehaviorId;
+		return itsProbeId;
 	}
 	
-	public int getAdviceSourceId()
+	public ProbeInfo getProbeInfo()
 	{
-		return itsAdviceSourceId;
+		return getProbeId() > 0 ?
+				itsStructureDatabase.getProbeInfo(getProbeId())
+				: null;
 	}
-
+	
+	public int[] getAdviceCFlow()
+	{
+		return itsAdviceCFlow;
+	}
+	
 	public long getParentTimestamp()
 	{
 		return itsParentTimestamp;
@@ -204,9 +206,9 @@ implements Serializable
 	protected String toString0()
 	{
 		return String.format(
-				"th: %d, bc: %d, t: %d",
+				"th: %d, pid: %d, t: %d",
 				itsThread,
-				itsOperationBytecodeIndex,
+				itsProbeId,
 				itsTimestamp); 
 	}
 }

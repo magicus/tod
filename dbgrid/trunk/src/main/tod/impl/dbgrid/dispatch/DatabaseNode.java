@@ -36,6 +36,7 @@ import tod.core.DebugFlags;
 import tod.core.ILogCollector;
 import tod.core.config.TODConfig;
 import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ObjectId;
 import tod.core.transport.CollectorLogReceiver;
@@ -79,7 +80,7 @@ implements RIDatabaseNode
 	 * (see EventCollector#exception(int, long, short, long, String, String, String, int, Object)).
 	 * <li> Finding location of events.
 	 */
-	private IStructureDatabase itsStructureDatabase;
+	private IMutableStructureDatabase itsStructureDatabase;
 	
 	private EventDatabase itsEventsDatabase;
 	private File itsObjectsDatabaseFile;
@@ -138,7 +139,7 @@ implements RIDatabaseNode
 			try
 			{
 				itsStructureDatabase = 
-					RemoteStructureDatabase.createDatabase(theMaster.getRemoteStructureDatabase());
+					RemoteStructureDatabase.createMutableDatabase(theMaster.getRemoteStructureDatabase());
 			}
 			catch (RemoteException e)
 			{
@@ -194,7 +195,7 @@ implements RIDatabaseNode
 	protected EventDatabase createDatabase(File aFile)
 	{
 		int theNodeIndex = Integer.parseInt(getNodeId().substring(3));
-		return new EventDatabase(theNodeIndex, aFile);
+		return new EventDatabase(itsStructureDatabase, theNodeIndex, aFile);
 	}
 	
 	/**
@@ -502,7 +503,7 @@ implements RIDatabaseNode
 		public MyCollector(
 				GridMaster aMaster, 
 				IHostInfo aHost, 
-				IStructureDatabase aStructureDatabase,
+				IMutableStructureDatabase aStructureDatabase,
 				DatabaseNode aNode)
 		{
 			super(aHost, aStructureDatabase, aNode);

@@ -41,7 +41,7 @@ public class TestDatabaseNode
 
 	@Before public void fill()
 	{
-		itsDatabase = new EventDatabase(0, new File("test.bin"));
+		itsDatabase = new EventDatabase(null, 0, new File("test.bin"));
 		EventGenerator theEventGenerator = createGenerator();
 		
 		System.out.println("filling...");

@@ -25,6 +25,7 @@ import static tod.impl.dbgrid.ObjectCodec.getObjectId;
 import static tod.impl.dbgrid.ObjectCodec.readObject;
 import static tod.impl.dbgrid.ObjectCodec.writeObject;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IStructureDatabase;
 import tod.impl.common.event.BehaviorExitEvent;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
@@ -49,28 +50,30 @@ public class GridBehaviorExitEvent extends BitGridEvent
 
 	
 	
-	public GridBehaviorExitEvent()
+	public GridBehaviorExitEvent(IStructureDatabase aStructureDatabase)
 	{
+		super(aStructureDatabase);
 	}
 
 	public GridBehaviorExitEvent(
+			IStructureDatabase aStructureDatabase,
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex, 
-			int aAdviceSourceId,
+			int[] aAdviceCFlow,
+			int aProbeId,
 			long aParentTimestamp,
 			boolean aHasThrown, 
 			Object aResult, 
 			int aBehaviorId)
 	{
-		set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp, aHasThrown, aResult, aBehaviorId);
+		super(aStructureDatabase);
+		set(aThread, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aParentTimestamp, aHasThrown, aResult, aBehaviorId);
 	}
 
-	public GridBehaviorExitEvent(BitStruct aBitStruct)
+	public GridBehaviorExitEvent(IStructureDatabase aStructureDatabase, BitStruct aBitStruct)
 	{
-		super(aBitStruct);
+		super(aStructureDatabase, aBitStruct);
 		itsBehaviorId = aBitStruct.readInt(DebuggerGridConfig.EVENT_BEHAVIOR_BITS);
 		itsHasThrown = aBitStruct.readBoolean();
 		itsResult = readObject(aBitStruct);
@@ -80,15 +83,14 @@ public class GridBehaviorExitEvent extends BitGridEvent
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex, 
-			int aAdviceSourceId,
+			int[] aAdviceCFlow,
+			int aProbeId,
 			long aParentTimestamp,
 			boolean aHasThrown, 
 			Object aResult, 
 			int aBehaviorId)
 	{
-		super.set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp);
+		super.set(aThread, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aParentTimestamp);
 		itsHasThrown = aHasThrown;
 		itsResult = aResult;
 		itsBehaviorId = aBehaviorId;

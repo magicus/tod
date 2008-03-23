@@ -117,7 +117,7 @@ public class Fixtures
 			File theFile = new File("eventTest.bin");
 			theFile.delete();
 			HardPagedFile thePagedFile = new HardPagedFile(theFile, DebuggerGridConfig.DB_PAGE_SIZE);
-			return new EventList(0, thePagedFile);
+			return new EventList(null, 0, thePagedFile);
 		}
 		catch (FileNotFoundException e)
 		{

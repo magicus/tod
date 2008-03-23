@@ -97,7 +97,7 @@ public class BenchGridEventSerialization
 					theEvent.writeTo(theBitStruct);
 					
 					theBitStruct.reset();
-					BitGridEvent.read(theBitStruct);
+					BitGridEvent.read(null, theBitStruct);
 				}
 			}
 		});

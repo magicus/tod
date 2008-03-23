@@ -25,6 +25,7 @@ import static tod.impl.dbgrid.ObjectCodec.getObjectId;
 import static tod.impl.dbgrid.ObjectCodec.readObject;
 import static tod.impl.dbgrid.ObjectCodec.writeObject;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IStructureDatabase;
 import tod.impl.common.event.ExceptionGeneratedEvent;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.SplittedConditionHandler;
@@ -38,27 +39,28 @@ public class GridExceptionGeneratedEvent extends BitGridEvent
 	
 	private Object itsException;
 	
-	public GridExceptionGeneratedEvent()
+	public GridExceptionGeneratedEvent(IStructureDatabase aStructureDatabase)
 	{
+		super(aStructureDatabase);
 	}
 
 	public GridExceptionGeneratedEvent(
+			IStructureDatabase aStructureDatabase,
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex, 
-			int aAdviceSourceId,
+			int[] aAdviceCFlow,
+			int aProbeId,
 			long aParentTimestamp,
 			Object aException)
 	{
-		set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp, aException);
+		super(aStructureDatabase);
+		set(aThread, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aParentTimestamp, aException);
 	}
 
-	public GridExceptionGeneratedEvent(BitStruct aBitStruct)
+	public GridExceptionGeneratedEvent(IStructureDatabase aStructureDatabase, BitStruct aBitStruct)
 	{
-		super(aBitStruct);
-
+		super(aStructureDatabase, aBitStruct);
 		itsException = readObject(aBitStruct);
 	}
 	
@@ -66,13 +68,12 @@ public class GridExceptionGeneratedEvent extends BitGridEvent
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex, 
-			int aAdviceSourceId,
+			int[] aAdviceCFlow,
+			int aProbeId,
 			long aParentTimestamp,
 			Object aException)
 	{
-		super.set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp);
+		super.set(aThread, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aParentTimestamp);
 		itsException = aException;
 	}
 
@@ -130,7 +131,7 @@ public class GridExceptionGeneratedEvent extends BitGridEvent
 	public boolean matchBehaviorCondition(int aBehaviorId, byte aRole)
 	{
 		return (aRole == RoleIndexSet.ROLE_BEHAVIOR_OPERATION) 
-			&& (aBehaviorId == getOperationBehaviorId());			
+			&& (aBehaviorId == getProbeInfo().behaviorId);			
 	}
 	
 	@Override
@@ -150,7 +151,7 @@ public class GridExceptionGeneratedEvent extends BitGridEvent
 				"%s (ex: %s, b: %d, %s)",
 				getEventType(),
 				itsException,
-				getOperationBehaviorId(),
+				getProbeInfo().behaviorId,
 				toString0());
 	}
 }

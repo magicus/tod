@@ -52,7 +52,7 @@ public class BenchEventDatabase
 
 	@Test public void test()  
 	{
-		itsDatabase = new EventDatabase(0, new File("test.bin"));
+		itsDatabase = new EventDatabase(null, 0, new File("test.bin"));
 		store();
 //		fetchSimple(1000);
 //		fetchCompound(100, 8);
@@ -186,7 +186,7 @@ public class BenchEventDatabase
 	
 	public static void main(String[] args) 
 	{
-		new BenchEventDatabase(new EventDatabase(0, new File("test.bin"))).store();
+		new BenchEventDatabase(new EventDatabase(null, 0, new File("test.bin"))).store();
 	}
 
 }

@@ -146,7 +146,7 @@ public class TestEventReordering implements ReorderingBufferListener
 			int theThread = Integer.parseInt(theTokenizer.nextToken());
 			long theTimestamp = Long.parseLong(theTokenizer.nextToken());
 			
-			GridEvent theEvent = new GridFieldWriteEvent(theThread, 0, theTimestamp, 0, 0, 0, 0, 0, 0, 0);
+			GridEvent theEvent = new GridFieldWriteEvent(null, theThread, 0, theTimestamp, null, 0, 0, 0, 0, 0);
 			
 			while (theBuffer.isFull()) processEvent(theBuffer.pop());
 			theBuffer.push(theEvent);

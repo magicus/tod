@@ -26,6 +26,7 @@ import static tod.impl.dbgrid.ObjectCodec.readObject;
 import static tod.impl.dbgrid.ObjectCodec.writeObject;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.impl.common.event.LocalVariableWriteEvent;
 import tod.impl.dbgrid.DebuggerGridConfig;
@@ -43,28 +44,30 @@ public class GridVariableWriteEvent extends BitGridEvent
 	private int itsVariableId;
 	private Object itsValue;
 	
-	public GridVariableWriteEvent()
+	public GridVariableWriteEvent(IStructureDatabase aStructureDatabase)
 	{
+		super(aStructureDatabase);
 	}
 
 	public GridVariableWriteEvent(
+			IStructureDatabase aStructureDatabase,
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex, 
-			int aAdviceSourceId,
+			int[] aAdviceCFlow,
+			int aProbeId,
 			long aParentTimestamp,
 			int aVariableId, 
 			Object aValue)
 	{
-		set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp, aVariableId, aValue);
+		super(aStructureDatabase);
+		set(aThread, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aParentTimestamp, aVariableId, aValue);
 	}
 
 
-	public GridVariableWriteEvent(BitStruct aBitStruct)
+	public GridVariableWriteEvent(IStructureDatabase aStructureDatabase, BitStruct aBitStruct)
 	{
-		super(aBitStruct);
+		super(aStructureDatabase, aBitStruct);
 
 		itsVariableId = aBitStruct.readInt(DebuggerGridConfig.EVENT_VARIABLE_BITS);
 		
@@ -78,15 +81,13 @@ public class GridVariableWriteEvent extends BitGridEvent
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex, 
-			int aAdviceSourceId,
+			int[] aAdviceCFlow,
+			int aProbeId,
 			long aParentTimestamp,
 			int aVariableId, 
 			Object aValue)
 	{
-		assert aOperationBehaviorId >= 0;
-		super.set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp);
+		super.set(aThread, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aParentTimestamp);
 		itsVariableId = aVariableId;
 		itsValue = aValue;
 	}
@@ -121,7 +122,7 @@ public class GridVariableWriteEvent extends BitGridEvent
 		assert theBehavior != null : "Null behavior for event "+this;
 		
 		LocalVariableInfo theInfo = theBehavior.getLocalVariableInfo(
-				getOperationBytecodeIndex(), 
+				getProbeInfo().bytecodeIndex, 
 				getVariableId());
 		
        	if (theInfo == null) theInfo = new LocalVariableInfo(

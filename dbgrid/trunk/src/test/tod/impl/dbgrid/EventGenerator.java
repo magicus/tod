@@ -33,6 +33,7 @@ import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_VAR_COUNT;
 import java.util.Random;
 
 import tod.core.database.TimestampGenerator;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ObjectId;
 import tod.impl.dbgrid.messages.BitGridEvent;
 import tod.impl.dbgrid.messages.GridArrayWriteEvent;
@@ -49,6 +50,8 @@ public class EventGenerator
 	private Random itsRandom;
 	private TimestampGenerator itsTimestampGenerator;
 	private TimestampGenerator itsParentTimestampGenerator;
+	
+	private IStructureDatabase itsStructureDatabase;
 	
 	private int itsThreadsRange;
 	private int itsDepthRange;
@@ -107,12 +110,12 @@ public class EventGenerator
 		{
 		case BEHAVIOR_EXIT:
 			return new GridBehaviorExitEvent(
+					itsStructureDatabase,
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
-					genBehaviorId(),
-					genBytecodeIndex(),
-					genAdviceSourceId(),
+					null,
+					genProbeId(),
 					genParentTimestamp(),
 					itsRandom.nextBoolean(),
 					genObject(),
@@ -120,12 +123,12 @@ public class EventGenerator
 			
 		case SUPER_CALL:
 			return new GridBehaviorCallEvent(
+					itsStructureDatabase,
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
-					genBehaviorId(),
-					genBytecodeIndex(),
-					genAdviceSourceId(),
+					null,
+					genProbeId(),
 					genParentTimestamp(),
 					MessageType.SUPER_CALL,
 					itsRandom.nextBoolean(),
@@ -136,23 +139,23 @@ public class EventGenerator
 			
 		case EXCEPTION_GENERATED:
 			return new GridExceptionGeneratedEvent(
+					itsStructureDatabase,
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
-					genBehaviorId(),
-					genBytecodeIndex(),
-					genAdviceSourceId(),
+					null,
+					genProbeId(),
 					genParentTimestamp(),
 					genObject());
 			
 		case FIELD_WRITE:
 			return new GridFieldWriteEvent(
+					itsStructureDatabase,
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
-					genBehaviorId(),
-					genBytecodeIndex(),
-					genAdviceSourceId(),
+					null,
+					genProbeId(),
 					genParentTimestamp(),
 					genFieldId(),
 					genObject(),
@@ -160,12 +163,12 @@ public class EventGenerator
 			
 		case INSTANTIATION:
 			return new GridBehaviorCallEvent(
+					itsStructureDatabase,
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
-					genBehaviorId(),
-					genBytecodeIndex(),
-					genAdviceSourceId(),
+					null,
+					genProbeId(),
 					genParentTimestamp(),
 					MessageType.INSTANTIATION,
 					itsRandom.nextBoolean(),
@@ -176,24 +179,24 @@ public class EventGenerator
 			
 		case LOCAL_VARIABLE_WRITE:
 			return new GridVariableWriteEvent(
+					itsStructureDatabase,
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
-					genBehaviorId(),
-					genBytecodeIndex(),
-					genAdviceSourceId(),
+					null,
+					genProbeId(),
 					genParentTimestamp(),
 					genVariableId(),
 					genObject());
 			
 		case METHOD_CALL:
 			return new GridBehaviorCallEvent(
+					itsStructureDatabase,
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
-					genBehaviorId(),
-					genBytecodeIndex(),
-					genAdviceSourceId(),
+					null,
+					genProbeId(),
 					genParentTimestamp(),
 					MessageType.METHOD_CALL,
 					itsRandom.nextBoolean(),
@@ -204,12 +207,12 @@ public class EventGenerator
 		
 		case ARRAY_WRITE:
 			return new GridArrayWriteEvent(
+					itsStructureDatabase,
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
-					genBehaviorId(),
-					genBytecodeIndex(),
-					genAdviceSourceId(),
+					null,
+					genProbeId(),
 					genParentTimestamp(),
 					genObject(),
 					itsRandom.nextInt(STRUCTURE_ARRAY_INDEX_COUNT),
@@ -217,12 +220,12 @@ public class EventGenerator
 			
 		case NEW_ARRAY:
 			return new GridNewArrayEvent(
+					itsStructureDatabase,
 					genThreadId(),
 					genDepth(),
 					itsTimestampGenerator.next(),
-					genBehaviorId(),
-					genBytecodeIndex(),
-					genAdviceSourceId(),
+					null,
+					genProbeId(),
 					genParentTimestamp(),
 					genObject(),
 					genFieldId(),
@@ -252,6 +255,11 @@ public class EventGenerator
 	public int genDepth()
 	{
 		return itsRandom.nextInt(itsDepthRange);
+	}
+	
+	public int genProbeId()
+	{
+		return itsRandom.nextInt(itsBehaviorRange) + 1; // TODO: fix if necessary
 	}
 	
 	public int genBehaviorId()

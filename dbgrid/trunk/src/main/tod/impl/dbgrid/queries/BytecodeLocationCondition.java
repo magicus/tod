@@ -49,7 +49,7 @@ public class BytecodeLocationCondition extends SimpleCondition
 	@Override
 	public boolean _match(GridEvent aEvent)
 	{
-		return aEvent.getOperationBytecodeIndex() == itsBytecodeLocation;
+		return aEvent.getProbeInfo().bytecodeIndex == itsBytecodeLocation;
 	}
 	
 	@Override

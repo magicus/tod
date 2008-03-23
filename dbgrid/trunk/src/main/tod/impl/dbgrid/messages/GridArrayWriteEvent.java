@@ -25,6 +25,7 @@ import static tod.impl.dbgrid.ObjectCodec.getObjectId;
 import static tod.impl.dbgrid.ObjectCodec.readObject;
 import static tod.impl.dbgrid.ObjectCodec.writeObject;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IStructureDatabase;
 import tod.impl.common.event.ArrayWriteEvent;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.SplittedConditionHandler;
@@ -41,28 +42,30 @@ public class GridArrayWriteEvent extends BitGridEvent
 	private int itsIndex;
 	private Object itsValue;
 
-	public GridArrayWriteEvent()
+	public GridArrayWriteEvent(IStructureDatabase aStructureDatabase)
 	{
+		super(aStructureDatabase);
 	}
 
 	public GridArrayWriteEvent(
+			IStructureDatabase aStructureDatabase,
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex, 
-			int aAdviceSourceId,
+			int[] aAdviceCFlow,
+			int aProbeId,
 			long aParentTimestamp,
 			Object aTarget,
 			int aIndex,
 			Object aValue)
 	{
-		set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp, aTarget, aIndex, aValue);
+		super(aStructureDatabase);
+		set(aThread, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aParentTimestamp, aTarget, aIndex, aValue);
 	}
 
-	public GridArrayWriteEvent(BitStruct aBitStruct)
+	public GridArrayWriteEvent(IStructureDatabase aStructureDatabase, BitStruct aBitStruct)
 	{
-		super(aBitStruct);
+		super(aStructureDatabase, aBitStruct);
 
 		itsTarget = readObject(aBitStruct);
 		itsIndex = aBitStruct.readInt(32);
@@ -73,15 +76,14 @@ public class GridArrayWriteEvent extends BitGridEvent
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex, 
-			int aAdviceSourceId,
+			int[] aAdviceCFlow,
+			int aProbeId,
 			long aParentTimestamp,
 			Object aTarget,
 			int aIndex,
 			Object aValue)
 	{
-		super.set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp);
+		super.set(aThread, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aParentTimestamp);
 		itsTarget = aTarget;
 		itsIndex = aIndex;
 		itsValue = aValue;

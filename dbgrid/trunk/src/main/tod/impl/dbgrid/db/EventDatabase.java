@@ -28,6 +28,7 @@ import java.rmi.RemoteException;
 import java.util.Comparator;
 
 import tod.core.DebugFlags;
+import tod.core.database.structure.IStructureDatabase;
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.db.EventReorderingBuffer.ReorderingBufferListener;
 import tod.impl.dbgrid.db.file.HardPagedFile;
@@ -46,6 +47,7 @@ import zz.utils.monitoring.Probe;
  */
 public class EventDatabase implements ReorderingBufferListener
 {
+	private final IStructureDatabase itsStructureDatabase;
 	private final HardPagedFile itsFile;
 	
 	private final EventList itsEventList;
@@ -68,13 +70,14 @@ public class EventDatabase implements ReorderingBufferListener
 	/**
 	 * Creates a new database using the specified file.
 	 */
-	public EventDatabase(int aNodeId, File aFile) 
+	public EventDatabase(IStructureDatabase aStructureDatabase, int aNodeId, File aFile) 
 	{
 		Monitor.getInstance().register(this);
+		itsStructureDatabase = aStructureDatabase;
 		try
 		{
 			itsFile = new HardPagedFile(aFile, DB_PAGE_SIZE);
-			itsEventList = new EventList(aNodeId, itsFile);
+			itsEventList = new EventList(itsStructureDatabase, aNodeId, itsFile);
 			itsIndexes = new Indexes(itsFile);
 		}
 		catch (IOException e)

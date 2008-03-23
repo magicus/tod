@@ -225,7 +225,11 @@ implements IGridEventBrowser, IScheduled
 	 */
 	private ILogEvent convert(GridEvent aEvent)
 	{
-		assert itsFilter._match(aEvent);
+		aEvent._setStructureDatabase(itsBrowser.getStructureDatabase());
+		if (! itsFilter._match(aEvent))
+		{
+			assert false;
+		}
 		return aEvent.toLogEvent(itsBrowser);
 	}
 	

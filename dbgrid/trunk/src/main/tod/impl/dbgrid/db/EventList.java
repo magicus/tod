@@ -25,6 +25,7 @@ import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_POINTER_BITS;
 
 import java.util.Iterator;
 
+import tod.core.database.structure.IStructureDatabase;
 import tod.impl.dbgrid.InternalPointer;
 import tod.impl.dbgrid.db.file.HardPagedFile;
 import tod.impl.dbgrid.db.file.HardPagedFile.PageBitStruct;
@@ -36,6 +37,8 @@ import zz.utils.monitoring.Probe;
 
 public class EventList
 {
+	private final IStructureDatabase itsStructureDatabase;
+	
 	/**
 	 * Number of events stored
 	 */
@@ -66,9 +69,10 @@ public class EventList
 	 */
 	private int itsRecordIndex = 0;
 	
-	public EventList(int aNodeId, HardPagedFile aFile) 
+	public EventList(IStructureDatabase aStructureDatabase, int aNodeId, HardPagedFile aFile) 
 	{
 		Monitor.getInstance().register(this);
+		itsStructureDatabase = aStructureDatabase;
 		itsNodeId = aNodeId;
 		itsFile = aFile;
 		itsCurrentBitStruct = itsFile.create().asBitStruct();
@@ -161,7 +165,7 @@ public class EventList
 			int theRecordLength = theBitStruct.readInt(DB_EVENT_SIZE_BITS);
 			if (theRecordLength == 0) break; // End-of-page marker.
 			
-			if (theCount == 0) return BitGridEvent.read(theBitStruct);
+			if (theCount == 0) return BitGridEvent.read(itsStructureDatabase, theBitStruct);
 			
 			theBitStruct.skip(theRecordLength-DB_EVENT_SIZE_BITS);
 			theCount--;
@@ -243,7 +247,7 @@ public class EventList
 				}
 			} while (theRecordLength == 0); // We really should not loop more than once
 			
-			GridEvent theEvent = BitGridEvent.read(itsPage);
+			GridEvent theEvent = BitGridEvent.read(itsStructureDatabase, itsPage);
 			
 			return theEvent;
 		}

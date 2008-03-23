@@ -60,6 +60,7 @@ import tod.impl.dbgrid.aggregator.IGridEventBrowser;
 import tod.impl.dbgrid.aggregator.StringHitsIterator;
 import tod.impl.dbgrid.db.RoleIndexSet;
 import tod.impl.dbgrid.messages.MessageType;
+import tod.impl.dbgrid.queries.AdviceCFlowCondition;
 import tod.impl.dbgrid.queries.AdviceSourceIdCondition;
 import tod.impl.dbgrid.queries.BehaviorCondition;
 import tod.impl.dbgrid.queries.BytecodeLocationCondition;
@@ -305,6 +306,11 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 	public IEventFilter createAdviceSourceIdFilter(int aAdviceSourceId)
 	{
 		return new AdviceSourceIdCondition(aAdviceSourceId);
+	}
+
+	public IEventFilter createAdviceCFlowFilter(int aAdviceSourceId)
+	{
+		return new AdviceCFlowCondition(aAdviceSourceId);
 	}
 
 	public IEventFilter createArrayWriteFilter()

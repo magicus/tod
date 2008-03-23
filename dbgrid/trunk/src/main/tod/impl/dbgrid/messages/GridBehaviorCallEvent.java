@@ -25,6 +25,7 @@ import static tod.impl.dbgrid.ObjectCodec.getObjectId;
 import static tod.impl.dbgrid.ObjectCodec.readObject;
 import static tod.impl.dbgrid.ObjectCodec.writeObject;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IStructureDatabase;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.SplittedConditionHandler;
@@ -53,17 +54,18 @@ public class GridBehaviorCallEvent extends BitGridEvent
 	private Object itsTarget;
 
 	
-	public GridBehaviorCallEvent()
+	public GridBehaviorCallEvent(IStructureDatabase aStructureDatabase)
 	{
+		super(aStructureDatabase);
 	}
 
 	public GridBehaviorCallEvent(
+			IStructureDatabase aStructureDatabase,
 			int aThread,
 			int aDepth,
 			long aTimestamp, 
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex,
-			int aAdviceSourceId,
+			int[] aAdviceCFlow,
+			int aProbeId,
 			long aParentTimestamp,
 			MessageType aType, 
 			boolean aDirectParent, 
@@ -72,12 +74,13 @@ public class GridBehaviorCallEvent extends BitGridEvent
 			int aExecutedBehaviorId, 
 			Object aTarget)
 	{
-		set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp, aType, aDirectParent, aArguments, aCalledBehaviorId, aExecutedBehaviorId, aTarget);
+		super(aStructureDatabase);
+		set(aThread, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aParentTimestamp, aType, aDirectParent, aArguments, aCalledBehaviorId, aExecutedBehaviorId, aTarget);
 	}
 
-	public GridBehaviorCallEvent(BitStruct aBitStruct, MessageType aType)
+	public GridBehaviorCallEvent(IStructureDatabase aStructureDatabase, BitStruct aBitStruct, MessageType aType)
 	{
-		super(aBitStruct);
+		super(aStructureDatabase, aBitStruct);
 		itsType = (byte) aType.ordinal();
 		
 		int theArgsCount = aBitStruct.readInt(DebuggerGridConfig.EVENT_ARGS_COUNT_BITS);
@@ -94,9 +97,8 @@ public class GridBehaviorCallEvent extends BitGridEvent
 			int aThread,
 			int aDepth,
 			long aTimestamp, 
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex,
-			int aAdviceSourceId,
+			int[] aAdviceCFlow,
+			int aProbeId,
 			long aParentTimestamp,
 			MessageType aType, 
 			boolean aDirectParent, 
@@ -105,7 +107,7 @@ public class GridBehaviorCallEvent extends BitGridEvent
 			int aExecutedBehaviorId, 
 			Object aTarget)
 	{
-		super.set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp);
+		super.set(aThread, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aParentTimestamp);
 		itsType = (byte) aType.ordinal();
 		itsDirectParent = aDirectParent;
 		itsArguments = aArguments;

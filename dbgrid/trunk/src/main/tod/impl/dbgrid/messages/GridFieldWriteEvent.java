@@ -25,6 +25,7 @@ import static tod.impl.dbgrid.ObjectCodec.getObjectId;
 import static tod.impl.dbgrid.ObjectCodec.readObject;
 import static tod.impl.dbgrid.ObjectCodec.writeObject;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IStructureDatabase;
 import tod.impl.common.event.FieldWriteEvent;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
@@ -42,29 +43,30 @@ public class GridFieldWriteEvent extends BitGridEvent
 	private Object itsTarget;
 	private Object itsValue;
 
-	public GridFieldWriteEvent()
+	public GridFieldWriteEvent(IStructureDatabase aStructureDatabase)
 	{
+		super(aStructureDatabase);
 	}
 
 	public GridFieldWriteEvent(
+			IStructureDatabase aStructureDatabase,
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex, 
-			int aAdviceSourceId,
+			int[] aAdviceCFlow,
+			int aProbeId,
 			long aParentTimestamp,
 			int aFieldId, 
 			Object aTarget, 
 			Object aValue)
 	{
-		set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp, aFieldId, aTarget, aValue);
+		super(aStructureDatabase);
+		set(aThread, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aParentTimestamp, aFieldId, aTarget, aValue);
 	}
 
-	public GridFieldWriteEvent(BitStruct aBitStruct)
+	public GridFieldWriteEvent(IStructureDatabase aStructureDatabase, BitStruct aBitStruct)
 	{
-		super(aBitStruct);
-
+		super(aStructureDatabase, aBitStruct);
 		itsFieldId = aBitStruct.readInt(DebuggerGridConfig.EVENT_FIELD_BITS);
 		itsTarget = readObject(aBitStruct);
 		itsValue = readObject(aBitStruct);
@@ -74,15 +76,14 @@ public class GridFieldWriteEvent extends BitGridEvent
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex, 
-			int aAdviceSourceId,
+			int[] aAdviceCFlow,
+			int aProbeId,
 			long aParentTimestamp,
 			int aFieldId, 
 			Object aTarget, 
 			Object aValue)
 	{
-		super.set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp);
+		super.set(aThread, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aParentTimestamp);
 		itsFieldId = aFieldId;
 		itsTarget = aTarget;
 		itsValue = aValue;

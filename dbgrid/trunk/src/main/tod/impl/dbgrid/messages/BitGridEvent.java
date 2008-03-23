@@ -22,6 +22,8 @@ package tod.impl.dbgrid.messages;
 
 import static tod.impl.dbgrid.DebuggerGridConfig.MESSAGE_TYPE_BITS;
 import tod.core.DebugFlags;
+import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.RoleIndexSet;
@@ -35,28 +37,27 @@ import zz.utils.bit.BitUtils;
  */
 public abstract class BitGridEvent extends GridEvent
 {
-	
-	public BitGridEvent()
+	public BitGridEvent(IStructureDatabase aStructureDatabase)
 	{
+		super(aStructureDatabase);
 	}
 
-	public BitGridEvent(BitStruct aBitStruct)
+	public BitGridEvent(IStructureDatabase aStructureDatabase, BitStruct aBitStruct)
 	{
+		this(aStructureDatabase);
 		int theThread = aBitStruct.readInt(DebuggerGridConfig.EVENT_THREAD_BITS);
 		int theDepth = aBitStruct.readInt(DebuggerGridConfig.EVENT_DEPTH_BITS);
 		long theTimestamp = aBitStruct.readLong(DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
-		int theOperationBehaviorId = readShort(aBitStruct, DebuggerGridConfig.EVENT_BEHAVIOR_BITS);
-		int theOperationBytecodeIndex = readShort(aBitStruct, DebuggerGridConfig.EVENT_BYTECODE_LOCATION_BITS);
-		int theAdviceSourceId = readShort(aBitStruct, DebuggerGridConfig.EVENT_ADVICE_SRC_ID_BITS);
+		int[] theAdviceCFlow = readAdviceCFlow(aBitStruct);
+		int theProbeId = aBitStruct.readInt(DebuggerGridConfig.EVENT_PROBEID_BITS);
 		
 		long theParentTimestamp = aBitStruct.readLong(DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
 		set(
 				theThread, 
 				theDepth,
 				theTimestamp,
-				theOperationBehaviorId,
-				theOperationBytecodeIndex,
-				theAdviceSourceId,
+				theAdviceCFlow,
+				theProbeId,
 				theParentTimestamp);
 	}
 	
@@ -77,11 +78,38 @@ public abstract class BitGridEvent extends GridEvent
 		aBitStruct.writeInt(getThread(), DebuggerGridConfig.EVENT_THREAD_BITS);
 		aBitStruct.writeInt(getDepth(), DebuggerGridConfig.EVENT_DEPTH_BITS);
 		aBitStruct.writeLong(getTimestamp(), DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
-		aBitStruct.writeInt(getOperationBehaviorId(), DebuggerGridConfig.EVENT_BEHAVIOR_BITS);
-		aBitStruct.writeInt(getOperationBytecodeIndex(), DebuggerGridConfig.EVENT_BYTECODE_LOCATION_BITS);
-		aBitStruct.writeInt(getAdviceSourceId(), DebuggerGridConfig.EVENT_ADVICE_SRC_ID_BITS);
+		writeAdviceCFlow(aBitStruct, getAdviceCFlow());
+		aBitStruct.writeInt(getProbeId(), DebuggerGridConfig.EVENT_PROBEID_BITS);
 		
 		aBitStruct.writeLong(getParentTimestamp(), DebuggerGridConfig.EVENT_TIMESTAMP_BITS);
+	}
+	
+	private static void writeAdviceCFlow(BitStruct aBitStruct, int[] aAdviceCFlow)
+	{
+		aBitStruct.writeInt(aAdviceCFlow != null ? aAdviceCFlow.length : 0, DebuggerGridConfig.EVENT_ADCFLOW_COUNT_BITS);
+		if (aAdviceCFlow != null) 
+		{
+			for(int theSourceId : aAdviceCFlow) aBitStruct.writeInt(
+					theSourceId, 
+					DebuggerGridConfig.EVENT_ADVICE_SRC_ID_BITS);
+		}
+	}
+	
+	private static int[] readAdviceCFlow(BitStruct aBitStruct)
+	{
+		int theCount = aBitStruct.readInt(DebuggerGridConfig.EVENT_ADCFLOW_COUNT_BITS);
+		if (theCount == 0) return null;
+		
+		int[] theCFlow = new int[theCount];
+		for(int i=0;i<theCount;i++) theCFlow[i] = aBitStruct.readInt(DebuggerGridConfig.EVENT_ADVICE_SRC_ID_BITS);
+		return theCFlow;
+	}
+	
+	private static int coundAdviceCFlowBits(int[] aAdviceCFlow)
+	{
+		int theCount = DebuggerGridConfig.EVENT_ADCFLOW_COUNT_BITS;
+		if (aAdviceCFlow != null) theCount += aAdviceCFlow.length * DebuggerGridConfig.EVENT_ADVICE_SRC_ID_BITS;
+		return theCount;
 	}
 	
 	/**
@@ -95,9 +123,8 @@ public abstract class BitGridEvent extends GridEvent
 		theCount += DebuggerGridConfig.EVENT_THREAD_BITS;
 		theCount += DebuggerGridConfig.EVENT_DEPTH_BITS;
 		theCount += DebuggerGridConfig.EVENT_TIMESTAMP_BITS;
-		theCount += DebuggerGridConfig.EVENT_BEHAVIOR_BITS;
-		theCount += DebuggerGridConfig.EVENT_BYTECODE_LOCATION_BITS;
-		theCount += DebuggerGridConfig.EVENT_ADVICE_SRC_ID_BITS;
+		theCount += coundAdviceCFlowBits(getAdviceCFlow());
+		theCount += DebuggerGridConfig.EVENT_PROBEID_BITS;
 		theCount += DebuggerGridConfig.EVENT_TIMESTAMP_BITS;
 		
 		return theCount;
@@ -112,7 +139,6 @@ public abstract class BitGridEvent extends GridEvent
 	 * Instructs this event to add relevant data to the indexes. The base
 	 * version handles all common data; subclasses should override this method
 	 * to index specific data.
-	 * 
 	 * @param aPointer
 	 *            The internal pointer to this event.
 	 */
@@ -123,14 +149,21 @@ public abstract class BitGridEvent extends GridEvent
 		
 		aIndexes.indexType((byte) getEventType().ordinal(), TUPLE);
 		
+		ProbeInfo theProbeInfo = getProbeInfo();
+		
 		if (! DebugFlags.DISABLE_LOCATION_INDEX)
 		{
-			if (getOperationBytecodeIndex() >= 0)
-				aIndexes.indexLocation(getOperationBytecodeIndex(), TUPLE);
+			if (theProbeInfo != null && theProbeInfo.bytecodeIndex >= 0)
+				aIndexes.indexLocation(theProbeInfo.bytecodeIndex, TUPLE);
 		}
 		
-		if (getAdviceSourceId() >= 0)
-			aIndexes.indexAdviceSourceId(getAdviceSourceId(), TUPLE);
+		if (theProbeInfo != null && theProbeInfo.adviceSourceId >= 0)
+			aIndexes.indexAdviceSourceId(theProbeInfo.adviceSourceId, TUPLE);
+		
+		if (getAdviceCFlow() != null)
+		{
+			for (int theSourceId : getAdviceCFlow()) aIndexes.indexAdviceCFlow(theSourceId, TUPLE);
+		}
 		
 		if (getThread() > 0) 
 			aIndexes.indexThread(getThread(), TUPLE);
@@ -139,48 +172,48 @@ public abstract class BitGridEvent extends GridEvent
 		
 		ROLE_TUPLE.set(getTimestamp(), aPointer, RoleIndexSet.ROLE_BEHAVIOR_OPERATION);
 		
-		if (getOperationBehaviorId() >= 0)
-			aIndexes.indexBehavior(getOperationBehaviorId(), ROLE_TUPLE);
+		if (theProbeInfo != null && theProbeInfo.behaviorId >= 0)
+			aIndexes.indexBehavior(theProbeInfo.behaviorId, ROLE_TUPLE);
 	}
 
 	/**
 	 * Creates an event from a serialized representation, symmetric to
 	 * {@link #writeTo(BitStruct)}.
 	 */
-	public static BitGridEvent read(BitStruct aBitStruct)
+	public static BitGridEvent read(IStructureDatabase aStructureDatabase, BitStruct aBitStruct)
 	{
 		MessageType theType = MessageType.VALUES[aBitStruct.readInt(MESSAGE_TYPE_BITS)];
 		switch (theType)
 		{
 		case BEHAVIOR_EXIT:
-			return new GridBehaviorExitEvent(aBitStruct);
+			return new GridBehaviorExitEvent(aStructureDatabase, aBitStruct);
 			
 		case SUPER_CALL:
-			return new GridBehaviorCallEvent(aBitStruct, MessageType.SUPER_CALL);
+			return new GridBehaviorCallEvent(aStructureDatabase, aBitStruct, MessageType.SUPER_CALL);
 			
 		case EXCEPTION_GENERATED:
-			return new GridExceptionGeneratedEvent(aBitStruct);
+			return new GridExceptionGeneratedEvent(aStructureDatabase, aBitStruct);
 			
 		case FIELD_WRITE:
-			return new GridFieldWriteEvent(aBitStruct);
+			return new GridFieldWriteEvent(aStructureDatabase, aBitStruct);
 			
 		case NEW_ARRAY:
-			return new GridNewArrayEvent(aBitStruct);
+			return new GridNewArrayEvent(aStructureDatabase, aBitStruct);
 			
 		case ARRAY_WRITE:
-			return new GridArrayWriteEvent(aBitStruct);
+			return new GridArrayWriteEvent(aStructureDatabase, aBitStruct);
 			
 		case INSTANTIATION:
-			return new GridBehaviorCallEvent(aBitStruct, MessageType.INSTANTIATION);
+			return new GridBehaviorCallEvent(aStructureDatabase, aBitStruct, MessageType.INSTANTIATION);
 			
 		case LOCAL_VARIABLE_WRITE:
-			return new GridVariableWriteEvent(aBitStruct);
+			return new GridVariableWriteEvent(aStructureDatabase, aBitStruct);
 			
 		case INSTANCEOF:
-			return new GridInstanceOfEvent(aBitStruct);
+			return new GridInstanceOfEvent(aStructureDatabase, aBitStruct);
 			
 		case METHOD_CALL:
-			return new GridBehaviorCallEvent(aBitStruct, MessageType.METHOD_CALL);
+			return new GridBehaviorCallEvent(aStructureDatabase, aBitStruct, MessageType.METHOD_CALL);
 			
 		default: throw new RuntimeException("Not handled: "+theType); 
 		}

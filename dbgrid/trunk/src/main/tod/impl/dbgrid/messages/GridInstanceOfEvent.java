@@ -25,6 +25,7 @@ import static tod.impl.dbgrid.ObjectCodec.getObjectId;
 import static tod.impl.dbgrid.ObjectCodec.readObject;
 import static tod.impl.dbgrid.ObjectCodec.writeObject;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IStructureDatabase;
 import tod.impl.common.event.InstanceOfEvent;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
@@ -42,29 +43,30 @@ public class GridInstanceOfEvent extends BitGridEvent
 	private int itsTypeId;
 	private boolean itsResult;
 
-	public GridInstanceOfEvent()
+	public GridInstanceOfEvent(IStructureDatabase aStructureDatabase)
 	{
+		super(aStructureDatabase);
 	}
 
 	public GridInstanceOfEvent(
+			IStructureDatabase aStructureDatabase,
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex, 
-			int aAdviceSourceId,
+			int[] aAdviceCFlow,
+			int aProbeId,
 			long aParentTimestamp,
 			Object aObject,
 			int aTypeId,
 			boolean aResult)
 	{
-		set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp, aObject, aTypeId, aResult);
+		super(aStructureDatabase);
+		set(aThread, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aParentTimestamp, aObject, aTypeId, aResult);
 	}
 
-	public GridInstanceOfEvent(BitStruct aBitStruct)
+	public GridInstanceOfEvent(IStructureDatabase aStructureDatabase, BitStruct aBitStruct)
 	{
-		super(aBitStruct);
-
+		super(aStructureDatabase, aBitStruct);
 		itsObject = readObject(aBitStruct);
 		itsTypeId = aBitStruct.readInt(DebuggerGridConfig.EVENT_TYPE_BITS);
 		itsResult = aBitStruct.readBoolean();
@@ -74,15 +76,14 @@ public class GridInstanceOfEvent extends BitGridEvent
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex, 
-			int aAdviceSourceId,
+			int[] aAdviceCFlow,
+			int aProbeId,
 			long aParentTimestamp,
 			Object aObject,
 			int aTypeId,
 			boolean aResult)
 	{
-		super.set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp);
+		super.set(aThread, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aParentTimestamp);
 		itsObject = aObject;
 		itsTypeId = aTypeId;
 		itsResult = aResult;

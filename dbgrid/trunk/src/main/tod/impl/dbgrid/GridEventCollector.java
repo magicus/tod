@@ -22,7 +22,7 @@ package tod.impl.dbgrid;
 
 import tod.agent.Output;
 import tod.core.database.structure.IHostInfo;
-import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.impl.common.EventCollector;
 import tod.impl.dbgrid.dispatch.AbstractEventDispatcher;
@@ -61,26 +61,37 @@ public class GridEventCollector extends EventCollector
 	 * instance, and the instance is sent to the dispatcher, which
 	 * should immediately either serializes it or clone it.
 	 */
-	private final GridBehaviorCallEvent itsCallEvent = new GridBehaviorCallEvent();
-	private final GridBehaviorExitEvent itsExitEvent = new GridBehaviorExitEvent();
-	private final GridExceptionGeneratedEvent itsExceptionEvent = new GridExceptionGeneratedEvent();
-	private final GridFieldWriteEvent itsFieldWriteEvent = new GridFieldWriteEvent();
-	private final GridArrayWriteEvent itsArrayWriteEvent = new GridArrayWriteEvent();
-	private final GridNewArrayEvent itsNewArrayEvent = new GridNewArrayEvent();
-	private final GridInstanceOfEvent itsInstanceOfEvent = new GridInstanceOfEvent();
-	private final GridOutputEvent itsOutputEvent = new GridOutputEvent();
-	private final GridVariableWriteEvent itsVariableWriteEvent = new GridVariableWriteEvent();
-	private final IStructureDatabase itsStructureDatabase;
+	private final GridBehaviorCallEvent itsCallEvent;
+	private final GridBehaviorExitEvent itsExitEvent;
+	private final GridExceptionGeneratedEvent itsExceptionEvent;
+	private final GridFieldWriteEvent itsFieldWriteEvent;
+	private final GridArrayWriteEvent itsArrayWriteEvent;
+	private final GridNewArrayEvent itsNewArrayEvent;
+	private final GridInstanceOfEvent itsInstanceOfEvent;
+	private final GridOutputEvent itsOutputEvent;
+	private final GridVariableWriteEvent itsVariableWriteEvent;
+	private final IMutableStructureDatabase itsStructureDatabase;
 	
 	
 	public GridEventCollector(
 			IHostInfo aHost,
-			IStructureDatabase aStructureDatabase,
+			IMutableStructureDatabase aStructureDatabase,
 			DatabaseNode aDispatcher)
 	{
 		super(aHost, aStructureDatabase);
 		itsDatabaseNode = aDispatcher;
-		itsStructureDatabase = itsDatabaseNode.getStructureDatabase();
+		itsStructureDatabase = aStructureDatabase;
+
+		itsCallEvent = new GridBehaviorCallEvent(itsStructureDatabase);
+		itsExitEvent = new GridBehaviorExitEvent(itsStructureDatabase);
+		itsExceptionEvent = new GridExceptionGeneratedEvent(itsStructureDatabase);
+		itsFieldWriteEvent = new GridFieldWriteEvent(itsStructureDatabase);
+		itsArrayWriteEvent = new GridArrayWriteEvent(itsStructureDatabase);
+		itsNewArrayEvent = new GridNewArrayEvent(itsStructureDatabase);
+		itsInstanceOfEvent = new GridInstanceOfEvent(itsStructureDatabase);
+		itsOutputEvent = new GridOutputEvent(itsStructureDatabase);
+		itsVariableWriteEvent = new GridVariableWriteEvent(itsStructureDatabase);
+		
 	}
 
 	private void dispatch(GridEvent aEvent)
@@ -112,18 +123,21 @@ public class GridEventCollector extends EventCollector
 			long aParentTimestamp, 
 			short aDepth,
 			long aTimestamp,
+			int[] aAdviceCFlow,
 			int aBehaviorId,
 			int aOperationBytecodeIndex,
 			Object aException)
 	{
 		System.out.println("GridEventCollector.exception()");
+
+		ProbeInfo theProbeInfo = itsStructureDatabase.getNewExceptionProbe(aBehaviorId, aOperationBytecodeIndex);
+
 		itsExceptionEvent.set(
 				aThreadId, 
 				aDepth,
 				aTimestamp,
-				aBehaviorId,
-				aOperationBytecodeIndex,
-				-1, //TODO: retrieve the tag from the structure database.
+				aAdviceCFlow,
+				theProbeInfo.id,
 				aParentTimestamp, 
 				aException);
 		
@@ -136,20 +150,17 @@ public class GridEventCollector extends EventCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId,
 			int aBehaviorId, 
 			boolean aHasThrown, Object aResult)
 	{
-		ProbeInfo theProbeInfo = getProbeInfo(aProbeId);
-		
 		itsExitEvent.set(
 				aThreadId, 
 				aDepth, 
 				aTimestamp, 
-				theProbeInfo.behaviorId,
-				theProbeInfo.bytecodeIndex,
-				theProbeInfo.adviceSourceId > 0 ? theProbeInfo.adviceSourceId : aAdviceCFlow,
+				aAdviceCFlow,
+				aProbeId,
 				aParentTimestamp, 
 				aHasThrown,
 				aResult,
@@ -164,20 +175,17 @@ public class GridEventCollector extends EventCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId,
 			int aFieldId,
 			Object aTarget, Object aValue)
 	{
-		ProbeInfo theProbeInfo = getProbeInfo(aProbeId);
-
 		itsFieldWriteEvent.set(
 				aThreadId, 
 				aDepth,
 				aTimestamp,
-				theProbeInfo.behaviorId,
-				theProbeInfo.bytecodeIndex,
-				theProbeInfo.adviceSourceId > 0 ? theProbeInfo.adviceSourceId : aAdviceCFlow,
+				aAdviceCFlow,
+				aProbeId,
 				aParentTimestamp,
 				aFieldId, 
 				aTarget, 
@@ -193,20 +201,17 @@ public class GridEventCollector extends EventCollector
 			long aParentTimestamp,
 			short aDepth, 
 			long aTimestamp, 
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId, 
 			Object aTarget,
 			int aBaseTypeId, int aSize)
 	{
-		ProbeInfo theProbeInfo = getProbeInfo(aProbeId);
-
 		itsNewArrayEvent.set(
 				aThreadId, 
 				aDepth,
 				aTimestamp,
-				theProbeInfo.behaviorId,
-				theProbeInfo.bytecodeIndex,
-				theProbeInfo.adviceSourceId > 0 ? theProbeInfo.adviceSourceId : aAdviceCFlow,
+				aAdviceCFlow,
+				aProbeId,
 				aParentTimestamp,
 				aTarget,
 				aBaseTypeId,
@@ -220,20 +225,17 @@ public class GridEventCollector extends EventCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId, 
 			Object aTarget, 
 			int aIndex, Object aValue)
 	{
-		ProbeInfo theProbeInfo = getProbeInfo(aProbeId);
-
 		itsArrayWriteEvent.set(
 				aThreadId, 
 				aDepth,
 				aTimestamp,
-				theProbeInfo.behaviorId,
-				theProbeInfo.bytecodeIndex,
-				theProbeInfo.adviceSourceId > 0 ? theProbeInfo.adviceSourceId : aAdviceCFlow,
+				aAdviceCFlow,
+				aProbeId,
 				aParentTimestamp,
 				aTarget,
 				aIndex,
@@ -248,21 +250,18 @@ public class GridEventCollector extends EventCollector
 			long aParentTimestamp, 
 			short aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId,
 			Object aObject, 
 			int aTypeId,
 			boolean aResult)
 	{
-		ProbeInfo theProbeInfo = getProbeInfo(aProbeId);
-
 		itsInstanceOfEvent.set(
 				aThreadId, 
 				aDepth,
 				aTimestamp,
-				theProbeInfo.behaviorId,
-				theProbeInfo.bytecodeIndex,
-				theProbeInfo.adviceSourceId > 0 ? theProbeInfo.adviceSourceId : aAdviceCFlow,
+				aAdviceCFlow,
+				aProbeId,
 				aParentTimestamp,
 				aObject,
 				aTypeId,
@@ -276,22 +275,19 @@ public class GridEventCollector extends EventCollector
 			long aParentTimestamp,
 			short aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehavior,
 			int aExecutedBehavior,
 			Object aTarget, Object[] aArguments)
 	{
-		ProbeInfo theProbeInfo = getProbeInfo(aProbeId);
-
 		itsCallEvent.set(
 				aThreadId, 
 				aDepth, 
 				aTimestamp,
-				theProbeInfo.behaviorId,
-				theProbeInfo.bytecodeIndex,
 				aAdviceCFlow,
+				aProbeId,
 				aParentTimestamp,
 				MessageType.INSTANTIATION, 
 				aDirectParent, 
@@ -309,20 +305,16 @@ public class GridEventCollector extends EventCollector
 			long aParentTimestamp, 
 			short aDepth,
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId,
 			int aVariableId, Object aValue)
 	{
-		ProbeInfo theProbeInfo = getProbeInfo(aProbeId);
-		assert theProbeInfo.behaviorId >= 0 : "Probe has no behavior: "+aProbeId;
-
 		itsVariableWriteEvent.set(
 				aThreadId,
 				aDepth, 
 				aTimestamp,
-				theProbeInfo.behaviorId,
-				theProbeInfo.bytecodeIndex,
-				theProbeInfo.adviceSourceId > 0 ? theProbeInfo.adviceSourceId : aAdviceCFlow,
+				aAdviceCFlow,
+				aProbeId,
 				aParentTimestamp,
 				aVariableId, 
 				aValue);
@@ -336,22 +328,19 @@ public class GridEventCollector extends EventCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehavior,
 			int aExecutedBehavior,
 			Object aTarget, Object[] aArguments)
 	{
-		ProbeInfo theProbeInfo = getProbeInfo(aProbeId);
-
 		itsCallEvent.set(
 				aThreadId, 
 				aDepth, 
 				aTimestamp,
-				theProbeInfo.behaviorId,
-				theProbeInfo.bytecodeIndex,
 				aAdviceCFlow,
+				aProbeId,
 				aParentTimestamp,
 				MessageType.METHOD_CALL, 
 				aDirectParent, 
@@ -369,7 +358,7 @@ public class GridEventCollector extends EventCollector
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			Output aOutput, byte[] aData)
 	{
 		throw new UnsupportedOperationException();
@@ -381,22 +370,19 @@ public class GridEventCollector extends EventCollector
 			long aParentTimestamp,
 			short aDepth, 
 			long aTimestamp,
-			int aAdviceCFlow,
+			int[] aAdviceCFlow,
 			int aProbeId,
 			boolean aDirectParent, 
 			int aCalledBehavior,
 			int aExecutedBehavior, 
 			Object aTarget, Object[] aArguments)
 	{
-		ProbeInfo theProbeInfo = getProbeInfo(aProbeId);
-
 		itsCallEvent.set(
 				aThreadId, 
 				aDepth, 
 				aTimestamp,
-				theProbeInfo.behaviorId,
-				theProbeInfo.bytecodeIndex,
 				aAdviceCFlow,
+				aProbeId,
 				aParentTimestamp,
 				MessageType.SUPER_CALL, 
 				aDirectParent, 

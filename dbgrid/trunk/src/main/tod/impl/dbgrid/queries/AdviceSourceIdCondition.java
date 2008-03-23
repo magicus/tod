@@ -50,7 +50,7 @@ public class AdviceSourceIdCondition extends SimpleCondition
 	@Override
 	public boolean _match(GridEvent aEvent)
 	{
-		return aEvent.getAdviceSourceId() == itsAdviceSourceId;
+		return aEvent.getProbeInfo().adviceSourceId == itsAdviceSourceId;
 	}
 	
 	@Override

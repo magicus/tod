@@ -249,7 +249,7 @@ implements RIDispatcher
 			itsWriter.setStream(itsCurrentProxy.getOutStream());
 		}
 
-		public void arrayWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+		public void arrayWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int[] aAdviceCFlow,
 				int aProbeId, Object aTarget, int aIndex, Object aValue)
 		{
 			try
@@ -262,7 +262,7 @@ implements RIDispatcher
 			}
 		}
 
-		public void instanceOf(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+		public void instanceOf(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int[] aAdviceCFlow,
 				int aProbeId, Object aObject, int aTypeId, boolean aResult)
 		{
 			try
@@ -275,7 +275,7 @@ implements RIDispatcher
 			}
 		}
 
-		public void behaviorExit(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+		public void behaviorExit(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int[] aAdviceCFlow,
 				int aProbeId, int aBehaviorId, boolean aHasThrown, Object aResult)
 		{
 			try
@@ -293,7 +293,7 @@ implements RIDispatcher
 			throw new UnsupportedOperationException();
 		}
 
-		public void exception(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+		public void exception(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int[] aAdviceCFlow,
 				String aMethodName, String aMethodSignature, String aMethodDeclaringClassSignature,
 				int aOperationBytecodeIndex, Object aException)
 		{
@@ -307,7 +307,7 @@ implements RIDispatcher
 			}
 		}
 
-		public void fieldWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+		public void fieldWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int[] aAdviceCFlow,
 				int aProbeId, int aFieldId, Object aTarget, Object aValue)
 		{
 			try
@@ -325,7 +325,7 @@ implements RIDispatcher
 			throw new UnsupportedOperationException();
 		}
 
-		public void instantiation(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+		public void instantiation(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int[] aAdviceCFlow,
 				int aProbeId, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
 				Object aTarget, Object[] aArguments)
 		{
@@ -339,7 +339,7 @@ implements RIDispatcher
 			}
 		}
 
-		public void localWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+		public void localWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int[] aAdviceCFlow,
 				int aProbeId, int aVariableId, Object aValue)
 		{
 			try
@@ -352,7 +352,7 @@ implements RIDispatcher
 			}
 		}
 
-		public void methodCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+		public void methodCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int[] aAdviceCFlow,
 				int aProbeId, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
 				Object aTarget, Object[] aArguments)
 		{
@@ -366,7 +366,7 @@ implements RIDispatcher
 			}
 		}
 
-		public void newArray(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+		public void newArray(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int[] aAdviceCFlow,
 				int aProbeId, Object aTarget, int aBaseTypeId, int aSize)
 		{
 			try
@@ -379,7 +379,7 @@ implements RIDispatcher
 			}
 		}
 
-		public void output(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+		public void output(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int[] aAdviceCFlow,
 				Output aOutput, byte[] aData)
 		{
 			try
@@ -397,7 +397,7 @@ implements RIDispatcher
 			throw new UnsupportedOperationException();
 		}
 
-		public void superCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int aAdviceCFlow,
+		public void superCall(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int[] aAdviceCFlow,
 				int aProbeId, boolean aDirectParent, int aCalledBehaviorId, int aExecutedBehaviorId,
 				Object aTarget, Object[] aArguments)
 		{

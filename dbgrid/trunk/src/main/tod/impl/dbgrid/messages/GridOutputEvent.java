@@ -22,6 +22,7 @@ package tod.impl.dbgrid.messages;
 
 import tod.agent.Output;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IStructureDatabase;
 import tod.impl.common.event.OutputEvent;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.db.Indexes;
@@ -33,13 +34,18 @@ public class GridOutputEvent extends BitGridEvent
 	private String itsData;
 	private Output itsOutput;
 	
-	public GridOutputEvent()
+	public GridOutputEvent(IStructureDatabase aStructureDatabase)
 	{
+		super(aStructureDatabase);
 	}
 
 
-	public GridOutputEvent(String aData, Output aOutput)
+	public GridOutputEvent(			
+			IStructureDatabase aStructureDatabase,
+			String aData, 
+			Output aOutput)
 	{
+		super(aStructureDatabase);
 		set(aData, aOutput);
 	}
 

@@ -74,7 +74,7 @@ public class BehaviorCondition extends SimpleCondition
 	public boolean _match(GridEvent aEvent)
 	{
 		return ((itsRole == RoleIndexSet.ROLE_BEHAVIOR_ANY || itsRole == RoleIndexSet.ROLE_BEHAVIOR_OPERATION) 
-						&& aEvent.getOperationBehaviorId() == itsBehaviorId)
+						&& aEvent.getProbeInfo().behaviorId == itsBehaviorId)
 				|| aEvent.matchBehaviorCondition(itsBehaviorId, itsRole);
 	}
 	

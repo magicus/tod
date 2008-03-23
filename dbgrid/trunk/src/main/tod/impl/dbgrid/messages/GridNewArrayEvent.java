@@ -26,6 +26,7 @@ import static tod.impl.dbgrid.ObjectCodec.readObject;
 import static tod.impl.dbgrid.ObjectCodec.writeObject;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IArrayTypeInfo;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.impl.common.event.NewArrayEvent;
 import tod.impl.dbgrid.DebuggerGridConfig;
@@ -44,28 +45,30 @@ public class GridNewArrayEvent extends BitGridEvent
 	private int itsBaseTypeId;
 	private int itsSize;
 
-	public GridNewArrayEvent()
+	public GridNewArrayEvent(IStructureDatabase aStructureDatabase)
 	{
+		super(aStructureDatabase);
 	}
 
 	public GridNewArrayEvent(
+			IStructureDatabase aStructureDatabase,
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex, 
-			int aAdviceSourceId,
+			int[] aAdviceCFlow,
+			int aProbeId,
 			long aParentTimestamp,
 			Object aTarget,
 			int aBaseTypeId,
 			int aSize)
 	{
-		set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp, aTarget, aBaseTypeId, aSize);
+		super(aStructureDatabase);
+		set(aThread, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aParentTimestamp, aTarget, aBaseTypeId, aSize);
 	}
 
-	public GridNewArrayEvent(BitStruct aBitStruct)
+	public GridNewArrayEvent(IStructureDatabase aStructureDatabase, BitStruct aBitStruct)
 	{
-		super(aBitStruct);
+		super(aStructureDatabase, aBitStruct);
 
 		itsTarget = readObject(aBitStruct);
 		itsBaseTypeId = aBitStruct.readInt(DebuggerGridConfig.EVENT_TYPE_BITS);
@@ -76,15 +79,14 @@ public class GridNewArrayEvent extends BitGridEvent
 			int aThread, 
 			int aDepth,
 			long aTimestamp, 
-			int aOperationBehaviorId,
-			int aOperationBytecodeIndex, 
-			int aAdviceSourceId,
+			int[] aAdviceCFlow,
+			int aProbeId,
 			long aParentTimestamp,
 			Object aTarget,
 			int aBaseTypeId,
 			int aSize)
 	{
-		super.set(aThread, aDepth, aTimestamp, aOperationBehaviorId, aOperationBytecodeIndex, aAdviceSourceId, aParentTimestamp);
+		super.set(aThread, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aParentTimestamp);
 		itsTarget = aTarget;
 		itsBaseTypeId = aBaseTypeId;
 		itsSize = aSize;

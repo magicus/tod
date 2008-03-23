@@ -52,6 +52,11 @@ public class DebuggerGridConfig
 	/**
 	 * Number of bits used to represent a behavior id in an event.
 	 */
+	public static final int EVENT_PROBEID_BITS = 32;
+	
+	/**
+	 * Number of bits used to represent a behavior id in an event.
+	 */
 	public static final int EVENT_BEHAVIOR_BITS = 16;
 	
 	/**
@@ -83,6 +88,12 @@ public class DebuggerGridConfig
 	 * Number of bits used to represent the number of arguments of a behavior call.
 	 */
 	public static final int EVENT_ARGS_COUNT_BITS = 8; 
+	
+	/**
+	 * Number of bits used to represent the number of items in an advice cflow
+	 */
+	public static final int EVENT_ADCFLOW_COUNT_BITS = 4; 
+	
 	
 	/**
 	 * Port at which database nodes connect to the master.
