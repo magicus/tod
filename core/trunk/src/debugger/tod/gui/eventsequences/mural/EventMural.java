@@ -497,12 +497,20 @@ public class EventMural extends MouseWheelPanel
 			int theDistance = (int) Math.sqrt(
 					itsZoomDirection.x*itsZoomDirection.x + itsZoomDirection.y*itsZoomDirection.y);
 			
-			double theAngle = Math.atan2(itsZoomDirection.y, itsZoomDirection.x);
+			theDistance -= 5;
+			if (theDistance < 0) return;
 			
-			if (inAngleRange(theAngle, 0f, Math.PI/8)) scroll(theDistance/100f);
-			else if (inAngleRange(theAngle, -Math.PI/2, Math.PI/8)) zoom(theDistance/100f, itsClickStart.x);
-			else if (inAngleRange(theAngle, Math.PI, Math.PI/8)) scroll(-theDistance/100f);
-			else if (inAngleRange(theAngle, Math.PI/2, Math.PI/8)) zoom(-theDistance/100f, itsClickStart.x);
+			double theAngle = Math.atan2(itsZoomDirection.y, itsZoomDirection.x);
+			int theZoomCenterAdjust = (int) (Math.pow(itsZoomDirection.x/10f, 3) * 10);
+			
+			if (inAngleRange(theAngle, 0f, Math.PI/8)) 
+				scroll(theDistance/100f);
+			else if (inAngleRange(theAngle, -Math.PI/2, Math.PI/4)) 
+				zoom(theDistance/200f, itsClickStart.x+theZoomCenterAdjust);
+			else if (inAngleRange(theAngle, Math.PI, Math.PI/8)) 
+				scroll(-theDistance/100f);
+			else if (inAngleRange(theAngle, Math.PI/2, Math.PI/4))
+				zoom(-theDistance/200f, itsClickStart.x+theZoomCenterAdjust);
 		}
 		else if (itsZoomMarkCountdown > 0)
 		{
@@ -561,6 +569,10 @@ public class EventMural extends MouseWheelPanel
 		if (nw < 2) return;
 			
 		long s = t - ((long) ((t-t1)*k));
+		
+		if (s < itsFirstTimestamp) s = itsFirstTimestamp;
+		if (itsLastTimestamp > 0 && s+w > itsLastTimestamp) s = itsLastTimestamp - w;
+
 		pEnd.set(s+nw);
 		pStart.set(s);
 	}
