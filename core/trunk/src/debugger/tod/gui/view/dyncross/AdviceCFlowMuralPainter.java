@@ -135,6 +135,19 @@ public class AdviceCFlowMuralPainter extends AbstractMuralPainter
 					if (theBrowser.hasPrevious())
 					{
 						ILogEvent thePrevious = theBrowser.previous();
+						Highlight theHighlight = itsHighlightsProperty.get(k-1);
+						
+						// Check if previous event is really in advice cflow, or only some shadow activity
+						boolean theInCFlow = false;
+						for (int theSrcId : theHighlight.getAdviceSourceIds())
+						{
+							if (contains(thePrevious.getAdviceCFlow(), theSrcId)) 
+							{
+								theInCFlow = true;
+								break;
+							}
+						}
+						if (! theInCFlow) continue;
 						
 						// Check if the previous event is a return/after event that ends an advice cflow
 						if (thePrevious instanceof IBehaviorExitEvent)
@@ -143,12 +156,7 @@ public class AdviceCFlowMuralPainter extends AbstractMuralPainter
 								(IBehaviorCallEvent) theBrowser.getLogBrowser().getEvent(thePrevious.getParentPointer());
 							
 							if (theCallEvent == null) continue;
-							
-							Highlight theHighlight = itsHighlightsProperty.get(k-1);
-							int[] theAdviceSrcIds = theHighlight.getAdviceSourceIds();
-							
-							int theCallAdviceSrcId = theCallEvent.getAdviceSourceId();
-							if (contains(theAdviceSrcIds, theCallAdviceSrcId)) continue;
+							if (contains(theHighlight.getAdviceSourceIds(), theCallEvent.getAdviceSourceId())) continue;
 						}
 						
 						theBrowser.next();
@@ -232,6 +240,7 @@ public class AdviceCFlowMuralPainter extends AbstractMuralPainter
 	
 	private static boolean contains(int[] aArray, int aValue)
 	{
+		if (aArray == null) return false;
 		for(int theValue : aArray) if (theValue == aValue) return true;
 		return false;
 	}

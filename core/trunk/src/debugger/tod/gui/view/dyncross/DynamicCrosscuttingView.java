@@ -50,6 +50,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 
+import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
@@ -126,23 +127,31 @@ implements IListListener<Highlight>
 				if (aE.getButton() != MouseEvent.BUTTON1) return;
 				
 				JList theList = (JList) aE.getSource();
-				Highlight theHighlight = (Highlight) theList.getSelectedValue();
+				final Highlight theHighlight = (Highlight) theList.getSelectedValue();
 
 				if (aE.getClickCount() == 1)
 				{
-					theHighlight.gotoSource(getGUIManager());
+					new Thread("DynCC goto source scheduler")
+					{
+						@Override
+						public void run()
+						{
+							try
+							{
+								sleep(300);
+								theHighlight.gotoSource(getGUIManager());
+							}
+							catch (InterruptedException e)
+							{
+								throw new RuntimeException(e);
+							}
+						}
+					}.start();
 				}
 				else if (aE.getClickCount() == 2)
 				{
-					itsSeed.pHighlights.add(theHighlight);
-					
-//					System.out.println("Events for: "+theHighlight);
-//					IEventBrowser theBrowser = theHighlight.createBrowser(getLogBrowser());
-//					while (theBrowser.hasNext())
-//					{
-//						ILogEvent theEvent = theBrowser.next();
-//						System.out.println(theEvent);
-//					}
+					if (itsSeed.pHighlights.contains(theHighlight)) itsSeed.pHighlights.remove(theHighlight);
+					else itsSeed.pHighlights.add(theHighlight);
 				}
 			}
 		};
@@ -193,6 +202,18 @@ implements IListListener<Highlight>
 		itsSeed.pHighlights.removeListener(this);
 	}
 
+	private IEventBrowser createBrowser(Highlight aHighlight)
+	{
+		ICompoundFilter theUnionFilter = getLogBrowser().createUnionFilter();
+		for (int theSourceId : aHighlight.getAdviceSourceIds())
+		{
+			theUnionFilter.add(getLogBrowser().createAdviceCFlowFilter(theSourceId));
+			theUnionFilter.add(getLogBrowser().createAdviceSourceIdFilter(theSourceId));
+		}
+		return getLogBrowser().createBrowser(theUnionFilter);
+
+	}
+	
 	/**
 	 * Initial setup of highlights
 	 */
@@ -202,7 +223,7 @@ implements IListListener<Highlight>
 		for(Highlight theHighlight : itsSeed.pHighlights)
 		{
 			itsHighlighter.pHighlightBrowsers.add(new BrowserData(
-					theHighlight.createBrowser(getLogBrowser()),
+					createBrowser(theHighlight),
 					COLORS[i++],
 					BrowserData.DEFAULT_MARK_SIZE+1));
 		}
@@ -211,7 +232,7 @@ implements IListListener<Highlight>
 	public void elementAdded(IList<Highlight> aList, int aIndex, Highlight aElement)
 	{
 		itsHighlighter.pHighlightBrowsers.add(aIndex, new BrowserData(
-				aElement.createBrowser(getLogBrowser()),
+				createBrowser(aElement),
 				COLORS[aIndex],
 				BrowserData.DEFAULT_MARK_SIZE+1));
 	}
@@ -258,6 +279,8 @@ implements IListListener<Highlight>
 		public void elementRemoved(IList<Highlight> aList, int aIndex, Highlight aElement)
 		{
 			remove(aIndex);
+			revalidate();
+			repaint();
 		}
 		
 	}

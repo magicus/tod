@@ -73,7 +73,6 @@ public class DynamicCrosscuttingSeed extends LogViewSeed
 	public static abstract class Highlight
 	{
 		public abstract int[] getAdviceSourceIds();
-		public abstract IEventBrowser createBrowser(ILogBrowser aLogBrowser);
 		public abstract void gotoSource(IGUIManager aGUIManager);
 	}
 	
@@ -95,17 +94,6 @@ public class DynamicCrosscuttingSeed extends LogViewSeed
 		public int[] getAdviceSourceIds()
 		{
 			return IntArray.toIntArray(itsAspectInfo.getAdviceIds());
-		}
-		
-		@Override
-		public IEventBrowser createBrowser(ILogBrowser aLogBrowser)
-		{
-			ICompoundFilter theUnionFilter = aLogBrowser.createUnionFilter();
-			for (int theSourceId : itsAspectInfo.getAdviceIds())
-			{
-				theUnionFilter.add(aLogBrowser.createAdviceCFlowFilter(theSourceId));
-			}
-			return aLogBrowser.createBrowser(theUnionFilter);
 		}
 		
 		@Override
@@ -144,13 +132,6 @@ public class DynamicCrosscuttingSeed extends LogViewSeed
 			int[] theResult = new int[1];
 			theResult[0] = itsAdviceSourceId;
 			return theResult;
-		}
-
-		@Override
-		public IEventBrowser createBrowser(ILogBrowser aLogBrowser)
-		{
-			IEventFilter theFilter = aLogBrowser.createAdviceCFlowFilter(itsAdviceSourceId);
-			return aLogBrowser.createBrowser(theFilter);
 		}
 
 		@Override
