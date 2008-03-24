@@ -35,8 +35,13 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
@@ -44,13 +49,17 @@ import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
 import tod.gui.BrowserData;
 import tod.gui.eventsequences.mural.AbstractMuralPainter;
+import tod.gui.eventsequences.mural.EventMural;
 import tod.gui.seed.DynamicCrosscuttingSeed.Highlight;
+import zz.utils.cache.MRUBuffer;
 import zz.utils.list.IList;
+import zz.utils.list.NakedLinkedList.Entry;
 import zz.utils.ui.UIUtils;
 
 public class AdviceCFlowMuralPainter extends AbstractMuralPainter
 {
 	private IList<Highlight> itsHighlightsProperty;
+	private Map<EventMural, MuralCache> itsMuralCaches = new WeakHashMap<EventMural, MuralCache>();
 	
 	public AdviceCFlowMuralPainter(IList<Highlight> aHighlightsProperty)
 	{
@@ -59,9 +68,10 @@ public class AdviceCFlowMuralPainter extends AbstractMuralPainter
 
 	@Override
 	public long[][] paintMural(
+			EventMural aMural, 
 			Graphics2D aGraphics, 
 			Rectangle aBounds, 
-			long t1, 
+			long t1,
 			long t2,
 			List<BrowserData> aBrowserDatas)
 	{
@@ -95,6 +105,8 @@ public class AdviceCFlowMuralPainter extends AbstractMuralPainter
 		
 		aGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
+		MuralCache theMuralCache = null;
+		
 		// Draw aspect marks
 		for (int k=0;k<theCount;k++)
 		{
@@ -126,54 +138,25 @@ public class AdviceCFlowMuralPainter extends AbstractMuralPainter
 					
 					// Nothing at this location, check if previous event expands in time.
 					
+					if (theMuralCache == null) theMuralCache = getMuralCache(aMural);
+					Highlight theHighlight = itsHighlightsProperty.get(k-1);
+					HighlightCache theCache = theMuralCache.getCache(theHighlight);
+					
 					// Find out timestamp of current location
 					long w = t2-t1;
 					long t = t1+(long)(1f*w*theX/aBounds.width);
-
-					IEventBrowser theBrowser = theBrowserData.browser.clone();
-					theBrowser.setNextTimestamp(t);
-					if (theBrowser.hasPrevious())
+					
+					Range theRange = theCache.getRange(t, theBrowserData);
+					if (theRange.inCFlow)
 					{
-						ILogEvent thePrevious = theBrowser.previous();
-						Highlight theHighlight = itsHighlightsProperty.get(k-1);
-						
-						// Check if previous event is really in advice cflow, or only some shadow activity
-						boolean theInCFlow = false;
-						for (int theSrcId : theHighlight.getAdviceSourceIds())
-						{
-							if (contains(thePrevious.getAdviceCFlow(), theSrcId)) 
-							{
-								theInCFlow = true;
-								break;
-							}
-						}
-						if (! theInCFlow) continue;
-						
-						// Check if the previous event is a return/after event that ends an advice cflow
-						if (thePrevious instanceof IBehaviorExitEvent)
-						{
-							IBehaviorCallEvent theCallEvent = 
-								(IBehaviorCallEvent) theBrowser.getLogBrowser().getEvent(thePrevious.getParentPointer());
-							
-							if (theCallEvent == null) continue;
-							if (contains(theHighlight.getAdviceSourceIds(), theCallEvent.getAdviceSourceId())) continue;
-						}
-						
-						theBrowser.next();
-						ILogEvent theNext = theBrowser.hasNext() ? theBrowser.next() : null;
-						
-						// Check if both events have the same advice cflow
-						if (theNext != null && Arrays.equals(thePrevious.getAdviceCFlow(), theNext.getAdviceCFlow()))
-						{
-							long dt = theNext.getTimestamp()-t1;
-							int theNextX = (int) (1f*dt*aBounds.width/w);
-							aGraphics.setColor(theBrowserData.color);
-							aGraphics.fill(new Rectangle2D.Float(
-									theX, 
-									theHeight+theMarkYs[k]+1, 
-									theNextX-theX, 
-									theBrowserData.markSize-1));
-						}
+						long dt = theRange.t2-t1;
+						int theNextX = (int) (1f*dt*aBounds.width/w);
+						aGraphics.setColor(theBrowserData.color);
+						aGraphics.fill(new Rectangle2D.Float(
+								theX, 
+								theHeight+theMarkYs[k]+1, 
+								theNextX-theX, 
+								theBrowserData.markSize-1));
 					}
 				}
 				
@@ -237,6 +220,17 @@ public class AdviceCFlowMuralPainter extends AbstractMuralPainter
 		
 		return theValues;
 	}
+
+	private MuralCache getMuralCache(EventMural aMural)
+	{
+		MuralCache theMuralCache = itsMuralCaches.get(aMural);
+		if (theMuralCache == null)
+		{
+			theMuralCache = new MuralCache();
+			itsMuralCaches.put(aMural, theMuralCache);
+		}
+		return theMuralCache;
+	}
 	
 	private static boolean contains(int[] aArray, int aValue)
 	{
@@ -245,5 +239,208 @@ public class AdviceCFlowMuralPainter extends AbstractMuralPainter
 		return false;
 	}
 	
+	private static boolean startsWith(int[] aArray, int[] aPrefix)
+	{
+		if (aArray.length < aPrefix.length) return false;
+		for(int i=0;i<aPrefix.length;i++) if (aArray[i] != aPrefix[i]) return false;
+		return true;
+	}
+	
+	private Range computeRangeInfo(
+			long t,
+			Highlight aHighlight,
+			BrowserData aBrowserData)
+	{
+		// Get surrounding events
+		IEventBrowser theBrowser = aBrowserData.browser.clone();
+		
+		ILogEvent thePrevious = null;
+		ILogEvent theNext = null;
+		
+		theBrowser.setNextTimestamp(t);
+		if (theBrowser.hasPrevious())
+		{
+			thePrevious = theBrowser.previous();
+			theBrowser.next();
+		}
+		
+		if (theBrowser.hasNext()) theNext = theBrowser.next();
+		
+		long t1 = thePrevious != null ? thePrevious.getTimestamp() : 0;
+		long t2 = theNext != null ? theNext.getTimestamp() : Long.MAX_VALUE;
+		
+		if (thePrevious == null) return new Range(t1, t2, false);
+		
+		// Check if previous event is really in advice cflow, or only some shadow activity
+		boolean theInCFlow = false;
+		for (int theSrcId : aHighlight.getAdviceSourceIds())
+		{
+			if (contains(thePrevious.getAdviceCFlow(), theSrcId)) 
+			{
+				theInCFlow = true;
+				break;
+			}
+		}
+		if (! theInCFlow) return new Range(t1, t2, false);
+		
+		// Check if the previous event is a return/after event that ends an advice cflow
+		if (thePrevious instanceof IBehaviorExitEvent)
+		{
+			IBehaviorCallEvent theCallEvent = 
+				(IBehaviorCallEvent) theBrowser.getLogBrowser().getEvent(thePrevious.getParentPointer());
+			
+			if (theCallEvent == null ||
+					contains(aHighlight.getAdviceSourceIds(), theCallEvent.getAdviceSourceId())) 
+			{
+				return new Range(t1, t2, false);
+			}
+		}
+		
+		return new Range(t1, t2, theNext != null);
+	}
+	
+	/**
+	 * Contains cached data relative to a particular mural.
+	 * @author gpothier
+	 */
+	private class MuralCache
+	{
+		private Map<Highlight, HighlightCache> itsCaches = new HashMap<Highlight, HighlightCache>();
+		
+		public HighlightCache getCache(Highlight aHighlight)
+		{
+			HighlightCache theCache = itsCaches.get(aHighlight);
+			if (theCache == null)
+			{
+				theCache = new HighlightCache(aHighlight);
+				itsCaches.put(aHighlight, theCache);
+			}
+			return theCache;
+		}
+	}
+	
+	/**
+	 * Contains cached data relative to a particular highlight in a particular mural.
+	 * @author gpothier
+	 */
+	private class HighlightCache
+	{
+		private List<Entry<Range>> itsRanges = new ArrayList<Entry<Range>>();
+		private MRUBuffer<Void, Range> itsMRUBuffer = new MRUBuffer<Void, Range>(100, false)
+		{
+			@Override
+			protected Range fetch(Void aId)
+			{
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			protected Void getKey(Range aValue)
+			{
+				throw new UnsupportedOperationException();
+			}
+			
+			@Override
+			protected void dropped(Range aValue)
+			{
+				itsRanges.remove(aValue);
+			}
+		};
+		
+		private Highlight itsHighlight;
+		
+		public HighlightCache(Highlight aHighlight)
+		{
+			itsHighlight = aHighlight;
+		}
+
+		public Range getRange(long t, BrowserData aBrowserData) 
+		{
+			Range theInstant = new Range(t);
+			int theIndex = Collections.binarySearch(itsRanges, new Entry<Range>(theInstant), RangeEntryComparator.getInstance());
+			if (theIndex >= 0) 
+			{
+				Entry<Range> theEntry = itsRanges.get(theIndex);
+				itsMRUBuffer.use(theEntry);
+				return theEntry.getValue();
+			}
+			else
+			{
+				Range theRange = computeRangeInfo(t, itsHighlight, aBrowserData);
+				
+				int theInsert = -theIndex-1;
+				if (theInsert > 0)
+				{
+					Range thePrevious = itsRanges.get(theInsert-1).getValue();
+					if (! (thePrevious.t2 <= theRange.t1))
+					{
+						assert false;
+					}
+				}
+				
+				if (theInsert < itsRanges.size())
+				{
+					Range theNext = itsRanges.get(theInsert).getValue();
+					assert theRange.t2 <= theNext.t1;
+				}
+				
+				Entry<Range> theEntry = itsMRUBuffer.add(theRange);
+				itsRanges.add(theInsert, theEntry);
+				return theRange;
+			}
+		}
+		
+	}
+
+	private static class Range
+	{
+		public final long t1;
+		public final long t2;
+		
+		public final boolean inCFlow;
+		
+		private Range(long aT)
+		{
+			t1 = t2 = aT;
+			inCFlow = false;
+		}
+		
+		public Range(long aT1, long aT2, boolean aInCFlow)
+		{
+			t1 = aT1;
+			t2 = aT2;
+			assert t2 > t1; 
+			
+			inCFlow = aInCFlow;
+		}
+	}
+	
+	private static class RangeEntryComparator implements Comparator<Entry<Range>>
+	{
+		private static final RangeEntryComparator INSTANCE = new RangeEntryComparator();
+
+		public static RangeEntryComparator getInstance()
+		{
+			return INSTANCE;
+		}
+
+		private RangeEntryComparator()
+		{
+		}
+		
+		public int compare(Entry<Range> e1, Entry<Range> e2)
+		{
+			Range r1 = e1.getValue();
+			Range r2 = e2.getValue();
+			
+			if (r1.t1 == r1.t2 && r2.t1 <= r1.t1 && r1.t1 <= r2.t2) return 0;
+			else if (r2.t1 == r2.t2 && r1.t1 <= r2.t1 && r2.t1 <= r1.t2) return 0;
+			else if (r2.t1 == r1.t1 && r2.t2 == r1.t2) return 0;
+			else if (r1.t1 >= r2.t2) return 1;
+			else if (r2.t1 >= r1.t2) return -1;
+			else throw new RuntimeException("Overlap");
+		}
+		
+	}
 	
 }

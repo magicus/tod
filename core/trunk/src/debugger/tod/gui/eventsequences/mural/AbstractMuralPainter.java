@@ -49,11 +49,11 @@ public abstract class AbstractMuralPainter
 	
 
 	public abstract long[][] paintMural(
+			EventMural aMural, 
 			Graphics2D aGraphics, 
 			Rectangle aBounds, 
 			long aT1, 
-			long aT2, 
-			List<BrowserData> aBrowserDatas);
+			long aT2, List<BrowserData> aBrowserDatas);
 
 	protected static Shape makeTriangle(float aX, float aY, float aBaseW, float aHeight)
 	{

@@ -724,10 +724,11 @@ public class EventMural extends MouseWheelPanel
 			
 			// Paint
 			long[][] theValues = aMural.itsMuralPainter.paintMural(
+					aMural, 
 					theGraphics, 
 					new Rectangle(0, 0, u, v), 
-					(long) theStart, 
-					(long) theEnd, 
+					theStart, 
+					theEnd, 
 					aMural.pEventBrowsers);
 
 			theImageData.setUpToDate(true);

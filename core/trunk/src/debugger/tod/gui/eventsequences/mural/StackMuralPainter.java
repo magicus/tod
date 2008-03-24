@@ -58,11 +58,11 @@ public class StackMuralPainter extends AbstractMuralPainter
 	 * Paints the mural, stacking the series one above another.
 	 */
 	public long[][] paintMural(
+			EventMural aMural, 
 			Graphics2D aGraphics, 
 			Rectangle aBounds, 
 			long aT1, 
-			long aT2, 
-			List<BrowserData> aBrowserDatas)
+			long aT2, List<BrowserData> aBrowserDatas)
 	{
 		long[][] theValues = getValues(aBounds, aT1, aT2, aBrowserDatas);
 		int theCount = theValues.length;

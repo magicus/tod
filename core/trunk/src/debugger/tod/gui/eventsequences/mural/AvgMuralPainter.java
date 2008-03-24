@@ -57,11 +57,11 @@ public class AvgMuralPainter extends AbstractMuralPainter
 	 */
 	@Override
 	public long[][] paintMural(
+			EventMural aMural, 
 			Graphics2D aGraphics, 
 			Rectangle aBounds, 
 			long aT1, 
-			long aT2, 
-			List<BrowserData> aBrowserDatas)
+			long aT2, List<BrowserData> aBrowserDatas)
 	{
 		long[][] theValues = getValues(aBounds, aT1, aT2, aBrowserDatas);
 		if (theValues.length == 0) return theValues;
