@@ -268,37 +268,52 @@ implements MouseWheelListener
 		int theChildrenHeight = 0;
 		int theTotalHeight = itsEventsPanel.getHeight();
 		
-		for (ILogEvent theEvent : theEvents)
+		for (ILogEvent theEvent : theEvents) 
 		{
-			AbstractEventNode theNode = theOldMap.get(theEvent);
-			if (theNode == null) theNode = buildEventNode(theEvent);
-			
-			if (theNode != null) 
-			{
-				theChildrenHeight += theNode.getPreferredSize().height;
-				itsEventsPanel.add(theNode);
-				itsNodesMap.put(theEvent, theNode);
-			}
+			theChildrenHeight += createNode(theEvent, theOldMap, itsNodesMap);
 		}
 		
 		while (theChildrenHeight < theTotalHeight)
 		{
 			ILogEvent theEvent = itsCore.incVisibleEvents();
 			if (theEvent == null) break;
-			AbstractEventNode theNode = theOldMap.get(theEvent);
-			if (theNode == null) theNode = buildEventNode(theEvent);
 			
-			if (theNode != null) 
-			{
-				theChildrenHeight += theNode.getPreferredSize().height;
-				itsEventsPanel.add(theNode);
-				itsNodesMap.put(theEvent, theNode);
-			}
+			theChildrenHeight += createNode(theEvent, theOldMap, itsNodesMap);
 		}
-		
 		
 		itsEventsPanel.revalidate();
 		itsEventsPanel.repaint();
+	}
+	
+	private int createNode(
+			ILogEvent aEvent, 
+			Map<ILogEvent, AbstractEventNode> aOldMap,
+			Map<ILogEvent, AbstractEventNode> aNewMap)
+	{
+		int theHeight = 0;
+		
+		AbstractEventNode theNode = aOldMap.get(aEvent);
+		if (theNode == null) theNode = buildEventNode(aEvent);
+		
+		if (theNode != null) 
+		{
+			theHeight = theNode.getPreferredSize().height;
+			itsEventsPanel.add(theNode);
+			aNewMap.put(aEvent, theNode);
+			
+			// Check if this is a group node
+			if (theNode instanceof AbstractEventGroupNode)
+			{
+				AbstractEventGroupNode<?> theGroupNode = (AbstractEventGroupNode) theNode;
+				Iterable<AbstractEventNode> theChildrenNodes = theGroupNode.getChildrenNodes();
+				for (AbstractEventNode theChildNode : theChildrenNodes)
+				{
+					aNewMap.put(theChildNode.getEvent(), theChildNode);
+				}
+			}
+		}
+
+		return theHeight;
 	}
 	
 	private void createUI()

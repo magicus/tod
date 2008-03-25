@@ -177,8 +177,6 @@ public abstract class AbstractSimpleEventNode extends AbstractEventNode
 		getListPanel().pSelectedEvent().set(getEvent());
 		ILogEvent theEvent = getEvent();
 		
-		System.out.println("cflow: "+IntArray.toList(theEvent.getAdviceCFlow()));
-		
 		Bus.get(this).postMessage(new EventSelectedMsg(theEvent, SelectionMethod.SELECT_IN_LIST));
 		aEvent.consume();			
 		

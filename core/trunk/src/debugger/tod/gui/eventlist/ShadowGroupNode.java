@@ -69,6 +69,7 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 	
 	private Set<BytecodeRole> itsHiddenRoles = new HashSet<BytecodeRole>();
 	private List<ILogEvent> itsShownEvents = new ArrayList<ILogEvent>();
+	private List<AbstractEventNode> itsChildrenNodes = new ArrayList<AbstractEventNode>();
 	private boolean itsFullObliviousness;
 	
 	private IProperty<IntimacyLevel> itsIntimacyLevelProperty;
@@ -167,11 +168,13 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 	@Override
 	protected JComponent getCenterComponent()
 	{
+		itsChildrenNodes.clear();
 		JPanel thePanel = new JPanel(GUIUtils.createStackLayout());
 		for (ILogEvent theEvent : itsShownEvents)
 		{
 			AbstractEventNode theNode = EventListPanel.buildEventNode(getGUIManager(), getListPanel(), theEvent);
 			thePanel.add(theNode);
+			itsChildrenNodes.add(theNode);
 		}
 		return thePanel;
 	}
@@ -180,5 +183,11 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 	public void mousePressed(MouseEvent aE)
 	{
 		getGUIManager().gotoSource(getSourceRange());
+	}
+	
+	@Override
+	public Iterable<AbstractEventNode> getChildrenNodes()
+	{
+		return itsChildrenNodes;
 	}
 }

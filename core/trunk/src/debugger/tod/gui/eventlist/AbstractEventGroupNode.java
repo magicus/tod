@@ -58,4 +58,6 @@ public abstract class AbstractEventGroupNode<K> extends AbstractEventNode
 	{
 		return itsGroup;
 	}
+	
+	public abstract Iterable<AbstractEventNode> getChildrenNodes();
 }
