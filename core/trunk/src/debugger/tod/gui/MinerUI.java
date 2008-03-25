@@ -347,7 +347,7 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 			}
 		};
 		
-		aToolbar.add(itsStringSearchAction);
+		if (itsSession.getConfig().get(TODConfig.INDEX_STRINGS)) aToolbar.add(itsStringSearchAction);
 		
 		if (DebugFlags.SHOW_DEBUG_GUI)
 		{
