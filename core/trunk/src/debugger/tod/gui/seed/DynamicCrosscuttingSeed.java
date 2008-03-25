@@ -74,6 +74,15 @@ public class DynamicCrosscuttingSeed extends LogViewSeed
 	{
 		public abstract int[] getAdviceSourceIds();
 		public abstract void gotoSource(IGUIManager aGUIManager);
+		
+		/**
+		 * Strips the package name from the given file name.
+		 */
+		protected String strippedName(String aFileName)
+		{
+			int i = aFileName.lastIndexOf('.');
+			return aFileName.substring(i+1);
+		}
 	}
 	
 	public static class AspectHighlight extends Highlight
@@ -105,7 +114,7 @@ public class DynamicCrosscuttingSeed extends LogViewSeed
 		@Override
 		public String toString()
 		{
-			return getAspectInfo().getSourceFile();
+			return strippedName(getAspectInfo().getSourceFile());
 		}
 	}
 	
@@ -143,7 +152,7 @@ public class DynamicCrosscuttingSeed extends LogViewSeed
 		@Override
 		public String toString()
 		{
-			return getAdviceSource().toString();
+			return strippedName(getAdviceSource().sourceFile)+":"+getAdviceSource().startLine;
 		}
 	}
 	

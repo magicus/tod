@@ -198,7 +198,21 @@ public class SourceRevealerUtils
 		for (IJavaProject theJavaProject : aJavaProjects)
 		{
 			IProject theProject = theJavaProject.getProject();
-			IFile[] theFiles = EclipseUtils.findFiles(theProject, aName);
+			IFile[] theFiles = EclipseUtils.findFiles(aName, theProject);
+			if (theFiles.length > 0) return theFiles[0];
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Similar to {@link #findFile(List, String)}, but only searches in source folders.
+	 */
+	public static IFile findSourceFile(List<IJavaProject> aJavaProjects, String aName) 
+	{
+		for (IJavaProject theJavaProject : aJavaProjects)
+		{
+			IFile[] theFiles = EclipseUtils.findSourceFiles(aName, theJavaProject);
 			if (theFiles.length > 0) return theFiles[0];
 		}
 		
@@ -219,9 +233,8 @@ public class SourceRevealerUtils
 		{
 			// Another aspectj hack
 			String theName = aSourceRange.sourceFile;
-			int i = theName.lastIndexOf('.');
-			theName = theName.substring(i+1);
-			IFile theFile = findFile(aJavaProjects, theName+".aj");
+			theName = theName.replace('.', '/');
+			IFile theFile = findSourceFile(aJavaProjects, theName+".aj");
 			if (theFile != null) return EditorUtility.openInEditor(theFile, false);
 			else
 			{

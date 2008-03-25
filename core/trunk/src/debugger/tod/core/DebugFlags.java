@@ -111,7 +111,7 @@ public class DebugFlags
 	/**
 	 * Causes the {@link EventInterpreter} to log events.
 	 */
-	public static final boolean INTERPRETER_LOG = true;
+	public static final boolean INTERPRETER_LOG = false;
 	
 	/**
 	 * Stream to which the event collector sends debug info.
