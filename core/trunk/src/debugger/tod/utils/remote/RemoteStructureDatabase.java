@@ -326,7 +326,7 @@ implements RIStructureDatabase
 		private List<IBehaviorInfo> itsBehaviors = new ArrayList<IBehaviorInfo>();
 		private List<IFieldInfo> itsFields = new ArrayList<IFieldInfo>();
 
-		private Stats itsLastStats = new Stats(0, 0, 0); 
+		private Stats itsLastStats = new Stats(0, 0, 0, 0); 
 		private boolean itsTypesUpToDate = false;
 		private boolean itsBehaviorsUpToDate = false;
 		private boolean itsFieldsUpToDate = false;

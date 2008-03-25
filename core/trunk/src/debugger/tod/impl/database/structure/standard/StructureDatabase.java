@@ -415,7 +415,7 @@ public class StructureDatabase implements IShareableStructureDatabase
 	
 	public Stats getStats()
 	{
-		return new Stats(itsClasses.size(), itsBehaviors.size(), itsFields.size());
+		return new Stats(itsClasses.size(), itsBehaviors.size(), itsFields.size(), itsProbes.size());
 	}
 	
 	public int getBehaviorId(String aClassName, String aMethodName, String aMethodSignature)

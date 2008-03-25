@@ -20,7 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.transport;
 
-import static tod.agent.AgentDebugFlags.COLLECTOR_LOG;
+import static tod.core.DebugFlags.INTERPRETER_LOG;
 import static tod.agent.AgentDebugFlags.DISABLE_COLLECTOR;
 
 import java.io.PrintStream;
@@ -180,7 +180,7 @@ public final class EventInterpreter implements ILowLevelCollector
 			
 			short theDepth = (short) (theThread.getCurrentDepth()-1);
 			
-			if (COLLECTOR_LOG) print(theDepth, String.format(
+			if (INTERPRETER_LOG) print(theDepth, String.format(
 					"logBehaviorEnter(%d, %s, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 					aTimestamp,
 					getBehavior(aBehaviorId),
@@ -237,7 +237,7 @@ public final class EventInterpreter implements ILowLevelCollector
 			
 			short theDepth = (short) theThread.getCurrentDepth();
 			
-			if (COLLECTOR_LOG) print(theDepth, String.format(
+			if (INTERPRETER_LOG) print(theDepth, String.format(
 					"logBehaviorEnter(%d, %s, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 					aTimestamp,
 					getBehavior(aBehaviorId),
@@ -309,7 +309,7 @@ public final class EventInterpreter implements ILowLevelCollector
 			theThread.decDepthAdjust();
 		}
 		
-		if (COLLECTOR_LOG) print(theDepth, String.format(
+		if (INTERPRETER_LOG) print(theDepth, String.format(
 				"logBehaviorExit(%d, %d, %s, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
 				aProbeId,
@@ -341,7 +341,7 @@ public final class EventInterpreter implements ILowLevelCollector
 		
 		ThreadData theThread = getThreadData(aThreadId);
 		
-		if (COLLECTOR_LOG)
+		if (INTERPRETER_LOG)
 		{
 			System.err.println("Exit with exception:");
 			((Throwable) aException).printStackTrace();
@@ -360,7 +360,7 @@ public final class EventInterpreter implements ILowLevelCollector
 		assert theFrame.behavior == aBehaviorId;
 		assert theFrame.directParent;
 		
-		if (COLLECTOR_LOG) itsPrintStream.println(String.format(
+		if (INTERPRETER_LOG) itsPrintStream.println(String.format(
 				" thread: %d, depth: %d\n frame: %s",
 				theThread.getId(),
 				theThread.getCurrentDepth(),
@@ -395,7 +395,7 @@ public final class EventInterpreter implements ILowLevelCollector
 
 		int[] theAdviceCFlow = theThread.getAdviceCFlow(); // Must do that before popping frame.
 		
-		if (COLLECTOR_LOG) print(theDepth, String.format(
+		if (INTERPRETER_LOG) print(theDepth, String.format(
 				"logExceptionGenerated(%d, %s, %s, %s, %d, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
 				aMethodName,
@@ -442,7 +442,7 @@ public final class EventInterpreter implements ILowLevelCollector
 		FrameInfo theFrame = theThread.currentFrame();
 		short theDepth = theThread.getCurrentDepth();
 		
-		if (COLLECTOR_LOG) print(theDepth, String.format(
+		if (INTERPRETER_LOG) print(theDepth, String.format(
 				"logFieldWrite(%d, %d, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
 				aProbeId,
@@ -479,7 +479,7 @@ public final class EventInterpreter implements ILowLevelCollector
 		FrameInfo theFrame = theThread.currentFrame();
 		
 		short theDepth = theThread.getCurrentDepth();
-		if (COLLECTOR_LOG) print(theDepth, String.format(
+		if (INTERPRETER_LOG) print(theDepth, String.format(
 				"logNewArray(%d, %d, %s, %d, %d)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
 				aProbeId,
@@ -517,7 +517,7 @@ public final class EventInterpreter implements ILowLevelCollector
 		FrameInfo theFrame = theThread.currentFrame();
 		
 		short theDepth = theThread.getCurrentDepth();
-		if (COLLECTOR_LOG) print(theDepth, String.format(
+		if (INTERPRETER_LOG) print(theDepth, String.format(
 				"logArrayWrite(%d, %d, %s, %d, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
 				aProbeId,
@@ -553,7 +553,7 @@ public final class EventInterpreter implements ILowLevelCollector
 		FrameInfo theFrame = theThread.currentFrame();
 		short theDepth = theThread.getCurrentDepth();
 		
-		if (COLLECTOR_LOG) print(theDepth, String.format(
+		if (INTERPRETER_LOG) print(theDepth, String.format(
 				"logLocalVariableWrite(%d, %d, %d, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
 				aProbeId,
@@ -588,7 +588,7 @@ public final class EventInterpreter implements ILowLevelCollector
 		FrameInfo theFrame = theThread.currentFrame();
 		
 		short theDepth = theThread.getCurrentDepth();
-		if (COLLECTOR_LOG) print(theDepth, String.format(
+		if (INTERPRETER_LOG) print(theDepth, String.format(
 				"logInstanceOf(%d, %d, %s, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
 				aProbeId,
@@ -628,9 +628,8 @@ public final class EventInterpreter implements ILowLevelCollector
 		ThreadData theThread = getThreadData(aThreadId);
 
 		FrameInfo theFrame = theThread.currentFrame();
-		assert theFrame.directParent && theFrame.behavior > 0;
 		
-		if (COLLECTOR_LOG)
+		if (INTERPRETER_LOG)
 		{
 			short theDepth = theThread.getCurrentDepth();
 			print(theDepth, String.format(
@@ -643,6 +642,8 @@ public final class EventInterpreter implements ILowLevelCollector
 					theFrame,
 					IntArray.toList(theThread.getAdviceCFlow())));
 		}
+
+		assert theFrame.directParent && theFrame.behavior > 0 : theFrame;
 
 		theFrame = theThread.pushFrame(true, aBehaviorId, true, theFrame.parentTimestamp, aCallType, aProbeId);
 		
@@ -669,7 +670,7 @@ public final class EventInterpreter implements ILowLevelCollector
 		FrameInfo theFrame = theThread.currentFrame();
 		short theDepth = theThread.getCurrentDepth();
 		
-		if (COLLECTOR_LOG) print(theDepth, String.format(
+		if (INTERPRETER_LOG) print(theDepth, String.format(
 				"logBeforeBehaviorCall(%d, %d, %s, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
 				aProbeId,
@@ -719,7 +720,7 @@ public final class EventInterpreter implements ILowLevelCollector
 		FrameInfo theFrame = theThread.currentFrame();
 		short theDepth = theThread.getCurrentDepth();
 		
-		if (COLLECTOR_LOG)
+		if (INTERPRETER_LOG)
 		{
 			print(theDepth, String.format(
 					"logAfterBehaviorCallDry()\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
@@ -766,7 +767,7 @@ public final class EventInterpreter implements ILowLevelCollector
 		short theDepth = (short) (theThread.getCurrentDepth()+1);
 		assert theFrame.behavior == aBehaviorId;
 		
-		if (COLLECTOR_LOG) print(theDepth, String.format(
+		if (INTERPRETER_LOG) print(theDepth, String.format(
 				"logAfterBehaviorCall(%d, %d, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
 				aProbeId,
@@ -805,7 +806,7 @@ public final class EventInterpreter implements ILowLevelCollector
 		short theDepth = (short) (theThread.getCurrentDepth()+1);
 		assert theFrame.behavior == aBehaviorId;
 		
-		if (COLLECTOR_LOG) print(theDepth, String.format(
+		if (INTERPRETER_LOG) print(theDepth, String.format(
 				"logAfterBehaviorCallWithException(%d, %d, %s, %s, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
 				aProbeId,
@@ -840,7 +841,7 @@ public final class EventInterpreter implements ILowLevelCollector
 		FrameInfo theFrame = theThread.currentFrame();
 		short theDepth = theThread.getCurrentDepth();
 		
-		if (COLLECTOR_LOG) print(theDepth, String.format(
+		if (INTERPRETER_LOG) print(theDepth, String.format(
 				"logOutput(%d, %s, %s)\n thread: %d, depth: %d\n frame: %s a.cflow: %s",
 				aTimestamp,
 				aOutput,

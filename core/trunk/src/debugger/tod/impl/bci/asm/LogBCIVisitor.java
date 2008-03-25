@@ -32,7 +32,10 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.impl.bci.asm;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import javax.swing.text.StyledEditorKit.ForegroundAction;
 
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassAdapter;
@@ -220,6 +223,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		private int itsStoreIndex = 0;
 		
 		private List<SootAttribute> itsSootAttributes = new ArrayList<SootAttribute>();
+		private List<Handler> itsExceptionHandlers = new ArrayList<Handler>();
 		
 		public BCIMethodVisitor(MethodVisitor mv, ASMMethodInfo aMethodInfo)
 		{
@@ -394,8 +398,42 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		}
 		
 		@Override
+		public void visitLineNumber(int aLine, Label aStart)
+		{
+			itsMethodInfo.addLineNumber(new ASMLineNumberInfo(aStart, aLine));
+			mv.visitLineNumber(aLine, aStart);
+		}
+		
+		@Override
+		public void visitLocalVariable(String aName, String aDesc, String aSignature, Label aStart, Label aEnd, int aIndex)
+		{
+			itsMethodInfo.addLocalVariable(new ASMLocalVariableInfo(aStart, aEnd, aName, aDesc, aIndex));
+			mv.visitLocalVariable(aName, aDesc, aSignature, aStart, aEnd, aIndex);
+		}
+
+		@Override
+		public void visitTryCatchBlock(Label aStart, Label aEnd, Label aHandler, String aType)
+		{
+			itsExceptionHandlers.add(new Handler(aStart, aEnd, aHandler, aType));
+		}
+		
+		/**
+		 * Post-processing of exception handlers to ensure they are in the correct order.
+		 */
+		private void processExceptionHandlers()
+		{
+			Collections.sort(itsExceptionHandlers);
+			for (Handler theHandler : itsExceptionHandlers)
+			{
+				mv.visitTryCatchBlock(theHandler.start, theHandler.end, theHandler.handler, theHandler.type);
+			}
+		}
+		
+		@Override
 		public void visitMaxs(int aMaxStack, int aMaxLocals)
 		{
+			processExceptionHandlers();
+			
 			Label theLabel = new Label();
 			mv.visitLabel(theLabel);
 			int theCodeSize = theLabel.getOffset();
@@ -416,19 +454,6 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			super.visitMaxs(aMaxStack, aMaxLocals);
 		}
 		
-		@Override
-		public void visitLineNumber(int aLine, Label aStart)
-		{
-			itsMethodInfo.addLineNumber(new ASMLineNumberInfo(aStart, aLine));
-			mv.visitLineNumber(aLine, aStart);
-		}
-		
-		@Override
-		public void visitLocalVariable(String aName, String aDesc, String aSignature, Label aStart, Label aEnd, int aIndex)
-		{
-			itsMethodInfo.addLocalVariable(new ASMLocalVariableInfo(aStart, aEnd, aName, aDesc, aIndex));
-			mv.visitLocalVariable(aName, aDesc, aSignature, aStart, aEnd, aIndex);
-		}
 
 		@Override
 		public void visitEnd()
@@ -460,6 +485,45 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 					theTagMap);
 
 			super.visitEnd();
+		}
+	}
+	
+	/**
+	 * Represents an exception handler.
+	 * @author gpothier
+	 */
+	private static class Handler implements Comparable<Handler>
+	{
+		public final Label start;
+		public final Label end;
+		public final Label handler;
+		public final String type;
+		
+		public Handler(Label aStart, Label aEnd, Label aHandler, String aType)
+		{
+			start = aStart;
+			end = aEnd;
+			handler = aHandler;
+			type = aType;
+		}
+		
+		/**
+		 * Whether this handler contains the specified handlers.
+		 */
+		public boolean contains(Handler h)
+		{
+			int mi1 = start.getOffset();
+			int mi2 = end.getOffset();
+			int hi1 = h.start.getOffset();
+			int hi2 = h.end.getOffset();
+			return mi1 <= hi1 && hi2 <= mi2;
+		}
+
+		public int compareTo(Handler h)
+		{
+			int ms = end.getOffset()-start.getOffset();
+			int hs = h.end.getOffset()-h.start.getOffset();
+			return ms-hs;
 		}
 	}
 	

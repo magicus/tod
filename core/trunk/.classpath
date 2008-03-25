@@ -13,6 +13,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/TOD-agent"/>
 	<classpathentry kind="lib" path="lib/jython-2.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/infovis.jar" sourcepath="/infovis-0.9beta2"/>
-	<classpathentry kind="lib" path="lib/asm-all-3.0.jar"/>
+	<classpathentry kind="lib" path="lib/asm-all-3.0.jar" sourcepath="/ASM/src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

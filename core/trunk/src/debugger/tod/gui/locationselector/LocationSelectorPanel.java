@@ -51,6 +51,7 @@ import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.IMemberInfo;
 import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
 import zz.utils.tree.SimpleTree;
@@ -82,6 +83,7 @@ public class LocationSelectorPanel extends JPanel
 		
 		theTabbedPane.addTab("Packages", new TreeSelector());
 		theTabbedPane.addTab("Behaviors", new BehaviorIdSelector());
+		theTabbedPane.addTab("Probes", new ProbeIdSelector());
 		
 		setLayout(new StackLayout());
 		add(theTabbedPane);
@@ -208,6 +210,65 @@ public class LocationSelectorPanel extends JPanel
 		}
 	}
 
+	/**
+	 * Peer of {@link BigListModel}
+	 * @author gpothier
+	 */
+	private static class BigJList extends JList
+	{
+		public BigJList()
+		{
+		}
+
+		public BigJList(BigListModel aDataModel)
+		{
+			super(aDataModel);
+		}
+
+		@Override
+		public BigListModel getModel()
+		{
+			return (BigListModel) super.getModel();
+		}
+		
+		@Override
+		public Dimension getPreferredSize()
+		{
+			getModel().setHideAway(true);
+			Dimension thePreferredSize = super.getPreferredSize();
+			getModel().setHideAway(false);
+			return thePreferredSize;
+		}
+	}
+	
+	/**
+	 * A list model for huge list for which we do not want the contents
+	 * to be retrieved just for calculating the preferred size.
+	 * @author gpothier
+	 */
+	private static abstract class BigListModel extends AbstractListModel
+	{
+		/**
+		 * This flag permits to simulate we are empty
+		 * during the call to getPreferredSize, otherwise the full
+		 * model is scanned.
+		 */
+		private boolean itsHideAway = false;
+		
+		public void setHideAway(boolean aHideAway)
+		{
+			itsHideAway = aHideAway;
+		}
+		
+		public final Object getElementAt(int aIndex)
+		{
+			if (itsHideAway) return "A";
+			else return getElementAt0(aIndex);
+		}
+		
+		protected abstract Object getElementAt0(int aIndex);
+	}
+	
 
 	/**
 	 * Presents behaviors by id.
@@ -224,37 +285,17 @@ public class LocationSelectorPanel extends JPanel
 		{
 			final BehaviorListModel theListModel = new BehaviorListModel(getStructureDatabase());
 			
-			JList theList = new JList()
-			{
-				@Override
-				public Dimension getPreferredSize()
-				{
-					theListModel.setHideAway(true);
-					Dimension thePreferredSize = super.getPreferredSize();
-					theListModel.setHideAway(false);
-					return thePreferredSize;
-				}
-			};
-			
-			theList.setModel(theListModel);
-		
+			JList theList = new BigJList(theListModel);
 			setLayout(new StackLayout());
 			add(new JScrollPane(theList));
 		}
 		
 	}
 	
-	private static class BehaviorListModel extends AbstractListModel
+	private static class BehaviorListModel extends BigListModel
 	{
 		private IStructureDatabase itsStructureDatabase;
 		private int itsSize;
-		
-		/**
-		 * This flag permits to simulate we are empty
-		 * during the call to getPreferredSize, otherwise the full
-		 * model is scanned.
-		 */
-		private boolean itsHideAway = false;
 		
 		public BehaviorListModel(IStructureDatabase aStructureDatabase)
 		{
@@ -262,15 +303,9 @@ public class LocationSelectorPanel extends JPanel
 			itsSize = itsStructureDatabase.getStats().nBehaviors;
 		}
 
-		public void setHideAway(boolean aHideAway)
+		@Override
+		protected Object getElementAt0(int aIndex)
 		{
-			itsHideAway = aHideAway;
-		}
-
-		public Object getElementAt(int aIndex)
-		{
-			if (itsHideAway) return "A";
-			
 			IBehaviorInfo theBehavior = itsStructureDatabase.getBehavior(aIndex, false);
 			return theBehavior != null ?
 					""+aIndex+" "+theBehavior.getType().getName()+"."+theBehavior.getName()
@@ -281,7 +316,54 @@ public class LocationSelectorPanel extends JPanel
 		{
 			return itsSize;
 		}
+	}
+	
+	/**
+	 * Presents probes by id.
+	 * @author gpothier
+	 */
+	private class ProbeIdSelector extends JPanel
+	{
+		public ProbeIdSelector()
+		{
+			createUI();
+		}
+
+		private void createUI()
+		{
+			final ProbeListModel theListModel = new ProbeListModel(getStructureDatabase());
+			
+			JList theList = new BigJList(theListModel);
+			setLayout(new StackLayout());
+			add(new JScrollPane(theList));
+		}
 		
+	}
+	
+	private static class ProbeListModel extends BigListModel
+	{
+		private IStructureDatabase itsStructureDatabase;
+		private int itsSize;
+		
+		public ProbeListModel(IStructureDatabase aStructureDatabase)
+		{
+			itsStructureDatabase = aStructureDatabase;
+			itsSize = itsStructureDatabase.getStats().nProbes;
+		}
+
+		@Override
+		protected Object getElementAt0(int aIndex)
+		{
+			ProbeInfo theProbeInfo = itsStructureDatabase.getProbeInfo(aIndex);
+			return theProbeInfo != null ?
+					""+aIndex+" "+theProbeInfo
+					: ""+aIndex;
+		}
+
+		public int getSize()
+		{
+			return itsSize;
+		}
 	}
 	
 	

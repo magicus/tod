@@ -36,6 +36,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
+import tod.core.transport.EventInterpreter;
 import tod.core.transport.LogReceiver;
 import tod.impl.common.ObjectInspector;
 import tod.utils.ConfigUtils;
@@ -106,6 +107,11 @@ public class DebugFlags
 	 * Causes the event collector to print the events it receives.
 	 */
 	public static final boolean COLLECTOR_LOG = false;
+	
+	/**
+	 * Causes the {@link EventInterpreter} to log events.
+	 */
+	public static final boolean INTERPRETER_LOG = true;
 	
 	/**
 	 * Stream to which the event collector sends debug info.

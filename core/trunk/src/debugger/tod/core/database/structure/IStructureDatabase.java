@@ -204,32 +204,36 @@ public interface IStructureDatabase
 		public final int nTypes;
 		public final int nBehaviors;
 		public final int nFields;
+		public final int nProbes;
 
-		public Stats(int aTypes, int aBehaviors, int aFields)
+		public Stats(int aTypes, int aBehaviors, int aFields, int aProbes)
 		{
 			nTypes = aTypes;
 			nBehaviors = aBehaviors;
 			nFields = aFields;
+			nProbes = aProbes;
 		}
 		
 		@Override
 		public String toString()
 		{
 			return String.format(
-					"Location repository stats: %d types, %d behaviors, %d fields",
+					"Location repository stats: %d types, %d behaviors, %d fields, %d probes",
 					nTypes,
 					nBehaviors,
-					nFields);
+					nFields,
+					nProbes);
 		}
 
 		@Override
 		public int hashCode()
 		{
-			final int PRIME = 31;
+			final int prime = 31;
 			int result = 1;
-			result = PRIME * result + nBehaviors;
-			result = PRIME * result + nFields;
-			result = PRIME * result + nTypes;
+			result = prime * result + nBehaviors;
+			result = prime * result + nFields;
+			result = prime * result + nProbes;
+			result = prime * result + nTypes;
 			return result;
 		}
 
@@ -242,9 +246,11 @@ public interface IStructureDatabase
 			final Stats other = (Stats) obj;
 			if (nBehaviors != other.nBehaviors) return false;
 			if (nFields != other.nFields) return false;
+			if (nProbes != other.nProbes) return false;
 			if (nTypes != other.nTypes) return false;
 			return true;
 		}
+
 	}
 
 
