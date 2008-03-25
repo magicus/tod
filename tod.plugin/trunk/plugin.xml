@@ -114,7 +114,7 @@
             category="tod.plugin"
             class="tod.plugin.views.TraceNavigatorView"
             id="tod.plugin.views.TraceNavigatorView"
-            name="Trace Navigator"/>
+            name="TOD Navigator"/>
       <view
             category="tod.plugin"
             class="tod.plugin.fxviews.TraceNavigatorFXView"
