@@ -435,10 +435,19 @@ public class EventMural extends MouseWheelPanel
 		repaint();
 	}
 	
+	/**
+	 * Whether the given mouse event has the modifiers that indicate that
+	 * event tooltips should be displayed/clickable.
+	 */
+	private boolean hasTooltipModifier(MouseEvent aEvent)
+	{
+		return MouseModifiers.hasCtrl(aEvent) || MouseModifiers.hasShift(aEvent);
+	}
+	
 	@Override
 	public void mouseMoved(MouseEvent aE)
 	{
-		if (MouseModifiers.getModifiers(aE) == MouseModifiers.CTRL)
+		if (hasTooltipModifier(aE))
 		{
 			updateEventInfo(aE.getX());
 		}
@@ -454,10 +463,9 @@ public class EventMural extends MouseWheelPanel
 	@Override
 	public void mousePressed(MouseEvent aE)
 	{
-		MouseModifiers theModifiers = MouseModifiers.getModifiers(aE);
 		if (aE.getButton() == MouseEvent.BUTTON1)
 		{
-			if (theModifiers == MouseModifiers.CTRL)
+			if (hasTooltipModifier(aE))
 			{
 				updateEventInfo(aE.getX());
 				if (itsCurrentEvent != null) eEventClicked().fire(itsCurrentEvent);
