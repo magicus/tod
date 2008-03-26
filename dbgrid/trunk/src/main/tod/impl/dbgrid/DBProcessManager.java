@@ -21,6 +21,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -41,6 +43,7 @@ import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
 
 import tod.Util;
 import tod.core.config.TODConfig;
+import tod.utils.TODUtils;
 import zz.utils.StreamPipe;
 
 /**
@@ -57,11 +60,21 @@ public class DBProcessManager
 	 */
 	public static DBProcessManager getDefault()
 	{
-		if (itsDefault == null)
+		try
 		{
-			itsDefault = new DBProcessManager(new TODConfig());
+			if (itsDefault == null)
+			{
+				itsDefault = new DBProcessManager(new TODConfig());
+				FileOutputStream theLogStrean = new FileOutputStream("db.log");
+				itsDefault.addOutputStream(theLogStrean);
+				itsDefault.addErrorStream(theLogStrean);
+			}
+			return itsDefault;
 		}
-		return itsDefault;
+		catch (FileNotFoundException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 	
 	public static String cp = ".";
@@ -482,10 +495,16 @@ public class DBProcessManager
 		{
 			try
 			{
+				TODUtils.log(0, "Starting keepalive thread");
+				
 				while(itsManager != null)
 				{
 					DBProcessManager theManager = itsManager.get();
-					if (theManager == null) return;
+					if (theManager == null) 
+					{
+						TODUtils.log(0, "DBProcessManager was garbage collected, stopping keepalive thread");
+						break;
+					}
 					
 					boolean theAlive = false;
 					RIGridMaster theMaster = theManager.getMaster();
@@ -508,6 +527,8 @@ public class DBProcessManager
 					theManager = null; // We don't want to prevent GC
 					wait(2000);
 				}
+				
+				TODUtils.log(0, "Stopped keepalive thread");
 			}
 			catch (InterruptedException e)
 			{

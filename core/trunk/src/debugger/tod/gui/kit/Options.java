@@ -39,7 +39,7 @@ import java.util.Set;
 
 import javax.swing.JComponent;
 
-import tod.gui.IGUIManager;
+import tod.gui.settings.GUISettings;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
 
@@ -49,7 +49,7 @@ import zz.utils.properties.SimpleRWProperty;
  */
 public class Options
 {
-	private final IGUIManager itsGUIManager;
+	private final GUISettings itsGUISettings;
 	
 	/**
 	 * The name of this options set, for persistence.
@@ -71,9 +71,9 @@ public class Options
 	private Map<OptionDef, IRWProperty> itsValues = 
 		new HashMap<OptionDef, IRWProperty>();
 	
-	public Options(IGUIManager aGUIManager, String aName, Options aParent)
+	public Options(GUISettings aGUISettings, String aName, Options aParent)
 	{
-		itsGUIManager = aGUIManager;
+		itsGUISettings = aGUISettings;
 		itsName = aName;
 		itsParent = aParent;
 	}
@@ -101,12 +101,12 @@ public class Options
 	
 	private <T> void save(OptionDef<T> aDef, T aValue)
 	{
-		itsGUIManager.setProperty(getKey(aDef), aDef.marshall(aValue));
+		itsGUISettings.setProperty(getKey(aDef), aDef.marshall(aValue));
 	}
 	
 	private <T> T load(OptionDef<T> aDef)
 	{
-		String theProperty = itsGUIManager.getProperty(getKey(aDef));
+		String theProperty = itsGUISettings.getProperty(getKey(aDef));
 		return theProperty != null ? aDef.unmarshall(theProperty) : null;
 	}
 	

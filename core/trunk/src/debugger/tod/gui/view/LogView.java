@@ -80,7 +80,7 @@ implements IOptionsOwner
 	public LogView(IGUIManager aGUIManager, ILogBrowser aLog)
 	{
 		itsGUIManager = aGUIManager;
-		itsOptions = new Options(itsGUIManager, getOptionsName(), itsGUIManager.getOptions());
+		itsOptions = new Options(itsGUIManager.getSettings(), getOptionsName(), itsGUIManager.getSettings().getOptions());
 		initOptions(itsOptions);
 		itsLog = aLog;
 		itsObjectFormatter = new ObjectFormatter(itsLog);

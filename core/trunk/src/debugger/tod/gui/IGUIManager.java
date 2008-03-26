@@ -38,6 +38,7 @@ import tod.core.session.ISession;
 import tod.gui.formatter.CustomFormatterRegistry;
 import tod.gui.kit.Options;
 import tod.gui.seed.LogViewSeed;
+import tod.gui.settings.GUISettings;
 
 /**
  * This interface permits to access the basic functionalities
@@ -66,25 +67,6 @@ public interface IGUIManager
 	public JobProcessor getJobProcessor();
 	
 	/**
-	 * Returns the registry of custom object formatters.
-	 */
-	public CustomFormatterRegistry getCustomFormatterRegistry();
-	
-	/**
-	 * Stores a persistent property, which can be retrieved
-	 * with {@link #getProperty(String)}.
-	 */
-	public void setProperty(String aKey, String aValue);
-	
-	/**
-	 * Retrieves a persistent property previously stored with 
-	 * {@link #setProperty(String, String)}.
-	 * @see MinerUI#getIntProperty(IGUIManager, String, int)
-	 * @see MinerUI#getBooleanProperty(IGUIManager, String, boolean)
-	 */
-	public String getProperty(String aKey);
-	
-	/**
 	 * Returns the current debugging session.
 	 */
 	public ISession getSession();
@@ -109,7 +91,9 @@ public interface IGUIManager
 	public void showEventsForLine(IBehaviorInfo aBehavior, int aLine, IEventFilter aFilter);
 	
 	/**
-	 * Returns the global GUI options of this GUI manager.
+	 * Returns a settings manager for this gui.
 	 */
-	public Options getOptions();
+	public GUISettings getSettings();
+	
+	
 }

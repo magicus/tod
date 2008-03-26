@@ -34,7 +34,6 @@ package tod.gui.kit;
 import javax.swing.JSplitPane;
 
 import tod.gui.IGUIManager;
-import tod.gui.MinerUI;
 
 /**
  * A split pane that saves its divider location in a {@link IGUIManager}
@@ -64,7 +63,7 @@ public class SavedSplitPane extends JSplitPane
 	@Override
 	public void addNotify()
 	{
-		int theSplitterPos = MinerUI.getIntProperty(itsGUIManager, itsPropertyName, 400);
+		int theSplitterPos = itsGUIManager.getSettings().getIntProperty(itsPropertyName, 400);
 		setDividerLocation(theSplitterPos);
 		
 		super.addNotify();
@@ -75,7 +74,7 @@ public class SavedSplitPane extends JSplitPane
 	{
 		super.removeNotify();
 		
-		itsGUIManager.setProperty(itsPropertyName, ""+getDividerLocation());
+		itsGUIManager.getSettings().setProperty(itsPropertyName, ""+getDividerLocation());
 	}
 	
 

@@ -101,7 +101,7 @@ public class FormattersView extends LogView
 	
 	private JComponent createSelector()
 	{
-		final CustomFormatterRegistry theRegistry = getGUIManager().getCustomFormatterRegistry();
+		final CustomFormatterRegistry theRegistry = getGUIManager().getSettings().getCustomFormatterRegistry();
 		CRMListModel theModel = new AbstractJavaCRMListModel<CustomObjectFormatter>(theRegistry.getFormatters())
 		{
 

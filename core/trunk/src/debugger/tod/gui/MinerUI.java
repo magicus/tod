@@ -35,16 +35,8 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
@@ -66,12 +58,9 @@ import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.session.ISession;
 import tod.core.session.ISessionMonitor;
-import tod.gui.formatter.CustomFormatterRegistry;
 import tod.gui.kit.Bus;
 import tod.gui.kit.BusOwnerPanel;
 import tod.gui.kit.IBusListener;
-import tod.gui.kit.IOptionsOwner;
-import tod.gui.kit.Options;
 import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.kit.messages.ShowObjectHistoryMsg;
 import tod.gui.kit.messages.EventSelectedMsg.SM_ShowNextForLine;
@@ -86,11 +75,11 @@ import tod.gui.seed.ObjectHistorySeed;
 import tod.gui.seed.StringSearchSeed;
 import tod.gui.seed.StructureSeed;
 import tod.gui.seed.ThreadsSeed;
+import tod.gui.settings.GUISettings;
 import tod.gui.view.IEventListView;
 import tod.gui.view.LogView;
 import tod.gui.view.controlflow.CFlowView;
 import tod.utils.TODUtils;
-import zz.utils.Base64;
 import zz.utils.SimpleAction;
 import zz.utils.ui.StackLayout;
 import zz.utils.ui.UniversalRenderer;
@@ -100,7 +89,7 @@ import zz.utils.ui.UniversalRenderer;
  * @author gpothier
  */
 public abstract class MinerUI extends BusOwnerPanel
-implements ILocationSelectionListener, IGUIManager, IOptionsOwner
+implements ILocationSelectionListener, IGUIManager
 {
 	static
 	{
@@ -114,8 +103,6 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 		}
 	}
 	
-	private static final String PROPERTY_REGISTRY = "minerUI.customFormatterRegistry";
-
 	
 	private LogViewBrowserNavigator itsNavigator = new LogViewBrowserNavigator()
 	{
@@ -158,12 +145,8 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 	private JobProcessor itsJobProcessor = new JobProcessor();
 	private BookmarkPanel itsBookmarkPanel = new BookmarkPanel();
 	
-	private CustomFormatterRegistry itsCustomFormatterRegistry;
+	private GUISettings itsGUISettings = new GUISettings(this);
 	
-	private Options itsRootOptions = new Options(this, "root", null);
-	
-	private Properties itsProperties = new Properties();
-
 	/**
 	 * The currently used debugging session.
 	 */
@@ -184,11 +167,6 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 	
 	public MinerUI()
 	{
-		loadProperties(itsProperties);
-		
-		itsCustomFormatterRegistry = (CustomFormatterRegistry) MinerUI.getObjectProperty(this, PROPERTY_REGISTRY, null);
-		if (itsCustomFormatterRegistry == null) itsCustomFormatterRegistry = new CustomFormatterRegistry();
-
 		createUI();
 	}
 	
@@ -202,10 +180,6 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 		return itsJobProcessor;
 	}
 	
-	public CustomFormatterRegistry getCustomFormatterRegistry()
-	{
-		return itsCustomFormatterRegistry;
-	}
 
 	private void createUI()
 	{
@@ -245,24 +219,18 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 		super.removeNotify();
 		Bus.get(this).unsubscribe(ShowObjectHistoryMsg.ID, itsShowObjectHistoryListener);
 		Bus.get(this).unsubscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
-		saveFormatters();
+		itsGUISettings.save();
 	}
 	
-	private void saveFormatters()
+	public GUISettings getSettings()
 	{
-		MinerUI.setObjectProperty(this, PROPERTY_REGISTRY, itsCustomFormatterRegistry);
-	}
-
-	public Options getOptions()
-	{
-		return itsRootOptions;
+		return itsGUISettings;
 	}
 	
 	protected void viewChanged(LogView aView)
 	{
 		itsBookmarkPanel.setView(aView);
-		saveFormatters();
-		saveProperties(itsProperties);
+		itsGUISettings.save();
 	}
 		
 	private JComponent createToolbar()
@@ -620,122 +588,6 @@ implements ILocationSelectionListener, IGUIManager, IOptionsOwner
 	public boolean canShowPreviousEventForLine()
 	{
 		return getEventListView() != null;
-	}
-	
-	/**
-	 * Loads stored properties and place them in the given properties map.
-	 */
-	public static void loadProperties(Properties aProperties)
-	{
-		try
-		{
-			File theFile = new File("tod-properties.txt");
-			if (theFile.exists()) aProperties.load(new FileInputStream(theFile));
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-	}
-	
-	/**
-	 * Saves the given properties map.
-	 */
-	public static void saveProperties(Properties aProperties)
-	{
-		try
-		{
-			File theFile = new File("tod-properties.txt");
-			aProperties.store(new FileOutputStream(theFile), "TOD configuration");
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-	}
-
-	public String getProperty(String aKey)
-	{
-		return itsProperties.getProperty(aKey);
-	}
-
-	public void setProperty(String aKey, String aValue)
-	{
-		itsProperties.setProperty(aKey, aValue);
-	}
-
-	/**
-	 * Utility method for {@link #getProperty(String)}
-	 */
-	public static boolean getBooleanProperty (IGUIManager aGUIManager, String aPropertyName, boolean aDefault)
-	{
-		String theString = aGUIManager.getProperty(aPropertyName);
-		return theString != null ? Boolean.parseBoolean(theString) : aDefault;
-	}
-	
-	/**
-	 * Utility method for {@link #getProperty(String)}
-	 */
-	public static int getIntProperty (IGUIManager aGUIManager, String aPropertyName, int aDefault)
-	{
-		String theString = aGUIManager.getProperty(aPropertyName);
-		return theString != null ? Integer.parseInt(theString) : aDefault;
-	}
-	
-	/**
-	 * Utility method for {@link #getProperty(String)}
-	 */
-	public static String getStringProperty (IGUIManager aGUIManager, String aPropertyName, String aDefault)
-	{
-		String theString = aGUIManager.getProperty(aPropertyName);
-		return theString != null ? theString : aDefault;
-	}
-	
-	/**
-	 * Retrieves a serialized object.
-	 */
-	public static Object getObjectProperty(IGUIManager aManager, String aPropertyName, Object aDefault)
-	{
-		try
-		{
-			String theString = aManager.getProperty(aPropertyName);
-			if (theString == null) return aDefault;
-			
-			byte[] theByteArray = Base64.decode(theString);
-			ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(theByteArray));
-			return ois.readObject();
-		}
-		catch (Exception e)
-		{
-			// avoid throwing new exception in case of new object format
-			//throw new RuntimeException(e);
-			System.err.println("---- Problem while loading GUI properties "+aPropertyName);
-			//e.printStackTrace();
-			return null;
-		}
-	}
-	
-	/**
-	 * Saves a serialized object into a property.
-	 */
-	public static void setObjectProperty(IGUIManager aManager, String aPropertyName, Object aValue)
-	{
-		try
-		{
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			ObjectOutputStream oos = new ObjectOutputStream(baos);
-			oos.writeObject(aValue);
-			oos.flush();
-			
-			byte[] theByteArray = baos.toByteArray();
-			String theString = Base64.encodeBytes(theByteArray);
-			
-			aManager.setProperty(aPropertyName, theString);
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
 	}
 	
 	/**

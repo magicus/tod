@@ -126,7 +126,7 @@ implements ActionListener
 	 */
 	protected Context getInitialContext()
 	{
-		String theName = MinerUI.getStringProperty(getGUIManager(), PROPERTY_INITIAL_CONTEXT, Context.PER_HOST.toString());
+		String theName = getGUIManager().getSettings().getStringProperty(PROPERTY_INITIAL_CONTEXT, Context.PER_HOST.toString());
 		return Context.valueOf(theName);
 	}
 	
@@ -201,17 +201,17 @@ implements ActionListener
 		Object theSource = aE.getSource();
 		if (theSource == itsGlobalButton)
 		{
-			getGUIManager().setProperty(PROPERTY_INITIAL_CONTEXT, Context.GLOBAL.toString());
+			getGUIManager().getSettings().setProperty(PROPERTY_INITIAL_CONTEXT, Context.GLOBAL.toString());
 			global();
 		}
 		else if (theSource == itsPerHostButton)
 		{
-			getGUIManager().setProperty(PROPERTY_INITIAL_CONTEXT, Context.PER_HOST.toString());
+			getGUIManager().getSettings().setProperty(PROPERTY_INITIAL_CONTEXT, Context.PER_HOST.toString());
 			perHost();
 		} 
 		else if (theSource == itsPerThreadButton)
 		{
-			getGUIManager().setProperty(PROPERTY_INITIAL_CONTEXT, Context.PER_THREAD.toString());
+			getGUIManager().getSettings().setProperty(PROPERTY_INITIAL_CONTEXT, Context.PER_THREAD.toString());
 			perThread();
 		} 
 		else throw new RuntimeException("Not handled: "+theSource);

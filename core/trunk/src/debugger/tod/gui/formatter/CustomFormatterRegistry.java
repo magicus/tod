@@ -102,7 +102,7 @@ public class CustomFormatterRegistry implements Serializable
 	{
 		ITypeInfo theType = aInspector.getType();
 		
-		CustomFormatterRegistry theRegistry = aGUIManager.getCustomFormatterRegistry();
+		CustomFormatterRegistry theRegistry = aGUIManager.getSettings().getCustomFormatterRegistry();
 		CustomObjectFormatter theFormatter = theRegistry.getFormatter(theType);
 		
 		if (theFormatter != null)
