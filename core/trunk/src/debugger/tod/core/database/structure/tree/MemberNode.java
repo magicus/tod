@@ -29,40 +29,22 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.eventlist;
+package tod.core.database.structure.tree;
 
-import tod.core.database.browser.GroupingEventBrowser.EventGroup;
-import tod.gui.IGUIManager;
+import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.IMemberInfo;
+import zz.utils.tree.SimpleTree;
 
-/**
- * Base class for nodes that represent groups of events
- * @author gpothier
- */
-public abstract class AbstractEventGroupNode<K> extends AbstractEventNode
+public class MemberNode extends LocationNode
 {
-	private EventGroup<K> itsGroup;
 
-	public AbstractEventGroupNode(IGUIManager aGUIManager, EventListPanel aListPanel, EventGroup<K> aGroup)
+	public MemberNode(SimpleTree<ILocationInfo> aTree, IMemberInfo aMember)
 	{
-		super(aGUIManager, aListPanel);
-		itsGroup = aGroup;
+		super(aTree, true, aMember);
 	}
 	
-	public EventGroup<K> getGroup()
+	public IMemberInfo getMember()
 	{
-		return itsGroup;
+		return (IMemberInfo) getLocation();
 	}
-	
-	public K getGroupKey() 
-	{
-		return getGroup().getGroupKey();
-	}
-	
-	@Override
-	protected EventGroup<K> getEvent()
-	{
-		return itsGroup;
-	}
-	
-	public abstract Iterable<AbstractEventNode> getChildrenNodes();
 }

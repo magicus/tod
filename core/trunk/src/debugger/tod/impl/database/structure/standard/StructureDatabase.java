@@ -44,12 +44,13 @@ import org.objectweb.asm.Type;
 import tod.Util;
 import tod.core.DebugFlags;
 import tod.core.config.TODConfig;
+import tod.core.database.structure.IAdviceInfo;
 import tod.core.database.structure.IArrayTypeInfo;
+import tod.core.database.structure.IAspectInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMutableBehaviorInfo;
-import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableFieldInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IShareableStructureDatabase;
@@ -57,10 +58,6 @@ import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
-import tod.core.database.structure.IStructureDatabase.AspectInfo;
-import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
-import tod.core.database.structure.IStructureDatabase.ProbeInfo;
-import tod.utils.TODUtils;
 import tod.utils.remote.RemoteStructureDatabase;
 import zz.utils.Utils;
 
@@ -105,15 +102,10 @@ public class StructureDatabase implements IShareableStructureDatabase
 	
 	private final Map<Long, ProbeInfo> itsExceptionProbesMap = new HashMap<Long, ProbeInfo>();
 	
-	/**
-	 * Maps advice source ids (see {@link IBehaviorInfo.BytecodeTagType#ADVICE_SOURCE_ID})
-	 * to their position in source code.
-	 */
-	private Map<Integer, SourceRange> itsAdviceSourceMap = 
-		new HashMap<Integer, SourceRange>();
+	private List<AdviceInfo> itsAdvices = new ArrayList<AdviceInfo>(100); 
 	
-	private Map<String, AspectInfo> itsAspectInfoMap = 
-		new HashMap<String, AspectInfo>();
+	private Map<String, IAspectInfo> itsAspectInfoMap = 
+		new HashMap<String, IAspectInfo>();
 	
 	private final IClassInfo itsUnknownClass = new ClassInfo(this, null, "Unknown", -1);
 	
@@ -458,12 +450,12 @@ public class StructureDatabase implements IShareableStructureDatabase
 		return itsProbes.size();
 	}
 	
-	public SourceRange getAdviceSource(int aAdviceId)
+	public IAdviceInfo getAdvice(int aAdviceId)
 	{
-		return itsAdviceSourceMap.get(aAdviceId);
+		return Utils.listGet(itsAdvices, aAdviceId);
 	}
 	
-	public Map<String, AspectInfo> getAspectInfoMap()
+	public Map<String, IAspectInfo> getAspectInfoMap()
 	{
 		return itsAspectInfoMap;
 	}
@@ -477,8 +469,8 @@ public class StructureDatabase implements IShareableStructureDatabase
 			assert theRange != null;
 			
 			// Fill advice source map
-			SourceRange thePrevious = itsAdviceSourceMap.put(theId, theRange);
-			if (thePrevious != null && ! thePrevious.equals(theRange))
+			AdviceInfo thePrevious = Utils.listGet(itsAdvices, theId); 
+			if (thePrevious != null && ! thePrevious.getSourceRange().equals(theRange))
 			{
 				Utils.rtex(
 						"Advice source inconsistency for id %d (prev.: %s, new: %s)", 
@@ -490,13 +482,16 @@ public class StructureDatabase implements IShareableStructureDatabase
 			// Fill aspect info map
 			if (thePrevious == null)
 			{
-				AspectInfo theInfo = itsAspectInfoMap.get(theRange.sourceFile);
-				if (theInfo == null)
+				AdviceInfo theAdviceInfo = new AdviceInfo(this, theId, theRange);
+				Utils.listSet(itsAdvices, theId, theAdviceInfo);
+				
+				AspectInfo theAspectInfo = (AspectInfo) itsAspectInfoMap.get(theRange.sourceFile);
+				if (theAspectInfo == null)
 				{
-					theInfo = new AspectInfo(theRange.sourceFile);
-					itsAspectInfoMap.put(theRange.sourceFile, theInfo);
+					theAspectInfo = new AspectInfo(this, -1, theRange.sourceFile);
+					itsAspectInfoMap.put(theRange.sourceFile, theAspectInfo);
 				}
-				theInfo.addAdviceId(theId);
+				theAspectInfo.addAdvice(theAdviceInfo);
 			}
 		}
 	}

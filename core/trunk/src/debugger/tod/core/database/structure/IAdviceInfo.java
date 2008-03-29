@@ -29,40 +29,13 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.eventlist;
-
-import tod.core.database.browser.GroupingEventBrowser.EventGroup;
-import tod.gui.IGUIManager;
+package tod.core.database.structure;
 
 /**
- * Base class for nodes that represent groups of events
+ * Information about a particular advice of an aspect
  * @author gpothier
  */
-public abstract class AbstractEventGroupNode<K> extends AbstractEventNode
+public interface IAdviceInfo extends ILocationInfo
 {
-	private EventGroup<K> itsGroup;
-
-	public AbstractEventGroupNode(IGUIManager aGUIManager, EventListPanel aListPanel, EventGroup<K> aGroup)
-	{
-		super(aGUIManager, aListPanel);
-		itsGroup = aGroup;
-	}
-	
-	public EventGroup<K> getGroup()
-	{
-		return itsGroup;
-	}
-	
-	public K getGroupKey() 
-	{
-		return getGroup().getGroupKey();
-	}
-	
-	@Override
-	protected EventGroup<K> getEvent()
-	{
-		return itsGroup;
-	}
-	
-	public abstract Iterable<AbstractEventNode> getChildrenNodes();
+	public SourceRange getSourceRange();
 }

@@ -29,24 +29,20 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.locationselector;
+package tod.core.database.structure;
 
-import tod.core.database.structure.ILocationInfo;
-import zz.utils.tree.SimpleTree;
-import zz.utils.tree.SimpleTreeNode;
+import java.util.List;
 
-public class LocationNode extends SimpleTreeNode<ILocationInfo>
+/**
+ * Information regarding a particular aspect.
+ * @author gpothier
+ */
+public interface IAspectInfo extends ILocationInfo
 {
-
-	public LocationNode(SimpleTree<ILocationInfo> aTree, boolean aLeaf, ILocationInfo aLocation)
-	{
-		super(aTree, aLeaf);
-		pValue().set(aLocation);
-	}
+	/**
+	 * Returns the source file that defines the aspect.
+	 */
+	public String getSourceFile();
 	
-	public ILocationInfo getLocation()
-	{
-		return pValue().get();
-	}
-
+	public List<IAdviceInfo> getAdvices();
 }

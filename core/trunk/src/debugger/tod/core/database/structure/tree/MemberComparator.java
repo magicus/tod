@@ -29,89 +29,48 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.eventlist;
+package tod.core.database.structure.tree;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Comparator;
 
-import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
+import tod.Util;
+import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.IMemberInfo;
+import zz.utils.tree.SimpleTreeNode;
 
 /**
- * Defines the level of intimacy for aspect debugging.
+ * Compares class members
+ * Fields are always before behaviors, otherwise lexicographic order is used.
  * @author gpothier
  */
-public final class IntimacyLevel implements Serializable
+public class MemberComparator implements Comparator
 {
-	public static final BytecodeRole[] ROLES = {
-		BytecodeRole.ADVICE_EXECUTE,
-		BytecodeRole.ADVICE_TEST,
-		BytecodeRole.CONTEXT_EXPOSURE,
-		BytecodeRole.ADVICE_ARG_SETUP,
-	};
-	
-	public static final IntimacyLevel FULL_INTIMACY = new IntimacyLevel(ROLES);
-	public static final IntimacyLevel FULL_OBLIVIOUSNESS = null;
-	
-	private Set<BytecodeRole> itsRoles;
-	
+	public static MemberComparator FIELD = new MemberComparator(true);
+	public static MemberComparator BEHAVIOR = new MemberComparator(false);
+
 	/**
-	 * Minimum intimacy level
+	 * If true, compares against package names (package names always appear before
+	 * class names).
 	 */
-	public IntimacyLevel()
+	private boolean itsForField;
+	
+	private MemberComparator(boolean aForPackage)
 	{
-		itsRoles = new HashSet<BytecodeRole>();
+		itsForField = aForPackage;
 	}
 	
-	private IntimacyLevel(BytecodeRole... aRoles)
+	public int compare(Object o1, Object o2)
 	{
-		itsRoles = new HashSet<BytecodeRole>();
-		for (BytecodeRole theRole : aRoles) itsRoles.add(theRole);
+		SimpleTreeNode<ILocationInfo> node = (SimpleTreeNode<ILocationInfo>) o1;
+		
+		ILocationInfo l = node.pValue().get();
+		boolean f = l instanceof IFieldInfo;
+		String n1 = Util.getFullName((IMemberInfo) l);
+			
+		String n2 = (String) o2;
+		
+		if (f != itsForField) return f ? 1 : -1;
+		else return n1.compareTo(n2);
 	}
-	
-	public IntimacyLevel(Set<BytecodeRole> aRoles)
-	{
-		itsRoles = aRoles;
-	}
-	
-	/**
-	 * Whether the given role should be shown in this intimacy level.
-	 */
-	public boolean showRole(BytecodeRole aRole)
-	{
-		return itsRoles.contains(aRole);
-	}
-
-	public Set<BytecodeRole> getRoles()
-	{
-		return itsRoles;
-	}
-	
-	@Override
-	public int hashCode()
-	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((itsRoles == null) ? 0 : itsRoles.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj)
-	{
-		if (this == obj) return true;
-		if (obj == null) return false;
-		if (getClass() != obj.getClass()) return false;
-		IntimacyLevel other = (IntimacyLevel) obj;
-		if (itsRoles == null)
-		{
-			if (other.itsRoles != null) return false;
-		}
-		else if (!itsRoles.equals(other.itsRoles)) return false;
-		return true;
-	}
-
-	
-	
 }

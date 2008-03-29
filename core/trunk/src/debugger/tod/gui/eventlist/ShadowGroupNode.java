@@ -32,6 +32,7 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.gui.eventlist;
 
 import java.awt.Color;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -39,24 +40,26 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
+import javax.swing.GrayFilter;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import tod.core.database.browser.LocationUtils;
 import tod.core.database.browser.ShadowId;
 import tod.core.database.browser.GroupingEventBrowser.EventGroup;
 import tod.core.database.event.ICallerSideEvent;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IAdviceInfo;
 import tod.core.database.structure.IStructureDatabase;
-import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
-import tod.gui.kit.StdProperties;
-import zz.utils.properties.IProperty;
-import zz.utils.properties.IPropertyListener;
-import zz.utils.properties.PropertyListener;
+import tod.gui.settings.IntimacySettings;
+import zz.utils.notification.IEvent;
+import zz.utils.notification.IEventListener;
 import zz.utils.ui.ResourceUtils.ImageResource;
 
 /**
@@ -68,39 +71,57 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 	private static final int ROLE_ICON_SIZE = 15;
 	
 	private Set<BytecodeRole> itsHiddenRoles = new HashSet<BytecodeRole>();
+	private Set<BytecodeRole> itsRoles = new HashSet<BytecodeRole>();
 	private List<ILogEvent> itsShownEvents = new ArrayList<ILogEvent>();
 	private List<AbstractEventNode> itsChildrenNodes = new ArrayList<AbstractEventNode>();
 	private boolean itsFullObliviousness;
 	
-	private IProperty<IntimacyLevel> itsIntimacyLevelProperty;
-	
-	private IPropertyListener<IntimacyLevel> itsIntimacyListener = new PropertyListener<IntimacyLevel>()
+	private IEventListener<Void> itsIntimacyListener = new IEventListener<Void>()
 	{
-		public void propertyChanged(IProperty<IntimacyLevel> aProperty, IntimacyLevel aOldValue, IntimacyLevel aNewValue)
+		public void fired(IEvent< ? extends Void> aEvent, Void aData)
 		{
-			createUI();
+			SwingUtilities.invokeLater(new Runnable()
+			{
+				public void run()
+				{
+					createUI();
+				}
+			});
 		}
 	};
 	
 	public ShadowGroupNode(IGUIManager aGUIManager, EventListPanel aListPanel, EventGroup<ShadowId> aGroup)
 	{
 		super(aGUIManager, aListPanel, aGroup);
-		itsIntimacyLevelProperty = getBus().getProperty(StdProperties.INTIMACY_LEVEL);
-		if (itsIntimacyLevelProperty != null)
-		{
-			itsIntimacyLevelProperty.addListener(itsIntimacyListener);
-		}
 		createUI();
+	}
+	
+	private IntimacySettings getIntimacySettings()
+	{
+		return getGUIManager().getSettings().getIntimacySettings();
+	}
+	
+	@Override
+	public void addNotify()
+	{
+		super.addNotify();
+		getIntimacySettings().eChanged.addListener(itsIntimacyListener);
+	}
+
+	@Override
+	public void removeNotify()
+	{
+		super.removeNotify();
+		getIntimacySettings().eChanged.removeListener(itsIntimacyListener);
 	}
 	
 	private void setup()
 	{
 		itsHiddenRoles.clear();
 		itsShownEvents.clear();
+		itsRoles.clear();
 		
-		IntimacyLevel theIntimacyLevel = itsIntimacyLevelProperty != null ?
-				itsIntimacyLevelProperty.get()
-				: IntimacyLevel.FULL_INTIMACY;
+		IntimacyLevel theIntimacyLevel = getIntimacySettings().getIntimacyLevel(getGroupKey().adviceSourceId);
 
 		itsFullObliviousness = theIntimacyLevel == null;
 		if (itsFullObliviousness) return; 
@@ -113,10 +134,12 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 				itsShownEvents.add(theEvent);
 			}
 			else itsHiddenRoles.add(theRole);
+			
+			itsRoles.add(theRole);
 		}
 	}
 	
-	private SourceRange getSourceRange()
+	private IAdviceInfo getAdvice()
 	{
 		ShadowId theShadowId = getGroup().getGroupKey();
 		ILogEvent theFirst = getGroup().getFirst();
@@ -125,7 +148,7 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 		{
 			ICallerSideEvent theEvent = (ICallerSideEvent) theFirst;
 			IStructureDatabase theDatabase = theEvent.getOperationBehavior().getDatabase();
-			return theDatabase.getAdviceSource(theShadowId.adviceSourceId);
+			return theDatabase.getAdvice(theShadowId.adviceSourceId);
 		}
 		
 		return null;
@@ -143,25 +166,19 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 		
 		if (itsShownEvents.size() > 0) addToGutter(new JLabel("  "));
 		
-		String theAdvice;
+		String theAdviceName;
 		
-		SourceRange theAdviceSource = getSourceRange();
-		theAdvice = theAdviceSource != null ?
-				theAdviceSource.sourceFile+":"+theAdviceSource.startLine
-				: "???";
+		IAdviceInfo theAdvice = getAdvice();
+		theAdviceName = theAdvice != null ? theAdvice.getName() : "???";
 		
-		addToCaption(new JLabel(theAdvice+"  "));
+		addToCaption(new JLabel(theAdviceName+"  "));
 		
 		// We iterate over the values of the enum so as to always have the same display order
-		for (BytecodeRole theRole : BytecodeRole.values())
+		for (BytecodeRole theRole : IntimacyLevel.ROLES)
 		{
-			if (itsHiddenRoles.contains(theRole))
-			{
-				ImageResource theRoleIcon = GUIUtils.getRoleIcon(theRole);
-				addToCaption(theRoleIcon != null ?
-						new JLabel(theRoleIcon.asIcon(ROLE_ICON_SIZE))
-						: new JLabel("??-"+theRole));
-			}
+			if (! itsRoles.contains(theRole)) continue;
+			addToCaption(new RoleLabel(theRole));
+			addToCaption(new JLabel(" "));
 		}
 	}
 
@@ -182,12 +199,86 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 	@Override
 	public void mousePressed(MouseEvent aE)
 	{
-		getGUIManager().gotoSource(getSourceRange());
+		getGUIManager().gotoSource(getAdvice().getSourceRange());
 	}
 	
 	@Override
 	public Iterable<AbstractEventNode> getChildrenNodes()
 	{
 		return itsChildrenNodes;
+	}
+	
+	/**
+	 * A caption label for a particular bytecode role
+	 * @author gpothier
+	 */
+	private class RoleLabel extends JLabel
+	implements IEventListener<Void>
+	{
+		private final BytecodeRole itsRole;
+		private final ImageIcon itsNormalIcon;
+		private final ImageIcon itsGrayIcon;
+
+		public RoleLabel(BytecodeRole aRole)
+		{
+			itsRole = aRole;
+
+			ImageResource theRoleIcon = GUIUtils.getRoleIcon(itsRole);
+			if (theRoleIcon != null)
+			{
+				itsNormalIcon = theRoleIcon.asIcon(ROLE_ICON_SIZE);
+				itsGrayIcon = new ImageIcon(GrayFilter.createDisabledImage(itsNormalIcon.getImage()));
+
+				updateIcon();
+				
+				addMouseListener(new MouseAdapter()
+				{
+					@Override
+					public void mousePressed(MouseEvent aE)
+					{
+						final IntimacySettings theSettings = getGUIManager().getSettings().getIntimacySettings();
+						IntimacyLevel theLevel = theSettings.getIntimacyLevel(getAdvice().getId());
+						
+						final Set<BytecodeRole> theRoles = new HashSet<BytecodeRole>();
+						theRoles.addAll(theLevel.getRoles());
+						if (! theRoles.remove(itsRole)) theRoles.add(itsRole);
+						
+						theSettings.setIntimacyLevel(getAdvice().getId(), new IntimacyLevel(theRoles));
+					}
+				});
+			}
+			else
+			{
+				itsNormalIcon = null;
+				itsGrayIcon = null;
+				setText("?? - "+itsRole);
+			}
+		}
+		
+		@Override
+		public void addNotify()
+		{
+			super.addNotify();
+			getGUIManager().getSettings().getIntimacySettings().eChanged.addListener(this);
+		}
+		
+		@Override
+		public void removeNotify()
+		{
+			super.removeNotify();
+			getGUIManager().getSettings().getIntimacySettings().eChanged.removeListener(this);
+		}
+
+		private void updateIcon()
+		{
+			IntimacySettings theSettings = getGUIManager().getSettings().getIntimacySettings();
+			IntimacyLevel theLevel = theSettings.getIntimacyLevel(getAdvice().getId());
+			setIcon(theLevel.showRole(itsRole) ? itsNormalIcon : itsGrayIcon);
+		}
+		
+		public void fired(IEvent< ? extends Void> aEvent, Void aData)
+		{
+			updateIcon();
+		}
 	}
 }

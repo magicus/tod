@@ -29,48 +29,23 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.locationselector;
+package tod.core.database.structure.tree;
 
-import java.util.Comparator;
-
-import tod.Util;
-import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.IAdviceInfo;
 import tod.core.database.structure.ILocationInfo;
-import tod.core.database.structure.IMemberInfo;
-import zz.utils.tree.SimpleTreeNode;
+import zz.utils.tree.SimpleTree;
 
-/**
- * Compares class members
- * Fields are always before behaviors, otherwise lexicographic order is used.
- * @author gpothier
- */
-public class MemberComparator implements Comparator
+public class AdviceNode extends LocationNode
 {
-	public static MemberComparator FIELD = new MemberComparator(true);
-	public static MemberComparator BEHAVIOR = new MemberComparator(false);
 
-	/**
-	 * If true, compares against package names (package names always appear before
-	 * class names).
-	 */
-	private boolean itsForField;
-	
-	private MemberComparator(boolean aForPackage)
+	public AdviceNode(SimpleTree<ILocationInfo> aTree, IAdviceInfo aAdvice)
 	{
-		itsForField = aForPackage;
+		super(aTree, true, aAdvice);
+	}
+
+	public IAdviceInfo getAdvice()
+	{
+		return (IAdviceInfo) getLocation();
 	}
 	
-	public int compare(Object o1, Object o2)
-	{
-		SimpleTreeNode<ILocationInfo> node = (SimpleTreeNode<ILocationInfo>) o1;
-		
-		ILocationInfo l = node.pValue().get();
-		boolean f = l instanceof IFieldInfo;
-		String n1 = Util.getFullName((IMemberInfo) l);
-			
-		String n2 = (String) o2;
-		
-		if (f != itsForField) return f ? 1 : -1;
-		else return n1.compareTo(n2);
-	}
 }

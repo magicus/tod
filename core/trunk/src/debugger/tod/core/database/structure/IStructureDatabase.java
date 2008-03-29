@@ -177,12 +177,11 @@ public interface IStructureDatabase
 	public int getProbeCount();
 	
 	/**
-	 * Returns the location of the source code that defines the advice with
-	 * the specified id.
-	 * @param aAdviceId An advice id.
-	 * @return The source range, or null if not available.
+	 * Returns the information (location of the source code) for the specified advice source id.
+	 * @param aAdviceId An advice source id.
+	 * @return The advice info, or null if not available.
 	 */
-	public SourceRange getAdviceSource(int aAdviceId);
+	public IAdviceInfo getAdvice(int aAdviceId);
 	
 	/**
 	 * Returns a map that maps aspect source file names to an {@link AspectInfo}
@@ -190,7 +189,7 @@ public interface IStructureDatabase
 	 * TODO: For now this structure is expected to be small but if we want to
 	 * be serious about aspects we must do that in another way.  
 	 */
-	public Map<String, AspectInfo> getAspectInfoMap();
+	public Map<String, IAspectInfo> getAspectInfoMap();
 
 	/**
 	 * Returns statistics about registered locations
@@ -436,40 +435,4 @@ public interface IStructureDatabase
 		}
 	}
 
-	/**
-	 * Holds the information of a single aspect 
-	 * (granularity is source file, so maybe more than one aspect).
-	 * @author gpothier
-	 */
-	public static class AspectInfo implements Serializable
-	{
-		private final String itsSourceFile;
-		private final List<Integer> itsAdviceIds = new ArrayList<Integer>();
-		
-		public AspectInfo(String aSourceFile)
-		{
-			itsSourceFile = aSourceFile;
-		}
-		
-		public String getSourceFile()
-		{
-			return itsSourceFile;
-		}
-		
-		/**
-		 * Internal method, don't use it.
-		 */
-		public void addAdviceId(int aId)
-		{
-			itsAdviceIds.add(aId);
-		}
-		
-		/**
-		 * Returns the list the ids of the advices contained in the source file.
-		 */
-		public List<Integer> getAdviceIds()
-		{
-			return itsAdviceIds;
-		}
-	}
 }

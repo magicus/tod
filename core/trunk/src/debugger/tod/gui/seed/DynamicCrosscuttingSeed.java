@@ -31,15 +31,16 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.seed;
 
-import tod.core.database.browser.ICompoundFilter;
-import tod.core.database.browser.IEventBrowser;
-import tod.core.database.browser.IEventFilter;
+import java.util.List;
+
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.IAdviceInfo;
+import tod.core.database.structure.IAspectInfo;
 import tod.core.database.structure.SourceRange;
-import tod.core.database.structure.IStructureDatabase.AspectInfo;
 import tod.gui.IGUIManager;
 import tod.gui.view.LogView;
 import tod.gui.view.dyncross.DynamicCrosscuttingView;
+import tod.impl.database.structure.standard.AspectInfo;
 import zz.utils.list.IList;
 import zz.utils.list.ZArrayList;
 import zz.utils.primitive.IntArray;
@@ -87,66 +88,67 @@ public class DynamicCrosscuttingSeed extends LogViewSeed
 	
 	public static class AspectHighlight extends Highlight
 	{
-		private final AspectInfo itsAspectInfo;
+		private final IAspectInfo itsAspect;
 
-		public AspectHighlight(AspectInfo aAspectInfo)
+		public AspectHighlight(IAspectInfo aAspectInfo)
 		{
-			itsAspectInfo = aAspectInfo;
+			itsAspect = aAspectInfo;
 		}
 		
-		public AspectInfo getAspectInfo()
+		public IAspectInfo getAspect()
 		{
-			return itsAspectInfo;
+			return itsAspect;
 		}
 		
 		@Override
 		public int[] getAdviceSourceIds()
 		{
-			return IntArray.toIntArray(itsAspectInfo.getAdviceIds());
+			List<IAdviceInfo> theAdvices = itsAspect.getAdvices();
+			int[] theResult = new int[theAdvices.size()];
+			int i=0;
+			for(IAdviceInfo theAdvice : theAdvices) theResult[i++] = theAdvice.getId();
+			return theResult;
 		}
 		
 		@Override
 		public void gotoSource(IGUIManager aGUIManager)
 		{
-			aGUIManager.gotoSource(new SourceRange(itsAspectInfo.getSourceFile(), 1));
+			aGUIManager.gotoSource(new SourceRange(itsAspect.getSourceFile(), 1));
 		}
 
 		@Override
 		public String toString()
 		{
-			return strippedName(getAspectInfo().getSourceFile());
+			return strippedName(getAspect().getSourceFile());
 		}
 	}
 	
 	public static class AdviceHighlight extends Highlight
 	{
-		private final int itsAdviceSourceId;
-		private final SourceRange itsAdviceSource;
+		private final IAdviceInfo itsAdvice;
 
-
-		public AdviceHighlight(int aAdviceSourceId, SourceRange aAdviceSource)
+		public AdviceHighlight(IAdviceInfo aAdvice)
 		{
-			itsAdviceSourceId = aAdviceSourceId;
-			itsAdviceSource = aAdviceSource;
+			itsAdvice = aAdvice;
 		}
 
 		public SourceRange getAdviceSource()
 		{
-			return itsAdviceSource;
+			return itsAdvice.getSourceRange();
 		}
 		
 		@Override
 		public int[] getAdviceSourceIds()
 		{
 			int[] theResult = new int[1];
-			theResult[0] = itsAdviceSourceId;
+			theResult[0] = itsAdvice.getId();
 			return theResult;
 		}
 
 		@Override
 		public void gotoSource(IGUIManager aGUIManager)
 		{
-			aGUIManager.gotoSource(itsAdviceSource);
+			aGUIManager.gotoSource(getAdviceSource());
 		}
 
 		@Override

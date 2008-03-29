@@ -29,23 +29,82 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.locationselector;
+package tod.core.database.structure.tree;
 
+import java.util.Collections;
+
+import tod.Util;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ILocationInfo;
 import zz.utils.tree.SimpleTree;
 
-public class FieldNode extends MemberNode
+public class ClassNode extends LocationNode
 {
+	private final boolean itsShowFields;
+	private final boolean itsShowBehaviors;
 
-	public FieldNode(SimpleTree<ILocationInfo> aTree, IFieldInfo aField)
+	public ClassNode(
+			SimpleTree<ILocationInfo> aTree, 
+			IClassInfo aClass, 
+			boolean aShowFields,
+			boolean aShowBehaviors)
 	{
-		super(aTree, aField);
+		super(aTree, ! (aShowFields || aShowBehaviors), aClass);
+		itsShowFields = aShowFields;
+		itsShowBehaviors = aShowBehaviors;
 	}
 
-	public IFieldInfo getField()
+	public IClassInfo getClassInfo()
 	{
-		return (IFieldInfo) getLocation();
+		return (IClassInfo) getLocation();
 	}
 	
+	@Override
+	protected void init()
+	{
+		System.out.println("Init for "+getClassInfo());
+		
+		if (itsShowFields) for(IFieldInfo theField : getClassInfo().getFields())
+			addFieldNode(theField);
+
+		if (itsShowBehaviors) for(IBehaviorInfo theBehavior : getClassInfo().getBehaviors())
+			addBehaviorNode(theBehavior);
+	}
+	
+	/**
+	 * Adds a new behavior node
+	 */
+	public BehaviorNode addBehaviorNode(IBehaviorInfo aBehavior)
+	{
+		int theIndex = Collections.binarySearch(
+				pChildren().get(), 
+				Util.getFullName(aBehavior),
+				MemberComparator.BEHAVIOR);
+		
+		if (theIndex >= 0) throw new RuntimeException("Behavior already exists: "+aBehavior); 
+		BehaviorNode theNode = new BehaviorNode(getTree(), aBehavior);
+
+		pChildren().add(-theIndex-1, theNode);
+		return theNode;
+	}
+	
+	/**
+	 * Adds a new field node
+	 */
+	public FieldNode addFieldNode(IFieldInfo aField)
+	{
+		int theIndex = Collections.binarySearch(
+				pChildren().get(), 
+				aField.getName(),
+				MemberComparator.FIELD);
+		
+		if (theIndex >= 0) throw new RuntimeException("Field already exists: "+aField); 
+		FieldNode theNode = new FieldNode(getTree(), aField);
+
+		pChildren().add(-theIndex-1, theNode);
+		return theNode;
+	}
+
 }

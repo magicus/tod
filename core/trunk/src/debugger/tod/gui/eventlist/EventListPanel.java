@@ -38,12 +38,16 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+
+import org.python.modules.newmodule;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
@@ -53,6 +57,7 @@ import tod.core.database.browser.GroupingEventBrowser.EventGroup;
 import tod.core.database.event.EventUtils;
 import tod.core.database.event.IArrayWriteEvent;
 import tod.core.database.event.IBehaviorExitEvent;
+import tod.core.database.event.ICallerSideEvent;
 import tod.core.database.event.IConstructorChainingEvent;
 import tod.core.database.event.IExceptionGeneratedEvent;
 import tod.core.database.event.IFieldWriteEvent;
@@ -62,6 +67,9 @@ import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IMethodCallEvent;
 import tod.core.database.event.INewArrayEvent;
+import tod.core.database.structure.IAdviceInfo;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
 import tod.gui.JobProcessor;
@@ -71,6 +79,7 @@ import tod.gui.kit.BusPanel;
 import tod.gui.kit.Options;
 import tod.gui.kit.StdOptions;
 import tod.gui.kit.Options.OptionDef;
+import tod.gui.settings.IntimacySettings;
 import tod.utils.TODUtils;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;
@@ -404,6 +413,26 @@ implements MouseWheelListener
 	 */
 	public void makeVisible(ILogEvent aEvent)
 	{
+		// Ensure intimacy level will allow to see the event
+		if (aEvent instanceof ICallerSideEvent)
+		{
+			ICallerSideEvent theEvent = (ICallerSideEvent) aEvent;
+			ProbeInfo theProbeInfo = theEvent.getProbeInfo();
+			if (theProbeInfo != null && theProbeInfo.role != null)
+			{
+				IAdviceInfo theAdvice = getLogBrowser().getStructureDatabase().getAdvice(theProbeInfo.adviceSourceId);
+				IntimacySettings theIntimacySettings = getGUIManager().getSettings().getIntimacySettings();
+				IntimacyLevel theLevel = theIntimacySettings.getIntimacyLevel(theProbeInfo.adviceSourceId);
+				if (theLevel == null || ! theLevel.showRole(theProbeInfo.role))
+				{
+					Set<BytecodeRole> theRoles = new HashSet<BytecodeRole>();
+					if (theLevel != null) theRoles.addAll(theLevel.getRoles());
+					theRoles.add(theProbeInfo.role);
+					theIntimacySettings.setIntimacyLevel(theProbeInfo.adviceSourceId, new IntimacyLevel(theRoles));
+				}
+			}
+		}
+		
 		AbstractEventNode theNode = itsNodesMap.get(aEvent);
 		
 		boolean isVisible = true;

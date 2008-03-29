@@ -55,12 +55,13 @@ public class GUISettings
 implements IOptionsOwner
 {
 	private static final String PROPERTY_REGISTRY = "todGUI.customFormatterRegistry";
+	private static final String PROPERTY_INTIMACY = "todGUI.intimacySettings";
 
 	private final IGUIManager itsGUIManager;
 	private final Properties itsProperties = new Properties();
 	private final Options itsRootOptions = new Options(this, "root", null);
 	private CustomFormatterRegistry itsCustomFormatterRegistry;
-	
+	private IntimacySettings itsIntimacySettings;
 
 	public GUISettings(IGUIManager aManager)
 	{
@@ -70,6 +71,9 @@ implements IOptionsOwner
 
 		itsCustomFormatterRegistry = (CustomFormatterRegistry) getObjectProperty(PROPERTY_REGISTRY, null);
 		if (itsCustomFormatterRegistry == null) itsCustomFormatterRegistry = new CustomFormatterRegistry();
+		
+		itsIntimacySettings = (IntimacySettings) getObjectProperty(PROPERTY_INTIMACY, null);
+		if (itsIntimacySettings == null) itsIntimacySettings = new IntimacySettings();
 	}
 
 	public void save()
@@ -229,7 +233,13 @@ implements IOptionsOwner
 			throw new RuntimeException(e);
 		}
 	}
-	
 
+	/**
+	 * Returns the settings for aspect/advice intimacy level.
+	 */
+	public IntimacySettings getIntimacySettings()
+	{
+		return itsIntimacySettings;
+	}
 
 }

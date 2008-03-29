@@ -29,24 +29,39 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.locationselector;
+package tod.gui.settings;
 
-import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.ILocationInfo;
-import zz.utils.tree.SimpleTree;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
-public class BehaviorNode extends MemberNode
+import tod.gui.eventlist.IntimacyLevel;
+import zz.utils.FireableTreeModel;
+import zz.utils.notification.IEvent;
+import zz.utils.notification.IFireableEvent;
+import zz.utils.notification.SimpleEvent;
+
+/**
+ * Holds the intimacy/obliviousness settings for each aspect/advice.
+ * @author gpothier
+ */
+public class IntimacySettings implements Serializable
 {
-
-	public BehaviorNode(SimpleTree<ILocationInfo> aTree, IBehaviorInfo aBehavior)
+	private Map<Integer, IntimacyLevel> itsIntimacyMap = new HashMap<Integer, IntimacyLevel>();
+	
+	/**
+	 * This event is fired whenever the intimacy settings change.
+	 */
+	public final IEvent<Void> eChanged = new SimpleEvent<Void>();
+	
+	public IntimacyLevel getIntimacyLevel(int aAdviceSourceId)
 	{
-		super(aTree, aBehavior);
-	}
-
-	public IBehaviorInfo getBehavior()
-	{
-		return (IBehaviorInfo) getMember();
+		return itsIntimacyMap.get(aAdviceSourceId);
 	}
 	
-	
+	public void setIntimacyLevel(int aAdviceSourceId, IntimacyLevel aLevel)
+	{
+		itsIntimacyMap.put(aAdviceSourceId, aLevel);
+		((IFireableEvent<Void>) eChanged).fire(null);
+	}
 }

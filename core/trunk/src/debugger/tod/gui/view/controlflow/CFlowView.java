@@ -53,7 +53,7 @@ import tod.core.database.structure.IThreadInfo;
 import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
-import tod.gui.IntimacyLevelSelector;
+import tod.gui.IntimacyLevelEditor;
 import tod.gui.MinerUI;
 import tod.gui.Resources;
 import tod.gui.eventlist.EventListPanel;
@@ -205,11 +205,6 @@ public class CFlowView extends LogView implements IEventListView
 		theSplitPane.setRightComponent(itsWatchPanel);
 		
 		add(theSplitPane, BorderLayout.CENTER);
-		
-		getBus().putProperty(
-				StdProperties.INTIMACY_LEVEL, 
-				new SimpleRWProperty<IntimacyLevel>(this, IntimacyLevel.FULL_OBLIVIOUSNESS), 
-				true);
 	}
 	
 	private void backwardStepOver() 
@@ -272,7 +267,7 @@ public class CFlowView extends LogView implements IEventListView
 		// Setup intimacy level selector
 		if (getConfig().get(TODConfig.WITH_ASPECTS))
 		{
-			theToolbar.add(new IntimacyLevelSelector());
+			theToolbar.add(new IntimacyLevelEditor(getGUIManager(), getLogBrowser().getStructureDatabase()));
 		}
 				
 		theToolbar.add(new JButton(new SimpleAction(

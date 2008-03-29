@@ -29,76 +29,23 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.locationselector;
+package tod.core.database.structure.tree;
 
-import java.util.Collections;
-
-import tod.core.database.structure.IClassInfo;
+import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ILocationInfo;
 import zz.utils.tree.SimpleTree;
 
-public class PackageNode extends LocationNode
+public class FieldNode extends MemberNode
 {
-	public PackageNode(SimpleTree<ILocationInfo> aTree, PackageInfo aValue)
-	{
-		super(aTree, false, aValue);
-	}
-	
-	/**
-	 * Retrieves the package node corresponding to the given name,
-	 * creating it if needed.
-	 */
-	public PackageNode getPackageNode(String aName)
-	{
-		int theIndex = Collections.binarySearch(
-				pChildren().get(),
-				aName, 
-				PackageComparator.PACKAGE);
-		
-		if (theIndex >= 0) 
-		{
-			// return existing node
-			return (PackageNode) pChildren().get(theIndex);
-		}
-		else
-		{
-			// create new node
-			PackageInfo thePackage = new PackageInfo(aName);
-			PackageNode theNode = new PackageNode(getTree(), thePackage);
-			pChildren().add(-theIndex-1, theNode);
-			return theNode;
-		}
-	}
-	
-	/**
-	 * Retrieves the class node corresponding to the given name.
-	 */
-	public ClassNode getClassNode(String aName)
-	{
-		int theIndex = Collections.binarySearch(
-				pChildren().get(), 
-				aName,
-				PackageComparator.CLASS);
-		
-		if (theIndex < 0) throw new RuntimeException("Class node not found: "+aName); 
-		return (ClassNode) pChildren().get(theIndex);
-	}
-	
-	/**
-	 * Adds a new class node
-	 */
-	public ClassNode addClassNode(IClassInfo aClassInfo, boolean aShowMembers)
-	{
-		int theIndex = Collections.binarySearch(
-				pChildren().get(), 
-				aClassInfo.getName(),
-				PackageComparator.CLASS);
-		
-		if (theIndex >= 0) throw new RuntimeException("Class node already exists: "+aClassInfo); 
 
-		ClassNode theNode = new ClassNode(getTree(), aClassInfo, aShowMembers);
-		pChildren().add(-theIndex-1, theNode);
-		return theNode;
+	public FieldNode(SimpleTree<ILocationInfo> aTree, IFieldInfo aField)
+	{
+		super(aTree, aField);
+	}
+
+	public IFieldInfo getField()
+	{
+		return (IFieldInfo) getLocation();
 	}
 	
 }

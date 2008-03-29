@@ -34,7 +34,9 @@ package tod.utils;
 import java.util.Map;
 
 import tod.core.config.TODConfig;
+import tod.core.database.structure.IAdviceInfo;
 import tod.core.database.structure.IArrayTypeInfo;
+import tod.core.database.structure.IAspectInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
@@ -171,12 +173,12 @@ implements IMutableStructureDatabase
 	{
 	}
 
-	public SourceRange getAdviceSource(int aAdviceId)
+	public IAdviceInfo getAdvice(int aAdviceId)
 	{
 		return null;
 	}
 
-	public Map<String, AspectInfo> getAspectInfoMap()
+	public Map<String, IAspectInfo> getAspectInfoMap()
 	{
 		return null;
 	}

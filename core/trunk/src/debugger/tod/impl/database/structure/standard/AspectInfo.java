@@ -29,32 +29,45 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.locationselector;
+package tod.impl.database.structure.standard;
 
-import tod.core.database.structure.ILocationInfo;
-import tod.core.database.structure.IStructureDatabase;
+import java.util.ArrayList;
+import java.util.List;
 
-public class PackageInfo implements ILocationInfo
+import tod.core.database.structure.IAdviceInfo;
+import tod.core.database.structure.IAspectInfo;
+import tod.core.database.structure.IShareableStructureDatabase;
+import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
+
+public class AspectInfo extends LocationInfo 
+implements IAspectInfo, ISerializableLocationInfo
 {
-	private String itsName;
-
-	public PackageInfo(String aName)
+	private final String itsSourceFile;
+	private final List<IAdviceInfo> itsAdvices = new ArrayList<IAdviceInfo>();
+	
+	
+	public AspectInfo(IShareableStructureDatabase aDatabase, int aId, String aSourceFile)
 	{
-		itsName = aName;
+		super(aDatabase, aId);
+		itsSourceFile = aSourceFile;
+		
+		changeName(aSourceFile.substring(aSourceFile.lastIndexOf('.')+1));
+	}
+	
+	public String getSourceFile()
+	{
+		return itsSourceFile;
+	}
+	
+	public void addAdvice(AdviceInfo aAdviceInfo)
+	{
+		itsAdvices.add(aAdviceInfo);
 	}
 
-	public IStructureDatabase getDatabase()
+	public List<IAdviceInfo> getAdvices()
 	{
-		return null;
+		return itsAdvices;
 	}
+	
 
-	public int getId()
-	{
-		return 0;
-	}
-
-	public String getName()
-	{
-		return itsName;
-	}
 }

@@ -29,40 +29,37 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.eventlist;
+package tod.core.database.structure.tree;
 
-import tod.core.database.browser.GroupingEventBrowser.EventGroup;
-import tod.gui.IGUIManager;
+import java.util.Comparator;
+
+import tod.Util;
+import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.IMemberInfo;
+import zz.utils.tree.SimpleTreeNode;
 
 /**
- * Base class for nodes that represent groups of events
+ * Compares advices (lerxicographic order)
  * @author gpothier
  */
-public abstract class AbstractEventGroupNode<K> extends AbstractEventNode
+public class AdviceComparator implements Comparator
 {
-	private EventGroup<K> itsGroup;
+	public static AdviceComparator ADVICE = new AdviceComparator();
 
-	public AbstractEventGroupNode(IGUIManager aGUIManager, EventListPanel aListPanel, EventGroup<K> aGroup)
+	private AdviceComparator()
 	{
-		super(aGUIManager, aListPanel);
-		itsGroup = aGroup;
 	}
 	
-	public EventGroup<K> getGroup()
+	public int compare(Object o1, Object o2)
 	{
-		return itsGroup;
+		SimpleTreeNode<ILocationInfo> node = (SimpleTreeNode<ILocationInfo>) o1;
+		
+		ILocationInfo l = node.pValue().get();
+		String n1 = l.getName();
+			
+		String n2 = (String) o2;
+		
+		return n1.compareTo(n2);
 	}
-	
-	public K getGroupKey() 
-	{
-		return getGroup().getGroupKey();
-	}
-	
-	@Override
-	protected EventGroup<K> getEvent()
-	{
-		return itsGroup;
-	}
-	
-	public abstract Iterable<AbstractEventNode> getChildrenNodes();
 }

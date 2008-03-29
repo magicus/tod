@@ -39,5 +39,4 @@ import tod.gui.eventlist.IntimacyLevel;
  */
 public class StdProperties
 {
-	public static final PropertyId<IntimacyLevel> INTIMACY_LEVEL = new PropertyId<IntimacyLevel>("IntimacyLevel");
 }

@@ -53,9 +53,9 @@ import javax.swing.JTabbedPane;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
-import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IAdviceInfo;
+import tod.core.database.structure.IAspectInfo;
 import tod.core.database.structure.IStructureDatabase;
-import tod.core.database.structure.IStructureDatabase.AspectInfo;
 import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
 import tod.gui.kit.SavedSplitPane;
@@ -98,24 +98,22 @@ implements IListListener<Highlight>
 		super.init();
 		
 		IStructureDatabase theStructureDatabase = getLogBrowser().getStructureDatabase();
-		Map<String, AspectInfo> theMap = theStructureDatabase.getAspectInfoMap();
+		Map<String, IAspectInfo> theMap = theStructureDatabase.getAspectInfoMap();
 		
 		// Create aspects list
 		List<AspectHighlight> theAspectsList = new ArrayList<AspectHighlight>();
-		for (AspectInfo theAspectInfo : theMap.values())
+		for (IAspectInfo theAspect : theMap.values())
 		{
-			theAspectsList.add(new AspectHighlight(theAspectInfo));
+			theAspectsList.add(new AspectHighlight(theAspect));
 		}
 		
 		// Create advices list
 		List<AdviceHighlight> theAdvicesList = new ArrayList<AdviceHighlight>();
 		for (AspectHighlight theHighlight : theAspectsList)
 		{
-			for (int theAdviceSourceId : theHighlight.getAspectInfo().getAdviceIds())
+			for (IAdviceInfo theAdvice : theHighlight.getAspect().getAdvices())
 			{
-				theAdvicesList.add(new AdviceHighlight(
-						theAdviceSourceId,
-						theStructureDatabase.getAdviceSource(theAdviceSourceId)));
+				theAdvicesList.add(new AdviceHighlight(theAdvice));
 			}
 		}
 		

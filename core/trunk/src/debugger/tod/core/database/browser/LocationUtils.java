@@ -49,6 +49,7 @@ import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
 import tod.utils.TODUtils;
@@ -239,13 +240,8 @@ public class LocationUtils
 		if (aEvent instanceof ICallerSideEvent)
 		{
 			ICallerSideEvent theEvent = (ICallerSideEvent) aEvent;
-			
-			IBehaviorInfo theBehavior = theEvent.getOperationBehavior();
-			if (theBehavior == null) return null;
-			
-			int theBytecodeIndex = theEvent.getOperationBytecodeIndex();
-			
-			return theBehavior.getTag(BytecodeTagType.ROLE, theBytecodeIndex);
+			ProbeInfo theProbeInfo = theEvent.getProbeInfo();
+			return theProbeInfo != null ? theProbeInfo.role : null;
 		}
 		else return null;
 	}

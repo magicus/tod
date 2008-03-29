@@ -36,6 +36,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.sound.midi.SysexMessage;
+
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -119,6 +121,8 @@ public class ASMInstrumenter implements IInstrumenter
 		}
 		catch (RuntimeException e)
 		{
+			System.err.println("Error while instrumenting: ");
+			e.printStackTrace();
 			printClass(theReader);
 			throw e;
 		}

@@ -39,7 +39,9 @@ import java.util.List;
 import java.util.Map;
 
 import tod.core.config.TODConfig;
+import tod.core.database.structure.IAdviceInfo;
 import tod.core.database.structure.IArrayTypeInfo;
+import tod.core.database.structure.IAspectInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
@@ -54,7 +56,6 @@ import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
-import tod.core.database.structure.IStructureDatabase.AspectInfo;
 import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
@@ -224,12 +225,13 @@ implements RIStructureDatabase
 		return theProbeInfo.id;
 	}
 
-	public SourceRange getAdviceSource(int aAdviceId) 
+	
+	public IAdviceInfo getAdvice(int aAdviceId) throws RemoteException
 	{
-		return itsSource.getAdviceSource(aAdviceId);
+		return itsSource.getAdvice(aAdviceId);
 	}
 
-	public Map<String, AspectInfo> getAspectInfoMap() 
+	public Map<String, IAspectInfo> getAspectInfoMap() 
 	{
 		return itsSource.getAspectInfoMap();
 	}
@@ -314,8 +316,6 @@ implements RIStructureDatabase
 	private static class MyDatabase extends UnicastRemoteObject
 	implements IShareableStructureDatabase, RIStructureDatabaseListener
 	{
-		private static final SourceRange NULL_RANGE = new SourceRange(null, 0, 0, 0, 0); 
-		
 		private RIStructureDatabase itsDatabase;
 		
 		private List<IMutableClassInfo> itsClasses = new ArrayList<IMutableClassInfo>();
@@ -325,6 +325,8 @@ implements RIStructureDatabase
 		
 		private List<IBehaviorInfo> itsBehaviors = new ArrayList<IBehaviorInfo>();
 		private List<IFieldInfo> itsFields = new ArrayList<IFieldInfo>();
+		
+		private List<IAdviceInfo> itsAdvices = new ArrayList<IAdviceInfo>();
 
 		private Stats itsLastStats = new Stats(0, 0, 0, 0); 
 		private boolean itsTypesUpToDate = false;
@@ -333,10 +335,7 @@ implements RIStructureDatabase
 		
 		private List<ProbeInfo> itsProbes = new ArrayList<ProbeInfo>();
 		
-		private Map<Integer, SourceRange> itsAdviceSourceMap = 
-			new HashMap<Integer, SourceRange>();
-		
-		private Map<String, AspectInfo> itsAspectInfoMap;
+		private Map<String, IAspectInfo> itsAspectInfoMap;
 		
 		private final TODConfig itsConfig;
 		private final String itsId;
@@ -401,6 +400,14 @@ implements RIStructureDatabase
 			
 			Utils.listSet(itsFields, aField.getId(), aField);
 			rebind(aField);
+		}
+		
+		private void cacheAdvice(IAdviceInfo aAdvice)
+		{
+			IAdviceInfo theAdvice = Utils.listGet(itsAdvices, aAdvice.getId());
+			
+			Utils.listSet(itsAdvices, aAdvice.getId(), aAdvice);
+			rebind(aAdvice);
 		}
 		
 		
@@ -669,27 +676,25 @@ implements RIStructureDatabase
 			throw new UnsupportedOperationException();
 		}
 
-		public SourceRange getAdviceSource(int aAdviceId)
+		public IAdviceInfo getAdvice(int aAdviceId)
 		{
-			SourceRange theRange = itsAdviceSourceMap.get(aAdviceId);
-			if (theRange == null)	
+			IAdviceInfo theAdvice = Utils.listGet(itsAdvices, aAdviceId);
+			if (theAdvice == null)	
 			{
 				try
 				{
-					theRange = itsDatabase.getAdviceSource(aAdviceId);
-					if (theRange == null) theRange = NULL_RANGE;
-					itsAdviceSourceMap.put(aAdviceId, theRange);
+					theAdvice = itsDatabase.getAdvice(aAdviceId);
+					Utils.listSet(itsAdvices, aAdviceId, theAdvice);
 				}
 				catch (RemoteException e)
 				{
 					throw new RuntimeException(e);
 				}
 			}
-			if (theRange == NULL_RANGE) theRange = null;
-			return theRange;
+			return theAdvice;
 		}
 		
-		public Map<String, AspectInfo> getAspectInfoMap()
+		public Map<String, IAspectInfo> getAspectInfoMap()
 		{
 			if (itsAspectInfoMap == null)
 			{

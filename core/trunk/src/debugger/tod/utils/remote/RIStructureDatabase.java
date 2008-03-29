@@ -36,15 +36,14 @@ import java.rmi.RemoteException;
 import java.util.Map;
 
 import tod.core.config.TODConfig;
-import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IAdviceInfo;
+import tod.core.database.structure.IAspectInfo;
 import tod.core.database.structure.IClassInfo;
-import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.IMutableFieldInfo;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.SourceRange;
-import tod.core.database.structure.IStructureDatabase.AspectInfo;
 import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
@@ -72,8 +71,8 @@ public interface RIStructureDatabase extends Remote
 	public Stats getStats() throws RemoteException;
 	public ProbeInfo[] getProbeInfos(int aAvailableCount) throws RemoteException;
 	public int getNewExceptionProbeInfo(int aBehaviorId, int aBytecodeIndex) throws RemoteException;
-	public SourceRange getAdviceSource(int aAdviceId) throws RemoteException;
-	public Map<String, AspectInfo> getAspectInfoMap() throws RemoteException;
+	public IAdviceInfo getAdvice(int aAdviceId) throws RemoteException;
+	public Map<String, IAspectInfo> getAspectInfoMap() throws RemoteException;
 	
 	public byte[] _getClassBytecode(int aClassId) throws RemoteException;
 	public Map<String, IMutableFieldInfo> _getClassFieldMap(int aClassId) throws RemoteException;

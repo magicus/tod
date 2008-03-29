@@ -29,70 +29,54 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.locationselector;
+package tod.core.database.structure.tree;
 
 import java.util.Collections;
 
-import tod.Util;
-import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.IClassInfo;
-import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.IAdviceInfo;
+import tod.core.database.structure.IAspectInfo;
 import tod.core.database.structure.ILocationInfo;
 import zz.utils.tree.SimpleTree;
 
-public class ClassNode extends LocationNode
+public class AspectNode extends LocationNode
 {
-	public ClassNode(SimpleTree<ILocationInfo> aTree, IClassInfo aClass, boolean aShowMembers)
+	private final boolean itsShowAdvices;
+
+	public AspectNode(
+			SimpleTree<ILocationInfo> aTree, 
+			IAspectInfo aAspect, 
+			boolean aShowAdvices)
 	{
-		super(aTree, ! aShowMembers, aClass);
+		super(aTree, ! aShowAdvices, aAspect);
+		itsShowAdvices = aShowAdvices;
 	}
 
-	public IClassInfo getClassInfo()
+	public IAspectInfo getAspectInfo()
 	{
-		return (IClassInfo) getLocation();
+		return (IAspectInfo) getLocation();
 	}
 	
 	@Override
 	protected void init()
 	{
-		System.out.println("Init for "+getClassInfo());
+		System.out.println("Init for "+getAspectInfo());
 		
-		for(IBehaviorInfo theBehavior : getClassInfo().getBehaviors())
-			addBehaviorNode(theBehavior);
-
-		for(IFieldInfo theField : getClassInfo().getFields())
-			addFieldNode(theField);
+		if (itsShowAdvices) for(IAdviceInfo theAdvice : getAspectInfo().getAdvices())
+			addAdviceNode(theAdvice);
 	}
 	
 	/**
-	 * Adds a new behavior node
+	 * Adds a new advice node
 	 */
-	public BehaviorNode addBehaviorNode(IBehaviorInfo aBehavior)
+	public AdviceNode addAdviceNode(IAdviceInfo aAdvice)
 	{
 		int theIndex = Collections.binarySearch(
 				pChildren().get(), 
-				Util.getFullName(aBehavior),
-				MemberComparator.BEHAVIOR);
+				aAdvice.getName(),
+				AdviceComparator.ADVICE);
 		
-		if (theIndex >= 0) throw new RuntimeException("Behavior already exists: "+aBehavior); 
-		BehaviorNode theNode = new BehaviorNode(getTree(), aBehavior);
-
-		pChildren().add(-theIndex-1, theNode);
-		return theNode;
-	}
-	
-	/**
-	 * Adds a new field node
-	 */
-	public FieldNode addFieldNode(IFieldInfo aField)
-	{
-		int theIndex = Collections.binarySearch(
-				pChildren().get(), 
-				aField.getName(),
-				MemberComparator.FIELD);
-		
-		if (theIndex >= 0) throw new RuntimeException("Field already exists: "+aField); 
-		FieldNode theNode = new FieldNode(getTree(), aField);
+		if (theIndex >= 0) throw new RuntimeException("Advice already exists: "+aAdvice); 
+		AdviceNode theNode = new AdviceNode(getTree(), aAdvice);
 
 		pChildren().add(-theIndex-1, theNode);
 		return theNode;

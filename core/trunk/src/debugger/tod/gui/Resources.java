@@ -52,7 +52,8 @@ public class Resources
 	public static final ImageResource ICON_ROLE_CONTEXT_EXPOSURE = loadIcon("roleContextExposure.png");
 	public static final ImageResource ICON_ROLE_RESIDUE_EVALUATION = loadIcon("roleResidueEvaluation.png");
 	
-	public static final ImageResource ICON_FULL_OBLIVIOUISNESS = loadIcon("fullObliviousness.png");
+	public static final ImageResource ICON_FULL_OBLIVIOUSNESS = loadIcon("fullObliviousness.png");
+	public static final ImageResource ICON_INTIMACY = loadIcon("intimacy.png");
 	
 	public static final ImageResource ICON_ZOOMSCROLLMARKER = loadIcon("zoomScrollMarker.png");
 	
