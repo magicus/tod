@@ -111,6 +111,11 @@ implements IListListener<Highlight>
 	{
 		super.init();
 		
+		for (Highlight theHighlight : itsSeed.pHighlights)
+		{
+			itsHighlightsMap.put(theHighlight.getLocation(), theHighlight);
+		}
+		
 		JSplitPane theSplitPane = new SavedSplitPane(getGUIManager(), "dynamicCrosscuttingView.splitterPos");
 
 		// Left part
