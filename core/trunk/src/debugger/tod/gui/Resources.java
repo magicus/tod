@@ -61,6 +61,9 @@ public class Resources
 	public static final ImageResource ICON_TRIANGLE_RIGHT = loadIcon("triangle_right.png");
 	
 	public static final ImageResource ICON_ZOOMSCROLLMARKER = loadIcon("zoomScrollMarker.png");
+	public static final ImageResource ICON_ROLESELECTEDMARKER = loadIcon("roleSelectedMarker.png");
+	public static final ImageResource ICON_ROLEUNSELECTEDMARKER = loadIcon("roleUnselectedMarker.png");
+	
 	
 	private static ImageResource loadIcon (String aName)
 	{

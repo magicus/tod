@@ -81,6 +81,7 @@ import tod.gui.kit.StdOptions;
 import tod.gui.kit.Options.OptionDef;
 import tod.gui.settings.IntimacySettings;
 import tod.utils.TODUtils;
+import zz.utils.cache.MRUBuffer;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;
 import zz.utils.notification.IFireableEvent;
@@ -120,10 +121,10 @@ implements MouseWheelListener
 	private final IFireableEvent<ILogEvent> eEventActivated = new SimpleEvent<ILogEvent>();
 		
 	/**
-	 * Maps currently displayed events to their graphic node.
+	 * Buffer for event nodes.
 	 */
-	private Map<ILogEvent, AbstractEventNode> itsNodesMap = 
-		new HashMap<ILogEvent, AbstractEventNode>();
+	private MRUBuffer<ILogEvent, AbstractEventNode> itsNodesBuffer =
+		new NodesBuffer();
 
 	private int itsSubmittedJobs = 0;
 	
@@ -271,15 +272,12 @@ implements MouseWheelListener
 		itsEventsPanel.removeAll();
 		List<ILogEvent> theEvents = itsCore.getDisplayedEvents();
 		
-		Map<ILogEvent, AbstractEventNode> theOldMap = itsNodesMap;
-		itsNodesMap = new HashMap<ILogEvent, AbstractEventNode>();
-		
 		int theChildrenHeight = 0;
 		int theTotalHeight = itsEventsPanel.getHeight();
 		
 		for (ILogEvent theEvent : theEvents) 
 		{
-			theChildrenHeight += createNode(theEvent, theOldMap, itsNodesMap);
+			theChildrenHeight += createNode(theEvent);
 		}
 		
 		while (theChildrenHeight < theTotalHeight)
@@ -287,39 +285,23 @@ implements MouseWheelListener
 			ILogEvent theEvent = itsCore.incVisibleEvents();
 			if (theEvent == null) break;
 			
-			theChildrenHeight += createNode(theEvent, theOldMap, itsNodesMap);
+			theChildrenHeight += createNode(theEvent);
 		}
 		
 		itsEventsPanel.revalidate();
 		itsEventsPanel.repaint();
 	}
 	
-	private int createNode(
-			ILogEvent aEvent, 
-			Map<ILogEvent, AbstractEventNode> aOldMap,
-			Map<ILogEvent, AbstractEventNode> aNewMap)
+	private int createNode(ILogEvent aEvent)
 	{
 		int theHeight = 0;
 		
-		AbstractEventNode theNode = aOldMap.get(aEvent);
-		if (theNode == null) theNode = buildEventNode(aEvent);
+		AbstractEventNode theNode = itsNodesBuffer.get(aEvent);
 		
 		if (theNode != null) 
 		{
 			theHeight = theNode.getPreferredSize().height;
 			itsEventsPanel.add(theNode);
-			aNewMap.put(aEvent, theNode);
-			
-			// Check if this is a group node
-			if (theNode instanceof AbstractEventGroupNode)
-			{
-				AbstractEventGroupNode<?> theGroupNode = (AbstractEventGroupNode) theNode;
-				Iterable<AbstractEventNode> theChildrenNodes = theGroupNode.getChildrenNodes();
-				for (AbstractEventNode theChildNode : theChildrenNodes)
-				{
-					aNewMap.put(theChildNode.getEvent(), theChildNode);
-				}
-			}
 		}
 
 		return theHeight;
@@ -392,7 +374,6 @@ implements MouseWheelListener
 	
 	private void update()
 	{
-		itsNodesMap.clear();
 		updateList();
 				
 		revalidate();
@@ -433,7 +414,7 @@ implements MouseWheelListener
 			}
 		}
 		
-		AbstractEventNode theNode = itsNodesMap.get(aEvent);
+		AbstractEventNode theNode = itsNodesBuffer.get(aEvent);
 		
 		boolean isVisible = true;
 		
@@ -450,7 +431,7 @@ implements MouseWheelListener
 		{
 			setTimestamp(aEvent.getTimestamp());
 			backward(2);
-			theNode = itsNodesMap.get(aEvent);
+			theNode = itsNodesBuffer.get(aEvent);
 		}
 		
 	}
@@ -494,11 +475,24 @@ implements MouseWheelListener
 		return buildEventNode(getGUIManager(), this, aEvent);
 	}
 	
-	public static AbstractEventNode buildEventNode(
+	/**
+	 * Builds and event node for the given event, 
+	 * or retrieves it from the event list's cache (if specified).
+	 */
+	public static AbstractEventNode getEventNode(
 			IGUIManager aGUIManager, 
 			EventListPanel aListPanel, 
 			ILogEvent aEvent)
 	{
+		if (aListPanel == null) return buildEventNode(aGUIManager, null, aEvent);
+		else return aListPanel.itsNodesBuffer.get(aEvent);
+	}
+	
+	public static AbstractEventNode buildEventNode(
+			IGUIManager aGUIManager, 
+			EventListPanel aListPanel, 
+			ILogEvent aEvent)
+		{
 		if (aEvent instanceof IFieldWriteEvent)
 		{
 			IFieldWriteEvent theEvent = (IFieldWriteEvent) aEvent;
@@ -587,5 +581,26 @@ implements MouseWheelListener
 		aOptions.addOption(StdOptions.SHOW_EVENTS_LOCATION, aShowEventsLocation);
 	}
 	
+	private class NodesBuffer extends MRUBuffer<ILogEvent, AbstractEventNode>
+	{
 
+		public NodesBuffer()
+		{
+			super(100);
+		}
+
+		@Override
+		protected AbstractEventNode fetch(ILogEvent aId)
+		{
+			return buildEventNode(aId);
+		}
+
+		@Override
+		protected ILogEvent getKey(AbstractEventNode aValue)
+		{
+			return aValue.getEvent();
+		}
+		
+	}
+	
 }

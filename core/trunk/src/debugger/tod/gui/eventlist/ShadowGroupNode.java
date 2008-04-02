@@ -57,9 +57,11 @@ import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
+import tod.gui.Resources;
 import tod.gui.settings.IntimacySettings;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;
+import zz.utils.ui.ResourceUtils;
 import zz.utils.ui.ResourceUtils.ImageResource;
 
 /**
@@ -93,7 +95,6 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 	public ShadowGroupNode(IGUIManager aGUIManager, EventListPanel aListPanel, EventGroup<ShadowId> aGroup)
 	{
 		super(aGUIManager, aListPanel, aGroup);
-		createUI();
 	}
 	
 	private IntimacySettings getIntimacySettings()
@@ -106,6 +107,7 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 	{
 		super.addNotify();
 		getIntimacySettings().eChanged.addListener(itsIntimacyListener);
+		createUI(); // (re)create the UI here because intimacy can have changed while out of gui.
 	}
 
 	@Override
@@ -189,7 +191,11 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 		JPanel thePanel = new JPanel(GUIUtils.createStackLayout());
 		for (ILogEvent theEvent : itsShownEvents)
 		{
-			AbstractEventNode theNode = EventListPanel.buildEventNode(getGUIManager(), getListPanel(), theEvent);
+			AbstractEventNode theNode = EventListPanel.getEventNode(
+					getGUIManager(), 
+					getListPanel(), 
+					theEvent);
+			
 			thePanel.add(theNode);
 			itsChildrenNodes.add(theNode);
 		}
@@ -216,8 +222,8 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 	implements IEventListener<Void>
 	{
 		private final BytecodeRole itsRole;
-		private final ImageIcon itsNormalIcon;
-		private final ImageIcon itsGrayIcon;
+		private final ImageIcon itsVisibleIcon;
+		private final ImageIcon itsHiddenIcon;
 
 		public RoleLabel(BytecodeRole aRole)
 		{
@@ -226,9 +232,20 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 			ImageResource theRoleIcon = GUIUtils.getRoleIcon(itsRole);
 			if (theRoleIcon != null)
 			{
-				itsNormalIcon = theRoleIcon.asIcon(ROLE_ICON_SIZE);
-				itsGrayIcon = new ImageIcon(GrayFilter.createDisabledImage(itsNormalIcon.getImage()));
-
+				ImageResource theHiddenImg =  ResourceUtils.overlay(
+						theRoleIcon,
+						Resources.ICON_ROLEUNSELECTEDMARKER);
+				
+				ImageResource theVisibleImg = ResourceUtils.overlay(
+						theRoleIcon,
+						Resources.ICON_ROLESELECTEDMARKER);
+				
+//				itsVisibleIcon = theRoleIcon.asIcon(ROLE_ICON_SIZE);
+//				itsHiddenIcon = new ImageIcon(GrayFilter.createDisabledImage(itsVisibleIcon.getImage()));
+				
+				itsVisibleIcon = theVisibleImg.asIcon(ROLE_ICON_SIZE);
+				itsHiddenIcon =  theHiddenImg.asIcon(ROLE_ICON_SIZE);
+				
 				updateIcon();
 				
 				addMouseListener(new MouseAdapter()
@@ -249,8 +266,8 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 			}
 			else
 			{
-				itsNormalIcon = null;
-				itsGrayIcon = null;
+				itsVisibleIcon = null;
+				itsHiddenIcon = null;
 				setText("?? - "+itsRole);
 			}
 		}
@@ -273,7 +290,7 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 		{
 			IntimacySettings theSettings = getGUIManager().getSettings().getIntimacySettings();
 			IntimacyLevel theLevel = theSettings.getIntimacyLevel(getAdvice().getId());
-			setIcon(theLevel.showRole(itsRole) ? itsNormalIcon : itsGrayIcon);
+			setIcon(theLevel.showRole(itsRole) ? itsVisibleIcon : itsHiddenIcon);
 		}
 		
 		public void fired(IEvent< ? extends Void> aEvent, Void aData)
