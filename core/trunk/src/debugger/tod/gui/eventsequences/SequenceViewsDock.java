@@ -323,7 +323,7 @@ public class SequenceViewsDock extends JPanel
 		private long itsRangeStart;
 		private long itsRangeEnd;
 		
-		private boolean itsChanging = false;
+		private int itsChanging = 0;
 		
 		public TimestampRangeSlider()
 		{
@@ -365,11 +365,11 @@ public class SequenceViewsDock extends JPanel
 			
 			long theDelta = itsLastTimestamp-itsFirstTimestamp;
 			
-			itsChanging = true;
+			itsChanging++;
 			itsSlider.setLowValue(1.0*(itsRangeStart-itsFirstTimestamp)/theDelta);
 			itsSlider.setHighValue(1.0*(itsRangeEnd-itsFirstTimestamp)/theDelta);
 			itsSlider.getModel().setValueIsAdjusting(false);
-			itsChanging = false;
+			itsChanging--;
 
 			updateRangeLabels();
 			updateLastLabel();
@@ -387,7 +387,11 @@ public class SequenceViewsDock extends JPanel
 			{
 				throw new RuntimeException("First: "+itsFirstTimestamp+", start: "+aStart);
 			}
+			
+			itsChanging++;
 			itsSlider.setLowValue(1.0*(aStart-itsFirstTimestamp)/(theDelta));
+			itsChanging--;
+
 			updateRangeLabels();
 			
 			TODUtils.logf(1, "[TimestampRangeSlider.setRangeStart] old: %d, new: %d", itsRangeStart, aStart);
@@ -399,7 +403,10 @@ public class SequenceViewsDock extends JPanel
 			long theDelta = itsLastTimestamp-itsFirstTimestamp;
 			if (theDelta == 0) return;
 			
+			itsChanging++;
 			itsSlider.setHighValue(1.0*(aEnd-itsFirstTimestamp)/(theDelta));
+			itsChanging--;
+
 			updateRangeLabels();
 			
 			TODUtils.logf(1, "[TimestampRangeSlider.setRangeEnd] old: %d, new: %d", itsRangeEnd, aEnd);
@@ -459,7 +466,7 @@ public class SequenceViewsDock extends JPanel
 		
 		public void stateChanged(ChangeEvent aE)
 		{
-			if (itsChanging) return;
+			if (itsChanging > 0) return;
 			
 			double theLowValue = itsSlider.getLowValue();
 			double theLow = theLowValue*(itsLastTimestamp-itsFirstTimestamp);
