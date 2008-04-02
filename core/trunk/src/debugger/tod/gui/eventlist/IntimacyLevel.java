@@ -45,10 +45,10 @@ import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 public final class IntimacyLevel implements Serializable
 {
 	public static final BytecodeRole[] ROLES = {
-		BytecodeRole.ADVICE_EXECUTE,
-		BytecodeRole.ADVICE_TEST,
-		BytecodeRole.CONTEXT_EXPOSURE,
 		BytecodeRole.ADVICE_ARG_SETUP,
+		BytecodeRole.CONTEXT_EXPOSURE,
+		BytecodeRole.ADVICE_TEST,
+		BytecodeRole.ADVICE_EXECUTE,
 	};
 	
 	public static final IntimacyLevel FULL_INTIMACY = new IntimacyLevel(ROLES);
