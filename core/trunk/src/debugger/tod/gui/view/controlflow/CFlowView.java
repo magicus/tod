@@ -253,7 +253,7 @@ public class CFlowView extends LogView implements IEventListView
 		while(theEvent != null)
 		{
 			BytecodeRole theRole = LocationUtils.getEventRole(theEvent);
-			if (theRole == null) break;
+			if (! IntimacyLevel.isKnownRole(theRole)) break;
 			
 			IntimacySettings theIntimacySettings = getGUIManager().getSettings().getIntimacySettings();
 			ProbeInfo theProbeInfo = LocationUtils.getProbeInfo(theEvent);

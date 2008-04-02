@@ -399,7 +399,7 @@ implements MouseWheelListener
 		{
 			ICallerSideEvent theEvent = (ICallerSideEvent) aEvent;
 			ProbeInfo theProbeInfo = theEvent.getProbeInfo();
-			if (theProbeInfo != null && theProbeInfo.role != null)
+			if (theProbeInfo != null && IntimacyLevel.isKnownRole(theProbeInfo.role))
 			{
 				IAdviceInfo theAdvice = getLogBrowser().getStructureDatabase().getAdvice(theProbeInfo.adviceSourceId);
 				IntimacySettings theIntimacySettings = getGUIManager().getSettings().getIntimacySettings();

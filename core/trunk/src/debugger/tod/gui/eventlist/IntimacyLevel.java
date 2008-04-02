@@ -112,6 +112,16 @@ public final class IntimacyLevel implements Serializable
 		return true;
 	}
 
-	
+	/**
+	 * Whether the given role is one of those in {@link #ROLES}
+	 */
+	public static boolean isKnownRole(BytecodeRole aRole)
+	{
+		for (BytecodeRole theRole : ROLES)
+		{
+			if (aRole == theRole) return true;
+		}
+		return false;
+	}
 	
 }
