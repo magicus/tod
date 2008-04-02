@@ -74,6 +74,8 @@ import tod.gui.view.LogView;
 import tod.gui.view.highlighter.EventHighlighter;
 import zz.utils.list.IList;
 import zz.utils.list.IListListener;
+import zz.utils.properties.IProperty;
+import zz.utils.properties.PropertyListener;
 import zz.utils.tree.ITree;
 import zz.utils.tree.SimpleTreeNode;
 import zz.utils.ui.StackLayout;
@@ -109,47 +111,6 @@ implements IListListener<Highlight>
 	{
 		super.init();
 		
-		MouseListener theAddListener = new MouseAdapter()
-		{
-			@Override
-			public void mousePressed(MouseEvent aE)
-			{
-				if (aE.getButton() != MouseEvent.BUTTON1) return;
-				
-				JList theList = (JList) aE.getSource();
-				final Highlight theHighlight = (Highlight) theList.getSelectedValue();
-
-				if (aE.getClickCount() == 1)
-				{
-					// We do the goto source action asynchronously to avoid
-					// double-click detection problems.
-					// Using SwingUtilities.invokeLater is probably not a good idea
-					// since we get out of the event loop between the clicks.
-					new Thread("DynCC goto source scheduler")
-					{
-						@Override
-						public void run()
-						{
-							try
-							{
-								sleep(300);
-								LocationUtils.gotoSource(getGUIManager(), theHighlight.getLocation());
-							}
-							catch (InterruptedException e)
-							{
-								throw new RuntimeException(e);
-							}
-						}
-					}.start();
-				}
-				else if (aE.getClickCount() == 2)
-				{
-					if (itsSeed.pHighlights.contains(theHighlight)) itsSeed.pHighlights.remove(theHighlight);
-					else itsSeed.pHighlights.add(theHighlight);
-				}
-			}
-		};
-		
 		JSplitPane theSplitPane = new SavedSplitPane(getGUIManager(), "dynamicCrosscuttingView.splitterPos");
 
 		// Left part
@@ -164,6 +125,18 @@ implements IListListener<Highlight>
 		HighlightCellEditor theEditor = new HighlightCellEditor();
 		theTreeTable.setDefaultRenderer(Highlight.class, theEditor);
 		theTreeTable.setDefaultEditor(Highlight.class, theEditor);
+		
+		theTreeTable.pSelectedLocation.addHardListener(new PropertyListener<ILocationInfo>()
+				{
+					@Override
+					public void propertyChanged(
+							IProperty<ILocationInfo> aProperty, 
+							ILocationInfo aOldValue,
+							ILocationInfo aNewValue)
+					{
+						if (aNewValue != null) LocationUtils.gotoSource(getGUIManager(), aNewValue);
+					}
+				});
 		
 		JScrollPane theScrollPane = new JScrollPane(theTreeTable);
 		

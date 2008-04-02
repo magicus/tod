@@ -32,11 +32,16 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.gui.components;
 
 import javax.swing.JPanel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.tree.TreePath;
 
 import tod.core.database.structure.ILocationInfo;
+import zz.utils.properties.IRWProperty;
+import zz.utils.properties.SimpleRWProperty;
 import zz.utils.tree.ITree;
 import zz.utils.tree.SimpleTreeNode;
 import zz.utils.treetable.JTreeTable;
@@ -54,6 +59,8 @@ public abstract class LocationTreeTable extends JPanel
 {
 	private final JTreeTable itsTreeTable;
 	private ITree<SimpleTreeNode<ILocationInfo>, ILocationInfo> itsTree;
+	
+	public final IRWProperty<ILocationInfo> pSelectedLocation = new SimpleRWProperty<ILocationInfo>();
 
 	public LocationTreeTable(ITree<SimpleTreeNode<ILocationInfo>, ILocationInfo> aTree)
 	{
@@ -64,6 +71,24 @@ public abstract class LocationTreeTable extends JPanel
 		itsTreeTable.getTree().setRootVisible(false);
 		itsTreeTable.getTree().setShowsRootHandles(true);
 		itsTreeTable.setTableHeader(null);
+		
+		itsTreeTable.getSelectionModel().addListSelectionListener(new ListSelectionListener()
+		{
+			public void valueChanged(ListSelectionEvent aE)
+			{
+				int theRow = itsTreeTable.getSelectedRow();
+				if (theRow == -1) 
+				{
+					pSelectedLocation.set(null);
+				}
+				else
+				{
+					TreePath thePath = itsTreeTable.getTree().getPathForRow(theRow);
+					SimpleTreeNode<ILocationInfo> theNode = (SimpleTreeNode) thePath.getLastPathComponent();					
+					pSelectedLocation.set(theNode.pValue().get());
+				}
+			}
+		});
 		
 		itsTreeTable.getTree().setCellRenderer(new MyTreeRenderer());
 
