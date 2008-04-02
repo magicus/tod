@@ -250,19 +250,27 @@ public class LocationUtils
 	
 	
 	/**
-	 * Returns the role of the given event.
+	 * Returns the probe info of the given event.
 	 */
-	public static BytecodeRole getEventRole(ILogEvent aEvent)
+	public static ProbeInfo getProbeInfo(ILogEvent aEvent)
 	{
 		if (aEvent instanceof ICallerSideEvent)
 		{
 			ICallerSideEvent theEvent = (ICallerSideEvent) aEvent;
-			ProbeInfo theProbeInfo = theEvent.getProbeInfo();
-			return theProbeInfo != null ? theProbeInfo.role : null;
+			return theEvent.getProbeInfo();
 		}
 		else return null;
 	}
 
+	/**
+	 * Returns the role of the given event.
+	 */
+	public static BytecodeRole getEventRole(ILogEvent aEvent)
+	{
+		ProbeInfo theProbeInfo = getProbeInfo(aEvent);
+		return theProbeInfo != null ? theProbeInfo.role : null;
+	}
+	
 	/**
 	 * Returns all the advice ids corresponding to the specified location, which
 	 * can be either an aspect or an advice.

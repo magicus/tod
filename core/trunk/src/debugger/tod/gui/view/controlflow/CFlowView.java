@@ -50,6 +50,8 @@ import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
@@ -70,6 +72,7 @@ import tod.gui.kit.messages.EventSelectedMsg;
 import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import tod.gui.seed.CFlowSeed;
+import tod.gui.settings.IntimacySettings;
 import tod.gui.view.IEventListView;
 import tod.gui.view.LogView;
 import tod.gui.view.controlflow.tree.CFlowTree;
@@ -245,6 +248,22 @@ public class CFlowView extends LogView implements IEventListView
 		itsStepper.setCurrentEvent(aEvent);
 		itsStepper.forwardStepInto();
 		ILogEvent theEvent = itsStepper.getCurrentEvent();
+		
+		// Step over AOP activities with which we are not intimate
+		while(theEvent != null)
+		{
+			BytecodeRole theRole = LocationUtils.getEventRole(theEvent);
+			if (theRole == null) break;
+			
+			IntimacySettings theIntimacySettings = getGUIManager().getSettings().getIntimacySettings();
+			ProbeInfo theProbeInfo = LocationUtils.getProbeInfo(theEvent);
+			IntimacyLevel theIntimacyLevel = theIntimacySettings.getIntimacyLevel(theProbeInfo.adviceSourceId);
+			if (theIntimacyLevel != null && theIntimacyLevel.showRole(theRole)) break;
+			
+			itsStepper.forwardStepOver();
+			theEvent = itsStepper.getCurrentEvent();
+		}
+		
 		if (theEvent != null) selectEvent(theEvent, SelectionMethod.FORWARD_STEP_INTO);
 	}
 	

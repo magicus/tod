@@ -132,9 +132,28 @@ implements IListListener<Highlight>
 					public void propertyChanged(
 							IProperty<ILocationInfo> aProperty, 
 							ILocationInfo aOldValue,
-							ILocationInfo aNewValue)
+							final ILocationInfo aNewValue)
 					{
-						if (aNewValue != null) LocationUtils.gotoSource(getGUIManager(), aNewValue);
+						if (aNewValue != null) 
+						{
+							// Delay a bit showing the source, as it causes issues.
+							new Thread("DynCC goto source scheduler")
+							{
+								@Override
+								public void run()
+								{
+									try
+									{
+										sleep(300);
+										LocationUtils.gotoSource(getGUIManager(), aNewValue);
+									}
+									catch (InterruptedException e)
+									{
+										throw new RuntimeException(e);
+									}
+								}
+							}.start();
+						}
 					}
 				});
 		
