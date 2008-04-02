@@ -64,4 +64,10 @@ public class IntimacySettings implements Serializable
 		itsIntimacyMap.put(aAdviceSourceId, aLevel);
 		((IFireableEvent<Void>) eChanged).fire(null);
 	}
+	
+	public void clear()
+	{
+		itsIntimacyMap.clear();
+		((IFireableEvent<Void>) eChanged).fire(null);		
+	}
 }

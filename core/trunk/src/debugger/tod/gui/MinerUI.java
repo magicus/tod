@@ -419,6 +419,7 @@ implements ILocationSelectionListener, IGUIManager
 	{
 		itsSession = aSession;
 		itsNavigator.clear();
+		itsGUISettings.getIntimacySettings().clear();
 		showThreads();
 		
 		if (itsSession == null)
