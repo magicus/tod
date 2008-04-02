@@ -84,6 +84,8 @@ public class EventScroller extends JPanel
 	private IEventBrowser itsBrowser;
 	
 	private Adjustable itsSlider;
+	private int itsLastValue;
+	
 	private long itsStart;
 	private long itsEnd;
 	private boolean itsUpdating = false;
@@ -115,6 +117,8 @@ public class EventScroller extends JPanel
 	{
 		// Setup slider
 		itsSlider = new JScrollBar(JScrollBar.VERTICAL);
+		itsSlider.setUnitIncrement(1);
+		itsSlider.setBlockIncrement(2);
 		itsSlider.addAdjustmentListener(new AdjustmentListener()
 		{
 			
@@ -143,15 +147,44 @@ public class EventScroller extends JPanel
 					break;
 					
 				case AdjustmentEvent.TRACK:
-					long theTimestamp = (itsSliderFactor * itsSlider.getValue()) + itsStart;
-					itsUpdating = true;
-					pTrackScroll.set(theTimestamp);
-					itsUpdating = false;
+					int theDelta = itsSlider.getValue()-itsLastValue;
+					switch(theDelta)
+					{
+					case -1:
+						eUnitScroll.fire(UnitScroll.UP);
+						break;
+						
+					case 1:
+						eUnitScroll.fire(UnitScroll.DOWN);
+						break;
+						
+					case -2:
+						eUnitScroll.fire(UnitScroll.UP);
+						eUnitScroll.fire(UnitScroll.UP);
+						eUnitScroll.fire(UnitScroll.UP);
+						break;
+						
+					case 2:
+						eUnitScroll.fire(UnitScroll.DOWN);
+						eUnitScroll.fire(UnitScroll.DOWN);
+						eUnitScroll.fire(UnitScroll.DOWN);
+						break;
+
+					default:
+						long theTimestamp = (itsSliderFactor * itsSlider.getValue()) + itsStart;
+						itsUpdating = true;
+						pTrackScroll.set(theTimestamp);
+						itsUpdating = false;
+						break;
+						
+					}
 					break;
 					
 				default:
 					throw new RuntimeException("Not handled");
 				}
+				
+				itsLastValue = itsSlider.getValue();
 			}
 		});
 		
@@ -172,6 +205,14 @@ public class EventScroller extends JPanel
 		{
 			theDelta /= 2;
 			itsSliderFactor *= 2;
+		}
+		
+		// We want the largest possible delta so that we can assume
+		// a track scroll of 1 is an up movement.
+		while (theDelta < Integer.MAX_VALUE/2)
+		{
+			theDelta *= 2;
+			itsSliderFactor /= 2;
 		}
 
 		itsSlider.setMinimum(0);

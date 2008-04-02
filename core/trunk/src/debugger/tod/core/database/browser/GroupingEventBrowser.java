@@ -402,6 +402,20 @@ public class GroupingEventBrowser<K> implements IEventBrowser
 		}
 		
 		@Override
+		public int hashCode()
+		{
+			final int PRIME = 31;
+			int result = 1;
+			result = PRIME * result + (itsGroupKey.hashCode());
+			for (ILogEvent theEvent : itsEvents)
+			{
+				result = PRIME * result + (theEvent.hashCode());
+			}
+			return result;
+
+		}
+		
+		@Override
 		public boolean equals(Object aObj)
 		{
 			if (aObj instanceof EventGroup)
