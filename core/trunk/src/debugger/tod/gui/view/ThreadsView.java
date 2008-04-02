@@ -71,7 +71,8 @@ public class ThreadsView extends LogView
 	private ThreadsSeed itsSeed;
 	
 	private SequenceViewsDock itsDock;
-	private Map<IThreadInfo, ThreadSequenceSeed> itsSeedsMap = new HashMap<IThreadInfo, ThreadSequenceSeed>();
+	private Map<IThreadInfo, ThreadSequenceSeed> itsSeedsMap = 
+		new HashMap<IThreadInfo, ThreadSequenceSeed>();
 	
 	private JLabel itsEventsCountLabel;
 	private long itsLastEventCount = -1;

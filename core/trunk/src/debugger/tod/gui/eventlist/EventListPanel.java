@@ -433,7 +433,6 @@ implements MouseWheelListener
 			backward(2);
 			theNode = itsNodesBuffer.get(aEvent);
 		}
-		
 	}
 	
 	/**

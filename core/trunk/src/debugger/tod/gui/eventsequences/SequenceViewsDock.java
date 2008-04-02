@@ -323,6 +323,8 @@ public class SequenceViewsDock extends JPanel
 		private long itsRangeStart;
 		private long itsRangeEnd;
 		
+		private boolean itsChanging = false;
+		
 		public TimestampRangeSlider()
 		{
 			itsSlider = new DoubleRangeSlider(0, 1, 0, 1){
@@ -349,8 +351,8 @@ public class SequenceViewsDock extends JPanel
 		{
 			if (aFirst == itsFirstTimestamp && aLast == itsLastTimestamp) return;
 			
-			TODUtils.logf(1, "[TimestampRangeSlider] setLimits(%d, %d)...", aFirst, aLast);
-			TODUtils.logf(1, "[TimestampRangeSlider] range before[%d, %d]", itsRangeStart, itsRangeEnd);
+			TODUtils.logf(1, "[TimestampRangeSlider.setLimits] setLimits(%d, %d)...", aFirst, aLast);
+			TODUtils.logf(1, "[TimestampRangeSlider.setLimits] range before[%d, %d]", itsRangeStart, itsRangeEnd);
 			if (itsRangeEnd == itsLastTimestamp) itsRangeEnd = aLast;
 			
 			itsFirstTimestamp = aFirst;
@@ -359,18 +361,21 @@ public class SequenceViewsDock extends JPanel
 			if (itsRangeStart < itsFirstTimestamp) itsRangeStart = itsFirstTimestamp;
 			if (itsRangeEnd > itsLastTimestamp) itsRangeEnd = itsLastTimestamp;
 
-			TODUtils.logf(1, "[TimestampRangeSlider] range after[%d, %d]", itsRangeStart, itsRangeEnd);
+			TODUtils.logf(1, "[TimestampRangeSlider.setLimits] range after[%d, %d]", itsRangeStart, itsRangeEnd);
 			
 			long theDelta = itsLastTimestamp-itsFirstTimestamp;
 			
+			itsChanging = true;
 			itsSlider.setLowValue(1.0*(itsRangeStart-itsFirstTimestamp)/theDelta);
 			itsSlider.setHighValue(1.0*(itsRangeEnd-itsFirstTimestamp)/theDelta);
+			itsSlider.getModel().setValueIsAdjusting(false);
+			itsChanging = false;
 
 			updateRangeLabels();
 			updateLastLabel();
-			itsSlider.getModel().setValueIsAdjusting(false);
 			updateViews();
-			TODUtils.logf(0, "[TimestampRangeSlider] setLimits done.", aFirst, aLast);
+
+			TODUtils.logf(0, "[TimestampRangeSlider.setLimits] done.", aFirst, aLast);
 		}
 		
 		public void setRangeStart(long aStart)
@@ -385,6 +390,7 @@ public class SequenceViewsDock extends JPanel
 			itsSlider.setLowValue(1.0*(aStart-itsFirstTimestamp)/(theDelta));
 			updateRangeLabels();
 			
+			TODUtils.logf(1, "[TimestampRangeSlider.setRangeStart] old: %d, new: %d", itsRangeStart, aStart);
 			itsRangeStart = aStart;
 		}
 		
@@ -396,6 +402,7 @@ public class SequenceViewsDock extends JPanel
 			itsSlider.setHighValue(1.0*(aEnd-itsFirstTimestamp)/(theDelta));
 			updateRangeLabels();
 			
+			TODUtils.logf(1, "[TimestampRangeSlider.setRangeEnd] old: %d, new: %d", itsRangeEnd, aEnd);
 			itsRangeEnd = aEnd;
 		}
 		
@@ -407,18 +414,15 @@ public class SequenceViewsDock extends JPanel
 		
 		private void updateRangeLabels()
 		{
-			double theLowValue = itsSlider.getLowValue();
-			double theLow = theLowValue*(itsLastTimestamp-itsFirstTimestamp);
-			itsRangeStart=(long) (itsFirstTimestamp + theLow);
-			double theHigh = itsSlider.getHighValue()*(itsLastTimestamp-itsFirstTimestamp);
-			itsRangeEnd=(long) (itsFirstTimestamp + theHigh);
-			
 			TODUtils.log(2, "range: ["+itsRangeStart+"-"+itsRangeEnd+"]");
+			
+			long theLow = itsRangeStart-itsFirstTimestamp;
+			long theHigh = itsRangeEnd-itsFirstTimestamp;
 			
 //			itsStartRangeLabel.setText((int)(theLow/1000000)+"ms <");
 //			itsEndRangeLabel.setText("< "+(int)(theHigh/1000000)+"ms");
-			itsStartRangeLabel.setText(formatTimestamp((long) theLow));
-			itsEndRangeLabel.setText(formatTimestamp((long) theHigh));
+			itsStartRangeLabel.setText(formatTimestamp(theLow)+" <");
+			itsEndRangeLabel.setText("< "+formatTimestamp(theHigh));
 		}
 		
 		private void updateLastLabel()
@@ -455,6 +459,14 @@ public class SequenceViewsDock extends JPanel
 		
 		public void stateChanged(ChangeEvent aE)
 		{
+			if (itsChanging) return;
+			
+			double theLowValue = itsSlider.getLowValue();
+			double theLow = theLowValue*(itsLastTimestamp-itsFirstTimestamp);
+			itsRangeStart=(long) (itsFirstTimestamp + theLow);
+			double theHigh = itsSlider.getHighValue()*(itsLastTimestamp-itsFirstTimestamp);
+			itsRangeEnd=(long) (itsFirstTimestamp + theHigh);			
+			
 			updateRangeLabels();
 			updateViews();
 		}
