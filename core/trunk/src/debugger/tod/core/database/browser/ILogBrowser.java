@@ -45,6 +45,7 @@ import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.session.ISession;
 import tod.impl.database.IBidiIterator;
@@ -161,6 +162,11 @@ public interface ILogBrowser
 	 * only returns events that pertain to the join point shadow of a particular advice.
 	 */
 	public IEventFilter createAdviceCFlowFilter(int aAdviceSourceId);
+	
+	/**
+	 * Creates a filter that accepts only events of the given role.
+	 */
+	public IEventFilter createRoleFilter(BytecodeRole aRole);
 	
 	/**
 	 * Creates a filter that accepts only behavior call events

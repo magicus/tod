@@ -55,6 +55,7 @@ import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.session.ISession;
 import tod.impl.common.LogBrowserUtils;
@@ -74,6 +75,7 @@ import tod.impl.local.filter.InstantiationFilter;
 import tod.impl.local.filter.IntersectionFilter;
 import tod.impl.local.filter.ObjectFilter;
 import tod.impl.local.filter.OperationLocationFilter;
+import tod.impl.local.filter.RoleFilter;
 import tod.impl.local.filter.TargetFilter;
 import tod.impl.local.filter.ThreadFilter;
 import tod.impl.local.filter.UnionFilter;
@@ -204,6 +206,11 @@ public class LocalBrowser implements ILogBrowser
 	public IEventFilter createAdviceCFlowFilter(int aAdviceSourceId)
 	{
 		return new AdviceCFlowFilter(this, aAdviceSourceId);
+	}
+
+	public IEventFilter createRoleFilter(BytecodeRole aRole)
+	{
+		return new RoleFilter(this, aRole);
 	}
 
 	public IEventFilter createBehaviorCallFilter()

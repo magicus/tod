@@ -31,28 +31,26 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.browser;
 
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
+import java.util.List;
 
 import org.objectweb.asm.Type;
 
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ICallerSideEvent;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IAdviceInfo;
+import tod.core.database.structure.IAspectInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
-import tod.core.database.structure.ILocationsRepository;
+import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
-import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
-import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
-import tod.utils.TODUtils;
 
 /**
  * Utilities related to {@link IStructureDatabase}
@@ -233,6 +231,25 @@ public class LocationUtils
 	}
 
 	/**
+	 * Go to the source of the specified location.
+	 */
+	public static void gotoSource(IGUIManager aGUIManager, ILocationInfo aLocation)
+	{
+		if (aLocation instanceof IAdviceInfo)
+		{
+			IAdviceInfo theAdvice = (IAdviceInfo) aLocation;
+			aGUIManager.gotoSource(theAdvice.getSourceRange());
+		}
+		else if (aLocation instanceof IAspectInfo)
+		{
+			IAspectInfo theAspect = (IAspectInfo) aLocation;
+			aGUIManager.gotoSource(new SourceRange(theAspect.getSourceFile(), 1));
+		}
+		else throw new UnsupportedOperationException(""+aLocation);
+	}
+	
+	
+	/**
 	 * Returns the role of the given event.
 	 */
 	public static BytecodeRole getEventRole(ILogEvent aEvent)
@@ -245,5 +262,29 @@ public class LocationUtils
 		}
 		else return null;
 	}
+
+	/**
+	 * Returns all the advice ids corresponding to the specified location, which
+	 * can be either an aspect or an advice.
+	 */
+	public static int[] getAdviceSourceIds(ILocationInfo aLocation)
+	{
+		if (aLocation instanceof IAspectInfo)
+		{
+			IAspectInfo theAspect = (IAspectInfo) aLocation;
+			List<IAdviceInfo> theAdvices = theAspect.getAdvices();
+			int[] theResult = new int[theAdvices.size()];
+			int i=0;
+			for(IAdviceInfo theAdvice : theAdvices) theResult[i++] = theAdvice.getId();
+			return theResult;
+		}
+		else if (aLocation instanceof IAdviceInfo)
+		{
+			IAdviceInfo theAdvice = (IAdviceInfo) aLocation;
+			return new int[] {theAdvice.getId()};
+		}
+		else throw new RuntimeException("Not handled: "+aLocation);
+	}
+	
 
 }

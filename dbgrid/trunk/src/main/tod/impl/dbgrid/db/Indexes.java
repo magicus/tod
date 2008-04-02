@@ -20,14 +20,15 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.db;
 
+import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_ADVICE_SRC_ID_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_BEHAVIOR_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_BYTECODE_LOCS_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_DEPTH_RANGE;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_FIELD_COUNT;
+import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_ROLE_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_THREADS_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_TYPE_COUNT;
 import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_VAR_COUNT;
-import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_ADVICE_SRC_ID_COUNT;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -60,6 +61,7 @@ public class Indexes
 	private RoleIndexSet itsBehaviorIndex;
 	private StdIndexSet itsAdviceSourceIdIndex;
 	private StdIndexSet itsAdviceCFlowIndex; // Distinct from above to implement pointcut history.
+	private StdIndexSet itsRoleIndex;
 	private StdIndexSet itsFieldIndex;
 	private StdIndexSet itsVariableIndex;
 	
@@ -89,6 +91,7 @@ public class Indexes
 		itsLocationIndex = new StdIndexSet("bytecodeLoc.", itsIndexManager, aFile, STRUCTURE_BYTECODE_LOCS_COUNT+1);
 		itsAdviceSourceIdIndex = new StdIndexSet("advice src id", itsIndexManager, aFile, STRUCTURE_ADVICE_SRC_ID_COUNT+1);
 		itsAdviceCFlowIndex = new StdIndexSet("advice cflow", itsIndexManager, aFile, STRUCTURE_ADVICE_SRC_ID_COUNT+1);
+		itsRoleIndex = new StdIndexSet("role", itsIndexManager, aFile, STRUCTURE_ROLE_COUNT+1);
 		itsBehaviorIndex = new RoleIndexSet("behavior", itsIndexManager, aFile, STRUCTURE_BEHAVIOR_COUNT+1);
 		itsFieldIndex = new StdIndexSet("field", itsIndexManager, aFile, STRUCTURE_FIELD_COUNT+1);
 		itsVariableIndex = new StdIndexSet("variable", itsIndexManager, aFile, STRUCTURE_VAR_COUNT+1);
@@ -253,6 +256,16 @@ public class Indexes
 	public HierarchicalIndex<StdTuple> getAdviceCFlowIndex(int aIndex)
 	{
 		return itsAdviceCFlowIndex.getIndex(aIndex);
+	}
+	
+	public void indexRole(int aIndex, StdTuple aTuple)
+	{
+		itsRoleIndex.addTuple(aIndex, aTuple);
+	}
+	
+	public HierarchicalIndex<StdTuple> getRoleIndex(int aIndex)
+	{
+		return itsRoleIndex.getIndex(aIndex);
 	}
 	
 	public void indexBehavior(int aIndex, RoleTuple aTuple)

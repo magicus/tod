@@ -33,41 +33,49 @@ package tod.gui.view.dyncross;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.browser.LocationUtils;
 import tod.core.database.structure.IAdviceInfo;
 import tod.core.database.structure.IAspectInfo;
-import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
+import tod.core.database.structure.tree.StructureTreeBuilders;
 import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
+import tod.gui.components.LocationTreeTable;
+import tod.gui.eventlist.IntimacyLevel;
 import tod.gui.kit.SavedSplitPane;
 import tod.gui.seed.DynamicCrosscuttingSeed;
-import tod.gui.seed.DynamicCrosscuttingSeed.AdviceHighlight;
-import tod.gui.seed.DynamicCrosscuttingSeed.AspectHighlight;
 import tod.gui.seed.DynamicCrosscuttingSeed.Highlight;
 import tod.gui.view.LogView;
 import tod.gui.view.highlighter.EventHighlighter;
-import zz.utils.SimpleListModel;
 import zz.utils.list.IList;
 import zz.utils.list.IListListener;
+import zz.utils.tree.ITree;
+import zz.utils.tree.SimpleTreeNode;
 import zz.utils.ui.StackLayout;
 
 /**
@@ -78,13 +86,17 @@ import zz.utils.ui.StackLayout;
 public class DynamicCrosscuttingView extends LogView
 implements IListListener<Highlight>
 {
-	private static final Color[] COLORS = {
-		Color.BLUE, Color.CYAN, Color.GREEN, Color.MAGENTA, Color.ORANGE,
-		Color.PINK, Color.RED, Color.WHITE, Color.YELLOW
-	};
+	private static final int COLUMN_HIGHLIGHT = 0;
 	
 	private final DynamicCrosscuttingSeed itsSeed;
 	private MyHighlighter itsHighlighter;
+	
+	/**
+	 * We maintain this temporary binding between the UI and the seed's highlights list.
+	 */
+	private Map<ILocationInfo, Highlight> itsHighlightsMap = new HashMap<ILocationInfo, Highlight>();
+	
+	
 	
 	public DynamicCrosscuttingView(IGUIManager aGUIManager, ILogBrowser aLog, DynamicCrosscuttingSeed aSeed)
 	{
@@ -96,26 +108,6 @@ implements IListListener<Highlight>
 	public void init()
 	{
 		super.init();
-		
-		IStructureDatabase theStructureDatabase = getLogBrowser().getStructureDatabase();
-		Map<String, IAspectInfo> theMap = theStructureDatabase.getAspectInfoMap();
-		
-		// Create aspects list
-		List<AspectHighlight> theAspectsList = new ArrayList<AspectHighlight>();
-		for (IAspectInfo theAspect : theMap.values())
-		{
-			theAspectsList.add(new AspectHighlight(theAspect));
-		}
-		
-		// Create advices list
-		List<AdviceHighlight> theAdvicesList = new ArrayList<AdviceHighlight>();
-		for (AspectHighlight theHighlight : theAspectsList)
-		{
-			for (IAdviceInfo theAdvice : theHighlight.getAspect().getAdvices())
-			{
-				theAdvicesList.add(new AdviceHighlight(theAdvice));
-			}
-		}
 		
 		MouseListener theAddListener = new MouseAdapter()
 		{
@@ -129,6 +121,10 @@ implements IListListener<Highlight>
 
 				if (aE.getClickCount() == 1)
 				{
+					// We do the goto source action asynchronously to avoid
+					// double-click detection problems.
+					// Using SwingUtilities.invokeLater is probably not a good idea
+					// since we get out of the event loop between the clicks.
 					new Thread("DynCC goto source scheduler")
 					{
 						@Override
@@ -137,7 +133,7 @@ implements IListListener<Highlight>
 							try
 							{
 								sleep(300);
-								theHighlight.gotoSource(getGUIManager());
+								LocationUtils.gotoSource(getGUIManager(), theHighlight.getLocation());
 							}
 							catch (InterruptedException e)
 							{
@@ -157,24 +153,28 @@ implements IListListener<Highlight>
 		JSplitPane theSplitPane = new SavedSplitPane(getGUIManager(), "dynamicCrosscuttingView.splitterPos");
 
 		// Left part
-		JList theAspectsJList = new JList(new SimpleListModel(theAspectsList));
-		JList theAdvicesJList = new JList(new SimpleListModel(theAdvicesList));
+		MyTreeTable theTreeTable = new MyTreeTable(StructureTreeBuilders.createAspectTree(
+				getLogBrowser().getStructureDatabase(), 
+				true));          
 		
-		theAspectsJList.addMouseListener(theAddListener);
-		theAdvicesJList.addMouseListener(theAddListener);
+		Dimension theSize = new HighlightEditor(this).getPreferredSize();
+		theTreeTable.setRowHeight(theSize.height + 1);
+		theTreeTable.setColumnWidth(COLUMN_HIGHLIGHT, theSize.width);
 		
-		JTabbedPane theTabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		theTabbedPane.addTab("Aspects", new JScrollPane(theAspectsJList));
-		theTabbedPane.addTab("Advices", new JScrollPane(theAdvicesJList));
+		HighlightCellEditor theEditor = new HighlightCellEditor();
+		theTreeTable.setDefaultRenderer(Highlight.class, theEditor);
+		theTreeTable.setDefaultEditor(Highlight.class, theEditor);
+		
+		JScrollPane theScrollPane = new JScrollPane(theTreeTable);
 		
 		// Right part
 		JPanel theRightPanel = new JPanel(new BorderLayout());
-		theRightPanel.add(new LegendPanel(), BorderLayout.SOUTH);
+//		theRightPanel.add(new LegendPanel(), BorderLayout.SOUTH);
 		
 		itsHighlighter = new MyHighlighter(getGUIManager(), getLogBrowser());
 		theRightPanel.add(itsHighlighter, BorderLayout.CENTER);
 		
-		theSplitPane.setLeftComponent(theTabbedPane);
+		theSplitPane.setLeftComponent(theScrollPane);
 		theSplitPane.setRightComponent(theRightPanel);
 		
 		setLayout(new StackLayout());
@@ -203,13 +203,52 @@ implements IListListener<Highlight>
 	private IEventBrowser createBrowser(Highlight aHighlight)
 	{
 		ICompoundFilter theUnionFilter = getLogBrowser().createUnionFilter();
-		for (int theSourceId : aHighlight.getAdviceSourceIds())
+		for (int theSourceId : LocationUtils.getAdviceSourceIds(aHighlight.getLocation()))
 		{
-			theUnionFilter.add(getLogBrowser().createAdviceCFlowFilter(theSourceId));
-			theUnionFilter.add(getLogBrowser().createAdviceSourceIdFilter(theSourceId));
+			if (hasAllRoles(aHighlight))
+			{
+				theUnionFilter.add(getLogBrowser().createAdviceCFlowFilter(theSourceId));
+				theUnionFilter.add(getLogBrowser().createAdviceSourceIdFilter(theSourceId));
+			}
+			else
+			{
+				ICompoundFilter theRolesFilter = getLogBrowser().createUnionFilter();
+				for (BytecodeRole theRole : aHighlight.getRoles()) 
+				{
+					if (theRole == BytecodeRole.ADVICE_EXECUTE)
+					{
+						theRolesFilter.add(getLogBrowser().createAdviceCFlowFilter(theSourceId));
+					}
+
+					theRolesFilter.add(getLogBrowser().createIntersectionFilter(
+							getLogBrowser().createRoleFilter(theRole),
+							getLogBrowser().createAdviceSourceIdFilter(theSourceId)));
+				}
+				
+				theUnionFilter.add(theRolesFilter);
+			}
 		}
 		return getLogBrowser().createBrowser(theUnionFilter);
-
+	}
+	
+	/**
+	 * Whether this highlight has all the available roles.
+	 */
+	private boolean hasAllRoles(Highlight aHighlight)
+	{
+		for (BytecodeRole theRole : IntimacyLevel.ROLES)
+		{
+			if(! aHighlight.getRoles().contains(theRole)) return false;
+		}
+		return true;
+	}
+	
+	void setHighlight(ILocationInfo aLocation, Highlight aHighlight)
+	{
+		Highlight thePrevious = itsHighlightsMap.get(aLocation);
+		if (thePrevious != null) itsSeed.pHighlights.remove(thePrevious);
+		itsHighlightsMap.put(aLocation, aHighlight);
+		if (aHighlight != null) itsSeed.pHighlights.add(aHighlight);
 	}
 	
 	/**
@@ -217,92 +256,138 @@ implements IListListener<Highlight>
 	 */
 	private void setupHighlights()
 	{
-		int i=0;
 		for(Highlight theHighlight : itsSeed.pHighlights)
 		{
 			itsHighlighter.pHighlightBrowsers.add(new BrowserData(
 					createBrowser(theHighlight),
-					COLORS[i++],
+					theHighlight.getColor(),
 					BrowserData.DEFAULT_MARK_SIZE+1));
 		}
 	}
 	
 	public void elementAdded(IList<Highlight> aList, int aIndex, Highlight aElement)
 	{
-		itsHighlighter.pHighlightBrowsers.add(aIndex, new BrowserData(
-				createBrowser(aElement),
-				COLORS[aIndex],
-				BrowserData.DEFAULT_MARK_SIZE+1));
+		itsHighlighter.pHighlightBrowsers.add(
+				aIndex, 
+				new BrowserData(createBrowser(aElement), aElement.getColor(), BrowserData.DEFAULT_MARK_SIZE+1));
 	}
 
 	public void elementRemoved(IList<Highlight> aList, int aIndex, Highlight aElement)
 	{
 		itsHighlighter.pHighlightBrowsers.remove(aIndex);
 	}
-
-	private class LegendPanel extends JPanel
-	implements IListListener<Highlight>
+	
+	/**
+	 * Our subclass of {@link LocationTreeTable} that has two additional columns:
+	 * - enable and choose intimacy
+	 * - choose color
+	 * @author gpothier
+	 */
+	private class MyTreeTable extends LocationTreeTable
 	{
-		public LegendPanel()
+		public MyTreeTable(ITree<SimpleTreeNode<ILocationInfo>, ILocationInfo> aTree)
 		{
-			super(new FlowLayout());
-			int i=0;
-			for(Highlight theHighlight : itsSeed.pHighlights)
+			super(aTree);
+		}
+
+		@Override
+		protected int getColumnCount()
+		{
+			return 1;
+		}
+
+		@Override
+		protected Class getColumnClass(int aColumn)
+		{
+			switch(aColumn) 
 			{
-				add(new LegendItem(theHighlight, COLORS[i++]));
+			case COLUMN_HIGHLIGHT: return Highlight.class;
+			default: throw new RuntimeException("Not handled: "+aColumn);
 			}
 		}
-		
+
 		@Override
-		public void addNotify()
+		protected Object getValueAt(ILocationInfo aLocation, int aColumn)
 		{
-			super.addNotify();
-			itsSeed.pHighlights.addHardListener(this);
-		}
-		
-		@Override
-		public void removeNotify()
-		{
-			super.removeNotify();
-			itsSeed.pHighlights.removeListener(this);
+			switch(aColumn) 
+			{
+			case COLUMN_HIGHLIGHT: 
+				Highlight theHighlight = itsHighlightsMap.get(aLocation);
+				System.out.println("location: "+aLocation+" -> "+theHighlight);
+				return theHighlight;
+			default: throw new RuntimeException("Not handled: "+aColumn);
+			}
 		}
 
-		public void elementAdded(IList<Highlight> aList, int aIndex, Highlight aElement)
+		@Override
+		protected boolean isCellEditable(ILocationInfo aLocation, int aColumn)
 		{
-			add(new LegendItem(aElement, COLORS[aIndex]), null, aIndex);
-			revalidate();
-			repaint();
+			return (aLocation instanceof IAspectInfo) || (aLocation instanceof IAdviceInfo);
 		}
+	}
 
-		public void elementRemoved(IList<Highlight> aList, int aIndex, Highlight aElement)
-		{
-			remove(aIndex);
-			revalidate();
-			repaint();
-		}
-		
-	}
-	
-	private static class LegendItem extends JPanel
-	{
-		private final Highlight itsHighlight;
-		
-		public LegendItem(Highlight aHighlight, Color aMarkColor)
-		{
-			super(new FlowLayout(FlowLayout.LEFT));
-			
-			itsHighlight = aHighlight;
-			
-			JPanel theColorPanel = new JPanel(null);
-			theColorPanel.setBackground(aMarkColor);
-			theColorPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-			theColorPanel.setPreferredSize(new Dimension(30, 20));
-			add(theColorPanel);
-			
-			add(new JLabel(itsHighlight.toString()));
-		}
-	}
-	
+//	private class LegendPanel extends JPanel
+//	implements IListListener<Highlight>
+//	{
+//		public LegendPanel()
+//		{
+//			super(new FlowLayout());
+//			for(Highlight theHighlight : itsSeed.pHighlights)
+//			{
+//				add(new LegendItem(theHighlight, theHighlight.getColor()));
+//			}
+//		}
+//		
+//		@Override
+//		public void addNotify()
+//		{
+//			super.addNotify();
+//			itsSeed.pHighlights.addHardListener(this);
+//		}
+//		
+//		@Override
+//		public void removeNotify()
+//		{
+//			super.removeNotify();
+//			itsSeed.pHighlights.removeListener(this);
+//		}
+//
+//		public void elementAdded(IList<Highlight> aList, int aIndex, Highlight aElement)
+//		{
+//			add(new LegendItem(aElement, aElement.getColor()), null, aIndex);
+//			revalidate();
+//			repaint();
+//		}
+//
+//		public void elementRemoved(IList<Highlight> aList, int aIndex, Highlight aElement)
+//		{
+//			remove(aIndex);
+//			revalidate();
+//			repaint();
+//		}
+//		
+//	}
+//	
+//	private static class LegendItem extends JPanel
+//	{
+//		private final Highlight itsHighlight;
+//		
+//		public LegendItem(Highlight aHighlight, Color aMarkColor)
+//		{
+//			super(new FlowLayout(FlowLayout.LEFT));
+//			
+//			itsHighlight = aHighlight;
+//			
+//			JPanel theColorPanel = new JPanel(null);
+//			theColorPanel.setBackground(aMarkColor);
+//			theColorPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+//			theColorPanel.setPreferredSize(new Dimension(30, 20));
+//			add(theColorPanel);
+//			
+//			add(new JLabel(itsHighlight.toString()));
+//		}
+//	}
+//	
 	private class MyHighlighter extends EventHighlighter
 	{
 		public MyHighlighter(IGUIManager aGUIManager, ILogBrowser aLogBrowser)
@@ -317,4 +402,62 @@ implements IListListener<Highlight>
 			super.perThread();
 		}
 	}
+	
+	/**
+	 * The table cell editor/renderer for the intimacy level column.
+	 * @author gpothier
+	 */
+	private class HighlightCellEditor extends AbstractCellEditor
+	implements TableCellRenderer, TableCellEditor
+	{
+		private HighlightEditor itsRenderer = new HighlightEditor(DynamicCrosscuttingView.this);
+		private HighlightEditor itsEditor = new HighlightEditor(DynamicCrosscuttingView.this);
+		private JPanel itsNoValueEditor = new JPanel();
+		
+		private void setup(
+				JComponent aEditor,
+				JTable aTable,
+				boolean aIsSelected,
+				boolean aHasFocus)
+		{
+			aEditor.setBackground(aIsSelected ? aTable.getSelectionBackground() : aTable.getBackground());
+		}
+		
+		public Component getTableCellRendererComponent(
+				JTable aTable,
+				Object aValue,
+				boolean aIsSelected,
+				boolean aHasFocus, 
+				int aRow,
+				int aColumn)
+		{
+//			if (aValue == NO_VALUE) return itsNoValueEditor;
+			
+			setup(itsRenderer, aTable, aIsSelected, aHasFocus);
+			itsRenderer.setValue((Highlight) aValue);
+			return itsRenderer;
+		}
+
+		public Component getTableCellEditorComponent(
+				JTable aTable,
+				Object aValue,
+				boolean aIsSelected,
+				int aRow,
+				int aColumn)
+		{
+//			if (aValue == NO_VALUE) return itsNoValueEditor;
+
+			setup(itsEditor, aTable, aIsSelected, true);
+			ILocationInfo theLocation = (ILocationInfo) aTable.getModel().getValueAt(aRow, 0);
+			itsEditor.setLocationInfo(theLocation);
+			itsEditor.setValue((Highlight) aValue);
+			return itsEditor;
+		}
+
+		public Object getCellEditorValue()
+		{
+			return itsEditor.getValue();
+		}
+	}
+
 }

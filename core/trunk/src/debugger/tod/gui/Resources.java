@@ -55,6 +55,11 @@ public class Resources
 	public static final ImageResource ICON_FULL_OBLIVIOUSNESS = loadIcon("fullObliviousness.png");
 	public static final ImageResource ICON_INTIMACY = loadIcon("intimacy.png");
 	
+	public static final ImageResource ICON_TRIANGLE_UP = loadIcon("triangle_up.png");
+	public static final ImageResource ICON_TRIANGLE_DOWN = loadIcon("triangle_down.png");
+	public static final ImageResource ICON_TRIANGLE_LEFT = loadIcon("triangle_left.png");
+	public static final ImageResource ICON_TRIANGLE_RIGHT = loadIcon("triangle_right.png");
+	
 	public static final ImageResource ICON_ZOOMSCROLLMARKER = loadIcon("zoomScrollMarker.png");
 	
 	private static ImageResource loadIcon (String aName)

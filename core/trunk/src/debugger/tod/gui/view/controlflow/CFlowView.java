@@ -53,9 +53,10 @@ import tod.core.database.structure.IThreadInfo;
 import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
-import tod.gui.IntimacyLevelEditor;
 import tod.gui.MinerUI;
 import tod.gui.Resources;
+import tod.gui.components.intimacyeditor.IntimacyEditorButton;
+import tod.gui.components.intimacyeditor.IntimacyLevelEditor;
 import tod.gui.eventlist.EventListPanel;
 import tod.gui.eventlist.IntimacyLevel;
 import tod.gui.formatter.EventFormatter;
@@ -267,7 +268,9 @@ public class CFlowView extends LogView implements IEventListView
 		// Setup intimacy level selector
 		if (getConfig().get(TODConfig.WITH_ASPECTS))
 		{
-			theToolbar.add(new IntimacyLevelEditor(getGUIManager(), getLogBrowser().getStructureDatabase()));
+			theToolbar.add(new IntimacyEditorButton(
+					getGUIManager().getSettings().getIntimacySettings(), 
+					getLogBrowser().getStructureDatabase()));
 		}
 				
 		theToolbar.add(new JButton(new SimpleAction(

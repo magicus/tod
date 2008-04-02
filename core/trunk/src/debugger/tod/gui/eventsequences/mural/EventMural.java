@@ -51,7 +51,9 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -578,7 +580,7 @@ public class EventMural extends MouseWheelPanel
 		long s = t - ((long) ((t-t1)*k));
 		
 		if (s < itsFirstTimestamp) s = itsFirstTimestamp;
-		if (itsLastTimestamp > 0 && s+w > itsLastTimestamp) s = itsLastTimestamp - w;
+		if (itsLastTimestamp > 0 && s+nw > itsLastTimestamp) s = itsLastTimestamp - nw;
 
 		pEnd.set(s+nw);
 		pStart.set(s);
@@ -675,6 +677,11 @@ public class EventMural extends MouseWheelPanel
 					{
 						doUpdateImage(theRequest);
 					}
+					catch(ConcurrentModificationException e)
+					{
+						System.err.println("EventMural.ImageUpdater.run] Concurrent modification, retrying");
+						theRequest.markDirty();
+					}
 					catch (Throwable e)
 					{
 						System.err.println("Exception in EventMural.Updater:");
@@ -731,13 +738,14 @@ public class EventMural extends MouseWheelPanel
 			TODUtils.log(2, "[ImageUpdater] doUpdateImage ["+theStart+"-"+theEnd+"]");
 			
 			// Paint
+			// (cloning the browser data list in order to avoid concurrent modifications)
 			long[][] theValues = aMural.itsMuralPainter.paintMural(
 					aMural, 
 					theGraphics, 
 					new Rectangle(0, 0, u, v), 
 					theStart, 
 					theEnd, 
-					aMural.pEventBrowsers);
+					new ArrayList<BrowserData>(aMural.pEventBrowsers)); 
 
 			theImageData.setUpToDate(true);
 			theImageData.setValues(theValues);

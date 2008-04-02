@@ -31,19 +31,21 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.seed;
 
+import java.awt.Color;
 import java.util.List;
+import java.util.Set;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IAdviceInfo;
 import tod.core.database.structure.IAspectInfo;
+import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.SourceRange;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.gui.IGUIManager;
 import tod.gui.view.LogView;
 import tod.gui.view.dyncross.DynamicCrosscuttingView;
-import tod.impl.database.structure.standard.AspectInfo;
 import zz.utils.list.IList;
 import zz.utils.list.ZArrayList;
-import zz.utils.primitive.IntArray;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
 
@@ -71,92 +73,72 @@ public class DynamicCrosscuttingSeed extends LogViewSeed
 	 * or individual advice).
 	 * @author gpothier
 	 */
-	public static abstract class Highlight
+	public static class Highlight
 	{
-		public abstract int[] getAdviceSourceIds();
-		public abstract void gotoSource(IGUIManager aGUIManager);
+		private final Color itsColor;
+		private final Set<BytecodeRole> itsRoles;
 		
 		/**
-		 * Strips the package name from the given file name.
+		 * The highlighted location (should be {@link IAdviceInfo} or {@link IAspectInfo}
 		 */
-		protected String strippedName(String aFileName)
+		private final ILocationInfo itsLocation;
+		
+		public Highlight(Color aColor, Set<BytecodeRole> aRoles, ILocationInfo aLocation)
 		{
-			int i = aFileName.lastIndexOf('.');
-			return aFileName.substring(i+1);
+			itsColor = aColor;
+			itsRoles = aRoles;
+			itsLocation = aLocation;
+		}
+
+		public Color getColor()
+		{
+			return itsColor;
+		}
+		
+		public Set<BytecodeRole> getRoles()
+		{
+			return itsRoles;
+		}
+		
+		public ILocationInfo getLocation()
+		{
+			return itsLocation;
+		}
+
+		@Override
+		public int hashCode()
+		{
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((itsColor == null) ? 0 : itsColor.hashCode());
+			result = prime * result + ((itsLocation == null) ? 0 : itsLocation.hashCode());
+			result = prime * result + ((itsRoles == null) ? 0 : itsRoles.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			final Highlight other = (Highlight) obj;
+			if (itsColor == null)
+			{
+				if (other.itsColor != null) return false;
+			}
+			else if (!itsColor.equals(other.itsColor)) return false;
+			if (itsLocation == null)
+			{
+				if (other.itsLocation != null) return false;
+			}
+			else if (!itsLocation.equals(other.itsLocation)) return false;
+			if (itsRoles == null)
+			{
+				if (other.itsRoles != null) return false;
+			}
+			else if (!itsRoles.equals(other.itsRoles)) return false;
+			return true;
 		}
 	}
-	
-	public static class AspectHighlight extends Highlight
-	{
-		private final IAspectInfo itsAspect;
-
-		public AspectHighlight(IAspectInfo aAspectInfo)
-		{
-			itsAspect = aAspectInfo;
-		}
-		
-		public IAspectInfo getAspect()
-		{
-			return itsAspect;
-		}
-		
-		@Override
-		public int[] getAdviceSourceIds()
-		{
-			List<IAdviceInfo> theAdvices = itsAspect.getAdvices();
-			int[] theResult = new int[theAdvices.size()];
-			int i=0;
-			for(IAdviceInfo theAdvice : theAdvices) theResult[i++] = theAdvice.getId();
-			return theResult;
-		}
-		
-		@Override
-		public void gotoSource(IGUIManager aGUIManager)
-		{
-			aGUIManager.gotoSource(new SourceRange(itsAspect.getSourceFile(), 1));
-		}
-
-		@Override
-		public String toString()
-		{
-			return strippedName(getAspect().getSourceFile());
-		}
-	}
-	
-	public static class AdviceHighlight extends Highlight
-	{
-		private final IAdviceInfo itsAdvice;
-
-		public AdviceHighlight(IAdviceInfo aAdvice)
-		{
-			itsAdvice = aAdvice;
-		}
-
-		public SourceRange getAdviceSource()
-		{
-			return itsAdvice.getSourceRange();
-		}
-		
-		@Override
-		public int[] getAdviceSourceIds()
-		{
-			int[] theResult = new int[1];
-			theResult[0] = itsAdvice.getId();
-			return theResult;
-		}
-
-		@Override
-		public void gotoSource(IGUIManager aGUIManager)
-		{
-			aGUIManager.gotoSource(getAdviceSource());
-		}
-
-		@Override
-		public String toString()
-		{
-			return strippedName(getAdviceSource().sourceFile)+":"+getAdviceSource().startLine;
-		}
-	}
-	
-
 }

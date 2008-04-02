@@ -36,6 +36,7 @@ import java.awt.Color;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.gui.FontConfig;
 import tod.gui.IGUIManager;
 import tod.gui.kit.html.HtmlDoc;

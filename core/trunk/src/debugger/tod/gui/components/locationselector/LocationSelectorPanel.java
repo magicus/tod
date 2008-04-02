@@ -29,7 +29,7 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.locationselector;
+package tod.gui.components.locationselector;
 
 import java.awt.Dimension;
 
@@ -61,26 +61,32 @@ import zz.utils.ui.StackLayout;
 import zz.utils.ui.UniversalRenderer;
 
 /**
- * This panel permits to select an aspect or advice in the structure database.
+ * This panel permits to select a location in the structure database.
  * @author gpothier
  */
-public class AspectSelectorPanel extends JPanel
+public class LocationSelectorPanel extends JPanel
 {
 	private final IRWProperty<ILocationInfo> pSelectedLocation = new SimpleRWProperty<ILocationInfo>();
 	private final IStructureDatabase itsStructureDatabase;
-	private final boolean itsShowAdvices;
+	private final boolean itsShowMembers;
 	
-	public AspectSelectorPanel(IStructureDatabase aStructureDatabase, boolean aShowAdvices)
+	public LocationSelectorPanel(IStructureDatabase aStructureDatabase, boolean aShowMembers)
 	{
 		itsStructureDatabase = aStructureDatabase;
-		itsShowAdvices = aShowAdvices;
+		itsShowMembers = aShowMembers;
 		createUI();
 	}
 
 	private void createUI()
 	{
+		JTabbedPane theTabbedPane = new JTabbedPane();
+		
+		theTabbedPane.addTab("Packages", new TreeSelector());
+		theTabbedPane.addTab("Behaviors", new BehaviorIdSelector());
+		theTabbedPane.addTab("Probes", new ProbeIdSelector());
+		
 		setLayout(new StackLayout());
-		add(new TreeSelector());
+		add(theTabbedPane);
 	}
 	
 	public IStructureDatabase getStructureDatabase()
@@ -105,7 +111,7 @@ public class AspectSelectorPanel extends JPanel
 	}
 	
 	/**
-	 * Presents all the aspects7advices in a tree.
+	 * Presents all the classes/behaviors in a tree.
 	 * @author gpothier
 	 */
 	private class TreeSelector extends JPanel
@@ -127,7 +133,7 @@ public class AspectSelectorPanel extends JPanel
 				public void valueChanged(TreeSelectionEvent aEvent)
 				{
 					LocationNode theNode = (LocationNode) aEvent.getPath().getLastPathComponent();
-					AspectSelectorPanel.this.show(theNode.getLocation());
+					LocationSelectorPanel.this.show(theNode.getLocation());
 				}
 			});
 			
@@ -137,7 +143,10 @@ public class AspectSelectorPanel extends JPanel
 		
 		private TreeModel createTreeModel()
 		{
-			return new SwingTreeModel(StructureTreeBuilders.createAspectTree(getStructureDatabase(), itsShowAdvices));
+			return new SwingTreeModel(StructureTreeBuilders.createClassTree(
+					getStructureDatabase(), 
+					itsShowMembers, 
+					itsShowMembers));
 		}
 	}
 	
@@ -151,8 +160,179 @@ public class AspectSelectorPanel extends JPanel
 		protected String getName(SimpleTreeNode<ILocationInfo> aNode)
 		{
 			ILocationInfo theLocation = aNode.pValue().get();
-			return theLocation.getName();
+			
+			if (theLocation instanceof IClassInfo)
+			{
+				IClassInfo theClass = (IClassInfo) theLocation;
+				return Util.getSimpleName(theClass.getName());
+			}
+			else if (theLocation instanceof IMemberInfo)
+			{
+				IMemberInfo theMember = (IMemberInfo) theLocation;
+				return Util.getFullName(theMember);
+			}
+			else
+			{
+				return theLocation.getName();
+			}
 		}
 	}
 
+	/**
+	 * Peer of {@link BigListModel}
+	 * @author gpothier
+	 */
+	private static class BigJList extends JList
+	{
+		public BigJList()
+		{
+		}
+
+		public BigJList(BigListModel aDataModel)
+		{
+			super(aDataModel);
+		}
+
+		@Override
+		public BigListModel getModel()
+		{
+			return (BigListModel) super.getModel();
+		}
+		
+		@Override
+		public Dimension getPreferredSize()
+		{
+			getModel().setHideAway(true);
+			Dimension thePreferredSize = super.getPreferredSize();
+			getModel().setHideAway(false);
+			return thePreferredSize;
+		}
+	}
+	
+	/**
+	 * A list model for huge list for which we do not want the contents
+	 * to be retrieved just for calculating the preferred size.
+	 * @author gpothier
+	 */
+	private static abstract class BigListModel extends AbstractListModel
+	{
+		/**
+		 * This flag permits to simulate we are empty
+		 * during the call to getPreferredSize, otherwise the full
+		 * model is scanned.
+		 */
+		private boolean itsHideAway = false;
+		
+		public void setHideAway(boolean aHideAway)
+		{
+			itsHideAway = aHideAway;
+		}
+		
+		public final Object getElementAt(int aIndex)
+		{
+			if (itsHideAway) return "A";
+			else return getElementAt0(aIndex);
+		}
+		
+		protected abstract Object getElementAt0(int aIndex);
+	}
+	
+
+	/**
+	 * Presents behaviors by id.
+	 * @author gpothier
+	 */
+	private class BehaviorIdSelector extends JPanel
+	{
+		public BehaviorIdSelector()
+		{
+			createUI();
+		}
+
+		private void createUI()
+		{
+			final BehaviorListModel theListModel = new BehaviorListModel(getStructureDatabase());
+			
+			JList theList = new BigJList(theListModel);
+			setLayout(new StackLayout());
+			add(new JScrollPane(theList));
+		}
+		
+	}
+	
+	private static class BehaviorListModel extends BigListModel
+	{
+		private IStructureDatabase itsStructureDatabase;
+		private int itsSize;
+		
+		public BehaviorListModel(IStructureDatabase aStructureDatabase)
+		{
+			itsStructureDatabase = aStructureDatabase;
+			itsSize = itsStructureDatabase.getStats().nBehaviors;
+		}
+
+		@Override
+		protected Object getElementAt0(int aIndex)
+		{
+			IBehaviorInfo theBehavior = itsStructureDatabase.getBehavior(aIndex, false);
+			return theBehavior != null ?
+					""+aIndex+" "+theBehavior.getType().getName()+"."+theBehavior.getName()
+					: ""+aIndex;
+		}
+
+		public int getSize()
+		{
+			return itsSize;
+		}
+	}
+	
+	/**
+	 * Presents probes by id.
+	 * @author gpothier
+	 */
+	private class ProbeIdSelector extends JPanel
+	{
+		public ProbeIdSelector()
+		{
+			createUI();
+		}
+
+		private void createUI()
+		{
+			final ProbeListModel theListModel = new ProbeListModel(getStructureDatabase());
+			
+			JList theList = new BigJList(theListModel);
+			setLayout(new StackLayout());
+			add(new JScrollPane(theList));
+		}
+		
+	}
+	
+	private static class ProbeListModel extends BigListModel
+	{
+		private IStructureDatabase itsStructureDatabase;
+		private int itsSize;
+		
+		public ProbeListModel(IStructureDatabase aStructureDatabase)
+		{
+			itsStructureDatabase = aStructureDatabase;
+			itsSize = itsStructureDatabase.getStats().nProbes;
+		}
+
+		@Override
+		protected Object getElementAt0(int aIndex)
+		{
+			ProbeInfo theProbeInfo = itsStructureDatabase.getProbeInfo(aIndex);
+			return theProbeInfo != null ?
+					""+aIndex+" "+theProbeInfo
+					: ""+aIndex;
+		}
+
+		public int getSize()
+		{
+			return itsSize;
+		}
+	}
+	
+	
 }

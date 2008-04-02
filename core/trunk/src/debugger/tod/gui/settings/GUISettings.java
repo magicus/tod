@@ -72,7 +72,7 @@ implements IOptionsOwner
 		itsCustomFormatterRegistry = (CustomFormatterRegistry) getObjectProperty(PROPERTY_REGISTRY, null);
 		if (itsCustomFormatterRegistry == null) itsCustomFormatterRegistry = new CustomFormatterRegistry();
 		
-		itsIntimacySettings = (IntimacySettings) getObjectProperty(PROPERTY_INTIMACY, null);
+//		itsIntimacySettings = (IntimacySettings) getObjectProperty(PROPERTY_INTIMACY, null);
 		if (itsIntimacySettings == null) itsIntimacySettings = new IntimacySettings();
 	}
 

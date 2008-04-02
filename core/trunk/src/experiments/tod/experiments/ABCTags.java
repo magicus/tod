@@ -58,6 +58,7 @@ import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.SourceRange;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.session.AbstractSession;
 import tod.core.session.ISession;
@@ -378,6 +379,11 @@ public class ABCTags
 		}
 
 		public IEventFilter createAdviceCFlowFilter(int aAdviceSourceId)
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		public IEventFilter createRoleFilter(BytecodeRole aRole)
 		{
 			throw new UnsupportedOperationException();
 		}

@@ -23,6 +23,7 @@ package tod.impl.dbgrid.messages;
 import static tod.impl.dbgrid.DebuggerGridConfig.MESSAGE_TYPE_BITS;
 import tod.core.DebugFlags;
 import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.db.Indexes;
@@ -158,11 +159,18 @@ public abstract class BitGridEvent extends GridEvent
 		}
 		
 		if (theProbeInfo != null && theProbeInfo.adviceSourceId >= 0)
+		{
 			aIndexes.indexAdviceSourceId(theProbeInfo.adviceSourceId, TUPLE);
+		}
 		
 		if (getAdviceCFlow() != null)
 		{
 			for (int theSourceId : getAdviceCFlow()) aIndexes.indexAdviceCFlow(theSourceId, TUPLE);
+		}
+		
+		if (theProbeInfo != null && theProbeInfo.role != null && theProbeInfo.role != BytecodeRole.UNKNOWN)
+		{
+			aIndexes.indexRole(theProbeInfo.role.ordinal()+1, TUPLE);
 		}
 		
 		if (getThread() > 0) 

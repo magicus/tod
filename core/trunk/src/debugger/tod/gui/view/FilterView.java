@@ -41,6 +41,7 @@ import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.LocationUtils;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
 import tod.gui.eventlist.EventListPanel;
@@ -155,6 +156,7 @@ public class FilterView extends LogView implements IEventListView
 	public IEventBrowser getEventBrowser()
 	{
 		IEventFilter theFilter = itsSeed.getBaseFilter();
+		
 		return theFilter != null ?
 				getLogBrowser().createBrowser(theFilter)
 				: getLogBrowser().createBrowser();

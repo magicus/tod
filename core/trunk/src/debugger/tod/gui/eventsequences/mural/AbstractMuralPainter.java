@@ -53,7 +53,8 @@ public abstract class AbstractMuralPainter
 			Graphics2D aGraphics, 
 			Rectangle aBounds, 
 			long aT1, 
-			long aT2, List<BrowserData> aBrowserDatas);
+			long aT2, 
+			List<BrowserData> aBrowserDatas);
 
 	protected static Shape makeTriangle(float aX, float aY, float aBaseW, float aHeight)
 	{
@@ -91,6 +92,10 @@ public abstract class AbstractMuralPainter
 			// TODO: check conversion
 			TODUtils.log(2, "[EventMural] Requesting counts: "+aT1+"-"+aT2);
 			theValues[i] = theBrowserData.browser.getEventCounts(aT1, aT2, theSamplesCount, false);
+			if (theValues[i] == null)
+			{
+				System.out.println("AbstractMuralPainter.getValues()");
+			}
 			i++;
 		}
 		

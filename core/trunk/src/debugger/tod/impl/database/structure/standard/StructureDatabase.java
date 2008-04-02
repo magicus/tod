@@ -488,7 +488,7 @@ public class StructureDatabase implements IShareableStructureDatabase
 				AspectInfo theAspectInfo = (AspectInfo) itsAspectInfoMap.get(theRange.sourceFile);
 				if (theAspectInfo == null)
 				{
-					theAspectInfo = new AspectInfo(this, -1, theRange.sourceFile);
+					theAspectInfo = new AspectInfo(this, itsIds.nextAspectId(), theRange.sourceFile);
 					itsAspectInfoMap.put(theRange.sourceFile, theAspectInfo);
 				}
 				theAspectInfo.addAdvice(theAdviceInfo);
@@ -572,6 +572,7 @@ public class StructureDatabase implements IShareableStructureDatabase
 		private int itsNextFreeClassId = FIRST_CLASS_ID;
 		private int itsNextFreeBehaviorId = 1;
 		private int itsNextFreeFieldId = 1;
+		private int itsNextFreeAspectId = 1;
 
 		public synchronized int nextClassId()
 		{
@@ -586,6 +587,11 @@ public class StructureDatabase implements IShareableStructureDatabase
 		public synchronized int nextFieldId()
 		{
 			return itsNextFreeFieldId++;
+		}
+		
+		public synchronized int nextAspectId()
+		{
+			return itsNextFreeAspectId++;
 		}
 	}
 	

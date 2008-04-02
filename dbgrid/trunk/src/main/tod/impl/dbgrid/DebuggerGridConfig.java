@@ -150,6 +150,11 @@ public class DebuggerGridConfig
 	public static final int STRUCTURE_ADVICE_SRC_ID_COUNT = 10000;
 	
 	/**
+	 * Maximum number of bytecode roles
+	 */
+	public static final int STRUCTURE_ROLE_COUNT = 10;
+	
+	/**
 	 * Maximum number of fields
 	 */
 	public static final int STRUCTURE_FIELD_COUNT = 100000;

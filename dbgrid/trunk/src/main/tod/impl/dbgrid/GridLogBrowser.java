@@ -50,6 +50,7 @@ import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.session.ISession;
 import tod.impl.common.LogBrowserUtils;
@@ -71,6 +72,7 @@ import tod.impl.dbgrid.queries.Disjunction;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.impl.dbgrid.queries.EventIdCondition;
 import tod.impl.dbgrid.queries.FieldCondition;
+import tod.impl.dbgrid.queries.RoleCondition;
 import tod.impl.dbgrid.queries.ThreadCondition;
 import tod.impl.dbgrid.queries.TypeCondition;
 import tod.impl.dbgrid.queries.VariableCondition;
@@ -311,6 +313,11 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 	public IEventFilter createAdviceCFlowFilter(int aAdviceSourceId)
 	{
 		return new AdviceCFlowCondition(aAdviceSourceId);
+	}
+
+	public IEventFilter createRoleFilter(BytecodeRole aRole)
+	{
+		return new RoleCondition(aRole);
 	}
 
 	public IEventFilter createArrayWriteFilter()

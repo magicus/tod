@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.LocationUtils;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
@@ -273,7 +274,7 @@ public class AdviceCFlowMuralPainter extends AbstractMuralPainter
 		
 		// Check if previous event is really in advice cflow, or only some shadow activity
 		boolean theInCFlow = false;
-		for (int theSrcId : aHighlight.getAdviceSourceIds())
+		for (int theSrcId : LocationUtils.getAdviceSourceIds(aHighlight.getLocation()))
 		{
 			if (contains(thePrevious.getAdviceCFlow(), theSrcId)) 
 			{
@@ -289,8 +290,8 @@ public class AdviceCFlowMuralPainter extends AbstractMuralPainter
 			IBehaviorCallEvent theCallEvent = 
 				(IBehaviorCallEvent) theBrowser.getLogBrowser().getEvent(thePrevious.getParentPointer());
 			
-			if (theCallEvent == null ||
-					contains(aHighlight.getAdviceSourceIds(), theCallEvent.getAdviceSourceId())) 
+			if (theCallEvent == null || 
+					contains(LocationUtils.getAdviceSourceIds(aHighlight.getLocation()), theCallEvent.getAdviceSourceId())) 
 			{
 				return new Range(t1, t2, false);
 			}
