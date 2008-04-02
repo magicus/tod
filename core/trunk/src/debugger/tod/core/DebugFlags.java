@@ -166,11 +166,6 @@ public class DebugFlags
 	 */
 	public static final boolean SHOW_DEBUG_GUI = ConfigUtils.readBoolean("show-debug-gui", false);
 	
-	/**
-	 * Whether murals should be computed for MuralScroller
-	 */
-	public static final boolean COMPUTE_SCROLLER_MURALS = false;
-	
 	private static PrintStream createStream(String aName)
 	{
 		try

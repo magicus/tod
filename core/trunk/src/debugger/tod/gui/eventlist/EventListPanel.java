@@ -73,7 +73,7 @@ import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
 import tod.gui.JobProcessor;
-import tod.gui.eventlist.MuralScroller.UnitScroll;
+import tod.gui.eventlist.EventScroller.UnitScroll;
 import tod.gui.kit.Bus;
 import tod.gui.kit.BusPanel;
 import tod.gui.kit.Options;
@@ -101,7 +101,7 @@ implements MouseWheelListener
 	private EventListCore itsCore;
 	private JPanel itsEventsPanel;
 	
-	private MuralScroller itsScroller;
+	private EventScroller itsScroller;
 	
 	private long itsFirstDisplayedTimestamp;
 	private long itsLastDisplayedTimestamp;
@@ -327,7 +327,7 @@ implements MouseWheelListener
 	
 	private void createUI()
 	{
-		itsScroller = new MuralScroller(getGUIManager());
+		itsScroller = new EventScroller(getGUIManager());
 		
 		itsScroller.eUnitScroll().addListener(new IEventListener<UnitScroll>()
 				{

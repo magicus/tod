@@ -31,30 +31,27 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.eventlist;
 
+import java.awt.Adjustable;
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.JSlider;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.JScrollBar;
 import javax.swing.plaf.basic.BasicArrowButton;
 
-import tod.core.DebugFlags;
 import tod.core.database.browser.IEventBrowser;
-import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
-import tod.gui.eventsequences.mural.EventMural;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.SimpleEvent;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
 import zz.utils.ui.Autorepeat;
-import zz.utils.ui.Orientation;
+import zz.utils.ui.StackLayout;
 
 /**
  * A widget that permits to scroll in an {@link IEventBrowser}.
@@ -63,7 +60,7 @@ import zz.utils.ui.Orientation;
  * <li>Track scrolling: moves to a given timestamp
  * @author gpothier
  */
-public class MuralScroller extends JPanel
+public class EventScroller extends JPanel
 {
 	private static final int THICKNESS = 25;
 	
@@ -86,8 +83,7 @@ public class MuralScroller extends JPanel
 	private final IGUIManager itsGUIManager;
 	private IEventBrowser itsBrowser;
 	
-	private EventMural itsMural;
-	private JSlider itsSlider;
+	private Adjustable itsSlider;
 	private long itsStart;
 	private long itsEnd;
 	private boolean itsUpdating = false;
@@ -98,13 +94,13 @@ public class MuralScroller extends JPanel
 	 */
 	private long itsSliderFactor;
 
-	public MuralScroller(IGUIManager aGUIManager)
+	public EventScroller(IGUIManager aGUIManager)
 	{
 		itsGUIManager = aGUIManager;
 		createUI();		
 	}
 	
-	public MuralScroller(IGUIManager aGUIManager, IEventBrowser aBrowser, long aStart, long aEnd)
+	public EventScroller(IGUIManager aGUIManager, IEventBrowser aBrowser, long aStart, long aEnd)
 	{
 		this(aGUIManager);
 		set(aBrowser, aStart, aEnd);
@@ -117,53 +113,50 @@ public class MuralScroller extends JPanel
 	
 	private void createUI()
 	{
-		itsMural = new EventMural(getGUIManager(), Orientation.VERTICAL, 0, Long.MAX_VALUE);
-		itsMural.setPreferredSize(new Dimension(THICKNESS, 100));
-
 		// Setup slider
-		
-		itsSlider = new JSlider(JSlider.VERTICAL);
-		itsSlider.setInverted(true);
-		itsSlider.addChangeListener(new ChangeListener()
+		itsSlider = new JScrollBar(JScrollBar.VERTICAL);
+		itsSlider.addAdjustmentListener(new AdjustmentListener()
 		{
-			public void stateChanged(ChangeEvent aE)
+			
+			public void adjustmentValueChanged(AdjustmentEvent aE)
 			{
-				long theTimestamp = (itsSliderFactor * itsSlider.getValue()) + itsStart;
-				itsUpdating = true;
-				pTrackScroll.set(theTimestamp);
-				itsUpdating = false;
+				switch(aE.getAdjustmentType())
+				{
+				case AdjustmentEvent.UNIT_DECREMENT:
+					eUnitScroll.fire(UnitScroll.UP);
+					break;
+					
+				case AdjustmentEvent.UNIT_INCREMENT:
+					eUnitScroll.fire(UnitScroll.DOWN);
+					break;
+					
+				case AdjustmentEvent.BLOCK_DECREMENT:
+					eUnitScroll.fire(UnitScroll.UP);
+					eUnitScroll.fire(UnitScroll.UP);
+					eUnitScroll.fire(UnitScroll.UP);
+					break;
+					
+				case AdjustmentEvent.BLOCK_INCREMENT:
+					eUnitScroll.fire(UnitScroll.DOWN);
+					eUnitScroll.fire(UnitScroll.DOWN);
+					eUnitScroll.fire(UnitScroll.DOWN);
+					break;
+					
+				case AdjustmentEvent.TRACK:
+					long theTimestamp = (itsSliderFactor * itsSlider.getValue()) + itsStart;
+					itsUpdating = true;
+					pTrackScroll.set(theTimestamp);
+					itsUpdating = false;
+					break;
+					
+				default:
+					throw new RuntimeException("Not handled");
+				}
 			}
 		});
 		
-		// Setup center container (mural + cursor)
-		JPanel theCenterContainer = new JPanel(new BorderLayout());
-		theCenterContainer.add(itsMural, BorderLayout.CENTER);
-		theCenterContainer.add(itsSlider, BorderLayout.WEST);
-		
-		// Setup main container (center + buttons)
-		setLayout(new BorderLayout());
-		
-		JButton theUpButton = new BasicArrowButton(BasicArrowButton.NORTH);
-		Autorepeat.install(theUpButton, new ActionListener()
-		{
-			public void actionPerformed(ActionEvent aE)
-			{
-				eUnitScroll.fire(UnitScroll.UP);
-			}
-		});
-		
-		JButton theDownButton = new BasicArrowButton(BasicArrowButton.SOUTH);
-		Autorepeat.install(theDownButton, new ActionListener()
-		{
-			public void actionPerformed(ActionEvent aE)
-			{
-				eUnitScroll.fire(UnitScroll.DOWN);
-			}
-		});
-		
-		add(theUpButton, BorderLayout.NORTH);
-		add(theDownButton, BorderLayout.SOUTH);
-		add(theCenterContainer, BorderLayout.CENTER);
+		setLayout(new StackLayout());
+		add((Component) itsSlider, BorderLayout.CENTER);
 	}
 
 	public void set(IEventBrowser aBrowser, long aStart, long aEnd)
@@ -172,17 +165,6 @@ public class MuralScroller extends JPanel
 		itsStart = aStart;
 		itsEnd = aEnd;
 
-		// Setup mural
-		if (DebugFlags.COMPUTE_SCROLLER_MURALS)
-		{
-			itsMural.setLimits(aStart, aEnd);
-			itsMural.pStart.set(itsStart);
-			itsMural.pEnd.set(itsEnd);
-			itsMural.pEventBrowsers.clear();
-			itsMural.pEventBrowsers.add(new BrowserData(itsBrowser, Color.BLACK, 5));
-			itsMural.repaint();
-		}
-		
 		// Setup slider
 		long theDelta = itsEnd-itsStart;
 		itsSliderFactor = 1;
