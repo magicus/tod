@@ -201,20 +201,22 @@ public class EventScroller extends JPanel
 		// Setup slider
 		long theDelta = itsEnd-itsStart;
 		itsSliderFactor = 1;
-		while (theDelta > Integer.MAX_VALUE)
+		if (theDelta != 0)
 		{
-			theDelta /= 2;
-			itsSliderFactor *= 2;
+			while (theDelta > Integer.MAX_VALUE)
+			{
+				theDelta /= 2;
+				itsSliderFactor *= 2;
+			}
+			
+			// We want the largest possible delta so that we can assume
+			// a track scroll of 1 is an up movement.
+			while (theDelta < Integer.MAX_VALUE/2)
+			{
+				theDelta *= 2;
+				itsSliderFactor /= 2;
+			}
 		}
-		
-		// We want the largest possible delta so that we can assume
-		// a track scroll of 1 is an up movement.
-		while (theDelta < Integer.MAX_VALUE/2)
-		{
-			theDelta *= 2;
-			itsSliderFactor /= 2;
-		}
-
 		itsSlider.setMinimum(0);
 		itsSlider.setMaximum((int) theDelta);
 		itsSlider.setValue(0);
