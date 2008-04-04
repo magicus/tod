@@ -168,7 +168,10 @@ public class LaunchUtils
 		
 		theArguments.add("-Dcollector-host="+theConnectionInfo.getHostName());
 		theArguments.add("-Dcollector-port="+theConnectionInfo.getPort());
-		
+/*	    if (TODConfig.SESSION_LOCAL.equals(theConfig.get(TODConfig.SESSION_TYPE)))
+			theArguments.add("-Djava.rmi.server.hostname=127.0.0.1");
+		else theArguments.add("-Djava.rmi.server.hostname="+theConnectionInfo.getHostName());
+	*/
 		theArguments.add(TODConfig.CLIENT_NAME.javaOpt(theConfig));
 		theArguments.add(TODConfig.AGENT_CACHE_PATH.javaOpt(theConfig));
 		theArguments.add(TODConfig.AGENT_VERBOSE.javaOpt(theConfig));
