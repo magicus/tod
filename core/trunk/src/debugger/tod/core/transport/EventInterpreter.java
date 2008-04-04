@@ -699,8 +699,10 @@ public final class EventInterpreter implements ILowLevelCollector
 				
 		theFrame = theThread.pushFrame(false, aBehaviorId, false, aTimestamp, null, -1);
 
-		ProbeInfo theProbeInfo = itsStructureDatabase.getProbeInfo(aProbeId);
-		if (theProbeInfo.adviceSourceId > 0 && theProbeInfo.role == BytecodeRole.ADVICE_EXECUTE) 
+		ProbeInfo theProbeInfo = aProbeId > 0 ? itsStructureDatabase.getProbeInfo(aProbeId) : null;
+		if (theProbeInfo != null 
+				&& theProbeInfo.adviceSourceId > 0 
+				&& theProbeInfo.role == BytecodeRole.ADVICE_EXECUTE) 
 		{
 			theThread.getAdviceCFlowStack().push(theProbeInfo.adviceSourceId);
 			theFrame.popAdvice = theProbeInfo.adviceSourceId;
@@ -745,7 +747,7 @@ public final class EventInterpreter implements ILowLevelCollector
 			theThread.popFrame();
 			
 			// Send message anyway, although there is a lot of missing info
-			String s = new String("<?TOD?-dry>");
+			String s = null;//new String("<?TOD?-dry>"); //TODO: register that string, and send object id.
 			logBeforeBehaviorCall(aThreadId, aTimestamp, -1, theFrame.behavior, BehaviorCallType.METHOD_CALL, s, null);
 			logAfterBehaviorCall(aThreadId, aTimestamp, -1, theFrame.behavior, s, s);
 		}
