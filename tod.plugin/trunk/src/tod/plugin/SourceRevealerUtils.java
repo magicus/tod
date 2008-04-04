@@ -212,8 +212,14 @@ public class SourceRevealerUtils
 	{
 		for (IJavaProject theJavaProject : aJavaProjects)
 		{
-			IFile[] theFiles = EclipseUtils.findSourceFiles(aName, theJavaProject);
-			if (theFiles.length > 0) return theFiles[0];
+			try
+			{
+				IFile[] theFiles = EclipseUtils.findSourceFiles(aName, theJavaProject);
+				if (theFiles.length > 0) return theFiles[0];
+			}catch(Exception e){ 
+				System.out.println("Revealer exception....");
+				e.printStackTrace();
+			}
 		}
 		
 		return null;
