@@ -5,7 +5,7 @@ directoryName: Documentation
 ---
 h1. Introduction
 
-TOD is an omniscient debugger for Java that can be used as a standalone application or within a Java IDE (it is currently available as an Eclipse plugin). TOD combines an easy-to-use interactive navigation interface with a highly scalable trace database that can record hundred of million events. TOD can be obtained free of charge in the {link: /download.page} section. Interested developpers can also obtain the source code (see {link: source.page}). You can also obtain scientific publications about TOD on the "Pleiad page":http://pleiad.dcc.uchile.cl/research/software/tod.
+TOD is an omniscient debugger for Java that can be used as a standalone application or within a Java IDE (it is currently available as an Eclipse plugin). TOD combines an easy-to-use interactive navigation interface with a highly scalable trace database that can record hundreds of million events. TOD can be obtained free of charge in the {link: /download.page} section. Interested developpers can also obtain the source code (see {link: source.page}). You can also obtain scientific publications about TOD on the "Pleiad page":http://pleiad.dcc.uchile.cl/research/software/tod.
 
 This small introduction explains why omniscient debugging is interesting by comparing it to classical debugging approaches. 
 

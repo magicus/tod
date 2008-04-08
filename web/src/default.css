@@ -26,7 +26,7 @@ a:hover
 /**************** Sidebar area styles ****************/
 
 #sidebar
-{position:absolute; top:0; left:0; width:180pt; height:100%; overflow:auto;  text-align:right; }
+{position:absolute; top:0; left:0; width:190pt; height:100%; overflow:auto;  text-align:right; }
 
 body > #sidebar
 {position:fixed;}
@@ -64,7 +64,7 @@ body > #pleiad
 {border: 0; margin: 0; padding: 0;}
 
 #logo 
-{border: 0; margin: 8pt 0 16pt 0; padding: 0; padding-right: 2pt;}
+{border: 0; margin: 8pt 10pt 16pt 0; padding: 0; padding-right: 2pt;}
 
 /**************** Navigation menu styles ****************/
 

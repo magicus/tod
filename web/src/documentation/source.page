@@ -11,6 +11,17 @@ h4. TOD core & Eclipse plugin
  
 "http://pleiad.dcc.uchile.cl/svn/tod/":http://pleiad.dcc.uchile.cl/svn/tod/
 
+You have to check out the following modules:
+
+* agent/trunk
+* core/trunk
+* dbgrid/trunk
+
+For the Eclipse plugin:
+
+* tod.plugin/trunk
+* tod.plugin.ajdt
+
 h4. Additional libraries
 
 "http://stgo.dyndns.org/svn/gpothier/devel/zz.utils":http://stgo.dyndns.org/svn/gpothier/devel/zz.utils
@@ -19,8 +30,8 @@ h4. Additional libraries
 
 h2. License
 
-TOD and the TOD Eclipse plugin are distributed under the GPL v2.
+TOD and the TOD Eclipse plugin are distributed under a BSD license.
 Additional libraries zz.utils and zz.eclipse.utils are in the public domain.
 External libraries have their own licenses.
 
-TOD uses an implementation of the MD5 algorithm “derived from the RSA Data Security, Inc. MD5 Message-Digest Algorithm”.
+TOD uses an implementation of the MD5 algorithm "derived from the RSA Data Security, Inc. MD5 Message-Digest Algorithm".

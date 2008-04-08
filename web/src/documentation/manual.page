@@ -8,6 +8,7 @@ Contents:
 * "Running your program":#running
 * "The trace navigator":#traceNavigator
 * "Where to start":#start
+* "TOD options":#options
 
 {a: running}
 h2. Running your program
@@ -86,4 +87,27 @@ You can see the context in which a particular event occurred by double-clicking 
 
 The leftmost part is the call stack: it shows which methods were on the call stack at the time the current event occurred. The middle part is a list of the events that occurred in the current method. The rightmost part is a reconstitution of the stack frame as it was when the current event occurred.
 
-h3. TOD options
+{a: options}
+h2. TOD options
+
+The behavior of TOD can be altered by options that are specified in the launch properties dialog:
+
+!images/todOptions-s.jpg!
+
+Currently only a few options among those available are useful for the user (many are only used during the development of TOD itself):
+
+{a: scoping}
+h4. Scope - trace filter
+
+This option defines the _instrumentation scope_, ie. the classes whose activity is recorded during the debugging session. Limiting the scope to carefully selected portions of the program permits to reduce both the overhead on the debugged program and the load of the event database. The default value of this option is:
+
+<pre>
+[-java.** -javax.** -sun.** -com.sun.** -org.ietf.jgss.** 
+-org.omg.** -org.w3c.** -org.xml.**]
+</pre>
+
+which means that classes from the JDK are excluded from the scope. To exclude more classes, simply add them to the list (preceded by a minus sign); to specify a full package with its subpackages use the ** wildcard. To exclude everything except specific classes, use something like this:
+
+<pre>
+[+my.package.** +my.other.package.**]
+</pre>
