@@ -50,6 +50,7 @@ import tod.impl.database.structure.standard.TagMap;
  * - one short to indicate the number of entries
  * - each entry is of the form (short pc, V v) where pc represents a 
  * bytecode index and v a value.
+ * @see http://pleiad.dcc.uchile.cl/trac/tod/wiki/BytecodeTags
  * @param <V> The type of the value of each entry
  * @author gpothier
  */

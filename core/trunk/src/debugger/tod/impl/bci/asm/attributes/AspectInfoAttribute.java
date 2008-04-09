@@ -46,6 +46,7 @@ import tod.core.database.structure.SourceRange;
  * A class-level attribute that contains information about the advice source ids
  * used in a class.
  * See AspectInfoAttr in zz.abc 
+ * @see http://pleiad.dcc.uchile.cl/trac/tod/wiki/BytecodeTags
  * @author gpothier
  */
 public class AspectInfoAttribute extends DataAttribute
