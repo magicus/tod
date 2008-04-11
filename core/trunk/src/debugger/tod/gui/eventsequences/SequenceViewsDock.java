@@ -375,7 +375,7 @@ public class SequenceViewsDock extends JPanel
 			updateLastLabel();
 			updateViews();
 
-			TODUtils.logf(0, "[TimestampRangeSlider.setLimits] done.", aFirst, aLast);
+			TODUtils.logf(1, "[TimestampRangeSlider.setLimits] done.", aFirst, aLast);
 		}
 		
 		public void setRangeStart(long aStart)
@@ -482,7 +482,7 @@ public class SequenceViewsDock extends JPanel
 		{
 			if (!itsSlider.getModel().getValueIsAdjusting() && (itsRangeEnd-itsRangeStart) > 0)
 			{
-				TODUtils.logf(0, "[TimestampRangeSlider] updateViews(%d, %d)", itsRangeStart, itsRangeEnd);
+				TODUtils.logf(1, "[TimestampRangeSlider] updateViews(%d, %d)", itsRangeStart, itsRangeEnd);
 				pStart().set(itsRangeStart);
 				pEnd().set(itsRangeEnd);
 			}
