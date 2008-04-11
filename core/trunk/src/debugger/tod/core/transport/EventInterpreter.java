@@ -648,11 +648,16 @@ public final class EventInterpreter implements ILowLevelCollector
 		theFrame = theThread.pushFrame(true, aBehaviorId, true, theFrame.parentTimestamp, aCallType, aProbeId);
 		
 		ProbeInfo theProbeInfo = itsStructureDatabase.getProbeInfo(aProbeId);
-		if (theProbeInfo.adviceSourceId > 0 && theProbeInfo.role == BytecodeRole.ADVICE_EXECUTE) 
-		{
-			theThread.getAdviceCFlowStack().push(theProbeInfo.adviceSourceId);
-			theFrame.popAdvice = theProbeInfo.adviceSourceId;
-		}
+		if (theProbeInfo==null) 
+			System.err.println("WARNING --- null probinfo for threadID " +  aThreadId +
+					" timestamp "+  aTimestamp+ " probeId " + aProbeId +" behaviorID " 
+					+ aBehaviorId +" BehaviorCallType " + aCallType);
+		else 
+			if (theProbeInfo.adviceSourceId > 0 && theProbeInfo.role == BytecodeRole.ADVICE_EXECUTE) 
+			{
+				theThread.getAdviceCFlowStack().push(theProbeInfo.adviceSourceId);
+				theFrame.popAdvice = theProbeInfo.adviceSourceId;
+			}
 	}
 	
 	public void logBeforeBehaviorCall(
