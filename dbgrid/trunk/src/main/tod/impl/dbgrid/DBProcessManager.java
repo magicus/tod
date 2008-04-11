@@ -21,6 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -233,7 +234,7 @@ public class DBProcessManager
 
 			if (itsProcess != null) itsProcess.destroy();
 			printOutput("--- Preparing...");
-			cp += ":"+System.getenv("classpath");
+			cp += File.pathSeparator+System.getenv("classpath");
 			boolean theJDWP = false;
 			
 			Long theHeapSize = getConfig().get(TODConfig.LOCAL_SESSION_HEAP);
@@ -245,7 +246,6 @@ public class DBProcessManager
 					"-Djava.library.path="+lib,
 					"-cp", cp,
 					"-Dmaster-host=localhost",		
-	//				"-Djava.rmi.server.hostname=127.0.0.1",
 					"-Dpage-buffer-size="+(theHeapSize/2),
 					TODConfig.MASTER_TIMEOUT.javaOpt(10),
 					TODConfig.AGENT_VERBOSE.javaOpt(getConfig()),
