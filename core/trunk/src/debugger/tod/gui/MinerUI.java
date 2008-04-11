@@ -314,8 +314,9 @@ implements ILocationSelectionListener, IGUIManager
 				openSeed(theSeed, false);			
 			}
 		};
+
 		
-//		aToolbar.add(itsStringSearchAction);
+		aActionCombo.add(itsStringSearchAction);
 		
 		if (DebugFlags.SHOW_DEBUG_GUI)
 		{
