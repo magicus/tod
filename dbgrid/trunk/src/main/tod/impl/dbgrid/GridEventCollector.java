@@ -25,8 +25,7 @@ import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.impl.common.EventCollector;
-import tod.impl.dbgrid.dispatch.AbstractEventDispatcher;
-import tod.impl.dbgrid.dispatch.DatabaseNode;
+import tod.impl.dbgrid.db.DatabaseNode;
 import tod.impl.dbgrid.messages.GridArrayWriteEvent;
 import tod.impl.dbgrid.messages.GridBehaviorCallEvent;
 import tod.impl.dbgrid.messages.GridBehaviorExitEvent;
@@ -394,9 +393,9 @@ public class GridEventCollector extends EventCollector
 		dispatch(itsCallEvent);
 	}
 
-	public void register(long aObjectUID, Object aObject, long aTimestamp)
+	public void register(long aObjectUID, byte[] aData, long aTimestamp)
 	{
-		itsDatabaseNode.register(aObjectUID, aObject, aTimestamp);
+		itsDatabaseNode.register(aObjectUID, aData, aTimestamp);
 	}
 
 	public void clear()

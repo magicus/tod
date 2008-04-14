@@ -32,7 +32,7 @@ import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.db.RIEventIterator;
 import tod.impl.dbgrid.db.RINodeEventIterator;
-import tod.impl.dbgrid.dispatch.RIDatabaseNode;
+import tod.impl.dbgrid.dispatch.RINodeConnector;
 import tod.impl.dbgrid.merge.DisjunctionIterator;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
@@ -58,14 +58,14 @@ implements RIQueryAggregator
 	
 	private void initIterators(final long aTimestamp)
 	{
-		final List<RIDatabaseNode> theNodes = itsMaster.getNodes();
+		final List<RINodeConnector> theNodes = itsMaster.getNodes();
 		
 		if (theNodes.size() == 1)
 		{
 			// Don't use futures if there is only one node.
 			try
 			{
-				RIDatabaseNode theNode = theNodes.get(0);
+				RINodeConnector theNode = theNodes.get(0);
 				RINodeEventIterator theIterator = theNode.getIterator(itsCondition);
 				theIterator.setNextTimestamp(aTimestamp);
 				itsMergeIterator = new EventIterator(theIterator);
@@ -88,7 +88,7 @@ implements RIQueryAggregator
 							@Override
 							protected EventIterator fetch() throws Throwable
 							{
-								RIDatabaseNode theNode = theNodes.get(i0);
+								RINodeConnector theNode = theNodes.get(i0);
 								try
 								{
 									RINodeEventIterator theIterator = theNode.getIterator(itsCondition);
@@ -228,12 +228,12 @@ implements RIQueryAggregator
 		long t0 = System.currentTimeMillis();
 
 		// Sum results from all nodes.
-		List<RIDatabaseNode> theNodes = itsMaster.getNodes();
+		List<RINodeConnector> theNodes = itsMaster.getNodes();
 		List<Future<long[]>> theFutures = new ArrayList<Future<long[]>>();
 		
-		for (RIDatabaseNode theNode : theNodes)
+		for (RINodeConnector theNode : theNodes)
 		{
-			final RIDatabaseNode theNode0 = theNode;
+			final RINodeConnector theNode0 = theNode;
 			theFutures.add (new Future<long[]>()
 			{
 				@Override

@@ -66,6 +66,8 @@ public class Dummy
 		
 		long t1 = System.currentTimeMillis();
 		System.out.println("Time: "+(t1-t0));
+		
+		Thread.sleep(1000000000);
 	}
 	
 	public static int foo(Object o, long b)

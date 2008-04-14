@@ -31,62 +31,21 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.server;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.net.Socket;
-
-import tod.core.bci.IInstrumenter;
+import tod.core.ILogCollector;
 import tod.core.config.TODConfig;
-import tod.core.database.structure.IStructureDatabase;
-import tod.core.transport.CollectorLogReceiver;
-import tod.core.transport.LogReceiver;
-import tod.impl.database.structure.standard.HostInfo;
+import tod.core.database.structure.IMutableStructureDatabase;
 
 /**
- * A TOD server that uses a {@link CollectorLogReceiver}
+ * A factory for creating TOD servers.
+ * A TOD server awaits and handles connections from debugged programs.
+ * The factory permits to abstract the fact that there might exist several types of servers 
+ * (for debugging Java, Python, etc...).
  * @author gpothier
  */
-public class CollectorTODServer extends TODServer
+public interface ITODServerFactory
 {
-	private int itsCurrentHostId = 1;
-
-	private ICollectorFactory itsCollectorFactory;
-
-	public CollectorTODServer(
+	public TODServer create(
 			TODConfig aConfig, 
-			IInstrumenter aInstrumenter, 
-			IStructureDatabase aStructureDatabase,
-			ICollectorFactory aCollectorFactory)
-	{
-		super(aConfig, aInstrumenter, aStructureDatabase);
-		itsCollectorFactory = aCollectorFactory;
-	}
-
-	@Override
-	protected LogReceiver createReceiver(Socket aSocket)
-	{
-		try
-		{
-			return new CollectorLogReceiver(
-					new HostInfo(itsCurrentHostId++),
-					new BufferedInputStream(aSocket.getInputStream()), 
-					new BufferedOutputStream(aSocket.getOutputStream()),
-					true,
-					getStructureDatabase(),
-					itsCollectorFactory.create())
-			{
-				@Override
-				protected synchronized void eof()
-				{
-					super.eof();
-					CollectorTODServer.this.disconnected();
-				}
-			};
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
+			IMutableStructureDatabase aStructureDatabase, 
+			ILogCollector aLogCollector);
 }

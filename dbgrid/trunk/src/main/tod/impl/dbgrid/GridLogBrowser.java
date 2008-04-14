@@ -227,7 +227,7 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 		itsListeners.remove(aListener);
 	}
 	
-	private void fireMonitorData(String aNodeId, MonitorData aData)
+	private void fireMonitorData(int aNodeId, MonitorData aData)
 	{
 		for (IGridBrowserListener theListener : itsListeners)
 		{
@@ -775,7 +775,7 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 		aThrowable.printStackTrace();
 	}
 	
-	public void monitorData(String aNodeId, MonitorData aData) 
+	public void monitorData(int aNodeId, MonitorData aData) 
 	{
 		fireMonitorData(aNodeId, aData);
 	}

@@ -49,28 +49,29 @@ public class TestObjectIndex
 	{
 		GridMaster theMaster = Fixtures.setupLocalMaster();
 		DebugFlags.MAX_EVENTS = 2819;
-		Fixtures.replay(new File("src/test/test-objects.bin"), theMaster);
-		theMaster.flush();
-		
-		GridLogBrowser theLogBrowser = GridLogBrowser.createLocal(null, theMaster);
-		IBehaviorInfo theBehavior = theMaster.getStructureDatabase().getBehavior(71, true);
-		
-		IEventFilter theFilter = TODUtils.getLocationFilter(theLogBrowser, theBehavior, 48);
-		
-		IEventBrowser theBrowser = theLogBrowser.createBrowser(theFilter);
-		for (int i=0;i<7;i++) theBrowser.next();
-		
-		IFieldWriteEvent theEvent = (IFieldWriteEvent) theBrowser.next();
-		ObjectId theTarget = (ObjectId) theEvent.getTarget();
-		
-		IObjectInspector theInspector = theLogBrowser.createObjectInspector(theTarget);
-		ITypeInfo theType = theInspector.getType();
-		
-		System.out.println(theType);
-		
-		Assert.assertTrue(theType.getId() > 0);
-		
-		System.out.println("Done.");
+		throw new UnsupportedOperationException();
+//		Fixtures.replay(new File("src/test/test-objects.bin"), theMaster);
+//		theMaster.flush();
+//		
+//		GridLogBrowser theLogBrowser = GridLogBrowser.createLocal(null, theMaster);
+//		IBehaviorInfo theBehavior = theMaster.getStructureDatabase().getBehavior(71, true);
+//		
+//		IEventFilter theFilter = TODUtils.getLocationFilter(theLogBrowser, theBehavior, 48);
+//		
+//		IEventBrowser theBrowser = theLogBrowser.createBrowser(theFilter);
+//		for (int i=0;i<7;i++) theBrowser.next();
+//		
+//		IFieldWriteEvent theEvent = (IFieldWriteEvent) theBrowser.next();
+//		ObjectId theTarget = (ObjectId) theEvent.getTarget();
+//		
+//		IObjectInspector theInspector = theLogBrowser.createObjectInspector(theTarget);
+//		ITypeInfo theType = theInspector.getType();
+//		
+//		System.out.println(theType);
+//		
+//		Assert.assertTrue(theType.getId() > 0);
+//		
+//		System.out.println("Done.");
 	}
 	
 }

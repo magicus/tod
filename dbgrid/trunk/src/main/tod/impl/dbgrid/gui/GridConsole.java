@@ -53,8 +53,8 @@ public class GridConsole extends JPanel
 	/**
 	 * Monitor data, per node. 
 	 */
-	private ListMap<String, MonitorData> itsMonitorData = 
-		new ListMap<String, MonitorData>();
+	private ListMap<Integer, MonitorData> itsMonitorData = 
+		new ListMap<Integer, MonitorData>();
 	
 	public GridConsole(RIGridMaster aMaster)
 	{
@@ -104,7 +104,7 @@ public class GridConsole extends JPanel
 		return theToolbar;
 	}
 
-	public void monitorData(String aNodeId, MonitorData aData)
+	public void monitorData(int aNodeId, MonitorData aData)
 	{
 		itsMonitorData.add(aNodeId, aData);
 		itsMonitorUI.setData(aData);
@@ -127,7 +127,7 @@ public class GridConsole extends JPanel
 		{
 		}
 
-		public void monitorData(String aNodeId, MonitorData aData) 
+		public void monitorData(int aNodeId, MonitorData aData) 
 		{
 			GridConsole.this.monitorData(aNodeId, aData);
 		}

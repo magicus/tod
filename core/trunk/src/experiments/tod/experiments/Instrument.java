@@ -34,6 +34,12 @@ package tod.experiments;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.util.TraceClassVisitor;
 
 import tod.core.config.TODConfig;
 import tod.core.database.structure.IMutableStructureDatabase;
@@ -47,10 +53,20 @@ public class Instrument
 	public static void main(String[] args) throws FileNotFoundException, IOException
 	{
 		String theClassFile = args[0];
+		byte[] theClassData = Utils.readInputStream_byte(new FileInputStream(theClassFile));
+		
+		ClassReader cr = new ClassReader(theClassData);
+		
+		PrintWriter theWriter = new PrintWriter(new OutputStreamWriter(System.out));
+		TraceClassVisitor theTraceClassVisitor = new TraceClassVisitor(theWriter);
+		cr.accept(theTraceClassVisitor, 0);
+		
+
+		
 		ASMInstrumenter theInstrumenter = createInstrumenter();
 		theInstrumenter.instrumentClass(
 				"test", 
-				Utils.readInputStream_byte(new FileInputStream(theClassFile)));
+				theClassData);
 	}
 	
 	/**

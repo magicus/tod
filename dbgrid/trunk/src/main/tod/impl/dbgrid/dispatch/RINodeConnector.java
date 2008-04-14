@@ -21,20 +21,42 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.dispatch;
 
 import java.io.Serializable;
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import tod.core.database.browser.IEventBrowser;
+import tod.core.database.structure.IHostInfo;
 import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.db.RINodeEventIterator;
 import tod.impl.dbgrid.queries.EventCondition;
 
+import zz.utils.net.Server.ServerAdress;
+
 /**
- * Remote interface for {@link DatabaseNode}, used only
- * for queries, not for event storage.
+ * Remote interface for {@link NodeConnector}
  * @author gpothier
  */
-public interface RIDatabaseNode extends RIDispatchNode
+public interface RINodeConnector extends Remote
 {
+	public int getNodeId() throws RemoteException;
+	
+	/**
+	 * Tells this node to establish its incoming data connection to
+	 * the grid master at the specified adress.
+	 */
+	public void connectEventStream(ServerAdress aAdress, IHostInfo aHostInfo) throws RemoteException;
+
+	/**
+	 * Flushes currently bufferred events.
+	 * @return Number of flushed events.
+	 */
+	public int flush() throws RemoteException;
+	
+	/**
+	 * Initializes or reinitializes the database.
+	 */
+	public void clear() throws RemoteException;
+	
 	/**
 	 * Creates a new event iterator for the given condition.
 	 */
@@ -100,4 +122,5 @@ public interface RIDatabaseNode extends RIDispatchNode
 		}
 	}
 
+	
 }

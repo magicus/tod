@@ -43,6 +43,8 @@ import tod.core.ILogCollector;
 
 public class HighLevelEventReader
 {
+	private static final boolean READ_SIZE = false;
+	
 	public static void readPacket(
 			DataInputStream aStream, 
 			ILogCollector aCollector) throws IOException
@@ -98,11 +100,18 @@ public class HighLevelEventReader
 				readException(aStream, aCollector);
 				break;
 				
+			case INSTANCEOF:
+				readInstantiation(aStream, aCollector);
+				break;
+				
 			case REGISTER_THREAD:
 				readThread(aStream, aCollector);
 				break;
 				
-
+			case REGISTER_OBJECT:
+				readRegister(aStream, aCollector);
+				break;
+				
 			default:
 				throw new RuntimeException("Unexpected message: "+aType);
 		}
@@ -125,7 +134,7 @@ public class HighLevelEventReader
 	
 	public static void readMethodCall(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
+		if (READ_SIZE) aStream.readInt(); // Packet size
 		aCollector.methodCall(
 				aStream.readInt(),
 				aStream.readLong(),
@@ -141,7 +150,7 @@ public class HighLevelEventReader
 	
 	public static void readInstantiation(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
+		if (READ_SIZE) aStream.readInt(); // Packet size
 		aCollector.instantiation(
 				aStream.readInt(),
 				aStream.readLong(),
@@ -157,7 +166,7 @@ public class HighLevelEventReader
 	
 	public static void readSuperCall(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
+		if (READ_SIZE) aStream.readInt(); // Packet size
 		aCollector.superCall(
 				aStream.readInt(),
 				aStream.readLong(),
@@ -174,7 +183,7 @@ public class HighLevelEventReader
 	
 	public static void readBehaviorExit(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
+		if (READ_SIZE) aStream.readInt(); // Packet size
 		aCollector.behaviorExit(
 				aStream.readInt(),
 				aStream.readLong(),
@@ -188,7 +197,7 @@ public class HighLevelEventReader
 	
 	public static void readFieldWrite(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
+		if (READ_SIZE) aStream.readInt(); // Packet size
 		aCollector.fieldWrite(
 				aStream.readInt(),
 				aStream.readLong(),
@@ -202,7 +211,7 @@ public class HighLevelEventReader
 	
 	public static void readNewArray(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
+		if (READ_SIZE) aStream.readInt(); // Packet size
 		aCollector.newArray(
 				aStream.readInt(),
 				aStream.readLong(),
@@ -216,7 +225,7 @@ public class HighLevelEventReader
 	
 	public static void readArrayWrite(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
+		if (READ_SIZE) aStream.readInt(); // Packet size
 		aCollector.arrayWrite(
 				aStream.readInt(),
 				aStream.readLong(),
@@ -230,7 +239,7 @@ public class HighLevelEventReader
 	
 	public static void readInstanceOf(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
+		if (READ_SIZE) aStream.readInt(); // Packet size
 		aCollector.instanceOf(
 				aStream.readInt(),
 				aStream.readLong(),
@@ -245,7 +254,7 @@ public class HighLevelEventReader
 	
 	public static void readLocalWrite(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
+		if (READ_SIZE) aStream.readInt(); // Packet size
 		aCollector.localWrite(
 				aStream.readInt(),
 				aStream.readLong(),
@@ -258,7 +267,7 @@ public class HighLevelEventReader
 	
 	public static void readException(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
+		if (READ_SIZE) aStream.readInt(); // Packet size
 		aCollector.exception(
 				aStream.readInt(),
 				aStream.readLong(),
@@ -273,7 +282,7 @@ public class HighLevelEventReader
 	
 	public static void readOutput(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
+		if (READ_SIZE) aStream.readInt(); // Packet size
         aCollector.output(
         		aStream.readInt(),
 				aStream.readLong(),
@@ -285,13 +294,26 @@ public class HighLevelEventReader
 	
 	public static void readThread(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
+		if (READ_SIZE) aStream.readInt(); // Packet size
 		aCollector.thread(
 				aStream.readInt(),
 				aStream.readLong(),
 				aStream.readUTF());
 	}
-    
+
+	public static void readRegister(DataInputStream aStream, ILogCollector aCollector) throws IOException
+	{
+		if (READ_SIZE) aStream.readInt(); // Packet size
+		long theObjectId = aStream.readLong();
+		long theTimestamp = aStream.readLong();
+		int theDataSize = aStream.readInt();
+		byte[] theData = new byte[theDataSize];
+		aStream.readFully(theData);
+		aCollector.register(theObjectId, theData, theTimestamp);
+	}
+	
+	
+	
     private static byte[] readBytes(DataInputStream aStream) throws IOException
     {
         int theLength = aStream.readInt();

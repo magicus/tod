@@ -42,7 +42,7 @@ import org.apache.lucene.search.Searcher;
 
 import tod.core.config.TODConfig;
 import tod.impl.database.IBidiIterator;
-import tod.impl.dbgrid.dispatch.RIDatabaseNode.StringSearchHit;
+import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
 import zz.utils.Utils;
 
 public class StringIndexer

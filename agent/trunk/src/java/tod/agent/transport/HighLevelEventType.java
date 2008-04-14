@@ -24,6 +24,7 @@ public enum HighLevelEventType
 	OUTPUT,
 	
 	// Registering
+	REGISTER_OBJECT,
 	REGISTER_THREAD;
 	
 	/**

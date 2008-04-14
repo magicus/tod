@@ -81,7 +81,8 @@ public class GridQuery
 			{
 				try
 				{
-					theEventsCount[0] = Fixtures.replay(theFile, theMaster);
+					throw new UnsupportedOperationException("Reimplement");
+//					theEventsCount[0] = Fixtures.replay(theFile, theMaster);
 				}
 				catch (Exception e)
 				{

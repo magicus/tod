@@ -40,7 +40,6 @@ import java.io.ObjectInputStream;
 import tod.agent.AgentConfig;
 import tod.agent.transport.ValueType;
 import tod.core.DebugFlags;
-import tod.core.ILogCollector;
 import tod.core.database.structure.ObjectId;
 
 /**
@@ -49,21 +48,14 @@ import tod.core.database.structure.ObjectId;
  */
 public class ValueReader
 {
-	public static void readRegistered (DataInputStream aStream, ILogCollector aCollector) throws IOException
+	public static Object readRegistered (byte[] aData)
 	{
-		int theSize = aStream.readInt(); // Packet size
-		byte[] theBuffer = new byte[theSize];
-		aStream.readFully(theBuffer);
+		int theSize = aData.length;
 		
-		DataInputStream theStream = new DataInputStream(new ByteArrayInputStream(theBuffer));
-		
-		long theObjectId = theStream.readLong();
-		long theObjectTimestamp = theStream.readLong();
-		if (DebugFlags.IGNORE_HOST) theObjectId >>>= AgentConfig.HOST_BITS;
-		ObjectInputStream theObjectStream = new ObjectInputStream(theStream);
 		Object theObject;
 		try
 		{
+			ObjectInputStream theObjectStream = new ObjectInputStream(new ByteArrayInputStream(aData));
 			theObject = theObjectStream.readObject();
 		}
 		catch (ClassNotFoundException e)
@@ -78,17 +70,15 @@ public class ValueReader
 		}
 		catch (Throwable e)
 		{
-			System.err.println("Error while deserializing object id: "+theObjectId+": ");
+			System.err.println("Error while deserializing object");
 			e.printStackTrace();
 			System.err.println(" packet size: "+theSize);
-			for(int i=0;i<theSize;i++) System.err.print(Integer.toHexString(theBuffer[i])+" ");			
+			for(int i=0;i<theSize;i++) System.err.print(Integer.toHexString(aData[i])+" ");			
 			System.err.println();
 			theObject = "Deserialization error";
 		}
-		
-//		System.out.println("Received object: "+theObject+", id: "+theObjectId +", ts: "+theObjectTimestamp);
-		
-		aCollector.register(theObjectId, theObject, theObjectTimestamp);
+
+		return theObject;
 	}
 	
 	private static ValueType readValueType (DataInputStream aStream) throws IOException

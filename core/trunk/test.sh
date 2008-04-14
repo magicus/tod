@@ -23,7 +23,7 @@ VMARGS="$VMARGS -Dagent-verbose=0"
 VMARGS="$VMARGS -Dagent-cache-path=/home/gpothier/tmp/tod"
 #VMARGS="$VMARGS -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"
 
-#java $VMARGS -cp ./bin dummy.Dummy
+java $VMARGS -cp ./bin dummy.Dummy
 # echo "set args $VMARGS -cp ./bin dummy.Dummy" > gdb.cmd
 # gdb -x gdb.cmd java
 
@@ -43,7 +43,7 @@ VMARGS="$VMARGS -Dagent-cache-path=/home/gpothier/tmp/tod"
 # gdb -x gdb.cmd /home/gpothier/apps/java/jdk1.5.0_08/bin/java 
 #java $VMARGS -cp ./bin calls.Main
 
-java $VMARGS -cp ../../runtime-EclipseApplication2/AspectJTODTest/taggedbin foo.Main
+#java $VMARGS -cp ../../runtime-EclipseApplication2/AspectJTODTest/taggedbin foo.Main
 
 #java $VMARGS -cp ./bin tod.bench.overhead.Dummy
 

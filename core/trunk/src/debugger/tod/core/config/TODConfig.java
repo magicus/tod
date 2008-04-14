@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Properties;
 
 import tod.agent.AgentConfig;
+import tod.core.server.JavaTODServerFactory;
 import tod.utils.ConfigUtils;
 import zz.utils.PublicCloneable;
 
@@ -250,6 +251,13 @@ public class TODConfig extends PublicCloneable implements Serializable
 			"Whether information used by the TOD extension for AspectJ, such as behavior bytecode " +
 			"and TagMap, should be included in behavior infos.",
 			false);
+	
+	public static final StringItem SERVER_TYPE = new StringItem(
+			ConfigLevel.ADVANCED,
+			"server-type",
+			"Type of server interface",
+			"Class name of the TOD server factory.",
+			JavaTODServerFactory.class.getName());
 	
 	/**
 	 * Contains all available configuration items.

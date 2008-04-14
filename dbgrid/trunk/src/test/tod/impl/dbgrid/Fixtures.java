@@ -23,23 +23,17 @@ package tod.impl.dbgrid;
 
 import static org.junit.Assert.fail;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
-import tod.core.DebugFlags;
 import tod.core.database.TimestampGenerator;
 import tod.core.database.event.ILogEvent;
-import tod.core.transport.LogReceiver;
 import tod.core.transport.LogReceiver.ILogReceiverMonitor;
 import tod.impl.database.IBidiIterator;
-import tod.impl.database.structure.standard.HostInfo;
 import tod.impl.dbgrid.db.EventDatabase;
 import tod.impl.dbgrid.db.EventList;
 import tod.impl.dbgrid.db.HierarchicalIndex;
@@ -384,39 +378,6 @@ public class Fixtures
 		{
 			throw new RuntimeException(e);
 		}
-	}
-	
-	public static long replay(
-			File aFile,
-			GridMaster aMaster) 
-			throws IOException
-	{
-		DebugFlags.REPLAY_MODE = true;
-		
-		DataInputStream theStream = new DataInputStream(
-				new BufferedInputStream(new FileInputStream(aFile)));
-		
-
-		LogReceiver theReceiver = aMaster._getDispatcher().createLogReceiver(
-				new HostInfo(1, null), 
-				aMaster, 
-				theStream,
-				null, 
-				false);
-		
-		MyLogReceiverMonitor theMonitor = new MyLogReceiverMonitor();
-		theReceiver.setMonitor(theMonitor);
-		
-		theReceiver.start();
-
-		theReceiver.waitEof();
-		
-		aMaster.flush();
-		System.out.println("Done");
-
-		theMonitor.processedMessages(theReceiver.getMessageCount());
-		
-		return theReceiver.getMessageCount();
 	}
 
 	private static class MyLogReceiverMonitor implements ILogReceiverMonitor

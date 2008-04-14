@@ -347,6 +347,9 @@ public class LowLevelEventWriter
 	{
 		if (aCallType == BehaviorCallType.INSTANTIATION && shouldSendByValue(aTarget))
 		{
+			// Ensure that the sending of the object's value is deferred:
+			// otherwise we serialize an object that is not completely
+			// initialized (eg. new String(byteArray, 5, 10)).
 			sendValue(itsBuffer, aTarget, aTimestamp, aDeferRequestorId);
 		}
 		else

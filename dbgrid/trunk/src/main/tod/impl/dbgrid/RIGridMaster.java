@@ -32,9 +32,8 @@ import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
 import tod.impl.dbgrid.db.NodeRejectedException;
 import tod.impl.dbgrid.db.RIBufferIterator;
-import tod.impl.dbgrid.dispatch.RIDispatchNode;
-import tod.impl.dbgrid.dispatch.RIDatabaseNode.StringSearchHit;
-import tod.impl.dbgrid.dispatch.tree.DispatchTreeStructure;
+import tod.impl.dbgrid.dispatch.RINodeConnector;
+import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.utils.remote.RIStructureDatabase;
 import zz.utils.ITask;
@@ -82,23 +81,12 @@ public interface RIGridMaster extends Remote
 	 */
 	public void disconnect() throws RemoteException;
 
-	
-	/**
-	 * Nodes can call this method to determine the current needs
-	 * of the dispatcher: database nodes, leaf dispatcher nodes
-	 * or internal dispatcher nodes.
-	 * Client: undetermined nodes.
-	 * @param aHostName The name of the host on which the node executes.
-	 */
-	public DispatchTreeStructure.NodeRole getRoleForNode(String aHostName) throws RemoteException;
-	
 	/**
 	 * Registers a node so that it can be used by the grid.
-	 * Client: dispatch nodes
 	 * @throws NodeRejectedException Thrown if the master refuses the new node
 	 * @return The id assigned to the node.
 	 */
-	public String registerNode(RIDispatchNode aNode, String aHostname) 
+	public int registerNode(RINodeConnector aNode, String aHostname) 
 		throws RemoteException, NodeRejectedException;
 	
 	/**
@@ -109,9 +97,9 @@ public interface RIGridMaster extends Remote
 	
 	/**
 	 * Dispatch nodes can periodically send monitoring data.
-	 * Client: dispatch nodes
+	 * Client: nodes
 	 */
-	public void pushMonitorData(String aNodeId, MonitorData aData) throws RemoteException;
+	public void pushMonitorData(int aNodeId, MonitorData aData) throws RemoteException;
 
 	/**
 	 * Returns a new query aggregator for the specified query

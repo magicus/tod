@@ -51,12 +51,12 @@ implements ReorderingBufferListener
 		super(aFile);
 	}
 
-	public void store(long aId, Object aObject, long aTimestamp)
+	public void store(long aId, byte[] aData, long aTimestamp)
 	{
 		if (aId < itsLastAddedId) itsUnorderedObjects++;
 		else itsLastAddedId = aId;
 		
-		Entry theEntry = new Entry(aId, aObject, aTimestamp);
+		Entry theEntry = new Entry(aId, aData, aTimestamp);
 		
 		if (DebugFlags.DISABLE_REORDER)
 		{
@@ -82,7 +82,7 @@ implements ReorderingBufferListener
 		
 		itsProcessedObjects++;
 		
-		super.store(theId, aEntry.object);
+		super.store(theId, aEntry.data);
 	}
 	
 	public synchronized int flush()

@@ -25,7 +25,7 @@ import java.rmi.RemoteException;
 import tod.impl.database.BufferedBidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.db.RIBufferIterator;
-import tod.impl.dbgrid.dispatch.RIDatabaseNode.StringSearchHit;
+import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
 
 /**
  * An iterator that returns string search results provided by a 

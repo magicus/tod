@@ -32,8 +32,6 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.impl.local;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.JComponent;
 
@@ -42,13 +40,9 @@ import tod.core.ILogCollector;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IMutableStructureDatabase;
-import tod.core.server.CollectorTODServer;
-import tod.core.server.ICollectorFactory;
 import tod.core.server.TODServer;
 import tod.core.session.AbstractSession;
 import tod.core.session.ISessionMonitor;
-import tod.impl.bci.asm.ASMDebuggerConfig;
-import tod.impl.bci.asm.ASMInstrumenter;
 import tod.impl.database.structure.standard.HostInfo;
 import tod.impl.database.structure.standard.StructureDatabase;
 import tod.utils.PrintThroughCollector;
@@ -59,7 +53,6 @@ public class LocalSession extends AbstractSession implements ISessionMonitor
 	private IMutableStructureDatabase itsStructureDatabase;
 	
 	private LocalBrowser itsBrowser;
-	private List<ILogCollector> itsCollectors = new ArrayList<ILogCollector>();
 	
 	public LocalSession(URI aUri, TODConfig aConfig)
 	{
@@ -67,14 +60,10 @@ public class LocalSession extends AbstractSession implements ISessionMonitor
 		itsStructureDatabase = StructureDatabase.create(aConfig, "bouh");
 		itsBrowser = new LocalBrowser(this, itsStructureDatabase);
 		
-		ASMDebuggerConfig theConfig = new ASMDebuggerConfig(aConfig);
-		ASMInstrumenter theInstrumenter = new ASMInstrumenter(itsStructureDatabase, theConfig);
-		
-		itsServer = new CollectorTODServer(
+		itsServer = TODServer.getFactory(aConfig).create(
 				aConfig,
-				theInstrumenter,
 				itsStructureDatabase,
-				new MyCollectorFactory());
+				createCollector());
 	}
 	
 	public void disconnect()
@@ -112,24 +101,18 @@ public class LocalSession extends AbstractSession implements ISessionMonitor
 		return true;
 	}
 
-	private class MyCollectorFactory implements ICollectorFactory
+	private ILogCollector createCollector()
 	{
-		private int itsHostId = 1;
-
-		public ILogCollector create()
-		{
-			HostInfo theHost = new HostInfo(itsHostId++);
-			ILogCollector theCollector = new LocalCollector(
-					itsBrowser,
-					theHost);
-			
-			if (DebugFlags.COLLECTOR_LOG) theCollector = new PrintThroughCollector(
-					theHost,
-					theCollector,
-					getLogBrowser().getStructureDatabase());
-			
-			itsCollectors.add(theCollector);
-			return theCollector;
-		}
+		HostInfo theHost = new HostInfo(-1);
+		ILogCollector theCollector = new LocalCollector(
+				itsBrowser,
+				theHost);
+		
+		if (DebugFlags.COLLECTOR_LOG) theCollector = new PrintThroughCollector(
+				theHost,
+				theCollector,
+				getLogBrowser().getStructureDatabase());
+		
+		return theCollector;
 	}
 }

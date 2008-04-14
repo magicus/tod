@@ -36,7 +36,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import tod.agent.AgentConfig;
 import tod.agent.transport.LowLevelEventType;
+import tod.core.DebugFlags;
 import tod.core.ILogCollector;
 import tod.core.database.structure.IStructureDatabase;
 import tod.impl.database.structure.standard.HostInfo;
@@ -80,7 +82,16 @@ public class CollectorLogReceiver extends LogReceiver
 	@Override
 	protected void processRegister(DataInputStream aStream) throws IOException
 	{
-		ValueReader.readRegistered(aStream, itsCollector);
+		int theSize = aStream.readInt(); // Packet size
+		
+		long theObjectId = aStream.readLong();
+		long theObjectTimestamp = aStream.readLong();
+		if (DebugFlags.IGNORE_HOST) theObjectId >>>= AgentConfig.HOST_BITS;
+
+		byte[] theData = new byte[theSize-16];
+		aStream.readFully(theData);
+		
+		itsCollector.register(theObjectId, theData, theObjectTimestamp);
 	}
 
 	@Override

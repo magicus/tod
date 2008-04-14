@@ -38,6 +38,10 @@ import javax.swing.JComponent;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
 
+/**
+ * Represents a debugging session on the client (frontend) side.
+ * @author gpothier
+ */
 public interface ISession
 {
 	/**

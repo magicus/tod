@@ -20,8 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -39,8 +38,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import tod.Util;
-import tod.agent.AgentConfig;
-import tod.core.bci.IInstrumenter;
+import tod.core.ILogCollector;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IHostInfo;
@@ -53,16 +51,14 @@ import tod.impl.database.structure.standard.StructureDatabase;
 import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
 import tod.impl.dbgrid.aggregator.StringHitsAggregator;
+import tod.impl.dbgrid.db.DatabaseNode;
 import tod.impl.dbgrid.db.NodeRejectedException;
 import tod.impl.dbgrid.db.RIBufferIterator;
-import tod.impl.dbgrid.dispatch.AbstractEventDispatcher;
-import tod.impl.dbgrid.dispatch.DatabaseNode;
-import tod.impl.dbgrid.dispatch.RIDatabaseNode;
-import tod.impl.dbgrid.dispatch.RIDispatchNode;
-import tod.impl.dbgrid.dispatch.RIDatabaseNode.StringSearchHit;
-import tod.impl.dbgrid.dispatch.tree.DispatchTreeStructure;
-import tod.impl.dbgrid.dispatch.tree.LocalDispatchTreeStructure;
-import tod.impl.dbgrid.dispatch.tree.DispatchTreeStructure.NodeRole;
+import tod.impl.dbgrid.dispatch.DispatcherCollector;
+import tod.impl.dbgrid.dispatch.NodeConnector;
+import tod.impl.dbgrid.dispatch.NodeProxy;
+import tod.impl.dbgrid.dispatch.RINodeConnector;
+import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.utils.remote.RIStructureDatabase;
 import tod.utils.remote.RemoteStructureDatabase;
@@ -70,6 +66,9 @@ import zz.utils.ITask;
 import zz.utils.Utils;
 import zz.utils.monitoring.Monitor;
 import zz.utils.monitoring.Monitor.MonitorData;
+import zz.utils.net.Server;
+import zz.utils.properties.IProperty;
+import zz.utils.properties.PropertyListener;
 
 /**
  * The entry point to the database grid.
@@ -83,12 +82,27 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	public static final String READY_STRING = "[GridMaster] Ready.";
 	
 	private TODConfig itsConfig;
-	private final IInstrumenter itsInstrumenter;
 
 	private List<ListenerData> itsListeners = new ArrayList<ListenerData>();
 	
 	private final boolean itsStartServer;
 	private TODServer itsServer;
+	
+	private ILogCollector itsCollector;
+	
+	/**
+	 * This is the same as {@link #itsCollector}, but only used in a distributed setting.
+	 * For local setting, it is null.
+	 */
+	private DispatcherCollector itsDispatcherCollector;
+	private MyNodeServer itsNodeServer;
+	
+	/**
+	 * Number of expected database nodes. If 0, we don't wait
+	 * for all nodes to connect.
+	 */
+	private int itsExpectedNodes;
+	private List<RINodeConnector> itsNodes = new ArrayList<RINodeConnector>();
 	
 	/**
 	 * Set by {@link #keepAlive()}
@@ -104,8 +118,6 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	private long itsLastTimestamp;
 	private int itsThreadCount;
 	
-	private final DispatchTreeStructure itsDispatchTreeStructure;
-	
 	
 	private List<IThreadInfo> itsThreads = new ArrayList<IThreadInfo>();
 	private List<IHostInfo> itsHosts = new ArrayList<IHostInfo>();
@@ -113,7 +125,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	/**
 	 * Maps node ids to {@link PrintWriter} objects that write to a log file
 	 */
-	private Map<String, PrintWriter> itsMonitorLogs = new HashMap<String, PrintWriter>();
+	private Map<Integer, PrintWriter> itsMonitorLogs = new HashMap<Integer, PrintWriter>();
 	
 	/**
 	 * A log browser for {@link #exec(ITask)}.
@@ -123,18 +135,13 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	private GridMaster(
 			TODConfig aConfig, 
 			StructureDatabase aStructureDatabase, 
-			IInstrumenter aInstrumenter,
-			DispatchTreeStructure aDispatchTreeStructure,
+			int aExpectedNodes,
 			boolean aStartServer) throws RemoteException
 	{
 		itsConfig = aConfig;
-		itsInstrumenter = aInstrumenter;
 		itsStructureDatabase = aStructureDatabase;
 		itsRemoteStructureDatabase = RemoteStructureDatabase.create(aStructureDatabase, true);
-		
-		itsDispatchTreeStructure = aDispatchTreeStructure;
-		itsDispatchTreeStructure.setMaster(this);
-
+		itsExpectedNodes = aExpectedNodes;
 		itsStartServer = aStartServer;	
 		
 		itsLocalLogBrowser = GridLogBrowser.createLocal(null, this);
@@ -148,16 +155,27 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	public static GridMaster createLocal(
 			TODConfig aConfig, 
 			StructureDatabase aStructureDatabase, 
-			IInstrumenter aInstrumenter,
 			DatabaseNode aDatabaseNode,
-			boolean aStartServer) throws RemoteException
+			boolean aStartServer) 
 	{
-		return new GridMaster(
-				aConfig, 
-				aStructureDatabase, 
-				aInstrumenter,
-				new LocalDispatchTreeStructure(aDatabaseNode),
-				aStartServer);
+		try
+		{
+			GridMaster theMaster = new GridMaster(
+					aConfig, 
+					aStructureDatabase, 
+					0,
+					aStartServer);
+
+			aDatabaseNode.connectedToMaster(theMaster, 0);
+			theMaster.itsCollector = aDatabaseNode.createLogCollector(new HostInfo(0));
+			theMaster.itsNodes.add(new NodeConnector(aDatabaseNode));
+			
+			return theMaster;
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 	
 	
@@ -169,15 +187,19 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	public static GridMaster create(
 			TODConfig aConfig, 
 			StructureDatabase aStructureDatabase, 
-			IInstrumenter aInstrumenter,
-			DispatchTreeStructure aTreeStructure) throws RemoteException
+			int aExpectedNodes) throws RemoteException
 	{
-		return new GridMaster(
+		GridMaster theMaster = new GridMaster(
 				aConfig,
 				aStructureDatabase,
-				aInstrumenter,
-				aTreeStructure,
+				aExpectedNodes,
 				true);
+		
+		theMaster.itsNodeServer = theMaster.new MyNodeServer();
+		theMaster.itsDispatcherCollector = new DispatcherCollector();
+		theMaster.itsCollector = theMaster.itsDispatcherCollector;
+		
+		return theMaster;
 	}
 	
 	private void createTimeoutThread()
@@ -197,10 +219,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	public void setConfig(TODConfig aConfig) 
 	{
 		itsConfig = aConfig;
-		
 		itsServer.setConfig(aConfig);
-		itsInstrumenter.setGlobalWorkingSet(aConfig.get(TODConfig.SCOPE_GLOBAL_FILTER));
-		itsInstrumenter.setTraceWorkingSet(aConfig.get(TODConfig.SCOPE_TRACE_FILTER));
 	}
 	
 	/**
@@ -209,7 +228,24 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	protected TODServer createServer()
 	{
-		return new MyTODServer(itsConfig, itsInstrumenter);
+		TODServer theServer = TODServer.getFactory(getConfig()).create(
+				getConfig(), 
+				getStructureDatabase(), 
+				itsCollector);
+		
+		theServer.pConnected().addHardListener(new PropertyListener<Boolean>()
+				{
+					@Override
+					public void propertyChanged(IProperty<Boolean> aProperty, Boolean aOldValue, Boolean aNewValue)
+					{
+						if (aNewValue == false)
+						{
+							flush();
+						}
+					}
+				});
+
+		return theServer;
 	}
 	
 	/**
@@ -217,7 +253,16 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	public void waitReady()
 	{
-		itsDispatchTreeStructure.waitReady();
+		// Wait for all expected database nodes to connect
+		try
+		{
+			while (itsExpectedNodes > 0 && itsNodes.size() < itsExpectedNodes) wait(1000);
+		}
+		catch (InterruptedException e)
+		{
+			throw new RuntimeException(e);
+		}
+		
 		if (itsStartServer) itsServer = createServer();
 		ready();
 	}
@@ -260,7 +305,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		System.out.println("[GridMaster] addListener done.");
 	}
 	
-	public void pushMonitorData(String aNodeId, MonitorData aData)
+	public void pushMonitorData(int aNodeId, MonitorData aData)
 	{
 //		System.out.println("Received monitor data from node #"+aNodeId+"\n"+Monitor.format(aData, false));
 		
@@ -306,7 +351,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 * Fires the {@link RIGridMasterListener#eventsReceived()} message
 	 * to all listeners.
 	 */
-	protected void fireMonitorData(String aNodeId, MonitorData aData) 
+	protected void fireMonitorData(int aNodeId, MonitorData aData) 
 	{
 		for (Iterator<ListenerData> theIterator = itsListeners.iterator(); theIterator.hasNext();)
 		{
@@ -339,23 +384,16 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		}
 	}
 	
-	public synchronized NodeRole getRoleForNode(String aHostName) 
+	public synchronized int registerNode(RINodeConnector aNode, String aHostname) throws NodeRejectedException
 	{
-		NodeRole theRole = itsDispatchTreeStructure.getRoleForNode(aHostName);
-		System.out.println("Assigned role "+theRole+" to "+aHostName);
-
-		return theRole;
-	}
-
-	public synchronized String registerNode(RIDispatchNode aNode, String aHostname) throws NodeRejectedException
-	{
-		String theId = itsDispatchTreeStructure.registerNode(aNode, aHostname);
+		itsNodes.add(aNode);
+		int theId = itsNodes.size();
 		
 		// Register the node in the RMI registry.
 		try
 		{
 			Registry theRegistry = LocateRegistry.getRegistry(DebuggerGridConfig.MASTER_HOST, Util.TOD_REGISTRY_PORT);
-			theRegistry.bind(theId, aNode);
+			theRegistry.bind("node-"+theId, aNode);
 		}
 		catch (Exception e)
 		{
@@ -372,16 +410,14 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 				"Received exception %s from node %s",
 				aException.getMessage(),
 				aException.getNodeId()));
-		
-		getRootDispatcher().nodeException(aException);
 	}
 	
 	/**
 	 * Returns the currently registered nodes.
 	 */
-	public List<RIDatabaseNode> getNodes()
+	public List<RINodeConnector> getNodes()
 	{
-		return itsDispatchTreeStructure.getDatabaseNodes();
+		return itsNodes;
 	}
 	
 	/**
@@ -392,25 +428,16 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		return getNodes().size();
 	}
 	
-	/**
-	 * Returns the root dispatcher.
-	 */
-	protected AbstractEventDispatcher getRootDispatcher()
-	{
-		return itsDispatchTreeStructure.getRootDispatcher();
-	}
-	
-	/**
-	 * Returns the event dispatcher. For testing only.
-	 */
-	public AbstractEventDispatcher _getDispatcher()
-	{
-		return getRootDispatcher();
-	}
-	
 	public void clear() 
 	{
-		getRootDispatcher().clear();
+		try
+		{
+			for (RINodeConnector theConnector : itsNodes) theConnector.clear();
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
 		itsThreads.clear();
 		itsHosts.clear();
 		updateStats();
@@ -421,7 +448,14 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	public void flush()
 	{
-		getRootDispatcher().flush();
+		try
+		{
+			for (RINodeConnector theConnector : itsNodes) theConnector.flush();
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 	
 	/**
@@ -482,9 +516,9 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	
 	public Object getRegisteredObject(final long aId)
 	{
-		List<Object> theResults = Utils.fork(getNodes(), new ITask<RIDatabaseNode, Object>()
+		List<Object> theResults = Utils.fork(getNodes(), new ITask<RINodeConnector, Object>()
 				{
-					public Object run(RIDatabaseNode aInput)
+					public Object run(RINodeConnector aInput)
 					{
 						try
 						{
@@ -515,18 +549,27 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	
 	protected void updateStats()
 	{
-		itsEventsCount = 0;
-		itsFirstTimestamp = Long.MAX_VALUE;
-		itsLastTimestamp = 0;
+		long theEventsCount = 0;
+		long theFirstTimestamp = Long.MAX_VALUE;
+		long theLastTimestamp = 0;
 		
 		try
 		{
-			for (RIDatabaseNode theNode : getNodes())
+			for (RINodeConnector theNode : getNodes())
 			{
-				itsEventsCount += theNode.getEventsCount();
-				itsFirstTimestamp = Math.min(itsFirstTimestamp, theNode.getFirstTimestamp());
-				itsLastTimestamp = Math.max(itsLastTimestamp, theNode.getLastTimestamp());
+				theEventsCount += theNode.getEventsCount();
+				theFirstTimestamp = Math.min(theFirstTimestamp, theNode.getFirstTimestamp());
+				theLastTimestamp = Math.max(theLastTimestamp, theNode.getLastTimestamp());
 			}
+			
+			// When there are no nodes:
+			if (theFirstTimestamp > theLastTimestamp) theFirstTimestamp = theLastTimestamp;
+			
+			System.out.println(String.format("Stats: %d, %d, %d", theEventsCount, theFirstTimestamp, theLastTimestamp));
+			
+			itsEventsCount = theEventsCount;
+			itsFirstTimestamp = theFirstTimestamp;
+			itsLastTimestamp = theLastTimestamp;
 		}
 		catch (RemoteException e)
 		{
@@ -588,50 +631,38 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		}
 	}
 
-	private class MyTODServer extends TODServer
+	/**
+	 * A server that waits for database nodes to connect.
+	 * @author gpothier
+	 */
+	private class MyNodeServer extends Server
 	{
-		private int itsCurrentHostId = 1;
-		
-		public MyTODServer(TODConfig aConfig, IInstrumenter aInstrumenter)
+		public MyNodeServer()
 		{
-			super(aConfig, aInstrumenter, itsStructureDatabase);
+			super(DebuggerGridConfig.MASTER_NODE_PORT);
 		}
 
 		@Override
-		protected LogReceiver createReceiver(Socket aSocket)
+		protected void accepted(Socket aSocket)
 		{
-			HostInfo theHostInfo = new HostInfo(itsCurrentHostId++);
-			registerHost(theHostInfo);
-			
+			// Read node id
+			int theNodeId;
 			try
 			{
-				LogReceiver theReceiver = getRootDispatcher().createLogReceiver(
-						theHostInfo,
-						GridMaster.this,
-						new BufferedInputStream(
-								aSocket.getInputStream(), 
-								AgentConfig.COLLECTOR_BUFFER_SIZE*2),
-						new BufferedOutputStream(
-								aSocket.getOutputStream(), 
-								AgentConfig.COLLECTOR_BUFFER_SIZE*2),
-						true);
-				
-				return theReceiver;
+				DataInputStream theInStream = new DataInputStream(aSocket.getInputStream());
+				theNodeId = theInStream.readInt();
 			}
 			catch (IOException e)
 			{
 				throw new RuntimeException(e);
 			}
-		}
-		
-		@Override
-		protected void disconnected()
-		{
-			super.disconnected();
-			GridMaster.this.flush();
+			
+			// Retrieve RMI node
+			RINodeConnector theNodeConnector = itsNodes.get(theNodeId-1);
+			
+			itsDispatcherCollector.addProxy(new NodeProxy(theNodeConnector, aSocket));
 		}
 	}
-	
 	
 	public static void main(String[] args) throws Exception
 	{
@@ -688,7 +719,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			}
 		}
 		
-		public boolean fireMonitorData(String aNodeId, MonitorData aData)
+		public boolean fireMonitorData(int aNodeId, MonitorData aData)
 		{
 			try
 			{

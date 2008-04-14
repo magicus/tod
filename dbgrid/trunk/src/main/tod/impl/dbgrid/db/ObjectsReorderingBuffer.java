@@ -24,7 +24,6 @@ import java.util.Comparator;
 import java.util.PriorityQueue;
 
 import tod.impl.dbgrid.DebuggerGridConfig;
-import tod.impl.dbgrid.messages.GridEvent;
 import zz.utils.RingBuffer;
 
 /**
@@ -145,14 +144,14 @@ public class ObjectsReorderingBuffer
 	{
 		public final long id;
 
-		public final Object object;
+		public final byte[] data;
 
 		public final long itsTimestamp;
 
-		public Entry(final long aId, final Object aObject, final long aTimestamp)
+		public Entry(long aId, byte[] aData, long aTimestamp)
 		{
 			id = aId;
-			object = aObject;
+			data = aData;
 			itsTimestamp = aTimestamp;
 		}
 	}

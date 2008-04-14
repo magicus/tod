@@ -354,9 +354,10 @@ public class PrintThroughCollector implements ILogCollector
 		itsCollector.superCall(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aDirectParent, aCalledBehaviorId, aExecutedBehaviorId, aTarget, aArguments);
 	}
 
-	public void register(long aObjectUID, Object aObject, long aTimestamp)
+	
+	public void register(long aObjectUID, byte[] aData, long aTimestamp)
 	{
-		itsCollector.register(aObjectUID, aObject,aTimestamp);
+		itsCollector.register(aObjectUID, aData, aTimestamp);
 	}
 
 	public void thread(int aThreadId, long aJVMThreadId, String aName)

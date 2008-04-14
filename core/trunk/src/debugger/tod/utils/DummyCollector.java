@@ -100,7 +100,7 @@ public class DummyCollector implements ILogCollector
 	{
 	}
 
-	public void register(long aObjectUID, Object aObject, long aTimestamp)
+	public void register(long aObjectUID, byte[] aData, long aTimestamp)
 	{
 	}
 

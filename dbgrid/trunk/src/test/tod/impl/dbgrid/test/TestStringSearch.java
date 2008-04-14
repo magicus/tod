@@ -25,9 +25,9 @@ import java.rmi.RemoteException;
 import org.junit.Test;
 
 import tod.core.config.TODConfig;
+import tod.impl.dbgrid.db.DatabaseNode;
 import tod.impl.dbgrid.db.RIBufferIterator;
-import tod.impl.dbgrid.dispatch.DatabaseNode;
-import tod.impl.dbgrid.dispatch.RIDatabaseNode.StringSearchHit;
+import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
 
 public class TestStringSearch
 {
@@ -39,11 +39,12 @@ public class TestStringSearch
 	{
 		TODConfig theConfig = new TODConfig();
 		theConfig.set(TODConfig.INDEX_STRINGS, true);
-		DatabaseNode theNode = DatabaseNode.createLocalNode();
+		DatabaseNode theNode = new DatabaseNode();
 
 		for (int i=0;i<STRINGS.length;i++)
 		{
-			theNode.register(i, STRINGS[i], i);
+			throw new UnsupportedOperationException("Reimplement");
+//			theNode.register(i, STRINGS[i], i);
 		}
 		
 		search(theNode, "Hello");

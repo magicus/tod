@@ -30,8 +30,8 @@ import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.db.RIBufferIterator;
-import tod.impl.dbgrid.dispatch.RIDatabaseNode;
-import tod.impl.dbgrid.dispatch.RIDatabaseNode.StringSearchHit;
+import tod.impl.dbgrid.dispatch.RINodeConnector;
+import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
 import tod.impl.dbgrid.merge.DisjunctionIterator;
 import zz.utils.Future;
 
@@ -55,7 +55,7 @@ implements RIBufferIterator<StringSearchHit[]>
 	
 	private void initIterators()
 	{
-		final List<RIDatabaseNode> theNodes = itsMaster.getNodes();
+		final List<RINodeConnector> theNodes = itsMaster.getNodes();
 		final SearchHitIterator[] theIterators = new SearchHitIterator[theNodes.size()];
 		
 		List<Future<SearchHitIterator>> theFutures = new ArrayList<Future<SearchHitIterator>>();
@@ -68,7 +68,7 @@ implements RIBufferIterator<StringSearchHit[]>
 						@Override
 						protected SearchHitIterator fetch() throws Throwable
 						{
-							RIDatabaseNode theNode = theNodes.get(i0);
+							RINodeConnector theNode = theNodes.get(i0);
 							RIBufferIterator<StringSearchHit[]> theIterator = 
 								theNode.searchStrings(itsSearchText);
 							theIterators[i0] = new SearchHitIterator(theIterator);

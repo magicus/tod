@@ -20,8 +20,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.transport;
 
-import static tod.core.DebugFlags.INTERPRETER_LOG;
 import static tod.agent.AgentDebugFlags.DISABLE_COLLECTOR;
+import static tod.core.DebugFlags.INTERPRETER_LOG;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -571,7 +571,8 @@ public final class EventInterpreter implements ILowLevelCollector
 				aTimestamp,
 				theThread.getAdviceCFlow(),
 				aProbeId,
-				aVariableId, aValue);
+				aVariableId, 
+				aValue);
 	}
 	
 	public void logInstanceOf(
@@ -866,7 +867,7 @@ public final class EventInterpreter implements ILowLevelCollector
 				theThread.getAdviceCFlow(),
 				aOutput, aData);
 	}
-
+	
 	public static class ThreadData 
 	{
 		/**
@@ -1063,6 +1064,5 @@ public final class EventInterpreter implements ILowLevelCollector
 		
 		return theBuilder.toString();
 	}
-
 
 }

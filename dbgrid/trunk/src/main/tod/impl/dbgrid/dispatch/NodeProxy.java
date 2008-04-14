@@ -20,130 +20,61 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.dispatch;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import java.net.Socket;
 import java.util.LinkedList;
 
-import tod.agent.transport.Commands;
 import zz.utils.ArrayStack;
-import zz.utils.Utils;
 
-public class DispatcherProxy extends DispatchNodeProxy
+/**
+ * This is the peer of {@link NodeConnector} on the master's side.
+ * @author gpothier
+ */
+public class NodeProxy
 {
+	private final RINodeConnector itsConnector;
 	private BufferedSender itsSender;
 	private BSOutputStream itsOut;
 	private DataOutputStream itsDataOut;
-	private DataInputStream itsDataIn;
-	private byte[] itsBuffer = new byte[1024];
-	private ByteBuffer itsIBBuffer;
-	private byte[] itsIBArray;
 	
+	public NodeProxy(RINodeConnector aConnector, Socket aSocket)
 	{
-		itsIBBuffer = ByteBuffer.allocate(4);
-		itsIBBuffer.order(ByteOrder.nativeOrder());
-		itsIBArray = itsIBBuffer.array();
+		itsConnector = aConnector;
+		try
+		{
+			itsSender = new BufferedSender(aConnector.getNodeId(), aSocket.getOutputStream());
+			itsOut = new BSOutputStream(itsSender);
+			itsDataOut = new DataOutputStream(itsOut);
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
+
 	
-	public DispatcherProxy(
-			RIDispatchNode aConnectable, 
-			InputStream aInputStream,
-			OutputStream aOutputStream,
-			String aNodeId)
-	{
-		super(aConnectable, aNodeId);
-		itsSender = new BufferedSender(aNodeId, aOutputStream);
-		itsOut = new BSOutputStream(itsSender);
-		itsDataOut = new DataOutputStream(itsOut);
-		itsDataIn = new DataInputStream(aInputStream);
-	}
-	
-	@Override
-	protected DataInputStream getInStream()
-	{
-		return itsDataIn;
-	}
-	
-	@Override
-	protected DataOutputStream getOutStream()
+	/**
+	 * Returns the output stream used to send data to the node.
+	 */
+	public DataOutputStream getOutStream()
 	{
 		return itsDataOut;
 	}
 	
 	/**
-	 * Returns the number of bytes queued in this proxy.
-	 * This can be used for load balancing.
+	 * Returns the number of bytes currently queued in this proxy's buffer
+	 * (for load balancing).
 	 */
 	public int getQueueSize()
 	{
 		return itsSender.getQueueSize();
 	}
 	
-	/**
-	 * Transfers a packet to the child node.
-	 */
-	public void forwardPacket(byte aMessage, DataInputStream aStream)
-	{
-		try
-		{
-			itsOut.write(aMessage);
-			
-			// Read packet size
-			aStream.readFully(itsIBArray);
-			int theSize = itsIBBuffer.getInt(0);
-			
-			// Write packet size
-			itsOut.write(itsIBArray);
-			
-			Utils.pipe(itsBuffer, aStream, itsOut, theSize);
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-
-	@Override
-	public void clear()
-	{
-		try
-		{
-			getOutStream().flush();
-			getConnectable().clear();
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-
-	@Override
-	public int flush()
-	{
-		try
-		{
-			System.out.println("[DispatcherProxy] Flushing "+getNodeId()+"...");
-			getOutStream().writeByte(Commands.BASE + Commands.CMD_FLUSH.ordinal());
-			getOutStream().flush();
-			System.out.println("[DispatcherProxy] Waiting response for "+getNodeId()+"...");
-			int theCount = getInStream().readInt();
-			System.out.println("[DispatcherProxy] Flushed "+theCount+" events on "+getNodeId());
-			
-			return theCount;
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-	
 	
 	/**
-	 * Sends buffers of data to the remote end. Buffers are queued and send
+	 * Sends buffers of data to the remote end. Buffers are queued and sent
 	 * asynchronously.
 	 * @author gpothier
 	 */
@@ -157,9 +88,9 @@ public class DispatcherProxy extends DispatchNodeProxy
 		
 		private boolean itsFlushed = true;
 
-		private final String itsNodeId;
+		private final int itsNodeId;
 		
-		public BufferedSender(String aNodeId, OutputStream aStream)
+		public BufferedSender(int aNodeId, OutputStream aStream)
 		{
 			itsNodeId = aNodeId;
 			itsStream = aStream;
@@ -359,4 +290,5 @@ public class DispatcherProxy extends DispatchNodeProxy
 			newBuffer();
 		}
 	}
+
 }

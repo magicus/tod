@@ -43,10 +43,12 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 import tod.agent.transport.LowLevelEventType;
+import tod.core.ILogCollector;
 import tod.core.bci.IInstrumenter;
 import tod.core.config.TODConfig;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
+import tod.core.server.JavaTODServer;
 import tod.core.server.TODServer;
 import tod.core.transport.LogReceiver;
 import tod.impl.bci.asm.ASMDebuggerConfig;
@@ -131,11 +133,11 @@ public class BenchRuntimeOverhead
 	
 
 	
-	public static class SinkTODServer extends TODServer
+	public static class SinkTODServer extends JavaTODServer
 	{
 		private SinkTODServer(TODConfig aConfig, IInstrumenter aInstrumenter, IStructureDatabase aStructureDatabase)
 		{
-			super(aConfig, aInstrumenter, aStructureDatabase);
+			super(aConfig, aInstrumenter, aStructureDatabase, null);
 		}
 		
 		public static SinkTODServer create(TODConfig aConfig)
@@ -147,19 +149,15 @@ public class BenchRuntimeOverhead
 		}
 
 		@Override
-		protected LogReceiver createReceiver(Socket aSocket)
+		protected LogReceiver createReceiver(
+				HostInfo aHostInfo,
+				InputStream aInStream,
+				OutputStream aOutStream,
+				boolean aStart, 
+				IStructureDatabase aStructureDatabase, 
+				ILogCollector aCollector)
 		{
-			try
-			{
-				return new SinkReceiver(
-						new HostInfo(1),
-						new BufferedInputStream(aSocket.getInputStream()), 
-						new BufferedOutputStream(aSocket.getOutputStream()));
-			}
-			catch (IOException e)
-			{
-				throw new RuntimeException(e);
-			}
+			return new SinkReceiver(aHostInfo, aInStream, aOutStream);
 		}
 		
 		private static class SinkReceiver extends LogReceiver

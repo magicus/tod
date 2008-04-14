@@ -18,15 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.dbgrid.dispatch;
+package tod.impl.dbgrid.db;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
@@ -39,22 +33,15 @@ import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ObjectId;
-import tod.core.transport.CollectorLogReceiver;
-import tod.core.transport.LogReceiver;
 import tod.impl.database.IBidiIterator;
-import tod.impl.database.structure.standard.HostInfo;
 import tod.impl.database.structure.standard.ThreadInfo;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridEventCollector;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.RIGridMaster;
-import tod.impl.dbgrid.db.EventDatabase;
-import tod.impl.dbgrid.db.ObjectsDatabase;
-import tod.impl.dbgrid.db.RIBufferIterator;
-import tod.impl.dbgrid.db.RINodeEventIterator;
-import tod.impl.dbgrid.db.ReorderedObjectsDatabase;
-import tod.impl.dbgrid.db.StringIndexer;
 import tod.impl.dbgrid.db.file.HardPagedFile;
+import tod.impl.dbgrid.dispatch.RINodeConnector;
+import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.utils.remote.RemoteStructureDatabase;
@@ -65,10 +52,13 @@ import zz.utils.Utils;
  * 
  * @author gpothier
  */
-public class DatabaseNode extends AbstractDispatchNode
-implements RIDatabaseNode
+public class DatabaseNode 
 {
 //	private static final ReceiverThread NODE_THREAD = new ReceiverThread();
+	
+	private RIGridMaster itsMaster;
+	private int itsNodeId;
+	private TODConfig itsConfig;
 	
 	private long itsEventsCount = 0;
 	private long itsFirstTimestamp = 0;
@@ -93,7 +83,7 @@ implements RIDatabaseNode
 	
 	private FlusherThread itsFlusherThread = new FlusherThread();
 
-	private DatabaseNode() throws RemoteException
+	public DatabaseNode() 
 	{
 		String thePrefix = DebuggerGridConfig.NODE_DATA_DIR;
 		File theParent = new File(thePrefix);
@@ -103,43 +93,31 @@ implements RIDatabaseNode
 		itsStringIndexFile = new File(theParent, "strings");
 	}
 	
-	/**
-	 * Creates a node that will work with a local master.
-	 */
-	public static DatabaseNode createLocalNode()
+	public TODConfig getConfig()
 	{
-		try
-		{
-			return new DatabaseNode();
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		return itsConfig;
 	}
 	
-	public static DatabaseNode createRemoteNode() throws RemoteException
+	public void connectedToMaster(RIGridMaster aMaster, int aNodeId)
 	{
-		return new DatabaseNode();
-	}
-	
-	@Override
-	protected void connectedToMaster()
-	{
-		super.connectedToMaster();
-		RIGridMaster theMaster = getMaster();
-		if (theMaster instanceof GridMaster)
+		itsMaster = aMaster;
+		itsNodeId = aNodeId;
+		
+		if (itsMaster instanceof GridMaster)
 		{
 			// This is the case where the master is local.
-			GridMaster theLocalMaster = (GridMaster) theMaster;
+			GridMaster theLocalMaster = (GridMaster) itsMaster;
 			itsStructureDatabase = theLocalMaster.getStructureDatabase();
+			itsConfig = theLocalMaster.getConfig();
 		}
 		else
 		{
 			try
 			{
 				itsStructureDatabase = 
-					RemoteStructureDatabase.createMutableDatabase(theMaster.getRemoteStructureDatabase());
+					RemoteStructureDatabase.createMutableDatabase(itsMaster.getRemoteStructureDatabase());
+				
+				itsConfig = itsMaster.getConfig();
 			}
 			catch (RemoteException e)
 			{
@@ -194,8 +172,7 @@ implements RIDatabaseNode
 	
 	protected EventDatabase createDatabase(File aFile)
 	{
-		int theNodeIndex = Integer.parseInt(getNodeId().substring(3));
-		return new EventDatabase(itsStructureDatabase, theNodeIndex, aFile);
+		return new EventDatabase(itsStructureDatabase, itsNodeId, aFile);
 	}
 	
 	/**
@@ -207,7 +184,6 @@ implements RIDatabaseNode
 	}
 
 	
-	@Override
 	public void clear()
 	{
 		itsEventsCount = 0;
@@ -217,7 +193,6 @@ implements RIDatabaseNode
 		initDatabase();
 	}
 	
-	@Override
 	public synchronized int flush()
 	{
 		int theObjectsCount = 0;
@@ -248,7 +223,7 @@ implements RIDatabaseNode
 			long aT1, 
 			long aT2,
 			int aSlotsCount,
-			boolean aForceMergeCounts) throws RemoteException
+			boolean aForceMergeCounts) 
 	{
 		return itsEventsDatabase.getEventCounts(
 				aCondition, 
@@ -258,7 +233,7 @@ implements RIDatabaseNode
 				aForceMergeCounts);
 	}
 
-	public RINodeEventIterator getIterator(EventCondition aCondition) throws RemoteException
+	public RINodeEventIterator getIterator(EventCondition aCondition) throws RemoteException 
 	{
 		return itsEventsDatabase.getIterator(aCondition);
 	}
@@ -303,82 +278,25 @@ implements RIDatabaseNode
 		return itsLastTimestamp;
 	}
 
-	@Override
-	public LogReceiver createLogReceiver(
-			HostInfo aHostInfo, 
-			GridMaster aMaster,
-			InputStream aInStream,
-			OutputStream aOutStream, 
-			boolean aStartImmediately)
+	public ILogCollector createLogCollector(IHostInfo aHostInfo)
 	{
-		System.out.println("[DatabaseNode] Creating LogReceiver");
-		ILogCollector theCollector = new MyCollector(
-				aMaster,
-				aHostInfo,
-				itsStructureDatabase,
-				this);
-		
-//		if (DebugFlags.COLLECTOR_LOG) theCollector = new PrintThroughCollector(
-//				aHostInfo,
-//				theCollector,
-//				aMaster.getLocationStore());
-		
-		return new MyReceiver(
-//				NODE_THREAD,
-				aHostInfo,
-				theCollector,
-				aInStream,
-				aOutStream,
-				aStartImmediately);
+		return new MyCollector(itsMaster, aHostInfo, itsStructureDatabase, this);
 	}
 
-	@Override
-	protected void connectToDispatcher(Socket aSocket)
-	{
-		try
-		{
-			connectToLocalDispatcher(
-					new BufferedInputStream(aSocket.getInputStream()),
-					new BufferedOutputStream(aSocket.getOutputStream()));
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
 
-	public void connectToLocalDispatcher(
-			InputStream aInputStream,
-			OutputStream aOutputStream)
-	{
-		connectToDispatcher(aInputStream, aOutputStream);
-	}
-	
-	private void connectToDispatcher(
-			InputStream aInputStream,
-			OutputStream aOutputStream)
-	{
-		createLogReceiver(
-				new HostInfo(0, null), // TODO: check this, do we correspond to a particular host? 
-				null, 
-				aInputStream, 
-				aOutputStream, 
-				true);
-	}
-	
-
-	public void register(long aId, Object aObject, long aTimestamp)
+	public void register(long aId, byte[] aData, long aTimestamp)
 	{
 		if (DebugFlags.SKIP_OBJECTS) return;
 		
 		long theObjectId = ObjectId.getObjectId(aId);
 		int theHostId = ObjectId.getHostId(aId);
-		getObjectsDatabase(theHostId).store(theObjectId, aObject, aTimestamp);
+		getObjectsDatabase(theHostId).store(theObjectId, aData, aTimestamp);
 		
-		if (itsStringIndexer != null && (aObject instanceof String))
-		{
-			itsStringIndexer.register(aId, (String) aObject);
-		}
+		// TODO: see how we can reimplement this now that we receive a serialized object.
+//		if (itsStringIndexer != null && (aObject instanceof String))
+//		{
+//			itsStringIndexer.register(aId, (String) aObject);
+//		}
 	}
 	
 	/**
@@ -414,7 +332,7 @@ implements RIDatabaseNode
 		return theObjectsDatabase != null ? theObjectsDatabase.load(theObjectId) : null;
 	}
 
-	public RIBufferIterator<StringSearchHit[]> searchStrings(String aText) throws RemoteException
+	public RIBufferIterator<StringSearchHit[]> searchStrings(String aText) throws RemoteException 
 	{
 		if (itsStringIndexer != null)
 		{
@@ -501,44 +419,31 @@ implements RIDatabaseNode
 		private GridMaster itsMaster;
 		
 		public MyCollector(
-				GridMaster aMaster, 
+				RIGridMaster aMaster, 
 				IHostInfo aHost, 
 				IMutableStructureDatabase aStructureDatabase,
 				DatabaseNode aNode)
 		{
 			super(aHost, aStructureDatabase, aNode);
-			itsMaster = aMaster;
+
+			// Only for local master (see #thread). 
+			if (aMaster instanceof GridMaster)
+			{
+				itsMaster = (GridMaster) aMaster;
+			}
 		}
 
 		@Override
 		public void thread(int aThreadId, long aJVMThreadId, String aName)
 		{
-			ThreadInfo theThread = createThreadInfo(getHost(), aThreadId, aJVMThreadId, aName);
-			itsMaster.registerThread(theThread);
+			if (itsMaster != null)
+			{
+				ThreadInfo theThread = createThreadInfo(getHost(), aThreadId, aJVMThreadId, aName);
+				itsMaster.registerThread(theThread);
+			}
+			else throw new UnsupportedOperationException("Should have been filtered by master");		
 		}
 	}
-	
-	private class MyReceiver extends CollectorLogReceiver
-	{
-		public MyReceiver(HostInfo aHostInfo, ILogCollector aCollector, InputStream aInStream, OutputStream aOutStream, boolean aStart)
-		{
-			super(aHostInfo, aInStream, aOutStream, aStart, getStructureDatabase(), aCollector);
-		}
-
-		@Override
-		protected int processFlush()
-		{
-			return DatabaseNode.this.flush();
-		}
-		
-		@Override
-		protected void processClear()
-		{
-			DatabaseNode.this.clear();
-		}
-	}
-	
-	
 	
 	/**
 	 * This thread flushes the database when no event has been added

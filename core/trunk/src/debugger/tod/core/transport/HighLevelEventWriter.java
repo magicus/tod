@@ -20,18 +20,13 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.transport;
 
-import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 
-import tod.agent.ObjectIdentity;
 import tod.agent.Output;
-import tod.agent.transport.Commands;
 import tod.agent.transport.HighLevelEventType;
-import tod.agent.transport.ObjectValue;
 import tod.agent.transport.ValueType;
+import tod.core.database.structure.ObjectId;
 
 /**
  * Provides the methods used to encode streamed log data. Non-static methods are
@@ -40,22 +35,18 @@ import tod.agent.transport.ValueType;
  */
 public class HighLevelEventWriter
 {
-	private final MyBuffer itsBuffer = new MyBuffer();
-	private DataOutputStream itsStream;
+	private DataOutputStream itsBuffer;
 	
-	RegisteredObjectsStack itsRegisteredObjectsStack = new RegisteredObjectsStack();
-	DeferredObjectsStack itsDeferredObjectsStack = new DeferredObjectsStack();
-	
-	public HighLevelEventWriter(DataOutputStream aStream)
+	public void setReceiver(DataOutputStream aReceiver)
 	{
-		itsStream = aStream;
+		itsBuffer = aReceiver;
 	}
 	
-	public void setStream(DataOutputStream aStream)
+	private void sendMessageType(DataOutputStream aStream, HighLevelEventType aType) throws IOException
 	{
-		itsStream = aStream;
+		aStream.writeByte(aType.ordinal());
 	}
-
+	
 	private void sendMethodCall(
 			HighLevelEventType aMessageType, 
 			int aThreadId,
@@ -70,39 +61,16 @@ public class HighLevelEventWriter
 			Object aTarget, 
 			Object[] aArguments) throws IOException
 	{
-		sendEventType(itsStream, aMessageType);
-
+		sendMessageType(itsBuffer, aMessageType);
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow);
 		itsBuffer.writeInt(aProbeId);
 		itsBuffer.writeBoolean(aDirectParent);
 		itsBuffer.writeInt(aCalledBehavior);
 		itsBuffer.writeInt(aExecutedBehavior);
-
-		if (aMessageType == HighLevelEventType.INSTANTIATION && shouldSendByValue(aTarget))
-		{
-			// Ensure that the sending of the object's value is deferred:
-			// otherwise we serialize an object that is not completely
-			// initialized (eg. new String(byteArray, 5, 10)).
-			sendValue(itsBuffer, aTarget, aTimestamp, aTimestamp);
-		}
-		else
-		{
-			sendValue(itsBuffer, aTarget, aTimestamp);
-		}
-
+		sendValue(itsBuffer, aTarget, aTimestamp);
 		sendArguments(itsBuffer, aArguments, aTimestamp);
 
-		itsBuffer.writeTo(itsStream);
-
-		sendRegisteredObjects();
-	}
-
-	/**
-	 * Determines if the given object should be sent by value.
-	 */
-	private boolean shouldSendByValue(Object aObject)
-	{
-		return (aObject instanceof String) || (aObject instanceof Throwable);
+//		itsBuffer.send(aMessageType);
 	}
 
 	public void sendMethodCall(
@@ -200,24 +168,14 @@ public class HighLevelEventWriter
 			boolean aHasThrown,
 			Object aResult) throws IOException
 	{
-		sendEventType(itsStream, HighLevelEventType.BEHAVIOR_EXIT);
-
+		sendMessageType(itsBuffer, HighLevelEventType.BEHAVIOR_EXIT); 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow);
 		itsBuffer.writeInt(aProbeId);
 		itsBuffer.writeInt(aBehaviorId);
 		itsBuffer.writeBoolean(aHasThrown);
 		sendValue(itsBuffer, aResult, aTimestamp);
 
-		itsBuffer.writeTo(itsStream);
-
-		if (itsDeferredObjectsStack.isAvailable(aParentTimestamp))
-		{
-			DeferredObjectEntry theEntry = itsDeferredObjectsStack.pop();
-			// System.out.println("Sending deferred object: "+theEntry.id);
-			sendRegisteredObject(theEntry.id, theEntry.object, theEntry.itsTimestamp);
-		}
-
-		sendRegisteredObjects();
+//		itsBuffer.send(HighLevelEventType.BEHAVIOR_EXIT);
 	}
 
 	public void sendFieldWrite(
@@ -231,17 +189,14 @@ public class HighLevelEventWriter
 			Object aTarget, 
 			Object aValue) throws IOException
 	{
-		sendEventType(itsStream, HighLevelEventType.FIELD_WRITE);
-
+		sendMessageType(itsBuffer, HighLevelEventType.FIELD_WRITE); 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow);
 		itsBuffer.writeInt(aProbeId);
 		itsBuffer.writeInt(aFieldLocationId);
 		sendValue(itsBuffer, aTarget, aTimestamp);
 		sendValue(itsBuffer, aValue, aTimestamp);
 
-		itsBuffer.writeTo(itsStream);
-
-		sendRegisteredObjects();
+//		itsBuffer.send(HighLevelEventType.FIELD_WRITE);
 	}
 
 	public void sendNewArray(
@@ -255,17 +210,14 @@ public class HighLevelEventWriter
 			int aBaseTypeId,
 			int aSize) throws IOException
 	{
-		sendEventType(itsStream, HighLevelEventType.NEW_ARRAY);
-
+		sendMessageType(itsBuffer, HighLevelEventType.NEW_ARRAY); 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow);
 		itsBuffer.writeInt(aProbeId);
 		sendValue(itsBuffer, aTarget, aTimestamp);
 		itsBuffer.writeInt(aBaseTypeId);
 		itsBuffer.writeInt(aSize);
 
-		itsBuffer.writeTo(itsStream);
-
-		sendRegisteredObjects();
+//		itsBuffer.send(HighLevelEventType.NEW_ARRAY);
 	}
 
 	public void sendArrayWrite(
@@ -279,17 +231,14 @@ public class HighLevelEventWriter
 			int aIndex, 
 			Object aValue) throws IOException
 	{
-		sendEventType(itsStream, HighLevelEventType.ARRAY_WRITE);
-
+		sendMessageType(itsBuffer, HighLevelEventType.ARRAY_WRITE); 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow);
 		itsBuffer.writeInt(aProbeId);
 		sendValue(itsBuffer, aTarget, aTimestamp);
 		itsBuffer.writeInt(aIndex);
 		sendValue(itsBuffer, aValue, aTimestamp);
 
-		itsBuffer.writeTo(itsStream);
-
-		sendRegisteredObjects();
+//		itsBuffer.send(HighLevelEventType.ARRAY_WRITE);
 	}
 
 	public void sendLocalWrite(
@@ -302,16 +251,13 @@ public class HighLevelEventWriter
 			int aVariableId,
 			Object aValue) throws IOException
 	{
-		sendEventType(itsStream, HighLevelEventType.LOCAL_VARIABLE_WRITE);
-
+		sendMessageType(itsBuffer, HighLevelEventType.LOCAL_VARIABLE_WRITE); 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow);
 		itsBuffer.writeInt(aProbeId);
 		itsBuffer.writeInt(aVariableId);
 		sendValue(itsBuffer, aValue, aTimestamp);
 
-		itsBuffer.writeTo(itsStream);
-
-		sendRegisteredObjects();
+//		itsBuffer.send(HighLevelEventType.LOCAL_VARIABLE_WRITE);
 	}
 
 	public void sendInstanceOf(
@@ -325,17 +271,14 @@ public class HighLevelEventWriter
 			int aTypeId,
 			boolean aResult) throws IOException
 	{
-		sendEventType(itsStream, HighLevelEventType.INSTANCEOF);
-
+		sendMessageType(itsBuffer, HighLevelEventType.INSTANCEOF); 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow);
 		itsBuffer.writeInt(aProbeId);
 		sendValue(itsBuffer, aObject, aTimestamp);
 		itsBuffer.writeInt(aTypeId);
 		itsBuffer.writeBoolean(aResult);
 
-		itsBuffer.writeTo(itsStream);
-
-		sendRegisteredObjects();
+//		itsBuffer.send(HighLevelEventType.INSTANCEOF);
 	}
 
 	public void sendException(
@@ -350,8 +293,7 @@ public class HighLevelEventWriter
 			int aOperationBytecodeIndex,
 			Object aException) throws IOException
 	{
-		sendEventType(itsStream, HighLevelEventType.EXCEPTION);
-
+		sendMessageType(itsBuffer, HighLevelEventType.EXCEPTION); 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow);
 		itsBuffer.writeUTF(aMethodName);
 		itsBuffer.writeUTF(aMethodSignature);
@@ -359,11 +301,7 @@ public class HighLevelEventWriter
 		itsBuffer.writeShort(aOperationBytecodeIndex);
 		sendValue(itsBuffer, aException, aTimestamp);
 
-		itsBuffer.writeTo(itsStream);
-
-		// We don't send registered objects here because it seems to cause
-		// a bad interaction with the native side.
-		// sendRegisteredObjects();
+//		itsBuffer.send(HighLevelEventType.EXCEPTION);
 	}
 
 	public void sendOutput(
@@ -375,16 +313,45 @@ public class HighLevelEventWriter
 			Output aOutput,
 			byte[] aData) throws IOException
 	{
-		sendEventType(itsStream, HighLevelEventType.OUTPUT);
-
+		sendMessageType(itsBuffer, HighLevelEventType.OUTPUT); 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow);
 		itsBuffer.writeByte((byte) aOutput.ordinal());
 		itsBuffer.writeInt(aData.length);
 		itsBuffer.write(aData);
 
-		itsBuffer.writeTo(itsStream);
+//		itsBuffer.send(HighLevelEventType.OUTPUT);
+	}
 
-		sendRegisteredObjects();
+	public void sendInstanceOf(
+			int aThreadId, 
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp,
+			int[] aAdviceCFlow,
+			int aProbeId,
+			Object aObject, 
+			int aTypeId,
+			boolean aResult) throws IOException
+	{
+		sendMessageType(itsBuffer, HighLevelEventType.INSTANCEOF); 
+		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow);
+		itsBuffer.writeInt(aProbeId);
+		sendValue(itsBuffer, aObject, aTimestamp);
+		itsBuffer.writeInt(aTypeId);
+		itsBuffer.writeBoolean(aResult);
+		
+//		itsBuffer.send(HighLevelEventType.INSTANCEOF);
+	}
+
+	public void sendRegister(long aObjectUID, byte[] aData, long aTimestamp) throws IOException
+	{
+		sendMessageType(itsBuffer, HighLevelEventType.REGISTER_OBJECT); 
+		itsBuffer.writeLong(aObjectUID);
+		itsBuffer.writeLong(aTimestamp);
+		itsBuffer.writeInt(aData.length); // Send data length because we don't actually write packet size
+		itsBuffer.write(aData);
+		
+//		itsBuffer.send(HighLevelEventType.REGISTER_OBJECT);
 	}
 
 	public void sendThread(
@@ -392,20 +359,12 @@ public class HighLevelEventWriter
 			long aJVMThreadId,
 			String aName) throws IOException
 	{
-		sendEventType(itsStream, HighLevelEventType.REGISTER_THREAD);
-
+		sendMessageType(itsBuffer, HighLevelEventType.REGISTER_THREAD); 
 		itsBuffer.writeInt(aThreadId);
 		itsBuffer.writeLong(aJVMThreadId);
 		itsBuffer.writeUTF(aName);
 
-		itsBuffer.writeTo(itsStream);
-
-		sendRegisteredObjects();
-	}
-
-	public void sendClear() throws IOException
-	{
-		sendCommand(itsStream, Commands.CMD_CLEAR);
+//		itsBuffer.send(HighLevelEventType.REGISTER_THREAD);
 	}
 
 	private void sendStd(
@@ -492,88 +451,13 @@ public class HighLevelEventWriter
 			sendValueType(aStream, ValueType.DOUBLE);
 			aStream.writeDouble(theDouble.doubleValue());
 		}
-		else if (shouldSendByValue(aValue))
+		else if (aValue instanceof ObjectId)
 		{
-			sendObject(aStream, aValue, aTimestamp, aDefer);
-		}
-		else
-		{
-			long theObjectId = ObjectIdentity.get(aValue);
+			ObjectId theId = (ObjectId) aValue;
 			sendValueType(aStream, ValueType.OBJECT_UID);
-			aStream.writeLong(Math.abs(theObjectId));
+			aStream.writeLong(theId.getId());
 		}
-	}
-
-	/**
-	 * Sends an object by value. This method checks if the object already had an
-	 * id. If it didn't, it is placed on the registered objects stack so that
-	 * its value is sent when {@link #sendRegisteredObjects()} is called. In any
-	 * case, the id of the object is sent.
-	 * 
-	 * @param aDefer
-	 *            If positive, and if the object didn't have an id, the object
-	 *            is placed on a defered objects stack instead of the registered
-	 *            objects stack. The value of this parameter is the timestamp of
-	 *            the event that "request" the deferring.
-	 */
-	private void sendObject(DataOutputStream aStream, Object aObject, long aTimestamp, long aDefer) throws IOException
-	{
-		long theObjectId = ObjectIdentity.get(aObject);
-
-		assert theObjectId != 0;
-		if (theObjectId < 0)
-		{
-			// First time this object appears, register it.
-			theObjectId = -theObjectId;
-			if (aDefer == -1)
-			{
-				// add the time stamp for flushing purpose in ObjectDatabase
-				itsRegisteredObjectsStack.push(theObjectId, aObject, aTimestamp);
-				// System.out.println("Registering: "+aObject+", id:
-				// "+theObjectId);
-			}
-			else
-			{
-				// add the time stamp for flushing purpose in ObjectDatabase
-				itsDeferredObjectsStack.push(aDefer, theObjectId, aObject, aTimestamp);
-				// System.out.println("Deferring: "+aObject+", id:
-				// "+theObjectId+", p.ts: "+aDefer);
-			}
-		}
-
-		sendValueType(aStream, ValueType.OBJECT_UID);
-		aStream.writeLong(theObjectId);
-	}
-
-	/**
-	 * Sends all pending registered objects.
-	 */
-	private void sendRegisteredObjects() throws IOException
-	{
-		while (!itsRegisteredObjectsStack.isEmpty())
-		{
-			// Note: remember that this is thread-safe because SocketCollector has one
-			// CollectorPacketWriter per thread.
-			ObjectEntry theEntry = itsRegisteredObjectsStack.pop();
-			sendRegisteredObject(theEntry.id, theEntry.object, theEntry.timestamp);
-		}
-	}
-
-	private void sendRegisteredObject(long aId, Object aObject, long aTimestamp) throws IOException
-	{
-		sendCommand(itsStream, Commands.CMD_REGISTER);
-		itsBuffer.writeLong(aId);
-		itsBuffer.writeLong(aTimestamp);
-		MyObjectOutputStream theStream = new MyObjectOutputStream(itsBuffer);
-		theStream.writeObject(ObjectValue.ensurePortable(aObject));
-		theStream.drain();
-		// System.out.println("Sent: "+aObject+", id: "+aId);
-		itsBuffer.writeTo(itsStream);
-	}
-
-	private static void sendEventType(DataOutputStream aStream, HighLevelEventType aMessageType) throws IOException
-	{
-		aStream.writeByte(aMessageType.ordinal());
+		else throw new IllegalArgumentException(""+aValue); 
 	}
 
 	private static void sendValueType(DataOutputStream aStream, ValueType aType) throws IOException
@@ -581,188 +465,38 @@ public class HighLevelEventWriter
 		aStream.writeByte(aType.ordinal());
 	}
 	
-	private static void sendCommand(DataOutputStream aStream, Commands aCommands) throws IOException
-	{
-		aStream.writeByte(aCommands.ordinal() + Commands.BASE);
-	}
-	
-
-	private static class MyObjectOutputStream extends ObjectOutputStream
-	{
-		public MyObjectOutputStream(OutputStream aOut) throws IOException
-		{
-			super(aOut);
-		}
-
-		@Override
-		public void drain() throws IOException
-		{
-			super.drain();
-		}
-	}
-
-	/**
-	 * Per-thread byte buffer for preparing packets.
-	 * 
-	 * @author gpothier
-	 */
-	private static class MyBuffer extends DataOutputStream
-	{
-		public MyBuffer()
-		{
-			super(new ByteArrayOutputStream());
-		}
-
-		/**
-		 * Writes the size of the buffer and its content to the given stream.
-		 */
-		public void writeTo(DataOutputStream aStream) throws IOException
-		{
-			flush();
-			ByteArrayOutputStream theByteOut = (ByteArrayOutputStream) out;
-			aStream.writeInt(theByteOut.size());
-			theByteOut.writeTo(aStream);
-			theByteOut.reset();
-		}
-	}
-
-	/**
-	 * A stack of objects pending to be sent.
-	 * 
-	 * @author gpothier
-	 */
-	private static class RegisteredObjectsStack
-	{
-		/**
-		 * List of registered objects that must be sent. Note: There is space
-		 * for a hard-coded number of entries that should "be enough for
-		 * everybody". Note that if only exception events are enabled this array
-		 * will overflow.
-		 */
-		private final ObjectEntry[] itsObjects = new ObjectEntry[1024];
-
-		/**
-		 * Number of entries in {@link #itsObjects}.
-		 */
-		private int itsSize = 0;
-
-		public RegisteredObjectsStack()
-		{
-			for (int i = 0; i < itsObjects.length; i++)
-			{
-				itsObjects[i] = new ObjectEntry();
-			}
-		}
-
-		public void push(long aId, Object aObject, long aTimestamp)
-		{
-			//TODO remove this 
-			if (itsSize>= itsObjects.length) {
-				System.out.println("---------WARNING");
-				for (int theI = 0; theI < itsObjects.length; theI++)
-					System.out.print(itsObjects[theI].object.getClass() +" ");
-			}
-			
-			itsObjects[itsSize++].set(aId, aObject, aTimestamp);
-		}
-
-		public boolean isEmpty()
-		{
-			return itsSize == 0;
-		}
-
-		public ObjectEntry pop()
-		{
-			return itsObjects[--itsSize];
-		}
-	}
-
-	private static class ObjectEntry
-	{
-		public long id;
-		public Object object;
-		public long timestamp;
-
-		public void set(long aId, Object aObject, long aTimestamp)
-		{
-			id = aId;
-			object = aObject;
-			timestamp = aTimestamp;
-		}
-	}
-
-	/**
-	 * A stack of objects whose registration is deferred. When we detect the
-	 * instantiation of an object that is sent by value,
-	 * 
-	 * @author gpothier
-	 */
-	private static class DeferredObjectsStack
-	{
-		/**
-		 * List of registered objects that must be sent. Note: There is space
-		 * for a hard-coded number of entries that should "be enough for
-		 * everybody". Note that if only exception events are enabled this array
-		 * will overflow.
-		 */
-		private final DeferredObjectEntry[] itsObjects = new DeferredObjectEntry[1024];
-
-		/**
-		 * Number of entries in {@link #itsObjects}.
-		 */
-		private int itsSize = 0;
-
-		public DeferredObjectsStack()
-		{
-			for (int i = 0; i < itsObjects.length; i++)
-			{
-				itsObjects[i] = new DeferredObjectEntry();
-			}
-		}
-
-		public void push(long aParentTimestamp, long aId, Object aObject, long aTimestamp)
-		{
-			itsObjects[itsSize++].set(aParentTimestamp, aId, aObject, aTimestamp);
-		}
-
-		public boolean isEmpty()
-		{
-			return itsSize == 0;
-		}
-
-		/**
-		 * Determines if the element at the top of the stack has the specified
-		 * parent timestamp.
-		 */
-		public boolean isAvailable(long aParentTimestamp)
-		{
-			if (isEmpty()) return false;
-			return itsObjects[itsSize - 1].parentTimestamp == aParentTimestamp;
-		}
-
-		public DeferredObjectEntry pop()
-		{
-			return itsObjects[--itsSize];
-		}
-	}
-
-	private static class DeferredObjectEntry
-	{
-		public long parentTimestamp;
-
-		public long id;
-
-		public Object object;
-
-		public long itsTimestamp;
-
-		public void set(long aParentTimestamp, long aId, Object aObject, long aTimestamp)
-		{
-			parentTimestamp = aParentTimestamp;
-			id = aId;
-			object = aObject;
-			itsTimestamp = aTimestamp;
-		}
-	}
-
+//	/**
+//	 * Per-thread byte buffer for preparing packets.
+//	 * 
+//	 * @author gpothier
+//	 */
+//	private class MyBuffer extends DataOutputStream
+//	{
+//		public MyBuffer()
+//		{
+//			super(new ByteArrayOutputStream());
+//		}
+//		
+//		public void send(HighLevelEventType aMessageType) throws IOException
+//		{
+//			send((byte) aMessageType.ordinal());
+//		}
+//		
+//		private void send(byte aMessageType) throws IOException
+//		{
+//			flush();
+//			ByteArrayOutputStream theByteOut = (ByteArrayOutputStream) out;
+//			itsReceiver.receive(aMessageType, theByteOut);
+//			theByteOut.reset();
+//		}
+//	}
+//
+//	/**
+//	 * A class that receives event buffers.
+//	 * @author gpothier
+//	 */
+//	public abstract class BufferReceiver
+//	{
+//		public abstract void receive(byte aMessageType, ByteArrayOutputStream aBuffer) throws IOException;
+//	}
 }

@@ -42,6 +42,7 @@ import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
+import tod.core.transport.ValueReader;
 import tod.impl.common.EventCollector;
 import tod.impl.common.event.ArrayWriteEvent;
 import tod.impl.common.event.BehaviorExitEvent;
@@ -398,10 +399,11 @@ public class LocalCollector extends EventCollector
 		itsBrowser.addThread(aThread);
 	}
 	
-	public void register(long aObjectUID, Object aObject, long aTimestamp)
+	public void register(long aObjectUID, byte[] aData, long aTimestamp)
 	{
 		//timestamp is not necessary in local version
-		itsBrowser.register(aObjectUID, aObject);
+		Object theObject = ValueReader.readRegistered(aData);
+		itsBrowser.register(aObjectUID, theObject);
 	}
 	
 	public void clear()

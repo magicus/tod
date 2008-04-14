@@ -20,13 +20,11 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.dispatch;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -35,35 +33,37 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.CountDownLatch;
 
 import tod.Util;
+import tod.core.ILogCollector;
 import tod.core.config.TODConfig;
-import tod.core.transport.LogReceiver;
-import tod.impl.database.structure.standard.HostInfo;
+import tod.core.database.structure.IHostInfo;
+import tod.core.transport.HighLevelEventReader;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.NodeException;
 import tod.impl.dbgrid.RIGridMaster;
+import tod.impl.dbgrid.db.DatabaseNode;
 import tod.impl.dbgrid.db.NodeRejectedException;
+import tod.impl.dbgrid.db.RIBufferIterator;
+import tod.impl.dbgrid.db.RINodeEventIterator;
+import tod.impl.dbgrid.queries.EventCondition;
 import zz.utils.monitoring.Monitor;
 import zz.utils.monitoring.Monitor.MonitorData;
 import zz.utils.net.Server.ServerAdress;
 
 /**
- * Base class for all the nodes of the dispatching tree.
- * There are three kinds of nodes:
- * <li>Internal dispatchers, that dispatch events to other 
- * dispatchers.
- * <li>Leaf dispatchers, that dispatch events to database
- * nodes.
- * <li>Database nodes, that index and store events.
+ * Handles the connection between a {@link DatabaseNode} and the {@link GridMaster}
+ * (on the node's side).
  * @author gpothier
  */
-public abstract class AbstractDispatchNode extends UnicastRemoteObject 
-implements RIDispatchNode
+public class NodeConnector extends UnicastRemoteObject 
+implements RINodeConnector
 {
+	private final DatabaseNode itsDatabaseNode;
+	
 	/**
 	 * Id of this node in the system
 	 */
-	private String itsNodeId = "";
+	private int itsNodeId = -1;
 
 	/**
 	 * The master to which this node is connected.
@@ -77,8 +77,9 @@ implements RIDispatchNode
 	 */
 	private CountDownLatch itsConnectedLatch = new CountDownLatch(1);
 
-	public AbstractDispatchNode() throws RemoteException
+	public NodeConnector(DatabaseNode aDatabaseNode) throws RemoteException
 	{
+		itsDatabaseNode = aDatabaseNode;
 	}
 
 	public TODConfig getConfig()
@@ -93,49 +94,18 @@ implements RIDispatchNode
 		}
 	}
 	
-	/**
-	 * Returns the id of this node
-	 */
-	public String getNodeId()
-	{
-		return itsNodeId;
-	}
-	
 	public RIGridMaster getMaster()
 	{
 		return itsMaster;
 	}
 
 	/**
-	 * Creates a log receiver that is able to communicate directly
-	 * with this dispatcher. The grid master requests a log receiver
-	 * to its root dispatcher whenever a new client connects.
-	 * @param aStartImmediately Whether the receiver should immediately
-	 * start its thread. This is for testing only.
-	 */
-	public abstract LogReceiver createLogReceiver(
-			HostInfo aHostInfo, 
-			GridMaster aMaster, 
-			InputStream aInStream,
-			OutputStream aOutStream, 
-			boolean aStartImmediately);
-	
-
-	public void connectToLocalMaster(GridMaster aMaster, String aId)
-	{
-		itsMaster = aMaster;
-		itsNodeId = aId;
-		connectedToMaster();
-		itsConnectedLatch.countDown();
-	}
-	
-	/**
 	 * Establishes the initial connection between this node and the
 	 * {@link GridMaster} through RMI.
 	 */
 	public void connectToMaster() throws IOException, NotBoundException
 	{
-		System.out.println("[AbstractDispatchNode] connectToMaster");
+		System.out.println("[NodeConnector] connectToMaster");
 		
 		// Setup RMI connection
 		Registry theRegistry = LocateRegistry.getRegistry(DebuggerGridConfig.MASTER_HOST, Util.TOD_REGISTRY_PORT);
@@ -146,7 +116,7 @@ implements RIDispatchNode
 		try
 		{
 			itsNodeId = getMaster().registerNode(this, InetAddress.getLocalHost().getHostName());
-			connectedToMaster();
+			itsDatabaseNode.connectedToMaster(itsMaster, itsNodeId);
 		}
 		catch (NodeRejectedException e)
 		{
@@ -161,18 +131,11 @@ implements RIDispatchNode
 		startMonitoringThread();
 	}
 
-	/**
-	 * This method is called once this node is connected to the
-	 * master.
-	 */
-	protected void connectedToMaster()
-	{
-	}
 	
 	/**
 	 * Waits until this node is connected to the grid master.
 	 */
-	protected void waitConnectedToMaster()
+	public void waitConnectedToMaster()
 	{
 		try
 		{
@@ -184,27 +147,30 @@ implements RIDispatchNode
 		}
 	}
 	
-	/**
-	 * Connects this node to its parent dispatcher.
-	 * Once the connection is established, this method calls
-	 * {@link #connectToDispatcher(Socket)} that is responsible
-	 * for servicing the connection.
-	 */
-	public final void connectToDispatcher(ServerAdress aAdress) 
+	public int getNodeId() 
+	{
+		return itsNodeId;
+	}
+	
+	public void connectEventStream(ServerAdress aAdress, IHostInfo aHostInfo) 
 	{
 		try
 		{
 			waitConnectedToMaster();
 			
-			System.out.println("[AbstractDispatchNode] Connecting to dispatcher at "+aAdress.hostName);
+			System.out.println("[NodeConnector] Connecting event stream to: "+aAdress.hostName);
 			Socket theSocket = aAdress.connect();
 			DataOutputStream theStream = 
 				new DataOutputStream(theSocket.getOutputStream());
 			
-			theStream.writeUTF(getNodeId());
+			DataInputStream theInStream = 
+				new DataInputStream(theSocket.getInputStream());
+			
+			theStream.writeInt(itsNodeId);
 			theStream.flush();
 			
-			connectToDispatcher(theSocket);
+			new MyReceiver(theInStream, itsDatabaseNode.createLogCollector(aHostInfo)).start();
+			
 			System.out.println("[AbstractDispatchNode] Connected.");
 		}
 		catch (IOException e)
@@ -212,13 +178,57 @@ implements RIDispatchNode
 			throw new RuntimeException(e);
 		}
 	}
+	
+	public int flush() 
+	{
+		return itsDatabaseNode.flush();
+	}
+	
+	public void clear() 
+	{
+		itsDatabaseNode.clear();
+	}
 
-	/**
-	 * Services the connection to the parent dispatcher.
-	 */
-	protected abstract void connectToDispatcher(Socket aSocket);
-	
-	
+	public long[] getEventCounts(
+			EventCondition aCondition, 
+			long aT1, 
+			long aT2, 
+			int aSlotsCount,
+			boolean aForceMergeCounts) 
+	{
+		return itsDatabaseNode.getEventCounts(aCondition, aT1, aT2, aSlotsCount, aForceMergeCounts);
+	}
+
+	public long getEventsCount() 
+	{
+		return itsDatabaseNode.getEventsCount();
+	}
+
+	public long getFirstTimestamp() 
+	{
+		return itsDatabaseNode.getFirstTimestamp();
+	}
+
+	public long getLastTimestamp() 
+	{
+		return itsDatabaseNode.getLastTimestamp();
+	}
+
+	public RINodeEventIterator getIterator(EventCondition aCondition) throws RemoteException 
+	{
+		return itsDatabaseNode.getIterator(aCondition);
+	}
+
+	public Object getRegisteredObject(long aId) 
+	{
+		return itsDatabaseNode.getRegisteredObject(aId);
+	}
+
+	public RIBufferIterator<StringSearchHit[]> searchStrings(String aText) throws RemoteException
+	{
+		return itsDatabaseNode.searchStrings(aText);
+	}
+
 	private void startMonitoringThread()
 	{
 		Thread thePrinterThread = new Thread()
@@ -233,12 +243,12 @@ implements RIDispatchNode
 						try
 						{
 							MonitorData theData = Monitor.getInstance().collectData();
-							getMaster().pushMonitorData(getNodeId(), theData);
+							getMaster().pushMonitorData(itsNodeId, theData);
 							sleep(10000);
 						}
 						catch (InterruptedException e)
 						{
-							getMaster().nodeException(new NodeException(getNodeId(), e));
+							getMaster().nodeException(new NodeException(itsNodeId, e));
 						}
 					}
 				}
@@ -252,8 +262,33 @@ implements RIDispatchNode
 		thePrinterThread.setPriority(Thread.MAX_PRIORITY);
 		thePrinterThread.start();
 	}
+	
+	private static class MyReceiver extends Thread
+	{
+		private final DataInputStream itsInStream;
+		private final ILogCollector itsCollector;
+		
+		public MyReceiver(DataInputStream aInStream, ILogCollector aCollector)
+		{
+			super("NodeConnector.MyReceiver");
+			itsInStream = aInStream;
+			itsCollector = aCollector;
+		}
 
-	public abstract int flush();
-	public abstract void clear();
-
+		@Override
+		public void run()
+		{
+			while(true)
+			{
+				try
+				{
+					HighLevelEventReader.readPacket(itsInStream, itsCollector);
+				}
+				catch (IOException e)
+				{
+					throw new RuntimeException(e);
+				}
+			}
+		}
+	}
 }

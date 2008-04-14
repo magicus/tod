@@ -32,13 +32,23 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.core.server;
 
 import tod.core.ILogCollector;
+import tod.core.config.TODConfig;
+import tod.core.database.structure.IMutableStructureDatabase;
+import tod.impl.bci.asm.ASMDebuggerConfig;
+import tod.impl.bci.asm.ASMInstrumenter;
 
 /**
- * A factory of {@link ILogCollector}. As there must be one collector
- * per host, the server must have a factory of collectors.
+ * Implementation of {@link ITODServerFactory} for Java debuggees.
  * @author gpothier
  */
-public interface ICollectorFactory
+public class JavaTODServerFactory implements ITODServerFactory
 {
-	public ILogCollector create();
+	public TODServer create(TODConfig aConfig, IMutableStructureDatabase aStructureDatabase, ILogCollector aLogCollector)
+	{
+		ASMDebuggerConfig theConfig = new ASMDebuggerConfig(aConfig);
+		ASMInstrumenter theInstrumenter = new ASMInstrumenter(aStructureDatabase, theConfig);
+		
+		return new JavaTODServer(aConfig, theInstrumenter, aStructureDatabase, aLogCollector);
+	}
+
 }
