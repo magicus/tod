@@ -17,7 +17,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
-*/
+ */
 package tod.plugin;
 
 import java.util.Collections;
@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.ILaunch;
@@ -40,7 +39,6 @@ import org.eclipse.debug.ui.sourcelookup.ISourceLookupResult;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.debug.core.IJavaClassObject;
 import org.eclipse.jdt.debug.core.IJavaClassType;
 import org.eclipse.jdt.debug.core.IJavaFieldVariable;
@@ -55,7 +53,6 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
@@ -64,7 +61,9 @@ import tod.utils.TODUtils;
 import zz.eclipse.utils.EclipseUtils;
 
 /**
- * Utility class that permits to asynchronously reveal particualr source locations
+ * Utility class that permits to asynchronously reveal particualr source
+ * locations
+ * 
  * @author gpothier
  */
 public class SourceRevealerUtils
@@ -79,121 +78,115 @@ public class SourceRevealerUtils
 	private SourceRevealerUtils()
 	{
 	}
-	
+
 	private Revealer itsCurentRevealer;
+
 	private boolean itsRevealScheduled = false;
-	
-	private void reveal (Revealer aRevealer)
+
+	private void reveal(Revealer aRevealer)
 	{
 		itsCurentRevealer = aRevealer;
-		if (! itsRevealScheduled)
+		if (!itsRevealScheduled)
 		{
 			itsRevealScheduled = true;
-			Display.getDefault().asyncExec(new Runnable ()
+			Display.getDefault().asyncExec(new Runnable()
+			{
+				public void run()
+				{
+					try
 					{
-						public void run()
-						{
-							try
-							{
-								itsCurentRevealer.reveal();
-							}
-							catch (Exception e)
-							{
-								e.printStackTrace();
-							}
-							itsRevealScheduled = false;
-						}
-					});
+						itsCurentRevealer.reveal();
+					}
+					catch (Exception e)
+					{
+						e.printStackTrace();
+					}
+					itsRevealScheduled = false;
+				}
+			});
 		}
 	}
-	
+
 	/**
 	 * Reveal the source code using Debug API. Only for JDT projects.
 	 */
-	public static void reveal (final ILaunch aLaunch, final SourceRange aSourceRange)
+	public static void reveal(final ILaunch aLaunch, final SourceRange aSourceRange)
 	{
-		TODUtils.log(1,"[SourceRevealerUtils.reveal(ILaunch, String, int)]"+aSourceRange);
-		getInstance().reveal (new Revealer()
+		TODUtils.log(1, "[SourceRevealerUtils.reveal(ILaunch, String, int)]" + aSourceRange);
+		getInstance().reveal(new Revealer()
 		{
-			public void reveal() 
+			public void reveal()
 			{
-				FakeStackFrame theArtifact = new FakeStackFrame(
-						aLaunch,
-						aSourceRange.sourceFile, 
+				FakeStackFrame theArtifact = new FakeStackFrame(aLaunch, aSourceRange.sourceFile,
 						aSourceRange.startLine);
-				
-				ISourceLookupResult theResult = DebugUITools.lookupSource(
-						theArtifact, 
-						aLaunch.getSourceLocator());
-				
+
+				ISourceLookupResult theResult = DebugUITools.lookupSource(theArtifact, aLaunch.getSourceLocator());
+
 				DebugUITools.displaySource(theResult, JavaPlugin.getActivePage());
 			}
 		});
 	}
-	
+
 	/**
-	 * Opens a given method. Should be safe for JDT and PDE projects. 
+	 * Opens a given method. Should be safe for JDT and PDE projects.
 	 */
-	public static void reveal (
-			final List<IJavaProject> aJavaProject, 
-			final String aTypeName, 
-			final String aMethodName)
+	public static void reveal(final List<IJavaProject> aJavaProject, final String aTypeName, final String aMethodName)
 	{
-		TODUtils.log(1,"[SourceRevealerUtils.reveal(IJavaProject, String, String)]" +aTypeName +" "+aMethodName);
-		getInstance().reveal (new Revealer()
+		TODUtils.log(1, "[SourceRevealerUtils.reveal(IJavaProject, String, String)]" + aTypeName + " " + aMethodName);
+		getInstance().reveal(new Revealer()
+		{
+			public void reveal() throws CoreException, BadLocationException
+			{
+				IType theType = TODPluginUtils.getType(aJavaProject, aTypeName);
+				if (theType == null)
 				{
-					public void reveal() throws CoreException, BadLocationException
-					{
-						IType theType = TODPluginUtils.getType(aJavaProject, aTypeName);
-						if (theType == null) {
-							TODUtils.logf(0, "The type %s has not been found in the available sources " +
-									"of the Eclipse workspace.\n Path were " +
-									"to find the sources was: %s", aTypeName, aJavaProject);
-							return;
-						}
-						
-						IMethod theMethod = theType.getMethod(aMethodName, null);
-						if (theMethod == null){
-							TODUtils.logf(0, "The method %s of type %s has not been found in the available sources " +
-									"of the Eclipse workspace.", aMethodName, aTypeName);
-							return;
-						}
-						
-						// Eclipse 3.3 only
-					//	JavaUI.openInEditor(theMethod, false, true);
-						
-						EditorUtility.openInEditor(theMethod, false);
-					}
-				});
+					TODUtils.logf(0, "The type %s has not been found in the available sources "
+							+ "of the Eclipse workspace.\n Path were " + "to find the sources was: %s", aTypeName,
+							aJavaProject);
+					return;
+				}
+
+				IMethod theMethod = theType.getMethod(aMethodName, null);
+				if (theMethod == null)
+				{
+					TODUtils.logf(0, "The method %s of type %s has not been found in the available sources "
+							+ "of the Eclipse workspace.", aMethodName, aTypeName);
+					return;
+				}
+
+				// Eclipse 3.3 only
+				// JavaUI.openInEditor(theMethod, false, true);
+
+				EditorUtility.openInEditor(theMethod, false);
+			}
+		});
 	}
-	
+
 	/**
-	 * Opens a given location. Should be safe for JDT and PDE projects. 
+	 * Opens a given location. Should be safe for JDT and PDE projects.
 	 */
-	public static void reveal (
-			final List<IJavaProject> aJavaProjects, 
-			final SourceRange aSourceRange)
+	public static void reveal(final List<IJavaProject> aJavaProjects, final SourceRange aSourceRange)
 	{
-		TODUtils.log(1,"[SourceRevealerUtils.reveal(IJavaProject, String, int)]" +aSourceRange);
-		getInstance().reveal (new Revealer()
+		TODUtils.log(1, "[SourceRevealerUtils.reveal(IJavaProject, String, int)]" + aSourceRange);
+		getInstance().reveal(new Revealer()
 		{
 			public void reveal() throws CoreException, BadLocationException
 			{
 				IEditorPart theEditor = findEditor(aJavaProjects, aSourceRange);
-				
+
 				if (theEditor instanceof ITextEditor)
 				{
 					ITextEditor theTextEditor = (ITextEditor) theEditor;
-					IDocumentProvider theProvider= theTextEditor.getDocumentProvider();
+					IDocumentProvider theProvider = theTextEditor.getDocumentProvider();
 					IDocument theDocument = theProvider.getDocument(theTextEditor.getEditorInput());
-					int theStart = theDocument.getLineOffset(aSourceRange.startLine-1);
+					int theStart = theDocument.getLineOffset(aSourceRange.startLine - 1);
 					theTextEditor.selectAndReveal(theStart, 0);
 				}
 			}
 		});
 	}
-	
-	public static IFile findFile(List<IJavaProject> aJavaProjects, String aName) 
+
+	public static IFile findFile(List<IJavaProject> aJavaProjects, String aName)
 	{
 		for (IJavaProject theJavaProject : aJavaProjects)
 		{
@@ -201,14 +194,15 @@ public class SourceRevealerUtils
 			IFile[] theFiles = EclipseUtils.findFiles(aName, theProject);
 			if (theFiles.length > 0) return theFiles[0];
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
-	 * Similar to {@link #findFile(List, String)}, but only searches in source folders.
+	 * Similar to {@link #findFile(List, String)}, but only searches in source
+	 * folders.
 	 */
-	public static IFile findSourceFile(List<IJavaProject> aJavaProjects, String aName) 
+	public static IFile findSourceFile(List<IJavaProject> aJavaProjects, String aName)
 	{
 		for (IJavaProject theJavaProject : aJavaProjects)
 		{
@@ -216,16 +210,19 @@ public class SourceRevealerUtils
 			{
 				IFile[] theFiles = EclipseUtils.findSourceFiles(aName, theJavaProject);
 				if (theFiles.length > 0) return theFiles[0];
-			}catch(Exception e){ 
+			}
+			catch (Exception e)
+			{
 				System.out.println("Revealer exception....");
 				e.printStackTrace();
 			}
 		}
-		
+
 		return null;
 	}
-	
-	public static IEditorPart findEditor(List<IJavaProject> aJavaProjects, SourceRange aSourceRange) throws CoreException
+
+	public static IEditorPart findEditor(List<IJavaProject> aJavaProjects, SourceRange aSourceRange)
+			throws CoreException
 	{
 		if (aSourceRange.sourceFile.endsWith(".aj"))
 		{
@@ -233,54 +230,55 @@ public class SourceRevealerUtils
 			IFile theFile = findFile(aJavaProjects, aSourceRange.sourceFile);
 			return theFile != null ? EditorUtility.openInEditor(theFile, false) : null;
 		}
-		
+
 		IType theType = TODPluginUtils.getType(aJavaProjects, aSourceRange.sourceFile);
-		if (theType == null) 
+		if (theType == null)
 		{
 			// Another aspectj hack
 			String theName = aSourceRange.sourceFile;
 			theName = theName.replace('.', '/');
-			IFile theFile = findSourceFile(aJavaProjects, theName+".aj");
+			IFile theFile = findSourceFile(aJavaProjects, theName + ".aj");
 			if (theFile != null) return EditorUtility.openInEditor(theFile, false);
 			else
 			{
-				TODUtils.logf(0, "The type %s has not been found in the available sources " +
-						"of the Eclipse workspace.\n Path were " +
-						"to find the sources was: %s", aSourceRange.sourceFile, aJavaProjects);
+				TODUtils.logf(0, "The type %s has not been found in the available sources "
+						+ "of the Eclipse workspace.\n Path were " + "to find the sources was: %s",
+						aSourceRange.sourceFile, aJavaProjects);
 				return null;
 			}
 		}
-		
+
 		// Eclipse 3.3 only
-		//theEditor = JavaUI.openInEditor(theType, false, false);
-		
+		// theEditor = JavaUI.openInEditor(theType, false, false);
+
 		return EditorUtility.openInEditor(theType, false);
 	}
-	
+
 	private interface Revealer
 	{
 		public void reveal() throws CoreException, BadLocationException;
 	}
-	
+
 	/**
 	 * This class is a hack that makes Eclipse think we have real stack frames.
 	 * This code is rather fragile and highly depends on the inner workings of
-	 * Eclipse. It works with Eclipse 3.2.1. 
+	 * Eclipse. It works with Eclipse 3.2.1.
+	 * 
 	 * @author gpothier
 	 */
 	private static class FakeStackFrame implements IJavaStackFrame
 	{
 		private final ILaunch itsLaunch;
+
 		private final String itsTypeName;
+
 		private final int itsLineNumber;
-		
+
 		private FakeThread itsThread;
+
 		private FakeReferenceType itsType;
 
-		public FakeStackFrame(
-				final ILaunch aLaunch, 
-				final String aTypeName, 
-				final int aLineNumber)
+		public FakeStackFrame(final ILaunch aLaunch, final String aTypeName, final int aLineNumber)
 		{
 			itsLaunch = aLaunch;
 			itsTypeName = aTypeName;
@@ -288,42 +286,42 @@ public class SourceRevealerUtils
 			itsThread = new FakeThread(this);
 			itsType = new FakeReferenceType(this);
 		}
-		
+
 		public String getSourcePath() throws DebugException
 		{
 			return null;
 		}
-		
+
 		public String getDeclaringTypeName() throws DebugException
 		{
 			return itsTypeName;
 		}
-		
+
 		public String getModelIdentifier()
 		{
 			return "org.eclipse.jdt.debug";
 		}
-		
+
 		public int getCharStart() throws DebugException
 		{
 			return -1;
 		}
-		
+
 		public int getCharEnd() throws DebugException
 		{
 			return -1;
 		}
-		
+
 		public int getLineNumber() throws DebugException
 		{
 			return itsLineNumber;
 		}
-		
+
 		public IThread getThread()
 		{
 			return itsThread;
 		}
-		
+
 		public boolean isTerminated()
 		{
 			return true;
@@ -339,7 +337,7 @@ public class SourceRevealerUtils
 		{
 			return false;
 		}
-		
+
 		public IJavaReferenceType getReferenceType() throws DebugException
 		{
 			return itsType;
@@ -349,7 +347,7 @@ public class SourceRevealerUtils
 		{
 			return itsTypeName;
 		}
-		
+
 		public String getMethodName() throws DebugException
 		{
 			return null;
@@ -379,7 +377,7 @@ public class SourceRevealerUtils
 		{
 			return itsLaunch;
 		}
-		
+
 		public boolean canStepInto()
 		{
 			throw new UnsupportedOperationException();
@@ -615,7 +613,7 @@ public class SourceRevealerUtils
 			throw new UnsupportedOperationException();
 		}
 	}
-	
+
 	private static class FakeThread implements IThread
 	{
 		private final FakeStackFrame itsFrame;
@@ -629,7 +627,6 @@ public class SourceRevealerUtils
 		{
 			return itsFrame;
 		}
-
 
 		public IBreakpoint[] getBreakpoints()
 		{
@@ -751,7 +748,7 @@ public class SourceRevealerUtils
 			throw new UnsupportedOperationException();
 		}
 	}
-	
+
 	private static class FakeReferenceType implements IJavaReferenceType
 	{
 		private FakeStackFrame itsFrame;
@@ -851,7 +848,5 @@ public class SourceRevealerUtils
 			return null;
 		}
 	}
-	
+
 }
-
-
