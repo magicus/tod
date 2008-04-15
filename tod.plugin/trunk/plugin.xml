@@ -11,7 +11,7 @@
       <library name="plugin.jar">
          <export name="*"/>
       </library>
- 	  <library name="lib/asm-all-3.0.jar">
+ 	  <library name="lib/asm-all-3.1.jar">
        <export
              name="*">
        </export>
