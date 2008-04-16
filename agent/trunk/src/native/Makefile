@@ -9,9 +9,6 @@
 # BOOST_BASE=/usr/include/boost
 # BOOST_FLAVOR=gcc41-mt
 # 
-# ASIO_VERSION= 
-# ASIO_BASE=/usr/include/asio/
-# 
 # WINBASE=
 
 include $(ENV_DEF)
@@ -19,16 +16,11 @@ include $(ENV_DEF)
 SHARED_MAGIC = -shared
 STATIC_MAGIC = -Wl,-Bstatic 
 
-CXXFLAGS += -I $(BOOST_BASE) -I $(ASIO_BASE)
-
-
 ifeq ($(PLATFORM), win32)
 	CXX = i586-mingw32msvc-g++
 
-	LDFLAGS_BOOST += -L $(WINBASE)/boost/lib
 	LDFLAGS += -lws2_32 -Wl,--add-stdcall-alias
-
-	CXXFLAGS += -I $(JAVA_HOME)/include/ -I $(JAVA_HOME)/include/win32/
+	CXXFLAGS += -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/win32/
 
 	LIBPREFIX =
 	LIBEXT = dll
@@ -40,7 +32,7 @@ ifeq ($(PLATFORM), macos)
 	
 	CXXFLAGS += -Wno-long-double
 
-	CXXFLAGS += -I $(JAVA_HOME)/Headers/ 
+	CXXFLAGS += -I$(JAVA_HOME)/Headers/ 
 	CXXFLAGS += -arch ppc -arch i386 
 	#CXXFLAGS += -arch ppc64 -arch x86_64
 
@@ -52,7 +44,7 @@ ifeq ($(PLATFORM), macos)
 endif
 
 ifeq ($(PLATFORM), linux)
-	CXXFLAGS += -I $(JAVA_HOME)/include/ -I $(JAVA_HOME)/include/linux/
+	CXXFLAGS += -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux/
 	LDFLAGS += -static-libgcc 
 
 	LIBPREFIX = lib
@@ -60,7 +52,10 @@ ifeq ($(PLATFORM), linux)
 endif
 
 CXXFLAGS += -O3 
+CXXFLAGS += -I$(BOOST_INCLUDES)
+
 LDFLAGS_BOOST += \
+	-L$(BOOST_LIBS) \
 	$(STATIC_MAGIC) -lboost_thread-$(BOOST_FLAVOR)-$(BOOST_VERSION) \
 	$(STATIC_MAGIC) -lboost_filesystem-$(BOOST_FLAVOR)-$(BOOST_VERSION)
 

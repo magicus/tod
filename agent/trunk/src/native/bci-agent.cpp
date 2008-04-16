@@ -46,7 +46,7 @@ Inc. MD5 Message-Digest Algorithm".
 
 #include <iostream>
 #include <fstream>
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/thread/tss.hpp>
 
@@ -54,7 +54,7 @@ Inc. MD5 Message-Digest Algorithm".
 extern "C" {
 #endif
 
-using asio::ip::tcp;
+using boost::asio::ip::tcp;
 namespace fs = boost::filesystem;
 
 // Outgoing commands
