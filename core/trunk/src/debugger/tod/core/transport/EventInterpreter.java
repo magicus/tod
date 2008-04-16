@@ -137,6 +137,12 @@ public final class EventInterpreter implements ILowLevelCollector
 		Utils.listSet(itsThreads, aThreadId, new ThreadData(aThreadId));
 		itsCollector.thread(aThreadId, aJVMThreadId, aName);
 	}
+	
+
+	public void registerObject(long aObjectUID, byte[] aData, long aTimestamp, boolean aIndexable)
+	{
+		itsCollector.register(aObjectUID, aData, aTimestamp, aIndexable);
+	}
 
 	public void logClInitEnter(
 			int aThreadId, 
@@ -169,6 +175,7 @@ public final class EventInterpreter implements ILowLevelCollector
 	{
 		if (DISABLE_COLLECTOR) return;
 		ThreadData theThread = getThreadData(aThreadId);
+		assert theThread != null : "Null thread for id: "+aThreadId;
 		
 		FrameInfo theFrame = theThread.currentFrame();
 		

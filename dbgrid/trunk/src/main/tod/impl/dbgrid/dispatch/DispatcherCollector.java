@@ -242,12 +242,12 @@ public class DispatcherCollector implements ILogCollector
 		}
 	}
 
-	public void register(long aObjectUID, byte[] aData, long aTimestamp)
+	public void register(long aObjectUID, byte[] aData, long aTimestamp, boolean aIndexable)
 	{
 		balance();
 		try
 		{
-			itsWriter.sendRegister(aObjectUID, aData, aTimestamp);
+			itsWriter.sendRegister(aObjectUID, aData, aTimestamp, aIndexable);
 		}
 		catch (IOException e)
 		{

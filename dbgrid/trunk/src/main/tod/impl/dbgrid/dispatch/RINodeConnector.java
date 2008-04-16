@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+import tod.core.config.TODConfig;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.structure.IHostInfo;
 import tod.impl.dbgrid.db.RIBufferIterator;
@@ -39,6 +40,11 @@ import zz.utils.net.Server.ServerAdress;
 public interface RINodeConnector extends Remote
 {
 	public int getNodeId() throws RemoteException;
+	
+	/**
+	 * Sets a new config for the node.
+	 */
+	public void setConfig(TODConfig aConfig) throws RemoteException;
 	
 	/**
 	 * Tells this node to establish its incoming data connection to

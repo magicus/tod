@@ -60,7 +60,6 @@ import tod.impl.dbgrid.dispatch.NodeProxy;
 import tod.impl.dbgrid.dispatch.RINodeConnector;
 import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
 import tod.impl.dbgrid.queries.EventCondition;
-import tod.utils.TODUtils;
 import tod.utils.remote.RIStructureDatabase;
 import tod.utils.remote.RemoteStructureDatabase;
 import zz.utils.ITask;
@@ -97,7 +96,11 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 * distributed setting. For local setting, it is null.
 	 */
 	private DispatcherCollector itsDispatcherCollector;
-
+	
+	/**
+	 * The socket server that accepts incoming connections from database nodes.
+	 * We must keep a reference to it.
+	 */
 	private MyNodeServer itsNodeServer;
 
 	/**
@@ -210,6 +213,14 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	{
 		itsConfig = aConfig;
 		itsServer.setConfig(aConfig);
+		try
+		{
+			for (RINodeConnector theConnector : itsNodes) theConnector.setConfig(aConfig);
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**
@@ -557,9 +568,6 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 
 			// When there are no nodes:
 			if (theFirstTimestamp > theLastTimestamp) theFirstTimestamp = theLastTimestamp;
-
-			TODUtils.logf(1, String.format("Stats: %d, %d, %d", theEventsCount, theFirstTimestamp, theLastTimestamp));
-
 			itsEventsCount = theEventsCount;
 			itsFirstTimestamp = theFirstTimestamp;
 			itsLastTimestamp = theLastTimestamp;
@@ -600,6 +608,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	private class DataUpdater extends TimerTask
 	{
+		private long itsPreviousTime;
 		private long itsPreviousEventsCount;
 
 		private long itsPreviousFirstTimestamp;
@@ -612,10 +621,21 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		public void run()
 		{
 			updateStats();
-
-			if (itsPreviousEventsCount != itsEventsCount || itsPreviousFirstTimestamp != itsFirstTimestamp
-					|| itsPreviousLastTimestamp != itsLastTimestamp || itsPreviousThreadCount != itsThreadCount)
+			long theTime = System.currentTimeMillis();
+			long theDelta = theTime - itsPreviousTime;
+			itsPreviousTime = theTime;
+			
+			if (itsPreviousEventsCount != itsEventsCount
+					|| itsPreviousFirstTimestamp != itsFirstTimestamp
+					|| itsPreviousLastTimestamp != itsLastTimestamp
+					|| itsPreviousThreadCount != itsThreadCount)
 			{
+				if (theDelta != 0)
+				{ 
+					long theRate = (itsEventsCount-itsPreviousEventsCount)/theDelta;
+					System.out.println("[DataUpdater] Recording rate: "+theRate+"kEv/s");
+				}
+				
 				itsPreviousEventsCount = itsEventsCount;
 				itsPreviousFirstTimestamp = itsFirstTimestamp;
 				itsPreviousLastTimestamp = itsLastTimestamp;

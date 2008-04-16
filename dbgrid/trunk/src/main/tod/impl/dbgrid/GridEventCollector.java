@@ -393,9 +393,9 @@ public class GridEventCollector extends EventCollector
 		dispatch(itsCallEvent);
 	}
 
-	public void register(long aObjectUID, byte[] aData, long aTimestamp)
+	public void register(long aObjectUID, byte[] aData, long aTimestamp, boolean aIndexable)
 	{
-		itsDatabaseNode.register(aObjectUID, aData, aTimestamp);
+		itsDatabaseNode.register(aObjectUID, aData, aTimestamp, aIndexable);
 	}
 
 	public void clear()

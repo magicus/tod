@@ -3,17 +3,16 @@
  */
 package tod.core.transport;
 
-import static tod.core.transport.ValueReader.*;
+import static tod.core.transport.ValueReader.readArguments;
+import static tod.core.transport.ValueReader.readValue;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 
 import tod.agent.AgentConfig;
 import tod.agent.BehaviorCallType;
 import tod.agent.transport.LowLevelEventType;
-import tod.agent.transport.ValueType;
 import tod.core.DebugFlags;
-import tod.core.ILogCollector;
-import tod.core.database.structure.ObjectId;
 
 public class LowLevelEventReader
 {
@@ -95,6 +94,10 @@ public class LowLevelEventReader
 			readOutput(aStream, aCollector);
 			break;
 			
+		case REGISTER_OBJECT:
+			readRegisterObject(aStream, aCollector);
+			break;
+			
 		case REGISTER_THREAD:
 			readRegisterThread(aStream, aCollector);
 			break;
@@ -110,6 +113,22 @@ public class LowLevelEventReader
 				aStream.readInt(), 
 				aStream.readLong(), 
 				aStream.readUTF());
+	}
+
+	private static void readRegisterObject(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+	{
+		int theSize = aStream.readInt(); // Packet size
+		
+		long theObjectId = aStream.readLong();
+		long theObjectTimestamp = aStream.readLong();
+		if (DebugFlags.IGNORE_HOST) theObjectId >>>= AgentConfig.HOST_BITS;
+
+		byte[] theData = new byte[theSize-17];
+		aStream.readFully(theData);
+		
+		boolean theIndexable = aStream.readBoolean();
+		
+		aCollector.registerObject(theObjectId, theData, theObjectTimestamp, theIndexable);
 	}
 
 	private static void readOutput(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException

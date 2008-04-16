@@ -284,10 +284,6 @@ public abstract class LogReceiver
 						processClear();
 						break;
 						
-					case CMD_REGISTER:
-						processRegister(aDataIn);
-						break;
-						
 					default: throw new RuntimeException("Not handled: "+theCommand); 
 					}
 
@@ -328,11 +324,6 @@ public abstract class LogReceiver
 	 * Reads and processes an incoming event packet.
 	 */
 	protected abstract void processEvent(LowLevelEventType aType, DataInputStream aStream) throws IOException;
-	
-	/**
-	 * Reads and processes an incoming registered object packet.
-	 */
-	protected abstract void processRegister(DataInputStream aStream) throws IOException;
 	
 	/**
 	 * Flushes buffered events.

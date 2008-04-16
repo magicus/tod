@@ -309,7 +309,8 @@ public class HighLevelEventReader
 		int theDataSize = aStream.readInt();
 		byte[] theData = new byte[theDataSize];
 		aStream.readFully(theData);
-		aCollector.register(theObjectId, theData, theTimestamp);
+		boolean theIndexable = aStream.readBoolean();
+		aCollector.register(theObjectId, theData, theTimestamp, theIndexable);
 	}
 	
 	

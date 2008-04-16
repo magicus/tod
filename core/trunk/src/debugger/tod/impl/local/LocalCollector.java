@@ -399,7 +399,7 @@ public class LocalCollector extends EventCollector
 		itsBrowser.addThread(aThread);
 	}
 	
-	public void register(long aObjectUID, byte[] aData, long aTimestamp)
+	public void register(long aObjectUID, byte[] aData, long aTimestamp, boolean aIndexable)
 	{
 		//timestamp is not necessary in local version
 		Object theObject = ValueReader.readRegistered(aData);

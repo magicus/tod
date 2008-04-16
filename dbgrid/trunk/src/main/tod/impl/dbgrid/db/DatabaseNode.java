@@ -33,6 +33,7 @@ import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ObjectId;
+import tod.core.transport.ValueReader;
 import tod.impl.database.IBidiIterator;
 import tod.impl.database.structure.standard.ThreadInfo;
 import tod.impl.dbgrid.DebuggerGridConfig;
@@ -96,6 +97,11 @@ public class DatabaseNode
 	public TODConfig getConfig()
 	{
 		return itsConfig;
+	}
+	
+	public void setConfig(TODConfig aConfig)
+	{
+		itsConfig = aConfig;
 	}
 	
 	public void connectedToMaster(RIGridMaster aMaster, int aNodeId)
@@ -284,7 +290,7 @@ public class DatabaseNode
 	}
 
 
-	public void register(long aId, byte[] aData, long aTimestamp)
+	public void register(long aId, byte[] aData, long aTimestamp, boolean aIndexable)
 	{
 		if (DebugFlags.SKIP_OBJECTS) return;
 		
@@ -292,11 +298,16 @@ public class DatabaseNode
 		int theHostId = ObjectId.getHostId(aId);
 		getObjectsDatabase(theHostId).store(theObjectId, aData, aTimestamp);
 		
-		// TODO: see how we can reimplement this now that we receive a serialized object.
-//		if (itsStringIndexer != null && (aObject instanceof String))
-//		{
-//			itsStringIndexer.register(aId, (String) aObject);
-//		}
+		if (itsStringIndexer != null && aIndexable)
+		{
+			Object theObject = ValueReader.readRegistered(aData);
+			if (theObject instanceof String)
+			{
+				String theString = (String) theObject;
+				itsStringIndexer.register(aId, theString);
+			}
+			else throw new UnsupportedOperationException("Not handled: "+theObject);
+		}
 	}
 	
 	/**

@@ -172,8 +172,10 @@ public interface ILogCollector
 	
 	/**
 	 * Registers an object whose state cannot be otherwise determined (eg String, Exception)
+	 * @param aIndexable Whether the object is indexable, which means that the db should 
+	 * deserialize and index it prior to storing it. Example indexable object: String
 	 */
-	public void register(long aObjectUID, byte[] aData, long aTimestamp);
+	public void register(long aObjectUID, byte[] aData, long aTimestamp, boolean aIndexable);
 	
 	/**
 	 * Clears the database.

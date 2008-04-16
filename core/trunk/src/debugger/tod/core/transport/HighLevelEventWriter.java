@@ -343,13 +343,14 @@ public class HighLevelEventWriter
 //		itsBuffer.send(HighLevelEventType.INSTANCEOF);
 	}
 
-	public void sendRegister(long aObjectUID, byte[] aData, long aTimestamp) throws IOException
+	public void sendRegister(long aObjectUID, byte[] aData, long aTimestamp, boolean aIndexable) throws IOException
 	{
 		sendMessageType(itsBuffer, HighLevelEventType.REGISTER_OBJECT); 
 		itsBuffer.writeLong(aObjectUID);
 		itsBuffer.writeLong(aTimestamp);
 		itsBuffer.writeInt(aData.length); // Send data length because we don't actually write packet size
 		itsBuffer.write(aData);
+		itsBuffer.writeBoolean(aIndexable);
 		
 //		itsBuffer.send(HighLevelEventType.REGISTER_OBJECT);
 	}

@@ -82,18 +82,13 @@ implements RINodeConnector
 		itsDatabaseNode = aDatabaseNode;
 	}
 
-	public TODConfig getConfig()
-	{
-		try
-		{
-			return getMaster().getConfig();
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
 	
+	public void setConfig(TODConfig aConfig) 
+	{
+		itsDatabaseNode.setConfig(aConfig);
+	}
+
+
 	public RIGridMaster getMaster()
 	{
 		return itsMaster;

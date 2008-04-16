@@ -21,13 +21,28 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.agent.transport;
 
 import static tod.agent.transport.LowLevelEventType.*;
+import static tod.agent.transport.LowLevelEventType.AFTER_CALL_DRY;
+import static tod.agent.transport.LowLevelEventType.AFTER_CALL_EXCEPTION;
+import static tod.agent.transport.LowLevelEventType.ARRAY_WRITE;
+import static tod.agent.transport.LowLevelEventType.BEFORE_CALL;
+import static tod.agent.transport.LowLevelEventType.BEFORE_CALL_DRY;
+import static tod.agent.transport.LowLevelEventType.BEHAVIOR_ENTER;
+import static tod.agent.transport.LowLevelEventType.BEHAVIOR_EXIT;
+import static tod.agent.transport.LowLevelEventType.BEHAVIOR_EXIT_EXCEPTION;
+import static tod.agent.transport.LowLevelEventType.CLINIT_ENTER;
+import static tod.agent.transport.LowLevelEventType.CLINIT_EXIT;
+import static tod.agent.transport.LowLevelEventType.EXCEPTION_GENERATED;
+import static tod.agent.transport.LowLevelEventType.FIELD_WRITE;
+import static tod.agent.transport.LowLevelEventType.INSTANCEOF;
+import static tod.agent.transport.LowLevelEventType.LOCAL_VARIABLE_WRITE;
+import static tod.agent.transport.LowLevelEventType.NEW_ARRAY;
+import static tod.agent.transport.LowLevelEventType.REGISTER_THREAD;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-
-import com.sun.org.apache.bcel.internal.generic.INSTANCEOF;
 
 import tod.agent.BehaviorCallType;
 import tod.agent.EventCollector;
@@ -455,6 +470,14 @@ public class LowLevelEventWriter
 		return (aObject instanceof String) || (aObject instanceof Throwable);
 	}
 
+	/**
+	 * Determines if the given object is indexable (see ILogCollector.register)
+	 */
+	private boolean isIndexable(Object aObject)
+	{
+		return (aObject instanceof String);
+	}
+	
 	public void sendThread(
 			int aThreadId, 
 			long aJVMThreadId,
@@ -613,12 +636,15 @@ public class LowLevelEventWriter
 
 	private void sendRegisteredObject(long aId, Object aObject, long aTimestamp) throws IOException
 	{
-		sendCommand(itsStream, Commands.CMD_REGISTER);
+		sendEventType(itsStream, REGISTER_OBJECT);
 		itsBuffer.writeLong(aId);
 		itsBuffer.writeLong(aTimestamp);
 		MyObjectOutputStream theStream = new MyObjectOutputStream(itsBuffer);
 		theStream.writeObject(ObjectValue.ensurePortable(aObject));
 		theStream.drain();
+		
+		itsBuffer.writeBoolean(isIndexable(aObject));
+		
 		// System.out.println("Sent: "+aObject+", id: "+aId);
 		itsBuffer.writeTo(itsStream);
 	}

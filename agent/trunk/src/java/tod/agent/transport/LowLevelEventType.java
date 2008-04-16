@@ -31,6 +31,7 @@ public enum LowLevelEventType
 	
 	
 	// Registering
+	REGISTER_OBJECT,
 	REGISTER_THREAD;
 	
 	/**

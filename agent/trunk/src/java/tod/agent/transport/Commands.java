@@ -10,12 +10,6 @@ package tod.agent.transport;
 public enum Commands
 {
 	/**
-	 * Registers an object sent by value.
-	 * args: a serialized object.
-	 */
-	CMD_REGISTER,
-	
-	/**
 	 * This command flushes all buffered events and indexes.
 	 * args: none
 	 * return:

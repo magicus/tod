@@ -198,13 +198,7 @@ public class BenchRuntimeOverhead
 			}
 
 			@Override
-			protected void processEvent(LowLevelEventType aType, DataInputStream aStream) throws IOException
-			{
-				throw new UnsupportedOperationException();
-			}
-
-			@Override
-			protected void processRegister(DataInputStream aStream) throws IOException
+			protected void processEvent(LowLevelEventType aType, DataInputStream aStream)
 			{
 				throw new UnsupportedOperationException();
 			}

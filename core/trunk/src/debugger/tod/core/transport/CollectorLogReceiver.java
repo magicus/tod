@@ -79,20 +79,6 @@ public class CollectorLogReceiver extends LogReceiver
 		LowLevelEventReader.readEvent(aType, aStream, itsInterpreter);
 	}
 	
-	@Override
-	protected void processRegister(DataInputStream aStream) throws IOException
-	{
-		int theSize = aStream.readInt(); // Packet size
-		
-		long theObjectId = aStream.readLong();
-		long theObjectTimestamp = aStream.readLong();
-		if (DebugFlags.IGNORE_HOST) theObjectId >>>= AgentConfig.HOST_BITS;
-
-		byte[] theData = new byte[theSize-16];
-		aStream.readFully(theData);
-		
-		itsCollector.register(theObjectId, theData, theObjectTimestamp);
-	}
 
 	@Override
 	protected void processClear()
