@@ -23,7 +23,9 @@ VMARGS="$VMARGS -Dagent-verbose=0"
 VMARGS="$VMARGS -Dagent-cache-path=/home/gpothier/tmp/tod"
 #VMARGS="$VMARGS -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"
 
-java $VMARGS -cp ./bin dummy.Dummy
+#java $VMARGS -cp ./bin dummy.Dummy
+#java $VMARGS -cp ./bin dummy.ShortProg
+java $VMARGS -cp ../TOD-evdbng/bin tod.impl.evdbng.Fixtures
 # echo "set args $VMARGS -cp ./bin dummy.Dummy" > gdb.cmd
 # gdb -x gdb.cmd java
 

@@ -132,12 +132,16 @@ public class ASMInstrumenter implements IInstrumenter
 		}
 
 		byte[] theBytecode = theWriter.toByteArray();
+		
+		theVisitor.storeBehaviorInfos();
 
-		if (itsConfig.getTODConfig().get(TODConfig.WITH_BYTECODE)) theVisitor
-				.getClassInfo()
-				.setBytecode(theBytecode);
+		if (itsConfig.getTODConfig().get(TODConfig.WITH_BYTECODE)) 
+		{
+			theVisitor.getClassInfo().setBytecode(theBytecode);
+		}
 
-		return theVisitor.isModified() ? new InstrumentedClass(theBytecode, theTracedMethods)
+		return theVisitor.isModified() ? 
+				new InstrumentedClass(theBytecode, theTracedMethods)
 				: null;
 	}
 

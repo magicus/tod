@@ -133,7 +133,6 @@ public class InfoCollector extends ClassAdapter
 		public MyCounter(MethodVisitor aMv)
 		{
 			super(aMv);
-			
 		}
 
 		@Override

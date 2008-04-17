@@ -48,6 +48,7 @@ import org.objectweb.asm.Opcodes;
 import tod.Util;
 import tod.agent.BehaviorCallType;
 import tod.core.config.TODConfig;
+import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.IMutableClassInfo;
@@ -56,6 +57,7 @@ import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
 import tod.impl.bci.asm.attributes.AspectInfoAttribute;
+import tod.impl.bci.asm.attributes.DummyLabelsAttribute;
 import tod.impl.bci.asm.attributes.SootAttribute;
 import tod.impl.database.structure.standard.TagMap;
 import zz.utils.ArrayStack;
@@ -105,6 +107,12 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 	 * This list will be filled with the ids of traced methods.
 	 */
 	private final List<Integer> itsTracedMethods;
+	
+	/**
+	 * We keep a list of all the method visitors we created
+	 * for the labels adjustment pass.
+	 */
+	private final List<BCIMethodVisitor> itsMethodVisitors = new ArrayList<BCIMethodVisitor>();
 
 	
 	public LogBCIVisitor(
@@ -202,6 +210,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 				/*&& (access & ACC_ABSTRACT) == 0*/) 
 		{
 			BCIMethodVisitor theMethodVisitor = new BCIMethodVisitor(mv, theMethodInfo);
+			itsMethodVisitors.add(theMethodVisitor);
 			
 			InstructionCounterAdapter theCounter = new InstructionCounterAdapter(
 					new InstantiationAnalyserVisitor (theMethodVisitor, theMethodInfo));	
@@ -211,6 +220,17 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			return theCounter;
 		}
 		else return mv;
+	}
+	
+	/**
+	 * Sets up the behavior info for all visited methods.
+	 */
+	public void storeBehaviorInfos()
+	{
+		for (BCIMethodVisitor theVisitor : itsMethodVisitors)
+		{
+			theVisitor.storeBehaviorInfo();
+		}
 	}
 	
 	private class BCIMethodVisitor extends MethodAdapter
@@ -224,6 +244,8 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		
 		private List<SootAttribute> itsSootAttributes = new ArrayList<SootAttribute>();
 		private List<Handler> itsExceptionHandlers = new ArrayList<Handler>();
+		
+		private DummyLabelsAttribute itsLabelsAttribute = new DummyLabelsAttribute();
 		
 		public BCIMethodVisitor(MethodVisitor mv, ASMMethodInfo aMethodInfo)
 		{
@@ -265,6 +287,21 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 				super.visitAttribute(aAttr);
 			}
 		}
+		
+		/**
+		 * Check if we must insert entry hooks. 
+		 */
+		@Override
+		public void visitCode()
+		{
+			mv.visitAttribute(itsLabelsAttribute);
+			
+			// Note: this method can be called if the currently visited type
+			// is an interface (<clinit>).
+			if (itsTrace && TRACE_ENVELOPPE) itsInstrumenter.insertEntryHooks();
+			super.visitCode();
+		}
+		
 		
 		@Override
 		public void visitTypeInsn(int aOpcode, String aDesc)
@@ -385,23 +422,12 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			else super.visitIntInsn(aOpcode, aOperand);
 		}
 		
-		/**
-		 * Check if we must insert entry hooks. 
-		 */
-		@Override
-		public void visitCode()
-		{
-			// Note: this method can be called if the currently visited type
-			// is an interface (<clinit>).
-			if (itsTrace && TRACE_ENVELOPPE) itsInstrumenter.insertEntryHooks();
-			super.visitCode();
-		}
-		
 		@Override
 		public void visitLineNumber(int aLine, Label aStart)
 		{
 			itsMethodInfo.addLineNumber(new ASMLineNumberInfo(aStart, aLine));
 			mv.visitLineNumber(aLine, aStart);
+			itsLabelsAttribute.add(aStart);
 		}
 		
 		@Override
@@ -409,6 +435,8 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		{
 			itsMethodInfo.addLocalVariable(new ASMLocalVariableInfo(aStart, aEnd, aName, aDesc, aIndex));
 			mv.visitLocalVariable(aName, aDesc, aSignature, aStart, aEnd, aIndex);
+			itsLabelsAttribute.add(aStart);
+			itsLabelsAttribute.add(aEnd);
 		}
 
 		@Override
@@ -455,8 +483,10 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		}
 		
 
-		@Override
-		public void visitEnd()
+		/**
+		 * Sets up the {@link IBehaviorInfo}.
+		 */
+		public void storeBehaviorInfo()
 		{
 			// Prepare tags
 			TagMap theTagMap = new TagMap();
@@ -484,8 +514,6 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 					itsMethodInfo.createLineNumberTable(), 
 					itsMethodInfo.createLocalVariableTable(),
 					theTagMap);
-
-			super.visitEnd();
 		}
 	}
 	
