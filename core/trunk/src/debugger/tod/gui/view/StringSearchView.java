@@ -43,19 +43,29 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.browser.LocationUtils;
+import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.ObjectId;
 import tod.gui.IGUIManager;
 import tod.gui.eventlist.EventListPanel;
+import tod.gui.kit.Bus;
 import tod.gui.kit.SavedSplitPane;
+import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.seed.StringSearchSeed;
 import tod.impl.database.IBidiIterator;
+import tod.utils.TODUtils;
 import zz.utils.SimpleListModel;
+import zz.utils.notification.IEvent;
+import zz.utils.notification.IEventListener;
+import zz.utils.properties.IProperty;
+import zz.utils.properties.IPropertyListener;
 import zz.utils.ui.StackLayout;
 
 public class StringSearchView extends LogView
@@ -111,6 +121,7 @@ public class StringSearchView extends LogView
 
 		itsResultsListModel = new SimpleListModel();
 		itsList = new JList(itsResultsListModel);
+		itsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		itsList.addListSelectionListener(new ListSelectionListener()
 		{
 			public void valueChanged(ListSelectionEvent aE)
@@ -128,11 +139,37 @@ public class StringSearchView extends LogView
 	{
 		itsEventListPanel =
 				new EventListPanel(getGUIManager(), getBus(), getLogBrowser(), getJobProcessor());
+
+		itsEventListPanel.eEventActivated().addListener(new IEventListener<ILogEvent>()
+		{
+			public void fired(IEvent< ? extends ILogEvent> aEvent, ILogEvent aData)
+			{
+				Bus.get(StringSearchView.this).postMessage(new ShowCFlowMsg(aData));
+			}
+		});
+
+		itsEventListPanel.pSelectedEvent().addHardListener(new IPropertyListener<ILogEvent>()
+		{
+			public void propertyChanged(
+					IProperty<ILogEvent> aProperty,
+					ILogEvent aOldValue,
+					ILogEvent aNewValue)
+			{
+				LocationUtils.gotoSource(getGUIManager(), aNewValue);
+				TODUtils.logf(0, "sourceRevealer called from StringSearchView");
+			}
+
+			public void propertyValueChanged(IProperty<ILogEvent> aProperty)
+			{
+			}
+		});
+
 		return itsEventListPanel;
 	}
 
 	private void highlight()
 	{
+		itsList.repaint();
 		Object[] theValues = itsList.getSelectedValues();
 
 		List<IEventFilter> theFilters = new ArrayList<IEventFilter>();
