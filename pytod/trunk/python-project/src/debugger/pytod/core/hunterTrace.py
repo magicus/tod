@@ -3,6 +3,7 @@
 
 import sys
 from inspect import isfunction
+import dis
 import re
 
 
@@ -75,7 +76,7 @@ class Function(object):
         self.__updateArgument__(args)
 
     def __getId__(self):
-        return self._id
+        return self.id
 
     def __getLnotab__(self):
         return self.lnotab
@@ -115,7 +116,7 @@ class Method(object):
         return self.local_var
 
     def __getTarget__(self):
-        return self.class
+        return self.idClass
 
     def __getArgs__(self):
         return self.argument
@@ -355,4 +356,24 @@ class hunterTrace(object):
 
 
 hT = hunterTrace(IdGenerator())
+
+def __print__():
+    print
+    print 'clases'
+    for k,v in hT._class.iteritems():
+        print v.__dict__
+        print
+    print '======='
+    
+    print 'metodos'
+    for k,v in hT._method.iteritems():
+        print v.__dict__
+        print
+    print '======='
+    
+    print 'funcion'
+    for k,v in hT._function.iteritems():
+        print v.__dict__
+        print
+    print '======='
 sys.settrace(hT.__trace__)    
