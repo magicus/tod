@@ -98,7 +98,7 @@ public class StringIndexer
 		try
 		{
 			itsIndexWriter.addDocument(theDocument);
-			TODUtils.logf(1, "Adding string: %1 to string indexer ", aString);
+			TODUtils.logf(1, "Adding string: %s to string indexer ", aString);
 			itsIndexedDocumentNumber++;
 		}
 		catch (IOException e)
@@ -113,12 +113,17 @@ public class StringIndexer
 		try
 		{
 			if (itsIndexedDocumentNumber > 0)
-			// optimize only when a substantial change has been done (30%)
-			if (itsOptimizedIndexedDocumentNumber * 100 / itsIndexedDocumentNumber < 70)
 			{
-				itsIndexWriter.optimize();
-				itsOptimizedIndexedDocumentNumber = itsIndexedDocumentNumber;
+				// optimize only when a substantial change has been done (30%)
+				if (itsOptimizedIndexedDocumentNumber * 100 / itsIndexedDocumentNumber < 70)
+				{
+					itsIndexWriter.optimize();
+					itsOptimizedIndexedDocumentNumber = itsIndexedDocumentNumber;
+				}
 			}
+
+			TODUtils.logf(0, "Searching for string '%s'  into %d terms ", aText, itsIndexWriter
+					.docCount());
 
 			// TODO check the need for closing the indexwriter
 			// itsIndexWriter.close();
@@ -164,8 +169,9 @@ public class StringIndexer
 			try
 			{
 				Document theDoc = itsHits.doc(itsIndex);
-				StringSearchHit theHit = new StringSearchHit(Long.parseLong(theDoc.get("id")), getScore(itsHits
-						.score(itsIndex)));
+				StringSearchHit theHit =
+						new StringSearchHit(Long.parseLong(theDoc.get("id")), getScore(itsHits
+								.score(itsIndex)));
 
 				itsIndex++;
 				return theHit;
@@ -188,8 +194,9 @@ public class StringIndexer
 			{
 				--itsIndex;
 				Document theDoc = itsHits.doc(itsIndex);
-				StringSearchHit theHit = new StringSearchHit(Long.parseLong(theDoc.get(FIELD_ID)), getScore(itsHits
-						.score(itsIndex)));
+				StringSearchHit theHit =
+						new StringSearchHit(Long.parseLong(theDoc.get(FIELD_ID)), getScore(itsHits
+								.score(itsIndex)));
 
 				return theHit;
 			}
@@ -303,7 +310,8 @@ public class StringIndexer
 				itsOffset++;
 				if (c == -1)
 				{
-					if (itsBuilder != null && itsBuilder.length() > 0) theToken = itsBuilder.toString();
+					if (itsBuilder != null && itsBuilder.length() > 0) theToken =
+							itsBuilder.toString();
 					itsBuilder = null;
 					break;
 				}

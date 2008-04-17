@@ -6,12 +6,12 @@ All rights reserved.
 Redistribution and use in source and binary forms, with or without modification, 
 are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright notice, this 
+ * Redistributions of source code must retain the above copyright notice, this 
       list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, 
+ * Redistributions in binary form must reproduce the above copyright notice, 
       this list of conditions and the following disclaimer in the documentation 
       and/or other materials provided with the distribution.
-    * Neither the name of the University of Chile nor the names of its contributors 
+ * Neither the name of the University of Chile nor the names of its contributors 
       may be used to endorse or promote products derived from this software without 
       specific prior written permission.
 
@@ -28,11 +28,10 @@ POSSIBILITY OF SUCH DAMAGE.
 
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
-*/
+ */
 package tod.gui.view;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -51,11 +50,10 @@ import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.ObjectId;
-import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
+import tod.gui.eventlist.EventListPanel;
 import tod.gui.kit.SavedSplitPane;
 import tod.gui.seed.StringSearchSeed;
-import tod.gui.view.highlighter.EventHighlighter;
 import tod.impl.database.IBidiIterator;
 import zz.utils.SimpleListModel;
 import zz.utils.ui.StackLayout;
@@ -63,18 +61,15 @@ import zz.utils.ui.StackLayout;
 public class StringSearchView extends LogView
 {
 	private static final String PROPERTY_SPLITTER_POS = "StringSearchView.splitterPos";
-	
+
 	private StringSearchSeed itsSeed;
 	private SimpleListModel itsResultsListModel;
 
 	private JList itsList;
 
-	private EventHighlighter itsEventHighlighter;
+	private EventListPanel itsEventListPanel;
 
-	public StringSearchView(
-			IGUIManager aGUIManager, 
-			ILogBrowser aLog, 
-			StringSearchSeed aSeed)
+	public StringSearchView(IGUIManager aGUIManager, ILogBrowser aLog, StringSearchSeed aSeed)
 	{
 		super(aGUIManager, aLog);
 		itsSeed = aSeed;
@@ -85,21 +80,24 @@ public class StringSearchView extends LogView
 	{
 		return itsSeed;
 	}
-	
+
 	private void createUI()
 	{
-		JSplitPane theSplitPane = new SavedSplitPane(JSplitPane.HORIZONTAL_SPLIT, getGUIManager(), PROPERTY_SPLITTER_POS);
+		JSplitPane theSplitPane =
+				new SavedSplitPane(
+						JSplitPane.HORIZONTAL_SPLIT,
+						getGUIManager(),
+						PROPERTY_SPLITTER_POS);
 		theSplitPane.setLeftComponent(createSearchPane());
-		theSplitPane.setRightComponent(createStripesPane());
-		
+		theSplitPane.setRightComponent(createEventListPane());
 		setLayout(new StackLayout());
 		add(theSplitPane);
 	}
-	
+
 	private JComponent createSearchPane()
 	{
 		JPanel thePanel = new JPanel(new BorderLayout());
-		
+
 		final JTextField theTextField = new JTextField();
 		theTextField.addActionListener(new ActionListener()
 		{
@@ -108,9 +106,9 @@ public class StringSearchView extends LogView
 				search(theTextField.getText());
 			}
 		});
-		
+
 		thePanel.add(theTextField, BorderLayout.NORTH);
-		
+
 		itsResultsListModel = new SimpleListModel();
 		itsList = new JList(itsResultsListModel);
 		itsList.addListSelectionListener(new ListSelectionListener()
@@ -120,60 +118,60 @@ public class StringSearchView extends LogView
 				highlight();
 			}
 		});
-		
+
 		thePanel.add(new JScrollPane(itsList), BorderLayout.CENTER);
-		
+
 		return thePanel;
 	}
-	
-	private JComponent createStripesPane()
+
+	private JComponent createEventListPane()
 	{
-		itsEventHighlighter = new EventHighlighter(getGUIManager(), getLogBrowser());
-		return itsEventHighlighter;
+		itsEventListPanel =
+				new EventListPanel(getGUIManager(), getBus(), getLogBrowser(), getJobProcessor());
+		return itsEventListPanel;
 	}
-	
+
 	private void highlight()
 	{
 		Object[] theValues = itsList.getSelectedValues();
 
 		List<IEventFilter> theFilters = new ArrayList<IEventFilter>();
-		for(Object theValue : theValues)
+		for (Object theValue : theValues)
 		{
 			SearchResult theResult = (SearchResult) theValue;
 			theFilters.add(getLogBrowser().createObjectFilter(theResult.getObjectId()));
 		}
-		
+
 		IEventFilter[] theFilterArray = theFilters.toArray(new IEventFilter[theFilters.size()]);
 		ICompoundFilter theFilter = getLogBrowser().createUnionFilter(theFilterArray);
-		
-		itsEventHighlighter.pHighlightBrowsers.clear();
-		itsEventHighlighter.pHighlightBrowsers.add(new BrowserData(
-				getLogBrowser().createBrowser(theFilter),
-				Color.BLUE));
+
+		itsEventListPanel.setBrowser(getLogBrowser().createBrowser(theFilter));
+
 	}
-	
+
 	private void search(String aText)
 	{
 		IBidiIterator<Long> theIterator = getLogBrowser().searchStrings(aText);
 		List<SearchResult> theList = new ArrayList<SearchResult>();
-		for(int i=0;i<100;i++)
+		for (int i = 0; i < 100; i++)
 		{
-			if (! theIterator.hasNext()) break;
+			if (!theIterator.hasNext()) break;
 			theList.add(new SearchResult(new ObjectId(theIterator.next())));
 		}
-		
+
 		itsResultsListModel.setList(theList);
 	}
-	
+
 	/**
 	 * Represents a search result
+	 * 
 	 * @author gpothier
 	 */
 	private class SearchResult
 	{
 		private ObjectId itsObjectId;
 		private String itsValue;
-	
+
 		public SearchResult(ObjectId aObjectId)
 		{
 			itsObjectId = aObjectId;
@@ -192,12 +190,12 @@ public class StringSearchView extends LogView
 			}
 			return itsValue;
 		}
-		
+
 		@Override
 		public String toString()
 		{
-			return "["+getObjectId()+"] "+getValue();
+			return "[" + getObjectId() + "] " + getValue();
 		}
-		
+
 	}
 }
