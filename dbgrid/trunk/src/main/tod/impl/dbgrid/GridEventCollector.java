@@ -17,7 +17,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
-*/
+ */
 package tod.impl.dbgrid;
 
 import tod.agent.Output;
@@ -37,41 +37,51 @@ import tod.impl.dbgrid.messages.GridNewArrayEvent;
 import tod.impl.dbgrid.messages.GridOutputEvent;
 import tod.impl.dbgrid.messages.GridVariableWriteEvent;
 import tod.impl.dbgrid.messages.MessageType;
+import tod.utils.TODUtils;
 
 /**
- * Event collector for the grid database backend. It handles events from a single
- * hosts, preprocesses them and sends them to the {@link AbstractEventDispatcher}.
- * Preprocessing is minimal and only involves packaging.
- * This class is not thread-safe.
+ * Event collector for the grid database backend. It handles events from a
+ * single hosts, preprocesses them and sends them to the
+ * {@link AbstractEventDispatcher}. Preprocessing is minimal and only involves
+ * packaging. This class is not thread-safe.
+ * 
  * @author gpothier
  */
 public class GridEventCollector extends EventCollector
 {
 	private final DatabaseNode itsDatabaseNode;
-	
+
 	/**
 	 * Number of events received by this collector
 	 */
 	private long itsEventsCount;
-	
+
 	/**
-	 * We keep an instance of each kind of event.
-	 * As events are received their attributes are copied to the appropriate
-	 * instance, and the instance is sent to the dispatcher, which
-	 * should immediately either serializes it or clone it.
+	 * We keep an instance of each kind of event. As events are received their
+	 * attributes are copied to the appropriate instance, and the instance is
+	 * sent to the dispatcher, which should immediately either serializes it or
+	 * clone it.
 	 */
 	private final GridBehaviorCallEvent itsCallEvent;
+
 	private final GridBehaviorExitEvent itsExitEvent;
+
 	private final GridExceptionGeneratedEvent itsExceptionEvent;
+
 	private final GridFieldWriteEvent itsFieldWriteEvent;
+
 	private final GridArrayWriteEvent itsArrayWriteEvent;
+
 	private final GridNewArrayEvent itsNewArrayEvent;
+
 	private final GridInstanceOfEvent itsInstanceOfEvent;
+
 	private final GridOutputEvent itsOutputEvent;
+
 	private final GridVariableWriteEvent itsVariableWriteEvent;
+
 	private final IMutableStructureDatabase itsStructureDatabase;
-	
-	
+
 	public GridEventCollector(
 			IHostInfo aHost,
 			IMutableStructureDatabase aStructureDatabase,
@@ -90,7 +100,7 @@ public class GridEventCollector extends EventCollector
 		itsInstanceOfEvent = new GridInstanceOfEvent(itsStructureDatabase);
 		itsOutputEvent = new GridOutputEvent(itsStructureDatabase);
 		itsVariableWriteEvent = new GridVariableWriteEvent(itsStructureDatabase);
-		
+
 	}
 
 	private void dispatch(GridEvent aEvent)
@@ -98,7 +108,7 @@ public class GridEventCollector extends EventCollector
 		itsDatabaseNode.pushEvent(aEvent);
 		itsEventsCount++;
 	}
-	
+
 	/**
 	 * Returns the number of events received by this collector.
 	 */
@@ -106,7 +116,7 @@ public class GridEventCollector extends EventCollector
 	{
 		return itsEventsCount;
 	}
-	
+
 	/**
 	 * Returns the probe info corresponding to the given probe id.
 	 */
@@ -119,7 +129,7 @@ public class GridEventCollector extends EventCollector
 	@Override
 	protected void exception(
 			int aThreadId,
-			long aParentTimestamp, 
+			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
 			int[] aAdviceCFlow,
@@ -127,86 +137,86 @@ public class GridEventCollector extends EventCollector
 			int aOperationBytecodeIndex,
 			Object aException)
 	{
-		System.out.println("GridEventCollector.exception()");
+		TODUtils.logf(1, "GridEventCollector.exception()");
 
-		ProbeInfo theProbeInfo = itsStructureDatabase.getNewExceptionProbe(aBehaviorId, aOperationBytecodeIndex);
+		ProbeInfo theProbeInfo =
+				itsStructureDatabase.getNewExceptionProbe(aBehaviorId, aOperationBytecodeIndex);
 
 		itsExceptionEvent.set(
-				aThreadId, 
+				aThreadId,
 				aDepth,
 				aTimestamp,
 				aAdviceCFlow,
 				theProbeInfo.id,
-				aParentTimestamp, 
+				aParentTimestamp,
 				aException);
-		
+
 		dispatch(itsExceptionEvent);
 	}
 
-
 	public void behaviorExit(
-			int aThreadId, 
-			long aParentTimestamp, 
-			short aDepth, 
+			int aThreadId,
+			long aParentTimestamp,
+			short aDepth,
 			long aTimestamp,
 			int[] aAdviceCFlow,
 			int aProbeId,
-			int aBehaviorId, 
-			boolean aHasThrown, Object aResult)
+			int aBehaviorId,
+			boolean aHasThrown,
+			Object aResult)
 	{
 		itsExitEvent.set(
-				aThreadId, 
-				aDepth, 
-				aTimestamp, 
+				aThreadId,
+				aDepth,
+				aTimestamp,
 				aAdviceCFlow,
 				aProbeId,
-				aParentTimestamp, 
+				aParentTimestamp,
 				aHasThrown,
 				aResult,
 				aBehaviorId);
-		
+
 		dispatch(itsExitEvent);
 	}
 
-
 	public void fieldWrite(
-			int aThreadId, 
+			int aThreadId,
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
 			int[] aAdviceCFlow,
 			int aProbeId,
 			int aFieldId,
-			Object aTarget, Object aValue)
+			Object aTarget,
+			Object aValue)
 	{
 		itsFieldWriteEvent.set(
-				aThreadId, 
+				aThreadId,
 				aDepth,
 				aTimestamp,
 				aAdviceCFlow,
 				aProbeId,
 				aParentTimestamp,
-				aFieldId, 
-				aTarget, 
+				aFieldId,
+				aTarget,
 				aValue);
-		
+
 		dispatch(itsFieldWriteEvent);
 	}
-	
-	
-	
+
 	public void newArray(
 			int aThreadId,
 			long aParentTimestamp,
-			short aDepth, 
-			long aTimestamp, 
+			short aDepth,
+			long aTimestamp,
 			int[] aAdviceCFlow,
-			int aProbeId, 
+			int aProbeId,
 			Object aTarget,
-			int aBaseTypeId, int aSize)
+			int aBaseTypeId,
+			int aSize)
 	{
 		itsNewArrayEvent.set(
-				aThreadId, 
+				aThreadId,
 				aDepth,
 				aTimestamp,
 				aAdviceCFlow,
@@ -215,7 +225,7 @@ public class GridEventCollector extends EventCollector
 				aTarget,
 				aBaseTypeId,
 				aSize);
-		
+
 		dispatch(itsNewArrayEvent);
 	}
 
@@ -225,12 +235,13 @@ public class GridEventCollector extends EventCollector
 			short aDepth,
 			long aTimestamp,
 			int[] aAdviceCFlow,
-			int aProbeId, 
-			Object aTarget, 
-			int aIndex, Object aValue)
+			int aProbeId,
+			Object aTarget,
+			int aIndex,
+			Object aValue)
 	{
 		itsArrayWriteEvent.set(
-				aThreadId, 
+				aThreadId,
 				aDepth,
 				aTimestamp,
 				aAdviceCFlow,
@@ -239,24 +250,23 @@ public class GridEventCollector extends EventCollector
 				aTarget,
 				aIndex,
 				aValue);
-		
+
 		dispatch(itsArrayWriteEvent);
 	}
 
-
 	public void instanceOf(
-			int aThreadId, 
-			long aParentTimestamp, 
-			short aDepth, 
+			int aThreadId,
+			long aParentTimestamp,
+			short aDepth,
 			long aTimestamp,
 			int[] aAdviceCFlow,
 			int aProbeId,
-			Object aObject, 
+			Object aObject,
 			int aTypeId,
 			boolean aResult)
 	{
 		itsInstanceOfEvent.set(
-				aThreadId, 
+				aThreadId,
 				aDepth,
 				aTimestamp,
 				aAdviceCFlow,
@@ -265,65 +275,65 @@ public class GridEventCollector extends EventCollector
 				aObject,
 				aTypeId,
 				aResult);
-		
+
 		dispatch(itsInstanceOfEvent);
 	}
 
 	public void instantiation(
 			int aThreadId,
 			long aParentTimestamp,
-			short aDepth, 
+			short aDepth,
 			long aTimestamp,
 			int[] aAdviceCFlow,
 			int aProbeId,
 			boolean aDirectParent,
 			int aCalledBehavior,
 			int aExecutedBehavior,
-			Object aTarget, Object[] aArguments)
+			Object aTarget,
+			Object[] aArguments)
 	{
 		itsCallEvent.set(
-				aThreadId, 
-				aDepth, 
+				aThreadId,
+				aDepth,
 				aTimestamp,
 				aAdviceCFlow,
 				aProbeId,
 				aParentTimestamp,
-				MessageType.INSTANTIATION, 
-				aDirectParent, 
+				MessageType.INSTANTIATION,
+				aDirectParent,
 				aArguments,
 				aCalledBehavior,
 				aExecutedBehavior,
 				aTarget);
-		
+
 		dispatch(itsCallEvent);
 	}
 
-
 	public void localWrite(
 			int aThreadId,
-			long aParentTimestamp, 
+			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
 			int[] aAdviceCFlow,
 			int aProbeId,
-			int aVariableId, Object aValue)
+			int aVariableId,
+			Object aValue)
 	{
 		itsVariableWriteEvent.set(
 				aThreadId,
-				aDepth, 
+				aDepth,
 				aTimestamp,
 				aAdviceCFlow,
 				aProbeId,
 				aParentTimestamp,
-				aVariableId, 
+				aVariableId,
 				aValue);
-		
+
 		dispatch(itsVariableWriteEvent);
 	}
 
-
 	public void methodCall(
-			int aThreadId, 
+			int aThreadId,
 			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
@@ -332,25 +342,25 @@ public class GridEventCollector extends EventCollector
 			boolean aDirectParent,
 			int aCalledBehavior,
 			int aExecutedBehavior,
-			Object aTarget, Object[] aArguments)
+			Object aTarget,
+			Object[] aArguments)
 	{
 		itsCallEvent.set(
-				aThreadId, 
-				aDepth, 
+				aThreadId,
+				aDepth,
 				aTimestamp,
 				aAdviceCFlow,
 				aProbeId,
 				aParentTimestamp,
-				MessageType.METHOD_CALL, 
-				aDirectParent, 
+				MessageType.METHOD_CALL,
+				aDirectParent,
 				aArguments,
 				aCalledBehavior,
 				aExecutedBehavior,
 				aTarget);
-		
+
 		dispatch(itsCallEvent);
 	}
-
 
 	public void output(
 			int aThreadId,
@@ -358,38 +368,39 @@ public class GridEventCollector extends EventCollector
 			short aDepth,
 			long aTimestamp,
 			int[] aAdviceCFlow,
-			Output aOutput, byte[] aData)
+			Output aOutput,
+			byte[] aData)
 	{
 		throw new UnsupportedOperationException();
 	}
 
-
 	public void superCall(
 			int aThreadId,
 			long aParentTimestamp,
-			short aDepth, 
+			short aDepth,
 			long aTimestamp,
 			int[] aAdviceCFlow,
 			int aProbeId,
-			boolean aDirectParent, 
+			boolean aDirectParent,
 			int aCalledBehavior,
-			int aExecutedBehavior, 
-			Object aTarget, Object[] aArguments)
+			int aExecutedBehavior,
+			Object aTarget,
+			Object[] aArguments)
 	{
 		itsCallEvent.set(
-				aThreadId, 
-				aDepth, 
+				aThreadId,
+				aDepth,
 				aTimestamp,
 				aAdviceCFlow,
 				aProbeId,
 				aParentTimestamp,
-				MessageType.SUPER_CALL, 
-				aDirectParent, 
+				MessageType.SUPER_CALL,
+				aDirectParent,
 				aArguments,
 				aCalledBehavior,
 				aExecutedBehavior,
 				aTarget);
-		
+
 		dispatch(itsCallEvent);
 	}
 
@@ -407,6 +418,5 @@ public class GridEventCollector extends EventCollector
 	{
 		return itsDatabaseNode.flush();
 	}
-	
-	
+
 }
