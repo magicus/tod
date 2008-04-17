@@ -385,6 +385,18 @@ public interface IStructureDatabase
 			}
 			else return false;
 		}
+		
+		@Override
+		public String toString()
+		{
+			return String.format(
+					"%s %s (%d-%d): %d",
+					getVariableTypeName(),
+					getVariableName(),
+					getStartPc(),
+					getStartPc()+getLength(),
+					getIndex());
+		}
 	}
 
 	/**

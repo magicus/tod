@@ -133,7 +133,7 @@ public class ASMInstrumenter implements IInstrumenter
 
 		byte[] theBytecode = theWriter.toByteArray();
 
-		if (itsConfig.getTODConfig().get(TODConfig.WITH_ASPECTS)) theVisitor
+		if (itsConfig.getTODConfig().get(TODConfig.WITH_BYTECODE)) theVisitor
 				.getClassInfo()
 				.setBytecode(theBytecode);
 

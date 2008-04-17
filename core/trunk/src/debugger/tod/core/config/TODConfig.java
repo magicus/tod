@@ -233,9 +233,16 @@ public class TODConfig extends PublicCloneable implements Serializable
 			ConfigLevel.ADVANCED,
 			"with-aspects",
 			"Include aspect info",
-			"Whether information used by the TOD extension for AspectJ, such as behavior bytecode " +
-			"and TagMap, should be included in behavior infos.",
+			"Whether information used by the TOD extension for AspectJ, such as " +
+			"TagMap, should be included in behavior infos.",
 			false);
+	
+	public static final BooleanItem WITH_BYTECODE = new BooleanItem(
+			ConfigLevel.ADVANCED,
+			"with-bytecode",
+			"Store behavior bytecode",
+			"Store behavior bytecode so as to provide disassembled views.",
+			true);
 	
 	public static final StringItem SERVER_TYPE = new StringItem(
 			ConfigLevel.ADVANCED,

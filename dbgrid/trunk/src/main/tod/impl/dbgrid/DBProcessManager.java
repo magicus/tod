@@ -253,6 +253,7 @@ public class DBProcessManager
 					TODConfig.CLIENT_NAME.javaOpt(getConfig()),
 					TODConfig.COLLECTOR_PORT.javaOpt(getConfig()),
 					TODConfig.WITH_ASPECTS.javaOpt(getConfig()),
+					TODConfig.WITH_BYTECODE.javaOpt(getConfig()),
 //					theJDWP ? "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000" : "",
 					"tod.impl.dbgrid.GridMaster",
 					"0");

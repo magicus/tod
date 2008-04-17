@@ -74,7 +74,8 @@ public class TODUtils
 
 	public static void logf(int aLevel, String aText, Object... aArgs)
 	{
-		log(aLevel, String.format(aText, aArgs));
+		// Do the test here instead of calling #log, to avoid calling #format when not necessary
+		if (TODConfig.TOD_VERBOSE >= aLevel) System.out.println(String.format(aText, aArgs));
 	}
 	
 	
