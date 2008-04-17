@@ -44,16 +44,16 @@ class Class(object):
     def __init__(self, id, code, lnotab):
         self.attribute = Diccionario()
         self.method = Diccionario()
-        self._lnotab = lnotab
-        self._code = code
-        self._name = code.co_name
-        self._id = id
+        self.lnotab = lnotab
+        self.code = code
+        self.name = code.co_name
+        self.id = id
 
     def __getId__(self):
-        return self._id
+        return self.id
 
     def __getLnotab__(self):
-        return self._lnotab
+        return self.lnotab
 
     def __addMethod__(self,code,locals):
         for k,v in locals.iteritems():
@@ -68,17 +68,17 @@ class Function(object):
     def __init__(self, id, code, lnotab,args):
         self.local_var = Diccionario()
         self.argument = Diccionario()
-        self._lnotab = lnotab
-        self._code = code
-        self._name = code.co_name
-        self._id = id
+        self.lnotab = lnotab
+        self.code = code
+        self.name = code.co_name
+        self.id = id
         self.__updateArgument__(args)
 
     def __getId__(self):
         return self._id
 
     def __getLnotab__(self):
-        return self._lnotab
+        return self.lnotab
 
     def __getLocalVar__(self):
         return self.local_var
@@ -87,7 +87,7 @@ class Function(object):
         return self.argument
 
     def __updateLocalVar__(self, local):
-        self._local_var.__update__(local)
+        self.local_var.__update__(local)
 
     def __updateArgument__(self, args):
         self.argument.__update__(args)
@@ -95,27 +95,27 @@ class Function(object):
 
 class Method(object):
 
-    def __init__(self, id, code, lnotab, idClass,args):
+    def __init__(self, id, code, lnotab, idClass, args):
         self.local_var = Diccionario()
         self.argument = Diccionario()
-        self._lnotab = lnotab
-        self._code = code
-        self._name = code.co_name
-        self._class = idClass
-        self._id = id
+        self.lnotab = lnotab
+        self.code = code
+        self.name = code.co_name
+        self.idClass = idClass
+        self.id = id
         self.__updateArgument__(args)
 
     def __getId__(self):
-        return self._id
+        return self.id
 
     def __getLnotab__(self):
-        return self._lnotab
+        return self.lnotab
 
     def __getLocalVar__(self):
         return self.local_var
 
     def __getTarget__(self):
-        return self._class
+        return self.class
 
     def __getArgs__(self):
         return self.argument
