@@ -459,12 +459,10 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		public void visitEnd()
 		{
 			// Prepare tags
-			TagMap theTagMap = null;
+			TagMap theTagMap = new TagMap();
 			
 			if (itsConfig.getTODConfig().get(TODConfig.WITH_ASPECTS))
 			{
-				theTagMap = new TagMap();
-				
 				for (SootAttribute theAttribute : itsSootAttributes)
 				{
 					theAttribute.fillTagMap(theTagMap, itsMethodInfo.getCodeSize());
