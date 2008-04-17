@@ -1,8 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 import sys
-from inspect import isfunction, ismethod, getmembers, getframeinfo
-import dis
+from inspect import isfunction
 import re
 
 
@@ -163,48 +162,11 @@ class hunterTrace(object):
             return True
         return False
 
-    def __inhunterTrace__(self, _object):
-        if self.__inClass__(_object):
-            return True
-        elif self.__inFunction__(_object):
-            return True
-        elif self.__inMethod__(_object):
-            return True
-        return False
-
     def __getClassKey__(self, idClass):
         for k,v in self._class.iteritems():
             if k.co_name == idClass:
                 return k
         return None
-
-    def __getFunctionKey__(self, idFunction):
-        for k,v in self._function.iteritems():
-            if k.co_name == idFunction:
-                return k
-        return None
-
-    def __getMethodKey__(self, idMethod):
-        for k,v in self._method.iteritems():
-            if k.co_name == idMethod:
-                return k
-        return None
-
-    def __getObjectKey__(self, name):
-        key = self.__getClassKey__(name)
-        if key == None:
-            key = self.__getMethodKey__(name)
-            if key == None:
-                key = self.__getFunctionKey__(name)
-                if key == None:
-                    return None
-                else:
-                    return key
-            else:
-                return key
-        else:
-            return key
-
 
     def __isClassKey__(self, codeClass):
         for k in self._class.iterkeys():
@@ -307,6 +269,27 @@ class hunterTrace(object):
         print "call",code.co_name,", id =",id, ", args =",args,
         print 'llamado desde',f_id,'f_lasti =',f_lasti 
 
+    def __register__(self, obj, local):
+        obj.local_var.__update__(local)
+
+    def __registerClass__(self, code, locals):
+        id = self.Id.__get__()
+        print 'register',code.co_name,', id =',id,', code = ',code
+        objClass = self.__addClass__(id,self.__createlnotab__(code),code)
+        self.Id.__next__()
+        #se deben registrar los metodos asociados
+        objClass.__addMethod__(code,locals)
+
+    def __registerMethod__(self, code, id, idClass, args):
+        print 'register',code.co_name,', id =',id,', idClass = ',idClass,', args=',args
+        self.__addMethod__(id,self.__createlnotab__(code),code,idClass,args)
+
+    def __registerFunction__(self, code):
+        id = self.Id.__get__()
+        args = self.__getargs__(code)
+        print 'register',code.co_name,', id =',id,', args=',args
+        self.__addFunction__(id,self.__createlnotab__(code),code,args)
+        self.Id.__next__()
 
     def __trace__(self, frame, event, arg):
         lineno = frame.f_lineno
@@ -369,28 +352,6 @@ class hunterTrace(object):
                     #imprimiendo los cambios de valores, con su respectivo id
                     self.__printchangevar__(code,local,locals,obj)
             print "return"
-
-    def __register__(self, obj, local):
-        obj.local_var.__update__(local)
-
-    def __registerClass__(self, code, locals):
-            id = self.Id.__get__()
-            print 'register',code.co_name,', id =',id,', code = ',code
-            objClass = self.__addClass__(id,self.__createlnotab__(code),code)
-            self.Id.__next__()
-            #se deben registrar los metodos asociados
-            objClass.__addMethod__(code,locals)
-
-    def __registerMethod__(self, code, id, idClass, args):
-            print 'register',code.co_name,', id =',id,', idClass = ',idClass,', args=',args
-            self.__addMethod__(id,self.__createlnotab__(code),code,idClass,args)
-
-    def __registerFunction__(self, code):
-            id = self.Id.__get__()
-            args = self.__getargs__(code)
-            print 'register',code.co_name,', id =',id,', args=',args
-            self.__addFunction__(id,self.__createlnotab__(code),code,args)
-            self.Id.__next__()
 
 
 hT = hunterTrace(IdGenerator())
