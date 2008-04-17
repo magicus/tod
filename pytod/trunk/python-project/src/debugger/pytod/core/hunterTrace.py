@@ -1,5 +1,6 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
+
 import sys
 from inspect import isfunction
 import re
@@ -61,7 +62,6 @@ class Class(object):
                 id = hT.Id.__get__()
                 self.method.__update__({k:id})
                 hT.Id.__next__()
-
 
 class Function(object):
 
