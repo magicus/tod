@@ -34,6 +34,7 @@ package tod.gui.view.structure;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IBehaviorInfo;
@@ -119,7 +120,12 @@ public class StructureView extends LogView
 		if (aLocation instanceof IBehaviorInfo)
 		{
 			IBehaviorInfo theBehavior = (IBehaviorInfo) aLocation;
-			showPanel(new BehaviorPanel(theBehavior));
+			
+			JTabbedPane theTabbedPane = new JTabbedPane();
+			theTabbedPane.addTab("Bytecode", new DisassemblyPanel(theBehavior));
+			theTabbedPane.addTab("Line numbers", new LineNumberInfoPanel(theBehavior));
+			theTabbedPane.addTab("Local variables", new VariableInfoPanel(theBehavior));
+			showPanel(theTabbedPane);
 		}
 	}
 	

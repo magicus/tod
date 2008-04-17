@@ -538,7 +538,7 @@ public class StructureDatabase implements IShareableStructureDatabase
 	 */
 	public LineNumberInfo[] _getBehaviorLineNumberInfo(int aBehaviorId)
 	{
-		return getBehavior(aBehaviorId, true)._getLineNumberTable();
+		return getBehavior(aBehaviorId, true)._getLineNumbers();
 	}
 	
 	/**

@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.agent.BehaviorKind;
+import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 
 public interface IBehaviorInfo extends IMemberInfo
@@ -115,8 +116,16 @@ public interface IBehaviorInfo extends IMemberInfo
 	 * available.
 	 */
 	public int[] getBytecodeLocations(int aLine);
-	
+
+	/**
+	 * Returns the raw local variables info of the behavior.
+	 */
     public LocalVariableInfo[] getLocalVariables();
+    
+    /**
+     * Returns the raw line number info of the behavior.
+     */
+    public LineNumberInfo[] getLineNumbers();
     
     /**
      * Indicates if this behavior is a constructor. 

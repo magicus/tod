@@ -169,11 +169,11 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
     
     public int getLineNumber (int aBytecodeIndex)
     {
-        if (itsHasLineNumberTable && getLineNumberTable().length > 0)
+        if (itsHasLineNumberTable && getLineNumbers().length > 0)
         {
-        	int theResult = getLineNumberTable()[0].getLineNumber();
+        	int theResult = getLineNumbers()[0].getLineNumber();
             
-            for (LineNumberInfo theInfo : getLineNumberTable())
+            for (LineNumberInfo theInfo : getLineNumbers())
 			{
                 if (aBytecodeIndex < theInfo.getStartPc()) break;
                 theResult = theInfo.getLineNumber();
@@ -195,13 +195,13 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
     
 	public int[] getBytecodeLocations(int aLine)
 	{
-        if (itsHasLineNumberTable && getLineNumberTable().length > 0)
+        if (itsHasLineNumberTable && getLineNumbers().length > 0)
         {
         	List<Integer> theLocations = new ArrayList<Integer>();
 
         	int thePreviousPc = -1;
         	int theCurrentLine = -1;
-            for (LineNumberInfo theInfo : getLineNumberTable())
+            for (LineNumberInfo theInfo : getLineNumbers())
             {
             	if (thePreviousPc == -1)
             	{
@@ -253,12 +253,12 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 		return itsLocalVariableTable;
 	}
 	
-	LineNumberInfo[] _getLineNumberTable()
+	LineNumberInfo[] _getLineNumbers()
 	{
 		return itsLineNumberTable;
 	}
 	
-	private LineNumberInfo[] getLineNumberTable()
+	public LineNumberInfo[] getLineNumbers()
 	{
 		if (itsLineNumberTable == null && itsHasLineNumberTable)
 		{

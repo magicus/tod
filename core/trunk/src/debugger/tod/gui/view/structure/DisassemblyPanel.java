@@ -57,10 +57,10 @@ import zz.utils.ui.PropertyEditor;
 import zz.utils.ui.StackLayout;
 
 /**
- * This panel displays detailed information about a behavior.
+ * This panel displays the disassembled bytecode of a behavior.
  * @author gpothier
  */
-public class BehaviorPanel extends JPanel
+public class DisassemblyPanel extends JPanel
 {
 	private static Column cPc = new Column("pc", 50)
 	{
@@ -117,7 +117,7 @@ public class BehaviorPanel extends JPanel
 		}
 	};
 
-	public BehaviorPanel(IBehaviorInfo aBehavior)
+	public DisassemblyPanel(IBehaviorInfo aBehavior)
 	{
 		itsBehavior = aBehavior;
 		itsDisassembled = Disassembler.disassemble(itsBehavior);
