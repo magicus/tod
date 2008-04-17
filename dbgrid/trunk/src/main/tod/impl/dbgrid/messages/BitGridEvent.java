@@ -38,6 +38,8 @@ import zz.utils.bit.BitUtils;
  */
 public abstract class BitGridEvent extends GridEvent
 {
+	private static final long serialVersionUID = 5405735108318929805L;
+
 	public BitGridEvent(IStructureDatabase aStructureDatabase)
 	{
 		super(aStructureDatabase);

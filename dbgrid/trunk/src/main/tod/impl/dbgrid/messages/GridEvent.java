@@ -38,6 +38,8 @@ import zz.utils.PublicCloneable;
 public abstract class GridEvent extends PublicCloneable 
 implements Serializable
 {
+	private static final long serialVersionUID = 8938721555658900935L;
+
 	private transient IStructureDatabase itsStructureDatabase;
 	
 	/**
