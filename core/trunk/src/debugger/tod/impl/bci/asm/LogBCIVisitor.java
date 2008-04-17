@@ -469,7 +469,10 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 				{
 					theAttribute.fillTagMap(theTagMap, itsMethodInfo.getCodeSize());
 				}
-				
+			}
+			
+			if (itsConfig.getTODConfig().get(TODConfig.WITH_BYTECODE))
+			{
 				itsInstrumenter.fillTagMap(theTagMap);
 			}
 			
