@@ -31,8 +31,6 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.common.event;
 
-import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
-
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.ICallerSideEvent;

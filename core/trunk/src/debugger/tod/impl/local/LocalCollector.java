@@ -31,8 +31,6 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.local;
 
-import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
-
 import tod.agent.Output;
 import tod.core.DebugFlags;
 import tod.core.database.structure.IArrayTypeInfo;
