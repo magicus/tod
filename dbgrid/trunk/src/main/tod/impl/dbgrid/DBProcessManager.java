@@ -17,7 +17,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
-*/
+ */
 package tod.impl.dbgrid;
 
 import java.io.BufferedReader;
@@ -40,22 +40,20 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
-
 import tod.Util;
 import tod.core.config.TODConfig;
 import tod.utils.TODUtils;
 import zz.utils.StreamPipe;
 
 /**
- * Manages (launches, monitors and controls) an external database
- * process.
+ * Manages (launches, monitors and controls) an external database process.
+ * 
  * @author gpothier
  */
 public class DBProcessManager
 {
 	private static DBProcessManager itsDefault;
-	
+
 	/**
 	 * Returns a default instance of {@link DBProcessManager}.
 	 */
@@ -77,24 +75,26 @@ public class DBProcessManager
 			throw new RuntimeException(e);
 		}
 	}
-	
-	public static String cp = ".";
+
+	public static String cp = "." + File.pathSeparator + System.getenv("classpath");
 	public static String lib = ".";
 
 	private TODConfig itsConfig;
 	private Process itsProcess;
 	private RIGridMaster itsMaster;
-	
+
 	private List<IDBProcessListener> itsListeners = new ArrayList<IDBProcessListener>();
-	
+
 	private List<PrintStream> itsOutputPrintStreams = new ArrayList<PrintStream>();
 	private List<PrintStream> itsErrorPrintStreams = new ArrayList<PrintStream>();
-	private Map<OutputStream, PrintStream> itsOutputStreams = new HashMap<OutputStream, PrintStream>();
-	private Map<OutputStream, PrintStream> itsErrorStreams = new HashMap<OutputStream, PrintStream>();
-	
+	private Map<OutputStream, PrintStream> itsOutputStreams =
+			new HashMap<OutputStream, PrintStream>();
+	private Map<OutputStream, PrintStream> itsErrorStreams =
+			new HashMap<OutputStream, PrintStream>();
+
 	private KeepAliveThread itsKeepAliveThread;
 	private boolean itsAlive = false;
-	
+
 	private Thread itsShutdownHook = new Thread("Shutdown hook (DBProcessManager)")
 	{
 		@Override
@@ -110,24 +110,24 @@ public class DBProcessManager
 		itsConfig = aConfig;
 		Runtime.getRuntime().addShutdownHook(itsShutdownHook);
 	}
-	
+
 	@Override
 	protected void finalize() throws Throwable
 	{
 		Runtime.getRuntime().removeShutdownHook(itsShutdownHook);
 		itsShutdownHook.run();
 	}
-	
-	public void addListener(IDBProcessListener aListener) 
+
+	public void addListener(IDBProcessListener aListener)
 	{
 		itsListeners.add(aListener);
 	}
-	
-	public void removeListener(IDBProcessListener aListener) 
+
+	public void removeListener(IDBProcessListener aListener)
 	{
 		itsListeners.remove(aListener);
 	}
-	
+
 	protected void fireStarted()
 	{
 		for (IDBProcessListener theListener : itsListeners)
@@ -143,14 +143,15 @@ public class DBProcessManager
 			theListener.stopped();
 		}
 	}
-	
+
 	public TODConfig getConfig()
 	{
 		return itsConfig;
 	}
-	
+
 	/**
 	 * Sets the configuration for subsequent launches.
+	 * 
 	 * @param aConfig
 	 */
 	public void setConfig(TODConfig aConfig)
@@ -160,6 +161,7 @@ public class DBProcessManager
 
 	/**
 	 * Adds a stream that will receive the output from the database process.
+	 * 
 	 * @see StreamPipe
 	 */
 	public void addOutputStream(OutputStream aStream)
@@ -173,9 +175,10 @@ public class DBProcessManager
 		}
 		itsOutputPrintStreams.add(thePrintStream);
 	}
-	
+
 	/**
-	 * Removes a stream previously added with {@link #addOutputStream(PrintStream)}
+	 * Removes a stream previously added with
+	 * {@link #addOutputStream(PrintStream)}
 	 */
 	public void removeOutputStream(OutputStream aStream)
 	{
@@ -184,7 +187,9 @@ public class DBProcessManager
 	}
 
 	/**
-	 * Adds a stream that will receive the error output from the database process.
+	 * Adds a stream that will receive the error output from the database
+	 * process.
+	 * 
 	 * @see StreamPipe
 	 */
 	public void addErrorStream(OutputStream aStream)
@@ -198,16 +203,17 @@ public class DBProcessManager
 		}
 		itsErrorPrintStreams.add(thePrintStream);
 	}
-	
+
 	/**
-	 * Removes a stream previously added with {@link #addErrorStream(PrintStream)}
+	 * Removes a stream previously added with
+	 * {@link #addErrorStream(PrintStream)}
 	 */
 	public void removeErrorStream(OutputStream aStream)
 	{
 		PrintStream thePrintStream = itsErrorStreams.remove(aStream);
 		itsErrorPrintStreams.remove(thePrintStream);
 	}
-	
+
 	/**
 	 * Returns the {@link RIGridMaster} representing the database.
 	 */
@@ -219,13 +225,13 @@ public class DBProcessManager
 	private String getJavaExecutable()
 	{
 		String theOs = System.getProperty("os.name");
-		
-		String theJVM = System.getProperty("java.home")+"/bin/java";
+
+		String theJVM = System.getProperty("java.home") + "/bin/java";
 		if (theOs.contains("Windows")) theJVM += "w.exe";
-			
+
 		return theJVM;
 	}
-	
+
 	private void createProcess()
 	{
 		try
@@ -234,55 +240,56 @@ public class DBProcessManager
 
 			if (itsProcess != null) itsProcess.destroy();
 			printOutput("--- Preparing...");
-			cp += File.pathSeparator+System.getenv("classpath");
 			boolean theJDWP = false;
-			
+
 			Long theHeapSize = getConfig().get(TODConfig.LOCAL_SESSION_HEAP);
 			String theJVM = getJavaExecutable();
-			ProcessBuilder theBuilder = new ProcessBuilder(
-					theJVM,
-					"-Xmx"+theHeapSize,
-					"-ea",
-					"-Djava.library.path="+lib,
-					"-cp", cp,
-					"-Dmaster-host=localhost",		
-					"-Dpage-buffer-size="+(theHeapSize/2),
-					TODConfig.MASTER_TIMEOUT.javaOpt(10),
-					TODConfig.AGENT_VERBOSE.javaOpt(getConfig()),
-					TODConfig.SCOPE_TRACE_FILTER.javaOpt(getConfig()),
-					TODConfig.CLIENT_NAME.javaOpt(getConfig()),
-					TODConfig.COLLECTOR_PORT.javaOpt(getConfig()),
-					TODConfig.WITH_ASPECTS.javaOpt(getConfig()),
-					TODConfig.WITH_BYTECODE.javaOpt(getConfig()),
-//					theJDWP ? "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000" : "",
-					"tod.impl.dbgrid.GridMaster",
-					"0");
-			
+			ProcessBuilder theBuilder =
+					new ProcessBuilder(
+							theJVM,
+							"-Xmx" + theHeapSize,
+							"-ea",
+							"-Djava.library.path=" + lib,
+							"-cp",
+							cp,
+							"-Dmaster-host=localhost",
+							"-Dpage-buffer-size=" + (theHeapSize / 2),
+							TODConfig.MASTER_TIMEOUT.javaOpt(10),
+							TODConfig.AGENT_VERBOSE.javaOpt(getConfig()),
+							TODConfig.SCOPE_TRACE_FILTER.javaOpt(getConfig()),
+							TODConfig.CLIENT_NAME.javaOpt(getConfig()),
+							TODConfig.COLLECTOR_PORT.javaOpt(getConfig()),
+							TODConfig.WITH_ASPECTS.javaOpt(getConfig()),
+							TODConfig.WITH_BYTECODE.javaOpt(getConfig()),
+							// theJDWP ?
+							// "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"
+							// : "",
+							"tod.impl.dbgrid.GridMaster",
+							"0");
+
 			StringBuilder theCommand = new StringBuilder();
-			for (String theArg : theBuilder.command()) 
+			for (String theArg : theBuilder.command())
 			{
 				theCommand.append('"');
 				theCommand.append(theArg);
 				theCommand.append("\" ");
 			}
-			System.out.println("[DBProcessManager] Command: "+theCommand);
-			
+			System.out.println("[DBProcessManager] Command: " + theCommand);
+
 			theBuilder.redirectErrorStream(false);
-			
+
 			setAlive(true);
 			printOutput("--- Starting process...");
-			printOutput("Classpath: "+cp);
+			printOutput("Classpath: " + cp);
 			itsProcess = theBuilder.start();
 			ProcessOutWatcher theWatcher = new ProcessOutWatcher(itsProcess.getInputStream());
 			ProcessErrGrabber theGrabber = new ProcessErrGrabber(itsProcess.getErrorStream());
 
 			printOutput("--- Waiting grid master...");
 			boolean theReady = theWatcher.waitReady();
-			
-			if (! theReady)
-			{
-				throw new RuntimeException("Could not start event database:\n--\n"+theGrabber.getText()+"\n--");
-			}
+
+			if (!theReady) { throw new RuntimeException("Could not start event database:\n--\n"
+					+ theGrabber.getText() + "\n--"); }
 
 			theGrabber.stopCapture();
 			printOutput("--- Ready.");
@@ -293,16 +300,16 @@ public class DBProcessManager
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	/**
-	 * Starts the database process and creates the grid master.
-	 * This method waits until the grid master is ready, or some failure occurs
-	 * (in which case it throws a {@link RuntimeException}).
+	 * Starts the database process and creates the grid master. This method
+	 * waits until the grid master is ready, or some failure occurs (in which
+	 * case it throws a {@link RuntimeException}).
 	 */
 	public void start()
 	{
 		createProcess();
-		
+
 		try
 		{
 			Registry theRegistry = LocateRegistry.getRegistry("localhost", Util.TOD_REGISTRY_PORT);
@@ -315,7 +322,7 @@ public class DBProcessManager
 		}
 
 	}
-	
+
 	/**
 	 * Stops the database process.
 	 */
@@ -324,7 +331,7 @@ public class DBProcessManager
 		if (itsProcess != null) itsProcess.destroy();
 		itsProcess = null;
 	}
-	
+
 	/**
 	 * Whether the process is alive.
 	 */
@@ -350,7 +357,7 @@ public class DBProcessManager
 			theStream.println(aString);
 		}
 	}
-	
+
 	private void printError(String aString)
 	{
 		for (PrintStream theStream : itsErrorPrintStreams)
@@ -358,9 +365,10 @@ public class DBProcessManager
 			theStream.println(aString);
 		}
 	}
-	
+
 	/**
 	 * A thread that monitors the JVM process' output stream
+	 * 
 	 * @author gpothier
 	 */
 	private class ProcessOutWatcher extends Thread
@@ -368,7 +376,7 @@ public class DBProcessManager
 		private InputStream itsStream;
 		private boolean itsReady = false;
 		private CountDownLatch itsLatch = new CountDownLatch(1);
-		
+
 		public ProcessOutWatcher(InputStream aStream)
 		{
 			super("LocalGridSession - Output Watcher");
@@ -382,15 +390,15 @@ public class DBProcessManager
 			try
 			{
 				BufferedReader theReader = new BufferedReader(new InputStreamReader(itsStream));
-				while(true)
+				while (true)
 				{
 					String theLine = theReader.readLine();
 					if (theLine == null) break;
 
 					printOutput(theLine);
-//					System.out.println("[GridMaster process] "+theLine);
-					
-					if (theLine.startsWith(GridMaster.READY_STRING))  
+					// System.out.println("[GridMaster process] "+theLine);
+
+					if (theLine.startsWith(GridMaster.READY_STRING))
 					{
 						itsReady = true;
 						itsLatch.countDown();
@@ -403,10 +411,11 @@ public class DBProcessManager
 				throw new RuntimeException(e);
 			}
 		}
-		
+
 		/**
 		 * Waits until the Grid master is ready, or a timeout occurs
-		 * @return Whether the grid master is ready. 
+		 * 
+		 * @return Whether the grid master is ready.
 		 */
 		public boolean waitReady()
 		{
@@ -422,7 +431,7 @@ public class DBProcessManager
 			}
 		}
 	}
-	
+
 	private class ProcessErrGrabber extends Thread
 	{
 		private InputStream itsStream;
@@ -434,7 +443,7 @@ public class DBProcessManager
 			itsStream = aStream;
 			start();
 		}
-		
+
 		/**
 		 * Stops capturing output, and prints it instead.
 		 */
@@ -442,23 +451,25 @@ public class DBProcessManager
 		{
 			itsBuilder = null;
 		}
-		
+
 		@Override
 		public void run()
 		{
 			try
 			{
 				BufferedReader theReader = new BufferedReader(new InputStreamReader(itsStream));
-				while(true)
+				while (true)
 				{
 					String theLine = theReader.readLine();
 					if (theLine == null) break;
 
 					printError(theLine);
-					System.err.println("[GridMaster process] "+theLine);
+					System.err.println("[GridMaster process] " + theLine);
 
-					StringBuilder theBuilder = itsBuilder; // To avoid concurrency issues
-					if (theBuilder != null) itsBuilder.append("> "+theLine+"\n");
+					StringBuilder theBuilder = itsBuilder; // To avoid
+															// concurrency
+															// issues
+					if (theBuilder != null) itsBuilder.append("> " + theLine + "\n");
 				}
 			}
 			catch (IOException e)
@@ -466,19 +477,17 @@ public class DBProcessManager
 				throw new RuntimeException(e);
 			}
 		}
-		
+
 		public String getText()
 		{
 			return itsBuilder.toString();
 		}
 	}
-	
-	
-	
+
 	private static class KeepAliveThread extends Thread
 	{
 		private WeakReference<DBProcessManager> itsManager;
-		
+
 		public KeepAliveThread(DBProcessManager aManager)
 		{
 			super("KeepAliveThread");
@@ -491,28 +500,31 @@ public class DBProcessManager
 		{
 			itsManager = null;
 		}
-		
+
 		@Override
 		public synchronized void run()
 		{
 			try
 			{
 				TODUtils.log(0, "Starting keepalive thread");
-				
-				while(itsManager != null)
+
+				while (itsManager != null)
 				{
 					DBProcessManager theManager = itsManager.get();
-					if (theManager == null) 
+					if (theManager == null)
 					{
-						TODUtils.log(0, "DBProcessManager was garbage collected, stopping keepalive thread");
+						TODUtils
+								.log(
+										0,
+										"DBProcessManager was garbage collected, stopping keepalive thread");
 						break;
 					}
-					
+
 					boolean theAlive = false;
 					RIGridMaster theMaster = theManager.getMaster();
 					try
 					{
-						if (theMaster != null) 
+						if (theMaster != null)
 						{
 							theMaster.keepAlive();
 							theAlive = true;
@@ -525,11 +537,11 @@ public class DBProcessManager
 					}
 
 					theManager.setAlive(theAlive);
-					
+
 					theManager = null; // We don't want to prevent GC
 					wait(2000);
 				}
-				
+
 				TODUtils.log(0, "Stopped keepalive thread");
 			}
 			catch (InterruptedException e)
@@ -538,19 +550,17 @@ public class DBProcessManager
 			}
 		}
 	}
-	
-	
-	
+
 	/**
 	 * A listener of the state of the process.
+	 * 
 	 * @author gpothier
 	 */
 	public interface IDBProcessListener
 	{
 		public void started();
+
 		public void stopped();
 	}
-
-
 
 }
