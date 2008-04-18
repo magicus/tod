@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from debugger.pytod.core.hunterTrace import *
+from debugger.pytod.core.hunterTrace import hT
 #from debugger.pytod.core.hunterTrace import __print__
 
 def prueba():
