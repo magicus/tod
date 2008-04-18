@@ -462,11 +462,8 @@ public class ObjectInspector implements IObjectInspector
 						aEvent.getPointer(), 
 						theField.getIndex());
 				
-//				EntryValue[] theValue = getLogBrowser().exec(theQuery);
-				EntryValue[] theValue = theQuery.run(getLogBrowser());
-
-				theResult = new Object[theValue.length];
-				for(int i=0;i<theValue.length;i++) theResult[i] = theValue[i].value;
+				theResult = getLogBrowser().exec(theQuery);
+//				theResult = theQuery.run(getLogBrowser());
 			}
 			
 			TODUtils.logf(0, "Retrieved slot %d of array %s -> %s", theField.getIndex(), itsObjectId, Arrays.asList(theResult));
@@ -479,7 +476,7 @@ public class ObjectInspector implements IObjectInspector
 	 * This query tracks the value of an array slot, following arraycopy and IO operations
 	 * @author gpothier
 	 */
-	private static class ArraySlotTrack extends Query<EntryValue[]>
+	private static class ArraySlotTrack extends Query<Object[]>
 	implements Serializable
 	{
 		private final ObjectId itsArrayId;
@@ -493,7 +490,7 @@ public class ObjectInspector implements IObjectInspector
 			itsIndex = aIndex;
 		}
 
-		public EntryValue[] run(ILogBrowser aLogBrowser)
+		public Object[] run(ILogBrowser aLogBrowser)
 		{
 			ILogEvent theEvent = aLogBrowser.getEvent(itsCallEventPointer);
 			
@@ -526,7 +523,11 @@ public class ObjectInspector implements IObjectInspector
 							itsIndex-theDestPos+theSrcPos));
 				}
 				
-				return theEntryValue;
+				if (theEntryValue == null) return null;
+				Object[] theResult = new Object[theEntryValue.length];
+				for(int i=0;i<theEntryValue.length;i++) theResult[i] = theEntryValue[i].value;
+
+				return theResult;
 			}
 
 			throw new IllegalArgumentException("Can't handle: "+theEvent);
