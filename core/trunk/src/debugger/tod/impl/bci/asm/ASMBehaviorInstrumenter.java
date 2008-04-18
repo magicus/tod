@@ -128,21 +128,16 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	 */
 	public void fillTagMap(TagMap aTagMap)
 	{
-		System.out.println("----------");
 		System.out.println(itsBehavior);
 		
 		for (CodeRange theRange : itsInstrumentationRanges.getRanges())
 		{
-			System.out.println("Range: "+theRange.start.getOffset()+"-"+theRange.end.getOffset());
 			aTagMap.putTagRange(
 					BytecodeTagType.ROLE, 
 					BytecodeRole.TOD_CODE, 
 					theRange.start.getOffset(),
 					theRange.end.getOffset());
 		}
-
-		System.out.println("----------");
-		System.out.println();
 	}
 	
 	/**
