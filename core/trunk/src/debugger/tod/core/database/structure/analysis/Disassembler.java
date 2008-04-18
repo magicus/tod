@@ -45,31 +45,30 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.util.TraceMethodVisitor;
 
+import tod.core.config.TODConfig;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
+import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.analysis.DisassembledBehavior.Instruction;
 import tod.impl.database.structure.standard.BehaviorInfo;
 import tod.impl.database.structure.standard.ClassInfo;
+import tod.impl.database.structure.standard.StructureDatabase;
 import zz.utils.Utils;
 
 public class Disassembler
 {
 	public static void main(String[] args) throws IOException
 	{
-		File f = new File("bin/dummy/Dummy.class");
+		File f = new File("/home/gpothier/tmp/Fixtures.class");
 		byte[] theBytecode = Utils.readInputStream_byte(new FileInputStream(f));
 		
-		ClassInfo theClass = new ClassInfo(null, null, "dummy.Dummy", 1);
+		StructureDatabase theStructureDatabase = StructureDatabase.create(new TODConfig());
+		ClassInfo theClass = theStructureDatabase.getNewClass("dummy.Dummy");
 		theClass.setBytecode(theBytecode);
 		
-		BehaviorInfo theBehavior = new BehaviorInfo(
-				null, 
-				2,
-				theClass, 
-				"foo",
-				"(Ljava/lang/Object;J)I",
-				null,
-				null);
+		IMutableBehaviorInfo theBehavior = theClass.getNewBehavior(
+				"checkCondition",
+				"(Ltod/impl/database/IBidiIterator;Ltod/impl/evdbng/queries/EventCondition;Ltod/impl/evdbng/EventGenerator;I)I");
 		
 		DisassembledBehavior theDisassembledBehavior = disassemble(theBehavior);
 		System.out.println(theDisassembledBehavior);
@@ -99,7 +98,7 @@ public class Disassembler
 			break;
 		}
 		
-		MyTraceMethodVisitor theVisitor = new MyTraceMethodVisitor();
+		MyTraceMethodVisitor theVisitor = new MyTraceMethodVisitor(cr);
 		theMethodNode.accept(theVisitor);
 		
 		return new DisassembledBehavior(aBehavior, theVisitor.getInstructions());
@@ -120,9 +119,9 @@ public class Disassembler
 			return itsInstructions.toArray(new Instruction[itsInstructions.size()]);
 		}
 		
-		public MyTraceMethodVisitor()
+		public MyTraceMethodVisitor(ClassReader aReader)
 		{
-			super (new ClassWriter(0).visitMethod(0, "", "", "", null));
+			super (new ClassWriter(aReader, 0).visitMethod(0, "", "", "", null));
 		}
 
 		/**

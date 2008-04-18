@@ -458,7 +458,6 @@ public class ObjectInspector implements IObjectInspector
 			else 
 			{
 				ArraySlotTrack theQuery = new ArraySlotTrack(
-						itsObjectId, 
 						aEvent.getPointer(), 
 						theField.getIndex());
 				
@@ -479,13 +478,11 @@ public class ObjectInspector implements IObjectInspector
 	private static class ArraySlotTrack extends Query<Object[]>
 	implements Serializable
 	{
-		private final ObjectId itsArrayId;
 		private final ExternalPointer itsCallEventPointer;
 		private final int itsIndex;
 
-		public ArraySlotTrack(ObjectId aArrayId, ExternalPointer aCallEventPointer, int aIndex)
+		public ArraySlotTrack(ExternalPointer aCallEventPointer, int aIndex)
 		{
-			itsArrayId = aArrayId;
 			itsCallEventPointer = aCallEventPointer;
 			itsIndex = aIndex;
 		}
@@ -531,6 +528,34 @@ public class ObjectInspector implements IObjectInspector
 			}
 
 			throw new IllegalArgumentException("Can't handle: "+theEvent);
+		}
+
+		@Override
+		public int hashCode()
+		{
+			final int prime = 31;
+			int result = 1;
+			result =
+					prime * result
+							+ ((itsCallEventPointer == null) ? 0 : itsCallEventPointer.hashCode());
+			result = prime * result + itsIndex;
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			final ArraySlotTrack other = (ArraySlotTrack) obj;
+			if (itsCallEventPointer == null)
+			{
+				if (other.itsCallEventPointer != null) return false;
+			}
+			else if (!itsCallEventPointer.equals(other.itsCallEventPointer)) return false;
+			if (itsIndex != other.itsIndex) return false;
+			return true;
 		}
 		
 	}
