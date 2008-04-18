@@ -354,26 +354,25 @@ class hunterTrace(object):
                     self.__printchangevar__(code,local,locals,obj)
             print "return"
 
+    def __printHunter__(self):
+        print
+        print 'clases'
+        for k,v in hT._class.iteritems():
+            print v.__dict__
+            print
+        print '======='
+        
+        print 'metodos'
+        for k,v in hT._method.iteritems():
+            print v.__dict__
+            print
+        print '======='
+        
+        print 'funcion'
+        for k,v in hT._function.iteritems():
+            print v.__dict__
+            print
+        print '======='
 
 hT = hunterTrace(IdGenerator())
-
-def __print__():
-    print
-    print 'clases'
-    for k,v in hT._class.iteritems():
-        print v.__dict__
-        print
-    print '======='
-    
-    print 'metodos'
-    for k,v in hT._method.iteritems():
-        print v.__dict__
-        print
-    print '======='
-    
-    print 'funcion'
-    for k,v in hT._function.iteritems():
-        print v.__dict__
-        print
-    print '======='
 sys.settrace(hT.__trace__)    
