@@ -243,16 +243,26 @@ class hunterTrace(object):
                     store_fast.update({i_arg_value:value})
         return store_fast   
 
-    def __printchangevar__(self, code, local, locals, obj, f_lasti):
+    def __depthFrame__(self, frame):
+        frameBack = frame.f_back
+        if frameBack.f_locals.has_key('__depthFrame__'):
+            currentDepth = frameBack.f_locals['__depthFrame__']
+            frame.f_locals['__depthFrame__'] = currentDepth + 1
+        else:
+            frame.f_locals['__depthFrame__'] = 0
+        return frame.f_locals['__depthFrame__']
+    
+    def __printchangevar__(self, code, local, locals, obj, f_lasti, depth):
         attr = obj.__getLocalVar__()
         objId = obj.__getId__()
         for i in local.iterkeys():
             probeId = self.probeId.__get__()
             self.probeId.__next__()
             print 'set',i,'=',locals[i],", id=", attr[i],
-            print ',probe(id =',probeId,', f_lasti =',f_lasti,', id =',objId,')'
+            print ',probe(id =',probeId,', f_lasti =',f_lasti,', id =',objId,')',
+            print ',current depth =',depth
             
-    def __printCallMethod__(self, code, frame):
+    def __printCallMethod__(self, code, frame, depth):
         obj = self.__getObject__(code)
         id = obj.__getId__()
         target = obj.__getTarget__()
@@ -267,9 +277,10 @@ class hunterTrace(object):
         print "call",code.co_name,", id =",id,", target =",target, ", args =",
         print args,
         print ',llamado desde (',f_id,',f_lasti =',f_lasti,')',
-        print ',probe(id =',probeId,', f_lasti =',current_lasti,', id =',id,')'
+        print ',probe(id =',probeId,', f_lasti =',current_lasti,', id =',id,')',
+        print ',current depth =',depth
 
-    def __printCallFunction__(self, code, frame):
+    def __printCallFunction__(self, code, frame, depth):
         obj = self.__getObject__(code)
         id = obj.__getId__()
         args = obj.__getArgs__()
@@ -282,7 +293,8 @@ class hunterTrace(object):
         current_lasti = frame.f_lasti
         print "call",code.co_name,", id =",id, ", args =",args,
         print ',llamado desde (',f_id,',f_lasti =',f_lasti,')',
-        print ',probe(id =',probeId,', f_lasti =',current_lasti,', id =',id,')'
+        print ',probe(id =',probeId,', f_lasti =',current_lasti,', id =',id,')',
+        print ',current depth =',depth
 
     def __register__(self, obj, local):
         obj.local_var.__update__(local)
@@ -311,6 +323,8 @@ class hunterTrace(object):
         code = frame.f_code
         locals = frame.f_locals
         globals = frame.f_globals
+        #profundidad del frame
+        depth = self.__depthFrame__(frame)
         if event == "call":
             if re.search(self.methodPattern,code.co_name) and not code.co_name == '__init__':
                 return
@@ -327,14 +341,14 @@ class hunterTrace(object):
                     id = hT._class[key].method[code.co_name]
                     args = self.__getargs__(code)
                     self.__registerMethod__(code,id,idClass,args)
-                self.__printCallMethod__(code, frame)
+                self.__printCallMethod__(code,frame,depth)
             else:
                 #verificamos si es una funcion
                 if globals.has_key(code.co_name):
                     if isfunction(globals[code.co_name]):
                         if not self.__inFunction__(code):
                             self.__registerFunction__(code)
-                    self.__printCallFunction__(code, frame)
+                    self.__printCallFunction__(code,frame, depth)
             return self.__trace__
         elif event == "line":
             if re.search(self.methodPattern,code.co_name) and not code.co_name == '__init__':
@@ -345,9 +359,9 @@ class hunterTrace(object):
             lnotab = obj.__getLnotab__()
             if lnotab.has_key(frame.f_lasti):
                 local = self.__getpartcode__(code,lnotab[frame.f_lasti])
-                self. __register__(obj,local)
+                self.__register__(obj,local)
                 #imprimiendo los cambios de valores, con su respectivo id
-                self.__printchangevar__(code,local,locals,obj,frame.f_lasti)
+                self.__printchangevar__(code,local,locals,obj,frame.f_lasti,depth)
             return self.__trace__
         elif event == "return":
             if re.search(self.methodPattern,code.co_name) and not code.co_name == '__init__':
@@ -365,7 +379,7 @@ class hunterTrace(object):
                     local = self.__getpartcode__(code,lnotab[frame.f_lasti])
                     self. __register__(obj,local)
                     #imprimiendo los cambios de valores, con su respectivo id
-                    self.__printchangevar__(code,local,locals,obj,frame.f_lasti)
+                    self.__printchangevar__(code,local,locals,obj,frame.f_lasti,depth)
             print "return"
 
     def __printHunter__(self):
