@@ -33,8 +33,8 @@ package tod.gui.view.controlflow.watch;
 
 import javax.swing.JPanel;
 
-import tod.core.database.browser.ILogBrowser;
-import tod.core.database.event.IWriteEvent;
+import tod.core.database.browser.ICompoundInspector.EntryValue;
+import tod.core.database.event.ILogEvent;
 import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
@@ -55,8 +55,7 @@ public class WatchEntryNode extends JPanel
 	private final AbstractWatchProvider itsProvider;
 	private final Entry itsEntry;
 	
-	private Object[] itsValue;
-	private IWriteEvent[] itsSetter;
+	private EntryValue[] itsValue;
 	
 	public WatchEntryNode(
 			IGUIManager aGUIManager,
@@ -89,19 +88,7 @@ public class WatchEntryNode extends JPanel
 			@Override
 			protected void runJob()
 			{
-				itsSetter = itsEntry.getSetter();
-				if (itsSetter == null)
-				{
-					itsValue = itsEntry.getValue();
-				}
-				else
-				{
-					itsValue = new Object[itsSetter.length];
-					for (int i=0;i<itsSetter.length;i++)
-					{
-						itsValue[i] = itsSetter[i].getValue();
-					}
-				}
+				itsValue = itsEntry.getValue();
 			}
 
 			@Override
@@ -112,9 +99,6 @@ public class WatchEntryNode extends JPanel
 					boolean theFirst = true;
 					for (int i=0;i<itsValue.length;i++)
 					{
-						Object theValue = itsValue[i];
-						IWriteEvent theSetter = itsSetter != null ? itsSetter[i] : null;
-			
 						if (theFirst) theFirst = false;
 						else add(GUIUtils.createLabel(" / "));
 						
@@ -123,10 +107,11 @@ public class WatchEntryNode extends JPanel
 								itsGUIManager, 
 								itsJobProcessor,
 								itsProvider.getCurrentObject(),
-								theValue,
+								itsValue[i].value,
 								itsProvider.getRefEvent(),
 								showPackageNames()));
 						
+						ILogEvent theSetter = itsValue[i].setter;
 						if (theSetter != null)
 						{
 							add(GUIUtils.createLabel(" ("));

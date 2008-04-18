@@ -72,73 +72,19 @@ public interface IObjectInspector extends ICompoundInspector<IFieldInfo>
 	public ITypeInfo getType ();
 	
 	/**
-	 * Retrieves all the member descriptors of the inspected object.
-	 */
-	public List<IMemberInfo> getMembers();
-	
-	/**
 	 * Retrieves all the field descriptors of the inspected object.
 	 */
 	public List<IFieldInfo> getFields();
 	
 	/**
-	 * Returns a filter on field write or behavior call events for the specified member
-	 * of the inspected object.
-	 * @return The filter, or null if the information is not available.
+	 * Returns an event broswer on the events that changed the value 
+	 * of the specified member of the inspected object.
 	 */
-	public IEventFilter getFilter (IMemberInfo aMemberInfo);
+	public IEventBrowser getBrowser (IFieldInfo aField);
 	
 	/**
-	 * Returns an event broswer on field write or behavior call events for the specified member
-	 * of the inspected object.
+	 * Returns the possible values assigned to the given field by the given event.
+	 * @param aEvent Must be an event returned by {@link #getBrowser(IFieldInfo)}.
 	 */
-	public IEventBrowser getBrowser (IMemberInfo aMemberInfo);
-	
-	/**
-	 * Positions this inspector to the point of the next field write/behavior call
-	 * of the specified member.
-	 */
-	public void stepToNext (IMemberInfo aMemberInfo);
-	
-	/**
-	 * Indicates if there is a field write/behavior call to the specified member after
-	 * the current timestamp.
-	 */
-	public boolean hasNext (IMemberInfo aMemberInfo);
-
-	/**
-	 * Positions this inspector to the point of the previous field write/behavior call
-	 * of the specified member.
-	 */
-	public void stepToPrevious (IMemberInfo aMemberInfo);
-	
-	/**
-	 * Indicates if there is a field write/behavior call to the specified member before
-	 * the current timestamp.
-	 */
-	public boolean hasPrevious (IMemberInfo aMemberInfo);
-
-	/**
-	 * Positions this inspector to the point of the next field write/behavior call
-	 * of any member.
-	 */
-	public void stepToNext ();
-	
-	/**
-	 * Indicates if there is a field write/behavior call to any member after
-	 * the current timestamp.
-	 */
-	public boolean hasNext ();
-
-	/**
-	 * Positions this inspector to the point of the previous field write/behavior call
-	 * of any member.
-	 */
-	public void stepToPrevious ();
-
-	/**
-	 * Indicates if there is a field write/behavior call to any member before
-	 * the current timestamp.
-	 */
-	public boolean hasPrevious ();
+	public Object[] getNewValue(IFieldInfo aField, ILogEvent aEvent);
 }

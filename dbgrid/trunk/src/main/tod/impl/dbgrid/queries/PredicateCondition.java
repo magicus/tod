@@ -21,8 +21,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.queries;
 
 
-import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
-import tod.core.database.structure.IStructureDatabase.ProbeInfo;
+import tod.core.database.browser.IEventPredicate;
+import tod.impl.database.AbstractFilteredBidiIterator;
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.db.EventList;
 import tod.impl.dbgrid.db.Indexes;
@@ -30,38 +30,51 @@ import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.messages.GridEvent;
 
 /**
- * Represents a condition on the role of a caller-side event
+ * Represents a condition that filters events based on a predicate
  * @author gpothier
  */
-public class RoleCondition extends SimpleCondition
+public class PredicateCondition extends SimpleCondition
 {
-	private static final long serialVersionUID = 2727420447011218824L;
-	
-	private BytecodeRole itsRole;
+	private static final long serialVersionUID = 2132857394221092337L;
+	private final EventCondition itsBaseCondition;
+	private final IEventPredicate itsPredicate;
 
 
-	public RoleCondition(BytecodeRole aRole)
+	public PredicateCondition(EventCondition aBaseCondition, IEventPredicate aPredicate)
 	{
-		itsRole = aRole;
+		itsBaseCondition = aBaseCondition;
+		itsPredicate = aPredicate;
 	}
 
 	@Override
-	public IBidiIterator<StdTuple> createTupleIterator(EventList aEventList, Indexes aIndexes, long aTimestamp)
+	public IBidiIterator<StdTuple> createTupleIterator(
+			final EventList aEventList, 
+			Indexes aIndexes, 
+			long aTimestamp)
 	{
-		return aIndexes.getRoleIndex(itsRole.ordinal()+1).getTupleIterator(aTimestamp);
+		IBidiIterator<StdTuple> theBaseIterator = itsBaseCondition.createTupleIterator(aEventList, aIndexes, aTimestamp);
+		
+		return new AbstractFilteredBidiIterator<StdTuple, StdTuple>(theBaseIterator)
+		{
+			@Override
+			protected Object transform(StdTuple aInput)
+			{
+				GridEvent theEvent = aEventList.getEvent(aInput.getEventPointer());
+				return itsPredicate.match(theEvent.toLogEvent(null)) ? aInput : REJECT;
+			}
+		};
 	}
 
 	@Override
 	public boolean _match(GridEvent aEvent)
 	{
-		ProbeInfo theProbeInfo = aEvent.getProbeInfo();
-		return theProbeInfo != null && theProbeInfo.role == itsRole;
+		return itsPredicate.match(aEvent.toLogEvent(null));
 	}
 	
 	@Override
 	protected String toString(int aIndent)
 	{
-		return String.format("Role = %s", itsRole);
+		return String.format("Predicate = %s on %s", itsPredicate, itsBaseCondition);
 	}
 
 }

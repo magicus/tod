@@ -21,6 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.queries;
 
 import tod.impl.database.IBidiIterator;
+import tod.impl.dbgrid.db.EventList;
 import tod.impl.dbgrid.db.IndexMerger;
 import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
@@ -36,21 +37,27 @@ public class Disjunction extends CompoundCondition
 
 	@Override
 	public IBidiIterator<StdTuple> createTupleIterator(
-			Indexes aIndexes,
-			long aTimestamp)
+			EventList aEventList,
+			Indexes aIndexes, long aTimestamp)
 	{
 		IBidiIterator<StdTuple>[] theIterators = new IBidiIterator[getConditions().size()];
 		int i = 0;
 		for (EventCondition theCondition : getConditions())
 		{
-			theIterators[i++] = theCondition.createTupleIterator(aIndexes, aTimestamp);
+			theIterators[i++] = theCondition.createTupleIterator(aEventList, aIndexes, aTimestamp);
 		}
 		
 		return IndexMerger.disjunction(theIterators);
 	}
 	
 	@Override
-	public long[] getEventCounts(Indexes aIndexes, long aT1, long aT2, int aSlotsCount, boolean aForceMergeCounts)
+	public long[] getEventCounts(
+			EventList aEventList,
+			Indexes aIndexes, 
+			long aT1,
+			long aT2, 
+			int aSlotsCount, 
+			boolean aForceMergeCounts)
 	{
 		int theSize = getConditions().size();
 		
@@ -59,7 +66,7 @@ public class Disjunction extends CompoundCondition
 		int i = 0;
 		for (EventCondition theCondition : getConditions())
 		{
-			theCounts[i++] = theCondition.getEventCounts(aIndexes, aT1, aT2, aSlotsCount, aForceMergeCounts);
+			theCounts[i++] = theCondition.getEventCounts(aEventList, aIndexes, aT1, aT2, aSlotsCount, aForceMergeCounts);
 		}
 		
 		// Sum up

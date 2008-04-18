@@ -61,7 +61,7 @@ public abstract class SplittedConditionHandler<T extends IndexTuple>
 	 */
 	public Conjunction createCondition(long aKey, byte aRole)
 	{
-		Conjunction theResult = new Conjunction();
+		Conjunction theResult = new Conjunction(true);
 		
 		int[] theParts = splitKey(aKey);
 		

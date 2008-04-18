@@ -49,6 +49,7 @@ import zz.utils.monitoring.Probe;
  */
 public class HierarchicalIndex<T extends IndexTuple>
 {
+	private final String itsName;
 	private Page itsRootPage;
 	private long itsFirstLeafPageId;
 	private int itsRootLevel;
@@ -69,8 +70,9 @@ public class HierarchicalIndex<T extends IndexTuple>
 	
 	private long itsLeafTupleCount = 0;
 
-	public HierarchicalIndex(TupleCodec<T> aTupleCodec, HardPagedFile aFile) 
+	public HierarchicalIndex(String aName, TupleCodec<T> aTupleCodec, HardPagedFile aFile) 
 	{
+		itsName = aName;
 		itsTupleCodec = aTupleCodec;
 		itsFile = aFile;
 		
@@ -81,21 +83,12 @@ public class HierarchicalIndex<T extends IndexTuple>
 		itsRootLevel = 0;
 	}
 	
-	private TupleCodec<T> getTupleCodec()
-	{
-		return itsTupleCodec;
-	}
-	
-	private HardPagedFile getFile()
-	{
-		return itsFile;
-	}
-	
 	/**
 	 * Reconstructs a previously-written index from the given struct.
 	 */
-	public HierarchicalIndex(TupleCodec<T> aTupleCodec, HardPagedFile aFile, BitStruct aStoredIndexStruct)
+	public HierarchicalIndex(String aName, TupleCodec<T> aTupleCodec, HardPagedFile aFile, BitStruct aStoredIndexStruct)
 	{
+		itsName = aName;
 		itsTupleCodec = aTupleCodec;
 		itsFile = aFile;
 
@@ -124,6 +117,16 @@ public class HierarchicalIndex<T extends IndexTuple>
 		}
 	}
 
+	private TupleCodec<T> getTupleCodec()
+	{
+		return itsTupleCodec;
+	}
+	
+	private HardPagedFile getFile()
+	{
+		return itsFile;
+	}
+	
 	
 	/**
 	 * Writes this index to the given struct so that it can be reloaded
@@ -437,6 +440,12 @@ public class HierarchicalIndex<T extends IndexTuple>
 	public long getStorageSpace()
 	{
 		return getTotalPageCount() * getPageSize();
+	}
+	
+	@Override
+	public String toString()
+	{
+		return getClass().getName()+":"+itsName;
 	}
 
 	/**

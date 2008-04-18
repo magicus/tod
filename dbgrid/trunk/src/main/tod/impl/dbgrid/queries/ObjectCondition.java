@@ -23,6 +23,7 @@ package tod.impl.dbgrid.queries;
 import tod.impl.database.AbstractFilteredBidiIterator;
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.SplittedConditionHandler;
+import tod.impl.dbgrid.db.EventList;
 import tod.impl.dbgrid.db.HierarchicalIndex;
 import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.RoleIndexSet;
@@ -54,7 +55,7 @@ public class ObjectCondition extends SimpleCondition
 	}
 
 	@Override
-	public IBidiIterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
+	public IBidiIterator<StdTuple> createTupleIterator(EventList aEventList, Indexes aIndexes, long aTimestamp)
 	{
 		HierarchicalIndex<RoleTuple> theIndex = 
 			aIndexes.getObjectIndex(itsPart, itsObjectId);

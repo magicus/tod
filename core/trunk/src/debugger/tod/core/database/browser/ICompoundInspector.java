@@ -31,6 +31,7 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.browser;
 
+import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IWriteEvent;
 
@@ -63,12 +64,29 @@ public interface ICompoundInspector<E>
 	 * This can happen for instance if several write events have
 	 * the same timestamp.
 	 */
-	public Object[] getEntryValue (E aEntry);
+	public EntryValue[] getEntryValue (E aEntry);
 	
 	/**
-	 * Returns the possible events that set the entry to the value it had at
-	 * the time the current event was executed.
+	 * Groups actual entry value and setter event 
+	 * @author gpothier
 	 */
-	public IWriteEvent[] getEntrySetter(E aEntry);
+	public static class EntryValue
+	{
+		/**
+		 * The value of the entry at a particular point in time.
+		 */
+		public final Object value;
+		
+		/**
+		 * The event that assigned the entry its value, if available.
+		 */
+		public final ILogEvent setter;
+		
+		public EntryValue(Object aValue, ILogEvent aSetter)
+		{
+			value = aValue;
+			setter = aSetter;
+		}
+	}
 
 }

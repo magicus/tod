@@ -154,7 +154,7 @@ public class DebugFlags
 	 * Ignore host when filtering on threads.
 	 * Should not be used if more than one host is being debugged.
 	 */
-	public static final boolean IGNORE_HOST = ConfigUtils.readBoolean("ignore-host", false); 
+	public static final boolean IGNORE_HOST = ConfigUtils.readBoolean("ignore-host", true); 
 	
 	/**
 	 * Whether {@link ObjectInspector} should try to guess the type of unknown objects

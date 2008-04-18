@@ -40,11 +40,10 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
+import tod.core.database.browser.ICompoundInspector.EntryValue;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
-import tod.core.database.event.IWriteEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ObjectId;
@@ -59,7 +58,6 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 	private final ILogEvent itsRefEvent;
 	private final ObjectId itsObject;
 	
-	private IBehaviorCallEvent itsParentEvent;
 	private boolean itsInvalid = false;
 	
 	private IObjectInspector itsInspector;
@@ -110,6 +108,7 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 		return itsInspector;
 	}
 	
+	@Override
 	public JComponent buildTitleComponent(JobProcessor aJobProcessor)
 	{
 		JPanel theContainer = new JPanel(GUIUtils.createStackLayout());
@@ -155,16 +154,19 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 		return theContainer;
 	}
 	
+	@Override
 	public ObjectId getCurrentObject()
 	{
 		return null;
 	}
 	
+	@Override
 	public ILogEvent getRefEvent()
 	{
 		return itsRefEvent;
 	}
 
+	@Override
 	public List<Entry> getEntries()
 	{
 		if (itsEntries == null)
@@ -188,17 +190,14 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 			itsField = aField;
 		}
 		
+		@Override
 		public String getName()
 		{
 			return itsField.getName();
 		}
 
-		public IWriteEvent[] getSetter()
-		{
-			return getInspector().getEntrySetter(itsField);
-		}
-
-		public Object[] getValue()
+		@Override
+		public EntryValue[] getValue()
 		{
 			return getInspector().getEntryValue(itsField);
 		}

@@ -34,6 +34,7 @@ import reflex.lib.pom.impl.lock.LockPOMMetaobject;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
+import tod.core.database.browser.IEventPredicate;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.IVariablesInspector;
@@ -72,6 +73,7 @@ import tod.impl.dbgrid.queries.Disjunction;
 import tod.impl.dbgrid.queries.EventCondition;
 import tod.impl.dbgrid.queries.EventIdCondition;
 import tod.impl.dbgrid.queries.FieldCondition;
+import tod.impl.dbgrid.queries.PredicateCondition;
 import tod.impl.dbgrid.queries.RoleCondition;
 import tod.impl.dbgrid.queries.ThreadCondition;
 import tod.impl.dbgrid.queries.TypeCondition;
@@ -243,6 +245,13 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 				RoleIndexSet.ROLE_OBJECT_ANYARG);
 	}
 
+	public IEventFilter createArgumentFilter(ObjectId aId, int aPosition)
+	{
+		return SplittedConditionHandler.OBJECTS.createCondition(
+				ObjectCodec.getObjectId(aId, true),
+				(byte) aPosition);
+	}
+	
 	public IEventFilter createValueFilter(ObjectId aId)
 	{
 		return SplittedConditionHandler.OBJECTS.createCondition(
@@ -259,14 +268,14 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 	
 	public IEventFilter createLocationFilter(IBehaviorInfo aBehavior, int aBytecodeIndex)
 	{
-		return CompoundCondition.and(
+		return createIntersectionFilter(
 				new BehaviorCondition(aBehavior.getId(), RoleIndexSet.ROLE_BEHAVIOR_OPERATION),
 				new BytecodeLocationCondition(aBytecodeIndex));
 	}
 
 	public IEventFilter createBehaviorCallFilter()
 	{
-		return CompoundCondition.or(
+		return createUnionFilter(
 				new TypeCondition(MessageType.METHOD_CALL),
 				new TypeCondition(MessageType.INSTANTIATION),
 				new TypeCondition(MessageType.SUPER_CALL));
@@ -336,7 +345,7 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 				ObjectCodec.getObjectId(aId, true),
 				RoleIndexSet.ROLE_OBJECT_TARGET);
 		
-		return CompoundCondition.and(
+		return createIntersectionFilter(
 				theObjectCondition,
 				new TypeCondition(MessageType.INSTANTIATION));
 	}
@@ -452,7 +461,7 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 		}
 		else
 		{
-			CompoundCondition theCompound = new Conjunction();
+			CompoundCondition theCompound = new Conjunction(false);
 			for (IEventFilter theFilter : aFilters)
 			{
 				theCompound.add(theFilter);
@@ -476,6 +485,11 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 		return theCompound;
 	}
 	
+	public IEventFilter createPredicateFilter(IEventPredicate aPredicate, IEventFilter aBaseFilter)
+	{
+		return new PredicateCondition((EventCondition) aBaseFilter, aPredicate);
+	}
+
 	@POMSync
 	public Object getRegistered(ObjectId aId)
 	{

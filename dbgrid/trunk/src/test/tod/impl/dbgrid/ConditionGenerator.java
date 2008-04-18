@@ -136,7 +136,7 @@ public class ConditionGenerator
 	
 	public EventCondition nextConjunction()
 	{
-		Conjunction theConjunction = new Conjunction();
+		Conjunction theConjunction = new Conjunction(false);
 		fillCompoundCondition(theConjunction);
 		return theConjunction;
 	}

@@ -36,12 +36,11 @@ import java.util.List;
 import javax.swing.JComponent;
 
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.browser.ICompoundInspector.EntryValue;
 import tod.core.database.event.ILogEvent;
-import tod.core.database.event.IWriteEvent;
 import tod.core.database.structure.ObjectId;
 import tod.gui.IGUIManager;
 import tod.gui.JobProcessor;
-import tod.gui.formatter.CustomFormatterRegistry;
 
 /**
  * Provider of watch data.
@@ -113,12 +112,6 @@ public abstract class AbstractWatchProvider
 		 * Returns the possible values for this entry.
 		 * This might be a time-consuming operation.
 		 */
-		public abstract Object[] getValue();
-
-		/**
-		 * Returns the possible setter events for this entry.
-		 * This might be a time-consuming operation.
-		 */
-		public abstract IWriteEvent[] getSetter();
+		public abstract EntryValue[] getValue();
 	}
 }

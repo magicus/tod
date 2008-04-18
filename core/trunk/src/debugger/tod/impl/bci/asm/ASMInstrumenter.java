@@ -84,9 +84,9 @@ public class ASMInstrumenter implements IInstrumenter
 	public InstrumentedClass instrumentClass(String aName, byte[] aBytecode)
 	{
 		if (!BCIUtils.acceptClass(aName, itsConfig.getGlobalSelector())) return null;
-		if (aName.startsWith("sun/reflect/")) return null; // Strange things
-		// happen inside
-		// those classes...
+		
+		// Strange things happen inside those classes...
+		if (aName.startsWith("sun/reflect/")) return null; 
 
 		String theChecksum = Utils.md5String(aBytecode);
 

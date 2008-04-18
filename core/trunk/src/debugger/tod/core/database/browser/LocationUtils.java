@@ -155,7 +155,7 @@ public class LocationUtils
 	 * Searches a behavior in the given type
 	 * @param aSearchAncestors See {@link #getField(ITypeInfo, String, boolean)}.
 	 */
-	public IBehaviorInfo getBehavior(
+	public static IBehaviorInfo getBehavior(
 			IStructureDatabase aDatabase,
 			IClassInfo aClass, 
 			String aName, 
@@ -175,7 +175,22 @@ public class LocationUtils
 		}
 
 		return null;
-
+	}
+	
+	/**
+	 * Searches a behavior in the given type
+	 * @param aSearchAncestors See {@link #getField(ITypeInfo, String, boolean)}.
+	 */
+	public static IBehaviorInfo getBehavior(
+			IStructureDatabase aDatabase,
+			String aClassName, 
+			String aName, 
+			String aSignature, 
+			boolean aSearchAncestors)
+	{
+		IClassInfo theClass = aDatabase.getClass(aClassName, false);
+		if (theClass == null) return null;
+		else return getBehavior(aDatabase, theClass, aName, aSignature, aSearchAncestors);
 	}
 	
 	/**
@@ -293,6 +308,4 @@ public class LocationUtils
 		}
 		else throw new RuntimeException("Not handled: "+aLocation);
 	}
-	
-
 }

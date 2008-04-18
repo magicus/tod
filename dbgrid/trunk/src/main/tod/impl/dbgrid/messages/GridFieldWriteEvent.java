@@ -115,7 +115,7 @@ public class GridFieldWriteEvent extends BitGridEvent
 	{
 		FieldWriteEvent theEvent = new FieldWriteEvent(aBrowser);
 		initEvent(aBrowser, theEvent);
-		theEvent.setField(aBrowser.getStructureDatabase().getField(getFieldId(), true));
+		theEvent.setField(getFieldInfo(aBrowser, getFieldId()));
 		theEvent.setTarget(getTarget());
 		theEvent.setValue(getValue());
 		return theEvent;

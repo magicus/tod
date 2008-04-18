@@ -106,7 +106,7 @@ public class VariablesInspector implements IVariablesInspector
 		return itsReferenceEvent;
 	}
 
-	public Object[] getEntryValue(LocalVariableInfo aVariable)
+	public EntryValue[] getEntryValue(LocalVariableInfo aVariable)
 	{
 		if (itsChildrenBrowser == null) return null;
 		
@@ -118,7 +118,10 @@ public class VariablesInspector implements IVariablesInspector
 		while (theBrowser.hasPrevious())
 		{
 			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) theBrowser.previous();
-			if (aVariable.equals(theEvent.getVariable())) return new Object[] {theEvent.getValue()};
+			if (aVariable.equals(theEvent.getVariable())) 
+			{
+				return new EntryValue[] {new EntryValue(theEvent.getValue(), theEvent)};
+			}
 		}
 		
 		// If we did not find a variable write corresponding to the variable,
@@ -130,7 +133,7 @@ public class VariablesInspector implements IVariablesInspector
 		{
 			if (aVariable.getIndex() == theSlot)
 			{
-				return new Object[] {itsBehaviorCall.getArguments()[i]};
+				return new EntryValue[] {new EntryValue(itsBehaviorCall.getArguments()[i], itsBehaviorCall)};
 			}
 			else
 			{

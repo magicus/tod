@@ -123,7 +123,7 @@ public class EventDatabase implements ReorderingBufferListener
 			int aSlotsCount, 
 			boolean aForceMergeCounts)
 	{
-		return aCondition.getEventCounts(getIndexes(), aT1, aT2, aSlotsCount, aForceMergeCounts);
+		return aCondition.getEventCounts(itsEventList, getIndexes(), aT1, aT2, aSlotsCount, aForceMergeCounts);
 	}
 
 	/**

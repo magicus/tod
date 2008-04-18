@@ -39,6 +39,7 @@ import java.util.Map;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
+import tod.core.database.browser.IEventPredicate;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.IVariablesInspector;
@@ -183,11 +184,21 @@ public class LocalBrowser implements ILogBrowser
 		return createBrowser(createIntersectionFilter());
 	}
 
+	public IEventFilter createPredicateFilter(IEventPredicate aPredicate, IEventFilter aBaseFilter)
+	{
+		throw new UnsupportedOperationException();
+	}
+
 	public IEventFilter createArgumentFilter(ObjectId aId)
 	{
-		return null;
+		throw new UnsupportedOperationException();
 	}
 	
+	public IEventFilter createArgumentFilter(ObjectId aId, int aPosition)
+	{
+		throw new UnsupportedOperationException();
+	}
+
 	public IEventFilter createExceptionGeneratedFilter()
 	{
 		return new ExceptionGeneratedFilter(this);

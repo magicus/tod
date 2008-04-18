@@ -53,7 +53,7 @@ import tod.gui.kit.IOptionsOwner;
 import tod.gui.kit.Options;
 import tod.gui.kit.SeedLinkLabel;
 import tod.gui.seed.LogViewSeed;
-import tod.gui.seed.ObjectInspectorSeed;
+import tod.gui.seed.ObjectHistorySeed;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.ISetProperty;
 import zz.utils.properties.PropertyUtils;
@@ -245,7 +245,7 @@ implements IOptionsOwner
 		{
 			ObjectId theObjectId = (ObjectId) aObject;
 			
-			ObjectInspectorSeed theSeed = new ObjectInspectorSeed(
+			ObjectHistorySeed theSeed = new ObjectHistorySeed(
 					getGUIManager(), 
 					getLogBrowser(), 
 					theObjectId);

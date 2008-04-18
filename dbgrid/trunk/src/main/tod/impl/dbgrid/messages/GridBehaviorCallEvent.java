@@ -171,8 +171,8 @@ public class GridBehaviorCallEvent extends BitGridEvent
 		
 		initEvent(aBrowser, theEvent);
 		theEvent.setArguments(getArguments());
-		theEvent.setCalledBehavior(aBrowser.getStructureDatabase().getBehavior(getCalledBehaviorId(), false));
-		theEvent.setExecutedBehavior(aBrowser.getStructureDatabase().getBehavior(getExecutedBehaviorId(), false));
+		theEvent.setCalledBehavior(getBehaviorInfo(aBrowser, getCalledBehaviorId()));
+		theEvent.setExecutedBehavior(getBehaviorInfo(aBrowser, getExecutedBehaviorId()));
 		theEvent.setDirectParent(isDirectParent());
 		theEvent.setTarget(getTarget());
 		
@@ -242,7 +242,7 @@ public class GridBehaviorCallEvent extends BitGridEvent
 		{
 			Object theArgument = itsArguments[i];
 
-			TUPLE.set(getTimestamp(), aPointer, (byte) i);
+			TUPLE.set(getTimestamp(), aPointer, (byte) (i+1));
 			aIndexes.indexObject(
 					theArgument,
 					TUPLE);
@@ -276,11 +276,11 @@ public class GridBehaviorCallEvent extends BitGridEvent
 			return true;
 		}
 							
-		if (aRole >= 0 && aRole < getArguments().length 
+		if (aRole > 0 && aRole <= getArguments().length 
 					&& SplittedConditionHandler.OBJECTS.match(
 							aPart, 
 							aPartialKey, 
-							getObjectId(getArguments()[aRole], false)))
+							getObjectId(getArguments()[aRole-1], false)))
 		{
 			return true;
 		}

@@ -126,6 +126,7 @@ public abstract class IndexSet<T extends IndexTuple>
 		if (theEntry == null)
 		{
 			theIndex = new MyHierarchicalIndex<T>(
+					itsName+" = "+aIndex,
 					getTupleCodec(), 
 					getFile(), 
 					this, 
@@ -138,6 +139,7 @@ public abstract class IndexSet<T extends IndexTuple>
 		else if (theEntry == DISCARDED_ENTRY)
 		{
 			theIndex = new MyHierarchicalIndex<T>(
+					itsName+" = "+aIndex,
 					getTupleCodec(), 
 					getFile(), 
 					getIndexStruct(aIndex), 
@@ -281,24 +283,26 @@ public abstract class IndexSet<T extends IndexTuple>
 		
 		
 		public MyHierarchicalIndex(
+				String aName,
 				TupleCodec<T> aTupleCodec, 
 				HardPagedFile aFile,
 				IndexSet<T> aIndexSet, 
 				int aIndex)
 		{
-			super(aTupleCodec, aFile);
+			super(aName, aTupleCodec, aFile);
 			itsIndexSet = aIndexSet;
 			itsIndex = aIndex;
 		}
 
 		public MyHierarchicalIndex(
+				String aName,
 				TupleCodec<T> aTupleCodec, 
 				HardPagedFile aFile,
 				BitStruct aStoredIndexStruct, 
 				IndexSet<T> aIndexSet, 
 				int aIndex)
 		{
-			super(aTupleCodec, aFile, aStoredIndexStruct);
+			super(aName, aTupleCodec, aFile, aStoredIndexStruct);
 			itsIndexSet = aIndexSet;
 			itsIndex = aIndex;
 		}

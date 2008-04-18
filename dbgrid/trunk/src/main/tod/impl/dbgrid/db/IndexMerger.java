@@ -35,9 +35,10 @@ public class IndexMerger
 	 * the specified indexes starting from a specified timestamp. 
 	 */
 	public static <T extends StdIndexSet.StdTuple> IBidiIterator<T> conjunction(
+			boolean aMatchRoles, 
 			IBidiIterator<T>[] aIterators)
 	{
-		return new MyConjunctionIterator<T>(aIterators);
+		return new MyConjunctionIterator<T>(aMatchRoles, aIterators);
 	}
 	
 	/**
@@ -70,9 +71,9 @@ public class IndexMerger
 	public static class MyConjunctionIterator<T extends StdIndexSet.StdTuple> 
 	extends ConjunctionIterator<T>
 	{
-		public MyConjunctionIterator(IBidiIterator<T>[] aIterators)
+		public MyConjunctionIterator(boolean aMatchRoles, IBidiIterator<T>[] aIterators)
 		{
-			super(aIterators);
+			super(aMatchRoles, aIterators);
 		}
 
 		@Override

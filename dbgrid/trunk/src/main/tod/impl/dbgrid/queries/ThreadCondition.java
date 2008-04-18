@@ -22,6 +22,7 @@ package tod.impl.dbgrid.queries;
 
 
 import tod.impl.database.IBidiIterator;
+import tod.impl.dbgrid.db.EventList;
 import tod.impl.dbgrid.db.HierarchicalIndex;
 import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
@@ -42,15 +43,21 @@ public class ThreadCondition extends SimpleCondition
 	}
 
 	@Override
-	public IBidiIterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
+	public IBidiIterator<StdTuple> createTupleIterator(EventList aEventList, Indexes aIndexes, long aTimestamp)
 	{
 		return aIndexes.getThreadIndex(itsThreadId).getTupleIterator(aTimestamp);
 	}
 
 	@Override
-	public long[] getEventCounts(Indexes aIndexes, long aT1, long aT2, int aSlotsCount, boolean aForceMergeCounts)
+	public long[] getEventCounts(
+			EventList aEventList,
+			Indexes aIndexes, 
+			long aT1, 
+			long aT2, 
+			int aSlotsCount, 
+			boolean aForceMergeCounts)
 	{
-		if (aForceMergeCounts) return super.getEventCounts(aIndexes, aT1, aT2, aSlotsCount, true);
+		if (aForceMergeCounts) return super.getEventCounts(aEventList, aIndexes, aT1, aT2, aSlotsCount, true);
 		
 		HierarchicalIndex<StdTuple> theIndex = aIndexes.getThreadIndex(itsThreadId);
 		return theIndex.fastCountTuples(aT1, aT2, aSlotsCount);

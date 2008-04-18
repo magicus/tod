@@ -53,7 +53,7 @@ implements IEventFilter, Serializable
 			Indexes aIndexes,
 			long aTimestamp)
 	{
-		IBidiIterator<StdTuple> theIterator = createTupleIterator(aIndexes, aTimestamp);
+		IBidiIterator<StdTuple> theIterator = createTupleIterator(aEventList, aIndexes, aTimestamp);
 		return new AbstractFilteredBidiIterator<StdTuple, GridEvent>(theIterator)
 		{
 			@Override
@@ -72,9 +72,11 @@ implements IEventFilter, Serializable
 	/**
 	 * Creates an iterator over matching events, taking them from the specified
 	 * {@link EventList} and {@link BitIndexes}.
+	 * @param aEventList TODO
 	 */
 	public abstract IBidiIterator<StdTuple> createTupleIterator(
-			Indexes aIndexes,
+			EventList aEventList,
+			Indexes aIndexes, 
 			long aTimestamp);
 	
 	/**
@@ -82,9 +84,15 @@ implements IEventFilter, Serializable
 	 * By default performs a merge count. Subclasses can override this method
 	 * to provide a more efficient implementation.
 	 */
-	public long[] getEventCounts(Indexes aIndexes, long aT1, long aT2, int aSlotsCount, boolean aForceMergeCounts)
+	public long[] getEventCounts(
+			EventList aEventList,
+			Indexes aIndexes, 
+			long aT1, 
+			long aT2, 
+			int aSlotsCount, 
+			boolean aForceMergeCounts)
 	{
-		return EventsCounter.mergeCountEvents(this, aIndexes, aT1, aT2, aSlotsCount); 
+		return EventsCounter.mergeCountEvents(this, aEventList, aIndexes, aT1, aT2, aSlotsCount); 
 	}
 
 	

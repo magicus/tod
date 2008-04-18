@@ -36,8 +36,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.Util;
+import tod.core.DebugFlags;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.ObjectId;
 import tod.gui.IGUIManager;
 import zz.utils.ListMap;
 
@@ -112,7 +114,13 @@ public class CustomFormatterRegistry implements Serializable
 		else
 		{		
 			String theName = aShowPackageNames ? theType.getName() : Util.getSimpleName(theType.getName());
-			return theName + " (" + aInspector.getObject().getId() + ")";
+			long theId = aInspector.getObject().getId();
+			
+			String theIdText = DebugFlags.IGNORE_HOST ?
+					""+ObjectId.getObjectId(theId)
+					: ObjectId.getObjectId(theId) +"." +ObjectId.getHostId(theId);
+					
+			return theName + " (" + theIdText + ")";
 		}
 	}
 

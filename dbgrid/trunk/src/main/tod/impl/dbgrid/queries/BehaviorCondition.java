@@ -21,6 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.queries;
 
 import tod.impl.database.IBidiIterator;
+import tod.impl.dbgrid.db.EventList;
 import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.RoleIndexSet;
 import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
@@ -43,7 +44,7 @@ public class BehaviorCondition extends SimpleCondition
 	}
 	
 	@Override
-	public IBidiIterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
+	public IBidiIterator<StdTuple> createTupleIterator(EventList aEventList, Indexes aIndexes, long aTimestamp)
 	{
 		IBidiIterator<RoleIndexSet.RoleTuple> theTupleIterator = 
 			aIndexes.getBehaviorIndex(itsBehaviorId).getTupleIterator(aTimestamp);

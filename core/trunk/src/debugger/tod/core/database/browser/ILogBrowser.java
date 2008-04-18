@@ -144,6 +144,13 @@ public interface ILogBrowser
 	public ICompoundFilter createIntersectionFilter (IEventFilter... aFilters);
 
 	/**
+	 * Creates a filter that accepts only events that match the predicate.
+	 * @param aPredicate The predicate used to select events
+	 * @param aBaseFilter The source filter from which events are taken.
+	 */
+	public IEventFilter createPredicateFilter(IEventPredicate aPredicate, IEventFilter aBaseFilter);
+	
+	/**
 	 * Creates a filter that accepts only events that occured at a particular 
 	 * location in the source code, indicated by a behavior and a bytecode index
 	 * within this behavior.
@@ -249,6 +256,12 @@ public interface ILogBrowser
 	 * is the specified object reference.
 	 */
 	public IEventFilter createArgumentFilter (ObjectId aId);
+	
+	/**
+	 * Creates a filter that accepts only the behavior call events 
+	 * in which the specified object is the argument at the specified position.
+	 */
+	public IEventFilter createArgumentFilter (ObjectId aId, int aPosition);
 	
 	/**
 	 * Creates a filter that accepts any event that refers to

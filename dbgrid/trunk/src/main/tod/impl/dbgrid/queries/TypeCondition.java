@@ -22,6 +22,7 @@ package tod.impl.dbgrid.queries;
 
 
 import tod.impl.database.IBidiIterator;
+import tod.impl.dbgrid.db.EventList;
 import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.messages.GridEvent;
@@ -42,7 +43,7 @@ public class TypeCondition extends SimpleCondition
 	}
 
 	@Override
-	public IBidiIterator<StdTuple> createTupleIterator(Indexes aIndexes, long aTimestamp)
+	public IBidiIterator<StdTuple> createTupleIterator(EventList aEventList, Indexes aIndexes, long aTimestamp)
 	{
 		return aIndexes.getTypeIndex(itsType.ordinal()).getTupleIterator(aTimestamp);
 	}

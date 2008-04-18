@@ -66,7 +66,7 @@ public class Fixtures
 			HierarchicalIndex<StdIndexSet.StdTuple>[] theIndexes = new HierarchicalIndex[aCount];
 			for (int i = 0; i < theIndexes.length; i++)
 			{
-				theIndexes[i] = new HierarchicalIndex<StdIndexSet.StdTuple>(StdIndexSet.TUPLE_CODEC, thePagedFile);
+				theIndexes[i] = new HierarchicalIndex<StdIndexSet.StdTuple>("test", StdIndexSet.TUPLE_CODEC, thePagedFile);
 			}
 			
 			return theIndexes;
@@ -93,7 +93,7 @@ public class Fixtures
 			HierarchicalIndex<RoleIndexSet.RoleTuple>[] theIndexes = new HierarchicalIndex[aCount];
 			for (int i = 0; i < theIndexes.length; i++)
 			{
-				theIndexes[i] = new HierarchicalIndex<RoleIndexSet.RoleTuple>(RoleIndexSet.TUPLE_CODEC, thePagedFile);
+				theIndexes[i] = new HierarchicalIndex<RoleIndexSet.RoleTuple>("test", RoleIndexSet.TUPLE_CODEC, thePagedFile);
 			}
 			
 			return theIndexes;

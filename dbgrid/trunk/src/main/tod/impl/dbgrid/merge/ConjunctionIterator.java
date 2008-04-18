@@ -33,6 +33,12 @@ import zz.utils.ITask;
  */
 public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 {
+	/**
+	 * Whether roles should be matched to consider events equal.
+	 * See comment in {@link Fetcher#fetch()}.
+	 */
+	private final boolean itsMatchRoles;
+	
 	private ThreadLocal<ForwardFetcher> itsForwardFetchers = new ThreadLocal<ForwardFetcher>()
 	{
 		@Override
@@ -51,9 +57,10 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 		}
 	};
 	
-	public ConjunctionIterator(IBidiIterator<T>[] aIterators)
+	public ConjunctionIterator(boolean aMatchRoles, IBidiIterator<T>[] aIterators)
 	{
 		super(aIterators);
+		itsMatchRoles = aMatchRoles;
 	}
 
 	@Override
@@ -132,8 +139,23 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 					if (theRefTuple == null) theRefTuple = theItem;
 					else 
 					{
-						if (! sameItem(theRefTuple, theItem)) theMatch = false;
-						if (! sameEvent(theRefTuple, theItem)) theSameEvent = false;
+						if (itsMatchRoles)
+						{
+							// Note: tuples must have the same role for split indexes.
+							// eg. Event x corresponds to call to foo(a, b)
+							// id(a) = 0/1, id(b) = 1/0, id(c) = 1/1
+							// c will wrongly match
+							if (! sameItem(theRefTuple, theItem)) theMatch = false;
+							if (! sameEvent(theRefTuple, theItem)) theSameEvent = false;
+						}
+						else
+						{
+							if (! sameEvent(theRefTuple, theItem)) 
+							{
+								theMatch = false;
+								theSameEvent = false;
+							}
+						}
 						if (! sameKey(theRefTuple, theItem)) theSameKey = false;
 					}
 

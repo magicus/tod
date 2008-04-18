@@ -90,32 +90,4 @@ implements ICompoundFilter
 		
 		return theCount;
 	}
-	
-	/**
-	 * Static factory method for conjunctions
-	 */
-	public static Conjunction and(EventCondition... aConditions)
-	{
-		Conjunction theCompound = new Conjunction();
-		for (EventCondition theCondition : aConditions)
-		{
-			theCompound.addCondition(theCondition);
-		}
-		
-		return theCompound;
-	}
-	
-	/**
-	 * Static factory method for disjunctions
-	 */
-	public static Disjunction or(EventCondition... aConditions)
-	{
-		Disjunction theCompound = new Disjunction();
-		for (EventCondition theCondition : aConditions)
-		{
-			theCompound.addCondition(theCondition);
-		}
-		
-		return theCompound;
-	}
 }

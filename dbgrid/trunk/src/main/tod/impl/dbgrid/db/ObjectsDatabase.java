@@ -81,6 +81,7 @@ public class ObjectsDatabase
 		{
 			itsFile = new HardPagedFile(aFile, DB_PAGE_SIZE);
 			itsindex = new HierarchicalIndex<ObjectPointerTuple>(
+					"[ObjectsDatabase] index",
 					ObjectTupleCodec.getInstance(),
 					itsFile);
 			

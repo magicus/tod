@@ -39,14 +39,14 @@ public class ArraySlotFieldInfo
 implements IArraySlotFieldInfo
 {
 	private transient IStructureDatabase itsDatabase;
-	private final int itsId;
+	private final int itsIndex;
 	private final IArrayTypeInfo itsType;
 
 	
 	public ArraySlotFieldInfo(IStructureDatabase aDatabase, IArrayTypeInfo aType, int aIndex)
 	{
 		itsDatabase = aDatabase;
-		itsId = -aIndex-1;
+		itsIndex = aIndex;
 		itsType = aType;
 	}
 	
@@ -67,7 +67,7 @@ implements IArraySlotFieldInfo
 	
 	public int getIndex()
 	{
-		return -itsId-1;
+		return itsIndex;
 	}
 	
 	public String getName()

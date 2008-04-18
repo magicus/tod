@@ -21,9 +21,11 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.queries;
 
 import tod.impl.database.IBidiIterator;
+import tod.impl.dbgrid.db.EventList;
 import tod.impl.dbgrid.db.IndexMerger;
 import tod.impl.dbgrid.db.Indexes;
 import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
+import tod.impl.dbgrid.merge.ConjunctionIterator;
 import tod.impl.dbgrid.messages.GridEvent;
 
 /**
@@ -32,22 +34,31 @@ import tod.impl.dbgrid.messages.GridEvent;
  */
 public class Conjunction extends CompoundCondition
 {
-
 	private static final long serialVersionUID = 6155046517220795498L;
+	
+	private final boolean itsMatchRoles;
+	
+	/**
+	 * @param aMatchRoles See {@link ConjunctionIterator}
+	 */
+	public Conjunction(boolean aMatchRoles)
+	{
+		itsMatchRoles = aMatchRoles;
+	}
 
 	@Override
 	public IBidiIterator<StdTuple> createTupleIterator(
-			Indexes aIndexes,
-			long aTimestamp)
+			EventList aEventList,
+			Indexes aIndexes, long aTimestamp)
 	{
 		IBidiIterator<StdTuple>[] theIterators = new IBidiIterator[getConditions().size()];
 		int i = 0;
 		for (EventCondition theCondition : getConditions())
 		{
-			theIterators[i++] = theCondition.createTupleIterator(aIndexes, aTimestamp);
+			theIterators[i++] = theCondition.createTupleIterator(aEventList, aIndexes, aTimestamp);
 		}
 		
-		return IndexMerger.conjunction(theIterators);
+		return IndexMerger.conjunction(itsMatchRoles, theIterators);
 	}
 
 	@Override

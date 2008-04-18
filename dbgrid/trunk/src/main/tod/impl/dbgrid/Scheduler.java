@@ -53,7 +53,7 @@ implements POMGroupDef, ISessionMonitor
 	
 	public Scheduler()
 	{
-		new DeadlockDetectorThread().start();
+//		new DeadlockDetectorThread().start();
 	}
 
 	@Override
@@ -72,16 +72,16 @@ implements POMGroupDef, ISessionMonitor
 	protected void schedule()
 	{
 		
-		TODUtils.log(1,"[Scheduler] Schedule... req: "+itsExecutingRequest+" on "+Thread.currentThread().getName());
+		TODUtils.log(2,"[Scheduler] Schedule... req: "+itsExecutingRequest+" on "+Thread.currentThread().getName());
 		RequestIterator theIterator = iterator();
 		while (theIterator.hasNext())
 		{
 			Request theRequest = theIterator.next();
-			TODUtils.log(1,"[Scheduler] Request: "+theRequest);
+			TODUtils.log(2,"[Scheduler] Request: "+theRequest);
 		}
 		if (itsExecutingRequest == null) {
 			executeOldest();
-			TODUtils.log(1,"[Scheduler] Schedule done on "+Thread.currentThread().getName());
+			TODUtils.log(2,"[Scheduler] Schedule done on "+Thread.currentThread().getName());
 			itsActiveTaskCount++; 
 		}
 		
@@ -94,7 +94,7 @@ implements POMGroupDef, ISessionMonitor
 		{
 			System.out.println("");
 
-			TODUtils.logf(1,
+			TODUtils.logf(2,
 					"[Scheduler] Scheduler (%s) - reentering request %s on "+Thread.currentThread().getName(),
 					this,
 					aReq);
@@ -102,7 +102,7 @@ implements POMGroupDef, ISessionMonitor
 		}
 		else
 		{
-			TODUtils.logf(1,
+			TODUtils.logf(2,
 					"[Scheduler] Scheduler (%s) - executing %s on "+Thread.currentThread().getName(),
 					this,
 					aReq);
@@ -116,7 +116,7 @@ implements POMGroupDef, ISessionMonitor
 	{
 		if (itsExecutingRequest != aReq) throw new IllegalStateException();
 		itsExecutingRequest = null;
-		TODUtils.log(1,"[Scheduler] Scheduler.leave() on "+Thread.currentThread().getName());
+		TODUtils.log(2,"[Scheduler] Scheduler.leave() on "+Thread.currentThread().getName());
 		
 		itsActiveTaskCount--;
 	}

@@ -31,7 +31,9 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.common;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -40,8 +42,13 @@ import java.util.Map;
 import tod.core.DebugFlags;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
+import tod.core.database.browser.IEventPredicate;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
+import tod.core.database.browser.LocationUtils;
+import tod.core.database.browser.ILogBrowser.Query;
+import tod.core.database.event.ExternalPointer;
+import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ICreationEvent;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILogEvent;
@@ -53,6 +60,7 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMemberInfo;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.impl.database.structure.standard.ArraySlotFieldInfo;
@@ -66,13 +74,12 @@ import zz.utils.Utils;
  */
 public class ObjectInspector implements IObjectInspector
 {
-	private final ILogBrowser itsLogBrowser;
+	private final ILogBrowser aLogBrowser;
 	private ObjectId itsObjectId;
 	
 	private Delegate itsDelegate;
 	
-	private Map<IMemberInfo, IEventBrowser> itsBrowsersMap = new HashMap<IMemberInfo, IEventBrowser>();
-	private Map<IMemberInfo, IEventFilter> itsFiltersMap = new HashMap<IMemberInfo, IEventFilter>();
+	private Map<IFieldInfo, IEventBrowser> itsBrowsersMap = new HashMap<IFieldInfo, IEventBrowser>();
 	private ITypeInfo itsType;
 	
 	private ICreationEvent itsCreationEvent;
@@ -82,22 +89,22 @@ public class ObjectInspector implements IObjectInspector
 	 * The event relative to which values are reconstituted.
 	 */
 	private ILogEvent itsReferenceEvent;
-
+	
 	public ObjectInspector(ILogBrowser aEventTrace, ObjectId aObjectId)
 	{
-		itsLogBrowser = aEventTrace;
+		aLogBrowser = aEventTrace;
 		itsObjectId = aObjectId;
 	}
 	
 	public ObjectInspector(ILogBrowser aEventTrace, IClassInfo aClass)
 	{
-		itsLogBrowser = aEventTrace;
+		aLogBrowser = aEventTrace;
 		itsType = aClass;
 	}
 	
 	public ILogBrowser getLogBrowser()
 	{
-		return itsLogBrowser;
+		return aLogBrowser;
 	}
 
 	public ObjectId getObject()
@@ -111,8 +118,8 @@ public class ObjectInspector implements IObjectInspector
 		if (itsCreationEvent == null) 
 		{
 			TODUtils.log(1,"[ObjectInspector] Retrieving creation event for object: "+getObject());
-			IEventFilter theFilter = itsLogBrowser.createTargetFilter(getObject());
-			IEventBrowser theBrowser = itsLogBrowser.createBrowser(theFilter);
+			IEventFilter theFilter = aLogBrowser.createTargetFilter(getObject());
+			IEventBrowser theBrowser = aLogBrowser.createBrowser(theFilter);
 			
 			// Creation is the first event if it has been captured
 			// Check for timestamp because of concurrency & accuracy of timer.
@@ -147,11 +154,11 @@ public class ObjectInspector implements IObjectInspector
 			else if (DebugFlags.TRY_GUESS_TYPE)
 			{
 				// Try to guess type
-				IEventFilter theFilter = itsLogBrowser.createIntersectionFilter(
-						itsLogBrowser.createTargetFilter(itsObjectId),
-						itsLogBrowser.createFieldWriteFilter());
+				IEventFilter theFilter = aLogBrowser.createIntersectionFilter(
+						aLogBrowser.createTargetFilter(itsObjectId),
+						aLogBrowser.createFieldWriteFilter());
 				
-				IEventBrowser theBrowser = itsLogBrowser.createBrowser(theFilter);
+				IEventBrowser theBrowser = aLogBrowser.createBrowser(theFilter);
 				if (theBrowser.hasNext())
 				{
 					IFieldWriteEvent theEvent = (IFieldWriteEvent) theBrowser.next();
@@ -191,12 +198,6 @@ public class ObjectInspector implements IObjectInspector
 		return itsDelegate;
 	}
 	
-	public List<IMemberInfo> getMembers()
-	{
-		Delegate theDelegate = getDelegate();
-		return theDelegate != UNAVAILABLE ? theDelegate.getMembers() : Collections.EMPTY_LIST;
-	}
-	
 	public List<IFieldInfo> getFields()
 	{
 		Delegate theDelegate = getDelegate();
@@ -223,23 +224,10 @@ public class ObjectInspector implements IObjectInspector
 		throw new UnsupportedOperationException();
 	}
 
-	public Object[] getEntryValue(IFieldInfo aField)
-	{
-		IWriteEvent[] theSetters = getEntrySetter(aField);
-		Object[] theResult = new Object[theSetters.length];
-		
-		for (int i = 0; i < theSetters.length; i++)
-		{
-			theResult[i] = theSetters[i].getValue();
-		}
-		
-		return theResult;
-	}
-
-	public IWriteEvent[] getEntrySetter(IFieldInfo aField)
+	public EntryValue[] getEntryValue(IFieldInfo aField)
 	{
 		checkReferenceEvent();
-		List<IWriteEvent> theResult = new ArrayList<IWriteEvent>();
+		List<EntryValue> theResult = new ArrayList<EntryValue>();
 		
 		IEventBrowser theBrowser = getBrowser(aField);
 		theBrowser.setPreviousEvent(itsReferenceEvent);
@@ -248,122 +236,45 @@ public class ObjectInspector implements IObjectInspector
 		
 		while (theBrowser.hasPrevious())
 		{
-			IWriteEvent theEvent = (IWriteEvent) theBrowser.previous();
+			ILogEvent theEvent = theBrowser.previous();
 			long theTimestamp = theEvent.getTimestamp();
 			
 			if (thePreviousTimestamp == -1) thePreviousTimestamp = theTimestamp;
 			
-			if (theTimestamp == thePreviousTimestamp) theResult.add(theEvent);
+			if (theTimestamp == thePreviousTimestamp) 
+			{
+				Object[] theNewValue = getNewValue(aField, theEvent);
+				for (Object v : theNewValue) theResult.add(new EntryValue(v, theEvent));
+			}
 			else break;
 		}
 		
-		return theResult.toArray(new IWriteEvent[theResult.size()]);
+		return theResult.toArray(new EntryValue[theResult.size()]);
 	}
+	
+	public Object[] getNewValue(IFieldInfo aField, ILogEvent aEvent)
+	{
+		checkReferenceEvent();
+		return getDelegate().getNewValue(aField, aEvent);
+	}
+
 
 	/**
 	 * Returns an event browser for the specified field.
 	 */
-	public IEventBrowser getBrowser(IMemberInfo aMember)
+	public IEventBrowser getBrowser(IFieldInfo aMember)
 	{
 		IEventBrowser theBrowser = itsBrowsersMap.get(aMember);
 		if (theBrowser == null)
 		{
-			theBrowser = itsLogBrowser.createBrowser(getFilter(aMember));
+			Delegate theDelegate = getDelegate();
+			IEventFilter theFilter = theDelegate != UNAVAILABLE ? theDelegate.getFilter(aMember) : null;
+			theBrowser = aLogBrowser.createBrowser(theFilter);
 			itsBrowsersMap.put (aMember, theBrowser);
 		}
 		
 		return theBrowser;
 	}
-
-	public IEventFilter getFilter(IMemberInfo aMember)
-	{
-		IEventFilter theFilter = itsFiltersMap.get(aMember);
-		if (theFilter == null)
-		{
-			Delegate theDelegate = getDelegate();
-			theFilter = theDelegate != UNAVAILABLE ? theDelegate.getFilter(aMember) : null;
-			itsFiltersMap.put(aMember, theFilter);
-		}
-		
-		return theFilter;
-	}
-	
-	
-	public boolean hasNext()
-	{
-		throw new UnsupportedOperationException("Not yet implemented");
-	}
-	
-	public boolean hasPrevious()
-	{
-		throw new UnsupportedOperationException("Not yet implemented");
-	}
-	
-	public void stepToNext()
-	{
-		throw new UnsupportedOperationException("Not yet implemented");
-	}
-	
-	public void stepToPrevious()
-	{
-		throw new UnsupportedOperationException("Not yet implemented");
-	}
-	
-	public boolean hasNext(IMemberInfo aMember)
-	{
-		checkReferenceEvent();
-		IEventBrowser theBrowser = getBrowser(aMember);
-		theBrowser.setPreviousEvent(itsReferenceEvent);
-		return theBrowser.hasNext();
-	}
-	
-	public void stepToNext(IMemberInfo aMember)
-	{
-		checkReferenceEvent();
-		IEventBrowser theBrowser = getBrowser(aMember);
-		theBrowser.setPreviousEvent(itsReferenceEvent);
-		ILogEvent theEvent = theBrowser.next();
-		if (theEvent != null) setReferenceEvent(theEvent);
-	}
-	
-	public boolean hasPrevious(IMemberInfo aMember)
-	{
-		checkReferenceEvent();
-		IEventBrowser theBrowser = getBrowser(aMember);
-		theBrowser.setNextEvent(itsReferenceEvent);
-		return theBrowser.hasPrevious();
-	}
-	
-	public void stepToPrevious(IMemberInfo aMember)
-	{
-		checkReferenceEvent();
-		IEventBrowser theBrowser = getBrowser(aMember);
-		theBrowser.setNextEvent(itsReferenceEvent);
-		ILogEvent theEvent = theBrowser.previous();
-		if (theEvent != null) setReferenceEvent(theEvent);
-	}
-	
-	private static final Delegate UNAVAILABLE = new Delegate()
-	{
-
-		@Override
-		public List<IFieldInfo> getFields()
-		{
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public IEventFilter getFilter(IMemberInfo aMember)
-		{
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public List<IMemberInfo> getMembers()
-		{
-			throw new UnsupportedOperationException();
-		}
-	};
 	
 	/**
 	 * The object inspector uses a delegate that permits to abstract away the 
@@ -373,11 +284,6 @@ public class ObjectInspector implements IObjectInspector
 	private static abstract class Delegate
 	{
 		/**
-		 * Delegate method for {@link ObjectInspector#getMembers()}
-		 */
-		public abstract List<IMemberInfo> getMembers();
-
-		/**
 		 * Delegate method for {@link ObjectInspector#getFields()}
 		 */
 		public abstract List<IFieldInfo> getFields();
@@ -385,102 +291,116 @@ public class ObjectInspector implements IObjectInspector
 		/**
 		 * Delegate method for {@link ObjectInspector#getFilter(IMemberInfo)}
 		 */
-		public abstract IEventFilter getFilter(IMemberInfo aMember);
+		public abstract IEventFilter getFilter(IFieldInfo aMember);
+		
+		/**
+		 * Delegate method for {@link ObjectInspector#getNewValue(IFieldInfo, ILogEvent)}
+		 */
+		public abstract Object[] getNewValue(IFieldInfo aField, ILogEvent aEvent);
 	}
+	
+	private static final Delegate UNAVAILABLE = new Delegate()
+	{
+		@Override
+		public List<IFieldInfo> getFields()
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public IEventFilter getFilter(IFieldInfo aMember)
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public Object[] getNewValue(IFieldInfo aField, ILogEvent aEvent)
+		{
+			throw new UnsupportedOperationException();
+		}
+	};
 	
 	private class ObjectDelegate extends Delegate
 	{
-		private List<IMemberInfo> itsMembers;
 		private List<IFieldInfo> itsFields;
 		
 		/**
 		 * Recursively finds all inherited members of the inspected object.
 		 */
-		private void fillMembers (List<IMemberInfo> aMembers, ITypeInfo aType)
+		private void fillMembers (List<IFieldInfo> aMembers, ITypeInfo aType)
 		{
 			if (aType instanceof IClassInfo)
 			{
 				IClassInfo theClass = (IClassInfo) aType;
 				
 				Utils.fillCollection(aMembers, theClass.getFields());
-				Utils.fillCollection(aMembers, theClass.getBehaviors());
 
-				// Fill supertypes & interfaces, recursively
+				// Fill supertypes recursively
 				ITypeInfo theSupertype = theClass.getSupertype();
 				if (theSupertype != null) fillMembers(aMembers, theSupertype);
-				ITypeInfo[] theInterfaces = theClass.getInterfaces();
-				if (theInterfaces != null) for (ITypeInfo theInterface : theInterfaces)
-				{
-					fillMembers(aMembers, theInterface);
-				}
 			}
 		}
 		
-		public List<IMemberInfo> getMembers()
-		{
-			if (itsMembers == null)
-			{
-				itsMembers = new ArrayList<IMemberInfo>();
-				fillMembers(itsMembers, getType());
-			}
-			return itsMembers;
-		}
-		
+		@Override
 		public List<IFieldInfo> getFields()
 		{
 			if (itsFields == null)
 			{
 				itsFields = new ArrayList<IFieldInfo>();
-				
-				for (IMemberInfo theMember : getMembers())
-				{
-					if (theMember instanceof IFieldInfo)
-					{
-						IFieldInfo theField = (IFieldInfo) theMember;
-						itsFields.add (theField);
-					}
-				}
+				fillMembers(itsFields, getType());
 			}
 			return itsFields;
 		}
 		
-		public IEventFilter getFilter(IMemberInfo aMember)
+		@Override
+		public IEventFilter getFilter(IFieldInfo aField)
 		{
-			IEventFilter theFilter;
-			
-			if (aMember instanceof IFieldInfo)
-			{
-				IFieldInfo theField = (IFieldInfo) aMember;
-				
-				theFilter = itsLogBrowser.createIntersectionFilter(
-						itsLogBrowser.createFieldFilter(theField),
-						itsLogBrowser.createTargetFilter(itsObjectId));
-			}
-			else if (aMember instanceof IBehaviorInfo)
-			{
-				IBehaviorInfo theBehavior = (IBehaviorInfo) aMember;
-
-				theFilter = itsLogBrowser.createIntersectionFilter(
-						itsLogBrowser.createBehaviorCallFilter(theBehavior),
-						itsLogBrowser.createTargetFilter(itsObjectId));
-				
-			}
-			else throw new RuntimeException("Not handled: "+aMember);
-			
-			return theFilter;
+			return aLogBrowser.createIntersectionFilter(
+					aLogBrowser.createFieldFilter(aField),
+					aLogBrowser.createTargetFilter(itsObjectId));
 		}
+		
+		@Override
+		public Object[] getNewValue(IFieldInfo aField, ILogEvent aEvent)
+		{
+			IFieldWriteEvent theEvent = (IFieldWriteEvent) aEvent;
+			if (! theEvent.getField().equals(aField)) 
+			{
+				throw new IllegalArgumentException("Argument mismatch: "+aField+", "+aEvent);
+			}
+			else 
+			{
+				return new Object[] {theEvent.getValue()};
+			}
+				
+		}
+		
+	}
+
+	private static IBehaviorInfo getArrayCopy(IStructureDatabase aStructureDatabase)
+	{
+		return LocationUtils.getBehavior(
+				aStructureDatabase, 
+				"java.lang.System", 
+				"arraycopy", 
+				"(Ljava.lang.Object;ILjava.lang.Object;II)V", 
+				false);
 	}
 	
 	private class ArrayDelegate extends Delegate
 	{
 		private List<IFieldInfo> itsFields;
-
-		@Override
-		public List<IMemberInfo> getMembers()
-		{
-			return (List) getFields();
-		}
 		
+		/**
+		 * A reference to {@link System#arraycopy(Object, int, Object, int, int)}
+		 */
+		private IBehaviorInfo itsArrayCopy;
+
+		public ArrayDelegate()
+		{
+			itsArrayCopy = getArrayCopy(aLogBrowser.getStructureDatabase());
+		}
+
 		@Override
 		public List<IFieldInfo> getFields()
 		{
@@ -502,13 +422,139 @@ public class ObjectInspector implements IObjectInspector
 		}
 		
 		@Override
-		public IEventFilter getFilter(IMemberInfo aMember)
+		public IEventFilter getFilter(IFieldInfo aField)
 		{
-			IArraySlotFieldInfo theField = (IArraySlotFieldInfo) aMember;
-			return itsLogBrowser.createIntersectionFilter(
-					itsLogBrowser.createFieldFilter(theField),
-					itsLogBrowser.createTargetFilter(itsObjectId));
+			IArraySlotFieldInfo theField = (IArraySlotFieldInfo) aField;
 			
+			IEventFilter theFieldWriteFilter = aLogBrowser.createIntersectionFilter(
+					aLogBrowser.createFieldFilter(theField),
+					aLogBrowser.createTargetFilter(itsObjectId));
+			
+			IEventFilter theCopyFilter = aLogBrowser.createPredicateFilter(
+					new ArrayCopyFilter(theField.getIndex()), 
+					aLogBrowser.createIntersectionFilter(
+							aLogBrowser.createBehaviorCallFilter(itsArrayCopy),
+							aLogBrowser.createArgumentFilter(itsObjectId, 3)));
+			
+			return aLogBrowser.createUnionFilter(
+					theFieldWriteFilter,
+					theCopyFilter);
+			
+		}
+
+		@Override
+		public Object[] getNewValue(IFieldInfo aField, ILogEvent aEvent)
+		{
+			IArraySlotFieldInfo theField = (IArraySlotFieldInfo) aField;
+			Object[] theResult;
+			
+			TODUtils.logf(0, "Retrieving slot %d of array %s", theField.getIndex(), itsObjectId);
+			
+			if (aEvent instanceof IWriteEvent)
+			{
+				IWriteEvent theWriteEvent = (IWriteEvent) aEvent;
+				theResult = new Object[] {theWriteEvent.getValue()};
+			}
+			else 
+			{
+				ArraySlotTrack theQuery = new ArraySlotTrack(
+						itsObjectId, 
+						aEvent.getPointer(), 
+						theField.getIndex());
+				
+//				EntryValue[] theValue = getLogBrowser().exec(theQuery);
+				EntryValue[] theValue = theQuery.run(getLogBrowser());
+
+				theResult = new Object[theValue.length];
+				for(int i=0;i<theValue.length;i++) theResult[i] = theValue[i].value;
+			}
+			
+			TODUtils.logf(0, "Retrieved slot %d of array %s -> %s", theField.getIndex(), itsObjectId, Arrays.asList(theResult));
+			
+			return theResult;
+		}
+	}
+	
+	/**
+	 * This query tracks the value of an array slot, following arraycopy and IO operations
+	 * @author gpothier
+	 */
+	private static class ArraySlotTrack extends Query<EntryValue[]>
+	implements Serializable
+	{
+		private final ObjectId itsArrayId;
+		private final ExternalPointer itsCallEventPointer;
+		private final int itsIndex;
+
+		public ArraySlotTrack(ObjectId aArrayId, ExternalPointer aCallEventPointer, int aIndex)
+		{
+			itsArrayId = aArrayId;
+			itsCallEventPointer = aCallEventPointer;
+			itsIndex = aIndex;
+		}
+
+		public EntryValue[] run(ILogBrowser aLogBrowser)
+		{
+			ILogEvent theEvent = aLogBrowser.getEvent(itsCallEventPointer);
+			
+			if (theEvent instanceof IBehaviorCallEvent)
+			{
+				IBehaviorCallEvent theCall = (IBehaviorCallEvent) theEvent;
+				IBehaviorInfo theArrayCopy = getArrayCopy(aLogBrowser.getStructureDatabase());
+				
+				EntryValue[] theEntryValue = null;
+				
+				if (theArrayCopy.equals(theCall.getCalledBehavior()))
+				{
+					int theDestPos = (Integer) theCall.getArguments()[3];
+					int theLength = (Integer) theCall.getArguments()[4];
+					
+					// Check if our slot is in the modified window
+					assert itsIndex >= theDestPos && itsIndex < theDestPos+theLength;
+					
+					int theSrcPos = (Integer) theCall.getArguments()[1];
+					ObjectId theSource = (ObjectId) theCall.getArguments()[0];
+					
+					// Reconstitute corresponding value in source array
+					IObjectInspector theInspector = aLogBrowser.createObjectInspector(theSource);
+					theInspector.setReferenceEvent(theCall);
+					
+					TODUtils.logf(0, "Looking up slot %d of src array %s", itsIndex-theSrcPos, theSource);
+					theEntryValue = theInspector.getEntryValue(new ArraySlotFieldInfo(
+							aLogBrowser.getStructureDatabase(),
+							null,
+							itsIndex-theDestPos+theSrcPos));
+				}
+				
+				return theEntryValue;
+			}
+
+			throw new IllegalArgumentException("Can't handle: "+theEvent);
+		}
+		
+	}
+	
+	/**
+	 * Selects only arraycopy calls that covered a given index.
+	 * @author gpothier
+	 */
+	private static class ArrayCopyFilter implements IEventPredicate, Serializable
+	{
+		private static final long serialVersionUID = 1458736914058795108L;
+		private final int itsIndex;
+
+		public ArrayCopyFilter(int aIndex)
+		{
+			itsIndex = aIndex;
+		}
+
+		public boolean match(ILogEvent aEvent)
+		{
+			IBehaviorCallEvent theCall = (IBehaviorCallEvent) aEvent;
+			int theDestPos = (Integer) theCall.getArguments()[3];
+			int theLength = (Integer) theCall.getArguments()[4];
+			
+			return itsIndex >= theDestPos && itsIndex < theDestPos+theLength;
 		}
 	}
 	

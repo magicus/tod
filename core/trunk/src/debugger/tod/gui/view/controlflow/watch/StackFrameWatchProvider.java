@@ -41,11 +41,10 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import tod.Util;
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IVariablesInspector;
+import tod.core.database.browser.ICompoundInspector.EntryValue;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
-import tod.core.database.event.IWriteEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
@@ -101,7 +100,7 @@ public class StackFrameWatchProvider extends AbstractWatchProvider
 	
 	private IVariablesInspector getInspector()
 	{
-		if (itsInspector == null && ! itsInvalid);
+		if (itsInspector == null && ! itsInvalid)
 		{
 			IBehaviorCallEvent theParentEvent = getParentEvent();
 			if (theParentEvent != null)
@@ -114,6 +113,7 @@ public class StackFrameWatchProvider extends AbstractWatchProvider
 		return itsInspector;
 	}
 
+	@Override
 	public JComponent buildTitleComponent(JobProcessor aJobProcessor)
 	{
 		IBehaviorCallEvent theParentEvent = getParentEvent();
@@ -152,6 +152,7 @@ public class StackFrameWatchProvider extends AbstractWatchProvider
 		}			
 	}
 
+	@Override
 	public ObjectId getCurrentObject()
 	{
 		if (itsInvalid) return null;
@@ -161,11 +162,13 @@ public class StackFrameWatchProvider extends AbstractWatchProvider
 				: null;
 	}
 
+	@Override
 	public ILogEvent getRefEvent()
 	{
 		return itsRefEvent;
 	}
 	
+	@Override
 	public List<Entry> getEntries()
 	{
 		if (itsInvalid) return null;
@@ -190,19 +193,15 @@ public class StackFrameWatchProvider extends AbstractWatchProvider
 			itsLocalVariable = aLocalVariable;
 		}
 		
+		@Override
 		public String getName()
 		{
 			if (itsInvalid) return null;
 			return itsLocalVariable.getVariableName();
 		}
 
-		public IWriteEvent[] getSetter()
-		{
-			if (itsInvalid) return null;
-			return getInspector().getEntrySetter(itsLocalVariable);
-		}
-
-		public Object[] getValue()
+		@Override
+		public EntryValue[] getValue()
 		{
 			if (itsInvalid) return null;
 			return getInspector().getEntryValue(itsLocalVariable);

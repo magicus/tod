@@ -60,6 +60,7 @@ import tod.impl.dbgrid.dispatch.NodeProxy;
 import tod.impl.dbgrid.dispatch.RINodeConnector;
 import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
 import tod.impl.dbgrid.queries.EventCondition;
+import tod.utils.TODUtils;
 import tod.utils.remote.RIStructureDatabase;
 import tod.utils.remote.RemoteStructureDatabase;
 import zz.utils.ITask;
@@ -496,7 +497,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 
 	public RIQueryAggregator createAggregator(EventCondition aCondition) throws RemoteException
 	{
-		System.out.println("[GridMaster] Creating aggregator for conditions: " + aCondition);
+		TODUtils.logf(2, "[GridMaster] Creating aggregator for conditions: %s", aCondition);
 		return new QueryAggregator(this, aCondition);
 	}
 

@@ -29,57 +29,22 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.eventsequences;
+package tod.core.database.browser;
 
-import java.awt.Color;
-
-import javax.swing.JComponent;
-
-import tod.core.database.browser.IEventBrowser;
-import tod.core.database.browser.IObjectInspector;
-import tod.core.database.structure.IMemberInfo;
-import tod.gui.Hyperlinks;
-import tod.gui.IGUIManager;
+import tod.core.database.event.ILogEvent;
 
 /**
- * Abstract base class for event sequence views that displays events relative to a class member.
+ * A predicate, or filter, that accepts or rejects events 
  * @author gpothier
  */
-public abstract class AbstractMemberSequenceView extends AbstractSingleBrowserSequenceView
+public interface IEventPredicate
 {
-	private final IObjectInspector itsInspector;
-	
-	public AbstractMemberSequenceView(IGUIManager aGUIManager, Color aColor, IObjectInspector aInspector)
-	{
-		super(aGUIManager, aColor);
-		itsInspector = aInspector;
-	}
-
-	@Override
-	protected IEventBrowser getBrowser()
-	{
-		throw new UnsupportedOperationException("Reeimplement if needed");
-//		return itsInspector.getBrowser(getMember());
-	}
-
 	/**
-	 * Returns the member whose events are displayed in this sequence.
+	 * Whether the given event matches the predicate.
+	 * @param aEvent The event to check. Note that when used as part 
+	 * of an event filter, the information of the event might be incomplete,
+	 * in particular the behavior/field/class/thread infos might
+	 * have only the id field. 
 	 */
-	public abstract IMemberInfo getMember();
-	
-	/**
-	 * Helper method that creates a graphic object suitable for 
-	 * representing the given object.
-	 */
-	protected JComponent createBaloon(Object aObject)
-	{
-		return Hyperlinks.object(
-				Hyperlinks.SWING, 
-				getGUIManager(), 
-				getGUIManager().getJobProcessor(),
-				itsInspector.getObject(), 
-				aObject, 
-				null,
-				true);
-	}
+	public boolean match(ILogEvent aEvent);
 }

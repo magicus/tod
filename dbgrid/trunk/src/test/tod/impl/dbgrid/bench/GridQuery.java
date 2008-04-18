@@ -52,7 +52,6 @@ import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.impl.dbgrid.DBGridUtils;
 import tod.impl.dbgrid.DebuggerGridConfig;
-import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.RIGridMaster;
@@ -707,7 +706,7 @@ public class GridQuery
 		
 		for (IFieldInfo theField : theFields)
 		{
-			aInspector.getEntrySetter(theField);
+			aInspector.getEntryValue(theField);
 		}
 		
 		long t1 = System.currentTimeMillis();

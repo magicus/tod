@@ -42,6 +42,7 @@ import tod.core.config.TODConfig;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
+import tod.core.database.browser.IEventPredicate;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.IVariablesInspector;
@@ -184,6 +185,11 @@ public class ABCTags
 		}
 
 		public IEventFilter createArgumentFilter(ObjectId aId)
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		public IEventFilter createArgumentFilter(ObjectId aId, int aPosition)
 		{
 			throw new UnsupportedOperationException();
 		}
@@ -384,6 +390,13 @@ public class ABCTags
 		}
 
 		public IEventFilter createRoleFilter(BytecodeRole aRole)
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		public IEventFilter createPredicateFilter(
+				IEventPredicate aPredicate,
+				IEventFilter aBaseFilter)
 		{
 			throw new UnsupportedOperationException();
 		}
