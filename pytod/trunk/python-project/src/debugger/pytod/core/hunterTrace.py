@@ -1,10 +1,15 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+__author__ = "Milton Inostroza Aguilera"
+__email__ = "minoztro@gmail.com"
+__all__ = ['hT']
+
 import sys
 from inspect import isfunction
 import dis
 import re
+import time
 
 
 class Diccionario(dict):
@@ -252,7 +257,16 @@ class hunterTrace(object):
             frame.f_locals['__depthFrame__'] = 0
         return frame.f_locals['__depthFrame__']
     
-    def __printchangevar__(self, code, local, locals, obj, f_lasti, depth):
+    def __timeStampFrame__(self, frame):
+        frame.f_locals['__timeStampFrame__'] = time.time()
+        
+    def __getTimeStampParentFrame__(self, frame):
+        frameBack = frame.f_back 
+        if frameBack.f_locals.has_key('__timeStampFrame__'):
+            return frameBack.f_locals['__timeStampFrame__']
+        return -1
+    
+    def __printchangevar__(self, code, local, locals, obj, f_lasti, depth, parentTimeStampFrame):
         attr = obj.__getLocalVar__()
         objId = obj.__getId__()
         for i in local.iterkeys():
@@ -260,9 +274,10 @@ class hunterTrace(object):
             self.probeId.__next__()
             print 'set',i,'=',locals[i],", id=", attr[i],
             print ',probe(id =',probeId,', f_lasti =',f_lasti,', id =',objId,')',
-            print ',current depth =',depth
-            
-    def __printCallMethod__(self, code, frame, depth):
+            print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
+            print ',current depth =',depth,', current time stamp = %11.9f'%(time.time())            
+
+    def __printCallMethod__(self, code, frame, depth, parentTimeStampFrame):
         obj = self.__getObject__(code)
         id = obj.__getId__()
         target = obj.__getTarget__()
@@ -278,9 +293,10 @@ class hunterTrace(object):
         print args,
         print ',llamado desde (',f_id,',f_lasti =',f_lasti,')',
         print ',probe(id =',probeId,', f_lasti =',current_lasti,', id =',id,')',
-        print ',current depth =',depth
-
-    def __printCallFunction__(self, code, frame, depth):
+        print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
+        print ',current depth =',depth,', current time stamp = %11.9f'%(time.time())        
+        
+    def __printCallFunction__(self, code, frame, depth, parentTimeStampFrame):
         obj = self.__getObject__(code)
         id = obj.__getId__()
         args = obj.__getArgs__()
@@ -294,8 +310,9 @@ class hunterTrace(object):
         print "call",code.co_name,", id =",id, ", args =",args,
         print ',llamado desde (',f_id,',f_lasti =',f_lasti,')',
         print ',probe(id =',probeId,', f_lasti =',current_lasti,', id =',id,')',
-        print ',current depth =',depth
-
+        print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
+        print ',current depth =',depth,', current time stamp = %11.9f'%(time.time())
+        
     def __register__(self, obj, local):
         obj.local_var.__update__(local)
 
@@ -325,6 +342,10 @@ class hunterTrace(object):
         globals = frame.f_globals
         #profundidad del frame
         depth = self.__depthFrame__(frame)
+        #se marca frame con timestamp
+        self.__timeStampFrame__(frame)
+        #se obtiene timestamp de frame padre
+        parentTimeStampFrame = self.__getTimeStampParentFrame__(frame)
         if event == "call":
             if re.search(self.methodPattern,code.co_name) and not code.co_name == '__init__':
                 return
@@ -340,7 +361,7 @@ class hunterTrace(object):
                     idClass = hT._class[key].__getId__()
                     id = hT._class[key].method[code.co_name]
                     args = self.__getargs__(code)
-                    self.__registerMethod__(code,id,idClass,args)
+                    self.__registerMethod__(code,id,idClass,args,parentTimeStampFrame)
                 self.__printCallMethod__(code,frame,depth)
             else:
                 #verificamos si es una funcion
@@ -348,7 +369,7 @@ class hunterTrace(object):
                     if isfunction(globals[code.co_name]):
                         if not self.__inFunction__(code):
                             self.__registerFunction__(code)
-                    self.__printCallFunction__(code,frame, depth)
+                    self.__printCallFunction__(code,frame,depth,parentTimeStampFrame)
             return self.__trace__
         elif event == "line":
             if re.search(self.methodPattern,code.co_name) and not code.co_name == '__init__':
@@ -361,7 +382,7 @@ class hunterTrace(object):
                 local = self.__getpartcode__(code,lnotab[frame.f_lasti])
                 self.__register__(obj,local)
                 #imprimiendo los cambios de valores, con su respectivo id
-                self.__printchangevar__(code,local,locals,obj,frame.f_lasti,depth)
+                self.__printchangevar__(code,local,locals,obj,frame.f_lasti,depth,parentTimeStampFrame)
             return self.__trace__
         elif event == "return":
             if re.search(self.methodPattern,code.co_name) and not code.co_name == '__init__':
@@ -379,7 +400,7 @@ class hunterTrace(object):
                     local = self.__getpartcode__(code,lnotab[frame.f_lasti])
                     self. __register__(obj,local)
                     #imprimiendo los cambios de valores, con su respectivo id
-                    self.__printchangevar__(code,local,locals,obj,frame.f_lasti,depth)
+                    self.__printchangevar__(code,local,locals,obj,frame.f_lasti,depth,parentTimeStampFrame)
             print "return"
 
     def __printHunter__(self):
