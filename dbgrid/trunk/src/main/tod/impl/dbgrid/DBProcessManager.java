@@ -21,7 +21,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -76,7 +75,8 @@ public class DBProcessManager
 		}
 	}
 
-	public static String cp = "." + File.pathSeparator + System.getenv("classpath");
+	public static String cp = ".";// + File.pathSeparator +
+									// System.getenv("classpath");
 	public static String lib = ".";
 
 	private TODConfig itsConfig;
@@ -467,8 +467,8 @@ public class DBProcessManager
 					System.err.println("[GridMaster process] " + theLine);
 
 					StringBuilder theBuilder = itsBuilder; // To avoid
-															// concurrency
-															// issues
+					// concurrency
+					// issues
 					if (theBuilder != null) itsBuilder.append("> " + theLine + "\n");
 				}
 			}
