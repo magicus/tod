@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from debugger.pytod.core.hunterTrace import *
-from debugger.pytod.core.hunterTrace import __print__
+#from debugger.pytod.core.hunterTrace import __print__
 
 def prueba():
     x = 10
@@ -18,4 +18,4 @@ def prueba2(e=3):
 prueba()
 prueba2()
 
-__print__()
+hT.__printHunter__()
