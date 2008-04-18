@@ -130,11 +130,12 @@ class Method(object):
 
 class hunterTrace(object):
 
-    def __init__(self, Id):
+    def __init__(self, Id, probeId):
         self._class = {}
         self._function = {}
         self._method = {}
         self.Id = Id
+        self.probeId = probeId
         self.methodPattern = "\A__.*(__)$"
 
     def __addClass__(self, id, lnotab, code):
@@ -242,11 +243,15 @@ class hunterTrace(object):
                     store_fast.update({i_arg_value:value})
         return store_fast   
 
-    def __printchangevar__(self,code, local, locals, obj):
+    def __printchangevar__(self, code, local, locals, obj, f_lasti):
         attr = obj.__getLocalVar__()
+        objId = obj.__getId__()
         for i in local.iterkeys():
-            print 'set',i,'=',locals[i],", id=", attr[i]
-
+            probeId = self.probeId.__get__()
+            self.probeId.__next__()
+            print 'set',i,'=',locals[i],", id=", attr[i],
+            print ',probe(id =',probeId,', f_lasti =',f_lasti,', id =',objId,')'
+            
     def __printCallMethod__(self, code, frame):
         obj = self.__getObject__(code)
         id = obj.__getId__()
@@ -256,8 +261,13 @@ class hunterTrace(object):
         f_lasti = f_back.f_lasti
         f_code = f_back.f_code
         f_id = self.__getObjectId__(f_code)
+        probeId = self.probeId.__get__()
+        self.probeId.__next__()
+        current_lasti = frame.f_lasti
         print "call",code.co_name,", id =",id,", target =",target, ", args =",
-        print args,'llamado desde',f_id,'f_lasti =',f_lasti                                                   
+        print args,
+        print ',llamado desde (',f_id,',f_lasti =',f_lasti,')',
+        print ',probe(id =',probeId,', f_lasti =',current_lasti,', id =',id,')'
 
     def __printCallFunction__(self, code, frame):
         obj = self.__getObject__(code)
@@ -267,8 +277,12 @@ class hunterTrace(object):
         f_lasti = f_back.f_lasti
         f_code = f_back.f_code
         f_id = self.__getObjectId__(f_code)
+        probeId = self.probeId.__get__()
+        self.probeId.__next__()
+        current_lasti = frame.f_lasti
         print "call",code.co_name,", id =",id, ", args =",args,
-        print 'llamado desde',f_id,'f_lasti =',f_lasti 
+        print ',llamado desde (',f_id,',f_lasti =',f_lasti,')',
+        print ',probe(id =',probeId,', f_lasti =',current_lasti,', id =',id,')'
 
     def __register__(self, obj, local):
         obj.local_var.__update__(local)
@@ -333,7 +347,7 @@ class hunterTrace(object):
                 local = self.__getpartcode__(code,lnotab[frame.f_lasti])
                 self. __register__(obj,local)
                 #imprimiendo los cambios de valores, con su respectivo id
-                self.__printchangevar__(code,local,locals,obj)
+                self.__printchangevar__(code,local,locals,obj,frame.f_lasti)
             return self.__trace__
         elif event == "return":
             if re.search(self.methodPattern,code.co_name) and not code.co_name == '__init__':
@@ -351,7 +365,7 @@ class hunterTrace(object):
                     local = self.__getpartcode__(code,lnotab[frame.f_lasti])
                     self. __register__(obj,local)
                     #imprimiendo los cambios de valores, con su respectivo id
-                    self.__printchangevar__(code,local,locals,obj)
+                    self.__printchangevar__(code,local,locals,obj,frame.f_lasti)
             print "return"
 
     def __printHunter__(self):
@@ -374,5 +388,5 @@ class hunterTrace(object):
             print
         print '======='
 
-hT = hunterTrace(IdGenerator())
+hT = hunterTrace(IdGenerator(),IdGenerator())
 sys.settrace(hT.__trace__)    
