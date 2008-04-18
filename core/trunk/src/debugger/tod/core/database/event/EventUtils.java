@@ -46,26 +46,6 @@ public class EventUtils
 {
 	private static final IgnorableExceptions IGNORABLE_EXCEPTIONS = new IgnorableExceptions();
 	
-	public static String getVariableName(ILocalVariableWriteEvent aEvent)
-	{
-		IBehaviorInfo theInfo = aEvent.getParent().getExecutedBehavior();
-		
-		int theBytecodeIndex = aEvent.getOperationBytecodeIndex();
-		short theVariableIndex = aEvent.getVariable().getIndex();
-		
-		// 35 is the size of the instrumentation
-		LocalVariableInfo theLocalVariableInfo = theInfo != null ?
-				theInfo.getLocalVariableInfo(theBytecodeIndex+35, theVariableIndex)
-                : null;
-                
-		String theName = theLocalVariableInfo != null ? 
-				theLocalVariableInfo.getVariableName() 
-				: "$("+aEvent.getOperationBytecodeIndex()+", "+theVariableIndex+")";
-
-
-		return theName;
-	}
-	
 	/**
 	 * Indicates if the given exception is ignorable.
 	 * Ignorable exceptions include:
