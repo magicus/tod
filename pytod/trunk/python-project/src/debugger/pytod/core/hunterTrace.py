@@ -287,8 +287,6 @@ class hunterTrace(object):
 
     def __printCallMethod__(self, code, frame, depth, parentTimeStampFrame):
         obj = self.__getObject__(code)
-        if obj == None:
-            return
         id = obj.__getId__()
         target = obj.__getTarget__()
         args = obj.__getArgs__()
@@ -310,8 +308,6 @@ class hunterTrace(object):
         
     def __printCallFunction__(self, code, frame, depth, parentTimeStampFrame):
         obj = self.__getObject__(code)
-        if obj == None:
-            return
         id = obj.__getId__()
         args = obj.__getArgs__()
         f_back = frame.f_back
@@ -376,7 +372,7 @@ class hunterTrace(object):
                 if not self.__inMethod__(code):
                     key = type(locals['self']).__name__
                     key = hT.__getClassKey__(key)
-                    if key:
+                    if key == None:
                         return
                     if not hT._class.has_key(key):
                         return
@@ -448,6 +444,4 @@ class hunterTrace(object):
         print '======='
 
 hT = hunterTrace(IdGenerator(),IdGenerator())
-sys.settrace(hT.__trace__)
-settrace(hT.__trace__)
-
+sys.settrace(hT.__trace__)    
