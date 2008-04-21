@@ -4,12 +4,19 @@
 from debugger.pytod.core.hunterTrace import *
 
 class clase1(Descriptor):
+    
     def __init__(self):
-        x=0
+        self.w = 7
+        h = 5
+        return
 
     def metodo(self):
         z=3
-
+        
+    def metodo(self):
+        z=3
+        
+"""
 class clase2(Descriptor):
     def __init__(self):
         y = 1
@@ -19,9 +26,7 @@ class clase3(Descriptor):
         y = 1
     def metodo(self):
         v=6
-        
+"""        
 a = clase1()
-b = clase2()
-c = clase3()
-c.metodo()
+a.metodo()
 hT.__printHunter__()
