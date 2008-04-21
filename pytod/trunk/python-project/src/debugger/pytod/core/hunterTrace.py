@@ -3,6 +3,7 @@
 
 __author__ = "Milton Inostroza Aguilera"
 __email__ = "minoztro@gmail.com"
+__all__ = ['hT', 'Descriptor']
 
 import sys
 import dis
@@ -10,7 +11,6 @@ import re
 import time
 import inspect
 import thread
-
 
 
 class Diccionario(dict):
@@ -173,9 +173,9 @@ class hunterTrace(object):
             return True
         return False
 
-    def __getClassKey__(self, idClass):
+    def __getClassKey__(self, nameClass):
         for k,v in self._class.iteritems():
-            if k.co_name == idClass:
+            if k.co_name == nameClass:
                 return k
         return None
 
@@ -221,7 +221,7 @@ class hunterTrace(object):
             last_index = None
             for i in range(0, len(table), 2):
                 index = index + ord(table[i])
-                if last_index == None:
+                if not last_index:
                     last_index = index
                 else:
                     lnotab.update({index:tuple([last_index,index-1])})                
@@ -371,7 +371,7 @@ class hunterTrace(object):
                 if not self.__inMethod__(code):
                     key = type(locals['self']).__name__
                     key = hT.__getClassKey__(key)
-                    if key == None:
+                    if key:
                         return
                     if not hT._class.has_key(key):
                         return
@@ -394,7 +394,7 @@ class hunterTrace(object):
             if re.search(self.methodPattern,code.co_name) and not code.co_name == '__init__':
                 return
             obj = self.__getObject__(code)
-            if obj == None:
+            if obj:
                 return
             lnotab = obj.__getLnotab__()
             if lnotab.has_key(frame.f_lasti):
@@ -412,7 +412,7 @@ class hunterTrace(object):
                     self.__registerClass__(code,locals)
             else:
                 obj = self.__getObject__(code)
-                if obj == None:
+                if obj:
                     return
                 lnotab = obj.__getLnotab__()
                 if lnotab.has_key(frame.f_lasti):
