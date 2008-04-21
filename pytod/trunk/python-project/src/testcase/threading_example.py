@@ -8,7 +8,6 @@ import time
 from debugger.pytod.core.hunterTrace import *
 from threading import *
 
-settrace(hT.__trace__)
 
 class testit(Thread):
    def __init__ (self,ip):
