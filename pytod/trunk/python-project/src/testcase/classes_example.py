@@ -23,4 +23,5 @@ class clase3(Descriptor):
 a = clase1()
 b = clase2()
 c = clase3()
+c.metodo()
 hT.__printHunter__()
