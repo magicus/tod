@@ -224,20 +224,25 @@ public class SourceRevealerUtils
 	public static IEditorPart findEditor(List<IJavaProject> aJavaProjects, SourceRange aSourceRange)
 			throws CoreException
 	{
-		if (aSourceRange.sourceFile.endsWith(".aj"))
+		String theTypeName = aSourceRange.sourceFile;
+		
+		if (theTypeName.endsWith(".aj"))
 		{
 			// Hack for aspectj files.
-			IFile theFile = findFile(aJavaProjects, aSourceRange.sourceFile);
+			IFile theFile = findFile(aJavaProjects, theTypeName);
 			return theFile != null ? EditorUtility.openInEditor(theFile, false) : null;
 		}
+		
+		// For inner classes, we just try to open the root class 
+		int theIndex = theTypeName.indexOf('$');
+		if (theIndex >= 0) theTypeName = theTypeName.substring(0, theIndex);
 
-		IType theType = TODPluginUtils.getType(aJavaProjects, aSourceRange.sourceFile);
+		IType theType = TODPluginUtils.getType(aJavaProjects, theTypeName);
 		if (theType == null)
 		{
 			// Another aspectj hack
-			String theName = aSourceRange.sourceFile;
-			theName = theName.replace('.', '/');
-			IFile theFile = findSourceFile(aJavaProjects, theName + ".aj");
+			theTypeName = theTypeName.replace('.', '/');
+			IFile theFile = findSourceFile(aJavaProjects, theTypeName + ".aj");
 			if (theFile != null) return EditorUtility.openInEditor(theFile, false);
 			else
 			{
