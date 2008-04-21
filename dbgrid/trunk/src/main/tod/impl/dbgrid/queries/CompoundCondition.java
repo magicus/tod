@@ -35,6 +35,8 @@ import zz.utils.Utils;
 public abstract class CompoundCondition extends EventCondition
 implements ICompoundFilter
 {
+	private static final long serialVersionUID = 115527489652079546L;
+
 	private List<EventCondition> itsConditions = new ArrayList<EventCondition>();
 
 	protected List<EventCondition> getConditions()

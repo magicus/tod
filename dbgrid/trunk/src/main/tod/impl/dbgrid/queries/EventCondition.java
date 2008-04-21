@@ -38,6 +38,8 @@ import tod.impl.dbgrid.messages.GridEvent;
 public abstract class EventCondition
 implements IEventFilter, Serializable
 {
+	private static final long serialVersionUID = 2155010917220799328L;
+
 	/**
 	 * Indicates if the specified event passes the condition.
 	 * This method is used for testing purposes.

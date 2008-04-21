@@ -26,6 +26,8 @@ package tod.impl.dbgrid.queries;
  */
 public abstract class SimpleCondition extends EventCondition
 {
+	private static final long serialVersionUID = 2345187607220347825L;
+
 	@Override
 	public int getClausesCount()
 	{
