@@ -11,6 +11,7 @@ import re
 import time
 import inspect
 import thread
+from threading import settrace
 
 
 class Diccionario(dict):
@@ -286,6 +287,8 @@ class hunterTrace(object):
 
     def __printCallMethod__(self, code, frame, depth, parentTimeStampFrame):
         obj = self.__getObject__(code)
+        if obj == None:
+            return
         id = obj.__getId__()
         target = obj.__getTarget__()
         args = obj.__getArgs__()
@@ -307,6 +310,8 @@ class hunterTrace(object):
         
     def __printCallFunction__(self, code, frame, depth, parentTimeStampFrame):
         obj = self.__getObject__(code)
+        if obj == None:
+            return
         id = obj.__getId__()
         args = obj.__getArgs__()
         f_back = frame.f_back
@@ -394,7 +399,7 @@ class hunterTrace(object):
             if re.search(self.methodPattern,code.co_name) and not code.co_name == '__init__':
                 return
             obj = self.__getObject__(code)
-            if obj:
+            if obj == None:
                 return
             lnotab = obj.__getLnotab__()
             if lnotab.has_key(frame.f_lasti):
@@ -412,7 +417,7 @@ class hunterTrace(object):
                     self.__registerClass__(code,locals)
             else:
                 obj = self.__getObject__(code)
-                if obj:
+                if obj == None:
                     return
                 lnotab = obj.__getLnotab__()
                 if lnotab.has_key(frame.f_lasti):
@@ -443,4 +448,6 @@ class hunterTrace(object):
         print '======='
 
 hT = hunterTrace(IdGenerator(),IdGenerator())
-sys.settrace(hT.__trace__)    
+sys.settrace(hT.__trace__)
+settrace(hT.__trace__)
+
