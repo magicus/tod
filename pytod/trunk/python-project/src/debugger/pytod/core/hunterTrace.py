@@ -446,4 +446,6 @@ class hunterTrace(object):
         print '======='
 
 hT = hunterTrace(IdGenerator(),IdGenerator())
-sys.settrace(hT.__trace__)    
+sys.settrace(hT.__trace__)
+#a cada nuevo thread se le define settrace
+settrace(hT.__trace__)   
