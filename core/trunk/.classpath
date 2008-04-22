@@ -8,7 +8,6 @@
 	<classpathentry exported="true" kind="src" path="/zz.utils"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/javassist.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/reflex-core.jar"/>
 	<classpathentry kind="lib" path="lib/asm-all-3.1.jar" sourcepath="/ASM"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/TOD-agent"/>

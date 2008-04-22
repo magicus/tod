@@ -65,7 +65,7 @@ public class PackageComparator implements Comparator
 		ILocationInfo l = node.pValue().get();
 		boolean p = l instanceof PackageInfo;
 		
-		if (p != itsForPackage) return p ? 1 : -1;
+		if (p != itsForPackage) return p ? -1 : 1;
 		else return l.getName().compareTo(name);
 	}
 }
