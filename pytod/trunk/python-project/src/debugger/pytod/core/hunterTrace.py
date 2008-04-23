@@ -142,20 +142,10 @@ class Method(object):
         self.locals.__update__(local,self.id)
         
     
-class hTThread(object):
-    
-    def __init__(self, threadId, sysId, threadName):
-        self.id = threadId
-        self.sysId = sysId
-        self.name = threadName
-    
-    def __getsysId__(self):
-        return self.sysId
-    
 
 class hunterTrace(object):
 
-    def __init__(self, Id, probeId):
+    def __init__(self, Id, probeId, threadId):
         self._class = {}
         self._function = {}
         self._method = {}
@@ -163,6 +153,7 @@ class hunterTrace(object):
         self._thread = {}
         self.Id = Id
         self.probeId = probeId
+        self.threadId = threadId
         self.methodPattern = "\A__.*(__)$"
 
     def __addClass__(self, id, lnotab, code):
@@ -175,6 +166,12 @@ class hunterTrace(object):
 
     def __addMethod__(self, id, lnotab, code, idClass, args):
         self._method.update({code:Method(id,code,lnotab,idClass,args)})
+
+    def __addProbe__(self, probeId, currentLasti, parentId):
+        self._probe.update({(currentLasti,parentId):probeId})
+
+    def __addThread__(self, threadId, threadSysId):
+        self._thread.update({threadSysId:threadId})
 
     def __inClass__(self, _class):
         if self._class.has_key(_class):
@@ -230,6 +227,9 @@ class hunterTrace(object):
         elif self.__isMethodKey__(code):
             return self._method[code]
         return None
+
+    def __getThreadId__(self, threadSysId):
+        return self._thread[threadSysId]
 
     def __createlnotab__(self, code):
         lnotab = {}
@@ -290,7 +290,7 @@ class hunterTrace(object):
             return frameBack.f_locals['__timeStampFrame__']
         return currentTimeStamp
     
-    def __printchangevar__(self, code, local, locals, obj, currentLasti, depth, parentTimeStampFrame):
+    def __printchangevar__(self, code, local, locals, obj, currentLasti, depth, parentTimeStampFrame, threadId):
         attr = obj.__getLocals__()
         objId = obj.__getId__()
         for i in local.iterkeys():
@@ -306,9 +306,9 @@ class hunterTrace(object):
             #print ',probe(id =',probeId,', f_lasti =',f_lasti,', id =',objId,')',
             print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
             print ',current depth =',depth,', current time stamp = %11.9f'%(time.time()),
-            print ',current thread =',thread.get_ident()
+            print ',current thread =',threadId
 
-    def __printCallMethod__(self, code, frame, depth, currentTimeStamp, parentTimeStampFrame):
+    def __printCallMethod__(self, code, frame, depth, currentTimeStamp, parentTimeStampFrame, threadId):
         obj = self.__getObject__(code)
         methodId = obj.__getId__()
         classId = obj.__getTarget__()
@@ -330,10 +330,10 @@ class hunterTrace(object):
         #print ',probe(id =',probeId,', f_lasti =',current_lasti,', id =',methodId,')',
         print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
         print ',current depth =',depth,', current time stamp = %11.9f'%(currentTimeStamp),      
-        print ',current thread =',thread.get_ident()
+        print ',current thread =',threadId
 
         
-    def __printCallFunction__(self, code, frame, depth, currentTimeStamp, parentTimeStampFrame):
+    def __printCallFunction__(self, code, frame, depth, currentTimeStamp, parentTimeStampFrame, threadId):
         obj = self.__getObject__(code)
         functionId = obj.__getId__()
         args = obj.__getArgs__()
@@ -353,7 +353,7 @@ class hunterTrace(object):
         #print ',probe(id =',probeId,', f_lasti =',current_lasti,', id =',id,')',
         print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
         print ',current depth =',depth,', current time stamp = %11.9f'%(currentTimeStamp),
-        print ',current thread =',thread.get_ident()
+        print ',current thread =',threadId
 
         
     def __register__(self, obj, local):
@@ -383,13 +383,20 @@ class hunterTrace(object):
         self.__addFunction__(functionId,self.__createlnotab__(code),code,args)
         self.Id.__next__()
 
-    def __registerProbe__(self, f_lasti, parentId):
+    def __registerProbe__(self, currentLasti, parentId):
         probeId = self.probeId.__get__()
-        self._probe.update({(f_lasti,parentId):probeId})
-        print 'register probe id=',probeId,',f_lasti =',f_lasti,
+        self.__addProbe__(probeId,currentLasti,parentId)
+        print 'register probe id=',probeId,',current lasti =',currentLasti,
         print ',parent id =', parentId
         self.probeId.__next__()
         return probeId
+    
+    def __registerThread__(self, threadSysId):
+        threadId = self.threadId.__get__()
+        self.__addThread__(threadId,threadSysId)
+        print 'register thread id =',threadId,'thread sys id =',threadSysId
+        self.threadId.__next__()
+        return threadId
 
     def __trace__(self, frame, event, arg):
         if frame.f_back == None:
@@ -404,9 +411,15 @@ class hunterTrace(object):
         currentTimeStamp = self.__timeStampFrame__(frame)
         #se obtiene timestamp de frame padre
         parentTimeStampFrame = self.__getTimeStampParentFrame__(frame, currentTimeStamp)
+        threadSysId = thread.get_ident()
+        if not self._thread.has_key(threadSysId):
+            threadId = self.__registerThread__(threadSysId)
+        else:
+            threadId = self.__getThreadId__(threadSysId)
         if event == "call":
             if re.search(self.methodPattern,code.co_name) and not code.co_name == '__init__':
                 return
+            #se registra el thread si es que no existe
             if code.co_name == '__init__':
                 id = self.Id.__get__()
                 locals['self'].__dict__.update({'__pyTOD__':id})
@@ -432,14 +445,26 @@ class hunterTrace(object):
                     id = hT._class[key].method[code.co_name]
                     args = self.__getargs__(code)
                     self.__registerMethod__(code,id,idClass,args)
-                self.__printCallMethod__(code,frame,depth,currentTimeStamp,parentTimeStampFrame)
+                self.__printCallMethod__(
+                                         code,
+                                         frame,
+                                         depth,
+                                         currentTimeStamp,
+                                         parentTimeStampFrame,
+                                         threadId)
             else:
                 #verificamos si es una funcion
                 if globals.has_key(code.co_name):
                     if inspect.isfunction(globals[code.co_name]):
                         if not self.__inFunction__(code):
                             self.__registerFunction__(code)
-                    self.__printCallFunction__(code,frame,depth,currentTimeStamp,parentTimeStampFrame)       
+                    self.__printCallFunction__(
+                                               code,
+                                               frame,
+                                               depth,
+                                               currentTimeStamp,
+                                               parentTimeStampFrame,
+                                               threadId)       
             return self.__trace__
         elif event == "line":
             if re.search(self.methodPattern,code.co_name) and not code.co_name == '__init__':
@@ -452,7 +477,14 @@ class hunterTrace(object):
                 local = self.__getpartcode__(code,lnotab[frame.f_lasti])
                 self.__register__(obj,local)
                 #imprimiendo los cambios de valores, con su respectivo id
-                self.__printchangevar__(code,local,locals,obj,frame.f_lasti,depth,parentTimeStampFrame)
+                self.__printchangevar__(
+                                        code,
+                                        local,
+                                        locals,
+                                        obj,frame.f_lasti,
+                                        depth,
+                                        parentTimeStampFrame,
+                                        threadId)
             return self.__trace__
         elif event == "return":
             if re.search(self.methodPattern,code.co_name) and not code.co_name == '__init__':
@@ -470,7 +502,15 @@ class hunterTrace(object):
                     local = self.__getpartcode__(code,lnotab[frame.f_lasti])
                     self. __register__(obj,local)
                     #imprimiendo los cambios de valores, con su respectivo id
-                    self.__printchangevar__(code,local,locals,obj,frame.f_lasti,depth,parentTimeStampFrame)
+                    self.__printchangevar__(
+                                            code,
+                                            local,
+                                            locals,
+                                            obj,
+                                            frame.f_lasti,
+                                            depth,
+                                            parentTimeStampFrame,
+                                            threadId)
             print "return"
 
     def __printHunter__(self):
@@ -493,8 +533,9 @@ class hunterTrace(object):
             print
         print '======='
 
-hT = hunterTrace(IdGenerator(),IdGenerator())
+hT = hunterTrace(IdGenerator(),IdGenerator(),IdGenerator())
 #a cada nuevo thread se le define settrace
-settrace(hT.__trace__)   
+settrace(hT.__trace__)  
 #asignamos settrace para nuestro espacio de trabajo
 sys.settrace(hT.__trace__)
+
