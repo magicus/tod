@@ -111,7 +111,7 @@ class Function(object):
 class Method(object):
 
     def __init__(self, id, code, lnotab, idClass, args):
-        self.local_var = Diccionario()
+        self.locals = Diccionario()
         self.argument = Diccionario()
         self.lnotab = lnotab
         self.code = code
@@ -126,8 +126,8 @@ class Method(object):
     def __getLnotab__(self):
         return self.lnotab
 
-    def __getLocalVar__(self):
-        return self.local_var
+    def __getLocals__(self):
+        return self.locals
 
     def __getTarget__(self):
         return self.idClass
@@ -135,11 +135,12 @@ class Method(object):
     def __getArgs__(self):
         return self.argument
 
-    def __updateLocalVar__(self, local):
-        self.local_var.__update__(local)
-
     def __updateArgument__(self, args):
-        self.argument.__update__(args)
+        self.argument.__update__(args,self.id)
+        
+    def __registerLocals__(self, local):
+        self.locals.__update__(local,self.id)
+        
 
 
 class hunterTrace(object):
