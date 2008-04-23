@@ -93,7 +93,12 @@ class Descriptor(object):
         objId = obj.__getId__()
         obj.attribute.__updateAttr__({name:id},objId)
         hT.Id.__next__()
-        print 'set',name,'=',value,'id =',id
+        print hT.events['set'],
+        print hT.objects['attribute'],
+        print 'value =',value,
+        print 'id =',id,
+        print 'target =',objId
+        #falta agregar el probeId, currentTimeStamp, etc...
         object.__setattr__(self, name, value)
 
 class Class(object):
