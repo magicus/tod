@@ -323,9 +323,9 @@ class hunterTrace(object):
             probeId = self.__registerProbe__(currentLasti,parentId)
         else:
             probeId = self._probe[(currentLasti,parentId)]
-        print "call",code.co_name,", id =",methodId,", target =",classId, ", args =",
-        print args,
-        print ',llamado desde (',parentId,',f_lasti =',f_lasti,')',
+        print 'call id =',methodId,'parent id =',parentId,'target =',classId,
+        print args,', args =',
+        #print ',llamado desde (',parentId,',f_lasti =',f_lasti,')',
         print ',probe id =',probeId,
         #print ',probe(id =',probeId,', f_lasti =',current_lasti,', id =',methodId,')',
         print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
@@ -347,8 +347,9 @@ class hunterTrace(object):
             probeId = self.__registerProbe__(currentLasti,parentId)
         else:
             probeId = self._probe[(currentLasti,parentId)]
-        print "call",code.co_name,", id =",functionId, ", args =",args,
-        print ',llamado desde (',parentId,',f_lasti =',f_lasti,')',
+        print "call id =",functionId, ", parent id =",parentId,
+        print ',args =',args,
+        #print ',llamado desde (',parentId,',f_lasti =',f_lasti,')',
         print ',probe id =',probeId,
         #print ',probe(id =',probeId,', f_lasti =',current_lasti,', id =',id,')',
         print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
