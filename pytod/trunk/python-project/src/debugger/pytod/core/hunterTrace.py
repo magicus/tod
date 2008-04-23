@@ -300,8 +300,10 @@ class hunterTrace(object):
             if not self._probe.has_key((currentLasti,objId)):
                 probeId = self.__registerProbe__(currentLasti,objId)
             else:
-                probeId = self._probe[(currentLasti,objId)]                    
-            print 'set',i,'=',locals[i],", id=", attr[i],
+                probeId = self._probe[(currentLasti,objId)]
+            #preguntar el tipo de la variable para poder
+            #"socketear"
+            print 'set id =',attr[i],', value =',locals[i],
             print ',probe id =',probeId,
             #print ',probe(id =',probeId,', f_lasti =',f_lasti,', id =',objId,')',
             print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
