@@ -16,15 +16,16 @@ from threading import settrace
 
 class Diccionario(dict):
 
-    def __setitem__(self,k,v):
+    def __setitem__(self, k, v):
         dict.__setitem__(self,k,v)
 
-    def __update__(self,d):
+    def __update__(self, d, parentId):
         for k,v in d.items():
             #se debe registrar argumento self?
-            if not self.has_key(k) or k == 'self':
-                self[k] = v
-                print 'register',k,'=',v
+            if not self.has_key(k):
+                if not k == 'self':
+                    self[k] = v
+                    print 'register id =',v,',name =',k,',parent id=',parentId
 
 class IdGenerator(object):
     def __init__(self):
@@ -45,7 +46,9 @@ class Descriptor(object):
         key = hT.__getClassKey__(key)
         if key == None:
             return
-        hT._class[key].attribute.__update__({name:id})
+        obj = hT._class[key] 
+        objId = obj.__getId__()
+        obj.attribute.__update__({name:id},objId)
         hT.Id.__next__()
         print 'set',name,'=',value,'id =',id
         object.__setattr__(self, name, value)
@@ -77,7 +80,7 @@ class Class(object):
 class Function(object):
 
     def __init__(self, id, code, lnotab,args):
-        self.local_var = Diccionario()
+        self.locals = Diccionario()
         self.argument = Diccionario()
         self.lnotab = lnotab
         self.code = code
@@ -91,17 +94,18 @@ class Function(object):
     def __getLnotab__(self):
         return self.lnotab
 
-    def __getLocalVar__(self):
-        return self.local_var
+    def __getLocals__(self):
+        return self.locals
 
     def __getArgs__(self):
         return self.argument
 
-    def __updateLocalVar__(self, local):
-        self.local_var.__update__(local)
-
     def __updateArgument__(self, args):
-        self.argument.__update__(args)
+        self.argument.__update__(args,self.id)
+        
+    def __registerLocals__(self, local):
+        self.locals.__update__(local,self.id)
+
 
 
 class Method(object):
@@ -274,7 +278,7 @@ class hunterTrace(object):
         return currentTimeStamp
     
     def __printchangevar__(self, code, local, locals, obj, f_lasti, depth, parentTimeStampFrame):
-        attr = obj.__getLocalVar__()
+        attr = obj.__getLocals__()
         objId = obj.__getId__()
         for i in local.iterkeys():
             probeId = self.probeId.__get__()
@@ -328,7 +332,8 @@ class hunterTrace(object):
 
         
     def __register__(self, obj, local):
-        obj.local_var.__update__(local)
+        objId = obj.__getId__()
+        obj.__registerLocals__(local)
 
     def __registerClass__(self, code, locals):
         classId = self.Id.__get__()
@@ -350,7 +355,7 @@ class hunterTrace(object):
         functionId = self.Id.__get__()
         args = self.__getargs__(code)
         print 'register id =',functionId,',name =',code.co_name,', args =',args
-        self.__addFunction__(id,self.__createlnotab__(code),code,args)
+        self.__addFunction__(functionId,self.__createlnotab__(code),code,args)
         self.Id.__next__()
 
     def __trace__(self, frame, event, arg):
