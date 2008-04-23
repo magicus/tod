@@ -14,6 +14,7 @@ def prueba():
 def prueba2(e=3):
     z = 3
     print 'hola'
+    return 5
 
 
 prueba()
