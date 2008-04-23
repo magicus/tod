@@ -52,13 +52,13 @@ class Descriptor(object):
 
 class Class(object):
 
-    def __init__(self, id, code, lnotab):
+    def __init__(self, classId, code, lnotab):
         self.attribute = Diccionario()
         self.method = Diccionario()
         self.lnotab = lnotab
         self.code = code
         self.name = code.co_name
-        self.id = id
+        self.id = classId
 
     def __getId__(self):
         return self.id
@@ -289,8 +289,8 @@ class hunterTrace(object):
 
     def __printCallMethod__(self, code, frame, depth, currentTimeStamp, parentTimeStampFrame):
         obj = self.__getObject__(code)
-        id = obj.__getId__()
-        target = obj.__getTarget__()
+        methodId = obj.__getId__()
+        classId = obj.__getTarget__()
         args = obj.__getArgs__()
         f_back = frame.f_back
         f_lasti = f_back.f_lasti
@@ -299,10 +299,10 @@ class hunterTrace(object):
         probeId = self.probeId.__get__()
         self.probeId.__next__()
         current_lasti = frame.f_lasti
-        print "call",code.co_name,", id =",id,", target =",target, ", args =",
+        print "call",code.co_name,", id =",methodId,", target =",classId, ", args =",
         print args,
         print ',llamado desde (',f_id,',f_lasti =',f_lasti,')',
-        print ',probe(id =',probeId,', f_lasti =',current_lasti,', id =',id,')',
+        print ',probe(id =',probeId,', f_lasti =',current_lasti,', id =',methodId,')',
         print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
         print ',current depth =',depth,', current time stamp = %11.9f'%(currentTimeStamp),      
         print ',current thread =',thread.get_ident()
@@ -335,14 +335,15 @@ class hunterTrace(object):
         className = code.co_name
         classBases = None #globals[className].__class__.__bases__
         print 'register',className,', id =',classId,', superclass = ',classBases
-        objClass = self.__addClass__(id,self.__createlnotab__(code),code)
+        objClass = self.__addClass__(classId,self.__createlnotab__(code),code)
         self.Id.__next__()
         #se deben registrar los metodos asociados
         objClass.__addMethod__(code,locals)
 
-    def __registerMethod__(self, code, id, idClass, args):
-        print 'register',code.co_name,', id =',id,', idClass = ',idClass,', args=',args
-        self.__addMethod__(id,self.__createlnotab__(code),code,idClass,args)
+    def __registerMethod__(self, code, methodId, classId, args):
+        print 'register id=',methodId,',class id=',classId,',name=',code.co_name,
+        print 'args=',args
+        self.__addMethod__(methodId,self.__createlnotab__(code),code,classId,args)
 
     def __registerFunction__(self, code):
         id = self.Id.__get__()
