@@ -1,5 +1,24 @@
 package tod.idea.plugin;
 
+import javax.swing.BoxLayout;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+
+import org.jetbrains.annotations.NotNull;
+
+import tod.core.config.TODConfig;
+import tod.core.database.structure.SourceRange;
+import tod.core.session.ISession;
+import tod.core.session.SessionUtils;
+import tod.core.session.TODSessionManager;
+import tod.gui.MinerUI;
+import tod.gui.SwingDialogUtils;
+import zz.utils.properties.IProperty;
+import zz.utils.properties.PropertyListener;
+
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.configurations.ConfigurationInfoProvider;
@@ -29,13 +48,6 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.ui.content.Content;
-import org.jetbrains.annotations.NotNull;
-import tod.core.config.TODConfig;
-import tod.core.database.structure.SourceRange;
-import tod.core.session.SessionUtils;
-import tod.gui.MinerUI;
-
-import javax.swing.*;
 
 /**
  * @author Rodolfo Toledo
@@ -79,14 +91,44 @@ public class MyJavaProgramRunner implements JavaProgramRunner
         theMinerUI = new MinerUI()
         {
 
+        	{
+        		TODSessionManager.getInstance().pCurrentSession().addHardListener(new PropertyListener<ISession>()
+        				{
+        					public void propertyChanged(
+        							IProperty<ISession> aProperty, 
+        							ISession aOldValue, 
+        							final ISession aNewValue)
+        					{
+        						SwingUtilities.invokeLater(new Runnable()
+        						{
+        							public void run()
+        							{
+        								setSession(aNewValue);
+        							}
+        						});
+        					}
+        				});
+
+        		setSession(TODSessionManager.getInstance().pCurrentSession().get());
+        	}
+        	
             public void gotoSource(SourceRange aSourceRange)
             {
                 navigate(aSourceRange.sourceFile, aSourceRange.startLine,
                          settings.getRunProfile().getModules()[0].getProject());
             }
-        };
+            
+    		public <T> T showDialog(DialogType<T> aDialog)
+    		{
+    			return SwingDialogUtils.showDialog(this, aDialog);
+    		}
 
-        theMinerUI.setSession(SessionUtils.createSession(new TODConfig()));
+        };
+        
+        TODConfig theConfig = new TODConfig(); //TODO: retrieve TOD config from launch configuration
+        IntelliJProgramLaunch theLaunch = new IntelliJProgramLaunch(); // TODO: see if information is needed 
+        TODSessionManager.getInstance().getSession(theMinerUI, theConfig, theLaunch);
+
     }
 
     public void checkConfiguration(RunnerSettings settings, ConfigurationPerRunnerSettings perRunnerSettings)
