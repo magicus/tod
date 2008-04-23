@@ -52,7 +52,21 @@ class Diccionario(dict):
             if not self.has_key(k):
                 if not k == 'self':
                     self[k] = v
-                    print 'register id =',v,
+                    print hT.events['register'],
+                    print hT.objects['local'],
+                    print 'id =',v,
+                    print ',name =',k,
+                    print ',parent id=',parentId
+
+    def __updateAttr__(self, d, parentId):
+        for k,v in d.items():
+            #se debe registrar argumento self?
+            if not self.has_key(k):
+                if not k == 'self':
+                    self[k] = v
+                    print hT.events['register'],
+                    print hT.objects['attribute'],
+                    print 'id =',v,
                     print ',name =',k,
                     print ',parent id=',parentId
 
@@ -77,7 +91,7 @@ class Descriptor(object):
             return
         obj = hT._class[key] 
         objId = obj.__getId__()
-        obj.attribute.__update__({name:id},objId)
+        obj.attribute.__updateAttr__({name:id},objId)
         hT.Id.__next__()
         print 'set',name,'=',value,'id =',id
         object.__setattr__(self, name, value)
@@ -336,6 +350,7 @@ class hunterTrace(object):
             #preguntar el tipo de la variable para poder
             #"socketear"
             print self.events['set'],
+            print self.objects['local'],
             print 'id =',attr[i],
             print ', value =',locals[i],
             print ',probe id =',probeId,
@@ -361,6 +376,7 @@ class hunterTrace(object):
         else:
             probeId = self._probe[(currentLasti,parentId)]
         print self.events['call'],
+        print self.objects['method'],
         print 'id =',methodId,
         print 'parent id =',parentId,
         print 'target =',classId,
@@ -389,6 +405,7 @@ class hunterTrace(object):
         else:
             probeId = self._probe[(currentLasti,parentId)]
         print self.events['call'],
+        print self.objects['function'],
         print ' id =',functionId,
         print ', parent id =',parentId,
         print ',args =',args,
@@ -423,7 +440,10 @@ class hunterTrace(object):
         classId = self.Id.__get__()
         className = code.co_name
         classBases = None #globals[className].__class__.__bases__
-        print 'register',className,', id =',classId,
+        print self.events['register'],
+        print self.objects['class'],
+        print 'name',className,
+        print ', id =',classId,
         print ', superclass = ',classBases
         objClass = self.__addClass__(classId,self.__createlnotab__(code),code)
         self.Id.__next__()
@@ -432,7 +452,10 @@ class hunterTrace(object):
         objClass.__addMethod__(code,locals)
 
     def __registerMethod__(self, code, methodId, classId, args):
-        print 'register id=',methodId,
+        
+        print self.events['register'],
+        print self.objects['method'],
+        print 'id=',methodId,
         print ',class id=',classId,
         print ',name=',code.co_name,
         print 'args=',args
@@ -446,7 +469,9 @@ class hunterTrace(object):
     def __registerFunction__(self, code):
         functionId = self.Id.__get__()
         args = self.__getargs__(code)
-        print 'register id =',functionId,
+        print self.events['register'],
+        print self.objects['function'],        
+        print 'id =',functionId,
         print ',name =',code.co_name,
         print ', args =',args
         self.__addFunction__(
@@ -459,7 +484,9 @@ class hunterTrace(object):
     def __registerProbe__(self, currentLasti, parentId):
         probeId = self.probeId.__get__()
         self.__addProbe__(probeId,currentLasti,parentId)
-        print 'register probe id=',probeId,
+        print self.events['register'],
+        print self.objects['probe'],
+        print ',probe id=',probeId,
         print ',current lasti =',currentLasti,
         print ',parent id =', parentId
         self.probeId.__next__()
@@ -468,7 +495,9 @@ class hunterTrace(object):
     def __registerThread__(self, threadSysId):
         threadId = self.threadId.__get__()
         self.__addThread__(threadId,threadSysId)
-        print 'register thread id =',threadId,
+        print self.events['register'],
+        print self.objects['thread'],
+        print 'thread id =',threadId,
         print 'thread sys id =',threadSysId
         self.threadId.__next__()
         return threadId
