@@ -366,7 +366,20 @@ class hunterTrace(object):
         print', current time stamp = %11.9f'%(currentTimeStamp),
         print ',current thread =',threadId
 
-        
+    def __printReturn__(self, frame, arg):
+        f_back = frame.f_back
+        f_code = f_back.f_code
+        parentId = self.__getObjectId__(f_code)
+        currentLasti = frame.f_lasti
+        #registramos un nuevo probe o lo rescatamos
+        if not self._probe.has_key((currentLasti,parentId)):
+            probeId = self.__registerProbe__(currentLasti,parentId)
+        else:
+            probeId = self._probe[(currentLasti,parentId)]
+        print 'return value',arg,
+        print ',probe id =',probeId,
+        print ',hasThrown =', True
+    
     def __register__(self, obj, local):
         objId = obj.__getId__()
         obj.__registerLocals__(local)
@@ -438,8 +451,8 @@ class hunterTrace(object):
         currentTimeStamp = self.__timeStampFrame__(frame)
         #se obtiene timestamp de frame padre
         parentTimeStampFrame = self.__getTimeStampParentFrame__(
-                                                            frame, 
-                                                            currentTimeStamp)
+                                                    frame, 
+                                                    currentTimeStamp)
         threadSysId = thread.get_ident()
         if not self._thread.has_key(threadSysId):
             threadId = self.__registerThread__(threadSysId)
@@ -512,7 +525,8 @@ class hunterTrace(object):
                                         code,
                                         local,
                                         locals,
-                                        obj,frame.f_lasti,
+                                        obj,
+                                        frame.f_lasti,
                                         depth,
                                         parentTimeStampFrame,
                                         threadId)
@@ -543,7 +557,8 @@ class hunterTrace(object):
                                             depth,
                                             parentTimeStampFrame,
                                             threadId)
-            print "return"
+            #registrar salida de return
+            self.__printReturn__(frame, arg)
 
     def __printHunter__(self):
         print
