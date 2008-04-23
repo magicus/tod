@@ -337,7 +337,8 @@ class hunterTrace(object):
         print 'register',className,', id =',classId,', superclass = ',classBases
         objClass = self.__addClass__(classId,self.__createlnotab__(code),code)
         self.Id.__next__()
-        #se deben registrar los metodos asociados
+        #se deben registrar los metodos asociados 
+        #como atributos de la clase
         objClass.__addMethod__(code,locals)
 
     def __registerMethod__(self, code, methodId, classId, args):
@@ -346,9 +347,9 @@ class hunterTrace(object):
         self.__addMethod__(methodId,self.__createlnotab__(code),code,classId,args)
 
     def __registerFunction__(self, code):
-        id = self.Id.__get__()
+        functionId = self.Id.__get__()
         args = self.__getargs__(code)
-        print 'register',code.co_name,', id =',id,', args=',args
+        print 'register id =',functionId,',name =',code.co_name,', args =',args
         self.__addFunction__(id,self.__createlnotab__(code),code,args)
         self.Id.__next__()
 
