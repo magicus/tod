@@ -331,8 +331,10 @@ class hunterTrace(object):
         obj.local_var.__update__(local)
 
     def __registerClass__(self, code, locals):
-        id = self.Id.__get__()
-        print 'register',code.co_name,', id =',id,', code = ',code
+        classId = self.Id.__get__()
+        className = code.co_name
+        classBases = None #globals[className].__class__.__bases__
+        print 'register',className,', id =',classId,', superclass = ',classBases
         objClass = self.__addClass__(id,self.__createlnotab__(code),code)
         self.Id.__next__()
         #se deben registrar los metodos asociados
@@ -369,6 +371,12 @@ class hunterTrace(object):
                 id = self.Id.__get__()
                 locals['self'].__dict__.update({'__pyTOD__':id})
                 self.Id.__next__()
+                #aca se sacan las bases de la clase la cual
+                #se ha instanciado
+                #TODO: encontrar una mejor forma de hacerlo
+                #ineficiente!!..quizas interviniendo la llamada
+                #de la super clase?
+                print type(locals['self']).__bases__
             #si self esta en locals estamos en un metodo
             if locals.has_key('self'):
                 if not self.__inMethod__(code):
@@ -446,6 +454,7 @@ class hunterTrace(object):
         print '======='
 
 hT = hunterTrace(IdGenerator(),IdGenerator())
-sys.settrace(hT.__trace__)
 #a cada nuevo thread se le define settrace
 settrace(hT.__trace__)   
+#asignamos settrace para nuestro espacio de trabajo
+sys.settrace(hT.__trace__)
