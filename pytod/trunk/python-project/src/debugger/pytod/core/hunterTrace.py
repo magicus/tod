@@ -141,7 +141,26 @@ class Method(object):
     def __registerLocals__(self, local):
         self.locals.__update__(local,self.id)
         
-
+class Probe(object):
+    
+    def __init__(self, probeId, f_lasti, parentId):
+        self.id = probeId
+        self.f_lasti = f_lasti
+        self.parentId = parentId
+    
+    def __getId__(self):
+        return self.id
+    
+class hTThread(object):
+    
+    def __init__(self, threadId, sysId, threadName):
+        self.id = threadId
+        self.sysId = sysId
+        self.name = threadName
+    
+    def __getsysId__(self):
+        return self.sysId
+    
 
 class hunterTrace(object):
 
@@ -149,6 +168,8 @@ class hunterTrace(object):
         self._class = {}
         self._function = {}
         self._method = {}
+        self._probe = []
+        self._thread = []
         self.Id = Id
         self.probeId = probeId
         self.methodPattern = "\A__.*(__)$"
