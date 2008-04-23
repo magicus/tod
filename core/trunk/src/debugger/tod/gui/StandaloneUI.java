@@ -76,6 +76,11 @@ public class StandaloneUI extends JPanel
 		public void gotoSource(SourceRange aSourceRange)
 		{
 		}
+
+		public <T> T showDialog(DialogType<T> aDialog)
+		{
+			return SwingDialogUtils.showDialog(this, aDialog);
+		}
 	}
 	
 	public static void main(String[] args)

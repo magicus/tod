@@ -11,9 +11,6 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
-import tod.plugin.GenericSourceRevealer;
-import tod.plugin.SourceRevealer;
-
 
 /**
  * Launch delegate for launch type: org.eclipse.jdt.launching.localJavaApplication
@@ -34,8 +31,7 @@ public class TODLaunchDelegate_JDT_JavaLocal extends JavaLaunchDelegate
 		try
 		{
 			IJavaProject theJavaProject = getJavaProject(aConfiguration);
-			SourceRevealer theRevealer = new GenericSourceRevealer(aLaunch, theJavaProject);
-			if (LaunchUtils.setup(theRevealer, aConfiguration, aLaunch))
+			if (LaunchUtils.setup(theJavaProject, aConfiguration, aLaunch))
 			{
 				super.launch(aConfiguration, LaunchUtils.MODE, aLaunch, aMonitor);
 			}

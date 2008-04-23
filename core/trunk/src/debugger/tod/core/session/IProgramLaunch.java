@@ -31,48 +31,12 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.session;
 
-import java.net.URI;
-import java.util.HashSet;
-import java.util.Set;
-
-import tod.core.config.TODConfig;
-
-public abstract class AbstractSession implements ISession
+/**
+ * Represents a program launch, typically in an IDE.
+ * This interface is completetly abstract; plugins should define their own structure.
+ * @author gpothier
+ */
+public interface IProgramLaunch
 {
-	private TODConfig itsConfig;
-	private final URI itsUri;
-	private final Set<IProgramLaunch> itsLaunches = new HashSet<IProgramLaunch>();
 
-	public AbstractSession(URI aUri, TODConfig aConfig)
-	{
-		itsUri = aUri;
-		itsConfig = aConfig;
-	}
-
-	public URI getUri()
-	{
-		return itsUri;
-	}
-
-	public TODConfig getConfig()
-	{
-		return itsConfig;
-	} 
-	
-	public void setConfig(TODConfig aConfig)
-	{
-		itsConfig = aConfig;
-	}
-
-	public ConnectionInfo getConnectionInfo()
-	{
-		return new ConnectionInfo(
-				getConfig().get(TODConfig.COLLECTOR_HOST), 
-				getConfig().get(TODConfig.COLLECTOR_PORT));
-	}
-
-	public Set<IProgramLaunch> getLaunches()
-	{
-		return itsLaunches;
-	}
 }

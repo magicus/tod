@@ -7,11 +7,13 @@ import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -24,9 +26,11 @@ import tod.core.config.TODConfig;
 import tod.core.session.ConnectionInfo;
 import tod.core.session.ISession;
 import tod.core.session.SessionCreationException;
-import tod.plugin.SourceRevealer;
+import tod.core.session.TODSessionManager;
+import tod.plugin.EclipseProgramLaunch;
 import tod.plugin.TODPlugin;
-import tod.plugin.TODSessionManager;
+import tod.plugin.TODPluginUtils;
+import tod.plugin.views.AbstractNavigatorView;
 import zz.utils.Utils;
 
 public class LaunchUtils 
@@ -36,18 +40,28 @@ public class LaunchUtils
 	private static final ThreadLocal<LaunchInfo> itsInfo = new ThreadLocal<LaunchInfo>();
 
 	public static boolean setup(
-			SourceRevealer aSourceRevealer,
+			IJavaProject aJavaProject,
 			ILaunchConfiguration aConfiguration, 
 			ILaunch aLaunch) throws CoreException
 	{
+		return setup(new IProject[] {aJavaProject.getProject()}, aConfiguration, aLaunch);
+	}
+	
+	public static boolean setup(
+			IProject[] aProjects,
+			ILaunchConfiguration aConfiguration, 
+			ILaunch aLaunch) throws CoreException
+{
 		TODConfig theConfig = TODConfigLaunchTab.readConfig(aConfiguration);
+		AbstractNavigatorView theView = TODPluginUtils.getTraceNavigatorView(true);
+		
 		ISession theSession = null;
 		try
 		{
 			theSession = TODSessionManager.getInstance().getSession(
-					aLaunch,
-					aSourceRevealer,
-					theConfig);
+					theView.getGUIManager(),
+					theConfig,
+					new EclipseProgramLaunch(aLaunch, aProjects));
 		}
 		catch (Exception e)
 		{

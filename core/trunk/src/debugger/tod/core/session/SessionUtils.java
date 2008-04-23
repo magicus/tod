@@ -69,6 +69,26 @@ public class SessionUtils
 	}
 	
 	/**
+	 * Returns the class of the root session (considering delegated sessions).
+	 */
+	public static Class<? extends ISession> getSessionClass(ISession aSession)
+	{
+		while(aSession != null)
+		{
+			if (aSession instanceof DelegatedSession)
+			{
+				DelegatedSession theSession = (DelegatedSession) aSession;
+				aSession = theSession.getDelegate();
+			}
+			else
+			{
+				return aSession.getClass();
+			}
+		}
+		throw new RuntimeException("Invalid session");
+	}
+	
+	/**
 	 * Creates a session for the specified config.
 	 */
 	public static ISession createSession(TODConfig aConfig)

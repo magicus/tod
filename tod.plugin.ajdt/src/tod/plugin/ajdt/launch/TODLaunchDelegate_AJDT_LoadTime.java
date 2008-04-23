@@ -11,8 +11,6 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.IVMRunner;
 
-import tod.plugin.GenericSourceRevealer;
-import tod.plugin.SourceRevealer;
 import tod.plugin.launch.LaunchUtils;
 
 
@@ -35,8 +33,7 @@ public class TODLaunchDelegate_AJDT_LoadTime extends LTWApplicationLaunchConfigu
 		try
 		{
 			IJavaProject theJavaProject = getJavaProject(aConfiguration);
-			SourceRevealer theRevealer = new GenericSourceRevealer(aLaunch, theJavaProject);
-			if (LaunchUtils.setup(theRevealer, aConfiguration, aLaunch))
+			if (LaunchUtils.setup(theJavaProject, aConfiguration, aLaunch))
 			{
 				super.launch(aConfiguration, LaunchUtils.MODE, aLaunch, aMonitor);
 			}

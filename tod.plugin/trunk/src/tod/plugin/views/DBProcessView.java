@@ -5,11 +5,8 @@ package tod.plugin.views;
 
 import javax.swing.JComponent;
 
-import org.eclipse.ui.part.ViewPart;
-
 import tod.impl.dbgrid.DBProcessManager;
 import tod.impl.dbgrid.gui.GridLauncher;
-import tod.plugin.TODSessionManager;
 
 /**
  * This view permits to control the database process.

@@ -35,8 +35,6 @@ import tod.core.database.browser.IEventFilter;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.SourceRange;
 import tod.core.session.ISession;
-import tod.gui.formatter.CustomFormatterRegistry;
-import tod.gui.kit.Options;
 import tod.gui.seed.LogViewSeed;
 import tod.gui.settings.GUISettings;
 
@@ -67,7 +65,7 @@ public interface IGUIManager
 	public JobProcessor getJobProcessor();
 	
 	/**
-	 * Returns the current debugging session.
+	 * Returns the debugging session currently associated with this GUI manager.
 	 */
 	public ISession getSession();
 	
@@ -95,5 +93,60 @@ public interface IGUIManager
 	 */
 	public GUISettings getSettings();
 	
+	/**
+	 * Shows a message/question to the user.
+	 * See {@link SwingDialogUtils} for an example implementation.
+	 */
+	public <T> T showDialog(DialogType<T> aDialog);
 	
+	/**
+	 * Models a dialog presented to the user.
+	 * @param <R> The type of the response (Boolean for YES/NO, Void for OK...)
+	 * @author gpothier
+	 */
+	public static abstract class DialogType<R>
+	{
+		private String itsTitle;
+		private String itsText;
+
+		public DialogType(String aTitle, String aText)
+		{
+			itsTitle = aTitle;
+			itsText = aText;
+		}
+
+		public String getTitle()
+		{
+			return itsTitle;
+		}
+
+		public String getText()
+		{
+			return itsText;
+		}
+	}
+	
+	public static class YesNoDialogType extends DialogType<Boolean>
+	{
+		public YesNoDialogType(String aTitle, String aText)
+		{
+			super(aTitle, aText);
+		}
+	}
+	
+	public static class OkCancelDialogTYpe extends DialogType<Boolean>
+	{
+		public OkCancelDialogTYpe(String aTitle, String aText)
+		{
+			super(aTitle, aText);
+		}
+	}
+	
+	public static class ErrorDialogType extends DialogType<Void>
+	{
+		public ErrorDialogType(String aTitle, String aText)
+		{
+			super(aTitle, aText);
+		}
+	}
 }

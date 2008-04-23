@@ -11,8 +11,9 @@ import org.eclipse.ui.IWorkbenchPart;
 
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.SourceRange;
+import tod.core.session.ISession;
 import tod.gui.IGUIManager;
-import tod.plugin.DebuggingSession;
+import tod.plugin.SourceRevealerUtils;
 
 public abstract class AbstractNavigatorView extends AbstractAWTView implements ISelectionListener
 {
@@ -71,12 +72,12 @@ public abstract class AbstractNavigatorView extends AbstractAWTView implements I
 		itsMoving = false;
 	}
 	
-	public void gotoEvent(DebuggingSession aSession, SourceRange aSourceRange)
+	public void gotoSource(ISession aSession, SourceRange aSourceRange)
 	{
 	    if (itsMoving) return;
 	    itsMoving = true;
-
-	    aSession.gotoSource(aSourceRange);
+	    
+	    SourceRevealerUtils.reveal(aSession, aSourceRange);
 	    
 	    itsMoving = false;
 	}

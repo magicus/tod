@@ -22,22 +22,26 @@ package tod.plugin.views;
 
 import java.awt.event.ActionEvent;
 
-import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 
 import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.SourceRange;
+import tod.core.session.ISession;
+import tod.core.session.TODSessionManager;
 import tod.gui.MinerUI;
 import tod.gui.seed.LogViewSeed;
 import tod.gui.seed.LogViewSeedFactory;
-import tod.plugin.DebuggingSession;
 import tod.plugin.TODPluginUtils;
-import tod.plugin.TODSessionManager;
-import zz.utils.SimpleAction;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.PropertyListener;
 
@@ -48,12 +52,12 @@ public class EventViewer extends MinerUI
 	public EventViewer(TraceNavigatorView aTraceNavigatorView)
 	{
 		itsTraceNavigatorView = aTraceNavigatorView;
-		TODSessionManager.getInstance().pCurrentSession().addHardListener(new PropertyListener<DebuggingSession>()
+		TODSessionManager.getInstance().pCurrentSession().addHardListener(new PropertyListener<ISession>()
 				{
 					public void propertyChanged(
-							IProperty<DebuggingSession> aProperty, 
-							DebuggingSession aOldValue, 
-							final DebuggingSession aNewValue)
+							IProperty<ISession> aProperty, 
+							ISession aOldValue, 
+							final ISession aNewValue)
 					{
 						SwingUtilities.invokeLater(new Runnable()
 						{
@@ -68,12 +72,6 @@ public class EventViewer extends MinerUI
 		setSession(TODSessionManager.getInstance().pCurrentSession().get());
 	}
 	
-	@Override
-	public DebuggingSession getSession()
-	{
-		return (DebuggingSession) super.getSession();
-	}
-
 	@Override
 	protected void createActions(ActionToolbar aToolbar, ActionCombo aActionCombo)
 	{
@@ -109,6 +107,57 @@ public class EventViewer extends MinerUI
 	
 	public void gotoSource(SourceRange aSourceRange)
 	{
-	    itsTraceNavigatorView.gotoEvent(getSession(), aSourceRange);
+	    itsTraceNavigatorView.gotoSource(getSession(), aSourceRange);
+	}
+	
+	public <T> T showDialog(DialogType<T> aDialog)
+	{
+		if (aDialog instanceof ErrorDialogType)
+		{
+			final ErrorDialogType theDialog = (ErrorDialogType) aDialog;
+			final int[] theResult = new int[1];
+			Display.getDefault().syncExec(new Runnable()
+			{
+				public void run()
+				{
+					Shell theShell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+					theResult[0] = ErrorDialog.openError(
+							theShell, 
+							theDialog.getTitle(), 
+							theDialog.getText(), 
+							new Status(
+									IStatus.ERROR,
+									"tod.plugin",
+									0,
+									"Exception",
+									null));
+				}
+			});
+
+			return null;//theResult[0] != Dialog.CANCEL;		
+		}
+		else if (aDialog instanceof OkCancelDialogTYpe)
+		{
+			OkCancelDialogTYpe theDialog = (OkCancelDialogTYpe) aDialog;
+			throw new UnsupportedOperationException();
+		}
+		else if (aDialog instanceof YesNoDialogType)
+		{
+			final YesNoDialogType theDialog = (YesNoDialogType) aDialog;
+			final boolean[] theResult = new boolean[1];
+			Display.getDefault().syncExec(new Runnable()
+			{
+				public void run()
+				{
+					Shell theShell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+					theResult[0] = MessageDialog.openQuestion(
+							theShell,
+							theDialog.getTitle(),
+							theDialog.getText());
+				}
+			});
+			return (T) (Boolean) theResult[0];
+		}
+		else throw new IllegalArgumentException("Not handled: "+aDialog);
 	}
 }

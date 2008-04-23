@@ -29,50 +29,54 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.core.session;
+package tod.gui;
 
-import java.net.URI;
-import java.util.HashSet;
-import java.util.Set;
+import javax.swing.JComponent;
+import javax.swing.JOptionPane;
 
-import tod.core.config.TODConfig;
+import tod.gui.IGUIManager.DialogType;
+import tod.gui.IGUIManager.ErrorDialogType;
+import tod.gui.IGUIManager.OkCancelDialogTYpe;
+import tod.gui.IGUIManager.YesNoDialogType;
 
-public abstract class AbstractSession implements ISession
+/**
+ * Utility class for implementing {@link IGUIManager#showDialog(tod.gui.IGUIManager.DialogType)}
+ * on Swing.
+ * @author gpothier
+ */
+public class SwingDialogUtils
 {
-	private TODConfig itsConfig;
-	private final URI itsUri;
-	private final Set<IProgramLaunch> itsLaunches = new HashSet<IProgramLaunch>();
-
-	public AbstractSession(URI aUri, TODConfig aConfig)
+	public static <T> T showDialog(JComponent aParent, DialogType<T> aDialog)
 	{
-		itsUri = aUri;
-		itsConfig = aConfig;
+		if (aDialog instanceof ErrorDialogType)
+		{
+			ErrorDialogType theDialog = (ErrorDialogType) aDialog;
+			JOptionPane.showMessageDialog(aParent, theDialog.getText(), theDialog.getTitle(), JOptionPane.ERROR_MESSAGE);
+			return null;
+		}
+		else if (aDialog instanceof OkCancelDialogTYpe)
+		{
+			OkCancelDialogTYpe theDialog = (OkCancelDialogTYpe) aDialog;
+			int theResult = JOptionPane.showConfirmDialog(
+					aParent, 
+					theDialog.getText(), 
+					theDialog.getTitle(), 
+					JOptionPane.OK_CANCEL_OPTION);
+			
+			return (T) (Boolean) (theResult == JOptionPane.OK_OPTION);
+		}
+		else if (aDialog instanceof YesNoDialogType)
+		{
+			YesNoDialogType theDialog = (YesNoDialogType) aDialog;
+			int theResult = JOptionPane.showConfirmDialog(
+					aParent, 
+					theDialog.getText(), 
+					theDialog.getTitle(), 
+					JOptionPane.YES_NO_OPTION);
+			
+			return (T) (Boolean) (theResult == JOptionPane.YES_OPTION);
+		}
+		else throw new IllegalArgumentException("Not handled: "+aDialog);
 	}
 
-	public URI getUri()
-	{
-		return itsUri;
-	}
-
-	public TODConfig getConfig()
-	{
-		return itsConfig;
-	} 
-	
-	public void setConfig(TODConfig aConfig)
-	{
-		itsConfig = aConfig;
-	}
-
-	public ConnectionInfo getConnectionInfo()
-	{
-		return new ConnectionInfo(
-				getConfig().get(TODConfig.COLLECTOR_HOST), 
-				getConfig().get(TODConfig.COLLECTOR_PORT));
-	}
-
-	public Set<IProgramLaunch> getLaunches()
-	{
-		return itsLaunches;
-	}
 }

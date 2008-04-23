@@ -32,6 +32,7 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.core.session;
 
 import java.net.URI;
+import java.util.Set;
 
 import javax.swing.JComponent;
 
@@ -40,6 +41,9 @@ import tod.core.database.browser.ILogBrowser;
 
 /**
  * Represents a debugging session on the client (frontend) side.
+ * A session is associated with one database instance, and with
+ * several launches; all launched programs send events to the 
+ * same database.
  * @author gpothier
  */
 public interface ISession
@@ -48,6 +52,11 @@ public interface ISession
 	 * Returns the current configuration of this session.
 	 */
 	public TODConfig getConfig();
+	
+	/**
+	 * Returns the launch configurations associated with this session.
+	 */
+	public Set<IProgramLaunch> getLaunches();
 	
 	/**
 	 * Returns the monitor of this session.

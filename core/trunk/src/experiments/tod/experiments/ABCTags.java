@@ -62,9 +62,11 @@ import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.session.AbstractSession;
+import tod.core.session.IProgramLaunch;
 import tod.core.session.ISession;
 import tod.core.session.ISessionMonitor;
 import tod.gui.MinerUI;
+import tod.gui.IGUIManager.DialogType;
 import tod.gui.seed.StructureSeed;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
@@ -110,6 +112,12 @@ public class ABCTags
 		
 		public void gotoSource(SourceRange aSourceRange)
 		{
+			throw new UnsupportedOperationException();
+		}
+
+		public <T> T showDialog(DialogType<T> aDialog)
+		{
+			throw new UnsupportedOperationException();
 		}
 	}
 	

@@ -8,13 +8,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.pde.ui.launcher.EclipseApplicationLaunchConfiguration;
-
-import tod.plugin.GenericSourceRevealer;
-import tod.plugin.SourceRevealer;
 
 
 /**
@@ -37,8 +32,7 @@ extends EclipseApplicationLaunchConfiguration
 		try
 		{
 			IProject[] theProjects = getProjectsForProblemSearch(aConfiguration, aMode);
-			SourceRevealer theRevealer = new GenericSourceRevealer(aLaunch, theProjects);
-			if (LaunchUtils.setup(theRevealer, aConfiguration, aLaunch))
+			if (LaunchUtils.setup(theProjects, aConfiguration, aLaunch))
 			{
 				super.launch(aConfiguration, LaunchUtils.MODE, aLaunch, aMonitor);
 			}

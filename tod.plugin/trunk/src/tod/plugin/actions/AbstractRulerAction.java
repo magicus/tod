@@ -18,8 +18,8 @@ import org.eclipse.jface.text.source.IVerticalRulerInfo;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import tod.core.database.structure.IBehaviorInfo;
+import tod.core.session.ISession;
 import tod.gui.IGUIManager;
-import tod.plugin.DebuggingSession;
 import tod.plugin.TODPluginUtils;
 
 public abstract class AbstractRulerAction extends Action //implements IUpdate
@@ -95,9 +95,9 @@ public abstract class AbstractRulerAction extends Action //implements IUpdate
 	/**
 	 * Retrieves the current session.
 	 */
-	protected DebuggingSession getSession()
+	protected ISession getSession()
 	{
-		return (DebuggingSession) getGUIManager(false).getSession();
+		return getGUIManager(false).getSession();
 	}
 	
 	/**

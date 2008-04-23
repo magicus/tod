@@ -20,8 +20,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
  */
 package tod.plugin;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -39,6 +41,7 @@ import org.eclipse.debug.ui.sourcelookup.ISourceLookupResult;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.debug.core.IJavaClassObject;
 import org.eclipse.jdt.debug.core.IJavaClassType;
 import org.eclipse.jdt.debug.core.IJavaFieldVariable;
@@ -57,6 +60,8 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import tod.core.database.structure.SourceRange;
+import tod.core.session.IProgramLaunch;
+import tod.core.session.ISession;
 import tod.utils.TODUtils;
 import zz.eclipse.utils.EclipseUtils;
 
@@ -126,6 +131,30 @@ public class SourceRevealerUtils
 			}
 		});
 	}
+	
+	/**
+	 * Returns all the java projects of the given session.
+	 */
+	private static List<IJavaProject> getJavaProjects(ISession aSession)
+	{
+		List<IJavaProject> theJavaProjects = new ArrayList<IJavaProject>();
+		
+	    Set<IProgramLaunch> theLaunches = aSession.getLaunches();
+	    for (IProgramLaunch theLaunch : theLaunches)
+		{
+	    	EclipseProgramLaunch theEclipseLaunch = (EclipseProgramLaunch) theLaunch;
+	    	for (IProject theProject : theEclipseLaunch.getProjects())
+			{
+	    		IJavaProject theJavaProject = JavaCore.create(theProject);
+				if (theJavaProject != null && theJavaProject.exists())
+				{
+					theJavaProjects.add(theJavaProject);
+				}
+			}
+		}
+
+	    return theJavaProjects;
+	}
 
 	/**
 	 * Opens a given method. Should be safe for JDT and PDE projects.
@@ -165,14 +194,14 @@ public class SourceRevealerUtils
 	/**
 	 * Opens a given location. Should be safe for JDT and PDE projects.
 	 */
-	public static void reveal(final List<IJavaProject> aJavaProjects, final SourceRange aSourceRange)
+	public static void reveal(final ISession aSession, final SourceRange aSourceRange)
 	{
-		TODUtils.log(1, "[SourceRevealerUtils.reveal(IJavaProject, String, int)]" + aSourceRange);
+		TODUtils.log(1, "[SourceRevealerUtils.reveal(ISession, String, int)]" + aSourceRange);
 		getInstance().reveal(new Revealer()
 		{
 			public void reveal() throws CoreException, BadLocationException
 			{
-				IEditorPart theEditor = findEditor(aJavaProjects, aSourceRange);
+				IEditorPart theEditor = findEditor(getJavaProjects(aSession), aSourceRange);
 
 				if (theEditor instanceof ITextEditor)
 				{
