@@ -71,7 +71,7 @@ class Class(object):
             if inspect.isfunction(v):
                 if not (k == '__module__'):
                     id = hT.Id.__get__()
-                    self.method.__update__({k:id})
+                    self.method.update({k:id})
                     hT.Id.__next__()
 
 class Function(object):
