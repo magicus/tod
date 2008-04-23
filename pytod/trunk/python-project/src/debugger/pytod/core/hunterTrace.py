@@ -141,15 +141,6 @@ class Method(object):
     def __registerLocals__(self, local):
         self.locals.__update__(local,self.id)
         
-class Probe(object):
-    
-    def __init__(self, probeId, f_lasti, parentId):
-        self.id = probeId
-        self.f_lasti = f_lasti
-        self.parentId = parentId
-    
-    def __getId__(self):
-        return self.id
     
 class hTThread(object):
     
@@ -168,8 +159,8 @@ class hunterTrace(object):
         self._class = {}
         self._function = {}
         self._method = {}
-        self._probe = []
-        self._thread = []
+        self._probe = {}
+        self._thread = {}
         self.Id = Id
         self.probeId = probeId
         self.methodPattern = "\A__.*(__)$"
@@ -299,16 +290,20 @@ class hunterTrace(object):
             return frameBack.f_locals['__timeStampFrame__']
         return currentTimeStamp
     
-    def __printchangevar__(self, code, local, locals, obj, f_lasti, depth, parentTimeStampFrame):
+    def __printchangevar__(self, code, local, locals, obj, currentLasti, depth, parentTimeStampFrame):
         attr = obj.__getLocals__()
         objId = obj.__getId__()
         for i in local.iterkeys():
-            probeId = self.probeId.__get__()
-            self.probeId.__next__()
             if not attr.has_key(i) or not locals.has_key(i):
                 return
+            #registramos un nuevo probe o utilizamos el que existe
+            if not self._probe.has_key((currentLasti,objId)):
+                probeId = self.__registerProbe__(currentLasti,objId)
+            else:
+                probeId = self._probe[(currentLasti,objId)]                    
             print 'set',i,'=',locals[i],", id=", attr[i],
-            print ',probe(id =',probeId,', f_lasti =',f_lasti,', id =',objId,')',
+            print ',probe id =',probeId,
+            #print ',probe(id =',probeId,', f_lasti =',f_lasti,', id =',objId,')',
             print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
             print ',current depth =',depth,', current time stamp = %11.9f'%(time.time()),
             print ',current thread =',thread.get_ident()
@@ -321,14 +316,18 @@ class hunterTrace(object):
         f_back = frame.f_back
         f_lasti = f_back.f_lasti
         f_code = f_back.f_code
-        f_id = self.__getObjectId__(f_code)
-        probeId = self.probeId.__get__()
-        self.probeId.__next__()
-        current_lasti = frame.f_lasti
+        parentId = self.__getObjectId__(f_code)
+        currentLasti = frame.f_lasti        
+        #registramos un nuevo probe
+        if not self._probe.has_key((currentLasti,parentId)):
+            probeId = self.__registerProbe__(currentLasti,parentId)
+        else:
+            probeId = self._probe[(currentLasti,parentId)]
         print "call",code.co_name,", id =",methodId,", target =",classId, ", args =",
         print args,
-        print ',llamado desde (',f_id,',f_lasti =',f_lasti,')',
-        print ',probe(id =',probeId,', f_lasti =',current_lasti,', id =',methodId,')',
+        print ',llamado desde (',parentId,',f_lasti =',f_lasti,')',
+        print ',probe id =',probeId,
+        #print ',probe(id =',probeId,', f_lasti =',current_lasti,', id =',methodId,')',
         print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
         print ',current depth =',depth,', current time stamp = %11.9f'%(currentTimeStamp),      
         print ',current thread =',thread.get_ident()
@@ -336,18 +335,22 @@ class hunterTrace(object):
         
     def __printCallFunction__(self, code, frame, depth, currentTimeStamp, parentTimeStampFrame):
         obj = self.__getObject__(code)
-        id = obj.__getId__()
+        functionId = obj.__getId__()
         args = obj.__getArgs__()
         f_back = frame.f_back
         f_lasti = f_back.f_lasti
         f_code = f_back.f_code
-        f_id = self.__getObjectId__(f_code)
-        probeId = self.probeId.__get__()
-        self.probeId.__next__()
-        current_lasti = frame.f_lasti
-        print "call",code.co_name,", id =",id, ", args =",args,
-        print ',llamado desde (',f_id,',f_lasti =',f_lasti,')',
-        print ',probe(id =',probeId,', f_lasti =',current_lasti,', id =',id,')',
+        parentId = self.__getObjectId__(f_code)
+        currentLasti = frame.f_lasti
+        #registramos un nuevo probe o lo rescatamos
+        if not self._probe.has_key((currentLasti,parentId)):
+            probeId = self.__registerProbe__(currentLasti,parentId)
+        else:
+            probeId = self._probe[(currentLasti,parentId)]
+        print "call",code.co_name,", id =",functionId, ", args =",args,
+        print ',llamado desde (',parentId,',f_lasti =',f_lasti,')',
+        print ',probe id =',probeId,
+        #print ',probe(id =',probeId,', f_lasti =',current_lasti,', id =',id,')',
         print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
         print ',current depth =',depth,', current time stamp = %11.9f'%(currentTimeStamp),
         print ',current thread =',thread.get_ident()
@@ -379,6 +382,14 @@ class hunterTrace(object):
         print 'register id =',functionId,',name =',code.co_name,', args =',args
         self.__addFunction__(functionId,self.__createlnotab__(code),code,args)
         self.Id.__next__()
+
+    def __registerProbe__(self, f_lasti, parentId):
+        probeId = self.probeId.__get__()
+        self._probe.update({(f_lasti,parentId):probeId})
+        print 'register probe id=',probeId,',f_lasti =',f_lasti,
+        print ',parent id =', parentId
+        self.probeId.__next__()
+        return probeId
 
     def __trace__(self, frame, event, arg):
         if frame.f_back == None:
