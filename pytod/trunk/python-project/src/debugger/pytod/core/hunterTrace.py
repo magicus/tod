@@ -13,6 +13,33 @@ import inspect
 import thread
 from threading import settrace
 
+objects = {
+           'class':0,
+           'method':1,
+           'attribute':2,
+           'function':3,
+           'local':4,
+           'probe':5,
+           'thread':6
+           }
+
+dataTypes = {
+             int.__name__:0,
+             str.__name__:1,
+             float.__name__:2,
+             long.__name__:3,
+             bool.__name__:4,
+             tuple.__name__:5,
+             list.__name__:6,
+             dict.__name__:7
+             }
+
+events = {
+          'register':0,
+          'call':1,
+          'set':2,
+          'return':3
+          }
 
 class Diccionario(dict):
 
@@ -153,6 +180,9 @@ class hunterTrace(object):
         self._method = {}
         self._probe = {}
         self._thread = {}
+        self.objects = objects
+        self.dataTypes = dataTypes
+        self.events = events
         self.Id = Id
         self.probeId = probeId
         self.threadId = threadId
@@ -305,7 +335,8 @@ class hunterTrace(object):
                 probeId = self._probe[(currentLasti,objId)]
             #preguntar el tipo de la variable para poder
             #"socketear"
-            print 'set id =',attr[i],
+            print self.events['set'],
+            print 'id =',attr[i],
             print ', value =',locals[i],
             print ',probe id =',probeId,
             #print ',probe(id =',probeId,', f_lasti =',f_lasti,', id =',objId,')',
@@ -329,7 +360,8 @@ class hunterTrace(object):
             probeId = self.__registerProbe__(currentLasti,parentId)
         else:
             probeId = self._probe[(currentLasti,parentId)]
-        print 'call id =',methodId,
+        print self.events['call'],
+        print 'id =',methodId,
         print 'parent id =',parentId,
         print 'target =',classId,
         print args,', args =',
@@ -356,7 +388,9 @@ class hunterTrace(object):
             probeId = self.__registerProbe__(currentLasti,parentId)
         else:
             probeId = self._probe[(currentLasti,parentId)]
-        print "call id =",functionId, ", parent id =",parentId,
+        print self.events['call'],
+        print ' id =',functionId,
+        print ', parent id =',parentId,
         print ',args =',args,
         #print ',llamado desde (',parentId,',f_lasti =',f_lasti,')',
         print ',probe id =',probeId,
@@ -376,7 +410,8 @@ class hunterTrace(object):
             probeId = self.__registerProbe__(currentLasti,parentId)
         else:
             probeId = self._probe[(currentLasti,parentId)]
-        print 'return value',arg,
+        print self.events['return'],
+        print ' value',arg,
         print ',probe id =',probeId,
         print ',hasThrown =', True
     
