@@ -15,7 +15,6 @@ class testit(Thread):
       self.ip = ip
       self.status = -1
    def run(self):
-      #print thread.get_ident()
       pingaling = os.popen("ping -q -c2 "+self.ip,"r")
       while 1:
         line = pingaling.readline()

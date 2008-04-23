@@ -12,6 +12,7 @@ def prueba():
     prueba2()
 
 def prueba2(e=3):
+    z = 3
     print 'hola'
 
 

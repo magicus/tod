@@ -12,10 +12,7 @@ class clase1(Descriptor):
 
     def metodo(self):
         z=3
-        
-    def metodo(self):
-        z=3
-        
+        self.a = 0
 """
 class clase2(Descriptor):
     def __init__(self):
