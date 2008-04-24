@@ -6,12 +6,12 @@ All rights reserved.
 Redistribution and use in source and binary forms, with or without modification, 
 are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright notice, this 
+ * Redistributions of source code must retain the above copyright notice, this 
       list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, 
+ * Redistributions in binary form must reproduce the above copyright notice, 
       this list of conditions and the following disclaimer in the documentation 
       and/or other materials provided with the distribution.
-    * Neither the name of the University of Chile nor the names of its contributors 
+ * Neither the name of the University of Chile nor the names of its contributors 
       may be used to endorse or promote products derived from this software without 
       specific prior written permission.
 
@@ -28,7 +28,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
-*/
+ */
 package tod.core.config;
 
 import java.io.IOException;
@@ -36,36 +36,47 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * Configuration options for deployment (native agent version, database version...).
- * Note that deployment options can be overridden by system properties. 
+ * Configuration options for deployment (native agent version, database
+ * version...). Note that deployment options can be overridden by system
+ * properties.
+ * 
  * @author gpothier
  */
 public class DeploymentConfig
 {
 	public static final String AGENTNAME_PROPERTY = "tod.agent.name";
 	public static final String DATABASECLASS_PROPERTY = "tod.db.class";
-	
+	public static final String DB_SCOPE_CHECK_PROPERTY = "db.scope.check";
+
 	private static String itsAgentName;
 	private static String itsDatabaseClassName;
-	
+	private static String itsDbScopeCheck;
+
 	static
 	{
 		Properties theProperties = readProperties();
-		
-		itsAgentName = System.getProperty(
-				AGENTNAME_PROPERTY,
-				theProperties.getProperty(AGENTNAME_PROPERTY));
-		
-		itsDatabaseClassName = System.getProperty(
-				DATABASECLASS_PROPERTY, 
-				theProperties.getProperty(DATABASECLASS_PROPERTY));
+
+		itsAgentName =
+				System.getProperty(AGENTNAME_PROPERTY, theProperties
+						.getProperty(AGENTNAME_PROPERTY));
+
+		itsDatabaseClassName =
+				System.getProperty(DATABASECLASS_PROPERTY, theProperties
+						.getProperty(DATABASECLASS_PROPERTY));
+
+		String theDBScopeCheck =
+				System.getProperty(DB_SCOPE_CHECK_PROPERTY, theProperties
+						.getProperty(DB_SCOPE_CHECK_PROPERTY));
+		itsDbScopeCheck = theDBScopeCheck == null ? "true" : theDBScopeCheck;
+
 	}
-	
+
 	public static Properties readProperties()
 	{
 		try
 		{
-			InputStream theStream = DeploymentConfig.class.getResourceAsStream("/config.properties");
+			InputStream theStream =
+					DeploymentConfig.class.getResourceAsStream("/config.properties");
 			Properties theProperties = new Properties();
 			theProperties.load(theStream);
 			return theProperties;
@@ -75,8 +86,7 @@ public class DeploymentConfig
 			throw new RuntimeException(e);
 		}
 	}
-	
-	
+
 	/**
 	 * Returns the name of the native agent to use.
 	 */
@@ -91,5 +101,10 @@ public class DeploymentConfig
 	public static String getDatabaseClass()
 	{
 		return itsDatabaseClassName;
+	}
+
+	public static String getDbScopeCheck()
+	{
+		return itsDbScopeCheck;
 	}
 }

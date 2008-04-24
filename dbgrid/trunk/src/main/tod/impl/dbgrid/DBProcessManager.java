@@ -40,6 +40,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import tod.Util;
+import tod.core.config.DeploymentConfig;
 import tod.core.config.TODConfig;
 import tod.utils.TODUtils;
 import zz.utils.StreamPipe;
@@ -76,7 +77,7 @@ public class DBProcessManager
 	}
 
 	public static String cp = ".";// + File.pathSeparator +
-									// System.getenv("classpath");
+	// System.getenv("classpath");
 	public static String lib = ".";
 
 	private TODConfig itsConfig;
@@ -261,6 +262,7 @@ public class DBProcessManager
 							TODConfig.COLLECTOR_PORT.javaOpt(getConfig()),
 							TODConfig.WITH_ASPECTS.javaOpt(getConfig()),
 							TODConfig.WITH_BYTECODE.javaOpt(getConfig()),
+							"-Ddb.scope.check=" + DeploymentConfig.getDbScopeCheck(),
 							// theJDWP ?
 							// "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"
 							// : "",
