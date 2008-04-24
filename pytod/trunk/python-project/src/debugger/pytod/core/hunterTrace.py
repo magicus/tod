@@ -11,6 +11,7 @@ import re
 import time
 import inspect
 import thread
+import xdrlib
 from threading import settrace
 
 objects = {
@@ -204,7 +205,7 @@ class Method(object):
 
 class hunterTrace(object):
 
-    def __init__(self, Id, probeId, threadId):
+    def __init__(self, Id, probeId, threadId, packer):
         self._class = {}
         self._function = {}
         self._method = {}
@@ -216,6 +217,7 @@ class hunterTrace(object):
         self.Id = Id
         self.probeId = probeId
         self.threadId = threadId
+        self.packer = packer
         self.methodPattern = "\A__.*(__)$"
 
     def __addClass__(self, id, lnotab, code):
@@ -493,11 +495,26 @@ class hunterTrace(object):
     def __registerFunction__(self, code):
         functionId = self.Id.__get__()
         args = self.__getargs__(code)
+        self.packer.reset()
         print self.events['register'],
+        self.packer.pack_int(self.events['register'])
         print self.objects['function'],        
-        print 'id =',functionId,
-        print ',name =',code.co_name,
-        print ', args =',args
+        self.packer.pack_int(self.objects['function'])
+        #print 'id =',functionId,
+        print functionId,
+        self.packer.pack_int(functionId)
+        #print ',name =',code.co_name,
+        print code.co_name,
+        self.packer.pack_string(code.co_name)
+        print len(args),
+        self.packer.pack_int(len(args))
+        for k,v in args.iteritems():
+            print k,
+            self.packer.pack_string(k)
+            print v,
+            self.packer.pack_int(v)
+        #print ', args =',args
+        print self.packer.get_buffer()
         self.__addFunction__(
                              functionId,
                              self.__createlnotab__(code),
@@ -664,7 +681,7 @@ class hunterTrace(object):
             print
         print '======='
 
-hT = hunterTrace(IdGenerator(),IdGenerator(),IdGenerator())
+hT = hunterTrace(IdGenerator(),IdGenerator(),IdGenerator(),xdrlib.Packer())
 #a cada nuevo thread se le define settrace
 settrace(hT.__trace__)  
 #asignamos settrace para nuestro espacio de trabajo
