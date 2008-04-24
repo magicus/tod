@@ -71,6 +71,7 @@ class Diccionario(dict):
                     print ',parent id=',parentId
 
 class IdGenerator(object):
+    
     def __init__(self):
         self.id = 1
 
@@ -81,9 +82,15 @@ class IdGenerator(object):
         self.id = self.id + 1
         return
 
+
 class Descriptor(object):
 
     def __setattr__(self, name, value):
+        frame = sys._getframe()
+        currentDepth = hT.__getDepthFrame__(frame)
+        currentTimeStamp = hT.__timeStampFrame__(frame)
+        parentTimeStamp = hT.__getTimeStampParentFrame__(frame, currentTimeStamp)
+        threadId = hT.__getThreadId__(thread.get_ident())
         id = hT.Id.__get__()
         key = type(self).__name__
         key = hT.__getClassKey__(key)
@@ -97,7 +104,11 @@ class Descriptor(object):
         print hT.objects['attribute'],
         print 'value =',value,
         print 'id =',id,
-        print 'target =',objId
+        print 'target =',objId,
+        print 'current depth =',currentDepth,
+        print 'current time stamp = %11.9f'%(currentTimeStamp),
+        print 'parent time stamp = %11.9f'%(parentTimeStamp),
+        print 'current thread =',threadId
         #falta agregar el probeId, currentTimeStamp, etc...
         object.__setattr__(self, name, value)
 
@@ -223,6 +234,22 @@ class hunterTrace(object):
 
     def __addThread__(self, threadId, threadSysId):
         self._thread.update({threadSysId:threadId})
+        
+    def __createlnotab__(self, code):
+        lnotab = {}
+        if hasattr(code, 'co_lnotab'):
+            table = code.co_lnotab
+            index = 0
+            last_index = None
+            for i in range(0, len(table), 2):
+                index = index + ord(table[i])
+                if last_index == None:
+                    last_index = index
+                else:
+                    lnotab.update({index:tuple([last_index,index-1])})                
+                    last_index = index
+            lnotab.update({len(code.co_code)-1:tuple([last_index,len(code.co_code)-1])})                
+        return lnotab        
 
     def __inClass__(self, _class):
         if self._class.has_key(_class):
@@ -238,12 +265,6 @@ class hunterTrace(object):
         if self._method.has_key(_method):
             return True
         return False
-
-    def __getClassKey__(self, nameClass):
-        for k,v in self._class.iteritems():
-            if k.co_name == nameClass:
-                return k
-        return None
 
     def __isClassKey__(self, codeClass):
         for k in self._class.iterkeys():
@@ -262,7 +283,13 @@ class hunterTrace(object):
             if k == codeMethod:
                 return self._method[k]
         return None
-
+    
+    def __getClassKey__(self, nameClass):
+        for k,v in self._class.iteritems():
+            if k.co_name == nameClass:
+                return k
+        return None
+    
     def __getObjectId__(self, code):
         if self.__isClassKey__(code):
             return self._class[code].__getId__()
@@ -280,23 +307,12 @@ class hunterTrace(object):
         return None
 
     def __getThreadId__(self, threadSysId):
-        return self._thread[threadSysId]
+        if not hT._thread.has_key(threadSysId):
+            threadId = self.__registerThread__(threadSysId)
+        else:
+            threadId = self._thread[threadSysId]
+        return threadId
 
-    def __createlnotab__(self, code):
-        lnotab = {}
-        if hasattr(code, 'co_lnotab'):
-            table = code.co_lnotab
-            index = 0
-            last_index = None
-            for i in range(0, len(table), 2):
-                index = index + ord(table[i])
-                if last_index == None:
-                    last_index = index
-                else:
-                    lnotab.update({index:tuple([last_index,index-1])})                
-                    last_index = index
-            lnotab.update({len(code.co_code)-1:tuple([last_index,len(code.co_code)-1])})                
-        return lnotab
 
     def __getargs__(self, code):
         args = {}
@@ -320,6 +336,9 @@ class hunterTrace(object):
                     i_arg_value = code.co_varnames[value]
                     store_fast.update({i_arg_value:value})
         return store_fast   
+
+    def __getDepthFrame__(self, frame):
+        return frame.f_locals['__depthFrame__']
 
     def __depthFrame__(self, frame):
         frameBack = frame.f_back
@@ -522,11 +541,7 @@ class hunterTrace(object):
         parentTimeStampFrame = self.__getTimeStampParentFrame__(
                                                     frame, 
                                                     currentTimeStamp)
-        threadSysId = thread.get_ident()
-        if not self._thread.has_key(threadSysId):
-            threadId = self.__registerThread__(threadSysId)
-        else:
-            threadId = self.__getThreadId__(threadSysId)
+        threadId = self.__getThreadId__(thread.get_ident())
         if event == "call":
             if re.search(self.methodPattern,code.co_name):
                 if not code.co_name == '__init__':
