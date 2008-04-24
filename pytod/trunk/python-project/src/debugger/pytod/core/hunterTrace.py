@@ -550,11 +550,21 @@ class hunterTrace(object):
     def __registerProbe__(self, currentLasti, parentId):
         probeId = self.probeId.__get__()
         self.__addProbe__(probeId,currentLasti,parentId)
+        self.packer.reset()
         print self.events['register'],
+        self.packer.pack_int(self.events['register'])
         print self.objects['probe'],
-        print ',probe id=',probeId,
-        print ',current lasti =',currentLasti,
-        print ',parent id =', parentId
+        self.packer.pack_int(self.objects['probe'])
+        #print ',probe id=',probeId,
+        print probeId,
+        self.packer.pack_int(probeId)
+        #print ',current lasti =',currentLasti,
+        print currentLasti,
+        self.packer.pack_int(currentLasti)
+        #print ',parent id =', parentId
+        print parentId
+        self.packer.pack_int(parentId)
+        
         self.probeId.__next__()
         return probeId
     
@@ -571,7 +581,7 @@ class hunterTrace(object):
         self.packer.pack_int(threadId)
         #print 'thread sys id =',threadSysId
         print threadSysId
-        self.packer.pack_double(threadSysId)
+        self.packer.pack_int(threadSysId)
         self.threadId.__next__()
         return threadId
 
