@@ -478,13 +478,28 @@ class hunterTrace(object):
         objClass.__addMethod__(code,locals)
 
     def __registerMethod__(self, code, methodId, classId, args):
-        
+        self.packer.reset()
         print self.events['register'],
+        self.packer.pack_int(self.events['register'])
         print self.objects['method'],
-        print 'id=',methodId,
-        print ',class id=',classId,
-        print ',name=',code.co_name,
-        print 'args=',args
+        self.packer.pack_int(self.objects['method'])
+        #print 'id=',methodId,
+        print methodId,
+        self.packer.pack_int(methodId)
+        #print ',class id=',classId,
+        print classId
+        self.packer.pack_int(classId)
+        #print ',name=',code.co_name,
+        print code.co_name,
+        self.packer.pack_string(code.co_name)
+        print len(args),
+        self.packer.pack_int(len(args))
+        for k,v in args.iteritems():
+            print k,
+            self.packer.pack_string(k)
+            print v,
+            self.packer.pack_int(v)
+        print self.packer.get_buffer()
         self.__addMethod__(
                            methodId,
                            self.__createlnotab__(code),
