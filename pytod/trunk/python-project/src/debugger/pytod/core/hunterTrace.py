@@ -53,11 +53,21 @@ class Diccionario(dict):
             if not self.has_key(k):
                 if not k == 'self':
                     self[k] = v
+                    hT.packer.reset()
                     print hT.events['register'],
+                    hT.packer.pack_int(hT.events['register'])
                     print hT.objects['local'],
-                    print 'id =',v,
-                    print ',name =',k,
-                    print ',parent id=',parentId
+                    hT.packer.pack_int(hT.objects['local'])
+                    #print 'id =',v,
+                    print v,
+                    hT.packer.pack_int(v)
+                    #print ',parent id=',parentId,
+                    print parentId,
+                    hT.packer.pack_int(v)
+                    #print ',name =',k
+                    print k
+                    hT.packer.pack_string(k)
+                    
 
     def __updateAttr__(self, d, parentId):
         for k,v in d.items():
