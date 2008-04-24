@@ -507,7 +507,7 @@ class hunterTrace(object):
         print methodId,
         self.packer.pack_int(methodId)
         #print ',class id=',classId,
-        print classId
+        print classId,
         self.packer.pack_int(classId)
         #print ',name=',code.co_name,
         print code.co_name,
