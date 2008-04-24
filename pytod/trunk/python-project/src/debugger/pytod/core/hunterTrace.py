@@ -561,10 +561,17 @@ class hunterTrace(object):
     def __registerThread__(self, threadSysId):
         threadId = self.threadId.__get__()
         self.__addThread__(threadId,threadSysId)
+        self.packer.reset()
         print self.events['register'],
+        self.packer.pack_int(self.events['register'])
         print self.objects['thread'],
-        print 'thread id =',threadId,
-        print 'thread sys id =',threadSysId
+        self.packer.pack_int(self.objects['thread'])
+        #print 'thread id =',threadId,
+        print threadId,
+        self.packer.pack_int(threadId)
+        #print 'thread sys id =',threadSysId
+        print threadSysId
+        self.packer.pack_double(threadSysId)
         self.threadId.__next__()
         return threadId
 
