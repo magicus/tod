@@ -475,12 +475,22 @@ class hunterTrace(object):
     def __registerClass__(self, code, locals):
         classId = self.Id.__get__()
         className = code.co_name
-        classBases = None #globals[className].__class__.__bases__
+        #HINT: ver como recuperar las herencias de esta clase 
+        classBases = None
+        self.packer.reset()
         print self.events['register'],
+        self.packer.pack_int(self.events['register'])
         print self.objects['class'],
-        print 'name',className,
-        print ', id =',classId,
-        print ', superclass = ',classBases
+        self.packer.pack_int(self.objects['class'])
+        #print ', id =',classId,
+        print classId,
+        self.packer.pack_int(classId)
+        #print 'name',className,
+        print className,
+        self.packer.pack_string(className)
+        #print ', superclass = ',classBases
+        print classBases
+        self.packer.pack_int(0)
         objClass = self.__addClass__(classId,self.__createlnotab__(code),code)
         self.Id.__next__()
         #se deben registrar los metodos asociados 
