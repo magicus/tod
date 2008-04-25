@@ -584,10 +584,20 @@ class hunterTrace(object):
             probeId = self.__registerProbe__(currentLasti,parentId)
         else:
             probeId = self._probe[(currentLasti,parentId)]
+        self.packer.reset()
         print self.events['return'],
-        print ' value',arg,
-        print ',probe id =',probeId,
-        print ',hasThrown =', True
+        self.packer.pack_int(self.events['return'])
+        #print ' value',arg,
+        #TODO: ver tipos de datos
+        print arg,
+        #self.packer.pack_int()
+        #print ',probe id =',probeId,
+        print probeId,
+        self.packer.pack_int(probeId)
+        #print ',hasThrown =', False
+        print False
+        self.packer.pack_bool(False)
+
     
     def __register__(self, obj, local):
         objId = obj.__getId__()
