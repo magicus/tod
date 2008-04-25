@@ -169,6 +169,13 @@ class Function(object):
 
     def __getArgs__(self):
         return self.argument
+    
+    def __getArgsValues__(self, args, locals):
+        argValues = {}
+        for k in args.iterkeys():
+            if locals.has_key(k):
+               argValues[args[k]] = locals[k]
+        return argValues
 
     def __updateArgument__(self, args):
         self.argument.__update__(args,self.id)
@@ -430,6 +437,7 @@ class hunterTrace(object):
         obj = self.__getObject__(code)
         functionId = obj.__getId__()
         args = obj.__getArgs__()
+        argsValue = obj.__getArgsValues__(args,frame.f_locals)
         f_back = frame.f_back
         f_lasti = f_back.f_lasti
         f_code = f_back.f_code
@@ -442,16 +450,26 @@ class hunterTrace(object):
             probeId = self._probe[(currentLasti,parentId)]
         print self.events['call'],
         print self.objects['function'],
-        print ' id =',functionId,
-        print ', parent id =',parentId,
-        print ',args =',args,
-        #print ',llamado desde (',parentId,',f_lasti =',f_lasti,')',
-        print ',probe id =',probeId,
+        #print ' id =',functionId,
+        print functionId,
+        #print ', parent id =',parentId,
+        print parentId,
+        #print ',args =',args,
+        print len(argsValue),
+        for k,v in argsValue.iteritems():
+            print k,
+            print v,
+        #print ',probe id =',probeId,
+        print probeId,
         #print ',probe(id =',probeId,', f_lasti =',current_lasti,', id =',id,')',
-        print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
-        print ',current depth =',depth,
-        print', current time stamp = %11.9f'%(currentTimeStamp),
-        print ',current thread =',threadId
+        #print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
+        print '%11.9f'%(parentTimeStampFrame),
+        #print ',current depth =',depth,
+        print depth,
+        #print', current time stamp = %11.9f'%(currentTimeStamp),
+        print '%11.9f'%(currentTimeStamp),
+        #print ',current thread =',threadId
+        print threadId
 
     def __printReturn__(self, frame, arg):
         f_back = frame.f_back
