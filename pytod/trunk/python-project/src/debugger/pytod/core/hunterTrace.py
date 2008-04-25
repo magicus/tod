@@ -417,6 +417,7 @@ class hunterTrace(object):
         methodId = obj.__getId__()
         classId = obj.__getTarget__()
         args = obj.__getArgs__()
+        argsValue = obj.__getArgsValues__(args,frame.f_locals)
         f_back = frame.f_back
         f_lasti = f_back.f_lasti
         f_code = f_back.f_code
@@ -427,19 +428,44 @@ class hunterTrace(object):
             probeId = self.__registerProbe__(currentLasti,parentId)
         else:
             probeId = self._probe[(currentLasti,parentId)]
+        self.packer.reset()
         print self.events['call'],
+        self.packer.pack_int(self.events['call'])
         print self.objects['method'],
-        print 'id =',methodId,
-        print 'parent id =',parentId,
-        print 'target =',classId,
-        print args,', args =',
-        #print ',llamado desde (',parentId,',f_lasti =',f_lasti,')',
-        print ',probe id =',probeId,
-        #print ',probe(id =',probeId,', f_lasti =',current_lasti,', id =',methodId,')',
-        print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
-        print ',current depth =',depth,
-        print ', current time stamp = %11.9f'%(currentTimeStamp),      
-        print ',current thread =',threadId
+        self.packer.pack_int(self.objects['method'])
+        #print 'id =',methodId,
+        print methodId,
+        self.packer.pack_int(methodId,)
+        #print 'parent id =',parentId,
+        print parentId,
+        self.packer.pack_int(parentId)
+        #print 'target =',classId,
+        print claassId,
+        self.packer.pack_int(claassId)
+        #print ',args =',args,
+        print len(argsValue),
+        self.packer.pack_int(len(argsValue))
+        for k,v in argsValue.iteritems():
+            print k,
+            self.packer.pack_int(k)
+            print v,
+            #TODO: en estos momentos asumimos todos enteros
+            self.packer.pack_int(v)
+        #print ',probe id =',probeId,
+        print probeId,
+        self.packer.pack_int(probeId)
+        #print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
+        print '%11.9f'%(parentTimeStampFrame),
+        self.packer.pack_double(parentTimeStampFrame)
+        #print ',current depth =',depth,
+        print depth,
+        self.packer.pack_int(depth)
+        #print ', current time stamp = %11.9f'%(currentTimeStamp),      
+        print '%11.9f'%(currentTimeStamp)
+        self.packer.pack_double(currentTimeStamp)
+        #print ',current thread =',threadId
+        print threadId
+        self.packer.pack_int(threadId)
 
         
     def __printCallFunction__(self, code, frame, depth, currentTimeStamp, parentTimeStampFrame, threadId):
@@ -470,6 +496,7 @@ class hunterTrace(object):
         self.packer.pack_int(parentId)
         #print ',args =',args,
         print len(argsValue),
+        self.packer.pack_int(len(argsValue))
         for k,v in argsValue.iteritems():
             print k,
             self.packer.pack_int(k)
