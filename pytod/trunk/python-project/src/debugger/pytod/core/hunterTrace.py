@@ -75,11 +75,18 @@ class Diccionario(dict):
             if not self.has_key(k):
                 if not k == 'self':
                     self[k] = v
+                    hT.packer.reset()
                     print hT.events['register'],
+                    hT.packer.pack_int(hT.events['register'])
                     print hT.objects['attribute'],
-                    print 'id =',v,
-                    print ',name =',k,
-                    print ',parent id=',parentId
+                    hT.packer.pack_int(hT.objects['attribute'])
+                    print v,
+                    hT.packer.pack_int(v)
+                    print parentId  
+                    hT.packer.pack_int(parentId)
+                    print k
+                    hT.packer.pack_string(k)
+
 
 class IdGenerator(object):
     
@@ -493,8 +500,8 @@ class hunterTrace(object):
         print parentId,
         self.packer.pack_int(parentId)
         #print 'target =',classId,
-        print claassId,
-        self.packer.pack_int(claassId)
+        print classId,
+        self.packer.pack_int(classId)
         #print ',args =',args,
         print len(argsValue),
         self.packer.pack_int(len(argsValue))
@@ -555,7 +562,7 @@ class hunterTrace(object):
             self.packer.pack_int(k)
             print v,
             #TODO: en estos momentos asumimos todos enteros
-            self.packer.pack_int(v)
+            #self.packer.pack_int(v)
             
         #print ',probe id =',probeId,
         print probeId,
@@ -692,7 +699,7 @@ class hunterTrace(object):
         probeId = self.probeId.__get__()
         self.__addProbe__(probeId,currentLasti,parentId)
         self.packer.reset()
-        print self.events['register'],
+        print self.events['register'],     
         self.packer.pack_int(self.events['register'])
         print self.objects['probe'],
         self.packer.pack_int(self.objects['probe'])
