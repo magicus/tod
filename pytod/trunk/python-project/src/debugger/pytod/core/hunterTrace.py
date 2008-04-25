@@ -174,7 +174,8 @@ class Function(object):
         argValues = {}
         for k in args.iterkeys():
             if locals.has_key(k):
-               argValues[args[k]] = locals[k]
+                argValues[args[k]] = locals[k]
+        #TODO: analizar caso para cuando sean tuple, list, dict
         return argValues
 
     def __updateArgument__(self, args):
@@ -211,6 +212,14 @@ class Method(object):
 
     def __getArgs__(self):
         return self.argument
+    
+    def __getArgsValues__(self, args, locals):
+        argValues = {}
+        for k in args.iterkeys():
+            if locals.has_key(k):
+                argValues[args[k]] = locals[k]
+        #TODO: analizar caso para cuando sean tuple, list, dict
+        return argValues
 
     def __updateArgument__(self, args):
         self.argument.__update__(args,self.id)
@@ -448,28 +457,42 @@ class hunterTrace(object):
             probeId = self.__registerProbe__(currentLasti,parentId)
         else:
             probeId = self._probe[(currentLasti,parentId)]
+        self.packer.reset()
         print self.events['call'],
+        self.packer.pack_int(self.events['call'])
         print self.objects['function'],
+        self.packer.pack_int(self.objects['function'])
         #print ' id =',functionId,
         print functionId,
+        self.packer.pack_int(functionId)
         #print ', parent id =',parentId,
         print parentId,
+        self.packer.pack_int(parentId)
         #print ',args =',args,
         print len(argsValue),
         for k,v in argsValue.iteritems():
             print k,
+            self.packer.pack_int(k)
             print v,
+            #TODO: en estos momentos asumimos todos enteros
+            self.packer.pack_int(v)
+            
         #print ',probe id =',probeId,
         print probeId,
+        self.packer.pack_int(probeId)
         #print ',probe(id =',probeId,', f_lasti =',current_lasti,', id =',id,')',
         #print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
         print '%11.9f'%(parentTimeStampFrame),
+        self.packer.pack_double(parentTimeStampFrame)        
         #print ',current depth =',depth,
         print depth,
+        self.packer.pack_int(depth)
         #print', current time stamp = %11.9f'%(currentTimeStamp),
         print '%11.9f'%(currentTimeStamp),
+        self.packer.pack_double(currentTimeStamp)
         #print ',current thread =',threadId
         print threadId
+        self.packer.pack_int(threadId)
 
     def __printReturn__(self, frame, arg):
         f_back = frame.f_back
