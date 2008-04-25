@@ -388,7 +388,7 @@ class hunterTrace(object):
             return frameBack.f_locals['__timeStampFrame__']
         return currentTimeStamp
     
-    def __printchangevar__(self, code, local, locals, obj, currentLasti, depth, parentTimeStampFrame, threadId):
+    def __printChangeVar__(self, code, local, locals, obj, currentLasti, depth, parentTimeStampFrame, threadId):
         attr = obj.__getLocals__()
         objId = obj.__getId__()
         for i in local.iterkeys():
@@ -399,18 +399,38 @@ class hunterTrace(object):
                 probeId = self.__registerProbe__(currentLasti,objId)
             else:
                 probeId = self._probe[(currentLasti,objId)]
+            #TODO: ver cuando el valor es una tuple, list, dict, etc                
             #preguntar el tipo de la variable para poder
             #"socketear"
+            self.packer.reset()
             print self.events['set'],
+            self.packer.pack_int(self.events['set'])
             print self.objects['local'],
-            print 'id =',attr[i],
-            print ', value =',locals[i],
-            print ',probe id =',probeId,
-            #print ',probe(id =',probeId,', f_lasti =',f_lasti,', id =',objId,')',
-            print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
-            print ',current depth =',depth,
-            print ', current time stamp = %11.9f'%(time.time()),
-            print ',current thread =',threadId
+            self.packer.pack_int(self.objects['local'])
+            #print 'id =',attr[i],
+            print attr[i],
+            self.packer.pack_int(attr[i])
+            print objId,
+            self.packer.pack_int(objId)
+            #print ', value =',locals[i],
+            print locals[i],
+            self.packer.pack_int(locals[i])
+            #print ',probe id =',probeId,
+            print probeId,
+            self.packer.pack_int(probeId)
+            #print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
+            print '%11.9f'%(parentTimeStampFrame),
+            self.packer.pack_double(parentTimeStampFrame)
+            #print ',current depth =',depth,
+            print depth,
+            self.packer.pack_int(depth)
+            #print ', current time stamp = %11.9f'%(time.time()),
+            currentTimeStamp = time.time() 
+            print '%11.9f'%(currentTimeStamp),
+            self.packer.pack_double(currentTimeStamp)
+            #print ',current thread =',threadId
+            print threadId
+            self.packer.pack_int(threadId)
 
     def __printCallMethod__(self, code, frame, depth, currentTimeStamp, parentTimeStampFrame, threadId):
         obj = self.__getObject__(code)
@@ -435,7 +455,7 @@ class hunterTrace(object):
         self.packer.pack_int(self.objects['method'])
         #print 'id =',methodId,
         print methodId,
-        self.packer.pack_int(methodId,)
+        self.packer.pack_int(methodId)
         #print 'parent id =',parentId,
         print parentId,
         self.packer.pack_int(parentId)
@@ -742,7 +762,7 @@ class hunterTrace(object):
                 local = self.__getpartcode__(code,lnotab[frame.f_lasti])
                 self.__register__(obj,local)
                 #imprimiendo los cambios de valores, con su respectivo id
-                self.__printchangevar__(
+                self.__printChangeVar__(
                                         code,
                                         local,
                                         locals,
@@ -769,7 +789,7 @@ class hunterTrace(object):
                     local = self.__getpartcode__(code,lnotab[frame.f_lasti])
                     self. __register__(obj,local)
                     #imprimiendo los cambios de valores, con su respectivo id
-                    self.__printchangevar__(
+                    self.__printChangeVar__(
                                             code,
                                             local,
                                             locals,
