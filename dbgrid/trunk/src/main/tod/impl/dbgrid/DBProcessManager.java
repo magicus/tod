@@ -295,6 +295,11 @@ public class DBProcessManager
 
 			theGrabber.stopCapture();
 			printOutput("--- Ready.");
+			
+			Registry theRegistry = LocateRegistry.getRegistry("localhost", Util.TOD_REGISTRY_PORT);
+			itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.getRMIId(getConfig()));
+			itsMaster.setConfig(getConfig());
+
 			itsKeepAliveThread = new KeepAliveThread(this);
 		}
 		catch (Exception e)
@@ -311,18 +316,6 @@ public class DBProcessManager
 	public void start()
 	{
 		createProcess();
-
-		try
-		{
-			Registry theRegistry = LocateRegistry.getRegistry("localhost", Util.TOD_REGISTRY_PORT);
-			itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.getRMIId(getConfig()));
-			itsMaster.setConfig(getConfig());
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
-
 	}
 
 	/**
@@ -398,7 +391,7 @@ public class DBProcessManager
 					if (theLine == null) break;
 
 					printOutput(theLine);
-					// System.out.println("[GridMaster process] "+theLine);
+//					System.out.println("[GridMaster process] "+theLine);
 
 					if (theLine.startsWith(GridMaster.READY_STRING))
 					{
@@ -515,28 +508,32 @@ public class DBProcessManager
 					DBProcessManager theManager = itsManager.get();
 					if (theManager == null)
 					{
-						TODUtils
-								.log(
-										0,
-										"DBProcessManager was garbage collected, stopping keepalive thread");
+						TODUtils.log(0, "DBProcessManager was garbage collected, stopping keepalive thread");
 						break;
 					}
 
 					boolean theAlive = false;
-					RIGridMaster theMaster = theManager.getMaster();
-					try
+					for (int i=0;i<3;i++)
 					{
-						if (theMaster != null)
+						RIGridMaster theMaster = theManager.getMaster();
+						try
 						{
-							theMaster.keepAlive();
-							theAlive = true;
+							if (theMaster != null)
+							{
+								theMaster.keepAlive();
+								theAlive = true;
+							}
+							break; // we continue the loop only if an exception occurred.
+						}
+						catch (RemoteException e)
+						{
+							System.err.println("[KeepAliveThread] Error in try #"+(i+1));
+							e.printStackTrace();
+							Thread.sleep(500);
 						}
 					}
-					catch (RemoteException e)
-					{
-						e.printStackTrace();
-						theManager.itsMaster = null;
-					}
+					
+					if (! theAlive) theManager.itsMaster = null;
 
 					theManager.setAlive(theAlive);
 
