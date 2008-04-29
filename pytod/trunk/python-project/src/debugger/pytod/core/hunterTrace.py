@@ -595,9 +595,9 @@ class hunterTrace(object):
         print self.events['return'],
         self.packer.pack_int(self.events['return'])
         #print ' value',arg,
-        #TODO: ver tipos de datos
+        #TODO: ver tipos de datos y la manera de enviarlos
         print arg,
-        #self.packer.pack_int()
+        self.packer.pack_int(1)
         #print ',probe id =',probeId,
         print probeId,
         self.packer.pack_int(probeId)
