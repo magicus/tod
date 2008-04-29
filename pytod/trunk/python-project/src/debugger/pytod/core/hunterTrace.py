@@ -707,12 +707,11 @@ class hunterTrace(object):
         print probeId,
         self.packer.pack_int(probeId)
         #print ',current lasti =',currentLasti,
+        print parentId
+        self.packer.pack_int(parentId)
         print currentLasti,
         self.packer.pack_int(currentLasti)
         #print ',parent id =', parentId
-        print parentId
-        self.packer.pack_int(parentId)
-        
         self.probeId.__next__()
         return probeId
     
