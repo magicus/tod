@@ -184,7 +184,7 @@ class Function(object):
 
     def __init__(self, id, code, lnotab,args):
         self.locals = Diccionario()
-        self.argument = Diccionario()
+        self.argument = ()
         self.lnotab = lnotab
         self.code = code
         self.name = code.co_name
@@ -203,16 +203,32 @@ class Function(object):
     def __getArgs__(self):
         return self.argument
     
-    def __getArgsValues__(self, args, locals):
-        argValues = {}
-        for k in args.iterkeys():
-            if locals.has_key(k):
-                argValues[args[k]] = locals[k]
+    def __getArgsValues__(self, locals):
+        argValues = ()
+        for name in self.argument:
+            if locals.has_key(name):
+                argValues = argValues + (locals[name],)
         #TODO: analizar caso para cuando sean tuple, list, dict
         return argValues
 
     def __updateArgument__(self, args):
-        self.argument.__update__(args,self.id)
+        self.argument = self.argument + args
+        parentId = self.id
+        for i in range(len(args)):            
+            hT.packer.reset()
+            print hT.events['register'],
+            hT.packer.pack_int(hT.events['register'])
+            print hT.objects['local'],
+            hT.packer.pack_int(hT.objects['local'])
+            #print 'id =',v,
+            print i,
+            hT.packer.pack_int(i)
+            #print ',parent id=',parentId,
+            print parentId,
+            hT.packer.pack_int(parentId)
+            #print ',name =',k
+            print args[i]
+            hT.packer.pack_string(args[i])            
         
     def __registerLocals__(self, local):
         self.locals.__update__(local,self.id)
@@ -374,7 +390,6 @@ class hunterTrace(object):
             threadId = self._thread[threadSysId]
         return threadId
 
-
     def __getArgs__(self, code):
         return code.co_varnames
 
@@ -528,8 +543,7 @@ class hunterTrace(object):
     def __printCallFunction__(self, code, frame, depth, currentTimeStamp, parentTimeStampFrame, threadId):
         obj = self.__getObject__(code)
         functionId = obj.__getId__()
-        args = obj.__getArgs__()
-        argsValue = obj.__getArgsValues__(args,frame.f_locals)
+        argsValue = obj.__getArgsValues__(frame.f_locals)
         f_back = frame.f_back
         f_lasti = f_back.f_lasti
         f_code = f_back.f_code
@@ -554,13 +568,10 @@ class hunterTrace(object):
         #print ',args =',args,
         print len(argsValue),
         self.packer.pack_int(len(argsValue))
-        for k,v in argsValue.iteritems():
-            print k,
-            self.packer.pack_int(k)
+        for v in argsValue:
             print v,
             #TODO: en estos momentos asumimos todos enteros
-            #self.packer.pack_int(v)
-            
+            self.packer.pack_int(1)
         #print ',probe id =',probeId,
         print probeId,
         self.packer.pack_int(probeId)
@@ -649,11 +660,11 @@ class hunterTrace(object):
         self.packer.pack_string(code.co_name)
         print len(args),
         self.packer.pack_int(len(args))
-        for k,v in args.iteritems():
-            print k,
-            self.packer.pack_string(k)
-            print v,
-            self.packer.pack_int(v)
+        for i in range(len(args)):
+            print args[i]
+            self.packer.pack_string(args[i])
+            print i,
+            self.packer.pack_int(i)
         print self.packer.get_buffer()
         self.__addMethod__(
                            methodId,
@@ -678,11 +689,11 @@ class hunterTrace(object):
         self.packer.pack_string(code.co_name)
         print len(args),
         self.packer.pack_int(len(args))
-        for k,v in args.iteritems():
-            print k,
-            self.packer.pack_string(k)
-            print v,
-            self.packer.pack_int(v)
+        for i in range(len(args)):
+            print args[i],
+            self.packer.pack_string(args[i])
+            print i,
+            self.packer.pack_int(i)
         #print ', args =',args
         print self.packer.get_buffer()
         self.__addFunction__(
