@@ -57,7 +57,7 @@ public class VariableInfoPanel extends JPanel
 	private void createUI()
 	{
 		LocalVariableInfo[] theLocalVariables = itsBehavior.getLocalVariables();
-		JList theList = new JList(theLocalVariables);
+		JList theList = theLocalVariables != null ? new JList(theLocalVariables) : new JList();
 		theList.setCellRenderer(new UniversalRenderer<LocalVariableInfo>()
 				{
 					@Override

@@ -77,26 +77,29 @@ public class Disassembler
 	public static DisassembledBehavior disassemble(IBehaviorInfo aBehavior)
 	{
 		IClassInfo theClass = aBehavior.getType();
-		byte[] theBytecode = theClass.getBytecode();
-		
-		if (theBytecode == null) return null;
-		
-		ClassReader cr = new ClassReader(theBytecode);
-		ClassNode cn = new ClassNode();
-		cr.accept(cn, 0);
-		
-		// Search the requested method
 		MethodNode theMethodNode = null;
-//		String theSig = LocationUtils.getDescriptor(aBehavior);
-		String theSig = aBehavior.getSignature();
-		for (Iterator theIterator = cn.methods.iterator(); theIterator.hasNext();)
+		ClassReader cr = null;
+		
+		byte[] theBytecode = theClass.getBytecode();
+		if (theBytecode != null)
 		{
-			MethodNode theMethod = (MethodNode) theIterator.next();
-			if (! theMethod.name.equals(aBehavior.getName())) continue;
-			if (! theMethod.desc.equals(theSig)) continue;
-			theMethodNode = theMethod;
-			break;
+			cr = new ClassReader(theBytecode);
+			ClassNode cn = new ClassNode();
+			cr.accept(cn, 0);
+			
+			// Search the requested method
+			String theSig = aBehavior.getSignature();
+			for (Iterator theIterator = cn.methods.iterator(); theIterator.hasNext();)
+			{
+				MethodNode theMethod = (MethodNode) theIterator.next();
+				if (! theMethod.name.equals(aBehavior.getName())) continue;
+				if (! theMethod.desc.equals(theSig)) continue;
+				theMethodNode = theMethod;
+				break;
+			}
 		}
+		
+		if (theMethodNode == null) return null;
 		
 		MyTraceMethodVisitor theVisitor = new MyTraceMethodVisitor(cr);
 		theMethodNode.accept(theVisitor);

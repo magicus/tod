@@ -57,7 +57,7 @@ public class LineNumberInfoPanel extends JPanel
 	private void createUI()
 	{
 		LineNumberInfo[] theLineNumbers = itsBehavior.getLineNumbers();
-		JList theList = new JList(theLineNumbers);
+		JList theList = theLineNumbers != null ? new JList(theLineNumbers) : new JList();
 		theList.setCellRenderer(new UniversalRenderer<LineNumberInfo>()
 				{
 					@Override
