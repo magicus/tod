@@ -20,19 +20,49 @@ def __createlnotab__(code):
         lnotab.update({len(code.co_code)-1:tuple([last_index,len(code.co_code)-1])})                
     return lnotab
 
+def __getargs__(code):
+    code.co_varnames
+
 def trace(frame, event, arg):
     code = frame.f_code
+    #dis.dis(code)
     if event == 'call':
+        print __getargs__(code)
         #dis.dis(code)
         #print frame.f_exc_type
         #print __createlnotab__(code)
         #print frame.f_locals
         return trace
     elif event == 'line':
+        print frame.f_locals
+        try:
+            print id(frame.f_locals['a'])
+        except:
+            pass
+        raw_input()
         return trace
     elif event == 'return':
         print code.co_name
         print arg
         raw_input()
         
+class Descriptor(object):
+    
+    def __setattr__(self, name, value):
+        print 'estoy dentro de setattr',sys._getframe()
+        
+
+class prueba(Descriptor):
+    def __init__(self):
+        self.x = 0
+        self.y = 1
+        
 sys.settrace(trace)
+#a = prueba()
+
+def algo(a,b,c):
+    a = [2, 3, 4]
+    print id(a)
+    a.append(5)
+    
+algo(3,2,5)

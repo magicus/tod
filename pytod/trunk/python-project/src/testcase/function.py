@@ -4,12 +4,12 @@
 from debugger.pytod.core.hunterTrace import hT
 #from debugger.pytod.core.hunterTrace import __print__
 
-def prueba():
+def prueba(z,r,t,y):
     x = 10
     a = 0
     x = 15
     y = x = a = 1
-    prueba2()
+    #prueba2()
 
 def prueba2(e=3):
     z = 3
@@ -17,7 +17,7 @@ def prueba2(e=3):
     return 5
 
 
-prueba()
-prueba2()
+prueba(10,11,12,13)
+#prueba2()
 
 hT.__printHunter__()
