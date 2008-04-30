@@ -375,11 +375,8 @@ class hunterTrace(object):
         return threadId
 
 
-    def __getargs__(self, code):
-        args = {}
-        for i in range(code.co_argcount):
-            args.update({code.co_varnames[i]:i})
-        return args
+    def __getArgs__(self, code):
+        return code.co_varnames
 
     def __getpartcode__(self,code, bound):
         i = bound[0]
@@ -667,7 +664,7 @@ class hunterTrace(object):
 
     def __registerFunction__(self, code):
         functionId = self.Id.__get__()
-        args = self.__getargs__(code)
+        args = self.__getArgs__(code)
         self.packer.reset()
         print self.events['register'],
         self.packer.pack_int(self.events['register'])
@@ -776,7 +773,7 @@ class hunterTrace(object):
                     if not hT._class[key].method.has_key(code.co_name):
                         return
                     id = hT._class[key].method[code.co_name]
-                    args = self.__getargs__(code)
+                    args = self.__getArgs__(code)
                     self.__registerMethod__(code,id,idClass,args)
                 self.__printCallMethod__(
                                          code,
