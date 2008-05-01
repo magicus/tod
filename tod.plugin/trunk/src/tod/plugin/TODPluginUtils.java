@@ -20,9 +20,11 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.plugin;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IInitializer;
 import org.eclipse.jdt.core.IJavaElement;
@@ -55,6 +57,7 @@ import tod.plugin.views.AbstractNavigatorView;
 import tod.plugin.views.TraceNavigatorView;
 import tod.utils.ConfigUtils;
 import tod.utils.TODUtils;
+import zz.utils.Utils;
 
 /**
  * Utilities for the TOD plugin
@@ -100,9 +103,38 @@ public class TODPluginUtils
 						theType);
 				
 				ITypeInfo theReturnType = getReturnType(theStructureDatabase, theMethod.getReturnType(), theType);
-				
-				if (theMethodName.equals(Util.getSimpleInnermostName(theTypeName))) 
+
+				if (theMethodName.equals(Util.getSimpleInnermostName(theTypeName)))
+				{
 					theMethodName = "<init>";
+
+					// Include synthetic parameters for inner classes constructors
+					IType theCurrentType = theType;
+					List<ITypeInfo> theSyntheticArgs = new ArrayList<ITypeInfo>();
+					while(theCurrentType != null)
+					{
+						IType theDeclaringType = theCurrentType.getDeclaringType();
+						if (theDeclaringType != null)
+						{
+							// This is an inner class
+							if (! Flags.isStatic(theCurrentType.getFlags()))
+							{
+								IClassInfo theInnerClass = theStructureDatabase.getClass(
+										theDeclaringType.getFullyQualifiedName(), 
+										false);
+								
+								theSyntheticArgs.add(theInnerClass);
+							}
+						}
+						theCurrentType = theDeclaringType;
+					}
+	
+					if (theSyntheticArgs.size() > 0)
+					{
+						Utils.fillCollection(theSyntheticArgs, theArgumentTypes);
+						theArgumentTypes = theSyntheticArgs.toArray(new ITypeInfo[theSyntheticArgs.size()]);
+					}
+				}
 				
 				return theClass.getBehavior(theMethodName, theArgumentTypes, theReturnType);
 			}
@@ -185,7 +217,7 @@ public class TODPluginUtils
 				for (int i=0;i<theArrayDepth;i++) theBuilder.append(Signature.C_ARRAY);
 				theBuilder.append(Signature.C_RESOLVED);
 				String thePackage = resolvedNames[0][0];
-				String theClass = resolvedNames[0][1]; 
+				String theClass = resolvedNames[0][1].replace('.', '$'); 
 				if (thePackage != null)
 				{
 					theBuilder.append(thePackage);
