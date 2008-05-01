@@ -172,6 +172,12 @@ public class ASMInstrumenter implements IInstrumenter
 			start = aStart;
 			end = aEnd;
 		}
+		
+		@Override
+		public String toString()
+		{
+			return "CodeRange["+start+"-"+end+"]";
+		}
 	}
 
 	/**

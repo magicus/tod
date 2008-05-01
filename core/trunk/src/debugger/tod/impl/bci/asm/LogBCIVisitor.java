@@ -490,6 +490,10 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		{
 			// Prepare tags
 			TagMap theTagMap = new TagMap();
+			if ("fetchNext".equals(itsBehavior.getName()))
+			{
+				System.out.println("BCIMethodVisitor.storeBehaviorInfo()");
+			}
 			
 			if (itsConfig.getTODConfig().get(TODConfig.WITH_ASPECTS))
 			{

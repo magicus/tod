@@ -671,9 +671,9 @@ public class StructureDatabase implements IShareableStructureDatabase
 		 * @param aName Name of the behavior.
 		 * @param aType Type of the behavior's arguments.
 		 */
-		public int getBehaviorId(String aName, ITypeInfo[] aArgumentTypes)
+		public int getBehaviorId(String aName, ITypeInfo[] aArgumentTypes, ITypeInfo aReturnType)
 		{
-			String theKey = ClassInfo.getBehaviorKey(aName, aArgumentTypes);
+			String theKey = ClassInfo.getBehaviorKey(aName, aArgumentTypes, aReturnType);
 			Integer theId = itsIdMap.get(theKey);
 			if (theId == null)
 			{

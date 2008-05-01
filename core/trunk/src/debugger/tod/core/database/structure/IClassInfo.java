@@ -88,8 +88,9 @@ public interface IClassInfo extends ITypeInfo
 
 	/**
 	 * Searches a behavior according to its signature.
+	 * @param aReturnType TODO
 	 */
-	public IBehaviorInfo getBehavior(String aName, ITypeInfo[] aArgumentTypes);
+	public IBehaviorInfo getBehavior(String aName, ITypeInfo[] aArgumentTypes, ITypeInfo aReturnType);
 
 	/**
 	 * Returns all the fields of this class (excluding inherited ones).

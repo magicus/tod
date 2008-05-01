@@ -34,15 +34,18 @@ package tod.experiments;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+
+import javax.swing.JFrame;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.util.TraceClassVisitor;
 
+import tod.core.bci.IInstrumenter.InstrumentedClass;
 import tod.core.config.TODConfig;
-import tod.core.database.structure.IMutableStructureDatabase;
+import tod.core.database.browser.LocationUtils;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IClassInfo;
+import tod.gui.view.structure.DisassemblyPanel;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
 import tod.impl.database.structure.standard.StructureDatabase;
@@ -52,34 +55,35 @@ public class Instrument
 {
 	public static void main(String[] args) throws FileNotFoundException, IOException
 	{
-		String theClassFile = args[0];
+		String theClassFile = "/home/gpothier/eclipse/ws-tod-daughter/TOD-evdbng/bin/tod/impl/evdbng/db/file/TupleIterator.class";
 		byte[] theClassData = Utils.readInputStream_byte(new FileInputStream(theClassFile));
 		
 		ClassReader cr = new ClassReader(theClassData);
+		ClassNode theClassNode = new ClassNode();
+		cr.accept(theClassNode, 0);
 		
-		PrintWriter theWriter = new PrintWriter(new OutputStreamWriter(System.out));
-		TraceClassVisitor theTraceClassVisitor = new TraceClassVisitor(theWriter);
-		cr.accept(theTraceClassVisitor, 0);
+		String theName = theClassNode.name.replace('/', '.');
+		System.out.println(theName);
 		
-
-		
-		ASMInstrumenter theInstrumenter = createInstrumenter();
-		theInstrumenter.instrumentClass(
-				"test", 
-				theClassData);
-	}
-	
-	/**
-	 * Creates a functional {@link ASMInstrumenter}.
-	 * @return
-	 */
-	public static ASMInstrumenter createInstrumenter()
-	{
 		TODConfig theConfig = new TODConfig();
-		IMutableStructureDatabase theStructureDatabase = StructureDatabase.create(theConfig, "test");
 		ASMDebuggerConfig theDebuggerConfig = new ASMDebuggerConfig(theConfig);
+		StructureDatabase theStructureDatabase = StructureDatabase.create(theConfig, "test");
+		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theStructureDatabase, theDebuggerConfig);
+		
+		InstrumentedClass theInstrumentedClass = theInstrumenter.instrumentClass(theName, theClassData);
 
-		return new ASMInstrumenter(theStructureDatabase, theDebuggerConfig);
+		IClassInfo theClass = theStructureDatabase.getClass(theName, true);
+		String theSig = "()Ltod/impl/evdbng/db/file/Tuple;";
+		IBehaviorInfo theBehavior = theClass.getBehavior(
+				"fetchNext", 
+				LocationUtils.getArgumentTypes(theStructureDatabase, theSig), 
+				LocationUtils.getReturnType(theStructureDatabase, theSig));
+		
+		JFrame theFrame = new JFrame("TOD - Instrument");
+		theFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		theFrame.setContentPane(new DisassemblyPanel(theBehavior));
+		theFrame.pack();
+		theFrame.setVisible(true);
 	}
 	
 }

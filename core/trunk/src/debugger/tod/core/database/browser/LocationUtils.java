@@ -163,10 +163,11 @@ public class LocationUtils
 			boolean aSearchAncestors)
 	{
 		ITypeInfo[] theArgumentTypes = getArgumentTypes(aDatabase, aSignature);
+		ITypeInfo theReturnType = getReturnType(aDatabase, aSignature);
 		
 		while (aClass != null)
 		{
-			IBehaviorInfo theBehavior = aClass.getBehavior(aName, theArgumentTypes);
+			IBehaviorInfo theBehavior = aClass.getBehavior(aName, theArgumentTypes, theReturnType);
 			if (theBehavior != null) return theBehavior;
 			
 			if (! aSearchAncestors) return null;

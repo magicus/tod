@@ -99,16 +99,18 @@ public class TODPluginUtils
 						theMethod.getParameterTypes(), 
 						theType);
 				
+				ITypeInfo theReturnType = getReturnType(theStructureDatabase, theMethod.getReturnType(), theType);
+				
 				if (theMethodName.equals(Util.getSimpleInnermostName(theTypeName))) 
 					theMethodName = "<init>";
 				
-				return theClass.getBehavior(theMethodName, theArgumentTypes);
+				return theClass.getBehavior(theMethodName, theArgumentTypes, theReturnType);
 			}
 			else if (theMember instanceof IInitializer)
 			{
 				IInitializer theInitializer = (IInitializer) theMember;
 				String theInitializerName = theInitializer.getElementName();
-				return theClass.getBehavior(theInitializerName, null);
+				return theClass.getBehavior(theInitializerName, null, null);
 			}
 			else if (theMember instanceof IField)
 			{
@@ -137,6 +139,14 @@ public class TODPluginUtils
 		return theTypes;
 	}
 
+	public static ITypeInfo getReturnType(
+			IStructureDatabase aStructureDatabase,
+			String aJDTSignature,
+			IType aDeclaringType) throws JavaModelException
+	{
+		return getType(aStructureDatabase, aJDTSignature, aDeclaringType);
+	}
+	
 	public static ITypeInfo getType(
 			IStructureDatabase aStructureDatabase,
 			String aJDTSignature,

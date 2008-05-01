@@ -246,9 +246,9 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		return itsFieldsMap;
 	}
 	
-	public IMutableBehaviorInfo getBehavior(String aName, ITypeInfo[] aArgumentTypes)
+	public IMutableBehaviorInfo getBehavior(String aName, ITypeInfo[] aArgumentTypes, ITypeInfo aReturnType)
 	{
-		return getBehaviorsMap().get(getBehaviorKey(aName, aArgumentTypes));
+		return getBehaviorsMap().get(getBehaviorKey(aName, aArgumentTypes, aReturnType));
 	}
 	
 	Map<String, IMutableBehaviorInfo> _getBehaviorsMap()
@@ -271,10 +271,10 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		ITypeInfo[] theArgumentTypes = LocationUtils.getArgumentTypes(getDatabase(), aDescriptor);
 		ITypeInfo theReturnType = LocationUtils.getReturnType(getDatabase(), aDescriptor);
 		
-		IMutableBehaviorInfo theBehavior = getBehavior(aName, theArgumentTypes);
+		IMutableBehaviorInfo theBehavior = getBehavior(aName, theArgumentTypes, theReturnType);
 		if (theBehavior == null)
 		{
-			int theId = itsClassNameInfo.getBehaviorId(aName, theArgumentTypes);
+			int theId = itsClassNameInfo.getBehaviorId(aName, theArgumentTypes, theReturnType);
 			theBehavior = new BehaviorInfo(
 					getStructureDatabase(), 
 					theId,
@@ -367,13 +367,13 @@ implements IMutableClassInfo, ISerializableLocationInfo
 	
 	private String getKey(IBehaviorInfo aBehavior)
 	{
-		return getBehaviorKey(aBehavior.getName(), aBehavior.getArgumentTypes());
+		return getBehaviorKey(aBehavior.getName(), aBehavior.getArgumentTypes(), aBehavior.getReturnType());
 	}
 	
 	/**
 	 * Returns a key (signature) for identifying a behavior.
 	 */
-	public static String getBehaviorKey(String aName, ITypeInfo[] aArgumentTypes)
+	public static String getBehaviorKey(String aName, ITypeInfo[] aArgumentTypes, ITypeInfo aReturnType)
 	{
 		StringBuilder theBuilder = new StringBuilder("b");
 		theBuilder.append(aName);
@@ -383,6 +383,8 @@ implements IMutableClassInfo, ISerializableLocationInfo
 			theBuilder.append('|');
 			theBuilder.append(theType.getName());
 		}
+		theBuilder.append('/');
+		theBuilder.append(aReturnType.getName());
 		
 		return theBuilder.toString();
 	}
