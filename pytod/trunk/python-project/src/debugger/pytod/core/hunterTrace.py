@@ -12,7 +12,10 @@ import time
 import inspect
 import thread
 import xdrlib
-#from threading import settrace
+import socket
+th = False
+if th:
+    from threading import settrace
 
 objects = {
            'class':0,
@@ -309,6 +312,15 @@ class hunterTrace(object):
         self.threadId = threadId
         self.packer = packer
         self.methodPattern = "\A__.*(__)$"
+        self.__socketConnect__()
+        
+    def __socketConnect__(self):
+        self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        try:
+            self.socket.connect(('127.0.0.1', 8058))
+        except:
+            print "TOD, esta durmiendo :("
+
 
     def __addClass__(self, id, lnotab, code):
         objClass = Class(id,code,lnotab)
@@ -649,6 +661,8 @@ class hunterTrace(object):
         #print ', superclass = ',classBases
         print classBases
         self.packer.pack_int(0)
+        raw_input()
+        self.socket.sendall("milton")
         objClass = self.__addClass__(classId,self.__createlnotab__(code),code)
         self.Id.__next__()
         #se deben registrar los metodos asociados 
@@ -891,8 +905,9 @@ class hunterTrace(object):
         print '======='
 
 hT = hunterTrace(IdGenerator(),IdGenerator(),IdGenerator(),xdrlib.Packer())
-#a cada nuevo thread se le define settrace
-#settrace(hT.__trace__)  
+if th:
+    #a cada nuevo thread se le define settrace
+    settrace(hT.__trace__)  
 #asignamos settrace para nuestro espacio de trabajo
 sys.settrace(hT.__trace__)
 
