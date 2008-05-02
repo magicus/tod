@@ -21,6 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.plugin;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
@@ -32,6 +33,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.ITypeParameter;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
@@ -166,6 +168,7 @@ public class TODPluginUtils
 		for (int i=0;i<theCount;i++)
 		{
 			theTypes[i] = getType(aStructureDatabase, aJDTSignatures[i], aDeclaringType);
+			if (theTypes[i] == null) return null;
 		}
 		
 		return theTypes;
@@ -185,7 +188,7 @@ public class TODPluginUtils
 			IType aDeclaringType) throws JavaModelException
 	{
 		String theTypeName = getResolvedTypeName(aJDTSignature, aDeclaringType);
-		return aStructureDatabase.getType(theTypeName, true);
+		return theTypeName != null ? aStructureDatabase.getType(theTypeName, true) : null;
 	}
 	
 	/**
@@ -227,7 +230,19 @@ public class TODPluginUtils
 				theBuilder.append(Signature.C_SEMICOLON);
 				return theBuilder.toString();
 			}
-			else return null;
+			
+			ITypeParameter theTypeParameter = aDeclaringType.getTypeParameter(name);
+			if (theTypeParameter != null)
+			{
+				String[] theBounds = theTypeParameter.getBounds();
+				if (theBounds != null && theBounds.length > 0)
+				{
+					System.out.println(Arrays.asList(theBounds)); 
+				}
+				return "Ljava/lang/Object;"; 
+			}
+			
+			return null;
 		}
 		else
 		{
