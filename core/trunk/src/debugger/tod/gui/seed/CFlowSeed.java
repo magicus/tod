@@ -54,11 +54,10 @@ public class CFlowSeed extends LogViewSeed
 	private IRWProperty<ILogEvent> pSelectedEvent = new SimpleRWProperty<ILogEvent>(this)
 	{
 		@Override
-		public void set(ILogEvent aEvent)
+		protected void changed(ILogEvent aOldValue, ILogEvent aNewValue)
 		{
-			if (aEvent instanceof IBehaviorExitEvent) aEvent = aEvent.getParent();
-			itsThread = aEvent.getThread();
-			super.set(aEvent);
+			if (aNewValue instanceof IBehaviorExitEvent) aNewValue = aNewValue.getParent();
+			itsThread = aNewValue.getThread();
 		}
 	};
 	
