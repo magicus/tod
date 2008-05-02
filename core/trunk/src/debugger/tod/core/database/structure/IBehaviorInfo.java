@@ -120,7 +120,7 @@ public interface IBehaviorInfo extends IMemberInfo
 	/**
 	 * Returns the raw local variables info of the behavior.
 	 */
-    public LocalVariableInfo[] getLocalVariables();
+    public List<LocalVariableInfo> getLocalVariables();
     
     /**
      * Returns the raw line number info of the behavior.

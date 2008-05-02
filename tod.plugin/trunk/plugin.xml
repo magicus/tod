@@ -19,9 +19,6 @@
       <library name="lib/log4j.jar"> 
          <export name="*"/>
       </library>
-      <library name="lib/javassist.jar">
-         <export name="*"/>
-      </library>
      
       <library name="lib/jython-2.2.1.jar">
          <export name="*"/>
@@ -33,15 +30,6 @@
       </library>
       -->
       
-      <library name="lib/javafxrt.jar">
-         <export name="*"/>
-      </library>
-      <library name="lib/swing-layout.jar">
-         <export name="*"/>
-      </library>
-      <library name="lib/Filters.jar">
-         <export name="*"/>
-      </library>
       <library name="lib/reflex-core.jar">
          <export name="*"/>
       </library>

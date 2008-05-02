@@ -51,6 +51,7 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMutableBehaviorInfo;
+import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableFieldInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IShareableStructureDatabase;
@@ -58,6 +59,7 @@ import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
+import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.utils.remote.RemoteStructureDatabase;
 import zz.utils.Utils;
 
@@ -270,6 +272,19 @@ public class StructureDatabase implements IShareableStructureDatabase
 			registerClass(theClass);
 		}
 		
+		return theClass;
+	}
+	
+	public ClassInfo addClass(int aId, String aName)
+	{
+		ClassInfo theClass = getClass(aId, false);
+		if (theClass != null)
+		{
+			throw new IllegalArgumentException("There is already a class with id "+aId);
+		}
+		
+		theClass = new ClassInfo(this, getClassNameInfo(aName), aName, itsIds.nextClassId());
+		registerClass(theClass);
 		return theClass;
 	}
 	
@@ -527,7 +542,7 @@ public class StructureDatabase implements IShareableStructureDatabase
 	 * This method is used to retrieve the value of transient fields on the remote side
 	 * (see {@link RemoteStructureDatabase}).
 	 */
-	public LocalVariableInfo[] _getBehaviorLocalVariableInfo(int aBehaviorId)
+	public List<LocalVariableInfo> _getBehaviorLocalVariableInfo(int aBehaviorId)
 	{
 		return getBehavior(aBehaviorId, true)._getLocalVariables();
 	}

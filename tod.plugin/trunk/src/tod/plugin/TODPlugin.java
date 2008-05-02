@@ -22,9 +22,6 @@ package tod.plugin;
 
 import java.io.File;
 
-import javassist.ClassPool;
-import javassist.LoaderClassPath;
-
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -34,8 +31,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
-import reflex.run.common.RunningEnvironment;
-import tod.ReflexRiver;
 import tod.Util;
 import tod.impl.dbgrid.DBProcessManager;
 import zz.eclipse.utils.EclipseUtils;
@@ -68,24 +63,25 @@ public class TODPlugin extends AbstractUIPlugin
 	{
 		super.start(context);
 
-		ClassPool thePool = null;
 		String theBase = getLibraryPath();
-//		ReflexLaunchHack.setupReflex();
 
-		if (USE_REFLEX_BRIDGE)
-		{
-			try
-			{
-				ReflexRiver.setup();
-			}
-			catch (Exception e)
-			{
-				msgBridgeProblem();
-				throw new RuntimeException("Reflex bridge not detected", e);
-			}
-			
-			thePool = RunningEnvironment.get().getClassPool();
-		}
+//		ClassPool thePool = null;
+////		ReflexLaunchHack.setupReflex();
+//
+//		if (USE_REFLEX_BRIDGE)
+//		{
+//			try
+//			{
+//				ReflexRiver.setup();
+//			}
+//			catch (Exception e)
+//			{
+//				msgBridgeProblem();
+//				throw new RuntimeException("Reflex bridge not detected", e);
+//			}
+//			
+//			thePool = RunningEnvironment.get().getClassPool();
+//		}
 		
 		
 		String theDevPath = Util.workspacePath;
@@ -122,11 +118,11 @@ public class TODPlugin extends AbstractUIPlugin
 				+theDevPath+"/zz.utils/bin";
 		}
 		
-		if (USE_REFLEX_BRIDGE)
-		{
-			ClassLoader theLoader = Thread.currentThread().getContextClassLoader();
-			thePool.appendClassPath(new LoaderClassPath(theLoader));
-		}
+//		if (USE_REFLEX_BRIDGE)
+//		{
+//			ClassLoader theLoader = Thread.currentThread().getContextClassLoader();
+//			thePool.appendClassPath(new LoaderClassPath(theLoader));
+//		}
 		
 		DBProcessManager.lib = theBase;
 	}

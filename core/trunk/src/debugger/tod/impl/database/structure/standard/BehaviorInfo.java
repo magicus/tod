@@ -64,7 +64,7 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 	private transient LineNumberInfo[] itsLineNumberTable;
 	
 	private boolean itsHasLocalVariableTable = false;
-	private transient LocalVariableInfo[] itsLocalVariableTable;
+	private transient List<LocalVariableInfo> itsLocalVariableTable;
 	
 	private boolean itsHasTagMap = false;
 	private transient TagMap itsTagMap;
@@ -96,7 +96,6 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 			BehaviorKind aKind,
 			int aCodeSize,
 			LineNumberInfo[] aLineNumberInfos,
-			LocalVariableInfo[] aLocalVariableInfos,
 			TagMap aTagMap)
 	{
 		itsHasTrace = aTraced ? HasTrace.YES : HasTrace.NO;
@@ -105,9 +104,6 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 		
 		itsLineNumberTable = aLineNumberInfos;
 		itsHasLineNumberTable = itsLineNumberTable != null;
-		
-		itsLocalVariableTable = aLocalVariableInfos;
-		itsHasLocalVariableTable = itsLocalVariableTable != null;
 		
 		itsTagMap = aTagMap;
 		itsHasTagMap = itsTagMap != null;
@@ -147,9 +143,8 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 	public LocalVariableInfo getLocalVariableInfo (int aPc, int aIndex)
 	{
 		int thePc = aPc+17; // 17 is the size of our instrumentation
-    	if (itsHasLocalVariableTable) for (int i=0; i<getLocalVariables().length; i++)
+    	if (itsHasLocalVariableTable) for (LocalVariableInfo theInfo : getLocalVariables())
     	{
-    	    LocalVariableInfo theInfo = getLocalVariables()[i];
     		if (theInfo.match(thePc, aIndex)) return theInfo;
     	}
     	return null;
@@ -157,8 +152,8 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
     
     public LocalVariableInfo getLocalVariableInfo (int aSymbolIndex)
     {
-        return itsHasLocalVariableTable && aSymbolIndex < getLocalVariables().length ?
-        		getLocalVariables()[aSymbolIndex]
+        return itsHasLocalVariableTable && aSymbolIndex < getLocalVariables().size() ?
+        		getLocalVariables().get(aSymbolIndex)
                 : null;
     }
     
@@ -238,12 +233,12 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 		return itsHasTagMap ? getTagMap().getTag(aType, aBytecodeIndex) : null;
 	}
 
-	public LocalVariableInfo[] _getLocalVariables()
+	public List<LocalVariableInfo> _getLocalVariables()
     {
     	return itsLocalVariableTable;
     }
 	
-	public LocalVariableInfo[] getLocalVariables()
+	public List<LocalVariableInfo> getLocalVariables()
 	{
 		if (itsLocalVariableTable == null && itsHasLocalVariableTable)
 		{
@@ -253,9 +248,16 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 		return itsLocalVariableTable;
 	}
 	
+	public void addLocalVariableInfo(LocalVariableInfo aInfo)
+	{
+		if (itsLocalVariableTable == null) itsLocalVariableTable = new ArrayList<LocalVariableInfo>();
+		itsHasLocalVariableTable = true;
+		itsLocalVariableTable.add(aInfo);
+	}
+	
 	LineNumberInfo[] _getLineNumbers()
 	{
-		return itsLineNumberTable;
+		return itsLineNumberTable; 
 	}
 	
 	public LineNumberInfo[] getLineNumbers()

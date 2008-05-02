@@ -188,4 +188,9 @@ implements IMutableStructureDatabase
 		return null;
 	}
 
+	public IMutableClassInfo addClass(int aId, String aName)
+	{
+		return null;
+	}
+
 }

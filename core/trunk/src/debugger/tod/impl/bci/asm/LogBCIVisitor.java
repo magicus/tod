@@ -35,8 +35,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.text.StyledEditorKit.ForegroundAction;
-
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassAdapter;
 import org.objectweb.asm.ClassVisitor;
@@ -56,6 +54,7 @@ import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
+import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.impl.bci.asm.attributes.AspectInfoAttribute;
 import tod.impl.bci.asm.attributes.DummyLabelsAttribute;
 import tod.impl.bci.asm.attributes.SootAttribute;
@@ -516,8 +515,12 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 					itsMethodInfo.getKind(),
 					itsMethodInfo.getCodeSize(),
 					itsMethodInfo.createLineNumberTable(), 
-					itsMethodInfo.createLocalVariableTable(),
 					theTagMap);
+			
+			for (LocalVariableInfo theInfo : itsMethodInfo.createLocalVariableTable())
+			{
+				itsBehavior.addLocalVariableInfo(theInfo);
+			}
 		}
 	}
 	

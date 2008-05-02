@@ -31,7 +31,6 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.structure;
 
-import java.util.Map;
 
 /**
  * Represents an in-construction {@link IClassInfo}.
@@ -67,6 +66,14 @@ public interface IMutableClassInfo extends IClassInfo, IMutableLocationInfo
 	public IMutableBehaviorInfo getNewBehavior(String aName, String aDescriptor);
 	
 	/**
+	 * Adds a new behavior with a specific id.
+	 * This is for platforms where ids are not assigned by the structure
+	 * database (eg. python).
+	 * Othwerwise, use {@link #getNewBehavior(String, String)}.
+	 */
+	public IMutableBehaviorInfo addBehavior(int aId, String aName, String aDescriptor);
+	
+	/**
 	 * This method either creates a new uninitialized field, or 
 	 * returns the field that has the specified name.
 	 * if the field is created it is automatically assigned an id and added
@@ -74,4 +81,12 @@ public interface IMutableClassInfo extends IClassInfo, IMutableLocationInfo
 	 */
 	public IMutableFieldInfo getNewField(String aName, ITypeInfo aType);
 
+	/**
+	 * Adds a new field with a specific id.
+	 * This is for platforms where ids are not assigned by the structure
+	 * database (eg. python).
+	 * Othwerwise, use {@link #getNewField(String, ITypeInfo)}.
+	 */
+	public IMutableFieldInfo addField(int aId, String aName, ITypeInfo aType);
+	
 }

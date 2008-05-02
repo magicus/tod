@@ -241,7 +241,7 @@ implements RIStructureDatabase
 		return itsSource._getBehaviorLineNumberInfo(aBehaviorId);
 	}
 
-	public LocalVariableInfo[] _getBehaviorLocalVariableInfo(int aBehaviorId) 
+	public List<LocalVariableInfo> _getBehaviorLocalVariableInfo(int aBehaviorId) 
 	{
 		return itsSource._getBehaviorLocalVariableInfo(aBehaviorId);
 	}
@@ -614,6 +614,11 @@ implements RIStructureDatabase
 				throw new RuntimeException(e);
 			}
 		}
+		
+		public IMutableClassInfo addClass(int aId, String aName)
+		{
+			throw new UnsupportedOperationException("Not implemented yet");
+		}
 
 		public ITypeInfo getNewType(String aName)
 		{
@@ -723,7 +728,7 @@ implements RIStructureDatabase
 			}
 		}
 
-		public LocalVariableInfo[] _getBehaviorLocalVariableInfo(int aBehaviorId)
+		public List<LocalVariableInfo> _getBehaviorLocalVariableInfo(int aBehaviorId)
 		{
 			try
 			{

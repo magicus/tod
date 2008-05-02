@@ -31,12 +31,15 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.view.structure;
 
+import java.util.List;
+
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
+import zz.utils.SimpleListModel;
 import zz.utils.ui.StackLayout;
 import zz.utils.ui.UniversalRenderer;
 
@@ -56,8 +59,12 @@ public class VariableInfoPanel extends JPanel
 
 	private void createUI()
 	{
-		LocalVariableInfo[] theLocalVariables = itsBehavior.getLocalVariables();
-		JList theList = theLocalVariables != null ? new JList(theLocalVariables) : new JList();
+		List<LocalVariableInfo> theLocalVariables = itsBehavior.getLocalVariables();
+		
+		JList theList = theLocalVariables != null ? 
+				new JList(new SimpleListModel(theLocalVariables))
+				: new JList();
+				
 		theList.setCellRenderer(new UniversalRenderer<LocalVariableInfo>()
 				{
 					@Override

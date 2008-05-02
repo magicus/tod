@@ -38,7 +38,6 @@ import tod.agent.BehaviorKind;
 import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
 import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
-import tod.impl.bci.asm.attributes.SootAttribute;
 import tod.impl.database.structure.standard.TagMap;
 
 public class ASMMethodInfo
@@ -170,15 +169,13 @@ public class ASMMethodInfo
      * Creates an array of {@link LocalVariableInfo} from a list of 
      * {@link ASMLocalVariableInfo}
      */
-    public LocalVariableInfo[] createLocalVariableTable ()
+    public List<LocalVariableInfo> createLocalVariableTable ()
     {
-    	int theLength = itsLocalVariableInfo.size();
-    	LocalVariableInfo[] theTable = new LocalVariableInfo[theLength];
+    	List<LocalVariableInfo> theTable = new ArrayList<LocalVariableInfo>();
     	
-    	int i=0;
     	for (ASMLocalVariableInfo theInfo : itsLocalVariableInfo)
     	{
-    		theTable[i++] = theInfo.resolve();
+    		theTable.add(theInfo.resolve());
     	}
     	
     	return theTable;

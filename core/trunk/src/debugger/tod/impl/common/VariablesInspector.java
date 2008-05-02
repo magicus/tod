@@ -78,7 +78,7 @@ public class VariablesInspector implements IVariablesInspector
 		if (itsVariables == null)
 		{
 			itsVariables = getBehaviorCall() != null ?
-					Arrays.asList(getBehavior().getLocalVariables())
+					getBehavior().getLocalVariables()
 					: Collections.EMPTY_LIST;
 		}
 		return itsVariables;

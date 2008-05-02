@@ -51,8 +51,11 @@ public interface IMutableBehaviorInfo extends IBehaviorInfo, IMutableLocationInf
 			BehaviorKind aKind,
 			int aCodeSize,
 			LineNumberInfo[] aLineNumberInfos,
-			LocalVariableInfo[] aLocalVariableInfos,
 			TagMap aTagMap);
 	
+	/**
+	 * Adds an individual local var. info.
+	 */
+	public void addLocalVariableInfo(LocalVariableInfo aInfo);
 
 }

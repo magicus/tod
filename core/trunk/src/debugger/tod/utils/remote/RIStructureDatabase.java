@@ -33,6 +33,7 @@ package tod.utils.remote;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.Map;
 
 import tod.core.config.TODConfig;
@@ -43,7 +44,6 @@ import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.IMutableFieldInfo;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
-import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
@@ -77,7 +77,7 @@ public interface RIStructureDatabase extends Remote
 	public byte[] _getClassBytecode(int aClassId) throws RemoteException;
 	public Map<String, IMutableFieldInfo> _getClassFieldMap(int aClassId) throws RemoteException;
 	public Map<String, IMutableBehaviorInfo> _getClassBehaviorsMap(int aClassId) throws RemoteException;
-	public LocalVariableInfo[] _getBehaviorLocalVariableInfo(int aBehaviorId) throws RemoteException;
+	public List<LocalVariableInfo> _getBehaviorLocalVariableInfo(int aBehaviorId) throws RemoteException;
 	public LineNumberInfo[] _getBehaviorLineNumberInfo(int aBehaviorId) throws RemoteException;
 	public TagMap _getBehaviorTagMap(int aBehaviorId) throws RemoteException;
 	public IClassInfo _getBehaviorClass(int aBehaviorId, boolean aFailIfAbsent) throws RemoteException;

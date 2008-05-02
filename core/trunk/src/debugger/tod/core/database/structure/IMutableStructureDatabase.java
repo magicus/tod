@@ -50,6 +50,14 @@ public interface IMutableStructureDatabase extends IStructureDatabase
 	public IMutableClassInfo getNewClass(String aName);
 	
 	/**
+	 * Adds a new class with a specific id.
+	 * This is for platforms where ids are not assigned by the structure
+	 * database (eg. python).
+	 * Othwerwise, use {@link #getNewClass(String)}.
+	 */
+	public IMutableClassInfo addClass(int aId, String aName);
+	
+	/**
 	 * Same as {@link #getType(String, boolean)}, but if the type is a class and
 	 * does not exist, it is created as by {@link #getNewClass(String)}.
 	 */

@@ -38,7 +38,6 @@ import java.util.Map;
 
 import org.objectweb.asm.Type;
 
-import tod.core.config.TODConfig;
 import tod.core.database.browser.LocationUtils;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
@@ -47,10 +46,8 @@ import tod.core.database.structure.IMemberInfo;
 import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableFieldInfo;
-import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IShareableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
-import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
 import tod.impl.database.structure.standard.StructureDatabase.ClassNameInfo;
 import zz.utils.Utils;
@@ -289,6 +286,30 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		
 		return theBehavior;
 	}
+
+	public IMutableBehaviorInfo addBehavior(int aId, String aName, String aDescriptor)
+	{
+		BehaviorInfo theBehavior = getStructureDatabase().getBehavior(aId, false);
+		if (theBehavior != null)
+		{
+			throw new IllegalArgumentException("There is already a behavior with id "+aId);
+		}
+		
+		ITypeInfo[] theArgumentTypes = LocationUtils.getArgumentTypes(getDatabase(), aDescriptor);
+		ITypeInfo theReturnType = LocationUtils.getReturnType(getDatabase(), aDescriptor);
+		
+		theBehavior = new BehaviorInfo(
+				getStructureDatabase(), 
+				aId,
+				this,
+				aName,
+				aDescriptor,
+				theArgumentTypes,
+				theReturnType);
+		
+		register(theBehavior);
+		return theBehavior;
+	}
 	
 	public IMutableFieldInfo getNewField(String aName, ITypeInfo aType)
 	{
@@ -301,6 +322,19 @@ implements IMutableClassInfo, ISerializableLocationInfo
 			register(theField);
 		}
 	
+		return theField;
+	}
+	
+	public IMutableFieldInfo addField(int aId, String aName, ITypeInfo aType)
+	{
+		FieldInfo theField = getStructureDatabase().getField(aId, false);
+		if (theField != null)
+		{
+			throw new IllegalArgumentException("There is already a field with id "+aId);
+		}
+		
+		theField = new FieldInfo(getStructureDatabase(), aId, this, aName);
+		register(theField);
 		return theField;
 	}
 	
