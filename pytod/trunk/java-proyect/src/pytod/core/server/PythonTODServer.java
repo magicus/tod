@@ -16,7 +16,7 @@ import tod.core.server.TODServer;
 import tod.gui.eventlist.LocalVariableWriteNode;
 
 /**
- * A TOD server accepts connections from debugged VMs and process instrumentation
+ * A Python TOD server accepts connections from debugged script Python and process instrumentation
  * requests as well as logged events.
  * The actual implementation of the instrumenter and database are left
  * to delegates.
