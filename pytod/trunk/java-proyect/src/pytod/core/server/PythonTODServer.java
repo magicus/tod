@@ -7,8 +7,21 @@ import java.net.Socket;
 
 import tod.core.ILogCollector;
 import tod.core.config.TODConfig;
+import tod.core.database.structure.IMutableBehaviorInfo;
+import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
+import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
+import tod.core.server.ITODServerFactory;
 import tod.core.server.TODServer;
+import tod.gui.eventlist.LocalVariableWriteNode;
+
+/**
+ * A TOD server accepts connections from debugged VMs and process instrumentation
+ * requests as well as logged events.
+ * The actual implementation of the instrumenter and database are left
+ * to delegates.
+ * @author minostro
+ */
 
 public class PythonTODServer extends TODServer
 {
@@ -23,6 +36,7 @@ public class PythonTODServer extends TODServer
 		super(aConfig);
 		itsStructureDatabase = aStructureDatabase;
 		itsLogCollector = aLogCollector;
+		System.out.println("Hola soy Pilton");
 	}
 
 	@Override
@@ -147,12 +161,13 @@ public class PythonTODServer extends TODServer
 		public void registerClass(XDRInputStream aInputStream)
 		{
 			XDRInputStream theStream = aInputStream;
+			IMutableClassInfo itsClass;
 			try
 			{
 				int classId = theStream.readInt();
 				String className = new String(theStream.readString());
 				int classBases = theStream.readInt();
-				//mandar registro a la base de datos
+				itsClass = itsStructureDatabase.addClass(classId, className);
 			}
 			catch (Exception e)
 			{
@@ -164,23 +179,24 @@ public class PythonTODServer extends TODServer
 		public void registerMethod(XDRInputStream aInputStream)
 		{
 			XDRInputStream theStream = aInputStream;
-			Argument args[];
+			IMutableClassInfo theClass;
+			IMutableBehaviorInfo theBehavior;
 			try
 			{
 				int methodId = theStream.readInt();
 				int classId = theStream.readInt();
-				String methodName = new String(theStream.readString());
+				String methodName = theStream.readString();
 				int argsN = theStream.readInt();
+				theClass = itsStructureDatabase.getClass(classId, true);
+				theBehavior = theClass.addBehavior(methodId, methodName, ""+argsN);
 				if (argsN != 0){
-					args = new Argument[argsN];
 					for(int i=0;i<argsN;i=i+1)
 					{
 						int argId = theStream.readInt();
-						String argName = new String(theStream.readString());
-						args[i] = new Argument(argId,argName);
+						String argName = theStream.readString();
+						theBehavior.addLocalVariableInfo(new LocalVariableInfo(0,0,argName," ",argId));
 					}
 				}
-				//mandar registro a la base de datos
 			}
 			catch (Exception e)
 			{
@@ -410,8 +426,8 @@ public class PythonTODServer extends TODServer
 						}	
 					}
 					break;
-					
 					case CALL_EVENT:
+					{
 						int theObject = itsStream.readInt();
 						switch (theObject)
 						{
@@ -424,9 +440,10 @@ public class PythonTODServer extends TODServer
 						default:
 							break;
 						}
-						break;
-						
+					}
+					break;
 					case SET_EVENT:
+					{
 						int theObject = itsStream.readInt();
 						switch (theObject)
 						{
@@ -439,8 +456,8 @@ public class PythonTODServer extends TODServer
 						default:
 							break;
 						}
-						break;
-						
+					}
+					break;	
 					case RETURN_EVENT:
 						returnEvent(itsStream);
 						break;
