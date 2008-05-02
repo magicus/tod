@@ -7,17 +7,17 @@ import java.net.Socket;
 
 import tod.core.ILogCollector;
 import tod.core.config.TODConfig;
-import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.server.TODServer;
 
 public class PythonTODServer extends TODServer
 {
-	private final IStructureDatabase itsStructureDatabase;
+	private final IMutableStructureDatabase itsStructureDatabase;
 	private final ILogCollector itsLogCollector;
 
 	public PythonTODServer(
 			TODConfig aConfig,
-			IStructureDatabase aStructureDatabase,
+			IMutableStructureDatabase aStructureDatabase,
 			ILogCollector aLogCollector) 
 	{
 		super(aConfig);
@@ -28,7 +28,15 @@ public class PythonTODServer extends TODServer
 	@Override
 	protected void accepted(Socket aSocket) 
 	{
-		
+		try
+		{
+			XDRInputStream theStream = new XDRInputStream(aSocket.getInputStream());
+			new Receiver(theStream);
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 	
 	
@@ -372,6 +380,7 @@ public class PythonTODServer extends TODServer
 					switch (theEvent)
 					{
 					case REGISTER_EVENT:
+					{
 						int theObject = itsStream.readInt();
 						switch(theObject)
 						{
@@ -398,8 +407,9 @@ public class PythonTODServer extends TODServer
 							break;
 						default:
 							break;
-						}
-						break;
+						}	
+					}
+					break;
 					
 					case CALL_EVENT:
 						int theObject = itsStream.readInt();
