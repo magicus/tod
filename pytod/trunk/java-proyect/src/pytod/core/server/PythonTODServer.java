@@ -392,8 +392,10 @@ public class PythonTODServer extends TODServer
 			{
 				while (true)
 				{
-					int theEvent = itsStream.readInt();
-					switch (theEvent)
+					String theEvent = itsStream.readString();
+					System.out.println(theEvent);
+					int theEvent1 = 1;
+					switch (theEvent1)
 					{
 					case REGISTER_EVENT:
 					{
