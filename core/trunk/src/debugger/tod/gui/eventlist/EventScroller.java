@@ -94,7 +94,7 @@ public class EventScroller extends JPanel
 	 * If p is the position of the slider the timestamp t is:
 	 * p*{@link #itsSliderFactor} + {@link #itsStart} 
 	 */
-	private long itsSliderFactor;
+	private float itsSliderFactor;
 
 	public EventScroller(IGUIManager aGUIManager)
 	{
@@ -150,6 +150,9 @@ public class EventScroller extends JPanel
 					int theDelta = itsSlider.getValue()-itsLastValue;
 					switch(theDelta)
 					{
+					case 0:
+						break;
+						
 					case -1:
 						eUnitScroll.fire(UnitScroll.UP);
 						break;
@@ -171,7 +174,7 @@ public class EventScroller extends JPanel
 						break;
 
 					default:
-						long theTimestamp = (itsSliderFactor * itsSlider.getValue()) + itsStart;
+						long theTimestamp = (long)(itsSliderFactor * itsSlider.getValue()) + itsStart;
 						itsUpdating = true;
 						pTrackScroll.set(theTimestamp);
 						itsUpdating = false;

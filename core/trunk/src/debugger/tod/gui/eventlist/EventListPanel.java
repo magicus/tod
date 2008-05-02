@@ -181,7 +181,14 @@ implements MouseWheelListener
 			@Override
 			public Object run()
 			{
-				itsCore.forward(aCount);
+				try
+				{
+					itsCore.forward(aCount);
+				}
+				catch (Throwable e)
+				{
+					e.printStackTrace();
+				}
 				itsSubmittedJobs--;
 				if (itsSubmittedJobs == 0) postUpdateList();
 				return null;
@@ -195,12 +202,19 @@ implements MouseWheelListener
 		if (itsSubmittedJobs > 5) return;
 		
 		itsSubmittedJobs++;
-		getJobProcessor().runNow(new JobProcessor.Job<Object>()
+		getJobProcessor().submit(new JobProcessor.Job<Object>()
 		{
 			@Override
 			public Object run()
 			{
-				itsCore.backward(aCount);
+				try
+				{
+					itsCore.backward(aCount);
+				}
+				catch (Throwable e)
+				{
+					e.printStackTrace();
+				}
 				itsSubmittedJobs--;
 				if (itsSubmittedJobs == 0) postUpdateList();
 				return null;

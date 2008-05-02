@@ -150,7 +150,7 @@ public class EventListCore
 			if (itsDisplayedEvents.size() > itsCurrentDelta)
 			{
 				ILogEvent theDisplayedEvent = itsDisplayedEvents.get(itsCurrentDelta);
-				assert theDisplayedEvent.equals(theEvent);
+				assert theDisplayedEvent.equals(theEvent) : "Displayed: "+theDisplayedEvent+", retrieved: "+theEvent;
 			}
 		}
 		
@@ -177,7 +177,7 @@ public class EventListCore
 			if (itsDisplayedEvents.size() > itsCurrentDelta)
 			{
 				ILogEvent theDisplayedEvent = itsDisplayedEvents.get(itsCurrentDelta);
-				assert theDisplayedEvent.equals(theEvent);
+				assert theDisplayedEvent.equals(theEvent) : "Displayed: "+theDisplayedEvent+", retrieved: "+theEvent;
 			}
 			
 			itsCurrentDelta++;
