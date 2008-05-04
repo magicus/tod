@@ -12,6 +12,7 @@ class Client {
                 Socket skCliente = new Socket( HOST , PUERTO );
                 XDROutputStream aux = new XDROutputStream(skCliente.getOutputStream());
                 aux.writeString("a");
+                aux.writeInt(2);
                 //DataInputStream flujo = new DataInputStream( aux );
                 //System.out.println( flujo.readUTF() );
                 skCliente.close();

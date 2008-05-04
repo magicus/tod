@@ -16,10 +16,12 @@ class Server {
                     Socket skCliente = skServidor.accept(); // Crea objeto
                     System.out.println("Sirvo al cliente " + numCli);
                     XDRInputStream theStream = new XDRInputStream(skCliente.getInputStream());
-                    String numero = theStream.readString();
+                    String palabra = theStream.readString();
                     //DataOutputStream flujo = aux;
                     //flujo.writeUTF( "Hola cliente " + numCli );
-                    System.out.println(numero);
+                    System.out.println(palabra);
+                    System.out.println(theStream.read());
+                    
                     skCliente.close();
                 }
                 System.out.println("Demasiados clientes por hoy");
