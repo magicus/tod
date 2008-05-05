@@ -1,8 +1,0 @@
-\contentsline {section}{\numberline {1}Desarrollo}{5}{section.1}
-\contentsline {section}{\numberline {2}Protocolo de comunicaci\IeC {\'o}n - Draft}{5}{section.2}
-\contentsline {subsection}{\numberline {2.1}Identificadores bases}{5}{subsection.2.1}
-\contentsline {subsection}{\numberline {2.2}Registro de objetos}{6}{subsection.2.2}
-\contentsline {subsection}{\numberline {2.3}Llamada de objetos}{8}{subsection.2.3}
-\contentsline {subsection}{\numberline {2.4}Asignaci\IeC {\'o}n - Modificaci\IeC {\'o}n de objetos}{9}{subsection.2.4}
-\contentsline {subsection}{\numberline {2.5}Return}{9}{subsection.2.5}
-\contentsline {section}{\numberline {3}Perspectiva}{10}{section.3}
