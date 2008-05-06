@@ -195,7 +195,6 @@ class hunterTrace(object):
         for i in local.iterkeys():
             if not attr.has_key(i) or not locals.has_key(i):
                 return
-            #registramos un nuevo probe o utilizamos el que existe
             if not self._probe.has_key((currentLasti,objId)):
                 probeId = self.__registerProbe__(currentLasti,objId)
             else:
@@ -208,12 +207,10 @@ class hunterTrace(object):
             self.packer.pack_int(self.events['set'])
             print self.objects['local'],
             self.packer.pack_int(self.objects['local'])
-            #print 'id =',attr[i],
             print attr[i],
             self.packer.pack_int(attr[i])
             print objId,
             self.packer.pack_int(objId)
-            #print ', value =',locals[i],
             print locals[i],
             #TODO: ver el asunto de los tipos de datos
             try:
@@ -223,20 +220,15 @@ class hunterTrace(object):
                 #print locals[i]
                 #print sys.exc_info()
                 pass
-            #print ',probe id =',probeId,
             print probeId,
             self.packer.pack_int(probeId)
-            #print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
             print '%11.9f'%(parentTimeStampFrame),
             self.packer.pack_double(parentTimeStampFrame)
-            #print ',current depth =',depth,
             print depth,
             self.packer.pack_int(depth)
-            #print ', current time stamp = %11.9f'%(time.time()),
             currentTimeStamp = time.time() 
             print '%11.9f'%(currentTimeStamp),
             self.packer.pack_double(currentTimeStamp)
-            #print ',current thread =',threadId
             print threadId
             self.packer.pack_int(threadId)
 
@@ -250,7 +242,6 @@ class hunterTrace(object):
         f_code = f_back.f_code
         parentId = self.__getObjectId__(f_code)
         currentLasti = frame.f_lasti        
-        #registramos un nuevo probe
         if not self._probe.has_key((currentLasti,parentId)):
             probeId = self.__registerProbe__(currentLasti,parentId)
         else:
@@ -260,35 +251,26 @@ class hunterTrace(object):
         self.packer.pack_int(self.events['call'])
         print self.objects['method'],
         self.packer.pack_int(self.objects['method'])
-        #print 'id =',methodId,
         print methodId,
         self.packer.pack_int(methodId)
-        #print 'parent id =',parentId,
         print parentId,
         self.packer.pack_int(parentId)
-        #print 'target =',classId,
         print classId,
         self.packer.pack_int(classId)
-        #print ',args =',args,
         print len(argsValue),
         self.packer.pack_int(len(argsValue))
         for v in argsValue:
             print v,
             #TODO: en estos momentos asumimos todos enteros
             self.packer.pack_int(1)
-        #print ',probe id =',probeId,
         print probeId,
         self.packer.pack_int(probeId)
-        #print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
         print '%11.9f'%(parentTimeStampFrame),
         self.packer.pack_double(parentTimeStampFrame)
-        #print ',current depth =',depth,
         print depth,
-        self.packer.pack_int(depth)
-        #print ', current time stamp = %11.9f'%(currentTimeStamp),      
+        self.packer.pack_int(depth)    
         print '%11.9f'%(currentTimeStamp),
         self.packer.pack_double(currentTimeStamp)
-        #print ',current thread =',threadId
         print threadId
         self.packer.pack_int(threadId)
 
@@ -302,7 +284,6 @@ class hunterTrace(object):
         f_code = f_back.f_code
         parentId = self.__getObjectId__(f_code)
         currentLasti = frame.f_lasti
-        #registramos un nuevo probe o lo rescatamos
         if not self._probe.has_key((currentLasti,parentId)):
             probeId = self.__registerProbe__(currentLasti,parentId)
         else:
@@ -312,33 +293,24 @@ class hunterTrace(object):
         self.packer.pack_int(self.events['call'])
         print self.objects['function'],
         self.packer.pack_int(self.objects['function'])
-        #print ' id =',functionId,
         print functionId,
         self.packer.pack_int(functionId)
-        #print ', parent id =',parentId,
         print parentId,
         self.packer.pack_int(parentId)
-        #print ',args =',args,
         print len(argsValue),
         self.packer.pack_int(len(argsValue))
         for v in argsValue:
             print v,
             #TODO: en estos momentos asumimos todos enteros
             self.packer.pack_int(1)
-        #print ',probe id =',probeId,
         print probeId,
         self.packer.pack_int(probeId)
-        #print ',probe(id =',probeId,', f_lasti =',current_lasti,', id =',id,')',
-        #print ',parent time stamp = %11.9f'%(parentTimeStampFrame),
         print '%11.9f'%(parentTimeStampFrame),
         self.packer.pack_double(parentTimeStampFrame)        
-        #print ',current depth =',depth,
         print depth,
         self.packer.pack_int(depth)
-        #print', current time stamp = %11.9f'%(currentTimeStamp),
         print '%11.9f'%(currentTimeStamp),
         self.packer.pack_double(currentTimeStamp)
-        #print ',current thread =',threadId
         print threadId
         self.packer.pack_int(threadId)
 
@@ -355,14 +327,11 @@ class hunterTrace(object):
         self.packer.reset()
         print self.events['return'],
         self.packer.pack_int(self.events['return'])
-        #print ' value',arg,
         #TODO: ver tipos de datos y la manera de enviarlos
         print arg,
         self.packer.pack_int(1)
-        #print ',probe id =',probeId,
         print probeId,
         self.packer.pack_int(probeId)
-        #print ',hasThrown =', False
         print False
         self.packer.pack_bool(False)
 
@@ -381,13 +350,10 @@ class hunterTrace(object):
         self.packer.pack_int(self.events['register'])
         print self.objects['class'],
         self.packer.pack_int(self.objects['class'])
-        #print ', id =',classId,
         print classId,
         self.packer.pack_int(classId)
-        #print 'name',className,
         print className,
         self.packer.pack_string(className)
-        #print ', superclass = ',classBases
         print classBases
         self.packer.pack_int(0)
         raw_input()
@@ -404,13 +370,10 @@ class hunterTrace(object):
         self.packer.pack_int(self.events['register'])
         print self.objects['method'],
         self.packer.pack_int(self.objects['method'])
-        #print 'id=',methodId,
         print methodId,
         self.packer.pack_int(methodId)
-        #print ',class id=',classId,
         print classId,
         self.packer.pack_int(classId)
-        #print ',name=',code.co_name,
         print code.co_name,
         self.packer.pack_string(code.co_name)
         print len(args),
@@ -437,10 +400,8 @@ class hunterTrace(object):
         self.packer.pack_int(self.events['register'])
         print self.objects['function'],        
         self.packer.pack_int(self.objects['function'])
-        #print 'id =',functionId,
         print functionId,
         self.packer.pack_int(functionId)
-        #print ',name =',code.co_name,
         print code.co_name,
         self.packer.pack_string(code.co_name)
         print len(args),
@@ -450,8 +411,8 @@ class hunterTrace(object):
             self.packer.pack_string(args[i])
             print i,
             self.packer.pack_int(i)
-        #print ', args =',args
-        print self.packer.get_buffer()
+        raw_input()
+        self._socket.sendall(self.packer.get_buffer())
         self.__addFunction__(
                              functionId,
                              self.__createlnotab__(code),
@@ -486,10 +447,8 @@ class hunterTrace(object):
         self.packer.pack_int(self.events['register'])
         print self.objects['thread'],
         self.packer.pack_int(self.objects['thread'])
-        #print 'thread id =',threadId,
         print threadId,
         self.packer.pack_int(threadId)
-        #print 'thread sys id =',threadSysId
         print threadSysId
         self.packer.pack_int(threadSysId)
         raw_input()
