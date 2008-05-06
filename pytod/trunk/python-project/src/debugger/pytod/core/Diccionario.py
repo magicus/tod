@@ -25,15 +25,14 @@ class Diccionario(dict):
                     self.hT.packer.pack_int(self.hT.events['register'])
                     print self.hT.objects['local'],
                     self.hT.packer.pack_int(self.hT.objects['local'])
-                    #print 'id =',v,
                     print v,
                     self.hT.packer.pack_int(v)
-                    #print ',parent id=',parentId,
                     print parentId,
                     self.hT.packer.pack_int(v)
-                    #print ',name =',k
                     print k
                     self.hT.packer.pack_string(k)
+                    raw_input()
+                    self._socket.sendall(self.packer.get_buffer())
                     
 
     def __updateAttr__(self, d, parentId):
@@ -53,3 +52,5 @@ class Diccionario(dict):
                     self.hT.packer.pack_int(parentId)
                     print k
                     self.hT.packer.pack_string(k)
+                    raw_input()
+                    self._socket.sendall(self.packer.get_buffer())
