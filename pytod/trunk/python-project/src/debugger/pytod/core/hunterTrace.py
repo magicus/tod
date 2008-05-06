@@ -473,6 +473,7 @@ class hunterTrace(object):
         self.packer.pack_int(parentId)
         print currentLasti
         self.packer.pack_int(currentLasti)
+        raw_input()
         self._socket.sendall(self.packer.get_buffer())
         self.probeId.__next__()
         return probeId
@@ -491,6 +492,8 @@ class hunterTrace(object):
         #print 'thread sys id =',threadSysId
         print threadSysId
         self.packer.pack_int(threadSysId)
+        raw_input()
+        self._socket.sendall(self.packer.get_buffer())
         self.threadId.__next__()
         return threadId
 
