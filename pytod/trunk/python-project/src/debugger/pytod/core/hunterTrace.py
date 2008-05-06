@@ -9,265 +9,20 @@ import sys
 import dis
 import re
 import time
-import inspect
 import thread
 import xdrlib
 import socket
+import inspect
+from constantsObjects import objects, dataTypes, events
+from generatorId import generatorId
+from Descriptor import Descriptor
+from objectClass import Class
+from objectMethod import Method
+from objectFunction import Function
 th = False
 if th:
     from threading import settrace
-from constantsObjects import *
-
-class Diccionario(dict):
-
-    def __setitem__(self, k, v):
-        dict.__setitem__(self,k,v)
-
-    def __update__(self, d, parentId):
-        for k,v in d.items():
-            #se debe registrar argumento self?
-            if not self.has_key(k):
-                if not k == 'self':
-                    self[k] = v
-                    hT.packer.reset()
-                    print hT.events['register'],
-                    hT.packer.pack_int(hT.events['register'])
-                    print hT.objects['local'],
-                    hT.packer.pack_int(hT.objects['local'])
-                    #print 'id =',v,
-                    print v,
-                    hT.packer.pack_int(v)
-                    #print ',parent id=',parentId,
-                    print parentId,
-                    hT.packer.pack_int(v)
-                    #print ',name =',k
-                    print k
-                    hT.packer.pack_string(k)
-                    
-
-    def __updateAttr__(self, d, parentId):
-        for k,v in d.items():
-            #se debe registrar argumento self?
-            if not self.has_key(k):
-                if not k == 'self':
-                    self[k] = v
-                    hT.packer.reset()
-                    print hT.events['register'],
-                    hT.packer.pack_int(hT.events['register'])
-                    print hT.objects['attribute'],
-                    hT.packer.pack_int(hT.objects['attribute'])
-                    print v,
-                    hT.packer.pack_int(v)
-                    print parentId  
-                    hT.packer.pack_int(parentId)
-                    print k
-                    hT.packer.pack_string(k)
-
-
-class IdGenerator(object):
-    
-    def __init__(self):
-        self.id = 1
-
-    def __get__(self):
-        return self.id
-
-    def __next__(self):
-        self.id = self.id + 1
-        return
-
-
-class Descriptor(object):
-
-    def __setattr__(self, name, value):
-        frame = sys._getframe()
-        currentLasti = frame.f_lasti
-        currentDepth = hT.__getDepthFrame__(frame)
-        currentTimeStamp = time.time() 
-        parentTimeStamp = hT.__getTimeStampParentFrame__(frame, currentTimeStamp)
-        threadId = hT.__getThreadId__(thread.get_ident())
-        id = hT.Id.__get__()
-        key = type(self).__name__
-        key = hT.__getClassKey__(key)
-        if key == None:
-            return
-        obj = hT._class[key] 
-        objId = obj.__getId__()
-        obj.attribute.__updateAttr__({name:id},objId)
-        hT.Id.__next__()
-        #registramos un nuevo probe
-        if not hT._probe.has_key((currentLasti,objId)):
-            probeId = hT.__registerProbe__(currentLasti,objId)
-        else:
-            probeId = hT._probe[(currentLasti,objId)]
-        hT.packer.reset()
-        print hT.events['set'],
-        hT.packer.pack_int(hT.events['set'])
-        print hT.objects['attribute'],
-        hT.packer.pack_int(hT.objects['attribute'])
-        #print 'id =',id,
-        print id,
-        hT.packer.pack_int(id)
-        #print 'target =',objId,
-        print objId,
-        hT.packer.pack_int(objId)
-        #print 'value =',value,
-        #TODO: ver caso cuando value es del tipo tuple, list, dict
-        print value,
-        if type(value) is (dict or tuple or list):
-            hT.packer.pack_int(value)
-        print probeId,
-        hT.packer.pack_int(probeId)
-        #print 'parent time stamp = %11.9f'%(parentTimeStamp),
-        print '%11.9f'%(parentTimeStamp),
-        hT.packer.pack_double(parentTimeStamp)        
-        #print 'current depth =',currentDepth,
-        print currentDepth,
-        hT.packer.pack_int(currentDepth)
-        #print 'current time stamp = %11.9f'%(currentTimeStamp),
-        print '%11.9f'%(currentTimeStamp),
-        hT.packer.pack_double(currentTimeStamp)
-        #print 'current thread =',threadId
-        print threadId,
-        hT.packer.pack_int(threadId)
-        object.__setattr__(self, name, value)
-
-class Class(object):
-
-    def __init__(self, classId, code, lnotab):
-        self.attribute = Diccionario()
-        self.method = Diccionario()
-        self.lnotab = lnotab
-        self.code = code
-        self.name = code.co_name
-        self.id = classId
-
-    def __getId__(self):
-        return self.id
-
-    def __getLnotab__(self):
-        return self.lnotab
-
-    def __addMethod__(self,code,locals):
-        for k,v in locals.iteritems():
-            if inspect.isfunction(v):
-                if not (k == '__module__'):
-                    id = hT.Id.__get__()
-                    self.method.update({k:id})
-                    hT.Id.__next__()
-
-
-class Method(object):
-
-    def __init__(self, id, code, lnotab, idClass, args):
-        self.locals = Diccionario()
-        self.argument = ()
-        self.lnotab = lnotab
-        self.code = code
-        self.name = code.co_name
-        self.idClass = idClass
-        self.id = id
-        self.__updateArgument__(args)
-
-    def __getId__(self):
-        return self.id
-
-    def __getLnotab__(self):
-        return self.lnotab
-
-    def __getLocals__(self):
-        return self.locals
-
-    def __getTarget__(self):
-        return self.idClass
-
-    def __getArgs__(self):
-        return self.argument
-    
-    def __getArgsValues__(self, locals):
-        argValues = ()
-        for name in self.argument:
-            if locals.has_key(name):
-                argValues = argValues + (locals[name],)
-        #TODO: analizar caso para cuando sean tuple, list, dict
-        return argValues
-
-    def __updateArgument__(self, args):
-        self.argument = self.argument + args
-        parentId = self.id
-        for i in range(len(args)):           
-            hT.packer.reset()
-            print hT.events['register'],
-            hT.packer.pack_int(hT.events['register'])
-            print hT.objects['local'],
-            hT.packer.pack_int(hT.objects['local'])
-            #print 'id =',v,
-            print i,
-            hT.packer.pack_int(i)
-            #print ',parent id=',parentId,
-            print parentId,
-            hT.packer.pack_int(parentId)
-            #print ',name =',k
-            print args[i]
-            hT.packer.pack_string(args[i])
-        
-    def __registerLocals__(self, local):
-        self.locals.__update__(local,self.id)
-
-
-class Function(object):
-
-    def __init__(self, id, code, lnotab,args):
-        self.locals = Diccionario()
-        self.argument = ()
-        self.lnotab = lnotab
-        self.code = code
-        self.name = code.co_name
-        self.id = id
-        self.__updateArgument__(args)
-
-    def __getId__(self):
-        return self.id
-
-    def __getLnotab__(self):
-        return self.lnotab
-
-    def __getLocals__(self):
-        return self.locals
-
-    def __getArgs__(self):
-        return self.argument
-    
-    def __getArgsValues__(self, locals):
-        argValues = ()
-        for name in self.argument:
-            if locals.has_key(name):
-                argValues = argValues + (locals[name],)
-        #TODO: analizar caso para cuando sean tuple, list, dict
-        return argValues
-
-    def __updateArgument__(self, args):
-        self.argument = self.argument + args
-        parentId = self.id
-        for i in range(len(args)):            
-            hT.packer.reset()
-            print hT.events['register'],
-            hT.packer.pack_int(hT.events['register'])
-            print hT.objects['local'],
-            hT.packer.pack_int(hT.objects['local'])
-            #print 'id =',v,
-            print i,
-            hT.packer.pack_int(i)
-            #print ',parent id=',parentId,
-            print parentId,
-            hT.packer.pack_int(parentId)
-            #print ',name =',k
-            print args[i]
-            hT.packer.pack_string(args[i])            
-        
-    def __registerLocals__(self, local):
-        self.locals.__update__(local,self.id)
-        
+      
 
 class hunterTrace(object):
 
@@ -277,6 +32,7 @@ class hunterTrace(object):
         self._method = {}
         self._probe = {}
         self._thread = {}
+        self._socket = None
         self.objects = objects
         self.dataTypes = dataTypes
         self.events = events
@@ -288,23 +44,23 @@ class hunterTrace(object):
         self.__socketConnect__()
         
     def __socketConnect__(self):
-        self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        self._socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         try:
-            self.socket.connect(('127.0.0.1', 8058))
-        except:
+            self._socket.connect(('127.0.0.1', 8058))
+        except socket.gaierror:
             print "TOD, esta durmiendo :("
 
 
     def __addClass__(self, id, lnotab, code):
-        objClass = Class(id,code,lnotab)
+        objClass = Class(self,id,code,lnotab)
         self._class.update({code:objClass})
         return objClass
 
     def __addFunction__(self, id, lnotab, code, args):
-        self._function.update({code:Function(id,code,lnotab,args)})
+        self._function.update({code:Function(self,id,code,lnotab,args)})
 
     def __addMethod__(self, id, lnotab, code, idClass, args):
-        self._method.update({code:Method(id,code,lnotab,idClass,args)})
+        self._method.update({code:Method(self,id,code,lnotab,idClass,args)})
 
     def __addProbe__(self, probeId, currentLasti, parentId):
         self._probe.update({(currentLasti,parentId):probeId})
@@ -635,7 +391,7 @@ class hunterTrace(object):
         print classBases
         self.packer.pack_int(0)
         raw_input()
-        self.socket.sendall(self.packer.get_buffer())
+        self._socket.sendall(self.packer.get_buffer())
         objClass = self.__addClass__(classId,self.__createlnotab__(code),code)
         self.Id.__next__()
         #se deben registrar los metodos asociados 
@@ -877,7 +633,7 @@ class hunterTrace(object):
             print
         print '======='
 
-hT = hunterTrace(IdGenerator(),IdGenerator(),IdGenerator(),xdrlib.Packer())
+hT = hunterTrace(generatorId(),generatorId(),generatorId(),xdrlib.Packer())
 if th:
     #a cada nuevo thread se le define settrace
     settrace(hT.__trace__)  
