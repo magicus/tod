@@ -283,7 +283,7 @@ public class StructureDatabase implements IShareableStructureDatabase
 			throw new IllegalArgumentException("There is already a class with id "+aId);
 		}
 		
-		theClass = new ClassInfo(this, getClassNameInfo(aName), aName, itsIds.nextClassId());
+		theClass = new ClassInfo(this, getClassNameInfo(aName), aName, aId);
 		registerClass(theClass);
 		return theClass;
 	}
