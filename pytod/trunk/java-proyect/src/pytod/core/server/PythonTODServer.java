@@ -165,6 +165,7 @@ public class PythonTODServer extends TODServer
 			try
 			{
 				int classId = theStream.readInt();
+				System.out.println(classId);
 				String className = new String(theStream.readString());
 				int classBases = theStream.readInt();
 				itsClass = itsStructureDatabase.addClass(classId, className);
@@ -188,12 +189,14 @@ public class PythonTODServer extends TODServer
 				String methodName = theStream.readString();
 				int argsN = theStream.readInt();
 				theClass = itsStructureDatabase.getClass(classId, true);
-				theBehavior = theClass.addBehavior(methodId, methodName, ""+argsN);
+				theBehavior = theClass.addBehavior(methodId, methodName, "()V");
+				//theBehavior = theClass.addBehavior(methodId, methodName, ""+argsN);
+				System.out.println(argsN);
 				if (argsN != 0){
 					for(int i=0;i<argsN;i=i+1)
 					{
-						int argId = theStream.readInt();
 						String argName = theStream.readString();
+						int argId = theStream.readInt();
 						theBehavior.addLocalVariableInfo(new LocalVariableInfo(0,0,argName," ",argId));
 					}
 				}
@@ -392,10 +395,10 @@ public class PythonTODServer extends TODServer
 			{
 				while (true)
 				{
-					String theEvent = itsStream.readString();
-					System.out.println(theEvent);
-					int theEvent1 = 1;
-					switch (theEvent1)
+					int theEvent = itsStream.readInt();
+					//System.out.println(theEvent);
+					//int theEvent1 = 1;
+					switch (theEvent)
 					{
 					case REGISTER_EVENT:
 					{
