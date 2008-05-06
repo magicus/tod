@@ -420,7 +420,8 @@ class hunterTrace(object):
             self.packer.pack_string(args[i])
             print i,
             self.packer.pack_int(i)
-        print self.packer.get_buffer()
+        raw_input()
+        self._socket.sendall(self.packer.get_buffer())
         self.__addMethod__(
                            methodId,
                            self.__createlnotab__(code),
@@ -466,15 +467,13 @@ class hunterTrace(object):
         self.packer.pack_int(self.events['register'])
         print self.objects['probe'],
         self.packer.pack_int(self.objects['probe'])
-        #print ',probe id=',probeId,
         print probeId,
         self.packer.pack_int(probeId)
-        #print ',current lasti =',currentLasti,
         print parentId,
         self.packer.pack_int(parentId)
         print currentLasti
         self.packer.pack_int(currentLasti)
-        #print ',parent id =', parentId
+        self._socket.sendall(self.packer.get_buffer())
         self.probeId.__next__()
         return probeId
     
