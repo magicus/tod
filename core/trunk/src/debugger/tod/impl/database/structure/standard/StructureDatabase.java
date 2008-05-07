@@ -51,7 +51,6 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMutableBehaviorInfo;
-import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableFieldInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IShareableStructureDatabase;
@@ -59,7 +58,6 @@ import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
-import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.utils.remote.RemoteStructureDatabase;
 import zz.utils.Utils;
 
@@ -442,6 +440,23 @@ public class StructureDatabase implements IShareableStructureDatabase
 		return theId;
 	}
 	
+	
+	
+	public void addProbe(
+			int aId,
+			int aBehaviorId,
+			int aBytecodeIndex,
+			BytecodeRole aRole,
+			int aAdviceSourceId)
+	{
+		ProbeInfo theProbe = Utils.listGet(itsProbes, aId);
+		if (theProbe != null)
+		{
+			throw new IllegalArgumentException("There is already a probe with id "+aId);
+		}
+		Utils.listSet(itsProbes, aId, new ProbeInfo(aId, aBehaviorId, aBytecodeIndex, aRole, aAdviceSourceId));
+	}
+
 	public void setProbe(int aProbeId, int aBehaviorId, int aBytecodeIndex, BytecodeRole aRole, int aAdviceSourceId)
 	{
 		itsProbes.set(aProbeId, new ProbeInfo(aProbeId, aBehaviorId, aBytecodeIndex, aRole, aAdviceSourceId));

@@ -79,6 +79,11 @@ public interface IMutableStructureDatabase extends IStructureDatabase
 	public int addProbe(int aBehaviorId, int aBytecodeIndex, BytecodeRole aRole, int aAdviceSourceId);
 	
 	/**
+	 * Creates a new probe with the specified id.
+	 */
+	public void addProbe(int aId, int aBehaviorId, int aBytecodeIndex, BytecodeRole aRole, int aAdviceSourceId);
+	
+	/**
 	 * Changes the probe info for the given id.
 	 */
 	public void setProbe(int aProbeId, int aBehaviorId, int aBytecodeIndex, BytecodeRole aRole, int aAdviceSourceId);

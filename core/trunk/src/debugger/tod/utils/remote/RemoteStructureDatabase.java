@@ -658,6 +658,16 @@ implements RIStructureDatabase
 			throw new UnsupportedOperationException();
 		}
 
+		public void addProbe(
+				int aId,
+				int aBehaviorId,
+				int aBytecodeIndex,
+				BytecodeRole aRole,
+				int aAdviceSourceId)
+		{
+			throw new UnsupportedOperationException();
+		}
+
 		public void setProbe(int aProbeId, int aBehaviorId, int aBytecodeIndex, BytecodeRole aRole, int aAdviceSourceId)
 		{
 			throw new UnsupportedOperationException();

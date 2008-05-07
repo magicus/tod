@@ -193,4 +193,13 @@ implements IMutableStructureDatabase
 		return null;
 	}
 
+	public void addProbe(
+			int aId,
+			int aBehaviorId,
+			int aBytecodeIndex,
+			BytecodeRole aRole,
+			int aAdviceSourceId)
+	{
+	}
+
 }
