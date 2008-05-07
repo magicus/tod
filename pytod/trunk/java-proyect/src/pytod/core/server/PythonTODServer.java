@@ -233,7 +233,8 @@ public class PythonTODServer extends TODServer
 				int probeId = theStream.readInt();
 				int parentId = theStream.readInt();				
 				int probeCurrentLasti = theStream.readInt();
-				//mandar registro a la base de datos
+				itsStructureDatabase.addProbe(probeId, parentId, probeCurrentLasti, null, 0);
+				System.out.println("Registrando probe "+probe);
 			}
 			catch (Exception e)
 			{
@@ -249,7 +250,8 @@ public class PythonTODServer extends TODServer
 			{
 				int threadId = theStream.readInt();
 				int sysId = theStream.readInt();
-				//mandar registro a la base de datos
+				itsLogCollector.thread(threadId, sysId, "()V");
+				System.out.println("Registrando thread");
 			}
 			catch (Exception e)
 			{
