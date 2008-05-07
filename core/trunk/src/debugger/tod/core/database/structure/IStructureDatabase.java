@@ -303,14 +303,14 @@ public interface IStructureDatabase
 		private String itsVariableTypeName;
 		private short itsIndex;
 	
-		public LocalVariableInfo(short aStartPc, short aLength, String aVariableName, String aVariableTypeName,
-				short aIndex)
+		public LocalVariableInfo(int aStartPc, int aLength, String aVariableName, String aVariableTypeName,
+				int aIndex)
 		{
-			itsStartPc = aStartPc;
-			itsLength = aLength;
+			itsStartPc = (short) aStartPc;
+			itsLength = (short) aLength;
 			itsVariableName = aVariableName;
 			itsVariableTypeName = aVariableTypeName;
-			itsIndex = aIndex;
+			itsIndex = (short) aIndex;
 		}
 	
 		/**

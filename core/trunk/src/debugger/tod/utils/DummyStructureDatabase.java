@@ -40,6 +40,7 @@ import tod.core.database.structure.IAspectInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
@@ -65,7 +66,7 @@ implements IMutableStructureDatabase
 		return null;
 	}
 
-	public IBehaviorInfo getBehavior(int aId, boolean aFailIfAbsent)
+	public IMutableBehaviorInfo getBehavior(int aId, boolean aFailIfAbsent)
 	{
 		return null;
 	}

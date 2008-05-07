@@ -72,6 +72,11 @@ public interface IMutableStructureDatabase extends IStructureDatabase
 	 * Override so as to provide mutable version.
 	 */
 	public IMutableClassInfo getClass(int aId, boolean aFailIfAbsent);
+	
+	/**
+	 * Override so as to provide mutable version.
+	 */
+	public IMutableBehaviorInfo getBehavior(int aId, boolean aFailIfAbsent);
 
 	/**
 	 * Creates a new probe and returns its id. 

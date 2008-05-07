@@ -323,7 +323,7 @@ implements RIStructureDatabase
 		
 		private IClassInfo itsUnknownClass = new ClassInfo(this, null, "Unknown", -1);
 		
-		private List<IBehaviorInfo> itsBehaviors = new ArrayList<IBehaviorInfo>();
+		private List<IMutableBehaviorInfo> itsBehaviors = new ArrayList<IMutableBehaviorInfo>();
 		private List<IFieldInfo> itsFields = new ArrayList<IFieldInfo>();
 		
 		private List<IAdviceInfo> itsAdvices = new ArrayList<IAdviceInfo>();
@@ -386,9 +386,9 @@ implements RIStructureDatabase
 			}
 		}
 		
-		private void cacheBehavior(IBehaviorInfo aBehavior)
+		private void cacheBehavior(IMutableBehaviorInfo aBehavior)
 		{
-			IBehaviorInfo theBehavior = Utils.listGet(itsBehaviors, aBehavior.getId());
+			IMutableBehaviorInfo theBehavior = Utils.listGet(itsBehaviors, aBehavior.getId());
 			
 			Utils.listSet(itsBehaviors, aBehavior.getId(), aBehavior);
 			rebind(aBehavior);
@@ -442,13 +442,13 @@ implements RIStructureDatabase
 			}
 		}
 		
-		public IBehaviorInfo getBehavior(int aBehaviorId, boolean aFailIfAbsent)
+		public IMutableBehaviorInfo getBehavior(int aBehaviorId, boolean aFailIfAbsent)
 		{
 			if (aBehaviorId <= 0) return null;
 			
 			try
 			{
-				IBehaviorInfo theBehavior = Utils.listGet(itsBehaviors, aBehaviorId);
+				IMutableBehaviorInfo theBehavior = Utils.listGet(itsBehaviors, aBehaviorId);
 				if (theBehavior == null)
 				{
 					IMutableClassInfo theClass = (IMutableClassInfo) itsDatabase._getBehaviorClass(aBehaviorId, aFailIfAbsent);
