@@ -338,7 +338,7 @@ public class PythonTODServer extends TODServer
 				int depth = theStream.readInt();
 				double currentTimeStamp = theStream.readDouble();
 				int threadId = theStream.readInt();
-				//mandar registro a la base de datos
+				//TODO: guillaume must be write a handler for function
 			}
 			catch (Exception e)
 			{
@@ -377,14 +377,22 @@ public class PythonTODServer extends TODServer
 			{
 				int localId = theStream.readInt();
 				int parentId = theStream.readInt();
-				//ver el asunto de los valores..el tipo
+				//TODO: ver el asunto de los valores..el tipo
 				int localValue = theStream.readInt();
 				int probeId = theStream.readInt();
 				double parentTimeStampFrame = theStream.readDouble();
 				int depth = theStream.readInt();
 				double currentTimeStamp = theStream.readDouble();
 				int threadId = theStream.readInt();				
-				//mandar registro a la base de datos
+				itsLogCollector.localWrite(
+						threadId,
+						(long)parentTimeStampFrame, 
+						(short)depth, 
+						(long)currentTimeStamp, 
+						null, 
+						probeId, 
+						localId, 
+						null);
 			}
 			catch (Exception e)
 			{
@@ -403,7 +411,16 @@ public class PythonTODServer extends TODServer
 				int returnValue = theStream.readInt();
 				int probeId = theStream.readInt();
 				boolean hasThrown = theStream.readBoolean();				
-				//mandar registro a la base de datos
+				itsLogCollector.behaviorExit(
+						aThreadId, 
+						aParentTimestamp, 
+						aDepth, 
+						aTimestamp, 
+						aAdviceCFlow, 
+						aProbeId, 
+						aBehaviorId, 
+						aHasThrown, 
+						aResult);
 			}
 			catch (Exception e)
 			{
