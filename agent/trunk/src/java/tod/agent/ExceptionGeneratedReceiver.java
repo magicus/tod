@@ -38,7 +38,7 @@ public class ExceptionGeneratedReceiver
 	 */
 	public static void ignoreNextException()
 	{
-		if (AgentReady.READY) AgentConfig.getCollector().ignoreNextException();
+		if (AgentReady.COLLECTOR_READY) AgentConfig.getCollector().ignoreNextException();
 	}
 	
 	public static void exceptionGenerated(
@@ -50,7 +50,7 @@ public class ExceptionGeneratedReceiver
 	{
 		try
 		{
-			if (AgentReady.READY) AgentConfig.getCollector().logExceptionGenerated(
+			if (AgentReady.COLLECTOR_READY) AgentConfig.getCollector().logExceptionGenerated(
 					aMethodName,
 					aMethodSignature, 
 					aMethodDeclaringClassSignature,

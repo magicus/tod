@@ -78,8 +78,6 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 	public static final boolean TRACE_ENTRY = true;
 	public static final boolean TRACE_EXIT = true;
 	
-	public static final boolean ENABLE_READY_CHECK = false;
-	
 	/**
 	 * If set to true, features that prevent bytecode verification will
 	 * not be used.

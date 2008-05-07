@@ -30,16 +30,21 @@ public class TOD
 {
 	static
 	{
-		if (AgentReady.isEnabled()) System.out.println("[TOD] Native agent detected.");
+		if (AgentReady.isNativeAgentLoaded()) System.out.println("[TOD] Native agent detected.");
 		else System.out.println("[TOD] Native agent not detected.");
 	}
+	
+	/**
+	 * If > 0, trace capture is activated
+	 */
+	private static int CAPTURE_ENABLED = 1;
 	
 	/**
 	 * Clears all previously recorded events.
 	 */
 	public static void clearDatabase()
 	{
-		if (AgentReady.isEnabled()) 
+		if (AgentReady.isNativeAgentLoaded()) 
 		{
 			System.out.println("[TOD] Sending clearDatabase request...");
 			AgentConfig.getCollector().clear();
@@ -56,7 +61,7 @@ public class TOD
 	 */
 	public static void flushEvents()
 	{
-		if (AgentReady.isEnabled()) 
+		if (AgentReady.isNativeAgentLoaded()) 
 		{
 			System.out.println("[TOD] Sending flushEvents request...");
 			AgentConfig.getCollector().flush();
@@ -67,4 +72,17 @@ public class TOD
 			System.out.println("[TOD] Ignoring flushEvents request: native agent not detected.");
 		}
 	}
+	
+	public static void enableCapture()
+	{
+		CAPTURE_ENABLED++;
+		AgentReady.CAPTURE_ENABLED = CAPTURE_ENABLED > 0;
+	}
+	
+	public static void disableCapture()
+	{
+		CAPTURE_ENABLED--;
+		AgentReady.CAPTURE_ENABLED = CAPTURE_ENABLED > 0;
+	}
+	
 }

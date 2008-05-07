@@ -20,26 +20,47 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.agent;
 
+/**
+ * Contains a few flags that indicate the state of the native & java agent,
+ * as well as the enabling/disabling of trace capture.
+ * 
+ * @author gpothier
+ */
 public class AgentReady
 {
-	public static boolean READY = false;
+	/**
+	 * Set to true once the {@link EventCollector} is ready to receive events.
+	 */
+	public static boolean COLLECTOR_READY = false;
 	
-	private static boolean ENABLED = false;
+	/**
+	 * This flag is set to true by the native agent, if it is properly loaded.
+	 */
+	private static boolean NATIVE_AGENT_LOADED = false;
+	
+	/**
+	 * Whether trace capture is currently enabled.
+	 * @see TOD#enableCapture()
+	 * @see TOD#disableCapture()
+	 */
+	public static boolean CAPTURE_ENABLED = true;
 	
 	/**
 	 * Called by the native agent.
 	 */
-	private static void enable()
+	private static void nativeAgentLoaded()
 	{
 		// Don't use System.out here, it is still null when this method is called...
-		ENABLED = true;
+		NATIVE_AGENT_LOADED = true;
 	}
 	
 	/**
 	 * Whether the native agent is enabled.
 	 */
-	public static boolean isEnabled()
+	public static boolean isNativeAgentLoaded()
 	{
-		return ENABLED;
+		return NATIVE_AGENT_LOADED;
 	}
+	
+	
 }

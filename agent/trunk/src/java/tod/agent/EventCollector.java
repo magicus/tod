@@ -84,7 +84,7 @@ public final class EventCollector
 		
 		itsSenderThread.start();
 
-		AgentReady.READY = true;
+		AgentReady.COLLECTOR_READY = true;
 
 		try
 		{
