@@ -28,11 +28,11 @@ class Diccionario(dict):
                     print v,
                     self.hT.packer.pack_int(v)
                     print parentId,
-                    self.hT.packer.pack_int(v)
+                    self.hT.packer.pack_int(parentId)
                     print k
                     self.hT.packer.pack_string(k)
                     raw_input()
-                    self._socket.sendall(self.packer.get_buffer())
+                    self.hT._socket.sendall(self.hT.packer.get_buffer())
                     
 
     def __updateAttr__(self, d, parentId):
@@ -53,4 +53,4 @@ class Diccionario(dict):
                     print k
                     self.hT.packer.pack_string(k)
                     raw_input()
-                    self._socket.sendall(self.packer.get_buffer())
+                    self.hT._socket.sendall(self.hT.packer.get_buffer())
