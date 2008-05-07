@@ -151,6 +151,9 @@ public class PythonTODServer extends TODServer
 				String localName = new String(aInputStream.readString());
 				//for this moment only register locals of methods
 				//TODO: guillaume must be write {I hope} a handler for functions
+				System.out.println(localId);
+				System.out.println(parentId);
+				System.out.println(localName);
 				theBehavior = itsStructureDatabase.getBehavior(parentId, true);
 				theBehavior.addLocalVariableInfo(new LocalVariableInfo(0,0,localName,"()V",localId));
 				System.out.println("Registrando variable local "+localName);
@@ -203,7 +206,7 @@ public class PythonTODServer extends TODServer
 						theBehavior.addLocalVariableInfo(new LocalVariableInfo(0,0,argName,"()V",argId));
 					}
 				}
-				System.out.println("Registrando el metodo "+methodName);
+				System.out.println("Registrando el metodo "+methodName + "id = "+methodId);
 			}
 			catch (Exception e)
 			{
@@ -266,7 +269,7 @@ public class PythonTODServer extends TODServer
 
 		}
 		
-		public void callMethod(XDRInputStream aInputStream)
+		public void methodCall(XDRInputStream aInputStream)
 		{
 			XDRInputStream theStream = aInputStream;
 			calledArgument args[];
@@ -281,7 +284,8 @@ public class PythonTODServer extends TODServer
 					for(int i=0;i<argsN;i=i+1)
 					{
 						int argId = theStream.readInt();
-						//preguntar como lo haremos con string o int
+						//TODO:preguntar como lo haremos con string o int
+						//por ahora se utilizará solo int
 						int argValue = theStream.readInt();
 						args[i] = new calledArgument(argId,argValue);
 					}
@@ -291,7 +295,18 @@ public class PythonTODServer extends TODServer
 				int depth = theStream.readInt();
 				double currentTimeStamp = theStream.readDouble();
 				int threadId = theStream.readInt();
-				//mandar registro a la base de datos
+				itsLogCollector.methodCall(
+						threadId,
+						(long)parentTimeStampFrame,
+						(short)depth, 
+						(long)currentTimeStamp, 
+						null,
+						probeId,
+						false, 
+						parentId,
+						parentId,
+						null,
+						args);
 			}
 			catch (Exception e)
 			{
@@ -299,7 +314,7 @@ public class PythonTODServer extends TODServer
 			}
 		}
 		
-		public void callFunction(XDRInputStream aInputStream)
+		public void functionCall(XDRInputStream aInputStream)
 		{
 			XDRInputStream theStream = aInputStream;
 			calledArgument args[];
@@ -445,10 +460,10 @@ public class PythonTODServer extends TODServer
 						switch (theObject)
 						{
 						case OBJECT_METHOD:
-							callMethod(itsStream);
+							methodCall(itsStream);
 							break;
 						case OBJECT_FUNCTION:
-							callFunction(itsStream);
+							functionCall(itsStream);
 							break;
 						default:
 							break;
