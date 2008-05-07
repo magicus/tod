@@ -117,19 +117,18 @@ public class PythonTODServer extends TODServer
 
 		public void registerFunction(XDRInputStream aInputStream)
 		{
-			XDRInputStream theStream = aInputStream;
 			Argument args[];
 			try
 			{
-				int functionId = theStream.readInt();
-				String functionName = new String(theStream.readString());
-				int argsN = theStream.readInt();
+				int functionId = aInputStream.readInt();
+				String functionName = new String(aInputStream.readString());
+				int argsN = aInputStream.readInt();
 				if (argsN != 0){
 					args = new Argument[argsN];
 					for(int i=0;i<argsN;i=i+1)
 					{
-						int argId = theStream.readInt();
-						String argName = new String(theStream.readString());
+						int argId = aInputStream.readInt();
+						String argName = new String(aInputStream.readString());
 						args[i] = new Argument(argId,argName);
 					}
 				}
@@ -151,9 +150,10 @@ public class PythonTODServer extends TODServer
 				int parentId = aInputStream.readInt();
 				String localName = new String(aInputStream.readString());
 				//for this moment only register locals of methods
-				//TODO: guillaume must be write a handler for functions
+				//TODO: guillaume must be write {I hope} a handler for functions
 				theBehavior = itsStructureDatabase.getBehavior(parentId, true);
 				theBehavior.addLocalVariableInfo(new LocalVariableInfo(0,0,localName,"()V",localId));
+				System.out.println("Registrando variable local "+localName);
 			}
 			catch (Exception e)
 			{
@@ -164,15 +164,16 @@ public class PythonTODServer extends TODServer
 
 		public void registerClass(XDRInputStream aInputStream)
 		{
-			XDRInputStream theStream = aInputStream;
 			IMutableClassInfo theClass;
 			try
 			{
-				int classId = theStream.readInt();
+				int classId = aInputStream.readInt();
 				System.out.println(classId);
-				String className = new String(theStream.readString());
-				int classBases = theStream.readInt();
+				String className = new String(aInputStream.readString());
+				//TODO: change register format class  without field classBases
+				int classBases = aInputStream.readInt();
 				theClass = itsStructureDatabase.addClass(classId, className);
+				System.out.println("Registrando clase "+className);
 			}
 			catch (Exception e)
 			{
@@ -183,27 +184,26 @@ public class PythonTODServer extends TODServer
 
 		public void registerMethod(XDRInputStream aInputStream)
 		{
-			XDRInputStream theStream = aInputStream;
 			IMutableClassInfo theClass;
 			IMutableBehaviorInfo theBehavior;
 			try
 			{
-				int methodId = theStream.readInt();
-				int classId = theStream.readInt();
-				String methodName = theStream.readString();
-				int argsN = theStream.readInt();
+				int methodId = aInputStream.readInt();
+				int classId = aInputStream.readInt();
+				String methodName = aInputStream.readString();
+				int argsN = aInputStream.readInt();
 				theClass = itsStructureDatabase.getClass(classId, true);
 				theBehavior = theClass.addBehavior(methodId, methodName, "()V");
 				//theBehavior = theClass.addBehavior(methodId, methodName, ""+argsN);
-				System.out.println(argsN);
 				if (argsN != 0){
 					for(int i=0;i<argsN;i=i+1)
 					{
-						String argName = theStream.readString();
-						int argId = theStream.readInt();
+						String argName = aInputStream.readString();
+						int argId = aInputStream.readInt();
 						theBehavior.addLocalVariableInfo(new LocalVariableInfo(0,0,argName,"()V",argId));
 					}
 				}
+				System.out.println("Registrando el metodo "+methodName);
 			}
 			catch (Exception e)
 			{
@@ -214,12 +214,15 @@ public class PythonTODServer extends TODServer
 		
 		public void registerAttribute(XDRInputStream aInputStream)
 		{
-			XDRInputStream theStream = aInputStream;
+			IMutableClassInfo theClass;
 			try
 			{
-				int attributeId = theStream.readInt();
-				int parentId = theStream.readInt();
-				String attributeName = new String(theStream.readString());	
+				int attributeId = aInputStream.readInt();
+				int parentId = aInputStream.readInt();
+				String attributeName = new String(aInputStream.readString());	
+				theClass = itsStructureDatabase.getClass(parentId, true);
+				theClass.addField(attributeId, attributeName, null);
+				System.out.println("Registrando un atributo con id "+attributeId);
 			}
 			catch (Exception e)
 			{
