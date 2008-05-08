@@ -3,7 +3,15 @@
 
 __author__ = "Milton Inostroza Aguilera"
 __email__ = "minoztro@gmail.com"
-__all__ = ['objects', 'dataTypes','events']
+__all__ = ['events','objects', 'dataTypes','packXDRLib']
+
+
+events = {
+          'register':0,
+          'call':1,
+          'set':2,
+          'return':3
+          }
 
 objects = {
            'class':0,
@@ -24,11 +32,13 @@ dataTypes = {
              tuple.__name__:5,
              list.__name__:6,
              dict.__name__:7
+             #other type: 8
              }
 
-events = {
-          'register':0,
-          'call':1,
-          'set':2,
-          'return':3
-          }
+packXDRLib = {
+              0:'int',
+              1:'string',
+              2:'float',
+              3:'double',
+              4:'bool',
+              }
