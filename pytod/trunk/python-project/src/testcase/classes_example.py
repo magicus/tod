@@ -7,13 +7,15 @@ from debugger.pytod.core.hunterTrace import *
 class clase1(Descriptor):
     
     def __init__(self, y):
-        x = 1
-        x = 3
-        #self.c = 2
-        pass
+        self.x = 1
+        self.c = 2
+        self.z = 3
+        return
     
     def metodo(self, h, i, j, k):
-        pass
+        self.casa = 1
+        k = i + j
+        return
 """
 class clase2(Descriptor):
     def __init__(self):
