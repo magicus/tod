@@ -575,6 +575,9 @@ class hunterTrace(object):
             self.__printReturn__(frame, arg)
 
     def __printHunter__(self):
+        #cerrar socket
+        #TODO: encontrar una manera mejor de hacer esto
+        self._socket.close()
         print
         print 'clases'
         for k,v in hT._class.iteritems():
