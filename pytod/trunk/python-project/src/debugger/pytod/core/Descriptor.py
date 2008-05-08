@@ -41,9 +41,25 @@ class Descriptor(object):
         hT.packer.pack_int(objId)
         #print 'value =',value,
         #TODO: ver caso cuando value es del tipo tuple, list, dict
-        print value,
-        if type(value) is (dict or tuple or list):
-            hT.packer.pack_int(value)
+        
+        #TODO: ver el asunto de los tipos de datos
+        #tomar el tipo y consultar en dataTypes el id
+        dataType = 8
+        if self.dataTypes.has_key(value.__class__.__name__):
+            dataType = self.dataTypes[value.__class__.__name__]
+        self.packer.pack_int(dataType)
+        print dataType
+        #se crea una estructura la cual retorna
+        #que metodo debe ser llamado
+        if self.packXDRLib.has_key(dataType):
+            methodName = self.packXDRLib[dataType]
+            getattr(self.packer,'pack_%s'%methodName)(value)
+            print value
+        else:
+            #en estos momentos envíamos el tipo de dato
+            #TODO: debieramos envíar el id del objeto
+            self.packer.pack_int(dataType)
+            print dataType
         print probeId,
         hT.packer.pack_int(probeId)
         #print 'parent time stamp = %11.9f'%(parentTimeStamp),
