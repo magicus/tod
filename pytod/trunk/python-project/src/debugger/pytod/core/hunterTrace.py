@@ -13,7 +13,7 @@ import thread
 import xdrlib
 import socket
 import inspect
-from constantsObjects import objects, dataTypes, events
+from constantsObjects import events, objects, dataTypes, packXDRLib
 from generatorId import generatorId
 from Descriptor import Descriptor
 from objectClass import Class
@@ -33,9 +33,10 @@ class hunterTrace(object):
         self._probe = {}
         self._thread = {}
         self._socket = None
+        self.events = events
         self.objects = objects
         self.dataTypes = dataTypes
-        self.events = events
+        self.packXDRLib = packXDRLib
         self.Id = Id
         self.probeId = probeId
         self.threadId = threadId
@@ -213,13 +214,23 @@ class hunterTrace(object):
             self.packer.pack_int(objId)
             print locals[i],
             #TODO: ver el asunto de los tipos de datos
-            try:
-                if type(locals[i]) is not (dict or tuple or list):
-                    self.packer.pack_int(locals[i])
-            except:
-                #print locals[i]
-                #print sys.exc_info()
-                pass
+            #tomar el tipo y consultar en dataTypes el id
+            dataType = 8
+            if self.dataTypes.has_key(locals[i].__class__.__name__):
+                dataType = self.dataTypes[locals[i].__class__.__name__]
+            self.packer.pack_int(dataType)
+            print dataType
+            #se crea una estructura la cual retorna
+            #que metodo debe ser llamado
+            if self.packXDRLib.has_key(dataType):
+                methodName = self.packXDRLib[dataType]
+                getattr(self.packer,'pack_%s'%methodName)(locals[i])
+                print locals[i]
+            else:
+                #en estos momentos envíamos el tipo de dato
+                #TODO: debieramos envíar el id del objeto
+                self.packer.pack_int(dataType)
+                print dataType
             print probeId,
             self.packer.pack_int(probeId)
             print '%11.9f'%(parentTimeStampFrame),
@@ -231,6 +242,7 @@ class hunterTrace(object):
             self.packer.pack_double(currentTimeStamp)
             print threadId
             self.packer.pack_int(threadId)
+            self._socket.sendall(self.packer.get_buffer())
 
     def __printCallMethod__(self, code, frame, depth, currentTimeStamp, parentTimeStampFrame, threadId):
         obj = self.__getObject__(code)
