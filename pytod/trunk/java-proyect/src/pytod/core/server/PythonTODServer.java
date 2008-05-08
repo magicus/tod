@@ -309,7 +309,7 @@ public class PythonTODServer extends TODServer
 						parentId,
 						parentId,
 						null,
-						args);
+						null);
 			}
 			catch (Exception e)
 			{
