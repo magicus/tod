@@ -12,7 +12,7 @@ class Class(object):
 
     def __init__(self, hT, classId, code, lnotab):
         self.hT = hT
-        self.attribute = Diccionario(self.hT)
+        self.attributes = Diccionario(self.hT)
         self.method = Diccionario(self.hT)
         self.lnotab = lnotab
         self.code = code
