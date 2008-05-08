@@ -381,53 +381,55 @@ public class PythonTODServer extends TODServer
 				int parentId = aInputStream.readInt();
 				//TODO: ver el asunto de los valores..el tipo
 				int typeId = aInputStream.readInt();
+				Object theValue;
 				switch (typeId) {
 				case DATA_INT:
 				{
-					int localValue = aInputStream.readInt();
+					theValue = aInputStream.readInt();
 					break;
 				}
 				case DATA_STR:
 				{
-					String localValue = aInputStream.readString();
+					theValue = aInputStream.readString();
 					break;
 				}
 				case DATA_FLOAT:
 				{
-					float localValue = aInputStream.readFloat();
+					theValue = aInputStream.readFloat();
 					break;
 				}
 				case DATA_LONG:
 				{
-					long localValue = aInputStream.readLong();
+					theValue = aInputStream.readLong();
 					break;
 				}
 				case DATA_BOOL:
 				{
-					boolean localValue = aInputStream.readBoolean();
+					theValue = aInputStream.readBoolean();
 					break;
 				}
 				case DATA_TUPLE:
 				{
-					int localValue = aInputStream.readInt();
+					theValue = aInputStream.readInt();
 					break;
 				}
 				case DATA_LIST:
 				{
-					int localValue = aInputStream.readInt();
+					theValue = aInputStream.readInt();
 					break;
 				}
 				case DATA_DICT:
 				{
-					int localValue = aInputStream.readInt();
+					theValue = aInputStream.readInt();
 					break;
 				}
 				case DATA_OTHER:
 				{
-					int localValue = aInputStream.readInt();
+					theValue = aInputStream.readInt();
 					break;
 				}
 				default:
+					theValue = aInputStream.readInt();					
 					break;
 				}
 				int probeId = aInputStream.readInt();
@@ -443,8 +445,8 @@ public class PythonTODServer extends TODServer
 						null, 
 						probeId, 
 						localId, 
-						null);
-				System.out.println("modificando variable "+ localId + "valor " + localValue);
+						theValue);
+				System.out.println("modificando variable "+ localId);
 			}
 			catch (Exception e)
 			{
