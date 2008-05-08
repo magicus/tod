@@ -8,7 +8,7 @@ __all__ = ['generatorId']
 class generatorId(object):
     
     def __init__(self):
-        self.id = 1
+        self.id = 100
 
     def __get__(self):
         return self.id
