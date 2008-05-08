@@ -5,6 +5,8 @@ __author__ = "Milton Inostroza Aguilera"
 __email__ = "minoztro@gmail.com"
 __all__ = ['Diccionario']
 
+import xdrlib
+
 class Diccionario(dict):
     
     def __init__(self, hT):
@@ -35,7 +37,7 @@ class Diccionario(dict):
                     self.hT._socket.sendall(self.hT.packer.get_buffer())
                     
 
-    def __updateAttr__(self, d, parentId):
+    def __updateAttr__(self, d, parentId): 
         for k,v in d.items():
             #se debe registrar argumento self?
             if not self.has_key(k):
@@ -48,9 +50,9 @@ class Diccionario(dict):
                     self.hT.packer.pack_int(self.hT.objects['attribute'])
                     print v,
                     self.hT.packer.pack_int(v)
-                    print parentId  
+                    print parentId,  
                     self.hT.packer.pack_int(parentId)
                     print k
-                    self.hT.packer.pack_string(k)
-                    raw_input()
+                    self.hT.packer.pack_string(k)      
+                    raw_input()                                 
                     self.hT._socket.sendall(self.hT.packer.get_buffer())
