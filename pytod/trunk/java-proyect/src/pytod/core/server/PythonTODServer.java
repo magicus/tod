@@ -69,7 +69,10 @@ public class PythonTODServer extends TODServer
 	private static final int DATA_FLOAT = 2;
 	private static final int DATA_LONG = 3;
 	private static final int DATA_BOOL = 4;
-	private static final int DATA_OTHER = 5;
+	private static final int DATA_TUPLE = 5;
+	private static final int DATA_LIST = 6;
+	private static final int DATA_DICT = 7;
+	private static final int DATA_OTHER = 8;
 	//events
 	private static final int REGISTER_EVENT = 0;
 	private static final int CALL_EVENT = 1;
@@ -372,18 +375,66 @@ public class PythonTODServer extends TODServer
 		
 		public void setLocal(XDRInputStream aInputStream)
 		{
-			XDRInputStream theStream = aInputStream;
 			try
 			{
-				int localId = theStream.readInt();
-				int parentId = theStream.readInt();
+				int localId = aInputStream.readInt();
+				int parentId = aInputStream.readInt();
 				//TODO: ver el asunto de los valores..el tipo
-				int localValue = theStream.readInt();
-				int probeId = theStream.readInt();
-				double parentTimeStampFrame = theStream.readDouble();
-				int depth = theStream.readInt();
-				double currentTimeStamp = theStream.readDouble();
-				int threadId = theStream.readInt();				
+				int typeId = aInputStream.readInt();
+				switch (typeId) {
+				case DATA_INT:
+				{
+					int localValue = aInputStream.readInt();
+					break;
+				}
+				case DATA_STR:
+				{
+					String localValue = aInputStream.readString();
+					break;
+				}
+				case DATA_FLOAT:
+				{
+					float localValue = aInputStream.readFloat();
+					break;
+				}
+				case DATA_LONG:
+				{
+					long localValue = aInputStream.readLong();
+					break;
+				}
+				case DATA_BOOL:
+				{
+					boolean localValue = aInputStream.readBoolean();
+					break;
+				}
+				case DATA_TUPLE:
+				{
+					int localValue = aInputStream.readInt();
+					break;
+				}
+				case DATA_LIST:
+				{
+					int localValue = aInputStream.readInt();
+					break;
+				}
+				case DATA_DICT:
+				{
+					int localValue = aInputStream.readInt();
+					break;
+				}
+				case DATA_OTHER:
+				{
+					int localValue = aInputStream.readInt();
+					break;
+				}
+				default:
+					break;
+				}
+				int probeId = aInputStream.readInt();
+				double parentTimeStampFrame = aInputStream.readDouble();
+				int depth = aInputStream.readInt();
+				double currentTimeStamp = aInputStream.readDouble();
+				int threadId = aInputStream.readInt();				
 				itsLogCollector.localWrite(
 						threadId,
 						(long)parentTimeStampFrame, 
@@ -393,6 +444,7 @@ public class PythonTODServer extends TODServer
 						probeId, 
 						localId, 
 						null);
+				System.out.println("modificando variable "+ localId + "valor " + localValue);
 			}
 			catch (Exception e)
 			{
@@ -412,15 +464,15 @@ public class PythonTODServer extends TODServer
 				int probeId = theStream.readInt();
 				boolean hasThrown = theStream.readBoolean();				
 				itsLogCollector.behaviorExit(
-						aThreadId, 
-						aParentTimestamp, 
-						aDepth, 
-						aTimestamp, 
-						aAdviceCFlow, 
-						aProbeId, 
-						aBehaviorId, 
-						aHasThrown, 
-						aResult);
+						0, 
+						0, 
+						0, 
+						0, 
+						, 
+						probeId, 
+						0, 
+						hasThrown, 
+						null);
 			}
 			catch (Exception e)
 			{
