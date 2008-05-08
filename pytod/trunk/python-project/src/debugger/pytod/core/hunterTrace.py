@@ -200,9 +200,6 @@ class hunterTrace(object):
                 probeId = self.__registerProbe__(currentLasti,objId)
             else:
                 probeId = self._probe[(currentLasti,objId)]
-            #TODO: ver cuando el valor es una tuple, list, dict, etc                
-            #preguntar el tipo de la variable para poder
-            #"socketear"
             self.packer.reset()
             print self.events['set'],
             self.packer.pack_int(self.events['set'])
@@ -220,8 +217,6 @@ class hunterTrace(object):
                 dataType = self.dataTypes[locals[i].__class__.__name__]
             self.packer.pack_int(dataType)
             print dataType
-            #se crea una estructura la cual retorna
-            #que metodo debe ser llamado
             if self.packXDRLib.has_key(dataType):
                 methodName = self.packXDRLib[dataType]
                 getattr(self.packer,'pack_%s'%methodName)(locals[i])
