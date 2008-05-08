@@ -82,6 +82,12 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	 * Index of the variable that stores the event interpreter.
 	 */
 	private int itsCollectorVar;
+	
+	/**
+	 * This variable is a flag that indicates if trace capture is enabled.
+	 */
+	private int itsCaptureEnabledVar;
+	
 	private int itsFirstFreeVar;
 	
 	private Label itsReturnHookLabel;
@@ -120,6 +126,10 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		// Allocate space for interpreter var
 		itsCollectorVar = itsFirstFreeVar;
+		itsFirstFreeVar += 1;
+		
+		// Allocate space for trace capture var
+		itsCaptureEnabledVar = itsFirstFreeVar;
 		itsFirstFreeVar += 1;
 	}
 	
@@ -204,6 +214,11 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				"()"+Type.getDescriptor(EventCollector.class));
 		mv.visitVarInsn(ASTORE, itsCollectorVar);
 		
+		// Store the capture enabled flag
+		// We need to use the same value of the flag during the whole execution of the method.
+		mv.visitFieldInsn(GETSTATIC, Type.getInternalName(AgentReady.class), "CAPTURE_ENABLED", "Z");
+		mv.visitVarInsn(ISTORE, itsCaptureEnabledVar);
+
 		
 		// Call logBehaviorEnter
 		// We suppose that if a class is instrumented all its descendants
@@ -273,7 +288,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	
 	private void checkCaptureEnabled(Label aLabel)
 	{
-		mv.visitFieldInsn(GETSTATIC, Type.getInternalName(AgentReady.class), "CAPTURE_ENABLED", "Z");
+//		mv.visitFieldInsn(GETSTATIC, Type.getInternalName(AgentReady.class), "CAPTURE_ENABLED", "Z");
+		mv.visitVarInsn(ILOAD, itsCaptureEnabledVar);
 		mv.visitJumpInsn(IFEQ, aLabel);
 	}
 	

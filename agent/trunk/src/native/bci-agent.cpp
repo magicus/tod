@@ -649,15 +649,15 @@ void JNICALL cbVMStart(
 	// Initialize the classes and method ids that will be used
 	// for registering traced methods
 	
-if (cfgObfuscation == 1)	
+	if (cfgObfuscation == 1)	
 	{
 		TracedMethods_setTraced = new StaticVoidMethod(jni, "tod/agentX/TracedMethods", "setTraced", "(I)V");
-		TOD_enable = new StaticVoidMethod(jni, "tod/agentX/AgentReady", "enable", "()V");
+		TOD_enable = new StaticVoidMethod(jni, "tod/agentX/AgentReady", "nativeAgentLoaded", "()V");
 	}
 	else 
 	{
 		TracedMethods_setTraced = new StaticVoidMethod(jni, "tod/agent/TracedMethods", "setTraced", "(I)V");
-		TOD_enable = new StaticVoidMethod(jni, "tod/agent/AgentReady", "enable", "()V");
+		TOD_enable = new StaticVoidMethod(jni, "tod/agent/AgentReady", "nativeAgentLoaded", "()V");
 		
 	}
 	TOD_enable->invoke(jni);
@@ -684,7 +684,7 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
 	
 	fs::path::default_name_check(fs::no_check);
 
-	printf("Loading BCI agent - v2.2\n");
+	printf("Loading BCI agent - v2.3\n");
 	if (cfgDebugTOD == 1) printf(">>>>WARNING hard filtering for debugging TOD is on \n");
 	if (cfgObfuscation == 1) printf(">>>>WARNING obfuscation form agent package to agentX is considered \n");
 	fflush(stdout);
