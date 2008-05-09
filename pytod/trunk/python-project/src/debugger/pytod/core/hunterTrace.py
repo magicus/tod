@@ -236,7 +236,10 @@ class hunterTrace(object):
             self.packer.pack_double(currentTimeStamp)
             print threadId
             self.packer.pack_int(threadId)
-            self._socket.sendall(self.packer.get_buffer())
+            try:
+                self._socket.sendall(self.packer.get_buffer())
+            except:
+                print 'TOD está durmiendo :-('            
 
     def __printCallMethod__(self, code, frame, depth, currentTimeStamp, parentTimeStampFrame, threadId):
         obj = self.__getObject__(code)
@@ -279,7 +282,11 @@ class hunterTrace(object):
         self.packer.pack_double(currentTimeStamp)
         print threadId
         self.packer.pack_int(threadId)
-
+        #TODO: falta enviar datos
+        #try:
+        #    self._socket.sendall(self.packer.get_buffer())
+        #except:
+        #    print 'TOD está durmiendo :-('
         
     def __printCallFunction__(self, code, frame, depth, currentTimeStamp, parentTimeStampFrame, threadId):
         obj = self.__getObject__(code)
@@ -319,6 +326,11 @@ class hunterTrace(object):
         self.packer.pack_double(currentTimeStamp)
         print threadId
         self.packer.pack_int(threadId)
+        #TODO: falta enviar datos
+        #try:
+        #    self._socket.sendall(self.packer.get_buffer())
+        #except:
+        #    print 'TOD está durmiendo :-('        
 
     def __printReturn__(self, frame, arg):
         f_back = frame.f_back
@@ -340,6 +352,12 @@ class hunterTrace(object):
         self.packer.pack_int(probeId)
         print False
         self.packer.pack_bool(False)
+        #TODO: falta enviar datos
+        #try:
+        #    self._socket.sendall(self.packer.get_buffer())
+        #except:
+        #    print 'TOD está durmiendo :-('
+        
 
     
     def __register__(self, obj, local):
@@ -363,7 +381,10 @@ class hunterTrace(object):
         print classBases
         self.packer.pack_int(0)
         raw_input()
-        self._socket.sendall(self.packer.get_buffer())
+        try:
+            self._socket.sendall(self.packer.get_buffer())
+        except:
+            print 'TOD está durmiendo :-('
         objClass = self.__addClass__(classId,self.__createlnotab__(code),code)
         self.Id.__next__()
         #se deben registrar los metodos asociados 
@@ -390,7 +411,10 @@ class hunterTrace(object):
             print i,
             self.packer.pack_int(i)
         raw_input()
-        self._socket.sendall(self.packer.get_buffer())
+        try:
+            self._socket.sendall(self.packer.get_buffer())
+        except:
+            print 'TOD está durmiendo :-('
         self.__addMethod__(
                            methodId,
                            self.__createlnotab__(code),
@@ -418,7 +442,10 @@ class hunterTrace(object):
             print i,
             self.packer.pack_int(i)
         raw_input()
-        self._socket.sendall(self.packer.get_buffer())
+        try:
+            self._socket.sendall(self.packer.get_buffer())
+        except:
+            print 'TOD está durmiendo :-('            
         self.__addFunction__(
                              functionId,
                              self.__createlnotab__(code),
@@ -441,7 +468,10 @@ class hunterTrace(object):
         print currentLasti
         self.packer.pack_int(currentLasti)
         raw_input()
-        self._socket.sendall(self.packer.get_buffer())
+        try:
+            self._socket.sendall(self.packer.get_buffer())
+        except:
+            print 'TOD está durmiendo :-('
         self.probeId.__next__()
         return probeId
     
@@ -458,7 +488,10 @@ class hunterTrace(object):
         print threadSysId
         self.packer.pack_int(threadSysId)
         raw_input()
-        self._socket.sendall(self.packer.get_buffer())
+        try:
+            self._socket.sendall(self.packer.get_buffer())
+        except:
+            print 'TOD está durmiendo :-('
         self.threadId.__next__()
         return threadId
 
