@@ -34,7 +34,10 @@ class Diccionario(dict):
                     print k
                     self.hT.packer.pack_string(k)
                     raw_input()
-                    self.hT._socket.sendall(self.hT.packer.get_buffer())
+                    try:
+                        self.hT._socket.sendall(self.hT.packer.get_buffer())
+                    except:
+                        print 'TOD está durmiendo :-('
                     
 
     def __updateAttr__(self, d, parentId): 
@@ -54,5 +57,9 @@ class Diccionario(dict):
                     self.hT.packer.pack_int(parentId)
                     print k
                     self.hT.packer.pack_string(k)      
-                    raw_input()                                 
-                    self.hT._socket.sendall(self.hT.packer.get_buffer())
+                    raw_input()                          
+                    try:       
+                        self.hT._socket.sendall(self.hT.packer.get_buffer())
+                    except:
+                        print 'TOD está durmiendo :-('
+                        
