@@ -275,7 +275,7 @@ public class PythonTODServer extends TODServer
 		public void methodCall(XDRInputStream aInputStream)
 		{
 			XDRInputStream theStream = aInputStream;
-			calledArgument args[];
+			calledArgument args[] = null;
 			try
 			{
 				int methodId = theStream.readInt();
@@ -309,7 +309,7 @@ public class PythonTODServer extends TODServer
 						parentId,
 						parentId,
 						null,
-						null);
+						args);
 			}
 			catch (Exception e)
 			{
@@ -352,18 +352,79 @@ public class PythonTODServer extends TODServer
 		public void setAttribute(XDRInputStream aInputStream)
 		{
 			XDRInputStream theStream = aInputStream;
+			IMutableClassInfo theClass;
 			try
 			{
 				int attributeId = theStream.readInt();
 				int parentId = theStream.readInt();
-				//ver el asunto de los valores..el tipo
-				int attributeValue = theStream.readInt();
+				int typeId = aInputStream.readInt();
+				Object theValue;
+				switch (typeId) {
+				case DATA_INT:
+				{
+					theValue = aInputStream.readInt();
+					break;
+				}
+				case DATA_STR:
+				{
+					theValue = aInputStream.readString();
+					break;
+				}
+				case DATA_FLOAT:
+				{
+					theValue = aInputStream.readFloat();
+					break;
+				}
+				case DATA_LONG:
+				{
+					theValue = aInputStream.readLong();
+					break;
+				}
+				case DATA_BOOL:
+				{
+					theValue = aInputStream.readBoolean();
+					break;
+				}
+				case DATA_TUPLE:
+				{
+					theValue = aInputStream.readInt();
+					break;
+				}
+				case DATA_LIST:
+				{
+					theValue = aInputStream.readInt();
+					break;
+				}
+				case DATA_DICT:
+				{
+					theValue = aInputStream.readInt();
+					break;
+				}
+				case DATA_OTHER:
+				{
+					theValue = aInputStream.readInt();
+					break;
+				}
+				default:
+					theValue = aInputStream.readInt();					
+					break;
+				}
 				int probeId = theStream.readInt();
 				double parentTimeStampFrame = theStream.readDouble();
 				int depth = theStream.readInt();
 				double currentTimeStamp = theStream.readDouble();
-				int threadId = theStream.readInt();				
-				//mandar registro a la base de datos
+				int threadId = theStream.readInt();
+				itsLogCollector.fieldWrite(
+						threadId, 
+						(long)parentTimeStampFrame, 
+						(short)depth, 
+						(long)currentTimeStamp, 
+						null, 
+						probeId, 
+						attributeId, 
+						parentId, 
+						theValue);
+				System.out.println("modificando atributo "+ attributeId);
 			}
 			catch (Exception e)
 			{
