@@ -467,10 +467,10 @@ public class PythonTODServer extends TODServer
 				boolean hasThrown = theStream.readBoolean();				
 				itsLogCollector.behaviorExit(
 						0, 
-						0, 
-						0, 
-						0, 
-						, 
+						(long)0, 
+						(short)0, 
+						(long)0, 
+						null, 
 						probeId, 
 						0, 
 						hasThrown, 
