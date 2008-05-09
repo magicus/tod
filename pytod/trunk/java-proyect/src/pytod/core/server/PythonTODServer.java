@@ -79,29 +79,15 @@ public class PythonTODServer extends TODServer
 	private static final int SET_EVENT = 2;
 	private static final int RETURN_EVENT = 3;
 	
-	private class Argument
-	{
-		private int id;
-		private String name;
-		
-
-		public Argument(int aId, String aName)
-		{
-			id = aId;
-			name = new String(aName);
-			
-		}
-	}
-	
 	private class calledArgument
 	{
-		private int id;
-		private int value;
+		private int itsId;
+		private Object itsValue;
 		
-		public calledArgument(int aId, int aValue)
+		public calledArgument(int aId, Object aValue)
 		{
-			id = aId;
-			value = aValue;
+			itsId = aId;
+			itsValue = aValue;
 		}
 		
 	}
