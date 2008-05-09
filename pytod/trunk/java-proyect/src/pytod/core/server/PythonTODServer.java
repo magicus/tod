@@ -349,17 +349,11 @@ public class PythonTODServer extends TODServer
 			}
 		}
 
-		public void setAttribute(XDRInputStream aInputStream)
+		public Object getObjectValue(int aTypeId, XDRInputStream aInputStream)
 		{
-			XDRInputStream theStream = aInputStream;
-			IMutableClassInfo theClass;
-			try
-			{
-				int attributeId = theStream.readInt();
-				int parentId = theStream.readInt();
-				int typeId = aInputStream.readInt();
+			try {
 				Object theValue;
-				switch (typeId) {
+				switch (aTypeId) {
 				case DATA_INT:
 				{
 					theValue = aInputStream.readInt();
@@ -409,6 +403,23 @@ public class PythonTODServer extends TODServer
 					theValue = aInputStream.readInt();					
 					break;
 				}
+				return theValue;
+			} 
+			catch (Exception e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		
+		public void setAttribute(XDRInputStream aInputStream)
+		{
+			XDRInputStream theStream = aInputStream;
+			try
+			{
+				int attributeId = theStream.readInt();
+				int parentId = theStream.readInt();
+				int typeId = aInputStream.readInt();
+				Object theValue = getObjectValue(typeId, aInputStream);
 				int probeId = theStream.readInt();
 				double parentTimeStampFrame = theStream.readDouble();
 				int depth = theStream.readInt();
@@ -440,59 +451,8 @@ public class PythonTODServer extends TODServer
 			{
 				int localId = aInputStream.readInt();
 				int parentId = aInputStream.readInt();
-				//TODO: ver el asunto de los valores..el tipo
 				int typeId = aInputStream.readInt();
-				Object theValue;
-				switch (typeId) {
-				case DATA_INT:
-				{
-					theValue = aInputStream.readInt();
-					break;
-				}
-				case DATA_STR:
-				{
-					theValue = aInputStream.readString();
-					break;
-				}
-				case DATA_FLOAT:
-				{
-					theValue = aInputStream.readFloat();
-					break;
-				}
-				case DATA_LONG:
-				{
-					theValue = aInputStream.readLong();
-					break;
-				}
-				case DATA_BOOL:
-				{
-					theValue = aInputStream.readBoolean();
-					break;
-				}
-				case DATA_TUPLE:
-				{
-					theValue = aInputStream.readInt();
-					break;
-				}
-				case DATA_LIST:
-				{
-					theValue = aInputStream.readInt();
-					break;
-				}
-				case DATA_DICT:
-				{
-					theValue = aInputStream.readInt();
-					break;
-				}
-				case DATA_OTHER:
-				{
-					theValue = aInputStream.readInt();
-					break;
-				}
-				default:
-					theValue = aInputStream.readInt();					
-					break;
-				}
+				Object theValue = getObjectValue(typeId, aInputStream);
 				int probeId = aInputStream.readInt();
 				double parentTimeStampFrame = aInputStream.readDouble();
 				int depth = aInputStream.readInt();
