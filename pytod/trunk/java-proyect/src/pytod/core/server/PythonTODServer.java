@@ -79,18 +79,6 @@ public class PythonTODServer extends TODServer
 	private static final int SET_EVENT = 2;
 	private static final int RETURN_EVENT = 3;
 	
-	private class calledArgument
-	{
-		private int itsId;
-		private Object itsValue;
-		
-		public calledArgument(int aId, Object aValue)
-		{
-			itsId = aId;
-			itsValue = aValue;
-		}
-		
-	}
 	
 	private class Receiver extends Thread
 	{
@@ -261,7 +249,7 @@ public class PythonTODServer extends TODServer
 		public void methodCall(XDRInputStream aInputStream)
 		{
 			XDRInputStream theStream = aInputStream;
-			calledArgument args[] = null;
+			Object args[] = null;
 			try
 			{
 				int methodId = theStream.readInt();
@@ -269,14 +257,12 @@ public class PythonTODServer extends TODServer
 				int classId = theStream.readInt();
 				int argsN = theStream.readInt();
 				if (argsN != 0){
-					args = new calledArgument[argsN];
+					args = new Object[argsN];
 					for(int i=0;i<argsN;i=i+1)
 					{
-						int argId = theStream.readInt();
-						//TODO:preguntar como lo haremos con string o int
-						//por ahora se utilizará solo int
-						int argValue = theStream.readInt();
-						args[i] = new calledArgument(argId,argValue);
+						int argType = theStream.readInt();
+						Object theValue = getObjectValue(argType, aInputStream);
+						args[i] = theValue;
 					}
 				}
 				int probeId = theStream.readInt();
@@ -286,9 +272,9 @@ public class PythonTODServer extends TODServer
 				int threadId = theStream.readInt();
 				itsLogCollector.methodCall(
 						threadId,
-						(long)parentTimeStampFrame,
+						(long)0,
 						(short)depth, 
-						(long)currentTimeStamp, 
+						(long)(currentTimeStamp*1000000000), 
 						null,
 						probeId,
 						false, 
@@ -296,6 +282,7 @@ public class PythonTODServer extends TODServer
 						parentId,
 						null,
 						args);
+				System.out.println("llamando a método "+ methodId);
 			}
 			catch (Exception e)
 			{
