@@ -25,7 +25,7 @@ if th:
 
 class hunterTrace(object):
 
-    def __init__(self, Id, probeId, threadId, packer):
+    def __init__(self, Id, probeId, threadId, packer, host, port):
         self._class = {}
         self._function = {}
         self._method = {}
@@ -40,13 +40,15 @@ class hunterTrace(object):
         self.probeId = probeId
         self.threadId = threadId
         self.packer = packer
+        self.host = host
+        self.port = port
         self.methodPattern = "\A__.*(__)$"
         self.__socketConnect__()
         
     def __socketConnect__(self):
         self._socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         try:
-            self._socket.connect(('127.0.0.1', 8058))
+            self._socket.connect((self.host, self.port))
         except socket.gaierror:
             print "TOD, esta durmiendo :("
 
@@ -168,6 +170,13 @@ class hunterTrace(object):
 
     def __getDepthFrame__(self, frame):
         return frame.f_locals['__depthFrame__']
+    
+    def __getDataType__(self, value):
+        dataType = 8
+        if self.dataTypes.has_key(value.__class__.__name__):
+            dataType = self.dataTypes[value.__class__.__name__]
+        return dataType
+
 
     def __depthFrame__(self, frame):
         frameBack = frame.f_back
@@ -189,6 +198,17 @@ class hunterTrace(object):
             return frameBack.f_locals['__timeStampFrame__']
         return currentTimeStamp
     
+    def __packValue__(self, dataType, value):
+        if self.packXDRLib.has_key(dataType):
+            methodName = self.packXDRLib[dataType]
+            getattr(self.packer,'pack_%s'%methodName)(value)
+            print value,            
+        else:
+            #en estos momentos envíamos el tipo de dato
+            #TODO: debieramos envíar el id del objeto
+            self.packer.pack_int(dataType)
+            print dataType,
+    
     def __printChangeVar__(self, code, local, locals, obj, currentLasti, depth, parentTimeStampFrame, threadId):
         attr = obj.__getLocals__()
         objId = obj.__getId__()
@@ -209,22 +229,10 @@ class hunterTrace(object):
             print objId,
             self.packer.pack_int(objId)
             print locals[i],
-            #TODO: ver el asunto de los tipos de datos
-            #tomar el tipo y consultar en dataTypes el id
-            dataType = 8
-            if self.dataTypes.has_key(locals[i].__class__.__name__):
-                dataType = self.dataTypes[locals[i].__class__.__name__]
+            dataType = self.__getDataType__(locals[i])
             self.packer.pack_int(dataType)
-            print dataType
-            if self.packXDRLib.has_key(dataType):
-                methodName = self.packXDRLib[dataType]
-                getattr(self.packer,'pack_%s'%methodName)(locals[i])
-                print locals[i]
-            else:
-                #en estos momentos envíamos el tipo de dato
-                #TODO: debieramos envíar el id del objeto
-                self.packer.pack_int(dataType)
-                print dataType
+            print dataType,
+            self.__packValue__(dataType, locals[i])
             print probeId,
             self.packer.pack_int(probeId)
             print '%11.9f'%(parentTimeStampFrame),
@@ -268,10 +276,12 @@ class hunterTrace(object):
         self.packer.pack_int(classId)
         print len(argsValue),
         self.packer.pack_int(len(argsValue))
-        for v in argsValue:
-            print v,
-            #TODO: en estos momentos asumimos todos enteros
-            self.packer.pack_int(1)
+        for value in argsValue:
+            print value,
+            dataType = self.__getDataType__(value)
+            self.packer.pack_int(dataType)
+            print dataType,
+            self.__packValue__(dataType, value)
         print probeId,
         self.packer.pack_int(probeId)
         print '%11.9f'%(parentTimeStampFrame),
@@ -282,11 +292,10 @@ class hunterTrace(object):
         self.packer.pack_double(currentTimeStamp)
         print threadId
         self.packer.pack_int(threadId)
-        #TODO: falta enviar datos
-        #try:
-        #    self._socket.sendall(self.packer.get_buffer())
-        #except:
-        #    print 'TOD está durmiendo :-('
+        try:
+            self._socket.sendall(self.packer.get_buffer())
+        except:
+            print 'TOD está durmiendo :-('
         
     def __printCallFunction__(self, code, frame, depth, currentTimeStamp, parentTimeStampFrame, threadId):
         obj = self.__getObject__(code)
@@ -636,7 +645,13 @@ class hunterTrace(object):
             print
         print '======='
 
-hT = hunterTrace(generatorId(),generatorId(),generatorId(),xdrlib.Packer())
+hT = hunterTrace(
+                 generatorId(),
+                 generatorId(),
+                 generatorId(),
+                 xdrlib.Packer(),
+                 '127.0.0.1',
+                 8058)
 
 class Descriptor(object):
 
@@ -655,8 +670,6 @@ class Descriptor(object):
             return
         obj = hT._class[key] 
         objId = obj.__getId__()
-        print 'voy bien'
-        raw_input()
         #comportamiento extraño
         #se debe deshabilitar settrace
         #revizar comportamiento de xdrlib
@@ -674,48 +687,30 @@ class Descriptor(object):
         hT.packer.pack_int(hT.events['set'])
         print hT.objects['attribute'],
         hT.packer.pack_int(hT.objects['attribute'])
-        #print 'id =',id,
         print id,
         hT.packer.pack_int(id)
-        #print 'target =',objId,
         print objId,
         hT.packer.pack_int(objId)
-        #print 'value =',value,
-        #TODO: ver caso cuando value es del tipo tuple, list, dict
-        #TODO: ver el asunto de los tipos de datos
-        #tomar el tipo y consultar en dataTypes el id
-        dataType = 8
-        if hT.dataTypes.has_key(value.__class__.__name__):
-            dataType = hT.dataTypes[value.__class__.__name__]
+        dataType = hT.__getDataType__(value)
         hT.packer.pack_int(dataType)
         print dataType,
-        #se crea una estructura la cual retorna
-        #que metodo debe ser llamado
-        if hT.packXDRLib.has_key(dataType):
-            methodName = hT.packXDRLib[dataType]
-            getattr(hT.packer,'pack_%s'%methodName)(value)
-            print value,
-        else:
-            #en estos momentos envíamos el tipo de dato
-            #TODO: debieramos envíar el id del objeto
-            hT.packer.pack_int(dataType)
-            print dataType,
+        hT.__packValue__(dataType, value)
         print probeId,
         hT.packer.pack_int(probeId)
-        #print 'parent time stamp = %11.9f'%(parentTimeStamp),
         print '%11.9f'%(parentTimeStamp),
         hT.packer.pack_double(parentTimeStamp)        
-        #print 'current depth =',currentDepth,
         print currentDepth,
         hT.packer.pack_int(currentDepth)
-        #print 'current time stamp = %11.9f'%(currentTimeStamp),
         print '%11.9f'%(currentTimeStamp),
         hT.packer.pack_double(currentTimeStamp)
-        #print 'current thread =',threadId
         print threadId,
         hT.packer.pack_int(threadId)
         object.__setattr__(self, name, value)
         #se habilita nuevamente settrace
+        try:
+            hT._socket.sendall(hT.packer.get_buffer())
+        except:
+            print 'TOD está durmiendo :-('
         sys.settrace(hT.__trace__)
 
 
