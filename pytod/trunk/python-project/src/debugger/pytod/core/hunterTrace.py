@@ -88,7 +88,7 @@ class hunterTrace(object):
 
     def __convertTimestamp__(self,timestamp):
         #the timestamp is converted to long
-        return long(timestamp*1000000000000)
+        return long(timestamp*1000000000)
 
     def __depthFrame__(self, frame):
         frameBack = frame.f_back
@@ -239,12 +239,12 @@ class hunterTrace(object):
             print probeId,
             self.packer.pack_int(probeId)
             print parentTimeStampFrame,
-            self.packer.pack_uhyper(parentTimeStampFrame)
+            self.packer.pack_hyper(parentTimeStampFrame)
             print depth,
             self.packer.pack_int(depth)
             currentTimeStamp = self.__convertTimestamp__(time.time()) 
             print currentTimeStamp,
-            self.packer.pack_uhyper(currentTimeStamp)
+            self.packer.pack_hyper(currentTimeStamp)
             print threadId
             self.packer.pack_int(threadId)
             try:
@@ -288,11 +288,11 @@ class hunterTrace(object):
         print probeId,
         self.packer.pack_int(probeId)
         print parentTimeStampFrame,
-        self.packer.pack_uhyper(parentTimeStampFrame)
+        self.packer.pack_hyper(parentTimeStampFrame)
         print depth,
         self.packer.pack_int(depth)    
         print currentTimeStamp,
-        self.packer.pack_uhyper(currentTimeStamp)
+        self.packer.pack_hyper(currentTimeStamp)
         print threadId
         self.packer.pack_int(threadId)
         try:
@@ -331,11 +331,11 @@ class hunterTrace(object):
         print probeId,
         self.packer.pack_int(probeId)
         print parentTimeStampFrame,
-        self.packer.pack_uhyper(parentTimeStampFrame)        
+        self.packer.pack_hyper(parentTimeStampFrame)        
         print depth,
         self.packer.pack_int(depth)
         print currentTimeStamp,
-        self.packer.pack_uhyper(currentTimeStamp)
+        self.packer.pack_hyper(currentTimeStamp)
         print threadId
         self.packer.pack_int(threadId)
         #TODO: falta enviar datos
@@ -701,11 +701,11 @@ class Descriptor(object):
         print probeId,
         hT.packer.pack_int(probeId)
         print parentTimeStamp,
-        hT.packer.pack_uhyper(parentTimeStamp)        
+        hT.packer.pack_hyper(parentTimeStamp)        
         print currentDepth,
         hT.packer.pack_int(currentDepth)
         print currentTimeStamp,
-        hT.packer.pack_uhyper(currentTimeStamp)
+        hT.packer.pack_hyper(currentTimeStamp)
         print threadId,
         hT.packer.pack_int(threadId)
         object.__setattr__(self, name, value)
