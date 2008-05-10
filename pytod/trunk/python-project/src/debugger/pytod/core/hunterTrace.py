@@ -86,6 +86,19 @@ class hunterTrace(object):
             lnotab.update({len(code.co_code)-1:tuple([last_index,len(code.co_code)-1])})                
         return lnotab        
 
+    def __convertTimestamp__(self,timestamp):
+        #the timestamp is converted to long
+        return long(timestamp*1000000000000)
+
+    def __depthFrame__(self, frame):
+        frameBack = frame.f_back
+        if frameBack.f_locals.has_key('__depthFrame__'):
+            currentDepth = frameBack.f_locals['__depthFrame__']
+            frame.f_locals['__depthFrame__'] = currentDepth + 1
+        else:
+            frame.f_locals['__depthFrame__'] = 1
+        return frame.f_locals['__depthFrame__']
+
     def __inClass__(self, _class):
         if self._class.has_key(_class):
             return True
@@ -176,27 +189,17 @@ class hunterTrace(object):
         if self.dataTypes.has_key(value.__class__.__name__):
             dataType = self.dataTypes[value.__class__.__name__]
         return dataType
-
-
-    def __depthFrame__(self, frame):
-        frameBack = frame.f_back
-        if frameBack.f_locals.has_key('__depthFrame__'):
-            currentDepth = frameBack.f_locals['__depthFrame__']
-            frame.f_locals['__depthFrame__'] = currentDepth + 1
-        else:
-            frame.f_locals['__depthFrame__'] = 1
-        return frame.f_locals['__depthFrame__']
     
-    def __timeStampFrame__(self, frame):
-        if not frame.f_locals.has_key('__timeStampFrame__'): 
-            frame.f_locals['__timeStampFrame__'] = time.time()
-        return frame.f_locals['__timeStampFrame__']
-        
-    def __getTimeStampParentFrame__(self, frame, currentTimeStamp):
+    def __getTimestampParentFrame__(self, frame, currentTimeStamp):
         frameBack = frame.f_back 
         if frameBack.f_locals.has_key('__timeStampFrame__'):
             return frameBack.f_locals['__timeStampFrame__']
         return currentTimeStamp
+    
+    def __timeStampFrame__(self, frame):
+        if not frame.f_locals.has_key('__timeStampFrame__'): 
+            frame.f_locals['__timeStampFrame__'] = self.__convertTimestamp__(time.time())
+        return frame.f_locals['__timeStampFrame__']
     
     def __packValue__(self, dataType, value):
         if self.packXDRLib.has_key(dataType):
@@ -235,13 +238,13 @@ class hunterTrace(object):
             self.__packValue__(dataType, locals[i])
             print probeId,
             self.packer.pack_int(probeId)
-            print '%11.9f'%(parentTimeStampFrame),
-            self.packer.pack_double(parentTimeStampFrame)
+            print parentTimeStampFrame,
+            self.packer.pack_uhyper(parentTimeStampFrame)
             print depth,
             self.packer.pack_int(depth)
-            currentTimeStamp = time.time() 
-            print '%11.9f'%(currentTimeStamp),
-            self.packer.pack_double(currentTimeStamp)
+            currentTimeStamp = self.__convertTimestamp__(time.time()) 
+            print currentTimeStamp,
+            self.packer.pack_uhyper(currentTimeStamp)
             print threadId
             self.packer.pack_int(threadId)
             try:
@@ -284,12 +287,12 @@ class hunterTrace(object):
             self.__packValue__(dataType, value)
         print probeId,
         self.packer.pack_int(probeId)
-        print '%11.9f'%(parentTimeStampFrame),
-        self.packer.pack_double(parentTimeStampFrame)
+        print parentTimeStampFrame,
+        self.packer.pack_uhyper(parentTimeStampFrame)
         print depth,
         self.packer.pack_int(depth)    
-        print '%11.9f'%(currentTimeStamp),
-        self.packer.pack_double(currentTimeStamp)
+        print currentTimeStamp,
+        self.packer.pack_uhyper(currentTimeStamp)
         print threadId
         self.packer.pack_int(threadId)
         try:
@@ -327,12 +330,12 @@ class hunterTrace(object):
             self.packer.pack_int(1)
         print probeId,
         self.packer.pack_int(probeId)
-        print '%11.9f'%(parentTimeStampFrame),
-        self.packer.pack_double(parentTimeStampFrame)        
+        print parentTimeStampFrame,
+        self.packer.pack_uhyper(parentTimeStampFrame)        
         print depth,
         self.packer.pack_int(depth)
-        print '%11.9f'%(currentTimeStamp),
-        self.packer.pack_double(currentTimeStamp)
+        print currentTimeStamp,
+        self.packer.pack_uhyper(currentTimeStamp)
         print threadId
         self.packer.pack_int(threadId)
         #TODO: falta enviar datos
@@ -516,7 +519,7 @@ class hunterTrace(object):
         #se marca frame con timestamp
         currentTimeStamp = self.__timeStampFrame__(frame)
         #se obtiene timestamp de frame padre
-        parentTimeStampFrame = self.__getTimeStampParentFrame__(
+        parentTimeStampFrame = self.__getTimestampParentFrame__(
                                                     frame, 
                                                     currentTimeStamp)
         threadId = self.__getThreadId__(thread.get_ident())
@@ -660,8 +663,8 @@ class Descriptor(object):
         frame = sys._getframe()
         currentLasti = frame.f_lasti
         currentDepth = hT.__getDepthFrame__(frame)
-        currentTimeStamp = time.time() 
-        parentTimeStamp = hT.__getTimeStampParentFrame__(frame, currentTimeStamp)
+        currentTimeStamp = hT.__convertTimestamp__(time.time()) 
+        parentTimeStamp = hT.__getTimestampParentFrame__(frame, currentTimeStamp)
         threadId = hT.__getThreadId__(thread.get_ident())
         id = hT.Id.__get__()
         key = type(self).__name__
@@ -697,12 +700,12 @@ class Descriptor(object):
         hT.__packValue__(dataType, value)
         print probeId,
         hT.packer.pack_int(probeId)
-        print '%11.9f'%(parentTimeStamp),
-        hT.packer.pack_double(parentTimeStamp)        
+        print parentTimeStamp,
+        hT.packer.pack_uhyper(parentTimeStamp)        
         print currentDepth,
         hT.packer.pack_int(currentDepth)
-        print '%11.9f'%(currentTimeStamp),
-        hT.packer.pack_double(currentTimeStamp)
+        print currentTimeStamp,
+        hT.packer.pack_uhyper(currentTimeStamp)
         print threadId,
         hT.packer.pack_int(threadId)
         object.__setattr__(self, name, value)
