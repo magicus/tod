@@ -266,15 +266,16 @@ public class PythonTODServer extends TODServer
 					}
 				}
 				int probeId = theStream.readInt();
-				double parentTimeStampFrame = theStream.readDouble();
+				long parentTimeStampFrame = theStream.readLong();
+				System.out.println(parentTimeStampFrame);
 				int depth = theStream.readInt();
-				double currentTimeStamp = theStream.readDouble();
+				long currentTimeStamp = theStream.readLong();
 				int threadId = theStream.readInt();
 				itsLogCollector.methodCall(
 						threadId,
-						(long)0,
+						parentTimeStampFrame,
 						(short)depth, 
-						(long)(currentTimeStamp*1000000000), 
+						currentTimeStamp, 
 						null,
 						probeId,
 						false, 
@@ -310,9 +311,9 @@ public class PythonTODServer extends TODServer
 					}
 				}
 				int probeId = theStream.readInt();
-				double parentTimeStampFrame = theStream.readDouble();
+				long parentTimeStampFrame = theStream.getBytesReadRead()();
 				int depth = theStream.readInt();
-				double currentTimeStamp = theStream.readDouble();
+				long currentTimeStamp = theStream.getBytesRead();
 				int threadId = theStream.readInt();
 				//TODO: guillaume must be write a handler for function
 			}
@@ -394,15 +395,15 @@ public class PythonTODServer extends TODServer
 				int typeId = aInputStream.readInt();
 				Object theValue = getObjectValue(typeId, aInputStream);
 				int probeId = theStream.readInt();
-				double parentTimeStampFrame = theStream.readDouble();
+				long parentTimeStampFrame = theStream.readLong();
 				int depth = theStream.readInt();
-				double currentTimeStamp = theStream.readDouble();
+				long currentTimeStamp = theStream.readLong();
 				int threadId = theStream.readInt();
 				itsLogCollector.fieldWrite(
 						threadId, 
-						(long)parentTimeStampFrame, 
+						parentTimeStampFrame, 
 						(short)depth, 
-						(long)currentTimeStamp, 
+						currentTimeStamp, 
 						null, 
 						probeId, 
 						attributeId, 
@@ -427,15 +428,15 @@ public class PythonTODServer extends TODServer
 				int typeId = aInputStream.readInt();
 				Object theValue = getObjectValue(typeId, aInputStream);
 				int probeId = aInputStream.readInt();
-				double parentTimeStampFrame = aInputStream.readDouble();
+				long parentTimeStampFrame = aInputStream.readLong();
 				int depth = aInputStream.readInt();
-				double currentTimeStamp = aInputStream.readDouble();
+				long currentTimeStamp = aInputStream.readLong();
 				int threadId = aInputStream.readInt();				
 				itsLogCollector.localWrite(
 						threadId,
-						(long)parentTimeStampFrame, 
+						parentTimeStampFrame, 
 						(short)depth, 
-						(long)currentTimeStamp, 
+						currentTimeStamp, 
 						null, 
 						probeId, 
 						localId, 
