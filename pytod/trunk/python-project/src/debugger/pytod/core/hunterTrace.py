@@ -183,7 +183,10 @@ class hunterTrace(object):
         return store_fast   
 
     def __getDepthFrame__(self, frame):
-        return frame.f_locals['__depthFrame__']
+        try:
+            return frame.f_locals['__depthFrame__']
+        except:
+            return -1
     
     def __getDataType__(self, value):
         dataType = 8
@@ -672,7 +675,8 @@ class Descriptor(object):
         import sys
         frame = sys._getframe()
         currentLasti = frame.f_lasti
-        currentDepth = hT.__depthFrame__(frame)
+        currentDepth = hT.__getDepthFrame__(frame)
+        # __depthFrame__(frame)
         currentTimeStamp = hT.__convertTimestamp__(time.time()) 
         parentTimeStamp = hT.__getTimestampParentFrame__(frame)
         threadId = hT.__getThreadId__(thread.get_ident())
