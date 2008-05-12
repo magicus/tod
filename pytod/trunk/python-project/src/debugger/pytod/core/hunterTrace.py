@@ -49,7 +49,7 @@ class hunterTrace(object):
         self._socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         try:
             self._socket.connect((self.host, self.port))
-        except socket.gaierror:
+        except:
             print "TOD, esta durmiendo :("
 
 
