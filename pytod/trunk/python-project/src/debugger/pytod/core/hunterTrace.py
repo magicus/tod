@@ -42,6 +42,7 @@ class hunterTrace(object):
         self.packer = packer
         self.host = host
         self.port = port
+        self.isInitialTime = True
         self.methodPattern = "\A__.*(__)$"
         self.__socketConnect__()
         
@@ -190,16 +191,24 @@ class hunterTrace(object):
             dataType = self.dataTypes[value.__class__.__name__]
         return dataType
     
+    """
     def __getTimestampParentFrame__(self, frame, currentTimeStamp):
         frameBack = frame.f_back 
         if frameBack.f_locals.has_key('__timeStampFrame__'):
             return frameBack.f_locals['__timeStampFrame__']
         return currentTimeStamp
+    """
+
+    def __getTimestampParentFrame__(self, frame):
+        frameBack = frame.f_back 
+        if frameBack.f_locals.has_key('__timeStampFrame__'):
+            return frameBack.f_locals['__timeStampFrame__']
+        return 0
     
     def __timeStampFrame__(self, frame):
         if not frame.f_locals.has_key('__timeStampFrame__'): 
             frame.f_locals['__timeStampFrame__'] = self.__convertTimestamp__(time.time())
-        return frame.f_locals['__timeStampFrame__']
+        return
     
     def __packValue__(self, dataType, value):
         if self.packXDRLib.has_key(dataType):
@@ -369,7 +378,6 @@ class hunterTrace(object):
         #    self._socket.sendall(self.packer.get_buffer())
         #except:
         #    print 'TOD está durmiendo :-('
-        
 
     
     def __register__(self, obj, local):
@@ -517,11 +525,10 @@ class hunterTrace(object):
         #profundidad del frame
         depth = self.__depthFrame__(frame)
         #se marca frame con timestamp
-        currentTimeStamp = self.__timeStampFrame__(frame)
+        #sys.settrace(None)
+        self.__timeStampFrame__(frame)
         #se obtiene timestamp de frame padre
-        parentTimeStampFrame = self.__getTimestampParentFrame__(
-                                                    frame, 
-                                                    currentTimeStamp)
+        parentTimeStampFrame = self.__getTimestampParentFrame__(frame)
         threadId = self.__getThreadId__(thread.get_ident())
         if event == "call":
             if re.search(self.methodPattern,code.co_name):
@@ -553,6 +560,7 @@ class hunterTrace(object):
                     id = hT._class[key].method[code.co_name]
                     args = self.__getArgs__(code)
                     self.__registerMethod__(code,id,idClass,args)
+                currentTimeStamp = self.__convertTimestamp__(time.time())
                 self.__printCallMethod__(
                                          code,
                                          frame,
@@ -566,13 +574,15 @@ class hunterTrace(object):
                     if inspect.isfunction(globals[code.co_name]):
                         if not self.__inFunction__(code):
                             self.__registerFunction__(code)
+                    currentTimeStamp = self.__convertTimestamp__(time.time())
                     self.__printCallFunction__(
                                                code,
                                                frame,
                                                depth,
                                                currentTimeStamp,
                                                parentTimeStampFrame,
-                                               threadId)       
+                                               threadId)   
+            #sys.settrace(self.__trace__)    
             return self.__trace__
         elif event == "line":
             if re.search(self.methodPattern,code.co_name):
@@ -662,9 +672,9 @@ class Descriptor(object):
         import sys
         frame = sys._getframe()
         currentLasti = frame.f_lasti
-        currentDepth = hT.__getDepthFrame__(frame)
+        currentDepth = hT.__depthFrame__(frame)
         currentTimeStamp = hT.__convertTimestamp__(time.time()) 
-        parentTimeStamp = hT.__getTimestampParentFrame__(frame, currentTimeStamp)
+        parentTimeStamp = hT.__getTimestampParentFrame__(frame)
         threadId = hT.__getThreadId__(thread.get_ident())
         id = hT.Id.__get__()
         key = type(self).__name__
