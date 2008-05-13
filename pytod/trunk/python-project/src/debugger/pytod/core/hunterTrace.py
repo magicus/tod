@@ -243,7 +243,6 @@ class hunterTrace(object):
             self.packer.pack_int(attr[i])
             print behaviorId,
             self.packer.pack_int(behaviorId)
-            print locals[i],
             dataType = self.__getDataType__(locals[i])
             self.packer.pack_int(dataType)
             print dataType,
@@ -294,7 +293,6 @@ class hunterTrace(object):
         print len(argsValue),
         self.packer.pack_int(len(argsValue))
         for value in argsValue:
-            print value,
             dataType = self.__getDataType__(value)
             self.packer.pack_int(dataType)
             print dataType,
@@ -362,6 +360,7 @@ class hunterTrace(object):
         f_back = frame.f_back
         f_code = f_back.f_code
         parentId = self.__getObjectId__(f_code)
+        behaviorId = self.__getObjectId__(frame.f_code)
         currentLasti = frame.f_lasti
         #registramos un nuevo probe o lo rescatamos
         if not self._probe.has_key((currentLasti,parentId)):
@@ -371,18 +370,20 @@ class hunterTrace(object):
         self.packer.reset()
         print self.events['return'],
         self.packer.pack_int(self.events['return'])
-        #TODO: ver tipos de datos y la manera de enviarlos
-        #print arg,
-        self.packer.pack_int(1)
+        print behaviorId,
+        self.packer.pack_int(101)
+        dataType = self.__getDataType__(arg)
+        #self.packer.pack_int(dataType)
+        print dataType,
+        #self.__packValue__(dataType, arg)        
         print probeId,
-        self.packer.pack_int(probeId)
+        #self.packer.pack_int(probeId)
         print False
-        self.packer.pack_bool(False)
-        #TODO: falta enviar datos
-        #try:
-        #    self._socket.sendall(self.packer.get_buffer())
-        #except:
-        #    print 'TOD está durmiendo :-('
+        #self.packer.pack_bool(False)
+        try:
+            self._socket.sendall(self.packer.get_buffer())
+        except:
+            print 'TOD está durmiendo :-('
 
     
     def __register__(self, obj, local):
@@ -683,11 +684,11 @@ class Descriptor(object):
         currentTimestamp = hT.__convertTimestamp__(time.time()) 
         parentTimestamp = hT.__getTimestampParentFrame__(frame)
         threadId = hT.__getThreadId__(thread.get_ident())
-        Id = hT.Id.__get__()
         key = type(self).__name__
         key = hT.__getClassKey__(key)
         if key == None:
             return
+        #Id = hT.Id.__get__()
         obj = hT._class[key] 
         objId = obj.__getId__()
         behaviorId = hT.__getObjectId__(code)
@@ -696,8 +697,9 @@ class Descriptor(object):
         #revizar comportamiento de xdrlib
         import sys
         sys.settrace(None)
-        obj.attributes.__updateAttr__({name:Id},objId)
-        hT.Id.__next__()
+        obj.attributes.__updateAttr__({name:-1},objId)
+        #hT.Id.__next__()
+        Id = obj.attributes[name]
         #registramos un nuevo probe        
         if not hT._probe.has_key((currentLasti,behaviorId)):
             probeId = hT.__registerProbe__(currentLasti,behaviorId)
