@@ -42,7 +42,7 @@ class hunterTrace(object):
         self.packer = packer
         self.host = host
         self.port = port
-        self.isInitialTime = True
+        #self.isInitialTime = True
         self.methodPattern = "\A__.*(__)$"
         self.__socketConnect__()
         
@@ -204,13 +204,13 @@ class hunterTrace(object):
 
     def __getTimestampParentFrame__(self, frame):
         frameBack = frame.f_back 
-        if frameBack.f_locals.has_key('__timeStampFrame__'):
-            return frameBack.f_locals['__timeStampFrame__']
+        if frameBack.f_locals.has_key('__timestampFrame__'):
+            return frameBack.f_locals['__timestampFrame__']
         return 0
     
-    def __timeStampFrame__(self, frame):
-        if not frame.f_locals.has_key('__timeStampFrame__'): 
-            frame.f_locals['__timeStampFrame__'] = self.__convertTimestamp__(time.time())
+    def __timestampFrame__(self, frame):
+        if not frame.f_locals.has_key('__timestampFrame__'): 
+            frame.f_locals['__timestampFrame__'] = self.__convertTimestamp__(time.time())
         return
     
     def __packValue__(self, dataType, value):
@@ -224,16 +224,16 @@ class hunterTrace(object):
             self.packer.pack_int(dataType)
             print dataType,
     
-    def __printChangeVar__(self, code, local, locals, obj, currentLasti, depth, parentTimeStampFrame, threadId):
+    def __printChangeVar__(self, code, local, locals, obj, currentLasti, depth, parentTimestampFrame, threadId):
         attr = obj.__getLocals__()
-        objId = obj.__getId__()
+        behaviorId = self.__getObjectId__(code)
         for i in local.iterkeys():
             if not attr.has_key(i) or not locals.has_key(i):
                 return
-            if not self._probe.has_key((currentLasti,objId)):
-                probeId = self.__registerProbe__(currentLasti,objId)
+            if not self._probe.has_key((currentLasti,behaviorId)):
+                probeId = self.__registerProbe__(currentLasti,behaviorId)
             else:
-                probeId = self._probe[(currentLasti,objId)]
+                probeId = self._probe[(currentLasti,behaviorId)]
             self.packer.reset()
             print self.events['set'],
             self.packer.pack_int(self.events['set'])
@@ -241,8 +241,8 @@ class hunterTrace(object):
             self.packer.pack_int(self.objects['local'])
             print attr[i],
             self.packer.pack_int(attr[i])
-            print objId,
-            self.packer.pack_int(objId)
+            print behaviorId,
+            self.packer.pack_int(behaviorId)
             print locals[i],
             dataType = self.__getDataType__(locals[i])
             self.packer.pack_int(dataType)
@@ -250,21 +250,23 @@ class hunterTrace(object):
             self.__packValue__(dataType, locals[i])
             print probeId,
             self.packer.pack_int(probeId)
-            print parentTimeStampFrame,
-            self.packer.pack_hyper(parentTimeStampFrame)
+            print parentTimestampFrame,
+            self.packer.pack_hyper(parentTimestampFrame)
             print depth,
             self.packer.pack_int(depth)
-            currentTimeStamp = self.__convertTimestamp__(time.time()) 
-            print currentTimeStamp,
-            self.packer.pack_hyper(currentTimeStamp)
+            currentTimestamp = self.__convertTimestamp__(time.time()) 
+            print currentTimestamp,
+            self.packer.pack_hyper(currentTimestamp)
             print threadId
+            print behaviorId, code.co_name
+            raw_input()
             self.packer.pack_int(threadId)
             try:
                 self._socket.sendall(self.packer.get_buffer())
             except:
                 print 'TOD está durmiendo :-('            
 
-    def __printCallMethod__(self, code, frame, depth, currentTimeStamp, parentTimeStampFrame, threadId):
+    def __printCallMethod__(self, code, frame, depth, currentTimestamp, parentTimestampFrame, threadId):
         obj = self.__getObject__(code)
         methodId = obj.__getId__()
         classId = obj.__getTarget__()
@@ -285,8 +287,8 @@ class hunterTrace(object):
         self.packer.pack_int(self.objects['method'])
         print methodId,
         self.packer.pack_int(methodId)
-        print parentId,
-        self.packer.pack_int(parentId)
+        #print parentId,
+        #self.packer.pack_int(parentId)
         print classId,
         self.packer.pack_int(classId)
         print len(argsValue),
@@ -299,12 +301,12 @@ class hunterTrace(object):
             self.__packValue__(dataType, value)
         print probeId,
         self.packer.pack_int(probeId)
-        print parentTimeStampFrame,
-        self.packer.pack_hyper(parentTimeStampFrame)
+        print parentTimestampFrame,
+        self.packer.pack_hyper(parentTimestampFrame)
         print depth,
         self.packer.pack_int(depth)    
-        print currentTimeStamp,
-        self.packer.pack_hyper(currentTimeStamp)
+        print currentTimestamp,
+        self.packer.pack_hyper(currentTimestamp)
         print threadId
         self.packer.pack_int(threadId)
         try:
@@ -312,7 +314,7 @@ class hunterTrace(object):
         except:
             print 'TOD está durmiendo :-('
         
-    def __printCallFunction__(self, code, frame, depth, currentTimeStamp, parentTimeStampFrame, threadId):
+    def __printCallFunction__(self, code, frame, depth, currentTimestamp, parentTimestampFrame, threadId):
         obj = self.__getObject__(code)
         functionId = obj.__getId__()
         argsValue = obj.__getArgsValues__(frame.f_locals)
@@ -332,8 +334,8 @@ class hunterTrace(object):
         self.packer.pack_int(self.objects['function'])
         print functionId,
         self.packer.pack_int(functionId)
-        print parentId,
-        self.packer.pack_int(parentId)
+        #print parentId,
+        #self.packer.pack_int(parentId)
         print len(argsValue),
         self.packer.pack_int(len(argsValue))
         for v in argsValue:
@@ -342,12 +344,12 @@ class hunterTrace(object):
             self.packer.pack_int(1)
         print probeId,
         self.packer.pack_int(probeId)
-        print parentTimeStampFrame,
-        self.packer.pack_hyper(parentTimeStampFrame)        
+        print parentTimestampFrame,
+        self.packer.pack_hyper(parentTimestampFrame)        
         print depth,
         self.packer.pack_int(depth)
-        print currentTimeStamp,
-        self.packer.pack_hyper(currentTimeStamp)
+        print currentTimestamp,
+        self.packer.pack_hyper(currentTimestamp)
         print threadId
         self.packer.pack_int(threadId)
         #TODO: falta enviar datos
@@ -476,9 +478,9 @@ class hunterTrace(object):
                              args)
         self.Id.__next__()
 
-    def __registerProbe__(self, currentLasti, parentId):
+    def __registerProbe__(self, currentLasti, behaviorId):
         probeId = self.probeId.__get__()
-        self.__addProbe__(probeId,currentLasti,parentId)
+        self.__addProbe__(probeId,currentLasti,behaviorId)
         self.packer.reset()
         print self.events['register'],     
         self.packer.pack_int(self.events['register'])
@@ -486,8 +488,8 @@ class hunterTrace(object):
         self.packer.pack_int(self.objects['probe'])
         print probeId,
         self.packer.pack_int(probeId)
-        print parentId,
-        self.packer.pack_int(parentId)
+        print behaviorId,
+        self.packer.pack_int(behaviorId)
         print currentLasti
         self.packer.pack_int(currentLasti)
         raw_input()
@@ -529,9 +531,9 @@ class hunterTrace(object):
         depth = self.__depthFrame__(frame)
         #se marca frame con timestamp
         #sys.settrace(None)
-        self.__timeStampFrame__(frame)
+        self.__timestampFrame__(frame)
         #se obtiene timestamp de frame padre
-        parentTimeStampFrame = self.__getTimestampParentFrame__(frame)
+        parentTimestampFrame = self.__getTimestampParentFrame__(frame)
         threadId = self.__getThreadId__(thread.get_ident())
         if event == "call":
             if re.search(self.methodPattern,code.co_name):
@@ -563,13 +565,13 @@ class hunterTrace(object):
                     id = hT._class[key].method[code.co_name]
                     args = self.__getArgs__(code)
                     self.__registerMethod__(code,id,idClass,args)
-                currentTimeStamp = self.__convertTimestamp__(time.time())
+                currentTimestamp = self.__convertTimestamp__(time.time())
                 self.__printCallMethod__(
                                          code,
                                          frame,
                                          depth,
-                                         currentTimeStamp,
-                                         parentTimeStampFrame,
+                                         currentTimestamp,
+                                         parentTimestampFrame,
                                          threadId)
             else:
                 #verificamos si es una funcion
@@ -577,13 +579,13 @@ class hunterTrace(object):
                     if inspect.isfunction(globals[code.co_name]):
                         if not self.__inFunction__(code):
                             self.__registerFunction__(code)
-                    currentTimeStamp = self.__convertTimestamp__(time.time())
+                    currentTimestamp = self.__convertTimestamp__(time.time())
                     self.__printCallFunction__(
                                                code,
                                                frame,
                                                depth,
-                                               currentTimeStamp,
-                                               parentTimeStampFrame,
+                                               currentTimestamp,
+                                               parentTimestampFrame,
                                                threadId)   
             #sys.settrace(self.__trace__)    
             return self.__trace__
@@ -606,7 +608,7 @@ class hunterTrace(object):
                                         obj,
                                         frame.f_lasti,
                                         depth,
-                                        parentTimeStampFrame,
+                                        parentTimestampFrame,
                                         threadId)
             return self.__trace__
         elif event == "return":
@@ -633,7 +635,7 @@ class hunterTrace(object):
                                             obj,
                                             frame.f_lasti,
                                             depth,
-                                            parentTimeStampFrame,
+                                            parentTimestampFrame,
                                             threadId)
             #registrar salida de return
             self.__printReturn__(frame, arg)
@@ -674,56 +676,60 @@ class Descriptor(object):
     def __setattr__(self, name, value):
         import sys
         frame = sys._getframe()
-        currentLasti = frame.f_lasti
-        currentDepth = hT.__getDepthFrame__(frame)
+        code = frame.f_back.f_code
+        currentLasti = frame.f_back.f_lasti
+        currentDepth = hT.__getDepthFrame__(frame.f_back)
         # __depthFrame__(frame)
-        currentTimeStamp = hT.__convertTimestamp__(time.time()) 
-        parentTimeStamp = hT.__getTimestampParentFrame__(frame)
+        currentTimestamp = hT.__convertTimestamp__(time.time()) 
+        parentTimestamp = hT.__getTimestampParentFrame__(frame)
         threadId = hT.__getThreadId__(thread.get_ident())
-        id = hT.Id.__get__()
+        Id = hT.Id.__get__()
         key = type(self).__name__
         key = hT.__getClassKey__(key)
         if key == None:
             return
         obj = hT._class[key] 
         objId = obj.__getId__()
+        behaviorId = hT.__getObjectId__(code)
         #comportamiento extraño
         #se debe deshabilitar settrace
         #revizar comportamiento de xdrlib
         import sys
         sys.settrace(None)
-        obj.attributes.__updateAttr__({name:id},objId)
+        obj.attributes.__updateAttr__({name:Id},objId)
         hT.Id.__next__()
         #registramos un nuevo probe        
-        if not hT._probe.has_key((currentLasti,objId)):
-            probeId = hT.__registerProbe__(currentLasti,objId)
+        if not hT._probe.has_key((currentLasti,behaviorId)):
+            probeId = hT.__registerProbe__(currentLasti,behaviorId)
         else:
-            probeId = hT._probe[(currentLasti,objId)]          
+            probeId = hT._probe[(currentLasti,behaviorId)]          
         hT.packer.reset()
         print hT.events['set'],
         hT.packer.pack_int(hT.events['set'])
         print hT.objects['attribute'],
         hT.packer.pack_int(hT.objects['attribute'])
-        print id,
-        hT.packer.pack_int(id)
-        print objId,
-        hT.packer.pack_int(objId)
+        print Id,
+        hT.packer.pack_int(Id)
+        print behaviorId,
+        hT.packer.pack_int(behaviorId)
         dataType = hT.__getDataType__(value)
         hT.packer.pack_int(dataType)
         print dataType,
         hT.__packValue__(dataType, value)
         print probeId,
         hT.packer.pack_int(probeId)
-        print parentTimeStamp,
-        hT.packer.pack_hyper(parentTimeStamp)        
+        print parentTimestamp,
+        hT.packer.pack_hyper(parentTimestamp)        
         print currentDepth,
         hT.packer.pack_int(currentDepth)
-        print currentTimeStamp,
-        hT.packer.pack_hyper(currentTimeStamp)
-        print threadId,
+        print currentTimestamp,
+        hT.packer.pack_hyper(currentTimestamp)
+        print threadId
         hT.packer.pack_int(threadId)
         object.__setattr__(self, name, value)
         #se habilita nuevamente settrace
+        print behaviorId, code.co_name
+        raw_input()
         try:
             hT._socket.sendall(hT.packer.get_buffer())
         except:
