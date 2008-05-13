@@ -45,6 +45,8 @@ class Diccionario(dict):
             #se debe registrar argumento self?
             if not self.has_key(k):
                 if not k == 'self':
+                    v = self.hT.Id.__get__()
+                    self.hT.Id.__next__()
                     self[k] = v
                     self.hT.packer.reset()
                     print self.hT.events['register'],
