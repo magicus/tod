@@ -257,8 +257,6 @@ class hunterTrace(object):
             print currentTimestamp,
             self.packer.pack_hyper(currentTimestamp)
             print threadId
-            print behaviorId, code.co_name
-            raw_input()
             self.packer.pack_int(threadId)
             try:
                 self._socket.sendall(self.packer.get_buffer())
@@ -356,7 +354,7 @@ class hunterTrace(object):
         #except:
         #    print 'TOD está durmiendo :-('        
 
-    def __printReturn__(self, frame, arg):
+    def __printReturn__(self, frame, arg, depth, parentTimestampFrame, threadId):
         f_back = frame.f_back
         f_code = f_back.f_code
         parentId = self.__getObjectId__(f_code)
@@ -371,15 +369,24 @@ class hunterTrace(object):
         print self.events['return'],
         self.packer.pack_int(self.events['return'])
         print behaviorId,
-        self.packer.pack_int(101)
+        self.packer.pack_int(behaviorId)
         dataType = self.__getDataType__(arg)
-        #self.packer.pack_int(dataType)
+        self.packer.pack_int(dataType)
         print dataType,
-        #self.__packValue__(dataType, arg)        
+        self.__packValue__(dataType, arg)        
+        print False,
+        self.packer.pack_int(0)
         print probeId,
-        #self.packer.pack_int(probeId)
-        print False
-        #self.packer.pack_bool(False)
+        self.packer.pack_int(probeId)
+        print parentTimestampFrame,
+        self.packer.pack_hyper(parentTimestampFrame)        
+        print depth,
+        self.packer.pack_int(depth)
+        currentTimestamp = self.__convertTimestamp__(time.time()) 
+        print currentTimestamp,
+        self.packer.pack_hyper(currentTimestamp)
+        print threadId
+        self.packer.pack_int(threadId)
         try:
             self._socket.sendall(self.packer.get_buffer())
         except:
@@ -629,8 +636,7 @@ class hunterTrace(object):
                     local = self.__getpartcode__(code,lnotab[frame.f_lasti])
                     self. __register__(obj,local)
                     #imprimiendo los cambios de valores, con su respectivo id
-                    self.__printChangeVar__(
-                                            code,
+                    self.__printChangeVar__(code,
                                             local,
                                             locals,
                                             obj,
@@ -639,7 +645,11 @@ class hunterTrace(object):
                                             parentTimestampFrame,
                                             threadId)
             #registrar salida de return
-            self.__printReturn__(frame, arg)
+            self.__printReturn__(frame,
+                                 arg,
+                                 depth,
+                                 parentTimestampFrame,
+                                 threadId)
 
     def __printHunter__(self):
         #cerrar socket
@@ -730,8 +740,6 @@ class Descriptor(object):
         hT.packer.pack_int(threadId)
         object.__setattr__(self, name, value)
         #se habilita nuevamente settrace
-        print behaviorId, code.co_name
-        raw_input()
         try:
             hT._socket.sendall(hT.packer.get_buffer())
         except:
