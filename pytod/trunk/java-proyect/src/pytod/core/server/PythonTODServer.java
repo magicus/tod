@@ -253,7 +253,6 @@ public class PythonTODServer extends TODServer
 			try
 			{
 				int methodId = theStream.readInt();
-				int parentId = theStream.readInt();
 				int classId = theStream.readInt();
 				int argsN = theStream.readInt();
 				if (argsN != 0){
@@ -279,8 +278,8 @@ public class PythonTODServer extends TODServer
 						null,
 						probeId,
 						false, 
-						parentId,
-						parentId,
+						-1,
+						methodId,
 						null,
 						args);
 				System.out.println("llamando a método "+ methodId);
@@ -298,7 +297,6 @@ public class PythonTODServer extends TODServer
 			try
 			{
 				int functionId = theStream.readInt();
-				int parentId = theStream.readInt();
 				int argsN = theStream.readInt();
 				if (argsN != 0){
 					args = new calledArgument[argsN];
@@ -455,21 +453,31 @@ public class PythonTODServer extends TODServer
 			XDRInputStream theStream = aInputStream;
 			try
 			{
-				//que pasa con el id del return?
-				//ver tipo de datos
-				int returnValue = theStream.readInt();
+				boolean hasThrown = false;
+				int behaviorId = aInputStream.readInt();
+				int typeId = aInputStream.readInt();
+				Object theValue = getObjectValue(typeId, aInputStream);
+				int iHasThrown = theStream.readInt();
+				if (iHasThrown == 1)
+				{
+					hasThrown = true;
+				}
 				int probeId = theStream.readInt();
-				boolean hasThrown = theStream.readBoolean();				
+				long parentTimeStampFrame = aInputStream.readLong();
+				int depth = aInputStream.readInt();
+				long currentTimeStamp = aInputStream.readLong();
+				int threadId = aInputStream.readInt();
 				itsLogCollector.behaviorExit(
-						0, 
-						(long)0, 
-						(short)0, 
-						(long)0, 
-						null, 
+						threadId, 
+						parentTimeStampFrame, 
+						(short)depth, 
+						currentTimeStamp, 
+						null,
 						probeId, 
-						0, 
+						behaviorId,
 						hasThrown, 
-						null);
+						theValue);
+				System.out.println("Registrando return");
 			}
 			catch (Exception e)
 			{
