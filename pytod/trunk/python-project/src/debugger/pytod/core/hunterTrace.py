@@ -202,13 +202,18 @@ class hunterTrace(object):
         return currentTimeStamp
     """
 
+    def __getTimestampFrame__(self, frame):
+        if frame.f_locals.has_key('__timestampFrame__'):
+            return frame.f_locals['__timestampFrame__']
+        return 0
+
     def __getTimestampParentFrame__(self, frame):
         frameBack = frame.f_back 
         if frameBack.f_locals.has_key('__timestampFrame__'):
             return frameBack.f_locals['__timestampFrame__']
         return 0
     
-    def __timestampFrame__(self, frame):
+    def __markTimestampFrame__(self, frame):
         if not frame.f_locals.has_key('__timestampFrame__'): 
             frame.f_locals['__timestampFrame__'] = self.__convertTimestamp__(time.time())
         return
@@ -227,6 +232,7 @@ class hunterTrace(object):
     def __printChangeVar__(self, code, local, locals, obj, currentLasti, depth, parentTimestampFrame, threadId):
         attr = obj.__getLocals__()
         behaviorId = self.__getObjectId__(code)
+        depth = depth + 1
         for i in local.iterkeys():
             if not attr.has_key(i) or not locals.has_key(i):
                 return
@@ -360,6 +366,7 @@ class hunterTrace(object):
         parentId = self.__getObjectId__(f_code)
         behaviorId = self.__getObjectId__(frame.f_code)
         currentLasti = frame.f_lasti
+        depth = depth + 1
         #registramos un nuevo probe o lo rescatamos
         if not self._probe.has_key((currentLasti,parentId)):
             probeId = self.__registerProbe__(currentLasti,parentId)
@@ -538,16 +545,14 @@ class hunterTrace(object):
         #profundidad del frame
         depth = self.__depthFrame__(frame)
         #se marca frame con timestamp
-        #sys.settrace(None)
-        self.__timestampFrame__(frame)
-        #se obtiene timestamp de frame padre
-        parentTimestampFrame = self.__getTimestampParentFrame__(frame)
+        self.__markTimestampFrame__(frame)
         threadId = self.__getThreadId__(thread.get_ident())
         if event == "call":
             if re.search(self.methodPattern,code.co_name):
                 if not code.co_name == '__init__':
                     return
-            #se registra el thread si es que no existe
+            #se obtiene timestamp de frame padre
+            parentTimestampFrame = self.__getTimestampParentFrame__(frame)
             if code.co_name == '__init__':
                 id = self.Id.__get__()
                 locals['self'].__dict__.update({'__pyTOD__':id})
@@ -573,7 +578,7 @@ class hunterTrace(object):
                     id = hT._class[key].method[code.co_name]
                     args = self.__getArgs__(code)
                     self.__registerMethod__(code,id,idClass,args)
-                currentTimestamp = self.__convertTimestamp__(time.time())
+                currentTimestamp = frame.f_locals['__timestampFrame__']
                 self.__printCallMethod__(
                                          code,
                                          frame,
@@ -587,7 +592,7 @@ class hunterTrace(object):
                     if inspect.isfunction(globals[code.co_name]):
                         if not self.__inFunction__(code):
                             self.__registerFunction__(code)
-                    currentTimestamp = self.__convertTimestamp__(time.time())
+                    currentTimestamp = frame.f_locals['__timestampFrame__']
                     self.__printCallFunction__(
                                                code,
                                                frame,
@@ -601,6 +606,7 @@ class hunterTrace(object):
             if re.search(self.methodPattern,code.co_name):
                 if not code.co_name == '__init__':
                     return
+            parentTimestampFrame = self.__getTimestampFrame__(frame)
             obj = self.__getObject__(code)
             if obj == None:
                 return
@@ -623,6 +629,7 @@ class hunterTrace(object):
             if re.search(self.methodPattern,code.co_name):
                 if not code.co_name == '__init__':
                     return
+            parentTimestampFrame = self.__getTimestampFrame__(frame)
             if locals.has_key('__init__'):
                 #registramos la definicion de la clase
                 if not self.__inClass__(code):
@@ -644,12 +651,12 @@ class hunterTrace(object):
                                             depth,
                                             parentTimestampFrame,
                                             threadId)
-            #registrar salida de return
-            self.__printReturn__(frame,
-                                 arg,
-                                 depth,
-                                 parentTimestampFrame,
-                                 threadId)
+                #registrar salida de return
+                self.__printReturn__(frame,
+                                     arg,
+                                     depth,
+                                     parentTimestampFrame,
+                                     threadId)
 
     def __printHunter__(self):
         #cerrar socket
@@ -690,6 +697,7 @@ class Descriptor(object):
         code = frame.f_back.f_code
         currentLasti = frame.f_back.f_lasti
         currentDepth = hT.__getDepthFrame__(frame.f_back)
+        currentDepth = currentDepth + 1
         # __depthFrame__(frame)
         currentTimestamp = hT.__convertTimestamp__(time.time()) 
         parentTimestamp = hT.__getTimestampParentFrame__(frame)
