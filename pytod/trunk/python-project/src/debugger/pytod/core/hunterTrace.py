@@ -18,7 +18,7 @@ from generatorId import generatorId
 from objectClass import Class
 from objectMethod import Method
 from objectFunction import Function
-th = False
+th = True
 if th:
     from threading import settrace
       
@@ -132,6 +132,50 @@ class hunterTrace(object):
             if k == codeMethod:
                 return self._method[k]
         return None
+
+    def __instantiation__(self, code, frame, depth, currentTimestamp, parentTimestampFrame, threadId):
+        obj = self.__getObject__(code)
+        instantiationId = obj.__getId__()
+        classId = obj.__getTarget__()
+        argsValue = obj.__getArgsValues__(frame.f_locals)
+        f_back = frame.f_back
+        f_lasti = f_back.f_lasti
+        f_code = f_back.f_code
+        parentId = self.__getObjectId__(f_code)
+        currentLasti = frame.f_lasti        
+        if not self._probe.has_key((currentLasti,parentId)):
+            probeId = self.__registerProbe__(currentLasti,parentId)
+        else:
+            probeId = self._probe[(currentLasti,parentId)]
+        self.packer.reset()
+        print self.events['instantiation'],
+        print instantiationId,
+        print len(argsValue),        
+        self.packer.pack_int(self.events['instantiation'])
+        self.packer.pack_int(instantiationId)
+        self.packer.pack_int(len(argsValue))
+        for value in argsValue:
+            dataType = self.__getDataType__(value)
+            self.packer.pack_int(dataType)
+            print dataType,
+            self.__packValue__(dataType, value)
+        self.packer.pack_int(probeId)
+        self.packer.pack_hyper(parentTimestampFrame)
+        self.packer.pack_int(depth)    
+        self.packer.pack_hyper(currentTimestamp)
+        self.packer.pack_int(threadId)
+        print probeId,
+        print parentTimestampFrame,
+        print depth,
+        print currentTimestamp,
+        print threadId
+        
+        try:
+            self._socket.sendall(self.packer.get_buffer())
+        except:
+            print 'TOD está durmiendo :-('
+
+
     
     def __getClassKey__(self, nameClass):
         for k,v in self._class.iteritems():
@@ -190,10 +234,14 @@ class hunterTrace(object):
     
     def __getDataType__(self, value):
         dataType = 8
-        if self.dataTypes.has_key(value.__class__.__name__):
-            dataType = self.dataTypes[value.__class__.__name__]
-        return dataType
-    
+        try:
+            valueType = value.__class__.__name__
+            if self.dataTypes.has_key(value.__class__.__name__):
+                dataType = self.dataTypes[value.__class__.__name__]
+        except:
+            return dataType
+        finally:
+            return dataType
     """
     def __getTimestampParentFrame__(self, frame, currentTimeStamp):
         frameBack = frame.f_back 
@@ -229,7 +277,7 @@ class hunterTrace(object):
             self.packer.pack_int(dataType)
             print dataType,
     
-    def __printChangeVar__(self, code, local, locals, obj, currentLasti, depth, parentTimestampFrame, threadId):
+    def __localWrite__(self, code, local, locals, obj, currentLasti, depth, parentTimestampFrame, threadId):
         attr = obj.__getLocals__()
         behaviorId = self.__getObjectId__(code)
         depth = depth + 1
@@ -269,7 +317,7 @@ class hunterTrace(object):
             except:
                 print 'TOD está durmiendo :-('            
 
-    def __printCallMethod__(self, code, frame, depth, currentTimestamp, parentTimestampFrame, threadId):
+    def __methodCall__(self, code, frame, depth, currentTimestamp, parentTimestampFrame, threadId):
         obj = self.__getObject__(code)
         methodId = obj.__getId__()
         classId = obj.__getTarget__()
@@ -316,7 +364,7 @@ class hunterTrace(object):
         except:
             print 'TOD está durmiendo :-('
         
-    def __printCallFunction__(self, code, frame, depth, currentTimestamp, parentTimestampFrame, threadId):
+    def __functionCall__(self, code, frame, depth, currentTimestamp, parentTimestampFrame, threadId):
         obj = self.__getObject__(code)
         functionId = obj.__getId__()
         argsValue = obj.__getArgsValues__(frame.f_locals)
@@ -360,7 +408,7 @@ class hunterTrace(object):
         #except:
         #    print 'TOD está durmiendo :-('        
 
-    def __printReturn__(self, frame, arg, depth, parentTimestampFrame, threadId):
+    def __behaviorExit__(self, frame, arg, depth, parentTimestampFrame, threadId):
         f_back = frame.f_back
         f_code = f_back.f_code
         parentId = self.__getObjectId__(f_code)
@@ -399,7 +447,6 @@ class hunterTrace(object):
         except:
             print 'TOD está durmiendo :-('
 
-    
     def __register__(self, obj, local):
         objId = obj.__getId__()
         obj.__registerLocals__(local)
@@ -579,13 +626,23 @@ class hunterTrace(object):
                     args = self.__getArgs__(code)
                     self.__registerMethod__(code,id,idClass,args)
                 currentTimestamp = frame.f_locals['__timestampFrame__']
-                self.__printCallMethod__(
-                                         code,
-                                         frame,
-                                         depth,
-                                         currentTimestamp,
-                                         parentTimestampFrame,
-                                         threadId)
+                if code.co_name == '__init__':
+                    self.__instantiation__(
+                                             code,
+                                             frame,
+                                             depth,
+                                             currentTimestamp,
+                                             parentTimestampFrame,
+                                             threadId)
+
+                else:
+                    self.__methodCall__(
+                                             code,
+                                             frame,
+                                             depth,
+                                             currentTimestamp,
+                                             parentTimestampFrame,
+                                             threadId)
             else:
                 #verificamos si es una funcion
                 if globals.has_key(code.co_name):
@@ -593,7 +650,7 @@ class hunterTrace(object):
                         if not self.__inFunction__(code):
                             self.__registerFunction__(code)
                     currentTimestamp = frame.f_locals['__timestampFrame__']
-                    self.__printCallFunction__(
+                    self.__functionCall__(
                                                code,
                                                frame,
                                                depth,
@@ -615,7 +672,7 @@ class hunterTrace(object):
                 local = self.__getpartcode__(code,lnotab[frame.f_lasti])
                 self.__register__(obj,local)
                 #imprimiendo los cambios de valores, con su respectivo id
-                self.__printChangeVar__(
+                self.__localWrite__(
                                         code,
                                         local,
                                         locals,
@@ -643,7 +700,7 @@ class hunterTrace(object):
                     local = self.__getpartcode__(code,lnotab[frame.f_lasti])
                     self. __register__(obj,local)
                     #imprimiendo los cambios de valores, con su respectivo id
-                    self.__printChangeVar__(code,
+                    self.__localWrite__(code,
                                             local,
                                             locals,
                                             obj,
@@ -652,7 +709,7 @@ class hunterTrace(object):
                                             parentTimestampFrame,
                                             threadId)
                 #registrar salida de return
-                self.__printReturn__(frame,
+                self.__behaviorExit__(frame,
                                      arg,
                                      depth,
                                      parentTimestampFrame,
