@@ -23,17 +23,18 @@ class Diccionario(dict):
                 if not k == 'self':
                     self[k] = v
                     self.hT.packer.reset()
-                    print self.hT.events['register'],
                     self.hT.packer.pack_int(self.hT.events['register'])
-                    print self.hT.objects['local'],
                     self.hT.packer.pack_int(self.hT.objects['local'])
-                    print v,
                     self.hT.packer.pack_int(v)
-                    print parentId,
                     self.hT.packer.pack_int(parentId)
-                    print k
                     self.hT.packer.pack_string(k)
-                    raw_input()
+                    if self.hT.FLAG_DEBUGG:
+                        print self.hT.events['register'],
+                        print self.hT.objects['local'],
+                        print v,
+                        print parentId,
+                        print k
+                        raw_input()
                     try:
                         self.hT._socket.sendall(self.hT.packer.get_buffer())
                     except:
@@ -49,17 +50,18 @@ class Diccionario(dict):
                     self.hT.Id.__next__()
                     self[k] = v
                     self.hT.packer.reset()
-                    print self.hT.events['register'],
                     self.hT.packer.pack_int(self.hT.events['register'])
-                    print self.hT.objects['attribute'],
                     self.hT.packer.pack_int(self.hT.objects['attribute'])
-                    print v,
                     self.hT.packer.pack_int(v)
-                    print parentId,  
                     self.hT.packer.pack_int(parentId)
-                    print k
-                    self.hT.packer.pack_string(k)      
-                    raw_input()                          
+                    self.hT.packer.pack_string(k)
+                    if self.hT.FLAG_DEBUGG:
+                        print self.hT.events['register'],
+                        print self.hT.objects['attribute'],
+                        print v,
+                        print parentId,
+                        print k 
+                        raw_input()                          
                     try:       
                         self.hT._socket.sendall(self.hT.packer.get_buffer())
                     except:
