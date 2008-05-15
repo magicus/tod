@@ -4,7 +4,7 @@
 __author__ = "Milton Inostroza Aguilera"
 __email__ = "minoztro@gmail.com"
 __all__ = ['hT', 'Descriptor']
-
+th = False
 import sys
 import dis
 import re
@@ -18,7 +18,6 @@ from generatorId import generatorId
 from objectClass import Class
 from objectMethod import Method
 from objectFunction import Function
-th = True
 if th:
     from threading import settrace
       
@@ -42,6 +41,7 @@ class hunterTrace(object):
         self.packer = packer
         self.host = host
         self.port = port
+        self.FLAG_DEBUGG = False
         #self.isInitialTime = True
         self.methodPattern = "\A__.*(__)$"
         self.__socketConnect__()
@@ -147,29 +147,34 @@ class hunterTrace(object):
             probeId = self.__registerProbe__(currentLasti,parentId)
         else:
             probeId = self._probe[(currentLasti,parentId)]
-        self.packer.reset()
-        print self.events['instantiation'],
-        print instantiationId,
-        print len(argsValue),        
+        self.packer.reset()       
         self.packer.pack_int(self.events['instantiation'])
         self.packer.pack_int(instantiationId)
         self.packer.pack_int(len(argsValue))
+        printArg = " "
         for value in argsValue:
             dataType = self.__getDataType__(value)
             self.packer.pack_int(dataType)
-            print dataType,
-            self.__packValue__(dataType, value)
+            printArg += str(dataType)
+            printArg += " "
+            printArg += str(self.__packValue__(dataType, value))
+            printArg += " "
         self.packer.pack_int(probeId)
         self.packer.pack_hyper(parentTimestampFrame)
         self.packer.pack_int(depth)    
         self.packer.pack_hyper(currentTimestamp)
         self.packer.pack_int(threadId)
-        print probeId,
-        print parentTimestampFrame,
-        print depth,
-        print currentTimestamp,
-        print threadId
-        
+        if self.FLAG_DEBUGG:
+            print self.events['instantiation'],
+            print instantiationId,
+            print len(argsValue), 
+            print printArg,        
+            print probeId,
+            print parentTimestampFrame,
+            print depth,
+            print currentTimestamp,
+            print threadId
+            raw_input()
         try:
             self._socket.sendall(self.packer.get_buffer())
         except:
@@ -242,13 +247,6 @@ class hunterTrace(object):
             return dataType
         finally:
             return dataType
-    """
-    def __getTimestampParentFrame__(self, frame, currentTimeStamp):
-        frameBack = frame.f_back 
-        if frameBack.f_locals.has_key('__timeStampFrame__'):
-            return frameBack.f_locals['__timeStampFrame__']
-        return currentTimeStamp
-    """
 
     def __getTimestampFrame__(self, frame):
         if frame.f_locals.has_key('__timestampFrame__'):
@@ -270,12 +268,12 @@ class hunterTrace(object):
         if self.packXDRLib.has_key(dataType):
             methodName = self.packXDRLib[dataType]
             getattr(self.packer,'pack_%s'%methodName)(value)
-            print value,            
+            return value            
         else:
             #en estos momentos envíamos el tipo de dato
             #TODO: debieramos envíar el id del objeto
             self.packer.pack_int(dataType)
-            print dataType,
+            return dataType
     
     def __localWrite__(self, code, local, locals, obj, currentLasti, depth, parentTimestampFrame, threadId):
         attr = obj.__getLocals__()
@@ -289,29 +287,32 @@ class hunterTrace(object):
             else:
                 probeId = self._probe[(currentLasti,behaviorId)]
             self.packer.reset()
-            print self.events['set'],
             self.packer.pack_int(self.events['set'])
-            print self.objects['local'],
             self.packer.pack_int(self.objects['local'])
-            print attr[i],
             self.packer.pack_int(attr[i])
-            print behaviorId,
             self.packer.pack_int(behaviorId)
             dataType = self.__getDataType__(locals[i])
             self.packer.pack_int(dataType)
-            print dataType,
-            self.__packValue__(dataType, locals[i])
-            print probeId,
+            value = self.__packValue__(dataType, locals[i])
             self.packer.pack_int(probeId)
-            print parentTimestampFrame,
             self.packer.pack_hyper(parentTimestampFrame)
-            print depth,
             self.packer.pack_int(depth)
             currentTimestamp = self.__convertTimestamp__(time.time()) 
-            print currentTimestamp,
             self.packer.pack_hyper(currentTimestamp)
-            print threadId
             self.packer.pack_int(threadId)
+            if self.FLAG_DEBUGG:            
+                print self.events['set'],
+                print self.objects['local'],
+                print attr[i],
+                print behaviorId,
+                print dataType,
+                print value,
+                print probeId,
+                print parentTimestampFrame,
+                print depth,
+                print currentTimestamp,
+                print threadId
+                raw_input()
             try:
                 self._socket.sendall(self.packer.get_buffer())
             except:
@@ -332,33 +333,37 @@ class hunterTrace(object):
         else:
             probeId = self._probe[(currentLasti,parentId)]
         self.packer.reset()
-        print self.events['call'],
         self.packer.pack_int(self.events['call'])
-        print self.objects['method'],
         self.packer.pack_int(self.objects['method'])
-        print methodId,
         self.packer.pack_int(methodId)
-        #print parentId,
-        #self.packer.pack_int(parentId)
-        print classId,
         self.packer.pack_int(classId)
-        print len(argsValue),
         self.packer.pack_int(len(argsValue))
+        printArg = " "
         for value in argsValue:
             dataType = self.__getDataType__(value)
             self.packer.pack_int(dataType)
-            print dataType,
-            self.__packValue__(dataType, value)
-        print probeId,
+            printArg += str(dataType)
+            printArg += " "            
+            printArg += str(self.__packValue__(dataType, value))
+            printArg += " "
         self.packer.pack_int(probeId)
-        print parentTimestampFrame,
         self.packer.pack_hyper(parentTimestampFrame)
-        print depth,
         self.packer.pack_int(depth)    
-        print currentTimestamp,
         self.packer.pack_hyper(currentTimestamp)
-        print threadId
         self.packer.pack_int(threadId)
+        if self.FLAG_DEBUGG:
+            print self.events['call'],
+            print self.objects['method'],
+            print methodId,
+            print classId,
+            print len(argsValue),
+            print printArg,
+            print probeId,
+            print parentTimestampFrame,
+            print depth,
+            print currentTimestamp,
+            print threadId
+            raw_input()
         try:
             self._socket.sendall(self.packer.get_buffer())
         except:
@@ -378,30 +383,35 @@ class hunterTrace(object):
         else:
             probeId = self._probe[(currentLasti,parentId)]
         self.packer.reset()
-        print self.events['call'],
         self.packer.pack_int(self.events['call'])
-        print self.objects['function'],
         self.packer.pack_int(self.objects['function'])
-        print functionId,
         self.packer.pack_int(functionId)
-        #print parentId,
-        #self.packer.pack_int(parentId)
-        print len(argsValue),
         self.packer.pack_int(len(argsValue))
-        for v in argsValue:
-            print v,
-            #TODO: en estos momentos asumimos todos enteros
-            self.packer.pack_int(1)
-        print probeId,
+        printArg = " "
+        for value in argsValue:
+            dataType = self.__getDataType__(value)
+            self.packer.pack_int(dataType)
+            printArg += dataType
+            printArg += " "            
+            printArg += str(self.__packValue__(dataType, value))
+            printArg += " "     
         self.packer.pack_int(probeId)
-        print parentTimestampFrame,
         self.packer.pack_hyper(parentTimestampFrame)        
-        print depth,
         self.packer.pack_int(depth)
-        print currentTimestamp,
         self.packer.pack_hyper(currentTimestamp)
-        print threadId
         self.packer.pack_int(threadId)
+        if self.FLAG_DEBUGG:
+            print self.events['call'],
+            print self.objects['function'],
+            print functionId,
+            print len(argsValue),
+            print printArg,
+            print probeId,
+            print parentTimestampFrame,
+            print depth,
+            print currentTimestamp,
+            print threadId
+            raw_input()
         #TODO: falta enviar datos
         #try:
         #    self._socket.sendall(self.packer.get_buffer())
@@ -415,33 +425,35 @@ class hunterTrace(object):
         behaviorId = self.__getObjectId__(frame.f_code)
         currentLasti = frame.f_lasti
         depth = depth + 1
-        #registramos un nuevo probe o lo rescatamos
         if not self._probe.has_key((currentLasti,parentId)):
             probeId = self.__registerProbe__(currentLasti,parentId)
         else:
             probeId = self._probe[(currentLasti,parentId)]
         self.packer.reset()
-        print self.events['return'],
         self.packer.pack_int(self.events['return'])
-        print behaviorId,
         self.packer.pack_int(behaviorId)
         dataType = self.__getDataType__(arg)
         self.packer.pack_int(dataType)
-        print dataType,
-        self.__packValue__(dataType, arg)        
-        print False,
+        value = self.__packValue__(dataType, arg)        
         self.packer.pack_int(0)
-        print probeId,
         self.packer.pack_int(probeId)
-        print parentTimestampFrame,
         self.packer.pack_hyper(parentTimestampFrame)        
-        print depth,
         self.packer.pack_int(depth)
         currentTimestamp = self.__convertTimestamp__(time.time()) 
-        print currentTimestamp,
         self.packer.pack_hyper(currentTimestamp)
-        print threadId
         self.packer.pack_int(threadId)
+        if self.FLAG_DEBUGG:
+            print self.events['return'],
+            print behaviorId,
+            print dataType,
+            print value,
+            print False,
+            print probeId,
+            print parentTimestampFrame,
+            print depth,
+            print currentTimestamp,
+            print threadId
+            raw_input()
         try:
             self._socket.sendall(self.packer.get_buffer())
         except:
@@ -457,47 +469,51 @@ class hunterTrace(object):
         #HINT: ver como recuperar las herencias de esta clase 
         classBases = None
         self.packer.reset()
-        print self.events['register'],
         self.packer.pack_int(self.events['register'])
-        print self.objects['class'],
         self.packer.pack_int(self.objects['class'])
-        print classId,
         self.packer.pack_int(classId)
-        print className,
         self.packer.pack_string(className)
-        print classBases
         self.packer.pack_int(0)
-        raw_input()
+        if self.FLAG_DEBUGG:
+            print self.events['register'],
+            print self.objects['class'],
+            print classId,
+            print className,
+            print classBases
+            raw_input()
         try:
             self._socket.sendall(self.packer.get_buffer())
         except:
             print 'TOD está durmiendo :-('
         objClass = self.__addClass__(classId,self.__createlnotab__(code),code)
         self.Id.__next__()
-        #se deben registrar los metodos asociados 
-        #como atributos de la clase
         objClass.__addMethod__(code,locals)
 
     def __registerMethod__(self, code, methodId, classId, args):
         self.packer.reset()
-        print self.events['register'],
         self.packer.pack_int(self.events['register'])
-        print self.objects['method'],
         self.packer.pack_int(self.objects['method'])
-        print methodId,
         self.packer.pack_int(methodId)
-        print classId,
         self.packer.pack_int(classId)
-        print code.co_name,
         self.packer.pack_string(code.co_name)
-        print len(args),
         self.packer.pack_int(len(args))
+        printArg = " "
         for i in range(len(args)):
-            print args[i],
+            printArg += str(args[i])
+            printArg += " "
             self.packer.pack_string(args[i])
-            print i,
+            printArg += str(i)
+            printArg += " "
             self.packer.pack_int(i)
-        raw_input()
+        if self.FLAG_DEBUGG:
+            print self.events['register'],
+            print self.objects['method'],
+            print methodId,
+            print classId,
+            print code.co_name,
+            print len(args),
+            print printArg
+            raw_input()
         try:
             self._socket.sendall(self.packer.get_buffer())
         except:
@@ -513,22 +529,27 @@ class hunterTrace(object):
         functionId = self.Id.__get__()
         args = self.__getArgs__(code)
         self.packer.reset()
-        print self.events['register'],
         self.packer.pack_int(self.events['register'])
-        print self.objects['function'],        
         self.packer.pack_int(self.objects['function'])
-        print functionId,
         self.packer.pack_int(functionId)
-        print code.co_name,
         self.packer.pack_string(code.co_name)
-        print len(args),
         self.packer.pack_int(len(args))
+        printArg = " " 
         for i in range(len(args)):
-            print args[i],
+            printArg += str(args[i])
+            printArg += " "
             self.packer.pack_string(args[i])
-            print i,
+            printArg += str(i)
+            printArg += " "
             self.packer.pack_int(i)
-        raw_input()
+        if self.FLAG_DEBUGG:
+            print self.events['register'],
+            print self.objects['function'],
+            print functionId,
+            print code.co_name,
+            print len(args),
+            print printArg
+            raw_input()
         try:
             self._socket.sendall(self.packer.get_buffer())
         except:
@@ -544,17 +565,18 @@ class hunterTrace(object):
         probeId = self.probeId.__get__()
         self.__addProbe__(probeId,currentLasti,behaviorId)
         self.packer.reset()
-        print self.events['register'],     
         self.packer.pack_int(self.events['register'])
-        print self.objects['probe'],
         self.packer.pack_int(self.objects['probe'])
-        print probeId,
         self.packer.pack_int(probeId)
-        print behaviorId,
         self.packer.pack_int(behaviorId)
-        print currentLasti
         self.packer.pack_int(currentLasti)
-        raw_input()
+        if self.FLAG_DEBUGG:
+            print self.events['register'],
+            print self.objects['probe'],
+            print probeId,
+            print behaviorId,
+            print currentLasti            
+            raw_input()
         try:
             self._socket.sendall(self.packer.get_buffer())
         except:
@@ -566,15 +588,16 @@ class hunterTrace(object):
         threadId = self.threadId.__get__()
         self.__addThread__(threadId,threadSysId)
         self.packer.reset()
-        print self.events['register'],
         self.packer.pack_int(self.events['register'])
-        print self.objects['thread'],
         self.packer.pack_int(self.objects['thread'])
-        print threadId,
         self.packer.pack_int(threadId)
-        print threadSysId
         self.packer.pack_int(threadSysId)
-        raw_input()
+        if self.FLAG_DEBUGG:
+            print self.events['register'],
+            print self.objects['thread'],
+            print threadId,
+            print threadSysId
+            raw_input()
         try:
             self._socket.sendall(self.packer.get_buffer())
         except:
@@ -589,16 +612,13 @@ class hunterTrace(object):
         code = frame.f_code
         locals = frame.f_locals
         globals = frame.f_globals
-        #profundidad del frame
         depth = self.__depthFrame__(frame)
-        #se marca frame con timestamp
         self.__markTimestampFrame__(frame)
         threadId = self.__getThreadId__(thread.get_ident())
         if event == "call":
             if re.search(self.methodPattern,code.co_name):
                 if not code.co_name == '__init__':
                     return
-            #se obtiene timestamp de frame padre
             parentTimestampFrame = self.__getTimestampParentFrame__(frame)
             if code.co_name == '__init__':
                 id = self.Id.__get__()
@@ -657,7 +677,6 @@ class hunterTrace(object):
                                                currentTimestamp,
                                                parentTimestampFrame,
                                                threadId)   
-            #sys.settrace(self.__trace__)    
             return self.__trace__
         elif event == "line":
             if re.search(self.methodPattern,code.co_name):
@@ -671,7 +690,6 @@ class hunterTrace(object):
             if lnotab.has_key(frame.f_lasti):
                 local = self.__getpartcode__(code,lnotab[frame.f_lasti])
                 self.__register__(obj,local)
-                #imprimiendo los cambios de valores, con su respectivo id
                 self.__localWrite__(
                                         code,
                                         local,
@@ -699,7 +717,6 @@ class hunterTrace(object):
                 if lnotab.has_key(frame.f_lasti):
                     local = self.__getpartcode__(code,lnotab[frame.f_lasti])
                     self. __register__(obj,local)
-                    #imprimiendo los cambios de valores, con su respectivo id
                     self.__localWrite__(code,
                                             local,
                                             locals,
@@ -708,7 +725,6 @@ class hunterTrace(object):
                                             depth,
                                             parentTimestampFrame,
                                             threadId)
-                #registrar salida de return
                 self.__behaviorExit__(frame,
                                      arg,
                                      depth,
@@ -755,7 +771,6 @@ class Descriptor(object):
         currentLasti = frame.f_back.f_lasti
         currentDepth = hT.__getDepthFrame__(frame.f_back)
         currentDepth = currentDepth + 1
-        # __depthFrame__(frame)
         currentTimestamp = hT.__convertTimestamp__(time.time()) 
         parentTimestamp = hT.__getTimestampParentFrame__(frame)
         threadId = hT.__getThreadId__(thread.get_ident())
@@ -763,7 +778,6 @@ class Descriptor(object):
         key = hT.__getClassKey__(key)
         if key == None:
             return
-        #Id = hT.Id.__get__()
         obj = hT._class[key] 
         objId = obj.__getId__()
         behaviorId = hT.__getObjectId__(code)
@@ -773,42 +787,43 @@ class Descriptor(object):
         import sys
         sys.settrace(None)
         obj.attributes.__updateAttr__({name:-1},objId)
-        #hT.Id.__next__()
         Id = obj.attributes[name]
-        #registramos un nuevo probe        
         if not hT._probe.has_key((currentLasti,behaviorId)):
             probeId = hT.__registerProbe__(currentLasti,behaviorId)
         else:
             probeId = hT._probe[(currentLasti,behaviorId)]          
         hT.packer.reset()
-        print hT.events['set'],
         hT.packer.pack_int(hT.events['set'])
-        print hT.objects['attribute'],
         hT.packer.pack_int(hT.objects['attribute'])
-        print Id,
         hT.packer.pack_int(Id)
-        print behaviorId,
         hT.packer.pack_int(behaviorId)
         dataType = hT.__getDataType__(value)
         hT.packer.pack_int(dataType)
-        print dataType,
-        hT.__packValue__(dataType, value)
-        print probeId,
+        value = hT.__packValue__(dataType, value)
         hT.packer.pack_int(probeId)
-        print parentTimestamp,
         hT.packer.pack_hyper(parentTimestamp)        
-        print currentDepth,
         hT.packer.pack_int(currentDepth)
-        print currentTimestamp,
         hT.packer.pack_hyper(currentTimestamp)
-        print threadId
         hT.packer.pack_int(threadId)
-        object.__setattr__(self, name, value)
-        #se habilita nuevamente settrace
+        object.__setattr__(self, name, value) 
+        if hT.FLAG_DEBUGG:
+            print hT.events['set'],
+            print hT.objects['attribute'],
+            print Id,
+            print behaviorId,
+            print dataType,
+            print value,
+            print probeId,
+            print parentTimestamp,
+            print currentDepth,
+            print currentTimestamp,
+            print threadId
+            raw_input()
         try:
             hT._socket.sendall(hT.packer.get_buffer())
         except:
             print 'TOD está durmiendo :-('
+        #se habilita nuevamente settrace    
         sys.settrace(hT.__trace__)
 
 
