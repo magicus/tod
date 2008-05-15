@@ -48,19 +48,18 @@ class Method(object):
         parentId = self.id
         for i in range(len(args)):           
             self.hT.packer.reset()
-            print self.hT.events['register'],
             self.hT.packer.pack_int(self.hT.events['register'])
-            print self.hT.objects['local'],
             self.hT.packer.pack_int(self.hT.objects['local'])
-            #print 'id =',v,
-            print i,
             self.hT.packer.pack_int(i)
-            #print ',parent id=',parentId,
-            print parentId,
             self.hT.packer.pack_int(parentId)
-            #print ',name =',k
-            print args[i]
             self.hT.packer.pack_string(args[i])
+            if self.hT.FLAG_DEBUGG:
+                print self.hT.events['register'],
+                print self.hT.objects['local'],
+                print i,
+                print parentId,
+                print args[i]
+                raw_input()
         
     def __registerLocals__(self, local):
         self.locals.__update__(local,self.id)
