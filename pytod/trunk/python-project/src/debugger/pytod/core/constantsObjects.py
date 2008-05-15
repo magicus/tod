@@ -10,7 +10,8 @@ events = {
           'register':0,
           'call':1,
           'set':2,
-          'return':3
+          'return':3,
+          'instantiation':4
           }
 
 objects = {
