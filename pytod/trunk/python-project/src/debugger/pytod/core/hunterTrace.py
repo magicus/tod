@@ -391,7 +391,7 @@ class hunterTrace(object):
         for value in argsValue:
             dataType = self.__getDataType__(value)
             self.packer.pack_int(dataType)
-            printArg += dataType
+            printArg += str(dataType)
             printArg += " "            
             printArg += str(self.__packValue__(dataType, value))
             printArg += " "     
@@ -412,11 +412,10 @@ class hunterTrace(object):
             print currentTimestamp,
             print threadId
             raw_input()
-        #TODO: falta enviar datos
-        #try:
-        #    self._socket.sendall(self.packer.get_buffer())
-        #except:
-        #    print 'TOD está durmiendo :-('        
+        try:
+            self._socket.sendall(self.packer.get_buffer())
+        except:
+            print 'TOD está durmiendo :-('        
 
     def __behaviorExit__(self, frame, arg, depth, parentTimestampFrame, threadId):
         f_back = frame.f_back
