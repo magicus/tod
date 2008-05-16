@@ -4,7 +4,7 @@
 __author__ = "Milton Inostroza Aguilera"
 __email__ = "minoztro@gmail.com"
 __all__ = ['hT', 'Descriptor']
-th = False
+th = True
 import sys
 import dis
 import re
@@ -418,6 +418,10 @@ class hunterTrace(object):
             print 'TOD está durmiendo :-('        
 
     def __behaviorExit__(self, frame, arg, depth, parentTimestampFrame, threadId):
+        print arg
+        print frame.f_globals
+        print 'fin de return'
+        raw_input()
         f_back = frame.f_back
         f_code = f_back.f_code
         parentId = self.__getObjectId__(f_code)
@@ -605,7 +609,20 @@ class hunterTrace(object):
         return threadId
 
     def __trace__(self, frame, event, arg):
+        #print frame.f_code.co_name
+        #print frame.f_exc_traceback
+        #print frame.f_exc_type
+        #print frame.f_exc_value
         if frame.f_back == None:
+            if frame.f_code.co_name == 'apport_excepthook':
+                f_traceback = frame.f_locals['exc_tb']
+                print f_traceback.tb_next.tb_frame.f_code.co_name
+                print f_traceback.tb_next.tb_lineno
+                print f_traceback.tb_next.tb_lasti
+                print event
+                print frame.f_back
+                raw_input()
+                sys.settrace(None)       
             return
         lineno = frame.f_lineno
         code = frame.f_code
@@ -618,9 +635,15 @@ class hunterTrace(object):
             if re.search(self.methodPattern,code.co_name):
                 if not code.co_name == '__init__':
                     return
+            #supuesto manejo de error
+            if frame.f_code.co_name == 'apport_excepthook':
+                print frame.f_locals
+                raw_input()
             parentTimestampFrame = self.__getTimestampParentFrame__(frame)
             if code.co_name == '__init__':
                 id = self.Id.__get__()
+                if not hasattr(locals['self'],'__dict__'):
+                    return
                 locals['self'].__dict__.update({'__pyTOD__':id})
                 self.Id.__next__()
                 #aca se sacan las bases de la clase la cual
