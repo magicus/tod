@@ -25,24 +25,24 @@ def __getargs__(code):
 
 def trace(frame, event, arg):
     code = frame.f_code
-    #dis.dis(code)
     if event == 'call':
-        print __getargs__(code)
-        #dis.dis(code)
-        #print frame.f_exc_type
-        #print __createlnotab__(code)
-        #print frame.f_locals
+        print code.co_name
+        print frame.f_locals
+        print frame.f_exc_value
+        print frame.f_exc_traceback
+        print frame.f_exc_value
+        raw_input()
         return trace
     elif event == 'line':
-        print frame.f_locals
-        try:
-            print id(frame.f_locals['a'])
-        except:
-            pass
-        raw_input()
+        print frame.f_exc_value
+        print frame.f_exc_traceback
+        print frame.f_exc_value
         return trace
     elif event == 'return':
         print code.co_name
+        print frame.f_exc_value
+        print frame.f_exc_traceback
+        print frame.f_exc_value        
         print arg
         raw_input()
         
@@ -64,5 +64,6 @@ def algo(a,b,c):
     a = [2, 3, 4]
     print id(a)
     a.append(5)
+    1/0
     
 algo(3,2,5)

@@ -9,7 +9,7 @@ def prueba(z,r,t,y):
     a = 0
     x = 15
     y = x = a = 1
-    #prueba2()
+    prueba2()
 
 def prueba2(e=3):
     z = 3

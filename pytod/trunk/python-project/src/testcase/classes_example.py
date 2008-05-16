@@ -10,12 +10,14 @@ class clase1(Descriptor):
         self.x = 1
         self.c = 2
         self.z = 3
+        #self.metodo(0, 1, 2, 3)
         return
     
     def metodo(self, h, i, j, k):
         self.casa = 1
-        k = i + j
-        return
+        k = i + j + (1/0) +'a'
+        o = 50
+        return k
 """
 class clase2(Descriptor):
     def __init__(self):
