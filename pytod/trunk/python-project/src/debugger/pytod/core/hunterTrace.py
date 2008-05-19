@@ -180,8 +180,6 @@ class hunterTrace(object):
         except:
             print 'TOD está durmiendo :-('
 
-
-    
     def __getClassKey__(self, nameClass):
         for k,v in self._class.iteritems():
             if k.co_name == nameClass:
@@ -417,11 +415,7 @@ class hunterTrace(object):
         except:
             print 'TOD está durmiendo :-('        
 
-    def __behaviorExit__(self, frame, arg, depth, parentTimestampFrame, threadId):
-        print arg
-        print frame.f_globals
-        print 'fin de return'
-        raw_input()
+    def __behaviorExit__(self, frame, arg, depth, parentTimestampFrame, threadId, hasTrown):
         f_back = frame.f_back
         f_code = f_back.f_code
         parentId = self.__getObjectId__(f_code)
@@ -437,8 +431,11 @@ class hunterTrace(object):
         self.packer.pack_int(behaviorId)
         dataType = self.__getDataType__(arg)
         self.packer.pack_int(dataType)
-        value = self.__packValue__(dataType, arg)        
-        self.packer.pack_int(0)
+        value = self.__packValue__(dataType, arg)
+        if hasTrown:       
+            self.packer.pack_int(1)
+        else:
+            self.packer.pack_int(0)
         self.packer.pack_int(probeId)
         self.packer.pack_hyper(parentTimestampFrame)        
         self.packer.pack_int(depth)
@@ -450,7 +447,7 @@ class hunterTrace(object):
             print behaviorId,
             print dataType,
             print value,
-            print False,
+            print hasTrown,
             print probeId,
             print parentTimestampFrame,
             print depth,
@@ -609,20 +606,7 @@ class hunterTrace(object):
         return threadId
 
     def __trace__(self, frame, event, arg):
-        #print frame.f_code.co_name
-        #print frame.f_exc_traceback
-        #print frame.f_exc_type
-        #print frame.f_exc_value
         if frame.f_back == None:
-            if frame.f_code.co_name == 'apport_excepthook':
-                f_traceback = frame.f_locals['exc_tb']
-                print f_traceback.tb_next.tb_frame.f_code.co_name
-                print f_traceback.tb_next.tb_lineno
-                print f_traceback.tb_next.tb_lasti
-                print event
-                print frame.f_back
-                raw_input()
-                sys.settrace(None)       
             return
         lineno = frame.f_lineno
         code = frame.f_code
@@ -636,9 +620,9 @@ class hunterTrace(object):
                 if not code.co_name == '__init__':
                     return
             #supuesto manejo de error
-            if frame.f_code.co_name == 'apport_excepthook':
-                print frame.f_locals
-                raw_input()
+            #if frame.f_code.co_name == 'apport_excepthook':
+            #    print frame.f_locals
+            #    raw_input()
             parentTimestampFrame = self.__getTimestampParentFrame__(frame)
             if code.co_name == '__init__':
                 id = self.Id.__get__()
@@ -751,7 +735,22 @@ class hunterTrace(object):
                                      arg,
                                      depth,
                                      parentTimestampFrame,
-                                     threadId)
+                                     threadId,
+                                     False)
+        elif event == 'exception':
+            parentTimestampFrame = self.__getTimestampFrame__(frame)
+            #print f_traceback.tb_next.tb_frame.f_code.co_name
+            #print f_traceback.tb_next.tb_lineno
+            #print f_traceback.tb_next.tb_lasti
+            self.__behaviorExit__(frame,
+                                     arg[1],
+                                     depth,
+                                     parentTimestampFrame,
+                                     threadId,
+                                     True)
+            sys.settrace(None)
+            #print '[trace]', event, frame.f_code.co_name, frame.f_lineno, arg
+            #raw_input()
 
     def __printHunter__(self):
         #cerrar socket
