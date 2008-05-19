@@ -11,10 +11,13 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
+import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.server.ITODServerFactory;
 import tod.core.server.TODServer;
 import tod.gui.eventlist.LocalVariableWriteNode;
+import tod.agent.transport.*;
+import java.io.ByteArrayOutputStream;
 
 /**
  * A Python TOD server accepts connections from debugged script Python and process instrumentation
@@ -515,15 +518,33 @@ public class PythonTODServer extends TODServer
 				int typeId = aInputStream.readInt();
 				Object theValue = getObjectValue(typeId, aInputStream);
 				int iHasThrown = theStream.readInt();
-				if (iHasThrown == 1)
-				{
-					hasThrown = true;
-				}
 				int probeId = theStream.readInt();
 				long parentTimeStampFrame = aInputStream.readLong();
 				int depth = aInputStream.readInt();
 				long currentTimeStamp = aInputStream.readLong();
 				int threadId = aInputStream.readInt();
+				if (iHasThrown == 1)
+				{
+					hasThrown = true;
+					byte[] theValueS = ValueWriter.serialize(theValue);
+					//arreglar con identificadores internos
+					itsLogCollector.register(1000,
+							theValueS, 
+							currentTimeStamp, 
+							false);
+					itsLogCollector.behaviorExit(
+							threadId, 
+							parentTimeStampFrame, 
+							(short)depth, 
+							currentTimeStamp, 
+							null,
+							probeId, 
+							behaviorId,
+							hasThrown, 
+							new ObjectId(1000));
+					
+				}
+				else{
 				itsLogCollector.behaviorExit(
 						threadId, 
 						parentTimeStampFrame, 
@@ -534,6 +555,7 @@ public class PythonTODServer extends TODServer
 						behaviorId,
 						hasThrown, 
 						theValue);
+				}
 				System.out.println("Registrando return");
 			}
 			catch (Exception e)
