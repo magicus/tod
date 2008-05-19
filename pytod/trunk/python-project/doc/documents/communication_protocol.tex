@@ -26,7 +26,7 @@
 
 \title{Protocolo de comunicación}
 \author{Milton Inostroza Aguilera}
-\date{12 Mayo de 2008}
+\date{19 Mayo de 2008}
 \clearpage
 \maketitle
 
@@ -56,9 +56,11 @@ Registro & 0\\
 \hline
 Llamada & 1\\
 \hline
-Retorno & 2\\
+Asignación & 2\\
 \hline
-Asignacion & 3\\
+Retorno & 3\\
+\hline
+Instanciación & 4\\
 \hline
 \end{tabular}
 \caption{Identificadores de sucesos} 
@@ -110,7 +112,13 @@ long & 3\\
 \hline
 bool & 4\\
 \hline
-other & 5\\
+list & 5\\
+\hline
+tuple & 6\\
+\hline
+dict & 7\\
+\hline
+other & 8\\
 \hline
 \end{tabular}
 \caption{Identificadores de tipo de datos} 
@@ -243,11 +251,11 @@ Se describe la llamada al objeto función:\\
 
 \begin{table}[!h]
 \begin{center}
-\begin{tabular}{| c | c | c | c | c | c | c |}
+\begin{tabular}{| c | c | c | c | c | c |}
 \hline
-eventId & objectId & Id & parentId & argsN & typeId_{i} & argValue_{i}\\
+eventId & objectId & Id & argsN & typeId_{i} & argValue_{i}\\
 \hline
-int & int & int & int & int & int & --\footnotemark[1]\\
+int & int & int & int & int & value or valueId\footnotemark[1]\\
 \hline
 \end{tabular}
 \caption{Llamada al objeto función} 
@@ -258,11 +266,11 @@ Se describe la llamada al objeto método:\\
 
 \begin{table}[!h]
 \begin{center}
-\begin{tabular}{| c | c | c | c | c | c | c | c |}
+\begin{tabular}{| c | c | c | c | c | c | c |}
 \hline
-eventId & objectId & Id & parentId & classId & argsN & typeId_{i} & argValue_{i}\\
+eventId & objectId & Id & classId & argsN & typeId_{i} & argValue_{i}\\
 \hline
-int & int & int & int & int & int & int & --\footnotemark[1]\\
+int & int & int & int & int & int & value or valueId\footnotemark[1]\\
 \hline
 \end{tabular}
 \caption{Llamada al objeto método} 
@@ -281,11 +289,12 @@ int & double & int & double & int \\
 \hline
 \end{tabular}
 \caption{Coordenadas} 
+\label{Coordenadas}
 \end{center}
 \end{table}
 
 
-\footnotetext[1]{Aún no se toma decisión para poder almacenar los valores de objetos primitivos de Python como son: listas, tuplas, diccionarios, enumeraciones.}
+\footnotetext[1]{Aún no se implementa la modificación de la máquina virtual de Python para obtener el identificador único del objeto}
 \newpage
 
 \subsection{Asignación - Modificación de objetos}
@@ -299,7 +308,7 @@ Se describe la asignación - modificacion al objeto variable local:\\
 \hline
 eventId & objectId & Id & parentId & typeId & value\\
 \hline
-int & int & int & int & int & --\footnotemark[1]\\
+int & int & int & int & int & value or valueId\footnotemark[1]\\
 \hline
 \end{tabular}
 \caption{Registro del objeto variable local} 
@@ -314,27 +323,14 @@ Se describe la asignación - modificación al objeto atributo:\\
 \hline
 eventId & objectId & Id & parentId & typeId & value\\
 \hline
-int & int & int & int & int & --\footnotemark[1]\\
+int & int & int & int & int & value or valueId\footnotemark[1]\\
 \hline
 \end{tabular}
 \caption{Registro del objeto atributo} 
 \end{center}
 \end{table}
 
-Es importante señalar que todas estas asignaciones - modificaciones estan acompañadas de los siguientes datos que se describen a continuación:\\
-
-\begin{table}[!h]
-\begin{center}
-\begin{tabular}{| c | c | c | c | c |}
-\hline
-probeId & parentTimeStampFrame & depth & currentTimeStamp & threadId\\
-\hline
-int & double & int & double & int \\
-\hline
-\end{tabular}
-\caption{Coordenadas} 
-\end{center}
-\end{table}
+Es importante señalar que todas estas asignaciones - modificaciones están acompañadas de los siguientes datos \ref{Coordenadas}.
 
 \subsection{Return}
 
@@ -344,16 +340,18 @@ Se describe return:\\
 
 \begin{table}[!h]
 \begin{center}
-\begin{tabular}{| c | c | c | c | c |}
+\begin{tabular}{| c | c | c | c | c | c |}
 \hline
-eventId & typeId & value & probeId & hasThrown \\
+eventId & behaviorId & typeId & value & probeId & hasThrown \\
 \hline
-int & int & --\footnotemark[1] & int & bool\\
+int & int & int & value or valueId\footnotemark[1] & int & bool\\
 \hline
 \end{tabular}
 \caption{Registro de return} 
 \end{center}
 \end{table}
 
-\footnotetext[1]{Aún no se toma decisión para poder almacenar los valores de objetos primitivos de Python como son: listas, tuplas, diccionarios, enumeraciones.}
+Es importante señalar return está acompañado de los siguientes datos \ref{Coordenadas}.
+
+\footnotetext[1]{Aún no se implementa la modificación de la máquina virtual de Python para obtener el identificador único del objeto}
 \end{document}
