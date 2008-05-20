@@ -133,11 +133,11 @@ class hunterTrace(object):
                 return self._method[k]
         return None
 
-    def __instantiation__(self, code, frame, depth, currentTimestamp, parentTimestampFrame, threadId):
-        obj = self.__getObject__(code)
-        instantiationId = obj.__getId__()
-        classId = obj.__getTarget__()
-        argsValue = obj.__getArgsValues__(frame.f_locals)
+    def __instantiation__(self, code, frame, aInstantiationId, depth, currentTimestamp, parentTimestampFrame, threadId):
+        behavior = self.__getObject__(code)
+        behaviorId = behavior.__getId__()
+        classId = behavior.__getTarget__()
+        argsValue = behavior.__getArgsValues__(frame.f_locals)
         f_back = frame.f_back
         f_lasti = f_back.f_lasti
         f_code = f_back.f_code
@@ -149,7 +149,8 @@ class hunterTrace(object):
             probeId = self._probe[(currentLasti,parentId)]
         self.packer.reset()       
         self.packer.pack_int(self.events['instantiation'])
-        self.packer.pack_int(instantiationId)
+        self.packer.pack_int(behaviorId)
+        self.packer.pack_int(aInstantiationId)
         self.packer.pack_int(len(argsValue))
         printArg = " "
         for value in argsValue:
@@ -316,10 +317,10 @@ class hunterTrace(object):
             except:
                 print 'TOD está durmiendo :-('            
 
-    def __methodCall__(self, code, frame, depth, currentTimestamp, parentTimestampFrame, threadId):
+    def __methodCall__(self, code, frame, aTargetId, depth, currentTimestamp, parentTimestampFrame, threadId):
         obj = self.__getObject__(code)
         methodId = obj.__getId__()
-        classId = obj.__getTarget__()
+        #classId = obj.__getTarget__()
         argsValue = obj.__getArgsValues__(frame.f_locals)
         f_back = frame.f_back
         f_lasti = f_back.f_lasti
@@ -334,7 +335,7 @@ class hunterTrace(object):
         self.packer.pack_int(self.events['call'])
         self.packer.pack_int(self.objects['method'])
         self.packer.pack_int(methodId)
-        self.packer.pack_int(classId)
+        self.packer.pack_int(aTargetId)
         self.packer.pack_int(len(argsValue))
         printArg = " "
         for value in argsValue:
@@ -625,11 +626,14 @@ class hunterTrace(object):
             #    raw_input()
             parentTimestampFrame = self.__getTimestampParentFrame__(frame)
             if code.co_name == '__init__':
+                #TODO: cambio experimental, revizar!!!!!!
+                """
                 id = self.Id.__get__()
                 if not hasattr(locals['self'],'__dict__'):
                     return
                 locals['self'].__dict__.update({'__pyTOD__':id})
                 self.Id.__next__()
+                """
                 #aca se sacan las bases de la clase la cual
                 #se ha instanciado
                 #TODO: encontrar una mejor forma de hacerlo
@@ -653,22 +657,27 @@ class hunterTrace(object):
                     self.__registerMethod__(code,id,idClass,args)
                 currentTimestamp = frame.f_locals['__timestampFrame__']
                 if code.co_name == '__init__':
-                    self.__instantiation__(
-                                             code,
-                                             frame,
-                                             depth,
-                                             currentTimestamp,
-                                             parentTimestampFrame,
-                                             threadId)
+                    id = self.Id.__get__()
+                    if not hasattr(locals['self'],'__dict__'):
+                        return
+                    locals['self'].__dict__.update({'__pyTOD__':id})
+                    self.Id.__next__()
+                    self.__instantiation__(code,
+                                           frame,
+                                           locals['self'].__pyTOD__,
+                                           depth,
+                                           currentTimestamp,
+                                           parentTimestampFrame,
+                                           threadId)
 
                 else:
-                    self.__methodCall__(
-                                             code,
-                                             frame,
-                                             depth,
-                                             currentTimestamp,
-                                             parentTimestampFrame,
-                                             threadId)
+                    self.__methodCall__(code,
+                                        frame,
+                                        locals['self'].__pyTOD__,
+                                        depth,
+                                        currentTimestamp,
+                                        parentTimestampFrame,
+                                        threadId)
             else:
                 #verificamos si es una funcion
                 if globals.has_key(code.co_name):
@@ -676,13 +685,12 @@ class hunterTrace(object):
                         if not self.__inFunction__(code):
                             self.__registerFunction__(code)
                     currentTimestamp = frame.f_locals['__timestampFrame__']
-                    self.__functionCall__(
-                                               code,
-                                               frame,
-                                               depth,
-                                               currentTimestamp,
-                                               parentTimestampFrame,
-                                               threadId)   
+                    self.__functionCall__(code,
+                                          frame,
+                                          depth,
+                                          currentTimestamp,
+                                          parentTimestampFrame,
+                                          threadId)   
             return self.__trace__
         elif event == "line":
             if re.search(self.methodPattern,code.co_name):
@@ -696,15 +704,14 @@ class hunterTrace(object):
             if lnotab.has_key(frame.f_lasti):
                 local = self.__getpartcode__(code,lnotab[frame.f_lasti])
                 self.__register__(obj,local)
-                self.__localWrite__(
-                                        code,
-                                        local,
-                                        locals,
-                                        obj,
-                                        frame.f_lasti,
-                                        depth,
-                                        parentTimestampFrame,
-                                        threadId)
+                self.__localWrite__(code,
+                                    local,
+                                    locals,
+                                    obj,
+                                    frame.f_lasti,
+                                    depth,
+                                    parentTimestampFrame,
+                                    threadId)
             return self.__trace__
         elif event == "return":
             if re.search(self.methodPattern,code.co_name):
@@ -805,7 +812,6 @@ class Descriptor(object):
         #comportamiento extraño
         #se debe deshabilitar settrace
         #revizar comportamiento de xdrlib
-        import sys
         sys.settrace(None)
         obj.attributes.__updateAttr__({name:-1},objId)
         Id = obj.attributes[name]
@@ -817,7 +823,8 @@ class Descriptor(object):
         hT.packer.pack_int(hT.events['set'])
         hT.packer.pack_int(hT.objects['attribute'])
         hT.packer.pack_int(Id)
-        hT.packer.pack_int(behaviorId)
+        #hT.packer.pack_int(behaviorId)
+        hT.packer.pack_int(self.__pyTOD__)
         dataType = hT.__getDataType__(value)
         hT.packer.pack_int(dataType)
         value = hT.__packValue__(dataType, value)
@@ -826,7 +833,7 @@ class Descriptor(object):
         hT.packer.pack_int(currentDepth)
         hT.packer.pack_hyper(currentTimestamp)
         hT.packer.pack_int(threadId)
-        object.__setattr__(self, name, value) 
+        object.__setattr__(self, name, value)
         if hT.FLAG_DEBUGG:
             print hT.events['set'],
             print hT.objects['attribute'],
