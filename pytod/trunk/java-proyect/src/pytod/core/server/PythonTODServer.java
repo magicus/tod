@@ -135,12 +135,12 @@ public class PythonTODServer extends TODServer
 				int parentId = aInputStream.readInt();
 				String localName = new String(aInputStream.readString());
 				//for this moment only register locals of methods
-				//TODO: guillaume must be write {I hope} a handler for functions
+				//TODO: guillaume must write {I hope} a handler for functions
 				System.out.println(localId);
 				System.out.println(parentId);
 				System.out.println(localName);
 				theBehavior = itsStructureDatabase.getBehavior(parentId, true);
-				theBehavior.addLocalVariableInfo(new LocalVariableInfo(0,0,localName,"()V",localId));
+				theBehavior.addLocalVariableInfo(new LocalVariableInfo(0, 32000,localName,"()V",localId));
 				System.out.println("Registrando variable local "+localName);
 			}
 			catch (Exception e)
@@ -260,7 +260,8 @@ public class PythonTODServer extends TODServer
 			Object args[] = null;
 			try
 			{
-				int instantiationId = theStream.readInt();
+				int behaviorId = theStream.readInt();
+				int targetId = theStream.readInt();
 				int argsN = theStream.readInt();
 				if (argsN != 0){
 					args = new Object[argsN];
@@ -283,12 +284,12 @@ public class PythonTODServer extends TODServer
 						currentTimeStamp, 
 						null,
 						probeId,
-						false, 
+						true, 
 						-1,
-						instantiationId,
-						null,
+						behaviorId,
+						new ObjectId(targetId),
 						args);
-				System.out.println("instanciacion "+ instantiationId);
+				System.out.println("instanciacion "+ targetId);
 			}
 			catch (Exception e)
 			{
@@ -303,7 +304,7 @@ public class PythonTODServer extends TODServer
 			try
 			{
 				int methodId = theStream.readInt();
-				int classId = theStream.readInt();
+				int targetId = theStream.readInt();
 				int argsN = theStream.readInt();
 				if (argsN != 0){
 					args = new Object[argsN];
@@ -326,10 +327,10 @@ public class PythonTODServer extends TODServer
 						currentTimeStamp, 
 						null,
 						probeId,
-						false, 
+						true, 
 						-1,
 						methodId,
-						null,
+						new ObjectId(targetId),
 						args);
 				System.out.println("llamando a método "+ methodId);
 			}
@@ -449,7 +450,7 @@ public class PythonTODServer extends TODServer
 			try
 			{
 				int attributeId = theStream.readInt();
-				int parentId = theStream.readInt();
+				int targetId = theStream.readInt();
 				int typeId = aInputStream.readInt();
 				Object theValue = getObjectValue(typeId, aInputStream);
 				int probeId = theStream.readInt();
@@ -465,7 +466,7 @@ public class PythonTODServer extends TODServer
 						null, 
 						probeId, 
 						attributeId, 
-						parentId, 
+						new ObjectId(targetId), 
 						theValue);
 				System.out.println("modificando atributo "+ attributeId);
 			}
