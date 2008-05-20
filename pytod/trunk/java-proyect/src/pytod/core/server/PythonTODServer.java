@@ -511,6 +511,7 @@ public class PythonTODServer extends TODServer
 		public void returnEvent(XDRInputStream aInputStream)
 		{
 			XDRInputStream theStream = aInputStream;
+			int exitId = 101;
 			try
 			{
 				boolean hasThrown = false;
@@ -527,8 +528,8 @@ public class PythonTODServer extends TODServer
 				{
 					hasThrown = true;
 					byte[] theValueS = ValueWriter.serialize(theValue);
-					//arreglar con identificadores internos
-					itsLogCollector.register(1000,
+					itsLogCollector.register(
+							exitId,
 							theValueS, 
 							currentTimeStamp, 
 							false);
@@ -541,7 +542,7 @@ public class PythonTODServer extends TODServer
 							probeId, 
 							behaviorId,
 							hasThrown, 
-							new ObjectId(1000));
+							new ObjectId(exitId));
 					
 				}
 				else{
