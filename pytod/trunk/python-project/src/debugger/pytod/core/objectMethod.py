@@ -44,22 +44,28 @@ class Method(object):
         return argValues
 
     def __updateArgument__(self, aArgs):
-        self.argument = self.argument + aArgs
-        parentId = self.Id
-        for i in range(len(aArgs)):           
-            self.hT.packer.reset()
-            self.hT.packer.pack_int(self.hT.events['register'])
-            self.hT.packer.pack_int(self.hT.objects['local'])
-            self.hT.packer.pack_int(i)
-            self.hT.packer.pack_int(parentId)
-            self.hT.packer.pack_string(aArgs[i])
-            if self.hT.FLAG_DEBUGG:
-                print self.hT.events['register'],
-                print self.hT.objects['local'],
-                print i,
-                print parentId,
-                print aArgs[i]
-                raw_input()
+        #no se registra self como argumento valido
+        for theArg in aArgs:
+            if not theArg == 'self':
+                self.argument += (theArg,)
+        theParentId = self.Id
+        for theIndex in range(len(aArgs)):
+            if not aArgs[theIndex] == 'self':
+                self.hT.packer.reset()
+                self.hT.packer.pack_int(self.hT.events['register'])
+                self.hT.packer.pack_int(self.hT.objects['local'])
+                #se realiza un corrimiento para igual situacion con los indices
+                #del bytecode --> co_varnames
+                self.hT.packer.pack_int(theIndex + 1)
+                self.hT.packer.pack_int(theParentId)
+                self.hT.packer.pack_string(aArgs[theIndex])
+                if self.hT.FLAG_DEBUGG:
+                    print self.hT.events['register'],
+                    print self.hT.objects['local'],
+                    print theIndex + 1,
+                    print theParentId,
+                    print aArgs[theIndex]
+                    raw_input()
         
     def __registerLocals__(self, aLocal):
         self.locals.__update__(aLocal,self.Id,self.argument)
