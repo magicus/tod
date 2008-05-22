@@ -13,11 +13,15 @@ class Diccionario(dict):
         self.hT = hT
         dict.__init__(self)
 
-    def __setitem__(self, k, v):
-        dict.__setitem__(self,k,v)
+    def __setitem__(self, aKey, aValue):
+        dict.__setitem__(self,aKey,aValue)
 
-    def __update__(self, d, parentId):
-        for k,v in d.items():
+    def __update__(self, aDictionary, aParentId, aArgument):
+        for k,v in aDictionary.items():
+            if k in aArgument:
+                #variable local ya registrada ya que es un argumento
+                self[k] = v
+                return
             #se debe registrar argumento self?
             if not self.has_key(k):
                 if not k == 'self':
@@ -26,13 +30,13 @@ class Diccionario(dict):
                     self.hT.packer.pack_int(self.hT.events['register'])
                     self.hT.packer.pack_int(self.hT.objects['local'])
                     self.hT.packer.pack_int(v)
-                    self.hT.packer.pack_int(parentId)
+                    self.hT.packer.pack_int(aParentId)
                     self.hT.packer.pack_string(k)
                     if self.hT.FLAG_DEBUGG:
                         print self.hT.events['register'],
                         print self.hT.objects['local'],
                         print v,
-                        print parentId,
+                        print aParentId,
                         print k
                         raw_input()
                     try:
@@ -41,8 +45,8 @@ class Diccionario(dict):
                         print 'TOD está durmiendo :-('
                     
 
-    def __updateAttr__(self, d, parentId): 
-        for k,v in d.items():
+    def __updateAttr__(self, aDictionary, aParentId): 
+        for k,v in aDictionary.items():
             #se debe registrar argumento self?
             if not self.has_key(k):
                 if not k == 'self':
@@ -53,13 +57,13 @@ class Diccionario(dict):
                     self.hT.packer.pack_int(self.hT.events['register'])
                     self.hT.packer.pack_int(self.hT.objects['attribute'])
                     self.hT.packer.pack_int(v)
-                    self.hT.packer.pack_int(parentId)
+                    self.hT.packer.pack_int(aParentId)
                     self.hT.packer.pack_string(k)
                     if self.hT.FLAG_DEBUGG:
                         print self.hT.events['register'],
                         print self.hT.objects['attribute'],
                         print v,
-                        print parentId,
+                        print aParentId,
                         print k 
                         raw_input()                          
                     try:       
