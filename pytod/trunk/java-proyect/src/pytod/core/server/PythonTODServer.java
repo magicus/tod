@@ -97,6 +97,14 @@ public class PythonTODServer extends TODServer
 			start();
 		}
 
+		private String generateSignature(int aArgsCount)
+		{
+			StringBuilder theSignatureBuilder = new StringBuilder("(");
+			for(int i=0;i<aArgsCount;i++) theSignatureBuilder.append("Ljava.lang.Object;");
+			theSignatureBuilder.append(")Ljava.lang.Object;");
+			
+			return theSignatureBuilder.toString();
+		}
 
 		public void registerFunction(XDRInputStream aInputStream)
 		{
@@ -108,13 +116,13 @@ public class PythonTODServer extends TODServer
 				String functionName = new String(aInputStream.readString());
 				int argsN = aInputStream.readInt();
 				theClass = itsStructureDatabase.getClass(100, true);
-				theBehavior = theClass.addBehavior(functionId, functionName, "()V");
+				theBehavior = theClass.addBehavior(functionId, functionName, generateSignature(argsN));
 				if (argsN != 0){
 					for(int i=0;i<argsN;i=i+1)
 					{
 						String argName = new String(aInputStream.readString());						
 						int argId = aInputStream.readInt();
-						theBehavior.addLocalVariableInfo(new LocalVariableInfo(0,32000,argName,"()V",argId));
+						theBehavior.addLocalVariableInfo(new LocalVariableInfo(0, 32000, argName, "java.lang.Object", argId));
 						System.out.println("Registrando variable local "+argName);
 					}
 				}
@@ -141,7 +149,7 @@ public class PythonTODServer extends TODServer
 				System.out.println(parentId);
 				System.out.println(localName);
 				theBehavior = itsStructureDatabase.getBehavior(parentId, true);
-				theBehavior.addLocalVariableInfo(new LocalVariableInfo(0, 32000,localName,"()V",localId));
+				theBehavior.addLocalVariableInfo(new LocalVariableInfo(0, 32000, localName, "java.lang.Object", localId));
 				System.out.println("Registrando variable local "+localName);
 			}
 			catch (Exception e)
@@ -181,15 +189,16 @@ public class PythonTODServer extends TODServer
 				int classId = aInputStream.readInt();
 				String methodName = aInputStream.readString();
 				int argsN = aInputStream.readInt();
+				
 				theClass = itsStructureDatabase.getClass(classId, true);
-				theBehavior = theClass.addBehavior(methodId, methodName, "()V");
+				theBehavior = theClass.addBehavior(methodId, methodName, generateSignature(argsN));
 				//theBehavior = theClass.addBehavior(methodId, methodName, ""+argsN);
 				if (argsN != 0){
 					for(int i=0;i<argsN;i=i+1)
 					{
 						String argName = aInputStream.readString();
 						int argId = aInputStream.readInt();
-						theBehavior.addLocalVariableInfo(new LocalVariableInfo(0,3200,argName,"()V",argId));
+						theBehavior.addLocalVariableInfo(new LocalVariableInfo(0, 32000, argName, "java.lang.Object", argId));
 						System.out.println("Registrando variable local "+argName);
 					}
 				}
