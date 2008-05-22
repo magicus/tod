@@ -114,7 +114,8 @@ public class PythonTODServer extends TODServer
 					{
 						String argName = new String(aInputStream.readString());						
 						int argId = aInputStream.readInt();
-						theBehavior.addLocalVariableInfo(new LocalVariableInfo(0,0,argName,"()V",argId));
+						theBehavior.addLocalVariableInfo(new LocalVariableInfo(0,32000,argName,"()V",argId));
+						System.out.println("Registrando variable local "+argName);
 					}
 				}
 				System.out.println("Registrando la funcion "+functionName + "id = "+functionId);
@@ -188,7 +189,8 @@ public class PythonTODServer extends TODServer
 					{
 						String argName = aInputStream.readString();
 						int argId = aInputStream.readInt();
-						theBehavior.addLocalVariableInfo(new LocalVariableInfo(0,0,argName,"()V",argId));
+						theBehavior.addLocalVariableInfo(new LocalVariableInfo(0,3200,argName,"()V",argId));
+						System.out.println("Registrando variable local "+argName);
 					}
 				}
 				System.out.println("Registrando el metodo "+methodName + "id = "+methodId);
