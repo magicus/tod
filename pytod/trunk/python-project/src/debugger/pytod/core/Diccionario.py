@@ -17,27 +17,27 @@ class Diccionario(dict):
         dict.__setitem__(self,aKey,aValue)
 
     def __update__(self, aDictionary, aParentId, aArgument):
-        for k,v in aDictionary.items():
-            if k in aArgument:
+        for theKey, theValue in aDictionary.items():
+            if theKey in aArgument:
                 #variable local ya registrada ya que es un argumento
-                self[k] = v
+                self[theKey] = theValue
                 return
             #se debe registrar argumento self?
-            if not self.has_key(k):
-                if not k == 'self':
-                    self[k] = v
+            if not self.has_key(theKey):
+                if not theKey == 'self':
+                    self[theKey] = theValue
                     self.hT.packer.reset()
                     self.hT.packer.pack_int(self.hT.events['register'])
                     self.hT.packer.pack_int(self.hT.objects['local'])
-                    self.hT.packer.pack_int(v)
+                    self.hT.packer.pack_int(theValue)
                     self.hT.packer.pack_int(aParentId)
-                    self.hT.packer.pack_string(k)
+                    self.hT.packer.pack_string(theKey)
                     if self.hT.FLAG_DEBUGG:
                         print self.hT.events['register'],
                         print self.hT.objects['local'],
-                        print v,
+                        print theValue,
                         print aParentId,
-                        print k
+                        print theKey
                         raw_input()
                     try:
                         self.hT._socket.sendall(self.hT.packer.get_buffer())
@@ -46,25 +46,25 @@ class Diccionario(dict):
                     
 
     def __updateAttr__(self, aDictionary, aParentId): 
-        for k,v in aDictionary.items():
+        for theKey, theValue in aDictionary.items():
             #se debe registrar argumento self?
-            if not self.has_key(k):
-                if not k == 'self':
-                    v = self.hT.Id.__get__()
+            if not self.has_key(theKey):
+                if not theKey == 'self':
+                    theValue = self.hT.Id.__get__()
                     self.hT.Id.__next__()
-                    self[k] = v
+                    self[theKey] = theValue
                     self.hT.packer.reset()
                     self.hT.packer.pack_int(self.hT.events['register'])
                     self.hT.packer.pack_int(self.hT.objects['attribute'])
-                    self.hT.packer.pack_int(v)
+                    self.hT.packer.pack_int(theValue)
                     self.hT.packer.pack_int(aParentId)
-                    self.hT.packer.pack_string(k)
+                    self.hT.packer.pack_string(theKey)
                     if self.hT.FLAG_DEBUGG:
                         print self.hT.events['register'],
                         print self.hT.objects['attribute'],
-                        print v,
+                        print theValue,
                         print aParentId,
-                        print k 
+                        print theKey 
                         raw_input()                          
                     try:       
                         self.hT._socket.sendall(self.hT.packer.get_buffer())
