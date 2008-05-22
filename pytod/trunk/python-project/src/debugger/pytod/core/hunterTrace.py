@@ -42,7 +42,6 @@ class hunterTrace(object):
         self.host = host
         self.port = port
         self.FLAG_DEBUGG = False
-        #self.isInitialTime = True
         self.methodPattern = "\A__.*(__)$"
         self.__socketConnect__()
         
@@ -167,7 +166,7 @@ class hunterTrace(object):
         self.packer.pack_int(threadId)
         if self.FLAG_DEBUGG:
             print self.events['instantiation'],
-            print instantiationId,
+            print aInstantiationId,
             print len(argsValue), 
             print printArg,        
             print probeId,
@@ -274,11 +273,11 @@ class hunterTrace(object):
             self.packer.pack_int(dataType)
             return dataType
     
-    def __localWrite__(self, code, local, locals, obj, currentLasti, depth, parentTimestampFrame, threadId):
+    def __localWrite__(self, code, bytecodeLocal, locals, obj, currentLasti, depth, parentTimestampFrame, threadId):
         attr = obj.__getLocals__()
         behaviorId = self.__getObjectId__(code)
         depth = depth + 1
-        for i in local.iterkeys():
+        for i in bytecodeLocal.iterkeys():
             if not attr.has_key(i) or not locals.has_key(i):
                 return
             if not self._probe.has_key((currentLasti,behaviorId)):
@@ -354,7 +353,7 @@ class hunterTrace(object):
             print self.events['call'],
             print self.objects['method'],
             print methodId,
-            print classId,
+            print aTargetId,
             print len(argsValue),
             print printArg,
             print probeId,
@@ -702,10 +701,10 @@ class hunterTrace(object):
                 return
             lnotab = obj.__getLnotab__()
             if lnotab.has_key(frame.f_lasti):
-                local = self.__getpartcode__(code,lnotab[frame.f_lasti])
-                self.__register__(obj,local)
+                bytecodeLocal = self.__getpartcode__(code,lnotab[frame.f_lasti])
+                self.__register__(obj,bytecodeLocal)
                 self.__localWrite__(code,
-                                    local,
+                                    bytecodeLocal,
                                     locals,
                                     obj,
                                     frame.f_lasti,
@@ -728,16 +727,16 @@ class hunterTrace(object):
                     return
                 lnotab = obj.__getLnotab__()
                 if lnotab.has_key(frame.f_lasti):
-                    local = self.__getpartcode__(code,lnotab[frame.f_lasti])
-                    self. __register__(obj,local)
+                    bytecodeLocal = self.__getpartcode__(code,lnotab[frame.f_lasti])
+                    self. __register__(obj,bytecodeLocal)
                     self.__localWrite__(code,
-                                            local,
-                                            locals,
-                                            obj,
-                                            frame.f_lasti,
-                                            depth,
-                                            parentTimestampFrame,
-                                            threadId)
+                                        bytecodeLocal,
+                                        locals,
+                                        obj,
+                                        frame.f_lasti,
+                                        depth,
+                                        parentTimestampFrame,
+                                        threadId)
                 self.__behaviorExit__(frame,
                                      arg,
                                      depth,
