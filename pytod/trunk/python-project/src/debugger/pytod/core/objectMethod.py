@@ -9,19 +9,19 @@ from Diccionario import Diccionario
 
 class Method(object):
 
-    def __init__(self, hT, id, code, lnotab, idClass, args):
-        self.hT = hT
+    def __init__(self, aHt, aId, aCode, aLnotab, aIdClass, aArgs):
+        self.hT = aHt
         self.locals = Diccionario(self.hT)
         self.argument = ()
-        self.lnotab = lnotab
-        self.code = code
-        self.name = code.co_name
-        self.idClass = idClass
-        self.id = id
-        self.__updateArgument__(args)
+        self.lnotab = aLnotab
+        self.code = aCode
+        self.name = aCode.co_name
+        self.idClass = aIdClass
+        self.Id = aId
+        self.__updateArgument__(aArgs)
 
     def __getId__(self):
-        return self.id
+        return self.Id
 
     def __getLnotab__(self):
         return self.lnotab
@@ -35,31 +35,31 @@ class Method(object):
     def __getArgs__(self):
         return self.argument
     
-    def __getArgsValues__(self, locals):
+    def __getArgsValues__(self, aLocals):
         argValues = ()
         for name in self.argument:
-            if locals.has_key(name):
-                argValues = argValues + (locals[name],)
+            if aLocals.has_key(name):
+                argValues = argValues + (aLocals[name],)
         #TODO: analizar caso para cuando sean tuple, list, dict
         return argValues
 
-    def __updateArgument__(self, args):
-        self.argument = self.argument + args
-        parentId = self.id
-        for i in range(len(args)):           
+    def __updateArgument__(self, aArgs):
+        self.argument = self.argument + aArgs
+        parentId = self.Id
+        for i in range(len(aArgs)):           
             self.hT.packer.reset()
             self.hT.packer.pack_int(self.hT.events['register'])
             self.hT.packer.pack_int(self.hT.objects['local'])
             self.hT.packer.pack_int(i)
             self.hT.packer.pack_int(parentId)
-            self.hT.packer.pack_string(args[i])
+            self.hT.packer.pack_string(aArgs[i])
             if self.hT.FLAG_DEBUGG:
                 print self.hT.events['register'],
                 print self.hT.objects['local'],
                 print i,
                 print parentId,
-                print args[i]
+                print aArgs[i]
                 raw_input()
         
-    def __registerLocals__(self, local):
-        self.locals.__update__(local,self.id)
+    def __registerLocals__(self, aLocal):
+        self.locals.__update__(aLocal,self.Id,self.argument)

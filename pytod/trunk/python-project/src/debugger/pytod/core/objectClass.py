@@ -10,23 +10,23 @@ from Diccionario import Diccionario
 
 class Class(object):
 
-    def __init__(self, hT, classId, code, lnotab):
-        self.hT = hT
+    def __init__(self, aHt, aClassId, aCode, aLnotab):
+        self.hT = aHt
         self.attributes = Diccionario(self.hT)
         self.method = Diccionario(self.hT)
-        self.lnotab = lnotab
-        self.code = code
-        self.name = code.co_name
-        self.id = classId
+        self.lnotab = aLnotab
+        self.code = aCode
+        self.name = aCode.co_name
+        self.Id = aClassId
 
     def __getId__(self):
-        return self.id
+        return self.Id
 
     def __getLnotab__(self):
         return self.lnotab
 
-    def __addMethod__(self,code,locals):
-        for k,v in locals.iteritems():
+    def __addMethod__(self, aCode, aLocals):
+        for k,v in aLocals.iteritems():
             if inspect.isfunction(v):
                 if not (k == '__module__'):
                     id = self.hT.Id.__get__()
