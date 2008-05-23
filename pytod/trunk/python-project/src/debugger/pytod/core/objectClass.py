@@ -6,14 +6,14 @@ __email__ = "minoztro@gmail.com"
 __all__ = ['Class']
 
 import inspect
-from Diccionario import Diccionario
+from Dictionary import Dictionary
 
 class Class(object):
 
     def __init__(self, aHt, aClassId, aCode, aLnotab):
         self.hT = aHt
-        self.attributes = Diccionario(self.hT)
-        self.method = Diccionario(self.hT)
+        self.attributes = Dictionary(self.hT)
+        self.method = Dictionary(self.hT)
         self.lnotab = aLnotab
         self.code = aCode
         self.name = aCode.co_name

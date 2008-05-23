@@ -5,13 +5,13 @@ __author__ = "Milton Inostroza Aguilera"
 __email__ = "minoztro@gmail.com"
 __all__ = ['Function']
 
-from Diccionario import Diccionario
+from Dictionary import Dictionary
 
 class Function(object):
 
     def __init__(self, aHt, aId, aCode, aLnotab, aArgs):
         self.hT = aHt
-        self.locals = Diccionario(self.hT)
+        self.locals = Dictionary(self.hT)
         self.argument = ()
         self.lnotab = aLnotab
         self.code = aCode
