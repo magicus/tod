@@ -8,11 +8,11 @@ __all__ = ['generatorId']
 class generatorId(object):
     
     def __init__(self):
-        self.id = 102
+        self.Id = 102
 
     def __get__(self):
-        return self.id
+        return self.Id
 
     def __next__(self):
-        self.id = self.id + 1
+        self.Id = self.Id + 1
         return 
