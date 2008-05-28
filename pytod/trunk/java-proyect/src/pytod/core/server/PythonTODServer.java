@@ -59,7 +59,12 @@ public class PythonTODServer extends TODServer
 		}
 	}
 	
-	
+	//events
+	private static final int REGISTER_EVENT = 0;
+	private static final int CALL_EVENT = 1;
+	private static final int SET_EVENT = 2;
+	private static final int RETURN_EVENT = 3;
+	private static final int INSTANTIATION_EVENT = 4;	
 	//objects
 	private static final int OBJECT_CLASS = 0;
 	private static final int OBJECT_METHOD = 1;
@@ -78,12 +83,6 @@ public class PythonTODServer extends TODServer
 	private static final int DATA_LIST = 6;
 	private static final int DATA_DICT = 7;
 	private static final int DATA_OTHER = 8;
-	//events
-	private static final int REGISTER_EVENT = 0;
-	private static final int CALL_EVENT = 1;
-	private static final int SET_EVENT = 2;
-	private static final int RETURN_EVENT = 3;
-	private static final int INSTANTIATION_EVENT = 4;
 	
 	
 	private class Receiver extends Thread
@@ -238,6 +237,7 @@ public class PythonTODServer extends TODServer
 				int probeId = theStream.readInt();
 				int parentId = theStream.readInt();				
 				int probeCurrentLasti = theStream.readInt();
+				int currentLineno = theStream.readInt();
 				itsStructureDatabase.addProbe(probeId, parentId, probeCurrentLasti, null, 0);
 				System.out.println("Registrando probe "+probeId);
 			}
