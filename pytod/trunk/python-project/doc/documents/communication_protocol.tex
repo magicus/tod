@@ -24,9 +24,9 @@
 \renewcommand\appendixname{Apéndice}
 \renewcommand\abstractname{Resumen}
 
-\title{Protocolo de comunicación}
+\title{Protocolo de comunicación - Draft}
 \author{Milton Inostroza Aguilera}
-\date{19 Mayo de 2008}
+\date{28 Mayo de 2008}
 \clearpage
 \maketitle
 
@@ -35,15 +35,20 @@
 Protocolo de comunicación utilizado para envíar datos desde pyTOD hacia TOD.
 
 \end{abstract}
+
+\newpage
+\tableofcontents
 \newpage
 \listoftables
 \newpage
 
-\section{Protocolo de comunicación - Draft}
+\section{Protocolo de comunicación}
 
-Se muestran las tablas bases para el registro de los objetos y para el envío de eventos:
+Se muestran los identificadores bases para el registro de los objetos, envío de eventos y tipo de datos:
 
-\subsection{Identificadores bases}
+\subsection{Identificadores}
+
+\subsubsection{Sucesos}
 
 La siguiente tabla muestra que cada suceso tiene un identificador en el sistema de capturación de huella.
 \begin{table}[!h]
@@ -67,7 +72,8 @@ Instanciación & 4\\
 \end{center}
 \end{table}
 
-La siguiente tabla muestra que cada objeto tiene un identificador en el sistema de capturación de huella.
+\subsubsection{Objetos}
+La siguiente tabla muestra que cada objeto tiene un identificador en el sistema de captura de huella.
 \begin{table}[!h]
 \begin{center}
 \begin{tabular}{|l | c |}
@@ -76,11 +82,11 @@ Id Objeto & Identificador\\
 \hline
 Clase & 0\\
 \hline
-método & 1\\
+Método & 1\\
 \hline
 Atributo & 2\\
 \hline
-Funcion & 3\\
+Función & 3\\
 \hline
 Variable local & 4\\
 \hline
@@ -95,7 +101,8 @@ Thread & 6\\
 \\
 \pagebreak
 
-La siguiente tabla muestra que cada tipo de datos un identificador en el sistema de capturación de huella.
+\subsubsection{Tipo de datos}
+La siguiente tabla muestra que cada tipo de datos tiene un identificador en el sistema de captura de huella.
 \begin{table}[!h]
 \begin{center}
 \begin{tabular}{|l | c |}
@@ -129,29 +136,30 @@ other & 8\\
 
 A continuación se muestra el formato que tienen el registro de los diferentes objetos dentro del capturador de huellas:\\
 
+\subsubsection{Función}
 Se describe el registro del objeto función:\\
 
 \begin{table}[!h]
 \begin{center}
-\begin{tabular}{| c | c | c | c | c | c | c |}
+\begin{tabular}{| c | c | c | c | c | c | c | c |}
 \hline
-eventId & objectId & Id & name & argsN & \{argName_{i} & argId_{i}\}\\
+eventId & objectId & functionId & functionName & argsN & \{argName_{i} & argId_{i}\} & fileName\\
 \hline
-int & int & int & str & int & str & int \\
+int & int & int & str & int & str & int & str\\
 \hline
 \end{tabular}
 \caption{Registro del objeto función} 
 \end{center}
 \end{table}
 
-
+\subsubsection{Variable local}
 Se describe el registro del objeto variable local:\\
 
 \begin{table}[!h]
 \begin{center}
 \begin{tabular}{| c | c | c | c | c |}
 \hline
-eventId & objectId & Id & parentId & name\\
+eventId & objectId & localId & parentId & localName\\
 \hline
 int & int & int & int & str\\
 \hline
@@ -160,14 +168,14 @@ int & int & int & int & str\\
 \end{center}
 \end{table}
 
-
+\subsubsection{Clase}
 Se describe el registro del objeto clase:\\
 
 \begin{table}[!h]
 \begin{center}
 \begin{tabular}{| c | c | c | c | c |}
 \hline
-eventId & objectId & Id & name & classBases\\
+eventId & objectId & classId & className & classBases\\
 \hline
 int & int & int & str & --\footnotemark[1]\\
 \hline
@@ -178,30 +186,31 @@ int & int & int & str & --\footnotemark[1]\\
 
 
 \footnotetext[1]{Aún no se toma decisión para poder registrar las super clases que pueda tener la clase registrada.}
-\newpage
+
+\subsubsection{Método}
 Se describe el registro del objeto método:\\
 
 \begin{table}[!h]
 \begin{center}
-\begin{tabular}{| c | c | c | c | c | c | c | c |}
+\begin{tabular}{| c | c | c | c | c | c | c | c | c |}
 \hline
-eventId & objectId & Id & classId & name & argsN & \{argName_{i} & argId_{i}\}\\
+eventId & objectId & methodId & classId & methodName & argsN & \{argName_{i} & argId_{i}\} & fileName\\
 \hline
-int & int & int & int & str & int & str & int \\
+int & int & int & int & str & int & str & int & str\\
 \hline
 \end{tabular}
 \caption{Registro del objeto método} 
 \end{center}
 \end{table}
 
-
+\subsubsection{Atributo}
 Se describe el registro del objeto atributo:\\
 
 \begin{table}[!h]
 \begin{center}
 \begin{tabular}{| c | c | c | c | c |}
 \hline
-eventId & objectId & Id & parentId & name\\
+eventId & objectId & attributeId & parentId & attributeName\\
 \hline
 int & int & int & int & str\\
 \hline
@@ -210,14 +219,14 @@ int & int & int & int & str\\
 \end{center}
 \end{table}
 
-
+\subsubsection{Thread}
 Se describe el registro del objeto thread: \\
 
 \begin{table}[!h]
 \begin{center}
 \begin{tabular}{| c | c | c | c |}
 \hline
-eventId & objectId & Id & sysId\\
+eventId & objectId & threadId & sysId\\
 \hline
 int & int & int & int\\
 \hline
@@ -225,35 +234,36 @@ int & int & int & int\\
 \caption{Registro del objeto thread} 
 \end{center}
 \end{table}
-
+\newpage
+\subsubsection{Probe}
 
 Se describe el registro del objeto probe: \\
 
 \begin{table}[!h]
 \begin{center}
-\begin{tabular}{| c | c | c | c | c |}
+\begin{tabular}{| c | c | c | c | c | c |}
 \hline
-eventId & objectId & Id & parentId & currentLasti \\
+eventId & objectId & Id & parentId & currentLasti & currentLineno \\
 \hline
-int & int & int & int & int\\
+int & int & int & int & int & int\\
 \hline
 \end{tabular}
 \caption{Registro del objeto probe} 
 \end{center}
 \end{table}
 
-\newpage
 \subsection{Llamada de objetos}
 
 A continuación se muestra el formato que tienen las llamadas de los objetos función y método dentro del capturador de huellas:\\
 
+\subsubsection{Función}
 Se describe la llamada al objeto función:\\
 
 \begin{table}[!h]
 \begin{center}
 \begin{tabular}{| c | c | c | c | c | c |}
 \hline
-eventId & objectId & Id & argsN & typeId_{i} & argValue_{i}\\
+eventId & objectId & functionId & argsN & \{typeId_{i} & argValue_{i}\}\\
 \hline
 int & int & int & int & int & value or valueId\footnotemark[1]\\
 \hline
@@ -262,15 +272,17 @@ int & int & int & int & int & value or valueId\footnotemark[1]\\
 \end{center}
 \end{table}
 
+\subsubsection{Método}
+
 Se describe la llamada al objeto método:\\
 
 \begin{table}[!h]
 \begin{center}
-\begin{tabular}{| c | c | c | c | c | c | c |}
+\begin{tabular}{| c | c | c | c | c | c | c | c |}
 \hline
-eventId & objectId & Id & classId & argsN & typeId_{i} & argValue_{i}\\
+eventId & objectId & methodId & targetId & classId & argsN & \{typeId_{i} & argValue_{i}\}\\
 \hline
-int & int & int & int & int & int & value or valueId\footnotemark[1]\\
+int & int & int & int & int & int & int & value or valueId\footnotemark[1]\\
 \hline
 \end{tabular}
 \caption{Llamada al objeto método} 
@@ -297,16 +309,38 @@ int & double & int & double & int \\
 \footnotetext[1]{Aún no se implementa la modificación de la máquina virtual de Python para obtener el identificador único del objeto}
 \newpage
 
-\subsection{Asignación - Modificación de objetos}
-A continuación se muestra el formato que tienen las asignaciones | modificaciones de los objetos variable local y atributo dentro del capturador de huellas:\\
+\subsection{Instanciación de clase}
 
-Se describe la asignación - modificacion al objeto variable local:\\
+A continuación se muestra el formato que tienen la instanciación de clase dentro del capturador de huellas:\\
 
 \begin{table}[!h]
 \begin{center}
 \begin{tabular}{| c | c | c | c | c | c |}
 \hline
-eventId & objectId & Id & parentId & typeId & value\\
+eventId & behaviorId & targetId & argsN & \{typeId_{i} & argValue_{i}\}\\
+\hline
+int & int & int & int & int & value or valueId\footnotemark[1]\\
+\hline
+\end{tabular}
+\caption{Instanciación de clase} 
+\end{center}
+\end{table}
+
+Es importante señalar que la instanciación está acompañada de los siguientes datos \ref{Coordenadas}.
+
+
+\subsection{Asignación - Modificación de objetos}
+A continuación se muestra el formato que tienen las asignaciones | modificaciones de los objetos variable local y atributo dentro del capturador de huellas:\\
+
+\subsubsection{Variable local}
+
+Se describe la asignación - modificación al objeto variable local:\\
+
+\begin{table}[!h]
+\begin{center}
+\begin{tabular}{| c | c | c | c | c | c |}
+\hline
+eventId & objectId & localId & parentId & typeId & value\\
 \hline
 int & int & int & int & int & value or valueId\footnotemark[1]\\
 \hline
@@ -315,13 +349,15 @@ int & int & int & int & int & value or valueId\footnotemark[1]\\
 \end{center}
 \end{table}
 
+\subsubsection{Atributo}
+
 Se describe la asignación - modificación al objeto atributo:\\
 
 \begin{table}[!h]
 \begin{center}
 \begin{tabular}{| c | c | c | c | c | c |}
 \hline
-eventId & objectId & Id & parentId & typeId & value\\
+eventId & objectId & attributeId & targetId & typeId & value\\
 \hline
 int & int & int & int & int & value or valueId\footnotemark[1]\\
 \hline
@@ -332,6 +368,7 @@ int & int & int & int & int & value or valueId\footnotemark[1]\\
 
 Es importante señalar que todas estas asignaciones - modificaciones están acompañadas de los siguientes datos \ref{Coordenadas}.
 
+\newpage
 \subsection{Return}
 
 A continuación se muestra el formato que tiene el return dentro del capturador de huellas:\\
