@@ -25,50 +25,94 @@ if th:
 class hunterTrace(object):
 
     def __init__(self, aId, aProbeId, aThreadId, aPacker, aHost, aPort):
-        self._class = {}
-        self._function = {}
-        self._method = {}
-        self._probe = {}
-        self._thread = {}
-        self._socket = None
-        self.events = events
-        self.objects = objects
-        self.dataTypes = dataTypes
-        self.packXDRLib = packXDRLib
-        self.Id = aId
-        self.probeId = aProbeId
-        self.threadId = aThreadId
-        self.packer = aPacker
-        self.host = aHost
-        self.port = aPort
-        self.FLAG_DEBUGG = True
-        self.methodPattern = "\A__.*(__)$"
+        self.itsClass = {}
+        self.itsFunction = {}
+        self.itsMethod = {}
+        self.itsProbe = {}
+        self.itsThread = {}
+        self.itsSocket = None
+        self.itsEvents = events
+        self.itsObjects = objects
+        self.itsDataTypes = dataTypes
+        self.itsPackXDR = packXDRLib
+        self.itsId = aId
+        self.itsProbeId = aProbeId
+        self.itsThreadId = aThreadId
+        self.itsPacker = aPacker
+        self.itsHost = aHost
+        self.itsPort = aPort
+        self.FLAG_DEBUGG = False
+        self.itsMethodPattern = "\A__.*(__)$"
         self.__socketConnect__()
-        
-    def __socketConnect__(self):
-        self._socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        try:
-            self._socket.connect((self.host, self.port))
-        except:
-            print "TOD, esta durmiendo :("
-
 
     def __addClass__(self, aId, aLnotab, aCode):
         objectClass = Class(self,aId,aCode,aLnotab)
-        self._class.update({aCode:objectClass})
+        self.itsClass.update({aCode:objectClass})
         return objectClass
 
     def __addFunction__(self, aId, aLnotab, aCode, aArgs):
-        self._function.update({aCode:Function(self,aId,aCode,aLnotab,aArgs)})
+        self.itsFunction.update({aCode:Function(self,aId,aCode,aLnotab,aArgs)})
 
     def __addMethod__(self, aId, aLnotab, aCode, idClass, aArgs):
-        self._method.update({aCode:Method(self,aId,aCode,aLnotab,idClass,aArgs)})
+        self.itsMethod.update({aCode:Method(self,aId,aCode,aLnotab,idClass,aArgs)})
 
     def __addProbe__(self, aProbeId, currentLasti, parentId):
-        self._probe.update({(currentLasti,parentId):aProbeId})
+        self.itsProbe.update({(currentLasti,parentId):aProbeId})
 
-    def __addThread__(self, aThreadId, threadSysId):
-        self._thread.update({threadSysId:aThreadId})
+    def __addThread__(self, aThreadId, aThreadSysId):
+        self.itsThread.update({aThreadSysId:aThreadId})
+                
+    def __behaviorExit__(self,
+                         aFrame,
+                         arg,
+                         aDepth,
+                         aParentTimestampFrame,
+                         aThreadId,
+                         aHasTrown):
+        theBackFrame = aFrame.f_back
+        theBackFrameCode = theBackFrame.f_code
+        theParentId = self.__getObjectId__(theBackFrameCode)
+        behaviorId = self.__getObjectId__(aFrame.f_code)
+        theCurrentLasti = aFrame.f_lasti
+        theDepth = aDepth + 1
+        if not self.itsProbe.has_key((theCurrentLasti,theParentId)):
+            theProbeId = self.__registerProbe__(theCurrentLasti,
+                                                theParentId,
+                                                aFrame.f_lineno)
+        else:
+            theProbeId = self.itsProbe[(theCurrentLasti,theParentId)]
+        self.itsPacker.reset()
+        self.itsPacker.pack_int(self.itsEvents['return'])
+        self.itsPacker.pack_int(behaviorId)
+        theDataType = self.__getDataType__(arg)
+        self.itsPacker.pack_int(theDataType)
+        thePackValue = self.__packValue__(theDataType, arg)
+        if aHasTrown:       
+            self.itsPacker.pack_int(1)
+        else:
+            self.itsPacker.pack_int(0)
+        self.itsPacker.pack_int(theProbeId)
+        self.itsPacker.pack_hyper(aParentTimestampFrame)        
+        self.itsPacker.pack_int(theDepth)
+        theCurrentTimestamp = self.__convertTimestamp__(time.time()) 
+        self.itsPacker.pack_hyper(theCurrentTimestamp)
+        self.itsPacker.pack_int(aThreadId)
+        if self.FLAG_DEBUGG:
+            print self.itsEvents['return'],
+            print behaviorId,
+            print theDataType,
+            print thePackValue,
+            print aHasTrown,
+            print theProbeId,
+            print aParentTimestampFrame,
+            print theDepth,
+            print theCurrentTimestamp,
+            print aThreadId
+            raw_input()
+        try:
+            self.itsSocket.sendall(self.itsPacker.get_buffer())
+        except:
+            print 'TOD está durmiendo :-('
         
     def __createlnotab__(self, aCode):
         theLnotab = {}
@@ -98,84 +142,52 @@ class hunterTrace(object):
         else:
             aFrame.f_locals['__depthFrame__'] = 1
         return aFrame.f_locals['__depthFrame__']
-
-    def __inClass__(self, aClass):
-        if self._class.has_key(aClass):
-            return True
-        return False
-
-    def __inFunction__(self, aFunction):
-        if self._function.has_key(aFunction):
-            return True
-        return False
-
-    def __inMethod__(self, aMethod):
-        if self._method.has_key(aMethod):
-            return True
-        return False
-
-    def __isClassKey__(self, aClassCode):
-        for theKey in self._class.iterkeys():
-            if theKey == aClassCode:
-                return self._class[theKey]
-        return None
-
-    def __isFunctionKey__(self, aFunctionCode):
-        for theKey in self._function.iterkeys():
-            if theKey == aFunctionCode:
-                return self._function[theKey]
-        return None
-
-    def __isMethodKey__(self, aMethodCode):
-        for theKey in self._method.iterkeys():
-            if theKey == aMethodCode:
-                return self._method[theKey]
-        return None
-
-    def __instantiation__(self, 
-                          aCode, 
-                          aFrame, 
-                          aInstantiationId, 
-                          aDepth, 
-                          aCurrentTimestamp, 
-                          aParentTimestampFrame, 
-                          aThreadId):
-        theBehavior = self.__getObject__(aCode)
-        theBehaviorId = theBehavior.__getId__()
-        theClassId = theBehavior.__getTarget__()
-        theArgsValue = theBehavior.__getArgsValues__(aFrame.f_locals)
+    
+    def __functionCall__(self, 
+                         aCode, 
+                         aFrame,
+                         aDepth,
+                         aCurrentTimestamp,
+                         aParentTimestampFrame,
+                         aThreadId):
+        theObject = self.__getObject__(aCode)
+        theFunctionId = theObject.__getId__()
+        theArgsValue = theObject.__getArgsValues__(aFrame.f_locals)
         theBackFrame = aFrame.f_back
-        theFrameLasti = theBackFrame.f_lasti
+        theBackFrameLasti = theBackFrame.f_lasti
         theBackFrameCode = theBackFrame.f_code
         theParentId = self.__getObjectId__(theBackFrameCode)
-        theCurrentLasti = aFrame.f_lasti        
-        if not self._probe.has_key((theCurrentLasti,theParentId)):
-            theProbeId = self.__registerProbe__(theCurrentLasti,theParentId)
+        theCurrentLasti = aFrame.f_lasti
+        if not self.itsProbe.has_key((theCurrentLasti,theParentId)):
+            theProbeId = self.__registerProbe__(theCurrentLasti,
+                                                theParentId,
+                                                aFrame.f_lineno)
         else:
-            theProbeId = self._probe[(theCurrentLasti,theParentId)]
-        self.packer.reset()       
-        self.packer.pack_int(self.events['instantiation'])
-        self.packer.pack_int(theBehaviorId)
-        self.packer.pack_int(aInstantiationId)
-        self.packer.pack_int(len(theArgsValue))
+            theProbeId = self.itsProbe[(theCurrentLasti,theParentId)]
+        self.itsPacker.reset()
+        self.itsPacker.pack_int(self.itsEvents['call'])
+        self.itsPacker.pack_int(self.itsObjects['function'])
+        self.itsPacker.pack_int(theFunctionId)
+        self.itsPacker.pack_int(len(theArgsValue)-1)
         thePrintArg = " "
         for theValue in theArgsValue:
             theDataType = self.__getDataType__(theValue)
-            self.packer.pack_int(theDataType)
+            self.itsPacker.pack_int(theDataType)
             thePrintArg += str(theDataType)
-            thePrintArg += " "
+            thePrintArg += " "            
             thePrintArg += str(self.__packValue__(theDataType, theValue))
-            thePrintArg += " "
-        self.packer.pack_int(theProbeId)
-        self.packer.pack_hyper(aParentTimestampFrame)
-        self.packer.pack_int(aDepth)    
-        self.packer.pack_hyper(aCurrentTimestamp)
-        self.packer.pack_int(aThreadId)
+            thePrintArg += " "     
+        self.itsPacker.pack_int(theProbeId)
+        self.itsPacker.pack_hyper(aParentTimestampFrame)        
+        self.itsPacker.pack_int(aDepth)
+        self.itsPacker.pack_hyper(aCurrentTimestamp)
+        self.itsPacker.pack_int(aThreadId)
         if self.FLAG_DEBUGG:
-            print self.events['instantiation'],
-            print aInstantiationId,
-            print len(theArgsValue), 
-            print thePrintArg,        
+            print self.itsEvents['call'],
+            print self.itsObjects['function'],
+            print theFunctionId,
+            print len(theArgsValue)-1,
+            print thePrintArg,
             print theProbeId,
             print aParentTimestampFrame,
             print aDepth,
@@ -183,40 +195,40 @@ class hunterTrace(object):
             print aThreadId
             raw_input()
         try:
-            self._socket.sendall(self.packer.get_buffer())
+            self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-('
-
+            print 'TOD está durmiendo :-('        
+            
     def __getArgs__(self, aCode):
         return aCode.co_varnames[:aCode.co_argcount]
 
     def __getClassKey__(self, aNameClass):
-        for theKey, theValue in self._class.iteritems():
+        for theKey, theValue in self.itsClass.iteritems():
             if theKey.co_name == aNameClass:
                 return theKey
         return None
     
     def __getObjectId__(self, aCode):
         if self.__isClassKey__(aCode):
-            return self._class[aCode].__getId__()
+            return self.itsClass[aCode].__getId__()
         elif self.__isFunctionKey__(aCode):
-            return self._function[aCode].__getId__()
+            return self.itsFunction[aCode].__getId__()
         elif self.__isMethodKey__(aCode):
-            return self._method[aCode].__getId__()
+            return self.itsMethod[aCode].__getId__()
         return -1
 
     def __getObject__(self, aCode):
         if self.__isFunctionKey__(aCode):
-            return self._function[aCode]
+            return self.itsFunction[aCode]
         elif self.__isMethodKey__(aCode):
-            return self._method[aCode]
+            return self.itsMethod[aCode]
         return None
 
     def __getThreadId__(self, aThreadSysId):
-        if not hT._thread.has_key(aThreadSysId):
+        if not hT.itsThread.has_key(aThreadSysId):
             theThreadId = self.__registerThread__(aThreadSysId)
         else:
-            theThreadId = self._thread[aThreadSysId]
+            theThreadId = self.itsThread[aThreadSysId]
         return theThreadId
 
     def __getpartcode__(self, aCode, aLimits):
@@ -245,8 +257,8 @@ class hunterTrace(object):
     def __getDataType__(self, aValue):
         theDataType = 8
         try:
-            if self.dataTypes.has_key(aValue.__class__.__name__):
-                theDataType = self.dataTypes[aValue.__class__.__name__]
+            if self.itsDataTypes.has_key(aValue.__class__.__name__):
+                theDataType = self.itsDataTypes[aValue.__class__.__name__]
         except:
             return theDataType
         finally:
@@ -262,31 +274,104 @@ class hunterTrace(object):
         if theBackFrame.f_locals.has_key('__timestampFrame__'):
             return theBackFrame.f_locals['__timestampFrame__']
         return 0
-    
-    def __markTimestampFrame__(self, aFrame):
-        if not aFrame.f_locals.has_key('__timestampFrame__'): 
-            aFrame.f_locals['__timestampFrame__'] = self.__convertTimestamp__(
-                                                                  time.time())
-        return
-    
-    def __packValue__(self, aDataType, aValue):
-        if self.packXDRLib.has_key(aDataType):
-            theMethodName = self.packXDRLib[aDataType]
-            getattr(self.packer,'pack_%s'%theMethodName)(aValue)
-            return aValue            
+
+    def __inClass__(self, aClass):
+        if self.itsClass.has_key(aClass):
+            return True
+        return False
+
+    def __inFunction__(self, aFunction):
+        if self.itsFunction.has_key(aFunction):
+            return True
+        return False
+
+    def __inMethod__(self, aMethod):
+        if self.itsMethod.has_key(aMethod):
+            return True
+        return False
+
+    def __isClassKey__(self, aClassCode):
+        for theKey in self.itsClass.iterkeys():
+            if theKey == aClassCode:
+                return self.itsClass[theKey]
+        return None
+
+    def __isFunctionKey__(self, aFunctionCode):
+        for theKey in self.itsFunction.iterkeys():
+            if theKey == aFunctionCode:
+                return self.itsFunction[theKey]
+        return None
+
+    def __isMethodKey__(self, aMethodCode):
+        for theKey in self.itsMethod.iterkeys():
+            if theKey == aMethodCode:
+                return self.itsMethod[theKey]
+        return None
+
+    def __instantiation__(self, 
+                          aCode, 
+                          aFrame, 
+                          aInstantiationId, 
+                          aDepth, 
+                          aCurrentTimestamp, 
+                          aParentTimestampFrame, 
+                          aThreadId):
+        theBehavior = self.__getObject__(aCode)
+        theBehaviorId = theBehavior.__getId__()
+        theClassId = theBehavior.__getTarget__()
+        theArgsValue = theBehavior.__getArgsValues__(aFrame.f_locals)
+        theBackFrame = aFrame.f_back
+        theFrameLasti = theBackFrame.f_lasti
+        theBackFrameCode = theBackFrame.f_code
+        theParentId = self.__getObjectId__(theBackFrameCode)
+        theCurrentLasti = aFrame.f_lasti        
+        if not self.itsProbe.has_key((theCurrentLasti,theParentId)):
+            theProbeId = self.__registerProbe__(theCurrentLasti,
+                                                theParentId,
+                                                aFrame.f_lineno)
         else:
-            #en estos momentos envíamos el tipo de dato
-            #TODO: debieramos envíar el id del objeto
-            self.packer.pack_int(aDataType)
-            return aDataType
+            theProbeId = self.itsProbe[(theCurrentLasti,theParentId)]
+        self.itsPacker.reset()       
+        self.itsPacker.pack_int(self.itsEvents['instantiation'])
+        self.itsPacker.pack_int(theBehaviorId)
+        self.itsPacker.pack_int(aInstantiationId)
+        self.itsPacker.pack_int(len(theArgsValue))
+        thePrintArg = " "
+        for theValue in theArgsValue:
+            theDataType = self.__getDataType__(theValue)
+            self.itsPacker.pack_int(theDataType)
+            thePrintArg += str(theDataType)
+            thePrintArg += " "
+            thePrintArg += str(self.__packValue__(theDataType, theValue))
+            thePrintArg += " "
+        self.itsPacker.pack_int(theProbeId)
+        self.itsPacker.pack_hyper(aParentTimestampFrame)
+        self.itsPacker.pack_int(aDepth)    
+        self.itsPacker.pack_hyper(aCurrentTimestamp)
+        self.itsPacker.pack_int(aThreadId)
+        if self.FLAG_DEBUGG:
+            print self.itsEvents['instantiation'],
+            print aInstantiationId,
+            print len(theArgsValue), 
+            print thePrintArg,        
+            print theProbeId,
+            print aParentTimestampFrame,
+            print aDepth,
+            print aCurrentTimestamp,
+            print aThreadId
+            raw_input()
+        try:
+            self.itsSocket.sendall(self.itsPacker.get_buffer())
+        except:
+            print 'TOD está durmiendo :-('
     
-    def __localWrite__(
-                       self,
+    def __localWrite__(self,
                        aCode,
                        aBytecodeLocal,
                        aLocals,
                        aObject,
                        aCurrentLasti,
+                       aCurrentLineno,
                        aDepth,
                        aParentTimestampFrame, 
                        aThreadId):
@@ -297,28 +382,29 @@ class hunterTrace(object):
             if not theLocalVariables.has_key(theValue) or \
                not aLocals.has_key(theValue):
                 return
-            if not self._probe.has_key((aCurrentLasti,theBehaviorId)):
+            if not self.itsProbe.has_key((aCurrentLasti,theBehaviorId)):
                 theProbeId = self.__registerProbe__(aCurrentLasti,
-                                                    theBehaviorId)
+                                                    theBehaviorId,
+                                                    aCurrentLineno)
             else:
-                theProbeId = self._probe[(aCurrentLasti,theBehaviorId)]
-            self.packer.reset()
-            self.packer.pack_int(self.events['set'])
-            self.packer.pack_int(self.objects['local'])
-            self.packer.pack_int(theLocalVariables[theValue])
-            self.packer.pack_int(theBehaviorId)
+                theProbeId = self.itsProbe[(aCurrentLasti,theBehaviorId)]
+            self.itsPacker.reset()
+            self.itsPacker.pack_int(self.itsEvents['set'])
+            self.itsPacker.pack_int(self.itsObjects['local'])
+            self.itsPacker.pack_int(theLocalVariables[theValue])
+            self.itsPacker.pack_int(theBehaviorId)
             theDataType = self.__getDataType__(aLocals[theValue])
-            self.packer.pack_int(theDataType)
+            self.itsPacker.pack_int(theDataType)
             thePackValue = self.__packValue__(theDataType, aLocals[theValue])
-            self.packer.pack_int(theProbeId)
-            self.packer.pack_hyper(aParentTimestampFrame)
-            self.packer.pack_int(theDepth)
+            self.itsPacker.pack_int(theProbeId)
+            self.itsPacker.pack_hyper(aParentTimestampFrame)
+            self.itsPacker.pack_int(theDepth)
             theCurrentTimestamp = self.__convertTimestamp__(time.time()) 
-            self.packer.pack_hyper(theCurrentTimestamp)
-            self.packer.pack_int(aThreadId)
+            self.itsPacker.pack_hyper(theCurrentTimestamp)
+            self.itsPacker.pack_int(aThreadId)
             if self.FLAG_DEBUGG:            
-                print self.events['set'],
-                print self.objects['local'],
+                print self.itsEvents['set'],
+                print self.itsObjects['local'],
                 print theLocalVariables[theValue],
                 print theBehaviorId,
                 print theDataType,
@@ -330,9 +416,15 @@ class hunterTrace(object):
                 print aThreadId
                 raw_input()
             try:
-                self._socket.sendall(self.packer.get_buffer())
+                self.itsSocket.sendall(self.itsPacker.get_buffer())
             except:
                 print 'TOD está durmiendo :-('            
+    
+    def __markTimestampFrame__(self, aFrame):
+        if not aFrame.f_locals.has_key('__timestampFrame__'): 
+            aFrame.f_locals['__timestampFrame__'] = self.__convertTimestamp__(
+                                                                  time.time())
+        return
 
     def __methodCall__(self,
                        aCode,
@@ -351,32 +443,34 @@ class hunterTrace(object):
         theBackFrameCode = theBackFrame.f_code
         theParentId = self.__getObjectId__(theBackFrameCode)
         theCurrentLasti = aFrame.f_lasti        
-        if not self._probe.has_key((theCurrentLasti,theParentId)):
-            theProbeId = self.__registerProbe__(theCurrentLasti,theParentId)
+        if not self.itsProbe.has_key((theCurrentLasti,theParentId)):
+            theProbeId = self.__registerProbe__(theCurrentLasti,
+                                                theParentId,
+                                                aFrame.f_lineno)
         else:
-            theProbeId = self._probe[(theCurrentLasti,theParentId)]
-        self.packer.reset()
-        self.packer.pack_int(self.events['call'])
-        self.packer.pack_int(self.objects['method'])
-        self.packer.pack_int(theMethodId)
-        self.packer.pack_int(aTargetId)
-        self.packer.pack_int(len(theArgsValue))
+            theProbeId = self.itsProbe[(theCurrentLasti,theParentId)]
+        self.itsPacker.reset()
+        self.itsPacker.pack_int(self.itsEvents['call'])
+        self.itsPacker.pack_int(self.itsObjects['method'])
+        self.itsPacker.pack_int(theMethodId)
+        self.itsPacker.pack_int(aTargetId)
+        self.itsPacker.pack_int(len(theArgsValue))
         thePrintArg = " "
         for theValue in theArgsValue:
             theDataType = self.__getDataType__(theValue)
-            self.packer.pack_int(theDataType)
+            self.itsPacker.pack_int(theDataType)
             thePrintArg += str(theDataType)
             thePrintArg += " "            
             thePrintArg += str(self.__packValue__(theDataType, theValue))
             thePrintArg += " "
-        self.packer.pack_int(theProbeId)
-        self.packer.pack_hyper(aParentTimestampFrame)
-        self.packer.pack_int(aDepth)    
-        self.packer.pack_hyper(aCurrentTimestamp)
-        self.packer.pack_int(aThreadId)
+        self.itsPacker.pack_int(theProbeId)
+        self.itsPacker.pack_hyper(aParentTimestampFrame)
+        self.itsPacker.pack_int(aDepth)    
+        self.itsPacker.pack_hyper(aCurrentTimestamp)
+        self.itsPacker.pack_int(aThreadId)
         if self.FLAG_DEBUGG:
-            print self.events['call'],
-            print self.objects['method'],
+            print self.itsEvents['call'],
+            print self.itsObjects['method'],
             print theMethodId,
             print aTargetId,
             print len(theArgsValue),
@@ -388,168 +482,106 @@ class hunterTrace(object):
             print aThreadId
             raw_input()
         try:
-            self._socket.sendall(self.packer.get_buffer())
+            self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
             print 'TOD está durmiendo :-('
+    
+    
+    def __packValue__(self, aDataType, aValue):
+        if self.itsPackXDR.has_key(aDataType):
+            theMethodName = self.itsPackXDR[aDataType]
+            getattr(self.itsPacker,'pack_%s'%theMethodName)(aValue)
+            return aValue            
+        else:
+            #en estos momentos envíamos el tipo de dato
+            #TODO: debieramos envíar el id del objeto
+            self.itsPacker.pack_int(aDataType)
+            return aDataType
+
+    def __printHunter__(self):
+        #cerrar socket
+        #TODO: encontrar una manera mejor de hacer esto
+        self.itsSocket.close()
+        print
+        print 'clases'
+        for theKey, theValue in hT.itsClass.iteritems():
+            print theValue.__dict__
+            print
+        print '======='
         
-    def __functionCall__(self, 
-                         aCode, 
-                         aFrame,
-                         aDepth,
-                         aCurrentTimestamp,
-                         aParentTimestampFrame,
-                         aThreadId):
-        theObject = self.__getObject__(aCode)
-        theFunctionId = theObject.__getId__()
-        theArgsValue = theObject.__getArgsValues__(aFrame.f_locals)
-        theBackFrame = aFrame.f_back
-        theBackFrameLasti = theBackFrame.f_lasti
-        theBackFrameCode = theBackFrame.f_code
-        theParentId = self.__getObjectId__(theBackFrameCode)
-        theCurrentLasti = aFrame.f_lasti
-        if not self._probe.has_key((theCurrentLasti,theParentId)):
-            theProbeId = self.__registerProbe__(theCurrentLasti,theParentId)
-        else:
-            theProbeId = self._probe[(theCurrentLasti,theParentId)]
-        self.packer.reset()
-        self.packer.pack_int(self.events['call'])
-        self.packer.pack_int(self.objects['function'])
-        self.packer.pack_int(theFunctionId)
-        self.packer.pack_int(len(theArgsValue)-1)
-        thePrintArg = " "
-        for theValue in theArgsValue:
-            theDataType = self.__getDataType__(theValue)
-            self.packer.pack_int(theDataType)
-            thePrintArg += str(theDataType)
-            thePrintArg += " "            
-            thePrintArg += str(self.__packValue__(theDataType, theValue))
-            thePrintArg += " "     
-        self.packer.pack_int(theProbeId)
-        self.packer.pack_hyper(aParentTimestampFrame)        
-        self.packer.pack_int(aDepth)
-        self.packer.pack_hyper(aCurrentTimestamp)
-        self.packer.pack_int(aThreadId)
-        if self.FLAG_DEBUGG:
-            print self.events['call'],
-            print self.objects['function'],
-            print theFunctionId,
-            print len(theArgsValue)-1,
-            print thePrintArg,
-            print theProbeId,
-            print aParentTimestampFrame,
-            print aDepth,
-            print aCurrentTimestamp,
-            print aThreadId
-            raw_input()
+        print 'metodos'
+        for theKey, theValue in hT._method.iteritems():
+            print v.__dict__
+            print
+        print '======='
+        
+        print 'funcion'
+        for theKey, theValue in hT._function.iteritems():
+            print theValue.__dict__
+            print
+        print '======='
+        
+    def __socketConnect__(self):
+        self.itsSocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         try:
-            self._socket.sendall(self.packer.get_buffer())
+            self.itsSocket.connect((self.itsHost, self.itsPort))
         except:
-            print 'TOD está durmiendo :-('        
-
-    def __behaviorExit__(self,
-                         aFrame,
-                         arg,
-                         aDepth,
-                         aParentTimestampFrame,
-                         aThreadId,
-                         aHasTrown):
-        theBackFrame = aFrame.f_back
-        theBackFrameCode = theBackFrame.f_code
-        theParentId = self.__getObjectId__(theBackFrameCode)
-        behaviorId = self.__getObjectId__(aFrame.f_code)
-        theCurrentLasti = aFrame.f_lasti
-        theDepth = aDepth + 1
-        if not self._probe.has_key((theCurrentLasti,theParentId)):
-            theProbeId = self.__registerProbe__(theCurrentLasti,theParentId)
-        else:
-            theProbeId = self._probe[(theCurrentLasti,theParentId)]
-        self.packer.reset()
-        self.packer.pack_int(self.events['return'])
-        self.packer.pack_int(behaviorId)
-        theDataType = self.__getDataType__(arg)
-        self.packer.pack_int(theDataType)
-        thePackValue = self.__packValue__(theDataType, arg)
-        if aHasTrown:       
-            self.packer.pack_int(1)
-        else:
-            self.packer.pack_int(0)
-        self.packer.pack_int(theProbeId)
-        self.packer.pack_hyper(aParentTimestampFrame)        
-        self.packer.pack_int(theDepth)
-        theCurrentTimestamp = self.__convertTimestamp__(time.time()) 
-        self.packer.pack_hyper(theCurrentTimestamp)
-        self.packer.pack_int(aThreadId)
-        if self.FLAG_DEBUGG:
-            print self.events['return'],
-            print behaviorId,
-            print theDataType,
-            print thePackValue,
-            print aHasTrown,
-            print theProbeId,
-            print aParentTimestampFrame,
-            print theDepth,
-            print theCurrentTimestamp,
-            print aThreadId
-            raw_input()
-        try:
-            self._socket.sendall(self.packer.get_buffer())
-        except:
-            print 'TOD está durmiendo :-('
-
+            print "TOD, esta durmiendo :("
+    
     def __register__(self, aObject, aLocals):
         aObject.__registerLocals__(aLocals)
 
     def __registerClass__(self, aCode, aLocals):
-        theClassId = self.Id.__get__()
+        theClassId = self.itsId.__get__()
         theClassName = aCode.co_name
         #HINT: ver como recuperar las herencias de esta clase 
         theClassBases = None
-        self.packer.reset()
-        self.packer.pack_int(self.events['register'])
-        self.packer.pack_int(self.objects['class'])
-        self.packer.pack_int(theClassId)
-        self.packer.pack_string(theClassName)
-        self.packer.pack_int(0)
+        self.itsPacker.reset()
+        self.itsPacker.pack_int(self.itsEvents['register'])
+        self.itsPacker.pack_int(self.itsObjects['class'])
+        self.itsPacker.pack_int(theClassId)
+        self.itsPacker.pack_string(theClassName)
+        self.itsPacker.pack_int(0)
         if self.FLAG_DEBUGG:
-            print self.events['register'],
-            print self.objects['class'],
+            print self.itsEvents['register'],
+            print self.itsObjects['class'],
             print theClassId,
             print theClassName,
             print theClassBases
             raw_input()
         try:
-            self._socket.sendall(self.packer.get_buffer())
+            self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
             print 'TOD está durmiendo :-('
         theObjectClass = self.__addClass__(
                                            theClassId,
                                            self.__createlnotab__(aCode),
                                            aCode)
-        self.Id.__next__()
+        self.itsId.__next__()
         theObjectClass.__addMethod__(aCode,aLocals)
 
     def __registerMethod__(self, aCode, aMethodId, aClassId, aArgs):
-        self.packer.reset()
-        self.packer.pack_int(self.events['register'])
-        self.packer.pack_int(self.objects['method'])
-        self.packer.pack_int(aMethodId)
-        self.packer.pack_int(aClassId)
-        self.packer.pack_string(aCode.co_name)
+        self.itsPacker.reset()
+        self.itsPacker.pack_int(self.itsEvents['register'])
+        self.itsPacker.pack_int(self.itsObjects['method'])
+        self.itsPacker.pack_int(aMethodId)
+        self.itsPacker.pack_int(aClassId)
+        self.itsPacker.pack_string(aCode.co_name)
         #argumento viene con self, se le debe restar uno a la cantidad de
         #elementos
-        self.packer.pack_int(len(aArgs)-1)
+        self.itsPacker.pack_int(len(aArgs)-1)
         thePrintArg = " "
         for theValue in range(len(aArgs)):
             if not aArgs[theValue] == 'self':
                 thePrintArg += str(aArgs[theValue])
                 thePrintArg += " "
-                self.packer.pack_string(aArgs[theValue])
+                self.itsPacker.pack_string(aArgs[theValue])
                 thePrintArg += str(theValue)
                 thePrintArg += " "
-                self.packer.pack_int(theValue)
+                self.itsPacker.pack_int(theValue)
         if self.FLAG_DEBUGG:
-            print self.events['register'],
-            print self.objects['method'],
+            print self.itsEvents['register'],
+            print self.itsObjects['method'],
             print aMethodId,
             print aClassId,
             print aCode.co_name,
@@ -557,7 +589,7 @@ class hunterTrace(object):
             print thePrintArg
             raw_input()
         try:
-            self._socket.sendall(self.packer.get_buffer())
+            self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
             print 'TOD está durmiendo :-('
         self.__addMethod__(
@@ -568,33 +600,33 @@ class hunterTrace(object):
                            aArgs)
 
     def __registerFunction__(self, aCode):
-        theFunctionId = self.Id.__get__()
+        theFunctionId = self.itsId.__get__()
         aArgs = self.__getArgs__(aCode)
-        self.packer.reset()
-        self.packer.pack_int(self.events['register'])
-        self.packer.pack_int(self.objects['function'])
-        self.packer.pack_int(theFunctionId)
-        self.packer.pack_string(aCode.co_name)
-        self.packer.pack_int(len(aArgs))
+        self.itsPacker.reset()
+        self.itsPacker.pack_int(self.itsEvents['register'])
+        self.itsPacker.pack_int(self.itsObjects['function'])
+        self.itsPacker.pack_int(theFunctionId)
+        self.itsPacker.pack_string(aCode.co_name)
+        self.itsPacker.pack_int(len(aArgs))
         thePrintArg = " " 
         for theValue in range(len(aArgs)):
             if not aArgs[theValue] == 'self':
                 thePrintArg += str(aArgs[theValue])
                 thePrintArg += " "
-                self.packer.pack_string(aArgs[theValue])
+                self.itsPacker.pack_string(aArgs[theValue])
                 thePrintArg += str(theValue)
                 thePrintArg += " "
-                self.packer.pack_int(theValue)
+                self.itsPacker.pack_int(theValue)
         if self.FLAG_DEBUGG:
-            print self.events['register'],
-            print self.objects['function'],
+            print self.itsEvents['register'],
+            print self.itsObjects['function'],
             print theFunctionId,
             print aCode.co_name,
             print len(aArgs)-1,
             print thePrintArg
             raw_input()
         try:
-            self._socket.sendall(self.packer.get_buffer())
+            self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
             print 'TOD está durmiendo :-('            
         self.__addFunction__(
@@ -602,50 +634,52 @@ class hunterTrace(object):
                              self.__createlnotab__(aCode),
                              aCode,
                              aArgs)
-        self.Id.__next__()
+        self.itsId.__next__()
 
-    def __registerProbe__(self, aCurrentLasti, aBehaviorId):
-        theProbeId = self.probeId.__get__()
+    def __registerProbe__(self, aCurrentLasti, aBehaviorId, aCurrentLineno):
+        theProbeId = self.itsProbeId.__get__()
         self.__addProbe__(theProbeId,aCurrentLasti,aBehaviorId)
-        self.packer.reset()
-        self.packer.pack_int(self.events['register'])
-        self.packer.pack_int(self.objects['probe'])
-        self.packer.pack_int(theProbeId)
-        self.packer.pack_int(aBehaviorId)
-        self.packer.pack_int(aCurrentLasti)
+        self.itsPacker.reset()
+        self.itsPacker.pack_int(self.itsEvents['register'])
+        self.itsPacker.pack_int(self.itsObjects['probe'])
+        self.itsPacker.pack_int(theProbeId)
+        self.itsPacker.pack_int(aBehaviorId)
+        self.itsPacker.pack_int(aCurrentLasti)
+        self.itsPacker.pack_int(aCurrentLineno)
         if self.FLAG_DEBUGG:
-            print self.events['register'],
-            print self.objects['probe'],
+            print self.itsEvents['register'],
+            print self.itsObjects['probe'],
             print theProbeId,
             print aBehaviorId,
-            print aCurrentLasti            
+            print aCurrentLasti,            
+            print aCurrentLineno
             raw_input()
         try:
-            self._socket.sendall(self.packer.get_buffer())
+            self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
             print 'TOD está durmiendo :-('
-        self.probeId.__next__()
+        self.itsProbeId.__next__()
         return theProbeId
     
     def __registerThread__(self, aThreadSysId):
-        theThreadId = self.threadId.__get__()
+        theThreadId = self.itsThreadId.__get__()
         self.__addThread__(theThreadId,aThreadSysId)
-        self.packer.reset()
-        self.packer.pack_int(self.events['register'])
-        self.packer.pack_int(self.objects['thread'])
-        self.packer.pack_int(theThreadId)
-        self.packer.pack_int(aThreadSysId)
+        self.itsPacker.reset()
+        self.itsPacker.pack_int(self.itsEvents['register'])
+        self.itsPacker.pack_int(self.itsObjects['thread'])
+        self.itsPacker.pack_int(theThreadId)
+        self.itsPacker.pack_int(aThreadSysId)
         if self.FLAG_DEBUGG:
-            print self.events['register'],
-            print self.objects['thread'],
+            print self.itsEvents['register'],
+            print self.itsObjects['thread'],
             print theThreadId,
             print aThreadSysId
             raw_input()
         try:
-            self._socket.sendall(self.packer.get_buffer())
+            self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
             print 'TOD está durmiendo :-('
-        self.threadId.__next__()
+        self.itsThreadId.__next__()
         return theThreadId
 
     def __trace__(self, aFrame, aEvent, aArg):
@@ -658,22 +692,18 @@ class hunterTrace(object):
         self.__markTimestampFrame__(aFrame)
         theThreadId = self.__getThreadId__(thread.get_ident())
         if aEvent == "call":
-            if re.search(self.methodPattern,theCode.co_name):
+            if re.search(self.itsMethodPattern,theCode.co_name):
                 if not theCode.co_name == '__init__':
                     return
-            #supuesto manejo de error
-            #if aFrame.f_code.co_name == 'apport_excepthook':
-            #    print aFrame.f_locals
-            #    raw_input()
             theParentTimestampFrame = self.__getTimestampParentFrame__(aFrame)
             if theCode.co_name == '__init__':
-                #TODO: cambio experimental, revizar!!!!!!
+                #FIXME: cambio experimental, revizar!!!!!!
                 """
-                id = self.Id.__get__()
+                id = self.itsId.__get__()
                 if not hasattr(theLocals['self'],'__dict__'):
                     return
                 theLocals['self'].__dict__.update({'__pyTOD__':id})
-                self.Id.__next__()
+                self.itsId.__next__()
                 """
                 #aca se sacan las bases de la clase la cual
                 #se ha instanciado
@@ -688,21 +718,21 @@ class hunterTrace(object):
                     theKey = hT.__getClassKey__(theKey)
                     if theKey == None:
                         return
-                    if not hT._class.has_key(theKey):
+                    if not hT.itsClass.has_key(theKey):
                         return
-                    theClassId = hT._class[theKey].__getId__()
-                    if not hT._class[theKey].method.has_key(theCode.co_name):
+                    theClassId = hT.itsClass[theKey].__getId__()
+                    if not hT.itsClass[theKey].method.has_key(theCode.co_name):
                         return
-                    theMethodId = hT._class[theKey].method[theCode.co_name]
+                    theMethodId = hT.itsClass[theKey].method[theCode.co_name]
                     theArgs = self.__getArgs__(theCode)
                     self.__registerMethod__(theCode,theMethodId,theClassId,theArgs)
                 theCurrentTimestamp = aFrame.f_locals['__timestampFrame__']
                 if theCode.co_name == '__init__':
-                    Id = self.Id.__get__()
+                    Id = self.itsId.__get__()
                     if not hasattr(theLocals['self'],'__dict__'):
                         return
                     theLocals['self'].__dict__.update({'__pyTOD__':Id})
-                    self.Id.__next__()
+                    self.itsId.__next__()
                     self.__instantiation__(theCode,
                                            aFrame,
                                            theLocals['self'].__pyTOD__,
@@ -734,7 +764,7 @@ class hunterTrace(object):
                                           theThreadId)   
             return self.__trace__
         elif aEvent == "line":
-            if re.search(self.methodPattern,theCode.co_name):
+            if re.search(self.itsMethodPattern,theCode.co_name):
                 if not theCode.co_name == '__init__':
                     return
             theParentTimestampFrame = self.__getTimestampFrame__(aFrame)
@@ -750,12 +780,13 @@ class hunterTrace(object):
                                     theLocals,
                                     theObject,
                                     aFrame.f_lasti,
+                                    aFrame.f_lineno,
                                     theDepth,
                                     theParentTimestampFrame,
                                     theThreadId)
             return self.__trace__
         elif aEvent == "return":
-            if re.search(self.methodPattern,theCode.co_name):
+            if re.search(self.itsMethodPattern,theCode.co_name):
                 if not theCode.co_name == '__init__':
                     return
             theParentTimestampFrame = self.__getTimestampFrame__(aFrame)
@@ -776,6 +807,7 @@ class hunterTrace(object):
                                         theLocals,
                                         theObject,
                                         aFrame.f_lasti,
+                                        aFrame.f_lineno,
                                         theDepth,
                                         theParentTimestampFrame,
                                         theThreadId)
@@ -785,7 +817,7 @@ class hunterTrace(object):
                                      theParentTimestampFrame,
                                      theThreadId,
                                      False)
-        elif aEvent == 'exception':
+        elif aEvent == "exception":
             theParentTimestampFrame = self.__getTimestampFrame__(aFrame)
             #print f_traceback.tb_next.tb_frame.f_code.co_name
             #print f_traceback.tb_next.tb_lineno
@@ -796,32 +828,9 @@ class hunterTrace(object):
                                      theParentTimestampFrame,
                                      theThreadId,
                                      True)
-            sys.settrace(None)
+            #sys.settrace(None)
             #print '[trace]', aEvent, aFrame.f_code.co_name, aFrame.f_lineno, aArg
             #raw_input()
-
-    def __printHunter__(self):
-        #cerrar socket
-        #TODO: encontrar una manera mejor de hacer esto
-        self._socket.close()
-        print
-        print 'clases'
-        for theKey, theValue in hT._class.iteritems():
-            print theValue.__dict__
-            print
-        print '======='
-        
-        print 'metodos'
-        for theKey, theValue in hT._method.iteritems():
-            print v.__dict__
-            print
-        print '======='
-        
-        print 'funcion'
-        for theKey, theValue in hT._function.iteritems():
-            print theValue.__dict__
-            print
-        print '======='
 
 hT = hunterTrace(
                  generatorId(),
@@ -846,7 +855,7 @@ class Descriptor(object):
         theKey = hT.__getClassKey__(theKey)
         if theKey == None:
             return
-        theObject = hT._class[theKey] 
+        theObject = hT.itsClass[theKey] 
         theObjectId = theObject.__getId__()
         theBehaviorId = hT.__getObjectId__(theCode)
         #comportamiento extraño
@@ -855,28 +864,30 @@ class Descriptor(object):
         sys.settrace(None)
         theObject.attributes.__updateAttr__({aName:-1},theObjectId)
         Id = theObject.attributes[aName]
-        if not hT._probe.has_key((theCurrentLasti,theBehaviorId)):
-            theProbeId = hT.__registerProbe__(theCurrentLasti,theBehaviorId)
+        if not hT.itsProbe.has_key((theCurrentLasti,theBehaviorId)):
+            theProbeId = hT.__registerProbe__(theCurrentLasti,
+                                              theBehaviorId,
+                                              theFrame.f_lineno)
         else:
-            theProbeId = hT._probe[(theCurrentLasti,theBehaviorId)]          
-        hT.packer.reset()
-        hT.packer.pack_int(hT.events['set'])
-        hT.packer.pack_int(hT.objects['attribute'])
-        hT.packer.pack_int(Id)
-        #hT.packer.pack_int(theBehaviorId)
-        hT.packer.pack_int(self.__pyTOD__)
+            theProbeId = hT.itsProbe[(theCurrentLasti,theBehaviorId)]          
+        hT.itsPacker.reset()
+        hT.itsPacker.pack_int(hT.itsEvents['set'])
+        hT.itsPacker.pack_int(hT.itsObjects['attribute'])
+        hT.itsPacker.pack_int(Id)
+        #hT.itsPacker.pack_int(theBehaviorId)
+        hT.itsPacker.pack_int(self.__pyTOD__)
         theDataType = hT.__getDataType__(aValue)
-        hT.packer.pack_int(theDataType)
+        hT.itsPacker.pack_int(theDataType)
         thePackValue = hT.__packValue__(theDataType, aValue)
-        hT.packer.pack_int(theProbeId)
-        hT.packer.pack_hyper(theParentTimestamp)        
-        hT.packer.pack_int(theCurrentDepth)
-        hT.packer.pack_hyper(theCurrentTimestamp)
-        hT.packer.pack_int(theThreadId)
+        hT.itsPacker.pack_int(theProbeId)
+        hT.itsPacker.pack_hyper(theParentTimestamp)        
+        hT.itsPacker.pack_int(theCurrentDepth)
+        hT.itsPacker.pack_hyper(theCurrentTimestamp)
+        hT.itsPacker.pack_int(theThreadId)
         object.__setattr__(self, aName, aValue)
         if hT.FLAG_DEBUGG:
-            print hT.events['set'],
-            print hT.objects['attribute'],
+            print hT.itsEvents['set'],
+            print hT.itsObjects['attribute'],
             print Id,
             print theBehaviorId,
             print theDataType,
@@ -888,7 +899,7 @@ class Descriptor(object):
             print theThreadId
             raw_input()
         try:
-            hT._socket.sendall(hT.packer.get_buffer())
+            hT.itsSocket.sendall(hT.itsPacker.get_buffer())
         except:
             print 'TOD está durmiendo :-('
         #se habilita nuevamente settrace    
