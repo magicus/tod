@@ -45,20 +45,14 @@ class Function(object):
             if not theArg == 'self':
                 self.argument = self.argument + (theArg,)
         theParentId = self.Id
-        for theIndex in range(len(aArgs)):            
-            self.hT.packer.reset()
-            self.hT.packer.pack_int(self.hT.events['register'])
-            self.hT.packer.pack_int(self.hT.objects['local'])
-            self.hT.packer.pack_int(theIndex)
-            self.hT.packer.pack_int(theParentId)
-            self.hT.packer.pack_string(aArgs[theIndex])  
-            if self.hT.FLAG_DEBUGG:
-                print self.hT.events['register'],
-                print self.hT.objects['local'],          
-                print theIndex,
-                print theParentId,
-                print aArgs[theIndex]
-                raw_input()
-                
+        if self.hT.FLAG_DEBUGG:
+            for theIndex in range(len(aArgs)):            
+                    print self.hT.events['register'],
+                    print self.hT.objects['local'],          
+                    print theIndex,
+                    print theParentId,
+                    print aArgs[theIndex]
+                    raw_input()             
+            
     def __registerLocals__(self, aLocal):
         self.locals.__update__(aLocal,self.Id,self.argument)
