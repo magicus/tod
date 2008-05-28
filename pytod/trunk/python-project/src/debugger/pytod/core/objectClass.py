@@ -29,6 +29,6 @@ class Class(object):
         for k,v in aLocals.iteritems():
             if inspect.isfunction(v):
                 if not (k == '__module__'):
-                    id = self.hT.Id.__get__()
+                    id = self.hT.itsId.__get__()
                     self.method.update({k:id})
-                    self.hT.Id.__next__()
+                    self.hT.itsId.__next__()

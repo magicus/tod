@@ -26,21 +26,21 @@ class Dictionary(dict):
             if not self.has_key(theKey):
                 if not theKey == 'self':
                     self[theKey] = theValue
-                    self.hT.packer.reset()
-                    self.hT.packer.pack_int(self.hT.events['register'])
-                    self.hT.packer.pack_int(self.hT.objects['local'])
-                    self.hT.packer.pack_int(theValue)
-                    self.hT.packer.pack_int(aParentId)
-                    self.hT.packer.pack_string(theKey)
+                    self.hT.itsPacker.reset()
+                    self.hT.itsPacker.pack_int(self.hT.itsEvents['register'])
+                    self.hT.itsPacker.pack_int(self.hT.itsObjects['local'])
+                    self.hT.itsPacker.pack_int(theValue)
+                    self.hT.itsPacker.pack_int(aParentId)
+                    self.hT.itsPacker.pack_string(theKey)
                     if self.hT.FLAG_DEBUGG:
-                        print self.hT.events['register'],
-                        print self.hT.objects['local'],
+                        print self.hT.itsEvents['register'],
+                        print self.hT.itsObjects['local'],
                         print theValue,
                         print aParentId,
                         print theKey
                         raw_input()
                     try:
-                        self.hT._socket.sendall(self.hT.packer.get_buffer())
+                        self.hT.itsSocket.sendall(self.hT.itsPacker.get_buffer())
                     except:
                         print 'TOD está durmiendo :-('
                     
@@ -50,24 +50,24 @@ class Dictionary(dict):
             #se debe registrar argumento self?
             if not self.has_key(theKey):
                 if not theKey == 'self':
-                    theValue = self.hT.Id.__get__()
-                    self.hT.Id.__next__()
+                    theValue = self.hT.itsId.__get__()
+                    self.hT.itsId.__next__()
                     self[theKey] = theValue
-                    self.hT.packer.reset()
-                    self.hT.packer.pack_int(self.hT.events['register'])
-                    self.hT.packer.pack_int(self.hT.objects['attribute'])
-                    self.hT.packer.pack_int(theValue)
-                    self.hT.packer.pack_int(aParentId)
-                    self.hT.packer.pack_string(theKey)
+                    self.hT.itsPacker.reset()
+                    self.hT.itsPacker.pack_int(self.hT.itsEvents['register'])
+                    self.hT.itsPacker.pack_int(self.hT.itsObjects['attribute'])
+                    self.hT.itsPacker.pack_int(theValue)
+                    self.hT.itsPacker.pack_int(aParentId)
+                    self.hT.itsPacker.pack_string(theKey)
                     if self.hT.FLAG_DEBUGG:
-                        print self.hT.events['register'],
-                        print self.hT.objects['attribute'],
+                        print self.hT.itsEvents['register'],
+                        print self.hT.itsObjects['attribute'],
                         print theValue,
                         print aParentId,
                         print theKey 
                         raw_input()                          
                     try:       
-                        self.hT._socket.sendall(self.hT.packer.get_buffer())
+                        self.hT.itsSocket.sendall(self.hT.itsPacker.get_buffer())
                     except:
                         print 'TOD está durmiendo :-('
                         
