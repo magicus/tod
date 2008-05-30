@@ -41,7 +41,7 @@ class hunterTrace(object):
         self.itsPacker = aPacker
         self.itsHost = aHost
         self.itsPort = aPort
-        self.FLAG_DEBUGG = False
+        self.FLAG_DEBUGG = True
         self.itsMethodPattern = "\A__.*(__)$"
         self.__socketConnect__()
 
@@ -579,6 +579,7 @@ class hunterTrace(object):
                 thePrintArg += str(theValue)
                 thePrintArg += " "
                 self.itsPacker.pack_int(theValue)
+        self.itsPacker.pack_string(aCode.co_filename)
         if self.FLAG_DEBUGG:
             print self.itsEvents['register'],
             print self.itsObjects['method'],
@@ -586,7 +587,8 @@ class hunterTrace(object):
             print aClassId,
             print aCode.co_name,
             print len(aArgs)-1,
-            print thePrintArg
+            print thePrintArg,
+            print aCode.co_filename
             raw_input()
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
@@ -617,13 +619,15 @@ class hunterTrace(object):
                 thePrintArg += str(theValue)
                 thePrintArg += " "
                 self.itsPacker.pack_int(theValue)
+        self.itsPacker.pack_str(aCode.co_filename)
         if self.FLAG_DEBUGG:
             print self.itsEvents['register'],
             print self.itsObjects['function'],
             print theFunctionId,
             print aCode.co_name,
             print len(aArgs)-1,
-            print thePrintArg
+            print thePrintArg,
+            print aCode.co_filename
             raw_input()
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
