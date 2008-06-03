@@ -32,6 +32,7 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.impl.database.structure.standard;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import tod.agent.BehaviorKind;
@@ -240,7 +241,9 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 	
 	public List<LocalVariableInfo> getLocalVariables()
 	{
-		if (itsLocalVariableTable == null && itsHasLocalVariableTable)
+		if (! itsHasLocalVariableTable) return Collections.EMPTY_LIST;
+		
+		if (itsLocalVariableTable == null)
 		{
 			assert ! isOriginal();
 			itsLocalVariableTable = getDatabase()._getBehaviorLocalVariableInfo(getId());
