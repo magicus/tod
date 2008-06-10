@@ -4,7 +4,7 @@
 __author__ = "Milton Inostroza Aguilera"
 __email__ = "minoztro@gmail.com"
 __all__ = ['hT', 'Descriptor']
-th = False
+th = True
 import sys
 import dis
 import re
@@ -41,7 +41,8 @@ class hunterTrace(object):
         self.itsPacker = aPacker
         self.itsHost = aHost
         self.itsPort = aPort
-        self.FLAG_DEBUGG = True
+        self.FLAG_DEBUGG = False
+        self.FLAG_THROWN = False
         self.itsMethodPattern = "\A__.*(__)$"
         self.__socketConnect__()
 
@@ -68,7 +69,7 @@ class hunterTrace(object):
                          aDepth,
                          aParentTimestampFrame,
                          aThreadId,
-                         aHasTrown):
+                         aHasThrown):
         theBackFrame = aFrame.f_back
         theBackFrameCode = theBackFrame.f_code
         theParentId = self.__getObjectId__(theBackFrameCode)
@@ -87,7 +88,7 @@ class hunterTrace(object):
         theDataType = self.__getDataType__(arg)
         self.itsPacker.pack_int(theDataType)
         thePackValue = self.__packValue__(theDataType, arg)
-        if aHasTrown:       
+        if aHasThrown:       
             self.itsPacker.pack_int(1)
         else:
             self.itsPacker.pack_int(0)
@@ -112,7 +113,7 @@ class hunterTrace(object):
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-('
+            print 'TOD está durmiendo :-( - Salida de behavior', aFrame.f_code.co_name
         
     def __createlnotab__(self, aCode):
         theLnotab = {}
@@ -197,7 +198,7 @@ class hunterTrace(object):
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-('        
+            print 'TOD está durmiendo :-( - Llamado a funcion', aCode.co_name        
             
     def __getArgs__(self, aCode):
         return aCode.co_varnames[:aCode.co_argcount]
@@ -363,7 +364,7 @@ class hunterTrace(object):
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-('
+            print 'TOD está durmiendo :-( - Instanciación', aCode.co_name
     
     def __localWrite__(self,
                        aCode,
@@ -418,7 +419,7 @@ class hunterTrace(object):
             try:
                 self.itsSocket.sendall(self.itsPacker.get_buffer())
             except:
-                print 'TOD está durmiendo :-('            
+                print 'TOD está durmiendo :-( - Local write', aCode.co_name            
     
     def __markTimestampFrame__(self, aFrame):
         if not aFrame.f_locals.has_key('__timestampFrame__'): 
@@ -484,7 +485,7 @@ class hunterTrace(object):
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-('
+            print 'TOD está durmiendo :-( - Call metodo', aCode.co_name
     
     
     def __packValue__(self, aDataType, aValue):
@@ -552,7 +553,7 @@ class hunterTrace(object):
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-('
+            print 'TOD está durmiendo :-( - Registrando Clase', aCode.co_name
         theObjectClass = self.__addClass__(
                                            theClassId,
                                            self.__createlnotab__(aCode),
@@ -593,7 +594,7 @@ class hunterTrace(object):
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-('
+            print 'TOD está durmiendo :-( Registrando Metodo', aCode.co_name
         self.__addMethod__(
                            aMethodId,
                            self.__createlnotab__(aCode),
@@ -619,7 +620,7 @@ class hunterTrace(object):
                 thePrintArg += str(theValue)
                 thePrintArg += " "
                 self.itsPacker.pack_int(theValue)
-        self.itsPacker.pack_str(aCode.co_filename)
+        self.itsPacker.pack_string(aCode.co_filename)
         if self.FLAG_DEBUGG:
             print self.itsEvents['register'],
             print self.itsObjects['function'],
@@ -632,7 +633,7 @@ class hunterTrace(object):
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-('            
+            print 'TOD está durmiendo :-( - Registrando Funcion', aCode.co_name       
         self.__addFunction__(
                              theFunctionId,
                              self.__createlnotab__(aCode),
@@ -661,7 +662,7 @@ class hunterTrace(object):
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-('
+            print 'TOD está durmiendo :-( - Registrando Probe'
         self.itsProbeId.__next__()
         return theProbeId
     
@@ -682,12 +683,13 @@ class hunterTrace(object):
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-('
+            print 'TOD está durmiendo :-( - Registrando Thread'
         self.itsThreadId.__next__()
         return theThreadId
 
     def __trace__(self, aFrame, aEvent, aArg):
         if aFrame.f_back == None:
+            sys.settrace(None)
             return
         theCode = aFrame.f_code
         theLocals = aFrame.f_locals
@@ -802,6 +804,9 @@ class hunterTrace(object):
                 theObject = self.__getObject__(theCode)
                 if theObject == None:
                     return
+                if self.FLAG_THROWN == True:
+                    self.FLAG_THROWN = False
+                    return
                 theLnotab = theObject.__getLnotab__()
                 if theLnotab.has_key(aFrame.f_lasti):
                     theBytecodeLocals = self.__getpartcode__(theCode,theLnotab[aFrame.f_lasti])
@@ -822,16 +827,24 @@ class hunterTrace(object):
                                      theThreadId,
                                      False)
         elif aEvent == "exception":
+            for theTuple in dis.findlinestarts(theCode):
+                if aFrame.f_lineno in theTuple:
+                    theIndex = theTuple[0]
+            theOp = ord(theCode.co_code[theIndex-3])
+            theInstruction = dis.opname[theOp]
+            if theInstruction == 'SETUP_EXCEPT':
+                return self.__trace__
+            #print theInstruction, theCode.co_name
+            #print aFrame.f_lineno, aFrame.f_lasti
+            #dis.disassemble(theCode, aFrame.f_lasti)
             theParentTimestampFrame = self.__getTimestampFrame__(aFrame)
-            #print f_traceback.tb_next.tb_frame.f_code.co_name
-            #print f_traceback.tb_next.tb_lineno
-            #print f_traceback.tb_next.tb_lasti
             self.__behaviorExit__(aFrame,
                                      aArg[1],
                                      theDepth,
                                      theParentTimestampFrame,
                                      theThreadId,
                                      True)
+            self.FLAG_THROWN = True           
             #sys.settrace(None)
             #print '[trace]', aEvent, aFrame.f_code.co_name, aFrame.f_lineno, aArg
             #raw_input()
@@ -905,7 +918,7 @@ class Descriptor(object):
         try:
             hT.itsSocket.sendall(hT.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-('
+            print 'TOD está durmiendo :-(', theCode.co_name
         #se habilita nuevamente settrace    
         sys.settrace(hT.__trace__)
 
