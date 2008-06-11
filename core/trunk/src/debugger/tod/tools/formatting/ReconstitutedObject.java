@@ -33,6 +33,7 @@ package tod.tools.formatting;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
+import tod.core.database.browser.ICompoundInspector.EntryValue;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ObjectId;
@@ -67,10 +68,10 @@ public class ReconstitutedObject
 			else Utils.rtex("Class %s is not in scope, cannot access field %s.", itsClass.getName(), aFieldName);
 		}
 		
-		Object[] theEntryValues = itsInspector.getEntryValue(theField);
+		EntryValue[] theEntryValues = itsInspector.getEntryValue(theField);
 		if (theEntryValues == null || theEntryValues.length > 1) throw new RuntimeException("What do we do? "+theEntryValues);
 		
-		Object theValue = theEntryValues.length == 1 ? theEntryValues[0] : null;
+		Object theValue = theEntryValues.length == 1 ? theEntryValues[0].value : null;
 		
 		ILogBrowser theLogBrowser = itsInspector.getLogBrowser();
 		
@@ -100,7 +101,7 @@ public class ReconstitutedObject
 					itsInspector.getReferenceEvent(), 
 					false);
 		}
-		else return null;
+		else return "null";
 	}
 	
 	/**
