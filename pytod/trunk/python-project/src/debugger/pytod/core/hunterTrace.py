@@ -3,7 +3,7 @@
 
 __author__ = "Milton Inostroza Aguilera"
 __email__ = "minoztro@gmail.com"
-__all__ = ['hT', 'Descriptor']
+__all__ = ['hT']
 th = True
 import sys
 import dis
@@ -19,8 +19,8 @@ from objectClass import Class
 from objectMethod import Method
 from objectFunction import Function
 if th:
-    from threading import settrace
-      
+    from threading import settrace   
+
 
 class hunterTrace(object):
 
@@ -797,8 +797,9 @@ class hunterTrace(object):
                     return
             theParentTimestampFrame = self.__getTimestampFrame__(aFrame)
             if theLocals.has_key('__init__'):
-                #registramos la definicion de la clase
                 if not self.__inClass__(theCode):
+                    #registramos la definicion de la clase
+                    theLocals.update({'__setattr__':Descriptor.__dict__['__setattr__']})
                     self.__registerClass__(theCode,theLocals)
             else:
                 theObject = self.__getObject__(theCode)
