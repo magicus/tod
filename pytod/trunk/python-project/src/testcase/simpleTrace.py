@@ -4,10 +4,10 @@
 import sys
 import dis
 
-def __createlnotab__(code):
-    lnotab = {}
-    if hasattr(code, 'co_lnotab'):
-        table = code.co_lnotab
+def __createlnotab__(aCode):
+    theLnotab = {}
+    if hasattr(aCode, 'co_lnotab'):
+        table = aCode.co_lnotab
         index = 0
         last_index = None
         for i in range(0, len(table), 2):
@@ -15,55 +15,63 @@ def __createlnotab__(code):
             if last_index == None:
                 last_index = index
             else:
-                lnotab.update({index:tuple([last_index,index-1])})                
+                theLnotab.update({index:tuple([last_index,index-1])})                
                 last_index = index
-        lnotab.update({len(code.co_code)-1:tuple([last_index,len(code.co_code)-1])})                
-    return lnotab
+        theLnotab.update({len(aCode.co_code)-1:tuple([last_index,len(aCode.co_code)-1])})                
+    return theLnotab 
 
-def __getargs__(code):
-    code.co_varnames
 
 def trace(frame, event, arg):
+    print event
     code = frame.f_code
-    if event == 'call':
-        print code.co_name
-        print frame.f_locals
-        print frame.f_exc_value
-        print frame.f_exc_traceback
-        print frame.f_exc_value
+    if event == 'exception':
+        fBack = frame.f_back
+        if frame.f_code.co_name == '<module>':
+            print 'para la cuestioncita'
+            #sys.settrace(None)
+        print fBack, fBack.f_code.co_name, code.co_name
         raw_input()
+        for theIndex in dis.findlinestarts(code):
+            if frame.f_lineno in theIndex:
+                theValue = theIndex[0]
+        print frame.f_lineno, frame.f_lasti
+        print dis.opname[ord(code.co_code[theValue-3])]
+        dis.disassemble(frame.f_code,frame.f_lasti)
+        #print event, code.co_name
+        #print arg[0],arg[1],arg[2]
+        raw_input()
+        return None
+    if event == 'call':
+        #print code.co_name
+        #raw_input()
         return trace
     elif event == 'line':
-        print frame.f_exc_value
-        print frame.f_exc_traceback
-        print frame.f_exc_value
+        #print code.co_name
         return trace
     elif event == 'return':
         print code.co_name
-        print frame.f_exc_value
-        print frame.f_exc_traceback
-        print frame.f_exc_value        
-        print arg
-        raw_input()
-        
-class Descriptor(object):
-    
-    def __setattr__(self, name, value):
-        print 'estoy dentro de setattr',sys._getframe()
-        
-
-class prueba(Descriptor):
-    def __init__(self):
-        self.x = 0
-        self.y = 1
+        #print arg
+        #raw_input()
+        pass
         
 sys.settrace(trace)
-#a = prueba()
 
-def algo(a,b,c):
-    a = [2, 3, 4]
-    print id(a)
-    a.append(5)
-    1/0
+def m0():
+    m1()
+
+def m1():
+    m2()
+"""
+def m2():
+    try:
+        m3()
+    except:
+        print 'hola'
+"""
+def m2():
+    m3()
+
+def m3():
+    y = 1/0
     
-algo(3,2,5)
+m0()

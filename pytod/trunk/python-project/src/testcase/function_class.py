@@ -16,7 +16,7 @@ def prueba2(e=3):
     x = 15
     y = x = a = 1
 
-class clasePrueba(Descriptor):
+class clasePrueba(object):
 
     def __init__(self):
         x = 1
