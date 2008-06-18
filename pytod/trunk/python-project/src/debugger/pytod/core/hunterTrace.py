@@ -511,13 +511,13 @@ class hunterTrace(object):
         print '======='
         
         print 'metodos'
-        for theKey, theValue in hT._method.iteritems():
+        for theKey, theValue in hT.itsMethod.iteritems():
             print v.__dict__
             print
         print '======='
         
         print 'funcion'
-        for theKey, theValue in hT._function.iteritems():
+        for theKey, theValue in hT.itsFunction.iteritems():
             print theValue.__dict__
             print
         print '======='

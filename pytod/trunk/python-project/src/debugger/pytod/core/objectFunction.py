@@ -47,8 +47,8 @@ class Function(object):
         theParentId = self.Id
         if self.hT.FLAG_DEBUGG:
             for theIndex in range(len(aArgs)):            
-                    print self.hT.events['register'],
-                    print self.hT.objects['local'],          
+                    print self.hT.itsEvents['register'],
+                    print self.hT.itsObjects['local'],          
                     print theIndex,
                     print theParentId,
                     print aArgs[theIndex]
