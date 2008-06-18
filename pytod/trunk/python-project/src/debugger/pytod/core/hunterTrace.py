@@ -41,7 +41,7 @@ class hunterTrace(object):
         self.itsPacker = aPacker
         self.itsHost = aHost
         self.itsPort = aPort
-        self.FLAG_DEBUGG = False
+        self.FLAG_DEBUGG = True
         self.FLAG_THROWN = False
         self.itsMethodPattern = "\A__.*(__)$"
         self.__socketConnect__()
@@ -103,7 +103,7 @@ class hunterTrace(object):
             print behaviorId,
             print theDataType,
             print thePackValue,
-            print aHasTrown,
+            print aHasThrown,
             print theProbeId,
             print aParentTimestampFrame,
             print theDepth,
