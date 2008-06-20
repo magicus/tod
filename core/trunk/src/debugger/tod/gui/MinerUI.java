@@ -48,6 +48,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import tod.core.DebugFlags;
+import tod.core.IBookmarks;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
@@ -56,8 +57,10 @@ import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ObjectId;
+import tod.core.database.structure.SourceRange;
 import tod.core.session.ISession;
 import tod.core.session.ISessionMonitor;
+import tod.gui.IGUIManager.DialogType;
 import tod.gui.kit.Bus;
 import tod.gui.kit.BusOwnerPanel;
 import tod.gui.kit.IBusListener;
@@ -79,6 +82,7 @@ import tod.gui.settings.GUISettings;
 import tod.gui.view.IEventListView;
 import tod.gui.view.LogView;
 import tod.gui.view.controlflow.CFlowView;
+import tod.impl.common.Bookmarks;
 import tod.utils.TODUtils;
 import zz.utils.SimpleAction;
 import zz.utils.ui.StackLayout;
@@ -146,6 +150,8 @@ implements ILocationSelectionListener, IGUIManager
 	private BookmarkPanel itsBookmarkPanel = new BookmarkPanel();
 	
 	private GUISettings itsGUISettings = new GUISettings(this);
+	
+	private Bookmarks itsBookmarks = new Bookmarks();
 	
 	/**
 	 * The currently used debugging session.
@@ -227,6 +233,20 @@ implements ILocationSelectionListener, IGUIManager
 		return itsGUISettings;
 	}
 	
+	public IBookmarks getBookmarks()
+	{
+		return itsBookmarks;
+	}
+
+	public void gotoSource(SourceRange aSourceRange)
+	{
+	}
+
+	public <T> T showDialog(DialogType<T> aDialog)
+	{
+		return null;
+	}
+
 	protected void viewChanged(LogView aView)
 	{
 		itsBookmarkPanel.setView(aView);

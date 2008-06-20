@@ -31,17 +31,31 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.eventsequences;
 
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.IThreadInfo;
 import tod.gui.IGUIManager;
-import zz.utils.list.IList;
 
 /**
- * A seed that permits to create event sequence views.
+ * Sequence seed that shows all events.
  * @author gpothier
  */
-public interface IEventSequenceSeed
+public class GlobalSequenceSeed implements IEventSequenceSeed
 {
-	/**
-	 * Creates a new view corresponding to this seed.
-	 */
-	public IEventSequenceView createView(IGUIManager aGUIManager);
+	private ILogBrowser itsLogBrowser;
+
+	public GlobalSequenceSeed(ILogBrowser aTrace)
+	{
+		itsLogBrowser = aTrace;
+	}
+
+	public ILogBrowser getLogBrowser()
+	{
+		return itsLogBrowser;
+	}
+
+	public GlobalSequenceView createView(IGUIManager aGUIManager)
+	{
+		return new GlobalSequenceView(aGUIManager, this);
+	}
+
 }

@@ -29,19 +29,77 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.eventsequences;
+package tod.gui.eventsequences.mural;
 
-import tod.gui.IGUIManager;
-import zz.utils.list.IList;
+import java.util.Comparator;
+import java.util.List;
+
+import tod.core.database.event.ILogEvent;
+
+import zz.utils.notification.IEvent;
 
 /**
- * A seed that permits to create event sequence views.
+ * Provides ballons for murals
  * @author gpothier
  */
-public interface IEventSequenceSeed
+public interface IBalloonProvider
 {
 	/**
-	 * Creates a new view corresponding to this seed.
+	 * Gets the balloons to show in the given interval.
 	 */
-	public IEventSequenceView createView(IGUIManager aGUIManager);
+	public List<Balloon> getBaloons(long aStartTimestamp, long aEndTimestamp);
+	
+	/**
+	 * Returns an event that is fired when the set of balloons changes.
+	 */
+	public IEvent<Void> eChanged();
+	
+	public static class Balloon
+	{
+		private ILogEvent itsEvent;
+		
+		/**
+		 * HTML text of the balloon
+		 */
+		private final String itsText;
+
+		public Balloon(ILogEvent aEvent, String aText)
+		{
+			itsEvent = aEvent;
+			itsText = aText;
+		}
+
+		public ILogEvent getEvent()
+		{
+			return itsEvent;
+		}
+
+		public long getTimestamp()
+		{
+			return getEvent().getTimestamp();
+		}
+		
+		public String getText()
+		{
+			return itsText;
+		}
+		
+		
+
+	}
+
+	/**
+	 * Compares the timestamp of balloons.
+	 */
+	public static Comparator<Balloon> COMPARATOR = new Comparator<Balloon>()
+	{
+		public int compare(Balloon aO1, Balloon aO2)
+		{
+			long dt = aO1.getTimestamp() - aO2.getTimestamp();
+			
+			if (dt < 0) return -1;
+			else if (dt == 0) return 0;
+			else return 1;
+		}
+	};
 }

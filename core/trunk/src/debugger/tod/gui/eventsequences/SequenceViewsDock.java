@@ -44,7 +44,6 @@ import java.util.List;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -54,7 +53,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import tod.agent.AgentUtils;
-import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.session.ISession;
 import tod.gui.GUIUtils;
@@ -158,6 +156,9 @@ public class SequenceViewsDock extends JPanel
 	 */
 	private AbstractMuralPainter itsMuralPainter;
 	
+	private int itsPreferredStripeHeight = 80;
+	private boolean itsShowStripeTitle = true;
+	
 	public SequenceViewsDock(IGUIManager aGUIManager)
 	{
 		itsGUIManager = aGUIManager;
@@ -168,7 +169,13 @@ public class SequenceViewsDock extends JPanel
 	{
 		setLayout(new BorderLayout());
 		itsViewsPanel = new JPanel (GUIUtils.createStackLayout());
-		add (new JScrollPane(itsViewsPanel), BorderLayout.CENTER);
+		
+		JScrollPane theScrollPane = new JScrollPane(
+				itsViewsPanel, 
+				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
+				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		
+		add (theScrollPane, BorderLayout.CENTER);
 		
 		itsTimestampSlider = new TimestampRangeSlider();
 		add(itsTimestampSlider, BorderLayout.NORTH);
@@ -190,6 +197,15 @@ public class SequenceViewsDock extends JPanel
 	public void setMuralPainter(AbstractMuralPainter aMuralPainter)
 	{
 		itsMuralPainter = aMuralPainter;
+	}
+	
+	/**
+	 * Returns the mural that corresponds to the seed at the specified index.
+	 */
+	public EventMural getMural(int aIndex)
+	{
+		SequencePanel thePanel = (SequencePanel) itsViewsPanel.getComponent(aIndex);
+		return thePanel.getMural();
 	}
 	
 	private void computeBounds()
@@ -238,11 +254,20 @@ public class SequenceViewsDock extends JPanel
 		return pSeeds;
 	}
 
+	public void setPreferredStripeHeight(int aPreferredStripeHeight)
+	{
+		itsPreferredStripeHeight = aPreferredStripeHeight;
+	}
+	
+	public void setShowStripeTitle(boolean aShowStripeTitle)
+	{
+		itsShowStripeTitle = aShowStripeTitle;
+	}
 	
 	private class SequencePanel extends JPanel
 	{
 		private IEventSequenceView itsView;
-		private EventMural itsStripe;
+		private EventMural itsMural;
 		
 		/**
 		 * We keep references to connectors so that we can disconnect.
@@ -274,15 +299,15 @@ public class SequenceViewsDock extends JPanel
 		private void createUI()
 		{
 			setLayout(new BorderLayout(5, 0));
-			setPreferredSize(new Dimension(10, 80));
+			setPreferredSize(new Dimension(10, itsPreferredStripeHeight));
 			
 			itsView.setLimits(itsFirstTimestamp, itsLastTimestamp);
-			itsStripe = itsView.getEventStripe();
+			itsMural = itsView.getEventStripe();
 			
-			if (itsMuralPainter != null) itsStripe.setMuralPainter(itsMuralPainter);
+			if (itsMuralPainter != null) itsMural.setMuralPainter(itsMuralPainter);
 			
-			add (itsStripe, BorderLayout.CENTER);
-			add (createNorthPanel(), BorderLayout.NORTH);
+			add (itsMural, BorderLayout.CENTER);
+			if (itsShowStripeTitle) add (createNorthPanel(), BorderLayout.NORTH);
 		}
 		
 		public JPanel createNorthPanel()
@@ -300,6 +325,11 @@ public class SequenceViewsDock extends JPanel
 			thePanel.add(theToolBar);
 			
 			return thePanel;
+		}
+		
+		public EventMural getMural()
+		{
+			return itsMural;
 		}
 	}
 	

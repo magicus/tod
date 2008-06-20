@@ -16,6 +16,7 @@ import javax.swing.BorderFactory;
 import javax.swing.GrayFilter;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
@@ -32,6 +33,9 @@ import tod.gui.components.intimacyeditor.IntimacyLevelEditor;
 import tod.gui.eventlist.IntimacyLevel;
 import tod.gui.seed.DynamicCrosscuttingSeed.Highlight;
 import zz.utils.Utils;
+import zz.utils.notification.IEvent;
+import zz.utils.notification.IEventListener;
+import zz.utils.ui.SimpleColorChooserPanel;
 import zz.utils.ui.UIUtils;
 import zz.utils.ui.popup.ButtonPopupComponent;
 
@@ -42,10 +46,6 @@ import zz.utils.ui.popup.ButtonPopupComponent;
 class HighlightEditor extends JPanel
 implements ChangeListener
 {
-	private static final Color[] COLORS =
-	{ Color.BLUE, Color.CYAN, Color.GREEN, Color.MAGENTA, Color.ORANGE, Color.PINK, Color.RED, Color.YELLOW, Color.GRAY };
-
-
 	private static final Border BORDER = BorderFactory.createLineBorder(Color.BLACK);
 	
 	private final DynamicCrosscuttingView itsDynamicCrosscuttingView;
@@ -87,7 +87,15 @@ implements ChangeListener
 		JButton theButton = new JButton(Resources.ICON_TRIANGLE_DOWN.asIcon(9));
 		theButton.setMargin(UIUtils.NULL_INSETS);
 		
-		itsButton = new ButtonPopupComponent(new MyPopup(), theButton);
+		SimpleColorChooserPanel thePopup = new SimpleColorChooserPanel("Disable");
+		thePopup.eChanged().addListener(new IEventListener<Color>() 
+			{
+				public void fired(IEvent< ? extends Color> aEvent, Color aData)
+				{
+					selectColor(aData);
+				}
+			});
+		itsButton = new ButtonPopupComponent(thePopup, theButton);
 		add(itsButton);
 
 		JPanel theRolesPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -204,53 +212,5 @@ implements ChangeListener
 		
 		stateChanged(null);
 	}
-
-	private class MyPopup extends JPanel
-	{
-		public MyPopup()
-		{
-			createUI();
-		}
-
-		private void createUI()
-		{
-			setLayout(new BorderLayout());
-
-			MouseListener theListener = new MouseAdapter()
-			{
-				@Override
-				public void mousePressed(MouseEvent e)
-				{
-					Object theSource = e.getSource();
-					if (theSource instanceof JLabel) selectColor(null);
-					else selectColor(((JPanel) theSource).getBackground());
-				}
-			};
-
-			JLabel theDisableLabel = new JLabel("Disable");
-			theDisableLabel.setBorder(BORDER);
-			theDisableLabel.addMouseListener(theListener);
-
-			JPanel theNorthPanel = new JPanel();
-			theNorthPanel.add(theDisableLabel);
-			add(theNorthPanel, BorderLayout.NORTH);
-
-			JPanel theCenterPanel = new JPanel(new GridLayout(0, 5, 5, 5));
-
-			for (Color theColor : COLORS)
-			{
-				JPanel theColorPanel = new JPanel(null);
-				theColorPanel.setPreferredSize(new Dimension(20, 20));
-				theColorPanel.setBackground(theColor);
-				theColorPanel.setBorder(BORDER);
-				theColorPanel.addMouseListener(theListener);
-
-				theCenterPanel.add(theColorPanel);
-			}
-
-			add(theCenterPanel, BorderLayout.CENTER);
-		}
-	}
-
 
 }

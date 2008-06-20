@@ -31,17 +31,39 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.eventsequences;
 
-import tod.gui.IGUIManager;
-import zz.utils.list.IList;
+import java.awt.Color;
 
-/**
- * A seed that permits to create event sequence views.
- * @author gpothier
- */
-public interface IEventSequenceSeed
+import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.ILogBrowser;
+import tod.gui.IGUIManager;
+
+public class GlobalSequenceView extends AbstractSingleBrowserSequenceView
 {
-	/**
-	 * Creates a new view corresponding to this seed.
-	 */
-	public IEventSequenceView createView(IGUIManager aGUIManager);
+	public static final Color EVENT_COLOR = Color.GRAY;
+
+	private final GlobalSequenceSeed itsSeed;
+	
+	public GlobalSequenceView(IGUIManager aGUIManager, GlobalSequenceSeed aSeed)
+	{
+		super(aGUIManager, EVENT_COLOR);
+		itsSeed = aSeed;
+	}
+
+	@Override
+	public ILogBrowser getLogBrowser()
+	{
+		return itsSeed.getLogBrowser();
+	}
+	
+	@Override
+	protected IEventBrowser getBrowser()
+	{
+		return getLogBrowser().createBrowser();
+	}
+
+	public String getTitle()
+	{
+		return "All events";
+	}
+	
 }

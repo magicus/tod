@@ -38,6 +38,7 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
@@ -55,10 +56,9 @@ import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
-import tod.gui.MinerUI;
 import tod.gui.Resources;
+import tod.gui.components.BookmarksMural;
 import tod.gui.components.intimacyeditor.IntimacyEditorButton;
-import tod.gui.components.intimacyeditor.IntimacyLevelEditor;
 import tod.gui.eventlist.EventListPanel;
 import tod.gui.eventlist.IntimacyLevel;
 import tod.gui.formatter.EventFormatter;
@@ -67,7 +67,6 @@ import tod.gui.kit.IBusListener;
 import tod.gui.kit.Options;
 import tod.gui.kit.SavedSplitPane;
 import tod.gui.kit.StdOptions;
-import tod.gui.kit.StdProperties;
 import tod.gui.kit.messages.EventSelectedMsg;
 import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
@@ -83,7 +82,6 @@ import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.PropertyListener;
 import zz.utils.properties.SimplePropertyListener;
-import zz.utils.properties.SimpleRWProperty;
 import zz.utils.ui.UIUtils;
 import zz.utils.ui.ZLabel;
 
@@ -101,6 +99,10 @@ public class CFlowView extends LogView implements IEventListView
 	
 	private ZLabel itsHostLabel;
 	private ZLabel itsThreadLabel;
+	
+	private BookmarksMural itsBookmarksMural;
+	
+	private BookmarkButton itsBookmarkButton;
 	
 	private IPropertyListener<ILogEvent> itsSelectedEventListener = new PropertyListener<ILogEvent>()
 	{
@@ -200,6 +202,10 @@ public class CFlowView extends LogView implements IEventListView
 		
 		theCFlowPanel.add(theNorthPanel, BorderLayout.NORTH);
 		
+		// Create bookmark mural
+		itsBookmarksMural = new BookmarksMural(getGUIManager(), getLogBrowser(), getGUIManager().getBookmarks());
+		add(itsBookmarksMural, BorderLayout.NORTH);
+		
 		// Create watch panel
 		itsWatchPanel = new WatchPanel(this);
 
@@ -292,6 +298,7 @@ public class CFlowView extends LogView implements IEventListView
 					getLogBrowser().getStructureDatabase()));
 		}
 				
+		// Stepping buttons
 		theToolbar.add(new JButton(new SimpleAction(
 				Resources.ICON_BACKWARD_STEP_OVER.asIcon(20), 
 				"Backward step over")
@@ -340,9 +347,16 @@ public class CFlowView extends LogView implements IEventListView
 			{
 				forwardStepOver();				
 			}
-
 		}));
 
+		// Bookmark buttons
+		theToolbar.add(new JLabel("   "));
+		
+		itsBookmarkButton = new BookmarkButton(getGUIManager().getBookmarks());
+		theToolbar.add(itsBookmarkButton);
+		
+	
+		// UI tweaking...
 		for (int i=0;i<theToolbar.getComponentCount();i++)
 		{
 			Component theComponent = theToolbar.getComponent(i);
@@ -386,6 +400,9 @@ public class CFlowView extends LogView implements IEventListView
 		}
 		
 		LocationUtils.gotoSource(getGUIManager(), theSelectedEvent);
+		
+		itsBookmarksMural.setCurrentEvent(theSelectedEvent);
+		itsBookmarkButton.setCurrentEvent(theSelectedEvent);
 	}
 	
 	private void showEvent (ILogEvent aEvent)

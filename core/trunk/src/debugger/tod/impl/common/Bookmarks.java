@@ -29,19 +29,42 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.eventsequences;
+package tod.impl.common;
 
-import tod.gui.IGUIManager;
-import zz.utils.list.IList;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * A seed that permits to create event sequence views.
- * @author gpothier
- */
-public interface IEventSequenceSeed
+import tod.core.IBookmarks;
+import zz.utils.FireableTreeModel;
+import zz.utils.notification.IEvent;
+import zz.utils.notification.IFireableEvent;
+import zz.utils.notification.SimpleEvent;
+
+public class Bookmarks implements IBookmarks
 {
-	/**
-	 * Creates a new view corresponding to this seed.
-	 */
-	public IEventSequenceView createView(IGUIManager aGUIManager);
+	private final List<Bookmark> itsBookmarks = new ArrayList<Bookmark>();
+	private final IFireableEvent<Void> eChanged = new SimpleEvent<Void>();
+	
+	public void addBookmark(Bookmark aBookmark)
+	{
+		itsBookmarks.add(aBookmark);
+		eChanged.fire(null);
+	}
+
+	public void removeBookmark(Bookmark aBookmark)
+	{
+		itsBookmarks.remove(aBookmark);
+		eChanged.fire(null);
+	}
+
+	public IEvent<Void> eChanged()
+	{
+		return eChanged;
+	}
+
+	public Iterable<Bookmark> getBookmarks()
+	{
+		return itsBookmarks;
+	}
+
 }

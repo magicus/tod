@@ -33,26 +33,22 @@ package tod.gui.eventsequences.mural;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Event;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.GeneralPath;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.List;
@@ -61,15 +57,13 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import javax.swing.text.StyledEditorKit.FontSizeAction;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.LocationUtils;
-import tod.core.database.event.ICallerSideEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.gui.BrowserData;
@@ -77,10 +71,12 @@ import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
 import tod.gui.Resources;
+import tod.gui.eventsequences.mural.IBalloonProvider.Balloon;
 import tod.gui.formatter.EventFormatter;
 import tod.utils.TODUtils;
 import zz.utils.Cleaner;
 import zz.utils.notification.IEvent;
+import zz.utils.notification.IEventListener;
 import zz.utils.notification.IFireableEvent;
 import zz.utils.notification.SimpleEvent;
 import zz.utils.properties.ArrayListProperty;
@@ -92,7 +88,8 @@ import zz.utils.ui.MouseModifiers;
 import zz.utils.ui.MouseWheelPanel;
 import zz.utils.ui.NullLayout;
 import zz.utils.ui.Orientation;
-import zz.utils.ui.UIUtils;
+import zz.utils.ui.StackLayout;
+import zz.utils.ui.TransparentPanel;
 import zz.utils.ui.ResourceUtils.ImageResource;
 
 /**
@@ -173,6 +170,7 @@ public class EventMural extends MouseWheelPanel
 		protected void clean()
 		{
 			if (itsImage != null) itsImage.setUpToDate(false);
+			updateBaloons();
 			repaint();
 		}
 	};
@@ -213,13 +211,29 @@ public class EventMural extends MouseWheelPanel
 	private ILogEvent itsCurrentEvent;
 	private EventDetailsPanel itsCurrentEventPanel;
 	
+	/**
+	 * Optional balloon provider.
+	 */
+	private IBalloonProvider itsBalloonProvider;
+	
+	private JPanel itsCurrentEventLayer;
+	private JPanel itsBalloonsLayer;
+	
+	private final IEventListener<Void> itsBalloonListener = new IEventListener<Void>()
+	{
+		public void fired(IEvent< ? extends Void> aEvent, Void aData)
+		{
+			updateBaloons();
+		}
+	};
+	
 	public EventMural(
 			IGUIManager aGUIManager, 
 			Orientation aOrientation,
 			long aFirstTimestamp,
 			long aLastTimestamp)
 	{
-		super(new NullLayout());
+		super(new StackLayout());
 		itsGUIManager = aGUIManager;
 		itsOrientation = aOrientation;
 		itsFirstTimestamp = aFirstTimestamp;
@@ -251,9 +265,15 @@ public class EventMural extends MouseWheelPanel
 			}
 		});
 		
+		itsCurrentEventLayer = new TransparentPanel(new NullLayout());
+		add(itsCurrentEventLayer);
+		
+		itsBalloonsLayer = new TransparentPanel(new NullLayout());
+		add(itsBalloonsLayer);
+		
 		itsCurrentEventPanel = new EventDetailsPanel();
 		itsCurrentEventPanel.setVisible(false);
-		add(itsCurrentEventPanel);
+		itsCurrentEventLayer.add(itsCurrentEventPanel);
 	}
 
 	public EventMural(
@@ -265,6 +285,7 @@ public class EventMural extends MouseWheelPanel
 	{
 		this(aGUIManager, aOrientation, aFirstTimestamp, aLastTimestamp);
 		pEventBrowsers.add(new BrowserData(aBrowser));
+		updateBaloons();
 	}
 
 	public void setLimits(long aFirstTimestamp, long aLastTimestamp)
@@ -633,6 +654,123 @@ public class EventMural extends MouseWheelPanel
 		pStart.set((long)t1p);
 	}
 	
+	public IBalloonProvider getBalloonProvider()
+	{
+		return itsBalloonProvider;
+	}
+
+	public void setBalloonProvider(IBalloonProvider aBalloonProvider)
+	{
+		if (itsBalloonProvider != null) itsBalloonProvider.eChanged().removeListener(itsBalloonListener);
+		itsBalloonProvider = aBalloonProvider;
+		if (itsBalloonProvider != null) itsBalloonProvider.eChanged().addListener(itsBalloonListener);
+	}
+
+	/**
+	 * Updates the set of displayed baloons.
+	 */
+	protected void updateBaloons()
+	{
+		itsBalloonsLayer.removeAll();
+		if (! isReady()) return;
+		
+		// Get parameters
+		int w = getWidth();
+		int x = 0;
+		
+		long t1 = pStart.get();
+		long t2 = pEnd.get();
+		
+		if (t1 == t2) return;
+		
+		List<Balloon> theBaloons = itsBalloonProvider != null ? itsBalloonProvider.getBaloons(t1, t2) : null;
+		
+		long t = t1;
+		
+		// Start placing baloons
+		SpaceManager theManager = new SpaceManager(getHeight());
+
+		if (theBaloons != null) for (Balloon theBalloon : theBaloons)
+		{
+			t = theBalloon.getTimestamp();
+			if (t > t2) break;
+			
+			x = (int) (w * (t - t1) / (t2 - t1));
+			
+			Range theRange = theManager.getAvailableRange(x);
+			if (theRange == null) continue;
+			
+			JComponent theBaloon = createBalloon(theBalloon);
+			
+			if (theBaloon != null)
+			{
+				Dimension theSize = theBaloon.getPreferredSize();
+				
+				if (theSize.height > theRange.getSpan()) continue;
+
+				int by = (int) theRange.getStart();
+				double bw = theSize.width;
+				double bh = theSize.height;
+				
+				theBaloon.setBounds(x-(theSize.width/2), by, theSize.width, theSize.height);
+				itsBalloonsLayer.add(theBaloon);
+				
+				theManager.occupy(x, by, bw, bh);
+			}
+		}
+		itsBalloonsLayer.repaint();
+	}
+	
+	/**
+	 * Creates the {@link JComponent} that represents a balloon.
+	 */
+	private JComponent createBalloon(Balloon aBalloon)
+	{
+		return new BalloonLabel(aBalloon);
+	}
+	
+	private class BalloonLabel extends JLabel
+	implements MouseListener
+	{
+		private final Balloon itsBalloon;
+
+		public BalloonLabel(Balloon aBalloon)
+		{
+			super("<html>"+aBalloon.getText());
+			itsBalloon = aBalloon;
+			addMouseListener(this);
+			setOpaque(false);
+			setBackground(Color.LIGHT_GRAY);
+		}
+
+		public void mouseEntered(MouseEvent aE)
+		{
+			setOpaque(true);
+			repaint();
+		}
+
+		public void mouseExited(MouseEvent aE)
+		{
+			setOpaque(false);
+			repaint();
+		}
+
+		public void mousePressed(MouseEvent aE)
+		{
+			eEventClicked().fire(itsBalloon.getEvent());
+		}
+
+		public void mouseReleased(MouseEvent aE)
+		{
+		}
+
+		public void mouseClicked(MouseEvent aE)
+		{
+		}
+
+		
+	}
+	
 	private static class ImageUpdater extends Thread
 	{
 		private BlockingQueue<EventMural> itsRequestsQueue =
@@ -841,4 +979,118 @@ public class EventMural extends MouseWheelPanel
 			itsDetailsLabel.setIcon(theIcon != null ? theIcon.asIcon(15) : null);
 		}
 	}
+	
+	/**
+	 * This class permits to place baloons according to available space.
+	 * TODO: Implement a better algorithm, for now we use discrete scanlines.
+	 * @author gpothier
+	 */
+	private static class SpaceManager
+	{
+		private static double K = 4.0;
+		private double itsHeight;
+		private double[] itsLines;
+		
+		public SpaceManager(double aHeight)
+		{
+			itsHeight = aHeight;
+			itsLines = new double[(int) (itsHeight/K)];
+			
+			for (int i = 0; i < itsLines.length; i++) itsLines[i] = -1;
+		}
+
+		/**
+		 * Returns the biggest available range at the specified position.
+		 * @return A {@link Range}, or null if there is no space.
+		 */
+		public Range getAvailableRange (double aX)
+		{
+			Range theBiggestRange = null;
+			double theStart = -1;
+			double theEnd = -1;
+			
+			for (int i = 0; i < itsLines.length; i++)
+			{
+				double x = itsLines[i];
+				
+				if (theStart < 0)
+				{
+					if (x < aX) theStart = i*K;
+				}
+				else
+				{
+					if (x < aX) theEnd = i*K;
+					else
+					{
+						Range theRange = new Range(theStart, theEnd);
+						if (theBiggestRange == null || theRange.getSpan() > theBiggestRange.getSpan())
+							theBiggestRange = theRange;
+						
+						theStart = theEnd = -1;
+					}
+				}
+			}
+			
+			if (theBiggestRange == null && theStart >= 0)
+			{
+				theBiggestRange = new Range(theStart, theEnd);
+			}
+			
+			return theBiggestRange;
+		}
+		
+		/**
+		 * Marks the given bounds as occupied 
+		 */
+		public void occupy(double aX, double aY, double aW, double aH)
+		{
+			double theY1 = aY;
+			double theY2 = aY+aH;
+			
+			int theI1 = (int) (theY1 / K);
+			int theI2 = (int) (theY2 / K);
+			
+			for (int i=theI1;i<=theI2;i++) itsLines[i] = aX+aW;
+		}
+		
+	}
+	
+	private static class Range
+	{
+		private double itsStart;
+		private double itsEnd;
+		
+		public Range(double aStart, double aEnd)
+		{
+			itsStart = aStart;
+			itsEnd = aEnd;
+		}
+		
+		public double getEnd()
+		{
+			return itsEnd;
+		}
+
+		public double getStart()
+		{
+			return itsStart;
+		}
+
+		public boolean intersects (Range aRange)
+		{
+			return aRange.getStart() <= getEnd() || getStart() <= aRange.getEnd();
+		}
+		
+		public boolean contains (Range aRange)
+		{
+			return aRange.getStart() >= getStart() && aRange.getEnd() <= getEnd();			
+		}
+		
+		public double getSpan()
+		{
+			return itsEnd - itsStart;
+		}
+	}
+	
+
 }

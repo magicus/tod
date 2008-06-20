@@ -64,6 +64,7 @@ public class Resources
 	public static final ImageResource ICON_ROLESELECTEDMARKER = loadIcon("roleSelectedMarker.png");
 	public static final ImageResource ICON_ROLEUNSELECTEDMARKER = loadIcon("roleUnselectedMarker.png");
 	
+	public static final ImageResource ICON_BOOKMARK = loadIcon("bookmark.png");
 	
 	private static ImageResource loadIcon (String aName)
 	{
