@@ -364,7 +364,7 @@ Técnica no escalable
 \end{itemize}
 
 		\subsection{Depuración basada en puntos de quiebre}
-			\subsubsection{Origen}
+			\subsubsection{Motivación}
 
 Un punto de quiebre, en desarrollo de software, es una detención intencional o pausa en un lugar del programa, puesto en ese lugar con propósitos de depuración.  En general, un punto de quiebre es el significado de adquirir conocimiento acerca de un programa durante su ejecución.  Durante la interrupción, el programador inspecciona el ambiente de prueba (memoria, archivos, reportes, etc) para averiguar si el programa funciona bien.
 
@@ -390,10 +390,76 @@ El depurador al momento de encontrar el punto de quiebre, no tiene en sus regist
 Hay que seleccionarlas bien, aún en estudio
 
 		\subsection{Depuración Omnisciente}
-			\subsubsection{Origen}
+			\subsubsection{Motivación}
+
+Mediante el registro de cada cambio de un programa en ejecución, es posible presentar al programador cualquier información que desee.  Esencialmente, esto hace posible depurar el programa yendo "atrás en el tiempo", simplificando bastante el proceso de depuración.
+
+
+Los desarrolladores de los depuradores se han concentrado completamente en responder la siguiente pregunta: "¿Qué información podemos entregar a los programadores mientras el programa se está ejecutando?".  Aunque esto no es del todo herrado, no es la pregunta correcta.  La pregunta que debieran tener que responder es: "¿Qué información ayudaría más al programador?".
+
+De estudios informales se ha revelado que varios cientos de programadores, aproximadamente el 90\% de ellos, depuran todos sus programas utilizando sólo instrucciones de impresión.
+
+
+			\subsubsubsection{Depuración omnisciente}
+
+Un depurador omnisciente trabaja mediante la recolección de eventos generados por cada cambio de estado (cada asignación de variable de cualquier tipo) y cada llamada a un método dentro del programa depurado.  Después de terminado el programa es mostrado el depurador (interfaz gráfica) permitiendo al programador ver el estado del programa en el tiempo de ejecución que desee.  El programador puede seleccionar cualquier variable e ir "atrás en el tiempo" y mirar donde ésta fue definida o cual fue su valor.
+
+Existen consideraciones para programas que superan los 10 millones de eventos.
+
+
+			\subsubsubsection{Es interesante la depuración omnisciente}
+
+Existen varias razones para hacer un esfuerzo y estudiar la depuración omnisciente:
+
+\begin{itemize}
+	\item La primera y más famosa, es fácil depurar cuando puedes ir hacia atrás.  La pregunta más común que los programadores se hacen es "¿Quién definió esta variable?".
+
+	\item Este elimina los terribles problemas con depuradores de quiebre, con los cuales el programador debe "adivinar" en donde poner el punto de quiebre.  No existen pasos extras para depurar, no sucede la situación "ohh, fuí demasiado lejos".  Se eliminan los problemas no deterministicos.
+
+	\item Este entrega al programador una lista única del programa siendo capaz de ver las huellas de llamadas a métodos.
+
+	\item Toda la información es serializada.  Puede ser analizada remotamente.
+
 			\subsubsection{Proceso de depuración}
+
+Aunque no existe una definición formal de como llevar a cabo el proceso de depuración en esta técnica, se utiliza la definición de Bil Lewis para explicar al lector el proceso y componentes esenciales que debe tener un depurador omnisciente.
+
+				\subsubsubsection{Mantener el estado}
+
+Se quiere ser capaz de revertir el programa hacia cualquier estado anterior de ejecución.  Esto implica que debemos grabar cada cambio de cada objeto o variable.  Necesitamos grabar cada asignación en cada hilo de ejecución y definir un orden sobre ellos.
+
+La marca de tiempo debe ser el único referente del estado del programa.
+
+				\subsubsubsection{Presentación}
+
+Cada objeto, variable, instrucción E/S tendrá un valor conocido para cada marca de tiempo.  Cuando "revertimos el depurador" a un tiempo dado, toda la información es actualizada para reflejar los valores para esa marca de tiempo.
+
+Se muestra toda la información de forma adecuada y el programador no debiera nunca preguntarse ¿ésto cambió? o ¿dónde estoy?
+
+				\subsubsubsection{Identificar el estado}
+
+El programador debe ser capaz de mirar un objeto y saber que objeto es y que valores tienen las variables de instancias.  Los objetos de clases son mostrados justo con el nombre de clase (ej.: Persona), strings y otras primitivas como se esperan (1, True, "soy una cadena").
+
+				\subsubsubsection{Navegación}
+
+La simple navegación a través de la historia del programa es dotado a través de la selección de linea en un panel o presionando algunos botones.
+
+Los botones deben trabajar de una forma estándar para los diferentes paneles que existan.
+
+
 			\subsubsection{Ventajas / Desventajas}
-			\subsubsection{Herramientas más utilizadas}
+
+Se debe tener una capacidad de almacenamiento bastante grande, un cluster de preferencia.
+
+			\subsubsection{Herramientas}
+
+Algunas de las herramientas que existen en el mercada actualmente son:
+\begin{itemize}
+	\item TOD
+	\item otras más...
+\end{itemize}
+
+
 
 	\section{Lenguajes de Programación}
 
@@ -433,9 +499,21 @@ Java es un lenguaje cuyos tipos se fijan en el momento de compilar. La mayoría 
 Existen muchas más diferencias entre estos dos lenguajes pero para el caso de estudio sólo nos interesa mostrar esta diferencia como la principal.
 
 \chapter{Implementaciones de depuradores omniscientes}
+
+	A lo largo de la historia de las ciencias de la computación han existido muchos esfuerzos por implementar depuradores omniscientes es por esto que encontramos importante conocer las distintas perspectivas de diferentes equipos de implementación.  A continuación mostramos, dividida por etapas, las distintas implementaciones existentes al día de hoy.
+
 	\section{Implementaciones históricas}
+
+EXDAMS
+
 	\section{Implementaciones recientes}
+
+ODB (Bil Lewis)
+
 	\section{TOD: depurador omnisciente para Java}
+
+Utilizar paper de TOD para esto
+
 \chapter{pyTOD}
 	\section{Arquitectura de pyTOD}
 	\section{El Modelo y Diseño de pyTOD}
