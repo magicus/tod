@@ -1,0 +1,466 @@
+\documentclass[12pt,a4paper]{report}
+\usepackage[utf8x]{inputenc}
+\usepackage{ucs}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{moreverb} 
+\usepackage{hyperref}
+\usepackage{colortbl}
+\usepackage[doublespacing]{setspace}
+\usepackage[left=4cm,top=4cm,right=3cm,bottom=3cm]{geometry}
+\pagestyle{headings}
+\hypersetup{colorlinks=false, draft=true}
+\usepackage{appendix}
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{4}
+\begin{document}
+
+%\title{Décima semana de trabajo [9 - 13 de Junio]}
+%\author{Milton Inostroza Aguilera}
+%\date{16 de Junio de 2008}
+%\clearpage
+%\maketitle
+
+\begin{abstract}
+
+La depuración es la mayor tarea del proceso de desarrollo de software, considerándolo en términos de tiempo y costo. Desafortunadamente los depuradores en muchos ambientes de desarrollo sólo entregan una asistencia mínima, esto contribuye a que la depuración sea algo tedioso y una tarea que consume mucho tiempo.
+
+Existen dos métodos tradicionales para hacer depuración: log-based (basado en mensaje) y break point-based (basado en punto de quiebre). La primera propuesta consiste en ir insertando registros de declaraciones dentro del código fuente, en el orden que se produce una huella ad-hoc durante la ejecución del programa. Esta técnica expone la historia actual de ejecución pero,  (a) requiere tremendas modificaciones del código fuente, y (b) esta técnica no es escalar, debido a que el análisis manual de grandes huellas es complicado. El segundo método consiste en correr el programa bajo un depurador dedicado cuando el programador permita pausar la ejecución en un punto determinado, examinando el contenido de memoria, y pudiendo continuar la ejecución paso a paso. A pesar de lo anterior, breakpoint-based debugging es limitado: cuando la ejecución es pausada, la información sobre el estado y actividad anterior del programa es limitada por la introspección\footnotemark[1] de la pila de llamada actual.
+
+Los depuradores omniscientes, también conocidos como atrás-en-el-tiempo o después-de-la-muerte, superan todas estas características. Un depurador omnisciente registra los eventos que ocurren durante la ejecución del programa depurado y en seguida entrega al usuario un conveniente navegador por medio del cual obtiene la huella de ejecución.  Este acercamiento combina las ventajas de la depuración basada en log –- la actividad pasada no se pierde nunca –- y también la de depuración basada en break point – fácil navegación, ejecución paso a paso e inspección completa de la pila de ejecución. Un depurador omnisciente puede simular la ejecución paso a paso hacia adelante y hacia atrás, y es posible construir inmediatamente preguntras / respuestas que podrían de una u otra forma exigir un esfuerzo significante al programador, como “¿ en qué punto la variable x fue asignada al valor y ?”  o  “¿ en qué estado estaba el objeto o cuando se le pasó un argumento al método foo?”.
+
+Es importante señalar que los depuradores omniscientes además de superar todas las características anteriormente nombradas poseen una característica única y es la de identificar la causa inicial de los bugs\footnotemark[2]
+
+Existen varias implementaciones de los depuradores omniscientes, pero basaremos nuestro caso de estudio en TOD\footnotemark[3], un depurador omnisciente orientado a la huella de ejecución.  TOD depura sólo programas escritos en Java y para esto brinda cuatro características principales:
+\begin{enumerate}
+         \item Stepping, ejecución paso a paso del programa a depurar
+         \item Estado de reconstitución
+         \item Reconstitución del control de flujo
+         \item Identificar la causa inicial de los bugs
+\end{itemize}
+
+El desafío que se plantea en este trabajo de título es diseñar un prototipo experimental llamado pyTOD quien realizará depuración omnisciente a scripts escritos en un lenguaje de tipado dinámico llama Python, basándose en el estudio, análisis y utilización de TOD.
+
+\footnotetext[1]{Capacidad de un programa de razonar sobre su propia estructura}
+\footnotetext[2]{Defecto de software }
+\footnotetext[3]{Trace-Oriented debugger implementado en el lenguaje de programación Java(lenguaje de tipado estático)}
+
+\end{abstract}
+
+\newpage
+\tableofcontents
+\newpage
+\listoffigures
+\newpage
+\listoftables
+\newpage
+
+\chapter{Introducción}
+
+El proceso de depuración de software cada vez se hace más necesario debido al crecimiento y evolución de los lenguajes de programación (cambios de paradigmas y características).  Es importante que el programador disponga de ambientes adecuados para que de una forma fácil, rápida e intuitiva pueda corregir defectos de software.  Si el programador no cuenta con un ambiente adecuado para poder inspeccionar su software y corregir ciertas anomalías el costo y tiempo del desarrollo de software aumenta dramáticamente [Paper: A study of the effect of  imperfect debugging on software development cost]  En muchos casos los softwares desarrollados no son expuestos a pruebas exhaustivas para conocer su verdadero comportamiento en diversos ambientes, debido a lo costoso de esto, lo cual conlleva a tener comportamientos inesperados en el tiempo de producción de estos.
+
+El proceso anterior se define como la manera de identificar y eliminar errores dentro de un programa de software y sigue siendo, hoy en día a pesar del avance de la tecnología, en buena medida una actividad manual.  Actividad que desafía la paciencia, imaginación e intuición de los programadores.  En muchos casos los programadores deben incluir en el código fuente instrucciones auxiliares que permitan el seguimiento de la ejecución del programa, presentando los valores de variables, direcciones de memoria o lo que les sea necesario.
+
+Es deseable que una herramienta de depuración de software evite que los programadores tengan que introducir lineas adicionales en sus programas para intentar saber el comportamiento de ciertos componentes de su software.  Además es importante que este ambiente logre el concepto de inmediatez [Paper: Debugging and the experience of immediacy] que consiste específicamente en conectar al programador con el ambiente de depuración el cual lo haga sentir más cercano al programado depurado, para hacer más gráfico el concepto de inmediatez se puede imaginar a un conductor de carreras Fórmula uno, el concepto de inmediates es que cuando el gire su manubrio a la izquierda la dirección del automóvil inmediatamente vaya en la dirección deseada, ¿se imagina si esto no sucediera? el conductor no se sentiría que sus manos están conectadas con su automovil eliminando la sensación de que automovil y corredor son uno solo.
+
+Es de esta forma como la industria del software ha planteado diversas soluciones las cuales mitigan el pesado proceso de depuración de software.  Las soluciones mayormente utilizadas son los depuradores basados en logs y basados en puntos de quiebre, relegando de forma increible la solución de los depuradores omniscientes.  Es en este punto donde nacen preguntas fundamentales tales como ¿conociendo las bondades de los depuradores omniscientes por qué no son ampliamente utilizados?, ¿A los programadores sólo le basta con los depuradores break-point based y log-based?, ¿Cuáles son las desventajas que hace impracticable implementar un depurador omnisciente?, ¿no es necesario para el programador conocer la principal causa del defecto de software?.
+
+Enfocándonos en la solución de depuración omnisciente, no basta con sólo almacenar la historia del programada depurado, si no que se debe contar con un almacen de datos adecuado que sea escalable y eficiente para guardar esta enorme cantidad de información.  Además de esto un depurado omnisciente debe implementar una interfaz que permita el concepto de inmediates, permitiendo conectar al programador con la herramienta de depuración evitando con esto que el programador se desconecte del problema actual.
+
+Es por lo anterior que se ha seleccionado como caso de estudio TOD (Trace-oriented Debugger) [Paper: indicar el trabajo publicado en OOPSLA 2007] un depurador omnisciente con almacenamiento escalable.  Su interfaz gráfica implementa el concepto de inmediatez y el overhead que produce es menor que otras implementaciones existentes sobre este concepto.
+
+De este modo este trabajo de titulo se centra en la implementación de un prototipo experimental el cual realice depuración omnisciente a scripts escrito en el lenguaje de programación Python, utilizando como base de estudio e implementación TOD, un depurador omnisciente escrito en el lenguaje de programación Java.
+
+\chapter{Propósito general}
+
+De acuerdo con Grace Murray Hopper, uno de los pioneros de la ciencia de la computación, la situación que dio origen al término depuración se explica a continuación. A principio de la década de los años 1950, los programadores de la Universidad de Harvard gastaron semanas en intentos infructuosos para encontrar el error en un de sus programas. Finalmente, una investigación dentro de las computadoras reveló que un insecto había muerto ahí. Una vez removido el insecto, el programa funcionó correctamente. Desde entonces, el proceso de quitar errores de los programs ha sido llamado "depuración".
+
+Pero, de acuerdo a Edsgar Dijkstra, otro pionero en las ciencias de la computación, el término es irresponsable. Depuración sugiere que el programador no tiene la culpa por el error. Esto es como si el insecto trepara dentro del código mientras el programador estaba mirando hacía otro lado.
+
+Aunque el término tenga algunas dicidencias podemos decir que depuración es un proceso metódico el cual encuentra y reduce el número de bug, o defectos, en un programa de computación, haciendo de esta forma que estos se comporten como es esperado.  La depuración tiende a ser dura cuando varios subsistemas están estrechamentes acoplados, y cambios en uno pueden provocar bugs en otros.
+
+La Depuración es, en general, una pesada y cansadora tarea.  La habilidad para depurar del programador es probablemente el mayor factor en la capacidad de depurar un problema, pero la dificultad de la depuración de software varía enormemente referente al lenguaje de programación utilizado y las herramientas disponibles, tal como los depuradores.  Los depuradores son herramientas de software las cuales habilitan al programar para monitorear la ejecución de un determinado programa, detenerlo, reactivarlo, poner puntos de quiebre, cambiar valores en memoria e incluso, en algunos casos, ir atrás en el tiempo.  El termino depurador puede ser además relacionado con la persona quien hace la depuración.
+
+Generalmente, los lenguajes de alto nivel, como Java, hacen la depuración fácil, porque ellos tienen características tales como manejo de excepción que hacen real fuentes de comportamiento herratico más facil de localizar.  En los lenguajes de bajo nivel tal como C o assembler, los bugs pueden causar silenciosos problemas tal como corrupción de memoria, y esto frecuentemente dificil ver donde el problema principal ha ocurrido.  En estos casos, las herramientas de depuradores de memoria pueden ser requeridos.
+
+En determinadas situaciones, herramientas de software de propósito general que son lenguajes especificos pueden ser muy utiles.  Estas son llamadas herramientas de analisis estatico.  Estas herramientas observan problemas conocidos que son muy específicos, algunos comunes y algunos extraños, dentro del código fuente.  Cada uno de estos son detectados por estás herramientas raramente son detectados por el compilador o interprete, por lo tanto ellos no son correctores sintacticos, si no más bien correctores semanticos.
+
+
+	\section*{Herramientas}
+
+Un depurador es un software que es utilizado para probar y depurar otros programas.  Una técnica que permite gran poder en esto es la capacidad de suspender el programa depurado cuando una condición especifica es encontrada.
+
+
+Cuando un programa lanza un error, el depurador muestra la posición en el código original, esto si es que es un depurador a nivel de código fuente, comunmente vistos en ambientes de desarrollos integrados.  Un lanzamiento de error sucede cuando el programa no puede debido a un defecto de software (más conocido como Bug).  Por ejemplo, tal vez el programa intentó utilizar una instrucción no disponible en la versión actual de la CPU o intentó acceder a memoria no disponible o protegida.
+
+
+Comúnmente, los depuradores además ofrecen prestaciones más sofisticadas como ejecutar un programa paso a paso (step by step), detener la ejecución (detener le ejecución del programa para examinar el estado actual) en algún tipo de evento mediante un punto de quiebre (breakpoint), y seguirle la pista a los valores de determinadas variables.  Algunos depuradores tienen la capacidad de modificar el estado del programa mientras este se ejecuta y así no solamente son meros expectadores de la ejecución de este.
+
+
+La importancia de un buen depurador no puede ser exagerado.  Incluso, la existencia y calidad de una herramienta para un lenguaje dado y su plataforma puede incluso ser un factor de decisión en su uso, incluso si otro lenguaje/plataforma es más apropiado.  Aunque, es importante también notar que el programa puede (y incluso hacer) comportarse de forma diferente cuando corre bajo un depurador, debido a los inevitables cambios que provoca la presencia de un depurador.  Como resultado, incluso con buenas herramientas de depuración, este es a menudo muy difícil localizar problemas en tiempo de ejecución en sistemas multi-hilos o en sistemas distribuidos.
+
+
+	\section*{Proceso de depuración}
+
+La depuración comienza tratando de reproducir un problema.  Esto puede ser una tarea no trivial, por ejemplo en el caso de procesos paralelos o algún problema inusual de software.  Además el ambiente especifico del usuario y el uso de la historia puede hacer que sea dificil reproducir el problema.
+
+
+Después de que el bug es reproducido, la entrada del programa necesita ser simplificada para hacer más fácil el proceso.  Por ejemplo, un bug en un compilador puede hacer que este caiga cuando este parseando un programa fuente muy largo.  Tal simplificación puede ser realizada manualmente, utilizando una enfoque "divide y vencerás".  El programador intenterá de sacar algunas partes del caso original de prueba y verificar si el problema aún existe.  Cuando depuramos el problema en una interfaz gráfica, el programador tratará de saltarse alguna interacción  desde la descripción original del problema y verificar si las acciones restantes son suficientes para que aparezca el bug.
+
+
+Después de que el caso de prueba es suficientemente simplificado, el programador puede usar el depurado para examinar el estado del programa (valores de las variables, la pila de llamadas) e identificar el origen del problema.  De forma alternativa un rastreo puede ser utilizado.  En un caso sencillo el rastreo consiste sólo en algunas instrucciones de impresión, las cuales impremen el valor de las variables en determinados puntos del programa en ejecución.
+
+
+La depuración remota es el proceso de depuración de un programa el cual está corriendo en un sistema diferente que el depurador.  Para comenzar la depuración remota, el depurador se conecta a un sistema remoto sobre una red de datos.  Una vez conectado, el depurador puede controlar la ejecución del programa  sobre un sistema remoto y recobrar la información sobre el estado de este.
+
+	\section{Objetivo general}
+
+El objetivo general de este trabajo de título es:
+\begin{itemize}
+\item Construir un prototipo experimental llamado pyTOD para realizar depuración omnisciente a scripts escritos en el lenguaje de programación Python, utilizando como base de estudio TOD, un depurador omnisciente implementado en el lenguaje de programación Java.
+\end{itemize}
+
+    Esto implica brindar un ambiente de depuración que sea eficiente para el programar además de entregar una herramienta básica para inspeccionar programas y poder encontrar las causas de los bugs.
+
+	\section{Objetivos específicos}
+
+Para lograr el éxito del objetivo general de este trabajo de título se han definido los siguientes objetivos específicos:
+
+\begin{itemize}
+\item[1.] \textit{Diseñar e Implementar un sistema que instrumente\footnotemark[1] el código Python de tal forma que envíe eventos a la base de datos de TOD.}
+\end{itemize}
+
+A través de la metodología de ensayo y error se implementará un capturador de huella de ejecución ad-hoc el cual capturará todos los sucesos ocurridos en el programa objetivo escrito en Python, para luego enviarlos a la base de datos de TOD.
+
+\footnotetext[1]{agregar instrucciones al código para que realice determinadas tareas}
+
+\begin{itemize}
+\item[2.] \textit{Analizar la compatibilidad del modelo actual de huella de ejecución\footnotemark[2] de TOD con el lenguaje de programación Python.}
+\end{itemize}
+
+\footnotetext[2]{Secuencia ordenada de eventos heterogéneos}
+
+Una vez que el capturador de huellas funcione parcialmente se comenzará con el estudio de compatibilidad de huella de ejecución de TOD.  De ser necesario el modelo actual de huella de ejecución de TOD será modificado para conseguir compatibilidad con pyTOD.
+
+\begin{itemize}
+\item[3.] \textit{Diseñar e Implementar un protocolo de comunicación entre pyTOD (Python) y TOD (Java)}
+\end{itemize}
+
+Será necesario implementar un protocolo de comunicación el cual transporte la huella de ejecución creada en pyTOD hacía la base de datos de TOD.  Esto se realizará una vez que se haya analizado y modificado el modelo de huella de ejecución de TOD.
+
+\begin{itemize}
+\item[4.] \textit{Diseñar e Implementar una interfaz gráfica para el depurador pyTOD.}
+\end{itemize}
+
+De ser necesario se construirá una interfaz gráfica en la cual el usuario pueda interactuar con el programa depurado.  Para esto se debe evaluar si la actual interfaz gráfica de TOD sirve y es compatible.  De ser compatible realizando modificaciones se tomará esta opción como valida y se reutilizará este componente.
+
+\begin{itemize}
+\item[5.] \textit{Diseñar e Implementar un plugin para eclipse el cual permita conectar la interfaz gráfica del depurador con el ambiente de desarrollo.}
+\end{itemize}
+
+Como se planteo anteriormente el principio de inmediatez es fundamental en un ambiente de depuración eficiente, por lo tanto se cree que no basta con tener una interfaz gráfica independiente del ambiente de desarrollo del programador si no que se encuentra fundamental que la interfaz de usuario del depurador sea incorporado como plugin dentro del ambiente de desarrollo.  Para este caso se considerará como ambiente de desarrallo el ide Eclipse.  Se utilizará el plugin de Python para Eclipse, PyDev como base de extensión para el nuevo plugin el cual permita al programador una interacción transparente entre el ambiente de desarrollo y el ambiente de depuración.
+
+
+\begin{itemize}
+\item[6.] \textit{Aplicar pyTOD en un caso de prueba real.}
+\end{itemize}
+
+El resultado de éxito y contribución de este trabajo de título depende mayormente de este punto.  Es de interés que la herramienta desarrollada, pyTOD sea de utilidad verdadera y muestre con resultados reales que es una aproximación a lo que podría ser un ambiente de depuración real para asistir efectivamente a los programadores que utilizan el lenguaje de programación Python.  En este punto se realizarán pruebas con programas de softwares reales y que se encuentren disponibles en la red bajo la categoría de software open source.
+
+
+	\section{Hipótesis del trabajo}
+
+    Es posible utilizar TOD, como base de desarrollo técnico y conceptual, para construir un prototipo experimental que realice depuración omnisciente a scripts escritos en Python.
+
+	\section{Alcance del trabajo}
+
+    Se plantea construir un prototipo experimental el cual realice depuración básica a scripts escritos en Python. Si es necesario y existe la compatibilidad suficiente se reutilizarán algunas herramientas que utiliza TOD para realizar este tipo de depuración. En ningún caso este trabajo producirá un Depurador Omnisciente con la implementación completa de las funcionalidades que este implica.
+
+	\section{Limitaciones y supuestos}
+
+El prototipo experimental no realizará depuración a programas que hagan uso de multithread.
+
+    Para mantener un registro exacto de todos los objetos\footnotemark[3] dentro del programa depurado se necesita marcarlos a cada uno de ellos con un identificador, pero lamentablemente en Python no se puede y la única manera de realizarlo es modificando la maquina virtual, situación que queda fuera del alcance de este trabajo de titulo.
+
+\footnotetext[3]{referente a todos los elementos dentro de la ejecución de un programa (métodos, funciones, atributos, instancia de clases, etc.)}
+
+\chapter{Metodología del trabajo}
+	\section{Búsqueda bibliográfica}
+
+En esta etapa principalmente se enfocó a la búsquedas de papers relacionados con el tema de depuración en general.
+
+	\section{Análisis del Marco teórico}
+
+Básicamente se fue avanzando en forma iterativa y por la técnica ensayo y error.  El objetivo central era lograr construir un capturador de huella y en la construcción de este se fueron corrigiendo temas de compatibilidad con TOD y cosas adicionales de que hacer 
+
+	\section{Análisis de TOD}
+
+TOD es un depurador omnisciente el que tiene como principal característica el ser escalable en el sentido de almacenamiento de la huella de ejecución.  Para nuestro trabajo debemos analizar las siguientes partes de TOD:
+
+\begin{itemize}
+	\item Event Database
+    \item Structure Database
+    \item Debugger frontend
+\end{itemize}
+
+	\section{Modelamiento y diseño de pyTOD}
+
+    Se modela la arquitectura de pyTOD y los componentes base para su funcionamiento.  En esta etapa se establecerán todas las modificaciones necesarias que se deben realizar a los componentes de TOD (base de datos estructural, base de datos de sucesos e interfaz gráfica) para que sea compatible con pyTOD.
+
+	\section{Implementación de pyTOD}
+
+    Esta sección comprende toda el desarrollo práctico del presente trabajo de título, en la cual se implementará el capturador de huellas utilizando el paradigma de orientación de objetos.  Se utilizarán recursos internos del lenguaje de programación Python.  Es importante señalar que el uso de la función settrace perteneciente al módulo sys se torna en un elemento central en este desarrollo.  Además se inspeccionará el bytecode de Python para ciertas operaciones.
+
+	\section{Evaluación de pyTOD en casos de pruebas}
+
+ Se tomarán aplicaciones open source que hayan sido implementadas en el lenguaje de programación Python.  Se analizará su bugtracker y de ahí se tomarán algunos bugs (abiertos o cerrados) y se verá como es el comportamiento de pyTOD en estos casos de pruebas.
+
+
+\chapter{Marco teórico}
+	\section{Introducción}
+
+En la practica, un programador inevitablemente gasta demasiado tiempo encontrando y solucionando bugs. La Depuración, particularmente la realizada a programas escritos por otras personas, es una habilidad independiente a la de escribir programas correctos al primer intento. Desafortunadamente, mientras la depuración es frecuentemente utilizada, esta es raras veces enseñada. Un curso típico sobre técnicas de depuración consiste únicamente en leer el manual de un depurador determinado.
+
+\subsection{Identificación del bug}
+
+Depuración significa remover los bugs de un programa.  Un bug es un comportamiento del programa que es inesperado o indeseado.
+
+Ocasionalmente existe una especificación formal que un programa está obligado a seguir, en este caso un bug es la falla en el seguimiento de esta especificación.  Frecuentemente la especificación del programa es informal, en este caso las personas pueden discutir si un comportamiento particular es de hecho un bug o no.
+
+Como una de las personas que escriben programas, el programador debe ser la fuente de los reportes de bug.  No simplemente confiando en los usuarios finales o en los dedicados a probar determinadas funcionalidades.  Si el programador nota algo extraño mientras el programa se está ejecutando, este puede tentarle a ignorarlo y esperar que todo vaya bien en el programa.  Esto es aceptable si el programador en ese momento está trabajando en otra cosa.  Si el programador tiene archivos o reportes del bug es mejor que siempre los guarde.  Si tiene tiempo después, debe volver al caso anómalo.  Esto de no ser posible es deseable que pase a alguien más este problema para que lo pueda estudiar y solucionar.  Como una de las personas más familiarizadas con el programa el programador está en la mejor posición para detectar comportamientos inesperados.
+
+Una vez que el programador tiene un reporte de bug, el primer paso para remover este bug es indentificarlo.  Esto es particularmente importante cuando se está trabajando con un reporte debug que ha sido producido por otra persona, tales como usuarios o un equipo de pruebas.  Algunos bug son relativamente obvios, como cuando el programa termina su ejecución inesperadamente.  Otros son oscuros, como cuando el programa genera una salida la cual es ligeramente incorrecta.
+
+Muchos reportes de bug recibidos desde los usuarios son de la forma "Yo hice esto y esto otro, y luego algo fue mal".  Antes de hacer cualquier cosa, el programador debe encontrar que es lo que fue mal -- esto es, el programador debe identificar el bug determinando el comportamiento del programa el cual fue inesperado o indeseado.  Cualquier intento de corregir el bug antes de entender que es lo que fue mal es generalmente tiempo desperciado.
+
+Identificar un reporte de bug hecho por un usuario, típicamente requiere obtener la respuesta a estas dos preguntas: "¿Qué hizo el programa?" y "¿Qué esperaba que hiciera el programa?".  El objetivo es determinar precisamente el comportamiento del programa el cual fue inesperado o indeseable.
+
+Una vez que el bug es identificado, la forma más fácil y rápida de solucionarlo es determinar que este no es del todo un bug.  Si existe una especificación formal del programa, el programador debe modificar la especificación.  En otros casos, el programador debe modificar las expectativas del usuario.  Esta rápida solución consiste en llamar a este comportamiento como una "característica no documentada".  A pesar del potencial abuso que se pueda cometer,  esto es de hecho la forma correcta de manejar un problema.
+
+Desafortunadamente, la mayoría de los bugs son verdaderos bugs, y requieren de mucho trabajo.
+
+
+\subsection{Replicar el bug}
+
+El primer paso para solucionar un bug es replicarlo.  Esto significa recrear el comportamiento indeseado bajo condiciones controladas.  El objetivo es encontrar un conjunto de especificaciones precisas de los pasos los cuales demuestran el bug.
+
+
+En muchos casos esto es sencillo.  El programador ejecuta el programador con una esistirse a la tentación, graba el bug.  determinada información de entrada, o presiona un botón en particular o una ventana de dialogo y el bug ocurre.  En otros casos, replicar puede ser difícil.  Esto puede requerir series de pasos muy largos, o en un programa interactivo como un juego, este puede requerir precisión de tiempo.  En los peores casos, replicación puede ser casi imposible.
+
+\subsubsection{El programador nunca debe saltar este paso}
+
+
+Los programadores son tentados algunas veces  de saltar el paso de replicación, e ir directamente desde el reporte del bug a la eliminación del mismo.  Sin embargo, fallar en la replicación del bug significa que es imposible verificar la correción.  La correción puede provocar un bug diferente, o puede tener un efecto insignificante.  Si el bug no ha sido replicado, no hay forma de conocerlo.
+
+Fallar en replicar el bug es un problema real el cual puede suceder muchas veces.  En un programa complejo, es frecuentemente fácil encontrar algo que arreglar.  Esta es la naturaleza del humano, la de asumir que cualquier solución particular resuelve el problema que se tiene.  Sin necesitar verificaciones, cualquier solución convincente puede ser aceptada, si está bien o mal.  Una solución incorrecta lidera futuros problemas.  En promedio, saltarse el paso de replicación derrocha más tiempo que ahorralo.
+
+
+\subsubsection{Situaciones de dificil replicación}
+
+Lejos la mejor vía para replicar el bug es sobre un sistema que este completamente bajo el control del programador, con una copia del programa construida por el mismo.  Replicando el bug sobre su propio programa significa que el puede facilmente hacer pruebas y nuevos parches para el programa.  Desafortunadamente, en algunos casos esto es imposible.
+
+Una de las razones por lo que la replicación en el sistema del programador puede ser imposible es que el usuario que reporte el bug puede que tenga un único sistema de configuración, o puede que el usuario sólo use archivos de entradas confidenciales a los cuales el programador no pueda acceder.  En estos caso el programador debe tratar de asegurar que el usuario puede realmente replicar el bug, y que el usuario pueda probar el nuevo parche desarrolladiquiqueo.  Sin la ayuda del usuario en este sentido, la depuración es reducida a algo más pequeño que son los supuestos.  Esto generalmente no es un mal procedimiento.  Si no existe opción, entonces el programador puede tratar al menos de construir algunos casos aleatorios de prueba para construir un parche, confirmando que este hace algo útil incluso si el programador no puede verificar que este elimina el bug original.
+
+Un problema mucho más común es que el usuario reporte un bug, pero el programador no puede replicarlo el mismo en su propio sistema, y el programador no sabe por qué.  Esta no es una opción definitiva para resolver este tipo de problema, pero a continuación se detallan algunas posibles consideraciones.
+
+\begin{itemize}
+	\item El usuario puede simplemente reportar de forma incorrecta el problema o de la forma en la cual puede ser replicado.  El programador debe volver al usuario, confirmar que es lo que el usuario actualmente está escribiendo o donde el usuario actualmente está haciendo clicks, confirmar que es lo que el usuario ve en pantalla.  El programador no debe tratar de hacer cualquier presunción sobre como el programa está ejecutándose -- el usuario puede estar haciendo algo que el programador nunca se hubiera imaginado o considerado.
+
+    \item Algunos programas tienen comportamientos extraños bajo condiciones inusuales.  El programador debe verificar si el sistema del usuario tiene poco espacio en el disco duro, o tiene una conexión de red defectuosa, o si está muy sobrecargado.  Es recomendable que a su vez verifique si otros programas están fallando inesperadamente y provocan el bug en el programa objetivo.
+
+    \item El programador además debe revisar la versión de software que el usuario está ejecutando, revisar la versión del sistema operativo, etc.
+\end{itemize}
+
+En algunos casos un bug puede suceder raramente y aparentemente de forma aleatoria, entonces es muy dificil imaginarse la forma como estos son lanzados, y como replicarlos.  En esta situación frustrante al programador sólo le queda tomar una opción confiable que es la de automáticamente registrar todos los eventos que potencialmente puedan ser relevantes y guardar todos estos registros cuando el bug ocurra.  En algunos casos es particularmente útil ser capaz de volver a ejecutar el programa usando los registros, los cuales pueden ser mecanismos poderosos para replicar un bug.
+
+
+\subsection{Entender el bug}
+
+
+Una vez que el programador es capaz de replicar el bug, debe entender que lo produjo.  Este es generalmente el paso que consume mayor tiempo.
+
+
+\subsubsection{Entender el programa}
+
+Con el objetivo de entender un bug en un programa, el programador debe entender algo del funcionamiento acerca del programa.
+
+Si el programador escribió el programa, es presumible que ya lo entienda.  De caso contrario, entonces el programador tiene un problema más serio.
+
+Si el programador no ha escrito el programa, el necesita basarse de la estructura general.  Muchos programas están organizados de una forma sensata.  Si el programador tiene suerte, la organización del programa estará documentada, o podrá preguntar a los diseñadores del programa.
+
+Comunmente, el programador necesitará sacar la estructura del código fuente.  La mejor opción es comenzar mirando el código fuente desde el principio del programa.  Leer rápidamente el programa, bajando por las funciones, hasta que encuentre el principal centro de acción -- en la mayoría de los programas, se trata de algún tipo de ciclo.  Esto puede hacerse normalmente  muy rápido.  La naturaleza de este centro de acción puede decirle donde mirar en el código fuente para cualquier actividad en particular.  Esto además puede decirle en lineas generales como es que el programa actúa.
+
+El peor de los casos son los programas grandes escritos por muchos años y por diferentes desarrolladores.  Estos llegan, en algunos casos, a ser un conjunto de ideas diferentes con muy poca consistencia.  La situación comunmente es depresiva.  El programador solamente debe hacer lo mejor que pueda.
+
+Un depurador puede además ser útil cuando se trata de entender un programa.  Mediante la ejecución del programa bajo un depurador y definiendo puntos de quiebre, el programador puede ser capaz de ver el comportamiento dinámico del programa.  Cuando alcanza el punto de quiebre definido por el programador, puede mirar la pila de llamadas para analizar como llegó a la parte en donde está, y mirar algunas variables claves.  Incluso si el programador no alcanza el punto de quiebre definido por el, este ya habrá aprendido algo.
+
+
+\subsubsection{Encontrar el bug}
+
+El siguiente paso es localizar el bug en el código fuente del programa.
+
+Existen dos ubicaciones en el código fuente las cuales el programador necesita considerar: el código que hace que el comportamiento incorrecto sea visible y el código que en realidad es incorrecto.  Es muy común que estas sean las mismas piezas de código.  Sin embargo, es bastante común que estos estén en diferentes partes del programa.  Un ejemplo típico de esto es cuando existe un error en un parte del programa que causa un acceso a memoria restringida el cual provoca una visión erronea del comportamiento en una parte completamente diferente en el programa.  El programador no puede permitirse que en el afán de arreglar el error se confunda y piense que el código que directamente causa el comportamiento erroneo es en realidad la parte incorrecta del programa.
+
+Por lo general, el programador tiene que encontrar el código que produce el comportamiento erroneo.  Conociendo el comportamiento erroneo, y sabiendo como el código fuente fue organizado, a menudo esto lo dirige rapidamente a la parte del programa que causa el problema.  Algunas veces una rápida lectura del código es suficiente para identificar el código problemático.
+
+De lo contrario, disminuyendo el comportamiento erróneo en una particular pieza de código es donde un depurador puede ser de mucha utilidad.  Si el programador tiene bastante suerte tendrá un volcado de memoria, un depurador inmediatamente puede identificar la linea que ha fallado.  De lo contrario, juiciosamente el programador deberá ir poniendo puntos de quiebre mientras la replicación del bug puede ser rápidamente acotada sobre el código defectuoso.
+
+Los Depuradores modernos, tienen poderosas capacidades para hacer este proceso más manejable, tales como los puntos de quiebre, los datos de los puntos de observación, ignorar puntos de quiebre en un determinado número de veces.  Estas características, muchas veces, son muy útiles para la localización del comportamiento erróneo en el código fuente, y sólo falla en circunstancias especiales.
+
+Por supuesto, un depurador a veces no ayuda. En algunos casos, un error no se produce cuando el programa se ejecuta bajo un depurador, a pesar de que se pueden reproducir sin contar con el depurador, lo que generalmente indica un problema que depende del momento preciso de ejecución o del diseño de la memoria (problema específicos). En otros casos, puede que no tenga acceso a un depurador, o el depurador puede que no sea muy poderoso, lo que puede suceder cuando se trabaja en sistemas empotrados o de otros entornos de programación más restringidos, o cuando se utilizan características de programación que no están soportadas por el depurador (por ejemplo, en algunos ambientes, hilos).
+
+En estos casos simples las instrucciones de impresión a veces pueden ayudar a localizar la fuente del comportamiento erróneo. Añadir instrucciones de impresión en lugares pertinentes, reconstruir el programa, reproducir el problema con el nuevo programa, y usar las intrucciones de impresión para perfeccionar con exactitud qué código se está ejecutando cuando se produjo el problema.  Lo ideal sería que el programa ya cuente con algún tipo de implementación que permita ser reutilizada. Incluso si no es así, el programador debería considerar la posibilidad de un enfoque sistemático para añadir instrucciones de impresión, de modo que el programador pueda utilizar posteriormente estos resultados al momento de realizar una nueva depuración al mismo programa. En particular, cada instrucción de impresión debe indicar claramente dónde está localizado en el programa, a fin de que pueda ser rápidamente encontrada más tarde.
+
+Finalmente un método alternativo para localizar la fuente del comportamiento erroneo es la simple inspección del código fuente. Esta es la única opción si el programador no puede reproducir el problema. Una clara comprensión de todo el código fuente del programa es un requisito fundamental para que esta alternativa sea una buena opción. Desafortunadamente, un problema complejo es casi imposible aislar mediante la simple lectura del código fuente.  El programador tendrá que adivinar entre ciertas posibilidades, y tratar de localizar a través del código fuente de forma cuidadosa si está en frente realmente de algún problema.
+
+
+\subsubsection{Encontrar el error}
+
+Ahora que el programador ha encontrado el código que causa el comportamiento erroneo, es necesario identificar el error en la codificación real. A menudo son el mismo código - es decir, la codificación erronea directamente causa el mal comportamiento. Sin embargo, el programador siempre debe considerar la posibilidad de que el error está en otros lugares.
+
+Por ejemplo, la rutina que causa el comportamiento erróneo puede comportarse correctamente, pero puede ser llamada con datos de entrada erroneos, o en el momento equivocado. Un error en la codificación de otros lugares puede causar una estructura de datos que espera valores erroneos. Otra posibilidad es que el usuario ingrese datos incorrectos.
+
+La solución en estos casos pueden ser dos. El programador debe, por supuesto, arreglar el código que llama la rutina de forma incorrecta o de lo contrario restringir los datos de entrada para que no son incorrectos. En el caso de una mala entrada del usuario, deberá validar la entrada. Además, puede que desee agregar controles al código que utiliza los valores.  Se debe comprobar valores que no sean correctos para la entrada, y generar un informe de error u otro manejador con el objetivo de que no se produzca un comportamiento erroneo del programa.
+
+
+\subsection{Corregir el bug}
+
+El último paso en el proceso de depuración es, por supuesto, eliminar el bug. Este punto se cree que no es importante detallarlo y sólo se mencionarán un par de puntos interesantes.
+
+\begin{itemize}
+    \item Si el programador desea un programa que pueda mantenerse en el futuro, entonces deberá asegurarse de arreglar el error de forma correcta. Esto significa que la solución encaja con el resto del programa, y que fija todos los aspectos del problema, sin introducir nuevos problemas. 
+
+    \item El programador debe actualizar toda la documentación. 
+
+    \item En algunos casos puede que el programador necesite un parche rápido para solucionar un problema inmediato. No hay nada malo en ello, siempre y cuando el programador se de el tiempo para después volver atrás y arreglar de forma definitiva el bug. 
+
+    \item Obviamente, siempre fijar cualquier prueba que se haga velando por que ya no se vuelva a repetir el comportamiento erroneo. No debe olvidar asegurarse de que el programa sigue para pasar una serie de ensayos. El programador debe considerar la posibilidad de extender las series de ensayos para detectar el caso que se ha fijado anteriormente, para asegurarse de que este no vuelva a manifestarse.
+\end{itemize}
+
+A partir de lo anterior, es interesante observar las técnicas que el mercado de software a desarrollado para satisfacer las necesidades tanto de las empresas que construyen software como a los desarrolladores independientes que también producen software.
+
+
+
+	\section{Técnicas de depuración}
+		\subsection{Depuración basada en mensajes}
+			\subsubsection{Origen}
+
+Aún investigando!
+
+			\subsubsection{Proceso de depuración}
+
+log-based en general se refiere a que tu insertas instrucciones que imprimen algo (en consola o en un archivo). En general se hace a nivel de código fuente, pero creo que la mayor distinción es que con log-based lo que se imprime es dirigido a un humano.
+
+			\subsubsection{Ventajas / Desventajas}
+
+Técnica no escalable
+
+			\subsubsection{Herramientas más utilizadas}
+\begin{itemize}
+	\item log4j
+\end{itemize}
+
+		\subsection{Depuración basada en puntos de quiebre}
+			\subsubsection{Origen}
+
+Un punto de quiebre, en desarrollo de software, es una detención intencional o pausa en un lugar del programa, puesto en ese lugar con propósitos de depuración.  En general, un punto de quiebre es el significado de adquirir conocimiento acerca de un programa durante su ejecución.  Durante la interrupción, el programador inspecciona el ambiente de prueba (memoria, archivos, reportes, etc) para averiguar si el programa funciona bien.
+
+			\subsubsection{Proceso de depuración}
+
+En la practica, un punto de quiebre consiste en una o más condiciones que determinan cuando la ejecución de un programa debe ser interrumpido.  La forma más común de un punto de quiebre es uno donde la ejecución del programa es interrumpido antes de ejecutar la instrucción especificado por el programador.  Esto es comúnmente llamado instrucción de punto de quiebre.
+
+Otro tipo de condiciones pueden ser utilizadas, tales como lectura, escritura o modificación de un ubicación especifica en el area de memoria.  Esto es comúnmente llamado información de punto de quiebre o un punto de observación.
+
+Los puntos de quiebres además pueden ser utilizado para interrumpir la ejecución en un momento determinado, o cuando se presiona determinada tecla, etc.
+
+Muchos procesadores incluyen soporte de hardware para los puntos de quiebre (comúnmente para los puntos de quiebre de instrucción e información).  Dicho hardware puede incluir limitantes, por ejemplo no permitir puntos de quiebres o instrucciones ubicadas en sectores reservados por el mismo.  Este tipo de restricciones es impuesta por la micro arquitectura del procesador, variando de procesador en procesador.
+
+Sin soporte hardware, los depuradores tienen que implementar los puntos de quiebre mediante software, lo cual, particularmente para los puntos de quiebre de informaciòn, pueden tener un impacto enorme en el rendimiento de la aplicación que esta siendo depurada.
+
+
+			\subsubsection{Ventajas / Desventajas}
+
+El depurador al momento de encontrar el punto de quiebre, no tiene en sus registros la pila de llamadas que se producieron anteriormente perdiendo toda la información anterior al punto de quiebre.
+
+			\subsubsection{Herramientas más utilizadas}
+
+Hay que seleccionarlas bien, aún en estudio
+
+		\subsection{Depuración Omnisciente}
+			\subsubsection{Origen}
+			\subsubsection{Proceso de depuración}
+			\subsubsection{Ventajas / Desventajas}
+			\subsubsection{Herramientas más utilizadas}
+
+	\section{Lenguajes de Programación}
+
+Esta sección es importante ya que señala las diferencias entre el lenguaje de programación en la cual está implementado TOD y entre el lenguaje de programación que se intentará portar.
+
+		\subsection{Python}
+
+			\subsubsection{¿Qué es Python?}
+
+Python es un lenguaje de programación creado por Guido van Rossum a principios de los años 90.  Es un lenguaje similar a Perl, pero con una sintaxis muy limpia y que favorece un código legible.
+
+Se trata de un lenguaje interpretado o de script, con tipado dinámico, fuertemente tipado, multiplataforma y multiparadigma (orientación a objetos, estructurada y funcional).
+
+			\subsubsection{Lenguaje interpretado}
+
+Es un lenguaje de programación interpretado o de script, esto quiere decir que se ejecuta utilizando un programa intermedio llamado intérprete, en lugar de compilar el código a lenguaje máquina que pueda comprender y ejecutar directamente una computadora (lenguajes compilados).
+
+La ventaja de los lenguajes compilados es que su ejecución es más rápida. Sin embargo los lenguajes interpretados son más flexibles y más portables.
+
+Python tiene, no obstante, muchas de las características de los lenguajes compilados, por lo que se podría decir que es semi interpretado. En Python, como en Java y muchos otros lenguajes, el código fuente se
+traduce a un pseudo código máquina intermedio llamado bytecode la primera vez que se ejecuta, generando archivos .pyc o .pyo (bytecode optimizado), que son los que se ejecutarán en sucesivas ocasiones.
+
+
+			\subsubsection{Tipado dinámico}
+
+La característica de tipado dinámico se refiere a que no es necesario declarar el tipo de dato que va a contener una determinada variable, sino que su tipo se determinará en tiempo de ejecución según el tipo del valor al que se asigne, y el tipo de esta variable puede cambiar si se le asigna un valor de otro tipo.
+
+
+			\subsubsection{Fuertemente tipado}
+
+No se permite tratar a una variable como si fuera de un tipo distinto al que tiene, es necesario convertir de forma explícita dicha variable al nuevo tipo previamente. Por ejemplo, si tenemos una variable que contiene un texto (variable de tipo cadena o string) no podremos tratarla como un número (sumar la cadena “9” y el número 8). En otros lenguajes el tipo de la variable cambiaría para adaptarse al comportamiento esperado, aunque esto es más propenso a errores.
+
+		\subsection{Python v/s Java}
+
+Java es un lenguaje cuyos tipos se fijan en el momento de compilar. La mayoría de los lenguajes de tipado estático fuerzan esto exigiéndole al programador que declare todas las varibles con sus tipos antes de usarlas. 
+
+Existen muchas más diferencias entre estos dos lenguajes pero para el caso de estudio sólo nos interesa mostrar esta diferencia como la principal.
+
+\chapter{Implementaciones de depuradores omniscientes}
+	\section{Implementaciones históricas}
+	\section{Implementaciones recientes}
+	\section{TOD: depurador omnisciente para Java}
+\chapter{pyTOD}
+	\section{Arquitectura de pyTOD}
+	\section{El Modelo y Diseño de pyTOD}
+	\section{Implementación de pyTOD}
+		\subsection{Protocolo Comunicación de pyTOD}
+		\subsection{Estructuras y Clases de pyTOD}
+		\subsection{Código Principal de pyTOD}
+		\subsection{Interfases Principales de pyTOD}
+	\section{Aspectos Básicos de Funcionamiento de pyTOD}
+	\section{Medidas de rendimiento de pyTOD}
+\chapter{Evaluación de pyTOD en casos de pruebas}
+	\section{Selección de casos de uso}
+	\section{Resultados obtenidos con pyTOD}
+\chapter{Conclusiones}
+\chapter{Trabajo futuro}
+\newpage
+\end{doublespace}
+\begin{thebibliography}{1}
+\bibitem{bytecode} \url{http://docs.python.org/lib/bytecodes.html}
+\end{thebibliography}
+
+\appendix
+\appendixpage
+\addappheadtotoc
+\pagebreak
+\chapter{Código fuente de pyTOD}
+
+\end{document}
