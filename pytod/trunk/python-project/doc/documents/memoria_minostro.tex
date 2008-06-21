@@ -340,15 +340,20 @@ El último paso en el proceso de depuración es, por supuesto, eliminar el bug. 
     \item Obviamente, siempre fijar cualquier prueba que se haga velando por que ya no se vuelva a repetir el comportamiento erroneo. No debe olvidar asegurarse de que el programa sigue para pasar una serie de ensayos. El programador debe considerar la posibilidad de extender las series de ensayos para detectar el caso que se ha fijado anteriormente, para asegurarse de que este no vuelva a manifestarse.
 \end{itemize}
 
-A partir de lo anterior, es interesante observar las técnicas que el mercado de software a desarrollado para satisfacer las necesidades tanto de las empresas que construyen software como a los desarrolladores independientes que también producen software.
-
+A partir de lo anterior, es interesante observar las técnicas que el mercado de software a desarrollado para satisfacer las necesidades tanto de las empresas que construyen software como la de los desarrolladores independientes.
 
 
 	\section{Técnicas de depuración}
 		\subsection{Depuración basada en mensajes}
-			\subsubsection{Origen}
+			\subsubsection{Motivación}
 
-Aún investigando!
+Insertar instrucciones de registro en un código es una baja tecnología para hacer depuración.  También puede ser la única manera ya que los depuradores no siempre están disponibles o se pueden aplicar. Normalmente este es el caso de múltiples aplicaciones y aplicaciones distribuidas.
+
+La experiencia indica que la acción de registrar cierto comportamiento es un componente importante dentro del ciclo de desarrollo. Estos ofrecen varias ventajas. Proporciona contexto precisa sobre la ejecución del programa. Una vez insertado en el código, la generación del registro de salida no requiere la intervención humana. Por otra parte, el registro de salida se debe guardar en un medio persistente, para luego ser estudiados en otro momento. Además de su uso en el ciclo de desarrollo, un buen manejo de las intrucciones de registro de comportamiente pueden ser vistas como una herramienta de auditoría.
+
+Como Brian W. Kernighan y Rob Pike exponen en su libro "La Práctica de Programación":
+
+\textit{Como opción personal, tendemos a no utilizar depuradores más allá de obtener un pila de traza o el valor de una variable o dos. Una de las razones es que es fácil perderse en detalles complicados de estructuras de datos y control de flujo; nos encontramos que ir a través del programa es menos productivo que pensar duramente y añadir instrucciones de salida que verifiquen por si mismos puntos criticos de este. Al hacer clic sobre las declaraciones llevará más tiempo que el rastreo de la salida que juiciosamente fueron colocadas. Se tarda menos tiempo para decidir dónde colocar las declaraciones de impresión que dar pasos para lograr seccionar la región crítica del código, incluso asumiendo que nosotros sabemos está. Más importante aún, las instrucciones de depuración permanecen en el programa, las sesiones de depuración son transitorias.}
 
 			\subsubsection{Proceso de depuración}
 
@@ -356,7 +361,8 @@ log-based en general se refiere a que tu insertas instrucciones que imprimen alg
 
 			\subsubsection{Ventajas / Desventajas}
 
-Técnica no escalable
+La técnica de mensajes tiene sus inconvenientes. Puede retardar una solicitud que se le realiza al programa. Si los mensajes son demasiado extensos esto puede causar ceguera de desplazamiento sobre el código fuente original.  Es importante señalar que esta técnica no escalable.  
+
 
 			\subsubsection{Herramientas más utilizadas}
 \begin{itemize}
