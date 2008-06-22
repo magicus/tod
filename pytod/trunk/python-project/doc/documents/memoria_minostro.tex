@@ -14,8 +14,12 @@
 \pagestyle{headings}
 \hypersetup{colorlinks=false, draft=true}
 \usepackage{appendix}
-\setcounter{secnumdepth}{4}
-\setcounter{tocdepth}{4}
+\setcounter{secnumdepth}{6}
+\setcounter{tocdepth}{6}
+
+\let\subsubsubsection\paragraph
+\setcounter{\secnumdepth}{5}
+\setcounter{\tocdepth}{5}
 \begin{document}
 
 %\title{Décima semana de trabajo [9 - 13 de Junio]}
@@ -45,7 +49,7 @@ Existen varias implementaciones de los depuradores omniscientes, pero basaremos 
 El desafío que se plantea en este trabajo de título es diseñar un prototipo experimental llamado pyTOD quien realizará depuración omnisciente a scripts escritos en un lenguaje de tipado dinámico llama Python, basándose en el estudio, análisis y utilización de TOD.
 
 \footnotetext[1]{Capacidad de un programa de razonar sobre su propia estructura}
-\footnotetext[2]{Defecto de software }
+\footnotetext[2]{Defecto de software}
 \footnotetext[3]{Trace-Oriented debugger implementado en el lenguaje de programación Java(lenguaje de tipado estático)}
 
 \end{abstract}
@@ -357,14 +361,14 @@ Como Brian W. Kernighan y Rob Pike exponen en su libro "La Práctica de Programa
 
 			\subsubsection{Proceso de depuración}
 
-log-based en general se refiere a que tu insertas instrucciones que imprimen algo (en consola o en un archivo). En general se hace a nivel de código fuente, pero creo que la mayor distinción es que con log-based lo que se imprime es dirigido a un humano.
+Este proceso consiste en que el programador manualmente vaya insertando instrucciones que impriman datos de interés (ubicación, ambiente, etc.) y estos se guarden en un archivo o se impriman directacamente en una consola.  En general esto se hace nivel de código fuente y lo que se imprime siempre está dirigido para que un humano lo comprenda.
 
 			\subsubsection{Ventajas / Desventajas}
 
-La técnica de mensajes tiene sus inconvenientes. Puede retardar una solicitud que se le realiza al programa. Si los mensajes son demasiado extensos esto puede causar ceguera de desplazamiento sobre el código fuente original.  Es importante señalar que esta técnica no escalable.  
+La técnica de mensajes tiene sus inconvenientes. Puede retardar una solicitud que se le realiza al programa. Si los mensajes son demasiado extensos estos pueden causar ceguera de desplazamiento sobre el código fuente original.  Es importante señalar que esta técnica no escalable.  
 
 
-			\subsubsection{Herramientas más utilizadas}
+			\subsubsection{Herramientas}
 \begin{itemize}
 	\item log4j
 \end{itemize}
@@ -391,29 +395,29 @@ Sin soporte hardware, los depuradores tienen que implementar los puntos de quieb
 
 El depurador al momento de encontrar el punto de quiebre, no tiene en sus registros la pila de llamadas que se producieron anteriormente perdiendo toda la información anterior al punto de quiebre.
 
-			\subsubsection{Herramientas más utilizadas}
+			\subsubsection{Herramientas}
 
 Hay que seleccionarlas bien, aún en estudio
 
 		\subsection{Depuración Omnisciente}
 			\subsubsection{Motivación}
 
-Mediante el registro de cada cambio de un programa en ejecución, es posible presentar al programador cualquier información que desee.  Esencialmente, esto hace posible depurar el programa yendo "atrás en el tiempo", simplificando bastante el proceso de depuración.
+Mediante el registro de cada cambio de un programa en ejecución, es posible presentar al programador cualquier información que desee.  Esencialmente, esto hace posible depurar el programa yendo \textit{atrás en el tiempo}, simplificando bastante el proceso de depuración.
 
 
-Los desarrolladores de los depuradores se han concentrado completamente en responder la siguiente pregunta: "¿Qué información podemos entregar a los programadores mientras el programa se está ejecutando?".  Aunque esto no es del todo herrado, no es la pregunta correcta.  La pregunta que debieran tener que responder es: "¿Qué información ayudaría más al programador?".
+Los desarrolladores de los depuradores se han concentrado completamente en responder la siguiente pregunta: \textit{¿Qué información podemos entregar a los programadores mientras el programa se está ejecutando?}.  Aunque esto no es del todo herrado, no es la pregunta correcta.  La pregunta que debieran tener que responder es: \textit{¿Qué información ayudaría más al programador?}.
 
 De estudios informales se ha revelado que varios cientos de programadores, aproximadamente el 90\% de ellos, depuran todos sus programas utilizando sólo instrucciones de impresión.
 
 
-			\subsubsubsection{Depuración omnisciente}
+			\paragraph{Depuración omnisciente}
 
-Un depurador omnisciente trabaja mediante la recolección de eventos generados por cada cambio de estado (cada asignación de variable de cualquier tipo) y cada llamada a un método dentro del programa depurado.  Después de terminado el programa es mostrado el depurador (interfaz gráfica) permitiendo al programador ver el estado del programa en el tiempo de ejecución que desee.  El programador puede seleccionar cualquier variable e ir "atrás en el tiempo" y mirar donde ésta fue definida o cual fue su valor.
+Un depurador omnisciente trabaja mediante la recolección de eventos generados por cada cambio de estado (cada asignación de variable de cualquier tipo) y cada llamada a un método dentro del programa depurado.  Después de terminado el programa es mostrado el depurador (interfaz gráfica) permitiendo al programador ver el estado del programa en el tiempo de ejecución que desee.  El programador puede seleccionar cualquier variable e ir \textit{atrás en el tiempo} y mirar donde ésta fue definida o cual fue su valor.
 
 Existen consideraciones para programas que superan los 10 millones de eventos.
 
 
-			\subsubsubsection{Es interesante la depuración omnisciente}
+			\paragraph[Estudio interesante]{Es interesante la depuración omnisciente}
 
 Existen varias razones para hacer un esfuerzo y estudiar la depuración omnisciente:
 
@@ -425,28 +429,29 @@ Existen varias razones para hacer un esfuerzo y estudiar la depuración omniscie
 	\item Este entrega al programador una lista única del programa siendo capaz de ver las huellas de llamadas a métodos.
 
 	\item Toda la información es serializada.  Puede ser analizada remotamente.
+\end{itemize}
 
 			\subsubsection{Proceso de depuración}
 
 Aunque no existe una definición formal de como llevar a cabo el proceso de depuración en esta técnica, se utiliza la definición de Bil Lewis para explicar al lector el proceso y componentes esenciales que debe tener un depurador omnisciente.
 
-				\subsubsubsection{Mantener el estado}
+				\paragraph{Mantener el estado}
 
 Se quiere ser capaz de revertir el programa hacia cualquier estado anterior de ejecución.  Esto implica que debemos grabar cada cambio de cada objeto o variable.  Necesitamos grabar cada asignación en cada hilo de ejecución y definir un orden sobre ellos.
 
 La marca de tiempo debe ser el único referente del estado del programa.
 
-				\subsubsubsection{Presentación}
+				\paragraph{Presentación}
 
 Cada objeto, variable, instrucción E/S tendrá un valor conocido para cada marca de tiempo.  Cuando "revertimos el depurador" a un tiempo dado, toda la información es actualizada para reflejar los valores para esa marca de tiempo.
 
 Se muestra toda la información de forma adecuada y el programador no debiera nunca preguntarse ¿ésto cambió? o ¿dónde estoy?
 
-				\subsubsubsection{Identificar el estado}
+				\paragraph{Identificar el estado}
 
 El programador debe ser capaz de mirar un objeto y saber que objeto es y que valores tienen las variables de instancias.  Los objetos de clases son mostrados justo con el nombre de clase (ej.: Persona), strings y otras primitivas como se esperan (1, True, "soy una cadena").
 
-				\subsubsubsection{Navegación}
+				\paragraph{Navegación}
 
 La simple navegación a través de la historia del programa es dotado a través de la selección de linea en un panel o presionando algunos botones.
 
@@ -461,11 +466,11 @@ Se debe tener una capacidad de almacenamiento bastante grande, un cluster de pre
 
 Algunas de las herramientas que existen en el mercada actualmente son:
 \begin{itemize}
+	\item EXDAMS
+	\item ODB
+	\item ZSTEP
 	\item TOD
-	\item otras más...
 \end{itemize}
-
-
 
 	\section{Lenguajes de Programación}
 
@@ -506,15 +511,113 @@ Existen muchas más diferencias entre estos dos lenguajes pero para el caso de e
 
 \chapter{Implementaciones de depuradores omniscientes}
 
-	A lo largo de la historia de las ciencias de la computación han existido muchos esfuerzos por implementar depuradores omniscientes es por esto que encontramos importante conocer las distintas perspectivas de diferentes equipos de implementación.  A continuación mostramos, dividida por etapas, las distintas implementaciones existentes al día de hoy.
+A lo largo de la historia de las ciencias de la computación han existido muchos esfuerzos por implementar depuradores omniscientes es por esto que encontramos importante conocer las distintas perspectivas de diferentes equipos de implementación.  A continuación mostramos, dividida por etapas, las distintas implementaciones existentes al día de hoy.
 
 	\section{Implementaciones históricas}
 
-EXDAMS
+En esta sección consideraremos dos implementaciones importantes:
+\begin{itemize}
+	\item EXDAMS - Extendable Debugging And Monitoring System
+	\item ZSTEP - para prolog al parecer
+\end{itemize}
+
+		\subsection{EXDAMS}
+			\subsubsection{Historia}
+
+Con la llegada de los lenguajes algebraicos de alto nivel, la industria de la computación esperaba ser aliviado de los detalles de programación requeridos en el nivel de lenguajes ensamblador.  Esta expectativa ha sido en gran parte cumplida.  Muchos sistemas son ahora construídos en lenguajes de alto nivel.
+
+Sin embargo, la habilidad de depurar programas tiene avances estos son pequeños en relación al incremento en el uso de estos lenguajes de alto nivel.  Como Evans and Darlay indican:
+\textit{ Nosotros encontramos que, hablando en términos generales, un análisis cercano de casi todas las principales técnicas de depuración de los lenguajes en ensamblador existe al menos un sistema de depuración perteneciente a alguno lenguaje de alto nivel.  Sin embargo, las facilidades de la depuración en linea para los lenguajes de alto nivel son en general menos bien desarrolladas y menos ampliamente usadas (relativo al uso de estos lenguajes) que sus contrapartes para lenguajes en ensamblador}.
+
+En general, los sistemas construidos son meramente copias de los depuradores en linea de los lenguajes en ensamblador, más que diseños de facilidades totalmente nuevas para los lenguajes de alto nivel.  Ellos no han creado ni formatos graficos en los cuales se presente información acerca de la depuración, no han entregado una manera rasonable con la cual los usuarios puedan especificar el proceso requerido en cualquier depuradora de información disponible.
+
+EXDAMS, es un intento por quebrar este impase entregando un ambiente simple en el cual los usuarios pueden facilmente añadir nuevas funcionalidades a un depurador en linea sin tene que modificar mayormete el compilador a nivel de código fuente, ni EXDAMS, o sus programas para que sean depurados.
+
+
+			\subsubsection{Motivación}
+
+EXDAMS, es un sistema depurador y monitor en linea diseñado para facilitar la experimentación con nuevas herramientas de ayuda que cumplan estas mismas características y para proveer alternarnancia de forma flexible entre estas ayudas como el tiempo de ejecución es controlado en cualquiera de los sentidos adelante o atrás.
+
+			\subsubsection{Características}
+
+Es un poderozo depurador y monitor a nivel de código fuente para lenguajes de computación.  Sus facilidades son de dos tipos: estatico, el cual hace referencia a un punto específico en tiempo de ejecución; y pelicula, el cual cambia en tiempo de ejecución y puede ser visto en tiempo de ejecución sin importar la dirección atrás o adelante (ej.: un usuario puede ver la ejecución de su programa, en reversa, yendo hacía atrás a algún estado anterior).
+
+Adicionalmente de estas facilidades, las características de ambiente de EXDAMS son:
+\begin{enumerate}
+	\item Habilidad para alternar, en cualquier punto de ejecución, entre el espacio de los datos (¿qué está sucediendo?) y el espacio de control (¿cómo sucedio esto?), de esta forma asociando una acción del programa con la instrucción exacta que produce la acción.
+
+	\item Fácil extensión para nuevas herramientas de depuración y monitoreo definidas por el usuario.
+\end{enumerate} 
+
+			\subsubsection{Objetivos de diseño}
+
+EXDAMS, fue diseñado para satisfacer tres necesidades:
+\begin{itemize}
+	\item como un vehículo para probar algunos propuestas, pero sin aplicarlas, para facilidades de depuración y monitoreo en linea.
+
+	\item Como facilidades extendibles las cuales los nuevos depuradores y monitores pueden añadir facilmente y luego probarlas.
+
+	\item Como un sistema que provee algunas medidas de independencia de no sólo una máquina en particular sobre la cual está siendo ejecutado este y la particular implementación de un lenguaje está siendo depurado y/o monitoreado, si no que además de muchos lenguajes fuentes en los cuales los programas de los usuarios pueden ser escritos y depurados y/o monitoreados.
+\end{itemize}
+
+En una situación perfecta para hacer depuración, de acuerdo con la filosofía de EXDAMS, el usuario primero establece \texit{que es lo que está sucediendo}, luego decide si ese comportamiento es correcto, y finalmente, si este no es correcto, determina \textit{como} el programa efectuó esa operación, al mismo tiempo que busca el error en el programa o en la información.  De esta manera, cualquier sistema de depuración y monitoreo exhaustiva debe incluir facilidades poderosas en los espacios de información y control y proveer una manera simple de alternancia entre los puntos correspondientes en cualquier espacio, como las necesidades del usuario o preferencias personales le indiquen.
+
+			\subsubsection[Depuración y monitoreo]{Depuración y monitoreo dentro de EXDAMS}
+
+EXDAMS contiene dos tipos de asistencia para la depuración y monitoreo:
+
+\begin{description}
+	\item[Asistencia estática] Muestra información que es invariante en relación el tiempo de ejecución (una marca de tiempo es incrementada como cada instrucción del código es ejecutado y usado para referir un punto particular en la ejecución del programa), como son los valores de variables al momento de ocurrir un error, una lista de todos los valores de las variables que fueron dadas en tiempo de ejecución, o una muestra de una porción del código fuente.
+
+	\item[Asistencia dinámica] De otra manera, esta asistencia es sensible al tiempo de ejecución, esto es, la información que ella muestra puede variar con el tiempo de ejecución.  Esta asistencia dinámica incluye el ultimo valor de \textit{n} de un conjunto de variables, la instrucción actual y la subrutina, y el valor actual del conjunto de variables.  El usuario puede ejecutar la asistencia dinámica en cualquiera de las direcciones adelante y atrás, controlando el tiempo de ejecución.
+
+\end{description}
+
+Las características más importantes, desde el punto de vista del usuario son:
+
+\begin{itemize}
+	\item La habilidad para controlar el tiempo de ejecución de su programa, moviendo una variable rapidamente hacia atrás o adelante, mientras el depurador y/o monitor actualiza constantemente su despliegue de información.
+
+	\item La habilidad de detenerse en cualquier punto en tiempo de ejecución del programa, cambiando al otro asistente, y continuando examinando concienzudamente el comportamiento de su programa.
+
+\end{itemize}
+
+			\paragraph[Análisis de flujo]{Análisis de flujo invertido}
+
+Mediante la llamada de \textit{FLOWBACK FOR}(instrucción reservada de EXDAMS) y especificando un valor en particular, el usuario solicitará a EXDAMS analizar como la información fluyó a través de su programa para producir el valor especificado.  Este análisis es presentado en la forma de un árbol invertido, con el nodo de más abajo correspondiente al valor el cual el análisis inverso fue solicitado.  Cada nodo consiste en una instrucción de asignación a nivel de codigo de lenguaje que produjo el valor, el valor mismo, y conectado con los nodos del siguiente nivel.  Estos nodos corresponden a valores no constantes dentro de la instrucción de asignación mostrada en el nodo que está conectado con esos nodos.  Esos nodos tienen la misma forma como el original y están conectados para todos los valors no constantes utilizados en una instrucción de asignación en particular produciendo su valor.  De esta manera, la siguiente figura muestra en analisis de flujo invertido para un valor particular de A. 
+
+Esta figura muestra que la instrucción de asignación A=B+C-10; produjo un valor específico de A, y este valor fue 105.  Los valores de B y C usado en la asignación de A fue 8 y 107, respectivamente, y fueron producidas mediante las instrucciones de asignación \"B=R-1;\" y \"C=A+E;\" respectivamente.  Cada uno de los otros nodos se explican de la misma manera.
+
+			\subsubsection{Arquitectura}
+
+EXDAMS es un sistema que cuenta de cuatro fases.  Estas fases son análisis del programa, compilación, recoleción de historia en tiempo de ejecución y depuración en tiempo de ejecución con navegación a através de la historia del programa.
+
+				\paragraph{Análisis del programa}
+
+La primer fase analiza el programa fuente del usuario como este efectúa las cuatro funciones, la más importante de las cuales es la creación de un modelo para este programa.  Este modelo, el corazón de la fase depuración en tiempo de ejecución con navegación a através de la historia del programa, es la manera por la cual los valores recolectados sobre la cinta de la historia son interpretados y por la cual porciones del codigo fuente son recuperados, y es el repositorio de toda la información estructural conocida acerca del programa.
+
+En general, la historia contiene toda la información dinámica necesaria para actualizar en tiempo de ejecución cuando vayamos en las direcciones de atrás o adelante, mientras el modelo contiene todo lo necesario sobre la información estática.
+
+El modelo contiene la información estática de control y la información variable de alteración del programa del usuario.  La información de control consiste en la estructura del programa acerca de CALL, GOTO, IF-THEN-ELSE y DO-END, mientras que la información variable de alteración consiste en los nombres de las variables sobre el lado izquierdo los cuales son afectadas por instrucciones de asignación y las cuales a la vez pueden ser alteradas por instrucciones de entrada.
+
+Las instrucciones de depuración añadidas al programa pasan la información relevante de tiempo de ejecución hacia  la recoleción de historia en tiempo de ejecución.
+
+				\paragraph{Compilación}
+
+El procesador estándar del lenguaje fuente compila el programa fuente, como actualizado durante el analisis del programa.
+
+				\paragraph[Recolección de historia]{recoleción de historia en tiempo de ejecución}
+
+La vesión compilada del programa actualizado es ejecutada con un conjunto rutines en tiempo de ejecución que este llama.  Estas rutinas reunen la información dinámica acerca del comportamiento del programa.
+
+Esta información es completada en un buffer que es escrito cuando se llena.  Esta es la cinta de historia del comportamiento del programa y, junto con la tabla simbolica y el modelo, es suficiente para recrear el comportamiento del programa en cualquiera de las direcciones (atrás o adelante) en el tiempo de ejecución.
+
+				\paragraph[Historia del programa]{depuración en tiempo de ejecución con navegación a através de la historia del programa.}
+
 
 	\section{Implementaciones recientes}
 
-ODB (Bil Lewis)
+ODB (Bil Lewis), chronicle
 
 	\section{TOD: depurador omnisciente para Java}
 
