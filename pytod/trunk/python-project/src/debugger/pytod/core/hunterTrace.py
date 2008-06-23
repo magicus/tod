@@ -41,7 +41,7 @@ class hunterTrace(object):
         self.itsPacker = aPacker
         self.itsHost = aHost
         self.itsPort = aPort
-        self.FLAG_DEBUGG = True
+        self.FLAG_DEBUGG = False
         self.FLAG_THROWN = False
         self.itsMethodPattern = "\A__.*(__)$"
         self.__socketConnect__()
@@ -491,6 +491,12 @@ class hunterTrace(object):
     def __packValue__(self, aDataType, aValue):
         if self.itsPackXDR.has_key(aDataType):
             theMethodName = self.itsPackXDR[aDataType]
+            #bool no funciona bien con XDRLib entre java y python
+            if aDataType == 4:
+                if aValue:
+                    aValue = 1
+                else:
+                    aValue = 0
             getattr(self.itsPacker,'pack_%s'%theMethodName)(aValue)
             return aValue            
         else:
@@ -800,6 +806,7 @@ class hunterTrace(object):
                 if not self.__inClass__(theCode):
                     #registramos la definicion de la clase
                     theLocals.update({'__setattr__':Descriptor.__dict__['__setattr__']})
+                    theLocals.update({'__metaclass__':MetaClass})
                     self.__registerClass__(theCode,theLocals)
             else:
                 theObject = self.__getObject__(theCode)
@@ -858,6 +865,11 @@ hT = hunterTrace(
                  '127.0.0.1',
                  8058)
 
+class MetaClass(type):
+    def __setattr__(self, aName, aValue):
+        print 'Meta notificacion', aName, aValue
+        super(MetaClass, self).__setattr__(aName, aValue)
+
 class Descriptor(object):
 
     def __setattr__(self, aName, aValue):
@@ -892,7 +904,6 @@ class Descriptor(object):
         hT.itsPacker.pack_int(hT.itsEvents['set'])
         hT.itsPacker.pack_int(hT.itsObjects['attribute'])
         hT.itsPacker.pack_int(Id)
-        #hT.itsPacker.pack_int(theBehaviorId)
         hT.itsPacker.pack_int(self.__pyTOD__)
         theDataType = hT.__getDataType__(aValue)
         hT.itsPacker.pack_int(theDataType)
