@@ -17,11 +17,7 @@
 \setcounter{secnumdepth}{6}
 \setcounter{tocdepth}{6}
 
-\let\subsubsubsection\paragraph
-\setcounter{\secnumdepth}{5}
-\setcounter{\tocdepth}{5}
 \begin{document}
-
 %\title{Décima semana de trabajo [9 - 13 de Junio]}
 %\author{Milton Inostroza Aguilera}
 %\date{16 de Junio de 2008}
@@ -614,10 +610,92 @@ Esta información es completada en un buffer que es escrito cuando se llena.  Es
 
 				\paragraph[Historia del programa]{depuración en tiempo de ejecución con navegación a através de la historia del programa.}
 
+Esta fase contiene a los asistentes para depuración y monitoreo los cuales presentan la información historica hacia el usuario de una manera usable en su pantalla.  Esto además interpreta los comandos del usuario para mostrar alternativas y/o variaciones en tiempo de ejecución, y entrega la capacidad de editar para modificar bug descubiertos y para retornar el programa modificado a las cuatras fases para un nuevo proceso de depuración.
+
 
 	\section{Implementaciones recientes}
 
-ODB (Bil Lewis), chronicle
+En esta sección consideraremos dos implementaciones importantes:
+\begin{itemize}
+	\item ODB - Omniscient Debugging
+	\item Chronicle - para prolog al parecer
+\end{itemize}
+
+		\subsection{ODB}
+
+ODB es una implementación Java la cual recolecta información mediante la instrumentación del byte code del programa objetivo, al momento que éste es cargado.  Este utiliza un mecanismo simple de alto nivel para ordenar los eventos de diferentes hilos.  Este ha sido probado en MacOS, UNIX, y Windows sobre una gran variedad de programas.
+
+Para un depurador gráfico como este, existen dos temas de vital importancia:
+\begin{description}
+	\item[Presentación de la información] ¿Como el programador puede obtener desde el depurador el estado del programa que le interese?
+	\item[Navegación] ¿Cómo el programador reconoce el estado?
+\end{description} 
+
+			\subsubsection{La naturaleza de los bug bajo ODB}
+
+ODB divide a las bug en dos dimensiones:  ¿Todos los eventos registrados para el bug caben en memoria? y ¿El bug producte una información erronea o este falla al producir una información correcta?
+
+				\paragraph{La serpiente en el pasto}
+
+Si el programa imprime \texit{la respuesta es 41} en vez de \texit{42}, entonces nosotros tenemos un manejador sobre el bug.  Nosotros vemos la serpiente en el pasto y podemos agarrar su cola.  Ahora si el programa falla al producir la respuesta correcta, entonces nosotros no tenemos un manejador directo del bug.  Esta es la serpiente en el pasto que no podemos ver.
+
+Para programas que encajan y nosotros podemos ver la serpiente en el pasto, entonces el ODB es absolutamente maravilloso.  Es posible comenzar sobre la salida erronea e ir hacia atrás, encontrando el valor inapropiado en cada punto, y luego seguir a este valor hasta su causa. (Si tu tienes una cola de serpiente y tu la tiras lo suficientemente fuerte, tu obtendrás su cabeza.)  No es inusual iniciar el depurador, seleccionado la salida erronea, y navegar por el código fuente en 60 segundos. Con absoluta confianza.
+
+Los depuradores basado en punto de quiebre sufren del problema "La largatija en el pasto".  Incluso cuando ellos pueden ver la largatija y tirar de su cola, la lagartija quebrará su cola y se irá.  Luego ellos vuelven al problema “La lagartija perdida en el pasto”.
+
+Con ODB, existe una versión de este problema.  Cuando la producción incorrecta es causada por la falta de un determinado objeto cuando esta siendo asignado, entonces nosotros tenemos que responder la pregunta \textit{¿Quién pudo haber echo esto?}, la cual es una pregunta mucho más dificil que \texit{¿Quién hizo esto?} (Esta es el lagarto sin pata en el problema del pasto).  Nosotros pensamos que tenemos una serpiente, pero despues de tirar tu cola por un momento, esta la quiebra de cualquier forma.
+
+Para problemas relativamente pequeños (digamos 10.000 de eventos), esto es fácil y basta con solo examinar por completo las huellas de asignación de los métodos.  Para problemas más grandes, la "serpiente perdida en el pasto", se tornan más problemáticos.  Nosotros tenemos una gran cantidad de información acerca de la asignación y una idea no muy cierta de lo que estamos buscando.
+
+Afortunadamente, el problema anterior es un caso profundamente analizado.  ODB incorpora la función \textit{get()} de Ducassé (poner referencia!)
+
+				\paragraph{Tamaño}
+
+Otra importante dimensión es la del tamaño.  Dentro de un espacio de direccionamiento de 31-bit, existe espacio para almacenar alrededor de 10 millones de eventos.  Un gran porcentaje de los bug reales encajan dentro de este espacio.  Un buen porcentaje no.  Existe un número de opciones para atacar este problema.  Nosotros podemos:
+\begin{itemize}
+	\item Recolector de basura, tirar a la basura a los eventos antiguos
+	\item Instrumentar pocos métodos
+	\item Registrar por poco tiempo 
+\end{itemize}
+
+					\subparagraph{Recolección de basura}
+
+Esto es bueno porque no requiere esfuerzo y efectivamente mantiene una ventana de eventos circundante al bug.  Esto de lo contrario es malo porque no se elimina basura, si no que solo eventos antiguos que pudieran ser importantes.  Esto además es malo porque permite el programa correr lo bastante para que el rendimiento se convierta en un tema importante.  Este añade un 50\% extra sobre el mayor de los costos promedio para un evento.
+
+Cuando la fuente del bug está dentro de los 10 millones de evento del tiempo cuando la grabación fue apagada, luego nosotros volvemos el bien conocido problema de "la serpiente en el pasto". Cuando este va más lejos, nosotros perdemos la fuente del bug, y el recolector de basura pierde su valor.
+
+					\subparagraph{Código seguro}
+
+Es muy normal para un gran porcentaje de un programa consista en bien conocido, seguro código fuente. (Existen cualquier metodo recomputable, o metodos que nosotros no queremos ver el interior de ellos).  Mediante solicitud que estos metodos no sea instrumentados, muchos de eventos no interesantes son eliminados.  ODB permite al programar seleccionar arbitrariamente un conjunto de métodos, clases, o paquetes, los cuales pueden ser instrumentados o no.
+
+					\subparagraph{Comenzar detener registro}
+
+Si el programador sospecha que determinado evento conocido siempre ocurre antes del bug (ej.: Cuando presiono este botón el programa se cae), luego el registro puede ser habilitado en ese punto y apagado después del bug.  ODB permite control manual (Existe un botón inicio/fin registro).  Este además permite control automático.  Control automático de la manera que nosotros iremos a examinar un gran conjunto de eventos por un patrón particular, el cual será prendido / apagado registro.  Una vez más, esto es precisamente el problema de los analizadores de eventos para lo cual ODB utiliza la función \textit{get()} de Ducassé.
+
+				\paragraph{Implementación}
+
+ODB mantiene un array sencillo de marca de tiempos.  Cada marca de tiempo es un entero de 32 bit, conteniendo un índice de hilo (8 bits), un indice de linea (20 bits) y un indice de tipo (4 bits).  Un evento para cambiar una instancia de una varible necesita tres palabras: una marca de tiempo, la variable que ha cambiado, y el nuevo valor.  Un evento para una llamada de método necesita: objeto, nombre del método, los argumentos y el valor de retorno (o Excepción), junto con una pequeño montón de variables internas propias del depurador.  Esto añade cerca de 20 palabras.  La instrucción return line además generará 10 palabras más.
+
+Cada variable tiene un historial asociado que es sólo una lista de pares marca de tiempo / valor. Cuando el ODB quiere saber cual valor de una variable fue en el tiempo 102, este justo agarra el valor que está más cerca al valor previo.  La lista de historia para variables locales y argumentos cuelgan sobre la Linea de huella.
+
+Siempre que ocurra un evento, este bloquea por completo el debugger, una nueva marca de tiempo es generada y registrada dentro de la lista, y estructuras asociadas son construidas.  Los valres de retorno y excepciones son agregadas dentro de la apropieda linea de huella como ellas fueran generadas.
+
+La inseción en el código es muy simple.  El byte code fuente es examinado y un código instrumentado es insertado antes de cada asignación y cerca de cada llamada de método.
+
+Una inserción tipica luce de esta forma:
+
+\begin{verbatim}
+289 aload 4											// nuevo valor
+291 astore_1										// variable local ie
+292 ldc_w #404 <String “Micro4:Micro4.java:64”>
+295 ldc_w #416 <String “ie”>
+298 aload_1											// ie
+299 aload_2											// Huella padre
+300 invokestatic #14 <change(String, String, Object, Trace)>
+\end{verbatim}
+
+Donde el código original eran las lineas 289 y 291, asignando un valor a la variable local \texit{ie}.  La instrumentación crea un evento que registra que sobre la linea 64 de Micro.java(#292), la variable local ie(#295), de quien su Lista de historia puede ser encontrada sobre la linea de huella en el registro 2 (#299), le fue asignada al valor en el registro 1 (#298).  Los otros tipos de eventos son similares.
+
 
 	\section{TOD: depurador omnisciente para Java}
 
