@@ -140,6 +140,15 @@ public class LaunchUtils
 		});
 	}
 	
+	/**
+	 * Returns the session created by {@link #setup(IJavaProject, ILaunchConfiguration, ILaunch)}
+	 * in this thread.
+	 */
+	public static ISession getSession()
+	{
+		return itsInfo.get().session;
+	}
+	
 	public static IVMRunner getVMRunner(IVMRunner aDelegate) 
 	{
 		return new DelegatedRunner(aDelegate, itsInfo.get());
