@@ -223,7 +223,7 @@ public abstract class LogReceiver
 	
 	protected boolean process(DataInputStream aDataIn, DataOutputStream aDataOut) throws IOException
 	{
-		if (DebugFlags.SKIP_EVENTS)
+		if (DebugFlags.SWALLOW)
 		{
 			byte[] theBuffer = new byte[4096];
 			while(true)

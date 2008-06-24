@@ -54,6 +54,12 @@ public class DebugFlags
 	private static final String HOME = System.getProperty("user.home");	
 	
 	/**
+	 * If this flag is true, the database just swallows everything that is sent to
+	 * it without even interpreting it.
+	 */
+	public static final boolean SWALLOW = ConfigUtils.readBoolean("swallow", false); 
+	
+	/**
 	 * Causes database nodes to skip incoming events
 	 */
 	public static final boolean SKIP_EVENTS = ConfigUtils.readBoolean("skip-events", false); 
