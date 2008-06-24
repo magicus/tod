@@ -38,6 +38,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import tod.Util;
+import tod.core.DebugFlags;
 import tod.core.ILogCollector;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
@@ -60,6 +61,7 @@ import tod.impl.dbgrid.dispatch.NodeProxy;
 import tod.impl.dbgrid.dispatch.RINodeConnector;
 import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
 import tod.impl.dbgrid.queries.EventCondition;
+import tod.utils.PrintThroughCollector;
 import tod.utils.TODUtils;
 import tod.utils.remote.RIStructureDatabase;
 import tod.utils.remote.RemoteStructureDatabase;
@@ -169,6 +171,12 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 
 			aDatabaseNode.connectedToMaster(theMaster, 0);
 			theMaster.itsCollector = aDatabaseNode.createLogCollector(new HostInfo(0));
+			
+			if (DebugFlags.COLLECTOR_LOG) theMaster.itsCollector = new PrintThroughCollector(
+					new HostInfo(0, "print"),
+					theMaster.itsCollector,
+					aStructureDatabase);
+			
 			theMaster.itsNodes.add(new NodeConnector(aDatabaseNode));
 
 			return theMaster;
