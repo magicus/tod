@@ -41,6 +41,7 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IStructureDatabase;
+import tod.impl.database.structure.standard.BehaviorInfo;
 import zz.utils.Utils;
 
 /**
@@ -67,7 +68,8 @@ public class PrintThroughCollector implements ILogCollector
 
 	private IBehaviorInfo getBehavior(int aId)
 	{
-		return itsStructureDatabase.getBehavior(aId, true);
+		IBehaviorInfo theBehavior = itsStructureDatabase.getBehavior(aId, false);
+		return theBehavior;
 	}
 	
 	private IFieldInfo getField(int aId)

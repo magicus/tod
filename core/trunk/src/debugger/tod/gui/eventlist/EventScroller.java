@@ -204,7 +204,7 @@ public class EventScroller extends JPanel
 		// Setup slider
 		long theDelta = itsEnd-itsStart;
 		itsSliderFactor = 1;
-		if (theDelta != 0)
+		if (theDelta > 0)
 		{
 			while (theDelta > Integer.MAX_VALUE)
 			{

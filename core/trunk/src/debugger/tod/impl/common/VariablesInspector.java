@@ -138,7 +138,7 @@ public class VariablesInspector implements IVariablesInspector
 			else
 			{
 				ITypeInfo theType = theArgumentTypes[i];
-				theSlot += theType.getSize();
+				theSlot += theType.getSize(); // TODO: this is java-specific, generalize
 			}
 		}
 		

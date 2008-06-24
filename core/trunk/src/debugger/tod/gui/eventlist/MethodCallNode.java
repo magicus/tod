@@ -52,7 +52,8 @@ public class MethodCallNode extends BehaviorCallNode
 	protected HtmlElement createShortBehaviorName()
 	{
 		IBehaviorInfo theBehavior = getBehavior();
-		return HtmlText.create(HtmlText.escapeHTML(theBehavior.getName()));
+		return HtmlText.create(HtmlText.escapeHTML(
+				theBehavior != null ? theBehavior.getName() : "Error: null behavior"));
 	}
 	
 	protected HtmlElement createFullBehaviorName()

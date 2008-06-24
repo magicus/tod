@@ -288,7 +288,7 @@ public class StructureDatabase implements IShareableStructureDatabase
 	
 	public BehaviorInfo getBehavior(int aId, boolean aFailIfAbsent)
 	{
-		BehaviorInfo theBehavior = Utils.listGet(itsBehaviors, aId);
+		BehaviorInfo theBehavior = aId >= 0 ? Utils.listGet(itsBehaviors, aId) : null;
 		if (theBehavior == null && aFailIfAbsent) throw new RuntimeException("Behavior not found: "+aId);
 		return theBehavior;
 	}

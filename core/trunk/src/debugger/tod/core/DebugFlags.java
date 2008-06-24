@@ -106,7 +106,7 @@ public class DebugFlags
 	/**
 	 * Causes the event collector to print the events it receives.
 	 */
-	public static final boolean COLLECTOR_LOG = false;
+	public static final boolean COLLECTOR_LOG = true;
 	
 	/**
 	 * Causes the {@link EventInterpreter} to log events.
@@ -118,8 +118,8 @@ public class DebugFlags
 	 * Default is System.out
 	 */
 	public static final PrintStream COLLECTOR_PRINT_STREAM =
-//		System.out;
-		createStream(HOME+"/tmp/tod/collector.log");
+		System.out;
+//		createStream(HOME+"/tmp/tod/collector.log");
 
 	/**
 	 * Whether a message should be printed whenever a new behavior is registered

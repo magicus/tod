@@ -10,7 +10,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="lib" path="lib/reflex-core.jar"/>
 	<classpathentry kind="lib" path="lib/asm-all-3.1.jar" sourcepath="/ASM"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/TOD-agent"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/TOD-agent"/>
 	<classpathentry kind="lib" path="lib/jython-2.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/infovis.jar" sourcepath="/infovis-0.9beta2"/>
 	<classpathentry kind="output" path="bin"/>
