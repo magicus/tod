@@ -25,7 +25,7 @@ public class TODLaunchDelegate_AJDT extends AJApplicationLaunchConfigurationDele
 	{
 		return LaunchUtils.getVMRunner(super.getVMRunner(aConfiguration, aMode));
 	}
-	
+
 	@Override
 	public void launch(ILaunchConfiguration aConfiguration, String aMode, ILaunch aLaunch, IProgressMonitor aMonitor)
 			throws CoreException

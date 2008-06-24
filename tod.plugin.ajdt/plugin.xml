@@ -11,37 +11,13 @@
 
       <!-- the DEV/DEPLOY in-out markers are used by a perl script, don't remove -->
       <!-- DEV-in -->
-      <library name="../zz.utils/bin">
-         <export name="*"/>
-      </library>
       <library name="../TOD/bin">
-         <export name="*"/>
-      </library>
-      <library name="../tod-fx/bin">
-         <export name="*"/>
-      </library>
-      <library name="../reflex/bin">
-         <export name="*"/>
-      </library>
-      <library name="../pom/bin">
          <export name="*"/>
       </library>
       <!-- DEV-out -->
       
       <!-- DEPLOY-in     
-      <library name="lib/tod-agent.jar">
-         <export name="*"/>
-      </library>
       <library name="lib/tod-debugger.jar">
-         <export name="*"/>
-      </library>
-      <library name="lib/zz.utils.jar">
-         <export name="*"/>
-      </library>
-      <library name="lib/reflex-core.jar">
-         <export name="*"/>
-      </library>
-      <library name="lib/pom.jar">
          <export name="*"/>
       </library>
       DEPLOY-out --> 
