@@ -41,5 +41,5 @@ packXDRLib = {
               1:'string',
               2:'float',
               3:'double',
-              4:'bool',
+              4:'int', #4:'bool'
               }
