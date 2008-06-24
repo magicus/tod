@@ -77,19 +77,19 @@
    </runtime>
 
    <requires>
-      <import plugin="org.eclipse.ui"/>
-      <import plugin="org.eclipse.core.runtime"/>
-      <import plugin="org.eclipse.jdt.core"/>
-      <import plugin="org.eclipse.debug.core"/>
-      <import plugin="org.eclipse.debug.ui"/>
-      <import plugin="org.eclipse.jface.text"/>
-      <import plugin="org.eclipse.jdt.ui"/>
-      <import plugin="org.eclipse.ui.workbench.texteditor"/>
-      <import plugin="zz.eclipse.utils"/>
-      <import plugin="org.eclipse.jdt.debug"/>
-      <import plugin="org.eclipse.jdt.junit"/>
-      <import plugin="org.eclipse.jdt.junit.runtime"/>
-      <import plugin="org.eclipse.pde.ui"/>
+      <import plugin="org.eclipse.ui" export="true"/>
+      <import plugin="org.eclipse.core.runtime" export="true"/>
+      <import plugin="org.eclipse.jdt.core" export="true"/>
+      <import plugin="org.eclipse.debug.core" export="true"/>
+      <import plugin="org.eclipse.debug.ui" export="true"/>
+      <import plugin="org.eclipse.jface.text" export="true"/>
+      <import plugin="org.eclipse.jdt.ui" export="true"/>
+      <import plugin="org.eclipse.ui.workbench.texteditor" export="true"/>
+      <import plugin="zz.eclipse.utils" export="true"/>
+      <import plugin="org.eclipse.jdt.debug" export="true"/>
+      <import plugin="org.eclipse.jdt.junit" export="true"/>
+      <import plugin="org.eclipse.jdt.junit.runtime" export="true"/>
+      <import plugin="org.eclipse.pde.ui" export="true"/>
    </requires>
 
    <extension
