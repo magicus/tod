@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin
+   id="tod.plugin.pytod"
+   name="pyTOD Eclipse Plugin"
+   version="0.1"
+   provider-name="Milton Inostroza"
+   class="tod.plugin.pytod.Activator">
+   <requires>
+      <import plugin="org.python.pydev"/>
+      <import plugin="org.python.pydev.core"/>
+      <import plugin="tod.plugin"/>
+      <import plugin="org.python.pydev.debug"/>
+   </requires>
+
+   <extension
+         point="org.eclipse.debug.core.launchDelegates">
+      <launchDelegate
+            delegate="tod.plugin.pytod.launch.PyTODLaunchDelegate_PythonRun"
+            id="tod.plugin.pytod.launchDelegate.PythonRun"
+            modes="tod"
+            type="org.python.pydev.debug.regularLaunchConfigurationType"/>
+   </extension>
+
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="tod.plugin.pytod.launch.PyTODLaunchTabGroup_PythonRun"
+            id="tod.plugin.pytod.launchConfigurationTabGroup.PythonRun"
+            type="org.python.pydev.debug.regularLaunchConfigurationType"/>
+   </extension>
+
+</plugin>
