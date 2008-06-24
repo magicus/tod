@@ -125,6 +125,7 @@ public class PythonTODServer extends TODServer
 						System.out.println("Registrando variable local "+argName);
 					}
 				}
+				String fileName = aInputStream.readString();
 				System.out.println("Registrando la funcion "+functionName + "id = "+functionId);
 			}
 			catch (Exception e)
@@ -201,6 +202,7 @@ public class PythonTODServer extends TODServer
 						System.out.println("Registrando variable local "+argName);
 					}
 				}
+				String fileName = aInputStream.readString();
 				System.out.println("Registrando el metodo "+methodName + "id = "+methodId);
 			}
 			catch (Exception e)
@@ -420,7 +422,14 @@ public class PythonTODServer extends TODServer
 				}
 				case DATA_BOOL:
 				{
-					theValue = aInputStream.readBoolean();
+					//theValue = aInputStream.readBoolean();
+					theValue = aInputStream.readInt();
+					if (theValue.equals(1)) {
+						theValue = Boolean.TRUE;
+					}
+					else {
+						theValue = Boolean.FALSE;
+					}
 					break;
 				}
 				case DATA_TUPLE:
