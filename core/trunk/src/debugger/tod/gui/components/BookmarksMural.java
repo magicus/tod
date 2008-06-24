@@ -154,7 +154,7 @@ public class BookmarksMural extends JPanel
 				long theTimestamp = itsCurrentEvent.getTimestamp();
 				if (theTimestamp >= aStartTimestamp && theTimestamp <= aEndTimestamp) 
 				{
-					Balloon theBalloon = new Balloon(itsCurrentEvent, "<span style='color: blue'>I</span>");
+					Balloon theBalloon = new Balloon(itsCurrentEvent, "<span style='color: blue'>X</span>");
 					theResult.add(theBalloon);
 				}
 			}

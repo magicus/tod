@@ -37,12 +37,14 @@ import zz.utils.ui.text.XFont;
 
 public class FontConfig
 {
-	public static final XFont STD_FONT = XFont.DEFAULT_XPLAIN.deriveFont(13);
-	public static final XFont STD_HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, 13);
-	public static final XFont SMALL_FONT = XFont.DEFAULT_XPLAIN.deriveFont(12);
-	public static final XFont TINY_FONT = XFont.DEFAULT_XPLAIN.deriveFont(10);
+	private static final float ZOOM = 1.0f;
 	
-	public static final int SMALL = 60;
-	public static final int NORMAL = 80;
-	public static final int BIG = 100;
+	public static final XFont STD_FONT = XFont.DEFAULT_XPLAIN.deriveFont(13*ZOOM);
+	public static final XFont STD_HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, 13*ZOOM);
+	public static final XFont SMALL_FONT = XFont.DEFAULT_XPLAIN.deriveFont(12*ZOOM);
+	public static final XFont TINY_FONT = XFont.DEFAULT_XPLAIN.deriveFont(10*ZOOM);
+	
+	public static final int SMALL = (int) (60*ZOOM);
+	public static final int NORMAL = (int) (80*ZOOM);
+	public static final int BIG = (int) (100*ZOOM);
 }
