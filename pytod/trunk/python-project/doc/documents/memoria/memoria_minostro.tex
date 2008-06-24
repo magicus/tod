@@ -16,13 +16,14 @@
 \usepackage{appendix}
 \setcounter{secnumdepth}{6}
 \setcounter{tocdepth}{6}
-
 \begin{document}
 %\title{Décima semana de trabajo [9 - 13 de Junio]}
 %\author{Milton Inostroza Aguilera}
 %\date{16 de Junio de 2008}
 %\clearpage
 %\maketitle
+\include{portada_memoria}
+
 
 \begin{abstract}
 
@@ -698,8 +699,234 @@ Donde el código original eran las lineas 289 y 291, asignando un valor a la var
 
 
 	\section{TOD: depurador omnisciente para Java}
+		\subsection{Contribución}
 
-Utilizar paper de TOD para esto
+La contribución de este trabajo es mostrar que el debugging omnisciente puede ser realizado realisticamente a través del uso de diferentes técnicas aumentando la eficiencia, escalabilidad y usabilidad.  Lo planteado es validado por TOD, un debugger portable orientado a la huella para Java integrado dentro de ECLIPSE [5].  Las características de TOD son:
+\begin{description}
+	\item[Eficiente generación de eventos] Basado en un compacto modelo de huella, un uso de codificación binaria de eventos, y un rápido tejedor de bajo nivel.
+
+	\item[Máquina especializada de base de datos distribuida] Para un almacenamiento escalable y rápido y consultas sobre eventos, cuando se apalancan el manejador de restricciones natural de la ejecución de huellas.  En unos 10 nodos dedicados en cluster TOD mantiene una tasa sustancial de entrada de 170.000 eventos por segundo y cientos de consultas por segundo.
+
+	\itema[Soporte para huellas parciales] Ofreciendo mecanismos estáticos y dinámicos para la generación selectiva de la huella y un reporte adecuado para la información incompleta.
+
+	\item[GUI informativa, gracias a la eficiencia del procesamiento de consultas] TOD es utilizado para depurar una aplicación compleja como eclipse preservando su interactividad.
+
+	\item[Componentes especializados de GUI] Entregando una vista de alto nivel en huellas grandes de eventos para una navegación mucho más efectiva, como el mural de hilos.
+\end{description}
+
+
+		\subsection[Desafíos]{Desafíos del debugging omnisciente}
+
+	Presentamos las características principales de un degugger omnisciente comparado con los debuggers tradicionales y el perfil de los desafíos de escalabilidad del debugging omnisciente.
+
+			\subsubsection[Características] Características de un debugger omnisciente:
+
+	Un debugger omnisciente(OD; DO) entrega cuatro características principales:
+\begin{itemize}
+	\item paso (pasando)
+	\item estado de reconstitución
+	\item reconstitución del control del flujo
+	\item encontrar la principal causa.  
+\end{itemize}
+El último es únicamente en los debuggers omnisciente, mientras que los otros son características de los debuggers típicos.
+
+	En debuggers basado en punto de quiebre, stepping consiste en la ejecución del programa objetivo una instrucción a la vez.  Existen dos variaciones del stepping:  step over ejecuta el comportamiento llama a las declaraciones sin estar esperando dentro del llamado al comportamiento, mientras el step into espera a la primera (comienzo) de la llamada al comportamiento.  Reconstitución del estado consiste en ir entregando al programador un objeto de estado inspector cuando el programa objetivo está esperando.  Reconstitución del control de flujo permite obtener una vista en la llamada de la pila actual del programa, con ligadura a variables y objetos.  OD's extiende estas tres características con completa libertad con respecto al tiempo:  stepping puede ser realizado tanto hacia adelante como hacia atrás, los programadores pueden inspeccionar el estado de objetos como estaban en cualquier punto de entrega en el tiempo, y pueden libremente navegar por el árbol de control.
+
+	Finalmente, una de las características más usadas de OD's es su habilidad para encontrar “donde” y “en que contexto” a un campo o variable en particular le fue entregado un cierto valor.  Ciertamente, frecuentemente los bugs se manifiestan mucho después de suceder su causa raíz.  Para instanciar, tratando de referirnos a NULL referencia obtenida desde un campo que entrega una causa de caída, cuando es el síntoma del bug.  La información que el programador necesita es donde el campo fue definido con valor NULL.  Con debugger basado en punto de quiebre, siempre si la ejecución es pausada justo antes del imperfecto referido, la causa raíz del bug se pudo haber perdido.  Ejemplo:  porque el código que causó no está en la llamada nunca más.
+
+			\subsubsection{Desafío de escalabilidad}
+
+Destacando las características presentadas sobre la necesidad de generar y grabar las huellas de ejecución.  El potencial crecimiento de estas huellas ponen diversos desafíos de escalabilidad, cuando son la principal razón que afecta a la calidad de producción de OD's.
+
+Eventos deben ser grabados rápidamente, preferentemente en tiempo real, como que  (a) debugging puede comenzar inmediatamente después que el programa objetivo haya terminado o caído, y (b) el desbordamiento en tiempo de ejecución es minimizado para preservar sobre todo el desempeño del programa depurado y la interactividad cuando se necesite (ejemplo debugging Eclipse).
+
+El debugger puede causar una interferencia mínima al programa objetivo en el sentido de no afectar su comportamiento.  En particular, la administración del espacio de direcciones y de memoria del proceso objetivo no puede ser alterado.
+
+La capacidad del almacén de eventos de un debugger omnisciente debe estar alineado con un número esperado de eventos dentro del uso total de la huella; con GHZ CPU's, cientos de millones de eventos pueden ser generados en solamente pocos minutos de ejecución.
+
+
+Fig. 1 Arquitectura de auto nivel de TOD
+
+Consultas dentro la huella de ejecución debe ejecutarse a una velocidad compatible con la interacción del usuario; por ejemplo: en décimas de segundos para operaciones como el stepping.
+La información debe ser presentada de una manera que trata que la carga cognoscitiva de la navegación a través de la enorme huella de los eventos, habilitando una rápida identificación de los bug's.
+
+ 	Este trabajo se encamina en el uso optimizado de las representaciones de los eventos e indexación agresiva, un modelo simple de consulta, una base distribuida por debajo, soporte para huellas parciales y componentes de presentación e interacción especializados.
+
+		\subsection{Acerca de TOD}
+
+TOD es un debugger orientado a la huella para java, que se dirige sobre la identificación del uso de la escalabilidad.  El objetivo es dirigir esos usos en el orden para obtener un debugger omnisciente que es prácticamente aplicable.  Esta sección da un panorama de TOD en el sentido de su arquitectura, el modelo de evento, y los componentes de la GUI.
+
+			\subsubsection{Arquitectura}
+
+TOD es diseñado alrededor de dos ideas centrales: desacoplar el núcleo del debugger desde el programa objetivo en ejecución y ser portable.  Esto es hecho sobre un árbol de componentes (Fig.1):  el objetivo (JVM) en el cual el programa debugged corre y emite eventos, el núcleo del debugger que implementa las principales funcionalidades de TOD, y la interfaz del debugger a través del cual el usuario mutuamente consulta y navega en la huella de ejecución.
+
+La racionalidad para almacenar los eventos en una base de datos preferentemente que están en memoria como huellas en otros debuggers omniscientes [8,13,15] está precisamente dirigido a algunos de los desafíos discutidos en la sección 2.2.:  almacenando eventos en el espacio de dirección del  objetivo de la aplicación no es escalable para unos cuantos cientos de megabytes de información de la huella, e interfiere con el administrador de memoria, en particular con el colector de basura.  El costo de captura se incrementa por el uso de una base de datos que es compensado por una mejor escalabilidad y sin generar intrusión.  Como un lado efecto, la habilidad de serializar la huella de ejecución permite para debugging post-morten, quien abre un interesante perspectiva para las compañías de software dispuesta a ofrecer software con alta calidad de soporte:  observando el costo de almacenamiento, una huella en ejecución navegable es una información lejos mucha más relevante para reportar un bug que un texto descriptivo apropiado. 
+
+Tabla 1.  Eventos y sus atributos
+
+La cabecera de las filas son tipos de eventos y la cabecera de las columnas son posible argumentos (ts: tiempo, tid: identificador del hilo, depth: llamada a la pila en profundidad, pev: puntero al padre del evento, LOC: localidad del código fuente, fid: identificador de celda, bid: identificador de comportamiento, vid: identificador de variable local, idx: índice, val: valor, ret: valor de retorno, tgt: objetivo, vxc: excepción; args: argumentos).
+
+Durante la ejecución, la aplicación objetivo emite eventos que son enviados al núcleo del debugger, donde ellos son grabados e in3.1 dexados en una base de datos de eventos.  El tema de los eventos que son emitidos es discutido posteriormente.  La base de datos de los eventos levante las particularidades del curso del evento y el conjunto restrictivo de posibles consultas que entrega entre el alto rendimiento de grabación y el buen desempeño de las consultas (ver en sección 4 y 5).  El núcleo del debugger contiene otra base de datos, la base de datos de estructura, quién contiene información estática sobre la aplicación objetivo.  En particular conserva la huella el identificador de 32 bits en enteros que son asignados hacia eventos estructurales del programa objetivo(por ejemplo: clases, métodos y campos(celdas)).  Las consultas son presentadas por el usuario confiando entre el evento y la base de datos estructura.
+
+			\subsubsection{Representación y emisión eventos}
+
+Introducimos ahora a la representación de los eventos y las huellas de estos, así como también los eventos son emitidos por la aplicación liberada de errores en TOD.
+
+\begin{description}
+
+	\item[Modelo de evento y huella] Un evento es una estructura caracterizada por un número de atributos elegidos entre el conjunto A={a0,...,ak}.   Observemos e.aj el valor del atributo aj del evento e.  Para cada j perteneciente [0...k], dejamos Dj como el dominio de aj, por ejemplo el conjunto de todos los valores distintos que pueden ser tomados por aj. para cualquier evento dentro de la huella.  Una huella del evento T=<e1,...,en> es una secuencia ordenada de n eventos heterogéneos.
+
+El atributo a0 corresponde al timestamp del evento; este es caracterizado por el hecho que (a) todos los eventos tienen un valor para a0, (b) allí existe un completo orden sobre D0 y (c) los eventos en T están ordenados por sus valores de a0.  Tabla 1 muestra cuales eventos concretamente son capturados y cuáles son sus atributos.
+
+	\item[Emisión de los eventos]  El núcleo debugger de TOD captura los eventos emitidos por la aplicación objetivo (Fig. 1).  Existen tres vías en las cuales los eventos pueden ser emitidos:  puertos especializados de la huella del hardware [7],  maquina virtual o interpretador de instrumentación [14], y aplicación de instrumentación [8, 13]].  TOD utiliza la última:  aunque no es tan rápida como las pruebas de hardware y significativamente utiliza más espacio que el nivel de instrumentación de máquina virtual en términos de tamaño de código, la instrumentación de aplicación es mucho más portable y fácil de implementar.
+
+En TOD, la JVM que está alojada en la aplicación objetivo está configurada para usar el agente  JVMTI3 .  El agente intercepta los eventos cargados por la clase y reemplaza las definiciones originales por la versión instrumentada.  Instrumentación es realizada por el tejedor en el núcleo del debugger:  el agente envía el bytecode original al núcleo,  el tejedor implementa la clase y almacena estructuradamente la información en la base de datos de estructuras, y la clase modificada es enviada nuevamente a la JVM objetivo donde es eventualmente cargada (Fig. 1).  El agente toma la clase instrumentada del disco duro para reducir el número de turnos de los procesos internos.  Esto es  particularmente usado por el uso frecuente de las clases como algunas en el JDK.
+
+Instrumentación es realizando usando la librería de bytecode ASM [3]:  el código de captura  del evento es añadida antes y/o después de un patrón especifico de bytecode en el código original, tal como un campo de escritura o una llamada a un método.  Cuando el código instrumentado es ejecutado, los eventos son construidos a partir de sus atributos, serializados en un formato binario personalizado, y envía a través de un socket a la base de datos de eventos.
+
+	\item[Sincronización no ambigua del evento] Aunque los timestamps del evento son obtenidos a través del servicio de precisión en nano segundo de Java, es potencialmente carente de exactitud haciendo posible que varios eventos del mismo hilo tengan el mismo valor timestamps.  Como esto es incompatible con el esquema de indexación usado por TOD (sect. 4), cambiamos el valor original del timestamp por unos bits a la izquierda y se usan los bits libres para diferenciar eventos del mismo hilo que sea parte del mismo timestamp.  Cuando comparamos el timestamps de los eventos de diferentes hilos, usamos el timestamps original para preservar el orden de los hilos internos{inter-thread}.
+
+	\item[Alcance de la captura de huella] El esquema de instrumentación describe sobre es selectivo, eso es, es posible de proveer filtros definidos para los usuarios que limite el número de eventos emitidos.  Esta característica es descrita en la sección 7.
+
+	\item[Identificación del objeto] El agente JVMTI de TOD asigna un único identificador para cada objeto en la aplicación objetivo.  Como una excepción a este mecanismo las instancias de los objetos que representan valores primitivos (por ejemplo entero, decimal, etc) tales como las cadenas y exceptions son pasadas por valor.
+\end{description}
+
+			\subsubsection[Bajo nivel de consultas]{Bajo nivel de consultas: cursores y contadores}
+
+	Todas las características presentadas en la sección 2.1 (paso a paso, reconstitución de estado, reconstitución del control de flujo y encontrar la causa raíz) pueden ser expresados en términos de dos niveles de consultas de bajo nivel:  cursores y contadores, cuales introducimos a continuación.  Ambos basados en el filtrado de eventos de la huella de acuerdo a algunas condiciones de sus atributos.  Condiciones puede ser cualquier combinación booleana de simples predicados de la forma attribute = value, donde value es una constante.  Para la instancia (kind = FW o kind = BC) o target = obj145.  Si Q es una condición y e es un evento, definimos el predicado de la función Q(e) cuyo valor es verdadero si e verifica la condición Q.
+³ JVMTI: Interfaz de herramienta Máquina virtual de Java, parte de la plataforma de Java 5.
+	
+
+	La actual posición del cursor está representado por la linea negra entre los eventos cuatro y cinco.  Los Eventos que juntan el predicado del cursor están en gris.   llamamos sucesivamente a next() retornando los eventos 5,6,11 and 14;  llamando posNext(11) la posición del cursor entre los eventos 10 y 11; llamando posPrev(11) las posiciones estarán entre los eventos 11 y 12.
+
+Fig. 2 Navegación entre la unión de los eventos y el predicado del cursor 
+operación
+semántica {significado}
+next() / prev()
+Retorna el siguiente / previo unión de eventos y mueve el cursor hacia adelante / atrás.
+posNext(t) / posPrev(t)
+Mueve de modo que la siguiente llamada a next()/prev() retorna el primero/ultimo evento cuyo timestamp es mejor / peor que o igual que t.
+posNext(ev) / posPrev(ev)
+Mueve de modo que la siguiente llamada a next() / prev() retorne el evento dado.
+Tabla 2. operaciones de los cursores
+
+\begin{description}
+	\item[cursores] Definimos cursor(Q) como un iterador sobre los eventos que reúne la condición Q (Fig. 2).  Los cursores tienen una posición actual que está situada entre dos eventos consecutivos (o hacia el principio o el termino de la huella).  Un cursor soporta un número de operaciones de navegación, como las mostradas en la tabla 2.
+
+	\item[contadores] Entregan un intervalo de tiempo [t1,t2] dividido en s porciones de largo delta t = (t1 – t2) / s cada uno, y una condición Q para los atributos del evento, una consulta de contador regresa un arreglo de s enteros tales que s[i] = | {e pertenece a T: dentro(e, t1 + i*delta t) ^ Q(e)} | donde dentro(e,t) <=> e.ts >= t ^ e.ts < t + delta t.   Cada ranura del arreglo contiene el número de eventos unidos Q que ocurrieron durante la correspondiente porción de tiempo.
+\end{description}
+
+			\subsubsection{Alto nivel de consultas}
+
+	Ahora explicaremos como los cursores y los contadores son combinados algoritmicamente para implementar el alto nivel características descritas en la sección 2.1.  La sección 4 discute la agresiva optimización de la base de datos habilitado por sólo estar usando las consultas basadas en los filtros.
+
+Stepping.  Definimos stepper como un objeto que tiene un evento actual ev y soporta operaciones paso hacia adelante y hacia atrás paso dentro y paso sobre.  Por instancia, paso adelante dentro es definido como sigue:
+
+	c <-- cursor(thread = ev.thread)
+	c.posPrev(ev); ev <-- c.next()
+
+	Paso adelante sobre cambia la condición del cursor a: thread = ev.thread ^ depth = ev.depth.  Paso atrás es simétrico al paso hacía atrás.
+
+reconstitución de estado.  El valor v de una celda f de un objeto en particular o con tiempo t puede ser recuperado como sigue:
+
+	c <--cursor(kind = FW ^ fid = f ^ target = o)
+	c.posPrev(t); v <-- c.prev().val
+
+El estado de un objeto puede ser recuperado realizando la misma operación para cada uno de los campos.  La pila de marcos son reconstituidos en una manera similar, usando eventos de escritura variables instanciados de la celda de eventos escritos.
+
+reconstitución del control de flujo.  Los eventos que ocurren en el alto nivel del control de flujo de una llamada dada del método e  son recuperados de la siguiente manera:
+
+	c <-- cursor(thread = e.thread ^ depth = e.depth + 1)
+	c.posPrev(e.ts); cflow = <>
+	repeat
+		ev = c.next(); cflow <-- cflow union <ev>
+	until ev.kind = Bex
+
+Buscador de la causa inicial.  Determinando como a un campo ha sido asignado un valor indeseado es tan directo como la consulta de la reconstrucción del estado arriba:  en lugar de obtener el valor del evento de la celda escrita que asignó el valor al campo, el evento por si mismo se hace el actual, dando acceso para el contexto en eso momento.  La exploración atrás en el tiempo es la causa que pueda ir sobre esto, encima de la causa inicial.
+
+			\subsubsection{Componentes de la interfaz gráfica}
+
+	La interfaz de TOD puede ser usada independiente o como una añadidura para el IDE de Java llamado Eclipse (Fig. 3).  El navegador de usuario entre diferentes vistas utiliza las ampliamente conocidas metáforas de los navegadores web (hyper vínculos, botón hacia atrás).  Las vistas disponibles son:  inspector de objetos, control de flujo, y mural.  La vista de inspección de objetos muestra la reconstitución de objetos, y permite encontrar la causa inicial por valor de celdas a través de un conveniente ¿por qué? link a cada campo siguiente. La vista de control de flujo muestra una constitución del flujo de control y permite las operaciones de caminar así como encontrar la raíz de la causa por valores de variables locales.
+
+\begin{description}
+	\item[murals] Las descripciones del nivel alto son útil para marcar patrones anormales del comportamiento.  Sin embargo representando un número fuerte de eventos en un limitado número de píxeles es difícil.  Jerding y Stasko introdujeron la información del mural [9] como una “reducción de la representación de la información del espacio de un entero que ajusta enteramente dentro de una ventana mostrada ”.  Las características de los eventos murals de TOD, cuales son gráficas que muestran la evolución de la densidad del evento, o un número de eventos por unidad de tiempo, en un periodo dado.  Por instancia, TOD puede mostrar la densidad del evento por cada uno de los hilos para el conjunto de ejecución de la aplicación objetivo (Fig. 4), o la densidad de llamadas a métodos de un objeto en particular.  Las densidades son obtenidas a través  de los contadores (sección 3.3), donde el largo de las tajadas de tiempo correspondiente al espacio utilizado por un simple pixel de la barra en el mural.  El usuario puede hacer un acercamiento y ver el murals;  cuando el nivel de acercamiento permite distinguir los eventos individuales del usuario puede seleccionar un evento y ver el contexto dentro.
+\end{description}
+
+Botón (A) lanza el programa con el trace recording{recordando la huella}.  El usuario navega en el control de flujo (B) utilizando los botones de paso (C), o por medio de un click sobre el evento.  La linea correspondiente al evento actual está resaltada en la ventana del código (D).  El estado de la pila de marcos y el objeto actual es mostrado en la ventana (E).  El usuario puede saltar de una instrucción que defina el valor actual de una variable o campo por medio de un click en why? Siguiente eso (next to it).
+
+
+Fig. 3 Caminando con TOD en Eclipse
+
+de una vista de paso.  El mural de hilos tiene distintas aplicaciones, por ejemplo: entender la interoperación entre los hilos, o spotting dead y las livelocks.
+
+		\subsection{Alta velocidad en el crecimiento de la base de datos}
+
+Ahora describimos y analizamos el esquema de indexación de TOD, aun cuando permite la ejecución de consultas eficientes mientras estén rápidas enough {bien} disponible un alto rendimiento de grabar.  En la sección 5 se muestra como nuestra solución es favorable para la paralelización, y en la sección 6 reportes sobre el actual medidas de rendimiento.
+
+La necesidad para desarrollar una cimiento de base de datos especializada para TOD fue motivado por el pobre rendimiento de el uso profundo de la administración de sistemas de base de datos para nuestros propósitos: PostgreSQL y Oracle sólo soportan almacenar eventos a una taza de 50 y 500 eventos por segundo respectivamente, mientras nuestros registros la taza está en el orden de los cientos de millones de eventos por segundo [19].  Nuestro alto rendimiento especializado en los cimientos de la base de datos apalancan la siguiente especificaciones para el stream del evento de 
+
+El gráfico muestra la densidad de los eventos a lo largo del eje del tiempo
+
+una huella de ejecución: (a) el stream del evento es de sólo lectura, (b) los eventos al llegar son ordenados a partir del timestamp y (c) las consultas son limitadas por el filtrado.
+
+			\subsubsection{Indexación jerárquica de los eventos}
+
+TOD adoptó un esquema de indexación jerárquica que permite traer el evento juntando un predicado en timestamp ordenar sin siempre realmente accesando a los mismos eventos, reduciendo el proceso de costo de la consulta.
+
+\begin{description}
+	\item[Índices en los valores de los atributos] Usando la notación definida en la sección 3.2.  nosotros definimos el índice de T sobre aj como una función Ij: Dj --> (Do,N)* para j pertenece [1..k] so que Ij mapas alguna posibilidad valor v de aj una secuencia del indice entrada del formulario (ts,i).  Una entrada aparece en el indice Ij(v) si y sólo si ei.aj = v ^ ei.a0 = ts, donde ei es el i-esimo evento de T.  Adicionalmente, las entradas son ordenadas por ts.  Esos indice pueden ser usados directamente para recuperar todos los eventos que junten una consulta simple de la forma attribute = value; condiciones de composición son discutidas en la sección 4.3.
+
+	\item[Jerarquía de indexación por timestamp] Debido a que las consultas en TOD no consisten sólo en encontrar eventos juntados {finding matching}, pero también {also} cuando se encuentran los eventos juntados ocurre esto, después o antes de un punto particular en el tiempo, los índices son ordenado por sus valores de ts puede ser posible presentarlos en una búsqueda binaria para encontrar el timestamp deseado.
+
+Esto es siempre mucho más eficiente para extender el índice de estructura en una manera jerárquica (Fig. 5).  Cada índice jerárquico para el valor v del atributo aj contiene un número de niveles;  El índice Ij(v) describe sobre la constitución del nivel 0.  La entrada (ts, i) índice del nivel 0 son almacenados en el disco duro en pequeñas páginas, donde cada una contiene un número de entradas pertenecientes al mismo índice.  Cuando una página está llena, una entrada de la forma (ts,pid) es creado un índice en el nivel 1: ts es tomado desde la primera entrada (ts,i) de la reciente pagina llena, y pid es un puntero a esa página.  Las entradas del Nivel 1 están acumuladas en turno en una página; cuando una página del nivel es llenada, una entrada el Nivel 2 es creada, y así sucesivamente.  
+
+El nivel más alto siempre contiene una pagina sencilla, llamada la página raíz.  El número de niveles sobre el Nivel 0 de un índice es llamado la altura del índice.  
+\end{description}
+
+
+			\subsubsection{Costo de la creación de un índice}
+
+Los experimentos muestran que el tamaño promedio de un evento es ||e|| = 50 bytes.  El tamaño de una entrada de Nivel 0 es ||(ts,i)|| = 16 bytes (dos enteros de 64 bits).  El tamaño de las entradas de nivel superior es ||(ts,pid)|| = 12 bytes (pid está en 32 bits).  Las experiencias han determinado que el tamaño de una página óptima es P = 4096 bytes, por lo tanto el Nivel 0 las paginas de índices contienen 256 entradas, en los niveles superiores las páginas contienen 341 entradas y las paginas de eventos contienen 81 eventos en promedio.  La altura h de los índices es logarítmica con respecto al número de entradas y en la práctica nunca excedieron 5 (un índice de altura 5 permite para 341^5 ~ 4x10^12 entradas)  Asumiendo que la actual página de eventos puede residir {kept} en memoria, la página de eventos sólo causa una página escrita cada 81 eventos.
+
+Para cada evento que entre a la base de datos a lo más existirá k = |A|-1 índices que actualizar (como ese índice no separado sobre a0).  Los experimentos indican que sobre el promedio k = 10.  Dado ciertos eventos que llegan en orden con respecto a a0, actualizando un índice sólo pensando en adherir una entrada en el final de la página en el Nivel 0, y en el final de las paginas de nivel superior sólo cuando un página de nivel inferior es llenada.  La entrada/salida y costos de memoria de esta operación son los siguiente:
+
+\begin{itemize}
+	\item Si la página de índices actual para cada nivel puede ser residida en memoria, un costo de E/S es realizado sólo cuando una pagina está llena.  El número promedio de páginas accedidas por el evento entrante es:
+
+	\item Si sólo la pagina de índices está en el nivel 0 puede ser residida en memoria, cuando una página es llenada debe ser escrita, El nivel de la página leída es el 1, actualizado y leído tras el disco.  Analizando, el nivel más alto, tiene aproximadamente 0.13 accesos por evento.  
+
+	\item Si la pagina no puede ser residida en memoria, actualizar siempre implicará las tres operaciones acerca, entregando 20 accesos por evento.
+\end{itemize}
+
+	El aumento de memoria dedicado al buffering de página es por lo tanto lo más importante:  Hay una diferencia de  400 directorios entre la situaciones extremas arriba.
+
+	Ahora estimamos el número total de índices, sumatoria de j=1 hasta k sobre | Dj |, en orden de determinar cuántas páginas de buffer de memoria se necesita para permanecer en el caso donde por lo menos la página actual del nivel 0 de los ajustes de cada índices en memoria.  Los atributos de los eventos pueden ser divididos en dos categorías.  El dominio de los atributos estáticos (por ejemplo: behavior id {id de comportamiento}, field id {id de la celda}, type id {id de tipo},ubicación, etc.) depende solamente de la estructura del programa, no del tamaño de la huella.  En nuestras pruebas con la captura de las huellas en Eclipse, observamos que ellos acumulan cerca de 200.000 distintos valores.  Hay dos atributos dinámicos: thread id y object id.  Su dominio puede ser enorme dado que el programa objetivo puede repetitivamente crear y destruir objetos e hilos durante su ejecución.  Sin embargo, sólo una fracción de ellos puede ser usado en cualquier punto dado en el tiempo:  Todos los objetos que viven deben ajustarse dentro de la JVM's objetivo que está disponible en memoria y todos los hilos que viven deben ser razonablemente ejecutados por la CPU.  Así es solamente necesario tener un espacio para el índice del buffer de la pagina para los objetos e hilos usados actualmente.
+
+	El dominio de los  object id's claramente domina todos los dominios acumulados.  Si la aplicación objetivo regularmente usa un millón de objetos, cerca P*10^6 = 4GB de espacio es necesario para buffer, el cual es alcanzable por el actual mid-end systems.
+
+
+			\subsubsection{Costo de recuperación del evento}
+
+	Ahora presentamos los algoritmos que permiten recuperar eventos buscando un predicado arbitrario en la linea de tiempo con respecto al tamaño de los índices involucrados.  Los algoritmos son recuperados en orden respecto a su timestamp; la recuperación al revés tiene el mismo costo.
+
+\begin{description}
+	\item[condiciones simples] Para una condición simple de la forma aj = C donde C es una constante, podemos recuperar eventos buscados ordenados por timestamp, simplemente obteniendo las entradas (ts,i) desde Ij(C).  Si el evento actual es requerido (por ejemplo: por los cursores), estos son directamente recuperados desde la huella como ei; si no (por ejemplo: para los contadores) el evento no necesita ser accedido.  En cualquier caso, todas las entradas pueden ser recuperadas en la linea de tiempo, como el índice se explora simplemente una vez.
+
+	\item[condiciones conjuntivas] Para una conjunción booleana de una condición simple de la forma aj1 = C1 ^....^ajm = Cm, nosotros usamos una variante del algoritmo sort merge join[2], extensamente utilizado en la administración de los sistemas de bases de datos, para identificar los eventos buscados sin accesarlos (Algoritmo 1):  obtenemos el Ij1 (Cl) para cada una de las condiciones simples, y por cada uno mantenemos un puntero a la entrada actual (tsl,il).  Entonces iteramos: en cada paso verificamos si todos los il son iguales, en este caso añadimos cualquier resultado a las entradas actuales:  El echo que todos ellos point del mismo evento significa que el evento coincide con todas las condiciones.  Entonces avanzamos el puntero de índice cuya entrada actual tenga el mínimo valor para ts.  Como cada índice es revisado una sola vez y hay ninguna jerarquizado ciclo, merge join corre en tiempo lineal con respecto a la suma de los tamaños de los índices considerados.
+\end{description}
+
+
+		\subsection{Trabajando con huellas parciales}
+
+	Aunque TOD es diseñado para soportar grandes huella de ejecución, no siempre es practicable grabar cada evento:  El tiempo de ejecución mayor de una captura de evento es importante (Sección 6.2), como también lo es los requerimientos de almacenamiento.  La idea de las huellas parciales es que nosotros podemos levantar el echo que durante el desarrollo de una pieza de software, algunos componentes son verificados, por ejemplo: maduro y bien probado, y eso puede ser no necesario para generar y almacenar eventos para las actividades internas de esos componentes.  Esta sección muestra como el alcance de la captura de la huella puede facilitar el debugging y como TOD hace posible el trabajo con huellas parciales.
+
+			\subsubsection[Ejemplo de motivación]{Ejemplo de motivación: debugging el plugin de TOD en eclipse}
+
+Consideremos como un ejemplo de debugging el mismo plugin de TODO en eclipse.  Este ejemplo es bastante representativo de un componente de desarrollo existente, probado, frameworks o plugin arquitecturas.  Aquí, nosotros estamos fuertemente interesados en dos tipos de bugs:  aquellos que son internos del plugin y aquellos que relacionados con la interacción entre el plugin y la plataforma.  En el primer caso, nosotros no necesitamos capturar eventos que ocurren dentro de la plataforma ECLIPSE porque eso es considerado como probado.  En el segundo caso, nosotros tenemos que grabar eventos que ocurren dentro de la plataforma, pero no necesariamente todos:  puede que sea bastante los eventos que se deban grabar de la Java Tooling(JDT), o solamente alguna parte de ella, por instanciar la interfaz de usuario.
+
+Figura 10 muestra el impacto de diferentes alcances de estrategias de la huella en comparación con el número de eventos emitidos y el exceso del tiempo de ejecución, durante diferentes etapas de la ejecución del plugin de TOD.  En este pequeño experimento podemos ver que por apropiado que sea el alcance de la captura de la huella, hay sobre cinco ordenes de magnitud de diferentes en el número de eventos emitidos, y que los aumentos en el exceso del tiempo de ejecución puede ser sobre 20 tiempos, realza grandemente la aplicabilidad de TOD.
+
+faltan agregar cosas.
 
 \chapter{pyTOD}
 	\section{Arquitectura de pyTOD}
