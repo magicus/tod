@@ -191,6 +191,7 @@ public class DebugFlags
 	
 	static
 	{
+		if (SWALLOW == true) System.err.println("******* Warning: SWALLOW (DebugFlags)");
 		if (SKIP_EVENTS == true) System.err.println("******* Warning: SKIP_EVENTS (DebugFlags)");
 		if (DISABLE_REORDER == true) System.err.println("******* Warning: DISABLE_REORDER (DebugFlags)");
 		if (DISABLE_INDEXES == true) System.err.println("******* Warning: DISABLE_INDEXES (DebugFlags)");
