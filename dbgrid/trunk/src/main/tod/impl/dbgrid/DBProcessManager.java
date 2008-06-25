@@ -262,6 +262,7 @@ public class DBProcessManager
 							TODConfig.COLLECTOR_PORT.javaOpt(getConfig()),
 							TODConfig.WITH_ASPECTS.javaOpt(getConfig()),
 							TODConfig.WITH_BYTECODE.javaOpt(getConfig()),
+							TODConfig.SERVER_TYPE.javaOpt(getConfig()),
 							"-Ddb.scope.check=" + DeploymentConfig.getDbScopeCheck(),
 							// theJDWP ?
 							// "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"

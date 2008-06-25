@@ -5,7 +5,7 @@
    name="pyTOD Eclipse Plugin"
    version="0.1"
    provider-name="Milton Inostroza"
-   class="tod.plugin.pytod.Activator">
+   class="tod.plugin.pytod.PyTODPlugin">
    <requires>
       <import plugin="org.python.pydev"/>
       <import plugin="org.python.pydev.core"/>

@@ -59,7 +59,6 @@ public class PyTODLaunchDelegate_PythonRun extends RegularLaunchConfigurationDel
     public void launch(ILaunchConfiguration aConfiguration, String aMode,
 			ILaunch aLaunch, IProgressMonitor monitor) throws CoreException
 	{
-
 		if (monitor == null)
 		{
 			monitor = new NullProgressMonitor();
@@ -72,24 +71,15 @@ public class PyTODLaunchDelegate_PythonRun extends RegularLaunchConfigurationDel
 			{ 
 				throw new RuntimeException("Could not perform setup."); 
 			}
-		}
-		finally
-		{
-			LaunchUtils.tearDown();
-		}
 
-		monitor.beginTask("Preparing configuration", 3);
-		TODConfig theConfig = TODConfigLaunchTab.readConfig(aConfiguration);
-		ISession theSession = LaunchUtils.getSession();
-		ConnectionInfo theConnectionInfo = theSession.getConnectionInfo();
+			monitor.beginTask("Preparing configuration", 3);
+			TODConfig theConfig = TODConfigLaunchTab.readConfig(aConfiguration);
+			ISession theSession = LaunchUtils.getSession();
+			ConnectionInfo theConnectionInfo = theSession.getConnectionInfo();
+			
+			String theHostName = theConnectionInfo.getHostName();
+			int thePort = theConnectionInfo.getPort();
 		
-		String theHostName = theConnectionInfo.getHostName();
-		int thePort = theConnectionInfo.getPort();
-		
-		// Aquí
-
-		try
-		{
 			PythonRunnerConfig runConfig = 
 				new PythonRunnerConfig(aConfiguration, aMode, getRunnerConfigRun());
 
@@ -122,6 +112,10 @@ public class PyTODLaunchDelegate_PythonRun extends RegularLaunchConfigurationDel
 				}
 			});
 			finishLaunchWithError(aLaunch);
+		}
+		finally
+		{
+			LaunchUtils.tearDown();
 		}
 	}
     
