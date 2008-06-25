@@ -905,8 +905,8 @@ class MetaDescriptor(type):
         hT.itsPacker.pack_hyper(theCurrentTimestamp)
         hT.itsPacker.pack_int(theThreadId)
         super(MetaDescriptor, self).__setattr__(aName, aValue)
-        #if hT.FLAG_DEBUGG:
-        if True:
+        if hT.FLAG_DEBUGG:
+        #if True:
             print hT.itsEvents['set'],
             print hT.itsObjects['classAttribute'],
             print Id,
