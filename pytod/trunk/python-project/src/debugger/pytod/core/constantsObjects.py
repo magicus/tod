@@ -21,7 +21,8 @@ objects = {
            'function':3,
            'local':4,
            'probe':5,
-           'thread':6
+           'thread':6,
+           'classAttribute':7
            }
 
 dataTypes = {
