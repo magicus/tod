@@ -20,11 +20,11 @@ class clase1(object):
         print self.z
         k = i + j
         self.x = k
+        """
         try:
             o = self.foo()
         except:
             o = 1
-        """
         self.foo()
         """
         return k
@@ -32,7 +32,7 @@ class clase1(object):
     def foo(self):
         y = 1/0
 
-
+"""
 class Corriente(object):
     "Clase Corriente. Nota: Llamar con from pinchpython import *"
     __num_corrientes = -1
@@ -60,7 +60,7 @@ class Corriente(object):
 class clase2(object):
     def __init__(self):
         y = 1
-"""   
+   
         
 class clase3(object):
     def __init__(self):
@@ -71,7 +71,7 @@ class clase3(object):
 if __name__ == '__main__':
     a = clase1(1)
     a.metodo(10,20,30,40)
-    c = Corriente()
+    #c = Corriente()
     #b = clase2()
     #c = clase3()
     #hT.__printHunter__()
