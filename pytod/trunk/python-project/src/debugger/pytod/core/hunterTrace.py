@@ -806,7 +806,7 @@ class hunterTrace(object):
                 if not self.__inClass__(theCode):
                     #registramos la definicion de la clase
                     theLocals.update({'__setattr__':Descriptor.__dict__['__setattr__']})
-                    theLocals.update({'__metaclass__':MetaClass})
+                    theLocals.update({'__metaclass__':MetaDescriptor})
                     self.__registerClass__(theCode,theLocals)
             else:
                 theObject = self.__getObject__(theCode)
@@ -865,10 +865,67 @@ hT = hunterTrace(
                  '127.0.0.1',
                  8058)
 
-class MetaClass(type):
+class MetaDescriptor(type):
     def __setattr__(self, aName, aValue):
-        print 'Meta notificacion', aName, aValue
-        super(MetaClass, self).__setattr__(aName, aValue)
+        import sys
+        theFrame = sys._getframe()
+        theCode = theFrame.f_back.f_code
+        theCurrentLasti = theFrame.f_back.f_lasti
+        theCurrentDepth = hT.__getDepthFrame__(theFrame.f_back) + 1
+        theCurrentTimestamp = hT.__convertTimestamp__(time.time())
+        theParentTimestamp = hT.__getTimestampParentFrame__(theFrame)
+        theThreadId = hT.__getThreadId__(thread.get_ident())
+        theKey = self.__name__
+        theKey = hT.__getClassKey__(theKey)
+        if theKey == None:
+            return
+        theObject = hT.itsClass[theKey]
+        theObjectId = theObject.__getId__()
+        theBehaviorId = hT.__getObjectId__(theCode)
+        sys.settrace(None)
+        theObject.classAttributes.__updateClassAttribute__({aName:-1},theObjectId)
+        Id = theObject.classAttributes[aName]
+        if not hT.itsProbe.has_key((theCurrentLasti,theBehaviorId)):
+            theProbeId = hT.__registerProbe__(theCurrentLasti,
+                                              theBehaviorId,
+                                              theFrame.f_lineno)
+        else:
+            theProbeId = hT.itsProbe[(theCurrentLasti,theBehaviorId)]          
+        hT.itsPacker.reset()
+        hT.itsPacker.pack_int(hT.itsEvents['set'])
+        hT.itsPacker.pack_int(hT.itsObjects['classAttribute'])
+        hT.itsPacker.pack_int(Id)
+        #hT.itsPacker.pack_int(self.__pyTOD__)
+        theDataType = hT.__getDataType__(aValue)
+        hT.itsPacker.pack_int(theDataType)
+        thePackValue = hT.__packValue__(theDataType, aValue)
+        hT.itsPacker.pack_int(theProbeId)
+        hT.itsPacker.pack_hyper(theParentTimestamp)        
+        hT.itsPacker.pack_int(theCurrentDepth)
+        hT.itsPacker.pack_hyper(theCurrentTimestamp)
+        hT.itsPacker.pack_int(theThreadId)
+        super(MetaDescriptor, self).__setattr__(aName, aValue)
+        #if hT.FLAG_DEBUGG:
+        if True:
+            print hT.itsEvents['set'],
+            print hT.itsObjects['classAttribute'],
+            print Id,
+            print theBehaviorId,
+            print theDataType,
+            print thePackValue,
+            print theProbeId,
+            print theParentTimestamp,
+            print theCurrentDepth,
+            print theCurrentTimestamp,
+            print theThreadId
+            raw_input()
+        try:
+            #hT.itsSocket.sendall(hT.itsPacker.get_buffer())
+            pass
+        except:
+            print 'TOD está durmiendo :-(', theCode.co_name    
+        sys.settrace(hT.__trace__)
+        
 
 class Descriptor(object):
 
