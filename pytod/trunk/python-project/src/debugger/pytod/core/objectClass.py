@@ -12,6 +12,7 @@ class Class(object):
 
     def __init__(self, aHt, aClassId, aCode, aLnotab):
         self.hT = aHt
+        self.classAttributes = Dictionary(self.hT)
         self.attributes = Dictionary(self.hT)
         self.method = Dictionary(self.hT)
         self.lnotab = aLnotab
