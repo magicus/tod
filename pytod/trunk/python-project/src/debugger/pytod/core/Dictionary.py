@@ -92,7 +92,8 @@ class Dictionary(dict):
                         print theKey 
                         raw_input()                          
                     try:       
-                        self.hT.itsSocket.sendall(self.hT.itsPacker.get_buffer())
+                        #self.hT.itsSocket.sendall(self.hT.itsPacker.get_buffer())
+                        pass
                     except:
                         print 'TOD está durmiendo :-('
                         
