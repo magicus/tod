@@ -32,7 +32,6 @@ class clase1(object):
     def foo(self):
         y = 1/0
 
-"""
 class Corriente(object):
     "Clase Corriente. Nota: Llamar con from pinchpython import *"
     __num_corrientes = -1
@@ -41,6 +40,7 @@ class Corriente(object):
     def __init__(self):
         self.__class__.__num_corrientes += 1
         self.__MCP = 0
+"""
         self.__T0 = 0
         self.__Tf = 0
         self.__h = 0
@@ -71,7 +71,7 @@ class clase3(object):
 if __name__ == '__main__':
     a = clase1(1)
     a.metodo(10,20,30,40)
-    #c = Corriente()
+    c = Corriente()
     #b = clase2()
     #c = clase3()
     #hT.__printHunter__()
