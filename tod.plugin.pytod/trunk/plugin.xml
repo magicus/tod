@@ -29,5 +29,12 @@
             id="tod.plugin.pytod.launchConfigurationTabGroup.PythonRun"
             type="org.python.pydev.debug.regularLaunchConfigurationType"/>
    </extension>
+   <extension
+         point="tod.plugin.SourceRevealer">
+      <revealer
+            class="tod.plugin.pytod.PythonSourceRevealer"
+            id="tod.plugin.pytod.revealer">
+      </revealer>
+   </extension>
 
 </plugin>

@@ -34,6 +34,8 @@ import org.python.pydev.plugin.PydevPlugin;
 import org.python.pydev.plugin.nature.PythonNature;
 import org.python.pydev.runners.SimpleRunner;
 
+import tod.core.session.ConnectionInfo;
+
 /**
  * Launches Python process, and connects it to Eclipse's debugger.
  * Waits for process to complete.
@@ -68,8 +70,10 @@ public class PyTODRunner {
      * 
      * The code is modeled after Ant launching example.
 	 */
-	public static void run(final PythonRunnerConfig config, ILaunch launch, IProgressMonitor monitor) throws CoreException, IOException {
-        //let's check if the interpreter is valid.
+	public static void run(final PythonRunnerConfig config, ILaunch launch, IProgressMonitor monitor, ConnectionInfo aConnection) throws CoreException, IOException {
+        String[] theCommandLine;
+        String[] theCurrentCommandLine;
+		//let's check if the interpreter is valid.
         final IInterpreterManager interpreterManager = PythonNature.getPythonNature(config.project).getRelatedInterpreterManager();
         if(!interpreterManager.hasInfoOnInterpreter(config.interpreterLocation)){
             final Display display = Display.getDefault();
@@ -98,7 +102,18 @@ public class PyTODRunner {
     			runUnitTest(config, launch, monitor);
                 
     		}else { //default - just configured by command line (the others need special attention)
-    	        doIt(config, monitor, config.envp, config.getCommandLine(true), config.workingDirectory, launch);
+    			//System.out.println(config.getCommandLineAsString());
+    			theCurrentCommandLine = config.getCommandLine(true);
+    			theCommandLine = new String[theCurrentCommandLine.length+1];
+    			theCommandLine[0] = theCurrentCommandLine[0];
+    			theCommandLine[1] = theCurrentCommandLine[1];
+    			theCommandLine[2] = "/media/WD Passport/eclipse/workspace/python-project/src/testcase/wrapper.py";
+    			theCommandLine[3] = theCurrentCommandLine[2];
+//    			theCommandLine[4] = "-h";
+//    			theCommandLine[5] = aConnection.getHostName();
+//    			theCommandLine[6] = "-p";
+//    			theCommandLine[7] = ""+aConnection.getPort();    			
+    	        doIt(config, monitor, config.envp, theCommandLine, config.workingDirectory, launch);
     		}
         }catch (final JDTNotAvailableException e) {
             PydevPlugin.log(e);

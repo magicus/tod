@@ -178,6 +178,17 @@ public class PythonTODServer extends TODServer
 			}			
 
 		}
+		
+		public void registerStaticField(XDRInputStream aInputStream)
+		{
+			IMutableClassInfo theClass;
+			try {
+//				theClass.addField(aId, aName, aType)
+//				itsLogCollector.
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
+		}
 
 		public void registerMethod(XDRInputStream aInputStream)
 		{

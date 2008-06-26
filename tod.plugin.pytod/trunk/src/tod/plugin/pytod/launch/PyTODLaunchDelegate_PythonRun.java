@@ -77,8 +77,8 @@ public class PyTODLaunchDelegate_PythonRun extends RegularLaunchConfigurationDel
 			ISession theSession = LaunchUtils.getSession();
 			ConnectionInfo theConnectionInfo = theSession.getConnectionInfo();
 			
-			String theHostName = theConnectionInfo.getHostName();
-			int thePort = theConnectionInfo.getPort();
+			//String theHostName = theConnectionInfo.getHostName();
+			//int thePort = theConnectionInfo.getPort();
 		
 			PythonRunnerConfig runConfig = 
 				new PythonRunnerConfig(aConfiguration, aMode, getRunnerConfigRun());
@@ -86,7 +86,7 @@ public class PyTODLaunchDelegate_PythonRun extends RegularLaunchConfigurationDel
 			monitor.worked(1);
 			try
 			{
-				PyTODRunner.run(runConfig, aLaunch, monitor);
+				PyTODRunner.run(runConfig, aLaunch, monitor, theConnectionInfo);
 			}
 			catch (IOException e)
 			{

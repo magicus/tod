@@ -91,6 +91,7 @@
       <import plugin="org.eclipse.jdt.junit.runtime" export="true"/>
       <import plugin="org.eclipse.pde.ui" export="true"/>
    </requires>
+   <extension-point id="SourceRevealer" name="Source Revealer" schema="schema/SourceRevealer.exsd"/>
 
    <extension
          point="org.eclipse.ui.views">
@@ -279,6 +280,13 @@
             modes="tod,run"
             name="Connect to Database">
       </launchConfigurationType>
+   </extension>
+   <extension
+         point="tod.plugin.SourceRevealer">
+      <revealer
+            class="tod.plugin.JavaSourceRevealer"
+            id="tod.plugin.JavaRevealer">
+      </revealer>
    </extension>
 
 </plugin>
