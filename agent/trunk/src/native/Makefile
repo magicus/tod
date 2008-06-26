@@ -16,6 +16,9 @@ include $(ENV_DEF)
 SHARED_MAGIC = -shared
 STATIC_MAGIC = -Wl,-Bstatic 
 
+#Base name for the tod-agent library
+AGENT_NAME = tod-agent
+
 ifeq ($(PLATFORM), win32)
 	CXX = i586-mingw32msvc-g++
 
@@ -54,8 +57,12 @@ endif
 ifeq ($(PLATFORM), linux_x64)
 	CXXFLAGS += -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux/
 	LDFLAGS += -static-libgcc 
+
+	# To do a static version we would have to recompile the whole libc with -fPIC...
+	# So it is dynamic for now
 	STATIC_MAGIC = 
 
+	AGENT_NAME = tod-agent_x64
 	LIBPREFIX = lib
 	LIBEXT = so
 endif
@@ -65,13 +72,15 @@ CXXFLAGS += -I$(BOOST_INCLUDES)
 
 LDFLAGS += -fPIC
 
+AGENT_LIBNAME = $(LIBPREFIX)$(AGENT_NAME).$(LIBEXT)
+
 LDFLAGS_BOOST += \
 	-L$(BOOST_LIBS) \
 	$(STATIC_MAGIC) -lboost_system-$(BOOST_FLAVOR)-$(BOOST_VERSION) \
 	$(STATIC_MAGIC) -lboost_thread-$(BOOST_FLAVOR)-$(BOOST_VERSION) \
 	$(STATIC_MAGIC) -lboost_filesystem-$(BOOST_FLAVOR)-$(BOOST_VERSION)
 
-bci-agent-objects = \
+tod-agent-objects = \
 	$(PLATFORM)/bci-agent.o \
 	$(PLATFORM)/utils.o \
 	$(PLATFORM)/md5.o \
@@ -79,18 +88,21 @@ bci-agent-objects = \
 
 ##############
 
-all: bci-agent #array-cast
+all: tod-agent
 
-bci-agent: dirs $(bci-agent-objects)
-	$(CXX) $(SHARED_MAGIC) -o $(PLATFORM)/$(LIBPREFIX)bci-agent.$(LIBEXT) $(bci-agent-objects) $(LDFLAGS) $(LDFLAGS_BOOST)
-	cp $(PLATFORM)/$(LIBPREFIX)bci-agent.$(LIBEXT) ../..
+tod-agent: dirs $(tod-agent-objects)
+	$(CXX) $(SHARED_MAGIC) -o $(PLATFORM)/$(AGENT_LIBNAME) $(tod-agent-objects) $(LDFLAGS) $(LDFLAGS_BOOST)
+	cp $(PLATFORM)/$(AGENT_LIBNAME) ../..
 
 dirs:
 	mkdir -p $(PLATFORM)
 
+push: all
+	./push.sh $(PLATFORM)/$(AGENT_LIBNAME) $(AGENT_LIBNAME)
+
 clean:
-	rm -f ../../libbci-agent.so ../../libnative-stream.so ../../bci-agent.dll ../../native-stream.dll
-	rm -rf linux win32 macos
+	rm -f ../../*.so ../../*.dll 
+	rm -rf linux linux_x64 win32 macos
 
 ############## 
 
