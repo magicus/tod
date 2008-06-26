@@ -157,7 +157,6 @@ JNIEXPORT void JNICALL Java_tod_utils_ArrayCast_i2ba (
 	env->ReleasePrimitiveArrayCritical(dest, d, 0);
 }
 
-
 #ifdef __cplusplus
 }
 #endif
