@@ -137,12 +137,12 @@ class hunterTrace(object):
 
     def __depthFrame__(self, aFrame):
         theBackFrame = aFrame.f_back
-        if theBackFrame.f_locals.has_key('__depthFrame__'):
-            theCurrentDepth = theBackFrame.f_locals['__depthFrame__']
-            aFrame.f_locals['__depthFrame__'] = theCurrentDepth + 1
+        if theBackFrame.f_locals.has_key('__depth__'):
+            theCurrentDepth = theBackFrame.f_locals['__depth__']
+            aFrame.f_locals['__depth__'] = theCurrentDepth + 1
         else:
-            aFrame.f_locals['__depthFrame__'] = 1
-        return aFrame.f_locals['__depthFrame__']
+            aFrame.f_locals['__depth__'] = 1
+        return aFrame.f_locals['__depth__']
     
     def __functionCall__(self, 
                          aCode, 
@@ -251,7 +251,7 @@ class hunterTrace(object):
 
     def __getDepthFrame__(self, aFrame):
         try:
-            return aFrame.f_locals['__depthFrame__']
+            return aFrame.f_locals['__depth__']
         except:
             return -1
     
@@ -698,6 +698,8 @@ class hunterTrace(object):
             sys.settrace(None)
             return
         theCode = aFrame.f_code
+        if theCode.co_name == '<module>':
+            return
         theLocals = aFrame.f_locals
         theGlobals = aFrame.f_globals
         theDepth = self.__depthFrame__(aFrame)
