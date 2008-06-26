@@ -51,8 +51,19 @@ ifeq ($(PLATFORM), linux)
 	LIBEXT = so
 endif
 
-CXXFLAGS += -O3 
+ifeq ($(PLATFORM), linux_x64)
+	CXXFLAGS += -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux/
+	LDFLAGS += -static-libgcc 
+	STATIC_MAGIC = 
+
+	LIBPREFIX = lib
+	LIBEXT = so
+endif
+
+CXXFLAGS += -O3 -fPIC
 CXXFLAGS += -I$(BOOST_INCLUDES)
+
+LDFLAGS += -fPIC
 
 LDFLAGS_BOOST += \
 	-L$(BOOST_LIBS) \
