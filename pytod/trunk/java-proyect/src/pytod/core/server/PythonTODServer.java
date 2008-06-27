@@ -69,6 +69,8 @@ public class PythonTODServer extends TODServer
 	private static final int OBJECT_LOCAL = 4;
 	private static final int OBJECT_PROBE = 5;
 	private static final int OBJECT_THREAD = 6;
+	private static final int OBJECT_STATICFIELD = 7;
+	private static final int OBJECT_OBJECT = 8;
 	//dataTypes
 	private static final int DATA_INT = 0;
 	private static final int DATA_STR = 1;
@@ -179,12 +181,19 @@ public class PythonTODServer extends TODServer
 		public void registerStaticField(XDRInputStream aInputStream)
 		{
 			IMutableClassInfo theClass;
-			try {
-//				theClass.addField(aId, aName, aType)
-//				itsLogCollector.
-			} catch (Exception e) {
-				// TODO: handle exception
+			try
+			{
+				int attributeId = aInputStream.readInt();
+				int parentId = aInputStream.readInt();
+				String attributeName = new String(aInputStream.readString());	
+				theClass = itsStructureDatabase.getClass(parentId, true);
+				theClass.addField(attributeId, attributeName, null, true);
+				System.out.println("Registrando un atributo estatico con id "+attributeId);
 			}
+			catch (Exception e)
+			{
+				throw new RuntimeException(e);
+			}	
 		}
 
 		public void registerMethod(XDRInputStream aInputStream)
@@ -267,6 +276,31 @@ public class PythonTODServer extends TODServer
 				int sysId = theStream.readInt();
 				itsLogCollector.thread(threadId, sysId, "()V");
 				System.out.println("Registrando thread");
+			}
+			catch (Exception e)
+			{
+				throw new RuntimeException(e);
+			}			
+
+		}
+
+		public void registerObject(XDRInputStream aInputStream)
+		{
+			XDRInputStream theStream = aInputStream;
+			try
+			{
+				int theTypeId = aInputStream.readInt();
+				int theId = aInputStream.readInt();
+				Object theValue = getObjectValue(theTypeId, aInputStream);
+				System.out.println(theValue);
+				long theCurrentTimestamp = aInputStream.readLong();
+				byte[] theByteValue = ValueWriter.serialize(theValue);
+				itsLogCollector.register(
+						theId,
+						theByteValue, 
+						theCurrentTimestamp, 
+						true);
+				System.out.println("Registrando un nuevo objeto" + theId + "" + theValue);
 			}
 			catch (Exception e)
 			{
@@ -472,30 +506,86 @@ public class PythonTODServer extends TODServer
 			}
 		}
 		
+		public void setStaticField(XDRInputStream aInputStream)
+		{
+			XDRInputStream theStream = aInputStream;
+			try
+			{
+				int theStaticFieldId = theStream.readInt();
+				System.out.println(theStaticFieldId);
+				int theTypeId = aInputStream.readInt();
+				System.out.println(theTypeId);
+				Object theValue = getObjectValue(theTypeId, aInputStream);
+				int theProbeId = theStream.readInt();
+				long theParentTimestampFrame = theStream.readLong();
+				int theDepth = theStream.readInt();
+				long theCurrentTimestamp = theStream.readLong();
+				int theThreadId = theStream.readInt();
+				itsLogCollector.fieldWrite(
+						theThreadId, 
+						theParentTimestampFrame, 
+						(short)theDepth, 
+						theCurrentTimestamp, 
+						null, 
+						theProbeId, 
+						theStaticFieldId, 
+						null, 
+						theValue);
+				System.out.println("modificando atributo estatico"+ theStaticFieldId);
+			}
+			catch (Exception e)
+			{
+				throw new RuntimeException(e);
+			}			
+
+		}
+		
 		public void setAttribute(XDRInputStream aInputStream)
 		{
 			XDRInputStream theStream = aInputStream;
 			try
 			{
+				Object theValue;
+				int theValueId;
 				int attributeId = theStream.readInt();
 				int targetId = theStream.readInt();
 				int typeId = aInputStream.readInt();
-				Object theValue = getObjectValue(typeId, aInputStream);
-				int probeId = theStream.readInt();
-				long parentTimeStampFrame = theStream.readLong();
-				int depth = theStream.readInt();
-				long currentTimeStamp = theStream.readLong();
-				int threadId = theStream.readInt();
-				itsLogCollector.fieldWrite(
-						threadId, 
-						parentTimeStampFrame, 
-						(short)depth, 
-						currentTimeStamp, 
-						null, 
-						probeId, 
-						attributeId, 
-						new ObjectId(targetId), 
-						theValue);
+				if (typeId == 1) {
+					theValueId = aInputStream.readInt();
+					int probeId = theStream.readInt();
+					long parentTimeStampFrame = theStream.readLong();
+					int depth = theStream.readInt();
+					long currentTimeStamp = theStream.readLong();
+					int threadId = theStream.readInt();
+					itsLogCollector.fieldWrite(
+							threadId, 
+							parentTimeStampFrame, 
+							(short)depth, 
+							currentTimeStamp, 
+							null, 
+							probeId, 
+							attributeId, 
+							new ObjectId(targetId), 
+							new ObjectId(theValueId));				
+				} 
+				else {
+					theValue = getObjectValue(typeId, aInputStream);
+					int probeId = theStream.readInt();
+					long parentTimeStampFrame = theStream.readLong();
+					int depth = theStream.readInt();
+					long currentTimeStamp = theStream.readLong();
+					int threadId = theStream.readInt();
+					itsLogCollector.fieldWrite(
+							threadId, 
+							parentTimeStampFrame, 
+							(short)depth, 
+							currentTimeStamp, 
+							null, 
+							probeId, 
+							attributeId, 
+							new ObjectId(targetId), 
+							theValue);
+				}
 				System.out.println("modificando atributo "+ attributeId);
 			}
 			catch (Exception e)
@@ -632,6 +722,11 @@ public class PythonTODServer extends TODServer
 						case OBJECT_THREAD:
 							registerThread(itsStream);
 							break;
+						case OBJECT_STATICFIELD:
+							registerStaticField(itsStream);
+							break;
+						case OBJECT_OBJECT:
+							registerObject(itsStream);
 						default:
 							break;
 						}	
@@ -658,6 +753,9 @@ public class PythonTODServer extends TODServer
 						int theObject = itsStream.readInt();
 						switch (theObject)
 						{
+						case OBJECT_STATICFIELD:
+							setStaticField(itsStream);
+							break;
 						case OBJECT_ATTRIBUTE:
 							setAttribute(itsStream);
 							break;
