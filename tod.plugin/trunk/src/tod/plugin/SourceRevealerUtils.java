@@ -31,12 +31,13 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.eclipse.ui.texteditor.ITextEditor;
 
 import tod.core.database.structure.SourceRange;
 import tod.core.session.IProgramLaunch;
@@ -158,5 +159,45 @@ public class SourceRevealerUtils
 
 		return null;
 	}
+
+	/**
+	 * Returns all the java projects of the given session.
+	 */
+	public static List<IJavaProject> getJavaProjects(ISession aSession)
+	{
+		List<IJavaProject> theJavaProjects = new ArrayList<IJavaProject>();
+		
+	    Set<IProgramLaunch> theLaunches = aSession.getLaunches();
+	    for (IProgramLaunch theLaunch : theLaunches)
+		{
+	    	EclipseProgramLaunch theEclipseLaunch = (EclipseProgramLaunch) theLaunch;
+	    	for (IProject theProject : theEclipseLaunch.getProjects())
+			{
+	    		IJavaProject theJavaProject = JavaCore.create(theProject);
+				if (theJavaProject != null && theJavaProject.exists())
+				{
+					theJavaProjects.add(theJavaProject);
+				}
+			}
+		}
+
+	    return theJavaProjects;
+	}
+
+	/**
+	 * Reveals the specified line in the given editor
+	 */
+	public static void revealLine(IEditorPart aEditor, int aLine) throws BadLocationException
+	{
+		if (aEditor instanceof ITextEditor)
+		{
+			ITextEditor theTextEditor = (ITextEditor) aEditor;
+			IDocumentProvider theProvider = theTextEditor.getDocumentProvider();
+			IDocument theDocument = theProvider.getDocument(theTextEditor.getEditorInput());
+			int theStart = theDocument.getLineOffset(aLine-1);
+			theTextEditor.selectAndReveal(theStart, 0);
+		}
+	}
+	
 
 }

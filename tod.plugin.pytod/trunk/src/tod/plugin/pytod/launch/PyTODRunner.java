@@ -8,7 +8,10 @@ package tod.plugin.pytod.launch;
 import java.io.File;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
@@ -35,6 +38,7 @@ import org.python.pydev.plugin.nature.PythonNature;
 import org.python.pydev.runners.SimpleRunner;
 
 import tod.core.session.ConnectionInfo;
+import tod.plugin.pytod.PyTODPlugin;
 
 /**
  * Launches Python process, and connects it to Eclipse's debugger.
@@ -71,15 +75,15 @@ public class PyTODRunner {
      * The code is modeled after Ant launching example.
 	 */
 	public static void run(final PythonRunnerConfig config, ILaunch launch, IProgressMonitor monitor, ConnectionInfo aConnection) throws CoreException, IOException {
-        String[] theCommandLine;
-        String[] theCurrentCommandLine;
 		//let's check if the interpreter is valid.
         final IInterpreterManager interpreterManager = PythonNature.getPythonNature(config.project).getRelatedInterpreterManager();
-        if(!interpreterManager.hasInfoOnInterpreter(config.interpreterLocation)){
+        if(!interpreterManager.hasInfoOnInterpreter(config.interpreterLocation))
+        {
             final Display display = Display.getDefault();
-            display.syncExec(new Runnable(){
-
-                public void run() {
+            display.syncExec(new Runnable()
+            {
+                public void run() 
+                {
                     String msg = "The interpreter '%s' is not correctly configured as a '%s' interpreter.\n\n" +
                             "Reasons: If it is an old interpreter, you can open the run dialog (Menu: run > run) " +
                             "and choose a new interpreter in the arguments tab.\n\n" +
@@ -94,36 +98,49 @@ public class PyTODRunner {
             return;
         }
         
-        try{
-    		if (config.isDebug) {
+        try
+        {
+    		if (config.isDebug) 
+    		{
     		    runDebug(config, launch, monitor);
-                
-    		}else if (config.isUnittest()) { 
-    			runUnitTest(config, launch, monitor);
-                
-    		}else { //default - just configured by command line (the others need special attention)
-    			//System.out.println(config.getCommandLineAsString());
-    			theCurrentCommandLine = config.getCommandLine(true);
-    			theCommandLine = new String[theCurrentCommandLine.length+1];
-    			theCommandLine[0] = theCurrentCommandLine[0];
-    			theCommandLine[1] = theCurrentCommandLine[1];
-    			theCommandLine[2] = "/media/WD Passport/eclipse/workspace/python-project/src/testcase/wrapper.py";
-    			theCommandLine[3] = theCurrentCommandLine[2];
-//    			theCommandLine[4] = "-h";
-//    			theCommandLine[5] = aConnection.getHostName();
-//    			theCommandLine[6] = "-p";
-//    			theCommandLine[7] = ""+aConnection.getPort();    			
-    	        doIt(config, monitor, config.envp, theCommandLine, config.workingDirectory, launch);
     		}
-        }catch (final JDTNotAvailableException e) {
+    		else if (config.isUnittest()) 
+    		{ 
+    			runUnitTest(config, launch, monitor);
+    		}
+    		else 
+    		{ 
+    			//default - just configured by command line (the others need special attention)
+    			
+    			// Insert wrapper
+    			List<String> theCmdLine = new ArrayList<String>(Arrays.asList(config.getCommandLine(true)));
+    			theCmdLine.addAll(2, Arrays.asList(new String[] {
+    					PyTODPlugin.getDefault().getHunterPath()+"/testcase/wrapper.py",
+    			}));
+    			
+    			// Setup system path
+    			List<String> theEnv = new ArrayList<String>(Arrays.asList(config.envp));
+    			theEnv.add("PYTHONPATH="+PyTODPlugin.getDefault().getHunterPath());
+    			
+    	        doIt(
+    	        		config, 
+    	        		monitor, 
+    	        		theEnv.toArray(new String[theEnv.size()]), 
+    	        		theCmdLine.toArray(new String[theCmdLine.size()]), 
+    	        		config.workingDirectory, 
+    	        		launch);
+    		}
+        }
+        catch (final JDTNotAvailableException e) 
+        {
             PydevPlugin.log(e);
             final Display display = Display.getDefault();
-            display.syncExec(new Runnable(){
-
-                public void run() {
+            display.syncExec(new Runnable()
+            {
+                public void run() 
+                {
                     MessageDialog.openError(display.getActiveShell(), "Unable to run the selected configuration.", e.getMessage());
                 }
-                
             });
         }
 	}
@@ -195,6 +212,9 @@ public class PyTODRunner {
         subMonitor.subTask("Exec...");
         
         //it was dying before register, so, I made this faster to see if this fixes it
+        
+        System.out.println("Command: "+Arrays.asList(cmdLine));
+        System.out.println("WD: "+workingDirectory);
         Process p = createProcess(launch, envp, cmdLine, workingDirectory);	
         checkProcess(p);
 

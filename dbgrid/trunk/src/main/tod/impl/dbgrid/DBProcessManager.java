@@ -76,6 +76,10 @@ public class DBProcessManager
 		}
 	}
 
+	/**
+	 * Classpath to use to launch the database. This is public because
+	 * the plugin sets it when initialized.
+	 */
 	public static String cp = ".";// + File.pathSeparator +
 	// System.getenv("classpath");
 	public static String lib = ".";

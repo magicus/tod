@@ -20,6 +20,7 @@ public interface ISourceRevealer
 	
 	/**
 	 * Reveal a particular source location.
+	 * @return Whether revealing was successful.
 	 */
-	public void reveal(ISession aSession, SourceRange aSourceRange) throws CoreException, BadLocationException;
+	public boolean reveal(ISession aSession, SourceRange aSourceRange) throws CoreException, BadLocationException;
 }

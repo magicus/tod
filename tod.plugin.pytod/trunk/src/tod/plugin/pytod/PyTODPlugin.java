@@ -22,6 +22,8 @@ public class PyTODPlugin extends AbstractUIPlugin {
 	
 	private String itsLibraryPath;
 	
+	private String itsHunterPath;
+	
 	/**
 	 * The constructor
 	 */
@@ -37,21 +39,25 @@ public class PyTODPlugin extends AbstractUIPlugin {
 	{
 		super.start(context);
 	
-		String theBase = getLibraryPath();
 
 		String theDevPath = Util.workspacePath;
 		if (theDevPath == null)
 		{
+			String theBase = getLibraryPath();
+			
 			DBProcessManager.cp += File.pathSeparator
 				+theBase+"/tod-pytod-db.jar";
+			
+			itsHunterPath = theBase+"/lib/python";
 		}
 		else
 		{
 			DBProcessManager.cp += File.pathSeparator
 				+theDevPath+"/TOD-pytod-db/bin"+File.pathSeparator
 				+theDevPath+"/TOD-pytod-db/lib/freehep-xdr-2.0.3.jar";
+			
+			itsHunterPath = theDevPath+"/python-project/src";
 		}
-
 	}
 
 	/*
@@ -82,6 +88,12 @@ public class PyTODPlugin extends AbstractUIPlugin {
 		return itsLibraryPath;
 	}
 	
-
+	/**
+	 * Returns the path to the base of the python trace capture scripts.
+	 */
+	public String getHunterPath()
+	{
+		return itsHunterPath;
+	}
 
 }

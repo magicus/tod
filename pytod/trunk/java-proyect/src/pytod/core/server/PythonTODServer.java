@@ -228,7 +228,7 @@ public class PythonTODServer extends TODServer
 				int parentId = aInputStream.readInt();
 				String attributeName = new String(aInputStream.readString());	
 				theClass = itsStructureDatabase.getClass(parentId, true);
-				theClass.addField(attributeId, attributeName, null, xst);
+				theClass.addField(attributeId, attributeName, null, true);
 				System.out.println("Registrando un atributo con id "+attributeId);
 			}
 			catch (Exception e)

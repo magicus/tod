@@ -1,4 +1,7 @@
-package tod.plugin;
+/*
+ * Created on Jun 27, 2008
+ */
+package tod.plugin.ajdt;
 
 import java.util.List;
 
@@ -7,19 +10,22 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
-import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.ui.IEditorPart;
 
 import tod.core.database.structure.SourceRange;
 import tod.core.session.ISession;
+import tod.plugin.ISourceRevealer;
+import tod.plugin.SourceRevealerUtils;
+import tod.plugin.TODPluginUtils;
 import tod.utils.TODUtils;
 
-public class JavaSourceRevealer implements ISourceRevealer
+public class AspectJSourceRevealer implements ISourceRevealer
 {
+
 	public boolean canHandle(SourceRange aSourceRange)
 	{
-		return aSourceRange.sourceFile.endsWith(".java") || aSourceRange.sourceFile.indexOf('.') == -1;
+		return aSourceRange.sourceFile.endsWith(".aj");		
 	}
 
 	public boolean reveal(ISession aSession, SourceRange aSourceRange) throws CoreException, BadLocationException
@@ -36,6 +42,13 @@ public class JavaSourceRevealer implements ISourceRevealer
 	{
 		String theTypeName = aSourceRange.sourceFile;
 		
+		if (theTypeName.endsWith(".aj"))
+		{
+			// Hack for aspectj files.
+			IFile theFile = SourceRevealerUtils.findFile(aJavaProjects, theTypeName);
+			return theFile != null ? EditorUtility.openInEditor(theFile, false) : null;
+		}
+		
 		// For inner classes, we just try to open the root class 
 		int theIndex = theTypeName.indexOf('$');
 		if (theIndex >= 0) theTypeName = theTypeName.substring(0, theIndex);
@@ -43,8 +56,7 @@ public class JavaSourceRevealer implements ISourceRevealer
 		IType theType = TODPluginUtils.getType(aJavaProjects, theTypeName);
 		if (theType == null)
 		{
-			// Hack for AspectJ
-			// TODO: try to put that into tod.plugin.ajdt
+			// Another aspectj hack
 			theTypeName = theTypeName.replace('.', '/');
 			IFile theFile = SourceRevealerUtils.findSourceFile(aJavaProjects, theTypeName + ".aj");
 			if (theFile != null) return EditorUtility.openInEditor(theFile, false);
@@ -58,11 +70,10 @@ public class JavaSourceRevealer implements ISourceRevealer
 		}
 		
 		// Eclipse 3.3 only
-		return JavaUI.openInEditor(theType, false, false);
+		// theEditor = JavaUI.openInEditor(theType, false, false);
 		
-		// This is safe for pre-3.3
-//		return EditorUtility.openInEditor(theType, false);
+		return EditorUtility.openInEditor(theType, false);
 	}
 
-	
+
 }
