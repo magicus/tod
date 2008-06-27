@@ -66,8 +66,8 @@ public class TestGridMaster
 			}
 			
 			IMutableClassInfo theClass = theStructureDatabase.getNewClass("C"+i);
-			theClass.getNewBehavior("m"+i, "()V");
-			theClass.getNewField("f"+i, PrimitiveTypeInfo.BOOLEAN);
+			theClass.getNewBehavior("m"+i, "()V", false);
+			theClass.getNewField("f"+i, PrimitiveTypeInfo.BOOLEAN, false);
 		}
 		GridLogBrowser theLogBrowser = GridLogBrowser.createLocal(null, theMaster);
 

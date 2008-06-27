@@ -62,31 +62,35 @@ public interface IMutableClassInfo extends IClassInfo, IMutableLocationInfo
 	 * to the database.
 	 * @param aDescriptor The descriptor (signature) of the behavior. 
 	 * For now this is the ASM-provided descriptor.
+	 * @param aStatic Whether the ehavior is a static one.
 	 */
-	public IMutableBehaviorInfo getNewBehavior(String aName, String aDescriptor);
+	public IMutableBehaviorInfo getNewBehavior(String aName, String aDescriptor, boolean aStatic);
 	
 	/**
 	 * Adds a new behavior with a specific id.
 	 * This is for platforms where ids are not assigned by the structure
 	 * database (eg. python).
-	 * Othwerwise, use {@link #getNewBehavior(String, String)}.
+	 * Othwerwise, use {@link #getNewBehavior(String, String, boolean)}.
+	 * @param aStatic Whether the ehavior is a static one.
 	 */
-	public IMutableBehaviorInfo addBehavior(int aId, String aName, String aDescriptor);
+	public IMutableBehaviorInfo addBehavior(int aId, String aName, String aDescriptor, boolean aStatic);
 	
 	/**
 	 * This method either creates a new uninitialized field, or 
 	 * returns the field that has the specified name.
 	 * if the field is created it is automatically assigned an id and added
 	 * to the database.
+	 * @param aStatic Whether the field is a static one.
 	 */
-	public IMutableFieldInfo getNewField(String aName, ITypeInfo aType);
+	public IMutableFieldInfo getNewField(String aName, ITypeInfo aType, boolean aStatic);
 
 	/**
 	 * Adds a new field with a specific id.
 	 * This is for platforms where ids are not assigned by the structure
 	 * database (eg. python).
-	 * Othwerwise, use {@link #getNewField(String, ITypeInfo)}.
+	 * Othwerwise, use {@link #getNewField(String, ITypeInfo, boolean)}.
+	 * @param aStatic Whether the field is a static one.
 	 */
-	public IMutableFieldInfo addField(int aId, String aName, ITypeInfo aType);
+	public IMutableFieldInfo addField(int aId, String aName, ITypeInfo aType, boolean aStatic);
 	
 }

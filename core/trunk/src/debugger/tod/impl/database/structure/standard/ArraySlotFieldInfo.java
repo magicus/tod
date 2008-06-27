@@ -41,7 +41,6 @@ implements IArraySlotFieldInfo
 	private transient IStructureDatabase itsDatabase;
 	private final int itsIndex;
 	private final IArrayTypeInfo itsType;
-
 	
 	public ArraySlotFieldInfo(IStructureDatabase aDatabase, IArrayTypeInfo aType, int aIndex)
 	{
@@ -75,4 +74,8 @@ implements IArraySlotFieldInfo
 		return "["+getIndex()+"]";
 	}
 
+	public boolean isStatic()
+	{
+		return false;
+	}
 }

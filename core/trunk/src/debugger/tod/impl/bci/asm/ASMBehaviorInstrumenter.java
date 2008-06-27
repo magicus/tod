@@ -389,7 +389,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		boolean theStatic = aOpcode == INVOKESTATIC;
 		
 		IMutableClassInfo theOwner = itsStructureDatabase.getNewClass(Util.jvmToScreen(aOwner));
-		IMutableBehaviorInfo theCalledBehavior = theOwner.getNewBehavior(aName, aDesc);
+		IMutableBehaviorInfo theCalledBehavior = theOwner.getNewBehavior(aName, aDesc, theStatic);
 
 		Label theOriginalCallLabel = new Label();
 				
@@ -527,7 +527,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		IMutableClassInfo theOwner = itsStructureDatabase.getNewClass(Util.jvmToScreen(aOwner));
 
 		ITypeInfo theType = itsStructureDatabase.getNewType(aDesc);
-		IFieldInfo theField = theOwner.getNewField(aName, theType);
+		IFieldInfo theField = theOwner.getNewField(aName, theType, theStatic);
 		
 		Type theASMType = Type.getType(aDesc);
 		

@@ -31,9 +31,6 @@ import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.impl.common.event.Event;
-import tod.impl.database.structure.standard.ArrayTypeInfo;
-import tod.impl.database.structure.standard.BehaviorInfo;
-import tod.impl.database.structure.standard.ClassInfo;
 import tod.impl.database.structure.standard.FieldInfo;
 import tod.impl.database.structure.standard.ThreadInfo;
 import tod.impl.dbgrid.GridLogBrowser;
@@ -150,7 +147,7 @@ implements Serializable
 		}
 		else
 		{
-			return new FieldInfo(null, aId, null, null);
+			return new FieldInfo(null, aId, null, null, false);
 		}
 	}
 

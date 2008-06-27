@@ -49,7 +49,9 @@ public class StructureDatabaseUtils
 			String aMethodSignature)
 	{
 		IMutableClassInfo theClass = aStructureDatabase.getNewClass(aClassName);
-		IMutableBehaviorInfo theBehavior = theClass.getNewBehavior(aMethodName, aMethodSignature);
+		// TODO: Specifying a non-static method is not really the thing to do,
+		// but for now I don't know how to do it correctly (and it does not really matter).
+		IMutableBehaviorInfo theBehavior = theClass.getNewBehavior(aMethodName, aMethodSignature, false);
 		return theBehavior.getId();
 	}
 

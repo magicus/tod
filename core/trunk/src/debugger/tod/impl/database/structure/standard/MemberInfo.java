@@ -33,7 +33,6 @@ package tod.impl.database.structure.standard;
 
 import tod.core.ILogCollector;
 import tod.core.database.structure.IMemberInfo;
-import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IShareableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
@@ -53,14 +52,27 @@ implements IMemberInfo, ISerializableLocationInfo
 	 */
 	private int itsTypeId;
 	
-	public MemberInfo(IShareableStructureDatabase aDatabase, int aId, ITypeInfo aType, String aName)
+	private boolean itsStatic;
+	
+	public MemberInfo(
+			IShareableStructureDatabase aDatabase, 
+			int aId, 
+			ITypeInfo aType, 
+			String aName, 
+			boolean aStatic)
 	{
 		super(aDatabase, aId, aName);
 		itsTypeId = aType.getId();
+		itsStatic = aStatic;
 	}
 	
 	public ITypeInfo getType()
 	{
 		return getDatabase().getType(itsTypeId, true);
-	}	
+	}
+	
+	public boolean isStatic()
+	{
+		return itsStatic;
+	}
 }

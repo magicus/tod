@@ -5,19 +5,15 @@ import hep.io.xdr.XDRInputStream;
 import java.io.IOException;
 import java.net.Socket;
 
+import tod.agent.transport.ValueWriter;
 import tod.core.ILogCollector;
 import tod.core.config.TODConfig;
-import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
-import tod.core.server.ITODServerFactory;
 import tod.core.server.TODServer;
-import tod.gui.eventlist.LocalVariableWriteNode;
-import tod.agent.transport.*;
-import java.io.ByteArrayOutputStream;
 
 /**
  * A Python TOD server accepts connections from debugged script Python and process instrumentation
@@ -115,7 +111,7 @@ public class PythonTODServer extends TODServer
 				String functionName = new String(aInputStream.readString());
 				int argsN = aInputStream.readInt();
 				theClass = itsStructureDatabase.getClass(100, true);
-				theBehavior = theClass.addBehavior(functionId, functionName, generateSignature(argsN));
+				theBehavior = theClass.addBehavior(functionId, functionName, generateSignature(argsN), false);
 				if (argsN != 0){
 					for(int i=0;i<argsN;i=i+1)
 					{
@@ -202,7 +198,7 @@ public class PythonTODServer extends TODServer
 				int argsN = aInputStream.readInt();
 				
 				theClass = itsStructureDatabase.getClass(classId, true);
-				theBehavior = theClass.addBehavior(methodId, methodName, generateSignature(argsN));
+				theBehavior = theClass.addBehavior(methodId, methodName, generateSignature(argsN), false);
 				//theBehavior = theClass.addBehavior(methodId, methodName, ""+argsN);
 				if (argsN != 0){
 					for(int i=0;i<argsN;i=i+1)
@@ -232,7 +228,7 @@ public class PythonTODServer extends TODServer
 				int parentId = aInputStream.readInt();
 				String attributeName = new String(aInputStream.readString());	
 				theClass = itsStructureDatabase.getClass(parentId, true);
-				theClass.addField(attributeId, attributeName, null);
+				theClass.addField(attributeId, attributeName, null, xst);
 				System.out.println("Registrando un atributo con id "+attributeId);
 			}
 			catch (Exception e)

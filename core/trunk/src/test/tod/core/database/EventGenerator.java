@@ -50,7 +50,6 @@ import tod.impl.common.event.NewArrayEvent;
 import tod.impl.database.structure.standard.BehaviorInfo;
 import tod.impl.database.structure.standard.FieldInfo;
 import tod.impl.database.structure.standard.ThreadInfo;
-import tod.impl.local.event.BehaviorCallEvent;
 import tod.impl.local.event.ConstructorChainingEvent;
 import tod.impl.local.event.InstantiationEvent;
 import tod.impl.local.event.MethodCallEvent;
@@ -99,8 +98,8 @@ public class EventGenerator
 		itsObjectRange = aObjectRange;
 		
 		for(int i=0;i<itsThreadsRange;i++) itsThreads.add(new ThreadInfo(null, i, 0, ""+i));
-		for(int i=0;i<itsBehaviorRange;i++) itsBehaviors.add(new BehaviorInfo(null, i, null, ""+i, "", null, null));
-		for(int i=0;i<itsFieldRange;i++) itsFields.add(new FieldInfo(null, i, null, ""+i));
+		for(int i=0;i<itsBehaviorRange;i++) itsBehaviors.add(new BehaviorInfo(null, i, null, ""+i, false, "", null, null));
+		for(int i=0;i<itsFieldRange;i++) itsFields.add(new FieldInfo(null, i, null, ""+i, false));
 	}
 
 	public EventGenerator(long aSeed)

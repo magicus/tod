@@ -50,7 +50,6 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.analysis.DisassembledBehavior.Instruction;
-import tod.impl.database.structure.standard.BehaviorInfo;
 import tod.impl.database.structure.standard.ClassInfo;
 import tod.impl.database.structure.standard.StructureDatabase;
 import zz.utils.Utils;
@@ -68,7 +67,8 @@ public class Disassembler
 		
 		IMutableBehaviorInfo theBehavior = theClass.getNewBehavior(
 				"checkCondition",
-				"(Ltod/impl/database/IBidiIterator;Ltod/impl/evdbng/queries/EventCondition;Ltod/impl/evdbng/EventGenerator;I)I");
+				"(Ltod/impl/database/IBidiIterator;Ltod/impl/evdbng/queries/EventCondition;Ltod/impl/evdbng/EventGenerator;I)I", 
+				false);
 		
 		DisassembledBehavior theDisassembledBehavior = disassemble(theBehavior);
 		System.out.println(theDisassembledBehavior);

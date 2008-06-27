@@ -263,7 +263,7 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		return itsBehaviorsMap;
 	}
 	
-	public IMutableBehaviorInfo getNewBehavior(String aName, String aDescriptor)
+	public IMutableBehaviorInfo getNewBehavior(String aName, String aDescriptor, boolean aStatic)
 	{
 		ITypeInfo[] theArgumentTypes = LocationUtils.getArgumentTypes(getDatabase(), aDescriptor);
 		ITypeInfo theReturnType = LocationUtils.getReturnType(getDatabase(), aDescriptor);
@@ -277,6 +277,7 @@ implements IMutableClassInfo, ISerializableLocationInfo
 					theId,
 					this,
 					aName,
+					aStatic,
 					aDescriptor,
 					theArgumentTypes,
 					theReturnType);
@@ -287,7 +288,7 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		return theBehavior;
 	}
 
-	public IMutableBehaviorInfo addBehavior(int aId, String aName, String aDescriptor)
+	public IMutableBehaviorInfo addBehavior(int aId, String aName, String aDescriptor, boolean aStatic)
 	{
 		BehaviorInfo theBehavior = getStructureDatabase().getBehavior(aId, false);
 		if (theBehavior != null)
@@ -303,6 +304,7 @@ implements IMutableClassInfo, ISerializableLocationInfo
 				aId,
 				this,
 				aName,
+				aStatic,
 				aDescriptor,
 				theArgumentTypes,
 				theReturnType);
@@ -311,13 +313,13 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		return theBehavior;
 	}
 	
-	public IMutableFieldInfo getNewField(String aName, ITypeInfo aType)
+	public IMutableFieldInfo getNewField(String aName, ITypeInfo aType, boolean aStatic)
 	{
 		IMutableFieldInfo theField = getField(aName);
 		if (theField == null)
 		{
 			int theId = itsClassNameInfo.getFieldId(aName, aType);
-			theField = new FieldInfo(getStructureDatabase(), theId, this, aName);
+			theField = new FieldInfo(getStructureDatabase(), theId, this, aName, aStatic);
 			
 			register(theField);
 		}
@@ -325,7 +327,7 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		return theField;
 	}
 	
-	public IMutableFieldInfo addField(int aId, String aName, ITypeInfo aType)
+	public IMutableFieldInfo addField(int aId, String aName, ITypeInfo aType, boolean aStatic)
 	{
 		FieldInfo theField = getStructureDatabase().getField(aId, false);
 		if (theField != null)
@@ -333,7 +335,7 @@ implements IMutableClassInfo, ISerializableLocationInfo
 			throw new IllegalArgumentException("There is already a field with id "+aId);
 		}
 		
-		theField = new FieldInfo(getStructureDatabase(), aId, this, aName);
+		theField = new FieldInfo(getStructureDatabase(), aId, this, aName, aStatic);
 		register(theField);
 		return theField;
 	}

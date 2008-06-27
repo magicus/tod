@@ -250,7 +250,8 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			itsMethodInfo = aMethodInfo;
 			itsBehavior = itsClassInfo.getNewBehavior(
 					itsMethodInfo.getName(),
-					itsMethodInfo.getDescriptor());
+					itsMethodInfo.getDescriptor(), 
+					itsMethodInfo.isStatic());
 			
 			if (itsTrace)
 			{

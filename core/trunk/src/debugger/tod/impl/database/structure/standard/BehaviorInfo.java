@@ -75,11 +75,12 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 			int aId, 
 			ClassInfo aType, 
 			String aName,
+			boolean aStatic,
 			String aSignature,
 			ITypeInfo[] aArgumentTypes,
 			ITypeInfo aReturnType)
 	{
-		super(aDatabase, aId, aType, aName);
+		super(aDatabase, aId, aType, aName, aStatic);
 		itsSignature = aSignature;
 		itsArgumentTypes = aArgumentTypes;
 		itsReturnType = aReturnType;

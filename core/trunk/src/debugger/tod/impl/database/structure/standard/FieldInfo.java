@@ -34,7 +34,6 @@ package tod.impl.database.structure.standard;
 import tod.core.ILogCollector;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IMutableFieldInfo;
-import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IShareableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 
@@ -47,9 +46,14 @@ public class FieldInfo extends MemberInfo implements IMutableFieldInfo
 {
 	private static final long serialVersionUID = 1642825455287392890L;
 
-	public FieldInfo(IShareableStructureDatabase aDatabase, int aId, ITypeInfo aTypeInfo, String aName)
+	public FieldInfo(
+			IShareableStructureDatabase aDatabase, 
+			int aId, 
+			ITypeInfo aTypeInfo, 
+			String aName,
+			boolean aStatic)
 	{
-		super(aDatabase, aId, aTypeInfo, aName);
+		super(aDatabase, aId, aTypeInfo, aName, aStatic);
 	}
 
 	@Override

@@ -37,5 +37,10 @@ public interface IMemberInfo extends ILocationInfo
 	 * The type that declares this member.
 	 */
 	public ITypeInfo getType();
+	
+	/**
+	 * Whether this member is static.
+	 */
+	public boolean isStatic();
 
 }
