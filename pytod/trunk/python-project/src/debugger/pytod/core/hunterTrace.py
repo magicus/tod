@@ -8,6 +8,7 @@ th = True
 import sys
 import dis
 import re
+import types
 import time
 import thread
 import xdrlib
@@ -44,6 +45,10 @@ class hunterTrace(object):
         self.FLAG_DEBUGG = False
         self.FLAG_THROWN = False
         self.itsMethodPattern = "\A__.*(__)$"
+        #trick for MetaDescriptor's depth
+        self.itsCurrentDepth = 0
+        #trick for Objects {strings, tuple, dict, list}
+        self.itsRegisterObjects = []
         self.__socketConnect__()
 
     def __addClass__(self, aId, aLnotab, aCode):
@@ -497,6 +502,10 @@ class hunterTrace(object):
                     aValue = 1
                 else:
                     aValue = 0
+            #trick for string objects (it's send the Id)
+            if aDataType == 1:
+                 self.itsPacker.pack_int(id(aValue))
+                 return id(aValue)
             getattr(self.itsPacker,'pack_%s'%theMethodName)(aValue)
             return aValue            
         else:
@@ -647,7 +656,31 @@ class hunterTrace(object):
                              aCode,
                              aArgs)
         self.itsId.__next__()
-
+        
+    def __registerObject__(self, aValue, aCurrentTimestamp):
+        self.itsRegisterObjects.append(id(aValue))
+        self.itsPacker.reset()
+        self.itsPacker.pack_int(self.itsEvents['register'])
+        self.itsPacker.pack_int(self.itsObjects['object'])
+        #enviar el tipo de dato por mientras solo es string
+        self.itsPacker.pack_int(1) #string
+        self.itsPacker.pack_int(id(aValue))
+        self.itsPacker.pack_string(aValue)
+        self.itsPacker.pack_hyper(aCurrentTimestamp)
+        if self.FLAG_DEBUGG:
+        #if True:
+            print self.itsEvents['register'],
+            print self.itsObjects['object'],
+            print 1,
+            print id(aValue),
+            print aValue,
+            print aCurrentTimestamp
+            raw_input()
+        try:
+            self.itsSocket.sendall(self.itsPacker.get_buffer())
+        except:
+            print 'TOD está durmiendo :-( - Registrando Probe'
+    
     def __registerProbe__(self, aCurrentLasti, aBehaviorId, aCurrentLineno):
         theProbeId = self.itsProbeId.__get__()
         self.__addProbe__(theProbeId,aCurrentLasti,aBehaviorId)
@@ -703,7 +736,7 @@ class hunterTrace(object):
             return
         theLocals = aFrame.f_locals
         theGlobals = aFrame.f_globals
-        theDepth = self.__depthFrame__(aFrame)
+        theDepth = self.itsCurrentDepth = self.__depthFrame__(aFrame)
         self.__markTimestampFrame__(aFrame)
         theThreadId = self.__getThreadId__(thread.get_ident())
         if aEvent == "call":
@@ -869,7 +902,8 @@ class MetaDescriptor(type):
         theFrame = sys._getframe()
         theCode = theFrame.f_back.f_code
         theCurrentLasti = theFrame.f_back.f_lasti
-        theCurrentDepth = hT.__getDepthFrame__(theFrame.f_back) + 2
+        #theCurrentDepth = hT.__getDepthFrame__(theFrame.f_back) + 2
+        theCurrentDepth = hT.itsCurrentDepth
         theCurrentTimestamp = hT.__convertTimestamp__(time.time())
         theParentTimestamp = hT.__getTimestampParentFrame__(theFrame)
         theThreadId = hT.__getThreadId__(thread.get_ident())
@@ -890,38 +924,76 @@ class MetaDescriptor(type):
                                               theFrame.f_lineno)
         else:
             theProbeId = hT.itsProbe[(theCurrentLasti,theBehaviorId)]          
-        hT.itsPacker.reset()
-        hT.itsPacker.pack_int(hT.itsEvents['set'])
-        hT.itsPacker.pack_int(hT.itsObjects['classAttribute'])
-        hT.itsPacker.pack_int(Id)
-        theDataType = hT.__getDataType__(aValue)
-        hT.itsPacker.pack_int(theDataType)
-        thePackValue = hT.__packValue__(theDataType, aValue)
-        hT.itsPacker.pack_int(theProbeId)
-        hT.itsPacker.pack_hyper(theParentTimestamp)        
-        hT.itsPacker.pack_int(theCurrentDepth)
-        hT.itsPacker.pack_hyper(theCurrentTimestamp)
-        hT.itsPacker.pack_int(theThreadId)
-        super(MetaDescriptor, self).__setattr__(aName, aValue)
-        #if hT.FLAG_DEBUGG:
-        if True:
-            print hT.itsEvents['set'],
-            print hT.itsObjects['classAttribute'],
-            print Id,
-            print theDataType,
-            print thePackValue,
-            print theProbeId,
-            print theParentTimestamp,
-            print theCurrentDepth,
-            print theCurrentTimestamp,
-            print theThreadId
-            raw_input()
-        try:
-            hT.itsSocket.sendall(hT.itsPacker.get_buffer())
-            pass
-        except:
-            print 'TOD está durmiendo :-(', theCode.co_name    
-        sys.settrace(hT.__trace__)
+        #preguntar si el valor está registrado y si además es string
+        if type(aValue) == types.StringType:
+            if not id(aValue) in hT.itsRegisterObjects:
+                hT.__registerObject__(aValue, theCurrentTimestamp)
+                hT.itsPacker.reset()
+                hT.itsPacker.pack_int(hT.itsEvents['set'])
+                hT.itsPacker.pack_int(hT.itsObjects['classAttribute'])
+                hT.itsPacker.pack_int(Id)
+                theDataType = hT.__getDataType__(aValue)
+                hT.itsPacker.pack_int(theDataType)
+                hT.itsPacker.pack_int(id(aValue))
+                #thePackValue = hT.__packValue__(theDataType, aValue)
+                hT.itsPacker.pack_int(theProbeId)
+                hT.itsPacker.pack_hyper(theParentTimestamp)        
+                hT.itsPacker.pack_int(theCurrentDepth)
+                hT.itsPacker.pack_hyper(theCurrentTimestamp)
+                hT.itsPacker.pack_int(theThreadId)
+                super(MetaDescriptor, self).__setattr__(aName, aValue)
+                if hT.FLAG_DEBUGG:
+                #if True:
+                    print hT.itsEvents['set'],
+                    print hT.itsObjects['classAttribute'],
+                    print Id,
+                    print theDataType,
+                    print id(aValue),
+                    print theProbeId,
+                    print theParentTimestamp,
+                    print theCurrentDepth,
+                    print theCurrentTimestamp,
+                    print theThreadId
+                    raw_input()
+                try:
+                    hT.itsSocket.sendall(hT.itsPacker.get_buffer())
+                    pass
+                except:
+                    print 'TOD está durmiendo :-(', theCode.co_name    
+                sys.settrace(hT.__trace__)
+        else:
+            hT.itsPacker.reset()
+            hT.itsPacker.pack_int(hT.itsEvents['set'])
+            hT.itsPacker.pack_int(hT.itsObjects['classAttribute'])
+            hT.itsPacker.pack_int(Id)
+            theDataType = hT.__getDataType__(aValue)
+            hT.itsPacker.pack_int(theDataType)
+            thePackValue = hT.__packValue__(theDataType, aValue)
+            hT.itsPacker.pack_int(theProbeId)
+            hT.itsPacker.pack_hyper(theParentTimestamp)        
+            hT.itsPacker.pack_int(theCurrentDepth)
+            hT.itsPacker.pack_hyper(theCurrentTimestamp)
+            hT.itsPacker.pack_int(theThreadId)
+            super(MetaDescriptor, self).__setattr__(aName, aValue)
+            if hT.FLAG_DEBUGG:
+            #if True:
+                print hT.itsEvents['set'],
+                print hT.itsObjects['classAttribute'],
+                print Id,
+                print theDataType,
+                print thePackValue,
+                print theProbeId,
+                print theParentTimestamp,
+                print theCurrentDepth,
+                print theCurrentTimestamp,
+                print theThreadId
+                raw_input()
+            try:
+                hT.itsSocket.sendall(hT.itsPacker.get_buffer())
+                pass
+            except:
+                print 'TOD está durmiendo :-(', theCode.co_name    
+            sys.settrace(hT.__trace__)
         
 
 class Descriptor(object):
@@ -955,39 +1027,79 @@ class Descriptor(object):
                                               theFrame.f_lineno)
         else:
             theProbeId = hT.itsProbe[(theCurrentLasti,theBehaviorId)]          
-        hT.itsPacker.reset()
-        hT.itsPacker.pack_int(hT.itsEvents['set'])
-        hT.itsPacker.pack_int(hT.itsObjects['attribute'])
-        hT.itsPacker.pack_int(Id)
-        hT.itsPacker.pack_int(self.__pyTOD__)
-        theDataType = hT.__getDataType__(aValue)
-        hT.itsPacker.pack_int(theDataType)
-        thePackValue = hT.__packValue__(theDataType, aValue)
-        hT.itsPacker.pack_int(theProbeId)
-        hT.itsPacker.pack_hyper(theParentTimestamp)        
-        hT.itsPacker.pack_int(theCurrentDepth)
-        hT.itsPacker.pack_hyper(theCurrentTimestamp)
-        hT.itsPacker.pack_int(theThreadId)
-        object.__setattr__(self, aName, aValue)
-        if hT.FLAG_DEBUGG:
-            print hT.itsEvents['set'],
-            print hT.itsObjects['attribute'],
-            print Id,
-            print theBehaviorId,
-            print theDataType,
-            print thePackValue,
-            print theProbeId,
-            print theParentTimestamp,
-            print theCurrentDepth,
-            print theCurrentTimestamp,
-            print theThreadId
-            raw_input()
-        try:
-            hT.itsSocket.sendall(hT.itsPacker.get_buffer())
-        except:
-            print 'TOD está durmiendo :-(', theCode.co_name
-        #se habilita nuevamente settrace    
-        sys.settrace(hT.__trace__)
+        #preguntar si el valor está registrado y si además es string
+        if type(aValue) == types.StringType:
+            if not id(aValue) in hT.itsRegisterObjects:
+                hT.__registerObject__(aValue, theCurrentTimestamp)
+                #se envía normalmente el asunteque
+                hT.itsPacker.pack_int(hT.itsEvents['set'])
+                hT.itsPacker.pack_int(hT.itsObjects['attribute'])
+                hT.itsPacker.pack_int(Id)
+                hT.itsPacker.pack_int(self.__pyTOD__)
+                theDataType = hT.__getDataType__(aValue)
+                hT.itsPacker.pack_int(theDataType)
+                hT.itsPacker.pack_int(id(aValue))
+                #thePackValue = hT.__packValue__(theDataType, aValue)
+                hT.itsPacker.pack_int(theProbeId)
+                hT.itsPacker.pack_hyper(theParentTimestamp)        
+                hT.itsPacker.pack_int(theCurrentDepth)
+                hT.itsPacker.pack_hyper(theCurrentTimestamp)
+                hT.itsPacker.pack_int(theThreadId)
+                object.__setattr__(self, aName, aValue)
+                if hT.FLAG_DEBUGG:
+                #if True:
+                    print hT.itsEvents['set'],
+                    print hT.itsObjects['attribute'],
+                    print Id,
+                    print theBehaviorId,
+                    print theDataType,
+                    print id(aValue),
+                    print theProbeId,
+                    print theParentTimestamp,
+                    print theCurrentDepth,
+                    print theCurrentTimestamp,
+                    print theThreadId
+                    raw_input()
+                try:
+                    hT.itsSocket.sendall(hT.itsPacker.get_buffer())
+                except:
+                    print 'TOD está durmiendo :-(', theCode.co_name
+                #se habilita nuevamente settrace    
+                sys.settrace(hT.__trace__)
+        else:
+            hT.itsPacker.reset()
+            hT.itsPacker.pack_int(hT.itsEvents['set'])
+            hT.itsPacker.pack_int(hT.itsObjects['attribute'])
+            hT.itsPacker.pack_int(Id)
+            hT.itsPacker.pack_int(self.__pyTOD__)
+            theDataType = hT.__getDataType__(aValue)
+            hT.itsPacker.pack_int(theDataType)
+            thePackValue = hT.__packValue__(theDataType, aValue)
+            hT.itsPacker.pack_int(theProbeId)
+            hT.itsPacker.pack_hyper(theParentTimestamp)        
+            hT.itsPacker.pack_int(theCurrentDepth)
+            hT.itsPacker.pack_hyper(theCurrentTimestamp)
+            hT.itsPacker.pack_int(theThreadId)
+            object.__setattr__(self, aName, aValue)
+            if hT.FLAG_DEBUGG:
+                print hT.itsEvents['set'],
+                print hT.itsObjects['attribute'],
+                print Id,
+                print theBehaviorId,
+                print theDataType,
+                print thePackValue,
+                print theProbeId,
+                print theParentTimestamp,
+                print theCurrentDepth,
+                print theCurrentTimestamp,
+                print theThreadId
+                raw_input()
+            try:
+                hT.itsSocket.sendall(hT.itsPacker.get_buffer())
+            except:
+                print 'TOD está durmiendo :-(', theCode.co_name
+            #se habilita nuevamente settrace    
+            sys.settrace(hT.__trace__)
 
 
 if th:

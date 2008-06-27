@@ -52,19 +52,19 @@ class Dictionary(dict):
             #se debe registrar argumento self?
             if not self.has_key(theKey):
                 if not theKey == 'self':
-                    theValue = self.hT.itsId.__get__()
+                    theId = self.hT.itsId.__get__()
                     self.hT.itsId.__next__()
-                    self[theKey] = theValue
+                    self[theKey] = theId
                     self.hT.itsPacker.reset()
                     self.hT.itsPacker.pack_int(self.hT.itsEvents['register'])
                     self.hT.itsPacker.pack_int(self.hT.itsObjects['attribute'])
-                    self.hT.itsPacker.pack_int(theValue)
+                    self.hT.itsPacker.pack_int(theId)
                     self.hT.itsPacker.pack_int(aParentId)
                     self.hT.itsPacker.pack_string(theKey)
                     if self.hT.FLAG_DEBUGG:
                         print self.hT.itsEvents['register'],
                         print self.hT.itsObjects['attribute'],
-                        print theValue,
+                        print theId,
                         print aParentId,
                         print theKey 
                         raw_input()                          
@@ -89,8 +89,8 @@ class Dictionary(dict):
                         self.hT.itsPacker.pack_int(theValue)
                         self.hT.itsPacker.pack_int(aParentId)
                         self.hT.itsPacker.pack_string(theKey)
-                        #if self.hT.FLAG_DEBUGG:
-                        if True:
+                        if self.hT.FLAG_DEBUGG:
+                        #if True:
                             print self.hT.itsEvents['register'],
                             print self.hT.itsObjects['classAttribute'],
                             print theValue,
