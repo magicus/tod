@@ -14,13 +14,13 @@
 \renewcommand{\contentsname}{Indice} 
 \renewcommand\listfigurename{Lista de Figuras}
 \renewcommand\listtablename{Lista de Tablas}
-\renewcommand\bibname{Bibliografía}
+\newcommand\bibname{Bibliografía}
 \renewcommand{\refname}{Bibliografía}
 \renewcommand\indexname{Indice alfabético}
 \renewcommand\figurename{Figura}
 \renewcommand\tablename{Tabla}
 \renewcommand\partname{Parte}
-\renewcommand\chaptername{Capítulo}
+\newcommand\chaptername{Capítulo}
 \renewcommand\appendixname{Apéndice}
 \renewcommand\abstractname{Resumen}
 
@@ -70,14 +70,14 @@ se inicializa como módulo vacío (types.ModuleType).\\
 realidad todavía estará sin inicializar del todo. Habrá referencias
 que todavía no habránn sido creadas ya que iban en orden por detrás de
 las importaciones.
-\end{itemize}
+\end{enumerate}
 
 \end{itemize}
 
 
 \section{Protocolo de comunicación - Draft}
 
-Para poder enviar los datos a la bases de datos de TOD se utilizarán socket's.  Para codificar se utilizara la libreriz xdrlib que está basada en el estandar rfc1832 \cite{rfc1832}
+Para poder enviar los datos a la bases de datos de TOD se utilizarán socket's.  Para codificar se utilizara la librería xdrlib que está basada en el estandar rfc1832 \cite{rfc1832}
 
 Se muestran las tablas bases para el registro de los objetos y para el envío de eventos:
 
