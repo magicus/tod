@@ -41,18 +41,17 @@ public class LaunchUtils
 
 	public static boolean setup(
 			IJavaProject aJavaProject,
-			ILaunchConfiguration aConfiguration, 
+			TODConfig aConfig, 
 			ILaunch aLaunch) throws CoreException
 	{
-		return setup(new IProject[] {aJavaProject.getProject()}, aConfiguration, aLaunch);
+		return setup(new IProject[] {aJavaProject.getProject()}, aConfig, aLaunch);
 	}
 	
 	public static boolean setup(
 			IProject[] aProjects,
-			ILaunchConfiguration aConfiguration, 
+			TODConfig aConfig, 
 			ILaunch aLaunch) throws CoreException
 {
-		TODConfig theConfig = TODConfigLaunchTab.readConfig(aConfiguration);
 		AbstractNavigatorView theView = TODPluginUtils.getTraceNavigatorView(true);
 		
 		ISession theSession = null;
@@ -60,16 +59,16 @@ public class LaunchUtils
 		{
 			theSession = TODSessionManager.getInstance().getSession(
 					theView.getGUIManager(),
-					theConfig,
+					aConfig,
 					new EclipseProgramLaunch(aLaunch, aProjects));
 		}
 		catch (Exception e)
 		{
 			TODPlugin.logError("Could not create session", e);
-			handleException(theConfig, e);
+			handleException(aConfig, e);
 		}
 		
-		itsInfo.set(new LaunchInfo(theSession, aConfiguration));
+		itsInfo.set(new LaunchInfo(theSession, aConfig));
 		
 		return theSession != null;
 	}
@@ -185,7 +184,7 @@ public class LaunchUtils
 		theArguments.add("-noverify");
 		
 		// Config
-		TODConfig theConfig = TODConfigLaunchTab.readConfig(aInfo.config);
+		TODConfig theConfig = aInfo.config;
 		
 		ConnectionInfo theConnectionInfo = aInfo.session.getConnectionInfo();
 		
@@ -205,13 +204,14 @@ public class LaunchUtils
 	private static class LaunchInfo
 	{
 		public final ISession session;
-		public final ILaunchConfiguration config;
+		public final TODConfig config;
 		
-		public LaunchInfo(ISession aSession, ILaunchConfiguration aConfig)
+		public LaunchInfo(ISession aSession, TODConfig aConfig)
 		{
 			session = aSession;
 			config = aConfig;
 		}
+		
 	}
 
 

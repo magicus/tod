@@ -6,5 +6,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/TOD"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/TOD-dbgrid"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/zz.utils"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/TOD-pytod-db"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

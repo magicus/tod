@@ -31,7 +31,7 @@ public class TODLaunchDelegate_JDT_JavaLocal extends JavaLaunchDelegate
 		try
 		{
 			IJavaProject theJavaProject = getJavaProject(aConfiguration);
-			if (LaunchUtils.setup(theJavaProject, aConfiguration, aLaunch))
+			if (LaunchUtils.setup(theJavaProject, TODConfigLaunchTab.readConfig(aConfiguration), aLaunch))
 			{
 				super.launch(aConfiguration, LaunchUtils.MODE, aLaunch, aMonitor);
 			}

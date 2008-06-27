@@ -88,6 +88,7 @@ public class PythonTODServer extends TODServer
 		
 		public Receiver(XDRInputStream aInputStream)
 		{
+			super("PythonTODServer.Receiver");
 			itsStream = aInputStream;
 			start();
 		}

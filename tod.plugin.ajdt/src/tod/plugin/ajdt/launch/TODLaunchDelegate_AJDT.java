@@ -12,6 +12,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.IVMRunner;
 
 import tod.plugin.launch.LaunchUtils;
+import tod.plugin.launch.TODConfigLaunchTab;
 
 
 /**
@@ -33,7 +34,7 @@ public class TODLaunchDelegate_AJDT extends AJApplicationLaunchConfigurationDele
 		try
 		{
 			IJavaProject theJavaProject = getJavaProject(aConfiguration);
-			if (LaunchUtils.setup(theJavaProject, aConfiguration, aLaunch))
+			if (LaunchUtils.setup(theJavaProject, TODConfigLaunchTab.readConfig(aConfiguration), aLaunch))
 			{
 				super.launch(aConfiguration, LaunchUtils.MODE, aLaunch, aMonitor);
 			}

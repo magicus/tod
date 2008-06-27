@@ -12,6 +12,28 @@
       <import plugin="tod.plugin"/>
       <import plugin="org.python.pydev.debug"/>
    </requires>
+   
+   <runtime>
+      <library name="plugin.jar">
+         <export name="*"/>
+      </library>
+
+      <!-- the DEV/DEPLOY in-out markers are used by a perl script, don't remove -->
+      <!-- DEV-in -->
+      <library name="../TOD-pytod-db/bin">
+         <export name="*"/>
+      </library>
+     
+      <!-- DEV-out -->
+      
+      <!-- DEPLOY-in     
+      <library name="lib/tod-pytod-db.jar">
+         <export name="*"/>
+      </library>
+      DEPLOY-out -->
+   </runtime>
+
+   
 
    <extension
          point="org.eclipse.debug.core.launchDelegates">

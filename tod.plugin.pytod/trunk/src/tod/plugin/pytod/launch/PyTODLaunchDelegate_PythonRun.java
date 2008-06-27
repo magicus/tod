@@ -24,6 +24,8 @@ import org.python.pydev.debug.ui.launching.RegularLaunchConfigurationDelegate;
 import org.python.pydev.editor.actions.PyAction;
 import org.python.pydev.plugin.PydevPlugin;
 
+import pytod.core.server.PythonTODServer;
+import pytod.core.server.PythonTODServerFactory;
 import tod.core.config.TODConfig;
 import tod.core.session.ConnectionInfo;
 import tod.core.session.ISession;
@@ -66,14 +68,18 @@ public class PyTODLaunchDelegate_PythonRun extends RegularLaunchConfigurationDel
 
 		try
 		{
+			TODConfig theConfig = TODConfigLaunchTab.readConfig(aConfiguration);
+			
+			// Force python server
+			theConfig.set(TODConfig.SERVER_TYPE, PythonTODServerFactory.class.getName());
+			
 			IProject[] theProjects = new IProject[] { getProject(aConfiguration) };
-			if (!LaunchUtils.setup(theProjects, aConfiguration, aLaunch)) 
+			if (!LaunchUtils.setup(theProjects, theConfig, aLaunch)) 
 			{ 
 				throw new RuntimeException("Could not perform setup."); 
 			}
 
 			monitor.beginTask("Preparing configuration", 3);
-			TODConfig theConfig = TODConfigLaunchTab.readConfig(aConfiguration);
 			ISession theSession = LaunchUtils.getSession();
 			ConnectionInfo theConnectionInfo = theSession.getConnectionInfo();
 			
