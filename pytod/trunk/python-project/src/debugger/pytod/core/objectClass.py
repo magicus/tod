@@ -38,5 +38,4 @@ class Class(object):
         self.staticField.__updateStaticField__(aLocals, self.Id)
     
     def __addAttribute__(self, aName, aObjectId):
-        self.attributes.__updateAttr__({aName:-1}, aObjectId)
-        
+        self.attributes.__updateAttr__({aName:-1}, aObjectId)       
