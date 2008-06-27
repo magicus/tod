@@ -566,6 +566,7 @@ class hunterTrace(object):
                                            aCode)
         self.itsId.__next__()
         theObjectClass.__addMethod__(aCode,aLocals)
+        theObjectClass.__addStaticField__(aLocals)
 
     def __registerMethod__(self, aCode, aMethodId, aClassId, aArgs):
         self.itsPacker.reset()
@@ -844,9 +845,6 @@ class hunterTrace(object):
             theInstruction = dis.opname[theOp]
             if theInstruction == 'SETUP_EXCEPT':
                 return self.__trace__
-            #print theInstruction, theCode.co_name
-            #print aFrame.f_lineno, aFrame.f_lasti
-            #dis.disassemble(theCode, aFrame.f_lasti)
             theParentTimestampFrame = self.__getTimestampFrame__(aFrame)
             self.__behaviorExit__(aFrame,
                                      aArg[1],
@@ -855,9 +853,7 @@ class hunterTrace(object):
                                      theThreadId,
                                      True)
             self.FLAG_THROWN = True           
-            #sys.settrace(None)
-            #print '[trace]', aEvent, aFrame.f_code.co_name, aFrame.f_lineno, aArg
-            #raw_input()
+            
 
 hT = hunterTrace(
                  generatorId(),
@@ -873,7 +869,7 @@ class MetaDescriptor(type):
         theFrame = sys._getframe()
         theCode = theFrame.f_back.f_code
         theCurrentLasti = theFrame.f_back.f_lasti
-        theCurrentDepth = hT.__getDepthFrame__(theFrame.f_back) + 1
+        theCurrentDepth = hT.__getDepthFrame__(theFrame.f_back) + 2
         theCurrentTimestamp = hT.__convertTimestamp__(time.time())
         theParentTimestamp = hT.__getTimestampParentFrame__(theFrame)
         theThreadId = hT.__getThreadId__(thread.get_ident())
@@ -885,8 +881,9 @@ class MetaDescriptor(type):
         theObjectId = theObject.__getId__()
         theBehaviorId = hT.__getObjectId__(theCode)
         sys.settrace(None)
-        theObject.classAttributes.__updateClassAttribute__({aName:-1},theObjectId)
-        Id = theObject.classAttributes[aName]
+        theObject.__addStaticField__({aName:-1})
+        #theObject.classAttributes.__updateClassAttribute__({aName:-1},theObjectId)
+        Id = theObject.staticField[aName]
         if not hT.itsProbe.has_key((theCurrentLasti,theBehaviorId)):
             theProbeId = hT.__registerProbe__(theCurrentLasti,
                                               theBehaviorId,
@@ -897,7 +894,6 @@ class MetaDescriptor(type):
         hT.itsPacker.pack_int(hT.itsEvents['set'])
         hT.itsPacker.pack_int(hT.itsObjects['classAttribute'])
         hT.itsPacker.pack_int(Id)
-        #hT.itsPacker.pack_int(self.__pyTOD__)
         theDataType = hT.__getDataType__(aValue)
         hT.itsPacker.pack_int(theDataType)
         thePackValue = hT.__packValue__(theDataType, aValue)
@@ -907,12 +903,11 @@ class MetaDescriptor(type):
         hT.itsPacker.pack_hyper(theCurrentTimestamp)
         hT.itsPacker.pack_int(theThreadId)
         super(MetaDescriptor, self).__setattr__(aName, aValue)
-        if hT.FLAG_DEBUGG:
-        #if True:
+        #if hT.FLAG_DEBUGG:
+        if True:
             print hT.itsEvents['set'],
             print hT.itsObjects['classAttribute'],
             print Id,
-            print theBehaviorId,
             print theDataType,
             print thePackValue,
             print theProbeId,
@@ -922,7 +917,7 @@ class MetaDescriptor(type):
             print theThreadId
             raw_input()
         try:
-            #hT.itsSocket.sendall(hT.itsPacker.get_buffer())
+            hT.itsSocket.sendall(hT.itsPacker.get_buffer())
             pass
         except:
             print 'TOD está durmiendo :-(', theCode.co_name    
@@ -951,7 +946,8 @@ class Descriptor(object):
         #se debe deshabilitar settrace
         #revizar comportamiento de xdrlib
         sys.settrace(None)
-        theObject.attributes.__updateAttr__({aName:-1},theObjectId)
+        theObject.__addAttribute__(aName, theObjectId)
+        #theObject.attributes.__updateAttr__({aName:-1},theObjectId)
         Id = theObject.attributes[aName]
         if not hT.itsProbe.has_key((theCurrentLasti,theBehaviorId)):
             theProbeId = hT.__registerProbe__(theCurrentLasti,

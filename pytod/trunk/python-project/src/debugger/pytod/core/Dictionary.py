@@ -6,6 +6,8 @@ __email__ = "minoztro@gmail.com"
 __all__ = ['Dictionary']
 
 import xdrlib
+import inspect
+import re
 
 class Dictionary(dict):
     
@@ -71,29 +73,33 @@ class Dictionary(dict):
                     except:
                         print 'TOD está durmiendo :-('
 
-    def __updateClassAttribute__(self, aDictionary, aParentId): 
+    def __updateStaticField__(self, aDictionary, aParentId): 
         for theKey, theValue in aDictionary.items():
-            if not self.has_key(theKey):
-                if not theKey == 'self':
-                    theValue = self.hT.itsId.__get__()
-                    self.hT.itsId.__next__()
-                    self[theKey] = theValue
-                    self.hT.itsPacker.reset()
-                    self.hT.itsPacker.pack_int(self.hT.itsEvents['register'])
-                    self.hT.itsPacker.pack_int(self.hT.itsObjects['classAttribute'])
-                    self.hT.itsPacker.pack_int(theValue)
-                    self.hT.itsPacker.pack_int(aParentId)
-                    self.hT.itsPacker.pack_string(theKey)
-                    if self.hT.FLAG_DEBUGG:
-                        print self.hT.itsEvents['register'],
-                        print self.hT.itsObjects['classAttribute'],
-                        print theValue,
-                        print aParentId,
-                        print theKey 
-                        raw_input()                          
-                    try:       
-                        #self.hT.itsSocket.sendall(self.hT.itsPacker.get_buffer())
-                        pass
-                    except:
-                        print 'TOD está durmiendo :-('
-                        
+            if not inspect.isfunction(theValue) and not theKey == 'self':
+                if not re.search(self.hT.itsMethodPattern,theKey):
+                    if not self.has_key(theKey):
+                        theValue = self.hT.itsId.__get__()
+                        self.hT.itsId.__next__()
+                        self[theKey] = theValue
+                        self.hT.itsPacker.reset()
+                        self.hT.itsPacker.pack_int(
+                            self.hT.itsEvents['register'])
+                        self.hT.itsPacker.pack_int(
+                            self.hT.itsObjects['classAttribute'])
+                        self.hT.itsPacker.pack_int(theValue)
+                        self.hT.itsPacker.pack_int(aParentId)
+                        self.hT.itsPacker.pack_string(theKey)
+                        #if self.hT.FLAG_DEBUGG:
+                        if True:
+                            print self.hT.itsEvents['register'],
+                            print self.hT.itsObjects['classAttribute'],
+                            print theValue,
+                            print aParentId,
+                            print theKey 
+                            raw_input()                          
+                        try:       
+                            self.hT.itsSocket.sendall(
+                                self.hT.itsPacker.get_buffer())
+                            pass
+                        except:
+                            print 'TOD está durmiendo :-('

@@ -12,7 +12,7 @@ class Class(object):
 
     def __init__(self, aHt, aClassId, aCode, aLnotab):
         self.hT = aHt
-        self.classAttributes = Dictionary(self.hT)
+        self.staticField = Dictionary(self.hT)
         self.attributes = Dictionary(self.hT)
         self.method = Dictionary(self.hT)
         self.lnotab = aLnotab
@@ -33,3 +33,10 @@ class Class(object):
                     id = self.hT.itsId.__get__()
                     self.method.update({k:id})
                     self.hT.itsId.__next__()
+    
+    def __addStaticField__(self, aLocals):
+        self.staticField.__updateStaticField__(aLocals, self.Id)
+    
+    def __addAttribute__(self, aName, aObjectId):
+        self.attributes.__updateAttr__({aName:-1}, aObjectId)
+        
