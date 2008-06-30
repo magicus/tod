@@ -220,7 +220,7 @@ public class PythonTODServer extends TODServer
 						System.out.println("Registrando variable local "+argName);
 					}
 				}
-				String fileName = aInputStream.readString();
+				String theFileName = aInputStream.readString();
 				int theCodeSize = aInputStream.readInt();
 				int theLineNumbers = aInputStream.readInt();
 				int theStartPc = -1;
