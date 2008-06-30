@@ -124,26 +124,41 @@ import dis
     Saludo = type('Saludo', (), dicc)
     s = Saludo()
     s.hola()
+
+    
+    def __depthFrame__(aFrame):
+        theBackFrame = aFrame.f_back
+        if theBackFrame.f_locals.has_key('__depth__'):
+            theCurrentDepth = theBackFrame.f_locals['__depth__']
+            aFrame.f_locals['__depth__'] = theCurrentDepth + 1
+        else:
+            aFrame.f_locals['__depth__'] = 1
+            print 'frame inicial',aFrame.f_code.co_name,
+        return aFrame.f_locals['__depth__']
+
+    def trace(aFrame, aEvent, aArg):
+        theCode = aFrame.f_code
+        if theCode.co_name == '<module>':
+                return
+        theDepth = __depthFrame__(aFrame)
+        if aEvent == 'call':
+            print theCode.co_name, theDepth
+        elif aEvent == 'line':
+            pass
+        elif aEvent == 'return':
+            pass
+        elif aEvent == 'exception':
+            pass
 """
-
-def __depthFrame__(aFrame):
-    theBackFrame = aFrame.f_back
-    if theBackFrame.f_locals.has_key('__depth__'):
-        theCurrentDepth = theBackFrame.f_locals['__depth__']
-        aFrame.f_locals['__depth__'] = theCurrentDepth + 1
-    else:
-        aFrame.f_locals['__depth__'] = 1
-        print 'frame inicial',aFrame.f_code.co_name,
-    return aFrame.f_locals['__depth__']
-
-
 def trace(aFrame, aEvent, aArg):
     theCode = aFrame.f_code
-    if theCode.co_name == '<module>':
-            return
-    theDepth = __depthFrame__(aFrame)
     if aEvent == 'call':
-        print theCode.co_name, theDepth
+        print len(dis.findlinestarts(theCode))
+        for theTuple in dis.findlinestarts(theCode):
+            print theTuple
+        print dis.dis(theCode)
+        print len(theCode.co_code)
+        raw_input()
     elif aEvent == 'line':
         pass
     elif aEvent == 'return':

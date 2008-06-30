@@ -591,6 +591,7 @@ class hunterTrace(object):
         theObjectClass.__addStaticField__(aLocals)
 
     def __registerMethod__(self, aCode, aMethodId, aClassId, aArgs):
+        theLineNumbers = 0
         self.itsPacker.reset()
         self.itsPacker.pack_int(self.itsEvents['register'])
         self.itsPacker.pack_int(self.itsObjects['method'])
@@ -610,6 +611,21 @@ class hunterTrace(object):
                 thePrintArg += " "
                 self.itsPacker.pack_int(theValue)
         self.itsPacker.pack_string(aCode.co_filename)
+        #agregamos setup del método para que el plugin
+        #funcione correctamente
+        #de seguro que esto se puede hacer mejor
+        for theTuple in dis.findlinestarts(aCode):
+            theLineNumbers += 1
+        self.itsPacker.pack_int(len(aCode.co_code))        
+        self.itsPacker.pack_int(theLineNumbers)
+        thePrintLines = " "
+        for theStartPc, theLineNumber in dis.findlinestarts(aCode):
+            thePrintArg += str(theStartPc)
+            thePrintArg += " "            
+            self.itsPacker.pack_int(theStartPc)
+            thePrintArg += str(theLineNumber)
+            thePrintArg += " "            
+            self.itsPacker.pack_int(theLineNumber)
         if self.FLAG_DEBUGG:
             print self.itsEvents['register'],
             print self.itsObjects['method'],
@@ -619,6 +635,9 @@ class hunterTrace(object):
             print len(aArgs)-1,
             print thePrintArg,
             print aCode.co_filename
+            print len(aCode.co_code)
+            print theLineNumbers
+            print thePrintLines
             raw_input()
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
