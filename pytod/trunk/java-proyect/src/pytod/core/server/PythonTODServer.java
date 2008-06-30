@@ -12,6 +12,7 @@ import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ObjectId;
+import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.server.TODServer;
 
@@ -220,6 +221,17 @@ public class PythonTODServer extends TODServer
 					}
 				}
 				String fileName = aInputStream.readString();
+				int theCodeSize = aInputStream.readInt();
+				int theLineNumbers = aInputStream.readInt();
+				int theStartPc = -1;
+				int theLineNumber = -1;
+				LineNumberInfo[] theLineNumberInfo = new LineNumberInfo[theLineNumbers];
+				for (int i = 0; i < theLineNumbers; i++) {
+					theStartPc = aInputStream.readInt();
+					theLineNumber = aInputStream.readInt();
+					theLineNumberInfo[i] = new LineNumberInfo((short) theStartPc, (short) theLineNumber);
+				}
+				theBehavior.setup(true, null, theCodeSize, theLineNumberInfo, null);
 				System.out.println("Registrando el metodo "+methodName + "id = "+methodId);
 			}
 			catch (Exception e)
@@ -630,13 +642,19 @@ public class PythonTODServer extends TODServer
 		public void returnEvent(XDRInputStream aInputStream)
 		{
 			XDRInputStream theStream = aInputStream;
-			int exitId = 101;
 			try
 			{
+				int theValueId = 0;
+				Object theValue = null;
 				boolean hasThrown = false;
 				int behaviorId = aInputStream.readInt();
 				int typeId = aInputStream.readInt();
-				Object theValue = getObjectValue(typeId, aInputStream);
+				if (typeId == 1) {
+					theValueId = aInputStream.readInt();
+				}
+				else{
+					theValue = getObjectValue(typeId, aInputStream);					
+				}
 				int iHasThrown = theStream.readInt();
 				int probeId = theStream.readInt();
 				long parentTimeStampFrame = aInputStream.readLong();
@@ -646,12 +664,6 @@ public class PythonTODServer extends TODServer
 				if (iHasThrown == 1)
 				{
 					hasThrown = true;
-					byte[] theValueS = ValueWriter.serialize(theValue);
-					itsLogCollector.register(
-							exitId,
-							theValueS, 
-							currentTimeStamp, 
-							false);
 					itsLogCollector.behaviorExit(
 							threadId, 
 							parentTimeStampFrame, 
@@ -661,7 +673,7 @@ public class PythonTODServer extends TODServer
 							probeId, 
 							behaviorId,
 							hasThrown, 
-							new ObjectId(exitId));
+							new ObjectId(theValueId));
 					
 				}
 				else{

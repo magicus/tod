@@ -70,7 +70,7 @@ class hunterTrace(object):
                 
     def __behaviorExit__(self,
                          aFrame,
-                         arg,
+                         aArg,
                          aDepth,
                          aParentTimestampFrame,
                          aThreadId,
@@ -87,22 +87,35 @@ class hunterTrace(object):
                                                 aFrame.f_lineno)
         else:
             theProbeId = self.itsProbe[(theCurrentLasti,theParentId)]
-        self.itsPacker.reset()
-        self.itsPacker.pack_int(self.itsEvents['return'])
-        self.itsPacker.pack_int(behaviorId)
-        theDataType = self.__getDataType__(arg)
-        self.itsPacker.pack_int(theDataType)
-        thePackValue = self.__packValue__(theDataType, arg)
-        if aHasThrown:       
+        theCurrentTimestamp = self.__convertTimestamp__(time.time())
+        if aHasThrown:                  
+            hT.__registerObject__(aArg,theCurrentTimestamp)
+            self.itsPacker.reset()
+            self.itsPacker.pack_int(self.itsEvents['return'])
+            self.itsPacker.pack_int(behaviorId)
+            theDataType = self.__getDataType__(aArg)
+            self.itsPacker.pack_int(theDataType)
+            #thePackValue = self.__packValue__(theDataType, arg)
+            self.itsPacker.pack_int(id(aArg))
             self.itsPacker.pack_int(1)
+            self.itsPacker.pack_int(theProbeId)
+            self.itsPacker.pack_hyper(aParentTimestampFrame)        
+            self.itsPacker.pack_int(theDepth)
+            self.itsPacker.pack_hyper(theCurrentTimestamp)
+            self.itsPacker.pack_int(aThreadId)
         else:
+            self.itsPacker.reset()
+            self.itsPacker.pack_int(self.itsEvents['return'])
+            self.itsPacker.pack_int(behaviorId)
+            theDataType = self.__getDataType__(aArg)
+            self.itsPacker.pack_int(theDataType)
+            thePackValue = self.__packValue__(theDataType, aArg)
             self.itsPacker.pack_int(0)
-        self.itsPacker.pack_int(theProbeId)
-        self.itsPacker.pack_hyper(aParentTimestampFrame)        
-        self.itsPacker.pack_int(theDepth)
-        theCurrentTimestamp = self.__convertTimestamp__(time.time()) 
-        self.itsPacker.pack_hyper(theCurrentTimestamp)
-        self.itsPacker.pack_int(aThreadId)
+            self.itsPacker.pack_int(theProbeId)
+            self.itsPacker.pack_hyper(aParentTimestampFrame)        
+            self.itsPacker.pack_int(theDepth)
+            self.itsPacker.pack_hyper(theCurrentTimestamp)
+            self.itsPacker.pack_int(aThreadId)
         if self.FLAG_DEBUGG:
             print self.itsEvents['return'],
             print behaviorId,
