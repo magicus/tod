@@ -39,10 +39,5 @@ import java.util.List;
  */
 public interface IAspectInfo extends ILocationInfo
 {
-	/**
-	 * Returns the source file that defines the aspect.
-	 */
-	public String getSourceFile();
-	
 	public List<IAdviceInfo> getAdvices();
 }

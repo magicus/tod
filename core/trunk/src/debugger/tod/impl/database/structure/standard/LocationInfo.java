@@ -52,6 +52,9 @@ implements IMutableLocationInfo, Serializable
 	private final int itsId;
 	private String itsName;
 	
+	private String itsSourceFile;
+
+	
 	public LocationInfo(IShareableStructureDatabase aDatabase, int aId)
 	{
 		itsOriginal = true;
@@ -114,6 +117,16 @@ implements IMutableLocationInfo, Serializable
 	protected void changeName(String aName)
 	{
 		itsName = aName;
+	}
+
+	public String getSourceFile()
+	{
+		return itsSourceFile;
+	}
+
+	public void setSourceFile(String aSourceFile)
+	{
+		itsSourceFile = aSourceFile;
 	}
 
 	@Override

@@ -19,7 +19,7 @@ public class JavaSourceRevealer implements ISourceRevealer
 {
 	public boolean canHandle(SourceRange aSourceRange)
 	{
-		return aSourceRange.sourceFile.endsWith(".java") || aSourceRange.sourceFile.indexOf('.') == -1;
+		return aSourceRange.sourceFile.endsWith(".java");
 	}
 
 	public boolean reveal(ISession aSession, SourceRange aSourceRange) throws CoreException, BadLocationException
@@ -34,7 +34,7 @@ public class JavaSourceRevealer implements ISourceRevealer
 	public static IEditorPart findEditor(List<IJavaProject> aJavaProjects, SourceRange aSourceRange)
 	throws CoreException
 	{
-		String theTypeName = aSourceRange.sourceFile;
+		String theTypeName = aSourceRange.typeName;
 		
 		// For inner classes, we just try to open the root class 
 		int theIndex = theTypeName.indexOf('$');
@@ -52,7 +52,7 @@ public class JavaSourceRevealer implements ISourceRevealer
 			{
 				TODUtils.logf(0, "The type %s has not been found in the available sources "
 						+ "of the Eclipse workspace.\n Path were " + "to find the sources was: %s",
-						aSourceRange.sourceFile, aJavaProjects);
+						aSourceRange.typeName, aJavaProjects);
 				return null;
 			}
 		}

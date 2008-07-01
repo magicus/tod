@@ -48,4 +48,9 @@ public interface IMutableLocationInfo extends ILocationInfo
 	 */
 	public IMutableStructureDatabase _getMutableDatabase();
 	
+	/**
+	 * Sets the source file name.
+	 */
+	public void setSourceFile(String aFile);
+
 }

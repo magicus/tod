@@ -231,8 +231,7 @@ public class LocationUtils
 		    int theLineNumber = theBehavior.getLineNumber(theBytecodeIndex);
 		    ITypeInfo theType = theBehavior.getType();
 		    
-		    String theTypeName = theType.getName();
-		    return new SourceRange(theTypeName, theLineNumber);
+		    return new SourceRange(theType.getName(), theType.getSourceFile(), theLineNumber);
 		}
 		else return null;
 	}
@@ -259,7 +258,7 @@ public class LocationUtils
 		else if (aLocation instanceof IAspectInfo)
 		{
 			IAspectInfo theAspect = (IAspectInfo) aLocation;
-			aGUIManager.gotoSource(new SourceRange(theAspect.getSourceFile(), 1));
+			aGUIManager.gotoSource(new SourceRange(theAspect.getName(), theAspect.getSourceFile(), 1));
 		}
 		else throw new UnsupportedOperationException(""+aLocation);
 	}

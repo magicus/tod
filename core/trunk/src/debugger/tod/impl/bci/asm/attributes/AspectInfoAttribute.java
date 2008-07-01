@@ -76,6 +76,7 @@ public class AspectInfoAttribute extends DataAttribute
 			int theEndColumn = aStream.readInt();
 			
 			theMap.put(theId, new SourceRange(
+					theSourceFile, // TODO: this is probably not a good idea...
 					theSourceFile, 
 					theStartLine, 
 					theStartColumn, 

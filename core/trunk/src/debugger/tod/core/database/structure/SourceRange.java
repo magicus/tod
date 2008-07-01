@@ -42,6 +42,7 @@ public class SourceRange implements Serializable
 {
 	private static final long serialVersionUID = 3583352414851419066L;
 
+	public final String typeName;
 	public final String sourceFile;
 	public final int startLine;
 	public final int startColumn;
@@ -51,13 +52,14 @@ public class SourceRange implements Serializable
 	/**
 	 * Creates a source range for a single line
 	 */
-	public SourceRange(String aSourceFile, int aLine)
+	public SourceRange(String aTypeName, String aSourceFile, int aLine)
 	{
-		this(aSourceFile, aLine, 1, aLine, 1);
+		this(aTypeName, aSourceFile, aLine, 1, aLine, 1);
 	}
 	
-	public SourceRange(String aSourceFile, int aStartLine, int aStartColumn, int aEndLine, int aEndColumn)
+	public SourceRange(String aTypeName, String aSourceFile, int aStartLine, int aStartColumn, int aEndLine, int aEndColumn)
 	{
+		typeName = aTypeName;
 		sourceFile = aSourceFile;
 		startLine = aStartLine;
 		startColumn = aStartColumn;

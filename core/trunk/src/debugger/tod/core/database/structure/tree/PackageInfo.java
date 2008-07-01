@@ -57,4 +57,9 @@ public class PackageInfo implements ILocationInfo
 	{
 		return itsName;
 	}
+
+	public String getSourceFile()
+	{
+		throw new UnsupportedOperationException();
+	}
 }

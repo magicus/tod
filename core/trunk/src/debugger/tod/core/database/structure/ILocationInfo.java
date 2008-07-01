@@ -54,6 +54,11 @@ public interface ILocationInfo
 	public IStructureDatabase getDatabase();
 	
 	/**
+	 * Returns the name of the file that contains the source code of this location.
+	 */
+	public String getSourceFile();
+	
+	/**
 	 * Interface for location info implementations that are serializable.
 	 * Such implementation should have their reference to the owner database
 	 * transient, so that upon arriving at a new location they can be bound

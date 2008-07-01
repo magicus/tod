@@ -78,4 +78,9 @@ implements IArraySlotFieldInfo
 	{
 		return false;
 	}
+
+	public String getSourceFile()
+	{
+		throw new UnsupportedOperationException();
+	}
 }

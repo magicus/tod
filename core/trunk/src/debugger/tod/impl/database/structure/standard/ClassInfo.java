@@ -101,7 +101,7 @@ implements IMutableClassInfo, ISerializableLocationInfo
 	 * various versions when classes are redefined at runtime.
 	 */
 	private boolean itsDisposable = false;
-	
+		
 	private long itsStartTime;
 
 	public ClassInfo(IShareableStructureDatabase aDatabase, ClassNameInfo aClassNameInfo, String aName, int aId)

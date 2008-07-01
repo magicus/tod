@@ -165,23 +165,36 @@ public class SourceRevealerUtils
 	 */
 	public static List<IJavaProject> getJavaProjects(ISession aSession)
 	{
+		List<IProject> theProjects = getProjects(aSession);
 		List<IJavaProject> theJavaProjects = new ArrayList<IJavaProject>();
 		
-	    Set<IProgramLaunch> theLaunches = aSession.getLaunches();
-	    for (IProgramLaunch theLaunch : theLaunches)
+    	for (IProject theProject : theProjects)
 		{
-	    	EclipseProgramLaunch theEclipseLaunch = (EclipseProgramLaunch) theLaunch;
-	    	for (IProject theProject : theEclipseLaunch.getProjects())
+    		IJavaProject theJavaProject = JavaCore.create(theProject);
+			if (theJavaProject != null && theJavaProject.exists())
 			{
-	    		IJavaProject theJavaProject = JavaCore.create(theProject);
-				if (theJavaProject != null && theJavaProject.exists())
-				{
-					theJavaProjects.add(theJavaProject);
-				}
+				theJavaProjects.add(theJavaProject);
 			}
 		}
 
 	    return theJavaProjects;
+	}
+
+	/**
+	 * Returns all the projects of the given session.
+	 */
+	public static List<IProject> getProjects(ISession aSession)
+	{
+		List<IProject> theProjects = new ArrayList<IProject>();
+		
+		Set<IProgramLaunch> theLaunches = aSession.getLaunches();
+		for (IProgramLaunch theLaunch : theLaunches)
+		{
+			EclipseProgramLaunch theEclipseLaunch = (EclipseProgramLaunch) theLaunch;
+			theProjects.addAll(theEclipseLaunch.getProjects());
+		}
+		
+		return theProjects;
 	}
 
 	/**
