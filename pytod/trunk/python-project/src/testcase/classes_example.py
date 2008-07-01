@@ -1,8 +1,10 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 import sys
-sys.path.append('/media/WD Passport/eclipse/workspace/python-project/src')
-from debugger.pytod.core.hunterTrace import hT
+#sys.path.append('/media/WD Passport/eclipse/workspace/python-project/src')
+#from debugger.pytod.core.hunterTrace import hT
+import time
+first = time.time()
 
 class clase1(object):
     h = 2
@@ -72,6 +74,8 @@ if __name__ == '__main__':
     a.metodo(10,20,30,40)
     c = Corriente()
     Corriente.__num_corrientes = 36
+    finish = time.time()
+    print finish-first
     #b = clase2()
     #c = clase3()
     #hT.__printHunter__()
