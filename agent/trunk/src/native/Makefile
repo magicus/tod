@@ -15,18 +15,20 @@ include $(ENV_DEF)
 
 SHARED_MAGIC = -shared
 STATIC_MAGIC = -Wl,-Bstatic 
+STATIC_LIB_PREFIX = 
 
 #Base name for the tod-agent library
 AGENT_NAME = tod-agent
 
 ifeq ($(PLATFORM), win32)
-	CXX = i586-mingw32msvc-g++
+	#CXX = i586-mingw32msvc-g++
 
 	LDFLAGS += -lws2_32 -Wl,--add-stdcall-alias
 	CXXFLAGS += -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/win32/
 
 	LIBPREFIX =
 	LIBEXT = dll
+	STATIC_LIB_PREFIX = lib
 endif
 
 ifeq ($(PLATFORM), macos)
@@ -76,9 +78,9 @@ AGENT_LIBNAME = $(LIBPREFIX)$(AGENT_NAME).$(LIBEXT)
 
 LDFLAGS_BOOST += \
 	-L$(BOOST_LIBS) \
-	$(STATIC_MAGIC) -lboost_system-$(BOOST_FLAVOR)-$(BOOST_VERSION) \
-	$(STATIC_MAGIC) -lboost_thread-$(BOOST_FLAVOR)-$(BOOST_VERSION) \
-	$(STATIC_MAGIC) -lboost_filesystem-$(BOOST_FLAVOR)-$(BOOST_VERSION)
+	$(STATIC_MAGIC) -l$(STATIC_LIB_PREFIX)boost_system-$(BOOST_FLAVOR)-$(BOOST_VERSION) \
+	$(STATIC_MAGIC) -l$(STATIC_LIB_PREFIX)boost_thread-$(BOOST_FLAVOR)-$(BOOST_VERSION) \
+	$(STATIC_MAGIC) -l$(STATIC_LIB_PREFIX)boost_filesystem-$(BOOST_FLAVOR)-$(BOOST_VERSION)
 
 tod-agent-objects = \
 	$(PLATFORM)/bci-agent.o \
