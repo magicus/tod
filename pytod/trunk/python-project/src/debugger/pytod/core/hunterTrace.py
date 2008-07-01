@@ -350,6 +350,13 @@ class hunterTrace(object):
                                                 aFrame.f_lineno)
         else:
             theProbeId = self.itsProbe[(theCurrentLasti,theParentId)]
+            
+        #preguntamos si algún argumento es del tipo string
+        #y lo registramos debidamente
+        for theValue in theArgsValue:
+            if type(theValue) == types.StringType:
+                if not id(theValue) in hT.itsRegisterObjects:
+                    self.__registerObject__(theValue, aCurrentTimestamp)
         self.itsPacker.reset()       
         self.itsPacker.pack_int(self.itsEvents['instantiation'])
         self.itsPacker.pack_int(theBehaviorId)
@@ -357,12 +364,17 @@ class hunterTrace(object):
         self.itsPacker.pack_int(len(theArgsValue))
         thePrintArg = " "
         for theValue in theArgsValue:
-            theDataType = self.__getDataType__(theValue)
+            theDataType = self.__getDataType__(theValue)               
             self.itsPacker.pack_int(theDataType)
             thePrintArg += str(theDataType)
             thePrintArg += " "
-            thePrintArg += str(self.__packValue__(theDataType, theValue))
-            thePrintArg += " "
+            if theDataType == 1:
+                self.itsPacker.pack_int(id(theValue))
+                thePrintArg += str(id(theValue))
+                thePrintArg += " "
+            else:
+                thePrintArg += str(self.__packValue__(theDataType, theValue))
+                thePrintArg += " "
         self.itsPacker.pack_int(theProbeId)
         self.itsPacker.pack_hyper(aParentTimestampFrame)
         self.itsPacker.pack_int(aDepth)    
@@ -653,6 +665,7 @@ class hunterTrace(object):
     def __registerFunction__(self, aCode):
         theFunctionId = self.itsId.__get__()
         aArgs = self.__getArgs__(aCode)
+        theLineNumbers = 0
         self.itsPacker.reset()
         self.itsPacker.pack_int(self.itsEvents['register'])
         self.itsPacker.pack_int(self.itsObjects['function'])
@@ -669,7 +682,23 @@ class hunterTrace(object):
                 thePrintArg += " "
                 self.itsPacker.pack_int(theValue)
         self.itsPacker.pack_string(aCode.co_filename)
-        if self.FLAG_DEBUGG:
+        #agregamos setup del método para que el plugin
+        #funcione correctamente
+        #de seguro que esto se puede hacer mejor
+        for theTuple in dis.findlinestarts(aCode):
+            theLineNumbers += 1
+        self.itsPacker.pack_int(len(aCode.co_code))        
+        self.itsPacker.pack_int(theLineNumbers)
+        thePrintLines = " "
+        for theStartPc, theLineNumber in dis.findlinestarts(aCode):
+            thePrintArg += str(theStartPc)
+            thePrintArg += " "            
+            self.itsPacker.pack_int(theStartPc)
+            thePrintArg += str(theLineNumber)
+            thePrintArg += " "            
+            self.itsPacker.pack_int(theLineNumber)
+        #if self.FLAG_DEBUGG:
+        if True:
             print self.itsEvents['register'],
             print self.itsObjects['function'],
             print theFunctionId,
@@ -677,6 +706,9 @@ class hunterTrace(object):
             print len(aArgs)-1,
             print thePrintArg,
             print aCode.co_filename
+            print len(aCode.co_code)
+            print theLineNumbers
+            print thePrintLines
             raw_input()
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())

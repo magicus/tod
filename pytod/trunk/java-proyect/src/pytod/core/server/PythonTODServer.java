@@ -38,7 +38,7 @@ public class PythonTODServer extends TODServer
 		itsStructureDatabase = aStructureDatabase;
 		itsLogCollector = aLogCollector;
 		System.out.println("Hola soy Pilton");
-		//truculencia planteada por Guillaume
+		//Dirty trick proposed by Guillaume
 		IMutableClassInfo theClass = itsStructureDatabase.addClass(100, "functionClass");
 	}
 
@@ -116,7 +116,7 @@ public class PythonTODServer extends TODServer
 				int argsN = aInputStream.readInt();
 				theClass = itsStructureDatabase.getClass(100, true);
 				theBehavior = theClass.addBehavior(functionId, functionName, generateSignature(argsN), false);
-				if (argsN != 0){
+				if (argsN > 0){
 					for(int i=0;i<argsN;i=i+1)
 					{
 						String argName = new String(aInputStream.readString());						
@@ -126,6 +126,17 @@ public class PythonTODServer extends TODServer
 					}
 				}
 				String fileName = aInputStream.readString();
+				int theCodeSize = aInputStream.readInt();
+				int theLineNumbers = aInputStream.readInt();
+				int theStartPc = -1;
+				int theLineNumber = -1;
+				LineNumberInfo[] theLineNumberInfo = new LineNumberInfo[theLineNumbers];
+				for (int i = 0; i < theLineNumbers; i++) {
+					theStartPc = aInputStream.readInt();
+					theLineNumber = aInputStream.readInt();
+					theLineNumberInfo[i] = new LineNumberInfo((short) theStartPc, (short) theLineNumber);
+				}
+				theBehavior.setup(true, null, theCodeSize, theLineNumberInfo, null);
 				System.out.println("Registrando la funcion "+functionName + "id = "+functionId);
 			}
 			catch (Exception e)
@@ -176,7 +187,6 @@ public class PythonTODServer extends TODServer
 			{
 				throw new RuntimeException(e);
 			}			
-
 		}
 		
 		public void registerStaticField(XDRInputStream aInputStream)
@@ -210,8 +220,7 @@ public class PythonTODServer extends TODServer
 				
 				theClass = itsStructureDatabase.getClass(classId, true);
 				theBehavior = theClass.addBehavior(methodId, methodName, generateSignature(argsN), false);
-				//theBehavior = theClass.addBehavior(methodId, methodName, ""+argsN);
-				if (argsN != 0){
+				if (argsN > 0){
 					for(int i=0;i<argsN;i=i+1)
 					{
 						String argName = aInputStream.readString();
@@ -330,13 +339,18 @@ public class PythonTODServer extends TODServer
 				int behaviorId = theStream.readInt();
 				int targetId = theStream.readInt();
 				int argsN = theStream.readInt();
-				if (argsN != 0){
+				if (argsN > 0){
 					args = new Object[argsN];
 					for(int i=0;i<argsN;i=i+1)
 					{
-						int argType = theStream.readInt();
-						Object theValue = getObjectValue(argType, aInputStream);
-						args[i] = theValue;
+						int theArgType = theStream.readInt();
+						if (theArgType == 1) {
+							int theValueId = theStream.readInt();
+							args[i] = new ObjectId(theValueId);
+						} else {
+							Object theValue = getObjectValue(theArgType, aInputStream);
+							args[i] = theValue;
+						}
 					}
 				}
 				int probeId = theStream.readInt();
@@ -373,7 +387,7 @@ public class PythonTODServer extends TODServer
 				int methodId = theStream.readInt();
 				int targetId = theStream.readInt();
 				int argsN = theStream.readInt();
-				if (argsN != 0){
+				if (argsN > 0){
 					args = new Object[argsN];
 					for(int i=0;i<argsN;i=i+1)
 					{
@@ -415,7 +429,7 @@ public class PythonTODServer extends TODServer
 			{
 				int functionId = theStream.readInt();
 				int argsN = theStream.readInt();
-				if (argsN != 0){
+				if (argsN > 0){
 					args = new Object[argsN];
 					for(int i=0;i<argsN;i=i+1)
 					{
