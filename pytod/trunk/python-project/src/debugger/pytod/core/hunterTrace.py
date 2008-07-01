@@ -350,7 +350,6 @@ class hunterTrace(object):
                                                 aFrame.f_lineno)
         else:
             theProbeId = self.itsProbe[(theCurrentLasti,theParentId)]
-            
         #preguntamos si algún argumento es del tipo string
         #y lo registramos debidamente
         for theValue in theArgsValue:
@@ -480,6 +479,12 @@ class hunterTrace(object):
                                                 aFrame.f_lineno)
         else:
             theProbeId = self.itsProbe[(theCurrentLasti,theParentId)]
+        #preguntamos si algún argumento es del tipo string
+        #y lo registramos debidamente
+        for theValue in theArgsValue:
+            if type(theValue) == types.StringType:
+                if not id(theValue) in hT.itsRegisterObjects:
+                    self.__registerObject__(theValue, aCurrentTimestamp)            
         self.itsPacker.reset()
         self.itsPacker.pack_int(self.itsEvents['call'])
         self.itsPacker.pack_int(self.itsObjects['method'])
@@ -491,9 +496,14 @@ class hunterTrace(object):
             theDataType = self.__getDataType__(theValue)
             self.itsPacker.pack_int(theDataType)
             thePrintArg += str(theDataType)
-            thePrintArg += " "            
-            thePrintArg += str(self.__packValue__(theDataType, theValue))
             thePrintArg += " "
+            if theDataType == 1:
+                self.itsPacker.pack_int(id(theValue))
+                thePrintArg += str(id(theValue))
+                thePrintArg += " "
+            else:
+                thePrintArg += str(self.__packValue__(theDataType, theValue))
+                thePrintArg += " "
         self.itsPacker.pack_int(theProbeId)
         self.itsPacker.pack_hyper(aParentTimestampFrame)
         self.itsPacker.pack_int(aDepth)    
