@@ -22,14 +22,14 @@ def release(version):
 	cwd = os.getcwd()
 	os.chdir(taMod.path + '/src/native')
 
-	libs = ["libtod-agent.so", "libtod-agent_x64.so"]
+	libs = ["libtod-agent.so", "libtod-agent_x64.so", "libtod-agent.dylib", "tod-agent.dll"]
 
 	for lib in libs:
 		# Get local signature
-		lsig = int(os.popen('./svn-sig.sh').read())
+		lsig = os.popen('./svn-sig.sh').read()
 
 		# Get remote signature
-		rsig = int(urllib.urlopen(AGENT_LIBS_URL + lib + "-sig.txt").read())
+		rsig = urllib.urlopen(AGENT_LIBS_URL + lib + "-sig.txt").read()
 
 		if lsig != rsig:
 			print "SVN revisions do not match for " + lib
@@ -39,7 +39,7 @@ def release(version):
 
 	os.chdir(cwd)
 	print "Done."
-	sys.exit(0)
+	#sys.exit(0)
 	
 	shutil.copy('ant.settings', tpMod.path)
 
