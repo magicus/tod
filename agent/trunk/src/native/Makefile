@@ -38,11 +38,16 @@ ifeq ($(PLATFORM), macos)
 	CXXFLAGS += -Wno-long-double
 
 	CXXFLAGS += -I$(JAVA_HOME)/Headers/ 
-	CXXFLAGS += -arch ppc -arch i386 
-	#CXXFLAGS += -arch ppc64 -arch x86_64
+	
+	#CXXFLAGS += -arch ppc 
+	CXXFLAGS += -arch i386 
+	#CXXFLAGS += -arch ppc64 
+	#CXXFLAGS += -arch x86_64
 
-	LDFLAGS += -arch ppc -arch i386 
-	#LDFLAGS += -arch ppc64 -arch x86_64
+	#LDFLAGS += -arch ppc 
+	LDFLAGS += -arch i386 
+	#LDFLAGS += -arch ppc64 
+	#LDFLAGS += -arch x86_64
 
 	LIBPREFIX = lib
 	LIBEXT = dylib
