@@ -231,7 +231,6 @@ public class PythonTODServer extends TODServer
 				}
 				String theFileName = aInputStream.readString();
 				theClass.setSourceFile(theFileName);
-				
 				int theCodeSize = aInputStream.readInt();
 				int theLineNumbers = aInputStream.readInt();
 				int theStartPc = -1;
@@ -393,9 +392,15 @@ public class PythonTODServer extends TODServer
 					args = new Object[argsN];
 					for(int i=0;i<argsN;i=i+1)
 					{
-						int argType = theStream.readInt();
-						Object theValue = getObjectValue(argType, aInputStream);
-						args[i] = theValue;
+						int theArgType = theStream.readInt();
+						if (theArgType == 1) {
+							int theValueId = theStream.readInt();
+							args[i] = new ObjectId(theValueId);
+						} else {
+							Object theValue = getObjectValue(theArgType, aInputStream);
+							args[i] = theValue;
+
+						}
 					}
 				}
 				int probeId = theStream.readInt();
