@@ -89,7 +89,7 @@ class hunterTrace(object):
             theProbeId = self.itsProbe[(theCurrentLasti,theParentId)]
         theCurrentTimestamp = self.__convertTimestamp__(time.time())
         if aHasThrown:                  
-            hT.__registerObject__(aArg,theCurrentTimestamp)
+            self.__registerObject__(aArg,theCurrentTimestamp)
             self.itsPacker.reset()
             self.itsPacker.pack_int(self.itsEvents['return'])
             self.itsPacker.pack_int(behaviorId)
@@ -104,12 +104,19 @@ class hunterTrace(object):
             self.itsPacker.pack_hyper(theCurrentTimestamp)
             self.itsPacker.pack_int(aThreadId)
         else:
+            theDataType = self.__getDataType__(aArg)
+            if theDataType == 1:
+                if not id(aArg) in self.itsObjects:
+                    self.__registerObject__(aArg,theCurrentTimestamp)
             self.itsPacker.reset()
             self.itsPacker.pack_int(self.itsEvents['return'])
             self.itsPacker.pack_int(behaviorId)
-            theDataType = self.__getDataType__(aArg)
             self.itsPacker.pack_int(theDataType)
-            thePackValue = self.__packValue__(theDataType, aArg)
+            if theDataType == 1:
+                thePackValue = id(aArg)
+                self.itsPacker.pack_int(id(aArg))
+            else:
+                thePackValue = self.__packValue__(theDataType, aArg)            
             self.itsPacker.pack_int(0)
             self.itsPacker.pack_int(theProbeId)
             self.itsPacker.pack_hyper(aParentTimestampFrame)        
@@ -117,6 +124,7 @@ class hunterTrace(object):
             self.itsPacker.pack_hyper(theCurrentTimestamp)
             self.itsPacker.pack_int(aThreadId)
         if self.FLAG_DEBUGG:
+        #if True:
             print self.itsEvents['return'],
             print behaviorId,
             print theDataType,

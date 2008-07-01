@@ -706,8 +706,8 @@ public class PythonTODServer extends TODServer
 						null,
 						probeId, 
 						behaviorId,
-						hasThrown, 
-						theValue);
+						hasThrown,
+						typeId == 1 ? new ObjectId(theValueId) : theValue);
 				}
 				System.out.println("Registrando return");
 			}
