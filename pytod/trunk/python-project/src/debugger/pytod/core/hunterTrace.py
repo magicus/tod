@@ -95,7 +95,6 @@ class hunterTrace(object):
             self.itsPacker.pack_int(behaviorId)
             theDataType = self.__getDataType__(aArg)
             self.itsPacker.pack_int(theDataType)
-            #thePackValue = self.__packValue__(theDataType, arg)
             self.itsPacker.pack_int(id(aArg))
             self.itsPacker.pack_int(1)
             self.itsPacker.pack_int(theProbeId)
@@ -124,7 +123,6 @@ class hunterTrace(object):
             self.itsPacker.pack_hyper(theCurrentTimestamp)
             self.itsPacker.pack_int(aThreadId)
         if self.FLAG_DEBUGG:
-        #if True:
             print self.itsEvents['return'],
             print behaviorId,
             print theDataType,
