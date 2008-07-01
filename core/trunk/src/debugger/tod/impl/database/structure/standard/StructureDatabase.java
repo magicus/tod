@@ -245,6 +245,7 @@ public class StructureDatabase implements IShareableStructureDatabase
 
 	protected void registerClass(IClassInfo aClass)
 	{
+		itsIds.registerClassId(aClass.getId());
 		Utils.listSet(itsClasses, aClass.getId(), (ClassInfo) aClass);
 		ClassNameInfo theClassNameInfo = getClassNameInfo(aClass.getName());
 		theClassNameInfo.addClass((ClassInfo) aClass);
@@ -305,6 +306,8 @@ public class StructureDatabase implements IShareableStructureDatabase
 	
 	public void registerBehavior(IBehaviorInfo aBehavior)
 	{
+		itsIds.registerBehaviorId(aBehavior.getId());
+
 		Utils.listSet(itsBehaviors, aBehavior.getId(), (BehaviorInfo) aBehavior);
 		if (DebugFlags.LOG_REGISTERED_BEHAVIORS) 
 		{
@@ -332,6 +335,7 @@ public class StructureDatabase implements IShareableStructureDatabase
 	
 	public void registerField(IFieldInfo aField)
 	{
+		itsIds.registerFieldId(aField.getId());
 		Utils.listSet(itsFields, aField.getId(), (FieldInfo) aField);
 	}
 
@@ -622,6 +626,33 @@ public class StructureDatabase implements IShareableStructureDatabase
 		public synchronized int nextAspectId()
 		{
 			return itsNextFreeAspectId++;
+		}
+		
+		/**
+		 * Notifies this id manager that a class with the given id has been
+		 * registered without asking for an id here.
+		 */
+		public synchronized void registerClassId(int aId)
+		{
+			if (aId >= itsNextFreeClassId) itsNextFreeClassId = aId+1;
+		}
+
+		/**
+		 * Notifies this id manager that a behavior with the given id has been
+		 * registered without asking for an id here.
+		 */
+		public synchronized void registerBehaviorId(int aId)
+		{
+			if (aId >= itsNextFreeBehaviorId) itsNextFreeBehaviorId = aId+1;
+		}
+		
+		/**
+		 * Notifies this id manager that a field with the given id has been
+		 * registered without asking for an id here.
+		 */
+		public synchronized void registerFieldId(int aId)
+		{
+			if (aId >= itsNextFreeFieldId) itsNextFreeFieldId = aId+1;
 		}
 	}
 	
