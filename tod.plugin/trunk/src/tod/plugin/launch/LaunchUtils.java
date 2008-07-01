@@ -170,9 +170,32 @@ public class LaunchUtils
         String theLibName = null;
         String theAgentName = DeploymentConfig.getNativeAgentName();
 		String theOs = System.getProperty("os.name");
-		if (theOs.contains("Windows")) theLibName = theAgentName+".dll";
-		else if (theOs.contains("Mac")) theLibName = "lib"+theAgentName+".dylib";
-		else theLibName = "lib"+theAgentName+".so";
+		String theArch = System.getProperty("os.arch");
+		
+		if (theOs.startsWith("Windows"))
+		{
+			theLibName = theAgentName+".dll";
+		}
+		else if (theOs.startsWith("Mac OS X"))
+		{
+			theLibName = "lib"+theAgentName+".dylib";
+		}
+		else if (theOs.startsWith("Linux"))
+		{
+			if (theArch.equals("x86") || theArch.equals("i386") || theArch.equals("i686"))
+			{
+				theLibName = "lib"+theAgentName+".so";
+			}
+			else if (theArch.equals("x86_64"))
+			{
+				theLibName = "lib"+theAgentName+"_x64.so";
+			}
+		}
+		
+		if (theLibName == null)
+		{
+			throw new RuntimeException("Unsupported architecture: "+theOs+"/"+theArch);
+		}
 
 		String theNativeAgentPath = System.getProperty(
 				"bcilib.path",

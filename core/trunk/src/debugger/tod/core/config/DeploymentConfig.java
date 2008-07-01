@@ -56,17 +56,18 @@ public class DeploymentConfig
 	{
 		Properties theProperties = readProperties();
 
-		itsAgentName =
-				System.getProperty(AGENTNAME_PROPERTY, theProperties
-						.getProperty(AGENTNAME_PROPERTY));
+		itsAgentName = System.getProperty(
+				AGENTNAME_PROPERTY, 
+				theProperties.getProperty(AGENTNAME_PROPERTY));
 
-		itsDatabaseClassName =
-				System.getProperty(DATABASECLASS_PROPERTY, theProperties
-						.getProperty(DATABASECLASS_PROPERTY));
+		itsDatabaseClassName = System.getProperty(
+				DATABASECLASS_PROPERTY, 
+				theProperties.getProperty(DATABASECLASS_PROPERTY));
 
-		String theDBScopeCheck =
-				System.getProperty(DB_SCOPE_CHECK_PROPERTY, theProperties
-						.getProperty(DB_SCOPE_CHECK_PROPERTY));
+		String theDBScopeCheck = System.getProperty(
+				DB_SCOPE_CHECK_PROPERTY, 
+				theProperties.getProperty(DB_SCOPE_CHECK_PROPERTY));
+		
 		itsDbScopeCheck = theDBScopeCheck == null ? "true" : theDBScopeCheck;
 
 	}
@@ -75,8 +76,7 @@ public class DeploymentConfig
 	{
 		try
 		{
-			InputStream theStream =
-					DeploymentConfig.class.getResourceAsStream("/config.properties");
+			InputStream theStream = DeploymentConfig.class.getResourceAsStream("/config.properties");
 			Properties theProperties = new Properties();
 			theProperties.load(theStream);
 			return theProperties;
