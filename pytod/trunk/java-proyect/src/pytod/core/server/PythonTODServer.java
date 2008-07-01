@@ -230,6 +230,8 @@ public class PythonTODServer extends TODServer
 					}
 				}
 				String theFileName = aInputStream.readString();
+				theClass.setSourceFile(theFileName);
+				
 				int theCodeSize = aInputStream.readInt();
 				int theLineNumbers = aInputStream.readInt();
 				int theStartPc = -1;
