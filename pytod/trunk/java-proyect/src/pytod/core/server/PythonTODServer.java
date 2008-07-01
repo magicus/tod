@@ -440,9 +440,15 @@ public class PythonTODServer extends TODServer
 					args = new Object[argsN];
 					for(int i=0;i<argsN;i=i+1)
 					{
-						int argType = theStream.readInt();
-						Object theValue = getObjectValue(argType, aInputStream);
-						args[i] = theValue;
+						int theArgType = theStream.readInt();
+						if (theArgType == 1) {
+							int theValueId = theStream.readInt();
+							args[i] = new ObjectId(theValueId);
+						} else {
+							Object theValue = getObjectValue(theArgType, aInputStream);
+							args[i] = theValue;
+
+						}
 					}
 				}
 				int probeId = theStream.readInt();
@@ -450,7 +456,7 @@ public class PythonTODServer extends TODServer
 				int depth = theStream.readInt();
 				long currentTimeStamp = theStream.readLong();
 				int threadId = theStream.readInt();
-				//TODO: guillaume must be write a handler for function
+				//TODO: Guillaume must be write a handler for function
 				itsLogCollector.methodCall(
 						threadId,
 						parentTimeStampFrame,

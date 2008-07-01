@@ -189,19 +189,30 @@ class hunterTrace(object):
                                                 aFrame.f_lineno)
         else:
             theProbeId = self.itsProbe[(theCurrentLasti,theParentId)]
+        #preguntamos si algún argumento es del tipo string
+        #y lo registramos debidamente
+        for theValue in theArgsValue:
+            if type(theValue) == types.StringType:
+                if not id(theValue) in hT.itsRegisterObjects:
+                    self.__registerObject__(theValue, aCurrentTimestamp)             
         self.itsPacker.reset()
         self.itsPacker.pack_int(self.itsEvents['call'])
         self.itsPacker.pack_int(self.itsObjects['function'])
         self.itsPacker.pack_int(theFunctionId)
-        self.itsPacker.pack_int(len(theArgsValue)-1)
+        self.itsPacker.pack_int(len(theArgsValue))
         thePrintArg = " "
         for theValue in theArgsValue:
             theDataType = self.__getDataType__(theValue)
             self.itsPacker.pack_int(theDataType)
             thePrintArg += str(theDataType)
-            thePrintArg += " "            
-            thePrintArg += str(self.__packValue__(theDataType, theValue))
-            thePrintArg += " "     
+            thePrintArg += " "
+            if theDataType == 1:
+                self.itsPacker.pack_int(id(theValue))
+                thePrintArg += str(id(theValue))
+                thePrintArg += " "
+            else:
+                thePrintArg += str(self.__packValue__(theDataType, theValue))
+                thePrintArg += " "            
         self.itsPacker.pack_int(theProbeId)
         self.itsPacker.pack_hyper(aParentTimestampFrame)        
         self.itsPacker.pack_int(aDepth)
@@ -211,7 +222,7 @@ class hunterTrace(object):
             print self.itsEvents['call'],
             print self.itsObjects['function'],
             print theFunctionId,
-            print len(theArgsValue)-1,
+            print len(theArgsValue),
             print thePrintArg,
             print theProbeId,
             print aParentTimestampFrame,
@@ -713,8 +724,8 @@ class hunterTrace(object):
             thePrintArg += str(theLineNumber)
             thePrintArg += " "            
             self.itsPacker.pack_int(theLineNumber)
-        #if self.FLAG_DEBUGG:
-        if True:
+        if self.FLAG_DEBUGG:
+        #if True:
             print self.itsEvents['register'],
             print self.itsObjects['function'],
             print theFunctionId,
