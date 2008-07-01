@@ -550,11 +550,15 @@ public class PythonTODServer extends TODServer
 			XDRInputStream theStream = aInputStream;
 			try
 			{
+				Object theValue = null;
+				int theValueId = 0;
 				int theStaticFieldId = theStream.readInt();
-				System.out.println(theStaticFieldId);
 				int theTypeId = aInputStream.readInt();
-				System.out.println(theTypeId);
-				Object theValue = getObjectValue(theTypeId, aInputStream);
+				if (theTypeId == 1) {
+					theValueId = theStream.readInt();
+				} else {
+					theValue = getObjectValue(theTypeId, aInputStream);
+				}
 				int theProbeId = theStream.readInt();
 				long theParentTimestampFrame = theStream.readLong();
 				int theDepth = theStream.readInt();
@@ -569,7 +573,7 @@ public class PythonTODServer extends TODServer
 						theProbeId, 
 						theStaticFieldId, 
 						null, 
-						theValue);
+						theTypeId == 1 ? new ObjectId(theValueId) : theValue);
 				System.out.println("modificando atributo estatico"+ theStaticFieldId);
 			}
 			catch (Exception e)
@@ -584,47 +588,31 @@ public class PythonTODServer extends TODServer
 			XDRInputStream theStream = aInputStream;
 			try
 			{
-				Object theValue;
-				int theValueId;
+				Object theValue = null;
+				int theValueId = 0;
 				int attributeId = theStream.readInt();
 				int targetId = theStream.readInt();
-				int typeId = aInputStream.readInt();
-				if (typeId == 1) {
+				int theTypeId = aInputStream.readInt();
+				if (theTypeId == 1) {
 					theValueId = aInputStream.readInt();
-					int probeId = theStream.readInt();
-					long parentTimeStampFrame = theStream.readLong();
-					int depth = theStream.readInt();
-					long currentTimeStamp = theStream.readLong();
-					int threadId = theStream.readInt();
-					itsLogCollector.fieldWrite(
-							threadId, 
-							parentTimeStampFrame, 
-							(short)depth, 
-							currentTimeStamp, 
-							null, 
-							probeId, 
-							attributeId, 
-							new ObjectId(targetId), 
-							new ObjectId(theValueId));				
-				} 
-				else {
-					theValue = getObjectValue(typeId, aInputStream);
-					int probeId = theStream.readInt();
-					long parentTimeStampFrame = theStream.readLong();
-					int depth = theStream.readInt();
-					long currentTimeStamp = theStream.readLong();
-					int threadId = theStream.readInt();
-					itsLogCollector.fieldWrite(
-							threadId, 
-							parentTimeStampFrame, 
-							(short)depth, 
-							currentTimeStamp, 
-							null, 
-							probeId, 
-							attributeId, 
-							new ObjectId(targetId), 
-							theValue);
+				} else {
+					theValue = getObjectValue(theTypeId, aInputStream);
 				}
+				int probeId = theStream.readInt();
+				long parentTimeStampFrame = theStream.readLong();
+				int depth = theStream.readInt();
+				long currentTimeStamp = theStream.readLong();
+				int threadId = theStream.readInt();
+				itsLogCollector.fieldWrite(
+						threadId, 
+						parentTimeStampFrame, 
+						(short)depth, 
+						currentTimeStamp, 
+						null, 
+						probeId, 
+						attributeId, 
+						new ObjectId(targetId), 
+						theTypeId == 1 ? new ObjectId(theValueId) : theValue);
 				System.out.println("modificando atributo "+ attributeId);
 			}
 			catch (Exception e)
@@ -639,10 +627,16 @@ public class PythonTODServer extends TODServer
 		{
 			try
 			{
+				Object theValue = null;
+				int theValueId = 0;
 				int localId = aInputStream.readInt();
 				int parentId = aInputStream.readInt();
-				int typeId = aInputStream.readInt();
-				Object theValue = getObjectValue(typeId, aInputStream);
+				int theTypeId = aInputStream.readInt();
+				if (theTypeId == 1) {
+					theValueId = aInputStream.readInt();
+				} else {
+					theValue = getObjectValue(theTypeId, aInputStream);
+				}
 				int probeId = aInputStream.readInt();
 				long parentTimeStampFrame = aInputStream.readLong();
 				int depth = aInputStream.readInt();
@@ -656,7 +650,7 @@ public class PythonTODServer extends TODServer
 						null, 
 						probeId, 
 						localId, 
-						theValue);
+						theTypeId == 1 ? new ObjectId(theValueId) : theValue);
 				System.out.println("modificando variable "+ localId);
 			}
 			catch (Exception e)
