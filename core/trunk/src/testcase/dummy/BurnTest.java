@@ -42,7 +42,7 @@ public class BurnTest
 	public static void main(String[] args)
 	{
 		long t0 = System.currentTimeMillis();
-		Node root = createTree(null, 100000);
+		Node root = createTree(null, 10000);
 		long t1 = System.currentTimeMillis();
 		for (int i=0;i<100;i++) root.visit();
 		long t2 = System.currentTimeMillis();
