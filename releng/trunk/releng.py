@@ -57,6 +57,7 @@ class SVNModule(SCMModule):
 		return str(rev)
 	
 	def log(self):
+		if self.lastRev == self.rev: return ''
 		startRev = str(int(self.lastRev) + 1)
 		endRev = self.rev
 		
