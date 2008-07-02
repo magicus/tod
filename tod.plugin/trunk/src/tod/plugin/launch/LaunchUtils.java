@@ -186,7 +186,7 @@ public class LaunchUtils
 			{
 				theLibName = "lib"+theAgentName+".so";
 			}
-			else if (theArch.equals("x86_64"))
+			else if (theArch.equals("x86_64") || theArch.equals("amd64"))
 			{
 				theLibName = "lib"+theAgentName+"_x64.so";
 			}
