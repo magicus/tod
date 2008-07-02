@@ -112,12 +112,12 @@ public class DebugFlags
 	/**
 	 * Causes the event collector to print the events it receives.
 	 */
-	public static final boolean COLLECTOR_LOG = true;
+	public static final boolean COLLECTOR_LOG = ConfigUtils.readBoolean("collector-log", false);
 	
 	/**
 	 * Causes the {@link EventInterpreter} to log events.
 	 */
-	public static final boolean INTERPRETER_LOG = false;
+	public static final boolean INTERPRETER_LOG = ConfigUtils.readBoolean("interpreter-log", false);
 	
 	/**
 	 * Stream to which the event collector sends debug info.
