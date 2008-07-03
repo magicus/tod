@@ -110,7 +110,7 @@
 		<echo message="Finished building tod-agent"/>
 		<copy todir="lib">
 			<fileset dir="${tod-agent.dir}/build" includes="tod-agent.jar"/>
-			<fileset dir="${tod-agent.dir}" includes="*.so *.dll"/>
+			<fileset dir="${tod-agent.dir}" includes="*.so *.dll *.dylib"/>
 		</copy>
 	</target>		
 
