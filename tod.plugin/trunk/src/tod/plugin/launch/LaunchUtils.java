@@ -6,15 +6,20 @@ package tod.plugin.launch;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.launching.IVMInstall;
+import org.eclipse.jdt.launching.IVMInstall3;
 import org.eclipse.jdt.launching.IVMRunner;
+import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
@@ -38,7 +43,7 @@ public class LaunchUtils
 	public static final String MODE = ILaunchManager.DEBUG_MODE;
 
 	private static final ThreadLocal<LaunchInfo> itsInfo = new ThreadLocal<LaunchInfo>();
-
+	
 	public static boolean setup(
 			IJavaProject aJavaProject,
 			TODConfig aConfig, 
@@ -153,24 +158,34 @@ public class LaunchUtils
 		return new DelegatedRunner(aDelegate, itsInfo.get());
 	}
 	
-	protected static List<String> getAdditionalVMArguments(LaunchInfo aInfo) throws CoreException
+	/**
+	 * Determines the version of the native agent library to use for the given
+	 * launch configuration.
+	 * The architecture of the target VM is first determined by running a small
+	 * program in the target VM.
+	 */
+	protected static String getAgentLibName(ILaunchConfiguration aConfiguration) throws CoreException
 	{
-		String theLibraryPath = TODPlugin.getDefault().getLibraryPath();
-
-		List<String> theArguments = new ArrayList<String>();
-        
-        // Boot class path
-		String theAgentPath = System.getProperty(
-				"agent.path",
-				theLibraryPath+"/tod-agent.jar");
-        
-        theArguments.add ("-Xbootclasspath/p:"+theAgentPath);
+		// Determine architecture of target VM
+		IVMInstall theVMInstall = JavaRuntime.computeVMInstall(aConfiguration);
+		String theOs;
+		String theArch;
 		
-		// Native agent
+		if (theVMInstall instanceof IVMInstall3)
+		{
+			IVMInstall3 theInstall3 = (IVMInstall3) theVMInstall;
+			Map theMap = theInstall3.evaluateSystemProperties(new String[] {"os.name", "os.arch"}, null);
+			theOs = (String) theMap.get("os.name");
+			theArch = (String) theMap.get("os.arch");
+		}
+		else
+		{
+			theOs = System.getProperty("os.name");
+			theArch = System.getProperty("os.arch");
+		}
+		
         String theLibName = null;
         String theAgentName = DeploymentConfig.getNativeAgentName();
-		String theOs = System.getProperty("os.name");
-		String theArch = System.getProperty("os.arch");
 		
 		if (theOs.startsWith("Windows"))
 		{
@@ -196,6 +211,36 @@ public class LaunchUtils
 		{
 			throw new RuntimeException("Unsupported architecture: "+theOs+"/"+theArch);
 		}
+
+		return theLibName;
+	}
+	
+	protected static List<String> getAdditionalVMArguments(
+			ILaunch aLaunch, 
+			LaunchInfo aInfo,
+			IProgressMonitor aMonitor) throws CoreException
+	{
+		if (aMonitor == null) aMonitor = new NullProgressMonitor();
+		
+		// Determine which version of the agent to use.
+		if (aMonitor.isCanceled()) return null;
+		aMonitor.subTask("Determining architecture of target JVM");
+        String theLibName = getAgentLibName(aLaunch.getLaunchConfiguration());
+		if (aMonitor.isCanceled()) return null;
+
+		aMonitor.subTask("Setting up extra JVM arguments");
+		
+		String theLibraryPath = TODPlugin.getDefault().getLibraryPath();
+
+		List<String> theArguments = new ArrayList<String>();
+        
+        // Boot class path
+		String theAgentPath = System.getProperty(
+				"agent.path",
+				theLibraryPath+"/tod-agent.jar");
+        
+        theArguments.add ("-Xbootclasspath/p:"+theAgentPath);
+		
 
 		String theNativeAgentPath = System.getProperty(
 				"bcilib.path",
@@ -255,7 +300,9 @@ public class LaunchUtils
 				IProgressMonitor aMonitor)
 				throws CoreException
 		{
-			List<String> theAdditionalArgs = getAdditionalVMArguments(itsInfo);
+			List<String> theAdditionalArgs = getAdditionalVMArguments(aLaunch, itsInfo, aMonitor);
+			if (aMonitor.isCanceled()) return;
+			
 			List<String> theArgs = new ArrayList<String>();
 			Utils.fillCollection(theArgs, theAdditionalArgs);
 			Utils.fillCollection(theArgs, aConfiguration.getVMArguments());
@@ -266,4 +313,5 @@ public class LaunchUtils
 			itsDelegate.run(aConfiguration, aLaunch, aMonitor);
 		}
 	}
+	
 }
