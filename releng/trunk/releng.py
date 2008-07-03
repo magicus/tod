@@ -7,6 +7,7 @@ import sys
 import imp
 import shutil
 import re
+import datetime
 
 versions = None
 modules = None
@@ -211,6 +212,8 @@ def build(version, checkout):
 	versions['_version_'] = version
 	fChanges = open('release/changes_' + version + '.txt', 'w+')
 	fLogs = open('release/logs_' + version + '.txt', 'w+')
+
+	fChanges.write(datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S\n"))
 	fChanges.write('Changes between ' + lastVersion + ' and ' + version + '\n\n')
 	fLogs.write('Commit logs between ' + lastVersion + ' and ' + version + '\n\n')
 	
