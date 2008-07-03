@@ -1,4 +1,4 @@
-\documentclass[12pt,a4paper]{report}
+\documentclass[12pt,legalpaper]{report}
 \usepackage[utf8x]{inputenc}
 \usepackage{ucs}
 \usepackage[spanish]{babel}
@@ -16,6 +16,9 @@
 \usepackage{appendix}
 \setcounter{secnumdepth}{6}
 \setcounter{tocdepth}{6}
+\renewcommand{\appendixname}{Apéndice}
+\renewcommand{\appendixpagename}{Apéndices}
+\renewcommand{\appendixtocname}{Apéndices}
 \begin{document}
 %\title{}
 %\author{Milton Inostroza Aguilera}
@@ -30,7 +33,7 @@ La depuración es la mayor tarea del proceso de desarrollo de software, consider
 
 Existen dos métodos tradicionales para hacer depuración: log-based (basado en mensaje) y break point-based (basado en punto de quiebre). La primera propuesta consiste en ir insertando registros de declaraciones dentro del código fuente, en el orden que se produce una huella ad-hoc durante la ejecución del programa. Esta técnica expone la historia actual de ejecución pero,  (a) requiere tremendas modificaciones del código fuente, y (b) esta técnica no es escalar, debido a que el análisis manual de grandes huellas es complicado. El segundo método consiste en correr el programa bajo un depurador dedicado cuando el programador permita pausar la ejecución en un punto determinado, examinando el contenido de memoria, y pudiendo continuar la ejecución paso a paso. A pesar de lo anterior, breakpoint-based debugging es limitado: cuando la ejecución es pausada, la información sobre el estado y actividad anterior del programa es limitada por la introspección\footnotemark[1] de la pila de llamada actual.
 
-Los depuradores omniscientes, también conocidos como atrás-en-el-tiempo o después-de-la-muerte, superan todas estas características. Un depurador omnisciente registra los eventos que ocurren durante la ejecución del programa depurado y en seguida entrega al usuario un conveniente navegador por medio del cual obtiene la huella de ejecución.  Este acercamiento combina las ventajas de la depuración basada en log –- la actividad pasada no se pierde nunca –- y también la de depuración basada en break point – fácil navegación, ejecución paso a paso e inspección completa de la pila de ejecución. Un depurador omnisciente puede simular la ejecución paso a paso hacia adelante y hacia atrás, y es posible construir inmediatamente preguntras / respuestas que podrían de una u otra forma exigir un esfuerzo significante al programador, como “¿ en qué punto la variable x fue asignada al valor y ?”  o  “¿ en qué estado estaba el objeto o cuando se le pasó un argumento al método foo?”.
+Los depuradores omniscientes, también conocidos como atrás-en-el-tiempo o después-de-la-muerte, superan todas estas características. Un depurador omnisciente registra los eventos que ocurren durante la ejecución del programa depurado y en seguida entrega al usuario un conveniente navegador por medio del cual obtiene la huella de ejecución.  Este acercamiento combina las ventajas de la depuración basada en log –- la actividad pasada no se pierde nunca –- y también la de depuración basada en break point – fácil navegación, ejecución paso a paso e inspección completa de la pila de ejecución. Un depurador omnisciente puede simular la ejecución paso a paso hacia adelante y hacia atrás, y es posible construir inmediatamente preguntras / respuestas que podrían de una u otra forma exigir un esfuerzo significante al programador, como “¿en qué punto la variable \textit{x} fue asignada al valor \textit{y}?”  o  “¿en qué estado estaba el objeto \textit{o} cuando se le pasó un argumento al método \textit{foo}?”.
 
 Es importante señalar que los depuradores omniscientes además de superar todas las características anteriormente nombradas poseen una característica única y es la de identificar la causa inicial de los bugs\footnotemark[2]
 
@@ -76,7 +79,36 @@ De este modo este trabajo de titulo se centra en la implementación de un protot
 
 \chapter{Propósito general}
 
-De acuerdo con Grace Murray Hopper, uno de los pioneros de la ciencia de la computación, la situación que dio origen al término depuración se explica a continuación. A principio de la década de los años 1950, los programadores de la Universidad de Harvard gastaron semanas en intentos infructuosos para encontrar el error en un de sus programas. Finalmente, una investigación dentro de las computadoras reveló que un insecto había muerto ahí. Una vez removido el insecto, el programa funcionó correctamente. Desde entonces, el proceso de quitar errores de los programs ha sido llamado "depuración".
+Como concepto general se dice que software es el conjunto de programas de cómputo, procedimientos, reglas, documentación y datos asociados que forman parte de las operaciones de un sistema de computación.[Extraído del estándar 729 del IEEE[2].
+
+La ingeniería de software plantea que existen tres grandes procesos para desarrollar software, que se detallan en orden cronológico:
+\begin{enumerate}
+	\item Análisis de sistema
+	\item Diseño de sistema
+	\item Codificación de software.
+\end{enumerate}
+
+En especial nos centraremos en el último proceso en el cual se realizan las tareas que comúnmente se conocen como programación; que consiste, escencialmente, en llevar a código fuente, en el lenguaje de programación elejido, todo lo diseñado en la fase anterior. Esta tarea la realiza el programador, siguiendo por completo los lineamientos impuestos en el diseño y en consideración siempre a los requisitos funcionales y no funcionales (ERS) especificados en la primera etapa.
+
+Es común pensar que la etapa de programación o codificación (algunos la llaman implementación) es la que insume la mayor parte del trabajo de desarrollo del software; sin embargo, esto puede ser relativo (y generalmente aplicable a sistemas de pequeño porte) ya que las etapas previas son cruciales, críticas y pueden llevar bastante más tiempo. Se suele hacer estimaciones de un 30\% del tiempo total insumido en la programación, pero esta cifra no es consistente ya que depende en gran medida de las características del sistema, su criticidad y el lenguaje de programación elegido. En tanto menor es el nivel del lenguaje mayor será el tiempo de programación requerido, así por ejemplo se tardaría más tiempo en codificar un algoritmo en Assembly que el mismo programado en lenguaje C.
+
+Durante la fase de programación, el código puede adoptar varios estados, dependiendo de la forma de trabajo y del lenguaje elegido:
+\begin{description}
+
+    \item[Código fuente] Es el escrito directamente por los programadores en editores de texto, lo cual genera el programa. Contiene el conjunto de instrucciones codificadas en algún lenguaje de alto nivel. Puede estar distribuido en paquetes, procedimientos, librerías fuente, etc.
+
+    \item[Código objeto] Es el código binario o intermedio resultante de procesar con un compilador el código fuente. Consiste en una traducción completa y de una sola vez de éste último. El código objeto no es inteligible por el ser humano (normalmente es formato binario) pero tampoco es directamente ejecutable por la computadora. Se trata de una representación intermedia entre el código fuente y el código ejecutable, a la espera de un enlace final con las rutinas de librería y entre procedimientos.
+
+	\begin{itemize}
+		\item El código objeto no existe si el programador trabaja con un lenguaje a modo de intérprete puro, en este caso el mismo intérprete se encarga de traducir y ejecutar línea por línea el código fuente (de acuerdo al flujo del programa), en tiempo de ejecución. En este caso tampoco existe el o los archivos de código ejecutable. Una desventaja de esta modalidad es que la ejecución del programa o sistema es un poco más lenta que si se hiciera con un intérprete intermedio, y bastante más lenta que si existe el o los archivos de código ejecutable. Es decir no favorece el rendimiento en velocidad de ejecución. Pero una gran ventaja de la modalidad intérprete puro, es que el esta forma de trabajo facilita enormemente la tarea de depuración del código fuente (frente a la alternativa de hacerlo con un compilador puro). Frecuentemente se suele usar una forma mixta de trabajo (si el lenguaje de programación elejido lo permite), es decir inicialmente trabajar a modo de intérprete puro, y una vez depurado el código fuente (liberado de errores) se utiliza un compilador del mismo lenguaje para obtener el código ejecutable completo, con lo cual se agiliza la depuración y la velocidad de ejecución se optimiza.
+	\end{itemize}
+
+	\item[Código ejecutable] Es el código binario resultado de enlazar uno o más fragmentos de código objeto con las rutinas y librerías necesarias. Constituye uno o más archivos binarios con un formato tal que el sistema operativo es capaz de cargarlo en la memoria RAM (eventualmente también parte en una memoria virtual), y proceder a su ejecución directa. Por lo anterior se dice que el código ejecutable es directamente "inteligible por la computadora". El código ejecutable, también conocido como código máquina, no existe si se programa con modalidad de "intérprete puro".
+\end{description}
+
+Mientras se programa la aplicación, sistema, o software en general, se realizan también tareas de depuración, esto es la labor de ir liberando al código de los errores factibles de ser hallados en esta fase (de semántica, sintáctica y lógica). 
+
+De acuerdo con Grace Murray Hopper, uno de los pioneros de la ciencia de la computación, la situación que dio origen al término depuración sucedió a principio de la década de los años 1950, los programadores de la Universidad de Harvard gastaron semanas en intentos infructuosos para encontrar el error en un de sus programas. Finalmente, una investigación dentro de las computadoras reveló que un insecto había muerto ahí. Una vez removido el insecto, el programa funcionó correctamente. Desde entonces, el proceso de quitar errores de los programs ha sido llamado "depuración".
 
 Pero, de acuerdo a Edsgar Dijkstra, otro pionero en las ciencias de la computación, el término es irresponsable. Depuración sugiere que el programador no tiene la culpa por el error. Esto es como si el insecto trepara dentro del código mientras el programador estaba mirando hacía otro lado.
 
@@ -89,7 +121,7 @@ Generalmente, los lenguajes de alto nivel, como Java, hacen la depuración fáci
 En determinadas situaciones, herramientas de software de propósito general que son lenguajes especificos pueden ser muy utiles.  Estas son llamadas herramientas de analisis estatico.  Estas herramientas observan problemas conocidos que son muy específicos, algunos comunes y algunos extraños, dentro del código fuente.  Cada uno de estos son detectados por estás herramientas raramente son detectados por el compilador o interprete, por lo tanto ellos no son correctores sintacticos, si no más bien correctores semanticos.
 
 
-	\section*{Herramientas}
+	\section{Herramientas}
 
 Un depurador es un software que es utilizado para probar y depurar otros programas.  Una técnica que permite gran poder en esto es la capacidad de suspender el programa depurado cuando una condición especifica es encontrada.
 
@@ -103,7 +135,7 @@ Comúnmente, los depuradores además ofrecen prestaciones más sofisticadas como
 La importancia de un buen depurador no puede ser exagerado.  Incluso, la existencia y calidad de una herramienta para un lenguaje dado y su plataforma puede incluso ser un factor de decisión en su uso, incluso si otro lenguaje/plataforma es más apropiado.  Aunque, es importante también notar que el programa puede (y incluso hacer) comportarse de forma diferente cuando corre bajo un depurador, debido a los inevitables cambios que provoca la presencia de un depurador.  Como resultado, incluso con buenas herramientas de depuración, este es a menudo muy difícil localizar problemas en tiempo de ejecución en sistemas multi-hilos o en sistemas distribuidos.
 
 
-	\section*{Proceso de depuración}
+	\section{Proceso de depuración}
 
 La depuración comienza tratando de reproducir un problema.  Esto puede ser una tarea no trivial, por ejemplo en el caso de procesos paralelos o algún problema inusual de software.  Además el ambiente especifico del usuario y el uso de la historia puede hacer que sea dificil reproducir el problema.
 
