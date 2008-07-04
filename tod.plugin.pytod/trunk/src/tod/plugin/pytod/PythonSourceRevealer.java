@@ -23,6 +23,7 @@ public class PythonSourceRevealer implements ISourceRevealer
 {
 	public boolean canHandle(SourceRange aSourceRange)
 	{
+		if (aSourceRange.sourceFile == null) return false;
 		return aSourceRange.sourceFile.endsWith(".py");		
 	}
 

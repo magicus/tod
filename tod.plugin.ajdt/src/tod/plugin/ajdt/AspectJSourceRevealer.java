@@ -25,6 +25,7 @@ public class AspectJSourceRevealer implements ISourceRevealer
 
 	public boolean canHandle(SourceRange aSourceRange)
 	{
+		if (aSourceRange.sourceFile == null) return false;
 		return aSourceRange.sourceFile.endsWith(".aj");		
 	}
 
