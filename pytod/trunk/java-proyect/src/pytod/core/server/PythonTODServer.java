@@ -37,7 +37,7 @@ public class PythonTODServer extends TODServer
 		super(aConfig);
 		itsStructureDatabase = aStructureDatabase;
 		itsLogCollector = aLogCollector;
-		System.out.println("Hola soy Pilton");
+		//System.out.println("Hola soy Pilton");
 		//Dirty trick proposed by Guillaume
 		IMutableClassInfo theClass = itsStructureDatabase.addClass(100, "functionClass");
 	}
@@ -72,6 +72,7 @@ public class PythonTODServer extends TODServer
 	private static final int OBJECT_THREAD = 6;
 	private static final int OBJECT_STATICFIELD = 7;
 	private static final int OBJECT_OBJECT = 8;
+	private static final int OBJECT_EXCEPTION = 9;
 	//dataTypes
 	private static final int DATA_INT = 0;
 	private static final int DATA_STR = 1;
@@ -111,21 +112,21 @@ public class PythonTODServer extends TODServer
 			IMutableBehaviorInfo theBehavior;
 			try
 			{
-				int functionId = aInputStream.readInt();
-				String functionName = new String(aInputStream.readString());
-				int argsN = aInputStream.readInt();
+				int theFunctionId = aInputStream.readInt();
+				String theFunctionName = new String(aInputStream.readString());
+				int theArgsCount = aInputStream.readInt();
 				theClass = itsStructureDatabase.getClass(100, true);
-				theBehavior = theClass.addBehavior(functionId, functionName, generateSignature(argsN), false);
-				if (argsN > 0){
-					for(int i=0;i<argsN;i=i+1)
+				theBehavior = theClass.addBehavior(theFunctionId, theFunctionName, generateSignature(theArgsCount), false);
+				if (theArgsCount > 0){
+					for(int i=0;i<theArgsCount;i=i+1)
 					{
-						String argName = new String(aInputStream.readString());						
-						int argId = aInputStream.readInt();
-						theBehavior.addLocalVariableInfo(new LocalVariableInfo(0, 32000, argName, "java.lang.Object", argId));
-						System.out.println("Registrando variable local "+argName);
+						String theArgName = new String(aInputStream.readString());						
+						int theArgId = aInputStream.readInt();
+						theBehavior.addLocalVariableInfo(new LocalVariableInfo(0, 32000, theArgName, "java.lang.Object", theArgId));
+						System.out.println("Registrando variable local "+theArgName);
 					}
 				}
-				String fileName = aInputStream.readString();
+				String theFileName = aInputStream.readString();
 				int theCodeSize = aInputStream.readInt();
 				int theLineNumbers = aInputStream.readInt();
 				int theStartPc = -1;
@@ -137,7 +138,7 @@ public class PythonTODServer extends TODServer
 					theLineNumberInfo[i] = new LineNumberInfo((short) theStartPc, (short) theLineNumber);
 				}
 				theBehavior.setup(true, null, theCodeSize, theLineNumberInfo, null);
-				System.out.println("Registrando la funcion "+functionName + "id = "+functionId);
+				System.out.println("Registrando la funcion "+theFunctionName + "id = "+theFunctionId);
 			}
 			catch (Exception e)
 			{
@@ -151,17 +152,17 @@ public class PythonTODServer extends TODServer
 			IMutableBehaviorInfo theBehavior;			
 			try
 			{
-				int localId = aInputStream.readInt();
-				int parentId = aInputStream.readInt();
-				String localName = new String(aInputStream.readString());
+				int theLocalId = aInputStream.readInt();
+				int theParentId = aInputStream.readInt();
+				String theLocalName = new String(aInputStream.readString());
 				//for this moment only register locals of methods
 				//TODO: guillaume must write {I hope} a handler for functions
-				System.out.println(localId);
-				System.out.println(parentId);
-				System.out.println(localName);
-				theBehavior = itsStructureDatabase.getBehavior(parentId, true);
-				theBehavior.addLocalVariableInfo(new LocalVariableInfo(0, 32000, localName, "java.lang.Object", localId));
-				System.out.println("Registrando variable local "+localName);
+				System.out.println(theLocalId);
+				System.out.println(theParentId);
+				System.out.println(theLocalName);
+				theBehavior = itsStructureDatabase.getBehavior(theParentId, true);
+				theBehavior.addLocalVariableInfo(new LocalVariableInfo(0, 32000, theLocalName, "java.lang.Object", theLocalId));
+				System.out.println("Registrando variable local "+theLocalName);
 			}
 			catch (Exception e)
 			{
@@ -175,13 +176,13 @@ public class PythonTODServer extends TODServer
 			IMutableClassInfo theClass;
 			try
 			{
-				int classId = aInputStream.readInt();
-				System.out.println(classId);
-				String className = new String(aInputStream.readString());
+				int theClassId = aInputStream.readInt();
+				System.out.println(theClassId);
+				String theClassName = new String(aInputStream.readString());
 				//TODO: change register format class  without field classBases
-				int classBases = aInputStream.readInt();
-				theClass = itsStructureDatabase.addClass(classId, className);
-				System.out.println("Registrando clase "+className);
+				int theClassBases = aInputStream.readInt();
+				theClass = itsStructureDatabase.addClass(theClassId, theClassName);
+				System.out.println("Registrando clase "+theClassName);
 			}
 			catch (Exception e)
 			{
@@ -194,12 +195,12 @@ public class PythonTODServer extends TODServer
 			IMutableClassInfo theClass;
 			try
 			{
-				int attributeId = aInputStream.readInt();
-				int parentId = aInputStream.readInt();
-				String attributeName = new String(aInputStream.readString());	
-				theClass = itsStructureDatabase.getClass(parentId, true);
-				theClass.addField(attributeId, attributeName, null, true);
-				System.out.println("Registrando un atributo estatico con id "+attributeId);
+				int theAttributeId = aInputStream.readInt();
+				int theParentId = aInputStream.readInt();
+				String theAttributeName = new String(aInputStream.readString());	
+				theClass = itsStructureDatabase.getClass(theParentId, true);
+				theClass.addField(theAttributeId, theAttributeName, null, true);
+				System.out.println("Registrando un atributo estatico con id "+theAttributeId);
 			}
 			catch (Exception e)
 			{
@@ -213,20 +214,19 @@ public class PythonTODServer extends TODServer
 			IMutableBehaviorInfo theBehavior;
 			try
 			{
-				int methodId = aInputStream.readInt();
-				int classId = aInputStream.readInt();
-				String methodName = aInputStream.readString();
-				int argsN = aInputStream.readInt();
-				
-				theClass = itsStructureDatabase.getClass(classId, true);
-				theBehavior = theClass.addBehavior(methodId, methodName, generateSignature(argsN), false);
-				if (argsN > 0){
-					for(int i=0;i<argsN;i=i+1)
+				int theMethodId = aInputStream.readInt();
+				int theClassId = aInputStream.readInt();
+				String theMethodName = aInputStream.readString();
+				int theArgsCount = aInputStream.readInt();
+				theClass = itsStructureDatabase.getClass(theClassId, true);
+				theBehavior = theClass.addBehavior(theMethodId, theMethodName, generateSignature(theArgsCount), false);
+				if (theArgsCount > 0){
+					for(int i=0;i<theArgsCount;i=i+1)
 					{
-						String argName = aInputStream.readString();
-						int argId = aInputStream.readInt();
-						theBehavior.addLocalVariableInfo(new LocalVariableInfo(0, 32000, argName, "java.lang.Object", argId));
-						System.out.println("Registrando variable local "+argName);
+						String theArgName = aInputStream.readString();
+						int theArgId = aInputStream.readInt();
+						theBehavior.addLocalVariableInfo(new LocalVariableInfo(0, 32000, theArgName, "java.lang.Object", theArgId));
+						System.out.println("Registrando variable local "+theArgName);
 					}
 				}
 				String theFileName = aInputStream.readString();
@@ -242,7 +242,7 @@ public class PythonTODServer extends TODServer
 					theLineNumberInfo[i] = new LineNumberInfo((short) theStartPc, (short) theLineNumber);
 				}
 				theBehavior.setup(true, null, theCodeSize, theLineNumberInfo, null);
-				System.out.println("Registrando el metodo "+methodName + "id = "+methodId);
+				System.out.println("Registrando el metodo "+theMethodName + "id = "+theMethodId);
 			}
 			catch (Exception e)
 			{
@@ -256,12 +256,12 @@ public class PythonTODServer extends TODServer
 			IMutableClassInfo theClass;
 			try
 			{
-				int attributeId = aInputStream.readInt();
-				int parentId = aInputStream.readInt();
-				String attributeName = new String(aInputStream.readString());	
-				theClass = itsStructureDatabase.getClass(parentId, true);
-				theClass.addField(attributeId, attributeName, null, true);
-				System.out.println("Registrando un atributo con id "+attributeId);
+				int theAttributeId = aInputStream.readInt();
+				int theParentId = aInputStream.readInt();
+				String theAttributeName = new String(aInputStream.readString());	
+				theClass = itsStructureDatabase.getClass(theParentId, true);
+				theClass.addField(theAttributeId, theAttributeName, null, true);
+				System.out.println("Registrando un atributo con id "+theAttributeId);
 			}
 			catch (Exception e)
 			{
@@ -272,15 +272,14 @@ public class PythonTODServer extends TODServer
 
 		public void registerProbe(XDRInputStream aInputStream)
 		{
-			XDRInputStream theStream = aInputStream;
 			try
 			{
-				int probeId = theStream.readInt();
-				int parentId = theStream.readInt();				
-				int probeCurrentLasti = theStream.readInt();
-				int currentLineno = theStream.readInt();
-				itsStructureDatabase.addProbe(probeId, parentId, probeCurrentLasti, null, 0);
-				System.out.println("Registrando probe "+probeId);
+				int theProbeId = aInputStream.readInt();
+				int theParentId = aInputStream.readInt();				
+				int theProbeCurrentLasti = aInputStream.readInt();
+				int theCurrentLineno = aInputStream.readInt();
+				itsStructureDatabase.addProbe(theProbeId, theParentId, theProbeCurrentLasti, null, 0);
+				System.out.println("Registrando probe "+theProbeId);
 			}
 			catch (Exception e)
 			{
@@ -291,12 +290,11 @@ public class PythonTODServer extends TODServer
 		
 		public void registerThread(XDRInputStream aInputStream)
 		{
-			XDRInputStream theStream = aInputStream;
 			try
 			{
-				int threadId = theStream.readInt();
-				int sysId = theStream.readInt();
-				itsLogCollector.thread(threadId, sysId, "()V");
+				int theThreadId = aInputStream.readInt();
+				int theSysId = aInputStream.readInt();
+				itsLogCollector.thread(theThreadId, theSysId, "()V");
 				System.out.println("Registrando thread");
 			}
 			catch (Exception e)
@@ -308,7 +306,6 @@ public class PythonTODServer extends TODServer
 
 		public void registerObject(XDRInputStream aInputStream)
 		{
-			XDRInputStream theStream = aInputStream;
 			try
 			{
 				int theTypeId = aInputStream.readInt();
@@ -331,47 +328,82 @@ public class PythonTODServer extends TODServer
 
 		}
 
+		public void registerException(XDRInputStream aInputStream)
+		{
+			try
+			{
+				Object theValue = null;
+				int theValueId = 0;
+				int theTypeId = aInputStream.readInt();
+				if (theTypeId == 1) {
+					theValueId = aInputStream.readInt();
+				}
+				else{
+					theValue = getObjectValue(theTypeId, aInputStream);					
+				}
+				int theProbeId = aInputStream.readInt();
+				long theParentTimestamp = aInputStream.readLong();
+				int theDepth = aInputStream.readInt();
+				long theCurrentTimestamp = aInputStream.readLong();
+				int theThreadId = aInputStream.readInt();
+				itsLogCollector.exception(
+						theThreadId, 
+						theParentTimestamp,
+						(short) theDepth, 
+						theCurrentTimestamp, 
+						null, 
+						theProbeId, 
+						theTypeId == 1 ? new ObjectId(theValueId) : theValue);
+				System.out.println("Registrando exception 3");
+			}
+			catch (Exception e)
+			{
+				throw new RuntimeException(e);
+			}
+		}		
+		
+		
 		public void instantiationEvent(XDRInputStream aInputStream)
 		{
-			XDRInputStream theStream = aInputStream;
 			Object args[] = null;
 			try
 			{
-				int behaviorId = theStream.readInt();
-				int targetId = theStream.readInt();
-				int argsN = theStream.readInt();
-				if (argsN > 0){
-					args = new Object[argsN];
-					for(int i=0;i<argsN;i=i+1)
+				int theBehaviorId = aInputStream.readInt();
+				int theTargetId = aInputStream.readInt();
+				int theArgsCount = aInputStream.readInt();
+				if (theArgsCount > 0){
+					args = new Object[theArgsCount];
+					for(int i=0;i<theArgsCount;i=i+1)
 					{
-						int theArgType = theStream.readInt();
+						int theArgType = aInputStream.readInt();
 						if (theArgType == 1) {
-							int theValueId = theStream.readInt();
+							int theValueId = aInputStream.readInt();
 							args[i] = new ObjectId(theValueId);
-						} else {
+						} 
+						else {
 							Object theValue = getObjectValue(theArgType, aInputStream);
 							args[i] = theValue;
 						}
 					}
 				}
-				int probeId = theStream.readInt();
-				long parentTimeStampFrame = theStream.readLong();
-				int depth = theStream.readInt();
-				long currentTimeStamp = theStream.readLong();
-				int threadId = theStream.readInt();
+				int theProbeId = aInputStream.readInt();
+				long theParentTimestamp = aInputStream.readLong();
+				int theDepth = aInputStream.readInt();
+				long theCurrentTimestamp = aInputStream.readLong();
+				int theThreadId = aInputStream.readInt();
 				itsLogCollector.instantiation(
-						threadId,
-						parentTimeStampFrame,
-						(short)depth, 
-						currentTimeStamp, 
+						theThreadId,
+						theParentTimestamp,
+						(short)theDepth, 
+						theCurrentTimestamp, 
 						null,
-						probeId,
+						theProbeId,
 						true, 
 						-1,
-						behaviorId,
-						new ObjectId(targetId),
+						theBehaviorId,
+						new ObjectId(theTargetId),
 						args);
-				System.out.println("instanciacion "+ targetId);
+				System.out.println("instanciacion "+ theTargetId);
 			}
 			catch (Exception e)
 			{
@@ -381,46 +413,45 @@ public class PythonTODServer extends TODServer
 		
 		public void methodCall(XDRInputStream aInputStream)
 		{
-			XDRInputStream theStream = aInputStream;
-			Object args[] = null;
+			Object theArgs[] = null;
 			try
 			{
-				int methodId = theStream.readInt();
-				int targetId = theStream.readInt();
-				int argsN = theStream.readInt();
-				if (argsN > 0){
-					args = new Object[argsN];
-					for(int i=0;i<argsN;i=i+1)
+				int theMethodId = aInputStream.readInt();
+				int theTargetId = aInputStream.readInt();
+				int theArgsCount = aInputStream.readInt();
+				if (theArgsCount > 0){
+					theArgs = new Object[theArgsCount];
+					for(int i=0;i<theArgsCount;i=i+1)
 					{
-						int theArgType = theStream.readInt();
+						int theArgType = aInputStream.readInt();
 						if (theArgType == 1) {
-							int theValueId = theStream.readInt();
-							args[i] = new ObjectId(theValueId);
-						} else {
+							int theValueId = aInputStream.readInt();
+							theArgs[i] = new ObjectId(theValueId);
+						} 
+						else {
 							Object theValue = getObjectValue(theArgType, aInputStream);
-							args[i] = theValue;
-
+							theArgs[i] = theValue;
 						}
 					}
 				}
-				int probeId = theStream.readInt();
-				long parentTimeStampFrame = theStream.readLong();
-				int depth = theStream.readInt();
-				long currentTimeStamp = theStream.readLong();
-				int threadId = theStream.readInt();
+				int theProbeId = aInputStream.readInt();
+				long theParentTimestamp = aInputStream.readLong();
+				int theDepth = aInputStream.readInt();
+				long theCurrentTimestamp = aInputStream.readLong();
+				int theThreadId = aInputStream.readInt();
 				itsLogCollector.methodCall(
-						threadId,
-						parentTimeStampFrame,
-						(short)depth, 
-						currentTimeStamp, 
+						theThreadId,
+						theParentTimestamp,
+						(short)theDepth, 
+						theCurrentTimestamp, 
 						null,
-						probeId,
+						theProbeId,
 						true, 
 						-1,
-						methodId,
-						new ObjectId(targetId),
-						args);
-				System.out.println("llamando a método "+ methodId);
+						theMethodId,
+						new ObjectId(theTargetId),
+						theArgs);
+				System.out.println("llamando a método "+ theMethodId);
 			}
 			catch (Exception e)
 			{
@@ -430,45 +461,44 @@ public class PythonTODServer extends TODServer
 		
 		public void functionCall(XDRInputStream aInputStream)
 		{
-			XDRInputStream theStream = aInputStream;
-			Object args[] = null;
+			Object theArgs[] = null;
 			try
 			{
-				int functionId = theStream.readInt();
-				int argsN = theStream.readInt();
-				if (argsN > 0){
-					args = new Object[argsN];
-					for(int i=0;i<argsN;i=i+1)
+				int theFunctionId = aInputStream.readInt();
+				int theArgsCount = aInputStream.readInt();
+				if (theArgsCount > 0){
+					theArgs = new Object[theArgsCount];
+					for(int i=0;i<theArgsCount;i=i+1)
 					{
-						int theArgType = theStream.readInt();
+						int theArgType = aInputStream.readInt();
 						if (theArgType == 1) {
-							int theValueId = theStream.readInt();
-							args[i] = new ObjectId(theValueId);
+							int theValueId = aInputStream.readInt();
+							theArgs[i] = new ObjectId(theValueId);
 						} else {
 							Object theValue = getObjectValue(theArgType, aInputStream);
-							args[i] = theValue;
+							theArgs[i] = theValue;
 
 						}
 					}
 				}
-				int probeId = theStream.readInt();
-				long parentTimeStampFrame = theStream.readLong();
-				int depth = theStream.readInt();
-				long currentTimeStamp = theStream.readLong();
-				int threadId = theStream.readInt();
+				int theProbeId = aInputStream.readInt();
+				long theParentTimestamp = aInputStream.readLong();
+				int theDepth = aInputStream.readInt();
+				long theCurrentTimestamp = aInputStream.readLong();
+				int theThreadId = aInputStream.readInt();
 				//TODO: Guillaume must be write a handler for function
 				itsLogCollector.methodCall(
-						threadId,
-						parentTimeStampFrame,
-						(short)depth, 
-						currentTimeStamp, 
+						theThreadId,
+						theParentTimestamp,
+						(short)theDepth, 
+						theCurrentTimestamp, 
 						null,
-						probeId,
+						theProbeId,
 						false, 
 						-1,
-						functionId,
+						theFunctionId,
 						null,
-						args);
+						theArgs);
 			}
 			catch (Exception e)
 			{
@@ -547,23 +577,22 @@ public class PythonTODServer extends TODServer
 		
 		public void setStaticField(XDRInputStream aInputStream)
 		{
-			XDRInputStream theStream = aInputStream;
 			try
 			{
 				Object theValue = null;
 				int theValueId = 0;
-				int theStaticFieldId = theStream.readInt();
+				int theStaticFieldId = aInputStream.readInt();
 				int theTypeId = aInputStream.readInt();
 				if (theTypeId == 1) {
-					theValueId = theStream.readInt();
+					theValueId = aInputStream.readInt();
 				} else {
 					theValue = getObjectValue(theTypeId, aInputStream);
 				}
-				int theProbeId = theStream.readInt();
-				long theParentTimestampFrame = theStream.readLong();
-				int theDepth = theStream.readInt();
-				long theCurrentTimestamp = theStream.readLong();
-				int theThreadId = theStream.readInt();
+				int theProbeId = aInputStream.readInt();
+				long theParentTimestampFrame = aInputStream.readLong();
+				int theDepth = aInputStream.readInt();
+				long theCurrentTimestamp = aInputStream.readLong();
+				int theThreadId = aInputStream.readInt();
 				itsLogCollector.fieldWrite(
 						theThreadId, 
 						theParentTimestampFrame, 
@@ -585,24 +614,23 @@ public class PythonTODServer extends TODServer
 		
 		public void setAttribute(XDRInputStream aInputStream)
 		{
-			XDRInputStream theStream = aInputStream;
 			try
 			{
 				Object theValue = null;
 				int theValueId = 0;
-				int attributeId = theStream.readInt();
-				int targetId = theStream.readInt();
+				int attributeId = aInputStream.readInt();
+				int targetId = aInputStream.readInt();
 				int theTypeId = aInputStream.readInt();
 				if (theTypeId == 1) {
 					theValueId = aInputStream.readInt();
 				} else {
 					theValue = getObjectValue(theTypeId, aInputStream);
 				}
-				int probeId = theStream.readInt();
-				long parentTimeStampFrame = theStream.readLong();
-				int depth = theStream.readInt();
-				long currentTimeStamp = theStream.readLong();
-				int threadId = theStream.readInt();
+				int probeId = aInputStream.readInt();
+				long parentTimeStampFrame = aInputStream.readLong();
+				int depth = aInputStream.readInt();
+				long currentTimeStamp = aInputStream.readLong();
+				int threadId = aInputStream.readInt();
 				itsLogCollector.fieldWrite(
 						threadId, 
 						parentTimeStampFrame, 
@@ -629,29 +657,29 @@ public class PythonTODServer extends TODServer
 			{
 				Object theValue = null;
 				int theValueId = 0;
-				int localId = aInputStream.readInt();
-				int parentId = aInputStream.readInt();
+				int theLocalId = aInputStream.readInt();
+				int theParentId = aInputStream.readInt();
 				int theTypeId = aInputStream.readInt();
 				if (theTypeId == 1) {
 					theValueId = aInputStream.readInt();
 				} else {
 					theValue = getObjectValue(theTypeId, aInputStream);
 				}
-				int probeId = aInputStream.readInt();
-				long parentTimeStampFrame = aInputStream.readLong();
-				int depth = aInputStream.readInt();
-				long currentTimeStamp = aInputStream.readLong();
-				int threadId = aInputStream.readInt();				
+				int theProbeId = aInputStream.readInt();
+				long theParentTimestamp = aInputStream.readLong();
+				int theDepth = aInputStream.readInt();
+				long theCurrentTimestamp = aInputStream.readLong();
+				int theThreadId = aInputStream.readInt();				
 				itsLogCollector.localWrite(
-						threadId,
-						parentTimeStampFrame, 
-						(short)depth, 
-						currentTimeStamp, 
+						theThreadId,
+						theParentTimestamp, 
+						(short)theDepth, 
+						theCurrentTimestamp, 
 						null, 
-						probeId, 
-						localId, 
+						theProbeId, 
+						theLocalId, 
 						theTypeId == 1 ? new ObjectId(theValueId) : theValue);
-				System.out.println("modificando variable "+ localId);
+				System.out.println("modificando variable "+ theLocalId);
 			}
 			catch (Exception e)
 			{
@@ -662,13 +690,11 @@ public class PythonTODServer extends TODServer
 		
 		public void returnEvent(XDRInputStream aInputStream)
 		{
-			XDRInputStream theStream = aInputStream;
 			try
 			{
 				int theValueId = 0;
 				Object theValue = null;
-				boolean hasThrown = false;
-				int behaviorId = aInputStream.readInt();
+				int theBehaviorId = aInputStream.readInt();
 				int typeId = aInputStream.readInt();
 				if (typeId == 1) {
 					theValueId = aInputStream.readInt();
@@ -676,39 +702,22 @@ public class PythonTODServer extends TODServer
 				else{
 					theValue = getObjectValue(typeId, aInputStream);					
 				}
-				int iHasThrown = theStream.readInt();
-				int probeId = theStream.readInt();
-				long parentTimeStampFrame = aInputStream.readLong();
-				int depth = aInputStream.readInt();
-				long currentTimeStamp = aInputStream.readLong();
-				int threadId = aInputStream.readInt();
-				if (iHasThrown == 1)
-				{
-					hasThrown = true;
-					itsLogCollector.behaviorExit(
-							threadId, 
-							parentTimeStampFrame, 
-							(short)depth, 
-							currentTimeStamp, 
-							null,
-							probeId, 
-							behaviorId,
-							hasThrown, 
-							new ObjectId(theValueId));
-					
-				}
-				else{
+				int theHasThrown = aInputStream.readInt();
+				int theProbeId = aInputStream.readInt();
+				long theParentTimestamp = aInputStream.readLong();
+				int theDepth = aInputStream.readInt();
+				long theCurrentTimestamp = aInputStream.readLong();
+				int theThreadId = aInputStream.readInt();
 				itsLogCollector.behaviorExit(
-						threadId, 
-						parentTimeStampFrame, 
-						(short)depth, 
-						currentTimeStamp, 
+						theThreadId, 
+						theParentTimestamp, 
+						(short)theDepth, 
+						theCurrentTimestamp, 
 						null,
-						probeId, 
-						behaviorId,
-						hasThrown,
+						theProbeId, 
+						theBehaviorId,
+						theHasThrown == 1? true : false,
 						typeId == 1 ? new ObjectId(theValueId) : theValue);
-				}
 				System.out.println("Registrando return");
 			}
 			catch (Exception e)
@@ -725,8 +734,6 @@ public class PythonTODServer extends TODServer
 				while (true)
 				{
 					int theEvent = itsStream.readInt();
-					//System.out.println(theEvent);
-					//int theEvent1 = 1;
 					switch (theEvent)
 					{
 					case REGISTER_EVENT:
@@ -760,6 +767,10 @@ public class PythonTODServer extends TODServer
 							break;
 						case OBJECT_OBJECT:
 							registerObject(itsStream);
+							break;
+						case OBJECT_EXCEPTION:
+							registerException(itsStream);
+							break;
 						default:
 							break;
 						}	
@@ -803,11 +814,9 @@ public class PythonTODServer extends TODServer
 					case RETURN_EVENT:
 						returnEvent(itsStream);
 						break;
-						
 					case INSTANTIATION_EVENT:
 						instantiationEvent(itsStream);
 						break;
-
 					default:
 						break;
 					}
@@ -817,9 +826,6 @@ public class PythonTODServer extends TODServer
 			{
 				throw new RuntimeException(e);
 			}
-		}
-		
-		
+		}	
 	}
-
 }
