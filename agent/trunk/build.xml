@@ -1,7 +1,7 @@
 <project name="TOD-agent" default="jar" basedir=".">
 
     <target name="init">
-   		<property file="ant.settings"/> <!-- This is optional, only for skip.deps-->
+   		<property file="../tod.plugin/ant.settings"/> <!-- This is optional, only for skip.deps-->
     	
 		<property name="version" value="dev"/>
     	
