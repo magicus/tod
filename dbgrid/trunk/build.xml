@@ -13,25 +13,26 @@
     	
         <property name="zz.utils.dir" value="${basedir}/../zz.utils"/>
         <property name="tod-agent.dir" value="${basedir}/../TOD-agent"/>
-        <property name="reflex.dir" value="${basedir}/../reflex"/>
-        <property name="pom.dir" value="${basedir}/../pom"/>
         <property name="tod.dir" value="${basedir}/../TOD"/>
     	
         <path id="main.classpath">
-        	<pathelement path="${lib.dir}/tod-agent.jar"/>
-        	<pathelement path="${lib.dir}/tod-debugger.jar"/>
-            <pathelement path="${lib.dir}/zz.utils.jar"/>
+        	<pathelement path="${tod-agent.dir}/build/tod-agent.jar"/>
+        	<pathelement path="${tod.dir}/build/tod-debugger.jar"/>
+            <pathelement path="${zz.utils.dir}/build/zz.utils.jar"/>
+        	
             <pathelement path="${lib.dir}/lucene-core-2.0.0.jar"/>
             <pathelement path="${lib.dir}/reflex-core.jar"/>
             <pathelement path="${lib.dir}/pom.jar"/>
         </path>
     	
         <path id="test.classpath">
-        	<pathelement path="${lib.dir}/tod-agent.jar"/>
-        	<pathelement path="${lib.dir}/tod-debugger.jar"/>
-        	<pathelement path="${lib.dir}/tod-test.jar"/>
-            <pathelement path="${lib.dir}/zz.utils.jar"/>
+        	<pathelement path="${tod-agent.dir}/build/tod-agent.jar"/>
+        	<pathelement path="${tod.dir}/build/tod-debugger.jar"/>
+        	<pathelement path="${tod.dir}/build/tod-test.jar"/>
+            <pathelement path="${zz.utils.dir}/build/zz.utils.jar"/>
+        	
         	<pathelement path="${classes-main.dir}"/>
+        	
             <pathelement path="${lib.dir}/junit-4.1.jar"/>
             <pathelement path="${lib.dir}/pom.jar"/>
         </path>
@@ -43,10 +44,6 @@
             <fileset dir="${build.dir}"/>
             <fileset dir="${classes-main.dir}"/>
             <fileset dir="${classes-test.dir}"/>
-        	
-        	<fileset file="${lib.dir}/zz.utils.jar"/>
-        	<fileset file="${lib.dir}/tod-agent.jar"/>
-        	<fileset file="${lib.dir}/tod-debugger.jar"/>
         </delete>
     </target>
 
@@ -82,6 +79,10 @@
 		<zip destfile="${build.dir}/tod-db.zip">
 			<zipfileset dir="." prefix="tod-${version}"
 				includes="scripts/**, build/tod-*.jar, lib/*.jar"/>
+			
+			<zipfileset dir="${tod-agent.dir}/build" prefix="tod-${version}/lib" includes="tod-agent.jar"/>
+			<zipfileset dir="${tod.dir}/build" prefix="tod-${version}/lib" includes="tod-debugger.jar"/>
+			<zipfileset dir="${zz.utils.dir}/build" prefix="tod-${version}/lib" includes="zz.utils.jar"/>
 		</zip>
 
 		<tar destfile="${build.dir}/tod-db.tar.gz" compression="gzip">
@@ -91,6 +92,10 @@
 			<tarfileset dir="." prefix="tod-${version}"
 				includes="scripts/**, build/tod-*.jar, lib/*.jar"
 				excludes="scripts/*.sh, scripts/collector.log"/>
+			
+			<tarfileset dir="${tod-agent.dir}/build" prefix="tod-${version}/lib" includes="tod-agent.jar"/>
+			<tarfileset dir="${tod.dir}/build" prefix="tod-${version}/lib" includes="tod-debugger.jar"/>
+			<tarfileset dir="${zz.utils.dir}/build" prefix="tod-${version}/lib" includes="zz.utils.jar"/>
 		</tar>
 	</target>
 	
@@ -103,57 +108,25 @@
     	</exec>
     </target>
 	
-	<target name="dep.zz.utils" depends="init">
+	<target name="dep.zz.utils" depends="init" unless="skip.deps">
 		<ant 
 			antfile="${zz.utils.dir}/build.xml" 
 			dir="${zz.utils.dir}" 
 			target="jar"
 			inheritall="false"/>
 		<echo message="Finished building zz.utils"/>
-		<copy todir="lib">
-			<fileset dir="${zz.utils.dir}/build" includes="zz.utils.jar"/>
-		</copy>
 	</target>
 	
-	<target name="dep.tod-agent" depends="init">
+	<target name="dep.tod-agent" depends="init" unless="skip.deps">
 		<ant 
 			antfile="${tod-agent.dir}/build.xml" 
 			dir="${tod-agent.dir}" 
 			target="jar"
 			inheritall="false"/>
 		<echo message="Finished building tod-agent"/>
-		<copy todir="lib">
-			<fileset dir="${tod-agent.dir}/build" includes="tod-agent.jar"/>
-		</copy>
 	</target>	
 	
-	<target name="dep.reflex" depends="init">
-		<echo message="Building reflex..."/>
-		<ant 
-			antfile="${reflex.dir}/build.xml" 
-			dir="${reflex.dir}" 
-			target="jar"
-			inheritall="false"/>
-		<echo message="Finished building reflex"/>
-		<copy todir="lib">
-			<fileset dir="${reflex.dir}/build" includes="reflex-core.jar"/>
-		</copy>
-	</target>
-	
-	<target name="dep.pom" depends="init">
-		<echo message="Building pom..."/>
-		<ant 
-			antfile="${pom.dir}/build.xml" 
-			dir="${pom.dir}" 
-			target="jar"
-			inheritall="false"/>
-		<echo message="Finished building pom"/>
-		<copy todir="lib">
-			<fileset dir="${pom.dir}/build" includes="pom.jar"/>
-		</copy>
-	</target>
-	
-	<target name="dep.tod" depends="init">
+	<target name="dep.tod" depends="init" unless="skip.deps">
 		<echo message="Building TOD..."/>
 		<ant 
 			antfile="${tod.dir}/build.xml" 
@@ -161,9 +134,6 @@
 			target="jar"
 			inheritall="false"/>
 		<echo message="Finished building TOD"/>
-		<copy todir="lib">
-			<fileset dir="${tod.dir}/build" includes="*.jar"/>
-		</copy>
 	</target>
 	
 	

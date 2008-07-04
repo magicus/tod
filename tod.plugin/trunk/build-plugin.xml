@@ -20,19 +20,19 @@
 		<property name="tod-dbgrid.dir" value="${basedir}/../TOD-dbgrid"/>
 		<property name="zz.utils.dir" value="${basedir}/../zz.utils"/>
 		<property name="zz.eclipse.utils.dir" value="${basedir}/../zz.eclipse.utils"/>
-		<property name="reflex.dir" value="${basedir}/../reflex"/>
-		<property name="pom.dir" value="${basedir}/../pom"/>
 
 		<path id="default.classpath">
-			<pathelement path="${lib.dir}/zz.utils.jar"/>
-			<pathelement path="${lib.dir}/tod-debugger.jar"/>
-			<pathelement path="${lib.dir}/tod-agent.jar"/>
-			<pathelement path="${lib.dir}/tod-dbgrid.jar"/>
+			<pathelement path="${zz.utils.dir}/build/zz.utils.jar"/>
+			<pathelement path="${tod.dir}/build/tod-debugger.jar"/>
+			<pathelement path="${tod-agent.dir}/build/tod-agent.jar"/>
+			<pathelement path="${tod-dbgrid.dir}/build/tod-dbgrid.jar"/>
+			<pathelement path="${zz.eclipse.utils.dir}/build/zz.eclipse.utils/plugin.jar"/>
+			
 			<pathelement path="${lib.dir}/asm-all-3.1.jar"/>
 			<pathelement path="${lib.dir}/reflex-core.jar"/>
 			<pathelement path="${lib.dir}/jython-2.2.1.jar"/>
 			<pathelement path="${lib.dir}/javassist.jar"/>
-			<pathelement path="${zz.eclipse.utils.dir}/build/zz.eclipse.utils/plugin.jar"/>
+			
 			<fileset dir="${eclipse.home}/plugins">
 				<include name="**/*.jar"/>
 			</fileset>
@@ -76,57 +76,53 @@
 		<copy todir="${plugin.dir}">
 			<fileset dir="${basedir}" includes="lib/* icons/*" />
 		</copy>
+		
+		<copy todir="${plugin.dir}/lib">
+			<fileset dir="${zz.utils.dir}/build" includes="zz.utils.jar"/>
+			<fileset dir="${tod.dir}/build" includes="tod-debugger.jar"/>
+			<fileset dir="${tod-agent.dir}/build" includes="tod-agent.jar"/>
+			<fileset dir="${tod-dbgrid.dir}/build" includes="tod-dbgrid.jar"/>
+			<fileset dir="${tod-agent.dir}" includes="*.so *.dll *.dylib"/>
+		</copy>
+		
 		<exec executable="${basedir}/mkDeployPlugin.pl" />
 	</target>
 
-	<target name="dep.tod" depends="init">
+	<target name="dep.tod" depends="init" unless="skip.deps">
 		<ant 
 			antfile="${tod.dir}/build.xml" 
 			dir="${tod.dir}" 
 			target="jar"
 			inheritall="false"/>
-		<copy todir="lib">
-			<fileset dir="${tod.dir}/build" includes="tod-debugger.jar tod-agent.jar"/>
-		</copy>
 	</target>
 
-	<target name="dep.tod-dbgrid" depends="init">
+	<target name="dep.tod-dbgrid" depends="init" unless="skip.deps">
 		<ant 
 			antfile="${tod-dbgrid.dir}/build.xml" 
 			dir="${tod-dbgrid.dir}" 
 			target="jar"
 			inheritall="false"/>
-		<copy todir="lib">
-			<fileset dir="${tod-dbgrid.dir}/build" includes="tod-dbgrid.jar"/>
-		</copy>
 	</target>
 	
-	<target name="dep.tod-agent" depends="init">
+	<target name="dep.tod-agent" depends="init" unless="skip.deps">
 		<ant 
 			antfile="${tod-agent.dir}/build.xml" 
 			dir="${tod-agent.dir}" 
 			target="jar"
 			inheritall="false"/>
 		<echo message="Finished building tod-agent"/>
-		<copy todir="lib">
-			<fileset dir="${tod-agent.dir}/build" includes="tod-agent.jar"/>
-			<fileset dir="${tod-agent.dir}" includes="*.so *.dll *.dylib"/>
-		</copy>
 	</target>		
 
-	<target name="dep.zz.utils" depends="init">
+	<target name="dep.zz.utils" depends="init" unless="skip.deps">
 		<ant 
 			antfile="${zz.utils.dir}/build.xml" 
 			dir="${zz.utils.dir}" 
 			target="jar"
 			inheritall="false"/>
 		<echo message="Finished building zz.utils"/>
-		<copy todir="lib">
-			<fileset dir="${zz.utils.dir}/build" includes="zz.utils.jar"/>
-		</copy>
 	</target>
 
-	<target name="dep.zz.eclipse.utils" depends="init">
+	<target name="dep.zz.eclipse.utils" depends="init" unless="skip.deps">
 		<ant 
 			antfile="${zz.eclipse.utils.dir}/build-plugin.xml" 
 			dir="${zz.eclipse.utils.dir}" 
@@ -134,33 +130,6 @@
 			inheritall="false"/>
 		<echo message="Finished building zz.utils"/>
 	</target>
-
-	<target name="dep.reflex" depends="init">
-		<echo message="Building reflex..."/>
-		<ant 
-			antfile="${reflex.dir}/build.xml" 
-			dir="${reflex.dir}" 
-			target="jar"
-			inheritall="false"/>
-		<echo message="Finished building reflex"/>
-		<copy todir="lib">
-			<fileset dir="${reflex.dir}/build" includes="reflex-core.jar"/>
-		</copy>
-	</target>
-
-	<target name="dep.pom" depends="init">
-		<echo message="Building pom..."/>
-		<ant 
-			antfile="${pom.dir}/build.xml" 
-			dir="${pom.dir}" 
-			target="jar"
-			inheritall="false"/>
-		<echo message="Finished building pom"/>
-		<copy todir="lib">
-			<fileset dir="${pom.dir}/build" includes="pom.jar"/>
-		</copy>
-	</target>
-
 
 	<target name="dep.all" depends="dep.tod-agent, dep.tod, dep.zz.utils, dep.zz.eclipse.utils, dep.tod-dbgrid"/>
 </project>
