@@ -957,9 +957,9 @@ public final class EventCollector
 			}
 			else 
 			{
-				itsTimestamp += 3000;
+				itsTimestamp += 1;
 				itsSeqCount++;
-				if (itsSeqCount > 10)
+				if (itsSeqCount > 100)
 				{
 					ts = Timestamper.update();
 					if (ts > itsTimestamp) 

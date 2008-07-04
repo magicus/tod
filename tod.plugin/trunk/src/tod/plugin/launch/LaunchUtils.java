@@ -235,16 +235,12 @@ public class LaunchUtils
 		List<String> theArguments = new ArrayList<String>();
         
         // Boot class path
-		String theAgentPath = System.getProperty(
-				"agent.path",
-				theLibraryPath+"/tod-agent.jar");
+		String theAgentPath = System.getProperty("agent.path", theLibraryPath+"/tod-agent.jar");
         
         theArguments.add ("-Xbootclasspath/p:"+theAgentPath);
 		
 
-		String theNativeAgentPath = System.getProperty(
-				"bcilib.path",
-				theLibraryPath+"/"+theLibName);
+		String theNativeAgentPath = System.getProperty("bcilib.path", theLibraryPath)+"/"+theLibName;
 		
 		theArguments.add("-agentpath:"+theNativeAgentPath);
 		theArguments.add("-Djava.library.path="+theLibraryPath);

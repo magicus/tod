@@ -65,33 +65,9 @@ public class TODPlugin extends AbstractUIPlugin
 
 		String theBase = getLibraryPath();
 
-//		ClassPool thePool = null;
-////		ReflexLaunchHack.setupReflex();
-//
-//		if (USE_REFLEX_BRIDGE)
-//		{
-//			try
-//			{
-//				ReflexRiver.setup();
-//			}
-//			catch (Exception e)
-//			{
-//				msgBridgeProblem();
-//				throw new RuntimeException("Reflex bridge not detected", e);
-//			}
-//			
-//			thePool = RunningEnvironment.get().getClassPool();
-//		}
-		
-		
 		String theDevPath = Util.workspacePath;
 		if (theDevPath == null)
 		{
-//			thePool.appendClassPath(theBase+"/reflex-core.jar");
-//			thePool.appendClassPath(theBase+"/pom.jar");
-//			thePool.appendClassPath(theBase+"/zz.utils.jar");
-//			thePool.appendClassPath(theBase+"/tod-debugger.jar");
-
 			DBProcessManager.cp += File.pathSeparator
 				+theBase+"/tod-debugger.jar"+File.pathSeparator
 				+theBase+"/tod-dbgrid.jar"+File.pathSeparator
@@ -103,11 +79,6 @@ public class TODPlugin extends AbstractUIPlugin
 		}
 		else
 		{
-//			thePool.appendClassPath(theDevPath+"/reflex/bin");
-//			thePool.appendClassPath(theDevPath+"/pom/bin");
-//			thePool.appendClassPath(theDevPath+"/zz.utils/bin");
-//			thePool.appendClassPath(theDevPath+"/TOD/bin");			
-
 			DBProcessManager.cp += File.pathSeparator
 				+theDevPath+"/TOD/bin"+File.pathSeparator
 				+theDevPath+"/TOD-agent/bin"+File.pathSeparator
@@ -116,13 +87,11 @@ public class TODPlugin extends AbstractUIPlugin
 				+theBase+"/reflex-core.jar"+File.pathSeparator
 				+theBase+"/pom.jar"+File.pathSeparator
 				+theDevPath+"/zz.utils/bin";
+			
+			if (System.getProperty("agent.path") == null) System.setProperty("agent.path", theDevPath+"/TOD-agent/bin");
+			if (System.getProperty("bcilib.path") == null) System.setProperty("bcilib.path", theDevPath+"/TOD-agent");
+
 		}
-		
-//		if (USE_REFLEX_BRIDGE)
-//		{
-//			ClassLoader theLoader = Thread.currentThread().getContextClassLoader();
-//			thePool.appendClassPath(new LoaderClassPath(theLoader));
-//		}
 		
 		DBProcessManager.lib = theBase;
 	}
