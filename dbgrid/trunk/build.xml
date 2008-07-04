@@ -1,6 +1,8 @@
 <project name="TOD-dbgrid" default="jar" basedir=".">
 
     <target name="init">
+   		<property file="ant.settings"/> <!-- This is optional, only for skip.deps-->
+    	
 		<property name="version" value="dev"/>
     	
         <property name="scripts.dir" value="${basedir}/scripts"/>
