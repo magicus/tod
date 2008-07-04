@@ -1,8 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 import sys
-#sys.path.append('/media/WD Passport/eclipse/workspace/python-project/src')
-#from debugger.pytod.core.hunterTrace import hT
+sys.path.append('/media/WD Passport/eclipse/workspace/python-project/src')
+from debugger.pytod.core.hunterTrace import hT
 import time
 first = time.time()
 
@@ -22,17 +22,15 @@ class clase1(object):
         print self.z
         k = i + j
         self.x = k
-        """
         try:
             o = self.foo()
         except:
             o = 1
-        self.foo()
-        """
+        #self.foo()
         return k
     
     def foo(self):
-        y = 1/3
+        y = 1/0
 
 class Corriente(object):
     "Clase Corriente. Nota: Llamar con from pinchpython import *"
