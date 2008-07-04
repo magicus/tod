@@ -47,7 +47,7 @@ public class PyTODPlugin extends AbstractUIPlugin {
 			
 			DBProcessManager.cp += File.pathSeparator
 				+theBase+"/tod-pytod-db.jar"+File.pathSeparator
-				+theBase+"/lib/freehep-xdr-2.0.3.jar";
+				+theBase+"/freehep-xdr-2.0.3.jar";
 			
 			itsHunterPath = theBase+"/pytod-core";
 		}

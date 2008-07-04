@@ -76,7 +76,7 @@
 			<fileset dir="${pytod-db.dir}/build" includes="tod-pytod-db.jar"/>
 		</copy>
 		
-		<copy todir="${plugin.dir}/pytod-core">
+		<copy todir="${plugin.dir}/lib/pytod-core">
 			<fileset dir="${pytod-core.dir}/src" includes="debugger/**" />
 		</copy>
 		
