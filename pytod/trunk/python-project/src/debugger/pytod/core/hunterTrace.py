@@ -96,7 +96,7 @@ class hunterTrace(object):
             theDataType = self.__getDataType__(aArg)
             self.itsPacker.pack_int(theDataType)
             self.itsPacker.pack_int(id(aArg))
-            self.itsPacker.pack_int(1)
+            self.itsPacker.pack_int(1) #True
             self.itsPacker.pack_int(theProbeId)
             self.itsPacker.pack_hyper(aParentTimestampFrame)        
             self.itsPacker.pack_int(theDepth)
@@ -116,7 +116,7 @@ class hunterTrace(object):
                 self.itsPacker.pack_int(id(aArg))
             else:
                 thePackValue = self.__packValue__(theDataType, aArg)            
-            self.itsPacker.pack_int(0)
+            self.itsPacker.pack_int(0) #False
             self.itsPacker.pack_int(theProbeId)
             self.itsPacker.pack_hyper(aParentTimestampFrame)        
             self.itsPacker.pack_int(theDepth)
@@ -629,65 +629,54 @@ class hunterTrace(object):
         theObjectClass.__addMethod__(aCode,aLocals)
         theObjectClass.__addStaticField__(aLocals)
 
-    def __registerMethod__(self, aCode, aMethodId, aClassId, aArgs):
-        theLineNumbers = 0
+    def __registerException__(self,
+                              aFrame,
+                              aArg,
+                              aDepth,
+                              aParentTimestampFrame,
+                              aThreadId):
+        theBackFrame = aFrame.f_back
+        theBackFrameCode = theBackFrame.f_code
+        theParentId = self.__getObjectId__(theBackFrameCode)
+        #behaviorId = self.__getObjectId__(aFrame.f_code)
+        #theParentId = self.__getObjectId__(aFrame.f_code)
+        theCurrentLasti = aFrame.f_lasti
+        theDepth = aDepth + 1
+        if not self.itsProbe.has_key((theCurrentLasti,theParentId)):
+            theProbeId = self.__registerProbe__(theCurrentLasti,
+                                                theParentId,
+                                                aFrame.f_lineno)
+        else:
+            theProbeId = self.itsProbe[(theCurrentLasti,theParentId)]
+        theCurrentTimestamp = self.__convertTimestamp__(time.time())       
+        if not id(aArg) in self.itsObjects:
+            self.__registerObject__(aArg,theCurrentTimestamp)            
         self.itsPacker.reset()
         self.itsPacker.pack_int(self.itsEvents['register'])
-        self.itsPacker.pack_int(self.itsObjects['method'])
-        self.itsPacker.pack_int(aMethodId)
-        self.itsPacker.pack_int(aClassId)
-        self.itsPacker.pack_string(aCode.co_name)
-        #argumento viene con self, se le debe restar uno a la cantidad de
-        #elementos
-        self.itsPacker.pack_int(len(aArgs)-1)
-        thePrintArg = " "
-        for theValue in range(len(aArgs)):
-            if not aArgs[theValue] == 'self':
-                thePrintArg += str(aArgs[theValue])
-                thePrintArg += " "
-                self.itsPacker.pack_string(aArgs[theValue])
-                thePrintArg += str(theValue)
-                thePrintArg += " "
-                self.itsPacker.pack_int(theValue)
-        self.itsPacker.pack_string(aCode.co_filename)
-        #agregamos setup del método para que el plugin
-        #funcione correctamente
-        #de seguro que esto se puede hacer mejor
-        for theTuple in dis.findlinestarts(aCode):
-            theLineNumbers += 1
-        self.itsPacker.pack_int(len(aCode.co_code))        
-        self.itsPacker.pack_int(theLineNumbers)
-        thePrintLines = " "
-        for theStartPc, theLineNumber in dis.findlinestarts(aCode):
-            thePrintArg += str(theStartPc)
-            thePrintArg += " "            
-            self.itsPacker.pack_int(theStartPc)
-            thePrintArg += str(theLineNumber)
-            thePrintArg += " "            
-            self.itsPacker.pack_int(theLineNumber)
+        self.itsPacker.pack_int(self.itsObjects['exception'])       
+        theDataType = self.__getDataType__(aArg)
+        self.itsPacker.pack_int(theDataType)
+        self.itsPacker.pack_int(id(aArg))
+        self.itsPacker.pack_int(theProbeId)
+        self.itsPacker.pack_hyper(aParentTimestampFrame)        
+        self.itsPacker.pack_int(theDepth)
+        self.itsPacker.pack_hyper(theCurrentTimestamp)
+        self.itsPacker.pack_int(aThreadId)
         if self.FLAG_DEBUGG:
             print self.itsEvents['register'],
-            print self.itsObjects['method'],
-            print aMethodId,
-            print aClassId,
-            print aCode.co_name,
-            print len(aArgs)-1,
-            print thePrintArg,
-            print aCode.co_filename
-            print len(aCode.co_code)
-            print theLineNumbers
-            print thePrintLines
+            print self.itsObjects['exception'],
+            print theDataType,
+            print id(aArg),
+            print theProbeId,
+            print aParentTimestampFrame,
+            print theDepth,
+            print theCurrentTimestamp,
+            print aThreadId
             raw_input()
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-( Registrando Metodo', aCode.co_name
-        self.__addMethod__(
-                           aMethodId,
-                           self.__createlnotab__(aCode),
-                           aCode,
-                           aClassId,
-                           aArgs)
+            print 'TOD está durmiendo :-( - Salida de behavior', aFrame.f_code.co_name
 
     def __registerFunction__(self, aCode):
         theFunctionId = self.itsId.__get__()
@@ -747,6 +736,67 @@ class hunterTrace(object):
                              aCode,
                              aArgs)
         self.itsId.__next__()
+
+
+    def __registerMethod__(self, aCode, aMethodId, aClassId, aArgs):
+        theLineNumbers = 0
+        self.itsPacker.reset()
+        self.itsPacker.pack_int(self.itsEvents['register'])
+        self.itsPacker.pack_int(self.itsObjects['method'])
+        self.itsPacker.pack_int(aMethodId)
+        self.itsPacker.pack_int(aClassId)
+        self.itsPacker.pack_string(aCode.co_name)
+        #argumento viene con self, se le debe restar uno a la cantidad de
+        #elementos
+        self.itsPacker.pack_int(len(aArgs)-1)
+        thePrintArg = " "
+        for theValue in range(len(aArgs)):
+            if not aArgs[theValue] == 'self':
+                thePrintArg += str(aArgs[theValue])
+                thePrintArg += " "
+                self.itsPacker.pack_string(aArgs[theValue])
+                thePrintArg += str(theValue)
+                thePrintArg += " "
+                self.itsPacker.pack_int(theValue)
+        self.itsPacker.pack_string(aCode.co_filename)
+        #agregamos setup del método para que el plugin
+        #funcione correctamente
+        #de seguro que esto se puede hacer mejor
+        for theTuple in dis.findlinestarts(aCode):
+            theLineNumbers += 1
+        self.itsPacker.pack_int(len(aCode.co_code))        
+        self.itsPacker.pack_int(theLineNumbers)
+        thePrintLines = " "
+        for theStartPc, theLineNumber in dis.findlinestarts(aCode):
+            thePrintArg += str(theStartPc)
+            thePrintArg += " "            
+            self.itsPacker.pack_int(theStartPc)
+            thePrintArg += str(theLineNumber)
+            thePrintArg += " "            
+            self.itsPacker.pack_int(theLineNumber)
+        if self.FLAG_DEBUGG:
+            print self.itsEvents['register'],
+            print self.itsObjects['method'],
+            print aMethodId,
+            print aClassId,
+            print aCode.co_name,
+            print len(aArgs)-1,
+            print thePrintArg,
+            print aCode.co_filename
+            print len(aCode.co_code)
+            print theLineNumbers
+            print thePrintLines
+            raw_input()
+        try:
+            self.itsSocket.sendall(self.itsPacker.get_buffer())
+        except:
+            print 'TOD está durmiendo :-( Registrando Metodo', aCode.co_name
+        self.__addMethod__(
+                           aMethodId,
+                           self.__createlnotab__(aCode),
+                           aCode,
+                           aClassId,
+                           aArgs)
         
     def __registerObject__(self, aValue, aCurrentTimestamp):
         self.itsRegisterObjects.append(id(aValue))
@@ -962,6 +1012,10 @@ class hunterTrace(object):
                                      theThreadId,
                                      False)
         elif aEvent == "exception":
+            theParentTimestampFrame = self.__getTimestampFrame__(aFrame)
+            #registrar la exception
+            self.__registerException__(aFrame,aArg[1],theDepth,theParentTimestampFrame,theThreadId)
+            raw_input()
             for theTuple in dis.findlinestarts(theCode):
                 if aFrame.f_lineno in theTuple:
                     theIndex = theTuple[0]
@@ -969,7 +1023,6 @@ class hunterTrace(object):
             theInstruction = dis.opname[theOp]
             if theInstruction == 'SETUP_EXCEPT':
                 return self.__trace__
-            theParentTimestampFrame = self.__getTimestampFrame__(aFrame)
             self.__behaviorExit__(aFrame,
                                      aArg[1],
                                      theDepth,
@@ -977,7 +1030,6 @@ class hunterTrace(object):
                                      theThreadId,
                                      True)
             self.FLAG_THROWN = True           
-            
 
 hT = hunterTrace(
                  generatorId(),

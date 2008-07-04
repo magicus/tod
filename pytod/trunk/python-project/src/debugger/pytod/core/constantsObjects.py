@@ -23,7 +23,8 @@ objects = {
            'probe':5,
            'thread':6,
            'classAttribute':7,
-           'object':8
+           'object':8,
+           'exception':9
            }
 
 dataTypes = {
