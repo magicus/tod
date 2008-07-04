@@ -115,7 +115,7 @@ public class PyTODRunner {
     			// Insert wrapper
     			List<String> theCmdLine = new ArrayList<String>(Arrays.asList(config.getCommandLine(true)));
     			theCmdLine.addAll(2, Arrays.asList(new String[] {
-    					PyTODPlugin.getDefault().getHunterPath()+"/testcase/wrapper.py",
+    					PyTODPlugin.getDefault().getHunterPath()+"/debugger/wrapper.py",
     			}));
     			
     			// Setup system path

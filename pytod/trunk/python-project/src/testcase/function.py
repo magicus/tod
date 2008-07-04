@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from debugger.pytod.core.hunterTrace import hT
+#rom debugger.pytod.core.hunterTrace import hT
 #from debugger.pytod.core.hunterTrace import __print__
 
 def prueba(z,r,t,y):
@@ -20,4 +20,4 @@ def prueba2(e=3):
 prueba(10,11,12,13)
 #prueba2()
 
-hT.__printHunter__()
+#T.__printHunter__()
