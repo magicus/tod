@@ -72,6 +72,10 @@
 			<fileset dir="${pytod-db.dir}" includes="lib/freehep-xdr-2.0.3.jar" />
 		</copy>
 		
+		<copy todir="${plugin.dir}/lib">
+			<fileset dir="${pytod-db.dir}/build" includes="tod-pytod-db.jar"/>
+		</copy>
+		
 		<copy todir="${plugin.dir}/pytod-core">
 			<fileset dir="${pytod-core.dir}/src" includes="debugger/**" />
 		</copy>
