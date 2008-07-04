@@ -118,7 +118,8 @@ def setEclipsePluginVersion(moduleName, version):
 	f.truncate()
 	
 def antBuild(moduleName, buildFileName, targetName):
-	print 'Building ' + moduleName + '...'
+	print '***********************************************************'
+	print 'Building ' + moduleName + ' (' + targetName + ')...'
 	module = getModule(moduleName)
 	cwd = os.getcwd()
 	dir = 'checkouts/'+module.name
@@ -127,6 +128,7 @@ def antBuild(moduleName, buildFileName, targetName):
 	os.chdir(cwd)
 	
 	if (ret != 0): raise Exception('Build failed')
+	print ''
 	
 def mkcleandir(path):	
 	if os.path.exists(path):
@@ -227,14 +229,14 @@ def build(version, checkout):
 		if (len(changesText.strip()) > 0): 
 			fChanges.write(header + '\n')
 			fChanges.write('-'*len(header) + '\n')
-			fChanges.write(changesText)
+			fChanges.write(changesText.encode('utf-8'))
 			fChanges.write('\n')
 			
 		logsText = stripLog(log, 0)
 		if (len(logsText.strip()) > 0): 
 			fLogs.write(header + '\n')
 			fLogs.write('-'*len(header) + '\n')
-			fLogs.write(logsText)
+			fLogs.write(logsText.encode('utf-8'))
 			fLogs.write('\n')
 		
 	fChanges.close()
