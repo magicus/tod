@@ -599,7 +599,7 @@ class hunterTrace(object):
     def __register__(self, aObject, aLocals):
         aObject.__registerLocals__(aLocals)
 
-    def __registerClass__(self, aCode, aLocals):
+    def __registerClass__(self, aCode, aLocals, aParentTimestamp, aDepth, aFrameLineNo):
         theClassId = self.itsId.__get__()
         theClassName = aCode.co_name
         #HINT: ver como recuperar las herencias de esta clase 
@@ -627,7 +627,11 @@ class hunterTrace(object):
                                            aCode)
         self.itsId.__next__()
         theObjectClass.__addMethod__(aCode,aLocals)
-        theObjectClass.__addStaticField__(aLocals)
+        theObjectClass.__register_set_StaticField__(aLocals,
+                                                    aFrameLineNo,
+                                                    aParentTimestamp,
+                                                    aDepth,
+                                                    aCode.co_filename)
 
     def __registerException__(self,
                               aFrame,
@@ -797,6 +801,39 @@ class hunterTrace(object):
                            aCode,
                            aClassId,
                            aArgs)
+        
+        
+    def __registerSpecialMethod__(self, aName, aMethodId, aClassId, aFileName):
+        self.itsPacker.reset()
+        self.itsPacker.pack_int(self.itsEvents['register'])
+        self.itsPacker.pack_int(self.itsObjects['specialMethod'])
+        self.itsPacker.pack_int(aMethodId)
+        self.itsPacker.pack_int(aClassId)
+        self.itsPacker.pack_string(aName)
+        self.itsPacker.pack_string(aFileName)
+        #agregamos setup del método para que el plugin
+        #funcione correctamente
+        #de seguro que esto se puede hacer mejor
+        if self.FLAG_DEBUGG:
+            print self.itsEvents['register'],
+            print self.itsObjects['specialMethod'],
+            print aMethodId,
+            print aClassId,
+            print aName,
+            print aFileName
+            raw_input()
+        try:
+            self.itsSocket.sendall(self.itsPacker.get_buffer())
+        except:
+            print 'TOD está durmiendo :-( Registrando Metodo', aName
+        """
+        self.__addMethod__(
+                           aMethodId,
+                           self.__createlnotab__(aCode),
+                           aCode,
+                           aClassId,
+                           aArgs)
+        """
         
     def __registerObject__(self, aValue, aCurrentTimestamp):
         self.itsRegisterObjects.append(id(aValue))
@@ -981,9 +1018,15 @@ class hunterTrace(object):
             if theLocals.has_key('__init__'):
                 if not self.__inClass__(theCode):
                     #registramos la definicion de la clase
-                    theLocals.update({'__setattr__':Descriptor.__dict__['__setattr__']})
+                    theLocals.update(
+                            {'__setattr__':Descriptor.__dict__['__setattr__']})
                     theLocals.update({'__metaclass__':MetaDescriptor})
-                    self.__registerClass__(theCode,theLocals)
+                    self.__registerClass__(
+                                           theCode,
+                                           theLocals,
+                                           theParentTimestampFrame,
+                                           theDepth,
+                                           aFrame.f_lineno)
             else:
                 theObject = self.__getObject__(theCode)
                 if theObject == None:
@@ -993,7 +1036,9 @@ class hunterTrace(object):
                     return
                 theLnotab = theObject.__getLnotab__()
                 if theLnotab.has_key(aFrame.f_lasti):
-                    theBytecodeLocals = self.__getpartcode__(theCode,theLnotab[aFrame.f_lasti])
+                    theBytecodeLocals = self.__getpartcode__(
+                                                    theCode,
+                                                    theLnotab[aFrame.f_lasti])
                     self. __register__(theObject,theBytecodeLocals)
                     self.__localWrite__(theCode,
                                         theBytecodeLocals,
@@ -1122,17 +1167,15 @@ class MetaDescriptor(type):
                 print theDataType,
                 print thePackValue,
                 print theProbeId,
-                print theParentTimestamp,
+                print aParentTimestamp,
                 print theCurrentDepth,
                 print theCurrentTimestamp,
                 print theThreadId
                 raw_input()
             try:
                 hT.itsSocket.sendall(hT.itsPacker.get_buffer())
-                pass
             except:
                 print 'TOD está durmiendo :-(', theCode.co_name    
-            sys.settrace(hT.__trace__)
         
 
 class Descriptor(object):

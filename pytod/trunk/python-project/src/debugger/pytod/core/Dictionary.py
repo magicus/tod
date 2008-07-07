@@ -90,7 +90,6 @@ class Dictionary(dict):
                         self.hT.itsPacker.pack_int(aParentId)
                         self.hT.itsPacker.pack_string(theKey)
                         if self.hT.FLAG_DEBUGG:
-                        #if True:
                             print self.hT.itsEvents['register'],
                             print self.hT.itsObjects['classAttribute'],
                             print theValue,

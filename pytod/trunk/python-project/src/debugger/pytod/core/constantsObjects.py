@@ -24,7 +24,8 @@ objects = {
            'thread':6,
            'classAttribute':7,
            'object':8,
-           'exception':9
+           'exception':9,
+           'specialMethod':10
            }
 
 dataTypes = {

@@ -173,7 +173,7 @@ class Test(object):
     def __init__(self):
         self.a = 10
         self.metodo()
-        
+    
     def metodo(self):
         self.a = self.a +1
 

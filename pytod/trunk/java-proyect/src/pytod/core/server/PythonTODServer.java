@@ -73,6 +73,7 @@ public class PythonTODServer extends TODServer
 	private static final int OBJECT_STATICFIELD = 7;
 	private static final int OBJECT_OBJECT = 8;
 	private static final int OBJECT_EXCEPTION = 9;
+	private static final int OBJECT_SPECIALMETHOD = 10;
 	//dataTypes
 	private static final int DATA_INT = 0;
 	private static final int DATA_STR = 1;
@@ -230,7 +231,7 @@ public class PythonTODServer extends TODServer
 					}
 				}
 				String theFileName = aInputStream.readString();
-				theClass.setSourceFile(theFileName);
+				theBehavior.setSourceFile(theFileName);
 				int theCodeSize = aInputStream.readInt();
 				int theLineNumbers = aInputStream.readInt();
 				int theStartPc = -1;
@@ -243,6 +244,29 @@ public class PythonTODServer extends TODServer
 				}
 				theBehavior.setup(true, null, theCodeSize, theLineNumberInfo, null);
 				System.out.println("Registrando el metodo "+theMethodName + "id = "+theMethodId);
+			}
+			catch (Exception e)
+			{
+				throw new RuntimeException(e);
+			}			
+
+		}	
+		
+		public void registerSpecialMethod(XDRInputStream aInputStream)
+		{
+			IMutableClassInfo theClass;
+			IMutableBehaviorInfo theBehavior;
+			try
+			{
+				int theMethodId = aInputStream.readInt();
+				int theClassId = aInputStream.readInt();
+				String theMethodName = aInputStream.readString();
+				theClass = itsStructureDatabase.getClass(theClassId, true);
+				theBehavior = theClass.addBehavior(theMethodId, theMethodName, generateSignature(0), false);
+				String theFileName = aInputStream.readString();
+				theBehavior.setSourceFile(theFileName);
+				//theBehavior.setup(true, null, theCodeSize, theLineNumberInfo, null);
+				System.out.println("Registrando el SpecialMetodo "+theMethodName + "id = "+theMethodId);
 			}
 			catch (Exception e)
 			{
@@ -770,6 +794,9 @@ public class PythonTODServer extends TODServer
 							break;
 						case OBJECT_EXCEPTION:
 							registerException(itsStream);
+							break;
+						case OBJECT_SPECIALMETHOD:
+							registerSpecialMethod(itsStream);
 							break;
 						default:
 							break;
