@@ -809,7 +809,6 @@ class hunterTrace(object):
         self.itsPacker.pack_string(aValue)
         self.itsPacker.pack_hyper(aCurrentTimestamp)
         if self.FLAG_DEBUGG:
-        #if True:
             print self.itsEvents['register'],
             print self.itsObjects['object'],
             print 1,
@@ -1013,9 +1012,11 @@ class hunterTrace(object):
                                      False)
         elif aEvent == "exception":
             theParentTimestampFrame = self.__getTimestampFrame__(aFrame)
-            #registrar la exception
-            self.__registerException__(aFrame,aArg[1],theDepth,theParentTimestampFrame,theThreadId)
-            raw_input()
+            self.__registerException__(aFrame,
+                                        aArg[1],
+                                        theDepth,
+                                        theParentTimestampFrame,
+                                        theThreadId)
             for theTuple in dis.findlinestarts(theCode):
                 if aFrame.f_lineno in theTuple:
                     theIndex = theTuple[0]
@@ -1024,11 +1025,11 @@ class hunterTrace(object):
             if theInstruction == 'SETUP_EXCEPT':
                 return self.__trace__
             self.__behaviorExit__(aFrame,
-                                     aArg[1],
-                                     theDepth,
-                                     theParentTimestampFrame,
-                                     theThreadId,
-                                     True)
+                                    aArg[1],
+                                    theDepth,
+                                    theParentTimestampFrame,
+                                    theThreadId,
+                                    True)
             self.FLAG_THROWN = True           
 
 hT = hunterTrace(
@@ -1045,7 +1046,6 @@ class MetaDescriptor(type):
         theFrame = sys._getframe()
         theCode = theFrame.f_back.f_code
         theCurrentLasti = theFrame.f_back.f_lasti
-        #theCurrentDepth = hT.__getDepthFrame__(theFrame.f_back) + 2
         theCurrentDepth = hT.itsCurrentDepth
         theCurrentTimestamp = hT.__convertTimestamp__(time.time())
         theParentTimestamp = hT.__getTimestampParentFrame__(theFrame)
@@ -1059,7 +1059,6 @@ class MetaDescriptor(type):
         theBehaviorId = hT.__getObjectId__(theCode)
         sys.settrace(None)
         theObject.__addStaticField__({aName:-1})
-        #theObject.classAttributes.__updateClassAttribute__({aName:-1},theObjectId)
         Id = theObject.staticField[aName]
         if not hT.itsProbe.has_key((theCurrentLasti,theBehaviorId)):
             theProbeId = hT.__registerProbe__(theCurrentLasti,
@@ -1078,7 +1077,6 @@ class MetaDescriptor(type):
                 theDataType = hT.__getDataType__(aValue)
                 hT.itsPacker.pack_int(theDataType)
                 hT.itsPacker.pack_int(id(aValue))
-                #thePackValue = hT.__packValue__(theDataType, aValue)
                 hT.itsPacker.pack_int(theProbeId)
                 hT.itsPacker.pack_hyper(theParentTimestamp)        
                 hT.itsPacker.pack_int(theCurrentDepth)
@@ -1086,7 +1084,6 @@ class MetaDescriptor(type):
                 hT.itsPacker.pack_int(theThreadId)
                 super(MetaDescriptor, self).__setattr__(aName, aValue)
                 if hT.FLAG_DEBUGG:
-                #if True:
                     print hT.itsEvents['set'],
                     print hT.itsObjects['classAttribute'],
                     print Id,
@@ -1119,7 +1116,6 @@ class MetaDescriptor(type):
             hT.itsPacker.pack_int(theThreadId)
             super(MetaDescriptor, self).__setattr__(aName, aValue)
             if hT.FLAG_DEBUGG:
-            #if True:
                 print hT.itsEvents['set'],
                 print hT.itsObjects['classAttribute'],
                 print Id,
@@ -1157,12 +1153,8 @@ class Descriptor(object):
         theObject = hT.itsClass[theKey] 
         theObjectId = theObject.__getId__()
         theBehaviorId = hT.__getObjectId__(theCode)
-        #comportamiento extraño
-        #se debe deshabilitar settrace
-        #revizar comportamiento de xdrlib
         sys.settrace(None)
         theObject.__addAttribute__(aName, theObjectId)
-        #theObject.attributes.__updateAttr__({aName:-1},theObjectId)
         Id = theObject.attributes[aName]
         if not hT.itsProbe.has_key((theCurrentLasti,theBehaviorId)):
             theProbeId = hT.__registerProbe__(theCurrentLasti,
@@ -1170,11 +1162,9 @@ class Descriptor(object):
                                               theFrame.f_lineno)
         else:
             theProbeId = hT.itsProbe[(theCurrentLasti,theBehaviorId)]          
-        #preguntar si el valor está registrado y si además es string
         if type(aValue) == types.StringType:
             if not id(aValue) in hT.itsRegisterObjects:
                 hT.__registerObject__(aValue, theCurrentTimestamp)
-                #se envía normalmente el asunteque
                 hT.itsPacker.pack_int(hT.itsEvents['set'])
                 hT.itsPacker.pack_int(hT.itsObjects['attribute'])
                 hT.itsPacker.pack_int(Id)
@@ -1182,7 +1172,6 @@ class Descriptor(object):
                 theDataType = hT.__getDataType__(aValue)
                 hT.itsPacker.pack_int(theDataType)
                 hT.itsPacker.pack_int(id(aValue))
-                #thePackValue = hT.__packValue__(theDataType, aValue)
                 hT.itsPacker.pack_int(theProbeId)
                 hT.itsPacker.pack_hyper(theParentTimestamp)        
                 hT.itsPacker.pack_int(theCurrentDepth)
@@ -1190,7 +1179,6 @@ class Descriptor(object):
                 hT.itsPacker.pack_int(theThreadId)
                 object.__setattr__(self, aName, aValue)
                 if hT.FLAG_DEBUGG:
-                #if True:
                     print hT.itsEvents['set'],
                     print hT.itsObjects['attribute'],
                     print Id,
@@ -1206,8 +1194,7 @@ class Descriptor(object):
                 try:
                     hT.itsSocket.sendall(hT.itsPacker.get_buffer())
                 except:
-                    print 'TOD está durmiendo :-(', theCode.co_name
-                #se habilita nuevamente settrace    
+                    print 'TOD está durmiendo :-(', theCode.co_name   
                 sys.settrace(hT.__trace__)
         else:
             hT.itsPacker.reset()
@@ -1240,14 +1227,11 @@ class Descriptor(object):
             try:
                 hT.itsSocket.sendall(hT.itsPacker.get_buffer())
             except:
-                print 'TOD está durmiendo :-(', theCode.co_name
-            #se habilita nuevamente settrace    
+                print 'TOD está durmiendo :-(', theCode.co_name   
             sys.settrace(hT.__trace__)
 
 
 if th:
-    #a cada nuevo thread se le define settrace
     settrace(hT.__trace__)  
-#asignamos settrace para nuestro espacio de trabajo
 sys.settrace(hT.__trace__)
 
