@@ -96,8 +96,12 @@ public class HighLevelEventReader
 				readOutput(aStream, aCollector);
 				break;
 				
-			case EXCEPTION:
-				readException(aStream, aCollector);
+			case EXCEPTION_BYNAME:
+				readExceptionByName(aStream, aCollector);
+				break;
+				
+			case EXCEPTION_BYID:
+				readExceptionById(aStream, aCollector);
 				break;
 				
 			case INSTANCEOF:
@@ -265,7 +269,7 @@ public class HighLevelEventReader
 				aStream.readInt(), readValue(aStream));
 	}
 	
-	public static void readException(DataInputStream aStream, ILogCollector aCollector) throws IOException
+	public static void readExceptionByName(DataInputStream aStream, ILogCollector aCollector) throws IOException
 	{
 		if (READ_SIZE) aStream.readInt(); // Packet size
 		aCollector.exception(
@@ -277,7 +281,21 @@ public class HighLevelEventReader
 				aStream.readUTF(),
 				aStream.readUTF(),
 				aStream.readUTF(),
-				aStream.readShort(), readValue(aStream));
+				aStream.readShort(), 
+				readValue(aStream));
+	}
+	
+	public static void readExceptionById(DataInputStream aStream, ILogCollector aCollector) throws IOException
+	{
+		if (READ_SIZE) aStream.readInt(); // Packet size
+		aCollector.exception(
+				aStream.readInt(),
+				aStream.readLong(),
+				aStream.readShort(),
+				aStream.readLong(),
+				readAdviceCFlow(aStream),
+				aStream.readInt(),
+				readValue(aStream));
 	}
 	
 	public static void readOutput(DataInputStream aStream, ILogCollector aCollector) throws IOException

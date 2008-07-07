@@ -41,7 +41,6 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IStructureDatabase;
-import tod.impl.database.structure.standard.BehaviorInfo;
 import zz.utils.Utils;
 
 /**
@@ -115,6 +114,29 @@ public class PrintThroughCollector implements ILogCollector
 				aException));
 
 		itsCollector.exception(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aMethodName, aMethodSignature, aMethodDeclaringClassSignature, aOperationBytecodeIndex, aException);
+	}
+	
+	
+
+	public void exception(
+			int aThreadId,
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp,
+			int[] aAdviceCFlow,
+			int aProbeId,
+			Object aException)
+	{
+		print(aDepth, String.format(
+				"exception    (thread: %d, p.ts: %s, depth: %d, ts: %s, pid: %d, exc.: %s",
+				aThreadId,
+				formatTimestamp(aParentTimestamp),
+				aDepth,
+				formatTimestamp(aTimestamp),
+				aProbeId,
+				aException));
+
+		itsCollector.exception(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aException);
 	}
 
 	public void behaviorExit(

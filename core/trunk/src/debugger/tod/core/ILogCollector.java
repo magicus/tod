@@ -157,6 +157,15 @@ public interface ILogCollector
 			int aOperationBytecodeIndex,
 			Object aException);
 	
+	public void exception(
+			int aThreadId, 
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp,
+			int[] aAdviceCFlow, 
+			int aProbeId,
+			Object aException);
+	
 	public void output(
 			int aThreadId, 
 			long aParentTimestamp,

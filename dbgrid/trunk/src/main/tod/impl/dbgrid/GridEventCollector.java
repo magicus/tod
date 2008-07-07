@@ -137,17 +137,29 @@ public class GridEventCollector extends EventCollector
 			int aOperationBytecodeIndex,
 			Object aException)
 	{
-		TODUtils.logf(1, "GridEventCollector.exception()");
-
 		ProbeInfo theProbeInfo =
 				itsStructureDatabase.getNewExceptionProbe(aBehaviorId, aOperationBytecodeIndex);
+
+		exception(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, theProbeInfo.id, aException);
+	}
+
+	public void exception(
+			int aThreadId,
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp,
+			int[] aAdviceCFlow,
+			int aProbeId,
+			Object aException)
+	{
+		TODUtils.logf(1, "GridEventCollector.exception()");
 
 		itsExceptionEvent.set(
 				aThreadId,
 				aDepth,
 				aTimestamp,
 				aAdviceCFlow,
-				theProbeInfo.id,
+				aProbeId,
 				aParentTimestamp,
 				aException);
 

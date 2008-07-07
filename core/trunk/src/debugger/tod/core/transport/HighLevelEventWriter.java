@@ -293,12 +293,29 @@ public class HighLevelEventWriter
 			int aOperationBytecodeIndex,
 			Object aException) throws IOException
 	{
-		sendMessageType(itsBuffer, HighLevelEventType.EXCEPTION); 
+		sendMessageType(itsBuffer, HighLevelEventType.EXCEPTION_BYNAME); 
 		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow);
 		itsBuffer.writeUTF(aMethodName);
 		itsBuffer.writeUTF(aMethodSignature);
 		itsBuffer.writeUTF(aMethodDeclaringClassSignature);
 		itsBuffer.writeShort(aOperationBytecodeIndex);
+		sendValue(itsBuffer, aException, aTimestamp);
+
+//		itsBuffer.send(HighLevelEventType.EXCEPTION);
+	}
+
+	public void sendException(
+			int aThreadId,
+			long aParentTimestamp,
+			int aDepth,
+			long aTimestamp,
+			int[] aAdviceCFlow,
+			int aBehaviorId, 
+			Object aException) throws IOException
+	{
+		sendMessageType(itsBuffer, HighLevelEventType.EXCEPTION_BYID); 
+		sendStd(itsBuffer, aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow);
+		itsBuffer.writeInt(aBehaviorId);
 		sendValue(itsBuffer, aException, aTimestamp);
 
 //		itsBuffer.send(HighLevelEventType.EXCEPTION);

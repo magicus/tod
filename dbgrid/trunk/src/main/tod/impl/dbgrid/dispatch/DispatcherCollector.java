@@ -140,6 +140,28 @@ public class DispatcherCollector implements ILogCollector
 			throw new RuntimeException(e);
 		}
 	}
+	
+	
+
+	public void exception(
+			int aThreadId,
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp,
+			int[] aAdviceCFlow,
+			int aProbeId,
+			Object aException)
+	{
+		balance();
+		try
+		{
+			itsWriter.sendException(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId, aException);
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
 
 	public void fieldWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp, int[] aAdviceCFlow,
 			int aProbeId, int aFieldId, Object aTarget, Object aValue)

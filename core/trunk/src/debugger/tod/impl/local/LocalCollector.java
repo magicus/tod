@@ -148,10 +148,24 @@ public class LocalCollector extends EventCollector
 			int aOperationBytecodeIndex, 
 			Object aException)
 	{
+		ProbeInfo theProbeInfo = itsBrowser.getStructureDatabase().getNewExceptionProbe(aBehaviorId, aOperationBytecodeIndex);
+		exception(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, theProbeInfo.id, aOperationBytecodeIndex, aException);
+	}
+
+	
+	
+	public void exception(
+			int aThreadId,
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp,
+			int[] aAdviceCFlow,
+			int aProbeId,
+			Object aException)
+	{
 		ExceptionGeneratedEvent theEvent = new ExceptionGeneratedEvent(itsBrowser);
 		LocalThreadInfo theThread = getThread(aThreadId);
-		ProbeInfo theProbeInfo = itsBrowser.getStructureDatabase().getNewExceptionProbe(aBehaviorId, aOperationBytecodeIndex);
-		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, theProbeInfo.id);
+		initEvent(theEvent, theThread, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, aProbeId);
 		
 		theEvent.setException(aException);
 		

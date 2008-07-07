@@ -42,6 +42,7 @@ import tod.core.ILogCollector;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.IThreadInfo;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.impl.database.structure.standard.ThreadInfo;
 import zz.utils.Utils;
 

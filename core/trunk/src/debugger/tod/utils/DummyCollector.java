@@ -48,6 +48,17 @@ public class DummyCollector implements ILogCollector
 	{
 	}
 
+	public void exception(
+			int aThreadId,
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp,
+			int[] aAdviceCFlow,
+			int aProbeId,
+			Object aException)
+	{
+	}
+
 	public void fieldWrite(int aThreadId, long aParentTimestamp, short aDepth, long aTimestamp,
 			int[] aAdviceCFlow, int aProbeId, int aFieldId, Object aTarget, Object aValue)
 	{
