@@ -231,7 +231,10 @@ public class LocationUtils
 		    int theLineNumber = theBehavior.getLineNumber(theBytecodeIndex);
 		    ITypeInfo theType = theBehavior.getType();
 		    
-		    return new SourceRange(theType.getName(), theType.getSourceFile(), theLineNumber);
+		    String theSourceFile = theBehavior.getSourceFile();
+		    if (theSourceFile == null) theSourceFile = theType.getSourceFile();
+		    
+		    return new SourceRange(theType.getName(), theSourceFile, theLineNumber);
 		}
 		else return null;
 	}
