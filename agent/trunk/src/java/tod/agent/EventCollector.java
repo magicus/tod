@@ -20,22 +20,18 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.agent;
 
-import static tod.agent.AgentDebugFlags.DISABLE_COLLECTOR;
-
-import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
-import java.net.Socket;
+import java.net.InetSocketAddress;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
 import tod.agent.transport.LowLevelEventWriter;
 import tod.agent.transport.NakedLinkedList;
-import tod.agent.transport.NakedLinkedList.Entry;
+import tod.agent.transport.PacketBufferSender;
 
 
 /**
@@ -62,8 +58,7 @@ public final class EventCollector
 	};
 	
 	private List<ThreadData> itsThreadDataList = new ArrayList<ThreadData>();
-	private Sender itsSender;
-	private SenderThread itsSenderThread = new SenderThread();
+	private PacketBufferSender itsSender;
 
 	
 	private static int itsCurrentThreadId = 1;
@@ -73,17 +68,26 @@ public final class EventCollector
 	
 	public EventCollector(String aHostname, int aPort) throws IOException 
 	{
-		this (new Socket(aHostname, aPort));
+		this (SocketChannel.open(new InetSocketAddress(aHostname, aPort)));
 	}
 	
-	public EventCollector(Socket aSocket)
+	public EventCollector(SocketChannel aChannel)
 	{
-		itsSender = new Sender(aSocket);
-		itsSender.sendInit();
-		Runtime.getRuntime().addShutdownHook(new MyShutdownHook());
+		// Send initialization
+		try
+		{
+			DataOutputStream theStream = new DataOutputStream(aChannel.socket().getOutputStream());
+			theStream.writeInt(AgentConfig.CNX_JAVA);
+			theStream.writeUTF(AgentConfig.getClientName());
+			theStream.flush();
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
 		
-		itsSenderThread.start();
-
+		itsSender = new PacketBufferSender(aChannel);
+		
 		AgentReady.COLLECTOR_READY = true;
 
 		try
@@ -123,7 +127,7 @@ public final class EventCollector
         try
         {
         	LowLevelEventWriter theWriter = theThread.packetStart(0);
-        	theWriter.sendThread(theThread.getId(), theJvmId, theCurrentThread.getName());
+        	theWriter.sendThread(theJvmId, theCurrentThread.getName());
             theThread.packetEnd();
         }
         catch (IOException e)
@@ -156,7 +160,6 @@ public final class EventCollector
         	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
         	
         	theWriter.sendClInitEnter(
-        			theThread.getId(), 
         			theTimestamp,
         			aBehaviorId,
         			aCallType);
@@ -193,7 +196,6 @@ public final class EventCollector
         	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
         	
         	theWriter.sendBehaviorEnter(
-        			theThread.getId(), 
         			theTimestamp,
         			aBehaviorId,
         			aCallType,
@@ -213,13 +215,29 @@ public final class EventCollector
 				theTimestamp,
 				aBehaviorId,
 				aCallType,
-				aObject,
+				formatObj(aObject),
 				formatArgs(aArguments));
+	}
+	
+	private String formatObj(Object aObject)
+	{
+		if (aObject == null) return "null";
+		else return aObject.getClass().getName();
 	}
 	
 	private String formatArgs(Object[] aArgs)
 	{
-		return aArgs != null ? ""+Arrays.asList(aArgs) : "null";
+		if (aArgs == null) return "[-]";
+		StringBuilder theBuilder = new StringBuilder();
+		theBuilder.append("[");
+		for (Object theArg : aArgs)
+		{
+			theBuilder.append(formatObj(theArg));
+			theBuilder.append(", ");
+		}
+		theBuilder.append("]");
+		
+		return theBuilder.toString();
 	}
 	
 
@@ -239,7 +257,6 @@ public final class EventCollector
         	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
         	
         	theWriter.sendClInitExit(
-        			theThread.getId(), 
         			theTimestamp,
         			aProbeId, 
         			aBehaviorId);
@@ -257,7 +274,7 @@ public final class EventCollector
 				theTimestamp,
 				aProbeId,
 				aBehaviorId,
-				aResult);
+				formatObj(aResult));
 	}
 	
 	public void logBehaviorExit(
@@ -276,7 +293,6 @@ public final class EventCollector
         	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
         	
         	theWriter.sendBehaviorExit(
-        			theThread.getId(), 
         			theTimestamp,
         			aProbeId,
         			aBehaviorId,
@@ -295,7 +311,7 @@ public final class EventCollector
 				theTimestamp,
 				aProbeId,
 				aBehaviorId,
-				aResult);
+				formatObj(aResult));
 	}
 	
 	
@@ -314,7 +330,6 @@ public final class EventCollector
         	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
         	
         	theWriter.sendBehaviorExitWithException(
-        			theThread.getId(), 
         			theTimestamp,
         			aBehaviorId,
         			aException);
@@ -361,7 +376,6 @@ public final class EventCollector
         	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
         	
         	theWriter.sendExceptionGenerated(
-        			theThread.getId(), 
         			theTimestamp,
         			aMethodName,
         			aMethodSignature,
@@ -404,7 +418,6 @@ public final class EventCollector
         	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
         	
         	theWriter.sendFieldWrite(
-        			theThread.getId(), 
         			theTimestamp,
         			aProbeId, 
         			aFieldId,
@@ -424,8 +437,8 @@ public final class EventCollector
 				theTimestamp,
 				aProbeId,
 				aFieldId,
-				aTarget,
-				aValue);
+				formatObj(aTarget),
+				formatObj(aValue));
 	}
 	
 	public void logNewArray(
@@ -445,7 +458,6 @@ public final class EventCollector
         	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
         	
         	theWriter.sendNewArray(
-        			theThread.getId(), 
         			theTimestamp,
         			aProbeId, 
         			aTarget,
@@ -464,7 +476,7 @@ public final class EventCollector
 				theThread.getId(),
 				theTimestamp,
 				aProbeId,
-				aTarget,
+				formatObj(aTarget),
 				aBaseTypeId,
 				aSize);
 	}
@@ -487,7 +499,6 @@ public final class EventCollector
         	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
         	
         	theWriter.sendArrayWrite(
-        			theThread.getId(), 
         			theTimestamp,
         			aProbeId, 
         			aTarget,
@@ -506,9 +517,9 @@ public final class EventCollector
 				theThread.getId(),
 				theTimestamp,
 				aProbeId,
-				aTarget,
+				formatObj(aTarget),
 				aIndex,
-				aValue);
+				formatObj(aValue));
 	}
 	
 	public void logInstanceOf(
@@ -528,7 +539,6 @@ public final class EventCollector
 			LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
 			
 			theWriter.sendInstanceOf(
-					theThread.getId(), 
 					theTimestamp,
 					aProbeId, 
 					aObject,
@@ -547,7 +557,7 @@ public final class EventCollector
 				theThread.getId(),
 				theTimestamp,
 				aProbeId,
-				aObject,
+				formatObj(aObject),
 				aTypeId,
 				aResult);
 	}
@@ -568,7 +578,6 @@ public final class EventCollector
         	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
         	
         	theWriter.sendLocalVariableWrite(
-        			theThread.getId(), 
         			theTimestamp,
         			aProbeId, 
         			aVariableId, 
@@ -587,7 +596,7 @@ public final class EventCollector
 				theTimestamp,
 				aProbeId,
 				aVariableId,
-				aValue);
+				formatObj(aValue));
 	}
 	
 	public void logBeforeBehaviorCallDry(
@@ -606,7 +615,6 @@ public final class EventCollector
         	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
         	
         	theWriter.sendBeforeBehaviorCallDry(
-        			theThread.getId(), 
         			theTimestamp,
         			aProbeId, 
         			aBehaviorId,
@@ -647,7 +655,6 @@ public final class EventCollector
         	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
         	
         	theWriter.sendBeforeBehaviorCall(
-        			theThread.getId(), 
         			theTimestamp,
         			aProbeId, 
         			aBehaviorId,
@@ -669,7 +676,7 @@ public final class EventCollector
 				aProbeId,
 				aBehaviorId,
 				aCallType,
-				aTarget,
+				formatObj(aTarget),
 				formatArgs(aArguments));
 
 	}
@@ -686,9 +693,7 @@ public final class EventCollector
         {
         	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
         	
-        	theWriter.sendAfterBehaviorCallDry(
-        			theThread.getId(), 
-        			theTimestamp);
+        	theWriter.sendAfterBehaviorCallDry(theTimestamp);
         	
             theThread.packetEnd();
         }
@@ -720,7 +725,6 @@ public final class EventCollector
         	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
         	
         	theWriter.sendAfterBehaviorCall(
-        			theThread.getId(), 
         			theTimestamp,
         			aProbeId, 
         			aBehaviorId,
@@ -740,8 +744,8 @@ public final class EventCollector
 				theTimestamp,
 				aProbeId,
 				aBehaviorId,
-				aTarget,
-				aResult);
+				formatObj(aTarget),
+				formatObj(aResult));
 
 	}
 	
@@ -762,7 +766,6 @@ public final class EventCollector
         	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
         	
         	theWriter.sendAfterBehaviorCallWithException(
-        			theThread.getId(), 
         			theTimestamp,
         			aProbeId, 
         			aBehaviorId,
@@ -782,7 +785,7 @@ public final class EventCollector
 				theTimestamp,
 				aProbeId,
 				aBehaviorId,
-				aTarget,
+				formatObj(aTarget),
 				aException);
 	}
 	
@@ -801,7 +804,6 @@ public final class EventCollector
         	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
         	
         	theWriter.sendOutput(
-        			theThread.getId(), 
         			theTimestamp,
         			aOutput,
         			aData);
@@ -841,7 +843,6 @@ public final class EventCollector
 	 */
 	public void flush()
 	{
-		if (DISABLE_COLLECTOR) return;
 		throw new UnsupportedOperationException();
 	}
 	
@@ -873,28 +874,9 @@ public final class EventCollector
 		 */
 		private boolean itsIgnoreNextException = false;
 
-		private static final int BUFFER_SIZE = AgentConfig.COLLECTOR_BUFFER_SIZE;
-		
-		/**
-		 * A wrapper around {@link #itsBuffer}
-		 */
-		private final DataOutputStream itsDataOutputStream;
-
 		private final LowLevelEventWriter itsWriter;
 		
-		/**
-		 * In construction packet buffer
-		 */
-		private final ByteArrayOutputStream itsBuffer;
-		
-		/**
-		 * Full packets buffer
-		 */
-		private final ByteArrayOutputStream itsLog;
-		
 		private boolean itsSending = false;
-		
-		private boolean itsShutDown = false;
 		
 		private long itsFirstTimestamp;
 		private long itsLastTimestamp;
@@ -907,14 +889,7 @@ public final class EventCollector
 		public ThreadData(int aId)
 		{
 			itsId = aId;
-			
-			itsBuffer = new ByteArrayOutputStream();
-			itsLog = new ByteArrayOutputStream(BUFFER_SIZE);
-			itsDataOutputStream = new DataOutputStream(itsBuffer);
-			itsWriter = new LowLevelEventWriter(itsDataOutputStream);
-			
-			// Add ourself to LRU list
-			itsEntry = itsSenderThread.register(this);
+			itsWriter = new LowLevelEventWriter(itsSender.createBuffer(itsId));
 		}
 		
 		public int getId()
@@ -1011,196 +986,12 @@ public final class EventCollector
 		{
 			if (! itsSending) throw new RuntimeException();
 			itsSending = false;
-			try
-			{
-				itsDataOutputStream.flush();
-				int theRequestedSize = itsBuffer.size();
-//				System.out.println("[SocketCollector] Adding "+theRequestedSize+", total: "+itsLog.size());
-				if (itsLog.size() + theRequestedSize > BUFFER_SIZE) send();
-				if (! AgentDebugFlags.DISABLE_EVENT_SEND) itsBuffer.writeTo(itsLog);
-				itsBuffer.reset();
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
-		}
-		
-		public synchronized void send()
-		{
-			if (! itsShutDown && itsLog.size() > 0)
-			{
-//				System.out.println("[SocketCollector] Sending " + itsLog.size() + " bytes for "+getId());
-//				long theDeltaT = itsLastTimestamp-itsFirstTimestamp;
-//				itsBiggestDeltaT = Math.max(itsBiggestDeltaT, theDeltaT);
-//				System.out.println(String.format(
-//						"Sending %d bytes, deltaT: %s, biggest: %s, id: %02d",
-//						itsLog.size(),
-//						AgentUtils.formatTimestamp(theDeltaT),
-//						AgentUtils.formatTimestamp(itsBiggestDeltaT),
-//						getId()));
-				
-				itsSender.sendLog(itsLog);
-				itsLog.reset();
-			}
-			
-			itsFirstTimestamp = itsLastTimestamp = 0;
 		}
 		
 		public NakedLinkedList.Entry<ThreadData> getEntry()
 		{
 			return itsEntry;
 		}
-
-		public void shutDown() 
-		{
-			System.out.println("[TOD] Flushing events for thread " +
-					getId() +
-					", sending " +
-					itsLog.size() +
-					" bytes");
-			send();
-			itsShutDown = true;
-		}
-	}
-	
-	private static class Sender
-	{
-		private Socket itsSocket;
-		private OutputStream itsOutputStream;
-
-		public Sender(Socket aSocket)
-		{
-			itsSocket = aSocket;
-			try
-			{
-				itsOutputStream = itsSocket.getOutputStream();
-			}
-			catch (IOException e)
-			{
-				throw new RuntimeException(e);
-			}
-		}
-		
-		/**
-		 * Sends signature and client name
-		 */
-		public void sendInit()
-		{
-			try
-			{
-				DataOutputStream theStream = new DataOutputStream(itsOutputStream);
-				theStream.writeInt(AgentConfig.CNX_JAVA);
-				theStream.writeUTF(AgentConfig.getClientName());
-			}
-			catch (IOException e)
-			{
-				throw new RuntimeException(e);
-			}
-		}
-		
-		public synchronized void sendLog(ByteArrayOutputStream aStream)
-		{
-			try
-			{
-				aStream.writeTo(itsOutputStream);
-				itsOutputStream.flush();
-			}
-			catch (IOException e)
-			{
-				throw new RuntimeException(e);
-			}
-		}
-	}
-		
-	private class MyShutdownHook extends Thread
-	{
-		public MyShutdownHook() 
-		{
-			super("Shutdown hook (SocketCollector)");
-		}
-
-		@Override
-		public void run()
-		{
-			System.out.println("[TOD] Flushing events...");
-			
-			if (itsThreadDataList == null) return;
-			for (ThreadData theData : itsThreadDataList) theData.shutDown();
-			
-			try
-			{
-				// Allow some time for buffers to be sent
-				Thread.sleep(1000);
-			}
-			catch (InterruptedException e)
-			{
-				throw new RuntimeException(e);
-			}
-			
-			System.out.println("[TOD] Shutting down.");
-		}
-		
-	}
-	
-	
-	/**
-	 * This thread periodically flushes the least recently flushed thread data.
-	 * This permits to avoid data being cached for too long in waiting threads.
-	 * @author gpothier
-	 */
-	private class SenderThread extends Thread
-	{
-		private NakedLinkedList<ThreadData> itsLRUList = 
-			new NakedLinkedList<ThreadData>();
-		
-		public SenderThread()
-		{
-			super("SenderThread");
-			setDaemon(true);
-			setPriority(MAX_PRIORITY);
-		}
-		
-		public synchronized Entry<ThreadData> register(ThreadData aData)
-		{
-			Entry<ThreadData> theEntry = itsLRUList.createEntry(aData);
-			itsLRUList.addLast(theEntry);
-			
-			return theEntry;
-		}
-		
-		@Override
-		public void run()
-		{
-			try
-			{
-				while(true)
-				{
-					if (itsLRUList.size() > 0)
-					{
-						Entry<ThreadData> theFirstEntry;
-						
-						synchronized (this)
-						{
-							theFirstEntry = itsLRUList.getFirstEntry();
-							itsLRUList.remove(theFirstEntry);
-							itsLRUList.addLast(theFirstEntry);
-						}
-						
-						ThreadData theFirst = theFirstEntry.getValue();
-						
-						theFirst.send();
-					}
-
-					Thread.sleep(10);
-				}
-			}
-			catch (InterruptedException e)
-			{
-				throw new RuntimeException(e);
-			}
-		}
-		
 	}
 	
 	private static void printf(String aString, Object... aArgs)

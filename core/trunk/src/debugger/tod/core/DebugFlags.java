@@ -60,6 +60,11 @@ public class DebugFlags
 	public static final boolean SWALLOW = ConfigUtils.readBoolean("swallow", false); 
 	
 	/**
+	 * Causes the {@link EventInterpreter} to ignore all events
+	 */
+	public static final boolean SKIP_COLLECTOR = ConfigUtils.readBoolean("skip-collector", false);
+	
+	/**
 	 * Causes database nodes to skip incoming events
 	 */
 	public static final boolean SKIP_EVENTS = ConfigUtils.readBoolean("skip-events", false); 
@@ -192,6 +197,7 @@ public class DebugFlags
 	static
 	{
 		if (SWALLOW == true) System.err.println("******* Warning: SWALLOW (DebugFlags)");
+		if (SKIP_COLLECTOR == true) System.err.println("******* Warning: SKIP_COLLECTOR (DebugFlags)");
 		if (SKIP_EVENTS == true) System.err.println("******* Warning: SKIP_EVENTS (DebugFlags)");
 		if (DISABLE_REORDER == true) System.err.println("******* Warning: DISABLE_REORDER (DebugFlags)");
 		if (DISABLE_INDEXES == true) System.err.println("******* Warning: DISABLE_INDEXES (DebugFlags)");

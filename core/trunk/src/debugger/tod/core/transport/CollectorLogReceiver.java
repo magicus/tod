@@ -31,14 +31,12 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.transport;
 
-import java.io.DataInputStream;
+import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import tod.agent.AgentConfig;
 import tod.agent.transport.LowLevelEventType;
-import tod.core.DebugFlags;
 import tod.core.ILogCollector;
 import tod.core.database.structure.IStructureDatabase;
 import tod.impl.database.structure.standard.HostInfo;
@@ -74,9 +72,9 @@ public class CollectorLogReceiver extends LogReceiver
 	}
 
 	@Override
-	protected void processEvent(LowLevelEventType aType, DataInputStream aStream) throws IOException
+	protected void processEvent(int aThreadId, LowLevelEventType aType, DataInput aStream) throws IOException
 	{
-		LowLevelEventReader.readEvent(aType, aStream, itsInterpreter);
+		LowLevelEventReader.readEvent(aThreadId, aType, aStream, itsInterpreter);
 	}
 	
 

@@ -38,11 +38,23 @@ package dummy;
 public class BurnTest
 {
 	private static int rndSeed = 1234598;
+	private static final int N = 50000;
 	
 	public static void main(String[] args)
 	{
-		long t0 = System.currentTimeMillis();
+//		StringBuilder b = new StringBuilder("ho");
+//		while(true)
+//		{
+//			b.append(b.toString());
+//		}
+		
+		// Warm up
 		Node root = createTree(null, 10000);
+		for (int i=0;i<10;i++) root.visit();
+		
+		// Real thing
+		long t0 = System.currentTimeMillis();
+		root = createTree(null, N);
 		long t1 = System.currentTimeMillis();
 		for (int i=0;i<100;i++) root.visit();
 		long t2 = System.currentTimeMillis();

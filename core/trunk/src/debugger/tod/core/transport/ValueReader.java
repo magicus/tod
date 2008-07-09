@@ -32,7 +32,7 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.core.transport;
 
 import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
+import java.io.DataInput;
 import java.io.IOException;
 import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
@@ -81,13 +81,13 @@ public class ValueReader
 		return theObject;
 	}
 	
-	private static ValueType readValueType (DataInputStream aStream) throws IOException
+	private static ValueType readValueType (DataInput aStream) throws IOException
 	{
 		byte theByte = aStream.readByte();
 		return ValueType.VALUES[theByte];
 	}
 	
-    public static Object[] readArguments(DataInputStream aStream) throws IOException
+    public static Object[] readArguments(DataInput aStream) throws IOException
     {
         int theCount = aStream.readInt();
         Object[] theArguments = new Object[theCount];
@@ -99,7 +99,7 @@ public class ValueReader
         return theArguments;
     }
     
-	public static Object readValue (DataInputStream aStream) throws IOException
+	public static Object readValue (DataInput aStream) throws IOException
 	{
 		ValueType theType = readValueType(aStream);
 		switch (theType)

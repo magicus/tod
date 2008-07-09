@@ -10,10 +10,9 @@ package tod.agent;
  */
 public class Timestamper extends Thread
 {
-	private static Timestamper INSTANCE = new Timestamper();
-
 	private Timestamper()
 	{
+		super("[TOD] Timestamper");
 		setDaemon(true);
 		start();
 	}

@@ -6,7 +6,7 @@ package tod.core.transport;
 import static tod.core.transport.ValueReader.readArguments;
 import static tod.core.transport.ValueReader.readValue;
 
-import java.io.DataInputStream;
+import java.io.DataInput;
 import java.io.IOException;
 
 import tod.agent.AgentConfig;
@@ -16,132 +16,128 @@ import tod.core.DebugFlags;
 
 public class LowLevelEventReader
 {
-	public static void read(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
-	{
-		LowLevelEventType theType = readEventType(aStream);
-		readEvent(theType, aStream, aCollector);
-	}
+//	public static void read(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+//	{
+//		LowLevelEventType theType = readEventType(aStream);
+//		readEvent(theType, aStream, aCollector);
+//	}
 	
-	public static void readEvent(LowLevelEventType aType, DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+	public static void readEvent(int aThreadId, LowLevelEventType aType, DataInput aStream, ILowLevelCollector aCollector) throws IOException
 	{
 		switch(aType)
 		{
 		case CLINIT_ENTER:
-			readClInitEnter(aStream, aCollector);
+			readClInitEnter(aThreadId, aStream, aCollector);
 			break;
 			
 		case BEHAVIOR_ENTER:
-			readBehaviorEnter(aStream, aCollector);
+			readBehaviorEnter(aThreadId, aStream, aCollector);
 			break;
 			
 		case CLINIT_EXIT:
-			readClInitExit(aStream, aCollector);
+			readClInitExit(aThreadId, aStream, aCollector);
 			break;
 			
 		case BEHAVIOR_EXIT:
-			readBehaviorExit(aStream, aCollector);
+			readBehaviorExit(aThreadId, aStream, aCollector);
 			break;
 			
 		case BEHAVIOR_EXIT_EXCEPTION:
-			readBehaviorExitWithException(aStream, aCollector);
+			readBehaviorExitWithException(aThreadId, aStream, aCollector);
 			break;
 			
 		case EXCEPTION_GENERATED:
-			readExceptionGenerated(aStream, aCollector);
+			readExceptionGenerated(aThreadId, aStream, aCollector);
 			break;
 			
 		case FIELD_WRITE:
-			readFieldWrite(aStream, aCollector);
+			readFieldWrite(aThreadId, aStream, aCollector);
 			break;
 			
 		case NEW_ARRAY:
-			readNewArray(aStream, aCollector);
+			readNewArray(aThreadId, aStream, aCollector);
 			break;
 			
 		case ARRAY_WRITE:
-			readArrayWrite(aStream, aCollector);
+			readArrayWrite(aThreadId, aStream, aCollector);
 			break;
 			
 		case LOCAL_VARIABLE_WRITE:
-			readLocalVariableWrite(aStream, aCollector);
+			readLocalVariableWrite(aThreadId, aStream, aCollector);
 			break;
 			
 		case INSTANCEOF:
-			readInstanceOf(aStream, aCollector);
+			readInstanceOf(aThreadId, aStream, aCollector);
 			break;
 			
 		case BEFORE_CALL_DRY:
-			readBeforeBehaviorCallDry(aStream, aCollector);
+			readBeforeBehaviorCallDry(aThreadId, aStream, aCollector);
 			break;
 			
 		case BEFORE_CALL:
-			readBeforeBehaviorCall(aStream, aCollector);
+			readBeforeBehaviorCall(aThreadId, aStream, aCollector);
 			break;
 			
 		case AFTER_CALL_DRY:
-			readAfterBehaviorCallDry(aStream, aCollector);
+			readAfterBehaviorCallDry(aThreadId, aStream, aCollector);
 			break;
 			
 		case AFTER_CALL:
-			readAfterBehaviorCall(aStream, aCollector);
+			readAfterBehaviorCall(aThreadId, aStream, aCollector);
 			break;
 			
 		case AFTER_CALL_EXCEPTION:
-			readAfterBehaviorCallWithException(aStream, aCollector);
+			readAfterBehaviorCallWithException(aThreadId, aStream, aCollector);
 			break;
 			
 		case OUTPUT:
-			readOutput(aStream, aCollector);
+			readOutput(aThreadId, aStream, aCollector);
 			break;
 			
 		case REGISTER_OBJECT:
-			readRegisterObject(aStream, aCollector);
+			readRegisterObject(aThreadId, aStream, aCollector);
 			break;
 			
 		case REGISTER_THREAD:
-			readRegisterThread(aStream, aCollector);
+			readRegisterThread(aThreadId, aStream, aCollector);
 			break;
 			
 		default: throw new RuntimeException("Not handled: "+aType);
 		}
 	}
 	
-	private static void readRegisterThread(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+	private static void readRegisterThread(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
 		aCollector.registerThread(
-				aStream.readInt(), 
+				aThreadId, 
 				aStream.readLong(), 
 				aStream.readUTF());
 	}
 
-	private static void readRegisterObject(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+	private static void readRegisterObject(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
 	{
 		int theSize = aStream.readInt(); // Packet size
 		
 		long theObjectId = aStream.readLong();
-		long theObjectTimestamp = aStream.readLong();
 		if (DebugFlags.IGNORE_HOST) theObjectId >>>= AgentConfig.HOST_BITS;
+		long theObjectTimestamp = aStream.readLong();
+		boolean theIndexable = aStream.readBoolean();
 
 		byte[] theData = new byte[theSize-17];
 		aStream.readFully(theData);
 		
-		boolean theIndexable = aStream.readBoolean();
-		
 		aCollector.registerObject(theObjectId, theData, theObjectTimestamp, theIndexable);
 	}
 
-	private static void readOutput(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+	private static void readOutput(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
 		throw new UnsupportedOperationException();
 	}
 
-	private static void readAfterBehaviorCallWithException(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+	private static void readAfterBehaviorCallWithException(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
 		aCollector.logAfterBehaviorCallWithException(
-				aStream.readInt(),
+				aThreadId,
 				aStream.readLong(),
 				aStream.readInt(),
 				aStream.readInt(),
@@ -149,11 +145,10 @@ public class LowLevelEventReader
 				readValue(aStream));
 	}
 
-	private static void readAfterBehaviorCall(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+	private static void readAfterBehaviorCall(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
 		aCollector.logAfterBehaviorCall(
-				aStream.readInt(),
+				aThreadId,
 				aStream.readLong(),
 				aStream.readInt(),
 				aStream.readInt(),
@@ -161,19 +156,17 @@ public class LowLevelEventReader
 				readValue(aStream));
 	}
 
-	private static void readAfterBehaviorCallDry(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+	private static void readAfterBehaviorCallDry(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
 		aCollector.logAfterBehaviorCallDry(
-				aStream.readInt(),
+				aThreadId,
 				aStream.readLong());
 	}
 
-	private static void readBeforeBehaviorCall(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+	private static void readBeforeBehaviorCall(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
 		aCollector.logBeforeBehaviorCall(
-				aStream.readInt(),
+				aThreadId,
 				aStream.readLong(),
 				aStream.readInt(),
 				aStream.readInt(),
@@ -182,33 +175,30 @@ public class LowLevelEventReader
 				readArguments(aStream));
 	}
 
-	private static void readBeforeBehaviorCallDry(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+	private static void readBeforeBehaviorCallDry(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
 		aCollector.logBeforeBehaviorCallDry(
-				aStream.readInt(),
+				aThreadId,
 				aStream.readLong(),
 				aStream.readInt(),
 				aStream.readInt(),
 				readCallType(aStream));
 	}
 
-	private static void readLocalVariableWrite(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+	private static void readLocalVariableWrite(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
 		aCollector.logLocalVariableWrite(
-				aStream.readInt(),
+				aThreadId,
 				aStream.readLong(),
 				aStream.readInt(),
 				aStream.readInt(),
 				readValue(aStream));
 	}
 
-	private static void readArrayWrite(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+	private static void readArrayWrite(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
 		aCollector.logArrayWrite(
-				aStream.readInt(),
+				aThreadId,
 				aStream.readLong(),
 				aStream.readInt(),
 				readValue(aStream),
@@ -216,11 +206,10 @@ public class LowLevelEventReader
 				readValue(aStream));
 	}
 
-	private static void readInstanceOf(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+	private static void readInstanceOf(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
 		aCollector.logInstanceOf(
-				aStream.readInt(),
+				aThreadId,
 				aStream.readLong(),
 				aStream.readInt(),
 				readValue(aStream),
@@ -228,11 +217,10 @@ public class LowLevelEventReader
 				aStream.readBoolean());
 	}
 	
-	private static void readNewArray(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+	private static void readNewArray(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
 		aCollector.logNewArray(
-				aStream.readInt(),
+				aThreadId,
 				aStream.readLong(),
 				aStream.readInt(),
 				readValue(aStream),
@@ -240,11 +228,10 @@ public class LowLevelEventReader
 				aStream.readInt());
 	}
 
-	private static void readFieldWrite(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+	private static void readFieldWrite(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
 		aCollector.logFieldWrite(
-				aStream.readInt(),
+				aThreadId,
 				aStream.readLong(),
 				aStream.readInt(),
 				aStream.readInt(),
@@ -252,11 +239,10 @@ public class LowLevelEventReader
 				readValue(aStream));
 	}
 
-	private static void readExceptionGenerated(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+	private static void readExceptionGenerated(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
 		aCollector.logExceptionGenerated(
-				aStream.readInt(),
+				aThreadId,
 				aStream.readLong(),
 				aStream.readUTF(),
 				aStream.readUTF(),
@@ -265,42 +251,38 @@ public class LowLevelEventReader
 				readValue(aStream));
 	}
 
-	private static void readBehaviorExitWithException(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+	private static void readBehaviorExitWithException(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
 		aCollector.logBehaviorExitWithException(
-				aStream.readInt(),
+				aThreadId,
 				aStream.readLong(),
 				aStream.readInt(),
 				readValue(aStream));
 	}
 
-	private static void readBehaviorExit(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+	private static void readBehaviorExit(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
 		aCollector.logBehaviorExit(
-				aStream.readInt(),
+				aThreadId,
 				aStream.readLong(),
 				aStream.readInt(),
 				aStream.readInt(),
 				readValue(aStream));
 	}
 
-	private static void readClInitExit(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+	private static void readClInitExit(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
 		aCollector.logClInitExit(
-				aStream.readInt(),
+				aThreadId,
 				aStream.readLong(),
 				aStream.readInt(),
 				aStream.readInt());
 	}
 
-	private static void readBehaviorEnter(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+	private static void readBehaviorEnter(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
 		aCollector.logBehaviorEnter(
-				aStream.readInt(),
+				aThreadId,
 				aStream.readLong(),
 				aStream.readInt(),
 				readCallType(aStream),
@@ -308,23 +290,22 @@ public class LowLevelEventReader
 				readArguments(aStream));
 	}
 
-	private static void readClInitEnter(DataInputStream aStream, ILowLevelCollector aCollector) throws IOException
+	private static void readClInitEnter(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
 	{
-		int theSize = aStream.readInt(); // Packet size
 		aCollector.logClInitEnter(
-				aStream.readInt(),
+				aThreadId,
 				aStream.readLong(),
 				aStream.readInt(),
 				readCallType(aStream));
 	}
 
-	private static LowLevelEventType readEventType (DataInputStream aStream) throws IOException
+	private static LowLevelEventType readEventType (DataInput aStream) throws IOException
 	{
 		byte theByte = aStream.readByte();
 		return LowLevelEventType.VALUES[theByte];
 	}
 	
-	private static BehaviorCallType readCallType (DataInputStream aStream) throws IOException
+	private static BehaviorCallType readCallType (DataInput aStream) throws IOException
 	{
 		byte theByte = aStream.readByte();
 		return BehaviorCallType.VALUES[theByte];

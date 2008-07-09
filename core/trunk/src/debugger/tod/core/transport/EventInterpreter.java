@@ -20,7 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.transport;
 
-import static tod.agent.AgentDebugFlags.DISABLE_COLLECTOR;
+import static tod.core.DebugFlags.SKIP_COLLECTOR;
 import static tod.core.DebugFlags.INTERPRETER_LOG;
 
 import java.io.PrintStream;
@@ -173,7 +173,7 @@ public final class EventInterpreter implements ILowLevelCollector
 			Object aObject, 
 			Object[] aArguments)
 	{
-		if (DISABLE_COLLECTOR) return;
+		if (SKIP_COLLECTOR) return;
 		ThreadData theThread = getThreadData(aThreadId);
 		assert theThread != null : "Null thread for id: "+aThreadId;
 		
@@ -302,7 +302,7 @@ public final class EventInterpreter implements ILowLevelCollector
 			int aBehaviorId,
 			Object aResult)
 	{
-		if (DISABLE_COLLECTOR) return;
+		if (SKIP_COLLECTOR) return;
 		ThreadData theThread = getThreadData(aThreadId);
 
 		int[] theAdviceCFlow = theThread.getAdviceCFlow(); // Must do that before popping frame
@@ -344,7 +344,7 @@ public final class EventInterpreter implements ILowLevelCollector
 			int aBehaviorId, 
 			Object aException)
 	{
-		if (DISABLE_COLLECTOR) return;
+		if (SKIP_COLLECTOR) return;
 		
 		ThreadData theThread = getThreadData(aThreadId);
 		
@@ -394,7 +394,7 @@ public final class EventInterpreter implements ILowLevelCollector
 			int aOperationBytecodeIndex,
 			Object aException)
 	{
-		if (DISABLE_COLLECTOR) return;
+		if (SKIP_COLLECTOR) return;
 		ThreadData theThread = getThreadData(aThreadId);
 		
 		FrameInfo theFrame = theThread.currentFrame();
@@ -443,7 +443,7 @@ public final class EventInterpreter implements ILowLevelCollector
 			Object aTarget, 
 			Object aValue)
 	{
-		if (DISABLE_COLLECTOR) return;
+		if (SKIP_COLLECTOR) return;
 		ThreadData theThread = getThreadData(aThreadId);
 
 		FrameInfo theFrame = theThread.currentFrame();
@@ -480,7 +480,7 @@ public final class EventInterpreter implements ILowLevelCollector
 			int aBaseTypeId,
 			int aSize)
 	{
-		if (DISABLE_COLLECTOR) return;
+		if (SKIP_COLLECTOR) return;
 		ThreadData theThread = getThreadData(aThreadId);
 		
 		FrameInfo theFrame = theThread.currentFrame();
@@ -518,7 +518,7 @@ public final class EventInterpreter implements ILowLevelCollector
 			int aIndex,
 			Object aValue)
 	{
-		if (DISABLE_COLLECTOR) return;
+		if (SKIP_COLLECTOR) return;
 		ThreadData theThread = getThreadData(aThreadId);
 		
 		FrameInfo theFrame = theThread.currentFrame();
@@ -554,7 +554,7 @@ public final class EventInterpreter implements ILowLevelCollector
 			int aVariableId,
 			Object aValue)
 	{
-		if (DISABLE_COLLECTOR) return;
+		if (SKIP_COLLECTOR) return;
 		ThreadData theThread = getThreadData(aThreadId);
 
 		FrameInfo theFrame = theThread.currentFrame();
@@ -590,7 +590,7 @@ public final class EventInterpreter implements ILowLevelCollector
 			int aTypeId,
 			boolean aResult)
 	{
-		if (DISABLE_COLLECTOR) return;
+		if (SKIP_COLLECTOR) return;
 		ThreadData theThread = getThreadData(aThreadId);
 		
 		FrameInfo theFrame = theThread.currentFrame();
@@ -631,7 +631,7 @@ public final class EventInterpreter implements ILowLevelCollector
 			int aBehaviorId,
 			BehaviorCallType aCallType)
 	{
-		if (DISABLE_COLLECTOR) return;
+		if (SKIP_COLLECTOR) return;
 		assert aCallType != null;
 		ThreadData theThread = getThreadData(aThreadId);
 
@@ -677,7 +677,7 @@ public final class EventInterpreter implements ILowLevelCollector
 			Object aTarget, 
 			Object[] aArguments)
 	{
-		if (DISABLE_COLLECTOR) return;
+		if (SKIP_COLLECTOR) return;
 		ThreadData theThread = getThreadData(aThreadId);
 
 		FrameInfo theFrame = theThread.currentFrame();
@@ -729,7 +729,7 @@ public final class EventInterpreter implements ILowLevelCollector
 			int aThreadId, 
 			long aTimestamp)
 	{
-		if (DISABLE_COLLECTOR) return;
+		if (SKIP_COLLECTOR) return;
 		// Nothing to do here, maybe we don't need this message
 		ThreadData theThread = getThreadData(aThreadId);
 		FrameInfo theFrame = theThread.currentFrame();
@@ -774,7 +774,7 @@ public final class EventInterpreter implements ILowLevelCollector
 			Object aTarget,
 			Object aResult)
 	{
-		if (DISABLE_COLLECTOR) return;
+		if (SKIP_COLLECTOR) return;
 		ThreadData theThread = getThreadData(aThreadId);
 
 		int[] theAdviceCFlow = theThread.getAdviceCFlow(); // We must get that before popping the frame
@@ -813,7 +813,7 @@ public final class EventInterpreter implements ILowLevelCollector
 			Object aTarget, 
 			Object aException)
 	{
-		if (DISABLE_COLLECTOR) return;
+		if (SKIP_COLLECTOR) return;
 		ThreadData theThread = getThreadData(aThreadId);
 
 		int[] theAdviceCFlow = theThread.getAdviceCFlow(); //Must do that before popping frame
@@ -850,7 +850,7 @@ public final class EventInterpreter implements ILowLevelCollector
 			Output aOutput, 
 			byte[] aData)
 	{
-		if (DISABLE_COLLECTOR) return;
+		if (SKIP_COLLECTOR) return;
 		ThreadData theThread = getThreadData(aThreadId);
 
 		FrameInfo theFrame = theThread.currentFrame();

@@ -1,31 +1,32 @@
 #! /bin/sh
 
 # AGENT=../TOD-agng/libtod-agent.so
-AGENT=../TOD-agent/libbci-agent.so
+AGENT=../TOD-agent/libtod-agent.so
 #CLASSPATH=./bin:../zz.utils/bin
 
-HOST=localhost
+#HOST=localhost
 #HOST=syntagma.dim.uchile.cl
-#HOST=padme.dcc.uchile.cl
+HOST=padme.dcc.uchile.cl
 
 
 VMARGS=''
-VMARGS="$VMARGS -agentpath:$AGENT"
+#VMARGS="$VMARGS -agentpath:$AGENT"
 VMARGS="$VMARGS -noverify"
 VMARGS="$VMARGS -Dcollector-host=$HOST -Dcollector-port=8058 -Dtod-host=tod-1"
 VMARGS="$VMARGS -Dcollector-type=socket"
 VMARGS="$VMARGS -Xbootclasspath/p:../TOD-agent/bin" 
-#VMARGS="$VMARGS -ea" 
+VMARGS="$VMARGS -ea" 
 VMARGS="$VMARGS -server" 
 VMARGS="$VMARGS -Xmx384m" 
 VMARGS="$VMARGS -XX:MaxPermSize=128m"
 VMARGS="$VMARGS -Dagent-verbose=0"
 VMARGS="$VMARGS -Dagent-cache-path=/home/gpothier/tmp/tod"
 #VMARGS="$VMARGS -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"
+#VMARGS="$VMARGS -agentlib:hprof=cpu=samples,depth=8"
 
-#java $VMARGS -cp ./bin dummy.Dummy
+$JAVA_HOME/bin/java $VMARGS -cp ./bin dummy.BurnTest
 #java $VMARGS -cp ./bin dummy.ShortProg
-java $VMARGS -cp ../TOD-evdbng/bin tod.impl.evdbng.Fixtures
+#java $VMARGS -cp ../TOD-evdbng/bin tod.impl.evdbng.Fixtures
 # echo "set args $VMARGS -cp ./bin dummy.Dummy" > gdb.cmd
 # gdb -x gdb.cmd java
 

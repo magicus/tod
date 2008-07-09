@@ -34,11 +34,6 @@ import java.io.PrintStream;
 public class AgentDebugFlags
 {
 	/**
-	 * Causes the {@link EventInterpreter} to ignore all events
-	 */
-	public static final boolean DISABLE_COLLECTOR = false;
-
-	/**
 	 * If true, the {@link EventInterpreter} prints all the events it receives
 	 */
 	public static final boolean COLLECTOR_LOG = false;
@@ -83,7 +78,6 @@ public class AgentDebugFlags
 
 	static
 	{
-		if (DISABLE_COLLECTOR == true) System.err.println("******* Warning: DISABLE_INTERPRETER (DebugFlags)");
 		if (DISABLE_EVENT_SEND == true) System.err.println("******* Warning: DISABLE_EVENT_SEND (DebugFlags)");
 		if (COLLECTOR_IGNORE_ALL == true) System.err.println("******* Warning: COLLECTOR_IGNORE_ALL (DebugFlags)");
 	}

@@ -77,7 +77,7 @@ public class AgentConfig
 	/**
 	 * Size of {@link SocketCollector} buffer. 
 	 */
-	public static final int COLLECTOR_BUFFER_SIZE = 32768;
+	public static final int COLLECTOR_BUFFER_SIZE = 16384;
 
 
 	private static EventCollector itsCollector;
