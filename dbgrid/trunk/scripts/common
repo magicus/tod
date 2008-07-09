@@ -30,7 +30,7 @@ export CLASSPATH
 [ -n "$LOCATIONS_FILE" ] || export LOCATIONS_FILE=$SHARED_STORAGE/tod/locations.bin
 
 [ -n "$PAGE_BUFFER_SIZE" ] || export PAGE_BUFFER_SIZE=200m
-[ -n "$JVM_HEAP_SIZE_SIZE" ] || export JVM_HEAP_SIZE_SIZE=500m
+[ -n "$JVM_HEAP_SIZE" ] || export JVM_HEAP_SIZE=500m
 [ -n "$SUB_FACTOR" ] || export SUB_FACTOR="1"
 [ -n "$GRID_IMPL" ] || export GRID_IMPL="uniform"
 
