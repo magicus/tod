@@ -62,37 +62,37 @@ public class EventViewFactory
 		if (aEvent instanceof IInstantiationEvent)
 		{
 			IInstantiationEvent theEvent = (IInstantiationEvent) aEvent;
-			theView = new InstantiationView (aGUIManager, aLog, theEvent);
+			theView = new InstantiationView (aGUIManager, theEvent);
 		}
 		else if (aEvent instanceof IBehaviorCallEvent)
 		{
 			IBehaviorCallEvent theEvent = (IBehaviorCallEvent) aEvent;
-			theView = new BehaviorCallView (aGUIManager, aLog, theEvent);
+			theView = new BehaviorCallView (aGUIManager, theEvent);
 		}
 		else if (aEvent instanceof IBehaviorExitEvent)
 		{
 			IBehaviorExitEvent theEvent = (IBehaviorExitEvent) aEvent;
-			theView = new BehaviorExitView(aGUIManager, aLog, theEvent);
+			theView = new BehaviorExitView(aGUIManager, theEvent);
 		}
 		else if (aEvent instanceof IFieldWriteEvent)
 		{
 			IFieldWriteEvent theEvent = (IFieldWriteEvent) aEvent;
-			theView = new FieldWriteEventView (aGUIManager, aLog, theEvent);
+			theView = new FieldWriteEventView (aGUIManager, theEvent);
 		}
 		else if (aEvent instanceof ILocalVariableWriteEvent)
 		{
 			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) aEvent;
-			theView = new VariableWriteEventView(aGUIManager, aLog, theEvent);
+			theView = new VariableWriteEventView(aGUIManager, theEvent);
 		}
 		else if (aEvent instanceof IArrayWriteEvent)
 		{
 			IArrayWriteEvent theEvent = (IArrayWriteEvent) aEvent;
-			theView = new ArrayWriteEventView(aGUIManager, aLog, theEvent);
+			theView = new ArrayWriteEventView(aGUIManager, theEvent);
 		}
 		else if (aEvent instanceof IExceptionGeneratedEvent)
 		{
 			IExceptionGeneratedEvent theEvent = (IExceptionGeneratedEvent) aEvent;
-			theView = new ExceptionGeneratedView(aGUIManager, aLog, theEvent);
+			theView = new ExceptionGeneratedView(aGUIManager, theEvent);
 		}
 		
 		if (theView != null) theView.init();

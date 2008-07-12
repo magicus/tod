@@ -31,7 +31,6 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.view.event;
 
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IArrayWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.gui.IGUIManager;
@@ -43,17 +42,19 @@ public class ArrayWriteEventView extends EventView
 {
 	private IArrayWriteEvent itsEvent;
 	
-	public ArrayWriteEventView(IGUIManager aManager, ILogBrowser aLog, IArrayWriteEvent aEvent)
+	public ArrayWriteEventView(IGUIManager aManager, IArrayWriteEvent aEvent)
 	{
-		super(aManager, aLog);
+		super(aManager);
 		itsEvent = aEvent;
 	}
 	
+	@Override
 	protected ILogEvent getEvent()
 	{
 		return itsEvent;
 	}
 	
+	@Override
 	public void init()
 	{
 		super.init();

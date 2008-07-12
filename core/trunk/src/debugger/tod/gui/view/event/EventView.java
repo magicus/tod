@@ -31,15 +31,15 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.view.event;
 
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
-import tod.gui.kit.SeedLinkLabel;
+import tod.gui.SeedHyperlink;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.seed.FilterSeed;
+import tod.gui.seed.LogViewSeed;
 import tod.gui.view.LogView;
 
 /**
@@ -50,13 +50,14 @@ import tod.gui.view.LogView;
  * layout constraints; they will be stacked vertically.
  * @author gpothier
  */
-public abstract class EventView extends LogView
+public abstract class EventView<T extends LogViewSeed> extends LogView<T>
 {
-	public EventView(IGUIManager aManager, ILogBrowser aLog)
+	public EventView(IGUIManager aManager)
 	{
-		super (aManager, aLog);
+		super (aManager);
 	}
 	
+	@Override
 	public void init()
 	{
 		setLayout(GUIUtils.createStackLayout());
@@ -71,7 +72,6 @@ public abstract class EventView extends LogView
 				"Host: ", 
 				"\""+theHost.getName()+"\" ["+theHost.getId()+"]", 
 				new FilterSeed (
-						getGUIManager(), 
 						getLogBrowser(),
 						"All events of host: "+theHost.getName(),
 						getLogBrowser().createHostFilter(theHost))));
@@ -80,7 +80,6 @@ public abstract class EventView extends LogView
 				"(>" + theEvent.getDepth() + ") Thread: ", 
 				"\""+theThread.getName()+"\" ["+theThread.getId()+"]", 
 				new FilterSeed (
-						getGUIManager(),
 						getLogBrowser(), 
 						"All events of thread: "+theThread.getDescription(),
 						getLogBrowser().createThreadFilter(theThread))));
@@ -91,9 +90,10 @@ public abstract class EventView extends LogView
 
 		
 		// CFlow
-		SeedLinkLabel theCFlowLabel = new SeedLinkLabel(
-				"View control flow", 
-				new CFlowSeed(getGUIManager(), getLogBrowser(), theEvent));
+		SeedHyperlink theCFlowLabel = SeedHyperlink.create(
+				getGUIManager(),
+				new CFlowSeed(getLogBrowser(), theEvent),
+				"View control flow");
 		
 		add (theCFlowLabel);
 		

@@ -34,7 +34,6 @@ package tod.gui.eventsequences;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Image;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -164,7 +163,7 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 	 */
 	protected void eventClicked(ILogEvent aEvent)
 	{
-		getGUIManager().openSeed(new CFlowSeed(getGUIManager(), getLogBrowser(), aEvent), false);
+		getGUIManager().openSeed(new CFlowSeed(getLogBrowser(), aEvent), false);
 	}
 	
 	/**

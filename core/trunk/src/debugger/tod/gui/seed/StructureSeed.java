@@ -33,7 +33,7 @@ package tod.gui.seed;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.ILocationInfo;
-import tod.gui.IGUIManager;
+import tod.gui.view.LogView;
 import tod.gui.view.structure.StructureView;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
@@ -46,9 +46,9 @@ public class StructureSeed extends LogViewSeed
 {
 	private final IRWProperty<ILocationInfo> pSelectedLocation = new SimpleRWProperty<ILocationInfo>();
 
-	public StructureSeed(IGUIManager aGUIManager, ILogBrowser aLog)
+	public StructureSeed(ILogBrowser aLog)
 	{
-		super(aGUIManager, aLog);
+		super(aLog);
 	}
 	
 	/**
@@ -60,11 +60,9 @@ public class StructureSeed extends LogViewSeed
 	}
 
 	@Override
-	protected StructureView requestComponent()
+	public Class< ? extends LogView> getComponentClass()
 	{
-		StructureView theView = new StructureView(getGUIManager(), getLogBrowser(), this);
-		theView.init();
-		return theView;
+		return StructureView.class;
 	}
 	
 	

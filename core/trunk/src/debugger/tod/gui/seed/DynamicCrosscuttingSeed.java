@@ -32,16 +32,13 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.gui.seed;
 
 import java.awt.Color;
-import java.util.List;
 import java.util.Set;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IAdviceInfo;
 import tod.core.database.structure.IAspectInfo;
 import tod.core.database.structure.ILocationInfo;
-import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
-import tod.gui.IGUIManager;
 import tod.gui.view.LogView;
 import tod.gui.view.dyncross.DynamicCrosscuttingView;
 import zz.utils.list.IList;
@@ -55,17 +52,15 @@ public class DynamicCrosscuttingSeed extends LogViewSeed
 	public final IRWProperty<Long> pStart = new SimpleRWProperty<Long>();
 	public final IRWProperty<Long> pEnd = new SimpleRWProperty<Long>();
 
-	public DynamicCrosscuttingSeed(IGUIManager aGUIManager, ILogBrowser aLog)
+	public DynamicCrosscuttingSeed(ILogBrowser aLog)
 	{
-		super(aGUIManager, aLog);
+		super(aLog);
 	}
 
 	@Override
-	protected LogView requestComponent()
+	public Class< ? extends LogView> getComponentClass()
 	{
-		DynamicCrosscuttingView theView = new DynamicCrosscuttingView(getGUIManager(), getLogBrowser(), this);
-		theView.init();
-		return theView;
+		return DynamicCrosscuttingView.class;
 	}
 	
 	/**

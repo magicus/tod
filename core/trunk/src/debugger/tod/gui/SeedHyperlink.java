@@ -33,21 +33,23 @@ package tod.gui;
 
 import java.awt.Color;
 
-import tod.gui.seed.Seed;
+import tod.gui.seed.LogViewSeed;
 import zz.utils.ui.ZHyperlink;
 import zz.utils.ui.text.XFont;
 
 public class SeedHyperlink extends ZHyperlink
 {
-	private Seed itsSeed;
+	private final IGUIManager itsGUIManager;
+	private LogViewSeed itsSeed;
 	
-	public SeedHyperlink(String aText, XFont aFont, Color aColor, Seed aSeed)
+	public SeedHyperlink(IGUIManager aGUIManager, LogViewSeed aSeed, String aText, XFont aFont, Color aColor)
 	{
 		super(aText, aFont, aColor);
+		itsGUIManager = aGUIManager;
 		itsSeed = aSeed;
 	}
 
-	public void setSeed(Seed aSeed)
+	public void setSeed(LogViewSeed aSeed)
 	{
 		itsSeed = aSeed;
 	}
@@ -55,14 +57,15 @@ public class SeedHyperlink extends ZHyperlink
 	@Override
 	protected void traverse()
 	{
-		itsSeed.open();
+		itsGUIManager.openSeed(itsSeed, false);
 	}
 	
 	/**
 	 * Creates a new flow text with default size computer.
 	 */
 	public static SeedHyperlink create(
-			Seed aSeed, 
+			IGUIManager aGUIManager, 
+			LogViewSeed aSeed, 
 			String aText, 
 			XFont aFont, 
 			Color aColor)
@@ -71,7 +74,7 @@ public class SeedHyperlink extends ZHyperlink
 				new XFont(aFont.getAWTFont(), false) 
 				: aFont;
 		
-		SeedHyperlink theHyperlink = new SeedHyperlink(aText, theFont, aColor, aSeed);
+		SeedHyperlink theHyperlink = new SeedHyperlink(aGUIManager, aSeed, aText, theFont, aColor);
 		
 		return theHyperlink;
 	}
@@ -79,18 +82,30 @@ public class SeedHyperlink extends ZHyperlink
 	/**
 	 * Creates a new flow text with default size computer and font.
 	 */
-	public static SeedHyperlink create(Seed aSeed, String aText, Color aColor)
+	public static SeedHyperlink create(IGUIManager aGUIManager, LogViewSeed aSeed, String aText, Color aColor)
 	{
-		return create(aSeed, aText, XFont.DEFAULT_XUNDERLINED, aColor);
+		return create(aGUIManager, aSeed, aText, XFont.DEFAULT_XUNDERLINED, aColor);
 	}
 
 	/**
 	 * Creates a new flow text with default size computer and default font
 	 * of the given size.
 	 */
-	public static SeedHyperlink create(Seed aSeed, String aText, float aFontSize, Color aColor)
+	public static SeedHyperlink create(
+			IGUIManager aGUIManager, 
+			LogViewSeed aSeed, 
+			String aText, 
+			float aFontSize, 
+			Color aColor)
 	{
-		return create(aSeed, aText, XFont.DEFAULT_XUNDERLINED.deriveFont(aFontSize), aColor);
+		return create(aGUIManager, aSeed, aText, XFont.DEFAULT_XUNDERLINED.deriveFont(aFontSize), aColor);
 	}
 
+	public static SeedHyperlink create(
+			IGUIManager aGUIManager,
+			LogViewSeed aSeed,
+			String aText)
+	{
+		return create(aGUIManager, aSeed, aText, XFont.DEFAULT_XUNDERLINED, Color.BLUE);
+	}
 }

@@ -29,37 +29,15 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.kit;
+package tod.gui.seed;
 
-import java.awt.Color;
-
-import tod.gui.FontConfig;
-import tod.gui.seed.Seed;
-import zz.utils.ui.ZHyperlink;
+import tod.core.database.event.ILogEvent;
 
 /**
- * A hyperlink-like label, that permits to jump to a specific view.
+ * A kind of seed that has a main event.
  * @author gpothier
  */
-public class SeedLinkLabel extends ZHyperlink
+public interface IEventSeed
 {
-	/**
-	 * The seed to which to jump when this link is selected.
-	 */
-	private final Seed itsTargetSeed;
-	
-	public SeedLinkLabel(
-			String aText,
-			Seed aTargetSeed)
-	{
-		super(aText, FontConfig.STD_FONT, Color.BLUE);
-		itsTargetSeed = aTargetSeed;
-	}
-	
-	@Override
-	protected void traverse()
-	{
-		itsTargetSeed.open();
-	}
-	
+	public ILogEvent getEvent();
 }

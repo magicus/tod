@@ -62,11 +62,9 @@ import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.session.AbstractSession;
-import tod.core.session.IProgramLaunch;
 import tod.core.session.ISession;
 import tod.core.session.ISessionMonitor;
 import tod.gui.MinerUI;
-import tod.gui.IGUIManager.DialogType;
 import tod.gui.seed.StructureSeed;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
@@ -97,7 +95,7 @@ public class ABCTags
 		frame.setVisible(true);
 		frame.setSize(1300, 500);
 		
-		StructureSeed theSeed = new StructureSeed(theUI, theLogBrowser);
+		StructureSeed theSeed = new StructureSeed(theLogBrowser);
 		theUI.openSeed(theSeed, false);
 		
 		System.out.println("ready");

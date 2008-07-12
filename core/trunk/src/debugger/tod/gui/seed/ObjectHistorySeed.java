@@ -34,7 +34,6 @@ package tod.gui.seed;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.ObjectId;
-import tod.gui.IGUIManager;
 import tod.gui.view.LogView;
 import tod.gui.view.ObjectHistoryView;
 import zz.utils.properties.IRWProperty;
@@ -71,9 +70,9 @@ public class ObjectHistorySeed extends LogViewSeed
 	private final IRWProperty<Boolean> pShowKind_ArrayWrite = new SimpleRWProperty<Boolean>(this);
 	private final IRWProperty<Boolean> pShowKind_Exception = new SimpleRWProperty<Boolean>(this);
 	
-	public ObjectHistorySeed(IGUIManager aGUIManager, ILogBrowser aLog, ObjectId aObject)
+	public ObjectHistorySeed(ILogBrowser aLog, ObjectId aObject)
 	{
-		super(aGUIManager, aLog);
+		super(aLog);
 		itsObject = aObject;
 		
 		pShowRole_Target.set(true);
@@ -89,11 +88,9 @@ public class ObjectHistorySeed extends LogViewSeed
 	}
 	
 	@Override
-	protected LogView requestComponent()
+	public Class< ? extends LogView> getComponentClass()
 	{
-		ObjectHistoryView theView = new ObjectHistoryView(getGUIManager(), getLogBrowser(), this);
-		theView.init();
-		return theView;
+		return ObjectHistoryView.class;
 	}
 
 	public ObjectId getObject()

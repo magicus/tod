@@ -38,10 +38,8 @@ import javax.swing.JSplitPane;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.LocationUtils;
 import tod.core.database.event.ILogEvent;
-import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
 import tod.gui.eventlist.EventListPanel;
@@ -64,10 +62,10 @@ import zz.utils.properties.PropertyListener;
  * based on a {@link tod.core.database.browser.IEventFilter}
  * @author gpothier
  */
-public class FilterView extends LogView implements IEventListView
+public class FilterView extends LogView<FilterSeed> 
+implements IEventListView
 {
 	private static final String PROPERTY_SPLITTER_POS = "filterView.splitterPos";
-	private FilterSeed itsSeed;
 	
 	private EventListPanel itsListPanel;
 	private EventHighlighter itsEventHighlighter;
@@ -89,14 +87,33 @@ public class FilterView extends LogView implements IEventListView
 					BrowserData.DEFAULT_MARK_SIZE));
 		}
 	};
+
+	private HtmlComponent itsTitleComponent;
 	
-	public FilterView(IGUIManager aGUIManager, ILogBrowser aLog, FilterSeed aSeed)
+	public FilterView(IGUIManager aGUIManager)
 	{
-		super(aGUIManager, aLog);
-		itsSeed = aSeed;
+		super(aGUIManager);
 		
 		createUI ();
-		connect(itsSeed.pSelectedEvent(), itsListPanel.pSelectedEvent(), true);
+	}
+	
+	@Override
+	protected void connectSeed(FilterSeed aSeed)
+	{
+		connect(aSeed.pSelectedEvent(), itsListPanel.pSelectedEvent());
+		connect(aSeed.pSelectedEvent(), itsListPanel.pSelectedEvent());
+		aSeed.pSelectedEvent().addHardListener(itsSelectedEventListener);
+		
+		itsListPanel.setBrowser(aSeed.getBaseFilter());
+		itsTitleComponent.setDoc(aSeed.getTitle());
+	}
+
+	@Override
+	protected void disconnectSeed(FilterSeed aSeed)
+	{
+		disconnect(aSeed.pSelectedEvent(), itsListPanel.pSelectedEvent());
+		disconnect(aSeed.pSelectedEvent(), itsListPanel.pSelectedEvent());
+		aSeed.pSelectedEvent().removeListener(itsSelectedEventListener);
 	}
 
 	@Override
@@ -123,9 +140,9 @@ public class FilterView extends LogView implements IEventListView
 				
 		setLayout(new BorderLayout());
 		add (theSplitPane, BorderLayout.CENTER);
-		HtmlComponent theTitleComponent = new HtmlComponent(itsSeed.getTitle());
-		theTitleComponent.setOpaque(false);
-		add(theTitleComponent, BorderLayout.NORTH);
+		itsTitleComponent = new HtmlComponent();
+		itsTitleComponent.setOpaque(false);
+		add(itsTitleComponent, BorderLayout.NORTH);
 		
 		theSplitPane.setLeftComponent(itsListPanel);
 		
@@ -133,29 +150,9 @@ public class FilterView extends LogView implements IEventListView
 		theSplitPane.setRightComponent(itsEventHighlighter);
 	}
 	
-	@Override
-	public void addNotify()
-	{
-		connect(itsSeed.pSelectedEvent(), itsListPanel.pSelectedEvent(), true);
-
-		super.addNotify();
-		
-		itsSeed.pSelectedEvent().addHardListener(itsSelectedEventListener);
-		
-		itsListPanel.setBrowser(itsSeed.getBaseFilter());
-	}
-	
-	@Override
-	public void removeNotify()
-	{
-		super.removeNotify();
-		
-		itsSeed.pSelectedEvent().removeListener(itsSelectedEventListener);
-	}
-	
 	public IEventBrowser getEventBrowser()
 	{
-		IEventFilter theFilter = itsSeed.getBaseFilter();
+		IEventFilter theFilter = getSeed().getBaseFilter();
 		
 		return theFilter != null ?
 				getLogBrowser().createBrowser(theFilter)
@@ -164,12 +161,12 @@ public class FilterView extends LogView implements IEventListView
 
 	public ILogEvent getSelectedEvent()
 	{
-		return itsSeed.pSelectedEvent().get();
+		return getSeed().pSelectedEvent().get();
 	}
 
 	public void selectEvent(ILogEvent aEvent, SelectionMethod aMethod)
 	{
-		itsSeed.pSelectedEvent().set(aEvent);
+		getSeed().pSelectedEvent().set(aEvent);
 	}
 	
 	

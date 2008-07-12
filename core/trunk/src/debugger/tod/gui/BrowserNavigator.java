@@ -35,7 +35,6 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.Action;
 
-import tod.gui.seed.Seed;
 import zz.utils.ArrayStack;
 import zz.utils.ItemAction;
 import zz.utils.Stack;
@@ -45,7 +44,7 @@ import zz.utils.Stack;
  * seeds.
  * @author gpothier
  */
-public class BrowserNavigator<S extends Seed>
+public class BrowserNavigator<S>
 {
 	private Stack<S> itsBackwardSeeds = new ArrayStack<S>(50);
 	private Stack<S> itsForwardSeeds = new ArrayStack<S>();

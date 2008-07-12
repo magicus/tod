@@ -42,7 +42,6 @@ import javax.swing.JSplitPane;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.LocationUtils;
 import tod.core.database.browser.ObjectIdUtils;
 import tod.core.database.event.ILogEvent;
@@ -51,7 +50,6 @@ import tod.gui.BrowserData;
 import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
-import tod.gui.MinerUI;
 import tod.gui.eventlist.EventListPanel;
 import tod.gui.kit.Bus;
 import tod.gui.kit.Options;
@@ -69,11 +67,10 @@ import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.PropertyListener;
 import zz.utils.ui.PropertyEditor;
 
-public class ObjectHistoryView extends LogView implements IEventListView
+public class ObjectHistoryView extends LogView<ObjectHistorySeed> 
+implements IEventListView
 {
 	private static final String PROPERTY_SPLITTER_POS = "objectHistoryView.splitterPos";
-
-	private final ObjectHistorySeed itsSeed;
 
 	private EventListPanel itsListPanel;
 	private EventHighlighter itsEventHighlighter;
@@ -106,14 +103,64 @@ public class ObjectHistoryView extends LogView implements IEventListView
 			updateFilter();
 		}
 	};
+
+	private HtmlComponent itsTitleComponent;
+
+	private FlagsPanel itsFlagsPanel;
 	
-	public ObjectHistoryView(IGUIManager aGUIManager, ILogBrowser aLog, ObjectHistorySeed aSeed)
+	public ObjectHistoryView(IGUIManager aGUIManager)
 	{
-		super(aGUIManager, aLog);
-		itsSeed = aSeed;
+		super(aGUIManager);
 		
 		createUI ();
-		connect(itsSeed.pSelectedEvent(), itsListPanel.pSelectedEvent(), true);
+	}
+
+	@Override
+	protected void connectSeed(ObjectHistorySeed aSeed)
+	{
+		connect(aSeed.pSelectedEvent(), itsListPanel.pSelectedEvent());
+		
+		aSeed.pSelectedEvent().addHardListener(itsSelectedEventListener);
+		
+		aSeed.pShowKind_ArrayWrite().addHardListener(itsFlagsListener);
+		aSeed.pShowKind_BehaviorCall().addHardListener(itsFlagsListener);
+		aSeed.pShowKind_Exception().addHardListener(itsFlagsListener);
+		aSeed.pShowKind_FieldWrite().addHardListener(itsFlagsListener);
+		aSeed.pShowKind_LocalWrite().addHardListener(itsFlagsListener);
+		
+		aSeed.pShowRole_Arg().addHardListener(itsFlagsListener);
+		aSeed.pShowRole_Result().addHardListener(itsFlagsListener);
+		aSeed.pShowRole_Target().addHardListener(itsFlagsListener);
+		aSeed.pShowRole_Value().addHardListener(itsFlagsListener);
+		
+		String theTitle = ObjectIdUtils.getObjectDescription(
+				getLogBrowser(), 
+				aSeed.getObject(), 
+				false);
+		
+		itsTitleComponent.setDoc(HtmlDoc.create("<b>"+theTitle+"</b>", FontConfig.BIG, Color.BLACK));
+		itsFlagsPanel.setSeed(aSeed);
+	}
+
+	@Override
+	protected void disconnectSeed(ObjectHistorySeed aSeed)
+	{
+		disconnect(aSeed.pSelectedEvent(), itsListPanel.pSelectedEvent());
+
+		aSeed.pSelectedEvent().removeListener(itsSelectedEventListener);
+
+		aSeed.pShowKind_ArrayWrite().removeListener(itsFlagsListener);
+		aSeed.pShowKind_BehaviorCall().removeListener(itsFlagsListener);
+		aSeed.pShowKind_Exception().removeListener(itsFlagsListener);
+		aSeed.pShowKind_FieldWrite().removeListener(itsFlagsListener);
+		aSeed.pShowKind_LocalWrite().removeListener(itsFlagsListener);
+		
+		aSeed.pShowRole_Arg().removeListener(itsFlagsListener);
+		aSeed.pShowRole_Result().removeListener(itsFlagsListener);
+		aSeed.pShowRole_Target().removeListener(itsFlagsListener);
+		aSeed.pShowRole_Value().removeListener(itsFlagsListener);
+
+		itsFlagsPanel.setSeed(null);
 	}
 
 	@Override
@@ -151,19 +198,15 @@ public class ObjectHistoryView extends LogView implements IEventListView
 		setLayout(new BorderLayout());
 		add (theSplitPane, BorderLayout.CENTER);
 		
-		String theTitle = ObjectIdUtils.getObjectDescription(
-				getLogBrowser(), 
-				itsSeed.getObject(), 
-				false);
+		itsTitleComponent = new HtmlComponent();
 		
-		HtmlComponent theTitleComponent = new HtmlComponent(
-				HtmlDoc.create("<b>"+theTitle+"</b>", FontConfig.BIG, Color.BLACK));
+		itsTitleComponent.setOpaque(false);
+		add(itsTitleComponent, BorderLayout.NORTH);
 		
-		theTitleComponent.setOpaque(false);
-		add(theTitleComponent, BorderLayout.NORTH);
+		itsFlagsPanel = new FlagsPanel();
 		
 		JScrollPane theScrollPane = new JScrollPane(
-				new FlagsPanel(), 
+				itsFlagsPanel, 
 				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		
@@ -180,15 +223,15 @@ public class ObjectHistoryView extends LogView implements IEventListView
 	 */
 	private void updateFilter()
 	{
-		ObjectId theObject = itsSeed.getObject();
+		ObjectId theObject = getSeed().getObject();
 		
 		// Setup role filter
 		IEventFilter theRoleFilter;
 		
-		Boolean r_arg = itsSeed.pShowRole_Arg().get();
-		Boolean r_result = itsSeed.pShowRole_Result().get();
-		Boolean r_target = itsSeed.pShowRole_Target().get();
-		Boolean r_value = itsSeed.pShowRole_Value().get();
+		Boolean r_arg = getSeed().pShowRole_Arg().get();
+		Boolean r_result = getSeed().pShowRole_Result().get();
+		Boolean r_target = getSeed().pShowRole_Target().get();
+		Boolean r_value = getSeed().pShowRole_Value().get();
 		
 		if (r_arg && r_result && r_target && r_value)
 		{
@@ -205,11 +248,11 @@ public class ObjectHistoryView extends LogView implements IEventListView
 		}
 
 		// Setup kind filter
-		Boolean k_arrayWrite = itsSeed.pShowKind_ArrayWrite().get();
-		Boolean k_behaviorCall = itsSeed.pShowKind_BehaviorCall().get();
-		Boolean k_exception = itsSeed.pShowKind_Exception().get();
-		Boolean k_fieldWrite = itsSeed.pShowKind_FieldWrite().get();
-		Boolean k_localWrite = itsSeed.pShowKind_LocalWrite().get();
+		Boolean k_arrayWrite = getSeed().pShowKind_ArrayWrite().get();
+		Boolean k_behaviorCall = getSeed().pShowKind_BehaviorCall().get();
+		Boolean k_exception = getSeed().pShowKind_Exception().get();
+		Boolean k_fieldWrite = getSeed().pShowKind_FieldWrite().get();
+		Boolean k_localWrite = getSeed().pShowKind_LocalWrite().get();
 
 		if (k_arrayWrite && k_behaviorCall && k_exception && k_fieldWrite && k_localWrite)
 		{
@@ -231,46 +274,6 @@ public class ObjectHistoryView extends LogView implements IEventListView
 		}
 			
 		itsListPanel.setBrowser(getEventBrowser());
-	}
-	
-	@Override
-	public void addNotify()
-	{
-		connect(itsSeed.pSelectedEvent(), itsListPanel.pSelectedEvent(), true);
-		
-		super.addNotify();
-		
-		itsSeed.pSelectedEvent().addHardListener(itsSelectedEventListener);
-		
-		itsSeed.pShowKind_ArrayWrite().addHardListener(itsFlagsListener);
-		itsSeed.pShowKind_BehaviorCall().addHardListener(itsFlagsListener);
-		itsSeed.pShowKind_Exception().addHardListener(itsFlagsListener);
-		itsSeed.pShowKind_FieldWrite().addHardListener(itsFlagsListener);
-		itsSeed.pShowKind_LocalWrite().addHardListener(itsFlagsListener);
-		
-		itsSeed.pShowRole_Arg().addHardListener(itsFlagsListener);
-		itsSeed.pShowRole_Result().addHardListener(itsFlagsListener);
-		itsSeed.pShowRole_Target().addHardListener(itsFlagsListener);
-		itsSeed.pShowRole_Value().addHardListener(itsFlagsListener);
-	}
-	
-	@Override
-	public void removeNotify()
-	{
-		super.removeNotify();
-		
-		itsSeed.pSelectedEvent().removeListener(itsSelectedEventListener);
-
-		itsSeed.pShowKind_ArrayWrite().removeListener(itsFlagsListener);
-		itsSeed.pShowKind_BehaviorCall().removeListener(itsFlagsListener);
-		itsSeed.pShowKind_Exception().removeListener(itsFlagsListener);
-		itsSeed.pShowKind_FieldWrite().removeListener(itsFlagsListener);
-		itsSeed.pShowKind_LocalWrite().removeListener(itsFlagsListener);
-		
-		itsSeed.pShowRole_Arg().removeListener(itsFlagsListener);
-		itsSeed.pShowRole_Result().removeListener(itsFlagsListener);
-		itsSeed.pShowRole_Target().removeListener(itsFlagsListener);
-		itsSeed.pShowRole_Value().removeListener(itsFlagsListener);
 	}
 	
 	public IEventBrowser getEventBrowser()
@@ -295,78 +298,88 @@ public class ObjectHistoryView extends LogView implements IEventListView
 	{
 		public FlagsPanel()
 		{
-			createUI();
 		}
-
-		private void createUI()
+		
+		public void setSeed(ObjectHistorySeed aSeed)
 		{
+			removeAll();
+			
 			JPanel theRolePanel = new JPanel(GUIUtils.createStackLayout());
 			theRolePanel.setBorder(BorderFactory.createTitledBorder("Object role"));
-			
-			theRolePanel.add(PropertyEditor.createCheckBox(
-					itsSeed.pShowRole_Arg(), 
-					"Argument",
-					"<html>" +
-					"<b>Argument role.</b> Selects events where the object <br>" +
-					"appears as one of the arguments of a behavior call."));
-			
-			theRolePanel.add(PropertyEditor.createCheckBox(
-					itsSeed.pShowRole_Result(), 
-					"Result",
-					"<html>" +
-					"<b>Result role.</b> Selects events where the object <br>" +
-					"is the result of a behavior call."));
-			
-			theRolePanel.add(PropertyEditor.createCheckBox(
-					itsSeed.pShowRole_Target(), 
-					"Target",
-					"<html>" +
-					"<b>Target role.</b> Selects events where the object <br>" +
-					"is the target of a behavior call, field write or array write."));
-			
-			theRolePanel.add(PropertyEditor.createCheckBox(
-					itsSeed.pShowRole_Value(), 
-					"Value",
-					"<html>" +
-					"<b>Value role.</b> Selects events where the object <br>" +
-					"is the value written into a field, local variable or array."));
 			
 			JPanel theKindPanel = new JPanel(GUIUtils.createStackLayout());
 			theKindPanel.setBorder(BorderFactory.createTitledBorder("Event kind"));
 			
-			theKindPanel.add(PropertyEditor.createCheckBox(
-					itsSeed.pShowKind_ArrayWrite(), 
-					"Array write",
-					"<html>" +
-					"<b>Array write kind.</b> Selects array write events"));
+
 			
-			theKindPanel.add(PropertyEditor.createCheckBox(
-					itsSeed.pShowKind_BehaviorCall(), 
-					"Behavior call",
-					"<html>" +
-					"<b>Behavior call kind.</b> Selects behavior call events"));
-			
-			theKindPanel.add(PropertyEditor.createCheckBox(
-					itsSeed.pShowKind_Exception(), 
-					"Exception",
-					"<html>" +
-					"<b>Exception kind.</b> Selects exception events"));
-			
-			theKindPanel.add(PropertyEditor.createCheckBox(
-					itsSeed.pShowKind_FieldWrite(), 
-					"Field write",
-					"<html>" +
-					"<b>Field write kind.</b> Selects field write events"));
-			
-			theKindPanel.add(PropertyEditor.createCheckBox(
-					itsSeed.pShowKind_LocalWrite(), 
-					"Local variable write",
-					"<html>" +
-					"<b>Local variable write kind.</b> Selects local variable write events"));
+			if (aSeed != null)
+			{
+				theRolePanel.add(PropertyEditor.createCheckBox(
+						aSeed.pShowRole_Arg(), 
+						"Argument",
+						"<html>" +
+						"<b>Argument role.</b> Selects events where the object <br>" +
+						"appears as one of the arguments of a behavior call."));
+				
+				theRolePanel.add(PropertyEditor.createCheckBox(
+						aSeed.pShowRole_Result(), 
+						"Result",
+						"<html>" +
+						"<b>Result role.</b> Selects events where the object <br>" +
+						"is the result of a behavior call."));
+				
+				theRolePanel.add(PropertyEditor.createCheckBox(
+						aSeed.pShowRole_Target(), 
+						"Target",
+						"<html>" +
+						"<b>Target role.</b> Selects events where the object <br>" +
+						"is the target of a behavior call, field write or array write."));
+				
+				theRolePanel.add(PropertyEditor.createCheckBox(
+						aSeed.pShowRole_Value(), 
+						"Value",
+						"<html>" +
+						"<b>Value role.</b> Selects events where the object <br>" +
+						"is the value written into a field, local variable or array."));
+				
+				
+				theKindPanel.add(PropertyEditor.createCheckBox(
+						aSeed.pShowKind_ArrayWrite(), 
+						"Array write",
+						"<html>" +
+						"<b>Array write kind.</b> Selects array write events"));
+				
+				theKindPanel.add(PropertyEditor.createCheckBox(
+						aSeed.pShowKind_BehaviorCall(), 
+						"Behavior call",
+						"<html>" +
+						"<b>Behavior call kind.</b> Selects behavior call events"));
+				
+				theKindPanel.add(PropertyEditor.createCheckBox(
+						aSeed.pShowKind_Exception(), 
+						"Exception",
+						"<html>" +
+						"<b>Exception kind.</b> Selects exception events"));
+				
+				theKindPanel.add(PropertyEditor.createCheckBox(
+						aSeed.pShowKind_FieldWrite(), 
+						"Field write",
+						"<html>" +
+						"<b>Field write kind.</b> Selects field write events"));
+				
+				theKindPanel.add(PropertyEditor.createCheckBox(
+						aSeed.pShowKind_LocalWrite(), 
+						"Local variable write",
+						"<html>" +
+						"<b>Local variable write kind.</b> Selects local variable write events"));
+			}
 
 			setLayout(GUIUtils.createStackLayout());
 			add(theRolePanel);
 			add(theKindPanel);
+			
+			revalidate();
+			repaint();
 		}
 	}
 }

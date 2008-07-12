@@ -37,9 +37,7 @@ import javax.swing.JSplitPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import tod.core.database.browser.ILogBrowser;
 import tod.gui.IGUIManager;
-import tod.gui.MinerUI;
 import tod.gui.formatter.CustomFormatterRegistry;
 import tod.gui.formatter.CustomObjectFormatter;
 import tod.gui.kit.SavedSplitPane;
@@ -55,23 +53,15 @@ import zz.utils.ui.crmlist.CRMListModel;
  * This view permits to edit the set of available formatters.
  * @author gpothier
  */
-public class FormattersView extends LogView
+public class FormattersView extends LogView<FormattersSeed>
 {
 	private static final String PROPERTY_SPLITTER_POS = "formattersView.splitterPos";
 
-	private final FormattersSeed itsSeed;
-	
 	private JPanel itsEditorHolder;
 	
-	public FormattersView(IGUIManager aGUIManager, ILogBrowser aLog, FormattersSeed aSeed)
+	public FormattersView(IGUIManager aGUIManager)
 	{
-		super(aGUIManager, aLog);
-		itsSeed = aSeed;
-	}
-	
-	public FormattersSeed getSeed()
-	{
-		return itsSeed;
+		super(aGUIManager);
 	}
 
 	@Override

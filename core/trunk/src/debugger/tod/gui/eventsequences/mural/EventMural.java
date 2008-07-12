@@ -44,7 +44,6 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -875,19 +874,22 @@ public class EventMural extends MouseWheelPanel
 			
 			TODUtils.log(2, "[ImageUpdater] doUpdateImage ["+theStart+"-"+theEnd+"]");
 			
-			// Paint
-			// (cloning the browser data list in order to avoid concurrent modifications)
-			long[][] theValues = aMural.itsMuralPainter.paintMural(
-					aMural, 
-					theGraphics, 
-					new Rectangle(0, 0, u, v), 
-					theStart, 
-					theEnd, 
-					new ArrayList<BrowserData>(aMural.pEventBrowsers)); 
+			if (theStart > theEnd)
+			{
+				// Paint
+				// (cloning the browser data list in order to avoid concurrent modifications)
+				long[][] theValues = aMural.itsMuralPainter.paintMural(
+						aMural, 
+						theGraphics, 
+						new Rectangle(0, 0, u, v), 
+						theStart, 
+						theEnd, 
+						new ArrayList<BrowserData>(aMural.pEventBrowsers)); 
 
-			theImageData.setUpToDate(true);
-			theImageData.setValues(theValues);
-			aMural.repaint();
+				theImageData.setUpToDate(true);
+				theImageData.setValues(theValues);
+				aMural.repaint();
+			}
 		}
 	}
 	

@@ -58,6 +58,7 @@ import tod.gui.eventlist.EventListPanel;
 import tod.gui.kit.Bus;
 import tod.gui.kit.SavedSplitPane;
 import tod.gui.kit.messages.ShowCFlowMsg;
+import tod.gui.seed.LogViewSeed;
 import tod.gui.seed.StringSearchSeed;
 import tod.impl.database.IBidiIterator;
 import tod.utils.TODUtils;
@@ -68,27 +69,20 @@ import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
 import zz.utils.ui.StackLayout;
 
-public class StringSearchView extends LogView
+public class StringSearchView extends LogView<StringSearchSeed>
 {
 	private static final String PROPERTY_SPLITTER_POS = "StringSearchView.splitterPos";
 
-	private StringSearchSeed itsSeed;
 	private SimpleListModel itsResultsListModel;
 
 	private JList itsList;
 
 	private EventListPanel itsEventListPanel;
 
-	public StringSearchView(IGUIManager aGUIManager, ILogBrowser aLog, StringSearchSeed aSeed)
+	public StringSearchView(IGUIManager aGUIManager)
 	{
-		super(aGUIManager, aLog);
-		itsSeed = aSeed;
+		super(aGUIManager);
 		createUI();
-	}
-
-	public StringSearchSeed getSeed()
-	{
-		return itsSeed;
 	}
 
 	private void createUI()

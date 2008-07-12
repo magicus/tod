@@ -55,19 +55,17 @@ public class ThreadsSeed extends LogViewSeed
 	 */
 	private IRWProperty<Long> pRangeEnd = new SimpleRWProperty<Long>(this);
 
-	public ThreadsSeed(IGUIManager aGUIManager, ILogBrowser aLog)
+	public ThreadsSeed(ILogBrowser aLog)
 	{
-		super(aGUIManager, aLog);
+		super(aLog);
 		pRangeStart().set(aLog.getFirstTimestamp());
 		pRangeEnd().set(aLog.getLastTimestamp());
 	}
 
 	@Override
-	protected LogView requestComponent()
+	public Class< ? extends LogView> getComponentClass()
 	{
-		ThreadsView theView = new ThreadsView(getGUIManager(), getLogBrowser(), this);
-		theView.init();
-		return theView;
+		return ThreadsView.class;
 	}
 
 	public IRWProperty<Long> pRangeStart()

@@ -32,21 +32,13 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.gui.view.dyncross;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.AbstractCellEditor;
-import javax.swing.BorderFactory;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -85,12 +77,11 @@ import zz.utils.ui.StackLayout;
  * (aka. aspect murals).
  * @author gpothier
  */
-public class DynamicCrosscuttingView extends LogView
+public class DynamicCrosscuttingView extends LogView<DynamicCrosscuttingSeed>
 implements IListListener<Highlight>
 {
 	private static final int COLUMN_HIGHLIGHT = 0;
 	
-	private final DynamicCrosscuttingSeed itsSeed;
 	private MyHighlighter itsHighlighter;
 	
 	/**
@@ -98,23 +89,40 @@ implements IListListener<Highlight>
 	 */
 	private Map<ILocationInfo, Highlight> itsHighlightsMap = new HashMap<ILocationInfo, Highlight>();
 	
-	
-	
-	public DynamicCrosscuttingView(IGUIManager aGUIManager, ILogBrowser aLog, DynamicCrosscuttingSeed aSeed)
+	public DynamicCrosscuttingView(IGUIManager aGUIManager)
 	{
-		super(aGUIManager, aLog);
-		itsSeed = aSeed;
+		super(aGUIManager);
+	}
+
+	@Override
+	protected void connectSeed(DynamicCrosscuttingSeed aSeed)
+	{
+		connect(aSeed.pStart, itsHighlighter.pStart());
+		connect(aSeed.pEnd, itsHighlighter.pEnd());
+		
+		itsHighlightsMap.clear();
+		for (Highlight theHighlight : aSeed.pHighlights)
+		{
+			itsHighlightsMap.put(theHighlight.getLocation(), theHighlight);
+		}
+		
+		aSeed.pHighlights.addHardListener(this);
+		
+		setupHighlights();
+	}
+
+	@Override
+	protected void disconnectSeed(DynamicCrosscuttingSeed aSeed)
+	{
+		disconnect(aSeed.pStart, itsHighlighter.pStart());
+		disconnect(aSeed.pEnd, itsHighlighter.pEnd());
+		aSeed.pHighlights.removeListener(this);
 	}
 
 	@Override
 	public void init()
 	{
 		super.init();
-		
-		for (Highlight theHighlight : itsSeed.pHighlights)
-		{
-			itsHighlightsMap.put(theHighlight.getLocation(), theHighlight);
-		}
 		
 		JSplitPane theSplitPane = new SavedSplitPane(getGUIManager(), "dynamicCrosscuttingView.splitterPos");
 
@@ -176,27 +184,8 @@ implements IListListener<Highlight>
 		
 		setLayout(new StackLayout());
 		add(theSplitPane);
-	
-		setupHighlights();
-		
-		connect(itsSeed.pStart, itsHighlighter.pStart(), true);
-		connect(itsSeed.pEnd, itsHighlighter.pEnd(), true);
 	}
 	
-	@Override
-	public void addNotify()
-	{
-		super.addNotify();
-		itsSeed.pHighlights.addHardListener(this);
-	}
-	
-	@Override
-	public void removeNotify()
-	{
-		super.removeNotify();
-		itsSeed.pHighlights.removeListener(this);
-	}
-
 	private IEventBrowser createBrowser(Highlight aHighlight)
 	{
 		ICompoundFilter theUnionFilter = getLogBrowser().createUnionFilter();
@@ -243,9 +232,9 @@ implements IListListener<Highlight>
 	void setHighlight(ILocationInfo aLocation, Highlight aHighlight)
 	{
 		Highlight thePrevious = itsHighlightsMap.get(aLocation);
-		if (thePrevious != null) itsSeed.pHighlights.remove(thePrevious);
+		if (thePrevious != null) getSeed().pHighlights.remove(thePrevious);
 		itsHighlightsMap.put(aLocation, aHighlight);
-		if (aHighlight != null) itsSeed.pHighlights.add(aHighlight);
+		if (aHighlight != null) getSeed().pHighlights.add(aHighlight);
 	}
 	
 	/**
@@ -253,7 +242,7 @@ implements IListListener<Highlight>
 	 */
 	private void setupHighlights()
 	{
-		for(Highlight theHighlight : itsSeed.pHighlights)
+		for(Highlight theHighlight : getSeed().pHighlights)
 		{
 			itsHighlighter.pHighlightBrowsers.add(new BrowserData(
 					createBrowser(theHighlight),
@@ -395,7 +384,7 @@ implements IListListener<Highlight>
 		@Override
 		protected void perThread()
 		{
-			setMuralPainter(new AdviceCFlowMuralPainter(itsSeed.pHighlights));
+			setMuralPainter(new AdviceCFlowMuralPainter(getSeed().pHighlights));
 			super.perThread();
 		}
 	}

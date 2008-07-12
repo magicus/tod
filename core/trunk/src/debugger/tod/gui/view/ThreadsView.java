@@ -31,45 +31,32 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.view;
 
-import infovis.panel.dqinter.DoubleRangeSlider;
-
 import java.awt.BorderLayout;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.Timer;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IThreadInfo;
 import tod.gui.IGUIManager;
 import tod.gui.eventsequences.SequenceViewsDock;
 import tod.gui.eventsequences.ThreadSequenceSeed;
 import tod.gui.seed.ThreadsSeed;
 import zz.utils.Utils;
-import zz.utils.properties.PropertyUtils;
 
 /**
  * A view that lets the user select a thread and displays all the events 
  * of this thread.
  * @author gpothier
  */
-public class ThreadsView extends LogView
+public class ThreadsView extends LogView<ThreadsSeed>
 {
-	private ThreadsSeed itsSeed;
-	
 	private SequenceViewsDock itsDock;
 	private Map<IThreadInfo, ThreadSequenceSeed> itsSeedsMap = 
 		new HashMap<IThreadInfo, ThreadSequenceSeed>();
@@ -80,14 +67,31 @@ public class ThreadsView extends LogView
 	
 	private Timer itsTimer;
 	
-	public ThreadsView(IGUIManager aGUIManager, ILogBrowser aLog, ThreadsSeed aSeed)
+	public ThreadsView(IGUIManager aGUIManager)
 	{
-		super(aGUIManager, aLog);
-		itsSeed = aSeed;
-		
+		super(aGUIManager);
 		createUI();
 	}
 	
+	@Override
+	protected void connectSeed(ThreadsSeed aSeed)
+	{
+		connect(aSeed.pRangeStart(), itsDock.pStart());
+		connect(aSeed.pRangeEnd(), itsDock.pEnd());
+		
+		itsTimer.start();
+		update();
+	}
+
+	@Override
+	protected void disconnectSeed(ThreadsSeed aSeed)
+	{
+		itsTimer.stop();
+
+		disconnect(aSeed.pRangeStart(), itsDock.pStart());
+		disconnect(aSeed.pRangeEnd(), itsDock.pEnd());
+	}
+
 	private void createUI()
 	{
 		itsDock = new SequenceViewsDock(getGUIManager());
@@ -97,8 +101,6 @@ public class ThreadsView extends LogView
 		add (itsEventsCountLabel, BorderLayout.NORTH);
 		add (itsDock, BorderLayout.CENTER);
 		
-		update();
-		
 		itsTimer = new Timer(1000, new ActionListener()
 						{
 							public void actionPerformed(ActionEvent aE)
@@ -106,19 +108,9 @@ public class ThreadsView extends LogView
 								update();
 							}
 						});
-		itsTimer.start();
 		
-		PropertyUtils.connect(itsSeed.pRangeStart(), itsDock.pStart(), true);
-		PropertyUtils.connect(itsSeed.pRangeEnd(), itsDock.pEnd(), true);
 	}
 	
-	@Override
-	public void removeNotify()
-	{
-		super.removeNotify();
-		itsTimer.stop();
-	}
-
 	private void update()
 	{
 		long theEventCount = getLogBrowser().getEventsCount();

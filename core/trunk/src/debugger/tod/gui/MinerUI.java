@@ -60,7 +60,6 @@ import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.SourceRange;
 import tod.core.session.ISession;
 import tod.core.session.ISessionMonitor;
-import tod.gui.IGUIManager.DialogType;
 import tod.gui.kit.Bus;
 import tod.gui.kit.BusOwnerPanel;
 import tod.gui.kit.IBusListener;
@@ -108,7 +107,7 @@ implements ILocationSelectionListener, IGUIManager
 	}
 	
 	
-	private LogViewBrowserNavigator itsNavigator = new LogViewBrowserNavigator()
+	private LogViewBrowserNavigator itsNavigator = new LogViewBrowserNavigator(this)
 	{
 		@Override
 		protected void viewChanged(LogView aTheView)
@@ -122,10 +121,7 @@ implements ILocationSelectionListener, IGUIManager
 		public boolean processMessage(ShowObjectHistoryMsg aMessage)
 		{
 			ObjectId theObject = aMessage.getObjectId();
-			ObjectHistorySeed theSeed = new ObjectHistorySeed(
-					MinerUI.this, 
-					getLogBrowser(), 
-					theObject);
+			ObjectHistorySeed theSeed = new ObjectHistorySeed(getLogBrowser(), theObject);
 			
 			openSeed(theSeed, false);
 			return true;
@@ -136,10 +132,7 @@ implements ILocationSelectionListener, IGUIManager
 	{
 		public boolean processMessage(ShowCFlowMsg aMessage)
 		{
-			CFlowSeed theSeed = new CFlowSeed(
-					MinerUI.this, 
-					getLogBrowser(),
-					aMessage.getEvent());
+			CFlowSeed theSeed = new CFlowSeed(getLogBrowser(), aMessage.getEvent());
 			
 			openSeed(theSeed, false);
 			return true;
@@ -170,6 +163,8 @@ implements ILocationSelectionListener, IGUIManager
 	private ActionToolbar itsToolbar;
 
 	private ActionCombo itsActionCombo;
+	
+	private LogView itsCurrentView;
 	
 	public MinerUI()
 	{
@@ -251,6 +246,7 @@ implements ILocationSelectionListener, IGUIManager
 	{
 		itsBookmarkPanel.setView(aView);
 		itsGUISettings.save();
+		itsCurrentView = aView;
 	}
 		
 	private JComponent createToolbar()
@@ -306,7 +302,6 @@ implements ILocationSelectionListener, IGUIManager
 				ILogBrowser theLogBrowser = getSession().getLogBrowser();
 				
 				FilterSeed theSeed = new FilterSeed(
-						MinerUI.this,
 						theLogBrowser,
 						"All exceptions",
 						theLogBrowser.createExceptionGeneratedFilter());
@@ -327,9 +322,7 @@ implements ILocationSelectionListener, IGUIManager
 			{
 				ILogBrowser theLogBrowser = getSession().getLogBrowser();
 				
-				StringSearchSeed theSeed = new StringSearchSeed(
-						MinerUI.this,
-						theLogBrowser);
+				StringSearchSeed theSeed = new StringSearchSeed(theLogBrowser);
 				
 				openSeed(theSeed, false);			
 			}
@@ -350,11 +343,7 @@ implements ILocationSelectionListener, IGUIManager
 				{
 					ILogBrowser theLogBrowser = getSession().getLogBrowser();
 					
-					FilterSeed theSeed = new FilterSeed(
-							MinerUI.this, 
-							theLogBrowser,
-							"All events",
-							null);
+					FilterSeed theSeed = new FilterSeed(theLogBrowser, "All events", null);
 					
 					openSeed(theSeed, false);			
 				}
@@ -371,7 +360,7 @@ implements ILocationSelectionListener, IGUIManager
 			public void actionPerformed(ActionEvent aE)
 			{
 				ILogBrowser theLogBrowser = getSession().getLogBrowser();
-				StructureSeed theSeed = new StructureSeed(MinerUI.this, theLogBrowser);
+				StructureSeed theSeed = new StructureSeed(theLogBrowser);
 				openSeed(theSeed, false);			
 			}
 			
@@ -387,7 +376,7 @@ implements ILocationSelectionListener, IGUIManager
 			public void actionPerformed(ActionEvent aE)
 			{
 				ILogBrowser theLogBrowser = getSession().getLogBrowser();
-				FormattersSeed theSeed = new FormattersSeed(MinerUI.this, theLogBrowser);
+				FormattersSeed theSeed = new FormattersSeed(theLogBrowser);
 				openSeed(theSeed, false);			
 			}
 			
@@ -402,7 +391,7 @@ implements ILocationSelectionListener, IGUIManager
 			public void actionPerformed(ActionEvent aE)
 			{
 				ILogBrowser theLogBrowser = getSession().getLogBrowser();
-				LogViewSeed theSeed = new DynamicCrosscuttingSeed(MinerUI.this, theLogBrowser);
+				LogViewSeed theSeed = new DynamicCrosscuttingSeed(theLogBrowser);
 				openSeed(theSeed, false);			
 			}
 		});
@@ -468,7 +457,7 @@ implements ILocationSelectionListener, IGUIManager
 	
 	protected void showThreads()
 	{
-		if (itsSession != null) openSeed(new ThreadsSeed(this, itsSession.getLogBrowser()), false);
+		if (itsSession != null) openSeed(new ThreadsSeed(itsSession.getLogBrowser()), false);
 		else openSeed(null, false);
 	}
 
@@ -479,7 +468,7 @@ implements ILocationSelectionListener, IGUIManager
 		if (aSelectedLocations.size() == 1)
 		{
 			ILocationInfo theInfo = (ILocationInfo) aSelectedLocations.get(0);
-			theSeed = LogViewSeedFactory.getDefaultSeed(this, getSession().getLogBrowser(), theInfo);
+			theSeed = LogViewSeedFactory.getDefaultSeed(getSession().getLogBrowser(), theInfo);
 		}
 
 		openSeed(theSeed, false);
@@ -511,7 +500,6 @@ implements ILocationSelectionListener, IGUIManager
 			}
 			TODUtils.logf(0,"Trying to show events for filter %s",theFilter.getClass());
 			LogViewSeed theSeed = new FilterSeed(
-					this, 
 					theLogBrowser, 
 					"Events on line "+aLine+" of "+aBehavior.getName(),
 					theFilter);
@@ -526,15 +514,7 @@ implements ILocationSelectionListener, IGUIManager
 	 */
 	private IEventListView getEventListView()
 	{
-		LogViewSeed theCurrentSeed = itsNavigator.getCurrentSeed();
-		if (theCurrentSeed == null) return null;
-		
-		LogView theCurrentView = theCurrentSeed.getComponent();
-		if (theCurrentView instanceof IEventListView)
-		{
-			IEventListView theView = (IEventListView) theCurrentView;
-			return theView;
-		}
+		if (itsCurrentView instanceof IEventListView) return (IEventListView) itsCurrentView;
 		else return null;
 	}
 	

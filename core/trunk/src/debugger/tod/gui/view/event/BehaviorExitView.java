@@ -32,7 +32,6 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.gui.view.event;
 
 import tod.Util;
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.structure.IBehaviorInfo;
@@ -49,13 +48,13 @@ public class BehaviorExitView extends EventView
 	
 	public BehaviorExitView(
 			IGUIManager aManager, 
-			ILogBrowser aLog, 
 			IBehaviorExitEvent aEvent)
 	{
-		super(aManager, aLog);
+		super(aManager);
 		itsEvent = aEvent;
 	}
 	
+	@Override
 	protected IBehaviorExitEvent getEvent()
 	{
 		return itsEvent;

@@ -31,6 +31,8 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui;
 
+import java.lang.reflect.Constructor;
+
 import javax.swing.JPanel;
 
 import tod.gui.seed.LogViewSeed;
@@ -43,10 +45,13 @@ import zz.utils.ui.StackLayout;
  */
 public class LogViewBrowserNavigator extends BrowserNavigator<LogViewSeed>
 {
+	private final IGUIManager itsGUIManager;
 	private JPanel itsViewContainer;
+	private LogView itsCurrentView;
 	
-	public LogViewBrowserNavigator()
+	public LogViewBrowserNavigator(IGUIManager aGUIManager)
 	{
+		itsGUIManager = aGUIManager;
 		itsViewContainer = new JPanel(new StackLayout());
 	}
 
@@ -57,38 +62,36 @@ public class LogViewBrowserNavigator extends BrowserNavigator<LogViewSeed>
 
 	protected void setSeed (LogViewSeed aSeed)
 	{
-		if (getCurrentSeed() != null) 
+		LogView thePreviousView = itsCurrentView;
+		
+		try
 		{
-			try
+			if (itsCurrentView != null && aSeed != null && ! itsCurrentView.getClass().equals(aSeed.getComponentClass()))
 			{
-				LogView theComponent = getCurrentSeed().getComponent();
-				if (theComponent != null) itsViewContainer.remove(theComponent);
-				getCurrentSeed().deactivate();
+				// Keep current view
+				itsViewContainer.remove(itsCurrentView);
+				itsCurrentView = null;
 			}
-			catch (Exception e)
+			
+			if (itsCurrentView == null && aSeed != null)
 			{
-				e.printStackTrace();
+				Class<? extends LogView> theClass = aSeed.getComponentClass();
+				Constructor<? extends LogView> theConstructor = theClass.getConstructor(IGUIManager.class);
+				itsCurrentView = theConstructor.newInstance(itsGUIManager);
+				itsCurrentView.init();
+				itsViewContainer.add(itsCurrentView);
 			}
+			
+			if (itsCurrentView != null) itsCurrentView.setSeed(aSeed);
 		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		if (itsCurrentView != thePreviousView) viewChanged(itsCurrentView);
 		
 		super.setSeed(aSeed);
-		
-		if (getCurrentSeed() != null) 
-		{
-			try
-			{
-				getCurrentSeed().activate();
-				LogView theComponent = getCurrentSeed().getComponent();
-				assert itsViewContainer.getComponentCount() == 0;
-				itsViewContainer.add(theComponent);
-				viewChanged(theComponent);
-			}
-			catch (Exception e)
-			{
-				e.printStackTrace();
-			}
-		}
-		else viewChanged(null);
 		
 		itsViewContainer.revalidate();
 		itsViewContainer.repaint();

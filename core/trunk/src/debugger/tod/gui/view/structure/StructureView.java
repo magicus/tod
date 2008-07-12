@@ -36,7 +36,6 @@ import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.gui.IGUIManager;
@@ -47,18 +46,15 @@ import tod.gui.view.LogView;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.PropertyListener;
-import zz.utils.properties.PropertyUtils;
-import zz.utils.properties.PropertyUtils.Connector;
 import zz.utils.ui.StackLayout;
 
 /**
  * Provides access to the structural database.
  * @author gpothier
  */
-public class StructureView extends LogView
+public class StructureView extends LogView<StructureSeed>
 {
 	private static final String PROPERTY_SPLITTER_POS = "structureView.splitterPos";
-	private final StructureSeed itsSeed;
 	private JPanel itsInfoHolder;
 	private LocationSelectorPanel itsSelectorPanel;
 	
@@ -70,17 +66,25 @@ public class StructureView extends LogView
 		}
 	};
 	
-	public StructureView(IGUIManager aGUIManager, ILogBrowser aLog, StructureSeed aSeed)
+	public StructureView(IGUIManager aGUIManager)
 	{
-		super(aGUIManager, aLog);
-		itsSeed = aSeed;
+		super(aGUIManager);
 	}
-	
-	public StructureSeed getSeed()
+
+	@Override
+	protected void connectSeed(StructureSeed aSeed)
 	{
-		return itsSeed;
+		aSeed.pSelectedLocation().addHardListener(itsSelectedLocationListener);
+		connect(aSeed.pSelectedLocation(), itsSelectorPanel.pSelectedLocation());
 	}
-	
+
+	@Override
+	protected void disconnectSeed(StructureSeed aSeed)
+	{
+		aSeed.pSelectedLocation().removeListener(itsSelectedLocationListener);
+		disconnect(aSeed.pSelectedLocation(), itsSelectorPanel.pSelectedLocation());
+	}
+
 	@Override
 	public void init()
 	{
@@ -95,21 +99,6 @@ public class StructureView extends LogView
 		setLayout(new StackLayout());
 		add(theSplitPane);
 		
-		connect(getSeed().pSelectedLocation(), itsSelectorPanel.pSelectedLocation(), true);
-	}
-	
-	@Override
-	public void addNotify()
-	{
-		super.addNotify();
-		getSeed().pSelectedLocation().addHardListener(itsSelectedLocationListener);
-	}
-	
-	@Override
-	public void removeNotify()
-	{
-		super.removeNotify();
-		getSeed().pSelectedLocation().removeListener(itsSelectedLocationListener);
 	}
 	
 	/**

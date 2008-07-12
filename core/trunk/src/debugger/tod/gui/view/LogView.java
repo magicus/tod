@@ -33,6 +33,7 @@ package tod.gui.view;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JComponent;
@@ -46,17 +47,18 @@ import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
 import tod.gui.JobProcessor;
+import tod.gui.SeedHyperlink;
 import tod.gui.formatter.EventFormatter;
 import tod.gui.formatter.ObjectFormatter;
 import tod.gui.kit.BusOwnerPanel;
 import tod.gui.kit.IOptionsOwner;
 import tod.gui.kit.Options;
-import tod.gui.kit.SeedLinkLabel;
 import tod.gui.seed.LogViewSeed;
 import tod.gui.seed.ObjectHistorySeed;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.ISetProperty;
 import zz.utils.properties.PropertyUtils;
+import zz.utils.properties.PropertyUtils.Connector;
 import zz.utils.ui.ZLabel;
 
 /**
@@ -64,10 +66,9 @@ import zz.utils.ui.ZLabel;
  * @see tod.gui.seed.LogViewSeed
  * @author gpothier
  */
-public abstract class LogView extends BusOwnerPanel
+public abstract class LogView<T extends LogViewSeed> extends BusOwnerPanel
 implements IOptionsOwner
 {
-	private final ILogBrowser itsLog;
 	private final IGUIManager itsGUIManager;
 	
 	private List<PropertyUtils.Connector> itsConnectors; 
@@ -77,14 +78,70 @@ implements IOptionsOwner
 	
 	private Options itsOptions;
 	
-	public LogView(IGUIManager aGUIManager, ILogBrowser aLog)
+	private T itsSeed;
+	
+	/**
+	 * This flag indicates that this component has been added to a visible hierarchy.
+	 */
+	private boolean itsAdded = false;
+	
+	/**
+	 * This flag indicates that the seed is connected.
+	 */
+	private boolean itsSeedConnected = false;
+	
+	public LogView(IGUIManager aGUIManager)
 	{
 		itsGUIManager = aGUIManager;
 		itsOptions = new Options(itsGUIManager.getSettings(), getOptionsName(), itsGUIManager.getSettings().getOptions());
 		initOptions(itsOptions);
-		itsLog = aLog;
-		itsObjectFormatter = new ObjectFormatter(itsLog);
-		itsEventFormatter = new EventFormatter(itsLog);
+	}
+	
+	/**
+	 * Sets the seed displayed by this view.
+	 */
+	public final void setSeed(T aSeed)
+	{
+		if (itsSeedConnected && itsSeed != null) 
+		{
+			disconnectSeed(itsSeed);
+			itsSeedConnected = false;
+		}
+		
+		itsSeed = aSeed;
+		itsObjectFormatter = itsSeed != null ? new ObjectFormatter(itsSeed.getLogBrowser()) : null;
+		itsEventFormatter = itsSeed != null ? new EventFormatter(itsSeed.getLogBrowser()) : null;
+		
+		if (itsAdded && itsSeed != null)
+		{
+			connectSeed(itsSeed);
+			itsSeedConnected = true;
+		}
+	}
+	
+	public T getSeed()
+	{
+		return itsSeed;
+	}
+	
+	/**
+	 * Connects the UI elements of this view to the properties of the seed.
+	 * This method is called automatically by {@link LogView} as needed, ie.
+	 * when the seed is changed and when the component appears on screen.
+	 * This is a pseudo-abstract method, that does nothing by default. 
+	 */
+	protected void connectSeed(T aSeed)
+	{
+	}
+	
+	/**
+	 * Disonnects the UI elements of this view to the properties of the seed.
+	 * This method is called automatically by {@link LogView} as needed, ie.
+	 * when the seed is changed and when the component disappears from screen.
+	 * This is a pseudo-abstract method, that does nothing by default. 
+	 */
+	protected void disconnectSeed(T aSeed)
+	{
 	}
 	
 	/**
@@ -110,17 +167,25 @@ implements IOptionsOwner
 	@Override
 	public void addNotify()
 	{
+		if (! itsSeedConnected && itsSeed != null)
+		{
+			connectSeed(itsSeed);
+			itsSeedConnected = true;
+		}
+		itsAdded = true;
 		super.addNotify();
-		if (itsConnectors != null) 
-			for (PropertyUtils.Connector theConnector : itsConnectors) theConnector.connect();
 	}
 	
 	@Override
 	public void removeNotify()
 	{
 		super.removeNotify();
-		if (itsConnectors != null) 
-			for (PropertyUtils.Connector theConnector : itsConnectors) theConnector.disconnect();
+		if (itsSeedConnected && itsSeed != null)
+		{
+			disconnectSeed(itsSeed);
+			itsSeedConnected = false;
+		}
+		itsAdded = false;
 	}
 	
 	@Override
@@ -130,16 +195,35 @@ implements IOptionsOwner
 	}
 	
 	/**
-	 * Prepares a connection between two properties. 
-	 * The connection is effective only once this component is shown. 
-	 * The connection is removed when this component is hidden.
+	 * Sets up a bidirectional connection between two properties
 	 * @see PropertyUtils.Connector
 	 */
-	protected <T> void connect (IRWProperty<T> aSource, IRWProperty<T> aTarget, boolean aSymmetric)
+	protected <V> void connect (IRWProperty<V> aSource, IRWProperty<V> aTarget)
 	{
 		if (itsConnectors == null) itsConnectors = new ArrayList<PropertyUtils.Connector>(); 
-		PropertyUtils.SimpleValueConnector<T> theConnector = new PropertyUtils.SimpleValueConnector<T>(aSource, aTarget, aSymmetric, true);
+		PropertyUtils.SimpleValueConnector<V> theConnector = new PropertyUtils.SimpleValueConnector<V>(
+				aSource, 
+				aTarget, 
+				true, 
+				true);
+		
 		itsConnectors.add (theConnector);
+		theConnector.connect();
+	}
+	
+	protected <V> void disconnect (IRWProperty<V> aSource, IRWProperty<V> aTarget)
+	{
+		if (itsConnectors != null) for (Iterator<Connector> theIterator = itsConnectors.iterator(); theIterator.hasNext();)
+		{
+			Connector theConnector = theIterator.next();
+			if (theConnector.getSourceProperty() == aSource && theConnector.getTargetProperty() == aTarget)
+			{
+				theIterator.remove();
+				theConnector.disconnect();
+				return;
+			}
+		}
+		throw new RuntimeException("Properties were not connected");
 	}
 	
 	/**
@@ -157,7 +241,7 @@ implements IOptionsOwner
 	
 	public ILogBrowser getLogBrowser()
 	{
-		return itsLog;
+		return getGUIManager().getSession().getLogBrowser();
 	}
 	
 	public IGUIManager getGUIManager()
@@ -211,7 +295,7 @@ implements IOptionsOwner
 	 */
 	protected JComponent createTitledLink (String aTitle, String aLinkName, LogViewSeed aSeed)
 	{
-		return createTitledPanel(aTitle, new SeedLinkLabel(aLinkName, aSeed));
+		return createTitledPanel(aTitle, SeedHyperlink.create(getGUIManager(), aSeed, aLinkName));
 	}
 	
 	/**
@@ -245,14 +329,12 @@ implements IOptionsOwner
 		{
 			ObjectId theObjectId = (ObjectId) aObject;
 			
-			ObjectHistorySeed theSeed = new ObjectHistorySeed(
-					getGUIManager(), 
-					getLogBrowser(), 
-					theObjectId);
+			ObjectHistorySeed theSeed = new ObjectHistorySeed(getLogBrowser(), theObjectId);
 			
-			return new SeedLinkLabel (
-					itsObjectFormatter.getPlainText(aObject), 
-					theSeed);
+			return SeedHyperlink.create(
+					getGUIManager(),
+					theSeed,
+					itsObjectFormatter.getPlainText(aObject)); 
 		}
 		else return new JLabel (itsObjectFormatter.getPlainText(aObject));
 	}

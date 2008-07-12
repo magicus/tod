@@ -32,7 +32,6 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.gui.seed;
 
 import tod.core.database.browser.ILogBrowser;
-import tod.gui.IGUIManager;
 import tod.gui.view.LogView;
 import tod.gui.view.StringSearchView;
 import zz.utils.properties.IRWProperty;
@@ -42,9 +41,9 @@ public class StringSearchSeed extends LogViewSeed
 {
 	private IRWProperty<String> pText = new SimpleRWProperty<String>();
 	
-	public StringSearchSeed(IGUIManager aGUIManager, ILogBrowser aLog)
+	public StringSearchSeed(ILogBrowser aLog)
 	{
-		super(aGUIManager, aLog);
+		super(aLog);
 	}
 
 	public IRWProperty<String> pText()
@@ -53,8 +52,8 @@ public class StringSearchSeed extends LogViewSeed
 	}
 
 	@Override
-	protected LogView requestComponent()
+	public Class< ? extends LogView> getComponentClass()
 	{
-		return new StringSearchView(getGUIManager(), getLogBrowser(), this);
+		return StringSearchView.class;
 	}
 }

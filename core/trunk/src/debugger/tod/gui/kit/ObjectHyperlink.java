@@ -31,13 +31,17 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.kit;
 
+import java.awt.Color;
+
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.gui.IGUIManager;
 import tod.gui.JobProcessor;
+import tod.gui.SeedHyperlink;
 import tod.gui.JobProcessor.IJobListener;
 import tod.gui.JobProcessor.Job;
-import tod.gui.seed.Seed;
+import tod.gui.seed.LogViewSeed;
 import zz.utils.ui.text.XFont;
 
 /**
@@ -46,19 +50,20 @@ import zz.utils.ui.text.XFont;
  * {@link JobProcessor}.
  * @author gpothier
  */
-public class ObjectHyperlink extends SeedLinkLabel
+public class ObjectHyperlink extends SeedHyperlink
 implements IJobListener<ITypeInfo>
 {
 	private final ObjectId itsObject;
 
 	public ObjectHyperlink(
-			Seed aSeed,
+			IGUIManager aGUIManager,
+			LogViewSeed aSeed,
 			final ILogBrowser aLogBrowser,
 			JobProcessor aJobProcessor,
 			ObjectId aObject, 
 			XFont aFont)
 	{
-		super("... (" + aObject + ")", aSeed);
+		super(aGUIManager, aSeed, "... (" + aObject + ")", XFont.DEFAULT_XUNDERLINED, Color.BLUE);
 		itsObject = aObject;
 		
 		Job<ITypeInfo> theJob = new Job<ITypeInfo>()

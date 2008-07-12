@@ -37,7 +37,6 @@ import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
 import tod.core.database.structure.IThreadInfo;
-import tod.gui.IGUIManager;
 import tod.gui.view.LogView;
 import tod.gui.view.controlflow.CFlowView;
 import zz.utils.properties.IRWProperty;
@@ -48,6 +47,7 @@ import zz.utils.properties.SimpleRWProperty;
  * @author gpothier
  */
 public class CFlowSeed extends LogViewSeed
+implements IEventSeed
 {
 	private IThreadInfo itsThread;
 	
@@ -63,19 +63,16 @@ public class CFlowSeed extends LogViewSeed
 	
 	private IRWProperty<IParentEvent> pRootEvent = new SimpleRWProperty<IParentEvent>(this);
 	
-	public CFlowSeed(
-			IGUIManager aGUIManager, 
-			ILogBrowser aLog, 
-			ILogEvent aSelectedEvent)
+	public CFlowSeed(ILogBrowser aLog, ILogEvent aSelectedEvent)
 	{
-		this(aGUIManager, aLog, aSelectedEvent.getThread());
+		this(aLog, aSelectedEvent.getThread());
 		pSelectedEvent().set(aSelectedEvent);
 	}
 
 	
-	public CFlowSeed(IGUIManager aGUIManager, ILogBrowser aLog, IThreadInfo aThread)
+	public CFlowSeed(ILogBrowser aLog, IThreadInfo aThread)
 	{
-		super(aGUIManager, aLog);
+		super(aLog);
 		itsThread = aThread;
 
 		IParentEvent theRoot = aLog.getCFlowRoot(aThread);
@@ -88,12 +85,10 @@ public class CFlowSeed extends LogViewSeed
 		}
 	}
 
-
-	protected LogView requestComponent()
+	@Override
+	public Class< ? extends LogView> getComponentClass()
 	{
-		CFlowView theView = new CFlowView(getGUIManager(), getLogBrowser(), this);
-		theView.init();
-		return theView;
+		return CFlowView.class;
 	}
 	
 	public IThreadInfo getThread()
@@ -117,4 +112,12 @@ public class CFlowSeed extends LogViewSeed
 	{
 		return pRootEvent;
 	}
+
+
+	public ILogEvent getEvent()
+	{
+		return pSelectedEvent.get();
+	}
+	
+	
 }

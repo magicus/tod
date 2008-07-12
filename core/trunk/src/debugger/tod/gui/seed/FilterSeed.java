@@ -36,9 +36,7 @@ import java.awt.Color;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
-import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.gui.FontConfig;
-import tod.gui.IGUIManager;
 import tod.gui.kit.html.HtmlDoc;
 import tod.gui.view.FilterView;
 import tod.gui.view.LogView;
@@ -67,34 +65,27 @@ public class FilterSeed extends LogViewSeed/*<FilterView>*/
 
 	
 	public FilterSeed(
-			IGUIManager aGUIManager, 
 			ILogBrowser aLog, 
 			String aTitle,
 			IEventFilter aBaseFilter)
 	{
-		this(
-				aGUIManager, 
-				aLog,
-				HtmlDoc.create("<b>"+aTitle+"</b>", FontConfig.BIG, Color.BLACK),
-				aBaseFilter);
+		this(aLog, HtmlDoc.create("<b>"+aTitle+"</b>", FontConfig.BIG, Color.BLACK), aBaseFilter);
 	}
 	
 	public FilterSeed(
-			IGUIManager aGUIManager, 
 			ILogBrowser aLog, 
 			HtmlDoc aTitle,
 			IEventFilter aBaseFilter)
 	{
-		super(aGUIManager, aLog);
+		super(aLog);
 		itsTitle = aTitle;
 		itsBaseFilter = aBaseFilter;
 	}
 	
-	protected LogView requestComponent()
+	@Override
+	public Class< ? extends LogView> getComponentClass()
 	{
-		FilterView theView = new FilterView (getGUIManager(), getLogBrowser(), this);
-		theView.init();
-		return theView;
+		return FilterView.class;
 	}
 	
 	public long getTimestamp()

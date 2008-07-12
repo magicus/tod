@@ -43,17 +43,19 @@ public class FieldWriteEventView extends EventView
 {
 	private IFieldWriteEvent itsEvent;
 	
-	public FieldWriteEventView(IGUIManager aManager, ILogBrowser aLog, IFieldWriteEvent aEvent)
+	public FieldWriteEventView(IGUIManager aManager, IFieldWriteEvent aEvent)
 	{
-		super(aManager, aLog);
+		super(aManager);
 		itsEvent = aEvent;
 	}
 	
+	@Override
 	protected ILogEvent getEvent()
 	{
 		return itsEvent;
 	}
 	
+	@Override
 	public void init()
 	{
 		super.init();

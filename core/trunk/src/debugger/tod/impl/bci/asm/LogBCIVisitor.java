@@ -189,6 +189,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 	public void visitSource(String aSource, String aDebug)
 	{
 		itsClassInfo.setSourceFile(aSource);
+		super.visitSource(aSource, aDebug);
 	}
 	
 	public IMutableClassInfo getClassInfo()

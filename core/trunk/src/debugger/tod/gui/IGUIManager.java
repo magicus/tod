@@ -33,6 +33,7 @@ package tod.gui;
 
 import tod.core.IBookmarks;
 import tod.core.database.browser.IEventFilter;
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.SourceRange;
 import tod.core.session.ISession;

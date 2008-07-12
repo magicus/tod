@@ -131,8 +131,6 @@ public class WatchPanel extends BusPanel
 		itsScrollPane = new JScrollPane();
 		itsScrollPane.getViewport().setBackground(Color.WHITE);
 		add(itsScrollPane, BorderLayout.CENTER);
-		
-		showStackFrame();
 	}
 	
 	@Override

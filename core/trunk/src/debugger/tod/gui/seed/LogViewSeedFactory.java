@@ -37,7 +37,6 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ITypeInfo;
-import tod.gui.IGUIManager;
 
 /**
  * A factory of {@link LogViewSeed}s.
@@ -47,12 +46,11 @@ import tod.gui.IGUIManager;
 public class LogViewSeedFactory 
 {
 	private static LogViewSeed createSeed(
-			IGUIManager aGUIManager,
 			ILogBrowser aLog,
 			String aTitle,
 			IEventFilter aFilter)
 	{
-		return new FilterSeed(aGUIManager, aLog, aTitle, aFilter);
+		return new FilterSeed(aLog, aTitle, aFilter);
 	}
 	
 	/**
@@ -60,7 +58,6 @@ public class LogViewSeedFactory
 	 * the specified location info.
 	 */
 	public static LogViewSeed getDefaultSeed(
-			IGUIManager aGUIManager,
 			ILogBrowser aLog,
 			ILocationInfo aInfo)
 	{
@@ -68,7 +65,6 @@ public class LogViewSeedFactory
 		{
 			ITypeInfo theTypeInfo = (ITypeInfo) aInfo;
 			return createSeed(
-					aGUIManager, 
 					aLog,
 					"Instantiations of "+theTypeInfo.getName(),
 					aLog.createInstantiationsFilter(theTypeInfo));
@@ -77,7 +73,6 @@ public class LogViewSeedFactory
 		{
 			IBehaviorInfo theBehaviourInfo = (IBehaviorInfo) aInfo;
 			return createSeed(
-					aGUIManager, 
 					aLog, 
 					"Calls of "+theBehaviourInfo.getName(),
 					aLog.createBehaviorCallFilter(theBehaviourInfo));
@@ -87,7 +82,6 @@ public class LogViewSeedFactory
 			IFieldInfo theFieldInfo = (IFieldInfo) aInfo;
 
 			return createSeed(
-					aGUIManager, 
 					aLog, 
 					"Assignments of "+theFieldInfo.getName(),
 					aLog.createFieldFilter(theFieldInfo));

@@ -32,7 +32,6 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.gui.seed;
 
 import tod.core.database.browser.ILogBrowser;
-import tod.gui.IGUIManager;
 import tod.gui.view.LogView;
 
 /**
@@ -44,13 +43,14 @@ public class ObjectSimulationSeed extends LogViewSeed
 {
 	private Object itsObject;
 	
-	public ObjectSimulationSeed(IGUIManager aGUIManager, ILogBrowser aLog, Object aObject)
+	public ObjectSimulationSeed(ILogBrowser aLog, Object aObject)
 	{
-		super(aGUIManager, aLog);
+		super(aLog);
 		itsObject = aObject;
 	}
 
-	protected LogView requestComponent()
+	@Override
+	public Class< ? extends LogView> getComponentClass()
 	{
 		return null;
 	}

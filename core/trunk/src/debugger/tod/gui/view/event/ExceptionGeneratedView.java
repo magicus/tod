@@ -31,7 +31,6 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.view.event;
 
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IExceptionGeneratedEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.gui.IGUIManager;
@@ -42,15 +41,13 @@ public class ExceptionGeneratedView extends EventView
 {
 	private IExceptionGeneratedEvent itsEvent;
 	
-	public ExceptionGeneratedView(
-			IGUIManager aManager, 
-			ILogBrowser aLog, 
-			IExceptionGeneratedEvent aEvent)
+	public ExceptionGeneratedView(IGUIManager aManager, IExceptionGeneratedEvent aEvent)
 	{
-		super(aManager, aLog);
+		super(aManager);
 		itsEvent = aEvent;
 	}
 	
+	@Override
 	protected IExceptionGeneratedEvent getEvent()
 	{
 		return itsEvent;
@@ -70,11 +67,7 @@ public class ExceptionGeneratedView extends EventView
 		IBehaviorInfo theBehavior = theEvent.getOperationBehavior();
 		String theBehaviorName = theBehavior != null ? theBehavior.getName() : "<unknown>";
 		
-		LogViewSeed theSeed = LogViewSeedFactory.getDefaultSeed(
-				getGUIManager(), 
-				getLogBrowser(), 
-				theBehavior);
-		
+		LogViewSeed theSeed = LogViewSeedFactory.getDefaultSeed(getLogBrowser(), theBehavior);
 		add (createTitledLink("Occured in: ", theBehaviorName, theSeed));
 	}
 

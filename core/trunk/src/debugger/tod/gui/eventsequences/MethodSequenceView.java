@@ -84,8 +84,8 @@ public class MethodSequenceView extends AbstractMemberSequenceView
 		JPanel theContainer = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
 		// Create hyperlink to call event
-		CFlowSeed theSeed = new CFlowSeed(getGUIManager(), getLogBrowser(), aEvent);
-		SeedHyperlink theHyperlink = SeedHyperlink.create(theSeed, "call", 10, Color.BLUE);
+		CFlowSeed theSeed = new CFlowSeed(getLogBrowser(), aEvent);
+		SeedHyperlink theHyperlink = SeedHyperlink.create(getGUIManager(), theSeed, "call");
 		theContainer.add (theHyperlink);
 		
 		// Open parenthesis

@@ -78,8 +78,8 @@ public class FieldSequenceView extends AbstractMemberSequenceView
 		JPanel theContainer = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
 		// Create hyperlink to call event
-		CFlowSeed theSeed = new CFlowSeed(getGUIManager(), getLogBrowser(), aEvent);
-		SeedHyperlink theHyperlink = SeedHyperlink.create(theSeed, "set", 10, Color.BLUE);
+		CFlowSeed theSeed = new CFlowSeed(getLogBrowser(), aEvent);
+		SeedHyperlink theHyperlink = SeedHyperlink.create(getGUIManager(), theSeed, "set");
 		theContainer.add (theHyperlink);
 		
 		// Colon

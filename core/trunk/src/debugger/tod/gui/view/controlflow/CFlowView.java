@@ -44,7 +44,6 @@ import javax.swing.JSplitPane;
 
 import tod.core.config.TODConfig;
 import tod.core.database.browser.IEventBrowser;
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.LocationUtils;
 import tod.core.database.browser.Stepper;
 import tod.core.database.event.ILogEvent;
@@ -61,7 +60,6 @@ import tod.gui.components.BookmarksMural;
 import tod.gui.components.intimacyeditor.IntimacyEditorButton;
 import tod.gui.eventlist.EventListPanel;
 import tod.gui.eventlist.IntimacyLevel;
-import tod.gui.formatter.EventFormatter;
 import tod.gui.kit.Bus;
 import tod.gui.kit.IBusListener;
 import tod.gui.kit.Options;
@@ -85,13 +83,11 @@ import zz.utils.properties.SimplePropertyListener;
 import zz.utils.ui.UIUtils;
 import zz.utils.ui.ZLabel;
 
-public class CFlowView extends LogView implements IEventListView
+public class CFlowView extends LogView<CFlowSeed> implements IEventListView
 {
 	public static final boolean SHOW_PARENT_FRAMES = false;
 	private static final String PROPERTY_SPLITTER_POS = "cflowView.splitterPos";
 
-	private CFlowSeed itsSeed;
-	private EventFormatter itsFormatter;
 	private Stepper itsStepper;
 	
 	private CFlowTree itsCFlowTree;
@@ -157,23 +153,28 @@ public class CFlowView extends LogView implements IEventListView
 	};
 	
 
-	public CFlowView(IGUIManager aGUIManager, ILogBrowser aLogBrowser, CFlowSeed aSeed)
+	public CFlowView(IGUIManager aGUIManager)
 	{
-		super (aGUIManager, aLogBrowser);
-		itsSeed = aSeed;
-		itsFormatter = new EventFormatter(aLogBrowser);
-
-		itsStepper = new Stepper(getLogBrowser());
-	}
-	
-	public CFlowSeed getSeed()
-	{
-		return itsSeed;
+		super (aGUIManager);
 	}
 
-	public EventFormatter getFormatter()
+
+	@Override
+	protected void connectSeed(CFlowSeed aSeed)
 	{
-		return itsFormatter;
+		aSeed.pSelectedEvent().addHardListener(itsSelectedEventListener);
+		connect(aSeed.pSelectedEvent(), itsCFlowTree.pSelectedEvent());
+		aSeed.pRootEvent().addHardListener(itsRootEventListener);
+		update();
+		itsWatchPanel.showStackFrame();
+	}
+
+	@Override
+	protected void disconnectSeed(CFlowSeed aSeed)
+	{
+		aSeed.pSelectedEvent().removeListener(itsSelectedEventListener);
+		disconnect(aSeed.pSelectedEvent(), itsCFlowTree.pSelectedEvent());
+		aSeed.pRootEvent().removeListener(itsRootEventListener);
 	}
 
 	@Override
@@ -215,11 +216,13 @@ public class CFlowView extends LogView implements IEventListView
 		theSplitPane.setRightComponent(itsWatchPanel);
 		
 		add(theSplitPane, BorderLayout.CENTER);
+		
+		itsStepper = new Stepper(getLogBrowser());
 	}
 	
 	private void backwardStepOver() 
 	{
-		itsStepper.setCurrentEvent(itsSeed.pSelectedEvent().get());
+		itsStepper.setCurrentEvent(getSeed().pSelectedEvent().get());
 		itsStepper.backwardStepOver();
 		ILogEvent theEvent = itsStepper.getCurrentEvent();
 		if (theEvent != null) selectEvent(theEvent, SelectionMethod.BACKWARD_STEP_OVER);
@@ -228,7 +231,7 @@ public class CFlowView extends LogView implements IEventListView
 
 	private void backwardStepInto() 
 	{
-		itsStepper.setCurrentEvent(itsSeed.pSelectedEvent().get());
+		itsStepper.setCurrentEvent(getSeed().pSelectedEvent().get());
 		itsStepper.backwardStepInto();
 		ILogEvent theEvent = itsStepper.getCurrentEvent();
 		if (theEvent != null) selectEvent(theEvent, SelectionMethod.BACKWARD_STEP_INTO);
@@ -236,7 +239,7 @@ public class CFlowView extends LogView implements IEventListView
 	
 	private void stepOut() 
 	{
-		ILogEvent theSelectedEvent = itsSeed.pSelectedEvent().get();
+		ILogEvent theSelectedEvent = getSeed().pSelectedEvent().get();
 		if (theSelectedEvent != null)
 		{
 			itsStepper.setCurrentEvent(theSelectedEvent);
@@ -275,12 +278,12 @@ public class CFlowView extends LogView implements IEventListView
 	
 	private void forwardStepInto() 
 	{
-		forwardStepInto(itsSeed.pSelectedEvent().get());
+		forwardStepInto(getSeed().pSelectedEvent().get());
 	}
 
 	private void forwardStepOver() 
 	{
-		itsStepper.setCurrentEvent(itsSeed.pSelectedEvent().get());
+		itsStepper.setCurrentEvent(getSeed().pSelectedEvent().get());
 		itsStepper.forwardStepOver();
 		ILogEvent theEvent = itsStepper.getCurrentEvent();
 		if (theEvent != null) selectEvent(theEvent, SelectionMethod.FORWARD_STEP_OVER);
@@ -391,7 +394,7 @@ public class CFlowView extends LogView implements IEventListView
 		itsThreadLabel.revalidate();
 		itsThreadLabel.repaint();
 
-		ILogEvent theSelectedEvent = itsSeed.pSelectedEvent().get();
+		ILogEvent theSelectedEvent = getSeed().pSelectedEvent().get();
 		
 		if (theSelectedEvent != null)
 		{
@@ -421,10 +424,6 @@ public class CFlowView extends LogView implements IEventListView
 	@Override
 	public void addNotify()
 	{
-		itsSeed.pSelectedEvent().addHardListener(itsSelectedEventListener);
-		connect(itsSeed.pSelectedEvent(), itsCFlowTree.pSelectedEvent(), true);
-		itsSeed.pRootEvent().addHardListener(itsRootEventListener);
-		
 		Bus.get(this).subscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
 		Bus.get(this).subscribe(EventSelectedMsg.ID, itsEventSelectedListener);
 		
@@ -432,15 +431,12 @@ public class CFlowView extends LogView implements IEventListView
 		itsShowPackages.addHardListener(itsShowPackagesListener);
 		
 		super.addNotify();
-		update();
 	}
 	
 	@Override
 	public void removeNotify()
 	{
 		super.removeNotify();
-		itsSeed.pSelectedEvent().removeListener(itsSelectedEventListener);
-		itsSeed.pRootEvent().removeListener(itsRootEventListener);
 		
 		Bus.get(this).unsubscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
 		Bus.get(this).unsubscribe(EventSelectedMsg.ID, itsEventSelectedListener);
@@ -465,7 +461,7 @@ public class CFlowView extends LogView implements IEventListView
 	
 	public boolean isEventSelected(ILogEvent aEvent)
 	{
-		ILogEvent theSelectedEvent = itsSeed.pSelectedEvent().get();
+		ILogEvent theSelectedEvent = getSeed().pSelectedEvent().get();
 		return theSelectedEvent != null && theSelectedEvent.equals(aEvent);
 	}
 	

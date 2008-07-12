@@ -31,7 +31,6 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.view.event;
 
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.gui.IGUIManager;
 
@@ -44,18 +43,19 @@ public class VariableWriteEventView extends EventView
 	
 	public VariableWriteEventView(
 			IGUIManager aManager, 
-			ILogBrowser aLog, 
 			ILocalVariableWriteEvent aEvent)
 	{
-		super(aManager, aLog);
+		super(aManager);
 		itsEvent = aEvent;
 	}
 	
+	@Override
 	protected ILocalVariableWriteEvent getEvent()
 	{
 		return itsEvent;
 	}
 	
+	@Override
 	public void init()
 	{
 		super.init();

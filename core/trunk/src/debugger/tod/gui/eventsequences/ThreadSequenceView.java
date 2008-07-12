@@ -32,7 +32,6 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.gui.eventsequences;
 
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -116,7 +115,7 @@ public class ThreadSequenceView extends AbstractSingleBrowserSequenceView
 	
 	protected void showCFlow()
 	{
-		CFlowSeed theSeed = new CFlowSeed(getGUIManager(), getLogBrowser(), getThread());
+		CFlowSeed theSeed = new CFlowSeed(getLogBrowser(), getThread());
 		getGUIManager().openSeed(theSeed, false);
 	}
 	
@@ -154,7 +153,6 @@ public class ThreadSequenceView extends AbstractSingleBrowserSequenceView
 		{
 			IEventFilter theFilter = getLogBrowser().createThreadFilter(getThread());
 			FilterSeed theSeed = new FilterSeed(
-					getGUIManager(), 
 					getLogBrowser(), 
 					"All events of thread "+getThread().getName(),
 					theFilter);

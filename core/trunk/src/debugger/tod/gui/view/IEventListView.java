@@ -34,10 +34,12 @@ package tod.gui.view;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
+import tod.gui.seed.IEventSeed;
 
 /**
  * Interface for views that represent an event list in some form.
  * @author gpothier
+ * @deprecated Use {@link IEventSeed} instead
  */
 public interface IEventListView 
 {

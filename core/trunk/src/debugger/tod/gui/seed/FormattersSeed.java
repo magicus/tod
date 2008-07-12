@@ -32,7 +32,6 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.gui.seed;
 
 import tod.core.database.browser.ILogBrowser;
-import tod.gui.IGUIManager;
 import tod.gui.view.LogView;
 import tod.gui.view.formatters.FormattersView;
 import zz.utils.properties.IRWProperty;
@@ -46,17 +45,15 @@ public class FormattersSeed extends LogViewSeed
 {
 	private IRWProperty<String> pCurrentFormatter = new SimpleRWProperty<String>();
 
-	public FormattersSeed(IGUIManager aGUIManager, ILogBrowser aLog)
+	public FormattersSeed(ILogBrowser aLog)
 	{
-		super(aGUIManager, aLog);
+		super(aLog);
 	}
 
 	@Override
-	protected LogView requestComponent()
+	public Class< ? extends LogView> getComponentClass()
 	{
-		FormattersView theView = new FormattersView(getGUIManager(), getLogBrowser(), this);
-		theView.init();
-		return theView;
+		return FormattersView.class;
 	}
 
 	public IRWProperty<String> pCurrentFormatter()

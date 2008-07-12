@@ -32,7 +32,6 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.gui.view.event;
 
 import tod.Util;
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
@@ -48,13 +47,13 @@ public class BehaviorCallView extends EventView
 	
 	public BehaviorCallView(
 			IGUIManager aManager, 
-			ILogBrowser aLog, 
 			IBehaviorCallEvent aEvent)
 	{
-		super(aManager, aLog);
+		super(aManager);
 		itsEvent = aEvent;
 	}
 	
+	@Override
 	protected IBehaviorCallEvent getEvent()
 	{
 		return itsEvent;
