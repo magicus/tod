@@ -93,8 +93,8 @@ public class ReconstitutedObject
 		else if (theValue != null)
 		{
 			return Hyperlinks.object(
-					Hyperlinks.TEXT, 
 					itsGUIManager, 
+					Hyperlinks.TEXT, 
 					itsGUIManager != null ? itsGUIManager.getJobProcessor() : null,
 					null,
 					theValue,

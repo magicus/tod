@@ -62,12 +62,12 @@ public class NewArrayNode extends AbstractSimpleEventNode
 		}
 		
 		aBody.addText("new ");
-		aBody.add(Hyperlinks.type(Hyperlinks.HTML, itsEvent.getType().getElementType()));
+		aBody.add(Hyperlinks.type(getGUIManager(), Hyperlinks.HTML, itsEvent.getType().getElementType()));
 		aBody.addText("[" + itsEvent.getArraySize() + "] -> ");
 		
 		aBody.add(Hyperlinks.object(
-				Hyperlinks.HTML,
 				getGUIManager(),
+				Hyperlinks.HTML,
 				getJobProcessor(),
 				theCurrentObject, 
 				itsEvent.getInstance(), 

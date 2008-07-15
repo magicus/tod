@@ -37,6 +37,7 @@ import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
 import tod.core.database.structure.IThreadInfo;
+import tod.gui.formatter.EventFormatter;
 import tod.gui.view.LogView;
 import tod.gui.view.controlflow.CFlowView;
 import zz.utils.properties.IRWProperty;
@@ -131,7 +132,7 @@ implements IEventSeed
 	@Override
 	public String getShortDescription()
 	{
-		return getEvent().toString();
+		return EventFormatter.formatEvent(getLogBrowser(), getEvent());
 	}
 	
 	

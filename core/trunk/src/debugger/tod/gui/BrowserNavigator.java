@@ -33,11 +33,13 @@ package tod.gui;
 
 import java.awt.event.ActionEvent;
 import java.util.Collection;
+import java.util.Iterator;
 
 import javax.swing.Action;
 
 import zz.utils.ArrayStack;
 import zz.utils.ItemAction;
+import zz.utils.ReverseIteratorWrapper;
 
 /**
  * Implements the web browser-like navigation: backward and forward stack of
@@ -64,9 +66,15 @@ public class BrowserNavigator<S>
 		itsCurrentSeed = aSeed;
 	}
 	
-	public Collection<S> getBackwardSeeds()
+	public Iterable<S> getBackwardSeeds()
 	{
-		return itsBackwardSeeds;
+		return new Iterable<S>()
+		{
+			public Iterator<S> iterator()
+			{
+				return new ReverseIteratorWrapper<S>(itsBackwardSeeds);
+			}
+		};
 	}
 	
 	/**
@@ -81,6 +89,28 @@ public class BrowserNavigator<S>
 			setSeed(theSeed);
 			updateActions();
 		}
+	}
+	
+	/**
+	 * Jump backward to the specified seed. An exception is thrown if the seed is not in
+	 * the backward stack
+	 * @param aSeed
+	 */
+	public void backToSeed(S aSeed)
+	{
+		while(! itsBackwardSeeds.isEmpty())
+		{
+			S theSeed = itsBackwardSeeds.pop();
+			if (itsCurrentSeed != null) itsForwardSeeds.push(itsCurrentSeed);
+			itsCurrentSeed = theSeed;
+			if (itsCurrentSeed == aSeed)
+			{
+				setSeed(itsCurrentSeed);
+				updateActions();
+				return;
+			}
+		}
+		throw new RuntimeException("Seed not found: "+aSeed);
 	}
 
 	/**

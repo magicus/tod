@@ -47,7 +47,7 @@ import tod.core.database.structure.ILocationInfo;
 import zz.utils.AbstractFormatter;
 
 /**
- * Formatter for {@link tod.core.database.event.Event}
+ * Formatter for {@link ILogEvent}s
  * @author gpothier
  */
 public class EventFormatter extends AbstractFormatter<ILogEvent>
@@ -122,8 +122,10 @@ public class EventFormatter extends AbstractFormatter<ILogEvent>
 		{
 			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) aEvent;
 			
-            return "Variable written: "+theEvent.getVariable().getVariableName()
-            	+" value: "+formatObject(theEvent.getValue());
+			return String.format(
+					"%s = %s",
+					theEvent.getVariable().getVariableName(),
+					formatObject(theEvent.getValue()));
 		}
 		else if (aEvent instanceof IOutputEvent)
 		{
@@ -165,17 +167,24 @@ public class EventFormatter extends AbstractFormatter<ILogEvent>
 	private String formatArgs (Object[] aArguments)
 	{
 		StringBuffer theBuffer = new StringBuffer();
-		theBuffer.append("[");
 		
+		boolean theFirst = true;
 		if (aArguments != null) for (Object theArgument : aArguments)
 		{
+			if (! theFirst) theBuffer.append(", ");
+			else theFirst = false;
+			
 			theBuffer.append(formatObject(theArgument));
-			theBuffer.append(" ");
 		}
-		
-		theBuffer.append("]");
 		
 		return theBuffer.toString();
 	}
 
+	/**
+	 * Formats the given event.
+	 */
+	public static String formatEvent(ILogBrowser aLogBrowser, ILogEvent aEvent)
+	{
+		return new EventFormatter(aLogBrowser).getText(aEvent, false);
+	}
 }

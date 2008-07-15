@@ -103,8 +103,8 @@ public class WatchEntryNode extends JPanel
 						else add(GUIUtils.createLabel(" / "));
 						
 						add(Hyperlinks.object(
-								Hyperlinks.SWING, 
 								itsGUIManager, 
+								Hyperlinks.SWING, 
 								itsJobProcessor,
 								itsProvider.getCurrentObject(),
 								itsValue[i].value,
@@ -115,7 +115,7 @@ public class WatchEntryNode extends JPanel
 						if (theSetter != null)
 						{
 							add(GUIUtils.createLabel(" ("));
-							add(Hyperlinks.event(Hyperlinks.SWING, "why?", theSetter));
+							add(Hyperlinks.event(itsGUIManager, Hyperlinks.SWING, "why?", theSetter));
 							add(GUIUtils.createLabel(")"));
 						}
 					}

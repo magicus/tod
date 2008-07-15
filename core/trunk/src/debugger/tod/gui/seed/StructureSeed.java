@@ -33,7 +33,6 @@ package tod.gui.seed;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.ILocationInfo;
-import tod.gui.kit.html.HtmlText;
 import tod.gui.view.LogView;
 import tod.gui.view.structure.StructureView;
 import zz.utils.properties.IRWProperty;
@@ -50,6 +49,12 @@ public class StructureSeed extends LogViewSeed
 	public StructureSeed(ILogBrowser aLog)
 	{
 		super(aLog);
+	}
+	
+	public StructureSeed(ILogBrowser aLog, ILocationInfo aLocation)
+	{
+		this(aLog);
+		pSelectedLocation.set(aLocation);
 	}
 	
 	/**

@@ -58,8 +58,8 @@ public class LocalVariableWriteNode extends AbstractSimpleEventNode
 		aBody.addText(" = ");
 		
 		aBody.add(Hyperlinks.object(
-				Hyperlinks.HTML,
 				getGUIManager(),
+				Hyperlinks.HTML,
 				getJobProcessor(),
 				itsEvent.getValue(),
 				itsEvent,

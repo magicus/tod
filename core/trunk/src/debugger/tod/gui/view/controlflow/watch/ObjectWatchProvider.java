@@ -125,8 +125,8 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 		if (itsObject != null)
 		{
 			theObjectContainer.add(Hyperlinks.object(
-					Hyperlinks.SWING, 
 					getGUIManager(),
+					Hyperlinks.SWING, 
 					aJobProcessor,
 					itsObject,
 					itsRefEvent,
@@ -145,7 +145,7 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 		
 		// Setup history link
 		theLinksContainer.add(GUIUtils.createLabel("("));
-		theLinksContainer.add(Hyperlinks.history(Hyperlinks.SWING, itsObject));
+		theLinksContainer.add(Hyperlinks.history(getGUIManager(), Hyperlinks.SWING, itsObject));
 		theLinksContainer.add(GUIUtils.createLabel(")"));
 		
 		theContainer.add(theObjectContainer);

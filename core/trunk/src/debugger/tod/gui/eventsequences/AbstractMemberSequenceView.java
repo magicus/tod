@@ -74,8 +74,8 @@ public abstract class AbstractMemberSequenceView extends AbstractSingleBrowserSe
 	protected JComponent createBaloon(Object aObject)
 	{
 		return Hyperlinks.object(
-				Hyperlinks.SWING, 
 				getGUIManager(), 
+				Hyperlinks.SWING, 
 				getGUIManager().getJobProcessor(),
 				itsInspector.getObject(), 
 				aObject, 

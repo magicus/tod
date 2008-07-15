@@ -66,8 +66,8 @@ public class InstanceOfNode extends AbstractSimpleEventNode
 		}
 		
 		aBody.add(Hyperlinks.object(
-				Hyperlinks.HTML,
 				getGUIManager(),
+				Hyperlinks.HTML,
 				getJobProcessor(),
 				theCurrentObject, 
 				itsEvent.getObject(),
@@ -77,6 +77,7 @@ public class InstanceOfNode extends AbstractSimpleEventNode
 		aBody.addText(" instanceof ");
 		
 		aBody.add(Hyperlinks.type(
+				getGUIManager(), 
 				Hyperlinks.HTML,
 				itsEvent.getTestedType()));
 		

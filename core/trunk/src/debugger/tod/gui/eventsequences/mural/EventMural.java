@@ -874,7 +874,7 @@ public class EventMural extends MouseWheelPanel
 			
 			TODUtils.log(2, "[ImageUpdater] doUpdateImage ["+theStart+"-"+theEnd+"]");
 			
-			if (theStart > theEnd)
+			if (theStart < theEnd)
 			{
 				// Paint
 				// (cloning the browser data list in order to avoid concurrent modifications)

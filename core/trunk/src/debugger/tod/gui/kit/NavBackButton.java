@@ -35,7 +35,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
-import java.util.Collection;
 import java.util.Iterator;
 
 import javax.swing.JButton;
@@ -45,6 +44,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import tod.gui.BrowserNavigator;
+import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
 import tod.gui.Resources;
@@ -102,12 +102,16 @@ public class NavBackButton extends JPanel
 		if (theDescription == null) return null;
 		
 		JLabel theLabel = new JLabel(theDescription);
+		theLabel.setOpaque(false);
 		return theLabel;
 	}
 	
 	private static JLabel createKindDesc(LogViewSeed aSeed)
 	{
 		JLabel theLabel = new JLabel(aSeed.getKindDescription());
+		theLabel.setFont(FontConfig.TINY_FONT.getAWTFont());
+		theLabel.setForeground(Color.DARK_GRAY);
+		theLabel.setOpaque(false);
 		return theLabel;
 	}
 	
@@ -115,7 +119,7 @@ public class NavBackButton extends JPanel
 	{
 		JPanel thePanel = new JPanel(null);
 		thePanel.setPreferredSize(new Dimension(0, aSize));
-		thePanel.setBackground(Color.black);
+		thePanel.setBackground(Color.BLACK);
 		return thePanel;
 	}
 	
@@ -135,18 +139,19 @@ public class NavBackButton extends JPanel
 
 		private void createUI()
 		{
-			setLayout(new BorderLayout());
+			setLayout(GUIUtils.createStackLayout());
 			
 			itsSimilarSeedsPanel = new JPanel(GUIUtils.createStackLayout());
-			add(new JScrollPane(itsSimilarSeedsPanel));
+			itsSimilarSeedsPanel.setBackground(Color.white);
+			add(new JScrollPane(itsSimilarSeedsPanel), BorderLayout.CENTER);
 			
 			add(createSeparator(2));
 			
 			itsOtherSeedsPanel = new JPanel(GUIUtils.createStackLayout());
-			add(new JScrollPane(itsOtherSeedsPanel));
+			add(new JScrollPane(itsOtherSeedsPanel), BorderLayout.SOUTH);
 		}
 		
-		private void setup(Collection<LogViewSeed> aBackwardSeeds)
+		private void setup(Iterable<LogViewSeed> aBackwardSeeds)
 		{
 			itsSimilarSeedsPanel.removeAll();
 			itsOtherSeedsPanel.removeAll();
@@ -165,7 +170,7 @@ public class NavBackButton extends JPanel
 
 				if (! theKindShown)
 				{
-					itsSimilarSeedsPanel.add(createKindDesc(theSeed));
+//					itsSimilarSeedsPanel.add(createKindDesc(theSeed));
 					theKindShown = true;
 				}
 				
@@ -200,26 +205,11 @@ public class NavBackButton extends JPanel
 			super(GUIUtils.createStackLayout());
 			itsSeed = aSeed;
 			
-			if (aShowKindDesc)
-			{
-				JLabel theKindLabel = createKindDesc(aSeed);
-				theKindLabel.setOpaque(false);
-				add(theKindLabel);
-			}
+			if (aShowKindDesc) add(createKindDesc(aSeed));
 
 			JLabel theDesc = createShortDesc(aSeed);
-			if (theDesc != null)
-			{
-				theDesc.setOpaque(false);
-				add(theDesc);
-			}
-			else if (!aShowKindDesc)
-			{
-				// Show something anyway here...
-				JLabel theKindLabel = createKindDesc(aSeed);
-				theKindLabel.setOpaque(false);
-				add(theKindLabel);
-			}
+			if (theDesc != null) add(theDesc);
+			else if (!aShowKindDesc) add(createKindDesc(aSeed));
 			
 			setBackground(Color.WHITE);
 		}
@@ -240,7 +230,7 @@ public class NavBackButton extends JPanel
 		public void mousePressed(MouseEvent aE)
 		{
 			itsNavPopupButton.hidePopup();
-			itsGUIManager.openSeed(itsSeed, false);
+			itsNavigator.backToSeed(itsSeed);
 		}
 	}
 }

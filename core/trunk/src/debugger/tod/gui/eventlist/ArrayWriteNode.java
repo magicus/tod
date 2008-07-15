@@ -63,8 +63,8 @@ public class ArrayWriteNode extends AbstractSimpleEventNode
 		}
 		
 		aBody.add(Hyperlinks.object(
-				Hyperlinks.HTML,
 				getGUIManager(),
+				Hyperlinks.HTML,
 				getJobProcessor(),
 				theCurrentObject, 
 				itsEvent.getTarget(),
@@ -74,8 +74,8 @@ public class ArrayWriteNode extends AbstractSimpleEventNode
 		aBody.addText("[" + itsEvent.getIndex() + "] = ");
 		
 		aBody.add(Hyperlinks.object(
-				Hyperlinks.HTML,
 				getGUIManager(),
+				Hyperlinks.HTML,
 				getJobProcessor(),
 				theCurrentObject, 
 				itsEvent.getValue(), 

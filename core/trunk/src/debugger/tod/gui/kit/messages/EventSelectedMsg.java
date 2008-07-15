@@ -80,12 +80,24 @@ public class EventSelectedMsg extends Message
 		public static final SelectionMethod STEP_OUT = new SM_StepOut();
 		public static final SelectionMethod SELECT_IN_LIST = new SM_SelectInList();
 		public static final SelectionMethod SELECT_IN_CALL_STACK = new SM_SelectInCallStack();
+		
+		/**
+		 * Whether a new seed should be created when an event is selected with this method.
+		 * This permits to organize navigation.
+		 */
+		public abstract boolean shouldCreateSeed();
 	}
 	
 	public static class SM_ForwardStepInto extends SelectionMethod
 	{
 		private SM_ForwardStepInto()
 		{
+		}
+
+		@Override
+		public boolean shouldCreateSeed()
+		{
+			return true;
 		}
 	}
 	
@@ -94,12 +106,24 @@ public class EventSelectedMsg extends Message
 		private SM_ForwardStepOver()
 		{
 		}
+
+		@Override
+		public boolean shouldCreateSeed()
+		{
+			return false;
+		}
 	}
 	
 	public static class SM_BackwardStepInto extends SelectionMethod
 	{
 		private SM_BackwardStepInto()
 		{
+		}
+
+		@Override
+		public boolean shouldCreateSeed()
+		{
+			return true;
 		}
 	}
 	
@@ -108,12 +132,24 @@ public class EventSelectedMsg extends Message
 		private SM_BackwardStepOver()
 		{
 		}
+
+		@Override
+		public boolean shouldCreateSeed()
+		{
+			return false;
+		}
 	}
 
 	public static class SM_StepOut extends SelectionMethod
 	{
 		private SM_StepOut()
 		{
+		}
+
+		@Override
+		public boolean shouldCreateSeed()
+		{
+			return true;
 		}
 	}
 	
@@ -122,12 +158,24 @@ public class EventSelectedMsg extends Message
 		private SM_SelectInList()
 		{
 		}
+
+		@Override
+		public boolean shouldCreateSeed()
+		{
+			return false;
+		}
 	}
 	
 	public static class SM_SelectInCallStack extends SelectionMethod
 	{
 		private SM_SelectInCallStack()
 		{
+		}
+
+		@Override
+		public boolean shouldCreateSeed()
+		{
+			return true;
 		}
 	}
 	
@@ -141,6 +189,12 @@ public class EventSelectedMsg extends Message
 			itsObject = aObject;
 			itsField = aField;
 		}
+
+		@Override
+		public boolean shouldCreateSeed()
+		{
+			return true;
+		}
 	}
 
 	public static class SM_SelectInBookmarks extends SelectionMethod
@@ -151,6 +205,12 @@ public class EventSelectedMsg extends Message
 		{
 			itsName = aName;
 		}
+
+		@Override
+		public boolean shouldCreateSeed()
+		{
+			return true;
+		}
 	}
 	
 	public static class SM_SelectInHistory extends SelectionMethod
@@ -160,6 +220,12 @@ public class EventSelectedMsg extends Message
 		public SM_SelectInHistory(EventSelectedMsg aSelectedMessage)
 		{
 			itsSelectedMessage = aSelectedMessage;
+		}
+
+		@Override
+		public boolean shouldCreateSeed()
+		{
+			return true;
 		}
 	}
 	
@@ -173,7 +239,12 @@ public class EventSelectedMsg extends Message
 			itsBehavior = aBehavior;
 			itsLineNumber = aLineNumber;
 		}
-		
+
+		@Override
+		public boolean shouldCreateSeed()
+		{
+			return true;
+		}
 	}
 
 	public static class SM_ShowNextForLine extends SM_ShowForLine
@@ -182,6 +253,12 @@ public class EventSelectedMsg extends Message
 		{
 			super(aBehavior, aLineNumber);
 		}
+
+		@Override
+		public boolean shouldCreateSeed()
+		{
+			return true;
+		}
 	}
 	
 	public static class SM_ShowPreviousForLine extends SM_ShowForLine
@@ -189,6 +266,12 @@ public class EventSelectedMsg extends Message
 		public SM_ShowPreviousForLine(IBehaviorInfo aBehavior, int aLineNumber)
 		{
 			super(aBehavior, aLineNumber);
+		}
+
+		@Override
+		public boolean shouldCreateSeed()
+		{
+			return false;
 		}
 	}
 

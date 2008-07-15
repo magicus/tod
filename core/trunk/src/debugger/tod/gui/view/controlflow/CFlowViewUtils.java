@@ -67,8 +67,8 @@ public class CFlowViewUtils
 				else aContainer.add(ZLabel.create(", ", aFont, Color.BLACK));
 				
 				aContainer.add(Hyperlinks.object(
-						Hyperlinks.SWING, 
 						aGUIManager,
+						Hyperlinks.SWING, 
 						aJobProcessor,
 						theArgument, 
 						aRefEvent,

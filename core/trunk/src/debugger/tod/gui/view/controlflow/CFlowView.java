@@ -66,7 +66,6 @@ import tod.gui.kit.Options;
 import tod.gui.kit.SavedSplitPane;
 import tod.gui.kit.StdOptions;
 import tod.gui.kit.messages.EventSelectedMsg;
-import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.settings.IntimacySettings;
@@ -115,15 +114,6 @@ public class CFlowView extends LogView<CFlowSeed> implements IEventListView
 		public void propertyChanged(IProperty<ILogEvent> aProperty, ILogEvent aOldValue, ILogEvent aNewValue)
 		{
 			update();
-		}
-	};
-	
-	private IBusListener<ShowCFlowMsg> itsShowCFlowListener = new IBusListener<ShowCFlowMsg>()
-	{
-		public boolean processMessage(ShowCFlowMsg aMessage)
-		{
-			showEvent(aMessage.getEvent());
-			return true;
 		}
 	};
 	
@@ -424,7 +414,6 @@ public class CFlowView extends LogView<CFlowSeed> implements IEventListView
 	@Override
 	public void addNotify()
 	{
-		Bus.get(this).subscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
 		Bus.get(this).subscribe(EventSelectedMsg.ID, itsEventSelectedListener);
 		
 		itsShowPackages = Options.get(this).getProperty(StdOptions.SHOW_PACKAGE_NAMES);
@@ -438,7 +427,6 @@ public class CFlowView extends LogView<CFlowSeed> implements IEventListView
 	{
 		super.removeNotify();
 		
-		Bus.get(this).unsubscribe(ShowCFlowMsg.ID, itsShowCFlowListener);
 		Bus.get(this).unsubscribe(EventSelectedMsg.ID, itsEventSelectedListener);
 		
 		itsShowPackages.removeListener(itsShowPackagesListener);
@@ -455,7 +443,14 @@ public class CFlowView extends LogView<CFlowSeed> implements IEventListView
 	
 	public void selectEvent(ILogEvent aEvent, SelectionMethod aMethod)
 	{
-		getSeed().pSelectedEvent().set(aEvent);
+		if (aMethod.shouldCreateSeed())
+		{
+			getGUIManager().openSeed(new CFlowSeed(getLogBrowser(), aEvent), false);
+		}
+		else
+		{
+			getSeed().pSelectedEvent().set(aEvent);
+		}
 		Bus.get(CFlowView.this).postMessage(new EventSelectedMsg(aEvent, aMethod));
 	}
 	

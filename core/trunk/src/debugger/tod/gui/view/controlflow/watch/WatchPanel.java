@@ -242,8 +242,8 @@ public class WatchPanel extends BusPanel
 		theContainer.add(GUIUtils.createLabel("this = "));
 		
 		theContainer.add(Hyperlinks.object(
-				Hyperlinks.SWING, 
 				getGUIManager(), 
+				Hyperlinks.SWING, 
 				getJobProcessor(),
 				aCurrentObject,
 				itsProvider.getRefEvent(),

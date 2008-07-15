@@ -63,8 +63,8 @@ public class FieldWriteNode extends AbstractSimpleEventNode
 		}
 		
 		aBody.add(Hyperlinks.object(
-				Hyperlinks.HTML,
 				getGUIManager(),
+				Hyperlinks.HTML,
 				getJobProcessor(),
 				theCurrentObject, 
 				itsEvent.getTarget(),
@@ -76,8 +76,8 @@ public class FieldWriteNode extends AbstractSimpleEventNode
 		aBody.addText(" = ");
 		
 		aBody.add(Hyperlinks.object(
-				Hyperlinks.HTML,
 				getGUIManager(),
+				Hyperlinks.HTML,
 				getJobProcessor(),
 				theCurrentObject,
 				itsEvent.getValue(),

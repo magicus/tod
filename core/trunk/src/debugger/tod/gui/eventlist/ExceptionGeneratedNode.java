@@ -70,8 +70,8 @@ public class ExceptionGeneratedNode extends AbstractSimpleEventNode
 				theRed ? Color.RED : Color.BLACK));
 		
 		aBody.add(Hyperlinks.object(
-				Hyperlinks.HTML,
 				getGUIManager(),
+				Hyperlinks.HTML,
 				getJobProcessor(),
 				itsEvent.getException(),
 				itsEvent,

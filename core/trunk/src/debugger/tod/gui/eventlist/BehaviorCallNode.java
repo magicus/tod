@@ -152,8 +152,8 @@ public abstract class BehaviorCallNode extends AbstractSimpleEventNode
 				else aParent.addText(", ");
 				
 				aParent.add(Hyperlinks.object(
-						Hyperlinks.HTML,
 						getGUIManager(),
+						Hyperlinks.HTML,
 						getJobProcessor(),
 						theArgument, 
 						getEvent(),
@@ -208,8 +208,8 @@ public abstract class BehaviorCallNode extends AbstractSimpleEventNode
 		Object theTarget = getEvent().getTarget();
 		if (theTarget == null) aParent.addText(" (static)");
 		else aParent.add(Hyperlinks.object(
-				Hyperlinks.HTML,
 				getGUIManager(),
+				Hyperlinks.HTML,
 				getJobProcessor(),
 				theTarget, 
 				getEvent(),
@@ -295,8 +295,8 @@ public abstract class BehaviorCallNode extends AbstractSimpleEventNode
 					add(HtmlText.create("]"));
 
 					add(Hyperlinks.object(
-							Hyperlinks.HTML,
 							getGUIManager(),
+							Hyperlinks.HTML,
 							getJobProcessor(),
 							theExitEvent.getResult(),
 							theExitEvent,
@@ -308,8 +308,8 @@ public abstract class BehaviorCallNode extends AbstractSimpleEventNode
 					{
 						add(HtmlText.create(aResultPrefix + " "));						
 						add(Hyperlinks.object(
-								Hyperlinks.HTML,
 								getGUIManager(),
+								Hyperlinks.HTML,
 								getJobProcessor(),
 								theResult,
 								theExitEvent,
