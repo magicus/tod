@@ -4,13 +4,13 @@
 AGENT=../TOD-agent/libtod-agent.so
 #CLASSPATH=./bin:../zz.utils/bin
 
-#HOST=localhost
+HOST=localhost
 #HOST=syntagma.dim.uchile.cl
-HOST=padme.dcc.uchile.cl
+#HOST=padme.dcc.uchile.cl
 
 
 VMARGS=''
-#VMARGS="$VMARGS -agentpath:$AGENT"
+VMARGS="$VMARGS -agentpath:$AGENT"
 VMARGS="$VMARGS -noverify"
 VMARGS="$VMARGS -Dcollector-host=$HOST -Dcollector-port=8058 -Dtod-host=tod-1"
 VMARGS="$VMARGS -Dcollector-type=socket"

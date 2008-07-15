@@ -32,12 +32,12 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.gui;
 
 import java.awt.event.ActionEvent;
+import java.util.Collection;
 
 import javax.swing.Action;
 
 import zz.utils.ArrayStack;
 import zz.utils.ItemAction;
-import zz.utils.Stack;
 
 /**
  * Implements the web browser-like navigation: backward and forward stack of
@@ -46,8 +46,8 @@ import zz.utils.Stack;
  */
 public class BrowserNavigator<S>
 {
-	private Stack<S> itsBackwardSeeds = new ArrayStack<S>(50);
-	private Stack<S> itsForwardSeeds = new ArrayStack<S>();
+	private ArrayStack<S> itsBackwardSeeds = new ArrayStack<S>(50);
+	private ArrayStack<S> itsForwardSeeds = new ArrayStack<S>();
 	
 	private Action itsBackwardAction = new BackwardAction();
 	private Action itsForwardAction = new ForwardAction();
@@ -62,6 +62,11 @@ public class BrowserNavigator<S>
 	protected void setSeed (S aSeed)
 	{
 		itsCurrentSeed = aSeed;
+	}
+	
+	public Collection<S> getBackwardSeeds()
+	{
+		return itsBackwardSeeds;
 	}
 	
 	/**

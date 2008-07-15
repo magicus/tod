@@ -51,7 +51,7 @@ import zz.utils.properties.SimpleRWProperty;
 public class FilterSeed extends LogViewSeed/*<FilterView>*/
 {
 	private final IEventFilter itsBaseFilter;
-	private final HtmlDoc itsTitle;
+	private final String itsTitle;
 	
 	
 	/**
@@ -63,18 +63,9 @@ public class FilterSeed extends LogViewSeed/*<FilterView>*/
 	
 	private IRWProperty<IEventFilter> pAdditionalFilter = new SimpleRWProperty<IEventFilter>(this);
 
-	
 	public FilterSeed(
 			ILogBrowser aLog, 
 			String aTitle,
-			IEventFilter aBaseFilter)
-	{
-		this(aLog, HtmlDoc.create("<b>"+aTitle+"</b>", FontConfig.BIG, Color.BLACK), aBaseFilter);
-	}
-	
-	public FilterSeed(
-			ILogBrowser aLog, 
-			HtmlDoc aTitle,
 			IEventFilter aBaseFilter)
 	{
 		super(aLog);
@@ -105,7 +96,7 @@ public class FilterSeed extends LogViewSeed/*<FilterView>*/
 	
 	public HtmlDoc getTitle()
 	{
-		return itsTitle;
+		return HtmlDoc.create("<b>"+itsTitle+"</b>", FontConfig.BIG, Color.BLACK);
 	}
 	
 	/**
@@ -114,6 +105,18 @@ public class FilterSeed extends LogViewSeed/*<FilterView>*/
 	public IRWProperty<ILogEvent> pSelectedEvent()
 	{
 		return pSelectedEvent;
+	}
+
+	@Override
+	public String getKindDescription()
+	{
+		return"Event list";
+	}
+
+	@Override
+	public String getShortDescription()
+	{
+		return itsTitle;
 	}
 
 }

@@ -54,6 +54,7 @@ public abstract class HtmlParentElement extends HtmlElement
 	
 	public void add(HtmlElement aElement)
 	{
+		assert aElement != null;
 		if (itsChildren == null) itsChildren = new ArrayList<HtmlElement>();
 		itsChildren.add(aElement);
 		if (getDoc() != null)

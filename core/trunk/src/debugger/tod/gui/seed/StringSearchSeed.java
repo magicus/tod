@@ -56,4 +56,18 @@ public class StringSearchSeed extends LogViewSeed
 	{
 		return StringSearchView.class;
 	}
+
+	@Override
+	public String getKindDescription()
+	{
+		return "Search results";
+	}
+
+	@Override
+	public String getShortDescription()
+	{
+		return "\""+pText.get()+"\"";
+	}
+	
+	
 }

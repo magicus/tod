@@ -32,6 +32,7 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.gui.seed;
 
 import tod.core.database.browser.ILogBrowser;
+import tod.gui.kit.html.HtmlText;
 import tod.gui.view.LogView;
 
 /**
@@ -54,4 +55,18 @@ public class ObjectSimulationSeed extends LogViewSeed
 	{
 		return null;
 	}
+
+	@Override
+	public String getKindDescription()
+	{
+		return "Object simulation";
+	}
+
+	@Override
+	public String getShortDescription()
+	{
+		return itsObject.toString();
+	}
+	
+	
 }

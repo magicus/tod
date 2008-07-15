@@ -61,4 +61,16 @@ public abstract class LogViewSeed
 	 * Returns the class of the component that is capable of displaying this seed. 
 	 */
 	public abstract Class<? extends LogView> getComponentClass();
+	
+	/**
+	 * A description of the kind (class) of this seed.
+	 * Should not include the details of this particular seed.
+	 */
+	public abstract String getKindDescription();
+
+	/**
+	 * A short description for this seed, should not describe the seed kind 
+	 * but only the specifics of this particular seed.
+	 */
+	public abstract String getShortDescription();
 }

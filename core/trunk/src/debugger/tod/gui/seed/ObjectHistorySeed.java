@@ -34,6 +34,8 @@ package tod.gui.seed;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.ObjectId;
+import tod.gui.kit.html.HtmlDoc;
+import tod.gui.kit.html.HtmlText;
 import tod.gui.view.LogView;
 import tod.gui.view.ObjectHistoryView;
 import zz.utils.properties.IRWProperty;
@@ -152,4 +154,19 @@ public class ObjectHistorySeed extends LogViewSeed
 	{
 		return pShowKind_Exception;
 	}
+
+	
+	@Override
+	public String getKindDescription()
+	{
+		return "Object history";
+	}
+
+	@Override
+	public String getShortDescription()
+	{
+		return itsObject.toString();
+	}
+	
+	
 }

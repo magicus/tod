@@ -203,4 +203,20 @@ public class HtmlDoc implements HyperlinkListener
 		
 		return theDoc;
 	}
+	
+	public static HtmlDoc create(HtmlElement aElement)
+	{
+		assert aElement != null;
+		if (aElement instanceof HtmlBody)
+		{
+			HtmlBody theBody = (HtmlBody) aElement;
+			return new HtmlDoc(theBody);
+		}
+		else
+		{
+			HtmlBody theBody = new HtmlBody();
+			theBody.add(aElement);
+			return new HtmlDoc(theBody);
+		}
+	}
 }

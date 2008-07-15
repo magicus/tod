@@ -42,6 +42,7 @@ public class BurnTest
 	
 	public static void main(String[] args)
 	{
+		System.out.println("Burn test");
 //		StringBuilder b = new StringBuilder("ho");
 //		while(true)
 //		{

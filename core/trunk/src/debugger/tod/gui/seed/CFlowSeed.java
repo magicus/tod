@@ -118,6 +118,21 @@ implements IEventSeed
 	{
 		return pSelectedEvent.get();
 	}
+
+	
+
+	@Override
+	public String getKindDescription()
+	{
+		return "Control flow view";
+	}
+
+
+	@Override
+	public String getShortDescription()
+	{
+		return getEvent().toString();
+	}
 	
 	
 }

@@ -63,6 +63,18 @@ public class DynamicCrosscuttingSeed extends LogViewSeed
 		return DynamicCrosscuttingView.class;
 	}
 	
+	@Override
+	public String getKindDescription()
+	{
+		return "Dynamic crosscutting";
+	}
+
+	@Override
+	public String getShortDescription()
+	{
+		return null;
+	}
+
 	/**
 	 * Represents any kind of Aspect stuff that can be highlighted (full aspect,
 	 * or individual advice).

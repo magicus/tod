@@ -32,6 +32,7 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.gui.seed;
 
 import tod.core.database.browser.ILogBrowser;
+import tod.gui.kit.html.HtmlText;
 import tod.gui.view.LogView;
 import tod.gui.view.formatters.FormattersView;
 import zz.utils.properties.IRWProperty;
@@ -59,6 +60,18 @@ public class FormattersSeed extends LogViewSeed
 	public IRWProperty<String> pCurrentFormatter()
 	{
 		return pCurrentFormatter;
+	}
+
+	@Override
+	public String getKindDescription()
+	{
+		return "Custom formatters";
+	}
+
+	@Override
+	public String getShortDescription()
+	{
+		return pCurrentFormatter.get().toString();
 	}
 	
 	

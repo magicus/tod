@@ -63,6 +63,7 @@ import tod.core.session.ISessionMonitor;
 import tod.gui.kit.Bus;
 import tod.gui.kit.BusOwnerPanel;
 import tod.gui.kit.IBusListener;
+import tod.gui.kit.NavBackButton;
 import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.kit.messages.ShowObjectHistoryMsg;
 import tod.gui.kit.messages.EventSelectedMsg.SM_ShowNextForLine;
@@ -196,8 +197,8 @@ implements ILocationSelectionListener, IGUIManager
 			theNavButtonsPanel.add(itsSchedulerMonitor);
 		}
 		
-		theNavButtonsPanel.add (new JButton (itsNavigator.getBackwardAction()));
-		theNavButtonsPanel.add (new JButton (itsNavigator.getForwardAction()));
+		theNavButtonsPanel.add (new NavBackButton(this, itsNavigator));
+		theNavButtonsPanel.add (new JButton(itsNavigator.getForwardAction()));
 		
 		theCenterPanel.add (itsNavigator.getViewContainer(), BorderLayout.CENTER);
 		theCenterPanel.add (theNavButtonsPanel, BorderLayout.NORTH);

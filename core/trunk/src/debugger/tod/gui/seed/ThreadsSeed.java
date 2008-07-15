@@ -33,6 +33,7 @@ package tod.gui.seed;
 
 import tod.core.database.browser.ILogBrowser;
 import tod.gui.IGUIManager;
+import tod.gui.kit.html.HtmlText;
 import tod.gui.view.LogView;
 import tod.gui.view.ThreadsView;
 import zz.utils.properties.IRWProperty;
@@ -76,6 +77,18 @@ public class ThreadsSeed extends LogViewSeed
 	public IRWProperty<Long> pRangeEnd()
 	{
 		return pRangeEnd;
+	}
+
+	@Override
+	public String getKindDescription()
+	{
+		return "Threads summary";
+	}
+
+	@Override
+	public String getShortDescription()
+	{
+		return null;
 	}
 
 }
