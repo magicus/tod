@@ -100,6 +100,8 @@ implements IListListener<Highlight>
 		connect(aSeed.pStart, itsHighlighter.pStart());
 		connect(aSeed.pEnd, itsHighlighter.pEnd());
 		
+		itsHighlighter.reloadContext();
+		
 		itsHighlightsMap.clear();
 		for (Highlight theHighlight : aSeed.pHighlights)
 		{
@@ -384,7 +386,7 @@ implements IListListener<Highlight>
 		@Override
 		protected void perThread()
 		{
-			setMuralPainter(new AdviceCFlowMuralPainter(getSeed().pHighlights));
+			if (getSeed() != null) setMuralPainter(new AdviceCFlowMuralPainter(getSeed().pHighlights));
 			super.perThread();
 		}
 	}

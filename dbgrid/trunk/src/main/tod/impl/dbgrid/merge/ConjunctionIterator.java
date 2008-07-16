@@ -180,12 +180,16 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 				{
 					if (theSameEvent)
 					{
-						T theTuple = fetchSameEvent(theHeads);
+						T theTuple = fetchSameEvent(theHeads, true);
 						if (theTuple != null) return theTuple;
 					}
 					
 					if (! theSameKey) itsDirection.move(getSelectedHead(), getGoalTimestamp());
-					else itsDirection.move(getSelectedHead());
+					else 
+					{
+						T theTuple = fetchSameEvent(theHeads, false);
+						if (theTuple != null) return theTuple;
+					}
 				}
 			}
 			while (!theMatch);
@@ -194,12 +198,16 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 		}
 		
 		/**
-		 * Handles the case in which all head tuples point to the same event but with
-		 * a different role.
-		 * In this case, all the tuples that refer to the same event are fetched, and
+		 * Handles the case in which 
+		 * - all head tuples point to the same event but with a different role.
+		 * - or all head tuples have the same key but point to a different event
+		 * 
+		 * In these cases, all the tuples that refer to the same event/key are fetched, and
 		 * a match is searched amongst them.
+		 * 
+		 * @param aExactMatch Whether the tuples should be an exact match (ie. consider roles)
 		 */
-		private T fetchSameEvent(T[] aHeads)
+		private T fetchSameEvent(T[] aHeads, boolean aExactMatch)
 		{
 			clearBackBuffers();
 			T theRefTuple = aHeads[0];
@@ -213,7 +221,14 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 				{
 					T theTuple = itsDirection.peekHead(i);
 					if (theTuple == null) break;
-					if (! sameEvent(theRefTuple, theTuple)) break;
+					if (aExactMatch) 
+					{
+						if (! sameEvent(theRefTuple, theTuple)) break;
+					}
+					else
+					{
+						if (! sameKey(theRefTuple, theTuple)) break;
+					}
 					
 					itsBackBuffers[i].add(theTuple);
 					itsDirection.move(i);
@@ -235,7 +250,7 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 				for (int h=0;h<getHeadCount();h++)
 				{
 					if (h == i) continue;
-					if (! hasTuple(theTuple, itsBackBuffers[h]))
+					if (! hasTuple(theTuple, itsBackBuffers[h], aExactMatch))
 					{
 						theMatch = false;
 						break;
@@ -251,11 +266,18 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 		 * Determines whether the specified list of tuples contains a tuple
 		 * that is identical to the given reference tuple.
 		 */
-		private boolean hasTuple(T aRefTuple, List<T> aList)
+		private boolean hasTuple(T aRefTuple, List<T> aList, boolean aExactMatch)
 		{
 			for (T theTuple : aList)
 			{
-				if (sameItem(aRefTuple, theTuple)) return true;
+				if (aExactMatch)
+				{
+					if (sameItem(aRefTuple, theTuple)) return true;
+				}
+				else
+				{
+					if (sameEvent(aRefTuple, theTuple)) return true;
+				}
 			}
 			return false;
 		}

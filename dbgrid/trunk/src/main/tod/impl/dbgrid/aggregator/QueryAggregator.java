@@ -168,8 +168,10 @@ implements RIQueryAggregator
 		
 		while(itsMergeIterator.hasNext())
 		{
-			theNext = itsMergeIterator.next();
-			if (theNext.getTimestamp() > aTimestamp) break;
+			itsMergeIterator.next();
+			theNext = itsMergeIterator.peekNext();
+			GridEvent thePrevious = itsMergeIterator.peekPrevious();
+			if (theNext == null || theNext.getTimestamp() > aTimestamp) break;
 		}
 	}
 	

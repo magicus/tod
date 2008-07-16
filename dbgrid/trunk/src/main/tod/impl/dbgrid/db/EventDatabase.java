@@ -211,9 +211,15 @@ public class EventDatabase implements ReorderingBufferListener
 	}
 
 	
-	public void eventDropped(long aDelta)
+	public void eventDropped(long aLastRetrieved, long aNewEvent)
 	{
-		System.err.println("WARNING: out of order event - dropped ("+aDelta+")");
+		long theDelta = aLastRetrieved-aNewEvent;
+		System.err.println(String.format(
+				"WARNING: out of order event - dropped (last: %d, new: %d, delta: %d)",
+				aLastRetrieved, 
+				aNewEvent,
+				theDelta));
+		
 		itsDroppedEvents++;
 	}
 	
@@ -236,7 +242,7 @@ public class EventDatabase implements ReorderingBufferListener
 		long theTimestamp = aEvent.getTimestamp();
 		if (theTimestamp < itsLastProcessedTimestamp)
 		{
-			eventDropped(itsLastProcessedTimestamp-theTimestamp);
+			eventDropped(itsLastProcessedTimestamp, theTimestamp);
 			return;
 		}
 		

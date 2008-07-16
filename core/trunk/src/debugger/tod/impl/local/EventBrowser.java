@@ -32,6 +32,7 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.impl.local;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import tod.core.database.browser.IEventBrowser;
@@ -57,7 +58,11 @@ public class EventBrowser extends PublicCloneable implements IEventBrowser
 	{
 		itsLogBrowser = aLogBrowser;
 		itsFilter = aFilter;
-		assert aEvents != null;
+		if (aEvents == null) 
+		{
+			aEvents = Collections.EMPTY_LIST;
+			System.err.println("Warning: EventBrowser received an empty children list.");
+		}
 		itsEvents = aEvents;
 	}
 	

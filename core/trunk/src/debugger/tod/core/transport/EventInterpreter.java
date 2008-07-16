@@ -351,7 +351,6 @@ public final class EventInterpreter implements ILowLevelCollector
 		if (INTERPRETER_LOG)
 		{
 			System.err.println("Exit with exception:");
-			((Throwable) aException).printStackTrace();
 			
 			itsPrintStream.println(String.format(
 				"logBehaviorExitWithException(%d, %d, %s)",

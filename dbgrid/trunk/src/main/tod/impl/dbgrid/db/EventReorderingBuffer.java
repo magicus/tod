@@ -78,7 +78,7 @@ public class EventReorderingBuffer
 		long theTimestamp = aEvent.getTimestamp();
 		if (theTimestamp < itsLastRetrieved)
 		{
-			itsListener.eventDropped(itsLastRetrieved-theTimestamp);
+			itsListener.eventDropped(itsLastRetrieved, theTimestamp);
 			return;
 		}
 
@@ -312,14 +312,14 @@ public class EventReorderingBuffer
 			if (theTimestamp < itsLastAdded)
 			{
 				System.err.println("[EventReorderingBuffer] Out of order events in same thread!!!");
-				itsListener.eventDropped(-1);
+				itsListener.eventDropped(itsLastAdded, theTimestamp);
 				return;
 			}
 
 			if (isFull())
 			{
 				System.err.println("[EventReorderingBuffer] Per-thread buffer full");
-				itsListener.eventDropped(-2);
+				itsListener.eventDropped(0, 0);
 				return;
 			}
 
@@ -332,8 +332,9 @@ public class EventReorderingBuffer
 	{
 		/**
 		 * Called when an event could not be reordered and had to be dropped.
-		 * @param aDela TODO
+		 * @param aLastRetrieved The last valid timestamp
+		 * @param aNewEvent The out-of-order timestamp that was received
 		 */
-		public void eventDropped(long aDela);
+		public void eventDropped(long aLastRetrieved, long aNewEvent);
 	}
 }

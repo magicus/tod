@@ -138,8 +138,6 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	 */
 	public void fillTagMap(TagMap aTagMap)
 	{
-		System.out.println(itsBehavior);
-		
 		for (CodeRange theRange : itsInstrumentationRanges.getRanges())
 		{
 			aTagMap.putTagRange(

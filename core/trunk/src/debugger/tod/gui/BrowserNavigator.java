@@ -77,6 +77,11 @@ public class BrowserNavigator<S>
 		};
 	}
 	
+	public Iterable<S> getForwardSeeds()
+	{
+		return itsForwardSeeds;
+	}
+	
 	/**
 	 * Jumps to the previous view
 	 */

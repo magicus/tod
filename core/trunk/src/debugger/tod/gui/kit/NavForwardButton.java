@@ -38,9 +38,9 @@ import tod.gui.seed.LogViewSeed;
  * A browser-like back button that can also show the navigation stack
  * @author gpothier
  */
-public class NavBackButton extends AbstractNavButton
+public class NavForwardButton extends AbstractNavButton
 {
-	public NavBackButton(BrowserNavigator<LogViewSeed> aNavigator)
+	public NavForwardButton(BrowserNavigator<LogViewSeed> aNavigator)
 	{
 		super(aNavigator);
 	}
@@ -48,7 +48,7 @@ public class NavBackButton extends AbstractNavButton
 	@Override
 	protected Iterable<LogViewSeed> getSeedsStack()
 	{
-		return getNavigator().getBackwardSeeds();
+		return getNavigator().getForwardSeeds();
 	}
 	
 }

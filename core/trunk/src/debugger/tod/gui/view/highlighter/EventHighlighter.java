@@ -199,22 +199,40 @@ implements ActionListener
 	public void actionPerformed(ActionEvent aE)
 	{
 		Object theSource = aE.getSource();
-		if (theSource == itsGlobalButton)
-		{
-			getGUIManager().getSettings().setProperty(PROPERTY_INITIAL_CONTEXT, Context.GLOBAL.toString());
-			global();
-		}
-		else if (theSource == itsPerHostButton)
-		{
-			getGUIManager().getSettings().setProperty(PROPERTY_INITIAL_CONTEXT, Context.PER_HOST.toString());
-			perHost();
-		} 
-		else if (theSource == itsPerThreadButton)
-		{
-			getGUIManager().getSettings().setProperty(PROPERTY_INITIAL_CONTEXT, Context.PER_THREAD.toString());
-			perThread();
-		} 
+		if (theSource == itsGlobalButton) setContext(Context.GLOBAL);
+		else if (theSource == itsPerHostButton) setContext(Context.PER_HOST);
+		else if (theSource == itsPerThreadButton) setContext(Context.PER_THREAD);
 		else throw new RuntimeException("Not handled: "+theSource);
+	}
+	
+	/**
+	 * Reloads the current context.
+	 */
+	public void reloadContext()
+	{
+		setContext(getInitialContext());
+	}
+	
+	public void setContext(Context aContext)
+	{
+		switch(aContext) 
+		{
+		case GLOBAL:
+			global();
+			break;
+			
+		case PER_HOST:
+			perHost();
+			break;
+			
+		case PER_THREAD:
+			perThread();
+			break;
+			
+		default: throw new RuntimeException("Not handled: "+aContext); 
+		}
+
+		getGUIManager().getSettings().setProperty(PROPERTY_INITIAL_CONTEXT, aContext.toString());
 	}
 	
 	protected IEventSequenceSeed createGlobalSeed()
