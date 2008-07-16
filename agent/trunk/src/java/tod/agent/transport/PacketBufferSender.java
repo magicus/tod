@@ -111,20 +111,20 @@ public class PacketBufferSender extends Thread
 					thePendingBuffer.sent();
 				}
 				
-//				if (thePendingBuffer == null || sentBuffers > 100)
-//				{
-//					// Check stale buffers at a regular interval
-//					long t = System.currentTimeMillis();
-//					long delta = t - checkTime;
-//					
-//					if (delta > 100)
-//					{
-//						checkTime = t;
-//						for (PacketBuffer theBuffer : itsBuffers) theBuffer.pleaseSwap();
-//					}
-//					
-//					sentBuffers = 0;
-//				}
+				if (thePendingBuffer == null || sentBuffers > 100)
+				{
+					// Check stale buffers at a regular interval
+					long t = System.currentTimeMillis();
+					long delta = t - checkTime;
+					
+					if (delta > 100)
+					{
+						checkTime = t;
+						for (PacketBuffer theBuffer : itsBuffers) theBuffer.pleaseSwap();
+					}
+					
+					sentBuffers = 0;
+				}
 			}
 		}
 		catch (Exception e)
@@ -201,7 +201,6 @@ public class PacketBufferSender extends Thread
 		
 		private boolean itsCurrentCleanStart = true;
 		private boolean itsCurrentCleanEnd = true;
-		
 		
 		PacketBuffer(int aThreadId)
 		{

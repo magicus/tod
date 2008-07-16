@@ -119,6 +119,7 @@ public class LowLevelEventWriter
 			LowLevelEventType aType,
 			long aTimestamp)
 	{
+//		System.out.println("Starting packet: "+itsStream.getThreadId()+" - "+aTimestamp);
 		sendEventType(itsBuffer, aType);
 		itsBuffer.putLong(aTimestamp);
 	}
