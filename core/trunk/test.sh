@@ -24,7 +24,7 @@ VMARGS="$VMARGS -Dagent-cache-path=/home/gpothier/tmp/tod"
 #VMARGS="$VMARGS -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"
 #VMARGS="$VMARGS -agentlib:hprof=cpu=samples,depth=8"
 
-$JAVA_HOME/bin/java $VMARGS -cp ./bin dummy.BurnTest
+#$JAVA_HOME/bin/java $VMARGS -cp ./bin dummy.BurnTest
 #java $VMARGS -cp ./bin dummy.ShortProg
 #java $VMARGS -cp ../TOD-evdbng/bin tod.impl.evdbng.Fixtures
 # echo "set args $VMARGS -cp ./bin dummy.Dummy" > gdb.cmd
@@ -34,7 +34,7 @@ $JAVA_HOME/bin/java $VMARGS -cp ./bin dummy.BurnTest
 # gdb  -x gdb.cmd java
 #java $VMARGS -jar /home/gpothier/apps/jabref/JabRef-2.2.jar
 
-#java $VMARGS -cp "../../runtime-EclipseApplication(1)/TODTest/bin/":lib/zz.utils.jar imageviewer2.ImageViewer $1
+$JAVA_HOME/bin/java $VMARGS -cp "../../ws-tod-daughter/AspectJTODTest/bin/":lib/zz.utils.jar imageviewer2008.ImageViewer $1
 #java $VMARGS -cp ./bin dummy.Dummy2
 
 #~/apps/eclipse-3.3.1.1/eclipse -vm /home/gpothier/apps/java/jdk1.5.0_08/bin/java -data ~/eclipse/ws-tod -consolelog -vmargs $VMARGS

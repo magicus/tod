@@ -35,23 +35,27 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.Iterator;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import tod.gui.BrowserNavigator;
-import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
-import tod.gui.IGUIManager;
 import tod.gui.Resources;
+import tod.gui.kit.html.HtmlBody;
+import tod.gui.kit.html.HtmlComponent;
+import tod.gui.kit.html.HtmlDoc;
+import tod.gui.kit.html.HtmlElement;
+import tod.gui.kit.html.HtmlRaw;
+import tod.gui.kit.html.HtmlText;
 import tod.gui.seed.LogViewSeed;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;
-import zz.utils.ui.MousePanel;
+import zz.utils.ui.ScrollablePanel;
 import zz.utils.ui.UIUtils;
 import zz.utils.ui.popup.ButtonPopupComponent;
 
@@ -100,23 +104,17 @@ public abstract class AbstractNavButton extends JPanel
 		add(itsNavPopupButton, BorderLayout.EAST);
 	}
 	
-	private static JLabel createShortDesc(LogViewSeed aSeed)
+	private static HtmlElement createShortDesc(LogViewSeed aSeed)
 	{
 		String theDescription = aSeed.getShortDescription();
 		if (theDescription == null) return null;
 		
-		JLabel theLabel = new JLabel(theDescription);
-		theLabel.setOpaque(false);
-		return theLabel;
+		return HtmlText.create(theDescription);
 	}
 	
-	private static JLabel createKindDesc(LogViewSeed aSeed)
+	private static HtmlElement createKindDesc(LogViewSeed aSeed)
 	{
-		JLabel theLabel = new JLabel(aSeed.getKindDescription());
-		theLabel.setFont(FontConfig.TINY_FONT.getAWTFont());
-		theLabel.setForeground(Color.DARK_GRAY);
-		theLabel.setOpaque(false);
-		return theLabel;
+		return HtmlText.create(aSeed.getKindDescription(), 75, Color.DARK_GRAY);
 	}
 	
 	private static JComponent createSeparator(int aSize)
@@ -145,20 +143,40 @@ public abstract class AbstractNavButton extends JPanel
 
 		private void createUI()
 		{
-			setLayout(GUIUtils.createStackLayout());
+			removeAll();
+			setLayout(new BorderLayout());
+			setPreferredSize(new Dimension(300, 400));
 			
-			itsSimilarSeedsPanel = new JPanel(GUIUtils.createStackLayout());
+			itsSimilarSeedsPanel = new ScrollablePanel(GUIUtils.createStackLayout())
+			{
+				@Override
+				public boolean getScrollableTracksViewportWidth()
+				{
+					return true;
+				}
+			};
 			itsSimilarSeedsPanel.setBackground(Color.white);
-			add(new JScrollPane(itsSimilarSeedsPanel), BorderLayout.CENTER);
+			JScrollPane theSimScrollPane = new JScrollPane(itsSimilarSeedsPanel);
+			add(theSimScrollPane, BorderLayout.CENTER);
 			
-			add(createSeparator(2));
+//			add(createSeparator(2));
 			
-			itsOtherSeedsPanel = new JPanel(GUIUtils.createStackLayout());
-			add(new JScrollPane(itsOtherSeedsPanel), BorderLayout.SOUTH);
+			itsOtherSeedsPanel = new ScrollablePanel(GUIUtils.createStackLayout())
+			{
+				@Override
+				public boolean getScrollableTracksViewportWidth()
+				{
+					return true;
+				}
+			};
+			JScrollPane theOtherScrollPane = new JScrollPane(itsOtherSeedsPanel);
+			add(theOtherScrollPane, BorderLayout.SOUTH);
 		}
 		
 		private void setup()
 		{
+			createUI(); // temp
+			
 			itsSimilarSeedsPanel.removeAll();
 			itsOtherSeedsPanel.removeAll();
 			
@@ -176,7 +194,7 @@ public abstract class AbstractNavButton extends JPanel
 
 				if (! theKindShown)
 				{
-//					itsSimilarSeedsPanel.add(createKindDesc(theSeed));
+					itsSimilarSeedsPanel.add(new HtmlComponent(HtmlDoc.create(createKindDesc(theSeed))));
 					theKindShown = true;
 				}
 				
@@ -202,41 +220,53 @@ public abstract class AbstractNavButton extends JPanel
 	 * This panel represents a single seed.
 	 * @author gpothier
 	 */
-	private class SeedPanel extends MousePanel
+	private class SeedPanel extends HtmlComponent
+	implements MouseListener
 	{
 		private final LogViewSeed itsSeed;
 
 		public SeedPanel(LogViewSeed aSeed, boolean aShowKindDesc)
 		{
-			super(GUIUtils.createStackLayout());
+			addMouseListener(this);
 			itsSeed = aSeed;
 			
-			if (aShowKindDesc) add(createKindDesc(aSeed));
-
-			JLabel theDesc = createShortDesc(aSeed);
-			if (theDesc != null) add(theDesc);
-			else if (!aShowKindDesc) add(createKindDesc(aSeed));
+			HtmlBody theBody = new HtmlBody();
+			
+			HtmlElement theShortDesc = createShortDesc(aSeed);
+			if (aShowKindDesc || theShortDesc == null) 
+			{
+				theBody.add(createKindDesc(aSeed));
+				theBody.add(HtmlRaw.create("<br>"));
+			}
+			if (theShortDesc != null) theBody.add(theShortDesc);
+			
+			setDoc(HtmlDoc.create(theBody));
 			
 			setBackground(Color.WHITE);
 		}
 		
-		@Override
 		public void mouseEntered(MouseEvent aE)
 		{
 			setBackground(UIUtils.getLighterColor(Color.BLUE));
 		}
 		
-		@Override
 		public void mouseExited(MouseEvent aE)
 		{
 			setBackground(Color.WHITE);
 		}
 		
-		@Override
 		public void mousePressed(MouseEvent aE)
 		{
 			itsNavPopupButton.hidePopup();
 			itsNavigator.backToSeed(itsSeed);
+		}
+
+		public void mouseClicked(MouseEvent aE)
+		{
+		}
+
+		public void mouseReleased(MouseEvent aE)
+		{
 		}
 	}
 }

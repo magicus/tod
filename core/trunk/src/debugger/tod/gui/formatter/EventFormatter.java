@@ -32,6 +32,7 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.gui.formatter;
 
 import tod.Util;
+import tod.agent.transport.ObjectValue;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IArrayWriteEvent;
 import tod.core.database.event.IBehaviorCallEvent;
@@ -61,97 +62,139 @@ public class EventFormatter extends AbstractFormatter<ILogEvent>
 		itsObjectFormatter = new ObjectFormatter(itsLogBrowser);
 	}
 
+	@Override
 	protected String getText(ILogEvent aEvent, boolean aHtml)
 	{
 		if (aEvent instanceof IInstantiationEvent)
 		{
-			IInstantiationEvent theEvent = (IInstantiationEvent) aEvent;
-			
-			return String.format(
-					"%s (%s)",
-					Util.getPrettyName(theEvent.getType().getName()),
-	                formatArgs(theEvent.getArguments()));
+			return formatInstantiation((IInstantiationEvent) aEvent);
 		}
 		else if (aEvent instanceof IBehaviorCallEvent)
 		{
-			IBehaviorCallEvent theEvent = (IBehaviorCallEvent) aEvent;
-			
-			IBehaviorInfo theBehavior = theEvent.getExecutedBehavior();
-			if (theBehavior == null) theBehavior = theEvent.getCalledBehavior();
-			
-			return String.format(
-					"%s.%s (%s)",
-					Util.getPrettyName(theBehavior.getType().getName()),
-	                theBehavior.getName(),
-	                formatArgs(theEvent.getArguments()));
+			return formatBehaviorCall((IBehaviorCallEvent) aEvent);
 		}
 		else if (aEvent instanceof IBehaviorExitEvent)
 		{
-			IBehaviorExitEvent theEvent = (IBehaviorExitEvent) aEvent;
-			IBehaviorCallEvent theParent = theEvent.getParent();
-			
-			if (theParent != null)
-			{
-				IBehaviorInfo theBehavior = theParent.getExecutedBehavior();
-				if (theBehavior == null) theBehavior = theParent.getCalledBehavior();
-
-				return String.format(
-						"Return from %s.%s -> %s",
-						Util.getPrettyName(theBehavior.getType().getName()),
-		                theBehavior.getName(),
-		                theEvent.getResult());
-			}
-			else
-			{
-				return String.format(
-						"Return from ? -> %s",
-		                theEvent.getResult());
-			}
+			return formatBehaviorExit((IBehaviorExitEvent) aEvent);
 		}
 		else if (aEvent instanceof IFieldWriteEvent)
 		{
-			IFieldWriteEvent theEvent = (IFieldWriteEvent) aEvent;
-
-			return String.format(
-					"%s.%s = %s",
-					Util.getPrettyName(theEvent.getField().getType().getName()),
-					theEvent.getField().getName(),
-					formatObject(theEvent.getValue()));
+			return formatFieldWrite((IFieldWriteEvent) aEvent);
 		}
         else if (aEvent instanceof ILocalVariableWriteEvent)
 		{
-			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) aEvent;
-			
-			return String.format(
-					"%s = %s",
-					theEvent.getVariable().getVariableName(),
-					formatObject(theEvent.getValue()));
+			return formatLocalWrite((ILocalVariableWriteEvent) aEvent);
 		}
 		else if (aEvent instanceof IOutputEvent)
 		{
-			IOutputEvent theEvent = (IOutputEvent) aEvent;
-			return "Output ("+theEvent.getOutput()+"): "+theEvent.getData();
+			return formatOutput((IOutputEvent) aEvent);
 		}
 		else if (aEvent instanceof IExceptionGeneratedEvent)
 		{
-			IExceptionGeneratedEvent theEvent = (IExceptionGeneratedEvent) aEvent;
-			IBehaviorInfo theBehavior = theEvent.getOperationBehavior();
-			String theBehaviorName = theBehavior != null ? 
-					Util.getSimpleName(theBehavior.getType().getName()) + "." + theBehavior.getName() 
-					: "<unknown>"; 
-			return "Exception thrown in "+theBehaviorName+": "+formatObject(theEvent.getException());
+			return formatException((IExceptionGeneratedEvent) aEvent);
 		}
 		else if (aEvent instanceof IArrayWriteEvent)
 		{
-			IArrayWriteEvent theEvent = (IArrayWriteEvent) aEvent;
-			
-			return String.format(
-					"%s[%d] = %s",
-					formatObject(theEvent.getTarget()),
-					theEvent.getIndex(),
-					formatObject(theEvent.getValue()));
+			return formatArrayWrite((IArrayWriteEvent) aEvent);
 		}
 		else return ""+aEvent;
+	}
+
+	private String formatArrayWrite(IArrayWriteEvent theEvent)
+	{
+		return String.format(
+				"%s[%d] = %s",
+				formatObject(theEvent.getTarget()),
+				theEvent.getIndex(),
+				formatObject(theEvent.getValue()));
+	}
+
+	private String formatException(IExceptionGeneratedEvent theEvent)
+	{
+		IBehaviorInfo theBehavior = theEvent.getOperationBehavior();
+		String theBehaviorName = theBehavior != null ? 
+				Util.getSimpleName(theBehavior.getType().getName()) + "." + theBehavior.getName() 
+				: "<unknown>";
+				
+		String theExceptionText;
+		
+		Object theException = theEvent.getException();
+		if (theException instanceof ObjectValue)
+		{
+			ObjectValue theValue = (ObjectValue) theException;
+			theExceptionText = theValue.getClassName();
+		}
+		else
+		{
+			theExceptionText = ""+theException;
+		}
+		
+		return "Exception thrown in "+theBehaviorName+": "+theExceptionText;
+	}
+
+	private String formatOutput(IOutputEvent theEvent)
+	{
+		return "Output ("+theEvent.getOutput()+"): "+theEvent.getData();
+	}
+
+	private String formatLocalWrite(ILocalVariableWriteEvent theEvent)
+	{
+		return String.format(
+				"%s = %s",
+				theEvent.getVariable().getVariableName(),
+				formatObject(theEvent.getValue()));
+	}
+
+	private String formatFieldWrite(IFieldWriteEvent theEvent)
+	{
+		return String.format(
+				"%s.%s = %s",
+				Util.getPrettyName(theEvent.getField().getType().getName()),
+				theEvent.getField().getName(),
+				formatObject(theEvent.getValue()));
+	}
+
+	private String formatBehaviorExit(IBehaviorExitEvent theEvent)
+	{
+		IBehaviorCallEvent theParent = theEvent.getParent();
+		
+		if (theParent != null)
+		{
+			IBehaviorInfo theBehavior = theParent.getExecutedBehavior();
+			if (theBehavior == null) theBehavior = theParent.getCalledBehavior();
+
+			return String.format(
+					"Return from %s.%s -> %s",
+					Util.getPrettyName(theBehavior.getType().getName()),
+		            theBehavior.getName(),
+		            theEvent.getResult());
+		}
+		else
+		{
+			return String.format(
+					"Return from ? -> %s",
+		            theEvent.getResult());
+		}
+	}
+
+	private String formatBehaviorCall(IBehaviorCallEvent theEvent)
+	{
+		IBehaviorInfo theBehavior = theEvent.getExecutedBehavior();
+		if (theBehavior == null) theBehavior = theEvent.getCalledBehavior();
+		
+		return String.format(
+				"%s.%s (%s)",
+				Util.getPrettyName(theBehavior.getType().getName()),
+		        theBehavior.getName(),
+		        formatArgs(theEvent.getArguments()));
+	}
+
+	private String formatInstantiation(IInstantiationEvent theEvent)
+	{
+		return String.format(
+				"%s (%s)",
+				Util.getPrettyName(theEvent.getType().getName()),
+		        formatArgs(theEvent.getArguments()));
 	}
 	
 	public String formatObject (Object aObject)

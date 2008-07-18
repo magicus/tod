@@ -45,5 +45,10 @@ public class HtmlRaw extends HtmlElement
 	{
 		aBuilder.append(itsText);
 	}
+	
+	public static HtmlRaw create(String aContent)
+	{
+		return new HtmlRaw(aContent);
+	}
 
 }
