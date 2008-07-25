@@ -256,6 +256,12 @@ public class WatchPanel extends BusPanel
 	private class WatchBrowserNavigator extends BrowserNavigator<WatchSeed>
 	{
 		@Override
+		public void open(WatchSeed aSeed)
+		{
+			super.open(aSeed);
+		}
+		
+		@Override
 		protected void setSeed(WatchSeed aSeed)
 		{
 			super.setSeed(aSeed);

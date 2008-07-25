@@ -308,6 +308,7 @@ implements MouseWheelListener
 	
 	private int createNode(ILogEvent aEvent)
 	{
+		assert aEvent != null;
 		int theHeight = 0;
 		
 		AbstractEventNode theNode = itsNodesBuffer.get(aEvent);
@@ -432,7 +433,7 @@ implements MouseWheelListener
 		
 		boolean isVisible = true;
 		
-		if (theNode != null) 
+		if (theNode != null && theNode.getParent() != null) 
 		{
 			Rectangle theNodeBounds = theNode.getBounds();
 			Rectangle theBounds = itsEventsPanel.getBounds();
@@ -596,7 +597,6 @@ implements MouseWheelListener
 	
 	private class NodesBuffer extends MRUBuffer<ILogEvent, AbstractEventNode>
 	{
-
 		public NodesBuffer()
 		{
 			super(100);
@@ -611,9 +611,8 @@ implements MouseWheelListener
 		@Override
 		protected ILogEvent getKey(AbstractEventNode aValue)
 		{
-			return aValue.getEvent();
+			return aValue != null ? aValue.getEvent() : null;
 		}
-		
 	}
 	
 }

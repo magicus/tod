@@ -38,6 +38,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Iterator;
 
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -86,7 +87,7 @@ public abstract class AbstractNavButton extends JPanel
 	{
 		setLayout(new BorderLayout());
 		
-		JButton theBackButton = new JButton(itsNavigator.getBackwardAction());
+		JButton theBackButton = new JButton(getAction());
 		add(theBackButton, BorderLayout.CENTER);
 		
 		JButton theArrowButton = new JButton(Resources.ICON_TRIANGLE_DOWN.asIcon(10));
@@ -124,6 +125,8 @@ public abstract class AbstractNavButton extends JPanel
 		thePanel.setBackground(Color.BLACK);
 		return thePanel;
 	}
+	
+	protected abstract Action getAction();
 	
 	protected abstract Iterable<LogViewSeed> getSeedsStack();
 	

@@ -31,6 +31,9 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui;
 
+import java.awt.Dimension;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.net.URI;
 
 import javax.swing.JComponent;
@@ -69,6 +72,17 @@ public class StandaloneUI extends JPanel
 		
 		JComponent theConsole = itsSession.createConsole();
 		if (theConsole != null) theTabbedPane.addTab("Console", theConsole);
+		
+		int theWidth = itsTraceView.getSettings().getIntProperty("StandaloneUI.width", 600);
+		int theHeight = itsTraceView.getSettings().getIntProperty("StandaloneUI.height", 400);
+		setPreferredSize(new Dimension(theWidth, theHeight));
+	}
+	
+	public void saveSize()
+	{
+		itsTraceView.getSettings().setProperty("StandaloneUI.width", ""+getWidth());
+		itsTraceView.getSettings().setProperty("StandaloneUI.height", ""+getHeight());
+		itsTraceView.getSettings().save();
 	}
 
 	private class MyTraceView extends MinerUI
@@ -89,8 +103,17 @@ public class StandaloneUI extends JPanel
 		URI theUri = args.length > 0 ? URI.create(args[0]) : null;
 		
 		JFrame theFrame = new JFrame("TOD");
-		theFrame.setContentPane(new StandaloneUI(theUri));
+		final StandaloneUI theUI = new StandaloneUI(theUri);
+		theFrame.setContentPane(theUI);
 		theFrame.pack();
+		theFrame.addWindowListener(new WindowAdapter()
+		{
+			@Override
+			public void windowClosing(WindowEvent aE)
+			{
+				theUI.saveSize();
+			}
+		});
 		theFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		theFrame.setVisible(true);
 	}

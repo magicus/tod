@@ -37,6 +37,7 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JComponent;
 
+import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
 import tod.gui.GUIUtils;
 import tod.gui.JobProcessor;
@@ -49,8 +50,14 @@ import zz.utils.ui.UIUtils;
  */
 public abstract class AbstractStackNode extends MousePanel
 {
+	private final CallStackPanel itsCallStackPanel;
 	private final JobProcessor itsJobProcessor;
-	private final IParentEvent itsEvent;
+	
+	/**
+	 * The event currently selected in this frame.
+	 * Note that the frame itself displays the parent of this event.
+	 */
+	private final ILogEvent itsEvent;
 	
 	/**
 	 * Indicates if this stack node corresponds to the currently
@@ -60,24 +67,26 @@ public abstract class AbstractStackNode extends MousePanel
 
 	private boolean itsMouseOver = false;
 	
-	private CallStackPanel itsCallStackPanel;
 	
 	public AbstractStackNode(
 			JobProcessor aJobProcessor,
-			IParentEvent aEvent,
-			boolean aCurrentStackFrame, 
+			ILogEvent aEvent,
 			CallStackPanel aCallStackPanel)
 	{
 		itsJobProcessor = aJobProcessor;
 		itsEvent = aEvent;
-		itsCurrentStackFrame = aCurrentStackFrame;
 		itsCallStackPanel = aCallStackPanel;
 		createUI();
 	}
-
-	public IParentEvent getEvent()
+	
+	public ILogEvent getEvent()
 	{
 		return itsEvent;
+	}
+
+	public IParentEvent getFrameEvent()
+	{
+		return itsEvent.getParent();
 	}
 	
 	public void setCurrentStackFrame(boolean aCurrentStackFrame)
@@ -92,7 +101,7 @@ public abstract class AbstractStackNode extends MousePanel
 	{
 		setLayout(GUIUtils.createStackLayout());
 
-		if (! getEvent().isDirectParent())
+		if (! getFrameEvent().isDirectParent())
 		{
 			JComponent theDots = createDots();
 			theDots.addMouseListener(this);
@@ -142,7 +151,7 @@ public abstract class AbstractStackNode extends MousePanel
 		{
 			//removed old behavior
 			//Bus.get(this).postMessage(new EventSelectedMsg(getEvent(), SelectionMethod.SELECT_IN_CALL_STACK));
-			itsCallStackPanel.selectChildOf(itsEvent);
+			itsCallStackPanel.selectEvent(itsEvent);
 		}
 		
 		aE.consume();

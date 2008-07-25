@@ -63,11 +63,13 @@ implements IEventSeed
 	};
 	
 	private IRWProperty<IParentEvent> pRootEvent = new SimpleRWProperty<IParentEvent>(this);
+	private IRWProperty<ILogEvent> pLeafEvent = new SimpleRWProperty<ILogEvent>(this);
 	
 	public CFlowSeed(ILogBrowser aLog, ILogEvent aSelectedEvent)
 	{
 		this(aLog, aSelectedEvent.getThread());
 		pSelectedEvent().set(aSelectedEvent);
+		pLeafEvent().set(aSelectedEvent);
 	}
 
 	
@@ -114,6 +116,14 @@ implements IEventSeed
 		return pRootEvent;
 	}
 
+	/**
+	 * The bottommost event in the control flow (for call stack display).
+	 */
+	public IRWProperty<ILogEvent> pLeafEvent()
+	{
+		return pLeafEvent;
+	}
+	
 
 	public ILogEvent getEvent()
 	{

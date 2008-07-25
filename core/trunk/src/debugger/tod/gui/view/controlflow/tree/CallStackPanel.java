@@ -40,16 +40,16 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import tod.core.database.browser.ILogBrowser;
-import tod.core.database.event.IConstructorChainingEvent;
-import tod.core.database.event.IInstantiationEvent;
+import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
-import tod.core.database.event.IMethodCallEvent;
 import tod.core.database.event.IParentEvent;
 import tod.gui.JobProcessor;
-import tod.gui.kit.Bus;
-import tod.gui.kit.messages.EventSelectedMsg;
-import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
+import tod.gui.seed.CFlowSeed;
+import tod.gui.view.LogView;
 import zz.utils.Utils;
+import zz.utils.properties.IProperty;
+import zz.utils.properties.IPropertyListener;
+import zz.utils.properties.PropertyListener;
 import zz.utils.ui.GridStackLayout;
 import zz.utils.ui.ScrollablePanel;
 import zz.utils.ui.StackLayout;
@@ -62,14 +62,8 @@ import zz.utils.ui.StackLayout;
  */
 public class CallStackPanel extends JPanel
 {
-	private final ILogBrowser itsLogBrowser;
-
+	private CFlowSeed itsSeed;
 	private final JobProcessor itsJobProcessor;
-
-	/**
-	 * the leaf is event is the event selected in the event list
-	 */
-	private ILogEvent itsLeafEvent;
 
 	/**
 	 * Root of the control flow tree for the current leaf event
@@ -77,15 +71,65 @@ public class CallStackPanel extends JPanel
 	private IParentEvent itsRootEvent;
 	
 	private List<AbstractStackNode> itsStackNodes = new ArrayList<AbstractStackNode>();
+	
+	private AbstractStackNode itsCurrentStackNode;
 
 	private JScrollPane itsScrollPane;
-
-	public CallStackPanel(ILogBrowser aLogBrowser, JobProcessor aJobProcessor)
+	
+	private final IPropertyListener<ILogEvent> itsSelectedEventListener = new PropertyListener<ILogEvent>()
 	{
-		itsLogBrowser = aLogBrowser;
+		@Override
+		public void propertyChanged(
+				IProperty<ILogEvent> aProperty,
+				ILogEvent aOldValue,
+				ILogEvent aNewValue)
+		{
+			selectedEventChanged(aNewValue);
+		}
+	};
+	
+	private final IPropertyListener<ILogEvent> itsLeafEventListener = new PropertyListener<ILogEvent>()
+	{
+		@Override
+		public void propertyChanged(
+				IProperty<ILogEvent> aProperty,
+				ILogEvent aOldValue,
+				ILogEvent aNewValue)
+		{
+			leafEventChanged();
+		}
+	};
+	
+	public CallStackPanel(JobProcessor aJobProcessor)
+	{
 		itsJobProcessor = aJobProcessor;
 		createUI();
 	}
+	
+	/**
+	 * Called when the seed is connected to the CFlowView.
+	 * @see LogView#connectSeed
+	 */
+	protected void connectSeed(CFlowSeed aSeed)
+	{
+		itsSeed = aSeed;
+		itsSeed.pSelectedEvent().addHardListener(itsSelectedEventListener);
+		itsSeed.pLeafEvent().addHardListener(itsLeafEventListener);
+		rebuildStack();
+	}
+
+	/**
+	 * Called when the seed is disconnected from the CFlowView.
+	 * @see LogView#disconnectSeed
+	 */
+	protected void disconnectSeed(CFlowSeed aSeed)
+	{
+		itsSeed.pSelectedEvent().removeListener(itsSelectedEventListener);
+		itsSeed.pLeafEvent().removeListener(itsLeafEventListener);
+		itsSeed = null;
+	}
+
+
 
 	public JobProcessor getJobProcessor()
 	{
@@ -94,59 +138,54 @@ public class CallStackPanel extends JPanel
 
 	public ILogBrowser getLogBrowser()
 	{
-		return itsLogBrowser;
+		return itsSeed.getLogBrowser();
 	}
-
-	public void setLeafEvent(ILogEvent aEvent)
+	
+	private void selectedEventChanged(ILogEvent aEvent)
 	{
-		itsLeafEvent = aEvent;
-		
 		// Search if parent is already in the call stack
-		itsRootEvent = null;
-		update();
+		for (AbstractStackNode theNode : itsStackNodes)
+		{
+			if (theNode.getFrameEvent().equals(aEvent.getParent()))
+			{
+				setCurrentStackNode(theNode);
+				return;
+			}
+		}
+		
+		// if not found, rebuild the stack.
+		itsSeed.pLeafEvent().set(aEvent);
 	}
 
-	public ILogEvent getLeafEvent()
+	private void leafEventChanged()
 	{
-		return itsLeafEvent;
+		rebuildStack();
 	}
-
+	
+	private void setCurrentStackNode(AbstractStackNode aNode)
+	{
+		if (itsCurrentStackNode != null) itsCurrentStackNode.setCurrentStackFrame(false);
+		itsCurrentStackNode = aNode;
+		if (itsCurrentStackNode != null) itsCurrentStackNode.setCurrentStackFrame(true);
+	}
+	
 	public IParentEvent getRootEvent()
 	{
-		if (itsRootEvent == null && itsLeafEvent != null)
+		if (itsRootEvent == null)
 		{
-			itsRootEvent = getLogBrowser().getCFlowRoot(itsLeafEvent.getThread());
+			itsRootEvent = getLogBrowser().getCFlowRoot(itsSeed.getThread());
 		}
 		return itsRootEvent;
-	}
-
-	/**
-	 * return the child of the stack event given in parameter. Return null if
-	 * this stack event has no child (i.e. it is the parent of the leafevent)
-	 */
-	public IParentEvent getChildOf(IParentEvent aEvent)
-	{
-		IParentEvent theChild = getLeafEvent().getParent();
-		if (aEvent == theChild) return null;
-		IParentEvent theParent = theChild.getParent();
-		while (theParent != aEvent && theParent != null) //parent == null when the aEvent is root
-		{
-			theChild = theParent;
-			theParent = theChild.getParent();
-		}
-		
-		return theChild;
 	}
 
 	/**
 	 * show the child event of the IParentEvent given in parameter in the
 	 * current event list
 	 */
-	public void selectChildOf(IParentEvent aEvent)
+	public void selectEvent(ILogEvent aEvent)
 	{
-		IParentEvent theChildEvent = getChildOf(aEvent);
-		if (theChildEvent != null) 
-			Bus.get(this).postMessage(new EventSelectedMsg(theChildEvent, SelectionMethod.SELECT_IN_CALL_STACK));
+		itsSeed.pSelectedEvent().set(aEvent);
+//		Bus.get(this).postMessage(new EventSelectedMsg(aEvent, SelectionMethod.SELECT_IN_CALL_STACK));
 	}
 
 	private void createUI()
@@ -156,14 +195,10 @@ public class CallStackPanel extends JPanel
 		add(itsScrollPane);
 	}
 
-	@Override
-	public void addNotify()
+	private void rebuildStack()
 	{
-		super.addNotify();
-	}
-
-	private void update()
-	{
+		itsRootEvent = null;
+		itsCurrentStackNode = null;
 		JComponent theStack = createStack();
 		theStack.setOpaque(false);
 		itsScrollPane.setViewportView(theStack);
@@ -178,56 +213,39 @@ public class CallStackPanel extends JPanel
 	 */
 	private JComponent createStack()
 	{
-		List<IParentEvent> theCallStack = new ArrayList<IParentEvent>();
-		IParentEvent theCurrentParent = getLeafEvent().getParent();
-		IParentEvent theLastAdded = null;
-		while (theCurrentParent != null)
-		{
-			theCallStack.add(theCurrentParent);
-			theLastAdded = theCurrentParent;
-			theCurrentParent = theCurrentParent.getParent();
-		}
-
-		IParentEvent theRootEvent = getRootEvent();
-		if (!theRootEvent.equals(theLastAdded)) theCallStack.add(theRootEvent);
-
+		JPanel theContainer = new ScrollablePanel(new GridStackLayout(1, 0, 2, true, false));
+		ILogEvent theCurrentEvent = itsSeed.pLeafEvent().get();
 		itsStackNodes.clear();
 		
-		JPanel theContainer = new ScrollablePanel(new GridStackLayout(1, 0, 2, true, false));
-
-		if (theCallStack.size() > 0) for (int i = 0; i < theCallStack.size(); i++)
+		ILogEvent theSelected = itsSeed.pSelectedEvent().get();
+		IBehaviorCallEvent theSelectedFrame = theSelected != null ? theSelected.getParent() : null;
+		
+		while (theCurrentEvent != null)
 		{
-			IParentEvent theAncestor = theCallStack.get(i);
-			AbstractStackNode theStackNode = buildStackNode(theAncestor, i == 0);
+			AbstractStackNode theStackNode = buildStackNode(theCurrentEvent);
 			itsStackNodes.add(theStackNode);
 			theContainer.add(theStackNode);
+			
+			theCurrentEvent = theCurrentEvent.getParent();
+			if (theCurrentEvent != null && theCurrentEvent.equals(theSelectedFrame)) setCurrentStackNode(theStackNode);
 		}
 
 		return theContainer;
 	}
 
-	private AbstractStackNode buildStackNode(IParentEvent aEvent, boolean aCurrentFrame)
+	private AbstractStackNode buildStackNode(ILogEvent aEvent)
 	{
 		// JobProcessor theJobProcessor = getJobProcessor();
 		JobProcessor theJobProcessor = null;
 
-		if (Utils.equalOrBothNull(aEvent, getRootEvent()))
+		if (aEvent.getParent() == null || Utils.equalOrBothNull(aEvent.getParent(), getRootEvent()))
 		{
-			return new RootStackNode(theJobProcessor, aEvent, aCurrentFrame,this);
+			return new RootStackNode(theJobProcessor, getRootEvent(), this);
 		}
-		else if (aEvent instanceof IMethodCallEvent)
+		else 
 		{
-			return new NormalStackNode(theJobProcessor, (IMethodCallEvent) aEvent, aCurrentFrame,this);
+			return new NormalStackNode(theJobProcessor, aEvent, this);
 		}
-		else if (aEvent instanceof IInstantiationEvent)
-		{
-			return new NormalStackNode(theJobProcessor, (IInstantiationEvent) aEvent, aCurrentFrame,this);
-		}
-		else if (aEvent instanceof IConstructorChainingEvent)
-		{
-			return new NormalStackNode(theJobProcessor, (IConstructorChainingEvent) aEvent, aCurrentFrame,this);
-		}
-		else throw new RuntimeException("Not handled: " + aEvent);
 	}
 
 }

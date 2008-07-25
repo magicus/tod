@@ -33,6 +33,7 @@ package tod.gui.view.controlflow.tree;
 
 import javax.swing.JComponent;
 
+import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
 import tod.gui.GUIUtils;
 import tod.gui.JobProcessor;
@@ -41,12 +42,18 @@ public class RootStackNode extends AbstractStackNode
 {
 	public RootStackNode(
 			JobProcessor aJobProcessor, 
-			IParentEvent aEvent, 
-			boolean aCurrentStackFrame, CallStackPanel aCallStackPanel)
+			ILogEvent aEvent, 
+			CallStackPanel aCallStackPanel)
 	{
-		super(aJobProcessor, aEvent, aCurrentStackFrame, aCallStackPanel);
+		super(aJobProcessor, aEvent, aCallStackPanel);
 	}
 
+	@Override
+	public IParentEvent getFrameEvent()
+	{
+		return (IParentEvent) getEvent();
+	}
+	
 	@Override
 	protected JComponent createHeader()
 	{

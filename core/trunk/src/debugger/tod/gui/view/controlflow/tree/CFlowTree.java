@@ -45,6 +45,7 @@ import tod.gui.JobProcessor;
 import tod.gui.eventlist.EventListPanel;
 import tod.gui.kit.BusPanel;
 import tod.gui.kit.SavedSplitPane;
+import tod.gui.seed.CFlowSeed;
 import tod.gui.view.controlflow.CFlowView;
 import zz.utils.Utils;
 import zz.utils.notification.IEvent;
@@ -89,7 +90,7 @@ public class CFlowTree extends BusPanel
 				}
 				
 				// Only update call stack, as this property is connected to event list
-				itsCallStackPanel.setLeafEvent(aNewValue);
+//				itsCallStackPanel.setLeafEvent(aNewValue);
 			}
 		};
 	
@@ -99,6 +100,17 @@ public class CFlowTree extends BusPanel
 		itsView = aView;
 		createUI();
 	}
+	
+	public void connectSeed(CFlowSeed aSeed)
+	{
+		itsCallStackPanel.connectSeed(aSeed);
+	}
+
+	public void disconnectSeed(CFlowSeed aSeed)
+	{
+		itsCallStackPanel.disconnectSeed(aSeed);
+	}
+
 	
 	public JobProcessor getJobProcessor()
 	{
@@ -142,7 +154,7 @@ public class CFlowTree extends BusPanel
 		
 		PropertyUtils.connect(pSelectedEvent, itsEventListPanel.pSelectedEvent(), true);
 		
-		itsCallStackPanel = new CallStackPanel(itsView.getLogBrowser(), getJobProcessor());
+		itsCallStackPanel = new CallStackPanel(getJobProcessor());
 		theSplitPane.setLeftComponent(itsCallStackPanel);
 	}
 	

@@ -117,20 +117,20 @@ public class CFlowView extends LogView<CFlowSeed> implements IEventListView
 		}
 	};
 	
-	private IBusListener<EventSelectedMsg> itsEventSelectedListener = new IBusListener<EventSelectedMsg>()
-	{
-		public boolean processMessage(EventSelectedMsg aMessage)
-		{
-			if (aMessage.getSelectionMethod() == SelectionMethod.SELECT_IN_CALL_STACK)
-			{
-				showEvent(aMessage.getEvent());
-				return true;
-			}
-			
-			return false;
-		}
-	};
-	
+//	private IBusListener<EventSelectedMsg> itsEventSelectedListener = new IBusListener<EventSelectedMsg>()
+//	{
+//		public boolean processMessage(EventSelectedMsg aMessage)
+//		{
+//			if (aMessage.getSelectionMethod() == SelectionMethod.SELECT_IN_CALL_STACK)
+//			{
+//				showEvent(aMessage.getEvent());
+//				return true;
+//			}
+//			
+//			return false;
+//		}
+//	};
+//	
 
 	private IRWProperty<Boolean> itsShowPackages;
 	private IPropertyListener<Boolean> itsShowPackagesListener = new SimplePropertyListener<Boolean>()
@@ -157,6 +157,7 @@ public class CFlowView extends LogView<CFlowSeed> implements IEventListView
 		aSeed.pRootEvent().addHardListener(itsRootEventListener);
 		update();
 		itsWatchPanel.showStackFrame();
+		itsCFlowTree.connectSeed(aSeed);
 	}
 
 	@Override
@@ -165,6 +166,7 @@ public class CFlowView extends LogView<CFlowSeed> implements IEventListView
 		aSeed.pSelectedEvent().removeListener(itsSelectedEventListener);
 		disconnect(aSeed.pSelectedEvent(), itsCFlowTree.pSelectedEvent());
 		aSeed.pRootEvent().removeListener(itsRootEventListener);
+		itsCFlowTree.disconnectSeed(aSeed);
 	}
 
 	@Override
@@ -414,7 +416,7 @@ public class CFlowView extends LogView<CFlowSeed> implements IEventListView
 	@Override
 	public void addNotify()
 	{
-		Bus.get(this).subscribe(EventSelectedMsg.ID, itsEventSelectedListener);
+//		Bus.get(this).subscribe(EventSelectedMsg.ID, itsEventSelectedListener);
 		
 		itsShowPackages = Options.get(this).getProperty(StdOptions.SHOW_PACKAGE_NAMES);
 		itsShowPackages.addHardListener(itsShowPackagesListener);
@@ -427,7 +429,7 @@ public class CFlowView extends LogView<CFlowSeed> implements IEventListView
 	{
 		super.removeNotify();
 		
-		Bus.get(this).unsubscribe(EventSelectedMsg.ID, itsEventSelectedListener);
+//		Bus.get(this).unsubscribe(EventSelectedMsg.ID, itsEventSelectedListener);
 		
 		itsShowPackages.removeListener(itsShowPackagesListener);
 	}

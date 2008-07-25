@@ -31,6 +31,8 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.kit;
 
+import javax.swing.Action;
+
 import tod.gui.BrowserNavigator;
 import tod.gui.seed.LogViewSeed;
 
@@ -43,6 +45,12 @@ public class NavBackButton extends AbstractNavButton
 	public NavBackButton(BrowserNavigator<LogViewSeed> aNavigator)
 	{
 		super(aNavigator);
+	}
+
+	@Override
+	protected Action getAction()
+	{
+		return getNavigator().getBackwardAction();
 	}
 
 	@Override

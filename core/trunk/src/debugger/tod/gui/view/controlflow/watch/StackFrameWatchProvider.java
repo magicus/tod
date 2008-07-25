@@ -171,10 +171,11 @@ public class StackFrameWatchProvider extends AbstractWatchProvider
 	@Override
 	public List<Entry> getEntries()
 	{
+		IVariablesInspector theInspector = getInspector(); // Obtain inspector first to update validity
 		if (itsInvalid) return null;
 		if (itsEntries == null)
 		{
-			List<LocalVariableInfo> theVariables = getInspector().getVariables();
+			List<LocalVariableInfo> theVariables = theInspector.getVariables();
 			itsEntries = new ArrayList<Entry>();
 			for (LocalVariableInfo theLocalVariable : theVariables)
 			{

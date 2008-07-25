@@ -38,6 +38,7 @@ import javax.swing.JPanel;
 
 import tod.Util;
 import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.gui.FontConfig;
@@ -53,16 +54,16 @@ public class NormalStackNode extends AbstractStackNode
 {
 	public NormalStackNode(
 			JobProcessor aJobProcessor, 
-			IBehaviorCallEvent aEvent,
-			boolean aCurrentStackFrame, CallStackPanel aCallStackPanel)
+			ILogEvent aEvent,
+			CallStackPanel aCallStackPanel)
 	{
-		super(aJobProcessor, aEvent, aCurrentStackFrame, aCallStackPanel);
+		super(aJobProcessor, aEvent, aCallStackPanel);
 	}
 
 	@Override
-	public IBehaviorCallEvent getEvent()
+	public IBehaviorCallEvent getFrameEvent()
 	{
-		return (IBehaviorCallEvent) super.getEvent();
+		return (IBehaviorCallEvent) super.getFrameEvent();
 	}
 	
 	@Override
@@ -73,10 +74,10 @@ public class NormalStackNode extends AbstractStackNode
 		StringBuilder theBuilder = new StringBuilder();
 
 		// Create caption
-		IBehaviorInfo theBehavior = getEvent().getExecutedBehavior();
-		if (theBehavior == null) theBehavior = getEvent().getCalledBehavior();
+		IBehaviorInfo theBehavior = getFrameEvent().getExecutedBehavior();
+		if (theBehavior == null) theBehavior = getFrameEvent().getCalledBehavior();
 		ITypeInfo theType = theBehavior.getType();
-		Object[] theArguments = getEvent().getArguments();
+		Object[] theArguments = getFrameEvent().getArguments();
 		
 		// Type.method
 		theBuilder.append(Util.getSimpleName(theType.getName()));
