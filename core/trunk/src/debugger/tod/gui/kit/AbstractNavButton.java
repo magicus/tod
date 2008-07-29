@@ -160,7 +160,8 @@ public abstract class AbstractNavButton extends JPanel
 				public Dimension getPreferredSize()
 				{
 					Dimension theSize = super.getPreferredSize();
-					if (theSize.width > 400) theSize.width = 400;
+					theSize.height += 50; // Hack...
+					if (theSize.width > 300) theSize.width = 300;
 					if (theSize.height > 500) theSize.height = 500;
 					return theSize;
 				}
