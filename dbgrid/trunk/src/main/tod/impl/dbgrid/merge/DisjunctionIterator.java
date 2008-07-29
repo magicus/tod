@@ -86,7 +86,7 @@ public abstract class DisjunctionIterator<T> extends MergeIterator<T>
 	{
 		T[] theBuffer = (T[]) new Object[getHeadCount()];
 		T theMaxTimestampItem = null;
-		long theMaxTimestamp = 0;
+		long theMaxTimestamp = -1;
 
 		T[] theHeads = peekPreviousHeads(theBuffer);
 		
