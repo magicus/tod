@@ -22,6 +22,7 @@ import tod.impl.evdbng.messages.GridFieldWriteEvent;
 import tod.impl.evdbng.messages.GridNewArrayEvent;
 import tod.impl.evdbng.messages.GridOutputEvent;
 import tod.impl.evdbng.messages.GridVariableWriteEvent;
+import tod.utils.TODUtils;
 
 /**
  * Event collector for the grid database backend. It handles events from a single
@@ -103,7 +104,7 @@ public class GridEventCollector extends EventCollector
 	@Override
 	protected void exception(
 			int aThreadId,
-			long aParentTimestamp, 
+			long aParentTimestamp,
 			short aDepth,
 			long aTimestamp,
 			int[] aAdviceCFlow,
@@ -111,19 +112,32 @@ public class GridEventCollector extends EventCollector
 			int aOperationBytecodeIndex,
 			Object aException)
 	{
-		System.out.println("GridEventCollector.exception()");
+		ProbeInfo theProbeInfo =
+				itsStructureDatabase.getNewExceptionProbe(aBehaviorId, aOperationBytecodeIndex);
 
-		ProbeInfo theProbeInfo = itsStructureDatabase.getNewExceptionProbe(aBehaviorId, aOperationBytecodeIndex);
+		exception(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, theProbeInfo.id, aException);
+	}
+
+	public void exception(
+			int aThreadId,
+			long aParentTimestamp,
+			short aDepth,
+			long aTimestamp,
+			int[] aAdviceCFlow,
+			int aProbeId,
+			Object aException)
+	{
+		TODUtils.logf(1, "GridEventCollector.exception()");
 
 		itsExceptionEvent.set(
-				aThreadId, 
+				aThreadId,
 				aDepth,
 				aTimestamp,
 				aAdviceCFlow,
-				theProbeInfo.id,
-				aParentTimestamp, 
+				aProbeId,
+				aParentTimestamp,
 				aException);
-		
+
 		dispatch(itsExceptionEvent);
 	}
 
