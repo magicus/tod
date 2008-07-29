@@ -43,8 +43,8 @@ public class HtmlText extends HtmlElement
 	/**
 	 * Relative font size, in percent. 
 	 */
-	private int itsFontSize;
-	private int itsFontWeight;
+	private int itsFontSize = FontConfig.NORMAL;
+	private int itsFontWeight = FONT_WEIGHT_NORMAL;
 	private Color itsColor;
 	private StringBuilder itsExtraStyle;
 
