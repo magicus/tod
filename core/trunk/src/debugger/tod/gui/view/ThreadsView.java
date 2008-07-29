@@ -63,6 +63,7 @@ public class ThreadsView extends LogView<ThreadsSeed>
 	
 	private JLabel itsEventsCountLabel;
 	private long itsLastEventCount = -1;
+	private int itsLastThreadCount = -1;
 
 	
 	private Timer itsTimer;
@@ -114,15 +115,18 @@ public class ThreadsView extends LogView<ThreadsSeed>
 	private void update()
 	{
 		long theEventCount = getLogBrowser().getEventsCount();
+
+		List<IThreadInfo> theThreads = new ArrayList<IThreadInfo>();
+		Utils.fillCollection(theThreads, getLogBrowser().getThreads());
+		int theThreadCount = theThreads.size();
 		
-		if (theEventCount != itsLastEventCount)
+		if (theEventCount != itsLastEventCount || theThreadCount != itsLastThreadCount)
 		{
 			itsLastEventCount = theEventCount;
+			itsLastThreadCount = theThreadCount;
 			
 			itsEventsCountLabel.setText("Events registered: "+theEventCount);
 			
-			List<IThreadInfo> theThreads = new ArrayList<IThreadInfo>();
-			Utils.fillCollection(theThreads, getLogBrowser().getThreads());
 			Collections.sort(theThreads, IThreadInfo.ThreadIdComparator.getInstance());
 			
 			for (IThreadInfo theThread : theThreads)

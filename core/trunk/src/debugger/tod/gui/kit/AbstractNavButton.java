@@ -36,15 +36,17 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import tod.gui.BrowserNavigator;
+import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.Resources;
 import tod.gui.kit.html.HtmlBody;
@@ -57,6 +59,7 @@ import tod.gui.seed.LogViewSeed;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;
 import zz.utils.ui.ScrollablePanel;
+import zz.utils.ui.StackLayout;
 import zz.utils.ui.UIUtils;
 import zz.utils.ui.popup.ButtonPopupComponent;
 
@@ -110,20 +113,14 @@ public abstract class AbstractNavButton extends JPanel
 		String theDescription = aSeed.getShortDescription();
 		if (theDescription == null) return null;
 		
-		return HtmlText.create(theDescription);
+		HtmlText theText = HtmlText.create(theDescription, FontConfig.SMALL, Color.BLACK);
+		theText.addExtraStyle("left", "10");
+		return theText;
 	}
 	
 	private static HtmlElement createKindDesc(LogViewSeed aSeed)
 	{
-		return HtmlText.create(aSeed.getKindDescription(), 75, Color.DARK_GRAY);
-	}
-	
-	private static JComponent createSeparator(int aSize)
-	{
-		JPanel thePanel = new JPanel(null);
-		thePanel.setPreferredSize(new Dimension(0, aSize));
-		thePanel.setBackground(Color.BLACK);
-		return thePanel;
+		return HtmlText.create(aSeed.getKindDescription(), FontConfig.NORMAL, HtmlText.FONT_WEIGHT_BOLD, Color.BLACK);
 	}
 	
 	protected abstract Action getAction();
@@ -136,8 +133,7 @@ public abstract class AbstractNavButton extends JPanel
 	 */
 	private class NavStackPanel extends JPanel
 	{
-		private JPanel itsSimilarSeedsPanel;
-		private JPanel itsOtherSeedsPanel;
+		private JPanel itsSeedsPanel;
 		
 		public NavStackPanel()
 		{
@@ -147,10 +143,9 @@ public abstract class AbstractNavButton extends JPanel
 		private void createUI()
 		{
 			removeAll();
-			setLayout(new BorderLayout());
-			setPreferredSize(new Dimension(300, 400));
+			setLayout(new StackLayout());
 			
-			itsSimilarSeedsPanel = new ScrollablePanel(GUIUtils.createStackLayout())
+			itsSeedsPanel = new ScrollablePanel(GUIUtils.createStackLayout())
 			{
 				@Override
 				public boolean getScrollableTracksViewportWidth()
@@ -158,65 +153,78 @@ public abstract class AbstractNavButton extends JPanel
 					return true;
 				}
 			};
-			itsSimilarSeedsPanel.setBackground(Color.white);
-			JScrollPane theSimScrollPane = new JScrollPane(itsSimilarSeedsPanel);
-			add(theSimScrollPane, BorderLayout.CENTER);
-			
-//			add(createSeparator(2));
-			
-			itsOtherSeedsPanel = new ScrollablePanel(GUIUtils.createStackLayout())
+			itsSeedsPanel.setBackground(Color.white);
+			JScrollPane theScrollPane = new JScrollPane(itsSeedsPanel)
 			{
 				@Override
-				public boolean getScrollableTracksViewportWidth()
+				public Dimension getPreferredSize()
 				{
-					return true;
+					Dimension theSize = super.getPreferredSize();
+					if (theSize.width > 400) theSize.width = 400;
+					if (theSize.height > 500) theSize.height = 500;
+					return theSize;
 				}
 			};
-			JScrollPane theOtherScrollPane = new JScrollPane(itsOtherSeedsPanel);
-			add(theOtherScrollPane, BorderLayout.SOUTH);
+			add(theScrollPane);
 		}
 		
 		private void setup()
 		{
 			createUI(); // temp
 			
-			itsSimilarSeedsPanel.removeAll();
-			itsOtherSeedsPanel.removeAll();
+			itsSeedsPanel.removeAll();
 			
-			Class theFirstClass = null;
 			Iterator<LogViewSeed> theIterator = getSeedsStack().iterator();
-			
-			LogViewSeed theSeed = null;
-			boolean theKindShown = false;
 
+			// The seeds are grouped by class.
+			Class theGroupClass = null;
+			List<LogViewSeed> theSeedGroup = new ArrayList<LogViewSeed>();
+			
 			while(theIterator.hasNext())
 			{
-				theSeed = theIterator.next();
-				if (theFirstClass == null) theFirstClass = theSeed.getClass();
-				else if (! theFirstClass.equals(theSeed.getClass())) break;
+				LogViewSeed theSeed = theIterator.next();
+				Class theClass = theSeed.getClass();
+				if (theGroupClass == null) theGroupClass = theClass;
 
-				if (! theKindShown)
+				if (theClass.equals(theGroupClass))
 				{
-					itsSimilarSeedsPanel.add(new HtmlComponent(HtmlDoc.create(createKindDesc(theSeed))));
-					theKindShown = true;
+					theSeedGroup.add(theSeed);
 				}
-				
-				itsSimilarSeedsPanel.add(new SeedPanel(theSeed, false));
+				else
+				{
+					setupGroup(theSeedGroup);
+					theSeedGroup.clear();
+					theSeedGroup.add(theSeed);
+					theGroupClass = theClass;
+				}
 			}
 			
-			while(theSeed != null)
-			{
-				itsOtherSeedsPanel.add(new SeedPanel(theSeed, true));
-				
-				if (! theIterator.hasNext()) break;
-				theSeed = theIterator.next();
-				
-				itsOtherSeedsPanel.add(createSeparator(1));
-			} 
+			if (! theSeedGroup.isEmpty()) setupGroup(theSeedGroup);
 			
 			revalidate();
 			repaint();
 		}
+
+		private void setupGroup(List<LogViewSeed> aGroup)
+		{
+			if (aGroup.size() == 1)
+			{
+				LogViewSeed theSeed = aGroup.get(0);
+				itsSeedsPanel.add(new SeedPanel(theSeed, true));
+			}
+			else
+			{
+				assert ! aGroup.isEmpty();
+				LogViewSeed theFirstSeed = aGroup.get(0);
+				itsSeedsPanel.add(new HtmlComponent(HtmlDoc.create(createKindDesc(theFirstSeed))));
+				
+				for (LogViewSeed theSeed : aGroup)
+				{
+					itsSeedsPanel.add(new SeedPanel(theSeed, false));
+				}
+			}
+		}
+		
 	}
 	
 	/**

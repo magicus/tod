@@ -37,40 +37,48 @@ import tod.gui.FontConfig;
 
 public class HtmlText extends HtmlElement
 {
+	public static final int FONT_WEIGHT_NORMAL = 400;
+	public static final int FONT_WEIGHT_BOLD = 800;
+	
 	/**
 	 * Relative font size, in percent. 
 	 */
 	private int itsFontSize;
+	private int itsFontWeight;
 	private Color itsColor;
+	private StringBuilder itsExtraStyle;
 
 	private String itsText;
+	
+	public HtmlText()
+	{
+	}
 
-	public HtmlText(String aText)
-	{
-		this(aText, FontConfig.NORMAL);
-	}
-	
-	public HtmlText(String aText, int aFontSize)
-	{
-		this(aText, null, aFontSize);		
-	}
-	
-	public HtmlText(String aText, Color aColor)
-	{
-		this(aText, aColor, FontConfig.NORMAL);
-	}
-	
-	public HtmlText(String aText, Color aColor, int aFontSize)
-	{
-		itsText = aText;
-		itsFontSize = aFontSize;
-		itsColor = aColor;
-	}
-	
 	public void setText(String aText)
 	{
 		itsText = aText;
 		update();
+	}
+
+	public void setFontSize(int aFontSize)
+	{
+		itsFontSize = aFontSize;
+	}
+
+	public void setFontWeight(int aFontWeight)
+	{
+		itsFontWeight = aFontWeight;
+	}
+
+	public void setColor(Color aColor)
+	{
+		itsColor = aColor;
+	}
+	
+	public void addExtraStyle(String aKey, String aValue)
+	{
+		if (itsExtraStyle == null) itsExtraStyle = new StringBuilder();
+		itsExtraStyle.append(aKey+": "+aValue+"; ");
 	}
 
 	@Override
@@ -94,19 +102,38 @@ public class HtmlText extends HtmlElement
 			aBuilder.append("; ");
 		}
 		
+		if (itsFontWeight != FONT_WEIGHT_NORMAL)
+		{
+			aBuilder.append("font-weight: ");
+			aBuilder.append(itsFontWeight);
+			aBuilder.append("; "); 
+		}
+		
+		if (itsExtraStyle != null) aBuilder.append(itsExtraStyle);
+		
 		aBuilder.append("'>");
 		aBuilder.append(itsText);
 		aBuilder.append("</span>");
 	}
 	
+	public static HtmlText create(String aText, int aFontSize, int aFontWeight, Color aColor)
+	{
+		HtmlText theText = new HtmlText();
+		theText.setText(aText);
+		theText.setFontSize(aFontSize);
+		theText.setColor(aColor);
+		theText.setFontWeight(aFontWeight);
+		return theText;
+	}
+	
 	public static HtmlText create(String aText, int aFontSize, Color aColor)
 	{
-		return new HtmlText(aText, aColor, aFontSize);
+		return create(aText, aFontSize, FONT_WEIGHT_NORMAL, aColor);
 	}
 	
 	public static HtmlText create(String aText, Color aColor)
 	{
-		return new HtmlText(aText, aColor, FontConfig.NORMAL);
+		return create(aText, FontConfig.NORMAL, FONT_WEIGHT_NORMAL, aColor);
 	}
 	
 	public static HtmlText create(String aText)

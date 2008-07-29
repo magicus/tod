@@ -83,7 +83,7 @@ public abstract class HtmlParentElement extends HtmlElement
 	
 	public void addText(String aText)
 	{
-		add(new HtmlText(aText));
+		add(HtmlText.create(aText));
 	}
 	
 	public void addBr()

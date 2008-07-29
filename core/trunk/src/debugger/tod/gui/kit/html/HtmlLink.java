@@ -35,7 +35,7 @@ public abstract class HtmlLink extends HtmlText implements IHyperlinkListener
 {
 	public HtmlLink(String aText)
 	{
-		super(aText);
+		setText(aText);
 	}
 	
 	@Override

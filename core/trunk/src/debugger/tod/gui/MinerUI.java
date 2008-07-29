@@ -142,7 +142,7 @@ implements ILocationSelectionListener, IGUIManager
 	};
 
 	private JobProcessor itsJobProcessor = new JobProcessor();
-	private BookmarkPanel itsBookmarkPanel = new BookmarkPanel();
+//	private BookmarkPanel itsBookmarkPanel = new BookmarkPanel();
 	
 	private GUISettings itsGUISettings = new GUISettings(this);
 	
@@ -246,7 +246,7 @@ implements ILocationSelectionListener, IGUIManager
 
 	protected void viewChanged(LogView aView)
 	{
-		itsBookmarkPanel.setView(aView);
+//		itsBookmarkPanel.setView(aView);
 		itsGUISettings.save();
 		itsCurrentView = aView;
 	}
@@ -269,10 +269,10 @@ implements ILocationSelectionListener, IGUIManager
 	 */
 	protected void createActions(ActionToolbar aToolbar, ActionCombo aActionCombo)
 	{
-		if (DebugFlags.SHOW_DEBUG_GUI)
-		{
-			aToolbar.add(itsBookmarkPanel);
-		}
+//		if (DebugFlags.SHOW_DEBUG_GUI)
+//		{
+//			aToolbar.add(itsBookmarkPanel);
+//		}
 
 		// Add a button that permits to jump to the threads view.
 		aToolbar.add(new MyAction(

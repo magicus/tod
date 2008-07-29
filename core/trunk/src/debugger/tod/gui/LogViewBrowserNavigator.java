@@ -66,7 +66,7 @@ public class LogViewBrowserNavigator extends BrowserNavigator<LogViewSeed>
 		
 		try
 		{
-			if (itsCurrentView != null && aSeed != null && ! itsCurrentView.getClass().equals(aSeed.getComponentClass()))
+			if (itsCurrentView != null && (aSeed == null || ! itsCurrentView.getClass().equals(aSeed.getComponentClass())))
 			{
 				// Keep current view
 				itsViewContainer.remove(itsCurrentView);

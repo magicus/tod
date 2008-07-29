@@ -269,7 +269,7 @@ public class Hyperlinks
 		@Override
 		public HtmlElement createText(String aLabel, Color aColor)
 		{
-			return new HtmlText(aLabel, aColor);
+			return HtmlText.create(aLabel, aColor);
 		}
 	}
 	
