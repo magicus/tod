@@ -248,7 +248,11 @@ public class PacketBufferSender extends Thread
 		 */
 		public void pleaseSwap()
 		{
-			if (itsPendingBuffer == null && itsCurrentBuffer.position() > 0) swapBuffers();
+			if (itsCurrentBuffer.position() == 0) return;
+			synchronized (this)
+			{
+				if (itsPendingBuffer == null) swapBuffers();
+			}
 		}
 		
 		/**
