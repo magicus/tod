@@ -140,6 +140,8 @@ implements IEventListView
 		
 		itsTitleComponent.setDoc(HtmlDoc.create("<b>"+theTitle+"</b>", FontConfig.BIG, Color.BLACK));
 		itsFlagsPanel.setSeed(aSeed);
+		
+		updateFilter();
 	}
 
 	@Override
@@ -211,8 +213,6 @@ implements IEventListView
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		
 		add(theScrollPane, BorderLayout.WEST);
-		
-		updateFilter();
 		
 		itsEventHighlighter = new EventHighlighter(getGUIManager(), getLogBrowser());
 		theSplitPane.setRightComponent(itsEventHighlighter);

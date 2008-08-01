@@ -38,6 +38,7 @@ import tod.gui.IGUIManager;
 import tod.gui.kit.html.HtmlElement;
 import tod.gui.kit.html.HtmlGroup;
 import tod.gui.kit.html.HtmlText;
+import tod.gui.kit.html.HtmlUtils;
 
 public class MethodCallNode extends BehaviorCallNode
 {
@@ -52,7 +53,7 @@ public class MethodCallNode extends BehaviorCallNode
 	protected HtmlElement createShortBehaviorName()
 	{
 		IBehaviorInfo theBehavior = getBehavior();
-		return HtmlText.create(HtmlText.escapeHTML(
+		return HtmlText.create(HtmlUtils.escapeHTML(
 				theBehavior != null ? theBehavior.getName() : "Error: null behavior"));
 	}
 	
@@ -63,7 +64,7 @@ public class MethodCallNode extends BehaviorCallNode
 		if (showPackageNames()) theGroup.add(createPackageName());
 		theGroup.addText(Util.getSimpleName(getBehavior().getType().getName()));
 		theGroup.addText(".");
-		theGroup.addText(HtmlText.escapeHTML(theBehavior.getName()));
+		theGroup.addText(HtmlUtils.escapeHTML(theBehavior.getName()));
 		
 		return theGroup;
 	}

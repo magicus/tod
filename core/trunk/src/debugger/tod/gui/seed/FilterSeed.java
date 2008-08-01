@@ -38,6 +38,7 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.gui.FontConfig;
 import tod.gui.kit.html.HtmlDoc;
+import tod.gui.kit.html.HtmlUtils;
 import tod.gui.view.FilterView;
 import tod.gui.view.LogView;
 import zz.utils.properties.IRWProperty;
@@ -96,7 +97,7 @@ public class FilterSeed extends LogViewSeed/*<FilterView>*/
 	
 	public HtmlDoc getTitle()
 	{
-		return HtmlDoc.create("<b>"+itsTitle+"</b>", FontConfig.BIG, Color.BLACK);
+		return HtmlDoc.create("<b>"+HtmlUtils.escapeHTML(itsTitle)+"</b>", FontConfig.BIG, Color.BLACK);
 	}
 	
 	/**

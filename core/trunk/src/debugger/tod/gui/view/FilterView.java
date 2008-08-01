@@ -33,6 +33,7 @@ package tod.gui.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 
 import javax.swing.JSplitPane;
 
@@ -47,6 +48,7 @@ import tod.gui.kit.Bus;
 import tod.gui.kit.Options;
 import tod.gui.kit.SavedSplitPane;
 import tod.gui.kit.html.HtmlComponent;
+import tod.gui.kit.html.HtmlDoc;
 import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import tod.gui.seed.FilterSeed;
@@ -106,6 +108,7 @@ implements IEventListView
 		
 		itsListPanel.setBrowser(aSeed.getBaseFilter());
 		itsTitleComponent.setDoc(aSeed.getTitle());
+		itsTitleComponent.getPreferredSize(); // For some reason we have to call this in order for the size to be updated...
 	}
 
 	@Override
