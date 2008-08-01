@@ -32,7 +32,7 @@ public class TestEventDatabase
 	@Before public void fill()
 	{
 		System.out.println("enabled: "+AgentReady.CAPTURE_ENABLED);
-		TOD.disableCapture();
+//		TOD.disableCapture();
 		itsStructureDatabase = StructureDatabase.create(new TODConfig());
 		itsDatabase = new EventDatabase(
 				itsStructureDatabase,
@@ -79,13 +79,13 @@ public class TestEventDatabase
 			
 			if (theCount > 3)
 			{
-				TOD.enableCapture();
+//				TOD.enableCapture();
 				Fixtures.checkIteration(
 						itsDatabase, 
 						theEventCondition, 
 						createGenerator(), 
 						theCount);
-				TOD.disableCapture();
+//				TOD.disableCapture();
 			}
 		}
 	}

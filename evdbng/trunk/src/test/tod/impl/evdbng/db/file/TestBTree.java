@@ -15,7 +15,7 @@ public class TestBTree
 {
 	
 	private static final int NavigationNumber = 10;
-	private static final int TestNumber = 6000000;
+	private static final int TestNumber = 60000;
 	private static final long E = 0x1fffffffffL;
 	private static final int D = 0x1fffff;
 	private static final int C = 0x1fff;
@@ -37,7 +37,7 @@ public class TestBTree
 	public void testSequenceTree() 
 	{
 		//first key must be 0.
-		int theFirstIndex=0, theLastIndex= TestNumber;
+		int theFirstIndex=1000, theLastIndex= TestNumber;
 		
 		testKeyMaker(theLastIndex);
 		
@@ -55,7 +55,7 @@ public class TestBTree
 		for (int theI = 0; theI < NavigationNumber; theI++)
 		{
 			System.out.println("testing - "+theI);
-			long theStartTimestamp = getKeyForIndex(itsRandom.nextInt(theLastIndex)) ;
+			long theStartTimestamp = getKeyForIndex(randomIndex(theFirstIndex, theLastIndex));
 			testTupleBackward(theTimestampTree, theStartTimestamp);
 			testTupleForward(theTimestampTree, theStartTimestamp);
 		}
@@ -70,7 +70,7 @@ public class TestBTree
 	public void testSimpleTree() 
 	{
 		//first key must be 0.
-		int theFirstIndex=0, theLastIndex= TestNumber;
+		int theFirstIndex=1000, theLastIndex= TestNumber;
 		
 		testKeyMaker(theLastIndex);
 		
@@ -188,22 +188,28 @@ public class TestBTree
 	}
 	
 	
+	private int randomIndex(int aFirstIndex, int aLastIndex)
+	{
+		return itsRandom.nextInt(aLastIndex-aFirstIndex) + aFirstIndex;
+	}
+	
 	/**
 	 * keys should have been inserted sequentially
 	 * @param aTimestampTree
 	 * @param aFirstTimestamp
 	 * @param aLastTimestamp
 	 */
-	private void testGetEventID(SequenceTree aTimestampTree, long aFirstIndex, long aLastIndex)
+	private void testGetEventID(SequenceTree aTimestampTree, int aFirstIndex, int aLastIndex)
 	{
-		Assert.assertTrue(aTimestampTree.getTuplePosition(getKeyForIndex(aFirstIndex), null) == aFirstIndex);
-		Assert.assertTrue(aTimestampTree.getTuplePosition(getKeyForIndex(aFirstIndex+7), null) == aFirstIndex+7);
+		Assert.assertTrue(aTimestampTree.getTuplePosition(getKeyForIndex(aFirstIndex), null) == 0);
+		Assert.assertTrue(aTimestampTree.getTuplePosition(getKeyForIndex(aFirstIndex+7), null) == 7);
 		
-		Assert.assertTrue(aTimestampTree.getTuplePosition(getKeyForIndex(aLastIndex), null) == aLastIndex);
+		Assert.assertTrue(aTimestampTree.getTuplePosition(getKeyForIndex(aLastIndex), null) == aLastIndex-aFirstIndex);
 		int i = 0;
 		while (i++<10000){
-			long theTest = itsRandom.nextInt((int)aLastIndex);
-			Assert.assertTrue(aTimestampTree.getTuplePosition(getKeyForIndex(theTest), null)==theTest);
+			long theTest = randomIndex(aFirstIndex, aLastIndex);
+			//if (i < 1607) continue;
+			Assert.assertTrue(""+i, aTimestampTree.getTuplePosition(getKeyForIndex(theTest), null)==theTest-aFirstIndex);
 		}
 	}
 	

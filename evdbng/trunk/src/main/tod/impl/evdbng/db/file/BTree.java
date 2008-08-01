@@ -37,6 +37,11 @@ public abstract class BTree<T extends Tuple>
 	 * Last written key for each level.
 	 */
 	private long[] itsLastKeys = new long[DB_MAX_INDEX_LEVELS];
+	
+	/**
+	 * The keys currently being written for each level.
+	 */
+	private long[] itsCurrentKeys = new long[DB_MAX_INDEX_LEVELS];
 
 	/**
 	 * Number of tuples before the beginning of the current page for each level.
@@ -169,6 +174,36 @@ public abstract class BTree<T extends Tuple>
 	protected abstract TupleBufferFactory<T> getTupleBufferFactory();
 	
 	/**
+	 * Writes a tuple at the leaf level.
+	 * @return The {@link PageIOStream} to which extra data can be written
+	 */
+	protected PageIOStream addLeafKey(long aKey)
+	{
+		if (itsFirstKey == -1) itsFirstKey = aKey;
+		assert itsLastKey <= aKey;
+		itsLastKey = aKey;
+		PageIOStream theStream = addKey(aKey, itsTupleBufferFactory.getDataSize(), 0);
+		itsLeafTupleCount++;
+		
+		return theStream;
+	} 
+	
+	/**
+	 * Adds an internal tuple at the specified level.
+	 * @param aKey The tuple key
+	 * @param aPageId Tuple data
+	 * @param aTupleCount Tuple data
+	 * @param aLevel The level to which the tuple is added
+	 */
+	protected void addInternalTuple(long aKey, int aPageId, short aTupleCount, int aLevel)
+	{
+		assert aLevel > 0;
+		
+		addKey(aKey, PageIOStream.internalTupleDataSize(), aLevel);
+		itsChains[aLevel].writeInternalTupleData(aPageId, (short) aTupleCount);
+	}
+	
+	/**
 	 * Adds a key to the current page of the given level.
 	 * The caller is responsible of writing additional tuple data. This method only
 	 * ensures that space is available for adding this data.
@@ -179,7 +214,10 @@ public abstract class BTree<T extends Tuple>
 	{
 		long theDelta = aKey - itsLastKeys[aLevel];
 		assert theDelta >= 0 : "aKey: "+aKey+"theDelta: "+theDelta;
-		itsLastKeys[aLevel] = aKey;
+		
+		// Set the currently written key so that index tuples in higher 
+		// levels are properly set up
+		itsCurrentKeys[aLevel] = aKey;
 		
 		// We put the MSB to 1 for bytes so as to recognize a 0 byte
 		// at the end of a page as empty space
@@ -212,7 +250,11 @@ public abstract class BTree<T extends Tuple>
 		{
 			itsChains[aLevel].writeBL(0x60, aKey, aDataSpace);
 		}
-		
+
+		// We update this after writing to the chains, as the last key of the previous page
+		// is written at the beginning of each new page
+		itsLastKeys[aLevel] = aKey;
+
 		return itsChains[aLevel].getCurrentStream();
 	}
 	
@@ -231,7 +273,7 @@ public abstract class BTree<T extends Tuple>
 		theStream.setPos(0);
 		
 		TupleBuffer<?> theBuffer;
-		long theLastKey = theStream.readLong();
+		long theLastKey = theStream.readLong(); // Last key of the previous page.
 		
 		if (aLevel == 0)
 		{
@@ -295,21 +337,6 @@ public abstract class BTree<T extends Tuple>
 	}
 	
 	/**
-	 * Writes a tuple at the leaf level.
-	 * @return The {@link PageIOStream} to which extra data can be written
-	 */
-	protected PageIOStream addLeafKey(long aKey)
-	{
-		if (itsFirstKey == -1) itsFirstKey = aKey;
-		assert itsLastKey <= aKey;
-		itsLastKey = aKey;
-		PageIOStream theStream = addKey(aKey, itsTupleBufferFactory.getDataSize(), 0);
-		itsLeafTupleCount++;
-		
-		return theStream;
-	} 
-	
-	/**
 	 * Initializes the current leaf page. This method is called before any data
 	 * is written to the page.
 	 */
@@ -325,7 +352,8 @@ public abstract class BTree<T extends Tuple>
 	 */
 	protected void startPage(int aLevel)
 	{
-		itsChains[aLevel].writeLong(itsLastKey, 0);
+		// Write the last key of the previous page
+		itsChains[aLevel].writeLong(itsLastKeys[aLevel], 0);
 	}
 	
 	
@@ -337,7 +365,7 @@ public abstract class BTree<T extends Tuple>
 	 */
 	protected void newPageHook(int aLevel, int aOldPageId, int aNewPageId)
 	{
-		//add the value of the first key of the page
+		// Initialize the new page
 		if (aLevel == 0) startLeafPage();
 		else startPage(aLevel);
 		
@@ -353,20 +381,18 @@ public abstract class BTree<T extends Tuple>
 			
 			//add the key to the first page of the new level : its always the first key
 			itsChains[itsRootLevel].writeLong(itsFirstKey, 0);
+			itsLastKeys[itsRootLevel] = itsFirstKey;
 			
 			//create the first internal tuple of the level 
 			//having as key the first key of the leaves
-			addKey(itsFirstKey, PageIOStream.internalTupleDataSize(), itsRootLevel);
-			itsChains[itsRootLevel].writeInternalTupleData(aOldPageId, (short) 0);
+			addInternalTuple(itsFirstKey, aOldPageId, (short) 0, itsRootLevel);
 		}
 		
-		//create a new page with the key value to be written  (itsLastKeys[aLevel]
-		addKey(itsLastKeys[aLevel], PageIOStream.internalTupleDataSize(), aLevel+1);
-		
+		//create a new page with the key value to be written 
 		//the LeafTupleCount includes the key which is going to be inserted...
 		long theOldPageCount = itsLeafTupleCount-itsTupleCount[aLevel];
 		assert theOldPageCount < Short.MAX_VALUE;
-		itsChains[aLevel+1].writeInternalTupleData(aNewPageId, (short) theOldPageCount);
+		addInternalTuple(itsCurrentKeys[aLevel], aNewPageId, (short) theOldPageCount, aLevel+1);
 		
 		itsTupleCount[aLevel] = itsLeafTupleCount;
 	}
