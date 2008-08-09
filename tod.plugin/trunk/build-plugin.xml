@@ -18,6 +18,7 @@
 		<property name="tod.dir" value="${basedir}/../TOD"/>
 		<property name="tod-agent.dir" value="${basedir}/../TOD-agent"/>
 		<property name="tod-dbgrid.dir" value="${basedir}/../TOD-dbgrid"/>
+		<property name="tod-evdb1.dir" value="${basedir}/../TOD-evdb1"/>
 		<property name="zz.utils.dir" value="${basedir}/../zz.utils"/>
 		<property name="zz.eclipse.utils.dir" value="${basedir}/../zz.eclipse.utils"/>
 
@@ -82,6 +83,7 @@
 			<fileset dir="${tod.dir}/build" includes="tod-debugger.jar"/>
 			<fileset dir="${tod-agent.dir}/build" includes="tod-agent.jar"/>
 			<fileset dir="${tod-dbgrid.dir}/build" includes="tod-dbgrid.jar"/>
+			<fileset dir="${tod-evdb1.dir}/build" includes="tod-evdb1.jar"/>
 			<fileset dir="${tod-agent.dir}" includes="*.so *.dll *.dylib"/>
 		</copy>
 		
@@ -100,6 +102,14 @@
 		<ant 
 			antfile="${tod-dbgrid.dir}/build.xml" 
 			dir="${tod-dbgrid.dir}" 
+			target="jar"
+			inheritall="false"/>
+	</target>
+	
+	<target name="dep.tod-evdb1" depends="init" unless="skip.deps">
+		<ant 
+			antfile="${tod-evdb1.dir}/build.xml" 
+			dir="${tod-evdb1.dir}" 
 			target="jar"
 			inheritall="false"/>
 	</target>
@@ -131,5 +141,5 @@
 		<echo message="Finished building zz.utils"/>
 	</target>
 
-	<target name="dep.all" depends="dep.tod-agent, dep.tod, dep.zz.utils, dep.zz.eclipse.utils, dep.tod-dbgrid"/>
+	<target name="dep.all" depends="dep.tod-agent, dep.tod, dep.zz.utils, dep.zz.eclipse.utils, dep.tod-dbgrid, dep.tod-evdb1"/>
 </project>
