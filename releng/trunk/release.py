@@ -7,15 +7,19 @@ AGENT_LIBS_URL = "http://pleiad.dcc.uchile.cl/files/tod/tod-agent/"
 
 def release(version):
 	zzuMod = useSVN('zz.utils', 'http://stgo.dyndns.org/svn/gpothier/devel/zz.utils')
+	zzeuMod = useSVN('zz.eclipse.utils', 'http://stgo.dyndns.org/svn/gpothier/devel/zz.eclipse.utils/')
+
 	tpMod = useSVN('tod.plugin', 'http://pleiad.dcc.uchile.cl/svn/tod/tod.plugin/trunk/')
 	tpaMod = useSVN('tod.plugin.ajdt', 'http://pleiad.dcc.uchile.cl/svn/tod/tod.plugin.ajdt/')
 	tppMod = useSVN('tod.plugin.pytod', 'http://pleiad.dcc.uchile.cl/svn/tod/tod.plugin.pytod/trunk')
 	todMod = useSVN('TOD', 'http://pleiad.dcc.uchile.cl/svn/tod/core/trunk/')
 	taMod = useSVN('TOD-agent', 'http://pleiad.dcc.uchile.cl/svn/tod/agent/trunk/')
 	toddbgridMod = useSVN('TOD-dbgrid', 'http://pleiad.dcc.uchile.cl/svn/tod/dbgrid/trunk/')
+	todevdb1Mod = useSVN('TOD-evdb1', 'http://pleiad.dcc.uchile.cl/svn/tod/evdb1/trunk/')
+
 	pytodDbMod = useSVN('TOD-pytod-db', 'http://pleiad.dcc.uchile.cl/svn/tod/pytod/trunk/java-proyect/')
 	pytodCoreMod = useSVN('python-project', 'http://pleiad.dcc.uchile.cl/svn/tod/pytod/trunk/python-project/')
-	zzeuMod = useSVN('zz.eclipse.utils', 'http://stgo.dyndns.org/svn/gpothier/devel/zz.eclipse.utils/')
+
 	
 	print '############################################################'
 	print 'Checking and downloading native library builds...'
@@ -54,6 +58,7 @@ def release(version):
 	antBuild('TOD', 'build.xml', 'clean')
 	antBuild('TOD-agent', 'build.xml', 'clean')
 	antBuild('TOD-dbgrid', 'build.xml', 'clean')
+	antBuild('TOD-evdb1', 'build.xml', 'clean')
 	antBuild('TOD-pytod-db', 'build.xml', 'clean')
 	antBuild('zz.utils', 'build.xml', 'clean')
 	antBuild('zz.eclipse.utils', 'build-plugin.xml', 'clean')
@@ -71,6 +76,7 @@ def release(version):
 	antBuild('TOD-agent', 'build.xml', 'jar')
 	antBuild('TOD', 'build.xml', 'jar')
 	antBuild('TOD-dbgrid', 'build.xml', 'jar')
+	antBuild('TOD-evdb1', 'build.xml', 'jar')
 	antBuild('TOD-pytod-db', 'build.xml', 'jar')
 
 	setEclipsePluginVersion('tod.plugin', version)
