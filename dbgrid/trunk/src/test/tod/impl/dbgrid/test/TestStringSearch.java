@@ -25,6 +25,7 @@ import java.rmi.RemoteException;
 import org.junit.Test;
 
 import tod.core.config.TODConfig;
+import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.db.DatabaseNode;
 import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
@@ -39,7 +40,7 @@ public class TestStringSearch
 	{
 		TODConfig theConfig = new TODConfig();
 		theConfig.set(TODConfig.INDEX_STRINGS, true);
-		DatabaseNode theNode = new DatabaseNode();
+		DatabaseNode theNode = DebuggerGridConfig.createDatabaseNode();
 
 		for (int i=0;i<STRINGS.length;i++)
 		{

@@ -60,7 +60,6 @@ import tod.impl.dbgrid.dispatch.NodeConnector;
 import tod.impl.dbgrid.dispatch.NodeProxy;
 import tod.impl.dbgrid.dispatch.RINodeConnector;
 import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
-import tod.impl.dbgrid.queries.EventCondition;
 import tod.utils.PrintThroughCollector;
 import tod.utils.TODUtils;
 import tod.utils.remote.RIStructureDatabase;
@@ -143,7 +142,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	/**
 	 * A log browser for {@link #exec(ITask)}.
 	 */
-	private ILogBrowser itsLocalLogBrowser;
+	private GridLogBrowser itsLocalLogBrowser;
 
 	private GridMaster(TODConfig aConfig, StructureDatabase aStructureDatabase, int aExpectedNodes, boolean aStartServer)
 			throws RemoteException
@@ -154,7 +153,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		itsExpectedNodes = aExpectedNodes;
 		itsStartServer = aStartServer;
 
-		itsLocalLogBrowser = GridLogBrowser.createLocal(null, this);
+		itsLocalLogBrowser = DebuggerGridConfig.createLocalLogBrowser(null, this);
 
 		createTimeoutThread();
 	}
@@ -162,8 +161,11 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	/**
 	 * Creates a master with a single database node.
 	 */
-	public static GridMaster createLocal(TODConfig aConfig, StructureDatabase aStructureDatabase,
-			DatabaseNode aDatabaseNode, boolean aStartServer)
+	public static GridMaster createLocal(
+			TODConfig aConfig, 
+			StructureDatabase aStructureDatabase,
+			DatabaseNode aDatabaseNode, 
+			boolean aStartServer)
 	{
 		try
 		{
@@ -192,7 +194,10 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 * {@link #waitReady()} method should be called to wait for the nodes to
 	 * connect.
 	 */
-	public static GridMaster create(TODConfig aConfig, StructureDatabase aStructureDatabase, int aExpectedNodes)
+	public static GridMaster create(
+			TODConfig aConfig, 
+			StructureDatabase aStructureDatabase, 
+			int aExpectedNodes)
 			throws RemoteException
 	{
 		GridMaster theMaster = new GridMaster(aConfig, aStructureDatabase, aExpectedNodes, true);
@@ -204,6 +209,19 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		return theMaster;
 	}
 
+	/**
+	 * For testing only.
+	 */
+	public ILogCollector _getCollector()
+	{
+		return itsCollector;
+	}
+	
+	public GridLogBrowser _getLocalLogBrowser()
+	{
+		return itsLocalLogBrowser;
+	}
+	
 	private void createTimeoutThread()
 	{
 		Integer theTimeout = getConfig().get(TODConfig.MASTER_TIMEOUT);
@@ -238,7 +256,9 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	protected TODServer createServer()
 	{
-		TODServer theServer = TODServer.getFactory(getConfig()).create(getConfig(), getStructureDatabase(),
+		TODServer theServer = TODServer.getFactory(getConfig()).create(
+				getConfig(), 
+				getStructureDatabase(),
 				itsCollector);
 
 		theServer.pConnected().addHardListener(new PropertyListener<Boolean>()
@@ -503,7 +523,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		return itsHosts;
 	}
 
-	public RIQueryAggregator createAggregator(EventCondition aCondition) throws RemoteException
+	public RIQueryAggregator createAggregator(IGridEventFilter aCondition) throws RemoteException
 	{
 		TODUtils.logf(2, "[GridMaster] Creating aggregator for conditions: %s", aCondition);
 		return new QueryAggregator(this, aCondition);

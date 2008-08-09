@@ -20,16 +20,16 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.evdbng.messages;
 
-import static tod.impl.evdbng.ObjectCodec.getObjectId;
-import static tod.impl.evdbng.ObjectCodec.getObjectSize;
-import static tod.impl.evdbng.ObjectCodec.readObject;
-import static tod.impl.evdbng.ObjectCodec.writeObject;
+import static tod.impl.evdbng.ObjectCodecNG.getObjectId;
+import static tod.impl.evdbng.ObjectCodecNG.getObjectSize;
+import static tod.impl.evdbng.ObjectCodecNG.readObject;
+import static tod.impl.evdbng.ObjectCodecNG.writeObject;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IStructureDatabase;
 import tod.impl.common.event.InstanceOfEvent;
 import tod.impl.dbgrid.GridLogBrowser;
-import tod.impl.dbgrid.SplittedConditionHandler;
 import tod.impl.dbgrid.messages.MessageType;
+import tod.impl.evdbng.SplittedConditionHandler;
 import tod.impl.evdbng.db.Indexes;
 import tod.impl.evdbng.db.RoleIndexSet;
 import tod.impl.evdbng.db.file.PagedFile.PageIOStream;

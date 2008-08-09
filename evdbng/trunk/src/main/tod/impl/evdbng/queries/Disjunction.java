@@ -6,10 +6,11 @@ Proprietary and confidential
 package tod.impl.evdbng.queries;
 
 import tod.impl.database.IBidiIterator;
+import tod.impl.dbgrid.messages.GridEvent;
+import tod.impl.evdbng.db.EventList;
 import tod.impl.evdbng.db.IndexMerger;
 import tod.impl.evdbng.db.Indexes;
 import tod.impl.evdbng.db.file.SimpleTuple;
-import tod.impl.evdbng.messages.GridEventNG;
 
 /**
  * A disjunctive condition: any subcondition must match.
@@ -21,21 +22,27 @@ public class Disjunction extends CompoundCondition
 
 	@Override
 	public IBidiIterator<SimpleTuple> createTupleIterator(
-			Indexes aIndexes,
-			long aEventId)
+			EventList aEventList,
+			Indexes aIndexes, long aEventId)
 	{
 		IBidiIterator<SimpleTuple>[] theIterators = new IBidiIterator[getConditions().size()];
 		int i = 0;
 		for (EventCondition theCondition : getConditions())
 		{
-			theIterators[i++] = theCondition.createTupleIterator(aIndexes, aEventId);
+			theIterators[i++] = theCondition.createTupleIterator(aEventList, aIndexes, aEventId);
 		}
 		
 		return IndexMerger.disjunction(theIterators);
 	}
 	
 	@Override
-	public long[] getEventCounts(Indexes aIndexes, long aT1, long aT2, int aSlotsCount, boolean aForceMergeCounts)
+	public long[] getEventCounts(
+			EventList aEventList,
+			Indexes aIndexes, 
+			long aT1, 
+			long aT2, 
+			int aSlotsCount, 
+			boolean aForceMergeCounts)
 	{
 		int theSize = getConditions().size();
 		
@@ -44,7 +51,7 @@ public class Disjunction extends CompoundCondition
 		int i = 0;
 		for (EventCondition theCondition : getConditions())
 		{
-			theCounts[i++] = theCondition.getEventCounts(aIndexes, aT1, aT2, aSlotsCount, aForceMergeCounts);
+			theCounts[i++] = theCondition.getEventCounts(aEventList, aIndexes, aT1, aT2, aSlotsCount, aForceMergeCounts);
 		}
 		
 		// Sum up
@@ -58,7 +65,7 @@ public class Disjunction extends CompoundCondition
 	}
 
 	@Override
-	public boolean _match(GridEventNG aEvent)
+	public boolean _match(GridEvent aEvent)
 	{
 		for (EventCondition theCondition : getConditions())
 		{

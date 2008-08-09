@@ -7,6 +7,7 @@ package tod.impl.evdbng.messages;
 
 import tod.core.DebugFlags;
 import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.MessageType;
@@ -109,19 +110,37 @@ public abstract class GridEventNG extends GridEvent
 	{
 		ProbeInfo theProbeInfo = getProbeInfo();
 		
+		aIndexes.indexType(getEventType().ordinal(), aId);
+		
 		if (! DebugFlags.DISABLE_LOCATION_INDEX)
 		{
 			if (theProbeInfo != null && theProbeInfo.bytecodeIndex >= 0) aIndexes.indexLocation(theProbeInfo.bytecodeIndex, aId);
 		}
 
 		if (theProbeInfo != null && theProbeInfo.behaviorId >= 0)
+		{
 			aIndexes.indexBehavior(theProbeInfo.behaviorId, aId, RoleIndexSet.ROLE_BEHAVIOR_OPERATION);
+		}
 		
 		if (theProbeInfo != null && theProbeInfo.adviceSourceId >= 0)
+		{
 			aIndexes.indexAdviceSourceId(theProbeInfo.adviceSourceId, aId);
+		}
+		
+		if (getAdviceCFlow() != null)
+		{
+			for (int theSourceId : getAdviceCFlow()) aIndexes.indexAdviceCFlow(theSourceId, aId);
+		}
+		
+		if (theProbeInfo != null && theProbeInfo.role != null && theProbeInfo.role != BytecodeRole.UNKNOWN)
+		{
+			aIndexes.indexRole(theProbeInfo.role.ordinal()+1, aId);
+		}
 		
 		if (getThread() > 0) 
+		{
 			aIndexes.indexThread(getThread(), aId);
+		}
 		
 		aIndexes.indexDepth(getDepth(), aId);
 		

@@ -84,7 +84,7 @@ public class RemoteGridSession extends AbstractSession
 //					new Class[] {RIGridMaster.class},
 //					itsMaster);
 		
-			itsBrowser = GridLogBrowser.createRemote(this, itsMaster);
+			itsBrowser = DebuggerGridConfig.createRemoteLogBrowser(this, itsMaster);
 			itsMonitor = Scheduler.get(itsBrowser);
 		}
 		catch (UnknownHostException e)

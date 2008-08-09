@@ -32,7 +32,7 @@ import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IThreadInfo;
 import tod.impl.dbgrid.GridLogBrowser;
-import tod.impl.dbgrid.aggregator.IGridEventBrowser;
+import tod.impl.dbgrid.aggregator.GridEventBrowser;
 import tod.utils.TODUtils;
 
 public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCallEvent
@@ -101,7 +101,8 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 				theLogBrowser.createThreadFilter(getThread()),
 				theLogBrowser.createDepthFilter(getDepth()+1));
 		
-		IGridEventBrowser theBrowser = theLogBrowser.createBrowser(theFilter);
+		// Note that this cast should never fail as the filter cannot be an id condition.
+		GridEventBrowser theBrowser = (GridEventBrowser) theLogBrowser.createBrowser(theFilter);
 		theBrowser.setBounds(itsFirstChild, itsLastChild);
 		
 		return theBrowser;

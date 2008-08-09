@@ -5,21 +5,22 @@ Proprietary and confidential
 */
 package tod.impl.evdbng.db;
 
-import static tod.impl.evdbng.DebuggerGridConfig.STRUCTURE_ADVICE_SRC_ID_COUNT;
-import static tod.impl.evdbng.DebuggerGridConfig.STRUCTURE_BEHAVIOR_COUNT;
-import static tod.impl.evdbng.DebuggerGridConfig.STRUCTURE_BYTECODE_LOCS_COUNT;
-import static tod.impl.evdbng.DebuggerGridConfig.STRUCTURE_DEPTH_RANGE;
-import static tod.impl.evdbng.DebuggerGridConfig.STRUCTURE_FIELD_COUNT;
-import static tod.impl.evdbng.DebuggerGridConfig.STRUCTURE_THREADS_COUNT;
-import static tod.impl.evdbng.DebuggerGridConfig.STRUCTURE_TYPE_COUNT;
-import static tod.impl.evdbng.DebuggerGridConfig.STRUCTURE_VAR_COUNT;
+import static tod.impl.evdbng.DebuggerGridConfigNG.STRUCTURE_ROLE_COUNT;
+import static tod.impl.evdbng.DebuggerGridConfigNG.STRUCTURE_ADVICE_SRC_ID_COUNT;
+import static tod.impl.evdbng.DebuggerGridConfigNG.STRUCTURE_BEHAVIOR_COUNT;
+import static tod.impl.evdbng.DebuggerGridConfigNG.STRUCTURE_BYTECODE_LOCS_COUNT;
+import static tod.impl.evdbng.DebuggerGridConfigNG.STRUCTURE_DEPTH_RANGE;
+import static tod.impl.evdbng.DebuggerGridConfigNG.STRUCTURE_FIELD_COUNT;
+import static tod.impl.evdbng.DebuggerGridConfigNG.STRUCTURE_THREADS_COUNT;
+import static tod.impl.evdbng.DebuggerGridConfigNG.STRUCTURE_VAR_COUNT;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import tod.impl.evdbng.DebuggerGridConfig;
-import tod.impl.evdbng.ObjectCodec;
+import tod.impl.dbgrid.messages.MessageType;
+import tod.impl.evdbng.DebuggerGridConfigNG;
+import tod.impl.evdbng.ObjectCodecNG;
 import tod.impl.evdbng.SplittedConditionHandler;
 import tod.impl.evdbng.db.IndexSet.IndexManager;
 import tod.impl.evdbng.db.file.PagedFile;
@@ -38,11 +39,14 @@ public class Indexes
 {
 	private IndexManager itsIndexManager = new IndexManager();
 	
+	private SimpleIndexSet itsTypeIndexSet;
 	private SimpleIndexSet itsThreadIndexSet;
 	private SimpleIndexSet itsDepthIndexSet;
 	private SimpleIndexSet itsLocationIndexSet;
-	private SimpleIndexSet itsAdviceSourceIdIndexSet;
 	private RoleIndexSet itsBehaviorIndexSet;
+	private SimpleIndexSet itsAdviceSourceIdIndexSet;
+	private SimpleIndexSet itsAdviceCFlowIndexSet; // Distinct from above to implement pointcut history.
+	private SimpleIndexSet itsRoleIndexSet;
 	private SimpleIndexSet itsFieldIndexSet;
 	private SimpleIndexSet itsVariableIndexSet;
 	
@@ -70,10 +74,13 @@ public class Indexes
 	{
 		Monitor.getInstance().register(this);
 		
+		itsTypeIndexSet = new SimpleIndexSet(itsIndexManager, "type", aFile, MessageType.VALUES.length+1);
 		itsThreadIndexSet = new SimpleIndexSet(itsIndexManager, "thread", aFile, STRUCTURE_THREADS_COUNT+1);
 		itsDepthIndexSet = new SimpleIndexSet(itsIndexManager, "depth", aFile, STRUCTURE_DEPTH_RANGE+1);
 		itsLocationIndexSet = new SimpleIndexSet(itsIndexManager, "bytecodeLoc.", aFile, STRUCTURE_BYTECODE_LOCS_COUNT+1);
 		itsAdviceSourceIdIndexSet = new SimpleIndexSet(itsIndexManager, "advice src id", aFile, STRUCTURE_ADVICE_SRC_ID_COUNT+1);
+		itsAdviceCFlowIndexSet = new SimpleIndexSet(itsIndexManager, "advice cflow", aFile, STRUCTURE_ADVICE_SRC_ID_COUNT+1);
+		itsRoleIndexSet = new SimpleIndexSet(itsIndexManager, "role", aFile, STRUCTURE_ROLE_COUNT+1);
 		itsBehaviorIndexSet = new RoleIndexSet(itsIndexManager, "behavior", aFile, STRUCTURE_BEHAVIOR_COUNT+1);
 		itsFieldIndexSet = new SimpleIndexSet(itsIndexManager, "field", aFile, STRUCTURE_FIELD_COUNT+1);
 		itsVariableIndexSet = new SimpleIndexSet(itsIndexManager, "variable", aFile, STRUCTURE_VAR_COUNT+1);
@@ -81,13 +88,13 @@ public class Indexes
 		itsArrayIndexIndexSets = createSplitIndex(
 				"index", 
 				SimpleIndexSet.class, 
-				DebuggerGridConfig.INDEX_ARRAY_INDEX_PARTS,
+				DebuggerGridConfigNG.INDEX_ARRAY_INDEX_PARTS,
 				aFile);
 		
 		itsObjectIndexeSets = createSplitIndex(
 				"object",
 				RoleIndexSet.class,
-				DebuggerGridConfig.INDEX_OBJECT_PARTS,
+				DebuggerGridConfigNG.INDEX_OBJECT_PARTS,
 				aFile);
 	}
 	
@@ -134,10 +141,13 @@ public class Indexes
 	{
 		Monitor.getInstance().unregister(this);
 
+		itsTypeIndexSet.dispose();
 		itsThreadIndexSet.dispose();
 		itsDepthIndexSet.dispose();
 		itsLocationIndexSet.dispose();
 		itsAdviceSourceIdIndexSet.dispose();
+		itsAdviceCFlowIndexSet.dispose();
+		itsRoleIndexSet.dispose();
 		itsBehaviorIndexSet.dispose();
 		itsFieldIndexSet.dispose();
 		itsVariableIndexSet.dispose();
@@ -153,6 +163,16 @@ public class Indexes
 		}
 		
 		itsIndexManager.dispose();
+	}
+	
+	public void indexType(int aIndex, long aEventId)
+	{
+		itsTypeIndexSet.add(aIndex, aEventId);
+	}
+	
+	public SimpleTree getTypeIndex(int aIndex)
+	{
+		return itsTypeIndexSet.getIndex(aIndex);
 	}
 	
 	public void indexThread(int aIndex, long aEventId)
@@ -193,6 +213,26 @@ public class Indexes
 	public SimpleTree getAdviceSourceIdIndex(int aIndex)
 	{
 		return itsAdviceSourceIdIndexSet.getIndex(aIndex);
+	}
+	
+	public void indexAdviceCFlow(int aIndex, long aEventId)
+	{
+		itsAdviceCFlowIndexSet.add(aIndex, aEventId);
+	}
+	
+	public SimpleTree getAdviceCFlowIndex(int aIndex)
+	{
+		return itsAdviceCFlowIndexSet.getIndex(aIndex);
+	}
+	
+	public void indexRole(int aIndex, long aEventId)
+	{
+		itsRoleIndexSet.add(aIndex, aEventId);
+	}
+	
+	public SimpleTree getRoleIndex(int aIndex)
+	{
+		return itsRoleIndexSet.getIndex(aIndex);
 	}
 	
 	public void indexBehavior(int aIndex, long aEventId, byte aRole)
@@ -237,7 +277,7 @@ public class Indexes
 	
 	public void indexObject(Object aObject, long aEventId, byte aRole)
 	{
-		long theId = ObjectCodec.getObjectId(aObject, false);
+		long theId = ObjectCodecNG.getObjectId(aObject, false);
 		indexObject(theId, aEventId, aRole);
 	}
 

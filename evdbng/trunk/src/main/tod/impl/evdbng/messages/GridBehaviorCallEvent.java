@@ -5,10 +5,10 @@ Proprietary and confidential
 */
 package tod.impl.evdbng.messages;
 
-import static tod.impl.evdbng.ObjectCodec.getObjectId;
-import static tod.impl.evdbng.ObjectCodec.getObjectSize;
-import static tod.impl.evdbng.ObjectCodec.readObject;
-import static tod.impl.evdbng.ObjectCodec.writeObject;
+import static tod.impl.evdbng.ObjectCodecNG.getObjectId;
+import static tod.impl.evdbng.ObjectCodecNG.getObjectSize;
+import static tod.impl.evdbng.ObjectCodecNG.readObject;
+import static tod.impl.evdbng.ObjectCodecNG.writeObject;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IStructureDatabase;
 import tod.impl.dbgrid.GridLogBrowser;

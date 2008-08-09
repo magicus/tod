@@ -7,39 +7,35 @@ package tod.impl.evdbng.queries;
 
 import java.io.Serializable;
 
-import tod.core.database.browser.IEventFilter;
 import tod.impl.database.AbstractFilteredBidiIterator;
 import tod.impl.database.IBidiIterator;
+import tod.impl.dbgrid.IGridEventFilter;
+import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.evdbng.db.EventList;
 import tod.impl.evdbng.db.EventsCounter;
 import tod.impl.evdbng.db.Indexes;
 import tod.impl.evdbng.db.file.Tuple;
-import tod.impl.evdbng.messages.GridEventNG;
 
 /**
  * Represents a boolean filtering condition on event attributes.
  * @author gpothier
  */
 public abstract class EventCondition<T extends Tuple>
-implements IEventFilter, Serializable
+implements IGridEventFilter, Serializable
 {
-	/**
-	 * Indicates if the specified event passes the condition.
-	 * This method is used for testing purposes.
-	 */
-	public abstract boolean _match(GridEventNG aEvent);
+	public abstract boolean _match(GridEvent aEvent);
 	
 	/**
 	 * Creates an iterator over matching events, taking them from the specified
 	 * {@link EventList} and {@link Indexes}.
 	 */
-	public final IBidiIterator<GridEventNG> createIterator(
+	public final IBidiIterator<GridEvent> createIterator(
 			final EventList aEventList,
 			Indexes aIndexes,
 			long aEventId)
 	{
-		IBidiIterator<T> theIterator = createTupleIterator(aIndexes, aEventId);
-		return new AbstractFilteredBidiIterator<T, GridEventNG>(theIterator)
+		IBidiIterator<T> theIterator = createTupleIterator(aEventList, aIndexes, aEventId);
+		return new AbstractFilteredBidiIterator<T, GridEvent>(theIterator)
 		{
 			@Override
 			protected Object transform(T aTuple)
@@ -57,9 +53,11 @@ implements IEventFilter, Serializable
 	/**
 	 * Creates an iterator over matching events, taking them from the specified
 	 * {@link EventList} and {@link Indexes}.
+	 * @param aEventList TODO
 	 */
 	public abstract IBidiIterator<T> createTupleIterator(
-			Indexes aIndexes,
+			EventList aEventList,
+			Indexes aIndexes, 
 			long aEventId);
 	
 	/**
@@ -67,9 +65,15 @@ implements IEventFilter, Serializable
 	 * By default performs a merge count. Subclasses can override this method
 	 * to provide a more efficient implementation.
 	 */
-	public long[] getEventCounts(Indexes aIndexes, long aT1, long aT2, int aSlotsCount, boolean aForceMergeCounts)
+	public long[] getEventCounts(
+			EventList aEventList,
+			Indexes aIndexes, 
+			long aT1, 
+			long aT2, 
+			int aSlotsCount, 
+			boolean aForceMergeCounts)
 	{
-		return EventsCounter.mergeCountEvents(this, aIndexes, aT1, aT2, aSlotsCount); 
+		return EventsCounter.mergeCountEvents(this, aEventList, aIndexes, aT1, aT2, aSlotsCount); 
 	}
 
 	

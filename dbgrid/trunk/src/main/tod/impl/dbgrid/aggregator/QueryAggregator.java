@@ -30,12 +30,12 @@ import tod.impl.database.BufferedBidiIterator;
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
+import tod.impl.dbgrid.IGridEventFilter;
 import tod.impl.dbgrid.db.RIEventIterator;
 import tod.impl.dbgrid.db.RINodeEventIterator;
 import tod.impl.dbgrid.dispatch.RINodeConnector;
 import tod.impl.dbgrid.merge.DisjunctionIterator;
 import tod.impl.dbgrid.messages.GridEvent;
-import tod.impl.dbgrid.queries.EventCondition;
 import zz.utils.Future;
 
 /**
@@ -46,10 +46,10 @@ public class QueryAggregator extends UnicastRemoteObject
 implements RIQueryAggregator
 {
 	private final GridMaster itsMaster;
-	private final EventCondition itsCondition;
+	private final IGridEventFilter itsCondition;
 	private AbstractBidiIterator<GridEvent> itsMergeIterator;
 
-	public QueryAggregator(GridMaster aMaster, EventCondition aCondition) throws RemoteException
+	public QueryAggregator(GridMaster aMaster, IGridEventFilter aCondition) throws RemoteException
 	{
 		itsMaster = aMaster;
 		itsCondition = aCondition;

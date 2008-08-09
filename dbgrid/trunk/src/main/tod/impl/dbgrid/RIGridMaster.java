@@ -34,7 +34,6 @@ import tod.impl.dbgrid.db.NodeRejectedException;
 import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.dispatch.RINodeConnector;
 import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
-import tod.impl.dbgrid.queries.EventCondition;
 import tod.utils.remote.RIStructureDatabase;
 import zz.utils.ITask;
 import zz.utils.monitoring.Monitor.MonitorData;
@@ -105,7 +104,7 @@ public interface RIGridMaster extends Remote
 	 * Returns a new query aggregator for the specified query
 	 * Client: frontend 
 	 */
-	public RIQueryAggregator createAggregator(EventCondition aCondition) throws RemoteException;
+	public RIQueryAggregator createAggregator(IGridEventFilter aFilter) throws RemoteException;
 		
 	/**
 	 * Returns all the threads registered during the execution of the

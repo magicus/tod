@@ -71,6 +71,7 @@ public class TODPlugin extends AbstractUIPlugin
 			DBProcessManager.cp += File.pathSeparator
 				+theBase+"/tod-debugger.jar"+File.pathSeparator
 				+theBase+"/tod-dbgrid.jar"+File.pathSeparator
+				+theBase+"/tod-evdb1.jar"+File.pathSeparator
 				+theBase+"/tod-agent.jar"+File.pathSeparator
 				+theBase+"/asm-all-3.1.jar"+File.pathSeparator
 				+theBase+"/reflex-core.jar"+File.pathSeparator
@@ -83,6 +84,7 @@ public class TODPlugin extends AbstractUIPlugin
 				+theDevPath+"/TOD/bin"+File.pathSeparator
 				+theDevPath+"/TOD-agent/bin"+File.pathSeparator
 				+theDevPath+"/TOD-dbgrid/bin"+File.pathSeparator
+				+theDevPath+"/TOD-evdb1/bin"+File.pathSeparator
 				+theBase+"/asm-all-3.1.jar"+File.pathSeparator
 				+theBase+"/reflex-core.jar"+File.pathSeparator
 				+theBase+"/pom.jar"+File.pathSeparator

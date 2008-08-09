@@ -25,6 +25,7 @@ import java.rmi.RemoteException;
 import reflex.lib.pom.POMSync;
 import reflex.lib.pom.POMSyncClass;
 import reflex.lib.pom.impl.POMMetaobject;
+import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
@@ -33,10 +34,10 @@ import tod.core.database.structure.IThreadInfo;
 import tod.impl.database.BufferedBidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
+import tod.impl.dbgrid.IGridEventFilter;
 import tod.impl.dbgrid.IScheduled;
 import tod.impl.dbgrid.Scheduler;
 import tod.impl.dbgrid.messages.GridEvent;
-import tod.impl.dbgrid.queries.EventCondition;
 
 /**
  * Implementation of {@link IEventBrowser} that serves as the client-side
@@ -48,17 +49,17 @@ import tod.impl.dbgrid.queries.EventCondition;
 		group = Scheduler.class,
 		syncAll = false)
 public class GridEventBrowser extends BufferedBidiIterator<ILogEvent[], ILogEvent>
-implements IGridEventBrowser, IScheduled
+implements IEventBrowser, IScheduled
 {
 	private final GridLogBrowser itsBrowser;
-	private final EventCondition itsFilter;
+	private final IGridEventFilter itsFilter;
 	
 	private final RIQueryAggregator itsAggregator;
 	
 	private ILogEvent itsFirstEvent;
 	private ILogEvent itsLastEvent;
 	
-	public GridEventBrowser(GridLogBrowser aBrowser, EventCondition aFilter) throws RemoteException
+	public GridEventBrowser(GridLogBrowser aBrowser, IGridEventFilter aFilter) throws RemoteException
 	{
 		itsBrowser = aBrowser;
 		itsFilter = aFilter;
@@ -426,9 +427,8 @@ implements IGridEventBrowser, IScheduled
 
 	public IEventBrowser createIntersection(IEventFilter aFilter)
 	{
-		IGridEventBrowser theBrowser = itsBrowser.createBrowser(itsBrowser.createIntersectionFilter(
-				itsFilter,
-				aFilter));
+		ICompoundFilter theFilter = itsBrowser.createIntersectionFilter(itsFilter, aFilter);
+		GridEventBrowser theBrowser = (GridEventBrowser) itsBrowser.createBrowser(theFilter);
 		
 		theBrowser.setBounds(itsFirstEvent, itsLastEvent);
 		

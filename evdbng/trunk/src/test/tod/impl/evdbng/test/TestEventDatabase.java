@@ -11,13 +11,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import tod.agent.AgentReady;
-import tod.agent.TOD;
 import tod.core.config.TODConfig;
 import tod.impl.database.structure.standard.StructureDatabase;
-import tod.impl.evdbng.ConditionGenerator;
-import tod.impl.evdbng.EventGenerator;
-import tod.impl.evdbng.Fixtures;
-import tod.impl.evdbng.db.EventDatabase;
+import tod.impl.evdbng.ConditionGeneratorNG;
+import tod.impl.evdbng.EventGeneratorNG;
+import tod.impl.evdbng.FixturesNG;
+import tod.impl.evdbng.db.EventDatabaseNG;
 import tod.impl.evdbng.db.file.PagedFile;
 import tod.impl.evdbng.queries.BehaviorCondition;
 import tod.impl.evdbng.queries.CompoundCondition;
@@ -26,7 +25,7 @@ import tod.impl.evdbng.queries.EventCondition;
 
 public class TestEventDatabase
 {
-	private EventDatabase itsDatabase;
+	private EventDatabaseNG itsDatabase;
 	private StructureDatabase itsStructureDatabase;
 
 	@Before public void fill()
@@ -34,16 +33,16 @@ public class TestEventDatabase
 		System.out.println("enabled: "+AgentReady.CAPTURE_ENABLED);
 //		TOD.disableCapture();
 		itsStructureDatabase = StructureDatabase.create(new TODConfig());
-		itsDatabase = new EventDatabase(
+		itsDatabase = new EventDatabaseNG(
 				itsStructureDatabase,
 				0, 
 				PagedFile.create(new File("indexes.bin")),
 				PagedFile.create(new File("events.bin")));
 		
-		EventGenerator theEventGenerator = createGenerator();
+		EventGeneratorNG theEventGenerator = createGenerator();
 		
 		System.out.println("filling...");
-		Fixtures.fillDatabase(itsDatabase, theEventGenerator, 12000);
+		FixturesNG.fillDatabase(itsDatabase, theEventGenerator, 12000);
 	}
 	
 	@Test public void check() 
@@ -54,7 +53,7 @@ public class TestEventDatabase
 		CompoundCondition theCondition = new Disjunction();
 		theCondition.addCondition(new BehaviorCondition(3, (byte) 0));
 		
-		Fixtures.checkCondition(
+		FixturesNG.checkCondition(
 				itsDatabase, 
 				theCondition,
 				createGenerator(),
@@ -62,7 +61,7 @@ public class TestEventDatabase
 				1000);
 
 		// Check with random conditions
-		ConditionGenerator theConditionGenerator = new ConditionGenerator(0, createGenerator());
+		ConditionGeneratorNG theConditionGenerator = new ConditionGeneratorNG(0, createGenerator());
 		
 		for (int i=0;i<1000;i++)
 		{
@@ -70,7 +69,7 @@ public class TestEventDatabase
 			EventCondition theEventCondition = theConditionGenerator.next();
 			System.out.println(theEventCondition);
 			
-			int theCount = Fixtures.checkCondition(
+			int theCount = FixturesNG.checkCondition(
 					itsDatabase, 
 					theEventCondition,
 					createGenerator(),
@@ -80,7 +79,7 @@ public class TestEventDatabase
 			if (theCount > 3)
 			{
 //				TOD.enableCapture();
-				Fixtures.checkIteration(
+				FixturesNG.checkIteration(
 						itsDatabase, 
 						theEventCondition, 
 						createGenerator(), 
@@ -90,9 +89,9 @@ public class TestEventDatabase
 		}
 	}
 	
-	private EventGenerator createGenerator()
+	private EventGeneratorNG createGenerator()
 	{
-		return new EventGenerator(itsStructureDatabase, 100, 100, 100, 100, 100, 100, 100, 100, 100);
+		return new EventGeneratorNG(itsStructureDatabase, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100);
 	}
 	
 }

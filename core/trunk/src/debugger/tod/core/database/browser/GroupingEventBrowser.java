@@ -34,6 +34,7 @@ package tod.core.database.browser;
 import java.util.LinkedList;
 import java.util.List;
 
+import tod.core.ILogCollector;
 import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;

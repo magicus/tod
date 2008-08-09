@@ -32,6 +32,7 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.core.server;
 
 import tod.core.config.TODConfig;
+import tod.utils.ConfigUtils;
 import tod.utils.TODUtils;
 import zz.utils.net.Server;
 import zz.utils.properties.IProperty;
@@ -52,10 +53,20 @@ public abstract class TODServer extends Server
 	
 	public TODServer(TODConfig aConfig)
 	{
-		super(aConfig.get(TODConfig.COLLECTOR_PORT));
+		super(getPort(aConfig));
 		TODUtils.logf(0, "TODServer on port: %d", getPort());
 
 		itsConfig = aConfig;
+	}
+	
+	/**
+	 * This is a hack to allow debugging the database with TOD.
+	 * Without this, the collector port passed to the native agent
+	 * is always the same as the one the server tries to listen to.
+	 */
+	private static int getPort(TODConfig aConfig)
+	{
+		return ConfigUtils.readInt("debug-server-port", aConfig.get(TODConfig.COLLECTOR_PORT));
 	}
 	
 	public void setConfig(TODConfig aConfig)

@@ -42,7 +42,7 @@ public class DBGridUtils
 	{
 		TODConfig theConfig = new TODConfig();
 		StructureDatabase theStructureDatabase = StructureDatabase.create(theConfig);
-		DatabaseNode theNode = new DatabaseNode();
+		DatabaseNode theNode = DebuggerGridConfig.createDatabaseNode();
 		
 		GridMaster theMaster = GridMaster.createLocal(
 				theConfig, 

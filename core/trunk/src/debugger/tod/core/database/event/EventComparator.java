@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import tod.core.ILogCollector;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
 
@@ -166,7 +167,6 @@ public class EventComparator implements Comparator<ILogEvent>
 		{
 			return null;
 		}
-
 	}
 
 }

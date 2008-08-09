@@ -33,7 +33,7 @@ public class StartNode
 	{
 		System.out.println("StartNode");
 
-		DatabaseNode theNode = new DatabaseNode();
+		DatabaseNode theNode = DebuggerGridConfig.createDatabaseNode();
 		NodeConnector theConnector = new NodeConnector(theNode);
 		theConnector.connectToMaster();
 	}

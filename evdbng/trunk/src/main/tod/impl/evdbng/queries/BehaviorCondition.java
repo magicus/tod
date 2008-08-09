@@ -7,10 +7,11 @@ package tod.impl.evdbng.queries;
 
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.impl.database.IBidiIterator;
+import tod.impl.dbgrid.messages.GridEvent;
+import tod.impl.evdbng.db.EventList;
 import tod.impl.evdbng.db.Indexes;
 import tod.impl.evdbng.db.RoleIndexSet;
 import tod.impl.evdbng.db.file.RoleTuple;
-import tod.impl.evdbng.messages.GridEventNG;
 
 /**
  * Represents a condition on behavior id and corresponding role.
@@ -29,7 +30,7 @@ public class BehaviorCondition extends SimpleCondition<RoleTuple>
 	}
 	
 	@Override
-	public IBidiIterator<RoleTuple> createTupleIterator(Indexes aIndexes, long aEventId)
+	public IBidiIterator<RoleTuple> createTupleIterator(EventList aEventList, Indexes aIndexes, long aEventId)
 	{
 		IBidiIterator<RoleTuple> theTupleIterator = 
 			aIndexes.getBehaviorIndex(itsBehaviorId).getTupleIterator(aEventId);
@@ -57,7 +58,7 @@ public class BehaviorCondition extends SimpleCondition<RoleTuple>
 	}
 	
 	@Override
-	public boolean _match(GridEventNG aEvent)
+	public boolean _match(GridEvent aEvent)
 	{
 		ProbeInfo theProbeInfo = aEvent.getProbeInfo();
 		return ((itsRole == RoleIndexSet.ROLE_BEHAVIOR_ANY || itsRole == RoleIndexSet.ROLE_BEHAVIOR_OPERATION) 

@@ -20,12 +20,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.impl.common.ObjectInspector;
-import tod.impl.dbgrid.GridLogBrowser.TypeCache;
 
 public class GridObjectInspector extends ObjectInspector
 {
@@ -40,6 +38,7 @@ public class GridObjectInspector extends ObjectInspector
 		super(aEventTrace, aObjectId);
 	}
 
+	@Override
 	public GridLogBrowser getLogBrowser()
 	{
 		return (GridLogBrowser) super.getLogBrowser();
@@ -48,7 +47,7 @@ public class GridObjectInspector extends ObjectInspector
 	@Override
 	public ITypeInfo getType()
 	{
-		return getLogBrowser().getTypeCache().get(getObject()).type;
+		return getLogBrowser().getCachedType(getObject());
 	}
 	
 	public ITypeInfo getType0()

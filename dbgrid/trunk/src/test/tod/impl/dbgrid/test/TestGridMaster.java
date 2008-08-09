@@ -20,6 +20,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.test;
 
+import java.lang.reflect.Constructor;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,25 +32,37 @@ import org.junit.Test;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
-import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.impl.database.structure.standard.HostInfo;
-import tod.impl.database.structure.standard.PrimitiveTypeInfo;
 import tod.impl.database.structure.standard.ThreadInfo;
 import tod.impl.dbgrid.ConditionGenerator;
+import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.EventGenerator;
 import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.GridMaster;
+import tod.impl.dbgrid.IGridEventFilter;
+import tod.impl.dbgrid.IdGenerator;
 import tod.impl.dbgrid.aggregator.GridEventBrowser;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
-import tod.impl.dbgrid.messages.BitGridEvent;
 import tod.impl.dbgrid.messages.GridEvent;
-import tod.impl.dbgrid.queries.EventCondition;
 
 public class TestGridMaster
 {
-	@Test public void test() throws RemoteException
+	@Test public void test() throws Exception
+	{
+		try
+		{
+			doTest();
+		}
+		catch (Exception e)
+		{
+			Thread.sleep(1000);
+			throw e;
+		}
+	}
+	
+	private void doTest() throws RemoteException
 	{
 		GridMaster theMaster = Fixtures.setupLocalMaster();
 		IMutableStructureDatabase theStructureDatabase = theMaster.getStructureDatabase();
@@ -65,31 +78,38 @@ public class TestGridMaster
 				theMaster.registerThread(new ThreadInfo(theHostInfo, j, j, ""+j));
 			}
 			
-			IMutableClassInfo theClass = theStructureDatabase.getNewClass("C"+i);
-			theClass.getNewBehavior("m"+i, "()V", false);
-			theClass.getNewField("f"+i, PrimitiveTypeInfo.BOOLEAN, false);
+//			IMutableClassInfo theClass = theStructureDatabase.getNewClass("C"+i);
+//			theClass.getNewBehavior("m"+i, "()V", false);
+//			theClass.getNewField("f"+i, PrimitiveTypeInfo.BOOLEAN, false);
 		}
-		GridLogBrowser theLogBrowser = GridLogBrowser.createLocal(null, theMaster);
+		GridLogBrowser theLogBrowser = DebuggerGridConfig.createLocalLogBrowser(null, theMaster);
 
-		EventGenerator theEventGenerator = createGenerator();
+		EventGenerator theEventGenerator = createEventGenerator(theStructureDatabase);
+		theEventGenerator.fillStructureDatabase(theStructureDatabase);
 		
 		System.out.println("filling...");
 		Fixtures.fillDatabase(theMaster, theEventGenerator, 1000000);
 		
 		System.out.println("checking...");
-		ConditionGenerator theConditionGenerator = new ConditionGenerator(0, createGenerator());
+		IdGenerator theIdGenerator = new IdGenerator(100, 100, 100, 100, 100, 100, 100, 100, 100, 100);
+		ConditionGenerator theConditionGenerator = createConditionGenerator(0, theIdGenerator, theLogBrowser);
+		
 		for (int i=0;i<2;i++) theConditionGenerator.next();
 		
 		for (int i=0;i<1000;i++)
 		{
 			System.out.println(i+1);
-			EventCondition theEventCondition = theConditionGenerator.next();
+			IGridEventFilter theEventCondition = (IGridEventFilter) theConditionGenerator.next();
 			System.out.println(theEventCondition);
 			
-			int theCount = checkCondition(theMaster, theEventCondition, createGenerator(), 5000, 10000);
+			if (i == 2)
+			{
+				System.out.println("TestGridMaster.doTest()");
+			}
+			int theCount = checkCondition(theMaster, theEventCondition, createEventGenerator(theStructureDatabase), 5000, 10000);
 			
 			GridEventBrowser theEventBrowser = new GridEventBrowser(theLogBrowser, theEventCondition);
-			int theCount2 = checkCondition(theEventBrowser, theEventCondition, createGenerator(), 5000, 10000);
+			int theCount2 = checkCondition(theEventBrowser, theEventCondition, createEventGenerator(theStructureDatabase), 5000, 10000);
 			
 			Assert.assertTrue("Bad count", theCount == theCount2);
 			
@@ -98,7 +118,7 @@ public class TestGridMaster
 				checkIteration(
 						theLogBrowser,
 						theEventCondition, 
-						createGenerator(), 
+						createEventGenerator(theStructureDatabase), 
 						theCount);
 			}
 
@@ -108,7 +128,7 @@ public class TestGridMaster
 	
 	private int checkCondition(
 			GridMaster aMaster, 
-			EventCondition aCondition, 
+			IGridEventFilter aCondition, 
 			EventGenerator aReferenceGenerator,
 			int aSkip,
 			int aCount) throws RemoteException
@@ -124,11 +144,15 @@ public class TestGridMaster
 		int theMatched = 0;
 		for (int i=0;i<aCount;i++)
 		{
-			BitGridEvent theRefEvent = aReferenceGenerator.next();
+			GridEvent theRefEvent = aReferenceGenerator.next();
 			if (aCondition._match(theRefEvent))
 			{
 				GridEvent[] theBuffer = theAggregator.next(1);
-				BitGridEvent theTestedEvent = (BitGridEvent) theBuffer[0]; 
+				GridEvent theTestedEvent = theBuffer[0]; 
+				if (i == 13)
+				{
+					System.out.println("hop");
+				}
 				Fixtures.assertEquals(""+i, theRefEvent, theTestedEvent);
 				theMatched++;
 			}
@@ -140,7 +164,7 @@ public class TestGridMaster
 	
 	private int checkCondition(
 			GridEventBrowser aBrowser, 
-			EventCondition aCondition, 
+			IGridEventFilter aCondition, 
 			EventGenerator aReferenceGenerator,
 			int aSkip,
 			int aCount) 
@@ -172,7 +196,7 @@ public class TestGridMaster
 	
 	public static void checkIteration(
 			ILogBrowser aBrowser,
-			EventCondition aCondition, 
+			IGridEventFilter aCondition, 
 			EventGenerator aReferenceGenerator,
 			int aCount)
 	{
@@ -233,9 +257,29 @@ public class TestGridMaster
 
 
 	
-	private EventGenerator createGenerator()
+	private EventGenerator createEventGenerator(IMutableStructureDatabase aStructureDatabase)
 	{
-		return new EventGenerator(100, 100, 100, 100, 100, 100, 100, 100, 100);
+		try
+		{
+			Class theClass = DebuggerGridConfig.getDbImpl().getClass("EventGenerator");
+			Constructor theConstructor = theClass.getConstructor(
+					IMutableStructureDatabase.class,
+					long.class, int.class, int.class,
+					int.class, int.class, int.class,
+					int.class, int.class, int.class,
+					int.class);
+			
+			return (EventGenerator) theConstructor.newInstance(aStructureDatabase, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100);
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	private ConditionGenerator createConditionGenerator(long aSeed, IdGenerator aIdGenerator, ILogBrowser aLogBrowser)
+	{
+		return new ConditionGenerator(aSeed, aIdGenerator, aLogBrowser);
 	}
 	
 }

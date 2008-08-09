@@ -1,99 +1,19 @@
-/*
-TOD - Trace Oriented Debugger.
-Copyright (C) 2006 Guillaume Pothier (gpothier@dcc.uchile.cl)
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-version 2 as published by the Free Software Foundation.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-Parts of this work rely on the MD5 algorithm "derived from the 
-RSA Data Security, Inc. MD5 Message-Digest Algorithm".
-*/
 package tod.impl.dbgrid;
 
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.rmi.RemoteException;
+
+import tod.core.session.ISession;
 import tod.impl.dbgrid.db.DatabaseNode;
-import tod.impl.dbgrid.db.HierarchicalIndex;
 import tod.impl.dbgrid.db.ObjectsDatabase;
-import tod.impl.dbgrid.db.file.HardPagedFile;
-import tod.impl.dbgrid.db.file.TupleIterator;
-import tod.impl.dbgrid.db.file.TupleWriter;
-import tod.impl.dbgrid.messages.MessageType;
 import tod.utils.ConfigUtils;
-import zz.utils.bit.BitUtils;
 
 public class DebuggerGridConfig
 {
 	private static final String HOME = System.getProperty("user.home");
 
-	/**
-	 * Number of bits used to represent the thread of an event.
-	 */
-	public static final int EVENT_THREAD_BITS = 16;
-	
-	/**
-	 * Number of bits used to represent the depth of an event.
-	 */
-	public static final int EVENT_DEPTH_BITS = 16;
-	
-	/**
-	 * Number of bits used to represent the serial number of an event.
-	 */
-	public static final int EVENT_TIMESTAMP_BITS = 64; 
-	
-	/**
-	 * Number of bits used to represent a behavior id in an event.
-	 */
-	public static final int EVENT_PROBEID_BITS = 32;
-	
-	/**
-	 * Number of bits used to represent a behavior id in an event.
-	 */
-	public static final int EVENT_BEHAVIOR_BITS = 16;
-	
-	/**
-	 * Number of bits used to represent a type id in an event.
-	 */
-	public static final int EVENT_TYPE_BITS = 16; 
-	
-	/**
-	 * Number of bits used to represent a field id in an event.
-	 */
-	public static final int EVENT_FIELD_BITS = 16; 
-	
-	/**
-	 * Number of bits used to represent a variable id in an event.
-	 */
-	public static final int EVENT_VARIABLE_BITS = 16; 
-	
-	/**
-	 * Number of bits used to represent the bytecode location of an event
-	 */
-	public static final int EVENT_BYTECODE_LOCATION_BITS = 16; 
-	
-	/**
-	 * Number of bits used to represent the advice source id of an event
-	 */
-	public static final int EVENT_ADVICE_SRC_ID_BITS = 16; 
-	
-	/**
-	 * Number of bits used to represent the number of arguments of a behavior call.
-	 */
-	public static final int EVENT_ARGS_COUNT_BITS = 8; 
-	
-	/**
-	 * Number of bits used to represent the number of items in an advice cflow
-	 */
-	public static final int EVENT_ADCFLOW_COUNT_BITS = 4; 
-	
 	
 	/**
 	 * Port at which database nodes connect to the master.
@@ -119,142 +39,6 @@ public class DebuggerGridConfig
 	 */
 	public static final int DB_OBJECTS_BUFFER_SIZE = 1000;
 	
-	/**
-	 * Maximum number of event types 
-	 */
-	public static final int STRUCTURE_TYPE_COUNT = 40000;
-
-	/**
-	 * Maximum number of threads
-	 */
-	public static final int STRUCTURE_THREADS_COUNT = 10000;
-
-	/**
-	 * Maximum number of different depths
-	 */
-	public static final int STRUCTURE_DEPTH_RANGE = BitUtils.pow2i(EVENT_DEPTH_BITS);
-	
-	/**
-	 * Maximum number of bytecode locations
-	 */
-	public static final int STRUCTURE_BYTECODE_LOCS_COUNT = 65536;
-
-	/**
-	 * Maximum number of behaviors
-	 */
-	public static final int STRUCTURE_BEHAVIOR_COUNT = 200000;
-
-	/**
-	 * Maximum number of advice source ids.
-	 */
-	public static final int STRUCTURE_ADVICE_SRC_ID_COUNT = 10000;
-	
-	/**
-	 * Maximum number of bytecode roles
-	 */
-	public static final int STRUCTURE_ROLE_COUNT = 10;
-	
-	/**
-	 * Maximum number of fields
-	 */
-	public static final int STRUCTURE_FIELD_COUNT = 100000;
-
-	/**
-	 * Maximum number of variable indexes
-	 */
-	public static final int STRUCTURE_VAR_COUNT = 1000;
-
-	/**
-	 * Maximum number of objects 
-	 */
-	public static final int STRUCTURE_OBJECT_COUNT = BitUtils.pow2i(14);
-	
-	/**
-	 * Maximum number of array indexes.
-	 */
-	public static final int STRUCTURE_ARRAY_INDEX_COUNT = BitUtils.pow2i(14);
-	
-	/**
-	 * Number of partitions of key values for the objects index.
-	 * @see SplittedConditionHandler
-	 */
-	public static final int[] INDEX_OBJECT_PARTS = {16, 16};
-
-	/**
-	 * Number of partitions of key values for the array index index.
-	 * @see SplittedConditionHandler
-	 */
-	public static final int[] INDEX_ARRAY_INDEX_PARTS = {14, 14};
-	
-
-	/**
-	 * Number of bits used to represent the message type
-	 */
-	public static final int MESSAGE_TYPE_BITS = BitUtils.log2ceil(MessageType.VALUES.length); 
-	
-	/**
-	 * Number of bits necessary to represent an external event pointer.
-	 */
-	public static final int EVENTID_POINTER_SIZE = 
-		+DebuggerGridConfig.EVENT_THREAD_BITS
-		+DebuggerGridConfig.EVENT_TIMESTAMP_BITS;
-
-	/**
-	 * Size of file pages in the database
-	 */
-	public static final int DB_PAGE_SIZE = 4096;
-	
-	/**
-	 * Number of bits to represent a page pointer in a linked pages list,
-	 * as used by {@link TupleWriter} and {@link TupleIterator}
-	 */
-	public static final int DB_PAGE_POINTER_BITS = 32;
-	
-	/**
-	 * NUmber of bits to represent an offset (in bits) in a page.
-	 */
-	public static final int DB_PAGE_BITOFFSET_BITS = BitUtils.log2ceil(DB_PAGE_SIZE*8);
-	
-	/**
-	 * NUmber of bits to represent an offset (in bytes) in a page.
-	 */
-	public static final int DB_PAGE_BYTEOFFSET_BITS = BitUtils.log2ceil(DB_PAGE_SIZE);
-	
-	/**
-	 * Average event size.
-	 */
-	public static final int DB_AVG_EVENT_SIZE = 55;
-	
-	public static final int DB_AVG_EVENTS_PER_PAGE = DB_PAGE_SIZE/DB_AVG_EVENT_SIZE;
-	
-	/**
-	 * Number of bits used to represent the record index in an internal
-	 * event pointer.
-	 */
-	public static final int DB_EVENTID_INDEX_BITS = 
-		BitUtils.log2ceil(DB_AVG_EVENTS_PER_PAGE) + 1;
-	
-	/**
-	 * Number of bits used to represent the node in an internal event
-	 * pointer. 
-	 */
-	public static final int DB_EVENTID_NODE_BITS = 6;
-	
-	/**
-	 * Number of bits used to represent the page in an internal
-	 * event pointer.
-	 */
-	public static final int DB_EVENTID_PAGE_BITS = 64 - DB_EVENTID_INDEX_BITS - DB_EVENTID_NODE_BITS;
-
-	/**
-	 * Number of bits used to represent event sizes in event pages.
-	 */
-	public static final int DB_EVENT_SIZE_BITS = 16;
-	
-	/**
-	 * Maximum number of index levels for {@link HierarchicalIndex}.
-	 */
-	public static final int DB_MAX_INDEX_LEVELS = 6;
 	
 	/**
 	 * Number of events to fetch at a time 
@@ -262,31 +46,11 @@ public class DebuggerGridConfig
 	public static final int QUERY_ITERATOR_BUFFER_SIZE = 1;
 	
 	/**
-	 * Number of children of dispatchers.
-	 */
-	public static final int DISPATCH_BRANCHING_FACTOR = 
-		ConfigUtils.readInt("dispatch-branching-factor", 0);
-	
-	/**
 	 * Number of consecutive packets to send to children in the dispatch 
 	 * round-robin scheme.
 	 */
 	public static final int DISPATCH_BATCH_SIZE =
 		ConfigUtils.readInt("dispatch-batch-size", 128);
-	
-	/**
-	 * Maximum size allocated to page buffers.
-	 * See {@link HardPagedFile.PageDataManager}
-	 */
-	public static final long DB_PAGE_BUFFER_SIZE = 
-		ConfigUtils.readSize("page-buffer-size", getDefaultPageBufferSize());
-	
-	private static String getDefaultPageBufferSize()
-	{
-		int theSize = (int) (Runtime.getRuntime().maxMemory() / (1024*1024));
-		int theBufferSize = theSize * 6 / 10;
-		return theBufferSize + "m";
-	}
 	
 	public static final String MASTER_HOST =
 		ConfigUtils.readString("master-host", "localhost");
@@ -303,5 +67,105 @@ public class DebuggerGridConfig
 	
 	public static final boolean LOAD_BALANCING =
 		ConfigUtils.readBoolean("load-balancing", false);
+	
+	/**
+	 * Name of the database implementation. Can be evdb1 or evdbng.
+	 */
+	public static final String DBIMPL = ConfigUtils.readString("dbimpl", "evdb1");
+	
+	private static final String DATABASENODE_BASE = "db.DatabaseNode";
+	private static final String GRIDLOGBROWSER_BASE = "GridLogBrowser";
+	
+	public static enum DbImpl
+	{
+		EVDB1("tod.impl.dbgrid", "1"),
+		EVDBNG("tod.impl.evdbng", "NG");
+		
+		public final String prefix;
+		public final String suffix;
+
+		private DbImpl(String aPrefix, String aSuffix)
+		{
+			prefix = aPrefix;
+			suffix = aSuffix;
+		}
+		
+		public Class getClass(String aBase)
+		{
+			try
+			{
+				return Class.forName(prefix+"."+aBase+suffix);
+			}
+			catch (ClassNotFoundException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+	}
+	
+	public static DbImpl getDbImpl()
+	{
+		if ("evdb1".equals(DBIMPL)) return DbImpl.EVDB1;
+		else if ("evdbng".equals(DBIMPL)) return DbImpl.EVDBNG;
+		else throw new RuntimeException("Not handled: "+DBIMPL);
+	}
+	
+	/**
+	 * Creates the proper instance of {@link DatabaseNode} according to
+	 * the selected database implementation ({@link #DBIMPL}).
+	 */
+	public static DatabaseNode createDatabaseNode()
+	{
+		try
+		{
+			return (DatabaseNode) getDbImpl().getClass(DATABASENODE_BASE).newInstance();
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public static GridLogBrowser createLocalLogBrowser(ISession aSession, GridMaster aMaster)
+	{
+		try
+		{
+			Method theMethod = getDbImpl().getClass(GRIDLOGBROWSER_BASE).getDeclaredMethod(
+					"createLocal", 
+					ISession.class, 
+					GridMaster.class);
+			
+			return (GridLogBrowser) theMethod.invoke(null, aSession, aMaster);
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public static GridLogBrowser createRemoteLogBrowser(ISession aSession, RIGridMaster aMaster) throws RemoteException 
+	{
+		try
+		{
+			Method theMethod = getDbImpl().getClass(GRIDLOGBROWSER_BASE).getDeclaredMethod(
+					"createRemote", 
+					ISession.class, 
+					RIGridMaster.class);
+				
+			return (GridLogBrowser) theMethod.invoke(null, aSession, aMaster);
+		}
+		catch (InvocationTargetException e)
+		{
+			if (e.getCause() instanceof RemoteException)
+			{
+				throw (RemoteException) e.getCause();
+			}
+			else throw new RuntimeException(e);
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
 	
 }

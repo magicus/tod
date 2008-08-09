@@ -1,50 +1,26 @@
-/*
-TOD - Trace Oriented Debugger.
-Copyright (C) 2006 Guillaume Pothier (gpothier@dcc.uchile.cl)
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-version 2 as published by the Free Software Foundation.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-Parts of this work rely on the MD5 algorithm "derived from the 
-RSA Data Security, Inc. MD5 Message-Digest Algorithm".
-*/
 package tod.impl.dbgrid;
-
-import static tod.impl.dbgrid.DebuggerGridConfig.STRUCTURE_OBJECT_COUNT;
 
 import java.util.Random;
 
-import tod.impl.dbgrid.db.RoleIndexSet;
-import tod.impl.dbgrid.queries.BehaviorCondition;
-import tod.impl.dbgrid.queries.BytecodeLocationCondition;
-import tod.impl.dbgrid.queries.CompoundCondition;
-import tod.impl.dbgrid.queries.Conjunction;
-import tod.impl.dbgrid.queries.DepthCondition;
-import tod.impl.dbgrid.queries.Disjunction;
-import tod.impl.dbgrid.queries.EventCondition;
-import tod.impl.dbgrid.queries.FieldCondition;
-import tod.impl.dbgrid.queries.ThreadCondition;
-import tod.impl.dbgrid.queries.TypeCondition;
-import tod.impl.dbgrid.queries.VariableCondition;
+import tod.core.database.browser.ICompoundFilter;
+import tod.core.database.browser.IEventFilter;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.IThreadInfo;
+import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
+import tod.impl.database.structure.standard.ThreadInfo;
 
 /**
- * Randomly generates {@link EventCondition}s.
+ * Random generator of conditions.
+ * Uses an {@link ILogBrowser} as a factory
  * @author gpothier
  */
-public class ConditionGenerator
+public final class ConditionGenerator
 {
+	private final ILogBrowser itsLogBrowser;
 	private Random itsRandom;
-	private EventGenerator itsEventGenerator;
+	private IdGenerator itsIdGenerator;
 	
 	/**
 	 * Current depth of the generated condition.
@@ -52,18 +28,14 @@ public class ConditionGenerator
 	 */
 	private int itsLevel = 0;
 	
-	public ConditionGenerator(long aSeed)
-	{
-		this(aSeed, new EventGenerator(aSeed)); 
-	}
-	
-	public ConditionGenerator(long aSeed, EventGenerator aEventGenerator)
+	public ConditionGenerator(long aSeed, IdGenerator aEventGenerator, ILogBrowser aBrowser)
 	{
 		itsRandom = new Random(aSeed);
-		itsEventGenerator = aEventGenerator;
+		itsIdGenerator = aEventGenerator;
+		itsLogBrowser = aBrowser;
 	}
 
-	public EventCondition next()
+	public IEventFilter next()
 	{
 		itsLevel = 0;
 		return next(0.5f);
@@ -73,7 +45,7 @@ public class ConditionGenerator
 	 * Generates a random condition, with a specified probability of generating
 	 * a simple condition (vs. compound contition).
 	 */
-	public EventCondition next(float aSimpleProbability)
+	public IEventFilter next(float aSimpleProbability)
 	{
 		float f = itsRandom.nextFloat();
 		
@@ -82,78 +54,68 @@ public class ConditionGenerator
 				: nextCompoundCondition();
 	}
 	
-	public EventCondition nextSimpleCondition()
+	public IEventFilter nextSimpleCondition()
 	{
-		switch(itsRandom.nextInt(8))
+		switch(itsRandom.nextInt(7))
 		{
-		case 0: return new BehaviorCondition(itsEventGenerator.genBehaviorId(), genBehaviorRole());
-		case 1: return new BytecodeLocationCondition(itsEventGenerator.genBytecodeIndex());
-		case 2: return new FieldCondition(itsEventGenerator.genFieldId());
-		case 3:
-			long theId = itsRandom.nextInt(STRUCTURE_OBJECT_COUNT-1) + 1;
-			return SplittedConditionHandler.OBJECTS.createCondition(
-					theId,
-					genObjectRole());
-			
-		case 4: return new ThreadCondition(itsEventGenerator.genThreadId());
-		case 5: return new TypeCondition(itsEventGenerator.genType());
-		case 6: return new VariableCondition(itsEventGenerator.genVariableId());
-		case 7: return new DepthCondition(itsEventGenerator.genDepth());
+		case 0: return itsLogBrowser.createBehaviorCallFilter(genBehavior());
+		case 1: return itsLogBrowser.createLocationFilter(genBehavior(), itsIdGenerator.genBytecodeIndex());
+		case 2: return itsLogBrowser.createFieldFilter(genField());
+		case 3: return itsLogBrowser.createObjectFilter(itsIdGenerator.genObject());
+		case 4: return itsLogBrowser.createThreadFilter(genThread());
+		case 5: return itsLogBrowser.createVariableWriteFilter(genVariable());
+		case 6: return itsLogBrowser.createDepthFilter(itsIdGenerator.genDepth());
 		default: throw new RuntimeException("Not handled");
 		}
 	}
-	
-	private byte genBehaviorRole()
-	{
-		switch(itsRandom.nextInt(3))
-		{
-		case 0: return RoleIndexSet.ROLE_BEHAVIOR_ANY;
-		case 1: return RoleIndexSet.ROLE_BEHAVIOR_CALLED;
-		case 2: return RoleIndexSet.ROLE_BEHAVIOR_EXECUTED;
-		default: throw new RuntimeException("Not handled");
-		}
-	}
-	
-	private byte genObjectRole()
-	{
-		switch(itsRandom.nextInt(5))
-		{
-		case 0: return RoleIndexSet.ROLE_OBJECT_EXCEPTION;
-		case 1: return RoleIndexSet.ROLE_OBJECT_RESULT;
-		case 2: return RoleIndexSet.ROLE_OBJECT_TARGET;
-		case 3: return RoleIndexSet.ROLE_OBJECT_VALUE;
-		case 4: return (byte) itsRandom.nextInt(10);
-		default: throw new RuntimeException("Not handled");
-		}
-	}
-	
-	public EventCondition nextCompoundCondition()
+		
+	public ICompoundFilter nextCompoundCondition()
 	{
 		itsLevel++;
 		if (itsRandom.nextBoolean()) return nextConjunction();
 		else return nextDisjunction();
 	}
 	
-	public EventCondition nextConjunction()
+	public ICompoundFilter nextConjunction()
 	{
-		Conjunction theConjunction = new Conjunction(false);
+		ICompoundFilter theConjunction = itsLogBrowser.createIntersectionFilter();
 		fillCompoundCondition(theConjunction);
 		return theConjunction;
 	}
 	
-	public EventCondition nextDisjunction()
+	public ICompoundFilter nextDisjunction()
 	{
-		Disjunction theDisjunction = new Disjunction();
+		ICompoundFilter theDisjunction = itsLogBrowser.createUnionFilter();
 		fillCompoundCondition(theDisjunction);
 		return theDisjunction;
 	}
 	
-	private void fillCompoundCondition(CompoundCondition aCondition)
+	private void fillCompoundCondition(ICompoundFilter aCondition)
 	{
 		int theCount = itsRandom.nextInt(9)+1;
 		for(int i=0;i<theCount;i++)
 		{
-			aCondition.addCondition(next(itsLevel < 3 ? 0.9f : 1f));
+			aCondition.add(next(itsLevel < 3 ? 0.9f : 1f));
 		}
+	}
+	
+	protected IBehaviorInfo genBehavior()
+	{
+		return itsLogBrowser.getStructureDatabase().getBehavior(itsIdGenerator.genBehaviorId(), true);
+	}
+	
+	protected IFieldInfo genField()
+	{
+		return itsLogBrowser.getStructureDatabase().getField(itsIdGenerator.genFieldId(), true);
+	}
+	
+	protected IThreadInfo genThread()
+	{
+		return new ThreadInfo(null, itsIdGenerator.genThreadId(), 0, null);
+	}
+	
+	protected LocalVariableInfo genVariable()
+	{
+		return new LocalVariableInfo(0, 0, null, null, itsIdGenerator.genVariableId());
 	}
 }

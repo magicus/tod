@@ -29,7 +29,8 @@ import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
-import tod.impl.dbgrid.aggregator.IGridEventBrowser;
+import tod.impl.dbgrid.IGridEventFilter;
+import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.local.EventBrowser;
 
 /**
@@ -37,7 +38,7 @@ import tod.impl.local.EventBrowser;
  * or 0 event if the given event is null.
  * @author gpothier
  */
-public class EventIdCondition implements IEventFilter, ICompoundFilter
+public class EventIdCondition implements IGridEventFilter, ICompoundFilter
 {
 	private final ILogBrowser itsLogBrowser;
 	private final ILogEvent itsEvent;
@@ -48,7 +49,7 @@ public class EventIdCondition implements IEventFilter, ICompoundFilter
 		itsEvent = aEvent;
 	}
 	
-	public IGridEventBrowser createBrowser()
+	public IEventBrowser createBrowser()
 	{
 		List<ILogEvent> theEvents = new ArrayList<ILogEvent>();
 		if (itsEvent != null) theEvents.add(itsEvent);
@@ -75,7 +76,12 @@ public class EventIdCondition implements IEventFilter, ICompoundFilter
 		throw new UnsupportedOperationException();
 	}
 
-	private class MyBrowser extends EventBrowser implements IGridEventBrowser
+	public boolean _match(GridEvent aEvent)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	private class MyBrowser extends EventBrowser implements IEventBrowser
 	{
 		/**
 		 * To simplify the implementation we only allow bounds to be set once.

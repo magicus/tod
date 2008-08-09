@@ -6,6 +6,7 @@ Proprietary and confidential
 package tod.impl.evdbng.db.file;
 
 import tod.impl.database.AbstractBidiIterator;
+import tod.impl.dbgrid.ITupleIterator;
 import tod.impl.evdbng.db.file.PagedFile.Page;
 
 
@@ -22,6 +23,7 @@ import tod.impl.evdbng.db.file.PagedFile.Page;
  * @author gpothier
  */
 public class TupleIterator<T extends Tuple> extends AbstractBidiIterator<T>
+implements ITupleIterator<T>
 {
 	private final BTree<T> itsTree;
 	
@@ -89,11 +91,6 @@ public class TupleIterator<T extends Tuple> extends AbstractBidiIterator<T>
 		return itsLastKey;
 	}
 
-	/**
-	 * Returns an iterator that is positioned
-	 * so that the key of the next returned tuple
-	 * is the first that is greater or equal to the specified key
-	 */
 	public TupleIterator<T> iteratorNextKey(long aKey)
 	{
 		return itsTree.getTupleIterator(aKey);

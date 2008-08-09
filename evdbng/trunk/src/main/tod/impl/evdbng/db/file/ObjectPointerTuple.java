@@ -1,6 +1,6 @@
 package tod.impl.evdbng.db.file;
 
-import tod.impl.evdbng.db.ObjectsDatabase;
+import tod.impl.dbgrid.db.ObjectsDatabase;
 
 /**
  * A tuple that stores information to retrieve an object in

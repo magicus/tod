@@ -3,7 +3,7 @@
  */
 package tod.impl.evdbng.db.file;
 
-import static tod.impl.evdbng.DebuggerGridConfig.*;
+import static tod.impl.evdbng.DebuggerGridConfigNG.*;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

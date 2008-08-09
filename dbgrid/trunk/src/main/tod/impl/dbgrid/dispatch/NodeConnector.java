@@ -39,13 +39,13 @@ import tod.core.database.structure.IHostInfo;
 import tod.core.transport.HighLevelEventReader;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
+import tod.impl.dbgrid.IGridEventFilter;
 import tod.impl.dbgrid.NodeException;
 import tod.impl.dbgrid.RIGridMaster;
 import tod.impl.dbgrid.db.DatabaseNode;
 import tod.impl.dbgrid.db.NodeRejectedException;
 import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.db.RINodeEventIterator;
-import tod.impl.dbgrid.queries.EventCondition;
 import zz.utils.monitoring.Monitor;
 import zz.utils.monitoring.Monitor.MonitorData;
 import zz.utils.net.Server.ServerAdress;
@@ -185,7 +185,7 @@ implements RINodeConnector
 	}
 
 	public long[] getEventCounts(
-			EventCondition aCondition, 
+			IGridEventFilter aCondition, 
 			long aT1, 
 			long aT2, 
 			int aSlotsCount,
@@ -209,7 +209,7 @@ implements RINodeConnector
 		return itsDatabaseNode.getLastTimestamp();
 	}
 
-	public RINodeEventIterator getIterator(EventCondition aCondition) throws RemoteException 
+	public RINodeEventIterator getIterator(IGridEventFilter aCondition) throws RemoteException 
 	{
 		return itsDatabaseNode.getIterator(aCondition);
 	}

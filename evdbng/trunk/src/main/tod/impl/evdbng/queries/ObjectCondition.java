@@ -7,12 +7,13 @@ package tod.impl.evdbng.queries;
 
 import tod.impl.database.AbstractFilteredBidiIterator;
 import tod.impl.database.IBidiIterator;
+import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.evdbng.SplittedConditionHandler;
+import tod.impl.evdbng.db.EventList;
 import tod.impl.evdbng.db.Indexes;
 import tod.impl.evdbng.db.RoleIndexSet;
 import tod.impl.evdbng.db.file.BTree;
 import tod.impl.evdbng.db.file.RoleTuple;
-import tod.impl.evdbng.messages.GridEventNG;
 
 /**
  * Represents a condition on an object, with a corresponding role.
@@ -38,7 +39,7 @@ public class ObjectCondition extends SimpleCondition<RoleTuple>
 	}
 
 	@Override
-	public IBidiIterator<RoleTuple> createTupleIterator(Indexes aIndexes, long aEventId)
+	public IBidiIterator<RoleTuple> createTupleIterator(EventList aEventList, Indexes aIndexes, long aEventId)
 	{
 		BTree<RoleTuple> theIndex = 
 			aIndexes.getObjectIndex(itsPart, itsObjectId);
@@ -77,7 +78,7 @@ public class ObjectCondition extends SimpleCondition<RoleTuple>
 	}
 
 	@Override
-	public boolean _match(GridEventNG aEvent)
+	public boolean _match(GridEvent aEvent)
 	{
 		return aEvent.matchObjectCondition(itsPart, itsObjectId, itsRole);
 	}

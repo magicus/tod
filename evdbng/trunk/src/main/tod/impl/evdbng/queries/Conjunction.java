@@ -6,10 +6,11 @@ Proprietary and confidential
 package tod.impl.evdbng.queries;
 
 import tod.impl.database.IBidiIterator;
+import tod.impl.dbgrid.messages.GridEvent;
+import tod.impl.evdbng.db.EventList;
 import tod.impl.evdbng.db.IndexMerger;
 import tod.impl.evdbng.db.Indexes;
 import tod.impl.evdbng.db.file.SimpleTuple;
-import tod.impl.evdbng.messages.GridEventNG;
 
 /**
  * A conjunctive condition: all subconditions must match.
@@ -28,21 +29,21 @@ public class Conjunction extends CompoundCondition
 
 	@Override
 	public IBidiIterator<SimpleTuple> createTupleIterator(
-			Indexes aIndexes,
-			long aEventId)
+			EventList aEventList,
+			Indexes aIndexes, long aEventId)
 	{
 		IBidiIterator<SimpleTuple>[] theIterators = new IBidiIterator[getConditions().size()];
 		int i = 0;
 		for (EventCondition theCondition : getConditions())
 		{
-			theIterators[i++] = theCondition.createTupleIterator(aIndexes, aEventId);
+			theIterators[i++] = theCondition.createTupleIterator(aEventList, aIndexes, aEventId);
 		}
 		
 		return IndexMerger.conjunction(itsMatchRoles, theIterators);
 	}
 
 	@Override
-	public boolean _match(GridEventNG aEvent)
+	public boolean _match(GridEvent aEvent)
 	{
 		for (EventCondition theCondition : getConditions())
 		{

@@ -43,7 +43,7 @@ public abstract class SplittedConditionHandler<T extends IndexSet<?>>
 	 * Creates a compound condition matching all key parts.
 	 * @param aRole Optional tuple role.
 	 */
-	public Conjunction createCondition(int aIndex, byte aRole)
+	public Conjunction createCondition(long aIndex, byte aRole)
 	{
 		Conjunction theResult = new Conjunction(true);
 		
@@ -115,7 +115,7 @@ public abstract class SplittedConditionHandler<T extends IndexSet<?>>
 		@Override
 		protected int[] splitIndex(long aIndex)
 		{
-			return splitIndex(aIndex, DebuggerGridConfig.INDEX_OBJECT_PARTS);
+			return splitIndex(aIndex, DebuggerGridConfigNG.INDEX_OBJECT_PARTS);
 		}
 
 		@Override
@@ -136,7 +136,7 @@ public abstract class SplittedConditionHandler<T extends IndexSet<?>>
 		@Override
 		protected int[] splitIndex(long aIndex)
 		{
-			return splitIndex(aIndex, DebuggerGridConfig.INDEX_ARRAY_INDEX_PARTS);
+			return splitIndex(aIndex, DebuggerGridConfigNG.INDEX_ARRAY_INDEX_PARTS);
 		}
 
 		@Override

@@ -5,8 +5,8 @@ Proprietary and confidential
 */
 package tod.impl.evdbng.db;
 
-import static tod.impl.evdbng.DebuggerGridConfig.DB_PAGE_BUFFER_SIZE;
-import static tod.impl.evdbng.DebuggerGridConfig.DB_PAGE_SIZE;
+import static tod.impl.evdbng.DebuggerGridConfigNG.DB_PAGE_BUFFER_SIZE;
+import static tod.impl.evdbng.DebuggerGridConfigNG.DB_PAGE_SIZE;
 import tod.impl.evdbng.db.file.BTree;
 import tod.impl.evdbng.db.file.PagedFile;
 import tod.impl.evdbng.db.file.Tuple;

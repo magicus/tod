@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.impl.database.IBidiIterator;
+import tod.impl.dbgrid.IGridEventFilter;
 import tod.impl.dbgrid.messages.GridEvent;
-import tod.impl.dbgrid.queries.EventCondition;
 
 /**
  * Iterator for events of a particular query for a given node.
@@ -37,14 +37,14 @@ public class NodeEventIterator extends UnicastRemoteObject
 implements RINodeEventIterator
 {
 	private EventDatabase itsDatabase;
-	private EventCondition itsCondition;
+	private IGridEventFilter itsFilter;
 	
 	private IBidiIterator<GridEvent> itsIterator;
 	
-	public NodeEventIterator(EventDatabase aDatabase, EventCondition aCondition) throws RemoteException
+	public NodeEventIterator(EventDatabase aDatabase, IGridEventFilter aFilter) throws RemoteException
 	{
 		itsDatabase = aDatabase;
-		itsCondition = aCondition;
+		itsFilter = aFilter;
 	}
 
 	public GridEvent[] next(int aCount)
@@ -63,7 +63,7 @@ implements RINodeEventIterator
 
 	public void setNextTimestamp(long aTimestamp)
 	{
-		itsIterator = itsDatabase.evaluate(itsCondition, aTimestamp);
+		itsIterator = itsDatabase.evaluate(itsFilter, aTimestamp);
 	}
 
 	public GridEvent[] previous(int aCount)

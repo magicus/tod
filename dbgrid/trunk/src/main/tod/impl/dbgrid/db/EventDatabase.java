@@ -20,21 +20,15 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.db;
 
-import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_SIZE;
-
-import java.io.File;
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Comparator;
 
 import tod.core.DebugFlags;
 import tod.core.database.structure.IStructureDatabase;
 import tod.impl.database.IBidiIterator;
+import tod.impl.dbgrid.IGridEventFilter;
 import tod.impl.dbgrid.db.EventReorderingBuffer.ReorderingBufferListener;
-import tod.impl.dbgrid.db.file.HardPagedFile;
-import tod.impl.dbgrid.messages.BitGridEvent;
 import tod.impl.dbgrid.messages.GridEvent;
-import tod.impl.dbgrid.queries.EventCondition;
 import zz.utils.monitoring.AggregationType;
 import zz.utils.monitoring.Monitor;
 import zz.utils.monitoring.Probe;
@@ -45,13 +39,10 @@ import zz.utils.monitoring.Probe;
  * of indexes.
  * @author gpothier
  */
-public class EventDatabase implements ReorderingBufferListener
+public abstract class EventDatabase 
+implements ReorderingBufferListener
 {
 	private final IStructureDatabase itsStructureDatabase;
-	private final HardPagedFile itsFile;
-	
-	private final EventList itsEventList;
-	private final Indexes itsIndexes;
 	
 	/**
 	 * Timestamp of the last processed event
@@ -70,22 +61,17 @@ public class EventDatabase implements ReorderingBufferListener
 	/**
 	 * Creates a new database using the specified file.
 	 */
-	public EventDatabase(IStructureDatabase aStructureDatabase, int aNodeId, File aFile) 
+	public EventDatabase(IStructureDatabase aStructureDatabase, int aNodeId) 
 	{
 		Monitor.getInstance().register(this);
 		itsStructureDatabase = aStructureDatabase;
-		try
-		{
-			itsFile = new HardPagedFile(aFile, DB_PAGE_SIZE);
-			itsEventList = new EventList(itsStructureDatabase, aNodeId, itsFile);
-			itsIndexes = new Indexes(itsFile);
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
 	}
 
+	public IStructureDatabase getStructureDatabase()
+	{
+		return itsStructureDatabase;
+	}
+	
 	/**
 	 * Recursively disposes this database.
 	 * Amongst other things, unregister from the monitor.
@@ -93,38 +79,24 @@ public class EventDatabase implements ReorderingBufferListener
 	public void dispose()
 	{
 		Monitor.getInstance().unregister(this);
-		itsEventList.dispose();
-		itsIndexes.dispose();
-		itsFile.dispose();
 	}
 
-	public Indexes getIndexes()
-	{
-		return itsIndexes;
-	}
-	
 	/**
 	 * Creates an iterator over matching events of this node, starting at the specified timestamp.
 	 */
-	public IBidiIterator<GridEvent> evaluate(EventCondition aCondition, long aTimestamp)
-	{
-		return aCondition.createIterator(itsEventList, getIndexes(), aTimestamp);
-	}
+	public abstract IBidiIterator<GridEvent> evaluate(IGridEventFilter aCondition, long aTimestamp);
 
-	public RINodeEventIterator getIterator(EventCondition aCondition) throws RemoteException
+	public RINodeEventIterator getIterator(IGridEventFilter aCondition) throws RemoteException
 	{
 		return new NodeEventIterator(this, aCondition);
 	}
 
-	public long[] getEventCounts(
-			EventCondition aCondition,
+	public abstract long[] getEventCounts(
+			IGridEventFilter aCondition,
 			long aT1, 
 			long aT2,
 			int aSlotsCount, 
-			boolean aForceMergeCounts)
-	{
-		return aCondition.getEventCounts(itsEventList, getIndexes(), aT1, aT2, aSlotsCount, aForceMergeCounts);
-	}
+			boolean aForceMergeCounts);
 
 	/**
 	 * Pushes a single message to this node.
@@ -172,7 +144,7 @@ public class EventDatabase implements ReorderingBufferListener
 	 * after this method is called.
 	 */
 	public int flush()
-		{
+	{
 		int theCount = 0;
 		System.out.println("[EventDatabase] Flushing...");
 		while (! itsReorderingBuffer.isEmpty())
@@ -188,9 +160,11 @@ public class EventDatabase implements ReorderingBufferListener
 	 * Flushes the oldest available event.
 	 * Returns 0 if the Buffer was empty, otherwise returns 1 if an event was indeed flushed.
 	 */
-	public int flushOldestEvent(){
+	public int flushOldestEvent()
+	{
 		int theCount = 0;
-		if (!itsReorderingBuffer.isEmpty()){
+		if (!itsReorderingBuffer.isEmpty())
+		{
 			processEvent(itsReorderingBuffer.pop());
 			theCount++;
 		}
@@ -229,7 +203,8 @@ public class EventDatabase implements ReorderingBufferListener
 	 * @param aDelay
 	 * @return
 	 */
-	public boolean isNextEventFlushable(long aDelay){
+	public boolean isNextEventFlushable(long aDelay)
+	{
 		return itsReorderingBuffer.isNextEventFlushable(aDelay) ;
 	}
 	
@@ -237,8 +212,6 @@ public class EventDatabase implements ReorderingBufferListener
 	
 	private void processEvent(GridEvent aEvent)
 	{
-		BitGridEvent theEvent = (BitGridEvent) aEvent;
-		
 		long theTimestamp = aEvent.getTimestamp();
 		if (theTimestamp < itsLastProcessedTimestamp)
 		{
@@ -249,33 +222,15 @@ public class EventDatabase implements ReorderingBufferListener
 		itsLastProcessedTimestamp = theTimestamp;
 		itsProcessedEventsCount++;
 		
-		long theId = itsEventList.add(aEvent);
-		if (! DebugFlags.DISABLE_INDEXES) theEvent.index(itsIndexes, theId);		
+		processEvent0(aEvent);
 	}
+
+	protected abstract void processEvent0(GridEvent aEvent);
 	
 	/**
 	 * Returns the amount of disk storage used by this node.
 	 */
-	public long getStorageSpace()
-	{
-		return itsFile.getStorageSpace();
-	}
+	public abstract long getStorageSpace();
 	
-	public long getEventsCount()
-	{
-		return itsEventList.getEventsCount();
-	}
-
-	
-	private static class EventTimestampComparator implements Comparator<GridEvent>
-	{
-		public int compare(GridEvent aEvent1, GridEvent aEvent2)
-		{
-			long theDelta = aEvent1.getTimestamp() - aEvent2.getTimestamp();
-			if (theDelta == 0) return 0;
-			else if (theDelta > 0) return 1;
-			else return -1;
-		}
-	}
-	
+	public abstract long getEventsCount();
 }

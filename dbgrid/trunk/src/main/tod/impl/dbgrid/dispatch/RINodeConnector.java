@@ -27,10 +27,9 @@ import java.rmi.RemoteException;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.structure.IHostInfo;
+import tod.impl.dbgrid.IGridEventFilter;
 import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.db.RINodeEventIterator;
-import tod.impl.dbgrid.queries.EventCondition;
-
 import zz.utils.net.Server.ServerAdress;
 
 /**
@@ -66,13 +65,13 @@ public interface RINodeConnector extends Remote
 	/**
 	 * Creates a new event iterator for the given condition.
 	 */
-	public RINodeEventIterator getIterator(EventCondition aCondition) throws RemoteException;
+	public RINodeEventIterator getIterator(IGridEventFilter aCondition) throws RemoteException;
 	
 	/**
 	 * Semantic matches {@link IEventBrowser#getEventCounts(long, long, int)}
 	 */
 	public long[] getEventCounts(
-			EventCondition aCondition,
+			IGridEventFilter aCondition,
 			long aT1,
 			long aT2,
 			int aSlotsCount, 

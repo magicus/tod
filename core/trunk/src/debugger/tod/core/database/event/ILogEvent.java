@@ -31,6 +31,7 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.event;
 
+import tod.core.ILogCollector;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
@@ -91,5 +92,4 @@ public interface ILogEvent
 	 * @return An array of advice source ids, or null if not in the cflow of any advice.
 	 */
 	public int[] getAdviceCFlow();
-	
 }

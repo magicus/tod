@@ -7,9 +7,10 @@ package tod.impl.evdbng.queries;
 
 
 import tod.impl.database.IBidiIterator;
+import tod.impl.dbgrid.messages.GridEvent;
+import tod.impl.evdbng.db.EventList;
 import tod.impl.evdbng.db.Indexes;
 import tod.impl.evdbng.db.file.SimpleTuple;
-import tod.impl.evdbng.messages.GridEventNG;
 
 /**
  * Represents a condition on bytecode location
@@ -26,13 +27,13 @@ public class BytecodeLocationCondition extends SimpleCondition<SimpleTuple>
 	}
 
 	@Override
-	public IBidiIterator<SimpleTuple> createTupleIterator(Indexes aIndexes, long aEventId)
+	public IBidiIterator<SimpleTuple> createTupleIterator(EventList aEventList, Indexes aIndexes, long aEventId)
 	{
 		return aIndexes.getLocationIndex(itsBytecodeLocation).getTupleIterator(aEventId);
 	}
 
 	@Override
-	public boolean _match(GridEventNG aEvent)
+	public boolean _match(GridEvent aEvent)
 	{
 		return aEvent.getProbeInfo().bytecodeIndex == itsBytecodeLocation;
 	}

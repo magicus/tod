@@ -22,6 +22,7 @@ package tod.impl.dbgrid.messages;
 
 import java.io.Serializable;
 
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IBehaviorInfo;
@@ -34,11 +35,6 @@ import tod.impl.common.event.Event;
 import tod.impl.database.structure.standard.FieldInfo;
 import tod.impl.database.structure.standard.ThreadInfo;
 import tod.impl.dbgrid.GridLogBrowser;
-import tod.impl.dbgrid.queries.ArrayIndexCondition;
-import tod.impl.dbgrid.queries.BehaviorCondition;
-import tod.impl.dbgrid.queries.FieldCondition;
-import tod.impl.dbgrid.queries.ObjectCondition;
-import tod.impl.dbgrid.queries.VariableCondition;
 import zz.utils.PublicCloneable;
 
 public abstract class GridEvent extends PublicCloneable 
@@ -91,14 +87,14 @@ implements Serializable
 	
 	/**
 	 * Initializes common event fields. Subclasses can use this method in the
-	 * implementation of {@link #toLogEvent(GridLogBrowser)}
+	 * implementation of {@link #toLogEvent(ILogBrowser)}
 	 */
 	protected void initEvent(GridLogBrowser aBrowser, Event aEvent)
 	{
 		// If no browser is specified, make up a thread info
 		// This is the case when using PredicateCondition.
 		IThreadInfo theThread = aBrowser != null ?
-				aBrowser.getThread(getThread())
+				((GridLogBrowser) aBrowser).getThread(getThread())
 				: new ThreadInfo(null, getThread(), 0, "Unknown");
 				
 		aEvent.setThread(theThread);
@@ -110,36 +106,36 @@ implements Serializable
 	}
 	
 	/**
-	 * Utility for implementation of {@link #toLogEvent(GridLogBrowser)}
+	 * Utility for implementation of {@link #toLogEvent(ILogBrowser)}
 	 */
-	protected IBehaviorInfo getBehaviorInfo(GridLogBrowser aBrowser, int aId)
+	protected IBehaviorInfo getBehaviorInfo(ILogBrowser aBrowser, int aId)
 	{
 		assert aBrowser == null || aBrowser.getStructureDatabase() == itsStructureDatabase;
 		return itsStructureDatabase.getBehavior(aId, false); 
 	}
 	
 	/**
-	 * Utility for implementation of {@link #toLogEvent(GridLogBrowser)}
+	 * Utility for implementation of {@link #toLogEvent(ILogBrowser)}
 	 */
-	protected ITypeInfo getTypeInfo(GridLogBrowser aBrowser, int aId)
+	protected ITypeInfo getTypeInfo(ILogBrowser aBrowser, int aId)
 	{
 		assert aBrowser == null || aBrowser.getStructureDatabase() == itsStructureDatabase;
 		return itsStructureDatabase.getType(aId, true); 
 	}
 	
 	/**
-	 * Utility for implementation of {@link #toLogEvent(GridLogBrowser)}
+	 * Utility for implementation of {@link #toLogEvent(ILogBrowser)}
 	 */
-	protected IArrayTypeInfo getArrayTypeInfo(GridLogBrowser aBrowser, ITypeInfo aBaseType, int aDimensions)
+	protected IArrayTypeInfo getArrayTypeInfo(ILogBrowser aBrowser, ITypeInfo aBaseType, int aDimensions)
 	{
 		assert aBrowser == null || aBrowser.getStructureDatabase() == itsStructureDatabase;
 		return itsStructureDatabase.getArrayType(aBaseType, aDimensions); 
 	}
 	
 	/**
-	 * Utility for implementation of {@link #toLogEvent(GridLogBrowser)}
+	 * Utility for implementation of {@link #toLogEvent(ILogBrowser)}
 	 */
-	protected IFieldInfo getFieldInfo(GridLogBrowser aBrowser, int aId)
+	protected IFieldInfo getFieldInfo(ILogBrowser aBrowser, int aId)
 	{
 		if (aBrowser != null)
 		{

@@ -19,6 +19,7 @@ public class EventsCounter
 {
 	public static long[] mergeCountEvents(
 			EventCondition aCondition, 
+			EventList aEventList,
 			Indexes aIndexes, 
 			long aT1, 
 			long aT2, 
@@ -30,7 +31,7 @@ public class EventsCounter
 		
 		long theTotal = 0;
 		
-		IBidiIterator<SimpleTuple> theIterator = aCondition.createTupleIterator(aIndexes, aT1);
+		IBidiIterator<SimpleTuple> theIterator = aCondition.createTupleIterator(aEventList, aIndexes, aT1);
 		while (theIterator.hasNext())
 		{
 			SimpleTuple theTuple = theIterator.next();

@@ -37,7 +37,7 @@ package tod.core.database.event;
  * It is always the last event of a {@link IBehaviorCallEvent}.
  * @author gpothier
  */
-public interface IBehaviorExitEvent extends ILogEvent
+public interface IBehaviorExitEvent extends ICallerSideEvent
 {
 	/**
 	 * Whether the behavior returned normally or with an

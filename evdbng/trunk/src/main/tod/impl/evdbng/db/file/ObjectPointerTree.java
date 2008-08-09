@@ -3,7 +3,7 @@
  */
 package tod.impl.evdbng.db.file;
 
-import tod.impl.evdbng.db.ObjectsDatabase;
+import tod.impl.dbgrid.db.ObjectsDatabase;
 import tod.impl.evdbng.db.file.PagedFile.PageIOStream;
 
 /**

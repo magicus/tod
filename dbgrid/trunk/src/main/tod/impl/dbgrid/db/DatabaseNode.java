@@ -31,20 +31,15 @@ import tod.core.ILogCollector;
 import tod.core.config.TODConfig;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
-import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ObjectId;
 import tod.core.transport.ValueReader;
 import tod.impl.database.IBidiIterator;
-import tod.impl.database.structure.standard.ThreadInfo;
 import tod.impl.dbgrid.DebuggerGridConfig;
-import tod.impl.dbgrid.GridEventCollector;
 import tod.impl.dbgrid.GridMaster;
+import tod.impl.dbgrid.IGridEventFilter;
 import tod.impl.dbgrid.RIGridMaster;
-import tod.impl.dbgrid.db.file.HardPagedFile;
-import tod.impl.dbgrid.dispatch.RINodeConnector;
 import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
 import tod.impl.dbgrid.messages.GridEvent;
-import tod.impl.dbgrid.queries.EventCondition;
 import tod.utils.remote.RemoteStructureDatabase;
 import zz.utils.Utils;
 
@@ -53,7 +48,7 @@ import zz.utils.Utils;
  * 
  * @author gpothier
  */
-public class DatabaseNode 
+public abstract class DatabaseNode 
 {
 //	private static final ReceiverThread NODE_THREAD = new ReceiverThread();
 	
@@ -74,11 +69,12 @@ public class DatabaseNode
 	private IMutableStructureDatabase itsStructureDatabase;
 	
 	private EventDatabase itsEventsDatabase;
-	private File itsObjectsDatabaseFile;
-	private File itsStringIndexFile;
+	private File itsRootDirectory;
 	
-	private List<ReorderedObjectsDatabase> itsObjectsDatabases = 
-		new ArrayList<ReorderedObjectsDatabase>();
+	/**
+	 * Per-host object databases.
+	 */
+	private List<ObjectsDatabase> itsObjectsDatabases = new ArrayList<ObjectsDatabase>();
 	
 	private StringIndexer itsStringIndexer;
 	
@@ -87,11 +83,8 @@ public class DatabaseNode
 	public DatabaseNode() 
 	{
 		String thePrefix = DebuggerGridConfig.NODE_DATA_DIR;
-		File theParent = new File(thePrefix);
-		System.out.println("Using data directory: "+theParent);
-		
-		itsObjectsDatabaseFile = new File(theParent, "objects.bin");
-		itsStringIndexFile = new File(theParent, "strings");
+		itsRootDirectory = new File(thePrefix);
+		System.out.println("Using data directory: "+itsRootDirectory);
 	}
 	
 	public TODConfig getConfig()
@@ -133,10 +126,8 @@ public class DatabaseNode
 		initDatabase();
 	}
 	
-	private synchronized void initDatabase()
+	protected synchronized void initDatabase()
 	{
-		HardPagedFile.clearCache(); //TODO: only clear pages of current database
-		
 		if (itsEventsDatabase != null)
 		{
 			itsEventsDatabase.dispose();
@@ -151,9 +142,7 @@ public class DatabaseNode
 		File theParent = new File(thePrefix);
 		System.out.println("Using data directory: "+theParent);
 		
-		File theFile = new File(theParent, "events.bin");
-		theFile.delete();
-		itsEventsDatabase = createDatabase(theFile);		
+		itsEventsDatabase = createEventDatabase(theParent);		
 
 		// Init objects database
 		for (ObjectsDatabase theDatabase : itsObjectsDatabases)
@@ -162,12 +151,11 @@ public class DatabaseNode
 		}
 		
 		itsObjectsDatabases.clear();
-		itsObjectsDatabaseFile.delete();
 		
 		if (getConfig().get(TODConfig.INDEX_STRINGS))
 		{
 			System.out.println("[LeafEventDispatcher] Creating string indexer");
-			itsStringIndexer = new StringIndexer(getConfig(), itsStringIndexFile);
+			itsStringIndexer = new StringIndexer(getConfig(), new File(itsRootDirectory, "strings.bin"));
 		}
 		else
 		{
@@ -176,19 +164,28 @@ public class DatabaseNode
 		}
 	}
 	
-	protected EventDatabase createDatabase(File aFile)
-	{
-		return new EventDatabase(itsStructureDatabase, itsNodeId, aFile);
-	}
+	/**
+	 * Creates an event database in the given directory. 
+	 */
+	protected abstract EventDatabase createEventDatabase(File aDirectory);
 	
 	/**
 	 * Returns the structure database used by this node.
 	 */
-	public IStructureDatabase getStructureDatabase()
+	public IMutableStructureDatabase getStructureDatabase()
 	{
 		return itsStructureDatabase;
 	}
 
+	public int getNodeId()
+	{
+		return itsNodeId;
+	}
+	
+	public RIGridMaster getMaster()
+	{
+		return itsMaster;
+	}
 	
 	public void clear()
 	{
@@ -205,7 +202,7 @@ public class DatabaseNode
 		
 		System.out.println("[DatabaseNode] Flushing...");
 		
-		for (ReorderedObjectsDatabase theDatabase : itsObjectsDatabases)
+		for (ObjectsDatabase theDatabase : itsObjectsDatabases)
 		{
 			if (theDatabase != null) theObjectsCount += theDatabase.flush();
 		}
@@ -225,7 +222,7 @@ public class DatabaseNode
 	}
 	
 	public long[] getEventCounts(
-			EventCondition aCondition, 
+			IGridEventFilter aCondition, 
 			long aT1, 
 			long aT2,
 			int aSlotsCount,
@@ -239,7 +236,7 @@ public class DatabaseNode
 				aForceMergeCounts);
 	}
 
-	public RINodeEventIterator getIterator(EventCondition aCondition) throws RemoteException 
+	public RINodeEventIterator getIterator(IGridEventFilter aCondition) throws RemoteException 
 	{
 		return itsEventsDatabase.getIterator(aCondition);
 	}
@@ -284,11 +281,7 @@ public class DatabaseNode
 		return itsLastTimestamp;
 	}
 
-	public ILogCollector createLogCollector(IHostInfo aHostInfo)
-	{
-		return new MyCollector(itsMaster, aHostInfo, itsStructureDatabase, this);
-	}
-
+	public abstract ILogCollector createLogCollector(IHostInfo aHostInfo);
 
 	public void register(long aId, byte[] aData, long aTimestamp, boolean aIndexable)
 	{
@@ -316,9 +309,9 @@ public class DatabaseNode
 	 * @param aHostId A host id, of those embedded in object
 	 * ids.
 	 */
-	private ReorderedObjectsDatabase getObjectsDatabase(int aHostId)
+	private ObjectsDatabase getObjectsDatabase(int aHostId)
 	{
-		ReorderedObjectsDatabase theDatabase = null;
+		ObjectsDatabase theDatabase = null;
 		if (aHostId < itsObjectsDatabases.size())
 		{
 			theDatabase = itsObjectsDatabases.get(aHostId);
@@ -326,12 +319,19 @@ public class DatabaseNode
 		
 		if (theDatabase == null)
 		{
-			theDatabase = new ReorderedObjectsDatabase(itsObjectsDatabaseFile);
+			theDatabase = createObjectsDatabase(itsRootDirectory, "h"+aHostId);
 			Utils.listSet(itsObjectsDatabases, aHostId, theDatabase);
 		}
 		
 		return theDatabase;
 	}
+	
+	/**
+	 * Creates an object database in the given directory.
+	 * As there can be several object databases (one per host), and additional name
+	 * is given to differentiate them.
+	 */
+	protected abstract ObjectsDatabase createObjectsDatabase(File aDirectory, String aName);
 	
 	public Object getRegisteredObject(long aId) 
 	{
@@ -339,7 +339,7 @@ public class DatabaseNode
 		
 		long theObjectId = ObjectId.getObjectId(aId);
 		int theHostId = ObjectId.getHostId(aId);
-		ReorderedObjectsDatabase theObjectsDatabase = getObjectsDatabase(theHostId);
+		ObjectsDatabase theObjectsDatabase = getObjectsDatabase(theHostId);
 		return theObjectsDatabase != null ? theObjectsDatabase.load(theObjectId) : null;
 	}
 
@@ -425,36 +425,6 @@ public class DatabaseNode
 		}
 	}
 	
-	private static class MyCollector extends GridEventCollector
-	{
-		private GridMaster itsMaster;
-		
-		public MyCollector(
-				RIGridMaster aMaster, 
-				IHostInfo aHost, 
-				IMutableStructureDatabase aStructureDatabase,
-				DatabaseNode aNode)
-		{
-			super(aHost, aStructureDatabase, aNode);
-
-			// Only for local master (see #thread). 
-			if (aMaster instanceof GridMaster)
-			{
-				itsMaster = (GridMaster) aMaster;
-			}
-		}
-
-		@Override
-		public void thread(int aThreadId, long aJVMThreadId, String aName)
-		{
-			if (itsMaster != null)
-			{
-				ThreadInfo theThread = createThreadInfo(getHost(), aThreadId, aJVMThreadId, aName);
-				itsMaster.registerThread(theThread);
-			}
-			else throw new UnsupportedOperationException("Should have been filtered by master");		
-		}
-	}
 	
 	/**
 	 * This thread flushes the database when no event has been added
@@ -509,13 +479,14 @@ public class DatabaseNode
 							theCount++;
 						}
 						// Flush oldest object if the newest was created more than 2s after
-						for (ReorderedObjectsDatabase theDatabase : itsObjectsDatabases)
-							if (theDatabase != null)
-								while (theDatabase.isNextEventFlushable(2000000000)) 
-									{
-										theDatabase.flushOldestEvent();
-										theCount++;
-									}
+						for (ObjectsDatabase theDatabase : itsObjectsDatabases)
+						{
+							if (theDatabase != null) while (theDatabase.isNextEventFlushable(2000000000)) 
+							{
+								theDatabase.flushOldestEvent();
+								theCount++;
+							}
+						}	
 						System.out.println("Flushing "+theCount+" events and  objects older than 2s");
 					}
 					itsActive = false;

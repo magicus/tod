@@ -20,86 +20,139 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.db;
 
-import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_BYTEOFFSET_BITS;
-import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_POINTER_BITS;
-import static tod.impl.dbgrid.DebuggerGridConfig.DB_PAGE_SIZE;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.IntBuffer;
 
-import tod.impl.dbgrid.db.file.HardPagedFile;
-import tod.impl.dbgrid.db.file.IndexTuple;
-import tod.impl.dbgrid.db.file.IndexTupleCodec;
-import tod.impl.dbgrid.db.file.HardPagedFile.Page;
-import zz.utils.bit.BitStruct;
+import tod.core.DebugFlags;
+import tod.impl.dbgrid.db.ObjectsReorderingBuffer.Entry;
+import tod.impl.dbgrid.db.ObjectsReorderingBuffer.ReorderingBufferListener;
 import zz.utils.monitoring.AggregationType;
 import zz.utils.monitoring.Monitor;
 import zz.utils.monitoring.Probe;
 
 /**
- * A database for storing registered objects.
- * Each object has an associated id. It is assumed that
- * objects are sent in in their id order.
+ * Stores registered objects.
  * @author gpothier
  */
-public class ObjectsDatabase
+public abstract class ObjectsDatabase
+implements ReorderingBufferListener
 {
-	private HardPagedFile itsFile;
-	private HierarchicalIndex<ObjectPointerTuple> itsindex;
-	private ObjectPointerTuple itsTuple = new ObjectPointerTuple(0, 0, 0);
-	
+	private ObjectsReorderingBuffer itsReorderingBuffer = new ObjectsReorderingBuffer(this);
+
 	private long itsLastRecordedId = 0;
-	private int itsDroppedObjects = 0; 
-	
-	private ByteBuffer itsByteBuffer = ByteBuffer.allocate(0);
-	private IntBuffer itsIntBuffer = itsByteBuffer.asIntBuffer();
-	
-	/**
-	 * Current data page
-	 */
-	private Page itsCurrentPage;
-	
-	/**
-	 * Offset in the current page, in bytes.
-	 */
-	private int itsCurrentOffset;
-	
+	private long itsDroppedObjects = 0;
+	private long itsUnorderedObjects = 0;
+	private long itsProcessedObjects = 0;
+	private long itsLastAddedId;
+	private long itsLastProcessedId;
 	private long itsObjectsCount = 0;
-	
-	public ObjectsDatabase(File aFile)
+
+	public ObjectsDatabase()
 	{
-		Monitor.getInstance().register(this);
-		try
+		Monitor.getInstance().register(this);		
+	}
+
+	/**
+	 * Stores an object into the database. The object is serialized by {@link #encode(Object)}
+	 * prior to storage.
+	 * @param aId Id of the object to store.
+	 * @param aObject The object to store.
+	 */
+	public void store(long aId, Object aObject)
+	{
+		store(aId, encode(aObject));
+	}
+
+	public void store(long aId, byte[] aData, long aTimestamp)
+	{
+		if (aId < itsLastAddedId) itsUnorderedObjects++;
+		else itsLastAddedId = aId;
+		
+		Entry theEntry = new Entry(aId, aData, aTimestamp);
+		
+		if (DebugFlags.DISABLE_REORDER)
 		{
-			itsFile = new HardPagedFile(aFile, DB_PAGE_SIZE);
-			itsindex = new HierarchicalIndex<ObjectPointerTuple>(
-					"[ObjectsDatabase] index",
-					ObjectTupleCodec.getInstance(),
-					itsFile);
-			
-			itsCurrentPage = itsFile.create();
-			itsCurrentOffset = 0;
+			doStore(theEntry);
 		}
-		catch (FileNotFoundException e)
+		else
 		{
-			throw new RuntimeException(e);
+			while (itsReorderingBuffer.isFull()) doStore(itsReorderingBuffer.pop());
+			itsReorderingBuffer.push(theEntry);
 		}
 	}
 	
+	private void doStore(Entry aEntry)
+	{
+		long theId = aEntry.id;
+		if (theId < itsLastProcessedId)
+		{
+			objectDropped();
+			return;
+		}
+		
+		itsLastProcessedId = theId;
+		
+		itsProcessedObjects++;
+		
+		store(theId, aEntry.data);
+	}
+	
+	private void store(long aId, byte[] aData)
+	{
+		itsObjectsCount++;
+		
+		assert aData.length > 0;
+		if (aId < itsLastRecordedId)
+		{
+			itsDroppedObjects++;
+			return;
+		}
+		
+		itsLastRecordedId = aId;
+		store0(aId, aData);
+	}
+	
+	protected abstract void store0(long aId, byte[] aData);
+	
+	public synchronized int flush()
+	{
+		int theCount = 0;
+		System.out.println("[ReorderedObjectsDatabase] Flushing...");
+		while (! itsReorderingBuffer.isEmpty())
+		{
+			doStore(itsReorderingBuffer.pop());
+			theCount++;
+		}
+		System.out.println("[ReorderedObjectsDatabase] Flushed "+theCount+" objects.");
+
+		return theCount;
+	}
+
+	/**
+	 * return 0 if the Buffer is empty else return 1
+	 * @return
+	 */
+	public synchronized  int flushOldestEvent(){
+		int theCount = 0;
+		if (!itsReorderingBuffer.isEmpty())
+		{
+			doStore(itsReorderingBuffer.pop());
+			theCount++;
+		}
+		return theCount;
+	}
+
 	public void dispose()
 	{
 		Monitor.getInstance().unregister(this);
-		itsFile.dispose();
 	}
 	
+	public abstract Object load(long aObjectId);
+
 	/**
 	 * Serializes the given object into an array of bytes so that
 	 * it can be stored.
@@ -126,10 +179,18 @@ public class ObjectsDatabase
 	protected Object decode(byte[] aData)
 	{
 		assert aData.length > 0;
+		ByteArrayInputStream theStream = new ByteArrayInputStream(aData);
+		return decode(theStream);
+	}
+	
+	/**
+	 * Deserializes an object previously serialized by {@link #encode(Object)}.
+	 */
+	protected Object decode(InputStream aStream)
+	{
 		try
 		{
-			ByteArrayInputStream theStream = new ByteArrayInputStream(aData);
-			ObjectInputStream theOIStream = new ObjectInputStream(theStream);
+			ObjectInputStream theOIStream = new ObjectInputStream(aStream);
 			return theOIStream.readObject();
 		}
 		catch (IOException e)
@@ -142,242 +203,42 @@ public class ObjectsDatabase
 		}
 	}
 	
+
 	/**
-	 * Stores an object into the database. The object is serialized by {@link #encode(Object)}
-	 * prior to storage.
-	 * @param aId Id of the object to store.
-	 * @param aObject The object to store.
+	 * define if the difference between the oldest event of the buffer
+	 *  and the newest is more than aDelay (in nanosecond)
+	 * @param aDelay
+	 * @return
 	 */
-	public void store(long aId, Object aObject)
+	public boolean isNextEventFlushable(long aDelay)
 	{
-		store(aId, encode(aObject));
+		return itsReorderingBuffer.isNextEventFlushable(aDelay);
 	}
 	
-	private void checkBufferSize(int aSize)
-	{
-		if (itsIntBuffer.capacity() < aSize)
-		{
-			itsByteBuffer = ByteBuffer.allocate(4*Math.max(itsIntBuffer.capacity()*2, aSize));
-			itsByteBuffer.order(ByteOrder.nativeOrder());
-			itsIntBuffer = itsByteBuffer.asIntBuffer();
-		}
-	}
 	
-	/**
-	 * Stores an already-serialized object into the database.
-	 */
-	public void store(long aId, byte[] aData)
+	@Probe(key = "Out of order objects", aggr = AggregationType.SUM)
+	public long getUnorderedEvents()
 	{
-		itsObjectsCount++;
-		
-		assert aData.length > 0;
-		if (aId < itsLastRecordedId)
-		{
-			itsDroppedObjects++;
-			return;
-		}
-		
-		// Add index tuple
-		itsTuple.set(aId, itsCurrentPage.getPageId(), itsCurrentOffset);
-		itsindex.add(itsTuple);
-		
-		// Store object data
-		itsLastRecordedId = aId;
-		int theDataSize = aData.length;
-		int theStorageSize = 1 + (theDataSize+3)/4;
-		
-		checkBufferSize(theStorageSize);
-		
-		itsIntBuffer.position(0);
-		itsIntBuffer.put(theDataSize);
-		itsByteBuffer.position(4);
-		itsByteBuffer.put(aData);
-
-		itsIntBuffer.position(0);
-		int theRemaining = theStorageSize*4;
-		while (theRemaining > 0)
-		{			
-			// Determine available space in current page, keeping 64 bits
-			// for next-page pointer
-			int theSpaceInPage = itsCurrentPage.getSize()-8-itsCurrentOffset;
-			int[] thePageData = itsCurrentPage.getData();
-			
-			int theAmountToCopy = Math.min(theRemaining, theSpaceInPage);
-			assert theAmountToCopy % 4 == 0;
-			assert itsCurrentOffset % 4 == 0;
-			
-			itsIntBuffer.get(thePageData, itsCurrentOffset/4, theAmountToCopy/4);
-			
-			itsCurrentPage.modified();
-			
-			theRemaining -= theAmountToCopy;
-			itsCurrentOffset += theAmountToCopy;
-			
-			if (theAmountToCopy == theSpaceInPage)
-			{
-				// Allocate next page
-				Page theNextPage = itsFile.create();
-				long thePageId = theNextPage.getPageId();
-				assert itsCurrentPage.getSize()-8 == itsCurrentOffset;
-				
-				thePageData[itsCurrentOffset/4] = (int) (thePageId & 0xffffffff);
-				thePageData[(itsCurrentOffset/4)+1] = (int) (thePageId >>> 32);
-				
-				itsCurrentPage = theNextPage;
-				itsCurrentOffset = 0;
-			}
-			
-			itsCurrentPage.use();
-		}
+		return itsUnorderedObjects;
 	}
-	
-	/**
-	 * Loads an object from the database.
-	 * @param aId Id of the object to load.
-	 */
-	public Object load(long aId)
+
+	@Probe(key = "DROPPED OBJECTS", aggr = AggregationType.SUM)
+	public long getDroppedEvents()
 	{
-		ObjectPointerTuple theTuple = itsindex.getTupleAt(aId, true);
-		if (theTuple == null) return null;
-		
-		int theOffset = theTuple.getOffset();
-		Page thePage = itsFile.get(theTuple.getPageId());
-		
-		assert theOffset % 4 == 0;
-		int theDataSize = thePage.getData()[theOffset/4];
-
-		int theStorageSize = (theDataSize+3)/4;
-		
-		checkBufferSize(theStorageSize);
-
-		theOffset += 4;
-		
-		itsIntBuffer.position(0);
-		int theRemaining = theStorageSize*4;
-		while (theRemaining > 0)
-		{
-			// Determine available space in current page, keeping 64 bits
-			// for next-page pointer
-			int theSpaceInPage = thePage.getSize()-8-theOffset;
-			int[] thePageData = thePage.getData();
-			
-			int theAmountToCopy = Math.min(theRemaining, theSpaceInPage);
-			assert theAmountToCopy % 4 == 0;
-			assert theOffset % 4 == 0;
-			
-			if (theAmountToCopy > 0) itsIntBuffer.put(thePageData, theOffset/4, theAmountToCopy/4); 
-			
-			theRemaining -= theAmountToCopy;
-			theOffset += theAmountToCopy;
-			
-			if (theRemaining > 0)
-			{
-				// Get next page
-				assert thePage.getSize()-8 == theOffset;
-
-				long theI1 = thePageData[theOffset/4];
-				long theI2 = thePageData[(theOffset/4)+1];
-				
-				long thePageId = theI1 + (theI2 << 32); 
-				thePage = itsFile.get(thePageId);
-				theOffset = 0;
-			}
-		}
-		
-		return decode(itsByteBuffer.array());
+		return itsDroppedObjects;
 	}
-	
+
 	@Probe(key = "objects count", aggr = AggregationType.SUM)
 	public long getObjectsCount()
 	{
 		return itsObjectsCount;
 	}
 	
-	/**
-	 * Codec for {@link InternalTuple}.
-	 * @author gpothier
-	 */
-	private static class ObjectTupleCodec extends IndexTupleCodec<ObjectPointerTuple>
+
+	public void objectDropped()
 	{
-		private static ObjectTupleCodec INSTANCE = new ObjectTupleCodec();
-
-		public static ObjectTupleCodec getInstance()
-		{
-			return INSTANCE;
-		}
-
-		private ObjectTupleCodec()
-		{
-		}
-		
-		@Override
-		public int getTupleSize()
-		{
-			return super.getTupleSize() 
-					+ DB_PAGE_POINTER_BITS
-					+ DB_PAGE_BYTEOFFSET_BITS;
-		}
-
-		@Override
-		public ObjectPointerTuple read(BitStruct aBitStruct)
-		{
-			return new ObjectPointerTuple(aBitStruct);
-		}
+		itsDroppedObjects++;
 	}
 	
-	
-	
-	private static class ObjectPointerTuple extends IndexTuple
-	{
-		private long itsPageId;
-		private int itsOffset;
-		
-		public ObjectPointerTuple(long aKey, long aPageId, int aOffset)
-		{
-			super(aKey);
-			itsPageId = aPageId;
-			itsOffset = aOffset;
-		}
-		
-		public ObjectPointerTuple(BitStruct aBitStruct)
-		{
-			super(aBitStruct);
-			itsPageId = aBitStruct.readLong(DB_PAGE_POINTER_BITS);
-			itsOffset = aBitStruct.readInt(DB_PAGE_BYTEOFFSET_BITS);
-		}
 
-		@Override
-		public void writeTo(BitStruct aBitStruct)
-		{
-			super.writeTo(aBitStruct);
-			aBitStruct.writeLong(itsPageId, DB_PAGE_POINTER_BITS);
-			aBitStruct.writeInt(itsOffset, DB_PAGE_BYTEOFFSET_BITS);
-		}
-		
-		@Override
-		public int getBitCount()
-		{
-			return super.getBitCount() 
-					+ DB_PAGE_POINTER_BITS
-					+ DB_PAGE_BYTEOFFSET_BITS;
-		}
-		
-		public void set(long aKey, long aPageId, int aOffset)
-		{
-			super.set(aKey);
-			itsPageId = aPageId;
-			itsOffset = aOffset;
-		}
-
-		public int getOffset()
-		{
-			return itsOffset;
-		}
-
-		public long getPageId()
-		{
-			return itsPageId;
-		}
-
-	}
 }

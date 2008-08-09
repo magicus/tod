@@ -5,7 +5,7 @@ Proprietary and confidential
 */
 package tod.impl.evdbng.db.file;
 
-import static tod.impl.evdbng.DebuggerGridConfig.DB_MAX_INDEX_LEVELS;
+import static tod.impl.evdbng.DebuggerGridConfigNG.DB_MAX_INDEX_LEVELS;
 import tod.impl.evdbng.db.file.PagedFile.ChainedPageIOStream;
 import tod.impl.evdbng.db.file.PagedFile.Page;
 import tod.impl.evdbng.db.file.PagedFile.PageIOStream;

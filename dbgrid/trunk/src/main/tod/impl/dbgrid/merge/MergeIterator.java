@@ -22,8 +22,7 @@ package tod.impl.dbgrid.merge;
 
 import tod.impl.database.AbstractBidiIterator;
 import tod.impl.database.IBidiIterator;
-import tod.impl.dbgrid.db.file.IndexTuple;
-import tod.impl.dbgrid.db.file.TupleIterator;
+import tod.impl.dbgrid.ITupleIterator;
 import zz.utils.ITask;
 import zz.utils.Utils;
 
@@ -97,12 +96,13 @@ public abstract class MergeIterator<T> extends AbstractBidiIterator<T>
 	{
 		IBidiIterator<T> theIterator = itsIterators[aHeadIndex];
 		boolean theMustAdvance = true;
-		if (theIterator instanceof TupleIterator)
+		
+		if (theIterator instanceof ITupleIterator)
 		{
-			TupleIterator theTupleIterator = (TupleIterator) theIterator;
-			IndexTuple theLastTuple = theTupleIterator.getLastTuple();
+			ITupleIterator theTupleIterator = (ITupleIterator) theIterator;
+			long theLastKey = theTupleIterator.getLastKey();
 			
-			if (aMinKey > theLastTuple.getKey())
+			if (aMinKey > theLastKey)
 			{
 				theIterator = theTupleIterator.iteratorNextKey(aMinKey);
 				itsIterators[aHeadIndex] = theIterator;
@@ -127,12 +127,13 @@ public abstract class MergeIterator<T> extends AbstractBidiIterator<T>
 	{
 		IBidiIterator<T> theIterator = itsIterators[aHeadIndex];
 		boolean theMustAdvance = true;
-		if (theIterator instanceof TupleIterator)
+
+		if (theIterator instanceof ITupleIterator)
 		{
-			TupleIterator theTupleIterator = (TupleIterator) theIterator;
-			IndexTuple theFirstTuple = theTupleIterator.getFirstTuple();
+			ITupleIterator theTupleIterator = (ITupleIterator) theIterator;
+			long theFirstKey = theTupleIterator.getFirstKey();
 			
-			if (aMaxKey < theFirstTuple.getKey())
+			if (aMaxKey < theFirstKey)
 			{
 				theIterator = theTupleIterator.iteratorNextKey(aMaxKey);
 				itsIterators[aHeadIndex] = theIterator;
