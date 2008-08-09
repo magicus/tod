@@ -50,7 +50,7 @@
 	
 	<target name="jar" depends="compile">
         <mkdir dir="${build.dir}"/>
-		<jar destfile="${build.dir}/tod-dbgrid.jar" basedir="${classes-main.dir}"/>
+		<jar destfile="${build.dir}/tod-evdb1.jar" basedir="${classes-main.dir}"/>
 	</target>
 	
 	<target name="dep.zz.utils" depends="init" unless="skip.deps">
