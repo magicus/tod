@@ -80,6 +80,7 @@ public class SessionTypeManager
 	{
 		try
 		{
+			System.out.println(String.format("Creating session [%s:%s]", aSchema, aUri));
 			SessionType theSessionType = itsSchemaMap.get(aSchema);
 			ISessionFactory theFactory = theSessionType.getFactory();
 			return theFactory.create(aUri, aConfig);
