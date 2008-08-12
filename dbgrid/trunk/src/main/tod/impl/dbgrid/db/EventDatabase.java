@@ -188,13 +188,14 @@ implements ReorderingBufferListener
 	public void eventDropped(long aLastRetrieved, long aNewEvent)
 	{
 		long theDelta = aLastRetrieved-aNewEvent;
+		itsDroppedEvents++;
+		
 		System.err.println(String.format(
-				"WARNING: out of order event - dropped (last: %d, new: %d, delta: %d)",
+				"WARNING: out of order event - dropped (last: %d, new: %d, delta: %d, #%d)",
 				aLastRetrieved, 
 				aNewEvent,
-				theDelta));
-		
-		itsDroppedEvents++;
+				theDelta,
+				itsDroppedEvents));
 	}
 	
 	/**
