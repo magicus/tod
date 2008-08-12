@@ -72,7 +72,7 @@ public class EventReorderingBuffer
 	/**
 	 * Pushes an incoming event into this buffer.
 	 */
-	public void push(GridEvent aEvent)
+	public synchronized void push(GridEvent aEvent)
 	{
 		// _pushTS(aEvent, itsGlobalDebugBuffer);
 		long theTimestamp = aEvent.getTimestamp();
@@ -98,12 +98,12 @@ public class EventReorderingBuffer
 	 * Returns true if an event is available on output. if an event is available
 	 * it should be immediately retrieved, before a new event is pushed.
 	 */
-	public boolean isFull()
+	public synchronized boolean isFull()
 	{
 		return itsBuffer.isFull();
 	}
 
-	public boolean isEmpty()
+	public synchronized boolean isEmpty()
 	{
 		return itsBuffer.isEmpty() && itsOutOfOrderBuffer.isEmpty();
 	}
@@ -114,12 +114,14 @@ public class EventReorderingBuffer
 	 * 
 	 * @return
 	 */
-	public long getNextAvailableTimestamp()
+	public synchronized long getNextAvailableTimestamp()
 	{
 		long theNextOutOfOrder;
 		long theNextInOrder;
+		
 		if (!itsBuffer.isEmpty()) theNextInOrder = itsBuffer.peek().getTimestamp();
 		else theNextInOrder = -1;
+		
 		if (!itsOutOfOrderBuffer.isEmpty()) theNextOutOfOrder = itsOutOfOrderBuffer.getNextAvailable();
 		else theNextOutOfOrder = -1;
 
@@ -145,7 +147,7 @@ public class EventReorderingBuffer
 	/**
 	 * Retrieves the next ordered event.
 	 */
-	public GridEvent pop()
+	public synchronized GridEvent pop()
 	{
 		GridEvent theResult;
 		GridEvent theInOrderEvent = itsBuffer.peek();
