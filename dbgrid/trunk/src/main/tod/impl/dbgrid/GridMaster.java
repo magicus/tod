@@ -664,6 +664,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 					long theRate = (itsEventsCount-itsPreviousEventsCount)/theDelta;
 					System.out.println("[DataUpdater] Recording rate: "+theRate+"kEv/s");
 				}
+				System.out.println("[DataUpdater] Event count: "+itsEventsCount);
 				
 				itsPreviousEventsCount = itsEventsCount;
 				itsPreviousFirstTimestamp = itsFirstTimestamp;
