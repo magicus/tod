@@ -189,8 +189,7 @@ public class EventReorderingBuffer
 
 		private long itsLastRetrieved;
 
-		// private RingBuffer<GridEvent> itsOoODebugBuffer = new
-		// RingBuffer<GridEvent>(1000);
+//		private RingBuffer<GridEvent> itsOoODebugBuffer = new RingBuffer<GridEvent>(1000);
 
 		private PerThreadBuffer getBuffer(int aThreadId)
 		{
@@ -220,12 +219,12 @@ public class EventReorderingBuffer
 
 		public void add(GridEvent aEvent)
 		{
-			// _pushTS(aEvent, itsOoODebugBuffer);
+//			_pushTS(aEvent, itsOoODebugBuffer);
 			itsAdded++;
 
 			PerThreadBuffer theBuffer = getBuffer(aEvent);
 			theBuffer.add(aEvent);
-			assert aEvent.getTimestamp() > itsLastRetrieved;
+			assert aEvent.getTimestamp() >= itsLastRetrieved : aEvent.getTimestamp() + "<" + itsLastRetrieved;
 
 			if (itsNextAvailable == null || aEvent.getTimestamp() < itsNextAvailable.getTimestamp())
 			{
@@ -254,8 +253,8 @@ public class EventReorderingBuffer
 			// Advance the buffer that contained the next event
 			PerThreadBuffer theNextBuffer = getBuffer(itsNextAvailable);
 			GridEvent theNextEvent = theNextBuffer.remove();
-			assert theNextEvent == itsNextAvailable;
-			assert theNextEvent.getTimestamp() >= itsLastRetrieved;
+			assert theNextEvent == itsNextAvailable : theNextEvent + "!=" + itsNextAvailable;
+			assert theNextEvent.getTimestamp() >= itsLastRetrieved : theNextEvent.getTimestamp() + "<" +itsLastRetrieved;
 
 			itsLastRetrieved = theNextEvent.getTimestamp();
 

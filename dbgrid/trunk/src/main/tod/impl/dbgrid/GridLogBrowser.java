@@ -340,7 +340,7 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 		}
 	}
 	
-	private List<IThreadInfo> getThreads0()
+	private synchronized List<IThreadInfo> getThreads0()
 	{
 		if (itsThreads == null) fetchThreads();
 		return itsThreads;
@@ -378,13 +378,13 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 		}		
 	}
 	
-	private List<IHostInfo> getHosts0()
+	private synchronized List<IHostInfo> getHosts0()
 	{
 		if (itsHosts == null) fetchHosts();
 		return itsHosts;
 	}
 	
-	public Iterable<IThreadInfo> getThreads()
+	public synchronized Iterable<IThreadInfo> getThreads()
 	{
 		getThreads0();
 		return itsPackedThreads;
