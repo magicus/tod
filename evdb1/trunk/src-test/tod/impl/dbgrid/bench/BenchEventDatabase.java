@@ -75,7 +75,7 @@ public class BenchEventDatabase
 			public void run()
 			{
 				Fixtures.fillDatabase(itsDatabase, theGenerator, 3000000);
-				itsDatabase.flush();
+				itsDatabase.flush(null);
 			}
 		});
 		

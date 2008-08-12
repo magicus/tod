@@ -28,6 +28,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import tod.core.DebugFlags;
+import tod.impl.dbgrid.db.DatabaseNode.FlushMonitor;
 import tod.impl.dbgrid.db.ObjectsReorderingBuffer.Entry;
 import tod.impl.dbgrid.db.ObjectsReorderingBuffer.ReorderingBufferListener;
 import zz.utils.monitoring.AggregationType;
@@ -118,16 +119,22 @@ implements ReorderingBufferListener
 	
 	protected abstract void store0(long aId, byte[] aData);
 	
-	public synchronized int flush()
+	public synchronized int flush(FlushMonitor aFlushMonitor)
 	{
 		int theCount = 0;
 		System.out.println("[ReorderedObjectsDatabase] Flushing...");
 		while (! itsReorderingBuffer.isEmpty())
 		{
+			if (aFlushMonitor != null && aFlushMonitor.isCancelled()) 
+			{
+				System.out.println("[ObjectsDatabase] Flush cancelled.");
+				break;
+			}
+			
 			doStore(itsReorderingBuffer.pop());
 			theCount++;
 		}
-		System.out.println("[ReorderedObjectsDatabase] Flushed "+theCount+" objects.");
+		System.out.println("[ObjectsDatabase] Flushed "+theCount+" objects.");
 
 		return theCount;
 	}

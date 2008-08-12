@@ -27,6 +27,7 @@ import tod.core.DebugFlags;
 import tod.core.database.structure.IStructureDatabase;
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.IGridEventFilter;
+import tod.impl.dbgrid.db.DatabaseNode.FlushMonitor;
 import tod.impl.dbgrid.db.EventReorderingBuffer.ReorderingBufferListener;
 import tod.impl.dbgrid.messages.GridEvent;
 import zz.utils.monitoring.AggregationType;
@@ -143,12 +144,18 @@ implements ReorderingBufferListener
 	 * Flushes the event buffer. Events should not be added
 	 * after this method is called.
 	 */
-	public int flush()
+	public int flush(FlushMonitor aFlushMonitor)
 	{
 		int theCount = 0;
 		System.out.println("[EventDatabase] Flushing...");
 		while (! itsReorderingBuffer.isEmpty())
 		{
+			if (aFlushMonitor != null && aFlushMonitor.isCancelled()) 
+			{
+				System.out.println("[EventDatabase] Flush cancelled.");
+				break;
+			}
+
 			processEvent(itsReorderingBuffer.pop());
 			theCount++;
 		}

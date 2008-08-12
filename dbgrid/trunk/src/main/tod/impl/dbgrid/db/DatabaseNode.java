@@ -61,6 +61,11 @@ public abstract class DatabaseNode
 	private long itsLastTimestamp = 0;
 	
 	/**
+	 * This flag permits to handle the canceling of flushes.
+	 */
+	private FlushMonitor itsFlushMonitor;
+	
+	/**
 	 * The database node needs the structure database for the following:
 	 * <li> Exception resolving
 	 * (see EventCollector#exception(int, long, short, long, String, String, String, int, Object)).
@@ -196,22 +201,32 @@ public abstract class DatabaseNode
 		initDatabase();
 	}
 	
-	public synchronized int flush()
+	public int flush()
 	{
+		return flush(false); 
+	}
+	
+	public synchronized int flush(boolean aCancellable)
+	{
+		if (aCancellable) itsFlushMonitor = new FlushMonitor();
 		int theObjectsCount = 0;
 		
 		System.out.println("[DatabaseNode] Flushing...");
 		
+		// Flush objects database
 		for (ObjectsDatabase theDatabase : itsObjectsDatabases)
 		{
-			if (theDatabase != null) theObjectsCount += theDatabase.flush();
+			if (theDatabase != null) theObjectsCount += theDatabase.flush(itsFlushMonitor);
 		}
 		
 		System.out.println("[DatabaseNode] Flushed "+theObjectsCount+" objects");
 
-		int theEventsCount = itsEventsDatabase.flush();
+		// Flush events database
+		int theEventsCount = itsEventsDatabase.flush(itsFlushMonitor);
 		
 		System.out.println("[DatabaseNode] Flushed "+theEventsCount+" events");
+		
+		itsFlushMonitor = null;
 		
 		return theObjectsCount+theEventsCount;
 	}
@@ -246,6 +261,10 @@ public abstract class DatabaseNode
 	 */
 	public void pushEvent(GridEvent aEvent)
 	{
+		// Cancel flushing if events are pushed at the same time.
+		FlushMonitor theFlushMonitor = itsFlushMonitor;
+		if (theFlushMonitor != null) theFlushMonitor.cancel(); // Must be outside the lock.
+		
 		synchronized (this)
 		{
 			// The GridEventCollector uses a pool of events
@@ -465,7 +484,9 @@ public abstract class DatabaseNode
 					{
 						if (! itsFlushed)
 						{
-							flush();
+							System.out.println("[FlusherThread] Performing full flush...");
+							flush(true);
+							System.out.println("[FlusherThread] Full flush done.");
 							itsFlushed = true;
 						}
 					}
@@ -478,6 +499,7 @@ public abstract class DatabaseNode
 							flushOldestEvent();
 							theCount++;
 						}
+						
 						// Flush oldest object if the newest was created more than 2s after
 						for (ObjectsDatabase theDatabase : itsObjectsDatabases)
 						{
@@ -487,8 +509,10 @@ public abstract class DatabaseNode
 								theCount++;
 							}
 						}	
-						System.out.println("Flushing "+theCount+" events and  objects older than 2s");
+						
+						System.out.println("Flushed "+theCount+" events and  objects older than 2s");
 					}
+					
 					itsActive = false;
 				}
 			}
@@ -499,4 +523,23 @@ public abstract class DatabaseNode
 		}
 	}
 
+	/**
+	 * This class permits to cancel a flushing operation if 
+	 * a push is attempted during the flush.
+	 * @author gpothier
+	 */
+	public static class FlushMonitor
+	{
+		private boolean itsCancelled = false;
+		
+		public boolean isCancelled()
+		{
+			return itsCancelled;
+		}
+		
+		public void cancel()
+		{
+			itsCancelled = true;
+		}
+	}
 }

@@ -79,7 +79,7 @@ public class Fixtures
 			aDatabase.push(aGenerator.next());
 			if (i % 100000 == 0) System.out.println(i);
 		}
-		aDatabase.flush();
+		aDatabase.flush(null);
 	}
 	
 	public static void fillDatabase(GridMaster aMaster, EventGenerator aGenerator, long aCount)
