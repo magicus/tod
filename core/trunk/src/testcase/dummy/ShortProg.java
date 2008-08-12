@@ -59,13 +59,17 @@ public class ShortProg
 	
 	private static class Mouf
 	{
+		private int i = 0;
+		
 		public void bar()
 		{
+			i++;
 			System.out.println("barrrr");
 		}
 
 		public void foo()
 		{
+			i++;
 			System.out.println("foo!");
 		}
 		

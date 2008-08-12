@@ -46,6 +46,7 @@ import tod.core.database.browser.IEventPredicate;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.LocationUtils;
+import tod.core.database.browser.ICompoundInspector.EntryValue;
 import tod.core.database.browser.ILogBrowser.Query;
 import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
@@ -252,6 +253,52 @@ public class ObjectInspector implements IObjectInspector
 		return theResult.toArray(new EntryValue[theResult.size()]);
 	}
 	
+	public EntryValue[] nextEntryValue(IFieldInfo aField)
+	{
+		IEventBrowser theBrowser = getBrowser(aField);
+		EntryValue[] theEntryValue = getEntryValue(aField);
+		
+		List<EntryValue> theResult = new ArrayList<EntryValue>();
+		for (EntryValue theValue : theEntryValue)
+		{
+			theBrowser.setNextEvent(theValue.setter);
+			ILogEvent theNext = theBrowser.next();
+			assert theNext.equals(theValue.setter);
+			
+			if (! theBrowser.hasNext()) continue;
+			theNext = theBrowser.next();
+			
+			itsReferenceEvent = theNext;
+			Object[] theNewValue = getNewValue(aField, theNext);
+			for (Object v : theNewValue) theResult.add(new EntryValue(v, theNext));
+		}
+		
+		return theResult.isEmpty() ? null : theResult.toArray(new EntryValue[theResult.size()]);
+	}
+
+	public EntryValue[] previousEntryValue(IFieldInfo aField)
+	{
+		IEventBrowser theBrowser = getBrowser(aField);
+		EntryValue[] theEntryValue = getEntryValue(aField);
+		
+		List<EntryValue> theResult = new ArrayList<EntryValue>();
+		for (EntryValue theValue : theEntryValue)
+		{
+			theBrowser.setPreviousEvent(theValue.setter);
+			ILogEvent thePrevious = theBrowser.previous();
+			assert thePrevious.equals(theValue.setter);
+			
+			if (! theBrowser.hasPrevious()) continue;
+			thePrevious = theBrowser.previous();
+			
+			itsReferenceEvent = thePrevious;
+			Object[] theNewValue = getNewValue(aField, thePrevious);
+			for (Object v : theNewValue) theResult.add(new EntryValue(v, thePrevious));
+		}
+		
+		return theResult.isEmpty() ? null : theResult.toArray(new EntryValue[theResult.size()]);
+	}
+
 	public Object[] getNewValue(IFieldInfo aField, ILogEvent aEvent)
 	{
 		checkReferenceEvent();

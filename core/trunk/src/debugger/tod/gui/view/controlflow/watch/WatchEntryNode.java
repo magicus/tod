@@ -31,15 +31,19 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.view.controlflow.watch;
 
+import java.awt.Color;
+
 import javax.swing.JPanel;
 
 import tod.core.database.browser.ICompoundInspector.EntryValue;
 import tod.core.database.event.ILogEvent;
+import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
 import tod.gui.JobProcessor;
 import tod.gui.kit.AsyncPanel;
+import tod.gui.seed.CFlowSeed;
 import tod.gui.view.controlflow.watch.AbstractWatchProvider.Entry;
 
 /**
@@ -54,8 +58,6 @@ public class WatchEntryNode extends JPanel
 	private final WatchPanel itsWatchPanel;
 	private final AbstractWatchProvider itsProvider;
 	private final Entry itsEntry;
-	
-	private EntryValue[] itsValue;
 	
 	public WatchEntryNode(
 			IGUIManager aGUIManager,
@@ -83,46 +85,176 @@ public class WatchEntryNode extends JPanel
 	{
 		String theName = itsEntry.getName();
 		add(GUIUtils.createLabel(theName + " = "));
-		add(new AsyncPanel(itsJobProcessor)
-		{
-			@Override
-			protected void runJob()
-			{
-				itsValue = itsEntry.getValue();
-			}
+		add(new ValueAsyncPanel(itsJobProcessor));
+	}
 
-			@Override
-			protected void update()
+	/**
+	 * This panel displays the value of the entry, and the why? and prev/next links
+	 * @author gpothier
+	 */
+	private class ValueAsyncPanel extends AsyncPanel
+	{
+		private EntryValue[] itsValue;
+		
+		public ValueAsyncPanel(JobProcessor aJobProcessor)
+		{
+			super(aJobProcessor);
+		}
+
+		@Override
+		protected void runJob()
+		{
+			itsValue = itsEntry.getValue();
+		}
+
+		@Override
+		protected void update()
+		{
+			if (itsValue != null)
 			{
-				if (itsValue != null)
+				boolean theFirst = true;
+				for (int i=0;i<itsValue.length;i++)
 				{
-					boolean theFirst = true;
-					for (int i=0;i<itsValue.length;i++)
+					if (theFirst) theFirst = false;
+					else add(GUIUtils.createLabel(" / "));
+					
+					add(Hyperlinks.object(
+							itsGUIManager, 
+							Hyperlinks.SWING, 
+							itsJobProcessor,
+							itsProvider.getCurrentObject(),
+							itsValue[i].value,
+							itsProvider.getRefEvent(),
+							showPackageNames()));
+					
+					ILogEvent theSetter = itsValue[i].setter;
+					add(GUIUtils.createLabel(" ("));
+					if (theSetter != null)
 					{
-						if (theFirst) theFirst = false;
-						else add(GUIUtils.createLabel(" / "));
-						
-						add(Hyperlinks.object(
-								itsGUIManager, 
-								Hyperlinks.SWING, 
-								itsJobProcessor,
-								itsProvider.getCurrentObject(),
-								itsValue[i].value,
-								itsProvider.getRefEvent(),
-								showPackageNames()));
-						
-						ILogEvent theSetter = itsValue[i].setter;
-						if (theSetter != null)
-						{
-							add(GUIUtils.createLabel(" ("));
-							add(Hyperlinks.event(itsGUIManager, Hyperlinks.SWING, "why?", theSetter));
-							add(GUIUtils.createLabel(")"));
-						}
+						add(Hyperlinks.event(itsGUIManager, Hyperlinks.SWING, "why?", theSetter));
+						add(GUIUtils.createLabel(", "));
+					}
+					
+					add(new PreviousValueAsyncPanel(getJobProcessor()));
+					add(GUIUtils.createLabel("/"));
+					add(new NextValueAsyncPanel(getJobProcessor()));
+					
+					add(GUIUtils.createLabel(")"));
+				}
+			}
+		}
+	}
+	
+	/**
+	 * This panel displays the next or previous value of the entry
+	 * @author gpothier
+	 */
+	private abstract class NeighbourValueAsyncPanel extends AsyncPanel
+	{
+		private EntryValue[] itsValue;
+		
+		public NeighbourValueAsyncPanel(JobProcessor aJobProcessor)
+		{
+			super(aJobProcessor);
+		}
+		
+		protected abstract String getLabel();
+		
+		protected abstract EntryValue[] getValue(Entry aEntry);
+
+		@Override
+		protected void createUI()
+		{
+			setLayout(GUIUtils.createSequenceLayout());
+			add(GUIUtils.createLabel(
+					getLabel(), 
+					FontConfig.STD_FONT, 
+					Color.DARK_GRAY));
+		}
+		
+		@Override
+		protected void runJob()
+		{
+			itsValue = getValue(itsEntry);
+		}
+
+		@Override
+		protected void update()
+		{
+			removeAll();
+			if (itsValue != null)
+			{
+				boolean theFirst = true;
+				for (int i=0;i<itsValue.length;i++)
+				{
+					if (theFirst) theFirst = false;
+					else add(GUIUtils.createLabel(" / "));
+					
+					ILogEvent theSetter = itsValue[i].setter;
+					if (theSetter != null)
+					{
+						CFlowSeed theSeed = new CFlowSeed(itsGUIManager.getSession().getLogBrowser(), theSetter);
+						theSeed.pInspectedObject().set(itsProvider.getInspectedObject());
+						add(Hyperlinks.seed(itsGUIManager, Hyperlinks.SWING, getLabel(), theSeed));
 					}
 				}
 			}
-		});
+			else
+			{
+				add(GUIUtils.createLabel(
+						getLabel(), 
+						FontConfig.STD_FONT, 
+						Color.LIGHT_GRAY));
+			}
+		}
 	}
 	
+	/**
+	 * This panel displays the next value of the entry
+	 * @author gpothier
+	 */
+	private class NextValueAsyncPanel extends NeighbourValueAsyncPanel
+	{
+		public NextValueAsyncPanel(JobProcessor aJobProcessor)
+		{
+			super(aJobProcessor);
+		}
+		
+		@Override
+		protected String getLabel()
+		{
+			return "next";
+		}
+		
+		@Override
+		protected EntryValue[] getValue(Entry aEntry)
+		{
+			return aEntry.getNextValue();
+		}
+	}
+	
+	/**
+	 * This panel displays the next value of the entry
+	 * @author gpothier
+	 */
+	private class PreviousValueAsyncPanel extends NeighbourValueAsyncPanel
+	{
+		public PreviousValueAsyncPanel(JobProcessor aJobProcessor)
+		{
+			super(aJobProcessor);
+		}
+		
+		@Override
+		protected String getLabel()
+		{
+			return "prev.";
+		}
+		
+		@Override
+		protected EntryValue[] getValue(Entry aEntry)
+		{
+			return aEntry.getPreviousValue();
+		}
+	}
 	
 }

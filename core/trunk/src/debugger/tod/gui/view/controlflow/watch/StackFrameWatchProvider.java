@@ -106,7 +106,6 @@ public class StackFrameWatchProvider extends AbstractWatchProvider
 			if (theParentEvent != null)
 			{
 				itsInspector = getLogBrowser().createVariablesInspector(theParentEvent);
-				itsInspector.setReferenceEvent(itsRefEvent);
 			}
 		}
 		
@@ -163,6 +162,12 @@ public class StackFrameWatchProvider extends AbstractWatchProvider
 	}
 
 	@Override
+	public ObjectId getInspectedObject()
+	{
+		return null;
+	}
+
+	@Override
 	public ILogEvent getRefEvent()
 	{
 		return itsRefEvent;
@@ -205,7 +210,29 @@ public class StackFrameWatchProvider extends AbstractWatchProvider
 		public EntryValue[] getValue()
 		{
 			if (itsInvalid) return null;
-			return getInspector().getEntryValue(itsLocalVariable);
+			IVariablesInspector theInspector = getInspector();
+			itsInspector.setReferenceEvent(itsRefEvent);
+			return theInspector.getEntryValue(itsLocalVariable);
 		}
+
+		@Override
+		public EntryValue[] getNextValue()
+		{
+			if (itsInvalid) return null;
+			IVariablesInspector theInspector = getInspector();
+			itsInspector.setReferenceEvent(itsRefEvent);
+			return theInspector.nextEntryValue(itsLocalVariable);
+		}
+
+		@Override
+		public EntryValue[] getPreviousValue()
+		{
+			if (itsInvalid) return null;
+			IVariablesInspector theInspector = getInspector();
+			itsInspector.setReferenceEvent(itsRefEvent);
+			return theInspector.previousEntryValue(itsLocalVariable);
+		}
+		
+		
 	}
 }

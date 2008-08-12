@@ -40,6 +40,12 @@ public class FontConfig
 	private static final float ZOOM = 1.0f;
 	
 	public static final XFont STD_FONT = XFont.DEFAULT_XPLAIN.deriveFont(13*ZOOM);
+	
+	/**
+	 * Standard font with underline
+	 */
+	public static final XFont STD_FONT_U = new XFont(STD_FONT.getAWTFont(), true);
+	
 	public static final XFont STD_HEADER_FONT = XFont.DEFAULT_XPLAIN.deriveFont(Font.BOLD, 13*ZOOM);
 	public static final XFont SMALL_FONT = XFont.DEFAULT_XPLAIN.deriveFont(12*ZOOM);
 	public static final XFont TINY_FONT = XFont.DEFAULT_XPLAIN.deriveFont(10*ZOOM);

@@ -43,21 +43,49 @@ import tod.gui.JobProcessor;
  */
 public abstract class AsyncPanel extends JPanel
 {
+	private final JobProcessor itsJobProcessor;
+	private boolean itsSubmitted = false;
+
 	public AsyncPanel(JobProcessor aJobProcessor)
 	{
-		super(GUIUtils.createSequenceLayout());
+		itsJobProcessor = aJobProcessor;
 		setOpaque(false);
-		add(GUIUtils.createLabel("..."));
-		aJobProcessor.submit(new JobProcessor.Job<Object>()
+		createUI();
+	}
+	
+	protected JobProcessor getJobProcessor()
+	{
+		return itsJobProcessor;
+	}
+	
+	@Override
+	public void addNotify()
+	{
+		super.addNotify();
+		if (! itsSubmitted)
+		{
+			itsJobProcessor.submit(new JobProcessor.Job<Void>()
 				{
 					@Override
-					public Object run()
+					public Void run()
 					{
 						runJob();
 						postUpdate();
 						return null;
 					}
 				});
+			itsSubmitted = true;
+		}
+	}
+	
+	/**
+	 * Creates the initial UI of this panel.
+	 * By default, displays "...".
+	 */
+	protected void createUI()
+	{
+		setLayout(GUIUtils.createSequenceLayout());
+		add(GUIUtils.createLabel("..."));
 	}
 	
 	private void postUpdate()

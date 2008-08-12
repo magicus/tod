@@ -40,6 +40,7 @@ import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IVariablesInspector;
+import tod.core.database.browser.ICompoundInspector.EntryValue;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
@@ -145,6 +146,18 @@ public class VariablesInspector implements IVariablesInspector
 		return null;
 	}
 	
+	public EntryValue[] nextEntryValue(LocalVariableInfo aEntry)
+	{
+		// TODO: implement
+		return null;
+	}
+
+	public EntryValue[] previousEntryValue(LocalVariableInfo aEntry)
+	{
+		// TODO: implement
+		return null;
+	}
+
 	public ILocalVariableWriteEvent[] getEntrySetter(LocalVariableInfo aVariable)
 	{
 		if (itsChildrenBrowser == null) return null;

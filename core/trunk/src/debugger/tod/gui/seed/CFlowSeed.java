@@ -37,6 +37,7 @@ import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
 import tod.core.database.structure.IThreadInfo;
+import tod.core.database.structure.ObjectId;
 import tod.gui.formatter.EventFormatter;
 import tod.gui.view.LogView;
 import tod.gui.view.controlflow.CFlowView;
@@ -64,6 +65,8 @@ implements IEventSeed
 	
 	private IRWProperty<IParentEvent> pRootEvent = new SimpleRWProperty<IParentEvent>(this);
 	private IRWProperty<ILogEvent> pLeafEvent = new SimpleRWProperty<ILogEvent>(this);
+	
+	private IRWProperty<ObjectId> pInspectedObject = new SimpleRWProperty<ObjectId>(this);
 	
 	public CFlowSeed(ILogBrowser aLog, ILogEvent aSelectedEvent)
 	{
@@ -124,6 +127,14 @@ implements IEventSeed
 		return pLeafEvent;
 	}
 	
+	/**
+	 * The currently inspected object, if any.
+	 */
+	public IRWProperty<ObjectId> pInspectedObject()
+	{
+		return pInspectedObject;
+	}
+
 
 	public ILogEvent getEvent()
 	{

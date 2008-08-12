@@ -82,12 +82,17 @@ public abstract class AbstractWatchProvider
 		return getGUIManager().getSession().getLogBrowser();
 	}
 
-
 	/**
 	 * Returns a current object. Currently this is only for
 	 * stack frame reconstitution, represents the "this" variable.
 	 */
 	public abstract ObjectId getCurrentObject();
+	
+	/**
+	 * Returns the currently inspected object, if any.
+	 * For stack frames, returns null. 
+	 */
+	public abstract ObjectId getInspectedObject();
 	
 	/**
 	 * Returns the event that serves as a temporal reference for the watched objects.
@@ -113,5 +118,17 @@ public abstract class AbstractWatchProvider
 		 * This might be a time-consuming operation.
 		 */
 		public abstract EntryValue[] getValue();
+		
+		/**
+		 * Returns the next value taken by this entry.
+		 * This might be a time-consuming operation.
+		 */
+		public abstract EntryValue[] getNextValue();
+
+		/**
+		 * Returns the previous value taken by this entry.
+		 * This might be a time-consuming operation.
+		 */
+		public abstract EntryValue[] getPreviousValue();
 	}
 }

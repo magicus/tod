@@ -60,11 +60,25 @@ public interface ICompoundInspector<E>
 	 * Returns the possible values of the specified entry at the time the 
 	 * current event was executed.
 	 * @return An array of possible values. If there is more than one value,
-	 * it means that it was impossible to retrive an unambiguous value.
+	 * it means that it was impossible to retrieve an unambiguous value.
 	 * This can happen for instance if several write events have
 	 * the same timestamp.
 	 */
 	public EntryValue[] getEntryValue (E aEntry);
+	
+	/**
+	 * Moves the reference event to the next setter, and returns the corresponding value.
+	 * Note: the reference event is undefined after calling this method.
+	 * However, calling this method repeatedly has the expected effect.
+	 */
+	public EntryValue[] nextEntryValue(E aEntry);
+	
+	/**
+	 * Moves the reference event to the previous setter, and returns the corresponding value.
+	 * Note: the reference event is undefined after calling this method.
+	 * However, calling this method repeatedly has the expected effect.
+	 */
+	public EntryValue[] previousEntryValue(E aEntry);
 	
 	/**
 	 * Groups actual entry value and setter event 

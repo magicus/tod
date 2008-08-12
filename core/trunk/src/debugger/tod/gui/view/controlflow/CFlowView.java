@@ -42,6 +42,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
+import tod.Util;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.LocationUtils;
@@ -50,6 +51,7 @@ import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
+import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.gui.FontConfig;
@@ -72,6 +74,7 @@ import tod.gui.settings.IntimacySettings;
 import tod.gui.view.IEventListView;
 import tod.gui.view.LogView;
 import tod.gui.view.controlflow.tree.CFlowTree;
+import tod.gui.view.controlflow.watch.ObjectWatchSeed;
 import tod.gui.view.controlflow.watch.WatchPanel;
 import zz.utils.SimpleAction;
 import zz.utils.properties.IProperty;
@@ -157,6 +160,18 @@ public class CFlowView extends LogView<CFlowSeed> implements IEventListView
 		aSeed.pRootEvent().addHardListener(itsRootEventListener);
 		update();
 		itsWatchPanel.showStackFrame();
+		
+		ObjectId theInspectedObject = aSeed.pInspectedObject().get();
+		if (theInspectedObject != null) 
+		{
+			String theText = Util.getObjectName(getGUIManager(), theInspectedObject, null, aSeed.pSelectedEvent().get());
+			itsWatchPanel.openWatch(new ObjectWatchSeed(
+					getGUIManager(),
+					theText,
+					itsWatchPanel,
+					aSeed.pSelectedEvent().get(),
+					theInspectedObject));
+		}
 		itsCFlowTree.connectSeed(aSeed);
 	}
 

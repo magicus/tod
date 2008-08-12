@@ -67,22 +67,28 @@ public class Hyperlinks
 	public static final SwingLabelFactory SWING = new SwingLabelFactory();
 	public static final TextLabelFactory TEXT = new TextLabelFactory();
 	
+	public static <T> T seed(IGUIManager aGUIManager, LabelFactory<T> aFactory, String aText, LogViewSeed aSeed)
+	{
+		return aFactory.createLink(aGUIManager, aText, aSeed);
+	}
+	
+	
 	public static <T> T history(IGUIManager aGUIManager, LabelFactory<T> aFactory, ObjectId aObject)
 	{
 		ObjectHistorySeed theSeed = new ObjectHistorySeed(aGUIManager.getSession().getLogBrowser(), aObject);
-		return aFactory.createLink(aGUIManager, "show history", theSeed);
+		return seed(aGUIManager, aFactory, "show history", theSeed);
 	}
 	
 	public static <T> T type (IGUIManager aGUIManager, LabelFactory<T> aFactory, ITypeInfo aType)
 	{
 		StructureSeed theSeed = new StructureSeed(aGUIManager.getSession().getLogBrowser(), aType);
-		return aFactory.createLink(aGUIManager, aType.getName(), theSeed);
+		return seed(aGUIManager, aFactory, aType.getName(), theSeed);
 	}
 	
 	public static <T> T behavior(IGUIManager aGUIManager, LabelFactory<T> aFactory, IBehaviorInfo aBehavior)
 	{
 		StructureSeed theSeed = new StructureSeed(aGUIManager.getSession().getLogBrowser(), aBehavior);
-		return aFactory.createLink(aGUIManager, Util.getPrettyName(aBehavior.getName()), theSeed);		
+		return seed(aGUIManager, aFactory, Util.getPrettyName(aBehavior.getName()), theSeed);		
 	}
 	
 	/**
@@ -91,7 +97,7 @@ public class Hyperlinks
 	public static <T> T event(IGUIManager aGUIManager, LabelFactory<T> aFactory, String aText, ILogEvent aEvent)
 	{
 		CFlowSeed theSeed = new CFlowSeed(aGUIManager.getSession().getLogBrowser(), aEvent);
-		return aFactory.createLink(aGUIManager, aText, theSeed);
+		return seed(aGUIManager, aFactory, aText, theSeed);
 	}
 	
 	public static <T> T object(
@@ -133,28 +139,7 @@ public class Hyperlinks
 		if (aObject instanceof ObjectId)
 		{
 			ObjectId theId = (ObjectId) aObject;
-			
-			String theText;
-			if (aCurrentObject != null && aCurrentObject.equals(aObject)) theText = "this";
-//			else if (aJobProcessor != null) 
-//			{
-//				return new ObjectHyperlink(
-//						aSeedFactory.objectSeed(theId),
-//						aLogBrowser,
-//						aJobProcessor,
-//						theId,
-//						aFont);
-//			}
-			else 
-			{
-				IObjectInspector theInspector = theLogBrowser.createObjectInspector(theId);
-				theInspector.setReferenceEvent(aRefEvent);
-				theText = CustomFormatterRegistry.formatObjectShort(
-						aGUIManager, 
-						theInspector, 
-						aShowPackageNames);
-			}
-			
+			String theText = Util.getObjectName(aGUIManager, theId, aCurrentObject, aRefEvent);
 			return aFactory.createLink(theText, new ShowObjectMsg(theText, theId, aRefEvent));
 		}
 		else if (aObject instanceof String)

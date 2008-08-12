@@ -101,8 +101,6 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 				
 				itsInspector = getLogBrowser().createClassInspector(theBehavior.getType());
 			}
-			
-			itsInspector.setReferenceEvent(itsRefEvent);
 		}
 		
 		return itsInspector;
@@ -161,6 +159,12 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 	}
 	
 	@Override
+	public ObjectId getInspectedObject()
+	{
+		return itsObject;
+	}
+
+	@Override
 	public ILogEvent getRefEvent()
 	{
 		return itsRefEvent;
@@ -199,7 +203,27 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 		@Override
 		public EntryValue[] getValue()
 		{
-			return getInspector().getEntryValue(itsField);
+			IObjectInspector theInspector = getInspector();
+			theInspector.setReferenceEvent(itsRefEvent);
+			return theInspector.getEntryValue(itsField);
 		}
+
+		@Override
+		public EntryValue[] getNextValue()
+		{
+			IObjectInspector theInspector = getInspector();
+			theInspector.setReferenceEvent(itsRefEvent);
+			return theInspector.nextEntryValue(itsField);
+		}
+
+		@Override
+		public EntryValue[] getPreviousValue()
+		{
+			IObjectInspector theInspector = getInspector();
+			theInspector.setReferenceEvent(itsRefEvent);
+			return theInspector.previousEntryValue(itsField);
+		}
+		
+		
 	}
 }

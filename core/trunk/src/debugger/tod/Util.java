@@ -37,10 +37,16 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.List;
 
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.browser.IObjectInspector;
+import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMemberInfo;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.ObjectId;
+import tod.gui.IGUIManager;
+import tod.gui.formatter.CustomFormatterRegistry;
 
 /**
  * @author gpothier
@@ -187,6 +193,33 @@ public class Util
 			return theField.getName();
 		}
 		else throw new RuntimeException("Not handled: "+aMember);
+	}
+	
+	/**
+	 * Returns a suitable name for the given object, using formatters if necessary.
+	 * @param aCurrentObject The current "this" object, if any.
+	 */
+	public static String getObjectName(
+			IGUIManager aGUIManager, 
+			ObjectId aObject, 
+			Object aCurrentObject,
+			ILogEvent aRefEvent)
+	{
+		ILogBrowser theLogBrowser = aGUIManager.getSession().getLogBrowser();
+
+		String theText;
+		if (aCurrentObject != null && aCurrentObject.equals(aObject)) theText = "this";
+		else 
+		{
+			IObjectInspector theInspector = theLogBrowser.createObjectInspector(aObject);
+			theInspector.setReferenceEvent(aRefEvent);
+			theText = CustomFormatterRegistry.formatObjectShort(
+					aGUIManager, 
+					theInspector, 
+					false);
+		}
+		
+		return theText;
 	}
 	
 
