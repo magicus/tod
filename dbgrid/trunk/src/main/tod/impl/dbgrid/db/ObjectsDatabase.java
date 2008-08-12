@@ -138,6 +138,25 @@ implements ReorderingBufferListener
 
 		return theCount;
 	}
+	
+	public int flushOld(long aOldness, FlushMonitor aFlushMonitor)
+	{
+		int theCount = 0;
+		
+		while (isNextEventFlushable(aOldness)) 
+		{
+			if (aFlushMonitor != null && aFlushMonitor.isCancelled()) 
+			{
+				System.out.println("[ObjectsDatabase] FlushOld cancelled.");
+				break;
+			}
+
+			flushOldestEvent();
+			theCount++;
+		}
+
+		return theCount;
+	}
 
 	/**
 	 * return 0 if the Buffer is empty else return 1
@@ -217,7 +236,7 @@ implements ReorderingBufferListener
 	 * @param aDelay
 	 * @return
 	 */
-	public boolean isNextEventFlushable(long aDelay)
+	private boolean isNextEventFlushable(long aDelay)
 	{
 		return itsReorderingBuffer.isNextEventFlushable(aDelay);
 	}

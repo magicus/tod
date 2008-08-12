@@ -231,6 +231,28 @@ public abstract class DatabaseNode
 		return theObjectsCount+theEventsCount;
 	}
 	
+	/**
+	 * Flushes events and objects older than a certain time.
+	 * @param aOldness The objects older than aOldness will be flushed
+	 */
+	public synchronized int flushOld(long aOldness, boolean aCancellable)
+	{
+		if (aCancellable) itsFlushMonitor = new FlushMonitor();
+		System.out.println("[FlusherThread] Flushing events and  objects older than "+(aOldness/1000000)+"ms...");
+		
+		int theCount = 0;
+		theCount += itsEventsDatabase.flushOld(aOldness, itsFlushMonitor);
+		
+		for (ObjectsDatabase theDatabase : itsObjectsDatabases)
+		{
+			if (theDatabase != null) theCount += theDatabase.flushOld(aOldness, itsFlushMonitor);
+		}	
+		
+		System.out.println("[FlusherThread] Flushed "+theCount+" events and objects.");
+
+		return theCount;
+	}
+	
 	public synchronized void flushOldestEvent()
 	{
 		itsEventsDatabase.flushOldestEvent();
@@ -493,24 +515,9 @@ public abstract class DatabaseNode
 					else
 					{
 						// Flush oldest event if the newest was created more than 2s after
-						int theCount = 0;
-						while (itsEventsDatabase.isNextEventFlushable(2000000000)) 
-						{
-							flushOldestEvent();
-							theCount++;
-						}
-						
-						// Flush oldest object if the newest was created more than 2s after
-						for (ObjectsDatabase theDatabase : itsObjectsDatabases)
-						{
-							if (theDatabase != null) while (theDatabase.isNextEventFlushable(2000000000)) 
-							{
-								theDatabase.flushOldestEvent();
-								theCount++;
-							}
-						}	
-						
-						System.out.println("Flushed "+theCount+" events and  objects older than 2s");
+						System.out.println("[FlusherThread] Performing partial flush...");
+						flushOld(2000000000, true);
+						System.out.println("[FlusherThread] Partial flush done.");
 					}
 					
 					itsActive = false;

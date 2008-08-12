@@ -164,6 +164,29 @@ implements ReorderingBufferListener
 	}
 	
 	/**
+	 * Flushes events older than a certain time.
+	 */
+	public int flushOld(long aOldness, FlushMonitor aFlushMonitor)
+	{
+		int theCount = 0;
+		
+		while (isNextEventFlushable(aOldness)) 
+		{
+			if (aFlushMonitor != null && aFlushMonitor.isCancelled()) 
+			{
+				System.out.println("[EventDatabase] FlushOld cancelled.");
+				break;
+			}
+			
+			flushOldestEvent();
+			theCount++;
+		}
+
+		return theCount;
+	}
+
+	
+	/**
 	 * Flushes the oldest available event.
 	 * Returns 0 if the Buffer was empty, otherwise returns 1 if an event was indeed flushed.
 	 */
@@ -208,10 +231,8 @@ implements ReorderingBufferListener
 	/**
 	 * define if the difference between the oldest event of the buffer
 	 *  and the newest is more than aDelay (in nanosecond)
-	 * @param aDelay
-	 * @return
 	 */
-	public boolean isNextEventFlushable(long aDelay)
+	private boolean isNextEventFlushable(long aDelay)
 	{
 		return itsReorderingBuffer.isNextEventFlushable(aDelay) ;
 	}
