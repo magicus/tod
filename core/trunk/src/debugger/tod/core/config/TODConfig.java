@@ -154,7 +154,7 @@ public class TODConfig extends PublicCloneable implements Serializable
 							+ "Classes that do no pass this filter are not touched by any kind "
 							+ "of instrumentation and are not registered in the trace database. "
 							+ "There should not be any reason to modify it.",
-					"[-tod.agent.** -tod.core.**]");
+					"[-tod.agent.**]");
 
 	public static final StringItem SCOPE_TRACE_FILTER =
 			new StringItem(
