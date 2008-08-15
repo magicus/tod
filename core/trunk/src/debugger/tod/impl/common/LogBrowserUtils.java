@@ -89,7 +89,7 @@ public class LogBrowserUtils
 	}
 
 	/**
-	 * Iplementation of {@link ILogBrowser#getCFlowRoot(IThreadInfo)} 
+	 * Implementation of {@link ILogBrowser#getCFlowRoot(IThreadInfo)} 
 	 */
 	public static IParentEvent createCFlowRoot(ILogBrowser aBrowser, IThreadInfo aThread)
 	{
@@ -107,11 +107,11 @@ public class LogBrowserUtils
 			ILogEvent theEvent = theBrowser.next();
 			theRoot.addChild((Event) theEvent);
 			
-			if (! ((theEvent instanceof IBehaviorCallEvent) 
-					|| (theEvent instanceof IExceptionGeneratedEvent)))
-			{
-				System.err.println("[LogBrowserUtils] Warning: bad event at level 1: "+theEvent);
-			}
+//			if (! ((theEvent instanceof IBehaviorCallEvent) 
+//					|| (theEvent instanceof IExceptionGeneratedEvent)))
+//			{
+//				System.err.println("[LogBrowserUtils] Warning: bad event at level 1: "+theEvent);
+//			}
 		}
 		return theRoot;
 	}
