@@ -33,6 +33,7 @@ import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.dispatch.RINodeConnector;
 import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
 import tod.impl.dbgrid.merge.DisjunctionIterator;
+import tod.tools.monitoring.MonitoringClient.MonitorId;
 import zz.utils.Future;
 
 /**
@@ -92,7 +93,7 @@ implements RIBufferIterator<StringSearchHit[]>
 				: null;
 	}
 	
-	public StringSearchHit[] next(int aCount)
+	public StringSearchHit[] next(MonitorId aMonitorId, int aCount)
 	{
 		List<StringSearchHit> theList = new ArrayList<StringSearchHit>(aCount);
 		for (int i=0;i<aCount;i++)
@@ -104,7 +105,7 @@ implements RIBufferIterator<StringSearchHit[]>
 		return toArray(theList);
 	}
 
-	public StringSearchHit[] previous(int aCount)
+	public StringSearchHit[] previous(MonitorId aMonitorId, int aCount)
 	{
 		List<StringSearchHit> theList = new ArrayList<StringSearchHit>(aCount);
 		for (int i=0;i<aCount;i++)
@@ -142,7 +143,7 @@ implements RIBufferIterator<StringSearchHit[]>
 		{
 			try
 			{
-				return itsIterator.next(DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
+				return itsIterator.next(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
 			}
 			catch (RemoteException e)
 			{
@@ -155,7 +156,7 @@ implements RIBufferIterator<StringSearchHit[]>
 		{
 			try
 			{
-				return itsIterator.previous(DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
+				return itsIterator.previous(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
 			}
 			catch (RemoteException e)
 			{

@@ -32,14 +32,13 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.core.database.browser;
 
 import java.util.LinkedList;
-import java.util.List;
 
-import tod.core.ILogCollector;
 import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
+import tod.tools.monitoring.Monitored;
 import zz.utils.Utils;
 
 /**
@@ -144,6 +143,7 @@ public class GroupingEventBrowser<K> implements IEventBrowser
 	/**
 	 * Retrieves the next event/group in the given direction.
 	 */
+	@Monitored
 	private ILogEvent more(Direction aDirection)
 	{
 		ILogEvent theNext = aDirection.more(itsSource);
@@ -221,6 +221,7 @@ public class GroupingEventBrowser<K> implements IEventBrowser
 	/**
 	 * Stops at the next event/group in the specified direction
 	 */
+	@Monitored
 	private void stop(Direction aDirection)
 	{
 		// If we are at the beginning or end the sequence, we can stay here
@@ -274,24 +275,28 @@ public class GroupingEventBrowser<K> implements IEventBrowser
 			}
 
 			@Override
+			@Monitored
 			public boolean hasMore(IEventBrowser aBrowser)
 			{
 				return aBrowser.hasNext();
 			}
 
 			@Override
+			@Monitored
 			public ILogEvent more(IEventBrowser aBrowser)
 			{
 				return aBrowser.next();
 			}
 
 			@Override
+			@Monitored
 			public boolean hasBack(IEventBrowser aBrowser)
 			{
 				return aBrowser.hasPrevious();
 			}
 			
 			@Override
+			@Monitored
 			public ILogEvent back(IEventBrowser aBrowser)
 			{
 				return aBrowser.previous();
@@ -307,24 +312,28 @@ public class GroupingEventBrowser<K> implements IEventBrowser
 			}
 			
 			@Override
+			@Monitored
 			public boolean hasMore(IEventBrowser aBrowser)
 			{
 				return aBrowser.hasPrevious();
 			}
 			
 			@Override
+			@Monitored
 			public ILogEvent more(IEventBrowser aBrowser)
 			{
 				return aBrowser.previous();
 			}
 			
 			@Override
+			@Monitored
 			public boolean hasBack(IEventBrowser aBrowser)
 			{
 				return aBrowser.hasNext();
 			}
 
 			@Override
+			@Monitored
 			public ILogEvent back(IEventBrowser aBrowser)
 			{
 				return aBrowser.next();

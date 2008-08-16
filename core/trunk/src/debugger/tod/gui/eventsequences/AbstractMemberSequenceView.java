@@ -76,7 +76,7 @@ public abstract class AbstractMemberSequenceView extends AbstractSingleBrowserSe
 		return Hyperlinks.object(
 				getGUIManager(), 
 				Hyperlinks.SWING, 
-				getGUIManager().getJobProcessor(),
+				getGUIManager().getJobScheduler(),
 				itsInspector.getObject(), 
 				aObject, 
 				null,

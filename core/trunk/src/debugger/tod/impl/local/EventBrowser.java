@@ -231,7 +231,7 @@ public class EventBrowser extends PublicCloneable implements IEventBrowser
 
 	public long getFirstTimestamp()
 	{
-		return getEvent(0).getTimestamp();
+		return getEventCount() > 0 ? getEvent(0).getTimestamp() : 0;
 	}
 
 	public long getLastTimestamp()

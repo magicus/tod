@@ -20,11 +20,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.db;
 
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import tod.core.database.browser.IEventBrowser;
-import tod.core.database.event.ILogEvent;
 import tod.impl.dbgrid.messages.GridEvent;
 
 /**

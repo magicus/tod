@@ -48,7 +48,6 @@ import tod.gui.BrowserNavigator;
 import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
-import tod.gui.JobProcessor;
 import tod.gui.kit.AsyncPanel;
 import tod.gui.kit.Bus;
 import tod.gui.kit.BusPanel;
@@ -56,6 +55,9 @@ import tod.gui.kit.IBusListener;
 import tod.gui.kit.messages.ShowObjectMsg;
 import tod.gui.view.controlflow.CFlowView;
 import tod.gui.view.controlflow.watch.AbstractWatchProvider.Entry;
+import tod.tools.scheduling.IJobScheduler;
+import tod.tools.scheduling.JobGroup;
+import tod.tools.scheduling.IJobScheduler.JobPriority;
 import zz.utils.SimpleAction;
 import zz.utils.ui.ScrollablePanel;
 
@@ -67,7 +69,7 @@ public class WatchPanel extends BusPanel
 {
 	private CFlowView itsView;
 	private WatchBrowserNavigator itsBrowserNavigator;
-	private JobProcessor itsJobProcessor;
+	private JobGroup itsJobGroup;
 	private JScrollPane itsScrollPane;
 	private AbstractWatchProvider itsProvider;
 	private List<Entry> itsEntries;
@@ -91,7 +93,7 @@ public class WatchPanel extends BusPanel
 	{
 		super(aView.getBus());
 		itsView = aView;
-		itsJobProcessor = new JobProcessor(getGUIManager().getJobProcessor());
+		itsJobGroup = new JobGroup(getGUIManager().getJobScheduler());
 		itsBrowserNavigator = new WatchBrowserNavigator();
 	}
 	
@@ -137,9 +139,6 @@ public class WatchPanel extends BusPanel
 	public void addNotify()
 	{
 		super.addNotify();
-		if (itsJobProcessor == null) 
-			itsJobProcessor = new JobProcessor(getGUIManager().getJobProcessor());
-		
 		Bus.get(this).subscribe(ShowObjectMsg.ID, itsShowObjectListener);
 		
 		createUI();
@@ -149,8 +148,7 @@ public class WatchPanel extends BusPanel
 	public void removeNotify()
 	{
 		super.removeNotify();
-		itsJobProcessor.detach();
-		itsJobProcessor = null;
+		itsJobGroup.cancelAll();
 		Bus.get(this).unsubscribe(ShowObjectMsg.ID, itsShowObjectListener);
 	}
 	
@@ -163,9 +161,9 @@ public class WatchPanel extends BusPanel
 	 * Returns a job processor that only contains jobs for this watch
 	 * panel.
 	 */
-	public JobProcessor getJobProcessor()
+	public IJobScheduler getJobScheduler()
 	{
-		return itsJobProcessor;
+		return itsJobGroup;
 	}
 
 	public void showStackFrame()
@@ -192,12 +190,12 @@ public class WatchPanel extends BusPanel
 	public <E> void showWatch(AbstractWatchProvider aProvider)
 	{
 		itsProvider = aProvider;
-		getJobProcessor().cancelAll();
+		getJobScheduler().cancelAll();
 				
 		JPanel theEntriesPanel = new ScrollablePanel(GUIUtils.createStackLayout());
 		theEntriesPanel.setOpaque(false);
 		
-		theEntriesPanel.add(aProvider.buildTitleComponent(getJobProcessor()));
+		theEntriesPanel.add(aProvider.buildTitleComponent(getJobScheduler()));
 		
 		ObjectId theCurrentObject = aProvider.getCurrentObject();
 		if (theCurrentObject != null)
@@ -205,7 +203,7 @@ public class WatchPanel extends BusPanel
 			theEntriesPanel.add(buildCurrentObjectLine(theCurrentObject));
 		}
 				
-		theEntriesPanel.add(new AsyncPanel(getJobProcessor())
+		theEntriesPanel.add(new AsyncPanel(getJobScheduler(), JobPriority.AUTO)
 		{
 			@Override
 			protected void runJob()
@@ -214,7 +212,7 @@ public class WatchPanel extends BusPanel
 			}
 
 			@Override
-			protected void update()
+			protected void updateSuccess()
 			{
 				setLayout(GUIUtils.createStackLayout());
 				if (itsEntries != null) for (Entry theEntry : itsEntries)
@@ -223,7 +221,7 @@ public class WatchPanel extends BusPanel
 					
 					add(new WatchEntryNode(
 							getGUIManager(),
-							getJobProcessor(),
+							getJobScheduler(),
 							WatchPanel.this,
 							itsProvider,
 							theEntry));
@@ -244,7 +242,7 @@ public class WatchPanel extends BusPanel
 		theContainer.add(Hyperlinks.object(
 				getGUIManager(), 
 				Hyperlinks.SWING, 
-				getJobProcessor(),
+				getJobScheduler(),
 				aCurrentObject,
 				itsProvider.getRefEvent(),
 				showPackageNames()));

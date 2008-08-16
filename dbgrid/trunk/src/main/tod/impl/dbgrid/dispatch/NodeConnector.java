@@ -46,6 +46,9 @@ import tod.impl.dbgrid.db.DatabaseNode;
 import tod.impl.dbgrid.db.NodeRejectedException;
 import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.db.RINodeEventIterator;
+import tod.tools.monitoring.MonitoringServer;
+import tod.tools.monitoring.RIMonitoringServer;
+import tod.tools.monitoring.RIMonitoringServerProvider;
 import zz.utils.monitoring.Monitor;
 import zz.utils.monitoring.Monitor.MonitorData;
 import zz.utils.net.Server.ServerAdress;
@@ -82,7 +85,13 @@ implements RINodeConnector
 		itsDatabaseNode = aDatabaseNode;
 	}
 
-	
+	public RIMonitoringServer getMonitoringServer()
+	{
+		return MonitoringServer.get();
+	}
+
+
+
 	public void setConfig(TODConfig aConfig) 
 	{
 		itsDatabaseNode.setConfig(aConfig);

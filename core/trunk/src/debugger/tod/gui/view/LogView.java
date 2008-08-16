@@ -46,7 +46,6 @@ import tod.core.database.structure.ObjectId;
 import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
-import tod.gui.JobProcessor;
 import tod.gui.SeedHyperlink;
 import tod.gui.formatter.EventFormatter;
 import tod.gui.formatter.ObjectFormatter;
@@ -55,6 +54,7 @@ import tod.gui.kit.IOptionsOwner;
 import tod.gui.kit.Options;
 import tod.gui.seed.LogViewSeed;
 import tod.gui.seed.ObjectHistorySeed;
+import tod.tools.scheduling.IJobScheduler;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.ISetProperty;
 import zz.utils.properties.PropertyUtils;
@@ -257,9 +257,9 @@ implements IOptionsOwner
 	/**
 	 * Helper method to obtain the default job processor for this view.
 	 */
-	public JobProcessor getJobProcessor()
+	public IJobScheduler getJobProcessor()
 	{
-		return getGUIManager().getJobProcessor();
+		return getGUIManager().getJobScheduler();
 	}
 
 	

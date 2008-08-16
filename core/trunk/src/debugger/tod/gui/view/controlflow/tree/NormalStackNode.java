@@ -43,7 +43,7 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
-import tod.gui.JobProcessor;
+import tod.tools.scheduling.IJobScheduler;
 import zz.utils.ui.ZLabel;
 
 /**
@@ -52,12 +52,16 @@ import zz.utils.ui.ZLabel;
  */
 public class NormalStackNode extends AbstractStackNode
 {
+	private ITypeInfo itsType;
+	private Object[] itsArguments;
+	private String itsBehaviorName;
+
 	public NormalStackNode(
-			JobProcessor aJobProcessor, 
+			IJobScheduler aJobScheduler, 
 			ILogEvent aEvent,
 			CallStackPanel aCallStackPanel)
 	{
-		super(aJobProcessor, aEvent, aCallStackPanel);
+		super(aJobScheduler, aEvent, aCallStackPanel);
 	}
 
 	@Override
@@ -67,22 +71,31 @@ public class NormalStackNode extends AbstractStackNode
 	}
 	
 	@Override
-	protected JComponent createHeader()
+	protected void runJob()
 	{
-		JPanel theContainer = new JPanel(GUIUtils.createStackLayout());
-		theContainer.setOpaque(false);
+		super.runJob();
+		
 		StringBuilder theBuilder = new StringBuilder();
 
 		// Create caption
 		IBehaviorInfo theBehavior = getFrameEvent().getExecutedBehavior();
 		if (theBehavior == null) theBehavior = getFrameEvent().getCalledBehavior();
-		ITypeInfo theType = theBehavior.getType();
-		Object[] theArguments = getFrameEvent().getArguments();
+		itsType = theBehavior.getType();
+		itsArguments = getFrameEvent().getArguments();
 		
 		// Type.method
-		theBuilder.append(Util.getSimpleName(theType.getName()));
+		theBuilder.append(Util.getSimpleName(itsType.getName()));
 		theBuilder.append(".");
 		theBuilder.append(theBehavior.getName());
+		
+		itsBehaviorName = theBuilder.toString();
+	}
+	
+	@Override
+	protected JComponent createHeader()
+	{
+		JPanel theContainer = new JPanel(GUIUtils.createStackLayout());
+		theContainer.setOpaque(false);
 		
 		// Arguments
 //		theBuilder.append("(");
@@ -106,14 +119,14 @@ public class NormalStackNode extends AbstractStackNode
 //		theBuilder.append(")");
 
 		ZLabel theLabel1 = ZLabel.create(
-				Util.getPackageName(theType.getName()), 
+				Util.getPackageName(itsType.getName()), 
 				FontConfig.TINY_FONT, 
 				Color.DARK_GRAY);
 		theLabel1.addMouseListener(this);
 		add(theLabel1);
 		
 		ZLabel theLabel2 = ZLabel.create(
-				theBuilder.toString(), 
+				itsBehaviorName, 
 				FontConfig.SMALL_FONT, 
 				Color.BLACK);
 		theLabel2.addMouseListener(this);

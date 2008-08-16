@@ -40,6 +40,7 @@ import tod.impl.dbgrid.IGridEventFilter;
 import tod.impl.dbgrid.RIGridMaster;
 import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
 import tod.impl.dbgrid.messages.GridEvent;
+import tod.tools.monitoring.MonitoringClient.MonitorId;
 import tod.utils.remote.RemoteStructureDatabase;
 import zz.utils.Utils;
 
@@ -403,7 +404,7 @@ public abstract class DatabaseNode
 			itsIterator = aIterator;
 		}
 		
-		public StringSearchHit[] next(int aCount) 
+		public StringSearchHit[] next(MonitorId aMonitorId, int aCount) 
 		{
 			StringSearchHit[] theArray = new StringSearchHit[aCount];
 			
@@ -431,7 +432,7 @@ public abstract class DatabaseNode
 			else return null;
 		}
 
-		public StringSearchHit[] previous(int aCount)
+		public StringSearchHit[] previous(MonitorId aMonitorId, int aCount)
 		{
 			StringSearchHit[] theArray = new StringSearchHit[aCount];
 			

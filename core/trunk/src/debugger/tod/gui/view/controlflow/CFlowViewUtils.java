@@ -38,7 +38,7 @@ import javax.swing.JPanel;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
-import tod.gui.JobProcessor;
+import tod.tools.scheduling.IJobScheduler;
 import zz.utils.ui.ZLabel;
 import zz.utils.ui.text.XFont;
 
@@ -49,7 +49,7 @@ public class CFlowViewUtils
 	 */
 	public static void addArguments(
 			IGUIManager aGUIManager,
-			JobProcessor aJobProcessor,
+			IJobScheduler aJobScheduler,
 			JPanel aContainer,
 			IBehaviorCallEvent aRefEvent,
 			Object[] aArguments, 
@@ -69,7 +69,7 @@ public class CFlowViewUtils
 				aContainer.add(Hyperlinks.object(
 						aGUIManager,
 						Hyperlinks.SWING, 
-						aJobProcessor,
+						aJobScheduler,
 						theArgument, 
 						aRefEvent,
 						aShowPackageNames));

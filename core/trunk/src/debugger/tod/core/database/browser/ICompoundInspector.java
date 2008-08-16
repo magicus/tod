@@ -48,7 +48,7 @@ public interface ICompoundInspector<E>
 	 * are the values they had at the moment
 	 * the reference event was executed.
 	 */
-	public void setReferenceEvent (ILogEvent aEvent);
+	public void setReferenceEvent(ILogEvent aEvent);
 	
 	/**
 	 * Returns the current reference event of this inspector.
@@ -64,7 +64,7 @@ public interface ICompoundInspector<E>
 	 * This can happen for instance if several write events have
 	 * the same timestamp.
 	 */
-	public EntryValue[] getEntryValue (E aEntry);
+	public EntryValue[] getEntryValue(E aEntry);
 	
 	/**
 	 * Moves the reference event to the next setter, and returns the corresponding value.

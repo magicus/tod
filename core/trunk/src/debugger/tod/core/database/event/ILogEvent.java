@@ -40,7 +40,7 @@ import tod.core.database.structure.IThreadInfo;
  * Root of the interface graph of logging events.
  * @author gpothier
  */
-public interface ILogEvent
+public interface ILogEvent 
 {
 	/**
 	 * Returns a pointer to this event.
@@ -78,7 +78,7 @@ public interface ILogEvent
 	
 	/**
 	 * Returns behavior call event corresponding to the behavior execution
-	 * during which this event occured.
+	 * during which this event occurred.
 	 * Note that calling this method might cause a database access, at
 	 * least the first time it is called (implementations of this method 
 	 * should cache the result).

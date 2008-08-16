@@ -29,7 +29,6 @@ import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.session.AbstractSession;
 import tod.core.session.ConnectionInfo;
-import tod.core.session.ISessionMonitor;
 import tod.impl.dbgrid.aggregator.GridEventBrowser;
 import tod.impl.dbgrid.gui.GridConsole;
 
@@ -43,7 +42,6 @@ public class LocalGridSession extends AbstractSession
 	private DBProcessManager itsProcessManager = DBProcessManager.getDefault();
 	private RIGridMaster itsMaster;
 	private ILogBrowser itsLogBrowser;
-	private ISessionMonitor itsMonitor;
 	
 	public LocalGridSession(URI aUri, TODConfig aConfig)
 	{
@@ -65,7 +63,6 @@ public class LocalGridSession extends AbstractSession
 		{
 			itsMaster = itsProcessManager.getMaster();
 			itsLogBrowser = DebuggerGridConfig.createRemoteLogBrowser(this, itsMaster); 
-			itsMonitor = Scheduler.get(itsLogBrowser);
 		}
 		catch (RemoteException e)
 		{
@@ -101,11 +98,6 @@ public class LocalGridSession extends AbstractSession
 	public ILogBrowser getLogBrowser()
 	{
 		return itsLogBrowser;
-	}
-
-	public ISessionMonitor getMonitor()
-	{
-		return itsMonitor;
 	}
 
 	public boolean isAlive()

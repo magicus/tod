@@ -28,6 +28,7 @@ import java.util.List;
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.IGridEventFilter;
 import tod.impl.dbgrid.messages.GridEvent;
+import tod.tools.monitoring.MonitoringClient.MonitorId;
 
 /**
  * Iterator for events of a particular query for a given node.
@@ -47,7 +48,7 @@ implements RINodeEventIterator
 		itsFilter = aFilter;
 	}
 
-	public GridEvent[] next(int aCount)
+	public GridEvent[] next(MonitorId aMonitorId, int aCount)
 	{
 		List<GridEvent> theList = new ArrayList<GridEvent>(aCount);
 		for (int i=0;i<aCount;i++)
@@ -66,7 +67,7 @@ implements RINodeEventIterator
 		itsIterator = itsDatabase.evaluate(itsFilter, aTimestamp);
 	}
 
-	public GridEvent[] previous(int aCount)
+	public GridEvent[] previous(MonitorId aMonitorId, int aCount)
 	{
 		List<GridEvent> theList = new ArrayList<GridEvent>(aCount);
 		for (int i=0;i<aCount;i++)

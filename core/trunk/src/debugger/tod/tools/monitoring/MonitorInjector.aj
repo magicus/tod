@@ -29,67 +29,43 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod;
+package tod.tools.monitoring;
 
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
-import java.lang.instrument.Instrumentation;
-import java.security.ProtectionDomain;
+import java.awt.EventQueue;
 
 /**
- * A Java agent class that sets up a dummy {@link ClassFileTransformer}
- * that will delegate to the actual Reflex transformer when the application
- * is ready (ie. when the Reflex classes are available).
+ * This aspect takes care of starting subtasks when a {@link Monitored} method
+ * is executed.
  * @author gpothier
  */
-public class ReflexBridge implements ClassFileTransformer
+public aspect MonitorInjector
 {
-	private static ReflexBridge INSTANCE = new ReflexBridge();
-
-	public static ReflexBridge getInstance()
-	{
-		return INSTANCE;
-	}
-
-	private ReflexBridge()
-	{
-	}
+	pointcut monitored(): execution(@Monitored * *(..));
 	
-	private ClassFileTransformer itsTransformer;
-	
-    public byte[] transform(
-    		ClassLoader aLoader, 
-    		String aClassName, 
-    		Class< ? > aClassBeingRedefined, 
-    		ProtectionDomain aProtectionDomain, 
-    		byte[] aClassfileBuffer) throws IllegalClassFormatException
+	before(): monitored()
 	{
-    	try
+		if (EventQueue.isDispatchThread())
 		{
-			byte[] theResult = null;
-			
-			if (itsTransformer != null) 
-			{
-				theResult = itsTransformer.transform(aLoader, aClassName, aClassBeingRedefined, aProtectionDomain, aClassfileBuffer);
-			}
-			
-			return theResult;
+			System.err.println("Warning: calling monitored method from event dispatch thread.");
 		}
-		catch (Throwable e)
+		
+		TaskMonitor theMonitor = TaskMonitor.current();
+		if (theMonitor != null)
 		{
-			e.printStackTrace();
-			return null;
+			theMonitor.push(thisJoinPointStaticPart.toShortString());
 		}
 	}
-    
-    public void setTransformer(ClassFileTransformer aTransformer)
+	
+	after(): monitored()
 	{
-		itsTransformer = aTransformer;
+		TaskMonitor theMonitor = TaskMonitor.current();
+		if (theMonitor != null)
+		{
+			theMonitor.pop();
+		}
 	}
+	
+//	pointcut badCall(): call(* TaskMonitoring.*(..)) && !withincode(@Monitored * *(..));
+//	declare error: badCall(): "Calling TaskMonitoring within non-monitored method";
 
-	public static void premain(String agentArgs, Instrumentation inst)
-    {
-		System.out.println("ReflexBridge loaded.");
-        inst.addTransformer(ReflexBridge.getInstance());
-    }
 }

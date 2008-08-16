@@ -29,6 +29,7 @@ import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.db.DatabaseNode;
 import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
+import tod.tools.monitoring.MonitoringClient.MonitorId;
 
 public class TestStringSearch
 {
@@ -65,7 +66,7 @@ public class TestStringSearch
 	{
 		while(true)
 		{
-			StringSearchHit[] theHits = aIterator.next(1);
+			StringSearchHit[] theHits = aIterator.next(MonitorId.get(), 1);
 			if (theHits == null) break;
 			
 			StringSearchHit theHit = theHits[0];

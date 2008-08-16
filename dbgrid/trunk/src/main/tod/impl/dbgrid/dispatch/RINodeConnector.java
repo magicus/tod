@@ -30,13 +30,14 @@ import tod.core.database.structure.IHostInfo;
 import tod.impl.dbgrid.IGridEventFilter;
 import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.db.RINodeEventIterator;
+import tod.tools.monitoring.RIMonitoringServerProvider;
 import zz.utils.net.Server.ServerAdress;
 
 /**
  * Remote interface for {@link NodeConnector}
  * @author gpothier
  */
-public interface RINodeConnector extends Remote
+public interface RINodeConnector extends Remote, RIMonitoringServerProvider
 {
 	public int getNodeId() throws RemoteException;
 	

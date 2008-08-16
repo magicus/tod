@@ -60,6 +60,8 @@ import tod.impl.dbgrid.dispatch.NodeConnector;
 import tod.impl.dbgrid.dispatch.NodeProxy;
 import tod.impl.dbgrid.dispatch.RINodeConnector;
 import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
+import tod.tools.monitoring.MonitoringServer;
+import tod.tools.monitoring.RIMonitoringServer;
 import tod.utils.PrintThroughCollector;
 import tod.utils.TODUtils;
 import tod.utils.remote.RIStructureDatabase;
@@ -86,7 +88,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	private TODConfig itsConfig;
 
 	private List<ListenerData> itsListeners = new ArrayList<ListenerData>();
-
+	
 	private final boolean itsStartServer;
 
 	private TODServer itsServer;
@@ -207,6 +209,11 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		theMaster.itsCollector = theMaster.itsDispatcherCollector;
 
 		return theMaster;
+	}
+
+	public RIMonitoringServer getMonitoringServer()
+	{
+		return MonitoringServer.get();
 	}
 
 	/**
@@ -628,7 +635,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	{
 		return aTask.run(itsLocalLogBrowser);
 	}
-
+	
 	/**
 	 * A timer task that periodically updates aggregate data, and notifies
 	 * listeners if data has changed since last update.

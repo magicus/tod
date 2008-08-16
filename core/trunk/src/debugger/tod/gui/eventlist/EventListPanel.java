@@ -37,17 +37,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-
-import org.python.modules.newmodule;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
@@ -72,7 +68,6 @@ import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
-import tod.gui.JobProcessor;
 import tod.gui.eventlist.EventScroller.UnitScroll;
 import tod.gui.kit.Bus;
 import tod.gui.kit.BusPanel;
@@ -80,6 +75,8 @@ import tod.gui.kit.Options;
 import tod.gui.kit.StdOptions;
 import tod.gui.kit.Options.OptionDef;
 import tod.gui.settings.IntimacySettings;
+import tod.tools.scheduling.IJobScheduler;
+import tod.tools.scheduling.IJobScheduler.JobPriority;
 import tod.utils.TODUtils;
 import zz.utils.cache.MRUBuffer;
 import zz.utils.notification.IEvent;
@@ -97,7 +94,7 @@ implements MouseWheelListener
 {
 	private final IGUIManager itsGUIManager;
 	private final ILogBrowser itsLogBrowser;
-	private final JobProcessor itsJobProcessor;
+	private final IJobScheduler itsJobScheduler;
 	
 	private EventListCore itsCore;
 	private JPanel itsEventsPanel;
@@ -136,12 +133,12 @@ implements MouseWheelListener
 //		}
 //	};
 	
-	public EventListPanel(IGUIManager aGUIManager, Bus aBus, ILogBrowser aLogBrowser, JobProcessor aJobProcessor)
+	public EventListPanel(IGUIManager aGUIManager, Bus aBus, ILogBrowser aLogBrowser, IJobScheduler aJobScheduler)
 	{
 		super(aBus);
 		itsGUIManager = aGUIManager;
 		itsLogBrowser = aLogBrowser;
-		itsJobProcessor = aJobProcessor;
+		itsJobScheduler = aJobScheduler;
 		createUI();
 	}
 	
@@ -149,15 +146,15 @@ implements MouseWheelListener
 	 * Creates an event list that shows all the event selected by the specified 
 	 * filter, or all the events of the database if the filter is null.
 	 */
-	public EventListPanel(IGUIManager aGUIManager, Bus aBus, ILogBrowser aLogBrowser, JobProcessor aJobProcessor, IEventFilter aEventFilter)
+	public EventListPanel(IGUIManager aGUIManager, Bus aBus, ILogBrowser aLogBrowser, IJobScheduler aJobScheduler, IEventFilter aEventFilter)
 	{
-		this(aGUIManager, aBus, aLogBrowser, aJobProcessor);
+		this(aGUIManager, aBus, aLogBrowser, aJobScheduler);
 		setBrowser(aEventFilter);
 	}
 	
-	public JobProcessor getJobProcessor()
+	public IJobScheduler getJobScheduler()
 	{
-		return itsJobProcessor;
+		return itsJobScheduler;
 	}
 	
 	public ILogBrowser getLogBrowser()
@@ -176,10 +173,9 @@ implements MouseWheelListener
 		if (itsSubmittedJobs > 5) return;
 		
 		itsSubmittedJobs++;
-		getJobProcessor().submit(new JobProcessor.Job<Object>()
+		getJobScheduler().submit(JobPriority.EXPLICIT, new Runnable()
 		{
-			@Override
-			public Object run()
+			public void run()
 			{
 				try
 				{
@@ -191,7 +187,6 @@ implements MouseWheelListener
 				}
 				itsSubmittedJobs--;
 				if (itsSubmittedJobs == 0) postUpdateList();
-				return null;
 			}
 		});
 	}
@@ -202,10 +197,9 @@ implements MouseWheelListener
 		if (itsSubmittedJobs > 5) return;
 		
 		itsSubmittedJobs++;
-		getJobProcessor().submit(new JobProcessor.Job<Object>()
+		getJobScheduler().submit(JobPriority.EXPLICIT, new Runnable()
 		{
-			@Override
-			public Object run()
+			public void run()
 			{
 				try
 				{
@@ -217,7 +211,6 @@ implements MouseWheelListener
 				}
 				itsSubmittedJobs--;
 				if (itsSubmittedJobs == 0) postUpdateList();
-				return null;
 			}
 		});
 	}
@@ -225,16 +218,14 @@ implements MouseWheelListener
 	public void setTimestamp(final long aTimestamp)
 	{
 		if (itsCore == null) return;
-		getJobProcessor().submit(new JobProcessor.Job<Object>()
+		getJobScheduler().submit(JobPriority.EXPLICIT, new Runnable()
 		{
-			@Override
-			public Object run()
+			public void run()
 			{
 				TODUtils.log(1,"[EventListPanel.setTimestamp] Updating...");
 				itsCore.setTimestamp(aTimestamp);
 				postUpdateList();
 				TODUtils.log(1,"[EventListPanel.setTimestamp] Done...");
-				return null;
 			}
 		});
 	}

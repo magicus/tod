@@ -34,6 +34,7 @@ package tod.impl.database;
 import java.util.NoSuchElementException;
 
 
+
 public abstract class AbstractBidiIterator<T> implements IBidiIterator<T>
 {
 	private boolean itsNextReady;

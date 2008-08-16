@@ -46,6 +46,7 @@ import tod.impl.dbgrid.IdGenerator;
 import tod.impl.dbgrid.aggregator.GridEventBrowser;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
 import tod.impl.dbgrid.messages.GridEvent;
+import tod.tools.monitoring.MonitoringClient.MonitorId;
 
 public class TestGridMaster
 {
@@ -88,7 +89,7 @@ public class TestGridMaster
 		theEventGenerator.fillStructureDatabase(theStructureDatabase);
 		
 		System.out.println("filling...");
-		Fixtures.fillDatabase(theMaster, theEventGenerator, 1000000);
+		Fixtures.fillDatabase(theMaster, theEventGenerator, 16000);
 		
 		System.out.println("checking...");
 		IdGenerator theIdGenerator = new IdGenerator(100, 100, 100, 100, 100, 100, 100, 100, 100, 100);
@@ -102,6 +103,7 @@ public class TestGridMaster
 			IGridEventFilter theEventCondition = (IGridEventFilter) theConditionGenerator.next();
 			System.out.println(theEventCondition);
 			
+			if (i < 2) continue;
 			if (i == 2)
 			{
 				System.out.println("TestGridMaster.doTest()");
@@ -147,7 +149,7 @@ public class TestGridMaster
 			GridEvent theRefEvent = aReferenceGenerator.next();
 			if (aCondition._match(theRefEvent))
 			{
-				GridEvent[] theBuffer = theAggregator.next(1);
+				GridEvent[] theBuffer = theAggregator.next(MonitorId.get(), 1);
 				GridEvent theTestedEvent = theBuffer[0]; 
 				if (i == 13)
 				{

@@ -23,6 +23,8 @@ package tod.impl.dbgrid.db;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+import tod.tools.monitoring.MonitoringClient.MonitorId;
+
 /**
  * An iterator that buffers data into packets.
  * @param <T> Should be an array type
@@ -35,13 +37,13 @@ public interface RIBufferIterator<T> extends Remote
 	 * @param aCount Maximum number of elements to fetch.
 	 * @return The fetched elements, or null if there are no more events.
 	 */
-	public T next(int aCount) throws RemoteException;
+	public T next(MonitorId aMonitorId, int aCount) throws RemoteException;
 	
 	/**
-	 * Fetches elements preceeding the cursor position, and updates the cursor.
+	 * Fetches elements preceding the cursor position, and updates the cursor.
 	 * @param aCount Maximum number of elements to fetch.
 	 * @return The fetched elements, or null if there are no more events.
 	 */
-	public T previous(int aCount) throws RemoteException;
+	public T previous(MonitorId aMonitorId, int aCount) throws RemoteException;
 
 }

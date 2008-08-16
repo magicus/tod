@@ -41,12 +41,12 @@ import tod.core.database.browser.ShadowId;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
-import tod.gui.JobProcessor;
 import tod.gui.eventlist.EventListPanel;
 import tod.gui.kit.BusPanel;
 import tod.gui.kit.SavedSplitPane;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.view.controlflow.CFlowView;
+import tod.tools.scheduling.IJobScheduler;
 import zz.utils.Utils;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;
@@ -112,7 +112,7 @@ public class CFlowTree extends BusPanel
 	}
 
 	
-	public JobProcessor getJobProcessor()
+	public IJobScheduler getJobScheduler()
 	{
 		return itsView.getJobProcessor();
 	}
@@ -136,7 +136,7 @@ public class CFlowTree extends BusPanel
 				itsView.getGUIManager(), 
 				getBus(), 
 				itsView.getLogBrowser(), 
-				getJobProcessor());
+				getJobScheduler());
 		
 		itsEventListPanel.eEventActivated().addListener(new IEventListener<ILogEvent>()
 				{
@@ -154,7 +154,7 @@ public class CFlowTree extends BusPanel
 		
 		PropertyUtils.connect(pSelectedEvent, itsEventListPanel.pSelectedEvent(), true);
 		
-		itsCallStackPanel = new CallStackPanel(getJobProcessor());
+		itsCallStackPanel = new CallStackPanel(getJobScheduler());
 		theSplitPane.setLeftComponent(itsCallStackPanel);
 	}
 	

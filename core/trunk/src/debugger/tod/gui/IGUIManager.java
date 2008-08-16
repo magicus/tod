@@ -33,12 +33,12 @@ package tod.gui;
 
 import tod.core.IBookmarks;
 import tod.core.database.browser.IEventFilter;
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.SourceRange;
 import tod.core.session.ISession;
 import tod.gui.seed.LogViewSeed;
 import tod.gui.settings.GUISettings;
+import tod.tools.scheduling.JobScheduler;
 
 /**
  * This interface permits to access the basic functionalities
@@ -62,9 +62,9 @@ public interface IGUIManager
 	public void gotoSource (SourceRange aSourceRange);
 	
 	/**
-	 * Returns a global job processor.
+	 * Returns a global job scheduler.
 	 */
-	public JobProcessor getJobProcessor();
+	public JobScheduler getJobScheduler();
 	
 	/**
 	 * Returns the debugging session currently associated with this GUI manager.

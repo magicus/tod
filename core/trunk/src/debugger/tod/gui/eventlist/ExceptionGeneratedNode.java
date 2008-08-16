@@ -72,7 +72,7 @@ public class ExceptionGeneratedNode extends AbstractSimpleEventNode
 		aBody.add(Hyperlinks.object(
 				getGUIManager(),
 				Hyperlinks.HTML,
-				getJobProcessor(),
+				getJobScheduler(),
 				itsEvent.getException(),
 				itsEvent,
 				showPackageNames()));

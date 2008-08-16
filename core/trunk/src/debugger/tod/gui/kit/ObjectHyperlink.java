@@ -37,11 +37,10 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.gui.IGUIManager;
-import tod.gui.JobProcessor;
 import tod.gui.SeedHyperlink;
-import tod.gui.JobProcessor.IJobListener;
-import tod.gui.JobProcessor.Job;
 import tod.gui.seed.LogViewSeed;
+import tod.tools.scheduling.IJobScheduler;
+import tod.tools.scheduling.IJobScheduler.JobPriority;
 import zz.utils.ui.text.XFont;
 
 /**
@@ -51,7 +50,6 @@ import zz.utils.ui.text.XFont;
  * @author gpothier
  */
 public class ObjectHyperlink extends SeedHyperlink
-implements IJobListener<ITypeInfo>
 {
 	private final ObjectId itsObject;
 
@@ -59,28 +57,22 @@ implements IJobListener<ITypeInfo>
 			IGUIManager aGUIManager,
 			LogViewSeed aSeed,
 			final ILogBrowser aLogBrowser,
-			JobProcessor aJobProcessor,
+			IJobScheduler aJobScheduler,
 			ObjectId aObject, 
 			XFont aFont)
 	{
 		super(aGUIManager, aSeed, "... (" + aObject + ")", XFont.DEFAULT_XUNDERLINED, Color.BLUE);
 		itsObject = aObject;
 		
-		Job<ITypeInfo> theJob = new Job<ITypeInfo>()
-		{
-			@Override
-			public ITypeInfo run()
+		aJobScheduler.submit(JobPriority.AUTO, new Runnable()
 			{
-				return aLogBrowser.createObjectInspector(itsObject).getType();
-			}
-		};
+				public void run()
+				{
+					ITypeInfo theType = aLogBrowser.createObjectInspector(itsObject).getType();
+					String theText = theType.getName() + " (" + itsObject + ")";
+					setText(theText);
+				}
+			});
 		
-		aJobProcessor.submit(theJob, this);
-	}
-
-	public void jobFinished(ITypeInfo aType)
-	{
-		String theText = aType.getName() + " (" + itsObject + ")";
-		setText(theText);
 	}
 }

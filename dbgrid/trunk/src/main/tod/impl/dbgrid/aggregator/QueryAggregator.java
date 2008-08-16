@@ -36,6 +36,7 @@ import tod.impl.dbgrid.db.RINodeEventIterator;
 import tod.impl.dbgrid.dispatch.RINodeConnector;
 import tod.impl.dbgrid.merge.DisjunctionIterator;
 import tod.impl.dbgrid.messages.GridEvent;
+import tod.tools.monitoring.MonitoringClient.MonitorId;
 import zz.utils.Future;
 
 /**
@@ -124,7 +125,7 @@ implements RIQueryAggregator
 				: null;
 	}
 	
-	public GridEvent[] next(int aCount)
+	public GridEvent[] next(MonitorId aMonitorId, int aCount)
 	{
 		List<GridEvent> theList = new ArrayList<GridEvent>(aCount);
 		for (int i=0;i<aCount;i++)
@@ -141,7 +142,7 @@ implements RIQueryAggregator
 		initIterators(aTimestamp);
 	}
 
-	public GridEvent[] previous(int aCount)
+	public GridEvent[] previous(MonitorId aMonitorId, int aCount)
 	{
 		List<GridEvent> theList = new ArrayList<GridEvent>(aCount);
 		for (int i=0;i<aCount;i++)
@@ -299,7 +300,7 @@ implements RIQueryAggregator
 		{
 			try
 			{
-				return itsIterator.next(DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
+				return itsIterator.next(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
 			}
 			catch (RemoteException e)
 			{
@@ -312,7 +313,7 @@ implements RIQueryAggregator
 		{
 			try
 			{
-				return itsIterator.previous(DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
+				return itsIterator.previous(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
 			}
 			catch (RemoteException e)
 			{

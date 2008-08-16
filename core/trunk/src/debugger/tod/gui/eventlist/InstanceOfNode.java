@@ -68,7 +68,7 @@ public class InstanceOfNode extends AbstractSimpleEventNode
 		aBody.add(Hyperlinks.object(
 				getGUIManager(),
 				Hyperlinks.HTML,
-				getJobProcessor(),
+				getJobScheduler(),
 				theCurrentObject, 
 				itsEvent.getObject(),
 				itsEvent,

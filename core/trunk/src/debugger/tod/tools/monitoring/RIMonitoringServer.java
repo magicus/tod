@@ -29,16 +29,24 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.core.session;
+package tod.tools.monitoring;
 
-/**
- * A monitor that permits to know the workload and to control an {@link ISession}
- * @author gpothier
- */
-public interface ISessionMonitor
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+
+import tod.tools.monitoring.MonitoringClient.MonitorId;
+
+public interface RIMonitoringServer extends Remote
 {
 	/**
-	 * Returns the number of scheduled jobs in the session.
+	 * Sets the client-side monitor manager that will receive notifications
+	 * from this server.
 	 */
-	public int getQueueSize();
+	public void setClient(RIMonitoringClient aManager) throws RemoteException;
+	
+	/**
+	 * Notifies this server that a monitor was cancelled on the client
+	 */
+	public void monitorCancelled(MonitorId aId) throws RemoteException;
+
 }

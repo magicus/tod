@@ -11,11 +11,11 @@
       <library name="plugin.jar">
          <export name="*"/>
       </library>
+      
  	  <library name="lib/asm-all-3.1.jar">
-       <export
-             name="*">
-       </export>
+       <export name="*"/>
       </library>
+      
       <library name="lib/log4j.jar"> 
          <export name="*"/>
       </library>
@@ -30,15 +30,15 @@
       </library>
       -->
       
-      <library name="lib/reflex-core.jar">
+      <library name="lib/infovis.jar">
          <export name="*"/>
       </library>
-      <library name="lib/pom.jar">
+      
+      <library name="lib/aspectjrt.jar">
          <export name="*"/>
       </library>
-       <library name="lib/infovis.jar">
-         <export name="*"/>
-      </library>
+      
+      
 
       <!-- the DEV/DEPLOY in-out markers are used by a perl script, don't remove -->
       <!-- DEV-in -->

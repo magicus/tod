@@ -40,7 +40,7 @@ import tod.core.database.browser.ICompoundInspector.EntryValue;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.ObjectId;
 import tod.gui.IGUIManager;
-import tod.gui.JobProcessor;
+import tod.tools.scheduling.IJobScheduler;
 
 /**
  * Provider of watch data.
@@ -62,7 +62,7 @@ public abstract class AbstractWatchProvider
 	 * @param aJobProcessor A job processor that can be used if elements
 	 * of the title are to be created asynchronously.
 	 */
-	public abstract JComponent buildTitleComponent(JobProcessor aJobProcessor);
+	public abstract JComponent buildTitleComponent(IJobScheduler aJobScheduler);
 	
 	/**
 	 * Returns a title for this watch provider.

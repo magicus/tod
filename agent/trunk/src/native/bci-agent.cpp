@@ -304,27 +304,18 @@ void JNICALL cbClassFileLoadHook(
 	jint* new_class_data_len, unsigned char** new_class_data) 
 {
 	
-	if (cfgObfuscation == 1)
+	if (cfgObfuscation)
 	{
-		if (strncmp("tod/agentX/", name, 11) == 0)
-		{
-			return;
-		}
+		if (strncmp("tod/agentX/", name, 11) == 0) return;
 	}
 	else
 	{
-		if (strncmp("tod/agent/", name, 10) == 0)
-		{
-			return;
-		}
+		if (strncmp("tod/agent/", name, 10) == 0) return;
 	}
-	if ( cfgDebugTOD == 1 )
+	
+	if (cfgDebugTOD)
 	{
-		if ( !(strncmp("tod/", name, 4) == 0) && !(strncmp("zz/", name, 3) == 0) )
-		{
-			return;
-		}	
-
+		if (!(strncmp("tod/", name, 4) == 0) && !(strncmp("zz/", name, 3) == 0) ) return;
 	}
 	else
 	{	 

@@ -41,10 +41,11 @@ import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
-import tod.gui.JobProcessor;
 import tod.gui.kit.AsyncPanel;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.view.controlflow.watch.AbstractWatchProvider.Entry;
+import tod.tools.scheduling.IJobScheduler;
+import tod.tools.scheduling.IJobScheduler.JobPriority;
 
 /**
  * Represents a watch entry (field or variable).
@@ -52,7 +53,7 @@ import tod.gui.view.controlflow.watch.AbstractWatchProvider.Entry;
  */
 public class WatchEntryNode extends JPanel
 {
-	private final JobProcessor itsJobProcessor;
+	private final IJobScheduler itsJobScheduler;
 	
 	private final IGUIManager itsGUIManager;
 	private final WatchPanel itsWatchPanel;
@@ -61,7 +62,7 @@ public class WatchEntryNode extends JPanel
 	
 	public WatchEntryNode(
 			IGUIManager aGUIManager,
-			JobProcessor aJobProcessor,
+			IJobScheduler aJobScheduler,
 			WatchPanel aWatchPanel,
 			AbstractWatchProvider aProvider, 
 			Entry aEntry)
@@ -69,7 +70,7 @@ public class WatchEntryNode extends JPanel
 		super(GUIUtils.createSequenceLayout());
 		itsWatchPanel = aWatchPanel;
 		setOpaque(false);
-		itsJobProcessor = aJobProcessor;
+		itsJobScheduler = aJobScheduler;
 		itsGUIManager = aGUIManager;
 		itsProvider = aProvider;
 		itsEntry = aEntry;
@@ -85,7 +86,7 @@ public class WatchEntryNode extends JPanel
 	{
 		String theName = itsEntry.getName();
 		add(GUIUtils.createLabel(theName + " = "));
-		add(new ValueAsyncPanel(itsJobProcessor));
+		add(new ValueAsyncPanel(itsJobScheduler));
 	}
 
 	/**
@@ -96,9 +97,9 @@ public class WatchEntryNode extends JPanel
 	{
 		private EntryValue[] itsValue;
 		
-		public ValueAsyncPanel(JobProcessor aJobProcessor)
+		public ValueAsyncPanel(IJobScheduler aJobScheduler)
 		{
-			super(aJobProcessor);
+			super(aJobScheduler, JobPriority.AUTO);
 		}
 
 		@Override
@@ -108,7 +109,7 @@ public class WatchEntryNode extends JPanel
 		}
 
 		@Override
-		protected void update()
+		protected void updateSuccess()
 		{
 			if (itsValue != null)
 			{
@@ -121,7 +122,7 @@ public class WatchEntryNode extends JPanel
 					add(Hyperlinks.object(
 							itsGUIManager, 
 							Hyperlinks.SWING, 
-							itsJobProcessor,
+							itsJobScheduler,
 							itsProvider.getCurrentObject(),
 							itsValue[i].value,
 							itsProvider.getRefEvent(),
@@ -135,9 +136,9 @@ public class WatchEntryNode extends JPanel
 						add(GUIUtils.createLabel(", "));
 					}
 					
-					add(new PreviousValueAsyncPanel(getJobProcessor()));
+					add(new PreviousValueAsyncPanel(getJobScheduler()));
 					add(GUIUtils.createLabel("/"));
-					add(new NextValueAsyncPanel(getJobProcessor()));
+					add(new NextValueAsyncPanel(getJobScheduler()));
 					
 					add(GUIUtils.createLabel(")"));
 				}
@@ -153,9 +154,9 @@ public class WatchEntryNode extends JPanel
 	{
 		private EntryValue[] itsValue;
 		
-		public NeighbourValueAsyncPanel(JobProcessor aJobProcessor)
+		public NeighbourValueAsyncPanel(IJobScheduler aJobScheduler)
 		{
-			super(aJobProcessor);
+			super(aJobScheduler, JobPriority.AUTO);
 		}
 		
 		protected abstract String getLabel();
@@ -179,9 +180,8 @@ public class WatchEntryNode extends JPanel
 		}
 
 		@Override
-		protected void update()
+		protected void updateSuccess()
 		{
-			removeAll();
 			if (itsValue != null)
 			{
 				boolean theFirst = true;
@@ -215,9 +215,9 @@ public class WatchEntryNode extends JPanel
 	 */
 	private class NextValueAsyncPanel extends NeighbourValueAsyncPanel
 	{
-		public NextValueAsyncPanel(JobProcessor aJobProcessor)
+		public NextValueAsyncPanel(IJobScheduler aJobScheduler)
 		{
-			super(aJobProcessor);
+			super(aJobScheduler);
 		}
 		
 		@Override
@@ -239,9 +239,9 @@ public class WatchEntryNode extends JPanel
 	 */
 	private class PreviousValueAsyncPanel extends NeighbourValueAsyncPanel
 	{
-		public PreviousValueAsyncPanel(JobProcessor aJobProcessor)
+		public PreviousValueAsyncPanel(IJobScheduler aJobScheduler)
 		{
-			super(aJobProcessor);
+			super(aJobScheduler);
 		}
 		
 		@Override

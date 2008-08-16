@@ -65,7 +65,7 @@ public class FieldWriteNode extends AbstractSimpleEventNode
 		aBody.add(Hyperlinks.object(
 				getGUIManager(),
 				Hyperlinks.HTML,
-				getJobProcessor(),
+				getJobScheduler(),
 				theCurrentObject, 
 				itsEvent.getTarget(),
 				itsEvent,
@@ -78,7 +78,7 @@ public class FieldWriteNode extends AbstractSimpleEventNode
 		aBody.add(Hyperlinks.object(
 				getGUIManager(),
 				Hyperlinks.HTML,
-				getJobProcessor(),
+				getJobScheduler(),
 				theCurrentObject,
 				itsEvent.getValue(),
 				itsEvent,

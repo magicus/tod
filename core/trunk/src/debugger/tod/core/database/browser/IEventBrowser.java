@@ -61,7 +61,7 @@ public interface IEventBrowser extends IPublicCloneable
 	 * Returns the number of events that can be returned by this
 	 * browser.
 	 */
-	public long getEventCount ();
+	public long getEventCount();
 	
 	/**
 	 * Returns the number of events that occured between the specified timestamps
@@ -88,7 +88,7 @@ public interface IEventBrowser extends IPublicCloneable
 	 * @return Returns true if the specified event if available to 
 	 * this browser.
 	 */
-	public boolean setNextEvent (ILogEvent aEvent);
+	public boolean setNextEvent(ILogEvent aEvent);
 	
 	/**
 	 * Sets the cursor so that a call to {@link #previous()}
@@ -99,7 +99,7 @@ public interface IEventBrowser extends IPublicCloneable
 	 * @return Returns true if the specified event if available to
 	 * this browser.
 	 */
-	public boolean setPreviousEvent (ILogEvent aEvent);
+	public boolean setPreviousEvent(ILogEvent aEvent);
 	
 	/**
 	 * Sets the internal cursor of this browser so that the next
@@ -107,7 +107,7 @@ public interface IEventBrowser extends IPublicCloneable
 	 * whose timestamp is superior or equal to the specified 
 	 * timestamp.
 	 */
-	public void setNextTimestamp (long aTimestamp);
+	public void setNextTimestamp(long aTimestamp);
 	
 	/**
 	 * Sets the internal cursor of this browser so that the next
@@ -115,17 +115,17 @@ public interface IEventBrowser extends IPublicCloneable
 	 * whose timestamp is inferior or equal to the specified 
 	 * timestamp.
 	 */
-	public void setPreviousTimestamp (long aTimestamp);
+	public void setPreviousTimestamp(long aTimestamp);
 	
 	/**
 	 * Indicates if there is a next event.
 	 */
-	public boolean hasNext ();
+	public boolean hasNext();
 	
 	/**
 	 * Indicates if there is a previous event.
 	 */
-	public boolean hasPrevious ();
+	public boolean hasPrevious();
 	
 	/**
 	 * Returns the next event and updates the cursor.

@@ -22,9 +22,6 @@ package tod.impl.dbgrid.aggregator;
 
 import java.rmi.RemoteException;
 
-import reflex.lib.pom.POMSync;
-import reflex.lib.pom.POMSyncClass;
-import reflex.lib.pom.impl.POMMetaobject;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
@@ -36,18 +33,14 @@ import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.IGridEventFilter;
 import tod.impl.dbgrid.IScheduled;
-import tod.impl.dbgrid.Scheduler;
 import tod.impl.dbgrid.messages.GridEvent;
+import tod.tools.monitoring.MonitoringClient.MonitorId;
 
 /**
  * Implementation of {@link IEventBrowser} that serves as the client-side
  * of a {@link QueryAggregator}.
  * @author gpothier
  */
-@POMSyncClass(
-		scheduler = Scheduler.class, 
-		group = Scheduler.class,
-		syncAll = false)
 public class GridEventBrowser extends BufferedBidiIterator<ILogEvent[], ILogEvent>
 implements IEventBrowser, IScheduled
 {
@@ -83,11 +76,6 @@ implements IEventBrowser, IScheduled
 		return itsBrowser;
 	}
 	
-	POMMetaobject getMetaobject()
-	{
-		return itsBrowser.getMetaobject();
-	}
-	
 	public void setBounds(ILogEvent aFirstEvent, ILogEvent aLastEvent)
 	{
 		itsFirstEvent = aFirstEvent;
@@ -95,25 +83,11 @@ implements IEventBrowser, IScheduled
 	}
 	
 	@Override
-	@POMSync
 	protected ILogEvent[] fetchNextBuffer()
 	{
 		try
 		{
-			getMetaobject().callTrap(null, "fetchNextBuffer");
-			return fetchNextBuffer0();
-		}
-		finally
-		{
-			getMetaobject().returnTrap();
-		}
-	}
-	
-	protected ILogEvent[] fetchNextBuffer0()
-	{
-		try
-		{
-			GridEvent[] theGridEvents = itsAggregator.next(DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
+			GridEvent[] theGridEvents = itsAggregator.next(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
 			if (theGridEvents == null) return null;
 			else return convert(theGridEvents);
 		}
@@ -124,25 +98,11 @@ implements IEventBrowser, IScheduled
 	}
 	
 	@Override
-	@POMSync
 	protected ILogEvent[] fetchPreviousBuffer()
 	{
 		try
 		{
-			getMetaobject().callTrap(null, "fetchPreviousBuffer");
-			return fetchPreviousBuffer0();
-		}
-		finally
-		{
-			getMetaobject().returnTrap();
-		}
-	}
-	
-	protected ILogEvent[] fetchPreviousBuffer0()
-	{
-		try
-		{
-			GridEvent[] theGridEvents = itsAggregator.previous(DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
+			GridEvent[] theGridEvents = itsAggregator.previous(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
 			if (theGridEvents == null) return null;
 			else return convert(theGridEvents);
 		}
@@ -251,21 +211,7 @@ implements IEventBrowser, IScheduled
 		return getEventCounts(aT1, aT2, 1, aForceMergeCounts)[0];
 	}
 
-	@POMSync
 	public long[] getEventCounts(long aT1, long aT2, int aSlotsCount, boolean aForceMergeCounts)
-	{
-		try
-		{
-			getMetaobject().callTrap(null, "getEventCounts");
-			return getEventCounts0(aT1, aT2, aSlotsCount, aForceMergeCounts);
-		}
-		finally
-		{
-			getMetaobject().returnTrap();
-		}
-	}
-	
-	public long[] getEventCounts0(long aT1, long aT2, int aSlotsCount, boolean aForceMergeCounts)
 	{
 		try
 		{
@@ -284,21 +230,7 @@ implements IEventBrowser, IScheduled
 		}
 	}
 
-	@POMSync
 	public boolean setNextEvent(ILogEvent aEvent)
-	{
-		try
-		{
-			getMetaobject().callTrap(null, "setNextEvent");
-			return setNextEvent0(aEvent);
-		}
-		finally
-		{
-			getMetaobject().returnTrap();
-		}
-	}
-	
-	public boolean setNextEvent0(ILogEvent aEvent)
 	{
 		try
 		{
@@ -315,21 +247,7 @@ implements IEventBrowser, IScheduled
 		}
 	}
 
-	@POMSync
 	public boolean setPreviousEvent(ILogEvent aEvent)
-	{
-		try
-		{
-			getMetaobject().callTrap(null, "setPreviousEvent");
-			return setPreviousEvent0(aEvent);
-		}
-		finally
-		{
-			getMetaobject().returnTrap();
-		}
-	}
-	
-	public boolean setPreviousEvent0(ILogEvent aEvent)
 	{
 		try
 		{
@@ -366,21 +284,7 @@ implements IEventBrowser, IScheduled
 		return aTimestamp;
 	}
 	
-	@POMSync
 	public void setNextTimestamp(long aTimestamp)
-	{
-		try
-		{
-			getMetaobject().callTrap(null, "setNextTimestamp");
-			setNextTimestamp0(aTimestamp);
-		}
-		finally
-		{
-			getMetaobject().returnTrap();
-		}
-	}
-	
-	public void setNextTimestamp0(long aTimestamp)
 	{
 		try
 		{
@@ -393,21 +297,7 @@ implements IEventBrowser, IScheduled
 		}
 	}
 
-	@POMSync
 	public void setPreviousTimestamp(long aTimestamp)
-	{
-		try
-		{
-			getMetaobject().callTrap(null, "setPreviousTimestamp");
-			setPreviousTimestamp0(aTimestamp);
-		}
-		finally
-		{
-			getMetaobject().returnTrap();
-		}
-	}
-	
-	public void setPreviousTimestamp0(long aTimestamp)
 	{
 		try
 		{

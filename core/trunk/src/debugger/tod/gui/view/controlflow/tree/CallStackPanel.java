@@ -43,9 +43,9 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
-import tod.gui.JobProcessor;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.view.LogView;
+import tod.tools.scheduling.IJobScheduler;
 import zz.utils.Utils;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
@@ -63,7 +63,7 @@ import zz.utils.ui.StackLayout;
 public class CallStackPanel extends JPanel
 {
 	private CFlowSeed itsSeed;
-	private final JobProcessor itsJobProcessor;
+	private final IJobScheduler itsJobScheduler;
 
 	/**
 	 * Root of the control flow tree for the current leaf event
@@ -100,9 +100,9 @@ public class CallStackPanel extends JPanel
 		}
 	};
 	
-	public CallStackPanel(JobProcessor aJobProcessor)
+	public CallStackPanel(IJobScheduler aJobScheduler)
 	{
-		itsJobProcessor = aJobProcessor;
+		itsJobScheduler = aJobScheduler;
 		createUI();
 	}
 	
@@ -131,9 +131,9 @@ public class CallStackPanel extends JPanel
 
 
 
-	public JobProcessor getJobProcessor()
+	public IJobScheduler getJobProcessor()
 	{
-		return itsJobProcessor;
+		return itsJobScheduler;
 	}
 
 	public ILogBrowser getLogBrowser()
@@ -235,16 +235,16 @@ public class CallStackPanel extends JPanel
 
 	private AbstractStackNode buildStackNode(ILogEvent aEvent)
 	{
-		// JobProcessor theJobProcessor = getJobProcessor();
-		JobProcessor theJobProcessor = null;
+		IJobScheduler theJobScheduler = getJobProcessor();
+//		IJobScheduler theJobScheduler = null;
 
 		if (aEvent.getParent() == null || Utils.equalOrBothNull(aEvent.getParent(), getRootEvent()))
 		{
-			return new RootStackNode(theJobProcessor, getRootEvent(), this);
+			return new RootStackNode(theJobScheduler, getRootEvent(), this);
 		}
 		else 
 		{
-			return new NormalStackNode(theJobProcessor, aEvent, this);
+			return new NormalStackNode(theJobScheduler, aEvent, this);
 		}
 	}
 

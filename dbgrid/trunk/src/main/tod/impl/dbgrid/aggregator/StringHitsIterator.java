@@ -26,6 +26,7 @@ import tod.impl.database.BufferedBidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
+import tod.tools.monitoring.MonitoringClient.MonitorId;
 
 /**
  * An iterator that returns string search results provided by a 
@@ -46,7 +47,7 @@ public class StringHitsIterator extends BufferedBidiIterator<StringSearchHit[], 
 	{
 		try
 		{
-			return itsSourceIterator.next(DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
+			return itsSourceIterator.next(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
 		}
 		catch (RemoteException e)
 		{
@@ -59,7 +60,7 @@ public class StringHitsIterator extends BufferedBidiIterator<StringSearchHit[], 
 	{
 		try
 		{
-			return itsSourceIterator.previous(DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
+			return itsSourceIterator.previous(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
 		}
 		catch (RemoteException e)
 		{

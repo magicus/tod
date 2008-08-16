@@ -40,24 +40,26 @@ import javax.swing.JComponent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
 import tod.gui.GUIUtils;
-import tod.gui.JobProcessor;
-import zz.utils.ui.MousePanel;
+import tod.gui.kit.AsyncPanel;
+import tod.tools.scheduling.IJobScheduler;
+import tod.tools.scheduling.IJobScheduler.JobPriority;
 import zz.utils.ui.UIUtils;
 
 /**
  * Represents a stack item in the control flow.
  * @author gpothier
  */
-public abstract class AbstractStackNode extends MousePanel
+public abstract class AbstractStackNode extends AsyncPanel
 {
 	private final CallStackPanel itsCallStackPanel;
-	private final JobProcessor itsJobProcessor;
 	
 	/**
 	 * The event currently selected in this frame.
 	 * Note that the frame itself displays the parent of this event.
 	 */
 	private final ILogEvent itsEvent;
+	
+	private IParentEvent itsFrameEvent;
 	
 	/**
 	 * Indicates if this stack node corresponds to the currently
@@ -67,16 +69,14 @@ public abstract class AbstractStackNode extends MousePanel
 
 	private boolean itsMouseOver = false;
 	
-	
 	public AbstractStackNode(
-			JobProcessor aJobProcessor,
+			IJobScheduler aJobScheduler,
 			ILogEvent aEvent,
 			CallStackPanel aCallStackPanel)
 	{
-		itsJobProcessor = aJobProcessor;
+		super(aJobScheduler, JobPriority.AUTO);
 		itsEvent = aEvent;
 		itsCallStackPanel = aCallStackPanel;
-		createUI();
 	}
 	
 	public ILogEvent getEvent()
@@ -84,9 +84,15 @@ public abstract class AbstractStackNode extends MousePanel
 		return itsEvent;
 	}
 
+	@Override
+	protected void runJob()
+	{
+		itsFrameEvent = itsEvent.getParent();
+	}
+
 	public IParentEvent getFrameEvent()
 	{
-		return itsEvent.getParent();
+		return itsFrameEvent;
 	}
 	
 	public void setCurrentStackFrame(boolean aCurrentStackFrame)
@@ -96,8 +102,9 @@ public abstract class AbstractStackNode extends MousePanel
 	}
 
 	protected abstract JComponent createHeader();
-	
-	protected void createUI()
+
+	@Override
+	protected void updateSuccess()
 	{
 		setLayout(GUIUtils.createStackLayout());
 

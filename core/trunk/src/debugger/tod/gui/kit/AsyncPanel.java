@@ -31,51 +31,89 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.kit;
 
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import tod.gui.GUIUtils;
-import tod.gui.JobProcessor;
+import tod.tools.monitoring.ITaskMonitor;
+import tod.tools.monitoring.TaskMonitor.TaskCancelledException;
+import tod.tools.scheduling.IJobScheduler;
+import tod.tools.scheduling.IJobScheduler.JobPriority;
+import zz.utils.notification.IEvent;
+import zz.utils.notification.IEventListener;
+import zz.utils.ui.MousePanel;
 
 /**
  * A component whose content is retrieved asynchronously
  * @author gpothier
  */
-public abstract class AsyncPanel extends JPanel
+public abstract class AsyncPanel extends MousePanel
+implements IEventListener<Void>
 {
-	private final JobProcessor itsJobProcessor;
-	private boolean itsSubmitted = false;
+	private final IJobScheduler itsJobScheduler;
+	private final JobPriority itsJobPriority;
+	private ITaskMonitor itsMonitor;
+	private boolean itsCancelled;
 
-	public AsyncPanel(JobProcessor aJobProcessor)
+	public AsyncPanel(IJobScheduler aJobScheduler, JobPriority aJobPriority)
 	{
-		itsJobProcessor = aJobProcessor;
+		itsJobScheduler = aJobScheduler;
+		itsJobPriority = aJobPriority;
 		setOpaque(false);
 		createUI();
 	}
 	
-	protected JobProcessor getJobProcessor()
+	protected IJobScheduler getJobScheduler()
 	{
-		return itsJobProcessor;
+		return itsJobScheduler;
 	}
 	
 	@Override
 	public void addNotify()
 	{
 		super.addNotify();
-		if (! itsSubmitted)
+		if (itsMonitor == null)
 		{
-			itsJobProcessor.submit(new JobProcessor.Job<Void>()
+			itsMonitor = itsJobScheduler.submit(itsJobPriority, new Runnable()
 				{
-					@Override
-					public Void run()
+					public void run()
 					{
-						runJob();
-						postUpdate();
-						return null;
+						try
+						{
+							runJob();
+							if (! itsCancelled) postUpdate(Outcome.SUCCESS);
+						}
+						catch (TaskCancelledException e)
+						{
+							postUpdate(Outcome.CANCELLED);
+						}
+						catch (Throwable e)
+						{
+							System.err.println("Error executing job:");
+							e.printStackTrace();
+							postUpdate(Outcome.FAILURE);
+						}
 					}
 				});
-			itsSubmitted = true;
+			itsMonitor.eCancelled().addListener(this);
 		}
+	}
+	
+	public void fired(IEvent< ? extends Void> aEvent, Void aData)
+	{
+		itsCancelled = true;
+		postUpdate(Outcome.CANCELLED);
+	}
+
+	public void cancelJob()
+	{
+		if (itsMonitor != null) itsMonitor.cancel();
+	}
+	
+	@Override
+	public void removeNotify()
+	{
+		cancelJob();
+		super.removeNotify();
 	}
 	
 	/**
@@ -87,21 +125,65 @@ public abstract class AsyncPanel extends JPanel
 		setLayout(GUIUtils.createSequenceLayout());
 		add(GUIUtils.createLabel("..."));
 	}
+
+	/**
+	 * Updates the UI once the long-running job of {@link #runJob()} is
+	 * finished.
+	 * This method is executed in the Swing thread. 
+	 * It is not necessary to call {@link #revalidate()} nor {@link #repaint()}.
+	 * @param aOutcome Indicates if the job run successfully or not.
+	 */
+	protected void update(Outcome aOutcome)
+	{
+		switch(aOutcome)
+		{
+		case SUCCESS:
+			updateSuccess();
+			break;
+			
+		case CANCELLED:
+			updateCancelled();
+			break;
+			
+		case FAILURE:
+			updateFailure();
+			break;
+			
+		default:
+			throw new RuntimeException("Not handled: "+aOutcome);
+		}
+	}
 	
-	private void postUpdate()
+	/**
+	 * Called by default by {@link #update(Outcome)} if the job finished successfully.
+	 * This method is executed in the Swing thread. 
+	 * It is not necessary to call {@link #revalidate()} nor {@link #repaint()}.
+	 */
+	protected abstract void updateSuccess();
+	
+	protected void updateCancelled()
+	{
+	}
+	
+	protected void updateFailure()
+	{
+	}
+	
+	
+
+	private void postUpdate(final Outcome aOutcome)
 	{
 		SwingUtilities.invokeLater(new Runnable()
 		{
 			public void run()
 			{
 				removeAll();
-				update();
+				update(aOutcome);
 				revalidate();
 				repaint();
 			}
 		});
 	}
-	
 	
 	/**
 	 * This method should perform a long-running task. It will be 
@@ -110,12 +192,10 @@ public abstract class AsyncPanel extends JPanel
 	 * be scheduled for execution in the Swing thread.
 	 */
 	protected abstract void runJob();
+
+	public enum Outcome
+	{
+		SUCCESS, CANCELLED, FAILURE;
+	}
 	
-	/**
-	 * Updates the UI once the long-running job of {@link #runJob()} is
-	 * executed.
-	 * This method is executed in the Swing thread. 
-	 * It is not necessary to call {@link #revalidate()} nor {@link #repaint()}.
-	 */
-	protected abstract void update();
 }

@@ -177,6 +177,8 @@ public class DebugFlags
 	 */
 	public static final boolean SHOW_DEBUG_GUI = ConfigUtils.readBoolean("show-debug-gui", false);
 	
+	public static final boolean TRACE_MONITORING = ConfigUtils.readBoolean("trace-monitoring", false);
+	
 	private static PrintStream createStream(String aName)
 	{
 		try

@@ -50,7 +50,7 @@ import tod.core.database.structure.ObjectId;
 import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
-import tod.gui.JobProcessor;
+import tod.tools.scheduling.IJobScheduler;
 import zz.utils.ui.ZLabel;
 
 public class ObjectWatchProvider extends AbstractWatchProvider
@@ -107,7 +107,7 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 	}
 	
 	@Override
-	public JComponent buildTitleComponent(JobProcessor aJobProcessor)
+	public JComponent buildTitleComponent(IJobScheduler aJobScheduler)
 	{
 		JPanel theContainer = new JPanel(GUIUtils.createStackLayout());
 		theContainer.setOpaque(false);
@@ -125,7 +125,7 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 			theObjectContainer.add(Hyperlinks.object(
 					getGUIManager(),
 					Hyperlinks.SWING, 
-					aJobProcessor,
+					aJobScheduler,
 					itsObject,
 					itsRefEvent,
 					showPackageNames()));

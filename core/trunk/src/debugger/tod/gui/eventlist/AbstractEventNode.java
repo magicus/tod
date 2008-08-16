@@ -42,9 +42,8 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
-import tod.gui.JobProcessor;
-import tod.gui.formatter.CustomFormatterRegistry;
 import tod.gui.kit.BusPanel;
+import tod.tools.scheduling.IJobScheduler;
 import zz.utils.Utils;
 
 /**
@@ -92,11 +91,11 @@ public abstract class AbstractEventNode extends BusPanel
 		return getLogBrowser().getSession().getConfig();
 	}
 
-	public JobProcessor getJobProcessor()
+	public IJobScheduler getJobScheduler()
 	{
 		return getListPanel() != null ? 
-				getListPanel().getJobProcessor()
-				: getGUIManager().getJobProcessor();
+				getListPanel().getJobScheduler()
+				: getGUIManager().getJobScheduler();
 	}
 
 	/**

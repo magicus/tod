@@ -36,16 +36,16 @@ import javax.swing.JComponent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
 import tod.gui.GUIUtils;
-import tod.gui.JobProcessor;
+import tod.tools.scheduling.IJobScheduler;
 
 public class RootStackNode extends AbstractStackNode
 {
 	public RootStackNode(
-			JobProcessor aJobProcessor, 
+			IJobScheduler aJobScheduler, 
 			ILogEvent aEvent, 
 			CallStackPanel aCallStackPanel)
 	{
-		super(aJobProcessor, aEvent, aCallStackPanel);
+		super(aJobScheduler, aEvent, aCallStackPanel);
 	}
 
 	@Override

@@ -45,6 +45,7 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IThreadInfo;
 import tod.impl.common.event.Event;
 import tod.impl.local.event.RootEvent;
+import tod.tools.monitoring.Monitored;
 
 /**
  * Utility methods for implementing log browsers.
@@ -55,11 +56,12 @@ public class LogBrowserUtils
 	/**
 	 * Retrieves the event corresponding to the given pointer from a log browser.
 	 */
+	@Monitored
 	public static ILogEvent getEvent(ILogBrowser aLogBrowser, ExternalPointer aPointer)
 	{
 		IEventFilter theFilter = aLogBrowser.createThreadFilter(aPointer.thread);
-		
 		IEventBrowser theBrowser = aLogBrowser.createBrowser(theFilter);
+		
 		theBrowser.setNextTimestamp(aPointer.timestamp);
 		if (theBrowser.hasNext())
 		{
@@ -77,6 +79,7 @@ public class LogBrowserUtils
 	 * result set.
 	 * This method might move the browser's event pointer.
 	 */
+	@Monitored
 	public static boolean hasEvent(IEventBrowser aBrowser, ILogEvent aEvent)
 	{
 		aBrowser.setNextEvent(aEvent);
@@ -91,6 +94,7 @@ public class LogBrowserUtils
 	/**
 	 * Implementation of {@link ILogBrowser#getCFlowRoot(IThreadInfo)} 
 	 */
+	@Monitored
 	public static IParentEvent createCFlowRoot(ILogBrowser aBrowser, IThreadInfo aThread)
 	{
 		RootEvent theRoot = new RootEvent(aBrowser);

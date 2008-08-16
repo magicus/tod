@@ -40,6 +40,7 @@ import tod.core.database.structure.ObjectId;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
 import tod.gui.formatter.CustomFormatterRegistry;
+import tod.tools.monitoring.Monitored;
 import zz.utils.Utils;
 
 /**
@@ -50,22 +51,36 @@ public class ReconstitutedObject
 {
 	private final IGUIManager itsGUIManager;
 	private final IObjectInspector itsInspector;
-	private final IClassInfo itsClass;
+	private boolean itsClassValid = false;
+	private IClassInfo itsClass;
 	
 	public ReconstitutedObject(IGUIManager aGUIManager, IObjectInspector aInspector)
 	{
 		itsGUIManager = aGUIManager;
 		itsInspector = aInspector;
-		itsClass = itsInspector != null ? (IClassInfo) itsInspector.getType() : null;
+	}
+	
+	protected IClassInfo getType()
+	{
+		if (! itsClassValid)
+		{
+			itsClass = itsInspector != null ? (IClassInfo) itsInspector.getType() : null;
+			itsClassValid = true;
+		}
+		
+		return itsClass;
 	}
 
+	@Monitored
 	public Object get(String aFieldName)
 	{
-		IFieldInfo theField = itsClass.getField(aFieldName);
+		IClassInfo theClass = getType();
+		
+		IFieldInfo theField = theClass.getField(aFieldName);
 		if (theField == null) 
 		{
-			if (itsClass.isInScope()) Utils.rtex("Field %s not found in class %s.", aFieldName, itsClass.getName());
-			else Utils.rtex("Class %s is not in scope, cannot access field %s.", itsClass.getName(), aFieldName);
+			if (theClass.isInScope()) Utils.rtex("Field %s not found in class %s.", aFieldName, theClass.getName());
+			else Utils.rtex("Class %s is not in scope, cannot access field %s.", theClass.getName(), aFieldName);
 		}
 		
 		EntryValue[] theEntryValues = itsInspector.getEntryValue(theField);
@@ -95,7 +110,7 @@ public class ReconstitutedObject
 			return Hyperlinks.object(
 					itsGUIManager, 
 					Hyperlinks.TEXT, 
-					itsGUIManager != null ? itsGUIManager.getJobProcessor() : null,
+					itsGUIManager != null ? itsGUIManager.getJobScheduler() : null,
 					null,
 					theValue,
 					itsInspector.getReferenceEvent(), 

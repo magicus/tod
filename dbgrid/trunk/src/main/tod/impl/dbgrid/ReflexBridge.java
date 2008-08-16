@@ -20,18 +20,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
-import java.io.File;
-import java.lang.reflect.Constructor;
-
-import javax.swing.SwingUtilities;
-
-import reflex.Run;
-import reflex.core.LogLevel;
-import reflex.lib.pom.POMConfig;
-import reflex.lib.pom.POMScheduler;
-import reflex.run.common.RLoader;
-import reflex.run.common.RunningEnvironment;
-import tod.impl.dbgrid.messages.GridEvent;
 
 /**
  * Infrastructure class that permits to have the UI classes loaded

@@ -34,6 +34,8 @@ import tod.impl.dbgrid.db.NodeRejectedException;
 import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.dispatch.RINodeConnector;
 import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
+import tod.tools.monitoring.RIMonitoringServerProvider;
+import tod.tools.monitoring.RemoteLinker;
 import tod.utils.remote.RIStructureDatabase;
 import zz.utils.ITask;
 import zz.utils.monitoring.Monitor.MonitorData;
@@ -46,7 +48,7 @@ import zz.utils.monitoring.Monitor.MonitorData;
  * and {@link QueryAggregator}.
  * @author gpothier
  */
-public interface RIGridMaster extends Remote
+public interface RIGridMaster extends Remote, RIMonitoringServerProvider
 {
 	/**
 	 * Returns the configuration of this master.
@@ -104,6 +106,7 @@ public interface RIGridMaster extends Remote
 	 * Returns a new query aggregator for the specified query
 	 * Client: frontend 
 	 */
+	@RemoteLinker
 	public RIQueryAggregator createAggregator(IGridEventFilter aFilter) throws RemoteException;
 		
 	/**
@@ -142,6 +145,7 @@ public interface RIGridMaster extends Remote
 	 * Returns a remote locations repository.
 	 * Client: frontend 
 	 */
+	@RemoteLinker
 	public RIStructureDatabase getRemoteStructureDatabase() throws RemoteException;
 
 	/**
@@ -159,6 +163,7 @@ public interface RIGridMaster extends Remote
 	 * Searches a text in the registered strings.
 	 * @return An iterator that returns matching strings in order of relevance.
 	 */
+	@RemoteLinker
 	public RIBufferIterator<StringSearchHit[]> searchStrings(String aSearchText) throws RemoteException;
 
 	/**
@@ -174,5 +179,4 @@ public interface RIGridMaster extends Remote
 	 * @see NodeExceptionResolver 
 	 */
 	public int getBehaviorId(String aClassName, String aMethodName, String aMethodSignature) throws RemoteException;
-
 }

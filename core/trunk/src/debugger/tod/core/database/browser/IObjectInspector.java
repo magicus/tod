@@ -69,7 +69,7 @@ public interface IObjectInspector extends ICompoundInspector<IFieldInfo>
 	/**
 	 * Returns the type descriptor of the object.
 	 */
-	public ITypeInfo getType ();
+	public ITypeInfo getType();
 	
 	/**
 	 * Retrieves all the field descriptors of the inspected object.

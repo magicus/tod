@@ -44,7 +44,6 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import tod.core.DebugFlags;
@@ -59,7 +58,6 @@ import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.SourceRange;
 import tod.core.session.ISession;
-import tod.core.session.ISessionMonitor;
 import tod.gui.kit.Bus;
 import tod.gui.kit.BusOwnerPanel;
 import tod.gui.kit.IBusListener;
@@ -84,6 +82,8 @@ import tod.gui.view.IEventListView;
 import tod.gui.view.LogView;
 import tod.gui.view.controlflow.CFlowView;
 import tod.impl.common.Bookmarks;
+import tod.tools.scheduling.JobScheduler;
+import tod.tools.scheduling.JobSchedulerMonitor;
 import tod.utils.TODUtils;
 import zz.utils.SimpleAction;
 import zz.utils.ui.StackLayout;
@@ -141,7 +141,7 @@ implements ILocationSelectionListener, IGUIManager
 		}
 	};
 
-	private JobProcessor itsJobProcessor = new JobProcessor();
+	private JobScheduler itsJobScheduler = new JobScheduler();
 //	private BookmarkPanel itsBookmarkPanel = new BookmarkPanel();
 	
 	private GUISettings itsGUISettings = new GUISettings(this);
@@ -160,8 +160,6 @@ implements ILocationSelectionListener, IGUIManager
 	 */
 	private List<Action> itsActions = new ArrayList<Action>();
 
-	private SessionMonitorUpdater itsSchedulerMonitor;
-
 	private ActionToolbar itsToolbar;
 
 	private ActionCombo itsActionCombo;
@@ -178,11 +176,10 @@ implements ILocationSelectionListener, IGUIManager
 		return getSession().getLogBrowser();
 	}
 
-	public JobProcessor getJobProcessor()
+	public JobScheduler getJobScheduler()
 	{
-		return itsJobProcessor;
+		return itsJobScheduler;
 	}
-	
 
 	private void createUI()
 	{
@@ -192,12 +189,6 @@ implements ILocationSelectionListener, IGUIManager
 		
 		JPanel theNavButtonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
 		
-		itsSchedulerMonitor = new SessionMonitorUpdater();
-		if (DebugFlags.SHOW_DEBUG_GUI)
-		{
-			theNavButtonsPanel.add(itsSchedulerMonitor);
-		}
-		
 		theNavButtonsPanel.add (new NavBackButton(itsNavigator));
 		theNavButtonsPanel.add (new NavForwardButton(itsNavigator));
 		
@@ -206,6 +197,7 @@ implements ILocationSelectionListener, IGUIManager
 		
 		add (theCenterPanel, BorderLayout.CENTER);
 		theNavButtonsPanel.add (createToolbar());
+		theNavButtonsPanel.add(new JobSchedulerMonitor(itsJobScheduler));
 	}
 	
 	@Override
@@ -439,16 +431,12 @@ implements ILocationSelectionListener, IGUIManager
 			itsStringSearchAction.setEnabled(false);
 			itsActionCombo.setEnabled(false);
 			for (Action theAction : itsActions) theAction.setEnabled(false);
-			
-			itsSchedulerMonitor.setScheduler(null);
 		}
 		else
 		{
 			itsStringSearchAction.setEnabled(itsSession.getConfig().get(TODConfig.INDEX_STRINGS));
 			itsActionCombo.setEnabled(true);
 			for (Action theAction : itsActions) theAction.setEnabled(true);
-			
-			itsSchedulerMonitor.setScheduler(itsSession.getMonitor());
 		}
 	}
 	
@@ -478,7 +466,7 @@ implements ILocationSelectionListener, IGUIManager
 	
 	public void openSeed(LogViewSeed aSeed, boolean aNewTab)
 	{
-		getJobProcessor().cancelAll();
+		getJobScheduler().cancelAll();
 		itsNavigator.open(aSeed);
 	}
 
@@ -594,76 +582,6 @@ implements ILocationSelectionListener, IGUIManager
 		return getEventListView() != null;
 	}
 	
-	/**
-	 * A monitor component for a scheduler, that gives the user an indication
-	 * about the load of the underlying log browser.
-	 * @author gpothier
-	 */
-	private static class SessionMonitorUpdater extends JPanel
-	implements Runnable
-	{
-		private ISessionMonitor itsMonitor;
-		private Thread itsThread;
-		private JLabel itsLabel;
-
-		public SessionMonitorUpdater()
-		{
-			itsThread = new Thread(this);
-			createUI();
-		}
-		
-		private void createUI()
-		{
-			itsLabel = new JLabel("mon.");
-			setLayout(new StackLayout());
-			add(itsLabel);
-		}
-		
-		public void setScheduler(ISessionMonitor aScheduler)
-		{
-			itsMonitor = aScheduler;
-		}
-		
-		@Override
-		public void addNotify()
-		{
-			super.addNotify();
-			itsThread.start();
-		}
-		
-		@Override
-		public void removeNotify()
-		{
-			super.removeNotify();
-			itsThread.interrupt();
-		}
-		
-		public void run()
-		{
-			while(true)
-			{
-				if (itsMonitor == null)
-				{
-					itsLabel.setText("mon.");
-				}
-				else
-				{
-					int theQueueSize = itsMonitor.getQueueSize();
-					itsLabel.setText(""+theQueueSize);
-				}
-				
-				try
-				{
-					Thread.sleep(500);
-				}
-				catch (InterruptedException e)
-				{
-					break;
-				}
-			}
-		}	
-	}
-
 	/**
 	 * A kind of combo box that permits to access additional actions.
 	 * @author gpothier

@@ -32,7 +32,6 @@ import tod.Util;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.session.AbstractSession;
-import tod.core.session.ISessionMonitor;
 import tod.impl.dbgrid.gui.GridConsole;
 
 public class RemoteGridSession extends AbstractSession
@@ -40,7 +39,6 @@ public class RemoteGridSession extends AbstractSession
 	public static final String TOD_GRID_SCHEME = "tod-grid";
 	private RIGridMaster itsMaster;
 	private ILogBrowser itsBrowser;
-	private ISessionMonitor itsMonitor;
 	
 	/**
 	 * If false the remote master is cleared before use.
@@ -85,7 +83,6 @@ public class RemoteGridSession extends AbstractSession
 //					itsMaster);
 		
 			itsBrowser = DebuggerGridConfig.createRemoteLogBrowser(this, itsMaster);
-			itsMonitor = Scheduler.get(itsBrowser);
 		}
 		catch (UnknownHostException e)
 		{
@@ -135,11 +132,6 @@ public class RemoteGridSession extends AbstractSession
 		return itsBrowser;
 	}
 	
-	public ISessionMonitor getMonitor()
-	{
-		return itsMonitor;
-	}
-
 	public JComponent createConsole()
 	{
 		return new GridConsole(itsMaster);

@@ -63,7 +63,6 @@ import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.session.AbstractSession;
 import tod.core.session.ISession;
-import tod.core.session.ISessionMonitor;
 import tod.gui.MinerUI;
 import tod.gui.seed.StructureSeed;
 import tod.impl.bci.asm.ASMDebuggerConfig;
@@ -147,11 +146,6 @@ public class ABCTags
 		public ILogBrowser getLogBrowser()
 		{
 			return itsLogBrowser;
-		}
-
-		public ISessionMonitor getMonitor()
-		{
-			return null;
 		}
 
 		public boolean isAlive()

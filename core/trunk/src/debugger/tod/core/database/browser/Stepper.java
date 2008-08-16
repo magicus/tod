@@ -34,6 +34,7 @@ package tod.core.database.browser;
 import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IThreadInfo;
+import tod.tools.monitoring.Monitored;
 
 /**
  * Provides forward and backward stepping operations.
@@ -64,21 +65,29 @@ public class Stepper
 		itsCurrentEvent = aCurrentEvent;
 	}
 	
+	@Monitored
 	private void forward(IEventBrowser aBrowser)
 	{
 		aBrowser.setPreviousEvent(itsCurrentEvent);
 		do
 		{
-			itsCurrentEvent = aBrowser.hasNext() ? aBrowser.next() : null;		
+			itsCurrentEvent = aBrowser.hasNext() ?
+					aBrowser.next() 
+					: null;
+					
 		} while (itsCurrentEvent instanceof IBehaviorExitEvent);
 	}
 	
+	@Monitored
 	private void backward(IEventBrowser aBrowser)
 	{
 		aBrowser.setNextEvent(itsCurrentEvent);
 		do
 		{
-			itsCurrentEvent = aBrowser.hasPrevious() ? aBrowser.previous() : null;
+			itsCurrentEvent = aBrowser.hasPrevious() ? 
+					aBrowser.previous() 
+					: null;
+					
 		} while (itsCurrentEvent instanceof IBehaviorExitEvent);
 	}
 

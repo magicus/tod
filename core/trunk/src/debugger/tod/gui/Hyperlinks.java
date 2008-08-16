@@ -38,12 +38,10 @@ import javax.swing.JComponent;
 import tod.Util;
 import tod.agent.transport.ObjectValue;
 import tod.core.database.browser.ILogBrowser;
-import tod.core.database.browser.IObjectInspector;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
-import tod.gui.formatter.CustomFormatterRegistry;
 import tod.gui.kit.Bus;
 import tod.gui.kit.html.HtmlElement;
 import tod.gui.kit.html.HtmlLink;
@@ -54,6 +52,7 @@ import tod.gui.seed.CFlowSeed;
 import tod.gui.seed.LogViewSeed;
 import tod.gui.seed.ObjectHistorySeed;
 import tod.gui.seed.StructureSeed;
+import tod.tools.scheduling.IJobScheduler;
 import zz.utils.ui.ZLabel;
 
 /** 
@@ -103,7 +102,7 @@ public class Hyperlinks
 	public static <T> T object(
 			IGUIManager aGUIManager, 
 			LabelFactory<T> aFactory, 
-			JobProcessor aJobProcessor,
+			IJobScheduler aJobProcessor,
 			Object aObject,
 			ILogEvent aRefEvent,
 			boolean aShowPackageNames)
@@ -120,7 +119,7 @@ public class Hyperlinks
 	public static <T> T object(
 			IGUIManager aGUIManager, 
 			LabelFactory<T> aFactory, 
-			JobProcessor aJobProcessor,
+			IJobScheduler aJobProcessor,
 			Object aCurrentObject, 
 			Object aObject, 
 			ILogEvent aRefEvent,

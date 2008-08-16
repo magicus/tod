@@ -35,6 +35,7 @@ import tod.Util;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.gui.Hyperlinks;
+import tod.tools.monitoring.Monitored;
 
 /**
  * Utilities for working with object ids or refs.
@@ -46,7 +47,11 @@ public class ObjectIdUtils
 	 * Returns the type of the given object.
 	 * Adapted from {@link Hyperlinks#object}
 	 */
-	public static String getObjectDescription(ILogBrowser aLogBrowser, Object aObject, boolean aShowPackageNames)
+	@Monitored
+	public static String getObjectDescription(
+			ILogBrowser aLogBrowser, 
+			Object aObject, 
+			boolean aShowPackageNames)
 	{
 		String theId = null;
 		// Check if this is a registered object.

@@ -50,6 +50,7 @@ import tod.gui.kit.html.HtmlBody;
 import tod.gui.kit.html.HtmlElement;
 import tod.gui.kit.html.HtmlParentElement;
 import tod.gui.kit.html.HtmlText;
+import tod.tools.scheduling.IJobScheduler.JobPriority;
 import zz.utils.ui.StackLayout;
 import zz.utils.ui.UIUtils;
 
@@ -154,7 +155,7 @@ public abstract class BehaviorCallNode extends AbstractSimpleEventNode
 				aParent.add(Hyperlinks.object(
 						getGUIManager(),
 						Hyperlinks.HTML,
-						getJobProcessor(),
+						getJobScheduler(),
 						theArgument, 
 						getEvent(),
 						showPackageNames()));
@@ -210,7 +211,7 @@ public abstract class BehaviorCallNode extends AbstractSimpleEventNode
 		else aParent.add(Hyperlinks.object(
 				getGUIManager(),
 				Hyperlinks.HTML,
-				getJobProcessor(),
+				getJobScheduler(),
 				theTarget, 
 				getEvent(),
 				showPackageNames()));
@@ -257,7 +258,7 @@ public abstract class BehaviorCallNode extends AbstractSimpleEventNode
 	
 	protected HtmlElement createResult(final String aResultPrefix)
 	{
-		return new AsyncHtmlGroup(getJobProcessor(), aResultPrefix + " ...")
+		return new AsyncHtmlGroup(getJobScheduler(), JobPriority.AUTO, aResultPrefix + " ...")
 		{
 			@Override
 			protected void runJob()
@@ -266,7 +267,7 @@ public abstract class BehaviorCallNode extends AbstractSimpleEventNode
 			}
 
 			@Override
-			protected void updateUI()
+			protected void updateSuccess()
 			{
 				IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
 				Object theResult = getResult();
@@ -297,7 +298,7 @@ public abstract class BehaviorCallNode extends AbstractSimpleEventNode
 					add(Hyperlinks.object(
 							getGUIManager(),
 							Hyperlinks.HTML,
-							getJobProcessor(),
+							getJobScheduler(),
 							theExitEvent.getResult(),
 							theExitEvent,
 							showPackageNames()));
@@ -310,7 +311,7 @@ public abstract class BehaviorCallNode extends AbstractSimpleEventNode
 						add(Hyperlinks.object(
 								getGUIManager(),
 								Hyperlinks.HTML,
-								getJobProcessor(),
+								getJobScheduler(),
 								theResult,
 								theExitEvent,
 								showPackageNames()));

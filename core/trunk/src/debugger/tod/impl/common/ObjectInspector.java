@@ -46,7 +46,6 @@ import tod.core.database.browser.IEventPredicate;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.LocationUtils;
-import tod.core.database.browser.ICompoundInspector.EntryValue;
 import tod.core.database.browser.ILogBrowser.Query;
 import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
@@ -65,6 +64,7 @@ import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.impl.database.structure.standard.ArraySlotFieldInfo;
+import tod.tools.monitoring.Monitored;
 import tod.utils.TODUtils;
 import zz.utils.Utils;
 
@@ -114,6 +114,7 @@ public class ObjectInspector implements IObjectInspector
 	}
 	
 	
+	@Monitored
 	public ICreationEvent getCreationEvent()
 	{
 		if (itsCreationEvent == null) 
@@ -139,9 +140,9 @@ public class ObjectInspector implements IObjectInspector
 			}
 		}
 		return itsCreationEvent;
-		
 	}
 	
+	@Monitored
 	public ITypeInfo getType()
 	{
 		if (itsType == null)
@@ -174,6 +175,7 @@ public class ObjectInspector implements IObjectInspector
 		return itsType;
 	}
 	
+	@Monitored
 	protected Delegate getDelegate()
 	{
 		if (itsDelegate == null)
@@ -199,6 +201,7 @@ public class ObjectInspector implements IObjectInspector
 		return itsDelegate;
 	}
 	
+	@Monitored
 	public List<IFieldInfo> getFields()
 	{
 		Delegate theDelegate = getDelegate();
@@ -225,6 +228,7 @@ public class ObjectInspector implements IObjectInspector
 		throw new UnsupportedOperationException();
 	}
 
+	@Monitored
 	public EntryValue[] getEntryValue(IFieldInfo aField)
 	{
 		checkReferenceEvent();
@@ -253,6 +257,7 @@ public class ObjectInspector implements IObjectInspector
 		return theResult.toArray(new EntryValue[theResult.size()]);
 	}
 	
+	@Monitored
 	public EntryValue[] nextEntryValue(IFieldInfo aField)
 	{
 		IEventBrowser theBrowser = getBrowser(aField);
@@ -276,6 +281,7 @@ public class ObjectInspector implements IObjectInspector
 		return theResult.isEmpty() ? null : theResult.toArray(new EntryValue[theResult.size()]);
 	}
 
+	@Monitored
 	public EntryValue[] previousEntryValue(IFieldInfo aField)
 	{
 		IEventBrowser theBrowser = getBrowser(aField);
@@ -299,6 +305,7 @@ public class ObjectInspector implements IObjectInspector
 		return theResult.isEmpty() ? null : theResult.toArray(new EntryValue[theResult.size()]);
 	}
 
+	@Monitored
 	public Object[] getNewValue(IFieldInfo aField, ILogEvent aEvent)
 	{
 		checkReferenceEvent();
@@ -309,6 +316,7 @@ public class ObjectInspector implements IObjectInspector
 	/**
 	 * Returns an event browser for the specified field.
 	 */
+	@Monitored
 	public IEventBrowser getBrowser(IFieldInfo aMember)
 	{
 		IEventBrowser theBrowser = itsBrowsersMap.get(aMember);
@@ -389,6 +397,7 @@ public class ObjectInspector implements IObjectInspector
 		}
 		
 		@Override
+		@Monitored
 		public List<IFieldInfo> getFields()
 		{
 			if (itsFields == null)
@@ -449,6 +458,7 @@ public class ObjectInspector implements IObjectInspector
 		}
 
 		@Override
+		@Monitored
 		public List<IFieldInfo> getFields()
 		{
 			if (itsFields == null)
@@ -490,6 +500,7 @@ public class ObjectInspector implements IObjectInspector
 		}
 
 		@Override
+		@Monitored
 		public Object[] getNewValue(IFieldInfo aField, ILogEvent aEvent)
 		{
 			IArraySlotFieldInfo theField = (IArraySlotFieldInfo) aField;

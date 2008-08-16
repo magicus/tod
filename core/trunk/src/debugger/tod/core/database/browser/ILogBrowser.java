@@ -126,7 +126,7 @@ public interface ILogBrowser
 	 * Creates a browser that only reports events that pass a specific
 	 * filter.
 	 */
-	public IEventBrowser createBrowser (IEventFilter aFilter);
+	public IEventBrowser createBrowser(IEventFilter aFilter);
 	
 	/**
 	 * Creates a browser that reports all recorded events.

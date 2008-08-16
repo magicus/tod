@@ -27,10 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import reflex.lib.pom.POMSync;
-import reflex.lib.pom.POMSyncClass;
-import reflex.lib.pom.impl.POMMetaobject;
-import reflex.lib.pom.impl.lock.LockPOMMetaobject;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
@@ -66,30 +62,13 @@ import zz.utils.monitoring.Monitor.MonitorData;
  * Note: it is remote because it must be accessed by the master.
  * @author gpothier
  */
-@POMSyncClass(
-		scheduler = Scheduler.class, 
-		group = Scheduler.class,
-		syncAll = false)
 public abstract class GridLogBrowser extends UnicastRemoteObject
 implements ILogBrowser, RIGridMasterListener, IScheduled
 {
 	private static final long serialVersionUID = -5101014933784311102L;
 
 	private final ISession itsSession;
-	
-	/**
-	 * Manual override of Reflex. We want to avoid the reflexBridge hassle, so
-	 * we call the MO manually.
-	 */
-	private Scheduler itsScheduler = 
-		new Scheduler();
-
-	/**
-	 * Manual override of Reflex. We want to avoid the reflexBridge hassle, so
-	 * we call the MO manually.
-	 */
-	private POMMetaobject itsMetaobject = new LockPOMMetaobject(itsScheduler);
-	
+		
 	private RIGridMaster itsMaster;
 	private IStructureDatabase itsStructureDatabase;
 	
@@ -122,7 +101,6 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 		itsMaster = aMaster;
 		itsMaster.addListener(this);		
 		itsStructureDatabase = aStructureDatabase;
-		itsScheduler.setGroup(this);
 		System.out.println("[GridLogBrowser] Instantiated.");
 	}
 	
@@ -136,26 +114,7 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 		return this;
 	}
 	
-	public POMMetaobject getMetaobject()
-	{
-		return itsMetaobject;
-	}
-	
-	@POMSync
 	public void clear()
-	{
-		try
-		{
-			getMetaobject().callTrap(null, "clear");
-			clear0();
-		}
-		finally
-		{
-			getMetaobject().returnTrap();
-		}
-	}
-	
-	public void clear0()
 	{
 		try
 		{
@@ -265,21 +224,7 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 	protected abstract ICompoundFilter createUnionFilter0(IEventFilter... aFilters);
 
 	
-	@POMSync
 	public Object getRegistered(ObjectId aId)
-	{
-		try
-		{
-			getMetaobject().callTrap(null, "getRegistered");
-			return getRegistered0(aId);
-		}
-		finally
-		{
-			getMetaobject().returnTrap();
-		}		
-	}
-	
-	public Object getRegistered0(ObjectId aId)
 	{
 		try
 		{
@@ -309,21 +254,7 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 		return itsLastTimestamp;
 	}
 	
-	@POMSync
-	private void fetchThreads()
-	{
-		try
-		{
-			getMetaobject().callTrap(null, "fetchThreads");
-			fetchThreads0();
-		}
-		finally
-		{
-			getMetaobject().returnTrap();
-		}
-	}
-	
-	private synchronized void fetchThreads0()
+	private synchronized void fetchThreads()
 	{
 		try
 		{
@@ -346,21 +277,7 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 		return itsThreads;
 	}
 	
-	@POMSync
-	private void fetchHosts()
-	{
-		try
-		{
-			getMetaobject().callTrap(null, "fetchHosts");
-			fetchHosts0();
-		}
-		finally
-		{
-			getMetaobject().returnTrap();
-		}		
-	}
-	
-	private synchronized void fetchHosts0()
+	private synchronized void fetchHosts()
 	{
 		try
 		{
@@ -481,21 +398,7 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 		return new VariablesInspector(aEvent);
 	}
 	
-	@POMSync
 	public IBidiIterator<Long> searchStrings(String aSearchText)
-	{
-		try
-		{
-			getMetaobject().callTrap(null, "searchStrings");
-			return searchStrings0(aSearchText);
-		}
-		finally
-		{
-			getMetaobject().returnTrap();
-		}
-	}
-	
-	public IBidiIterator<Long> searchStrings0(String aSearchText)
 	{
 		try
 		{
@@ -520,21 +423,7 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 		itsHostsMap.clear();
 	}
 	
-	@POMSync
 	private void updateStats()
-	{
-		try
-		{
-			getMetaobject().callTrap(null, "updateStats");
-			updateStats0();
-		}
-		finally
-		{
-			getMetaobject().returnTrap();
-		}
-	}
-	
-	private void updateStats0()
 	{
 		try
 		{

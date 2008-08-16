@@ -51,7 +51,7 @@ import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
-import tod.gui.JobProcessor;
+import tod.tools.scheduling.IJobScheduler;
 import zz.utils.ui.ZLabel;
 
 /**
@@ -113,7 +113,7 @@ public class StackFrameWatchProvider extends AbstractWatchProvider
 	}
 
 	@Override
-	public JComponent buildTitleComponent(JobProcessor aJobProcessor)
+	public JComponent buildTitleComponent(IJobScheduler aJobScheduler)
 	{
 		IBehaviorCallEvent theParentEvent = getParentEvent();
 
