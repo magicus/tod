@@ -87,6 +87,7 @@ implements IPropertyListener<Integer>
 		add(itsProgressBar, BorderLayout.CENTER);
 		
 		JButton theCancelAllButton = new JButton("(X)");
+		theCancelAllButton.setToolTipText("Cancel all pending jobs");
 		theCancelAllButton.setMargin(UIUtils.NULL_INSETS);
 		theCancelAllButton.addActionListener(new ActionListener()
 		{

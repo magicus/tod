@@ -45,6 +45,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import tod.core.DebugFlags;
 import tod.core.IBookmarks;
@@ -637,11 +638,20 @@ implements ILocationSelectionListener, IGUIManager
 			itsComboBox.setEnabled(aEnabled);
 		}
 
-		public void actionPerformed(ActionEvent aE)
+		public void actionPerformed(final ActionEvent aE)
 		{
-			Action theAction = (Action) itsModel.getSelectedItem();
-			theAction.actionPerformed(aE);
+			final Action theAction = (Action) itsModel.getSelectedItem();
 			itsModel.setSelectedItem(itsTitleAction);
+
+			// We execute it later because the open combo causes probels while debugging
+			// (locks the whole X session).
+			SwingUtilities.invokeLater(new Runnable()
+			{
+				public void run()
+				{
+					theAction.actionPerformed(aE);
+				}
+			});
 		}
 	}
 	

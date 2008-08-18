@@ -56,7 +56,7 @@ public class AspectInfoAttribute extends DataAttribute
 	
 	public AspectInfoAttribute(Map<Integer, SourceRange> aAdviceInfoMap)
 	{
-		super("zz.abc.AspectInfoAttr");
+		super("zz.abc.sourceloc.AspectInfoAttr");
 		itsAdviceMap = aAdviceInfoMap;
 	}
 
