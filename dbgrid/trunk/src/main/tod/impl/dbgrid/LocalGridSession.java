@@ -51,10 +51,6 @@ public class LocalGridSession extends AbstractSession
 	
 	protected void init()
 	{
-		// Load POM-synced classes (hack to avoid timeout)
-		System.out.println(GridLogBrowser.class);
-		System.out.println(GridEventBrowser.class);
-
 		itsProcessManager.stop();
 		itsProcessManager.setConfig(getConfig());
 		itsProcessManager.start();

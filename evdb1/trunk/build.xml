@@ -23,9 +23,6 @@
         	<pathelement path="${tod-dbgrid.dir}/build/tod-dbgrid.jar"/>
         	<pathelement path="${tod.dir}/lib/aspectjrt.jar"/>
             <pathelement path="${zz.utils.dir}/build/zz.utils.jar"/>
-        	
-            <pathelement path="${lib.dir}/reflex-core.jar"/>
-            <pathelement path="${lib.dir}/pom.jar"/>
         </path>
     	
     </target>

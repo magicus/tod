@@ -18,8 +18,6 @@
     	
         <property name="tod-agent.dir" value="${basedir}/../TOD-agent"/>
         <property name="zz.utils.dir" value="${basedir}/../zz.utils"/>
-        <property name="reflex.dir" value="${basedir}/../reflex"/>
-        <property name="pom.dir" value="${basedir}/../pom"/>
 
     	
         <path id="debugger.classpath">
