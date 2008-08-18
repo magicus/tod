@@ -67,6 +67,7 @@ public class ThreadSequenceView extends AbstractSingleBrowserSequenceView
 		}
 	}
 
+	@Override
 	public ILogBrowser getLogBrowser()
 	{
 		return itsSeed.getLogBrowser();

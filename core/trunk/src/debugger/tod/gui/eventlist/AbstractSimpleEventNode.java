@@ -60,6 +60,7 @@ import tod.gui.kit.messages.EventActivatedMsg;
 import tod.gui.kit.messages.EventSelectedMsg;
 import tod.gui.kit.messages.EventActivatedMsg.ActivationMethod;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
+import tod.tools.scheduling.IJobSchedulerProvider;
 import tod.tools.scheduling.Scheduled;
 import tod.tools.scheduling.IJobScheduler.JobPriority;
 import zz.utils.Utils;

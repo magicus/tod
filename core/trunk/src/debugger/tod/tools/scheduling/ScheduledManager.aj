@@ -80,7 +80,7 @@ public aspect ScheduledManager
 		execution(@Scheduled (!void) IJobSchedulerProvider+.*(..))
 		: "@Scheduled cannot be applied to non-void method";
 
-	declare error:
+	declare warning:
 		execution(@Scheduled * (! IJobSchedulerProvider+).*(..))
-		: "@Scheduled method must belong to a IJobSchedulerProvider";
+		: "@Scheduled method must belong to a IJobSchedulerProvider [Should be an error, but iajc problem]";
 }

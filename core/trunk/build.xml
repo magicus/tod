@@ -1,4 +1,5 @@
-<project name="TOD" default="jar" basedir=".">
+<project name="TOD" default="jar" basedir="." 
+	xmlns:aspectj="antlib:org.aspectj">
 
     <target name="init">
    		<property file="../tod.plugin/ant.settings"/> <!-- This is optional, only for skip.deps-->
@@ -28,10 +29,8 @@
             <pathelement path="${lib.dir}/asm-all-3.1.jar"/>
             <pathelement path="${lib.dir}/jython-2.2.1.jar"/>
             <pathelement path="${lib.dir}/lucene-core-2.0.0.jar"/>
-            <pathelement path="${lib.dir}/reflex-core.jar"/>
-            <pathelement path="${lib.dir}/javassist.jar"/>
-            <pathelement path="${lib.dir}/pom.jar"/>
             <pathelement path="${lib.dir}/infovis.jar"/>
+            <pathelement path="${lib.dir}/aspectjrt.jar"/>
         </path>
     	
         <path id="test.classpath">
@@ -41,7 +40,7 @@
         	<pathelement path="${classes-debugger.dir}"/>
         	
             <pathelement path="${lib.dir}/junit-4.1.jar"/>
-            <pathelement path="${lib.dir}/pom.jar"/>
+            <pathelement path="${lib.dir}/aspectjrt.jar"/>
         </path>
 
     </target>
@@ -58,9 +57,10 @@
     <target name="compile-debugger" depends="init, dep.all">
         <mkdir dir="${classes-debugger.dir}"/>
     	
-        <javac compiler="javac1.5" source="1.5" target="1.5"
-        	debug="yes" nowarn="yes"
-            srcdir="${src-debugger.dir}"
+        <aspectj:iajc
+        	source="1.5" target="1.5"
+        	debug="yes" 
+        	srcdir="${src-debugger.dir}"
             destdir="${classes-debugger.dir}"
             classpathref="debugger.classpath"/>
     	
@@ -71,8 +71,8 @@
 	
     <target name="compile-test" depends="init, dep.all, compile-debugger">
         <mkdir dir="${classes-test.dir}"/>
-        <javac 
-        	compiler="javac1.5" source="1.5" target="1.5"
+        <aspectj:iajc 
+        	source="1.5" target="1.5"
         	debug="yes" nowarn="yes"
             srcdir="${src-test.dir}"
             destdir="${classes-test.dir}"
@@ -81,7 +81,8 @@
 	
     <target name="compile-testcase" depends="init, dep.all">
         <mkdir dir="${classes-testcase.dir}"/>
-        <javac compiler="javac1.5" source="1.5" target="1.5"
+        <aspectj:iajc
+        	source="1.5" target="1.5"
         	debug="yes" nowarn="yes"
             srcdir="${src-testcase.dir}"
             destdir="${classes-testcase.dir}"
@@ -90,21 +91,6 @@
 	
 	<target name="compile" depends="dep.all, compile-debugger, compile-test, compile-testcase"/>
 	
-	<target name="rmic" depends="compile">
-		<rmic 
-			base="${classes-debugger.dir}" 
-			classpathref="debugger.classpath">
-			
-			<include name="tod/impl/dbgrid/GridMaster.class"/>
-			<include name="tod/impl/dbgrid/aggregator/QueryAggregator.class"/>
-			<include name="tod/impl/dbgrid/dbnode/DatabaseNode.class"/>
-			<include name="tod/impl/dbgrid/dbnode/NodeEventIterator.class"/>
-			<include name="tod/impl/dbgrid/GridLogBrowser.class"/>
-			<include name="tod/utils/remote/RemoteLocationsRepository.class"/>
-			
-		</rmic>
-	</target>
-
 	<target name="jar" depends="compile">
         <mkdir dir="${build.dir}"/>
 		<jar destfile="${build.dir}/tod-debugger.jar" basedir="${classes-debugger.dir}"/>
