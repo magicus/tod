@@ -37,6 +37,11 @@ import java.util.Iterator;
 
 import javax.swing.Action;
 
+import tod.tools.scheduling.IJobScheduler;
+import tod.tools.scheduling.IJobSchedulerProvider;
+import tod.tools.scheduling.Scheduled;
+import tod.tools.scheduling.IJobScheduler.JobPriority;
+
 import zz.utils.ArrayStack;
 import zz.utils.ItemAction;
 import zz.utils.ReverseIteratorWrapper;
@@ -47,7 +52,10 @@ import zz.utils.ReverseIteratorWrapper;
  * @author gpothier
  */
 public class BrowserNavigator<S>
+implements IJobSchedulerProvider
 {
+	private final IJobScheduler itsJobScheduler;
+	
 	private ArrayStack<S> itsBackwardSeeds = new ArrayStack<S>(50);
 	private ArrayStack<S> itsForwardSeeds = new ArrayStack<S>();
 	
@@ -56,6 +64,16 @@ public class BrowserNavigator<S>
 	
 	private S itsCurrentSeed;
 	
+	public BrowserNavigator(IJobScheduler aJobScheduler)
+	{
+		itsJobScheduler = aJobScheduler;
+	}
+
+	public IJobScheduler getJobScheduler()
+	{
+		return itsJobScheduler;
+	}
+
 	public S getCurrentSeed()
 	{
 		return itsCurrentSeed;
@@ -85,6 +103,7 @@ public class BrowserNavigator<S>
 	/**
 	 * Jumps to the previous view
 	 */
+	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
 	public void backward()
 	{
 		if (! itsBackwardSeeds.isEmpty())
@@ -101,6 +120,7 @@ public class BrowserNavigator<S>
 	 * the backward stack
 	 * @param aSeed
 	 */
+	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
 	public void backToSeed(S aSeed)
 	{
 		while(! itsBackwardSeeds.isEmpty())
@@ -121,6 +141,7 @@ public class BrowserNavigator<S>
 	/**
 	 * Jumps to the view that was active before jumping backwards
 	 */
+	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
 	public void forward()
 	{
 		if (! itsForwardSeeds.isEmpty())

@@ -43,10 +43,10 @@ import zz.utils.list.NakedLinkedList.Entry;
  */
 public class JobGroup implements IJobScheduler
 {
-	private final JobScheduler itsScheduler;
+	private final IJobScheduler itsScheduler;
 	private final NakedLinkedList<JobWrapper> itsJobs = new NakedLinkedList<JobWrapper>();
 
-	public JobGroup(JobScheduler aScheduler)
+	public JobGroup(IJobScheduler aScheduler)
 	{
 		itsScheduler = aScheduler;
 	};
@@ -64,15 +64,20 @@ public class JobGroup implements IJobScheduler
 	public synchronized ITaskMonitor submit(JobPriority aPriority, Runnable aRunnable)
 	{
 		TaskMonitor theMonitor = TaskMonitoring.createMonitor();
-		JobWrapper theWrapper = new JobWrapper(theMonitor, aRunnable);
+		submit(aPriority, aRunnable, theMonitor);
+		return theMonitor;
+	}
+	
+	public void submit(JobPriority aPriority, Runnable aRunnable, TaskMonitor aMonitor)
+	{
+		JobWrapper theWrapper = new JobWrapper(aMonitor, aRunnable);
 		Entry<JobWrapper> theEntry = itsJobs.createEntry(theWrapper);
 		theWrapper.setEntry(theEntry);
 		itsJobs.addLast(theEntry);
 		
-		itsScheduler.submit(aPriority, theWrapper, theMonitor);
-		return theMonitor;
+		itsScheduler.submit(aPriority, theWrapper, aMonitor);
 	}
-	
+
 	private synchronized void remove(Entry<JobWrapper> aEntry)
 	{
 		if (aEntry.isAttached()) itsJobs.remove(aEntry);

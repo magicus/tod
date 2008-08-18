@@ -46,7 +46,8 @@ public aspect MonitorInjector
 	{
 		if (EventQueue.isDispatchThread())
 		{
-			System.err.println("Warning: calling monitored method from event dispatch thread.");
+			System.out.println("Warning: calling monitored method from event dispatch thread. Stack trace:");
+			new RuntimeException().printStackTrace(System.out);
 		}
 		
 		TaskMonitor theMonitor = TaskMonitor.current();

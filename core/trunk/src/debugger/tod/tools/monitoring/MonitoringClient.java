@@ -72,12 +72,14 @@ implements RIMonitoringClient
 	public MonitorId createId(TaskMonitor aMonitor, RIMonitoringServer aServer)
 	{
 		MonitorId theId = new MonitorId(nextId());
+		if (DebugFlags.TRACE_MONITORING) System.out.println("[MonitoringClient] "+Thread.currentThread()+" created: "+theId);
 		itsMonitorsMap.put(theId, new MonitorWrapper(theId, aMonitor, aServer));
 		return theId;
 	}
 	
 	public void destroyId(MonitorId aId)
 	{
+		if (DebugFlags.TRACE_MONITORING) System.out.println("[MonitoringClient] "+Thread.currentThread()+" destroyed: "+aId);
 		itsMonitorsMap.remove(aId);
 	}
 	

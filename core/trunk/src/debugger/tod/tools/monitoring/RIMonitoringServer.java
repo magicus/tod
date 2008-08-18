@@ -39,14 +39,7 @@ import tod.tools.monitoring.MonitoringClient.MonitorId;
 public interface RIMonitoringServer extends Remote
 {
 	/**
-	 * Sets the client-side monitor manager that will receive notifications
-	 * from this server.
-	 */
-	public void setClient(RIMonitoringClient aManager) throws RemoteException;
-	
-	/**
 	 * Notifies this server that a monitor was cancelled on the client
 	 */
 	public void monitorCancelled(MonitorId aId) throws RemoteException;
-
 }

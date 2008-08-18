@@ -70,7 +70,12 @@ implements IJobScheduler
 		for (Job theJob : theJobs) theJob.monitor.cancel();
 		
 		Job theCurrentJob = itsCurrentJob; // local var. for concurrency.
-		if (theCurrentJob != null) theCurrentJob.monitor.cancel();
+		if (theCurrentJob != null) 
+		{
+			// Cancel the current job only if cancel is not called from
+			// that job.
+			if (! theCurrentJob.isSameThread()) theCurrentJob.monitor.cancel();
+		}
 		
 		updateQueueSize();
 	}
@@ -82,7 +87,7 @@ implements IJobScheduler
 		return theMonitor;
 	}
 	
-	void submit(JobPriority aPriority, Runnable aRunnable, TaskMonitor aMonitor)
+	public void submit(JobPriority aPriority, Runnable aRunnable, TaskMonitor aMonitor)
 	{
 		itsQueuedJobs.offer(new Job(aPriority, aMonitor, aRunnable));
 		updateQueueSize();
@@ -102,8 +107,10 @@ implements IJobScheduler
 				if (itsCurrentJob.monitor.isCancelled()) continue;
 				try
 				{
+					itsCurrentJob.setThread(Thread.currentThread());
 					TaskMonitoring.start(itsCurrentJob.monitor);
 					itsCurrentJob.runnable.run();
+					TaskMonitoring.stop();
 				}
 				catch (TaskCancelledException e)
 				{
@@ -116,7 +123,7 @@ implements IJobScheduler
 				}
 				finally
 				{
-					TaskMonitoring.stop();
+					TaskMonitor.setCurrent(null);
 					itsCurrentJob = null;
 					updateQueueSize();
 				}
@@ -141,12 +148,31 @@ implements IJobScheduler
 		private final JobPriority itsPriority;
 		public final Runnable runnable;
 		public final TaskMonitor monitor;
+		
+		/**
+		 * The thread that executes the job.
+		 * Only valid once the job is executing.
+		 */
+		private Thread itsThread;
 
 		public Job(JobPriority aPriority, TaskMonitor aMonitor, Runnable aRunnable)
 		{
 			itsPriority = aPriority;
 			monitor = aMonitor;
 			runnable = aRunnable;
+		}
+		
+		public void setThread(Thread aThread)
+		{
+			itsThread = aThread;
+		}
+		
+		/**
+		 * Whether the current thread is the thread that executes this job.
+		 */
+		public boolean isSameThread()
+		{
+			return itsThread == Thread.currentThread();
 		}
 
 		public int compareTo(Job j)

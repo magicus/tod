@@ -34,6 +34,7 @@ package tod.tools.monitoring;
 import java.rmi.Remote;
 import java.rmi.server.UnicastRemoteObject;
 
+import tod.core.DebugFlags;
 import tod.tools.monitoring.MonitoringClient.MonitorId;
 
 public aspect RemoteMonitoringManager
@@ -143,15 +144,15 @@ public aspect RemoteMonitoringManager
 	{
 		try
 		{
-			System.out.println("[RemoteMonitoringManager] At: "+thisJoinPoint.toLongString());
+			if (DebugFlags.TRACE_MONITORING) System.out.println("[RemoteMonitoringManager] At: "+thisJoinPoint.toLongString());
 			
 			if (aTarget instanceof UnicastRemoteObject)
 			{
-				System.out.println("[RemoteMonitoringManager] Object is local, skipping: "+aTarget);
+				if (DebugFlags.TRACE_MONITORING) System.out.println("[RemoteMonitoringManager] Object is local, skipping: "+aTarget);
 			}
 			else
 			{
-				System.out.println("[RemoteMonitoringManager] Linking "+aTarget+" -> "+aResult);
+				if (DebugFlags.TRACE_MONITORING) System.out.println("[RemoteMonitoringManager] Linking "+aTarget+" -> "+aResult);
 				RMIGroupManager.get().addLink(aTarget, aResult);
 			}
 		}

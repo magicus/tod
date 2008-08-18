@@ -46,6 +46,8 @@ import tod.core.database.event.IParentEvent;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.view.LogView;
 import tod.tools.scheduling.IJobScheduler;
+import tod.tools.scheduling.SwingJob;
+import tod.tools.scheduling.IJobScheduler.JobPriority;
 import zz.utils.Utils;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
@@ -131,7 +133,7 @@ public class CallStackPanel extends JPanel
 
 
 
-	public IJobScheduler getJobProcessor()
+	public IJobScheduler getJobScheduler()
 	{
 		return itsJobScheduler;
 	}
@@ -197,55 +199,59 @@ public class CallStackPanel extends JPanel
 
 	private void rebuildStack()
 	{
-		itsRootEvent = null;
-		itsCurrentStackNode = null;
-		JComponent theStack = createStack();
-		theStack.setOpaque(false);
-		itsScrollPane.setViewportView(theStack);
-		itsScrollPane.getViewport().setBackground(Color.WHITE);
-
-		revalidate();
-		repaint();
+		getJobScheduler().submit(JobPriority.AUTO, new StackBuilderJob());
 	}
-
-	/**
-	 * Builds the stack of ancestor events.
-	 */
-	private JComponent createStack()
+	
+	private class StackBuilderJob extends SwingJob
 	{
-		JPanel theContainer = new ScrollablePanel(new GridStackLayout(1, 0, 2, true, false));
-		ILogEvent theCurrentEvent = itsSeed.pLeafEvent().get();
-		itsStackNodes.clear();
-		
-		ILogEvent theSelected = itsSeed.pSelectedEvent().get();
-		IBehaviorCallEvent theSelectedFrame = theSelected != null ? theSelected.getParent() : null;
-		
-		while (theCurrentEvent != null)
+		@Override
+		protected void work()
 		{
-			AbstractStackNode theStackNode = buildStackNode(theCurrentEvent);
-			itsStackNodes.add(theStackNode);
-			theContainer.add(theStackNode);
+			itsRootEvent = null;
+			itsCurrentStackNode = null;
+
+			ILogEvent theCurrentEvent = itsSeed.pLeafEvent().get();
+			itsStackNodes.clear();
 			
-			theCurrentEvent = theCurrentEvent.getParent();
-			if (theCurrentEvent != null && theCurrentEvent.equals(theSelectedFrame)) setCurrentStackNode(theStackNode);
+			ILogEvent theSelected = itsSeed.pSelectedEvent().get();
+			IBehaviorCallEvent theSelectedFrame = theSelected != null ? theSelected.getParent() : null;
+			
+			while (theCurrentEvent != null)
+			{
+				AbstractStackNode theStackNode = buildStackNode(theCurrentEvent);
+				itsStackNodes.add(theStackNode);
+				
+				theCurrentEvent = theCurrentEvent.getParent();
+				if (theCurrentEvent != null && theCurrentEvent.equals(theSelectedFrame)) setCurrentStackNode(theStackNode);
+			}
 		}
-
-		return theContainer;
-	}
-
-	private AbstractStackNode buildStackNode(ILogEvent aEvent)
-	{
-		IJobScheduler theJobScheduler = getJobProcessor();
-//		IJobScheduler theJobScheduler = null;
-
-		if (aEvent.getParent() == null || Utils.equalOrBothNull(aEvent.getParent(), getRootEvent()))
+		
+		private AbstractStackNode buildStackNode(ILogEvent aEvent)
 		{
-			return new RootStackNode(theJobScheduler, getRootEvent(), this);
+			if (aEvent.getParent() == null || Utils.equalOrBothNull(aEvent.getParent(), getRootEvent()))
+			{
+				return new RootStackNode(getJobScheduler(), getRootEvent(), CallStackPanel.this);
+			}
+			else 
+			{
+				return new NormalStackNode(getJobScheduler(), aEvent, CallStackPanel.this);
+			}
 		}
-		else 
+
+		
+		@Override
+		protected void update()
 		{
-			return new NormalStackNode(theJobScheduler, aEvent, this);
+			JPanel theStack = new ScrollablePanel(new GridStackLayout(1, 0, 2, true, false));
+			theStack.setOpaque(false);
+			
+			for (JComponent theNode : itsStackNodes) theStack.add(theNode);
+			
+			itsScrollPane.setViewportView(theStack);
+			itsScrollPane.getViewport().setBackground(Color.WHITE);
+
+			revalidate();
+			repaint();
 		}
 	}
-
 }

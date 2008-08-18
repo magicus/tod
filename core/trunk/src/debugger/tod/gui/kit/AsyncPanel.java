@@ -37,6 +37,7 @@ import tod.gui.GUIUtils;
 import tod.tools.monitoring.ITaskMonitor;
 import tod.tools.monitoring.TaskMonitor.TaskCancelledException;
 import tod.tools.scheduling.IJobScheduler;
+import tod.tools.scheduling.IJobSchedulerProvider;
 import tod.tools.scheduling.IJobScheduler.JobPriority;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;
@@ -47,7 +48,7 @@ import zz.utils.ui.MousePanel;
  * @author gpothier
  */
 public abstract class AsyncPanel extends MousePanel
-implements IEventListener<Void>
+implements IEventListener<Void>, IJobSchedulerProvider
 {
 	private final IJobScheduler itsJobScheduler;
 	private final JobPriority itsJobPriority;
@@ -56,13 +57,14 @@ implements IEventListener<Void>
 
 	public AsyncPanel(IJobScheduler aJobScheduler, JobPriority aJobPriority)
 	{
+		assert aJobScheduler != null;
 		itsJobScheduler = aJobScheduler;
 		itsJobPriority = aJobPriority;
 		setOpaque(false);
 		createUI();
 	}
 	
-	protected IJobScheduler getJobScheduler()
+	public IJobScheduler getJobScheduler()
 	{
 		return itsJobScheduler;
 	}

@@ -32,6 +32,7 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.tools.scheduling;
 
 import tod.tools.monitoring.ITaskMonitor;
+import tod.tools.monitoring.TaskMonitor;
 
 /**
  * An entity that permits to schedule jobs.
@@ -50,6 +51,11 @@ public interface IJobScheduler
 	 * progress and to cancel the job.
 	 */
 	public ITaskMonitor submit(JobPriority aPriority, Runnable aRunnable);
+	
+	/**
+	 * Same as {@link #submit(JobPriority, Runnable)}, but specifying an existing monitor.
+	 */
+	public void submit(JobPriority aPriority, Runnable aRunnable, TaskMonitor aMonitor);
 	
 	/**
 	 * Cancel all the jobs of this scheduler.

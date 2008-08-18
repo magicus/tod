@@ -487,16 +487,23 @@ public class ObjectInspector implements IObjectInspector
 					aLogBrowser.createFieldFilter(theField),
 					aLogBrowser.createTargetFilter(itsObjectId));
 			
-			IEventFilter theCopyFilter = aLogBrowser.createPredicateFilter(
-					new ArrayCopyFilter(theField.getIndex()), 
-					aLogBrowser.createIntersectionFilter(
-							aLogBrowser.createBehaviorCallFilter(itsArrayCopy),
-							aLogBrowser.createArgumentFilter(itsObjectId, 3)));
-			
-			return aLogBrowser.createUnionFilter(
-					theFieldWriteFilter,
-					theCopyFilter);
-			
+			if (itsArrayCopy == null)
+			{
+				// Can be null if the method was never called (by instrumented code)
+				return theFieldWriteFilter;
+			}
+			else
+			{
+				IEventFilter theCopyFilter = aLogBrowser.createPredicateFilter(
+						new ArrayCopyFilter(theField.getIndex()), 
+						aLogBrowser.createIntersectionFilter(
+								aLogBrowser.createBehaviorCallFilter(itsArrayCopy),
+								aLogBrowser.createArgumentFilter(itsObjectId, 3)));
+				
+				return aLogBrowser.createUnionFilter(
+						theFieldWriteFilter,
+						theCopyFilter);
+			}
 		}
 
 		@Override

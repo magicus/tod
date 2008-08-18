@@ -55,6 +55,8 @@ import tod.gui.kit.Options;
 import tod.gui.seed.LogViewSeed;
 import tod.gui.seed.ObjectHistorySeed;
 import tod.tools.scheduling.IJobScheduler;
+import tod.tools.scheduling.IJobSchedulerProvider;
+import tod.tools.scheduling.IJobScheduler.JobPriority;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.ISetProperty;
 import zz.utils.properties.PropertyUtils;
@@ -67,7 +69,7 @@ import zz.utils.ui.ZLabel;
  * @author gpothier
  */
 public abstract class LogView<T extends LogViewSeed> extends BusOwnerPanel
-implements IOptionsOwner
+implements IOptionsOwner, IJobSchedulerProvider
 {
 	private final IGUIManager itsGUIManager;
 	
@@ -257,7 +259,7 @@ implements IOptionsOwner
 	/**
 	 * Helper method to obtain the default job processor for this view.
 	 */
-	public IJobScheduler getJobProcessor()
+	public IJobScheduler getJobScheduler()
 	{
 		return getGUIManager().getJobScheduler();
 	}

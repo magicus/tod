@@ -29,73 +29,37 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.tools.monitoring;
+package tod.tools.scheduling;
 
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
-import java.util.Map;
+import javax.swing.SwingUtilities;
 
-import tod.core.DebugFlags;
-import tod.tools.monitoring.MonitoringClient.MonitorId;
-
-public class MonitoringServer extends UnicastRemoteObject
-implements RIMonitoringServer
+/**
+ * A job that runs some code in the Swing event thread
+ * when the main work is finished
+ * @author gpothier
+ */
+public abstract class SwingJob implements Runnable
 {
-	private static MonitoringServer INSTANCE;
-	static
+	public final void run()
 	{
-		try
+		work();
+		SwingUtilities.invokeLater(new Runnable()
 		{
-			INSTANCE = new MonitoringServer();
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-
-	/**
-	 * Retrieves the singleton instance.
-	 */
-	public static MonitoringServer get()
-	{
-		return INSTANCE;
-	}
-	
-	private Map<MonitorId, TaskMonitor> itsMonitorsMap =
-		new HashMap<MonitorId, TaskMonitor>();
-	
-	private MonitoringServer() throws RemoteException
-	{
-	}
-
-	public void monitorCancelled(MonitorId aId)
-	{
-		TaskMonitor theMonitor = itsMonitorsMap.get(aId);
-		if (theMonitor == null) return; // The monitored task has already finished
-		if (DebugFlags.TRACE_MONITORING) System.out.println("Monitor cancelled: "+aId);
-		theMonitor.cancel();
-	}
-
-	/**
-	 * Assigns a monitor to a monitor id.
-	 */
-	public void assign(MonitorId aId, TaskMonitor aMonitor)
-	{
-		if (DebugFlags.TRACE_MONITORING) System.out.println("Assigning monitor "+aId);
-		assert aId != null;
-		assert aMonitor != null;
-		itsMonitorsMap.put(aId, aMonitor);
+			public void run()
+			{
+				update();
+			}
+		});
 	}
 	
 	/**
-	 * Removes the monitor assigned to the given id.
+	 * Performs the main job, in a worker thread.
 	 */
-	public void delete(MonitorId aId)
-	{
-		if (DebugFlags.TRACE_MONITORING) System.out.println("Deleting monitor "+aId);
-		TaskMonitor theMonitor = itsMonitorsMap.remove(aId);
-		if (theMonitor == null) throw new RuntimeException("No monitor for id: "+aId);		
-	}
+	protected abstract void work();
+	
+	/**
+	 * This method is executed in the Swing event thread once the
+	 * main job is finished.
+	 */
+	protected abstract void update();
 }

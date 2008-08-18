@@ -108,6 +108,7 @@ implements ILocationSelectionListener, IGUIManager
 		}
 	}
 	
+	private JobScheduler itsJobScheduler = new JobScheduler();
 	
 	private LogViewBrowserNavigator itsNavigator = new LogViewBrowserNavigator(this)
 	{
@@ -141,7 +142,6 @@ implements ILocationSelectionListener, IGUIManager
 		}
 	};
 
-	private JobScheduler itsJobScheduler = new JobScheduler();
 //	private BookmarkPanel itsBookmarkPanel = new BookmarkPanel();
 	
 	private GUISettings itsGUISettings = new GUISettings(this);

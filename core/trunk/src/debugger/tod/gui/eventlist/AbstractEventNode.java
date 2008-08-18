@@ -44,6 +44,7 @@ import tod.gui.GUIUtils;
 import tod.gui.IGUIManager;
 import tod.gui.kit.BusPanel;
 import tod.tools.scheduling.IJobScheduler;
+import tod.tools.scheduling.IJobSchedulerProvider;
 import zz.utils.Utils;
 
 /**
@@ -51,6 +52,7 @@ import zz.utils.Utils;
  * @author gpothier
  */
 public abstract class AbstractEventNode extends BusPanel
+implements IJobSchedulerProvider
 {
 	private final IGUIManager itsGUIManager;
 	private final EventListPanel itsListPanel;

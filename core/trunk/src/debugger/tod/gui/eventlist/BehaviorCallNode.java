@@ -34,6 +34,8 @@ package tod.gui.eventlist;
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.JToolTip;
@@ -260,45 +262,38 @@ public abstract class BehaviorCallNode extends AbstractSimpleEventNode
 	{
 		return new AsyncHtmlGroup(getJobScheduler(), JobPriority.AUTO, aResultPrefix + " ...")
 		{
+			private List<HtmlElement> itsElements = new ArrayList<HtmlElement>();
+			private Color itsExpanderColor;
+			
 			@Override
 			protected void runJob()
-			{
-				getEvent().getExitEvent(); // This call caches call information
-			}
-
-			@Override
-			protected void updateSuccess()
 			{
 				IBehaviorExitEvent theExitEvent = getEvent().getExitEvent();
 				Object theResult = getResult();
 				IBehaviorInfo theBehavior = getBehavior();
 				
-				// Set final expander color.
-				Color theExpanderColor;
-				if (theExitEvent == null) theExpanderColor = Color.BLACK;
-				else theExpanderColor = theExitEvent.hasThrown() ? Color.RED : Color.BLUE;
+				// Determine final expander color.
+				if (theExitEvent == null) itsExpanderColor = Color.BLACK;
+				else itsExpanderColor = theExitEvent.hasThrown() ? Color.RED : Color.BLUE;
 				
 				if (!getEvent().hasRealChildren()) 
-					theExpanderColor = UIUtils.getLighterColor(theExpanderColor, 0.2f);
+					itsExpanderColor = UIUtils.getLighterColor(itsExpanderColor, 0.2f);
 				
-				itsExpanderWidget.setColor(theExpanderColor);
-
-				// Add result components
-				
+				// Create components
 				if (theExitEvent == null)
 				{
-					add(HtmlText.create(" [Behavior never returned]"));
+					itsElements.add(HtmlText.create(" [Behavior never returned]"));
 				}
 				else if (theExitEvent.hasThrown())
 				{
-					add(HtmlText.create("["));
-					add(HtmlText.create("Thrown ", FontConfig.NORMAL, Color.RED));
-					add(HtmlText.create("]"));
+					itsElements.add(HtmlText.create("["));
+					itsElements.add(HtmlText.create("Thrown ", FontConfig.NORMAL, Color.RED));
+					itsElements.add(HtmlText.create("]"));
 
-					add(Hyperlinks.object(
+					itsElements.add(Hyperlinks.object(
 							getGUIManager(),
 							Hyperlinks.HTML,
-							getJobScheduler(),
+							null,
 							theExitEvent.getResult(),
 							theExitEvent,
 							showPackageNames()));
@@ -307,21 +302,28 @@ public abstract class BehaviorCallNode extends AbstractSimpleEventNode
 				{
 					if (theResult != null)
 					{
-						add(HtmlText.create(aResultPrefix + " "));						
-						add(Hyperlinks.object(
+						itsElements.add(HtmlText.create(aResultPrefix + " "));						
+						itsElements.add(Hyperlinks.object(
 								getGUIManager(),
 								Hyperlinks.HTML,
-								getJobScheduler(),
+								null,
 								theResult,
 								theExitEvent,
 								showPackageNames()));
 					}
 					else if (! theBehavior.getReturnType().isVoid())
 					{
-						add(HtmlText.create(aResultPrefix + " "));						
-						add(HtmlText.create("null"));
+						itsElements.add(HtmlText.create(aResultPrefix + " "));						
+						itsElements.add(HtmlText.create("null"));
 					}
 				}
+			}
+
+			@Override
+			protected void updateSuccess()
+			{
+				itsExpanderWidget.setColor(itsExpanderColor);
+				for (HtmlElement theElement : itsElements) add(theElement);
 			}
 		};
 	}

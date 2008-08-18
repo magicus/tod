@@ -48,6 +48,8 @@ import tod.gui.BrowserData;
 import tod.gui.IGUIManager;
 import tod.gui.eventsequences.mural.EventMural;
 import tod.gui.seed.CFlowSeed;
+import tod.tools.scheduling.IJobScheduler;
+import tod.tools.scheduling.IJobSchedulerProvider;
 import zz.utils.ItemAction;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;
@@ -61,7 +63,8 @@ import zz.utils.ui.text.XFont;
  * <li>Provides helpers for baloons.
  * @author gpothier
  */
-public abstract class AbstractSequenceView implements IEventSequenceView
+public abstract class AbstractSequenceView
+implements IEventSequenceView, IJobSchedulerProvider
 {
 	public static final XFont FONT = XFont.DEFAULT_XPLAIN.deriveFont(10);
 	
@@ -83,6 +86,11 @@ public abstract class AbstractSequenceView implements IEventSequenceView
 	public ILogBrowser getLogBrowser()
 	{
 		return getGUIManager().getSession().getLogBrowser();
+	}
+
+	public IJobScheduler getJobScheduler()
+	{
+		return getGUIManager().getJobScheduler();
 	}
 
 	public void setLimits(long aFirstTimestamp, long aLastTimestamp)

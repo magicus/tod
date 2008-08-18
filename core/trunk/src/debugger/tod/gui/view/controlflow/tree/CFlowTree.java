@@ -114,7 +114,7 @@ public class CFlowTree extends BusPanel
 	
 	public IJobScheduler getJobScheduler()
 	{
-		return itsView.getJobProcessor();
+		return itsView.getJobScheduler();
 	}
 
 	/**

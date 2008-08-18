@@ -94,7 +94,7 @@ public class WatchPanel extends BusPanel
 		super(aView.getBus());
 		itsView = aView;
 		itsJobGroup = new JobGroup(getGUIManager().getJobScheduler());
-		itsBrowserNavigator = new WatchBrowserNavigator();
+		itsBrowserNavigator = new WatchBrowserNavigator(itsJobGroup);
 	}
 	
 	/**
@@ -253,6 +253,11 @@ public class WatchPanel extends BusPanel
 	
 	private class WatchBrowserNavigator extends BrowserNavigator<WatchSeed>
 	{
+		public WatchBrowserNavigator(IJobScheduler aJobScheduler)
+		{
+			super(aJobScheduler);
+		}
+
 		@Override
 		public void open(WatchSeed aSeed)
 		{

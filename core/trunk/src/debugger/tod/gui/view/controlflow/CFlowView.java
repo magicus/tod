@@ -76,6 +76,8 @@ import tod.gui.view.LogView;
 import tod.gui.view.controlflow.tree.CFlowTree;
 import tod.gui.view.controlflow.watch.ObjectWatchSeed;
 import tod.gui.view.controlflow.watch.WatchPanel;
+import tod.tools.scheduling.Scheduled;
+import tod.tools.scheduling.IJobScheduler.JobPriority;
 import zz.utils.SimpleAction;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
@@ -85,7 +87,8 @@ import zz.utils.properties.SimplePropertyListener;
 import zz.utils.ui.UIUtils;
 import zz.utils.ui.ZLabel;
 
-public class CFlowView extends LogView<CFlowSeed> implements IEventListView
+public class CFlowView extends LogView<CFlowSeed> 
+implements IEventListView
 {
 	public static final boolean SHOW_PARENT_FRAMES = false;
 	private static final String PROPERTY_SPLITTER_POS = "cflowView.splitterPos";
@@ -227,6 +230,7 @@ public class CFlowView extends LogView<CFlowSeed> implements IEventListView
 		itsStepper = new Stepper(getLogBrowser());
 	}
 	
+	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
 	private void backwardStepOver() 
 	{
 		itsStepper.setCurrentEvent(getSeed().pSelectedEvent().get());
@@ -236,6 +240,7 @@ public class CFlowView extends LogView<CFlowSeed> implements IEventListView
 	}
 	
 
+	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
 	private void backwardStepInto() 
 	{
 		itsStepper.setCurrentEvent(getSeed().pSelectedEvent().get());
@@ -244,6 +249,7 @@ public class CFlowView extends LogView<CFlowSeed> implements IEventListView
 		if (theEvent != null) selectEvent(theEvent, SelectionMethod.BACKWARD_STEP_INTO);
 	}
 	
+	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
 	private void stepOut() 
 	{
 		ILogEvent theSelectedEvent = getSeed().pSelectedEvent().get();
@@ -259,6 +265,7 @@ public class CFlowView extends LogView<CFlowSeed> implements IEventListView
 	/**
 	 * Perform a step into action on the specified event.
 	 */
+	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
 	public void forwardStepInto(ILogEvent aEvent)
 	{
 		itsStepper.setCurrentEvent(aEvent);
@@ -288,6 +295,7 @@ public class CFlowView extends LogView<CFlowSeed> implements IEventListView
 		forwardStepInto(getSeed().pSelectedEvent().get());
 	}
 
+	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
 	private void forwardStepOver() 
 	{
 		itsStepper.setCurrentEvent(getSeed().pSelectedEvent().get());

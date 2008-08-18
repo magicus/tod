@@ -132,7 +132,7 @@ public class StringSearchView extends LogView<StringSearchSeed>
 	private JComponent createEventListPane()
 	{
 		itsEventListPanel =
-				new EventListPanel(getGUIManager(), getBus(), getLogBrowser(), getJobProcessor());
+				new EventListPanel(getGUIManager(), getBus(), getLogBrowser(), getJobScheduler());
 
 		itsEventListPanel.eEventActivated().addListener(new IEventListener<ILogEvent>()
 		{

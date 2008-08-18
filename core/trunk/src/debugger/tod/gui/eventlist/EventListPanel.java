@@ -37,10 +37,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -76,8 +79,11 @@ import tod.gui.kit.StdOptions;
 import tod.gui.kit.Options.OptionDef;
 import tod.gui.settings.IntimacySettings;
 import tod.tools.scheduling.IJobScheduler;
+import tod.tools.scheduling.IJobSchedulerProvider;
+import tod.tools.scheduling.JobGroup;
+import tod.tools.scheduling.Scheduled;
+import tod.tools.scheduling.SwingJob;
 import tod.tools.scheduling.IJobScheduler.JobPriority;
-import tod.utils.TODUtils;
 import zz.utils.cache.MRUBuffer;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;
@@ -90,7 +96,7 @@ import zz.utils.properties.SimpleRWProperty;
 import zz.utils.ui.ScrollablePanel;
 
 public class EventListPanel extends BusPanel
-implements MouseWheelListener
+implements MouseWheelListener, IJobSchedulerProvider
 {
 	private final IGUIManager itsGUIManager;
 	private final ILogBrowser itsLogBrowser;
@@ -120,11 +126,8 @@ implements MouseWheelListener
 	/**
 	 * Buffer for event nodes.
 	 */
-	private MRUBuffer<ILogEvent, AbstractEventNode> itsNodesBuffer =
-		new NodesBuffer();
+	private MRUBuffer<ILogEvent, AbstractEventNode> itsNodesBuffer = new NodesBuffer();
 
-	private int itsSubmittedJobs = 0;
-	
 //	private IBusListener<EventSelectedMsg> itsEventSelectedListener = new IBusListener<EventSelectedMsg>()
 //	{
 //		public boolean processMessage(EventSelectedMsg aMessage)
@@ -138,7 +141,7 @@ implements MouseWheelListener
 		super(aBus);
 		itsGUIManager = aGUIManager;
 		itsLogBrowser = aLogBrowser;
-		itsJobScheduler = aJobScheduler;
+		itsJobScheduler = new JobGroup(aJobScheduler);
 		createUI();
 	}
 	
@@ -167,67 +170,28 @@ implements MouseWheelListener
 		return itsGUIManager;
 	}
 	
+	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
 	public void forward(final int aCount)
 	{
 		if (itsCore == null) return;
-		if (itsSubmittedJobs > 5) return;
-		
-		itsSubmittedJobs++;
-		getJobScheduler().submit(JobPriority.EXPLICIT, new Runnable()
-		{
-			public void run()
-			{
-				try
-				{
-					itsCore.forward(aCount);
-				}
-				catch (Throwable e)
-				{
-					e.printStackTrace();
-				}
-				itsSubmittedJobs--;
-				if (itsSubmittedJobs == 0) postUpdateList();
-			}
-		});
+		itsCore.forward(aCount);
+		updateList();
 	}
 	
+	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
 	public void backward(final int aCount)
 	{
 		if (itsCore == null) return;
-		if (itsSubmittedJobs > 5) return;
-		
-		itsSubmittedJobs++;
-		getJobScheduler().submit(JobPriority.EXPLICIT, new Runnable()
-		{
-			public void run()
-			{
-				try
-				{
-					itsCore.backward(aCount);
-				}
-				catch (Throwable e)
-				{
-					e.printStackTrace();
-				}
-				itsSubmittedJobs--;
-				if (itsSubmittedJobs == 0) postUpdateList();
-			}
-		});
+		itsCore.backward(aCount);
+		updateList();
 	}
 	
+	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
 	public void setTimestamp(final long aTimestamp)
 	{
 		if (itsCore == null) return;
-		getJobScheduler().submit(JobPriority.EXPLICIT, new Runnable()
-		{
-			public void run()
-			{
-				TODUtils.log(1,"[EventListPanel.setTimestamp] Updating...");
-				itsCore.setTimestamp(aTimestamp);
-				postUpdateList();
-				TODUtils.log(1,"[EventListPanel.setTimestamp] Done...");
-			}
-		});
+		itsCore.setTimestamp(aTimestamp);
+		updateList();
 	}
 
 	/**
@@ -257,60 +221,84 @@ implements MouseWheelListener
 		update();
 	}
 	
-	/**
-	 * Posts an {@link #updateList()} request to be executed by the
-	 * swing thread.
-	 */
-	private void postUpdateList()
-	{
-		SwingUtilities.invokeLater(new Runnable()
-		{
-			public void run()
-			{
-				updateList();
-			}
-		});
-	}
-	
 	private void updateList()
 	{
-		itsEventsPanel.removeAll();
-		List<ILogEvent> theEvents = itsCore.getDisplayedEvents();
-		
-		int theChildrenHeight = 0;
-		int theTotalHeight = itsEventsPanel.getHeight();
-		
-		for (ILogEvent theEvent : theEvents) 
-		{
-			theChildrenHeight += createNode(theEvent);
-		}
-		
-		while (theChildrenHeight < theTotalHeight)
-		{
-			ILogEvent theEvent = itsCore.incVisibleEvents();
-			if (theEvent == null) break;
-			
-			theChildrenHeight += createNode(theEvent);
-		}
-		
-		itsEventsPanel.revalidate();
-		itsEventsPanel.repaint();
+		getJobScheduler().submit(JobPriority.EXPLICIT, new ListUpdateJob());
 	}
 	
-	private int createNode(ILogEvent aEvent)
+	private class ListUpdateJob extends SwingJob
 	{
-		assert aEvent != null;
-		int theHeight = 0;
+		private List<JComponent> itsNodes = new ArrayList<JComponent>();
 		
-		AbstractEventNode theNode = itsNodesBuffer.get(aEvent);
-		
-		if (theNode != null) 
+		@Override
+		protected void work()
 		{
-			theHeight = theNode.getPreferredSize().height;
-			itsEventsPanel.add(theNode);
+			List<ILogEvent> theEvents = itsCore.getDisplayedEvents();
+			
+			int theChildrenHeight = 0;
+			int theTotalHeight = itsEventsPanel.getHeight();
+			
+			for (ILogEvent theEvent : theEvents) 
+			{
+				theChildrenHeight += createNode(theEvent);
+			}
+			
+			while (theChildrenHeight < theTotalHeight)
+			{
+				ILogEvent theEvent = itsCore.incVisibleEvents();
+				if (theEvent == null) break;
+				
+				theChildrenHeight += createNode(theEvent);
+			}
+		}
+		
+		private int createNode(ILogEvent aEvent)
+		{
+			assert aEvent != null;
+			final int[] theHeight = new int[1];
+			
+			final AbstractEventNode theNode = itsNodesBuffer.get(aEvent);
+			
+			if (theNode != null) 
+			{
+				try
+				{
+					SwingUtilities.invokeAndWait(new Runnable()
+					{
+						public void run()
+						{
+							theHeight[0] = theNode.getPreferredSize().height;
+						}
+					});
+				}
+				catch (InterruptedException e)
+				{
+					throw new RuntimeException(e);
+				}
+				catch (InvocationTargetException e)
+				{
+					throw new RuntimeException(e);
+				}
+				itsNodes.add(theNode);
+			}
+
+			return theHeight[0];
+		}
+		
+
+
+		@Override
+		protected void update()
+		{
+			itsEventsPanel.removeAll();
+			
+			for (JComponent theNode : itsNodes) itsEventsPanel.add(theNode);
+			
+			itsEventsPanel.revalidate();
+			itsEventsPanel.repaint();
 		}
 
-		return theHeight;
+		
 	}
 	
 	private void createUI()

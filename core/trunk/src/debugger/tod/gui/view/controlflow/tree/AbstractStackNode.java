@@ -42,6 +42,7 @@ import tod.core.database.event.IParentEvent;
 import tod.gui.GUIUtils;
 import tod.gui.kit.AsyncPanel;
 import tod.tools.scheduling.IJobScheduler;
+import tod.tools.scheduling.Scheduled;
 import tod.tools.scheduling.IJobScheduler.JobPriority;
 import zz.utils.ui.UIUtils;
 
@@ -152,6 +153,7 @@ public abstract class AbstractStackNode extends AsyncPanel
 	}
 
 	@Override
+	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
 	public void mousePressed(MouseEvent aE)
 	{
 		if (! itsCurrentStackFrame)

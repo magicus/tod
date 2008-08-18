@@ -70,25 +70,26 @@ implements IEventSeed
 	
 	public CFlowSeed(ILogBrowser aLog, ILogEvent aSelectedEvent)
 	{
-		this(aLog, aSelectedEvent.getThread());
+		super(aLog);
+		itsThread = aSelectedEvent.getThread();
 		pSelectedEvent().set(aSelectedEvent);
 		pLeafEvent().set(aSelectedEvent);
 	}
-
 	
-	public CFlowSeed(ILogBrowser aLog, IThreadInfo aThread)
+	public static CFlowSeed forThread(ILogBrowser aLog, IThreadInfo aThread)
 	{
-		super(aLog);
-		itsThread = aThread;
-
 		IParentEvent theRoot = aLog.getCFlowRoot(aThread);
-		pRootEvent().set(theRoot);
-//		pParentEvent().set(theRoot);
+		ILogEvent theSelectedEvent = null;
 		IEventBrowser theChildrenBrowser = theRoot.getChildrenBrowser();
 		if (theChildrenBrowser.hasNext())
 		{
-			pSelectedEvent().set(theChildrenBrowser.next());
+			theSelectedEvent = theChildrenBrowser.next();
 		}
+		
+		CFlowSeed theSeed = new CFlowSeed(aLog, theSelectedEvent);
+		theSeed.pRootEvent().set(theRoot);
+//		theSeed.pParentEvent().set(theRoot);
+		return theSeed;
 	}
 
 	@Override

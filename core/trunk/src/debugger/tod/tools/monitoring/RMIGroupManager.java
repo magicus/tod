@@ -75,7 +75,7 @@ public class RMIGroupManager
 	 * If this is the first time we see this server, we register the
 	 * local {@link MonitoringClient}.
 	 */
-	private RIMonitoringServer getServer(RIMonitoringServerProvider aProvider)
+	private synchronized RIMonitoringServer getServer(RIMonitoringServerProvider aProvider)
 	{
 		RIMonitoringServer theServer = itsProvidersMap.get(aProvider);
 		if (theServer == null)
@@ -83,7 +83,6 @@ public class RMIGroupManager
 			try
 			{
 				theServer = aProvider.getMonitoringServer();
-				theServer.setClient(MonitoringClient.get());
 			}
 			catch (RemoteException e)
 			{

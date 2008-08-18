@@ -45,6 +45,7 @@ import tod.core.database.structure.IThreadInfo;
 import tod.gui.IGUIManager;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.seed.FilterSeed;
+import tod.tools.scheduling.Scheduled;
 import zz.utils.ItemAction;
 import zz.utils.Utils;
 
@@ -113,9 +114,10 @@ public class ThreadSequenceView extends AbstractSingleBrowserSequenceView
 		}
 	}
 	
+	@Scheduled
 	protected void showCFlow()
 	{
-		CFlowSeed theSeed = new CFlowSeed(getLogBrowser(), getThread());
+		CFlowSeed theSeed = CFlowSeed.forThread(getLogBrowser(), getThread());
 		getGUIManager().openSeed(theSeed, false);
 	}
 	

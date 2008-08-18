@@ -60,6 +60,8 @@ import tod.gui.kit.messages.EventActivatedMsg;
 import tod.gui.kit.messages.EventSelectedMsg;
 import tod.gui.kit.messages.EventActivatedMsg.ActivationMethod;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
+import tod.tools.scheduling.Scheduled;
+import tod.tools.scheduling.IJobScheduler.JobPriority;
 import zz.utils.Utils;
 import zz.utils.primitive.IntArray;
 import zz.utils.ui.ResourceUtils.ImageResource;
@@ -170,6 +172,7 @@ public abstract class AbstractSimpleEventNode extends AbstractEventNode
 	}
 	
 	@Override
+	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
 	public void mousePressed(MouseEvent aEvent)
 	{
 		if (getListPanel() == null) return;

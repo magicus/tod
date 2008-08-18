@@ -29,73 +29,32 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.tools.monitoring;
+package tod.tools.scheduling;
 
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import tod.core.DebugFlags;
-import tod.tools.monitoring.MonitoringClient.MonitorId;
+import tod.tools.scheduling.IJobScheduler.JobPriority;
 
-public class MonitoringServer extends UnicastRemoteObject
-implements RIMonitoringServer
+/**
+ * This annotation permits to transparently execute the method they
+ * apply to through a scheduler.
+ * The class that declares the method must implement {@link IJobSchedulerProvider}
+ * so that the correct scheduler can be used.
+ * Only methods that return void can be marked by this annotation. 
+ * @author gpothier
+ */
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Scheduled
 {
-	private static MonitoringServer INSTANCE;
-	static
-	{
-		try
-		{
-			INSTANCE = new MonitoringServer();
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-
-	/**
-	 * Retrieves the singleton instance.
-	 */
-	public static MonitoringServer get()
-	{
-		return INSTANCE;
-	}
-	
-	private Map<MonitorId, TaskMonitor> itsMonitorsMap =
-		new HashMap<MonitorId, TaskMonitor>();
-	
-	private MonitoringServer() throws RemoteException
-	{
-	}
-
-	public void monitorCancelled(MonitorId aId)
-	{
-		TaskMonitor theMonitor = itsMonitorsMap.get(aId);
-		if (theMonitor == null) return; // The monitored task has already finished
-		if (DebugFlags.TRACE_MONITORING) System.out.println("Monitor cancelled: "+aId);
-		theMonitor.cancel();
-	}
-
-	/**
-	 * Assigns a monitor to a monitor id.
-	 */
-	public void assign(MonitorId aId, TaskMonitor aMonitor)
-	{
-		if (DebugFlags.TRACE_MONITORING) System.out.println("Assigning monitor "+aId);
-		assert aId != null;
-		assert aMonitor != null;
-		itsMonitorsMap.put(aId, aMonitor);
-	}
+	JobPriority value() default JobPriority.DEFAULT;
 	
 	/**
-	 * Removes the monitor assigned to the given id.
+	 * Indicates if other jobs should be cancelled prior to submitting the new job.
+	 * @return
 	 */
-	public void delete(MonitorId aId)
-	{
-		if (DebugFlags.TRACE_MONITORING) System.out.println("Deleting monitor "+aId);
-		TaskMonitor theMonitor = itsMonitorsMap.remove(aId);
-		if (theMonitor == null) throw new RuntimeException("No monitor for id: "+aId);		
-	}
+	boolean cancelOthers() default false;
 }

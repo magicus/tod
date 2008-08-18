@@ -51,6 +51,7 @@ public class LogViewBrowserNavigator extends BrowserNavigator<LogViewSeed>
 	
 	public LogViewBrowserNavigator(IGUIManager aGUIManager)
 	{
+		super(aGUIManager.getJobScheduler());
 		itsGUIManager = aGUIManager;
 		itsViewContainer = new JPanel(new StackLayout());
 	}
