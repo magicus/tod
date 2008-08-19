@@ -9,6 +9,7 @@ Contents:
 * "The trace navigator":#traceNavigator
 * "Where to start":#start
 * "TOD options":#options
+* "TOD and AspectJ":#aspectj
 
 {a: running}
 h2. Running your program
@@ -111,3 +112,26 @@ which means that classes from the JDK are excluded from the scope. To exclude mo
 <pre>
 [+my.package.** +my.other.package.**]
 </pre>
+
+{a: aspectj}
+h2. TOD and AspectJ
+
+TOD provides specific features for debugging AspectJ programs (see "Extending Omniscient Debugging to Support Aspect-Oriented Programming":http://pleiad.dcc.uchile.cl/papers/2008/pothierTanter-sac2008.pdf). 
+In order to enable those features, the debugged program must be compiled with a patched version of abc, which you can download "here":http://pleiad.dcc.uchile.cl/files/tod/abc-complete.jar. This compiler tags each bytecode of the program with information that indicates the purpose of this bytecode.
+
+Compile your program with abc to generate the tagged classes:
+
+<pre>
+java -jar abc-complete.jar \
+  -sourceroots <your source path> \
+  -d <your output directory> \
+  -tag-instructions \
+  -around-inlining:off -before-after-inlining:off \
+  -ext zz.abc.sourceloc
+</pre>
+
+Once your program has been compiled, you must tell Eclipse to use the tagged classes instead of those compiled by AJDT. You must modify the classpath of the launch configuration you use to run your program: remove the default entries and add the folder containing the tagged class as a new User entry.
+
+Then you must tell TOD to actually use the tags contained in the classes. In the TOD option tab of the launch configuration, enable the "Include aspect info" option.
+
+
