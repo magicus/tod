@@ -38,7 +38,7 @@ import tod.tools.parsers.WorkingSetParser;
 
 
 /**
- * This class parses working sets for {@link reflex.std.run.WorkingSetHandler}
+ * This class parses working sets.
  * 
  * 
  * Pseudo Grammar for working set parsing is:

@@ -38,14 +38,6 @@ import tod.core.DebugFlags;
 
 /**
  * Permits to identify an object.
- * There are two identification schemes:
- * <li>Instances of classes that were elegible to the 
- * {@link reflex.lib.logging.core.impl.mop.identification.ObjectIdentifier} 
- * mechanism have a truly unique identifier; they are represented
- * by the {@link ObjectUID} inner class.
- * <li>Instances of other classes are represented by a 
- * {@link ObjectHash}, which provides only a hint to a object's identity,
- * as several objects can have the same hash code.
  * @author gpothier
  */
 public class ObjectId implements Serializable

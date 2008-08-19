@@ -77,11 +77,6 @@ public class RemoteGridSession extends AbstractSession
 			itsMaster.setConfig(getConfig());
 			if (! itsUseExisting) itsMaster.clear();
 			
-//			itsBrowser = (ILogBrowser) ReflexBridge.create(
-//					"tod.impl.dbgrid.GridLogBrowser", 
-//					new Class[] {RIGridMaster.class},
-//					itsMaster);
-		
 			itsBrowser = DebuggerGridConfig.createRemoteLogBrowser(this, itsMaster);
 		}
 		catch (UnknownHostException e)

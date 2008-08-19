@@ -137,8 +137,6 @@ public interface ClassSelector extends IFilter<String>
 	
 	/**
 	 * A class selector base on a working set.
-	 * 
-	 * @see reflex.std.run.WorkingSetHandler
 	 * @author gpothier
 	 */
 	public static class WorkingSetClassSelector implements ClassSelector

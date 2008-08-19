@@ -40,8 +40,6 @@ import zz.eclipse.utils.EclipseUtils;
  */
 public class TODPlugin extends AbstractUIPlugin
 {
-	public static final boolean USE_REFLEX_BRIDGE = false;
-	
 	// The shared instance.
 	private static TODPlugin plugin;
 	
@@ -105,32 +103,6 @@ public class TODPlugin extends AbstractUIPlugin
 		plugin = null;
 	}
 	
-	private void msgBridgeProblem()
-	{
-		Display.getDefault().syncExec(new Runnable()
-		{
-			public void run()
-			{
-				String theArgs = System.getProperty("eclipse.vmargs");
-				String thePath = getLibraryPath() + "/reflex-bridge.jar"; 
-				
-				String theMessage = "Eclipse must be launched with special JVM arguments " +
-						"for TOD to work. Check that your eclipse.ini file (in the Eclipse " +
-						"installation directory) contains the following text:\n" +
-						"-javaagent:" + thePath + "\n" +
-						"If you launch Eclipse with a custom launch script and the script " +
-						"passes -vmargs to the Eclipse launcher, add the above argument " +
-						"right after -vmargs.\n" +
-						"The current vmargs are: "+theArgs;
-
-				Shell theShell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-				MessageDialog.openError(theShell, "TOD plugin - Reflex Bridge not found", theMessage);
-			}
-		});
-	}
-		
-
-
 	/**
 	 * Returns the shared instance.
 	 */

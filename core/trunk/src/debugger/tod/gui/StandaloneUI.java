@@ -99,7 +99,6 @@ public class StandaloneUI extends JPanel
 	
 	public static void main(String[] args)
 	{
-//		ReflexRiver.setup();
 		URI theUri = args.length > 0 ? URI.create(args[0]) : null;
 		
 		JFrame theFrame = new JFrame("TOD");
