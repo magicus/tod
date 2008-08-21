@@ -109,11 +109,11 @@ public class GridVariableWriteEvent extends GridEventNG
 				getVariableId());
 		
        	if (theInfo == null) theInfo = new LocalVariableInfo(
-       			(short)-1, 
-       			(short)-1, 
+       			(short) -1, 
+       			(short) -1, 
        			"$"+getVariableId(), 
        			"", 
-       			(short)-1);
+       			(short) getVariableId());
 
 		theEvent.setVariable(theInfo); 
 		
