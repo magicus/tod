@@ -487,6 +487,8 @@ public abstract class DatabaseNode
 	 */
 	private class FlusherThread extends Thread
 	{
+		private static final int SECS_BEFORE_FLUSH = 5;
+		
 		private boolean itsActive = false;
 		private boolean itsFlushed = true;
 		
@@ -514,7 +516,7 @@ public abstract class DatabaseNode
 			{
 				while(true)
 				{
-					wait(2000);
+					wait(SECS_BEFORE_FLUSH * 1000);
 
 					if (! itsActive)
 					{
@@ -528,9 +530,9 @@ public abstract class DatabaseNode
 					}
 					else
 					{
-						// Flush oldest event if the newest was created more than 2s after
+						// Flush old events and objects
 						System.out.println("[FlusherThread] Performing partial flush...");
-						flushOld(2000000000, true);
+						flushOld(SECS_BEFORE_FLUSH * 1000000000L, true);
 						System.out.println("[FlusherThread] Partial flush done.");
 					}
 					
