@@ -155,6 +155,10 @@ implements ReorderingBufferListener
 				System.out.println("[EventDatabase] Flush cancelled.");
 				break;
 			}
+			
+			// This is a hack that tries to boost the ability of the event pusher
+			// thread to cancel the flush.
+			if (aFlushMonitor != null && theCount % 16 == 0) Thread.yield();
 
 			processEvent(itsReorderingBuffer.pop());
 			theCount++;
@@ -177,6 +181,10 @@ implements ReorderingBufferListener
 				System.out.println("[EventDatabase] FlushOld cancelled.");
 				break;
 			}
+			
+			// This is a hack that tries to boost the ability of the event pusher
+			// thread to cancel the flush.
+			if (aFlushMonitor != null && theCount % 16 == 0) Thread.yield();
 			
 			flushOldestEvent();
 			theCount++;

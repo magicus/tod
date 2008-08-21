@@ -214,7 +214,7 @@ public abstract class DatabaseNode
 			if (aCancellable) itsFlushMonitor = new FlushMonitor();
 			int theObjectsCount = 0;
 			
-			System.out.println("[DatabaseNode] Flushing...");
+			System.out.println("[DatabaseNode] Flushing... (cancellable: "+aCancellable+")");
 			
 			// Flush objects database
 			for (ObjectsDatabase theDatabase : itsObjectsDatabases)
@@ -228,8 +228,6 @@ public abstract class DatabaseNode
 			int theEventsCount = itsEventsDatabase.flush(itsFlushMonitor);
 			
 			System.out.println("[DatabaseNode] Flushed "+theEventsCount+" events");
-			
-			itsFlushMonitor = null;
 			
 			return theObjectsCount+theEventsCount;
 		}
@@ -248,7 +246,7 @@ public abstract class DatabaseNode
 		try
 		{
 			if (aCancellable) itsFlushMonitor = new FlushMonitor();
-			System.out.println("[FlusherThread] Flushing events and  objects older than "+(aOldness/1000000)+"ms...");
+			System.out.println("[FlusherThread] Flushing events and  objects older than "+(aOldness/1000000)+"ms... (cancellable: "+aCancellable+")");
 			
 			int theCount = 0;
 			theCount += itsEventsDatabase.flushOld(aOldness, itsFlushMonitor);
@@ -495,6 +493,7 @@ public abstract class DatabaseNode
 		public FlusherThread()
 		{
 			super("FlusherThread");
+			setPriority(MIN_PRIORITY);
 			start();
 		}
 		
