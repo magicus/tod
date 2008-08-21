@@ -35,7 +35,9 @@ import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
 import tod.impl.database.structure.standard.TagMap;
 
 /**
- * This attribute indicates ???? don't really know...
+ * This attribute indicates the advice source id of each bytecode.
+ * The source location corresponding to the source id can be found 
+ * through {@link AspectInfoAttribute}.
  * @author gpothier
  */
 public class SootInstructionSourceAttribute extends SootIntAttribute
