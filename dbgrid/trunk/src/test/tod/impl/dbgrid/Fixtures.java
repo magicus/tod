@@ -61,7 +61,12 @@ public class Fixtures
 	
 	public static void assertEquals(String aMessage, GridEvent aRefEvent, GridEvent aEvent)
 	{
-		if (! Utils.fieldsEqual(aRefEvent, aEvent, false)) fail(aMessage);
+		if (! Utils.fieldsEqual(aRefEvent, aEvent, false)) 
+		{
+			System.out.println("ref:  "+aRefEvent);
+			System.out.println("test: "+aEvent);
+			fail(aMessage);
+		}
 	}
 
 	public static void assertEquals(String aMessage, ILogEvent aRefEvent, ILogEvent aEvent)

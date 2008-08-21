@@ -209,27 +209,34 @@ public abstract class DatabaseNode
 	
 	public synchronized int flush(boolean aCancellable)
 	{
-		if (aCancellable) itsFlushMonitor = new FlushMonitor();
-		int theObjectsCount = 0;
-		
-		System.out.println("[DatabaseNode] Flushing...");
-		
-		// Flush objects database
-		for (ObjectsDatabase theDatabase : itsObjectsDatabases)
+		try
 		{
-			if (theDatabase != null) theObjectsCount += theDatabase.flush(itsFlushMonitor);
-		}
-		
-		System.out.println("[DatabaseNode] Flushed "+theObjectsCount+" objects");
+			if (aCancellable) itsFlushMonitor = new FlushMonitor();
+			int theObjectsCount = 0;
+			
+			System.out.println("[DatabaseNode] Flushing...");
+			
+			// Flush objects database
+			for (ObjectsDatabase theDatabase : itsObjectsDatabases)
+			{
+				if (theDatabase != null) theObjectsCount += theDatabase.flush(itsFlushMonitor);
+			}
+			
+			System.out.println("[DatabaseNode] Flushed "+theObjectsCount+" objects");
 
-		// Flush events database
-		int theEventsCount = itsEventsDatabase.flush(itsFlushMonitor);
-		
-		System.out.println("[DatabaseNode] Flushed "+theEventsCount+" events");
-		
-		itsFlushMonitor = null;
-		
-		return theObjectsCount+theEventsCount;
+			// Flush events database
+			int theEventsCount = itsEventsDatabase.flush(itsFlushMonitor);
+			
+			System.out.println("[DatabaseNode] Flushed "+theEventsCount+" events");
+			
+			itsFlushMonitor = null;
+			
+			return theObjectsCount+theEventsCount;
+		}
+		finally
+		{
+			itsFlushMonitor = null;
+		}
 	}
 	
 	/**
@@ -238,20 +245,27 @@ public abstract class DatabaseNode
 	 */
 	public synchronized int flushOld(long aOldness, boolean aCancellable)
 	{
-		if (aCancellable) itsFlushMonitor = new FlushMonitor();
-		System.out.println("[FlusherThread] Flushing events and  objects older than "+(aOldness/1000000)+"ms...");
-		
-		int theCount = 0;
-		theCount += itsEventsDatabase.flushOld(aOldness, itsFlushMonitor);
-		
-		for (ObjectsDatabase theDatabase : itsObjectsDatabases)
+		try
 		{
-			if (theDatabase != null) theCount += theDatabase.flushOld(aOldness, itsFlushMonitor);
-		}	
-		
-		System.out.println("[FlusherThread] Flushed "+theCount+" events and objects.");
+			if (aCancellable) itsFlushMonitor = new FlushMonitor();
+			System.out.println("[FlusherThread] Flushing events and  objects older than "+(aOldness/1000000)+"ms...");
+			
+			int theCount = 0;
+			theCount += itsEventsDatabase.flushOld(aOldness, itsFlushMonitor);
+			
+			for (ObjectsDatabase theDatabase : itsObjectsDatabases)
+			{
+				if (theDatabase != null) theCount += theDatabase.flushOld(aOldness, itsFlushMonitor);
+			}	
+			
+			System.out.println("[FlusherThread] Flushed "+theCount+" events and objects.");
 
-		return theCount;
+			return theCount;
+		}
+		finally
+		{
+			itsFlushMonitor = null;
+		}
 	}
 	
 	public synchronized void flushOldestEvent()
