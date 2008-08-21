@@ -83,6 +83,7 @@ import tod.gui.view.IEventListView;
 import tod.gui.view.LogView;
 import tod.gui.view.controlflow.CFlowView;
 import tod.impl.common.Bookmarks;
+import tod.tools.scheduling.IJobSchedulerProvider;
 import tod.tools.scheduling.JobScheduler;
 import tod.tools.scheduling.JobSchedulerMonitor;
 import tod.tools.scheduling.Scheduled;
@@ -97,7 +98,7 @@ import zz.utils.ui.UniversalRenderer;
  * @author gpothier
  */
 public abstract class MinerUI extends BusOwnerPanel
-implements ILocationSelectionListener, IGUIManager
+implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider
 {
 	static
 	{
