@@ -5,6 +5,10 @@ Proprietary and confidential
 */
 package tod.impl.evdbng.db;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+
 import tod.core.DebugFlags;
 import tod.core.database.structure.IStructureDatabase;
 import tod.impl.database.IBidiIterator;
@@ -35,6 +39,8 @@ public class EventDatabaseNG extends EventDatabase
 	 */
 	private final SequenceTree itsTimestampTree;
 	
+	private PrintWriter itsLogWriter;
+	
 	/**
 	 * Creates a new database using the specified files.
 	 */
@@ -47,6 +53,18 @@ public class EventDatabaseNG extends EventDatabase
 		itsEventList = new EventList(getStructureDatabase(), aNodeId, itsIndexesFile, aEventsFile);
 		itsIndexes = new Indexes(itsIndexesFile);
 		itsTimestampTree = new SequenceTree("[EventDatabase] timestamp tree", itsIndexesFile);
+		
+		if (DebugFlags.DB_LOG_DIR != null) 
+		{
+			try
+			{
+				itsLogWriter = new PrintWriter(new File(DebugFlags.DB_LOG_DIR+"/evdb.log"));
+			}
+			catch (FileNotFoundException e)
+			{
+				e.printStackTrace();
+			}
+		}
 	}
 
 	@Override
@@ -98,7 +116,12 @@ public class EventDatabaseNG extends EventDatabase
 
 		int theId = itsEventList.add(theEvent);
 		itsTimestampTree.add(aEvent.getTimestamp());
-		if (! DebugFlags.DISABLE_INDEXES) theEvent.index(itsIndexes, theId);		
+		if (! DebugFlags.DISABLE_INDEXES) theEvent.index(itsIndexes, theId);	
+		if (DebugFlags.DB_LOG_DIR != null) 
+		{
+			itsLogWriter.println(theId+" - "+aEvent);
+			itsLogWriter.flush();
+		}
 	}
 	
 	/**

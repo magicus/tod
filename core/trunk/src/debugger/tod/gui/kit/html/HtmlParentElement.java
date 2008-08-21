@@ -43,7 +43,7 @@ public abstract class HtmlParentElement extends HtmlElement
 	private List<HtmlElement> itsChildren = null;
 
 	@Override
-	public void setDoc(HtmlDoc aDoc)
+	public synchronized void setDoc(HtmlDoc aDoc)
 	{
 		super.setDoc(aDoc);
 		if (itsChildren != null) for (HtmlElement theElement : itsChildren)
@@ -52,7 +52,7 @@ public abstract class HtmlParentElement extends HtmlElement
 		}
 	}
 	
-	public void add(HtmlElement aElement)
+	public synchronized void add(HtmlElement aElement)
 	{
 		assert aElement != null;
 		if (itsChildren == null) itsChildren = new ArrayList<HtmlElement>();
@@ -64,14 +64,14 @@ public abstract class HtmlParentElement extends HtmlElement
 		}
 	}
 	
-	public void remove(HtmlElement aElement)
+	public synchronized void remove(HtmlElement aElement)
 	{
 		itsChildren.remove(aElement);
 		aElement.setDoc(null);
 		update();
 	}
 	
-	public void clear()
+	public synchronized void clear()
 	{
 		if (itsChildren != null) 
 		{
@@ -111,7 +111,7 @@ public abstract class HtmlParentElement extends HtmlElement
 	protected abstract void renderAttributes(StringBuilder aBuilder);
 	
 	
-	protected void renderChildren(StringBuilder aBuilder)
+	protected synchronized void renderChildren(StringBuilder aBuilder)
 	{
 		if (itsChildren != null) for (HtmlElement theElement : itsChildren)
 		{

@@ -73,12 +73,14 @@ public interface IJobScheduler
 		/**
 		 * Priority for jobs that have been explicitly requested by the user.
 		 */
-		EXPLICIT(1),
+		EXPLICIT(10),
 		
 		/**
 		 * Priority for auxilliary jobs that have not been explicitly requested by the user.
 		 */
-		AUTO(-1);
+		AUTO(-10),
+		
+		LOW(-20);
 		
 		private final int itsValue;
 

@@ -177,7 +177,17 @@ public class DebugFlags
 	 */
 	public static final boolean SHOW_DEBUG_GUI = ConfigUtils.readBoolean("show-debug-gui", false);
 	
+	/**
+	 * Tracing of the monitoring framework
+	 */
 	public static final boolean TRACE_MONITORING = ConfigUtils.readBoolean("trace-monitoring", false);
+	
+	/**
+	 * A directory where the contents of the database is logged in a human-readable form.
+	 * If null, no logging is performed  
+	 */
+	public static final String DB_LOG_DIR = ConfigUtils.readString("db-log-dir", null);
+	
 	
 	private static PrintStream createStream(String aName)
 	{
@@ -209,5 +219,7 @@ public class DebugFlags
 		if (LOCAL_COLLECTOR_STORE == false) System.err.println("******* Warning: LOCAL_COLLECTOR_STORE (DebugFlags)");
 		if (DISPATCH_FAKE_1 == true) System.err.println("******* Warning: DISPATCH_FAKE_1 (DebugFlags)");
 		if (IGNORE_HOST == true) System.err.println("******* Warning: IGNORE_HOST (DebugFlags)");
+		if (DB_LOG_DIR != null) System.err.println("******* Warning: DB_LOG_DIR (DebugFlags)");
+
 	}
 }

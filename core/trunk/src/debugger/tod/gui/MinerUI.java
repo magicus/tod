@@ -85,6 +85,8 @@ import tod.gui.view.controlflow.CFlowView;
 import tod.impl.common.Bookmarks;
 import tod.tools.scheduling.JobScheduler;
 import tod.tools.scheduling.JobSchedulerMonitor;
+import tod.tools.scheduling.Scheduled;
+import tod.tools.scheduling.IJobScheduler.JobPriority;
 import tod.utils.TODUtils;
 import zz.utils.SimpleAction;
 import zz.utils.ui.StackLayout;
@@ -474,6 +476,7 @@ implements ILocationSelectionListener, IGUIManager
 	/**
 	 * Shows a list of all the events that occurred at the specified line.
 	 */
+	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
 	public void showEventsForLine(IBehaviorInfo aBehavior, int aLine, IEventFilter aFilter)
 	{
 		ILogBrowser theLogBrowser = getLogBrowser();
@@ -527,6 +530,7 @@ implements ILocationSelectionListener, IGUIManager
 		return aBaseBrowser.createIntersection(theFilter);
 	}
 	
+	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
 	public void showNextEventForLine(IBehaviorInfo aBehavior, int aLine)
 	{
 		IEventListView theView = getEventListView();
@@ -547,6 +551,7 @@ implements ILocationSelectionListener, IGUIManager
 		}
 	}
 	
+	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
 	public void showPreviousEventForLine(IBehaviorInfo aBehavior, int aLine)
 	{
 		IEventListView theView = getEventListView();

@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import tod.agent.AgentConfig;
+import tod.agent.AgentDebugFlags;
 
 /**
  * Sends the packets bufferred by a set of {@link PacketBuffer} to a given
@@ -307,6 +308,10 @@ public class PacketBufferSender extends Thread
 			else
 			{
 				// The packet is split
+				if (AgentDebugFlags.TRANSPORT_LONGPACKETS_LOG) 
+				{
+					System.out.println("[TOD-PacketBufferSender] Starting long packet for thread "+itsThreadId+" ("+aLength+" bytes)");
+				}
 				while (aLength > 0)
 				{
 					int theCount = Math.min(aLength, remaining());
@@ -317,6 +322,10 @@ public class PacketBufferSender extends Thread
 						aLength -= theCount;
 					}
 
+					if (AgentDebugFlags.TRANSPORT_LONGPACKETS_LOG) 
+					{
+						System.out.println("[TOD-PacketBufferSender] Long packet for thread "+itsThreadId+": sent "+theCount+" bytes");
+					}
 					if (aLength > 0) itsCurrentCleanEnd = false;
 					swapBuffers(); // Swap anyway here - we want to start a fresh packet after the long one.
 					if (aLength > 0) itsCurrentCleanStart = false;

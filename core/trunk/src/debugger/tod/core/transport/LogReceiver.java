@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 
 import tod.agent.AgentConfig;
+import tod.agent.AgentDebugFlags;
 import tod.agent.transport.Commands;
 import tod.agent.transport.LowLevelEventType;
 import tod.core.DebugFlags;
@@ -283,7 +284,7 @@ public abstract class LogReceiver
 		{
 			try
 			{
-				// Read and decode meta-packet header header
+				// Read and decode meta-packet header 
 				aDataIn.readFully(itsHeaderBuffer.array());
 				itsHeaderBuffer.position(0);
 				itsHeaderBuffer.limit(9);
@@ -305,8 +306,16 @@ public abstract class LogReceiver
 					if (theBuffer == null)
 					{
 						theBuffer = new ThreadPacketBuffer();
+						
+						if (AgentDebugFlags.TRANSPORT_LONGPACKETS_LOG)
+							System.out.println("[LogReceiver] Starting long packet for thread "+theThreadId);
+						
 						itsThreadPacketBuffers.put(theThreadId, theBuffer);
 					}
+					
+					if (AgentDebugFlags.TRANSPORT_LONGPACKETS_LOG)
+						System.out.println("[LogReceiver] Long packet for thread "+theThreadId+", appending "+theSize+" bytes");
+					
 					theBuffer.append(itsDataBuffer.array(), 0, itsDataBuffer.remaining());
 				}
 				else
@@ -315,9 +324,19 @@ public abstract class LogReceiver
 					if (theBuffer != null)
 					{
 						// Process outstanding long packet.
+						assert ! theCleanStart;
+						
+						if (AgentDebugFlags.TRANSPORT_LONGPACKETS_LOG)
+							System.out.println("[LogReceiver] Long packet for thread "+theThreadId+", appending "+theSize+" bytes");
+						
 						theBuffer.append(itsDataBuffer.array(), 0, itsDataBuffer.remaining());
+						
 						BufferDataInput theStream = new BufferDataInput(theBuffer.toByteBuffer());
-						processThreadPackets(theThreadId, theStream, aDataOut);
+						
+						if (AgentDebugFlags.TRANSPORT_LONGPACKETS_LOG)
+							System.out.println("[LogReceiver] Starting to process long packet for thread "+theThreadId+": "+theBuffer);
+						
+						processThreadPackets(theThreadId, theStream, aDataOut, AgentDebugFlags.TRANSPORT_LONGPACKETS_LOG);
 						
 						// Remove long packet from map
 						itsThreadPacketBuffers.remove(theThreadId);
@@ -325,7 +344,7 @@ public abstract class LogReceiver
 					else
 					{
 						BufferDataInput theStream = new BufferDataInput(itsDataBuffer);
-						processThreadPackets(theThreadId, theStream, aDataOut);
+						processThreadPackets(theThreadId, theStream, aDataOut, false);
 					}
 				}
 			}
@@ -347,7 +366,11 @@ public abstract class LogReceiver
 		return true;
 	}
 
-	protected void processThreadPackets(int aThreadId, BufferDataInput aStream, DataOutputStream aDataOut)
+	protected void processThreadPackets(
+			int aThreadId, 
+			BufferDataInput aStream, 
+			DataOutputStream aDataOut,
+			boolean aLogPackets)
 	throws IOException
 	{
 		while(aStream.hasMore())
@@ -387,7 +410,9 @@ public abstract class LogReceiver
 			else
 			{
 				LowLevelEventType theType = LowLevelEventType.VALUES[theMessage];
+				if (aLogPackets) System.out.println("[LogReceiver] Processing "+theType+" (remaining: "+aStream.remaining()+")");
 				processEvent(aThreadId, theType, aStream);
+				if (aLogPackets) System.out.println("[LogReceiver] Done processing "+theType+" (remaining: "+aStream.remaining()+")");
 			}
 			
 			if (itsMonitor != null 
@@ -435,6 +460,12 @@ public abstract class LogReceiver
 			ByteBuffer theBuffer = ByteBuffer.wrap(itsBuffer.toByteArray());
 			theBuffer.order(ByteOrder.nativeOrder());
 			return theBuffer;
+		}
+		
+		@Override
+		public String toString()
+		{
+			return "ThreadPacketBuffer: "+itsBuffer.size()+" bytes";
 		}
 	}
 	
@@ -528,6 +559,11 @@ public abstract class LogReceiver
 		public boolean hasMore()
 		{
 			return itsBuffer.remaining() > 0;
+		}
+		
+		public int remaining()
+		{
+			return itsBuffer.remaining();
 		}
 		
 		public boolean readBoolean()

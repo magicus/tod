@@ -46,6 +46,8 @@ import tod.tools.scheduling.IJobScheduler.JobPriority;
 public abstract class AsyncHtmlGroup extends HtmlGroup
 {
 	private final IJobScheduler itsJobScheduler;
+	private final JobPriority itsJobPriority;
+	
 	private ITaskMonitor itsMonitor;
 	private boolean itsCancelled;
 
@@ -59,30 +61,40 @@ public abstract class AsyncHtmlGroup extends HtmlGroup
 	public AsyncHtmlGroup(IJobScheduler aJobScheduler, JobPriority aJobPriority, String aTempText)
 	{
 		itsJobScheduler = aJobScheduler;
+		itsJobPriority = aJobPriority;
 		itsText = HtmlText.create(aTempText);
 		add(itsText);
+	}
+	
+	@Override
+	public void setDoc(HtmlDoc aDoc)
+	{
+		super.setDoc(aDoc);
 		
-		itsMonitor = itsJobScheduler.submit(aJobPriority, new Runnable()
+		if (itsMonitor == null && ! itsCancelled)
 		{
-			public void run()
+			itsMonitor = itsJobScheduler.submit(itsJobPriority, new Runnable()
 			{
-				try
+				public void run()
 				{
-					runJob();
-					postUpdate(Outcome.SUCCESS);
+					try
+					{
+						runJob();
+						postUpdate(Outcome.SUCCESS);
+					}
+					catch (TaskCancelledException e)
+					{
+						postUpdate(Outcome.CANCELLED);
+					}
+					catch (Throwable e)
+					{
+						System.err.println("Error executing job:");
+						e.printStackTrace();
+						postUpdate(Outcome.FAILURE);
+					}
 				}
-				catch (TaskCancelledException e)
-				{
-					postUpdate(Outcome.CANCELLED);
-				}
-				catch (Throwable e)
-				{
-					System.err.println("Error executing job:");
-					e.printStackTrace();
-					postUpdate(Outcome.FAILURE);
-				}
-			}
-		});
+			});
+		}
 	}
 	
 	public void cancelJob()

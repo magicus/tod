@@ -156,7 +156,7 @@ public class WatchEntryNode extends JPanel
 		
 		public NeighbourValueAsyncPanel(IJobScheduler aJobScheduler)
 		{
-			super(aJobScheduler, JobPriority.AUTO);
+			super(aJobScheduler, JobPriority.LOW);
 		}
 		
 		protected abstract String getLabel();

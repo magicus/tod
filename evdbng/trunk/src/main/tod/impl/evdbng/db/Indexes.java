@@ -86,7 +86,7 @@ public class Indexes
 		itsVariableIndexSet = new SimpleIndexSet(itsIndexManager, "variable", aFile, STRUCTURE_VAR_COUNT+1);
 
 		itsArrayIndexIndexSets = createSplitIndex(
-				"index", 
+				"arIndex", 
 				SimpleIndexSet.class, 
 				DebuggerGridConfigNG.INDEX_ARRAY_INDEX_PARTS,
 				aFile);

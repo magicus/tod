@@ -56,6 +56,10 @@ public class AgentDebugFlags
 	 */
 	public static final boolean COLLECTOR_IGNORE_ALL = false;
 
+	/**
+	 * Enables logging of long packets processing.
+	 */
+	public static final boolean TRANSPORT_LONGPACKETS_LOG = true;
 
 
 	private static PrintStream createStream(String aName)
@@ -80,5 +84,6 @@ public class AgentDebugFlags
 	{
 		if (DISABLE_EVENT_SEND == true) System.err.println("******* Warning: DISABLE_EVENT_SEND (DebugFlags)");
 		if (COLLECTOR_IGNORE_ALL == true) System.err.println("******* Warning: COLLECTOR_IGNORE_ALL (DebugFlags)");
+		if (TRANSPORT_LONGPACKETS_LOG == true) System.err.println("******* Warning: TRANSPORT_LONGPACKETS_LOG (DebugFlags)");
 	}
 }

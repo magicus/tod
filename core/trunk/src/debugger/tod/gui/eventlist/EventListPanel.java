@@ -170,7 +170,7 @@ implements MouseWheelListener, IJobSchedulerProvider
 		return itsGUIManager;
 	}
 	
-	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
+	@Scheduled(value = JobPriority.EXPLICIT)
 	public void forward(final int aCount)
 	{
 		if (itsCore == null) return;
@@ -178,7 +178,7 @@ implements MouseWheelListener, IJobSchedulerProvider
 		updateList();
 	}
 	
-	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
+	@Scheduled(value = JobPriority.EXPLICIT)
 	public void backward(final int aCount)
 	{
 		if (itsCore == null) return;
@@ -186,7 +186,7 @@ implements MouseWheelListener, IJobSchedulerProvider
 		updateList();
 	}
 	
-	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
+	@Scheduled(value = JobPriority.EXPLICIT)
 	public void setTimestamp(final long aTimestamp)
 	{
 		if (itsCore == null) return;

@@ -6,6 +6,12 @@ Proprietary and confidential
 package tod.impl.evdbng.db.file;
 
 import static tod.impl.evdbng.DebuggerGridConfigNG.DB_MAX_INDEX_LEVELS;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+
+import tod.core.DebugFlags;
 import tod.impl.evdbng.db.file.PagedFile.ChainedPageIOStream;
 import tod.impl.evdbng.db.file.PagedFile.Page;
 import tod.impl.evdbng.db.file.PagedFile.PageIOStream;
@@ -66,6 +72,8 @@ public abstract class BTree<T extends Tuple>
 	 */
 	private final TupleBufferFactory<T> itsTupleBufferFactory = getTupleBufferFactory();
 	
+	private PrintWriter itsLogWriter;
+	
 	public BTree(String aName, PagedFile aFile)
 	{
 		itsName = aName;
@@ -77,6 +85,8 @@ public abstract class BTree<T extends Tuple>
 		itsRootPage = itsChains[0].getCurrentPage();
 		itsFirstLeafPageId = itsRootPage.getPageId();
 		itsRootLevel = 0;
+		
+		setup();
 	}
 	
 	/**
@@ -110,9 +120,25 @@ public abstract class BTree<T extends Tuple>
 			// tuple count
 			itsTupleCount[i] = aStream.readTupleCount();
 		}
+		
+		setup();
 	}
 
-	
+	private void setup()
+	{
+		if (DebugFlags.DB_LOG_DIR != null) 
+		{
+			try
+			{
+				itsLogWriter = new PrintWriter(new File(DebugFlags.DB_LOG_DIR+"/tree-"+itsName+".log"));
+			}
+			catch (FileNotFoundException e)
+			{
+				e.printStackTrace();
+			}
+		}
+
+	}
 	/**
 	 * Writes this index to the given struct so that it can be reloaded
 	 * later.
@@ -181,6 +207,13 @@ public abstract class BTree<T extends Tuple>
 	{
 		if (itsFirstKey == -1) itsFirstKey = aKey;
 		assert itsLastKey <= aKey;
+		
+		if (DebugFlags.DB_LOG_DIR != null) 
+		{
+			itsLogWriter.println(itsLeafTupleCount+" - "+aKey);
+			itsLogWriter.flush();
+		}
+		
 		itsLastKey = aKey;
 		PageIOStream theStream = addKey(aKey, itsTupleBufferFactory.getDataSize(), 0);
 		itsLeafTupleCount++;
