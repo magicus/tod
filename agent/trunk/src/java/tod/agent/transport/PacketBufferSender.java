@@ -294,7 +294,8 @@ public class PacketBufferSender extends Thread
 		{
 			int theOffset = 0;
 			
-			if (! aCanSplit)
+			// Note: we don't want to split small packets, hence the second condition
+			if (! aCanSplit || aLength <= AgentConfig.COLLECTOR_BUFFER_SIZE)
 			{
 				if (remaining() < aLength) swapBuffers();
 				_assert (remaining() >= aLength);
@@ -304,14 +305,14 @@ public class PacketBufferSender extends Thread
 			{
 				// The packet will not be split
 				itsCurrentBuffer.put(aBuffer, theOffset, aLength);
+				if (remaining() == 0) swapBuffers();
 			}
 			else
 			{
 				// The packet is split
 				if (AgentDebugFlags.TRANSPORT_LONGPACKETS_LOG) 
-				{
 					System.out.println("[TOD-PacketBufferSender] Starting long packet for thread "+itsThreadId+" ("+aLength+" bytes)");
-				}
+				
 				while (aLength > 0)
 				{
 					int theCount = Math.min(aLength, remaining());
@@ -323,12 +324,11 @@ public class PacketBufferSender extends Thread
 					}
 
 					if (AgentDebugFlags.TRANSPORT_LONGPACKETS_LOG) 
-					{
 						System.out.println("[TOD-PacketBufferSender] Long packet for thread "+itsThreadId+": sent "+theCount+" bytes");
-					}
+
 					if (aLength > 0) itsCurrentCleanEnd = false;
 					swapBuffers(); // Swap anyway here - we want to start a fresh packet after the long one.
-					if (aLength > 0) itsCurrentCleanStart = false;
+					itsCurrentCleanStart = false;
 				}
 			}
 		}

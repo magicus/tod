@@ -82,8 +82,8 @@ public class AgentDebugFlags
 
 	static
 	{
-		if (DISABLE_EVENT_SEND == true) System.err.println("******* Warning: DISABLE_EVENT_SEND (DebugFlags)");
-		if (COLLECTOR_IGNORE_ALL == true) System.err.println("******* Warning: COLLECTOR_IGNORE_ALL (DebugFlags)");
-		if (TRANSPORT_LONGPACKETS_LOG == true) System.err.println("******* Warning: TRANSPORT_LONGPACKETS_LOG (DebugFlags)");
+		if (DISABLE_EVENT_SEND == true) System.err.println("******* Warning: DISABLE_EVENT_SEND (AgentDebugFlags)");
+		if (COLLECTOR_IGNORE_ALL == true) System.err.println("******* Warning: COLLECTOR_IGNORE_ALL (AgentDebugFlags)");
+		if (TRANSPORT_LONGPACKETS_LOG == true) System.err.println("******* Warning: TRANSPORT_LONGPACKETS_LOG (AgentDebugFlags)");
 	}
 }

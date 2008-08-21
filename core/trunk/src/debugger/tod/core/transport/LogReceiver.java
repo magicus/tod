@@ -293,6 +293,9 @@ public abstract class LogReceiver
 				int theSize = itsHeaderBuffer.getInt(); 
 				int theFlags = itsHeaderBuffer.get();
 				
+				// These flags indicate if the beginning (resp. end) of the metapacket
+				// correspond to the beginning (resp. end) of a real packet.
+				// (otherwise, it means the real packets span several metapackets).
 				boolean theCleanStart = (theFlags & 2) != 0;
 				boolean theCleanEnd = (theFlags & 1) != 0;
 				
@@ -305,12 +308,18 @@ public abstract class LogReceiver
 					ThreadPacketBuffer theBuffer = itsThreadPacketBuffers.get(theThreadId);
 					if (theBuffer == null)
 					{
+						assert theCleanStart;
+						
 						theBuffer = new ThreadPacketBuffer();
 						
 						if (AgentDebugFlags.TRANSPORT_LONGPACKETS_LOG)
 							System.out.println("[LogReceiver] Starting long packet for thread "+theThreadId);
 						
 						itsThreadPacketBuffers.put(theThreadId, theBuffer);
+					}
+					else
+					{
+						assert ! theCleanStart;
 					}
 					
 					if (AgentDebugFlags.TRANSPORT_LONGPACKETS_LOG)
@@ -320,7 +329,7 @@ public abstract class LogReceiver
 				}
 				else
 				{
-					ThreadPacketBuffer theBuffer = itsThreadPacketBuffers.get(theThreadId);
+					ThreadPacketBuffer theBuffer = itsThreadPacketBuffers.remove(theThreadId);
 					if (theBuffer != null)
 					{
 						// Process outstanding long packet.
@@ -337,12 +346,11 @@ public abstract class LogReceiver
 							System.out.println("[LogReceiver] Starting to process long packet for thread "+theThreadId+": "+theBuffer);
 						
 						processThreadPackets(theThreadId, theStream, aDataOut, AgentDebugFlags.TRANSPORT_LONGPACKETS_LOG);
-						
-						// Remove long packet from map
-						itsThreadPacketBuffers.remove(theThreadId);
 					}
 					else
 					{
+						assert theCleanStart;
+						
 						BufferDataInput theStream = new BufferDataInput(itsDataBuffer);
 						processThreadPackets(theThreadId, theStream, aDataOut, false);
 					}
