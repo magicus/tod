@@ -188,6 +188,12 @@ public class DebugFlags
 	 */
 	public static final String DB_LOG_DIR = ConfigUtils.readString("db-log-dir", null);
 	
+	/**
+	 * Whether the FlusherThread should be enabled.
+	 */
+	public static final boolean ENABLE_AUTOFLUSH = ConfigUtils.readBoolean("enable-autoflush", false);
+	
+	
 	
 	private static PrintStream createStream(String aName)
 	{

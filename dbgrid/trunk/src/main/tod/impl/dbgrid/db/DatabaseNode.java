@@ -84,7 +84,7 @@ public abstract class DatabaseNode
 	
 	private StringIndexer itsStringIndexer;
 	
-	private FlusherThread itsFlusherThread = new FlusherThread();
+	private FlusherThread itsFlusherThread = DebugFlags.ENABLE_AUTOFLUSH ? new FlusherThread() : null;
 
 	public DatabaseNode() 
 	{
@@ -317,7 +317,7 @@ public abstract class DatabaseNode
 		}
 		
 		// This must be outside the lock otherwise it might deadlock.
-		itsFlusherThread.active();
+		if (itsFlusherThread != null) itsFlusherThread.active();
 	}
 	
 	public long getEventsCount()
