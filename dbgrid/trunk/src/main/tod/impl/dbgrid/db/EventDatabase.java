@@ -30,7 +30,6 @@ import tod.impl.dbgrid.IGridEventFilter;
 import tod.impl.dbgrid.db.DatabaseNode.FlushMonitor;
 import tod.impl.dbgrid.db.EventReorderingBuffer.ReorderingBufferListener;
 import tod.impl.dbgrid.messages.GridEvent;
-import tod.impl.dbgrid.test.TestMatching;
 import zz.utils.monitoring.AggregationType;
 import zz.utils.monitoring.Monitor;
 import zz.utils.monitoring.Probe;
