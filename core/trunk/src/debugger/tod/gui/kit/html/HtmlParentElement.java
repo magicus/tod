@@ -32,6 +32,7 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.gui.kit.html;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 
 /**
@@ -52,7 +53,7 @@ public abstract class HtmlParentElement extends HtmlElement
 		}
 	}
 	
-	public synchronized void add(HtmlElement aElement)
+	public void add(HtmlElement aElement)
 	{
 		assert aElement != null;
 		if (itsChildren == null) itsChildren = new ArrayList<HtmlElement>();
@@ -64,14 +65,14 @@ public abstract class HtmlParentElement extends HtmlElement
 		}
 	}
 	
-	public synchronized void remove(HtmlElement aElement)
+	public void remove(HtmlElement aElement)
 	{
 		itsChildren.remove(aElement);
 		aElement.setDoc(null);
 		update();
 	}
 	
-	public synchronized void clear()
+	public void clear()
 	{
 		if (itsChildren != null) 
 		{
@@ -111,10 +112,12 @@ public abstract class HtmlParentElement extends HtmlElement
 	protected abstract void renderAttributes(StringBuilder aBuilder);
 	
 	
-	protected synchronized void renderChildren(StringBuilder aBuilder)
+	protected void renderChildren(StringBuilder aBuilder)
 	{
-		if (itsChildren != null) for (HtmlElement theElement : itsChildren)
+		// We don't use an iterator here to avoid concurrency issues.
+		if (itsChildren != null) for (int i=0;i<itsChildren.size();i++)
 		{
+			HtmlElement theElement = itsChildren.get(i);
 			theElement.render(aBuilder);
 		}
 	}
