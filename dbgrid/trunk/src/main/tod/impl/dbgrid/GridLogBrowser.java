@@ -73,6 +73,7 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 	private IStructureDatabase itsStructureDatabase;
 	
 	private long itsEventsCount;
+	private long itsDroppedEventsCount;
 	private long itsFirstTimestamp;
 	private long itsLastTimestamp;
 	
@@ -242,6 +243,12 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 		return itsEventsCount;
 	}
 
+	public long getDroppedEventsCount()
+	{
+		if (itsDroppedEventsCount == 0) updateStats(); 
+		return itsDroppedEventsCount;
+	}
+	
 	public long getFirstTimestamp()
 	{
 		if (itsFirstTimestamp == 0) updateStats();
@@ -416,6 +423,7 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 	private synchronized void clearStats()
 	{
 		itsEventsCount = 0;
+		itsDroppedEventsCount = 0;
 		itsFirstTimestamp = 0;
 		itsLastTimestamp = 0;
 		itsThreads = null;
@@ -428,6 +436,7 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 		try
 		{
 			itsEventsCount = itsMaster.getEventsCount();
+			itsDroppedEventsCount = itsMaster.getDroppedEventsCount();
 			itsFirstTimestamp = itsMaster.getFirstTimestamp();
 			itsLastTimestamp = itsMaster.getLastTimestamp();
 		}

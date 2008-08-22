@@ -79,6 +79,7 @@ public interface RINodeConnector extends Remote, RIMonitoringServerProvider
 			boolean aForceMergeCounts) throws RemoteException;
 	
 	public long getEventsCount() throws RemoteException;
+	public long getDroppedEventsCount() throws RemoteException;
 	public long getFirstTimestamp() throws RemoteException;
 	public long getLastTimestamp() throws RemoteException;
 	

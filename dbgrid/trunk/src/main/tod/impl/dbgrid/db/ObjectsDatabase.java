@@ -202,17 +202,17 @@ implements ReorderingBufferListener
 	/**
 	 * Deserializes an object previously serialized by {@link #encode(Object)}.
 	 */
-	protected Object decode(byte[] aData)
+	protected Object decode(long aId, byte[] aData)
 	{
 		assert aData.length > 0;
 		ByteArrayInputStream theStream = new ByteArrayInputStream(aData);
-		return decode(theStream);
+		return decode(aId, theStream);
 	}
 	
 	/**
 	 * Deserializes an object previously serialized by {@link #encode(Object)}.
 	 */
-	protected Object decode(InputStream aStream)
+	protected Object decode(long aId, InputStream aStream)
 	{
 		try
 		{
@@ -221,11 +221,11 @@ implements ReorderingBufferListener
 		}
 		catch (IOException e)
 		{
-			throw new RuntimeException(e);
+			throw new RuntimeException("Error while decoding object "+aId, e);
 		}
 		catch (ClassNotFoundException e)
 		{
-			throw new RuntimeException(e);
+			throw new RuntimeException("Error while decoding object "+aId, e);
 		}
 	}
 	

@@ -143,6 +143,11 @@ public class LocalBrowser implements ILogBrowser
 		return itsEvents.size();
 	}
 	
+	public long getDroppedEventsCount()
+	{
+		throw new UnsupportedOperationException();
+	}
+
 	public EventList getEvents()
 	{
 		return itsEvents;

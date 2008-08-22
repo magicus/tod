@@ -220,7 +220,7 @@ public class ObjectsDatabase1 extends ObjectsDatabase
 			}
 		}
 		
-		return decode(itsByteBuffer.array());
+		return decode(aId, itsByteBuffer.array());
 	}
 	
 	/**

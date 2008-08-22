@@ -125,6 +125,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	private RemoteStructureDatabase itsRemoteStructureDatabase;
 
 	private long itsEventsCount;
+	private long itsDroppedEventsCount = -1;
 
 	private long itsFirstTimestamp;
 
@@ -542,6 +543,12 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		return itsEventsCount;
 	}
 
+	public long getDroppedEventsCount()
+	{
+		if (itsDroppedEventsCount == -1) updateStats();
+		return itsDroppedEventsCount;
+	}
+	
 	public long getFirstTimestamp()
 	{
 		if (itsFirstTimestamp == 0) updateStats();
@@ -590,6 +597,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	protected void updateStats()
 	{
 		long theEventsCount = 0;
+		long theDroppedEventsCount = 0;
 		long theFirstTimestamp = Long.MAX_VALUE;
 		long theLastTimestamp = 0;
 
@@ -598,6 +606,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			for (RINodeConnector theNode : getNodes())
 			{
 				theEventsCount += theNode.getEventsCount();
+				theDroppedEventsCount += theNode.getDroppedEventsCount();
 				theFirstTimestamp = Math.min(theFirstTimestamp, theNode.getFirstTimestamp());
 				theLastTimestamp = Math.max(theLastTimestamp, theNode.getLastTimestamp());
 			}
@@ -605,6 +614,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			// When there are no nodes:
 			if (theFirstTimestamp > theLastTimestamp) theFirstTimestamp = theLastTimestamp;
 			itsEventsCount = theEventsCount;
+			itsDroppedEventsCount = theDroppedEventsCount;
 			itsFirstTimestamp = theFirstTimestamp;
 			itsLastTimestamp = theLastTimestamp;
 		}
@@ -646,6 +656,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	{
 		private long itsPreviousTime;
 		private long itsPreviousEventsCount;
+		private long itsPreviousDroppedEventsCount;
 
 		private long itsPreviousFirstTimestamp;
 
@@ -662,6 +673,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			itsPreviousTime = theTime;
 			
 			if (itsPreviousEventsCount != itsEventsCount
+					|| itsPreviousDroppedEventsCount != itsDroppedEventsCount
 					|| itsPreviousFirstTimestamp != itsFirstTimestamp
 					|| itsPreviousLastTimestamp != itsLastTimestamp
 					|| itsPreviousThreadCount != itsThreadCount)
@@ -674,6 +686,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 				System.out.println("[DataUpdater] Event count: "+itsEventsCount);
 				
 				itsPreviousEventsCount = itsEventsCount;
+				itsPreviousDroppedEventsCount = itsDroppedEventsCount;
 				itsPreviousFirstTimestamp = itsFirstTimestamp;
 				itsPreviousLastTimestamp = itsLastTimestamp;
 				itsPreviousThreadCount = itsThreadCount;

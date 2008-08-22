@@ -207,6 +207,11 @@ implements RINodeConnector
 	{
 		return itsDatabaseNode.getEventsCount();
 	}
+	
+	public long getDroppedEventsCount() throws RemoteException
+	{
+		return itsDatabaseNode.getDroppedEventsCount();
+	}
 
 	public long getFirstTimestamp() 
 	{

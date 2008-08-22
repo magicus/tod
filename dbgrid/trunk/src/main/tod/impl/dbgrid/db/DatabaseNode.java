@@ -325,6 +325,11 @@ public abstract class DatabaseNode
 		return itsEventsCount;
 	}
 
+	public long getDroppedEventsCount()
+	{
+		return itsEventsDatabase.getDroppedEvents();
+	}
+	
 	public long getFirstTimestamp()
 	{
 		return itsFirstTimestamp;

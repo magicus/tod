@@ -130,6 +130,12 @@ public interface RIGridMaster extends Remote, RIMonitoringServerProvider
 	public long getEventsCount() throws RemoteException;
 	
 	/**
+	 * Returns the number of dropped events.
+	 * Client: frontend 
+	 */
+	public long getDroppedEventsCount() throws RemoteException;
+	
+	/**
 	 * Returns the timestamp of the first event recorded in this log.
 	 * Client: frontend 
 	 */

@@ -349,6 +349,11 @@ public class ABCTags
 			return 0;
 		}
 
+		public long getDroppedEventsCount()
+		{
+			return 0;
+		}
+
 		public long getFirstTimestamp()
 		{
 			return 0;

@@ -203,7 +203,7 @@ public class IdGenerator
 	{
 		int theCount = itsRandom.nextInt(100);
 		theCount -= 94;
-		if (theCount < 0) return null;
+		if (theCount <= 0) return null;
 		int[] theResult = new int[theCount];
 		for(int i=0;i<theCount;i++) theResult[i] = genAdviceSourceId();
 		return theResult;

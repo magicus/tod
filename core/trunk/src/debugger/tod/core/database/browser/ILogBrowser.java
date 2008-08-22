@@ -91,6 +91,11 @@ public interface ILogBrowser
 	public long getEventsCount();
 	
 	/**
+	 * Returns the total number of dropped events.
+	 */
+	public long getDroppedEventsCount();
+	
+	/**
 	 * Returns the event pointed to by the specified pointer.
 	 */
 	public ILogEvent getEvent(ExternalPointer aPointer);

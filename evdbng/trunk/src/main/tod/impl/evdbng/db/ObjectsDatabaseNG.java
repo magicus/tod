@@ -130,7 +130,7 @@ public class ObjectsDatabaseNG extends ObjectsDatabase
 		
 		PageListInputStream theStream = new PageListInputStream(theStruct, theDataSize);
 		
-		return decode(theStream);
+		return decode(aId, theStream);
 	}
 	
 	/**

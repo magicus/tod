@@ -32,6 +32,8 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.gui.view;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -41,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.Timer;
 
 import tod.core.database.structure.IThreadInfo;
@@ -62,6 +65,7 @@ public class ThreadsView extends LogView<ThreadsSeed>
 		new HashMap<IThreadInfo, ThreadSequenceSeed>();
 	
 	private JLabel itsEventsCountLabel;
+	private JLabel itsDroppedEventsCountLabel;
 	private long itsLastEventCount = -1;
 	private int itsLastThreadCount = -1;
 
@@ -97,9 +101,15 @@ public class ThreadsView extends LogView<ThreadsSeed>
 	{
 		itsDock = new SequenceViewsDock(getGUIManager());
 		itsEventsCountLabel = new JLabel();
+		itsDroppedEventsCountLabel = new JLabel();
+		itsDroppedEventsCountLabel.setForeground(Color.RED);
+		
+		JPanel theCountsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		theCountsPanel.add(itsEventsCountLabel);
+		theCountsPanel.add(itsDroppedEventsCountLabel);
 		
 		setLayout(new BorderLayout());
-		add (itsEventsCountLabel, BorderLayout.NORTH);
+		add (theCountsPanel, BorderLayout.NORTH);
 		add (itsDock, BorderLayout.CENTER);
 		
 		itsTimer = new Timer(1000, new ActionListener()
@@ -126,6 +136,9 @@ public class ThreadsView extends LogView<ThreadsSeed>
 			itsLastThreadCount = theThreadCount;
 			
 			itsEventsCountLabel.setText("Events registered: "+theEventCount);
+			
+			long theDropped = getLogBrowser().getDroppedEventsCount();
+			if (theDropped > 0) itsDroppedEventsCountLabel.setText("DROPPED: "+theDropped);
 			
 			Collections.sort(theThreads, IThreadInfo.ThreadIdComparator.getInstance());
 			
