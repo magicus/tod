@@ -35,7 +35,7 @@ import zz.utils.Utils;
  */
 public class EventReorderingBuffer
 {
-	private long itsLastPushed;
+	private long itsLastInOrder;
 
 	private long itsLastRetrieved;
 
@@ -78,18 +78,18 @@ public class EventReorderingBuffer
 		long theTimestamp = aEvent.getTimestamp();
 		if (theTimestamp < itsLastRetrieved)
 		{
-			itsListener.eventDropped(itsLastRetrieved, theTimestamp);
+			itsListener.eventDropped(itsLastRetrieved, theTimestamp, "ERB.push() - too late");
 			return;
 		}
 
-		if (theTimestamp < itsLastPushed)
+		if (theTimestamp < itsLastInOrder)
 		{
 			// Out of order event.
 			itsOutOfOrderBuffer.add(aEvent);
 		}
 		else
 		{
-			itsLastPushed = theTimestamp;
+			itsLastInOrder = theTimestamp;
 			itsBuffer.add(aEvent);
 		}
 	}
@@ -137,11 +137,15 @@ public class EventReorderingBuffer
 	 * @param aDelay
 	 * @return
 	 */
-	public boolean isNextEventFlushable(long aDelay)
+	public synchronized boolean isNextEventFlushable(long aDelay)
 	{
-		long theNextAvailableTimestamp = getNextAvailableTimestamp();
+		// Don't allow flushing old events while there are pending OoO events
+		if (! itsOutOfOrderBuffer.isEmpty()) return false; 
+		if (itsBuffer.isEmpty()) return false;
+		
+		long theNextAvailableTimestamp = itsBuffer.peek().getTimestamp();
 		if (theNextAvailableTimestamp == -1) return false;
-		return (itsLastPushed - theNextAvailableTimestamp) > aDelay;
+		return (itsLastInOrder - theNextAvailableTimestamp) > aDelay;
 	}
 
 	/**
@@ -307,20 +311,21 @@ public class EventReorderingBuffer
 			super(DebuggerGridConfig.DB_PERTHREAD_REORDER_BUFFER_SIZE);
 		}
 
+		@Override
 		public void add(GridEvent aEvent)
 		{
 			long theTimestamp = aEvent.getTimestamp();
 			if (theTimestamp < itsLastAdded)
 			{
 				System.err.println("[EventReorderingBuffer] Out of order events in same thread!!!");
-				itsListener.eventDropped(itsLastAdded, theTimestamp);
+				itsListener.eventDropped(itsLastAdded, theTimestamp, "ERB.PTB.add() - same thread");
 				return;
 			}
 
 			if (isFull())
 			{
 				System.err.println("[EventReorderingBuffer] Per-thread buffer full");
-				itsListener.eventDropped(0, 0);
+				itsListener.eventDropped(0, 0, "ERB.PTB.add() - full");
 				return;
 			}
 
@@ -335,7 +340,8 @@ public class EventReorderingBuffer
 		 * Called when an event could not be reordered and had to be dropped.
 		 * @param aLastRetrieved The last valid timestamp
 		 * @param aNewEvent The out-of-order timestamp that was received
+		 * @param aReason TODO
 		 */
-		public void eventDropped(long aLastRetrieved, long aNewEvent);
+		public void eventDropped(long aLastRetrieved, long aNewEvent, String aReason);
 	}
 }

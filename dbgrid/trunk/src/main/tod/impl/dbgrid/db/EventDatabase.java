@@ -21,7 +21,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.db;
 
 import java.rmi.RemoteException;
-import java.util.Comparator;
 
 import tod.core.DebugFlags;
 import tod.core.database.structure.IStructureDatabase;
@@ -193,6 +192,15 @@ implements ReorderingBufferListener
 		return theCount;
 	}
 
+	/**
+	 * define if the difference between the oldest event of the buffer
+	 *  and the newest is more than aDelay (in nanosecond)
+	 */
+	private boolean isNextEventFlushable(long aDelay)
+	{
+		return itsReorderingBuffer.isNextEventFlushable(aDelay) ;
+	}
+	
 	
 	/**
 	 * Flushes the oldest available event.
@@ -223,26 +231,18 @@ implements ReorderingBufferListener
 	}
 
 	
-	public void eventDropped(long aLastRetrieved, long aNewEvent)
+	public void eventDropped(long aLastRetrieved, long aNewEvent, String aReason)
 	{
 		long theDelta = aLastRetrieved-aNewEvent;
 		itsDroppedEvents++;
 		
 		System.err.println(String.format(
-				"WARNING: out of order event - dropped (last: %d, new: %d, delta: %d, #%d)",
+				"WARNING: out of order event (%s) - dropped (last: %d, new: %d, delta: %d, #%d)",
+				aReason,
 				aLastRetrieved, 
 				aNewEvent,
 				theDelta,
 				itsDroppedEvents));
-	}
-	
-	/**
-	 * define if the difference between the oldest event of the buffer
-	 *  and the newest is more than aDelay (in nanosecond)
-	 */
-	private boolean isNextEventFlushable(long aDelay)
-	{
-		return itsReorderingBuffer.isNextEventFlushable(aDelay) ;
 	}
 	
 	
@@ -252,7 +252,7 @@ implements ReorderingBufferListener
 		long theTimestamp = aEvent.getTimestamp();
 		if (theTimestamp < itsLastProcessedTimestamp)
 		{
-			eventDropped(itsLastProcessedTimestamp, theTimestamp);
+			eventDropped(itsLastProcessedTimestamp, theTimestamp, "EventDatabase.processEvent()");
 			return;
 		}
 		
