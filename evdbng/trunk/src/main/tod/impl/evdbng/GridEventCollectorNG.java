@@ -9,7 +9,8 @@ import tod.agent.Output;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
-import tod.impl.common.EventCollector;
+import tod.impl.dbgrid.GridEventCollector;
+import tod.impl.dbgrid.RIGridMaster;
 import tod.impl.dbgrid.db.DatabaseNode;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.MessageType;
@@ -31,7 +32,7 @@ import tod.utils.TODUtils;
  * This class is not thread-safe.
  * @author gpothier
  */
-public class GridEventCollectorNG extends EventCollector
+public class GridEventCollectorNG extends GridEventCollector
 {
 	private final DatabaseNode itsDatabaseNode;
 	
@@ -59,11 +60,12 @@ public class GridEventCollectorNG extends EventCollector
 	
 	
 	public GridEventCollectorNG(
+			RIGridMaster aMaster,
 			IHostInfo aHost,
 			IMutableStructureDatabase aStructureDatabase,
 			DatabaseNode aDispatcher)
 	{
-		super(aHost, aStructureDatabase);
+		super(aMaster, aHost, aStructureDatabase);
 		itsDatabaseNode = aDispatcher;
 		itsStructureDatabase = aStructureDatabase;
 		

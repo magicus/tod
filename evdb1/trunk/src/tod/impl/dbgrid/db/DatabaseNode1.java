@@ -41,38 +41,6 @@ public class DatabaseNode1 extends DatabaseNode
 	@Override
 	public ILogCollector createLogCollector(IHostInfo aHostInfo)
 	{
-		return new MyCollector(getMaster(), aHostInfo, getStructureDatabase(), this);
+		return new GridEventCollector1(getMaster(), aHostInfo, getStructureDatabase(), this);
 	}
-
-	private static class MyCollector extends GridEventCollector1
-	{
-		private GridMaster itsMaster;
-		
-		public MyCollector(
-				RIGridMaster aMaster, 
-				IHostInfo aHost, 
-				IMutableStructureDatabase aStructureDatabase,
-				DatabaseNode aNode)
-		{
-			super(aHost, aStructureDatabase, aNode);
-
-			// Only for local master (see #thread). 
-			if (aMaster instanceof GridMaster)
-			{
-				itsMaster = (GridMaster) aMaster;
-			}
-		}
-
-		@Override
-		public void thread(int aThreadId, long aJVMThreadId, String aName)
-		{
-			if (itsMaster != null)
-			{
-				ThreadInfo theThread = createThreadInfo(getHost(), aThreadId, aJVMThreadId, aName);
-				itsMaster.registerThread(theThread);
-			}
-			else throw new UnsupportedOperationException("Should have been filtered by master");		
-		}
-	}
-
 }

@@ -99,15 +99,12 @@ public class TestGridMaster
 		
 		for (int i=0;i<1000;i++)
 		{
-			System.out.println(i+1);
 			IGridEventFilter theEventCondition = (IGridEventFilter) theConditionGenerator.next();
+			if (i < 90) continue;
+
+			System.out.println(i+1);
 			System.out.println(theEventCondition);
 			
-			if (i < 2) continue;
-			if (i == 2)
-			{
-				System.out.println("TestGridMaster.doTest()");
-			}
 			int theCount = checkCondition(theMaster, theEventCondition, createEventGenerator(theStructureDatabase), 5000, 10000);
 			
 			GridEventBrowser theEventBrowser = new GridEventBrowser(theLogBrowser, theEventCondition);

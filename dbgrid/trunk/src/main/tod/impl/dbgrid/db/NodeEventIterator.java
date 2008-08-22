@@ -37,8 +37,8 @@ import tod.tools.monitoring.MonitoringClient.MonitorId;
 public class NodeEventIterator extends UnicastRemoteObject 
 implements RINodeEventIterator
 {
-	private EventDatabase itsDatabase;
-	private IGridEventFilter itsFilter;
+	private final EventDatabase itsDatabase;
+	private final IGridEventFilter itsFilter;
 	
 	private IBidiIterator<GridEvent> itsIterator;
 	

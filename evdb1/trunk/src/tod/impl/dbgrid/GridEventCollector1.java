@@ -24,7 +24,6 @@ import tod.agent.Output;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
-import tod.impl.common.EventCollector;
 import tod.impl.dbgrid.db.DatabaseNode;
 import tod.impl.dbgrid.messages.GridArrayWriteEvent;
 import tod.impl.dbgrid.messages.GridBehaviorCallEvent;
@@ -47,7 +46,7 @@ import tod.utils.TODUtils;
  * 
  * @author gpothier
  */
-public class GridEventCollector1 extends EventCollector
+public class GridEventCollector1 extends GridEventCollector
 {
 	private final DatabaseNode itsDatabaseNode;
 
@@ -83,11 +82,12 @@ public class GridEventCollector1 extends EventCollector
 	private final IMutableStructureDatabase itsStructureDatabase;
 
 	public GridEventCollector1(
+			RIGridMaster aMaster,
 			IHostInfo aHost,
 			IMutableStructureDatabase aStructureDatabase,
 			DatabaseNode aDispatcher)
 	{
-		super(aHost, aStructureDatabase);
+		super(aMaster, aHost, aStructureDatabase);
 		itsDatabaseNode = aDispatcher;
 		itsStructureDatabase = aStructureDatabase;
 

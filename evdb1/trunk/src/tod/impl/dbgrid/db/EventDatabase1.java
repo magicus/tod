@@ -85,7 +85,7 @@ public class EventDatabase1 extends EventDatabase
 	 * Creates an iterator over matching events of this node, starting at the specified timestamp.
 	 */
 	@Override
-	public IBidiIterator<GridEvent> evaluate(IGridEventFilter aCondition, long aTimestamp)
+	protected IBidiIterator<GridEvent> evaluate0(IGridEventFilter aCondition, long aTimestamp)
 	{
 		return ((EventCondition) aCondition).createIterator(itsEventList, getIndexes(), aTimestamp);
 	}

@@ -24,11 +24,13 @@ import java.rmi.RemoteException;
 
 import tod.core.DebugFlags;
 import tod.core.database.structure.IStructureDatabase;
+import tod.impl.database.AbstractBidiIterator;
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.IGridEventFilter;
 import tod.impl.dbgrid.db.DatabaseNode.FlushMonitor;
 import tod.impl.dbgrid.db.EventReorderingBuffer.ReorderingBufferListener;
 import tod.impl.dbgrid.messages.GridEvent;
+import tod.impl.dbgrid.test.TestMatching;
 import zz.utils.monitoring.AggregationType;
 import zz.utils.monitoring.Monitor;
 import zz.utils.monitoring.Probe;
@@ -83,9 +85,20 @@ implements ReorderingBufferListener
 
 	/**
 	 * Creates an iterator over matching events of this node, starting at the specified timestamp.
+	 * This method wraps {@link #evaluate0(IGridEventFilter, long)} to filter duplicate events.
+	 * Duplicate events can occur in some cases, see {@link TestMatching#testMultimatch()}.
 	 */
-	public abstract IBidiIterator<GridEvent> evaluate(IGridEventFilter aCondition, long aTimestamp);
+	public final IBidiIterator<GridEvent> evaluate(IGridEventFilter aCondition, long aTimestamp)
+	{
+		return new DuplicateFilterIterator(evaluate0(aCondition, aTimestamp));
+	}
 
+	/**
+	 * Actual implementation of {@link #evaluate(IGridEventFilter, long)}. The iterator returned by this
+	 * method might return duplicate events.
+	 */
+	protected abstract IBidiIterator<GridEvent> evaluate0(IGridEventFilter aCondition, long aTimestamp);
+	
 	public RINodeEventIterator getIterator(IGridEventFilter aCondition) throws RemoteException
 	{
 		return new NodeEventIterator(this, aCondition);
@@ -270,4 +283,51 @@ implements ReorderingBufferListener
 	public abstract long getStorageSpace();
 	
 	public abstract long getEventsCount();
+	
+	/**
+	 * An iterator that filters out duplicate events from a source iterator.
+	 * @author gpothier
+	 */
+	private static class DuplicateFilterIterator extends AbstractBidiIterator<GridEvent>
+	{
+		private final IBidiIterator<GridEvent> itsSource;
+		
+		private GridEvent itsLastNext;
+		private GridEvent itsLastPrevious;
+		
+		public DuplicateFilterIterator(IBidiIterator<GridEvent> aSource)
+		{
+			itsSource = aSource;
+		}
+
+		@Override
+		protected GridEvent fetchNext()
+		{
+			GridEvent theNext = itsSource.hasNext() ? itsSource.next() : null;
+			while (theNext != null && itsLastNext != null && itsLastNext.sameEvent(theNext))
+			{
+				// duplicate
+				theNext = itsSource.hasNext() ? itsSource.next() : null;
+			}
+
+			itsLastNext = theNext;
+			itsLastPrevious = null;
+			return theNext;
+		}
+
+		@Override
+		protected GridEvent fetchPrevious()
+		{
+			GridEvent thePrevious = itsSource.hasPrevious() ? itsSource.previous() : null;
+			while (thePrevious != null && itsLastPrevious != null && itsLastPrevious.sameEvent(thePrevious))
+			{
+				// duplicate
+				thePrevious = itsSource.hasPrevious() ? itsSource.previous() : null;
+			}
+
+			itsLastPrevious = thePrevious;
+			itsLastNext = null;
+			return thePrevious;
+		}
+	}
 }

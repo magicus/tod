@@ -261,4 +261,16 @@ implements Serializable
 				itsProbeId,
 				itsTimestamp); 
 	}
+	
+	/**
+	 * Returns true if the specified event is the same as this event,
+	 * ie their thread and timestamp are equal.
+	 * If both events come from the same (sane) database, it should mean
+	 * they are equal.
+	 */
+	public boolean sameEvent(GridEvent e)
+	{
+		return e.itsTimestamp == itsTimestamp
+			&& e.itsThread == itsThread;
+	}
 }

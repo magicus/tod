@@ -41,7 +41,7 @@ public class DatabaseNodeNG extends DatabaseNode
 	@Override
 	public ILogCollector createLogCollector(IHostInfo aHostInfo)
 	{
-		return new GridEventCollectorNG(aHostInfo, getStructureDatabase(), this);
+		return new GridEventCollectorNG(getMaster(), aHostInfo, getStructureDatabase(), this);
 	}
 
 }
