@@ -524,9 +524,10 @@ public abstract class LogReceiver
 							if (theReceiver.process()) theWait = 1;
 						}
 						catch (IOException e)
-						{
+						{	
 							System.err.println("Exception while processing receiver of "+theReceiver.getHostName());
 							e.printStackTrace();
+							theReceiver.processFlush();
 						}
 						
 						if (theReceiver.isEof()) itsReceivers.remove(i);
