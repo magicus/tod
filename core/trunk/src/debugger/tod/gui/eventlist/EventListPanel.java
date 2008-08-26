@@ -186,7 +186,7 @@ implements MouseWheelListener, IJobSchedulerProvider
 		updateList();
 	}
 	
-	@Scheduled(value = JobPriority.EXPLICIT)
+	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
 	public void setTimestamp(final long aTimestamp)
 	{
 		if (itsCore == null) return;
