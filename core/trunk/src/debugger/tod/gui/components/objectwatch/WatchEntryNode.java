@@ -29,7 +29,7 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.components.objectinspector;
+package tod.gui.components.objectwatch;
 
 import java.awt.Color;
 
@@ -42,7 +42,7 @@ import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
 import tod.gui.activities.cflow.CFlowSeed;
-import tod.gui.components.objectinspector.AbstractWatchProvider.Entry;
+import tod.gui.components.objectwatch.AbstractWatchProvider.Entry;
 import tod.gui.kit.AsyncPanel;
 import tod.tools.scheduling.IJobScheduler;
 import tod.tools.scheduling.IJobScheduler.JobPriority;

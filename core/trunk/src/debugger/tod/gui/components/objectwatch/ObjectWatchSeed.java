@@ -29,27 +29,35 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.components.objectinspector;
+package tod.gui.components.objectwatch;
 
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.ObjectId;
 import tod.gui.IGUIManager;
 
-public class StackFrameWatchSeed extends WatchSeed
+public class ObjectWatchSeed extends WatchSeed
 {
-
-	public StackFrameWatchSeed(IGUIManager aGUIManager, String aTitle, WatchPanel aWatchPanel, ILogEvent aRefEvent)
+	private ObjectId itsObject;
+	
+	public ObjectWatchSeed(
+			IGUIManager aGUIManager,
+			String aTitle,
+			WatchPanel aWatchPanel,
+			ILogEvent aRefEvent,
+			ObjectId aObject)
 	{
 		super(aTitle, aWatchPanel, aGUIManager, aRefEvent);
+		itsObject = aObject;
 	}
 
 	@Override
 	public AbstractWatchProvider createProvider()
 	{
-		return new StackFrameWatchProvider(
+		return new ObjectWatchProvider(
 				getGUIManager(),
 				getTitle(),
-				getRefEvent());
+				getRefEvent(),
+				itsObject);
 	}
 
 }

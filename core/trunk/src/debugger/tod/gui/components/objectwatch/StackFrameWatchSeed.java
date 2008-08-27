@@ -29,55 +29,27 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.components.objectinspector;
+package tod.gui.components.objectwatch;
 
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.gui.IGUIManager;
 
-public abstract class WatchSeed 
+public class StackFrameWatchSeed extends WatchSeed
 {
-	private final String itsTitle;
-	private final WatchPanel itsWatchPanel;
-	private final IGUIManager itsGUIManager;
-	private final ILogEvent itsRefEvent;
-	
 
-	public WatchSeed(
-			String aTitle,
-			WatchPanel aWatchPanel, 
-			IGUIManager aGUIManager, 
-			ILogEvent aRefEvent)
+	public StackFrameWatchSeed(IGUIManager aGUIManager, String aTitle, WatchPanel aWatchPanel, ILogEvent aRefEvent)
 	{
-		itsTitle = aTitle;
-		itsWatchPanel = aWatchPanel;
-		itsGUIManager = aGUIManager;
-		itsRefEvent = aRefEvent;
+		super(aTitle, aWatchPanel, aGUIManager, aRefEvent);
 	}
 
-	public String getTitle()
+	@Override
+	public AbstractWatchProvider createProvider()
 	{
-		return itsTitle;
-	}
-	
-	public WatchPanel getWatchPanel()
-	{
-		return itsWatchPanel;
-	}
-
-	public IGUIManager getGUIManager()
-	{
-		return itsGUIManager;
-	}
-	
-	public ILogEvent getRefEvent()
-	{
-		return itsRefEvent;
+		return new StackFrameWatchProvider(
+				getGUIManager(),
+				getTitle(),
+				getRefEvent());
 	}
 
-	public void open()
-	{
-		itsWatchPanel.showWatch(createProvider());
-	}
-	
-	public abstract AbstractWatchProvider createProvider();
 }
