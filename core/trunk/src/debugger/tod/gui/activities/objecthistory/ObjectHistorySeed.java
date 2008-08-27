@@ -36,9 +36,9 @@ import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.ObjectId;
 import tod.gui.activities.ActivityPanel;
 import tod.gui.activities.ActivitySeed;
+import tod.gui.activities.IEventSeed;
 import tod.gui.kit.html.HtmlDoc;
 import tod.gui.kit.html.HtmlText;
-import tod.gui.seed.IEventSeed;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
 

@@ -29,7 +29,7 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.seed;
+package tod.gui.activities;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.event.ILogEvent;

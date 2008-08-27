@@ -40,8 +40,8 @@ import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ObjectId;
 import tod.gui.activities.ActivityPanel;
 import tod.gui.activities.ActivitySeed;
+import tod.gui.activities.IEventListSeed;
 import tod.gui.formatter.EventFormatter;
-import tod.gui.seed.IEventListSeed;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
 

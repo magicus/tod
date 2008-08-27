@@ -43,7 +43,7 @@ import javax.swing.JPanel;
 
 import tod.core.database.event.ILogEvent;
 import tod.gui.activities.ActivityPanel;
-import tod.gui.seed.IEventSeed;
+import tod.gui.activities.IEventSeed;
 import zz.utils.SimpleComboBoxModel;
 
 /**
