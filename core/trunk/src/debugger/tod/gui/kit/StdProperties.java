@@ -31,7 +31,7 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.kit;
 
-import tod.gui.eventlist.IntimacyLevel;
+import tod.gui.components.eventlist.IntimacyLevel;
 
 /**
  * Defines commonly used property ids.

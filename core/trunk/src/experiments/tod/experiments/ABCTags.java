@@ -64,7 +64,7 @@ import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.session.AbstractSession;
 import tod.core.session.ISession;
 import tod.gui.MinerUI;
-import tod.gui.seed.StructureSeed;
+import tod.gui.activities.structure.StructureSeed;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
 import tod.impl.database.IBidiIterator;

@@ -49,13 +49,13 @@ import tod.gui.BrowserNavigator;
 import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.Resources;
+import tod.gui.activities.ActivitySeed;
 import tod.gui.kit.html.HtmlBody;
 import tod.gui.kit.html.HtmlComponent;
 import tod.gui.kit.html.HtmlDoc;
 import tod.gui.kit.html.HtmlElement;
 import tod.gui.kit.html.HtmlRaw;
 import tod.gui.kit.html.HtmlText;
-import tod.gui.seed.LogViewSeed;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;
 import zz.utils.ui.ScrollablePanel;
@@ -70,18 +70,18 @@ import zz.utils.ui.popup.ButtonPopupComponent;
  */
 public abstract class AbstractNavButton extends JPanel
 {
-	private final BrowserNavigator<LogViewSeed> itsNavigator;
+	private final BrowserNavigator<ActivitySeed> itsNavigator;
 	private NavStackPanel itsNavStackPanel;
 	private ButtonPopupComponent itsNavPopupButton;
 	
-	public AbstractNavButton(BrowserNavigator<LogViewSeed> aNavigator)
+	public AbstractNavButton(BrowserNavigator<ActivitySeed> aNavigator)
 	{
 		itsNavigator = aNavigator;
 		itsNavStackPanel = new NavStackPanel();
 		createUI();
 	}
 	
-	public BrowserNavigator<LogViewSeed> getNavigator()
+	public BrowserNavigator<ActivitySeed> getNavigator()
 	{
 		return itsNavigator;
 	}
@@ -108,7 +108,7 @@ public abstract class AbstractNavButton extends JPanel
 		add(itsNavPopupButton, BorderLayout.EAST);
 	}
 	
-	private static HtmlElement createShortDesc(LogViewSeed aSeed)
+	private static HtmlElement createShortDesc(ActivitySeed aSeed)
 	{
 		String theDescription = aSeed.getShortDescription();
 		if (theDescription == null) return null;
@@ -118,14 +118,14 @@ public abstract class AbstractNavButton extends JPanel
 		return theText;
 	}
 	
-	private static HtmlElement createKindDesc(LogViewSeed aSeed)
+	private static HtmlElement createKindDesc(ActivitySeed aSeed)
 	{
 		return HtmlText.create(aSeed.getKindDescription(), FontConfig.NORMAL, HtmlText.FONT_WEIGHT_BOLD, Color.BLACK);
 	}
 	
 	protected abstract Action getAction();
 	
-	protected abstract Iterable<LogViewSeed> getSeedsStack();
+	protected abstract Iterable<ActivitySeed> getSeedsStack();
 	
 	/**
 	 * The panel that shows the backward navigation stack.
@@ -175,15 +175,15 @@ public abstract class AbstractNavButton extends JPanel
 			
 			itsSeedsPanel.removeAll();
 			
-			Iterator<LogViewSeed> theIterator = getSeedsStack().iterator();
+			Iterator<ActivitySeed> theIterator = getSeedsStack().iterator();
 
 			// The seeds are grouped by class.
 			Class theGroupClass = null;
-			List<LogViewSeed> theSeedGroup = new ArrayList<LogViewSeed>();
+			List<ActivitySeed> theSeedGroup = new ArrayList<ActivitySeed>();
 			
 			while(theIterator.hasNext())
 			{
-				LogViewSeed theSeed = theIterator.next();
+				ActivitySeed theSeed = theIterator.next();
 				Class theClass = theSeed.getClass();
 				if (theGroupClass == null) theGroupClass = theClass;
 
@@ -206,20 +206,20 @@ public abstract class AbstractNavButton extends JPanel
 			repaint();
 		}
 
-		private void setupGroup(List<LogViewSeed> aGroup)
+		private void setupGroup(List<ActivitySeed> aGroup)
 		{
 			if (aGroup.size() == 1)
 			{
-				LogViewSeed theSeed = aGroup.get(0);
+				ActivitySeed theSeed = aGroup.get(0);
 				itsSeedsPanel.add(new SeedPanel(theSeed, true));
 			}
 			else
 			{
 				assert ! aGroup.isEmpty();
-				LogViewSeed theFirstSeed = aGroup.get(0);
+				ActivitySeed theFirstSeed = aGroup.get(0);
 				itsSeedsPanel.add(new HtmlComponent(HtmlDoc.create(createKindDesc(theFirstSeed))));
 				
-				for (LogViewSeed theSeed : aGroup)
+				for (ActivitySeed theSeed : aGroup)
 				{
 					itsSeedsPanel.add(new SeedPanel(theSeed, false));
 				}
@@ -235,9 +235,9 @@ public abstract class AbstractNavButton extends JPanel
 	private class SeedPanel extends HtmlComponent
 	implements MouseListener
 	{
-		private final LogViewSeed itsSeed;
+		private final ActivitySeed itsSeed;
 
-		public SeedPanel(LogViewSeed aSeed, boolean aShowKindDesc)
+		public SeedPanel(ActivitySeed aSeed, boolean aShowKindDesc)
 		{
 			addMouseListener(this);
 			itsSeed = aSeed;

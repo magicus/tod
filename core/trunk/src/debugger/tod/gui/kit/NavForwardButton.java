@@ -34,7 +34,7 @@ package tod.gui.kit;
 import javax.swing.Action;
 
 import tod.gui.BrowserNavigator;
-import tod.gui.seed.LogViewSeed;
+import tod.gui.activities.ActivitySeed;
 
 /**
  * A browser-like back button that can also show the navigation stack
@@ -42,7 +42,7 @@ import tod.gui.seed.LogViewSeed;
  */
 public class NavForwardButton extends AbstractNavButton
 {
-	public NavForwardButton(BrowserNavigator<LogViewSeed> aNavigator)
+	public NavForwardButton(BrowserNavigator<ActivitySeed> aNavigator)
 	{
 		super(aNavigator);
 	}
@@ -54,7 +54,7 @@ public class NavForwardButton extends AbstractNavButton
 	}
 
 	@Override
-	protected Iterable<LogViewSeed> getSeedsStack()
+	protected Iterable<ActivitySeed> getSeedsStack()
 	{
 		return getNavigator().getForwardSeeds();
 	}

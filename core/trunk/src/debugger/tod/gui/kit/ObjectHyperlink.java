@@ -38,7 +38,7 @@ import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.gui.IGUIManager;
 import tod.gui.SeedHyperlink;
-import tod.gui.seed.LogViewSeed;
+import tod.gui.activities.ActivitySeed;
 import tod.tools.scheduling.IJobScheduler;
 import tod.tools.scheduling.IJobScheduler.JobPriority;
 import zz.utils.ui.text.XFont;
@@ -55,7 +55,7 @@ public class ObjectHyperlink extends SeedHyperlink
 
 	public ObjectHyperlink(
 			IGUIManager aGUIManager,
-			LogViewSeed aSeed,
+			ActivitySeed aSeed,
 			final ILogBrowser aLogBrowser,
 			IJobScheduler aJobScheduler,
 			ObjectId aObject, 

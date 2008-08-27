@@ -59,6 +59,17 @@ import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.SourceRange;
 import tod.core.session.ISession;
+import tod.gui.activities.ActivityPanel;
+import tod.gui.activities.ActivitySeed;
+import tod.gui.activities.ActivitySeedFactory;
+import tod.gui.activities.cflow.CFlowSeed;
+import tod.gui.activities.dyncross.DynamicCrosscuttingSeed;
+import tod.gui.activities.editformatters.FormattersSeed;
+import tod.gui.activities.filteredevents.FilterSeed;
+import tod.gui.activities.objecthistory.ObjectHistorySeed;
+import tod.gui.activities.stringsearch.StringSearchSeed;
+import tod.gui.activities.structure.StructureSeed;
+import tod.gui.activities.threads.ThreadsSeed;
 import tod.gui.kit.Bus;
 import tod.gui.kit.BusOwnerPanel;
 import tod.gui.kit.IBusListener;
@@ -66,19 +77,8 @@ import tod.gui.kit.NavBackButton;
 import tod.gui.kit.NavForwardButton;
 import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.kit.messages.ShowObjectHistoryMsg;
-import tod.gui.seed.CFlowSeed;
-import tod.gui.seed.DynamicCrosscuttingSeed;
-import tod.gui.seed.FilterSeed;
-import tod.gui.seed.FormattersSeed;
 import tod.gui.seed.IEventListSeed;
-import tod.gui.seed.LogViewSeed;
-import tod.gui.seed.LogViewSeedFactory;
-import tod.gui.seed.ObjectHistorySeed;
-import tod.gui.seed.StringSearchSeed;
-import tod.gui.seed.StructureSeed;
-import tod.gui.seed.ThreadsSeed;
 import tod.gui.settings.GUISettings;
-import tod.gui.view.LogView;
 import tod.impl.common.Bookmarks;
 import tod.tools.scheduling.IJobSchedulerProvider;
 import tod.tools.scheduling.JobScheduler;
@@ -114,7 +114,7 @@ implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider
 	private LogViewBrowserNavigator itsNavigator = new LogViewBrowserNavigator(this)
 	{
 		@Override
-		protected void viewChanged(LogView aTheView)
+		protected void viewChanged(ActivityPanel aTheView)
 		{
 			MinerUI.this.viewChanged(aTheView);
 		}
@@ -165,7 +165,7 @@ implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider
 
 	private ActionCombo itsActionCombo;
 	
-	private LogView itsCurrentView;
+	private ActivityPanel itsCurrentView;
 	
 	public MinerUI()
 	{
@@ -193,7 +193,7 @@ implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider
 		theNavButtonsPanel.add (new NavBackButton(itsNavigator));
 		theNavButtonsPanel.add (new NavForwardButton(itsNavigator));
 		
-		theCenterPanel.add (itsNavigator.getViewContainer(), BorderLayout.CENTER);
+		theCenterPanel.add (itsNavigator.getActivityContainer(), BorderLayout.CENTER);
 		theCenterPanel.add (theNavButtonsPanel, BorderLayout.NORTH);
 		
 		add (theCenterPanel, BorderLayout.CENTER);
@@ -237,7 +237,7 @@ implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider
 		return null;
 	}
 
-	protected void viewChanged(LogView aView)
+	protected void viewChanged(ActivityPanel aView)
 	{
 //		itsBookmarkPanel.setView(aView);
 		itsGUISettings.save();
@@ -386,7 +386,7 @@ implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider
 			public void actionPerformed(ActionEvent aE)
 			{
 				ILogBrowser theLogBrowser = getSession().getLogBrowser();
-				LogViewSeed theSeed = new DynamicCrosscuttingSeed(theLogBrowser);
+				ActivitySeed theSeed = new DynamicCrosscuttingSeed(theLogBrowser);
 				openSeed(theSeed, false);			
 			}
 		});
@@ -455,17 +455,17 @@ implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider
 
 	public void selectionChanged(List/*<LocationInfo>*/ aSelectedLocations)
 	{
-		LogViewSeed theSeed = null;
+		ActivitySeed theSeed = null;
 		if (aSelectedLocations.size() == 1)
 		{
 			ILocationInfo theInfo = (ILocationInfo) aSelectedLocations.get(0);
-			theSeed = LogViewSeedFactory.getDefaultSeed(getSession().getLogBrowser(), theInfo);
+			theSeed = ActivitySeedFactory.getDefaultSeed(getSession().getLogBrowser(), theInfo);
 		}
 
 		openSeed(theSeed, false);
 	}
 	
-	public void openSeed(LogViewSeed aSeed, boolean aNewTab)
+	public void openSeed(ActivitySeed aSeed, boolean aNewTab)
 	{
 		getJobScheduler().cancelAll();
 		itsNavigator.open(aSeed);
@@ -491,7 +491,7 @@ implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider
 				theFilter = theLogBrowser.createIntersectionFilter(theFilter, aFilter);
 			}
 			TODUtils.logf(0,"Trying to show events for filter %s",theFilter.getClass());
-			LogViewSeed theSeed = new FilterSeed(
+			ActivitySeed theSeed = new FilterSeed(
 					theLogBrowser, 
 					"Events on line "+aLine+" of "+aBehavior.getName(),
 					theFilter);

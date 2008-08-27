@@ -39,8 +39,8 @@ import tod.core.database.structure.SourceRange;
 import tod.core.session.ISession;
 import tod.core.session.TODSessionManager;
 import tod.gui.MinerUI;
-import tod.gui.seed.LogViewSeed;
-import tod.gui.seed.LogViewSeedFactory;
+import tod.gui.activities.ActivitySeed;
+import tod.gui.activities.ActivitySeedFactory;
 import tod.plugin.TODPluginUtils;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.PropertyListener;
@@ -96,7 +96,7 @@ public class EventViewer extends MinerUI
 		try
 		{
 			ILocationInfo theLocationInfo = TODPluginUtils.getLocationInfo(getSession(), aElement);
-			LogViewSeed theSeed = LogViewSeedFactory.getDefaultSeed(getLogBrowser(), theLocationInfo);
+			ActivitySeed theSeed = ActivitySeedFactory.getDefaultSeed(getLogBrowser(), theLocationInfo);
 			openSeed(theSeed, false);
 		}
 		catch (JavaModelException e)

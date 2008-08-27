@@ -51,7 +51,7 @@ import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.tree.PackageInfo;
 import tod.core.database.structure.tree.StructureTreeBuilders;
 import tod.gui.components.LocationTreeTable;
-import tod.gui.eventlist.IntimacyLevel;
+import tod.gui.components.eventlist.IntimacyLevel;
 import tod.gui.settings.IntimacySettings;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;

@@ -42,16 +42,16 @@ import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.gui.activities.ActivitySeed;
+import tod.gui.activities.cflow.CFlowSeed;
+import tod.gui.activities.objecthistory.ObjectHistorySeed;
+import tod.gui.activities.structure.StructureSeed;
 import tod.gui.kit.Bus;
 import tod.gui.kit.html.HtmlElement;
 import tod.gui.kit.html.HtmlLink;
 import tod.gui.kit.html.HtmlText;
 import tod.gui.kit.messages.Message;
 import tod.gui.kit.messages.ShowObjectMsg;
-import tod.gui.seed.CFlowSeed;
-import tod.gui.seed.LogViewSeed;
-import tod.gui.seed.ObjectHistorySeed;
-import tod.gui.seed.StructureSeed;
 import tod.tools.scheduling.IJobScheduler;
 import zz.utils.ui.ZLabel;
 
@@ -66,7 +66,7 @@ public class Hyperlinks
 	public static final SwingLabelFactory SWING = new SwingLabelFactory();
 	public static final TextLabelFactory TEXT = new TextLabelFactory();
 	
-	public static <T> T seed(IGUIManager aGUIManager, LabelFactory<T> aFactory, String aText, LogViewSeed aSeed)
+	public static <T> T seed(IGUIManager aGUIManager, LabelFactory<T> aFactory, String aText, ActivitySeed aSeed)
 	{
 		return aFactory.createLink(aGUIManager, aText, aSeed);
 	}
@@ -194,7 +194,7 @@ public class Hyperlinks
 	
 	private static abstract class LabelFactory<T>
 	{
-		public abstract T createLink(IGUIManager aGUIManager, String aLabel, LogViewSeed aSeed);
+		public abstract T createLink(IGUIManager aGUIManager, String aLabel, ActivitySeed aSeed);
 		public abstract T createLink(String aLabel, Message aMessage);
 		public abstract T createText(String aLabel, Color aColor);
 	}
@@ -202,7 +202,7 @@ public class Hyperlinks
 	private static class SwingLabelFactory extends LabelFactory<JComponent>
 	{
 		@Override
-		public JComponent createLink(IGUIManager aGUIManager, String aLabel, LogViewSeed aSeed)
+		public JComponent createLink(IGUIManager aGUIManager, String aLabel, ActivitySeed aSeed)
 		{
 			return SeedHyperlink.create(aGUIManager, aSeed, aLabel, FontConfig.STD_FONT, Color.BLUE);		
 		}
@@ -225,7 +225,7 @@ public class Hyperlinks
 	{
 
 		@Override
-		public HtmlElement createLink(final IGUIManager aGUIManager, String aLabel, final LogViewSeed aSeed)
+		public HtmlElement createLink(final IGUIManager aGUIManager, String aLabel, final ActivitySeed aSeed)
 		{
 			return new HtmlLink(aLabel)
 			{
@@ -261,7 +261,7 @@ public class Hyperlinks
 	{
 
 		@Override
-		public String createLink(IGUIManager aGUIManager, String aLabel, LogViewSeed aSeed)
+		public String createLink(IGUIManager aGUIManager, String aLabel, ActivitySeed aSeed)
 		{
 			return aLabel;
 		}

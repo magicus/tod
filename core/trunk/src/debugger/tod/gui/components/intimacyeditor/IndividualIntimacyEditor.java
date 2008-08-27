@@ -15,7 +15,7 @@ import javax.swing.event.ChangeListener;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.gui.GUIUtils;
 import tod.gui.Resources;
-import tod.gui.eventlist.IntimacyLevel;
+import tod.gui.components.eventlist.IntimacyLevel;
 import zz.utils.ui.UIUtils;
 
 /**

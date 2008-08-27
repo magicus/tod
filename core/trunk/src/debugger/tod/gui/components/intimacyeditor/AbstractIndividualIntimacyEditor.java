@@ -34,7 +34,7 @@ package tod.gui.components.intimacyeditor;
 import javax.swing.JPanel;
 
 import tod.core.database.structure.ILocationInfo;
-import tod.gui.eventlist.IntimacyLevel;
+import tod.gui.components.eventlist.IntimacyLevel;
 
 abstract class AbstractIndividualIntimacyEditor extends JPanel
 {

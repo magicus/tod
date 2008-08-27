@@ -36,7 +36,8 @@ import tod.core.database.browser.IEventFilter;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.SourceRange;
 import tod.core.session.ISession;
-import tod.gui.seed.LogViewSeed;
+import tod.gui.activities.ActivitySeed;
+import tod.gui.kit.IBusOwner;
 import tod.gui.settings.GUISettings;
 import tod.tools.scheduling.JobScheduler;
 
@@ -47,14 +48,14 @@ import tod.tools.scheduling.JobScheduler;
  * a GUI manager
  * @author gpothier
  */
-public interface IGUIManager
+public interface IGUIManager extends IBusOwner
 {
 	/**
 	 * Sets the currently viewed seed.
 	 * @param aNewTab If false, the viewer for the seed will replace the
 	 * currently displayed viewer. If true, a new tab will be opened.
 	 */
-	public void openSeed (LogViewSeed aSeed, boolean aNewTab);
+	public void openSeed (ActivitySeed aSeed, boolean aNewTab);
 	
 	/**
 	 * Shows the location of the specified event in the source code.

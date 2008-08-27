@@ -1,0 +1,87 @@
+/*
+TOD - Trace Oriented Debugger.
+Copyright (c) 2006-2008, Guillaume Pothier
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, 
+are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice, this 
+      list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice, 
+      this list of conditions and the following disclaimer in the documentation 
+      and/or other materials provided with the distribution.
+    * Neither the name of the University of Chile nor the names of its contributors 
+      may be used to endorse or promote products derived from this software without 
+      specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY 
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
+IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
+INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT 
+NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+POSSIBILITY OF SUCH DAMAGE.
+
+Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
+Inc. MD5 Message-Digest Algorithm".
+*/
+package tod.gui.activities.structure;
+
+import java.util.List;
+
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
+import zz.utils.SimpleListModel;
+import zz.utils.ui.StackLayout;
+import zz.utils.ui.UniversalRenderer;
+
+/**
+ * This panel displays the local variable info table of a behavior
+ * @author gpothier
+ */
+public class VariableInfoPanel extends JPanel
+{
+	private final IBehaviorInfo itsBehavior;
+
+	public VariableInfoPanel(IBehaviorInfo aBehavior)
+	{
+		itsBehavior = aBehavior;
+		createUI();
+	}
+
+	private void createUI()
+	{
+		List<LocalVariableInfo> theLocalVariables = itsBehavior.getLocalVariables();
+		
+		JList theList = theLocalVariables != null ? 
+				new JList(new SimpleListModel(theLocalVariables))
+				: new JList();
+				
+		theList.setCellRenderer(new UniversalRenderer<LocalVariableInfo>()
+				{
+					@Override
+					protected String getName(LocalVariableInfo aObject)
+					{
+						return String.format(
+								"%s %s (%d-%d): %d",
+								aObject.getVariableTypeName(),
+								aObject.getVariableName(),
+								aObject.getStartPc(),
+								aObject.getStartPc()+aObject.getLength(),
+								aObject.getIndex());
+					}
+				});
+		
+		setLayout(new StackLayout());
+		add(new JScrollPane(theList));
+	}
+	
+}

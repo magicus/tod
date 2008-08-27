@@ -35,7 +35,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import tod.gui.eventlist.IntimacyLevel;
+import tod.gui.components.eventlist.IntimacyLevel;
 import zz.utils.FireableTreeModel;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IFireableEvent;

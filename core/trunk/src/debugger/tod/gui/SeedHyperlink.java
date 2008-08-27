@@ -33,23 +33,23 @@ package tod.gui;
 
 import java.awt.Color;
 
-import tod.gui.seed.LogViewSeed;
+import tod.gui.activities.ActivitySeed;
 import zz.utils.ui.ZHyperlink;
 import zz.utils.ui.text.XFont;
 
 public class SeedHyperlink extends ZHyperlink
 {
 	private final IGUIManager itsGUIManager;
-	private LogViewSeed itsSeed;
+	private ActivitySeed itsSeed;
 	
-	public SeedHyperlink(IGUIManager aGUIManager, LogViewSeed aSeed, String aText, XFont aFont, Color aColor)
+	public SeedHyperlink(IGUIManager aGUIManager, ActivitySeed aSeed, String aText, XFont aFont, Color aColor)
 	{
 		super(aText, aFont, aColor);
 		itsGUIManager = aGUIManager;
 		itsSeed = aSeed;
 	}
 
-	public void setSeed(LogViewSeed aSeed)
+	public void setSeed(ActivitySeed aSeed)
 	{
 		itsSeed = aSeed;
 	}
@@ -65,7 +65,7 @@ public class SeedHyperlink extends ZHyperlink
 	 */
 	public static SeedHyperlink create(
 			IGUIManager aGUIManager, 
-			LogViewSeed aSeed, 
+			ActivitySeed aSeed, 
 			String aText, 
 			XFont aFont, 
 			Color aColor)
@@ -82,7 +82,7 @@ public class SeedHyperlink extends ZHyperlink
 	/**
 	 * Creates a new flow text with default size computer and font.
 	 */
-	public static SeedHyperlink create(IGUIManager aGUIManager, LogViewSeed aSeed, String aText, Color aColor)
+	public static SeedHyperlink create(IGUIManager aGUIManager, ActivitySeed aSeed, String aText, Color aColor)
 	{
 		return create(aGUIManager, aSeed, aText, XFont.DEFAULT_XUNDERLINED, aColor);
 	}
@@ -93,7 +93,7 @@ public class SeedHyperlink extends ZHyperlink
 	 */
 	public static SeedHyperlink create(
 			IGUIManager aGUIManager, 
-			LogViewSeed aSeed, 
+			ActivitySeed aSeed, 
 			String aText, 
 			float aFontSize, 
 			Color aColor)
@@ -103,7 +103,7 @@ public class SeedHyperlink extends ZHyperlink
 
 	public static SeedHyperlink create(
 			IGUIManager aGUIManager,
-			LogViewSeed aSeed,
+			ActivitySeed aSeed,
 			String aText)
 	{
 		return create(aGUIManager, aSeed, aText, XFont.DEFAULT_XUNDERLINED, Color.BLUE);

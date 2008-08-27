@@ -45,7 +45,7 @@ import tod.core.config.TODConfig;
 import tod.core.database.browser.LocationUtils;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
-import tod.gui.view.structure.DisassemblyPanel;
+import tod.gui.activities.structure.DisassemblyPanel;
 import tod.impl.bci.asm.ASMDebuggerConfig;
 import tod.impl.bci.asm.ASMInstrumenter;
 import tod.impl.database.structure.standard.StructureDatabase;

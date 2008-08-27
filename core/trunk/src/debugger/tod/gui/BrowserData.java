@@ -36,8 +36,8 @@ import java.awt.Color;
 import tod.core.database.browser.IEventBrowser;
 
 /**
- * Data agregate for browsers that are used in an {@link tod.gui.eventsequences.mural.EventMural}
- * or a {@link tod.gui.TimeScale}. Apart from an {@link tod.core.database.browser.IEventBrowser}
+ * Data agregate for browsers that are used in an {@link tod.gui.components.eventsequences.mural.EventMural}
+ * or a {@link tod.gui.components.TimeScale}. Apart from an {@link tod.core.database.browser.IEventBrowser}
  * it contains a color that indicates how the events of the broswser should be rendered,
  * and the size of an optional marker displayed below columns that contain events.
  * @author gpothier

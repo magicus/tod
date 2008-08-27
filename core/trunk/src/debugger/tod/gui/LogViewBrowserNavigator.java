@@ -35,75 +35,76 @@ import java.lang.reflect.Constructor;
 
 import javax.swing.JPanel;
 
-import tod.gui.seed.LogViewSeed;
-import tod.gui.view.LogView;
+import tod.gui.activities.ActivityPanel;
+import tod.gui.activities.ActivitySeed;
 import zz.utils.ui.StackLayout;
 
 /**
- * Browser navigator for log view seeds.
+ * Browser navigator for activity seeds.
  * @author gpothier
  */
-public class LogViewBrowserNavigator extends BrowserNavigator<LogViewSeed>
+public class LogViewBrowserNavigator extends BrowserNavigator<ActivitySeed>
 {
 	private final IGUIManager itsGUIManager;
-	private JPanel itsViewContainer;
-	private LogView itsCurrentView;
+	private JPanel itsContainer;
+	private ActivityPanel itsCurrentActivityPanel;
 	
 	public LogViewBrowserNavigator(IGUIManager aGUIManager)
 	{
 		super(aGUIManager.getJobScheduler());
 		itsGUIManager = aGUIManager;
-		itsViewContainer = new JPanel(new StackLayout());
+		itsContainer = new JPanel(new StackLayout());
 	}
 
-	public JPanel getViewContainer()
+	public JPanel getActivityContainer()
 	{
-		return itsViewContainer;
+		return itsContainer;
 	}
 
-	protected void setSeed (LogViewSeed aSeed)
+	@Override
+	protected void setSeed (ActivitySeed aSeed)
 	{
-		LogView thePreviousView = itsCurrentView;
+		ActivityPanel thePreviousPanel = itsCurrentActivityPanel;
 		
 		try
 		{
-			if (itsCurrentView != null && (aSeed == null || ! itsCurrentView.getClass().equals(aSeed.getComponentClass())))
+			if (itsCurrentActivityPanel != null && (aSeed == null || ! itsCurrentActivityPanel.getClass().equals(aSeed.getComponentClass())))
 			{
 				// Keep current view
-				itsViewContainer.remove(itsCurrentView);
-				itsCurrentView = null;
+				itsContainer.remove(itsCurrentActivityPanel);
+				itsCurrentActivityPanel = null;
 			}
 			
-			if (itsCurrentView == null && aSeed != null)
+			if (itsCurrentActivityPanel == null && aSeed != null)
 			{
-				Class<? extends LogView> theClass = aSeed.getComponentClass();
-				Constructor<? extends LogView> theConstructor = theClass.getConstructor(IGUIManager.class);
-				itsCurrentView = theConstructor.newInstance(itsGUIManager);
-				itsCurrentView.init();
-				itsViewContainer.add(itsCurrentView);
+				Class<? extends ActivityPanel> theClass = aSeed.getComponentClass();
+				Constructor<? extends ActivityPanel> theConstructor = theClass.getConstructor(IGUIManager.class);
+				itsCurrentActivityPanel = theConstructor.newInstance(itsGUIManager);
+				itsCurrentActivityPanel.init();
+				itsContainer.add(itsCurrentActivityPanel);
 			}
 			
-			if (itsCurrentView != null) itsCurrentView.setSeed(aSeed);
+			if (itsCurrentActivityPanel != null) itsCurrentActivityPanel.setSeed(aSeed);
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
 		
-		if (itsCurrentView != thePreviousView) viewChanged(itsCurrentView);
+		if (itsCurrentActivityPanel != thePreviousPanel) viewChanged(itsCurrentActivityPanel);
 		
 		super.setSeed(aSeed);
 		
-		itsViewContainer.revalidate();
-		itsViewContainer.repaint();
-		itsViewContainer.validate();
+		itsContainer.revalidate();
+		itsContainer.repaint();
+		itsContainer.validate();
 	}
 	
 	/**
 	 * Called when a new view is displayed. Does
 	 * nothing by default.
 	 */
-	protected void viewChanged(LogView theView)
+	protected void viewChanged(ActivityPanel theView)
 	{
 	}
 
