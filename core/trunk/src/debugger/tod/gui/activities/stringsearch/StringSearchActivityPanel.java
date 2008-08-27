@@ -53,6 +53,7 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.LocationUtils;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.ObjectId;
+import tod.gui.IContext;
 import tod.gui.IGUIManager;
 import tod.gui.activities.ActivityPanel;
 import tod.gui.activities.ActivitySeed;
@@ -79,9 +80,9 @@ public class StringSearchActivityPanel extends ActivityPanel<StringSearchSeed>
 
 	private EventListPanel itsEventListPanel;
 
-	public StringSearchActivityPanel(IGUIManager aGUIManager)
+	public StringSearchActivityPanel(IContext aContext)
 	{
-		super(aGUIManager);
+		super(aContext);
 		createUI();
 	}
 

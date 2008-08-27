@@ -47,8 +47,8 @@ import tod.core.database.structure.ObjectId;
 import tod.gui.BrowserNavigator;
 import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
+import tod.gui.IContext;
 import tod.gui.IGUIManager;
-import tod.gui.activities.cflow.CFlowActivityPanel;
 import tod.gui.components.objectwatch.AbstractWatchProvider.Entry;
 import tod.gui.kit.AsyncPanel;
 import tod.gui.kit.Bus;
@@ -65,9 +65,9 @@ import zz.utils.ui.ScrollablePanel;
  * A panel that shows the contents of a stack frame or of an object.
  * @author gpothier
  */
-public class WatchPanel extends BusPanel
+public class ObjectWatchPanel extends BusPanel
 {
-	private CFlowActivityPanel itsView;
+	private final IContext itsContext;
 	private WatchBrowserNavigator itsBrowserNavigator;
 	private JobGroup itsJobGroup;
 	private JScrollPane itsScrollPane;
@@ -81,7 +81,7 @@ public class WatchPanel extends BusPanel
 			openWatch(new ObjectWatchSeed(
 					getGUIManager(),
 					aMessage.getTitle(), 
-					WatchPanel.this,
+					ObjectWatchPanel.this,
 					aMessage.getRefEvent(), 
 					aMessage.getObjectId()));
 			
@@ -89,25 +89,12 @@ public class WatchPanel extends BusPanel
 		}
 	};
 	
-	public WatchPanel(CFlowActivityPanel aView)
+	public ObjectWatchPanel(IContext aContext)
 	{
-		super(aView.getBus());
-		itsView = aView;
+		super(aContext.getBus());
+		itsContext = aContext;
 		itsJobGroup = new JobGroup(getGUIManager().getJobScheduler());
 		itsBrowserNavigator = new WatchBrowserNavigator(itsJobGroup);
-	}
-	
-	/**
-	 * Whether package names should be displayed.
-	 */
-	protected boolean showPackageNames()
-	{
-		return getView().showPackageNames();
-	}
-	
-	public CFlowActivityPanel getView()
-	{
-		return itsView;
 	}
 	
 	private void createUI()
@@ -154,7 +141,12 @@ public class WatchPanel extends BusPanel
 	
 	public IGUIManager getGUIManager()
 	{
-		return itsView.getGUIManager();
+		return itsContext.getGUIManager();
+	}
+	
+	public IContext getContext()
+	{
+		return itsContext;
 	}
 	
 	/**
@@ -168,13 +160,13 @@ public class WatchPanel extends BusPanel
 
 	public void showStackFrame()
 	{
-		ILogEvent theRefEvent = itsView.getSeed().pSelectedEvent().get();
+		ILogEvent theRefEvent = getContext().pSelectedEvent().get();
 		if (theRefEvent == null) return;
 		
 		itsBrowserNavigator.open(new StackFrameWatchSeed(
 				getGUIManager(),
 				"frame",
-				WatchPanel.this,
+				ObjectWatchPanel.this,
 				theRefEvent));
 
 	}
@@ -222,7 +214,7 @@ public class WatchPanel extends BusPanel
 					add(new WatchEntryNode(
 							getGUIManager(),
 							getJobScheduler(),
-							WatchPanel.this,
+							ObjectWatchPanel.this,
 							itsProvider,
 							theEntry));
 				}
@@ -245,7 +237,7 @@ public class WatchPanel extends BusPanel
 				getJobScheduler(),
 				aCurrentObject,
 				itsProvider.getRefEvent(),
-				showPackageNames()));
+				true));
 		
 		return theContainer;		
 		

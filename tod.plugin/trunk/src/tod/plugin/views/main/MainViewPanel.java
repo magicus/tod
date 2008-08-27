@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.plugin.views;
+package tod.plugin.views.main;
 
 import java.awt.event.ActionEvent;
 
@@ -45,11 +45,11 @@ import tod.plugin.TODPluginUtils;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.PropertyListener;
 
-public class EventViewer extends MinerUI
+public class MainViewPanel extends MinerUI
 {
-	private final TraceNavigatorView itsTraceNavigatorView;
+	private final MainView itsTraceNavigatorView;
 
-	public EventViewer(TraceNavigatorView aTraceNavigatorView)
+	public MainViewPanel(MainView aTraceNavigatorView)
 	{
 		itsTraceNavigatorView = aTraceNavigatorView;
 		TODSessionManager.getInstance().pCurrentSession().addHardListener(new PropertyListener<ISession>()

@@ -47,6 +47,7 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 import tod.core.database.structure.IThreadInfo;
+import tod.gui.IContext;
 import tod.gui.IGUIManager;
 import tod.gui.activities.ActivityPanel;
 import tod.gui.components.eventsequences.SequenceViewsDock;
@@ -72,9 +73,9 @@ public class ThreadsActivityPanel extends ActivityPanel<ThreadsSeed>
 	
 	private Timer itsTimer;
 	
-	public ThreadsActivityPanel(IGUIManager aGUIManager)
+	public ThreadsActivityPanel(IContext aContext)
 	{
-		super(aGUIManager);
+		super(aContext);
 		createUI();
 	}
 	

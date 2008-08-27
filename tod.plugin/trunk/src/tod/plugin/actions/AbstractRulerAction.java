@@ -59,7 +59,7 @@ public abstract class AbstractRulerAction extends Action //implements IUpdate
 	
 	protected IGUIManager getGUIManager(boolean aShow)
 	{
-		return TODPluginUtils.getTraceNavigatorView(aShow).getGUIManager();
+		return TODPluginUtils.getMainView(aShow).getGUIManager();
 	}
 
 	/**

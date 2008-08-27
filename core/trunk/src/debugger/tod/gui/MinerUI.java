@@ -87,6 +87,8 @@ import tod.tools.scheduling.Scheduled;
 import tod.tools.scheduling.IJobScheduler.JobPriority;
 import tod.utils.TODUtils;
 import zz.utils.SimpleAction;
+import zz.utils.properties.IRWProperty;
+import zz.utils.properties.SimpleRWProperty;
 import zz.utils.ui.StackLayout;
 import zz.utils.ui.UniversalRenderer;
 
@@ -95,7 +97,7 @@ import zz.utils.ui.UniversalRenderer;
  * @author gpothier
  */
 public abstract class MinerUI extends BusOwnerPanel
-implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider
+implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider, IContext
 {
 	static
 	{
@@ -111,7 +113,7 @@ implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider
 	
 	private JobScheduler itsJobScheduler = new JobScheduler();
 	
-	private LogViewBrowserNavigator itsNavigator = new LogViewBrowserNavigator(this)
+	private ContextBrowserNavigator itsNavigator = new ContextBrowserNavigator(this)
 	{
 		@Override
 		protected void viewChanged(ActivityPanel aTheView)
@@ -167,6 +169,11 @@ implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider
 	
 	private ActivityPanel itsCurrentView;
 	
+	/**
+	 * This belongs to {@link IContext}, for now a gui manager == a context.
+	 */
+	private IRWProperty<ILogEvent> pSelectedEvent = new SimpleRWProperty<ILogEvent>();
+	
 	public MinerUI()
 	{
 		createUI();
@@ -201,6 +208,21 @@ implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider
 		theNavButtonsPanel.add(new JobSchedulerMonitor(itsJobScheduler));
 	}
 	
+	
+	
+	/**
+	 * Implementation of {@link IContext}
+	 */
+	public IGUIManager getGUIManager()
+	{
+		return this;
+	}
+
+	public IRWProperty<ILogEvent> pSelectedEvent()
+	{
+		return pSelectedEvent;
+	}
+
 	@Override
 	public void addNotify()
 	{

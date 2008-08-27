@@ -38,6 +38,7 @@ import javax.swing.JTabbedPane;
 
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ILocationInfo;
+import tod.gui.IContext;
 import tod.gui.IGUIManager;
 import tod.gui.activities.ActivityPanel;
 import tod.gui.components.locationselector.LocationSelectorPanel;
@@ -65,9 +66,9 @@ public class StructureActivityPanel extends ActivityPanel<StructureSeed>
 		}
 	};
 	
-	public StructureActivityPanel(IGUIManager aGUIManager)
+	public StructureActivityPanel(IContext aContext)
 	{
-		super(aGUIManager);
+		super(aContext);
 	}
 
 	@Override

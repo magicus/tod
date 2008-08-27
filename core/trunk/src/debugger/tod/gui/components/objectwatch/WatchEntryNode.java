@@ -56,14 +56,14 @@ public class WatchEntryNode extends JPanel
 	private final IJobScheduler itsJobScheduler;
 	
 	private final IGUIManager itsGUIManager;
-	private final WatchPanel itsWatchPanel;
+	private final ObjectWatchPanel itsWatchPanel;
 	private final AbstractWatchProvider itsProvider;
 	private final Entry itsEntry;
 	
 	public WatchEntryNode(
 			IGUIManager aGUIManager,
 			IJobScheduler aJobScheduler,
-			WatchPanel aWatchPanel,
+			ObjectWatchPanel aWatchPanel,
 			AbstractWatchProvider aProvider, 
 			Entry aEntry)
 	{
@@ -77,11 +77,6 @@ public class WatchEntryNode extends JPanel
 		createUI();
 	}
 	
-	protected boolean showPackageNames()
-	{
-		return itsWatchPanel.showPackageNames();
-	}
-
 	private void createUI()
 	{
 		String theName = itsEntry.getName();
@@ -126,7 +121,7 @@ public class WatchEntryNode extends JPanel
 							itsProvider.getCurrentObject(),
 							itsValue[i].value,
 							itsProvider.getRefEvent(),
-							showPackageNames()));
+							true));
 					
 					ILogEvent theSetter = itsValue[i].setter;
 					add(GUIUtils.createLabel(" ("));

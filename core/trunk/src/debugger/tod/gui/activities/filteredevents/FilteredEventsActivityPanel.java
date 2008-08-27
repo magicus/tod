@@ -42,6 +42,7 @@ import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.LocationUtils;
 import tod.core.database.event.ILogEvent;
 import tod.gui.BrowserData;
+import tod.gui.IContext;
 import tod.gui.IGUIManager;
 import tod.gui.activities.ActivityPanel;
 import tod.gui.components.eventlist.EventListPanel;
@@ -91,10 +92,9 @@ public class FilteredEventsActivityPanel extends ActivityPanel<FilterSeed>
 
 	private HtmlComponent itsTitleComponent;
 	
-	public FilteredEventsActivityPanel(IGUIManager aGUIManager)
+	public FilteredEventsActivityPanel(IContext aContext)
 	{
-		super(aGUIManager);
-		
+		super(aContext);
 		createUI ();
 	}
 	

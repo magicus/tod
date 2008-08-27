@@ -38,7 +38,7 @@ public class ConnectToDatabaseLaunchDelegate extends AbstractJavaLaunchConfigura
 		ISession theSession = new RemoteGridSession(null, theConfig, true); 
 		theSession.getLaunches().add(new EclipseProgramLaunch(aLaunch, theJavaProject));
 		
-		TODPluginUtils.getTraceNavigatorView(true);
+		TODPluginUtils.getMainView(true);
 		TODSessionManager.getInstance().pCurrentSession().set(theSession);
 
 		aMonitor.done();

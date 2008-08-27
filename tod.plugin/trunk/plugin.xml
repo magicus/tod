@@ -107,9 +107,10 @@
       </category>
       <view
             category="tod.plugin"
-            class="tod.plugin.views.TraceNavigatorView"
-            id="tod.plugin.views.TraceNavigatorView"
-            name="TOD Navigator"/>
+            class="tod.plugin.views.main.MainView"
+            id="tod.plugin.views.main.MainView"
+            name="TOD Navigator"
+            restorable="true"/>
       <!--
       <view
             category="tod.plugin"
@@ -119,9 +120,17 @@
       -->
       <view
             category="tod.plugin"
-            class="tod.plugin.views.DBProcessView"
+            class="tod.plugin.views.dbprocess.DBProcessView"
             id="tod.plugin.views.DBProcessView"
-            name="Database management">
+            name="Database management"
+            restorable="true">
+      </view>
+      <view
+            category="tod.plugin"
+            class="tod.plugin.views.objectwatch.ObjectWatchView"
+            id="tod.plugin.views.objectwatch.ObjectWatchView"
+            name="TOD Watch"
+            restorable="true">
       </view>
    </extension>
    <extension

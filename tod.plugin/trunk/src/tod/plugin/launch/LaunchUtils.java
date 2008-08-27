@@ -35,7 +35,7 @@ import tod.core.session.TODSessionManager;
 import tod.plugin.EclipseProgramLaunch;
 import tod.plugin.TODPlugin;
 import tod.plugin.TODPluginUtils;
-import tod.plugin.views.AbstractNavigatorView;
+import tod.plugin.views.main.MainView;
 import zz.utils.Utils;
 
 public class LaunchUtils 
@@ -57,7 +57,7 @@ public class LaunchUtils
 			TODConfig aConfig, 
 			ILaunch aLaunch) throws CoreException
 {
-		AbstractNavigatorView theView = TODPluginUtils.getTraceNavigatorView(true);
+		MainView theView = TODPluginUtils.getMainView(true);
 		
 		ISession theSession = null;
 		try

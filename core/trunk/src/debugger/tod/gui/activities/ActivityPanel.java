@@ -45,6 +45,7 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.ObjectId;
 import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
+import tod.gui.IContext;
 import tod.gui.IGUIManager;
 import tod.gui.SeedHyperlink;
 import tod.gui.activities.objecthistory.ObjectHistorySeed;
@@ -55,7 +56,6 @@ import tod.gui.kit.IOptionsOwner;
 import tod.gui.kit.Options;
 import tod.tools.scheduling.IJobScheduler;
 import tod.tools.scheduling.IJobSchedulerProvider;
-import tod.tools.scheduling.IJobScheduler.JobPriority;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.ISetProperty;
 import zz.utils.properties.PropertyUtils;
@@ -70,7 +70,7 @@ import zz.utils.ui.ZLabel;
 public abstract class ActivityPanel<T extends ActivitySeed> extends BusOwnerPanel
 implements IOptionsOwner, IJobSchedulerProvider
 {
-	private final IGUIManager itsGUIManager;
+	private final IContext itsContext;
 	
 	private List<PropertyUtils.Connector> itsConnectors; 
 
@@ -91,10 +91,14 @@ implements IOptionsOwner, IJobSchedulerProvider
 	 */
 	private boolean itsSeedConnected = false;
 	
-	public ActivityPanel(IGUIManager aGUIManager)
+	public ActivityPanel(IContext aContext)
 	{
-		itsGUIManager = aGUIManager;
-		itsOptions = new Options(itsGUIManager.getSettings(), getOptionsName(), itsGUIManager.getSettings().getOptions());
+		itsContext = aContext;
+		itsOptions = new Options(
+				getGUIManager().getSettings(), 
+				getOptionsName(), 
+				getGUIManager().getSettings().getOptions());
+		
 		initOptions(itsOptions);
 	}
 	
@@ -245,9 +249,14 @@ implements IOptionsOwner, IJobSchedulerProvider
 		return getGUIManager().getSession().getLogBrowser();
 	}
 	
+	public IContext getContext()
+	{
+		return itsContext;
+	}
+	
 	public IGUIManager getGUIManager()
 	{
-		return itsGUIManager;
+		return getContext().getGUIManager();
 	}
 	
 	public TODConfig getConfig()

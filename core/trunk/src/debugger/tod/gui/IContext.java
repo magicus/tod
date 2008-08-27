@@ -29,38 +29,33 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.components.event;
+package tod.gui;
 
-import tod.core.database.event.IInstantiationEvent;
-import tod.core.database.structure.ITypeInfo;
-import tod.gui.IGUIManager;
+import tod.core.database.event.ILogEvent;
+import tod.gui.kit.Bus;
+import zz.utils.properties.IRWProperty;
 
 /**
- * View for {@link tod.core.database.event.IInstantiationEvent}
+ * Represents a user-interface context, ie everything related to the current
+ * activities.
+ * Currently, there can be only one context per {@link IGUIManager}, but that
+ * might change.
  * @author gpothier
  */
-public class InstantiationView extends BehaviorCallView
+public interface IContext
 {
-	public InstantiationView(IGUIManager aManager, IInstantiationEvent aEvent)
-	{
-		super(aManager, aEvent);
-	}
+	/**
+	 * The GUI manager this context comes from.
+	 */
+	public IGUIManager getGUIManager();
 	
+	/**
+	 * The event currently selected in this context.
+	 */
+	public IRWProperty<ILogEvent> pSelectedEvent();
 	
-	protected IInstantiationEvent getEvent()
-	{
-		return (IInstantiationEvent) super.getEvent();
-	}
-	
-	public void init()
-	{
-		super.init();
-		add (createTitledPanel("Created instance: ", createInspectorLink(getEvent().getInstance())));
-	}
-
-	@Override
-	protected ITypeInfo getType()
-	{
-		return getEvent().getType();
-	}
+	/**
+	 * The bus used to communicate within this context.
+	 */
+	public Bus getBus();
 }

@@ -56,6 +56,7 @@ import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
+import tod.gui.IContext;
 import tod.gui.IGUIManager;
 import tod.gui.Resources;
 import tod.gui.activities.ActivityPanel;
@@ -64,7 +65,7 @@ import tod.gui.components.eventlist.EventListPanel;
 import tod.gui.components.eventlist.IntimacyLevel;
 import tod.gui.components.intimacyeditor.IntimacyEditorButton;
 import tod.gui.components.objectwatch.ObjectWatchSeed;
-import tod.gui.components.objectwatch.WatchPanel;
+import tod.gui.components.objectwatch.ObjectWatchPanel;
 import tod.gui.kit.Bus;
 import tod.gui.kit.Options;
 import tod.gui.kit.SavedSplitPane;
@@ -91,7 +92,7 @@ public class CFlowActivityPanel extends ActivityPanel<CFlowSeed>
 	private Stepper itsStepper;
 	
 	private CFlowTree itsCFlowTree;
-	private WatchPanel itsWatchPanel;
+	private ObjectWatchPanel itsWatchPanel;
 	
 	private ZLabel itsHostLabel;
 	private ZLabel itsThreadLabel;
@@ -144,9 +145,9 @@ public class CFlowActivityPanel extends ActivityPanel<CFlowSeed>
 	};
 	
 
-	public CFlowActivityPanel(IGUIManager aGUIManager)
+	public CFlowActivityPanel(IContext aContext)
 	{
-		super (aGUIManager);
+		super (aContext);
 	}
 
 
@@ -213,7 +214,7 @@ public class CFlowActivityPanel extends ActivityPanel<CFlowSeed>
 		add(itsBookmarksMural, BorderLayout.NORTH);
 		
 		// Create watch panel
-		itsWatchPanel = new WatchPanel(this);
+		itsWatchPanel = new ObjectWatchPanel(getContext());
 
 		JSplitPane theSplitPane = new SavedSplitPane(JSplitPane.HORIZONTAL_SPLIT, getGUIManager(), PROPERTY_SPLITTER_POS);
 		theSplitPane.setResizeWeight(0.5);

@@ -35,24 +35,29 @@ import java.lang.reflect.Constructor;
 
 import javax.swing.JPanel;
 
+import tod.core.database.event.ILogEvent;
 import tod.gui.activities.ActivityPanel;
 import tod.gui.activities.ActivitySeed;
+import tod.gui.activities.IEventSeed;
+import zz.utils.properties.PropertyUtils;
+import zz.utils.properties.PropertyUtils.Connector;
 import zz.utils.ui.StackLayout;
 
 /**
- * Browser navigator for activity seeds.
+ * Browser navigator for a given context.
  * @author gpothier
  */
-public class LogViewBrowserNavigator extends BrowserNavigator<ActivitySeed>
+public class ContextBrowserNavigator extends BrowserNavigator<ActivitySeed>
 {
-	private final IGUIManager itsGUIManager;
+	private final IContext itsContext;
 	private JPanel itsContainer;
 	private ActivityPanel itsCurrentActivityPanel;
+	private Connector<ILogEvent> itsSelectedEventConnector;
 	
-	public LogViewBrowserNavigator(IGUIManager aGUIManager)
+	public ContextBrowserNavigator(IContext aContext)
 	{
-		super(aGUIManager.getJobScheduler());
-		itsGUIManager = aGUIManager;
+		super(aContext.getGUIManager().getJobScheduler());
+		itsContext = aContext;
 		itsContainer = new JPanel(new StackLayout());
 	}
 
@@ -68,9 +73,17 @@ public class LogViewBrowserNavigator extends BrowserNavigator<ActivitySeed>
 		
 		try
 		{
-			if (itsCurrentActivityPanel != null && (aSeed == null || ! itsCurrentActivityPanel.getClass().equals(aSeed.getComponentClass())))
+			if (itsCurrentActivityPanel != null 
+					&& (aSeed == null 
+							|| ! itsCurrentActivityPanel.getClass().equals(aSeed.getComponentClass())))
 			{
-				// Keep current view
+				// Drop current view
+				if (itsSelectedEventConnector != null)
+				{
+					itsSelectedEventConnector.disconnect();
+					itsSelectedEventConnector = null;
+				}
+
 				itsContainer.remove(itsCurrentActivityPanel);
 				itsCurrentActivityPanel = null;
 			}
@@ -78,10 +91,19 @@ public class LogViewBrowserNavigator extends BrowserNavigator<ActivitySeed>
 			if (itsCurrentActivityPanel == null && aSeed != null)
 			{
 				Class<? extends ActivityPanel> theClass = aSeed.getComponentClass();
-				Constructor<? extends ActivityPanel> theConstructor = theClass.getConstructor(IGUIManager.class);
-				itsCurrentActivityPanel = theConstructor.newInstance(itsGUIManager);
+				Constructor<? extends ActivityPanel> theConstructor = theClass.getConstructor(IContext.class);
+				itsCurrentActivityPanel = theConstructor.newInstance(itsContext);
 				itsCurrentActivityPanel.init();
 				itsContainer.add(itsCurrentActivityPanel);
+				
+				if (itsCurrentActivityPanel.getSeed() instanceof IEventSeed)
+				{
+					IEventSeed theEventSeed = (IEventSeed) itsCurrentActivityPanel.getSeed();
+					itsSelectedEventConnector = PropertyUtils.connect(
+							itsContext.pSelectedEvent(), 
+							theEventSeed.pEvent(), 
+							true);
+				}
 			}
 			
 			if (itsCurrentActivityPanel != null) itsCurrentActivityPanel.setSeed(aSeed);

@@ -56,6 +56,7 @@ import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.tree.StructureTreeBuilders;
 import tod.gui.BrowserData;
+import tod.gui.IContext;
 import tod.gui.IGUIManager;
 import tod.gui.activities.ActivityPanel;
 import tod.gui.activities.dyncross.DynamicCrosscuttingSeed.Highlight;
@@ -88,9 +89,9 @@ implements IListListener<Highlight>
 	 */
 	private Map<ILocationInfo, Highlight> itsHighlightsMap = new HashMap<ILocationInfo, Highlight>();
 	
-	public DynamicCrosscuttingActivityPanel(IGUIManager aGUIManager)
+	public DynamicCrosscuttingActivityPanel(IContext aContext)
 	{
-		super(aGUIManager);
+		super(aContext);
 	}
 
 	@Override

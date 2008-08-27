@@ -42,7 +42,7 @@ public class ObjectWatchSeed extends WatchSeed
 	public ObjectWatchSeed(
 			IGUIManager aGUIManager,
 			String aTitle,
-			WatchPanel aWatchPanel,
+			ObjectWatchPanel aWatchPanel,
 			ILogEvent aRefEvent,
 			ObjectId aObject)
 	{

@@ -55,8 +55,7 @@ import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.session.ISession;
-import tod.plugin.views.AbstractNavigatorView;
-import tod.plugin.views.TraceNavigatorView;
+import tod.plugin.views.main.MainView;
 import tod.utils.ConfigUtils;
 import tod.utils.TODUtils;
 import zz.utils.Utils;
@@ -297,21 +296,21 @@ public class TODPluginUtils
 	/**
 	 * Find and optionally gives focus to the trace navigator view.
 	 */
-	public static AbstractNavigatorView getTraceNavigatorView(final boolean aShow)
+	public static MainView getMainView(final boolean aShow)
 	{
-		final AbstractNavigatorView[] theResult = new AbstractNavigatorView[1];
+		final MainView[] theResult = new MainView[1];
 		Display.getDefault().syncExec(new Runnable ()
 		{
 			public void run()
 			{
 				try
 				{
-					String theViewId = ConfigUtils.readString("tod.plugin-view", TraceNavigatorView.VIEW_ID);
+					String theViewId = ConfigUtils.readString("tod.plugin-view", MainView.VIEW_ID);
 					
 					IWorkbenchWindow theWindow = Workbench.getInstance().getActiveWorkbenchWindow();
 					IWorkbenchPage thePage = theWindow.getActivePage();
 			
-					AbstractNavigatorView theView = (AbstractNavigatorView) (aShow ?
+					MainView theView = (MainView) (aShow ?
 							thePage.showView(theViewId)
 							: thePage.findView(theViewId));
 			

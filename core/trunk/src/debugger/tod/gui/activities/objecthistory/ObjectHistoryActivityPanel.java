@@ -38,6 +38,7 @@ import javax.swing.JTabbedPane;
 
 import tod.core.database.browser.ObjectIdUtils;
 import tod.gui.FontConfig;
+import tod.gui.IContext;
 import tod.gui.IGUIManager;
 import tod.gui.activities.ActivityPanel;
 import tod.gui.kit.html.HtmlComponent;
@@ -50,9 +51,9 @@ public class ObjectHistoryActivityPanel extends ActivityPanel<ObjectHistorySeed>
 	private ObjectMethodsPanel itsMethodsPanel;
 	private HtmlComponent itsTitleComponent;
 	
-	public ObjectHistoryActivityPanel(IGUIManager aGUIManager)
+	public ObjectHistoryActivityPanel(IContext aContext)
 	{
-		super(aGUIManager);
+		super(aContext);
 	}
 	
 	@Override

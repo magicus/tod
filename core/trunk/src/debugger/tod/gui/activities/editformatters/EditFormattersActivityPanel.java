@@ -37,6 +37,7 @@ import javax.swing.JSplitPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import tod.gui.IContext;
 import tod.gui.IGUIManager;
 import tod.gui.activities.ActivityPanel;
 import tod.gui.formatter.CustomFormatterRegistry;
@@ -58,9 +59,9 @@ public class EditFormattersActivityPanel extends ActivityPanel<FormattersSeed>
 
 	private JPanel itsEditorHolder;
 	
-	public EditFormattersActivityPanel(IGUIManager aGUIManager)
+	public EditFormattersActivityPanel(IContext aContext)
 	{
-		super(aGUIManager);
+		super(aContext);
 	}
 
 	@Override

@@ -38,7 +38,7 @@ import tod.gui.IGUIManager;
 public class StackFrameWatchSeed extends WatchSeed
 {
 
-	public StackFrameWatchSeed(IGUIManager aGUIManager, String aTitle, WatchPanel aWatchPanel, ILogEvent aRefEvent)
+	public StackFrameWatchSeed(IGUIManager aGUIManager, String aTitle, ObjectWatchPanel aWatchPanel, ILogEvent aRefEvent)
 	{
 		super(aTitle, aWatchPanel, aGUIManager, aRefEvent);
 	}

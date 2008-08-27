@@ -36,42 +36,43 @@ import javax.swing.JPanel;
 import tod.core.database.browser.ILogBrowser;
 import tod.gui.IGUIManager;
 import tod.gui.kit.Bus;
+import tod.gui.kit.IBusOwner;
 import tod.tools.scheduling.IJobScheduler;
 import tod.tools.scheduling.IJobSchedulerProvider;
 import zz.utils.properties.IRWProperty;
 
 /**
- * An abstract base class that eases the creation of panels for log views
+ * An abstract base class that eases the creation of sub panels for activity panels.
  * @author gpothier
  */
 public abstract class ActivitySubPanel<T extends ActivitySeed> extends JPanel
-implements IJobSchedulerProvider
+implements IJobSchedulerProvider, IBusOwner
 {
-	private final ActivityPanel<T> itsView;
+	private final ActivityPanel<T> itsActivityPanel;
 
-	public ActivitySubPanel(ActivityPanel<T> aView)
+	public ActivitySubPanel(ActivityPanel<T> aActivityPanel)
 	{
-		itsView = aView;
+		itsActivityPanel = aActivityPanel;
 	}
 	
 	protected IGUIManager getGUIManager()
 	{
-		return itsView.getGUIManager();
+		return itsActivityPanel.getGUIManager();
 	}
 	
 	protected ILogBrowser getLogBrowser()
 	{
-		return itsView.getLogBrowser();
+		return itsActivityPanel.getLogBrowser();
 	}
 
 	public IJobScheduler getJobScheduler()
 	{
-		return itsView.getJobScheduler();
+		return itsActivityPanel.getJobScheduler();
 	}
 
 	protected T getSeed()
 	{
-		return itsView.getSeed();
+		return itsActivityPanel.getSeed();
 	}
 	
 	/**
@@ -92,17 +93,17 @@ implements IJobSchedulerProvider
 	
 	protected <V> void connect (IRWProperty<V> aSource, IRWProperty<V> aTarget)
 	{
-		itsView.connect(aSource, aTarget);
+		itsActivityPanel.connect(aSource, aTarget);
 	}
 	
 	protected <V> void disconnect (IRWProperty<V> aSource, IRWProperty<V> aTarget)
 	{
-		itsView.disconnect(aSource, aTarget);
+		itsActivityPanel.disconnect(aSource, aTarget);
 	}
 
-	protected Bus getBus() 
+	public Bus getBus() 
 	{
-		return itsView.getBus();
+		return itsActivityPanel.getBus();
 	}
 
 }

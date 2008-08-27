@@ -37,14 +37,14 @@ import tod.gui.IGUIManager;
 public abstract class WatchSeed 
 {
 	private final String itsTitle;
-	private final WatchPanel itsWatchPanel;
+	private final ObjectWatchPanel itsWatchPanel;
 	private final IGUIManager itsGUIManager;
 	private final ILogEvent itsRefEvent;
 	
 
 	public WatchSeed(
 			String aTitle,
-			WatchPanel aWatchPanel, 
+			ObjectWatchPanel aWatchPanel, 
 			IGUIManager aGUIManager, 
 			ILogEvent aRefEvent)
 	{
@@ -59,7 +59,7 @@ public abstract class WatchSeed
 		return itsTitle;
 	}
 	
-	public WatchPanel getWatchPanel()
+	public ObjectWatchPanel getWatchPanel()
 	{
 		return itsWatchPanel;
 	}
