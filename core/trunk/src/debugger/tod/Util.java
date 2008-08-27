@@ -163,7 +163,10 @@ public class Util
 	 */
 	public static String getFullName(IBehaviorInfo aBehavior)
 	{
-		StringBuilder theBuilder = new StringBuilder(aBehavior.getName());
+		String theName = aBehavior.getName();
+		if ("<init>".equals(theName)) theName = getSimpleInnermostName(aBehavior.getType().getName());
+		
+		StringBuilder theBuilder = new StringBuilder(theName);
 		theBuilder.append('(');
 		boolean theFirst = true;
 		for (ITypeInfo theType : aBehavior.getArgumentTypes())

@@ -63,7 +63,6 @@ import tod.gui.components.intimacyeditor.IntimacyEditorButton;
 import tod.gui.eventlist.EventListPanel;
 import tod.gui.eventlist.IntimacyLevel;
 import tod.gui.kit.Bus;
-import tod.gui.kit.IBusListener;
 import tod.gui.kit.Options;
 import tod.gui.kit.SavedSplitPane;
 import tod.gui.kit.StdOptions;
@@ -71,7 +70,6 @@ import tod.gui.kit.messages.EventSelectedMsg;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.settings.IntimacySettings;
-import tod.gui.view.IEventListView;
 import tod.gui.view.LogView;
 import tod.gui.view.controlflow.tree.CFlowTree;
 import tod.gui.view.controlflow.watch.ObjectWatchSeed;
@@ -88,7 +86,6 @@ import zz.utils.ui.UIUtils;
 import zz.utils.ui.ZLabel;
 
 public class CFlowView extends LogView<CFlowSeed> 
-implements IEventListView
 {
 	public static final boolean SHOW_PARENT_FRAMES = false;
 	private static final String PROPERTY_SPLITTER_POS = "cflowView.splitterPos";
@@ -483,13 +480,6 @@ implements IEventListView
 	{
 		ILogEvent theSelectedEvent = getSeed().pSelectedEvent().get();
 		return theSelectedEvent != null && theSelectedEvent.equals(aEvent);
-	}
-	
-	public IEventBrowser getEventBrowser()
-	{
-		ILogEvent theSelectedEvent = getSeed().pSelectedEvent().get();
-		IParentEvent theParent = theSelectedEvent.getParent();
-		return theParent.getChildrenBrowser();
 	}
 	
 	public ILogEvent getSelectedEvent()

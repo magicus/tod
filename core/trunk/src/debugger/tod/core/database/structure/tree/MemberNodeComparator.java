@@ -29,17 +29,48 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.seed;
+package tod.core.database.structure.tree;
 
-import tod.core.database.browser.IEventBrowser;
-import tod.core.database.event.ILogEvent;
-import zz.utils.properties.IRWProperty;
+import java.util.Comparator;
+
+import tod.Util;
+import tod.core.database.structure.IFieldInfo;
+import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.IMemberInfo;
+import zz.utils.tree.SimpleTreeNode;
 
 /**
- * A kind of seed that has a main event.
+ * Compares class members
+ * Fields are always before behaviors, otherwise lexicographic order is used.
  * @author gpothier
  */
-public interface IEventSeed
+public class MemberNodeComparator implements Comparator
 {
-	public IRWProperty<ILogEvent> pEvent();
+	public static MemberNodeComparator FIELD = new MemberNodeComparator(true);
+	public static MemberNodeComparator BEHAVIOR = new MemberNodeComparator(false);
+
+	/**
+	 * If true, compares against package names (package names always appear before
+	 * class names).
+	 */
+	private boolean itsForField;
+	
+	private MemberNodeComparator(boolean aForPackage)
+	{
+		itsForField = aForPackage;
+	}
+	
+	public int compare(Object o1, Object o2)
+	{
+		SimpleTreeNode<ILocationInfo> node = (SimpleTreeNode<ILocationInfo>) o1;
+		
+		ILocationInfo l = node.pValue().get();
+		boolean f = l instanceof IFieldInfo;
+		String n1 = Util.getFullName((IMemberInfo) l);
+			
+		String n2 = (String) o2;
+		
+		if (f != itsForField) return f ? 1 : -1;
+		else return n1.compareTo(n2);
+	}
 }

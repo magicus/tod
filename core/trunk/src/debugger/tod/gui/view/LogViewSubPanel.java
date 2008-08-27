@@ -29,48 +29,81 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.core.database.structure.tree;
+package tod.gui.view;
 
-import java.util.Comparator;
+import javax.swing.JPanel;
 
-import tod.Util;
-import tod.core.database.structure.IFieldInfo;
-import tod.core.database.structure.ILocationInfo;
-import tod.core.database.structure.IMemberInfo;
-import zz.utils.tree.SimpleTreeNode;
+import tod.core.database.browser.ILogBrowser;
+import tod.gui.IGUIManager;
+import tod.gui.kit.Bus;
+import tod.gui.seed.LogViewSeed;
+import tod.tools.scheduling.IJobScheduler;
+import tod.tools.scheduling.IJobSchedulerProvider;
+import zz.utils.properties.IRWProperty;
 
 /**
- * Compares class members
- * Fields are always before behaviors, otherwise lexicographic order is used.
+ * An abstract base class that eases the creation of panels for log views
  * @author gpothier
  */
-public class MemberComparator implements Comparator
+public abstract class LogViewSubPanel<T extends LogViewSeed> extends JPanel
+implements IJobSchedulerProvider
 {
-	public static MemberComparator FIELD = new MemberComparator(true);
-	public static MemberComparator BEHAVIOR = new MemberComparator(false);
+	private final LogView<T> itsView;
 
+	public LogViewSubPanel(LogView<T> aView)
+	{
+		itsView = aView;
+	}
+	
+	protected IGUIManager getGUIManager()
+	{
+		return itsView.getGUIManager();
+	}
+	
+	protected ILogBrowser getLogBrowser()
+	{
+		return itsView.getLogBrowser();
+	}
+
+	public IJobScheduler getJobScheduler()
+	{
+		return itsView.getJobScheduler();
+	}
+
+	protected T getSeed()
+	{
+		return itsView.getSeed();
+	}
+	
 	/**
-	 * If true, compares against package names (package names always appear before
-	 * class names).
+	 * Called by the view when {@link LogView#connectSeed(LogViewSeed)}
+	 * is called.
 	 */
-	private boolean itsForField;
-	
-	private MemberComparator(boolean aForPackage)
+	public void connectSeed(T aSeed)
 	{
-		itsForField = aForPackage;
 	}
 	
-	public int compare(Object o1, Object o2)
+	/**
+	 * Called by the view when {@link LogView#disconnectSeed(LogViewSeed)}
+	 * is called.
+	 */
+	public void disconnectSeed(T aSeed)
 	{
-		SimpleTreeNode<ILocationInfo> node = (SimpleTreeNode<ILocationInfo>) o1;
-		
-		ILocationInfo l = node.pValue().get();
-		boolean f = l instanceof IFieldInfo;
-		String n1 = Util.getFullName((IMemberInfo) l);
-			
-		String n2 = (String) o2;
-		
-		if (f != itsForField) return f ? 1 : -1;
-		else return n1.compareTo(n2);
 	}
+	
+	protected <V> void connect (IRWProperty<V> aSource, IRWProperty<V> aTarget)
+	{
+		itsView.connect(aSource, aTarget);
+	}
+	
+	protected <V> void disconnect (IRWProperty<V> aSource, IRWProperty<V> aTarget)
+	{
+		itsView.disconnect(aSource, aTarget);
+	}
+
+	protected Bus getBus() 
+	{
+		return itsView.getBus();
+	}
+
 }

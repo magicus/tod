@@ -29,33 +29,15 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.view;
+package tod.gui.seed;
 
 import tod.core.database.browser.IEventBrowser;
-import tod.core.database.event.ILogEvent;
-import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
-import tod.gui.seed.IEventSeed;
 
 /**
- * Interface for views that represent an event list in some form.
+ * A seed whose view represents a list of events.
  * @author gpothier
- * @deprecated Use {@link IEventSeed} instead
  */
-public interface IEventListView 
+public interface IEventListSeed extends IEventSeed
 {
-	/**
-	 * Returns the event browser on which this view is based.
-	 */
 	public IEventBrowser getEventBrowser();
-	
-	/**
-	 * Returns the currently selected event.
-	 * @return The currently selected event, or null if no event is selected.
-	 */
-	public ILogEvent getSelectedEvent();
-	
-	/**
-	 * Selects (and makes visible) the specified event.
-	 */
-	public void selectEvent(ILogEvent aEvent, SelectionMethod aMethod);
 }

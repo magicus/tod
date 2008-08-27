@@ -42,8 +42,7 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
 import tod.core.database.event.ILogEvent;
-import tod.gui.kit.messages.EventSelectedMsg;
-import tod.gui.view.IEventListView;
+import tod.gui.seed.IEventSeed;
 import tod.gui.view.LogView;
 import zz.utils.SimpleComboBoxModel;
 
@@ -53,7 +52,7 @@ import zz.utils.SimpleComboBoxModel;
  */
 public class BookmarkPanel extends JPanel
 {
-	private IEventListView itsCurrentView;
+	private IEventSeed itsCurrentSeed;
 	private JComboBox itsComboBox;
 	private SimpleComboBoxModel itsModel = new SimpleComboBoxModel(new ArrayList());
 	
@@ -89,26 +88,26 @@ public class BookmarkPanel extends JPanel
 	
 	public void setView(LogView aView)
 	{
-		if (aView instanceof IEventListView)
+		if (aView.getSeed() instanceof IEventSeed)
 		{
-			IEventListView theView = (IEventListView) aView;
-			itsCurrentView = theView;
+			IEventSeed theSeed = (IEventSeed) aView.getSeed();
+			itsCurrentSeed = theSeed;
 		}
-		else itsCurrentView = null;
+		else itsCurrentSeed = null;
 		
 		itsComboBox.setSelectedIndex(-1);
-		itsComboBox.setEnabled(itsCurrentView != null);
+		itsComboBox.setEnabled(itsCurrentSeed != null);
 	}
 	
 	private void selectBookmark(String aName)
 	{
-		if (itsCurrentView == null) return;
+		if (itsCurrentSeed == null) return;
 		if (aName == null || aName.length() == 0) return;
 		
 		ILogEvent theEvent = itsBookmarks.get(aName);
 		if (theEvent == null)
 		{
-			theEvent = itsCurrentView.getSelectedEvent();
+			theEvent = itsCurrentSeed.pEvent().get();
 			itsBookmarks.put(aName, theEvent);
 			itsModel.getList().add(aName);
 			Collections.sort(itsModel.getList());
@@ -117,7 +116,8 @@ public class BookmarkPanel extends JPanel
 		}
 		else
 		{
-			itsCurrentView.selectEvent(theEvent, new EventSelectedMsg.SM_SelectInBookmarks(aName));
+//			itsCurrentSeed.selectEvent(theEvent, new EventSelectedMsg.SM_SelectInBookmarks(aName));
+			itsCurrentSeed.pEvent().set(theEvent);
 		}
 		
 		itsComboBox.setSelectedItem(null);

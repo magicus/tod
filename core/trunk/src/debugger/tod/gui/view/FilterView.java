@@ -65,7 +65,6 @@ import zz.utils.properties.PropertyListener;
  * @author gpothier
  */
 public class FilterView extends LogView<FilterSeed> 
-implements IEventListView
 {
 	private static final String PROPERTY_SPLITTER_POS = "filterView.splitterPos";
 	

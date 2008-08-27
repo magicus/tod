@@ -37,7 +37,7 @@ import tod.core.database.structure.ObjectId;
 import tod.gui.kit.html.HtmlDoc;
 import tod.gui.kit.html.HtmlText;
 import tod.gui.view.LogView;
-import tod.gui.view.ObjectHistoryView;
+import tod.gui.view.objecthistory.ObjectHistoryView;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
 
@@ -48,6 +48,7 @@ import zz.utils.properties.SimpleRWProperty;
  * @author gpothier
  */
 public class ObjectHistorySeed extends LogViewSeed
+implements IEventSeed
 {
 	private final ObjectId itsObject;
 	
@@ -156,6 +157,11 @@ public class ObjectHistorySeed extends LogViewSeed
 	}
 
 	
+	public IRWProperty<ILogEvent> pEvent()
+	{
+		return pSelectedEvent;
+	}
+
 	@Override
 	public String getKindDescription()
 	{

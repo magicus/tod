@@ -29,17 +29,32 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.seed;
+package tod.utils;
 
-import tod.core.database.browser.IEventBrowser;
-import tod.core.database.event.ILogEvent;
-import zz.utils.properties.IRWProperty;
+import java.util.Comparator;
+
+import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.IMemberInfo;
 
 /**
- * A kind of seed that has a main event.
+ * Lexicographic comparator for {@link IMemberInfo}
  * @author gpothier
  */
-public interface IEventSeed
+public class LocationComparator implements Comparator<ILocationInfo>
 {
-	public IRWProperty<ILogEvent> pEvent();
+	private static final LocationComparator INSTANCE = new LocationComparator();
+	
+	public static LocationComparator getInstance()
+	{
+		return INSTANCE;
+	}
+	
+	private LocationComparator()
+	{
+	}
+
+	public int compare(ILocationInfo l1, ILocationInfo l2)
+	{
+		return l1.getName().compareToIgnoreCase(l2.getName()); 
+	}
 }

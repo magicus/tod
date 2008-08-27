@@ -49,7 +49,7 @@ import zz.utils.properties.SimpleRWProperty;
  * @author gpothier
  */
 public class CFlowSeed extends LogViewSeed
-implements IEventSeed
+implements IEventListSeed
 {
 	private IThreadInfo itsThread;
 	
@@ -136,13 +136,10 @@ implements IEventSeed
 		return pInspectedObject;
 	}
 
-
-	public ILogEvent getEvent()
+	public IRWProperty<ILogEvent> pEvent()
 	{
-		return pSelectedEvent.get();
+		return pSelectedEvent;
 	}
-
-	
 
 	@Override
 	public String getKindDescription()
@@ -150,12 +147,16 @@ implements IEventSeed
 		return "Control flow view";
 	}
 
-
 	@Override
 	public String getShortDescription()
 	{
-		return EventFormatter.formatEvent(getLogBrowser(), getEvent());
+		return EventFormatter.formatEvent(getLogBrowser(), pSelectedEvent.get());
 	}
 	
-	
+	public IEventBrowser getEventBrowser()
+	{
+		ILogEvent theSelectedEvent = pSelectedEvent().get();
+		IParentEvent theParent = theSelectedEvent.getParent();
+		return theParent.getChildrenBrowser();
+	}
 }

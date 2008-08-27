@@ -66,12 +66,11 @@ import tod.gui.kit.NavBackButton;
 import tod.gui.kit.NavForwardButton;
 import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.kit.messages.ShowObjectHistoryMsg;
-import tod.gui.kit.messages.EventSelectedMsg.SM_ShowNextForLine;
-import tod.gui.kit.messages.EventSelectedMsg.SM_ShowPreviousForLine;
 import tod.gui.seed.CFlowSeed;
 import tod.gui.seed.DynamicCrosscuttingSeed;
 import tod.gui.seed.FilterSeed;
 import tod.gui.seed.FormattersSeed;
+import tod.gui.seed.IEventListSeed;
 import tod.gui.seed.LogViewSeed;
 import tod.gui.seed.LogViewSeedFactory;
 import tod.gui.seed.ObjectHistorySeed;
@@ -79,9 +78,7 @@ import tod.gui.seed.StringSearchSeed;
 import tod.gui.seed.StructureSeed;
 import tod.gui.seed.ThreadsSeed;
 import tod.gui.settings.GUISettings;
-import tod.gui.view.IEventListView;
 import tod.gui.view.LogView;
-import tod.gui.view.controlflow.CFlowView;
 import tod.impl.common.Bookmarks;
 import tod.tools.scheduling.IJobSchedulerProvider;
 import tod.tools.scheduling.JobScheduler;
@@ -504,12 +501,15 @@ implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider
 	}
 	
 	/**
-	 * Returns the current view if it is a {@link CFlowView}, or null otherwise.
+	 * Returns the current seed if it is a {@link IEventListSeed}, or null otherwise.
 	 * @return
 	 */
-	private IEventListView getEventListView()
+	private IEventListSeed getEventListSeed()
 	{
-		if (itsCurrentView instanceof IEventListView) return (IEventListView) itsCurrentView;
+		if (itsCurrentView.getSeed() instanceof IEventListSeed) 
+		{
+			return (IEventListSeed) itsCurrentView.getSeed();
+		}
 		else return null;
 	}
 	
@@ -534,42 +534,44 @@ implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider
 	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
 	public void showNextEventForLine(IBehaviorInfo aBehavior, int aLine)
 	{
-		IEventListView theView = getEventListView();
-		if (theView == null) return;
+		IEventListSeed theSeed = getEventListSeed();
+		if (theSeed == null) return;
 
 		IEventBrowser theBrowser = createLocationBrowser(
-				theView.getEventBrowser(),
+				theSeed.getEventBrowser(),
 				aBehavior, 
 				aLine);
 		
-		ILogEvent theSelectedEvent = theView.getSelectedEvent();
+		ILogEvent theSelectedEvent = theSeed.pEvent().get();
 		if (theSelectedEvent != null) theBrowser.setPreviousEvent(theSelectedEvent);
 		
 		if (theBrowser.hasNext())
 		{
 			ILogEvent theEvent = theBrowser.next();
-			theView.selectEvent(theEvent, new SM_ShowNextForLine(aBehavior, aLine));
+//			theSeed.selectEvent(theEvent, new SM_ShowNextForLine(aBehavior, aLine));
+			theSeed.pEvent().set(theEvent);
 		}
 	}
 	
 	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
 	public void showPreviousEventForLine(IBehaviorInfo aBehavior, int aLine)
 	{
-		IEventListView theView = getEventListView();
-		if (theView == null) return;
+		IEventListSeed theSeed = getEventListSeed();
+		if (theSeed == null) return;
 
 		IEventBrowser theBrowser = createLocationBrowser(
-				theView.getEventBrowser(),
+				theSeed.getEventBrowser(),
 				aBehavior, 
 				aLine);
 		
-		ILogEvent theSelectedEvent = theView.getSelectedEvent();
+		ILogEvent theSelectedEvent = theSeed.pEvent().get();
 		if (theSelectedEvent != null) theBrowser.setNextEvent(theSelectedEvent);
 		
 		if (theBrowser.hasPrevious())
 		{
 			ILogEvent theEvent = theBrowser.previous();
-			theView.selectEvent(theEvent, new SM_ShowPreviousForLine(aBehavior, aLine));
+//			theSeed.selectEvent(theEvent, new SM_ShowPreviousForLine(aBehavior, aLine));
+			theSeed.pEvent().set(theEvent);
 		}
 	}
 	
@@ -578,7 +580,7 @@ implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider
 	 */
 	public boolean canShowNextEventForLine()
 	{
-		return getEventListView() != null;
+		return getEventListSeed() != null;
 	}
 
 	/**
@@ -586,7 +588,7 @@ implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider
 	 */
 	public boolean canShowPreviousEventForLine()
 	{
-		return getEventListView() != null;
+		return getEventListSeed() != null;
 	}
 	
 	/**

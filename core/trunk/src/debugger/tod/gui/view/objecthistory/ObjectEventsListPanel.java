@@ -29,7 +29,7 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.gui.view;
+package tod.gui.view.objecthistory;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -43,22 +43,16 @@ import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.LocationUtils;
-import tod.core.database.browser.ObjectIdUtils;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.ObjectId;
 import tod.gui.BrowserData;
-import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
-import tod.gui.IGUIManager;
 import tod.gui.eventlist.EventListPanel;
-import tod.gui.kit.Bus;
-import tod.gui.kit.Options;
 import tod.gui.kit.SavedSplitPane;
-import tod.gui.kit.html.HtmlComponent;
-import tod.gui.kit.html.HtmlDoc;
 import tod.gui.kit.messages.ShowCFlowMsg;
 import tod.gui.kit.messages.EventSelectedMsg.SelectionMethod;
 import tod.gui.seed.ObjectHistorySeed;
+import tod.gui.view.LogViewSubPanel;
 import tod.gui.view.highlighter.EventHighlighter;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;
@@ -67,11 +61,13 @@ import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.PropertyListener;
 import zz.utils.ui.PropertyEditor;
 
-public class ObjectHistoryView extends LogView<ObjectHistorySeed> 
-implements IEventListView
+/**
+ * This panel displays a list of all the events related to the 
+ * inspected object.
+ * @author gpothier
+ */
+public class ObjectEventsListPanel extends LogViewSubPanel<ObjectHistorySeed>
 {
-	private static final String PROPERTY_SPLITTER_POS = "objectHistoryView.splitterPos";
-
 	private EventListPanel itsListPanel;
 	private EventHighlighter itsEventHighlighter;
 
@@ -104,19 +100,16 @@ implements IEventListView
 		}
 	};
 
-	private HtmlComponent itsTitleComponent;
-
 	private FlagsPanel itsFlagsPanel;
 	
-	public ObjectHistoryView(IGUIManager aGUIManager)
+	public ObjectEventsListPanel(ObjectHistoryView aView)
 	{
-		super(aGUIManager);
-		
+		super(aView);
 		createUI ();
 	}
-
+	
 	@Override
-	protected void connectSeed(ObjectHistorySeed aSeed)
+	public void connectSeed(ObjectHistorySeed aSeed)
 	{
 		connect(aSeed.pSelectedEvent(), itsListPanel.pSelectedEvent());
 		
@@ -133,19 +126,13 @@ implements IEventListView
 		aSeed.pShowRole_Target().addHardListener(itsFlagsListener);
 		aSeed.pShowRole_Value().addHardListener(itsFlagsListener);
 		
-		String theTitle = ObjectIdUtils.getObjectDescription(
-				getLogBrowser(), 
-				aSeed.getObject(), 
-				false);
-		
-		itsTitleComponent.setDoc(HtmlDoc.create("<b>"+theTitle+"</b>", FontConfig.BIG, Color.BLACK));
 		itsFlagsPanel.setSeed(aSeed);
 		
 		updateFilter();
 	}
 
 	@Override
-	protected void disconnectSeed(ObjectHistorySeed aSeed)
+	public void disconnectSeed(ObjectHistorySeed aSeed)
 	{
 		disconnect(aSeed.pSelectedEvent(), itsListPanel.pSelectedEvent());
 
@@ -165,16 +152,13 @@ implements IEventListView
 		itsFlagsPanel.setSeed(null);
 	}
 
-	@Override
-	protected void initOptions(Options aOptions)
-	{
-		super.initOptions(aOptions);
-		EventListPanel.createDefaultOptions(aOptions, false, true);
-	}
-	
 	private void createUI()
 	{
-		JSplitPane theSplitPane = new SavedSplitPane(JSplitPane.HORIZONTAL_SPLIT, getGUIManager(), PROPERTY_SPLITTER_POS);
+		JSplitPane theSplitPane = new SavedSplitPane(
+				JSplitPane.HORIZONTAL_SPLIT, 
+				getGUIManager(), 
+				"objectEventsListPanel.splitterPos");
+		
 		theSplitPane.setResizeWeight(0.5);
 		
 		itsListPanel = new EventListPanel (getGUIManager(), getBus(), getLogBrowser(), getJobScheduler());
@@ -183,7 +167,7 @@ implements IEventListView
 				{
 					public void fired(IEvent< ? extends ILogEvent> aEvent, ILogEvent aData)
 					{
-						Bus.get(ObjectHistoryView.this).postMessage(new ShowCFlowMsg(aData));
+						getBus().postMessage(new ShowCFlowMsg(aData));
 					}
 				});
 		
@@ -199,11 +183,6 @@ implements IEventListView
 		
 		setLayout(new BorderLayout());
 		add (theSplitPane, BorderLayout.CENTER);
-		
-		itsTitleComponent = new HtmlComponent();
-		
-		itsTitleComponent.setOpaque(false);
-		add(itsTitleComponent, BorderLayout.NORTH);
 		
 		itsFlagsPanel = new FlagsPanel();
 		
@@ -382,5 +361,5 @@ implements IEventListView
 			repaint();
 		}
 	}
-}
 
+}

@@ -81,7 +81,7 @@ public class ClassNode extends LocationNode
 		int theIndex = Collections.binarySearch(
 				pChildren().get(), 
 				Util.getFullName(aBehavior),
-				MemberComparator.BEHAVIOR);
+				MemberNodeComparator.BEHAVIOR);
 		
 		if (theIndex >= 0) throw new RuntimeException("Behavior already exists: "+aBehavior); 
 		BehaviorNode theNode = new BehaviorNode(getTree(), aBehavior);
@@ -98,7 +98,7 @@ public class ClassNode extends LocationNode
 		int theIndex = Collections.binarySearch(
 				pChildren().get(), 
 				aField.getName(),
-				MemberComparator.FIELD);
+				MemberNodeComparator.FIELD);
 		
 		if (theIndex >= 0) throw new RuntimeException("Field already exists: "+aField); 
 		FieldNode theNode = new FieldNode(getTree(), aField);
