@@ -20,8 +20,16 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.plugin.views.main;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Panel;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.eclipse.core.runtime.IStatus;
@@ -30,6 +38,11 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.awt.SWT_AWT;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
@@ -44,6 +57,7 @@ import tod.gui.activities.ActivitySeedFactory;
 import tod.plugin.TODPluginUtils;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.PropertyListener;
+import zz.utils.ui.StackLayout;
 
 public class MainViewPanel extends MinerUI
 {
@@ -160,4 +174,31 @@ public class MainViewPanel extends MinerUI
 		}
 		else throw new IllegalArgumentException("Not handled: "+aDialog);
 	}
+
+	public void showPostIt(final JComponent aComponent, final Dimension aSize)
+	{
+		Display.getDefault().syncExec(new Runnable()
+		{
+			public void run()
+			{
+				Shell theMainShell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+				Shell thePostItShell = new Shell(theMainShell, SWT.DIALOG_TRIM | SWT.RESIZE);
+				thePostItShell.setText("TOD PostIt");
+				
+				Composite theEmbedded = new Composite(thePostItShell, SWT.EMBEDDED | SWT.CENTER);
+				thePostItShell.setLayout(new FillLayout());
+
+				Frame theFrame = SWT_AWT.new_Frame(theEmbedded);
+				theFrame.setLayout(new StackLayout());
+				theFrame.add(aComponent);
+				
+				thePostItShell.setSize(aSize.width+20, aSize.height+40);
+//				thePostItShell.pack();
+//				thePostItShell.setSize(thePreferredSize.width, thePreferredSize.height);
+				
+				thePostItShell.setVisible(true);
+			}
+		});
+	}
+	
 }

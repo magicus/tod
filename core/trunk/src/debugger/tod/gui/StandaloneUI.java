@@ -95,6 +95,16 @@ public class StandaloneUI extends JPanel
 		{
 			return SwingDialogUtils.showDialog(this, aDialog);
 		}
+
+		public void showPostIt(JComponent aComponent, Dimension aSize)
+		{
+			JFrame theFrame = new JFrame("TOD Post-It");
+			theFrame.setContentPane(aComponent);
+			theFrame.pack();
+			theFrame.setVisible(true);
+		}
+		
+		
 	}
 	
 	public static void main(String[] args)

@@ -31,6 +31,7 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.experiments;
 
+import java.awt.Dimension;
 import java.io.FileInputStream;
 import java.net.URI;
 import java.util.Collections;
@@ -113,6 +114,11 @@ public class ABCTags
 		}
 
 		public <T> T showDialog(DialogType<T> aDialog)
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		public void showPostIt(JComponent aComponent, Dimension aSize)
 		{
 			throw new UnsupportedOperationException();
 		}

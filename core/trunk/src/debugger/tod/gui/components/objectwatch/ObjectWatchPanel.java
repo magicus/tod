@@ -45,6 +45,7 @@ import javax.swing.JScrollPane;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.ObjectId;
 import tod.gui.BrowserNavigator;
+import tod.gui.FrozenContext;
 import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.IContext;
@@ -68,6 +69,7 @@ import zz.utils.ui.ScrollablePanel;
 public class ObjectWatchPanel extends BusPanel
 {
 	private final IContext itsContext;
+	private final boolean itsListenBus;
 	private WatchBrowserNavigator itsBrowserNavigator;
 	private JobGroup itsJobGroup;
 	private JScrollPane itsScrollPane;
@@ -89,12 +91,19 @@ public class ObjectWatchPanel extends BusPanel
 		}
 	};
 	
-	public ObjectWatchPanel(IContext aContext)
+	/**
+	 * @param aListenBus Whether this watch panel listen the bus for 
+	 * {@link ShowObjectMsg} messages.
+	 */
+	public ObjectWatchPanel(IContext aContext, boolean aListenBus)
 	{
 		super(aContext.getBus());
 		itsContext = aContext;
+		itsListenBus = aListenBus;
 		itsJobGroup = new JobGroup(getGUIManager().getJobScheduler());
 		itsBrowserNavigator = new WatchBrowserNavigator(itsJobGroup);
+		
+		createUI();
 	}
 	
 	private void createUI()
@@ -115,6 +124,15 @@ public class ObjectWatchPanel extends BusPanel
 		theToolbar.add(new JButton(itsBrowserNavigator.getBackwardAction()));
 		theToolbar.add(new JButton(itsBrowserNavigator.getForwardAction()));
 		
+		Action thePostItAction = new SimpleAction("PostIt")
+		{
+			public void actionPerformed(ActionEvent aE)
+			{
+				showPostIt();
+			}
+		};
+		theToolbar.add(new JButton(thePostItAction));
+		
 		add(theToolbar, BorderLayout.NORTH);
 		
 		itsScrollPane = new JScrollPane();
@@ -126,9 +144,7 @@ public class ObjectWatchPanel extends BusPanel
 	public void addNotify()
 	{
 		super.addNotify();
-		Bus.get(this).subscribe(ShowObjectMsg.ID, itsShowObjectListener);
-		
-		createUI();
+		if (itsListenBus) Bus.get(this).subscribe(ShowObjectMsg.ID, itsShowObjectListener);
 	}
 	
 	@Override
@@ -136,7 +152,7 @@ public class ObjectWatchPanel extends BusPanel
 	{
 		super.removeNotify();
 		itsJobGroup.cancelAll();
-		Bus.get(this).unsubscribe(ShowObjectMsg.ID, itsShowObjectListener);
+		if (itsListenBus) Bus.get(this).unsubscribe(ShowObjectMsg.ID, itsShowObjectListener);
 	}
 	
 	public IGUIManager getGUIManager()
@@ -168,7 +184,17 @@ public class ObjectWatchPanel extends BusPanel
 				"frame",
 				ObjectWatchPanel.this,
 				theRefEvent));
-
+	}
+	
+	private void showPostIt()
+	{
+		ObjectWatchPanel thePostIt = new ObjectWatchPanel(
+				FrozenContext.create(getContext()),
+				false);
+		
+		thePostIt.openWatch(itsBrowserNavigator.getCurrentSeed());
+		
+		getGUIManager().showPostIt(thePostIt, getPreferredSize());
 	}
 	
 	public void openWatch(WatchSeed aSeed)

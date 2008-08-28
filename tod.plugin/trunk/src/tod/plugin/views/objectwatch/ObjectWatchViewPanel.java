@@ -20,7 +20,7 @@ public class ObjectWatchViewPanel extends ExtraViewPanel
 	private void createUI()
 	{
 		setLayout(new BorderLayout());
-		itsObjectWatchPanel = new ObjectWatchPanel(getContext());
+		itsObjectWatchPanel = new ObjectWatchPanel(getContext(), true);
 		add(itsObjectWatchPanel, BorderLayout.CENTER);
 	}
 }

@@ -31,6 +31,10 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui;
 
+import java.awt.Dimension;
+
+import javax.swing.JComponent;
+
 import tod.core.IBookmarks;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.structure.IBehaviorInfo;
@@ -121,6 +125,12 @@ public interface IGUIManager extends IBusOwner
 	 * See {@link SwingDialogUtils} for an example implementation.
 	 */
 	public <T> T showDialog(DialogType<T> aDialog);
+	
+	/**
+	 * Displays the given component as a floating post-it note.
+	 * @param aSize The requested size of the postit. 
+	 */
+	public void showPostIt(JComponent aComponent, Dimension aSize);
 	
 	/**
 	 * Models a dialog presented to the user.

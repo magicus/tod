@@ -214,7 +214,7 @@ public class CFlowActivityPanel extends ActivityPanel<CFlowSeed>
 		add(itsBookmarksMural, BorderLayout.NORTH);
 		
 		// Create watch panel
-		itsWatchPanel = new ObjectWatchPanel(getContext());
+		itsWatchPanel = new ObjectWatchPanel(getContext(), true);
 
 		JSplitPane theSplitPane = new SavedSplitPane(JSplitPane.HORIZONTAL_SPLIT, getGUIManager(), PROPERTY_SPLITTER_POS);
 		theSplitPane.setResizeWeight(0.5);
