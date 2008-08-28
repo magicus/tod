@@ -186,7 +186,7 @@ implements MouseWheelListener, IJobSchedulerProvider
 		updateList();
 	}
 	
-	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
+	@Scheduled(value = JobPriority.EXPLICIT)
 	public void setTimestamp(final long aTimestamp)
 	{
 		if (itsCore == null) return;
@@ -326,6 +326,7 @@ implements MouseWheelListener, IJobSchedulerProvider
 					@Override
 					public void propertyChanged(IProperty<Long> aProperty, Long aOldValue, Long aNewValue)
 					{
+						getJobScheduler().cancelAll(); // Dont't set cancelAll on setTimestamp (as initialization also calls it) 
 						setTimestamp(aNewValue);
 					}
 				});

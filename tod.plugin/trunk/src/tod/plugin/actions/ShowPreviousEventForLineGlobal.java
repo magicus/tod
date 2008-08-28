@@ -10,7 +10,7 @@ import org.eclipse.jface.text.source.IVerticalRulerInfo;
 import org.eclipse.ui.texteditor.AbstractRulerActionDelegate;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-public class ShowPreviousEventForLineActionDelegate extends AbstractRulerActionDelegate
+public class ShowPreviousEventForLineGlobal extends AbstractRulerActionDelegate
 {
 	@Override
 	protected IAction createAction(
@@ -34,7 +34,7 @@ public class ShowPreviousEventForLineActionDelegate extends AbstractRulerActionD
 			{
 				public void run()
 				{
-					getGUIManager(true).showPreviousEventForLine(getCurrentBehavior(), getCurrentLine());
+					getGUIManager(true).showPreviousEventForLine(getCurrentBehavior(), getCurrentLine(), false);
 				}
 			});
 		}

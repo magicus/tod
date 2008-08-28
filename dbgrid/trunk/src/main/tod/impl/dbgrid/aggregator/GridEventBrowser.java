@@ -317,6 +317,7 @@ implements IEventBrowser, IScheduled
 
 	public IEventBrowser createIntersection(IEventFilter aFilter)
 	{
+		assert aFilter != null;
 		ICompoundFilter theFilter = itsBrowser.createIntersectionFilter(itsFilter, aFilter);
 		GridEventBrowser theBrowser = (GridEventBrowser) itsBrowser.createBrowser(theFilter);
 		

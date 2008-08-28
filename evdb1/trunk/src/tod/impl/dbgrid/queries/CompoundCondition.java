@@ -46,6 +46,7 @@ implements ICompoundFilter
 	
 	public void addCondition(EventCondition aCondition)
 	{
+		assert aCondition != null;
 		itsConditions.add(aCondition);
 	}
 	

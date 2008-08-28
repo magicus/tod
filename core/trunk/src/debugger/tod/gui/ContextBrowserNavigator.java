@@ -78,12 +78,6 @@ public class ContextBrowserNavigator extends BrowserNavigator<ActivitySeed>
 							|| ! itsCurrentActivityPanel.getClass().equals(aSeed.getComponentClass())))
 			{
 				// Drop current view
-				if (itsSelectedEventConnector != null)
-				{
-					itsSelectedEventConnector.disconnect();
-					itsSelectedEventConnector = null;
-				}
-
 				itsContainer.remove(itsCurrentActivityPanel);
 				itsCurrentActivityPanel = null;
 			}
@@ -95,16 +89,27 @@ public class ContextBrowserNavigator extends BrowserNavigator<ActivitySeed>
 				itsCurrentActivityPanel = theConstructor.newInstance(itsContext);
 				itsCurrentActivityPanel.init();
 				itsContainer.add(itsCurrentActivityPanel);
-				
-				if (itsCurrentActivityPanel.getSeed() instanceof IEventSeed)
-				{
-					IEventSeed theEventSeed = (IEventSeed) itsCurrentActivityPanel.getSeed();
-					itsSelectedEventConnector = PropertyUtils.connect(
-							itsContext.pSelectedEvent(), 
-							theEventSeed.pEvent(), 
-							true);
-				}
 			}
+
+			if (itsSelectedEventConnector != null)
+			{
+				itsSelectedEventConnector.disconnect();
+				itsSelectedEventConnector = null;
+			}
+
+			if (aSeed instanceof IEventSeed)
+			{
+				IEventSeed theEventSeed = (IEventSeed) aSeed;
+				itsSelectedEventConnector = PropertyUtils.connect(
+						theEventSeed.pEvent(), 
+						itsContext.pSelectedEvent(), 
+						true);
+			}
+			else
+			{
+				itsContext.pSelectedEvent().set(null);
+			}
+
 			
 			if (itsCurrentActivityPanel != null) itsCurrentActivityPanel.setSeed(aSeed);
 		}

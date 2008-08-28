@@ -72,8 +72,23 @@ public interface IGUIManager extends IBusOwner
 	 */
 	public ISession getSession();
 	
-	public void showNextEventForLine(IBehaviorInfo aBehavior, int aLine);
-	public void showPreviousEventForLine(IBehaviorInfo aBehavior, int aLine);
+	/**
+	 * Shows the next event that occurred at a specific line, relative to
+	 * the currently selected event.
+	 * @param aBehavior The behavior that contains the line
+	 * @param aInCFlow If true, only events that belong to the control flow of the 
+	 * parent behavior of the currently selected event. Otherwise, considers the whole trace. 
+	 */
+	public void showNextEventForLine(IBehaviorInfo aBehavior, int aLine, boolean aInCFlow);
+
+	/**
+	 * Shows the previous event that occurred at a specific line, relative to
+	 * the currently selected event.
+	 * @param aBehavior The behavior that contains the line
+	 * @param aInCFlow If true, only events that belong to the control flow of the 
+	 * parent behavior of the currently selected event. Otherwise, considers the whole trace. 
+	 */
+	public void showPreviousEventForLine(IBehaviorInfo aBehavior, int aLine, boolean aInCFlow);
 	
 	/**
 	 * Whether the "Show next event for line" action should be enabled.

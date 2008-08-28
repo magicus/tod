@@ -157,7 +157,7 @@
             id="tod.plugin.actions.ShowEventsForLine"
             targetID="org.eclipse.jdt.ui.CompilationUnitEditor">
          <action
-               class="tod.plugin.actions.ShowEventsForLineActionDelegate"
+               class="tod.plugin.actions.ShowEventsForLine"
                id="tod.plugin.actions.ShowEventsForLineAction"
                label="Show events in TOD"
                />
@@ -175,24 +175,34 @@
             <groupMarker name="tod.plugin.TODRulerMenu.events"/>
          </menu>
          <action
-               class="tod.plugin.actions.ShowEventsForLineActionDelegate"
+               class="tod.plugin.actions.ShowEventsForLine"
                id="tod.plugin.actions.CompilationUnitRulerPopupActions.ShowEventsForLineAction"
                label="Show events in TOD"
                menubarPath="tod.plugin.CompilationUnitTODRulerMenu/events"/>
          <action
-               class="tod.plugin.actions.ShowExceptionsForLineActionDelegate"
+               class="tod.plugin.actions.ShowExceptionsForLine"
                id="tod.plugin.actions.CompilationUnitRulerPopupActions.ShowExceptionsForLineActionDelegate"
                label="Show exceptions in TOD"
                menubarPath="tod.plugin.CompilationUnitTODRulerMenu/events"/>
          <action
-               class="tod.plugin.actions.ShowNextEventForLineActionDelegate"
+               class="tod.plugin.actions.ShowNextEventForLine"
                id="tod.plugin.actions.CompilationUnitRulerPopupActions.ShowNextEventForLineAction"
-               label="Next event for line"
+               label="Next event for line (in current method)"
                menubarPath="tod.plugin.CompilationUnitTODRulerMenu/events"/>
          <action
-               class="tod.plugin.actions.ShowPreviousEventForLineActionDelegate"
+               class="tod.plugin.actions.ShowNextEventForLineGlobal"
+               id="tod.plugin.actions.CompilationUnitRulerPopupActions.ShowNextEventForLineGlobalAction"
+               label="Next event for line (global)"
+               menubarPath="tod.plugin.CompilationUnitTODRulerMenu/events"/>
+         <action
+               class="tod.plugin.actions.ShowPreviousEventForLine"
                id="tod.plugin.actions.CompilationUnitRulerPopupActions.ShowPreviousEventForLineAction"
-               label="Previous event for line"
+               label="Previous event for line (in current method)"
+               menubarPath="tod.plugin.CompilationUnitTODRulerMenu/events"/>
+         <action
+               class="tod.plugin.actions.ShowPreviousEventForLineGlobal"
+               id="tod.plugin.actions.CompilationUnitRulerPopupActions.ShowPreviousEventForLineGlobalAction"
+               label="Previous event for line (global)"
                menubarPath="tod.plugin.CompilationUnitTODRulerMenu/events"/>
                
       </viewerContribution>
@@ -207,17 +217,17 @@
             <groupMarker name="events"/>
          </menu>
          <action
-               class="tod.plugin.actions.ShowEventsForLineActionDelegate"
+               class="tod.plugin.actions.ShowEventsForLine"
                id="tod.plugin.actions.ClassFileRulerPopupActions.ShowEventsForLineAction"
                label="Show events in TOD"
                menubarPath="tod.plugin.ClassFileTODRulerMenu/events"/>
          <action
-               class="tod.plugin.actions.ShowNextEventForLineActionDelegate"
+               class="tod.plugin.actions.ShowNextEventForLine"
                id="tod.plugin.actions.ClassFileRulerPopupActions.ShowNextEventForLineAction"
                label="Next event for line"
                menubarPath="tod.plugin.ClassFileTODRulerMenu/events"/>
          <action
-               class="tod.plugin.actions.ShowPreviousEventForLineActionDelegate"
+               class="tod.plugin.actions.ShowPreviousEventForLine"
                id="tod.plugin.actions.ClassFileRulerPopupActions.ShowPreviousEventForLineAction"
                label="Previous event for line"
                menubarPath="tod.plugin.ClassFileTODRulerMenu/events"/>

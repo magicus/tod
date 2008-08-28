@@ -12,28 +12,26 @@ import org.eclipse.jface.text.source.IVerticalRulerInfo;
 import org.eclipse.ui.texteditor.AbstractRulerActionDelegate;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IBehaviorInfo;
-import tod.gui.IGUIManager;
 import tod.plugin.TODPluginUtils;
 
 /**
- * Handler for the "Show exceptions in TOD" ruler action.
+ * Handler for the "Show events in TOD" ruler action.
  * @author gpothier
  */
-public class ShowExceptionsForLineActionDelegate extends AbstractRulerActionDelegate
+public class ShowEventsForLine extends AbstractRulerActionDelegate
 {
 	@Override
 	protected IAction createAction(
 			ITextEditor aEditor, 
 			IVerticalRulerInfo aRulerInfo)
 	{
-		return new ShowExceptionsForLineAction(aEditor, aRulerInfo);
+		return new ShowEventsForLineAction(aEditor, aRulerInfo);
 	}
 
-	private static class ShowExceptionsForLineAction extends AbstractRulerAction
+	private static class ShowEventsForLineAction extends AbstractRulerAction
 	{
-		public ShowExceptionsForLineAction(ITextEditor aEditor, IVerticalRulerInfo aRulerInfo)
+		public ShowEventsForLineAction(ITextEditor aEditor, IVerticalRulerInfo aRulerInfo)
 		{
 			super(aEditor, aRulerInfo);
 		}
@@ -45,13 +43,7 @@ public class ShowExceptionsForLineActionDelegate extends AbstractRulerActionDele
 			{
 				public void run()
 				{
-					IGUIManager theGUIManager = getGUIManager(true);
-					ILogBrowser theLogBrowser = theGUIManager.getSession().getLogBrowser();
-					
-					theGUIManager.showEventsForLine(
-							getCurrentBehavior(), 
-							getCurrentLine(), 
-							theLogBrowser.createExceptionGeneratedFilter());
+					getGUIManager(true).showEventsForLine(getCurrentBehavior(), getCurrentLine(), null);
 				}
 			});
 		}

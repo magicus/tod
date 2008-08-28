@@ -537,24 +537,29 @@ implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider, ICont
 	
 	/**
 	 * Creates an event browser over all the event that are accessible
-	 * to a base browser and that additionally occured at the specified
+	 * to a base browser and that additionally occurred at the specified
 	 * location.
 	 */
 	private IEventBrowser createLocationBrowser(
 			IEventBrowser aBaseBrowser,
 			IBehaviorInfo aBehavior, 
-			int aLine)
+			int aLine,
+			boolean aInCFlow)
 	{
 		IEventFilter theFilter = TODUtils.getLocationFilter(
 				aBaseBrowser.getLogBrowser(), 
 				aBehavior, 
 				aLine);
 		
-		return aBaseBrowser.createIntersection(theFilter);
+		if (theFilter == null) return null;
+		
+		return aInCFlow ? 
+				aBaseBrowser.createIntersection(theFilter) 
+				: getLogBrowser().createBrowser(theFilter);
 	}
 	
 	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
-	public void showNextEventForLine(IBehaviorInfo aBehavior, int aLine)
+	public void showNextEventForLine(IBehaviorInfo aBehavior, int aLine, boolean aInCFlow)
 	{
 		IEventListSeed theSeed = getEventListSeed();
 		if (theSeed == null) return;
@@ -562,7 +567,8 @@ implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider, ICont
 		IEventBrowser theBrowser = createLocationBrowser(
 				theSeed.getEventBrowser(),
 				aBehavior, 
-				aLine);
+				aLine,
+				aInCFlow);
 		
 		ILogEvent theSelectedEvent = theSeed.pEvent().get();
 		if (theSelectedEvent != null) theBrowser.setPreviousEvent(theSelectedEvent);
@@ -576,7 +582,7 @@ implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider, ICont
 	}
 	
 	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
-	public void showPreviousEventForLine(IBehaviorInfo aBehavior, int aLine)
+	public void showPreviousEventForLine(IBehaviorInfo aBehavior, int aLine, boolean aInCFlow)
 	{
 		IEventListSeed theSeed = getEventListSeed();
 		if (theSeed == null) return;
@@ -584,7 +590,8 @@ implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider, ICont
 		IEventBrowser theBrowser = createLocationBrowser(
 				theSeed.getEventBrowser(),
 				aBehavior, 
-				aLine);
+				aLine,
+				aInCFlow);
 		
 		ILogEvent theSelectedEvent = theSeed.pEvent().get();
 		if (theSelectedEvent != null) theBrowser.setNextEvent(theSelectedEvent);

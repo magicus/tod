@@ -198,25 +198,35 @@ public class TODPluginUtils
 	public static String getResolvedTypeName(String aJDTSignature, IType aDeclaringType) throws JavaModelException
 	{
 		int theArrayDepth = Signature.getArrayCount(aJDTSignature);
-		char type = aJDTSignature.charAt(theArrayDepth);
+		String theBaseSignature = aJDTSignature.substring(theArrayDepth);
+		String theBaseName = getResolvedTypeName0(theBaseSignature, aDeclaringType);
+		StringBuilder theName = new StringBuilder();
+		for(int i=0;i<theArrayDepth;i++) theName.append('[');
+		theName.append(theBaseName);
+		
+		return theName.toString();
+	}
+	
+	private static String getResolvedTypeName0(String aBaseJDTSignature, IType aDeclaringType) throws JavaModelException
+	{
+		char type = aBaseJDTSignature.charAt(0);
 
 		if (type == Signature.C_UNRESOLVED)
 		{
 			String name = ""; //$NON-NLS-1$
-			int bracket = aJDTSignature.indexOf(Signature.C_GENERIC_START, theArrayDepth + 1);
-			if (bracket > 0) name = aJDTSignature.substring(theArrayDepth + 1, bracket);
+			int bracket = aBaseJDTSignature.indexOf(Signature.C_GENERIC_START, 1);
+			if (bracket > 0) name = aBaseJDTSignature.substring(1, bracket);
 			else
 			{
-				int semi = aJDTSignature.indexOf(Signature.C_SEMICOLON, theArrayDepth + 1);
+				int semi = aBaseJDTSignature.indexOf(Signature.C_SEMICOLON, 1);
 				if (semi == -1) { throw new IllegalArgumentException(); }
-				name = aJDTSignature.substring(theArrayDepth + 1, semi);
+				name = aBaseJDTSignature.substring(1, semi);
 			}
 			
 			String[][] resolvedNames = aDeclaringType.resolveType(name);
 			if (resolvedNames != null && resolvedNames.length > 0) 
 			{
 				StringBuilder theBuilder = new StringBuilder();
-				for (int i=0;i<theArrayDepth;i++) theBuilder.append(Signature.C_ARRAY);
 				theBuilder.append(Signature.C_RESOLVED);
 				String thePackage = resolvedNames[0][0];
 				String theClass = resolvedNames[0][1].replace('.', '$'); 
@@ -245,7 +255,7 @@ public class TODPluginUtils
 		}
 		else
 		{
-			return aJDTSignature;
+			return aBaseJDTSignature;
 		}
 	}
 	

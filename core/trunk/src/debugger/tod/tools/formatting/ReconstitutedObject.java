@@ -76,7 +76,14 @@ public class ReconstitutedObject
 	{
 		IClassInfo theClass = getType();
 		
-		IFieldInfo theField = theClass.getField(aFieldName);
+		IFieldInfo theField = null;
+		while(theClass != null)
+		{
+			theField = theClass.getField(aFieldName);
+			if (theField != null) break;
+			theClass = theClass.getSupertype();
+		}
+		
 		if (theField == null) 
 		{
 			if (theClass.isInScope()) Utils.rtex("Field %s not found in class %s.", aFieldName, theClass.getName());

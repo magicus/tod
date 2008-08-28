@@ -38,6 +38,7 @@ import java.util.List;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -99,17 +100,19 @@ public class ObjectMethodsPanel extends ActivitySubPanel<ObjectHistorySeed>
 						getBus().postMessage(new ShowCFlowMsg(aData));
 					}
 				});
-
+		
 		theSplitPane.setRightComponent(itsListPanel);
 		
 		itsMethodsListModel = new SimpleListModel();
 		itsMethodsList = new JList(itsMethodsListModel);
+		itsMethodsList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		
 		itsMethodsList.getSelectionModel().addListSelectionListener(new ListSelectionListener()
 		{
 			public void valueChanged(ListSelectionEvent aE)
 			{
 				if (aE.getValueIsAdjusting()) return;
-				behaviorSelected((IBehaviorInfo) itsMethodsList.getSelectedValue());
+				update();
 			}
 		});
 		theSplitPane.setLeftComponent(new JScrollPane(itsMethodsList));
@@ -158,12 +161,26 @@ public class ObjectMethodsPanel extends ActivitySubPanel<ObjectHistorySeed>
 		}
 	}
 	
-	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
-	private void behaviorSelected(IBehaviorInfo aBehavior)
+	private void update()
 	{
+		Object[] theValues = itsMethodsList.getSelectedValues();
+		IBehaviorInfo[] theMethods = new IBehaviorInfo[theValues.length];
+		for(int i=0;i<theValues.length;i++) theMethods[i] = (IBehaviorInfo) theValues[i];
+		behaviorSelected(theMethods);
+	}
+	
+	@Scheduled(value = JobPriority.EXPLICIT, cancelOthers = true)
+	private void behaviorSelected(IBehaviorInfo[] aBehaviors)
+	{
+		ICompoundFilter theMethodsFilter = getLogBrowser().createUnionFilter();
+		for (IBehaviorInfo theBehavior : aBehaviors)
+		{
+			theMethodsFilter.add(getLogBrowser().createBehaviorCallFilter(theBehavior));
+		}
+		
 		ICompoundFilter theFilter = getLogBrowser().createIntersectionFilter(
 				getLogBrowser().createTargetFilter(getSeed().getObject()),
-				getLogBrowser().createBehaviorCallFilter(aBehavior));
+				theMethodsFilter);
 		
 		itsListPanel.setBrowser(theFilter);
 	}
