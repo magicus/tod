@@ -130,7 +130,7 @@ java -jar abc-complete.jar \
   -ext zz.abc.sourceloc
 </pre>
 
-Once your program has been compiled, you must tell Eclipse to use the tagged classes instead of those compiled by AJDT. You must modify the classpath of the launch configuration you use to run your program: remove the default entries and add the folder containing the tagged class as a new User entry.
+Once your program has been compiled, you must tell Eclipse to use the tagged classes instead of those compiled by AJDT. You must modify the classpath of the launch configuration you use to run your program: remove the default entries and add the folder containing the tagged class as a new User entry. You must also add abc-runtime.jar to the classpath.
 
 Then you must tell TOD to actually use the tags contained in the classes. In the TOD option tab of the launch configuration, enable the "Include aspect info" option.
 
