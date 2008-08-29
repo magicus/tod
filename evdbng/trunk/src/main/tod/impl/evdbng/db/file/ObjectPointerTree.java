@@ -3,6 +3,7 @@
  */
 package tod.impl.evdbng.db.file;
 
+import tod.core.DebugFlags;
 import tod.impl.dbgrid.db.ObjectsDatabase;
 import tod.impl.evdbng.db.file.PagedFile.PageIOStream;
 
@@ -34,6 +35,8 @@ public class ObjectPointerTree extends BTree<ObjectPointerTuple>
 	 */
 	public void add(long aObjectId, int aPageId, int aOffset)
 	{
+		logLeafTuple(aObjectId, "pid: "+aPageId+", off: "+aOffset);
+
 		PageIOStream theStream = addLeafKey(aObjectId);
 		theStream.writePagePointer(aPageId);
 		theStream.writePageOffset(aOffset);

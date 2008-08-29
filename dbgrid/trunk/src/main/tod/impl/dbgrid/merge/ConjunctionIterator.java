@@ -180,24 +180,33 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 									return null;
 								}
 							});
+					break;
 				}
 				else
 				{
 					if (theSameEvent)
 					{
 						T theTuple = fetchSameEvent(theHeads, true);
-						if (theTuple != null) return theTuple;
+						if (theTuple != null)
+						{
+							theResult = theTuple;
+							break;
+						}
 					}
 					
 					if (! theSameKey) itsDirection.move(getSelectedHead(), getGoalTimestamp());
 					else 
 					{
 						T theTuple = fetchSameEvent(theHeads, false);
-						if (theTuple != null) return theTuple;
+						if (theTuple != null)
+						{
+							theResult = theTuple;
+							break;
+						}
 					}
 				}
 			}
-			while (!theMatch);
+			while (true);
 
 			return theResult;
 		}

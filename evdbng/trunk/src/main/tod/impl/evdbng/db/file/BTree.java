@@ -137,8 +137,19 @@ public abstract class BTree<T extends Tuple>
 				e.printStackTrace();
 			}
 		}
-
 	}
+	
+	protected void logLeafTuple(long aKey, String aExtradata)
+	{
+		if (DebugFlags.DB_LOG_DIR != null) 
+		{
+			itsLogWriter.print(itsLeafTupleCount+" - "+aKey);
+			if (aExtradata != null) itsLogWriter.print(" "+aExtradata);
+			itsLogWriter.println();
+			itsLogWriter.flush();
+		}
+	}
+	
 	/**
 	 * Writes this index to the given struct so that it can be reloaded
 	 * later.
@@ -207,12 +218,6 @@ public abstract class BTree<T extends Tuple>
 	{
 		if (itsFirstKey == -1) itsFirstKey = aKey;
 		assert itsLastKey <= aKey;
-		
-		if (DebugFlags.DB_LOG_DIR != null) 
-		{
-			itsLogWriter.println(itsLeafTupleCount+" - "+aKey);
-			itsLogWriter.flush();
-		}
 		
 		itsLastKey = aKey;
 		PageIOStream theStream = addKey(aKey, itsTupleBufferFactory.getDataSize(), 0);

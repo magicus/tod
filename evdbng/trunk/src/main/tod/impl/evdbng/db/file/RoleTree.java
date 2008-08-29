@@ -32,6 +32,8 @@ public class RoleTree extends BTree<RoleTuple>
 	 */
 	public void add(long aEventId, byte aRole)
 	{
+		logLeafTuple(aEventId, "("+aRole+")");
+		
 		PageIOStream theStream = addLeafKey(aEventId);
 		theStream.writeByte(aRole);
 	}

@@ -33,6 +33,7 @@ public class SequenceTree extends BTree<SimpleTuple>
 	 */
 	public void add(long aKey)
 	{
+		logLeafTuple(aKey, null);
 		addLeafKey(aKey);
 	}
 	

@@ -32,6 +32,7 @@ public class SimpleTree extends BTree<SimpleTuple>
 	 */
 	public void add(long aEventId)
 	{
+		logLeafTuple(aEventId, null);
 		addLeafKey(aEventId);
 	}
 
