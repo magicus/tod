@@ -106,8 +106,11 @@ public class GridBehaviorCallEvent extends GridEventNG
 	{
 		super.writeTo(aBitStruct);
 		
-		aBitStruct.writeByte(itsArguments.length);
-		for (Object theArgument : itsArguments) writeObject(aBitStruct, theArgument);
+		aBitStruct.writeByte(itsArguments != null ? itsArguments.length : 0);
+		if (itsArguments != null) 
+		{
+			for (Object theArgument : itsArguments) writeObject(aBitStruct, theArgument);
+		}
 		
 		aBitStruct.writeBehaviorId(getCalledBehaviorId());
 		aBitStruct.writeBehaviorId(getExecutedBehaviorId());
@@ -121,7 +124,10 @@ public class GridBehaviorCallEvent extends GridEventNG
 		int theCount = super.getMessageSize();
 		
 		theCount += PageIOStream.byteSize();
-		for (Object theArgument : itsArguments) theCount += getObjectSize(theArgument);
+		if (itsArguments != null) 
+		{
+			for (Object theArgument : itsArguments) theCount += getObjectSize(theArgument);
+		}
 		
 		theCount += PageIOStream.behaviorIdSize();
 		theCount += PageIOStream.behaviorIdSize();
@@ -216,7 +222,7 @@ public class GridBehaviorCallEvent extends GridEventNG
 			aIndexes.indexBehavior(getExecutedBehaviorId(), aId, RoleIndexSet.ROLE_BEHAVIOR_EXECUTED);
 		}
 		
-		for (int i = 0; i < itsArguments.length; i++)
+		if (itsArguments != null) for (int i = 0; i < itsArguments.length; i++)
 		{
 			Object theArgument = itsArguments[i];
 			aIndexes.indexObject(theArgument, aId, (byte) (i+1));

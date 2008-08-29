@@ -66,6 +66,7 @@ implements ITupleIterator<T>
 			int aPosition)
 	{
 		super (false);
+		assert aTupleBuffer != null;
 		itsTree = aTree;
 		itsCurrentBuffer = aTupleBuffer;
 		itsPosition = aPosition;
