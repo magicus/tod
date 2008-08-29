@@ -100,55 +100,6 @@ public class RoleIndexSet extends IndexSet<RoleIndexSet.RoleTuple>
 		};
 	}
 	
-	/**
-	 * Creates an iterator that filters out duplicate tuples, which is useful when the 
-	 * role is not checked: for instance if a behavior call event has the same called
-	 * and executed method, it would appear twice in the behavior index with
-	 * a different role.
-	 */
-	public static IBidiIterator<RoleTuple> createFilteredIterator(
-			IBidiIterator<RoleTuple> aIterator)
-	{
-		return new DuplicateFilterIterator(aIterator);
-	}
-	
-	private static class DuplicateFilterIterator extends AbstractFilteredBidiIterator<RoleTuple, RoleTuple>
-	{
-		private long itsLastEventPointer;
-		private int itsDirection = 0;
-		
-		public DuplicateFilterIterator(IBidiIterator<RoleTuple> aIterator)
-		{
-			super(aIterator);
-			itsLastEventPointer = -1;
-		}
-		
-		@Override
-		protected RoleTuple fetchNext()
-		{
-			if (itsDirection != 1) itsLastEventPointer = -1;
-			itsDirection = 1;
-			return super.fetchNext();
-		}
-		
-		@Override
-		protected RoleTuple fetchPrevious()
-		{
-			if (itsDirection != -1) itsLastEventPointer = -1;
-			itsDirection = -1;
-			return super.fetchPrevious();
-		}
-		
-		@Override
-		protected Object transform(RoleTuple aIn)
-		{
-			if (aIn.getEventPointer() == itsLastEventPointer) return REJECT;
-			itsLastEventPointer = aIn.getEventPointer();
-			
-			return aIn;
-		}
-	}
-	
 
 	private static class RoleTupleCodec extends IndexTupleCodec<RoleTuple>
 	{

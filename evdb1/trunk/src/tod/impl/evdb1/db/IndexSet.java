@@ -22,6 +22,10 @@ package tod.impl.evdb1.db;
 
 import static tod.impl.evdb1.DebuggerGridConfig1.DB_PAGE_BUFFER_SIZE;
 import static tod.impl.evdb1.DebuggerGridConfig1.DB_PAGE_SIZE;
+import tod.impl.database.AbstractFilteredBidiIterator;
+import tod.impl.database.IBidiIterator;
+import tod.impl.evdb1.db.RoleIndexSet.RoleTuple;
+import tod.impl.evdb1.db.StdIndexSet.StdTuple;
 import tod.impl.evdb1.db.file.HardPagedFile;
 import tod.impl.evdb1.db.file.IndexTuple;
 import tod.impl.evdb1.db.file.TupleCodec;
@@ -220,6 +224,56 @@ public abstract class IndexSet<T extends IndexTuple>
 	{
 		return getClass().getSimpleName()+": "+itsName;
 	}
+	
+	/**
+	 * Creates an iterator that filters out duplicate tuples, which is useful when the 
+	 * role is not checked: for instance if a behavior call event has the same called
+	 * and executed method, it would appear twice in the behavior index with
+	 * a different role.
+	 */
+	public static <T extends StdTuple> IBidiIterator<T> createFilteredIterator(IBidiIterator<T> aIterator)
+	{
+		return new DuplicateFilterIterator<T>(aIterator);
+	}
+	
+	private static class DuplicateFilterIterator<T extends StdTuple> extends AbstractFilteredBidiIterator<T, T>
+	{
+		private long itsLastEventPointer;
+		private int itsDirection = 0;
+		
+		public DuplicateFilterIterator(IBidiIterator<T> aIterator)
+		{
+			super(aIterator);
+			itsLastEventPointer = -1;
+		}
+		
+		@Override
+		protected T fetchNext()
+		{
+			if (itsDirection != 1) itsLastEventPointer = -1;
+			itsDirection = 1;
+			return super.fetchNext();
+		}
+		
+		@Override
+		protected T fetchPrevious()
+		{
+			if (itsDirection != -1) itsLastEventPointer = -1;
+			itsDirection = -1;
+			return super.fetchPrevious();
+		}
+		
+		@Override
+		protected Object transform(T aIn)
+		{
+			if (aIn.getEventPointer() == itsLastEventPointer) return REJECT;
+			itsLastEventPointer = aIn.getEventPointer();
+			
+			return aIn;
+		}
+	}
+	
+
 	
 	/**
 	 * The index manager ensures that least-frequently-used indexes

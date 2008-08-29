@@ -18,12 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.dbgrid;
+package tod.impl.evdb1;
 
 import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_OBJECT_COUNT;
 
 import java.util.Random;
 
+import tod.impl.dbgrid.EventGenerator;
 import tod.impl.evdb1.SplittedConditionHandler;
 import tod.impl.evdb1.db.RoleIndexSet;
 import tod.impl.evdb1.queries.BehaviorCondition;
@@ -132,7 +133,7 @@ public class ConditionGenerator1
 	
 	public EventCondition nextConjunction()
 	{
-		Conjunction theConjunction = new Conjunction(false);
+		Conjunction theConjunction = new Conjunction(false, false);
 		fillCompoundCondition(theConjunction);
 		return theConjunction;
 	}

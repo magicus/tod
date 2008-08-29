@@ -82,6 +82,7 @@ public class RoleIndexSet extends IndexSet<RoleTuple>
 	/**
 	 * Creates an iterator that filters out the tuples from a source iterator that
 	 * don't have one of the specified roles.
+	 * See also: {@link #createFilteredIterator(IBidiIterator)}
 	 */
 	public static IBidiIterator<RoleTuple> createFilteredIterator(
 			IBidiIterator<RoleTuple> aIterator,
@@ -100,55 +101,6 @@ public class RoleIndexSet extends IndexSet<RoleTuple>
 				return REJECT;
 			}
 		};
-	}
-	
-	/**
-	 * Creates an iterator that filters out duplicate tuples, which is useful when the 
-	 * role is not checked: for instance if a behavior call event has the same called
-	 * and executed method, it would appear twice in the behavior index with
-	 * a different role.
-	 */
-	public static IBidiIterator<RoleTuple> createFilteredIterator(
-			IBidiIterator<RoleTuple> aIterator)
-	{
-		return new DuplicateFilterIterator(aIterator);
-	}
-	
-	private static class DuplicateFilterIterator extends AbstractFilteredBidiIterator<RoleTuple, RoleTuple>
-	{
-		private long itsLastKey;
-		private int itsDirection = 0;
-		
-		public DuplicateFilterIterator(IBidiIterator<RoleTuple> aIterator)
-		{
-			super(aIterator);
-			itsLastKey = -1;
-		}
-		
-		@Override
-		protected RoleTuple fetchNext()
-		{
-			if (itsDirection != 1) itsLastKey = -1;
-			itsDirection = 1;
-			return super.fetchNext();
-		}
-		
-		@Override
-		protected RoleTuple fetchPrevious()
-		{
-			if (itsDirection != -1) itsLastKey = -1;
-			itsDirection = -1;
-			return super.fetchPrevious();
-		}
-		
-		@Override
-		protected Object transform(RoleTuple aIn)
-		{
-			if (aIn.getKey() == itsLastKey) return REJECT;
-			itsLastKey = aIn.getKey();
-			
-			return aIn;
-		}
 	}
 	
 }

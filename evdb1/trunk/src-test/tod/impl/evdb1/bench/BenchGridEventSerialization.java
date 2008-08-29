@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.dbgrid.bench;
+package tod.impl.evdb1.bench;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -28,8 +28,8 @@ import org.junit.Test;
 
 import tod.BenchBase;
 import tod.BenchBase.BenchResults;
-import tod.impl.dbgrid.EventGenerator1;
 import tod.impl.dbgrid.messages.GridEvent;
+import tod.impl.evdb1.EventGenerator1;
 import tod.impl.evdb1.messages.BitGridEvent;
 import zz.utils.bit.BitStruct;
 import zz.utils.bit.IntBitStruct;

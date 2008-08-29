@@ -78,7 +78,7 @@ public class DebuggerGridConfig
 	
 	public static enum DbImpl
 	{
-		EVDB1("tod.impl.dbgrid", "1"),
+		EVDB1("tod.impl.evdb1", "1"),
 		EVDBNG("tod.impl.evdbng", "NG");
 		
 		public final String prefix;

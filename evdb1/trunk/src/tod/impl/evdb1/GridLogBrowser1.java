@@ -272,7 +272,7 @@ public class GridLogBrowser1 extends GridLogBrowser
 	@Override
 	protected ICompoundFilter createIntersectionFilter0(IEventFilter... aFilters)
 	{
-		CompoundCondition theCompound = new Conjunction(false);
+		CompoundCondition theCompound = new Conjunction(false, false);
 		for (IEventFilter theFilter : aFilters)
 		{
 			theCompound.add(theFilter);

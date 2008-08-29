@@ -45,7 +45,7 @@ public abstract class SplittedConditionHandler<T extends IndexSet<?>>
 	 */
 	public Conjunction createCondition(long aIndex, byte aRole)
 	{
-		Conjunction theResult = new Conjunction(true);
+		Conjunction theResult = new Conjunction(true, true);
 		
 		int[] theParts = splitIndex(aIndex);
 		

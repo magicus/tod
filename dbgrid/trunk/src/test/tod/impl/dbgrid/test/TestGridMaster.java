@@ -100,18 +100,16 @@ public class TestGridMaster
 		for (int i=0;i<1000;i++)
 		{
 			IGridEventFilter theEventCondition = (IGridEventFilter) theConditionGenerator.next();
-			if (i < 90) continue;
 
 			System.out.println(i+1);
 			System.out.println(theEventCondition);
 			
-//			int theCount = checkCondition(theMaster, theEventCondition, createEventGenerator(theStructureDatabase), 5000, 10000);
-			int theCount = 627;
+			int theCount = checkCondition(theMaster, theEventCondition, createEventGenerator(theStructureDatabase), 5000, 10000);
 			
-//			GridEventBrowser theEventBrowser = new GridEventBrowser(theLogBrowser, theEventCondition);
-//			int theCount2 = checkCondition(theEventBrowser, theEventCondition, createEventGenerator(theStructureDatabase), 5000, 10000);
-//			
-//			Assert.assertTrue("Bad count", theCount == theCount2);
+			GridEventBrowser theEventBrowser = new GridEventBrowser(theLogBrowser, theEventCondition);
+			int theCount2 = checkCondition(theEventBrowser, theEventCondition, createEventGenerator(theStructureDatabase), 5000, 10000);
+			
+			Assert.assertTrue("Bad count", theCount == theCount2);
 			
 			if (theCount > 3)
 			{

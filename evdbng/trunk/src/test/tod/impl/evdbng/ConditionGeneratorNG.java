@@ -113,7 +113,7 @@ public class ConditionGeneratorNG
 	
 	public EventCondition nextConjunction()
 	{
-		Conjunction theConjunction = new Conjunction(false);
+		Conjunction theConjunction = new Conjunction(false, false);
 		fillCompoundCondition(theConjunction);
 		return theConjunction;
 	}

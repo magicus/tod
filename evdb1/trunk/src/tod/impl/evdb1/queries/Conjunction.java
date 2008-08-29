@@ -25,6 +25,7 @@ import tod.impl.dbgrid.merge.ConjunctionIterator;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.evdb1.db.EventList;
 import tod.impl.evdb1.db.IndexMerger;
+import tod.impl.evdb1.db.IndexSet;
 import tod.impl.evdb1.db.Indexes;
 import tod.impl.evdb1.db.StdIndexSet.StdTuple;
 
@@ -37,13 +38,15 @@ public class Conjunction extends CompoundCondition
 	private static final long serialVersionUID = 6155046517220795498L;
 	
 	private final boolean itsMatchRoles;
+	private final boolean itsFitlerDuplicates;
 	
 	/**
 	 * @param aMatchRoles See {@link ConjunctionIterator}
 	 */
-	public Conjunction(boolean aMatchRoles)
+	public Conjunction(boolean aMatchRoles, boolean aFilterDuplicates)
 	{
 		itsMatchRoles = aMatchRoles;
+		itsFitlerDuplicates = aFilterDuplicates;
 	}
 
 	@Override
@@ -58,7 +61,8 @@ public class Conjunction extends CompoundCondition
 			theIterators[i++] = theCondition.createTupleIterator(aEventList, aIndexes, aTimestamp);
 		}
 		
-		return IndexMerger.conjunction(itsMatchRoles, theIterators);
+		IBidiIterator<StdTuple> theIterator = IndexMerger.conjunction(itsMatchRoles, theIterators);
+		return itsFitlerDuplicates ? IndexSet.createFilteredIterator(theIterator) : theIterator;
 	}
 
 	public boolean _match(GridEvent aEvent)

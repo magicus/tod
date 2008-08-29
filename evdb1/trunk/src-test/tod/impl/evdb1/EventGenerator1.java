@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.dbgrid;
+package tod.impl.evdb1;
 
 import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_ADVICE_SRC_ID_COUNT;
 import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_ARRAY_INDEX_COUNT;
@@ -30,6 +30,7 @@ import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_OBJECT_COUNT;
 import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_THREADS_COUNT;
 import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_VAR_COUNT;
 import tod.core.database.structure.IMutableStructureDatabase;
+import tod.impl.dbgrid.EventGenerator;
 import tod.impl.dbgrid.messages.MessageType;
 import tod.impl.evdb1.messages.BitGridEvent;
 import tod.impl.evdb1.messages.GridArrayWriteEvent;

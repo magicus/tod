@@ -7,6 +7,8 @@ package tod.impl.evdbng.db;
 
 import static tod.impl.evdbng.DebuggerGridConfigNG.DB_PAGE_BUFFER_SIZE;
 import static tod.impl.evdbng.DebuggerGridConfigNG.DB_PAGE_SIZE;
+import tod.impl.database.AbstractFilteredBidiIterator;
+import tod.impl.database.IBidiIterator;
 import tod.impl.evdbng.db.file.BTree;
 import tod.impl.evdbng.db.file.PagedFile;
 import tod.impl.evdbng.db.file.Tuple;
@@ -200,6 +202,17 @@ public abstract class IndexSet<T extends Tuple>
 	}
 	
 	/**
+	 * Creates an iterator that filters out duplicate tuples, which is useful when the 
+	 * role is not checked: for instance if a behavior call event has the same called
+	 * and executed method, it would appear twice in the behavior index with
+	 * a different role.
+	 */
+	public static <T extends Tuple> IBidiIterator<T> createFilteredIterator(IBidiIterator<T> aIterator)
+	{
+		return new DuplicateFilterIterator<T>(aIterator);
+	}
+
+	/**
 	 * The index manager ensures that least-frequently-used indexes
 	 * are discarded so that they do not waste memory.
 	 * @author gpothier
@@ -285,5 +298,42 @@ public abstract class IndexSet<T extends Tuple>
 			return itsTree;
 		}
 	}
+
+	protected static class DuplicateFilterIterator<T extends Tuple> extends AbstractFilteredBidiIterator<T, T>
+		{
+			private long itsLastKey;
+			private int itsDirection = 0;
+			
+			public DuplicateFilterIterator(IBidiIterator<T> aIterator)
+			{
+				super(aIterator);
+				itsLastKey = -1;
+			}
+			
+			@Override
+			protected T fetchNext()
+			{
+				if (itsDirection != 1) itsLastKey = -1;
+				itsDirection = 1;
+				return super.fetchNext();
+			}
+			
+			@Override
+			protected T fetchPrevious()
+			{
+				if (itsDirection != -1) itsLastKey = -1;
+				itsDirection = -1;
+				return super.fetchPrevious();
+			}
+			
+			@Override
+			protected Object transform(T aIn)
+			{
+				if (aIn.getKey() == itsLastKey) return REJECT;
+				itsLastKey = aIn.getKey();
+				
+				return aIn;
+			}
+		}
 	
 }

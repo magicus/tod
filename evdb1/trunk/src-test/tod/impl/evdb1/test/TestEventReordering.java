@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.dbgrid.test;
+package tod.impl.evdb1.test;
 
 import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_ADVICE_SRC_ID_COUNT;
 import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_ARRAY_INDEX_COUNT;
@@ -41,10 +41,10 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import tod.impl.dbgrid.DebuggerGridConfig;
-import tod.impl.dbgrid.EventGenerator1;
 import tod.impl.dbgrid.db.EventReorderingBuffer;
 import tod.impl.dbgrid.db.EventReorderingBuffer.ReorderingBufferListener;
 import tod.impl.dbgrid.messages.GridEvent;
+import tod.impl.evdb1.EventGenerator1;
 import tod.impl.evdb1.messages.GridFieldWriteEvent;
 
 public class TestEventReordering implements ReorderingBufferListener 

@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.dbgrid.bench;
+package tod.impl.evdb1.bench;
 
 import static org.junit.Assert.assertTrue;
 
@@ -27,10 +27,10 @@ import org.junit.Test;
 import tod.BenchBase;
 import tod.BenchBase.BenchResults;
 import tod.core.database.TimestampGenerator;
-import tod.impl.dbgrid.Fixtures1;
-import tod.impl.dbgrid.test.TestHierarchicalIndex;
+import tod.impl.evdb1.Fixtures1;
 import tod.impl.evdb1.db.HierarchicalIndex;
 import tod.impl.evdb1.db.StdIndexSet.StdTuple;
+import tod.impl.evdb1.test.TestHierarchicalIndex;
 
 public class BenchIndexes
 {
