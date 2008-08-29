@@ -67,7 +67,13 @@
 	language=python
 }
 
-
+\lstdefinestyle{java}
+{
+	language=java
+}
+%para funcionamiento de arboles
+\usepackage{pstricks}
+\usepackage{pst-tree}
 \begin{document}
 %\title{}
 %\author{Milton Inostroza Aguilera}
@@ -548,7 +554,7 @@ def monthlyReport(aRequest):
     logging.error('This is a sample error message')
     logging.critical('This is a sample critical message')    
     if aRequest.method == "POST":
-    ....
+    	....
     ....
 \end{lstlisting}
 \end{singlespace}
@@ -561,7 +567,6 @@ El resultado de la introducción de las instrucciones de mensajes son observados
 	\caption{Resultado de depuración con django-logging}
 \end{figure}
  
-
 
 		\subsection{Depuración basada en puntos de quiebre}
 			\subsubsection{Motivación}
@@ -582,15 +587,47 @@ Sin soporte de hardware, los depuradores tienen que implementar los puntos de qu
 
 
 			\subsubsection{Ventajas/Desventajas}
+			
+Los depuradores de punto de quiebre tienen las siguientes ventajas sobre los depuradores basados en mensajes:
 
-El depurador al momento de encontrar el punto de quiebre, no tiene en sus registros la pila de llamadas que se produjeron, perdiendo toda la información anterior al punto de quiebre.
+\begin{itemize} 
+	\item Examinar y modificar la memoria y las variables del programa.
+	\item Examinar el contenido de los registros del procesador.
+	\item Examinar la pila de llamadas que han desembocado en la situación actual.
+	\item Cambiar el punto de ejecución, de manera que el programa continúe su ejecución en un punto diferente al punto en el que fue detenido.
+	\item Ejecutar instrucción a instrucción.
+	\item Ejecutar partes determinadas del código, como el interior de una función, o el resto de código antes de salir de una función.
+\end{itemize}
 
-FALTAN LAS VENTAJAS
+La principal desventaja de los depuradores de punto de quiebre es que al encontrar el punto de quiebre, no tiene en sus registros la pila de llamadas que se produjeron, perdiendo toda la información anterior al punto de quiebre.
 
 			\subsubsection{Herramientas}
 
 				\paragraph{Depurador de Eclipse}
+				
+Eclipse es una plataforma de software compuesta por un framework de aplicaciones extensible, herramientas y una librería de tiempo de ejecución para software desarrollado y administración en general.  Este está escrito fundamentalmente en Java para entregar a los desarrolladores de software y administradores un ambiente de desarrollo integrado (IDE).
+
+Los usuarios de Eclipse pueden extender sus capacidades mediante la instalación de plugins escritos para el framework Eclipse, al igual que herramientas de desarrollo para otros lenguajes de programación, y pueden escribir y contribuir con sus propios plugins.
+
+\begin{figure}[hbp]
+	\centering
+	\includegraphics[scale=0.35]{images/Eclipse.eps}
+	\caption{Resultado de depuración con Eclipse}
+\end{figure}
+		
+
+Todas las liberaciones de Eclipse están bajos los términos de la licencia pública de Eclipse, Eclipse es una herramienta de software libre y abierta.
+
 				\paragraph{Depurador Winpdb }	
+
+Winpdb es un depurador de punto de quiebre para Python independiente de la plataforma, la cual soporta múltiple hilos de ejecución, modificación del espacia de nombres, depuración embebida, comunicación encriptada y es 20 veces más rápido que pdb (Módulo de Python para realizar depuración).
+
+\begin{figure}[hbp]
+	\centering
+	\includegraphics[scale=0.35]{images/Winpdb.eps}
+	\caption{Resultado de depuración con Winpdb}
+\end{figure}
+
 
 		\subsection{Depuración Omnisciente}
 			\subsubsection{Motivación}
@@ -600,7 +637,7 @@ Mediante el registro de cada cambio de un programa en ejecución, es posible pre
 
 Los desarrolladores de los depuradores se han concentrado completamente en responder la siguiente pregunta: \textit{¿Qué información podemos entregar a los programadores mientras el programa se está ejecutando?}.  Aunque esto no es del todo errado, no es la pregunta correcta.  La pregunta que debieran tener que responder es: \textit{¿Qué información ayudaría más al programador?}.
 
-De estudios informales \cite{} se ha revelado que cientos de programadores, aproximadamente el 90\% de ellos, depuran todos sus programas utilizando sólo instrucciones de impresión.
+De estudios informales \cite{odb} se ha revelado que cientos de programadores, aproximadamente el 90\% de ellos, depuran todos sus programas utilizando sólo instrucciones de impresión.
 
 
 			\paragraph{Depuración omnisciente}
@@ -651,13 +688,15 @@ La gran desventaja de esta técnica se relaciona con la gran capacidad de almace
 
 			\subsubsection{Herramientas}
 
-Algunas de las herramientas que existen en el mercada actualmente son:
+Algunas de las herramientas que existen son:
 \begin{itemize}
-	\item EXDAMS
-	\item ODB
-	\item ZSTEP
-	\item TOD
+	\item \textbf{EXDAMS}, un depurador extensible y sistema de monitoreo
+	\item \textbf{ODB}, un depurador omnisciente no escalable para el lenguaje de programación Java 
+	\item \textbf{ZSTEP}, un depurador omnisciente para el lenguaje de programación Lisp
+	\item \textbf{TOD}, un depurador omnisciente escalable para el lenguaje de programación Java
 \end{itemize}
+
+En el capítulo número 5 se individualizarán estas herramientas.
 
 	\section{Lenguajes de Programación}
 
@@ -701,7 +740,7 @@ Naturalmente, un programa que se escribe en un lenguaje de alto nivel también t
 
 Los compiladores son aquellos programas computacionales, cuya función es traducir un programa escrito en un determinado lenguaje a un idioma que la computadora entienda (lenguaje máquina con código binario).
 
-Al usar un lenguaje compilado, el programa desarrollado no se ejecuta mientras existan errores sintácticos, sino hasta que luego de haber compilado el programa, ya no aparecen estos errores en el código
+Al usar un lenguaje compilado, el programa desarrollado no se ejecuta mientras existan errores sintácticos, sino hasta que luego de haber compilado el programa, ya no aparecen estos errores en el código.
 
 				\paragraph{Lenguajes interpretados}
 
@@ -774,13 +813,210 @@ La característica de tipado dinámico se refiere a que no es necesario declarar
 
 No se permite tratar a una variable como si fuera de un tipo distinto al que tiene, es necesario convertir de forma explícita dicha variable al nuevo tipo previamente. Por ejemplo, si se tiene una variable que contiene un texto (variable de tipo cadena o string) no se podrá tratarla como un número (sumar la cadena "9"\ y el número 8). En otros lenguajes el tipo de la variable cambiaría para adaptarse al comportamiento esperado, aunque esto es más propenso a errores.
 
-		\subsection{Python v/s Java}
+		\subsection{Comparativa entre Python y Java}
 
-Java es un lenguaje cuyos tipos se fijan en el momento de compilar. La mayoría de los lenguajes de tipado estático fuerzan esto exigiéndole al programador que declare todas las varibles con sus tipos antes de usarlas. 
+Esta sección muestra similitudes y diferencias entre estos dos lenguajes de programación, evitando principalmente mostrar que uno es mejor que otro, esto debido a que los lenguajes de programación son herramientas, y diferentes herramientas son apropiadas para distintos trabajos.  Como ejemplo podemos ver a un plomero quien sólo tiene en su caja de herramientas un martillo (sin importar el tamaño del martillo), \textit{¿este será capaz de solucionar todos los problemas de las cañerías y alcantarillados?}.  En analogía a este ejemplo podemos ver a una organización de desarrollo de software, que plantea desarrollar todas las soluciones de software con el lenguaje de programación Java, \textit{¿esta organización será capaz de dar solución eficiente a todos los problemas que se le plantean?}.
 
-Existen muchas más diferencias entre estos dos lenguajes pero para el caso de estudio sólo nos interesa mostrar esta diferencia como la principal.
+Java es un lenguaje de tipado estático, cuyos tipos se fijan en el momento de compilar. La mayoría de los lenguajes de tipado estático fuerzan esto exigiéndole al programador que declare todas las varibles con sus tipos antes de usarlas. 
 
-INCLUIR TABLA COMPARATIVA.
+Existen tres principales características que los programadores deben tomar en cuenta, ver Cuadro \ref{comparativa}.
+
+A continuación se muestran ejemplos que comparan el uso entre Java y Python:
+
+El clásico programa que ilustra "Hola, mundo!"\
+
+\begin{itemize}
+	\item Java
+\begin{singlespace}
+\begin{lstlisting}
+public class HelloWorld
+{
+	public static void main (String[] args)
+	{
+		System.out.printlin("Hello, world!");
+	}
+}
+\end{lstlisting}
+	\item Python
+\begin{lstlisting}[style=Python]
+print "Hello, world!"
+\end{lstlisting}
+\end{singlespace}
+\end{itemize}
+
+En el siguiente ejemplo, se inicializa un entero con cero, luego este se convierte a string, luego se verifica si es que este está vacío.  Es importante notar que la declaración, la cual es necesaria en Java pero no en Python.
+
+\begin{itemize}
+	\item Java
+\begin{singlespace}
+\begin{lstlisting}
+int myCounter = 0;
+String myString = String.valueof(myCounter);
+if (MyString.equals("0"))
+...
+//imprimir los enteros del 1 al 9
+for(int i = 1; i < 10; i++){
+	System.out.println(i);
+}
+\end{lstlisting}
+	\item Python
+\begin{lstlisting}[style=Python]
+myCounter = 0
+myString = str(myCounter)
+if myString == 0
+...
+for i in range(1,10):
+	print i
+\end{lstlisting}
+\end{singlespace}
+\end{itemize}
+
+Imagine que su aplicación tiene 15 clases.  (Más precisamente, este tiene 15 clases públicas de nivel superior).
+
+\begin{table}[!h]
+\begin{center}
+\begin{tabular}{| c | c |}
+\hline
+\rowcolor[gray]{0.9}Java & Python\\
+\hline
+\begin{minipage}{7cm}
+\ \newline
+Cada nivel superior de clases públicas debe ser definida en su propio archivo.  Si la aplicación tiene 15 clases, esta tiene 15 archivos.\\
+\end{minipage}&
+\begin{minipage}{7cm}
+\ \newline
+Múltiples clases pueden ser definidas en un archivo.  Si la aplicación tiene 15 clases, la aplicación completa puede ser almacenada en un solo archivo, aunque quizás se desee dividir de forma sensata las clases entre 4, 5, o 6 archivos.\\
+\end{minipage}\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+En una aplicación, el método A llama a B, B llama a C, C llama a D, D llama a E, E llama a F.  Se descubre que F debe lanzar la excepción SpecialException, y este debe ser capturado por A.
+
+\begin{table}[!h]
+\begin{center}
+\begin{tabular}{| c | c |}
+\hline
+\rowcolor[gray]{0.9}Java & Python\\
+\hline
+\begin{minipage}{7cm}
+\ \newline
+Se debe lanzar SpecialException en F, y capturarla en A, y se debe añadir \textit{throws SpecialException} en las firmas de los métodos B, C, D, E y F.\\
+\end{minipage}&
+\begin{minipage}{7cm}
+\ \newline
+Se debe levantar SpecialException en F, y capturarla en A.  Las excepciones serán propagadas hacia arriba automáticamente, y no existe nada más que hacer.\\
+\end{minipage}\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+En una aplicación se tiene una clase \textit{Empleado}.  Cuando una instancia de Empleado es creada, al constructor debe ser pasado uno, dos o tres argumentos.
+
+Si se está programando en Java, esto significa que se tiene que escribir tres constructores, con tres diferentes firmas.  Si se está programando en Python, sólo se escribe un constructor, con valores por defecto para los argumentos opcionales.
+
+\begin{itemize}
+	\item Java
+\begin{singlespace}
+\begin{lstlisting}
+public class Empleado
+{
+	private String Nombre;
+	private int Impuesto;
+	private String estadoCivil;
+	//------constructor #1------
+	public Empleado(String aEmpleado)
+	{
+		this(aEmleado,1);
+	}
+	//------constructor #2------
+	public Empleado(String aEmpleado, int aImpuesto)
+	{
+		this(aEmleado, aImpuesto, "soltero");
+	}
+	//------constructor #3------
+	public Empleado(String aEmpleado, int aImpuesto, String aEstadoCivil)
+	{
+		this.Nombre = aEmpleado;
+		this.Impuesto = aImpuesto;
+		this.estadoCivil = aEstadoCivil;
+	}	
+}
+\end{lstlisting}
+	\item Python
+\begin{lstlisting}[style=Python]
+class Empleado():
+
+	def __init__(self, aNombre, aImpuesto=2, aEstadoCivil="soltero"):
+		self.nombre = aNombre
+		self.impuesto = aImpuesto
+		self.estadoCivil = aEstadoCivil
+\end{lstlisting}
+\end{singlespace}
+\end{itemize}
+
+Para graficar de mejor manera el tipado estático versus el tipado dinámico se muestran los siguientes gráficos:
+
+\begin{figure}[hpb]
+	\centering
+	\includegraphics[scale=0.5]{images/JavaPython/staticTyping.eps}
+	\caption{Tipado estático}
+\end{figure}
+
+\begin{figure}[hpb]
+	\centering
+	\includegraphics[scale=0.5]{images/JavaPython/dynamicTyping.eps}
+	\caption{Tipado dinámico}
+\end{figure}
+
+\begin{table}[!hpb]
+\begin{center}
+\begin{tabular}{| c | c |}
+\hline
+\rowcolor[gray]{0.9}Java & Python\\
+\hline
+\begin{minipage}{7cm}
+\ \newline
+\underline{\textit{Tipado estático}:} En java, todos los nombres de variables (junto con sus tipos), deben ser explícitamente declarados.  El intento de asignar un objeto con un tipo de datos erróneo a un nombre de variable levantará inmediatamente una excepción de tipo. \newline
+Los objetos contenedores Java (Ejemplo: \textit{Vector} y \textit{ArrayList}) esperan objetos del tipo genérico \textit{Object}, pero no puede esperar primitivas como un \textit{int}.  Para almacenar un \textit{int} en un \textit{Vector}, se debe primero convertir el \textit{int} a un \textit{Integer}. Cuando se rescata un objeto desde un contenedor, este no recuerda su tipo, y debe ser explícitamente convertido al tipo deseado.\\
+\end{minipage}&
+\begin{minipage}{7cm}
+\ \newline
+\underline{\textit{Tipado dinámico}:} En Python, nunca de declara nada.  Una instrucción de asignación vincula un nombre con un objeto, y el objeto puede ser de cualquier tipo.  Si un nombre es asignado a otro objeto de un tipo, este pude más tarde ser asignados con un objeto de diferente tipo.  Esto quiere decir que Python es un lenguaje de programación de tipado dinámico.\newline 
+Los objetos contenedores Python (Ejemplo: \textit{listas} y \textit{diccionarios}) pueden esperar objetos de cualquier tipo, incluyendo números y listas. Cuando se recupera un objeto desde un contenedor, este recuerda su tipo, entonces la conversión no es requerida.\\
+\ \newline
+\end{minipage}\\
+\hline
+\begin{minipage}{7cm}
+\ \newline
+\underline{\textit{Prolijo}:}
+Abundante en palabras; utilizando o conteniendo muchas palabras que son necesarias.\\
+\end{minipage}&
+\begin{minipage}{7cm}
+\ \newline
+\underline{\textit{Conciso}:}
+Expresando mucho en pocas palabras.  Esto implica brevedad, consiguiendo eliminar cosas superfluas.\\
+\end{minipage}\\
+\hline
+\begin{minipage}{7cm}
+\ \newline
+\underline{\textit{No es compacto}}\\
+\end{minipage}&
+\begin{minipage}{7cm}
+\ \newline
+\underline{\textit{Compacto}:}
+En The new hacker's Dictionary \cite{EricRaymond} entrega la siguiente información de compacto:
+Compacto adj. de diseño, describe la propiedad valuable que este puede ser retenido en la cabeza.  Esto significa que el objeto fue creado desde el diseño para ser utilizado con mucha facilidad y pocos errores.\\
+\end{minipage}\\
+\hline
+\end{tabular}
+\caption{Comparativa entre lenguajes Java y Python}
+\label{comparativa}
+\end{center}
+\end{table}
+
 
 \chapter{Implementación de depuradores omniscientes}
 
@@ -795,7 +1031,7 @@ En esta sección se considera EXDAMS - Extendable Debugging And Monitoring Syste
 
 Con la llegada de los lenguajes algebraicos de alto nivel, la industria de la computación esperaba ser aliviada de los detalles de programación requeridos en el nivel de los lenguajes ensamblador.  Esta expectativa ha sido en gran parte cumplida y muchos sistemas son ahora construídos en lenguajes de alto nivel.
 
-Sin embargo, la habilidad de depurar programas tiene avances que son pequeños en relación al incremento en el uso de estos lenguajes de alto nivel.  Como Evans and Darlay \cite{} indican:
+Sin embargo, la habilidad de depurar programas tiene avances que son pequeños en relación al incremento en el uso de estos lenguajes de alto nivel.  Como Evans and Darlay \cite{EvansDarlay} indican:
 \textit{"Nosotros encontramos que, hablando en términos generales, un análisis cercano de casi todas las principales técnicas de depuración de los lenguajes en ensamblador, existe al menos un sistema de depuración perteneciente a algún lenguaje de alto nivel.  Sin embargo, las facilidades de la depuración en linea para los lenguajes de alto nivel son en general menos bien desarrolladas y menos ampliamente usadas (relativo al uso de estos lenguajes) que sus contrapartes para lenguajes en ensamblador"}.
 
 En general, los sistemas construidos son meramente copias de los depuradores en línea de los lenguajes en ensamblador, más que diseños de facilidades totalmente nuevas para los lenguajes de alto nivel.  Ellos no han creado ni formatos gráficos en los cuales se presente información acerca de la depuración, no han entregado una manera rasonable con la cual los usuarios puedan especificar el proceso requerido en cualquier depurador de información disponible.
@@ -853,13 +1089,48 @@ Las características más importantes, desde el punto de vista del usuario son:
 
 			\paragraph[Análisis de flujo]{Análisis de flujo invertido}
 
-Mediante la llamada de \textit{FLOWBACK FOR}(instrucción reservada de EXDAMS) y especificando un valor en particular, el usuario solicitará a EXDAMS analizar ¿Cómo la información fluyó a través de su programa para producir el valor especificado?.  Este análisis es presentado en la forma de un árbol invertido, con el nodo de más abajo correspondiente al valor del cual el análisis inverso fue solicitado.  Cada nodo consiste en una instrucción de asignación a nivel de código de lenguaje que produjo el valor, el valor mismo, y conectado con los nodos del siguiente nivel.  Estos nodos corresponden a valores no constantes dentro de la instrucción de asignación mostrada que está conectada con esos nodos.  Esos nodos tienen la misma forma como el original y están conectados para todos los valores no constantes utilizados en una instrucción de asignación en particular produciendo su valor.  De esta manera, la siguiente figura muestra en análisis de flujo invertido para un valor particular de A. 
+Mediante la llamada de \textit{FLOWBACK FOR} (instrucción reservada de EXDAMS) y especificando un valor en particular, el usuario solicitará a EXDAMS analizar \textit{¿Cómo la información fluyó a través de su programa para producir el valor especificado?}.  Este análisis es presentado en la forma de un árbol invertido, con el nodo de más abajo correspondiente al valor del cual el análisis inverso fue solicitado.  Cada nodo consiste en una instrucción de asignación a nivel de código de lenguaje que produjo el valor, el valor mismo, y conectado con los nodos del siguiente nivel.  Estos nodos corresponden a valores no constantes dentro de la instrucción de asignación mostrada que está conectada con esos nodos.  Esos nodos tienen la misma forma como el original y están conectados para todos los valores no constantes utilizados en una instrucción de asignación en particular produciendo su valor.  De esta manera, la siguiente figura muestra en análisis de flujo invertido para un valor particular de $A$. 
 
-Esta figura muestra que la instrucción de asignación $A=B+C-10;$ produjo un valor específico de A, y este valor fue 105.  Los valores de B y C usado en la asignación de A fue 8 y 107, respectivamente, y fueron producidas mediante las instrucciones de asignación $B=R-1;$ y $C=A+E;$ respectivamente.  Cada uno de los otros nodos se explican de la misma manera.
+Esta figura muestra que la instrucción de asignación $A=B+C-10;$ produjo un valor específico de $A$, y este valor fue $105$.  Los valores de $B$ y $C$ usado en la asignación de $A$ fue $8$ y $107$, respectivamente, y fueron producidas mediante las instrucciones de asignación $B=R-1;$ y $C=A+E;$ respectivamente.  Cada uno de los otros nodos se explican de la misma manera.
+
+A continuación se muestra un ejemplo de flujo invertido:
+\begin{footnotesize}
+\begin{center}
+\psframebox[linearc=0.5cm,cornersize=absolute] {
+	\psset{arrows=->}\pstree [treemode=U, nodesep=4pt]
+		{\Toval[fillstyle=solid,fillcolor=lightgray] {$A = B + C - 10 \rightarrow 105$} }
+		{
+			\pstree
+				{\Toval{$B = R -1 \rightarrow 8$}}
+				{
+					\pstree
+						{\Toval{$R = D - 5 + S \rightarrow 9$}}
+						{
+							\Tcircle{$D$}
+							\Tcircle{$S$}
+						}
+				}
+			\pstree
+				{\Toval{$C = A + E \rightarrow 107$} }
+				{
+					\Toval{$A = 100 \rightarrow 100$}
+					\pstree
+						{\Toval{$E = D\cdot ({R\over K}) \rightarrow 7$}}
+						{
+							\Tcircle{$D$}
+							\Tcircle{$R$}
+							\Tcircle{$K$}
+						}
+				}
+		}
+	}
+\end{center}
+\end{footnotesize}
+
 
 			\subsubsection{Arquitectura}
 
-EXDAMS es un sistema que cuenta de cuatro fases.  Estas fases son análisis del programa, compilación, recolección de historia y depuración en tiempo de ejecución, con navegación a través de la historia del programa.
+EXDAMS es un sistema que cuenta de cuatro fases.  Estas fases son: análisis del programa, compilación, recolección de historia y depuración en tiempo de ejecución, con navegación a través de la historia del programa.
 
 				\paragraph{Análisis del programa}
 
@@ -867,7 +1138,7 @@ La primera fase analiza el programa fuente del usuario como efectúa las cuatro 
 
 En general, la historia contiene toda la información dinámica necesaria para actualizar en tiempo de ejecución cuando se vaya en las direcciones de atrás o adelante, mientras el modelo contiene todo lo necesario sobre la información estática.
 
-El modelo contiene la información estática de control y la información variable de alteración del programa del usuario.  La información de control consiste en la estructura del programa acerca de CALL, GOTO, IF-THEN-ELSE y DO-END, mientras que la información variable de alteración consiste en los nombres de las variables sobre el lado izquierdo los cuales son afectadas por instrucciones de asignación y las cuales a la vez pueden ser alteradas por instrucciones de entrada.
+El modelo contiene la información estática de control y la información variable de alteración del programa del usuario.  La información de control consiste en la estructura del programa acerca de \textit{CALL}, \textit{GOTO}, \textit{IF-THEN-ELSE} y \textit{DO-END}, mientras que la información variable de alteración consiste en los nombres de las variables sobre el lado izquierdo los cuales son afectadas por instrucciones de asignación y las cuales a la vez pueden ser alteradas por instrucciones de entrada.
 
 Las instrucciones de depuración añadidas al programa pasan la información relevante de tiempo de ejecución hacia  la recolección de historia en tiempo de ejecución.
 
@@ -896,23 +1167,30 @@ ODB es una implementación Java la cual recolecta información mediante la instr
 
 Para un depurador gráfico como este, existen dos temas de vital importancia:
 \begin{enumerate}
-	\item Presentación de la información; ¿Cómo el programador puede obtener desde el depurador, el estado del programa que le interese?
-	\item Navegación; ¿Cómo el programador reconoce el estado?
+	\item Presentación de la información; \textit{¿Cómo el programador puede obtener desde el depurador, el estado del programa que le interese?}
+	\item Navegación; \textit{¿Cómo el programador reconoce el estado?}
 \end{enumerate} 
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.5]{images/ODB/main.eps}
+	\caption{Ventana principal de depuración}
+	\label{mainWindow}
+\end{figure}
 
 			\subsubsection{La naturaleza de los bug bajo ODB}
 
-ODB divide a los bug en dos dimensiones:  ¿Todos los eventos registrados para el bug caben en memoria? y ¿El bug produce una información errónea o este falla al producir una información correcta?
+ODB divide a los bug en dos dimensiones:  \textit{¿Todos los eventos registrados para el bug caben en memoria?} y \textit{¿El bug produce una información errónea o este falla al producir una información correcta?}.
 
 				\paragraph{La serpiente en el pasto}
 
 Si el programa imprime \textit{la respuesta 41} en vez de \textit{42}, entonces se tiene un manejador sobre el bug.  Se observa la serpiente en el pasto y se puede agarrar su cola.  Ahora si el programa falla al producir la respuesta correcta, entonces no se tiene un manejador directo del bug, esta es la serpiente en el pasto que no podemos ver.
 
-Para programas en los cuales todos sus eventos son registrados en memoria y en los cuales se pueda ver la serpiente en el pasto, entonces ODB es absolutamente maravilloso.  Es posible comenzar sobre la salida errónea e ir hacia atrás, encontrando el valor inapropiado en cada punto, y luego seguir a este valor hasta su causa. (Si se tiene la cola de una serpiente y se tira lo suficientemente fuerte, se obtendrá su cabeza.)  No es inusual iniciar el depurador, seleccionando la salida errónea, y navegar por el código fuente en 60 segundos, con absoluta confianza.
+Para programas en los cuales todos sus eventos son registrados en memoria y en los cuales se pueda ver la serpiente en el pasto, entonces ODB es absolutamente efectivo.  Es posible comenzar sobre la salida errónea e ir hacia atrás, encontrando el valor inapropiado en cada punto, y luego seguir a este valor hasta su causa. (Si se tiene la cola de una serpiente y se tira lo suficientemente fuerte, se obtendrá su cabeza.). Es común iniciar el depurador, seleccionando la salida errónea, y navegar por todo el código fuente en 60 segundos, con absoluta confianza.
 
 Los depuradores basados en punto de quiebre sufren del problema \textit{La lagartija en el pasto}.  Incluso cuando ellos pueden ver la lagartija y tirar de su cola, la lagartija quebrará su cola y se irá.  Luego ellos vuelven a otro problema \textit{La lagartija perdida en el pasto}.
 
-Con ODB, existe una versión de este problema.  Cuando la producción incorrecta es causada por la falla de un determinado objeto cuando esta siendo asignado, entonces se tiene que responder la pregunta \textit{¿Quién pudo haber echo esto?}, la cual es una pregunta mucho más difícil que \textit{¿Quién hizo esto?} (Esta es la lagartija sin pata en el problema del pasto).  Nosotros pensamos que tenemos una serpiente, pero después de tirar su cola por un momento, esta la quiebra de cualquier forma.
+Con ODB, existe una versión de este problema.  Cuando la producción incorrecta es causada por la falla de un determinado objeto cuando esta siendo asignado, entonces se tiene que responder la pregunta \textit{¿Quién pudo haber echo esto?}, la cual es una pregunta mucho más difícil que \textit{¿Quién hizo esto?} (Esta es la lagartija sin pata en el problema del pasto).  Se piensa que tenemos una serpiente, pero después de tirar su cola por un momento, esta la quiebra de cualquier forma.
 
 Para problemas relativamente pequeños (digamos 10.000 eventos), esto es fácil y basta con sólo examinar por completo las huellas de asignación de los métodos.  Para problemas más grandes, la \textit{serpiente perdida en el pasto}, se tornan más problemáticos.  Se tiene una gran cantidad de información acerca de la asignación y una idea no muy cierta de lo que estamos buscando.
 
@@ -939,7 +1217,7 @@ Es común que para un programa exista un gran porcentaje de código fuente segur
 
 					\subparagraph{Comenzar/Detener registro}
 
-Si el programador sospecha que determinado evento conocido siempre ocurre antes del bug (ej.: Cuando presiona un botón y el programa se cae), luego el registro puede ser habilitado en ese punto y apagado después del bug.  ODB permite control manual (Existe un botón inicio/fin registro).  Este además permite control automático de la manera que se irá examinando un gran conjunto de eventos por un patrón particular, el cual Comenzará/Detendrá el registro.  Una vez más, esto es precisamente el problema de los analizadores de eventos para lo cual ODB utiliza la función \textit{get()} de Ducassé.
+Si el programador sospecha que determinado evento conocido siempre ocurre antes del bug (Ejemplo: Cuando presiona un botón y el programa se cae), luego el registro puede ser habilitado en ese punto y apagado después del bug.  ODB permite control manual (Existe un botón inicio/fin registro).  Este además permite control automático de la manera que se irá examinando un gran conjunto de eventos por un patrón particular, el cual Comenzará/Detendrá el registro.  Una vez más, esto es precisamente el problema de los analizadores de eventos para lo cual ODB utiliza la función \textit{get()} de Ducassé.
 
 				\paragraph{Implementación}
 
@@ -955,12 +1233,12 @@ Una inserción típica luce de esta forma:
 
 \begin{singlespace}
 \begin{verbatim}
-289 aload 4											// nuevo valor
-291 astore_1										// variable local ie
+289 aload 4   // nuevo valor
+291 astore_1 // variable local ie
 292 ldc_w #404 <String "Micro4:Micro4.java:64">
 295 ldc_w #416 <String "ie">
-298 aload_1											// ie
-299 aload_2											// Huella padre
+298 aload_1 // ie
+299 aload_2 // Huella padre
 300 invokestatic #14 <change(String, String, Object, Trace)>
 \end{verbatim}
 \end{singlespace}
@@ -1056,7 +1334,7 @@ La racionalidad para almacenar los eventos en una base de datos preferentemente 
 
 De la figura debemos destacar que la cabecera de las filas son tipos de eventos y la cabecera de las columnas son posibles argumentos (ts: tiempo, tid: identificador del hilo, depth: llamada a la pila en profundidad, pev: puntero al padre del evento, LOC: localidad del código fuente, fid: identificador de celda, bid: identificador del método, vid: identificador de variable local, idx: índice, val: valor, ret: valor de retorno, tgt: objetivo, vxc: excepción; args: argumentos).
 
-Durante la ejecución, la aplicación objetivo emite eventos que son enviados al núcleo del depurador, donde ellos son grabados e indexados en una base de datos de eventos.  El tema de los eventos que son emitidos es discutido posteriormente.  La base de datos de los eventos contiene las particularidades del curso del evento y el conjunto restrictivo de posibles consultas que entrega, entre el alto rendimiento de grabación y el buen desempeño de las consultas (ver en sección 4 y 5).  El núcleo del depurador contiene otra base de datos, la base de datos estructural, que contiene información estática sobre la aplicación objetivo.  En particular realiza un seguimiento de identificadores de 32 bits que son asignados a elementos estructurales del programa objetivo(por ejemplo: clases, métodos y campos(celdas)).  Las consultas son efectuadas por el usuario basándose entre el evento y la base de datos estructural.
+Durante la ejecución, la aplicación objetivo emite eventos que son enviados al núcleo del depurador, donde ellos son grabados e indexados en una base de datos de eventos.  El tema de los eventos que son emitidos es discutido posteriormente.  La base de datos de los eventos contiene las particularidades del curso del evento y el conjunto restrictivo de posibles consultas que entrega, entre el alto rendimiento de grabación y el buen desempeño de las consultas.  El núcleo del depurador contiene otra base de datos, la base de datos estructural, que contiene información estática sobre la aplicación objetivo.  En particular realiza un seguimiento de identificadores de 32 bits que son asignados a elementos estructurales del programa objetivo (por ejemplo: clases, métodos y campos(celdas)).  Las consultas son efectuadas por el usuario basándose entre el evento y la base de datos estructural.
 
 			\subsubsection{Representación y emisión de eventos}
 
@@ -1064,7 +1342,7 @@ Introducimos ahora a la representación de los eventos y las huellas de estos, a
 
 \begin{itemize}
 
-	\item \textbf{Modelo de evento y huella}: Un evento es una estructura caracterizada por un número de atributos elegidos entre el conjunto $A={a0,...,ak}$. Observemos $e.aj$ el valor del atributo $aj$ del evento $e$.  Para cada $j$ perteneciente $[0...k]$, dejamos $Dj$ como el dominio de $aj$, por ejemplo el conjunto de todos los valores distintos que pueden ser tomados por $aj$, para cualquier evento dentro de la huella.  Una huella del evento $T=<e_{1},...,e_{n}>$ es una secuencia ordenada de $n$ eventos heterogéneos.
+	\item \textbf{Modelo de evento y huella}: Un evento es una estructura caracterizada por un número de atributos elegidos entre el conjunto $A={a_0,\dots ,a_k}$. Observemos $e.a_j$ el valor del atributo $a_j$ del evento $e$.  Para cada $j$ perteneciente $[0\dots k]$, dejamos $Dj$ como el dominio de $aj$, por ejemplo el conjunto de todos los valores distintos que pueden ser tomados por $a_j$, para cualquier evento dentro de la huella.  Una huella del evento $T=<e_{1},\dots ,e_{n}>$ es una secuencia ordenada de $n$ eventos heterogéneos.
 
 El atributo $a_{0}$ corresponde a la marca de tiempo del evento; este es caracterizado por el hecho que (a) todos los eventos tienen un valor para $a_{0}$, (b) allí existe un completo orden sobre $D_{0}$ y (c) los eventos en $T$ están ordenados por sus valores de $a_{0}$. La figura \ref{EventsAttributes} muestra cuales eventos concretamente son capturados y cuáles son sus atributos.
 
@@ -2926,7 +3204,7 @@ int & int & int & int & int & int\\
 \caption{Registro del objeto probe} 
 \end{center}
 \end{table}
-
+\newpage
 				\paragraph{Objeto}
 
 Se describe el registro del objeto objeto: \\
@@ -2943,8 +3221,6 @@ int & int & int & int & double\\
 \caption{Registro del objeto objeto} 
 \end{center}
 \end{table}
-
-
 				\paragraph{Excepción}
 
 Se describe el registro del objeto excepción: \\
@@ -2958,11 +3234,11 @@ Se describe el registro del objeto excepción: \\
 int & int & int & value or valueId\footnotemark[1]\\
 \hline
 \end{tabular}
-\caption{Registro del objeto objeto} 
+\caption{Registro del objeto excepción} 
 \end{center}
 \end{table}
 
-\footnotetext[1]{Si el objeto es un entero o un booleano se pasa por valor, de caso contrario se pasa el id del objeto registrado anteriormente}
+%\footnotetext[1]{Si el objeto es un entero o un booleano se pasa por valor, de caso contrario se pasa el id del objeto registrado anteriormente}
 
 
 			\subsubsection{Llamada de objetos}
@@ -3242,6 +3518,14 @@ IBM Systems Journal, 16(4):363, 1977.
 
 \bibitem[23]{eclipse} Jim des Rivi`eres and John Wiegand. Eclipse: A platform for integrating development tools.\\
 IBM Systems Journal, 43(2):371–383, 2004.
+
+\bibitem[24]{EvansDarlay} Evans, Thomas G., and D. Lucille Darlay, "On-Line Debugging Techniques: A survey"\\
+AFIPS Conference Proceedings (1966 FJCC), Vol. 29, Spartan Books, Washington, D.C., 1966, pp.37-50
+
+
+\bibitem[25]{EricRaymond} The New Hacker's Dictionary,  Third Edition. Eric. S.Raymond. \\
+The MIT Press. 1996 (1993). ISBN: 0262680920. Inglés.
+
 
 \end{thebibliography}
 
