@@ -19,6 +19,7 @@
 		<property name="tod-agent.dir" value="${basedir}/../TOD-agent"/>
 		<property name="tod-dbgrid.dir" value="${basedir}/../TOD-dbgrid"/>
 		<property name="tod-evdb1.dir" value="${basedir}/../TOD-evdb1"/>
+		<property name="tod-evdbng.dir" value="${basedir}/../TOD-evdbng"/>
 		<property name="zz.utils.dir" value="${basedir}/../zz.utils"/>
 		<property name="zz.eclipse.utils.dir" value="${basedir}/../zz.eclipse.utils"/>
 
@@ -82,6 +83,7 @@
 			<fileset dir="${tod-agent.dir}/build" includes="tod-agent.jar"/>
 			<fileset dir="${tod-dbgrid.dir}/build" includes="tod-dbgrid.jar"/>
 			<fileset dir="${tod-evdb1.dir}/build" includes="tod-evdb1.jar"/>
+			<fileset dir="${tod-evdbng.dir}/build" includes="tod-evdbng.jar"/>
 			<fileset dir="${tod-agent.dir}" includes="*.so *.dll *.dylib"/>
 		</copy>
 		

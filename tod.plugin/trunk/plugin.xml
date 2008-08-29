@@ -57,6 +57,9 @@
       <library name="../TOD-evdb1/bin">
          <export name="*"/>
       </library>
+      <library name="../TOD-evdbng/bin">
+         <export name="*"/>
+      </library>
       <library name="../tod-fx/bin">
          <export name="*"/>
       </library>
@@ -74,6 +77,9 @@
          <export name="*"/>
       </library>
       <library name="lib/tod-evdb1.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/tod-evdbng.jar">
          <export name="*"/>
       </library>
       <library name="lib/zz.utils.jar">
