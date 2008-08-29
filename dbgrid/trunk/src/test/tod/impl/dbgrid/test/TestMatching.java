@@ -20,6 +20,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -92,40 +95,44 @@ public class TestMatching
 		// Fill event database
 		ILogCollector theCollector = MASTER._getCollector();
 		theCollector.thread(0, 0, "test");
-		theCollector.methodCall(0, 0, (short) 0, 1, null, 0, false, 0, 0, null, new Object[] {new ObjectId(5), new ObjectId(5)});
-		theCollector.methodCall(0, 0, (short) 0, 2, null, 0, false, 1, 1, null, new Object[] {});
-		theCollector.methodCall(0, 0, (short) 0, 3, null, 0, false, 0, 0, null, new Object[] {new ObjectId(5), new ObjectId(5)});
-		theCollector.methodCall(0, 0, (short) 0, 4, null, 0, false, 0, 0, null, new Object[] {new ObjectId(5), new ObjectId(5)});
+		
+		ObjectId o1 = new ObjectId(1);
+		ObjectId o5 = new ObjectId(5);
+		
+		theCollector.methodCall(0, 0, (short) 0, 1, null, 0, false, 0, 0, null, new Object[] {o5, o5});
+		theCollector.methodCall(0, 0, (short) 0, 2, null, 0, false, 0, 0, null, new Object[] {});
+		theCollector.methodCall(0, 0, (short) 0, 3, null, 0, false, 1, 1, null, new Object[] {o1});
+		theCollector.methodCall(0, 0, (short) 0, 4, null, 0, false, 0, 0, o1, new Object[] {o5, o1, o1, o1, o5, o1});
 		theCollector.methodCall(0, 0, (short) 0, 5, null, 0, false, 1, 1, null, new Object[] {});
-		theCollector.methodCall(0, 0, (short) 0, 6, null, 0, false, 1, 1, null, new Object[] {new ObjectId(5), new ObjectId(5)});
+		theCollector.methodCall(0, 0, (short) 0, 6, null, 0, false, 0, 0, null, new Object[] {o5, o1, o5});
+		theCollector.methodCall(0, 0, (short) 0, 7, null, 0, false, 0, 0, null, new Object[] {o5, o5, o1});
 		theCollector.flush();
 		
 		GridLogBrowser theLogBrowser = MASTER._getLocalLogBrowser();
 		IEventFilter theFilter = theLogBrowser.createUnionFilter(
-				theLogBrowser.createObjectFilter(new ObjectId(5)),
+				theLogBrowser.createObjectFilter(o5),
 				theLogBrowser.createBehaviorCallFilter(BEHAVIOR1));
 		
 		IEventBrowser theEventBrowser = theLogBrowser.createBrowser(theFilter);
 		theEventBrowser.setNextTimestamp(0);
 		
-		ILogEvent[] theEvents = {
-				theEventBrowser.next(),
-				theEventBrowser.next(),
-				theEventBrowser.next(),
-				theEventBrowser.next(),
-				theEventBrowser.previous(),
-				theEventBrowser.previous(),
-				theEventBrowser.next(),
-				theEventBrowser.previous(),
-		};
+		List<ILogEvent> theEvents = new ArrayList<ILogEvent>();
+		theEvents.add(theEventBrowser.next());
+		theEvents.add(theEventBrowser.next());
+		theEvents.add(theEventBrowser.next());
+		theEvents.add(theEventBrowser.next());
+		theEvents.add(theEventBrowser.previous());
+		theEvents.add(theEventBrowser.previous());
+		theEvents.add(theEventBrowser.previous());
+		theEvents.add(theEventBrowser.next());
 		
-		long[] theExpectedTimesamps = {1, 2, 3, 4, 4, 3, 3, 3};
+		long[] theExpectedTimesamps = {1, 3, 4, 5, 5, 4, 3, 3};
 		
-		Assert.assertEquals(theEvents.length, theExpectedTimesamps.length);
+		Assert.assertEquals(theEvents.size(), theExpectedTimesamps.length);
 		
-		for(int i=0;i<theEvents.length;i++)
+		for(int i=0;i<theEvents.size();i++)
 		{
-			Assert.assertEquals(theExpectedTimesamps[i], theEvents[i].getTimestamp());
+			Assert.assertEquals(""+i, theExpectedTimesamps[i], theEvents.get(i).getTimestamp());
 		}
 		
 	}
