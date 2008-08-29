@@ -25,6 +25,8 @@ import java.util.List;
 
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.merge.MergeIterator.Nav;
+import tod.tools.monitoring.Monitored;
+import tod.tools.monitoring.TaskMonitoring;
 import zz.utils.ITask;
 
 /**
@@ -113,12 +115,15 @@ public abstract class ConjunctionIterator<T> extends MergeIterator<T>
 			}
 		}
 		
+		@Monitored
 		public T fetch()
 		{
 			T theResult = null;
 			boolean theMatch;
 			do
 			{
+				TaskMonitoring.work();
+				
 				theMatch = true;
 				boolean theSameEvent = true;
 				boolean theSameKey = true;

@@ -21,6 +21,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.merge;
 
 import tod.impl.database.IBidiIterator;
+import tod.tools.monitoring.Monitored;
 import zz.utils.ITask;
 
 /**
@@ -36,6 +37,7 @@ public abstract class DisjunctionIterator<T> extends MergeIterator<T>
 	
 	
 	@Override
+	@Monitored
 	protected T fetchNext()
 	{
 		T[] theBuffer = (T[]) new Object[getHeadCount()];
