@@ -17,6 +17,7 @@
         <property name="zz.utils.dir" value="${basedir}/../zz.utils"/>
         <property name="tod-agent.dir" value="${basedir}/../TOD-agent"/>
         <property name="tod-evdb1.dir" value="${basedir}/../TOD-evdb1"/>
+        <property name="tod-evdbng.dir" value="${basedir}/../TOD-evdbng"/>
         <property name="tod.dir" value="${basedir}/../TOD"/>
     	
         <path id="main.classpath">
@@ -90,6 +91,7 @@
 			
 			<zipfileset dir="${tod-agent.dir}/build" prefix="tod-${version}/lib" includes="tod-agent.jar"/>
 			<zipfileset dir="${tod-evdb1.dir}/build" prefix="tod-${version}/lib" includes="tod-evdb1.jar"/>
+			<zipfileset dir="${tod-evdbng.dir}/build" prefix="tod-${version}/lib" includes="tod-evdbng.jar"/>
 			<zipfileset dir="${tod.dir}/build" prefix="tod-${version}/lib" includes="tod-debugger.jar"/>
 			<zipfileset dir="${zz.utils.dir}/build" prefix="tod-${version}/lib" includes="zz.utils.jar"/>
 		</zip>
@@ -104,6 +106,7 @@
 			
 			<tarfileset dir="${tod-agent.dir}/build" prefix="tod-${version}/lib" includes="tod-agent.jar"/>
 			<tarfileset dir="${tod-evdb1.dir}/build" prefix="tod-${version}/lib" includes="tod-evdb1.jar"/>
+			<tarfileset dir="${tod-evdbng.dir}/build" prefix="tod-${version}/lib" includes="tod-evdbng.jar"/>
 			<tarfileset dir="${tod.dir}/build" prefix="tod-${version}/lib" includes="tod-debugger.jar"/>
 			<tarfileset dir="${zz.utils.dir}/build" prefix="tod-${version}/lib" includes="zz.utils.jar"/>
 		</tar>
