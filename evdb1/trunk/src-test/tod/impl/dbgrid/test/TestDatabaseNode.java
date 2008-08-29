@@ -33,12 +33,12 @@ import tod.impl.dbgrid.EventGenerator1;
 import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.Fixtures1;
 import tod.impl.dbgrid.db.EventDatabase;
-import tod.impl.dbgrid.db.EventDatabase1;
 import tod.impl.dbgrid.messages.MessageType;
-import tod.impl.dbgrid.queries.CompoundCondition;
-import tod.impl.dbgrid.queries.Disjunction;
-import tod.impl.dbgrid.queries.EventCondition;
-import tod.impl.dbgrid.queries.TypeCondition;
+import tod.impl.evdb1.db.EventDatabase1;
+import tod.impl.evdb1.queries.CompoundCondition;
+import tod.impl.evdb1.queries.Disjunction;
+import tod.impl.evdb1.queries.EventCondition;
+import tod.impl.evdb1.queries.TypeCondition;
 
 public class TestDatabaseNode
 {

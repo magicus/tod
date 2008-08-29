@@ -28,9 +28,9 @@ import tod.BenchBase;
 import tod.BenchBase.BenchResults;
 import tod.core.database.TimestampGenerator;
 import tod.impl.dbgrid.Fixtures1;
-import tod.impl.dbgrid.db.HierarchicalIndex;
-import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
 import tod.impl.dbgrid.test.TestHierarchicalIndex;
+import tod.impl.evdb1.db.HierarchicalIndex;
+import tod.impl.evdb1.db.StdIndexSet.StdTuple;
 
 public class BenchIndexes
 {

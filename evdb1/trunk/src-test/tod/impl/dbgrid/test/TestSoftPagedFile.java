@@ -28,11 +28,11 @@ import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import tod.impl.dbgrid.db.file.ExponentialPageBank;
-import tod.impl.dbgrid.db.file.HardPagedFile;
-import tod.impl.dbgrid.db.file.SoftPagedFile;
-import tod.impl.dbgrid.db.file.SoftPagedFile.SoftPage;
-import tod.impl.dbgrid.db.file.SoftPagedFile.SoftPageBitStruct;
+import tod.impl.evdb1.db.file.ExponentialPageBank;
+import tod.impl.evdb1.db.file.HardPagedFile;
+import tod.impl.evdb1.db.file.SoftPagedFile;
+import tod.impl.evdb1.db.file.SoftPagedFile.SoftPage;
+import tod.impl.evdb1.db.file.SoftPagedFile.SoftPageBitStruct;
 
 public class TestSoftPagedFile
 {

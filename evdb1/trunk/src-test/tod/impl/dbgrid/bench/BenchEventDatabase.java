@@ -33,9 +33,9 @@ import tod.impl.dbgrid.ConditionGenerator1;
 import tod.impl.dbgrid.EventGenerator1;
 import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.db.EventDatabase;
-import tod.impl.dbgrid.db.EventDatabase1;
 import tod.impl.dbgrid.messages.GridEvent;
-import tod.impl.dbgrid.queries.EventCondition;
+import tod.impl.evdb1.db.EventDatabase1;
+import tod.impl.evdb1.queries.EventCondition;
 import zz.utils.monitoring.Monitor;
 
 public class BenchEventDatabase

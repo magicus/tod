@@ -29,8 +29,8 @@ import org.junit.Test;
 import tod.BenchBase;
 import tod.BenchBase.BenchResults;
 import tod.impl.dbgrid.EventGenerator1;
-import tod.impl.dbgrid.messages.BitGridEvent;
 import tod.impl.dbgrid.messages.GridEvent;
+import tod.impl.evdb1.messages.BitGridEvent;
 import zz.utils.bit.BitStruct;
 import zz.utils.bit.IntBitStruct;
 

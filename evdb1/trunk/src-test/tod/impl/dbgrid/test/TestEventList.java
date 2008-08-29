@@ -28,9 +28,9 @@ import org.junit.Test;
 
 import tod.impl.dbgrid.EventGenerator1;
 import tod.impl.dbgrid.Fixtures1;
-import tod.impl.dbgrid.db.EventList;
-import tod.impl.dbgrid.messages.BitGridEvent;
 import tod.impl.dbgrid.messages.GridEvent;
+import tod.impl.evdb1.db.EventList;
+import tod.impl.evdb1.messages.BitGridEvent;
 
 public class TestEventList
 {

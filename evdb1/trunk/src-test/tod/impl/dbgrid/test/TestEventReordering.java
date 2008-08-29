@@ -20,14 +20,14 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.test;
 
-import static tod.impl.dbgrid.DebuggerGridConfig1.STRUCTURE_ADVICE_SRC_ID_COUNT;
-import static tod.impl.dbgrid.DebuggerGridConfig1.STRUCTURE_ARRAY_INDEX_COUNT;
-import static tod.impl.dbgrid.DebuggerGridConfig1.STRUCTURE_BEHAVIOR_COUNT;
-import static tod.impl.dbgrid.DebuggerGridConfig1.STRUCTURE_BYTECODE_LOCS_COUNT;
-import static tod.impl.dbgrid.DebuggerGridConfig1.STRUCTURE_DEPTH_RANGE;
-import static tod.impl.dbgrid.DebuggerGridConfig1.STRUCTURE_FIELD_COUNT;
-import static tod.impl.dbgrid.DebuggerGridConfig1.STRUCTURE_OBJECT_COUNT;
-import static tod.impl.dbgrid.DebuggerGridConfig1.STRUCTURE_VAR_COUNT;
+import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_ADVICE_SRC_ID_COUNT;
+import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_ARRAY_INDEX_COUNT;
+import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_BEHAVIOR_COUNT;
+import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_BYTECODE_LOCS_COUNT;
+import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_DEPTH_RANGE;
+import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_FIELD_COUNT;
+import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_OBJECT_COUNT;
+import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_VAR_COUNT;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -45,7 +45,7 @@ import tod.impl.dbgrid.EventGenerator1;
 import tod.impl.dbgrid.db.EventReorderingBuffer;
 import tod.impl.dbgrid.db.EventReorderingBuffer.ReorderingBufferListener;
 import tod.impl.dbgrid.messages.GridEvent;
-import tod.impl.dbgrid.messages.GridFieldWriteEvent;
+import tod.impl.evdb1.messages.GridFieldWriteEvent;
 
 public class TestEventReordering implements ReorderingBufferListener 
 {

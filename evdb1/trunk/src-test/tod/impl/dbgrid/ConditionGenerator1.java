@@ -20,22 +20,23 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
-import static tod.impl.dbgrid.DebuggerGridConfig1.STRUCTURE_OBJECT_COUNT;
+import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_OBJECT_COUNT;
 
 import java.util.Random;
 
-import tod.impl.dbgrid.db.RoleIndexSet;
-import tod.impl.dbgrid.queries.BehaviorCondition;
-import tod.impl.dbgrid.queries.BytecodeLocationCondition;
-import tod.impl.dbgrid.queries.CompoundCondition;
-import tod.impl.dbgrid.queries.Conjunction;
-import tod.impl.dbgrid.queries.DepthCondition;
-import tod.impl.dbgrid.queries.Disjunction;
-import tod.impl.dbgrid.queries.EventCondition;
-import tod.impl.dbgrid.queries.FieldCondition;
-import tod.impl.dbgrid.queries.ThreadCondition;
-import tod.impl.dbgrid.queries.TypeCondition;
-import tod.impl.dbgrid.queries.VariableCondition;
+import tod.impl.evdb1.SplittedConditionHandler;
+import tod.impl.evdb1.db.RoleIndexSet;
+import tod.impl.evdb1.queries.BehaviorCondition;
+import tod.impl.evdb1.queries.BytecodeLocationCondition;
+import tod.impl.evdb1.queries.CompoundCondition;
+import tod.impl.evdb1.queries.Conjunction;
+import tod.impl.evdb1.queries.DepthCondition;
+import tod.impl.evdb1.queries.Disjunction;
+import tod.impl.evdb1.queries.EventCondition;
+import tod.impl.evdb1.queries.FieldCondition;
+import tod.impl.evdb1.queries.ThreadCondition;
+import tod.impl.evdb1.queries.TypeCondition;
+import tod.impl.evdb1.queries.VariableCondition;
 
 /**
  * Randomly generates {@link EventCondition}s.

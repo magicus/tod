@@ -20,26 +20,26 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
-import static tod.impl.dbgrid.DebuggerGridConfig1.STRUCTURE_ADVICE_SRC_ID_COUNT;
-import static tod.impl.dbgrid.DebuggerGridConfig1.STRUCTURE_ARRAY_INDEX_COUNT;
-import static tod.impl.dbgrid.DebuggerGridConfig1.STRUCTURE_BEHAVIOR_COUNT;
-import static tod.impl.dbgrid.DebuggerGridConfig1.STRUCTURE_BYTECODE_LOCS_COUNT;
-import static tod.impl.dbgrid.DebuggerGridConfig1.STRUCTURE_DEPTH_RANGE;
-import static tod.impl.dbgrid.DebuggerGridConfig1.STRUCTURE_FIELD_COUNT;
-import static tod.impl.dbgrid.DebuggerGridConfig1.STRUCTURE_OBJECT_COUNT;
-import static tod.impl.dbgrid.DebuggerGridConfig1.STRUCTURE_THREADS_COUNT;
-import static tod.impl.dbgrid.DebuggerGridConfig1.STRUCTURE_VAR_COUNT;
+import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_ADVICE_SRC_ID_COUNT;
+import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_ARRAY_INDEX_COUNT;
+import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_BEHAVIOR_COUNT;
+import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_BYTECODE_LOCS_COUNT;
+import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_DEPTH_RANGE;
+import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_FIELD_COUNT;
+import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_OBJECT_COUNT;
+import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_THREADS_COUNT;
+import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_VAR_COUNT;
 import tod.core.database.structure.IMutableStructureDatabase;
-import tod.impl.dbgrid.messages.BitGridEvent;
-import tod.impl.dbgrid.messages.GridArrayWriteEvent;
-import tod.impl.dbgrid.messages.GridBehaviorCallEvent;
-import tod.impl.dbgrid.messages.GridBehaviorExitEvent;
-import tod.impl.dbgrid.messages.GridExceptionGeneratedEvent;
-import tod.impl.dbgrid.messages.GridFieldWriteEvent;
-import tod.impl.dbgrid.messages.GridInstanceOfEvent;
-import tod.impl.dbgrid.messages.GridNewArrayEvent;
-import tod.impl.dbgrid.messages.GridVariableWriteEvent;
 import tod.impl.dbgrid.messages.MessageType;
+import tod.impl.evdb1.messages.BitGridEvent;
+import tod.impl.evdb1.messages.GridArrayWriteEvent;
+import tod.impl.evdb1.messages.GridBehaviorCallEvent;
+import tod.impl.evdb1.messages.GridBehaviorExitEvent;
+import tod.impl.evdb1.messages.GridExceptionGeneratedEvent;
+import tod.impl.evdb1.messages.GridFieldWriteEvent;
+import tod.impl.evdb1.messages.GridInstanceOfEvent;
+import tod.impl.evdb1.messages.GridNewArrayEvent;
+import tod.impl.evdb1.messages.GridVariableWriteEvent;
 
 public class EventGenerator1 extends EventGenerator
 {

@@ -29,10 +29,10 @@ import org.junit.runner.JUnitCore;
 import tod.core.database.TimestampGenerator;
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.Fixtures1;
-import tod.impl.dbgrid.db.HierarchicalIndex;
-import tod.impl.dbgrid.db.RoleIndexSet;
-import tod.impl.dbgrid.db.StdIndexSet;
-import tod.impl.dbgrid.db.RoleIndexSet.RoleTuple;
+import tod.impl.evdb1.db.HierarchicalIndex;
+import tod.impl.evdb1.db.RoleIndexSet;
+import tod.impl.evdb1.db.StdIndexSet;
+import tod.impl.evdb1.db.RoleIndexSet.RoleTuple;
 
 public class TestHierarchicalIndex
 {
@@ -80,7 +80,7 @@ public class TestHierarchicalIndex
 				long aTupleCount);
 		
 		/**
-		 * Checks the values of an index filled with {@link Fixtures1#fillIndex(HierarchicalIndex, tod.impl.dbgrid.test.TestHierarchicalIndex.TimestampGenerator, long)}
+		 * Checks the values of an index filled with {@link Fixtures1#fillIndex(HierarchicalIndex, tod.impl.evdb1.test.TestHierarchicalIndex.TimestampGenerator, long)}
 		 */
 		public void checkIndex(
 				HierarchicalIndex<T> aIndex, 
@@ -153,13 +153,13 @@ public class TestHierarchicalIndex
 	private static class StdIndexTester extends IndexTester<StdIndexSet.StdTuple>
 	{
 		@Override
-		public HierarchicalIndex<tod.impl.dbgrid.db.StdIndexSet.StdTuple> createIndex()
+		public HierarchicalIndex<tod.impl.evdb1.db.StdIndexSet.StdTuple> createIndex()
 		{
 			return Fixtures1.createStdIndex();
 		}
 
 		@Override
-		public void fillIndex(HierarchicalIndex<tod.impl.dbgrid.db.StdIndexSet.StdTuple> aIndex, TimestampGenerator aGenerator, long aTupleCount)
+		public void fillIndex(HierarchicalIndex<tod.impl.evdb1.db.StdIndexSet.StdTuple> aIndex, TimestampGenerator aGenerator, long aTupleCount)
 		{
 			Fixtures1.fillStdIndex(aIndex, aGenerator, aTupleCount);
 		}

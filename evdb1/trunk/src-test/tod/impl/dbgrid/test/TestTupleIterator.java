@@ -27,13 +27,13 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 
-import tod.impl.dbgrid.DebuggerGridConfig1;
-import tod.impl.dbgrid.db.StdIndexSet.StdTuple;
-import tod.impl.dbgrid.db.StdIndexSet.StdTupleCodec;
-import tod.impl.dbgrid.db.file.HardPagedFile;
-import tod.impl.dbgrid.db.file.TupleIterator;
-import tod.impl.dbgrid.db.file.TupleWriter;
-import tod.impl.dbgrid.db.file.HardPagedFile.Page;
+import tod.impl.evdb1.DebuggerGridConfig1;
+import tod.impl.evdb1.db.StdIndexSet.StdTuple;
+import tod.impl.evdb1.db.StdIndexSet.StdTupleCodec;
+import tod.impl.evdb1.db.file.HardPagedFile;
+import tod.impl.evdb1.db.file.TupleIterator;
+import tod.impl.evdb1.db.file.TupleWriter;
+import tod.impl.evdb1.db.file.HardPagedFile.Page;
 
 public class TestTupleIterator
 {

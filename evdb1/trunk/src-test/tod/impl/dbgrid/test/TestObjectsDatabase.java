@@ -28,7 +28,7 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import tod.impl.dbgrid.db.ObjectsDatabase;
-import tod.impl.dbgrid.db.ObjectsDatabase1;
+import tod.impl.evdb1.db.ObjectsDatabase1;
 
 public class TestObjectsDatabase
 {
