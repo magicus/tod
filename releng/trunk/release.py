@@ -16,6 +16,7 @@ def release(version):
 	taMod = useSVN('TOD-agent', 'http://pleiad.dcc.uchile.cl/svn/tod/agent/trunk/')
 	toddbgridMod = useSVN('TOD-dbgrid', 'http://pleiad.dcc.uchile.cl/svn/tod/dbgrid/trunk/')
 	todevdb1Mod = useSVN('TOD-evdb1', 'http://pleiad.dcc.uchile.cl/svn/tod/evdb1/trunk/')
+	todevdbngMod = useSVN('TOD-evdbng', 'http://pleiad.dcc.uchile.cl/svn/tod/evdbng/trunk/')
 
 	pytodDbMod = useSVN('TOD-pytod-db', 'http://pleiad.dcc.uchile.cl/svn/tod/pytod/trunk/java-proyect/')
 	pytodCoreMod = useSVN('python-project', 'http://pleiad.dcc.uchile.cl/svn/tod/pytod/trunk/python-project/')
@@ -59,6 +60,7 @@ def release(version):
 	antBuild('TOD-agent', 'build.xml', 'clean')
 	antBuild('TOD-dbgrid', 'build.xml', 'clean')
 	antBuild('TOD-evdb1', 'build.xml', 'clean')
+	antBuild('TOD-evdbng', 'build.xml', 'clean')
 	antBuild('TOD-pytod-db', 'build.xml', 'clean')
 	antBuild('zz.utils', 'build.xml', 'clean')
 	antBuild('zz.eclipse.utils', 'build-plugin.xml', 'clean')
@@ -77,6 +79,7 @@ def release(version):
 	antBuild('TOD', 'build.xml', 'jar')
 	antBuild('TOD-dbgrid', 'build.xml', 'jar')
 	antBuild('TOD-evdb1', 'build.xml', 'jar')
+	antBuild('TOD-evdbng', 'build.xml', 'jar')
 	antBuild('TOD-pytod-db', 'build.xml', 'jar')
 
 	setEclipsePluginVersion('tod.plugin', version)
