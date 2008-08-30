@@ -47,6 +47,7 @@ public abstract class TupleBuffer<T extends Tuple>
 	 */
 	public long getKey(int aPosition)
 	{
+		assert aPosition < itsPosition;
 		return itsKeyBuffer[aPosition];
 	}
 	

@@ -166,7 +166,7 @@ public class ObjectCodecNG
 			public void writeObject(PageIOStream aStruct, Object aObject)
 			{
 				Byte theByte = (Byte) aObject;
-				aStruct.writeInt(theByte.byteValue());
+				aStruct.writeByte(theByte.byteValue());
 			}
 		}, 
 		BOOLEAN()

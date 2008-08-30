@@ -58,6 +58,7 @@ implements ITupleIterator<T>
 	{
 		super (true);
 		itsTree = aTree;
+		itsCurrentBuffer = null;
 	}
 
 	public TupleIterator(
@@ -78,8 +79,15 @@ implements ITupleIterator<T>
 	 */
 	private void readBounds()
 	{
-		itsFirstKey = itsCurrentBuffer.getKey(0);
-		itsLastKey = itsCurrentBuffer.getKey(itsCurrentBuffer.getSize()-1);
+		if (itsCurrentBuffer.getSize() == 0)
+		{
+			itsFirstKey = itsLastKey = -1;
+		}
+		else
+		{
+			itsFirstKey = itsCurrentBuffer.getKey(0);
+			itsLastKey = itsCurrentBuffer.getKey(itsCurrentBuffer.getSize()-1);
+		}
 	}
 	
 	public long getFirstKey()
@@ -152,10 +160,12 @@ implements ITupleIterator<T>
 
 	/**
 	 * Returns the index (or position) of the next current tuple in its level.
-	 * (for now works only for level 0)
+	 * (for now works only for level 0).
+	 * If there is no next tuple, returns -1.
 	 */
 	public long getNextTupleIndex()
 	{
+		if (itsCurrentBuffer == null) return -1;
 		long theTupleCount = itsCurrentBuffer.getTupleCount();
 		assert theTupleCount >= 0 : "Information not available";
 		

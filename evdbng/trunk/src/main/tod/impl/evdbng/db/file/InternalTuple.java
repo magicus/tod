@@ -15,6 +15,7 @@ public class InternalTuple extends Tuple
 	public InternalTuple(long aKey, int aPageId, long aTupleCount)
 	{
 		super(aKey);
+		assert aPageId != 0;
 		itsPageId = aPageId;
 		itsTupleCount = aTupleCount;
 	}

@@ -252,6 +252,7 @@ public abstract class BTree<T extends Tuple>
 	{
 		long theDelta = aKey - itsLastKeys[aLevel];
 		assert theDelta >= 0 : "aKey: "+aKey+"theDelta: "+theDelta;
+		assert itsChains[aLevel] != null : ""+aLevel;
 		
 		// Set the currently written key so that index tuples in higher 
 		// levels are properly set up

@@ -135,7 +135,7 @@ public class EventList
 		itsEventStream.writeShort(theRecordLength);
 		aEvent.writeTo(itsEventStream);
 		int p1 = itsEventStream.getPos();
-		assert p1-p0 == theRecordLength;
+		assert p1-p0 == theRecordLength : "theRecordLength: "+theRecordLength+", p1-p0: "+(p1-p0)+" - "+aEvent;
 		
 		return itsEventsCount-1;
 	}
