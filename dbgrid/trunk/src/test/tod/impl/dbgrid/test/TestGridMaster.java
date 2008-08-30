@@ -89,7 +89,7 @@ public class TestGridMaster
 		theEventGenerator.fillStructureDatabase(theStructureDatabase);
 		
 		System.out.println("filling...");
-		Fixtures.fillDatabase(theMaster, theEventGenerator, 16000);
+		Fixtures.fillDatabase(theMaster, theEventGenerator, 1600000);
 		
 		System.out.println("checking...");
 		IdGenerator theIdGenerator = new IdGenerator(100, 100, 100, 100, 100, 100, 100, 100, 100, 100);
