@@ -233,12 +233,12 @@ public abstract class BTree<T extends Tuple>
 	 * @param aTupleCount Tuple data
 	 * @param aLevel The level to which the tuple is added
 	 */
-	protected void addInternalTuple(long aKey, int aPageId, short aTupleCount, int aLevel)
+	protected void addInternalTuple(long aKey, int aPageId, long aTupleCount, int aLevel)
 	{
 		assert aLevel > 0;
 		
 		addKey(aKey, PageIOStream.internalTupleDataSize(), aLevel);
-		itsChains[aLevel].writeInternalTupleData(aPageId, (short) aTupleCount);
+		itsChains[aLevel].writeInternalTupleData(aPageId, aTupleCount);
 	}
 	
 	/**
@@ -429,8 +429,7 @@ public abstract class BTree<T extends Tuple>
 		//create a new page with the key value to be written 
 		//the LeafTupleCount includes the key which is going to be inserted...
 		long theOldPageCount = itsLeafTupleCount-itsTupleCount[aLevel];
-		assert theOldPageCount < Short.MAX_VALUE;
-		addInternalTuple(itsCurrentKeys[aLevel], aNewPageId, (short) theOldPageCount, aLevel+1);
+		addInternalTuple(itsCurrentKeys[aLevel], aNewPageId, theOldPageCount, aLevel+1);
 		
 		itsTupleCount[aLevel] = itsLeafTupleCount;
 	}

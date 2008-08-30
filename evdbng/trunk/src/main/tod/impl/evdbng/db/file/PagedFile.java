@@ -873,7 +873,7 @@ public class PagedFile
 
 		public static int internalTupleDataSize()
 		{
-			return PageIOStream.pagePointerSize()+PageIOStream.longSize();
+			return PageIOStream.pagePointerSize()+PageIOStream.tupleCountSize();
 		}
 		
 		public void writeInternalTupleData(int aPageId, long aTupleCount)
@@ -1264,7 +1264,7 @@ public class PagedFile
 			itsCurrentStream.writeBL(aByte, aLong);
 		}
 		
-		public void writeInternalTupleData(int aPageId, int aTupleCount)
+		public void writeInternalTupleData(int aPageId, long aTupleCount)
 		{
 			checkSpace(PageIOStream.internalTupleDataSize());
 			itsCurrentStream.writeInternalTupleData(aPageId, aTupleCount);
