@@ -74,6 +74,16 @@
 %para funcionamiento de arboles
 \usepackage{pstricks}
 \usepackage{pst-tree}
+\usepackage{algorithm}
+\newcommand{\algorithmname}{\textbf{Algoritmo:}}
+\usepackage{algorithmic}
+\renewcommand{\algorithmicrequire}{\textbf{Entrada:}}
+\renewcommand{\algorithmicensure}{\textbf{Salida:}}
+\renewcommand{\algorithmicend}{\textbf{fin}}
+\renewcommand{\algorithmicif}{\textbf{si}}
+\renewcommand{\algorithmicthen}{\textbf{entonces}}
+\renewcommand{\algorithmicelse}{\textbf{sino}}
+\renewcommand{\algorithmicreturn}{\textbf{retorna}}
 \begin{document}
 %\title{}
 %\author{Milton Inostroza Aguilera}
@@ -1428,7 +1438,7 @@ El estado de un objeto puede ser recuperado realizando la misma operación para 
 	$c \leftarrow cursor(thread = e.thread  \wedge depth = e.depth + 1)$\\
 	$c.posPrev(e.ts); cflow = <>$\\
 	\textbf{repeat}\\
-	$	ev = c.next(); cflow \leftarrow cflow  \sqcup <ev>$\\
+	$ev = c.next(); cflow \leftarrow cflow  \sqcup <ev>$\\
 	\textbf{until} $ev.kind = BEx$\\
 
 	\item \textbf{Buscador de la causa inicial}: Determinando como a un campo ha sido asignado un valor indeseado, es tan directo como la consulta de la reconstrucción del estado:  en lugar de obtener el valor del evento de la celda escrita que asignó el valor al campo, el evento por sí mismo se hace el actual, dando acceso para el contexto en ese momento.  La exploración atrás en el tiempo es la causa que pueda ir sobre esto, encima de la causa inicial.
@@ -1771,14 +1781,7 @@ Como se puede observar el programador, en este caso, no tiene la necesidad de mo
 	
 	\section{El Modelo y Diseño de pyTOD}
 	
-	Diagrama de comunicación, diagrama de clases
-	
-\begin{figure}[hpb]
-	\centering
-	\includegraphics[scale=0.6]{images/classModelHunterTrace.eps}
-	\caption{Diagrama de clase del capturador de huella}
-\end{figure}
-	
+	Diagrama de comunicación, diagrama en block de notas
 	
 	\section{Implementación de pyTOD}
 		\subsection{Capturador de huella}
@@ -2827,7 +2830,7 @@ h0 - behaviorExit (thread: 101, p.ts: 1217207598474802944, depth: 3, ts: 1217207
 \end{singlespace}	
 
 				      
-				\paragraph{Excepción}
+				\paragraph{Excepción \label{excepcion}}
 				
 El evento excepción es registrado por el capturado de huella cuando este detecta el evento del tipo \textit{exception}.  Es importante señalar que existen dos situaciones en donde puede ocurrir una excepción:
 
@@ -3204,10 +3207,12 @@ int & int & int & int & int & int\\
 \caption{Registro del objeto probe} 
 \end{center}
 \end{table}
-\newpage
+\ \newline
+
 				\paragraph{Objeto}
 
-Se describe el registro del objeto objeto: \\
+Se describe el registro del objeto objeto:
+\newline
 
 \begin{table}[!h]
 \begin{center}
@@ -3400,10 +3405,485 @@ Es importante señalar return está acompañado de los siguientes datos \ref{Coo
 		
 		
 		\subsection{Estructuras y Clases de pyTOD}
+		
+		
+		  	\subsubsection{Estructura}
+
+Para mostrar la estructura de pyTOD se utiliza un diagrama de clases resumido en el cual sólo se muestran las relaciones entre las clases, métodos y atributos más importantes de esta.  Lo anterior con el fin de mostrar una estructura clara y concisa.  En la sección posterior se individualizará cada una de las clases que aquí aparecen. 
+			
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.6]{images/classModelHunterTrace.eps}
+	\caption{Diagrama de clase del capturador de huella}
+\end{figure}			
+			
+			\subsubsection{Clases}
+			
+En esta sección se muestran todos los atributos y métodos de las clases que intervienen en pyTOD.  Se explica cual es su uso y se explica sus atributos y métodos más importantes.			
+
+				\paragraph{hunterTrace}
+				
+Esta es la clase principal de pyTOD ya que contiene referencias a las demás clases y es la clase que contiene al método \textit{\_\_trace\_\_}
+
+					\subparagraph{Atributos}
+					
+Entre los atributos más importantes se tienen:
+\begin{itemize}
+	\item \textbf{itsClass :} Diccionario que contiene a todas las clases escritas por el programador.
+	\item \textbf{itsFunction :} Diccionario que contiene a todas las funciones escritas por el programador.
+	\item \textbf{itsMethod :} Diccionario que contiene a todos los métodos escritos por el programador.
+	\item \textbf{itsProbe :} Diccionario que almacena todos los probes que se generan en el depurador.  El objetivo de cada probe es identificar un lugar específico dentro del código depurado en donde ha ocurrido un evento.
+	\item \textbf{itsEvent :} Diccionario que contiene todos los eventos que suceden dentro del depurador:
+	\begin{itemize}
+		\item register
+		\item call
+		\item return
+		\item instantiation
+	\end{itemize}
+	
+	\item \textbf{itsObjects :} Diccionario que contiene todos los tipos de objetos que pueden encontrarse dentro del programa depurado:
+	\begin{itemize}
+		\item class
+		\item method
+		\item attribute
+		\item function
+		\item local
+		\item probe
+		\item thread
+		\item classAttribute
+		\item object
+		\item exception
+		\item specialMethod
+	\end{itemize}	
+	
+	\item \textbf{itsPackXDR :} Diccionario que es utilizado para reconocer el tipo de datos de un objeto.  Al momento que el tipo de datos es reconocido se devuelve el identificador para que la libería XDRLib sepa con que tipo de objeto está tratando.  El contenido de este diccionario es:
+	\begin{itemize}
+		\item int
+		\item string
+		\item float
+		\item double
+		\item bool	
+	\end{itemize}
+	
+	\item \textbf{itsDataTypes :} Diccionario que se utiliza para identificar el tipo de dato que se está enviando desde Python hacia Java, que es donde se almacenan en la base de datos de TOD.  El contenido de este diccionario es:
+	\begin{itemize}
+		\item int.\_\_name\_\_
+		\item str.\_\_name\_\_
+		  \item float.\_\_name\_\_
+		\item long.\_\_name\_\_
+		\item bool.\_\_name\_\_
+		\item tuple.\_\_name\_\_
+		\item list.\_\_name\_\_
+		\item dict.\_\_name\_\_
+	\end{itemize}
+	
+	\item \textbf{FLAG\_DEBUGG :} Atributo utilizado para mostrar cierta información de los eventos o de las registraciones, cuando su valor es \textit{True}.
+	
+	\item \textbf{FLAG\_THROWN :} Atributo utilizado para controlar la propagación de excepciones.  La utilización de este es explicado en la sección \ref{excepcion}.
+	
+	\item \textbf{itsCurrentDepth :} Atributo utilizado para guardar el nivel actual de llamadas, se utiliza para el evento de modificación de un atributo de clase.
+\end{itemize}			
+					
+					\subparagraph{Métodos}
+					
+Entre los métodos más importantes se tienen:
+\begin{itemize}
+	\item \textbf{\_\_createlnotab\_\_ :} Método que crea una estructura de datos la cual almacena la estructura de bytecode del objeto que se está registrando en el depurador.  Este método sólo se aplica a los objetos \textit{class}, \textit{method} y \textit{function}.
+
+Para un mejor entendimiento de esta función se presenta el siguiente ejemplo:
+
+EJEMPLO!!
+	\item \textbf{\_\_getPartCode\_\_ :} Método que se utiliza para inspeccionar el bytecode por bloques (inicio, fin) con el objetivo de extraer todas las variables locales definidas en este bloque.
+	
+	\item \textbf{\_\_trace\_\_ :} Método más importante de la clase y de pyTOD.  Éste permite estar notificados de los siguientes eventos dentro de un programa Python:
+	\begin{itemize}
+		\item call
+		\item line
+		\item return
+		\item exception
+	\end{itemize}
+En este método se centra la mayoría de los movimientos para la captura de la huella de ejecución.  Es importante señalar que por si sólo este método no tiene ninguna utilidad, ya que debemos indicarla a Python que asigne \_\_trace\_\_ como función al módulo \textit{sys} mediante su método \textit{settrace}.
+\end{itemize}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.6]{images/Clases/hunterTrace.eps}
+	\caption{Diagrama de clase de hunterTrace}
+\end{figure}
+					
+				\paragraph{generatorId}
+
+Esta clase sirve para implementar todos los generadores de identificadores que se requieren para que el depurador funcione correctamente.
+
+					\subparagraph{Atributos}
+
+\begin{itemize}
+	\item \textbf{Id :} Atributo que mantiene el valor actual del identificador.  El rango al que el identificador pertenece es [$101 \dots n$].  Esto debido a que TOD tiene reservador el rango [$1 \dots 99$] para objetos internos.
+\end{itemize}					
+					
+					\subparagraph{Métodos}						
+
+\begin{itemize}
+	\item \textbf{\_\_get\_\_ :} Retorna el valor actual del atribut \textit{Id}.
+	\item \textbf{\_\_next\_\_ :} Método que aumenta en una unidad el atributo \textit{Id}.
+\end{itemize}					
+
+					
+\begin{figure}[hpb]
+	\centering
+	\includegraphics[scale=0.6]{images/Clases/generatorId.eps}
+	\caption{Diagrama de clase de generatorId}
+\end{figure}
+					
+				\paragraph{Class}
+				
+Esta clase representa a cada una de las clases que ha definido el programador en su script.				
+				
+					\subparagraph{Atributos}
+
+Los atributos más importantes son:
+
+\begin{itemize}
+	\item \textbf{staticField:} Diccionario que guarda todos los atributos estáticos que pertenecen a la clase.
+	\item \textbf{code :} Atributo que guarda el objeto code \cite{code} de la clase original que definió el programador.
+	\item \textbf{specialBehaviorId :} Atributo que sirve como contador para identificar a cada método estático registrado en la clase
+\end{itemize}					
+					
+					\subparagraph{Métodos}	
+
+\begin{itemize}
+	\item \textbf{\_\_getLnotab\_\_ :} Retorna el \textit{lnotab} correspondiente de la clase.
+	\item \textbf{\_\_addAttribute\_\_ :} Agrega un nuevo atributo de instancia a la clase.
+	\item \textbf{\_\_addMethod\_\_ :} Agrega un nuevo método a la clase.
+\end{itemize}					
+
+				
+\begin{figure}[hpb]
+	\centering
+	\includegraphics[scale=0.6]{images/Clases/Class.eps}
+	\caption{Diagrama de clase de Class}
+\end{figure}
+					
+				\paragraph{Method}
+				
+Esta clase representa a cada método que el programador haya definido en cualquiera de sus clases.				
+				
+					\subparagraph{Atributos}
+					
+\begin{itemize}
+	\item \textbf{locals :} Diccionario que representa a todas las variables locales definidas en el método.
+	\item \textbf{argument :} Diccionario que representa todos los argumentos que tiene el método.
+	\item \textbf{idClass :} Atributo que indica a que clase pertenece el método.
+\end{itemize}					
+					
+					\subparagraph{Métodos}						
+					
+\begin{itemize}
+	\item \textbf{\_\_getLocals\_\_ :} Método que retorna todas las variables locales del método.
+	\item \textbf{\_\_getArgValues\_\_ :} Retorna el valor de todos los argumentos que se encuentran en \textit{frame.f\_locals}.
+\end{itemize}					
+					
+				
+\begin{figure}[hpb]
+	\centering
+	\includegraphics[scale=0.6]{images/Clases/Method.eps}
+	\caption{Diagrama de clase de Method}
+\end{figure}
+					
+				\paragraph{Function}
+
+Esta clase representa a cada función que el programador haya definido en cualquiera de sus clases.				
+				
+					\subparagraph{Atributos}
+					
+\begin{itemize}
+	\item \textbf{locals :} Diccionario que representa a todas las variables locales definidas en la función.
+	\item \textbf{argument :} Diccionario que representa todos los argumentos que tiene la función.
+\end{itemize}					
+					
+					\subparagraph{Métodos}						
+					
+\begin{itemize}
+	\item \textbf{\_\_getLocals\_\_ :} Método que retorna todas las variables locales de la función.
+	\item \textbf{\_\_getArgValues\_\_ :} Retorna el valor de todos los argumentos que se encuentran en \textit{frame.f\_locals}.
+\end{itemize}					
+					
+				
+\begin{figure}[hpb]
+	\centering
+	\includegraphics[scale=0.6]{images/Clases/Function.eps}
+	\caption{Diagrama de clase de Function}
+\end{figure}
+					
+				\paragraph{Dictionary}
+				
+Esta clase hereda del objeto nativo de Python \textit{dict}.  Esta clase se utiliza para almacenar los atributos de locales, atributos de clase y métodos										
+					\subparagraph{Atributos}
+					
+\begin{itemize}
+	\item \textbf{hT :} Atributo que hace referencia al \textit{hunterTrace} que pertenece. 
+\end{itemize}					
+					
+					
+					\subparagraph{Métodos}						
+					
+\begin{itemize}
+	\item \textbf{\_\_update\_\_ :}  Método que actualiza los elementos del diccionario, si el elemento no existe notifica a la base de datos estructural de TOD su creación y si el elemento existe notifica a la base de datos de eventos de TOD la modificación.
+\end{itemize}					
+					
+				
+\begin{figure}[hpb]
+	\centering
+	\includegraphics[scale=0.6]{images/Clases/Dictionary.eps}
+	\caption{Diagrama de clase de Dictionary}
+\end{figure}
+					
+		
+		
 		\subsection{Código Principal de pyTOD}
-		\subsection{Interfases Principales de pyTOD}
+		
+En esta sección se mostrará el código principal de pyTOD utilizando el lenguaje de pseudocódigo, para facilitar el entendimiento de este.  El código que se muestra son sólo las partes más importantes dentro del método \textit{\_\_trace\_\_}, detallando los eventos del tipo \textit{call}, \textit{line}, \textit{return} y \textit{exception}
+\algsetup{
+linenosize=\scriptsize,
+linenodelimiter=
+}
+\begin{algorithm}
+\begin{footnotesize}
+\begin{algorithmic}[1]
+\REQUIRE $aFrame, aEvent, aArg$
+\STATE $theCode \Leftarrow aFrame.f\_code$
+\STATE $theLocals \Leftarrow aFrame.f\_locals$
+\STATE $theGlobals \Leftarrow aFrame.f\_globals$
+\STATE $aFrame \Leftarrow \_\_markTimestampFrame\_\_()$
+\IF{$aEvent == 'call'$}
+	\IF{$self \in theLocals$ }
+		\STATE $\_\_registerMethod\_\_()$
+		\IF {$theCode.co\_name == '\_\_init\_\_'$}
+			\STATE asignar identificador a instancia de clase
+			\STATE $\_\_registerInstantiation\_\_()$
+		\ELSE
+			\STATE $\_\_methodCall\_\_()$
+		\ENDIF
+	\ELSE
+		\IF{$theObject$ es del tipo $function$}
+			\STATE $\_\_functionCall\_\_()$
+		\ENDIF
+	\ENDIF
+	\RETURN $\_\_trace\_\_$
+\ELSIF{$aEvent == 'line'$}
+	\STATE $theObject \Leftarrow \_\_getObject\_\_()$
+	\STATE $theLnotab \Leftarrow \_\_getLnotab\_\_()$
+	\IF{$aFrame.f\_lasti \in theLnotab$}
+		\STATE $theByteCodeLocals \Leftarrow \_\_getPartCode\_\_()$
+		\STATE $\_\_registerLocals\_\_()$
+		\STATE $\_\_localWrite\_\_()$
+	\ENDIF
+	\RETURN $\_\_trace\_\_$
+\ELSIF{$aEvent == 'return'$}
+	\IF{$'\_\_init\_\_' \in theLocals$}
+		\IF{$code \not\in class$}
+			\STATE $\_\_registerClass\_\_()$
+		\ENDIF
+	\ELSE
+		\STATE $theObject \Leftarrow \_\_getObject\_\_()$
+		\IF{$FLAG\_THROWN == \TRUE$}
+			\STATE $FLAG\_THROWN \Leftarrow$ \FALSE
+		\ENDIF
+
+		\STATE $theObject \Leftarrow \_\_getObject\_\_()$
+		\STATE $theLnotab \Leftarrow \_\_getLnotab\_\_()$
+		\IF{$aFrame.f\_lasti \in theLnotab$}
+			\STATE $theByteCodeLocals \Leftarrow \_\_getPartCode\_\_()$
+			\STATE $\_\_registerLocals\_\_()$
+			\STATE $\_\_localWrite\_\_()$
+		\ENDIF
+		\STATE $\_\_behaviorExit\_\_()$	
+	\ENDIF
+\ELSIF{$aEvent == 'exception'$}
+	\STATE $\_\_registerException\_\_()$
+	\IF{excepción es manejada en el bloque == \TRUE}
+		\RETURN $\_\_trace\_\_$
+	\ENDIF
+	\STATE $\_\_behaviorExit\_\_()$
+	\STATE $FLAG\_THROWN \Leftarrow \TRUE$
+\ENDIF
+\end{algorithmic}
+\end{footnotesize}
+\caption{Código principal de pyTOD}
+\end{algorithm}
+
+		
+		\subsection{Interfaces principales de pyTOD}
+		
+Esta sección describe las interfaces principales que encontrará el usuario en pyTOD.  Se describe desde arrancar el depurador hasta como interactuar con este.
+
+			\subsubsection{Arrancar el depurador}	
+
+Luego de abrir una sesion en Eclipse se debe arrancar el depurador:
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.4]{images/interfacesPlugin/arrancarTOD.eps}
+	\caption{Botón para arrancar el depurador}
+\end{figure}
+
+Al momento de presionar este botón se mostrará un proceso hijo de Eclipse, el cual contiene al ambiente completo para comenzar a realizar la depuración.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.4]{images/interfacesPlugin/arrancarTOD-2.eps}
+	\caption{Proceso Eclipse hijo lanzado}
+\end{figure}
+
+Al terminar la carga completa del proceso Eclipse hijo, se muestra la perspectiva para realizar depuración.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.4]{images/interfacesPlugin/arrancarTOD-3.eps}
+	\caption{Perspectiva inicial para depuración}
+\end{figure}
+
+			\subsubsection{Realizando depuración}
+			
+El usuario después de escribir su código lo puede depurar presionando el siguiente botón:
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.5]{images/interfacesPlugin/depuracionTOD.eps}
+	\caption{Botón de depuración}
+\end{figure}
+
+Después de ejecutar el depurador se le mostrará la siguiente interfaz al usuario:
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.4]{images/interfacesPlugin/depuracionTOD-2.eps}
+	\caption{Interfaz inicial luego de haber depurado el código del usuario}
+\end{figure}
+
+Lo que se muestra aquí son todos los eventos ocurridos en el script del programador, quien haciendo doble click se encuentra con la siguiente interfaz:
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.4]{images/interfacesPlugin/depuracionTOD-3.eps}
+	\caption{Control de flujo}
+\end{figure}
+
+Como se puede observar en esta figura se ha seleccionado la linea en la que el método \textit{f4} lanza una excepción.  Como se puede observar en la siguiente figura, en el momento que el usuario selecciona la linea el depurador inmediatamente ubica en el código fuente la linea que se está examinando.
+
+ \begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.4]{images/interfacesPlugin/depuracionTOD-4.eps}
+	\caption{Linea inspeccionada}
+\end{figure}
+
 	\section{Aspectos Básicos de Funcionamiento de pyTOD}
+	
+En esta sección se detallarán los pasos necesarios a seguir para obtener el depurador TOD y pyTOD.	
+		\subsection{Usuario final}
+		
+Usuario final se refiere al usuario que sólo realizará depuración omnisciente en sus scripts y no tendrá la intención de realizar mejoras o implementar nuevas características.  Este usuario sólo debe visitar \href{http://pleiad.dcc.uchile.cl/files/tod/releases/}{http://pleiad.dcc.uchile.cl/files/tod/releases/} y descargar la última versión liberada.  Es importante señalar que los únicos requerimientos que se necesitan son:
+\begin{itemize}
+	\item Eclipse 3.2 o superior.
+	\item Java 1.5 o superior.
+	\item Python 2.5
+\end{itemize}	
+
+Para mayor información puede visitar \href{http://pleiad.dcc.uchile.cl/tod/download.html}{http://pleiad.dcc.uchile.cl/tod/download.html}.
+		
+		\subsection{Desarrollador}
+		
+Para que el desarrollador pueda trabajar comodamente y pueda aportar mejoras e implementar nuevas características, debe seguir los siguentes pasos para instalar la versión de desarrollo:
+
+\begin{itemize}
+	\item Instalar Eclipse 3.2 o superior.
+	\item Instalar Java 1.5 o superior.
+	\item Instalar Python 2.5
+	 \item Descargar mediante svn lo siguiente:
+	 \begin{itemize}
+		\item http://stgo.dyndns.org/svn/gpothier/devel/zz.utils
+		\item http://stgo.dyndns.org/svn/gpothier/devel/zz.eclipse.utils
+		\item http://pleiad.dcc.uchile.cl/svn/tod/pytod/trunk/java-proyect
+		\item http://pleiad.dcc.uchile.cl/svn/tod/dbgrid/trunk
+		\item http://pleiad.dcc.uchile.cl/svn/tod/agent/trunk
+		\item http://pleiad.dcc.uchile.cl/svn/tod/tod.plugin.pytod/trunk
+		\item http://pleiad.dcc.uchile.cl/svn/tod/tod.plugin.ajdt
+		\item http://pleiad.dcc.uchile.cl/svn/tod/tod.plugin/trunk
+		\item http://pleiad.dcc.uchile.cl/svn/tod/core/trunk
+		\item http://pleiad.dcc.uchile.cl/svn/tod/pytod/trunk/python-project
+		\item http://pleiad.dcc.uchile.cl/svn/tod/evdb1/trunk
+	 \end{itemize}
+\end{itemize}
+
+Dentro de eclipse se debe modificar las configuraciones de ejecución de los siguientes archivos:
+
+\begin{itemize}
+	\item \textbf{GridMaster}
+	\begin{itemize}
+		\item \textit{Argumentos}
+
+Para ejecutar este programa Java se debe notar que existen dos tipos de argumentos: los argumentos del programa y los argumentos de la maquina virtual.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.5]{images/aspectoFuncionamiento/argsGridMaster.eps}
+	\caption{Argumentos de GridMaster}
+\end{figure}		
+		
+		\item \textit{Classpath}
+		
+Es importante tener bien configurada esta sección ya que varios proyectos dependen de otros y se no se establecen las relaciones entre ellos, el depurador no funcionará.
+		
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.5]{images/aspectoFuncionamiento/ClasspathGridMaster.eps}
+	\caption{Classpath de Gridmaster}
+\end{figure}		
+\ \newline
+
+	\end{itemize}
+	\item \textbf{StandaloneUI}
+	\begin{itemize}
+		\item \textit{Argumentos}
+		
+Para ejecutar este programa Java se debe notar que existen dos tipos de argumentos: los argumentos del programa y los argumentos de la maquina virtual.
+		
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.5]{images/aspectoFuncionamiento/argsStandaloneUI.eps}
+	\caption{Argumentos de StandaloneUI}
+\end{figure}		
+		
+		\item \textit{Classpath}
+
+Es importante tener bien configurada esta sección ya que varios proyectos dependen de otros y se no se establecen las relaciones entre ellos, el depurador no funcionará.
+	
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.5]{images/aspectoFuncionamiento/ClasspathStandaloneUI.eps}
+	\caption{Classpath de StandaloneUI}
+\end{figure}		
+\ \newline
+
+	\end{itemize}
+	\item \textbf{Plugin}
+	\begin{itemize}
+		\item \textit{Argumentos}
+
+Para ejecutar este programa Java se debe notar que existen dos tipos de argumentos: los argumentos del programa y los argumentos de la maquina virtual.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.5]{images/aspectoFuncionamiento/argsTODPlugin.eps}
+	\caption{Argumentos de TOD Plugin}
+\end{figure}
+	\end{itemize}	
+\end{itemize}
+	
 	\section{Medidas de rendimiento de pyTOD}
+	
+comparar con pdb	
+	
 \chapter{Evaluación de pyTOD en casos de pruebas}
 	\section{Selección de casos de uso}
 	\section{Resultados obtenidos con pyTOD}
@@ -3522,10 +4002,10 @@ IBM Systems Journal, 43(2):371–383, 2004.
 \bibitem[24]{EvansDarlay} Evans, Thomas G., and D. Lucille Darlay, "On-Line Debugging Techniques: A survey"\\
 AFIPS Conference Proceedings (1966 FJCC), Vol. 29, Spartan Books, Washington, D.C., 1966, pp.37-50
 
-
 \bibitem[25]{EricRaymond} The New Hacker's Dictionary,  Third Edition. Eric. S.Raymond. \\
 The MIT Press. 1996 (1993). ISBN: 0262680920. Inglés.
 
+\bibitem[26]{code}\href{http://docs.python.org/ref/types.html#l2h-142}{http://docs.python.org/ref/types.html\#l2h-142}
 
 \end{thebibliography}
 
