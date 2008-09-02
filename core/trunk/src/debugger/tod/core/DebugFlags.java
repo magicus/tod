@@ -36,6 +36,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
+import javax.security.auth.login.Configuration;
+
 import tod.core.transport.EventInterpreter;
 import tod.core.transport.LogReceiver;
 import tod.impl.common.ObjectInspector;
@@ -183,6 +185,11 @@ public class DebugFlags
 	public static final boolean TRACE_MONITORING = ConfigUtils.readBoolean("trace-monitoring", false);
 	
 	/**
+	 * Tracing of calls to database primitives
+	 */
+	public static final boolean TRACE_DBCALLS = ConfigUtils.readBoolean("trace-dbcalls", false);
+	
+	/**
 	 * A directory where the contents of the database is logged in a human-readable form.
 	 * If null, no logging is performed  
 	 */
@@ -226,6 +233,6 @@ public class DebugFlags
 		if (DISPATCH_FAKE_1 == true) System.err.println("******* Warning: DISPATCH_FAKE_1 (DebugFlags)");
 		if (IGNORE_HOST == true) System.err.println("******* Warning: IGNORE_HOST (DebugFlags)");
 		if (DB_LOG_DIR != null) System.err.println("******* Warning: DB_LOG_DIR (DebugFlags)");
-
+		if (TRACE_DBCALLS != false) System.err.println("******* Warning: TRACE_DBCALLS (DebugFlags)");
 	}
 }
