@@ -44,6 +44,7 @@ import zz.utils.PublicCloneable;
 public abstract class LocationInfo extends PublicCloneable 
 implements IMutableLocationInfo, Serializable
 {
+	private static final long serialVersionUID = 7811546902517644811L;
 	/**
 	 * A flag that can be used to check if this location info is local or remote. 
 	 */

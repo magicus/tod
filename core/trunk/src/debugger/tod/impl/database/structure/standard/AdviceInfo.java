@@ -39,6 +39,7 @@ import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
 public class AdviceInfo extends LocationInfo 
 implements IAdviceInfo, ISerializableLocationInfo
 {
+	private static final long serialVersionUID = 254197984023471789L;
 	private SourceRange itsSourceRange;
 
 	public AdviceInfo(IShareableStructureDatabase aDatabase, int aId, SourceRange aSource)

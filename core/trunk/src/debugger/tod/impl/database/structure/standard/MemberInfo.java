@@ -46,6 +46,8 @@ import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
 public abstract class MemberInfo extends LocationInfo 
 implements IMemberInfo, ISerializableLocationInfo
 {
+	private static final long serialVersionUID = 1781954680024875732L;
+
 	/**
 	 * We keep the type id instead of actual type in order to simplify
 	 * the handling of remote structure databases.

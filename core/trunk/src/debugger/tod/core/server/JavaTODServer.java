@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import tod.agent.AgentConfig;
+import tod.core.DebugFlags;
 import tod.core.ILogCollector;
 import tod.core.bci.IInstrumenter;
 import tod.core.bci.NativeAgentPeer;

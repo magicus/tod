@@ -31,6 +31,7 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.server;
 
+import tod.core.DebugFlags;
 import tod.core.config.TODConfig;
 import tod.utils.ConfigUtils;
 import tod.utils.TODUtils;
@@ -53,7 +54,7 @@ public abstract class TODServer extends Server
 	
 	public TODServer(TODConfig aConfig)
 	{
-		super(getPort(aConfig));
+		super(getPort(aConfig), DebugFlags.TOD_SERVER_DAEMON);
 		TODUtils.logf(0, "TODServer on port: %d", getPort());
 
 		itsConfig = aConfig;

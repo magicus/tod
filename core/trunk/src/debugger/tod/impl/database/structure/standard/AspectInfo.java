@@ -42,6 +42,7 @@ import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
 public class AspectInfo extends LocationInfo 
 implements IAspectInfo, ISerializableLocationInfo
 {
+	private static final long serialVersionUID = 3481200655789101417L;
 	private final String itsSourceFile;
 	private final List<IAdviceInfo> itsAdvices = new ArrayList<IAdviceInfo>();
 	
@@ -54,6 +55,7 @@ implements IAspectInfo, ISerializableLocationInfo
 		changeName(aSourceFile.substring(aSourceFile.lastIndexOf('.')+1));
 	}
 	
+	@Override
 	public String getSourceFile()
 	{
 		return itsSourceFile;

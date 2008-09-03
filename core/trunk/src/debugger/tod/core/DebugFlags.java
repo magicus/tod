@@ -199,8 +199,11 @@ public class DebugFlags
 	 * Whether the FlusherThread should be enabled.
 	 */
 	public static final boolean ENABLE_AUTOFLUSH = ConfigUtils.readBoolean("enable-autoflush", false);
-	
-	
+		
+	/**
+	 * Whether the TOD servers threads (eg. JavaTODServer) should be daemons.
+	 */
+	public static final boolean TOD_SERVER_DAEMON = ConfigUtils.readBoolean("tod-server-daemon", false);
 	
 	private static PrintStream createStream(String aName)
 	{

@@ -43,6 +43,8 @@ import tod.core.database.structure.ITypeInfo;
  */
 public abstract class TypeInfo extends LocationInfo implements ITypeInfo
 {
+	private static final long serialVersionUID = -9142027823637684560L;
+
 	public TypeInfo(IShareableStructureDatabase aDatabase, int aId, String aName)
 	{
 		super(aDatabase, aId, aName);

@@ -5,9 +5,10 @@ PATH=$JAVA_HOME/bin/:$PATH
 AGENT=../TOD-agent/libtod-agent.so
 #CLASSPATH=./bin:../zz.utils/bin
 
-HOST=localhost
+#HOST=localhost
 #HOST=syntagma.dim.uchile.cl
 #HOST=padme.dcc.uchile.cl
+HOST=cluster
 
 
 VMARGS=''
@@ -25,7 +26,8 @@ VMARGS="$VMARGS -Dagent-cache-path=/home/gpothier/tmp/tod"
 #VMARGS="$VMARGS -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"
 #VMARGS="$VMARGS -agentlib:hprof=cpu=samples,depth=8"
 
-java $VMARGS -cp ./bin dummy.BurnTest
+#java $VMARGS -cp ./bin dummy.BurnTest
+java $VMARGS -cp ./lib/aspectjrt.jar:./lib/asm-all-3.1.jar:./lib/junit-4.1.jar:./bin:../TOD-agent/bin:../TOD-dbgrid/bin:../TOD-evdb1/bin:../TOD-evdbng/bin:../zz.utils/bin -Ddbimpl=evdbng -Dtod-server-daemon=true tod.impl.dbgrid.bench.BurnMasterBench
 #java $VMARGS -cp ./bin dummy.ShortProg
 #java $VMARGS -cp ../TOD-evdbng/bin tod.impl.evdbng.Fixtures
 # echo "set args $VMARGS -cp ./bin dummy.Dummy" > gdb.cmd

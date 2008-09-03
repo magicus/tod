@@ -45,6 +45,7 @@ import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
  */
 public class ArrayTypeInfo extends TypeInfo implements IArrayTypeInfo
 {
+	private static final long serialVersionUID = 1415897267440123250L;
 	private final ITypeInfo itsElementType;
 	private final int itsDimensions;
 	
