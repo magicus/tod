@@ -166,7 +166,7 @@ public class RecorderHelper
 		else return aObject;
 	}
 	
-	public void record(
+	public synchronized void record(
 			Object aTarget, 
 			String aMethod,
 			Class[] aFormalsType,

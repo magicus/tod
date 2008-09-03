@@ -100,16 +100,20 @@ public class Replayer
 
 		while(true)
 		{
-			Record theRecord;
 			try
 			{
-				theRecord = (Record) theStream.readObject();
+				Object theObject = theStream.readObject();
+				Record theRecord = (Record) theObject;
+				theRecords.add(theRecord);
 			}
 			catch (EOFException e)
 			{
 				break;
 			}
-			theRecords.add(theRecord);
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
 		}
 		
 		Utils.println("Loaded %d records.", theRecords.size());
@@ -136,3 +140,4 @@ public class Replayer
 		}
 	}
 }
+	
