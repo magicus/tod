@@ -78,7 +78,8 @@ public class Replayer
 			}
 			catch (Throwable e)
 			{
-//				System.err.println("Exception processing record "+i+": "+theRecord);
+				System.err.println("Exception processing record "+i+": "+theRecord);
+				e.printStackTrace();
 			}
 			i++;
 		}
@@ -105,6 +106,7 @@ public class Replayer
 				Object theObject = theStream.readObject();
 				Record theRecord = (Record) theObject;
 				theRecords.add(theRecord);
+//				System.out.println((theRecords.size()-1)+": "+theRecord);
 			}
 			catch (EOFException e)
 			{

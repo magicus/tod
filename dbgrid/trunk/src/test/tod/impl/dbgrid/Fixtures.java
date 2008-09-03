@@ -114,7 +114,7 @@ public class Fixtures
 			IArrayWriteEvent theEvent = (IArrayWriteEvent) aEvent;
 			aCollector.arrayWrite(
 					theEvent.getThread().getId(), 
-					theEvent.getParentPointer().timestamp, 
+					theEvent.getParentPointer().getTimestamp(), 
 					(short) theEvent.getDepth(), 
 					theEvent.getTimestamp(), 
 					theEvent.getAdviceCFlow(), 
@@ -128,7 +128,7 @@ public class Fixtures
 			IConstructorChainingEvent theEvent = (IConstructorChainingEvent) aEvent;
 			aCollector.superCall(
 					theEvent.getThread().getId(), 
-					theEvent.getParentPointer().timestamp, 
+					theEvent.getParentPointer().getTimestamp(), 
 					(short) theEvent.getDepth(), 
 					theEvent.getTimestamp(), 
 					theEvent.getAdviceCFlow(), 
@@ -144,7 +144,7 @@ public class Fixtures
 			IInstantiationEvent theEvent = (IInstantiationEvent) aEvent;
 			aCollector.instantiation(
 					theEvent.getThread().getId(), 
-					theEvent.getParentPointer().timestamp, 
+					theEvent.getParentPointer().getTimestamp(), 
 					(short) theEvent.getDepth(), 
 					theEvent.getTimestamp(), 
 					theEvent.getAdviceCFlow(), 
@@ -160,7 +160,7 @@ public class Fixtures
 			IMethodCallEvent theEvent = (IMethodCallEvent) aEvent;
 			aCollector.methodCall(
 					theEvent.getThread().getId(), 
-					theEvent.getParentPointer().timestamp, 
+					theEvent.getParentPointer().getTimestamp(), 
 					(short) theEvent.getDepth(), 
 					theEvent.getTimestamp(), 
 					theEvent.getAdviceCFlow(), 
@@ -176,7 +176,7 @@ public class Fixtures
 			IBehaviorExitEvent theEvent = (IBehaviorExitEvent) aEvent;
 			aCollector.behaviorExit(	
 					theEvent.getThread().getId(), 
-					theEvent.getParentPointer().timestamp, 
+					theEvent.getParentPointer().getTimestamp(), 
 					(short) theEvent.getDepth(), 
 					theEvent.getTimestamp(), 
 					theEvent.getAdviceCFlow(), 
@@ -190,7 +190,7 @@ public class Fixtures
 			IExceptionGeneratedEvent theEvent = (IExceptionGeneratedEvent) aEvent;
 			aCollector.exception(
 					theEvent.getThread().getId(), 
-					theEvent.getParentPointer().timestamp, 
+					theEvent.getParentPointer().getTimestamp(), 
 					(short) theEvent.getDepth(), 
 					theEvent.getTimestamp(), 
 					theEvent.getAdviceCFlow(), 
@@ -202,7 +202,7 @@ public class Fixtures
 			IFieldWriteEvent theEvent = (IFieldWriteEvent) aEvent;
 			aCollector.fieldWrite(
 					theEvent.getThread().getId(), 
-					theEvent.getParentPointer().timestamp, 
+					theEvent.getParentPointer().getTimestamp(), 
 					(short) theEvent.getDepth(), 
 					theEvent.getTimestamp(), 
 					theEvent.getAdviceCFlow(), 
@@ -216,7 +216,7 @@ public class Fixtures
 			IInstanceOfEvent theEvent = (IInstanceOfEvent) aEvent;
 			aCollector.instanceOf(
 					theEvent.getThread().getId(), 
-					theEvent.getParentPointer().timestamp, 
+					theEvent.getParentPointer().getTimestamp(), 
 					(short) theEvent.getDepth(), 
 					theEvent.getTimestamp(), 
 					theEvent.getAdviceCFlow(), 
@@ -230,7 +230,7 @@ public class Fixtures
 			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) aEvent;
 			aCollector.localWrite(
 					theEvent.getThread().getId(), 
-					theEvent.getParentPointer().timestamp, 
+					theEvent.getParentPointer().getTimestamp(), 
 					(short) theEvent.getDepth(), 
 					theEvent.getTimestamp(), 
 					theEvent.getAdviceCFlow(), 
@@ -243,7 +243,7 @@ public class Fixtures
 			INewArrayEvent theEvent = (INewArrayEvent) aEvent;
 			aCollector.newArray(
 					theEvent.getThread().getId(), 
-					theEvent.getParentPointer().timestamp, 
+					theEvent.getParentPointer().getTimestamp(), 
 					(short) theEvent.getDepth(), 
 					theEvent.getTimestamp(), 
 					theEvent.getAdviceCFlow(), 
@@ -257,7 +257,7 @@ public class Fixtures
 			IOutputEvent theEvent = (IOutputEvent) aEvent;
 			aCollector.output(
 					theEvent.getThread().getId(), 
-					theEvent.getParentPointer().timestamp, 
+					theEvent.getParentPointer().getTimestamp(), 
 					(short) theEvent.getDepth(), 
 					theEvent.getTimestamp(), 
 					theEvent.getAdviceCFlow(),

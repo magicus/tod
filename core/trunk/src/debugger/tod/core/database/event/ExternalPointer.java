@@ -48,13 +48,23 @@ public class ExternalPointer implements Serializable
 {
 	private static final long serialVersionUID = -3084204556891153420L;
 	
-	public final IThreadInfo thread;
-	public final long timestamp;
+	private final IThreadInfo thread;
+	private final long timestamp;
 
 	public ExternalPointer(IThreadInfo aThread, long aTimestamp)
 	{
 		thread = aThread;
 		timestamp = aTimestamp;
+	}
+
+	public IThreadInfo getThread()
+	{
+		return thread;
+	}
+
+	public long getTimestamp()
+	{
+		return timestamp;
 	}
 
 	@Override

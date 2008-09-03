@@ -86,12 +86,12 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 		
 		if (itsFirstChild == null || itsLastChild == null)
 		{
-			itsFirstChild = itsCallInfo.firstChild != null ?
-					getLogBrowser().getEvent(itsCallInfo.firstChild)
+			itsFirstChild = itsCallInfo.getFirstChild() != null ?
+					getLogBrowser().getEvent(itsCallInfo.getFirstChild())
 					: null;
 					
-			itsLastChild = itsCallInfo.lastChild != null ? 
-					getLogBrowser().getEvent(itsCallInfo.lastChild)
+			itsLastChild = itsCallInfo.getLastChild() != null ? 
+					getLogBrowser().getEvent(itsCallInfo.getLastChild())
 					: null;
 		}
 		
@@ -114,19 +114,19 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 		{
 			if (itsCallInfo == null) initChildren();
 
-			if (itsCallInfo.exitEvent == null)
+			if (itsCallInfo.getExitEvent() == null)
 			{
 				itsExitEvent = null;
 			}
-			else if (itsCallInfo.lastChild != null 
+			else if (itsCallInfo.getLastChild() != null 
 					&& itsLastChild != null
-					&& itsCallInfo.lastChild.equals(itsCallInfo.exitEvent))
+					&& itsCallInfo.getLastChild().equals(itsCallInfo.getExitEvent()))
 			{
 				itsExitEvent = (IBehaviorExitEvent) itsLastChild;
 			}
 			else
 			{
-				itsExitEvent = (IBehaviorExitEvent) getLogBrowser().getEvent(itsCallInfo.exitEvent);
+				itsExitEvent = (IBehaviorExitEvent) getLogBrowser().getEvent(itsCallInfo.getExitEvent());
 			}
 		}
 
@@ -159,7 +159,7 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 			long t0 = System.currentTimeMillis();
 			ILogEvent theCallEvent = aLogBrowser.getEvent(itsEventPointer);
 			long theTimestamp = theCallEvent.getTimestamp();
-			assert theTimestamp == itsEventPointer.timestamp;
+			assert theTimestamp == itsEventPointer.getTimestamp();
 			
 			int theDepth = theCallEvent.getDepth();
 			IThreadInfo theThread = theCallEvent.getThread();
@@ -200,7 +200,7 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 							theEvent.getDepth(),
 							theDepth);
 				assert theEvent.getTimestamp() >= theTimestamp : "Event TimeStamp issue: " +theEvent.getTimestamp() +" while parent timestamp is " +theTimestamp ;
-				assert theEvent.getParentPointer().timestamp == theTimestamp : "Parent TimeStamp issue: " +theEvent.getTimestamp() +" while parent timestamp should be " +theTimestamp ;
+				assert theEvent.getParentPointer().getTimestamp() == theTimestamp : "Parent TimeStamp issue: " +theEvent.getTimestamp() +" while parent timestamp should be " +theTimestamp ;
 				
 				theLastChild = theEvent;
 				if (theEvent instanceof IBehaviorExitEvent)
@@ -219,7 +219,7 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 				ILogEvent theEvent = theBrowser.previous();
 				if (theEvent.getDepth() == theDepth+1)
 				{
-					assert theEvent.getParentPointer().timestamp == theTimestamp;
+					assert theEvent.getParentPointer().getTimestamp() == theTimestamp;
 					theLastChild = theEvent;
 					if (theEvent instanceof IBehaviorExitEvent)
 					{
@@ -242,7 +242,7 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 			if (theBrowser.hasNext())
 			{
 				ILogEvent theEvent = theBrowser.next();
-				assert theEvent.getParentPointer().timestamp == theTimestamp;
+				assert theEvent.getParentPointer().getTimestamp() == theTimestamp;
 				
 				theFirstChild = theEvent;
 				theHasRealChildren = ! theFirstChild.equals(theExitEvent);
@@ -305,10 +305,10 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 	{
 		private static final long serialVersionUID = 642849421884431178L;
 
-		public final ExternalPointer firstChild;
-		public final ExternalPointer lastChild;
-		public final ExternalPointer exitEvent;
-		public final boolean hasRealChildren;
+		private final ExternalPointer firstChild;
+		private final ExternalPointer lastChild;
+		private final ExternalPointer exitEvent;
+		private final boolean hasRealChildren;
 
 		public CallInfo(
 				ExternalPointer aFirstChild, 
@@ -320,6 +320,26 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 			lastChild = aLastChild;
 			exitEvent = aExitEvent;
 			hasRealChildren = aHasRealChildren;
+		}
+
+		public ExternalPointer getFirstChild()
+		{
+			return firstChild;
+		}
+
+		public ExternalPointer getLastChild()
+		{
+			return lastChild;
+		}
+
+		public ExternalPointer getExitEvent()
+		{
+			return exitEvent;
+		}
+
+		public boolean hasRealChildren()
+		{
+			return hasRealChildren;
 		}
 	}
 }

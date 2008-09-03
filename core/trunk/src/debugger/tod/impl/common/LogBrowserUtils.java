@@ -59,16 +59,16 @@ public class LogBrowserUtils
 	@Monitored
 	public static ILogEvent getEvent(ILogBrowser aLogBrowser, ExternalPointer aPointer)
 	{
-		IEventFilter theFilter = aLogBrowser.createThreadFilter(aPointer.thread);
+		IEventFilter theFilter = aLogBrowser.createThreadFilter(aPointer.getThread());
 		IEventBrowser theBrowser = aLogBrowser.createBrowser(theFilter);
 		
-		theBrowser.setNextTimestamp(aPointer.timestamp);
+		theBrowser.setNextTimestamp(aPointer.getTimestamp());
 		if (theBrowser.hasNext())
 		{
 			ILogEvent theEvent = theBrowser.next();
 			
-			assert theEvent.getThread().equals(aPointer.thread);
-			if (theEvent.getTimestamp() == aPointer.timestamp) return theEvent;
+			assert theEvent.getThread().equals(aPointer.getThread());
+			if (theEvent.getTimestamp() == aPointer.getTimestamp()) return theEvent;
 		}
 
 		return null;

@@ -33,6 +33,7 @@ package tod.tools.recording;
 
 import java.io.Serializable;
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,7 +46,7 @@ import zz.utils.Utils;
  * An history record of database access.
  * @author gpothier
  */
-public class Record implements Serializable
+public abstract class Record implements Serializable
 {
 	private static final long serialVersionUID = 2484097571786422998L;
 	
@@ -54,22 +55,45 @@ public class Record implements Serializable
 	private MethodSignature itsMethod;
 	private Object[] itsArgs;
 	private Object itsResult;
+	private String itsLocation;
 	
 	public Record(
 			int aThreadId,
 			ProxyObject aTarget,
 			MethodSignature aMethod,
 			Object[] aArgs,
-			Object aResult)
+			Object aResult,
+			String aLocation)
 	{
 		itsThreadId = aThreadId;
 		itsTarget = aTarget;
 		itsMethod = aMethod;
 		itsArgs = aArgs;
 		itsResult = aResult;
+		itsLocation = aLocation;
 	}
 
-	private Object resolve(final Map<Integer, Object> aObjectsMap, Object aObject)
+	public ProxyObject getTarget()
+	{
+		return itsTarget;
+	}
+
+	public MethodSignature getMethod()
+	{
+		return itsMethod;
+	}
+
+	public Object[] getArgs()
+	{
+		return itsArgs;
+	}
+
+	public Object getResult()
+	{
+		return itsResult;
+	}
+
+	protected Object resolve(final Map<Integer, Object> aObjectsMap, Object aObject)
 	{
 		return map(aObject, new IMapper()
 		{
@@ -88,7 +112,7 @@ public class Record implements Serializable
 	/**
 	 * "Fixes" the argument so that arrays are of the proper type.
 	 */
-	private Object fixArg(Object aArg, Class aExpectedType)
+	protected Object fixArg(Object aArg, Class aExpectedType)
 	{
 		if (aExpectedType.isArray())
 		{
@@ -100,41 +124,21 @@ public class Record implements Serializable
 		else return aArg;
 	}
 	
-	private Object[] fixArgs(Object[] aArgs, Method aMethod)
+	protected Object[] fixArgs(Object[] aArgs, Class<?>[] aParameterTypes)
 	{
 		Object[] theResult = new Object[aArgs.length];
-		Class<?>[] theParameterTypes = aMethod.getParameterTypes();
 		
 		for (int i=0;i<theResult.length;i++)
 		{
-			theResult[i] = fixArg(aArgs[i], theParameterTypes[i]); 
+			theResult[i] = fixArg(aArgs[i], aParameterTypes[i]); 
 		}
 		
 		return theResult;
 	}
 	
-	public void process(Map<Integer, Object> aObjectsMap) throws Exception
-	{
-		Object theTarget = resolve(aObjectsMap, itsTarget);
-		Class<?> theClass = theTarget.getClass();
-		Method theMethod = itsMethod.findMethod(theClass);
-		Object theResult = null;
-		try
-		{
-			theMethod.setAccessible(true);
-			theResult = theMethod.invoke(
-					theTarget, 
-					fixArgs((Object[]) resolve(aObjectsMap, itsArgs), theMethod));
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
-
-		registerResult(aObjectsMap, itsResult, theResult);
-	}
+	public abstract void process(Map<Integer, Object> aObjectsMap) throws Exception;
 	
-	private void registerResult(
+	protected void registerResult(
 			Map<Integer, Object> aObjectsMap, 
 			Object aFormalResult, 
 			Object aActualResult)
@@ -160,7 +164,7 @@ public class Record implements Serializable
 		}
 	}
 	
-	private Object[] toArray(Object aObject)
+	protected Object[] toArray(Object aObject)
 	{
 		if (aObject == null) return null;
 		else if (aObject.getClass().isArray()) return (Object[]) aObject;
@@ -174,7 +178,7 @@ public class Record implements Serializable
 		else throw new RuntimeException("not handled: "+aObject);
 	}
 	
-	private String format(Object aObject)
+	protected String format(Object aObject)
 	{
 		if (aObject == null) return "null";
 		else if (aObject.getClass().isArray())
@@ -196,12 +200,13 @@ public class Record implements Serializable
 	public String toString()
 	{
 		return String.format(
-				"Record [th: %d, tgt: %d, m: %s, args: %s] -> %s",
+				"Record [th: %d, tgt: %d, m: %s, args: %s] -> %s - loc: %s",
 				itsThreadId,
-				itsTarget.getId(), 
+				itsTarget != null ? itsTarget.getId() : null, 
 				itsMethod,
 				Arrays.asList(itsArgs),
-				format(itsResult));
+				format(itsResult),
+				itsLocation);
 	}
 	
 	public Object map(Object aSource, IMapper aMapper)
@@ -223,6 +228,76 @@ public class Record implements Serializable
 			}
 		}
 		else return aMapper.map(aSource);
+	}
+
+	public static class Call extends Record
+	{
+		private static final long serialVersionUID = 3691035497463713498L;
+		
+		public Call(
+				int aThreadId,
+				ProxyObject aTarget,
+				MethodSignature aMethod,
+				Object[] aArgs,
+				Object aResult,
+				String aLocation)
+		{
+			super(aThreadId, aTarget, aMethod, aArgs, aResult, aLocation);
+		}
+		
+		public void process(Map<Integer, Object> aObjectsMap) throws Exception
+		{
+			Object theTarget = resolve(aObjectsMap, getTarget());
+			Class<?> theClass = theTarget.getClass();
+			Method theMethod = getMethod().findMethod(theClass);
+			Object theResult = null;
+			try
+			{
+				theMethod.setAccessible(true);
+				theResult = theMethod.invoke(
+						theTarget, 
+						fixArgs((Object[]) resolve(aObjectsMap, getArgs()), theMethod.getParameterTypes()));
+			}
+			catch (Exception e)
+			{
+				throw new RuntimeException(e);
+			}
+
+			registerResult(aObjectsMap, getResult(), theResult);
+		}
+	}
+	
+	public static class New extends Record
+	{
+		private static final long serialVersionUID = 87635235091283764L;
+
+		public New(
+				int aThreadId,
+				MethodSignature aMethod,
+				Object[] aArgs,
+				Object aResult,
+				String aLocation)
+		{
+			super(aThreadId, null, aMethod, aArgs, aResult, aLocation);
+		}
+
+		public void process(Map<Integer, Object> aObjectsMap) throws Exception
+		{
+			Constructor theConstructor = getMethod().findConstructor();
+			Object theResult = null;
+			try
+			{
+				theConstructor.setAccessible(true);
+				theResult = theConstructor.newInstance(
+						fixArgs((Object[]) resolve(aObjectsMap, getArgs()), theConstructor.getParameterTypes()));
+			}
+			catch (Exception e)
+			{
+				throw new RuntimeException(e);
+			}
+
+			registerResult(aObjectsMap, getResult(), theResult);
+		}
 	}
 	
 	public interface IMapper
@@ -278,7 +353,6 @@ public class Record implements Serializable
 			{
 				itsArgTypeNames[i] = aArgTypes[i].getName();
 			}
-			
 		}
 		
 		public MethodSignature(String aMethodName, String[] aArgTypes)
@@ -296,6 +370,18 @@ public class Record implements Serializable
 			}
 			
 			return aClass.getMethod(itsMethodName, theArgClasses);
+		}
+		
+		public Constructor findConstructor() throws Exception
+		{
+			Class theClass = Class.forName(itsMethodName);
+			Class[] theArgClasses = new Class[itsArgTypeNames.length];
+			for(int i=0;i<theArgClasses.length;i++)
+			{
+				theArgClasses[i] = forName(itsArgTypeNames[i]);
+			}
+			
+			return theClass.getConstructor(theArgClasses);
 		}
 		
 		private Class forName(String aName) throws ClassNotFoundException

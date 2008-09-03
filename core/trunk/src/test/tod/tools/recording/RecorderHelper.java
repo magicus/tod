@@ -44,6 +44,7 @@ import tod.core.database.browser.ICompoundInspector;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.IStructureDatabase;
@@ -90,12 +91,13 @@ public class RecorderHelper
 		return itsLastThreadId++;
 	}
 	
-	private int getObjectId(Object aObject)
+	private int getObjectId(Object aObject, boolean aAllowNewId)
 	{
 		Integer theId = itsObjectIdsMap.get(aObject);
 		if (theId == null)
 		{
 			theId = nextObjectId();
+			if (! aAllowNewId && theId != 1) throw new RuntimeException("Object has no id: "+aObject);
 			itsObjectIdsMap.put(aObject, theId);
 		}
 		
@@ -127,7 +129,10 @@ public class RecorderHelper
 			|| (aObject instanceof IThreadInfo)
 			|| (aObject instanceof ILogEvent)
 			|| (aObject instanceof ProbeInfo)
-			|| (aObject instanceof ICompoundInspector);
+			|| (aObject instanceof ICompoundInspector)
+			|| (aObject instanceof ExternalPointer)
+			|| ("tod.impl.dbgrid.event.BehaviorCallEvent$CallInfoBuilder".equals(aObject.getClass().getName()))
+			|| ("tod.impl.dbgrid.event.BehaviorCallEvent$CallInfo".equals(aObject.getClass().getName()));
 	}
 	
 	private boolean isIgnored(Object aObject)
@@ -135,65 +140,83 @@ public class RecorderHelper
 		return (aObject instanceof ISession);
 	}
 	
-	private Object[] transformArray(Object[] aArray)
+	private Object[] transformArray(Object[] aArray, boolean aAllowNewId)
 	{
 		Object[] theResult = new Object[aArray.length];
 		for (int i=0;i<theResult.length;i++)
 		{
-			theResult[i] = transform(aArray[i]);
+			theResult[i] = transform(aArray[i], aAllowNewId);
 		}
 		
 		return theResult;
 	}
 	
-	private Object transform(Object aObject)
+	private Object transform(Object aObject, boolean aAllowNewId)
 	{
 		if (aObject == null) return null;
 		else if (isIgnored(aObject)) return null;
 		else if (aObject.getClass().isArray()) 
 		{
 			if (aObject.getClass().getComponentType().isPrimitive()) return aObject;
-			else return transformArray((Object[]) aObject);
+			else return transformArray((Object[]) aObject, aAllowNewId);
 		}
 		else if (aObject instanceof Iterable)
 		{
 			Iterable theIterable = (Iterable) aObject;
 			List theList = new ArrayList();
 			Utils.fillCollection(theList, theIterable);
-			return transformArray(theList.toArray());
+			return transformArray(theList.toArray(), aAllowNewId);
 		}
-		else if (isRecorded(aObject)) return new Record.ProxyObject(getObjectId(aObject));
+		else if (isRecorded(aObject)) return new Record.ProxyObject(getObjectId(aObject, aAllowNewId));
 		else return aObject;
 	}
 	
-	public synchronized void record(
-			Object aTarget, 
-			String aMethod,
-			Class[] aFormalsType,
-			Object[] aArgs, 
-			Object aReturn)
+	private synchronized void write(Record aRecord)
 	{
-		int theThreadId = getThreadId(Thread.currentThread());
-		int theTargetId = getObjectId(aTarget);
-		
-		Object[] theArguments = transformArray(aArgs);
-		Object theResult = transform(aReturn);
-		
-		Record theRecord = new Record(
-				theThreadId,
-				new Record.ProxyObject(theTargetId),
-				new Record.MethodSignature(aMethod, aFormalsType),
-				theArguments,
-				theResult);
-		
 		try
 		{
-			out.writeObject(theRecord);
+			out.writeObject(aRecord);
 			out.flush();
 		}
 		catch (IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+	}
+	
+	public void recordCall(
+			Object aTarget, 
+			String aMethod,
+			Class[] aFormalsType,
+			Object[] aArgs, 
+			Object aReturn,
+			String aLocation)
+	{
+		Record theRecord = new Record.Call(
+				getThreadId(Thread.currentThread()),
+				new Record.ProxyObject(getObjectId(aTarget, false)),
+				new Record.MethodSignature(aMethod, aFormalsType),
+				transformArray(aArgs, false),
+				transform(aReturn, true),
+				aLocation);
+		
+		write(theRecord);
+	}
+	
+	public void recordNew(
+			String aMethod,
+			Class[] aFormalsType,
+			Object[] aArgs, 
+			Object aReturn,
+			String aLocation)
+	{
+		Record theRecord = new Record.New(
+				getThreadId(Thread.currentThread()),
+				new Record.MethodSignature(aMethod, aFormalsType),
+				transformArray(aArgs, false),
+				transform(aReturn, true),
+				aLocation);
+		
+		write(theRecord);
 	}
 }
