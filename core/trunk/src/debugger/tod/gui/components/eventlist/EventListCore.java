@@ -37,7 +37,6 @@ import java.util.List;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.event.ILogEvent;
-import tod.tools.recording.RecorderHelper;
 import zz.utils.Utils;
 
 /**
