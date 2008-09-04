@@ -72,7 +72,6 @@ public abstract class BehaviorCallNode extends AbstractSimpleEventNode
 	{
 		super (aGUIManager, aListPanel);
 		itsEvent = aEvent;
-		RecorderHelper.getInstance().checkId(aEvent);
 		createUI();
 	}
 	

@@ -109,6 +109,7 @@ public class RecorderHelper
 	
 	/**
 	 * Checks that the given object has an id.
+	 * Only for debugging.
 	 */
 	public void checkId(Object aObject)
 	{
