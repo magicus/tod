@@ -93,7 +93,7 @@ public class ReconstitutedObject
 		EntryValue[] theEntryValues = itsInspector.getEntryValue(theField);
 		if (theEntryValues == null || theEntryValues.length > 1) throw new RuntimeException("What do we do? "+theEntryValues);
 		
-		Object theValue = theEntryValues.length == 1 ? theEntryValues[0].value : null;
+		Object theValue = theEntryValues.length == 1 ? theEntryValues[0].getValue() : null;
 		
 		ILogBrowser theLogBrowser = itsInspector.getLogBrowser();
 		

@@ -78,8 +78,8 @@ public class TODPluginUtils
 			IJavaElement aElement) throws JavaModelException
 	{
 		if (aSession == null) TODUtils.log(0,"Trying to show event while no session is available.");
-		ILogBrowser theEventTrace = aSession.getLogBrowser();
-		IStructureDatabase theStructureDatabase = theEventTrace.getStructureDatabase();
+		ILogBrowser theLogBrowser = aSession.getLogBrowser();
+		IStructureDatabase theStructureDatabase = theLogBrowser.getStructureDatabase();
 		
 		if (aElement instanceof IMember)
 		{

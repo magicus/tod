@@ -61,7 +61,7 @@ public class Replayer
 	public void process() throws Exception
 	{
 		Map<Integer, Object> theObjects = new HashMap<Integer, Object>();
-		theObjects.put(1, itsSession.getLogBrowser());
+		theObjects.put(1, itsSession);
 		
 		List<Record> theRecords = load(itsFile);
 		

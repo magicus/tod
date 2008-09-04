@@ -119,11 +119,11 @@ public class WatchEntryNode extends JPanel
 							Hyperlinks.SWING, 
 							itsJobScheduler,
 							itsProvider.getCurrentObject(),
-							itsValue[i].value,
+							itsValue[i].getValue(),
 							itsProvider.getRefEvent(),
 							true));
 					
-					ILogEvent theSetter = itsValue[i].setter;
+					ILogEvent theSetter = itsValue[i].getSetter();
 					add(GUIUtils.createLabel(" ("));
 					if (theSetter != null)
 					{
@@ -185,7 +185,7 @@ public class WatchEntryNode extends JPanel
 					if (theFirst) theFirst = false;
 					else add(GUIUtils.createLabel(" / "));
 					
-					ILogEvent theSetter = itsValue[i].setter;
+					ILogEvent theSetter = itsValue[i].getSetter();
 					if (theSetter != null)
 					{
 						CFlowSeed theSeed = new CFlowSeed(itsGUIManager.getSession().getLogBrowser(), theSetter);

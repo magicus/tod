@@ -37,6 +37,7 @@ import java.util.List;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.event.ILogEvent;
+import tod.tools.recording.RecorderHelper;
 import zz.utils.Utils;
 
 /**
@@ -134,6 +135,7 @@ public class EventListCore
 		for(int i=0;i<itsVisibleEvents && itsBrowser.hasNext();i++)
 		{
 			ILogEvent theEvent = itsBrowser.next();
+			RecorderHelper.getInstance().checkId(theEvent);
 			itsDisplayedEvents.add(theEvent);
 			itsCurrentDelta++;
 		}
@@ -144,6 +146,7 @@ public class EventListCore
 		while (itsCurrentDelta > 0)
 		{
 			ILogEvent theEvent = itsBrowser.previous();
+			RecorderHelper.getInstance().checkId(theEvent);
 			itsCurrentDelta--;
 			
 			// Check consistency
@@ -158,6 +161,7 @@ public class EventListCore
 		{
 			assert itsCurrentDelta == 0;
 			ILogEvent theEvent = itsBrowser.previous();
+			RecorderHelper.getInstance().checkId(theEvent);
 			
 			itsDisplayedEvents.addFirst(theEvent);
 			if (itsDisplayedEvents.size() > itsVisibleEvents) 
@@ -172,6 +176,7 @@ public class EventListCore
 			if (! itsBrowser.hasNext()) break;
 			
 			ILogEvent theEvent = itsBrowser.next();
+			RecorderHelper.getInstance().checkId(theEvent);
 			
 			// Check consistency
 			if (itsDisplayedEvents.size() > itsCurrentDelta)
@@ -187,6 +192,7 @@ public class EventListCore
 		while (itsCurrentDelta > itsVisibleEvents)
 		{
 			ILogEvent theEvent = itsBrowser.previous();
+			RecorderHelper.getInstance().checkId(theEvent);
 			itsCurrentDelta--;
 			
 			// Check consistency
@@ -202,6 +208,7 @@ public class EventListCore
 			if (itsBrowser.hasNext())
 			{
 				ILogEvent theEvent = itsBrowser.next();
+				RecorderHelper.getInstance().checkId(theEvent);
 				itsCurrentDelta++;
 				
 				itsDisplayedEvents.addLast(theEvent);
@@ -249,6 +256,7 @@ public class EventListCore
 			if (! itsBrowser.hasNext()) break;
 			
 			ILogEvent theEvent = itsBrowser.next();
+			RecorderHelper.getInstance().checkId(theEvent);
 			
 			// Check consistency
 			if (itsDisplayedEvents.size() > itsCurrentDelta)
@@ -266,6 +274,7 @@ public class EventListCore
 		if (itsBrowser.hasNext())
 		{
 			ILogEvent theEvent = itsBrowser.next();
+			RecorderHelper.getInstance().checkId(theEvent);
 			itsCurrentDelta++;
 			
 			itsDisplayedEvents.addLast(theEvent);

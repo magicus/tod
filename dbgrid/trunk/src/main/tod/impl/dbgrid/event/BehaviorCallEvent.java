@@ -77,7 +77,7 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 	public boolean hasRealChildren()
 	{
 		if (itsCallInfo == null) initChildren();
-		return itsCallInfo.hasRealChildren;
+		return itsCallInfo.hasRealChildren();
 	}
 	
 	public IEventBrowser getChildrenBrowser()
@@ -305,10 +305,10 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 	{
 		private static final long serialVersionUID = 642849421884431178L;
 
-		private final ExternalPointer firstChild;
-		private final ExternalPointer lastChild;
-		private final ExternalPointer exitEvent;
-		private final boolean hasRealChildren;
+		private final ExternalPointer itsFirstChild;
+		private final ExternalPointer itsLastChild;
+		private final ExternalPointer itsExitEvent;
+		private final boolean itsHasRealChildren;
 
 		public CallInfo(
 				ExternalPointer aFirstChild, 
@@ -316,30 +316,30 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 				ExternalPointer aExitEvent, 
 				boolean aHasRealChildren)
 		{
-			firstChild = aFirstChild;
-			lastChild = aLastChild;
-			exitEvent = aExitEvent;
-			hasRealChildren = aHasRealChildren;
+			itsFirstChild = aFirstChild;
+			itsLastChild = aLastChild;
+			itsExitEvent = aExitEvent;
+			itsHasRealChildren = aHasRealChildren;
 		}
 
 		public ExternalPointer getFirstChild()
 		{
-			return firstChild;
+			return itsFirstChild;
 		}
 
 		public ExternalPointer getLastChild()
 		{
-			return lastChild;
+			return itsLastChild;
 		}
 
 		public ExternalPointer getExitEvent()
 		{
-			return exitEvent;
+			return itsExitEvent;
 		}
 
 		public boolean hasRealChildren()
 		{
-			return hasRealChildren;
+			return itsHasRealChildren;
 		}
 	}
 }

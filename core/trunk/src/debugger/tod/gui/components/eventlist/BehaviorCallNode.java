@@ -52,6 +52,7 @@ import tod.gui.kit.html.HtmlBody;
 import tod.gui.kit.html.HtmlElement;
 import tod.gui.kit.html.HtmlParentElement;
 import tod.gui.kit.html.HtmlText;
+import tod.tools.recording.RecorderHelper;
 import tod.tools.scheduling.IJobScheduler.JobPriority;
 import zz.utils.ui.StackLayout;
 import zz.utils.ui.UIUtils;
@@ -71,6 +72,7 @@ public abstract class BehaviorCallNode extends AbstractSimpleEventNode
 	{
 		super (aGUIManager, aListPanel);
 		itsEvent = aEvent;
+		RecorderHelper.getInstance().checkId(aEvent);
 		createUI();
 	}
 	

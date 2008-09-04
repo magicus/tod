@@ -211,7 +211,7 @@ public class StackFrameWatchProvider extends AbstractWatchProvider
 		{
 			if (itsInvalid) return null;
 			IVariablesInspector theInspector = getInspector();
-			itsInspector.setReferenceEvent(itsRefEvent);
+			theInspector.setReferenceEvent(itsRefEvent);
 			return theInspector.getEntryValue(itsLocalVariable);
 		}
 
@@ -220,7 +220,7 @@ public class StackFrameWatchProvider extends AbstractWatchProvider
 		{
 			if (itsInvalid) return null;
 			IVariablesInspector theInspector = getInspector();
-			itsInspector.setReferenceEvent(itsRefEvent);
+			theInspector.setReferenceEvent(itsRefEvent);
 			return theInspector.nextEntryValue(itsLocalVariable);
 		}
 
@@ -229,7 +229,7 @@ public class StackFrameWatchProvider extends AbstractWatchProvider
 		{
 			if (itsInvalid) return null;
 			IVariablesInspector theInspector = getInspector();
-			itsInspector.setReferenceEvent(itsRefEvent);
+			theInspector.setReferenceEvent(itsRefEvent);
 			return theInspector.previousEntryValue(itsLocalVariable);
 		}
 		

@@ -266,9 +266,9 @@ public class ObjectInspector implements IObjectInspector
 		List<EntryValue> theResult = new ArrayList<EntryValue>();
 		for (EntryValue theValue : theEntryValue)
 		{
-			theBrowser.setNextEvent(theValue.setter);
+			theBrowser.setNextEvent(theValue.getSetter());
 			ILogEvent theNext = theBrowser.next();
-			assert theNext.equals(theValue.setter);
+			assert theNext.equals(theValue.getSetter());
 			
 			if (! theBrowser.hasNext()) continue;
 			theNext = theBrowser.next();
@@ -290,9 +290,9 @@ public class ObjectInspector implements IObjectInspector
 		List<EntryValue> theResult = new ArrayList<EntryValue>();
 		for (EntryValue theValue : theEntryValue)
 		{
-			theBrowser.setPreviousEvent(theValue.setter);
+			theBrowser.setPreviousEvent(theValue.getSetter());
 			ILogEvent thePrevious = theBrowser.previous();
-			assert thePrevious.equals(theValue.setter);
+			assert thePrevious.equals(theValue.getSetter());
 			
 			if (! theBrowser.hasPrevious()) continue;
 			thePrevious = theBrowser.previous();
@@ -587,7 +587,7 @@ public class ObjectInspector implements IObjectInspector
 				
 				if (theEntryValue == null) return null;
 				Object[] theResult = new Object[theEntryValue.length];
-				for(int i=0;i<theEntryValue.length;i++) theResult[i] = theEntryValue[i].value;
+				for(int i=0;i<theEntryValue.length;i++) theResult[i] = theEntryValue[i].getValue();
 
 				return theResult;
 			}

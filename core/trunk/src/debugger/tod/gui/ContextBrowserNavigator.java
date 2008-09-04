@@ -124,7 +124,7 @@ public class ContextBrowserNavigator extends BrowserNavigator<ActivitySeed>
 		
 		itsContainer.revalidate();
 		itsContainer.repaint();
-		itsContainer.validate();
+//		itsContainer.validate();
 	}
 	
 	/**

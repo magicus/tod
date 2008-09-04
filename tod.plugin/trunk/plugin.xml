@@ -102,6 +102,7 @@
       <import plugin="org.eclipse.jdt.junit" export="true"/>
       <import plugin="org.eclipse.jdt.junit.runtime" export="true"/>
       <import plugin="org.eclipse.pde.ui" export="true"/>
+      <import plugin="org.aspectj.runtime" optional="true"/>
    </requires>
    <extension-point id="SourceRevealer" name="Source Revealer" schema="schema/SourceRevealer.exsd"/>
 

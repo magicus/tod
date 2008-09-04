@@ -97,11 +97,22 @@ public class RecorderHelper
 		if (theId == null)
 		{
 			theId = nextObjectId();
-			if (! aAllowNewId && theId != 1) throw new RuntimeException("Object has no id: "+aObject);
+			if (! aAllowNewId && theId != 1) 
+			{
+				throw new RuntimeException("Object has no id: "+aObject);
+			}
 			itsObjectIdsMap.put(aObject, theId);
 		}
 		
 		return theId;
+	}
+	
+	/**
+	 * Checks that the given object has an id.
+	 */
+	public void checkId(Object aObject)
+	{
+		if (! itsObjectIdsMap.containsKey(aObject)) throw new RuntimeException("Not id: "+aObject);
 	}
 	
 	private int getThreadId(Thread aThread)
@@ -130,9 +141,11 @@ public class RecorderHelper
 			|| (aObject instanceof ILogEvent)
 			|| (aObject instanceof ProbeInfo)
 			|| (aObject instanceof ICompoundInspector)
+			|| (aObject instanceof ICompoundInspector.EntryValue)
 			|| (aObject instanceof ExternalPointer)
-			|| ("tod.impl.dbgrid.event.BehaviorCallEvent$CallInfoBuilder".equals(aObject.getClass().getName()))
-			|| ("tod.impl.dbgrid.event.BehaviorCallEvent$CallInfo".equals(aObject.getClass().getName()));
+//			|| ("tod.impl.dbgrid.event.BehaviorCallEvent$CallInfoBuilder".equals(aObject.getClass().getName()))
+//			|| ("tod.impl.dbgrid.event.BehaviorCallEvent$CallInfo".equals(aObject.getClass().getName()))
+			;
 	}
 	
 	private boolean isIgnored(Object aObject)

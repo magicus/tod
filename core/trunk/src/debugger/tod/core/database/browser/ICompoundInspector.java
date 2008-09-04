@@ -89,17 +89,27 @@ public interface ICompoundInspector<E>
 		/**
 		 * The value of the entry at a particular point in time.
 		 */
-		public final Object value;
+		private final Object itsValue;
 		
 		/**
 		 * The event that assigned the entry its value, if available.
 		 */
-		public final ILogEvent setter;
+		private final ILogEvent itsSetter;
 		
 		public EntryValue(Object aValue, ILogEvent aSetter)
 		{
-			value = aValue;
-			setter = aSetter;
+			itsValue = aValue;
+			itsSetter = aSetter;
+		}
+
+		public Object getValue()
+		{
+			return itsValue;
+		}
+
+		public ILogEvent getSetter()
+		{
+			return itsSetter;
 		}
 	}
 

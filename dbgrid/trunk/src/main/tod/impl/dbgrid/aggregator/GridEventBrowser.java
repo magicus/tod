@@ -34,6 +34,7 @@ import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.IGridEventFilter;
 import tod.impl.dbgrid.IScheduled;
 import tod.impl.dbgrid.messages.GridEvent;
+import tod.impl.dbgrid.queries.EventIdCondition;
 import tod.tools.monitoring.MonitoringClient.MonitorId;
 
 /**
@@ -44,7 +45,7 @@ import tod.tools.monitoring.MonitoringClient.MonitorId;
 public class GridEventBrowser extends BufferedBidiIterator<ILogEvent[], ILogEvent>
 implements IEventBrowser, IScheduled
 {
-	private final GridLogBrowser itsBrowser;
+	private final GridLogBrowser itsLogBrowser;
 	private final IGridEventFilter itsFilter;
 	
 	private final RIQueryAggregator itsAggregator;
@@ -54,16 +55,16 @@ implements IEventBrowser, IScheduled
 	
 	public GridEventBrowser(GridLogBrowser aBrowser, IGridEventFilter aFilter) throws RemoteException
 	{
-		itsBrowser = aBrowser;
+		itsLogBrowser = aBrowser;
 		itsFilter = aFilter;
-		itsAggregator = itsBrowser.getMaster().createAggregator(aFilter);
+		itsAggregator = itsLogBrowser.getMaster().createAggregator(aFilter);
 		assert itsAggregator != null;
 		reset();
 	}
 	
 	public GridLogBrowser getLogBrowser()
 	{
-		return itsBrowser;
+		return itsLogBrowser;
 	}
 	
 	public IEventFilter getFilter()
@@ -73,7 +74,7 @@ implements IEventBrowser, IScheduled
 	
 	public ILogBrowser getKey()
 	{
-		return itsBrowser;
+		return itsLogBrowser;
 	}
 	
 	public void setBounds(ILogEvent aFirstEvent, ILogEvent aLastEvent)
@@ -186,12 +187,12 @@ implements IEventBrowser, IScheduled
 	 */
 	private ILogEvent convert(GridEvent aEvent)
 	{
-		aEvent._setStructureDatabase(itsBrowser.getStructureDatabase());
+		aEvent._setStructureDatabase(itsLogBrowser.getStructureDatabase());
 		if (! itsFilter._match(aEvent))
 		{
 			assert false;
 		}
-		return aEvent.toLogEvent(itsBrowser);
+		return aEvent.toLogEvent(itsLogBrowser);
 	}
 	
 	private ILogEvent[] convert(GridEvent[] aEvents)
@@ -310,20 +311,30 @@ implements IEventBrowser, IScheduled
 		}
 	}
 	
+	@Override
 	public IEventBrowser clone()
 	{
-		return itsBrowser.createBrowser(itsFilter);
+		return itsLogBrowser.createBrowser(itsFilter);
 	}
 
 	public IEventBrowser createIntersection(IEventFilter aFilter)
 	{
 		assert aFilter != null;
-		ICompoundFilter theFilter = itsBrowser.createIntersectionFilter(itsFilter, aFilter);
-		GridEventBrowser theBrowser = (GridEventBrowser) itsBrowser.createBrowser(theFilter);
-		
-		theBrowser.setBounds(itsFirstEvent, itsLastEvent);
-		
-		return theBrowser;
+		if (aFilter instanceof EventIdCondition)
+		{
+			// That method explicitly handles EventIdConditions
+			ICompoundFilter theFilter = itsLogBrowser.createIntersectionFilter(itsFilter, aFilter);
+			return itsLogBrowser.createBrowser(theFilter);
+		}
+		else
+		{
+			ICompoundFilter theFilter = itsLogBrowser.createIntersectionFilter(itsFilter, aFilter);
+			GridEventBrowser theBrowser = (GridEventBrowser) itsLogBrowser.createBrowser(theFilter);
+			
+			theBrowser.setBounds(itsFirstEvent, itsLastEvent);
+			
+			return theBrowser;
+		}
 	}
 
 	public long getFirstTimestamp()
@@ -366,6 +377,42 @@ implements IEventBrowser, IScheduled
 			return aBrowser.previous().getTimestamp();
 		}
 		else return 0;
+	}
+
+	/**
+	 * Overridden only as a hack for Recorder.aj (otherwise execution is not picked)
+	 */
+	@Override
+	public ILogEvent next()
+	{
+		return super.next();
+	}
+
+	/**
+	 * Overridden only as a hack for Recorder.aj (otherwise execution is not picked)
+	 */
+	@Override
+	public ILogEvent peekNext()
+	{
+		return super.peekNext();
+	}
+
+	/**
+	 * Overridden only as a hack for Recorder.aj (otherwise execution is not picked)
+	 */
+	@Override
+	public ILogEvent peekPrevious()
+	{
+		return super.peekPrevious();
+	}
+
+	/**
+	 * Overridden only as a hack for Recorder.aj (otherwise execution is not picked)
+	 */
+	@Override
+	public ILogEvent previous()
+	{
+		return super.previous();
 	}
 
 
