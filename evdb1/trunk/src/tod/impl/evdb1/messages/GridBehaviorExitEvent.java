@@ -183,6 +183,12 @@ public class GridBehaviorExitEvent extends BitGridEvent
 							aPartialKey, 
 							getObjectId(getResult(), false)));
 	}
+
+	@Override
+	public boolean isExit()
+	{
+		return true;
+	}
 	
 	@Override
 	public String toString()

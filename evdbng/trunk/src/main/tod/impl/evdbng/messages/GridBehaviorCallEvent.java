@@ -280,6 +280,12 @@ public class GridBehaviorCallEvent extends GridEventNG
 	}
 	
 	@Override
+	public boolean isCall()
+	{
+		return true;
+	}
+	
+	@Override
 	public String toString()
 	{
 		return String.format(

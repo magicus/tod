@@ -126,11 +126,6 @@ public class IdGenerator
 		return itsTimestampGenerator.next();
 	}
 	
-	public long genParentTimestamp()
-	{
-		return itsParentTimestampGenerator.next();
-	}
-	
 	public int genThreadId()
 	{
 		return itsRandom.nextInt(itsThreadsRange) + 1;
@@ -209,4 +204,9 @@ public class IdGenerator
 		return theResult;
 	}
 
+	public int getDepthRange()
+	{
+		return itsDepthRange;
+	}
+	
 }

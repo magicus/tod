@@ -251,6 +251,22 @@ implements Serializable
 	}
 	
 	/**
+	 * Whether this event is a behavior call event.
+	 */
+	public boolean isCall()
+	{
+		return false;
+	}
+	
+	/**
+	 * Whether this event is a behavior exit event.
+	 */
+	public boolean isExit()
+	{
+		return false;
+	}
+	
+	/**
 	 * Internal version of toString, used by subclasses.
 	 */
 	protected String toString0()

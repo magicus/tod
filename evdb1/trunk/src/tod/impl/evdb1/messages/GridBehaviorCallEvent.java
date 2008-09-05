@@ -304,6 +304,12 @@ public class GridBehaviorCallEvent extends BitGridEvent
 	}
 	
 	@Override
+	public boolean isCall()
+	{
+		return true;
+	}
+	
+	@Override
 	public String toString()
 	{
 		return String.format(

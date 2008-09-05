@@ -31,6 +31,7 @@ import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_THREADS_COUNT;
 import static tod.impl.evdb1.DebuggerGridConfig1.STRUCTURE_VAR_COUNT;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.impl.dbgrid.EventGenerator;
+import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.MessageType;
 import tod.impl.evdb1.messages.BitGridEvent;
 import tod.impl.evdb1.messages.GridArrayWriteEvent;
@@ -70,149 +71,175 @@ public class EventGenerator1 extends EventGenerator
 				aArrayIndexRange);
 	}
 
+	@Override
 	public BitGridEvent next()
 	{
-		MessageType theType = genType();
-		switch (theType)
-		{
-		case BEHAVIOR_EXIT:
-			return new GridBehaviorExitEvent(
-					getStructureDatabase(),
-					genThreadId(),
-					genDepth(),
-					genTimestamp(),
-					genAdviceCFlow(),
-					genProbeId(),
-					genParentTimestamp(),
-					genBoolean(),
-					genObject(),
-					genBehaviorId());
-			
-		case SUPER_CALL:
-			return new GridBehaviorCallEvent(
-					getStructureDatabase(),
-					genThreadId(),
-					genDepth(),
-					genTimestamp(),
-					genAdviceCFlow(),
-					genProbeId(),
-					genParentTimestamp(),
-					MessageType.SUPER_CALL,
-					genBoolean(),
-					genArgs(),
-					genBehaviorId(),
-					genBehaviorId(),
-					genObject());
-			
-		case EXCEPTION_GENERATED:
-			return new GridExceptionGeneratedEvent(
-					getStructureDatabase(),
-					genThreadId(),
-					genDepth(),
-					genTimestamp(),
-					genAdviceCFlow(),
-					genProbeId(),
-					genParentTimestamp(),
-					genObject());
-			
-		case FIELD_WRITE:
-			return new GridFieldWriteEvent(
-					getStructureDatabase(),
-					genThreadId(),
-					genDepth(),
-					genTimestamp(),
-					genAdviceCFlow(),
-					genProbeId(),
-					genParentTimestamp(),
-					genFieldId(),
-					genObject(),
-					genObject());
-			
-		case INSTANTIATION:
-			return new GridBehaviorCallEvent(
-					getStructureDatabase(),
-					genThreadId(),
-					genDepth(),
-					genTimestamp(),
-					genAdviceCFlow(),
-					genProbeId(),
-					genParentTimestamp(),
-					MessageType.INSTANTIATION,
-					genBoolean(),
-					genArgs(),
-					genBehaviorId(),
-					genBehaviorId(),
-					genObject());
-			
-		case LOCAL_VARIABLE_WRITE:
-			return new GridVariableWriteEvent(
-					getStructureDatabase(),
-					genThreadId(),
-					genDepth(),
-					genTimestamp(),
-					genAdviceCFlow(),
-					genProbeId(),
-					genParentTimestamp(),
-					genVariableId(),
-					genObject());
-			
-		case METHOD_CALL:
-			return new GridBehaviorCallEvent(
-					getStructureDatabase(),
-					genThreadId(),
-					genDepth(),
-					genTimestamp(),
-					genAdviceCFlow(),
-					genProbeId(),
-					genParentTimestamp(),
-					MessageType.METHOD_CALL,
-					genBoolean(),
-					genArgs(),
-					genBehaviorId(),
-					genBehaviorId(),
-					genObject());
-		
-		case ARRAY_WRITE:
-			return new GridArrayWriteEvent(
-					getStructureDatabase(),
-					genThreadId(),
-					genDepth(),
-					genTimestamp(),
-					genAdviceCFlow(),
-					genProbeId(),
-					genParentTimestamp(),
-					genObject(),
-					genArrayIndex(),
-					genObject());
-			
-		case NEW_ARRAY:
-			return new GridNewArrayEvent(
-					getStructureDatabase(),
-					genThreadId(),
-					genDepth(),
-					genTimestamp(),
-					genAdviceCFlow(),
-					genProbeId(),
-					genParentTimestamp(),
-					genObject(),
-					genFieldId(),
-					1000);
-			
-		case INSTANCEOF:
-			return new GridInstanceOfEvent(
-					getStructureDatabase(),
-					genThreadId(),
-					genDepth(),
-					genTimestamp(),
-					genAdviceCFlow(),
-					genProbeId(),
-					genParentTimestamp(),
-					genObject(),
-					genTypeId(),
-					genBoolean());
+		return (BitGridEvent) super.next();
+	}
+	
+	@Override
+	protected BitGridEvent genInstanceOf(int aThreadId, int aDepth, long aParentTimestamp)
+	{
+		return new GridInstanceOfEvent(
+				getStructureDatabase(),
+				aThreadId,
+				aDepth,
+				genTimestamp(),
+				genAdviceCFlow(),
+				genProbeId(),
+				aParentTimestamp,
+				genObject(),
+				genTypeId(),
+				genBoolean());
+	}
 
-		default: throw new RuntimeException("Not handled: "+theType); 
-		}
+	@Override
+	protected BitGridEvent genNewArray(int aThreadId, int aDepth, long aParentTimestamp)
+	{
+		return new GridNewArrayEvent(
+				getStructureDatabase(),
+				aThreadId,
+				aDepth,
+				genTimestamp(),
+				genAdviceCFlow(),
+				genProbeId(),
+				aParentTimestamp,
+				genObject(),
+				genFieldId(),
+				1000);
+	}
 
+	@Override
+	protected BitGridEvent genArrayWrite(int aThreadId, int aDepth, long aParentTimestamp)
+	{
+		return new GridArrayWriteEvent(
+				getStructureDatabase(),
+				aThreadId,
+				aDepth,
+				genTimestamp(),
+				genAdviceCFlow(),
+				genProbeId(),
+				aParentTimestamp,
+				genObject(),
+				genArrayIndex(),
+				genObject());
+	}
+
+	@Override
+	protected BitGridEvent genMethodCall(int aThreadId, int aDepth, long aParentTimestamp)
+	{
+		return new GridBehaviorCallEvent(
+				getStructureDatabase(),
+				aThreadId,
+				aDepth,
+				genTimestamp(),
+				genAdviceCFlow(),
+				genProbeId(),
+				aParentTimestamp,
+				MessageType.METHOD_CALL,
+				genBoolean(),
+				genArgs(),
+				genBehaviorId(),
+				genBehaviorId(),
+				genObject());
+	}
+
+	@Override
+	protected BitGridEvent genVariableWrite(int aThreadId, int aDepth, long aParentTimestamp)
+	{
+		return new GridVariableWriteEvent(
+				getStructureDatabase(),
+				aThreadId,
+				aDepth,
+				genTimestamp(),
+				genAdviceCFlow(),
+				genProbeId(),
+				aParentTimestamp,
+				genVariableId(),
+				genObject());
+	}
+
+	@Override
+	protected BitGridEvent genInstantiation(int aThreadId, int aDepth, long aParentTimestamp)
+	{
+		return new GridBehaviorCallEvent(
+				getStructureDatabase(),
+				aThreadId,
+				aDepth,
+				genTimestamp(),
+				genAdviceCFlow(),
+				genProbeId(),
+				aParentTimestamp,
+				MessageType.INSTANTIATION,
+				genBoolean(),
+				genArgs(),
+				genBehaviorId(),
+				genBehaviorId(),
+				genObject());
+	}
+
+	@Override
+	protected BitGridEvent genFieldWrite(int aThreadId, int aDepth, long aParentTimestamp)
+	{
+		return new GridFieldWriteEvent(
+				getStructureDatabase(),
+				aThreadId,
+				aDepth,
+				genTimestamp(),
+				genAdviceCFlow(),
+				genProbeId(),
+				aParentTimestamp,
+				genFieldId(),
+				genObject(),
+				genObject());
+	}
+
+	@Override
+	protected BitGridEvent genException(int aThreadId, int aDepth, long aParentTimestamp)
+	{
+		return new GridExceptionGeneratedEvent(
+				getStructureDatabase(),
+				aThreadId,
+				aDepth,
+				genTimestamp(),
+				genAdviceCFlow(),
+				genProbeId(),
+				aParentTimestamp,
+				genObject());
+	}
+
+	@Override
+	protected BitGridEvent genSuperCall(int aThreadId, int aDepth, long aParentTimestamp)
+	{
+		return new GridBehaviorCallEvent(
+				getStructureDatabase(),
+				aThreadId,
+				aDepth,
+				genTimestamp(),
+				genAdviceCFlow(),
+				genProbeId(),
+				aParentTimestamp,
+				MessageType.SUPER_CALL,
+				genBoolean(),
+				genArgs(),
+				genBehaviorId(),
+				genBehaviorId(),
+				genObject());
+	}
+
+	@Override
+	protected BitGridEvent genBehaviorExit(int aThreadId, int aDepth, long aParentTimestamp)
+	{
+		return new GridBehaviorExitEvent(
+				getStructureDatabase(),
+				aThreadId,
+				aDepth,
+				genTimestamp(),
+				genAdviceCFlow(),
+				genProbeId(),
+				aParentTimestamp,
+				genBoolean(),
+				genObject(),
+				genBehaviorId());
 	}
 }

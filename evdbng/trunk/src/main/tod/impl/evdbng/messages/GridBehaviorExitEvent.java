@@ -160,6 +160,12 @@ public class GridBehaviorExitEvent extends GridEventNG
 	}
 	
 	@Override
+	public boolean isExit()
+	{
+		return true;
+	}
+	
+	@Override
 	public String toString()
 	{
 		return String.format(

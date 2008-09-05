@@ -21,6 +21,7 @@ import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ObjectId;
 import tod.impl.dbgrid.EventGenerator;
+import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.MessageType;
 import tod.impl.evdbng.messages.GridArrayWriteEvent;
 import tod.impl.evdbng.messages.GridBehaviorCallEvent;
@@ -71,148 +72,173 @@ public class EventGeneratorNG extends EventGenerator
 	@Override
 	public GridEventNG next()
 	{
-		MessageType theType = genType();
-		switch (theType)
-		{
-		case BEHAVIOR_EXIT:
-			return new GridBehaviorExitEvent(
-					getStructureDatabase(),
-					genThreadId(),
-					genDepth(),
-					genTimestamp(),
-					genAdviceCFlow(),
-					genProbeId(),
-					genParentTimestamp(),
-					genBoolean(),
-					genObject(),
-					genBehaviorId());
-			
-		case SUPER_CALL:
-			return new GridBehaviorCallEvent(
-					getStructureDatabase(),
-					genThreadId(),
-					genDepth(),
-					genTimestamp(),
-					genAdviceCFlow(),
-					genProbeId(),
-					genParentTimestamp(),
-					MessageType.SUPER_CALL,
-					genBoolean(),
-					genArgs(),
-					genBehaviorId(),
-					genBehaviorId(),
-					genObject());
-			
-		case EXCEPTION_GENERATED:
-			return new GridExceptionGeneratedEvent(
-					getStructureDatabase(),
-					genThreadId(),
-					genDepth(),
-					genTimestamp(),
-					genAdviceCFlow(),
-					genProbeId(),
-					genParentTimestamp(),
-					genObject());
-			
-		case FIELD_WRITE:
-			return new GridFieldWriteEvent(
-					getStructureDatabase(),
-					genThreadId(),
-					genDepth(),
-					genTimestamp(),
-					genAdviceCFlow(),
-					genProbeId(),
-					genParentTimestamp(),
-					genFieldId(),
-					genObject(),
-					genObject());
-			
-		case INSTANTIATION:
-			return new GridBehaviorCallEvent(
-					getStructureDatabase(),
-					genThreadId(),
-					genDepth(),
-					genTimestamp(),
-					genAdviceCFlow(),
-					genProbeId(),
-					genParentTimestamp(),
-					MessageType.INSTANTIATION,
-					genBoolean(),
-					genArgs(),
-					genBehaviorId(),
-					genBehaviorId(),
-					genObject());
-			
-		case LOCAL_VARIABLE_WRITE:
-			return new GridVariableWriteEvent(
-					getStructureDatabase(),
-					genThreadId(),
-					genDepth(),
-					genTimestamp(),
-					genAdviceCFlow(),
-					genProbeId(),
-					genParentTimestamp(),
-					genVariableId(),
-					genObject());
-			
-		case METHOD_CALL:
-			return new GridBehaviorCallEvent(
-					getStructureDatabase(),
-					genThreadId(),
-					genDepth(),
-					genTimestamp(),
-					genAdviceCFlow(),
-					genProbeId(),
-					genParentTimestamp(),
-					MessageType.METHOD_CALL,
-					genBoolean(),
-					genArgs(),
-					genBehaviorId(),
-					genBehaviorId(),
-					genObject());
-		
-		case ARRAY_WRITE:
-			return new GridArrayWriteEvent(
-					getStructureDatabase(),
-					genThreadId(),
-					genDepth(),
-					genTimestamp(),
-					genAdviceCFlow(),
-					genProbeId(),
-					genParentTimestamp(),
-					genObject(),
-					genArrayIndex(),
-					genObject());
-			
-		case NEW_ARRAY:
-			return new GridNewArrayEvent(
-					getStructureDatabase(),
-					genThreadId(),
-					genDepth(),
-					genTimestamp(),
-					genAdviceCFlow(),
-					genProbeId(),
-					genParentTimestamp(),
-					genObject(),
-					genFieldId(),
-					1000);
-			
-		case INSTANCEOF:
-			return new GridInstanceOfEvent(
-					getStructureDatabase(),
-					genThreadId(),
-					genDepth(),
-					genTimestamp(),
-					genAdviceCFlow(),
-					genProbeId(),
-					genParentTimestamp(),
-					genObject(),
-					genTypeId(),
-					genBoolean());
-			
-		default: throw new RuntimeException("Not handled: "+theType); 
-		}
+		return (GridEventNG) super.next();
+	}
+	
+	@Override
+	protected GridEventNG genInstanceOf(int aThreadId, int aDepth, long aParentTimestamp)
+	{
+		return new GridInstanceOfEvent(
+				getStructureDatabase(),
+				aThreadId,
+				aDepth,
+				genTimestamp(),
+				genAdviceCFlow(),
+				genProbeId(),
+				aParentTimestamp,
+				genObject(),
+				genTypeId(),
+				genBoolean());
+	}
 
+	@Override
+	protected GridEventNG genNewArray(int aThreadId, int aDepth, long aParentTimestamp)
+	{
+		return new GridNewArrayEvent(
+				getStructureDatabase(),
+				aThreadId,
+				aDepth,
+				genTimestamp(),
+				genAdviceCFlow(),
+				genProbeId(),
+				aParentTimestamp,
+				genObject(),
+				genFieldId(),
+				1000);
+	}
+
+	@Override
+	protected GridEventNG genArrayWrite(int aThreadId, int aDepth, long aParentTimestamp)
+	{
+		return new GridArrayWriteEvent(
+				getStructureDatabase(),
+				aThreadId,
+				aDepth,
+				genTimestamp(),
+				genAdviceCFlow(),
+				genProbeId(),
+				aParentTimestamp,
+				genObject(),
+				genArrayIndex(),
+				genObject());
+	}
+
+	@Override
+	protected GridEventNG genMethodCall(int aThreadId, int aDepth, long aParentTimestamp)
+	{
+		return new GridBehaviorCallEvent(
+				getStructureDatabase(),
+				aThreadId,
+				aDepth,
+				genTimestamp(),
+				genAdviceCFlow(),
+				genProbeId(),
+				aParentTimestamp,
+				MessageType.METHOD_CALL,
+				genBoolean(),
+				genArgs(),
+				genBehaviorId(),
+				genBehaviorId(),
+				genObject());
+	}
+
+	@Override
+	protected GridEventNG genVariableWrite(int aThreadId, int aDepth, long aParentTimestamp)
+	{
+		return new GridVariableWriteEvent(
+				getStructureDatabase(),
+				aThreadId,
+				aDepth,
+				genTimestamp(),
+				genAdviceCFlow(),
+				genProbeId(),
+				aParentTimestamp,
+				genVariableId(),
+				genObject());
+	}
+
+	@Override
+	protected GridEventNG genInstantiation(int aThreadId, int aDepth, long aParentTimestamp)
+	{
+		return new GridBehaviorCallEvent(
+				getStructureDatabase(),
+				aThreadId,
+				aDepth,
+				genTimestamp(),
+				genAdviceCFlow(),
+				genProbeId(),
+				aParentTimestamp,
+				MessageType.INSTANTIATION,
+				genBoolean(),
+				genArgs(),
+				genBehaviorId(),
+				genBehaviorId(),
+				genObject());
+	}
+
+	@Override
+	protected GridEventNG genFieldWrite(int aThreadId, int aDepth, long aParentTimestamp)
+	{
+		return new GridFieldWriteEvent(
+				getStructureDatabase(),
+				aThreadId,
+				aDepth,
+				genTimestamp(),
+				genAdviceCFlow(),
+				genProbeId(),
+				aParentTimestamp,
+				genFieldId(),
+				genObject(),
+				genObject());
+	}
+
+	@Override
+	protected GridEventNG genException(int aThreadId, int aDepth, long aParentTimestamp)
+	{
+		return new GridExceptionGeneratedEvent(
+				getStructureDatabase(),
+				aThreadId,
+				aDepth,
+				genTimestamp(),
+				genAdviceCFlow(),
+				genProbeId(),
+				aParentTimestamp,
+				genObject());
+	}
+
+	@Override
+	protected GridEventNG genSuperCall(int aThreadId, int aDepth, long aParentTimestamp)
+	{
+		return new GridBehaviorCallEvent(
+				getStructureDatabase(),
+				aThreadId,
+				aDepth,
+				genTimestamp(),
+				genAdviceCFlow(),
+				genProbeId(),
+				aParentTimestamp,
+				MessageType.SUPER_CALL,
+				genBoolean(),
+				genArgs(),
+				genBehaviorId(),
+				genBehaviorId(),
+				genObject());
+	}
+
+	@Override
+	protected GridEventNG genBehaviorExit(int aThreadId, int aDepth, long aParentTimestamp)
+	{
+		return new GridBehaviorExitEvent(
+				getStructureDatabase(),
+				aThreadId,
+				aDepth,
+				genTimestamp(),
+				genAdviceCFlow(),
+				genProbeId(),
+				aParentTimestamp,
+				genBoolean(),
+				genObject(),
+				genBehaviorId());
 	}
 
 	

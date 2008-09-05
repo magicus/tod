@@ -20,12 +20,20 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.impl.dbgrid.messages.GridEvent;
+import tod.impl.dbgrid.messages.MessageType;
+import zz.utils.ArrayStack;
+import zz.utils.Stack;
 
 public abstract class EventGenerator extends IdGenerator
 {
-	private IMutableStructureDatabase itsStructureDatabase;
+	private final IMutableStructureDatabase itsStructureDatabase;
+	
+	private final Map<Integer, ThreadData> itsThreadsMap = new HashMap<Integer, ThreadData>();
 	
 	public EventGenerator(
 			IMutableStructureDatabase aStructureDatabase,
@@ -49,5 +57,132 @@ public abstract class EventGenerator extends IdGenerator
 		return itsStructureDatabase;
 	}
 	
-	public abstract GridEvent next();
+	private ThreadData getThreadData(int aThreadId)
+	{
+		ThreadData theThreadData = itsThreadsMap.get(aThreadId);
+		if (theThreadData == null)
+		{
+			theThreadData = new ThreadData(genMethodCall(aThreadId, 0, 0));
+			itsThreadsMap.put(aThreadId, theThreadData);
+		}
+		
+		return theThreadData;
+	}
+	
+	public GridEvent next()
+	{
+		int theThreadId = genThreadId();
+		ThreadData theThreadData = getThreadData(theThreadId);
+		GridEvent theCurrentParent = theThreadData.peek();
+
+		int theDepth = theThreadData.getDepth();
+		long theParentTimestamp = theCurrentParent.getTimestamp();
+
+		GridEvent theEvent;
+		while(true)
+		{
+			MessageType theType = genType();
+			switch (theType)
+			{
+			case BEHAVIOR_EXIT:
+				theEvent = genBehaviorExit(theThreadId, theDepth, theParentTimestamp);
+				break;
+				
+			case SUPER_CALL:
+				theEvent = genSuperCall(theThreadId, theDepth, theParentTimestamp);
+				break;
+				
+			case EXCEPTION_GENERATED:
+				theEvent = genException(theThreadId, theDepth, theParentTimestamp);
+				break;
+				
+			case FIELD_WRITE:
+				theEvent = genFieldWrite(theThreadId, theDepth, theParentTimestamp);
+				break;
+				
+			case INSTANTIATION:
+				theEvent = genInstantiation(theThreadId, theDepth, theParentTimestamp);
+				break;
+				
+			case LOCAL_VARIABLE_WRITE:
+				theEvent = genVariableWrite(theThreadId, theDepth, theParentTimestamp);
+				break;
+				
+			case METHOD_CALL:
+				theEvent = genMethodCall(theThreadId, theDepth, theParentTimestamp);
+				break;
+			
+			case ARRAY_WRITE:
+				theEvent = genArrayWrite(theThreadId, theDepth, theParentTimestamp);
+				break;
+				
+			case NEW_ARRAY:
+				theEvent = genNewArray(theThreadId, theDepth, theParentTimestamp);
+				break;
+				
+			case INSTANCEOF:
+				theEvent = genInstanceOf(theThreadId, theDepth, theParentTimestamp);
+				break;
+
+			default: throw new RuntimeException("Not handled: "+theType); 
+			}
+
+			if (theEvent.isCall())
+			{
+				if (theDepth >= getDepthRange()) continue;
+				theThreadData.push(theEvent);
+			}
+			else if (theEvent.isExit())
+			{
+				if (theDepth <= 1) continue;
+				theThreadData.pop();
+			}
+			
+			return theEvent;
+		}
+	}
+
+	
+	protected abstract GridEvent genInstanceOf(int aThreadId, int aDepth, long aParentTimestamp);
+	protected abstract GridEvent genNewArray(int aThreadId, int aDepth, long aParentTimestamp);
+	protected abstract GridEvent genArrayWrite(int aThreadId, int aDepth, long aParentTimestamp);
+	protected abstract GridEvent genMethodCall(int aThreadId, int aDepth, long aParentTimestamp);
+	protected abstract GridEvent genVariableWrite(int aThreadId, int aDepth, long aParentTimestamp);
+	protected abstract GridEvent genInstantiation(int aThreadId, int aDepth, long aParentTimestamp);
+	protected abstract GridEvent genFieldWrite(int aThreadId, int aDepth, long aParentTimestamp);
+	protected abstract GridEvent genException(int aThreadId, int aDepth, long aParentTimestamp);
+	protected abstract GridEvent genSuperCall(int aThreadId, int aDepth, long aParentTimestamp);
+	protected abstract GridEvent genBehaviorExit(int aThreadId, int aDepth, long aParentTimestamp);
+
+
+	private static class ThreadData
+	{
+		private final Stack<GridEvent> itsStack = new ArrayStack<GridEvent>();
+		
+		public ThreadData(GridEvent aRoot)
+		{
+			itsStack.push(aRoot);
+		}
+
+		public GridEvent peek()
+		{
+			return itsStack.peek();
+		}
+		
+		public void push(GridEvent aEvent)
+		{
+			assert aEvent.isCall();
+			itsStack.push(aEvent);
+		}
+		
+		public GridEvent pop()
+		{
+			return itsStack.pop();
+		}
+		
+		public int getDepth()
+		{
+			return itsStack.size();
+		}
+	}
 }
