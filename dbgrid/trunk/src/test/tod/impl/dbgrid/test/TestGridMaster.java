@@ -30,7 +30,9 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.impl.database.structure.standard.HostInfo;
@@ -92,6 +94,9 @@ public class TestGridMaster
 		Fixtures.fillDatabase(theMaster, theEventGenerator, 1600000);
 		
 		System.out.println("checking...");
+		
+		checkBehaviorCalls(theMaster);
+		
 		IdGenerator theIdGenerator = new IdGenerator(100, 100, 100, 100, 100, 100, 100, 100, 100, 100);
 		ConditionGenerator theConditionGenerator = createConditionGenerator(0, theIdGenerator, theLogBrowser);
 		
@@ -122,6 +127,19 @@ public class TestGridMaster
 
 		}
 		
+	}
+	
+	private void checkBehaviorCalls(GridMaster aMaster)
+	{
+		GridLogBrowser theLogBrowser = aMaster._getLocalLogBrowser();
+		IEventFilter theFilter = theLogBrowser.createBehaviorCallFilter();
+		IEventBrowser theEventBrowser = theLogBrowser.createBrowser(theFilter);
+		
+		while(theEventBrowser.hasNext())
+		{
+			IBehaviorCallEvent theEvent = (IBehaviorCallEvent) theEventBrowser.next();
+			IEventBrowser theChildrenBrowser = theEvent.getChildrenBrowser();
+		}
 	}
 	
 	private int checkCondition(
