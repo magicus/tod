@@ -106,7 +106,7 @@ public abstract class BTree<T extends Tuple>
 		itsLeafTupleCount = aStream.readTupleCount();
 		itsRootLevel = aStream.readByte();
 		
-		for (int i=0;i<itsRootLevel;i++)
+		for (int i=0;i<=itsRootLevel;i++)
 		{
 			// chains
 			int thePageId = aStream.readPagePointer();
@@ -163,7 +163,7 @@ public abstract class BTree<T extends Tuple>
 		aStream.writeTupleCount(itsLeafTupleCount);
 		aStream.writeByte(itsRootLevel);
 		
-		for (int i=0;i<itsRootLevel;i++)
+		for (int i=0;i<=itsRootLevel;i++)
 		{
 			MyChainedPageIOStream<T> theChain = itsChains[i];
 			aStream.writePagePointer(theChain.getCurrentPage().getPageId());
