@@ -1711,7 +1711,7 @@ Para tener una mejor perspectiva de los componentes que componen pyTOD, es que s
 		
 		\subsection{Wrapper}
 		
-Por un asunto de usabilidad se ha construido un wrapper con el objetivo que el programador no deba modificar ninguna linea de los script que desee depurar.  A continuación su muestran dos ejemplos, el primero sin utilizar el wrapper y el segundo utilizando el wrapper.
+Por un asunto de usabilidad, se ha construido un wrapper con el objetivo que el programador no deba modificar ninguna linea de los script que desee depurar.  A continuación su muestran dos ejemplos, el primero sin utilizar el wrapper y el segundo utilizando el wrapper.
 
 \begin{itemize}
 	\item Código sin wrapper
@@ -1751,7 +1751,7 @@ if __name__ == '__main__':
 \end{lstlisting}
 \end{singlespace}
 
-Básicamente wrapper implementa las lineas que en el caso anterior el programador tuvo que agregar a su script, además wrapper de lo anterior wrapper se encarga de ejecutar el script del programador.  Wrapper es utilizado en el plugin construido para Eclipse.
+Básicamente wrapper implementa las lineas que en el caso anterior el programador tuvo que agregar a su script, además de lo anterior, wrapper se encarga de ejecutar el script del programador.  Wrapper es utilizado en el plugin construido para Eclipse.
 
 \begin{singlespace}
 \begin{lstlisting}[style=Python]
@@ -1775,14 +1775,22 @@ Como se puede observar el programador, en este caso, no tiene la necesidad de mo
 	\includegraphics[scale=1]{images/wrapper.eps}
 	\caption{Diagrama de composición wrapper}
 \end{figure}
+
+La figura anterior describe de que forma \textit{wrapper} se posiciona en la arquitectura del depurador.
 		
-		\subsection{Diagrama general}
+		%\subsection{Diagrama general}
 	
+	\section{Diseño de pyTOD}
 	
-	\section{El Modelo y Diseño de pyTOD}
-	
-	Diagrama de comunicación, diagrama en block de notas
-	
+En esta sección se muestra una perspectiva del diseño de pyTOD, separando los componentes entre \textit{Máquina virtual}, \textit{Base de datos} y \textit{Vista final del usuario}
+
+\begin{figure}[hpb]
+	\centering
+	\includegraphics[scale=0.4]{images/disenopyTOD.eps}
+	\caption{Diagrama de diseño de pyTOD}
+\end{figure}
+
+
 	\section{Implementación de pyTOD}
 		\subsection{Capturador de huella}
 		
@@ -1790,7 +1798,7 @@ El capturador de huella es el encargado de: a) registrar la estructura del progr
 
 El capturador de huella tiene una dependencia directa con la función \textit{settrace} \cite{settrace} perteneciente al módulo estándar \textit{sys}.  Esta función por definición fue creada para facilitar la creación de depuradores de código.
 
-Es por lo anterior que en el presente trabajo de memoria se utilizó esta función para satisfacer ciertos requerimientos de registro estructural del programa objetivo.  Es importante señalar que la función settrace no cubre todas las necesidades de este trabajo de memoria, ejemplo: no es posible estar enterado de la creación o modificación de una variable de instancia o una variable de clase.
+Por lo anterior, en el presente trabajo de memoria se utilizó esta función para satisfacer ciertos requerimientos de registro estructural del programa objetivo.  Es importante señalar que la función settrace no cubre todas las necesidades de este trabajo de memoria, ejemplo: no es posible estar enterado de la creación o modificación de una variable de instancia o una variable de clase.
 
 A continuación se muestra un ejemplo a nivel introductorio como esta función trabaja:
 
@@ -1902,7 +1910,7 @@ Mi resultado es: -5
 \end{singlespace}
 \end{itemize}
 
-Es importante dejar en claro la diferencia entre los sucesos estructurales y los eventos.  A continuación se detalla cada uno de éstos, se explica su implementación y ejecución dentro del capturador de huella:
+El ejemplo anterior nos muestra que es importante dejar en claro la diferencia entre los sucesos estructurales y los eventos.  A continuación se detalla cada uno de éstos, se explica su implementación y ejecución dentro del capturador de huella:
 
 			\subsubsection{Sucesos estructurales}
 			
@@ -1952,7 +1960,7 @@ Registrando clase miClase
 
 Continuando con el registro completo de la clase se guardan los métodos definidos en ella.  Los métodos son almacenados en una estructura de datos especial perteneciente a la clase objectClass.
 
-Finalmente, se registran los atributos de clase de la misma forma que se registran los métodos.  Estos atributos son guardados en una estructura de dato especial de la clase objectClass.  Este caso se trata con mayor complejidad que el anterior, debido a que la estructura de la base de datos TOD no permite registrar un atributo de clase que esté fuera de un métido de la clase, situación que en Python se definen como atributos de la clase a cualquier variable que esté dentro del cuerpo de la definición de la clase y fuera del cuerpo de los métodos definidos para esta.  Bajo esta situación se tomó la decisión de crear en el lado Java un método artificial llamado \textit{\textbf{clase}StaticMethod}, al cual se le asociarán todos los atributos de clase que se encuentren en la situación descrita anteriormente.
+Finalmente, se registran los atributos de clase de la misma forma que se registran los métodos.  Estos atributos son guardados en una estructura de dato especial de la clase objectClass.  Este caso se trata con mayor complejidad que el anterior, debido a que la estructura de la base de datos TOD no permite registrar un atributo de clase que esté fuera de un método de la clase, situación que en Python es posible dado que se definen como atributos de la clase a cualquier variable que esté dentro del cuerpo de la definición de la clase y fuera del cuerpo de los métodos definidos para ésta.  Bajo esta situación se tomó la decisión de crear en la parte Java de pyTOD un método artificial llamado \textit{\textbf{clase}StaticMethod}, al cual se le asociarán todos los atributos de clase que se encuentren en la situación descrita anteriormente.
 
 
 				\paragraph{Registro de método}
@@ -1974,13 +1982,13 @@ Registrando el metodo miMetodo id = 105
 \end{lstlisting}
 \end{singlespace}
 
-Es importante selañar que al momento de registra un método en la base de datos estructural se deben enviar los argumento de esta.  Por definición Python pone como primer argumento la referencia a la instancia, la forma estándar de nombrarlo es self, este argumento no es registrado como argumento en la base de datos estructural.
+Es importante señalar que al momento de registrar un método en la base de datos estructural, se deben enviar los argumento de éste.  Por definición Python pone como primer argumento la referencia a la instancia, la forma estándar de nombrarlo es self, este argumento no es registrado como argumento en la base de datos estructural.
 
-Los argumentos son registrado utilizando como identificador la posición que ocupan en \textit{frame.f\_code.co\_varnames}, que por definición son siempre los primeros elementos que contiene esta estructura de datos.
+Los argumentos son registrados utilizando como identificador la posición que ocupan en \textit{frame.f\_code.co\_varnames}, que por definición son siempre los primeros elementos que contiene esta estructura de datos.
 
 				\paragraph{Registro de método especial}
 
-De la misma forma que se registra un método se registra este método especial.  Como anteriormente se señala este método artificial se utiliza al momento de registrar un atributo de clase.  Este método siempre se encontrará por el nombre \textit{\textbf{Clase}SpecialMethod} siendo Clase el nombre de la clase a la cual pertenece.
+De la misma forma que se registra un método, se registra este método especial.  Como anteriormente se señala este método artificial se utiliza al momento de registrar un atributo de clase.  Este método siempre se encontrará por el nombre \textit{\textbf{Clase}SpecialMethod} siendo Clase el nombre de la clase a la cual pertenece.
 
 A este método no se le registran argumentos ni variables locales.  Este método es registrado en la base de datos estructural de TOD la primera vez que se registra un atributo de clase.
 
@@ -2006,7 +2014,7 @@ Respecto a los atributos la única diferencia es que no se tiene que omitir el a
 
 				\paragraph{Registro de atributo de instancia\label{registerField}}
 
-La función de sistema \textit{settrace} no entrega ningún mecanismo para estar notificado de la creación de un atributo de instancia.  Es por esto que se utiliza en mecanismo llamado \textit{\_\_setattr\_\_} que es un método interno de Python \cite{setattr} que permite estar notificado en el momento que se asigna un valor o se modifica una variable de instancia.  Lo que se hace es sobrescribir este método para todas las clases que el programador haya escrito.
+La función de sistema \textit{settrace} no entrega ningún mecanismo para estar notificado de la creación de un atributo de instancia.  Es por esto que se utiliza el mecanismo llamado \textit{\_\_setattr\_\_} que es un método interno de Python \cite{setattr} que permite estar notificado en el momento que se asigna un valor o se modifica una variable de instancia.  Lo que se hace es sobrescribir este método para todas las clases que el programador haya escrito.
 
 Se muestra un ejemplo de funcionamiento de este método:
 
@@ -2077,7 +2085,7 @@ h0 - fieldWrite   (thread: 101, p.ts: 1217048770743326976, depth: 2, ts: 1217048
 
 				\paragraph{Registro de atributo de clase\label{registerStaticField}}
 
-Para realizar este registro se debe diferenciar dos situaciones importantes:
+Para realizar este registro se deben diferenciar dos situaciones importantes:
 \begin{enumerate}
 	\item Si el atributo de clase se encuentra definido en el cuerpo de la clase pero fuera del cuerpo de los métodos, se utilizará el mecanismo de registro señalado para esta situación en el registro de clase \ref{registroClase}.
 	\item Si el atributo de clase está definido dentro de un método de la clase, se utilizará el paradigma de metaprogramación.
@@ -2087,6 +2095,54 @@ Se muestra un ejemplo para mostrar su funcionamiento:
 
 \begin{itemize}
 	\item Atributo de clase definido dentro del cuerpo de la clase pero fuera del cuerpo de los métodos
+	
+\begin{singlespace}
+\begin{lstlisting}[style=Python]
+class MetaDescriptor(type):
+
+    def __setattr__(self, aName, aValue):
+        """
+        Metodo de interes que permite auditar los movimientos
+        de las variables de clase
+        """    
+        if aName in self.__dict__:
+            print "Modificacion de", aName, "por el valor", aValue
+        else:
+            print "Registro de", aName, "con el valor", aValue
+        super(MetaDescriptor, self).__setattr__(aName, aValue)
+        
+        
+class miClase:
+    
+    __metaclass__ = MetaDescriptor
+    
+    temperatura = 75
+    
+    def __init__(self):
+        self.__class__.itsEdad = 73
+        self.__class__.itsColor = "Rojo"
+    
+
+if __name__ == "__main__":
+    theClase = miClase()
+    miClase.theSexo = "Femenino"
+    miClase.itsEdad += 1
+\end{lstlisting}
+
+El resultado de la ejecución del código es el siguiente:
+
+\begin{lstlisting}[style=consola,numbers=none]
+peregrino:~ minostro$ python miMetaDescriptor.py
+Registro de temperatura con el valor 75
+Registro de itsEdad con el valor 73
+Registro de itsColor con el valor Rojo
+Registro de theSexo con el valor Femenino
+Modificacion de itsEdad por el valor 74
+\end{lstlisting}
+
+\end{singlespace}
+	
+	
 	\item Atributo de clase definido dentro del cuerpo de los métodos
 
 \begin{singlespace}
@@ -2172,7 +2228,7 @@ Registrando variable local: y
 
 La forma de capturar la creación de una variable local, es inspeccionando el byte code de Python en búsqueda de la instrucción \textit{STORE\_FAST}. \cite{bytecode}
 
-Es importante señalar que al momento de registrar el método o la función se crea un lnotab \cite{lnotab} propio que es una estructura de datos que indica los rangos de los indices del byte code, para luego ser consultados al momento de inspeccionar el byte code.  Esto se realiza para hacer un poco más eficiente el proceso de búsqueda dentro del bytecode.
+Es importante señalar que al momento de registrar el método o la función se crea un lnotab \cite{lnotab} propio, que es una estructura de datos que indica los rangos de los indices del byte code, para luego ser consultados al momento de inspeccionar el byte code.  Esto se realiza para hacer un poco más eficiente el proceso de búsqueda dentro del bytecode.
 
 Se muestra un ejemplo introductorio para graficar la forma en que se registran los variables locales.
 
@@ -2372,7 +2428,7 @@ El registro de objeto ocurre en cualquier momento antes que se produzca un event
 
 Este registro se realiza para optimizar el paquete de datos que se envía a través del socket cuando ocurre un evento.
 
-El registro de objeto consiste en tomar el valor correspondiente del objeto (señalados anteriormente), asignarle un identificador único el cual es generado por la función \textit{id} de Python y registrar el objeto en la base de datos estructural de TOD con su valor original.
+El registro de objeto consiste en tomar el valor correspondiente del objeto (señalado anteriormente), asignarle un identificador único el cual es generado por la función \textit{id} de Python y registrar el objeto en la base de datos estructural de TOD con su valor original.
 
 \begin{singlespace}
 \begin{lstlisting}[style=consola,numbers=none]
@@ -2563,7 +2619,7 @@ h0 - fieldWrite   (thread: 101, p.ts: 1217207598470598912, depth: 2, ts: 1217207
 					
 					\subparagraph{Atributo de clase}
 
-De la misma forma que en el registro de los atributos de clase (incluyendo los dos casos) \ref{registerField}, se realiza el registro de modificación de estos.  En el momento que el programador modifique el valor de un atributo de clase el capturador de huella llamará al método \textit{\_\_addStaticAttribute\_\_} de la estructura de datos interna \textit{itsClass}, la cual se encarga de manejar los cambios en los atributos de clase.
+De la misma forma que en el registro de los atributos de clase (incluyendo los dos casos) \ref{registerField}, se realiza el registro de modificación de éstos.  En el momento que el programador modifique el valor de un atributo de clase el capturador de huella llamará al método \textit{\_\_addStaticAttribute\_\_} de la estructura de datos interna \textit{itsClass}, la cual se encarga de manejar los cambios en los atributos de clase.
 
 \begin{singlespace}
 \begin{lstlisting}[style=Python]
@@ -2630,7 +2686,7 @@ h0 - localWrite (thread: 101, p.ts: 1217207598474802944, depth: 3, ts: 121720759
 \end{lstlisting}
 \end{singlespace}					
 
-A continuación se muestra de que manera se realiza la captura de la modificación del valor de una variable local:
+A continuación se muestra de qué manera se realiza la captura de la modificación del valor de una variable local:
 
 \begin{singlespace}
 \begin{lstlisting}[style=Python]
@@ -2837,7 +2893,7 @@ El evento excepción es registrado por el capturado de huella cuando este detect
 \begin{itemize}
 	\item Excepción sin bloque \textit{try/except}
 
-Cuando ocurre una excepción en el código del programador esta debe ser propagada por todos los niveles de la pila de frames.  En este caso, como el programador no ha manejado la excepción, propagarla por todos los niveles de la pila tiene sentido.
+Cuando ocurre una excepción en el código del programador, ésta debe ser propagada por todos los niveles de la pila de frames.  En este caso, como el programador no ha manejado la excepción, propagarla por todos los niveles de la pila tiene sentido.
 
 \begin{singlespace}
 \begin{lstlisting}[style=Python]
@@ -2884,7 +2940,7 @@ ZeroDivisionError: integer division or modulo by zero
 
 	\item Excepción con bloque \textit{try/except} 
 
-En este caso no tiene sentido propagar la excepción por todos los niveles de la pila de frame, ya que el programador si ha manejado correctamente la excepción, esto implica que sólo debe propagarse hasta el nivel en donde se ha realizado el manejo de excepción.	
+En este caso no tiene sentido propagar la excepción por todos los niveles de la pila de frame, ya que el programador ha manejado correctamente la excepción, esto implica que sólo debe propagarse hasta el nivel en donde se ha realizado el manejo de excepción.	
 
 \begin{singlespace}
 \begin{lstlisting}[style=Python]
@@ -2972,7 +3028,7 @@ h0 - exception    (thread: 101, p.ts: 1217207598480425984, depth: 3, ts: 1217207
 
 Se utilizó sockets para comunicar pyTOD con TOD.  Se confeccionaron mensajes por cada tipo de registro y por cada tipo de evento que se genera en el programa objetivo.
 
-Es importante señalar que se utilizo la librería \textit{XDRLib} \cite{xdrlib} de python, basada en el estándar \cite{xdrlibestandar}, para construir el protocolo de comunicación entre el lenguaje de programación Python y Java.
+Es importante señalar que se utilizó la librería \textit{XDRLib} \cite{xdrlib} de python, basada en el estándar xdrlib\cite{xdrlibestandar}, para construir el protocolo de comunicación entre el lenguaje de programación Python y Java.
 
 A continuación se detalla el protocolo de comunicación creado.
 
@@ -3411,7 +3467,7 @@ Es importante señalar return está acompañado de los siguientes datos \ref{Coo
 
 Para mostrar la estructura de pyTOD se utiliza un diagrama de clases resumido en el cual sólo se muestran las relaciones entre las clases, métodos y atributos más importantes de esta.  Lo anterior con el fin de mostrar una estructura clara y concisa.  En la sección posterior se individualizará cada una de las clases que aquí aparecen. 
 			
-\begin{figure}[h]
+\begin{figure}[!h]
 	\centering
 	\includegraphics[scale=0.6]{images/classModelHunterTrace.eps}
 	\caption{Diagrama de clase del capturador de huella}
@@ -3469,7 +3525,7 @@ Entre los atributos más importantes se tienen:
 	\begin{itemize}
 		\item int.\_\_name\_\_
 		\item str.\_\_name\_\_
-		  \item float.\_\_name\_\_
+		\item float.\_\_name\_\_
 		\item long.\_\_name\_\_
 		\item bool.\_\_name\_\_
 		\item tuple.\_\_name\_\_
@@ -3490,9 +3546,6 @@ Entre los métodos más importantes se tienen:
 \begin{itemize}
 	\item \textbf{\_\_createlnotab\_\_ :} Método que crea una estructura de datos la cual almacena la estructura de bytecode del objeto que se está registrando en el depurador.  Este método sólo se aplica a los objetos \textit{class}, \textit{method} y \textit{function}.
 
-Para un mejor entendimiento de esta función se presenta el siguiente ejemplo:
-
-EJEMPLO!!
 	\item \textbf{\_\_getPartCode\_\_ :} Método que se utiliza para inspeccionar el bytecode por bloques (inicio, fin) con el objetivo de extraer todas las variables locales definidas en este bloque.
 	
 	\item \textbf{\_\_trace\_\_ :} Método más importante de la clase y de pyTOD.  Éste permite estar notificados de los siguientes eventos dentro de un programa Python:
@@ -3505,11 +3558,17 @@ EJEMPLO!!
 En este método se centra la mayoría de los movimientos para la captura de la huella de ejecución.  Es importante señalar que por si sólo este método no tiene ninguna utilidad, ya que debemos indicarla a Python que asigne \_\_trace\_\_ como función al módulo \textit{sys} mediante su método \textit{settrace}.
 \end{itemize}
 
-\begin{figure}[h]
-	\centering
-	\includegraphics[scale=0.6]{images/Clases/hunterTrace.eps}
-	\caption{Diagrama de clase de hunterTrace}
+\begin{figure}
+\centering
+\begin{minipage}[c]{5.5cm}
+\includegraphics[scale=0.6]{images/Clases/hunterTraceAttr.eps}
+\end{minipage}
+\begin{minipage}[c]{5.5cm}
+\includegraphics[scale=0.6]{images/Clases/hunterTraceMethods.eps}
+\end{minipage}
+\caption{Diagrama de clase de hunterTrace}
 \end{figure}
+
 					
 				\paragraph{generatorId}
 
@@ -3524,12 +3583,12 @@ Esta clase sirve para implementar todos los generadores de identificadores que s
 					\subparagraph{Métodos}						
 
 \begin{itemize}
-	\item \textbf{\_\_get\_\_ :} Retorna el valor actual del atribut \textit{Id}.
+	\item \textbf{\_\_get\_\_ :} Retorna el valor actual del atributo \textit{Id}.
 	\item \textbf{\_\_next\_\_ :} Método que aumenta en una unidad el atributo \textit{Id}.
 \end{itemize}					
 
 					
-\begin{figure}[hpb]
+\begin{figure}[!ht]
 	\centering
 	\includegraphics[scale=0.6]{images/Clases/generatorId.eps}
 	\caption{Diagrama de clase de generatorId}
@@ -3558,7 +3617,7 @@ Los atributos más importantes son:
 \end{itemize}					
 
 				
-\begin{figure}[hpb]
+\begin{figure}[!h]
 	\centering
 	\includegraphics[scale=0.6]{images/Clases/Class.eps}
 	\caption{Diagrama de clase de Class}
@@ -3584,7 +3643,7 @@ Esta clase representa a cada método que el programador haya definido en cualqui
 \end{itemize}					
 					
 				
-\begin{figure}[hpb]
+\begin{figure}[!h]
 	\centering
 	\includegraphics[scale=0.6]{images/Clases/Method.eps}
 	\caption{Diagrama de clase de Method}
@@ -3609,7 +3668,7 @@ Esta clase representa a cada función que el programador haya definido en cualqu
 \end{itemize}					
 					
 				
-\begin{figure}[hpb]
+\begin{figure}[!h]
 	\centering
 	\includegraphics[scale=0.6]{images/Clases/Function.eps}
 	\caption{Diagrama de clase de Function}
@@ -3632,7 +3691,7 @@ Esta clase hereda del objeto nativo de Python \textit{dict}.  Esta clase se util
 \end{itemize}					
 					
 				
-\begin{figure}[hpb]
+\begin{figure}[!h]
 	\centering
 	\includegraphics[scale=0.6]{images/Clases/Dictionary.eps}
 	\caption{Diagrama de clase de Dictionary}
@@ -3712,7 +3771,7 @@ linenodelimiter=
 \caption{Código principal de pyTOD}
 \end{algorithm}
 
-		
+\newpage	
 		\subsection{Interfaces principales de pyTOD}
 		
 Esta sección describe las interfaces principales que encontrará el usuario en pyTOD.  Se describe desde arrancar el depurador hasta como interactuar con este.
@@ -3882,7 +3941,60 @@ Para ejecutar este programa Java se debe notar que existen dos tipos de argument
 	
 	\section{Medidas de rendimiento de pyTOD}
 	
-comparar con pdb	
+Para medir la sobrecarga que realiza pyTOD sobre los scripts depurados se ha medido el tiempo de ejecución de los scripts sin depurar y luego el resultado del tiempo de ejecución cuando son depurados.  Los tiempos que se muestran a continuación son los mejores tiempos obtenidos de cinco tiempos de ejecución de cada script.  Las características del computador en el que se realizaron las mediciones son procesador de 2.4 GHz Intel Core 2 Duo, memoria ram de 2 GB 667 MHz DDR2, sistema operativo de 64 bits.
+
+El primer algoritmo en el cual se realizaron mediciones es el de \textit{ordenamiento por burbuja}:
+
+\begin{singlespace}
+\begin{lstlisting}[style=Python]
+class Sort(object):
+    
+    def __init__(self, aArreglo=None):
+        if aArreglo is None:
+            aArreglo = []
+        self.aArreglo = aArreglo
+    
+    def burble(self):
+        for i in range(len(self.aArreglo)):
+            for j in range(i, len(self.aArreglo)):
+                if self.aArreglo[i] > self.aArreglo[j]:
+                    theAux = self.aArreglo[i]
+                    self.aArreglo[i] = self.aArreglo[j]
+                    self.aArreglo[j] = theAux
+    
+if __name__ == '__main__':
+    theArreglo = list(range(5000))
+    theSort = Sort(theArreglo)
+    theSort.burble()
+\end{lstlisting}
+\end{singlespace}	
+
+El mejor tiempo de ejecución para este script sin el depurador fue de $4,77015805244$ segundos, y el mejor tiempo de ejecución con el depurador $1878,3465$.  Presentando una sobrecarga aproximada de $393$ veces. Es importante señalar que el depurador en este caso ha registrado el total de $12.507.506$ eventos.
+
+El segundo algoritmo en el cual se realizaron mediciones es en \textit{fibonacci}:
+
+\begin{singlespace}
+\begin{lstlisting}[style=Python]
+class Fibonacci(object):
+    
+    def __init__(self):
+        self.resultado = -1
+        
+    def fibonacci(self, n):
+        if n == 1 or n == 2:
+            self.resultado = 1
+        elif n > 2:
+            self.resultado = self.fibonacci(n-1) + self.fibonacci(n-2)
+        return self.resultado
+
+if __name__ == '__main__':
+    theNumero = 32
+    theFibonacci = Fibonacci()
+    print theFibonacci.fibonacci(theNumero)
+\end{lstlisting}
+\end{singlespace}	
+
+El mejor tiempo de ejecución para este script sin el depurador fue de $3,5871169$ segundos, y el mejor tiempo de ejecución con el depurador $2846,12946486$.  Presentando una sobrecarga aproximada de $793$ veces.  Es importante señalar que el depurador en este caso ha registrado el total de \textit{13.069.854} eventos.
 	
 \chapter{Evaluación de pyTOD en casos de pruebas}
 	\section{Selección de casos de uso}
