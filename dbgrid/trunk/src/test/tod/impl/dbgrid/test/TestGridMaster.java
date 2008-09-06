@@ -49,6 +49,7 @@ import tod.impl.dbgrid.aggregator.GridEventBrowser;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.tools.monitoring.MonitoringClient.MonitorId;
+import zz.utils.Utils;
 
 public class TestGridMaster
 {
@@ -91,11 +92,11 @@ public class TestGridMaster
 		theEventGenerator.fillStructureDatabase(theStructureDatabase);
 		
 		System.out.println("filling...");
-		Fixtures.fillDatabase(theMaster, theEventGenerator, 1600000);
+		Fixtures.fillDatabase(theMaster, theEventGenerator, 10000000);
 		
 		System.out.println("checking...");
 		
-		checkBehaviorCalls(theMaster);
+//		checkBehaviorCalls(theMaster);
 		
 		IdGenerator theIdGenerator = new IdGenerator(100, 100, 100, 100, 100, 100, 100, 100, 100, 100);
 		ConditionGenerator theConditionGenerator = createConditionGenerator(0, theIdGenerator, theLogBrowser);
@@ -105,6 +106,7 @@ public class TestGridMaster
 		for (int i=0;i<1000;i++)
 		{
 			IGridEventFilter theEventCondition = (IGridEventFilter) theConditionGenerator.next();
+			if (i<2) continue;
 
 			System.out.println(i+1);
 			System.out.println(theEventCondition);
@@ -135,11 +137,15 @@ public class TestGridMaster
 		IEventFilter theFilter = theLogBrowser.createBehaviorCallFilter();
 		IEventBrowser theEventBrowser = theLogBrowser.createBrowser(theFilter);
 		
-		while(theEventBrowser.hasNext())
+		int theCount = 0;
+		while(theEventBrowser.hasNext() && theCount < 500)
 		{
 			IBehaviorCallEvent theEvent = (IBehaviorCallEvent) theEventBrowser.next();
 			IEventBrowser theChildrenBrowser = theEvent.getChildrenBrowser();
+			theCount++;
 		}
+
+		Utils.println("Tested %d calls", theCount);
 	}
 	
 	private int checkCondition(
@@ -165,10 +171,6 @@ public class TestGridMaster
 			{
 				GridEvent[] theBuffer = theAggregator.next(MonitorId.get(), 1);
 				GridEvent theTestedEvent = theBuffer[0]; 
-				if (i == 13)
-				{
-					System.out.println("hop");
-				}
 				Fixtures.assertEquals(""+i, theRefEvent, theTestedEvent);
 				theMatched++;
 			}

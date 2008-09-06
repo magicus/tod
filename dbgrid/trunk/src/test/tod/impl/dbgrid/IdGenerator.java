@@ -108,17 +108,36 @@ public class IdGenerator
 		for(int i=1;i<=itsProbeRange;i++)
 		{
 			aDatabase.addProbe(
-					((i*3 + 7)%itsBehaviorRange)+1, 
-					((i/2 + 9)%itsBytecodeRange), 
+					getProbeBehavior(i), 
+					getProbeBytecode(i), 
 					null, 
-					((i*2 + 3)%itsAdviceSourceIdRange)+1);
+					getProbeAdviceSrcId(i));
 		}
 
 	}
+	
+	protected int getProbeBehavior(int aProbeId)
+	{
+		return ((aProbeId*3 + 7)%itsBehaviorRange)+1;
+	}
+	
+	protected int getProbeBytecode(int aProbeId)
+	{
+		return ((aProbeId/2 + 9)%itsBytecodeRange);
+	}
+	
+	protected int getProbeAdviceSrcId(int aProbeId)
+	{
+		return ((aProbeId*2 + 3)%itsAdviceSourceIdRange)+1;
+	}
+	
 
 	public MessageType genType()
 	{
-		return MessageType.VALUES[itsRandom.nextInt(MessageType.VALUES.length-2)+1];
+		// -1 to avoid OUTPUT, -2 to adjust the probability of EXIT, as there are three ways to ENTER
+		int theIndex = itsRandom.nextInt(MessageType.VALUES.length-1+2)-2;
+		if (theIndex < 0) theIndex = 0;
+		return MessageType.VALUES[theIndex];
 	}
 	
 	public long genTimestamp()
@@ -138,7 +157,7 @@ public class IdGenerator
 	
 	public int genProbeId()
 	{
-		return itsRandom.nextInt(itsBehaviorRange) + 1; // TODO: fix if necessary
+		return itsRandom.nextInt(itsProbeRange) + 1;
 	}
 	
 	public int genBehaviorId()

@@ -228,17 +228,18 @@ public class EventGeneratorNG extends EventGenerator
 	@Override
 	protected GridEventNG genBehaviorExit(int aThreadId, int aDepth, long aParentTimestamp)
 	{
+		int theProbeId = genProbeId();
 		return new GridBehaviorExitEvent(
 				getStructureDatabase(),
 				aThreadId,
 				aDepth,
 				genTimestamp(),
 				genAdviceCFlow(),
-				genProbeId(),
+				theProbeId,
 				aParentTimestamp,
 				genBoolean(),
 				genObject(),
-				genBehaviorId());
+				getProbeBehavior(theProbeId));
 	}
 
 	

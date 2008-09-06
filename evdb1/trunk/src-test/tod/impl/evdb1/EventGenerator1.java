@@ -230,16 +230,17 @@ public class EventGenerator1 extends EventGenerator
 	@Override
 	protected BitGridEvent genBehaviorExit(int aThreadId, int aDepth, long aParentTimestamp)
 	{
+		int theProbeId = genProbeId();
 		return new GridBehaviorExitEvent(
 				getStructureDatabase(),
 				aThreadId,
 				aDepth,
 				genTimestamp(),
 				genAdviceCFlow(),
-				genProbeId(),
+				theProbeId,
 				aParentTimestamp,
 				genBoolean(),
 				genObject(),
-				genBehaviorId());
+				getProbeBehavior(theProbeId));
 	}
 }

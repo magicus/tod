@@ -106,6 +106,7 @@ public class BurnMasterBench
 		for (int i=0;i<7;i++)
 		{
 			IGridEventFilter theEventCondition = (IGridEventFilter) theConditionGenerator.next();
+			if (i<2) continue;
 
 			System.out.println(i+1);
 			System.out.println(theEventCondition);

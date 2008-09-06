@@ -82,12 +82,12 @@ public class GridBehaviorExitEvent extends GridEventNG
 	}
 	
 	@Override
-	public void writeTo(PageIOStream aBitStruct)
+	public void writeTo(PageIOStream aStream)
 	{
-		super.writeTo(aBitStruct);
-		aBitStruct.writeBehaviorId(getBehaviorId());
-		aBitStruct.writeBoolean(hasThrown());
-		writeObject(aBitStruct, getResult());
+		super.writeTo(aStream);
+		aStream.writeBehaviorId(getBehaviorId());
+		aStream.writeBoolean(hasThrown());
+		writeObject(aStream, getResult());
 	}
 	
 	@Override

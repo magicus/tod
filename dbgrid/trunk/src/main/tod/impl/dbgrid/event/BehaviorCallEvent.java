@@ -179,7 +179,7 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 			
 			IEventBrowser theBrowser = aLogBrowser.createBrowser(theFilter);
 			boolean theFound = theBrowser.setPreviousEvent(theCallEvent);
-			assert theFound;
+			assert theFound : itsEventPointer+" - "+theCallEvent;
 			long t2 = System.currentTimeMillis();
 			
 			if (theBrowser.hasNext())
