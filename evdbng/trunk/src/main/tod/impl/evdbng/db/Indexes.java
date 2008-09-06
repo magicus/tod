@@ -118,8 +118,8 @@ public class Indexes
 					int.class);
 			
 			T[] theResult = (T[]) Array.newInstance(aIndexClass, 2);
-			theResult[0] = theConstructor.newInstance(itsIndexManager, aName+"-0", aFile, BitUtils.pow2i(aBits)+1);
-			theResult[1] = theConstructor.newInstance(itsIndexManager, aName+"-1", aFile, BitUtils.pow2i(aBits)+1);
+			theResult[0] = theConstructor.newInstance(itsIndexManager, aName+"_0", aFile, BitUtils.pow2i(aBits)+1);
+			theResult[1] = theConstructor.newInstance(itsIndexManager, aName+"_1", aFile, BitUtils.pow2i(aBits)+1);
 			
 			return theResult;
 		}
