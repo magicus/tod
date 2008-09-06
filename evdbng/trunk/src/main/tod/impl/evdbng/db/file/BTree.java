@@ -72,7 +72,36 @@ public abstract class BTree<T extends Tuple>
 	 */
 	private final TupleBufferFactory<T> itsTupleBufferFactory = getTupleBufferFactory();
 	
-	private PrintWriter itsLogWriter;
+	private static PrintWriter itsLogWriter;
+	
+	static
+	{
+		if (DebugFlags.DB_LOG_DIR != null) 
+		{
+			try
+			{
+				itsLogWriter = new PrintWriter(new File(DebugFlags.DB_LOG_DIR+"/btree.log"));
+			}
+			catch (FileNotFoundException e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	/**
+	 * Write everything to the same file otherwise we can get too many open files.
+	 */
+	private static synchronized void log(String aName, long aLeafTupleCount, long aKey, String aExtradata)
+	{
+		if (DebugFlags.DB_LOG_DIR != null)
+		{
+			itsLogWriter.print(aName+": "+aLeafTupleCount+" - "+aKey);
+			if (aExtradata != null) itsLogWriter.print(" "+aExtradata);
+			itsLogWriter.println();
+			itsLogWriter.flush();
+		}
+	}
 	
 	public BTree(String aName, PagedFile aFile)
 	{
@@ -85,8 +114,6 @@ public abstract class BTree<T extends Tuple>
 		itsRootPage = itsChains[0].getCurrentPage();
 		itsFirstLeafPageId = itsRootPage.getPageId();
 		itsRootLevel = 0;
-		
-		setup();
 	}
 	
 	/**
@@ -120,34 +147,11 @@ public abstract class BTree<T extends Tuple>
 			// tuple count
 			itsTupleCount[i] = aStream.readTupleCount();
 		}
-		
-		setup();
-	}
-
-	private void setup()
-	{
-		if (DebugFlags.DB_LOG_DIR != null) 
-		{
-			try
-			{
-				itsLogWriter = new PrintWriter(new File(DebugFlags.DB_LOG_DIR+"/tree-"+itsName+".log"));
-			}
-			catch (FileNotFoundException e)
-			{
-				e.printStackTrace();
-			}
-		}
 	}
 	
 	protected void logLeafTuple(long aKey, String aExtradata)
 	{
-		if (DebugFlags.DB_LOG_DIR != null) 
-		{
-			itsLogWriter.print(itsLeafTupleCount+" - "+aKey);
-			if (aExtradata != null) itsLogWriter.print(" "+aExtradata);
-			itsLogWriter.println();
-			itsLogWriter.flush();
-		}
+		log(itsName, itsLeafTupleCount, aKey, aExtradata);
 	}
 	
 	/**
