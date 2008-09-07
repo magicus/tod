@@ -935,7 +935,8 @@ class hunterTrace(object):
                 #TODO: encontrar una mejor forma de hacerlo
                 #ineficiente!!..quizas interviniendo la llamada
                 #de la super clase?
-                print type(theLocals['self']).__bases__
+                if 'self' in theLocals:
+                    print type(theLocals['self']).__bases__
             #si self esta en theLocals estamos en un metodo
             if theLocals.has_key('self'):
                 if not self.__inMethod__(theCode):
@@ -1057,8 +1058,12 @@ class hunterTrace(object):
                                      False)
         elif aEvent == "exception":
             theParentTimestampFrame = self.__getTimestampFrame__(aFrame)
+            if type(aArg[1]) is tuple:
+                theArgument = aArg[1][1]
+            else:
+                theArgument = aArg[1]
             self.__registerException__(aFrame,
-                                        aArg[1],
+                                        theArgument,
                                         theDepth,
                                         theParentTimestampFrame,
                                         theThreadId)
@@ -1070,7 +1075,7 @@ class hunterTrace(object):
             if theInstruction == 'SETUP_EXCEPT':
                 return self.__trace__
             self.__behaviorExit__(aFrame,
-                                    aArg[1],
+                                    theArgument,
                                     theDepth,
                                     theParentTimestampFrame,
                                     theThreadId,
