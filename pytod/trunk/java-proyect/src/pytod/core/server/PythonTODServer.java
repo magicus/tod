@@ -851,6 +851,7 @@ public class PythonTODServer extends TODServer
 			}
 			catch (IOException e)
 			{
+				itsLogCollector.flush();
 				throw new RuntimeException(e);
 			}
 		}	
