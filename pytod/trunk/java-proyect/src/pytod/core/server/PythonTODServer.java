@@ -333,7 +333,7 @@ public class PythonTODServer extends TODServer
 			try
 			{
 				int theTypeId = aInputStream.readInt();
-				long theId = aInputStream.readInt() & 0xffffffffL;
+				long theId = aInputStream.readLong();
 				Object theValue = getObjectValue(theTypeId, aInputStream);
 				System.out.println(theValue);
 				long theCurrentTimestamp = aInputStream.readLong();
@@ -359,8 +359,8 @@ public class PythonTODServer extends TODServer
 				Object theValue = null;
 				long theValueId = 0;
 				int theTypeId = aInputStream.readInt();
-				if (theTypeId == 1) { // Please explain that type stuff
-					theValueId = aInputStream.readInt() & 0xffffffffL;
+				if (theTypeId == 1) {
+					theValueId = aInputStream.readLong();
 				}
 				else{
 					theValue = getObjectValue(theTypeId, aInputStream);					
@@ -393,7 +393,7 @@ public class PythonTODServer extends TODServer
 			try
 			{
 				int theBehaviorId = aInputStream.readInt();
-				long theTargetId = aInputStream.readInt() & 0xffffffffL;
+				int theTargetId = aInputStream.readInt();
 				int theArgsCount = aInputStream.readInt();
 				if (theArgsCount > 0){
 					args = new Object[theArgsCount];
@@ -401,7 +401,7 @@ public class PythonTODServer extends TODServer
 					{
 						int theArgType = aInputStream.readInt();
 						if (theArgType == 1) {
-							long theValueId = aInputStream.readInt() & 0xffffffffL;
+							long theValueId = aInputStream.readLong();
 							args[i] = new ObjectId(theValueId);
 						} 
 						else {
@@ -441,7 +441,7 @@ public class PythonTODServer extends TODServer
 			try
 			{
 				int theMethodId = aInputStream.readInt();
-				long theTargetId = aInputStream.readInt() & 0xffffffffL;
+				int theTargetId = aInputStream.readInt();
 				int theArgsCount = aInputStream.readInt();
 				if (theArgsCount > 0){
 					theArgs = new Object[theArgsCount];
@@ -449,7 +449,7 @@ public class PythonTODServer extends TODServer
 					{
 						int theArgType = aInputStream.readInt();
 						if (theArgType == 1) {
-							long theValueId = aInputStream.readInt() & 0xffffffffL;
+							long theValueId = aInputStream.readLong();
 							theArgs[i] = new ObjectId(theValueId);
 						} 
 						else {
@@ -496,7 +496,7 @@ public class PythonTODServer extends TODServer
 					{
 						int theArgType = aInputStream.readInt();
 						if (theArgType == 1) {
-							long theValueId = aInputStream.readInt() & 0xffffffffL;
+							long theValueId = aInputStream.readLong();
 							theArgs[i] = new ObjectId(theValueId);
 						} else {
 							Object theValue = getObjectValue(theArgType, aInputStream);
@@ -608,7 +608,7 @@ public class PythonTODServer extends TODServer
 				int theStaticFieldId = aInputStream.readInt();
 				int theTypeId = aInputStream.readInt();
 				if (theTypeId == 1) {
-					theValueId = aInputStream.readInt() & 0xffffffffL;
+					theValueId = aInputStream.readLong();
 				} else {
 					theValue = getObjectValue(theTypeId, aInputStream);
 				}
@@ -643,10 +643,10 @@ public class PythonTODServer extends TODServer
 				Object theValue = null;
 				long theValueId = 0;
 				int attributeId = aInputStream.readInt();
-				long targetId = aInputStream.readInt() & 0xffffffffL;
+				int targetId = aInputStream.readInt();
 				int theTypeId = aInputStream.readInt();
 				if (theTypeId == 1) {
-					theValueId = aInputStream.readInt() & 0xffffffffL;
+					theValueId = aInputStream.readLong();
 				} else {
 					theValue = getObjectValue(theTypeId, aInputStream);
 				}
@@ -685,7 +685,7 @@ public class PythonTODServer extends TODServer
 				int theParentId = aInputStream.readInt();
 				int theTypeId = aInputStream.readInt();
 				if (theTypeId == 1) {
-					theValueId = aInputStream.readInt() & 0xffffffffL;
+					theValueId = aInputStream.readLong();
 				} else {
 					theValue = getObjectValue(theTypeId, aInputStream);
 				}
