@@ -207,7 +207,7 @@ class hunterTrace(object):
             thePrintArg += str(theDataType)
             thePrintArg += " "
             if theDataType == 1:
-                self.itsPacker.pack_int(id(theValue))
+                self.itsPacker.pack_hyper(id(theValue))
                 thePrintArg += str(id(theValue))
                 thePrintArg += " "
             else:
@@ -385,7 +385,7 @@ class hunterTrace(object):
             thePrintArg += str(theDataType)
             thePrintArg += " "
             if theDataType == 1:
-                self.itsPacker.pack_int(id(theValue))
+                self.itsPacker.pack_hyper(id(theValue))
                 thePrintArg += str(id(theValue))
                 thePrintArg += " "
             else:
@@ -423,6 +423,7 @@ class hunterTrace(object):
                        aParentTimestampFrame, 
                        aThreadId):
         theLocalVariables = aObject.__getLocals__()
+        print theLocalVariables
         theBehaviorId = self.__getObjectId__(aCode)
         theDepth = aDepth + 1
         for theValue in aBytecodeLocal.iterkeys():
@@ -435,37 +436,72 @@ class hunterTrace(object):
                                                     aCurrentLineno)
             else:
                 theProbeId = self.itsProbe[(aCurrentLasti,theBehaviorId)]
-            self.itsPacker.reset()
-            self.itsPacker.pack_int(self.itsEvents['set'])
-            self.itsPacker.pack_int(self.itsObjects['local'])
-            self.itsPacker.pack_int(theLocalVariables[theValue])
-            self.itsPacker.pack_int(theBehaviorId)
-            theDataType = self.__getDataType__(aLocals[theValue])
-            self.itsPacker.pack_int(theDataType)
-            thePackValue = self.__packValue__(theDataType, aLocals[theValue])
-            self.itsPacker.pack_int(theProbeId)
-            self.itsPacker.pack_hyper(aParentTimestampFrame)
-            self.itsPacker.pack_int(theDepth)
-            theCurrentTimestamp = self.__convertTimestamp__(time.time()) 
-            self.itsPacker.pack_hyper(theCurrentTimestamp)
-            self.itsPacker.pack_int(aThreadId)
-            if self.FLAG_DEBUGG:            
-                print self.itsEvents['set'],
-                print self.itsObjects['local'],
-                print theLocalVariables[theValue],
-                print theBehaviorId,
-                print theDataType,
-                print thePackValue,
-                print theProbeId,
-                print aParentTimestampFrame,
-                print theDepth,
-                print theCurrentTimestamp,
-                print aThreadId
-                raw_input()
-            try:
-                self.itsSocket.sendall(self.itsPacker.get_buffer())
-            except:
-                print 'TOD está durmiendo :-( - Local write', aCode.co_name            
+            theCurrentTimestamp = self.__convertTimestamp__(time.time())
+            if type(aLocals[theValue]) == types.StringType:
+                if not id(aLocals[theValue]) in hT.itsRegisterObjects:
+                    hT.__registerObject__(aLocals[theValue], theCurrentTimestamp)
+                    self.itsPacker.reset()
+                    self.itsPacker.pack_int(self.itsEvents['set'])
+                    self.itsPacker.pack_int(self.itsObjects['local'])
+                    self.itsPacker.pack_int(theLocalVariables[theValue])
+                    self.itsPacker.pack_int(theBehaviorId)
+                    theDataType = self.__getDataType__(aLocals[theValue])
+                    self.itsPacker.pack_int(theDataType)
+                    #thePackValue = self.__packValue__(theDataType, aLocals[theValue])
+                    self.itsPacker.pack_hyper(id(aLocals[theValue]))
+                    self.itsPacker.pack_int(theProbeId)
+                    self.itsPacker.pack_hyper(aParentTimestampFrame)
+                    self.itsPacker.pack_int(theDepth) 
+                    self.itsPacker.pack_hyper(theCurrentTimestamp)
+                    self.itsPacker.pack_int(aThreadId)
+                    if self.FLAG_DEBUGG:            
+                        print self.itsEvents['set'],
+                        print self.itsObjects['local'],
+                        print theLocalVariables[theValue],
+                        print theBehaviorId,
+                        print theDataType,
+                        print thePackValue,
+                        print theProbeId,
+                        print aParentTimestampFrame,
+                        print theDepth,
+                        print theCurrentTimestamp,
+                        print aThreadId
+                        raw_input()
+                    try:
+                        self.itsSocket.sendall(self.itsPacker.get_buffer())
+                    except:
+                        print 'TOD está durmiendo :-( - Local write', aCode.co_name                   
+            else:    
+                self.itsPacker.reset()
+                self.itsPacker.pack_int(self.itsEvents['set'])
+                self.itsPacker.pack_int(self.itsObjects['local'])
+                self.itsPacker.pack_int(theLocalVariables[theValue])
+                self.itsPacker.pack_int(theBehaviorId)
+                theDataType = self.__getDataType__(aLocals[theValue])
+                self.itsPacker.pack_int(theDataType)
+                thePackValue = self.__packValue__(theDataType, aLocals[theValue])
+                self.itsPacker.pack_int(theProbeId)
+                self.itsPacker.pack_hyper(aParentTimestampFrame)
+                self.itsPacker.pack_int(theDepth) 
+                self.itsPacker.pack_hyper(theCurrentTimestamp)
+                self.itsPacker.pack_int(aThreadId)
+                if self.FLAG_DEBUGG:            
+                    print self.itsEvents['set'],
+                    print self.itsObjects['local'],
+                    print theLocalVariables[theValue],
+                    print theBehaviorId,
+                    print theDataType,
+                    print thePackValue,
+                    print theProbeId,
+                    print aParentTimestampFrame,
+                    print theDepth,
+                    print theCurrentTimestamp,
+                    print aThreadId
+                    raw_input()
+                try:
+                    self.itsSocket.sendall(self.itsPacker.get_buffer())
+                except:
+                    print 'TOD está durmiendo :-( - Local write', aCode.co_name            
     
     def __markTimestampFrame__(self, aFrame):
         if not aFrame.f_locals.has_key('__timestampFrame__'): 
@@ -515,7 +551,7 @@ class hunterTrace(object):
             thePrintArg += str(theDataType)
             thePrintArg += " "
             if theDataType == 1:
-                self.itsPacker.pack_int(id(theValue))
+                self.itsPacker.pack_hyper(id(theValue))
                 thePrintArg += str(id(theValue))
                 thePrintArg += " "
             else:
@@ -556,7 +592,7 @@ class hunterTrace(object):
                     aValue = 0
             #trick for string objects (it's send the Id)
             if aDataType == 1:
-                 self.itsPacker.pack_int(id(aValue))
+                 self.itsPacker.pack_hyper(id(aValue))
                  return id(aValue)
             getattr(self.itsPacker,'pack_%s'%theMethodName)(aValue)
             return aValue            
@@ -660,7 +696,7 @@ class hunterTrace(object):
         self.itsPacker.pack_int(self.itsObjects['exception'])       
         theDataType = self.__getDataType__(aArg)
         self.itsPacker.pack_int(theDataType)
-        self.itsPacker.pack_int(id(aArg))
+        self.itsPacker.pack_hyper(id(aArg))
         self.itsPacker.pack_int(theProbeId)
         self.itsPacker.pack_hyper(aParentTimestampFrame)        
         self.itsPacker.pack_int(theDepth)
@@ -842,7 +878,7 @@ class hunterTrace(object):
         self.itsPacker.pack_int(self.itsObjects['object'])
         #enviar el tipo de dato por mientras solo es string
         self.itsPacker.pack_int(1) #string
-        self.itsPacker.pack_int(id(aValue))
+        self.itsPacker.pack_hyper(id(aValue))
         self.itsPacker.pack_string(aValue)
         self.itsPacker.pack_hyper(aCurrentTimestamp)
         if self.FLAG_DEBUGG:
@@ -1126,7 +1162,7 @@ class MetaDescriptor(type):
                 hT.itsPacker.pack_int(Id)
                 theDataType = hT.__getDataType__(aValue)
                 hT.itsPacker.pack_int(theDataType)
-                hT.itsPacker.pack_int(id(aValue))
+                hT.itsPacker.pack_hyper(id(aValue))
                 hT.itsPacker.pack_int(theProbeId)
                 hT.itsPacker.pack_hyper(theParentTimestamp)        
                 hT.itsPacker.pack_int(theCurrentDepth)
@@ -1216,10 +1252,14 @@ class Descriptor(object):
                 hT.itsPacker.pack_int(hT.itsEvents['set'])
                 hT.itsPacker.pack_int(hT.itsObjects['attribute'])
                 hT.itsPacker.pack_int(Id)
-                hT.itsPacker.pack_int(self.__pyTOD__)
+                try:
+                    hT.itsPacker.pack_int(self.__pyTOD__)
+                except:
+                    object.__setattr__(self, aName, aValue)
+                    return
                 theDataType = hT.__getDataType__(aValue)
                 hT.itsPacker.pack_int(theDataType)
-                hT.itsPacker.pack_int(id(aValue))
+                hT.itsPacker.pack_hyper(id(aValue))
                 hT.itsPacker.pack_int(theProbeId)
                 hT.itsPacker.pack_hyper(theParentTimestamp)        
                 hT.itsPacker.pack_int(theCurrentDepth)
@@ -1249,7 +1289,11 @@ class Descriptor(object):
             hT.itsPacker.pack_int(hT.itsEvents['set'])
             hT.itsPacker.pack_int(hT.itsObjects['attribute'])
             hT.itsPacker.pack_int(Id)
-            hT.itsPacker.pack_int(self.__pyTOD__)
+            try:
+                hT.itsPacker.pack_int(self.__pyTOD__)
+            except:
+                object.__setattr__(self, aName, aValue)
+                return
             theDataType = hT.__getDataType__(aValue)
             hT.itsPacker.pack_int(theDataType)
             thePackValue = hT.__packValue__(theDataType, aValue)
