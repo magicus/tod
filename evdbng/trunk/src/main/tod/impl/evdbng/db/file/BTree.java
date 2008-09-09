@@ -109,7 +109,7 @@ public abstract class BTree<T extends Tuple>
 		itsFile = aFile;
 
 		// Init pages
-		itsChains[0] = new MyChainedPageIOStream<T>(this, itsFile, 0);
+		itsChains[0] = new MyChainedPageIOStream<T>(itsFile, this, 0);
 		startLeafPage();
 		itsRootPage = itsChains[0].getCurrentPage();
 		itsFirstLeafPageId = itsRootPage.getPageId();
@@ -138,7 +138,7 @@ public abstract class BTree<T extends Tuple>
 			// chains
 			int thePageId = aStream.readPagePointer();
 			int thePos = aStream.readPageOffset();
-			itsChains[i] = new MyChainedPageIOStream<T>(this, getFile(), i);
+			itsChains[i] = new MyChainedPageIOStream<T>(getFile(), thePageId, thePos, this, i);
 			itsChains[i].getCurrentStream().setPos(thePos);
 			
 			// last keys
@@ -418,7 +418,7 @@ public abstract class BTree<T extends Tuple>
 			// We need one more level
 			assert itsRootLevel == aLevel;
 			itsRootLevel++;
-			theChain = new MyChainedPageIOStream<T>(this, itsFile, itsRootLevel);
+			theChain = new MyChainedPageIOStream<T>(itsFile, this, itsRootLevel);
 			itsRootPage = theChain.getCurrentPage();
 			itsChains[itsRootLevel] = theChain;
 			
@@ -570,12 +570,21 @@ public abstract class BTree<T extends Tuple>
 		private final BTree<T> itsTree;
 		private final int itsLevel;
 		
-		public MyChainedPageIOStream(BTree<T> aTree, PagedFile aFile, int aLevel)
+		public MyChainedPageIOStream(PagedFile aFile, BTree<T> aTree, int aLevel)
 		{
 			super(aFile);
 			itsTree = aTree;
 			itsLevel = aLevel;
 		}
+		
+		public MyChainedPageIOStream(PagedFile aFile, int aPageId, int aPosition, BTree<T> aTree, int aLevel)
+		{
+			super(aFile, aPageId, aPosition);
+			itsTree = aTree;
+			itsLevel = aLevel;
+		}
+
+
 
 		@Override
 		protected void newPageHook(int aOldPageId, int aNewPageId)

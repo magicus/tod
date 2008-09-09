@@ -455,17 +455,8 @@ public class PagedFile
 			return getBuffer().get(thePos) != 0;
 		}
 		
-		private void bugDetector(int aPosition)
-		{
-//			if (itsBufferId == 1 && aPosition > 891 && aPosition < 937)
-//			{
-//				System.out.println("Page.writeBoolean()");
-//			}
-		}
-		
 		public synchronized void writeBoolean(int aPosition, boolean aValue)
 		{
-			bugDetector(aPosition);
 			assert aPosition+1 <= itsPageSize;
 
 			int theBufferId = getValidBufferId();
@@ -489,7 +480,6 @@ public class PagedFile
 		
 		public synchronized void writeBytes(int aPosition, byte[] aBytes, int aOffset, int aCount)
 		{
-			bugDetector(aPosition);
 			assert aPosition+aCount <= itsPageSize;
 
 			int theBufferId = getValidBufferId();
@@ -513,7 +503,6 @@ public class PagedFile
 		
 		public synchronized void writeByte(int aPosition, int aValue)
 		{
-			bugDetector(aPosition);
 			assert aPosition+1 <= itsPageSize;
 
 			int theBufferId = getValidBufferId();
@@ -535,7 +524,6 @@ public class PagedFile
 		
 		public synchronized void writeShort(int aPosition, int aValue)
 		{
-			bugDetector(aPosition);
 			assert aPosition+2 <= itsPageSize;
 
 			int theBufferId = getValidBufferId();
@@ -557,7 +545,6 @@ public class PagedFile
 		
 		public synchronized void writeInt(int aPosition, int aValue)
 		{
-			bugDetector(aPosition);
 			assert aPosition+4 <= itsPageSize;
 
 			int theBufferId = getValidBufferId();
@@ -579,7 +566,6 @@ public class PagedFile
 		
 		public synchronized void writeLong(int aPosition, long aValue)
 		{
-			bugDetector(aPosition);
 			assert aPosition+8 <= itsPageSize;
 			
 			int theBufferId = getValidBufferId();
@@ -658,11 +644,6 @@ public class PagedFile
 		public PageIOStream asIOStream()
 		{
 			return new PageIOStream(this);
-		}
-		
-		public void modified()
-		{
-			PagedFile.this.modified(getValidBufferId());
 		}
 		
 		public void use()
@@ -1166,6 +1147,13 @@ public class PagedFile
 		{
 			itsFile = aFile;
 			itsCurrentStream = itsFile.create().asIOStream();
+		}
+		
+		public ChainedPageIOStream(PagedFile aFile, int aPageId, int aPosition)
+		{
+			itsFile = aFile;
+			itsCurrentStream = itsFile.get(aPageId).asIOStream();
+			itsCurrentStream.setPos(aPosition);
 		}
 		
 		/**

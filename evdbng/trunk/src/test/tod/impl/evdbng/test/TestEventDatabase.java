@@ -25,6 +25,11 @@ import tod.impl.evdbng.queries.EventCondition;
 
 public class TestEventDatabase
 {
+	static
+	{
+		System.setProperty("page-buffer-size", "1m");
+	}
+	
 	private EventDatabaseNG itsDatabase;
 	private StructureDatabase itsStructureDatabase;
 
@@ -40,9 +45,12 @@ public class TestEventDatabase
 				PagedFile.create(new File("events.bin")));
 		
 		EventGeneratorNG theEventGenerator = createGenerator();
+		theEventGenerator.fillStructureDatabase(itsStructureDatabase);
+		
+		theEventGenerator = createGenerator();
 		
 		System.out.println("filling...");
-		FixturesNG.fillDatabase(itsDatabase, theEventGenerator, 12000);
+		FixturesNG.fillDatabase(itsDatabase, theEventGenerator, 2000);
 	}
 	
 	@Test public void check() 
@@ -50,15 +58,15 @@ public class TestEventDatabase
 		System.out.println("checking...");
 		
 		// Check with fixed condition
-		CompoundCondition theCondition = new Disjunction();
-		theCondition.addCondition(new BehaviorCondition(3, (byte) 0));
-		
-		FixturesNG.checkCondition(
-				itsDatabase, 
-				theCondition,
-				createGenerator(),
-				0,
-				1000);
+//		CompoundCondition theCondition = new Disjunction();
+//		theCondition.addCondition(new BehaviorCondition(3, (byte) 0));
+//		
+//		FixturesNG.checkCondition(
+//				itsDatabase, 
+//				theCondition,
+//				createGenerator(),
+//				0,
+//				1000);
 
 		// Check with random conditions
 		ConditionGeneratorNG theConditionGenerator = new ConditionGeneratorNG(0, createGenerator());
@@ -67,6 +75,7 @@ public class TestEventDatabase
 		{
 			System.out.println(i+1);
 			EventCondition theEventCondition = theConditionGenerator.next();
+			if (i<2) continue;
 			System.out.println(theEventCondition);
 			
 			int theCount = FixturesNG.checkCondition(
@@ -74,7 +83,7 @@ public class TestEventDatabase
 					theEventCondition,
 					createGenerator(),
 					500,
-					10000);
+					1000);
 			
 			if (theCount > 3)
 			{

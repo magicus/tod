@@ -12,6 +12,7 @@ import java.nio.LongBuffer;
 import java.util.BitSet;
 
 import tod.impl.evdbng.db.file.PagedFile.Page;
+import zz.utils.Utils;
 import zz.utils.list.NakedLinkedList;
 import zz.utils.list.NakedLinkedList.Entry;
 import zz.utils.monitoring.AggregationType;
@@ -65,6 +66,7 @@ public class BufferManager
 		int theSize = itsPageSize*itsBufferCount;
 		try
 		{
+			Utils.println("Allocating %d buffers (%d bytes).", itsBufferCount, theSize);
 			itsBuffer = ByteBuffer.allocateDirect(theSize);
 		}
 		catch (Throwable e)
@@ -96,8 +98,10 @@ public class BufferManager
 	 */
 	private ByteBuffer getPageData(int aBufferId)
 	{
+		assert aBufferId >= 0 && aBufferId < itsBufferCount : String.format("bid: %d, count: %d", aBufferId, itsBufferCount);
 		ByteBuffer thePageData = itsBuffer.duplicate();
 		int theBufferPos = aBufferId * itsPageSize;
+		assert theBufferPos >= 0 && theBufferPos < itsBuffer.limit(): String.format("bufferPos: %d, limit: %d", theBufferPos, itsBuffer.limit());
 		thePageData.position(theBufferPos);
 		thePageData.limit(theBufferPos+itsPageSize);
 		return thePageData;
@@ -115,7 +119,7 @@ public class BufferManager
 	 * Frees the specified buffer, saves it to the file if dirty, and notifies the attached
 	 * page.
 	 */
-	private void freeBuffer(int aBufferId)
+	private synchronized void freeBuffer(int aBufferId)
 	{
 		Page thePage = itsAttachedPages[aBufferId];
 		if (thePage == null) return; // already free.
@@ -124,6 +128,7 @@ public class BufferManager
 		
 		if (itsDirtyBuffers.get(aBufferId))
 		{
+			assert thePage.getBufferId() >= 0 : "Page #"+thePage.getPageId()+" @"+aBufferId;
 			thePage.getFile().write(thePage);
 			itsDirtyBuffers.clear(aBufferId);
 		}
@@ -137,7 +142,7 @@ public class BufferManager
 	/**
 	 * Creates a new page.
 	 */
-	public Page create(PagedFile aFile, int aPageId)
+	public synchronized Page create(PagedFile aFile, int aPageId)
 	{
 		int theBufferId = getFreeBuffer();
 		ByteBuffer thePageData = getPageData(theBufferId);
@@ -156,7 +161,7 @@ public class BufferManager
 	/**
 	 * Flushes all dirty buffers to disk
 	 */
-	public void flush()
+	public synchronized void flush()
 	{
 		for (int i=0;i<itsBufferCount;i++)
 		{
@@ -167,7 +172,7 @@ public class BufferManager
 	/**
 	 * Flushed all the buffers that pertain to the given file.
 	 */
-	public void flush(PagedFile aFile)
+	public synchronized void flush(PagedFile aFile)
 	{
 		for (int i=0;i<itsBufferCount;i++)
 		{
@@ -179,7 +184,7 @@ public class BufferManager
 	/**
 	 * Invalidates all the pages of the specified file.
 	 */
-	public void invalidatePages(PagedFile aFile)
+	public synchronized void invalidatePages(PagedFile aFile)
 	{
 		for (Page thePage : itsAttachedPages) 
 		{
@@ -188,9 +193,9 @@ public class BufferManager
 	}
 
 	/**
-	 * Reloads a page from the disk. It is assumed that no buffer alread holds this page.
+	 * Reloads a page from the disk. It is assumed that no buffer already holds this page.
 	 */
-	void loadPage(Page aPage)
+	synchronized void loadPage(Page aPage)
 	{
 		int theBufferId = getFreeBuffer();
 		aPage.getFile().read(aPage, theBufferId);
@@ -213,7 +218,7 @@ public class BufferManager
 	 * This is optional, not calling it has no adverse effects, and the effect of calling
 	 * it is a potiential increase in efficiency.
 	 */
-	public void free(Page aPage)
+	public synchronized void free(Page aPage)
 	{
 		int theBufferId = aPage.getBufferId();
 		if (theBufferId != -1) itsPageReplacementAlgorithm.free(theBufferId);
@@ -222,7 +227,7 @@ public class BufferManager
 	/**
 	 * Marks the specified buffer as dirty. 
 	 */
-	public void modified(int aBufferId)
+	public synchronized void modified(int aBufferId)
 	{
 		itsDirtyBuffers.set(aBufferId);
 		use(aBufferId);
