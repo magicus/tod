@@ -6,7 +6,9 @@ Proprietary and confidential
 package tod.impl.evdbng;
 
 import sun.misc.VM;
+import tod.impl.evdbng.db.file.BufferManager;
 import tod.impl.evdbng.db.file.PagedFile;
+import tod.impl.evdbng.db.file.SimpleTree;
 import tod.utils.ConfigUtils;
 import zz.utils.bit.BitUtils;
 
@@ -104,6 +106,33 @@ public class DebuggerGridConfigNG
 	public static final long DB_PAGE_BUFFER_SIZE = 
 		ConfigUtils.readSize("page-buffer-size", getDefaultPageBufferSize());
 	
+	public static final int DB_THREADS =
+		ConfigUtils.readInt("db-threads", getDefaultDbThreads());
+	
+	/**
+	 * Size of database tasks, ie number of primitive operations
+	 * they contain.
+	 * See eg. {@link SimpleTree#addAsync(long)}.
+	 */
+	public static final int DB_TASK_SIZE =
+		ConfigUtils.readInt("db-task-size", 1024);
+	
+	/**
+	 * Number of items that are kept in thread-local storage
+	 * in the dirty pages manager in {@link BufferManager}. 
+	 */
+	public static final int DB_DIRTYPAGES_TMPSIZE =
+		ConfigUtils.readInt("db-dirtypages-tmpsize", 256);
+	
+	/**
+	 * Number of items that are kept in thread-local storage
+	 * in the LRU algorithm in {@link BufferManager}. 
+	 */
+	public static final int DB_LRU_TMPSIZE =
+		ConfigUtils.readInt("db-lru-tmpsize", 256);
+	
+	
+	
 	private static String getDefaultPageBufferSize()
 	{
 //		int theSize = (int) (Runtime.getRuntime().maxMemory() / (1024*1024));
@@ -112,4 +141,11 @@ public class DebuggerGridConfigNG
 		return theBufferSize + "m";
 	}
 	
+	/**
+	 * Default number of database threads to use.
+	 */
+	private static int getDefaultDbThreads()
+	{
+		return Runtime.getRuntime().availableProcessors()*2;
+	}
 }

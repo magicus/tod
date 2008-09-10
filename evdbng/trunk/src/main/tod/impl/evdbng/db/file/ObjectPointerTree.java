@@ -35,7 +35,7 @@ public class ObjectPointerTree extends BTree<ObjectPointerTuple>
 	 */
 	public void add(long aObjectId, int aPageId, int aOffset)
 	{
-		logLeafTuple(aObjectId, "pid: "+aPageId+", off: "+aOffset);
+		if (DebugFlags.DB_LOG_DIR != null) logLeafTuple(aObjectId, "pid: "+aPageId+", off: "+aOffset);
 
 		PageIOStream theStream = addLeafKey(aObjectId);
 		theStream.writePagePointer(aPageId);

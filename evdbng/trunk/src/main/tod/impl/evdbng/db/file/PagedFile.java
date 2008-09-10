@@ -17,6 +17,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 import zz.utils.monitoring.AggregationType;
 import zz.utils.monitoring.Monitor;
@@ -333,6 +334,8 @@ public class PagedFile
 	
 	public class Page
 	{
+		private final ReentrantLock itsLock = new ReentrantLock();
+		
 		/**
 		 * Id of the buffer page that holds the data for this page, or -1
 		 * if the page is not in memory.
@@ -367,6 +370,21 @@ public class PagedFile
 			itsStartPos = itsBufferId * itsPageSize;
 			itsPageId = aPageId;
 		}
+		
+		void lock()
+		{
+			itsLock.lock();
+		}
+		
+		void unlock()
+		{
+			itsLock.unlock();
+		}
+		
+		boolean tryLock()
+		{
+			return itsLock.tryLock();
+		}
 
 		public int getPageId()
 		{
@@ -386,18 +404,36 @@ public class PagedFile
 		/**
 		 * Called when the buffer that holds the data of this page is paged out.
 		 */
-		synchronized void pagedOut()
+		void pagedOut()
 		{
-			assert itsBufferId != -1;
-			itsBufferId = -1;
-			itsStartPos = Integer.MIN_VALUE;
+			try
+			{
+				lock();
+
+				assert itsBufferId != -1;
+				itsBufferId = -1;
+				itsStartPos = Integer.MIN_VALUE;
+			}
+			finally
+			{
+				unlock();
+			}
 		}
 		
-		synchronized void pagedIn(int aBufferId)
+		void pagedIn(int aBufferId)
 		{
-			assert itsBufferId == -1;
-			itsBufferId = aBufferId;
-			itsStartPos = itsBufferId * itsPageSize;
+			try
+			{
+				lock();
+
+				assert itsBufferId == -1;
+				itsBufferId = aBufferId;
+				itsStartPos = itsBufferId * itsPageSize;
+			}
+			finally
+			{
+				unlock();
+			}
 		}
 		
 		/**
@@ -412,21 +448,39 @@ public class PagedFile
 		/**
 		 * Called when the PagedFile is cleared so that this page is no longer valid.
 		 */
-		synchronized void invalidate()
+		void invalidate()
 		{
-			itsBufferId = -1;
-			itsStartPos = Integer.MIN_VALUE;
-			itsPageId = -1;
+			try
+			{
+				lock();
+
+				itsBufferId = -1;
+				itsStartPos = Integer.MIN_VALUE;
+				itsPageId = -1;
+			}
+			finally
+			{
+				unlock();
+			}
 		}
 
 		/**
 		 * Returns the id of the buffer that holds the data of this page,
 		 * reloading it from the file if necessary.
 		 */
-		private synchronized int getValidBufferId()
+		private int getValidBufferId()
 		{
-			if (itsBufferId == -1) itsBufferManager.loadPage(this);
-			return itsBufferId;
+			try
+			{
+				lock();
+
+				if (itsBufferId == -1) itsBufferManager.loadPage(this);
+				return itsBufferId;
+			}
+			finally
+			{
+				unlock();
+			}
 		}
 		
 		/**
@@ -445,182 +499,326 @@ public class PagedFile
 			itsTupleBuffer = new WeakReference<TupleBuffer<?>>(aTupleBuffer);
 		}
 		
-		public synchronized boolean readBoolean(int aPosition)
+		public boolean readBoolean(int aPosition)
 		{
-			assert aPosition+1 <= itsPageSize;
+			try
+			{
+				lock();
 
-			getValidBufferId();
-			int thePos = itsStartPos + aPosition;
-			
-			return getBuffer().get(thePos) != 0;
+				assert aPosition+1 <= itsPageSize;
+
+				getValidBufferId();
+				int thePos = itsStartPos + aPosition;
+				
+				return getBuffer().get(thePos) != 0;
+			}
+			finally
+			{
+				unlock();
+			}
 		}
 		
-		public synchronized void writeBoolean(int aPosition, boolean aValue)
+		public void writeBoolean(int aPosition, boolean aValue)
 		{
-			assert aPosition+1 <= itsPageSize;
+			try
+			{
+				lock();
 
-			int theBufferId = getValidBufferId();
-			int thePos = itsStartPos + aPosition;
-			
-			getBuffer().put(thePos, aValue ? (byte) 1 : (byte) 0);
-			modified(theBufferId);
+				assert aPosition+1 <= itsPageSize;
+
+				int theBufferId = getValidBufferId();
+				int thePos = itsStartPos + aPosition;
+				
+				getBuffer().put(thePos, aValue ? (byte) 1 : (byte) 0);
+				modified(theBufferId);
+			}
+			finally
+			{
+				unlock();
+			}
 		}
 
-		public synchronized void readBytes(int aPosition, byte[] aBuffer, int aOffset, int aCount)
+		public void readBytes(int aPosition, byte[] aBuffer, int aOffset, int aCount)
 		{
-			assert aPosition+aCount <= itsPageSize;
+			try
+			{
+				lock();
 
-			getValidBufferId();
-			int thePos = itsStartPos + aPosition;
-			ByteBuffer theBuffer = getBuffer().duplicate();
-			theBuffer.position(thePos);
-			
-			theBuffer.get(aBuffer, aOffset, aCount);
-		}
-		
-		public synchronized void writeBytes(int aPosition, byte[] aBytes, int aOffset, int aCount)
-		{
-			assert aPosition+aCount <= itsPageSize;
+				assert aPosition+aCount <= itsPageSize;
 
-			int theBufferId = getValidBufferId();
-			int thePos = itsStartPos + aPosition;
-			ByteBuffer theBuffer = getBuffer().duplicate();
-			theBuffer.position(thePos);
-
-			theBuffer.put(aBytes, aOffset, aCount);
-			modified(theBufferId);
-		}
-
-		public synchronized byte readByte(int aPosition)
-		{
-			assert aPosition+1 <= itsPageSize;
-
-			getValidBufferId();
-			int thePos = itsStartPos + aPosition;
-			
-			return getBuffer().get(thePos);
+				getValidBufferId();
+				int thePos = itsStartPos + aPosition;
+				ByteBuffer theBuffer = getBuffer().duplicate();
+				theBuffer.position(thePos);
+				
+				theBuffer.get(aBuffer, aOffset, aCount);
+			}
+			finally
+			{
+				unlock();
+			}
 		}
 		
-		public synchronized void writeByte(int aPosition, int aValue)
+		public void writeBytes(int aPosition, byte[] aBytes, int aOffset, int aCount)
 		{
-			assert aPosition+1 <= itsPageSize;
+			try
+			{
+				lock();
 
-			int theBufferId = getValidBufferId();
-			int thePos = itsStartPos + aPosition;
-			
-			getBuffer().put(thePos, (byte)aValue);
-			modified(theBufferId);
-		}
-		
-		public synchronized short readShort(int aPosition)
-		{
-			assert aPosition+2 <= itsPageSize;
+				assert aPosition+aCount <= itsPageSize;
 
-			getValidBufferId();
-			int thePos = itsStartPos + aPosition;
-			
-			return getBuffer().getShort(thePos);
-		}
-		
-		public synchronized void writeShort(int aPosition, int aValue)
-		{
-			assert aPosition+2 <= itsPageSize;
+				int theBufferId = getValidBufferId();
+				int thePos = itsStartPos + aPosition;
+				ByteBuffer theBuffer = getBuffer().duplicate();
+				theBuffer.position(thePos);
 
-			int theBufferId = getValidBufferId();
-			int thePos = itsStartPos + aPosition;
-			
-			getBuffer().putShort(thePos, (short)aValue);
-			modified(theBufferId);
-		}
-		
-		public synchronized int readInt(int aPosition)
-		{
-			assert aPosition+4 <= itsPageSize;
-
-			getValidBufferId();
-			int thePos = itsStartPos + aPosition;
-			
-			return getBuffer().getInt(thePos);
-		}
-		
-		public synchronized void writeInt(int aPosition, int aValue)
-		{
-			assert aPosition+4 <= itsPageSize;
-
-			int theBufferId = getValidBufferId();
-			int thePos = itsStartPos + aPosition;
-			
-			getBuffer().putInt(thePos, aValue);
-			modified(theBufferId);
+				theBuffer.put(aBytes, aOffset, aCount);
+				modified(theBufferId);
+			}
+			finally
+			{
+				unlock();
+			}
 		}
 
-		public synchronized long readLong(int aPosition)
+		public byte readByte(int aPosition)
 		{
-			assert aPosition+8 <= itsPageSize;
+			try
+			{
+				lock();
 
-			getValidBufferId();
-			int thePos = itsStartPos + aPosition;
-			
-			return getBuffer().getLong(thePos);
+				assert aPosition+1 <= itsPageSize;
+
+				getValidBufferId();
+				int thePos = itsStartPos + aPosition;
+				
+				return getBuffer().get(thePos);
+			}
+			finally
+			{
+				unlock();
+			}
 		}
 		
-		public synchronized void writeLong(int aPosition, long aValue)
+		public void writeByte(int aPosition, int aValue)
 		{
-			assert aPosition+8 <= itsPageSize;
-			
-			int theBufferId = getValidBufferId();
-			int thePos = itsStartPos + aPosition;
-			
-			getBuffer().putLong(thePos, aValue);
-			modified(theBufferId);
+			try
+			{
+				lock();
+
+				assert aPosition+1 <= itsPageSize;
+
+				int theBufferId = getValidBufferId();
+				int thePos = itsStartPos + aPosition;
+				
+				getBuffer().put(thePos, (byte)aValue);
+				modified(theBufferId);
+			}
+			finally
+			{
+				unlock();
+			}
 		}
 		
-		public synchronized void writeBB(int aPosition, int aByte1, int aByte2)
+		public short readShort(int aPosition)
 		{
-			assert aPosition+2 <= itsPageSize;
-			
-			int theBufferId = getValidBufferId();
-			int thePos = itsStartPos + aPosition;
-			
-			getBuffer().put(thePos, (byte) aByte1);
-			getBuffer().put(thePos+1, (byte) aByte2);
-			modified(theBufferId);
+			try
+			{
+				lock();
+
+				assert aPosition+2 <= itsPageSize;
+
+				getValidBufferId();
+				int thePos = itsStartPos + aPosition;
+				
+				return getBuffer().getShort(thePos);
+			}
+			finally
+			{
+				unlock();
+			}
+		}
+		
+		public void writeShort(int aPosition, int aValue)
+		{
+			try
+			{
+				lock();
+
+				assert aPosition+2 <= itsPageSize;
+
+				int theBufferId = getValidBufferId();
+				int thePos = itsStartPos + aPosition;
+				
+				getBuffer().putShort(thePos, (short)aValue);
+				modified(theBufferId);
+			}
+			finally
+			{
+				unlock();
+			}
+		}
+		
+		public int readInt(int aPosition)
+		{
+			try
+			{
+				lock();
+
+				assert aPosition+4 <= itsPageSize;
+
+				getValidBufferId();
+				int thePos = itsStartPos + aPosition;
+				
+				return getBuffer().getInt(thePos);
+			}
+			finally
+			{
+				unlock();
+			}
+		}
+		
+		public void writeInt(int aPosition, int aValue)
+		{
+			try
+			{
+				lock();
+
+				assert aPosition+4 <= itsPageSize;
+
+				int theBufferId = getValidBufferId();
+				int thePos = itsStartPos + aPosition;
+				
+				getBuffer().putInt(thePos, aValue);
+				modified(theBufferId);
+			}
+			finally
+			{
+				unlock();
+			}
 		}
 
-		public synchronized void writeBS(int aPosition, int aByte, int aShort)
+		public long readLong(int aPosition)
 		{
-			assert aPosition+3 <= itsPageSize;
-			
-			int theBufferId = getValidBufferId();
-			int thePos = itsStartPos + aPosition;
-			
-			getBuffer().put(thePos, (byte) aByte);
-			getBuffer().putShort(thePos+1, (short) aShort);
-			modified(theBufferId);
+			try
+			{
+				lock();
+
+				assert aPosition+8 <= itsPageSize;
+
+				getValidBufferId();
+				int thePos = itsStartPos + aPosition;
+				
+				return getBuffer().getLong(thePos);
+			}
+			finally
+			{
+				unlock();
+			}
 		}
 		
-		public synchronized void writeBI(int aPosition, int aByte, int aInt)
+		public void writeLong(int aPosition, long aValue)
 		{
-			assert aPosition+5 <= itsPageSize;
-			
-			int theBufferId = getValidBufferId();
-			int thePos = itsStartPos + aPosition;
-			
-			getBuffer().put(thePos, (byte) aByte);
-			getBuffer().putInt(thePos+1, aInt);
-			modified(theBufferId);
+			try
+			{
+				lock();
+
+				assert aPosition+8 <= itsPageSize;
+				
+				int theBufferId = getValidBufferId();
+				int thePos = itsStartPos + aPosition;
+				
+				getBuffer().putLong(thePos, aValue);
+				modified(theBufferId);
+			}
+			finally
+			{
+				unlock();
+			}
 		}
 		
-		public synchronized void writeBL(int aPosition, int aByte, long aLong)
+		public void writeBB(int aPosition, int aByte1, int aByte2)
 		{
-			assert aPosition+9 <= itsPageSize;
-			
-			int theBufferId = getValidBufferId();
-			int thePos = itsStartPos + aPosition;
-			
-			getBuffer().put(thePos, (byte) aByte);
-			getBuffer().putLong(thePos+1, aLong);
-			modified(theBufferId);
+			try
+			{
+				lock();
+
+				assert aPosition+2 <= itsPageSize;
+				
+				int theBufferId = getValidBufferId();
+				int thePos = itsStartPos + aPosition;
+				
+				getBuffer().put(thePos, (byte) aByte1);
+				getBuffer().put(thePos+1, (byte) aByte2);
+				modified(theBufferId);
+			}
+			finally
+			{
+				unlock();
+			}
+		}
+
+		public void writeBS(int aPosition, int aByte, int aShort)
+		{
+			try
+			{
+				lock();
+
+				assert aPosition+3 <= itsPageSize;
+				
+				int theBufferId = getValidBufferId();
+				int thePos = itsStartPos + aPosition;
+				
+				getBuffer().put(thePos, (byte) aByte);
+				getBuffer().putShort(thePos+1, (short) aShort);
+				modified(theBufferId);
+			}
+			finally
+			{
+				unlock();
+			}
+		}
+		
+		public void writeBI(int aPosition, int aByte, int aInt)
+		{
+			try
+			{
+				lock();
+
+				assert aPosition+5 <= itsPageSize;
+				
+				int theBufferId = getValidBufferId();
+				int thePos = itsStartPos + aPosition;
+				
+				getBuffer().put(thePos, (byte) aByte);
+				getBuffer().putInt(thePos+1, aInt);
+				modified(theBufferId);
+			}
+			finally
+			{
+				unlock();
+			}
+		}
+		
+		public void writeBL(int aPosition, int aByte, long aLong)
+		{
+			try
+			{
+				lock();
+
+				assert aPosition+9 <= itsPageSize;
+				
+				int theBufferId = getValidBufferId();
+				int thePos = itsStartPos + aPosition;
+				
+				getBuffer().put(thePos, (byte) aByte);
+				getBuffer().putLong(thePos+1, aLong);
+				modified(theBufferId);
+			}
+			finally
+			{
+				unlock();
+			}
 		}
 		
 		public void writeInternalTupleData(int aPosition, int aPageId, long aTupleCount)

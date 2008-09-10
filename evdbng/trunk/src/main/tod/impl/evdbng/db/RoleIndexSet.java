@@ -76,7 +76,7 @@ public class RoleIndexSet extends IndexSet<RoleTuple>
 
 	public void add(int aIndex, long aKey, byte aRole)
 	{
-		getIndex(aIndex).add(aKey, aRole);
+		getIndex(aIndex).addAsync(aKey, aRole);
 	}
 
 	/**

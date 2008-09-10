@@ -304,7 +304,7 @@ public abstract class DatabaseNode
 		{
 			// The GridEventCollector uses a pool of events
 			// we cannot hold references to those events
-			aEvent = (GridEvent) aEvent.clone(); 
+//			aEvent = (GridEvent) aEvent.clone(); 
 			itsEventsDatabase.push(aEvent);
 
 			long theTimestamp = aEvent.getTimestamp();

@@ -108,14 +108,16 @@ public class EventDatabaseNG extends EventDatabase
 				aForceMergeCounts);
 	}
 
+	int itsId = 1;
 	
 	@Override
 	protected void processEvent0(GridEvent aEvent)
 	{
 		GridEventNG theEvent = (GridEventNG) aEvent;
 
+//		int theId = itsId++;
 		int theId = itsEventList.add(theEvent);
-		itsTimestampTree.add(aEvent.getTimestamp());
+		itsTimestampTree.addAsync(aEvent.getTimestamp());
 		if (! DebugFlags.DISABLE_INDEXES) theEvent.index(itsIndexes, theId);	
 		if (DebugFlags.DB_LOG_DIR != null) 
 		{

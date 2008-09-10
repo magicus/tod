@@ -43,6 +43,6 @@ public class SimpleIndexSet extends IndexSet<SimpleTuple>
 	
 	public void add(int aIndex, long aKey)
 	{
-		getIndex(aIndex).add(aKey);
+		getIndex(aIndex).addAsync(aKey);
 	}
 }

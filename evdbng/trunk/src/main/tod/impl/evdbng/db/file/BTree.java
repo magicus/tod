@@ -92,14 +92,17 @@ public abstract class BTree<T extends Tuple>
 	/**
 	 * Write everything to the same file otherwise we can get too many open files.
 	 */
-	private static synchronized void log(String aName, long aLeafTupleCount, long aKey, String aExtradata)
+	private static void log(String aName, long aLeafTupleCount, long aKey, String aExtradata)
 	{
 		if (DebugFlags.DB_LOG_DIR != null)
 		{
-			itsLogWriter.print(aName+": "+aLeafTupleCount+" - "+aKey);
-			if (aExtradata != null) itsLogWriter.print(" "+aExtradata);
-			itsLogWriter.println();
-			itsLogWriter.flush();
+			synchronized(BTree.class)
+			{
+				itsLogWriter.print(aName+": "+aLeafTupleCount+" - "+aKey);
+				if (aExtradata != null) itsLogWriter.print(" "+aExtradata);
+				itsLogWriter.println();
+				itsLogWriter.flush();
+			}
 		}
 	}
 	
@@ -221,7 +224,7 @@ public abstract class BTree<T extends Tuple>
 	protected PageIOStream addLeafKey(long aKey)
 	{
 		if (itsFirstKey == -1) itsFirstKey = aKey;
-		assert itsLastKey <= aKey;
+		assert itsLastKey <= aKey : String.format("last: %d, key: %d", itsLastKey, aKey);
 		
 		itsLastKey = aKey;
 		PageIOStream theStream = addKey(aKey, itsTupleBufferFactory.getDataSize(), 0);
