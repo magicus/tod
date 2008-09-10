@@ -4000,7 +4000,53 @@ El mejor tiempo de ejecución para este script sin el depurador fue de $3,587116
 	\section{Selección de casos de uso}
 	\section{Resultados obtenidos con pyTOD}
 \chapter{Conclusiones}
+
+Las herramientas de depuración de código, son las herramientas que prestan más ayuda a los desarrolladores de software tanto en la etapa de desarrollo como en la etapa de puesta en marcha de un proyecto informático.  Es por esto que existía una gran motivación de encontrar un área en la cual se pudiera realizar un trabajo a nivel de ingeniería que fuera un aporte interesante.  En la actualidad la formación del Ingeniero Civil en Computación e Informática no contempla asignaturas en las que se enseñen los distintos enfoques y arquitecturas de los depuradores.  Debido a esto al comienzo del trabajo de título existía incertidumbre sobre los posibles problemas que se pudieran encontrar en esta área totalmente desconocida, incertidumbre que a través del desarrollo de este trabajo de título fue desapareciendo.
+
+El análisis del marco teórico se vuelve fundamental ya que sienta las bases para poder ver las principales ventajas y desventajas de los tres distintos enfoques que existen para realizar depuración de código:
+\begin{itemize}
+	\item Basado en mensajes.
+	\item Punto de quiebre.
+	\item Omnisciente.
+\end{itemize}
+
+
+El resultado de este análisis conduce el presente trabajo por el enfoque de los depuradores omniscientes debido a sus características que superan a las de los depuradores de punto de quiebre y los basados en mensajes.  Esto a pesar de que este tipo de depuradores no ha podido posicionarse como el enfoque de facto para realizar depuración de software.  La pregunta principal que se planteo en ese momento fue \textit{¿Por qué los depuradores omniscientes no son los más utilizados?}.  
+
+Con el objetivo de responder la pregunta anteriormente planteada, se decide buscar y estudiar las implementaciones existentes del enfoque de depuración omnisciente.  La búsqueda de las implementaciones fue compleja y se encontró poca cantidad de implementaciones de este enfoque, comparado con la cantidad encontrada de implementaciones que tienen los enfoques de punto de quiebre y basado en mensajes.  El principal problema que se argumentaba dentro de los mismos desarrolladores de los depuradores omniscientes, era la gran capacidad de almacenamiento que se requería para almacenar la huella de ejecución completa de una sesión de depuración y el complejo manejo de los datos que esto implicaba. 
+
+La poca cantidad de depuradores omniscientes desarrollados fue una señal potente de que implementar un depurador omnisciente no era una tarea fácil y menos una tarea que la pudiera desarrollar un individuo en si.  Entendiendo que no era posible desarrollar un depurador omnisciente desde cero, se enfocó el estudio en un depurador omnisciente llamado TOD.  Esta herramienta llamó particularmente la atención en el momento del estudio de implementaciones del enfoque de depuración omnisciente, debido a que era la única herramienta que en su definición ofrecía una estructura de base de datos que permitía almacenar por completo la huella de ejecución de una sesión de depuración sobre una arquitectura escalable, solucionando el principal problema que se le atribuye a estos tipos de depuradores.
+
+Al analizar las posibles contribuciones o mejoras que se pudieran hacer en TOD, se encontró un punto de principal interés.  TOD al ser un depurador para el lenguaje de programación Java, sólo realizaba depuración a un lenguaje de programación que es de tipado dinámico.  Esto por si solo dejó muchas interrogantes abiertas \textit{¿Cómo se comportaría TOD al realizar depuración a un lenguaje dinámico?}, \textit{¿Qué cambios habría que realizar en TOD para dar soporte a este tipo de lenguajes?}, \textit{¿Se pueden reutilizar algunos componentes de TOD para este objetivo?}, \textit{¿Cómo comunicar los componentes de TOD con la nueva arquitectura de depuración?}, entre otras.
+
+A partir de todas estas interrogantes es que se toma a TOD como base de estudio y plataforma de desarrollo para la construcción de pyTOD, un prototipo experimental para realizar depuración omnisciente a scripts escritos en el lenguaje de programación Python, lenguaje de tipado dinámico.
+
+
+En la etapa de diseño del prototipo se consideró necesario que pyTOD estuviera compuesto por los siguientes elementos:
+
+\begin{itemize}
+	\item Capturador de huella.
+	\item Protocolo de comunicación.
+	\item Mecanismo de conexión a nivel de base de datos.
+\end{itemize}
+
+Una vez implementados estos elementos y realizando pequeñas modificaciones en algunos de los componentes de TOD, se pudo efectuar una sesión de depuración omnisciente a scripts escritos en un lenguaje de programación de tipado dinámico, logrando alcanzar con esto el objetivo general del presente trabajo de título.
+
+Es importante señalar que además de demostrar que se pudo realizar depuración omnisciente a scripts escritos en un lenguaje de tipado dinámico utilizando como plataforma tecnológica a TOD, también permitió lo siguiente:
+
+\begin{itemize}
+	\item Notar que el diseño de base de datos de TOD no requirió de mayores modificaciones.
+	\item Hacer más general el mecanismo de conexión a la base de datos de TOD.
+	\item Demostrar que TOD es fácilmente extensible para realizar depuración omnisciente a otros lenguajes de programación.
+	 \item Ampliar el público objetivo de TOD, ya que ahora realiza depuración a más de un lenguaje de programación.
+\end{itemize}
+
+Al finalizar este trabajo de titulo se tiene la satisfacción de haber realizado una pequeña y real contribución en el área de la depuración, específicamente en la depuración omnisciente.  De la misma forma se está muy satisfecho de haber planteado y de haber dado solución a la situación de utilizar TOD como plataforma tecnológica para realizar depuración a scripts de lenguajes de tipado dinámico.
+
 \chapter{Trabajo futuro}
+
+Siendo pyTOD un prototipo experimental, su desempeño y prestaciones pueden ser mejoradas ampliamente, esto si se desea utilizarlo de forma real en la depuración de código.  Principalmente lo que se puede optimizar bastante es el capturador de huella, ya que no se utilizó el enfoque clásico de instrumentación de código si no que se utilizó la captura de la huella de ejecución mediante un mecanismo propio del lenguaje de programación.  También es importante mejorar la adaptabilidad en los diferentes sistemas operativos, como también mejorar el soporte para depuración de múltiples hilos de ejecución. 
+
 \newpage
 
 
