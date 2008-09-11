@@ -52,7 +52,7 @@ public class BufferManager
 	
 	private long itsReadCount = 0;
 	private long itsWriteCount = 0;
-
+	private long itsCollisions = 0;
 	
 	private PageReplacementAlgorithm itsPageReplacementAlgorithm;
 
@@ -116,6 +116,8 @@ public class BufferManager
 	/**
 	 * Frees the specified buffer, saves it to the file if dirty, and notifies the attached
 	 * page.
+	 * @return Whether the operation succeeded. The operation fails if the page or its 
+	 * {@link PagedFile} is in use in another thread.
 	 */
 	private synchronized boolean freeBuffer(int aBufferId)
 	{
@@ -214,11 +216,30 @@ public class BufferManager
 	synchronized void loadPage(Page aPage)
 	{
 		int theBufferId = getFreeBuffer();
-		aPage.getFile().read(aPage, theBufferId);
 		
-		assert itsAttachedPages[theBufferId] == null;
-		itsAttachedPages[theBufferId] = aPage;
-		aPage.pagedIn(theBufferId);
+		while(true)
+		{
+			if (! aPage.getFile().tryLock())
+			{
+				Thread.yield();
+				itsCollisions++;
+				continue;
+			}
+			
+			try
+			{
+				aPage.getFile().read(aPage, theBufferId);
+				
+				assert itsAttachedPages[theBufferId] == null;
+				itsAttachedPages[theBufferId] = aPage;
+				aPage.pagedIn(theBufferId);
+				break;
+			}
+			finally
+			{
+				aPage.getFile().unlock();
+			}
+		}
 	}
 	
 	/**
@@ -341,6 +362,12 @@ public class BufferManager
 	public long getBufferSpace()
 	{
 		return itsBufferCount*itsPageSize;
+	}
+	
+	@Probe(key = "collisions", aggr = AggregationType.SUM)
+	public long getCollisions()
+	{
+		return itsCollisions;
 	}
 	
 //	private static class ConcurrentBitSet
