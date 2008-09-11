@@ -693,6 +693,7 @@ public class BufferManager
 			for (int i=0;i<itsEntries.length;i++) 
 			{
 				Entry<Integer> theEntry = itsLRUList.createEntry(i);
+				assert theEntry.getValue() != null;
 				itsEntries[i] = theEntry;
 				itsLRUList.addFirst(theEntry);
 			}
@@ -791,10 +792,11 @@ public class BufferManager
 				commit();
 				Entry<Integer> theEntry = itsLRUList.getFirstEntry();
 				
-				int i=0;
 				while(theEntry != null) 
 				{
-					int theBufferId = theEntry.getValue();
+					Integer theValue = theEntry.getValue();
+					assert theValue != null;
+					int theBufferId = theValue;
 					if (freeBuffer(theBufferId))
 					{
 						assert theEntry.isAttached();
@@ -803,8 +805,8 @@ public class BufferManager
 						return theBufferId;
 					}
 
-					i++;
-//					Utils.println("Warning: could not free buffer (#%d, th: %s)", i, Thread.currentThread());
+					itsCollisions++;
+					Thread.yield();
 					theEntry = theEntry.getNext();
 				}
 				
