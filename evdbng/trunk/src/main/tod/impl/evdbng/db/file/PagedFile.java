@@ -396,6 +396,8 @@ public class PagedFile
 		
 		private boolean itsDirty = false;
 		
+		private int itsUseCount = 0;
+		
 		public Page(int aPageId)
 		{
 			itsBufferId = -1;
@@ -493,7 +495,11 @@ public class PagedFile
 
 		private void use(int aBufferId)
 		{
-			PagedFile.this.use(aBufferId);
+			if (itsUseCount++ > 10)
+			{
+				itsUseCount = 0;
+				PagedFile.this.use(aBufferId);
+			}
 		}
 		
 		public void use()

@@ -117,6 +117,13 @@ public class DebuggerGridConfigNG
 	public static final int DB_TASK_SIZE =
 		ConfigUtils.readInt("db-task-size", 1024);
 	
+	/**
+	 * Number of times a page must be used before its usage is informed
+	 * to the page replacement algorithm.
+	 */
+	public static final int DB_USE_THRESHOLD =
+		ConfigUtils.readInt("db-use-threshold", 10);
+	
 	private static String getDefaultPageBufferSize()
 	{
 //		int theSize = (int) (Runtime.getRuntime().maxMemory() / (1024*1024));
