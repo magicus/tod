@@ -220,7 +220,14 @@ public class BufferManager
 		{
 			if (! aPage.getFile().tryLock())
 			{
-				Thread.yield();
+				try
+				{
+					Thread.sleep(1);
+				}
+				catch (InterruptedException e)
+				{
+					throw new RuntimeException(e);
+				}
 				itsCollisions++;
 				continue;
 			}
@@ -786,34 +793,43 @@ public class BufferManager
 		@Override
 		public int getFreeBuffer()
 		{
-			try
+			while(true)
 			{
-				itsLock.writeLock().lock();
-				commit();
-				Entry<Integer> theEntry = itsLRUList.getFirstEntry();
-				
-				while(theEntry != null) 
+				try
 				{
-					Integer theValue = theEntry.getValue();
-					assert theValue != null;
-					int theBufferId = theValue;
-					if (freeBuffer(theBufferId))
+					itsLock.writeLock().lock();
+					commit();
+				
+					Entry<Integer> theEntry = itsLRUList.getFirstEntry();
+				
+					for(int i=0;i<16;i++) 
 					{
-						assert theEntry.isAttached();
-						itsLRUList.moveLast(theEntry);
-						
-						return theBufferId;
-					}
+						int theBufferId = theEntry.getValue();
+						if (freeBuffer(theBufferId))
+						{
+							assert theEntry.isAttached();
+							itsLRUList.moveLast(theEntry);
+							
+							return theBufferId;
+						}
 
-					itsCollisions++;
-					theEntry = theEntry.getNext();
+						itsCollisions++;
+						theEntry = itsLRUList.getNextEntry(theEntry);
+					}
+				}
+				finally
+				{
+					itsLock.writeLock().unlock();
 				}
 				
-				throw new RuntimeException("Could not free any buffer (if this happens I'll eat my hat)");
-			}
-			finally
-			{
-				itsLock.writeLock().unlock();
+				try
+				{
+					Thread.sleep(1);
+				}
+				catch (InterruptedException e)
+				{
+					throw new RuntimeException(e);
+				}
 			}
 		}
 	}
