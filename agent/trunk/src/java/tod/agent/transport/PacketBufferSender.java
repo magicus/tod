@@ -121,10 +121,15 @@ public class PacketBufferSender extends Thread
 					if (delta > 100)
 					{
 						checkTime = t;
+						
+						PacketBuffer[] theArray;
 						synchronized(this)
 						{
-							for (PacketBuffer theBuffer : itsBuffers) theBuffer.pleaseSwap();
+							// Might deadlock if we synchronize the pleaseSwaps, so copy the list
+							theArray = itsBuffers.toArray(new PacketBuffer[itsBuffers.size()]);
 						}
+						
+						for (PacketBuffer theBuffer : theArray) theBuffer.pleaseSwap();
 					}
 					
 					sentBuffers = 0;
