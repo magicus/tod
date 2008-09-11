@@ -16,17 +16,10 @@ public class DatabaseNodeNG extends DatabaseNode
 	@Override
 	protected EventDatabase createEventDatabase(File aDirectory)
 	{
-		File theIndexFile = new File(aDirectory, "indexes.bin");
-		theIndexFile.delete();
-		
-		File theEventsFile = new File(aDirectory, "events.bin");
-		theEventsFile.delete();
-		
 		return new EventDatabaseNG(
 				getStructureDatabase(), 
 				getNodeId(), 
-				new PagedFile(theIndexFile),
-				new PagedFile(theEventsFile));
+				aDirectory);
 	}
 
 	@Override

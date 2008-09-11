@@ -35,12 +35,10 @@ import tod.impl.evdbng.test.TimestampGenerator;
 
 public class FixturesNG
 {
-
-	
 	public static EventList createEventList() 
 	{
-		PagedFile theIndexesFile = PagedFile.create(new File("indexes.bin"));
-		PagedFile theEventsFile = PagedFile.create(new File("events.bin"));
+		PagedFile theIndexesFile = PagedFile.create(new File("indexes.bin"), true);
+		PagedFile theEventsFile = PagedFile.create(new File("events.bin"), true);
 		return new EventList(0, StructureDatabase.create(new TODConfig()), 0, theIndexesFile, theEventsFile);
 	}
 	

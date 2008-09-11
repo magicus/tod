@@ -61,8 +61,9 @@ public class PagedFile
 	private long itsScatteringCount = 0;
 
 
-	public static PagedFile create(File aFile)
+	public static PagedFile create(File aFile, boolean aTruncate)
 	{
+		if (aTruncate) aFile.delete();
 		return new PagedFile(aFile);
 	}
 	

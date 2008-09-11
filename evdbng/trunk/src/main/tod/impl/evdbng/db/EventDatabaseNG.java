@@ -59,22 +59,27 @@ public class EventDatabaseNG extends EventDatabase
 	/**
 	 * Creates a new database using the specified files.
 	 */
-	public EventDatabaseNG(IStructureDatabase aStructureDatabase, int aNodeId, PagedFile aIndexesFile, PagedFile aEventsFile) 
+	public EventDatabaseNG(
+			IStructureDatabase aStructureDatabase,
+			int aNodeId, 
+			File aDirectory) 
 	{
 		super(aStructureDatabase, aNodeId);
 		System.out.println("Using evdbng");
 		
-		itsIndexesFile = aIndexesFile;
+		itsIndexesFile = PagedFile.create(new File(aDirectory, "indexes.bin"), true);
 		
 		itsEventLists = new EventList[DB_THREADS];
 		for(int i=0;i<DB_THREADS;i++)
 		{
+			PagedFile theEventsFile = PagedFile.create(new File(aDirectory, "events-"+i+".bin"), true);
+			
 			itsEventLists[i] = new EventList(
 					i,
 					getStructureDatabase(), 
 					aNodeId, 
 					itsIndexesFile, 
-					aEventsFile);	
+					theEventsFile);	
 		}
 		
 		itsIndexes = new Indexes(itsIndexesFile);

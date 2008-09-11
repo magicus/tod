@@ -17,10 +17,6 @@ import tod.impl.evdbng.ConditionGeneratorNG;
 import tod.impl.evdbng.EventGeneratorNG;
 import tod.impl.evdbng.FixturesNG;
 import tod.impl.evdbng.db.EventDatabaseNG;
-import tod.impl.evdbng.db.file.PagedFile;
-import tod.impl.evdbng.queries.BehaviorCondition;
-import tod.impl.evdbng.queries.CompoundCondition;
-import tod.impl.evdbng.queries.Disjunction;
 import tod.impl.evdbng.queries.EventCondition;
 
 public class TestEventDatabase
@@ -42,8 +38,7 @@ public class TestEventDatabase
 		itsDatabase = new EventDatabaseNG(
 				itsStructureDatabase,
 				0, 
-				PagedFile.create(new File("indexes.bin")),
-				PagedFile.create(new File("events.bin")));
+				new File("."));
 		
 		EventGeneratorNG theEventGenerator = createGenerator();
 		theEventGenerator.fillStructureDatabase(itsStructureDatabase);

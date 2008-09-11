@@ -62,6 +62,11 @@ public class EventList implements IEventList
 	private final PagedFile itsEventsFile;
 	
 	/**
+	 * Just for checking that page ids are sequential.
+	 */
+	private int itsLastPageId = 0;
+	
+	/**
 	 * The current page stream of the events file.
 	 */
 	private PageIOStream itsEventStream;
@@ -120,6 +125,7 @@ public class EventList implements IEventList
 			PageIOStream theOldStream = itsEventStream;
 			itsEventStream = itsEventsFile.create().asIOStream();
 			int thePageId = itsEventStream.getPage().getPageId();
+			assert thePageId == ++itsLastPageId;
 			itsPageCount++;
 			
 			if (theOldStream != null)
