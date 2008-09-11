@@ -333,7 +333,7 @@ public class EventList implements IEventList
 			for (int i=0;i<itsPosition;i++) 
 			{
 				int theId = add(itsEvents[i]);
-				assert theId == itsExpectedIds[i];
+				assert theId == itsExpectedIds[i] : String.format("theId: %d, expected: %d", theId, itsExpectedIds[i]);
 			}
 		}
 
