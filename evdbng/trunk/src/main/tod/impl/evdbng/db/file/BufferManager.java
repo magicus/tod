@@ -213,9 +213,8 @@ public class BufferManager
 	/**
 	 * Reloads a page from the disk. It is assumed that no buffer already holds this page.
 	 */
-	synchronized void loadPage(Page aPage)
+	void loadPage(Page aPage)
 	{
-		int theBufferId = getFreeBuffer();
 		
 		while(true)
 		{
@@ -226,18 +225,22 @@ public class BufferManager
 				continue;
 			}
 			
-			try
+			synchronized (this)
 			{
-				aPage.getFile().read(aPage, theBufferId);
-				
-				assert itsAttachedPages[theBufferId] == null;
-				itsAttachedPages[theBufferId] = aPage;
-				aPage.pagedIn(theBufferId);
-				break;
-			}
-			finally
-			{
-				aPage.getFile().unlock();
+				try
+				{
+					int theBufferId = getFreeBuffer();
+					aPage.getFile().read(aPage, theBufferId);
+					
+					assert itsAttachedPages[theBufferId] == null;
+					itsAttachedPages[theBufferId] = aPage;
+					aPage.pagedIn(theBufferId);
+					break;
+				}
+				finally
+				{
+					aPage.getFile().unlock();
+				}
 			}
 		}
 	}
