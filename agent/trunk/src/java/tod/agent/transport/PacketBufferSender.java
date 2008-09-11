@@ -15,7 +15,7 @@ import tod.agent.AgentConfig;
 import tod.agent.AgentDebugFlags;
 
 /**
- * Sends the packets bufferred by a set of {@link PacketBuffer} to a given
+ * Sends the packets buffered by a set of {@link PacketBuffer} to a given
  * {@link ByteChannel}.
  * Packets of a given thread are sent together, prefixed by a header that indicates the 
  * size of the "meta-packet", the corresponding thread id, and whether the meta-packet contains
@@ -121,7 +121,10 @@ public class PacketBufferSender extends Thread
 					if (delta > 100)
 					{
 						checkTime = t;
-						for (PacketBuffer theBuffer : itsBuffers) theBuffer.pleaseSwap();
+						synchronized(this)
+						{
+							for (PacketBuffer theBuffer : itsBuffers) theBuffer.pleaseSwap();
+						}
 					}
 					
 					sentBuffers = 0;
@@ -164,7 +167,7 @@ public class PacketBufferSender extends Thread
 	
 	/**
 	 * Emulates a {@link DataOutputStream} to which event packets can be sent.
-	 * Uses double bufferring to handle sending of buffers.
+	 * Uses double buffering to handle sending of buffers.
 	 * @author gpothier
 	 */
 	public class PacketBuffer 
