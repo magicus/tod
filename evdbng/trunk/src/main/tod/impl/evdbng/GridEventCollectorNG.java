@@ -90,6 +90,7 @@ public class GridEventCollectorNG extends GridEventCollector
 	{
 		ProbeInfo theProbeInfo =
 				itsStructureDatabase.getNewExceptionProbe(aBehaviorId, aOperationBytecodeIndex);
+		assert theProbeInfo != null;
 
 		exception(aThreadId, aParentTimestamp, aDepth, aTimestamp, aAdviceCFlow, theProbeInfo.id, aException);
 	}

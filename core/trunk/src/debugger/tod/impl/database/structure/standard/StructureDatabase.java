@@ -474,6 +474,7 @@ public class StructureDatabase implements IShareableStructureDatabase
 		{
 			int theId = addProbe(aBehaviorId, aBytecodeIndex, null, -1);
 			theProbe = itsProbes.get(theId);
+			assert theProbe != null : String.format("bid: %d, index: %d, probeId: %d", aBehaviorId, aBytecodeIndex, theId);
 			itsExceptionProbesMap.put(theKey, theProbe);
 		}
 		return theProbe;
