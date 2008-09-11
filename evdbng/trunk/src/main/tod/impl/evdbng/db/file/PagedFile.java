@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
+import tod.impl.evdbng.DebuggerGridConfigNG;
+
 import zz.utils.monitoring.AggregationType;
 import zz.utils.monitoring.Monitor;
 import zz.utils.monitoring.Probe;
@@ -495,7 +497,7 @@ public class PagedFile
 
 		private void use(int aBufferId)
 		{
-			if (itsUseCount++ > 10)
+			if (itsUseCount++ > DebuggerGridConfigNG.DB_USE_THRESHOLD)
 			{
 				itsUseCount = 0;
 				PagedFile.this.use(aBufferId);

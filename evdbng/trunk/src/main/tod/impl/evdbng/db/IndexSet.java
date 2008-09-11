@@ -155,7 +155,7 @@ public abstract class IndexSet<T extends Tuple>
 		}
 		else theIndex = theEntry.getValue();
 		
-		itsIndexManager.use((Entry) theEntry);
+		if (theIndex.shouldUse()) itsIndexManager.use((Entry) theEntry);
 		
 		return theIndex.getTree();
 	}
@@ -290,6 +290,7 @@ public abstract class IndexSet<T extends Tuple>
 		 */
 		private final int itsIndex;
 		
+		private int itsUseCount = 0;
 		
 		public BTreeWrapper(
 				BTree<T> aTree, 
@@ -315,6 +316,22 @@ public abstract class IndexSet<T extends Tuple>
 		{
 			return itsTree;
 		}
+		
+		/**
+		 * Increments the use count, and returns true and resets the count if threshold is
+		 * reached.
+		 */
+		public boolean shouldUse()
+		{
+			if (itsUseCount++ > DebuggerGridConfigNG.DB_USE_THRESHOLD)
+			{
+				itsUseCount = 0;
+				return true;
+			}
+			else return false;
+		}
+		
+
 	}
 
 	protected static class DuplicateFilterIterator<T extends Tuple> extends AbstractFilteredBidiIterator<T, T>
