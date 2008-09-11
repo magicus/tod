@@ -8,6 +8,8 @@ package tod.impl.evdbng.db;
 import java.util.Iterator;
 
 import tod.core.database.structure.IStructureDatabase;
+import tod.impl.evdbng.DebuggerGridConfigNG;
+import tod.impl.evdbng.db.DBExecutor.DBTask;
 import tod.impl.evdbng.db.file.PagedFile;
 import tod.impl.evdbng.db.file.SequenceTree;
 import tod.impl.evdbng.db.file.PagedFile.Page;
@@ -23,8 +25,10 @@ import zz.utils.monitoring.Probe;
  * The events can be accessed by their position (see {@link #getEvent(int)}).
  * @author gpothier
  */
-public class EventList
+public class EventList implements IEventList
 {
+	private final int itsId;
+
 	private final IStructureDatabase itsStructureDatabase;
 	
 	/**
@@ -58,14 +62,13 @@ public class EventList
 	private final PagedFile itsEventsFile;
 	
 	/**
-	 * Just for checking that page ids are sequential.
-	 */
-	private int itsLastPageId = 0;
-	
-	/**
 	 * The current page stream of the events file.
 	 */
 	private PageIOStream itsEventStream;
+	
+	private AddTask itsCurrentTask = new AddTask();
+
+
 	
 	/**
 	 * Creates an event list
@@ -75,8 +78,14 @@ public class EventList
 	 * @param aEventsFile The file used to store events. Note: the file should not
 	 * be shared with other structures.
 	 */
-	public EventList(IStructureDatabase aStructureDatabase, int aNodeId, PagedFile aIndexesFile, PagedFile aEventsFile) 
+	public EventList(
+			int aId,
+			IStructureDatabase aStructureDatabase, 
+			int aNodeId, 
+			PagedFile aIndexesFile, 
+			PagedFile aEventsFile) 
 	{
+		itsId = aId;
 		itsStructureDatabase = aStructureDatabase;
 		itsEventIdTree = new SequenceTree("[EventList] event id tree", aIndexesFile);
 		Monitor.getInstance().register(this);
@@ -84,6 +93,14 @@ public class EventList
 		itsEventsFile = aEventsFile;
 	}
 	
+	/**
+	 * Each {@link IndexSet} has a sequential id (for {@link DBExecutor}).
+	 */
+	protected int getId()
+	{
+		return itsId;
+	}
+
 	public void dispose()
 	{
 		Monitor.getInstance().unregister(this);
@@ -103,7 +120,6 @@ public class EventList
 			PageIOStream theOldStream = itsEventStream;
 			itsEventStream = itsEventsFile.create().asIOStream();
 			int thePageId = itsEventStream.getPage().getPageId();
-			assert thePageId == ++itsLastPageId;
 			itsPageCount++;
 			
 			if (theOldStream != null)
@@ -138,6 +154,21 @@ public class EventList
 		assert p1-p0 == theRecordLength : "theRecordLength: "+theRecordLength+", p1-p0: "+(p1-p0)+" - "+aEvent;
 		
 		return itsEventsCount-1;
+	}
+	
+	public void addAsync(GridEventNG aEvent, int aExpectedId)
+	{
+		itsCurrentTask.addSubtask(aEvent, aExpectedId);
+		if (itsCurrentTask.isFull()) flushTasks();
+	}
+
+	/**
+	 * Flushes currently pending (see {@link #addAsync(long)}).
+	 */
+	public void flushTasks()
+	{
+		DBExecutor.getInstance().submit(itsCurrentTask);
+		itsCurrentTask = new AddTask();
 	}
 	
 	/**
@@ -266,4 +297,46 @@ public class EventList
 			throw new UnsupportedOperationException();
 		}
 	}
+	
+	private class AddTask extends DBTask
+	{
+		private final GridEventNG[] itsEvents = new GridEventNG[DebuggerGridConfigNG.DB_TASK_SIZE];
+		private final int[] itsExpectedIds = new int[DebuggerGridConfigNG.DB_TASK_SIZE];
+		private int itsPosition = 0;
+		
+		public void addSubtask(GridEventNG aEvent, int aExpectedId)
+		{
+			itsEvents[itsPosition] = aEvent;
+			itsExpectedIds[itsPosition] = aExpectedId;
+			itsPosition++;
+		}
+		
+		public boolean isEmpty()
+		{
+			return itsPosition == 0;
+		}
+		
+		public boolean isFull()
+		{
+			return itsPosition == itsEvents.length;
+		}
+		
+		@Override
+		public void run()
+		{
+			for (int i=0;i<itsPosition;i++) 
+			{
+				int theId = add(itsEvents[i]);
+				assert theId == itsExpectedIds[i];
+			}
+		}
+
+		@Override
+		public int getGroup()
+		{
+			return getId();
+		}
+	}
+
+
 }

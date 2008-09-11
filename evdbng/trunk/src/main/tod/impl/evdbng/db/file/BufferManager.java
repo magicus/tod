@@ -46,12 +46,6 @@ public class BufferManager
 	private final int itsBufferCount;
 
 	/**
-	 * Buffers that have been modified and thus need to be stored are marked
-	 * by a bit in this set. 
-	 */
-	private final ConcurrentBitSet itsDirtyBuffers = new ConcurrentBitSet();
-	
-	/**
 	 * The page attached to each buffer.
 	 */
 	private final Page[] itsAttachedPages;
@@ -132,19 +126,28 @@ public class BufferManager
 		if (! thePage.tryLock()) return false;
 		try
 		{
-			assert thePage.getBufferId() == aBufferId;
+			if (! thePage.getFile().tryLock()) return false;
 			
-			if (itsDirtyBuffers.getAndClear(aBufferId))
+			try
 			{
-				assert thePage.getBufferId() >= 0 : "Page #"+thePage.getPageId()+" @"+aBufferId;
-				thePage.getFile().write(thePage);
-			}
+				assert thePage.getBufferId() == aBufferId;
+				
+				if (thePage.isDirty())
+				{
+					assert thePage.getBufferId() >= 0 : "Page #"+thePage.getPageId()+" @"+aBufferId;
+					thePage.getFile().write(thePage);
+				}
 
-			thePage.pagedOut();
-			itsAttachedPages[aBufferId] = null;
-			
-			itsPageReplacementAlgorithm.bufferFreed(aBufferId);
-			return true;
+				thePage.pagedOut();
+				itsAttachedPages[aBufferId] = null;
+				
+				itsPageReplacementAlgorithm.bufferFreed(aBufferId);
+				return true;
+			}
+			finally
+			{
+				thePage.getFile().unlock();
+			}
 		}
 		finally
 		{
@@ -236,15 +239,6 @@ public class BufferManager
 		int theBufferId = aPage.getBufferId();
 		if (theBufferId != -1) itsPageReplacementAlgorithm.free(theBufferId);
 	}
-	
-	/**
-	 * Marks the specified buffer as dirty. 
-	 */
-	public void modified(int aBufferId)
-	{
-		itsDirtyBuffers.set(aBufferId);
-		use(aBufferId);
-	} 
 	
 	private void printBuffer(
 			String aLabel, 
@@ -349,86 +343,86 @@ public class BufferManager
 		return itsBufferCount*itsPageSize;
 	}
 	
-	private static class ConcurrentBitSet
-	{
-		private final BitSet itsDelegate = new BitSet();
-		
-		private final ReentrantReadWriteLock itsLock = new ReentrantReadWriteLock();		
-		private final List<FixedIntStack> itsStacks = new ArrayList<FixedIntStack>();
-		private final ThreadLocal<FixedIntStack> itsLocalStacks = new ThreadLocal<FixedIntStack>()
-		{
-			@Override
-			protected FixedIntStack initialValue()
-			{
-				FixedIntStack theStack = new FixedIntStack(DebuggerGridConfigNG.DB_DIRTYPAGES_TMPSIZE);
-				synchronized (itsStacks)
-				{
-					itsStacks.add(theStack);
-				}
-				return theStack;
-			}
-		};
-
-		public void set(int aIndex)
-		{
-			FixedIntStack theStack = itsLocalStacks.get();
-			
-			try
-			{
-				itsLock.readLock().lock();
-				if (theStack.isEmpty() || theStack.peek() != aIndex) theStack.push(aIndex);
-			}
-			finally
-			{
-				itsLock.readLock().unlock();
-			}
-			
-			if (theStack.isFull()) commit(theStack);
-		}
-		
-		private void set0(int aIndex)
-		{
-			itsDelegate.set(aIndex);
-		}
-		
-		private void commit(FixedIntStack aStack)
-		{
-			try
-			{
-				itsLock.writeLock().lock();
-				while(! aStack.isEmpty()) set0(aStack.pop());
-			}
-			finally
-			{
-				itsLock.writeLock().unlock();
-			}
-		}
-		
-		private void commit()
-		{
-			for (FixedIntStack theStack : itsStacks) commit(theStack);
-		}
-		
-		/**
-		 * Clears the given bit, and returns whether it was set or not.
-		 */
-		public boolean getAndClear(int aIndex)
-		{
-			try
-			{
-				itsLock.writeLock().lock();
-				commit();
-				boolean theSet = itsDelegate.get(aIndex);
-				itsDelegate.clear(aIndex);
-				return theSet;
-			}
-			finally
-			{
-				itsLock.writeLock().unlock();
-			}
-		}
-	}
-	
+//	private static class ConcurrentBitSet
+//	{
+//		private final BitSet itsDelegate = new BitSet();
+//		
+//		private final ReentrantReadWriteLock itsLock = new ReentrantReadWriteLock();		
+//		private final List<FixedIntStack> itsStacks = new ArrayList<FixedIntStack>();
+//		private final ThreadLocal<FixedIntStack> itsLocalStacks = new ThreadLocal<FixedIntStack>()
+//		{
+//			@Override
+//			protected FixedIntStack initialValue()
+//			{
+//				FixedIntStack theStack = new FixedIntStack(DebuggerGridConfigNG.DB_DIRTYPAGES_TMPSIZE);
+//				synchronized (itsStacks)
+//				{
+//					itsStacks.add(theStack);
+//				}
+//				return theStack;
+//			}
+//		};
+//
+//		public void set(int aIndex)
+//		{
+//			FixedIntStack theStack = itsLocalStacks.get();
+//			
+//			try
+//			{
+//				itsLock.readLock().lock();
+//				if (theStack.isEmpty() || theStack.peek() != aIndex) theStack.push(aIndex);
+//			}
+//			finally
+//			{
+//				itsLock.readLock().unlock();
+//			}
+//			
+//			if (theStack.isFull()) commit(theStack);
+//		}
+//		
+//		private void set0(int aIndex)
+//		{
+//			itsDelegate.set(aIndex);
+//		}
+//		
+//		private void commit(FixedIntStack aStack)
+//		{
+//			try
+//			{
+//				itsLock.writeLock().lock();
+//				while(! aStack.isEmpty()) set0(aStack.pop());
+//			}
+//			finally
+//			{
+//				itsLock.writeLock().unlock();
+//			}
+//		}
+//		
+//		private void commit()
+//		{
+//			for (FixedIntStack theStack : itsStacks) commit(theStack);
+//		}
+//		
+//		/**
+//		 * Clears the given bit, and returns whether it was set or not.
+//		 */
+//		public boolean getAndClear(int aIndex)
+//		{
+//			try
+//			{
+//				itsLock.writeLock().lock();
+//				commit();
+//				boolean theSet = itsDelegate.get(aIndex);
+//				itsDelegate.clear(aIndex);
+//				return theSet;
+//			}
+//			finally
+//			{
+//				itsLock.writeLock().unlock();
+//			}
+//		}
+//	}
+//	
 	/**
 	 * Abstract paging algorithm. Decides which buffers to page out when
 	 * new buffers are requested.
@@ -649,9 +643,14 @@ public class BufferManager
 			protected LRUStacks initialValue()
 			{
 				LRUStacks theStacks = new LRUStacks();
-				synchronized(itsStacks)
+				try
 				{
+					itsLock.writeLock().lock();
 					itsStacks.add(theStacks);
+				}
+				finally
+				{
+					itsLock.writeLock().unlock();
 				}
 				
 				return theStacks;
@@ -762,6 +761,7 @@ public class BufferManager
 				commit();
 				Entry<Integer> theEntry = itsLRUList.getFirstEntry();
 				
+				int i=0;
 				while(theEntry != null) 
 				{
 					int theBufferId = theEntry.getValue();
@@ -772,7 +772,9 @@ public class BufferManager
 						
 						return theBufferId;
 					}
-					
+
+					i++;
+//					Utils.println("Warning: could not free buffer (#%d, th: %s)", i, Thread.currentThread());
 					theEntry = theEntry.getNext();
 				}
 				
@@ -788,7 +790,7 @@ public class BufferManager
 
 	private static class LRUStacks
 	{
-		public final FixedIntStack useStack = new FixedIntStack(DebuggerGridConfigNG.DB_LRU_TMPSIZE);
-		public final FixedIntStack freeStack = new FixedIntStack(DebuggerGridConfigNG.DB_LRU_TMPSIZE);
+		public final FixedIntStack useStack = new FixedIntStack(DebuggerGridConfigNG.DB_TASK_SIZE);
+		public final FixedIntStack freeStack = new FixedIntStack(DebuggerGridConfigNG.DB_TASK_SIZE);
 	}
 }

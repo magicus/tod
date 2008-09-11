@@ -13,6 +13,7 @@ import tod.impl.dbgrid.IGridEventFilter;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.evdbng.db.EventList;
 import tod.impl.evdbng.db.EventsCounter;
+import tod.impl.evdbng.db.IEventList;
 import tod.impl.evdbng.db.Indexes;
 import tod.impl.evdbng.db.file.Tuple;
 
@@ -30,7 +31,7 @@ implements IGridEventFilter, Serializable
 	 * {@link EventList} and {@link Indexes}.
 	 */
 	public final IBidiIterator<GridEvent> createIterator(
-			final EventList aEventList,
+			final IEventList aEventList,
 			Indexes aIndexes,
 			long aEventId)
 	{
@@ -53,10 +54,9 @@ implements IGridEventFilter, Serializable
 	/**
 	 * Creates an iterator over matching events, taking them from the specified
 	 * {@link EventList} and {@link Indexes}.
-	 * @param aEventList TODO
 	 */
 	public abstract IBidiIterator<T> createTupleIterator(
-			EventList aEventList,
+			IEventList aEventList,
 			Indexes aIndexes, 
 			long aEventId);
 	
@@ -66,7 +66,7 @@ implements IGridEventFilter, Serializable
 	 * to provide a more efficient implementation.
 	 */
 	public long[] getEventCounts(
-			EventList aEventList,
+			IEventList aEventList,
 			Indexes aIndexes, 
 			long aT1, 
 			long aT2, 

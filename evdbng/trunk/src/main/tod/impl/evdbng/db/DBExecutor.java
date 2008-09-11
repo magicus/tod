@@ -1,6 +1,7 @@
 package tod.impl.evdbng.db;
 
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import tod.impl.evdbng.DebuggerGridConfigNG;
@@ -17,20 +18,28 @@ import zz.utils.Utils;
  * @author gpothier
  *
  */
-public class DBExecutor
+public class DBExecutor 
 {
-	private static final Worker[] itsWorkers = new Worker[DebuggerGridConfigNG.DB_THREADS];
+	private static final DBExecutor INSTANCE = new DBExecutor();
 	
-	static
+	public static DBExecutor getInstance()
 	{
+		return INSTANCE;
+	}
+	
+	private final Worker[] itsWorkers;
+	
+	private Throwable itsThrown = null;
+//	private int itsCount = 0;
+	
+	private DBExecutor()
+	{
+		itsWorkers = new Worker[DebuggerGridConfigNG.DB_THREADS];
 		Utils.println("DBExecutor - using %d threads", DebuggerGridConfigNG.DB_THREADS);
 		for(int i=0;i<DebuggerGridConfigNG.DB_THREADS;i++) itsWorkers[i] = new Worker(i);
 	}
-	
-	private static Throwable itsThrown = null;
-//	private static int itsCount = 0;
-	
-	private static void checkThrown()
+
+	private void checkThrown()
 	{
 		Throwable theThrown = itsThrown;
 		if (theThrown != null) 
@@ -40,30 +49,52 @@ public class DBExecutor
 		}
 	}
 	
-	public static void submit(DBTask aTask)
+	public void submit(DBTask aTask)
 	{
-		checkThrown();
-		
-		// Queue the task
-		int theQueue = aTask.getGroup() % DebuggerGridConfigNG.DB_THREADS;
-		itsWorkers[theQueue].submit(aTask);
-//		itsCount++;
-//		if (itsCount % 1024 == 0) System.out.println("executor: "+itsCount);
+		submit(aTask, false);
 	}
 	
 	/**
 	 * Submits the given task for execution and waits for it to complete.
 	 */
-	public static void submitAndWait(DBTask aTask)
+	public void submitAndWait(DBTask aTask)
 	{
-		int theQueue = aTask.getGroup() % DebuggerGridConfigNG.DB_THREADS;
-		itsWorkers[theQueue].submit(aTask);
-		NotifyTask theNotifyTask = new NotifyTask();
-		itsWorkers[theQueue].submit(theNotifyTask);
-		theNotifyTask.waitRun();
+		submit(aTask, true);
 	}
 	
-	private static final class Worker extends Thread
+	public void submit(DBTask aTask, boolean aWait)
+	{
+		checkThrown();
+		
+		int theQueue = aTask.getGroup() % DebuggerGridConfigNG.DB_THREADS;
+		itsWorkers[theQueue].submit(aTask);
+		
+		if (aWait)
+		{
+			NotifyTask theNotifyTask = new NotifyTask();
+			itsWorkers[theQueue].submit(theNotifyTask);
+			theNotifyTask.waitRun();
+		}
+	}
+	
+	/**
+	 * Waits until all the tasks that were already pending when this method
+	 * was called are completed.
+	 */
+	public void waitPendingTasks()
+	{
+		NotifyTask[] theTasks = new NotifyTask[DebuggerGridConfigNG.DB_THREADS];
+		for(int i=0;i<DebuggerGridConfigNG.DB_THREADS;i++) 
+		{
+			theTasks[i] = new NotifyTask();
+			itsWorkers[i].submit(theTasks[i]);
+		}
+		
+		for(int i=0;i<DebuggerGridConfigNG.DB_THREADS;i++) theTasks[i].waitRun(); 
+	}
+
+	
+	private class Worker extends Thread
 	{
 		private final ArrayBlockingQueue<DBTask> itsQueue = new ArrayBlockingQueue<DBTask>(128);
 		
@@ -130,6 +161,8 @@ public class DBExecutor
 	 */
 	private static class NotifyTask extends DBTask
 	{
+		private boolean itsHasRun = false;
+		
 		@Override
 		public int getGroup()
 		{
@@ -139,6 +172,7 @@ public class DBExecutor
 		@Override
 		public synchronized void run()
 		{
+			itsHasRun = true;
 			notifyAll();
 		}
 		
@@ -149,7 +183,7 @@ public class DBExecutor
 		{
 			try
 			{
-				wait();
+				while(! itsHasRun) wait();
 			}
 			catch (InterruptedException e)
 			{

@@ -165,6 +165,33 @@ public class Indexes
 		itsIndexManager.dispose();
 	}
 	
+	/**
+	 * Flushes currently pending tasks
+	 */
+	public void flushTasks()
+	{
+		itsTypeIndexSet.flushTasks();
+		itsThreadIndexSet.flushTasks();
+		itsDepthIndexSet.flushTasks();
+		itsLocationIndexSet.flushTasks();
+		itsAdviceSourceIdIndexSet.flushTasks();
+		itsAdviceCFlowIndexSet.flushTasks();
+		itsRoleIndexSet.flushTasks();
+		itsBehaviorIndexSet.flushTasks();
+		itsFieldIndexSet.flushTasks();
+		itsVariableIndexSet.flushTasks();
+
+		for (int i=0;i<itsArrayIndexIndexSets.length;i++)
+		{
+			itsArrayIndexIndexSets[i].flushTasks();
+		}
+		
+		for (int i=0;i<itsObjectIndexeSets.length;i++)
+		{
+			itsObjectIndexeSets[i].flushTasks();
+		}
+	}
+	
 	public void indexType(int aIndex, long aEventId)
 	{
 		itsTypeIndexSet.add(aIndex, aEventId);

@@ -117,22 +117,6 @@ public class DebuggerGridConfigNG
 	public static final int DB_TASK_SIZE =
 		ConfigUtils.readInt("db-task-size", 1024);
 	
-	/**
-	 * Number of items that are kept in thread-local storage
-	 * in the dirty pages manager in {@link BufferManager}. 
-	 */
-	public static final int DB_DIRTYPAGES_TMPSIZE =
-		ConfigUtils.readInt("db-dirtypages-tmpsize", 256);
-	
-	/**
-	 * Number of items that are kept in thread-local storage
-	 * in the LRU algorithm in {@link BufferManager}. 
-	 */
-	public static final int DB_LRU_TMPSIZE =
-		ConfigUtils.readInt("db-lru-tmpsize", 256);
-	
-	
-	
 	private static String getDefaultPageBufferSize()
 	{
 //		int theSize = (int) (Runtime.getRuntime().maxMemory() / (1024*1024));
@@ -146,6 +130,6 @@ public class DebuggerGridConfigNG
 	 */
 	private static int getDefaultDbThreads()
 	{
-		return Runtime.getRuntime().availableProcessors()*2;
+		return Runtime.getRuntime().availableProcessors();
 	}
 }

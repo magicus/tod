@@ -48,7 +48,7 @@ public class RoleTree extends BTree<RoleTuple>
 	public void writeTo(PageIOStream aStream)
 	{
 		// Flush buffered tuples before writing out this tree
-		DBExecutor.submitAndWait(itsCurrentTask);
+		if (! itsCurrentTask.isEmpty()) DBExecutor.getInstance().submitAndWait(itsCurrentTask);
 		
 		super.writeTo(aStream);
 	}
@@ -61,7 +61,7 @@ public class RoleTree extends BTree<RoleTuple>
 		itsCurrentTask.addTuple(aEventId, aRole);
 		if (itsCurrentTask.isFull()) 
 		{
-			DBExecutor.submit(itsCurrentTask);
+			DBExecutor.getInstance().submit(itsCurrentTask);
 			itsCurrentTask = new AddTask();
 		}
 	}
@@ -77,6 +77,11 @@ public class RoleTree extends BTree<RoleTuple>
 			itsEventIds[itsPosition] = aEventId;
 			itsRoles[itsPosition] = aRole;
 			itsPosition++;
+		}
+		
+		public boolean isEmpty()
+		{
+			return itsPosition == 0;
 		}
 		
 		public boolean isFull()

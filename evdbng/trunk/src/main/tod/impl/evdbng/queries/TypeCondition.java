@@ -24,7 +24,7 @@ package tod.impl.evdbng.queries;
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.dbgrid.messages.MessageType;
-import tod.impl.evdbng.db.EventList;
+import tod.impl.evdbng.db.IEventList;
 import tod.impl.evdbng.db.Indexes;
 import tod.impl.evdbng.db.file.SimpleTuple;
 
@@ -45,7 +45,7 @@ public class TypeCondition extends SimpleCondition<SimpleTuple>
 	
 	
 	@Override
-	public IBidiIterator<SimpleTuple> createTupleIterator(EventList aEventList, Indexes aIndexes, long aEventId)
+	public IBidiIterator<SimpleTuple> createTupleIterator(IEventList aEventList, Indexes aIndexes, long aEventId)
 	{
 		return aIndexes.getTypeIndex(itsType.ordinal()).getTupleIterator(aEventId);
 	}

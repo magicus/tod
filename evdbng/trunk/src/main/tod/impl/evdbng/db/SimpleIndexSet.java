@@ -5,7 +5,8 @@ Proprietary and confidential
 */
 package tod.impl.evdbng.db;
 
-import tod.impl.evdbng.db.IndexSet.IndexManager;
+import tod.impl.evdbng.DebuggerGridConfigNG;
+import tod.impl.evdbng.db.DBExecutor.DBTask;
 import tod.impl.evdbng.db.file.BTree;
 import tod.impl.evdbng.db.file.PagedFile;
 import tod.impl.evdbng.db.file.SimpleTree;
@@ -14,6 +15,8 @@ import tod.impl.evdbng.db.file.PagedFile.PageIOStream;
 
 public class SimpleIndexSet extends IndexSet<SimpleTuple> 
 {
+	private AddTask itsCurrentTask = new AddTask();
+
 	public SimpleIndexSet(
 			IndexManager aIndexManager, 
 			String aName, 
@@ -43,6 +46,60 @@ public class SimpleIndexSet extends IndexSet<SimpleTuple>
 	
 	public void add(int aIndex, long aKey)
 	{
-		getIndex(aIndex).addAsync(aKey);
+		itsCurrentTask.addTuple(aIndex, aKey);
+		if (itsCurrentTask.isFull()) flushTasks(); 
 	}
+	
+	private void add0(int aIndex, long aKey)
+	{
+		getIndex(aIndex).add(aKey);
+	}
+	
+	/**
+	 * Flushes currently pending (see {@link #addAsync(long)}).
+	 */
+	public void flushTasks()
+	{
+		DBExecutor.getInstance().submit(itsCurrentTask);
+		itsCurrentTask = new AddTask();
+	}
+
+
+	
+	private class AddTask extends DBTask
+	{
+		private final int[] itsIndexes = new int[DebuggerGridConfigNG.DB_TASK_SIZE];
+		private final long[] itsKeys = new long[DebuggerGridConfigNG.DB_TASK_SIZE];
+		private int itsPosition = 0;
+		
+		public void addTuple(int aIndex, long aKey)
+		{
+			itsIndexes[itsPosition] = aIndex;
+			itsKeys[itsPosition] = aKey;
+			itsPosition++;
+		}
+		
+		public boolean isEmpty()
+		{
+			return itsPosition == 0;
+		}
+		
+		public boolean isFull()
+		{
+			return itsPosition == itsKeys.length;
+		}
+		
+		@Override
+		public void run()
+		{
+			for (int i=0;i<itsPosition;i++) add0(itsIndexes[i], itsKeys[i]);
+		}
+
+		@Override
+		public int getGroup()
+		{
+			return getId();
+		}
+	}
+
 }

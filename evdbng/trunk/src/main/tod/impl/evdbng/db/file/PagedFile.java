@@ -5,9 +5,6 @@ Proprietary and confidential
 */
 package tod.impl.evdbng.db.file;
 
-import static tod.impl.evdbng.DebuggerGridConfigNG.DB_PAGE_BUFFER_SIZE;
-import static tod.impl.evdbng.DebuggerGridConfigNG.DB_PAGE_SIZE;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -30,6 +27,7 @@ import zz.utils.primitive.IntArray;
  */
 public class PagedFile 
 {
+	private final ReentrantLock itsLock = new ReentrantLock();
 	private final BufferManager itsBufferManager = BufferManager.getInstance();
 	
 	private final File itsFile;
@@ -82,6 +80,23 @@ public class PagedFile
 	{
 		Monitor.getInstance().unregister(this);
 	}
+	
+	void lock()
+	{
+		itsLock.lock();
+	}
+	
+	void unlock()
+	{
+		itsLock.unlock();
+	}
+	
+	boolean tryLock()
+	{
+		return itsLock.tryLock();
+	}
+
+
 
 	/**
 	 * Page size, in bytes.
@@ -183,26 +198,35 @@ public class PagedFile
 	 */
 	public Page get(int aPageId)
 	{
-		assert aPageId > 0 : aPageId;
-		
-		PageRef theReference = itsPagesMap.get(aPageId);
-		Page thePage = theReference != null ? theReference.get() : null;
-		
-		if (thePage == null)
+		try
 		{
-			thePage = new Page(aPageId);
-			itsPagesMap.put(aPageId, new PageRef(thePage));
-		}
+			itsLock.lock();
 
-		// Clean up garbage-collected references.
-		do
+			assert aPageId > 0 : aPageId;
+			
+			PageRef theReference = itsPagesMap.get(aPageId);
+			Page thePage = theReference != null ? theReference.get() : null;
+			
+			if (thePage == null)
+			{
+				thePage = new Page(aPageId);
+				itsPagesMap.put(aPageId, new PageRef(thePage));
+			}
+
+			// Clean up garbage-collected references.
+			do
+			{
+				PageRef theRef = (PageRef) itsPagesRefQueue.poll();
+				if (theRef == null) break;
+				else itsPagesMap.remove(theRef.getPageId());
+			} while (true);
+			
+			return thePage;
+		}
+		finally
 		{
-			PageRef theRef = (PageRef) itsPagesRefQueue.poll();
-			if (theRef == null) break;
-			else itsPagesMap.remove(theRef.getPageId());
-		} while (true);
-		
-		return thePage;
+			itsLock.unlock();
+		}
 	}
 	
 	/**
@@ -210,17 +234,22 @@ public class PagedFile
 	 */
 	public Page create()
 	{
-		int thePageId;
-
-		synchronized (this)
+		try
 		{
+			itsLock.lock();
+
+			int thePageId;
+
 			thePageId = ++itsPagesCount;
+			Page thePage = itsBufferManager.create(this, thePageId);
+			itsPagesMap.put(thePageId, new PageRef(thePage));
+			
+			return thePage;
 		}
-		
-		Page thePage = itsBufferManager.create(this, thePageId);
-		itsPagesMap.put(thePageId, new PageRef(thePage));
-		
-		return thePage;
+		finally
+		{
+			itsLock.unlock();
+		}
 	}
 	
 	/**
@@ -265,38 +294,53 @@ public class PagedFile
 	/**
 	 * Writes a particular page to the disk
 	 */
-	synchronized void write(Page aPage)
+	void write(Page aPage)
 	{
-		int thePageId = aPage.getPageId();
-		
-		// Map logical id to physical id
-		int thePid = itsPhysicalPage.get(thePageId);
-		if (thePid == 0)
-		{ 
-			thePid = itsPid++;
-			itsPhysicalPage.set(thePageId, thePid);
-		}
-		thePageId = thePid;
+		try
+		{
+			itsLock.lock();
 
-		updateScattering(thePageId);
-		
-		itsBufferManager.write(aPage, thePageId);
-		
-		itsWriteCount++;
+			int thePageId = aPage.getPageId();
+			
+			// Map logical id to physical id
+			int thePid = itsPhysicalPage.get(thePageId);
+			if (thePid == 0)
+			{ 
+				thePid = itsPid++;
+				itsPhysicalPage.set(thePageId, thePid);
+			}
+			thePageId = thePid;
+
+			updateScattering(thePageId);
+			
+			itsBufferManager.write(aPage, thePageId);
+			
+			itsWriteCount++;
+		}
+		finally
+		{
+			itsLock.unlock();
+		}
 	}
 	
 	/**
 	 * Reads a page from the disk
 	 */
-	synchronized void read(Page aPage, int aBufferId)
+	void read(Page aPage, int aBufferId)
 	{
-		int thePhysPageId = itsPhysicalPage.get(aPage.getPageId());
-		
-		updateScattering(thePhysPageId);
+		try
+		{
+			itsLock.lock();
 
-		itsBufferManager.read(aPage, thePhysPageId, aBufferId);
-		
-		itsReadCount++;
+			int thePhysPageId = itsPhysicalPage.get(aPage.getPageId());
+			updateScattering(thePhysPageId);
+			itsBufferManager.read(aPage, thePhysPageId, aBufferId);
+			itsReadCount++;
+		}
+		finally
+		{
+			itsLock.unlock();
+		}
 	}
 
 	
@@ -318,14 +362,6 @@ public class PagedFile
 	{
 		itsBufferManager.free(aPage);
 	}
-	
-	/**
-	 * Marks the specified buffer as dirty. 
-	 */
-	public void modified(int aBufferId)
-	{
-		itsBufferManager.modified(aBufferId);
-	} 
 	
 	private ByteBuffer getBuffer()
 	{
@@ -356,6 +392,8 @@ public class PagedFile
 		 * Can keep a cache of decompressed tuples.
 		 */
 		private WeakReference<TupleBuffer<?>> itsTupleBuffer;
+		
+		private boolean itsDirty = false;
 		
 		public Page(int aPageId)
 		{
@@ -429,6 +467,7 @@ public class PagedFile
 				assert itsBufferId == -1;
 				itsBufferId = aBufferId;
 				itsStartPos = itsBufferId * itsPageSize;
+				itsDirty = false;
 			}
 			finally
 			{
@@ -439,10 +478,26 @@ public class PagedFile
 		/**
 		 * Marks this page as dirty.
 		 */
-		private void modified(int theBufferId)
+		private void modified(int aBufferId)
 		{
-			PagedFile.this.modified(theBufferId);
+			itsDirty = true;
+			use(aBufferId);
 			itsTupleBuffer = null; // TODO: Maybe necessary to have some way to invalidate the tuple buffer itself
+		}
+		
+		public boolean isDirty()
+		{
+			return itsDirty;
+		}
+
+		private void use(int aBufferId)
+		{
+			PagedFile.this.use(aBufferId);
+		}
+		
+		public void use()
+		{
+			use(getValidBufferId());
 		}
 
 		/**
@@ -842,11 +897,6 @@ public class PagedFile
 		public PageIOStream asIOStream()
 		{
 			return new PageIOStream(this);
-		}
-		
-		public void use()
-		{
-			PagedFile.this.use(getValidBufferId());
 		}
 		
 		@Override

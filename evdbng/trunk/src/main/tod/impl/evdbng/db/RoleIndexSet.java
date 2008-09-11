@@ -7,7 +7,8 @@ package tod.impl.evdbng.db;
 
 import tod.impl.database.AbstractFilteredBidiIterator;
 import tod.impl.database.IBidiIterator;
-import tod.impl.evdbng.db.IndexSet.IndexManager;
+import tod.impl.evdbng.DebuggerGridConfigNG;
+import tod.impl.evdbng.db.DBExecutor.DBTask;
 import tod.impl.evdbng.db.file.BTree;
 import tod.impl.evdbng.db.file.PagedFile;
 import tod.impl.evdbng.db.file.RoleTree;
@@ -47,6 +48,8 @@ public class RoleIndexSet extends IndexSet<RoleTuple>
 	public static final byte ROLE_OBJECT_ANYARG = -5;
 	public static final byte ROLE_OBJECT_ANY = -6;
 	
+	private AddTask itsCurrentTask = new AddTask();
+
 	public RoleIndexSet(
 			IndexManager aIndexManager, 
 			String aName, 
@@ -76,8 +79,24 @@ public class RoleIndexSet extends IndexSet<RoleTuple>
 
 	public void add(int aIndex, long aKey, byte aRole)
 	{
-		getIndex(aIndex).addAsync(aKey, aRole);
+		itsCurrentTask.addTuple(aIndex, aKey, aRole);
+		if (itsCurrentTask.isFull()) flushTasks(); 
 	}
+	
+	private void add0(int aIndex, long aKey, byte aRole)
+	{
+		getIndex(aIndex).add(aKey, aRole);
+	}
+
+	/**
+	 * Flushes currently pending (see {@link #addAsync(long)}).
+	 */
+	public void flushTasks()
+	{
+		DBExecutor.getInstance().submit(itsCurrentTask);
+		itsCurrentTask = new AddTask();
+	}
+
 
 	/**
 	 * Creates an iterator that filters out the tuples from a source iterator that
@@ -103,4 +122,42 @@ public class RoleIndexSet extends IndexSet<RoleTuple>
 		};
 	}
 	
+	private class AddTask extends DBTask
+	{
+		private final int[] itsIndexes = new int[DebuggerGridConfigNG.DB_TASK_SIZE];
+		private final long[] itsKeys = new long[DebuggerGridConfigNG.DB_TASK_SIZE];
+		private final byte[] itsRoles = new byte[DebuggerGridConfigNG.DB_TASK_SIZE];
+		private int itsPosition = 0;
+		
+		public void addTuple(int aIndex, long aKey, byte aRole)
+		{
+			itsIndexes[itsPosition] = aIndex;
+			itsKeys[itsPosition] = aKey;
+			itsRoles[itsPosition] = aRole;
+			itsPosition++;
+		}
+		
+		public boolean isEmpty()
+		{
+			return itsPosition == 0;
+		}
+		
+		public boolean isFull()
+		{
+			return itsPosition == itsKeys.length;
+		}
+		
+		@Override
+		public void run()
+		{
+			for (int i=0;i<itsPosition;i++) add0(itsIndexes[i], itsKeys[i], itsRoles[i]);
+		}
+
+		@Override
+		public int getGroup()
+		{
+			return getId();
+		}
+	}
+
 }

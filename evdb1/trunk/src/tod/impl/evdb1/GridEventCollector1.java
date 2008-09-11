@@ -36,7 +36,6 @@ import tod.impl.evdb1.messages.GridExceptionGeneratedEvent;
 import tod.impl.evdb1.messages.GridFieldWriteEvent;
 import tod.impl.evdb1.messages.GridInstanceOfEvent;
 import tod.impl.evdb1.messages.GridNewArrayEvent;
-import tod.impl.evdb1.messages.GridOutputEvent;
 import tod.impl.evdb1.messages.GridVariableWriteEvent;
 import tod.utils.TODUtils;
 
@@ -57,30 +56,6 @@ public class GridEventCollector1 extends GridEventCollector
 	 */
 	private long itsEventsCount;
 
-	/**
-	 * We keep an instance of each kind of event. As events are received their
-	 * attributes are copied to the appropriate instance, and the instance is
-	 * sent to the dispatcher, which should immediately either serializes it or
-	 * clone it.
-	 */
-	private final GridBehaviorCallEvent itsCallEvent;
-
-	private final GridBehaviorExitEvent itsExitEvent;
-
-	private final GridExceptionGeneratedEvent itsExceptionEvent;
-
-	private final GridFieldWriteEvent itsFieldWriteEvent;
-
-	private final GridArrayWriteEvent itsArrayWriteEvent;
-
-	private final GridNewArrayEvent itsNewArrayEvent;
-
-	private final GridInstanceOfEvent itsInstanceOfEvent;
-
-	private final GridOutputEvent itsOutputEvent;
-
-	private final GridVariableWriteEvent itsVariableWriteEvent;
-
 	private final IMutableStructureDatabase itsStructureDatabase;
 
 	public GridEventCollector1(
@@ -92,17 +67,6 @@ public class GridEventCollector1 extends GridEventCollector
 		super(aMaster, aHost, aStructureDatabase);
 		itsDatabaseNode = aDispatcher;
 		itsStructureDatabase = aStructureDatabase;
-
-		itsCallEvent = new GridBehaviorCallEvent(itsStructureDatabase);
-		itsExitEvent = new GridBehaviorExitEvent(itsStructureDatabase);
-		itsExceptionEvent = new GridExceptionGeneratedEvent(itsStructureDatabase);
-		itsFieldWriteEvent = new GridFieldWriteEvent(itsStructureDatabase);
-		itsArrayWriteEvent = new GridArrayWriteEvent(itsStructureDatabase);
-		itsNewArrayEvent = new GridNewArrayEvent(itsStructureDatabase);
-		itsInstanceOfEvent = new GridInstanceOfEvent(itsStructureDatabase);
-		itsOutputEvent = new GridOutputEvent(itsStructureDatabase);
-		itsVariableWriteEvent = new GridVariableWriteEvent(itsStructureDatabase);
-
 	}
 
 	private void dispatch(GridEvent aEvent)
@@ -156,7 +120,8 @@ public class GridEventCollector1 extends GridEventCollector
 	{
 		TODUtils.logf(1, "GridEventCollector.exception()");
 
-		itsExceptionEvent.set(
+		GridExceptionGeneratedEvent theEvent = new GridExceptionGeneratedEvent(
+				itsStructureDatabase,
 				aThreadId,
 				aDepth,
 				aTimestamp,
@@ -165,7 +130,7 @@ public class GridEventCollector1 extends GridEventCollector
 				aParentTimestamp,
 				aException);
 
-		dispatch(itsExceptionEvent);
+		dispatch(theEvent);
 	}
 
 	public void behaviorExit(
@@ -179,7 +144,8 @@ public class GridEventCollector1 extends GridEventCollector
 			boolean aHasThrown,
 			Object aResult)
 	{
-		itsExitEvent.set(
+		GridBehaviorExitEvent theEvent = new GridBehaviorExitEvent(
+				itsStructureDatabase,
 				aThreadId,
 				aDepth,
 				aTimestamp,
@@ -190,7 +156,7 @@ public class GridEventCollector1 extends GridEventCollector
 				aResult,
 				aBehaviorId);
 
-		dispatch(itsExitEvent);
+		dispatch(theEvent);
 	}
 
 	public void fieldWrite(
@@ -204,7 +170,8 @@ public class GridEventCollector1 extends GridEventCollector
 			Object aTarget,
 			Object aValue)
 	{
-		itsFieldWriteEvent.set(
+		GridFieldWriteEvent theEvent = new GridFieldWriteEvent(
+				itsStructureDatabase,
 				aThreadId,
 				aDepth,
 				aTimestamp,
@@ -215,7 +182,7 @@ public class GridEventCollector1 extends GridEventCollector
 				aTarget,
 				aValue);
 
-		dispatch(itsFieldWriteEvent);
+		dispatch(theEvent);
 	}
 
 	public void newArray(
@@ -229,7 +196,8 @@ public class GridEventCollector1 extends GridEventCollector
 			int aBaseTypeId,
 			int aSize)
 	{
-		itsNewArrayEvent.set(
+		GridNewArrayEvent theEvent = new GridNewArrayEvent(
+				itsStructureDatabase,
 				aThreadId,
 				aDepth,
 				aTimestamp,
@@ -240,7 +208,7 @@ public class GridEventCollector1 extends GridEventCollector
 				aBaseTypeId,
 				aSize);
 
-		dispatch(itsNewArrayEvent);
+		dispatch(theEvent);
 	}
 
 	public void arrayWrite(
@@ -254,7 +222,8 @@ public class GridEventCollector1 extends GridEventCollector
 			int aIndex,
 			Object aValue)
 	{
-		itsArrayWriteEvent.set(
+		GridArrayWriteEvent theEvent = new GridArrayWriteEvent(
+				itsStructureDatabase,
 				aThreadId,
 				aDepth,
 				aTimestamp,
@@ -265,7 +234,7 @@ public class GridEventCollector1 extends GridEventCollector
 				aIndex,
 				aValue);
 
-		dispatch(itsArrayWriteEvent);
+		dispatch(theEvent);
 	}
 
 	public void instanceOf(
@@ -279,7 +248,8 @@ public class GridEventCollector1 extends GridEventCollector
 			int aTypeId,
 			boolean aResult)
 	{
-		itsInstanceOfEvent.set(
+		GridInstanceOfEvent theEvent = new GridInstanceOfEvent(
+				itsStructureDatabase,
 				aThreadId,
 				aDepth,
 				aTimestamp,
@@ -290,7 +260,7 @@ public class GridEventCollector1 extends GridEventCollector
 				aTypeId,
 				aResult);
 
-		dispatch(itsInstanceOfEvent);
+		dispatch(theEvent);
 	}
 
 	public void instantiation(
@@ -306,7 +276,8 @@ public class GridEventCollector1 extends GridEventCollector
 			Object aTarget,
 			Object[] aArguments)
 	{
-		itsCallEvent.set(
+		GridBehaviorCallEvent theEvent = new GridBehaviorCallEvent(
+				itsStructureDatabase,
 				aThreadId,
 				aDepth,
 				aTimestamp,
@@ -320,7 +291,7 @@ public class GridEventCollector1 extends GridEventCollector
 				aExecutedBehavior,
 				aTarget);
 
-		dispatch(itsCallEvent);
+		dispatch(theEvent);
 	}
 
 	public void localWrite(
@@ -333,7 +304,8 @@ public class GridEventCollector1 extends GridEventCollector
 			int aVariableId,
 			Object aValue)
 	{
-		itsVariableWriteEvent.set(
+		GridVariableWriteEvent theEvent = new GridVariableWriteEvent(
+				itsStructureDatabase,
 				aThreadId,
 				aDepth,
 				aTimestamp,
@@ -343,7 +315,7 @@ public class GridEventCollector1 extends GridEventCollector
 				aVariableId,
 				aValue);
 
-		dispatch(itsVariableWriteEvent);
+		dispatch(theEvent);
 	}
 
 	public void methodCall(
@@ -359,7 +331,8 @@ public class GridEventCollector1 extends GridEventCollector
 			Object aTarget,
 			Object[] aArguments)
 	{
-		itsCallEvent.set(
+		GridBehaviorCallEvent theEvent = new GridBehaviorCallEvent(
+				itsStructureDatabase,
 				aThreadId,
 				aDepth,
 				aTimestamp,
@@ -373,7 +346,7 @@ public class GridEventCollector1 extends GridEventCollector
 				aExecutedBehavior,
 				aTarget);
 
-		dispatch(itsCallEvent);
+		dispatch(theEvent);
 	}
 
 	public void output(
@@ -401,7 +374,8 @@ public class GridEventCollector1 extends GridEventCollector
 			Object aTarget,
 			Object[] aArguments)
 	{
-		itsCallEvent.set(
+		GridBehaviorCallEvent theEvent = new GridBehaviorCallEvent(
+				itsStructureDatabase,
 				aThreadId,
 				aDepth,
 				aTimestamp,
@@ -415,7 +389,7 @@ public class GridEventCollector1 extends GridEventCollector
 				aExecutedBehavior,
 				aTarget);
 
-		dispatch(itsCallEvent);
+		dispatch(theEvent);
 	}
 
 	public void register(long aObjectUID, byte[] aData, long aTimestamp, boolean aIndexable)

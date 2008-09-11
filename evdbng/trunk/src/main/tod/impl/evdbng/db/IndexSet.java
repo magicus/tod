@@ -9,12 +9,13 @@ import static tod.impl.evdbng.DebuggerGridConfigNG.DB_PAGE_BUFFER_SIZE;
 import static tod.impl.evdbng.DebuggerGridConfigNG.DB_PAGE_SIZE;
 import tod.impl.database.AbstractFilteredBidiIterator;
 import tod.impl.database.IBidiIterator;
+import tod.impl.evdbng.DebuggerGridConfigNG;
 import tod.impl.evdbng.db.file.BTree;
 import tod.impl.evdbng.db.file.PagedFile;
 import tod.impl.evdbng.db.file.Tuple;
 import tod.impl.evdbng.db.file.PagedFile.Page;
 import tod.impl.evdbng.db.file.PagedFile.PageIOStream;
-import zz.utils.cache.SyncMRUBuffer;
+import tod.tools.ConcurrentMRUBuffer;
 import zz.utils.list.NakedLinkedList.Entry;
 import zz.utils.monitoring.AggregationType;
 import zz.utils.monitoring.Monitor;
@@ -34,6 +35,15 @@ public abstract class IndexSet<T extends Tuple>
 	 * discarded and that are available in the file. 
 	 */
 	private static Entry DISCARDED_ENTRY = new Entry(null);
+	
+	private static int itsNextId;
+	
+	private synchronized static int nextId()
+	{
+		return itsNextId++;
+	}
+	
+	private final int itsId = nextId();
 	
 	/**
 	 * The global index manager.
@@ -79,6 +89,14 @@ public abstract class IndexSet<T extends Tuple>
 		
 		System.out.println("Created index "+itsName+" with "+aIndexCount+" entries.");
 		Monitor.getInstance().register(this);
+	}
+	
+	/**
+	 * Each {@link IndexSet} has a sequential id (for {@link DBExecutor}).
+	 */
+	protected int getId()
+	{
+		return itsId;
 	}
 	
 	public String getName()
@@ -217,13 +235,13 @@ public abstract class IndexSet<T extends Tuple>
 	 * are discarded so that they do not waste memory.
 	 * @author gpothier
 	 */
-	public static class IndexManager extends SyncMRUBuffer<Integer, BTreeWrapper<? extends Tuple>>
+	public static class IndexManager extends ConcurrentMRUBuffer<Integer, BTreeWrapper<? extends Tuple>>
 	{
 		private boolean itsDisposed = false;
 		
 		public IndexManager()
 		{
-			super((int) ((DB_PAGE_BUFFER_SIZE/DB_PAGE_SIZE) / 1), false);
+			super((int) ((DB_PAGE_BUFFER_SIZE/DB_PAGE_SIZE) / 1), false, DebuggerGridConfigNG.DB_TASK_SIZE);
 		}
 		
 		/**

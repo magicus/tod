@@ -23,7 +23,7 @@ package tod.impl.evdbng.queries;
 
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.messages.GridEvent;
-import tod.impl.evdbng.db.EventList;
+import tod.impl.evdbng.db.IEventList;
 import tod.impl.evdbng.db.file.SimpleTuple;
 
 /**
@@ -43,7 +43,7 @@ public class AdviceCFlowCondition extends SimpleCondition<SimpleTuple>
 
 	
 	@Override
-	public IBidiIterator<SimpleTuple> createTupleIterator(EventList aEventList, tod.impl.evdbng.db.Indexes aIndexes, long aEventId)
+	public IBidiIterator<SimpleTuple> createTupleIterator(IEventList aEventList, tod.impl.evdbng.db.Indexes aIndexes, long aEventId)
 	{
 		return aIndexes.getAdviceCFlowIndex(itsAdviceSourceId).getTupleIterator(aEventId);
 	}

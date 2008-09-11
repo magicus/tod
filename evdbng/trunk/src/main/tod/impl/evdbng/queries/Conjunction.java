@@ -7,7 +7,7 @@ package tod.impl.evdbng.queries;
 
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.messages.GridEvent;
-import tod.impl.evdbng.db.EventList;
+import tod.impl.evdbng.db.IEventList;
 import tod.impl.evdbng.db.IndexMerger;
 import tod.impl.evdbng.db.IndexSet;
 import tod.impl.evdbng.db.Indexes;
@@ -32,7 +32,7 @@ public class Conjunction extends CompoundCondition
 
 	@Override
 	public IBidiIterator<SimpleTuple> createTupleIterator(
-			EventList aEventList,
+			IEventList aEventList,
 			Indexes aIndexes, long aEventId)
 	{
 		IBidiIterator<SimpleTuple>[] theIterators = new IBidiIterator[getConditions().size()];

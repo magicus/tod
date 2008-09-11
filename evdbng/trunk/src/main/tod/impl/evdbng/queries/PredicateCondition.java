@@ -25,7 +25,7 @@ import tod.core.database.browser.IEventPredicate;
 import tod.impl.database.AbstractFilteredBidiIterator;
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.messages.GridEvent;
-import tod.impl.evdbng.db.EventList;
+import tod.impl.evdbng.db.IEventList;
 import tod.impl.evdbng.db.Indexes;
 import tod.impl.evdbng.db.file.SimpleTuple;
 
@@ -49,7 +49,7 @@ public class PredicateCondition extends SimpleCondition<SimpleTuple>
 	
 	@Override
 	public IBidiIterator<SimpleTuple> createTupleIterator(
-			final EventList aEventList, 
+			final IEventList aEventList, 
 			Indexes aIndexes, 
 			long aEventId)
 	{

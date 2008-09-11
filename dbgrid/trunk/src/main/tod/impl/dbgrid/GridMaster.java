@@ -654,6 +654,9 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	private class DataUpdater extends TimerTask
 	{
+		private long itsFirstTime = -1;
+		private long itsFirstEventsCount = -1;
+
 		private long itsPreviousTime;
 		private long itsPreviousEventsCount;
 		private long itsPreviousDroppedEventsCount;
@@ -669,8 +672,12 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		{
 			updateStats();
 			long theTime = System.currentTimeMillis();
-			long theDelta = theTime - itsPreviousTime;
-			itsPreviousTime = theTime;
+			
+			if (itsFirstTime == -1)
+			{
+				itsFirstTime = theTime;
+				itsFirstEventsCount = itsEventsCount;
+			}
 			
 			if (itsPreviousEventsCount != itsEventsCount
 					|| itsPreviousDroppedEventsCount != itsDroppedEventsCount
@@ -678,18 +685,22 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 					|| itsPreviousLastTimestamp != itsLastTimestamp
 					|| itsPreviousThreadCount != itsThreadCount)
 			{
-				if (theDelta != 0)
-				{ 
-					long theRate = (itsEventsCount-itsPreviousEventsCount)/theDelta;
-					System.out.println("[DataUpdater] Recording rate: "+theRate+"kEv/s");
-				}
-				System.out.println("[DataUpdater] Event count: "+itsEventsCount);
+				long theDelta = theTime - itsPreviousTime;
+				long theTotalDelta = theTime - itsFirstTime;
+				
+				long theRate = theDelta != 0 ? (itsEventsCount-itsPreviousEventsCount)/theDelta : 0;
+				long theTotalRate = theTotalDelta != 0 ? (itsEventsCount-itsFirstEventsCount)/theTotalDelta : 0;
+				
+				Utils.println("[DataUpdater] Recording rate: %dkEv/s (avg %dkEv/s)", theRate, theTotalRate);
+				Utils.println("[DataUpdater] Event count: %d", itsEventsCount);
 				
 				itsPreviousEventsCount = itsEventsCount;
 				itsPreviousDroppedEventsCount = itsDroppedEventsCount;
 				itsPreviousFirstTimestamp = itsFirstTimestamp;
 				itsPreviousLastTimestamp = itsLastTimestamp;
 				itsPreviousThreadCount = itsThreadCount;
+				
+				itsPreviousTime = theTime;
 
 				fireEventsReceived();
 			}

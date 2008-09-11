@@ -46,7 +46,7 @@ public class SimpleTree extends BTree<SimpleTuple>
 	public void writeTo(PageIOStream aStream)
 	{
 		// Flush buffered tuples before writing out this tree
-		DBExecutor.submitAndWait(itsCurrentTask);
+		if (! itsCurrentTask.isEmpty()) DBExecutor.getInstance().submitAndWait(itsCurrentTask);
 		
 		super.writeTo(aStream);
 	}
@@ -59,7 +59,7 @@ public class SimpleTree extends BTree<SimpleTuple>
 		itsCurrentTask.addTuple(aEventId);
 		if (itsCurrentTask.isFull()) 
 		{
-			DBExecutor.submit(itsCurrentTask);
+			DBExecutor.getInstance().submit(itsCurrentTask);
 			itsCurrentTask = new AddTask();
 		}
 	}
@@ -73,6 +73,11 @@ public class SimpleTree extends BTree<SimpleTuple>
 		{
 			itsEventIds[itsPosition] = aEventId;
 			itsPosition++;
+		}
+		
+		public boolean isEmpty()
+		{
+			return itsPosition == 0;
 		}
 		
 		public boolean isFull()

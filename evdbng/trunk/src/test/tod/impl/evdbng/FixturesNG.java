@@ -41,7 +41,7 @@ public class FixturesNG
 	{
 		PagedFile theIndexesFile = PagedFile.create(new File("indexes.bin"));
 		PagedFile theEventsFile = PagedFile.create(new File("events.bin"));
-		return new EventList(StructureDatabase.create(new TODConfig()), 0, theIndexesFile, theEventsFile);
+		return new EventList(0, StructureDatabase.create(new TODConfig()), 0, theIndexesFile, theEventsFile);
 	}
 	
 	public static PageIOStream createPageIOStream()

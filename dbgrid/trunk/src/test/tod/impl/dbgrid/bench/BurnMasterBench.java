@@ -95,7 +95,7 @@ public class BurnMasterBench
 		theEventGenerator.fillStructureDatabase(theStructureDatabase);
 		
 		System.out.println("filling...");
-		Fixtures.fillDatabase(theMaster, theEventGenerator, 5000);
+		Fixtures.fillDatabase(theMaster, theEventGenerator, 5000000);
 		
 		System.out.println("checking...");
 		IdGenerator theIdGenerator = new IdGenerator(100, 100, 100, 100, 100, 100, 100, 100, 100, 100);

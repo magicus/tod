@@ -19,7 +19,7 @@ public class EventsCounter
 {
 	public static long[] mergeCountEvents(
 			EventCondition aCondition, 
-			EventList aEventList,
+			IEventList aEventList,
 			Indexes aIndexes, 
 			long aT1, 
 			long aT2, 

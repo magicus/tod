@@ -27,7 +27,8 @@ public class TestEventDatabase
 {
 	static
 	{
-		System.setProperty("page-buffer-size", "1m");
+		System.setProperty("page-buffer-size", "4m");
+		System.setProperty("db-task-size", "10");
 	}
 	
 	private EventDatabaseNG itsDatabase;
