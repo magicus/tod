@@ -806,7 +806,6 @@ public class BufferManager
 					}
 
 					itsCollisions++;
-					Thread.yield();
 					theEntry = theEntry.getNext();
 				}
 				
