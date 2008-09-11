@@ -353,15 +353,7 @@ public class HardPagedFile extends PageBank
 							theOffset,
 							theRetries));
 					
-					try
-					{
-						Thread.sleep(500);
-					}
-					catch (InterruptedException e1)
-					{
-						throw new RuntimeException(e1);
-					}
-					
+					Utils.sleep(500);
 					theRetries++;
 					if (theRetries == 50) throw e;
 				}

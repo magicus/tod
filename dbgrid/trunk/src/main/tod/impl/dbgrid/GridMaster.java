@@ -859,23 +859,16 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		public void run()
 		{
 			System.out.println("[GridMaster] Timeout thread started.");
-			try
+			while (true)
 			{
-				while (true)
+				long theDelta = System.currentTimeMillis() - itsLastKeepAlive;
+				if (theDelta > itsTimeout)
 				{
-					long theDelta = System.currentTimeMillis() - itsLastKeepAlive;
-					if (theDelta > itsTimeout)
-					{
-						System.out.println("[GridMaster] Timeout, exiting");
-						System.exit(0);
-					}
-
-					Thread.sleep(5000);
+					System.out.println("[GridMaster] Timeout, exiting");
+					System.exit(0);
 				}
-			}
-			catch (InterruptedException e)
-			{
-				throw new RuntimeException(e);
+
+				Utils.sleep(5000);
 			}
 		}
 	}

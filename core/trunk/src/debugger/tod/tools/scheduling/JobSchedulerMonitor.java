@@ -39,6 +39,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
+import zz.utils.Utils;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IPropertyListener;
 import zz.utils.ui.UIUtils;
@@ -134,22 +135,15 @@ implements IPropertyListener<Integer>
 		@Override
 		public void run()
 		{
-			try
+			while(true)
 			{
-				while(true)
+				if (itsJobScheduler.pQueueSize().get() == 0)
 				{
-					if (itsJobScheduler.pQueueSize().get() == 0)
-					{
-						itsCurrentMax = 0;
-						update();
-					}
-					
-					Thread.sleep(300);
+					itsCurrentMax = 0;
+					update();
 				}
-			}
-			catch (InterruptedException e)
-			{
-				throw new RuntimeException(e);
+				
+				Utils.sleep(300);
 			}
 		}
 	}

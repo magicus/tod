@@ -12,6 +12,7 @@ import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import tod.impl.evdbng.DebuggerGridConfigNG;
@@ -37,6 +38,8 @@ public class BufferManager
 		return INSTANCE;
 	}
 
+	private final ReentrantLock itsLock = new ReentrantLock();
+	
 	/**
 	 * This buffer spans all the pages of this page manager.
 	 */
@@ -107,10 +110,14 @@ public class BufferManager
 	
 	/**
 	 * Returns the id of a free buffer.
+	 * @param aLock This lock will be locked once the freed buffer is known.
+	 * Note that many things can happen before the freed buffer is known, such as
+	 * writing pages, etc. It is guaranteed that when this method exits normally,
+	 * the lock is taken.
 	 */
-	private int getFreeBuffer()
+	private int getFreeBuffer(ReentrantLock aLock)
 	{
-		return itsPageReplacementAlgorithm.getFreeBuffer();
+		return itsPageReplacementAlgorithm.getFreeBuffer(aLock);
 	}
 
 	/**
@@ -119,95 +126,139 @@ public class BufferManager
 	 * @return Whether the operation succeeded. The operation fails if the page or its 
 	 * {@link PagedFile} is in use in another thread.
 	 */
-	private synchronized boolean freeBuffer(int aBufferId)
-	{
-		Page thePage = itsAttachedPages[aBufferId];
-		if (thePage == null) return true; // already free.
-
-		// If the page is being used, don't free the buffer (yes, this happens)
-		if (! thePage.tryLock()) return false;
+	private boolean freeBuffer(int aBufferId)
+	{		
 		try
 		{
-			if (! thePage.getFile().tryLock()) return false;
-			
+			itsLock.lock();
+
+			Page thePage = itsAttachedPages[aBufferId];
+			if (thePage == null) return true; // already free.
+
+			// If the page is being used, don't free the buffer (yes, this happens)
+			if (! thePage.tryLock()) return false;
 			try
 			{
-				assert thePage.getBufferId() == aBufferId;
+				if (! thePage.getFile().tryLock()) return false;
 				
-				if (thePage.isDirty())
+				try
 				{
-					assert thePage.getBufferId() >= 0 : "Page #"+thePage.getPageId()+" @"+aBufferId;
-					thePage.getFile().write(thePage);
-				}
+					assert thePage.getBufferId() == aBufferId;
+					
+					if (thePage.isDirty())
+					{
+						assert thePage.getBufferId() >= 0 : "Page #"+thePage.getPageId()+" @"+aBufferId;
+						thePage.getFile().write(thePage);
+					}
 
-				thePage.pagedOut();
-				itsAttachedPages[aBufferId] = null;
-				
-				itsPageReplacementAlgorithm.bufferFreed(aBufferId);
-				return true;
+					thePage.pagedOut();
+					itsAttachedPages[aBufferId] = null;
+					
+					itsPageReplacementAlgorithm.bufferFreed(aBufferId);
+					return true;
+				}
+				finally
+				{
+					thePage.getFile().unlock();
+				}
 			}
 			finally
 			{
-				thePage.getFile().unlock();
+				thePage.unlock();
 			}
 		}
 		finally
 		{
-			thePage.unlock();
+			itsLock.unlock();
 		}
 	}
 	
 	/**
 	 * Creates a new page.
 	 */
-	public synchronized Page create(PagedFile aFile, int aPageId)
+	public Page create(PagedFile aFile, int aPageId)
 	{
-		int theBufferId = getFreeBuffer();
-		ByteBuffer thePageData = getPageData(theBufferId);
-		
-		// Clear the page
-		LongBuffer theLongBuffer = thePageData.asLongBuffer();
-		for (int i=0;i<itsPageSize/8;i++) theLongBuffer.put(0);
-		
-		Page thePage = aFile.new Page(theBufferId, aPageId);
-		assert itsAttachedPages[theBufferId] == null;
-		itsAttachedPages[theBufferId] = thePage;
-		
-		return thePage;
+		try
+		{
+			int theBufferId = getFreeBuffer(itsLock);
+			ByteBuffer thePageData = getPageData(theBufferId);
+			
+			// Clear the page
+			LongBuffer theLongBuffer = thePageData.asLongBuffer();
+			for (int i=0;i<itsPageSize/8;i++) theLongBuffer.put(0);
+			
+			Page thePage = aFile.new Page(theBufferId, aPageId);
+			assert itsAttachedPages[theBufferId] == null;
+			itsAttachedPages[theBufferId] = thePage;
+			
+			return thePage;
+		}
+		finally
+		{
+			itsLock.unlock(); // Lock taken by getFreeBuffer
+		}
 	}
 
 	/**
 	 * Flushes all dirty buffers to disk
 	 */
-	public synchronized void flush()
+	public void flush()
 	{
-		for (int i=0;i<itsBufferCount;i++)
+		try
 		{
-			if (itsAttachedPages[i] != null) freeBuffer(i);
+			itsLock.lock();
+
+			for (int i=0;i<itsBufferCount;i++)
+			{
+				if (itsAttachedPages[i] != null) freeBuffer(i);
+			}
+		}
+		finally
+		{
+			itsLock.unlock();
 		}
 	}
 	
 	/**
 	 * Flushed all the buffers that pertain to the given file.
 	 */
-	public synchronized void flush(PagedFile aFile)
+	public void flush(PagedFile aFile)
 	{
-		for (int i=0;i<itsBufferCount;i++)
+		try
 		{
-			Page thePage = itsAttachedPages[i];
-			if (thePage != null && thePage.getFile() == aFile) freeBuffer(i);
+			itsLock.lock();
+
+			for (int i=0;i<itsBufferCount;i++)
+			{
+				Page thePage = itsAttachedPages[i];
+				if (thePage != null && thePage.getFile() == aFile) freeBuffer(i);
+			}
+		}
+		finally
+		{
+			itsLock.unlock();
 		}
 	}
 	
 	/**
 	 * Invalidates all the pages of the specified file.
 	 */
-	public synchronized void invalidatePages(PagedFile aFile)
+	public void invalidatePages(PagedFile aFile)
 	{
-		for (Page thePage : itsAttachedPages) 
+		try
 		{
-			if (thePage != null && thePage.getFile() == aFile) thePage.invalidate();
+			itsLock.lock();
+
+			for (Page thePage : itsAttachedPages) 
+			{
+				if (thePage != null && thePage.getFile() == aFile) thePage.invalidate();
+			}
 		}
+		finally
+		{
+			itsLock.unlock();
+		}
+
 	}
 
 	/**
@@ -215,40 +266,25 @@ public class BufferManager
 	 */
 	void loadPage(Page aPage)
 	{
-		
-		while(true)
+		while (! aPage.getFile().tryLock())
 		{
-			if (! aPage.getFile().tryLock())
-			{
-				try
-				{
-					Thread.sleep(1);
-				}
-				catch (InterruptedException e)
-				{
-					throw new RuntimeException(e);
-				}
-				itsCollisions++;
-				continue;
-			}
+			Utils.sleep(1);
+			itsCollisions++;
+		}
 			
-			synchronized (this)
-			{
-				try
-				{
-					int theBufferId = getFreeBuffer();
-					aPage.getFile().read(aPage, theBufferId);
-					
-					assert itsAttachedPages[theBufferId] == null;
-					itsAttachedPages[theBufferId] = aPage;
-					aPage.pagedIn(theBufferId);
-					break;
-				}
-				finally
-				{
-					aPage.getFile().unlock();
-				}
-			}
+		try
+		{
+			int theBufferId = getFreeBuffer(itsLock);
+			aPage.getFile().read(aPage, theBufferId);
+			
+			assert itsAttachedPages[theBufferId] == null;
+			itsAttachedPages[theBufferId] = aPage;
+			aPage.pagedIn(theBufferId);
+		}
+		finally
+		{
+			aPage.getFile().unlock();
+			itsLock.unlock();
 		}
 	}
 	
@@ -308,58 +344,76 @@ public class BufferManager
 	 * @param aPhysPageId Physical id of the page (location on disk), 
 	 * might be different from the logical page id stored in the Page.
 	 */
-	public synchronized void write(Page aPage, int aPhysPageId)
+	public void write(Page aPage, int aPhysPageId)
 	{
-		ByteBuffer thePageData = getPageData(aPage.getBufferId());
-		printBuffer("w", aPage, aPhysPageId, aPage.getBufferId());
-		
-		long thePagePos = ((long) aPhysPageId) * ((long) itsPageSize);
-		int theRemaining = itsPageSize;
 		try
 		{
-			while (theRemaining > 0)
+			itsLock.lock();
+
+			ByteBuffer thePageData = getPageData(aPage.getBufferId());
+			printBuffer("w", aPage, aPhysPageId, aPage.getBufferId());
+			
+			long thePagePos = ((long) aPhysPageId) * ((long) itsPageSize);
+			int theRemaining = itsPageSize;
+			try
 			{
-				int theWritten = aPage.getFile().getChannel().write(thePageData, thePagePos);
-				theRemaining -= theWritten;
-				thePagePos += theWritten;
+				while (theRemaining > 0)
+				{
+					int theWritten = aPage.getFile().getChannel().write(thePageData, thePagePos);
+					theRemaining -= theWritten;
+					thePagePos += theWritten;
+				}
 			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
+			}
+			
+			itsWriteCount++;
 		}
-		catch (IOException e)
+		finally
 		{
-			throw new RuntimeException(e);
+			itsLock.unlock();
 		}
-		
-		itsWriteCount++;
 	}
 	
 	/**
 	 * Reads a page to the disk
 	 * @param aPhysPageId Id of the page on disk
 	 */
-	public synchronized void read(Page aPage, int aPhysPageId, int aBufferId)
+	public void read(Page aPage, int aPhysPageId, int aBufferId)
 	{
-		ByteBuffer thePageData = getPageData(aBufferId);
-		
-		long thePagePos = ((long) aPhysPageId) * ((long) itsPageSize);
-		assert thePagePos >= 0 : thePagePos;
-		int theRemaining = itsPageSize;
 		try
 		{
-			while (theRemaining > 0)
+			itsLock.lock();
+
+			ByteBuffer thePageData = getPageData(aBufferId);
+			
+			long thePagePos = ((long) aPhysPageId) * ((long) itsPageSize);
+			assert thePagePos >= 0 : thePagePos;
+			int theRemaining = itsPageSize;
+			try
 			{
-				int theRead = aPage.getFile().getChannel().read(thePageData, thePagePos);
-				assert theRead >= 0 : "theRead: "+theRead+", thePagePos: "+thePagePos+", aPageId: "+aPhysPageId;
-				theRemaining -= theRead;
-				thePagePos += theRead;
+				while (theRemaining > 0)
+				{
+					int theRead = aPage.getFile().getChannel().read(thePageData, thePagePos);
+					assert theRead >= 0 : "theRead: "+theRead+", thePagePos: "+thePagePos+", aPageId: "+aPhysPageId;
+					theRemaining -= theRead;
+					thePagePos += theRead;
+				}
 			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
+			}
+			
+			printBuffer("r", aPage, aPhysPageId, aBufferId);
+			itsReadCount++;
 		}
-		catch (IOException e)
+		finally
 		{
-			throw new RuntimeException(e);
+			itsLock.unlock();
 		}
-		
-		printBuffer("r", aPage, aPhysPageId, aBufferId);
-		itsReadCount++;
 	}
 
 	@Probe(key = "buffer count", aggr = AggregationType.SUM)
@@ -487,7 +541,7 @@ public class BufferManager
 		/**
 		 * Returns a free buffer, paging out other buffers if necessary.
 		 */
-		public abstract int getFreeBuffer();
+		public abstract int getFreeBuffer(ReentrantLock aLock);
 		
 		/**
 		 * Called when a buffer has been freed so as to update the algorithm's state.
@@ -583,8 +637,9 @@ public class BufferManager
 		}
 		
 		@Override
-		public int getFreeBuffer()
+		public int getFreeBuffer(ReentrantLock aLock)
 		{
+			itsLock.lock(); // TODO: this is safe for semantics but might deadlock
 			if (itsFreeBuffersIds.isEmpty())
 			{
 				freeNBuffers((itsBufferCount/20) + 1);
@@ -791,7 +846,7 @@ public class BufferManager
 		}
 
 		@Override
-		public int getFreeBuffer()
+		public int getFreeBuffer(ReentrantLock aLock)
 		{
 			while(true)
 			{
@@ -808,6 +863,7 @@ public class BufferManager
 						if (freeBuffer(theBufferId))
 						{
 							assert theEntry.isAttached();
+							aLock.lock();
 							itsLRUList.moveLast(theEntry);
 							
 							return theBufferId;
@@ -822,14 +878,7 @@ public class BufferManager
 					itsLock.writeLock().unlock();
 				}
 				
-				try
-				{
-					Thread.sleep(1);
-				}
-				catch (InterruptedException e)
-				{
-					throw new RuntimeException(e);
-				}
+				Utils.sleep(1);
 			}
 		}
 	}
