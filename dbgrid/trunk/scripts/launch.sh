@@ -20,6 +20,7 @@ echo IP: $IP
 	
 VMARGS=''
 VMARGS="$VMARGS -Xmx$JVM_HEAP_SIZE"
+VMARGS="$VMARGS -XX:MaxDirectMemorySize=$JVM_DIRECTMEM_SIZE"
 VMARGS="$VMARGS -Djava.library.path=$NATIVE"
 VMARGS="$VMARGS -ea"
 VMARGS="$VMARGS -server"
