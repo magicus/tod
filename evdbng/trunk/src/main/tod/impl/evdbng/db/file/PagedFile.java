@@ -499,7 +499,9 @@ public class PagedFile
 		{
 			if (itsUseCount++ > DebuggerGridConfigNG.DB_USE_THRESHOLD)
 			{
-				itsUseCount = 0;
+				// We somewhat randomize the use count to avoid all pages trying to
+				// call use at the same time.
+				itsUseCount = itsPageId % (DebuggerGridConfigNG.DB_USE_THRESHOLD/4);
 				PagedFile.this.use(aBufferId);
 			}
 		}
