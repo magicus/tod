@@ -89,7 +89,7 @@ public class DebugFlags
 	/**
 	 * Causes database nodes to not reorder incoming events
 	 */
-	public static final boolean DISABLE_REORDER = false; 
+	public static final boolean DISABLE_REORDER = ConfigUtils.readBoolean("disable-reorder", false);
 	
 	/**
 	 * Causes database nodes to not index incoming events.
