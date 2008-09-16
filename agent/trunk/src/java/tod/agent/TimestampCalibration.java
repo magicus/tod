@@ -79,4 +79,8 @@ public class TimestampCalibration
 		
 		return s2-s;
 	}
+	
+	public static void main(String[] args)
+	{
+	}
 }
