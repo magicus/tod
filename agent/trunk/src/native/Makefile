@@ -118,7 +118,8 @@ dirs:
 	mkdir -p $(PLATFORM)
 
 push: all
-	./push.sh $(PLATFORM)/$(AGENT_LIBNAME) $(AGENT_LIBNAME)
+	./push.sh $(PLATFORM)/$(AGENT14_LIBNAME) $(AGENT14_LIBNAME)
+	./push.sh $(PLATFORM)/$(AGENT15_LIBNAME) $(AGENT15_LIBNAME)
 
 clean:
 	rm -f ../../*.so ../../*.dll ../../*.dylib
@@ -127,7 +128,7 @@ clean:
 ############## 
 
 $(PLATFORM)/agent.o: agent.cpp agent.h agentimpl.h utils.h jniutils.h
-	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) agent.cpp -o $(PLATFORM)/agent.o
+	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) $(CXXFLAGS15) agent.cpp -o $(PLATFORM)/agent.o
 
 $(PLATFORM)/agentimpl14.o: agentimpl-1.4.cpp agentimpl.h agent.h utils.h jniutils.h
 	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) $(CXXFLAGS14) agentimpl-1.4.cpp -o $(PLATFORM)/agentimpl14.o
@@ -136,10 +137,10 @@ $(PLATFORM)/agentimpl15.o: agentimpl-1.5.cpp agentimpl.h agent.h utils.h jniutil
 	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) $(CXXFLAGS15) agentimpl-1.5.cpp -o $(PLATFORM)/agentimpl15.o
 
 $(PLATFORM)/utils.o: utils.cpp utils.h
-	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) utils.cpp -o $(PLATFORM)/utils.o
+	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) $(CXXFLAGS15) utils.cpp -o $(PLATFORM)/utils.o
 
 $(PLATFORM)/jniutils.o: jniutils.cpp jniutils.h
-	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) jniutils.cpp -o $(PLATFORM)/jniutils.o
+	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) $(CXXFLAGS15) jniutils.cpp -o $(PLATFORM)/jniutils.o
 
 $(PLATFORM)/md5.o: md5.cpp md5.h
 	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) md5.cpp -o $(PLATFORM)/md5.o
