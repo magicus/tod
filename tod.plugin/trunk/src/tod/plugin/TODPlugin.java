@@ -70,7 +70,7 @@ public class TODPlugin extends AbstractUIPlugin
 				+theBase+"/tod-debugger.jar"+File.pathSeparator
 				+theBase+"/tod-dbgrid.jar"+File.pathSeparator
 				+theBase+"/tod-evdb1.jar"+File.pathSeparator
-				+theBase+"/tod-agent.jar"+File.pathSeparator
+				+theBase+"/tod-agent15.jar"+File.pathSeparator
 				+theBase+"/asm-all-3.1.jar"+File.pathSeparator
 				+theBase+"/aspectjrt.jar"+File.pathSeparator
 				+theBase+"/zz.utils.jar";
