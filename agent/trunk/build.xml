@@ -1,5 +1,11 @@
 <project name="TOD-agent" default="jar" basedir=".">
 
+	<taskdef name="retroweaver" classname="net.sourceforge.retroweaver.ant.RetroWeaverTask">
+		<classpath>
+			<pathelement location="${basedir}/buildlibs/retroweaver-all-2.0.6.jar"/>
+		</classpath>
+	</taskdef>
+
     <target name="init">
    		<property file="../tod.plugin/ant.settings"/> <!-- This is optional, only for skip.deps-->
     	
@@ -35,7 +41,12 @@
 
 	<target name="jar" depends="compile">
         <mkdir dir="${build.dir}"/>
-		<jar destfile="${build.dir}/tod-agent.jar" basedir="${classes.dir}"/>
+		<jar destfile="${build.dir}/tod-agent15.jar" basedir="${classes.dir}"/>
+		
+		<retroweaver inputjar="${build.dir}/tod-agent15.jar" outputjar="${build.dir}/tod-agent14.jar"/>
+		<jar destfile="${build.dir}/tod-agent14.jar" update="yes">
+			<zipfileset src="${basedir}/buildlibs/retroweaver-rt-2.0.6.jar" includes="**/*.class"/>
+		</jar>
 	</target>
 
 </project>

@@ -179,6 +179,7 @@ public abstract class LogReceiver
 	protected synchronized void eof()
 	{
 		itsEof = true;
+		processFlush();
 		notifyAll();
 	}
 	
@@ -400,6 +401,12 @@ public abstract class LogReceiver
 					System.out.println("[LogReceiver] Received clear request.");
 					processFlush();
 					processClear();
+					break;
+					
+				case CMD_END:
+					System.out.println("[LogReceiver] Received end request.");
+					processFlush();
+					disconnect();
 					break;
 					
 				default: throw new RuntimeException("Not handled: "+theCommand); 

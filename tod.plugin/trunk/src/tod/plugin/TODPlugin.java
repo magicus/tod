@@ -86,7 +86,8 @@ public class TODPlugin extends AbstractUIPlugin
 				+theBase+"/aspectjrt.jar"+File.pathSeparator
 				+theDevPath+"/zz.utils/bin";
 			
-			if (System.getProperty("agent.path") == null) System.setProperty("agent.path", theDevPath+"/TOD-agent/bin");
+			if (System.getProperty("agent14.path") == null) System.setProperty("agent14.path", theDevPath+"/TOD-agent/build/tod-agent14.jar");
+			if (System.getProperty("agent15.path") == null) System.setProperty("agent15.path", theDevPath+"/TOD-agent/bin");
 			if (System.getProperty("bcilib.path") == null) System.setProperty("bcilib.path", theDevPath+"/TOD-agent");
 
 		}

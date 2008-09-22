@@ -52,9 +52,12 @@ public class InfoCollector extends ClassAdapter
 	private List<ASMMethodInfo> itsMethodsInfo = new ArrayList<ASMMethodInfo>();
 	private ASMMethodInfo itsCurrentMethodInfo;
 	
-	public InfoCollector()
+	private final String itsName;
+	
+	public InfoCollector(String aName)
 	{
 		super(new ClassWriter(0)); // The ClassWriter is necessary to obtain instructions' pcs.
+		itsName = aName;
 	}
 
 	public ASMMethodInfo getMethodInfo (int aIndex)
@@ -62,14 +65,38 @@ public class InfoCollector extends ClassAdapter
 		return itsMethodsInfo.get(aIndex);
 	}
 	
+	public int getMethodCount()
+	{
+		return itsMethodsInfo.size();
+	}
+	
 	@Override
 	public MethodVisitor visitMethod(int access, String aName, String aDesc, String aSignature, String[] aExceptions)
 	{
 		MethodVisitor mv = super.visitMethod(access, aName, aDesc, aSignature, aExceptions);
-		itsCurrentMethodInfo = new ASMMethodInfo(aName, aDesc, BCIUtils.isStatic(access));
+		itsCurrentMethodInfo = new ASMMethodInfo(itsName, aName, aDesc, BCIUtils.isStatic(access));
 		itsMethodsInfo.add(itsCurrentMethodInfo);
-		return new JSRAnalyser(new MethodAttributesCollector(new MyCounter(mv)));
+		return new CallClassCollector(
+				new JSRAnalyser(
+						new MethodAttributesCollector(
+								new MyCounter(mv))));
 	}
+	
+	private class CallClassCollector extends MethodAdapter
+	{
+		public CallClassCollector(MethodVisitor mv)
+		{
+			super(mv);
+		}
+
+		@Override
+		public void visitMethodInsn(int aOpcode, String aOwner, String aName, String aDesc)
+		{
+			super.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
+			itsCurrentMethodInfo.addCalledClass(aOwner);
+		}
+	}
+
 	
 	private class MethodAttributesCollector extends MethodAdapter
 	{

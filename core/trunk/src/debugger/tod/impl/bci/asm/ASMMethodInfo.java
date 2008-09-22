@@ -23,7 +23,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.bci.asm;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import tod.agent.BehaviorKind;
 import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
@@ -34,6 +36,7 @@ import tod.impl.database.structure.standard.TagMap;
 public class ASMMethodInfo
 {
 	private int itsMaxLocals;
+	private final String itsOwner;
 	private final String itsName;
 	private final String itsDescriptor;
 	private final boolean itsStatic;
@@ -59,8 +62,14 @@ public class ASMMethodInfo
 	 */
 	private int[] itsOriginalPc;
 	
-	public ASMMethodInfo(String aName, String aDescriptor, boolean aStatic)
+	/**
+	 * This set contains all the classes on which methods are called in this method.
+	 */
+	private Set<String> itsCalledClasses = new HashSet<String>();
+	
+	public ASMMethodInfo(String aOwner, String aName, String aDescriptor, boolean aStatic)
 	{
+		itsOwner = aOwner;
 		itsName = aName;
 		itsDescriptor = aDescriptor;
 		itsStatic = aStatic;
@@ -101,6 +110,14 @@ public class ASMMethodInfo
 		return itsDescriptor;
 	}
 
+	/**
+	 * Returns the name of the owner of this method.
+	 */
+	public String getOwner()
+	{
+		return itsOwner;
+	}
+	
 	public String getName()
 	{
 		return itsName;
@@ -223,4 +240,13 @@ public class ASMMethodInfo
     	return itsTagMap.getTag(aType, thePc);
     }
     
+    public void addCalledClass(String aClass)
+    {
+    	itsCalledClasses.add(aClass);
+    }
+    
+    public Set<String> getCalledClasses()
+	{
+		return itsCalledClasses;
+	}
 }

@@ -55,137 +55,135 @@ import tod.core.session.ISession;
  * replayed (for benchmarking).
  * @author gpothier
  */
-public aspect Recorder
-{
-	pointcut recordedCall():
-		(execution(* ILogBrowser+.getSession(..)) 
-		|| execution(* ILogBrowser+.clear(..)) 
-		|| execution(* ILogBrowser+.getEvent(..)) 
-		|| execution(* ILogBrowser+.getStructureDatabase(..)) 
-		|| execution(* ILogBrowser+.getThreads(..)) 
-		|| execution(* ILogBrowser+.getHosts(..)) 
-		|| execution(* ILogBrowser+.getHost(..)) 
-		|| execution(* ILogBrowser+.create*(..)) 
-		|| execution(* ILogBrowser+.getCFlowRoot(..)) 
-		|| execution(* ILogBrowser+.searchStrings(..)) 
-		|| execution(* ILogBrowser+.exec(..)) 
-				
-		|| execution(* ISession+.getLogBrowser())
-		
-		|| execution(* IEventBrowser+.getLogBrowser(..))
-		|| execution(* IEventBrowser+.getFilter(..))
-		|| execution(* IEventBrowser+.getEventCount(..))
-		|| execution(* IEventBrowser+.getEventCounts(..))
-		|| execution(* IEventBrowser+.setNextEvent(..))
-		|| execution(* IEventBrowser+.setPreviousEvent(..))
-		|| execution(* IEventBrowser+.setNextTimestamp(..))
-		|| execution(* IEventBrowser+.setPreviousTimestamp(..))
-		|| execution(* IEventBrowser+.hasNext(..))
-		|| execution(* IEventBrowser+.hasPrevious(..))
-		|| execution(* IEventBrowser+.next(..))
-		|| execution(* IEventBrowser+.previous(..))
-		|| execution(* IEventBrowser+.createIntersection(..))
-		|| execution(* IEventBrowser+.getFirstTimestamp(..))
-		|| execution(* IEventBrowser+.getLastTimestamp(..))
-		|| execution(* IEventBrowser+.clone(..))
-		
-		|| execution(* IStructureDatabase+.getClass(..))
-		|| execution(* IStructureDatabase+.getClasses(..))
-		|| execution(* IStructureDatabase+.getType(..))
-		|| execution(* IStructureDatabase+.getArrayType(..))
-		|| execution(* IStructureDatabase+.getField(..))
-		|| execution(* IStructureDatabase+.getBehavior(..))
-		|| execution(* IStructureDatabase+.getBehaviors(..))
-		|| execution(* IStructureDatabase+.getProbeInfo(..))
-		|| execution(* IStructureDatabase+.getAdvice(..))
-		
-		|| execution(* ILogEvent+.getHost())
-		|| execution(* ILogEvent+.getThread())
-		|| execution(* ILogEvent+.getParent())
-		|| execution(* ILogEvent+.getParentPointer())
-		|| execution(* ILogEvent+.getPointer())
-		
-		|| execution(* IParentEvent+.getChildrenBrowser())
-		
-		|| execution(* IBehaviorCallEvent+.getExecutedBehavior())
-		|| execution(* IBehaviorCallEvent+.getCalledBehavior())
-		|| execution(* IBehaviorCallEvent+.getCallingBehavior())
-		|| execution(* IBehaviorCallEvent+.getExitEvent())
-		
-		|| execution(* ExternalPointer.*(..))
-
-		|| execution(* IClassInfo+.getSupertype(..))
-		|| execution(* IClassInfo+.getInterfaces(..))
-		|| execution(* IClassInfo+.getField(..))
-		|| execution(* IClassInfo+.getBehavior(..))
-		|| execution(* IClassInfo+.getFields(..))
-		|| execution(* IClassInfo+.getBehaviors(..))
-		
-		|| execution(* ICompoundInspector+.setReferenceEvent(..))
-		|| execution(* ICompoundInspector+.getReferenceEvent(..))
-		|| execution(* ICompoundInspector+.getEntryValue(..))
-		|| execution(* ICompoundInspector+.nextEntryValue(..))
-		|| execution(* ICompoundInspector+.previousEntryValue(..))
-		
-		|| execution(* IObjectInspector+.getLogBrowser(..))
-		|| execution(* IObjectInspector+.getCreationEvent(..))
-		|| execution(* IObjectInspector+.getType(..))
-		|| execution(* IObjectInspector+.getFields(..))
-		|| execution(* IObjectInspector+.getBrowser(..))
-		|| execution(* IObjectInspector+.getNewValue(..))
-		
-		|| execution(* IVariablesInspector+.getBehaviorCall(..))
-		|| execution(* IVariablesInspector+.getBehavior(..))
-		|| execution(* IVariablesInspector+.getVariables(..))
-		
-		|| execution(* ICompoundInspector.EntryValue.getSetter(..))
-		
-		) && ! (
-		execution(*.new(..))
-		|| execution(static * *.*(..))
-		);
-	
-	pointcut reenteringCall():
-		(execution(* ILogBrowser+.*(..))
-		|| execution(* ISession+.*(..))
-		|| execution(* IEventBrowser+.*(..))
-		|| execution(* IStructureDatabase+.*(..))
-		|| execution(* ILogEvent+.*(..))
-		|| execution(* IClassInfo+.*(..))
-		|| execution(* ICompoundInspector+.*(..))
-		);
-	
-	after() returning(Object r): recordedCall() && ! cflowbelow(reenteringCall())
-	{
-		if (DebugFlags.TRACE_DBCALLS)
-		{
-			MethodSignature theSignature = (MethodSignature) thisJoinPoint.getSignature();
-			RecorderHelper.getInstance().recordCall(
-					thisJoinPoint.getThis(), 
-					theSignature.getName(),
-					theSignature.getParameterTypes(),
-					thisJoinPoint.getArgs(), 
-					r,
-					""+thisJoinPoint.getSourceLocation());
-		}
-	}
-	
-//	pointcut recordedConstructor():
-//		call(tod.impl.dbgrid.event.BehaviorCallEvent.CallInfoBuilder.new(..));
+//public aspect Recorder
+//{
+//	pointcut recordedCall():
+//		(execution(* ILogBrowser+.getSession(..)) 
+//		|| execution(* ILogBrowser+.clear(..)) 
+//		|| execution(* ILogBrowser+.getEvent(..)) 
+//		|| execution(* ILogBrowser+.getStructureDatabase(..)) 
+//		|| execution(* ILogBrowser+.getThreads(..)) 
+//		|| execution(* ILogBrowser+.getHosts(..)) 
+//		|| execution(* ILogBrowser+.getHost(..)) 
+//		|| execution(* ILogBrowser+.create*(..)) 
+//		|| execution(* ILogBrowser+.getCFlowRoot(..)) 
+//		|| execution(* ILogBrowser+.searchStrings(..)) 
+//		|| execution(* ILogBrowser+.exec(..)) 
+//				
+//		|| execution(* ISession+.getLogBrowser())
+//		
+//		|| execution(* IEventBrowser+.getLogBrowser(..))
+//		|| execution(* IEventBrowser+.getFilter(..))
+//		|| execution(* IEventBrowser+.getEventCount(..))
+//		|| execution(* IEventBrowser+.getEventCounts(..))
+//		|| execution(* IEventBrowser+.setNextEvent(..))
+//		|| execution(* IEventBrowser+.setPreviousEvent(..))
+//		|| execution(* IEventBrowser+.setNextTimestamp(..))
+//		|| execution(* IEventBrowser+.setPreviousTimestamp(..))
+//		|| execution(* IEventBrowser+.hasNext(..))
+//		|| execution(* IEventBrowser+.hasPrevious(..))
+//		|| execution(* IEventBrowser+.next(..))
+//		|| execution(* IEventBrowser+.previous(..))
+//		|| execution(* IEventBrowser+.createIntersection(..))
+//		|| execution(* IEventBrowser+.getFirstTimestamp(..))
+//		|| execution(* IEventBrowser+.getLastTimestamp(..))
+//		|| execution(* IEventBrowser+.clone(..))
+//		
+//		|| execution(* IStructureDatabase+.getClass(..))
+//		|| execution(* IStructureDatabase+.getClasses(..))
+//		|| execution(* IStructureDatabase+.getType(..))
+//		|| execution(* IStructureDatabase+.getArrayType(..))
+//		|| execution(* IStructureDatabase+.getField(..))
+//		|| execution(* IStructureDatabase+.getBehavior(..))
+//		|| execution(* IStructureDatabase+.getBehaviors(..))
+//		|| execution(* IStructureDatabase+.getProbeInfo(..))
+//		|| execution(* IStructureDatabase+.getAdvice(..))
+//		
+//		|| execution(* ILogEvent+.getHost())
+//		|| execution(* ILogEvent+.getThread())
+//		|| execution(* ILogEvent+.getParent())
+//		|| execution(* ILogEvent+.getParentPointer())
+//		|| execution(* ILogEvent+.getPointer())
+//		
+//		|| execution(* IParentEvent+.getChildrenBrowser())
+//		
+//		|| execution(* IBehaviorCallEvent+.getExecutedBehavior())
+//		|| execution(* IBehaviorCallEvent+.getCalledBehavior())
+//		|| execution(* IBehaviorCallEvent+.getCallingBehavior())
+//		|| execution(* IBehaviorCallEvent+.getExitEvent())
+//		
+//		|| execution(* ExternalPointer.*(..))
+//
+//		|| execution(* IClassInfo+.getSupertype(..))
+//		|| execution(* IClassInfo+.getInterfaces(..))
+//		|| execution(* IClassInfo+.getField(..))
+//		|| execution(* IClassInfo+.getBehavior(..))
+//		|| execution(* IClassInfo+.getFields(..))
+//		|| execution(* IClassInfo+.getBehaviors(..))
+//		
+//		|| execution(* ICompoundInspector+.setReferenceEvent(..))
+//		|| execution(* ICompoundInspector+.getReferenceEvent(..))
+//		|| execution(* ICompoundInspector+.getEntryValue(..))
+//		|| execution(* ICompoundInspector+.nextEntryValue(..))
+//		|| execution(* ICompoundInspector+.previousEntryValue(..))
+//		
+//		|| execution(* IObjectInspector+.getLogBrowser(..))
+//		|| execution(* IObjectInspector+.getCreationEvent(..))
+//		|| execution(* IObjectInspector+.getType(..))
+//		|| execution(* IObjectInspector+.getFields(..))
+//		|| execution(* IObjectInspector+.getBrowser(..))
+//		|| execution(* IObjectInspector+.getNewValue(..))
+//		
+//		|| execution(* IVariablesInspector+.getBehaviorCall(..))
+//		|| execution(* IVariablesInspector+.getBehavior(..))
+//		|| execution(* IVariablesInspector+.getVariables(..))
+//		
+//		|| execution(* ICompoundInspector.EntryValue.getSetter(..))
+//		
+//		) && ! (
+//		execution(*.new(..))
+//		|| execution(static * *.*(..))
+//		);
 //	
-//	after() returning(Object r): recordedConstructor() 
+//	pointcut reenteringCall():
+//		(execution(* ILogBrowser+.*(..))
+//		|| execution(* ISession+.*(..))
+//		|| execution(* IEventBrowser+.*(..))
+//		|| execution(* IStructureDatabase+.*(..))
+//		|| execution(* ILogEvent+.*(..))
+//		|| execution(* IClassInfo+.*(..))
+//		|| execution(* ICompoundInspector+.*(..))
+//		);
+//	
+//	after() returning(Object r): recordedCall() && ! cflowbelow(reenteringCall())
 //	{
 //		if (DebugFlags.TRACE_DBCALLS)
 //		{
-//			ConstructorSignature theSignature = (ConstructorSignature) thisJoinPoint.getSignature();
-//			RecorderHelper.getInstance().recordNew(
-//					theSignature.getDeclaringTypeName(),
+//			MethodSignature theSignature = (MethodSignature) thisJoinPoint.getSignature();
+//			RecorderHelper.getInstance().recordCall(
+//					thisJoinPoint.getThis(), 
+//					theSignature.getName(),
 //					theSignature.getParameterTypes(),
 //					thisJoinPoint.getArgs(), 
 //					r,
 //					""+thisJoinPoint.getSourceLocation());
 //		}
 //	}
-	
-
-}
+//	
+////	pointcut recordedConstructor():
+////		call(tod.impl.dbgrid.event.BehaviorCallEvent.CallInfoBuilder.new(..));
+////	
+////	after() returning(Object r): recordedConstructor() 
+////	{
+////		if (DebugFlags.TRACE_DBCALLS)
+////		{
+////			ConstructorSignature theSignature = (ConstructorSignature) thisJoinPoint.getSignature();
+////			RecorderHelper.getInstance().recordNew(
+////					theSignature.getDeclaringTypeName(),
+////					theSignature.getParameterTypes(),
+////					thisJoinPoint.getArgs(), 
+////					r,
+////					""+thisJoinPoint.getSourceLocation());
+////		}
+////	}
+//}

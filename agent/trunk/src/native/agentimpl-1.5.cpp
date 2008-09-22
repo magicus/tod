@@ -64,6 +64,14 @@ void check_jvmti_error(jvmtiEnv *jvmti, jvmtiError errnum, const char *str)
 	}
 }
 
+void* agentimplAlloc(unsigned int size)
+{
+	unsigned char* mem_ptr;
+	jvmtiError err = gJvmti->Allocate(size, &mem_ptr);
+	check_jvmti_error(gJvmti, err, "Allocate");
+	return mem_ptr;
+}
+
 void enable_event(jvmtiEnv *jvmti, jvmtiEvent event)
 {
 	jvmtiError err = jvmti->SetEventNotificationMode(JVMTI_ENABLE, event, NULL);
@@ -208,6 +216,8 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved)
  	enable_event(jvmti, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK);
 	enable_event(jvmti, JVMTI_EVENT_EXCEPTION);
 	enable_event(jvmti, JVMTI_EVENT_VM_START);
+	
+	cfgIsJVM14 = false;
 
 	agentInit(propVerbose, propHost, propPort, propCachePath, propClientName);
 
@@ -262,13 +272,6 @@ jlong agentimplGetObjectId(JNIEnv* jni, jobject obj)
 	return -tag;
 }
 
-void* agentimplAlloc(unsigned int size)
-{
-	unsigned char* mem_ptr;
-	jvmtiError err = gJvmti->Allocate(size, &mem_ptr);
-	check_jvmti_error(gJvmti, err, "Allocate");
-	return mem_ptr;
-}
 
 
 #ifdef __cplusplus

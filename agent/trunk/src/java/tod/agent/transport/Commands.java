@@ -41,7 +41,12 @@ public enum Commands
 	 * args: none
 	 * return: none
 	 */
-	CMD_CLEAR;
+	CMD_CLEAR,
+	
+	/**
+	 * This command notifies the database that this VM is ending.
+	 */
+	CMD_END;
 	
 	/**
 	 * Base value for sending serialized commands

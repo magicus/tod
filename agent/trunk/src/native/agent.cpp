@@ -64,6 +64,7 @@ int AGENT_STARTED = 0;
 STREAM* gSocket;
 
 // Configuration data
+bool cfgIsJVM14 = false;
 int cfgSkipCoreClasses = 0;
 int cfgCaptureExceptions = 0;
 int cfgHostBits = 8; // Number of bits used to encode host id.
@@ -117,9 +118,10 @@ void agentConnect(char* host, char* port, char* clientName)
 	// Send signature (defined in AgentConfig)
 	writeInt(gSocket, 0x3a71be0);
 	
-	// Send client name
+	// Send client name & JVM14 flag 
 	if (propVerbose>=1) printf("Sending client name: %s\n", clientName);
 	writeUTF(gSocket, clientName);
+	writeByte(gSocket, cfgIsJVM14);
 	flush(gSocket);
 	
 	cfgHostId = readInt(gSocket);
@@ -246,6 +248,12 @@ void registerTracedMethods(JNIEnv* jni, int nTracedMethods, int* tracedMethods)
 	if (tracedMethods) delete tracedMethods;
 }
 
+bool startsWith(const char* aString, const char* aPrefix)
+{
+	int len = strlen(aPrefix);
+	return strncmp(aPrefix, aString, len) == 0;
+}
+
 void agentClassFileLoadHook(
 	JNIEnv* jni, const char* name, 
 	jint class_data_len, const unsigned char* class_data,
@@ -254,25 +262,26 @@ void agentClassFileLoadHook(
 {
 	if (cfgObfuscation)
 	{
-		if (strncmp("tod/agentX/", name, 11) == 0) return;
+		if (startsWith(name, "tod/agentX/")) return;
 	}
 	else
 	{
-		if (strncmp("tod/agent/", name, 10) == 0) return;
+		if (startsWith(name, "tod/agent/")) return;
 	}
 	
 	if (cfgDebugTOD)
 	{
-		if (!(strncmp("tod/", name, 4) == 0) && !(strncmp("zz/", name, 3) == 0) ) return;
+		if (!(startsWith(name, "tod/")) && !(startsWith(name, "zz/"))) return;
 	}
 	else
 	{	 
 		if (cfgSkipCoreClasses 
 			&& (
-				strncmp("java/", name, 5) == 0 
-				|| strncmp("sun/", name, 4) == 0
-	// 			|| strncmp("javax/", name, 6) == 0 
-				|| strncmp("com/sun/", name, 8) == 0 
+				startsWith(name, "java/")
+				|| startsWith(name, "sun/")
+	// 			|| startsWith(name, "javax/")
+				|| startsWith(name, "com/sun/")
+				|| startsWith(name, "net/sourceforge/retroweaver/")
 			)) return;
 	}
 
@@ -651,30 +660,28 @@ void agentStop()
  * Method: get
  * Signature: (Ljava/lang/Object;)J
  */
-JNIEXPORT jlong JNICALL Java_tod_agent_ObjectIdentity_get
+JNIEXPORT jlong JNICALL Java_tod_agent_ObjectIdentity_get15
 	(JNIEnv * jni, jclass, jobject obj)
 {
 	agentimplGetObjectId(jni, obj);
 }
 
-JNIEXPORT jint JNICALL Java_tod_agent_EventCollector_getHostId
+JNIEXPORT jint JNICALL Java_tod_agent__1AgentConfig_getHostId
 	(JNIEnv * jni, jclass)
 {
 	return cfgHostId;
 }
 
-
-
-JNIEXPORT jlong JNICALL Java_tod_agentX_ObjectIdentity_get
+JNIEXPORT jlong JNICALL Java_tod_agentX_ObjectIdentity_get15
 	(JNIEnv * jni, jclass cls, jobject obj)
 {
-	return Java_tod_agent_ObjectIdentity_get(jni, cls, obj);
+	return Java_tod_agent_ObjectIdentity_get15(jni, cls, obj);
 }
 
-JNIEXPORT jint JNICALL Java_tod_agentX_EventCollector_getHostId
+JNIEXPORT jint JNICALL Java_tod_agentX__1AgentConfig_getHostId
 	(JNIEnv * jni, jclass cls)
 {
-	return Java_tod_agent_EventCollector_getHostId(jni, cls);
+	return Java_tod_agent__1AgentConfig_getHostId(jni, cls);
 }
 
 #ifdef WIN32

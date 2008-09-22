@@ -140,13 +140,25 @@ public class BCIUtils implements Opcodes
 	/**
 	 * Produces code that wrap primitive types in their corresponding objects.
 	 */
-	public static void wrap (MethodVisitor aVisitor, Type aType)
+	public static void wrap (MethodVisitor aVisitor, Type aType, boolean aUseJava14)
 	{
-		wrap (aVisitor, aType.getSort());
+		wrap (aVisitor, aType.getSort(), aUseJava14);
 	}
 	
-	public static void wrap (MethodVisitor aVisitor, int aSort)
+	private static String getAPI(String aClassName, boolean aUseJava14)
 	{
+		String thePrefix = aUseJava14 ? 
+				"net/sourceforge/retroweaver/runtime/java/lang/" 
+				: "java/lang/";
+		
+		String theSuffix = aUseJava14 ? "_" : "";
+		
+		return thePrefix+aClassName+theSuffix;
+	}
+	
+	public static void wrap (MethodVisitor aVisitor, int aSort, boolean aUseJava14)
+	{
+		
 		switch (aSort)
 		{
 		case Type.OBJECT:
@@ -154,35 +166,35 @@ public class BCIUtils implements Opcodes
 			return;
 			
 		case Type.BOOLEAN:
-			aVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;");
+			aVisitor.visitMethodInsn(INVOKESTATIC, getAPI("Boolean", aUseJava14), "valueOf", "(Z)Ljava/lang/Boolean;");
 			return;
 			
 		case Type.BYTE:
-			aVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Byte", "valueOf", "(B)Ljava/lang/Byte;");
+			aVisitor.visitMethodInsn(INVOKESTATIC, getAPI("Byte", aUseJava14), "valueOf", "(B)Ljava/lang/Byte;");
 			return;
 			
 		case Type.CHAR:
-			aVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Character", "valueOf", "(C)Ljava/lang/Character;");
+			aVisitor.visitMethodInsn(INVOKESTATIC, getAPI("Character", aUseJava14), "valueOf", "(C)Ljava/lang/Character;");
 			return;
 			
 		case Type.DOUBLE:
-			aVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;");
+			aVisitor.visitMethodInsn(INVOKESTATIC, getAPI("Double", aUseJava14), "valueOf", "(D)Ljava/lang/Double;");
 			return;
 			
 		case Type.FLOAT:
-			aVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;");
+			aVisitor.visitMethodInsn(INVOKESTATIC, getAPI("Float", aUseJava14), "valueOf", "(F)Ljava/lang/Float;");
 			return;
 			
 		case Type.INT:
-			aVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;");
+			aVisitor.visitMethodInsn(INVOKESTATIC, getAPI("Integer", aUseJava14), "valueOf", "(I)Ljava/lang/Integer;");
 			return;
 			
 		case Type.LONG:
-			aVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;");
+			aVisitor.visitMethodInsn(INVOKESTATIC, getAPI("Long", aUseJava14), "valueOf", "(J)Ljava/lang/Long;");
 			return;
 			
 		case Type.SHORT:
-			aVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Short", "valueOf", "(S)Ljava/lang/Short;");
+			aVisitor.visitMethodInsn(INVOKESTATIC, getAPI("Short", aUseJava14), "valueOf", "(S)Ljava/lang/Short;");
 			return;
 			
 		}

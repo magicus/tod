@@ -29,43 +29,12 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.tools.monitoring;
+package tod.experiments;
 
-import java.awt.EventQueue;
-
-/**
- * This aspect takes care of starting subtasks when a {@link Monitored} method
- * is executed.
- * @author gpothier
- */
-public aspect MonitorInjector
+public class Props
 {
-	pointcut monitored(): execution(@Monitored * *(..));
-	
-	before(): monitored()
+	public static void main(String[] args)
 	{
-		if (EventQueue.isDispatchThread())
-		{
-			new RuntimeException("Warning: calling monitored method from event dispatch thread. Stack trace:").printStackTrace(System.out);
-		}
-		
-		TaskMonitor theMonitor = TaskMonitor.current();
-		if (theMonitor != null)
-		{
-			theMonitor.push(thisJoinPointStaticPart.toShortString());
-		}
+		System.out.println(System.getProperties());
 	}
-	
-	after(): monitored()
-	{
-		TaskMonitor theMonitor = TaskMonitor.current();
-		if (theMonitor != null)
-		{
-			theMonitor.pop();
-		}
-	}
-	
-//	pointcut badCall(): call(* TaskMonitoring.*(..)) && !withincode(@Monitored * *(..));
-//	declare error: badCall(): "Calling TaskMonitoring within non-monitored method";
-
 }

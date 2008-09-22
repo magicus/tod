@@ -33,9 +33,11 @@ public interface IInstrumenter
      * Instruments the given class.
      * @param aClassName JVM internal class name (eg. "java/lang/Object")
      * @param aBytecode Original bytecode of the class
+     * @param aUseJava14 If true, only Java 1.4 bytecode/APIs can be used.
+     * Retroweaver APIs can also be used.
      * @return New bytecode, or null if no instrumentation is performed.
      */
-	public InstrumentedClass instrumentClass (String aClassName, byte[] aBytecode);
+	public InstrumentedClass instrumentClass (String aClassName, byte[] aBytecode, boolean aUseJava14);
 	
 	/**
 	 * Changes the current trace working set.

@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import tod.agent.transport.Commands;
 import tod.agent.transport.LowLevelEventWriter;
 import tod.agent.transport.NakedLinkedList;
 import tod.agent.transport.PacketBufferSender;
@@ -43,11 +44,6 @@ import tod.agent.transport.PacketBufferSender;
  */
 public final class EventCollector 
 {
-	static
-	{
-//		System.out.println("EventInterpreter loaded.");
-	}
-	
 	private static PrintStream itsPrintStream = AgentDebugFlags.EVENT_INTERPRETER_PRINT_STREAM;
 	
 	private ThreadLocal<ThreadData> itsThreadData = new ThreadLocal<ThreadData>() 
@@ -59,14 +55,13 @@ public final class EventCollector
 		}
 	};
 	
+	private ThreadData itsDefaultThreadData;
+	
 	private List<ThreadData> itsThreadDataList = new ArrayList<ThreadData>();
 	private PacketBufferSender itsSender;
 
 	
 	private static int itsCurrentThreadId = 1;
-	
-	private int itsHostId;
-	
 	
 	public EventCollector(String aHostname, int aPort) throws IOException 
 	{
@@ -94,8 +89,7 @@ public final class EventCollector
 
 		try
 		{
-			itsHostId = getHostId();
-			if ((itsHostId & ~AgentConfig.HOST_MASK) != 0) 
+			if ((_AgentConfig.HOST_ID & ~AgentConfig.HOST_MASK) != 0) 
 				throw new RuntimeException("Host id overflow");
 		}
 		catch (UnsatisfiedLinkError e)
@@ -106,11 +100,6 @@ public final class EventCollector
 		}
 	}
 	
-	/**
-	 * Retrieves the host id that was sent to the native agent.
-	 */
-	public static native int getHostId ();
-
 	private synchronized int getNextThreadId()
 	{
 		return itsCurrentThreadId++;
@@ -119,25 +108,27 @@ public final class EventCollector
 	private ThreadData createThreadData()
 	{
 		Thread theCurrentThread = Thread.currentThread();
-		long theJvmId = theCurrentThread.getId();
-		int theId = (getNextThreadId() << AgentConfig.HOST_BITS) | itsHostId;
-		ThreadData theThread = new ThreadData(theId);
-		itsThreadData.set(theThread);
+		int theId = (getNextThreadId() << AgentConfig.HOST_BITS) | _AgentConfig.HOST_ID;
+		long theJvmId = _AgentConfig.JAVA14 ? theId : theCurrentThread.getId();
+		ThreadData theThreadData = new ThreadData(theId);
+		itsThreadData.set(theThreadData);
 		
-		assert ! theThread.isSending();
+		assert ! theThreadData.isSending();
 		
         try
         {
-        	LowLevelEventWriter theWriter = theThread.packetStart(0);
+        	LowLevelEventWriter theWriter = theThreadData.packetStart(0);
         	theWriter.sendThread(theJvmId, theCurrentThread.getName());
-            theThread.packetEnd();
+            theThreadData.packetEnd();
         }
         catch (IOException e)
         {
         	throw new RuntimeException(e);
         }
+        
+        if (itsDefaultThreadData == null) itsDefaultThreadData = theThreadData;
 
-		return theThread;
+		return theThreadData;
 	}
 	
 	private ThreadData getThreadData()
@@ -828,16 +819,9 @@ public final class EventCollector
 		ThreadData theThread = getThreadData();
 
 		assert ! theThread.isSending();
-        try
-        {
-        	LowLevelEventWriter theWriter = theThread.packetStart(0);
-        	theWriter.sendClear();
-            theThread.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
+    	LowLevelEventWriter theWriter = theThread.packetStart(0);
+    	theWriter.sendClear();
+        theThread.packetEnd();
 	}
 	
 	/**
@@ -845,7 +829,25 @@ public final class EventCollector
 	 */
 	public void flush()
 	{
-		throw new UnsupportedOperationException();
+		if (AgentDebugFlags.COLLECTOR_IGNORE_ALL) return;
+
+		ThreadData theThread = getThreadData();
+
+		assert ! theThread.isSending();
+    	LowLevelEventWriter theWriter = theThread.packetStart(0);
+    	theWriter.sendFlush();
+        theThread.packetEnd();
+	}
+	
+	/**
+	 * Sends {@link Commands#CMD_END}
+	 */
+	public void end()
+	{
+		assert ! itsDefaultThreadData.isSending();
+		LowLevelEventWriter theWriter = itsDefaultThreadData.packetStart(0);
+		theWriter.sendEnd();
+		itsDefaultThreadData.packetEnd();
 	}
 	
 	private class ThreadData 

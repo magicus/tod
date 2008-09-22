@@ -84,8 +84,8 @@ CXXFLAGS += -I$(BOOST_INCLUDES)
 
 LDFLAGS += -fPIC
 
-AGENT14_LIBNAME = $(LIBPREFIX)$(AGENT_NAME)-14.$(LIBEXT)
-AGENT15_LIBNAME = $(LIBPREFIX)$(AGENT_NAME)-15.$(LIBEXT)
+AGENT14_LIBNAME = $(LIBPREFIX)$(AGENT_NAME)14.$(LIBEXT)
+AGENT15_LIBNAME = $(LIBPREFIX)$(AGENT_NAME)15.$(LIBEXT)
 
 LDFLAGS_BOOST += \
 	-L$(BOOST_LIBS) \
@@ -99,12 +99,12 @@ common-objects = \
 	$(PLATFORM)/md5.o \
 	$(PLATFORM)/jniutils.o 
 
-agent14-objects = $(PLATFORM)/agentimpl14.o 
+agent14-objects = $(common-objects) $(PLATFORM)/agentimpl14.o 
 agent15-objects = $(common-objects) $(PLATFORM)/agentimpl15.o 
 
 ##############
 
-all: agent14 agent15
+all: agent15 agent14
 
 agent14: dirs $(agent14-objects)
 	$(CXX) $(SHARED_MAGIC) -o $(PLATFORM)/$(AGENT14_LIBNAME) $(agent14-objects) $(LDFLAGS) $(LDFLAGS_BOOST)

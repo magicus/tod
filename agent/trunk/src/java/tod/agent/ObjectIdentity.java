@@ -36,5 +36,31 @@ public class ObjectIdentity
 	 * If this call causes the object to be tagged, the opposite of 
 	 * the actual tag value is returned.
 	 */
-	public static native long get (Object aObject);
+	public static long get (Object aObject)
+	{
+		return _AgentConfig.JAVA14 ? get14(aObject) : get15(aObject); 
+	}
+	
+	private static native long get15(Object aObject);
+
+	private static final WeakLongHashMap MAP = _AgentConfig.JAVA14 ? new WeakLongHashMap() : null;
+	
+	private static long itsNextId = 1;
+	
+	private static synchronized long nextId()
+	{
+		return itsNextId++;
+	}
+	
+	private static long get14(Object aObject)
+	{
+		long theId = MAP.get(aObject);
+		if (theId != 0) return theId;
+		else
+		{
+			theId = (nextId() << AgentConfig.HOST_BITS) | _AgentConfig.HOST_ID;
+			MAP.put(aObject, theId);
+			return -theId;
+		}
+	}
 }

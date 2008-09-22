@@ -230,5 +230,35 @@ public class AgentUtils
 		return Long.parseLong(aSize)*theFactor;
 	}
 	
-
+	public static int getJvmMinorVersion()
+	{
+		return getJvmMinorVersion(System.getProperty("java.version"));
+	}
+	
+	public static int getJvmMinorVersion(String aVersionString)
+	{
+        String[] theVersionComponents = aVersionString.split("\\.");
+        int theMajor = Integer.parseInt(theVersionComponents[0]);
+        int theMinor = Integer.parseInt(theVersionComponents[1]);
+        
+        if (theMajor != 1) throw new RuntimeException("JVM version not supported: "+aVersionString);
+        
+        return theMinor;
+	}
+	
+	/**
+	 * Loads the given class.
+	 * Only for JDK1.4
+	 */
+	public static Class loadClass(String aName)
+	{
+		try
+		{
+			return Class.forName(aName);
+		}
+		catch (ClassNotFoundException e)
+		{
+			throw new NoClassDefFoundError(e.getMessage());
+		}
+	}
 }

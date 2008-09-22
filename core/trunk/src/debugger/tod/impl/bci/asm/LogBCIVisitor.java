@@ -24,7 +24,9 @@ package tod.impl.bci.asm;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassAdapter;
@@ -90,6 +92,8 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 	
 	private final IMutableStructureDatabase itsDatabase;
 	private final ASMDebuggerConfig itsConfig;
+	
+	private final boolean itsUseJava14;
 
 	/**
 	 * This list will be filled with the ids of traced methods.
@@ -109,7 +113,8 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			InfoCollector aInfoCollector, 
 			ClassVisitor aVisitor, 
 			String aChecksum,
-			List<Integer> aTracedMethods)
+			List<Integer> aTracedMethods,
+			boolean aUseJava14)
 	{
 		super(aVisitor);
 		itsDatabase = aDatabase;
@@ -117,6 +122,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		itsInfoCollector = aInfoCollector;
 		itsConfig = aConfig;
 		itsTracedMethods = aTracedMethods;
+		itsUseJava14 = aUseJava14;
 	}
 
 	/**
@@ -218,6 +224,44 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 	}
 	
 	/**
+	 * Returns the name of the synthetic field that holds the class
+	 * constant for the given class.
+	 * Only for JDK1.4
+	 */
+	public static String getClassFieldName(String aClass)
+	{
+		return "class$"+aClass.replace('/', '$');
+	}
+	
+	@Override
+	public void visitEnd()
+	{
+		if (itsUseJava14)
+		{
+			// Add the synthetic fields that hold class constants
+			
+			Set<String> theCalledClasses = new HashSet<String>();
+			for(int i=0;i<itsInfoCollector.getMethodCount();i++)
+			{
+				theCalledClasses.addAll(itsInfoCollector.getMethodInfo(i).getCalledClasses());
+			}
+			
+			for (String theClass : theCalledClasses)
+			{
+				visitField(
+						ACC_STATIC | ACC_SYNTHETIC, 
+						getClassFieldName(theClass), 
+						"Ljava/lang/Class;", 
+						null, 
+						null);
+			}
+		}
+		
+
+		super.visitEnd();
+	}
+	
+	/**
 	 * Sets up the behavior info for all visited methods.
 	 */
 	public void storeBehaviorInfos()
@@ -260,7 +304,8 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 					itsConfig,
 					mv, 
 					itsBehavior,
-					itsMethodInfo);
+					itsMethodInfo,
+					itsUseJava14);
 			
 			if (LOG>=2) System.out.println("Processing method "+itsMethodInfo.getName()+itsMethodInfo.getDescriptor());
 		}

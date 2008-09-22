@@ -34,7 +34,7 @@ extends EclipseApplicationLaunchConfiguration
 			IProject[] theProjects = getProjectsForProblemSearch(aConfiguration, aMode);
 			if (LaunchUtils.setup(theProjects, TODConfigLaunchTab.readConfig(aConfiguration), aLaunch))
 			{
-				super.launch(aConfiguration, LaunchUtils.MODE, aLaunch, aMonitor);
+				super.launch(aConfiguration, LaunchUtils.getLaunchMode(aConfiguration), aLaunch, aMonitor);
 			}
 		}
 		finally

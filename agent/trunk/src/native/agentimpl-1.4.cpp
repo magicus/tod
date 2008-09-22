@@ -40,37 +40,6 @@ extern "C" {
 JVMPI_Interface *gJvmpi;
 JVMDI_Interface_1 *gJvmdi;
 
-/* Every JVMTI interface returns an error code, which should be checked
- *   to avoid any cascading errors down the line.
- *   The interface GetErrorName() returns the actual enumeration constant
- *   name, making the error messages much easier to understand.
- */
-// void check_jvmti_error(jvmtiEnv *jvmti, jvmtiError errnum, const char *str)
-// {
-// 	if ( errnum != JVMTI_ERROR_NONE ) 
-// 	{
-// 		char *errnum_str;
-// 		
-// 		errnum_str = NULL;
-// 		(void)jvmti->GetErrorName(errnum, &errnum_str);
-// 		
-// 		printf("ERROR: JVMTI: %d(%s): %s\n", errnum, 
-// 			(errnum_str==NULL?"Unknown":errnum_str),
-// 			(str==NULL?"":str));
-// 
-// 		fflush(stdout);
-// 	}
-// }
-// 
-// void enable_event(jvmtiEnv *jvmti, jvmtiEvent event)
-// {
-// 	jvmtiError err = jvmti->SetEventNotificationMode(JVMTI_ENABLE, event, NULL);
-// 	check_jvmti_error(jvmti, err, "SetEventNotificationMode");
-// }
-// 
-// 
-// 
-
 #define CONSTANT_Class 		7
 #define CONSTANT_Fieldref 	9
 #define CONSTANT_Methodref 	10
@@ -83,6 +52,51 @@ JVMDI_Interface_1 *gJvmdi;
 #define CONSTANT_NameAndType 	12
 #define CONSTANT_Utf8 		1
 
+#define ERRCASE(N) case N: errmsg = "N"; break;
+
+void check_jvmpi_error(jint errnum, const char *str)
+{
+	if (errnum != JVMPI_SUCCESS) 
+	{
+		char *errmsg = NULL;
+		switch(errnum)
+		{
+			ERRCASE(JVMPI_FAIL)
+			ERRCASE(JVMPI_NOT_AVAILABLE)
+		}
+		
+		printf("ERROR: JVMPI: %d(%s): %s\n", errnum, 
+			(errmsg == NULL ? "Unknown" : errmsg),
+			(str == NULL ? "" : str));
+
+		fflush(stdout);
+	}
+}
+
+void check_jvmdi_error(jint errnum, const char *str)
+{
+	if (errnum != JVMDI_ERROR_NONE) 
+	{
+		char *errmsg = NULL;
+		switch(errnum)
+		{
+			ERRCASE(JVMDI_ERROR_OUT_OF_MEMORY)
+			ERRCASE(JVMDI_ERROR_ACCESS_DENIED)
+			ERRCASE(JVMDI_ERROR_UNATTACHED_THREAD)
+			ERRCASE(JVMDI_ERROR_VM_DEAD)
+			ERRCASE(JVMDI_ERROR_INTERNAL )
+		}
+		
+		printf("ERROR: JVMPI: %d(%s): %s\n", errnum, 
+			(errmsg == NULL ? "Unknown" : errmsg),
+			(str == NULL ? "" : str));
+
+		fflush(stdout);
+	}
+}
+
+
+
 uint8_t u1(unsigned char* data)
 {
 	return data[0];
@@ -94,7 +108,7 @@ uint16_t u2(unsigned char* data)
 }
 
 /**
-Retrieves the address of the ith item in the constant pool.
+Retrieves the address of the Nth item in the constant pool.
 */
 unsigned char* getConstant(unsigned char* pool, int index)
 {
@@ -142,17 +156,8 @@ unsigned char* getConstant(unsigned char* pool, int index)
 	return pool;
 }
 
-void cbClassFileLoadHook(JVMPI_Event* event) 
+bool getClassName(unsigned char* data, char* buffer, int bsize)
 {
-	unsigned char* data = event->u.class_load_hook.class_data;
-	jint len = event->u.class_load_hook.class_data_len;
-	
-// 	unsigned char* newdata = (unsigned char*) event->u.class_load_hook.malloc_f(len);
-// 	memcpy(newdata, data, len);
-	
-	event->u.class_load_hook.new_class_data = data;
-	event->u.class_load_hook.new_class_data_len = len;
-	
 // 	for(int i=0;i<event->u.class_load_hook.class_data_len;i++)
 // 	{
 // 		printf("%02x ", data[i]);
@@ -172,18 +177,41 @@ void cbClassFileLoadHook(JVMPI_Event* event)
 	
 	unsigned char* clsname_const = getConstant(pool, clsname_index-1);
 	int clsname_size = u2(clsname_const+1);
-	char* clsname = (char*) malloc(clsname_size+1);
-	memcpy(clsname, clsname_const+3, clsname_size);
-	clsname[clsname_size] = 0;
 	
-	printf("Hook: %s\n", clsname);
-	fflush(stdout);
+	if (clsname_size+1 > bsize) return false;
+	memcpy(buffer, clsname_const+3, clsname_size);
+	buffer[clsname_size] = 0;
+
+	return true;
+}
+
+
+void cbClassLoadHook(JVMPI_Event* event) 
+{
+	unsigned char* data = event->u.class_load_hook.class_data;
+	jint len = event->u.class_load_hook.class_data_len;
 	
-	free(clsname);
+	event->u.class_load_hook.new_class_data = data;
+	event->u.class_load_hook.new_class_data_len = len;
 	
-// 	agentClassFileLoadHook(
-// 		event->env_id,
-// 		name, class_data_len, class_data, new_class_data_len, new_class_data);
+	char clsName[2048];
+	if (! getClassName(data, clsName, sizeof(clsName)))
+	{
+		fprintf(stderr, "ERROR: class name too big\n");
+		return;
+	}
+	
+// 	printf("Hook: %s\n", clsName);
+// 	fflush(stdout);
+	
+	agentClassFileLoadHook(
+		event->env_id,
+		clsName, 
+		event->u.class_load_hook.class_data_len, 
+		event->u.class_load_hook.class_data, 
+		&event->u.class_load_hook.new_class_data_len, 
+		&event->u.class_load_hook.new_class_data,
+		event->u.class_load_hook.malloc_f);
 }
 // 
 // 
@@ -232,26 +260,83 @@ void cbClassFileLoadHook(JVMPI_Event* event)
 // }
 // 
 // 
-// void JNICALL cbVMStart(
-// 	jvmtiEnv *jvmti,
-// 	JNIEnv* jni)
-// {
-// 	agentStart(jni);
-// }
 
-void NotifyEvent(JVMPI_Event *event)
+void cbJvmInitDone(JVMPI_Event *event)
+{
+	agentStart(event->env_id);
+}
+
+
+void cbJVMPIEvent(JVMPI_Event *event)
 {
 	switch(event->event_type)
 	{
 		case JVMPI_EVENT_CLASS_LOAD_HOOK:
-			cbClassFileLoadHook(event);
+			cbClassLoadHook(event);
 			break;
+		case JVMPI_EVENT_JVM_INIT_DONE:
+			cbJvmInitDone(event);
+			break;
+// 		case JVMPI_EVENT_JVM_SHUT_DOWN:
+// 			cbJvmShutDown(event);
+// 			break;
 		default:
-			fprintf(stderr, "ERROR: unknown event type: %d\n", event->event_type);
+			fprintf(stderr, "ERROR: unknown JVMPI event type: %d\n", event->event_type);
 			break;
 	}
 }
 
+void cbException(JNIEnv* jni, JVMDI_Event* event)
+{
+	JVMDI_exception_event_data& ev = event->u.exception;
+	
+	if (! agentShouldProcessException(jni, ev.method)) return;
+
+	char* methodName;
+	char* methodSignature;
+	jclass methodDeclaringClass;
+	char* methodDeclaringClassSignature;
+ 
+	int bytecodeIndex = (int) ev.location;
+	
+	// Obtain method information
+	gJvmdi->GetMethodName(ev.clazz, ev.method, &methodName, &methodSignature);
+	gJvmdi->GetMethodDeclaringClass(ev.clazz, ev.method, &methodDeclaringClass);
+	gJvmdi->GetClassSignature(methodDeclaringClass, &methodDeclaringClassSignature);
+	
+	agentException(
+		jni, 
+		methodName, 
+		methodSignature, 
+		methodDeclaringClass, 
+		methodDeclaringClassSignature, 
+		ev.exception, 
+		bytecodeIndex);
+	
+	// Free buffers
+	gJvmdi->Deallocate((jbyte*) methodName);
+	gJvmdi->Deallocate((jbyte*) methodSignature);
+	gJvmdi->Deallocate((jbyte*) methodDeclaringClassSignature);
+
+}
+
+void cbVMDeath(JNIEnv* jni, JVMDI_Event* event)
+{
+//  	agentStop();
+}
+
+void cbJVMDIEvent(JNIEnv* jni, JVMDI_Event* event)
+{
+	switch(event->kind)
+	{
+		case JVMDI_EVENT_EXCEPTION:
+			cbException(jni, event);
+			break;
+		case JVMDI_EVENT_VM_DEATH:
+			cbVMDeath(jni, event);
+			break;
+	}
+}
 
 JNIEXPORT jint JNICALL JVM_OnLoad(JavaVM *jvm, char *options, void *reserved)
 {
@@ -268,8 +353,24 @@ JNIEXPORT jint JNICALL JVM_OnLoad(JavaVM *jvm, char *options, void *reserved)
 		return JNI_ERR;
 	}
 
-	gJvmpi->NotifyEvent = NotifyEvent;
-	gJvmpi->EnableEvent(JVMPI_EVENT_CLASS_LOAD_HOOK, NULL);
+	// Enable JVMPI events
+	gJvmpi->NotifyEvent = cbJVMPIEvent;
+	res = gJvmpi->EnableEvent(JVMPI_EVENT_CLASS_LOAD_HOOK, NULL);
+	check_jvmpi_error(res, "Enable JVMPI_EVENT_CLASS_LOAD_HOOK") ;
+	
+	res = gJvmpi->EnableEvent(JVMPI_EVENT_JVM_INIT_DONE, NULL);
+	check_jvmpi_error(res, "Enable JVMPI_EVENT_JVM_INIT_DONE");
+	
+// 	res = gJvmpi->EnableEvent(JVMPI_EVENT_JVM_SHUT_DOWN, NULL);
+// 	check_jvmpi_error(res, "Enable JVMPI_EVENT_JVM_SHUT_DOWN");
+	
+	// Enable JVMDI events
+	res = gJvmdi->SetEventHook(cbJVMDIEvent);
+	check_jvmdi_error(res, "SetEventHook");
+	
+// 	res = gJvmdi->SetEventNotificationMode(JVMDI_ENABLE, JVMDI_EVENT_EXCEPTION, NULL);
+// 	check_jvmdi_error(res, "Enable JVMDI_EVENT_EXCEPTION");
+
 // 	// Retrieve system properties
 // 	char* propVerbose = NULL;
 // 	char* propHost = NULL;
@@ -316,30 +417,21 @@ JNIEXPORT jint JNICALL JVM_OnLoad(JavaVM *jvm, char *options, void *reserved)
 // 	enable_event(jvmti, JVMTI_EVENT_EXCEPTION);
 // 	enable_event(jvmti, JVMTI_EVENT_VM_START);
 // 
-// 	agentInit(propVerbose, propHost, propPort, propCachePath, propClientName);
+	cfgIsJVM14 = true;
+
+	agentInit("0", "localhost", "8058", "/home/gpothier/tmp/tod", "no-name");
 
 	return JNI_OK;
 }
-
-// JNIEXPORT void JNICALL 
-// Agent_OnUnload(JavaVM *vm)
-// {
-// 	agentStop();
-// }
 
 //************************************************************************************
 
 
 jlong agentimplGetObjectId(JNIEnv* jni, jobject obj)
 {
+	// This is implemented in Java, so this method is never called.
 	return 0;
 }
-
-unsigned char* agentimplAlloc(int size)
-{
-	return NULL;
-}
-
 
 #ifdef __cplusplus
 }

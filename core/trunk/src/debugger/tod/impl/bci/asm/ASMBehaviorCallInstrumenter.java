@@ -34,6 +34,8 @@ public class ASMBehaviorCallInstrumenter implements Opcodes
 	private final MethodVisitor mv;
 	private final ASMBehaviorInstrumenter itsInstrumenter;
 	
+	private final boolean itsUseJava14;
+	
 	private int itsMethodId;
 	private boolean itsStatic;
 	private Type[] itsArgTypes;
@@ -57,11 +59,13 @@ public class ASMBehaviorCallInstrumenter implements Opcodes
 	public ASMBehaviorCallInstrumenter(
 			MethodVisitor mv, 
 			ASMBehaviorInstrumenter aInstrumenter,
-			int aOperationBehaviorId)
+			int aOperationBehaviorId,
+			boolean aUseJava14)
 	{
 		this.mv = mv;
 		itsInstrumenter = aInstrumenter;
 		itsOperationBehaviorId = aOperationBehaviorId;
+		itsUseJava14 = aUseJava14;
 	}
 
 	public void setup(
@@ -182,7 +186,7 @@ public class ASMBehaviorCallInstrumenter implements Opcodes
 		else
 		{
 			mv.visitInsn(itsReturnType.getSize() == 2 ? DUP2 : DUP);
-			BCIUtils.wrap(mv, itsReturnType);
+			BCIUtils.wrap(mv, itsReturnType, itsUseJava14);
 		}
 		
 		mv.visitVarInsn(ASTORE, itsArrayVar);

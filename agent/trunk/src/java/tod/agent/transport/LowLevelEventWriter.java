@@ -500,12 +500,24 @@ public class LowLevelEventWriter
 		sendRegisteredObjects();
 	}
 
-	public void sendClear() throws IOException
+	public void sendClear() 
 	{
 		sendCommand(itsBuffer, Commands.CMD_CLEAR);
 		copyBuffer();
 	}
 
+	public void sendFlush() 
+	{
+		sendCommand(itsBuffer, Commands.CMD_FLUSH);
+		copyBuffer();
+	}
+	
+	public void sendEnd() 
+	{
+		sendCommand(itsBuffer, Commands.CMD_END);
+		copyBuffer();
+	}
+	
 	/**
 	 * Sends an argument to the socket. This method handles arrays, single
 	 * objects or null values.

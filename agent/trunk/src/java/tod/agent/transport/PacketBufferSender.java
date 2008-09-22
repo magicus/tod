@@ -29,9 +29,13 @@ import java.nio.channels.ByteChannel;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import tod.agent.AgentConfig;
 import tod.agent.AgentDebugFlags;
+import tod.agent.AgentUtils;
+import tod.agent.EventCollector;
+import tod.agent._AgentConfig;
 
 /**
  * Sends the packets buffered by a set of {@link PacketBuffer} to a given
@@ -157,11 +161,34 @@ public class PacketBufferSender extends Thread
 		}
 		catch (Exception e)
 		{
-			Runtime.getRuntime().removeShutdownHook(itsShutdownHook);
 			System.err.println("[TOD] FATAL:");
 			e.printStackTrace();
+			Runtime.getRuntime().removeShutdownHook(itsShutdownHook);
 			System.exit(1);
 		}
+	}
+	
+	/**
+	 * Retroweaver does not handle {@link Queue#offer(Object)}
+	 */
+	private static <T> boolean queueOffer(LinkedList<T> aList, T aElement)
+	{
+		if (_AgentConfig.JAVA14) return aList.add(aElement);
+		else return aList.offer(aElement);
+	}
+	
+	/**
+	 * Retroweaver does not handle {@link Queue#poll()}
+	 */
+	private static <T> T queuePoll(LinkedList<T> aList)
+	{
+		if (_AgentConfig.JAVA14)
+		{
+	        if (aList.size()==0) return null;
+	        return aList.removeFirst();
+
+		}
+		else return aList.poll();
 	}
 	
 	/**
@@ -169,7 +196,7 @@ public class PacketBufferSender extends Thread
 	 */
 	synchronized void pushBuffer(PacketBuffer aBuffer) 
 	{
-		itsPendingBuffers.offer(aBuffer);
+		queueOffer(itsPendingBuffers, aBuffer);
 		notifyAll();
 	}
 	
@@ -179,7 +206,7 @@ public class PacketBufferSender extends Thread
 	synchronized PacketBuffer popBuffer() throws InterruptedException
 	{
 		if (itsPendingBuffers.isEmpty()) wait(100);
-		return itsPendingBuffers.poll();
+		return queuePoll(itsPendingBuffers);
 	}
 	
 	public synchronized PacketBuffer createBuffer(int aThreadId)
@@ -371,7 +398,9 @@ public class PacketBufferSender extends Thread
 		@Override
 		public void run()
 		{
-			System.out.println("[TOD] Flushing events...");
+			System.out.println("[TOD] Flushing buffers...");
+			
+			AgentConfig.getCollector().end();
 			
 			for (PacketBuffer theBuffer : itsBuffers) theBuffer.swapBuffers();
 			

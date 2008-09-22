@@ -61,7 +61,7 @@ public class Instrument
 		StructureDatabase theStructureDatabase = StructureDatabase.create(theConfig, "test");
 		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theStructureDatabase, theDebuggerConfig);
 		
-		InstrumentedClass theInstrumentedClass = theInstrumenter.instrumentClass(theName, theClassData);
+		InstrumentedClass theInstrumentedClass = theInstrumenter.instrumentClass(theName, theClassData, false);
 
 		IClassInfo theClass = theStructureDatabase.getClass(theName, true);
 		String theSig = "()Ltod/impl/evdbng/db/file/Tuple;";

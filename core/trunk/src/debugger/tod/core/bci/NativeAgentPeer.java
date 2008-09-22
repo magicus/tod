@@ -76,6 +76,11 @@ public abstract class NativeAgentPeer extends SocketThread
 	private String itsHostName;
 	
 	/**
+	 * If true, the connected JVM is version 1.4
+	 */
+	private boolean itsUseJava14;
+	
+	/**
 	 * An id for the connected host, assigned by
 	 * the {@link TODServer}. It is not necessarily the same as the "official"
 	 * host id; it is used only to differentiate object ids from several hosts. 
@@ -220,6 +225,8 @@ public abstract class NativeAgentPeer extends SocketThread
 		itsHostName = theInStream.readUTF();
 		System.out.println("[NativeAgentPeer] Received host name: '"+itsHostName+"'");
 		
+		itsUseJava14 = theInStream.readByte() != 0;
+		
 		// Send host id
 		theOutStream.writeInt(itsHostId);
 
@@ -276,7 +283,7 @@ public abstract class NativeAgentPeer extends SocketThread
 		String theError = null;
 		try
 		{
-			theInstrumentedClass = aInstrumenter.instrumentClass(theClassName, theBytecode);
+			theInstrumentedClass = aInstrumenter.instrumentClass(theClassName, theBytecode, itsUseJava14);
 		}
 		catch (Exception e)
 		{

@@ -74,7 +74,7 @@ public class ABCTags
 		ASMInstrumenter theInstrumenter = new ASMInstrumenter(theStructureDatabase, theDebuggerConfig);
 		
 		byte[] theBytecode = Utils.readInputStream_byte(new FileInputStream(args[0]));
-		theInstrumenter.instrumentClass("x", theBytecode);
+		theInstrumenter.instrumentClass("x", theBytecode, false);
 
 		ILogBrowser theLogBrowser = new MyLogBrowser(theStructureDatabase);
 		

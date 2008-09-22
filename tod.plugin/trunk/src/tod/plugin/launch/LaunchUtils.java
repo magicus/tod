@@ -3,6 +3,7 @@
  */
 package tod.plugin.launch;
 
+import java.io.File;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 
+import tod.agent.AgentUtils;
 import tod.core.config.DeploymentConfig;
 import tod.core.config.TODConfig;
 import tod.core.session.ConnectionInfo;
@@ -40,8 +42,6 @@ import zz.utils.Utils;
 
 public class LaunchUtils 
 {
-	public static final String MODE = ILaunchManager.DEBUG_MODE;
-
 	private static final ThreadLocal<LaunchInfo> itsInfo = new ThreadLocal<LaunchInfo>();
 	
 	public static boolean setup(
@@ -158,111 +158,76 @@ public class LaunchUtils
 		return new DelegatedRunner(aDelegate, itsInfo.get());
 	}
 	
+	public static String getLaunchMode(ILaunchConfiguration aConfiguration) throws CoreException
+	{
+		return getAgentCmd(aConfiguration).getLaunchMode();
+	}
+	
 	/**
 	 * Determines the version of the native agent library to use for the given
 	 * launch configuration.
 	 * The architecture of the target VM is first determined by running a small
 	 * program in the target VM.
 	 */
-	protected static String getAgentLibName(ILaunchConfiguration aConfiguration) throws CoreException
+	protected static AgentCmd getAgentCmd(ILaunchConfiguration aConfiguration) throws CoreException
 	{
 		// Determine architecture of target VM
 		IVMInstall theVMInstall = JavaRuntime.computeVMInstall(aConfiguration);
 		String theOs;
-		String theArch;
+		String theArchName;
+		String theVersion;
 		
 		if (theVMInstall instanceof IVMInstall3)
 		{
 			IVMInstall3 theInstall3 = (IVMInstall3) theVMInstall;
-			Map theMap = theInstall3.evaluateSystemProperties(new String[] {"os.name", "os.arch"}, null);
+			Map theMap = theInstall3.evaluateSystemProperties(new String[] {"os.name", "os.arch", "java.version"}, null);
 			theOs = (String) theMap.get("os.name");
-			theArch = (String) theMap.get("os.arch");
+			theArchName = (String) theMap.get("os.arch");
+			theVersion = (String) theMap.get("java.version");
 		}
 		else
 		{
 			theOs = System.getProperty("os.name");
-			theArch = System.getProperty("os.arch");
+			theArchName = System.getProperty("os.arch");
+			theVersion = System.getProperty("java.version");
 		}
 		
-        String theLibName = null;
-        String theAgentName = DeploymentConfig.getNativeAgentName();
-		
-		if (theOs.startsWith("Windows"))
-		{
-			theLibName = theAgentName+".dll";
-		}
-		else if (theOs.startsWith("Mac OS X"))
-		{
-			theLibName = "lib"+theAgentName+".dylib";
-		}
+		// Parse the version
+        String theAgentVersion = null;
+
+        int theMinor = AgentUtils.getJvmMinorVersion(theVersion);
+        
+        if (theMinor < 4) throw new RuntimeException("JVM version not supported: "+theVersion);
+        else if (theMinor == 4) theAgentVersion = "14";
+        else theAgentVersion = "15";
+        
+        // Determine architecture & assemble the agent name.
+        Arch theArch = null;
+        String theAgentName = DeploymentConfig.getNativeAgentName()+theAgentVersion;
+        
+		if (theOs.startsWith("Windows")) theArch = Arch.WIN32;
+		else if (theOs.startsWith("Mac OS X")) theArch = Arch.MACOS;
 		else if (theOs.startsWith("Linux"))
 		{
-			if (theArch.equals("x86") || theArch.equals("i386") || theArch.equals("i686"))
+			if (theArchName.equals("x86") || theArchName.equals("i386") || theArchName.equals("i686"))
 			{
-				theLibName = "lib"+theAgentName+".so";
+				theArch = Arch.LINUX;
 			}
-			else if (theArch.equals("x86_64") || theArch.equals("amd64"))
+			else if (theArchName.equals("x86_64") || theArchName.equals("amd64"))
 			{
-				theLibName = "lib"+theAgentName+"_x64.so";
+				theArch = Arch.LINUX;
+				theAgentName += "_x64";
 			}
 		}
 		
-		if (theLibName == null)
+		if (theArch == null)
 		{
-			throw new RuntimeException("Unsupported architecture: "+theOs+"/"+theArch);
+			throw new RuntimeException("Unsupported architecture: "+theOs+"/"+theArchName);
 		}
 
-		return theLibName;
-	}
-	
-	protected static List<String> getAdditionalVMArguments(
-			ILaunch aLaunch, 
-			LaunchInfo aInfo,
-			IProgressMonitor aMonitor) throws CoreException
-	{
-		if (aMonitor == null) aMonitor = new NullProgressMonitor();
-		
-		// Determine which version of the agent to use.
-		if (aMonitor.isCanceled()) return null;
-		aMonitor.subTask("Determining architecture of target JVM");
-        String theLibName = getAgentLibName(aLaunch.getLaunchConfiguration());
-		if (aMonitor.isCanceled()) return null;
-
-		aMonitor.subTask("Setting up extra JVM arguments");
-		
-		String theLibraryPath = TODPlugin.getDefault().getLibraryPath();
-
-		List<String> theArguments = new ArrayList<String>();
-        
-        // Boot class path
-		String theAgentPath = System.getProperty("agent.path", theLibraryPath+"/tod-agent.jar");
-        
-        theArguments.add ("-Xbootclasspath/p:"+theAgentPath);
-		
-
-		String theNativeAgentPath = System.getProperty("bcilib.path", theLibraryPath)+"/"+theLibName;
-		
-		theArguments.add("-agentpath:"+theNativeAgentPath);
-		theArguments.add("-Djava.library.path="+theLibraryPath);
-		
-		theArguments.add("-noverify");
-		
-		// Config
-		TODConfig theConfig = aInfo.config;
-		
-		ConnectionInfo theConnectionInfo = aInfo.session.getConnectionInfo();
-		
-		theArguments.add("-Dcollector-host="+theConnectionInfo.getHostName());
-		theArguments.add("-Dcollector-port="+theConnectionInfo.getPort());
-/*	    if (TODConfig.SESSION_LOCAL.equals(theConfig.get(TODConfig.SESSION_TYPE)))
-			theArguments.add("-Djava.rmi.server.hostname=127.0.0.1");
-		else theArguments.add("-Djava.rmi.server.hostname="+theConnectionInfo.getHostName());
-	*/
-		theArguments.add(TODConfig.CLIENT_NAME.javaOpt(theConfig));
-		theArguments.add(TODConfig.AGENT_CACHE_PATH.javaOpt(theConfig));
-		theArguments.add(TODConfig.AGENT_VERBOSE.javaOpt(theConfig));
-		
-		return theArguments;
+		return theMinor == 4 ? 
+				new Agent14Cmd(theArch, theAgentName) 
+				: new Agent15Cmd(theArch, theAgentName);
 	}
 	
 	private static class LaunchInfo
@@ -296,18 +261,246 @@ public class LaunchUtils
 				IProgressMonitor aMonitor)
 				throws CoreException
 		{
-			List<String> theAdditionalArgs = getAdditionalVMArguments(aLaunch, itsInfo, aMonitor);
+			if (aMonitor == null) aMonitor = new NullProgressMonitor();
 			if (aMonitor.isCanceled()) return;
 			
-			List<String> theArgs = new ArrayList<String>();
-			Utils.fillCollection(theArgs, theAdditionalArgs);
-			Utils.fillCollection(theArgs, aConfiguration.getVMArguments());
+			// Determine which version of the agent to use.
+			aMonitor.subTask("Determining architecture of target JVM");
+	        AgentCmd theCmd = getAgentCmd(aLaunch.getLaunchConfiguration());
+			if (aMonitor.isCanceled()) return;
+
+			// Setup JVM args
+			aMonitor.subTask("Setting up extra JVM arguments");
+			List<String> theVMArgs = new ArrayList<String>();
+			theCmd.buildVMArgs(theVMArgs, itsInfo);
+			if (aConfiguration.getVMArguments() != null) Utils.fillCollection(theVMArgs, aConfiguration.getVMArguments());
+			aConfiguration.setVMArguments(theVMArgs.toArray(new String[theVMArgs.size()]));
+
+			if (aMonitor.isCanceled()) return;
 			
-			String[] theFullArgs = theArgs.toArray(new String[theArgs.size()]);
-			aConfiguration.setVMArguments(theFullArgs);
+			// Setup environment
+			aMonitor.subTask("Setting up environment");
+			List<String> theEnv = new ArrayList<String>();
+			theCmd.buildEnv(theEnv, itsInfo);
+			if (aConfiguration.getEnvironment() != null) Utils.fillCollection(theEnv, aConfiguration.getEnvironment());
+			aConfiguration.setEnvironment(theEnv.toArray(new String[theEnv.size()]));
+			
+			if (aMonitor.isCanceled()) return;
 			
 			itsDelegate.run(aConfiguration, aLaunch, aMonitor);
 		}
 	}
 	
+	/**
+	 * Abstract base class for the launch command builder.
+	 * One subclass per JDK variant.
+	 * @author gpothier
+	 */
+	private static abstract class AgentCmd
+	{
+		private final Arch itsArch;
+		private final String itsLibraryName;
+		
+		private final String itsJavaLibraryPath;
+		private final String itsNativeLibraryPath;
+		
+		public AgentCmd(Arch aArch, String aLibraryName)
+		{
+			itsArch = aArch;
+			itsLibraryName = aLibraryName;
+
+			itsJavaLibraryPath = TODPlugin.getDefault().getLibraryPath();
+			itsNativeLibraryPath = System.getProperty("bcilib.path", itsJavaLibraryPath);
+		}
+
+		public Arch getArch()
+		{
+			return itsArch;
+		}
+
+		public String getLibraryName()
+		{
+			return itsLibraryName;
+		}
+
+		public String getJavaLibraryPath()
+		{
+			return itsJavaLibraryPath;
+		}
+
+		public String getNativeLibraryPath()
+		{
+			return itsNativeLibraryPath;
+		}
+
+		public abstract void buildVMArgs(List<String> aArguments, LaunchInfo aInfo);
+		public abstract void buildEnv(List<String> aArguments, LaunchInfo aInfo);
+		public abstract String getLaunchMode();
+	}
+	
+	/**
+	 * Launch command builder for JDK1.4
+	 * @author gpothier
+	 */
+	private static class Agent14Cmd extends AgentCmd
+	{
+		public Agent14Cmd(Arch aArch, String aLibraryName)
+		{
+			super(aArch, aLibraryName);
+		}
+
+		@Override
+		public void buildVMArgs(List<String> aArguments, LaunchInfo aInfo)
+		{
+			String theNativeAgentPath = getNativeLibraryPath()+File.separator+getArch().getLibraryFileName(getLibraryName());
+			aArguments.add("-Dtod.agent.lib="+theNativeAgentPath);
+			
+			aArguments.add("-Xdebug");
+			aArguments.add("-Xnoagent");
+			
+			aArguments.add("-Xrun"+getLibraryName());
+			
+			String theAgentPath = System.getProperty("agent14.path", getJavaLibraryPath()+"/tod-agent14.jar");
+	        aArguments.add("-Xbootclasspath/p:"+theAgentPath);
+	        
+	        aArguments.add("-noverify");
+			
+			// Config
+			TODConfig theConfig = aInfo.config;
+			
+			ConnectionInfo theConnectionInfo = aInfo.session.getConnectionInfo();
+			
+			aArguments.add("-Dcollector-host="+theConnectionInfo.getHostName());
+			aArguments.add("-Dcollector-port="+theConnectionInfo.getPort());
+			
+			aArguments.add(TODConfig.CLIENT_NAME.javaOpt(theConfig));
+			aArguments.add(TODConfig.AGENT_CACHE_PATH.javaOpt(theConfig));
+			aArguments.add(TODConfig.AGENT_VERBOSE.javaOpt(theConfig));
+		}
+
+		@Override
+		public void buildEnv(List<String> aArguments, LaunchInfo aInfo)
+		{
+			aArguments.add(getArch().getLibPathEntry(getNativeLibraryPath()));
+		}
+
+		@Override
+		public String getLaunchMode()
+		{
+			return ILaunchManager.RUN_MODE;
+		}
+	}
+
+	/**
+	 * Launch command builder for JDK1.5 and later
+	 * @author gpothier
+	 */
+	private static class Agent15Cmd extends AgentCmd
+	{
+		public Agent15Cmd(Arch aArch, String aLibraryName)
+		{
+			super(aArch, aLibraryName);
+		}
+
+		@Override
+		public void buildVMArgs(List<String> aArguments, LaunchInfo aInfo)
+		{
+			String theNativeAgentPath = getNativeLibraryPath()+File.separator+getArch().getLibraryFileName(getLibraryName());
+			
+			String theAgentPath = System.getProperty("agent15.path", getJavaLibraryPath()+"/tod-agent15.jar");
+	        aArguments.add("-Xbootclasspath/p:"+theAgentPath);
+	        
+	        aArguments.add("-noverify");
+
+	        aArguments.add("-agentpath:"+theNativeAgentPath);
+//			theArguments.add("-Djava.library.path="+theLibraryPath);
+			
+			// Config
+			TODConfig theConfig = aInfo.config;
+			
+			ConnectionInfo theConnectionInfo = aInfo.session.getConnectionInfo();
+			
+			aArguments.add("-Dcollector-host="+theConnectionInfo.getHostName());
+			aArguments.add("-Dcollector-port="+theConnectionInfo.getPort());
+			
+//			if (TODConfig.SESSION_LOCAL.equals(theConfig.get(TODConfig.SESSION_TYPE)))
+//				theArguments.add("-Djava.rmi.server.hostname=127.0.0.1");
+//			else theArguments.add("-Djava.rmi.server.hostname="+theConnectionInfo.getHostName());
+
+			aArguments.add(TODConfig.CLIENT_NAME.javaOpt(theConfig));
+			aArguments.add(TODConfig.AGENT_CACHE_PATH.javaOpt(theConfig));
+			aArguments.add(TODConfig.AGENT_VERBOSE.javaOpt(theConfig));
+		}
+
+		@Override
+		public void buildEnv(List<String> aArguments, LaunchInfo aInfo)
+		{
+		}
+
+		@Override
+		public String getLaunchMode()
+		{
+			return ILaunchManager.DEBUG_MODE;
+		}
+	}
+	
+	/**
+	 * Represents a deployment architecture (win32, macos, linux).
+	 * @author gpothier
+	 */
+	private static abstract class Arch
+	{
+		public static final Arch MACOS = new Arch()
+		{
+			public String getLibraryFileName(String aBaseName)
+			{
+				return "lib"+aBaseName+".dylib";
+			}
+
+			@Override
+			public String getLibPathEntry(String aPath)
+			{
+				throw new UnsupportedOperationException("I don't know how it works on MacOS");
+			}
+		};
+		
+		public static final Arch WIN32 = new Arch()
+		{
+			public String getLibraryFileName(String aBaseName)
+			{
+				return aBaseName+".dll";
+			}
+
+			@Override
+			public String getLibPathEntry(String aPath)
+			{
+				return "PATH="+aPath+";%PATH%";
+			}
+		};
+		
+		public static final Arch LINUX = new Arch()
+		{
+			public String getLibraryFileName(String aBaseName)
+			{
+				return "lib"+aBaseName+".so";
+			}
+
+			@Override
+			public String getLibPathEntry(String aPath)
+			{
+				return "LD_LIBRARY_PATH="+aPath+":$LD_LIBRARY_PATH";
+			}			
+		};
+		
+		/**
+		 * Returns the filename for a library on this architecture.
+		 */
+		public abstract String getLibraryFileName(String aBaseName);
+		
+		/**
+		 * Returns the environment mapping that is used to add a directory to the library
+		 * path.
+		 */
+		public abstract String getLibPathEntry(String aPath);
+	}
 }

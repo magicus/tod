@@ -22,6 +22,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.bci.asm;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -63,6 +66,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	private final ASMMethodInfo itsMethodInfo;
 	private final ASMDebuggerConfig itsConfig;
 	
+	private final boolean itsUseJava14;
+	
 	/**
 	 * Index of the variable that stores the real return point of the method.
 	 * The stored value is a probe id (int)
@@ -91,11 +96,17 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	 */
 	private final RangeManager itsInstrumentationRanges;
 	
+	/**
+	 * This set contains the classes whose loading has already been forced.
+	 */
+	private final Set<String> itsLoadedClasses = new HashSet<String>();
+	
 	public ASMBehaviorInstrumenter(
 			ASMDebuggerConfig aConfig,
 			MethodVisitor mv,
 			IMutableBehaviorInfo aBehavior,
-			ASMMethodInfo aMethodInfo)
+			ASMMethodInfo aMethodInfo,
+			boolean aUseJava14)
 	{
 		itsConfig = aConfig;
 		this.mv = mv;
@@ -107,7 +118,11 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		itsStructureDatabase = itsBehavior._getMutableDatabase();
 		itsProbesManager = new ProbesManager(itsStructureDatabase);
 		itsMethodInfo = aMethodInfo;
-		itsBehaviorCallInstrumenter = new ASMBehaviorCallInstrumenter(mv, this, itsBehavior.getId());
+		itsBehaviorCallInstrumenter = new ASMBehaviorCallInstrumenter(
+				mv, 
+				this, 
+				itsBehavior.getId(),
+				aUseJava14);
 		
 		itsFirstFreeVar = itsMethodInfo.getMaxLocals();
 		
@@ -122,6 +137,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		// Allocate space for trace capture var
 		itsCaptureEnabledVar = itsFirstFreeVar;
 		itsFirstFreeVar += 1;
+		
+		itsUseJava14 = aUseJava14;
 	}
 	
 	/**
@@ -324,7 +341,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		else
 		{
 			mv.visitInsn(theReturnType.getSize() == 2 ? DUP2 : DUP);
-			BCIUtils.wrap(mv, theReturnType);
+			BCIUtils.wrap(mv, theReturnType, itsUseJava14);
 		}
 		
 		mv.visitVarInsn(ASTORE, itsFirstFreeVar);
@@ -368,6 +385,46 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		return aCalledBehavior.hasTrace();
 	}
 	
+	private void forceLoad(String aClass)
+	{
+		if (! itsLoadedClasses.add(aClass)) return;
+		if (itsMethodInfo.getOwner().equals(aClass)) return;
+
+		if (itsUseJava14)
+		{
+			mv.visitFieldInsn(
+					GETSTATIC, 
+					itsMethodInfo.getOwner(), 
+					LogBCIVisitor.getClassFieldName(aClass), 
+					"Ljava/lang/Class;");
+			
+			Label theEndLabel = new Label();
+			mv.visitJumpInsn(IFNONNULL, theEndLabel);
+			
+			mv.visitLdcInsn(aClass.replace('/', '.'));
+			
+			mv.visitMethodInsn(
+					INVOKESTATIC, 
+					"tod/agent/AgentUtils", 
+					"loadClass", 
+					"(Ljava/lang/String;)Ljava/lang/Class;");
+
+			
+			mv.visitFieldInsn(
+					PUTSTATIC, 
+					itsMethodInfo.getOwner(), 
+					LogBCIVisitor.getClassFieldName(aClass), 
+					"Ljava/lang/Class;");
+			
+			mv.visitLabel(theEndLabel);
+		}
+		else
+		{
+			mv.visitLdcInsn(Type.getObjectType(aClass));
+			mv.visitInsn(POP);
+		}
+	}
+	
 	public void methodCall(
 			int aOpcode,
 			String aOwner, 
@@ -402,9 +459,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 
 		if (theHasTrace == HasTrace.UNKNOWN)
 		{
-			// Force class load
-			mv.visitLdcInsn(Type.getObjectType(aOwner));
-			mv.visitInsn(POP);
+			forceLoad(aOwner);
 			
 			// Runtime check for trace info
 			BCIUtils.pushInt(mv, theCalledBehavior.getId());
@@ -970,7 +1025,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		// ->value
 		mv.visitVarInsn(theType.getOpcode(ILOAD), aValueVar);
-		BCIUtils.wrap(mv, theType);
+		BCIUtils.wrap(mv, theType, itsUseJava14);
 		
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
@@ -1026,7 +1081,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		// ->value
 		mv.visitVarInsn(theType.getOpcode(ILOAD), aValueVar);
-		BCIUtils.wrap(mv, theType);
+		BCIUtils.wrap(mv, theType, itsUseJava14);
 		
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
@@ -1078,7 +1133,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		// ->value
 		mv.visitVarInsn(theType.getOpcode(ILOAD), aValueVar);
-		BCIUtils.wrap(mv, theType);
+		BCIUtils.wrap(mv, theType, itsUseJava14);
 		
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
@@ -1186,7 +1241,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				mv.visitVarInsn(ALOAD, aArrayVar); // :: array
 				BCIUtils.pushInt(mv, theIndex++); // :: array, index
 				mv.visitVarInsn(theType.getOpcode(ILOAD), theCurrentVar); // :: array, index, val
-				BCIUtils.wrap(mv, theType);
+				BCIUtils.wrap(mv, theType, itsUseJava14);
 				mv.visitInsn(AASTORE); // ::
 				
 				if (! aReverse) theCurrentVar += theType.getSize();

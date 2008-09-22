@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import tod.agent.AgentConfig;
-import tod.core.DebugFlags;
 import tod.core.ILogCollector;
 import tod.core.bci.IInstrumenter;
 import tod.core.bci.NativeAgentPeer;
@@ -273,9 +272,9 @@ public class JavaTODServer extends TODServer
 			itsDelegate = aDelegate;
 		}
 
-		public synchronized InstrumentedClass instrumentClass(String aClassName, byte[] aBytecode)
+		public synchronized InstrumentedClass instrumentClass(String aClassName, byte[] aBytecode, boolean aUseJava14)
 		{
-			return itsDelegate.instrumentClass(aClassName, aBytecode);
+			return itsDelegate.instrumentClass(aClassName, aBytecode, aUseJava14);
 		}
 
 		public synchronized void setGlobalWorkingSet(String aWorkingSet)

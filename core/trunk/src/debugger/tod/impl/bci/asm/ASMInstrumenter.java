@@ -72,7 +72,7 @@ public class ASMInstrumenter implements IInstrumenter
 		itsConfig.setGlobalWorkingSet(aWorkingSet);
 	}
 
-	public InstrumentedClass instrumentClass(String aName, byte[] aBytecode)
+	public InstrumentedClass instrumentClass(String aName, byte[] aBytecode, boolean aUseJava14)
 	{
 		
 		// Strange things happen inside those classes...
@@ -97,7 +97,7 @@ public class ASMInstrumenter implements IInstrumenter
 						new AspectInfoAttribute(null), };
 
 		// Pass 1: collect method info
-		InfoCollector theInfoCollector = new InfoCollector();
+		InfoCollector theInfoCollector = new InfoCollector(aName);
 		theReader.accept(theInfoCollector, theAttributes, ClassReader.SKIP_DEBUG);
 
 		List<Integer> theTracedMethods = new ArrayList<Integer>();
@@ -110,7 +110,8 @@ public class ASMInstrumenter implements IInstrumenter
 						theInfoCollector,
 						theWriter,
 						theChecksum,
-						theTracedMethods);
+						theTracedMethods,
+						aUseJava14);
 
 		try
 		{
