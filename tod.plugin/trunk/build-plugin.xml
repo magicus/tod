@@ -80,7 +80,8 @@
 		<copy todir="${plugin.dir}/lib">
 			<fileset dir="${zz.utils.dir}/build" includes="zz.utils.jar"/>
 			<fileset dir="${tod.dir}/build" includes="tod-debugger.jar"/>
-			<fileset dir="${tod-agent.dir}/build" includes="tod-agent.jar"/>
+			<fileset dir="${tod-agent.dir}/build" includes="tod-agent14.jar"/>
+			<fileset dir="${tod-agent.dir}/build" includes="tod-agent15.jar"/>
 			<fileset dir="${tod-dbgrid.dir}/build" includes="tod-dbgrid.jar"/>
 			<fileset dir="${tod-evdb1.dir}/build" includes="tod-evdb1.jar"/>
 			<fileset dir="${tod-evdbng.dir}/build" includes="tod-evdbng.jar"/>
