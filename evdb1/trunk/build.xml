@@ -19,7 +19,7 @@
 
         <path id="main.classpath">
         	<pathelement path="${tod.dir}/build/tod-debugger.jar"/>
-        	<pathelement path="${tod-agent.dir}/build/tod-agent.jar"/>
+        	<pathelement path="${tod-agent.dir}/build/tod-agent15.jar"/>
         	<pathelement path="${tod-dbgrid.dir}/build/tod-dbgrid.jar"/>
         	<pathelement path="${tod.dir}/lib/aspectjrt.jar"/>
             <pathelement path="${zz.utils.dir}/build/zz.utils.jar"/>
