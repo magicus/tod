@@ -117,8 +117,12 @@ agent15: dirs $(agent15-objects)
 dirs:
 	mkdir -p $(PLATFORM)
 
-push: all
+push: push14 push15
+
+push14: agent14
 	./push.sh $(PLATFORM)/$(AGENT14_LIBNAME) $(AGENT14_LIBNAME)
+
+push15: agent15
 	./push.sh $(PLATFORM)/$(AGENT15_LIBNAME) $(AGENT15_LIBNAME)
 
 clean:
