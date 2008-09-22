@@ -36,7 +36,7 @@ public class TODLaunchDelegate_AJDT extends AJApplicationLaunchConfigurationDele
 			IJavaProject theJavaProject = getJavaProject(aConfiguration);
 			if (LaunchUtils.setup(theJavaProject, TODConfigLaunchTab.readConfig(aConfiguration), aLaunch))
 			{
-				super.launch(aConfiguration, LaunchUtils.MODE, aLaunch, aMonitor);
+				super.launch(aConfiguration, LaunchUtils.getLaunchMode(aConfiguration), aLaunch, aMonitor);
 			}
 		}
 		finally
