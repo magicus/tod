@@ -67,7 +67,7 @@
       <!-- DEV-out -->
       
       <!-- DEPLOY-in     
-      <library name="lib/tod-agent.jar">
+      <library name="lib/tod-agent15.jar">
          <export name="*"/>
       </library>
       <library name="lib/tod-debugger.jar">

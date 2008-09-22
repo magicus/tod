@@ -26,7 +26,7 @@
 		<path id="default.classpath">
 			<pathelement path="${zz.utils.dir}/build/zz.utils.jar"/>
 			<pathelement path="${tod.dir}/build/tod-debugger.jar"/>
-			<pathelement path="${tod-agent.dir}/build/tod-agent.jar"/>
+			<pathelement path="${tod-agent.dir}/build/tod-agent15.jar"/>
 			<pathelement path="${tod-dbgrid.dir}/build/tod-dbgrid.jar"/>
 			<pathelement path="${zz.eclipse.utils.dir}/build/zz.eclipse.utils/plugin.jar"/>
 			
