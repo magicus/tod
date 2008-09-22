@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import sys
 import shutil
@@ -30,7 +31,7 @@ def release(version):
 	cwd = os.getcwd()
 	os.chdir(taMod.path + '/src/native')
 
-	libs = ["libtod-agent.so", "libtod-agent_x64.so", "libtod-agent.dylib", "tod-agent.dll"]
+	libs = ["libtod-agent15.so", "libtod-agent15_x64.so", "libtod-agent15.dylib", "tod-agent15.dll", "libtod-agent14.so", "libtod-agent14_x64.so", "tod-agent14.dll"]
 
 	for lib in libs:
 		# Get local signature
