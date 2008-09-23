@@ -98,26 +98,12 @@ public class VariablesInspector implements IVariablesInspector
 		return itsReferenceEvent;
 	}
 
-	public EntryValue[] getEntryValue(LocalVariableInfo aVariable)
+	/**
+	 * Returns the {@link EntryValue} corresponding to the argument
+	 * initially passed to the method.
+	 */
+	protected EntryValue getCallValue(LocalVariableInfo aVariable)
 	{
-		if (itsChildrenBrowser == null) return null;
-		
-		ILogBrowser theLogBrowser = itsChildrenBrowser.getLogBrowser();
-		IEventFilter theFilter = theLogBrowser.createVariableWriteFilter(aVariable);
-		IEventBrowser theBrowser = itsChildrenBrowser.createIntersection(theFilter);
-		
-		theBrowser.setNextEvent(itsReferenceEvent);
-		while (theBrowser.hasPrevious())
-		{
-			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) theBrowser.previous();
-			if (aVariable.equals(theEvent.getVariable())) 
-			{
-				return new EntryValue[] {new EntryValue(theEvent.getValue(), theEvent)};
-			}
-		}
-		
-		// If we did not find a variable write corresponding to the variable,
-		// we consider the behavior call's initial argument values
 		IBehaviorInfo theBehavior = itsBehaviorCall.getExecutedBehavior();
 		ITypeInfo[] theArgumentTypes = theBehavior.getArgumentTypes();
 		int theSlot = theBehavior.isStatic() ? 0 : 1;
@@ -125,7 +111,7 @@ public class VariablesInspector implements IVariablesInspector
 		{
 			if (aVariable.getIndex() == theSlot)
 			{
-				return new EntryValue[] {new EntryValue(itsBehaviorCall.getArguments()[i], itsBehaviorCall)};
+				return new EntryValue(itsBehaviorCall.getArguments()[i], itsBehaviorCall);
 			}
 			else
 			{
@@ -134,21 +120,110 @@ public class VariablesInspector implements IVariablesInspector
 			}
 		}
 		
-		return null;
+		return null;		
 	}
 	
-	public EntryValue[] nextEntryValue(LocalVariableInfo aEntry)
+	protected IEventBrowser getBrowser(LocalVariableInfo aVariable)
 	{
-		// TODO: implement
+		ILogBrowser theLogBrowser = itsChildrenBrowser.getLogBrowser();
+		IEventFilter theFilter = theLogBrowser.createVariableWriteFilter(aVariable);
+		return itsChildrenBrowser.createIntersection(theFilter);
+	}
+	
+	protected EntryValue getEntryValue0(LocalVariableInfo aVariable)
+	{
+		if (itsChildrenBrowser == null) return null;
+		
+		IEventBrowser theBrowser = getBrowser(aVariable);
+		
+		theBrowser.setNextEvent(itsReferenceEvent);
+		
+		if (theBrowser.hasPrevious())
+		{
+			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) theBrowser.previous();
+			assert aVariable.equals(theEvent.getVariable()); 
+			return new EntryValue(theEvent.getValue(), theEvent);
+		}
+		
+		// If we did not find a variable write corresponding to the variable,
+		// we consider the behavior call's initial argument values
+		return getCallValue(aVariable);
+	}
+	
+	public final EntryValue[] getEntryValue(LocalVariableInfo aVariable)
+	{
+		EntryValue theValue = getEntryValue0(aVariable);
+		return theValue != null ? new EntryValue[] {theValue} : null;
+	}
+	
+	protected EntryValue nextEntryValue0(LocalVariableInfo aVariable)
+	{
+		IEventBrowser theBrowser = getBrowser(aVariable);
+		EntryValue[] theEntryValues = getEntryValue(aVariable);
+		
+		EntryValue theValue = theEntryValues != null ? theEntryValues[0] : null;
+		
+		if (theValue == null || theValue.getSetter() == itsBehaviorCall)
+		{
+			theBrowser.setNextTimestamp(0);
+		}
+		else 
+		{
+			theBrowser.setNextEvent(theValue.getSetter());
+		}
+		
+		if (! theBrowser.hasNext()) return null;
+		ILocalVariableWriteEvent theNext = (ILocalVariableWriteEvent) theBrowser.next();
+		assert theNext.equals(theValue.getSetter());
+		
+		if (theBrowser.hasNext()) 
+		{
+			theNext = (ILocalVariableWriteEvent) theBrowser.next();
+			assert aVariable.equals(theNext.getVariable()); 
+			itsReferenceEvent = theNext;
+			return new EntryValue(theNext.getValue(), theNext);
+		}
+		
 		return null;
 	}
 
-	public EntryValue[] previousEntryValue(LocalVariableInfo aEntry)
+	public final EntryValue[] nextEntryValue(LocalVariableInfo aVariable)
 	{
-		// TODO: implement
-		return null;
+		EntryValue theValue = nextEntryValue0(aVariable);
+		return theValue != null ? new EntryValue[] {theValue} : null;
+	}
+	
+	protected EntryValue previousEntryValue0(LocalVariableInfo aVariable)
+	{
+		IEventBrowser theBrowser = getBrowser(aVariable);
+		EntryValue[] theEntryValues = getEntryValue(aVariable);
+		if (theEntryValues == null) return null;
+		
+		EntryValue theValue = theEntryValues[0];
+		
+		if (theValue.getSetter() == itsBehaviorCall) return null;
+		
+		theBrowser.setPreviousEvent(theValue.getSetter());
+		ILocalVariableWriteEvent thePrevious = (ILocalVariableWriteEvent) theBrowser.previous();
+		assert thePrevious.equals(theValue.getSetter());
+		
+		if (theBrowser.hasPrevious()) 
+		{
+			thePrevious = (ILocalVariableWriteEvent) theBrowser.previous();
+			assert aVariable.equals(thePrevious.getVariable()); 
+			itsReferenceEvent = thePrevious;
+			return new EntryValue(thePrevious.getValue(), thePrevious);
+		}
+		
+		return getCallValue(aVariable);
 	}
 
+	public final EntryValue[] previousEntryValue(LocalVariableInfo aVariable)
+	{
+		EntryValue theValue = previousEntryValue0(aVariable);
+		return theValue != null ? new EntryValue[] {theValue} : null;
+	}
+	
 	public ILocalVariableWriteEvent[] getEntrySetter(LocalVariableInfo aVariable)
 	{
 		if (itsChildrenBrowser == null) return null;
