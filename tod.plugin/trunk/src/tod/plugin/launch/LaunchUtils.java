@@ -378,23 +378,29 @@ public class LaunchUtils
 		@Override
 		public void buildVMArgs(List<String> aArguments, LaunchInfo aInfo)
 		{
+			TODConfig theConfig = aInfo.config;
+			ConnectionInfo theConnectionInfo = aInfo.session.getConnectionInfo();
+			
 			String theNativeAgentPath = getNativeLibraryPath()+File.separator+getArch().getLibraryFileName(getLibraryName());
 			aArguments.add("-Dtod.agent.lib="+theNativeAgentPath);
 			
 			aArguments.add("-Xdebug");
 			aArguments.add("-Xnoagent");
 			
-			aArguments.add("-Xrun"+getLibraryName());
+			String theAgentArgs = String.format(
+					"%d,%s,%d,%s,%s",
+					theConfig.get(TODConfig.AGENT_VERBOSE),
+					theConnectionInfo.getHostName(),
+					theConnectionInfo.getPort(),
+					theConfig.get(TODConfig.AGENT_CACHE_PATH),
+					theConfig.get(TODConfig.CLIENT_NAME));
+			
+			aArguments.add("-Xrun"+getLibraryName()+":"+theAgentArgs);
 			
 			String theAgentPath = System.getProperty("agent14.path", getJavaLibraryPath()+"/tod-agent14.jar");
 	        aArguments.add("-Xbootclasspath/p:"+theAgentPath);
 	        
 	        aArguments.add("-noverify");
-			
-			// Config
-			TODConfig theConfig = aInfo.config;
-			
-			ConnectionInfo theConnectionInfo = aInfo.session.getConnectionInfo();
 			
 			aArguments.add("-Dcollector-host="+theConnectionInfo.getHostName());
 			aArguments.add("-Dcollector-port="+theConnectionInfo.getPort());

@@ -213,59 +213,11 @@ void cbClassLoadHook(JVMPI_Event* event)
 		&event->u.class_load_hook.new_class_data,
 		event->u.class_load_hook.malloc_f);
 }
-// 
-// 
-// void JNICALL cbException(
-// 	jvmtiEnv *jvmti,
-// 	JNIEnv* jni,
-// 	jthread thread,
-// 	jmethodID method,
-// 	jlocation location,
-// 	jobject exception,
-// 	jmethodID catch_method,
-// 	jlocation catch_location)
-// {
-// 	if (! agentShouldProcessException(jni, method)) return;
-// 
-// 	char* methodName;
-// 	char* methodSignature;
-// 	jclass methodDeclaringClass;
-// 	char* methodDeclaring;
-//  
-// 	jvmtiJlocationFormat locationFormat;
-// 	int bytecodeIndex = -1;
-// 	
-// 	// Obtain method information
-// 	jvmti->GetMethodName(method, &methodName, &methodSignature, NULL);
-// 	jvmti->GetMethodDeclaringClass(method, &methodDeclaringClass);
-// 	jvmti->GetClassSignature(methodDeclaringClass, &methodDeclaringClassSignature, NULL);
-// 	
-// 	// Obtain location information
-// 	jvmti->GetJLocationFormat(&locationFormat);
-// 	if (locationFormat == JVMTI_JLOCATION_JVMBCI) bytecodeIndex = (int) location;
-// 
-// 	agentException(
-// 		jni, 
-// 		methodName, 
-// 		methodSignature, 
-// 		methodDeclaringClass, 
-// 		methodDeclaringClassSignature, 
-// 		exception, 
-// 		bytecodeIndex);
-// 	
-// 	// Free buffers
-// 	jvmti->Deallocate((unsigned char*) methodName);
-// 	jvmti->Deallocate((unsigned char*) methodSignature);
-// 	jvmti->Deallocate((unsigned char*) methodDeclaringClassSignature);
-// }
-// 
-// 
 
 void cbJvmInitDone(JVMPI_Event *event)
 {
 	agentStart(event->env_id);
 }
-
 
 void cbJVMPIEvent(JVMPI_Event *event)
 {
@@ -371,55 +323,46 @@ JNIEXPORT jint JNICALL JVM_OnLoad(JavaVM *jvm, char *options, void *reserved)
 // 	res = gJvmdi->SetEventNotificationMode(JVMDI_ENABLE, JVMDI_EVENT_EXCEPTION, NULL);
 // 	check_jvmdi_error(res, "Enable JVMDI_EVENT_EXCEPTION");
 
-// 	// Retrieve system properties
-// 	char* propVerbose = NULL;
-// 	char* propHost = NULL;
-// 	char* propPort = NULL;
-// 	char* propCachePath = NULL;
-// 	char* propClientName = NULL;
-// 
-// 	err = jvmti->GetSystemProperty("agent-verbose", &propVerbose);
-// 	if (err != JVMTI_ERROR_NOT_AVAILABLE) check_jvmti_error(jvmti, err, "GetSystemProperty (agent-verbose)");
-// 	
-// 	err = jvmti->GetSystemProperty("collector-host", &propHost);
-// 	check_jvmti_error(jvmti, err, "GetSystemProperty (collector-host)");
-// 	
-// 	err = jvmti->GetSystemProperty("agent-cache-path", &propCachePath);
-// 	if (err != JVMTI_ERROR_NOT_AVAILABLE) check_jvmti_error(jvmti, err, "GetSystemProperty (agent-cache-path)");
-// 	
-// 	err = jvmti->GetSystemProperty("client-name", &propClientName);
-// 	if (err != JVMTI_ERROR_NOT_AVAILABLE) check_jvmti_error(jvmti, err, "GetSystemProperty (client-name)");
-// 	
-// 	err = jvmti->GetSystemProperty("collector-port", &propPort);
-// 	check_jvmti_error(jvmti, err, "GetSystemProperty (collector-port)");
-// 	
-// 	// Set capabilities
-// 	err = jvmti->GetCapabilities(&capabilities);
-// 	check_jvmti_error(jvmti, err, "GetCapabilities");
-// 	
-// 	capabilities.can_generate_all_class_hook_events = 1;
-// 	capabilities.can_generate_exception_events = 1;
-// 	capabilities.can_tag_objects = 1;
-// 	err = jvmti->AddCapabilities(&capabilities);
-// 	check_jvmti_error(jvmti, err, "AddCapabilities");
-// 
-// 	// Set callbacks and enable event notifications 
-// 	memset(&callbacks, 0, sizeof(callbacks));
-// 	callbacks.ClassFileLoadHook = &cbClassFileLoadHook;
-// 	callbacks.Exception = &cbException;
-// 	callbacks.VMStart = &cbVMStart;
-// 	
-// 	err = jvmti->SetEventCallbacks(&callbacks, sizeof(callbacks));
-// 	check_jvmti_error(jvmti, err, "SetEventCallbacks");
-// 	
-// 	// Enable events
-//  	enable_event(jvmti, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK);
-// 	enable_event(jvmti, JVMTI_EVENT_EXCEPTION);
-// 	enable_event(jvmti, JVMTI_EVENT_VM_START);
-// 
+	// Parse options
+	int optLen = strlen(options);
+	char* buffer = (char*) malloc(optLen+1);
+	strncpy(buffer, options, optLen+1);
+	
+	char* propVerbose = NULL;
+	char* propHost = NULL;
+	char* propPort = NULL;
+	char* propCachePath = NULL;
+	char* propClientName = NULL;
+	
+	char** props[5] = {&propVerbose, &propHost, &propPort, &propCachePath, &propClientName};
+	
+	int i=0;
+	int p;
+	for(p=0;p<5 && i < optLen;p++)
+	{
+		*props[p] = &buffer[i];
+		while (i < optLen)
+		{
+			if (buffer[i] == ',') break;
+			i++;
+		}
+		
+		buffer[i] = 0;
+		i++;
+	}
+	
+	if (p != 5)
+	{
+		fprintf(stderr, "ERROR: Could not parse options (%d)\n", p);
+		return -1;
+	}
+	
+// 	printf("[TOD] Agent options: %s, %s, %s, %s, %s\n", propVerbose, propHost, propPort, propCachePath, propClientName);
+// 	fflush(stdout);
+	
 	cfgIsJVM14 = true;
 
-	agentInit("0", "localhost", "8058", "/home/gpothier/tmp/tod", "no-name");
+	agentInit(propVerbose, propHost, propPort, propCachePath, propClientName);
 
 	return JNI_OK;
 }
