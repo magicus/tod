@@ -13,6 +13,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchManager;
@@ -280,10 +281,35 @@ public class LaunchUtils
 			
 			// Setup environment
 			aMonitor.subTask("Setting up environment");
-			List<String> theEnv = new ArrayList<String>();
-			theCmd.buildEnv(theEnv, itsInfo);
-			if (aConfiguration.getEnvironment() != null) Utils.fillCollection(theEnv, aConfiguration.getEnvironment());
-			aConfiguration.setEnvironment(theEnv.toArray(new String[theEnv.size()]));
+			
+			if (theCmd.mustSetLibPath())
+			{
+				String[] theEnv;
+				if (aConfiguration.getEnvironment() != null) 
+				{
+					throw new UnsupportedOperationException();
+				}
+				else
+				{
+					// If no environment has been set, we must explicitly
+					// forward the native environment.
+					Map<String, String> theNativeEnv = DebugPlugin.getDefault().getLaunchManager().getNativeEnvironmentCasePreserved();
+					
+					String thePath = theNativeEnv.get(theCmd.getArch().getLibPathEnvKey());
+					thePath = thePath == null ? 
+							theCmd.getNativeLibraryPath()
+							: theCmd.getNativeLibraryPath()+theCmd.getArch().getLibPathSeparator()+thePath;
+					theNativeEnv.put(theCmd.getArch().getLibPathEnvKey(), thePath);
+					
+					theEnv = new String[theNativeEnv.size()];
+					int i=0;
+					for (Map.Entry<String, String> theEntry : theNativeEnv.entrySet())
+					{
+						theEnv[i++] = theEntry.getKey()+"="+theEntry.getValue();
+					}
+				}
+				aConfiguration.setEnvironment(theEnv);
+			}
 			
 			if (aMonitor.isCanceled()) return;
 			
@@ -334,8 +360,8 @@ public class LaunchUtils
 		}
 
 		public abstract void buildVMArgs(List<String> aArguments, LaunchInfo aInfo);
-		public abstract void buildEnv(List<String> aArguments, LaunchInfo aInfo);
 		public abstract String getLaunchMode();
+		public abstract boolean mustSetLibPath();
 	}
 	
 	/**
@@ -379,15 +405,15 @@ public class LaunchUtils
 		}
 
 		@Override
-		public void buildEnv(List<String> aArguments, LaunchInfo aInfo)
-		{
-			aArguments.add(getArch().getLibPathEntry(getNativeLibraryPath()));
-		}
-
-		@Override
 		public String getLaunchMode()
 		{
 			return ILaunchManager.RUN_MODE;
+		}
+		
+		@Override
+		public boolean mustSetLibPath()
+		{
+			return true;
 		}
 	}
 
@@ -433,14 +459,15 @@ public class LaunchUtils
 		}
 
 		@Override
-		public void buildEnv(List<String> aArguments, LaunchInfo aInfo)
-		{
-		}
-
-		@Override
 		public String getLaunchMode()
 		{
 			return ILaunchManager.DEBUG_MODE;
+		}
+		
+		@Override
+		public boolean mustSetLibPath()
+		{
+			return false;
 		}
 	}
 	
@@ -448,59 +475,45 @@ public class LaunchUtils
 	 * Represents a deployment architecture (win32, macos, linux).
 	 * @author gpothier
 	 */
-	private static abstract class Arch
+	private static class Arch
 	{
-		public static final Arch MACOS = new Arch()
-		{
-			public String getLibraryFileName(String aBaseName)
-			{
-				return "lib"+aBaseName+".dylib";
-			}
-
-			@Override
-			public String getLibPathEntry(String aPath)
-			{
-				throw new UnsupportedOperationException("I don't know how it works on MacOS");
-			}
-		};
+		public static final Arch MACOS = new Arch("lib", ".dylib", null, null);
+		public static final Arch WIN32 = new Arch("", ".dll", "PATH", ";");
+		public static final Arch LINUX = new Arch("lib", ".so", "LD_LIBRARY_PATH", ":");
 		
-		public static final Arch WIN32 = new Arch()
-		{
-			public String getLibraryFileName(String aBaseName)
-			{
-				return aBaseName+".dll";
-			}
-
-			@Override
-			public String getLibPathEntry(String aPath)
-			{
-				return "PATH="+aPath+";%PATH%";
-			}
-		};
+		private final String itsLibNamePrefix;
+		private final String itsLibNameSuffix;
+		private final String itsLibPathEnvKey;
+		private final String itsLibPathSeparator;
 		
-		public static final Arch LINUX = new Arch()
+		public Arch(
+				String aLibNamePrefix,
+				String aLibNameSuffix,
+				String aLibPathEnvKey,
+				String aLibPathSeparator)
 		{
-			public String getLibraryFileName(String aBaseName)
-			{
-				return "lib"+aBaseName+".so";
-			}
+			itsLibNamePrefix = aLibNamePrefix;
+			itsLibNameSuffix = aLibNameSuffix;
+			itsLibPathEnvKey = aLibPathEnvKey;
+			itsLibPathSeparator = aLibPathSeparator;
+		}
 
-			@Override
-			public String getLibPathEntry(String aPath)
-			{
-				return "LD_LIBRARY_PATH="+aPath+":$LD_LIBRARY_PATH";
-			}			
-		};
-		
 		/**
 		 * Returns the filename for a library on this architecture.
 		 */
-		public abstract String getLibraryFileName(String aBaseName);
+		public String getLibraryFileName(String aBaseName)
+		{
+			return itsLibNamePrefix+aBaseName+itsLibNameSuffix;
+		}
 		
-		/**
-		 * Returns the environment mapping that is used to add a directory to the library
-		 * path.
-		 */
-		public abstract String getLibPathEntry(String aPath);
+		public String getLibPathEnvKey()
+		{
+			return itsLibPathEnvKey;
+		}
+		
+		public String getLibPathSeparator()
+		{
+			return itsLibPathSeparator;
+		}
 	}
 }
