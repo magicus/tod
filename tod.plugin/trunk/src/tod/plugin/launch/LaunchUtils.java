@@ -6,6 +6,7 @@ package tod.plugin.launch;
 import java.io.File;
 import java.net.ConnectException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +19,7 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.IVMInstall3;
 import org.eclipse.jdt.launching.IVMRunner;
@@ -272,10 +274,26 @@ public class LaunchUtils
 
 			// Setup JVM args
 			aMonitor.subTask("Setting up extra JVM arguments");
-			List<String> theVMArgs = new ArrayList<String>();
-			theCmd.buildVMArgs(theVMArgs, itsInfo);
+			List<String> theVMArgs = theCmd.getVMArgs(itsInfo);
 			if (aConfiguration.getVMArguments() != null) Utils.fillCollection(theVMArgs, aConfiguration.getVMArguments());
 			aConfiguration.setVMArguments(theVMArgs.toArray(new String[theVMArgs.size()]));
+			
+			// Setup BootClassPath
+			aMonitor.subTask("Setting up bootclasspath");
+			List<String> theBootClassPath = theCmd.getBootClassPath(itsInfo);
+			Map theVMSpecific = aConfiguration.getVMSpecificAttributesMap();
+			if (theVMSpecific == null)
+			{
+				theVMSpecific = new HashMap();
+				aConfiguration.setVMSpecificAttributesMap(theVMSpecific);
+			}
+			
+			String[] theCurrentCP = (String[]) theVMSpecific.get(IJavaLaunchConfigurationConstants.ATTR_BOOTPATH_PREPEND);
+			if (theCurrentCP != null) Utils.fillCollection(theBootClassPath, theCurrentCP);
+			
+			theVMSpecific.put(
+					IJavaLaunchConfigurationConstants.ATTR_BOOTPATH_PREPEND, 
+					theBootClassPath.toArray(new String[theBootClassPath.size()]));
 
 			if (aMonitor.isCanceled()) return;
 			
@@ -287,7 +305,8 @@ public class LaunchUtils
 				String[] theEnv;
 				if (aConfiguration.getEnvironment() != null) 
 				{
-					throw new UnsupportedOperationException();
+					// TODO: See what we shoud do in this case
+					throw new UnsupportedOperationException("Not yet");
 				}
 				else
 				{
@@ -359,7 +378,8 @@ public class LaunchUtils
 			return itsNativeLibraryPath;
 		}
 
-		public abstract void buildVMArgs(List<String> aArguments, LaunchInfo aInfo);
+		public abstract List<String> getVMArgs(LaunchInfo aInfo);
+		public abstract List<String> getBootClassPath(LaunchInfo aInfo);
 		public abstract String getLaunchMode();
 		public abstract boolean mustSetLibPath();
 	}
@@ -376,16 +396,20 @@ public class LaunchUtils
 		}
 
 		@Override
-		public void buildVMArgs(List<String> aArguments, LaunchInfo aInfo)
+		public List<String> getVMArgs(LaunchInfo aInfo)
 		{
+			List<String> theVMArgs = new ArrayList<String>();
+			
+			theVMArgs.add("-noverify");
+
 			TODConfig theConfig = aInfo.config;
 			ConnectionInfo theConnectionInfo = aInfo.session.getConnectionInfo();
 			
 			String theNativeAgentPath = getNativeLibraryPath()+File.separator+getArch().getLibraryFileName(getLibraryName());
-			aArguments.add("-Dtod.agent.lib="+theNativeAgentPath);
+			theVMArgs.add("-Dtod.agent.lib="+theNativeAgentPath);
 			
-			aArguments.add("-Xdebug");
-			aArguments.add("-Xnoagent");
+			theVMArgs.add("-Xdebug");
+			theVMArgs.add("-Xnoagent");
 			
 			String theAgentArgs = String.format(
 					"%d,%s,%d,%s,%s",
@@ -395,19 +419,28 @@ public class LaunchUtils
 					theConfig.get(TODConfig.AGENT_CACHE_PATH),
 					theConfig.get(TODConfig.CLIENT_NAME));
 			
-			aArguments.add("-Xrun"+getLibraryName()+":"+theAgentArgs);
+			theVMArgs.add("-Xrun"+getLibraryName()+":"+theAgentArgs);
+			
+			
+			theVMArgs.add("-Dcollector-host="+theConnectionInfo.getHostName());
+			theVMArgs.add("-Dcollector-port="+theConnectionInfo.getPort());
+			
+			theVMArgs.add(TODConfig.CLIENT_NAME.javaOpt(theConfig));
+			theVMArgs.add(TODConfig.AGENT_CACHE_PATH.javaOpt(theConfig));
+			theVMArgs.add(TODConfig.AGENT_VERBOSE.javaOpt(theConfig));
+			
+			return theVMArgs;
+		}
+
+		@Override
+		public List<String> getBootClassPath(LaunchInfo aInfo)
+		{
+			List<String> theClassPath = new ArrayList<String>();
 			
 			String theAgentPath = System.getProperty("agent14.path", getJavaLibraryPath()+"/tod-agent14.jar");
-	        aArguments.add("-Xbootclasspath/p:"+theAgentPath);
+			theClassPath.add(theAgentPath);
 	        
-	        aArguments.add("-noverify");
-			
-			aArguments.add("-Dcollector-host="+theConnectionInfo.getHostName());
-			aArguments.add("-Dcollector-port="+theConnectionInfo.getPort());
-			
-			aArguments.add(TODConfig.CLIENT_NAME.javaOpt(theConfig));
-			aArguments.add(TODConfig.AGENT_CACHE_PATH.javaOpt(theConfig));
-			aArguments.add(TODConfig.AGENT_VERBOSE.javaOpt(theConfig));
+			return theClassPath;
 		}
 
 		@Override
@@ -435,35 +468,40 @@ public class LaunchUtils
 		}
 
 		@Override
-		public void buildVMArgs(List<String> aArguments, LaunchInfo aInfo)
+		public List<String> getVMArgs(LaunchInfo aInfo)
 		{
-			String theNativeAgentPath = getNativeLibraryPath()+File.separator+getArch().getLibraryFileName(getLibraryName());
-			
-			String theAgentPath = System.getProperty("agent15.path", getJavaLibraryPath()+"/tod-agent15.jar");
-	        aArguments.add("-Xbootclasspath/p:"+theAgentPath);
-	        
-	        aArguments.add("-noverify");
+			List<String> theVMArgs = new ArrayList<String>();
 
-	        aArguments.add("-agentpath:"+theNativeAgentPath);
-//			theArguments.add("-Djava.library.path="+theLibraryPath);
+			theVMArgs.add("-noverify");
+			
+			String theNativeAgentPath = getNativeLibraryPath()+File.separator+getArch().getLibraryFileName(getLibraryName());
+			theVMArgs.add("-agentpath:"+theNativeAgentPath);
 			
 			// Config
 			TODConfig theConfig = aInfo.config;
-			
 			ConnectionInfo theConnectionInfo = aInfo.session.getConnectionInfo();
 			
-			aArguments.add("-Dcollector-host="+theConnectionInfo.getHostName());
-			aArguments.add("-Dcollector-port="+theConnectionInfo.getPort());
+			theVMArgs.add("-Dcollector-host="+theConnectionInfo.getHostName());
+			theVMArgs.add("-Dcollector-port="+theConnectionInfo.getPort());
 			
-//			if (TODConfig.SESSION_LOCAL.equals(theConfig.get(TODConfig.SESSION_TYPE)))
-//				theArguments.add("-Djava.rmi.server.hostname=127.0.0.1");
-//			else theArguments.add("-Djava.rmi.server.hostname="+theConnectionInfo.getHostName());
-
-			aArguments.add(TODConfig.CLIENT_NAME.javaOpt(theConfig));
-			aArguments.add(TODConfig.AGENT_CACHE_PATH.javaOpt(theConfig));
-			aArguments.add(TODConfig.AGENT_VERBOSE.javaOpt(theConfig));
+			theVMArgs.add(TODConfig.CLIENT_NAME.javaOpt(theConfig));
+			theVMArgs.add(TODConfig.AGENT_CACHE_PATH.javaOpt(theConfig));
+			theVMArgs.add(TODConfig.AGENT_VERBOSE.javaOpt(theConfig));
+			
+			return theVMArgs;
 		}
 
+		@Override
+		public List<String> getBootClassPath(LaunchInfo aInfo)
+		{
+			List<String> theClassPath = new ArrayList<String>();
+			
+			String theAgentPath = System.getProperty("agent15.path", getJavaLibraryPath()+"/tod-agent15.jar");
+			theClassPath.add(theAgentPath);
+	        
+			return theClassPath;
+		}
+		
 		@Override
 		public String getLaunchMode()
 		{
