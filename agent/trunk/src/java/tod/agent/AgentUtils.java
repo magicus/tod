@@ -22,6 +22,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.agent;
 
+import javax.sound.midi.SysexMessage;
+
 
 
 public class AgentUtils
@@ -250,15 +252,15 @@ public class AgentUtils
 	 * Loads the given class.
 	 * Only for JDK1.4
 	 */
-	public static Class loadClass(String aName)
+	public static void loadClass(String aName)
 	{
 		try
 		{
-			return Class.forName(aName);
+			Class.forName(aName);
 		}
 		catch (ClassNotFoundException e)
 		{
-			throw new NoClassDefFoundError(e.getMessage());
+			System.err.println("[TOD] Info: could not preload "+aName+". Consider disabling class preloading in the configuration.");
 		}
 	}
 }

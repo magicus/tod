@@ -267,6 +267,15 @@ public class TODConfig extends PublicCloneable implements Serializable
 					"Type of server interface",
 					"Class name of the TOD server factory.",
 					JavaTODServerFactory.class.getName());
+	
+	public static final BooleanItem BCI_PRELOAD_CLASSES =
+			new BooleanItem(
+					ConfigLevel.ADVANCED,
+					"bci-preload-classes",
+					"Class preloading in instrumented code",
+					"Whether instrumented code should preload classes on which methods are about to be called. "
+						+"This permits to optimize the information sent to the database in some cases.",
+					true);
 
 	/**
 	 * Contains all available configuration items.

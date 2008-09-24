@@ -37,6 +37,7 @@ import tod.agent.BehaviorCallType;
 import tod.agent.EventCollector;
 import tod.agent.ExceptionGeneratedReceiver;
 import tod.agent.TracedMethods;
+import tod.core.config.TODConfig;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMutableBehaviorInfo;
@@ -387,34 +388,22 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	
 	private void forceLoad(String aClass)
 	{
+		if (! itsConfig.getTODConfig().get(TODConfig.BCI_PRELOAD_CLASSES)) return;
+		
 		if (! itsLoadedClasses.add(aClass)) return;
 		if (itsMethodInfo.getOwner().equals(aClass)) return;
 
 		if (itsUseJava14)
 		{
-			mv.visitFieldInsn(
-					GETSTATIC, 
-					itsMethodInfo.getOwner(), 
-					LogBCIVisitor.getClassFieldName(aClass), 
-					"Ljava/lang/Class;");
+			mv.visitFieldInsn(GETSTATIC, itsMethodInfo.getOwner(), LogBCIVisitor.getClassFieldName(aClass), "Z");
 			
 			Label theEndLabel = new Label();
-			mv.visitJumpInsn(IFNONNULL, theEndLabel);
+			mv.visitJumpInsn(IFNE, theEndLabel);
 			
 			mv.visitLdcInsn(aClass.replace('/', '.'));
-			
-			mv.visitMethodInsn(
-					INVOKESTATIC, 
-					"tod/agent/AgentUtils", 
-					"loadClass", 
-					"(Ljava/lang/String;)Ljava/lang/Class;");
-
-			
-			mv.visitFieldInsn(
-					PUTSTATIC, 
-					itsMethodInfo.getOwner(), 
-					LogBCIVisitor.getClassFieldName(aClass), 
-					"Ljava/lang/Class;");
+			mv.visitMethodInsn(INVOKESTATIC, "tod/agent/AgentUtils", "loadClass", "(Ljava/lang/String;)V");
+			mv.visitInsn(ICONST_1);
+			mv.visitFieldInsn(PUTSTATIC, itsMethodInfo.getOwner(), LogBCIVisitor.getClassFieldName(aClass), "Z");
 			
 			mv.visitLabel(theEndLabel);
 		}

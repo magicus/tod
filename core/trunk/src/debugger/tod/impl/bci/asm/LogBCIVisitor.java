@@ -236,10 +236,9 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 	@Override
 	public void visitEnd()
 	{
-		if (itsUseJava14)
+		if (itsUseJava14 && itsConfig.getTODConfig().get(TODConfig.BCI_PRELOAD_CLASSES))
 		{
 			// Add the synthetic fields that hold class constants
-			
 			Set<String> theCalledClasses = new HashSet<String>();
 			for(int i=0;i<itsInfoCollector.getMethodCount();i++)
 			{
@@ -248,12 +247,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			
 			for (String theClass : theCalledClasses)
 			{
-				visitField(
-						ACC_STATIC | ACC_SYNTHETIC, 
-						getClassFieldName(theClass), 
-						"Ljava/lang/Class;", 
-						null, 
-						null);
+				visitField(ACC_STATIC | ACC_SYNTHETIC, getClassFieldName(theClass), "Z", null, null);
 			}
 		}
 		
