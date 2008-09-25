@@ -61,7 +61,7 @@ public class AgentDebugFlags
 	/**
 	 * Enables logging of long packets processing.
 	 */
-	public static final boolean TRANSPORT_LONGPACKETS_LOG = true;
+	public static final boolean TRANSPORT_LONGPACKETS_LOG = false;
 
 
 	private static PrintStream createStream(String aName)

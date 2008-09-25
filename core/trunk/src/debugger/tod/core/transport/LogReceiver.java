@@ -43,6 +43,7 @@ import tod.agent.transport.Commands;
 import tod.agent.transport.LowLevelEventType;
 import tod.core.DebugFlags;
 import tod.impl.database.structure.standard.HostInfo;
+import zz.utils.Utils;
 
 /**
  * Receives (low-level) events from the debugged application through a socket.
@@ -290,6 +291,8 @@ public abstract class LogReceiver
 				// (otherwise, it means the real packets span several metapackets).
 				boolean theCleanStart = (theFlags & 2) != 0;
 				boolean theCleanEnd = (theFlags & 1) != 0;
+				
+				Utils.println("[LogReceiver] Packet: th: %d, sz: %d, cs: %s, ce: %s", theThreadId, theSize, theCleanStart, theCleanEnd);
 				
 				aDataIn.readFully(itsDataBuffer.array(), 0, theSize);
 				itsDataBuffer.position(0);

@@ -122,6 +122,13 @@ public class PacketBufferSender extends Thread
 						(thePendingBuffer.hasCleanStart() ? 2 : 0) 
 						| (thePendingBuffer.hasCleanEnd() ? 1 : 0);
 					
+					System.out.println(String.format(
+							"[TOD-PacketBufferSender] Sending packet (th: %d, sz: %d, cs: %s, ce: %s)",
+							theId,
+							theSize,
+							thePendingBuffer.hasCleanStart(),
+							thePendingBuffer.hasCleanEnd()));
+					
 					itsHeaderBuffer.put((byte) theFlags);
 					
 					itsHeaderBuffer.flip();
@@ -325,6 +332,10 @@ public class PacketBufferSender extends Thread
 				throw new RuntimeException(e);
 			}
 			
+			// Another thread might have called swapBuffers 
+			// during the above wait.
+			if (itsCurrentBuffer.position() == 0) return;
+			
 			itsPendingBuffer = itsCurrentBuffer;
 			itsPendingCleanStart = itsCurrentCleanStart;
 			itsPendingCleanEnd = itsCurrentCleanEnd;
@@ -382,7 +393,7 @@ public class PacketBufferSender extends Thread
 
 					if (aLength > 0) itsCurrentCleanEnd = false;
 					swapBuffers(); // Swap anyway here - we want to start a fresh packet after the long one.
-					itsCurrentCleanStart = false;
+					if (aLength > 0) itsCurrentCleanStart = false; // This must be after the swap.
 				}
 			}
 		}
