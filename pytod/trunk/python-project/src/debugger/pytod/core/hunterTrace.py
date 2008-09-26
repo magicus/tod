@@ -423,7 +423,6 @@ class hunterTrace(object):
                        aParentTimestampFrame, 
                        aThreadId):
         theLocalVariables = aObject.__getLocals__()
-        print theLocalVariables
         theBehaviorId = self.__getObjectId__(aCode)
         theDepth = aDepth + 1
         for theValue in aBytecodeLocal.iterkeys():
@@ -675,9 +674,12 @@ class hunterTrace(object):
                               aDepth,
                               aParentTimestampFrame,
                               aThreadId):
-        theBackFrame = aFrame.f_back
-        theBackFrameCode = theBackFrame.f_code
-        theParentId = self.__getObjectId__(theBackFrameCode)
+        #theBackFrame = aFrame.f_back
+        #theBackFrameCode = theBackFrame.f_code
+        #print aFrame.f_code.co_name, theBackFrameCode.co_name
+        #raw_input()
+        #theParentId = self.__getObjectId__(theBackFrameCode)
+        theParentId = self.__getObjectId__(aFrame.f_code)
         #behaviorId = self.__getObjectId__(aFrame.f_code)
         #theParentId = self.__getObjectId__(aFrame.f_code)
         theCurrentLasti = aFrame.f_lasti
