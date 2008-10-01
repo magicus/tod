@@ -4545,6 +4545,7 @@ IBM Systems Journal, 16(4):363, 1977.
 \chapter{Código fuente de pyTOD}
 
 	\section{Código fuente de hunterTrace.py}
+	
 \begin{singlespace}
 \begin{lstlisting}[style=Python]
 #! /usr/bin/python
@@ -4571,10 +4572,9 @@ from objectFunction import Function
 if th:
     from threading import settrace   
 
-
 class hunterTrace(object):
 
-    def __init__(self, aId, aProbeId, aThreadId, aPacker, aHost, aPort):
+    def __init__(self, aHost, aPort):
         self.itsClass = {}
         self.itsFunction = {}
         self.itsMethod = {}
@@ -4585,10 +4585,10 @@ class hunterTrace(object):
         self.itsObjects = objects
         self.itsDataTypes = dataTypes
         self.itsPackXDR = packXDRLib
-        self.itsId = aId
-        self.itsProbeId = aProbeId
-        self.itsThreadId = aThreadId
-        self.itsPacker = aPacker
+        self.itsId = generatorId()
+        self.itsProbeId = generatorId()
+        self.itsThreadId = generatorId()
+        self.itsPacker = xdrlib.Packer()
         self.itsHost = aHost
         self.itsPort = aPort
         self.FLAG_DEBUGG = False
@@ -4671,22 +4671,10 @@ class hunterTrace(object):
             self.itsPacker.pack_int(theDepth)
             self.itsPacker.pack_hyper(theCurrentTimestamp)
             self.itsPacker.pack_int(aThreadId)
-        if self.FLAG_DEBUGG:
-            print self.itsEvents['return'],
-            print behaviorId,
-            print theDataType,
-            print thePackValue,
-            print aHasThrown,
-            print theProbeId,
-            print aParentTimestampFrame,
-            print theDepth,
-            print theCurrentTimestamp,
-            print aThreadId
-            raw_input()
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-( - Salida de behavior', aFrame.f_code.co_name
+            pass
         
     def __createlnotab__(self, aCode):
         theLnotab = {}
@@ -4705,7 +4693,6 @@ class hunterTrace(object):
         return theLnotab        
 
     def __convertTimestamp__(self,aTimestamp):
-        #the timestamp is converted to long
         return long(aTimestamp*1000000000)
 
     def __depthFrame__(self, aFrame):
@@ -4738,8 +4725,6 @@ class hunterTrace(object):
                                                 aFrame.f_lineno)
         else:
             theProbeId = self.itsProbe[(theCurrentLasti,theParentId)]
-        #preguntamos si algún argumento es del tipo string
-        #y lo registramos debidamente
         for theValue in theArgsValue:
             if type(theValue) == types.StringType:
                 if not id(theValue) in hT.itsRegisterObjects:
@@ -4756,7 +4741,7 @@ class hunterTrace(object):
             thePrintArg += str(theDataType)
             thePrintArg += " "
             if theDataType == 1:
-                self.itsPacker.pack_int(id(theValue))
+                self.itsPacker.pack_hyper(id(theValue))
                 thePrintArg += str(id(theValue))
                 thePrintArg += " "
             else:
@@ -4767,22 +4752,10 @@ class hunterTrace(object):
         self.itsPacker.pack_int(aDepth)
         self.itsPacker.pack_hyper(aCurrentTimestamp)
         self.itsPacker.pack_int(aThreadId)
-        if self.FLAG_DEBUGG:
-            print self.itsEvents['call'],
-            print self.itsObjects['function'],
-            print theFunctionId,
-            print len(theArgsValue),
-            print thePrintArg,
-            print theProbeId,
-            print aParentTimestampFrame,
-            print aDepth,
-            print aCurrentTimestamp,
-            print aThreadId
-            raw_input()
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-( - Llamado a funcion', aCode.co_name        
+            pass        
             
     def __getArgs__(self, aCode):
         return aCode.co_varnames[:aCode.co_argcount]
@@ -4916,8 +4889,6 @@ class hunterTrace(object):
                                                 aFrame.f_lineno)
         else:
             theProbeId = self.itsProbe[(theCurrentLasti,theParentId)]
-        #preguntamos si algún argumento es del tipo string
-        #y lo registramos debidamente
         for theValue in theArgsValue:
             if type(theValue) == types.StringType:
                 if not id(theValue) in hT.itsRegisterObjects:
@@ -4934,7 +4905,7 @@ class hunterTrace(object):
             thePrintArg += str(theDataType)
             thePrintArg += " "
             if theDataType == 1:
-                self.itsPacker.pack_int(id(theValue))
+                self.itsPacker.pack_hyper(id(theValue))
                 thePrintArg += str(id(theValue))
                 thePrintArg += " "
             else:
@@ -4945,21 +4916,10 @@ class hunterTrace(object):
         self.itsPacker.pack_int(aDepth)    
         self.itsPacker.pack_hyper(aCurrentTimestamp)
         self.itsPacker.pack_int(aThreadId)
-        if self.FLAG_DEBUGG:
-            print self.itsEvents['instantiation'],
-            print aInstantiationId,
-            print len(theArgsValue), 
-            print thePrintArg,        
-            print theProbeId,
-            print aParentTimestampFrame,
-            print aDepth,
-            print aCurrentTimestamp,
-            print aThreadId
-            raw_input()
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-( - Instanciación', aCode.co_name
+            pass
     
     def __localWrite__(self,
                        aCode,
@@ -4972,6 +4932,7 @@ class hunterTrace(object):
                        aParentTimestampFrame, 
                        aThreadId):
         theLocalVariables = aObject.__getLocals__()
+        print theLocalVariables
         theBehaviorId = self.__getObjectId__(aCode)
         theDepth = aDepth + 1
         for theValue in aBytecodeLocal.iterkeys():
@@ -4984,42 +4945,49 @@ class hunterTrace(object):
                                                     aCurrentLineno)
             else:
                 theProbeId = self.itsProbe[(aCurrentLasti,theBehaviorId)]
-            self.itsPacker.reset()
-            self.itsPacker.pack_int(self.itsEvents['set'])
-            self.itsPacker.pack_int(self.itsObjects['local'])
-            self.itsPacker.pack_int(theLocalVariables[theValue])
-            self.itsPacker.pack_int(theBehaviorId)
-            theDataType = self.__getDataType__(aLocals[theValue])
-            self.itsPacker.pack_int(theDataType)
-            thePackValue = self.__packValue__(theDataType, aLocals[theValue])
-            self.itsPacker.pack_int(theProbeId)
-            self.itsPacker.pack_hyper(aParentTimestampFrame)
-            self.itsPacker.pack_int(theDepth)
-            theCurrentTimestamp = self.__convertTimestamp__(time.time()) 
-            self.itsPacker.pack_hyper(theCurrentTimestamp)
-            self.itsPacker.pack_int(aThreadId)
-            if self.FLAG_DEBUGG:            
-                print self.itsEvents['set'],
-                print self.itsObjects['local'],
-                print theLocalVariables[theValue],
-                print theBehaviorId,
-                print theDataType,
-                print thePackValue,
-                print theProbeId,
-                print aParentTimestampFrame,
-                print theDepth,
-                print theCurrentTimestamp,
-                print aThreadId
-                raw_input()
-            try:
-                self.itsSocket.sendall(self.itsPacker.get_buffer())
-            except:
-                print 'TOD está durmiendo :-( - Local write', aCode.co_name            
+            theCurrentTimestamp = self.__convertTimestamp__(time.time())
+            if type(aLocals[theValue]) == types.StringType:
+                if not id(aLocals[theValue]) in hT.itsRegisterObjects:
+                    hT.__registerObject__(aLocals[theValue], theCurrentTimestamp)
+                    self.itsPacker.reset()
+                    self.itsPacker.pack_int(self.itsEvents['set'])
+                    self.itsPacker.pack_int(self.itsObjects['local'])
+                    self.itsPacker.pack_int(theLocalVariables[theValue])
+                    self.itsPacker.pack_int(theBehaviorId)
+                    theDataType = self.__getDataType__(aLocals[theValue])
+                    self.itsPacker.pack_int(theDataType)
+                    self.itsPacker.pack_hyper(id(aLocals[theValue]))
+                    self.itsPacker.pack_int(theProbeId)
+                    self.itsPacker.pack_hyper(aParentTimestampFrame)
+                    self.itsPacker.pack_int(theDepth) 
+                    self.itsPacker.pack_hyper(theCurrentTimestamp)
+                    self.itsPacker.pack_int(aThreadId)
+                    try:
+                        self.itsSocket.sendall(self.itsPacker.get_buffer())
+                    except:
+                        pass                   
+            else:    
+                self.itsPacker.reset()
+                self.itsPacker.pack_int(self.itsEvents['set'])
+                self.itsPacker.pack_int(self.itsObjects['local'])
+                self.itsPacker.pack_int(theLocalVariables[theValue])
+                self.itsPacker.pack_int(theBehaviorId)
+                theDataType = self.__getDataType__(aLocals[theValue])
+                self.itsPacker.pack_int(theDataType)
+                thePackValue = self.__packValue__(theDataType, aLocals[theValue])
+                self.itsPacker.pack_int(theProbeId)
+                self.itsPacker.pack_hyper(aParentTimestampFrame)
+                self.itsPacker.pack_int(theDepth) 
+                self.itsPacker.pack_hyper(theCurrentTimestamp)
+                self.itsPacker.pack_int(aThreadId)
+                try:
+                    self.itsSocket.sendall(self.itsPacker.get_buffer())
+                except:
+                    pass            
     
     def __markTimestampFrame__(self, aFrame):
         if not aFrame.f_locals.has_key('__timestampFrame__'): 
-            aFrame.f_locals['__timestampFrame__'] = self.__convertTimestamp__(
-                                                                  time.time())
+            aFrame.f_locals['__timestampFrame__'] = self.__convertTimestamp__(time.time())
         return
 
     def __methodCall__(self,
@@ -5032,7 +5000,6 @@ class hunterTrace(object):
                        aThreadId):
         theObject = self.__getObject__(aCode)
         theMethodId = theObject.__getId__()
-        #classId = theObject.__getTarget__()
         theArgsValue = theObject.__getArgsValues__(aFrame.f_locals)
         theBackFrame = aFrame.f_back
         theBackFrameLasti = theBackFrame.f_lasti
@@ -5040,13 +5007,9 @@ class hunterTrace(object):
         theParentId = self.__getObjectId__(theBackFrameCode)
         theCurrentLasti = aFrame.f_lasti        
         if not self.itsProbe.has_key((theCurrentLasti,theParentId)):
-            theProbeId = self.__registerProbe__(theCurrentLasti,
-                                                theParentId,
-                                                aFrame.f_lineno)
+            theProbeId = self.__registerProbe__(theCurrentLasti, theParentId, aFrame.f_lineno)
         else:
             theProbeId = self.itsProbe[(theCurrentLasti,theParentId)]
-        #preguntamos si algún argumento es del tipo string
-        #y lo registramos debidamente
         for theValue in theArgsValue:
             if type(theValue) == types.StringType:
                 if not id(theValue) in hT.itsRegisterObjects:
@@ -5064,7 +5027,7 @@ class hunterTrace(object):
             thePrintArg += str(theDataType)
             thePrintArg += " "
             if theDataType == 1:
-                self.itsPacker.pack_int(id(theValue))
+                self.itsPacker.pack_hyper(id(theValue))
                 thePrintArg += str(id(theValue))
                 thePrintArg += " "
             else:
@@ -5075,49 +5038,30 @@ class hunterTrace(object):
         self.itsPacker.pack_int(aDepth)    
         self.itsPacker.pack_hyper(aCurrentTimestamp)
         self.itsPacker.pack_int(aThreadId)
-        if self.FLAG_DEBUGG:
-            print self.itsEvents['call'],
-            print self.itsObjects['method'],
-            print theMethodId,
-            print aTargetId,
-            print len(theArgsValue),
-            print thePrintArg,
-            print theProbeId,
-            print aParentTimestampFrame,
-            print aDepth,
-            print aCurrentTimestamp,
-            print aThreadId
-            raw_input()
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-( - Call metodo', aCode.co_name
+            pass
     
     
     def __packValue__(self, aDataType, aValue):
         if self.itsPackXDR.has_key(aDataType):
             theMethodName = self.itsPackXDR[aDataType]
-            #bool no funciona bien con XDRLib entre java y python
             if aDataType == 4:
                 if aValue:
                     aValue = 1
                 else:
                     aValue = 0
-            #trick for string objects (it's send the Id)
             if aDataType == 1:
-                 self.itsPacker.pack_int(id(aValue))
+                 self.itsPacker.pack_hyper(id(aValue))
                  return id(aValue)
-            getattr(self.itsPacker,'pack_%s'%theMethodName)(aValue)
+            getattr(self.itsPacker,'pack_\%s'\%theMethodName)(aValue)
             return aValue            
         else:
-            #en estos momentos envíamos el tipo de dato
-            #TODO: debieramos envíar el id del objeto
             self.itsPacker.pack_int(aDataType)
             return aDataType
 
     def __printHunter__(self):
-        #cerrar socket
-        #TODO: encontrar una manera mejor de hacer esto
         self.itsSocket.close()
         print
         print 'clases'
@@ -5143,7 +5087,7 @@ class hunterTrace(object):
         try:
             self.itsSocket.connect((self.itsHost, self.itsPort))
         except:
-            print "TOD, esta durmiendo :("
+            pass
     
     def __register__(self, aObject, aLocals):
         aObject.__registerLocals__(aLocals)
@@ -5151,7 +5095,6 @@ class hunterTrace(object):
     def __registerClass__(self, aCode, aLocals, aParentTimestamp, aDepth, aFrameLineNo):
         theClassId = self.itsId.__get__()
         theClassName = aCode.co_name
-        #HINT: ver como recuperar las herencias de esta clase 
         theClassBases = None
         self.itsPacker.reset()
         self.itsPacker.pack_int(self.itsEvents['register'])
@@ -5159,17 +5102,10 @@ class hunterTrace(object):
         self.itsPacker.pack_int(theClassId)
         self.itsPacker.pack_string(theClassName)
         self.itsPacker.pack_int(0)
-        if self.FLAG_DEBUGG:
-            print self.itsEvents['register'],
-            print self.itsObjects['class'],
-            print theClassId,
-            print theClassName,
-            print theClassBases
-            raw_input()
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-( - Registrando Clase', aCode.co_name
+            pass
         theObjectClass = self.__addClass__(
                                            theClassId,
                                            self.__createlnotab__(aCode),
@@ -5191,8 +5127,6 @@ class hunterTrace(object):
         theBackFrame = aFrame.f_back
         theBackFrameCode = theBackFrame.f_code
         theParentId = self.__getObjectId__(theBackFrameCode)
-        #behaviorId = self.__getObjectId__(aFrame.f_code)
-        #theParentId = self.__getObjectId__(aFrame.f_code)
         theCurrentLasti = aFrame.f_lasti
         theDepth = aDepth + 1
         if not self.itsProbe.has_key((theCurrentLasti,theParentId)):
@@ -5209,27 +5143,16 @@ class hunterTrace(object):
         self.itsPacker.pack_int(self.itsObjects['exception'])       
         theDataType = self.__getDataType__(aArg)
         self.itsPacker.pack_int(theDataType)
-        self.itsPacker.pack_int(id(aArg))
+        self.itsPacker.pack_hyper(id(aArg))
         self.itsPacker.pack_int(theProbeId)
         self.itsPacker.pack_hyper(aParentTimestampFrame)        
         self.itsPacker.pack_int(theDepth)
         self.itsPacker.pack_hyper(theCurrentTimestamp)
         self.itsPacker.pack_int(aThreadId)
-        if self.FLAG_DEBUGG:
-            print self.itsEvents['register'],
-            print self.itsObjects['exception'],
-            print theDataType,
-            print id(aArg),
-            print theProbeId,
-            print aParentTimestampFrame,
-            print theDepth,
-            print theCurrentTimestamp,
-            print aThreadId
-            raw_input()
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-( - Salida de behavior', aFrame.f_code.co_name
+            pass
 
     def __registerFunction__(self, aCode):
         theFunctionId = self.itsId.__get__()
@@ -5251,9 +5174,6 @@ class hunterTrace(object):
                 thePrintArg += " "
                 self.itsPacker.pack_int(theValue)
         self.itsPacker.pack_string(aCode.co_filename)
-        #agregamos setup del método para que el plugin
-        #funcione correctamente
-        #de seguro que esto se puede hacer mejor
         for theTuple in dis.findlinestarts(aCode):
             theLineNumbers += 1
         self.itsPacker.pack_int(len(aCode.co_code))        
@@ -5266,23 +5186,10 @@ class hunterTrace(object):
             thePrintArg += str(theLineNumber)
             thePrintArg += " "            
             self.itsPacker.pack_int(theLineNumber)
-        if self.FLAG_DEBUGG:
-        #if True:
-            print self.itsEvents['register'],
-            print self.itsObjects['function'],
-            print theFunctionId,
-            print aCode.co_name,
-            print len(aArgs)-1,
-            print thePrintArg,
-            print aCode.co_filename
-            print len(aCode.co_code)
-            print theLineNumbers
-            print thePrintLines
-            raw_input()
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-( - Registrando Funcion', aCode.co_name       
+            pass       
         self.__addFunction__(
                              theFunctionId,
                              self.__createlnotab__(aCode),
@@ -5299,8 +5206,6 @@ class hunterTrace(object):
         self.itsPacker.pack_int(aMethodId)
         self.itsPacker.pack_int(aClassId)
         self.itsPacker.pack_string(aCode.co_name)
-        #argumento viene con self, se le debe restar uno a la cantidad de
-        #elementos
         self.itsPacker.pack_int(len(aArgs)-1)
         thePrintArg = " "
         for theValue in range(len(aArgs)):
@@ -5312,9 +5217,6 @@ class hunterTrace(object):
                 thePrintArg += " "
                 self.itsPacker.pack_int(theValue)
         self.itsPacker.pack_string(aCode.co_filename)
-        #agregamos setup del método para que el plugin
-        #funcione correctamente
-        #de seguro que esto se puede hacer mejor
         for theTuple in dis.findlinestarts(aCode):
             theLineNumbers += 1
         self.itsPacker.pack_int(len(aCode.co_code))        
@@ -5327,23 +5229,10 @@ class hunterTrace(object):
             thePrintArg += str(theLineNumber)
             thePrintArg += " "            
             self.itsPacker.pack_int(theLineNumber)
-        if self.FLAG_DEBUGG:
-            print self.itsEvents['register'],
-            print self.itsObjects['method'],
-            print aMethodId,
-            print aClassId,
-            print aCode.co_name,
-            print len(aArgs)-1,
-            print thePrintArg,
-            print aCode.co_filename
-            print len(aCode.co_code)
-            print theLineNumbers
-            print thePrintLines
-            raw_input()
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-( Registrando Metodo', aCode.co_name
+            pass
         self.__addMethod__(
                            aMethodId,
                            self.__createlnotab__(aCode),
@@ -5360,52 +5249,24 @@ class hunterTrace(object):
         self.itsPacker.pack_int(aClassId)
         self.itsPacker.pack_string(aName)
         self.itsPacker.pack_string(aFileName)
-        #agregamos setup del método para que el plugin
-        #funcione correctamente
-        #de seguro que esto se puede hacer mejor
-        if self.FLAG_DEBUGG:
-            print self.itsEvents['register'],
-            print self.itsObjects['specialMethod'],
-            print aMethodId,
-            print aClassId,
-            print aName,
-            print aFileName
-            raw_input()
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-( Registrando Metodo', aName
-        """
-        self.__addMethod__(
-                           aMethodId,
-                           self.__createlnotab__(aCode),
-                           aCode,
-                           aClassId,
-                           aArgs)
-        """
+            pass
         
     def __registerObject__(self, aValue, aCurrentTimestamp):
         self.itsRegisterObjects.append(id(aValue))
         self.itsPacker.reset()
         self.itsPacker.pack_int(self.itsEvents['register'])
         self.itsPacker.pack_int(self.itsObjects['object'])
-        #enviar el tipo de dato por mientras solo es string
         self.itsPacker.pack_int(1) #string
-        self.itsPacker.pack_int(id(aValue))
+        self.itsPacker.pack_hyper(id(aValue))
         self.itsPacker.pack_string(aValue)
         self.itsPacker.pack_hyper(aCurrentTimestamp)
-        if self.FLAG_DEBUGG:
-            print self.itsEvents['register'],
-            print self.itsObjects['object'],
-            print 1,
-            print id(aValue),
-            print aValue,
-            print aCurrentTimestamp
-            raw_input()
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-( - Registrando Probe'
+            pass
     
     def __registerProbe__(self, aCurrentLasti, aBehaviorId, aCurrentLineno):
         theProbeId = self.itsProbeId.__get__()
@@ -5417,18 +5278,10 @@ class hunterTrace(object):
         self.itsPacker.pack_int(aBehaviorId)
         self.itsPacker.pack_int(aCurrentLasti)
         self.itsPacker.pack_int(aCurrentLineno)
-        if self.FLAG_DEBUGG:
-            print self.itsEvents['register'],
-            print self.itsObjects['probe'],
-            print theProbeId,
-            print aBehaviorId,
-            print aCurrentLasti,            
-            print aCurrentLineno
-            raw_input()
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-( - Registrando Probe'
+            pass
         self.itsProbeId.__next__()
         return theProbeId
     
@@ -5440,16 +5293,10 @@ class hunterTrace(object):
         self.itsPacker.pack_int(self.itsObjects['thread'])
         self.itsPacker.pack_int(theThreadId)
         self.itsPacker.pack_int(aThreadSysId)
-        if self.FLAG_DEBUGG:
-            print self.itsEvents['register'],
-            print self.itsObjects['thread'],
-            print theThreadId,
-            print aThreadSysId
-            raw_input()
         try:
             self.itsSocket.sendall(self.itsPacker.get_buffer())
         except:
-            print 'TOD está durmiendo :-( - Registrando Thread'
+            pass
         self.itsThreadId.__next__()
         return theThreadId
 
@@ -5471,22 +5318,8 @@ class hunterTrace(object):
                     return
             theParentTimestampFrame = self.__getTimestampParentFrame__(aFrame)
             if theCode.co_name == '__init__':
-                #FIXME: cambio experimental, revizar!!!!!!
-                """
-                id = self.itsId.__get__()
-                if not hasattr(theLocals['self'],'__dict__'):
-                    return
-                theLocals['self'].__dict__.update({'__pyTOD__':id})
-                self.itsId.__next__()
-                """
-                #aca se sacan las bases de la clase la cual
-                #se ha instanciado
-                #TODO: encontrar una mejor forma de hacerlo
-                #ineficiente!!..quizas interviniendo la llamada
-                #de la super clase?
                 if 'self' in theLocals:
                     print type(theLocals['self']).__bases__
-            #si self esta en theLocals estamos en un metodo
             if theLocals.has_key('self'):
                 if not self.__inMethod__(theCode):
                     theKey = type(theLocals['self']).__name__
@@ -5567,7 +5400,6 @@ class hunterTrace(object):
             theParentTimestampFrame = self.__getTimestampFrame__(aFrame)
             if theLocals.has_key('__init__'):
                 if not self.__inClass__(theCode):
-                    #registramos la definicion de la clase
                     theLocals.update(
                             {'__setattr__':Descriptor.__dict__['__setattr__']})
                     theLocals.update({'__metaclass__':MetaDescriptor})
@@ -5632,10 +5464,6 @@ class hunterTrace(object):
             self.FLAG_THROWN = True           
 
 hT = hunterTrace(
-                 generatorId(),
-                 generatorId(),
-                 generatorId(),
-                 xdrlib.Packer(),
                  '127.0.0.1',
                  8058)
 
@@ -5665,7 +5493,6 @@ class MetaDescriptor(type):
                                               theFrame.f_lineno)
         else:
             theProbeId = hT.itsProbe[(theCurrentLasti,theBehaviorId)]          
-        #preguntar si el valor está registrado y si además es string
         if type(aValue) == types.StringType:
             if not id(aValue) in hT.itsRegisterObjects:
                 hT.__registerObject__(aValue, theCurrentTimestamp)
@@ -5675,30 +5502,17 @@ class MetaDescriptor(type):
                 hT.itsPacker.pack_int(Id)
                 theDataType = hT.__getDataType__(aValue)
                 hT.itsPacker.pack_int(theDataType)
-                hT.itsPacker.pack_int(id(aValue))
+                hT.itsPacker.pack_hyper(id(aValue))
                 hT.itsPacker.pack_int(theProbeId)
                 hT.itsPacker.pack_hyper(theParentTimestamp)        
                 hT.itsPacker.pack_int(theCurrentDepth)
                 hT.itsPacker.pack_hyper(theCurrentTimestamp)
                 hT.itsPacker.pack_int(theThreadId)
                 super(MetaDescriptor, self).__setattr__(aName, aValue)
-                if hT.FLAG_DEBUGG:
-                    print hT.itsEvents['set'],
-                    print hT.itsObjects['classAttribute'],
-                    print Id,
-                    print theDataType,
-                    print id(aValue),
-                    print theProbeId,
-                    print theParentTimestamp,
-                    print theCurrentDepth,
-                    print theCurrentTimestamp,
-                    print theThreadId
-                    raw_input()
                 try:
                     hT.itsSocket.sendall(hT.itsPacker.get_buffer())
-                    pass
                 except:
-                    print 'TOD está durmiendo :-(', theCode.co_name    
+                    pass    
                 sys.settrace(hT.__trace__)
         else:
             hT.itsPacker.reset()
@@ -5714,22 +5528,10 @@ class MetaDescriptor(type):
             hT.itsPacker.pack_hyper(theCurrentTimestamp)
             hT.itsPacker.pack_int(theThreadId)
             super(MetaDescriptor, self).__setattr__(aName, aValue)
-            if hT.FLAG_DEBUGG:
-                print hT.itsEvents['set'],
-                print hT.itsObjects['classAttribute'],
-                print Id,
-                print theDataType,
-                print thePackValue,
-                print theProbeId,
-                print aParentTimestamp,
-                print theCurrentDepth,
-                print theCurrentTimestamp,
-                print theThreadId
-                raw_input()
             try:
                 hT.itsSocket.sendall(hT.itsPacker.get_buffer())
             except:
-                print 'TOD está durmiendo :-(', theCode.co_name    
+                pass    
         
 
 class Descriptor(object):
@@ -5765,40 +5567,35 @@ class Descriptor(object):
                 hT.itsPacker.pack_int(hT.itsEvents['set'])
                 hT.itsPacker.pack_int(hT.itsObjects['attribute'])
                 hT.itsPacker.pack_int(Id)
-                hT.itsPacker.pack_int(self.__pyTOD__)
+                try:
+                    hT.itsPacker.pack_int(self.__pyTOD__)
+                except:
+                    object.__setattr__(self, aName, aValue)
+                    return
                 theDataType = hT.__getDataType__(aValue)
                 hT.itsPacker.pack_int(theDataType)
-                hT.itsPacker.pack_int(id(aValue))
+                hT.itsPacker.pack_hyper(id(aValue))
                 hT.itsPacker.pack_int(theProbeId)
                 hT.itsPacker.pack_hyper(theParentTimestamp)        
                 hT.itsPacker.pack_int(theCurrentDepth)
                 hT.itsPacker.pack_hyper(theCurrentTimestamp)
                 hT.itsPacker.pack_int(theThreadId)
                 object.__setattr__(self, aName, aValue)
-                if hT.FLAG_DEBUGG:
-                    print hT.itsEvents['set'],
-                    print hT.itsObjects['attribute'],
-                    print Id,
-                    print theBehaviorId,
-                    print theDataType,
-                    print id(aValue),
-                    print theProbeId,
-                    print theParentTimestamp,
-                    print theCurrentDepth,
-                    print theCurrentTimestamp,
-                    print theThreadId
-                    raw_input()
                 try:
                     hT.itsSocket.sendall(hT.itsPacker.get_buffer())
                 except:
-                    print 'TOD está durmiendo :-(', theCode.co_name   
+                    pass   
                 sys.settrace(hT.__trace__)
         else:
             hT.itsPacker.reset()
             hT.itsPacker.pack_int(hT.itsEvents['set'])
             hT.itsPacker.pack_int(hT.itsObjects['attribute'])
             hT.itsPacker.pack_int(Id)
-            hT.itsPacker.pack_int(self.__pyTOD__)
+            try:
+                hT.itsPacker.pack_int(self.__pyTOD__)
+            except:
+                object.__setattr__(self, aName, aValue)
+                return
             theDataType = hT.__getDataType__(aValue)
             hT.itsPacker.pack_int(theDataType)
             thePackValue = hT.__packValue__(theDataType, aValue)
@@ -5808,31 +5605,1288 @@ class Descriptor(object):
             hT.itsPacker.pack_hyper(theCurrentTimestamp)
             hT.itsPacker.pack_int(theThreadId)
             object.__setattr__(self, aName, aValue)
-            if hT.FLAG_DEBUGG:
-                print hT.itsEvents['set'],
-                print hT.itsObjects['attribute'],
-                print Id,
-                print theBehaviorId,
-                print theDataType,
-                print thePackValue,
-                print theProbeId,
-                print theParentTimestamp,
-                print theCurrentDepth,
-                print theCurrentTimestamp,
-                print theThreadId
-                raw_input()
             try:
                 hT.itsSocket.sendall(hT.itsPacker.get_buffer())
             except:
-                print 'TOD está durmiendo :-(', theCode.co_name   
+                pass   
             sys.settrace(hT.__trace__)
-
-
 if th:
     settrace(hT.__trace__)  
 sys.settrace(hT.__trace__)
 \end{lstlisting}
 \end{singlespace}
 
+	\section{Código fuente de generatorId.py}
+	
+
+\begin{singlespace}
+\begin{lstlisting}[style=Python]
+#! /usr/bin/python
+# -*- coding: utf-8 -*-
+
+__author__ = "Milton Inostroza Aguilera"
+__email__ = "minoztro@gmail.com"
+__all__ = ['generatorId']
+
+class generatorId(object):
+    
+    def __init__(self):
+        self.Id = 101
+
+    def __get__(self):
+        return self.Id
+
+    def __next__(self):
+        self.Id = self.Id + 1
+        return 
+\end{lstlisting}
+\end{singlespace}
+
+	\section{Código fuente de Dictionary.py}
+
+\begin{singlespace}
+\begin{lstlisting}[style=Python]
+#! /usr/bin/python
+# -*- coding: utf-8 -*-
+
+__author__ = "Milton Inostroza Aguilera"
+__email__ = "minoztro@gmail.com"
+__all__ = ['Dictionary']
+
+import xdrlib
+import inspect
+import re
+
+class Dictionary(dict):
+    
+    def __init__(self, hT):
+        self.hT = hT
+        dict.__init__(self)
+
+    def __setitem__(self, aKey, aValue):
+        dict.__setitem__(self,aKey,aValue)
+
+    def __update__(self, aDictionary, aParentId, aArgument):
+        for theKey, theValue in aDictionary.items():
+            if theKey in aArgument:
+                #variable local ya registrada ya que es un argumento
+                self[theKey] = theValue
+                return
+            if not self.has_key(theKey):
+                if not theKey == 'self':
+                    self[theKey] = theValue
+                    self.hT.itsPacker.reset()
+                    self.hT.itsPacker.pack_int(self.hT.itsEvents['register'])
+                    self.hT.itsPacker.pack_int(self.hT.itsObjects['local'])
+                    self.hT.itsPacker.pack_int(theValue)
+                    self.hT.itsPacker.pack_int(aParentId)
+                    self.hT.itsPacker.pack_string(theKey)
+                    if self.hT.FLAG_DEBUGG:
+                        print self.hT.itsEvents['register'],
+                        print self.hT.itsObjects['local'],
+                        print theValue,
+                        print aParentId,
+                        print theKey
+                        raw_input()
+                    try:
+                        self.hT.itsSocket.sendall(self.hT.itsPacker.get_buffer())
+                    except:
+                        pass
+                    
+
+    def __updateAttr__(self, aDictionary, aParentId): 
+        for theKey, theValue in aDictionary.items():
+            if not self.has_key(theKey):
+                if not theKey == 'self':
+                    theId = self.hT.itsId.__get__()
+                    self.hT.itsId.__next__()
+                    self[theKey] = theId
+                    self.hT.itsPacker.reset()
+                    self.hT.itsPacker.pack_int(self.hT.itsEvents['register'])
+                    self.hT.itsPacker.pack_int(self.hT.itsObjects['attribute'])
+                    self.hT.itsPacker.pack_int(theId)
+                    self.hT.itsPacker.pack_int(aParentId)
+                    self.hT.itsPacker.pack_string(theKey)
+                    if self.hT.FLAG_DEBUGG:
+                        print self.hT.itsEvents['register'],
+                        print self.hT.itsObjects['attribute'],
+                        print theId,
+                        print aParentId,
+                        print theKey 
+                        raw_input()                          
+                    try:       
+                        self.hT.itsSocket.sendall(self.hT.itsPacker.get_buffer())
+                    except:
+                        pass
+
+    def __updateStaticField__(self, aDictionary, aParentId): 
+        for theKey, theValue in aDictionary.items():
+            if not inspect.isfunction(theValue) and not theKey == 'self':
+                if not re.search(self.hT.itsMethodPattern,theKey):
+                    if not self.has_key(theKey):
+                        theValue = self.hT.itsId.__get__()
+                        self.hT.itsId.__next__()
+                        self[theKey] = theValue
+                        self.hT.itsPacker.reset()
+                        self.hT.itsPacker.pack_int(
+                            self.hT.itsEvents['register'])
+                        self.hT.itsPacker.pack_int(
+                            self.hT.itsObjects['classAttribute'])
+                        self.hT.itsPacker.pack_int(theValue)
+                        self.hT.itsPacker.pack_int(aParentId)
+                        self.hT.itsPacker.pack_string(theKey)
+                        if self.hT.FLAG_DEBUGG:
+                            print self.hT.itsEvents['register'],
+                            print self.hT.itsObjects['classAttribute'],
+                            print theValue,
+                            print aParentId,
+                            print theKey 
+                            raw_input()                          
+                        try:       
+                            self.hT.itsSocket.sendall(
+                                self.hT.itsPacker.get_buffer())
+                            pass
+                        except:
+                            pass
+\end{lstlisting}
+\end{singlespace}
+
+	\section{Código fuente de constantsObjects}
+
+\begin{singlespace}
+\begin{lstlisting}[style=Python]
+#! /usr/bin/python
+# -*- coding: utf-8 -*-
+
+__author__ = "Milton Inostroza Aguilera"
+__email__ = "minoztro@gmail.com"
+__all__ = ['events','objects', 'dataTypes','packXDRLib']
+
+
+events = {
+          'register':0,
+          'call':1,
+          'set':2,
+          'return':3,
+          'instantiation':4
+          }
+
+objects = {
+           'class':0,
+           'method':1,
+           'attribute':2,
+           'function':3,
+           'local':4,
+           'probe':5,
+           'thread':6,
+           'classAttribute':7,
+           'object':8,
+           'exception':9,
+           'specialMethod':10
+           }
+
+dataTypes = {
+             int.__name__:0,
+             str.__name__:1,
+             float.__name__:2,
+             long.__name__:3,
+             bool.__name__:4,
+             tuple.__name__:5,
+             list.__name__:6,
+             dict.__name__:7
+             #other type: 8
+             }
+
+packXDRLib = {
+              0:'int',
+              1:'string',
+              2:'float',
+              3:'double',
+              4:'int', #4:'bool'
+              }
+\end{lstlisting}
+\end{singlespace}
+
+	\section{Código fuente de objectClass}
+	
+\begin{singlespace}
+\begin{lstlisting}[style=Python]
+#! /usr/bin/python
+# -*- coding: utf-8 -*-
+
+__author__ = "Milton Inostroza Aguilera"
+__email__ = "minoztro@gmail.com"
+__all__ = ['Class']
+
+import inspect
+import dis
+import time
+import re
+import thread
+from Dictionary import Dictionary
+
+class Class(object):
+
+    def __init__(self, aHt, aClassId, aCode, aLnotab):
+        self.hT = aHt
+        self.staticField = Dictionary(self.hT)
+        self.attributes = Dictionary(self.hT)
+        self.method = Dictionary(self.hT)
+        self.lnotab = aLnotab
+        self.code = aCode
+        self.name = aCode.co_name
+        self.Id = aClassId
+        self.SpecialBehaviorId = -1
+
+    def __getId__(self):
+        return self.Id
+
+    def __getLnotab__(self):
+        return self.lnotab
+
+    def __addMethod__(self, aCode, aLocals):
+        for theKey,theValue in aLocals.iteritems():
+            if inspect.isfunction(theValue):
+                if not (theKey == '__module__'):
+                    theId = self.hT.itsId.__get__()
+                    self.method.update({theKey:theId})
+                    self.hT.itsId.__next__()
+    
+    def __addSpecialMethod__(self, aFileName):
+        if self.method.has_key("%sStaticMethod"%self.name):
+            return
+        theId = self.hT.itsId.__get__()
+        self.method.update({"%sStaticMethod"%self.name:theId})
+        self.hT.itsId.__next__()
+        self.hT.__registerSpecialMethod__("%sStaticMethod"%self.name,
+                                          theId,
+                                          self.Id,
+                                          aFileName)
+        self.SpecialBehaviorId = theId
+    
+    def __setStaticField__(self,
+                           aId,
+                           aValue,
+                           aFrameLineNo,
+                           aCurrentLasti,
+                           aParentTimestamp,
+                           aDepth):
+        theThreadId = self.hT.__getThreadId__(thread.get_ident())
+        theCurrentTimestamp = self.hT.__convertTimestamp__(time.time())
+        if not self.hT.itsProbe.has_key((aCurrentLasti, self.SpecialBehaviorId)):
+            theProbeId = self.hT.__registerProbe__(aCurrentLasti,
+                                              self.SpecialBehaviorId,
+                                              aFrameLineNo)
+        else:
+            theProbeId = hT.itsProbe[(aCurrentLasti,aTheSpecialBehaviorId)]
+        self.hT.itsPacker.reset()
+        self.hT.itsPacker.pack_int(self.hT.itsEvents['set'])
+        self.hT.itsPacker.pack_int(self.hT.itsObjects['classAttribute'])
+        self.hT.itsPacker.pack_int(aId)
+        theDataType = self.hT.__getDataType__(aValue)
+        self.hT.itsPacker.pack_int(theDataType)
+        thePackValue = self.hT.__packValue__(theDataType, aValue)
+        self.hT.itsPacker.pack_int(theProbeId)
+        self.hT.itsPacker.pack_hyper(aParentTimestamp)        
+        self.hT.itsPacker.pack_int(aDepth)
+        self.hT.itsPacker.pack_hyper(theCurrentTimestamp)
+        self.hT.itsPacker.pack_int(theThreadId)
+        try:
+            self.hT.itsSocket.sendall(self.hT.itsPacker.get_buffer())
+            pass
+        except:
+            pass  
+    
+    def __register_set_StaticField__(self, 
+                                     aLocals, 
+                                     aFrameLineNo,
+                                     aParentTimestamp,
+                                     aDepth,
+                                     aFileName):
+        theLower = 0
+        theUpper = len(self.code.co_code)
+        theCode = self.code.co_code   
+        while theLower < theUpper:
+            theOp = ord(theCode[theLower])
+            theNameOp = dis.opname[theOp]      
+            theLower = theLower + 1
+            if theOp >= dis.HAVE_ARGUMENT:
+                theValue = ord(theCode[theLower])
+                theValue += ord(theCode[theLower+1])*256
+                if theNameOp == 'STORE_NAME':
+                    theStaticFieldName = self.code.co_names[theValue] 
+                    self.staticField.__updateStaticField__(
+                                                    {theStaticFieldName:-1}, 
+                                                    self.Id)
+                    self.__addSpecialMethod__(aFileName)
+                    if not re.search(self.hT.itsMethodPattern,theStaticFieldName):
+                        if not inspect.isfunction(aLocals[theStaticFieldName]):
+                            self.__setStaticField__(
+                                                self.staticField[theStaticFieldName], 
+                                                aLocals[theStaticFieldName],
+                                                aFrameLineNo,
+                                                theLower,
+                                                aParentTimestamp,
+                                                aDepth)
+                theLower = theLower + 2
+    
+    def __addStaticField__(self, aLocals):
+        self.staticField.__updateStaticField__(aLocals, self.Id)
+    
+    def __addAttribute__(self, aName, aObjectId):
+        self.attributes.__updateAttr__({aName:-1}, aObjectId)  
+\end{lstlisting}
+\end{singlespace}
+
+	\section{Código fuente de objectFunction}
+
+\begin{singlespace}
+\begin{lstlisting}[style=Python]
+#! /usr/bin/python
+# -*- coding: utf-8 -*-
+
+__author__ = "Milton Inostroza Aguilera"
+__email__ = "minoztro@gmail.com"
+__all__ = ['Function']
+
+from Dictionary import Dictionary
+
+class Function(object):
+
+    def __init__(self, aHt, aId, aCode, aLnotab, aArgs):
+        self.hT = aHt
+        self.locals = Dictionary(self.hT)
+        self.argument = ()
+        self.lnotab = aLnotab
+        self.code = aCode
+        self.name = aCode.co_name
+        self.Id = aId
+        self.__updateArgument__(aArgs)
+
+    def __getId__(self):
+        return self.Id
+
+    def __getLnotab__(self):
+        return self.lnotab
+
+    def __getLocals__(self):
+        return self.locals
+
+    def __getArgs__(self):
+        return self.argument
+    
+    def __getArgsValues__(self, aLocals):
+        argValues = ()
+        for name in self.argument:
+            if aLocals.has_key(name):
+                argValues = argValues + (aLocals[name],)
+        return argValues
+
+    def __updateArgument__(self, aArgs):
+        for theArg in aArgs:
+            if not theArg == 'self':
+                self.argument = self.argument + (theArg,)
+        theParentId = self.Id            
+            
+    def __registerLocals__(self, aLocal):
+        self.locals.__update__(aLocal,self.Id,self.argument)
+\end{lstlisting}
+\end{singlespace}
+
+	\section{Código fuente de objectMethod}
+	
+\begin{singlespace}
+\begin{lstlisting}[style=Python]
+#! /usr/bin/python
+# -*- coding: utf-8 -*-
+
+__author__ = "Milton Inostroza Aguilera"
+__email__ = "minoztro@gmail.com"
+__all__ = ['Method']
+
+from Dictionary import Dictionary
+
+class Method(object):
+
+    def __init__(self, aHt, aId, aCode, aLnotab, aIdClass, aArgs):
+        self.hT = aHt
+        self.locals = Dictionary(self.hT)
+        self.argument = ()
+        self.lnotab = aLnotab
+        self.code = aCode
+        self.name = aCode.co_name
+        self.idClass = aIdClass
+        self.Id = aId
+        self.__updateArgument__(aArgs)
+
+    def __getId__(self):
+        return self.Id
+
+    def __getLnotab__(self):
+        return self.lnotab
+
+    def __getLocals__(self):
+        return self.locals
+
+    def __getTarget__(self):
+        return self.idClass
+
+    def __getArgs__(self):
+        return self.argument
+    
+    def __getArgsValues__(self, aLocals):
+        argValues = ()
+        for name in self.argument:
+            if aLocals.has_key(name):
+                argValues = argValues + (aLocals[name],)
+        return argValues
+
+    def __updateArgument__(self, aArgs):
+        for theArg in aArgs:
+            if not theArg == 'self':
+                self.argument += (theArg,)
+        theParentId = self.Id
+        if self.hT.FLAG_DEBUGG:
+            for theIndex in range(len(aArgs)):
+                if not aArgs[theIndex] == 'self':
+                    print self.hT.itsEvents['register'],
+                    print self.hT.itsObjects['local'],
+                    print theIndex + 1,
+                    print theParentId,
+                    print aArgs[theIndex]
+                    raw_input() 
+                    
+    def __registerLocals__(self, aLocal):
+        self.locals.__update__(aLocal,self.Id,self.argument)
+\end{lstlisting}
+\end{singlespace}
+
+
+	\section{Código fuente de PythonTODServer.java (Interfaz de comunicación con base de datos de TOD)}
+	
+
+\begin{singlespace}
+\begin{lstlisting}
+package pytod.core.server;
+
+import hep.io.xdr.XDRInputStream;
+
+import java.io.IOException;
+import java.net.Socket;
+
+import tod.agent.transport.ValueWriter;
+import tod.core.ILogCollector;
+import tod.core.config.TODConfig;
+import tod.core.database.structure.IMutableBehaviorInfo;
+import tod.core.database.structure.IMutableClassInfo;
+import tod.core.database.structure.IMutableStructureDatabase;
+import tod.core.database.structure.ObjectId;
+import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
+import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
+import tod.core.server.TODServer;
+
+/**
+ * A Python TOD server accepts connections from debugged script Python and process instrumentation
+ * requests as well as logged events.
+ * The actual implementation of the instrumenter and database are left
+ * to delegates.
+ * @author minostro
+ */
+
+public class PythonTODServer extends TODServer
+{
+  private final IMutableStructureDatabase itsStructureDatabase;
+  private final ILogCollector itsLogCollector;
+
+  public PythonTODServer(
+      TODConfig aConfig,
+      IMutableStructureDatabase aStructureDatabase,
+      ILogCollector aLogCollector) 
+  {
+    super(aConfig);
+    itsStructureDatabase = aStructureDatabase;
+    itsLogCollector = aLogCollector;
+    IMutableClassInfo theClass = itsStructureDatabase.addClass(100, "functionClass");
+	}
+
+  @Override
+  protected void accepted(Socket aSocket) 
+  {
+    try
+    {
+      XDRInputStream theStream = new XDRInputStream(aSocket.getInputStream());
+      new Receiver(theStream);
+    }
+    catch (IOException e)
+    {
+      throw new RuntimeException(e);
+    }
+  }
+	
+  //events
+  private static final int REGISTER_EVENT = 0;
+  private static final int CALL_EVENT = 1;
+  private static final int SET_EVENT = 2;
+  private static final int RETURN_EVENT = 3;
+  private static final int INSTANTIATION_EVENT = 4;	
+  //objects
+  private static final int OBJECT_CLASS = 0;
+  private static final int OBJECT_METHOD = 1;
+  private static final int OBJECT_ATTRIBUTE = 2;
+  private static final int OBJECT_FUNCTION = 3;
+  private static final int OBJECT_LOCAL = 4;
+  private static final int OBJECT_PROBE = 5;
+  private static final int OBJECT_THREAD = 6;
+  private static final int OBJECT_STATICFIELD = 7;
+  private static final int OBJECT_OBJECT = 8;
+  private static final int OBJECT_EXCEPTION = 9;
+  private static final int OBJECT_SPECIALMETHOD = 10;
+  //dataTypes
+  private static final int DATA_INT = 0;
+  private static final int DATA_STR = 1;
+  private static final int DATA_FLOAT = 2;
+  private static final int DATA_LONG = 3;
+  private static final int DATA_BOOL = 4;
+  private static final int DATA_TUPLE = 5;
+  private static final int DATA_LIST = 6;
+  private static final int DATA_DICT = 7;
+  private static final int DATA_OTHER = 8;
+	
+	
+  private class Receiver extends Thread
+  {
+    private XDRInputStream itsStream;
+    public Receiver(XDRInputStream aInputStream)
+    {
+      super("PythonTODServer.Receiver");
+      itsStream = aInputStream;
+      start();
+    }
+	  
+    private String generateSignature(int aArgsCount)
+    {
+      StringBuilder theSignatureBuilder = new StringBuilder("(");
+      for(int i=0;i<aArgsCount;i++) theSignatureBuilder.append("Ljava.lang.Object;");
+      theSignatureBuilder.append(")Ljava.lang.Object;");
+      return theSignatureBuilder.toString();
+	  }
+  
+    public void registerFunction(XDRInputStream aInputStream)
+    {
+      IMutableClassInfo theClass;
+      IMutableBehaviorInfo theBehavior;
+      try
+      {
+	      int theFunctionId = aInputStream.readInt();
+	      String theFunctionName = new String(aInputStream.readString());
+        int theArgsCount = aInputStream.readInt();
+	      theClass = itsStructureDatabase.getClass(100, true);
+        theBehavior = theClass.addBehavior(theFunctionId, theFunctionName, generateSignature(theArgsCount), false);
+        if (theArgsCount > 0){
+          for(int i=0;i<theArgsCount;i=i+1)
+          {
+            String theArgName = new String(aInputStream.readString());						
+            int theArgId = aInputStream.readInt();
+            theBehavior.addLocalVariableInfo(new LocalVariableInfo(0, 32000, theArgName, "java.lang.Object", theArgId));
+          }
+        }
+        String theFileName = aInputStream.readString();
+        int theCodeSize = aInputStream.readInt();
+        int theLineNumbers = aInputStream.readInt();
+        int theStartPc = -1;
+        int theLineNumber = -1;
+        LineNumberInfo[] theLineNumberInfo = new LineNumberInfo[theLineNumbers];
+        for (int i = 0; i < theLineNumbers; i++) {
+          theStartPc = aInputStream.readInt();
+          theLineNumber = aInputStream.readInt();
+          theLineNumberInfo[i] = new LineNumberInfo((short) theStartPc, (short) theLineNumber);
+        }
+        theBehavior.setup(true, null, theCodeSize, theLineNumberInfo, null);
+      }
+      catch (Exception e)
+      {
+        throw new RuntimeException(e);
+      }			
+    }
+		
+
+    public void registerLocal(XDRInputStream aInputStream)
+    {
+      IMutableBehaviorInfo theBehavior;			
+      try
+      {
+        int theLocalId = aInputStream.readInt();
+        int theParentId = aInputStream.readInt();
+        String theLocalName = new String(aInputStream.readString());
+        theBehavior = itsStructureDatabase.getBehavior(theParentId, true);
+        theBehavior.addLocalVariableInfo(new LocalVariableInfo(0, 32000, theLocalName, "java.lang.Object", theLocalId));
+      }
+      catch (Exception e)
+      {
+        throw new RuntimeException(e);
+      }			
+    }
+
+    public void registerClass(XDRInputStream aInputStream)
+    {
+      IMutableClassInfo theClass;
+      try
+      {
+        int theClassId = aInputStream.readInt();
+        String theClassName = new String(aInputStream.readString());
+        int theClassBases = aInputStream.readInt();
+        theClass = itsStructureDatabase.addClass(theClassId, theClassName);
+      }
+      catch (Exception e)
+      {
+        throw new RuntimeException(e);
+      }			
+    }
+
+    public void registerStaticField(XDRInputStream aInputStream)
+    {
+      IMutableClassInfo theClass;
+      try
+      {
+        int theAttributeId = aInputStream.readInt();
+        int theParentId = aInputStream.readInt();
+        String theAttributeName = new String(aInputStream.readString());	
+        theClass = itsStructureDatabase.getClass(theParentId, true);
+        theClass.addField(theAttributeId, theAttributeName, null, true);
+      }
+      catch (Exception e)
+      {
+        throw new RuntimeException(e);
+      }	
+    }
+
+    public void registerMethod(XDRInputStream aInputStream)
+    {
+      IMutableClassInfo theClass;
+      IMutableBehaviorInfo theBehavior;
+      try
+      {
+        int theMethodId = aInputStream.readInt();
+        int theClassId = aInputStream.readInt();
+        String theMethodName = aInputStream.readString();
+        int theArgsCount = aInputStream.readInt();
+        theClass = itsStructureDatabase.getClass(theClassId, true);
+        theBehavior = theClass.addBehavior(theMethodId, theMethodName, generateSignature(theArgsCount), false);
+        if (theArgsCount > 0){
+          for(int i=0;i<theArgsCount;i=i+1)
+          {
+            String theArgName = aInputStream.readString();
+            int theArgId = aInputStream.readInt();
+            theBehavior.addLocalVariableInfo(new LocalVariableInfo(0, 32000, theArgName, "java.lang.Object", theArgId));
+          }
+        }
+        String theFileName = aInputStream.readString();
+        theBehavior.setSourceFile(theFileName);
+        int theCodeSize = aInputStream.readInt();
+        int theLineNumbers = aInputStream.readInt();
+        int theStartPc = -1;
+        int theLineNumber = -1;
+        LineNumberInfo[] theLineNumberInfo = new LineNumberInfo[theLineNumbers];
+        for (int i = 0; i < theLineNumbers; i++) {
+          theStartPc = aInputStream.readInt();
+          theLineNumber = aInputStream.readInt();
+          theLineNumberInfo[i] = new LineNumberInfo((short) theStartPc, (short) theLineNumber);
+        }
+        theBehavior.setup(true, null, theCodeSize, theLineNumberInfo, null);
+      }
+      catch (Exception e)
+      {
+        throw new RuntimeException(e);
+      }			
+    }
+
+    public void registerSpecialMethod(XDRInputStream aInputStream)
+    {
+      IMutableClassInfo theClass;
+      IMutableBehaviorInfo theBehavior;
+      try
+      {
+        int theMethodId = aInputStream.readInt();
+        int theClassId = aInputStream.readInt();
+        String theMethodName = aInputStream.readString();
+        theClass = itsStructureDatabase.getClass(theClassId, true);
+        theBehavior = theClass.addBehavior(theMethodId, theMethodName, generateSignature(0), false);
+        String theFileName = aInputStream.readString();
+        theBehavior.setSourceFile(theFileName);
+      }
+      catch (Exception e)
+      {
+        throw new RuntimeException(e);
+      }			
+    }
+
+    public void registerAttribute(XDRInputStream aInputStream)
+    {
+      IMutableClassInfo theClass;
+      try
+      {
+        int theAttributeId = aInputStream.readInt();
+        int theParentId = aInputStream.readInt();
+        String theAttributeName = new String(aInputStream.readString());	
+        theClass = itsStructureDatabase.getClass(theParentId, true);
+        theClass.addField(theAttributeId, theAttributeName, null, true);
+      }
+      catch (Exception e)
+      {
+        throw new RuntimeException(e);
+      }			
+    }
+
+    public void registerProbe(XDRInputStream aInputStream)
+    {
+      try
+      {
+        int theProbeId = aInputStream.readInt();
+        int theParentId = aInputStream.readInt();				
+        int theProbeCurrentLasti = aInputStream.readInt();
+        int theCurrentLineno = aInputStream.readInt();
+        itsStructureDatabase.addProbe(theProbeId, theParentId, theProbeCurrentLasti, null, 0);
+      }
+      catch (Exception e)
+      {
+        throw new RuntimeException(e);
+      }			
+    }
+
+		
+    public void registerThread(XDRInputStream aInputStream)
+    {
+      try
+      {
+        int theThreadId = aInputStream.readInt();
+        int theSysId = aInputStream.readInt();
+        itsLogCollector.thread(theThreadId, theSysId, "()V");
+      }
+      catch (Exception e)
+      {
+        throw new RuntimeException(e);
+      }			
+    }
+
+    public void registerObject(XDRInputStream aInputStream)
+    {
+      try
+      {
+        int theTypeId = aInputStream.readInt();
+        long theId = aInputStream.readLong();
+        Object theValue = getObjectValue(theTypeId, aInputStream);
+        long theCurrentTimestamp = aInputStream.readLong();
+        byte[] theByteValue = ValueWriter.serialize(theValue);
+        itsLogCollector.register(
+            theId,
+            theByteValue, 
+            theCurrentTimestamp, 
+            true);
+      }
+      catch (Exception e)
+      {
+        throw new RuntimeException(e);
+      }			
+    }
+
+    public void registerException(XDRInputStream aInputStream)
+    {
+      try
+      {
+        Object theValue = null;
+        long theValueId = 0;
+        int theTypeId = aInputStream.readInt();
+        if (theTypeId == 1) {
+          theValueId = aInputStream.readLong();
+        }
+        else{
+          theValue = getObjectValue(theTypeId, aInputStream);					
+        }
+        int theProbeId = aInputStream.readInt();
+        long theParentTimestamp = aInputStream.readLong();
+        int theDepth = aInputStream.readInt();
+        long theCurrentTimestamp = aInputStream.readLong();
+        int theThreadId = aInputStream.readInt();
+        itsLogCollector.exception(
+            theThreadId, 
+            theParentTimestamp,
+            (short) theDepth, 
+            theCurrentTimestamp, 
+            null, 
+            theProbeId, 
+            theTypeId == 1 ? new ObjectId(theValueId) : theValue);
+      }
+      catch (Exception e)
+      {
+        throw new RuntimeException(e);
+      }
+    }
+
+    public void instantiationEvent(XDRInputStream aInputStream)
+    {
+      Object args[] = null;
+      try
+      {
+        int theBehaviorId = aInputStream.readInt();
+        int theTargetId = aInputStream.readInt();
+        int theArgsCount = aInputStream.readInt();
+        if (theArgsCount > 0){
+          args = new Object[theArgsCount];
+          for(int i=0;i<theArgsCount;i=i+1)
+          {
+            int theArgType = aInputStream.readInt();
+            if (theArgType == 1) {
+              long theValueId = aInputStream.readLong();
+              args[i] = new ObjectId(theValueId);
+            } 
+            else {
+              Object theValue = getObjectValue(theArgType, aInputStream);
+              args[i] = theValue;
+            }
+          }
+        }
+        int theProbeId = aInputStream.readInt();
+        long theParentTimestamp = aInputStream.readLong();
+        int theDepth = aInputStream.readInt();
+        long theCurrentTimestamp = aInputStream.readLong();
+        int theThreadId = aInputStream.readInt();
+        itsLogCollector.instantiation(
+            theThreadId,
+            theParentTimestamp,
+            (short)theDepth, 
+            theCurrentTimestamp, 
+            null,
+            theProbeId,
+            true, 
+            -1,
+            theBehaviorId,
+            new ObjectId(theTargetId),
+            args);
+      }
+      catch (Exception e)
+      {
+        throw new RuntimeException(e);
+      }
+    }
+
+    public void methodCall(XDRInputStream aInputStream)
+    {
+      Object theArgs[] = null;
+      try
+      {
+        int theMethodId = aInputStream.readInt();
+        int theTargetId = aInputStream.readInt();
+        int theArgsCount = aInputStream.readInt();
+        if (theArgsCount > 0){
+          theArgs = new Object[theArgsCount];
+          for(int i=0;i<theArgsCount;i=i+1)
+          {
+            int theArgType = aInputStream.readInt();
+            if (theArgType == 1) {
+              long theValueId = aInputStream.readLong();
+              theArgs[i] = new ObjectId(theValueId);
+            } 
+            else {
+              Object theValue = getObjectValue(theArgType, aInputStream);
+              theArgs[i] = theValue;
+            }
+          }
+        }
+        int theProbeId = aInputStream.readInt();
+        long theParentTimestamp = aInputStream.readLong();
+        int theDepth = aInputStream.readInt();
+        long theCurrentTimestamp = aInputStream.readLong();
+        int theThreadId = aInputStream.readInt();
+        itsLogCollector.methodCall(
+            theThreadId,
+            theParentTimestamp,
+            (short)theDepth, 
+            theCurrentTimestamp, 
+            null,
+            theProbeId,
+            true, 
+            -1,
+            theMethodId,
+            new ObjectId(theTargetId),
+            theArgs);
+      }
+      catch (Exception e)
+      {
+        throw new RuntimeException(e);
+      }
+    }
+
+    public void functionCall(XDRInputStream aInputStream)
+    {
+      Object theArgs[] = null;
+      try
+      {
+        int theFunctionId = aInputStream.readInt();
+        int theArgsCount = aInputStream.readInt();
+        if (theArgsCount > 0){
+          theArgs = new Object[theArgsCount];
+          for(int i=0;i<theArgsCount;i=i+1)
+          {
+            int theArgType = aInputStream.readInt();
+            if (theArgType == 1) {
+              long theValueId = aInputStream.readLong();
+              theArgs[i] = new ObjectId(theValueId);
+          } else {
+              Object theValue = getObjectValue(theArgType, aInputStream);
+              theArgs[i] = theValue;
+            }
+          }
+        }
+        int theProbeId = aInputStream.readInt();
+        long theParentTimestamp = aInputStream.readLong();
+        int theDepth = aInputStream.readInt();
+        long theCurrentTimestamp = aInputStream.readLong();
+        int theThreadId = aInputStream.readInt();
+        itsLogCollector.methodCall(
+            theThreadId,
+            theParentTimestamp,
+            (short)theDepth, 
+            theCurrentTimestamp, 
+            null,
+            theProbeId,
+            false, 
+            -1,
+            theFunctionId,
+            null,
+            theArgs);
+      }
+      catch (Exception e)
+      {
+        throw new RuntimeException(e);
+      }
+    }
+
+    public Object getObjectValue(int aTypeId, XDRInputStream aInputStream)
+    {
+        try {
+        Object theValue;
+        switch (aTypeId) {
+        case DATA_INT:
+        {
+          theValue = aInputStream.readInt();
+          break;
+        }
+        case DATA_STR:
+        {
+          theValue = aInputStream.readString();
+          break;
+        }
+        case DATA_FLOAT:
+        {
+          theValue = aInputStream.readFloat();
+          break;
+        }
+        case DATA_LONG:
+        {
+          theValue = aInputStream.readLong();
+          break;
+        }
+        case DATA_BOOL:
+        {
+          theValue = aInputStream.readInt();
+          if (theValue.equals(1)) {
+            theValue = Boolean.TRUE;
+          }
+          else {
+            theValue = Boolean.FALSE;
+          }
+          break;
+        }
+        case DATA_TUPLE:
+        {
+          theValue = aInputStream.readInt();
+          break;
+        }
+        case DATA_LIST:
+        {
+          theValue = aInputStream.readInt();
+          break;
+        }
+        case DATA_DICT:
+        {
+          theValue = aInputStream.readInt();
+          break;
+        }
+        case DATA_OTHER:
+        {
+          theValue = aInputStream.readInt();
+          break;
+        }
+        default:
+          theValue = aInputStream.readInt();					
+          break;
+        }
+        return theValue;
+      } 
+      catch (Exception e)
+      {
+        throw new RuntimeException(e);
+      }
+    }
+		
+		
+
+    public void setStaticField(XDRInputStream aInputStream)
+    {
+      try
+      {
+        Object theValue = null;
+        long theValueId = 0;
+        int theStaticFieldId = aInputStream.readInt();
+        int theTypeId = aInputStream.readInt();
+        if (theTypeId == 1) {
+          theValueId = aInputStream.readLong();
+        } else {
+          theValue = getObjectValue(theTypeId, aInputStream);
+        }
+        int theProbeId = aInputStream.readInt();
+        long theParentTimestampFrame = aInputStream.readLong();
+        int theDepth = aInputStream.readInt();
+        long theCurrentTimestamp = aInputStream.readLong();
+        int theThreadId = aInputStream.readInt();
+        itsLogCollector.fieldWrite(
+            theThreadId, 
+            theParentTimestampFrame, 
+            (short)theDepth, 
+            theCurrentTimestamp, 
+            null, 
+            theProbeId, 
+            theStaticFieldId, 
+            null, 
+            theTypeId == 1 ? new ObjectId(theValueId) : theValue);
+      }
+      catch (Exception e)
+      {
+        throw new RuntimeException(e);
+      }			
+    }
+
+		
+    public void setAttribute(XDRInputStream aInputStream)
+    {
+      try
+      {
+        Object theValue = null;
+        long theValueId = 0;
+        int attributeId = aInputStream.readInt();
+        int targetId = aInputStream.readInt();
+        int theTypeId = aInputStream.readInt();
+        if (theTypeId == 1) {
+          theValueId = aInputStream.readLong();
+        } else {
+          theValue = getObjectValue(theTypeId, aInputStream);
+        }
+        int probeId = aInputStream.readInt();
+        long parentTimeStampFrame = aInputStream.readLong();
+        int depth = aInputStream.readInt();
+        long currentTimeStamp = aInputStream.readLong();
+        int threadId = aInputStream.readInt();
+        itsLogCollector.fieldWrite(
+            threadId, 
+            parentTimeStampFrame, 
+            (short)depth, 
+            currentTimeStamp, 
+            null, 
+            probeId, 
+            attributeId, 
+            new ObjectId(targetId), 
+            theTypeId == 1 ? new ObjectId(theValueId) : theValue);
+      }
+      catch (Exception e)
+      {
+        throw new RuntimeException(e);
+      }			
+    }
+
+		
+		
+    public void setLocal(XDRInputStream aInputStream)
+    {
+      try
+      {
+        Object theValue = null;
+        long theValueId = 0;
+        int theLocalId = aInputStream.readInt();
+        int theParentId = aInputStream.readInt();
+        int theTypeId = aInputStream.readInt();
+        if (theTypeId == 1) {
+          theValueId = aInputStream.readLong();
+        } else {
+          theValue = getObjectValue(theTypeId, aInputStream);
+        }
+        int theProbeId = aInputStream.readInt();
+        long theParentTimestamp = aInputStream.readLong();
+        int theDepth = aInputStream.readInt();
+        long theCurrentTimestamp = aInputStream.readLong();
+        int theThreadId = aInputStream.readInt();				
+        itsLogCollector.localWrite(
+            theThreadId,
+            theParentTimestamp, 
+            (short)theDepth, 
+            theCurrentTimestamp, 
+            null, 
+            theProbeId, 
+            theLocalId, 
+            theTypeId == 1 ? new ObjectId(theValueId) : theValue);
+      }
+      catch (Exception e)
+      {
+        throw new RuntimeException(e);
+      }			
+    }
+
+		
+    public void returnEvent(XDRInputStream aInputStream)
+    {
+      try
+      {
+        long theValueId = 0;
+        Object theValue = null;
+        int theBehaviorId = aInputStream.readInt();
+        int typeId = aInputStream.readInt();
+        if (typeId == 1) {
+          theValueId = aInputStream.readInt() & 0xffffffffL;
+        }
+        else{
+          theValue = getObjectValue(typeId, aInputStream);					
+        }
+        int theHasThrown = aInputStream.readInt();
+        int theProbeId = aInputStream.readInt();
+        long theParentTimestamp = aInputStream.readLong();
+        int theDepth = aInputStream.readInt();
+        long theCurrentTimestamp = aInputStream.readLong();
+        int theThreadId = aInputStream.readInt();
+        itsLogCollector.behaviorExit(
+            theThreadId, 
+            theParentTimestamp, 
+            (short)theDepth, 
+            theCurrentTimestamp, 
+            null,
+            theProbeId, 
+            theBehaviorId,
+            theHasThrown == 1? true : false,
+            typeId == 1 ? new ObjectId(theValueId) : theValue);
+      }
+      catch (Exception e)
+      {
+        throw new RuntimeException(e);
+      }
+    }
+
+		
+    @Override
+    public void run()
+    {
+      try
+      {
+        while (true)
+        {
+          int theEvent = itsStream.readInt();
+          switch (theEvent)
+          {
+          case REGISTER_EVENT:
+          {
+            int theObject = itsStream.readInt();
+            switch(theObject)
+            {
+            case OBJECT_CLASS:
+              registerClass(itsStream);
+              break;
+            case OBJECT_METHOD:
+              registerMethod(itsStream);
+              break;
+            case OBJECT_ATTRIBUTE:
+              registerAttribute(itsStream);						
+              break;
+            case OBJECT_FUNCTION:
+              registerFunction(itsStream);
+              break;
+            case OBJECT_LOCAL:
+              registerLocal(itsStream);
+              break;
+            case OBJECT_PROBE:
+              registerProbe(itsStream);
+              break;
+            case OBJECT_THREAD:
+              registerThread(itsStream);
+              break;
+            case OBJECT_STATICFIELD:
+              registerStaticField(itsStream);
+              break;
+            case OBJECT_OBJECT:
+              registerObject(itsStream);
+              break;
+            case OBJECT_EXCEPTION:
+              registerException(itsStream);
+              break;
+            case OBJECT_SPECIALMETHOD:
+              registerSpecialMethod(itsStream);
+              break;
+            default:
+              break;
+            }	
+          }
+          break;
+          case CALL_EVENT:
+          {
+            int theObject = itsStream.readInt();
+            switch (theObject)
+            {
+            case OBJECT_METHOD:
+              methodCall(itsStream);
+              break;
+            case OBJECT_FUNCTION:
+              functionCall(itsStream);
+              break;
+            default:
+              break;
+            }
+          }
+          break;
+          case SET_EVENT:
+          {
+            int theObject = itsStream.readInt();
+            switch (theObject)
+            {
+            case OBJECT_STATICFIELD:
+              setStaticField(itsStream);
+              break;
+            case OBJECT_ATTRIBUTE:
+              setAttribute(itsStream);
+              break;
+            case OBJECT_LOCAL:
+              setLocal(itsStream);
+              break;
+            default:
+              break;
+            }
+          }
+          break;	
+          case RETURN_EVENT:
+            returnEvent(itsStream);
+            break;
+          case INSTANTIATION_EVENT:
+            instantiationEvent(itsStream);
+            break;
+          default:
+            break;
+          }
+        }
+      }
+      catch (IOException e)
+      {
+        itsLogCollector.flush();
+        throw new RuntimeException(e);
+      }
+    }	
+  }
+}
+\end{lstlisting}
+\end{singlespace}
 
 \end{document}
