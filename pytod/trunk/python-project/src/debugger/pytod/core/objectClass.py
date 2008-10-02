@@ -115,9 +115,9 @@ class Class(object):
                 if theNameOp == 'STORE_NAME':
                     #print self.code.co_names[theValue]
                     #registro el atributo estático
-                    theStaticFieldName = self.code.co_names[theValue] 
+                    theStaticFieldName = self.code.co_names[theValue]                    
                     self.staticField.__updateStaticField__(
-                                                    {theStaticFieldName:-1}, 
+                                                    {theStaticFieldName:aLocals[theStaticFieldName]}, 
                                                     self.Id)
                     #creamos un metodo artificial para almacenar
                     #la definición de los atributos de clase
