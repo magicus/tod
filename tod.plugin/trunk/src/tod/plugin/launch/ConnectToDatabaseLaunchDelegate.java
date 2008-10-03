@@ -18,6 +18,7 @@ import tod.impl.dbgrid.RemoteGridSession;
 import tod.plugin.EclipseProgramLaunch;
 import tod.plugin.TODPlugin;
 import tod.plugin.TODPluginUtils;
+import tod.plugin.views.main.MainView;
 
 public class ConnectToDatabaseLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate
 {
@@ -33,12 +34,13 @@ public class ConnectToDatabaseLaunchDelegate extends AbstractJavaLaunchConfigura
 		
 		theConfig.set(TODConfig.COLLECTOR_HOST, getAddress(aConfiguration));
 		
+		MainView theView = TODPluginUtils.getMainView(true);
+		
 		aMonitor.worked(1);
 		IJavaProject theJavaProject = getJavaProject(aConfiguration);
-		ISession theSession = new RemoteGridSession(null, theConfig, true); 
+		ISession theSession = new RemoteGridSession(theView.getGUIManager(), null, theConfig, true); 
 		theSession.getLaunches().add(new EclipseProgramLaunch(aLaunch, theJavaProject));
 		
-		TODPluginUtils.getMainView(true);
 		TODSessionManager.getInstance().pCurrentSession().set(theSession);
 
 		aMonitor.done();
