@@ -29,6 +29,7 @@ import javax.swing.JComponent;
 
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
+import zz.utils.properties.IRWProperty;
 
 /**
  * Represents a debugging session on the client (frontend) side.
@@ -84,4 +85,11 @@ public interface ISession
 	 * with the database. 
 	 */
 	public boolean isAlive();
+	
+	/**
+	 * This property causes the agent on the debugged VM to enable/disable trace capture.
+	 * If the value is null, it means that the agent does not support enabling/disabling
+	 * (clients should not set the value to null, only the session can report that).
+	 */
+	public IRWProperty<Boolean> pCaptureEnabled();
 }

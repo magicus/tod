@@ -41,6 +41,8 @@ import tod.core.database.structure.IStructureDatabase;
 import tod.core.transport.CollectorLogReceiver;
 import tod.core.transport.LogReceiver;
 import tod.impl.database.structure.standard.HostInfo;
+import zz.utils.properties.IRWProperty;
+import zz.utils.properties.SimpleRWProperty;
 
 public class JavaTODServer extends TODServer
 {
@@ -52,6 +54,26 @@ public class JavaTODServer extends TODServer
 		new HashMap<String, ClientConnection>();
 	
 	private int itsCurrentHostId = 1;
+	private LogReceiver itsReceiver;
+	
+	private final IRWProperty<Boolean> pCaptureEnabled = 
+		new SimpleRWProperty<Boolean>(this, (Boolean) null)
+		{
+			@Override
+			protected Object canChange(Boolean aOldValue, Boolean aNewValue)
+			{
+				if (itsReceiver == null) return aNewValue == null ? ACCEPT : REJECT;
+				else return aNewValue != null ? ACCEPT : REJECT;
+			}
+			
+			@Override
+			protected void changed(Boolean aOldValue, Boolean aNewValue)
+			{
+				if (aNewValue == null) return;
+				else itsReceiver.sendEnableCapture(aNewValue);
+			}
+		};
+
 
 	public JavaTODServer(
 			TODConfig aConfig, 
@@ -122,6 +144,13 @@ public class JavaTODServer extends TODServer
 		}
 	}
 	
+	
+	@Override
+	public IRWProperty<Boolean> pCaptureEnabled()
+	{
+		return pCaptureEnabled;
+	}
+
 	@Override
 	protected void accepted(Socket aSocket)
 	{
@@ -141,16 +170,22 @@ public class JavaTODServer extends TODServer
 	
 	protected synchronized void acceptJavaConnection(Socket aSocket)
 	{
-		LogReceiver theReceiver;
 		try
 		{
-			theReceiver = createReceiver(
+			if (itsReceiver != null)
+			{
+				itsReceiver.eException().removeListener(getExceptionEvent());
+			}
+			
+			itsReceiver = createReceiver(
 					new HostInfo(itsCurrentHostId++),
 					new BufferedInputStream(aSocket.getInputStream()), 
 					new BufferedOutputStream(aSocket.getOutputStream()),
 					true,
 					getStructureDatabase(),
 					itsLogCollector);
+			
+			itsReceiver.eException().addListener(getExceptionEvent());
 		}
 		catch (IOException e1)
 		{
@@ -158,7 +193,7 @@ public class JavaTODServer extends TODServer
 		}
 		
 		
-		String theHostName = theReceiver.waitHostName();
+		String theHostName = itsReceiver.waitHostName();
 		if (itsConnections.containsKey(theHostName))
 		{
 			try
@@ -171,7 +206,7 @@ public class JavaTODServer extends TODServer
 				throw new RuntimeException(e);
 			}
 		}
-		itsConnections.put(theHostName, new ClientConnection(theReceiver));
+		itsConnections.put(theHostName, new ClientConnection(itsReceiver));
 		System.out.println("Accepted (java) connection from "+theHostName);
 		
 		if (itsConnections.size() == 1) connected();

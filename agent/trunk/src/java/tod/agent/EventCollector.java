@@ -22,6 +22,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.agent;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -31,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import tod.agent.transport.Commands;
+import tod.agent.transport.Command;
 import tod.agent.transport.LowLevelEventWriter;
 import tod.agent.transport.NakedLinkedList;
 import tod.agent.transport.PacketBufferSender;
@@ -55,6 +56,7 @@ public final class EventCollector
 		}
 	};
 	
+	private SocketChannel itsChannel;
 	private ThreadData itsDefaultThreadData;
 	
 	private List<ThreadData> itsThreadDataList = new ArrayList<ThreadData>();
@@ -70,10 +72,12 @@ public final class EventCollector
 	
 	public EventCollector(SocketChannel aChannel)
 	{
+		itsChannel = aChannel;
+		
 		// Send initialization
 		try
 		{
-			DataOutputStream theStream = new DataOutputStream(aChannel.socket().getOutputStream());
+			DataOutputStream theStream = new DataOutputStream(itsChannel.socket().getOutputStream());
 			theStream.writeInt(AgentConfig.CNX_JAVA);
 			theStream.writeUTF(AgentConfig.getClientName());
 			theStream.flush();
@@ -83,7 +87,8 @@ public final class EventCollector
 			throw new RuntimeException(e);
 		}
 		
-		itsSender = new PacketBufferSender(aChannel);
+		itsSender = new PacketBufferSender(itsChannel);
+		new CommandReceiver().start();
 		
 		AgentReady.COLLECTOR_READY = true;
 
@@ -840,14 +845,16 @@ public final class EventCollector
 	}
 	
 	/**
-	 * Sends {@link Commands#CMD_END}
+	 * Sends {@link Command#CMD_END}
 	 */
 	public void end()
 	{
-		assert ! itsDefaultThreadData.isSending();
-		LowLevelEventWriter theWriter = itsDefaultThreadData.packetStart(0);
+		ThreadData theThread = itsDefaultThreadData != null ? itsDefaultThreadData : getThreadData();
+		
+		assert ! theThread.isSending();
+		LowLevelEventWriter theWriter = theThread.packetStart(0);
 		theWriter.sendEnd();
-		itsDefaultThreadData.packetEnd();
+		theThread.packetEnd();
 	}
 	
 	private class ThreadData 
@@ -1027,4 +1034,58 @@ public final class EventCollector
 	}
 
 
+	/**
+	 * This thread reads incoming commands from the database.
+	 * @author gpothier
+	 */
+	private class CommandReceiver extends Thread
+	{
+		public CommandReceiver()
+		{
+			super("[TOD] Command receiver");
+			setDaemon(true);
+		}
+
+		@Override
+		public void run()
+		{
+			try
+			{
+				DataInputStream theIn = new DataInputStream(itsChannel.socket().getInputStream());
+				while(true)
+				{
+					byte theMessage = theIn.readByte();
+					if (theMessage >= Command.BASE)
+					{
+						Command theCommand = Command.VALUES[theMessage-Command.BASE];
+						switch (theCommand)
+						{
+						case CMD_ENABLECAPTURE:
+							boolean theEnable = theIn.readBoolean();
+							if (theEnable) 
+							{
+								System.out.println("[TOD] Enable capture request received.");
+								TOD.enableCapture();
+							}
+							else 
+							{
+								System.out.println("[TOD] Disable capture request received.");
+								TOD.disableCapture();
+							}
+							break;
+							
+						default: throw new RuntimeException("Not handled: "+theCommand); 
+						}
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				System.err.println("[TOD] FATAL:");
+				e.printStackTrace();
+				System.exit(1);
+			}
+			
+		}
+	}
 }

@@ -39,11 +39,14 @@ import java.util.Map;
 
 import tod.agent.AgentConfig;
 import tod.agent.AgentDebugFlags;
-import tod.agent.transport.Commands;
+import tod.agent.transport.Command;
 import tod.agent.transport.LowLevelEventType;
 import tod.core.DebugFlags;
 import tod.impl.database.structure.standard.HostInfo;
 import zz.utils.Utils;
+import zz.utils.notification.IEvent;
+import zz.utils.notification.IFireableEvent;
+import zz.utils.notification.SimpleEvent;
 
 /**
  * Receives (low-level) events from the debugged application through a socket.
@@ -87,6 +90,8 @@ public abstract class LogReceiver
 	 */
 	private Map<Integer, ThreadPacketBuffer> itsThreadPacketBuffers = new HashMap<Integer, ThreadPacketBuffer>();
 	
+	private IFireableEvent<Throwable> eException = new SimpleEvent<Throwable>();
+
 	public LogReceiver(
 			HostInfo aHostInfo,
 			InputStream aInStream, 
@@ -119,6 +124,14 @@ public abstract class LogReceiver
 		
 		itsReceiverThread.register(this);
 		if (aStart) start();
+	}
+	
+	/**
+	 * An event that is fired when an exception occurs in packet processing.
+	 */
+	public IEvent<Throwable> eException()
+	{
+		return eException;
 	}
 	
 	public void start()
@@ -182,6 +195,15 @@ public abstract class LogReceiver
 		itsEof = true;
 		processFlush();
 		notifyAll();
+		try
+		{
+			itsInStream.close();
+			itsOutStream.close();
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 	
 	/**
@@ -235,10 +257,29 @@ public abstract class LogReceiver
 	 */
 	private boolean process() throws IOException
 	{
-		return process(itsDataIn, itsDataOut);
+		return process(itsDataIn);
 	}
 	
-	protected boolean process(DataInputStream aDataIn, DataOutputStream aDataOut) throws IOException
+	protected synchronized void sendCommand(Command aCommand) throws IOException
+	{
+		itsDataOut.writeByte(aCommand.ordinal() + Command.BASE);
+	}
+	
+	public synchronized void sendEnableCapture(boolean aEnable)
+	{
+		try
+		{
+			sendCommand(Command.CMD_ENABLECAPTURE);
+			itsDataOut.writeBoolean(aEnable);
+			itsDataOut.flush();
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	protected boolean process(DataInputStream aDataIn) throws IOException
 	{
 		if (DebugFlags.SWALLOW)
 		{
@@ -292,7 +333,7 @@ public abstract class LogReceiver
 				boolean theCleanStart = (theFlags & 2) != 0;
 				boolean theCleanEnd = (theFlags & 1) != 0;
 				
-				Utils.println("[LogReceiver] Packet: th: %d, sz: %d, cs: %s, ce: %s", theThreadId, theSize, theCleanStart, theCleanEnd);
+//				Utils.println("[LogReceiver] Packet: th: %d, sz: %d, cs: %s, ce: %s", theThreadId, theSize, theCleanStart, theCleanEnd);
 				
 				aDataIn.readFully(itsDataBuffer.array(), 0, theSize);
 				itsDataBuffer.position(0);
@@ -340,14 +381,14 @@ public abstract class LogReceiver
 						if (AgentDebugFlags.TRANSPORT_LONGPACKETS_LOG)
 							System.out.println("[LogReceiver] Starting to process long packet for thread "+theThreadId+": "+theBuffer);
 						
-						processThreadPackets(theThreadId, theStream, aDataOut, AgentDebugFlags.TRANSPORT_LONGPACKETS_LOG);
+						processThreadPackets(theThreadId, theStream, AgentDebugFlags.TRANSPORT_LONGPACKETS_LOG);
 					}
 					else
 					{
 						assert theCleanStart;
 						
 						BufferDataInput theStream = new BufferDataInput(itsDataBuffer);
-						processThreadPackets(theThreadId, theStream, aDataOut, false);
+						processThreadPackets(theThreadId, theStream, false);
 					}
 				}
 			}
@@ -357,10 +398,11 @@ public abstract class LogReceiver
 				eof();
 				break;
 			}
-			catch (Exception e)
+			catch (Throwable e)
 			{
 				System.err.println("Exception in LogReceiver.process (msg #"+itsMessageCount+"):");
 				e.printStackTrace();
+				eException.fire(e);
 				eof();
 				break;
 			}
@@ -372,7 +414,6 @@ public abstract class LogReceiver
 	protected void processThreadPackets(
 			int aThreadId, 
 			BufferDataInput aStream, 
-			DataOutputStream aDataOut,
 			boolean aLogPackets)
 	throws IOException
 	{
@@ -388,16 +429,14 @@ public abstract class LogReceiver
 				break;
 			}
 			
-			if (theMessage >= Commands.BASE)
+			if (theMessage >= Command.BASE)
 			{
-				Commands theCommand = Commands.VALUES[theMessage-Commands.BASE];
+				Command theCommand = Command.VALUES[theMessage-Command.BASE];
 				switch (theCommand)
 				{
 				case CMD_FLUSH:
 					System.out.println("[LogReceiver] Received flush request.");
-					int theCount = processFlush();
-					aDataOut.writeInt(theCount);
-					aDataOut.flush();
+					processFlush();
 					break;
 					
 				case CMD_CLEAR:

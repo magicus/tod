@@ -64,8 +64,8 @@ import zz.utils.monitoring.Monitor.MonitorData;
  * Note: it is remote because it must be accessed by the master.
  * @author gpothier
  */
-public abstract class GridLogBrowser extends UnicastRemoteObject
-implements ILogBrowser, RIGridMasterListener, IScheduled
+public abstract class GridLogBrowser 
+implements ILogBrowser, IScheduled
 {
 	private static final long serialVersionUID = -5101014933784311102L;
 
@@ -85,9 +85,7 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 	private List<IHostInfo> itsPackedHosts;
 	
 	private Map<String, IHostInfo> itsHostsMap = new HashMap<String, IHostInfo>();
-	
-	private List<IGridBrowserListener> itsListeners = new ArrayList<IGridBrowserListener>();
-	
+		
 	/**
 	 * A cache of object types, see {@link GridObjectInspector#getType()}
 	 */
@@ -102,7 +100,6 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 	{
 		itsSession = aSession;
 		itsMaster = aMaster;
-		itsMaster.addListener(this);		
 		itsStructureDatabase = aStructureDatabase;
 		System.out.println("[GridLogBrowser] Instantiated.");
 	}
@@ -132,24 +129,6 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 	public ITypeInfo getCachedType(ObjectId aId) 
 	{
 		return itsTypeCache.get(aId).type;
-	}
-
-	public void addListener(IGridBrowserListener aListener)
-	{
-		itsListeners.add(aListener);
-	}
-	
-	public void removeListener(IGridBrowserListener aListener)
-	{
-		itsListeners.remove(aListener);
-	}
-	
-	private void fireMonitorData(int aNodeId, MonitorData aData)
-	{
-		for (IGridBrowserListener theListener : itsListeners)
-		{
-			theListener.monitorData(aNodeId, aData);
-		}
 	}
 
 	private List<EventIdCondition> getIdConditions(IEventFilter[] aFilters)
@@ -422,7 +401,7 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 	/**
 	 * Clears cached information so that they are lazily retrieved.
 	 */
-	private synchronized void clearStats()
+	public synchronized void clearStats()
 	{
 		itsEventsCount = 0;
 		itsDroppedEventsCount = 0;
@@ -448,27 +427,10 @@ implements ILogBrowser, RIGridMasterListener, IScheduled
 		}
 	}
 
-	public void eventsReceived() 
-	{
-		clearStats();
-	}
-
-	public void exception(Throwable aThrowable) 
-	{
-		aThrowable.printStackTrace();
-	}
-	
-	public void monitorData(int aNodeId, MonitorData aData) 
-	{
-		fireMonitorData(aNodeId, aData);
-	}
-
 	public <O> O exec(Query<O> aQuery)
 	{
 		return itsQueryResultCache.getResult(aQuery);
 	}
-
-
 
 	/**
 	 * @see TypeCache

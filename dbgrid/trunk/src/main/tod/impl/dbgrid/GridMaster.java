@@ -73,6 +73,8 @@ import zz.utils.Utils;
 import zz.utils.monitoring.Monitor;
 import zz.utils.monitoring.Monitor.MonitorData;
 import zz.utils.net.Server;
+import zz.utils.notification.IEvent;
+import zz.utils.notification.IEventListener;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.PropertyListener;
 
@@ -282,6 +284,14 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 				}
 			}
 		});
+		
+		theServer.eException().addListener(new IEventListener<Throwable>()
+		{
+			public void fired(IEvent< ? extends Throwable> aEvent, Throwable aData)
+			{
+				fireException(aData);
+			}
+		});
 
 		return theServer;
 	}
@@ -334,6 +344,12 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	{
 		itsServer.disconnect();
 	}
+	
+	public void sendEnableCapture(boolean aEnable)
+	{
+		itsServer.pCaptureEnabled().set(aEnable);
+	}
+
 
 	public void addListener(RIGridMasterListener aListener)
 	{
@@ -342,6 +358,21 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		itsListeners.add(theListenerData);
 		// theListenerData.fireEventsReceived();
 		System.out.println("[GridMaster] addListener done.");
+	}
+	
+	
+
+	public void removeListener(RIGridMasterListener aListener)
+	{
+		for (Iterator<ListenerData> theIterator = itsListeners.iterator(); theIterator.hasNext();)
+		{
+			ListenerData theListenerData = theIterator.next();
+			if (theListenerData.getListener().equals(aListener))
+			{
+				theIterator.remove();
+				break;
+			}
+		}
 	}
 
 	public void pushMonitorData(int aNodeId, MonitorData aData)
@@ -405,7 +436,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	}
 
 	/**
-	 * Fires the {@link RIGridMasterListener#eventsReceived()} message to all
+	 * Fires the {@link RIGridMasterListener#exception(Throwable)} message to all
 	 * listeners.
 	 */
 	public void fireException(Throwable aThrowable)
@@ -773,6 +804,11 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		public ListenerData(RIGridMasterListener aListener)
 		{
 			itsListener = aListener;
+		}
+		
+		public RIGridMasterListener getListener()
+		{
+			return itsListener;
 		}
 
 		public boolean fireEventsReceived()

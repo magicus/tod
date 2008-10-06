@@ -67,6 +67,8 @@ public interface RIGridMaster extends Remote, RIMonitoringServerProvider
 	 * Client: frontend
 	 */
 	public void addListener(RIGridMasterListener aListener) throws RemoteException;
+
+	public void removeListener(RIGridMasterListener aListener) throws RemoteException;
 	
 	/**
 	 * Clears the database managed by this master.
@@ -83,6 +85,11 @@ public interface RIGridMaster extends Remote, RIMonitoringServerProvider
 	 * Disconnects from currently connected debuggees.
 	 */
 	public void disconnect() throws RemoteException;
+	
+	/**
+	 * Tells the agent to enable/disable trace capture.
+	 */
+	public void sendEnableCapture(boolean aEnable) throws RemoteException;
 
 	/**
 	 * Registers a node so that it can be used by the grid.

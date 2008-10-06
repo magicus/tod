@@ -27,7 +27,6 @@ import java.util.Set;
 import tod.core.config.TODConfig;
 import tod.gui.IGUIManager;
 import zz.utils.Utils;
-import zz.utils.properties.IProperty;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
 
@@ -145,7 +144,7 @@ public class TODSessionManager
 		}
 		else
 		{
-			theCurrentSession = SessionUtils.createSession(aConfig);
+			theCurrentSession = SessionUtils.createSession(aRequestor, aConfig);
 			pCurrentSession.set(theCurrentSession);
 		}
 		

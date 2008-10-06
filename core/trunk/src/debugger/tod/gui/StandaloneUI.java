@@ -47,7 +47,8 @@ public class StandaloneUI extends JPanel
 	{
 		TODConfig theConfig = new TODConfig();
 		String theScheme = aUri != null ? aUri.getScheme() : null;
-		itsSession = SessionTypeManager.getInstance().createSession(theScheme, aUri, theConfig);
+		itsTraceView = new MyTraceView();
+		itsSession = SessionTypeManager.getInstance().createSession(itsTraceView, theScheme, aUri, theConfig);
 		createUI();
 	}
 
@@ -57,7 +58,6 @@ public class StandaloneUI extends JPanel
 		JTabbedPane theTabbedPane = new JTabbedPane();
 		add (theTabbedPane);
 		
-		itsTraceView = new MyTraceView();
 		itsTraceView.setSession(itsSession);
 		theTabbedPane.addTab("Trace view", itsTraceView);
 		

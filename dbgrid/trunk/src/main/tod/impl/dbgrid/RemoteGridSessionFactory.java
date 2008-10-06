@@ -27,6 +27,7 @@ import java.net.URI;
 import tod.core.config.TODConfig;
 import tod.core.session.ISession;
 import tod.core.session.ISessionFactory;
+import tod.gui.IGUIManager;
 
 /**
  * Session factory for {@link RemoteGridSession}.
@@ -34,10 +35,10 @@ import tod.core.session.ISessionFactory;
  */
 public class RemoteGridSessionFactory implements ISessionFactory
 {
-	public ISession create(URI aUri, TODConfig aConfig)
+	public ISession create(IGUIManager aGUIManager, URI aUri, TODConfig aConfig)
 	{
 		aConfig.set(TODConfig.COLLECTOR_HOST, aUri.getHost());
 		if (aUri.getPort() > 0) aConfig.set(TODConfig.COLLECTOR_PORT, aUri.getPort());
-		return new RemoteGridSession(aUri, aConfig, true);
+		return new RemoteGridSession(aGUIManager, aUri, aConfig, true);
 	}
 }

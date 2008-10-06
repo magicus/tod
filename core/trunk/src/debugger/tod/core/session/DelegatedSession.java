@@ -28,6 +28,7 @@ import javax.swing.JComponent;
 
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
+import zz.utils.properties.IRWProperty;
 
 /**
  * A session that delegates to another session.
@@ -85,5 +86,10 @@ public abstract class DelegatedSession implements ISession
 	public boolean isAlive()
 	{
 		return itsDelegate.isAlive();
+	}
+
+	public IRWProperty<Boolean> pCaptureEnabled()
+	{
+		return itsDelegate.pCaptureEnabled();
 	}
 }

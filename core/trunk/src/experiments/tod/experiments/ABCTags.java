@@ -55,6 +55,7 @@ import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.session.AbstractSession;
 import tod.core.session.ISession;
+import tod.gui.IGUIManager;
 import tod.gui.MinerUI;
 import tod.gui.activities.structure.StructureSeed;
 import tod.impl.bci.asm.ASMDebuggerConfig;
@@ -62,6 +63,7 @@ import tod.impl.bci.asm.ASMInstrumenter;
 import tod.impl.database.IBidiIterator;
 import tod.impl.database.structure.standard.StructureDatabase;
 import zz.utils.Utils;
+import zz.utils.properties.IRWProperty;
 
 public class ABCTags
 {
@@ -96,7 +98,7 @@ public class ABCTags
 	{
 		public MyMinerUI(TODConfig aConfig, ILogBrowser aLogBrowser)
 		{
-			setSession(new DummySession(aConfig, URI.create("dummy:dummy"), aLogBrowser));
+			setSession(new DummySession(this, aConfig, URI.create("dummy:dummy"), aLogBrowser));
 		}
 		
 		public void gotoSource(SourceRange aSourceRange)
@@ -119,9 +121,9 @@ public class ABCTags
 	{
 		private final ILogBrowser itsLogBrowser;
 
-		public DummySession(TODConfig aConfig, URI aUri, ILogBrowser aLogBrowser)
+		public DummySession(IGUIManager aGUIManager, TODConfig aConfig, URI aUri, ILogBrowser aLogBrowser)
 		{
-			super(aUri, aConfig);
+			super(aGUIManager, aUri, aConfig);
 			itsLogBrowser = aLogBrowser;
 		}
 
@@ -149,7 +151,11 @@ public class ABCTags
 		{
 			throw new UnsupportedOperationException();
 		}
-		
+
+		public IRWProperty<Boolean> pCaptureEnabled()
+		{
+			throw new UnsupportedOperationException();
+		}
 	}
 	
 	private static class MyLogBrowser implements ILogBrowser

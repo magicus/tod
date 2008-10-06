@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import tod.core.config.TODConfig;
+import tod.gui.IGUIManager;
 import tod.impl.local.LocalSessionFactory;
 
 /**
@@ -67,14 +68,14 @@ public class SessionTypeManager
 	/**
 	 * Returns the {@link ISession} subclass that handles the given schema. 
 	 */
-	public ISession createSession(String aSchema, URI aUri, TODConfig aConfig)
+	public ISession createSession(IGUIManager aGUIManager, String aSchema, URI aUri, TODConfig aConfig)
 	{
 		try
 		{
 			System.out.println(String.format("Creating session [%s:%s]", aSchema, aUri));
 			SessionType theSessionType = itsSchemaMap.get(aSchema);
 			ISessionFactory theFactory = theSessionType.getFactory();
-			return theFactory.create(aUri, aConfig);
+			return theFactory.create(aGUIManager, aUri, aConfig);
 		}
 		catch (Exception e)
 		{

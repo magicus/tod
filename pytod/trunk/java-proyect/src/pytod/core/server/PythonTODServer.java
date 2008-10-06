@@ -15,6 +15,8 @@ import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.server.TODServer;
+import zz.utils.properties.IRWProperty;
+import zz.utils.properties.SimpleRWProperty;
 
 /**
  * A Python TOD server accepts connections from debugged script Python and process instrumentation
@@ -28,6 +30,16 @@ public class PythonTODServer extends TODServer
 {
 	private final IMutableStructureDatabase itsStructureDatabase;
 	private final ILogCollector itsLogCollector;
+	
+	private final IRWProperty<Boolean> pCaptureEnabled = 
+		new SimpleRWProperty<Boolean>(this, (Boolean) null)
+		{
+			@Override
+			protected Object canChange(Boolean aOldValue, Boolean aNewValue)
+			{
+				return aNewValue == null ? ACCEPT : REJECT;
+			}
+		};
 
 	public PythonTODServer(
 			TODConfig aConfig,
@@ -54,6 +66,12 @@ public class PythonTODServer extends TODServer
 		{
 			throw new RuntimeException(e);
 		}
+	}
+	
+	@Override
+	public IRWProperty<Boolean> pCaptureEnabled()
+	{
+		return pCaptureEnabled;
 	}
 	
 	//events

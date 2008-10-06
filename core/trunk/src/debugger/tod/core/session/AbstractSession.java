@@ -27,19 +27,27 @@ import java.util.HashSet;
 import java.util.Set;
 
 import tod.core.config.TODConfig;
+import tod.gui.IGUIManager;
 
 public abstract class AbstractSession implements ISession
 {
 	private TODConfig itsConfig;
 	private final URI itsUri;
 	private final Set<IProgramLaunch> itsLaunches = new HashSet<IProgramLaunch>();
+	private final IGUIManager itsGUIManager;
 
-	public AbstractSession(URI aUri, TODConfig aConfig)
+	public AbstractSession(IGUIManager aGUIManager, URI aUri, TODConfig aConfig)
 	{
+		itsGUIManager = aGUIManager;
 		itsUri = aUri;
 		itsConfig = aConfig;
 	}
 
+	public IGUIManager getGUIManager()
+	{
+		return itsGUIManager;
+	}
+	
 	public URI getUri()
 	{
 		return itsUri;

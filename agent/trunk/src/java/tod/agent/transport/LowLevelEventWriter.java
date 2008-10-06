@@ -100,9 +100,9 @@ public class LowLevelEventWriter
 		aBuffer.put((byte) aType.ordinal());
 	}
 	
-	private static void sendCommand(ByteBuffer aBuffer, Commands aCommands) 
+	private static void sendCommand(ByteBuffer aBuffer, Command aCommands) 
 	{
-		aBuffer.put((byte) (aCommands.ordinal() + Commands.BASE));
+		aBuffer.put((byte) (aCommands.ordinal() + Command.BASE));
 	}
 	
 	private static void sendCallType(ByteBuffer aBuffer, BehaviorCallType aType)
@@ -502,19 +502,19 @@ public class LowLevelEventWriter
 
 	public void sendClear() 
 	{
-		sendCommand(itsBuffer, Commands.CMD_CLEAR);
+		sendCommand(itsBuffer, Command.CMD_CLEAR);
 		copyBuffer();
 	}
 
 	public void sendFlush() 
 	{
-		sendCommand(itsBuffer, Commands.CMD_FLUSH);
+		sendCommand(itsBuffer, Command.CMD_FLUSH);
 		copyBuffer();
 	}
 	
 	public void sendEnd() 
 	{
-		sendCommand(itsBuffer, Commands.CMD_END);
+		sendCommand(itsBuffer, Command.CMD_END);
 		copyBuffer();
 	}
 	

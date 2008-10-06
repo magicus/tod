@@ -155,10 +155,9 @@ implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider, ICont
 	private List<Action> itsActions = new ArrayList<Action>();
 
 	private ActionToolbar itsToolbar;
-
 	private ActionCombo itsActionCombo;
-	
 	private ActivityPanel itsCurrentView;
+	private CaptureEnableButton itsCaptureEnableButton;
 	
 	/**
 	 * This belongs to {@link IContext}, for now a gui manager == a context.
@@ -195,7 +194,10 @@ implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider, ICont
 		theCenterPanel.add (theNavButtonsPanel, BorderLayout.NORTH);
 		
 		add (theCenterPanel, BorderLayout.CENTER);
-		theNavButtonsPanel.add (createToolbar());
+		theNavButtonsPanel.add(createToolbar());
+		
+		itsCaptureEnableButton = new CaptureEnableButton();
+		theNavButtonsPanel.add(itsCaptureEnableButton);
 		theNavButtonsPanel.add(new JobSchedulerMonitor(itsJobScheduler));
 	}
 	
@@ -445,12 +447,14 @@ implements ILocationSelectionListener, IGUIManager, IJobSchedulerProvider, ICont
 			itsStringSearchAction.setEnabled(false);
 			itsActionCombo.setEnabled(false);
 			for (Action theAction : itsActions) theAction.setEnabled(false);
+			itsCaptureEnableButton.setCaptureEnableProperty(null);
 		}
 		else
 		{
 			itsStringSearchAction.setEnabled(itsSession.getConfig().get(TODConfig.INDEX_STRINGS));
 			itsActionCombo.setEnabled(true);
 			for (Action theAction : itsActions) theAction.setEnabled(true);
+			itsCaptureEnableButton.setCaptureEnableProperty(aSession.pCaptureEnabled());
 		}
 	}
 	

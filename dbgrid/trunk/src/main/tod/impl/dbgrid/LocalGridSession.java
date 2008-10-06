@@ -23,31 +23,23 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid;
 
 import java.net.URI;
-import java.rmi.RemoteException;
-
-import javax.swing.JComponent;
 
 import tod.core.config.TODConfig;
-import tod.core.database.browser.ILogBrowser;
-import tod.core.session.AbstractSession;
 import tod.core.session.ConnectionInfo;
-import tod.impl.dbgrid.aggregator.GridEventBrowser;
-import tod.impl.dbgrid.gui.GridConsole;
+import tod.gui.IGUIManager;
 
 /**
  * A single-process grid session, running in a separate vm.
  * This class handles the creation of the database process.
  * @author gpothier
  */
-public class LocalGridSession extends AbstractSession
+public class LocalGridSession extends AbstractGridSession
 {
 	private DBProcessManager itsProcessManager = DBProcessManager.getDefault();
-	private RIGridMaster itsMaster;
-	private ILogBrowser itsLogBrowser;
 	
-	public LocalGridSession(URI aUri, TODConfig aConfig)
+	public LocalGridSession(IGUIManager aGUIManager, URI aUri, TODConfig aConfig)
 	{
-		super(aUri, aConfig);
+		super(aGUIManager, aUri, aConfig);
 		init();
 	}
 	
@@ -57,45 +49,12 @@ public class LocalGridSession extends AbstractSession
 		itsProcessManager.setConfig(getConfig());
 		itsProcessManager.start();
 		
-		try
-		{
-			itsMaster = itsProcessManager.getMaster();
-			itsLogBrowser = DebuggerGridConfig.createRemoteLogBrowser(this, itsMaster); 
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		setMaster(itsProcessManager.getMaster());
 	}
 	
 	public void disconnect()
 	{
 		itsProcessManager.stop();
-	}
-
-
-	public JComponent createConsole()
-	{
-		return new GridConsole(itsMaster);
-	}
-
-
-	public void flush()
-	{
-		try
-		{
-			itsMaster.flush();
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-
-
-	public ILogBrowser getLogBrowser()
-	{
-		return itsLogBrowser;
 	}
 
 	public boolean isAlive()

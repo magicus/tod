@@ -27,6 +27,7 @@ import java.net.URI;
 import tod.core.config.TODConfig;
 import tod.core.session.ISession;
 import tod.core.session.ISessionFactory;
+import tod.gui.IGUIManager;
 
 /**
  * Factory for {@link LocalGridSession}.
@@ -35,9 +36,9 @@ import tod.core.session.ISessionFactory;
 public class LocalGridSessionFactory implements ISessionFactory
 {
 
-	public ISession create(URI aUri, TODConfig aConfig)
+	public ISession create(IGUIManager aGUIManager, URI aUri, TODConfig aConfig)
 	{
-		return new LocalGridSession(aUri, aConfig);
+		return new LocalGridSession(aGUIManager, aUri, aConfig);
 	}
 
 }

@@ -28,33 +28,27 @@ import java.rmi.UnknownHostException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-import javax.swing.JComponent;
-
 import tod.Util;
 import tod.core.config.TODConfig;
-import tod.core.database.browser.ILogBrowser;
-import tod.core.session.AbstractSession;
-import tod.impl.dbgrid.gui.GridConsole;
+import tod.gui.IGUIManager;
 
-public class RemoteGridSession extends AbstractSession
+public class RemoteGridSession extends AbstractGridSession
 {
 	public static final String TOD_GRID_SCHEME = "tod-grid";
-	private RIGridMaster itsMaster;
-	private ILogBrowser itsBrowser;
 	
 	/**
 	 * If false the remote master is cleared before use.
 	 */
 	private boolean itsUseExisting;
 	
-	public RemoteGridSession(URI aUri, TODConfig aConfig)
+	public RemoteGridSession(IGUIManager aGUIManager, URI aUri, TODConfig aConfig)
 	{
-		this(aUri, aConfig, false);
+		this(aGUIManager, aUri, aConfig, false);
 	}
 	
-	public RemoteGridSession(URI aUri, TODConfig aConfig, boolean aUseExisting)
+	public RemoteGridSession(IGUIManager aGUIManager, URI aUri, TODConfig aConfig, boolean aUseExisting)
 	{
-		super(aUri, aConfig);
+		super(aGUIManager, aUri, aConfig);
 		itsUseExisting = aUseExisting;
 		init();
 	}
@@ -75,11 +69,11 @@ public class RemoteGridSession extends AbstractSession
 			String theHost = getHost();
 			
 			Registry theRegistry = LocateRegistry.getRegistry(theHost, Util.TOD_REGISTRY_PORT);
-			itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.getRMIId(getConfig()));
-			itsMaster.setConfig(getConfig());
-			if (! itsUseExisting) itsMaster.clear();
+			RIGridMaster theMaster = (RIGridMaster) theRegistry.lookup(GridMaster.getRMIId(getConfig()));
+			theMaster.setConfig(getConfig());
+			if (! itsUseExisting) theMaster.clear();
 			
-			itsBrowser = DebuggerGridConfig.createRemoteLogBrowser(this, itsMaster);
+			setMaster(theMaster);
 		}
 		catch (UnknownHostException e)
 		{
@@ -102,9 +96,9 @@ public class RemoteGridSession extends AbstractSession
 	{
 		try
 		{
-			itsMaster.disconnect();
-			itsMaster.flush();
-			itsMaster.clear();
+			getMaster().disconnect();
+			getMaster().flush();
+			getMaster().clear();
 		}
 		catch (RemoteException e)
 		{
@@ -112,46 +106,18 @@ public class RemoteGridSession extends AbstractSession
 		}
 	}
 	
-	public void flush()
-	{
-		try
-		{
-			itsMaster.flush();
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-
-	public ILogBrowser getLogBrowser()
-	{
-		return itsBrowser;
-	}
-	
-	public JComponent createConsole()
-	{
-		return new GridConsole(itsMaster);
-	}
-	
-	protected RIGridMaster getMaster()
-	{
-		return itsMaster;
-	}
-
 	protected void reset()
 	{
-		itsMaster = null;
-		itsBrowser = null;
+		setMaster(null);
 	}
 	
 	public boolean isAlive()
 	{
-		if (itsMaster == null || itsBrowser == null) return false;
+		if (getMaster() == null || getLogBrowser() == null) return false;
 		
 		try
 		{
-			itsMaster.keepAlive();
+			getMaster().keepAlive();
 			return true;
 		}
 		catch (RemoteException e)

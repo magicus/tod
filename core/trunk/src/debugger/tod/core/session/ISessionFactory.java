@@ -25,6 +25,7 @@ package tod.core.session;
 import java.net.URI;
 
 import tod.core.config.TODConfig;
+import tod.gui.IGUIManager;
 
 /**
  * Factory for sessions. See {@link SessionTypeManager}.
@@ -35,5 +36,5 @@ public interface ISessionFactory
 	/**
 	 * Creates a session object for the given uri and config.
 	 */
-	public ISession create(URI aUri, TODConfig aConfig);
+	public ISession create(IGUIManager aGUIManager, URI aUri, TODConfig aConfig);
 }

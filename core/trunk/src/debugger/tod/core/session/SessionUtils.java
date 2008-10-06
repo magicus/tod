@@ -26,6 +26,7 @@ import java.lang.reflect.Constructor;
 import java.net.URI;
 
 import tod.core.config.TODConfig;
+import tod.gui.IGUIManager;
 import tod.impl.local.LocalSession;
 import zz.utils.Utils;
 
@@ -82,15 +83,15 @@ public class SessionUtils
 	/**
 	 * Creates a session for the specified config.
 	 */
-	public static ISession createSession(TODConfig aConfig)
+	public static ISession createSession(IGUIManager aGUIManager, TODConfig aConfig)
 	{
 		try
 		{
 			Class theSessionClass = getSessionClass(aConfig);
 			Constructor theConstructor = 
-				theSessionClass.getConstructor(URI.class, TODConfig.class);
+				theSessionClass.getConstructor(IGUIManager.class, URI.class, TODConfig.class);
 			
-			return (ISession) theConstructor.newInstance(null, aConfig);
+			return (ISession) theConstructor.newInstance(aGUIManager, null, aConfig);
 		}
 		catch (Exception e)
 		{

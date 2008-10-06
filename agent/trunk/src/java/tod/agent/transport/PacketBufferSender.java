@@ -33,8 +33,6 @@ import java.util.Queue;
 
 import tod.agent.AgentConfig;
 import tod.agent.AgentDebugFlags;
-import tod.agent.AgentUtils;
-import tod.agent.EventCollector;
 import tod.agent._AgentConfig;
 
 /**
@@ -47,7 +45,7 @@ import tod.agent._AgentConfig;
  */
 public class PacketBufferSender extends Thread
 {
-	private final ByteChannel itsOutputChannel;
+	private final ByteChannel itsChannel;
 	
 	/**
 	 * Used to send the header of each meta-packet.
@@ -66,12 +64,12 @@ public class PacketBufferSender extends Thread
 
 	private final MyShutdownHook itsShutdownHook;
 
-	public PacketBufferSender(ByteChannel aOutputChannel)
+	public PacketBufferSender(ByteChannel aChannel)
 	{
 		super("[TOD] Packet buffer sender");
 		setDaemon(true);
-		assert aOutputChannel != null;
-		itsOutputChannel = aOutputChannel;
+		assert aChannel != null;
+		itsChannel = aChannel;
 		
 		itsHeaderBuffer = ByteBuffer.allocate(9);
 		itsHeaderBuffer.order(ByteOrder.nativeOrder());
@@ -122,20 +120,20 @@ public class PacketBufferSender extends Thread
 						(thePendingBuffer.hasCleanStart() ? 2 : 0) 
 						| (thePendingBuffer.hasCleanEnd() ? 1 : 0);
 					
-					System.out.println(String.format(
-							"[TOD-PacketBufferSender] Sending packet (th: %d, sz: %d, cs: %s, ce: %s)",
-							theId,
-							theSize,
-							thePendingBuffer.hasCleanStart(),
-							thePendingBuffer.hasCleanEnd()));
+//					System.out.println(String.format(
+//							"[TOD-PacketBufferSender] Sending packet (th: %d, sz: %d, cs: %s, ce: %s)",
+//							theId,
+//							theSize,
+//							thePendingBuffer.hasCleanStart(),
+//							thePendingBuffer.hasCleanEnd()));
 					
 					itsHeaderBuffer.put((byte) theFlags);
 					
 					itsHeaderBuffer.flip();
-					itsOutputChannel.write(itsHeaderBuffer);
+					itsChannel.write(itsHeaderBuffer);
 					
 					theByteBuffer.flip();
-					itsOutputChannel.write(theByteBuffer);
+					itsChannel.write(theByteBuffer);
 					
 					theByteBuffer.clear();
 					

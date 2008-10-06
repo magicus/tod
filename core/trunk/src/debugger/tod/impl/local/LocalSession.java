@@ -33,9 +33,11 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.server.TODServer;
 import tod.core.session.AbstractSession;
+import tod.gui.IGUIManager;
 import tod.impl.database.structure.standard.HostInfo;
 import tod.impl.database.structure.standard.StructureDatabase;
 import tod.utils.PrintThroughCollector;
+import zz.utils.properties.IRWProperty;
 
 public class LocalSession extends AbstractSession 
 {
@@ -44,9 +46,9 @@ public class LocalSession extends AbstractSession
 	
 	private LocalBrowser itsBrowser;
 	
-	public LocalSession(URI aUri, TODConfig aConfig)
+	public LocalSession(IGUIManager aGUIManager, URI aUri, TODConfig aConfig)
 	{
-		super(aUri, aConfig);
+		super(aGUIManager, aUri, aConfig);
 		itsStructureDatabase = StructureDatabase.create(aConfig, "bouh");
 		itsBrowser = new LocalBrowser(this, itsStructureDatabase);
 		
@@ -94,5 +96,10 @@ public class LocalSession extends AbstractSession
 				getLogBrowser().getStructureDatabase());
 		
 		return theCollector;
+	}
+
+	public IRWProperty<Boolean> pCaptureEnabled()
+	{
+		return itsServer.pCaptureEnabled();
 	}
 }

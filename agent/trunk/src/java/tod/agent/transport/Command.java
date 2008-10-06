@@ -23,10 +23,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.agent.transport;
 
 /**
- * Commands that can be sent by the agent to the database.
+ * Commands that can be sent by the agent to the database and vice versa.
  * @author gpothier
  */
-public enum Commands
+public enum Command
 {
 	/**
 	 * This command flushes all buffered events and indexes.
@@ -46,7 +46,14 @@ public enum Commands
 	/**
 	 * This command notifies the database that this VM is ending.
 	 */
-	CMD_END;
+	CMD_END,
+	
+	/**
+	 * Tells the agent to enable/disable trace capture.
+	 * args: boolean(byte) aEnable
+	 * return: none 
+	 */
+	CMD_ENABLECAPTURE;
 	
 	/**
 	 * Base value for sending serialized commands
@@ -56,6 +63,6 @@ public enum Commands
 	/**
 	 * Cached values; call to values() is costly. 
 	 */
-	public static final Commands[] VALUES = values();
+	public static final Command[] VALUES = values();
 
 }

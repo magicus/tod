@@ -34,7 +34,7 @@ import tod.impl.evdbng.db.file.PagedFile.PageIOStream;
  */
 public class RoleTree extends BTree<RoleTuple>
 {
-	private AddTask itsCurrentTask = new AddTask();
+//	private AddTask itsCurrentTask = new AddTask();
 
 	public RoleTree(String aName, PagedFile aFile)
 	{
@@ -63,61 +63,61 @@ public class RoleTree extends BTree<RoleTuple>
 		theStream.writeByte(aRole);
 	}
 	
-	@Override
-	public void writeTo(PageIOStream aStream)
-	{
-		// Flush buffered tuples before writing out this tree
-		if (! itsCurrentTask.isEmpty()) DBExecutor.getInstance().submitAndWait(itsCurrentTask);
-		
-		super.writeTo(aStream);
-	}
-	
-	/**
-	 * Same as {@link #add(long, byte)} but uses the {@link DBExecutor}.
-	 */
-	public void addAsync(long aEventId, byte aRole)
-	{
-		itsCurrentTask.addTuple(aEventId, aRole);
-		if (itsCurrentTask.isFull()) 
-		{
-			DBExecutor.getInstance().submit(itsCurrentTask);
-			itsCurrentTask = new AddTask();
-		}
-	}
-
-	private class AddTask extends DBTask
-	{
-		private final long[] itsEventIds = new long[DebuggerGridConfigNG.DB_TASK_SIZE];
-		private final byte[] itsRoles = new byte[DebuggerGridConfigNG.DB_TASK_SIZE];
-		private int itsPosition = 0;
-		
-		public void addTuple(long aEventId, byte aRole)
-		{
-			itsEventIds[itsPosition] = aEventId;
-			itsRoles[itsPosition] = aRole;
-			itsPosition++;
-		}
-		
-		public boolean isEmpty()
-		{
-			return itsPosition == 0;
-		}
-		
-		public boolean isFull()
-		{
-			return itsPosition == itsEventIds.length;
-		}
-		
-		@Override
-		public void run()
-		{
-			for (int i=0;i<itsPosition;i++) add(itsEventIds[i], itsRoles[i]);
-		}
-
-		@Override
-		public int getGroup()
-		{
-			return RoleTree.this.hashCode();
-		}
-	}
+//	@Override
+//	public void writeTo(PageIOStream aStream)
+//	{
+//		// Flush buffered tuples before writing out this tree
+//		if (! itsCurrentTask.isEmpty()) DBExecutor.getInstance().submitAndWait(itsCurrentTask);
+//		
+//		super.writeTo(aStream);
+//	}
+//	
+//	/**
+//	 * Same as {@link #add(long, byte)} but uses the {@link DBExecutor}.
+//	 */
+//	public void addAsync(long aEventId, byte aRole)
+//	{
+//		itsCurrentTask.addTuple(aEventId, aRole);
+//		if (itsCurrentTask.isFull()) 
+//		{
+//			DBExecutor.getInstance().submit(itsCurrentTask);
+//			itsCurrentTask = new AddTask();
+//		}
+//	}
+//
+//	private class AddTask extends DBTask
+//	{
+//		private final long[] itsEventIds = new long[DebuggerGridConfigNG.DB_TASK_SIZE];
+//		private final byte[] itsRoles = new byte[DebuggerGridConfigNG.DB_TASK_SIZE];
+//		private int itsPosition = 0;
+//		
+//		public void addTuple(long aEventId, byte aRole)
+//		{
+//			itsEventIds[itsPosition] = aEventId;
+//			itsRoles[itsPosition] = aRole;
+//			itsPosition++;
+//		}
+//		
+//		public boolean isEmpty()
+//		{
+//			return itsPosition == 0;
+//		}
+//		
+//		public boolean isFull()
+//		{
+//			return itsPosition == itsEventIds.length;
+//		}
+//		
+//		@Override
+//		public void run()
+//		{
+//			for (int i=0;i<itsPosition;i++) add(itsEventIds[i], itsRoles[i]);
+//		}
+//
+//		@Override
+//		public int getGroup()
+//		{
+//			return RoleTree.this.hashCode();
+//		}
+//	}
 }

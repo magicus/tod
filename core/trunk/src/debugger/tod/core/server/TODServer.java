@@ -24,9 +24,13 @@ package tod.core.server;
 
 import tod.core.DebugFlags;
 import tod.core.config.TODConfig;
+import tod.core.session.ISession;
 import tod.utils.ConfigUtils;
 import tod.utils.TODUtils;
 import zz.utils.net.Server;
+import zz.utils.notification.IEvent;
+import zz.utils.notification.IFireableEvent;
+import zz.utils.notification.SimpleEvent;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
@@ -42,6 +46,7 @@ public abstract class TODServer extends Server
 {
 	private TODConfig itsConfig;
 	private IRWProperty<Boolean> pConnected = new SimpleRWProperty<Boolean>();
+	private IFireableEvent<Throwable> eException = new SimpleEvent<Throwable>();
 	
 	public TODServer(TODConfig aConfig)
 	{
@@ -115,6 +120,21 @@ public abstract class TODServer extends Server
 	protected void connected()
 	{
 		pConnected.set(true);
+	}
+	
+	/**
+	 * See {@link ISession#pCaptureEnabled()}.
+	 */
+	public abstract IRWProperty<Boolean> pCaptureEnabled();
+	
+	public IEvent<Throwable> eException()
+	{
+		return eException;
+	}
+	
+	protected IFireableEvent<Throwable> getExceptionEvent()
+	{
+		return eException;
 	}
 	
 	/**

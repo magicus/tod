@@ -34,7 +34,7 @@ import tod.impl.evdbng.db.file.PagedFile.PageIOStream;
  */
 public class SimpleTree extends BTree<SimpleTuple>
 {
-	private AddTask itsCurrentTask = new AddTask();
+//	private AddTask itsCurrentTask = new AddTask();
 
 	public SimpleTree(String aName, PagedFile aFile)
 	{
@@ -61,59 +61,59 @@ public class SimpleTree extends BTree<SimpleTuple>
 		addLeafKey(aEventId);
 	}
 	
-	@Override
-	public void writeTo(PageIOStream aStream)
-	{
-		// Flush buffered tuples before writing out this tree
-		if (! itsCurrentTask.isEmpty()) DBExecutor.getInstance().submitAndWait(itsCurrentTask);
-		
-		super.writeTo(aStream);
-	}
-	
-	/**
-	 * Same as {@link #add(long)} but uses the {@link DBExecutor}.
-	 */
-	public void addAsync(long aEventId)
-	{
-		itsCurrentTask.addTuple(aEventId);
-		if (itsCurrentTask.isFull()) 
-		{
-			DBExecutor.getInstance().submit(itsCurrentTask);
-			itsCurrentTask = new AddTask();
-		}
-	}
-
-	private class AddTask extends DBTask
-	{
-		private final long[] itsEventIds = new long[DebuggerGridConfigNG.DB_TASK_SIZE];
-		private int itsPosition = 0;
-		
-		public void addTuple(long aEventId)
-		{
-			itsEventIds[itsPosition] = aEventId;
-			itsPosition++;
-		}
-		
-		public boolean isEmpty()
-		{
-			return itsPosition == 0;
-		}
-		
-		public boolean isFull()
-		{
-			return itsPosition == itsEventIds.length;
-		}
-		
-		@Override
-		public void run()
-		{
-			for (int i=0;i<itsPosition;i++) add(itsEventIds[i]);
-		}
-
-		@Override
-		public int getGroup()
-		{
-			return SimpleTree.this.hashCode();
-		}
-	}
+//	@Override
+//	public void writeTo(PageIOStream aStream)
+//	{
+//		// Flush buffered tuples before writing out this tree
+//		if (! itsCurrentTask.isEmpty()) DBExecutor.getInstance().submitAndWait(itsCurrentTask);
+//		
+//		super.writeTo(aStream);
+//	}
+//	
+//	/**
+//	 * Same as {@link #add(long)} but uses the {@link DBExecutor}.
+//	 */
+//	public void addAsync(long aEventId)
+//	{
+//		itsCurrentTask.addTuple(aEventId);
+//		if (itsCurrentTask.isFull()) 
+//		{
+//			DBExecutor.getInstance().submit(itsCurrentTask);
+//			itsCurrentTask = new AddTask();
+//		}
+//	}
+//
+//	private class AddTask extends DBTask
+//	{
+//		private final long[] itsEventIds = new long[DebuggerGridConfigNG.DB_TASK_SIZE];
+//		private int itsPosition = 0;
+//		
+//		public void addTuple(long aEventId)
+//		{
+//			itsEventIds[itsPosition] = aEventId;
+//			itsPosition++;
+//		}
+//		
+//		public boolean isEmpty()
+//		{
+//			return itsPosition == 0;
+//		}
+//		
+//		public boolean isFull()
+//		{
+//			return itsPosition == itsEventIds.length;
+//		}
+//		
+//		@Override
+//		public void run()
+//		{
+//			for (int i=0;i<itsPosition;i++) add(itsEventIds[i]);
+//		}
+//
+//		@Override
+//		public int getGroup()
+//		{
+//			return SimpleTree.this.hashCode();
+//		}
+//	}
 }
