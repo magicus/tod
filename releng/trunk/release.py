@@ -7,8 +7,8 @@ import urllib
 AGENT_LIBS_URL = "http://pleiad.dcc.uchile.cl/files/tod/tod-agent/"
 
 def release(version):
-	zzuMod = useSVN('zz.utils', 'http://stgo.dyndns.org/svn/gpothier/devel/zz.utils')
-	zzeuMod = useSVN('zz.eclipse.utils', 'http://stgo.dyndns.org/svn/gpothier/devel/zz.eclipse.utils/')
+	zzuMod = useSVN('zz.utils', 'http://pleiad.dcc.uchile.cl/svn/zz/devel/zz.utils')
+	zzeuMod = useSVN('zz.eclipse.utils', 'http://pleiad.dcc.uchile.cl/svn/zz/devel/zz.eclipse.utils/')
 
 	tpMod = useSVN('tod.plugin', 'http://pleiad.dcc.uchile.cl/svn/tod/tod.plugin/trunk/')
 	tpaMod = useSVN('tod.plugin.ajdt', 'http://pleiad.dcc.uchile.cl/svn/tod/tod.plugin.ajdt/')
