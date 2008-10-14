@@ -86,7 +86,7 @@ public abstract class DatabaseNode
 	
 	private StringIndexer itsStringIndexer;
 	
-	private FlusherThread itsFlusherThread = DebugFlags.ENABLE_AUTOFLUSH ? new FlusherThread() : null;
+	private FlusherThread itsFlusherThread = new FlusherThread();
 
 	public DatabaseNode() 
 	{
@@ -103,6 +103,22 @@ public abstract class DatabaseNode
 	public void setConfig(TODConfig aConfig)
 	{
 		itsConfig = aConfig;
+		
+		// Update autoflush delay
+		itsFlusherThread.setDelay(itsConfig.get(TODConfig.DB_AUTOFLUSH_DELAY));
+
+		// Update string indexer
+		if (getConfig().get(TODConfig.INDEX_STRINGS))
+		{
+			System.out.println("[LeafEventDispatcher] Creating string indexer");
+			itsStringIndexer = new StringIndexer(getConfig(), new File(itsRootDirectory, "strings.bin"));
+		}
+		else
+		{
+			System.out.println("[LeafEventDispatcher] Not creating string indexer");
+			itsStringIndexer = null;
+		}
+
 	}
 	
 	public void connectedToMaster(RIGridMaster aMaster, int aNodeId)
@@ -159,17 +175,6 @@ public abstract class DatabaseNode
 		}
 		
 		itsObjectsDatabases.clear();
-		
-		if (getConfig().get(TODConfig.INDEX_STRINGS))
-		{
-			System.out.println("[LeafEventDispatcher] Creating string indexer");
-			itsStringIndexer = new StringIndexer(getConfig(), new File(itsRootDirectory, "strings.bin"));
-		}
-		else
-		{
-			System.out.println("[LeafEventDispatcher] Not creating string indexer");
-			itsStringIndexer = null;
-		}
 	}
 	
 	/**
@@ -494,16 +499,21 @@ public abstract class DatabaseNode
 	 */
 	private class FlusherThread extends Thread
 	{
-		private static final int SECS_BEFORE_FLUSH = 5;
-		
 		private boolean itsActive = false;
 		private boolean itsFlushed = true;
+		
+		private int itsDelay = 0;
 		
 		public FlusherThread()
 		{
 			super("FlusherThread");
 			setPriority(MIN_PRIORITY);
 			start();
+		}
+		
+		public void setDelay(int aDelay)
+		{
+			itsDelay = aDelay;
 		}
 		
 		/**
@@ -523,7 +533,13 @@ public abstract class DatabaseNode
 			{
 				while(true)
 				{
-					wait(SECS_BEFORE_FLUSH * 1000);
+					if (itsDelay == 0)
+					{
+						wait(5000);
+						continue;
+					}
+					
+					wait(itsDelay * 1000);
 
 					if (! itsActive)
 					{
@@ -539,7 +555,7 @@ public abstract class DatabaseNode
 					{
 						// Flush old events and objects
 						System.out.println("[FlusherThread] Performing partial flush...");
-						flushOld(SECS_BEFORE_FLUSH * 1000000000L, true);
+						flushOld(itsDelay * 1000000000L, true);
 						System.out.println("[FlusherThread] Partial flush done.");
 					}
 					

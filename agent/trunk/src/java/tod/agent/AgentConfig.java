@@ -47,6 +47,7 @@ public class AgentConfig
 	
 	public static final String PARAM_COLLECTOR_HOST = "collector-host";
 	public static final String PARAM_COLLECTOR_PORT = "collector-port";
+	public static final String PARAM_CAPTURE_AT_START = "capture-at-start";
 	
 	/**
 	 * This parameter defines the name of the host the agent runs on.

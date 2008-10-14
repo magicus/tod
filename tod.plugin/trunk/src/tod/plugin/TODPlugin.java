@@ -71,8 +71,6 @@ public class TODPlugin extends AbstractUIPlugin
 				+theBase+"/tod-dbgrid.jar"+File.pathSeparator
 				+theBase+"/tod-evdb1.jar"+File.pathSeparator
 				+theBase+"/tod-agent15.jar"+File.pathSeparator
-				+theBase+"/asm-all-3.1.jar"+File.pathSeparator
-				+theBase+"/aspectjrt.jar"+File.pathSeparator
 				+theBase+"/zz.utils.jar";
 		}
 		else
@@ -82,8 +80,6 @@ public class TODPlugin extends AbstractUIPlugin
 				+theDevPath+"/TOD-agent/bin"+File.pathSeparator
 				+theDevPath+"/TOD-dbgrid/bin"+File.pathSeparator
 				+theDevPath+"/TOD-evdb1/bin"+File.pathSeparator
-				+theBase+"/asm-all-3.1.jar"+File.pathSeparator
-				+theBase+"/aspectjrt.jar"+File.pathSeparator
 				+theDevPath+"/zz.utils/bin";
 			
 			if (System.getProperty("agent14.path") == null) System.setProperty("agent14.path", theDevPath+"/TOD-agent/build/tod-agent14.jar");
@@ -91,6 +87,11 @@ public class TODPlugin extends AbstractUIPlugin
 			if (System.getProperty("bcilib.path") == null) System.setProperty("bcilib.path", theDevPath+"/TOD-agent");
 
 		}
+
+		DBProcessManager.cp += File.pathSeparator
+			+theBase+"/asm-all-3.1.jar"+File.pathSeparator
+			+theBase+"/aspectjrt.jar"+File.pathSeparator
+			+theBase+"/lucene-core-2.0.0.jar";
 		
 		DBProcessManager.lib = theBase;
 	}

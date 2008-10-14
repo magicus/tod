@@ -119,6 +119,15 @@ public class TODConfig extends PublicCloneable implements Serializable
 					"If true, the native agent sets up a callback that captures " + "exceptions.",
 					true);
 
+	public static final BooleanItem AGENT_CAPTURE_AT_START =
+		new BooleanItem(
+				ConfigLevel.ADVANCED,
+				AgentConfig.PARAM_CAPTURE_AT_START,
+				"Agent - capture trace at start",
+				"Whether trace capture should be enabled when the agent starts.",
+				true);
+
+
 	public static final StringItem STRUCTURE_DATABASE_LOCATION =
 			new StringItem(
 					ConfigLevel.NORMAL,
@@ -242,6 +251,15 @@ public class TODConfig extends PublicCloneable implements Serializable
 					"Database process timeout",
 					"The time (in seconds) the debugger should wait for the database process to start.",
 					30);
+	
+	public static final IntegerItem DB_AUTOFLUSH_DELAY =
+			new IntegerItem(
+					ConfigLevel.ADVANCED,
+					"db-autoflush-delay",
+					"Database autoflush delay (seconds)",
+					"The delay, in seconds, between automatic database flushes. Setting it to 0 disables "
+							+"automatic flushes, which is sometimes needed to avoid 'Out of order events' errors.",
+					2);
 
 	public static final BooleanItem WITH_ASPECTS =
 			new BooleanItem(

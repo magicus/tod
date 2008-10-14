@@ -39,7 +39,13 @@ public class TOD
 	/**
 	 * If > 0, trace capture is activated
 	 */
-	private static int CAPTURE_ENABLED = 1;
+	private static int CAPTURE_ENABLED;
+	
+	static
+	{
+		CAPTURE_ENABLED = AgentUtils.readBoolean(AgentConfig.PARAM_CAPTURE_AT_START, true) ? 1 : 0;
+		AgentReady.CAPTURE_ENABLED = CAPTURE_ENABLED > 0;
+	}
 	
 	/**
 	 * Clears all previously recorded events.
@@ -85,6 +91,11 @@ public class TOD
 	{
 		CAPTURE_ENABLED--;
 		AgentReady.CAPTURE_ENABLED = CAPTURE_ENABLED > 0;
+	}
+	
+	static int captureEnabled()
+	{
+		return CAPTURE_ENABLED;
 	}
 	
 }

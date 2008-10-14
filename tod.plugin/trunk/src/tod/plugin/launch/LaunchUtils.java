@@ -428,6 +428,7 @@ public class LaunchUtils
 			theVMArgs.add(TODConfig.CLIENT_NAME.javaOpt(theConfig));
 			theVMArgs.add(TODConfig.AGENT_CACHE_PATH.javaOpt(theConfig));
 			theVMArgs.add(TODConfig.AGENT_VERBOSE.javaOpt(theConfig));
+			theVMArgs.add(TODConfig.AGENT_CAPTURE_AT_START.javaOpt(theConfig));
 			
 			return theVMArgs;
 		}
@@ -487,6 +488,7 @@ public class LaunchUtils
 			theVMArgs.add(TODConfig.CLIENT_NAME.javaOpt(theConfig));
 			theVMArgs.add(TODConfig.AGENT_CACHE_PATH.javaOpt(theConfig));
 			theVMArgs.add(TODConfig.AGENT_VERBOSE.javaOpt(theConfig));
+			theVMArgs.add(TODConfig.AGENT_CAPTURE_AT_START.javaOpt(theConfig));
 			
 			return theVMArgs;
 		}

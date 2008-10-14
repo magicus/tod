@@ -45,6 +45,12 @@ import tod.agent.transport.PacketBufferSender;
  */
 public final class EventCollector 
 {
+	static
+	{
+		// Force loading of TOD
+		TOD.captureEnabled();
+	}
+	
 	private static PrintStream itsPrintStream = AgentDebugFlags.EVENT_INTERPRETER_PRINT_STREAM;
 	
 	private ThreadLocal<ThreadData> itsThreadData = new ThreadLocal<ThreadData>() 

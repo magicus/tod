@@ -42,7 +42,7 @@ public abstract class AbstractGridSession extends AbstractSession
 	private GridLogBrowser itsBrowser;
 
 	private final IRWProperty<Boolean> pCaptureEnabled = 
-		new SimpleRWProperty<Boolean>(this, true)
+		new SimpleRWProperty<Boolean>(this, getConfig().get(TODConfig.AGENT_CAPTURE_AT_START))
 		{
 			@Override
 			protected Object canChange(Boolean aOldValue, Boolean aNewValue)
@@ -102,7 +102,6 @@ public abstract class AbstractGridSession extends AbstractSession
 			throw new RuntimeException(e);
 		}
 	}
-	
 
 	public IRWProperty<Boolean> pCaptureEnabled()
 	{

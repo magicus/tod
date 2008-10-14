@@ -185,11 +185,6 @@ public class DebugFlags
 	public static final String DB_LOG_DIR = ConfigUtils.readString("db-log-dir", null);
 	
 	/**
-	 * Whether the FlusherThread should be enabled.
-	 */
-	public static final boolean ENABLE_AUTOFLUSH = ConfigUtils.readBoolean("enable-autoflush", false);
-		
-	/**
 	 * Whether the TOD servers threads (eg. JavaTODServer) should be daemons.
 	 */
 	public static final boolean TOD_SERVER_DAEMON = ConfigUtils.readBoolean("tod-server-daemon", false);
