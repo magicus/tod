@@ -19,7 +19,7 @@ MA 02111-1307 USA
 
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
-*/
+ */
 package tod.core.config;
 
 import java.io.File;
@@ -120,13 +120,12 @@ public class TODConfig extends PublicCloneable implements Serializable
 					true);
 
 	public static final BooleanItem AGENT_CAPTURE_AT_START =
-		new BooleanItem(
-				ConfigLevel.ADVANCED,
-				AgentConfig.PARAM_CAPTURE_AT_START,
-				"Agent - capture trace at start",
-				"Whether trace capture should be enabled when the agent starts.",
-				true);
-
+			new BooleanItem(
+					ConfigLevel.ADVANCED,
+					AgentConfig.PARAM_CAPTURE_AT_START,
+					"Agent - capture trace at start",
+					"Whether trace capture should be enabled when the agent starts.",
+					true);
 
 	public static final StringItem STRUCTURE_DATABASE_LOCATION =
 			new StringItem(
@@ -251,14 +250,14 @@ public class TODConfig extends PublicCloneable implements Serializable
 					"Database process timeout",
 					"The time (in seconds) the debugger should wait for the database process to start.",
 					30);
-	
+
 	public static final IntegerItem DB_AUTOFLUSH_DELAY =
 			new IntegerItem(
 					ConfigLevel.ADVANCED,
 					"db-autoflush-delay",
 					"Database autoflush delay (seconds)",
 					"The delay, in seconds, between automatic database flushes. Setting it to 0 disables "
-							+"automatic flushes, which is sometimes needed to avoid 'Out of order events' errors.",
+							+ "automatic flushes, which is sometimes needed to avoid 'Out of order events' errors.",
 					2);
 
 	public static final BooleanItem WITH_ASPECTS =
@@ -285,15 +284,35 @@ public class TODConfig extends PublicCloneable implements Serializable
 					"Type of server interface",
 					"Class name of the TOD server factory.",
 					JavaTODServerFactory.class.getName());
-	
+
 	public static final BooleanItem BCI_PRELOAD_CLASSES =
 			new BooleanItem(
 					ConfigLevel.ADVANCED,
 					"bci-preload-classes",
 					"Class preloading in instrumented code",
 					"Whether instrumented code should preload classes on which methods are about to be called. "
-						+"This permits to optimize the information sent to the database in some cases.",
+							+ "This permits to optimize the information sent to the database in some cases.",
 					true);
+
+	public static final BooleanItem DB_TWOPHASES =
+			new BooleanItem(
+					ConfigLevel.ADVANCED,
+					"db-twophases",
+					"Split trace recording into two phases",
+					"If set to true, raw events emitted by the program are first written out to disk "
+							+ "without any processing; when the program terminates, they are indexed. This permits "
+							+ "to reduce the runtime overhead to the minimum.",
+					false);
+
+	public static final StringItem DB_RAW_EVENTS_DIR =
+			new StringItem(
+					ConfigLevel.ADVANCED,
+					"db-raw-events-dir",
+					"Directory to store raw events file",
+					"Defines the path where where the raw events file is stored (only valid "
+							+ "if two-phases recording is enabled). If possible, do not use the same disk as the"
+							+ "database files.",
+					HOME + File.separatorChar + "tmp" + File.separatorChar + "tod");
 
 	/**
 	 * Contains all available configuration items.

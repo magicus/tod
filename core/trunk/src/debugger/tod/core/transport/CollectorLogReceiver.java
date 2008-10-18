@@ -29,6 +29,7 @@ import java.io.OutputStream;
 
 import tod.agent.transport.LowLevelEventType;
 import tod.core.ILogCollector;
+import tod.core.config.TODConfig;
 import tod.core.database.structure.IStructureDatabase;
 import tod.impl.database.structure.standard.HostInfo;
 
@@ -44,6 +45,7 @@ public class CollectorLogReceiver extends LogReceiver
 	private final EventInterpreter itsInterpreter;
 	
 	public CollectorLogReceiver(
+			TODConfig aConfig,
 			HostInfo aHostInfo, 
 			InputStream aInStream, 
 			OutputStream aOutStream, 
@@ -51,7 +53,7 @@ public class CollectorLogReceiver extends LogReceiver
 			IStructureDatabase aStructureDatabase,
 			ILogCollector aCollector)
 	{
-		super(aHostInfo, aInStream, aOutStream, false);
+		super(aConfig, aHostInfo, aInStream, aOutStream, false);
 		itsCollector = aCollector;
 		itsInterpreter = new EventInterpreter(aStructureDatabase, itsCollector);
 		if (aStart) start();

@@ -24,6 +24,7 @@ package tod.agent;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
@@ -1084,6 +1085,10 @@ public final class EventCollector
 						}
 					}
 				}
+			}
+			catch (EOFException e)
+			{
+				System.out.println("[TOD] CommandReceiver eof");
 			}
 			catch (Exception e)
 			{

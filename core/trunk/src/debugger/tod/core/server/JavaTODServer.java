@@ -222,7 +222,14 @@ public class JavaTODServer extends TODServer
 			IStructureDatabase aStructureDatabase,
 			ILogCollector aCollector)
 	{
-		return new CollectorLogReceiver(aHostInfo, aInStream, aOutStream, aStart, aStructureDatabase, aCollector)
+		return new CollectorLogReceiver(
+				getConfig(), 
+				aHostInfo, 
+				aInStream, 
+				aOutStream, 
+				aStart, 
+				aStructureDatabase, 
+				aCollector)
 		{
 			@Override
 			protected synchronized void eof()

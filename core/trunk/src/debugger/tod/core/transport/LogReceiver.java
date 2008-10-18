@@ -22,11 +22,17 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.transport;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -42,7 +48,9 @@ import tod.agent.AgentDebugFlags;
 import tod.agent.transport.Command;
 import tod.agent.transport.LowLevelEventType;
 import tod.core.DebugFlags;
+import tod.core.config.TODConfig;
 import tod.impl.database.structure.standard.HostInfo;
+import tod.utils.TODUtils;
 import zz.utils.Utils;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IFireableEvent;
@@ -55,6 +63,8 @@ import zz.utils.notification.SimpleEvent;
 public abstract class LogReceiver 
 {
 	public static final ReceiverThread DEFAULT_THREAD = new ReceiverThread();
+	
+	private final TODConfig itsConfig;
 	
 	private ReceiverThread itsReceiverThread;
 	
@@ -84,6 +94,12 @@ public abstract class LogReceiver
 	private final ByteBuffer itsDataBuffer;
 	
 	/**
+	 * Output stream for storing events in two-phases mode.
+	 */
+	private final OutputStream itsFileOut;
+	private final File itsFile;
+	
+	/**
 	 * This map contains buffers that are used to reassemble long packets.
 	 * It only contains the entry corresponding to a given thread if a long packet is currently being
 	 * processed.
@@ -93,21 +109,24 @@ public abstract class LogReceiver
 	private IFireableEvent<Throwable> eException = new SimpleEvent<Throwable>();
 
 	public LogReceiver(
+			TODConfig aConfig,
 			HostInfo aHostInfo,
 			InputStream aInStream, 
 			OutputStream aOutStream, 
 			boolean aStart)
 	{
-		this(DEFAULT_THREAD, aHostInfo, aInStream, aOutStream, aStart);
+		this(aConfig, DEFAULT_THREAD, aHostInfo, aInStream, aOutStream, aStart);
 	}
 	
 	public LogReceiver(
+			TODConfig aConfig,
 			ReceiverThread aReceiverThread,
 			HostInfo aHostInfo,
 			InputStream aInStream, 
 			OutputStream aOutStream, 
 			boolean aStart)
 	{
+		itsConfig = aConfig;
 		itsReceiverThread = aReceiverThread;
 		itsHostInfo = aHostInfo;
 		itsInStream = aInStream;
@@ -123,6 +142,26 @@ public abstract class LogReceiver
 		itsDataBuffer.order(ByteOrder.nativeOrder());
 		
 		itsReceiverThread.register(this);
+		
+		if (itsConfig.get(TODConfig.DB_TWOPHASES))
+		{
+			try
+			{
+				itsFile = new File(itsConfig.get(TODConfig.DB_RAW_EVENTS_DIR)+"/events.raw");
+				itsFile.delete();
+				itsFileOut = new BufferedOutputStream(new FileOutputStream(itsFile));
+			}
+			catch (FileNotFoundException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		else
+		{
+			itsFile = null;
+			itsFileOut = null;
+		}
+		
 		if (aStart) start();
 	}
 	
@@ -313,7 +352,31 @@ public abstract class LogReceiver
 			setHostName(aDataIn.readUTF());
 			if (itsMonitor != null) itsMonitor.started();
 		}
-
+		
+		if (itsFileOut != null) 
+		{
+			TODUtils.log(0, "Storing raw events to file.");
+			storePackets(aDataIn);
+			TODUtils.logf(0, "Client terminated. Stored %.2fMB", 1f*itsFile.length()/(1024*1024));
+			
+			readPackets(
+					new DataInputStream(new BufferedInputStream(new FileInputStream(itsFile))), 
+					true);
+			
+			processFlush();
+			
+			TODUtils.log(0, "Trace imported.");
+			
+			return true;
+		}
+		else return readPackets(aDataIn, false);
+	}
+	
+	private boolean readPackets(DataInputStream aDataIn, boolean aPrintProgress) throws IOException
+	{
+		long theProcessedBytes = 0;
+		long theLastPrinted = 0; // Last printed quantity 
+		
 		while(aDataIn.available() != 0)
 		{
 			try
@@ -322,6 +385,7 @@ public abstract class LogReceiver
 				aDataIn.readFully(itsHeaderBuffer.array());
 				itsHeaderBuffer.position(0);
 				itsHeaderBuffer.limit(9);
+				theProcessedBytes += 9;
 				
 				int theThreadId = itsHeaderBuffer.getInt(); 
 				int theSize = itsHeaderBuffer.getInt(); 
@@ -338,6 +402,18 @@ public abstract class LogReceiver
 				aDataIn.readFully(itsDataBuffer.array(), 0, theSize);
 				itsDataBuffer.position(0);
 				itsDataBuffer.limit(theSize);
+				theProcessedBytes += theSize;
+
+				if (aPrintProgress)
+				{
+					int n = 10;
+					long thePrint = theProcessedBytes/(1024*1024*n); // Print every 10MB
+					if (thePrint > theLastPrinted)
+					{
+						theLastPrinted = thePrint;
+						Utils.println("Processed %dMB", thePrint*n);
+					}
+				}
 				
 				if (! theCleanEnd)
 				{
@@ -411,6 +487,32 @@ public abstract class LogReceiver
 		return true;
 	}
 
+	private void storePackets(DataInputStream aDataIn) throws IOException
+	{
+		byte[] theBuffer = new byte[4096];
+		while(true)
+		{
+			int theRead;
+			try
+			{
+				theRead = aDataIn.read(theBuffer);
+			}
+			catch (IOException e)
+			{
+				System.err.println(e.getMessage());
+				theRead = -1;
+			}
+
+			if (theRead == 0) continue;
+			else if (theRead > 0) itsFileOut.write(theBuffer, 0, theRead);
+			else
+			{
+				eof();
+				break;
+			}
+		}
+	}
+	
 	protected void processThreadPackets(
 			int aThreadId, 
 			BufferDataInput aStream, 
