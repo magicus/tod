@@ -46,7 +46,7 @@ public class Instrument
 {
 	public static void main(String[] args) throws FileNotFoundException, IOException
 	{
-		String theClassFile = "/home/gpothier/eclipse/ws-tod-daughter/TOD-evdbng/bin/tod/impl/evdbng/db/file/TupleIterator.class";
+		String theClassFile = args[0];
 		byte[] theClassData = Utils.readInputStream_byte(new FileInputStream(theClassFile));
 		
 		ClassReader cr = new ClassReader(theClassData);

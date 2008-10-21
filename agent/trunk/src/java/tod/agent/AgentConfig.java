@@ -57,7 +57,7 @@ public class AgentConfig
 	/**
 	 * Number of bits used to represent the host of an event.
 	 */
-	public static final int HOST_BITS = 8;
+	public static final int HOST_BITS = AgentUtils.readInt("host-bits", 1);
 	
 	public static final long HOST_MASK = BitUtilsLite.pow2(HOST_BITS)-1;
 	
