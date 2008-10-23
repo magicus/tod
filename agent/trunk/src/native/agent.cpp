@@ -180,8 +180,15 @@ void agentConfigure()
 
 			case CONFIG_DONE:
 				// Check host id vs host bits
-				int mask = (1 << cfgHostBits) - 1;
-				if ((cfgHostId & mask) != cfgHostId) fatal_error("Host id overflow.\n");
+				if (cfgHostBits > 0)
+				{
+					int mask = (1 << cfgHostBits) - 1;
+					if ((cfgHostId & mask) != cfgHostId) fatal_error("Host id overflow.\n");
+				}
+				else 
+				{
+					cfgHostId = 0;
+				}
 				
 				// Compute class cache prefix
 				int len = strlen(cfgWorkingSet)+strlen(cfgStructDbId)+2;
@@ -260,6 +267,14 @@ void agentClassFileLoadHook(
 	jint* new_class_data_len, unsigned char** new_class_data,
 	void* (*malloc_f)(unsigned int)) 
 {
+	if (! name) return; // Don't understand why, but it happens.
+	    
+	if (propVerbose>=3) 
+	{
+		printf("Checking scope (hook) name: %s, len: %d\n", name, class_data_len);
+		fflush(stdout);
+	}
+
 	if (cfgObfuscation)
 	{
 		if (startsWith(name, "tod/agentX/")) return;
@@ -604,7 +619,7 @@ void agentInit(
 {
 	fs::path::default_name_check(fs::no_check);
 
-	printf("Loading TOD agent - v3\n");
+	printf("Loading TOD agent - v3.1\n");
 	if (cfgDebugTOD == 1) printf(">>>>WARNING hard filtering for debugging TOD is on \n");
 	if (cfgObfuscation == 1) printf(">>>>WARNING obfuscation form agent package to agentX is considered \n");
 	fflush(stdout);

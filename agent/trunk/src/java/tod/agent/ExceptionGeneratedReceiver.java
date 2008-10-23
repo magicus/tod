@@ -52,8 +52,11 @@ public class ExceptionGeneratedReceiver
 	{
 		try
 		{
+			if (! AgentReady.COLLECTOR_READY) return;
+			if (! AgentReady.CAPTURE_ENABLED) return;
+			
 //			System.out.println(String.format("Exception generated: %s.%s, %d", aMethodDeclaringClassSignature, aMethodName, aOperationBytecodeIndex));
-			if (AgentReady.COLLECTOR_READY) AgentConfig.getCollector().logExceptionGenerated(
+			AgentConfig.getCollector().logExceptionGenerated(
 					aMethodName,
 					aMethodSignature, 
 					aMethodDeclaringClassSignature,
