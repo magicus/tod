@@ -34,6 +34,9 @@ import tod.impl.evdbng.db.file.PagedFile.Page;
 import tod.impl.evdbng.db.file.PagedFile.PageIOStream;
 import tod.impl.evdbng.db.file.TupleFinder.Match;
 import tod.impl.evdbng.db.file.TupleFinder.NoMatch;
+import zz.utils.ArrayStack;
+import zz.utils.Stack;
+import zz.utils.bit.BitUtils;
 
 public abstract class BTree<T extends Tuple>
 {
@@ -580,7 +583,18 @@ public abstract class BTree<T extends Tuple>
 		else return theTuple;
 	}
 
+	/**
+	 * Counts the tuples between keys k1 (inclusive) and k2 (exclusive).
+	 */
+	public long countTuples(long aK1, long aK2)
+	{
+		TupleIterator<T> i1 = getTupleIterator(aK1);
+		TupleIterator<T> i2 = getTupleIterator(aK2);
+		
+		return i2.getNextTupleIndex() - i1.getNextTupleIndex();
+	}
 	
+
 	/**
 	 * Chained PBS for the BTree. When a new page is created the hierarchy is updated.
 	 * @author gpothier

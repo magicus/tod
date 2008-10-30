@@ -93,7 +93,7 @@ public class DebuggerGridConfig
 	/**
 	 * Name of the database implementation. Can be evdb1 or evdbng.
 	 */
-	public static final String DBIMPL = ConfigUtils.readString("dbimpl", "evdb1");
+	public static final String DBIMPL = ConfigUtils.readString("dbimpl", "evdbng");
 	
 	private static final String DATABASENODE_BASE = "db.DatabaseNode";
 	private static final String GRIDLOGBROWSER_BASE = "GridLogBrowser";

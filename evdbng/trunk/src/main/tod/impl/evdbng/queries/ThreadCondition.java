@@ -27,6 +27,7 @@ import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.evdbng.db.IEventList;
 import tod.impl.evdbng.db.Indexes;
+import tod.impl.evdbng.db.file.SimpleTree;
 import tod.impl.evdbng.db.file.SimpleTuple;
 
 /**
@@ -49,15 +50,21 @@ public class ThreadCondition extends SimpleCondition<SimpleTuple>
 		return aIndexes.getThreadIndex(itsThreadId).getTupleIterator(aEventId);
 	}
 
-//	@Override
-//	public long[] getEventCounts(Indexes aIndexes, long aT1, long aT2, int aSlotsCount, boolean aForceMergeCounts)
-//	{
-//		// TODO: check implementation
-//		if (aForceMergeCounts) return super.getEventCounts(aIndexes, aT1, aT2, aSlotsCount, true);
-//		
-//		SimpleTree theTree = aIndexes.getThreadIndex(itsThreadId);
-//		return theTree.fastCountTuples(aT1, aT2, aSlotsCount);
-//	}
+	@Override
+	public long[] getEventCounts(
+			IEventList aEventList,
+			Indexes aIndexes, 
+			long aT1, 
+			long aT2, 
+			int aSlotsCount, 
+			boolean aForceMergeCounts)
+	{
+		// TODO: check implementation
+		if (aForceMergeCounts) return super.getEventCounts(aEventList, aIndexes, aT1, aT2, aSlotsCount, true);
+		
+		SimpleTree theIndex = aIndexes.getThreadIndex(itsThreadId);
+		return aIndexes.fastCounts(theIndex, aT1, aT2, aSlotsCount);
+	}
 
 	@Override
 	public boolean _match(GridEvent aEvent)

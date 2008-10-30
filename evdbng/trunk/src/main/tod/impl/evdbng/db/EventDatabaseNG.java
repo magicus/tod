@@ -34,8 +34,10 @@ import tod.impl.dbgrid.db.EventDatabase;
 import tod.impl.dbgrid.db.DatabaseNode.FlushMonitor;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.evdbng.DebuggerGridConfigNG;
+import tod.impl.evdbng.db.file.BTree;
 import tod.impl.evdbng.db.file.PagedFile;
 import tod.impl.evdbng.db.file.SequenceTree;
+import tod.impl.evdbng.db.file.Tuple;
 import tod.impl.evdbng.db.file.TupleFinder.NoMatch;
 import tod.impl.evdbng.messages.GridEventNG;
 import tod.impl.evdbng.queries.EventCondition;
@@ -66,11 +68,6 @@ public class EventDatabaseNG extends EventDatabase
 	
 	private final Indexes itsIndexes;
 	
-	/**
-	 * This tree permits to retrieve the id of the event for a specified timestamp
-	 */
-	private final SequenceTree itsTimestampTree;
-	
 	private PrintWriter itsLogWriter;
 	
 	/**
@@ -100,7 +97,6 @@ public class EventDatabaseNG extends EventDatabase
 		}
 		
 		itsIndexes = new Indexes(itsIndexesFile);
-		itsTimestampTree = new SequenceTree("[EventDatabase] timestamp tree", itsIndexesFile);
 		
 		if (DebugFlags.DB_LOG_DIR != null) 
 		{
@@ -135,7 +131,7 @@ public class EventDatabaseNG extends EventDatabase
 	@Override
 	protected IBidiIterator<GridEvent> evaluate0(IGridEventFilter aCondition, long aTimestamp)
 	{
-		long theEventId = itsTimestampTree.getTuplePosition(aTimestamp, NoMatch.AFTER);
+		long theEventId = itsIndexes.getEventId(aTimestamp);
 		return ((EventCondition<?>) aCondition).createIterator(itsSyntheticEventList, getIndexes(), theEventId);
 	}
 
@@ -155,7 +151,7 @@ public class EventDatabaseNG extends EventDatabase
 				aSlotsCount, 
 				aForceMergeCounts);
 	}
-
+	
 	@Override
 	protected synchronized void processEvent0(GridEvent aEvent)
 	{
@@ -165,7 +161,6 @@ public class EventDatabaseNG extends EventDatabase
 		int theEventList = theId % DB_THREADS;
 		itsEventLists[theEventList].addAsync(theEvent, theId / DB_THREADS);
 		
-		itsTimestampTree.addAsync(aEvent.getTimestamp());
 		if (! DebugFlags.DISABLE_INDEXES) theEvent.index(itsIndexes, theId);	
 		if (DebugFlags.DB_LOG_DIR != null) 
 		{
@@ -179,7 +174,6 @@ public class EventDatabaseNG extends EventDatabase
 	{
 		int theResult = super.flush(aFlushMonitor);
 		
-		itsTimestampTree.flushTasks();
 		itsIndexes.flushTasks();
 		for(int i=0;i<DB_THREADS;i++) itsEventLists[i].flushTasks();
 		

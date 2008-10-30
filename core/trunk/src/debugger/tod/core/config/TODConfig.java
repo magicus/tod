@@ -153,7 +153,7 @@ public class TODConfig extends PublicCloneable implements Serializable
 							+ "Classes that do no pass this filter are not touched by any kind "
 							+ "of instrumentation and are not registered in the trace database. "
 							+ "There should not be any reason to modify it.",
-					"[-tod.agent.**]");
+					ConfigUtils.readString("scope-globalFilter", "[-tod.agent.**]"));
 
 	public static final StringItem SCOPE_TRACE_FILTER =
 			new StringItem(
@@ -163,7 +163,7 @@ public class TODConfig extends PublicCloneable implements Serializable
 					"Tracing class filter for instrumentation. "
 							+ "Classes that do no pass this filter are not instrumented "
 							+ "but are registered in the structure database.",
-					"[-java.** -javax.** -sun.** -com.sun.** -org.ietf.jgss.** -org.omg.** -org.w3c.** -org.xml.**]");
+					ConfigUtils.readString("trace-filter", "[-java.** -javax.** -sun.** -com.sun.** -org.ietf.jgss.** -org.omg.** -org.w3c.** -org.xml.**]"));
 
 	public static final StringItem CLIENT_NAME =
 			new StringItem(

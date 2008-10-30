@@ -127,6 +127,7 @@ public abstract class GridEventNG extends GridEvent
 	{
 		ProbeInfo theProbeInfo = getProbeInfo();
 		
+		aIndexes.registerTimestamp(getTimestamp());
 		aIndexes.indexType(getEventType().ordinal(), aId);
 		
 		if (! DebugFlags.DISABLE_LOCATION_INDEX)

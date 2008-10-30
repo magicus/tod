@@ -40,9 +40,13 @@ import tod.impl.evdbng.DebuggerGridConfigNG;
 import tod.impl.evdbng.ObjectCodecNG;
 import tod.impl.evdbng.SplittedConditionHandler;
 import tod.impl.evdbng.db.IndexSet.IndexManager;
+import tod.impl.evdbng.db.file.BTree;
 import tod.impl.evdbng.db.file.PagedFile;
 import tod.impl.evdbng.db.file.RoleTree;
+import tod.impl.evdbng.db.file.SequenceTree;
 import tod.impl.evdbng.db.file.SimpleTree;
+import tod.impl.evdbng.db.file.Tuple;
+import tod.impl.evdbng.db.file.TupleFinder.NoMatch;
 import zz.utils.bit.BitUtils;
 import zz.utils.monitoring.AggregationType;
 import zz.utils.monitoring.Monitor;
@@ -55,6 +59,11 @@ import zz.utils.monitoring.Probe;
 public class Indexes 
 {
 	private IndexManager itsIndexManager = new IndexManager();
+	
+	/**
+	 * This tree permits to retrieve the id of the event for a specified timestamp
+	 */
+	private SequenceTree itsTimestampTree;
 	
 	private SimpleIndexSet itsTypeIndexSet;
 	private SimpleIndexSet itsThreadIndexSet;
@@ -90,6 +99,8 @@ public class Indexes
 	public Indexes(PagedFile aFile)
 	{
 		Monitor.getInstance().register(this);
+		
+		itsTimestampTree = new SequenceTree("[EventDatabase] timestamp tree", aFile);
 		
 		itsTypeIndexSet = new SimpleIndexSet(itsIndexManager, "type", aFile, MessageType.VALUES.length+1);
 		itsThreadIndexSet = new SimpleIndexSet(itsIndexManager, "thread", aFile, STRUCTURE_THREADS_COUNT+1);
@@ -187,6 +198,7 @@ public class Indexes
 	 */
 	public void flushTasks()
 	{
+		itsTimestampTree.flushTasks();
 		itsTypeIndexSet.flushTasks();
 		itsThreadIndexSet.flushTasks();
 		itsDepthIndexSet.flushTasks();
@@ -207,6 +219,16 @@ public class Indexes
 		{
 			itsObjectIndexeSets[i].flushTasks();
 		}
+	}
+	
+	public void registerTimestamp(long aTimestamp)
+	{
+		itsTimestampTree.addAsync(aTimestamp);
+	}
+	
+	public long getEventId(long aTimestamp) 
+	{
+		return itsTimestampTree.getTuplePosition(aTimestamp, NoMatch.AFTER);	
 	}
 	
 	public void indexType(int aIndex, long aEventId)
@@ -343,4 +365,29 @@ public class Indexes
 	{
 		return itsMaxObjectId;
 	}
+	
+	public <T extends Tuple> long[] fastCounts(
+			BTree<T> aIndex,
+			long aT1, 
+			long aT2,
+			int aSlotsCount)
+	{
+		long[] theCounts = new long[aSlotsCount];
+
+		long ki1 = getEventId(aT1); 
+		
+		for (int i=0;i<aSlotsCount;i++)
+		{
+			long t2 = aT1 + ((i+1)*(aT2-aT1)/aSlotsCount);
+			long ki2 = getEventId(t2);
+			
+			long c = ki1 != ki2 ? aIndex.countTuples(ki1, ki2) : 0;
+			theCounts[i] = c;
+			ki1 = ki2;
+		}
+		
+		return theCounts;
+	}
+
+
 }
