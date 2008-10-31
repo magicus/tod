@@ -70,6 +70,7 @@ public class TODPlugin extends AbstractUIPlugin
 				+theBase+"/tod-debugger.jar"+File.pathSeparator
 				+theBase+"/tod-dbgrid.jar"+File.pathSeparator
 				+theBase+"/tod-evdb1.jar"+File.pathSeparator
+				+theBase+"/tod-evdbng.jar"+File.pathSeparator
 				+theBase+"/tod-agent15.jar"+File.pathSeparator
 				+theBase+"/zz.utils.jar";
 		}
@@ -80,6 +81,7 @@ public class TODPlugin extends AbstractUIPlugin
 				+theDevPath+"/TOD-agent/bin"+File.pathSeparator
 				+theDevPath+"/TOD-dbgrid/bin"+File.pathSeparator
 				+theDevPath+"/TOD-evdb1/bin"+File.pathSeparator
+				+theDevPath+"/TOD-evdbng/bin"+File.pathSeparator
 				+theDevPath+"/zz.utils/bin";
 			
 			if (System.getProperty("agent14.path") == null) System.setProperty("agent14.path", theDevPath+"/TOD-agent/build/tod-agent14.jar");
