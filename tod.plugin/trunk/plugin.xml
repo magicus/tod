@@ -12,7 +12,7 @@
          <export name="*"/>
       </library>
       
- 	  <library name="lib/asm-all-3.1.jar">
+ 	  <library name="lib/asm-all-3.2-svn.jar">
        <export name="*"/>
       </library>
       

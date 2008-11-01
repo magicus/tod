@@ -24,7 +24,7 @@
             <pathelement path="${zz.utils.dir}/build/zz.utils.jar"/>
         	<pathelement path="${tod-agent.dir}/build/tod-agent15.jar"/>
         	
-            <pathelement path="${lib.dir}/asm-all-3.1.jar"/>
+            <pathelement path="${lib.dir}/asm-all-3.2-svn.jar"/>
             <pathelement path="${lib.dir}/jython-2.2.1.jar"/>
             <pathelement path="${lib.dir}/lucene-core-2.0.0.jar"/>
             <pathelement path="${lib.dir}/infovis.jar"/>

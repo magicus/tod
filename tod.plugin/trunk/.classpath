@@ -12,6 +12,6 @@
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/zz.utils"/>
 	<classpathentry kind="lib" path="lib/infovis.jar" sourcepath="/infovis-0.9beta2"/>
-	<classpathentry kind="lib" path="lib/asm-all-3.1.jar"/>
+	<classpathentry kind="lib" path="lib/asm-all-3.2-svn.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

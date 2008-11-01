@@ -91,7 +91,7 @@ public class TODPlugin extends AbstractUIPlugin
 		}
 
 		DBProcessManager.cp += File.pathSeparator
-			+theBase+"/asm-all-3.1.jar"+File.pathSeparator
+			+theBase+"/asm-all-3.2-svn.jar"+File.pathSeparator
 			+theBase+"/aspectjrt.jar"+File.pathSeparator
 			+theBase+"/lucene-core-2.0.0.jar";
 		
