@@ -1,6 +1,6 @@
 # The following variables should be defined in a file whose name 
-# is passed in $(ENV_DEF)
-
+# is passed in $(ENV_DEF). Example:
+#
 # PLATFORM=linux
 # 
 # JAVA14_HOME=/opt/java1.4
@@ -9,6 +9,8 @@
 # BOOST_VERSION=1_34_1
 # BOOST_BASE=/usr/include/boost
 # BOOST_FLAVOR=gcc41-mt
+#
+# MACOS_ARCH=-arch i386 -arch ppc -arch ppc64 -arch x86_64
 # 
 # WINBASE=
 
@@ -42,15 +44,8 @@ ifeq ($(PLATFORM), macos)
 	CXXFLAGS14 += -I$(JAVA14_HOME)/Headers/ 
 	CXXFLAGS15 += -I$(JAVA15_HOME)/Headers/ 
 	
-	#CXXFLAGS += -arch ppc 
-	CXXFLAGS += -arch i386 
-	#CXXFLAGS += -arch ppc64 
-	#CXXFLAGS += -arch x86_64
-
-	#LDFLAGS += -arch ppc 
-	LDFLAGS += -arch i386 
-	#LDFLAGS += -arch ppc64 
-	#LDFLAGS += -arch x86_64
+	CXXFLAGS += $(MACOS_ARCH)
+	LDFLAGS += $(MACOS_ARCH)
 
 	LIBPREFIX = lib
 	LIBEXT = dylib
