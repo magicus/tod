@@ -22,7 +22,7 @@ then
 	CLASSPATH="$CLASSPATH:$WORKSPACE/zz.utils/bin"
 else
 	CLASSPATH="$CLASSPATH:$LIB_DIR/aspectjrt.jar"
-	CLASSPATH="$CLASSPATH:$LIB_DIR/tod-agent.jar"
+	CLASSPATH="$CLASSPATH:$LIB_DIR/tod-agent15.jar"
 	CLASSPATH="$CLASSPATH:$LIB_DIR/tod-debugger.jar"
 	CLASSPATH="$CLASSPATH:$LIB_DIR/tod-evdb1.jar"
 	CLASSPATH="$CLASSPATH:$LIB_DIR/tod-evdbng.jar"
