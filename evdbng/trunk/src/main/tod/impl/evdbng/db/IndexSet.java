@@ -51,7 +51,7 @@ public abstract class IndexSet<T extends Tuple>
 	 * entries that never existed (null  value) from entries that were
 	 * discarded and that are available in the file. 
 	 */
-	private static Entry DISCARDED_ENTRY = new Entry(null);
+	private static final Entry DISCARDED_ENTRY = new Entry(null);
 	
 	private static int itsNextId;
 	
@@ -205,6 +205,8 @@ public abstract class IndexSet<T extends Tuple>
 	private void discardIndex(int aIndex)
 	{
 		Entry<BTreeWrapper<T>> theEntry = itsIndexes[aIndex];
+		assert theEntry != null : itsName+": "+aIndex;
+		assert theEntry.getValue() != null : itsName+": "+aIndex;
 		BTree<T> theIndex = theEntry.getValue().getTree();
 		
 		theIndex.writeTo(getIndexPage(aIndex));
