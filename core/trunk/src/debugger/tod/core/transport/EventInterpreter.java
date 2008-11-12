@@ -365,7 +365,7 @@ public final class EventInterpreter implements ILowLevelCollector
 		
 		int[] theAdviceCFlow = theThread.getAdviceCFlow(); // Must do that before popping frame
 		FrameInfo theFrame = theThread.popFrame();
-		assert theFrame.behavior == aBehaviorId;
+		assert theFrame.behavior == aBehaviorId : theThread.printStack(this);
 		assert theFrame.directParent;
 		
 		if (INTERPRETER_LOG) itsPrintStream.println(String.format(
@@ -993,6 +993,22 @@ public final class EventInterpreter implements ILowLevelCollector
 		public int[] getAdviceCFlow()
 		{
 			return itsAdviceCFlow.isEmpty() ? null : itsAdviceCFlow.toArray();
+		}
+		
+		/**
+		 * Generates a string that represents the call stack of this thread.
+		 * @return
+		 */
+		public String printStack(EventInterpreter aInterpreter)
+		{
+			StringBuilder theBuilder = new StringBuilder("Call stack:\n");
+			for(int i=itsStackSize-1;i>=0;i--)
+			{
+				theBuilder.append(aInterpreter.getBehavior(itsStack[i].behavior));
+				theBuilder.append("\n");
+			}
+			
+			return theBuilder.toString();
 		}
 	}
 

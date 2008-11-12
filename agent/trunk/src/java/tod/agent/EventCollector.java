@@ -64,7 +64,11 @@ public final class EventCollector
 	};
 	
 	private SocketChannel itsChannel;
-	private ThreadData itsDefaultThreadData;
+	
+	/**
+	 * A dummy thread data that is used for control messages.
+	 */
+	private ThreadData itsControlThreadData = null;
 	
 	private List<ThreadData> itsThreadDataList = new ArrayList<ThreadData>();
 	private PacketBufferSender itsSender;
@@ -94,7 +98,7 @@ public final class EventCollector
 			throw new RuntimeException(e);
 		}
 		
-		itsSender = new PacketBufferSender(itsChannel);
+		itsSender = new PacketBufferSender(this, itsChannel);
 		new CommandReceiver().start();
 		
 		AgentReady.COLLECTOR_READY = true;
@@ -138,8 +142,6 @@ public final class EventCollector
         	throw new RuntimeException(e);
         }
         
-        if (itsDefaultThreadData == null) itsDefaultThreadData = theThreadData;
-
 		return theThreadData;
 	}
 	
@@ -821,6 +823,15 @@ public final class EventCollector
         }
 	}
 
+	private ThreadData getControlThreadData()
+	{
+		if (itsControlThreadData == null)
+		{
+			itsControlThreadData = new ThreadData(-1);
+		}
+		return itsControlThreadData;
+	}
+	
 	/**
 	 * Sends a request to clear the database.
 	 */
@@ -843,12 +854,14 @@ public final class EventCollector
 	{
 		if (AgentDebugFlags.COLLECTOR_IGNORE_ALL) return;
 
-		ThreadData theThread = getThreadData();
-
-		assert ! theThread.isSending();
-    	LowLevelEventWriter theWriter = theThread.packetStart(0);
-    	theWriter.sendFlush();
-        theThread.packetEnd();
+		ThreadData theThread = getControlThreadData();
+		synchronized (theThread)
+		{
+			assert ! theThread.isSending();
+	    	LowLevelEventWriter theWriter = theThread.packetStart(0);
+	    	theWriter.sendFlush();
+	    	theThread.packetEnd();
+		}
 	}
 	
 	/**
@@ -856,12 +869,29 @@ public final class EventCollector
 	 */
 	public void end()
 	{
-		ThreadData theThread = itsDefaultThreadData != null ? itsDefaultThreadData : getThreadData();
-		
-		assert ! theThread.isSending();
-		LowLevelEventWriter theWriter = theThread.packetStart(0);
-		theWriter.sendEnd();
-		theThread.packetEnd();
+		ThreadData theThread = getControlThreadData();
+		synchronized (theThread)
+		{
+			assert ! theThread.isSending();
+			LowLevelEventWriter theWriter = theThread.packetStart(0);
+			theWriter.sendEnd();
+			theThread.packetEnd();
+		}
+	}
+	
+	/**
+	 * Sends {@link Command#DBEV_CAPTURE_ENABLED}
+	 */
+	public void evCaptureEnabled(boolean aEnabled)
+	{
+		ThreadData theThread = getControlThreadData();
+		synchronized (theThread)
+		{
+			assert ! theThread.isSending();
+			LowLevelEventWriter theWriter = theThread.packetStart(0);
+			theWriter.sendEvCaptureEnabled(aEnabled);
+			theThread.packetEnd();
+		}
 	}
 	
 	private class ThreadData 
@@ -1067,7 +1097,7 @@ public final class EventCollector
 						Command theCommand = Command.VALUES[theMessage-Command.BASE];
 						switch (theCommand)
 						{
-						case CMD_ENABLECAPTURE:
+						case AGCMD_ENABLECAPTURE:
 							boolean theEnable = theIn.readBoolean();
 							if (theEnable) 
 							{
@@ -1092,11 +1122,17 @@ public final class EventCollector
 			}
 			catch (Exception e)
 			{
-				System.err.println("[TOD] FATAL:");
-				e.printStackTrace();
-				System.exit(1);
+				if (itsSender.hasShutdownStarted() && (e instanceof IOException))
+				{
+					// Connection interrupted, just exit
+				}
+				else
+				{
+					System.err.println("[TOD] FATAL:");
+					e.printStackTrace();
+					System.exit(1);
+				}
 			}
-			
 		}
 	}
 }

@@ -32,7 +32,7 @@ import java.util.List;
 
 import tod.core.database.TimestampGenerator;
 import tod.core.database.event.ILogEvent;
-import tod.core.transport.LogReceiver.ILogReceiverMonitor;
+import tod.core.transport.PacketProcessor.ILogReceiverMonitor;
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.DerivativeDataPrinter;
 import tod.impl.dbgrid.Fixtures;

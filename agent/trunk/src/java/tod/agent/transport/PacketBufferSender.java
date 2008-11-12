@@ -23,6 +23,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.agent.transport;
 
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.ByteChannel;
@@ -33,6 +34,8 @@ import java.util.Queue;
 
 import tod.agent.AgentConfig;
 import tod.agent.AgentDebugFlags;
+import tod.agent.AgentReady;
+import tod.agent.EventCollector;
 import tod.agent._AgentConfig;
 
 /**
@@ -45,6 +48,8 @@ import tod.agent._AgentConfig;
  */
 public class PacketBufferSender extends Thread
 {
+	private final EventCollector itsEventCollector;
+	
 	private final ByteChannel itsChannel;
 	
 	/**
@@ -63,12 +68,15 @@ public class PacketBufferSender extends Thread
 	private final List<PacketBuffer> itsBuffers = new ArrayList<PacketBuffer>();
 
 	private final MyShutdownHook itsShutdownHook;
+	
+	private volatile boolean itsShutdownStarted = false;
 
-	public PacketBufferSender(ByteChannel aChannel)
+	public PacketBufferSender(EventCollector aEventCollector, ByteChannel aChannel)
 	{
 		super("[TOD] Packet buffer sender");
 		setDaemon(true);
 		assert aChannel != null;
+		itsEventCollector = aEventCollector;
 		itsChannel = aChannel;
 		
 		itsHeaderBuffer = ByteBuffer.allocate(9);
@@ -78,6 +86,11 @@ public class PacketBufferSender extends Thread
 		Runtime.getRuntime().addShutdownHook(itsShutdownHook);
 		
 		start();
+	}
+	
+	public boolean hasShutdownStarted()
+	{
+		return itsShutdownStarted;
 	}
 	
 	/**
@@ -95,6 +108,7 @@ public class PacketBufferSender extends Thread
 		{
 			// Time at which last stale buffer check was performed
 			long checkTime = System.currentTimeMillis();
+			boolean lastEnabled = ! AgentReady.CAPTURE_ENABLED; 
 			
 			// Number of buffers that were sent since last timestamp was taken (taking timestamps is costly)
 			int sentBuffers = 0;
@@ -158,6 +172,13 @@ public class PacketBufferSender extends Thread
 						}
 						
 						for (PacketBuffer theBuffer : theArray) theBuffer.pleaseSwap();
+						
+						// Notify of capture enabled state
+						if (lastEnabled != AgentReady.CAPTURE_ENABLED)
+						{
+							itsEventCollector.evCaptureEnabled(AgentReady.CAPTURE_ENABLED);
+							lastEnabled = AgentReady.CAPTURE_ENABLED;
+						}
 					}
 					
 					sentBuffers = 0;
@@ -166,10 +187,17 @@ public class PacketBufferSender extends Thread
 		}
 		catch (Exception e)
 		{
-			System.err.println("[TOD] FATAL:");
-			e.printStackTrace();
-			Runtime.getRuntime().removeShutdownHook(itsShutdownHook);
-			System.exit(1);
+			if (itsShutdownStarted && (e instanceof IOException))
+			{
+				// Broken pipe, just exit
+			}
+			else
+			{
+				System.err.println("[TOD] FATAL:");
+				e.printStackTrace();
+				Runtime.getRuntime().removeShutdownHook(itsShutdownHook);
+				System.exit(1);
+			}
 		}
 	}
 	
@@ -407,6 +435,7 @@ public class PacketBufferSender extends Thread
 		@Override
 		public void run()
 		{
+			itsShutdownStarted = true;
 			System.out.println("[TOD] Flushing buffers...");
 			
 			AgentConfig.getCollector().end();

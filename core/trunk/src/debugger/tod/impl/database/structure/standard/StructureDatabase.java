@@ -56,8 +56,11 @@ import zz.utils.Utils;
  * Standard implementation of {@link IStructureDatabase}
  * @author gpothier
  */
-public class StructureDatabase implements IShareableStructureDatabase
+public class StructureDatabase 
+implements Serializable, IShareableStructureDatabase
 {
+	private static final long serialVersionUID = -3929708435718445343L;
+
 	/**
 	 * Class ids below this value are reserved.
 	 */
@@ -170,6 +173,28 @@ public class StructureDatabase implements IShareableStructureDatabase
 		catch (Exception e)
 		{
 			throw new RuntimeException(e);
+		}
+	}
+	
+	/**
+	 * Call this method after deserializing a {@link StructureDatabase} to
+	 * set the database field on all locations.
+	 */
+	public void reown()
+	{
+		for (AdviceInfo theAdvice : itsAdvices) if (theAdvice != null) theAdvice.setDatabase(this, true);
+		for (ClassInfo theClass : itsClasses) if (theClass != null) theClass.setDatabase(this, true);
+
+		for (BehaviorInfo theBehavior : itsBehaviors) if (theBehavior != null) 
+		{
+			theBehavior.setDatabase(this, true);
+			ClassInfo theClass = (ClassInfo) theBehavior.getType();
+			theClass._getBehaviorsMap().put(ClassInfo.getKey(theBehavior), theBehavior);
+		}
+		
+		for (FieldInfo theField : itsFields) if (theField != null) 
+		{
+			theField.setDatabase(this, true);
 		}
 	}
 	
@@ -653,8 +678,10 @@ public class StructureDatabase implements IShareableStructureDatabase
 	 * the same class name: there can be several versions of the same class.
 	 * @author gpothier
 	 */
-	public class ClassNameInfo
+	public class ClassNameInfo implements Serializable
 	{
+		private static final long serialVersionUID = 5559242268240172292L;
+
 		/**
 		 * Maps class checksum to class info.
 		 */

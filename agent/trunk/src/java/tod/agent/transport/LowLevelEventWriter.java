@@ -502,19 +502,26 @@ public class LowLevelEventWriter
 
 	public void sendClear() 
 	{
-		sendCommand(itsBuffer, Command.CMD_CLEAR);
+		sendCommand(itsBuffer, Command.DBCMD_CLEAR);
 		copyBuffer();
 	}
 
 	public void sendFlush() 
 	{
-		sendCommand(itsBuffer, Command.CMD_FLUSH);
+		sendCommand(itsBuffer, Command.DBCMD_FLUSH);
 		copyBuffer();
 	}
 	
 	public void sendEnd() 
 	{
-		sendCommand(itsBuffer, Command.CMD_END);
+		sendCommand(itsBuffer, Command.DBCMD_END);
+		copyBuffer();
+	}
+	
+	public void sendEvCaptureEnabled(boolean aValue)
+	{
+		sendCommand(itsBuffer, Command.DBEV_CAPTURE_ENABLED);
+		itsBuffer.put(aValue ? (byte) 1 : (byte) 0);
 		copyBuffer();
 	}
 	

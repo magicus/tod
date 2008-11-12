@@ -133,6 +133,10 @@ public class GridConsole extends JPanel
 		{
 			GridConsole.this.monitorData(aNodeId, aData);
 		}
+
+		public void captureEnabled(boolean aEnabled) throws RemoteException
+		{
+		}
 		
 	}
 }

@@ -24,11 +24,8 @@ package tod.core.transport;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -36,35 +33,27 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import tod.agent.AgentConfig;
-import tod.agent.AgentDebugFlags;
 import tod.agent.transport.Command;
-import tod.agent.transport.LowLevelEventType;
 import tod.core.DebugFlags;
 import tod.core.config.TODConfig;
+import tod.core.database.structure.IStructureDatabase;
 import tod.impl.database.structure.standard.HostInfo;
 import tod.utils.TODUtils;
 import zz.utils.Utils;
-import zz.utils.notification.IEvent;
-import zz.utils.notification.IFireableEvent;
-import zz.utils.notification.SimpleEvent;
 
 /**
  * Receives (low-level) events from the debugged application through a socket.
  * @author gpothier
  */
-public abstract class LogReceiver 
+public abstract class LogReceiver extends PacketProcessor
 {
 	public static final ReceiverThread DEFAULT_THREAD = new ReceiverThread();
 	
 	private final TODConfig itsConfig;
+	private final IStructureDatabase itsStructureDatabase;
 	
 	private ReceiverThread itsReceiverThread;
 	
@@ -75,51 +64,33 @@ public abstract class LogReceiver
 	 */
 	private HostInfo itsHostInfo;
 	
-	private boolean itsEof = false;
-	
-	private ILogReceiverMonitor itsMonitor = null;
-	
-	/**
-	 * Number of commands received.
-	 */
-	private long itsMessageCount = 0;
-	
 	private final InputStream itsInStream;
 	private final OutputStream itsOutStream;
 
 	private DataInputStream itsDataIn;
 	private DataOutputStream itsDataOut;
 	
-	private final ByteBuffer itsHeaderBuffer;
-	private final ByteBuffer itsDataBuffer;
-	
 	/**
 	 * Output stream for storing events in two-phases mode.
 	 */
 	private final OutputStream itsFileOut;
-	private final File itsFile;
+	private final File itsEventsFile;
+	private final File itsDbFile;
 	
-	/**
-	 * This map contains buffers that are used to reassemble long packets.
-	 * It only contains the entry corresponding to a given thread if a long packet is currently being
-	 * processed.
-	 */
-	private Map<Integer, ThreadPacketBuffer> itsThreadPacketBuffers = new HashMap<Integer, ThreadPacketBuffer>();
-	
-	private IFireableEvent<Throwable> eException = new SimpleEvent<Throwable>();
-
 	public LogReceiver(
 			TODConfig aConfig,
+			IStructureDatabase aStructureDatabase,
 			HostInfo aHostInfo,
 			InputStream aInStream, 
 			OutputStream aOutStream, 
 			boolean aStart)
 	{
-		this(aConfig, DEFAULT_THREAD, aHostInfo, aInStream, aOutStream, aStart);
+		this(aConfig, aStructureDatabase, DEFAULT_THREAD, aHostInfo, aInStream, aOutStream, aStart);
 	}
 	
 	public LogReceiver(
 			TODConfig aConfig,
+			IStructureDatabase aStructureDatabase,
 			ReceiverThread aReceiverThread,
 			HostInfo aHostInfo,
 			InputStream aInStream, 
@@ -127,6 +98,7 @@ public abstract class LogReceiver
 			boolean aStart)
 	{
 		itsConfig = aConfig;
+		itsStructureDatabase = aStructureDatabase;
 		itsReceiverThread = aReceiverThread;
 		itsHostInfo = aHostInfo;
 		itsInStream = aInStream;
@@ -135,21 +107,19 @@ public abstract class LogReceiver
 		itsDataIn = new DataInputStream(itsInStream);
 		itsDataOut = new DataOutputStream(itsOutStream);
 		
-		itsHeaderBuffer = ByteBuffer.allocate(9);
-		itsHeaderBuffer.order(ByteOrder.nativeOrder());
-		
-		itsDataBuffer = ByteBuffer.allocate(AgentConfig.COLLECTOR_BUFFER_SIZE);
-		itsDataBuffer.order(ByteOrder.nativeOrder());
-		
 		itsReceiverThread.register(this);
 		
 		if (itsConfig.get(TODConfig.DB_TWOPHASES))
 		{
 			try
 			{
-				itsFile = new File(itsConfig.get(TODConfig.DB_RAW_EVENTS_DIR)+"/events.raw");
-				itsFile.delete();
-				itsFileOut = new BufferedOutputStream(new FileOutputStream(itsFile));
+				itsEventsFile = new File(itsConfig.get(TODConfig.DB_RAW_EVENTS_DIR)+"/events.raw");
+				itsEventsFile.delete();
+				
+				itsDbFile = new File(itsConfig.get(TODConfig.DB_RAW_EVENTS_DIR)+"/db.raw");
+				itsDbFile.delete();
+				
+				itsFileOut = new BufferedOutputStream(new FileOutputStream(itsEventsFile));
 			}
 			catch (FileNotFoundException e)
 			{
@@ -158,19 +128,12 @@ public abstract class LogReceiver
 		}
 		else
 		{
-			itsFile = null;
+			itsEventsFile = null;
+			itsDbFile = null;
 			itsFileOut = null;
 		}
 		
 		if (aStart) start();
-	}
-	
-	/**
-	 * An event that is fired when an exception occurs in packet processing.
-	 */
-	public IEvent<Throwable> eException()
-	{
-		return eException;
 	}
 	
 	public void start()
@@ -201,11 +164,6 @@ public abstract class LogReceiver
 		return itsStarted;
 	}
 	
-	public void setMonitor(ILogReceiverMonitor aMonitor)
-	{
-		itsMonitor = aMonitor;
-	}	
-	
 	/**
 	 * Returns the identification of the currently connected host.
 	 */
@@ -229,11 +187,10 @@ public abstract class LogReceiver
 		notifyAll();
 	}
 	
+	@Override
 	protected synchronized void eof()
 	{
-		itsEof = true;
-		processFlush();
-		notifyAll();
+		super.eof();
 		try
 		{
 			itsInStream.close();
@@ -262,34 +219,6 @@ public abstract class LogReceiver
 		}
 	}
 	
-	public boolean isEof()
-	{
-		return itsEof;
-	}
-	
-	/**
-	 * Waits until the input stream terminates
-	 */
-	public synchronized void waitEof()
-	{
-		try
-		{
-			while (! itsEof) wait();
-		}
-		catch (InterruptedException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-
-	/**
-	 * Returns the total number of messages received by this receiver.
-	 */
-	public long getMessageCount()
-	{
-		return itsMessageCount;
-	}
-	
 	/**
 	 * Processes currently pending data.
 	 * @return Whether there was data to process.
@@ -308,7 +237,7 @@ public abstract class LogReceiver
 	{
 		try
 		{
-			sendCommand(Command.CMD_ENABLECAPTURE);
+			sendCommand(Command.AGCMD_ENABLECAPTURE);
 			itsDataOut.writeBoolean(aEnable);
 			itsDataOut.flush();
 		}
@@ -350,17 +279,18 @@ public abstract class LogReceiver
 		if (getHostName() == null)
 		{
 			setHostName(aDataIn.readUTF());
-			if (itsMonitor != null) itsMonitor.started();
+			if (getMonitor() != null) getMonitor().started();
 		}
 		
 		if (itsFileOut != null) 
 		{
 			TODUtils.log(0, "Storing raw events to file.");
 			storePackets(aDataIn);
-			TODUtils.logf(0, "Client terminated. Stored %.2fMB", 1f*itsFile.length()/(1024*1024));
+			Utils.writeObject(itsStructureDatabase, itsDbFile);
+			TODUtils.logf(0, "Client terminated. Stored %.2fMB", 1f*itsEventsFile.length()/(1024*1024));
 			
 			readPackets(
-					new DataInputStream(new BufferedInputStream(new FileInputStream(itsFile))), 
+					new DataInputStream(new BufferedInputStream(new FileInputStream(itsEventsFile), 32*1024*1024)), 
 					true);
 			
 			processFlush();
@@ -372,121 +302,6 @@ public abstract class LogReceiver
 		else return readPackets(aDataIn, false);
 	}
 	
-	private boolean readPackets(DataInputStream aDataIn, boolean aPrintProgress) throws IOException
-	{
-		long theProcessedBytes = 0;
-		long theLastPrinted = 0; // Last printed quantity 
-		
-		while(aDataIn.available() != 0)
-		{
-			try
-			{
-				// Read and decode meta-packet header 
-				aDataIn.readFully(itsHeaderBuffer.array());
-				itsHeaderBuffer.position(0);
-				itsHeaderBuffer.limit(9);
-				theProcessedBytes += 9;
-				
-				int theThreadId = itsHeaderBuffer.getInt(); 
-				int theSize = itsHeaderBuffer.getInt(); 
-				int theFlags = itsHeaderBuffer.get();
-				
-				// These flags indicate if the beginning (resp. end) of the metapacket
-				// correspond to the beginning (resp. end) of a real packet.
-				// (otherwise, it means the real packets span several metapackets).
-				boolean theCleanStart = (theFlags & 2) != 0;
-				boolean theCleanEnd = (theFlags & 1) != 0;
-				
-//				Utils.println("[LogReceiver] Packet: th: %d, sz: %d, cs: %s, ce: %s", theThreadId, theSize, theCleanStart, theCleanEnd);
-				
-				aDataIn.readFully(itsDataBuffer.array(), 0, theSize);
-				itsDataBuffer.position(0);
-				itsDataBuffer.limit(theSize);
-				theProcessedBytes += theSize;
-
-				if (aPrintProgress)
-				{
-					int n = 10;
-					long thePrint = theProcessedBytes/(1024*1024*n); // Print every 10MB
-					if (thePrint > theLastPrinted)
-					{
-						theLastPrinted = thePrint;
-						Utils.println("Processed %dMB", thePrint*n);
-					}
-				}
-				
-				if (! theCleanEnd)
-				{
-					ThreadPacketBuffer theBuffer = itsThreadPacketBuffers.get(theThreadId);
-					if (theBuffer == null)
-					{
-						assert theCleanStart;
-						
-						theBuffer = new ThreadPacketBuffer();
-						
-						if (AgentDebugFlags.TRANSPORT_LONGPACKETS_LOG)
-							System.out.println("[LogReceiver] Starting long packet for thread "+theThreadId);
-						
-						itsThreadPacketBuffers.put(theThreadId, theBuffer);
-					}
-					else
-					{
-						assert ! theCleanStart;
-					}
-					
-					if (AgentDebugFlags.TRANSPORT_LONGPACKETS_LOG)
-						System.out.println("[LogReceiver] Long packet for thread "+theThreadId+", appending "+theSize+" bytes");
-					
-					theBuffer.append(itsDataBuffer.array(), 0, itsDataBuffer.remaining());
-				}
-				else
-				{
-					ThreadPacketBuffer theBuffer = itsThreadPacketBuffers.remove(theThreadId);
-					if (theBuffer != null)
-					{
-						// Process outstanding long packet.
-						assert ! theCleanStart;
-						
-						if (AgentDebugFlags.TRANSPORT_LONGPACKETS_LOG)
-							System.out.println("[LogReceiver] Long packet for thread "+theThreadId+", appending "+theSize+" bytes");
-						
-						theBuffer.append(itsDataBuffer.array(), 0, itsDataBuffer.remaining());
-						
-						BufferDataInput theStream = new BufferDataInput(theBuffer.toByteBuffer());
-						
-						if (AgentDebugFlags.TRANSPORT_LONGPACKETS_LOG)
-							System.out.println("[LogReceiver] Starting to process long packet for thread "+theThreadId+": "+theBuffer);
-						
-						processThreadPackets(theThreadId, theStream, AgentDebugFlags.TRANSPORT_LONGPACKETS_LOG);
-					}
-					else
-					{
-						assert theCleanStart;
-						
-						BufferDataInput theStream = new BufferDataInput(itsDataBuffer);
-						processThreadPackets(theThreadId, theStream, false);
-					}
-				}
-			}
-			catch (EOFException e)
-			{
-				System.err.println("LogReceiver: EOF (msg #"+itsMessageCount+")");
-				eof();
-				break;
-			}
-			catch (Throwable e)
-			{
-				System.err.println("Exception in LogReceiver.process (msg #"+itsMessageCount+"):");
-				e.printStackTrace();
-				eException.fire(e);
-				eof();
-				break;
-			}
-		}
-		
-		return true;
-	}
-
 	private void storePackets(DataInputStream aDataIn) throws IOException
 	{
 		byte[] theBuffer = new byte[4096];
@@ -513,116 +328,10 @@ public abstract class LogReceiver
 		}
 	}
 	
-	protected void processThreadPackets(
-			int aThreadId, 
-			BufferDataInput aStream, 
-			boolean aLogPackets)
-	throws IOException
+	@Override
+	protected void processEnd()
 	{
-		while(aStream.hasMore())
-		{
-			int theMessage = aStream.readByte();
-//			System.out.println("[LogReceiver] Command: "+theCommand);
-			itsMessageCount++;
-
-			if (DebugFlags.MAX_EVENTS > 0 && itsMessageCount > DebugFlags.MAX_EVENTS)
-			{
-				eof();
-				break;
-			}
-			
-			if (theMessage >= Command.BASE)
-			{
-				Command theCommand = Command.VALUES[theMessage-Command.BASE];
-				switch (theCommand)
-				{
-				case CMD_FLUSH:
-					System.out.println("[LogReceiver] Received flush request.");
-					processFlush();
-					break;
-					
-				case CMD_CLEAR:
-					System.out.println("[LogReceiver] Received clear request.");
-					processFlush();
-					processClear();
-					break;
-					
-				case CMD_END:
-					System.out.println("[LogReceiver] Received end request.");
-					processFlush();
-					disconnect();
-					break;
-					
-				default: throw new RuntimeException("Not handled: "+theCommand); 
-				}
-
-			}
-			else
-			{
-				LowLevelEventType theType = LowLevelEventType.VALUES[theMessage];
-				if (aLogPackets) System.out.println("[LogReceiver] Processing "+theType+" (remaining: "+aStream.remaining()+")");
-				processEvent(aThreadId, theType, aStream);
-				if (aLogPackets) System.out.println("[LogReceiver] Done processing "+theType+" (remaining: "+aStream.remaining()+")");
-			}
-			
-			if (itsMonitor != null 
-					&& DebugFlags.RECEIVER_PRINT_COUNTS > 0 
-					&& itsMessageCount % DebugFlags.RECEIVER_PRINT_COUNTS == 0)
-			{
-				itsMonitor.processedMessages(itsMessageCount);
-			}
-		}
-	}
-	
-	/**
-	 * Reads and processes an incoming event packet for the given thread.
-	 */
-	protected abstract void processEvent(int aThreadId, LowLevelEventType aType, DataInput aStream) throws IOException;
-	
-	/**
-	 * Flushes buffered events.
-	 * @return Number of flushed events
-	 */
-	protected abstract int processFlush();
-	
-	/**
-	 * Clears the database.
-	 */
-	protected abstract void processClear();
-	
-	
-	/**
-	 * This is a buffer for long packets, ie. packets that span more than
-	 * one meta-packet.
-	 * @author gpothier
-	 */
-	private static class ThreadPacketBuffer
-	{
-		private final ByteArrayOutputStream itsBuffer = new ByteArrayOutputStream();
-		
-		public void append(byte[] aBuffer, int aOffset, int aLength)
-		{
-			itsBuffer.write(aBuffer, aOffset, aLength);
-		}
-		
-		public ByteBuffer toByteBuffer()
-		{
-			ByteBuffer theBuffer = ByteBuffer.wrap(itsBuffer.toByteArray());
-			theBuffer.order(ByteOrder.nativeOrder());
-			return theBuffer;
-		}
-		
-		@Override
-		public String toString()
-		{
-			return "ThreadPacketBuffer: "+itsBuffer.size()+" bytes";
-		}
-	}
-	
-	public interface ILogReceiverMonitor
-	{
-		public void started();
-		public void processedMessages(long aCount);
+		disconnect();
 	}
 	
 	/**
@@ -692,108 +401,5 @@ public abstract class LogReceiver
 				throw new RuntimeException(e);
 			}
 		}
-	}
-	
-	/**
-	 * Wraps a {@link ByteBuffer} in a {@link DataInput}.
-	 * @author gpothier
-	 */
-	private static class BufferDataInput implements DataInput
-	{
-		private final ByteBuffer itsBuffer;
-
-		public BufferDataInput(ByteBuffer aBuffer)
-		{
-			itsBuffer = aBuffer;
-		}
-
-		public boolean hasMore()
-		{
-			return itsBuffer.remaining() > 0;
-		}
-		
-		public int remaining()
-		{
-			return itsBuffer.remaining();
-		}
-		
-		public boolean readBoolean()
-		{
-			return itsBuffer.get() != 0;
-		}
-
-		public byte readByte() 
-		{
-			return itsBuffer.get();
-		}
-
-		public char readChar() 
-		{
-			return itsBuffer.getChar();
-		}
-
-		public double readDouble() 
-		{
-			return itsBuffer.getDouble();
-		}
-
-		public float readFloat() 
-		{
-			return itsBuffer.getFloat();
-		}
-
-		public void readFully(byte[] aB, int aOff, int aLen) 
-		{
-			itsBuffer.get(aB, aOff, aLen);
-		}
-
-		public void readFully(byte[] aB) 
-		{
-			readFully(aB, 0, aB.length);
-		}
-
-		public int readInt() 
-		{
-			return itsBuffer.getInt();
-		}
-
-		public String readLine() 
-		{
-			throw new UnsupportedOperationException();
-		}
-
-		public long readLong() 
-		{
-			return itsBuffer.getLong();
-		}
-
-		public short readShort() 
-		{
-			return itsBuffer.getShort();
-		}
-
-		public int readUnsignedByte() 
-		{
-			throw new UnsupportedOperationException();
-		}
-
-		public int readUnsignedShort() 
-		{
-			throw new UnsupportedOperationException();
-		}
-
-		public String readUTF() 
-		{
-			int theSize = readInt();
-			char[] theChars = new char[theSize];
-			for(int i=0;i<theSize;i++) theChars[i] = readChar();
-			return new String(theChars);
-		}
-
-		public int skipBytes(int aN) 
-		{
-			throw new UnsupportedOperationException();
-		}
-		
 	}
 }

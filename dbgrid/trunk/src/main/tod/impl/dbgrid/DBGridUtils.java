@@ -26,6 +26,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 
 import tod.core.config.TODConfig;
+import tod.core.database.structure.IStructureDatabase;
 import tod.impl.database.structure.standard.StructureDatabase;
 import tod.impl.dbgrid.db.DatabaseNode;
 
@@ -57,27 +58,35 @@ public class DBGridUtils
 		}
 	}
 		
-	public static GridMaster setupLocalMaster(Registry aRegistry) throws RemoteException
+	public static GridMaster setupLocalMaster(
+			Registry aRegistry, 
+			TODConfig aConfig,
+			StructureDatabase aStructureDatabase) throws RemoteException
 	{
-		TODConfig theConfig = new TODConfig();
-		StructureDatabase theStructureDatabase = StructureDatabase.create(theConfig);
 		DatabaseNode theNode = DebuggerGridConfig.createDatabaseNode();
 		
 		GridMaster theMaster = GridMaster.createLocal(
-				theConfig, 
-				theStructureDatabase, 
+				aConfig, 
+				aStructureDatabase, 
 				theNode, 
 				true);
 		
 		if (aRegistry != null)
 		{
 			System.out.println("Binding master...");
-			aRegistry.rebind(GridMaster.getRMIId(theConfig), theMaster);
+			aRegistry.rebind(GridMaster.getRMIId(aConfig), theMaster);
 			System.out.println("Bound master");
 		}
 
 		theMaster.waitReady();
 		return theMaster;
+	}
+	
+	public static GridMaster setupLocalMaster(Registry aRegistry) throws RemoteException
+	{
+		TODConfig theConfig = new TODConfig();
+		StructureDatabase theStructureDatabase = StructureDatabase.create(theConfig);
+		return setupLocalMaster(aRegistry, theConfig, theStructureDatabase);
 	}
 	
 	/**

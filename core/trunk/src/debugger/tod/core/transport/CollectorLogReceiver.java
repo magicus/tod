@@ -53,7 +53,7 @@ public class CollectorLogReceiver extends LogReceiver
 			IStructureDatabase aStructureDatabase,
 			ILogCollector aCollector)
 	{
-		super(aConfig, aHostInfo, aInStream, aOutStream, false);
+		super(aConfig, aStructureDatabase, aHostInfo, aInStream, aOutStream, false);
 		itsCollector = aCollector;
 		itsInterpreter = new EventInterpreter(aStructureDatabase, itsCollector);
 		if (aStart) start();
@@ -81,5 +81,10 @@ public class CollectorLogReceiver extends LogReceiver
 	protected int processFlush()
 	{
 		return itsCollector.flush();
+	}
+
+	@Override
+	protected void processEvCaptureEnabled(boolean aEnabled)
+	{
 	}
 }

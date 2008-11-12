@@ -359,7 +359,7 @@ implements RIStructureDatabase
 			{
 				ISerializableLocationInfo theLocation = (ISerializableLocationInfo) aLocation;
 				assert aLocation.getDatabase() == null;
-				theLocation.setDatabase(this);
+				theLocation.setDatabase(this, false);
 			}
 			else assert false;
 		}

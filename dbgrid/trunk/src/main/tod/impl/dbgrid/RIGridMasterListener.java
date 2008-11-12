@@ -49,4 +49,9 @@ public interface RIGridMasterListener extends Remote
 	 * Called when new monitoring info has been received from a database node
 	 */
 	public void monitorData(int aNodeId, MonitorData aData) throws RemoteException;
+	
+	/**
+	 * Called when the trace capture has been enabled or disabled.
+	 */
+	public void captureEnabled(boolean aEnabled) throws RemoteException;
 }

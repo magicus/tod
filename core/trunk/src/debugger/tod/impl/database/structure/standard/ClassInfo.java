@@ -158,6 +158,18 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		return (StructureDatabase) super.getDatabase();
 	}
 	
+	@Override
+	public void setDatabase(IShareableStructureDatabase aDatabase, boolean aIsOriginal)
+	{
+		super.setDatabase(aDatabase, aIsOriginal);
+		if (aIsOriginal)
+		{
+			itsBehaviorsMap = new HashMap<String, IMutableBehaviorInfo>();
+			itsFieldsMap = new HashMap<String, IMutableFieldInfo>();
+			itsClassNameInfo = ((StructureDatabase) getDatabase()).new ClassNameInfo();
+		}
+	}
+	
 	protected IMemberInfo[] getMembers()
 	{
 		List<IMemberInfo> theMembers = new ArrayList<IMemberInfo>();
@@ -392,7 +404,7 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		return false;
 	}
 	
-	private String getKey(IBehaviorInfo aBehavior)
+	public static String getKey(IBehaviorInfo aBehavior)
 	{
 		return getBehaviorKey(aBehavior.getName(), aBehavior.getArgumentTypes(), aBehavior.getReturnType());
 	}

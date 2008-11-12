@@ -76,6 +76,7 @@ import zz.utils.net.Server;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;
 import zz.utils.properties.IProperty;
+import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.PropertyListener;
 
 /**
@@ -292,6 +293,15 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 				fireException(aData);
 			}
 		});
+		
+		theServer.pCaptureEnabled().addHardListener(new PropertyListener<Boolean>()
+		{
+			@Override
+			public void propertyChanged(IProperty<Boolean> aProperty, Boolean aOldValue, Boolean aNewValue)
+			{
+				fireCaptureEnabled(aNewValue);
+			}
+		});
 
 		return theServer;
 	}
@@ -448,6 +458,23 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		{
 			ListenerData theListenerData = theIterator.next();
 			if (!theListenerData.fireException(aThrowable))
+			{
+				System.out.println("Removing stale listener");
+				theIterator.remove();
+			}
+		}
+	}
+
+	/**
+	 * Fires the {@link RIGridMasterListener#captureEnabled(boolean)} message to all
+	 * listeners.
+	 */
+	protected void fireCaptureEnabled(boolean aEnabled)
+	{
+		for (Iterator<ListenerData> theIterator = itsListeners.iterator(); theIterator.hasNext();)
+		{
+			ListenerData theListenerData = theIterator.next();
+			if (!theListenerData.fireCaptureEnabled(aEnabled))
 			{
 				System.out.println("Removing stale listener");
 				theIterator.remove();
@@ -842,6 +869,19 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			try
 			{
 				itsListener.monitorData(aNodeId, aData);
+				return fire(false);
+			}
+			catch (RemoteException e)
+			{
+				return fire(true);
+			}
+		}
+
+		public boolean fireCaptureEnabled(boolean aEnabled)
+		{
+			try
+			{
+				itsListener.captureEnabled(aEnabled);
 				return fire(false);
 			}
 			catch (RemoteException e)

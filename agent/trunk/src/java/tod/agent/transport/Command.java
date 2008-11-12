@@ -34,26 +34,34 @@ public enum Command
 	 * return:
 	 *  number of flushed events: int
 	 */
-	CMD_FLUSH,
+	DBCMD_FLUSH,
 	
 	/**
 	 * This command clears the database.
 	 * args: none
 	 * return: none
 	 */
-	CMD_CLEAR,
+	DBCMD_CLEAR,
 	
 	/**
 	 * This command notifies the database that this VM is ending.
 	 */
-	CMD_END,
+	DBCMD_END,
+	
+	
+	/**
+	 * Informs the database about the state of trace capture.
+	 * This event is sent periodically.
+	 * args: isEnabled (boolean as byte).
+	 */
+	DBEV_CAPTURE_ENABLED,
 	
 	/**
 	 * Tells the agent to enable/disable trace capture.
 	 * args: boolean(byte) aEnable
 	 * return: none 
 	 */
-	CMD_ENABLECAPTURE;
+	AGCMD_ENABLECAPTURE;
 	
 	/**
 	 * Base value for sending serialized commands

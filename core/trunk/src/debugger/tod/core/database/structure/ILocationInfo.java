@@ -58,7 +58,7 @@ public interface ILocationInfo
 	 */
 	public interface ISerializableLocationInfo extends Serializable, ILocationInfo
 	{
-		public void setDatabase(IShareableStructureDatabase aDatabase);
+		public void setDatabase(IShareableStructureDatabase aDatabase, boolean aIsOriginal);
 	}
 
 }

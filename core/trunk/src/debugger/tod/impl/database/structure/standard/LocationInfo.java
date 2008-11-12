@@ -91,10 +91,11 @@ implements IMutableLocationInfo, Serializable
 		return getDatabase();
 	}
 	
-	public void setDatabase(IShareableStructureDatabase aDatabase)
+	public void setDatabase(IShareableStructureDatabase aDatabase, boolean aIsOriginal)
 	{
 		assert itsDatabase == null;
 		itsDatabase = aDatabase;
+		itsOriginal = aIsOriginal;
 	}
 	
 	/**

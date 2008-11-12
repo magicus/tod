@@ -56,6 +56,7 @@ public class JavaTODServer extends TODServer
 	private int itsCurrentHostId = 1;
 	private LogReceiver itsReceiver;
 	
+	private boolean itsUpdatingCapture = false;
 	private final IRWProperty<Boolean> pCaptureEnabled = 
 		new SimpleRWProperty<Boolean>(this, (Boolean) null)
 		{
@@ -69,6 +70,7 @@ public class JavaTODServer extends TODServer
 			@Override
 			protected void changed(Boolean aOldValue, Boolean aNewValue)
 			{
+				if (itsUpdatingCapture) return;
 				if (aNewValue == null) return;
 				else itsReceiver.sendEnableCapture(aNewValue);
 			}
@@ -236,6 +238,14 @@ public class JavaTODServer extends TODServer
 			{
 				super.eof();
 				JavaTODServer.this.disconnected();
+			}
+
+			@Override
+			protected void processEvCaptureEnabled(boolean aEnabled)
+			{
+				itsUpdatingCapture = true;
+				pCaptureEnabled.set(aEnabled);
+				itsUpdatingCapture = false;
 			}
 		};
 	}

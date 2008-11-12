@@ -41,6 +41,8 @@ public abstract class AbstractGridSession extends AbstractSession
 	private RIGridMaster itsMaster;
 	private GridLogBrowser itsBrowser;
 
+	private boolean itsUpdatingCapture = false;
+	
 	private final IRWProperty<Boolean> pCaptureEnabled = 
 		new SimpleRWProperty<Boolean>(this, getConfig().get(TODConfig.AGENT_CAPTURE_AT_START))
 		{
@@ -54,6 +56,7 @@ public abstract class AbstractGridSession extends AbstractSession
 			@Override
 			protected void changed(Boolean aOldValue, Boolean aNewValue)
 			{
+				if (itsUpdatingCapture) return;
 				try
 				{
 					if (getMaster() == null) return;
@@ -152,7 +155,12 @@ public abstract class AbstractGridSession extends AbstractSession
 		public void monitorData(int aNodeId, MonitorData aData) 
 		{
 		}
+
+		public void captureEnabled(boolean aEnabled) 
+		{
+			itsUpdatingCapture = true;
+			pCaptureEnabled().set(aEnabled);
+			itsUpdatingCapture = false;
+		}
 	}
-
-
 }
