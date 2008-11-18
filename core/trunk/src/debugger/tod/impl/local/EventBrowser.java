@@ -73,6 +73,18 @@ public class EventBrowser extends PublicCloneable implements IEventBrowser
 		}
 	}
 	
+	/**
+	 * Constructor for a browser that only contains one event.
+	 */
+	public EventBrowser(ILogBrowser aLogBrowser, ILogEvent aEvent, IEventFilter aFilter)
+	{
+		itsLogBrowser = aLogBrowser;
+		itsFilter = aFilter;
+		itsEvents = new ArrayList<ILogEvent>();
+		itsEvents.add(aEvent);
+	}
+	
+	
 	public ILogBrowser getLogBrowser()
 	{
 		return itsLogBrowser;

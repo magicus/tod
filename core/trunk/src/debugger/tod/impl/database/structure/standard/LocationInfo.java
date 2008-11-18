@@ -95,7 +95,7 @@ implements IMutableLocationInfo, Serializable
 	{
 		assert itsDatabase == null;
 		itsDatabase = aDatabase;
-		itsOriginal = aIsOriginal;
+		itsOriginal = aIsOriginal ? true : null;
 	}
 	
 	/**
