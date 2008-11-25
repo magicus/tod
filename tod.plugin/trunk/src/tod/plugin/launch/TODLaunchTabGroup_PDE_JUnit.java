@@ -27,12 +27,12 @@ import org.eclipse.debug.ui.ILaunchConfigurationTab;
 import org.eclipse.jdt.debug.ui.launchConfigurations.JavaArgumentsTab;
 import org.eclipse.pde.ui.launcher.AbstractPDELaunchConfigurationTabGroup;
 import org.eclipse.pde.ui.launcher.ConfigurationTab;
-import org.eclipse.pde.ui.launcher.EclipseLauncherTabGroup;
+import org.eclipse.pde.ui.launcher.JUnitTabGroup;
 import org.eclipse.pde.ui.launcher.MainTab;
 import org.eclipse.pde.ui.launcher.PluginsTab;
 import org.eclipse.pde.ui.launcher.TracingTab;
 
-public class TODLaunchTabGroup_PDE_EclipseApplication extends EclipseLauncherTabGroup {
+public class TODLaunchTabGroup_PDE_JUnit extends JUnitTabGroup {
 
 	/*
 	 * (non-Javadoc)

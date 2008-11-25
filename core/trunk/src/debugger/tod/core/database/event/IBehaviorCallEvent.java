@@ -31,7 +31,7 @@ import tod.core.database.structure.IBehaviorInfo;
  * Available information will vary depending on the instrumentation 
  * at the caller and callee sites.
  */
-public interface IBehaviorCallEvent extends IParentEvent, ICallerSideEvent
+public interface IBehaviorCallEvent extends IParentEvent, ICallerSideEvent, ITargetEvent
 {
 	/**
 	 * The arguments passed to the behavior.

@@ -45,6 +45,15 @@ public class OperationLocationFilter extends AbstractStatelessFilter
 		itsBytecodeIndex = aBytecodeIndex;
 	}
 	
+	public OperationLocationFilter(
+			LocalBrowser aBrowser, 
+			IBehaviorInfo aBehavior)
+	{
+		super(aBrowser);
+		itsBehaviour = aBehavior;
+		itsBytecodeIndex = -1;
+	}
+	
 	public boolean accept(ILogEvent aEvent)
 	{
 		if (aEvent instanceof ICallerSideEvent)
@@ -52,7 +61,7 @@ public class OperationLocationFilter extends AbstractStatelessFilter
 			ICallerSideEvent theEvent = (ICallerSideEvent) aEvent;
 
 			return itsBehaviour.equals(theEvent.getOperationBehavior())
-					&& itsBytecodeIndex == theEvent.getOperationBytecodeIndex();
+					&& (itsBytecodeIndex == -1 || (itsBytecodeIndex == theEvent.getOperationBytecodeIndex()));
 		}
 		else return false;
 	}

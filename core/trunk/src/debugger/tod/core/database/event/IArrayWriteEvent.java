@@ -26,7 +26,7 @@ package tod.core.database.event;
 /**
  * @author gpothier
  */
-public interface IArrayWriteEvent extends ICallerSideEvent, IWriteEvent
+public interface IArrayWriteEvent extends ICallerSideEvent, IWriteEvent, ITargetEvent, IValueEvent
 {
 	/**
 	 * The array that is written

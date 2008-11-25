@@ -48,7 +48,7 @@ public class TODUtils
 			for(int i=0;i<theLocationFilters.length;i++)
 			{
 				theLocationFilters[i] = 
-					aLogBrowser.createLocationFilter(aBehavior, theLocations[i]);
+					aLogBrowser.createOperationLocationFilter(aBehavior, theLocations[i]);
 			}
 			return aLogBrowser.createUnionFilter(theLocationFilters);
 		}

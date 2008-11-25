@@ -27,7 +27,7 @@ import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 /**
  * @author gpothier
  */
-public interface ILocalVariableWriteEvent extends ICallerSideEvent, IWriteEvent
+public interface ILocalVariableWriteEvent extends ICallerSideEvent, IWriteEvent, IValueEvent
 {
 	/**
 	 * The written variable

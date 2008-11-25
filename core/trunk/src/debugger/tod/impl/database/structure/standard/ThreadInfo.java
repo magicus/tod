@@ -82,7 +82,7 @@ public class ThreadInfo implements IThreadInfo, Serializable
 	@Override
 	public String toString()
 	{
-		return "Thread ("+getId()+", "+getJVMId()+", "+getName()+")";
+		return "Thread ("+getId()+", "+getJVMId()+", "+getName()+") on "+itsHost;
 	}
 
 	@Override

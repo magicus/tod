@@ -90,6 +90,7 @@ public class LogBrowserUtils
 	{
 		RootEvent theRoot = new RootEvent(aBrowser);
 		theRoot.setTimestamp(aBrowser.getFirstTimestamp());
+		theRoot.setThread(aThread);
 		
 		IEventFilter theFilter = aBrowser.createIntersectionFilter(
 				aBrowser.createThreadFilter(aThread),

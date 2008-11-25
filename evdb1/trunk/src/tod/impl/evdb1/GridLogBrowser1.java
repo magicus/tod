@@ -134,13 +134,18 @@ public class GridLogBrowser1 extends GridLogBrowser
 				RoleIndexSet.ROLE_OBJECT_RESULT);
 	}
 	
-	public IEventFilter createLocationFilter(IBehaviorInfo aBehavior, int aBytecodeIndex)
+	public IEventFilter createOperationLocationFilter(IBehaviorInfo aBehavior, int aBytecodeIndex)
 	{
 		return createIntersectionFilter(
 				new BehaviorCondition(aBehavior.getId(), RoleIndexSet.ROLE_BEHAVIOR_OPERATION),
 				new BytecodeLocationCondition(aBytecodeIndex));
 	}
 
+	public IEventFilter createOperationLocationFilter(IBehaviorInfo aBehavior)
+	{
+		return new BehaviorCondition(aBehavior.getId(), RoleIndexSet.ROLE_BEHAVIOR_OPERATION);
+	}
+	
 	public IEventFilter createBehaviorCallFilter()
 	{
 		return createUnionFilter(

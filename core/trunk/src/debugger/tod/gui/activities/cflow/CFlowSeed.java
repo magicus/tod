@@ -66,6 +66,8 @@ implements IEventListSeed
 		itsThread = aSelectedEvent.getThread();
 		pSelectedEvent().set(aSelectedEvent);
 		pLeafEvent().set(aSelectedEvent);
+		IParentEvent theRoot = aLog.getCFlowRoot(itsThread);
+		pRootEvent().set(theRoot);
 	}
 	
 	public static CFlowSeed forThread(ILogBrowser aLog, IThreadInfo aThread)

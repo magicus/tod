@@ -151,7 +151,13 @@ public interface ILogBrowser
 	 * location in the source code, indicated by a behavior and a bytecode index
 	 * within this behavior.
 	 */
-	public IEventFilter createLocationFilter(IBehaviorInfo aBehavior, int aBytecodeIndex);
+	public IEventFilter createOperationLocationFilter(IBehaviorInfo aBehavior, int aBytecodeIndex);
+	
+	/**
+	 * Creates a filter that accepts only events that occured in a particular 
+	 * behavior.
+	 */
+	public IEventFilter createOperationLocationFilter(IBehaviorInfo aBehavior);
 	
 	/**
 	 * Creates a filter that accepts only events that have the specified advice source id.

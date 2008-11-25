@@ -200,11 +200,16 @@ public class LocalBrowser implements ILogBrowser
 		return new ExceptionGeneratedFilter(this);
 	}
 
-	public IEventFilter createLocationFilter(IBehaviorInfo aBehavior, int aBytecodeIndex)
+	public IEventFilter createOperationLocationFilter(IBehaviorInfo aBehavior, int aBytecodeIndex)
 	{
 		return new OperationLocationFilter(this, aBehavior, aBytecodeIndex);
 	}
 
+	public IEventFilter createOperationLocationFilter(IBehaviorInfo aBehavior)
+	{
+		return new OperationLocationFilter(this, aBehavior);
+	}
+	
 	public IEventFilter createAdviceSourceIdFilter(int aAdviceSourceId)
 	{
 		return new AdviceSourceIdFilter(this, aAdviceSourceId);

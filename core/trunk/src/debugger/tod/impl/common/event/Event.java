@@ -22,6 +22,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.common.event;
 
+import java.io.Serializable;
+
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.ICallerSideEvent;
@@ -35,7 +37,8 @@ import zz.utils.Utils;
  * Base class of all logged events.
  * @author gpothier
  */
-public abstract class Event implements ICallerSideEvent
+public abstract class Event 
+implements ICallerSideEvent, Serializable // TODO: Serializable if for drag&drop in JQuery, see if we can do otherwise
 {
 	private ILogBrowser itsLogBrowser;
 	

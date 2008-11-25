@@ -27,7 +27,7 @@ import tod.core.database.structure.IFieldInfo;
 /**
  * @author gpothier
  */
-public interface IFieldWriteEvent extends ICallerSideEvent, IWriteEvent
+public interface IFieldWriteEvent extends ICallerSideEvent, IWriteEvent, ITargetEvent, IValueEvent
 {
 	/**
 	 * The object on which the field is written.

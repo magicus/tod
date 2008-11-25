@@ -277,11 +277,16 @@ public class ABCTags
 			throw new UnsupportedOperationException();
 		}
 
-		public IEventFilter createLocationFilter(IBehaviorInfo aBehavior, int aBytecodeIndex)
+		public IEventFilter createOperationLocationFilter(IBehaviorInfo aBehavior, int aBytecodeIndex)
 		{
 			throw new UnsupportedOperationException();
 		}
 
+		public IEventFilter createOperationLocationFilter(IBehaviorInfo aBehavior)
+		{
+			throw new UnsupportedOperationException();
+		}
+		
 		public IEventFilter createObjectFilter(ObjectId aId)
 		{
 			throw new UnsupportedOperationException();

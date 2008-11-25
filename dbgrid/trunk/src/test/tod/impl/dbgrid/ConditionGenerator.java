@@ -81,7 +81,7 @@ public final class ConditionGenerator
 		switch(itsRandom.nextInt(7))
 		{
 		case 0: return itsLogBrowser.createBehaviorCallFilter(genBehavior());
-		case 1: return itsLogBrowser.createLocationFilter(genBehavior(), itsIdGenerator.genBytecodeIndex());
+		case 1: return itsLogBrowser.createOperationLocationFilter(genBehavior(), itsIdGenerator.genBytecodeIndex());
 		case 2: return itsLogBrowser.createFieldFilter(genField());
 		case 3: return itsLogBrowser.createObjectFilter(itsIdGenerator.genObject());
 		case 4: return itsLogBrowser.createThreadFilter(genThread());
