@@ -22,6 +22,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.utils;
 
+import java.awt.EventQueue;
+import java.awt.GraphicsEnvironment;
 import java.util.Arrays;
 
 import tod.core.config.TODConfig;
@@ -68,6 +70,31 @@ public class TODUtils
 		// Do the test here instead of calling #log, to avoid calling #format when not necessary
 		if (TODConfig.TOD_VERBOSE >= aLevel) System.out.println(String.format(aText, aArgs));
 	}
+
+	private static final boolean headless = checkHeadless();
 	
+	private static boolean checkHeadless()
+	{
+		if (GraphicsEnvironment.isHeadless()) return true;
+		try
+		{
+			 EventQueue.isDispatchThread();
+			 return false;
+		}
+		catch(Throwable e)
+		{
+			return true;
+		}
+	}
+	
+	/**
+	 * Same as {@link EventQueue#isDispatchThread()},
+	 * but with an additional safety check for headless mode.
+	 */
+	public static boolean isDispatchThread()
+	{
+		if (headless) return false;
+		else return EventQueue.isDispatchThread();
+	}
 	
 }

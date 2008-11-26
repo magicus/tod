@@ -31,8 +31,7 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.tools.monitoring;
 
-import java.awt.EventQueue;
-import java.awt.GraphicsEnvironment;
+import tod.utils.TODUtils;
 
 /**
  * This aspect takes care of starting subtasks when a {@link Monitored} method
@@ -45,8 +44,7 @@ public aspect MonitorInjector
 	
 	before(): monitored()
 	{
-		// Note: the test for headless avoids a crash in isDispatchThread
-		if (! GraphicsEnvironment.isHeadless() && EventQueue.isDispatchThread())
+		if (TODUtils.isDispatchThread())
 		{
 			new RuntimeException("Warning: calling monitored method from event dispatch thread. Stack trace:").printStackTrace(System.out);
 		}
