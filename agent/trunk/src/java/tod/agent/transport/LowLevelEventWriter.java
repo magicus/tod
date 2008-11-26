@@ -50,6 +50,7 @@ import java.nio.ByteOrder;
 
 import tod.agent.BehaviorCallType;
 import tod.agent.EventCollector;
+import tod.agent.ExceptionGeneratedReceiver;
 import tod.agent.ObjectIdentity;
 import tod.agent.Output;
 import tod.agent.transport.PacketBufferSender.PacketBuffer;
@@ -237,7 +238,9 @@ public class LowLevelEventWriter
 
 		// We don't send registered objects here because it seems to cause
 		// a bad interaction with the native side.
-		// sendRegisteredObjects();
+		ExceptionGeneratedReceiver.setIgnoreExceptions(true);
+		sendRegisteredObjects();
+		ExceptionGeneratedReceiver.setIgnoreExceptions(false);
 	}
 	
 	public void sendFieldWrite(
@@ -719,7 +722,7 @@ public class LowLevelEventWriter
 		{
 			//TODO remove this 
 			if (itsSize>= itsObjects.length) {
-				System.out.println("---------WARNING");
+				System.out.println("---------TOD---------WARNING");
 				for (int theI = 0; theI < itsObjects.length; theI++)
 					System.out.print(itsObjects[theI].object.getClass() +" ");
 			}

@@ -34,6 +34,26 @@ public class ExceptionGeneratedReceiver
 		AgentConfig.getCollector();
 	}
 	
+	private static final ThreadLocal<Boolean> processingExceptions = 
+		new ThreadLocal<Boolean>()
+		{
+			@Override
+			protected Boolean initialValue()
+			{
+				return false;
+			}
+		};
+	
+	private static final ThreadLocal<Boolean> ignoreExceptions = 
+		new ThreadLocal<Boolean>()
+		{
+			@Override
+			protected Boolean initialValue()
+			{
+				return false;
+			}
+		};
+			
 	/**
 	 * Sets the ignore next exception flag of the current thread.
 	 * This is called by instrumented classes.
@@ -43,6 +63,14 @@ public class ExceptionGeneratedReceiver
 		if (AgentReady.COLLECTOR_READY) AgentConfig.getCollector().ignoreNextException();
 	}
 	
+	/**
+	 * Used to avoid processing exceptions while registered objects are sent.
+	 */
+	public static void setIgnoreExceptions(boolean aIgnore)
+	{
+		ignoreExceptions.set(aIgnore);
+	}
+	
 	public static void exceptionGenerated(
 			String aMethodName,
 			String aMethodSignature,
@@ -50,6 +78,13 @@ public class ExceptionGeneratedReceiver
 			int aOperationBytecodeIndex,
 			Throwable aThrowable)
 	{
+		if (ignoreExceptions.get()) return;
+		if (processingExceptions.get()) 
+		{
+			System.err.println("[TOD] Recursive exception, probably because we got disconnected from the database.");
+			System.exit(1);
+		}
+		processingExceptions.set(true);
 		try
 		{
 			if (! AgentReady.COLLECTOR_READY) return;
@@ -69,5 +104,6 @@ public class ExceptionGeneratedReceiver
 			e.printStackTrace();
 			System.exit(1);
 		}
+		processingExceptions.set(false);
 	}
 }

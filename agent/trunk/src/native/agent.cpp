@@ -88,7 +88,6 @@ char* classCachePrefix = "bad";
 // Class and method references
 StaticVoidMethod* ExceptionGeneratedReceiver_exceptionGenerated;
 int isInitializingExceptionMethods = 0;
-boost::thread_specific_ptr<bool> isInExceptionCb;
 
 StaticVoidMethod* TracedMethods_setTraced;
 StaticVoidMethod* TOD_enable;
@@ -550,16 +549,6 @@ void agentException(
 	jobject exception,
 	int bytecodeIndex)
 {
-	if (! isInExceptionCb.get()) isInExceptionCb.reset(new bool(false));
-	if (propVerbose>=3) printf("Exception detected by native agent.\n");
-	
-	if (*isInExceptionCb)
-	{
-		jni->FatalError("Recursive exeception event - probable cause is that the connection to the TOD database has been lost. Exiting.\n");
-	}
-	
-	*isInExceptionCb = true;
-	
 	if (propVerbose>=1) printf("Exception generated: %s, %s, %s, %d\n", methodName, methodSignature, methodDeclaringClassSignature, bytecodeIndex);
 	
 	ExceptionGeneratedReceiver_exceptionGenerated->invoke(
@@ -576,8 +565,6 @@ void agentException(
 		jni->ExceptionDescribe();
 		jni->FatalError("Exception detected while processing exeception event. Exiting.\n");
 	}
-	
-	*isInExceptionCb = false;
 }
 
 
