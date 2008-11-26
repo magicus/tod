@@ -78,17 +78,18 @@ public class ExceptionGeneratedReceiver
 			int aOperationBytecodeIndex,
 			Throwable aThrowable)
 	{
-		if (ignoreExceptions.get()) return;
-		if (processingExceptions.get()) 
-		{
-			System.err.println("[TOD] Recursive exception, probably because we got disconnected from the database.");
-			System.exit(1);
-		}
-		processingExceptions.set(true);
 		try
 		{
+			if (ignoreExceptions.get()) return;
 			if (! AgentReady.COLLECTOR_READY) return;
 			if (! AgentReady.CAPTURE_ENABLED) return;
+			
+			if (processingExceptions.get()) 
+			{
+				System.err.println("[TOD] Recursive exception, probably because we got disconnected from the database.");
+				System.exit(1);
+			}
+			processingExceptions.set(true);
 			
 //			System.out.println(String.format("Exception generated: %s.%s, %d", aMethodDeclaringClassSignature, aMethodName, aOperationBytecodeIndex));
 			AgentConfig.getCollector().logExceptionGenerated(
@@ -97,6 +98,8 @@ public class ExceptionGeneratedReceiver
 					aMethodDeclaringClassSignature,
 					aOperationBytecodeIndex, 
 					aThrowable);
+			
+			processingExceptions.set(false);
 		}
 		catch (Throwable e)
 		{
@@ -104,6 +107,5 @@ public class ExceptionGeneratedReceiver
 			e.printStackTrace();
 			System.exit(1);
 		}
-		processingExceptions.set(false);
 	}
 }
