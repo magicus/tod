@@ -26,12 +26,14 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ExternalPointer;
 
 /**
- * Serves as a fake event containing control flow roots
+ * Serves as a fake event containing control flow roots.
+ * This version explicitly stores all its children.
+ * @see BrowserRootEvent
  * @author gpothier
  */
-public class RootEvent extends BehaviorCallEvent
+public class ListRootEvent extends BehaviorCallEvent
 {
-	public RootEvent(ILogBrowser aLogBrowser)
+	public ListRootEvent(ILogBrowser aLogBrowser)
 	{
 		super(aLogBrowser);
 	}

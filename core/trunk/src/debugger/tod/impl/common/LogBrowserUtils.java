@@ -35,7 +35,8 @@ import tod.core.database.event.IConstructorChainingEvent.CallType;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IThreadInfo;
 import tod.impl.common.event.Event;
-import tod.impl.local.event.RootEvent;
+import tod.impl.local.event.BrowserRootEvent;
+import tod.impl.local.event.ListRootEvent;
 import tod.tools.monitoring.Monitored;
 
 /**
@@ -88,28 +89,7 @@ public class LogBrowserUtils
 	@Monitored
 	public static IParentEvent createCFlowRoot(ILogBrowser aBrowser, IThreadInfo aThread)
 	{
-		RootEvent theRoot = new RootEvent(aBrowser);
-		theRoot.setTimestamp(aBrowser.getFirstTimestamp());
-		theRoot.setThread(aThread);
-		
-		IEventFilter theFilter = aBrowser.createIntersectionFilter(
-				aBrowser.createThreadFilter(aThread),
-				aBrowser.createDepthFilter(1));
-		
-		IEventBrowser theBrowser = aBrowser.createBrowser(theFilter);
-		
-		while (theBrowser.hasNext())
-		{
-			ILogEvent theEvent = theBrowser.next();
-			theRoot.addChild((Event) theEvent);
-			
-//			if (! ((theEvent instanceof IBehaviorCallEvent) 
-//					|| (theEvent instanceof IExceptionGeneratedEvent)))
-//			{
-//				System.err.println("[LogBrowserUtils] Warning: bad event at level 1: "+theEvent);
-//			}
-		}
-		return theRoot;
+		return new BrowserRootEvent(aBrowser, aThread);
 	}
 	
 	public static CallType isSuperCall(IConstructorChainingEvent aEvent)
