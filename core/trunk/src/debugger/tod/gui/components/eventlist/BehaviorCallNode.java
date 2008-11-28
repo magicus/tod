@@ -244,7 +244,7 @@ public abstract class BehaviorCallNode extends AbstractSimpleEventNode
 	
 	protected HtmlElement createPackageName()
 	{
-		String thePackageName = Util.getPackageName(getBehavior().getType().getName());
+		String thePackageName = Util.getPackageName(getBehavior().getDeclaringType().getName());
 		if (thePackageName.length() > 0) thePackageName += ".";
 		return HtmlText.create(thePackageName, FontConfig.SMALL, Color.BLACK);
 	}

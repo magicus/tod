@@ -71,7 +71,7 @@ public class PrintThroughCollector implements ILogCollector
 	{
 		IBehaviorInfo theBehavior = getBehavior(aId);
 		return theBehavior != null ? 
-				String.format("%d (%s.%s)", aId, theBehavior.getType().getName(), theBehavior.getName())
+				String.format("%d (%s.%s)", aId, theBehavior.getDeclaringType().getName(), theBehavior.getName())
 				: ""+aId;
 	}
 	

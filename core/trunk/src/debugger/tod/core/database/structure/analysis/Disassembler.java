@@ -67,7 +67,7 @@ public class Disassembler
 	
 	public static DisassembledBehavior disassemble(IBehaviorInfo aBehavior)
 	{
-		IClassInfo theClass = aBehavior.getType();
+		IClassInfo theClass = aBehavior.getDeclaringType();
 		MethodNode theMethodNode = null;
 		ClassReader cr = null;
 		

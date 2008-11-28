@@ -267,7 +267,7 @@ public class LocationSelectorPanel extends JPanel
 		{
 			IBehaviorInfo theBehavior = itsStructureDatabase.getBehavior(aIndex, false);
 			return theBehavior != null ?
-					""+aIndex+" "+theBehavior.getType().getName()+"."+theBehavior.getName()
+					""+aIndex+" "+theBehavior.getDeclaringType().getName()+"."+theBehavior.getName()
 					: ""+aIndex;
 		}
 

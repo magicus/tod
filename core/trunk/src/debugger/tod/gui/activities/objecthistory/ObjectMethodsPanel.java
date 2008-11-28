@@ -199,7 +199,7 @@ public class ObjectMethodsPanel extends ActivitySubPanel<ObjectHistorySeed>
 			StringBuilder theBuilder = new StringBuilder();
 			theBuilder.append(Util.getFullName(aBehavior));
 			
-			IClassInfo theClass = aBehavior.getType();
+			IClassInfo theClass = aBehavior.getDeclaringType();
 			if (! theClass.equals(itsClass))
 			{
 				theBuilder.append(" [");

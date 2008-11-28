@@ -87,4 +87,11 @@ public class PrimitiveTypeInfo extends TypeInfo implements IPrimitiveTypeInfo
 	{
 		return TYPES[aId-1];
 	}
+	
+	public PrimitiveTypeInfo createUncertainClone()
+	{
+		throw new UnsupportedOperationException();
+	}
+
+
 }

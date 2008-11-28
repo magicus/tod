@@ -31,7 +31,7 @@ public interface IArraySlotFieldInfo extends IFieldInfo
 	/**
 	 * The type that contains an array slot is always an {@link IArrayTypeInfo}.
 	 */
-	public IArrayTypeInfo getType();
+	public IArrayTypeInfo getDeclaringType();
 	
 	/**
 	 * Returns the index of the array slot.

@@ -24,5 +24,8 @@ package tod.core.database.structure;
 
 public interface IFieldInfo extends IMemberInfo
 {
-
+	/**
+	 * The type of this field.
+	 */
+	public ITypeInfo getType();
 }

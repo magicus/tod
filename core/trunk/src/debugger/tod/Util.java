@@ -155,7 +155,7 @@ public class Util
 	public static String getFullName(IBehaviorInfo aBehavior)
 	{
 		String theName = aBehavior.getName();
-		if ("<init>".equals(theName)) theName = getSimpleInnermostName(aBehavior.getType().getName());
+		if ("<init>".equals(theName)) theName = getSimpleInnermostName(aBehavior.getDeclaringType().getName());
 		
 		StringBuilder theBuilder = new StringBuilder(theName);
 		theBuilder.append('(');

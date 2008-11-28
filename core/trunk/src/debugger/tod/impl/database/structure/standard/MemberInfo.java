@@ -59,7 +59,7 @@ implements IMemberInfo, ISerializableLocationInfo
 		itsStatic = aStatic;
 	}
 	
-	public ITypeInfo getType()
+	public ITypeInfo getDeclaringType()
 	{
 		return getDatabase().getType(itsTypeId, true);
 	}

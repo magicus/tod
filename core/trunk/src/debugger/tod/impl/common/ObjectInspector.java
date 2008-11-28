@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,7 @@ import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.LocationUtils;
 import tod.core.database.browser.ILogBrowser.Query;
 import tod.core.database.event.ExternalPointer;
+import tod.core.database.event.IArrayWriteEvent;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ICreationEvent;
 import tod.core.database.event.IFieldWriteEvent;
@@ -51,12 +53,14 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMemberInfo;
+import tod.core.database.structure.IPrimitiveTypeInfo;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.impl.database.structure.standard.ArraySlotFieldInfo;
 import tod.tools.monitoring.Monitored;
 import tod.utils.TODUtils;
+import zz.utils.Sieve;
 import zz.utils.Utils;
 
 /**
@@ -66,7 +70,18 @@ import zz.utils.Utils;
  */
 public class ObjectInspector implements IObjectInspector
 {
-	private final ILogBrowser aLogBrowser;
+	private final ILogBrowser itsLogBrowser;
+	
+	/**
+	 * Cached Uncertain java.lang.Object
+	 */
+	private final IClassInfo itsUObjectClass;
+	
+	/**
+	 * Cached unknown array class
+	 */
+	private final IArrayTypeInfo itsUArrayClass;
+	
 	private ObjectId itsObjectId;
 	
 	private Delegate itsDelegate;
@@ -82,21 +97,28 @@ public class ObjectInspector implements IObjectInspector
 	 */
 	private ILogEvent itsReferenceEvent;
 	
-	public ObjectInspector(ILogBrowser aEventTrace, ObjectId aObjectId)
+	private ObjectInspector(ILogBrowser aLogBrowser)
 	{
-		aLogBrowser = aEventTrace;
+		itsLogBrowser = aLogBrowser;
+		itsUObjectClass = aLogBrowser.getStructureDatabase().getClass("java.lang.Object", true).createUncertainClone();
+		itsUArrayClass = aLogBrowser.getStructureDatabase().getArrayType(itsUObjectClass, 1);
+	}
+	
+	public ObjectInspector(ILogBrowser aLogBrowser, ObjectId aObjectId)
+	{
+		this(aLogBrowser);
 		itsObjectId = aObjectId;
 	}
 	
-	public ObjectInspector(ILogBrowser aEventTrace, IClassInfo aClass)
+	public ObjectInspector(ILogBrowser aLogBrowser, IClassInfo aClass)
 	{
-		aLogBrowser = aEventTrace;
+		this(aLogBrowser);
 		itsType = aClass;
 	}
 	
 	public ILogBrowser getLogBrowser()
 	{
-		return aLogBrowser;
+		return itsLogBrowser;
 	}
 
 	public ObjectId getObject()
@@ -111,8 +133,8 @@ public class ObjectInspector implements IObjectInspector
 		if (itsCreationEvent == null) 
 		{
 			TODUtils.log(1,"[ObjectInspector] Retrieving creation event for object: "+getObject());
-			IEventFilter theFilter = aLogBrowser.createTargetFilter(getObject());
-			IEventBrowser theBrowser = aLogBrowser.createBrowser(theFilter);
+			IEventFilter theFilter = itsLogBrowser.createTargetFilter(getObject());
+			IEventBrowser theBrowser = itsLogBrowser.createBrowser(theFilter);
 			
 			// Creation is the first event if it has been captured
 			// Check for timestamp because of concurrency & accuracy of timer.
@@ -147,17 +169,47 @@ public class ObjectInspector implements IObjectInspector
 			else if (DebugFlags.TRY_GUESS_TYPE)
 			{
 				// Try to guess type
-				IEventFilter theFilter = aLogBrowser.createIntersectionFilter(
-						aLogBrowser.createTargetFilter(itsObjectId),
-						aLogBrowser.createFieldWriteFilter());
+				IEventFilter theFilter = itsLogBrowser.createTargetFilter(itsObjectId);
+				IEventBrowser theBrowser = itsLogBrowser.createBrowser(theFilter);
 				
-				IEventBrowser theBrowser = aLogBrowser.createBrowser(theFilter);
-				if (theBrowser.hasNext())
+				int theTries = 5;
+				Sieve<ITypeInfo> theCandidates = new Sieve<ITypeInfo>()
 				{
-					IFieldWriteEvent theEvent = (IFieldWriteEvent) theBrowser.next();
-					ITypeInfo theClass = theEvent.getField().getType();
-					itsType = theClass.createUncertainClone();
+					@Override
+					protected long getScore(ITypeInfo aElement)
+					{
+						return getTypeScore(aElement);
+					}
+				};
+				
+				while(theTries > 0 && theBrowser.hasNext())
+				{
+					ILogEvent theEvent = theBrowser.next();
+					if (theEvent instanceof IFieldWriteEvent)
+					{
+						IFieldWriteEvent theFieldWriteEvent = (IFieldWriteEvent) theEvent;
+						theCandidates.add(theFieldWriteEvent.getField().getDeclaringType());
+					}
+					else if (theEvent instanceof IBehaviorCallEvent)
+					{
+						IBehaviorCallEvent theBehaviorCallEvent = (IBehaviorCallEvent) theEvent;
+						IBehaviorInfo theCalledBehavior = theBehaviorCallEvent.getCalledBehavior();
+						IBehaviorInfo theExecutedBehavior = theBehaviorCallEvent.getExecutedBehavior();
+						if (theCalledBehavior != null) theCandidates.add(theCalledBehavior.getDeclaringType());
+						if (theExecutedBehavior != null) theCandidates.add(theExecutedBehavior.getDeclaringType());
+					}
+					else if (theEvent instanceof IArrayWriteEvent)
+					{
+						IArrayWriteEvent theArrayWriteEvent = (IArrayWriteEvent) theEvent;
+						theCandidates.add(itsUArrayClass);
+						break;
+					} 
+					else throw new RuntimeException("Not handled: "+theEvent);
+					theTries--;
 				}
+				
+				ITypeInfo theType = theCandidates.getBest();
+				if (theType != null) itsType = theType.createUncertainClone();
 			}
 			
 			// Note that we cannot give a null
@@ -165,6 +217,44 @@ public class ObjectInspector implements IObjectInspector
 		}
 		return itsType;
 	}
+	
+	/**
+	 * Returns the score of a type for type guessing
+	 */
+	private int getTypeScore(ITypeInfo aType)
+	{
+		if (aType instanceof IPrimitiveTypeInfo)
+		{
+			throw new RuntimeException("How did that happen?");
+		}
+		else if (aType instanceof IArrayTypeInfo)
+		{
+			return Integer.MAX_VALUE;
+		}
+		else if (aType instanceof IClassInfo)
+		{
+			IClassInfo theClass = (IClassInfo) aType;
+			return getClassDepth(theClass);
+		}
+		else throw new RuntimeException("Not handled: "+aType);
+	}
+	
+	/**
+	 * Returns the depths of the given class in the hierarchy.
+	 */
+	private int getClassDepth(IClassInfo aClass)
+	{
+		int theDepth = 0;
+		IClassInfo theCurrentClass = aClass;
+		while(theCurrentClass != null)
+		{
+			theDepth++;
+			theCurrentClass = theCurrentClass.getSupertype();
+		}
+		
+		return theDepth;
+	}
+
 	
 	@Monitored
 	protected Delegate getDelegate()
@@ -315,7 +405,7 @@ public class ObjectInspector implements IObjectInspector
 		{
 			Delegate theDelegate = getDelegate();
 			IEventFilter theFilter = theDelegate != UNAVAILABLE ? theDelegate.getFilter(aMember) : null;
-			theBrowser = aLogBrowser.createBrowser(theFilter);
+			theBrowser = itsLogBrowser.createBrowser(theFilter);
 			itsBrowsersMap.put (aMember, theBrowser);
 		}
 		
@@ -402,9 +492,9 @@ public class ObjectInspector implements IObjectInspector
 		@Override
 		public IEventFilter getFilter(IFieldInfo aField)
 		{
-			return aLogBrowser.createIntersectionFilter(
-					aLogBrowser.createFieldFilter(aField),
-					aLogBrowser.createTargetFilter(itsObjectId));
+			return itsLogBrowser.createIntersectionFilter(
+					itsLogBrowser.createFieldFilter(aField),
+					itsLogBrowser.createTargetFilter(itsObjectId));
 		}
 		
 		@Override
@@ -445,7 +535,7 @@ public class ObjectInspector implements IObjectInspector
 
 		public ArrayDelegate()
 		{
-			itsArrayCopy = getArrayCopy(aLogBrowser.getStructureDatabase());
+			itsArrayCopy = getArrayCopy(itsLogBrowser.getStructureDatabase());
 		}
 
 		@Override
@@ -474,9 +564,9 @@ public class ObjectInspector implements IObjectInspector
 		{
 			IArraySlotFieldInfo theField = (IArraySlotFieldInfo) aField;
 			
-			IEventFilter theFieldWriteFilter = aLogBrowser.createIntersectionFilter(
-					aLogBrowser.createFieldFilter(theField),
-					aLogBrowser.createTargetFilter(itsObjectId));
+			IEventFilter theFieldWriteFilter = itsLogBrowser.createIntersectionFilter(
+					itsLogBrowser.createFieldFilter(theField),
+					itsLogBrowser.createTargetFilter(itsObjectId));
 			
 			if (itsArrayCopy == null)
 			{
@@ -485,13 +575,13 @@ public class ObjectInspector implements IObjectInspector
 			}
 			else
 			{
-				IEventFilter theCopyFilter = aLogBrowser.createPredicateFilter(
+				IEventFilter theCopyFilter = itsLogBrowser.createPredicateFilter(
 						new ArrayCopyFilter(theField.getIndex()), 
-						aLogBrowser.createIntersectionFilter(
-								aLogBrowser.createBehaviorCallFilter(itsArrayCopy),
-								aLogBrowser.createArgumentFilter(itsObjectId, 3)));
+						itsLogBrowser.createIntersectionFilter(
+								itsLogBrowser.createBehaviorCallFilter(itsArrayCopy),
+								itsLogBrowser.createArgumentFilter(itsObjectId, 3)));
 				
-				return aLogBrowser.createUnionFilter(
+				return itsLogBrowser.createUnionFilter(
 						theFieldWriteFilter,
 						theCopyFilter);
 			}

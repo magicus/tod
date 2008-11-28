@@ -188,7 +188,7 @@ implements Serializable, IShareableStructureDatabase
 		for (BehaviorInfo theBehavior : itsBehaviors) if (theBehavior != null) 
 		{
 			theBehavior.setDatabase(this, true);
-			ClassInfo theClass = (ClassInfo) theBehavior.getType();
+			ClassInfo theClass = (ClassInfo) theBehavior.getDeclaringType();
 			theClass._getBehaviorsMap().put(ClassInfo.getKey(theBehavior), theBehavior);
 		}
 		
@@ -330,7 +330,7 @@ implements Serializable, IShareableStructureDatabase
 			System.out.println(String.format(
 					"Reg.b. %d: %s.%s",
 					aBehavior.getId(),
-					aBehavior.getType().getName(),
+					aBehavior.getDeclaringType().getName(),
 					Util.getFullName(aBehavior)));
 		}
 	}
@@ -604,13 +604,13 @@ implements Serializable, IShareableStructureDatabase
 	public IClassInfo _getBehaviorClass(int aBehaviorId, boolean aFailIfAbsent)
 	{
 		BehaviorInfo theBehavior = getBehavior(aBehaviorId, aFailIfAbsent);
-		return theBehavior != null ? theBehavior.getType() : null;
+		return theBehavior != null ? theBehavior.getDeclaringType() : null;
 	}
 
 	public IClassInfo _getFieldClass(int aFieldId, boolean aFailIfAbsent)
 	{
 		FieldInfo theField = getField(aFieldId, aFailIfAbsent);
-		return theField != null ? theField.getType() : null;
+		return theField != null ? theField.getDeclaringType() : null;
 	}
 
 	private static class Ids implements Serializable

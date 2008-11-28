@@ -161,7 +161,7 @@ public class DebugFlags
 	/**
 	 * Whether {@link ObjectInspector} should try to guess the type of unknown objects
 	 */
-	public static final boolean TRY_GUESS_TYPE = ConfigUtils.readBoolean("try-guess-type", false);
+	public static final boolean TRY_GUESS_TYPE = ConfigUtils.readBoolean("try-guess-type", true);
 	
 	/**
 	 * Whether to show GUI items that are used for debugging.

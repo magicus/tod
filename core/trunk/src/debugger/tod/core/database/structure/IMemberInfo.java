@@ -27,7 +27,7 @@ public interface IMemberInfo extends ILocationInfo
 	/**
 	 * The type that declares this member.
 	 */
-	public ITypeInfo getType();
+	public ITypeInfo getDeclaringType();
 	
 	/**
 	 * Whether this member is static.

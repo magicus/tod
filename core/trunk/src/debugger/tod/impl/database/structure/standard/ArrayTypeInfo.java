@@ -89,4 +89,11 @@ public class ArrayTypeInfo extends TypeInfo implements IArrayTypeInfo
 		return false;
 	}
 	
+	public ArrayTypeInfo createUncertainClone()
+	{
+		return new ArrayTypeInfo(getDatabase(), getElementType().createUncertainClone(), getDimensions());
+	}
+
+
+	
 }

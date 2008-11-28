@@ -90,7 +90,7 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 				IBehaviorInfo theBehavior = theParent.getExecutedBehavior();
 				if (theBehavior == null) theBehavior = theParent.getCalledBehavior();
 				
-				itsInspector = getLogBrowser().createClassInspector(theBehavior.getType());
+				itsInspector = getLogBrowser().createClassInspector(theBehavior.getDeclaringType());
 			}
 		}
 		

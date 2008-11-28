@@ -60,7 +60,7 @@ public interface ITypeInfo extends ILocationInfo
 	 * Creates a clone of this type info object that represents
 	 * uncertain information.
 	 */
-	public IClassInfo createUncertainClone();
+	public ITypeInfo createUncertainClone();
 	
 
 }

@@ -101,7 +101,7 @@ public class LogBrowserUtils
 		{
 			return CallType.UNKNOWN;
 		}
-		else if (theExecutedBehavior.getType().equals(theCallingBehavior.getType()))
+		else if (theExecutedBehavior.getDeclaringType().equals(theCallingBehavior.getDeclaringType()))
 		{
 			return CallType.THIS;
 		}

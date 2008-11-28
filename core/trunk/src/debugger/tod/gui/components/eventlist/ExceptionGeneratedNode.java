@@ -76,7 +76,7 @@ public class ExceptionGeneratedNode extends AbstractSimpleEventNode
 		{
 			IBehaviorInfo theBehavior = getEvent().getOperationBehavior();
 			String theBehaviorName = theBehavior != null ? 
-					Util.getSimpleName(theBehavior.getType().getName()) + "." + theBehavior.getName() 
+					Util.getSimpleName(theBehavior.getDeclaringType().getName()) + "." + theBehavior.getName() 
 					: "<unknown>"; 
 			
 			aBody.addText(" (in "+theBehaviorName+")");

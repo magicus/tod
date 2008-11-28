@@ -103,9 +103,9 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 	}
 	
 	@Override
-	public IClassInfo getType()
+	public IClassInfo getDeclaringType()
 	{
-		return (IClassInfo) super.getType();
+		return (IClassInfo) super.getDeclaringType();
 	}
 	
 	public HasTrace hasTrace()
@@ -300,7 +300,7 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 	@Override
 	public String toString()
 	{
-		return "Behavior ("+getId()+", "+getName()+") of "+getType();
+		return "Behavior ("+getId()+", "+getName()+") of "+getDeclaringType();
 	}
 	
 }

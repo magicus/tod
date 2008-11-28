@@ -71,7 +71,7 @@ public class NormalStackNode extends AbstractStackNode
 		// Create caption
 		IBehaviorInfo theBehavior = getFrameEvent().getExecutedBehavior();
 		if (theBehavior == null) theBehavior = getFrameEvent().getCalledBehavior();
-		itsType = theBehavior.getType();
+		itsType = theBehavior.getDeclaringType();
 		itsArguments = getFrameEvent().getArguments();
 		
 		// Type.method

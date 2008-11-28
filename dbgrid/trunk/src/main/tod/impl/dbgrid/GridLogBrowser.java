@@ -23,7 +23,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid;
 
 import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,10 +42,10 @@ import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.IThreadInfo;
-import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.session.ISession;
 import tod.impl.common.LogBrowserUtils;
+import tod.impl.common.ObjectInspector;
 import tod.impl.common.VariablesInspector;
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.aggregator.GridEventBrowser;
@@ -54,8 +53,6 @@ import tod.impl.dbgrid.aggregator.StringHitsIterator;
 import tod.impl.dbgrid.queries.EventIdCondition;
 import zz.utils.Utils;
 import zz.utils.cache.MRUBuffer;
-import zz.utils.cache.SyncMRUBuffer;
-import zz.utils.monitoring.Monitor.MonitorData;
 
 /**
  * Implementation of {@link ILogBrowser} for the grid backend.
@@ -86,12 +83,8 @@ implements ILogBrowser, IScheduled
 	
 	private Map<String, IHostInfo> itsHostsMap = new HashMap<String, IHostInfo>();
 		
-	/**
-	 * A cache of object types, see {@link GridObjectInspector#getType()}
-	 */
-	private TypeCache itsTypeCache = new TypeCache();
-	
 	private QueryResultCache itsQueryResultCache = new QueryResultCache();
+	private ObjectInspectorCache itsObjectInspectorCache = new ObjectInspectorCache();
 	
 	protected GridLogBrowser(
 			ISession aSession,
@@ -126,11 +119,6 @@ implements ILogBrowser, IScheduled
 		}
 	}
 	
-	public ITypeInfo getCachedType(ObjectId aId) 
-	{
-		return itsTypeCache.get(aId).type;
-	}
-
 	private List<EventIdCondition> getIdConditions(IEventFilter[] aFilters)
 	{
 		List<EventIdCondition> theIdConditions = new ArrayList<EventIdCondition>();
@@ -376,9 +364,9 @@ implements ILogBrowser, IScheduled
 		throw new UnsupportedOperationException();
 	}
 
-	public GridObjectInspector createObjectInspector(ObjectId aObjectId)
+	public IObjectInspector createObjectInspector(ObjectId aObjectId)
 	{
-		return new GridObjectInspector(this, aObjectId);
+		return itsObjectInspectorCache.get(aObjectId);
 	}
 
 	public IVariablesInspector createVariablesInspector(IBehaviorCallEvent aEvent)
@@ -433,48 +421,6 @@ implements ILogBrowser, IScheduled
 	}
 
 	/**
-	 * @see TypeCache
-	 * @author gpothier
-	 */
-	public static class TypeCacheEntry
-	{
-		public final ObjectId object;
-		public final ITypeInfo type;
-		
-		public TypeCacheEntry(final ObjectId aObject, final ITypeInfo aType)
-		{
-			object = aObject;
-			type = aType;
-		}
-	}
-	
-	/**
-	 * We maintain a cache of object types, as this is a frequent operation.
-	 * see {@link GridObjectInspector#getType()}
-	 * @author gpothier
-	 */
-	public class TypeCache extends SyncMRUBuffer<ObjectId, TypeCacheEntry>
-	{
-		public TypeCache()
-		{
-			super(100);
-		}
-
-		@Override
-		protected TypeCacheEntry fetch(ObjectId aId)
-		{
-			return new TypeCacheEntry(aId, createObjectInspector(aId).getType0());
-		}
-
-		@Override
-		protected ObjectId getKey(TypeCacheEntry aValue)
-		{
-			return aValue.object;
-		}
-		
-	}
-	
-	/**
 	 * An event browser that returns all events.
 	 * @author gpothier
 	 */
@@ -522,7 +468,6 @@ implements ILogBrowser, IScheduled
 		public QueryResultCache()
 		{
 			super(1000);
-			
 		}
 		
 		@Override
@@ -555,6 +500,25 @@ implements ILogBrowser, IScheduled
 			}
 			return (O) theEntry.result;
 		}
-		
+	}
+	
+	private class ObjectInspectorCache extends MRUBuffer<ObjectId, IObjectInspector>
+	{
+		public ObjectInspectorCache()
+		{
+			super(1000);
+		}
+
+		@Override
+		protected IObjectInspector fetch(ObjectId aId)
+		{
+			return new ObjectInspector(GridLogBrowser.this, aId);
+		}
+
+		@Override
+		protected ObjectId getKey(IObjectInspector aValue)
+		{
+			return aValue.getObject();
+		}
 	}
 }

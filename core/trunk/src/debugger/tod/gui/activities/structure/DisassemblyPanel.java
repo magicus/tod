@@ -117,7 +117,7 @@ public class DisassemblyPanel extends JPanel
 
 	private void createUI()
 	{
-		String theTitle = ""+itsBehavior.getType().getName()+"."+itsBehavior.getName();
+		String theTitle = ""+itsBehavior.getDeclaringType().getName()+"."+itsBehavior.getName();
 		if (itsDisassembled == null) theTitle += " - bytecode unavailable";
 		itsTitleLabel = new JLabel(theTitle);
 		

@@ -53,7 +53,7 @@ public class MethodCallNode extends BehaviorCallNode
 		HtmlGroup theGroup = new HtmlGroup();
 		IBehaviorInfo theBehavior = getBehavior();
 		if (showPackageNames()) theGroup.add(createPackageName());
-		theGroup.addText(Util.getSimpleName(getBehavior().getType().getName()));
+		theGroup.addText(Util.getSimpleName(getBehavior().getDeclaringType().getName()));
 		theGroup.addText(".");
 		theGroup.addText(HtmlUtils.escapeHTML(theBehavior.getName()));
 		

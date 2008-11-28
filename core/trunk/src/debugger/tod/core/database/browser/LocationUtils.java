@@ -220,7 +220,7 @@ public class LocationUtils
 		    if (theBehavior == null) return null;
 		    
 		    int theLineNumber = theBehavior.getLineNumber(theBytecodeIndex);
-		    ITypeInfo theType = theBehavior.getType();
+		    ITypeInfo theType = theBehavior.getDeclaringType();
 		    
 		    String theSourceFile = theBehavior.getSourceFile();
 		    if (theSourceFile == null) theSourceFile = theType.getSourceFile();

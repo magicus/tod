@@ -48,9 +48,15 @@ public class FieldInfo extends MemberInfo implements IMutableFieldInfo
 	}
 
 	@Override
-	public IClassInfo getType()
+	public IClassInfo getDeclaringType()
 	{
-		return (IClassInfo) super.getType();
+		return (IClassInfo) super.getDeclaringType();
+	}
+	
+	public ITypeInfo getType()
+	{
+		// TODO: implement
+		throw new UnsupportedOperationException("This should be implemented");
 	}
 
 	@Override

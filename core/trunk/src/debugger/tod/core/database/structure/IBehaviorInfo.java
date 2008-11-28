@@ -34,7 +34,7 @@ public interface IBehaviorInfo extends IMemberInfo
 	/**
 	 * The type of a behavior is always a class.
 	 */
-	public IClassInfo getType();
+	public IClassInfo getDeclaringType();
 	
 	/**
 	 * Whether this behavior is traced, ie. emits at least behavior

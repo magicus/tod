@@ -59,8 +59,8 @@ implements IInstantiationEvent
 		if (itsType == null)
 		{
 			return getExecutedBehavior() != null ? 
-					getExecutedBehavior().getType()
-					: getCalledBehavior().getType();
+					getExecutedBehavior().getDeclaringType()
+					: getCalledBehavior().getDeclaringType();
 		}
 		else return itsType;
 	}

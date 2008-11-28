@@ -442,5 +442,12 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		return "Class ("+getId()+", "+getName()+")";
 	}
 	
-	
+	public ClassInfo createUncertainClone()
+	{
+		ClassInfo theClone = (ClassInfo) super.clone();
+		theClone.changeName(getName()+ "?");
+		return theClone;
+	}
+
+
 }

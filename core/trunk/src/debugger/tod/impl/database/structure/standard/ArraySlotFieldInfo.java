@@ -25,6 +25,7 @@ package tod.impl.database.structure.standard;
 import tod.core.database.structure.IArraySlotFieldInfo;
 import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.ITypeInfo;
 
 public class ArraySlotFieldInfo 
 implements IArraySlotFieldInfo
@@ -45,9 +46,14 @@ implements IArraySlotFieldInfo
 		return itsDatabase;
 	}
 
-	public IArrayTypeInfo getType()
+	public IArrayTypeInfo getDeclaringType()
 	{
 		return itsType;
+	}
+	
+	public ITypeInfo getType()
+	{
+		return getDeclaringType().getElementType();
 	}
 	
 	public int getId()

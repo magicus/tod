@@ -135,7 +135,7 @@ public class StackFrameWatchProvider extends AbstractWatchProvider
 			{
 				theContainer.add(ZLabel.create("Behavior: ", STD_HEADER_FONT, Color.BLACK));
 				theContainer.add(Hyperlinks.behavior(getGUIManager(), Hyperlinks.SWING, theBehavior));
-				theContainer.add(ZLabel.create(" ("+Util.getPrettyName(theBehavior.getType().getName())+")", STD_HEADER_FONT, Color.BLACK));
+				theContainer.add(ZLabel.create(" ("+Util.getPrettyName(theBehavior.getDeclaringType().getName())+")", STD_HEADER_FONT, Color.BLACK));
 			}
 			
 			return theContainer;

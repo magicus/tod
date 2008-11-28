@@ -26,4 +26,6 @@ public interface IArrayTypeInfo extends ITypeInfo
 {
 	public int getDimensions();
 	public ITypeInfo getElementType();
+	
+	public IArrayTypeInfo createUncertainClone();
 }

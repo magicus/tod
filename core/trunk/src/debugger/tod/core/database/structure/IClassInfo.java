@@ -79,7 +79,6 @@ public interface IClassInfo extends ITypeInfo
 
 	/**
 	 * Searches a behavior according to its signature.
-	 * @param aReturnType TODO
 	 */
 	public IBehaviorInfo getBehavior(String aName, ITypeInfo[] aArgumentTypes, ITypeInfo aReturnType);
 
@@ -93,4 +92,5 @@ public interface IClassInfo extends ITypeInfo
 	 */
 	public Iterable<IBehaviorInfo> getBehaviors();
 	
+	public IClassInfo createUncertainClone();
 }

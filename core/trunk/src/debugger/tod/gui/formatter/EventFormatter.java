@@ -104,7 +104,7 @@ public class EventFormatter extends AbstractFormatter<ILogEvent>
 	{
 		IBehaviorInfo theBehavior = theEvent.getOperationBehavior();
 		String theBehaviorName = theBehavior != null ? 
-				Util.getSimpleName(theBehavior.getType().getName()) + "." + theBehavior.getName() 
+				Util.getSimpleName(theBehavior.getDeclaringType().getName()) + "." + theBehavior.getName() 
 				: "<unknown>";
 				
 		String theExceptionText;
@@ -140,7 +140,7 @@ public class EventFormatter extends AbstractFormatter<ILogEvent>
 	{
 		return String.format(
 				"%s.%s = %s",
-				Util.getPrettyName(theEvent.getField().getType().getName()),
+				Util.getPrettyName(theEvent.getField().getDeclaringType().getName()),
 				theEvent.getField().getName(),
 				formatObject(theEvent.getValue()));
 	}
@@ -156,7 +156,7 @@ public class EventFormatter extends AbstractFormatter<ILogEvent>
 
 			return String.format(
 					"Return from %s.%s -> %s",
-					Util.getPrettyName(theBehavior.getType().getName()),
+					Util.getPrettyName(theBehavior.getDeclaringType().getName()),
 		            theBehavior.getName(),
 		            theEvent.getResult());
 		}
@@ -175,7 +175,7 @@ public class EventFormatter extends AbstractFormatter<ILogEvent>
 		
 		return String.format(
 				"%s.%s (%s)",
-				Util.getPrettyName(theBehavior.getType().getName()),
+				Util.getPrettyName(theBehavior.getDeclaringType().getName()),
 		        theBehavior.getName(),
 		        formatArgs(theEvent.getArguments()));
 	}

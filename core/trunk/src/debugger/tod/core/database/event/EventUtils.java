@@ -70,7 +70,7 @@ public class EventUtils
 			IBehaviorInfo theBehavior = aEvent.getOperationBehavior();
 			if (theBehavior == null) return true; // TODO: this is temporary
 			
-			ITypeInfo theType = theBehavior.getType();
+			ITypeInfo theType = theBehavior.getDeclaringType();
 			return itsIgnorableExceptions.contains(theType.getName()+"."+theBehavior.getName());
 		}
 	}

@@ -28,4 +28,5 @@ package tod.core.database.structure;
  */
 public interface IPrimitiveTypeInfo extends ITypeInfo
 {
+	public IPrimitiveTypeInfo createUncertainClone();
 }
