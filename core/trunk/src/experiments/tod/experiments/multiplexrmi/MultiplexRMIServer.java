@@ -35,9 +35,21 @@ import zz.utils.net.MultiplexRMISocketFactory;
 public class MultiplexRMIServer extends UnicastRemoteObject
 implements RIMultiplexRMIServer
 {
+	static {
+		try
+		{
+			MultiplexRMISocketFactory.createServer("server", 6789);
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		} 
+	}
+	
 
 	public MultiplexRMIServer() throws RemoteException
 	{
+		super(0, MultiplexRMISocketFactory.get(), MultiplexRMISocketFactory.get());
 	}
 
 	public void addClient(RIMultiplexRMIClient aClient) throws RemoteException 
@@ -49,9 +61,7 @@ implements RIMultiplexRMIServer
 
 	public static void main(String[] args) throws IOException, AlreadyBoundException
 	{
-		RMISocketFactory.setSocketFactory(MultiplexRMISocketFactory.createServer("server", 6789));
-		Registry theRegistry = LocateRegistry.createRegistry(90);
-		
+		Registry theRegistry = LocateRegistry.createRegistry(90, MultiplexRMISocketFactory.get(), MultiplexRMISocketFactory.get());
 		theRegistry.bind("server", new MultiplexRMIServer());
 	}
 	

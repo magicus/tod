@@ -55,6 +55,7 @@ import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.session.AbstractSession;
 import tod.core.session.ISession;
+import tod.gui.IExtensionPoints;
 import tod.gui.IGUIManager;
 import tod.gui.MinerUI;
 import tod.gui.activities.structure.StructureSeed;
@@ -114,6 +115,11 @@ public class ABCTags
 		public void showPostIt(JComponent aComponent, Dimension aSize)
 		{
 			throw new UnsupportedOperationException();
+		}
+
+		public IExtensionPoints getExtensionPoints()
+		{
+			return null;
 		}
 	}
 	
@@ -198,6 +204,11 @@ public class ABCTags
 		}
 
 		public IEventFilter createArrayWriteFilter()
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		public IEventFilter createArrayWriteFilter(int aIndex)
 		{
 			throw new UnsupportedOperationException();
 		}
