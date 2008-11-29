@@ -48,7 +48,7 @@ public abstract class IndexSet<T extends Tuple>
 	
 	/**
 	 * This dummy entry is used in {@link #itsIndexes} to differenciate
-	 * entries that never existed (null  value) from entries that were
+	 * entries that never existed (null value) from entries that were
 	 * discarded and that are available in the file. 
 	 */
 	private static final Entry DISCARDED_ENTRY = new Entry(null);

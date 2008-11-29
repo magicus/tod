@@ -229,6 +229,12 @@ public interface ILogBrowser
 	public IEventFilter createArrayWriteFilter ();
 	
 	/**
+	 * Creates a filter that accepts only array write events on the specified
+	 * array index.
+	 */
+	public IEventFilter createArrayWriteFilter (int aIndex);
+	
+	/**
 	 * Creates a filter that accepts only local variable write events
 	 * of the specified variable.
 	 */

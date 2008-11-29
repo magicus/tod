@@ -105,6 +105,7 @@
       <import plugin="org.aspectj.runtime" optional="true"/>
    </requires>
    <extension-point id="SourceRevealer" name="Source Revealer" schema="schema/SourceRevealer.exsd"/>
+   <extension-point id="ActionsForEvent" name="Actions for events" schema="schema/ActionsForEvent.exsd"/>
 
    <extension
          point="org.eclipse.ui.views">

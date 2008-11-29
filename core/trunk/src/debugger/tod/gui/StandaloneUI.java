@@ -94,8 +94,11 @@ public class StandaloneUI extends JPanel
 			theFrame.pack();
 			theFrame.setVisible(true);
 		}
-		
-		
+
+		public IExtensionPoints getExtensionPoints()
+		{
+			return null;
+		}
 	}
 	
 	public static void main(String[] args)

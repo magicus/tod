@@ -102,25 +102,13 @@ public class SourceRevealerUtils
 	public static void reveal(ISession aSession, SourceRange aSourceRange)
 	{
 		TODUtils.log(1, "[SourceRevealerUtils.reveal(ISession, SourceRange)]" + aSourceRange);
-		
-		IExtensionRegistry theRegistry = Platform.getExtensionRegistry();
-		IConfigurationElement[] theExtensions = 
-			theRegistry.getConfigurationElementsFor("tod.plugin.SourceRevealer");
+		List<ISourceRevealer> theRevealers = ExtensionUtils.getExtensions(
+				"tod.plugin.SourceRevealer", 
+				ISourceRevealer.class);
 
-		for (IConfigurationElement theElement : theExtensions)
+		for (ISourceRevealer theRevealer : theRevealers)
 		{
-			ISourceRevealer theRevealer;
-			try
-			{
-				theRevealer = (ISourceRevealer) theElement.createExecutableExtension("class");
-			}
-			catch (CoreException e)
-			{
-				throw new RuntimeException(e);
-			}
-			
 			if (! theRevealer.canHandle(aSourceRange)) continue;
-				
 			getInstance().reveal(theRevealer, aSession, aSourceRange);
 		}
 	}

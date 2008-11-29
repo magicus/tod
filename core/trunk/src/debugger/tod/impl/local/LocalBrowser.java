@@ -43,7 +43,6 @@ import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
-import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
@@ -255,6 +254,11 @@ public class LocalBrowser implements ILogBrowser
 		throw new UnsupportedOperationException();
 	}
 	
+	public IEventFilter createArrayWriteFilter(int aIndex)
+	{
+		throw new UnsupportedOperationException();
+	}
+
 	public IEventFilter createVariableWriteFilter(LocalVariableInfo aVariable)
 	{
 		return new VariableWriteFilter(this, aVariable);

@@ -124,6 +124,11 @@ public interface IGUIManager extends IBusOwner
 	public void showPostIt(JComponent aComponent, Dimension aSize);
 	
 	/**
+	 * Returns an object that can be used to extend the TOD GUI.
+	 */
+	public IExtensionPoints getExtensionPoints();
+	
+	/**
 	 * Models a dialog presented to the user.
 	 * @param <R> The type of the response (Boolean for YES/NO, Void for OK...)
 	 * @author gpothier

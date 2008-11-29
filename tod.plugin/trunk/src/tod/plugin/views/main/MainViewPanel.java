@@ -20,16 +20,11 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.plugin.views.main;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Frame;
-import java.awt.Panel;
 import java.awt.event.ActionEvent;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.eclipse.core.runtime.IStatus;
@@ -40,7 +35,6 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -51,6 +45,7 @@ import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.SourceRange;
 import tod.core.session.ISession;
 import tod.core.session.TODSessionManager;
+import tod.gui.IExtensionPoints;
 import tod.gui.MinerUI;
 import tod.gui.activities.ActivitySeed;
 import tod.gui.activities.ActivitySeedFactory;
@@ -62,6 +57,7 @@ import zz.utils.ui.StackLayout;
 public class MainViewPanel extends MinerUI
 {
 	private final MainView itsTraceNavigatorView;
+	private final ExtensionPoints itsExtensionPoints = new ExtensionPoints();
 
 	public MainViewPanel(MainView aTraceNavigatorView)
 	{
@@ -200,5 +196,9 @@ public class MainViewPanel extends MinerUI
 			}
 		});
 	}
-	
+
+	public IExtensionPoints getExtensionPoints()
+	{
+		return itsExtensionPoints;
+	}
 }

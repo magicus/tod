@@ -171,14 +171,20 @@ public abstract class AbstractSimpleEventNode extends AbstractEventNode
 		
 		getListPanel().pSelectedEvent().set(getEvent());
 		ILogEvent theEvent = getEvent();
-		
 		Bus.get(this).postMessage(new EventSelectedMsg(theEvent, SelectionMethod.SELECT_IN_LIST));
 		aEvent.consume();			
 		
-		if (aEvent.getClickCount() == 2)
+		if (aEvent.isPopupTrigger())
 		{
-			Bus.get(this).postMessage(new EventActivatedMsg(getEvent(), ActivationMethod.DOUBLE_CLICK));
-			getListPanel().eventActivated(getEvent());
+			
+		}
+		else
+		{
+			if (aEvent.getClickCount() == 2)
+			{
+				Bus.get(this).postMessage(new EventActivatedMsg(getEvent(), ActivationMethod.DOUBLE_CLICK));
+				getListPanel().eventActivated(getEvent());
+			}
 		}
 	}
 	

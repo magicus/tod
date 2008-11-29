@@ -207,6 +207,11 @@ public class GridLogBrowser1 extends GridLogBrowser
 		return new TypeCondition(MessageType.ARRAY_WRITE);
 	}
 	
+	public IEventFilter createArrayWriteFilter(int aIndex)
+	{
+		return SplittedConditionHandler.INDEXES.createCondition(aIndex, (byte) 0);
+	}
+
 	public IEventFilter createVariableWriteFilter(LocalVariableInfo aVariable)
 	{
 		return new VariableCondition(aVariable.getIndex());
