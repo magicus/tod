@@ -20,38 +20,42 @@ MA 02111-1307 USA
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.agent.transport;
+package tod.impl.evdbng.db.file;
+
+import tod.core.DebugFlags;
+import tod.impl.dbgrid.db.ObjectsDatabase;
+import tod.impl.evdbng.db.file.PagedFile.PageIOStream;
 
 /**
- * Enumeration of all possible high-level event types. High level events
- * are those that have been processed by {@link EventInterpreter}.
+ * A {@link BTree} of object ref info for the {@link ObjectsDatabase}.
  * @author gpothier
  */
-public enum HighLevelEventType 
+public class ObjectRefTree extends BTree<ObjectRefTuple>
 {
-	// Events
-	INSTANTIATION,
-	NEW_ARRAY,
-	SUPER_CALL,
-	METHOD_CALL,
-	BEHAVIOR_EXIT,
-	EXCEPTION_BYNAME,
-	EXCEPTION_BYID,
-	FIELD_WRITE,
-	ARRAY_WRITE,
-	LOCAL_VARIABLE_WRITE,
-	INSTANCEOF,
-	OUTPUT,
+	public ObjectRefTree(String aName, PagedFile aFile, PageIOStream aStream)
+	{
+		super(aName, aFile, aStream);
+	}
+
+	public ObjectRefTree(String aName, PagedFile aFile)
+	{
+		super(aName, aFile);
+	}
+
+	@Override
+	protected TupleBufferFactory<ObjectRefTuple> getTupleBufferFactory()
+	{
+		return TupleBufferFactory.OBJECT_REF;
+	}
 	
-	// Registering
-	REGISTER_OBJECT,
-	REGISTER_REFOBJECT,
-	REGISTER_CLASS,
-	REGISTER_CLASSLOADER,
-	REGISTER_THREAD;
+	public void add(long aObjectId, long aClassId)
+	{
+		if (DebugFlags.DB_LOG_DIR != null) logLeafTuple(aObjectId, "clsId: "+aClassId);
+
+		PageIOStream theStream = addLeafKey(aObjectId);
+		theStream.writeLong(aClassId);
+	}
+
+
 	
-	/**
-	 * Cached values; call to values() is costly. 
-	 */
-	public static final HighLevelEventType[] VALUES = values();
 }

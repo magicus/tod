@@ -23,16 +23,19 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.db;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import tod.core.DebugFlags;
+import tod.core.database.structure.IClassInfo;
+import tod.core.database.structure.IMutableClassInfo;
+import tod.core.database.structure.IMutableStructureDatabase;
+import tod.core.database.structure.ITypeInfo;
 import tod.impl.dbgrid.db.DatabaseNode.FlushMonitor;
-import tod.impl.dbgrid.db.ObjectsReorderingBuffer.Entry;
-import tod.impl.dbgrid.db.ObjectsReorderingBuffer.ReorderingBufferListener;
+import tod.impl.dbgrid.db.ReorderingBuffer.ReorderingBufferListener;
 import zz.utils.monitoring.AggregationType;
 import zz.utils.monitoring.Monitor;
 import zz.utils.monitoring.Probe;
@@ -44,30 +47,29 @@ import zz.utils.monitoring.Probe;
 public abstract class ObjectsDatabase
 implements ReorderingBufferListener
 {
-	private ObjectsReorderingBuffer itsReorderingBuffer = new ObjectsReorderingBuffer(this);
+	private final IMutableStructureDatabase itsStructureDatabase;
+	
+	private final ObjectsReorderingBuffer itsReorderingBuffer = new ObjectsReorderingBuffer(this);
+	private final ObjectRefsReorderingBuffer itsRefsReorderingBuffer = new ObjectRefsReorderingBuffer(this);
+	
+	private final Map<Long, LoadedTypeInfo> itsClassesMap = new HashMap<Long, LoadedTypeInfo>();
 
-	private long itsLastRecordedId = 0;
 	private long itsDroppedObjects = 0;
 	private long itsUnorderedObjects = 0;
 	private long itsProcessedObjects = 0;
+	
 	private long itsLastAddedId;
 	private long itsLastProcessedId;
 	private long itsObjectsCount = 0;
 
-	public ObjectsDatabase()
+	private long itsLastRefAddedId;
+	private long itsLastRefProcessedId;
+	private long itsRefObjectsCount = 0;
+	
+	public ObjectsDatabase(IMutableStructureDatabase aStructureDatabase)
 	{
+		itsStructureDatabase = aStructureDatabase;
 		Monitor.getInstance().register(this);		
-	}
-
-	/**
-	 * Stores an object into the database. The object is serialized by {@link #encode(Object)}
-	 * prior to storage.
-	 * @param aId Id of the object to store.
-	 * @param aObject The object to store.
-	 */
-	public void store(long aId, Object aObject)
-	{
-		store(aId, encode(aObject));
 	}
 
 	public void store(long aId, byte[] aData, long aTimestamp)
@@ -75,7 +77,7 @@ implements ReorderingBufferListener
 		if (aId < itsLastAddedId) itsUnorderedObjects++;
 		else itsLastAddedId = aId;
 		
-		Entry theEntry = new Entry(aId, aData, aTimestamp);
+		ObjectsReorderingBuffer.Entry theEntry = new ObjectsReorderingBuffer.Entry(aId, aTimestamp, aData);
 		
 		if (DebugFlags.DISABLE_REORDER)
 		{
@@ -88,39 +90,89 @@ implements ReorderingBufferListener
 		}
 	}
 	
-	private void doStore(Entry aEntry)
+	private void doStore(ObjectsReorderingBuffer.Entry aEntry)
 	{
+		itsObjectsCount++;
+
 		long theId = aEntry.id;
 		if (theId < itsLastProcessedId)
 		{
+			itsDroppedObjects++;
 			objectDropped();
 			return;
 		}
 		
 		itsLastProcessedId = theId;
-		
 		itsProcessedObjects++;
-		
-		store(theId, aEntry.data);
-	}
-	
-	private void store(long aId, byte[] aData)
-	{
-		itsObjectsCount++;
-		
-		assert aData.length > 0;
-		if (aId < itsLastRecordedId)
-		{
-			itsDroppedObjects++;
-			return;
-		}
-		
-		itsLastRecordedId = aId;
-		store0(aId, aData);
+		store0(theId, aEntry.data);
 	}
 	
 	protected abstract void store0(long aId, byte[] aData);
 	
+	public void registerRef(long aId, long aTimestamp, long aClassId)
+	{
+		if (aId < itsLastRefAddedId) itsUnorderedObjects++;
+		else itsLastRefAddedId = aId;
+		
+		ObjectRefsReorderingBuffer.Entry theEntry = new ObjectRefsReorderingBuffer.Entry(aId, aTimestamp, aClassId);
+		
+		if (DebugFlags.DISABLE_REORDER)
+		{
+			doRegisterRef(theEntry);
+		}
+		else
+		{
+			while (itsRefsReorderingBuffer.isFull()) doRegisterRef(itsRefsReorderingBuffer.pop());
+			itsRefsReorderingBuffer.push(theEntry);
+		}
+	}
+	
+	private void doRegisterRef(ObjectRefsReorderingBuffer.Entry aEntry)
+	{
+		itsRefObjectsCount++;
+
+		long theId = aEntry.id;
+		if (theId < itsLastRefProcessedId)
+		{
+			itsDroppedObjects++;
+			objectDropped();
+			return;
+		}
+		
+		itsLastRefProcessedId = theId;
+		itsProcessedObjects++;
+		registerRef0(theId, aEntry.classId);
+	}
+	
+	protected abstract void registerRef0(long aId, long aClassId);
+	
+	public LoadedTypeInfo getLoadedClassForObject(long aObjectId)
+	{
+		long theClassId = getObjectTypeId(aObjectId);
+		return getLoadedClass(theClassId);
+	}
+	
+	public void registerClass(long aClassId, long aLoaderId, String aName)
+	{
+		ITypeInfo theType = aName.charAt(0) == '[' ?
+				itsStructureDatabase.getNewType(aName)
+				: itsStructureDatabase.getNewClass(aName);
+				
+		LoadedTypeInfo theLoadedClass = new LoadedTypeInfo(aClassId, aLoaderId, theType);
+		LoadedTypeInfo thePrevious = itsClassesMap.put(aClassId, theLoadedClass);
+		assert thePrevious == null;
+	}
+	
+	public LoadedTypeInfo getLoadedClass(long aClassId)
+	{
+		return itsClassesMap.get(aClassId);
+	}
+
+	public void registerClassLoader(long aLoaderId, long aClassId)
+	{
+		// TODO: implement
+	}
+
 	public synchronized int flush(FlushMonitor aFlushMonitor)
 	{
 		int theCount = 0;
@@ -136,6 +188,19 @@ implements ReorderingBufferListener
 			doStore(itsReorderingBuffer.pop());
 			theCount++;
 		}
+
+		while (! itsRefsReorderingBuffer.isEmpty())
+		{
+			if (aFlushMonitor != null && aFlushMonitor.isCancelled()) 
+			{
+				System.out.println("[ObjectsDatabase] Flush cancelled.");
+				break;
+			}
+			
+			doRegisterRef(itsRefsReorderingBuffer.pop());
+			theCount++;
+		}
+		
 		System.out.println("[ObjectsDatabase] Flushed "+theCount+" objects.");
 
 		return theCount;
@@ -180,27 +245,13 @@ implements ReorderingBufferListener
 	}
 	
 	public abstract Object load(long aObjectId);
-
-	/**
-	 * Serializes the given object into an array of bytes so that
-	 * it can be stored.
-	 */
-	protected byte[] encode(Object aObject)
-	{
-		try
-		{
-			ByteArrayOutputStream theStream = new ByteArrayOutputStream();
-			ObjectOutputStream theOOStream = new ObjectOutputStream(theStream);
-			theOOStream.writeObject(aObject);
-			theOOStream.flush();
-			return theStream.toByteArray();
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
 	
+	/**
+	 * Returns the class id of an object previously registered
+	 * with {@link #registerRef(long, long, long)}.
+	 */
+	protected abstract long getObjectTypeId(long aObjectId);
+
 	/**
 	 * Deserializes an object previously serialized by {@link #encode(Object)}.
 	 */
@@ -267,6 +318,28 @@ implements ReorderingBufferListener
 	{
 		itsDroppedObjects++;
 	}
-	
 
+	/**
+	 * Information about an actually loaded class.
+	 * @author gpothier
+	 */
+	public static class LoadedTypeInfo
+	{
+		public final long id;
+		public final long loaderId;
+		public final ITypeInfo typeInfo;
+		
+		public LoadedTypeInfo(long aId, long aLoaderId, ITypeInfo aType)
+		{
+			id = aId;
+			loaderId = aLoaderId;
+			typeInfo = aType;
+		}
+		
+		@Override
+		public String toString()
+		{
+			return "LoadedTypeInfo "+id+", "+loaderId+" - "+typeInfo;
+		}
+	}
 }

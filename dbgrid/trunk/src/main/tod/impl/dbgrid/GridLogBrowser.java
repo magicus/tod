@@ -364,10 +364,12 @@ implements ILogBrowser, IScheduled
 		throw new UnsupportedOperationException();
 	}
 
-	public IObjectInspector createObjectInspector(ObjectId aObjectId)
+	public final IObjectInspector createObjectInspector(ObjectId aObjectId)
 	{
 		return itsObjectInspectorCache.get(aObjectId);
 	}
+	
+	protected abstract IObjectInspector createObjectInspector0(ObjectId aObjectId);
 
 	public IVariablesInspector createVariablesInspector(IBehaviorCallEvent aEvent)
 	{
@@ -512,7 +514,7 @@ implements ILogBrowser, IScheduled
 		@Override
 		protected IObjectInspector fetch(ObjectId aId)
 		{
-			return new ObjectInspector(GridLogBrowser.this, aId);
+			return createObjectInspector0(aId);
 		}
 
 		@Override

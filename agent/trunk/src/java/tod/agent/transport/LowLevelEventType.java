@@ -51,6 +51,9 @@ public enum LowLevelEventType
 	
 	// Registering
 	REGISTER_OBJECT,
+	REGISTER_REFOBJECT,
+	REGISTER_CLASS,
+	REGISTER_CLASSLOADER,
 	REGISTER_THREAD;
 	
 	/**

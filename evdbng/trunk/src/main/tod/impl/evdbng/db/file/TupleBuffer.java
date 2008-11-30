@@ -217,5 +217,30 @@ public abstract class TupleBuffer<T extends Tuple>
 		}
 	}
 	
+	public static class ObjectRefTupleBuffer extends TupleBuffer<ObjectRefTuple>
+	{
+		private long[] itsClassIdBuffer;
+		
+		public ObjectRefTupleBuffer(int aSize, int aPreviousPageId, int aNextPageId)
+		{
+			super(aSize, aPreviousPageId, aNextPageId);
+			itsClassIdBuffer = new long[aSize];
+		}
+		
+		@Override
+		public void read0(int aPosition, PageIOStream aStream)
+		{
+			itsClassIdBuffer[aPosition] = aStream.readLong();
+		}
+		
+		@Override
+		public ObjectRefTuple getTuple(int aPosition)
+		{
+			return new ObjectRefTuple(
+					getKey(aPosition), 
+					itsClassIdBuffer[aPosition]);
+		}
+	}
+	
 
 }

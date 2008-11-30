@@ -145,6 +145,21 @@ public final class EventInterpreter implements ILowLevelCollector
 	{
 		itsCollector.register(aObjectUID, aData, aTimestamp, aIndexable);
 	}
+	
+	public void registerRefObject(long aId, long aTimestamp, long aClassId)
+	{
+		itsCollector.registerRefObject(aId, aTimestamp, aClassId);
+	}	
+
+	public void registerClass(long aId, long aLoaderId, String aName)
+	{
+		itsCollector.registerClass(aId, aLoaderId, aName);
+	}
+
+	public void registerClassLoader(long aId, long aClassId)
+	{
+		itsCollector.registerClassLoader(aId, aClassId);
+	}
 
 	public void logClInitEnter(
 			int aThreadId, 

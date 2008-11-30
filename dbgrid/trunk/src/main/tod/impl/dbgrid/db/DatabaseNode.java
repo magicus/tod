@@ -33,6 +33,7 @@ import tod.core.ILogCollector;
 import tod.core.config.TODConfig;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
+import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.transport.ValueReader;
 import tod.impl.database.IBidiIterator;
@@ -40,6 +41,7 @@ import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.IGridEventFilter;
 import tod.impl.dbgrid.RIGridMaster;
+import tod.impl.dbgrid.db.ObjectsDatabase.LoadedTypeInfo;
 import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.tools.monitoring.MonitoringClient.MonitorId;
@@ -369,6 +371,43 @@ public abstract class DatabaseNode
 		}
 	}
 	
+	public void registerRefObject(long aId, long aTimestamp, long aClassId)
+	{
+//		Utils.println("Register ref - id: %d, cls: %d", aId, aClassId);
+		if (DebugFlags.SKIP_OBJECTS) return;
+		
+		long theObjectId = ObjectId.getObjectId(aId);
+		int theHostId = ObjectId.getHostId(aId);
+		assert ObjectId.getHostId(aClassId) == theHostId;
+		
+		getObjectsDatabase(theHostId).registerRef(theObjectId, aTimestamp, ObjectId.getObjectId(aClassId));
+	}
+
+	public void registerClass(long aId, long aLoaderId, String aName)
+	{
+//		Utils.println("Register class - id: %d, loader: %d, name: %s", aId, aLoaderId, aName);
+		if (DebugFlags.SKIP_OBJECTS) return;
+		
+		long theClassId = ObjectId.getObjectId(aId);
+		int theHostId = ObjectId.getHostId(aId);
+		assert ObjectId.getHostId(aLoaderId) == theHostId;
+		
+		getObjectsDatabase(theHostId).registerClass(theClassId, ObjectId.getObjectId(aLoaderId), aName);
+	}
+
+	public void registerClassLoader(long aId, long aClassId)
+	{
+//		Utils.println("Register loader - id: %d, cls: %d", aId, aClassId);
+		if (DebugFlags.SKIP_OBJECTS) return;
+		
+		long theLoaderId = ObjectId.getObjectId(aId);
+		int theHostId = ObjectId.getHostId(aId);
+		assert ObjectId.getHostId(aClassId) == theHostId;
+		
+		getObjectsDatabase(theHostId).registerClassLoader(theLoaderId, ObjectId.getObjectId(aClassId));
+	}
+
+	
 	/**
 	 * Retrieves the objects database that stores object for 
 	 * the given host id.
@@ -409,6 +448,23 @@ public abstract class DatabaseNode
 		return theObjectsDatabase != null ? theObjectsDatabase.load(theObjectId) : null;
 	}
 
+	/**
+	 * Returns the type of the given object.
+	 */
+	public ITypeInfo getObjectType(long aId) 
+	{
+		if (DebugFlags.SKIP_OBJECTS) return null;
+		
+		long theObjectId = ObjectId.getObjectId(aId);
+		int theHostId = ObjectId.getHostId(aId);
+		ObjectsDatabase theObjectsDatabase = getObjectsDatabase(theHostId);
+		if (theObjectsDatabase == null) return null;
+
+		LoadedTypeInfo theLoadedClass = theObjectsDatabase.getLoadedClassForObject(theObjectId);
+		Utils.println("getObjectType(%d) -> %s", aId, theLoadedClass);
+		return theLoadedClass != null ? theLoadedClass.typeInfo : null;
+	}
+	
 	public RIBufferIterator<StringSearchHit[]> searchStrings(String aText) throws RemoteException 
 	{
 		if (itsStringIndexer != null)
@@ -588,4 +644,5 @@ public abstract class DatabaseNode
 			itsCancelled = true;
 		}
 	}
+
 }

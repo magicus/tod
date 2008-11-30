@@ -49,9 +49,6 @@ public class ObjectPointerTree extends BTree<ObjectPointerTuple>
 		return TupleBufferFactory.OBJECT_POINTER;
 	}
 	
-	/**
-	 * Adds a tuple to this tree. The tuple consists in an event id (event index) and a role.
-	 */
 	public void add(long aObjectId, int aPageId, int aOffset)
 	{
 		if (DebugFlags.DB_LOG_DIR != null) logLeafTuple(aObjectId, "pid: "+aPageId+", off: "+aOffset);

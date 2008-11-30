@@ -28,12 +28,16 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.impl.dbgrid.db.ObjectsDatabase;
 import tod.impl.evdbng.db.file.ObjectPointerTree;
 import tod.impl.evdbng.db.file.ObjectPointerTuple;
+import tod.impl.evdbng.db.file.ObjectRefTree;
+import tod.impl.evdbng.db.file.ObjectRefTuple;
 import tod.impl.evdbng.db.file.PagedFile;
 import tod.impl.evdbng.db.file.PagedFile.Page;
 import tod.impl.evdbng.db.file.PagedFile.PageIOStream;
+import tod.impl.evdbng.db.file.TupleFinder.NoMatch;
 import zz.utils.monitoring.AggregationType;
 import zz.utils.monitoring.Monitor;
 import zz.utils.monitoring.Probe;
@@ -48,6 +52,7 @@ public class ObjectsDatabaseNG extends ObjectsDatabase
 {
 	private PagedFile itsObjectsFile;
 	private ObjectPointerTree itsPointersTree;
+	private ObjectRefTree itsRefsTree;
 	
 	/**
 	 * Current data page
@@ -61,11 +66,16 @@ public class ObjectsDatabaseNG extends ObjectsDatabase
 	 * @param aObjectsFile The file to use to store actual object data (might be shared with other structures,
 	 * but having it separate permits to have objects data in a separate file).
 	 */
-	public ObjectsDatabaseNG(PagedFile aIndexFile, PagedFile aObjectsFile)
+	public ObjectsDatabaseNG(
+			IMutableStructureDatabase aStructureDatabase, 
+			PagedFile aIndexFile, 
+			PagedFile aObjectsFile)
 	{
+		super(aStructureDatabase);
 		Monitor.getInstance().register(this);
 		itsObjectsFile = aObjectsFile;
 		itsPointersTree = new ObjectPointerTree("[ObjectsDatabase] pointers tree", aIndexFile);
+		itsRefsTree = new ObjectRefTree("[ObjectsDatabase] refs tree", aIndexFile);
 		
 		itsCurrentPage = itsObjectsFile.create();
 		itsCurrentStruct = itsCurrentPage.asIOStream();
@@ -150,6 +160,19 @@ public class ObjectsDatabaseNG extends ObjectsDatabase
 		return decode(aId, theStream);
 	}
 	
+	@Override
+	protected void registerRef0(long aId, long aClassId)
+	{
+		itsRefsTree.add(aId, aClassId);
+	}
+	
+	@Override
+	protected long getObjectTypeId(long aObjectId)
+	{
+		ObjectRefTuple theTuple = itsRefsTree.getTupleAt(aObjectId, null);
+		return theTuple != null ? theTuple.getClassId() : 0;
+	}
+
 	/**
 	 * An input stream that wraps around a linked list of pages.
 	 * @author gpothier

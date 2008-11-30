@@ -47,6 +47,7 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IThreadInfo;
+import tod.core.database.structure.ITypeInfo;
 import tod.core.server.TODServer;
 import tod.core.transport.LogReceiver;
 import tod.impl.database.structure.standard.HostInfo;
@@ -534,9 +535,12 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		{
 			throw new RuntimeException(e);
 		}
+
 		itsThreads.clear();
 		itsHosts.clear();
 		updateStats();
+
+		itsLocalLogBrowser = DebuggerGridConfig.createLocalLogBrowser(null, this);
 	}
 
 	/**
@@ -648,7 +652,35 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 
 		return theObject;
 	}
-
+	
+	public ITypeInfo getObjectType(final long aId) throws RemoteException
+	{
+		List<ITypeInfo> theResults = Utils.fork(getNodes(), new ITask<RINodeConnector, ITypeInfo>()
+		{
+			public ITypeInfo run(RINodeConnector aInput)
+			{
+				try
+				{
+					return aInput.getObjectType(aId);
+				}
+				catch (RemoteException e)
+				{
+					throw new RuntimeException(e);
+				}
+			}
+		});
+		
+		ITypeInfo theType = null;
+		for (ITypeInfo theResult : theResults)
+		{
+			if (theResult == null) continue;
+			if (theType != null) throw new RuntimeException("Object present in various nodes!");
+			theType = theResult;
+		}
+		
+		return theType;
+	}
+	
 	public RIBufferIterator<StringSearchHit[]> searchStrings(String aSearchText) throws RemoteException
 	{
 		return new StringHitsAggregator(this, aSearchText);
@@ -730,6 +762,18 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		@Override
 		public void run()
 		{
+			try
+			{
+				run0();
+			}
+			catch (Throwable e)
+			{
+				e.printStackTrace();
+			}
+		}
+		
+		private void run0()
+		{
 			updateStats();
 			long theTime = System.currentTimeMillis();
 			
@@ -801,11 +845,19 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		}
 	}
 
-	public static void main(String[] args) throws Exception
+	public static void main(String[] args) 
 	{
 		Registry theRegistry = Util.getRegistry();
-		DBGridUtils.setupMaster(theRegistry, args);
-		System.out.println("Master ready.");
+		try
+		{
+			DBGridUtils.setupMaster(theRegistry, args);
+			System.out.println("Master ready.");
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 
 	/**

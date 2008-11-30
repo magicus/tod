@@ -395,7 +395,11 @@ public class DBProcessManager
 				while (true)
 				{
 					String theLine = theReader.readLine();
-					if (theLine == null) break;
+					if (theLine == null) 
+					{
+						itsLatch.countDown();
+						break;
+					}
 
 					printOutput(theLine);
 //					System.out.println("[GridMaster process] "+theLine);

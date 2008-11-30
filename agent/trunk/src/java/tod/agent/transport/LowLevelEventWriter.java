@@ -42,7 +42,6 @@ import static tod.agent.transport.LowLevelEventType.REGISTER_OBJECT;
 import static tod.agent.transport.LowLevelEventType.REGISTER_THREAD;
 
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
@@ -82,6 +81,7 @@ public class LowLevelEventWriter
 	
 	private RegisteredObjectsStack itsRegisteredObjectsStack = new RegisteredObjectsStack();
 	private DeferredObjectsStack itsDeferredObjectsStack = new DeferredObjectsStack();
+	private RegisteredRefObjectsStack itsRegisteredRefObjectsStack = new RegisteredRefObjectsStack();
 	
 	public LowLevelEventWriter(PacketBuffer aStream)
 	{
@@ -236,8 +236,8 @@ public class LowLevelEventWriter
 
 		copyBuffer();
 
-		// We don't send registered objects here because it seems to cause
-		// a bad interaction with the native side.
+		// There might be harmless recursive exceptions here, ignore
+		// Note: this is only for exception events, other events don't need this.
 		ExceptionGeneratedReceiver.setIgnoreExceptions(true);
 		sendRegisteredObjects();
 		ExceptionGeneratedReceiver.setIgnoreExceptions(false);
@@ -598,13 +598,11 @@ public class LowLevelEventWriter
 		}
 		else if (shouldSendByValue(aValue))
 		{
-			sendObject(aBuffer, aValue, aTimestamp, aDeferRequestor);
+			sendObjectByValue(aBuffer, aValue, aTimestamp, aDeferRequestor);
 		}
 		else
 		{
-			long theObjectId = ObjectIdentity.get(aValue);
-			sendValueType(aBuffer, ValueType.OBJECT_UID);
-			aBuffer.putLong(Math.abs(theObjectId));
+			sendObjectByRef(aBuffer, aValue, aTimestamp);
 		}
 	}
 
@@ -620,11 +618,11 @@ public class LowLevelEventWriter
 	 *            objects stack. The value of this parameter is the behavior id of
 	 *            the event that "request" the deferring.
 	 */
-	private void sendObject(ByteBuffer aBuffer, Object aObject, long aTimestamp, int aDeferRequestor) 
+	private void sendObjectByValue(ByteBuffer aBuffer, Object aObject, long aTimestamp, int aDeferRequestor) 
 	{
 		long theObjectId = ObjectIdentity.get(aObject);
-
 		assert theObjectId != 0;
+		
 		if (theObjectId < 0)
 		{
 			// First time this object appears, register it.
@@ -650,17 +648,48 @@ public class LowLevelEventWriter
 	}
 
 	/**
+	 * Sends an object by reference. This method checks if the object already had an
+	 * id. If it didn't, it is placed on the registered refs stack so that
+	 * its type is sent when {@link #sendRegisteredObjects()} is called. In any
+	 * case, the id of the object is sent.
+	 */
+	private void sendObjectByRef(ByteBuffer aBuffer, Object aObject, long aTimestamp) 
+	{
+		long theObjectId = ObjectIdentity.get(aObject);
+		assert theObjectId != 0;
+		
+		if (theObjectId < 0)
+		{
+			// First time this object appears, register its type
+			theObjectId = -theObjectId;
+			Class<?> theClass = aObject.getClass();
+			itsRegisteredRefObjectsStack.push(theObjectId, theClass, aTimestamp);
+		}
+
+		sendValueType(aBuffer, ValueType.OBJECT_UID);
+		aBuffer.putLong(theObjectId);
+	}
+
+	/**
 	 * Sends all pending registered objects.
 	 */
 	private void sendRegisteredObjects() throws IOException
 	{
+		// Note: remember that this is thread-safe because SocketCollector has one
+		// CollectorPacketWriter per thread.
+
 		while (!itsRegisteredObjectsStack.isEmpty())
 		{
-			// Note: remember that this is thread-safe because SocketCollector has one
-			// CollectorPacketWriter per thread.
 			ObjectEntry theEntry = itsRegisteredObjectsStack.pop();
 			sendRegisteredObject(theEntry.id, theEntry.object, theEntry.timestamp);
 		}
+		
+		while (!itsRegisteredRefObjectsStack.isEmpty())
+		{
+			RefObjectEntry theEntry = itsRegisteredRefObjectsStack.pop();
+			sendRegisteredRefObject(theEntry.id, theEntry.cls, theEntry.timestamp);
+		}
+
 	}
 
 	private void sendRegisteredObject(long aId, Object aObject, long aTimestamp) throws IOException
@@ -676,8 +705,8 @@ public class LowLevelEventWriter
 		theObjectOut.flush();
 		
 		int theSize = theBuffer.size()-5; // 5: event type + size 
-		
-		itsBuffer.put((byte) REGISTER_OBJECT.ordinal());
+	
+		sendEventType(itsBuffer, REGISTER_OBJECT);
 		itsBuffer.putInt(theSize); 
 		
 		itsBuffer.putLong(aId);
@@ -690,6 +719,81 @@ public class LowLevelEventWriter
 
 		itsStream.write(theArray, theArray.length, true);
 	}
+	
+	private void sendRegisteredRefObject(long aId, Class<?> aClass, long aTimestamp) throws IOException
+	{
+		// That must stay before we start using the buffer
+		long theClassId = getClassId(aClass); 
+		
+		sendEventType(itsBuffer, LowLevelEventType.REGISTER_REFOBJECT);
+		
+		itsBuffer.putLong(aId);
+		itsBuffer.putLong(aTimestamp);
+		itsBuffer.putLong(theClassId);
+		
+		copyBuffer();
+	}
+	
+	private long getClassId(Class<?> aClass) throws IOException
+	{
+		long theId = ObjectIdentity.get(aClass);
+		assert theId != 0;
+		
+		if (theId < 0)
+		{
+			theId = -theId;
+			sendRegisterClass(theId, aClass);
+		}
+		
+		return theId;
+	}
+	
+	private void sendRegisterClass(long aClassId, Class<?> aClass) throws IOException
+	{
+		// That must stay before we start using the buffer
+		long theLoaderId = getClassLoaderId(aClass.getClassLoader());
+		
+		sendEventType(itsBuffer, LowLevelEventType.REGISTER_CLASS);
+		
+		itsBuffer.putLong(aClassId);
+		itsBuffer.putLong(theLoaderId);
+		
+		String theName = aClass.getName();
+		itsBuffer.putShort((short) theName.length());
+		for(int i=0;i<theName.length();i++) itsBuffer.putChar(theName.charAt(i));
+		
+		copyBuffer();
+	}
+	
+	private long getClassLoaderId(ClassLoader aLoader) throws IOException
+	{
+		if (aLoader == null) return 0;
+		
+		long theId = ObjectIdentity.get(aLoader);
+		assert theId != 0;
+		
+		if (theId < 0)
+		{
+			theId = -theId;
+			sendRegisterClassLoader(theId, aLoader);
+		}
+		
+		return theId;
+	}
+	
+	private void sendRegisterClassLoader(long aLoaderId, ClassLoader aLoader) throws IOException
+	{
+		// That must stay before we start using the buffer
+		long theLoaderClassId = getClassId(aLoader.getClass());
+		
+		sendEventType(itsBuffer, LowLevelEventType.REGISTER_CLASSLOADER);
+		
+		itsBuffer.putLong(aLoaderId);
+		itsBuffer.putLong(theLoaderClassId);
+		
+		copyBuffer();
+	}
+	
 	/**
 	 * A stack of objects pending to be sent.
 	 * 
@@ -700,8 +804,7 @@ public class LowLevelEventWriter
 		/**
 		 * List of registered objects that must be sent. Note: There is space
 		 * for a hard-coded number of entries that should "be enough for
-		 * everybody". Note that if only exception events are enabled this array
-		 * will overflow.
+		 * everybody".
 		 */
 		private final ObjectEntry[] itsObjects = new ObjectEntry[1024];
 
@@ -766,8 +869,7 @@ public class LowLevelEventWriter
 		/**
 		 * List of registered objects that must be sent. Note: There is space
 		 * for a hard-coded number of entries that should "be enough for
-		 * everybody". Note that if only exception events are enabled this array
-		 * will overflow.
+		 * everybody". 
 		 */
 		private final DeferredObjectEntry[] itsObjects = new DeferredObjectEntry[1024];
 
@@ -825,5 +927,60 @@ public class LowLevelEventWriter
 			timestamp = aTimestamp;
 		}
 	}
+
+	/**
+	 * A stack of newly created objects whose type must be registered
+	 * @author gpothier
+	 */
+	private static class RegisteredRefObjectsStack
+	{
+		/**
+		 * List of registered objects that must be sent.
+		 */
+		private final RefObjectEntry[] itsObjects = new RefObjectEntry[1024];
+
+		/**
+		 * Number of entries in {@link #itsObjects}.
+		 */
+		private int itsSize = 0;
+
+		public RegisteredRefObjectsStack()
+		{
+			for (int i = 0; i < itsObjects.length; i++)
+			{
+				itsObjects[i] = new RefObjectEntry();
+			}
+		}
+
+		public void push(long aId, Class<?> aClass, long aTimestamp)
+		{
+			itsObjects[itsSize++].set(aId, aClass, aTimestamp);
+		}
+
+		public boolean isEmpty()
+		{
+			return itsSize == 0;
+		}
+
+		public RefObjectEntry pop()
+		{
+			return itsObjects[--itsSize];
+		}
+	}
+
+	private static class RefObjectEntry
+	{
+		public long id;
+		public Class<?> cls;
+		public long timestamp;
+
+		public void set(long aId, Class<?> aClass, long aTimestamp)
+		{
+			id = aId;
+			cls = aClass;
+			timestamp = aTimestamp;
+		}
+	}
+
 
 }

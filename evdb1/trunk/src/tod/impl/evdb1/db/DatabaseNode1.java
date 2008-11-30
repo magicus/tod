@@ -60,7 +60,7 @@ public class DatabaseNode1 extends DatabaseNode
 		File theFile = new File(aDirectory, "objects-"+aName+".bin");
 		theFile.delete();
 		
-		return new ObjectsDatabase1(theFile);
+		return new ObjectsDatabase1(getStructureDatabase(), theFile);
 	}
 	
 	@Override

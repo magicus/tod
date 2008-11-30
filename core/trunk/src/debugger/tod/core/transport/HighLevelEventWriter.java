@@ -373,6 +373,31 @@ public class HighLevelEventWriter
 		
 //		itsBuffer.send(HighLevelEventType.REGISTER_OBJECT);
 	}
+	
+	public void sendRegisterRefObject(long aId, long aTimestamp, long aClassId) throws IOException
+	{
+		sendMessageType(itsBuffer, HighLevelEventType.REGISTER_REFOBJECT); 
+		itsBuffer.writeLong(aId);
+		itsBuffer.writeLong(aTimestamp);
+		itsBuffer.writeLong(aClassId);
+	}
+
+	public void sendRegisterClass(long aId, long aLoaderId, String aName) throws IOException
+	{
+		sendMessageType(itsBuffer, HighLevelEventType.REGISTER_CLASS); 
+		itsBuffer.writeLong(aId);
+		itsBuffer.writeLong(aLoaderId);
+		itsBuffer.writeUTF(aName);
+	}
+
+	public void sendRegisterClassLoader(long aId, long aClassId) throws IOException
+	{
+		sendMessageType(itsBuffer, HighLevelEventType.REGISTER_CLASSLOADER); 
+		itsBuffer.writeLong(aId);
+		itsBuffer.writeLong(aClassId);
+	}
+	
+
 
 	public void sendThread(
 			int aThreadId, 
@@ -484,7 +509,7 @@ public class HighLevelEventWriter
 	{
 		aStream.writeByte(aType.ordinal());
 	}
-	
+
 //	/**
 //	 * Per-thread byte buffer for preparing packets.
 //	 * 

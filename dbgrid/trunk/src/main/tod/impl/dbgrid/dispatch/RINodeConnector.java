@@ -29,6 +29,7 @@ import java.rmi.RemoteException;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.ITypeInfo;
 import tod.impl.dbgrid.IGridEventFilter;
 import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.db.RINodeEventIterator;
@@ -90,6 +91,11 @@ public interface RINodeConnector extends Remote, RIMonitoringServerProvider
 	 * if not found.
 	 */
 	public Object getRegisteredObject(long aId) throws RemoteException;
+	
+	/**
+	 * Returns the type of the given object.
+	 */
+	public ITypeInfo getObjectType(long aId) throws RemoteException;
 	
 	/**
 	 * Searches the strings that match the given text.

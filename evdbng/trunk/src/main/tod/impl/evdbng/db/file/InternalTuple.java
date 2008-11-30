@@ -28,8 +28,8 @@ package tod.impl.evdbng.db.file;
  */
 public class InternalTuple extends Tuple
 {
-	private int itsPageId;
-	private long itsTupleCount;
+	private final int itsPageId;
+	private final long itsTupleCount;
 	
 	public InternalTuple(long aKey, int aPageId, long aTupleCount)
 	{

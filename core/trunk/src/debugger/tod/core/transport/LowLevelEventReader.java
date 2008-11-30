@@ -117,6 +117,18 @@ public class LowLevelEventReader
 			readRegisterObject(aThreadId, aStream, aCollector);
 			break;
 			
+		case REGISTER_REFOBJECT:
+			readRegisterRefObject(aThreadId, aStream, aCollector);
+			break;
+			
+		case REGISTER_CLASS:
+			readRegisterClass(aThreadId, aStream, aCollector);
+			break;
+			
+		case REGISTER_CLASSLOADER:
+			readRegisterClassLoader(aThreadId, aStream, aCollector);
+			break;
+			
 		case REGISTER_THREAD:
 			readRegisterThread(aThreadId, aStream, aCollector);
 			break;
@@ -137,8 +149,7 @@ public class LowLevelEventReader
 	{
 		int theSize = aStream.readInt(); // Packet size
 		
-		long theObjectId = aStream.readLong();
-		if (DebugFlags.IGNORE_HOST) theObjectId >>>= AgentConfig.HOST_BITS;
+		long theObjectId = ValueReader.readObjectId(aStream);
 		long theObjectTimestamp = aStream.readLong();
 		boolean theIndexable = aStream.readBoolean();
 
@@ -148,6 +159,35 @@ public class LowLevelEventReader
 		aCollector.registerObject(theObjectId, theData, theObjectTimestamp, theIndexable);
 	}
 
+	private static void readRegisterRefObject(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
+	{
+		long theId = ValueReader.readObjectId(aStream);
+		long theTimestamp = aStream.readLong();
+		long theClassId = ValueReader.readObjectId(aStream);
+		
+		aCollector.registerRefObject(theId, theTimestamp, theClassId);
+	}
+
+	private static void readRegisterClass(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
+	{
+		long theId = ValueReader.readObjectId(aStream);
+		long theLoaderId = ValueReader.readObjectId(aStream);
+		
+		int theNameSize = aStream.readShort();
+		char[] theName = new char[theNameSize];
+		for(int i=0;i<theNameSize;i++) theName[i] = aStream.readChar();
+		
+		aCollector.registerClass(theId, theLoaderId, new String(theName));
+	}
+	
+	private static void readRegisterClassLoader(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
+	{
+		long theId = ValueReader.readObjectId(aStream);
+		long theClassId = ValueReader.readObjectId(aStream);
+		
+		aCollector.registerClassLoader(theId, theClassId);
+	}
+	
 	private static void readOutput(int aThreadId, DataInput aStream, ILowLevelCollector aCollector) throws IOException
 	{
 		throw new UnsupportedOperationException();

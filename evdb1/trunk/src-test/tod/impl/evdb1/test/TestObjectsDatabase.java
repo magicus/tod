@@ -27,8 +27,8 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import tod.impl.dbgrid.db.ObjectsDatabase;
 import tod.impl.evdb1.db.ObjectsDatabase1;
+import zz.utils.Utils;
 
 public class TestObjectsDatabase
 {
@@ -38,13 +38,14 @@ public class TestObjectsDatabase
 	{
 		File theFile = new File("objects.bin");
 		theFile.delete();
-		ObjectsDatabase1 theDatabase = new ObjectsDatabase1(theFile);
+		ObjectsDatabase1 theDatabase = new ObjectsDatabase1(null, theFile);
 		
 		Random theRandom = new Random(0);
 		long theId = 1;
 		for (int i=0;i<COUNT;i++)
 		{
-			theDatabase.store(theId, new Long(i));
+			
+			theDatabase.store(theId, Utils.encode(new Long(i)), i);
 			
 			theId += theRandom.nextInt(100)+1;
 			

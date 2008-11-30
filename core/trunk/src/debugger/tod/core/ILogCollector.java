@@ -178,6 +178,29 @@ public interface ILogCollector
 	public void register(long aObjectUID, byte[] aData, long aTimestamp, boolean aIndexable);
 	
 	/**
+	 * Register a "normal" object, ie. an object that is only passed by reference.
+	 * @param aId Id of the object
+	 * @param aTimestamp Timestamp the object was first encountered
+	 * @param aClassId Id of the class of the object.
+	 */
+	public void registerRefObject(long aId, long aTimestamp, long aClassId);
+
+	/**
+	 * Registers a class
+	 * @param aId Id of the class
+	 * @param aLoaderId Id of the {@link ClassLoader} that loaded the class, or 0 for null
+	 * @param aName Name of the class.
+	 */
+	public void registerClass(long aId, long aLoaderId, String aName);
+
+	/**
+	 * Registers a class loader.
+	 * @param aId Id of the class loader
+	 * @param aClassId Id of the class of the class loader.
+	 */
+	public void registerClassLoader(long aId, long aClassId);
+	
+	/**
 	 * Clears the database.
 	 */
 	public void clear();
@@ -186,5 +209,6 @@ public interface ILogCollector
 	 * Flushes buffered events.
 	 */
 	public int flush();
+
 	
 }

@@ -38,6 +38,7 @@ import tod.Util;
 import tod.core.ILogCollector;
 import tod.core.config.TODConfig;
 import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.ITypeInfo;
 import tod.core.transport.HighLevelEventReader;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
@@ -233,6 +234,11 @@ implements RINodeConnector
 	public Object getRegisteredObject(long aId) 
 	{
 		return itsDatabaseNode.getRegisteredObject(aId);
+	}
+	
+	public ITypeInfo getObjectType(long aId) throws RemoteException
+	{
+		return itsDatabaseNode.getObjectType(aId);
 	}
 
 	public RIBufferIterator<StringSearchHit[]> searchStrings(String aText) throws RemoteException

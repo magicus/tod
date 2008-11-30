@@ -28,6 +28,7 @@ import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.IEventPredicate;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.browser.IObjectInspector;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IArraySlotFieldInfo;
 import tod.core.database.structure.IBehaviorInfo;
@@ -326,5 +327,11 @@ public class GridLogBrowserNG extends GridLogBrowser
 			}
 		}
 		else throw new IllegalArgumentException("Not handled: "+aFilter);
+	}
+
+	@Override
+	protected IObjectInspector createObjectInspector0(ObjectId aObjectId)
+	{
+		return new GridObjectInspectorNG(this, aObjectId);
 	}
 }

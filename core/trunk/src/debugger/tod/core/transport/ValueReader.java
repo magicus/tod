@@ -121,8 +121,7 @@ public class ValueReader
 				
 			case OBJECT_UID:
 			{
-				long theObjectId = aStream.readLong();
-				if (DebugFlags.IGNORE_HOST) theObjectId >>>= AgentConfig.HOST_BITS;
+				long theObjectId = readObjectId(aStream);
 				return new ObjectId(theObjectId);
 			}
 				
@@ -131,5 +130,10 @@ public class ValueReader
 		}
 	}
 	
-
+	public static long readObjectId(DataInput aStream) throws IOException
+	{
+		long theObjectId = aStream.readLong();
+		if (DebugFlags.IGNORE_HOST) theObjectId >>>= AgentConfig.HOST_BITS;
+		return theObjectId;
+	}
 }

@@ -28,6 +28,7 @@ import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.IEventPredicate;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.browser.IObjectInspector;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IArraySlotFieldInfo;
 import tod.core.database.structure.IBehaviorInfo;
@@ -40,6 +41,7 @@ import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.session.ISession;
+import tod.impl.common.ObjectInspector;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.RIGridMaster;
@@ -326,5 +328,11 @@ public class GridLogBrowser1 extends GridLogBrowser
 			}
 		}
 		else throw new IllegalArgumentException("Not handled: "+aFilter);
+	}
+
+	@Override
+	protected IObjectInspector createObjectInspector0(ObjectId aObjectId)
+	{
+		return new ObjectInspector(this, aObjectId);
 	}
 }

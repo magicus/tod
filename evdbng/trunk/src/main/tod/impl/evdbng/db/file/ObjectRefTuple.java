@@ -20,38 +20,27 @@ MA 02111-1307 USA
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.agent.transport;
+package tod.impl.evdbng.db.file;
+
+import tod.impl.dbgrid.db.ObjectsDatabase;
 
 /**
- * Enumeration of all possible high-level event types. High level events
- * are those that have been processed by {@link EventInterpreter}.
+ * A tuple that stores information on object references,
+ * namely the class id of the object.
  * @author gpothier
  */
-public enum HighLevelEventType 
+public class ObjectRefTuple extends Tuple
 {
-	// Events
-	INSTANTIATION,
-	NEW_ARRAY,
-	SUPER_CALL,
-	METHOD_CALL,
-	BEHAVIOR_EXIT,
-	EXCEPTION_BYNAME,
-	EXCEPTION_BYID,
-	FIELD_WRITE,
-	ARRAY_WRITE,
-	LOCAL_VARIABLE_WRITE,
-	INSTANCEOF,
-	OUTPUT,
+	private final long itsClassId;
 	
-	// Registering
-	REGISTER_OBJECT,
-	REGISTER_REFOBJECT,
-	REGISTER_CLASS,
-	REGISTER_CLASSLOADER,
-	REGISTER_THREAD;
-	
-	/**
-	 * Cached values; call to values() is costly. 
-	 */
-	public static final HighLevelEventType[] VALUES = values();
+	public ObjectRefTuple(long aKey, long aClassId)
+	{
+		super(aKey);
+		itsClassId = aClassId;
+	}
+
+	public long getClassId()
+	{
+		return itsClassId;
+	}
 }

@@ -106,6 +106,18 @@ public class DummyCollector implements ILogCollector
 	{
 	}
 
+	public void registerClass(long aId, long aLoaderId, String aName)
+	{
+	}
+
+	public void registerClassLoader(long aId, long aClassId)
+	{
+	}
+
+	public void registerRefObject(long aId, long aTimestamp, long aClassId)
+	{
+	}
+
 	public void clear()
 	{
 	}

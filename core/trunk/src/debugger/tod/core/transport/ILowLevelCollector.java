@@ -64,5 +64,8 @@ public interface ILowLevelCollector
 
 	public void registerThread(int aThreadId, long aJVMThreadId, String aName);
 	public void registerObject(long aObjectUID, byte[] aData, long aTimestamp, boolean aIndexable);
+	public void registerClassLoader(long aId, long aClassId);
+	public void registerClass(long aId, long aLoaderId, String aName);
+	public void registerRefObject(long aId, long aTimestamp, long aClassId);
 
 }

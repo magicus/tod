@@ -107,6 +107,18 @@ public class HighLevelEventReader
 				readRegister(aStream, aCollector);
 				break;
 				
+			case REGISTER_REFOBJECT:
+				readRegisterRef(aStream, aCollector);
+				break;
+				
+			case REGISTER_CLASS:
+				readRegisterClass(aStream, aCollector);
+				break;
+				
+			case REGISTER_CLASSLOADER:
+				readRegisterClassLoader(aStream, aCollector);
+				break;
+				
 			default:
 				throw new RuntimeException("Unexpected message: "+aType);
 		}
@@ -320,6 +332,32 @@ public class HighLevelEventReader
 		aStream.readFully(theData);
 		boolean theIndexable = aStream.readBoolean();
 		aCollector.register(theObjectId, theData, theTimestamp, theIndexable);
+	}
+	
+	public static void readRegisterRef(DataInputStream aStream, ILogCollector aCollector) throws IOException
+	{
+		if (READ_SIZE) aStream.readInt(); // Packet size
+		long theObjectId = aStream.readLong();
+		long theTimestamp = aStream.readLong();
+		long theClassId = aStream.readLong();
+		aCollector.registerRefObject(theObjectId, theTimestamp, theClassId);
+	}
+	
+	public static void readRegisterClass(DataInputStream aStream, ILogCollector aCollector) throws IOException
+	{
+		if (READ_SIZE) aStream.readInt(); // Packet size
+		long theClassId = aStream.readLong();
+		long theLoaderId = aStream.readLong();
+		String theName = aStream.readUTF();
+		aCollector.registerClass(theClassId, theLoaderId, theName);
+	}
+	
+	public static void readRegisterClassLoader(DataInputStream aStream, ILogCollector aCollector) throws IOException
+	{
+		if (READ_SIZE) aStream.readInt(); // Packet size
+		long theLoaderId = aStream.readLong();
+		long theClassId = aStream.readLong();
+		aCollector.registerClassLoader(theLoaderId, theClassId);
 	}
 	
 	

@@ -50,7 +50,7 @@ public class DatabaseNodeNG extends DatabaseNode
 		File theFile = new File(aDirectory, "objects-"+aName+".bin");
 		theFile.delete();
 		PagedFile thePagedFile = new PagedFile(theFile);
-		return new ObjectsDatabaseNG(thePagedFile, thePagedFile);
+		return new ObjectsDatabaseNG(getStructureDatabase(), thePagedFile, thePagedFile);
 	}
 
 	@Override

@@ -398,6 +398,21 @@ public class GridEventCollector1 extends GridEventCollector
 	{
 		itsDatabaseNode.register(aObjectUID, aData, aTimestamp, aIndexable);
 	}
+	
+	public void registerRefObject(long aId, long aTimestamp, long aClassId)
+	{
+		itsDatabaseNode.registerRefObject(aId, aTimestamp, aClassId);
+	}	
+	
+	public void registerClass(long aId, long aLoaderId, String aName)
+	{
+		itsDatabaseNode.registerClass(aId, aLoaderId, aName);
+	}
+
+	public void registerClassLoader(long aId, long aClassId)
+	{
+		itsDatabaseNode.registerClassLoader(aId, aClassId);
+	}
 
 	public void clear()
 	{

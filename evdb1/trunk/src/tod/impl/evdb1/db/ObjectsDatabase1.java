@@ -26,26 +26,19 @@ import static tod.impl.evdb1.DebuggerGridConfig1.DB_PAGE_BYTEOFFSET_BITS;
 import static tod.impl.evdb1.DebuggerGridConfig1.DB_PAGE_POINTER_BITS;
 import static tod.impl.evdb1.DebuggerGridConfig1.DB_PAGE_SIZE;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 
+import tod.core.database.structure.IMutableStructureDatabase;
 import tod.impl.dbgrid.db.ObjectsDatabase;
 import tod.impl.evdb1.db.file.HardPagedFile;
 import tod.impl.evdb1.db.file.IndexTuple;
 import tod.impl.evdb1.db.file.IndexTupleCodec;
 import tod.impl.evdb1.db.file.HardPagedFile.Page;
 import zz.utils.bit.BitStruct;
-import zz.utils.monitoring.AggregationType;
-import zz.utils.monitoring.Monitor;
-import zz.utils.monitoring.Probe;
 
 /**
  * A database for storing registered objects.
@@ -73,8 +66,9 @@ public class ObjectsDatabase1 extends ObjectsDatabase
 	private int itsCurrentOffset;
 	
 	
-	public ObjectsDatabase1(File aFile)
+	public ObjectsDatabase1(IMutableStructureDatabase aStructureDatabase, File aFile)
 	{
+		super(aStructureDatabase);
 		try
 		{
 			itsFile = new HardPagedFile(aFile, DB_PAGE_SIZE);
@@ -226,6 +220,19 @@ public class ObjectsDatabase1 extends ObjectsDatabase
 		return decode(aId, itsByteBuffer.array());
 	}
 	
+	@Override
+	protected void registerRef0(long aId, long aClassId)
+	{
+		// evdb1 does not handle that
+	}
+	
+	@Override
+	protected long getObjectTypeId(long aObjectId)
+	{
+		// evdb1 does not handle that
+		return 0;
+	}
+
 	/**
 	 * Codec for {@link InternalTuple}.
 	 * @author gpothier

@@ -31,8 +31,8 @@ import tod.impl.dbgrid.db.ObjectsDatabase;
  */
 public class ObjectPointerTuple extends Tuple
 {
-	private int itsPageId;
-	private int itsOffset;
+	private final int itsPageId;
+	private final int itsOffset;
 	
 	public ObjectPointerTuple(long aKey, int aPageId, int aOffset)
 	{

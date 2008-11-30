@@ -278,6 +278,45 @@ public class DispatcherCollector implements ILogCollector
 			throw new RuntimeException(e);
 		}
 	}
+	
+	public void registerRefObject(long aId, long aTimestamp, long aClassId)
+	{
+		balance();
+		try
+		{
+			itsWriter.sendRegisterRefObject(aId, aTimestamp, aClassId);
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}	
+
+	public void registerClass(long aId, long aLoaderId, String aName)
+	{
+		balance();
+		try
+		{
+			itsWriter.sendRegisterClass(aId, aLoaderId, aName);
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
+	public void registerClassLoader(long aId, long aClassId)
+	{
+		balance();
+		try
+		{
+			itsWriter.sendRegisterClassLoader(aId, aClassId);
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
 
 	public int flush()
 	{

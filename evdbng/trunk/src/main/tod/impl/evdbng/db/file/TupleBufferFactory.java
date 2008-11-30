@@ -25,6 +25,7 @@ package tod.impl.evdbng.db.file;
 import tod.impl.evdbng.db.file.PagedFile.PageIOStream;
 import tod.impl.evdbng.db.file.TupleBuffer.InternalTupleBuffer;
 import tod.impl.evdbng.db.file.TupleBuffer.ObjectPointerTupleBuffer;
+import tod.impl.evdbng.db.file.TupleBuffer.ObjectRefTupleBuffer;
 import tod.impl.evdbng.db.file.TupleBuffer.RoleTupleBuffer;
 import tod.impl.evdbng.db.file.TupleBuffer.SimpleTupleBuffer;
 
@@ -81,7 +82,6 @@ public abstract class TupleBufferFactory<T extends Tuple>
 	
 	public static final TupleBufferFactory<ObjectPointerTuple> OBJECT_POINTER = new TupleBufferFactory<ObjectPointerTuple>()
 	{
-
 		@Override
 		public ObjectPointerTupleBuffer create(int aSize, int aPreviousPageId, int aNextPageId)
 		{
@@ -92,6 +92,21 @@ public abstract class TupleBufferFactory<T extends Tuple>
 		public int getDataSize()
 		{
 			return PageIOStream.pagePointerSize()+PageIOStream.pageOffsetSize();
+		}
+	};
+	
+	public static final TupleBufferFactory<ObjectRefTuple> OBJECT_REF = new TupleBufferFactory<ObjectRefTuple>()
+	{
+		@Override
+		public ObjectRefTupleBuffer create(int aSize, int aPreviousPageId, int aNextPageId)
+		{
+			return new ObjectRefTupleBuffer(aSize, aPreviousPageId, aNextPageId);
+		}
+		
+		@Override
+		public int getDataSize()
+		{
+			return PageIOStream.longSize();
 		}
 	};
 	

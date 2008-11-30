@@ -20,38 +20,31 @@ MA 02111-1307 USA
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.agent.transport;
+package tod.impl.dbgrid.db;
+
+import tod.impl.dbgrid.DebuggerGridConfig;
 
 /**
- * Enumeration of all possible high-level event types. High level events
- * are those that have been processed by {@link EventInterpreter}.
+ * A buffer that permits to reoder slightly out-of-order objects.
+ * 
+ * @see ObjectsDatabase
  * @author gpothier
  */
-public enum HighLevelEventType 
+public class ObjectRefsReorderingBuffer extends ReorderingBuffer<ObjectRefsReorderingBuffer.Entry>
 {
-	// Events
-	INSTANTIATION,
-	NEW_ARRAY,
-	SUPER_CALL,
-	METHOD_CALL,
-	BEHAVIOR_EXIT,
-	EXCEPTION_BYNAME,
-	EXCEPTION_BYID,
-	FIELD_WRITE,
-	ARRAY_WRITE,
-	LOCAL_VARIABLE_WRITE,
-	INSTANCEOF,
-	OUTPUT,
+	public ObjectRefsReorderingBuffer(ReorderingBufferListener aListener)
+	{
+		super(aListener, DebuggerGridConfig.DB_OBJECTS_BUFFER_SIZE);
+	}
 	
-	// Registering
-	REGISTER_OBJECT,
-	REGISTER_REFOBJECT,
-	REGISTER_CLASS,
-	REGISTER_CLASSLOADER,
-	REGISTER_THREAD;
-	
-	/**
-	 * Cached values; call to values() is costly. 
-	 */
-	public static final HighLevelEventType[] VALUES = values();
+	public static class Entry extends ReorderingBuffer.Entry
+	{
+		public final long classId;
+
+		public Entry(long aId, long aTimestamp, long aClassId)
+		{
+			super(aId, aTimestamp);
+			classId = aClassId;
+		}
+	}
 }

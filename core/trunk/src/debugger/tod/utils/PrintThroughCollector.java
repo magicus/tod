@@ -375,6 +375,22 @@ public class PrintThroughCollector implements ILogCollector
 		itsCollector.register(aObjectUID, aData, aTimestamp, aIndexable);
 	}
 
+	
+	public void registerClass(long aId, long aLoaderId, String aName)
+	{
+		itsCollector.registerClass(aId, aLoaderId, aName);
+	}
+
+	public void registerClassLoader(long aId, long aClassId)
+	{
+		itsCollector.registerClassLoader(aId, aClassId);
+	}
+
+	public void registerRefObject(long aId, long aTimestamp, long aClassId)
+	{
+		itsCollector.registerRefObject(aId, aTimestamp, aClassId);
+	}
+
 	public void thread(int aThreadId, long aJVMThreadId, String aName)
 	{
 		itsCollector.thread(aThreadId, aJVMThreadId, aName);

@@ -24,7 +24,7 @@ package tod.impl.evdbng.db.file;
 
 public class RoleTuple extends Tuple
 {
-	private byte itsRole;
+	private final byte itsRole;
 
 	public RoleTuple(long aKey, byte aRole)
 	{
