@@ -39,11 +39,9 @@ public class ReorderingBuffer<E extends ReorderingBuffer.Entry>
 
 	private final RingBuffer<E> itsBuffer;
 	private final PriorityQueue<E> itsOutOfOrderBuffer = new PriorityQueue<E>(100, EntryComparator.getInstance());
-	private final ReorderingBufferListener itsListener;
 
-	public ReorderingBuffer(ReorderingBufferListener aListener, int aSize)
+	public ReorderingBuffer(int aSize)
 	{
-		itsListener = aListener;
 		itsBuffer = new RingBuffer<E>(aSize);
 	}
 
@@ -82,8 +80,6 @@ public class ReorderingBuffer<E extends ReorderingBuffer.Entry>
 	/**
 	 * return the timestamp of the oldest (next ordered) event in the buffer
 	 * return -1 if no more event are available
-	 * 
-	 * @return
 	 */
 	public long getNextAvailableTimestamp()
 	{
@@ -175,13 +171,4 @@ public class ReorderingBuffer<E extends ReorderingBuffer.Entry>
 			else return 1;
 		}
 	}
-
-	public interface ReorderingBufferListener
-	{
-		/**
-		 * Called when an object could not be reordered and had to be dropped.
-		 */
-		public void objectDropped();
-	}
-
 }

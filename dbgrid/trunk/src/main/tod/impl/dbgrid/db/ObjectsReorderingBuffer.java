@@ -32,9 +32,9 @@ import tod.impl.dbgrid.DebuggerGridConfig;
  */
 public class ObjectsReorderingBuffer extends ReorderingBuffer<ObjectsReorderingBuffer.Entry>
 {
-	public ObjectsReorderingBuffer(ReorderingBufferListener aListener)
+	public ObjectsReorderingBuffer()
 	{
-		super(aListener, DebuggerGridConfig.DB_OBJECTS_BUFFER_SIZE);
+		super(DebuggerGridConfig.DB_OBJECTS_BUFFER_SIZE);
 	}
 	
 	public static class Entry extends ReorderingBuffer.Entry

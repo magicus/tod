@@ -30,12 +30,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import tod.core.DebugFlags;
-import tod.core.database.structure.IClassInfo;
-import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.impl.dbgrid.db.DatabaseNode.FlushMonitor;
-import tod.impl.dbgrid.db.ReorderingBuffer.ReorderingBufferListener;
 import zz.utils.monitoring.AggregationType;
 import zz.utils.monitoring.Monitor;
 import zz.utils.monitoring.Probe;
@@ -45,12 +42,11 @@ import zz.utils.monitoring.Probe;
  * @author gpothier
  */
 public abstract class ObjectsDatabase
-implements ReorderingBufferListener
 {
 	private final IMutableStructureDatabase itsStructureDatabase;
 	
-	private final ObjectsReorderingBuffer itsReorderingBuffer = new ObjectsReorderingBuffer(this);
-	private final ObjectRefsReorderingBuffer itsRefsReorderingBuffer = new ObjectRefsReorderingBuffer(this);
+	private final ObjectsReorderingBuffer itsReorderingBuffer = new ObjectsReorderingBuffer();
+	private final ObjectRefsReorderingBuffer itsRefsReorderingBuffer = new ObjectRefsReorderingBuffer();
 	
 	private final Map<Long, LoadedTypeInfo> itsClassesMap = new HashMap<Long, LoadedTypeInfo>();
 
