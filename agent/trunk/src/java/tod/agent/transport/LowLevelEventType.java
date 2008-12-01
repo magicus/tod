@@ -51,10 +51,11 @@ public enum LowLevelEventType
 	
 	// Registering
 	REGISTER_OBJECT,
+	REGISTER_THREAD,
 	REGISTER_REFOBJECT,
 	REGISTER_CLASS,
-	REGISTER_CLASSLOADER,
-	REGISTER_THREAD;
+	REGISTER_CLASSLOADER;
+
 	
 	/**
 	 * Cached values; call to values() is costly. 

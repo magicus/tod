@@ -457,10 +457,12 @@ public class PacketBufferSender extends Thread
 					thePrevSize = theNewSize;
 				}
 				
+				itsChannel.close();
+				
 				// Give some more time to allow for the buffers to be sent
-				Thread.sleep(1000);
+				Thread.sleep(3000);
 			}
-			catch (InterruptedException e)
+			catch (Exception e)
 			{
 				throw new RuntimeException(e);
 			}
