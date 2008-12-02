@@ -217,7 +217,7 @@ public class ObjectWatchPanel extends BusPanel
 			@Override
 			protected void runJob()
 			{
-				itsEntries = itsProvider.getEntries();
+				itsEntries = itsProvider.getEntries(0, Integer.MAX_VALUE);
 			}
 
 			@Override

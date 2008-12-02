@@ -41,6 +41,7 @@ import tod.core.database.structure.ObjectId;
 import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
+import tod.gui.components.objectwatch.AbstractWatchProvider.Entry;
 import tod.tools.scheduling.IJobScheduler;
 import zz.utils.ui.ZLabel;
 
@@ -52,7 +53,6 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 	private boolean itsInvalid = false;
 	
 	private IObjectInspector itsInspector;
-	private List<Entry> itsEntries;
 	
 	public ObjectWatchProvider(
 			IGUIManager aGUIManager, 
@@ -162,18 +162,19 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 	}
 
 	@Override
-	public List<Entry> getEntries()
+	public int getEntryCount()
 	{
-		if (itsEntries == null)
-		{
-			List<IFieldInfo> theFields = getInspector().getFields();
-			itsEntries = new ArrayList<Entry>(theFields.size());
-			for (IFieldInfo theField : theFields)
-			{
-				itsEntries.add(new ObjectEntry(theField));
-			}
-		}
-		return itsEntries;
+		return getInspector().getFieldCount();
+	}
+
+	@Override
+	public List<Entry> getEntries(int aRangeStart, int aRangeSize)
+	{
+		List<IFieldInfo> theFields = getInspector().getFields(aRangeStart, aRangeSize);
+		List<Entry> theResult = new ArrayList<Entry>(theFields.size());
+		for (IFieldInfo theField : theFields) theResult.add(new ObjectEntry(theField));
+
+		return theResult;
 	}
 
 	private class ObjectEntry extends Entry

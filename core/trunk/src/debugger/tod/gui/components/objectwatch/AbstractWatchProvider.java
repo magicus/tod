@@ -91,10 +91,17 @@ public abstract class AbstractWatchProvider
 	public abstract ILogEvent getRefEvent();
 	
 	/**
-	 * Returns the list of available entries.
-	 * This might be a time-consuming operation.
+	 * Returns the number of available entries.
+	 * This should not be time consuming.
 	 */
-	public abstract List<Entry> getEntries();
+	public abstract int getEntryCount();
+	
+	/**
+	 * Returns all or a subset of the available entries.
+	 * This might be a time-consuming operation, depending on the 
+	 * size of the range and the type of target.
+	 */
+	public abstract List<Entry> getEntries(int aRangeStart, int aRangeSize);
 
 	public static abstract class Entry
 	{

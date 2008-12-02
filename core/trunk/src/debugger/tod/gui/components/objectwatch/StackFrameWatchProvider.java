@@ -164,11 +164,10 @@ public class StackFrameWatchProvider extends AbstractWatchProvider
 		return itsRefEvent;
 	}
 	
-	@Override
-	public List<Entry> getEntries()
+	private void checkEntries()
 	{
 		IVariablesInspector theInspector = getInspector(); // Obtain inspector first to update validity
-		if (itsInvalid) return null;
+		if (itsInvalid) return;
 		if (itsEntries == null)
 		{
 			List<LocalVariableInfo> theVariables = theInspector.getVariables();
@@ -178,7 +177,24 @@ public class StackFrameWatchProvider extends AbstractWatchProvider
 				itsEntries.add(new LocalVariableEntry(theLocalVariable));
 			}
 		}
-		return itsEntries;
+	}
+	
+	@Override
+	public int getEntryCount()
+	{
+		checkEntries();
+		return itsEntries != null ? itsEntries.size() : 0;
+	}
+
+	@Override
+	public List<Entry> getEntries(int aRangeStart, int aRangeSize)
+	{
+		checkEntries();
+		List<Entry> theResult = new ArrayList<Entry>();
+		for(int i=aRangeStart;i<Math.min(aRangeStart+aRangeSize, getEntryCount());i++) 
+			theResult.add(itsEntries.get(i));
+		
+		return theResult;
 	}
 
 	private class LocalVariableEntry extends Entry

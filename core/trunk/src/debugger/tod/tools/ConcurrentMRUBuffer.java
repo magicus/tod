@@ -79,13 +79,13 @@ public abstract class ConcurrentMRUBuffer<K, V> extends MRUBuffer<K, V>
 	}
 	
 	@Override
-	public Entry<V> add(V aValue)
+	public final Entry<V> add(V aValue)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public void drop(K aKey)
+	public final void drop(K aKey)
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -136,12 +136,28 @@ public abstract class ConcurrentMRUBuffer<K, V> extends MRUBuffer<K, V>
 		try
 		{
 			itsLock.writeLock().lock();
-			while(! aStacks.useStack.isEmpty()) super.use(aStacks.useStack.pop());
+			while(! aStacks.useStack.isEmpty()) 
+			{
+				Entry<V> theEntry = aStacks.useStack.pop();
+				if (isStillValid(theEntry)) use0(theEntry);
+			}
 		}
 		finally
 		{
 			itsLock.writeLock().unlock();
 		}
+	}
+	
+	/**
+	 * Indicates if the given entry still pertains to the buffer.
+	 * This is needed to handle cases where a client calls {@link #use(Entry)} and
+	 * the entry gets removed before the use stack is committed.
+	 */
+	protected abstract boolean isStillValid(Entry<V> aEntry);
+	
+	protected void use0(Entry<V> aEntry)
+	{
+		super.use(aEntry);
 	}
 	
 	private void commit()

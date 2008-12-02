@@ -26,7 +26,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -283,10 +282,16 @@ public class ObjectInspector implements IObjectInspector
 	}
 	
 	@Monitored
-	public List<IFieldInfo> getFields()
+	public List<IFieldInfo> getFields(int aRangeStart, int aRangeSize)
 	{
 		Delegate theDelegate = getDelegate();
-		return theDelegate != UNAVAILABLE ? theDelegate.getFields() : Collections.EMPTY_LIST;
+		return theDelegate != UNAVAILABLE ? theDelegate.getFields(aRangeStart, aRangeSize) : Collections.EMPTY_LIST;
+	}
+	
+	public int getFieldCount()
+	{
+		Delegate theDelegate = getDelegate();
+		return theDelegate != UNAVAILABLE ? theDelegate.getFieldsCount() : 0;
 	}
 
 	public void setReferenceEvent(ILogEvent aEvent)
@@ -420,9 +425,14 @@ public class ObjectInspector implements IObjectInspector
 	private static abstract class Delegate
 	{
 		/**
+		 * Delegate method for {@link ObjectInspector#getFieldCount()}
+		 */
+		public abstract int getFieldsCount();
+
+		/**
 		 * Delegate method for {@link ObjectInspector#getFields()}
 		 */
-		public abstract List<IFieldInfo> getFields();
+		public abstract List<IFieldInfo> getFields(int aRangeStart, int aRangeSize);
 
 		/**
 		 * Delegate method for {@link ObjectInspector#getFilter(IMemberInfo)}
@@ -438,7 +448,13 @@ public class ObjectInspector implements IObjectInspector
 	private static final Delegate UNAVAILABLE = new Delegate()
 	{
 		@Override
-		public List<IFieldInfo> getFields()
+		public List<IFieldInfo> getFields(int aRangeStart, int aRangeSize)
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public int getFieldsCount()
 		{
 			throw new UnsupportedOperationException();
 		}
@@ -477,16 +493,32 @@ public class ObjectInspector implements IObjectInspector
 			}
 		}
 		
-		@Override
-		@Monitored
-		public List<IFieldInfo> getFields()
+		private void checkFields()
 		{
 			if (itsFields == null)
 			{
 				itsFields = new ArrayList<IFieldInfo>();
 				fillMembers(itsFields, getType());
 			}
-			return itsFields;
+		}
+		
+		@Override
+		public int getFieldsCount()
+		{
+			checkFields();
+			return itsFields.size();
+		}
+
+		@Override
+		@Monitored
+		public List<IFieldInfo> getFields(int aRangeStart, int aRangeSize)
+		{
+			checkFields();
+			List<IFieldInfo> theResult = new ArrayList<IFieldInfo>();
+			for(int i=aRangeStart;i<Math.min(aRangeStart+aRangeSize, itsFields.size());i++) 
+				theResult.add(itsFields.get(i));
+			
+			return theResult;
 		}
 		
 		@Override
@@ -526,10 +558,8 @@ public class ObjectInspector implements IObjectInspector
 	
 	private class ArrayDelegate extends Delegate
 	{
-		private List<IFieldInfo> itsFields;
-		
 		/**
-		 * A reference to {@link System#arraycopy(Object, int, Object, int, int)}
+		 * A reference to the {@link System#arraycopy(Object, int, Object, int, int)} method
 		 */
 		private IBehaviorInfo itsArrayCopy;
 
@@ -539,24 +569,29 @@ public class ObjectInspector implements IObjectInspector
 		}
 
 		@Override
-		@Monitored
-		public List<IFieldInfo> getFields()
+		public int getFieldsCount()
 		{
-			if (itsFields == null)
-			{
-				itsFields = new ArrayList<IFieldInfo>();
-				INewArrayEvent theEvent = (INewArrayEvent) getCreationEvent();
-				int theSize = theEvent.getArraySize();
+			INewArrayEvent theEvent = (INewArrayEvent) getCreationEvent();
+			return theEvent.getArraySize();
+		}
+
+		@Override
+		@Monitored
+		public List<IFieldInfo> getFields(int aRangeStart, int aRangeSize)
+		{
+			List<IFieldInfo> theResult = new ArrayList<IFieldInfo>();
+			INewArrayEvent theEvent = (INewArrayEvent) getCreationEvent();
+			int theSize = theEvent.getArraySize();
 				
-				for (int i=0;i<theSize;i++)
-				{
-					itsFields.add(new ArraySlotFieldInfo(
-							getLogBrowser().getStructureDatabase(),
-							(IArrayTypeInfo) getType(),
-							i));
-				}
+			for(int i=aRangeStart;i<Math.min(aRangeStart+aRangeSize, theSize);i++)
+			{
+				theResult.add(new ArraySlotFieldInfo(
+						getLogBrowser().getStructureDatabase(),
+						(IArrayTypeInfo) getType(),
+						i));
 			}
-			return itsFields;
+
+			return theResult;
 		}
 		
 		@Override

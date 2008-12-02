@@ -61,11 +61,18 @@ public interface IObjectInspector extends ICompoundInspector<IFieldInfo>
 	 * Returns the type descriptor of the object.
 	 */
 	public ITypeInfo getType();
+
+	/**
+	 * Returns the total number of fields available in the inspected object.
+	 */
+	public int getFieldCount();
 	
 	/**
-	 * Retrieves all the field descriptors of the inspected object.
+	 * Retrieves all or a subset of the field descriptors of the inspected object.
+	 * @param aRangeStart Index of the first entry to return
+	 * @param aRangeSize Maximum number of entries to return
 	 */
-	public List<IFieldInfo> getFields();
+	public List<IFieldInfo> getFields(int aRangeStart, int aRangeSize);
 	
 	/**
 	 * Returns an event broswer on the events that changed the value 
