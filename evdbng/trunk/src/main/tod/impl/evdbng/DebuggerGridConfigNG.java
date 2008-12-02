@@ -90,7 +90,7 @@ public class DebuggerGridConfigNG
 	 * Number of partitions of key values for the objects index.
 	 * @see SplittedConditionHandler
 	 */
-	public static final int INDEX_OBJECT_PARTS = 12;
+	public static final int INDEX_OBJECT_PARTS = 16;
 
 	/**
 	 * Number of partitions of key values for the array index index.

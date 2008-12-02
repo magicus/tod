@@ -156,6 +156,7 @@ public abstract class IndexSet<T extends Tuple>
 			theEntry = new Entry<BTreeWrapper<T>>(theIndex);
 			
 			itsIndexes[aIndex] = theEntry;
+			itsIndexManager.use((Entry) theEntry);
 			itsIndexCount++;
 		}
 		else if (theEntry == DISCARDED_ENTRY)
@@ -168,11 +169,15 @@ public abstract class IndexSet<T extends Tuple>
 			theEntry = new Entry<BTreeWrapper<T>>(theIndex);
 			
 			itsIndexes[aIndex] = theEntry;
+			itsIndexManager.use((Entry) theEntry);
 			itsLoadCount++;
 		}
-		else theIndex = theEntry.getValue();
+		else 
+		{
+			theIndex = theEntry.getValue();
+			if (theIndex.shouldUse()) itsIndexManager.use((Entry) theEntry);
+		}
 		
-		if (theIndex.shouldUse()) itsIndexManager.use((Entry) theEntry);
 		
 		return theIndex.getTree();
 	}
@@ -285,6 +290,13 @@ public abstract class IndexSet<T extends Tuple>
 			if (itsDisposed) throw new IllegalStateException();
 			return super.getEntry(aKey, aFetch);
 		}
+		
+		@Override
+		protected boolean isStillValid(Entry<BTreeWrapper< ? extends Tuple>> aEntry)
+		{
+			BTreeWrapper<? extends Tuple> theWrapper = aEntry.getValue();
+			return theWrapper.getIndexSet().itsIndexes[theWrapper.getIndex()] != DISCARDED_ENTRY;
+		}
 
 		@Override
 		protected BTreeWrapper<? extends Tuple> fetch(Integer aId)
@@ -350,6 +362,11 @@ public abstract class IndexSet<T extends Tuple>
 			else return false;
 		}
 		
+		@Override
+		public String toString()
+		{
+			return "BTreeWrapper "+itsIndexSet.getName()+"["+itsIndex+"]";
+		}
 
 	}
 
