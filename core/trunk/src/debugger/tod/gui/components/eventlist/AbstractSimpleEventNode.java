@@ -25,11 +25,19 @@ package tod.gui.components.eventlist;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JPopupMenu;
 
 import tod.core.DebugFlags;
 import tod.core.config.TODConfig;
@@ -176,7 +184,8 @@ public abstract class AbstractSimpleEventNode extends AbstractEventNode
 		
 		if (aEvent.isPopupTrigger())
 		{
-			
+			JPopupMenu theMenu = createPopupMenu();
+			if (theMenu != null) theMenu.show(this, aEvent.getX(), aEvent.getY());
 		}
 		else
 		{
@@ -186,6 +195,41 @@ public abstract class AbstractSimpleEventNode extends AbstractEventNode
 				getListPanel().eventActivated(getEvent());
 			}
 		}
+	}
+	
+	private JPopupMenu createPopupMenu()
+	{
+		List<Action> theActions = getGUIManager().getExtensionPoints().getActionsForEvent(getEvent(), null);
+		if (theActions == null || theActions.isEmpty()) return null;
+		
+		JPopupMenu theMenu = new JPopupMenu();
+		Map<String, JMenu> theSubmenusMap = new HashMap<String, JMenu>();
+		for (Action theAction : theActions) 
+		{
+			String theName = (String) theAction.getValue(Action.NAME);
+			int i = theName.indexOf('/');
+			if (i >= 0)
+			{
+				String thePrefix = theName.substring(0, i);
+				String theSuffix = theName.substring(i+1);
+				
+				JMenu theSubmenu = theSubmenusMap.get(thePrefix);
+				if (theSubmenu == null)
+				{
+					theSubmenu = new JMenu(thePrefix);
+					theSubmenusMap.put(thePrefix, theSubmenu);
+					theMenu.add(theSubmenu);
+				}
+			
+				theSubmenu.add(new ActionWrapper(theSuffix, theAction));
+			}
+			else
+			{
+				theMenu.add(theAction);
+			}
+		}
+		
+		return theMenu;
 	}
 	
 	/**
@@ -217,5 +261,52 @@ public abstract class AbstractSimpleEventNode extends AbstractEventNode
 	{
 		aG.setColor(isSelected() ? Color.YELLOW : Color.WHITE);
 		aG.fillRect(0, 0, getWidth(), getHeight());
+	}
+	
+	private static class ActionWrapper implements Action
+	{
+		private String itsName;
+		private Action itsDelegate;
+		
+		public ActionWrapper(String aName, Action aDelegate)
+		{
+			itsName = aName;
+			itsDelegate = aDelegate;
+		}
+
+		public void addPropertyChangeListener(PropertyChangeListener aListener)
+		{
+			itsDelegate.addPropertyChangeListener(aListener);
+		}
+
+		public Object getValue(String aKey)
+		{
+			return Action.NAME.equals(aKey) ? itsName : itsDelegate.getValue(aKey);
+		}
+
+		public boolean isEnabled()
+		{
+			return itsDelegate.isEnabled();
+		}
+
+		public void putValue(String aKey, Object aValue)
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		public void removePropertyChangeListener(PropertyChangeListener aListener)
+		{
+			itsDelegate.removePropertyChangeListener(aListener);
+		}
+
+		public void setEnabled(boolean aB)
+		{
+			itsDelegate.setEnabled(aB);
+		}
+
+		public void actionPerformed(ActionEvent aE)
+		{
+			itsDelegate.actionPerformed(aE);
+		}
 	}
 }
