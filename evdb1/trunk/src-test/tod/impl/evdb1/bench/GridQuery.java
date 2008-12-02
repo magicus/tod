@@ -663,7 +663,7 @@ public class GridQuery
 			return null;
 		}
 		ITypeInfo theType = theInspector.getType();
-		List<IFieldInfo> theFields = theInspector.getFields();
+		List<IFieldInfo> theFields = theInspector.getFields(0, Integer.MAX_VALUE);
 		if (theFields.size() == 0)
 		{
 			System.out.println("  No fields found for object: "+aId);
@@ -703,7 +703,7 @@ public class GridQuery
 		ILogEvent theEvent = theBrowser.next();
 		
 		aInspector.setReferenceEvent(theEvent);
-		List<IFieldInfo> theFields = aInspector.getFields();
+		List<IFieldInfo> theFields = aInspector.getFields(0, Integer.MAX_VALUE);
 		
 		for (IFieldInfo theField : theFields)
 		{
