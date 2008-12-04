@@ -22,24 +22,24 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package java.tod.transport;
 
-import static tod.agent.LowLevelEventType.AFTER_CALL;
-import static tod.agent.LowLevelEventType.AFTER_CALL_DRY;
-import static tod.agent.LowLevelEventType.AFTER_CALL_EXCEPTION;
-import static tod.agent.LowLevelEventType.ARRAY_WRITE;
-import static tod.agent.LowLevelEventType.BEFORE_CALL;
-import static tod.agent.LowLevelEventType.BEFORE_CALL_DRY;
-import static tod.agent.LowLevelEventType.BEHAVIOR_ENTER;
-import static tod.agent.LowLevelEventType.BEHAVIOR_EXIT;
-import static tod.agent.LowLevelEventType.BEHAVIOR_EXIT_EXCEPTION;
-import static tod.agent.LowLevelEventType.CLINIT_ENTER;
-import static tod.agent.LowLevelEventType.CLINIT_EXIT;
-import static tod.agent.LowLevelEventType.EXCEPTION_GENERATED;
-import static tod.agent.LowLevelEventType.FIELD_WRITE;
-import static tod.agent.LowLevelEventType.INSTANCEOF;
-import static tod.agent.LowLevelEventType.LOCAL_VARIABLE_WRITE;
-import static tod.agent.LowLevelEventType.NEW_ARRAY;
-import static tod.agent.LowLevelEventType.REGISTER_OBJECT;
-import static tod.agent.LowLevelEventType.REGISTER_THREAD;
+import static java.tod._LowLevelEventType.AFTER_CALL;
+import static java.tod._LowLevelEventType.AFTER_CALL_DRY;
+import static java.tod._LowLevelEventType.AFTER_CALL_EXCEPTION;
+import static java.tod._LowLevelEventType.ARRAY_WRITE;
+import static java.tod._LowLevelEventType.BEFORE_CALL;
+import static java.tod._LowLevelEventType.BEFORE_CALL_DRY;
+import static java.tod._LowLevelEventType.BEHAVIOR_ENTER;
+import static java.tod._LowLevelEventType.BEHAVIOR_EXIT;
+import static java.tod._LowLevelEventType.BEHAVIOR_EXIT_EXCEPTION;
+import static java.tod._LowLevelEventType.CLINIT_ENTER;
+import static java.tod._LowLevelEventType.CLINIT_EXIT;
+import static java.tod._LowLevelEventType.EXCEPTION_GENERATED;
+import static java.tod._LowLevelEventType.FIELD_WRITE;
+import static java.tod._LowLevelEventType.INSTANCEOF;
+import static java.tod._LowLevelEventType.LOCAL_VARIABLE_WRITE;
+import static java.tod._LowLevelEventType.NEW_ARRAY;
+import static java.tod._LowLevelEventType.REGISTER_OBJECT;
+import static java.tod._LowLevelEventType.REGISTER_THREAD;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -49,14 +49,14 @@ import java.nio.ByteOrder;
 import java.tod.EventCollector;
 import java.tod.ExceptionGeneratedReceiver;
 import java.tod.ObjectIdentity;
+import java.tod._BehaviorCallType;
+import java.tod._LowLevelEventType;
+import java.tod._Output;
+import java.tod._ValueType;
 import java.tod.transport.PacketBufferSender.PacketBuffer;
 
-import tod.agent.BehaviorCallType;
 import tod.agent.Command;
-import tod.agent.LowLevelEventType;
 import tod.agent.ObjectValue;
-import tod.agent.Output;
-import tod.agent.ValueType;
 
 /**
  * Provides the methods used to encode streamed log data. Non-static methods are
@@ -95,12 +95,12 @@ public class LowLevelEventWriter
 		itsBuffer.order(ByteOrder.nativeOrder());
 	}
 
-	private static void sendEventType(ByteBuffer aBuffer, LowLevelEventType aType) 
+	private static void sendEventType(ByteBuffer aBuffer, _LowLevelEventType aType) 
 	{
 		aBuffer.put((byte) aType.ordinal());
 	}
 
-	private static void sendValueType(ByteBuffer aBuffer, ValueType aType) 
+	private static void sendValueType(ByteBuffer aBuffer, _ValueType aType) 
 	{
 		aBuffer.put((byte) aType.ordinal());
 	}
@@ -110,7 +110,7 @@ public class LowLevelEventWriter
 		aBuffer.put((byte) (aCommands.ordinal() + Command.BASE));
 	}
 	
-	private static void sendCallType(ByteBuffer aBuffer, BehaviorCallType aType)
+	private static void sendCallType(ByteBuffer aBuffer, _BehaviorCallType aType)
 	{
 		aBuffer.put((byte) aType.ordinal());
 	}
@@ -123,7 +123,7 @@ public class LowLevelEventWriter
 	}
 	
 	private void sendStd(
-			LowLevelEventType aType,
+			_LowLevelEventType aType,
 			long aTimestamp)
 	{
 //		System.out.println("Starting packet: "+itsStream.getThreadId()+" - "+aTimestamp);
@@ -143,7 +143,7 @@ public class LowLevelEventWriter
 	public void sendClInitEnter(
 			long aTimestamp,
 			int aBehaviorId, 
-			BehaviorCallType aCallType) throws IOException
+			_BehaviorCallType aCallType) throws IOException
 	{
 		sendStd(CLINIT_ENTER, aTimestamp);
 
@@ -158,7 +158,7 @@ public class LowLevelEventWriter
 	public void sendBehaviorEnter(
 			long aTimestamp,
 			int aBehaviorId, 
-			BehaviorCallType aCallType,
+			_BehaviorCallType aCallType,
 			Object aTarget, 
 			Object[] aArguments) throws IOException
 	{
@@ -345,7 +345,7 @@ public class LowLevelEventWriter
 			long aTimestamp,
 			int aProbeId, 
 			int aBehaviorId,
-			BehaviorCallType aCallType) throws IOException
+			_BehaviorCallType aCallType) throws IOException
 	{
 		sendStd(BEFORE_CALL_DRY, aTimestamp);
 
@@ -376,10 +376,10 @@ public class LowLevelEventWriter
 	private void sendTarget(
 			long aTimestamp,
 			int aDeferRequestorId,
-			BehaviorCallType aCallType, 
+			_BehaviorCallType aCallType, 
 			Object aTarget) throws IOException
 	{
-		if (aCallType == BehaviorCallType.INSTANTIATION && shouldSendByValue(aTarget))
+		if (aCallType == _BehaviorCallType.INSTANTIATION && shouldSendByValue(aTarget))
 		{
 			// Ensure that the sending of the object's value is deferred:
 			// otherwise we serialize an object that is not completely
@@ -411,7 +411,7 @@ public class LowLevelEventWriter
 			long aTimestamp,
 			int aProbeId, 
 			int aBehaviorId,
-			BehaviorCallType aCallType,
+			_BehaviorCallType aCallType,
 			Object aTarget, 
 			Object[] aArguments) throws IOException
 	{
@@ -471,7 +471,7 @@ public class LowLevelEventWriter
 	
 	public void sendOutput(
 			long aTimestamp,
-			Output aOutput, 
+			_Output aOutput, 
 			byte[] aData) throws IOException
 	{
 		throw new UnsupportedOperationException();
@@ -556,48 +556,48 @@ public class LowLevelEventWriter
 	{
 		if (aValue == null)
 		{
-			sendValueType(aBuffer, ValueType.NULL);
+			sendValueType(aBuffer, _ValueType.NULL);
 		}
 		else if (aValue instanceof Boolean)
 		{
 			Boolean theBoolean = (Boolean) aValue;
-			sendValueType(aBuffer, ValueType.BOOLEAN);
+			sendValueType(aBuffer, _ValueType.BOOLEAN);
 			aBuffer.put(theBoolean.booleanValue() ? TRUE : FALSE);
 		}
 		else if (aValue instanceof Byte)
 		{
 			Byte theByte = (Byte) aValue;
-			sendValueType(aBuffer, ValueType.BYTE);
+			sendValueType(aBuffer, _ValueType.BYTE);
 			aBuffer.put(theByte.byteValue());
 		}
 		else if (aValue instanceof Character)
 		{
 			Character theCharacter = (Character) aValue;
-			sendValueType(aBuffer, ValueType.CHAR);
+			sendValueType(aBuffer, _ValueType.CHAR);
 			aBuffer.putChar(theCharacter.charValue());
 		}
 		else if (aValue instanceof Integer)
 		{
 			Integer theInteger = (Integer) aValue;
-			sendValueType(aBuffer, ValueType.INT);
+			sendValueType(aBuffer, _ValueType.INT);
 			aBuffer.putInt(theInteger.intValue());
 		}
 		else if (aValue instanceof Long)
 		{
 			Long theLong = (Long) aValue;
-			sendValueType(aBuffer, ValueType.LONG);
+			sendValueType(aBuffer, _ValueType.LONG);
 			aBuffer.putLong(theLong.longValue());
 		}
 		else if (aValue instanceof Float)
 		{
 			Float theFloat = (Float) aValue;
-			sendValueType(aBuffer, ValueType.FLOAT);
+			sendValueType(aBuffer, _ValueType.FLOAT);
 			aBuffer.putFloat(theFloat.floatValue());
 		}
 		else if (aValue instanceof Double)
 		{
 			Double theDouble = (Double) aValue;
-			sendValueType(aBuffer, ValueType.DOUBLE);
+			sendValueType(aBuffer, _ValueType.DOUBLE);
 			aBuffer.putDouble(theDouble.doubleValue());
 		}
 		else if (shouldSendByValue(aValue))
@@ -647,7 +647,7 @@ public class LowLevelEventWriter
 			}
 		}
 
-		sendValueType(aBuffer, ValueType.OBJECT_UID);
+		sendValueType(aBuffer, _ValueType.OBJECT_UID);
 		aBuffer.putLong(theObjectId);
 	}
 
@@ -670,7 +670,7 @@ public class LowLevelEventWriter
 			itsRegisteredRefObjectsStack.push(theObjectId, theClass, aTimestamp);
 		}
 
-		sendValueType(aBuffer, ValueType.OBJECT_UID);
+		sendValueType(aBuffer, _ValueType.OBJECT_UID);
 		aBuffer.putLong(theObjectId);
 	}
 
@@ -729,7 +729,7 @@ public class LowLevelEventWriter
 		// That must stay before we start using the buffer
 		long theClassId = getClassId(aClass); 
 		
-		sendEventType(itsBuffer, LowLevelEventType.REGISTER_REFOBJECT);
+		sendEventType(itsBuffer, _LowLevelEventType.REGISTER_REFOBJECT);
 		
 		itsBuffer.putLong(aId);
 		itsBuffer.putLong(aTimestamp);
@@ -757,7 +757,7 @@ public class LowLevelEventWriter
 		// That must stay before we start using the buffer
 		long theLoaderId = getClassLoaderId(aClass.getClassLoader());
 		
-		sendEventType(itsBuffer, LowLevelEventType.REGISTER_CLASS);
+		sendEventType(itsBuffer, _LowLevelEventType.REGISTER_CLASS);
 		
 		itsBuffer.putLong(aClassId);
 		itsBuffer.putLong(theLoaderId);
@@ -790,7 +790,7 @@ public class LowLevelEventWriter
 		// That must stay before we start using the buffer
 		long theLoaderClassId = getClassId(aLoader.getClass());
 		
-		sendEventType(itsBuffer, LowLevelEventType.REGISTER_CLASSLOADER);
+		sendEventType(itsBuffer, _LowLevelEventType.REGISTER_CLASSLOADER);
 		
 		itsBuffer.putLong(aLoaderId);
 		itsBuffer.putLong(theLoaderClassId);

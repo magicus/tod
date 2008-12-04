@@ -55,9 +55,12 @@ import tod.impl.database.structure.standard.TagMap;
 public class ASMBehaviorInstrumenter implements Opcodes
 {
 	private static final String CLS_EVENTCOLLECTOR = "java/tod/EventCollector";
+	private static final String DSC_EVENTCOLLECTOR = "L"+CLS_EVENTCOLLECTOR+";";
 	private static final String CLS_AGENTREADY = "java/tod/AgentReady";
 	private static final String CLS_EXCEPTIONGENERATEDRECEIVER = "java/tod/ExceptionGeneratedReceiver";
 	private static final String CLS_TRACEDMETHODS = "java/tod/TracedMethods";
+	private static final String CLS_BEHAVIORCALLTYPE = "java/tod/_BehaviorCallType";
+	private static final String DSC_BEHAVIORCALLTYPE = "L"+CLS_BEHAVIORCALLTYPE+";";
 	
 	private final IMutableStructureDatabase itsStructureDatabase;
 	private final ProbesManager itsProbesManager;
@@ -218,7 +221,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				GETSTATIC, 
 				CLS_EVENTCOLLECTOR, 
 				"INSTANCE", 
-				"L"+CLS_EVENTCOLLECTOR+";");
+				DSC_EVENTCOLLECTOR);
 		mv.visitVarInsn(ASTORE, itsCollectorVar);
 		
 		// Store the capture enabled flag
@@ -881,9 +884,9 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		// ->call type
 		mv.visitFieldInsn(
 				GETSTATIC, 
-				Type.getInternalName(BehaviorCallType.class),
+				CLS_BEHAVIORCALLTYPE,
 				aCallType.name(), 
-				Type.getDescriptor(BehaviorCallType.class));
+				DSC_BEHAVIORCALLTYPE);
 	
 		// ->target
 		if (aTargetVar < 0) mv.visitInsn(ACONST_NULL);
@@ -896,7 +899,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				INVOKEVIRTUAL, 
 				CLS_EVENTCOLLECTOR, 
 				"logBeforeBehaviorCall", 
-				"(II"+Type.getDescriptor(BehaviorCallType.class)+"Ljava/lang/Object;[Ljava/lang/Object;)V");
+				"(II"+DSC_BEHAVIORCALLTYPE+"Ljava/lang/Object;[Ljava/lang/Object;)V");
 	}
 
 	public void invokeLogBeforeBehaviorCallDry(
@@ -915,15 +918,15 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		// ->call type
 		mv.visitFieldInsn(
 				GETSTATIC, 
-				Type.getInternalName(BehaviorCallType.class),
+				CLS_BEHAVIORCALLTYPE,
 				aCallType.name(), 
-				Type.getDescriptor(BehaviorCallType.class));
+				DSC_BEHAVIORCALLTYPE);
 		
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
 				CLS_EVENTCOLLECTOR, 
 				"logBeforeBehaviorCallDry", 
-				"(II"+Type.getDescriptor(BehaviorCallType.class)+")V");
+				"(II"+DSC_BEHAVIORCALLTYPE+")V");
 	}
 	
 	public void invokeLogAfterBehaviorCall(
@@ -1146,9 +1149,9 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		// ->call type
 		mv.visitFieldInsn(
 				GETSTATIC, 
-				Type.getInternalName(BehaviorCallType.class),
+				CLS_BEHAVIORCALLTYPE,
 				aCallType.name(), 
-				Type.getDescriptor(BehaviorCallType.class));
+				DSC_BEHAVIORCALLTYPE);
 	
 		// ->target
 		if (LogBCIVisitor.ENABLE_VERIFY || aTargetVar < 0) mv.visitInsn(ACONST_NULL);
@@ -1161,7 +1164,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				Opcodes.INVOKEVIRTUAL, 
 				CLS_EVENTCOLLECTOR, 
 				aClInit ? "logClInitEnter" : "logBehaviorEnter", 
-				"(I"+Type.getDescriptor(BehaviorCallType.class)+"Ljava/lang/Object;[Ljava/lang/Object;)V");	
+				"(I"+DSC_BEHAVIORCALLTYPE+"Ljava/lang/Object;[Ljava/lang/Object;)V");	
 	}
 
 	public void invokeLogBehaviorExit (

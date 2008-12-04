@@ -39,9 +39,7 @@ import java.util.StringTokenizer;
 import tod.agent.AgentConfig;
 import tod.agent.AgentDebugFlags;
 import tod.agent.AgentUtils;
-import tod.agent.BehaviorCallType;
 import tod.agent.Command;
-import tod.agent.Output;
 
 
 /**
@@ -193,7 +191,7 @@ public final class EventCollector
 
 	public void logClInitEnter(
 			int aBehaviorId, 
-			BehaviorCallType aCallType,
+			_BehaviorCallType aCallType,
 			Object aObject, 
 			Object[] aArguments)
 	{
@@ -229,7 +227,7 @@ public final class EventCollector
 	
 	public void logBehaviorEnter(
 			int aBehaviorId, 
-			BehaviorCallType aCallType,
+			_BehaviorCallType aCallType,
 			Object aObject, 
 			Object[] aArguments)
 	{
@@ -650,7 +648,7 @@ public final class EventCollector
 	public void logBeforeBehaviorCallDry(
 			int aProbeId, 
 			int aBehaviorId,
-			BehaviorCallType aCallType)
+			_BehaviorCallType aCallType)
 	{
 		if (AgentDebugFlags.COLLECTOR_IGNORE_ALL) return;
 		
@@ -688,7 +686,7 @@ public final class EventCollector
 	public void logBeforeBehaviorCall(
 			int aProbeId, 
 			int aBehaviorId,
-			BehaviorCallType aCallType,
+			_BehaviorCallType aCallType,
 			Object aTarget, 
 			Object[] aArguments)
 	{
@@ -838,7 +836,7 @@ public final class EventCollector
 	}
 	
 	public void logOutput(
-			Output aOutput, 
+			_Output aOutput, 
 			byte[] aData)
 	{
 		if (AgentDebugFlags.COLLECTOR_IGNORE_ALL) return;

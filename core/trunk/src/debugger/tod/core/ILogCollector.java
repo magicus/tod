@@ -23,8 +23,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.core;
 
 
-import tod.agent.HighLevelEventType;
 import tod.agent.Output;
+import tod.core.transport.HighLevelEventType;
 
 /**
  * Interface for incoming events. It is able to process high-level events
