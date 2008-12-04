@@ -49,7 +49,7 @@
          <export name="*"/>
       </library>
       <library name="../TOD-agent/bin">
-         <export name="*"/>
+         <export name="tod.agent.*"/>
       </library>
       <library name="../TOD-dbgrid/bin">
          <export name="*"/>
@@ -68,7 +68,7 @@
       
       <!-- DEPLOY-in     
       <library name="lib/tod-agent15.jar">
-         <export name="*"/>
+         <export name="tod.agent.*"/>
       </library>
       <library name="lib/tod-debugger.jar">
          <export name="*"/>
