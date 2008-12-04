@@ -5,7 +5,8 @@ import hep.io.xdr.XDRInputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-import tod.agent.transport.ValueWriter;
+import pytod.core.ValueWriter;
+
 import tod.core.ILogCollector;
 import tod.core.config.TODConfig;
 import tod.core.database.structure.IMutableBehaviorInfo;

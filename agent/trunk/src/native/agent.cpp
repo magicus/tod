@@ -124,7 +124,7 @@ void agentConnect(char* host, char* port, char* clientName)
 	flush(gSocket);
 	
 	cfgHostId = readInt(gSocket);
-	if (propVerbose>=2) printf("Assigned host id: %ld\n", cfgHostId);
+	if (propVerbose>=1) printf("Assigned host id: %ld\n", cfgHostId);
 	fflush(stdout);
 }
 
@@ -276,11 +276,11 @@ void agentClassFileLoadHook(
 
 	if (cfgObfuscation)
 	{
-		if (startsWith(name, "tod/agentX/")) return;
+		if (startsWith(name, "java/todX/")) return;
 	}
 	else
 	{
-		if (startsWith(name, "tod/agent/")) return;
+		if (startsWith(name, "java/tod/")) return;
 	}
 	
 	if (cfgDebugTOD)
@@ -502,12 +502,12 @@ void initExceptionClasses(JNIEnv* jni)
 	if (cfgObfuscation ==1 ) 
 	ExceptionGeneratedReceiver_exceptionGenerated = new StaticVoidMethod(
 		jni, 
-		"tod/agentX/ExceptionGeneratedReceiver",
+		"java/todX/ExceptionGeneratedReceiver",
 		"exceptionGenerated", 
 		"(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Throwable;)V");
 	else 	ExceptionGeneratedReceiver_exceptionGenerated = new StaticVoidMethod(
 		jni, 
-		"tod/agent/ExceptionGeneratedReceiver",
+		"java/tod/ExceptionGeneratedReceiver",
 		"exceptionGenerated", 
 		"(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Throwable;)V");
 	// init ignored methods
@@ -578,13 +578,13 @@ void agentStart(JNIEnv* jni)
 	
 	if (cfgObfuscation == 1)	
 	{
-		TracedMethods_setTraced = new StaticVoidMethod(jni, "tod/agentX/TracedMethods", "setTraced", "(I)V");
-		TOD_enable = new StaticVoidMethod(jni, "tod/agentX/AgentReady", "nativeAgentLoaded", "()V");
+		TracedMethods_setTraced = new StaticVoidMethod(jni, "java/todX/TracedMethods", "setTraced", "(I)V");
+		TOD_enable = new StaticVoidMethod(jni, "java/todX/AgentReady", "nativeAgentLoaded", "()V");
 	}
 	else 
 	{
-		TracedMethods_setTraced = new StaticVoidMethod(jni, "tod/agent/TracedMethods", "setTraced", "(I)V");
-		TOD_enable = new StaticVoidMethod(jni, "tod/agent/AgentReady", "nativeAgentLoaded", "()V");	
+		TracedMethods_setTraced = new StaticVoidMethod(jni, "java/tod/TracedMethods", "setTraced", "(I)V");
+		TOD_enable = new StaticVoidMethod(jni, "java/tod/AgentReady", "nativeAgentLoaded", "()V");	
 	}
 
 	TOD_enable->invoke(jni);
@@ -662,28 +662,28 @@ void agentStop()
  * Method: get
  * Signature: (Ljava/lang/Object;)J
  */
-JNIEXPORT jlong JNICALL Java_tod_agent_ObjectIdentity_get15
+JNIEXPORT jlong JNICALL Java_java_tod_ObjectIdentity_get15
 	(JNIEnv * jni, jclass, jobject obj)
 {
 	agentimplGetObjectId(jni, obj);
 }
 
-JNIEXPORT jint JNICALL Java_tod_agent__1AgentConfig_getHostId
+JNIEXPORT jint JNICALL Java_java_tod__1AgentConfig_getHostId
 	(JNIEnv * jni, jclass)
 {
 	return cfgHostId;
 }
 
-JNIEXPORT jlong JNICALL Java_tod_agentX_ObjectIdentity_get15
+JNIEXPORT jlong JNICALL Java_java_todX_ObjectIdentity_get15
 	(JNIEnv * jni, jclass cls, jobject obj)
 {
-	return Java_tod_agent_ObjectIdentity_get15(jni, cls, obj);
+	return Java_java_tod_ObjectIdentity_get15(jni, cls, obj);
 }
 
-JNIEXPORT jint JNICALL Java_tod_agentX__1AgentConfig_getHostId
+JNIEXPORT jint JNICALL Java_java_todX__1AgentConfig_getHostId
 	(JNIEnv * jni, jclass cls)
 {
-	return Java_tod_agent__1AgentConfig_getHostId(jni, cls);
+	return Java_java_tod__1AgentConfig_getHostId(jni, cls);
 }
 
 #ifdef WIN32
