@@ -20,7 +20,9 @@ MA 02111-1307 USA
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.agent;
+package java.tod;
+
+import tod.agent.BitUtilsLite;
 
 /**
  * A thread that maintains the current timestamp, with a granularity.
@@ -29,6 +31,23 @@ package tod.agent;
  */
 public class Timestamper extends Thread
 {
+	/**
+	 * Number of bits to shift timestamp values.
+	 */
+	public static final int TIMESTAMP_ADJUST_SHIFT = TimestampCalibration.shift;
+	
+	/**
+	 * Number of bits of original timestamp values that are considered inaccurate.
+	 */
+	public static final int TIMESTAMP_ADJUST_INACCURACY = TimestampCalibration.inaccuracy;
+	
+	/**
+	 * Mask of artificial timestamp bits.
+	 */
+	public static final long TIMESTAMP_ADJUST_MASK = 
+		BitUtilsLite.pow2(TIMESTAMP_ADJUST_INACCURACY+TIMESTAMP_ADJUST_SHIFT)-1;
+	
+
 	private Timestamper()
 	{
 		super("[TOD] Timestamper");
@@ -36,7 +55,7 @@ public class Timestamper extends Thread
 		start();
 	}
 	
-	public transient static long t = System.nanoTime() << AgentConfig.TIMESTAMP_ADJUST_SHIFT;
+	public transient static long t = System.nanoTime() << TIMESTAMP_ADJUST_SHIFT;
 	
 	@Override
 	public void run()
@@ -57,7 +76,7 @@ public class Timestamper extends Thread
 	
 	public static long update()
 	{
-		t = System.nanoTime() << AgentConfig.TIMESTAMP_ADJUST_SHIFT;
+		t = System.nanoTime() << TIMESTAMP_ADJUST_SHIFT;
 		return t;
 	}
 }

@@ -22,8 +22,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.formatter;
 
+
 import tod.Util;
-import tod.agent.transport.ObjectValue;
+import tod.agent.ObjectValue;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.IArrayWriteEvent;
 import tod.core.database.event.IBehaviorCallEvent;

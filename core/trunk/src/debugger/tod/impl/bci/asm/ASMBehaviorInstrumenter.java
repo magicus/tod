@@ -31,12 +31,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import tod.Util;
-import tod.agent.AgentConfig;
-import tod.agent.AgentReady;
 import tod.agent.BehaviorCallType;
-import tod.agent.EventCollector;
-import tod.agent.ExceptionGeneratedReceiver;
-import tod.agent.TracedMethods;
 import tod.core.config.TODConfig;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
@@ -59,6 +54,11 @@ import tod.impl.database.structure.standard.TagMap;
  */
 public class ASMBehaviorInstrumenter implements Opcodes
 {
+	private static final String CLS_EVENTCOLLECTOR = "java/tod/EventCollector";
+	private static final String CLS_AGENTREADY = "java/tod/AgentReady";
+	private static final String CLS_EXCEPTIONGENERATEDRECEIVER = "java/tod/ExceptionGeneratedReceiver";
+	private static final String CLS_TRACEDMETHODS = "java/tod/TracedMethods";
+	
 	private final IMutableStructureDatabase itsStructureDatabase;
 	private final ProbesManager itsProbesManager;
 	private final IMutableBehaviorInfo itsBehavior;
@@ -214,16 +214,16 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		itsCodeStartLabel = new Label();
 
 		// Obtain the event interpreter and store it into the interpreter var.
-		mv.visitMethodInsn(
-				INVOKESTATIC, 
-				Type.getInternalName(AgentConfig.class), 
-				"getCollector", 
-				"()"+Type.getDescriptor(EventCollector.class));
+		mv.visitFieldInsn(
+				GETSTATIC, 
+				CLS_EVENTCOLLECTOR, 
+				"INSTANCE", 
+				"L"+CLS_EVENTCOLLECTOR+";");
 		mv.visitVarInsn(ASTORE, itsCollectorVar);
 		
 		// Store the capture enabled flag
 		// We need to use the same value of the flag during the whole execution of the method.
-		mv.visitFieldInsn(GETSTATIC, Type.getInternalName(AgentReady.class), "CAPTURE_ENABLED", "Z");
+		mv.visitFieldInsn(GETSTATIC, CLS_AGENTREADY, "CAPTURE_ENABLED", "Z");
 		mv.visitVarInsn(ISTORE, itsCaptureEnabledVar);
 
 		
@@ -263,7 +263,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitMethodInsn(
 				INVOKESTATIC, 
-				Type.getInternalName(ExceptionGeneratedReceiver.class), 
+				CLS_EXCEPTIONGENERATEDRECEIVER, 
 				"ignoreNextException", 
 				"()V");
 		
@@ -455,7 +455,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			
 			mv.visitMethodInsn(
 					INVOKESTATIC, 
-					Type.getInternalName(TracedMethods.class), 
+					CLS_TRACEDMETHODS, 
 					"isTraced", 
 					"(I)Z");
 			
@@ -894,7 +894,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
-				Type.getInternalName(EventCollector.class), 
+				CLS_EVENTCOLLECTOR, 
 				"logBeforeBehaviorCall", 
 				"(II"+Type.getDescriptor(BehaviorCallType.class)+"Ljava/lang/Object;[Ljava/lang/Object;)V");
 	}
@@ -921,7 +921,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
-				Type.getInternalName(EventCollector.class), 
+				CLS_EVENTCOLLECTOR, 
 				"logBeforeBehaviorCallDry", 
 				"(II"+Type.getDescriptor(BehaviorCallType.class)+")V");
 	}
@@ -949,7 +949,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
-				Type.getInternalName(EventCollector.class), 
+				CLS_EVENTCOLLECTOR, 
 				"logAfterBehaviorCall", 
 				"(IILjava/lang/Object;Ljava/lang/Object;)V");
 	}
@@ -960,7 +960,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
-				Type.getInternalName(EventCollector.class), 
+				CLS_EVENTCOLLECTOR, 
 				"logAfterBehaviorCallDry", 
 				"()V");
 	}
@@ -988,7 +988,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
-				Type.getInternalName(EventCollector.class), 
+				CLS_EVENTCOLLECTOR, 
 				"logAfterBehaviorCallWithException", 
 				"(IILjava/lang/Object;Ljava/lang/Object;)V");
 	}
@@ -1018,7 +1018,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
-				Type.getInternalName(EventCollector.class), 
+				CLS_EVENTCOLLECTOR, 
 				"logFieldWrite", 
 				"(IILjava/lang/Object;Ljava/lang/Object;)V");
 	}
@@ -1045,7 +1045,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
-				Type.getInternalName(EventCollector.class), 
+				CLS_EVENTCOLLECTOR, 
 				"logNewArray", 
 				"(ILjava/lang/Object;II)V");
 	}
@@ -1074,7 +1074,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
-				Type.getInternalName(EventCollector.class), 
+				CLS_EVENTCOLLECTOR, 
 				"logArrayWrite", 
 				"(ILjava/lang/Object;ILjava/lang/Object;)V");
 	}
@@ -1101,7 +1101,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
-				Type.getInternalName(EventCollector.class), 
+				CLS_EVENTCOLLECTOR, 
 				"logInstanceOf",
 				"(ILjava/lang/Object;II)V");
 	}
@@ -1126,7 +1126,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitMethodInsn(
 				INVOKEVIRTUAL, 
-				Type.getInternalName(EventCollector.class), 
+				CLS_EVENTCOLLECTOR, 
 				"logLocalVariableWrite", 
 				"(IILjava/lang/Object;)V");
 	}
@@ -1159,7 +1159,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitMethodInsn(
 				Opcodes.INVOKEVIRTUAL, 
-				Type.getInternalName(EventCollector.class), 
+				CLS_EVENTCOLLECTOR, 
 				aClInit ? "logClInitEnter" : "logBehaviorEnter", 
 				"(I"+Type.getDescriptor(BehaviorCallType.class)+"Ljava/lang/Object;[Ljava/lang/Object;)V");	
 	}
@@ -1182,7 +1182,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 
 		mv.visitMethodInsn(
 				Opcodes.INVOKEVIRTUAL, 
-				Type.getInternalName(EventCollector.class), 
+				CLS_EVENTCOLLECTOR, 
 				aClInit ? "logClInitExit" : "logBehaviorExit", 
 				"(IILjava/lang/Object;)V");	
 	}
@@ -1199,7 +1199,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		
 		mv.visitMethodInsn(
 				Opcodes.INVOKEVIRTUAL, 
-				Type.getInternalName(EventCollector.class), 
+				CLS_EVENTCOLLECTOR, 
 				"logBehaviorExitWithException", 
 				"(ILjava/lang/Object;)V");	
 	}

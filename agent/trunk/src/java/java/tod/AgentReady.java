@@ -20,7 +20,8 @@ MA 02111-1307 USA
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.agent;
+package java.tod;
+
 
 /**
  * Contains a few flags that indicate the state of the native & java agent,

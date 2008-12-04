@@ -20,39 +20,43 @@ MA 02111-1307 USA
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.agent.transport;
+package java.tod.transport;
 
-import static tod.agent.transport.LowLevelEventType.AFTER_CALL;
-import static tod.agent.transport.LowLevelEventType.AFTER_CALL_DRY;
-import static tod.agent.transport.LowLevelEventType.AFTER_CALL_EXCEPTION;
-import static tod.agent.transport.LowLevelEventType.ARRAY_WRITE;
-import static tod.agent.transport.LowLevelEventType.BEFORE_CALL;
-import static tod.agent.transport.LowLevelEventType.BEFORE_CALL_DRY;
-import static tod.agent.transport.LowLevelEventType.BEHAVIOR_ENTER;
-import static tod.agent.transport.LowLevelEventType.BEHAVIOR_EXIT;
-import static tod.agent.transport.LowLevelEventType.BEHAVIOR_EXIT_EXCEPTION;
-import static tod.agent.transport.LowLevelEventType.CLINIT_ENTER;
-import static tod.agent.transport.LowLevelEventType.CLINIT_EXIT;
-import static tod.agent.transport.LowLevelEventType.EXCEPTION_GENERATED;
-import static tod.agent.transport.LowLevelEventType.FIELD_WRITE;
-import static tod.agent.transport.LowLevelEventType.INSTANCEOF;
-import static tod.agent.transport.LowLevelEventType.LOCAL_VARIABLE_WRITE;
-import static tod.agent.transport.LowLevelEventType.NEW_ARRAY;
-import static tod.agent.transport.LowLevelEventType.REGISTER_OBJECT;
-import static tod.agent.transport.LowLevelEventType.REGISTER_THREAD;
+import static tod.agent.LowLevelEventType.AFTER_CALL;
+import static tod.agent.LowLevelEventType.AFTER_CALL_DRY;
+import static tod.agent.LowLevelEventType.AFTER_CALL_EXCEPTION;
+import static tod.agent.LowLevelEventType.ARRAY_WRITE;
+import static tod.agent.LowLevelEventType.BEFORE_CALL;
+import static tod.agent.LowLevelEventType.BEFORE_CALL_DRY;
+import static tod.agent.LowLevelEventType.BEHAVIOR_ENTER;
+import static tod.agent.LowLevelEventType.BEHAVIOR_EXIT;
+import static tod.agent.LowLevelEventType.BEHAVIOR_EXIT_EXCEPTION;
+import static tod.agent.LowLevelEventType.CLINIT_ENTER;
+import static tod.agent.LowLevelEventType.CLINIT_EXIT;
+import static tod.agent.LowLevelEventType.EXCEPTION_GENERATED;
+import static tod.agent.LowLevelEventType.FIELD_WRITE;
+import static tod.agent.LowLevelEventType.INSTANCEOF;
+import static tod.agent.LowLevelEventType.LOCAL_VARIABLE_WRITE;
+import static tod.agent.LowLevelEventType.NEW_ARRAY;
+import static tod.agent.LowLevelEventType.REGISTER_OBJECT;
+import static tod.agent.LowLevelEventType.REGISTER_THREAD;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.tod.EventCollector;
+import java.tod.ExceptionGeneratedReceiver;
+import java.tod.ObjectIdentity;
+import java.tod.transport.PacketBufferSender.PacketBuffer;
 
 import tod.agent.BehaviorCallType;
-import tod.agent.EventCollector;
-import tod.agent.ExceptionGeneratedReceiver;
-import tod.agent.ObjectIdentity;
+import tod.agent.Command;
+import tod.agent.LowLevelEventType;
+import tod.agent.ObjectValue;
 import tod.agent.Output;
-import tod.agent.transport.PacketBufferSender.PacketBuffer;
+import tod.agent.ValueType;
 
 /**
  * Provides the methods used to encode streamed log data. Non-static methods are

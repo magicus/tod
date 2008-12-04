@@ -20,45 +20,57 @@ MA 02111-1307 USA
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.agent.transport;
-
+package tod.agent;
 
 /**
- * All possible low level event types. Low level events are those that are directly generated 
- * by instrumented code.
+ * Commands that can be sent by the agent to the database and vice versa.
  * @author gpothier
  */
-public enum LowLevelEventType 
+public enum Command
 {
-	CLINIT_ENTER,
-	BEHAVIOR_ENTER,
-	CLINIT_EXIT,
-	BEHAVIOR_EXIT,
-	BEHAVIOR_EXIT_EXCEPTION,
-	EXCEPTION_GENERATED,
-	FIELD_WRITE,
-	NEW_ARRAY,
-	ARRAY_WRITE,
-	LOCAL_VARIABLE_WRITE,
-	INSTANCEOF,
-	BEFORE_CALL_DRY,
-	BEFORE_CALL,
-	AFTER_CALL_DRY,
-	AFTER_CALL,
-	AFTER_CALL_EXCEPTION,
-	OUTPUT,
+	/**
+	 * This command flushes all buffered events and indexes.
+	 * args: none
+	 * return:
+	 *  number of flushed events: int
+	 */
+	DBCMD_FLUSH,
+	
+	/**
+	 * This command clears the database.
+	 * args: none
+	 * return: none
+	 */
+	DBCMD_CLEAR,
+	
+	/**
+	 * This command notifies the database that this VM is ending.
+	 */
+	DBCMD_END,
 	
 	
-	// Registering
-	REGISTER_OBJECT,
-	REGISTER_THREAD,
-	REGISTER_REFOBJECT,
-	REGISTER_CLASS,
-	REGISTER_CLASSLOADER;
-
+	/**
+	 * Informs the database about the state of trace capture.
+	 * This event is sent periodically.
+	 * args: isEnabled (boolean as byte).
+	 */
+	DBEV_CAPTURE_ENABLED,
+	
+	/**
+	 * Tells the agent to enable/disable trace capture.
+	 * args: boolean(byte) aEnable
+	 * return: none 
+	 */
+	AGCMD_ENABLECAPTURE;
+	
+	/**
+	 * Base value for sending serialized commands
+	 */
+	public static final int BASE = 100;
 	
 	/**
 	 * Cached values; call to values() is costly. 
 	 */
-	public static final LowLevelEventType[] VALUES = values();
+	public static final Command[] VALUES = values();
+
 }

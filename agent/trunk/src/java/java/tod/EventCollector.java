@@ -20,7 +20,7 @@ MA 02111-1307 USA
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.agent;
+package java.tod;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -29,14 +29,19 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
+import java.tod.transport.LowLevelEventWriter;
+import java.tod.transport.NakedLinkedList;
+import java.tod.transport.PacketBufferSender;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import tod.agent.transport.Command;
-import tod.agent.transport.LowLevelEventWriter;
-import tod.agent.transport.NakedLinkedList;
-import tod.agent.transport.PacketBufferSender;
+import tod.agent.AgentConfig;
+import tod.agent.AgentDebugFlags;
+import tod.agent.AgentUtils;
+import tod.agent.BehaviorCallType;
+import tod.agent.Command;
+import tod.agent.Output;
 
 
 /**
@@ -46,10 +51,46 @@ import tod.agent.transport.PacketBufferSender;
  */
 public final class EventCollector 
 {
+	public static final EventCollector INSTANCE;
+	
 	static
 	{
-		// Force loading of TOD
-		TOD.captureEnabled();
+		EventCollector c = null; // Just to have it compiling (because of final keyword)
+		try
+		{
+			// Force loading of TOD
+			TOD.captureEnabled();
+			
+			int thePort = AgentUtils.readInt(AgentConfig.PARAM_COLLECTOR_PORT, 0);
+			String theHost = AgentUtils.readString(AgentConfig.PARAM_COLLECTOR_HOST, null);
+			String theClientName = AgentUtils.readString(AgentConfig.PARAM_CLIENT_NAME, null);
+			
+			if (thePort == 0)
+			{
+				System.err.println("[TOD] Must specify database port");
+				System.exit(1);
+			}
+			
+			if (theHost == null)
+			{
+				System.err.println("[TOD] Must specify database host");
+				System.exit(1);
+			}
+			
+			if (theClientName == null)
+			{
+				System.err.println("[TOD] Must specify client name");
+				System.exit(1);
+			}
+
+			c = new EventCollector(theHost, thePort, theClientName);
+		}
+		catch (Throwable e)
+		{
+			e.printStackTrace();
+			System.exit(1);
+		}
+		INSTANCE = c;
 	}
 	
 	private static PrintStream itsPrintStream = AgentDebugFlags.EVENT_INTERPRETER_PRINT_STREAM;
@@ -76,12 +117,12 @@ public final class EventCollector
 	
 	private static int itsCurrentThreadId = 1;
 	
-	public EventCollector(String aHostname, int aPort) throws IOException 
+	public EventCollector(String aHostname, int aPort, String aClientName) throws IOException 
 	{
-		this (SocketChannel.open(new InetSocketAddress(aHostname, aPort)));
+		this (SocketChannel.open(new InetSocketAddress(aHostname, aPort)), aClientName);
 	}
 	
-	public EventCollector(SocketChannel aChannel)
+	public EventCollector(SocketChannel aChannel, String aClientName)
 	{
 		itsChannel = aChannel;
 		
@@ -90,7 +131,7 @@ public final class EventCollector
 		{
 			DataOutputStream theStream = new DataOutputStream(itsChannel.socket().getOutputStream());
 			theStream.writeInt(AgentConfig.CNX_JAVA);
-			theStream.writeUTF(AgentConfig.getClientName());
+			theStream.writeUTF(aClientName);
 			theStream.flush();
 		}
 		catch (IOException e)

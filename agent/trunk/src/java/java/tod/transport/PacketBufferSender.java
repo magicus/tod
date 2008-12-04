@@ -20,13 +20,16 @@ MA 02111-1307 USA
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.agent.transport;
+package java.tod.transport;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.ByteChannel;
+import java.tod.AgentReady;
+import java.tod.EventCollector;
+import java.tod._AgentConfig;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -34,9 +37,6 @@ import java.util.Queue;
 
 import tod.agent.AgentConfig;
 import tod.agent.AgentDebugFlags;
-import tod.agent.AgentReady;
-import tod.agent.EventCollector;
-import tod.agent._AgentConfig;
 
 /**
  * Sends the packets buffered by a set of {@link PacketBuffer} to a given
@@ -438,7 +438,7 @@ public class PacketBufferSender extends Thread
 			itsShutdownStarted = true;
 			System.out.println("[TOD] Flushing buffers...");
 			
-			AgentConfig.getCollector().end();
+			EventCollector.INSTANCE.end();
 			
 			for (PacketBuffer theBuffer : itsBuffers) theBuffer.swapBuffers();
 			

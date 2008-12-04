@@ -33,7 +33,6 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 import tod.agent.AgentConfig;
-import tod.agent.transport.SocketThread;
 import tod.core.bci.IInstrumenter.InstrumentedClass;
 import tod.core.config.TODConfig;
 import tod.core.server.TODServer;

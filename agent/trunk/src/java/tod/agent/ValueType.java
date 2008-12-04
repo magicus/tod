@@ -20,38 +20,22 @@ MA 02111-1307 USA
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.agent.transport;
+package tod.agent;
 
 /**
- * Enumeration of all possible high-level event types. High level events
- * are those that have been processed by {@link EventInterpreter}.
+ * Enumerates all possible value types.
  * @author gpothier
  */
-public enum HighLevelEventType 
+public enum ValueType 
 {
-	// Events
-	INSTANTIATION,
-	NEW_ARRAY,
-	SUPER_CALL,
-	METHOD_CALL,
-	BEHAVIOR_EXIT,
-	EXCEPTION_BYNAME,
-	EXCEPTION_BYID,
-	FIELD_WRITE,
-	ARRAY_WRITE,
-	LOCAL_VARIABLE_WRITE,
-	INSTANCEOF,
-	OUTPUT,
+	// Primitives values
+	NULL, BOOLEAN, BYTE, CHAR, SHORT, INT, LONG, FLOAT, DOUBLE,
 	
-	// Registering
-	REGISTER_OBJECT,
-	REGISTER_REFOBJECT,
-	REGISTER_CLASS,
-	REGISTER_CLASSLOADER,
-	REGISTER_THREAD;
+	// Objects
+	OBJECT_UID;
 	
 	/**
 	 * Cached values; call to values() is costly. 
 	 */
-	public static final HighLevelEventType[] VALUES = values();
+	public static final ValueType[] VALUES = values();
 }

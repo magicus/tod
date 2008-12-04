@@ -22,11 +22,11 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.test;
 
+import java.tod.ObjectIdentity;
 import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
-import tod.agent.ObjectIdentity;
 
 
 public class BCITest

@@ -30,7 +30,7 @@ import java.io.IOException;
 
 import tod.agent.AgentConfig;
 import tod.agent.BehaviorCallType;
-import tod.agent.transport.LowLevelEventType;
+import tod.agent.LowLevelEventType;
 import tod.core.DebugFlags;
 
 public class LowLevelEventReader

@@ -23,11 +23,11 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.evdbng.test;
 
 import java.io.File;
+import java.tod.AgentReady;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import tod.agent.AgentReady;
 import tod.core.config.TODConfig;
 import tod.impl.database.structure.standard.StructureDatabase;
 import tod.impl.evdbng.ConditionGeneratorNG;

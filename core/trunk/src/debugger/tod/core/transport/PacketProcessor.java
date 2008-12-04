@@ -34,8 +34,8 @@ import java.util.Map;
 
 import tod.agent.AgentConfig;
 import tod.agent.AgentDebugFlags;
-import tod.agent.transport.Command;
-import tod.agent.transport.LowLevelEventType;
+import tod.agent.Command;
+import tod.agent.LowLevelEventType;
 import tod.core.DebugFlags;
 import zz.utils.Utils;
 import zz.utils.notification.IEvent;

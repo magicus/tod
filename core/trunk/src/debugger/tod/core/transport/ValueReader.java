@@ -29,7 +29,7 @@ import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 
 import tod.agent.AgentConfig;
-import tod.agent.transport.ValueType;
+import tod.agent.ValueType;
 import tod.core.DebugFlags;
 import tod.core.database.structure.ObjectId;
 

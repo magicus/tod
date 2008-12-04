@@ -25,9 +25,9 @@ package tod.core.transport;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import tod.agent.HighLevelEventType;
 import tod.agent.Output;
-import tod.agent.transport.HighLevelEventType;
-import tod.agent.transport.ValueType;
+import tod.agent.ValueType;
 import tod.core.database.structure.ObjectId;
 
 /**

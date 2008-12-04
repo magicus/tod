@@ -20,7 +20,7 @@ MA 02111-1307 USA
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.agent.transport;
+package tod.core.bci;
 /*
  * Created on Oct 25, 2004
  */
@@ -33,7 +33,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ConcurrentModificationException;
 
 /**
  * A thread that runs an infinite processing loop over a socket.

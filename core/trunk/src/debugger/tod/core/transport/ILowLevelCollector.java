@@ -22,8 +22,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.transport;
 
+import java.tod.EventCollector;
+
 import tod.agent.BehaviorCallType;
-import tod.agent.EventCollector;
 import tod.agent.Output;
 
 /**

@@ -22,7 +22,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tests;
 
-import tod.agent.TOD;
+import java.tod.TOD;
 
 public class TestDynamicCaptureActivation
 {

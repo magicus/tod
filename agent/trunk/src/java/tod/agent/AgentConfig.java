@@ -22,7 +22,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.agent;
 
-import java.io.IOException;
 
 /**
  * Configuration of the agent in the target VM. 
@@ -57,89 +56,12 @@ public class AgentConfig
 	/**
 	 * Number of bits used to represent the host of an event.
 	 */
-	public static final int HOST_BITS = AgentUtils.readInt("host-bits", 1);
+	public static final int HOST_BITS = AgentUtils.readInt("host-bits", 0);
 	
 	public static final long HOST_MASK = BitUtilsLite.pow2(HOST_BITS)-1;
-	
-	/**
-	 * Number of bits to shift timestamp values.
-	 */
-	public static final int TIMESTAMP_ADJUST_SHIFT = TimestampCalibration.shift;
-	
-	/**
-	 * Number of bits of original timestamp values that are considered inaccurate.
-	 */
-	public static final int TIMESTAMP_ADJUST_INACCURACY = TimestampCalibration.inaccuracy;
-	
-	/**
-	 * Mask of artificial timestamp bits.
-	 */
-	public static final long TIMESTAMP_ADJUST_MASK = 
-		BitUtilsLite.pow2(TIMESTAMP_ADJUST_INACCURACY+TIMESTAMP_ADJUST_SHIFT)-1;
 	
 	/**
 	 * Size of {@link SocketCollector} buffer. 
 	 */
 	public static final int COLLECTOR_BUFFER_SIZE = 16384;
-
-
-	private static EventCollector itsCollector;
-	
-	/**
-	 * Name of this client.
-	 */
-	private static String itsClientName;
-	
-	/**
-	 * Collector host to connect to.
-	 */
-	private static String itsHost;
-	
-	/**
-	 * Port to connect to for events.
-	 */
-	private static int itsPort;
-	
-	static
-	{
-		itsPort = AgentUtils.readInt(PARAM_COLLECTOR_PORT, 8058);
-		itsHost = AgentUtils.readString(PARAM_COLLECTOR_HOST, "localhost");
-		itsClientName = AgentUtils.readString(PARAM_CLIENT_NAME, "no-name");
-	}
-	
-	private static EventCollector createCollector()
-	{
-		try
-		{
-			return new EventCollector(itsHost, itsPort);
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException("Cannot initialize collector", e);
-		}
-	}
-	
-	public static EventCollector getCollector()
-	{
-		if (itsCollector == null)
-		{
-			itsCollector = createCollector();			
-		}
-		return itsCollector;
-	}
-
-	public static String getClientName()
-	{
-		return itsClientName;
-	}
-
-	public static String getHost()
-	{
-		return itsHost;
-	}
-
-	public static int getPort()
-	{
-		return itsPort;
-	}
 }

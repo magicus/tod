@@ -22,9 +22,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.bci;
 
+import java.tod.TracedMethods;
 import java.util.List;
 
-import tod.agent.TracedMethods;
 import tod.core.config.TODConfig;
 
 public interface IInstrumenter

@@ -1047,8 +1047,7 @@ public final class EventInterpreter implements ILowLevelCollector
 		public boolean directParent;
 		
 		/**
-		 * Transformed timestamp of the event that started the current frame.
-		 * see {@link AgentUtils#transformTimestamp(long, byte)}
+		 * Timestamp of the event that started the current frame.
 		 */
 		public long parentTimestamp;
 		

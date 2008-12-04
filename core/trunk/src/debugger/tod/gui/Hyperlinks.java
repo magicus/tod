@@ -27,7 +27,7 @@ import java.awt.Color;
 import javax.swing.JComponent;
 
 import tod.Util;
-import tod.agent.transport.ObjectValue;
+import tod.agent.ObjectValue;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;

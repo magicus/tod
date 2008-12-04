@@ -4,7 +4,7 @@
  * Copyright 2006 Sun Microsystems, Inc. All rights reserved.
  * SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
  */
-package tod.agent;
+package java.tod;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;

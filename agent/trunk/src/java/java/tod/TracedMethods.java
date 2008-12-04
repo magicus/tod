@@ -20,41 +20,36 @@ MA 02111-1307 USA
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.agent;
+package java.tod;
 
 /**
- * Copied from zz.utils.
- * Implements a fixed-size stack of primitive integers.
+ * This class keeps a registry of traced methods.
+ * This is used by the instrumentation of method calls:
+ * the events generated for a call to a traced method are
+ * not the same as those of a non-traced method.
  * @author gpothier
  */
-public class FixedIntStack
+public class TracedMethods
 {
-	private int[] itsData;
-	private int itsHeight;
+	private static boolean[] traced = new boolean[10000];
 	
-	public FixedIntStack(int aInitialSize)
+	public static final void setTraced(int aId)
 	{
-		itsData = new int[aInitialSize];
-		itsHeight = 0;
+		if (aId >= traced.length)
+		{
+			boolean[] room = new boolean[aId*2];
+			System.arraycopy(traced, 0, room, 0, traced.length);
+			System.out.println("Reallocated TracedMethods: "+room.length);
+			traced = room;
+		}
+		
+		//System.out.println("Marking traced: "+aId);
+		traced[aId] = true;
 	}
 	
-	public void push(int aValue)
+	public static final boolean isTraced(int aId)
 	{
-		itsData[itsHeight++] = aValue;
-	}
-	
-	public int pop()
-	{
-		return itsData[--itsHeight];
-	}
-	
-	public boolean isEmpty()
-	{
-		return itsHeight == 0;
-	}
-	
-	public void clear()
-	{
-		itsHeight = 0;
+		//System.out.println("isTraced: "+aId);
+		return aId >= traced.length ? false : traced[aId];
 	}
 }

@@ -36,7 +36,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import tod.agent.transport.Command;
+import tod.agent.Command;
 import tod.core.DebugFlags;
 import tod.core.config.TODConfig;
 import tod.core.database.structure.IStructureDatabase;

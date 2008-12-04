@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import tod.agent.transport.LowLevelEventType;
+import tod.agent.LowLevelEventType;
 import tod.core.ILogCollector;
 import tod.core.config.TODConfig;
 import tod.core.database.structure.IStructureDatabase;

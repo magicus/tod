@@ -20,57 +20,38 @@ MA 02111-1307 USA
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.agent.transport;
+package tod.agent;
 
 /**
- * Commands that can be sent by the agent to the database and vice versa.
+ * Enumeration of all possible high-level event types. High level events
+ * are those that have been processed by {@link EventInterpreter}.
  * @author gpothier
  */
-public enum Command
+public enum HighLevelEventType 
 {
-	/**
-	 * This command flushes all buffered events and indexes.
-	 * args: none
-	 * return:
-	 *  number of flushed events: int
-	 */
-	DBCMD_FLUSH,
+	// Events
+	INSTANTIATION,
+	NEW_ARRAY,
+	SUPER_CALL,
+	METHOD_CALL,
+	BEHAVIOR_EXIT,
+	EXCEPTION_BYNAME,
+	EXCEPTION_BYID,
+	FIELD_WRITE,
+	ARRAY_WRITE,
+	LOCAL_VARIABLE_WRITE,
+	INSTANCEOF,
+	OUTPUT,
 	
-	/**
-	 * This command clears the database.
-	 * args: none
-	 * return: none
-	 */
-	DBCMD_CLEAR,
-	
-	/**
-	 * This command notifies the database that this VM is ending.
-	 */
-	DBCMD_END,
-	
-	
-	/**
-	 * Informs the database about the state of trace capture.
-	 * This event is sent periodically.
-	 * args: isEnabled (boolean as byte).
-	 */
-	DBEV_CAPTURE_ENABLED,
-	
-	/**
-	 * Tells the agent to enable/disable trace capture.
-	 * args: boolean(byte) aEnable
-	 * return: none 
-	 */
-	AGCMD_ENABLECAPTURE;
-	
-	/**
-	 * Base value for sending serialized commands
-	 */
-	public static final int BASE = 100;
+	// Registering
+	REGISTER_OBJECT,
+	REGISTER_REFOBJECT,
+	REGISTER_CLASS,
+	REGISTER_CLASSLOADER,
+	REGISTER_THREAD;
 	
 	/**
 	 * Cached values; call to values() is costly. 
 	 */
-	public static final Command[] VALUES = values();
-
+	public static final HighLevelEventType[] VALUES = values();
 }

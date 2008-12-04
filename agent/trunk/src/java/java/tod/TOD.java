@@ -20,7 +20,10 @@ MA 02111-1307 USA
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.agent;
+package java.tod;
+
+import tod.agent.AgentConfig;
+import tod.agent.AgentUtils;
 
 
 /**
@@ -55,7 +58,7 @@ public class TOD
 		if (AgentReady.isNativeAgentLoaded()) 
 		{
 			System.out.println("[TOD] Sending clearDatabase request...");
-			AgentConfig.getCollector().clear();
+			EventCollector.INSTANCE.clear();
 			System.out.println("[TOD] clearDatabase request done.");
 		}
 		else
@@ -72,7 +75,7 @@ public class TOD
 		if (AgentReady.isNativeAgentLoaded()) 
 		{
 			System.out.println("[TOD] Sending flushEvents request...");
-			AgentConfig.getCollector().flush();
+			EventCollector.INSTANCE.flush();
 			System.out.println("[TOD] flushEvents request done.");
 		}
 		else

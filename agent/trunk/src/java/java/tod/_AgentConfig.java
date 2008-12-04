@@ -1,7 +1,9 @@
 /*
  * Created on Sep 22, 2008
  */
-package tod.agent;
+package java.tod;
+
+import tod.agent.AgentUtils;
 
 /**
  * Agent configuration data that other parts of TOD should not attempt

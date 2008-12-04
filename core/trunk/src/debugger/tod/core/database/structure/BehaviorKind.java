@@ -20,22 +20,33 @@ MA 02111-1307 USA
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.agent.transport;
+package tod.core.database.structure;
 
 /**
- * Enumerates all possible value types.
+ * An enumeration of the various behaviour types.
  * @author gpothier
  */
-public enum ValueType 
+public enum BehaviorKind
 {
-	// Primitives values
-	NULL, BOOLEAN, BYTE, CHAR, SHORT, INT, LONG, FLOAT, DOUBLE,
+	METHOD("method"), 
+	STATIC_METHOD("static method"), 
+	CONSTRUCTOR("constructor"), 
+	STATIC_INIT("static block");
 	
-	// Objects
-	OBJECT_UID;
+	private String itsName;
 	
+	BehaviorKind (String aName)
+	{
+		itsName = aName;
+	}
+	
+	public String getName ()
+	{
+		return itsName;
+	}
+
 	/**
 	 * Cached values; call to values() is costly. 
 	 */
-	public static final ValueType[] VALUES = values();
+	public static final BehaviorKind[] VALUES = values();
 }

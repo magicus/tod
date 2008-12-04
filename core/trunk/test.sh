@@ -14,7 +14,7 @@ HOST=localhost
 VMARGS=''
 VMARGS="$VMARGS -agentpath:$AGENT"
 VMARGS="$VMARGS -noverify"
-VMARGS="$VMARGS -Dcollector-host=$HOST -Dcollector-port=8058 -Dtod-host=tod-1"
+VMARGS="$VMARGS -Dcollector-host=$HOST -Dcollector-port=8058 -Dclient-name=tod-1"
 VMARGS="$VMARGS -Dcollector-type=socket"
 VMARGS="$VMARGS -Xbootclasspath/p:../TOD-agent/bin" 
 VMARGS="$VMARGS -ea" 

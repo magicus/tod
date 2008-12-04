@@ -362,7 +362,7 @@ public class HierarchicalIndex<T extends IndexTuple>
 					theFirstChildPage = getFile().get(theTuple.getPagePointer());
 				}
 				
-				theBuilder.append(AgentUtils.formatTimestampU(theTuple.getKey()));
+				theBuilder.append(AgentUtils.formatTimestamp(theTuple.getKey()));
 				theBuilder.append('\n');
 				i++;
 			}

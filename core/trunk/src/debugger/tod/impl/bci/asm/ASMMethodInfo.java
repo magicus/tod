@@ -27,7 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import tod.agent.BehaviorKind;
+import tod.core.database.structure.BehaviorKind;
 import tod.core.database.structure.IBehaviorInfo.BytecodeTagType;
 import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;

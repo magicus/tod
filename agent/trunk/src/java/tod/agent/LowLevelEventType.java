@@ -22,31 +22,43 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.agent;
 
+
 /**
- * An enumeration of the various behaviour types.
+ * All possible low level event types. Low level events are those that are directly generated 
+ * by instrumented code.
  * @author gpothier
  */
-public enum BehaviorKind
+public enum LowLevelEventType 
 {
-	METHOD("method"), 
-	STATIC_METHOD("static method"), 
-	CONSTRUCTOR("constructor"), 
-	STATIC_INIT("static block");
+	CLINIT_ENTER,
+	BEHAVIOR_ENTER,
+	CLINIT_EXIT,
+	BEHAVIOR_EXIT,
+	BEHAVIOR_EXIT_EXCEPTION,
+	EXCEPTION_GENERATED,
+	FIELD_WRITE,
+	NEW_ARRAY,
+	ARRAY_WRITE,
+	LOCAL_VARIABLE_WRITE,
+	INSTANCEOF,
+	BEFORE_CALL_DRY,
+	BEFORE_CALL,
+	AFTER_CALL_DRY,
+	AFTER_CALL,
+	AFTER_CALL_EXCEPTION,
+	OUTPUT,
 	
-	private String itsName;
 	
-	BehaviorKind (String aName)
-	{
-		itsName = aName;
-	}
-	
-	public String getName ()
-	{
-		return itsName;
-	}
+	// Registering
+	REGISTER_OBJECT,
+	REGISTER_THREAD,
+	REGISTER_REFOBJECT,
+	REGISTER_CLASS,
+	REGISTER_CLASSLOADER;
 
+	
 	/**
 	 * Cached values; call to values() is costly. 
 	 */
-	public static final BehaviorKind[] VALUES = values();
+	public static final LowLevelEventType[] VALUES = values();
 }

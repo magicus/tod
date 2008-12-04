@@ -20,7 +20,8 @@ MA 02111-1307 USA
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.agent;
+package java.tod;
+
 
 /**
  * This class provides a method that is called by the JNI side when
@@ -29,10 +30,8 @@ package tod.agent;
  */
 public class ExceptionGeneratedReceiver
 {
-	static
-	{
-		AgentConfig.getCollector();
-	}
+	// Ensures the collector is loaded
+	private static EventCollector COLLECTOR = EventCollector.INSTANCE;
 	
 	private static final ThreadLocal<Boolean> processingExceptions = 
 		new ThreadLocal<Boolean>()
@@ -60,7 +59,7 @@ public class ExceptionGeneratedReceiver
 	 */
 	public static void ignoreNextException()
 	{
-		if (AgentReady.COLLECTOR_READY) AgentConfig.getCollector().ignoreNextException();
+		if (AgentReady.COLLECTOR_READY) COLLECTOR.ignoreNextException();
 	}
 	
 	/**
@@ -92,7 +91,7 @@ public class ExceptionGeneratedReceiver
 			processingExceptions.set(true);
 			
 //			System.out.println(String.format("Exception generated: %s.%s, %d", aMethodDeclaringClassSignature, aMethodName, aOperationBytecodeIndex));
-			AgentConfig.getCollector().logExceptionGenerated(
+			COLLECTOR.logExceptionGenerated(
 					aMethodName,
 					aMethodSignature, 
 					aMethodDeclaringClassSignature,
