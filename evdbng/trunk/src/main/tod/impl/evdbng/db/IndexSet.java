@@ -211,6 +211,7 @@ public abstract class IndexSet<T extends Tuple>
 	{
 		Entry<BTreeWrapper<T>> theEntry = itsIndexes[aIndex];
 		assert theEntry != null : itsName+": "+aIndex;
+		assert theEntry != DISCARDED_ENTRY : itsName+": "+aIndex;
 		assert theEntry.getValue() != null : itsName+": "+aIndex;
 		BTree<T> theIndex = theEntry.getValue().getTree();
 		
