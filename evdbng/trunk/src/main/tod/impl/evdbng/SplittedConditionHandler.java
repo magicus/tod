@@ -118,6 +118,75 @@ public abstract class SplittedConditionHandler<T extends IndexSet<?>>
 		return theParts;
 	}
 	
+	/**
+	 * A precomputed table to help do the index splitting.
+	 * The idea of the splitting is to take the even bits into one component
+	 * and the odd bits into the other.
+	 * For entry N, the value in the table is a short where the higher order
+	 * 8 bits are the odd bits of N and the lower order 8 bits are the even
+	 * bits of N. 
+	 */
+	private static final short[] splitTable = createSplitTable();
+	
+	private static short[] createSplitTable()
+	{
+		short[] table = new short[0x10000];
+		for(int i=0;i<0x10000;i++)
+		{
+			int v = 0;
+			int sourceMask = 1;
+			int evenMask = 0x0001;
+			int oddMask = 0x0100;
+			
+			for(int j=0;j<16;j++)
+			{
+				boolean bit = (i & sourceMask) != 0;
+				if ((j & 1) == 0)
+				{
+					if (bit) v |= evenMask;
+					evenMask <<= 1;
+				}
+				else
+				{
+					if (bit) v |= oddMask;
+					oddMask <<= 1;
+				}
+				sourceMask <<= 1;
+			}
+			
+			table[i] = (short) v;
+		}
+		
+		return table;
+	}
+	
+	protected static int[] splitIndex2(long aIndex)
+	{
+		int even = 0;
+		int odd = 0;
+		
+		long mask = 0xffff;
+		int srcOffset = 0;
+		int dstOffset = 0;
+		
+		for(int i=0;i<4;i++)
+		{
+			int current = (int) ((aIndex & mask) >>> srcOffset);
+			int entry = splitTable[current];
+			int cEven = entry & 0x00ff;
+			int cOdd = (entry & 0xff00) >> 8;
+			
+			even |= (cEven << dstOffset);
+			odd |= (cOdd << dstOffset);
+					
+			mask <<= 16;
+			srcOffset += 16;
+			dstOffset += 8;
+		}
+		
+		return new int[] {odd, even};
+	}
+	
 	public static Objects OBJECTS = new Objects();
 	public static ArrayIndexes INDEXES = new ArrayIndexes();
 
@@ -132,7 +201,7 @@ public abstract class SplittedConditionHandler<T extends IndexSet<?>>
 		@Override
 		protected int[] splitIndex(long aIndex)
 		{
-			return splitIndex(aIndex, DebuggerGridConfigNG.INDEX_OBJECT_PARTS);
+			return splitIndex2(aIndex);
 		}
 
 		@Override
@@ -153,7 +222,7 @@ public abstract class SplittedConditionHandler<T extends IndexSet<?>>
 		@Override
 		protected int[] splitIndex(long aIndex)
 		{
-			return splitIndex(aIndex, DebuggerGridConfigNG.INDEX_ARRAY_INDEX_PARTS);
+			return splitIndex2(aIndex);
 		}
 
 		@Override
