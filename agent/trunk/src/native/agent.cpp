@@ -31,6 +31,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 #include "utils.h"
 #include "jniutils.h"
 #include "md5.h"
+#include "workingset.h"
 
 #include <vector>
 
@@ -84,6 +85,9 @@ int propVerbose = 2;
 
 // directory prefix for the class cache. It is the MD5 sum of (working set, struct db id).
 char* classCachePrefix = "bad";
+
+// Working set
+CompoundClassSet* workingSet = NULL;
 
 // Class and method references
 StaticVoidMethod* ExceptionGeneratedReceiver_exceptionGenerated;
@@ -203,6 +207,9 @@ void agentConfigure()
 
 				if (propVerbose >= 1) printf("Class cache prefix: %s\n", classCachePrefix);
 				
+				// Parse working set
+				workingSet = parseWorkingSet(cfgWorkingSet);
+				
 				if (propVerbose >= 1) printf("Config done.\n");
 				return;
 		}
@@ -254,12 +261,6 @@ void registerTracedMethods(JNIEnv* jni, int nTracedMethods, int* tracedMethods)
 	if (tracedMethods) delete tracedMethods;
 }
 
-bool startsWith(const char* aString, const char* aPrefix)
-{
-	int len = strlen(aPrefix);
-	return strncmp(aPrefix, aString, len) == 0;
-}
-
 void agentClassFileLoadHook(
 	JNIEnv* jni, const char* name, 
 	jint class_data_len, const unsigned char* class_data,
@@ -277,10 +278,12 @@ void agentClassFileLoadHook(
 	if (cfgObfuscation)
 	{
 		if (startsWith(name, "java/todX/")) return;
+		if (startsWith(name, "tod/agentX/")) return;
 	}
 	else
 	{
 		if (startsWith(name, "java/tod/")) return;
+		if (startsWith(name, "tod/agent/")) return;
 	}
 	
 	if (cfgDebugTOD)
@@ -297,6 +300,16 @@ void agentClassFileLoadHook(
 				|| startsWith(name, "com/sun/")
 				|| startsWith(name, "net/sourceforge/retroweaver/")
 			)) return;
+	}
+	
+	if (! workingSet->accept(name)) 
+	{
+		if (propVerbose>=2) 
+		{
+			printf("Rejected by working set:: %s\n", name);
+			fflush(stdout);
+		}
+		return;
 	}
 
 	if (propVerbose>=1) printf("Loading (hook) %s\n", name);

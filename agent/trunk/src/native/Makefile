@@ -93,7 +93,8 @@ common-objects = \
 	$(PLATFORM)/agent.o \
 	$(PLATFORM)/utils.o \
 	$(PLATFORM)/md5.o \
-	$(PLATFORM)/jniutils.o 
+	$(PLATFORM)/jniutils.o \
+	$(PLATFORM)/workingset.o
 
 agent14-objects = $(common-objects) $(PLATFORM)/agentimpl14.o 
 agent15-objects = $(common-objects) $(PLATFORM)/agentimpl15.o 
@@ -109,6 +110,9 @@ agent14: dirs $(agent14-objects)
 agent15: dirs $(agent15-objects)
 	$(CXX) $(SHARED_MAGIC) -o $(PLATFORM)/$(AGENT15_LIBNAME) $(agent15-objects) $(LDFLAGS) $(LDFLAGS_BOOST)
 	cp $(PLATFORM)/$(AGENT15_LIBNAME) ../..
+
+workingsettest: dirs $(PLATFORM)/workingset.o $(PLATFORM)/workingsettest.o
+	$(CXX) -g -O0 -o workingsettest $(PLATFORM)/workingset.o $(PLATFORM)/workingsettest.o $(LDFLAGS) $(LDFLAGS_BOOST)
 
 dirs:
 	mkdir -p $(PLATFORM)
@@ -127,7 +131,7 @@ clean:
 
 ############## 
 
-$(PLATFORM)/agent.o: agent.cpp agent.h agentimpl.h utils.h jniutils.h
+$(PLATFORM)/agent.o: agent.cpp agent.h agentimpl.h utils.h jniutils.h workingset.h
 	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) $(CXXFLAGS15) agent.cpp -o $(PLATFORM)/agent.o
 
 $(PLATFORM)/agentimpl14.o: agentimpl-1.4.cpp agentimpl.h agent.h utils.h jniutils.h
@@ -144,4 +148,10 @@ $(PLATFORM)/jniutils.o: jniutils.cpp jniutils.h
 
 $(PLATFORM)/md5.o: md5.cpp md5.h
 	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) md5.cpp -o $(PLATFORM)/md5.o
+
+$(PLATFORM)/workingset.o: workingset.cpp workingset.h utils.h
+	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) workingset.cpp -o $(PLATFORM)/workingset.o
+
+$(PLATFORM)/workingsettest.o: workingsettest.cpp workingset.h utils.h
+	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) workingsettest.cpp -o $(PLATFORM)/workingsettest.o
 

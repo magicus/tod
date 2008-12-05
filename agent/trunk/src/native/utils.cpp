@@ -125,3 +125,10 @@ void flush(STREAM* f)
 {
 	f->flush();
 }
+
+bool startsWith(const char* aString, const char* aPrefix)
+{
+	int len = strlen(aPrefix);
+	return strncmp(aPrefix, aString, len) == 0;
+}
+

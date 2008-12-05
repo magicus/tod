@@ -20,35 +20,32 @@ MA 02111-1307 USA
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-#ifndef _Included_utils_h
-#define _Included_utils_h
-
 #include <stdio.h>
-#include <jni.h>
-#include <iostream>
-#include <boost/thread/recursive_mutex.hpp>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 
+#include <vector>
 
-typedef boost::recursive_mutex t_mutex;
-typedef boost::recursive_mutex::scoped_lock t_lock;
+#include "workingset.h"
 
-typedef std::iostream STREAM;
+bool startsWith(const char* aString, const char* aPrefix)
+{
+	int len = strlen(aPrefix);
+	return strncmp(aPrefix, aString, len) == 0;
+}
 
-void fatal_error(char*);
-void fatal_ioerror(char*);
+void test(CompoundClassSet* set, char* name)
+{
+	printf("%s -> %d\n", name, set->accept(name));
+}
 
-void writeByte(STREAM* f, int i);
-void writeShort(STREAM* f, int v);
-void writeInt(STREAM* f, int v);
-void writeLong(STREAM* f, jlong v);
-int readByte(STREAM* f);
-int readShort(STREAM* f);
-int readInt(STREAM* f);
-void writeUTF(STREAM* f, const char* s);
-char* readUTF(STREAM* f);
-void flush(STREAM* f);
-
-bool startsWith(const char* aString, const char* aPrefix);
-
-
-#endif
+int main(int, char**)
+{
+	printf("Let's go\n");
+	CompoundClassSet* set = parseWorkingSet("[-java/io/** +java/io/yes/* -tod/agent]");
+	test(set, "java/io/Tata");
+	test(set, "java/io/blip/Titi");
+	test(set, "java/io/yes/Tata");
+	test(set, "java/io/yes/no/Tata");
+}
