@@ -147,7 +147,8 @@ AbstractClassSet* CompoundClassSet::parseSet(char* ws, int& i)
 		}
 	}
 	
-	buffer[j-1] = 0;
+	if (buffer[j-1] == '/') buffer[j-1] = 0;
+	else buffer[j] = 0;
 	char* name = new char[j+1];
 	strcpy(name, buffer);
 	

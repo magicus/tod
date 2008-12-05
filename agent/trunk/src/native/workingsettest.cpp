@@ -43,9 +43,16 @@ void test(CompoundClassSet* set, char* name)
 int main(int, char**)
 {
 	printf("Let's go\n");
-	CompoundClassSet* set = parseWorkingSet("[-java/io/** +java/io/yes/* -tod/agent]");
+	CompoundClassSet* set;
+	
+	set = parseWorkingSet("[-java/io/** +java/io/yes/* -tod/agent]");
 	test(set, "java/io/Tata");
 	test(set, "java/io/blip/Titi");
 	test(set, "java/io/yes/Tata");
 	test(set, "java/io/yes/no/Tata");
+	
+	set = parseWorkingSet("[+tod.impl.evdbng.db.IndexSet +tod.impl.evdbng.db.SimpleIndexSet +zz.utils.cache.MRUBuffer +tod.tools.ConcurrentMRUBuffer +tod.impl.evdbng.db.IndexSet$IndexManager +tod.impl.evdbng.db.IndexSet$BTreeWrapper]");
+	test(set, "tod/impl/evdbng/db/Indexes");
+	test(set, "tod/impl/evdbng/db/IndexSet$IndexManager");
+	test(set, "tod/impl/evdbng/db/IndexSet");
 }
