@@ -527,6 +527,11 @@ public class PagedFile
 		{
 			use(getValidBufferId());
 		}
+		
+		public void free()
+		{
+			PagedFile.this.free(this);
+		}
 
 		/**
 		 * Called when the PagedFile is cleared so that this page is no longer valid.

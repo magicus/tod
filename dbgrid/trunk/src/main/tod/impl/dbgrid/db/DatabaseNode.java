@@ -339,6 +339,16 @@ public abstract class DatabaseNode
 		return itsEventsDatabase.getDroppedEvents();
 	}
 	
+	public long getObjectsStoreSize()
+	{
+		long theSize = 0;
+		for (ObjectsDatabase theDatabase : itsObjectsDatabases)
+			theSize += theDatabase.getStoreSize();
+		
+		return theSize;
+	}
+
+	
 	public long getFirstTimestamp()
 	{
 		return itsFirstTimestamp;

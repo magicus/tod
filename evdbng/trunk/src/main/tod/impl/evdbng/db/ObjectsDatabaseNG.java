@@ -127,6 +127,7 @@ public class ObjectsDatabaseNG extends ObjectsDatabase
 				assert itsCurrentStruct.getPos() == itsCurrentStruct.size() - PageIOStream.pagePointerSize();
 				itsCurrentStruct.writePagePointer(theNextPage.getPageId());
 				
+				itsCurrentPage.free();
 				itsCurrentPage = theNextPage;
 				itsCurrentStruct = theNextStruct;
 			}

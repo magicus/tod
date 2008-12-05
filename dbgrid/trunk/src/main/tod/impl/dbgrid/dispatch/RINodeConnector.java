@@ -83,6 +83,7 @@ public interface RINodeConnector extends Remote, RIMonitoringServerProvider
 	
 	public long getEventsCount() throws RemoteException;
 	public long getDroppedEventsCount() throws RemoteException;
+	public long getObjectsStoreSize() throws RemoteException;
 	public long getFirstTimestamp() throws RemoteException;
 	public long getLastTimestamp() throws RemoteException;
 	

@@ -53,6 +53,7 @@ public abstract class ObjectsDatabase
 	private long itsDroppedObjects = 0;
 	private long itsUnorderedObjects = 0;
 	private long itsProcessedObjects = 0;
+	private long itsStoreSize = 0;
 	
 	private long itsLastAddedId;
 	private long itsLastProcessedId;
@@ -100,6 +101,7 @@ public abstract class ObjectsDatabase
 		
 		itsLastProcessedId = theId;
 		itsProcessedObjects++;
+		itsStoreSize += aEntry.data.length;
 		store0(theId, aEntry.data);
 	}
 	
@@ -309,6 +311,11 @@ public abstract class ObjectsDatabase
 		return itsObjectsCount;
 	}
 	
+	@Probe(key = "store size", aggr = AggregationType.SUM)
+	public long getStoreSize()
+	{
+		return itsStoreSize;
+	}
 
 	public void objectDropped()
 	{
