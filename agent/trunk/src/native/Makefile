@@ -150,7 +150,7 @@ $(PLATFORM)/md5.o: md5.cpp md5.h
 	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) md5.cpp -o $(PLATFORM)/md5.o
 
 $(PLATFORM)/workingset.o: workingset.cpp workingset.h utils.h
-	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) workingset.cpp -o $(PLATFORM)/workingset.o
+	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) $(CXXFLAGS15) workingset.cpp -o $(PLATFORM)/workingset.o
 
 $(PLATFORM)/workingsettest.o: workingsettest.cpp workingset.h utils.h
 	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) workingsettest.cpp -o $(PLATFORM)/workingsettest.o
