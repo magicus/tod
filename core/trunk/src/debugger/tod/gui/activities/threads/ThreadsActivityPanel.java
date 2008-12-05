@@ -127,7 +127,7 @@ public class ThreadsActivityPanel extends ActivityPanel<ThreadsSeed>
 			itsLastEventCount = theEventCount;
 			itsLastThreadCount = theThreadCount;
 			
-			itsEventsCountLabel.setText("Events registered: "+theEventCount);
+			itsEventsCountLabel.setText(String.format("Events registered: %,d", theEventCount));
 			
 			long theDropped = getLogBrowser().getDroppedEventsCount();
 			if (theDropped > 0) itsDroppedEventsCountLabel.setText("DROPPED: "+theDropped);

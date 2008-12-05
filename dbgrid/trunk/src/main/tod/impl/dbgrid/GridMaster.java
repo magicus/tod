@@ -802,8 +802,8 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 				long theTotalRate = theTotalDelta != 0 ? (itsEventsCount-itsFirstEventsCount)/theTotalDelta : 0;
 				
 				Utils.println("[DataUpdater] Recording rate: %dkEv/s (avg %dkEv/s)", theRate, theTotalRate);
-				Utils.println("[DataUpdater] Event count: %d", itsEventsCount);
-				Utils.println("[DataUpdater] Objects store size: %d", itsObjectsStoreSize);
+				Utils.println("[DataUpdater] Event count: %,d", itsEventsCount);
+				Utils.println("[DataUpdater] Objects store size: %,d", itsObjectsStoreSize);
 				
 				itsPreviousEventsCount = itsEventsCount;
 				itsPreviousDroppedEventsCount = itsDroppedEventsCount;
