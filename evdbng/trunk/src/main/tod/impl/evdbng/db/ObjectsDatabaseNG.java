@@ -22,11 +22,14 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.evdbng.db;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.util.zip.DeflaterInputStream;
+import java.util.zip.DeflaterOutputStream;
 
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.impl.dbgrid.db.ObjectsDatabase;
@@ -37,10 +40,7 @@ import tod.impl.evdbng.db.file.ObjectRefTuple;
 import tod.impl.evdbng.db.file.PagedFile;
 import tod.impl.evdbng.db.file.PagedFile.Page;
 import tod.impl.evdbng.db.file.PagedFile.PageIOStream;
-import tod.impl.evdbng.db.file.TupleFinder.NoMatch;
-import zz.utils.monitoring.AggregationType;
 import zz.utils.monitoring.Monitor;
-import zz.utils.monitoring.Probe;
 
 /**
  * A database for storing registered objects.
@@ -88,15 +88,34 @@ public class ObjectsDatabaseNG extends ObjectsDatabase
 		itsObjectsFile.dispose();
 	}
 	
-	
+
+	/**
+	 * Tries to compress the data.
+	 * @return Compressed data, or null if not compressed
+	 */
+	private byte[] compress(byte[] aData)
+	{
+		if (aData.length < 100) return null;
+		
+		try
+		{
+			ByteArrayOutputStream theOut = new ByteArrayOutputStream();
+			OutputStream theCompressor = new DeflaterOutputStream(theOut);
+			theCompressor.write(aData);
+			theCompressor.close();
+			return theOut.toByteArray();
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
 	
 	@Override
 	protected void store0(long aId, byte[] aData)
 	{
-		int theDataSize = aData.length;
-
 		// Check if we have enough space to store data size & next page pointer
-		if (itsCurrentStruct.remaining() <= PageIOStream.pagePointerSize()*2)
+		if (itsCurrentStruct.remaining() <= PageIOStream.intSize()+PageIOStream.booleanSize()+PageIOStream.pagePointerSize())
 		{
 			// Skip to next page.
 			itsCurrentPage = itsObjectsFile.create();
@@ -106,7 +125,13 @@ public class ObjectsDatabaseNG extends ObjectsDatabase
 		int thePageId = itsCurrentStruct.getPage().getPageId();
 		int theOffset = itsCurrentStruct.getPos();
 		
+		byte[] theCompressed = compress(aData);
+		byte[] theData = theCompressed != null ? theCompressed : aData;
+		int theDataSize = theData.length;
+
 		itsCurrentStruct.writeInt(theDataSize);
+		itsCurrentStruct.writeBoolean(theCompressed != null);
+		
 		int theRemainingData = theDataSize;
 		int theCurrentOffset = 0;
 		while (theRemainingData > 0)
@@ -115,7 +140,7 @@ public class ObjectsDatabaseNG extends ObjectsDatabase
 					itsCurrentStruct.remaining()-PageIOStream.pagePointerSize(), 
 					theRemainingData);
 			
-			itsCurrentStruct.writeBytes(aData, theCurrentOffset, theSizeOnPage);
+			itsCurrentStruct.writeBytes(theData, theCurrentOffset, theSizeOnPage);
 			theRemainingData -= theSizeOnPage;
 			theCurrentOffset += theSizeOnPage;
 			
@@ -155,11 +180,32 @@ public class ObjectsDatabaseNG extends ObjectsDatabase
 		
 		theStruct.setPos(theOffset);
 		int theDataSize = theStruct.readInt();
+		boolean theCompressed = theStruct.readBoolean();
 		
 		PageListInputStream theStream = new PageListInputStream(theStruct, theDataSize);
 		
-		return decode(aId, theStream);
+		return theCompressed ? decompress(aId, theStream, theDataSize) : decode(aId, theStream);
 	}
+	
+	/**
+	 * Decompresses and decodes an object
+	 */
+	protected Object decompress(long aId, InputStream aStream, int aSize)
+	{
+		try
+		{
+			byte[] theData = new byte[aSize];
+			DataInputStream theIn = new DataInputStream(aStream);
+			theIn.readFully(theData);
+			return decode(aId, new DeflaterInputStream(new ByteArrayInputStream(theData)));
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+
 	
 	@Override
 	protected void registerRef0(long aId, long aClassId)
