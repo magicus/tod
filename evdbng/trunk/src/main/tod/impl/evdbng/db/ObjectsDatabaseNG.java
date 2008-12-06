@@ -28,8 +28,8 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.zip.DeflaterInputStream;
-import java.util.zip.DeflaterOutputStream;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.impl.dbgrid.db.ObjectsDatabase;
@@ -40,6 +40,7 @@ import tod.impl.evdbng.db.file.ObjectRefTuple;
 import tod.impl.evdbng.db.file.PagedFile;
 import tod.impl.evdbng.db.file.PagedFile.Page;
 import tod.impl.evdbng.db.file.PagedFile.PageIOStream;
+import zz.utils.Utils;
 import zz.utils.monitoring.Monitor;
 
 /**
@@ -100,7 +101,7 @@ public class ObjectsDatabaseNG extends ObjectsDatabase
 		try
 		{
 			ByteArrayOutputStream theOut = new ByteArrayOutputStream();
-			OutputStream theCompressor = new DeflaterOutputStream(theOut);
+			OutputStream theCompressor = new GZIPOutputStream(theOut);
 			theCompressor.write(aData);
 			theCompressor.close();
 			return theOut.toByteArray();
@@ -128,6 +129,8 @@ public class ObjectsDatabaseNG extends ObjectsDatabase
 		byte[] theCompressed = compress(aData);
 		byte[] theData = theCompressed != null ? theCompressed : aData;
 		int theDataSize = theData.length;
+		
+//		Utils.println("Storing %d, %d bytes, compressed: %s [%d, %d]", aId, theDataSize, theCompressed != null, thePageId, theOffset);
 
 		itsCurrentStruct.writeInt(theDataSize);
 		itsCurrentStruct.writeBoolean(theCompressed != null);
@@ -197,7 +200,7 @@ public class ObjectsDatabaseNG extends ObjectsDatabase
 			byte[] theData = new byte[aSize];
 			DataInputStream theIn = new DataInputStream(aStream);
 			theIn.readFully(theData);
-			return decode(aId, new DeflaterInputStream(new ByteArrayInputStream(theData)));
+			return decode(aId, new GZIPInputStream(new ByteArrayInputStream(theData)));
 		}
 		catch (IOException e)
 		{
