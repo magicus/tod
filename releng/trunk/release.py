@@ -12,15 +12,15 @@ def release(version):
 
 	tpMod = useSVN('tod.plugin', 'http://pleiad.dcc.uchile.cl/svn/tod/tod.plugin/trunk/')
 	tpaMod = useSVN('tod.plugin.ajdt', 'http://pleiad.dcc.uchile.cl/svn/tod/tod.plugin.ajdt/')
-	tppMod = useSVN('tod.plugin.pytod', 'http://pleiad.dcc.uchile.cl/svn/tod/tod.plugin.pytod/trunk')
+	#tppMod = useSVN('tod.plugin.pytod', 'http://pleiad.dcc.uchile.cl/svn/tod/tod.plugin.pytod/trunk')
 	todMod = useSVN('TOD', 'http://pleiad.dcc.uchile.cl/svn/tod/core/trunk/')
 	taMod = useSVN('TOD-agent', 'http://pleiad.dcc.uchile.cl/svn/tod/agent/trunk/')
 	toddbgridMod = useSVN('TOD-dbgrid', 'http://pleiad.dcc.uchile.cl/svn/tod/dbgrid/trunk/')
 	todevdb1Mod = useSVN('TOD-evdb1', 'http://pleiad.dcc.uchile.cl/svn/tod/evdb1/trunk/')
 	todevdbngMod = useSVN('TOD-evdbng', 'http://pleiad.dcc.uchile.cl/svn/tod/evdbng/trunk/')
 
-	pytodDbMod = useSVN('TOD-pytod-db', 'http://pleiad.dcc.uchile.cl/svn/tod/pytod/trunk/java-proyect/')
-	pytodCoreMod = useSVN('python-project', 'http://pleiad.dcc.uchile.cl/svn/tod/pytod/trunk/python-project/')
+	#pytodDbMod = useSVN('TOD-pytod-db', 'http://pleiad.dcc.uchile.cl/svn/tod/pytod/trunk/java-proyect/')
+	#pytodCoreMod = useSVN('python-project', 'http://pleiad.dcc.uchile.cl/svn/tod/pytod/trunk/python-project/')
 
 	
 	print '############################################################'
@@ -32,6 +32,7 @@ def release(version):
 	os.chdir(taMod.path + '/src/native')
 
 	libs = ["libtod-agent15.so", "libtod-agent15_x64.so", "libtod-agent15.dylib", "tod-agent15.dll", "libtod-agent14.so", "libtod-agent14_x64.so", "tod-agent14.dll"]
+	missingLibs = ""
 
 	for lib in libs:
 		# Get local signature
@@ -42,9 +43,10 @@ def release(version):
 
 		if lsig != rsig:
 			print "SVN revisions do not match for " + lib
-			sys.exit(-1)
-	
-		urllib.urlretrieve(AGENT_LIBS_URL + lib, "../../" + lib)
+			missingLibs += lib + " "
+			#sys.exit(-1)
+		else:
+			urllib.urlretrieve(AGENT_LIBS_URL + lib, "../../" + lib)
 
 	os.chdir(cwd)
 	print "Done."
@@ -62,12 +64,12 @@ def release(version):
 	antBuild('TOD-dbgrid', 'build.xml', 'clean')
 	antBuild('TOD-evdb1', 'build.xml', 'clean')
 	antBuild('TOD-evdbng', 'build.xml', 'clean')
-	antBuild('TOD-pytod-db', 'build.xml', 'clean')
+	#antBuild('TOD-pytod-db', 'build.xml', 'clean')
 	antBuild('zz.utils', 'build.xml', 'clean')
 	antBuild('zz.eclipse.utils', 'build-plugin.xml', 'clean')
 	antBuild('tod.plugin', 'build-plugin.xml', 'clean')
 	antBuild('tod.plugin.ajdt', 'build-plugin.xml', 'clean')
-	antBuild('tod.plugin.pytod', 'build-plugin.xml', 'clean')
+	#antBuild('tod.plugin.pytod', 'build-plugin.xml', 'clean')
 	
 	print '############################################################'
 	print 'Building plugins and dependencies...'
@@ -81,7 +83,7 @@ def release(version):
 	antBuild('TOD-dbgrid', 'build.xml', 'jar')
 	antBuild('TOD-evdb1', 'build.xml', 'jar')
 	antBuild('TOD-evdbng', 'build.xml', 'jar')
-	antBuild('TOD-pytod-db', 'build.xml', 'jar')
+	#antBuild('TOD-pytod-db', 'build.xml', 'jar')
 
 	setEclipsePluginVersion('tod.plugin', version)
 	antBuild('tod.plugin', 'build-plugin.xml', 'plugin')
@@ -89,8 +91,8 @@ def release(version):
 	setEclipsePluginVersion('tod.plugin.ajdt', version)
 	antBuild('tod.plugin.ajdt', 'build-plugin.xml', 'plugin')
 	
-	setEclipsePluginVersion('tod.plugin.pytod', version)
-	antBuild('tod.plugin.pytod', 'build-plugin.xml', 'plugin')
+	#setEclipsePluginVersion('tod.plugin.pytod', version)
+	#antBuild('tod.plugin.pytod', 'build-plugin.xml', 'plugin')
 	
 	print '############################################################'
 	print 'Packaging plugins...'
@@ -100,7 +102,7 @@ def release(version):
 	os.mkdir('release/plugins')
 	shutil.copytree(tpMod.path + '/build/tod.plugin', 'release/plugins/tod.plugin_' + version)
 	shutil.copytree(tpaMod.path + '/build/tod.plugin.ajdt', 'release/plugins/tod.plugin.ajdt_' + version)
-	shutil.copytree(tppMod.path + '/build/tod.plugin.pytod', 'release/plugins/tod.plugin.pytod_' + version)
+	#shutil.copytree(tppMod.path + '/build/tod.plugin.pytod', 'release/plugins/tod.plugin.pytod_' + version)
 	shutil.copytree(zzeuMod.path + '/build/zz.eclipse.utils', 'release/plugins/zz.eclipse.utils_1.0.0')
 
 	os.chdir('release')
@@ -116,4 +118,11 @@ def release(version):
 	shutil.copy(toddbgridMod.path + '/build/tod-db.zip', 'release/tod-db_' + version + '.zip')
 	shutil.copy(toddbgridMod.path + '/build/tod-db.tar.gz', 'release/tod-db_' + version + '.tar.gz')
 	
+	print '############################################################'
+        print 'Done.'
+        print '############################################################'
+        print ''
 	
+	print "Missing libs: " + missingLibs
+
+				
