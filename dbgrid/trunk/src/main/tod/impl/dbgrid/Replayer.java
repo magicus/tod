@@ -37,7 +37,9 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.rmi.registry.Registry;
 
+import tod.Util;
 import tod.agent.LowLevelEventType;
 import tod.core.ILogCollector;
 import tod.core.config.TODConfig;
@@ -124,7 +126,8 @@ public class Replayer extends PacketProcessor
 		
 		theStructureDatabase.reown();
 		
-		GridMaster theMaster = DBGridUtils.setupLocalMaster(null, theConfig, theStructureDatabase);
+		Registry theRegistry = Util.getRegistry();
+		GridMaster theMaster = DBGridUtils.setupLocalMaster(theRegistry, theConfig, theStructureDatabase);
 
 		Replayer theReplayer = new Replayer(
 				theMaster.getConfig(), 

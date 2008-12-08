@@ -22,6 +22,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.database.structure.standard;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -83,6 +86,36 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 //				aName,
 //				aSignature));
 	}
+	
+	private void writeObject(ObjectOutputStream out) throws IOException
+	{
+		out.defaultWriteObject();
+		if (StructureDatabaseUtils.isSaving())
+		{
+			out.writeBoolean(true);
+			out.writeObject(itsLineNumberTable);
+			out.writeObject(itsLocalVariableTable);
+			out.writeObject(itsTagMap);
+		}
+		else
+		{
+			out.writeBoolean(false);
+		}
+	}
+
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
+	{
+		in.defaultReadObject();
+		if (in.readBoolean())
+		{
+			itsLineNumberTable = (LineNumberInfo[]) in.readObject();
+			itsLocalVariableTable = (List<LocalVariableInfo>) in.readObject();
+			itsTagMap = (TagMap) in.readObject();
+		}
+	}
+ 
+
+
 	
 	public void setup(
 			boolean aTraced,

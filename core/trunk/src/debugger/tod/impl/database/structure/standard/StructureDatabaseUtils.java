@@ -22,10 +22,15 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.database.structure.standard;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.IMutableClassInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.IStructureDatabase;
+import zz.utils.Utils;
 
 /**
  * Utilities for implementing {@link IStructureDatabase}
@@ -33,6 +38,15 @@ import tod.core.database.structure.IStructureDatabase;
  */
 public class StructureDatabaseUtils
 {
+	public static ThreadLocal<Boolean> SAVING = new ThreadLocal<Boolean>()
+	{
+		@Override
+		protected Boolean initialValue()
+		{
+			return false;
+		}
+	};
+	
 	public static int getBehaviorId(
 			IMutableStructureDatabase aStructureDatabase, 
 			String aClassName, 
@@ -44,6 +58,28 @@ public class StructureDatabaseUtils
 		// but for now I don't know how to do it correctly (and it does not really matter).
 		IMutableBehaviorInfo theBehavior = theClass.getNewBehavior(aMethodName, aMethodSignature, false);
 		return theBehavior.getId();
+	}
+	
+	/**
+	 * Saves the given database to file.
+	 * This method ensures that some of the transient fields (in eg {@link BehaviorInfo}) are saved. 
+	 */
+	public static void saveDatabase(IStructureDatabase aStructureDatabase, File aFile) throws IOException
+	{
+		try
+		{
+			SAVING.set(true);
+			Utils.writeObject(aStructureDatabase, aFile);
+		}
+		finally
+		{
+			SAVING.set(true);
+		}
+	}
+	
+	static boolean isSaving()
+	{
+		return SAVING.get();
 	}
 
 }

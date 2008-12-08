@@ -41,6 +41,7 @@ import tod.core.DebugFlags;
 import tod.core.config.TODConfig;
 import tod.core.database.structure.IStructureDatabase;
 import tod.impl.database.structure.standard.HostInfo;
+import tod.impl.database.structure.standard.StructureDatabaseUtils;
 import tod.utils.TODUtils;
 import zz.utils.Utils;
 
@@ -286,7 +287,7 @@ public abstract class LogReceiver extends PacketProcessor
 		{
 			TODUtils.log(0, "Storing raw events to file.");
 			storePackets(aDataIn);
-			Utils.writeObject(itsStructureDatabase, itsDbFile);
+			StructureDatabaseUtils.saveDatabase(itsStructureDatabase, itsDbFile);
 			TODUtils.logf(0, "Client terminated. Stored %.2fMB", 1f*itsEventsFile.length()/(1024*1024));
 			
 			readPackets(
