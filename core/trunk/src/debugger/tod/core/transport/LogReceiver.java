@@ -238,6 +238,7 @@ public abstract class LogReceiver extends PacketProcessor
 	{
 		try
 		{
+			System.out.println("Sending enabled capture command ("+aEnable+")");
 			sendCommand(Command.AGCMD_ENABLECAPTURE);
 			itsDataOut.writeBoolean(aEnable);
 			itsDataOut.flush();
