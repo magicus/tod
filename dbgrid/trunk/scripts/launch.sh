@@ -5,7 +5,7 @@ case "$1" in
 	"master"	) MAIN="tod.impl.dbgrid.GridMaster";;
 	"node"		) MAIN="tod.impl.dbgrid.StartNode";;
 	"store"		) MAIN="tod.utils.StoreTODServer";;
-	"replay"	) MAIN="tod.impl.dbgrid.bench.GridReplay";;
+	"replay"	) MAIN="tod.impl.dbgrid.Replayer";;
 	"query"		) MAIN="tod.impl.dbgrid.bench.GridQuery";;
 	"nodestore"	) MAIN="tod.impl.dbgrid.bench.BenchDatabaseNode";;
 	"dispatch"	) MAIN="tod.impl.dbgrid.bench.GridDispatch";;
@@ -14,8 +14,8 @@ case "$1" in
 esac
 
 #determine ip
-IFACE=`route -n |grep UG|awk '{print $8}'`
-IP=`ifconfig $IFACE|grep "inet addr:"|awk '{print substr($2, 6, length($2)-5)}'`
+IFACE=`/sbin/route -n |grep UG|awk '{print $8}'`
+IP=`/sbin/ifconfig $IFACE|grep "inet addr:"|awk '{print substr($2, 6, length($2)-5)}'`
 echo IP: $IP
 	
 VMARGS=''
@@ -34,6 +34,7 @@ VMARGS="$VMARGS -Dtask-id=$TASK_ID"
 VMARGS="$VMARGS -Dgrid-impl=$GRID_IMPL"
 VMARGS="$VMARGS -Dcheck-same-host=$CHECK_SAME_HOST"
 VMARGS="$VMARGS -Djava.rmi.server.hostname=$IP"
+VMARGS="$VMARGS -Ddb-raw-events-dir=$RAW_EVENTS_DIR"
 
 if [ -n "$JDWP_PORT" ]
 then
