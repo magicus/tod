@@ -38,6 +38,7 @@ import javax.swing.tree.TreeSelectionModel;
 import tod.Util;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
+import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.IMemberInfo;
 import tod.core.database.structure.IStructureDatabase;
@@ -74,6 +75,7 @@ public class LocationSelectorPanel extends JPanel
 		
 		theTabbedPane.addTab("Packages", new TreeSelector());
 		theTabbedPane.addTab("Behaviors", new BehaviorIdSelector());
+		theTabbedPane.addTab("Fields", new FieldIdSelector());
 		theTabbedPane.addTab("Probes", new ProbeIdSelector());
 		
 		setLayout(new StackLayout());
@@ -271,6 +273,54 @@ public class LocationSelectorPanel extends JPanel
 					: ""+aIndex;
 		}
 
+		public int getSize()
+		{
+			return itsSize;
+		}
+	}
+	
+	/**
+	 * Presents fields by id.
+	 * @author gpothier
+	 */
+	private class FieldIdSelector extends JPanel
+	{
+		public FieldIdSelector()
+		{
+			createUI();
+		}
+		
+		private void createUI()
+		{
+			final FieldListModel theListModel = new FieldListModel(getStructureDatabase());
+			
+			JList theList = new BigJList(theListModel);
+			setLayout(new StackLayout());
+			add(new JScrollPane(theList));
+		}
+		
+	}
+	
+	private static class FieldListModel extends BigListModel
+	{
+		private IStructureDatabase itsStructureDatabase;
+		private int itsSize;
+		
+		public FieldListModel(IStructureDatabase aStructureDatabase)
+		{
+			itsStructureDatabase = aStructureDatabase;
+			itsSize = itsStructureDatabase.getStats().nFields;
+		}
+		
+		@Override
+		protected Object getElementAt0(int aIndex)
+		{
+			IFieldInfo theField = itsStructureDatabase.getField(aIndex, false);
+			return theField != null ?
+					""+aIndex+" "+theField.getDeclaringType().getName()+"."+theField.getName()
+					: ""+aIndex;
+		}
+		
 		public int getSize()
 		{
 			return itsSize;

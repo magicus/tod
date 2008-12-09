@@ -22,6 +22,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.database.structure.standard;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +43,8 @@ import tod.core.database.structure.IMutableFieldInfo;
 import tod.core.database.structure.IShareableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ILocationInfo.ISerializableLocationInfo;
+import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
+import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.impl.database.structure.standard.StructureDatabase.ClassNameInfo;
 import zz.utils.Utils;
 
@@ -106,6 +111,35 @@ implements IMutableClassInfo, ISerializableLocationInfo
 //		System.out.println(String.format("[Struct] class info [id: %d, name: %s]", aId, aName));
 	}
 
+	private void writeObject(ObjectOutputStream out) throws IOException
+	{
+		out.defaultWriteObject();
+		if (StructureDatabaseUtils.isSaving())
+		{
+			out.writeBoolean(true);
+			out.writeObject(itsBytecode);
+			out.writeObject(itsFieldsMap);
+			out.writeObject(itsBehaviorsMap);
+		}
+		else
+		{
+			out.writeBoolean(false);
+		}
+	}
+
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
+	{
+		in.defaultReadObject();
+		if (in.readBoolean())
+		{
+			itsBytecode = (byte[]) in.readObject();
+			itsFieldsMap = (Map<String, IMutableFieldInfo>) in.readObject();
+			itsBehaviorsMap = (Map<String, IMutableBehaviorInfo>) in.readObject();
+		}
+	}
+ 
+
+	
 	public String getJvmName()
 	{
 		return itsJvmName;
