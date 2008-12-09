@@ -331,8 +331,6 @@ void agentClassFileLoadHook(
 			// Send bytecode
 			writeInt(gSocket, class_data_len);
 			gSocket->write((char*) class_data, class_data_len);
-
-			flush(gSocket);
 		}
 		
 		return;
