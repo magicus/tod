@@ -198,9 +198,9 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		super.setDatabase(aDatabase, aIsOriginal);
 		if (aIsOriginal)
 		{
-			itsBehaviorsMap = new HashMap<String, IMutableBehaviorInfo>();
-			itsFieldsMap = new HashMap<String, IMutableFieldInfo>();
-			itsClassNameInfo = ((StructureDatabase) getDatabase()).new ClassNameInfo();
+			if (itsBehaviorsMap == null) itsBehaviorsMap = new HashMap<String, IMutableBehaviorInfo>();
+			if (itsFieldsMap == null) itsFieldsMap = new HashMap<String, IMutableFieldInfo>();
+			if (itsClassNameInfo == null) itsClassNameInfo = ((StructureDatabase) getDatabase()).new ClassNameInfo();
 		}
 	}
 	
