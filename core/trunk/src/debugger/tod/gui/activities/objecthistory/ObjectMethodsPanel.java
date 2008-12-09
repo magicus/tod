@@ -24,7 +24,9 @@ package tod.gui.activities.objecthistory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JList;
 import javax.swing.JScrollPane;
@@ -137,10 +139,19 @@ public class ObjectMethodsPanel extends ActivitySubPanel<ObjectHistorySeed>
 			
 			List<IBehaviorInfo> theBehaviors = new ArrayList<IBehaviorInfo>();
 			
-			while(theClass != null)
+			List<IClassInfo> theRemainingClasses = new ArrayList<IClassInfo>();
+			Set<IClassInfo> theProcessedClasses = new HashSet<IClassInfo>();
+			theRemainingClasses.add(theClass);
+			
+			while(! theRemainingClasses.isEmpty())
 			{
-				Utils.fillCollection(theBehaviors, theClass.getBehaviors());
-				theClass = theClass.getSupertype();
+				IClassInfo theCurrentClass = theRemainingClasses.remove(theRemainingClasses.size()-1);
+				if (! theProcessedClasses.add(theCurrentClass)) continue;
+				
+				Utils.fillCollection(theBehaviors, theCurrentClass.getBehaviors());
+				IClassInfo theSupertype = theCurrentClass.getSupertype();
+				if (theSupertype != null) theRemainingClasses.add(theSupertype);
+				if (theCurrentClass.getInterfaces() != null) Utils.fillCollection(theRemainingClasses, theCurrentClass.getInterfaces());
 			}
 			
 			Collections.sort(theBehaviors, LocationComparator.getInstance());

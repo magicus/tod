@@ -43,6 +43,8 @@ public abstract class SocketThread extends Thread
 {
 	private ServerSocket itsServerSocket;
 	private Socket itsSocket;
+	private BufferedOutputStream itsOutputStream;
+	private BufferedInputStream itsInputStream;
 	
 	/**
 	 * Creates a socket thread that accepts incoming connections
@@ -76,9 +78,23 @@ public abstract class SocketThread extends Thread
 	 */
 	public SocketThread(Socket aSocket, boolean aStart)
 	{
-		itsSocket = aSocket;
+		setSocket(aSocket);
 	    setName(getClass().getSimpleName());
 	    if (aStart) start();
+	}
+	
+	private void setSocket(Socket aSocket)
+	{
+		itsSocket = aSocket;
+		try
+		{
+			itsOutputStream = aSocket != null ? new BufferedOutputStream(itsSocket.getOutputStream()) : null; 
+			itsInputStream = aSocket != null ? new BufferedInputStream(itsSocket.getInputStream()) : null;
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 	
 	/**
@@ -89,6 +105,7 @@ public abstract class SocketThread extends Thread
 		return "SocketThread ("+getClass().getSimpleName()+")";
 	}
 	
+	@Override
 	public final void run()
 	{
 		try
@@ -125,7 +142,7 @@ public abstract class SocketThread extends Thread
 				
 				disconnected();
 				Thread.sleep (500);
-				if (itsServerSocket != null) itsSocket = null;
+				if (itsServerSocket != null) setSocket(null);
 				else break;
 			}
 		}
@@ -168,7 +185,7 @@ public abstract class SocketThread extends Thread
 	{
 		System.out.println(getLabel()+": waiting for client to conect...");
 		accepting();
-		itsSocket = itsServerSocket.accept();
+		setSocket(itsServerSocket.accept());
 		accepted();
 		System.out.println(getLabel()+": accepted connection from "+itsSocket);
 		
@@ -211,9 +228,7 @@ public abstract class SocketThread extends Thread
 	{
 		try
 		{
-			processInterrupted(
-					new BufferedOutputStream(itsSocket.getOutputStream()), 
-					new BufferedInputStream(itsSocket.getInputStream()));
+			processInterrupted(itsOutputStream, itsInputStream);
 		}
 		catch (IOException e)
 		{
@@ -246,9 +261,7 @@ public abstract class SocketThread extends Thread
 	 */
 	protected final void process() throws IOException, InterruptedException
 	{
-		process(
-				new BufferedOutputStream(itsSocket.getOutputStream()), 
-				new BufferedInputStream(itsSocket.getInputStream()));
+		process(itsOutputStream, itsInputStream);
 	}
 	
 	/**

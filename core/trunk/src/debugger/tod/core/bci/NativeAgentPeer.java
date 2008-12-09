@@ -36,6 +36,7 @@ import tod.agent.AgentConfig;
 import tod.core.bci.IInstrumenter.InstrumentedClass;
 import tod.core.config.TODConfig;
 import tod.core.server.TODServer;
+import zz.utils.Utils;
 
 
 /**
@@ -46,6 +47,7 @@ import tod.core.server.TODServer;
 public abstract class NativeAgentPeer extends SocketThread
 {
 	public static final byte INSTRUMENT_CLASS = 50;
+	public static final byte REGISTER_CLASS = 51;
 	public static final byte FLUSH = 99;
 	public static final byte OBJECT_HASH = 1;
 	public static final byte OBJECT_UID = 2;
@@ -193,11 +195,11 @@ public abstract class NativeAgentPeer extends SocketThread
 		switch (aCommand)
 		{
 		case INSTRUMENT_CLASS:
-			processInstrumentClassCommand(
-					itsInstrumenter, 
-					aInputStream, 
-					aOutputStream);
+			processInstrumentClassCommand(itsInstrumenter, aInputStream, aOutputStream);
+			break;
 			
+		case REGISTER_CLASS:
+			processRegisterClassCommand(itsInstrumenter, aInputStream);
 			break;
 			
 		case FLUSH:
@@ -205,6 +207,13 @@ public abstract class NativeAgentPeer extends SocketThread
 			break;
 			
 		default:
+			System.err.println("Command not handled: "+aCommand);
+			for(int i=0;i<128;i++)
+			{
+				byte b = aInputStream.readByte();
+				System.err.print(Integer.toHexString(b) + " " + ((char) b));
+				System.err.println();
+			}
 			throw new RuntimeException("Command not handled: "+aCommand);
 		}		
 	}
@@ -264,8 +273,6 @@ public abstract class NativeAgentPeer extends SocketThread
 	 * @param aInstrumenter The instrumenter that will do the BCI of the class
 	 * @param aInputStream Input stream connected to the agent
 	 * @param aOutputStream Output stream connected to the agent
-	 * @param aStoreClassesDir If not null, instrumented classes will be stored in
-	 * the directory denoted by this file.
 	 */
 	public void processInstrumentClassCommand(
 			IInstrumenter aInstrumenter,
@@ -334,4 +341,31 @@ public abstract class NativeAgentPeer extends SocketThread
 		aOutputStream.flush();
 	}
 	
+	/**
+	 * Processes a REGISTER_CLASS command sent by the agent.
+	 * @param aInstrumenter The instrumenter that will register the class
+	 * @param aInputStream Input stream connected to the agent
+	 */
+	public void processRegisterClassCommand(
+			IInstrumenter aInstrumenter,
+			DataInputStream aInputStream) throws IOException
+	{
+		String theClassName = aInputStream.readUTF();
+		int theLength = aInputStream.readInt();
+		byte[] theBytecode = new byte[theLength];
+		aInputStream.readFully(theBytecode);
+		
+//		Utils.println("Registering %s [%d]...", theClassName, theLength);
+		InstrumentedClass theInstrumentedClass = null;
+		try
+		{
+			theInstrumentedClass = aInstrumenter.instrumentClass(theClassName, theBytecode, itsUseJava14);
+			if (theInstrumentedClass != null) throw new RuntimeException("Class should not be instrumented: "+theClassName);
+		}
+		catch (Exception e)
+		{
+			System.err.println("Error during registration: ");
+			e.printStackTrace();
+		}
+	}
 }

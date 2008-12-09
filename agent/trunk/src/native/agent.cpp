@@ -51,6 +51,7 @@ namespace fs = boost::filesystem;
 // Outgoing commands
 const char EXCEPTION_GENERATED = 20;
 const char INSTRUMENT_CLASS = 50;
+const char REGISTER_CLASS = 51;
 const char FLUSH = 99;
 
 // Incoming commands
@@ -62,7 +63,7 @@ const char SET_STRUCTDB_ID = 86;
 const char CONFIG_DONE = 90;
 
 int AGENT_STARTED = 0;
-STREAM* gSocket;
+STREAM* gSocket = 0;
 
 // Configuration data
 bool cfgIsJVM14 = false;
@@ -72,7 +73,6 @@ int cfgHostBits = 8; // Number of bits used to encode host id.
 int cfgHostId = 0; // A host id assigned by the TODServer - not official.
 char* cfgWorkingSet = "undefined"; // The current working set of instrumentation
 char* cfgStructDbId = "undefined"; // The id of the structure database used by the peer
-int cfgDebugTOD = 0; // set to 1 for optimizing agent class filtering for debugging tod
 int cfgObfuscation = 0; // set to 1 ofuscated version of the agent: package tod.agentX instead of tod.agent
 
 // System properties configuration data.
@@ -275,6 +275,7 @@ void agentClassFileLoadHook(
 		fflush(stdout);
 	}
 
+	// Unconditionally skip agent classes
 	if (cfgObfuscation)
 	{
 		if (startsWith(name, "java/todX/")) return;
@@ -286,29 +287,54 @@ void agentClassFileLoadHook(
 		if (startsWith(name, "tod/agent/")) return;
 	}
 	
-	if (cfgDebugTOD)
-	{
-		if (!(startsWith(name, "tod/")) && !(startsWith(name, "zz/"))) return;
-	}
-	else
-	{	 
-		if (cfgSkipCoreClasses 
-			&& (
-				startsWith(name, "java/")
-				|| startsWith(name, "sun/")
-	// 			|| startsWith(name, "javax/")
-				|| startsWith(name, "com/sun/")
-				|| startsWith(name, "net/sourceforge/retroweaver/")
-			)) return;
-	}
+	// Check scope
+	bool skip = false;
+	if (cfgSkipCoreClasses 
+		&& (
+			startsWith(name, "java/")
+			|| startsWith(name, "sun/")
+// 			|| startsWith(name, "javax/")
+			|| startsWith(name, "com/sun/")
+			|| startsWith(name, "net/sourceforge/retroweaver/")
+		)) skip = true;
 	
 	if (! workingSet->accept(name)) 
 	{
 		if (propVerbose>=2) 
 		{
-			printf("Rejected by working set:: %s\n", name);
+			printf("Rejected by working set: %s\n", name);
 			fflush(stdout);
 		}
+		skip = true;
+	}
+	
+	if (skip)
+	{
+		if (!gSocket)
+		{
+			printf("[TOD] Unable to register %s\n", name);
+			fflush(stdout);
+			return;
+		}
+		
+		{
+			t_lock lock(loadMutex);
+		
+			if (propVerbose>=1) printf("Registering %s\n", name);
+			
+			// Send command
+			writeByte(gSocket, REGISTER_CLASS);
+			
+			// Send class name
+			writeUTF(gSocket, name);
+			
+			// Send bytecode
+			writeInt(gSocket, class_data_len);
+			gSocket->write((char*) class_data, class_data_len);
+
+			flush(gSocket);
+		}
+		
 		return;
 	}
 
@@ -316,7 +342,7 @@ void agentClassFileLoadHook(
 	
 	int* tracedMethods = NULL;
 	int nTracedMethods = 0;
-					
+	
 	// Compute MD5 sum
 	char md5Buffer[16];
 	char md5String[33];
@@ -620,7 +646,6 @@ void agentInit(
 	fs::path::default_name_check(fs::no_check);
 
 	printf("Loading TOD agent - v3.1\n");
-	if (cfgDebugTOD == 1) printf(">>>>WARNING hard filtering for debugging TOD is on \n");
 	if (cfgObfuscation == 1) printf(">>>>WARNING obfuscation form agent package to agentX is considered \n");
 	fflush(stdout);
 
