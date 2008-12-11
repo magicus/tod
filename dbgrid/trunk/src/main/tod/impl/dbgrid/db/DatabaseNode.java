@@ -31,6 +31,8 @@ import java.util.List;
 import tod.core.DebugFlags;
 import tod.core.ILogCollector;
 import tod.core.config.TODConfig;
+import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
@@ -483,6 +485,30 @@ public abstract class DatabaseNode
 		}
 		else return null;
 	}
+
+	/**
+	 * Returns the number of events that occurred within the given behavior.
+	 */
+	public long getEventCountAtBehavior(int aBehaviorId)
+	{
+		return itsEventsDatabase.getEventCountAtBehavior(aBehaviorId);
+	}
+	
+	/**
+	 * Returns the number of events that occurred within the given class.
+	 */
+	public long getEventCountAtClass(int aClassId)
+	{
+		long theTotal = 0;
+		IClassInfo theClass = getStructureDatabase().getClass(aClassId, true);
+		for (IBehaviorInfo theBehavior : theClass.getBehaviors())
+		{
+			theTotal += getEventCountAtBehavior(theBehavior.getId());
+		}
+		
+		return theTotal;
+	}
+	
 
 	private static class BidiHitIterator extends UnicastRemoteObject
 	implements RIBufferIterator<StringSearchHit[]>

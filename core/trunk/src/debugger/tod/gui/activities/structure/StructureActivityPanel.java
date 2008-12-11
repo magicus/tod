@@ -30,7 +30,6 @@ import javax.swing.JTabbedPane;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.ILocationInfo;
 import tod.gui.IContext;
-import tod.gui.IGUIManager;
 import tod.gui.activities.ActivityPanel;
 import tod.gui.components.locationselector.LocationSelectorPanel;
 import tod.gui.kit.SavedSplitPane;
@@ -79,7 +78,7 @@ public class StructureActivityPanel extends ActivityPanel<StructureSeed>
 	@Override
 	public void init()
 	{
-		itsSelectorPanel = new LocationSelectorPanel(getLogBrowser().getStructureDatabase(), true);
+		itsSelectorPanel = new LocationSelectorPanel(getLogBrowser(), true);
 		itsInfoHolder = new JPanel(new StackLayout());
 		
 		JSplitPane theSplitPane = new SavedSplitPane(JSplitPane.HORIZONTAL_SPLIT, getGUIManager(), PROPERTY_SPLITTER_POS);

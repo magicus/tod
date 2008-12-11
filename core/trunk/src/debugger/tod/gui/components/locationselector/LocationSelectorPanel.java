@@ -23,34 +23,29 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.components.locationselector;
 
 import java.awt.Dimension;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.AbstractListModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTree;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreeSelectionModel;
 
-import tod.Util;
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ILocationInfo;
-import tod.core.database.structure.IMemberInfo;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
-import tod.core.database.structure.tree.LocationNode;
+import tod.core.database.structure.tree.PackageInfo;
 import tod.core.database.structure.tree.StructureTreeBuilders;
+import tod.gui.components.LocationTreeTable;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
 import zz.utils.tree.SimpleTreeNode;
-import zz.utils.tree.SwingTreeModel;
 import zz.utils.ui.StackLayout;
-import zz.utils.ui.UniversalRenderer;
 
 /**
  * This panel permits to select a location in the structure database.
@@ -59,12 +54,19 @@ import zz.utils.ui.UniversalRenderer;
 public class LocationSelectorPanel extends JPanel
 {
 	private final IRWProperty<ILocationInfo> pSelectedLocation = new SimpleRWProperty<ILocationInfo>();
-	private final IStructureDatabase itsStructureDatabase;
+	private final ILogBrowser itsLogBrowser;
 	private final boolean itsShowMembers;
 	
-	public LocationSelectorPanel(IStructureDatabase aStructureDatabase, boolean aShowMembers)
+	private final Map<ILocationInfo, Long> itsCountsCache = new HashMap<ILocationInfo, Long>();
+	
+	/**
+	 * Total number of events in the database at the time the cache was valid.
+	 */
+	private long itsEventCountForCache;
+	
+	public LocationSelectorPanel(ILogBrowser aLogBrowser, boolean aShowMembers)
 	{
-		itsStructureDatabase = aStructureDatabase;
+		itsLogBrowser = aLogBrowser;
 		itsShowMembers = aShowMembers;
 		createUI();
 	}
@@ -73,18 +75,23 @@ public class LocationSelectorPanel extends JPanel
 	{
 		JTabbedPane theTabbedPane = new JTabbedPane();
 		
-		theTabbedPane.addTab("Packages", new TreeSelector());
-		theTabbedPane.addTab("Behaviors", new BehaviorIdSelector());
-		theTabbedPane.addTab("Fields", new FieldIdSelector());
-		theTabbedPane.addTab("Probes", new ProbeIdSelector());
+		theTabbedPane.addTab("Packages", new JScrollPane(new TreeSelector()));
+		theTabbedPane.addTab("Behaviors", new JScrollPane(new BigJList(new BehaviorListModel(getStructureDatabase()))));
+		theTabbedPane.addTab("Fields", new JScrollPane(new BigJList(new FieldListModel(getStructureDatabase()))));
+		theTabbedPane.addTab("Probes", new JScrollPane(new BigJList(new ProbeListModel(getStructureDatabase()))));
 		
 		setLayout(new StackLayout());
 		add(theTabbedPane);
 	}
+
+	public ILogBrowser getLogBrowser()
+	{
+		return itsLogBrowser;
+	}
 	
 	public IStructureDatabase getStructureDatabase()
 	{
-		return itsStructureDatabase;
+		return itsLogBrowser.getStructureDatabase();
 	}
 	
 	/**
@@ -103,74 +110,116 @@ public class LocationSelectorPanel extends JPanel
 		pSelectedLocation.set(aLocation);
 	}
 	
-	/**
-	 * Presents all the classes/behaviors in a tree.
-	 * @author gpothier
-	 */
-	private class TreeSelector extends JPanel
+	private void checkCacheValid()
 	{
-		public TreeSelector()
+		long theCurrentCount = getLogBrowser().getEventsCount();
+		if (theCurrentCount != itsEventCountForCache)
 		{
-			createUI();
+			itsEventCountForCache = theCurrentCount;
+			itsCountsCache.clear();
 		}
-
-		private void createUI()
+	}
+	
+	private long getEventCountAt(SimpleTreeNode<ILocationInfo> aNode)
+	{
+		ILocationInfo theLocation = aNode.pValue().get();
+		
+		checkCacheValid();
+		Long theCount = itsCountsCache.get(theLocation);
+		if (theCount == null)
 		{
-			JTree theTree = new JTree(createTreeModel());
-			theTree.setCellRenderer(new MyRenderer());
-			theTree.setShowsRootHandles(false);
-			
-			theTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-			theTree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener()
-			{
-				public void valueChanged(TreeSelectionEvent aEvent)
-				{
-					LocationNode theNode = (LocationNode) aEvent.getPath().getLastPathComponent();
-					LocationSelectorPanel.this.show(theNode.getLocation());
-				}
-			});
-			
-			setLayout(new StackLayout());
-			add(new JScrollPane(theTree));
+			theCount = computeEventCountAt(aNode);
+			itsCountsCache.put(theLocation, theCount);
 		}
 		
-		private TreeModel createTreeModel()
+		return theCount;
+	}
+		
+		
+	private long computeEventCountAt(SimpleTreeNode<ILocationInfo> aNode)
+	{
+		ILocationInfo theLocation = aNode.pValue().get();
+
+		if (theLocation instanceof IBehaviorInfo)
 		{
-			return new SwingTreeModel(StructureTreeBuilders.createClassTree(
-					getStructureDatabase(), 
-					itsShowMembers, 
-					itsShowMembers));
+			IBehaviorInfo theBehavior = (IBehaviorInfo) theLocation;
+			return getLogBrowser().getEventCountAt(theBehavior);
+		}
+		else if (theLocation instanceof IClassInfo)
+		{
+			IClassInfo theClass = (IClassInfo) theLocation;
+			return getLogBrowser().getEventCountAt(theClass);
+		}
+		else if (theLocation instanceof PackageInfo)
+		{
+			long theTotal = 0;
+			for (SimpleTreeNode<ILocationInfo> theChild : aNode.pChildren())
+			{
+				theTotal += getEventCountAt(theChild);
+			}
+			return theTotal;
+		}
+		else
+		{
+			System.err.println("Not handled: "+theLocation);
+			return -1;
 		}
 	}
 	
 	/**
-	 * Renderer for the classes tree.
+	 * Presents all the classes/behaviors in a tree.
 	 * @author gpothier
 	 */
-	private static class MyRenderer extends UniversalRenderer<SimpleTreeNode<ILocationInfo>>
+	private class TreeSelector extends LocationTreeTable
 	{
-		@Override
-		protected String getName(SimpleTreeNode<ILocationInfo> aNode)
+		public TreeSelector()
 		{
-			ILocationInfo theLocation = aNode.pValue().get();
+			super(StructureTreeBuilders.createClassTree(
+					getStructureDatabase(), 
+					itsShowMembers, 
+					itsShowMembers));
+
+//			getTree().setShowsRootHandles(false);
 			
-			if (theLocation instanceof IClassInfo)
+		}
+		
+		@Override
+		public int getColumnCount()
+		{
+			return 1;
+		}
+
+		@Override
+		public Class getColumnClass(int aColumn)
+		{
+			switch(aColumn)
 			{
-				IClassInfo theClass = (IClassInfo) theLocation;
-				return Util.getSimpleName(theClass.getName());
+			case 0: return Long.class;
+			default: throw new RuntimeException("No such column: "+aColumn);
 			}
-			else if (theLocation instanceof IMemberInfo)
+		}
+
+		@Override
+		public String getColumnName(int aColumn)
+		{
+			switch(aColumn)
 			{
-				IMemberInfo theMember = (IMemberInfo) theLocation;
-				return Util.getFullName(theMember);
+			case 0: return "# ev";
+			default: throw new RuntimeException("No such column: "+aColumn);
 			}
-			else
+		}
+			
+		@Override
+		protected Object getValueAt(SimpleTreeNode<ILocationInfo> aNode, ILocationInfo aLocation, int aColumn)
+		{
+			switch(aColumn)
 			{
-				return theLocation.getName();
+			case 0: return getEventCountAt(aNode);
+			default: throw new RuntimeException("No such column: "+aColumn);
 			}
 		}
 	}
-
+	
 	/**
 	 * Peer of {@link BigListModel}
 	 * @author gpothier
@@ -231,28 +280,7 @@ public class LocationSelectorPanel extends JPanel
 	}
 	
 
-	/**
-	 * Presents behaviors by id.
-	 * @author gpothier
-	 */
-	private class BehaviorIdSelector extends JPanel
-	{
-		public BehaviorIdSelector()
-		{
-			createUI();
-		}
 
-		private void createUI()
-		{
-			final BehaviorListModel theListModel = new BehaviorListModel(getStructureDatabase());
-			
-			JList theList = new BigJList(theListModel);
-			setLayout(new StackLayout());
-			add(new JScrollPane(theList));
-		}
-		
-	}
-	
 	private static class BehaviorListModel extends BigListModel
 	{
 		private IStructureDatabase itsStructureDatabase;
@@ -279,27 +307,6 @@ public class LocationSelectorPanel extends JPanel
 		}
 	}
 	
-	/**
-	 * Presents fields by id.
-	 * @author gpothier
-	 */
-	private class FieldIdSelector extends JPanel
-	{
-		public FieldIdSelector()
-		{
-			createUI();
-		}
-		
-		private void createUI()
-		{
-			final FieldListModel theListModel = new FieldListModel(getStructureDatabase());
-			
-			JList theList = new BigJList(theListModel);
-			setLayout(new StackLayout());
-			add(new JScrollPane(theList));
-		}
-		
-	}
 	
 	private static class FieldListModel extends BigListModel
 	{
@@ -327,28 +334,7 @@ public class LocationSelectorPanel extends JPanel
 		}
 	}
 	
-	/**
-	 * Presents probes by id.
-	 * @author gpothier
-	 */
-	private class ProbeIdSelector extends JPanel
-	{
-		public ProbeIdSelector()
-		{
-			createUI();
-		}
 
-		private void createUI()
-		{
-			final ProbeListModel theListModel = new ProbeListModel(getStructureDatabase());
-			
-			JList theList = new BigJList(theListModel);
-			setLayout(new StackLayout());
-			add(new JScrollPane(theList));
-		}
-		
-	}
-	
 	private static class ProbeListModel extends BigListModel
 	{
 		private IStructureDatabase itsStructureDatabase;

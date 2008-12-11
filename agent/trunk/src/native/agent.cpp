@@ -687,9 +687,13 @@ void agentStop()
 {
 	if (gSocket)
 	{
-		writeByte(gSocket, FLUSH);
-		flush(gSocket);
-		if (propVerbose>=1) printf("Sent flush\n");
+		{
+			t_lock lock(loadMutex);
+
+			writeByte(gSocket, FLUSH);
+			flush(gSocket);
+			if (propVerbose>=1) printf("Sent flush\n");
+		}
 	}
 }
 

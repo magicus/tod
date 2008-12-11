@@ -22,6 +22,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.evdbng.db;
 
+import static tod.impl.evdbng.DebuggerGridConfigNG.DB_THREADS;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -33,16 +35,9 @@ import tod.impl.dbgrid.IGridEventFilter;
 import tod.impl.dbgrid.db.EventDatabase;
 import tod.impl.dbgrid.db.DatabaseNode.FlushMonitor;
 import tod.impl.dbgrid.messages.GridEvent;
-import tod.impl.evdbng.DebuggerGridConfigNG;
-import tod.impl.evdbng.db.file.BTree;
 import tod.impl.evdbng.db.file.PagedFile;
-import tod.impl.evdbng.db.file.SequenceTree;
-import tod.impl.evdbng.db.file.Tuple;
-import tod.impl.evdbng.db.file.TupleFinder.NoMatch;
 import tod.impl.evdbng.messages.GridEventNG;
 import tod.impl.evdbng.queries.EventCondition;
-
-import static tod.impl.evdbng.DebuggerGridConfigNG.DB_THREADS;
 
 /**
  * This class manages an event database for a debugging session.
@@ -197,6 +192,12 @@ public class EventDatabaseNG extends EventDatabase
 		long theCount = 0;
 		for(int i=0;i<DB_THREADS;i++) theCount += itsEventLists[i].getEventsCount();
 		return theCount;
+	}
+
+	@Override
+	public long getEventCountAtBehavior(int aBehaviorId)
+	{
+		return itsIndexes.getEventsAtBehavior(aBehaviorId);
 	}
 	
 	/**

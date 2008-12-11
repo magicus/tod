@@ -425,5 +425,21 @@ public class ABCTags
 			throw new UnsupportedOperationException();
 		}
 		
+		public IEventFilter createBehaviorCallFilter(
+				IBehaviorInfo aCalledBehavior,
+				IBehaviorInfo aExecutedBehavior)
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		public long getEventCountAt(IBehaviorInfo aBehavior)
+		{
+			throw new UnsupportedOperationException();
+		}
+		
+		public long getEventCountAt(IClassInfo aClass)
+		{
+			throw new UnsupportedOperationException();
+		}
 	}
 }

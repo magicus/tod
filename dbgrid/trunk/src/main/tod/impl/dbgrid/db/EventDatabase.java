@@ -286,6 +286,11 @@ implements ReorderingBufferListener
 	public abstract long getEventsCount();
 	
 	/**
+	 * Returns the number of events that occurred within the given behavior.
+	 */
+	public abstract long getEventCountAtBehavior(int aBehaviorId);
+
+	/**
 	 * An iterator that filters out duplicate events from a source iterator.
 	 * @author gpothier
 	 */

@@ -28,6 +28,10 @@ package tod.core.bci;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.EOFException;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -90,6 +94,8 @@ public abstract class SocketThread extends Thread
 		{
 			itsOutputStream = aSocket != null ? new BufferedOutputStream(itsSocket.getOutputStream()) : null; 
 			itsInputStream = aSocket != null ? new BufferedInputStream(itsSocket.getInputStream()) : null;
+//			itsInputStream = aSocket != null ? new BufferedInputStream(new SpyInputStream(itsSocket.getInputStream())) : null;
+//			itsInputStream = aSocket != null ? new BufferedInputStream(new FileInputStream("spy.bin")) : null;
 		}
 		catch (IOException e)
 		{
@@ -270,5 +276,74 @@ public abstract class SocketThread extends Thread
 	protected abstract void process (
 			OutputStream aOutputStream, 
 			InputStream aInputStream) 
-			throws IOException, InterruptedException; 
+			throws IOException, InterruptedException;
+	
+	private class SpyInputStream extends FilterInputStream
+	{
+		private OutputStream itsOut;
+		
+		public SpyInputStream(InputStream aIn)
+		{
+			super(aIn);
+			try
+			{
+				itsOut = new FileOutputStream("spy.bin");
+			}
+			catch (FileNotFoundException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+
+		@Override
+		public int read() throws IOException
+		{
+			int v = super.read();
+			if (v == -1) itsOut.close();
+			else itsOut.write(v);
+			return v;
+		}
+
+		@Override
+		public int read(byte[] aB, int aOff, int aLen) throws IOException
+		{
+			int n = super.read(aB, aOff, aLen);
+			if (n == -1) itsOut.close();
+			else itsOut.write(aB, aOff, n);
+			return n;
+		}
+
+		@Override
+		public int read(byte[] aB) throws IOException
+		{
+			return read(aB, 0, aB.length);
+		}
+		
+		@Override
+		public void close() throws IOException
+		{
+			itsOut.close();
+			super.close();
+		}
+		
+		@Override
+		public synchronized void mark(int aReadlimit)
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public synchronized void reset() throws IOException
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public long skip(long aN) throws IOException
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		
+	}
 }

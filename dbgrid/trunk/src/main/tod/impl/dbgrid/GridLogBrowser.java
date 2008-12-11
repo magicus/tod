@@ -38,6 +38,7 @@ import tod.core.database.event.ExternalPointer;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.IParentEvent;
+import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IStructureDatabase;
@@ -45,7 +46,6 @@ import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.session.ISession;
 import tod.impl.common.LogBrowserUtils;
-import tod.impl.common.ObjectInspector;
 import tod.impl.common.VariablesInspector;
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.aggregator.GridEventBrowser;
@@ -422,6 +422,30 @@ implements ILogBrowser, IScheduled
 		return itsQueryResultCache.getResult(aQuery);
 	}
 
+	public long getEventCountAt(IBehaviorInfo aBehavior)
+	{
+		try
+		{
+			return getMaster().getEventCountAtBehavior(aBehavior.getId());
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
+	public long getEventCountAt(IClassInfo aClass)
+	{
+		try
+		{
+			return getMaster().getEventCountAtClass(aClass.getId());
+		}
+		catch (RemoteException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
 	/**
 	 * An event browser that returns all events.
 	 * @author gpothier

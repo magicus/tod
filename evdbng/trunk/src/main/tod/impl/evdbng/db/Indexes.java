@@ -35,6 +35,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.impl.dbgrid.messages.MessageType;
 import tod.impl.evdbng.DebuggerGridConfigNG;
 import tod.impl.evdbng.ObjectCodecNG;
@@ -51,6 +52,7 @@ import zz.utils.bit.BitUtils;
 import zz.utils.monitoring.AggregationType;
 import zz.utils.monitoring.Monitor;
 import zz.utils.monitoring.Probe;
+import zz.utils.primitive.IntArray;
 
 /**
  * Groups all the indexes maintained by a database node.
@@ -87,6 +89,8 @@ public class Indexes
 	private RoleIndexSet[] itsObjectIndexeSets;
 	
 	private long itsMaxObjectId = 0;
+	
+	private IntArray itsEventsAtBehavior = new IntArray(DebuggerGridConfigNG.STRUCTURE_BEHAVIOR_COUNT);
 
 	
 	/**
@@ -364,6 +368,22 @@ public class Indexes
 	public long getMaxObjectId()
 	{
 		return itsMaxObjectId;
+	}
+	
+	/**
+	 * Accounts for an event in the given probe
+	 */
+	public void eventAtProbe(ProbeInfo aProbeInfo)
+	{
+		int theBehaviorId = aProbeInfo.behaviorId;
+		int theCount = itsEventsAtBehavior.get(theBehaviorId);
+		if (theCount == Integer.MAX_VALUE) throw new IllegalStateException("It's time to use a LongArray...");
+		itsEventsAtBehavior.set(theBehaviorId, theCount+1);
+	}
+	
+	public long getEventsAtBehavior(int aBehaviorId)
+	{
+		return itsEventsAtBehavior.get(aBehaviorId);
 	}
 	
 	public <T extends Tuple> long[] fastCounts(

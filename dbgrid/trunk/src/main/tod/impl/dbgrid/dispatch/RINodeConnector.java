@@ -106,6 +106,16 @@ public interface RINodeConnector extends Remote, RIMonitoringServerProvider
 	public RIBufferIterator<StringSearchHit[]> searchStrings(String aText) throws RemoteException;
 	
 	/**
+	 * Returns the number of events that occurred within the given behavior.
+	 */
+	public long getEventCountAtBehavior(int aBehaviorId) throws RemoteException;
+
+	/**
+	 * Returns the number of events that occurred within the given class.
+	 */
+	public long getEventCountAtClass(int aClassId) throws RemoteException;
+	
+	/**
 	 * Represents a search hit.
 	 * @author gpothier
 	 */

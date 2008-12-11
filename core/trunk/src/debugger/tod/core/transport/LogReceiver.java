@@ -43,7 +43,6 @@ import tod.core.database.structure.IStructureDatabase;
 import tod.impl.database.structure.standard.HostInfo;
 import tod.impl.database.structure.standard.StructureDatabaseUtils;
 import tod.utils.TODUtils;
-import zz.utils.Utils;
 
 /**
  * Receives (low-level) events from the debugged application through a socket.
@@ -124,7 +123,10 @@ public abstract class LogReceiver extends PacketProcessor
 			}
 			catch (FileNotFoundException e)
 			{
-				throw new RuntimeException(e);
+				System.err.println("FATAL: Cannot open raw events directory: "+itsConfig.get(TODConfig.DB_RAW_EVENTS_DIR));
+				e.printStackTrace();
+				System.exit(1);
+				throw new RuntimeException(); // For compiler, because of final field
 			}
 		}
 		else
@@ -333,7 +335,7 @@ public abstract class LogReceiver extends PacketProcessor
 	@Override
 	protected void processEnd()
 	{
-		disconnect();
+//		disconnect();
 	}
 	
 	/**

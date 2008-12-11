@@ -184,6 +184,12 @@ public interface ILogBrowser
 	public IEventFilter createBehaviorCallFilter (IBehaviorInfo aBehavior);
 	
 	/**
+	 * Creates a filter that accepts only behavior call events with a particular called and
+	 * executed behavior. One of those, but not both, can be null.
+	 */
+	public IEventFilter createBehaviorCallFilter(IBehaviorInfo aCalledBehavior, IBehaviorInfo aExecutedBehavior);
+	
+	/**
 	 * Creates a filter that accepts only behavior call events (before call and after call).
 	 */
 	public IEventFilter createBehaviorCallFilter ();
@@ -343,6 +349,16 @@ public interface ILogBrowser
 	 * @return The value returned by the task.
 	 */
 	public <O> O exec(Query<O> aQuery);
+	
+	/**
+	 * Returns the number of events that occurred within the given behavior.
+	 */
+	public long getEventCountAt(IBehaviorInfo aBehavior);
+	
+	/**
+	 * Returns the number of events that occurred within the given class.
+	 */
+	public long getEventCountAt(IClassInfo aClass);
 	
 	/**
 	 * A query that is executable by the database.

@@ -243,7 +243,7 @@ implements RINodeConnector
 		return itsDatabaseNode.getRegisteredObject(aId);
 	}
 	
-	public ITypeInfo getObjectType(long aId) throws RemoteException
+	public ITypeInfo getObjectType(long aId) 
 	{
 		return itsDatabaseNode.getObjectType(aId);
 	}
@@ -253,6 +253,16 @@ implements RINodeConnector
 		return itsDatabaseNode.searchStrings(aText);
 	}
 
+	public long getEventCountAtBehavior(int aBehaviorId) 
+	{
+		return itsDatabaseNode.getEventCountAtBehavior(aBehaviorId);
+	}
+	
+	public long getEventCountAtClass(int aClassId) throws RemoteException
+	{
+		return itsDatabaseNode.getEventCountAtClass(aClassId);
+	}
+	
 	private void startMonitoringThread()
 	{
 		Thread thePrinterThread = new Thread()

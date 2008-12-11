@@ -199,7 +199,7 @@ public class IntimacyLevelEditor extends JPanel implements IEventListener<Void>
 		}
 
 		@Override
-		protected Object getValueAt(ILocationInfo aLocation, int aColumn)
+		protected Object getValueAt(SimpleTreeNode<ILocationInfo> aNode, ILocationInfo aLocation, int aColumn)
 		{
 			switch(aColumn)
 			{
@@ -209,7 +209,7 @@ public class IntimacyLevelEditor extends JPanel implements IEventListener<Void>
 		}
 
 		@Override
-		protected boolean isCellEditable(ILocationInfo aLocation, int aColumn)
+		protected boolean isCellEditable(SimpleTreeNode<ILocationInfo> aNode, ILocationInfo aLocation, int aColumn)
 		{
 			switch(aColumn)
 			{

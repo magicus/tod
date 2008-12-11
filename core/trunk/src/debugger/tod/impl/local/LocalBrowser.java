@@ -234,6 +234,13 @@ public class LocalBrowser implements ILogBrowser
 		return new BehaviorCallFilter(this, aBehavior);
 	}
 
+	public IEventFilter createBehaviorCallFilter(
+			IBehaviorInfo aCalledBehavior,
+			IBehaviorInfo aExecutedBehavior)
+	{
+		throw new UnsupportedOperationException();
+	}
+	
 	public IEventFilter createFieldFilter(IFieldInfo aFieldInfo)
 	{
 		return new FieldWriteFilter(this, aFieldInfo);
@@ -372,6 +379,14 @@ public class LocalBrowser implements ILogBrowser
 		return aQuery.run(this);
 	}
 	
+	public long getEventCountAt(IBehaviorInfo aBehavior)
+	{
+		throw new UnsupportedOperationException();
+	}
 	
+	public long getEventCountAt(IClassInfo aClass)
+	{
+		throw new UnsupportedOperationException();
+	}
 	
 }

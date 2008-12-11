@@ -452,15 +452,15 @@ public class PacketBufferSender extends Thread
 					if (theNewSize == thePrevSize)
 					{
 						System.err.println("[TOD] Buffers are not being sent, shutting down anyway ("+theNewSize+" buffers remaining).");
-						return;
+						break;
 					}
 					thePrevSize = theNewSize;
 				}
 				
-				itsChannel.close();
-				
 				// Give some more time to allow for the buffers to be sent
 				Thread.sleep(3000);
+				
+				itsChannel.close();
 			}
 			catch (Exception e)
 			{

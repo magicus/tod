@@ -160,6 +160,29 @@ public class GridLogBrowser1 extends GridLogBrowser
 	{
 		return new BehaviorCondition(aBehavior.getId(), RoleIndexSet.ROLE_BEHAVIOR_ANY_ENTER);
 	}
+	
+	public IEventFilter createBehaviorCallFilter(IBehaviorInfo aCalledBehavior, IBehaviorInfo aExecutedBehavior)
+	{
+		if (aCalledBehavior == null && aExecutedBehavior == null) 
+			throw new IllegalArgumentException("Both behaviors cannot be null");
+		
+		if (aCalledBehavior == null)
+		{
+			return new BehaviorCondition(aExecutedBehavior.getId(), RoleIndexSet.ROLE_BEHAVIOR_EXECUTED);
+		}
+		else if (aExecutedBehavior == null)
+		{
+			return new BehaviorCondition(aCalledBehavior.getId(), RoleIndexSet.ROLE_BEHAVIOR_CALLED);
+		}
+		else
+		{
+			return createIntersectionFilter(
+					createBehaviorCallFilter(aCalledBehavior, null),
+					createBehaviorCallFilter(null, aExecutedBehavior));
+		}
+	}
+
+
 
 	public IEventFilter createExceptionGeneratedFilter()
 	{

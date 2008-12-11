@@ -83,7 +83,7 @@ RecursivePackageSet::RecursivePackageSet(char* aName)
 
 bool RecursivePackageSet::acceptPackage(char* ref, char* name)
 {
-	return startsWith(name, ref);
+	return startsWith(name, ref) && (name[strlen(ref)] == '/' || name[strlen(ref)] == 0);
 }
 
 SinglePackageSet::SinglePackageSet(char* aName)

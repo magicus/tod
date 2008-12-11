@@ -35,9 +35,15 @@ bool startsWith(const char* aString, const char* aPrefix)
 	return strncmp(aPrefix, aString, len) == 0;
 }
 
-void test(CompoundClassSet* set, char* name)
+void test(CompoundClassSet* set, char* name, bool match)
 {
-	printf("%s -> %d\n", name, set->accept(name));
+	bool b = set->accept(name);
+	printf("%s -> %d\n", name, b);
+	if ((b != 0) != (match != 0))
+	{
+		printf("Fail\n");
+		exit(1);
+	}
 }
 
 int main(int, char**)
@@ -46,13 +52,19 @@ int main(int, char**)
 	CompoundClassSet* set;
 	
 	set = parseWorkingSet("[-java/io/** +java/io/yes/* -tod/agent]");
-	test(set, "java/io/Tata");
-	test(set, "java/io/blip/Titi");
-	test(set, "java/io/yes/Tata");
-	test(set, "java/io/yes/no/Tata");
+	test(set, "java/io/Tata", false);
+	test(set, "java/io/blip/Titi", false);
+	test(set, "java/io/yes/Tata", true);
+	test(set, "java/io/yes/no/Tata", false);
 	
 	set = parseWorkingSet("[+tod.impl.evdbng.db.IndexSet +tod.impl.evdbng.db.SimpleIndexSet +zz.utils.cache.MRUBuffer +tod.tools.ConcurrentMRUBuffer +tod.impl.evdbng.db.IndexSet$IndexManager +tod.impl.evdbng.db.IndexSet$BTreeWrapper]");
-	test(set, "tod/impl/evdbng/db/Indexes");
-	test(set, "tod/impl/evdbng/db/IndexSet$IndexManager");
-	test(set, "tod/impl/evdbng/db/IndexSet");
+	test(set, "tod/impl/evdbng/db/Indexes", false);
+	test(set, "tod/impl/evdbng/db/IndexSet$IndexManager", true);
+	test(set, "tod/impl/evdbng/db/IndexSet", true);
+	
+	set = parseWorkingSet("[-java.** -javax.** -sun.** -com.sun.** -org.ietf.jgss.** -org.omg.** -org.w3c.** -org.xml.** -org.jibx.**]");
+	test(set, "org/xmlpull/v1/XmlPullParserFactory", true);
+	test(set, "org/xmldb/api/DatabaseManager", true);
+	
+	printf("Success\n");
 }

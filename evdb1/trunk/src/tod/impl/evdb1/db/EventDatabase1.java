@@ -123,4 +123,10 @@ public class EventDatabase1 extends EventDatabase
 	{
 		return itsEventList.getEventsCount();
 	}
+	
+	@Override
+	public long getEventCountAtBehavior(int aBehaviorId)
+	{
+		throw new UnsupportedOperationException("Implement that");
+	}
 }

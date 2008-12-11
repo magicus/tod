@@ -30,7 +30,10 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.tree.TreePath;
 
+import tod.Util;
+import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.IMemberInfo;
 import zz.utils.properties.IRWProperty;
 import zz.utils.properties.SimpleRWProperty;
 import zz.utils.tree.ITree;
@@ -151,12 +154,12 @@ public abstract class LocationTreeTable extends JPanel
 	 * @param aColumn The index of the additional column
 	 * (first additional column has index 0).
 	 */
-	protected boolean isCellEditable(ILocationInfo aLocation, int aColumn)
+	protected boolean isCellEditable(SimpleTreeNode<ILocationInfo> aNode, ILocationInfo aLocation, int aColumn)
 	{
 		return false;
 	}
 
-	protected Object getValueAt(ILocationInfo aLocation, int aColumn)
+	protected Object getValueAt(SimpleTreeNode<ILocationInfo> aNode, ILocationInfo aLocation, int aColumn)
 	{
 		return null;
 	}
@@ -203,19 +206,18 @@ public abstract class LocationTreeTable extends JPanel
 			else 
 			{
 				SimpleTreeNode<ILocationInfo> theNode = (SimpleTreeNode<ILocationInfo>) aNode;
-				return LocationTreeTable.this.isCellEditable(theNode.pValue().get(), aColumn-1);
+				return LocationTreeTable.this.isCellEditable(theNode, theNode.pValue().get(), aColumn-1);
 			}
 		}
 		
 		@Override
-		public Object getValueAt(Object aNode, int aColumn)
+		public Object getValueFor(
+				SimpleTreeNode<ILocationInfo> aNode,
+				ILocationInfo aValue,
+				int aColumn)
 		{
-			if (aColumn == 0) return super.getValueAt(aNode, aColumn);
-			else
-			{
-				SimpleTreeNode<ILocationInfo> theNode = (SimpleTreeNode<ILocationInfo>) aNode;
-				return LocationTreeTable.this.getValueAt(theNode.pValue().get(), aColumn-1);
-			}
+			if (aColumn == 0) return aValue;
+			else return LocationTreeTable.this.getValueAt(aNode, aNode.pValue().get(), aColumn-1);
 		}
 		
 		@Override
@@ -239,7 +241,21 @@ public abstract class LocationTreeTable extends JPanel
 		protected String getName(SimpleTreeNode<ILocationInfo> aNode)
 		{
 			ILocationInfo theLocation = aNode.pValue().get();
-			return theLocation.getName();
+			
+			if (theLocation instanceof IClassInfo)
+			{
+				IClassInfo theClass = (IClassInfo) theLocation;
+				return Util.getSimpleName(theClass.getName());
+			}
+			else if (theLocation instanceof IMemberInfo)
+			{
+				IMemberInfo theMember = (IMemberInfo) theLocation;
+				return Util.getFullName(theMember);
+			}
+			else
+			{
+				return theLocation.getName();
+			}
 		}
 	}
 

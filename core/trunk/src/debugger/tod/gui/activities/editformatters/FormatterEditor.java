@@ -37,21 +37,19 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.ILocationInfo;
-import tod.core.database.structure.IStructureDatabase;
 import tod.gui.GUIUtils;
 import tod.gui.components.locationselector.LocationSelectorPanel;
 import tod.gui.formatter.CustomObjectFormatter;
 import zz.utils.Utils;
 import zz.utils.properties.IRWProperty;
-import zz.utils.properties.PropertyUtils;
 import zz.utils.properties.SimpleRWProperty;
 import zz.utils.ui.PropertyEditor;
 import zz.utils.ui.StackLayout;
 import zz.utils.ui.crmlist.AbstractJavaCRMListModel;
 import zz.utils.ui.crmlist.CRMList;
-import zz.utils.ui.crmlist.CRMListModel;
 import zz.utils.ui.popup.StickyPopup;
 
 /**
@@ -60,7 +58,7 @@ import zz.utils.ui.popup.StickyPopup;
  */
 public class FormatterEditor extends JPanel
 {
-	private final IStructureDatabase itsStructureDatabase;
+	private final ILogBrowser itsLogBrowser;
 	private final CustomObjectFormatter itsFormatter;
 	private StickyPopup itsLocationSelectorPopup;
 	
@@ -77,9 +75,9 @@ public class FormatterEditor extends JPanel
 	};
 	
 	
-	public FormatterEditor(IStructureDatabase aStructureDatabase, CustomObjectFormatter aFormatter)
+	public FormatterEditor(ILogBrowser aLogBrowser, CustomObjectFormatter aFormatter)
 	{
-		itsStructureDatabase = aStructureDatabase;
+		itsLogBrowser = aLogBrowser;
 		itsFormatter = aFormatter;
 		createUI();
 	}
@@ -162,7 +160,7 @@ public class FormatterEditor extends JPanel
 			}
 		};
 		
-		LocationSelectorPanel theLocationSelectorPanel = new LocationSelectorPanel(itsStructureDatabase, false)
+		LocationSelectorPanel theLocationSelectorPanel = new LocationSelectorPanel(itsLogBrowser, false)
 		{
 			@Override
 			public void show(ILocationInfo aLocation)

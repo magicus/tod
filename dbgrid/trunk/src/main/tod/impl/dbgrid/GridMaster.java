@@ -77,7 +77,6 @@ import zz.utils.net.Server;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;
 import zz.utils.properties.IProperty;
-import zz.utils.properties.IPropertyListener;
 import zz.utils.properties.PropertyListener;
 
 /**
@@ -740,6 +739,58 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	public <O> O exec(ITask<ILogBrowser, O> aTask)
 	{
 		return aTask.run(itsLocalLogBrowser);
+	}
+
+	public long getEventCountAtBehavior(final int aBehaviorId)
+	{
+		List<Long> theResults = Utils.fork(getNodes(), new ITask<RINodeConnector, Long>()
+		{
+			public Long run(RINodeConnector aInput)
+			{
+				try
+				{
+					return aInput.getEventCountAtBehavior(aBehaviorId);
+				}
+				catch (RemoteException e)
+				{
+					throw new RuntimeException(e);
+				}
+			}
+		});
+
+		long theCount = 0;
+		for (Long theResult : theResults)
+		{
+			theCount += theResult.longValue();
+		}
+
+		return theCount;
+	}
+	
+	public long getEventCountAtClass(final int aClassId) throws RemoteException
+	{
+		List<Long> theResults = Utils.fork(getNodes(), new ITask<RINodeConnector, Long>()
+		{
+			public Long run(RINodeConnector aInput)
+			{
+				try
+				{
+					return aInput.getEventCountAtClass(aClassId);
+				}
+				catch (RemoteException e)
+				{
+					throw new RuntimeException(e);
+				}
+			}
+		});
+
+		long theCount = 0;
+		for (Long theResult : theResults)
+		{
+			theCount += theResult.longValue();
+		}
+
+		return theCount;
 	}
 	
 	/**

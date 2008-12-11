@@ -28,6 +28,7 @@ import java.util.List;
 
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
@@ -200,4 +201,14 @@ public interface RIGridMaster extends Remote, RIMonitoringServerProvider
 	 * @see NodeExceptionResolver 
 	 */
 	public int getBehaviorId(String aClassName, String aMethodName, String aMethodSignature) throws RemoteException;
+	
+	/**
+	 * Returns the number of events that occurred within the given behavior.
+	 */
+	public long getEventCountAtBehavior(int aBehaviorId) throws RemoteException;
+
+	/**
+	 * Returns the number of events that occurred within the given class.
+	 */
+	public long getEventCountAtClass(int aClassId) throws RemoteException;
 }

@@ -126,6 +126,7 @@ public abstract class GridEventNG extends GridEvent
 	public void index(Indexes aIndexes, int aId)
 	{
 		ProbeInfo theProbeInfo = getProbeInfo();
+		if (theProbeInfo != null) aIndexes.eventAtProbe(theProbeInfo);
 		
 		aIndexes.registerTimestamp(getTimestamp());
 		aIndexes.indexType(getEventType().ordinal(), aId);

@@ -286,7 +286,7 @@ implements IListListener<Highlight>
 		}
 
 		@Override
-		protected Object getValueAt(ILocationInfo aLocation, int aColumn)
+		protected Object getValueAt(SimpleTreeNode<ILocationInfo> aNode, ILocationInfo aLocation, int aColumn)
 		{
 			switch(aColumn) 
 			{
@@ -299,7 +299,7 @@ implements IListListener<Highlight>
 		}
 
 		@Override
-		protected boolean isCellEditable(ILocationInfo aLocation, int aColumn)
+		protected boolean isCellEditable(SimpleTreeNode<ILocationInfo> aNode, ILocationInfo aLocation, int aColumn)
 		{
 			return (aLocation instanceof IAspectInfo) || (aLocation instanceof IAdviceInfo);
 		}

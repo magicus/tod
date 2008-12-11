@@ -29,7 +29,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import tod.gui.IContext;
-import tod.gui.IGUIManager;
 import tod.gui.activities.ActivityPanel;
 import tod.gui.formatter.CustomFormatterRegistry;
 import tod.gui.formatter.CustomObjectFormatter;
@@ -75,7 +74,7 @@ public class EditFormattersActivityPanel extends ActivityPanel<FormattersSeed>
 	private void show(CustomObjectFormatter aFormatter)
 	{
 		itsEditorHolder.removeAll();
-		itsEditorHolder.add(new FormatterEditor(getLogBrowser().getStructureDatabase(), aFormatter));
+		itsEditorHolder.add(new FormatterEditor(getLogBrowser(), aFormatter));
 		revalidate();
 		repaint();
 	}
