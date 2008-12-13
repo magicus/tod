@@ -40,6 +40,7 @@ import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.core.session.ISession;
 import tod.impl.common.ObjectInspector;
 import tod.impl.dbgrid.GridLogBrowser;
@@ -146,6 +147,11 @@ public class GridLogBrowser1 extends GridLogBrowser
 	public IEventFilter createOperationLocationFilter(IBehaviorInfo aBehavior)
 	{
 		return new BehaviorCondition(aBehavior.getId(), RoleIndexSet.ROLE_BEHAVIOR_OPERATION);
+	}
+	
+	public IEventFilter createOperationLocationFilter(ProbeInfo aProbe)
+	{
+		throw new UnsupportedOperationException();
 	}
 	
 	public IEventFilter createBehaviorCallFilter()

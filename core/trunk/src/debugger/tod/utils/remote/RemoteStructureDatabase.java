@@ -241,6 +241,11 @@ implements RIStructureDatabase
 	{
 		return itsSource._getBehaviorTagMap(aBehaviorId);
 	}
+	
+	public List<ProbeInfo> _getBehaviorProbes(int aBehaviorId) throws RemoteException
+	{
+		return itsSource._getBehaviorProbes(aBehaviorId);
+	}
 
 	public Map<String, IMutableBehaviorInfo> _getClassBehaviorsMap(int aClassId) 
 	{
@@ -748,6 +753,19 @@ implements RIStructureDatabase
 			{
 				System.out.println("Retrieving tag map for behavior: "+aBehaviorId);
 				return itsDatabase._getBehaviorTagMap(aBehaviorId);
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		
+		public List<ProbeInfo> _getBehaviorProbes(int aBehaviorId)
+		{
+			try
+			{
+				System.out.println("Retrieving probes for behavior: "+aBehaviorId);
+				return itsDatabase._getBehaviorProbes(aBehaviorId);
 			}
 			catch (RemoteException e)
 			{

@@ -24,6 +24,7 @@ package tod.core.database.structure;
 
 import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.impl.database.structure.standard.TagMap;
 
 /**
@@ -47,5 +48,9 @@ public interface IMutableBehaviorInfo extends IBehaviorInfo, IMutableLocationInf
 	 * Adds an individual local var. info.
 	 */
 	public void addLocalVariableInfo(LocalVariableInfo aInfo);
-
+	
+	/**
+	 * Adds a probe info.
+	 */
+	public void addProbe(ProbeInfo aProbe);
 }

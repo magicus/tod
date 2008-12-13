@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.impl.database.structure.standard.TagMap;
 
 /**
@@ -41,6 +42,7 @@ public interface IShareableStructureDatabase extends IMutableStructureDatabase
 	public List<LocalVariableInfo> _getBehaviorLocalVariableInfo(int aBehaviorId);
 	public LineNumberInfo[] _getBehaviorLineNumberInfo(int aBehaviorId);
 	public TagMap _getBehaviorTagMap(int aBehaviorId);
+	public List<ProbeInfo> _getBehaviorProbes(int aBehaviorId);
 	public IClassInfo _getBehaviorClass(int aBehaviorId, boolean aFailIfAbsent);
 	public IClassInfo _getFieldClass(int aFieldId, boolean aFailIdAbsent);
 }

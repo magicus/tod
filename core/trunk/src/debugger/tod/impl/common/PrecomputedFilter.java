@@ -20,29 +20,32 @@ MA 02111-1307 USA
 Parts of this work rely on the MD5 algorithm "derived from the 
 RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
-package tod.impl.local.filter;
+package tod.impl.common;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.IEventFilter;
+import tod.core.database.browser.ILogBrowser;
 import tod.core.database.event.ILogEvent;
 import tod.impl.common.event.Event;
 import tod.impl.local.EventBrowser;
 import tod.impl.local.LocalBrowser;
+import tod.impl.local.filter.AbstractFilter;
 
 /**
- * Base class for filters that are precomputed.
+ * Filters whose results are precomputed.
  * @author gpothier
  */
-public abstract class AbstractPrecomputedFilter extends AbstractFilter
+public class PrecomputedFilter implements IEventFilter
 {
+	private ILogBrowser itsLogBrowser;
 	private List<ILogEvent> itsEvents = new ArrayList<ILogEvent>();
 
-	public AbstractPrecomputedFilter(LocalBrowser aBrowser)
+	public PrecomputedFilter(ILogBrowser aLogBrowser)
 	{
-		super(aBrowser);
-		
+		itsLogBrowser = aLogBrowser;
 	}
 	
 	protected void addEvent (Event aEvent)
@@ -52,7 +55,7 @@ public abstract class AbstractPrecomputedFilter extends AbstractFilter
 	
 	public IEventBrowser createBrowser()
 	{
-		return new EventBrowser(getBrowser(), itsEvents, this);
+		return new EventBrowser(itsLogBrowser, itsEvents, this);
 	}
 	
 	public boolean accept(ILogEvent aEvent)

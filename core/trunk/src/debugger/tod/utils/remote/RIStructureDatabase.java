@@ -71,6 +71,7 @@ public interface RIStructureDatabase extends Remote
 	public List<LocalVariableInfo> _getBehaviorLocalVariableInfo(int aBehaviorId) throws RemoteException;
 	public LineNumberInfo[] _getBehaviorLineNumberInfo(int aBehaviorId) throws RemoteException;
 	public TagMap _getBehaviorTagMap(int aBehaviorId) throws RemoteException;
+	public List<ProbeInfo> _getBehaviorProbes(int aBehaviorId) throws RemoteException;
 	public IClassInfo _getBehaviorClass(int aBehaviorId, boolean aFailIfAbsent) throws RemoteException;
 	public IClassInfo _getFieldClass(int aFieldId, boolean aFailIfAbsent) throws RemoteException;
 }

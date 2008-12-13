@@ -452,11 +452,19 @@ implements Serializable, IShareableStructureDatabase
 	{
 		return itsProbes.get(aProbeId);
 	}
+	
+	protected void registerProbe(ProbeInfo aProbe)
+	{
+		BehaviorInfo theBehavior = getBehavior(aProbe.behaviorId, true);
+		theBehavior.addProbe(aProbe);
+	}
 
 	public int addProbe(int aBehaviorId, int aBytecodeIndex, BytecodeRole aRole, int aAdviceSourceId)
 	{
 		int theId = itsProbes.size(); // we add a null element in the constructor, so first id is 1
-		itsProbes.add(new ProbeInfo(theId, aBehaviorId, aBytecodeIndex, aRole, aAdviceSourceId));
+		ProbeInfo theProbe = new ProbeInfo(theId, aBehaviorId, aBytecodeIndex, aRole, aAdviceSourceId);
+		itsProbes.add(theProbe);
+		registerProbe(theProbe);
 		return theId;
 	}
 	
@@ -474,12 +482,16 @@ implements Serializable, IShareableStructureDatabase
 		{
 			throw new IllegalArgumentException("There is already a probe with id "+aId);
 		}
-		Utils.listSet(itsProbes, aId, new ProbeInfo(aId, aBehaviorId, aBytecodeIndex, aRole, aAdviceSourceId));
+		theProbe = new ProbeInfo(aId, aBehaviorId, aBytecodeIndex, aRole, aAdviceSourceId);
+		Utils.listSet(itsProbes, aId, theProbe);
+		registerProbe(theProbe);
 	}
 
 	public void setProbe(int aProbeId, int aBehaviorId, int aBytecodeIndex, BytecodeRole aRole, int aAdviceSourceId)
 	{
-		itsProbes.set(aProbeId, new ProbeInfo(aProbeId, aBehaviorId, aBytecodeIndex, aRole, aAdviceSourceId));
+		ProbeInfo theProbe = new ProbeInfo(aProbeId, aBehaviorId, aBytecodeIndex, aRole, aAdviceSourceId);
+		itsProbes.set(aProbeId, theProbe);
+		registerProbe(theProbe);
 	}
 
 	public ProbeInfo getNewExceptionProbe(int aBehaviorId, int aBytecodeIndex)
@@ -599,6 +611,11 @@ implements Serializable, IShareableStructureDatabase
 	public TagMap _getBehaviorTagMap(int aBehaviorId)
 	{
 		return getBehavior(aBehaviorId, true)._getTagMap();
+	}
+	
+	public List<ProbeInfo> _getBehaviorProbes(int aBehaviorId)
+	{
+		return getBehavior(aBehaviorId, true)._getProbes();
 	}
 	
 	public IClassInfo _getBehaviorClass(int aBehaviorId, boolean aFailIfAbsent)

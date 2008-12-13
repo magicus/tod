@@ -22,6 +22,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.browser;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.objectweb.asm.Type;
@@ -301,5 +302,15 @@ public class LocationUtils
 			return new int[] {theAdvice.getId()};
 		}
 		else throw new RuntimeException("Not handled: "+aLocation);
+	}
+	
+	public static List<IBehaviorInfo> getConstructors(IClassInfo aClass)
+	{
+		List<IBehaviorInfo> theResult = new ArrayList<IBehaviorInfo>();
+		for (IBehaviorInfo theBehavior : aClass.getBehaviors())
+		{
+			if (theBehavior.isConstructor()) theResult.add(theBehavior);
+		}
+		return theResult;
 	}
 }

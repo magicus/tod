@@ -38,6 +38,7 @@ import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.core.session.ISession;
 import tod.impl.database.IBidiIterator;
 import zz.utils.ITask;
@@ -158,6 +159,12 @@ public interface ILogBrowser
 	 * behavior.
 	 */
 	public IEventFilter createOperationLocationFilter(IBehaviorInfo aBehavior);
+	
+	/**
+	 * Creates a filter that accepts only events that occured at a precise 
+	 * location.
+	 */
+	public IEventFilter createOperationLocationFilter(ProbeInfo aProbe);
 	
 	/**
 	 * Creates a filter that accepts only events that have the specified advice source id.

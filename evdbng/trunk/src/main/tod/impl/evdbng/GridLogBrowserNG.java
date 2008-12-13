@@ -23,15 +23,18 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.evdbng;
 
 import java.rmi.RemoteException;
+import java.util.List;
 
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.IEventPredicate;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
+import tod.core.database.browser.LocationUtils;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IArraySlotFieldInfo;
 import tod.core.database.structure.IBehaviorInfo;
+import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IStructureDatabase;
@@ -40,7 +43,9 @@ import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.core.session.ISession;
+import tod.impl.common.PrecomputedFilter;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.RIGridMaster;
@@ -145,6 +150,13 @@ public class GridLogBrowserNG extends GridLogBrowser
 	public IEventFilter createOperationLocationFilter(IBehaviorInfo aBehavior)
 	{
 		return new BehaviorCondition(aBehavior.getId(), RoleIndexSet.ROLE_BEHAVIOR_OPERATION);
+	}
+	
+	public IEventFilter createOperationLocationFilter(ProbeInfo aProbe)
+	{
+		return createIntersectionFilter(
+				new BehaviorCondition(aProbe.behaviorId, RoleIndexSet.ROLE_BEHAVIOR_OPERATION),
+				new BytecodeLocationCondition(aProbe.bytecodeIndex));
 	}
 	
 	public IEventFilter createBehaviorCallFilter()
@@ -258,7 +270,24 @@ public class GridLogBrowserNG extends GridLogBrowser
 
 	public IEventFilter createInstantiationsFilter(ITypeInfo aType)
 	{
-		throw new UnsupportedOperationException();
+		if (aType instanceof IClassInfo)
+		{
+			IClassInfo theClass = (IClassInfo) aType;
+			List<IBehaviorInfo> theConstructors = LocationUtils.getConstructors(theClass);
+			if (theConstructors.isEmpty()) return new PrecomputedFilter(this);
+			
+			ICompoundFilter theFilter = createUnionFilter();
+			for (IBehaviorInfo theConstructor : theConstructors)
+				theFilter.add(createBehaviorCallFilter(null, theConstructor));
+			
+			return createIntersectionFilter(
+					theFilter,
+					createInstantiationsFilter());
+		}
+		else
+		{
+			throw new UnsupportedOperationException(""+aType);
+		}
 	}
 
 	public IEventFilter createTargetFilter(ObjectId aId)

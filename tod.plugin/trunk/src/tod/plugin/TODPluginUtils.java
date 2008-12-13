@@ -309,7 +309,7 @@ public class TODPluginUtils
 	public static MainView getMainView(final boolean aShow)
 	{
 		final MainView[] theResult = new MainView[1];
-		Display.getDefault().syncExec(new Runnable ()
+		Runnable theRunnable = new Runnable ()
 		{
 			public void run()
 			{
@@ -331,8 +331,11 @@ public class TODPluginUtils
 					throw new RuntimeException(e);
 				}
 			}
-		});
+		};
 		
+		if (Display.getDefault().getThread() == Thread.currentThread()) theRunnable.run();
+		else Display.getDefault().syncExec(theRunnable);
+
 		return theResult[0];
 	}
 

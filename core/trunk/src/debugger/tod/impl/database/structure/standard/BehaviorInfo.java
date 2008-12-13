@@ -36,6 +36,7 @@ import tod.core.database.structure.IShareableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 
 
 /**
@@ -63,6 +64,8 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 	
 	private boolean itsHasTagMap = false;
 	private transient TagMap itsTagMap;
+	
+	private transient List<ProbeInfo> itsProbes;
 
 	public BehaviorInfo(
 			IShareableStructureDatabase aDatabase, 
@@ -96,6 +99,7 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 			out.writeObject(itsLineNumberTable);
 			out.writeObject(itsLocalVariableTable);
 			out.writeObject(itsTagMap);
+			out.writeObject(itsProbes);
 		}
 		else
 		{
@@ -111,11 +115,14 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 			itsLineNumberTable = (LineNumberInfo[]) in.readObject();
 			itsLocalVariableTable = (List<LocalVariableInfo>) in.readObject();
 			itsTagMap = (TagMap) in.readObject();
+			itsProbes = (List<ProbeInfo>) in.readObject();
 		}
 	}
- 
 
-
+	public void addProbe(ProbeInfo aProbe)
+	{
+		itsProbes.add(aProbe);
+	}
 	
 	public void setup(
 			boolean aTraced,
@@ -134,6 +141,8 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 		itsTagMap = aTagMap;
 		itsHasTagMap = itsTagMap != null;
 	}
+	
+	
 	
 	@Override
 	public IClassInfo getDeclaringType()
@@ -311,6 +320,21 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 			itsTagMap = getDatabase()._getBehaviorTagMap(getId());
 		}
 		return itsTagMap;
+	}
+	
+	List<ProbeInfo> _getProbes()
+	{
+		return itsProbes;
+	}
+	
+	public ProbeInfo[] getProbes()
+	{
+		if (itsProbes == null)
+		{
+			assert ! isOriginal();
+			itsProbes = getDatabase()._getBehaviorProbes(getId());
+		}
+		return itsProbes.toArray(new ProbeInfo[itsProbes.size()]);
 	}
 	
     public boolean isConstructor()

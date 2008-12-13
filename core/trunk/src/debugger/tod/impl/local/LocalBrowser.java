@@ -48,6 +48,7 @@ import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.core.session.ISession;
 import tod.impl.common.LogBrowserUtils;
 import tod.impl.common.ObjectInspector;
@@ -202,6 +203,11 @@ public class LocalBrowser implements ILogBrowser
 	public IEventFilter createOperationLocationFilter(IBehaviorInfo aBehavior, int aBytecodeIndex)
 	{
 		return new OperationLocationFilter(this, aBehavior, aBytecodeIndex);
+	}
+	
+	public IEventFilter createOperationLocationFilter(ProbeInfo aProbe)
+	{
+		throw new UnsupportedOperationException();
 	}
 
 	public IEventFilter createOperationLocationFilter(IBehaviorInfo aBehavior)

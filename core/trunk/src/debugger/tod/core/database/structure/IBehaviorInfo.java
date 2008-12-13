@@ -27,6 +27,7 @@ import java.util.List;
 
 import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 
 public interface IBehaviorInfo extends IMemberInfo
 {
@@ -131,6 +132,11 @@ public interface IBehaviorInfo extends IMemberInfo
      * Indicates if this behavior is static.
      */
     public boolean isStatic();
+    
+    /**
+     * Returns all the probes of this method.
+     */
+    public ProbeInfo[] getProbes();
 
     /**
      * An enumeration of all possible bytecode tag types.

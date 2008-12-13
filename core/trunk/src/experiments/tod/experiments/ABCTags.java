@@ -53,6 +53,7 @@ import tod.core.database.structure.ObjectId;
 import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.core.session.AbstractSession;
 import tod.core.session.ISession;
 import tod.gui.IExtensionPoints;
@@ -289,6 +290,11 @@ public class ABCTags
 		}
 
 		public IEventFilter createOperationLocationFilter(IBehaviorInfo aBehavior, int aBytecodeIndex)
+		{
+			throw new UnsupportedOperationException();
+		}
+		
+		public IEventFilter createOperationLocationFilter(ProbeInfo aProbe)
 		{
 			throw new UnsupportedOperationException();
 		}
