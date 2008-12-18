@@ -55,10 +55,11 @@ public abstract class NativeAgentPeer extends SocketThread
 	public static final byte SET_SKIP_CORE_CLASSES = 81;
 	public static final byte SET_CAPTURE_EXCEPTIONS = 83;
 	public static final byte SET_HOST_BITS = 84;
-	public static final byte SET_WORKING_SET = 85;
+	public static final byte SET_WORKINGSET = 85;
 	public static final byte SET_STRUCTDB_ID = 86;
+	public static final byte SET_SPECIALCASE_WORKINGSET = 87;
 
-	public static final byte CONFIG_DONE = 90;
+	public static final byte CONFIG_DONE = 99;
 	
 	private final TODConfig itsConfig;
 	
@@ -252,12 +253,24 @@ public abstract class NativeAgentPeer extends SocketThread
 		theOutStream.writeByte(theHostBits);
 		
 		String theWorkingSet = itsConfig.get(TODConfig.SCOPE_TRACE_FILTER);
-		theOutStream.writeByte(SET_WORKING_SET);
+		theOutStream.writeByte(SET_WORKINGSET);
 		theOutStream.writeUTF(theWorkingSet);
 		
 		theOutStream.writeByte(SET_STRUCTDB_ID);
 		theOutStream.writeUTF(itsStructureDatabaseId);
 		
+		// Special cases working set
+		StringBuilder theSCWS = new StringBuilder("[");
+		for (String theName : itsInstrumenter.getSpecialCaseClasses())
+		{
+			theSCWS.append(" +");
+			theSCWS.append(theName);
+		}
+		theSCWS.append(']');
+		theOutStream.writeByte(SET_SPECIALCASE_WORKINGSET);
+		theOutStream.writeUTF(theSCWS.toString());
+		
+		// Finish
 		theOutStream.writeByte(CONFIG_DONE);
 		theOutStream.flush();
 	}

@@ -63,6 +63,9 @@ implements IMutableClassInfo, ISerializableLocationInfo
 	private boolean itsHasBytecode = false;
 	private transient byte[] itsBytecode;
 	
+	private boolean itsHasSMAP = false;
+	private transient String itsSMAP;
+	
 	private boolean itsInScope;
 	private boolean itsInterface;
 	
@@ -182,6 +185,28 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		itsHasBytecode = itsBytecode != null;
 	}
 	
+	String _getSMAP()
+	{
+		return itsSMAP;
+	}
+
+	public String getSMAP()
+	{
+		if (itsSMAP == null && itsHasSMAP)
+		{
+			assert ! isOriginal();
+			itsSMAP = getDatabase()._getClassSMAP(getId());
+		}
+		return itsSMAP;
+	}
+	
+	public void setSMAP(String aSmap)
+	{
+		assert isOriginal();
+		itsSMAP = aSmap;
+		itsHasSMAP = itsSMAP != null;
+	}
+
 	/**
 	 * Same as {@link #getDatabase()} but casts to {@link StructureDatabase}.
 	 * This is only for registration methods, that are used only where the original

@@ -26,6 +26,7 @@ import java.tod.TracedMethods;
 import java.util.List;
 
 import tod.core.config.TODConfig;
+import tod.impl.bci.asm.SpecialCases;
 
 public interface IInstrumenter
 {
@@ -38,6 +39,12 @@ public interface IInstrumenter
      * @return New bytecode, or null if no instrumentation is performed.
      */
 	public InstrumentedClass instrumentClass (String aClassName, byte[] aBytecode, boolean aUseJava14);
+	
+	/**
+	 * Returns all the classes that should be treated as special case
+	 * @see SpecialCases
+	 */
+	public Iterable<String> getSpecialCaseClasses();
 	
 	/**
 	 * Changes the current trace working set.

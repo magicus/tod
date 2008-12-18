@@ -34,10 +34,10 @@ import tod.agent.AgentUtils;
 import tod.core.config.DeploymentConfig;
 import tod.core.config.TODConfig;
 import tod.core.session.ConnectionInfo;
+import tod.core.session.IProgramLaunch;
 import tod.core.session.ISession;
 import tod.core.session.SessionCreationException;
 import tod.core.session.TODSessionManager;
-import tod.plugin.EclipseProgramLaunch;
 import tod.plugin.TODPlugin;
 import tod.plugin.TODPluginUtils;
 import tod.plugin.views.main.MainView;
@@ -52,23 +52,19 @@ public class LaunchUtils
 			TODConfig aConfig, 
 			ILaunch aLaunch) throws CoreException
 	{
-		return setup(new IProject[] {aJavaProject.getProject()}, aConfig, aLaunch);
+		return setup(aConfig, new EclipseProgramLaunch(aLaunch, new IProject[] {aJavaProject.getProject()}));
 	}
 	
 	public static boolean setup(
-			IProject[] aProjects,
 			TODConfig aConfig, 
-			ILaunch aLaunch) throws CoreException
+			IProgramLaunch aLaunch) throws CoreException
 {
 		MainView theView = TODPluginUtils.getMainView(true);
 		
 		ISession theSession = null;
 		try
 		{
-			theSession = TODSessionManager.getInstance().getSession(
-					theView.getGUIManager(),
-					aConfig,
-					new EclipseProgramLaunch(aLaunch, aProjects));
+			theSession = TODSessionManager.getInstance().getSession(theView.getGUIManager(), aConfig, aLaunch);
 		}
 		catch (Exception e)
 		{

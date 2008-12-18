@@ -33,7 +33,9 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
 import tod.core.config.TODConfig;
+import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.SourceRange;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.core.session.ISession;
 import tod.core.session.SessionTypeManager;
 import zz.utils.ui.StackLayout;
@@ -78,10 +80,15 @@ public class StandaloneUI extends JPanel
 
 	private class MyTraceView extends MinerUI
 	{
-		public void gotoSource(SourceRange aSourceRange)
+		public void gotoSource(ILocationInfo aLocation)
 		{
 		}
 
+		public void gotoSource(ProbeInfo aProbe)
+		{
+		}
+
+		@Override
 		public <T> T showDialog(DialogType<T> aDialog)
 		{
 			return SwingDialogUtils.showDialog(this, aDialog);

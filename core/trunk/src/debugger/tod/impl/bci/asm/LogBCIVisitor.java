@@ -79,7 +79,6 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 
 	private boolean itsModified = false;
 	
-	private boolean itsTrace;
 	private boolean itsInterface;
 	
 	private IMutableClassInfo itsClassInfo;
@@ -105,6 +104,8 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 	 * for the labels adjustment pass.
 	 */
 	private final List<BCIMethodVisitor> itsMethodVisitors = new ArrayList<BCIMethodVisitor>();
+	
+	private InstrumentationSpec itsSpec;
 
 	
 	public LogBCIVisitor(
@@ -138,6 +139,16 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		itsModified = true;
 	}
 	
+	private boolean shouldTrace(String aBehaviorName, String aSignature)
+	{
+		return itsSpec == null ? false : itsSpec.shouldInstrument(aBehaviorName, aSignature);
+	}
+
+	private boolean shouldTrace()
+	{
+		return itsSpec == null ? false : itsSpec.shouldInstrument();
+	}
+	
 	
 	@Override
 	public void visit(
@@ -162,11 +173,12 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		}
 		
 		// Check if we should trace operations in the class
-		itsTrace = itsConfig.isInScope(aName);
+		if (itsConfig.isInScope(aName)) itsSpec = InstrumentationSpec.ALL;
+		else itsSpec = SpecialCases.get(aName);
 			
-		itsClassInfo.setup(itsInterface, itsTrace, itsChecksum, theInterfaces, itsSuperclass);
+		itsClassInfo.setup(itsInterface, shouldTrace(), itsChecksum, theInterfaces, itsSuperclass);
 		
-		if (! itsInterface && itsTrace) markModified();
+		if (! itsInterface && shouldTrace()) markModified();
 		
 		super.visit(aVersion, access, aName, aSignature, aSuperName, aInterfaces);
 	}
@@ -186,6 +198,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 	public void visitSource(String aSource, String aDebug)
 	{
 		itsClassInfo.setSourceFile(aSource);
+		itsClassInfo.setSMAP(aDebug);
 		super.visitSource(aSource, aDebug);
 	}
 	
@@ -280,6 +293,8 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		
 		private DummyLabelsAttribute itsLabelsAttribute = new DummyLabelsAttribute();
 		
+		private boolean itsTraced;
+		
 		public BCIMethodVisitor(MethodVisitor mv, ASMMethodInfo aMethodInfo)
 		{
 			super (mv);
@@ -288,8 +303,9 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 					itsMethodInfo.getName(),
 					itsMethodInfo.getDescriptor(), 
 					itsMethodInfo.isStatic());
-			
-			if (itsTrace)
+		
+			itsTraced = shouldTrace(itsMethodInfo.getName(), itsMethodInfo.getDescriptor());
+			if (itsTraced)
 			{
 				itsTracedMethods.add(itsBehavior.getId());
 			}
@@ -333,7 +349,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			
 			// Note: this method can be called if the currently visited type
 			// is an interface (<clinit>).
-			if (itsTrace && TRACE_ENVELOPPE) itsInstrumenter.insertEntryHooks();
+			if (itsTraced && TRACE_ENVELOPPE) itsInstrumenter.insertEntryHooks();
 			super.visitCode();
 		}
 		
@@ -341,12 +357,12 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		@Override
 		public void visitTypeInsn(int aOpcode, String aDesc)
 		{
-			if (itsTrace && aOpcode == ANEWARRAY && TRACE_ARRAY)
+			if (itsTraced && aOpcode == ANEWARRAY && TRACE_ARRAY)
 			{
 				ITypeInfo theType = itsDatabase.getNewType('L'+aDesc+';');
 				itsInstrumenter.newArray(ASMBehaviorInstrumenter.createNewArrayClosure(aDesc), theType.getId());
 			}
-			else if (itsTrace && aOpcode == INSTANCEOF)
+			else if (itsTraced && aOpcode == INSTANCEOF)
 			{
 				int theRank = itsCounter.getCount();
 				BytecodeRole theRole = itsMethodInfo.getTag(BytecodeTagType.ROLE, theRank);
@@ -363,13 +379,13 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		
 		public void visitSuperOrThisCallInsn(int aOpcode, String aOwner, String aName, String aDesc)
 		{
-			if (itsTrace && TRACE_CALL && ! ENABLE_VERIFY) itsInstrumenter.methodCall(aOpcode, aOwner, aName, aDesc, BehaviorCallType.SUPER_CALL);
+			if (itsTraced && TRACE_CALL && ! ENABLE_VERIFY) itsInstrumenter.methodCall(aOpcode, aOwner, aName, aDesc, BehaviorCallType.SUPER_CALL);
 			else mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
 		}
 		
 		public void visitConstructorCallInsn(int aOpcode, String aOwner, int aCalledTypeId, String aName, String aDesc)
 		{
-			if (itsTrace && TRACE_CALL && ! ENABLE_VERIFY) itsInstrumenter.methodCall(aOpcode, aOwner, aName, aDesc, BehaviorCallType.INSTANTIATION);
+			if (itsTraced && TRACE_CALL && ! ENABLE_VERIFY) itsInstrumenter.methodCall(aOpcode, aOwner, aName, aDesc, BehaviorCallType.INSTANTIATION);
 			else mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
 		}
 		
@@ -385,14 +401,14 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 				throw new RuntimeException("Should have been filtered");
 			}
 			
-			if (itsTrace && TRACE_CALL) itsInstrumenter.methodCall(aOpcode, aOwner, aName, aDesc, BehaviorCallType.METHOD_CALL);
+			if (itsTraced && TRACE_CALL) itsInstrumenter.methodCall(aOpcode, aOwner, aName, aDesc, BehaviorCallType.METHOD_CALL);
 			else mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
 		}
 		
 		@Override
 		public void visitFieldInsn(int aOpcode, String aOwner, String aName, String aDesc)
 		{
-			if (itsTrace && TRACE_FIELD && (aOpcode == PUTFIELD || aOpcode == PUTSTATIC))
+			if (itsTraced && TRACE_FIELD && (aOpcode == PUTFIELD || aOpcode == PUTSTATIC))
 			{
 				itsInstrumenter.fieldWrite(aOpcode, aOwner, aName, aDesc);
 			}
@@ -402,7 +418,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		@Override
 		public void visitVarInsn(int aOpcode, int aVar)
 		{
-			if (itsTrace && TRACE_VAR && aOpcode >= ISTORE && aOpcode < IASTORE)
+			if (itsTraced && TRACE_VAR && aOpcode >= ISTORE && aOpcode < IASTORE)
 			{
 				if (! itsMethodInfo.shouldIgnoreStore(itsStoreIndex))
 				{
@@ -421,7 +437,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		@Override
 		public void visitIincInsn(int aVar, int aIncrement)
 		{
-			if (itsTrace && TRACE_VAR)
+			if (itsTraced && TRACE_VAR)
 			{
 				itsInstrumenter.variableInc(aVar, aIncrement);
 			}
@@ -435,11 +451,11 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		@Override
 		public void visitInsn(int aOpcode)
 		{
-			if (aOpcode >= IRETURN && aOpcode <= RETURN && itsTrace && TRACE_ENVELOPPE)
+			if (aOpcode >= IRETURN && aOpcode <= RETURN && itsTraced && TRACE_ENVELOPPE)
 			{
 				itsInstrumenter.doReturn(aOpcode);
 			}
-			else if (aOpcode >= IASTORE && aOpcode <= SASTORE && itsTrace && TRACE_ARRAY)
+			else if (aOpcode >= IASTORE && aOpcode <= SASTORE && itsTraced && TRACE_ARRAY)
 			{
 				itsInstrumenter.arrayWrite(aOpcode);
 			}
@@ -449,7 +465,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 		@Override
 		public void visitIntInsn(int aOpcode, int aOperand)
 		{
-			if (itsTrace && aOpcode == NEWARRAY && TRACE_ARRAY)
+			if (itsTraced && aOpcode == NEWARRAY && TRACE_ARRAY)
 			{
 				ITypeInfo theType = BCIUtils.getPrimitiveType(aOperand);
 				itsInstrumenter.newArray(ASMBehaviorInstrumenter.createNewArrayClosure(aOperand), theType.getId());
@@ -513,7 +529,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			}
 			itsMethodInfo.setCodeSize(theCodeSize);
 			
-			if (itsTrace && TRACE_ENVELOPPE) itsInstrumenter.endHooks();			
+			if (itsTraced && TRACE_ENVELOPPE) itsInstrumenter.endHooks();			
 			super.visitMaxs(aMaxStack, aMaxLocals);
 		}
 		
@@ -547,7 +563,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			
 			// Setup behavior info
 			itsBehavior.setup(
-					itsTrace,
+					itsTraced,
 					itsMethodInfo.getKind(),
 					itsMethodInfo.getCodeSize(),
 					itsMethodInfo.createLineNumberTable(), 

@@ -37,6 +37,7 @@ import tod.impl.database.structure.standard.TagMap;
 public interface IShareableStructureDatabase extends IMutableStructureDatabase
 {
 	public byte[] _getClassBytecode(int aClassId);
+	public String _getClassSMAP(int aClassId);
 	public Map<String, IMutableFieldInfo> _getClassFieldMap(int aClassId);
 	public Map<String, IMutableBehaviorInfo> _getClassBehaviorsMap(int aClassId);
 	public List<LocalVariableInfo> _getBehaviorLocalVariableInfo(int aBehaviorId);

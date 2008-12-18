@@ -22,6 +22,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.structure;
 
+import tod.tools.parsers.smap.SMAPFactory;
+
 
 /**
  * Represents a Java class or interface.
@@ -33,6 +35,14 @@ public interface IClassInfo extends ITypeInfo
 	 * Returns the bytecode of the (instrumented version of the) class.
 	 */
 	public byte[] getBytecode();
+	
+    /**
+     * Returns the value of the source debug extension attribute (JSR 45) of the class,
+     * if present. This attribute permits to map different levels of source code to 
+     * final generated source code, as in eg. JSPs.
+     * The value of this attribute should be parsed by {@link SMAPFactory}.
+     */
+    public String getSMAP();
 	
 	/**
 	 * Whether this object represents an interface, or a class.

@@ -329,10 +329,7 @@
    </extension>
    <extension
          point="tod.plugin.SourceRevealer">
-      <revealer
-            class="tod.plugin.JavaSourceRevealer"
-            id="tod.plugin.JavaRevealer">
-      </revealer>
+      <revealer class="tod.plugin.JavaSourceRevealer"/>
    </extension>
 
 </plugin>

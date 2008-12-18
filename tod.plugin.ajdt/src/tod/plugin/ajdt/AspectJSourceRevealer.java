@@ -13,7 +13,13 @@ import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.ui.IEditorPart;
 
+import tod.core.database.browser.LocationUtils;
+import tod.core.database.structure.IAdviceInfo;
+import tod.core.database.structure.IAspectInfo;
+import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.SourceRange;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.core.session.ISession;
 import tod.plugin.ISourceRevealer;
 import tod.plugin.SourceRevealerUtils;
@@ -22,13 +28,46 @@ import tod.utils.TODUtils;
 
 public class AspectJSourceRevealer implements ISourceRevealer
 {
-
-	public boolean canHandle(SourceRange aSourceRange)
+	public int canHandle(ISession aSession, ILocationInfo aLocation)
 	{
-		if (aSourceRange.sourceFile == null) return false;
-		return aSourceRange.sourceFile.endsWith(".aj");		
+		if (aLocation instanceof IAdviceInfo) return NORMAL;
+		else if (aLocation instanceof IAspectInfo) return NORMAL;
+		else return CANT;
 	}
 
+	public int canHandle(ISession aSession, ProbeInfo aProbe)
+	{
+		IStructureDatabase theStructureDatabase = aSession.getLogBrowser().getStructureDatabase();
+		String theSourceFile = LocationUtils.getSourceRange(theStructureDatabase, aProbe).sourceFile;
+		if (theSourceFile == null) return CANT;
+		return theSourceFile.endsWith(".aj") ? NORMAL : CANT;		
+	}
+
+	public boolean reveal(ISession aSession, ILocationInfo aLocation)
+			throws CoreException,
+			BadLocationException
+	{
+		if (aLocation instanceof IAdviceInfo)
+		{
+			IAdviceInfo theAdvice = (IAdviceInfo) aLocation;
+			return reveal(aSession, theAdvice.getSourceRange());
+		}
+		else if (aLocation instanceof IAspectInfo)
+		{
+			IAspectInfo theAspect = (IAspectInfo) aLocation;
+			return reveal(aSession, new SourceRange(theAspect.getName(), theAspect.getSourceFile(), 1));
+		}
+		else return false;
+	}
+
+	public boolean reveal(ISession aSession, ProbeInfo aProbe)
+			throws CoreException,
+			BadLocationException
+	{
+		IStructureDatabase theStructureDatabase = aSession.getLogBrowser().getStructureDatabase();
+		return reveal(aSession, LocationUtils.getSourceRange(theStructureDatabase, aProbe));
+	}
+	
 	public boolean reveal(ISession aSession, SourceRange aSourceRange) throws CoreException, BadLocationException
 	{
 		IEditorPart theEditor = findEditor(SourceRevealerUtils.getJavaProjects(aSession), aSourceRange);
@@ -75,6 +114,7 @@ public class AspectJSourceRevealer implements ISourceRevealer
 		
 		return EditorUtility.openInEditor(theType, false);
 	}
+
 
 
 }

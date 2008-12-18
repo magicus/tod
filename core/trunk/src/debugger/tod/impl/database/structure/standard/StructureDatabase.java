@@ -455,6 +455,7 @@ implements Serializable, IShareableStructureDatabase
 	
 	protected void registerProbe(ProbeInfo aProbe)
 	{
+		if (aProbe.behaviorId == -1) return; // This was a temp probe, it will be updated later
 		BehaviorInfo theBehavior = getBehavior(aProbe.behaviorId, true);
 		theBehavior.addProbe(aProbe);
 	}
@@ -568,6 +569,15 @@ implements Serializable, IShareableStructureDatabase
 		return getClass(aClassId, true)._getBytecode();
 	}
 	
+	/**
+	 * This method is used to retrieve the value of transient fields on the remote side
+	 * (see {@link RemoteStructureDatabase}).
+	 */
+	public String _getClassSMAP(int aClassId)
+	{
+		return getClass(aClassId, true)._getSMAP();
+	}
+
 	/**
 	 * This method is used to retrieve the value of transient fields on the remote side
 	 * (see {@link RemoteStructureDatabase}).

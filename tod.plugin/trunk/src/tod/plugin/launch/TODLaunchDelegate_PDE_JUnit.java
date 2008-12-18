@@ -9,8 +9,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.launching.IVMRunner;
-import org.eclipse.pde.ui.launcher.EclipseApplicationLaunchConfiguration;
 import org.eclipse.pde.ui.launcher.JUnitLaunchConfigurationDelegate;
+
 
 
 /**
@@ -33,7 +33,8 @@ extends JUnitLaunchConfigurationDelegate
 		try
 		{
 			IProject[] theProjects = getProjectsForProblemSearch(aConfiguration, aMode);
-			if (LaunchUtils.setup(theProjects, TODConfigLaunchTab.readConfig(aConfiguration), aLaunch))
+			EclipseProgramLaunch theLaunch = new EclipseProgramLaunch(aLaunch, theProjects);
+			if (LaunchUtils.setup(TODConfigLaunchTab.readConfig(aConfiguration), theLaunch))
 			{
 				super.launch(aConfiguration, LaunchUtils.getLaunchMode(aConfiguration), aLaunch, aMonitor);
 			}

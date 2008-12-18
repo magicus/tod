@@ -35,7 +35,13 @@ public interface IParentEvent extends ILogEvent
 	 * children of this event.
 	 */
 	public IEventBrowser getChildrenBrowser();
-	
+
+	/**
+	 * Returns an {@link IEventBrowser} that permits to retrieve 
+	 * all the events in the control flow of this event.
+	 */
+	public IEventBrowser getCFlowBrowser();
+
 	/**
 	 * Indicates if this node has children apart from the exit event.
 	 */

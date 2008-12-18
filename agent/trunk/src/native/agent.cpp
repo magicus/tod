@@ -58,9 +58,10 @@ const char FLUSH = 99;
 const char SET_SKIP_CORE_CLASSES = 81;
 const char SET_CAPTURE_EXCEPTIONS = 83;
 const char SET_HOST_BITS = 84;
-const char SET_WORKING_SET = 85;
+const char SET_WORKINGSET = 85;
 const char SET_STRUCTDB_ID = 86;
-const char CONFIG_DONE = 90;
+const char SET_SPECIALCASE_WORKINGSET = 87;
+const char CONFIG_DONE = 99;
 
 int AGENT_STARTED = 0;
 STREAM* gSocket = 0;
@@ -72,6 +73,7 @@ int cfgCaptureExceptions = 0;
 int cfgHostBits = 8; // Number of bits used to encode host id.
 int cfgHostId = 0; // A host id assigned by the TODServer - not official.
 char* cfgWorkingSet = "undefined"; // The current working set of instrumentation
+char* cfgSpecialCaseWorkingSet = "undefined"; // The special case working set
 char* cfgStructDbId = "undefined"; // The id of the structure database used by the peer
 int cfgObfuscation = 0; // set to 1 ofuscated version of the agent: package tod.agentX instead of tod.agent
 
@@ -88,6 +90,9 @@ char* classCachePrefix = "bad";
 
 // Working set
 CompoundClassSet* workingSet = NULL;
+
+// Working set for classes that should be included even if not in scope
+CompoundClassSet* specialCaseWorkingSet = NULL;
 
 // Class and method references
 StaticVoidMethod* ExceptionGeneratedReceiver_exceptionGenerated;
@@ -171,9 +176,14 @@ void agentConfigure()
 				if (propVerbose >= 1) printf("Host bits: %d\n", cfgHostBits);
 				break;
 
-			case SET_WORKING_SET:
+			case SET_WORKINGSET:
 				cfgWorkingSet = readUTF(gSocket);
 				if (propVerbose >= 1) printf("Working set: %s\n", cfgWorkingSet);
+				break;
+
+			case SET_SPECIALCASE_WORKINGSET:
+				cfgSpecialCaseWorkingSet = readUTF(gSocket);
+				if (propVerbose >= 2) printf("Special cases working set: %s\n", cfgSpecialCaseWorkingSet);
 				break;
 
 			case SET_STRUCTDB_ID:
@@ -207,8 +217,9 @@ void agentConfigure()
 
 				if (propVerbose >= 1) printf("Class cache prefix: %s\n", classCachePrefix);
 				
-				// Parse working set
+				// Parse working sets
 				workingSet = parseWorkingSet(cfgWorkingSet);
+				specialCaseWorkingSet = parseWorkingSet(cfgSpecialCaseWorkingSet);
 				
 				if (propVerbose >= 1) printf("Config done.\n");
 				return;
@@ -306,6 +317,17 @@ void agentClassFileLoadHook(
 			fflush(stdout);
 		}
 		skip = true;
+	}
+	
+	// Check special cases
+	if (specialCaseWorkingSet->accept(name))
+	{
+		if (propVerbose>=2) 
+		{
+			printf("Accepted as special case: %s\n", name);
+			fflush(stdout);
+		}
+		skip = false;
 	}
 	
 	if (skip)

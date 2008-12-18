@@ -24,7 +24,6 @@ package tod.impl.dbgrid.event;
 
 import java.io.Serializable;
 
-import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
@@ -65,7 +64,7 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 	/**
 	 * Initialize exit event and hasRealChildren flag.
 	 */
-	private synchronized void initChildren()
+	private synchronized void initCallInfo()
 	{
 		TODUtils.log(1,"[initChildren] For event: "+getPointer());
 		{
@@ -78,13 +77,16 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 
 	public boolean hasRealChildren()
 	{
-		if (itsCallInfo == null) initChildren();
+		if (itsCallInfo == null) initCallInfo();
 		return itsCallInfo.hasRealChildren();
 	}
 	
-	public IEventBrowser getChildrenBrowser()
+	/**
+	 * Ensure that bounds are initialized
+	 */
+	private void checkBounds()
 	{
-		if (itsCallInfo == null) initChildren();
+		if (itsCallInfo == null) initCallInfo();
 		
 		if (itsFirstChild == null || itsLastChild == null)
 		{
@@ -96,12 +98,30 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 					getLogBrowser().getEvent(itsCallInfo.getLastChild())
 					: null;
 		}
-		
+	}
+	
+	public IEventBrowser getChildrenBrowser()
+	{
+		checkBounds();
 		GridLogBrowser theLogBrowser = (GridLogBrowser) getLogBrowser();
 		
-		ICompoundFilter theFilter = theLogBrowser.createIntersectionFilter(
+		IEventFilter theFilter = theLogBrowser.createIntersectionFilter(
 				theLogBrowser.createThreadFilter(getThread()),
 				theLogBrowser.createDepthFilter(getDepth()+1));
+		
+		// Note that this cast should never fail as the filter cannot be an id condition.
+		GridEventBrowser theBrowser = (GridEventBrowser) theLogBrowser.createBrowser(theFilter);
+		theBrowser.setBounds(itsFirstChild, itsLastChild);
+		
+		return theBrowser;
+	}
+	
+	public IEventBrowser getCFlowBrowser()
+	{
+		checkBounds();
+		GridLogBrowser theLogBrowser = (GridLogBrowser) getLogBrowser();
+		
+		IEventFilter theFilter = theLogBrowser.createThreadFilter(getThread());
 		
 		// Note that this cast should never fail as the filter cannot be an id condition.
 		GridEventBrowser theBrowser = (GridEventBrowser) theLogBrowser.createBrowser(theFilter);
@@ -114,7 +134,7 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 	{		
 		if (itsExitEvent == null)
 		{
-			if (itsCallInfo == null) initChildren();
+			if (itsCallInfo == null) initCallInfo();
 
 			if (itsCallInfo.getExitEvent() == null)
 			{

@@ -53,6 +53,11 @@ public abstract class BehaviorCallEvent extends tod.impl.common.event.BehaviorCa
 	{
 		return new EventBrowser(getLogBrowser(), itsChildren, null);
 	}
+	
+	public IEventBrowser getCFlowBrowser()
+	{
+		throw new UnsupportedOperationException();
+	}
 
 	public void addChild (Event aEvent)
 	{

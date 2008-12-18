@@ -65,6 +65,12 @@ public class BrowserRootEvent implements IParentEvent
 
 		return itsLogBrowser.createBrowser(theFilter);
 	}
+	
+	public IEventBrowser getCFlowBrowser()
+	{
+		IEventFilter theFilter = itsLogBrowser.createThreadFilter(itsThread);
+		return itsLogBrowser.createBrowser(theFilter);
+	}
 
 	public long getFirstTimestamp()
 	{

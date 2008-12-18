@@ -30,9 +30,8 @@ import java.nio.channels.ByteChannel;
 import java.tod.AgentReady;
 import java.tod.EventCollector;
 import java.tod._AgentConfig;
-import java.util.ArrayList;
+import java.tod._ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 
 import tod.agent.AgentConfig;
@@ -65,7 +64,7 @@ public class PacketBufferSender extends Thread
 	/**
 	 * This list contains all the packet buffers created by this sender.
 	 */
-	private final List<PacketBuffer> itsBuffers = new ArrayList<PacketBuffer>();
+	private final _ArrayList<PacketBuffer> itsBuffers = new _ArrayList<PacketBuffer>();
 
 	private final MyShutdownHook itsShutdownHook;
 	
@@ -440,7 +439,7 @@ public class PacketBufferSender extends Thread
 			
 			EventCollector.INSTANCE.end();
 			
-			for (PacketBuffer theBuffer : itsBuffers) theBuffer.swapBuffers();
+			for (int i=0;i<itsBuffers.size();i++) itsBuffers.get(i).swapBuffers();
 			
 			try
 			{

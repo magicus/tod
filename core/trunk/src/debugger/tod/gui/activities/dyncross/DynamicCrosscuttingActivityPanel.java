@@ -151,7 +151,7 @@ implements IListListener<Highlight>
 									try
 									{
 										sleep(300);
-										LocationUtils.gotoSource(getGUIManager(), aNewValue);
+										getGUIManager().gotoSource(aNewValue);
 									}
 									catch (InterruptedException e)
 									{

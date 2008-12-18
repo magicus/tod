@@ -32,8 +32,6 @@ import java.nio.channels.SocketChannel;
 import java.tod.transport.LowLevelEventWriter;
 import java.tod.transport.NakedLinkedList;
 import java.tod.transport.PacketBufferSender;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.StringTokenizer;
 
 import tod.agent.AgentConfig;
@@ -109,7 +107,7 @@ public final class EventCollector
 	 */
 	private ThreadData itsControlThreadData = null;
 	
-	private List<ThreadData> itsThreadDataList = new ArrayList<ThreadData>();
+	private _ArrayList<ThreadData> itsThreadDataList = new _ArrayList<ThreadData>();
 	private PacketBufferSender itsSender;
 
 	

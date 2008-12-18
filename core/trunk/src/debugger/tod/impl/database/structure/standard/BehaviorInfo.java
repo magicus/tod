@@ -65,7 +65,7 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
 	private boolean itsHasTagMap = false;
 	private transient TagMap itsTagMap;
 	
-	private transient List<ProbeInfo> itsProbes;
+	private transient List<ProbeInfo> itsProbes = new ArrayList<ProbeInfo>();
 
 	public BehaviorInfo(
 			IShareableStructureDatabase aDatabase, 
@@ -347,12 +347,12 @@ public class BehaviorInfo extends MemberInfo implements IMutableBehaviorInfo
     	return getBehaviourKind() == BehaviorKind.STATIC_INIT;
     }
     
-    public boolean isStatic()
+    @Override
+	public boolean isStatic()
     {
     	return getBehaviourKind() == BehaviorKind.STATIC_INIT
     		|| getBehaviourKind() == BehaviorKind.STATIC_METHOD;
     }
-    
 	
 	@Override
 	public String toString()

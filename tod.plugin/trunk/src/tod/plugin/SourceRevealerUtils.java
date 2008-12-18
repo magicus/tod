@@ -21,15 +21,16 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.plugin;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExtensionRegistry;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.text.BadLocationException;
@@ -39,9 +40,11 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import tod.core.database.structure.SourceRange;
+import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.core.session.IProgramLaunch;
 import tod.core.session.ISession;
+import tod.plugin.launch.EclipseProgramLaunch;
 import tod.utils.TODUtils;
 import zz.eclipse.utils.EclipseUtils;
 
@@ -69,9 +72,10 @@ public class SourceRevealerUtils
 	private boolean itsRevealScheduled = false;
 
 	private void reveal(
+			final RevealKind aKind,
 			ISourceRevealer aRevealer, 
 			final ISession aSession, 
-			final SourceRange aSourceRange)
+			final Object aTarget)
 	{
 		itsCurentRevealer = aRevealer;
 		if (!itsRevealScheduled)
@@ -83,7 +87,7 @@ public class SourceRevealerUtils
 				{
 					try
 					{
-						itsCurentRevealer.reveal(aSession, aSourceRange);
+						aKind.reveal(itsCurentRevealer, aSession, aTarget);
 					}
 					catch (Exception e)
 					{
@@ -99,20 +103,55 @@ public class SourceRevealerUtils
 	/**
 	 * Opens a given location. Should be safe for JDT and PDE projects.
 	 */
-	public static void reveal(ISession aSession, SourceRange aSourceRange)
+	private static void reveal(
+			RevealKind aKind,
+			ISession aSession, 
+			Object aTarget)
 	{
-		TODUtils.log(1, "[SourceRevealerUtils.reveal(ISession, SourceRange)]" + aSourceRange);
+		TODUtils.log(1, "[SourceRevealerUtils.reveal]" + aTarget);
 		List<ISourceRevealer> theRevealers = ExtensionUtils.getExtensions(
 				"tod.plugin.SourceRevealer", 
 				ISourceRevealer.class);
 
-		for (ISourceRevealer theRevealer : theRevealers)
+		// Find the best revealer
+		List<Integer> theKeys = new ArrayList<Integer>();
+		Map<Integer, ISourceRevealer> theOrderedMap = new HashMap<Integer, ISourceRevealer>();
+		for (ISourceRevealer theRevealer : theRevealers) 
 		{
-			if (! theRevealer.canHandle(aSourceRange)) continue;
-			getInstance().reveal(theRevealer, aSession, aSourceRange);
+			int theConfidence = aKind.canHandle(theRevealer, aSession, aTarget);
+			while (theOrderedMap.containsKey(theConfidence)) theConfidence--;
+			theKeys.add(theConfidence);
+			theOrderedMap.put(theConfidence, theRevealer);
+		}
+
+		Collections.sort(theKeys);
+		
+		// Reveal
+		for (int i=theKeys.size()-1;i>=0;i--)
+		{
+			ISourceRevealer theRevealer = theOrderedMap.get(theKeys.get(i));
+			getInstance().reveal(aKind, theRevealer, aSession, aTarget);
+			break; //TODO: try other revealers if this one doesn't work.
 		}
 	}
 
+	/**
+	 * Opens a given location.
+	 */
+	public static void reveal(ISession aSession, ILocationInfo aLocation)
+	{
+		reveal(KIND_LOCATION, aSession, aLocation);
+	}
+
+	/**
+	 * Opens a given probe. 
+	 */
+	public static void reveal(ISession aSession, ProbeInfo aProbe)
+	{
+		reveal(KIND_PROBE, aSession, aProbe);
+	}
+
+	
 	public static IFile findFile(List<IJavaProject> aJavaProjects, String aName)
 	{
 		for (IJavaProject theJavaProject : aJavaProjects)
@@ -199,6 +238,44 @@ public class SourceRevealerUtils
 			theTextEditor.selectAndReveal(theStart, 0);
 		}
 	}
+	
+	private static abstract class RevealKind
+	{
+		public abstract int canHandle(ISourceRevealer aRevealer, ISession aSession, Object aTarget);
+		public abstract boolean reveal(ISourceRevealer aRevealer, ISession aSession, Object aTarget) throws CoreException, BadLocationException;
+	}
+	
+	private static final RevealKind KIND_LOCATION = new RevealKind()
+	{
+		@Override
+		public int canHandle(ISourceRevealer aRevealer, ISession aSession, Object aTarget)
+		{
+			return aRevealer.canHandle(aSession, (ILocationInfo) aTarget);
+		}
+
+		@Override
+		public boolean reveal(ISourceRevealer aRevealer, ISession aSession, Object aTarget) throws CoreException, BadLocationException
+		{
+			return aRevealer.reveal(aSession, (ILocationInfo) aTarget);
+		}
+	};
+	
+	private static final RevealKind KIND_PROBE = new RevealKind()
+	{
+		@Override
+		public int canHandle(ISourceRevealer aRevealer, ISession aSession, Object aTarget)
+		{
+			return aRevealer.canHandle(aSession, (ProbeInfo) aTarget);
+		}
+
+		@Override
+		public boolean reveal(ISourceRevealer aRevealer, ISession aSession, Object aTarget)
+				throws CoreException,
+				BadLocationException
+		{
+			return aRevealer.reveal(aSession, (ProbeInfo) aTarget);
+		}
+	};
 	
 
 }

@@ -60,6 +60,10 @@
             id="tod.plugin.ajdt.launchConfigurationTabGroup.AJDT_LoadTime"
             type="org.eclipse.ajdt.launching.AspectJLTWApplication"/>
    </extension>
+   <extension
+         point="tod.plugin.SourceRevealer">
+      <revealer class="tod.plugin.ajdt.AspectJSourceRevealer"/>
+   </extension>
 
 
 </plugin>

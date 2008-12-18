@@ -12,6 +12,7 @@ import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.pde.ui.launcher.EclipseApplicationLaunchConfiguration;
 
 
+
 /**
  * Launch delegate for configuration type: org.eclipse.pde.ui.RuntimeWorkbench
  * @author gpothier
@@ -32,7 +33,8 @@ extends EclipseApplicationLaunchConfiguration
 		try
 		{
 			IProject[] theProjects = getProjectsForProblemSearch(aConfiguration, aMode);
-			if (LaunchUtils.setup(theProjects, TODConfigLaunchTab.readConfig(aConfiguration), aLaunch))
+			EclipseProgramLaunch theLaunch = new EclipseProgramLaunch(aLaunch, theProjects);
+			if (LaunchUtils.setup(TODConfigLaunchTab.readConfig(aConfiguration), theLaunch))
 			{
 				super.launch(aConfiguration, LaunchUtils.getLaunchMode(aConfiguration), aLaunch, aMonitor);
 			}

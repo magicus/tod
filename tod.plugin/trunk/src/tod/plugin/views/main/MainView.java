@@ -28,7 +28,9 @@ import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchPart;
 
-import tod.core.database.structure.SourceRange;
+import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.core.session.ISession;
 import tod.gui.IContext;
 import tod.gui.IGUIManager;
@@ -100,16 +102,26 @@ public class MainView extends AbstractAWTView implements ISelectionListener
 		itsMoving = false;
 	}
 	
-	public void gotoSource(ISession aSession, SourceRange aSourceRange)
+	public void gotoSource(ISession aSession, ILocationInfo aLocation)
 	{
 	    if (itsMoving) return;
 	    itsMoving = true;
 	    
-	    SourceRevealerUtils.reveal(aSession, aSourceRange);
+	    SourceRevealerUtils.reveal(aSession, aLocation);
 	    
 	    itsMoving = false;
 	}
 
+	public void gotoSource(ISession aSession, ProbeInfo aProbe)
+	{
+		if (itsMoving) return;
+		itsMoving = true;
+		
+		SourceRevealerUtils.reveal(aSession, aProbe);
+		
+		itsMoving = false;
+	}
+	
 
 	
 	@Override

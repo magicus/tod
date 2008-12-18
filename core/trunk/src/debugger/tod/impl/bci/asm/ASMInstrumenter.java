@@ -81,6 +81,11 @@ public class ASMInstrumenter implements IInstrumenter
 		{
 			if (!BCIUtils.acceptClass(aName, itsConfig.getGlobalSelector())) return null;
 		}
+		
+		if ("org/apache/jsp/index_jsp".equals(aName))
+		{
+			System.out.println("ASMInstrumenter.instrumentClass()");
+		}
 
 		String theChecksum = Utils.md5String(aBytecode);
 
@@ -140,6 +145,11 @@ public class ASMInstrumenter implements IInstrumenter
 				: null;
 	}
 
+	public Iterable<String> getSpecialCaseClasses()
+	{
+		return SpecialCases.getAllClasses();
+	}
+	
 	private void printClass(ClassReader aReader)
 	{
 		aReader.accept(

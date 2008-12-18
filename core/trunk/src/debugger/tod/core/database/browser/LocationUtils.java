@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.objectweb.asm.Type;
 
-import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ICallerSideEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IAdviceInfo;
@@ -204,29 +203,32 @@ public class LocationUtils
 		
 		return theBuilder.toString();
 	}
-
+	
 	/**
 	 * Returns the source range corresponding to the given event.
 	 */
-	public static SourceRange getSourceRange (ILogEvent aEvent)
+	public static SourceRange getSourceRange (IStructureDatabase aStructureDatabase, ProbeInfo aProbe)
+	{
+	    IBehaviorInfo theBehavior = aStructureDatabase.getBehavior(aProbe.behaviorId, true);
+	    int theLineNumber = theBehavior.getLineNumber(aProbe.bytecodeIndex);
+	    ITypeInfo theType = theBehavior.getDeclaringType();
+	    
+	    String theSourceFile = theBehavior.getSourceFile();
+	    if (theSourceFile == null) theSourceFile = theType.getSourceFile();
+	    
+	    return new SourceRange(theType.getName(), theSourceFile, theLineNumber);
+	}
+	
+	/**
+	 * Returns the source range corresponding to the given event.
+	 */
+	public static SourceRange getSourceRange (IStructureDatabase aStructureDatabase, ILogEvent aEvent)
 	{
 		if (aEvent instanceof ICallerSideEvent)
 		{
 			ICallerSideEvent theEvent = (ICallerSideEvent) aEvent;
-			IBehaviorCallEvent theParent = theEvent.getParent();
-		    if (theParent == null) return null;
-		    
-		    int theBytecodeIndex = theEvent.getOperationBytecodeIndex();
-		    IBehaviorInfo theBehavior = theParent.getExecutedBehavior();
-		    if (theBehavior == null) return null;
-		    
-		    int theLineNumber = theBehavior.getLineNumber(theBytecodeIndex);
-		    ITypeInfo theType = theBehavior.getDeclaringType();
-		    
-		    String theSourceFile = theBehavior.getSourceFile();
-		    if (theSourceFile == null) theSourceFile = theType.getSourceFile();
-		    
-		    return new SourceRange(theType.getName(), theSourceFile, theLineNumber);
+			ProbeInfo theProbe = theEvent.getProbeInfo();
+			return getSourceRange(aStructureDatabase, theProbe);
 		}
 		else return null;
 	}
@@ -236,28 +238,10 @@ public class LocationUtils
 	 */
 	public static void gotoSource(IGUIManager aGUIManager, ILogEvent aEvent)
 	{
-		SourceRange theSourceRange = LocationUtils.getSourceRange(aEvent);
-		if (theSourceRange != null) aGUIManager.gotoSource(theSourceRange);
+		ProbeInfo theProbe = getProbeInfo(aEvent);
+		if (theProbe != null) aGUIManager.gotoSource(theProbe);
 	}
 
-	/**
-	 * Go to the source of the specified location.
-	 */
-	public static void gotoSource(IGUIManager aGUIManager, ILocationInfo aLocation)
-	{
-		if (aLocation instanceof IAdviceInfo)
-		{
-			IAdviceInfo theAdvice = (IAdviceInfo) aLocation;
-			aGUIManager.gotoSource(theAdvice.getSourceRange());
-		}
-		else if (aLocation instanceof IAspectInfo)
-		{
-			IAspectInfo theAspect = (IAspectInfo) aLocation;
-			aGUIManager.gotoSource(new SourceRange(theAspect.getName(), theAspect.getSourceFile(), 1));
-		}
-		else throw new UnsupportedOperationException(""+aLocation);
-	}
-	
 	
 	/**
 	 * Returns the probe info of the given event.

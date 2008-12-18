@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
-import javax.swing.GrayFilter;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -196,7 +195,7 @@ public class ShadowGroupNode extends AbstractEventGroupNode<ShadowId>
 	@Override
 	public void mousePressed(MouseEvent aE)
 	{
-		getGUIManager().gotoSource(getAdvice().getSourceRange());
+		getGUIManager().gotoSource(getAdvice());
 	}
 	
 	@Override

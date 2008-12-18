@@ -66,5 +66,9 @@ int main(int, char**)
 	test(set, "org/xmlpull/v1/XmlPullParserFactory", true);
 	test(set, "org/xmldb/api/DatabaseManager", true);
 	
+	set = parseWorkingSet("[]");
+	test(set, "org/xmlpull/v1/XmlPullParserFactory", false);
+	test(set, "org/xmldb/api/DatabaseManager", false);
+	
 	printf("Success\n");
 }

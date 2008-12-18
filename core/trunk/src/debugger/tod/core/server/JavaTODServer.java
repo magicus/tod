@@ -338,6 +338,11 @@ public class JavaTODServer extends TODServer
 		{
 			itsDelegate.setTraceWorkingSet(aWorkingSet);
 		}
+		
+		public synchronized Iterable<String> getSpecialCaseClasses()
+		{
+			return itsDelegate.getSpecialCaseClasses();
+		}
 	}
 	
 	/**

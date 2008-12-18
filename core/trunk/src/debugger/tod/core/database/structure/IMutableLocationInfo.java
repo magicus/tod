@@ -43,5 +43,4 @@ public interface IMutableLocationInfo extends ILocationInfo
 	 * Sets the source file name.
 	 */
 	public void setSourceFile(String aFile);
-
 }

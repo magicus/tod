@@ -15,7 +15,6 @@ import tod.core.config.TODConfig;
 import tod.core.session.ISession;
 import tod.core.session.TODSessionManager;
 import tod.impl.dbgrid.RemoteGridSession;
-import tod.plugin.EclipseProgramLaunch;
 import tod.plugin.TODPlugin;
 import tod.plugin.TODPluginUtils;
 import tod.plugin.views.main.MainView;

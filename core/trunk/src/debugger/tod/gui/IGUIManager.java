@@ -29,7 +29,8 @@ import javax.swing.JComponent;
 import tod.core.IBookmarks;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.SourceRange;
+import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.core.session.ISession;
 import tod.gui.activities.ActivitySeed;
 import tod.gui.kit.IBusOwner;
@@ -53,9 +54,14 @@ public interface IGUIManager extends IBusOwner
 	public void openSeed (ActivitySeed aSeed, boolean aNewTab);
 	
 	/**
-	 * Shows the location of the specified event in the source code.
+	 * Shows the location of the specified probe in the source code.
 	 */
-	public void gotoSource (SourceRange aSourceRange);
+	public void gotoSource (ProbeInfo aProbe);
+	
+	/**
+	 * Shows the location of the specified location in the source code.
+	 */
+	public void gotoSource (ILocationInfo aLocation);
 	
 	/**
 	 * Returns a global job scheduler.

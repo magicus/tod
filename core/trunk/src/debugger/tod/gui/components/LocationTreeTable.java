@@ -90,10 +90,24 @@ public abstract class LocationTreeTable extends JPanel
 		setTree(aTree);
 	}
 	
+	public IRWProperty<ILocationInfo> pSelectedLocation()
+	{
+		return pSelectedLocation;
+	}
+	
 	public void setTree(ITree<SimpleTreeNode<ILocationInfo>, ILocationInfo> aTree)
 	{
 		itsTree = aTree;
 		itsTreeTable.setTreeTableModel(new MyModel(itsTree));
+		for(int i=0;i<getColumnCount();i++)
+		{
+			int theWidth = getPreferredColumnWidth(i);
+			if (theWidth != -1) 
+			{
+				getColumn(i).setPreferredWidth(theWidth);
+				getColumn(i).setMaxWidth(theWidth);
+			}
+		}
 	}
 	
 	public void setDefaultRenderer(Class aClass, TableCellRenderer aRenderer)
@@ -146,6 +160,15 @@ public abstract class LocationTreeTable extends JPanel
 	protected String getColumnName(int aColumn)
 	{
 		return ""+aColumn;
+	}
+	
+	/**
+	 * Returns the preferred width for a particular column, or -1 if
+	 * it should not be set.
+	 */
+	protected int getPreferredColumnWidth(int aColumn)
+	{
+		return -1;
 	}
 	
 	/**

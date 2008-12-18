@@ -47,6 +47,12 @@ public interface IMutableClassInfo extends IClassInfo, IMutableLocationInfo
 	public void setBytecode(byte[] aBytecode);
 	
 	/**
+	 * Sets the SMAP of the class (JSR 45).
+	 * @see IClassInfo#getSMAP()
+	 */
+	public void setSMAP(String aSMAP);
+	
+	/**
 	 * This method either creates a new uninitialized behavior, or
 	 * returns the behavior of the specified name/descriptor.
 	 * If the behavior is created it is automatically assigned an id and added

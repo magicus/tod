@@ -46,11 +46,11 @@ import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IHostInfo;
+import tod.core.database.structure.ILocationInfo;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
-import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
@@ -103,11 +103,17 @@ public class ABCTags
 			setSession(new DummySession(this, aConfig, URI.create("dummy:dummy"), aLogBrowser));
 		}
 		
-		public void gotoSource(SourceRange aSourceRange)
+		public void gotoSource(ILocationInfo aLocation)
 		{
 			throw new UnsupportedOperationException();
 		}
 
+		public void gotoSource(ProbeInfo aProbe)
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
 		public <T> T showDialog(DialogType<T> aDialog)
 		{
 			throw new UnsupportedOperationException();

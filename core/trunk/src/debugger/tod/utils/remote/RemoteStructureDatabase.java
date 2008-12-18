@@ -257,6 +257,11 @@ implements RIStructureDatabase
 		return itsSource._getClassBytecode(aClassId);
 	}
 
+	public String _getClassSMAP(int aClassId) throws RemoteException
+	{
+		return itsSource._getClassSMAP(aClassId);
+	}
+
 	public Map<String, IMutableFieldInfo> _getClassFieldMap(int aClassId) 
 	{
 		return itsSource._getClassFieldMap(aClassId);
@@ -809,6 +814,19 @@ implements RIStructureDatabase
 			{
 				System.out.println("Retrieving bytecode for class: "+aClassId);
 				return itsDatabase._getClassBytecode(aClassId);
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		
+		public String _getClassSMAP(int aClassId)
+		{
+			try
+			{
+				System.out.println("Retrieving SMAP for class: "+aClassId);
+				return itsDatabase._getClassSMAP(aClassId);
 			}
 			catch (RemoteException e)
 			{

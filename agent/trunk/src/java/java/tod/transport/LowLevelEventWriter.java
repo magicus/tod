@@ -49,6 +49,7 @@ import java.nio.ByteOrder;
 import java.tod.EventCollector;
 import java.tod.ExceptionGeneratedReceiver;
 import java.tod.ObjectIdentity;
+import java.tod.ObjectValueFactory;
 import java.tod._BehaviorCallType;
 import java.tod._LowLevelEventType;
 import java.tod._Output;
@@ -705,7 +706,7 @@ public class LowLevelEventWriter
 		theBuffer.write(itsBufferStore, 0, 22);
 		
 		ObjectOutputStream theObjectOut = new ObjectOutputStream(theBuffer);
-		theObjectOut.writeObject(ObjectValue.ensurePortable(aObject));
+		theObjectOut.writeObject(ObjectValueFactory.ensurePortable(aObject));
 		theObjectOut.flush();
 		
 		int theSize = theBuffer.size()-5; // 5: event type + size 

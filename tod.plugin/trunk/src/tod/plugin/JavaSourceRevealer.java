@@ -11,16 +11,44 @@ import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.ui.IEditorPart;
 
+import tod.core.database.browser.LocationUtils;
+import tod.core.database.structure.ILocationInfo;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.SourceRange;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.core.session.ISession;
 import tod.utils.TODUtils;
 
 public class JavaSourceRevealer implements ISourceRevealer
 {
-	public boolean canHandle(SourceRange aSourceRange)
+	
+	public int canHandle(ISession aSession, ILocationInfo aLocation)
 	{
-		if (aSourceRange.sourceFile == null) return false;
-		return aSourceRange.sourceFile.endsWith(".java");
+		// TODO: we should handle behaviors and classes
+		return CANT;
+	}
+
+	public int canHandle(ISession aSession, ProbeInfo aProbe)
+	{
+		IStructureDatabase theStructureDatabase = aSession.getLogBrowser().getStructureDatabase();
+		String theSourceFile = LocationUtils.getSourceRange(theStructureDatabase, aProbe).sourceFile;
+		if (theSourceFile == null) return CANT;
+		return theSourceFile.endsWith(".java") ? NORMAL : CANT;		
+	}
+
+	public boolean reveal(ISession aSession, ILocationInfo aLocation)
+			throws CoreException,
+			BadLocationException
+	{
+		return false;
+	}
+
+	public boolean reveal(ISession aSession, ProbeInfo aProbe)
+			throws CoreException,
+			BadLocationException
+	{
+		IStructureDatabase theStructureDatabase = aSession.getLogBrowser().getStructureDatabase();
+		return reveal(aSession, LocationUtils.getSourceRange(theStructureDatabase, aProbe));
 	}
 
 	public boolean reveal(ISession aSession, SourceRange aSourceRange) throws CoreException, BadLocationException

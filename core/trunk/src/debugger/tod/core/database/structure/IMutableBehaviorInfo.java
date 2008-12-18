@@ -36,6 +36,7 @@ public interface IMutableBehaviorInfo extends IBehaviorInfo, IMutableLocationInf
 	/**
 	 * Sets up the attributes of this behavior.
 	 * This method should be called only once.
+	 * @param aSMAP TODO
 	 */
 	public void setup(
 			boolean aTraced,

@@ -109,6 +109,8 @@ bool isNameChar(char c)
 
 bool CompoundClassSet::accept(const char* name)
 {
+	if (components.size() == 0) return false;
+	
 	for (int i=components.size()-1;i>=0;i--)
 	{
 		SetOperation* op = components[i];

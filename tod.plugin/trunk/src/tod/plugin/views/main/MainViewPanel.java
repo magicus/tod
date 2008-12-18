@@ -42,7 +42,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 
 import tod.core.database.structure.ILocationInfo;
-import tod.core.database.structure.SourceRange;
+import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.core.session.ISession;
 import tod.core.session.TODSessionManager;
 import tod.gui.IExtensionPoints;
@@ -115,11 +115,18 @@ public class MainViewPanel extends MinerUI
 		}
 	}
 	
-	public void gotoSource(SourceRange aSourceRange)
-	{
-	    itsTraceNavigatorView.gotoSource(getSession(), aSourceRange);
-	}
 	
+	
+	public void gotoSource(ILocationInfo aLocation)
+	{
+	    itsTraceNavigatorView.gotoSource(getSession(), aLocation);
+	}
+
+	public void gotoSource(ProbeInfo aProbe)
+	{
+	    itsTraceNavigatorView.gotoSource(getSession(), aProbe);
+	}
+
 	public <T> T showDialog(DialogType<T> aDialog)
 	{
 		if (aDialog instanceof ErrorDialogType)

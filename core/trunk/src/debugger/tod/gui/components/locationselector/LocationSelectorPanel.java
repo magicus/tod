@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.AbstractListModel;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -43,9 +44,11 @@ import tod.core.database.structure.tree.PackageInfo;
 import tod.core.database.structure.tree.StructureTreeBuilders;
 import tod.gui.components.LocationTreeTable;
 import zz.utils.properties.IRWProperty;
+import zz.utils.properties.PropertyUtils;
 import zz.utils.properties.SimpleRWProperty;
 import zz.utils.tree.SimpleTreeNode;
 import zz.utils.ui.StackLayout;
+import zz.utils.ui.UniversalRenderer;
 
 /**
  * This panel permits to select a location in the structure database.
@@ -53,7 +56,15 @@ import zz.utils.ui.StackLayout;
  */
 public class LocationSelectorPanel extends JPanel
 {
-	private final IRWProperty<ILocationInfo> pSelectedLocation = new SimpleRWProperty<ILocationInfo>();
+	private final IRWProperty<ILocationInfo> pSelectedLocation = new SimpleRWProperty<ILocationInfo>()
+	{
+		@Override
+		protected void changed(ILocationInfo aOldValue, ILocationInfo aNewValue)
+		{
+			show(aNewValue);
+		}
+	};
+	
 	private final ILogBrowser itsLogBrowser;
 	private final boolean itsShowMembers;
 	
@@ -107,6 +118,7 @@ public class LocationSelectorPanel extends JPanel
 	 */
 	public void show(ILocationInfo aLocation)
 	{
+		System.out.println("LocationSelectorPanel.show(): "+aLocation);
 		pSelectedLocation.set(aLocation);
 	}
 	
@@ -180,7 +192,19 @@ public class LocationSelectorPanel extends JPanel
 					itsShowMembers));
 
 //			getTree().setShowsRootHandles(false);
-			
+			PropertyUtils.connect(pSelectedLocation(), LocationSelectorPanel.this.pSelectedLocation, true);
+			setDefaultRenderer(Long.class, new UniversalRenderer<Long>()
+			{
+				@Override
+				protected void setupLabel(JLabel aLabel, Long aValue)
+				{
+					long v = aValue.longValue();
+//					return v < 1000000 ? String.format("%,d", v) : String.format("%,.1fM", v/1000000.0);
+					String theLabel = String.format("%,d", v);
+					aLabel.setText(theLabel);
+					aLabel.setHorizontalAlignment(JLabel.RIGHT);
+				}
+			});
 		}
 		
 		@Override
@@ -205,6 +229,16 @@ public class LocationSelectorPanel extends JPanel
 			switch(aColumn)
 			{
 			case 0: return "# ev";
+			default: throw new RuntimeException("No such column: "+aColumn);
+			}
+		}
+		
+		@Override
+		protected int getPreferredColumnWidth(int aColumn)
+		{
+			switch(aColumn)
+			{
+			case 0: return 80;
 			default: throw new RuntimeException("No such column: "+aColumn);
 			}
 		}
