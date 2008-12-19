@@ -12,6 +12,7 @@ def release(version):
 
 	tpMod = useSVN('tod.plugin', 'http://pleiad.dcc.uchile.cl/svn/tod/tod.plugin/trunk/')
 	tpaMod = useSVN('tod.plugin.ajdt', 'http://pleiad.dcc.uchile.cl/svn/tod/tod.plugin.ajdt/')
+	tpwMod = useSVN('tod.plugin.wst', 'http://pleiad.dcc.uchile.cl/svn/tod/tod.plugin.wst/trunk')
 	#tppMod = useSVN('tod.plugin.pytod', 'http://pleiad.dcc.uchile.cl/svn/tod/tod.plugin.pytod/trunk')
 	todMod = useSVN('TOD', 'http://pleiad.dcc.uchile.cl/svn/tod/core/trunk/')
 	taMod = useSVN('TOD-agent', 'http://pleiad.dcc.uchile.cl/svn/tod/agent/trunk/')
@@ -69,6 +70,7 @@ def release(version):
 	antBuild('zz.eclipse.utils', 'build-plugin.xml', 'clean')
 	antBuild('tod.plugin', 'build-plugin.xml', 'clean')
 	antBuild('tod.plugin.ajdt', 'build-plugin.xml', 'clean')
+	antBuild('tod.plugin.wst', 'build-plugin.xml', 'clean')
 	#antBuild('tod.plugin.pytod', 'build-plugin.xml', 'clean')
 	
 	print '############################################################'
@@ -91,6 +93,9 @@ def release(version):
 	setEclipsePluginVersion('tod.plugin.ajdt', version)
 	antBuild('tod.plugin.ajdt', 'build-plugin.xml', 'plugin')
 	
+	setEclipsePluginVersion('tod.plugin.wst', version)
+	antBuild('tod.plugin.wst', 'build-plugin.xml', 'plugin')
+	
 	#setEclipsePluginVersion('tod.plugin.pytod', version)
 	#antBuild('tod.plugin.pytod', 'build-plugin.xml', 'plugin')
 	
@@ -102,6 +107,7 @@ def release(version):
 	os.mkdir('release/plugins')
 	shutil.copytree(tpMod.path + '/build/tod.plugin', 'release/plugins/tod.plugin_' + version)
 	shutil.copytree(tpaMod.path + '/build/tod.plugin.ajdt', 'release/plugins/tod.plugin.ajdt_' + version)
+	shutil.copytree(tpwMod.path + '/build/tod.plugin.wst', 'release/plugins/tod.plugin.wst_' + version)
 	#shutil.copytree(tppMod.path + '/build/tod.plugin.pytod', 'release/plugins/tod.plugin.pytod_' + version)
 	shutil.copytree(zzeuMod.path + '/build/zz.eclipse.utils', 'release/plugins/zz.eclipse.utils_1.0.0')
 
