@@ -668,7 +668,7 @@ public class LowLevelEventWriter
 			// First time this object appears, register its type
 			theObjectId = -theObjectId;
 			Class<?> theClass = aObject.getClass();
-			itsRegisteredRefObjectsStack.push(theObjectId, theClass, aTimestamp);
+			itsRegisteredRefObjectsStack.push(aObject, theObjectId, theClass, aTimestamp);
 		}
 
 		sendValueType(aBuffer, _ValueType.OBJECT_UID);
@@ -692,7 +692,7 @@ public class LowLevelEventWriter
 		while (!itsRegisteredRefObjectsStack.isEmpty())
 		{
 			RefObjectEntry theEntry = itsRegisteredRefObjectsStack.pop();
-			sendRegisteredRefObject(theEntry.id, theEntry.cls, theEntry.timestamp);
+			sendRegisteredRefObject(theEntry.object, theEntry.id, theEntry.cls, theEntry.timestamp);
 		}
 
 	}
@@ -725,9 +725,15 @@ public class LowLevelEventWriter
 		itsStream.write(theArray, theArray.length, true);
 	}
 	
-	private void sendRegisteredRefObject(long aId, Class<?> aClass, long aTimestamp) throws IOException
+	private void sendRegisteredRefObject(Object aObject, long aId, Class<?> aClass, long aTimestamp) throws IOException
 	{
 		// That must stay before we start using the buffer
+		if (aClass == Class.class)
+		{
+			// We have to register it explicitly now otherwise the system thinks it
+			// is already registered because it has an id.
+			sendRegisterClass(aId, (Class<?>) aObject);
+		}
 		long theClassId = getClassId(aClass); 
 		
 		sendEventType(itsBuffer, _LowLevelEventType.REGISTER_REFOBJECT);
@@ -957,9 +963,9 @@ public class LowLevelEventWriter
 			}
 		}
 
-		public void push(long aId, Class<?> aClass, long aTimestamp)
+		public void push(Object aObject, long aId, Class<?> aClass, long aTimestamp)
 		{
-			itsObjects[itsSize++].set(aId, aClass, aTimestamp);
+			itsObjects[itsSize++].set(aObject, aId, aClass, aTimestamp);
 		}
 
 		public boolean isEmpty()
@@ -975,12 +981,14 @@ public class LowLevelEventWriter
 
 	private static class RefObjectEntry
 	{
+		public Object object;
 		public long id;
 		public Class<?> cls;
 		public long timestamp;
 
-		public void set(long aId, Class<?> aClass, long aTimestamp)
+		public void set(Object aObject, long aId, Class<?> aClass, long aTimestamp)
 		{
+			object = aObject;
 			id = aId;
 			cls = aClass;
 			timestamp = aTimestamp;
