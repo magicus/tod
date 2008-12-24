@@ -1,8 +1,7 @@
 /*
- * Created on Dec 13, 2008
+ * Created on Dec 24, 2008
  */
 package tod.plugin.wst.launch;
-
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -10,14 +9,14 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.IVMRunner;
-import org.eclipse.jst.server.tomcat.core.internal.TomcatLaunchConfigurationDelegate;
+import org.eclipse.jst.server.generic.core.internal.GenericServerLaunchConfigurationDelegate;
 import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.ServerUtil;
 
 import tod.plugin.launch.LaunchUtils;
 import tod.plugin.launch.TODConfigLaunchTab;
 
-public class TODLaunchDelegate_Tomcat extends TomcatLaunchConfigurationDelegate
+public class TODLaunchDelegate_GenericServer extends GenericServerLaunchConfigurationDelegate
 {
 	@Override
 	public IVMRunner getVMRunner(ILaunchConfiguration aConfiguration, String aMode) throws CoreException
