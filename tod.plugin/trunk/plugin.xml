@@ -45,6 +45,9 @@
       <library name="../zz.utils/bin">
          <export name="*"/>
       </library>
+      <library name="../zz.jinterp/bin">
+         <export name="*"/>
+      </library>
       <library name="../TOD/bin">
          <export name="*"/>
       </library>
@@ -83,6 +86,9 @@
          <export name="*"/>
       </library>
       <library name="lib/zz.utils.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/zz.jinterp.jar">
          <export name="*"/>
       </library>
       DEPLOY-out -->
