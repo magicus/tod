@@ -22,8 +22,11 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.gui.kit;
 
+import java.awt.Color;
+
 import javax.swing.SwingUtilities;
 
+import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.tools.monitoring.ITaskMonitor;
 import tod.tools.monitoring.TaskMonitor.TaskCancelledException;
@@ -64,6 +67,20 @@ implements IEventListener<Void>, IJobSchedulerProvider
 	public void addNotify()
 	{
 		super.addNotify();
+		if (autoScheduleJob()) scheduleJob();
+	}
+	
+	/**
+	 * If this method returns true, the job is scheduled as soon as the panel is displayed.
+	 * Otherwise, the job must be scheduled manually using {@link #scheduleJob()}.
+	 */
+	protected boolean autoScheduleJob()
+	{
+		return true;
+	}
+	
+	protected void scheduleJob()
+	{
 		if (itsMonitor == null)
 		{
 			itsMonitor = itsJobScheduler.submit(itsJobPriority, new Runnable()
@@ -90,6 +107,7 @@ implements IEventListener<Void>, IJobSchedulerProvider
 			itsMonitor.eCancelled().addListener(this);
 		}
 	}
+	
 	
 	public void fired(IEvent< ? extends Void> aEvent, Void aData)
 	{
@@ -160,6 +178,7 @@ implements IEventListener<Void>, IJobSchedulerProvider
 	
 	protected void updateFailure()
 	{
+		add(GUIUtils.createLabel("ERROR", FontConfig.STD_FONT, Color.RED));
 	}
 	
 	

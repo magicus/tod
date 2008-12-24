@@ -46,6 +46,7 @@ import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.session.ISession;
 import tod.impl.common.LogBrowserUtils;
+import tod.impl.common.ObjectInspector;
 import tod.impl.common.VariablesInspector;
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.aggregator.GridEventBrowser;
@@ -85,6 +86,7 @@ implements ILogBrowser, IScheduled
 		
 	private QueryResultCache itsQueryResultCache = new QueryResultCache();
 	private ObjectInspectorCache itsObjectInspectorCache = new ObjectInspectorCache();
+	private StaticInspectorCache itsStaticInspectorCache = new StaticInspectorCache();
 	
 	protected GridLogBrowser(
 			ISession aSession,
@@ -361,7 +363,12 @@ implements ILogBrowser, IScheduled
 
 	public IObjectInspector createClassInspector(IClassInfo aClass)
 	{
-		throw new UnsupportedOperationException();
+		return itsStaticInspectorCache.get(aClass);
+	}
+
+	protected IObjectInspector createStaticInspector0(IClassInfo aClass)
+	{
+		return new ObjectInspector(this, aClass);
 	}
 
 	public final IObjectInspector createObjectInspector(ObjectId aObjectId)
@@ -369,11 +376,14 @@ implements ILogBrowser, IScheduled
 		return itsObjectInspectorCache.get(aObjectId);
 	}
 	
-	protected abstract IObjectInspector createObjectInspector0(ObjectId aObjectId);
+	protected IObjectInspector createObjectInspector0(ObjectId aObjectId)
+	{
+		return new ObjectInspector(this, aObjectId);
+	}
 
 	public IVariablesInspector createVariablesInspector(IBehaviorCallEvent aEvent)
 	{
-		return new VariablesInspector(aEvent);
+		return new VariablesInspector(this, aEvent);
 	}
 	
 	public IBidiIterator<Long> searchStrings(String aSearchText)
@@ -545,6 +555,26 @@ implements ILogBrowser, IScheduled
 		protected ObjectId getKey(IObjectInspector aValue)
 		{
 			return aValue.getObject();
+		}
+	}
+	
+	private class StaticInspectorCache extends MRUBuffer<IClassInfo, IObjectInspector>
+	{
+		public StaticInspectorCache()
+		{
+			super(1000);
+		}
+		
+		@Override
+		protected IObjectInspector fetch(IClassInfo aId)
+		{
+			return createStaticInspector0(aId);
+		}
+		
+		@Override
+		protected IClassInfo getKey(IObjectInspector aValue)
+		{
+			return (IClassInfo) aValue.getType();
 		}
 	}
 }

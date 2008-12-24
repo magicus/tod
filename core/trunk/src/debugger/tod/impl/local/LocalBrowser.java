@@ -362,7 +362,7 @@ public class LocalBrowser implements ILogBrowser
 
 	public IVariablesInspector createVariablesInspector(IBehaviorCallEvent aEvent)
 	{
-		return new VariablesInspector(aEvent);
+		return new VariablesInspector(this, aEvent);
 	}
 	
 	public Iterable<IHostInfo> getHosts()

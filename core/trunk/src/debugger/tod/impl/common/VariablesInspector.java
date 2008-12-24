@@ -23,7 +23,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.common;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,7 +30,6 @@ import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IVariablesInspector;
-import tod.core.database.browser.ICompoundInspector.EntryValue;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILocalVariableWriteEvent;
 import tod.core.database.event.ILogEvent;
@@ -41,18 +39,25 @@ import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 
 public class VariablesInspector implements IVariablesInspector
 {
+	private final ILogBrowser itsLogBrowser;
 	private final IBehaviorCallEvent itsBehaviorCall;
 	private final IEventBrowser itsChildrenBrowser;
 	private ILogEvent itsReferenceEvent;
 	private List<LocalVariableInfo> itsVariables;
 	
-	public VariablesInspector(IBehaviorCallEvent aBehaviorCall)
+	public VariablesInspector(ILogBrowser aLogBrowser, IBehaviorCallEvent aBehaviorCall)
 	{
 //		assert aBehaviorCall.isDirectParent();
+		itsLogBrowser = aLogBrowser;
 		itsBehaviorCall = aBehaviorCall.isDirectParent() ? aBehaviorCall : null;
 		itsChildrenBrowser = itsBehaviorCall != null && itsBehaviorCall.hasRealChildren() ? 
 				itsBehaviorCall.getChildrenBrowser() 
 				: null;
+	}
+	
+	public ILogBrowser getLogBrowser()
+	{
+		return itsLogBrowser;
 	}
 
 	public IBehaviorCallEvent getBehaviorCall()

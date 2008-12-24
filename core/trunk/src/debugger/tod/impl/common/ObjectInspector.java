@@ -60,7 +60,6 @@ import tod.impl.database.structure.standard.ArraySlotFieldInfo;
 import tod.tools.monitoring.Monitored;
 import tod.utils.TODUtils;
 import zz.utils.Sieve;
-import zz.utils.Utils;
 
 /**
  * Implementation of {@link tod.core.database.browser.IObjectInspector} based 
@@ -103,16 +102,24 @@ public class ObjectInspector implements IObjectInspector
 		itsUArrayClass = aLogBrowser.getStructureDatabase().getArrayType(itsUObjectClass, 1);
 	}
 	
+	/**
+	 * For non-static inspector
+	 */
 	public ObjectInspector(ILogBrowser aLogBrowser, ObjectId aObjectId)
 	{
 		this(aLogBrowser);
 		itsObjectId = aObjectId;
 	}
 	
+	/**
+	 * For static inspector
+	 */
 	public ObjectInspector(ILogBrowser aLogBrowser, IClassInfo aClass)
 	{
 		this(aLogBrowser);
 		itsType = aClass;
+		itsObjectId = null;
+		itsDelegate = new ObjectDelegate();
 	}
 	
 	public ILogBrowser getLogBrowser()
@@ -129,6 +136,7 @@ public class ObjectInspector implements IObjectInspector
 	@Monitored
 	public ICreationEvent getCreationEvent()
 	{
+		if (itsObjectId == null) throw new UnsupportedOperationException("This inspector is for static fields");
 		if (itsCreationEvent == null) 
 		{
 			TODUtils.log(1,"[ObjectInspector] Retrieving creation event for object: "+getObject());
@@ -485,7 +493,10 @@ public class ObjectInspector implements IObjectInspector
 			{
 				IClassInfo theClass = (IClassInfo) aType;
 				
-				Utils.fillCollection(aMembers, theClass.getFields());
+				for (IFieldInfo theField : theClass.getFields())
+				{
+					if (theField.isStatic() == (getObject() == null)) aMembers.add(theField);
+				}
 
 				// Fill supertypes recursively
 				ITypeInfo theSupertype = theClass.getSupertype();
@@ -524,9 +535,18 @@ public class ObjectInspector implements IObjectInspector
 		@Override
 		public IEventFilter getFilter(IFieldInfo aField)
 		{
-			return itsLogBrowser.createIntersectionFilter(
-					itsLogBrowser.createFieldFilter(aField),
-					itsLogBrowser.createTargetFilter(itsObjectId));
+			if (getObject() == null)
+			{
+				// static version
+				return itsLogBrowser.createFieldFilter(aField);
+			}
+			else
+			{
+				// Non-static version
+				return itsLogBrowser.createIntersectionFilter(
+						itsLogBrowser.createFieldFilter(aField),
+						itsLogBrowser.createTargetFilter(itsObjectId));
+			}
 		}
 		
 		@Override

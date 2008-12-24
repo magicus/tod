@@ -22,9 +22,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.database.browser;
 
-import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
-import tod.core.database.event.IWriteEvent;
 
 /**
  * Inspector of coumpound entities such as objects or stack frames.
@@ -33,6 +31,11 @@ import tod.core.database.event.IWriteEvent;
  */
 public interface ICompoundInspector<E>
 {
+	/**
+	 * Returns the log browser that created this inspector.
+	 */
+	public ILogBrowser getLogBrowser();
+	
 	/**
 	 * Sets the reference event of this inspector. Values of entries 
 	 * obtained by {@link #getEntryValue(Object)} 

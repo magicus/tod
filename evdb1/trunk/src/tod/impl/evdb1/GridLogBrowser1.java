@@ -358,10 +358,4 @@ public class GridLogBrowser1 extends GridLogBrowser
 		}
 		else throw new IllegalArgumentException("Not handled: "+aFilter);
 	}
-
-	@Override
-	protected IObjectInspector createObjectInspector0(ObjectId aObjectId)
-	{
-		return new ObjectInspector(this, aObjectId);
-	}
 }

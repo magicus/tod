@@ -38,11 +38,16 @@ import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ObjectId;
+import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
 import tod.gui.components.objectwatch.AbstractWatchProvider.Entry;
+import tod.gui.kit.AsyncPanel;
 import tod.tools.scheduling.IJobScheduler;
+import tod.tools.scheduling.IJobScheduler.JobPriority;
+import tod.tools.tostring.ToStringComputer;
+import zz.utils.ui.ZHyperlink;
 import zz.utils.ui.ZLabel;
 
 public class ObjectWatchProvider extends AbstractWatchProvider
@@ -135,6 +140,8 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 		// Setup history link
 		theLinksContainer.add(GUIUtils.createLabel("("));
 		theLinksContainer.add(Hyperlinks.history(getGUIManager(), Hyperlinks.SWING, itsObject));
+		theLinksContainer.add(GUIUtils.createLabel(", "));
+		theLinksContainer.add(new ToStringPanel(aJobScheduler));
 		theLinksContainer.add(GUIUtils.createLabel(")"));
 		
 		theContainer.add(theObjectContainer);
@@ -215,7 +222,59 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 			theInspector.setReferenceEvent(itsRefEvent);
 			return theInspector.previousEntryValue(itsField);
 		}
+	}
+	
+	private class ToStringPanel extends AsyncPanel
+	{
+		private String itsResult;
 		
+		public ToStringPanel(IJobScheduler aJobScheduler)
+		{
+			super(aJobScheduler, JobPriority.EXPLICIT);
+		}
+
+		@Override
+		protected void createUI()
+		{
+			setLayout(GUIUtils.createSequenceLayout());
+			add(new ZHyperlink("toString", FontConfig.STD_FONT, Color.BLUE)
+			{
+				@Override
+				protected void traverse()
+				{
+					setText("...");
+					revalidate();
+					repaint();
+					scheduleJob();
+				}
+			});
+		}
 		
+		@Override
+		protected boolean autoScheduleJob()
+		{
+			return false;
+		}
+
+		@Override
+		protected void runJob()
+		{
+			try
+			{
+				ToStringComputer theComputer = new ToStringComputer(getInspector());
+				itsResult = "\""+theComputer.compute()+"\"";
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+				itsResult = "Error evaluating toString(): "+e.getMessage();
+			}
+		}
+
+		@Override
+		protected void updateSuccess()
+		{
+			add(GUIUtils.createLabel(itsResult));
+		}
 	}
 }
