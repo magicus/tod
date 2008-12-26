@@ -257,6 +257,11 @@ implements RIStructureDatabase
 		return itsSource._getClassBytecode(aClassId);
 	}
 
+	public byte[] _getClassOriginalBytecode(int aClassId) 
+	{
+		return itsSource._getClassOriginalBytecode(aClassId);
+	}
+	
 	public String _getClassSMAP(int aClassId) throws RemoteException
 	{
 		return itsSource._getClassSMAP(aClassId);
@@ -814,6 +819,19 @@ implements RIStructureDatabase
 			{
 				System.out.println("Retrieving bytecode for class: "+aClassId);
 				return itsDatabase._getClassBytecode(aClassId);
+			}
+			catch (RemoteException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		
+		public byte[] _getClassOriginalBytecode(int aClassId)
+		{
+			try
+			{
+				System.out.println("Retrieving original bytecode for class: "+aClassId);
+				return itsDatabase._getClassOriginalBytecode(aClassId);
 			}
 			catch (RemoteException e)
 			{

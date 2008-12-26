@@ -54,7 +54,7 @@ public class Disassembler
 		
 		StructureDatabase theStructureDatabase = StructureDatabase.create(new TODConfig());
 		ClassInfo theClass = theStructureDatabase.getNewClass("dummy.Dummy");
-		theClass.setBytecode(theBytecode);
+		theClass.setBytecode(theBytecode, theBytecode);
 		
 		IMutableBehaviorInfo theBehavior = theClass.getNewBehavior(
 				"checkCondition",

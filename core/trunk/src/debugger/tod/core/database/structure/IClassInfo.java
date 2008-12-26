@@ -32,9 +32,14 @@ import tod.tools.parsers.smap.SMAPFactory;
 public interface IClassInfo extends ITypeInfo
 {
 	/**
-	 * Returns the bytecode of the (instrumented version of the) class.
+	 * Returns the bytecode of the instrumented version of the class.
 	 */
 	public byte[] getBytecode();
+	
+	/**
+	 * Returns the bytecode of the original version of the class.
+	 */
+	public byte[] getOriginalBytecode();
 	
     /**
      * Returns the value of the source debug extension attribute (JSR 45) of the class,

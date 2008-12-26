@@ -44,7 +44,7 @@ public interface IMutableClassInfo extends IClassInfo, IMutableLocationInfo
 	/**
 	 * Sets up the bytecode information of this class.
 	 */
-	public void setBytecode(byte[] aBytecode);
+	public void setBytecode(byte[] aBytecode, byte[] aOriginalBytecode);
 	
 	/**
 	 * Sets the SMAP of the class (JSR 45).

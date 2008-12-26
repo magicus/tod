@@ -31,6 +31,7 @@ import java.util.Set;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassAdapter;
 import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodAdapter;
 import org.objectweb.asm.MethodVisitor;
@@ -234,6 +235,19 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			return theCounter;
 		}
 		else return mv;
+	}
+	
+	@Override
+	public FieldVisitor visitField(
+			int aAccess,
+			String aName,
+			String aDesc,
+			String aSignature,
+			Object aValue)
+	{
+		ITypeInfo theType = itsDatabase.getNewType(aDesc);
+		itsClassInfo.getNewField(aName, theType, (aAccess & Opcodes.ACC_STATIC) != 0);
+		return super.visitField(aAccess, aName, aDesc, aSignature, aValue);
 	}
 	
 	/**

@@ -573,6 +573,15 @@ implements Serializable, IShareableStructureDatabase
 	 * This method is used to retrieve the value of transient fields on the remote side
 	 * (see {@link RemoteStructureDatabase}).
 	 */
+	public byte[] _getClassOriginalBytecode(int aClassId)
+	{
+		return getClass(aClassId, true)._getOriginalBytecode();
+	}
+	
+	/**
+	 * This method is used to retrieve the value of transient fields on the remote side
+	 * (see {@link RemoteStructureDatabase}).
+	 */
 	public String _getClassSMAP(int aClassId)
 	{
 		return getClass(aClassId, true)._getSMAP();

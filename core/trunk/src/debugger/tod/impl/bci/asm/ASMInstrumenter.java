@@ -82,11 +82,6 @@ public class ASMInstrumenter implements IInstrumenter
 			if (!BCIUtils.acceptClass(aName, itsConfig.getGlobalSelector())) return null;
 		}
 		
-		if ("org/apache/jsp/index_jsp".equals(aName))
-		{
-			System.out.println("ASMInstrumenter.instrumentClass()");
-		}
-
 		String theChecksum = Utils.md5String(aBytecode);
 
 		ClassReader theReader = new ClassReader(aBytecode);
@@ -137,7 +132,7 @@ public class ASMInstrumenter implements IInstrumenter
 
 		if (itsConfig.getTODConfig().get(TODConfig.WITH_BYTECODE)) 
 		{
-			theVisitor.getClassInfo().setBytecode(theBytecode);
+			theVisitor.getClassInfo().setBytecode(theBytecode, aBytecode);
 		}
 
 		return theVisitor.isModified() ? 

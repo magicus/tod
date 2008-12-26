@@ -66,6 +66,7 @@ public interface RIStructureDatabase extends Remote
 	public Map<String, IAspectInfo> getAspectInfoMap() throws RemoteException;
 	
 	public byte[] _getClassBytecode(int aClassId) throws RemoteException;
+	public byte[] _getClassOriginalBytecode(int aClassId) throws RemoteException;
 	public String _getClassSMAP(int aClassId) throws RemoteException;
 	public Map<String, IMutableFieldInfo> _getClassFieldMap(int aClassId) throws RemoteException;
 	public Map<String, IMutableBehaviorInfo> _getClassBehaviorsMap(int aClassId) throws RemoteException;

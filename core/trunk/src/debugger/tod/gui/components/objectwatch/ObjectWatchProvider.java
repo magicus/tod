@@ -31,6 +31,7 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
+import tod.core.config.TODConfig;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.ICompoundInspector.EntryValue;
 import tod.core.database.event.IBehaviorCallEvent;
@@ -42,7 +43,6 @@ import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
-import tod.gui.components.objectwatch.AbstractWatchProvider.Entry;
 import tod.gui.kit.AsyncPanel;
 import tod.tools.scheduling.IJobScheduler;
 import tod.tools.scheduling.IJobScheduler.JobPriority;
@@ -261,7 +261,8 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 		{
 			try
 			{
-				ToStringComputer theComputer = new ToStringComputer(getInspector());
+				TODConfig theConfig = getGUIManager().getSession().getConfig();
+				ToStringComputer theComputer = new ToStringComputer(theConfig, getInspector());
 				itsResult = "\""+theComputer.compute()+"\"";
 			}
 			catch (Exception e)

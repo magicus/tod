@@ -61,7 +61,16 @@ implements IMutableClassInfo, ISerializableLocationInfo
 	private String itsJvmName;
 	
 	private boolean itsHasBytecode = false;
+	
+	/**
+	 * Instrumented bytecode
+	 */
 	private transient byte[] itsBytecode;
+	
+	/**
+	 * Original (non-instrumented) bytecode.
+	 */
+	private transient byte[] itsOriginalBytecode;
 	
 	private boolean itsHasSMAP = false;
 	private transient String itsSMAP;
@@ -121,6 +130,7 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		{
 			out.writeBoolean(true);
 			out.writeObject(itsBytecode);
+			out.writeObject(itsOriginalBytecode);
 			out.writeObject(itsFieldsMap);
 			out.writeObject(itsBehaviorsMap);
 		}
@@ -136,6 +146,7 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		if (in.readBoolean())
 		{
 			itsBytecode = (byte[]) in.readObject();
+			itsOriginalBytecode = (byte[]) in.readObject();
 			itsFieldsMap = (Map<String, IMutableFieldInfo>) in.readObject();
 			itsBehaviorsMap = (Map<String, IMutableBehaviorInfo>) in.readObject();
 		}
@@ -167,6 +178,11 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		return itsBytecode;
 	}
 	
+	byte[] _getOriginalBytecode()
+	{
+		return itsOriginalBytecode;
+	}
+	
 	public byte[] getBytecode()
 	{
 		if (itsBytecode == null && itsHasBytecode)
@@ -177,11 +193,23 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		return itsBytecode;
 	}
 	
+	public byte[] getOriginalBytecode()
+	{
+		if (itsOriginalBytecode == null && itsHasBytecode)
+		{
+			assert ! isOriginal();
+			itsOriginalBytecode = getDatabase()._getClassOriginalBytecode(getId());
+		}
+		return itsOriginalBytecode;
+	}
+	
 
-	public void setBytecode(byte[] aBytecode)
+	public void setBytecode(byte[] aBytecode, byte[] aOriginalBytecode)
 	{
 		assert isOriginal();
+		assert (aBytecode == null) == (aOriginalBytecode == null);
 		itsBytecode = aBytecode;
+		itsOriginalBytecode = aOriginalBytecode;
 		itsHasBytecode = itsBytecode != null;
 	}
 	

@@ -36,6 +36,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import tod.core.config.ClassSelector;
+import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.ICompoundInspector.EntryValue;
@@ -46,6 +48,9 @@ import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.impl.bci.asm.BCIUtils;
+import tod.tools.parsers.ParseException;
+import tod.tools.parsers.workingset.WorkingSetFactory;
 import zz.jinterp.JArray;
 import zz.jinterp.JArrayType;
 import zz.jinterp.JBehavior;
@@ -54,8 +59,10 @@ import zz.jinterp.JField;
 import zz.jinterp.JInstance;
 import zz.jinterp.JInterpreter;
 import zz.jinterp.JObject;
+import zz.jinterp.JStaticField;
 import zz.jinterp.JType;
 import zz.jinterp.JPrimitive.JVoid;
+import zz.jinterp.SimpleInterp.SimpleStaticField;
 
 /**
  * Permits to compute the result of toString on reconstituted objects.
@@ -65,16 +72,41 @@ public class ToStringComputer
 {
 	private static final JObject NULL = new JVoid();
 	
+	private final TODConfig itsConfig;
 	private final IObjectInspector itsInspector;
 	private final JInterpreter itsInterpreter;
 	
+	private final ClassSelector itsGlobalSelector;
+	private final ClassSelector itsTraceSelector;
+
 	
-	public ToStringComputer(IObjectInspector aInspector)
+	public ToStringComputer(TODConfig aConfig, IObjectInspector aInspector)
 	{
+		itsConfig = aConfig;
 		itsInspector = aInspector;
+		itsGlobalSelector = parseWorkingSet(aConfig.get(TODConfig.SCOPE_GLOBAL_FILTER));
+		itsTraceSelector = parseWorkingSet(aConfig.get(TODConfig.SCOPE_TRACE_FILTER));
+		
 		itsInterpreter = new TODInterpreter();
 	}
 	
+	private ClassSelector parseWorkingSet(String aWorkingSet)
+	{
+		try
+		{
+			return WorkingSetFactory.parseWorkingSet(aWorkingSet);
+		}
+		catch (ParseException e)
+		{
+			throw new RuntimeException("Cannot parse selector: "+aWorkingSet, e);
+		}
+	}
+	
+
+	
+	/**
+	 * Computes the toString of the inspected object. 
+	 */
 	public String compute()
 	{
 		JObject[] args = {}; 
@@ -98,6 +130,14 @@ public class ToStringComputer
 		}
 		else throw new RuntimeException("Unexpected result: "+theResult);
 	}
+	
+	public boolean isInScope(JClass aClass)
+	{
+		String theName = aClass.getName().replace('/', '.');
+		if (! BCIUtils.acceptClass(theName, itsGlobalSelector)) return false;
+		if (! BCIUtils.acceptClass(theName, itsTraceSelector)) return false;
+		return true;
+	}
 
 	private JObject convertObject(Object aValue)
 	{
@@ -105,7 +145,7 @@ public class ToStringComputer
 		{
 			ObjectId theId = (ObjectId) aValue;
 			Object theRegistered = getLogBrowser().getRegistered(theId);
-			if (theRegistered != null) return itsInterpreter.toJObject(aValue);
+			if (theRegistered != null) return itsInterpreter.toJObject(theRegistered);
 			else 
 			{
 				IObjectInspector theInspector = getLogBrowser().createObjectInspector(theId);
@@ -148,6 +188,19 @@ public class ToStringComputer
 		return itsInterpreter.getClass(aClass.getName().replace('.', '/'));
 	}
 	
+	private IClassInfo convertClass(JClass aClass)
+	{
+		return getLogBrowser().getStructureDatabase().getClass(aClass.getName().replace('/', '.'), true);
+	}
+	
+	private IFieldInfo convertField(JField aField)
+	{
+		JClass theJClass = aField.getDeclaringClass();
+		IStructureDatabase theStructureDatabase = getLogBrowser().getStructureDatabase();
+		IClassInfo theTODClass = theStructureDatabase.getClass(theJClass.getName().replace('/', '.'), true);
+		return theTODClass.getField(aField.getName());
+	}
+	
 	private JArrayType convertArray(IArrayTypeInfo aArrayType)
 	{
 		throw new UnsupportedOperationException();
@@ -170,13 +223,33 @@ public class ToStringComputer
 		{
 			IStructureDatabase theStructureDatabase = getLogBrowser().getStructureDatabase();
 			IClassInfo theClass = theStructureDatabase.getClass(aName.replace('/', '.'), false);
-			return theClass != null ? theClass.getBytecode() : null;
+			return theClass != null ? theClass.getOriginalBytecode() : null;
 		}
 
 		@Override
-		public JField createField(JClass aClass, String aName, JType aType, boolean aPrivate)
+		public JStaticField createStaticField(JClass aClass, String aName, JType aType, int aAccess)
 		{
-			return null;
+			if (! isInScope(aClass)) return new SimpleStaticField(aClass, aName, aType, aAccess);
+			
+			IClassInfo theTODClass = convertClass(aClass);
+			IObjectInspector theInspector = getLogBrowser().createClassInspector(theTODClass);
+			theInspector.setReferenceEvent(getRefEvent());
+			IFieldInfo theTODField = theTODClass.getField(aName);
+			EntryValue[] theEntryValue = theInspector.getEntryValue(theTODField);
+			
+			JObject theValue;
+			if (theEntryValue.length == 0)
+			{
+				theValue = aType.getInitialValue();
+			}
+			else if (theEntryValue.length == 1)
+			{
+				theValue = convertObject(theEntryValue[0].getValue());
+			}
+			else
+			throw new RuntimeException("Can't retrieve value");
+
+			return new TODStaticField(aClass, aName, aType, aAccess, theValue);
 		}
 	}
 
@@ -208,14 +281,6 @@ public class ToStringComputer
 			}
 			
 			return theResult == NULL ? null : theResult;
-		}
-		
-		private IFieldInfo convertField(JField aField)
-		{
-			JClass theJClass = aField.getDeclaringClass();
-			IStructureDatabase theStructureDatabase = getLogBrowser().getStructureDatabase();
-			IClassInfo theTODClass = theStructureDatabase.getClass(theJClass.getName().replace('/', '.'), true);
-			return theTODClass.getField(aField.getName());
 		}
 		
 		@Override
@@ -264,25 +329,16 @@ public class ToStringComputer
 		}
 	}
 	
-	private class TODField extends JField
+	private class TODStaticField extends SimpleStaticField
 	{
-		private IObjectInspector itsInspector;
-
-		public TODField(
+		public TODStaticField(
 				JClass aClass,
 				String aName,
 				JType aType,
-				boolean aPrivate,
-				IObjectInspector aInspector)
+				int aAccess,
+				JObject aStaticValue)
 		{
-			super(aClass, aName, aType, aPrivate);
-			itsInspector = aInspector;
-		}
-
-		@Override
-		public JObject getStaticFieldValue()
-		{
-			throw new UnsupportedOperationException();
+			super(aClass, aName, aType, aAccess, aStaticValue);
 		}
 
 		@Override

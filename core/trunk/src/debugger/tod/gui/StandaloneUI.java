@@ -49,6 +49,8 @@ public class StandaloneUI extends JPanel
 	{
 		TODConfig theConfig = new TODConfig();
 		String theScheme = aUri != null ? aUri.getScheme() : null;
+		theConfig.set(TODConfig.COLLECTOR_HOST, aUri.getHost());
+		theConfig.set(TODConfig.COLLECTOR_PORT, aUri.getPort());
 		itsTraceView = new MyTraceView();
 		itsSession = SessionTypeManager.getInstance().createSession(itsTraceView, theScheme, aUri, theConfig);
 		createUI();
