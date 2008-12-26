@@ -18,10 +18,11 @@
     	
         <property name="tod-agent.dir" value="${basedir}/../TOD-agent"/>
         <property name="zz.utils.dir" value="${basedir}/../zz.utils"/>
+        <property name="zz.jinterp.dir" value="${basedir}/../zz.jinterp"/>
 
     	
         <path id="debugger.classpath">
-            <pathelement path="${zz.utils.dir}/build/zz.utils.jar"/>
+            <pathelement path="${zz.jinterp.dir}/build/zz.jinterp.jar"/>
         	<pathelement path="${tod-agent.dir}/build/tod-agent15.jar"/>
         	
             <pathelement path="${lib.dir}/asm-all-3.2-svn.jar"/>
