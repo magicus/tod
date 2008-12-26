@@ -22,6 +22,7 @@
 
     	
         <path id="debugger.classpath">
+            <pathelement path="${zz.utils.dir}/build/zz.utils.jar"/>
             <pathelement path="${zz.jinterp.dir}/build/zz.jinterp.jar"/>
         	<pathelement path="${tod-agent.dir}/build/tod-agent15.jar"/>
         	
