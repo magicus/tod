@@ -22,9 +22,11 @@
 		<property name="tod-evdbng.dir" value="${basedir}/../TOD-evdbng"/>
 		<property name="zz.utils.dir" value="${basedir}/../zz.utils"/>
 		<property name="zz.eclipse.utils.dir" value="${basedir}/../zz.eclipse.utils"/>
+		<property name="zz.jinterp.dir" value="${basedir}/../zz.jinterp"/>
 
 		<path id="default.classpath">
 			<pathelement path="${zz.utils.dir}/build/zz.utils.jar"/>
+			<pathelement path="${zz.jinterp.dir}/build/zz.jinterp.jar"/>
 			<pathelement path="${tod.dir}/build/tod-debugger.jar"/>
 			<pathelement path="${tod-agent.dir}/build/tod-agent15.jar"/>
 			<pathelement path="${tod-dbgrid.dir}/build/tod-dbgrid.jar"/>
@@ -79,6 +81,7 @@
 		
 		<copy todir="${plugin.dir}/lib">
 			<fileset dir="${zz.utils.dir}/build" includes="zz.utils.jar"/>
+			<fileset dir="${zz.jinterp.dir}/build" includes="zz.jinterp.jar"/>
 			<fileset dir="${tod.dir}/build" includes="tod-debugger.jar"/>
 			<fileset dir="${tod-agent.dir}/build" includes="tod-agent14.jar"/>
 			<fileset dir="${tod-agent.dir}/build" includes="tod-agent15.jar"/>
