@@ -9,6 +9,7 @@ AGENT_LIBS_URL = "http://pleiad.dcc.uchile.cl/files/tod/tod-agent/"
 def release(version):
 	zzuMod = useSVN('zz.utils', 'http://pleiad.dcc.uchile.cl/svn/zz/devel/zz.utils')
 	zzeuMod = useSVN('zz.eclipse.utils', 'http://pleiad.dcc.uchile.cl/svn/zz/devel/zz.eclipse.utils/')
+	zzji = useSVN('zz.jinterp', 'http://pleiad.dcc.uchile.cl/svn/zz/devel/zz.jinterp')
 
 	tpMod = useSVN('tod.plugin', 'http://pleiad.dcc.uchile.cl/svn/tod/tod.plugin/trunk/')
 	tpaMod = useSVN('tod.plugin.ajdt', 'http://pleiad.dcc.uchile.cl/svn/tod/tod.plugin.ajdt/')
@@ -68,6 +69,7 @@ def release(version):
 	#antBuild('TOD-pytod-db', 'build.xml', 'clean')
 	antBuild('zz.utils', 'build.xml', 'clean')
 	antBuild('zz.eclipse.utils', 'build-plugin.xml', 'clean')
+	antBuild('zz.jinterp', 'build.xml', 'clean')
 	antBuild('tod.plugin', 'build-plugin.xml', 'clean')
 	antBuild('tod.plugin.ajdt', 'build-plugin.xml', 'clean')
 	antBuild('tod.plugin.wst', 'build-plugin.xml', 'clean')
@@ -80,6 +82,7 @@ def release(version):
 
 	antBuild('zz.utils', 'build.xml', 'jar')
 	antBuild('zz.eclipse.utils', 'build-plugin.xml', 'plugin')
+	antBuild('zz.jinterp', 'build.xml', 'jar')
 	antBuild('TOD-agent', 'build.xml', 'jar')
 	antBuild('TOD', 'build.xml', 'jar')
 	antBuild('TOD-dbgrid', 'build.xml', 'jar')
