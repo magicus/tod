@@ -51,6 +51,7 @@ import tod.core.database.structure.ObjectId;
 import tod.impl.bci.asm.BCIUtils;
 import tod.tools.parsers.ParseException;
 import tod.tools.parsers.workingset.WorkingSetFactory;
+import tod.utils.TODUtils;
 import zz.jinterp.JArray;
 import zz.jinterp.JArrayType;
 import zz.jinterp.JBehavior;
@@ -286,7 +287,7 @@ public class ToStringComputer
 		@Override
 		public void putFieldValue(JField aField, JObject aValue)
 		{
-			throw new UnsupportedOperationException();
+			itsValues.put(aField, aValue);
 		}
 	}
 	
@@ -325,7 +326,7 @@ public class ToStringComputer
 		@Override
 		public void set(int aIndex, JObject aValue)
 		{
-			throw new UnsupportedOperationException();
+			itsValues.set(aIndex, aValue);
 		}
 	}
 	
@@ -339,12 +340,6 @@ public class ToStringComputer
 				JObject aStaticValue)
 		{
 			super(aClass, aName, aType, aAccess, aStaticValue);
-		}
-
-		@Override
-		public void putStaticFieldValue(JObject aValue)
-		{
-			throw new UnsupportedOperationException();
 		}
 	}
 }
