@@ -372,7 +372,8 @@ public interface IStructureDatabase
 			{
 				LocalVariableInfo theOther = (LocalVariableInfo) aObj;
 				return theOther.itsIndex == itsIndex
-						&& theOther.itsStartPc == itsStartPc;
+						&& theOther.itsStartPc == itsStartPc
+						&& theOther.itsLength == itsLength;
 			}
 			else return false;
 		}

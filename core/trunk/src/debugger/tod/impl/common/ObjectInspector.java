@@ -328,6 +328,17 @@ public class ObjectInspector implements IObjectInspector
 		checkReferenceEvent();
 		List<EntryValue> theResult = new ArrayList<EntryValue>();
 		
+		// Check if the ref event is the setter for this field
+		if (itsReferenceEvent instanceof IFieldWriteEvent)
+		{
+			IFieldWriteEvent theEvent = (IFieldWriteEvent) itsReferenceEvent;
+			if (theEvent.getField().equals(aField))
+			{
+				theResult.add(new EntryValue(theEvent.getValue(), theEvent));
+				return theResult.toArray(new EntryValue[theResult.size()]);
+			}
+		}
+		
 		IEventBrowser theBrowser = getBrowser(aField);
 		theBrowser.setPreviousEvent(itsReferenceEvent);
 		

@@ -139,6 +139,16 @@ public class VariablesInspector implements IVariablesInspector
 	{
 		if (itsChildrenBrowser == null) return null;
 		
+		// Check if the ref event is the setter for this variable
+		if (itsReferenceEvent instanceof ILocalVariableWriteEvent)
+		{
+			ILocalVariableWriteEvent theEvent = (ILocalVariableWriteEvent) itsReferenceEvent;
+			if (theEvent.getVariable().equals(aVariable))
+			{
+				return new EntryValue(theEvent.getValue(), theEvent);
+			}
+		}
+		
 		IEventBrowser theBrowser = getBrowser(aVariable);
 		
 		theBrowser.setNextEvent(itsReferenceEvent);
