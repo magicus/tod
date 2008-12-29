@@ -51,7 +51,6 @@ import tod.core.database.structure.ObjectId;
 import tod.impl.bci.asm.BCIUtils;
 import tod.tools.parsers.ParseException;
 import tod.tools.parsers.workingset.WorkingSetFactory;
-import tod.utils.TODUtils;
 import zz.jinterp.JArray;
 import zz.jinterp.JArrayType;
 import zz.jinterp.JBehavior;
@@ -62,6 +61,7 @@ import zz.jinterp.JInterpreter;
 import zz.jinterp.JObject;
 import zz.jinterp.JStaticField;
 import zz.jinterp.JType;
+import zz.jinterp.SimpleInterp;
 import zz.jinterp.JPrimitive.JVoid;
 import zz.jinterp.SimpleInterp.SimpleStaticField;
 
@@ -217,7 +217,7 @@ public class ToStringComputer
 		return itsInspector.getReferenceEvent();
 	}
 
-	private class TODInterpreter extends JInterpreter
+	private class TODInterpreter extends SimpleInterp
 	{
 		@Override
 		protected byte[] getClassBytecode(String aName)
