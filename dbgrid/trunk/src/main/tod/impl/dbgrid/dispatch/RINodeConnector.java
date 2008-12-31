@@ -23,8 +23,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.dispatch;
 
 import java.io.Serializable;
-import java.rmi.Remote;
-import java.rmi.RemoteException;
 
 import tod.core.config.TODConfig;
 import tod.core.database.browser.IEventBrowser;
@@ -35,41 +33,42 @@ import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.db.RINodeEventIterator;
 import tod.tools.monitoring.RIMonitoringServerProvider;
 import zz.utils.net.Server.ServerAdress;
+import zz.utils.srpc.IRemote;
 
 /**
  * Remote interface for {@link NodeConnector}
  * @author gpothier
  */
-public interface RINodeConnector extends Remote, RIMonitoringServerProvider
+public interface RINodeConnector extends IRemote, RIMonitoringServerProvider
 {
-	public int getNodeId() throws RemoteException;
+	public int getNodeId();
 	
 	/**
 	 * Sets a new config for the node.
 	 */
-	public void setConfig(TODConfig aConfig) throws RemoteException;
+	public void setConfig(TODConfig aConfig);
 	
 	/**
 	 * Tells this node to establish its incoming data connection to
 	 * the grid master at the specified adress.
 	 */
-	public void connectEventStream(ServerAdress aAdress, IHostInfo aHostInfo) throws RemoteException;
+	public void connectEventStream(ServerAdress aAdress, IHostInfo aHostInfo);
 
 	/**
 	 * Flushes currently bufferred events.
 	 * @return Number of flushed events.
 	 */
-	public int flush() throws RemoteException;
+	public int flush();
 	
 	/**
 	 * Initializes or reinitializes the database.
 	 */
-	public void clear() throws RemoteException;
+	public void clear();
 	
 	/**
 	 * Creates a new event iterator for the given condition.
 	 */
-	public RINodeEventIterator getIterator(IGridEventFilter aCondition) throws RemoteException;
+	public RINodeEventIterator getIterator(IGridEventFilter aCondition);
 	
 	/**
 	 * Semantic matches {@link IEventBrowser#getEventCounts(long, long, int)}
@@ -79,41 +78,41 @@ public interface RINodeConnector extends Remote, RIMonitoringServerProvider
 			long aT1,
 			long aT2,
 			int aSlotsCount, 
-			boolean aForceMergeCounts) throws RemoteException;
+			boolean aForceMergeCounts);
 	
-	public long getEventsCount() throws RemoteException;
-	public long getDroppedEventsCount() throws RemoteException;
-	public long getObjectsStoreSize() throws RemoteException;
-	public long getFirstTimestamp() throws RemoteException;
-	public long getLastTimestamp() throws RemoteException;
+	public long getEventsCount();
+	public long getDroppedEventsCount();
+	public long getObjectsStoreSize();
+	public long getFirstTimestamp();
+	public long getLastTimestamp();
 	
 	/**
 	 * Returns an object registered by this dispatcher, or null
 	 * if not found.
 	 */
-	public Object getRegisteredObject(long aId) throws RemoteException;
+	public Object getRegisteredObject(long aId);
 	
 	/**
 	 * Returns the type of the given object.
 	 */
-	public ITypeInfo getObjectType(long aId) throws RemoteException;
+	public ITypeInfo getObjectType(long aId);
 	
 	/**
 	 * Searches the strings that match the given text.
 	 * Returns an iterator of object ids of matching strings, ordered
 	 * by relevance.
 	 */
-	public RIBufferIterator<StringSearchHit[]> searchStrings(String aText) throws RemoteException;
+	public RIBufferIterator<StringSearchHit[]> searchStrings(String aText);
 	
 	/**
 	 * Returns the number of events that occurred within the given behavior.
 	 */
-	public long getEventCountAtBehavior(int aBehaviorId) throws RemoteException;
+	public long getEventCountAtBehavior(int aBehaviorId);
 
 	/**
 	 * Returns the number of events that occurred within the given class.
 	 */
-	public long getEventCountAtClass(int aClassId) throws RemoteException;
+	public long getEventCountAtClass(int aClassId);
 	
 	/**
 	 * Represents a search hit.

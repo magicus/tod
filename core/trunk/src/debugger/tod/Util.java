@@ -22,10 +22,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod;
 
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
+import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.List;
 
 import tod.core.database.browser.ILogBrowser;
@@ -38,13 +36,19 @@ import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.gui.IGUIManager;
 import tod.gui.formatter.CustomFormatterRegistry;
+import tod.utils.ConfigUtils;
+import zz.utils.srpc.RIRegistry;
+import zz.utils.srpc.SRPCRegistry;
+import zz.utils.srpc.SRPCServer;
 
 /**
  * @author gpothier
  */
 public class Util
 {
-	public static final int TOD_REGISTRY_PORT = 10098;
+	public static final int TOD_SRPC_PORT = ConfigUtils.readInt("client-port", 8068);
+	
+	private static SRPCRegistry SRPC_REGISTRY;
 	
 	/**
 	 * Path to the development eclipse workspace.
@@ -113,40 +117,30 @@ public class Util
 		return aFullyQualifiedName.replace('$', '.');
 	}
 	
-	public static Registry getRegistry()
+	public static SRPCRegistry getLocalSRPCRegistry()
 	{
-        // Check if we use an existing registry of if we create a new one.
-        Registry theRegistry = null;
-        try
+		if (SRPC_REGISTRY == null)
 		{
-        	theRegistry = LocateRegistry.getRegistry(TOD_REGISTRY_PORT);
-			if (theRegistry != null) theRegistry.unbind("dummy");
+			SRPCServer theServer = new SRPCServer(TOD_SRPC_PORT, false);
+			SRPC_REGISTRY = theServer.getRegistry();
 		}
-		catch (RemoteException e)
+		return SRPC_REGISTRY;
+	}
+	
+	public static RIRegistry getRemoteSRPCRegistry(String aHost, int aPort)
+	{
+		try
 		{
-            theRegistry = null;
+			return SRPCServer.connectTo(aHost, aPort);
 		}
-        catch(NotBoundException e)
-        {
-        	System.out.println("Found existing registry");
-            // Ignore - we were able to reach the registry, which is all we wanted
-        }
-        
-        if (theRegistry == null) 
-        {
-            try
-			{
-            	System.out.println("Creating new registry");
-				LocateRegistry.createRegistry(TOD_REGISTRY_PORT);
-				theRegistry = LocateRegistry.getRegistry("localhost", TOD_REGISTRY_PORT);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
-        }
-
-        return theRegistry;
+		catch (UnknownHostException e)
+		{
+			throw new RuntimeException(e);
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 	
 	/**

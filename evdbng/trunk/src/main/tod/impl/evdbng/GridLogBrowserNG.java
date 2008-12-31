@@ -22,7 +22,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.evdbng;
 
-import java.rmi.RemoteException;
 import java.util.List;
 
 import tod.core.database.browser.ICompoundFilter;
@@ -85,24 +84,17 @@ public class GridLogBrowserNG extends GridLogBrowser
 	private GridLogBrowserNG(
 			ISession aSession,
 			RIGridMaster aMaster,
-			IStructureDatabase aStructureDatabase) throws RemoteException
+			IStructureDatabase aStructureDatabase) 
 	{
 		super(aSession, aMaster, aStructureDatabase);
 	}
 	
 	public static GridLogBrowser createLocal(ISession aSession, GridMaster aMaster) 
 	{
-		try
-		{
-			return new GridLogBrowserNG(aSession, aMaster, aMaster.getStructureDatabase());
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		return new GridLogBrowserNG(aSession, aMaster, aMaster.getStructureDatabase());
 	}
 	
-	public static GridLogBrowser createRemote(ISession aSession, RIGridMaster aMaster) throws RemoteException
+	public static GridLogBrowser createRemote(ISession aSession, RIGridMaster aMaster)
 	{
 		return new GridLogBrowserNG(
 				aSession,
@@ -368,14 +360,7 @@ public class GridLogBrowserNG extends GridLogBrowser
 		if (aFilter instanceof EventCondition)
 		{
 			EventCondition theCondition = (EventCondition) aFilter;
-			try
-			{
-				return new GridEventBrowser(this, theCondition);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			return new GridEventBrowser(this, theCondition);
 		}
 		else throw new IllegalArgumentException("Not handled: "+aFilter);
 	}

@@ -23,14 +23,11 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid;
 
 import java.net.URI;
-import java.rmi.RemoteException;
-import java.rmi.UnknownHostException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 
 import tod.Util;
 import tod.core.config.TODConfig;
 import tod.gui.IGUIManager;
+import zz.utils.srpc.RIRegistry;
 
 public class RemoteGridSession extends AbstractGridSession
 {
@@ -53,36 +50,18 @@ public class RemoteGridSession extends AbstractGridSession
 		init();
 	}
 	
-	/**
-	 * Returns the host to connect to.
-	 * By default, the host specified in the config by {@link TODConfig#COLLECTOR_HOST}.
-	 */
-	protected String getHost()
-	{
-		return getConfig().get(TODConfig.COLLECTOR_HOST);
-	}
-	
 	protected void init() 
 	{
-		try
-		{
-			String theHost = getHost();
-			
-			Registry theRegistry = LocateRegistry.getRegistry(theHost, Util.TOD_REGISTRY_PORT);
-			RIGridMaster theMaster = (RIGridMaster) theRegistry.lookup(GridMaster.getRMIId(getConfig()));
-			theMaster.setConfig(getConfig());
-			if (! itsUseExisting) theMaster.clear();
-			
-			setMaster(theMaster);
-		}
-		catch (UnknownHostException e)
-		{
-			throw new RuntimeException("Unknown host: "+e.getCause().getMessage());
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
+		String theHost = getUri().getHost();
+		int thePort = getUri().getPort();
+		if (thePort == -1) thePort = Util.TOD_SRPC_PORT;
+		
+		RIRegistry theRegistry = Util.getRemoteSRPCRegistry(theHost, thePort);
+		RIGridMaster theMaster = (RIGridMaster) theRegistry.lookup(GridMaster.SRPC_ID);
+		theMaster.setConfig(getConfig());
+		if (! itsUseExisting) theMaster.clear();
+		
+		setMaster(theMaster);
 	}
 	
 	@Override
@@ -94,16 +73,9 @@ public class RemoteGridSession extends AbstractGridSession
 	
 	public void disconnect()
 	{
-		try
-		{
-			getMaster().disconnect();
-			getMaster().flush();
-			getMaster().clear();
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		getMaster().disconnect();
+		getMaster().flush();
+		getMaster().clear();
 	}
 	
 	protected void reset()
@@ -120,7 +92,7 @@ public class RemoteGridSession extends AbstractGridSession
 			getMaster().keepAlive();
 			return true;
 		}
-		catch (RemoteException e)
+		catch (Exception e)
 		{
 			e.printStackTrace();
 			return false;

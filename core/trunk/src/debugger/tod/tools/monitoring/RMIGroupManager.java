@@ -22,13 +22,13 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.tools.monitoring;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import zz.utils.srpc.IRemote;
+
 /**
- * Manages groups of {@link Remote} objects.
+ * Manages groups of {@link IRemote} objects.
  * The representative of the group is an instance of {@link RIMonitoringServerProvider}.
  * Whenever a call to a method of an object of the group returns a remote object,
  * this object is made part of the group.
@@ -55,8 +55,8 @@ public class RMIGroupManager
 	/**
 	 * Maps remote objects to their group representative.
 	 */
-	private Map<Remote, RIMonitoringServerProvider> itsGroupdMap =
-		new WeakHashMap<Remote, RIMonitoringServerProvider>();
+	private Map<IRemote, RIMonitoringServerProvider> itsGroupdMap =
+		new WeakHashMap<IRemote, RIMonitoringServerProvider>();
 	
 	private Map<RIMonitoringServerProvider, RIMonitoringServer> itsProvidersMap =
 		new WeakHashMap<RIMonitoringServerProvider, RIMonitoringServer>();
@@ -71,14 +71,7 @@ public class RMIGroupManager
 		RIMonitoringServer theServer = itsProvidersMap.get(aProvider);
 		if (theServer == null)
 		{
-			try
-			{
-				theServer = aProvider.getMonitoringServer();
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			theServer = aProvider.getMonitoringServer();
 			itsProvidersMap.put(aProvider, theServer);
 		}
 		return theServer;
@@ -89,7 +82,7 @@ public class RMIGroupManager
 	 * Adds a link from called to result, meaning result was returned 
 	 * by a call to called. 
 	 */
-	public void addLink(Remote aCalled, Remote aResult)
+	public void addLink(IRemote aCalled, IRemote aResult)
 	{
 		if (aCalled instanceof RIMonitoringServerProvider)
 		{
@@ -107,7 +100,7 @@ public class RMIGroupManager
 	/**
 	 * Returns the server provided by the representative of the given remote object, if available.
 	 */
-	public RIMonitoringServer getServer(Remote aObject)
+	public RIMonitoringServer getServer(IRemote aObject)
 	{
 		RIMonitoringServerProvider theProvider;
 		if (aObject instanceof RIMonitoringServerProvider) theProvider = (RIMonitoringServerProvider) aObject;

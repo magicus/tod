@@ -27,7 +27,6 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -351,14 +350,7 @@ public class FixturesNG
 
 	public static GridMaster setupLocalMaster()
 	{
-		try
-		{
-			return DBGridUtils.setupLocalMaster(null);
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		return DBGridUtils.setupLocalMaster(null);
 	}
 	private static class MyLogReceiverMonitor implements ILogReceiverMonitor
 	{

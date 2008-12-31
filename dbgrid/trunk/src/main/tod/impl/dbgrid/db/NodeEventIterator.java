@@ -22,8 +22,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.db;
 
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,15 +34,14 @@ import tod.tools.monitoring.MonitoringClient.MonitorId;
  * Iterator for events of a particular query for a given node.
  * @author gpothier
  */
-public class NodeEventIterator extends UnicastRemoteObject 
-implements RINodeEventIterator
+public class NodeEventIterator implements RINodeEventIterator
 {
 	private final EventDatabase itsDatabase;
 	private final IGridEventFilter itsFilter;
 	
 	private IBidiIterator<GridEvent> itsIterator;
 	
-	public NodeEventIterator(EventDatabase aDatabase, IGridEventFilter aFilter) throws RemoteException
+	public NodeEventIterator(EventDatabase aDatabase, IGridEventFilter aFilter)
 	{
 		itsDatabase = aDatabase;
 		itsFilter = aFilter;

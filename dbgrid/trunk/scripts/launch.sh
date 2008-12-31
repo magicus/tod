@@ -13,11 +13,6 @@ case "$1" in
 	*		) MAIN=$1;;
 esac
 
-#determine ip
-IFACE=`/sbin/route -n |grep UG|awk '{print $8}'`
-IP=`/sbin/ifconfig $IFACE|grep "inet addr:"|awk '{print substr($2, 6, length($2)-5)}'`
-echo IP: $IP
-	
 VMARGS=''
 VMARGS="$VMARGS -Xmx$JVM_HEAP_SIZE"
 VMARGS="$VMARGS -XX:MaxDirectMemorySize=$JVM_DIRECTMEM_SIZE"
@@ -33,7 +28,6 @@ VMARGS="$VMARGS -Dpage-buffer-size=$PAGE_BUFFER_SIZE"
 VMARGS="$VMARGS -Dtask-id=$TASK_ID"
 VMARGS="$VMARGS -Dgrid-impl=$GRID_IMPL"
 VMARGS="$VMARGS -Dcheck-same-host=$CHECK_SAME_HOST"
-VMARGS="$VMARGS -Djava.rmi.server.hostname=$IP"
 VMARGS="$VMARGS -Ddb-raw-events-dir=$RAW_EVENTS_DIR"
 
 if [ -n "$JDWP_PORT" ]

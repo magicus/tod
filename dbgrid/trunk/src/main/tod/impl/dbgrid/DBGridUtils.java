@@ -22,13 +22,11 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
-import java.rmi.RemoteException;
-import java.rmi.registry.Registry;
-
 import tod.core.config.TODConfig;
 import tod.core.database.structure.IStructureDatabase;
 import tod.impl.database.structure.standard.StructureDatabase;
 import tod.impl.dbgrid.db.DatabaseNode;
+import zz.utils.srpc.SRPCRegistry;
 
 public class DBGridUtils
 {
@@ -36,7 +34,7 @@ public class DBGridUtils
 	 * Standard setup of a grid master that waits for a number
 	 * of database nodes to connect
 	 */
-	public static GridMaster setupMaster(Registry aRegistry, String[] args) throws Exception
+	public static GridMaster setupMaster(SRPCRegistry aRegistry, String[] args) throws Exception
 	{
 		if (args.length == 1)
 		{
@@ -59,9 +57,9 @@ public class DBGridUtils
 	}
 		
 	public static GridMaster setupLocalMaster(
-			Registry aRegistry, 
+			SRPCRegistry aRegistry, 
 			TODConfig aConfig,
-			StructureDatabase aStructureDatabase) throws RemoteException
+			StructureDatabase aStructureDatabase)
 	{
 		DatabaseNode theNode = DebuggerGridConfig.createDatabaseNode();
 		
@@ -74,7 +72,7 @@ public class DBGridUtils
 		if (aRegistry != null)
 		{
 			System.out.println("Binding master...");
-			aRegistry.rebind(GridMaster.getRMIId(aConfig), theMaster);
+			aRegistry.rebind(GridMaster.SRPC_ID, theMaster);
 			System.out.println("Bound master");
 		}
 
@@ -82,7 +80,7 @@ public class DBGridUtils
 		return theMaster;
 	}
 	
-	public static GridMaster setupLocalMaster(Registry aRegistry) throws RemoteException
+	public static GridMaster setupLocalMaster(SRPCRegistry aRegistry) 
 	{
 		TODConfig theConfig = new TODConfig();
 		StructureDatabase theStructureDatabase = StructureDatabase.create(theConfig);
@@ -94,7 +92,7 @@ public class DBGridUtils
 	 * of database nodes to connect
 	 */
 	public static GridMaster setupMaster(
-			Registry aRegistry,
+			SRPCRegistry aRegistry,
 			int aExpectedNodes) throws Exception
 	{
 		TODConfig theConfig = new TODConfig();
@@ -107,7 +105,7 @@ public class DBGridUtils
 				aExpectedNodes);
 		
 		System.out.println("Binding master...");
-		aRegistry.rebind(GridMaster.getRMIId(theConfig), theMaster);
+		aRegistry.rebind(GridMaster.SRPC_ID, theMaster);
 		System.out.println("Bound master");
 		
 		theMaster.waitReady();

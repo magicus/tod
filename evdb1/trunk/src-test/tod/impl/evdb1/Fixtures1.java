@@ -26,7 +26,6 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +37,6 @@ import tod.impl.dbgrid.DerivativeDataPrinter;
 import tod.impl.dbgrid.Fixtures;
 import tod.impl.dbgrid.db.EventDatabase;
 import tod.impl.dbgrid.messages.GridEvent;
-import tod.impl.evdb1.DebuggerGridConfig1;
 import tod.impl.evdb1.db.EventList;
 import tod.impl.evdb1.db.HierarchicalIndex;
 import tod.impl.evdb1.db.RoleIndexSet;

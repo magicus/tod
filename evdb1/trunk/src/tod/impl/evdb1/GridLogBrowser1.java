@@ -22,13 +22,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.evdb1;
 
-import java.rmi.RemoteException;
-
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.IEventPredicate;
 import tod.core.database.browser.ILogBrowser;
-import tod.core.database.browser.IObjectInspector;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IArraySlotFieldInfo;
 import tod.core.database.structure.IBehaviorInfo;
@@ -42,7 +39,6 @@ import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.core.session.ISession;
-import tod.impl.common.ObjectInspector;
 import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.RIGridMaster;
@@ -82,24 +78,17 @@ public class GridLogBrowser1 extends GridLogBrowser
 	private GridLogBrowser1(
 			ISession aSession,
 			RIGridMaster aMaster,
-			IStructureDatabase aStructureDatabase) throws RemoteException
+			IStructureDatabase aStructureDatabase) 
 	{
 		super(aSession, aMaster, aStructureDatabase);
 	}
 	
 	public static GridLogBrowser createLocal(ISession aSession, GridMaster aMaster) 
 	{
-		try
-		{
-			return new GridLogBrowser1(aSession, aMaster, aMaster.getStructureDatabase());
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		return new GridLogBrowser1(aSession, aMaster, aMaster.getStructureDatabase());
 	}
 	
-	public static GridLogBrowser createRemote(ISession aSession, RIGridMaster aMaster) throws RemoteException
+	public static GridLogBrowser createRemote(ISession aSession, RIGridMaster aMaster)
 	{
 		return new GridLogBrowser1(
 				aSession,
@@ -347,14 +336,7 @@ public class GridLogBrowser1 extends GridLogBrowser
 		if (aFilter instanceof EventCondition)
 		{
 			EventCondition theCondition = (EventCondition) aFilter;
-			try
-			{
-				return new GridEventBrowser(this, theCondition);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			return new GridEventBrowser(this, theCondition);
 		}
 		else throw new IllegalArgumentException("Not handled: "+aFilter);
 	}

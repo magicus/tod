@@ -22,36 +22,34 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-
 import zz.utils.monitoring.Monitor.MonitorData;
+import zz.utils.srpc.IRemote;
 
 /**
  * A remote interface for a listener of {@link GridMaster}
  * @author gpothier
  */
-public interface RIGridMasterListener extends Remote
+public interface RIGridMasterListener extends IRemote
 {
 	/**
 	 * Called asynchronously after one ore more events are received.
 	 * This method will not be called at short intervals, there will be
 	 * typically at least one second between calls.
 	 */
-	public void eventsReceived() throws RemoteException;
+	public void eventsReceived();
 	
 	/**
 	 * Called when an exception occurred in the grid.
 	 */
-	public void exception(Throwable aThrowable) throws RemoteException;
+	public void exception(Throwable aThrowable);
 	
 	/**
 	 * Called when new monitoring info has been received from a database node
 	 */
-	public void monitorData(int aNodeId, MonitorData aData) throws RemoteException;
+	public void monitorData(int aNodeId, MonitorData aData);
 	
 	/**
 	 * Called when the trace capture has been enabled or disabled.
 	 */
-	public void captureEnabled(boolean aEnabled) throws RemoteException;
+	public void captureEnabled(boolean aEnabled);
 }

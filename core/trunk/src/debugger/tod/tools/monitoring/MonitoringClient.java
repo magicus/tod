@@ -23,8 +23,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.tools.monitoring;
 
 import java.io.Serializable;
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,21 +31,9 @@ import tod.core.DebugFlags;
 import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;
 
-public class MonitoringClient extends UnicastRemoteObject
-implements RIMonitoringClient
+public class MonitoringClient implements RIMonitoringClient
 {
-	private static MonitoringClient INSTANCE;
-	static
-	{
-		try
-		{
-			INSTANCE = new MonitoringClient();
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
+	private static final MonitoringClient INSTANCE = new MonitoringClient();
 
 	/**
 	 * Retrieves the singleton instance.
@@ -57,10 +43,6 @@ implements RIMonitoringClient
 		return INSTANCE;
 	}
 	
-	private MonitoringClient() throws RemoteException
-	{
-	}
-
 	private Map<MonitorId, MonitorWrapper> itsMonitorsMap = 
 		new HashMap<MonitorId, MonitorWrapper>();
 	
@@ -101,15 +83,8 @@ implements RIMonitoringClient
 
 		public void fired(IEvent< ? extends Void> aEvent, Void aData)
 		{
-			try
-			{
-				if (DebugFlags.TRACE_MONITORING) System.out.println("Monitor canceled: "+itsId);
-				itsServer.monitorCancelled(itsId);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			if (DebugFlags.TRACE_MONITORING) System.out.println("Monitor canceled: "+itsId);
+			itsServer.monitorCancelled(itsId);
 		}
 	}
 	

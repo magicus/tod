@@ -24,8 +24,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,6 +57,7 @@ import tod.impl.evdb1.GridLogBrowser1;
 import tod.utils.ConfigUtils;
 import zz.utils.ITask;
 import zz.utils.Utils;
+import zz.utils.srpc.SRPCRegistry;
 
 public class GridQuery
 {
@@ -67,7 +66,7 @@ public class GridQuery
 
 	public static void main(String[] args) throws Exception
 	{
-		Registry theRegistry = LocateRegistry.createRegistry(Util.TOD_REGISTRY_PORT);
+		SRPCRegistry theRegistry = Util.getLocalSRPCRegistry();
 		
 		String theFileName = STORE_EVENTS_FILE;
 		final File theFile = new File(theFileName);
@@ -95,7 +94,7 @@ public class GridQuery
 		System.out.println("Replayed "+theEventsCount[0]+" events: "+theEpS+"ev/s");
 
 		System.out.println("Looking up master in registry");
-		RIGridMaster theRemoteMaster = (RIGridMaster) theRegistry.lookup(GridMaster.getRMIId(new TODConfig()));
+		RIGridMaster theRemoteMaster = (RIGridMaster) theRegistry.lookup(GridMaster.SRPC_ID);
 		
 		final GridLogBrowser theBrowser = GridLogBrowser1.createRemote(null, theRemoteMaster);
 		

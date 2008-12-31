@@ -27,10 +27,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -78,6 +74,7 @@ import zz.utils.notification.IEvent;
 import zz.utils.notification.IEventListener;
 import zz.utils.properties.IProperty;
 import zz.utils.properties.PropertyListener;
+import zz.utils.srpc.SRPCRegistry;
 
 /**
  * The entry point to the database grid. Manages configuration and discovery of
@@ -86,9 +83,10 @@ import zz.utils.properties.PropertyListener;
  * 
  * @author gpothier
  */
-public class GridMaster extends UnicastRemoteObject implements RIGridMaster
+public class GridMaster implements RIGridMaster
 {
 	public static final String READY_STRING = "[GridMaster] Ready.";
+	public static final String SRPC_ID = "GridMaster";
 
 	private TODConfig itsConfig;
 
@@ -154,7 +152,6 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	private GridLogBrowser itsLocalLogBrowser;
 
 	private GridMaster(TODConfig aConfig, StructureDatabase aStructureDatabase, int aExpectedNodes, boolean aStartServer)
-			throws RemoteException
 	{
 		itsConfig = aConfig;
 		itsStructureDatabase = aStructureDatabase;
@@ -176,26 +173,19 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			DatabaseNode aDatabaseNode, 
 			boolean aStartServer)
 	{
-		try
-		{
-			GridMaster theMaster = new GridMaster(aConfig, aStructureDatabase, 0, aStartServer);
+		GridMaster theMaster = new GridMaster(aConfig, aStructureDatabase, 0, aStartServer);
 
-			aDatabaseNode.connectedToMaster(theMaster, 0);
-			theMaster.itsCollector = aDatabaseNode.createLogCollector(new HostInfo(0));
-			
-			if (DebugFlags.COLLECTOR_LOG) theMaster.itsCollector = new PrintThroughCollector(
-					new HostInfo(0, "print"),
-					theMaster.itsCollector,
-					aStructureDatabase);
-			
-			theMaster.itsNodes.add(new NodeConnector(aDatabaseNode));
+		aDatabaseNode.connectedToMaster(theMaster, 0);
+		theMaster.itsCollector = aDatabaseNode.createLogCollector(new HostInfo(0));
+		
+		if (DebugFlags.COLLECTOR_LOG) theMaster.itsCollector = new PrintThroughCollector(
+				new HostInfo(0, "print"),
+				theMaster.itsCollector,
+				aStructureDatabase);
+		
+		theMaster.itsNodes.add(new NodeConnector(aDatabaseNode));
 
-			return theMaster;
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		return theMaster;
 	}
 
 	/**
@@ -207,7 +197,6 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			TODConfig aConfig, 
 			StructureDatabase aStructureDatabase, 
 			int aExpectedNodes)
-			throws RemoteException
 	{
 		GridMaster theMaster = new GridMaster(aConfig, aStructureDatabase, aExpectedNodes, true);
 
@@ -254,14 +243,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	{
 		itsConfig = aConfig;
 		itsServer.setConfig(aConfig);
-		try
-		{
-			for (RINodeConnector theConnector : itsNodes) theConnector.setConfig(aConfig);
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		for (RINodeConnector theConnector : itsNodes) theConnector.setConfig(aConfig);
 	}
 
 	/**
@@ -489,15 +471,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		int theId = itsNodes.size();
 
 		// Register the node in the RMI registry.
-		try
-		{
-			Registry theRegistry = LocateRegistry.getRegistry(DebuggerGridConfig.MASTER_HOST, Util.TOD_REGISTRY_PORT);
-			theRegistry.bind("node-" + theId, aNode);
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
+		Util.getLocalSRPCRegistry().bind("node-" + theId, aNode);
 
 		return theId;
 	}
@@ -526,15 +500,8 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 
 	public void clear()
 	{
-		try
-		{
-			for (RINodeConnector theConnector : itsNodes)
-				theConnector.clear();
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		for (RINodeConnector theConnector : itsNodes)
+			theConnector.clear();
 
 		itsThreads.clear();
 		itsHosts.clear();
@@ -548,15 +515,8 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 	 */
 	public void flush()
 	{
-		try
-		{
-			for (RINodeConnector theConnector : itsNodes)
-				theConnector.flush();
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		for (RINodeConnector theConnector : itsNodes)
+			theConnector.flush();
 	}
 
 	/**
@@ -595,7 +555,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		return itsHosts;
 	}
 
-	public RIQueryAggregator createAggregator(IGridEventFilter aCondition) throws RemoteException
+	public RIQueryAggregator createAggregator(IGridEventFilter aCondition)
 	{
 		TODUtils.logf(2, "[GridMaster] Creating aggregator for conditions: %s", aCondition);
 		return new QueryAggregator(this, aCondition);
@@ -631,14 +591,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		{
 			public Object run(RINodeConnector aInput)
 			{
-				try
-				{
-					return aInput.getRegisteredObject(aId);
-				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
+				return aInput.getRegisteredObject(aId);
 			}
 		});
 
@@ -653,20 +606,13 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		return theObject;
 	}
 	
-	public ITypeInfo getObjectType(final long aId) throws RemoteException
+	public ITypeInfo getObjectType(final long aId)
 	{
 		List<ITypeInfo> theResults = Utils.fork(getNodes(), new ITask<RINodeConnector, ITypeInfo>()
 		{
 			public ITypeInfo run(RINodeConnector aInput)
 			{
-				try
-				{
-					return aInput.getObjectType(aId);
-				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
+				return aInput.getObjectType(aId);
 			}
 		});
 		
@@ -681,7 +627,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		return theType;
 	}
 	
-	public RIBufferIterator<StringSearchHit[]> searchStrings(String aSearchText) throws RemoteException
+	public RIBufferIterator<StringSearchHit[]> searchStrings(String aSearchText)
 	{
 		return new StringHitsAggregator(this, aSearchText);
 	}
@@ -694,30 +640,22 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		long theFirstTimestamp = Long.MAX_VALUE;
 		long theLastTimestamp = 0;
 
-		try
+		for (RINodeConnector theNode : getNodes())
 		{
-			for (RINodeConnector theNode : getNodes())
-			{
-				theEventsCount += theNode.getEventsCount();
-				theDroppedEventsCount += theNode.getDroppedEventsCount();
-				theObjectsStoreSize += theNode.getObjectsStoreSize();
-				theFirstTimestamp = Math.min(theFirstTimestamp, theNode.getFirstTimestamp());
-				theLastTimestamp = Math.max(theLastTimestamp, theNode.getLastTimestamp());
-			}
-
-			// When there are no nodes:
-			if (theFirstTimestamp > theLastTimestamp) theFirstTimestamp = theLastTimestamp;
-			itsEventsCount = theEventsCount;
-			itsDroppedEventsCount = theDroppedEventsCount;
-			itsObjectsStoreSize = theObjectsStoreSize;
-			itsFirstTimestamp = theFirstTimestamp;
-			itsLastTimestamp = theLastTimestamp;
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
+			theEventsCount += theNode.getEventsCount();
+			theDroppedEventsCount += theNode.getDroppedEventsCount();
+			theObjectsStoreSize += theNode.getObjectsStoreSize();
+			theFirstTimestamp = Math.min(theFirstTimestamp, theNode.getFirstTimestamp());
+			theLastTimestamp = Math.max(theLastTimestamp, theNode.getLastTimestamp());
 		}
 
+		// When there are no nodes:
+		if (theFirstTimestamp > theLastTimestamp) theFirstTimestamp = theLastTimestamp;
+		itsEventsCount = theEventsCount;
+		itsDroppedEventsCount = theDroppedEventsCount;
+		itsObjectsStoreSize = theObjectsStoreSize;
+		itsFirstTimestamp = theFirstTimestamp;
+		itsLastTimestamp = theLastTimestamp;
 	}
 
 	public IMutableStructureDatabase getStructureDatabase()
@@ -747,14 +685,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		{
 			public Long run(RINodeConnector aInput)
 			{
-				try
-				{
-					return aInput.getEventCountAtBehavior(aBehaviorId);
-				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
+				return aInput.getEventCountAtBehavior(aBehaviorId);
 			}
 		});
 
@@ -767,20 +698,13 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 		return theCount;
 	}
 	
-	public long getEventCountAtClass(final int aClassId) throws RemoteException
+	public long getEventCountAtClass(final int aClassId)
 	{
 		List<Long> theResults = Utils.fork(getNodes(), new ITask<RINodeConnector, Long>()
 		{
 			public Long run(RINodeConnector aInput)
 			{
-				try
-				{
-					return aInput.getEventCountAtClass(aClassId);
-				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
+				return aInput.getEventCountAtClass(aClassId);
 			}
 		});
 
@@ -906,7 +830,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 
 	public static void main(String[] args) 
 	{
-		Registry theRegistry = Util.getRegistry();
+		SRPCRegistry theRegistry = Util.getLocalSRPCRegistry();
 		try
 		{
 			DBGridUtils.setupMaster(theRegistry, args);
@@ -917,14 +841,6 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 			e.printStackTrace();
 			System.exit(1);
 		}
-	}
-
-	/**
-	 * Returns the RMI id to use to bind/fetch a master given a config.
-	 */
-	public static String getRMIId(TODConfig aConfig)
-	{
-		return "GridMaster-" + aConfig.get(TODConfig.COLLECTOR_PORT);
 	}
 
 	/**
@@ -956,7 +872,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 				itsListener.eventsReceived();
 				return fire(false);
 			}
-			catch (RemoteException e)
+			catch (Exception e)
 			{
 				return fire(true);
 			}
@@ -969,7 +885,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 				itsListener.exception(aThrowable);
 				return fire(false);
 			}
-			catch (RemoteException e)
+			catch (Exception e)
 			{
 				return fire(true);
 			}
@@ -982,7 +898,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 				itsListener.monitorData(aNodeId, aData);
 				return fire(false);
 			}
-			catch (RemoteException e)
+			catch (Exception e)
 			{
 				return fire(true);
 			}
@@ -995,7 +911,7 @@ public class GridMaster extends UnicastRemoteObject implements RIGridMaster
 				itsListener.captureEnabled(aEnabled);
 				return fire(false);
 			}
-			catch (RemoteException e)
+			catch (Exception e)
 			{
 				return fire(true);
 			}

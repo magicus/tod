@@ -22,13 +22,12 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.scheduling;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
 
 import tod.tools.monitoring.RIMonitoringServerProvider;
 import tod.tools.monitoring.MonitoringClient.MonitorId;
+import zz.utils.srpc.IRemote;
 
-public interface RIServer extends Remote, RIMonitoringServerProvider
+public interface RIServer extends IRemote, RIMonitoringServerProvider
 {
-	public int doTask(MonitorId aId, int aParam) throws RemoteException;
+	public int doTask(MonitorId aId, int aParam);
 }

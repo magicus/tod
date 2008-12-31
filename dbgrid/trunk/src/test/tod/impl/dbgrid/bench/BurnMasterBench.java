@@ -23,7 +23,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.bench;
 
 import java.lang.reflect.Constructor;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,7 +68,7 @@ public class BurnMasterBench
 		}
 	}
 	
-	private void doTest() throws RemoteException
+	private void doTest()
 	{
 		GridMaster theMaster = Fixtures.setupLocalMaster();
 		IMutableStructureDatabase theStructureDatabase = theMaster.getStructureDatabase();
@@ -137,7 +136,7 @@ public class BurnMasterBench
 			IGridEventFilter aCondition, 
 			EventGenerator aReferenceGenerator,
 			int aSkip,
-			int aCount) throws RemoteException
+			int aCount)
 	{
 		GridEvent theEvent = null;
 		for (int i=0;i<aSkip;i++) theEvent = aReferenceGenerator.next();

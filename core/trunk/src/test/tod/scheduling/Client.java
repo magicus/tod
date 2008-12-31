@@ -25,9 +25,6 @@ package tod.scheduling;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -42,6 +39,7 @@ import tod.tools.monitoring.MonitoringClient.MonitorId;
 import tod.tools.scheduling.JobScheduler;
 import tod.tools.scheduling.JobSchedulerMonitor;
 import tod.tools.scheduling.IJobScheduler.JobPriority;
+import zz.utils.srpc.RIRegistry;
 
 public class Client extends JPanel
 {
@@ -110,14 +108,7 @@ public class Client extends JPanel
 			@Override
 			protected void runJob()
 			{
-				try
-				{
-					itsResult = itsServer.doTask(MonitorId.get(), (int) (Math.random()*5)+2);
-				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
+				itsResult = itsServer.doTask(MonitorId.get(), (int) (Math.random()*5)+2);
 			}
 			
 			@Override
@@ -152,8 +143,8 @@ public class Client extends JPanel
 	
 	public static void main(String[] args) throws Exception
 	{
-		Registry theRegistry = LocateRegistry.getRegistry("localhost", Util.TOD_REGISTRY_PORT);
-		RIServer theServer = (RIServer) theRegistry.lookup("server");
+		RIRegistry theRoot = Util.getRemoteSRPCRegistry("localhost", Util.TOD_SRPC_PORT);
+		RIServer theServer = (RIServer) theRoot.lookup("server");
 		
 		JFrame theFrame = new JFrame("Scheduling test");
 		theFrame.setContentPane(new Client(theServer));

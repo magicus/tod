@@ -22,8 +22,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.utils.remote;
 
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -65,8 +63,7 @@ import zz.utils.Utils;
  * to obtain the actual repository.
  * @author gpothier
  */
-public class RemoteStructureDatabase extends UnicastRemoteObject
-implements RIStructureDatabase
+public class RemoteStructureDatabase implements RIStructureDatabase
 {
 	private IShareableStructureDatabase itsSource;
 	
@@ -78,7 +75,7 @@ implements RIStructureDatabase
 	private List<RIStructureDatabaseListener> itsListeners = 
 		new ArrayList<RIStructureDatabaseListener>();
 	
-	private RemoteStructureDatabase(IShareableStructureDatabase aSource, boolean aMutable) throws RemoteException
+	private RemoteStructureDatabase(IShareableStructureDatabase aSource, boolean aMutable)
 	{
 		itsSource = aSource;
 		itsMutable = aMutable;
@@ -116,12 +113,12 @@ implements RIStructureDatabase
 	 */
 	public static RemoteStructureDatabase create(
 			IShareableStructureDatabase aStructureDatabase,
-			boolean aMutable) throws RemoteException
+			boolean aMutable)
 	{
 		return new RemoteStructureDatabase(aStructureDatabase, aMutable);
 	}
 
-	public void addListener(RIStructureDatabaseListener aListener) throws RemoteException
+	public void addListener(RIStructureDatabaseListener aListener)
 	{
 		itsListeners.add(aListener);
 		aListener.changed(null);
@@ -135,7 +132,7 @@ implements RIStructureDatabase
 			{
 				theListener.changed(aStats);
 			}
-			catch (RemoteException e)
+			catch (Exception e)
 			{
 				System.err.println("[RemoteStructureDatabase] Could not fire change event:");
 				e.printStackTrace();
@@ -169,7 +166,7 @@ implements RIStructureDatabase
 		return itsSource.getClasses(aName);
 	}
 
-	public IClassInfo[] getClasses() throws RemoteException
+	public IClassInfo[] getClasses()
 	{
 		return itsSource.getClasses();
 	}
@@ -217,7 +214,7 @@ implements RIStructureDatabase
 	}
 
 	
-	public IAdviceInfo getAdvice(int aAdviceId) throws RemoteException
+	public IAdviceInfo getAdvice(int aAdviceId)
 	{
 		return itsSource.getAdvice(aAdviceId);
 	}
@@ -242,7 +239,7 @@ implements RIStructureDatabase
 		return itsSource._getBehaviorTagMap(aBehaviorId);
 	}
 	
-	public List<ProbeInfo> _getBehaviorProbes(int aBehaviorId) throws RemoteException
+	public List<ProbeInfo> _getBehaviorProbes(int aBehaviorId)
 	{
 		return itsSource._getBehaviorProbes(aBehaviorId);
 	}
@@ -262,7 +259,7 @@ implements RIStructureDatabase
 		return itsSource._getClassOriginalBytecode(aClassId);
 	}
 	
-	public String _getClassSMAP(int aClassId) throws RemoteException
+	public String _getClassSMAP(int aClassId)
 	{
 		return itsSource._getClassSMAP(aClassId);
 	}
@@ -277,7 +274,7 @@ implements RIStructureDatabase
 		return itsSource._getBehaviorClass(aBehaviorId, aFailIfAbsent);
 	}
 	
-	public IClassInfo _getFieldClass(int aFieldId, boolean aFailIfAbsent) throws RemoteException
+	public IClassInfo _getFieldClass(int aFieldId, boolean aFailIfAbsent)
 	{
 		return itsSource._getFieldClass(aFieldId, aFailIfAbsent);
 	}
@@ -288,14 +285,7 @@ implements RIStructureDatabase
 	public static IStructureDatabase createDatabase(RIStructureDatabase aDatabase)
 	{
 		assert aDatabase != null;
-		try
-		{
-			return new MyDatabase(aDatabase);
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		return new MyDatabase(aDatabase);
 	}
 	
 	/**
@@ -304,14 +294,7 @@ implements RIStructureDatabase
 	public static IMutableStructureDatabase createMutableDatabase(RIStructureDatabase aDatabase)
 	{
 		assert aDatabase != null;
-		try
-		{
-			return new MyDatabase(aDatabase);
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		return new MyDatabase(aDatabase);
 	}
 	
 	/**
@@ -319,8 +302,7 @@ implements RIStructureDatabase
 	 * from the remote structure database.
 	 * @author gpothier
 	 */
-	private static class MyDatabase extends UnicastRemoteObject
-	implements IShareableStructureDatabase, RIStructureDatabaseListener
+	private static class MyDatabase implements IShareableStructureDatabase, RIStructureDatabaseListener
 	{
 		private RIStructureDatabase itsDatabase;
 		
@@ -346,7 +328,7 @@ implements RIStructureDatabase
 		private final TODConfig itsConfig;
 		private final String itsId;
 		
-		public MyDatabase(RIStructureDatabase aDatabase) throws RemoteException
+		public MyDatabase(RIStructureDatabase aDatabase)
 		{
 			itsDatabase = aDatabase;
 			itsDatabase.addListener(this);
@@ -438,88 +420,60 @@ implements RIStructureDatabase
 		
 		private void updateStats()
 		{
-			try
-			{
-				itsLastStats = itsDatabase.getStats();
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			itsLastStats = itsDatabase.getStats();
 		}
 		
 		public IMutableBehaviorInfo getBehavior(int aBehaviorId, boolean aFailIfAbsent)
 		{
 			if (aBehaviorId <= 0) return null;
 			
-			try
+			IMutableBehaviorInfo theBehavior = Utils.listGet(itsBehaviors, aBehaviorId);
+			if (theBehavior == null)
 			{
-				IMutableBehaviorInfo theBehavior = Utils.listGet(itsBehaviors, aBehaviorId);
-				if (theBehavior == null)
+				IMutableClassInfo theClass = (IMutableClassInfo) itsDatabase._getBehaviorClass(aBehaviorId, aFailIfAbsent);
+				if (theClass != null)
 				{
-					IMutableClassInfo theClass = (IMutableClassInfo) itsDatabase._getBehaviorClass(aBehaviorId, aFailIfAbsent);
-					if (theClass != null)
-					{
-						cacheClass(theClass, true);
-						theBehavior = Utils.listGet(itsBehaviors, aBehaviorId);
-					}
+					cacheClass(theClass, true);
+					theBehavior = Utils.listGet(itsBehaviors, aBehaviorId);
 				}
-				
-				if (theBehavior == null && aFailIfAbsent) throw new RuntimeException("Behavior not found: "+aBehaviorId);
-				return theBehavior;
 			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			
+			if (theBehavior == null && aFailIfAbsent) throw new RuntimeException("Behavior not found: "+aBehaviorId);
+			return theBehavior;
 		}
 
 		public IFieldInfo getField(int aFieldId, boolean aFailIfAbsent)
 		{
-			try
+			IFieldInfo theField = Utils.listGet(itsFields, aFieldId);
+			if (theField == null)
 			{
-				IFieldInfo theField = Utils.listGet(itsFields, aFieldId);
-				if (theField == null)
+				IMutableClassInfo theClass = (IMutableClassInfo) itsDatabase._getFieldClass(aFieldId, aFailIfAbsent);
+				if (theClass != null)
 				{
-					IMutableClassInfo theClass = (IMutableClassInfo) itsDatabase._getFieldClass(aFieldId, aFailIfAbsent);
-					if (theClass != null)
-					{
-						cacheClass(theClass, true);
-						theField = Utils.listGet(itsFields, aFieldId);
-					}
+					cacheClass(theClass, true);
+					theField = Utils.listGet(itsFields, aFieldId);
 				}
-				
-				if (theField == null && aFailIfAbsent) throw new RuntimeException("Field not found: "+aFieldId);
-				return theField;
 			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			
+			if (theField == null && aFailIfAbsent) throw new RuntimeException("Field not found: "+aFieldId);
+			return theField;
 		}
 
 		public IMutableClassInfo getClass(int aClassId, boolean aFailIfAbsent)
 		{
-			try
+			IMutableClassInfo theClass = Utils.listGet(itsClasses, aClassId);
+			if (theClass == null)
 			{
-				IMutableClassInfo theClass = Utils.listGet(itsClasses, aClassId);
-				if (theClass == null)
+				theClass = (IMutableClassInfo) itsDatabase.getClass(aClassId, false);
+				if (theClass != null)
 				{
-					theClass = (IMutableClassInfo) itsDatabase.getClass(aClassId, false);
-					if (theClass != null)
-					{
-						assert theClass.getId() == aClassId;
-						cacheClass(theClass, false);
-					}
+					assert theClass.getId() == aClassId;
+					cacheClass(theClass, false);
 				}
-				
-				if (theClass == null && aFailIfAbsent) throw new RuntimeException("Class not found: "+aClassId);
-				return theClass;
 			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			
+			if (theClass == null && aFailIfAbsent) throw new RuntimeException("Class not found: "+aClassId);
+			return theClass;
 		}
 		
 		public IClassInfo getUnknownClass()
@@ -563,22 +517,15 @@ implements RIStructureDatabase
 
 		public IMutableClassInfo getClass(String aName, boolean aFailIfAbsent)
 		{
-			try
+			IMutableClassInfo theClass = itsClassesMap.get(aName);
+			if (theClass == null)
 			{
-				IMutableClassInfo theClass = itsClassesMap.get(aName);
-				if (theClass == null)
-				{
-					theClass = (IMutableClassInfo) itsDatabase.getClass(aName, false);
-					if (theClass != null) cacheClass(theClass, false);
-				}
-				
-				if (theClass == null && aFailIfAbsent) throw new RuntimeException("Class not found in database: "+aName);
-				return theClass;
+				theClass = (IMutableClassInfo) itsDatabase.getClass(aName, false);
+				if (theClass != null) cacheClass(theClass, false);
 			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			
+			if (theClass == null && aFailIfAbsent) throw new RuntimeException("Class not found in database: "+aName);
+			return theClass;
 		}
 
 		public IClassInfo getClass(String aName, String aChecksum, boolean aFailIfAbsent)
@@ -605,20 +552,13 @@ implements RIStructureDatabase
 
 		public IMutableClassInfo getNewClass(String aName)
 		{
-			try
+			IMutableClassInfo theClass = itsClassesMap.get(aName);
+			if (theClass == null)
 			{
-				IMutableClassInfo theClass = itsClassesMap.get(aName);
-				if (theClass == null)
-				{
-					theClass = (IMutableClassInfo) itsDatabase.getNewClass(aName);
-					cacheClass(theClass, false);
-				}
-				return theClass;
+				theClass = (IMutableClassInfo) itsDatabase.getNewClass(aName);
+				cacheClass(theClass, false);
 			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			return theClass;
 		}
 		
 		public IMutableClassInfo addClass(int aId, String aName)
@@ -641,15 +581,8 @@ implements RIStructureDatabase
 			if (aProbeId >= itsProbes.size())
 			{
 				// Fetch missing probes
-				try
-				{
-					ProbeInfo[] theProbeInfos = itsDatabase.getProbeInfos(itsProbes.size());
-					for (ProbeInfo theProbeInfo : theProbeInfos) itsProbes.add(theProbeInfo);
-				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
+				ProbeInfo[] theProbeInfos = itsDatabase.getProbeInfos(itsProbes.size());
+				for (ProbeInfo theProbeInfo : theProbeInfos) itsProbes.add(theProbeInfo);
 			}
 			return itsProbes.get(aProbeId);
 		}
@@ -681,15 +614,8 @@ implements RIStructureDatabase
 
 		public ProbeInfo getNewExceptionProbe(int aBehaviorId, int aBytecodeIndex)
 		{
-			try
-			{
-				int theProbeId = itsDatabase.getNewExceptionProbeInfo(aBehaviorId, aBytecodeIndex);
-				return getProbeInfo(theProbeId);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			int theProbeId = itsDatabase.getNewExceptionProbeInfo(aBehaviorId, aBytecodeIndex);
+			return getProbeInfo(theProbeId);
 		}
 
 		public void setAdviceSourceMap(Map<Integer, SourceRange> aMap)
@@ -702,15 +628,8 @@ implements RIStructureDatabase
 			IAdviceInfo theAdvice = Utils.listGet(itsAdvices, aAdviceId);
 			if (theAdvice == null)	
 			{
-				try
-				{
-					theAdvice = itsDatabase.getAdvice(aAdviceId);
-					Utils.listSet(itsAdvices, aAdviceId, theAdvice);
-				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
+				theAdvice = itsDatabase.getAdvice(aAdviceId);
+				Utils.listSet(itsAdvices, aAdviceId, theAdvice);
 			}
 			return theAdvice;
 		}
@@ -719,164 +638,77 @@ implements RIStructureDatabase
 		{
 			if (itsAspectInfoMap == null)
 			{
-				try
-				{
-					itsAspectInfoMap = itsDatabase.getAspectInfoMap();
-				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
+				itsAspectInfoMap = itsDatabase.getAspectInfoMap();
 			}
 			return itsAspectInfoMap;
 		}
 
 		public LineNumberInfo[] _getBehaviorLineNumberInfo(int aBehaviorId)
 		{
-			try
-			{
-				System.out.println("Retrieving line number info for behavior: "+aBehaviorId);
-				return itsDatabase._getBehaviorLineNumberInfo(aBehaviorId);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			System.out.println("Retrieving line number info for behavior: "+aBehaviorId);
+			return itsDatabase._getBehaviorLineNumberInfo(aBehaviorId);
 		}
 
 		public List<LocalVariableInfo> _getBehaviorLocalVariableInfo(int aBehaviorId)
 		{
-			try
-			{
-				System.out.println("Retrieving local variable info for behavior: "+aBehaviorId);
-				return itsDatabase._getBehaviorLocalVariableInfo(aBehaviorId);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			System.out.println("Retrieving local variable info for behavior: "+aBehaviorId);
+			return itsDatabase._getBehaviorLocalVariableInfo(aBehaviorId);
 		}
 
 		public TagMap _getBehaviorTagMap(int aBehaviorId)
 		{
-			try
-			{
-				System.out.println("Retrieving tag map for behavior: "+aBehaviorId);
-				return itsDatabase._getBehaviorTagMap(aBehaviorId);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			System.out.println("Retrieving tag map for behavior: "+aBehaviorId);
+			return itsDatabase._getBehaviorTagMap(aBehaviorId);
 		}
 		
 		public List<ProbeInfo> _getBehaviorProbes(int aBehaviorId)
 		{
-			try
-			{
-				System.out.println("Retrieving probes for behavior: "+aBehaviorId);
-				return itsDatabase._getBehaviorProbes(aBehaviorId);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			System.out.println("Retrieving probes for behavior: "+aBehaviorId);
+			return itsDatabase._getBehaviorProbes(aBehaviorId);
 		}
 
 		public Map<String, IMutableBehaviorInfo> _getClassBehaviorsMap(int aClassId)
 		{
-			try
-			{
-				System.out.println("Retrieving behavior map for class: "+aClassId);
-				Map<String, IMutableBehaviorInfo> theMap = itsDatabase._getClassBehaviorsMap(aClassId);
-				for (IMutableBehaviorInfo theBehavior : theMap.values()) cacheBehavior(theBehavior);
-				return theMap;
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			System.out.println("Retrieving behavior map for class: "+aClassId);
+			Map<String, IMutableBehaviorInfo> theMap = itsDatabase._getClassBehaviorsMap(aClassId);
+			for (IMutableBehaviorInfo theBehavior : theMap.values()) cacheBehavior(theBehavior);
+			return theMap;
 		}
 
 		public Map<String, IMutableFieldInfo> _getClassFieldMap(int aClassId)
 		{
-			try
-			{
-				System.out.println("Retrieving field map for class: "+aClassId);
-				Map<String, IMutableFieldInfo> theMap = itsDatabase._getClassFieldMap(aClassId);
-				for (IMutableFieldInfo theField : theMap.values()) cacheField(theField);
-				return theMap;
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			System.out.println("Retrieving field map for class: "+aClassId);
+			Map<String, IMutableFieldInfo> theMap = itsDatabase._getClassFieldMap(aClassId);
+			for (IMutableFieldInfo theField : theMap.values()) cacheField(theField);
+			return theMap;
 		}
 
 		public byte[] _getClassBytecode(int aClassId)
 		{
-			try
-			{
-				System.out.println("Retrieving bytecode for class: "+aClassId);
-				return itsDatabase._getClassBytecode(aClassId);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			System.out.println("Retrieving bytecode for class: "+aClassId);
+			return itsDatabase._getClassBytecode(aClassId);
 		}
 		
 		public byte[] _getClassOriginalBytecode(int aClassId)
 		{
-			try
-			{
-				System.out.println("Retrieving original bytecode for class: "+aClassId);
-				return itsDatabase._getClassOriginalBytecode(aClassId);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			System.out.println("Retrieving original bytecode for class: "+aClassId);
+			return itsDatabase._getClassOriginalBytecode(aClassId);
 		}
 		
 		public String _getClassSMAP(int aClassId)
 		{
-			try
-			{
-				System.out.println("Retrieving SMAP for class: "+aClassId);
-				return itsDatabase._getClassSMAP(aClassId);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			System.out.println("Retrieving SMAP for class: "+aClassId);
+			return itsDatabase._getClassSMAP(aClassId);
 		}
 
 		public IClassInfo _getBehaviorClass(int aBehaviorId, boolean aFailIfAbsent)
 		{
-			try
-			{
-				return itsDatabase._getBehaviorClass(aBehaviorId, aFailIfAbsent);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			return itsDatabase._getBehaviorClass(aBehaviorId, aFailIfAbsent);
 		}
 
 		public IClassInfo _getFieldClass(int aFieldId, boolean aFailIfAbsent)
 		{
-			try
-			{
-				return itsDatabase._getFieldClass(aFieldId, aFailIfAbsent);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			return itsDatabase._getFieldClass(aFieldId, aFailIfAbsent);
 		}
-		
-		
 	}
-
 }

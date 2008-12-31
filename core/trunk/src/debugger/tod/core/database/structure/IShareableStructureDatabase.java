@@ -25,8 +25,6 @@ package tod.core.database.structure;
 import java.util.List;
 import java.util.Map;
 
-import tod.core.database.structure.IStructureDatabase.LineNumberInfo;
-import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.impl.database.structure.standard.TagMap;
 
 /**

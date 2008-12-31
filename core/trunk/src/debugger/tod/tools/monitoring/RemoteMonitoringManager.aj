@@ -31,16 +31,15 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.tools.monitoring;
 
-import java.rmi.Remote;
-import java.rmi.server.UnicastRemoteObject;
-
 import tod.core.DebugFlags;
 import tod.tools.monitoring.MonitoringClient.MonitorId;
+import zz.utils.srpc.IRemote;
+import zz.utils.srpc.SRPCServer;
 
 public aspect RemoteMonitoringManager
 {
-	pointcut monitoredCall(Remote aTarget, MonitorId aId): 
-		call(* Remote+.*(MonitorId, ..)) 
+	pointcut monitoredCall(IRemote aTarget, MonitorId aId): 
+		call(* IRemote+.*(MonitorId, ..)) 
 		&& !within(tod.tools.monitoring.**)
 		&& args(aId, ..) && target(aTarget);
 	
@@ -48,13 +47,9 @@ public aspect RemoteMonitoringManager
 	 * Obtains an id for the current monitor and transmits this id
 	 * to the server side.
 	 */
-	Object around(Remote aTarget, MonitorId aId): monitoredCall(aTarget, aId)
+	Object around(IRemote aTarget, MonitorId aId): monitoredCall(aTarget, aId)
 	{
-		if (aTarget instanceof UnicastRemoteObject)
-		{
-			// This is a local object
-			return proceed(aTarget, aId);
-		}
+		if (SRPCServer.isLocal(aTarget)) return proceed(aTarget, aId);
 
 		MonitorId theRealId = null;
 		try
@@ -82,21 +77,17 @@ public aspect RemoteMonitoringManager
 		}
 	}
 	
-	pointcut monitoredExec(Remote aSubject, MonitorId aId): 
-		execution(* Remote+.*(MonitorId, ..)) 
+	pointcut monitoredExec(IRemote aSubject, MonitorId aId): 
+		execution(* IRemote+.*(MonitorId, ..)) 
 		&& !within(tod.tools.monitoring.**)
 		&& args(aId, ..) && this(aSubject);
 	
 	/**
 	 * Receives an id from the client and initializes a monitor.
 	 */
-	before(Remote aSubject, MonitorId aId): monitoredExec(aSubject, aId)
+	before(IRemote aSubject, MonitorId aId): monitoredExec(aSubject, aId)
 	{
-		if (aSubject instanceof UnicastRemoteObject)
-		{
-			// This is a local object
-			return;
-		}
+		if (SRPCServer.isLocal(aSubject)) return;
 
 		try
 		{
@@ -112,13 +103,9 @@ public aspect RemoteMonitoringManager
 	/**
 	 * Cleans up the monitor for this call.
 	 */
-	after(Remote aSubject, MonitorId aId): monitoredExec(aSubject, aId)
+	after(IRemote aSubject, MonitorId aId): monitoredExec(aSubject, aId)
 	{
-		if (aSubject instanceof UnicastRemoteObject)
-		{
-			// This is a local object
-			return;
-		}
+		if (SRPCServer.isLocal(aSubject)) return;
 
 		try
 		{
@@ -131,22 +118,22 @@ public aspect RemoteMonitoringManager
 		}
 	}
 
-	pointcut remoteCall(Remote aTarget): 
-//		call(Remote+ Remote+.*(..))
+	pointcut remoteCall(IRemote aTarget): 
+//		call(IRemote+ IRemote+.*(..))
 //		&& !call(* java..*(..)) // avoids trapping calls to Registry
-		call(@RemoteLinker Remote+ *.*(..))
+		call(@RemoteLinker IRemote+ *.*(..))
 		&& target(aTarget);
 	
 	/**
 	 * Set up the Remote objects groups.
 	 */
-	after(Remote aTarget) returning(Remote aResult): remoteCall(aTarget)
+	after(IRemote aTarget) returning(IRemote aResult): remoteCall(aTarget)
 	{
 		try
 		{
 			if (DebugFlags.TRACE_MONITORING) System.out.println("[RemoteMonitoringManager] At: "+thisJoinPoint.toLongString());
 			
-			if (aTarget instanceof UnicastRemoteObject)
+			if (SRPCServer.isLocal(aTarget))
 			{
 				if (DebugFlags.TRACE_MONITORING) System.out.println("[RemoteMonitoringManager] Object is local, skipping: "+aTarget);
 			}

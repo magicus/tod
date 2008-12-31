@@ -22,29 +22,15 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.tools.monitoring;
 
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.Map;
 
 import tod.core.DebugFlags;
 import tod.tools.monitoring.MonitoringClient.MonitorId;
 
-public class MonitoringServer extends UnicastRemoteObject
-implements RIMonitoringServer
+public class MonitoringServer implements RIMonitoringServer
 {
-	private static MonitoringServer INSTANCE;
-	static
-	{
-		try
-		{
-			INSTANCE = new MonitoringServer();
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
+	private static final MonitoringServer INSTANCE = new MonitoringServer();
 
 	/**
 	 * Retrieves the singleton instance.
@@ -57,7 +43,7 @@ implements RIMonitoringServer
 	private Map<MonitorId, TaskMonitor> itsMonitorsMap =
 		new HashMap<MonitorId, TaskMonitor>();
 	
-	private MonitoringServer() throws RemoteException
+	private MonitoringServer() 
 	{
 	}
 

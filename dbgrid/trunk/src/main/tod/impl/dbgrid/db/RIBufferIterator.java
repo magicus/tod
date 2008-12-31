@@ -22,30 +22,29 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.db;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
 
 import tod.tools.monitoring.MonitoringClient.MonitorId;
+import zz.utils.srpc.IRemote;
 
 /**
  * An iterator that buffers data into packets.
  * @param <T> Should be an array type
  * @author gpothier
  */
-public interface RIBufferIterator<T> extends Remote
+public interface RIBufferIterator<T> extends IRemote
 {
 	/**
 	 * Fetches elements following the cursor position, and updates the cursor.
 	 * @param aCount Maximum number of elements to fetch.
 	 * @return The fetched elements, or null if there are no more events.
 	 */
-	public T next(MonitorId aMonitorId, int aCount) throws RemoteException;
+	public T next(MonitorId aMonitorId, int aCount);
 	
 	/**
 	 * Fetches elements preceding the cursor position, and updates the cursor.
 	 * @param aCount Maximum number of elements to fetch.
 	 * @return The fetched elements, or null if there are no more events.
 	 */
-	public T previous(MonitorId aMonitorId, int aCount) throws RemoteException;
+	public T previous(MonitorId aMonitorId, int aCount);
 
 }

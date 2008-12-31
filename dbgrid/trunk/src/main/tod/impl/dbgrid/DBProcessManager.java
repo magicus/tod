@@ -31,9 +31,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.ref.WeakReference;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,6 +43,7 @@ import tod.core.config.DeploymentConfig;
 import tod.core.config.TODConfig;
 import tod.utils.TODUtils;
 import zz.utils.StreamPipe;
+import zz.utils.srpc.RIRegistry;
 
 /**
  * Manages (launches, monitors and controls) an external database process.
@@ -303,8 +301,8 @@ public class DBProcessManager
 			theGrabber.stopCapture();
 			printOutput("--- Ready.");
 			
-			Registry theRegistry = LocateRegistry.getRegistry("localhost", Util.TOD_REGISTRY_PORT);
-			itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.getRMIId(getConfig()));
+			RIRegistry theRegistry = Util.getRemoteSRPCRegistry("localhost", Util.TOD_SRPC_PORT);
+			itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.SRPC_ID);
 			itsMaster.setConfig(getConfig());
 
 			itsKeepAliveThread = new KeepAliveThread(this);
@@ -536,7 +534,7 @@ public class DBProcessManager
 							}
 							break; // we continue the loop only if an exception occurred.
 						}
-						catch (RemoteException e)
+						catch (Exception e)
 						{
 							System.err.println("[KeepAliveThread] Error in try #"+(i+1));
 							e.printStackTrace();

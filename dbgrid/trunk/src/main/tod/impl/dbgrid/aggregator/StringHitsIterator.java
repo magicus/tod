@@ -22,8 +22,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.aggregator;
 
-import java.rmi.RemoteException;
-
 import tod.impl.database.BufferedBidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.db.RIBufferIterator;
@@ -47,27 +45,13 @@ public class StringHitsIterator extends BufferedBidiIterator<StringSearchHit[], 
 	@Override
 	protected StringSearchHit[] fetchNextBuffer()
 	{
-		try
-		{
-			return itsSourceIterator.next(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		return itsSourceIterator.next(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
 	}
 
 	@Override
 	protected StringSearchHit[] fetchPreviousBuffer()
 	{
-		try
-		{
-			return itsSourceIterator.previous(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		return itsSourceIterator.previous(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
 	}
 
 	@Override

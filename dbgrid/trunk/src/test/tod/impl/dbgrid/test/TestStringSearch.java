@@ -22,8 +22,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.test;
 
-import java.rmi.RemoteException;
-
 import org.junit.Test;
 
 import tod.core.config.TODConfig;
@@ -39,7 +37,7 @@ public class TestStringSearch
 		"Hello", "World", "Hello World", "Hello123", "123", "Hello123World", "HelloWorld"
 	};
 	
-	@Test public void testSearch() throws RemoteException
+	@Test public void testSearch()
 	{
 		TODConfig theConfig = new TODConfig();
 		theConfig.set(TODConfig.INDEX_STRINGS, true);
@@ -57,14 +55,14 @@ public class TestStringSearch
 		search(theNode, "H*lo");
 	}
 	
-	private void search(DatabaseNode aNode, String aText) throws RemoteException
+	private void search(DatabaseNode aNode, String aText)
 	{
 		System.out.println("Search: "+aText);
 		printIterator(aNode.searchStrings(aText));
 		System.out.println("Done");
 	}
 	
-	private void printIterator(RIBufferIterator<StringSearchHit[]> aIterator) throws RemoteException
+	private void printIterator(RIBufferIterator<StringSearchHit[]> aIterator)
 	{
 		while(true)
 		{

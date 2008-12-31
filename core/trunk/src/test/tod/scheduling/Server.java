@@ -22,24 +22,16 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.scheduling;
 
-import java.rmi.RemoteException;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
-
 import tod.Util;
 import tod.tools.monitoring.Monitored;
 import tod.tools.monitoring.MonitoringServer;
 import tod.tools.monitoring.RIMonitoringServer;
 import tod.tools.monitoring.MonitoringClient.MonitorId;
+import zz.utils.srpc.SRPCRegistry;
 
-public class Server extends UnicastRemoteObject 
-implements RIServer
+public class Server implements RIServer
 {
-	public Server() throws RemoteException
-	{
-	}
-
-	public RIMonitoringServer getMonitoringServer() throws RemoteException
+	public RIMonitoringServer getMonitoringServer()
 	{
 		return MonitoringServer.get();
 	}
@@ -76,8 +68,8 @@ implements RIServer
 	
 	public static void main(String[] args) throws Exception
 	{
-		Registry theRegistry = Util.getRegistry();
-		theRegistry.rebind("server", new Server());
+		SRPCRegistry theRoot = Util.getLocalSRPCRegistry();
+		theRoot.bind("server", new Server());
 		System.out.println("Bound server");
 	}
 

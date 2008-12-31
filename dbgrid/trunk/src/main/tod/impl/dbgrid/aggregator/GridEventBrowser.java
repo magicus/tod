@@ -22,8 +22,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.aggregator;
 
-import java.rmi.RemoteException;
-
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
@@ -55,7 +53,7 @@ implements IEventBrowser, IScheduled
 	private ILogEvent itsFirstEvent;
 	private ILogEvent itsLastEvent;
 	
-	public GridEventBrowser(GridLogBrowser aBrowser, IGridEventFilter aFilter) throws RemoteException
+	public GridEventBrowser(GridLogBrowser aBrowser, IGridEventFilter aFilter)
 	{
 		itsLogBrowser = aBrowser;
 		itsFilter = aFilter;
@@ -88,31 +86,17 @@ implements IEventBrowser, IScheduled
 	@Override
 	protected ILogEvent[] fetchNextBuffer()
 	{
-		try
-		{
-			GridEvent[] theGridEvents = itsAggregator.next(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
-			if (theGridEvents == null) return null;
-			else return convert(theGridEvents);
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		GridEvent[] theGridEvents = itsAggregator.next(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
+		if (theGridEvents == null) return null;
+		else return convert(theGridEvents);
 	}
 	
 	@Override
 	protected ILogEvent[] fetchPreviousBuffer()
 	{
-		try
-		{
-			GridEvent[] theGridEvents = itsAggregator.previous(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
-			if (theGridEvents == null) return null;
-			else return convert(theGridEvents);
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		GridEvent[] theGridEvents = itsAggregator.previous(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
+		if (theGridEvents == null) return null;
+		else return convert(theGridEvents);
 	}
 
 
@@ -216,56 +200,35 @@ implements IEventBrowser, IScheduled
 
 	public long[] getEventCounts(long aT1, long aT2, int aSlotsCount, boolean aForceMergeCounts)
 	{
-		try
-		{
-			long[] theCounts = itsAggregator.getEventCounts(
-								aT1, 
-								aT2, 
-								aSlotsCount, 
-								aForceMergeCounts);
-			
-			// TODO: take into account first & last events.
-			return theCounts;
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		long[] theCounts = itsAggregator.getEventCounts(
+							aT1, 
+							aT2, 
+							aSlotsCount, 
+							aForceMergeCounts);
+		
+		// TODO: take into account first & last events.
+		return theCounts;
 	}
 
 	public boolean setNextEvent(ILogEvent aEvent)
 	{
-		try
-		{
-			boolean theResult = itsAggregator.setNextEvent(
-					checkTimestamp(aEvent.getTimestamp()),
-					aEvent.getThread().getId());
-			reset();
-			
-			return theResult;
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		boolean theResult = itsAggregator.setNextEvent(
+				checkTimestamp(aEvent.getTimestamp()),
+				aEvent.getThread().getId());
+		reset();
+		
+		return theResult;
 	}
 
 	public boolean setPreviousEvent(ILogEvent aEvent)
 	{
-		try
-		{
-			long theTimestamp = checkTimestamp(aEvent.getTimestamp());
-			IThreadInfo theThread = aEvent.getThread();
-			int theThreadId = theThread.getId();
-			boolean theResult = itsAggregator.setPreviousEvent(theTimestamp, theThreadId);
-			reset();
-			
-			return theResult;
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		long theTimestamp = checkTimestamp(aEvent.getTimestamp());
+		IThreadInfo theThread = aEvent.getThread();
+		int theThreadId = theThread.getId();
+		boolean theResult = itsAggregator.setPreviousEvent(theTimestamp, theThreadId);
+		reset();
+		
+		return theResult;
 	}
 
 	/**
@@ -289,28 +252,14 @@ implements IEventBrowser, IScheduled
 	
 	public void setNextTimestamp(long aTimestamp)
 	{
-		try
-		{
-			itsAggregator.setNextTimestamp(checkTimestamp(aTimestamp));
-			reset();
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		itsAggregator.setNextTimestamp(checkTimestamp(aTimestamp));
+		reset();
 	}
 
 	public void setPreviousTimestamp(long aTimestamp)
 	{
-		try
-		{
-			itsAggregator.setPreviousTimestamp(checkTimestamp(aTimestamp));
-			reset();
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		itsAggregator.setPreviousTimestamp(checkTimestamp(aTimestamp));
+		reset();
 	}
 	
 	@Override

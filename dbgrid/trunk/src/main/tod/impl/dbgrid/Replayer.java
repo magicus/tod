@@ -37,7 +37,6 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.rmi.registry.Registry;
 
 import tod.Util;
 import tod.agent.LowLevelEventType;
@@ -51,6 +50,7 @@ import tod.core.transport.PacketProcessor;
 import tod.impl.database.structure.standard.StructureDatabase;
 import tod.utils.TODUtils;
 import zz.utils.Utils;
+import zz.utils.srpc.SRPCRegistry;
 
 /**
  * Replays event stored in a file by {@link LogReceiver}
@@ -126,7 +126,7 @@ public class Replayer extends PacketProcessor
 		
 		theStructureDatabase.reown();
 		
-		Registry theRegistry = Util.getRegistry();
+		SRPCRegistry theRegistry = Util.getLocalSRPCRegistry();
 		GridMaster theMaster = DBGridUtils.setupLocalMaster(theRegistry, theConfig, theStructureDatabase);
 
 		Replayer theReplayer = new Replayer(

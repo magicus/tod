@@ -27,11 +27,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.CountDownLatch;
 
 import tod.Util;
@@ -51,18 +46,17 @@ import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.db.RINodeEventIterator;
 import tod.tools.monitoring.MonitoringServer;
 import tod.tools.monitoring.RIMonitoringServer;
-import tod.tools.monitoring.RIMonitoringServerProvider;
 import zz.utils.monitoring.Monitor;
 import zz.utils.monitoring.Monitor.MonitorData;
 import zz.utils.net.Server.ServerAdress;
+import zz.utils.srpc.RIRegistry;
 
 /**
  * Handles the connection between a {@link DatabaseNode} and the {@link GridMaster}
  * (on the node's side).
  * @author gpothier
  */
-public class NodeConnector extends UnicastRemoteObject 
-implements RINodeConnector
+public class NodeConnector implements RINodeConnector
 {
 	private final DatabaseNode itsDatabaseNode;
 	
@@ -83,7 +77,7 @@ implements RINodeConnector
 	 */
 	private CountDownLatch itsConnectedLatch = new CountDownLatch(1);
 
-	public NodeConnector(DatabaseNode aDatabaseNode) throws RemoteException
+	public NodeConnector(DatabaseNode aDatabaseNode)
 	{
 		itsDatabaseNode = aDatabaseNode;
 	}
@@ -110,15 +104,15 @@ implements RINodeConnector
 	 * Establishes the initial connection between this node and the
 	 * {@link GridMaster} through RMI.
 	 */
-	public void connectToMaster() throws IOException, NotBoundException
+	public void connectToMaster() throws IOException
 	{
 		System.out.println("[NodeConnector] connectToMaster");
 		
 		// Setup RMI connection
-		Registry theRegistry = LocateRegistry.getRegistry(DebuggerGridConfig.MASTER_HOST, Util.TOD_REGISTRY_PORT);
+		RIRegistry theRegistry = Util.getRemoteSRPCRegistry(DebuggerGridConfig.MASTER_HOST, Util.TOD_SRPC_PORT);
 		
 		// We use a temp config because we cannot yet obtain the config from the master
-		itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.getRMIId(new TODConfig()));
+		itsMaster = (RIGridMaster) theRegistry.lookup(GridMaster.SRPC_ID);
 
 		try
 		{
@@ -233,7 +227,7 @@ implements RINodeConnector
 		return itsDatabaseNode.getLastTimestamp();
 	}
 
-	public RINodeEventIterator getIterator(IGridEventFilter aCondition) throws RemoteException 
+	public RINodeEventIterator getIterator(IGridEventFilter aCondition) 
 	{
 		return itsDatabaseNode.getIterator(aCondition);
 	}
@@ -248,7 +242,7 @@ implements RINodeConnector
 		return itsDatabaseNode.getObjectType(aId);
 	}
 
-	public RIBufferIterator<StringSearchHit[]> searchStrings(String aText) throws RemoteException
+	public RIBufferIterator<StringSearchHit[]> searchStrings(String aText)
 	{
 		return itsDatabaseNode.searchStrings(aText);
 	}
@@ -258,7 +252,7 @@ implements RINodeConnector
 		return itsDatabaseNode.getEventCountAtBehavior(aBehaviorId);
 	}
 	
-	public long getEventCountAtClass(int aClassId) throws RemoteException
+	public long getEventCountAtClass(int aClassId)
 	{
 		return itsDatabaseNode.getEventCountAtClass(aClassId);
 	}
@@ -270,25 +264,18 @@ implements RINodeConnector
 			@Override
 			public void run()
 			{
-				try
+				while (true)
 				{
-					while (true)
+					try
 					{
-						try
-						{
-							MonitorData theData = Monitor.getInstance().collectData();
-							getMaster().pushMonitorData(itsNodeId, theData);
-							sleep(10000);
-						}
-						catch (InterruptedException e)
-						{
-							getMaster().nodeException(new NodeException(itsNodeId, e));
-						}
+						MonitorData theData = Monitor.getInstance().collectData();
+						getMaster().pushMonitorData(itsNodeId, theData);
+						sleep(10000);
 					}
-				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
+					catch (InterruptedException e)
+					{
+						getMaster().nodeException(new NodeException(itsNodeId, e));
+					}
 				}
 			}
 		};

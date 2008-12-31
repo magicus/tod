@@ -24,8 +24,6 @@ package tod.impl.dbgrid.gui;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -63,14 +61,7 @@ public class GridConsole extends JPanel
 		itsMaster = aMaster;
 		createUI();
 		
-		try
-		{
-			itsMaster.addListener(new MasterListener());
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		itsMaster.addListener(new MasterListener());
 	}
 	
 
@@ -90,14 +81,7 @@ public class GridConsole extends JPanel
 		{
 			public void actionPerformed(ActionEvent aE)
 			{
-				try
-				{
-					itsMaster.clear();
-				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
+				itsMaster.clear();
 			}
 		});
 		
@@ -112,14 +96,9 @@ public class GridConsole extends JPanel
 		itsMonitorUI.setData(aData);
 	}
 	
-	private class MasterListener extends UnicastRemoteObject
-	implements RIGridMasterListener
+	private class MasterListener implements RIGridMasterListener
 	{
 		private static final long serialVersionUID = -1912140049548993769L;
-
-		public MasterListener() throws RemoteException
-		{
-		}
 
 		public void eventsReceived()
 		{
@@ -134,7 +113,7 @@ public class GridConsole extends JPanel
 			GridConsole.this.monitorData(aNodeId, aData);
 		}
 
-		public void captureEnabled(boolean aEnabled) throws RemoteException
+		public void captureEnabled(boolean aEnabled)
 		{
 		}
 		

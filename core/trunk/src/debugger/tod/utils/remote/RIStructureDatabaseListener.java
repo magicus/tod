@@ -22,17 +22,15 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.utils.remote;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-
 import tod.core.database.structure.IStructureDatabase.Stats;
+import zz.utils.srpc.IRemote;
 
 /**
  * A listener that is notified when the contents of a locations repository
  * changes.
  * @author gpothier
  */
-public interface RIStructureDatabaseListener extends Remote
+public interface RIStructureDatabaseListener extends IRemote
 {
-	public void changed(Stats aStats) throws RemoteException;
+	public void changed(Stats aStats);
 }

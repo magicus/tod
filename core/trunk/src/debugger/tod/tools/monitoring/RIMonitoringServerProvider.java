@@ -22,15 +22,14 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.tools.monitoring;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
+import zz.utils.srpc.IRemote;
 
 /**
  * This class should be implemented by unique access points to a remote
  * machine (eg. GridMaster).
  * @author gpothier
  */
-public interface RIMonitoringServerProvider extends Remote
+public interface RIMonitoringServerProvider extends IRemote
 {
-	public RIMonitoringServer getMonitoringServer() throws RemoteException;
+	public RIMonitoringServer getMonitoringServer();
 }

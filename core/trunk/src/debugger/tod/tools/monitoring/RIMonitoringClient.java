@@ -22,9 +22,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.tools.monitoring;
 
-import java.rmi.Remote;
+import zz.utils.srpc.IRemote;
 
-public interface RIMonitoringClient extends Remote
+public interface RIMonitoringClient extends IRemote
 {
 
 }

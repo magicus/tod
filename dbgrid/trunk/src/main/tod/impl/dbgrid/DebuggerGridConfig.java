@@ -25,12 +25,12 @@ package tod.impl.dbgrid;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.rmi.RemoteException;
 
 import tod.core.session.ISession;
 import tod.impl.dbgrid.db.DatabaseNode;
 import tod.impl.dbgrid.db.ObjectsDatabase;
 import tod.utils.ConfigUtils;
+import zz.utils.srpc.SRPCRemoteException;
 
 public class DebuggerGridConfig
 {
@@ -165,7 +165,7 @@ public class DebuggerGridConfig
 		}
 	}
 	
-	public static GridLogBrowser createRemoteLogBrowser(ISession aSession, RIGridMaster aMaster) throws RemoteException 
+	public static GridLogBrowser createRemoteLogBrowser(ISession aSession, RIGridMaster aMaster) 
 	{
 		try
 		{
@@ -178,9 +178,9 @@ public class DebuggerGridConfig
 		}
 		catch (InvocationTargetException e)
 		{
-			if (e.getCause() instanceof RemoteException)
+			if (e.getCause() instanceof SRPCRemoteException)
 			{
-				throw (RemoteException) e.getCause();
+				throw (SRPCRemoteException) e.getCause();
 			}
 			else throw new RuntimeException(e);
 		}

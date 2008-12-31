@@ -22,7 +22,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -91,7 +90,7 @@ implements ILogBrowser, IScheduled
 	protected GridLogBrowser(
 			ISession aSession,
 			RIGridMaster aMaster,
-			IStructureDatabase aStructureDatabase) throws RemoteException
+			IStructureDatabase aStructureDatabase)
 	{
 		itsSession = aSession;
 		itsMaster = aMaster;
@@ -111,14 +110,7 @@ implements ILogBrowser, IScheduled
 	
 	public void clear()
 	{
-		try
-		{
-			itsMaster.clear();
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		itsMaster.clear();
 	}
 	
 	private List<EventIdCondition> getIdConditions(IEventFilter[] aFilters)
@@ -198,14 +190,7 @@ implements ILogBrowser, IScheduled
 	
 	public Object getRegistered(ObjectId aId)
 	{
-		try
-		{
-			return itsMaster.getRegisteredObject(aId.getId());
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		return itsMaster.getRegisteredObject(aId.getId());
 	}
 
 	public long getEventsCount()
@@ -234,18 +219,11 @@ implements ILogBrowser, IScheduled
 	
 	private synchronized void fetchThreads()
 	{
-		try
+		itsThreads = new ArrayList<IThreadInfo>();
+		itsPackedThreads = itsMaster.getThreads();
+		for (IThreadInfo theThread : itsPackedThreads)
 		{
-			itsThreads = new ArrayList<IThreadInfo>();
-			itsPackedThreads = itsMaster.getThreads();
-			for (IThreadInfo theThread : itsPackedThreads)
-			{
-				Utils.listSet(itsThreads, theThread.getId(), theThread);
-			}				
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
+			Utils.listSet(itsThreads, theThread.getId(), theThread);
 		}
 	}
 	
@@ -257,19 +235,12 @@ implements ILogBrowser, IScheduled
 	
 	private synchronized void fetchHosts()
 	{
-		try
+		itsHosts = new ArrayList<IHostInfo>();
+		itsPackedHosts = itsMaster.getHosts();
+		for (IHostInfo theHost : itsPackedHosts)
 		{
-			itsHosts = new ArrayList<IHostInfo>();
-			itsPackedHosts = itsMaster.getHosts();
-			for (IHostInfo theHost : itsPackedHosts)
-			{
-				Utils.listSet(itsHosts, theHost.getId(), theHost);
-				itsHostsMap.put(theHost.getName(), theHost);
-			}
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
+			Utils.listSet(itsHosts, theHost.getId(), theHost);
+			itsHostsMap.put(theHost.getName(), theHost);
 		}		
 	}
 	
@@ -332,14 +303,7 @@ implements ILogBrowser, IScheduled
 			theDisjunction.add(createThreadFilter(theThread));
 		}
 		
-		try
-		{
-			return new GlobalEventBrowser(this, (IGridEventFilter) theDisjunction);
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		return new GlobalEventBrowser(this, (IGridEventFilter) theDisjunction);
 	}
 	
 	public IEventBrowser createBrowser(IEventFilter aFilter)
@@ -388,14 +352,7 @@ implements ILogBrowser, IScheduled
 	
 	public IBidiIterator<Long> searchStrings(String aSearchText)
 	{
-		try
-		{
-			return new StringHitsIterator(itsMaster.searchStrings(aSearchText));
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		return new StringHitsIterator(itsMaster.searchStrings(aSearchText));
 	}
 
 	/**
@@ -414,17 +371,10 @@ implements ILogBrowser, IScheduled
 	
 	private void updateStats()
 	{
-		try
-		{
-			itsEventsCount = itsMaster.getEventsCount();
-			itsDroppedEventsCount = itsMaster.getDroppedEventsCount();
-			itsFirstTimestamp = itsMaster.getFirstTimestamp();
-			itsLastTimestamp = itsMaster.getLastTimestamp();
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		itsEventsCount = itsMaster.getEventsCount();
+		itsDroppedEventsCount = itsMaster.getDroppedEventsCount();
+		itsFirstTimestamp = itsMaster.getFirstTimestamp();
+		itsLastTimestamp = itsMaster.getLastTimestamp();
 	}
 
 	public <O> O exec(Query<O> aQuery)
@@ -434,26 +384,12 @@ implements ILogBrowser, IScheduled
 
 	public long getEventCountAt(IBehaviorInfo aBehavior)
 	{
-		try
-		{
-			return getMaster().getEventCountAtBehavior(aBehavior.getId());
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		return getMaster().getEventCountAtBehavior(aBehavior.getId());
 	}
 
 	public long getEventCountAt(IClassInfo aClass)
 	{
-		try
-		{
-			return getMaster().getEventCountAtClass(aClass.getId());
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		return getMaster().getEventCountAtClass(aClass.getId());
 	}
 	
 	/**
@@ -464,7 +400,7 @@ implements ILogBrowser, IScheduled
 	{
 		public GlobalEventBrowser(
 				GridLogBrowser aBrowser, 
-				IGridEventFilter aFilter) throws RemoteException
+				IGridEventFilter aFilter)
 		{
 			super(aBrowser, aFilter);
 		}
@@ -515,15 +451,8 @@ implements ILogBrowser, IScheduled
 		@Override
 		protected QueryCacheEntry fetch(Query aQuery)
 		{
-			try
-			{
-				Object theResult = itsMaster.exec(aQuery);
-				return new QueryCacheEntry(aQuery, theResult, itsEventsCount);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			Object theResult = itsMaster.exec(aQuery);
+			return new QueryCacheEntry(aQuery, theResult, itsEventsCount);
 		}
 		
 		public <O> O getResult(Query<O> aQuery)

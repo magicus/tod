@@ -22,8 +22,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.aggregator;
 
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,14 +43,13 @@ import zz.utils.Future;
  * Aggregates the partial results of a query obtained from the nodes.
  * @author gpothier
  */
-public class QueryAggregator extends UnicastRemoteObject
-implements RIQueryAggregator
+public class QueryAggregator implements RIQueryAggregator
 {
 	private final GridMaster itsMaster;
 	private final IGridEventFilter itsCondition;
 	private AbstractBidiIterator<GridEvent> itsMergeIterator;
 
-	public QueryAggregator(GridMaster aMaster, IGridEventFilter aCondition) throws RemoteException
+	public QueryAggregator(GridMaster aMaster, IGridEventFilter aCondition)
 	{
 		itsMaster = aMaster;
 		itsCondition = aCondition;
@@ -66,17 +63,10 @@ implements RIQueryAggregator
 		if (theNodes.size() == 1)
 		{
 			// Don't use futures if there is only one node.
-			try
-			{
-				RINodeConnector theNode = theNodes.get(0);
-				RINodeEventIterator theIterator = theNode.getIterator(itsCondition);
-				theIterator.setNextTimestamp(aTimestamp);
-				itsMergeIterator = new EventIterator(theIterator);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			RINodeConnector theNode = theNodes.get(0);
+			RINodeEventIterator theIterator = theNode.getIterator(itsCondition);
+			theIterator.setNextTimestamp(aTimestamp);
+			itsMergeIterator = new EventIterator(theIterator);
 		}
 		else
 		{
@@ -226,7 +216,7 @@ implements RIQueryAggregator
 			final long aT1,
 			final long aT2, 
 			final int aSlotsCount,
-			final boolean aForceMergeCounts) throws RemoteException
+			final boolean aForceMergeCounts)
 	{
 //		System.out.println("Aggregating counts...");
 		
@@ -300,27 +290,13 @@ implements RIQueryAggregator
 		@Override
 		protected GridEvent[] fetchNextBuffer()
 		{
-			try
-			{
-				return itsIterator.next(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			return itsIterator.next(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
 		}
 
 		@Override
 		protected GridEvent[] fetchPreviousBuffer()
 		{
-			try
-			{
-				return itsIterator.previous(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			return itsIterator.previous(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
 		}
 
 		@Override

@@ -22,8 +22,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.aggregator;
 
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,14 +40,13 @@ import zz.utils.Future;
  * Aggregates string hits provided by the {@link LeafEventDispatcher}s.
  * @author gpothier
  */
-public class StringHitsAggregator extends UnicastRemoteObject
-implements RIBufferIterator<StringSearchHit[]>
+public class StringHitsAggregator implements RIBufferIterator<StringSearchHit[]>
 {
 	private final GridMaster itsMaster;
 	private final String itsSearchText;
 	private MergeIterator itsMergeIterator;
 
-	public StringHitsAggregator(GridMaster aMaster, String aSearchText) throws RemoteException
+	public StringHitsAggregator(GridMaster aMaster, String aSearchText)
 	{
 		itsMaster = aMaster;
 		itsSearchText = aSearchText;
@@ -143,27 +140,13 @@ implements RIBufferIterator<StringSearchHit[]>
 		@Override
 		protected StringSearchHit[] fetchNextBuffer()
 		{
-			try
-			{
-				return itsIterator.next(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			return itsIterator.next(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
 		}
 
 		@Override
 		protected StringSearchHit[] fetchPreviousBuffer()
 		{
-			try
-			{
-				return itsIterator.previous(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			return itsIterator.previous(MonitorId.get(), DebuggerGridConfig.QUERY_ITERATOR_BUFFER_SIZE);
 		}
 
 		@Override

@@ -3,8 +3,6 @@
  */
 package tod.impl.evdbng;
 
-import java.rmi.RemoteException;
-
 import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IStructureDatabase;
@@ -33,22 +31,15 @@ public class GridObjectInspectorNG extends GridObjectInspector
 	{
 		if (aType == null)
 		{
-			try
-			{
-				RIGridMaster theMaster = getLogBrowser().getMaster();
-				aType = theMaster.getObjectType(getObject().getId());
-				
-				// We need to obtain an usable type through the structure database
-				// (because of the transient fields).
-				// TODO: de-gorify this
-				aType = reimport(aType, getLogBrowser().getStructureDatabase());
-				
-				if (aType == null) aType = getLogBrowser().getStructureDatabase().getUnknownClass();
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			RIGridMaster theMaster = getLogBrowser().getMaster();
+			aType = theMaster.getObjectType(getObject().getId());
+			
+			// We need to obtain an usable type through the structure database
+			// (because of the transient fields).
+			// TODO: de-gorify this
+			aType = reimport(aType, getLogBrowser().getStructureDatabase());
+			
+			if (aType == null) aType = getLogBrowser().getStructureDatabase().getUnknownClass();
 		}
 		
 		return aType;

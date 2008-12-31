@@ -24,9 +24,6 @@ package tod.impl.dbgrid;
 
 
 import static org.junit.Assert.fail;
-
-import java.rmi.RemoteException;
-
 import tod.core.ILogCollector;
 import tod.core.database.event.IArrayWriteEvent;
 import tod.core.database.event.IBehaviorExitEvent;
@@ -51,14 +48,7 @@ public class Fixtures
 
 	public static GridMaster setupLocalMaster()
 	{
-		try
-		{
-			return DBGridUtils.setupLocalMaster(null);
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		return DBGridUtils.setupLocalMaster(null);
 	}
 	
 	public static void assertEquals(String aMessage, GridEvent aRefEvent, GridEvent aEvent)

@@ -23,8 +23,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.db;
 
 import java.io.File;
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -139,17 +137,10 @@ public abstract class DatabaseNode
 		}
 		else
 		{
-			try
-			{
-				itsStructureDatabase = 
-					RemoteStructureDatabase.createMutableDatabase(itsMaster.getRemoteStructureDatabase());
-				
-				itsConfig = itsMaster.getConfig();
-			}
-			catch (RemoteException e)
-			{
-				throw new RuntimeException(e);
-			}
+			itsStructureDatabase = 
+				RemoteStructureDatabase.createMutableDatabase(itsMaster.getRemoteStructureDatabase());
+			
+			itsConfig = itsMaster.getConfig();
 		}
 		initDatabase();
 	}
@@ -297,7 +288,7 @@ public abstract class DatabaseNode
 				aForceMergeCounts);
 	}
 
-	public RINodeEventIterator getIterator(IGridEventFilter aCondition) throws RemoteException 
+	public RINodeEventIterator getIterator(IGridEventFilter aCondition) 
 	{
 		return itsEventsDatabase.getIterator(aCondition);
 	}
@@ -477,7 +468,7 @@ public abstract class DatabaseNode
 		return theLoadedClass != null ? theLoadedClass.typeInfo : null;
 	}
 	
-	public RIBufferIterator<StringSearchHit[]> searchStrings(String aText) throws RemoteException 
+	public RIBufferIterator<StringSearchHit[]> searchStrings(String aText) 
 	{
 		if (itsStringIndexer != null)
 		{
@@ -510,12 +501,11 @@ public abstract class DatabaseNode
 	}
 	
 
-	private static class BidiHitIterator extends UnicastRemoteObject
-	implements RIBufferIterator<StringSearchHit[]>
+	private static class BidiHitIterator implements RIBufferIterator<StringSearchHit[]>
 	{
 		private IBidiIterator<StringSearchHit> itsIterator;
 
-		public BidiHitIterator(IBidiIterator<StringSearchHit> aIterator) throws RemoteException
+		public BidiHitIterator(IBidiIterator<StringSearchHit> aIterator)
 		{
 			itsIterator = aIterator;
 		}

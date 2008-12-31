@@ -21,8 +21,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid;
 
 import java.net.URI;
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 
 import javax.swing.JComponent;
 
@@ -57,15 +55,8 @@ public abstract class AbstractGridSession extends AbstractSession
 			protected void changed(Boolean aOldValue, Boolean aNewValue)
 			{
 				if (itsUpdatingCapture) return;
-				try
-				{
-					if (getMaster() == null) return;
-					else getMaster().sendEnableCapture(aNewValue);
-				}
-				catch (RemoteException e)
-				{
-					throw new RuntimeException(e);
-				}
+				if (getMaster() == null) return;
+				else getMaster().sendEnableCapture(aNewValue);
 			}
 		};
 		
@@ -88,22 +79,15 @@ public abstract class AbstractGridSession extends AbstractSession
 	
 	protected void setMaster(RIGridMaster aMaster) 
 	{
-		try
-		{
-			if (itsMasterListener == null) itsMasterListener = new MasterListener();
-			
-			if (itsMaster != null) itsMaster.removeListener(itsMasterListener);
-			itsMaster = aMaster;
-			if (itsMaster != null) itsMaster.addListener(itsMasterListener);
-			
-			itsBrowser = itsMaster != null ?
-					DebuggerGridConfig.createRemoteLogBrowser(this, itsMaster)
-					: null;
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		if (itsMasterListener == null) itsMasterListener = new MasterListener();
+		
+		if (itsMaster != null) itsMaster.removeListener(itsMasterListener);
+		itsMaster = aMaster;
+		if (itsMaster != null) itsMaster.addListener(itsMasterListener);
+		
+		itsBrowser = itsMaster != null ?
+				DebuggerGridConfig.createRemoteLogBrowser(this, itsMaster)
+				: null;
 	}
 
 	public IRWProperty<Boolean> pCaptureEnabled()
@@ -118,23 +102,11 @@ public abstract class AbstractGridSession extends AbstractSession
 
 	public void flush()
 	{
-		try
-		{
-			itsMaster.flush();
-		}
-		catch (RemoteException e)
-		{
-			throw new RuntimeException(e);
-		}
+		itsMaster.flush();
 	}
 
-	private class MasterListener extends UnicastRemoteObject
-	implements RIGridMasterListener
+	private class MasterListener implements RIGridMasterListener
 	{
-		public MasterListener() throws RemoteException
-		{
-		}
-
 		public void eventsReceived() 
 		{
 			itsBrowser.clearStats();

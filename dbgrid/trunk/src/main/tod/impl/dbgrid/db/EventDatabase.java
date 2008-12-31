@@ -22,8 +22,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.db;
 
-import java.rmi.RemoteException;
-
 import tod.core.DebugFlags;
 import tod.core.database.structure.IStructureDatabase;
 import tod.impl.database.AbstractBidiIterator;
@@ -100,7 +98,7 @@ implements ReorderingBufferListener
 	 */
 	protected abstract IBidiIterator<GridEvent> evaluate0(IGridEventFilter aCondition, long aTimestamp);
 	
-	public RINodeEventIterator getIterator(IGridEventFilter aCondition) throws RemoteException
+	public RINodeEventIterator getIterator(IGridEventFilter aCondition)
 	{
 		return new NodeEventIterator(this, aCondition);
 	}
