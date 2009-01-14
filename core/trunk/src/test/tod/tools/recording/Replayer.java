@@ -120,8 +120,7 @@ public class Replayer
 		{
 			URI theUri = URI.create(args[1]);
 			TODConfig theConfig = new TODConfig();
-			String theScheme = theUri != null ? theUri.getScheme() : null;
-			ISession theSession = SessionTypeManager.getInstance().createSession(null, theScheme, theUri, theConfig);
+			ISession theSession = SessionTypeManager.getInstance().createSession(null, theUri, theConfig);
 
 			Replayer theReplayer = new Replayer(new File(args[0]), theSession);
 			theReplayer.process();

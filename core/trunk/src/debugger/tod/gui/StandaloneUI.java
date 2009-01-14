@@ -34,7 +34,6 @@ import javax.swing.JTabbedPane;
 
 import tod.core.config.TODConfig;
 import tod.core.database.structure.ILocationInfo;
-import tod.core.database.structure.SourceRange;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
 import tod.core.session.ISession;
 import tod.core.session.SessionTypeManager;
@@ -48,9 +47,8 @@ public class StandaloneUI extends JPanel
 	public StandaloneUI(URI aUri)
 	{
 		TODConfig theConfig = new TODConfig();
-		String theScheme = aUri != null ? aUri.getScheme() : null;
 		itsTraceView = new MyTraceView();
-		itsSession = SessionTypeManager.getInstance().createSession(itsTraceView, theScheme, aUri, theConfig);
+		itsSession = SessionTypeManager.getInstance().createSession(itsTraceView, aUri, theConfig);
 		createUI();
 	}
 

@@ -22,6 +22,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.session;
 
+import java.net.URI;
 import java.util.Set;
 
 import tod.core.config.TODConfig;
@@ -92,19 +93,20 @@ public class TODSessionManager
 	protected Boolean isCompatible(IGUIManager aRequestor, ISession aSession, TODConfig aConfig)
 	{
 		if (aSession == null || ! aSession.isAlive()) return false;
-		Class theSessionClass = SessionUtils.getSessionClass(aConfig);
+		URI theSessionURI = SessionUtils.getSessionURI(aConfig);
 		
 		String theHostName = aConfig.get(TODConfig.CLIENT_NAME);
 		assert aSession.getLogBrowser() != null;
 		try
 		{
-			Class theCurrentSessionClass = SessionUtils.getSessionClass(aSession);
+			URI theCurrentSessionURI = aSession.getUri();
 			TODConfig theCurrentConfig = aSession.getConfig();
+			
 			if (! compatible(theCurrentConfig, aConfig))
 			{
 				if (! msgIncompatibleType(aRequestor)) return false;
 			}
-			else if (! theCurrentSessionClass.equals(theSessionClass))
+			else if (! theCurrentSessionURI.getScheme().equals(theSessionURI.getScheme()))
 			{
 				if (! msgIncompatibleType(aRequestor)) return false;
 			}
@@ -144,7 +146,8 @@ public class TODSessionManager
 		}
 		else
 		{
-			theCurrentSession = SessionUtils.createSession(aRequestor, aConfig);
+			URI theSessionURI = SessionUtils.getSessionURI(aConfig);
+			theCurrentSession = SessionTypeManager.getInstance().createSession(aRequestor, theSessionURI, aConfig);
 			pCurrentSession.set(theCurrentSession);
 		}
 		

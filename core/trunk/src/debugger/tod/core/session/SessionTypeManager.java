@@ -36,6 +36,11 @@ import tod.impl.local.LocalSessionFactory;
  */
 public class SessionTypeManager
 {
+	public static final String SESSIONTYPE_REMOTE = "tod-dbgrid-remote";
+	public static final String SESSIONTYPE_LOCAL = "tod-dbgrid-local";
+	public static final String SESSIONTYPE_MEMORY = "tod-memory";
+	public static final String SESSIONTYPE_COUNT = "tod-count";
+	
 	private static SessionTypeManager INSTANCE = new SessionTypeManager();
 
 	public static SessionTypeManager getInstance()
@@ -46,34 +51,34 @@ public class SessionTypeManager
 	private SessionTypeManager()
 	{
 		// Register known session types.
-		registerType("tod-dbgrid-remote", "tod.impl.dbgrid.RemoteGridSessionFactory");
-		registerType("tod-dbgrid-local", "tod.impl.dbgrid.LocalGridSessionFactory");
-		registerType("tod-memory", LocalSessionFactory.class.getName());
+		registerType(SESSIONTYPE_REMOTE, "tod.impl.dbgrid.RemoteGridSessionFactory");
+		registerType(SESSIONTYPE_LOCAL, "tod.impl.dbgrid.LocalGridSessionFactory");
+		registerType(SESSIONTYPE_MEMORY, LocalSessionFactory.class.getName());
 	}
 	
-	private final Map<String, SessionType> itsSchemaMap = 
+	private final Map<String, SessionType> itsSchemeMap = 
 		new HashMap<String, SessionType>();
 	
 	/**
 	 * Registers a session type.
-	 * @param aSchema The URL schema of the type.
+	 * @param aScheme The URL schema of the type.
 	 * @param aClassName The class that implements the type.
 	 */
-	public void registerType(String aSchema, String aClassName)
+	public void registerType(String aScheme, String aClassName)
 	{
-		SessionType theSessionType = new SessionType(aSchema, aClassName);
-		itsSchemaMap.put(aSchema, theSessionType);
+		SessionType theSessionType = new SessionType(aScheme, aClassName);
+		itsSchemeMap.put(aScheme, theSessionType);
 	}
 	
 	/**
 	 * Returns the {@link ISession} subclass that handles the given schema. 
 	 */
-	public ISession createSession(IGUIManager aGUIManager, String aSchema, URI aUri, TODConfig aConfig)
+	public ISession createSession(IGUIManager aGUIManager, URI aUri, TODConfig aConfig)
 	{
 		try
 		{
-			System.out.println(String.format("Creating session [%s:%s]", aSchema, aUri));
-			SessionType theSessionType = itsSchemaMap.get(aSchema);
+			System.out.println(String.format("Creating session %s", aUri));
+			SessionType theSessionType = itsSchemeMap.get(aUri.getScheme());
 			ISessionFactory theFactory = theSessionType.getFactory();
 			return theFactory.create(aGUIManager, aUri, aConfig);
 		}

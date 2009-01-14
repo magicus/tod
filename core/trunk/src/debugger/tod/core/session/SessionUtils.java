@@ -22,13 +22,10 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.session;
 
-import java.lang.reflect.Constructor;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import tod.core.config.TODConfig;
-import tod.gui.IGUIManager;
-import tod.impl.local.LocalSession;
-import zz.utils.Utils;
 
 /**
  * Utilies to manage sessions.
@@ -37,67 +34,42 @@ import zz.utils.Utils;
 public class SessionUtils
 {
 	/**
-	 * Returns the class of session that should be created for the
+	 * Returns the URI of session that should be created for the
 	 * specified config.
 	 */
-	public static Class<? extends ISession> getSessionClass(TODConfig aConfig)
+	public static URI getSessionURI(TODConfig aConfig)
 	{
-		String theType = aConfig.get(TODConfig.SESSION_TYPE);
-		String theClassName;
-		if (TODConfig.SESSION_MEMORY.equals(theType)) theClassName = LocalSession.class.getName();
-		else if (TODConfig.SESSION_LOCAL.equals(theType)) theClassName = "tod.impl.dbgrid.LocalGridSession";
-		else if (TODConfig.SESSION_REMOTE.equals(theType)) theClassName = "tod.impl.dbgrid.RemoteGridSession";
-		else if (TODConfig.SESSION_COUNT.equals(theType)) throw new UnsupportedOperationException("Reimplement if needed");
-		else throw new RuntimeException("Not handled: "+theType);
-
 		try
 		{
-			return (Class) Class.forName(theClassName);
+			String theType = aConfig.get(TODConfig.SESSION_TYPE);
+			if (TODConfig.SESSION_MEMORY.equals(theType)) 
+			{
+				return new URI(SessionTypeManager.SESSIONTYPE_MEMORY, null, null);
+			}
+			else if (TODConfig.SESSION_LOCAL.equals(theType)) 
+			{
+				return new URI(SessionTypeManager.SESSIONTYPE_LOCAL, null, null);
+			}
+			else if (TODConfig.SESSION_REMOTE.equals(theType)) 
+			{
+				return new URI(
+						SessionTypeManager.SESSIONTYPE_REMOTE, 
+						null,
+						aConfig.get(TODConfig.COLLECTOR_HOST),
+						aConfig.get(TODConfig.COLLECTOR_PORT),
+						null,
+						null,
+						null);
+			}
+			else if (TODConfig.SESSION_COUNT.equals(theType)) 
+			{
+				throw new UnsupportedOperationException("Reimplement if needed");
+			}
+			else throw new RuntimeException("Not handled: "+theType);
 		}
-		catch (ClassNotFoundException e)
+		catch (URISyntaxException e)
 		{
 			throw new RuntimeException(e);
-		}
-	}
-	
-	/**
-	 * Returns the class of the root session (considering delegated sessions).
-	 */
-	public static Class<? extends ISession> getSessionClass(ISession aSession)
-	{
-		while(aSession != null)
-		{
-			if (aSession instanceof DelegatedSession)
-			{
-				DelegatedSession theSession = (DelegatedSession) aSession;
-				aSession = theSession.getDelegate();
-			}
-			else
-			{
-				return aSession.getClass();
-			}
-		}
-		throw new RuntimeException("Invalid session");
-	}
-	
-	/**
-	 * Creates a session for the specified config.
-	 */
-	public static ISession createSession(IGUIManager aGUIManager, TODConfig aConfig)
-	{
-		try
-		{
-			Class theSessionClass = getSessionClass(aConfig);
-			Constructor theConstructor = 
-				theSessionClass.getConstructor(IGUIManager.class, URI.class, TODConfig.class);
-			
-			return (ISession) theConstructor.newInstance(aGUIManager, null, aConfig);
-		}
-		catch (Exception e)
-		{
-			throw new SessionCreationException(
-					"Cannot create session: "+Utils.getRootCause(e).getMessage(), 
-					e);
 		}
 	}
 	
