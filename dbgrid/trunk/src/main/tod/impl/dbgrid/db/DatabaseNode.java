@@ -22,6 +22,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.dbgrid.db;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +37,7 @@ import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
+import tod.core.transport.ObjectDecoder;
 import tod.core.transport.ValueReader;
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
@@ -364,7 +367,7 @@ public abstract class DatabaseNode
 		
 		if (itsStringIndexer != null && aIndexable)
 		{
-			Object theObject = ValueReader.readRegistered(aData);
+			Object theObject = ObjectDecoder.decode(new DataInputStream(new ByteArrayInputStream(aData)));
 			if (theObject instanceof String)
 			{
 				String theString = (String) theObject;

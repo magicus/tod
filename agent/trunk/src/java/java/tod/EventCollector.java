@@ -22,22 +22,20 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package java.tod;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.EOFException;
-import java.io.IOException;
 import java.io.PrintStream;
-import java.net.InetSocketAddress;
-import java.nio.channels.SocketChannel;
+import java.tod.io._SocketChannel;
+import java.tod.transport.IOThread;
 import java.tod.transport.LowLevelEventWriter;
 import java.tod.transport.NakedLinkedList;
-import java.tod.transport.PacketBufferSender;
-import java.util.StringTokenizer;
 
 import tod.agent.AgentConfig;
 import tod.agent.AgentDebugFlags;
 import tod.agent.AgentUtils;
 import tod.agent.Command;
+import tod.agent.io._ByteBuffer;
+import tod.agent.io._GrowingByteBuffer;
+import tod.agent.io._IOException;
+import tod.agent.util._ArrayList;
 
 
 /**
@@ -100,7 +98,7 @@ public final class EventCollector
 		}
 	};
 	
-	private SocketChannel itsChannel;
+	private _SocketChannel itsChannel;
 	
 	/**
 	 * A dummy thread data that is used for control messages.
@@ -108,35 +106,35 @@ public final class EventCollector
 	private ThreadData itsControlThreadData = null;
 	
 	private _ArrayList<ThreadData> itsThreadDataList = new _ArrayList<ThreadData>();
-	private PacketBufferSender itsSender;
+	private IOThread itsIOThread;
 
 	
 	private static int itsCurrentThreadId = 1;
 	
-	public EventCollector(String aHostname, int aPort, String aClientName) throws IOException 
+	public EventCollector(String aHostname, int aPort, String aClientName) throws _IOException
 	{
-		this (SocketChannel.open(new InetSocketAddress(aHostname, aPort)), aClientName);
+		this (_SocketChannel.open(aHostname, aPort), aClientName);
 	}
 	
-	public EventCollector(SocketChannel aChannel, String aClientName)
+	public EventCollector(_SocketChannel aChannel, String aClientName)
 	{
 		itsChannel = aChannel;
 		
 		// Send initialization
+		_ByteBuffer theBuffer = _GrowingByteBuffer.allocate(200);
+		theBuffer.putIntB(AgentConfig.CNX_JAVA);
+		theBuffer.putString(aClientName);
+		theBuffer.flip();
 		try
 		{
-			DataOutputStream theStream = new DataOutputStream(itsChannel.socket().getOutputStream());
-			theStream.writeInt(AgentConfig.CNX_JAVA);
-			theStream.writeUTF(aClientName);
-			theStream.flush();
+			itsChannel.write(theBuffer);
 		}
-		catch (IOException e)
+		catch (_IOException e)
 		{
 			throw new RuntimeException(e);
 		}
 		
-		itsSender = new PacketBufferSender(this, itsChannel);
-		new CommandReceiver().start();
+		itsIOThread = new IOThread(this, itsChannel);
 		
 		AgentReady.COLLECTOR_READY = true;
 
@@ -168,16 +166,9 @@ public final class EventCollector
 		
 		assert ! theThreadData.isSending();
 		
-        try
-        {
-        	LowLevelEventWriter theWriter = theThreadData.packetStart(0);
-        	theWriter.sendThread(theJvmId, theCurrentThread.getName());
-            theThreadData.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
+    	LowLevelEventWriter theWriter = theThreadData.packetStart(0);
+    	theWriter.sendThread(theJvmId, theCurrentThread.getName());
+        theThreadData.packetEnd();
         
 		return theThreadData;
 	}
@@ -199,21 +190,14 @@ public final class EventCollector
 		long theTimestamp = theThread.timestamp();
 
 		if (theThread.isSending()) return;
-        try
-        {
-        	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
-        	
-        	theWriter.sendClInitEnter(
-        			theTimestamp,
-        			aBehaviorId,
-        			aCallType);
-        	
-            theThread.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
+    	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
+    	
+    	theWriter.sendClInitEnter(
+    			theTimestamp,
+    			aBehaviorId,
+    			aCallType);
+    	
+        theThread.packetEnd();
 
 		if (AgentDebugFlags.COLLECTOR_LOG) printf(
 				"logClInitEnter(th: %d, ts: %d, bid: %d, ct: %s)",
@@ -235,23 +219,16 @@ public final class EventCollector
 		long theTimestamp = theThread.timestamp();
 
 		if (theThread.isSending()) return;
-        try
-        {
-        	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
-        	
-        	theWriter.sendBehaviorEnter(
-        			theTimestamp,
-        			aBehaviorId,
-        			aCallType,
-        			aObject,
-        			aArguments);
-        	
-            theThread.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
+    	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
+    	
+    	theWriter.sendBehaviorEnter(
+    			theTimestamp,
+    			aBehaviorId,
+    			aCallType,
+    			aObject,
+    			aArguments);
+    	
+        theThread.packetEnd();
         
 		if (AgentDebugFlags.COLLECTOR_LOG) printf(
 				"logBehaviorEnter(th: %d, ts: %d, bid: %d, ct: %s, tgt: %s, args: %s)",
@@ -296,21 +273,14 @@ public final class EventCollector
 		long theTimestamp = theThread.timestamp();
 
 		if (theThread.isSending()) return;
-        try
-        {
-        	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
-        	
-        	theWriter.sendClInitExit(
-        			theTimestamp,
-        			aProbeId, 
-        			aBehaviorId);
-        	
-            theThread.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
+    	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
+    	
+    	theWriter.sendClInitExit(
+    			theTimestamp,
+    			aProbeId, 
+    			aBehaviorId);
+    	
+        theThread.packetEnd();
         
 		if (AgentDebugFlags.COLLECTOR_LOG) printf(
 				"logClInitExit(th: %d, ts: %d, pid: %d, bid: %d, res: %s)",
@@ -332,22 +302,15 @@ public final class EventCollector
 		long theTimestamp = theThread.timestamp();
 
 		if (theThread.isSending()) return;
-        try
-        {
-        	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
-        	
-        	theWriter.sendBehaviorExit(
-        			theTimestamp,
-        			aProbeId,
-        			aBehaviorId,
-        			aResult);
-        	
-            theThread.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
+    	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
+    	
+    	theWriter.sendBehaviorExit(
+    			theTimestamp,
+    			aProbeId,
+    			aBehaviorId,
+    			aResult);
+    	
+        theThread.packetEnd();
 
 		if (AgentDebugFlags.COLLECTOR_LOG) printf(
 				"logBehaviorExit(th: %d, ts: %d, pid: %d, bid: %d, res: %s)",
@@ -369,21 +332,14 @@ public final class EventCollector
 		long theTimestamp = theThread.timestamp();
 
 		if (theThread.isSending()) return;
-        try
-        {
-        	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
-        	
-        	theWriter.sendBehaviorExitWithException(
-        			theTimestamp,
-        			aBehaviorId,
-        			aException);
-        	
-            theThread.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
+    	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
+    	
+    	theWriter.sendBehaviorExitWithException(
+    			theTimestamp,
+    			aBehaviorId,
+    			aException);
+    	
+        theThread.packetEnd();
         
 		if (AgentDebugFlags.COLLECTOR_LOG) printf(
 				"logBehaviorExitWithException(th: %d, ts: %d, bid: %d, ex: %s)",
@@ -415,24 +371,17 @@ public final class EventCollector
 		long theTimestamp = theThread.timestamp();
 
 		if (theThread.isSending()) return;
-        try
-        {
-        	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
-        	
-        	theWriter.sendExceptionGenerated(
-        			theTimestamp,
-        			aMethodName,
-        			aMethodSignature,
-        			aMethodDeclaringClassSignature,
-        			aOperationBytecodeIndex,
-        			aException);
-        	
-            theThread.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
+    	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
+    	
+    	theWriter.sendExceptionGenerated(
+    			theTimestamp,
+    			aMethodName,
+    			aMethodSignature,
+    			aMethodDeclaringClassSignature,
+    			aOperationBytecodeIndex,
+    			aException);
+    	
+        theThread.packetEnd();
         
 		if (AgentDebugFlags.COLLECTOR_LOG) printf(
 				"logExceptionGenerated(th: %d, ts: %d, mn: %s, sig: %s, dt: %s, ex: %s)",
@@ -457,23 +406,16 @@ public final class EventCollector
 		long theTimestamp = theThread.timestamp();
 
 		if (theThread.isSending()) return;
-        try
-        {
-        	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
-        	
-        	theWriter.sendFieldWrite(
-        			theTimestamp,
-        			aProbeId, 
-        			aFieldId,
-        			aTarget, 
-        			aValue);
-        	
-            theThread.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
+    	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
+    	
+    	theWriter.sendFieldWrite(
+    			theTimestamp,
+    			aProbeId, 
+    			aFieldId,
+    			aTarget, 
+    			aValue);
+    	
+        theThread.packetEnd();
         
 		if (AgentDebugFlags.COLLECTOR_LOG) printf(
 				"logFieldWrite(th: %d, ts: %d, pid: %d, fid: %d, tgt: %s, val: %s)",
@@ -497,23 +439,16 @@ public final class EventCollector
 		long theTimestamp = theThread.timestamp();
 
 		if (theThread.isSending()) return;
-        try
-        {
-        	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
-        	
-        	theWriter.sendNewArray(
-        			theTimestamp,
-        			aProbeId, 
-        			aTarget,
-        			aBaseTypeId,
-        			aSize);
-        	
-            theThread.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
+    	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
+    	
+    	theWriter.sendNewArray(
+    			theTimestamp,
+    			aProbeId, 
+    			aTarget,
+    			aBaseTypeId,
+    			aSize);
+    	
+        theThread.packetEnd();
         
 		if (AgentDebugFlags.COLLECTOR_LOG) printf(
 				"logNewArray(th: %d, ts: %d, pid: %d, tgt: %s, btid: %d, sz: %d)",
@@ -538,23 +473,16 @@ public final class EventCollector
 		long theTimestamp = theThread.timestamp();
 
 		if (theThread.isSending()) return;
-        try
-        {
-        	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
-        	
-        	theWriter.sendArrayWrite(
-        			theTimestamp,
-        			aProbeId, 
-        			aTarget,
-        			aIndex,
-        			aValue);
-        	
-            theThread.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
+    	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
+    	
+    	theWriter.sendArrayWrite(
+    			theTimestamp,
+    			aProbeId, 
+    			aTarget,
+    			aIndex,
+    			aValue);
+    	
+        theThread.packetEnd();
         
 		if (AgentDebugFlags.COLLECTOR_LOG) printf(
 				"logArrayWrite(th: %d, ts: %d, pid: %d, tgt: %s, i: %d, val: %s)",
@@ -578,23 +506,16 @@ public final class EventCollector
 		long theTimestamp = theThread.timestamp();
 		
 		if (theThread.isSending()) return;
-		try
-		{
-			LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
-			
-			theWriter.sendInstanceOf(
-					theTimestamp,
-					aProbeId, 
-					aObject,
-					aTypeId,
-					aResult != 0);
-			
-			theThread.packetEnd();
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
+		LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
+		
+		theWriter.sendInstanceOf(
+				theTimestamp,
+				aProbeId, 
+				aObject,
+				aTypeId,
+				aResult != 0);
+		
+		theThread.packetEnd();
 		
 		if (AgentDebugFlags.COLLECTOR_LOG) printf(
 				"logInstanceOf(th: %d, ts: %d, pid: %d, obj: %s, t: %d, r: %s)",
@@ -617,22 +538,15 @@ public final class EventCollector
 		long theTimestamp = theThread.timestamp();
 
 		if (theThread.isSending()) return;
-        try
-        {
-        	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
-        	
-        	theWriter.sendLocalVariableWrite(
-        			theTimestamp,
-        			aProbeId, 
-        			aVariableId, 
-        			aValue);
-        	
-            theThread.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
+    	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
+    	
+    	theWriter.sendLocalVariableWrite(
+    			theTimestamp,
+    			aProbeId, 
+    			aVariableId, 
+    			aValue);
+    	
+        theThread.packetEnd();
 
 		if (AgentDebugFlags.COLLECTOR_LOG) printf(
 				"logLocalVariableWrite(th: %d, ts: %d, pid: %d, vid: %d, val: %s)",
@@ -654,22 +568,15 @@ public final class EventCollector
 		long theTimestamp = theThread.timestamp();
 
 		if (theThread.isSending()) return;
-        try
-        {
-        	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
-        	
-        	theWriter.sendBeforeBehaviorCallDry(
-        			theTimestamp,
-        			aProbeId, 
-        			aBehaviorId,
-        			aCallType);
-        	
-            theThread.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
+    	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
+    	
+    	theWriter.sendBeforeBehaviorCallDry(
+    			theTimestamp,
+    			aProbeId, 
+    			aBehaviorId,
+    			aCallType);
+    	
+        theThread.packetEnd();
         
 		if (AgentDebugFlags.COLLECTOR_LOG) printf(
 				"logBeforeBehaviorCallDry(th: %d, ts: %d, pid: %d, bid: %d, ct: %s)",
@@ -694,24 +601,17 @@ public final class EventCollector
 		long theTimestamp = theThread.timestamp();
 
 		if (theThread.isSending()) return;
-        try
-        {
-        	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
-        	
-        	theWriter.sendBeforeBehaviorCall(
-        			theTimestamp,
-        			aProbeId, 
-        			aBehaviorId,
-        			aCallType,
-        			aTarget,
-        			aArguments);
-        	
-            theThread.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
+    	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
+    	
+    	theWriter.sendBeforeBehaviorCall(
+    			theTimestamp,
+    			aProbeId, 
+    			aBehaviorId,
+    			aCallType,
+    			aTarget,
+    			aArguments);
+    	
+        theThread.packetEnd();
         
 		if (AgentDebugFlags.COLLECTOR_LOG) printf(
 				"logBeforeBehaviorCall(th: %d, ts: %d, pid: %d, bid: %d, ct: %s, tgt: %s, args: %s)",
@@ -733,18 +633,9 @@ public final class EventCollector
 		long theTimestamp = theThread.timestamp();
 
 		if (theThread.isSending()) return;
-        try
-        {
-        	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
-        	
-        	theWriter.sendAfterBehaviorCallDry(theTimestamp);
-        	
-            theThread.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
+    	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
+    	theWriter.sendAfterBehaviorCallDry(theTimestamp);
+        theThread.packetEnd();
         
 		if (AgentDebugFlags.COLLECTOR_LOG) printf(
 				"logAfterBehaviorCallDry(th: %d, ts: %d)",
@@ -764,23 +655,16 @@ public final class EventCollector
 		long theTimestamp = theThread.timestamp();
 
 		if (theThread.isSending()) return;
-        try
-        {
-        	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
-        	
-        	theWriter.sendAfterBehaviorCall(
-        			theTimestamp,
-        			aProbeId, 
-        			aBehaviorId,
-        			aTarget,
-        			aResult);
-        	
-            theThread.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
+    	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
+    	
+    	theWriter.sendAfterBehaviorCall(
+    			theTimestamp,
+    			aProbeId, 
+    			aBehaviorId,
+    			aTarget,
+    			aResult);
+    	
+        theThread.packetEnd();
         
 		if (AgentDebugFlags.COLLECTOR_LOG) printf(
 				"logAfterBehaviorCall(th: %d, ts: %d, pid: %d, bid: %d, tgt: %s, res: %s)",
@@ -805,23 +689,16 @@ public final class EventCollector
 		long theTimestamp = theThread.timestamp();
 
 		if (theThread.isSending()) return;
-        try
-        {
-        	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
-        	
-        	theWriter.sendAfterBehaviorCallWithException(
-        			theTimestamp,
-        			aProbeId, 
-        			aBehaviorId,
-        			aTarget,
-        			aException);
-        	
-            theThread.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
+    	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
+    	
+    	theWriter.sendAfterBehaviorCallWithException(
+    			theTimestamp,
+    			aProbeId, 
+    			aBehaviorId,
+    			aTarget,
+    			aException);
+    	
+        theThread.packetEnd();
         
 		if (AgentDebugFlags.COLLECTOR_LOG) printf(
 				"logAfterBehaviorCallWithException(th: %d, ts: %d, pid: %d, bid: %d, tgt: %s, ex: %s)",
@@ -843,21 +720,14 @@ public final class EventCollector
 		long theTimestamp = theThread.timestamp();
 
 		if (theThread.isSending()) return;
-        try
-        {
-        	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
-        	
-        	theWriter.sendOutput(
-        			theTimestamp,
-        			aOutput,
-        			aData);
-        	
-            theThread.packetEnd();
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
+    	LowLevelEventWriter theWriter = theThread.packetStart(theTimestamp);
+    	
+    	theWriter.sendOutput(
+    			theTimestamp,
+    			aOutput,
+    			aData);
+    	
+        theThread.packetEnd();
 	}
 
 	private ThreadData getControlThreadData()
@@ -974,7 +844,7 @@ public final class EventCollector
 		public ThreadData(int aId)
 		{
 			itsId = aId;
-			itsWriter = new LowLevelEventWriter(itsSender.createBuffer(itsId));
+			itsWriter = new LowLevelEventWriter(itsIOThread.createBuffer(itsId));
 		}
 		
 		public int getId()
@@ -1089,87 +959,4 @@ public final class EventCollector
 		itsPrintStream.println(aString);
 	}
 
-	/**
-	 * Taken from zz.utils - we can't depend on it.
-	 */
-	public static String indent(String aString, int aIndent, String aPattern)
-	{
-		StringBuilder theBuilder = new StringBuilder();
-		StringTokenizer theTokenizer = new StringTokenizer(aString, "\n");
-		while (theTokenizer.hasMoreTokens())
-		{
-			String theLine = theTokenizer.nextToken();
-			for (int i=0;i<aIndent;i++) theBuilder.append(aPattern);
-			theBuilder.append(theLine);
-			theBuilder.append('\n');
-		}
-		
-		return theBuilder.toString();
-	}
-
-
-	/**
-	 * This thread reads incoming commands from the database.
-	 * @author gpothier
-	 */
-	private class CommandReceiver extends Thread
-	{
-		public CommandReceiver()
-		{
-			super("[TOD] Command receiver");
-			setDaemon(true);
-		}
-
-		@Override
-		public void run()
-		{
-			try
-			{
-				DataInputStream theIn = new DataInputStream(itsChannel.socket().getInputStream());
-				while(true)
-				{
-					byte theMessage = theIn.readByte();
-					if (theMessage >= Command.BASE)
-					{
-						Command theCommand = Command.VALUES[theMessage-Command.BASE];
-						switch (theCommand)
-						{
-						case AGCMD_ENABLECAPTURE:
-							boolean theEnable = theIn.readBoolean();
-							if (theEnable) 
-							{
-								System.out.println("[TOD] Enable capture request received.");
-								TOD.enableCapture();
-							}
-							else 
-							{
-								System.out.println("[TOD] Disable capture request received.");
-								TOD.disableCapture();
-							}
-							break;
-							
-						default: throw new RuntimeException("Not handled: "+theCommand); 
-						}
-					}
-				}
-			}
-			catch (EOFException e)
-			{
-				System.out.println("[TOD] CommandReceiver eof");
-			}
-			catch (Exception e)
-			{
-				if (itsSender.hasShutdownStarted() && (e instanceof IOException))
-				{
-					// Connection interrupted, just exit
-				}
-				else
-				{
-					System.err.println("[TOD] FATAL:");
-					e.printStackTrace();
-					System.exit(1);
-				}
-			}
-		}
-	}
 }

@@ -4,12 +4,12 @@
 package java.tod;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.tod.util._IdentityHashMap;
 
 import tod.agent.ObjectValue;
 import tod.agent.ObjectValue.FieldValue;
+import tod.agent.util._ArrayList;
+
 
 /**
  * This is part of a trick to avoid loading _IdentityHashMap and similar
@@ -18,20 +18,10 @@ import tod.agent.ObjectValue.FieldValue;
  */
 public class ObjectValueFactory
 {
-	private static final Set<Class<?>> itsPortableClasses = new HashSet<Class<?>>(Arrays.asList(
-			String.class,
-			Long.class, Integer.class, Short.class, Character.class, 
-			Byte.class, Double.class, Float.class, Boolean.class,
-			Throwable.class,
-			StackTraceElement.class,
-			Exception.class,
-			RuntimeException.class));
-	
-
 	/**
 	 * Converts an object to an {@link ObjectValue}, using reflection to obtain field values.
 	 */
-	private static ObjectValue convert(Object aObject, _IdentityHashMap<Object, ObjectValue> aMapping)
+	private static ObjectValue toObjectValue(Object aObject, _IdentityHashMap<Object, ObjectValue> aMapping)
 	{
 		Class<?> theClass = aObject.getClass();
 		ObjectValue theResult = new ObjectValue(theClass.getName(), aObject instanceof Throwable);
@@ -62,7 +52,7 @@ public class ObjectValueFactory
 				Object theMapped = aMapping.get(theValue);
 				if (theMapped == null)
 				{
-					theMapped = ensurePortable(theValue, aMapping);
+					theMapped = convert(theValue, aMapping);
 					if (theMapped instanceof ObjectValue)
 					{
 						ObjectValue theObjectValue = (ObjectValue) theMapped;
@@ -81,15 +71,15 @@ public class ObjectValueFactory
 	}
 	
 	/**
-	 * Ensures that the specified object graph is portable, converting it to an {@link ObjectValue}
-	 * if necessary.
+	 * Ensures that the specified object graph is portable, converting nodes to {@link ObjectValue}
+	 * as needed.
 	 */
-	public static Object ensurePortable(Object aObject)
+	public static Object convert(Object aObject)
 	{
-		return ensurePortable(aObject, new _IdentityHashMap<Object, ObjectValue>());
+		return convert(aObject, new _IdentityHashMap<Object, ObjectValue>());
 	}
 	
-	private static Object ensurePortable(Object aObject, _IdentityHashMap<Object, ObjectValue> aMapping)
+	private static Object convert(Object aObject, _IdentityHashMap<Object, ObjectValue> aMapping)
 	{
 		assert ! aMapping.containsKey(aObject);
 		Object theResult;
@@ -98,7 +88,7 @@ public class ObjectValueFactory
 		else if (isPortable(aObject)) theResult = aObject;
 		else 
 		{
-			ObjectValue theObjectValue = convert(aObject, aMapping);
+			ObjectValue theObjectValue = toObjectValue(aObject, aMapping);
 			aMapping.put(aObject, theObjectValue);
 			theResult = theObjectValue;
 		}
@@ -107,13 +97,9 @@ public class ObjectValueFactory
 		return theResult;
 	}
 
-	/**
-	 * Determines if the given object is portable across JVMs (ie, part of the JDK).
-	 */
-	public static boolean isPortable(Object aObject)
+	private static boolean isPortable(Object aObject)
 	{
-		return itsPortableClasses.contains(aObject.getClass());
+		return (aObject instanceof String) || (aObject instanceof Number) || (aObject instanceof Boolean);
 	}
-
 
 }

@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.agent.Command;
+import tod.agent.io._ByteBuffer;
 import tod.core.DebugFlags;
 import tod.core.config.TODConfig;
 import tod.core.database.structure.IStructureDatabase;
@@ -282,7 +283,7 @@ public abstract class LogReceiver extends PacketProcessor
 		
 		if (getHostName() == null)
 		{
-			setHostName(aDataIn.readUTF());
+			setHostName(_ByteBuffer.getString(aDataIn));
 			if (getMonitor() != null) getMonitor().started();
 		}
 		

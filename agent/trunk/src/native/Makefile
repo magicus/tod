@@ -94,7 +94,8 @@ common-objects = \
 	$(PLATFORM)/utils.o \
 	$(PLATFORM)/md5.o \
 	$(PLATFORM)/jniutils.o \
-	$(PLATFORM)/workingset.o
+	$(PLATFORM)/workingset.o \
+	$(PLATFORM)/socketChannel.o
 
 agent14-objects = $(common-objects) $(PLATFORM)/agentimpl14.o 
 agent15-objects = $(common-objects) $(PLATFORM)/agentimpl15.o 
@@ -155,3 +156,5 @@ $(PLATFORM)/workingset.o: workingset.cpp workingset.h utils.h
 $(PLATFORM)/workingsettest.o: workingsettest.cpp workingset.h utils.h
 	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) workingsettest.cpp -o $(PLATFORM)/workingsettest.o
 
+$(PLATFORM)/socketChannel.o: socketChannel.cpp
+	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) $(CXXFLAGS15) socketChannel.cpp -o $(PLATFORM)/socketChannel.o

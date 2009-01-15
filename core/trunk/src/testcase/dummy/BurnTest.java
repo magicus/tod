@@ -42,6 +42,7 @@ public class BurnTest
 		
 		// Warm up
 		Node root = createTree(null, 10000);
+		System.out.println("BurnTest.main()");
 		for (int i=0;i<10;i++) root.visit();
 		
 		// Real thing

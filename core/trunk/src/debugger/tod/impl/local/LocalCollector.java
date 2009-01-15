@@ -22,6 +22,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.local;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+
 import tod.agent.Output;
 import tod.core.DebugFlags;
 import tod.core.database.structure.IArrayTypeInfo;
@@ -31,6 +34,7 @@ import tod.core.database.structure.IHostInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.IStructureDatabase.LocalVariableInfo;
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
+import tod.core.transport.ObjectDecoder;
 import tod.core.transport.ValueReader;
 import tod.impl.common.EventCollector;
 import tod.impl.common.event.ArrayWriteEvent;
@@ -405,7 +409,7 @@ public class LocalCollector extends EventCollector
 	public void register(long aObjectUID, byte[] aData, long aTimestamp, boolean aIndexable)
 	{
 		//timestamp is not necessary in local version
-		Object theObject = ValueReader.readRegistered(aData);
+		Object theObject = ObjectDecoder.decode(new DataInputStream(new ByteArrayInputStream(aData)));
 		itsBrowser.register(aObjectUID, theObject);
 	}
 	

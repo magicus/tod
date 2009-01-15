@@ -22,11 +22,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.core.transport;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.IOException;
-import java.io.InvalidClassException;
-import java.io.ObjectInputStream;
 
 import tod.agent.AgentConfig;
 import tod.agent.ValueType;
@@ -39,39 +36,6 @@ import tod.core.database.structure.ObjectId;
  */
 public class ValueReader
 {
-	public static Object readRegistered (byte[] aData)
-	{
-		int theSize = aData.length;
-		
-		Object theObject;
-		try
-		{
-			ObjectInputStream theObjectStream = new ObjectInputStream(new ByteArrayInputStream(aData));
-			theObject = theObjectStream.readObject();
-		}
-		catch (ClassNotFoundException e)
-		{
-//			System.err.println("Warning - class no found: "+e.getMessage());
-			theObject = "Unknown ("+e.getMessage()+")";
-		}
-		catch (InvalidClassException e)
-		{
-			System.err.println("Warning - invalid class: "+e.getMessage());
-			theObject = "Unknown ("+e.getMessage()+")";					
-		}
-		catch (Throwable e)
-		{
-			System.err.println("Error while deserializing object");
-			e.printStackTrace();
-			System.err.println(" packet size: "+theSize);
-			for(int i=0;i<theSize;i++) System.err.print(Integer.toHexString(aData[i])+" ");			
-			System.err.println();
-			theObject = "Deserialization error";
-		}
-
-		return theObject;
-	}
-	
 	private static ValueType readValueType (DataInput aStream) throws IOException
 	{
 		byte theByte = aStream.readByte();

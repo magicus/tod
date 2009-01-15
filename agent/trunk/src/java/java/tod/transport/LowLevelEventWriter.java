@@ -41,11 +41,6 @@ import static java.tod._LowLevelEventType.NEW_ARRAY;
 import static java.tod._LowLevelEventType.REGISTER_OBJECT;
 import static java.tod._LowLevelEventType.REGISTER_THREAD;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.tod.EventCollector;
 import java.tod.ExceptionGeneratedReceiver;
 import java.tod.ObjectIdentity;
@@ -54,10 +49,10 @@ import java.tod._BehaviorCallType;
 import java.tod._LowLevelEventType;
 import java.tod._Output;
 import java.tod._ValueType;
-import java.tod.transport.PacketBufferSender.PacketBuffer;
 
 import tod.agent.Command;
-import tod.agent.ObjectValue;
+import tod.agent.io._ByteBuffer;
+import tod.agent.io._GrowingByteBuffer;
 
 /**
  * Provides the methods used to encode streamed log data. Non-static methods are
@@ -82,41 +77,42 @@ public class LowLevelEventWriter
 	/**
 	 * Buffer to prepare (small) packets
 	 */
-	private final ByteBuffer itsBuffer;
+	private final _ByteBuffer itsBuffer;
 	
 	private RegisteredObjectsStack itsRegisteredObjectsStack = new RegisteredObjectsStack();
 	private DeferredObjectsStack itsDeferredObjectsStack = new DeferredObjectsStack();
 	private RegisteredRefObjectsStack itsRegisteredRefObjectsStack = new RegisteredRefObjectsStack();
 	
+	private _GrowingByteBuffer itsObjectsBuffer = _GrowingByteBuffer.allocate(1024);
+	
 	public LowLevelEventWriter(PacketBuffer aStream)
 	{
 		itsStream = aStream;
 		itsBufferStore = new byte[4096];
-		itsBuffer = ByteBuffer.wrap(itsBufferStore);
-		itsBuffer.order(ByteOrder.nativeOrder());
+		itsBuffer = _ByteBuffer.wrap(itsBufferStore);
 	}
 
-	private static void sendEventType(ByteBuffer aBuffer, _LowLevelEventType aType) 
+	private static void sendEventType(_ByteBuffer aBuffer, _LowLevelEventType aType) 
 	{
 		aBuffer.put((byte) aType.ordinal());
 	}
 
-	private static void sendValueType(ByteBuffer aBuffer, _ValueType aType) 
+	private static void sendValueType(_ByteBuffer aBuffer, _ValueType aType) 
 	{
 		aBuffer.put((byte) aType.ordinal());
 	}
 	
-	private static void sendCommand(ByteBuffer aBuffer, Command aCommands) 
+	private static void sendCommand(_ByteBuffer aBuffer, Command aCommands) 
 	{
 		aBuffer.put((byte) (aCommands.ordinal() + Command.BASE));
 	}
 	
-	private static void sendCallType(ByteBuffer aBuffer, _BehaviorCallType aType)
+	private static void sendCallType(_ByteBuffer aBuffer, _BehaviorCallType aType)
 	{
 		aBuffer.put((byte) aType.ordinal());
 	}
 	
-	private static void sendString(ByteBuffer aBuffer, String aString)
+	private static void sendString(_ByteBuffer aBuffer, String aString)
 	{
 		int theSize = aString.length();
 		aBuffer.putInt(theSize);
@@ -144,7 +140,7 @@ public class LowLevelEventWriter
 	public void sendClInitEnter(
 			long aTimestamp,
 			int aBehaviorId, 
-			_BehaviorCallType aCallType) throws IOException
+			_BehaviorCallType aCallType) 
 	{
 		sendStd(CLINIT_ENTER, aTimestamp);
 
@@ -161,7 +157,7 @@ public class LowLevelEventWriter
 			int aBehaviorId, 
 			_BehaviorCallType aCallType,
 			Object aTarget, 
-			Object[] aArguments) throws IOException
+			Object[] aArguments) 
 	{
 		sendStd(BEHAVIOR_ENTER, aTimestamp);
 
@@ -173,13 +169,12 @@ public class LowLevelEventWriter
 		copyBuffer();
 
 		sendRegisteredObjects();
-
 	}
 
 	public void sendClInitExit(
 			long aTimestamp,
 			int aProbeId, 
-			int aBehaviorId) throws IOException
+			int aBehaviorId)
 	{
 		sendStd(CLINIT_EXIT, aTimestamp);
 
@@ -195,7 +190,7 @@ public class LowLevelEventWriter
 			long aTimestamp,
 			int aProbeId, 
 			int aBehaviorId,
-			Object aResult) throws IOException
+			Object aResult) 
 	{
 		sendStd(BEHAVIOR_EXIT, aTimestamp);
 
@@ -211,7 +206,7 @@ public class LowLevelEventWriter
 	public void sendBehaviorExitWithException(
 			long aTimestamp,
 			int aBehaviorId, 
-			Object aException) throws IOException
+			Object aException) 
 	{
 		sendStd(BEHAVIOR_EXIT_EXCEPTION, aTimestamp);
 
@@ -229,7 +224,7 @@ public class LowLevelEventWriter
 			String aMethodSignature,
 			String aMethodDeclaringClassSignature, 
 			int aOperationBytecodeIndex,
-			Object aException) throws IOException
+			Object aException) 
 	{
 		sendStd(EXCEPTION_GENERATED, aTimestamp);
 
@@ -253,7 +248,7 @@ public class LowLevelEventWriter
 			int aProbeId, 
 			int aFieldId,
 			Object aTarget, 
-			Object aValue) throws IOException
+			Object aValue) 
 	{
 		sendStd(FIELD_WRITE, aTimestamp);
 
@@ -272,7 +267,7 @@ public class LowLevelEventWriter
 			int aProbeId, 
 			Object aTarget,
 			int aBaseTypeId,
-			int aSize) throws IOException
+			int aSize) 
 	{
 		sendStd(NEW_ARRAY, aTimestamp);
 
@@ -292,7 +287,7 @@ public class LowLevelEventWriter
 			int aProbeId, 
 			Object aTarget,
 			int aIndex,
-			Object aValue) throws IOException
+			Object aValue) 
 	{
 		sendStd(ARRAY_WRITE, aTimestamp);
 
@@ -311,7 +306,7 @@ public class LowLevelEventWriter
 			int aProbeId, 
 			Object aObject,
 			int aTypeId,
-			boolean aResult) throws IOException
+			boolean aResult) 
 	{
 		sendStd(INSTANCEOF, aTimestamp);
 		
@@ -329,7 +324,7 @@ public class LowLevelEventWriter
 			long aTimestamp,
 			int aProbeId, 
 			int aVariableId,
-			Object aValue) throws IOException
+			Object aValue) 
 	{
 		sendStd(LOCAL_VARIABLE_WRITE, aTimestamp);
 
@@ -346,7 +341,7 @@ public class LowLevelEventWriter
 			long aTimestamp,
 			int aProbeId, 
 			int aBehaviorId,
-			_BehaviorCallType aCallType) throws IOException
+			_BehaviorCallType aCallType) 
 	{
 		sendStd(BEFORE_CALL_DRY, aTimestamp);
 
@@ -358,7 +353,7 @@ public class LowLevelEventWriter
 	}
 	
 	public void sendAfterBehaviorCallDry(
-			long aTimestamp) throws IOException
+			long aTimestamp) 
 	{
 		sendStd(AFTER_CALL_DRY, aTimestamp);
 
@@ -378,7 +373,7 @@ public class LowLevelEventWriter
 			long aTimestamp,
 			int aDeferRequestorId,
 			_BehaviorCallType aCallType, 
-			Object aTarget) throws IOException
+			Object aTarget) 
 	{
 		if (aCallType == _BehaviorCallType.INSTANTIATION && shouldSendByValue(aTarget))
 		{
@@ -397,7 +392,7 @@ public class LowLevelEventWriter
 	 * For exit/after events, check if there is a deferred entry corresponding to
 	 * the given parent timestamp.
 	 */
-	private void checkDeferred(int aDeferRequestorId) throws IOException
+	private void checkDeferred(int aDeferRequestorId) 
 	{
 		if (itsDeferredObjectsStack.isAvailable(aDeferRequestorId))
 		{
@@ -414,7 +409,7 @@ public class LowLevelEventWriter
 			int aBehaviorId,
 			_BehaviorCallType aCallType,
 			Object aTarget, 
-			Object[] aArguments) throws IOException
+			Object[] aArguments) 
 	{
 		sendStd(BEFORE_CALL, aTimestamp);
 
@@ -434,7 +429,7 @@ public class LowLevelEventWriter
 			int aProbeId, 
 			int aBehaviorId, 
 			Object aTarget,
-			Object aResult) throws IOException
+			Object aResult) 
 	{
 		sendStd(AFTER_CALL, aTimestamp);
 
@@ -454,7 +449,7 @@ public class LowLevelEventWriter
 			int aProbeId, 
 			int aBehaviorId, 
 			Object aTarget, 
-			Object aException) throws IOException
+			Object aException) 
 	{
 		sendStd(AFTER_CALL_EXCEPTION, aTimestamp);
 
@@ -473,7 +468,7 @@ public class LowLevelEventWriter
 	public void sendOutput(
 			long aTimestamp,
 			_Output aOutput, 
-			byte[] aData) throws IOException
+			byte[] aData) 
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -496,7 +491,7 @@ public class LowLevelEventWriter
 	
 	public void sendThread(
 			long aJVMThreadId,
-			String aName) throws IOException
+			String aName) 
 	{
 		sendEventType(itsBuffer, REGISTER_THREAD);
 
@@ -538,9 +533,9 @@ public class LowLevelEventWriter
 	 * objects or null values.
 	 */
 	private void sendArguments(
-			ByteBuffer aBuffer, 
+			_ByteBuffer aBuffer, 
 			Object[] aArguments, 
-			long aTimestamp) throws IOException
+			long aTimestamp) 
 	{
 		aBuffer.putInt(aArguments != null ? aArguments.length : 0);
 
@@ -548,12 +543,12 @@ public class LowLevelEventWriter
 			sendValue(aBuffer, theArgument, aTimestamp);
 	}
 
-	private void sendValue(ByteBuffer aBuffer, Object aValue, long aTimestamp) throws IOException
+	private void sendValue(_ByteBuffer aBuffer, Object aValue, long aTimestamp) 
 	{
 		sendValue(aBuffer, aValue, aTimestamp, -1);
 	}
 
-	private void sendValue(ByteBuffer aBuffer, Object aValue, long aTimestamp, int aDeferRequestor) throws IOException
+	private void sendValue(_ByteBuffer aBuffer, Object aValue, long aTimestamp, int aDeferRequestor) 
 	{
 		if (aValue == null)
 		{
@@ -623,7 +618,7 @@ public class LowLevelEventWriter
 	 *            objects stack. The value of this parameter is the behavior id of
 	 *            the event that "request" the deferring.
 	 */
-	private void sendObjectByValue(ByteBuffer aBuffer, Object aObject, long aTimestamp, int aDeferRequestor) 
+	private void sendObjectByValue(_ByteBuffer aBuffer, Object aObject, long aTimestamp, int aDeferRequestor) 
 	{
 		long theObjectId = ObjectIdentity.get(aObject);
 		assert theObjectId != 0;
@@ -658,7 +653,7 @@ public class LowLevelEventWriter
 	 * its type is sent when {@link #sendRegisteredObjects()} is called. In any
 	 * case, the id of the object is sent.
 	 */
-	private void sendObjectByRef(ByteBuffer aBuffer, Object aObject, long aTimestamp) 
+	private void sendObjectByRef(_ByteBuffer aBuffer, Object aObject, long aTimestamp) 
 	{
 		long theObjectId = ObjectIdentity.get(aObject);
 		assert theObjectId != 0;
@@ -678,7 +673,7 @@ public class LowLevelEventWriter
 	/**
 	 * Sends all pending registered objects.
 	 */
-	private void sendRegisteredObjects() throws IOException
+	private void sendRegisteredObjects() 
 	{
 		// Note: remember that this is thread-safe because SocketCollector has one
 		// CollectorPacketWriter per thread.
@@ -697,35 +692,28 @@ public class LowLevelEventWriter
 
 	}
 
-	private void sendRegisteredObject(long aId, Object aObject, long aTimestamp) throws IOException
+	private void sendRegisteredObject(long aId, Object aObject, long aTimestamp) 
 	{
 		// We use a different buffer here because the packet might be huge.
-		ByteArrayOutputStream theBuffer = new ByteArrayOutputStream();
+		itsObjectsBuffer.clear();
+		itsObjectsBuffer.position(22); // Header placeholder
 		
-		// Write header placeholder
-		theBuffer.write(itsBufferStore, 0, 22);
+		ObjectEncoder.encode(ObjectValueFactory.convert(aObject), itsObjectsBuffer);
 		
-		ObjectOutputStream theObjectOut = new ObjectOutputStream(theBuffer);
-		theObjectOut.writeObject(ObjectValueFactory.ensurePortable(aObject));
-		theObjectOut.flush();
-		
-		int theSize = theBuffer.size()-5; // 5: event type + size 
+		int theSize = itsObjectsBuffer.position()-5; // 5: event type + size 
 	
-		sendEventType(itsBuffer, REGISTER_OBJECT);
-		itsBuffer.putInt(theSize); 
+		itsObjectsBuffer.position(0);
+		sendEventType(itsObjectsBuffer, REGISTER_OBJECT);
+		itsObjectsBuffer.putInt(theSize); 
 		
-		itsBuffer.putLong(aId);
-		itsBuffer.putLong(aTimestamp);
-		itsBuffer.put(isIndexable(aObject) ? (byte) 1 : (byte) 0);
+		itsObjectsBuffer.putLong(aId);
+		itsObjectsBuffer.putLong(aTimestamp);
+		itsObjectsBuffer.put(isIndexable(aObject) ? (byte) 1 : (byte) 0);
 		
-		byte[] theArray = theBuffer.toByteArray();
-		System.arraycopy(itsBufferStore, 0, theArray, 0, 22);
-		itsBuffer.clear();
-
-		itsStream.write(theArray, theArray.length, true);
+		itsStream.write(itsObjectsBuffer.array(), theSize+5, true);
 	}
 	
-	private void sendRegisteredRefObject(Object aObject, long aId, Class<?> aClass, long aTimestamp) throws IOException
+	private void sendRegisteredRefObject(Object aObject, long aId, Class<?> aClass, long aTimestamp) 
 	{
 		// That must stay before we start using the buffer
 		if (aClass == Class.class)
@@ -745,7 +733,7 @@ public class LowLevelEventWriter
 		copyBuffer();
 	}
 	
-	private long getClassId(Class<?> aClass) throws IOException
+	private long getClassId(Class<?> aClass) 
 	{
 		long theId = ObjectIdentity.get(aClass);
 		assert theId != 0;
@@ -759,7 +747,7 @@ public class LowLevelEventWriter
 		return theId;
 	}
 	
-	private void sendRegisterClass(long aClassId, Class<?> aClass) throws IOException
+	private void sendRegisterClass(long aClassId, Class<?> aClass) 
 	{
 		// That must stay before we start using the buffer
 		long theLoaderId = getClassLoaderId(aClass.getClassLoader());
@@ -776,7 +764,7 @@ public class LowLevelEventWriter
 		copyBuffer();
 	}
 	
-	private long getClassLoaderId(ClassLoader aLoader) throws IOException
+	private long getClassLoaderId(ClassLoader aLoader) 
 	{
 		if (aLoader == null) return 0;
 		
@@ -792,7 +780,7 @@ public class LowLevelEventWriter
 		return theId;
 	}
 	
-	private void sendRegisterClassLoader(long aLoaderId, ClassLoader aLoader) throws IOException
+	private void sendRegisterClassLoader(long aLoaderId, ClassLoader aLoader) 
 	{
 		// That must stay before we start using the buffer
 		long theLoaderClassId = getClassId(aLoader.getClass());

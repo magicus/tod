@@ -23,15 +23,15 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.dbgrid.db;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.io.DataInputStream;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 import tod.core.DebugFlags;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.transport.ObjectDecoder;
 import tod.impl.dbgrid.db.DatabaseNode.FlushMonitor;
 import zz.utils.monitoring.AggregationType;
 import zz.utils.monitoring.Monitor;
@@ -265,19 +265,7 @@ public abstract class ObjectsDatabase
 	 */
 	protected Object decode(long aId, InputStream aStream)
 	{
-		try
-		{
-			ObjectInputStream theOIStream = new ObjectInputStream(aStream);
-			return theOIStream.readObject();
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException("Error while decoding object "+aId, e);
-		}
-		catch (ClassNotFoundException e)
-		{
-			throw new RuntimeException("Error while decoding object "+aId, e);
-		}
+		return ObjectDecoder.decode(new DataInputStream(aStream));
 	}
 	
 

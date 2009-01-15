@@ -51,21 +51,21 @@ public class SpecialCases
 	
 	static
 	{
-//		add(
-//				"java/util/ArrayList",
-//				"<init>",
-//				"trimToSize",
-//				"ensureCapacity",
-//				"clone",
-//				"toArray",
-//				"set",
-//				"add",
-//				"remove", //TODO: exclude remove(Object)
-//				"fastRemove",
-//				"clear",
-//				"addAll",
-//				"removeRange",
-//				"readObject");
+		add(
+				"java/util/ArrayList",
+				"<init>",
+				"trimToSize",
+				"ensureCapacity",
+				"clone",
+				"toArray",
+				"set",
+				"add",
+				"remove", //TODO: exclude remove(Object)
+				"fastRemove",
+				"clear",
+				"addAll",
+				"removeRange",
+				"readObject");
 	}
 
 	/**

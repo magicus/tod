@@ -1,13 +1,11 @@
 /*
  * Created on Dec 14, 2008
  */
-package java.tod;
-
-import java.io.IOException;
+package java.tod.util;
 
 
 /*
- * !!!!! CHECK LICENSE !!!!!
+ * TODO: !!!!! CHECK LICENSE !!!!!
  */
 
 /*
@@ -615,85 +613,5 @@ public class _IdentityHashMap<K,V>
      */
     public int hashCode() {
     	throw new UnsupportedOperationException();
-    }
-
-
-    // Views
-
-
-    private static final long serialVersionUID = 9128218128712904371L;
-
-    /**
-     * Save the state of the <tt>IdentityHashMap</tt> instance to a stream
-     * (i.e., serialize it).
-     *
-     * @serialData The <i>size</i> of the HashMap (the number of key-value
-     *	        mappings) (<tt>int</tt>), followed by the key (Object) and
-     *          value (Object) for each key-value mapping represented by the
-     *          IdentityHashMap.  The key-value mappings are emitted in no
-     *          particular order.
-     */
-    private void writeObject(java.io.ObjectOutputStream s)
-        throws java.io.IOException  {
-        // Write out and any hidden stuff
-        s.defaultWriteObject();
-
-        // Write out size (number of Mappings)
-        s.writeInt(size);
-
-        // Write out keys and values (alternating)
-        Object[] tab = table;
-        for (int i = 0; i < tab.length; i += 2) {
-            Object key = tab[i];
-            if (key != null) {
-                s.writeObject(unmaskNull(key));
-                s.writeObject(tab[i + 1]);
-            }
-        }
-    }
-
-    /**
-     * Reconstitute the <tt>IdentityHashMap</tt> instance from a stream (i.e.,
-     * deserialize it).
-     */
-    private void readObject(java.io.ObjectInputStream s)
-        throws IOException, ClassNotFoundException  {
-        // Read in any hidden stuff
-        s.defaultReadObject();
-
-        // Read in size (number of Mappings)
-        int size = s.readInt();
-
-        // Allow for 33% growth (i.e., capacity is >= 2* size()).
-        init(capacity((size*4)/3));
-
-        // Read the keys and values, and put the mappings in the table
-        for (int i=0; i<size; i++) {
-            K key = (K) s.readObject();
-            V value = (V) s.readObject();
-            putForCreate(key, value);
-        }
-    }
-
-    /**
-     * The put method for readObject.  It does not resize the table,
-     * update modcount, etc.
-     */
-    private void putForCreate(K key, V value)
-        throws IOException
-    {
-        K k = (K)maskNull(key);
-        Object[] tab = table;
-        int len = tab.length;
-        int i = hash(k, len);
-
-        Object item;
-        while ( (item = tab[i]) != null) {
-            if (item == k)
-                throw new java.io.StreamCorruptedException();
-            i = nextKeyIndex(i, len);
-        }
-        tab[i] = k;
-        tab[i + 1] = value;
     }
 }

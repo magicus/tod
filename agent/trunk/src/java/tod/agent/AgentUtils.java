@@ -22,6 +22,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.agent;
 
+import tod.agent.util._ArrayList;
+
 public class AgentUtils
 {
 	public static String formatTimestamp(long aTimestamp)
@@ -164,13 +166,44 @@ public class AgentUtils
 	
 	public static int getJvmMinorVersion(String aVersionString)
 	{
-        String[] theVersionComponents = aVersionString.split("\\.");
+        String[] theVersionComponents = split(aVersionString, '.');
         int theMajor = Integer.parseInt(theVersionComponents[0]);
         int theMinor = Integer.parseInt(theVersionComponents[1]);
         
         if (theMajor != 1) throw new RuntimeException("JVM version not supported: "+aVersionString);
         
         return theMinor;
+	}
+	
+	public static String[] split(String aString, char aChar)
+	{
+		_ArrayList<String> theStrings = new _ArrayList<String>();
+		StringBuilder theBuilder = new StringBuilder();
+		
+		for(int i=0;i<aString.length();i++)
+		{
+			char c = aString.charAt(i);
+			if (c == aChar)
+			{
+				if (theBuilder.length() > 0)
+				{
+					theStrings.add(theBuilder.toString());
+					theBuilder = new StringBuilder();
+				}
+			}
+			else
+			{
+				theBuilder.append(c);
+			}
+		}
+		
+		if (theBuilder.length() > 0)
+		{
+			theStrings.add(theBuilder.toString());
+			theBuilder = new StringBuilder();
+		}
+
+		return theStrings.toArray(new String[theStrings.size()]);
 	}
 	
 	/**

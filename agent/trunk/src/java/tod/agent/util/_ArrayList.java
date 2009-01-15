@@ -1,7 +1,7 @@
 /*
  * Created on Dec 14, 2008
  */
-package java.tod;
+package tod.agent.util;
 
 /**
  * A simple version of {@link ArrayList}.
