@@ -179,8 +179,8 @@ public class GridBehaviorCallEvent extends GridEventNG
 		
 		initEvent(aBrowser, theEvent);
 		theEvent.setArguments(getArguments());
-		theEvent.setCalledBehavior(aBrowser.getStructureDatabase().getBehavior(getCalledBehaviorId(), false));
-		theEvent.setExecutedBehavior(aBrowser.getStructureDatabase().getBehavior(getExecutedBehaviorId(), false));
+		theEvent.setCalledBehavior(getBehaviorInfo(aBrowser, getCalledBehaviorId()));
+		theEvent.setExecutedBehavior(getBehaviorInfo(aBrowser, getExecutedBehaviorId()));
 		theEvent.setDirectParent(isDirectParent());
 		theEvent.setTarget(getTarget());
 		

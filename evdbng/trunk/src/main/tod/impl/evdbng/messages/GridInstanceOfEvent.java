@@ -117,7 +117,7 @@ public class GridInstanceOfEvent extends GridEventNG
 		InstanceOfEvent theEvent = new InstanceOfEvent(aBrowser);
 		initEvent(aBrowser, theEvent);
 		theEvent.setObject(getObject());
-		theEvent.setTestedType(aBrowser.getStructureDatabase().getType(itsTypeId, true));
+		theEvent.setTestedType(getTypeInfo(aBrowser, itsTypeId));
 		theEvent.setResult(getResult());
 		return theEvent;
 	}

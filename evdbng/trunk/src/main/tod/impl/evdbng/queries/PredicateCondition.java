@@ -26,41 +26,45 @@ package tod.impl.evdbng.queries;
 import tod.core.database.browser.IEventPredicate;
 import tod.impl.database.AbstractFilteredBidiIterator;
 import tod.impl.database.IBidiIterator;
+import tod.impl.dbgrid.GridLogBrowser;
 import tod.impl.dbgrid.messages.GridEvent;
 import tod.impl.evdbng.db.IEventList;
 import tod.impl.evdbng.db.Indexes;
-import tod.impl.evdbng.db.file.SimpleTuple;
+import tod.impl.evdbng.db.file.Tuple;
 
 /**
  * Represents a condition that filters events based on a predicate
  * @author gpothier
  */
-public class PredicateCondition extends SimpleCondition<SimpleTuple>
+public class PredicateCondition extends SimpleCondition<Tuple>
 {
 	private static final long serialVersionUID = 2132857394221092337L;
-	private final EventCondition<SimpleTuple> itsBaseCondition;
+	
+	private final EventCondition<Tuple> itsBaseCondition;
 	private final IEventPredicate itsPredicate;
 
 
-	public PredicateCondition(EventCondition<SimpleTuple> aBaseCondition, IEventPredicate aPredicate)
+	public PredicateCondition(
+			EventCondition<? extends Tuple> aBaseCondition, 
+			IEventPredicate aPredicate)
 	{
-		itsBaseCondition = aBaseCondition;
+		itsBaseCondition = (EventCondition) aBaseCondition;
 		itsPredicate = aPredicate;
 	}
 
 	
 	@Override
-	public IBidiIterator<SimpleTuple> createTupleIterator(
+	public IBidiIterator<Tuple> createTupleIterator(
 			final IEventList aEventList, 
 			Indexes aIndexes, 
 			long aEventId)
 	{
-		IBidiIterator<SimpleTuple> theBaseIterator = itsBaseCondition.createTupleIterator(aEventList, aIndexes, aEventId);
+		IBidiIterator<Tuple> theBaseIterator = itsBaseCondition.createTupleIterator(aEventList, aIndexes, aEventId);
 		
-		return new AbstractFilteredBidiIterator<SimpleTuple, SimpleTuple>(theBaseIterator)
+		return new AbstractFilteredBidiIterator<Tuple, Tuple>(theBaseIterator)
 		{
 			@Override
-			protected Object transform(SimpleTuple aInput)
+			protected Object transform(Tuple aInput)
 			{
 				long theEventId = aInput.getKey();
 				assert theEventId < Integer.MAX_VALUE;

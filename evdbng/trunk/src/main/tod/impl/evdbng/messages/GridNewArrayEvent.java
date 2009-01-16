@@ -123,8 +123,8 @@ public class GridNewArrayEvent extends GridEventNG
 		initEvent(aBrowser, theEvent);
 		theEvent.setInstance(getTarget());
 		
-		ITypeInfo theBaseType = aBrowser.getStructureDatabase().getType(getBaseTypeId(), false);
-		IArrayTypeInfo theType = aBrowser.getStructureDatabase().getArrayType(theBaseType, 1);
+		ITypeInfo theBaseType = getTypeInfo(aBrowser, getBaseTypeId());
+		IArrayTypeInfo theType = getArrayTypeInfo(aBrowser, theBaseType, 1);
 
 		theEvent.setType(theType);
 		theEvent.setArraySize(getSize());

@@ -25,6 +25,7 @@ package tod.core.session;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import tod.Util;
 import tod.core.config.TODConfig;
 
 /**
@@ -44,11 +45,11 @@ public class SessionUtils
 			String theType = aConfig.get(TODConfig.SESSION_TYPE);
 			if (TODConfig.SESSION_MEMORY.equals(theType)) 
 			{
-				return new URI(SessionTypeManager.SESSIONTYPE_MEMORY, null, null);
+				return new URI(SessionTypeManager.SESSIONTYPE_MEMORY, "/", null);
 			}
 			else if (TODConfig.SESSION_LOCAL.equals(theType)) 
 			{
-				return new URI(SessionTypeManager.SESSIONTYPE_LOCAL, null, null);
+				return new URI(SessionTypeManager.SESSIONTYPE_LOCAL, "/", null);
 			}
 			else if (TODConfig.SESSION_REMOTE.equals(theType)) 
 			{
@@ -56,7 +57,7 @@ public class SessionUtils
 						SessionTypeManager.SESSIONTYPE_REMOTE, 
 						null,
 						aConfig.get(TODConfig.COLLECTOR_HOST),
-						aConfig.get(TODConfig.COLLECTOR_PORT),
+						Util.TOD_SRPC_PORT,
 						null,
 						null,
 						null);
