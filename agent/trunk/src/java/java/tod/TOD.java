@@ -22,6 +22,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package java.tod;
 
+import java.tod.io._IO;
+
 import tod.agent.AgentConfig;
 import tod.agent.AgentUtils;
 
@@ -35,16 +37,16 @@ public class TOD
 {
 	static
 	{
-		if (AgentReady.isNativeAgentLoaded()) System.out.println("[TOD] Native agent detected.");
-		else System.out.println("[TOD] Native agent not detected.");
+		if (AgentReady.isNativeAgentLoaded()) _IO.out("[TOD] Native agent detected.");
+		else _IO.out("[TOD] Native agent not detected.");
 	}
 	
 	/**
 	 * If > 0, trace capture is activated
 	 */
-	private static int CAPTURE_ENABLED;
+	private static int CAPTURE_ENABLED = 0;
 	
-	static
+	public static void loadInitialCaptureState()
 	{
 		CAPTURE_ENABLED = AgentUtils.readBoolean(AgentConfig.PARAM_CAPTURE_AT_START, true) ? 1 : 0;
 		AgentReady.CAPTURE_ENABLED = CAPTURE_ENABLED > 0;
@@ -57,13 +59,13 @@ public class TOD
 	{
 		if (AgentReady.isNativeAgentLoaded()) 
 		{
-			System.out.println("[TOD] Sending clearDatabase request...");
+			_IO.out("[TOD] Sending clearDatabase request...");
 			EventCollector.INSTANCE.clear();
-			System.out.println("[TOD] clearDatabase request done.");
+			_IO.out("[TOD] clearDatabase request done.");
 		}
 		else
 		{
-			System.out.println("[TOD] Ignoring clearDatabase request: native agent not detected.");
+			_IO.out("[TOD] Ignoring clearDatabase request: native agent not detected.");
 		}
 	}
 	
@@ -74,13 +76,13 @@ public class TOD
 	{
 		if (AgentReady.isNativeAgentLoaded()) 
 		{
-			System.out.println("[TOD] Sending flushEvents request...");
+			_IO.out("[TOD] Sending flushEvents request...");
 			EventCollector.INSTANCE.flush();
-			System.out.println("[TOD] flushEvents request done.");
+			_IO.out("[TOD] flushEvents request done.");
 		}
 		else
 		{
-			System.out.println("[TOD] Ignoring flushEvents request: native agent not detected.");
+			_IO.out("[TOD] Ignoring flushEvents request: native agent not detected.");
 		}
 	}
 	

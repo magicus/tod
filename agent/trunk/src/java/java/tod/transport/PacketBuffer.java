@@ -1,5 +1,7 @@
 package java.tod.transport;
 
+import java.tod.io._IO;
+
 import tod.agent.AgentConfig;
 import tod.agent.AgentDebugFlags;
 import tod.agent.io._ByteBuffer;
@@ -157,7 +159,7 @@ public class PacketBuffer
 		{
 			// The packet is split
 			if (AgentDebugFlags.TRANSPORT_LONGPACKETS_LOG) 
-				System.out.println("[TOD-PacketBuffer] Starting long packet for thread "+itsThreadId+" ("+aLength+" bytes)");
+				_IO.out("[TOD-PacketBuffer] Starting long packet for thread "+itsThreadId+" ("+aLength+" bytes)");
 			
 			while (aLength > 0)
 			{
@@ -170,7 +172,7 @@ public class PacketBuffer
 				}
 
 				if (AgentDebugFlags.TRANSPORT_LONGPACKETS_LOG) 
-					System.out.println("[TOD-PacketBuffer] Long packet for thread "+itsThreadId+": sent "+theCount+" bytes");
+					_IO.out("[TOD-PacketBuffer] Long packet for thread "+itsThreadId+": sent "+theCount+" bytes");
 
 				if (aLength > 0) itsCurrentCleanEnd = false;
 				swapBuffers(); // Swap anyway here - we want to start a fresh packet after the long one.

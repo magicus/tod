@@ -24,7 +24,7 @@ public class _SocketChannel
 	public static _SocketChannel open(String aHostname, int aPort) throws _CannotConnectException
 	{
 		int theFD = open0(aHostname, aPort);
-		System.out.println("Connected: "+theFD);
+		_IO.out("Connected: "+theFD);
 		if (theFD == -1) throw new _CannotConnectException();
 		return new _SocketChannel(theFD);
 	}

@@ -64,6 +64,7 @@ const char SET_SPECIALCASE_WORKINGSET = 87;
 const char CONFIG_DONE = 99;
 
 int AGENT_STARTED = 0;
+int CAPTURE_STARTED = 0;
 STREAM* gSocket = 0;
 
 // Configuration data
@@ -100,6 +101,7 @@ int isInitializingExceptionMethods = 0;
 
 StaticVoidMethod* TracedMethods_setTraced;
 StaticVoidMethod* TOD_enable;
+StaticVoidMethod* TOD_start;
 
 // Method IDs for methods whose exceptions are ignored
 jmethodID ignoredExceptionMethods[3];
@@ -279,7 +281,19 @@ void agentClassFileLoadHook(
 	void* (*malloc_f)(unsigned int)) 
 {
 	if (! name) return; // Don't understand why, but it happens.
-	    
+
+	if (! CAPTURE_STARTED)
+	{
+		if (! startsWith(name, "java/") && ! startsWith(name, "sun/") && ! startsWith(name, "tod/"))
+		{
+			printf("[TOD] Starting capture (%s).\n", name);
+			fflush(stdout);
+
+			CAPTURE_STARTED = 1;
+			TOD_start->invoke(jni);
+		}
+	}
+
 	if (propVerbose>=3) 
 	{
 		printf("Checking scope (hook) name: %s, len: %d\n", name, class_data_len);
@@ -357,8 +371,6 @@ void agentClassFileLoadHook(
 		
 		return;
 	}
-
-	if (propVerbose>=1) printf("Loading (hook) %s\n", name);
 	
 	int* tracedMethods = NULL;
 	int nTracedMethods = 0;
@@ -425,6 +437,8 @@ void agentClassFileLoadHook(
 				f.open(cacheFilePath.native_file_string().c_str(), std::ios_base::in | std::ios_base::binary);
 				if (f.fail()) fatal_error("Could not open class file");
 				
+				if (propVerbose>=1) printf("Instrumented: %s\n", name);
+
 				*new_class_data = (unsigned char*) malloc_f(len);
 				*new_class_data_len = len;
 		
@@ -476,7 +490,7 @@ void agentClassFileLoadHook(
 		
 		if (len > 0)
 		{
-			if (propVerbose>=2) printf("Redefining %s...\n", name);
+			if (propVerbose>=1) printf("Instrumented: %s\n", name);
 
 			*new_class_data = (unsigned char*) malloc_f(len);
 			*new_class_data_len = len;
@@ -629,7 +643,7 @@ void agentException(
 
 void agentStart(JNIEnv* jni)
 {
-	if (propVerbose>=1) printf("Agent start\n");
+	printf("[TOD] Initializing...\n");
 	fflush(stdout);
 	
 	// Initialize the classes and method ids that will be used
@@ -639,11 +653,13 @@ void agentStart(JNIEnv* jni)
 	{
 		TracedMethods_setTraced = new StaticVoidMethod(jni, "java/todX/TracedMethods", "setTraced", "(I)V");
 		TOD_enable = new StaticVoidMethod(jni, "java/todX/AgentReady", "nativeAgentLoaded", "()V");
+		TOD_start = new StaticVoidMethod(jni, "java/todX/AgentReady", "start", "()V");
 	}
 	else 
 	{
 		TracedMethods_setTraced = new StaticVoidMethod(jni, "java/tod/TracedMethods", "setTraced", "(I)V");
 		TOD_enable = new StaticVoidMethod(jni, "java/tod/AgentReady", "nativeAgentLoaded", "()V");	
+		TOD_start = new StaticVoidMethod(jni, "java/tod/AgentReady", "start", "()V");	
 	}
 
 	TOD_enable->invoke(jni);
@@ -746,6 +762,51 @@ JNIEXPORT jint JNICALL Java_java_todX__1AgentConfig_getHostId
 	(JNIEnv * jni, jclass cls)
 {
 	return Java_java_tod__1AgentConfig_getHostId(jni, cls);
+}
+
+void ioPrint(JNIEnv* jni, jstring str, FILE* o)
+{
+	int len = jni->GetStringUTFLength(str);
+	char* b = (char*) jni->GetStringUTFChars(str, NULL);
+	char* c = (char*) malloc(len+1);
+	memcpy(c, b, len);
+	c[len] = 0;
+	
+	fprintf(o, "%s\n", c);
+	fflush(o);
+	
+	free(c);
+	jni->ReleaseStringUTFChars(str, b);
+}
+
+JNIEXPORT jint JNICALL Java_java_tod_io__1IO_out
+  (JNIEnv* jni, jclass, jstring str)
+{
+	ioPrint(jni, str, stdout);
+}
+
+JNIEXPORT jint JNICALL Java_java_tod_io__1IO_err
+  (JNIEnv* jni, jclass, jstring str)
+{
+	ioPrint(jni, str, stderr);
+}
+
+JNIEXPORT jstring JNICALL Java_java_tod_io__1IO_getCollectorHost
+  (JNIEnv* jni, jclass)
+{
+	return jni->NewStringUTF(propHost);
+}
+
+JNIEXPORT jstring JNICALL Java_java_tod_io__1IO_getCollectorPort
+  (JNIEnv* jni, jclass)
+{
+	return jni->NewStringUTF(propPort);
+}
+
+JNIEXPORT jstring JNICALL Java_java_tod_io__1IO_getClientName
+  (JNIEnv* jni, jclass)
+{
+	return jni->NewStringUTF(propClientName);
 }
 
 #ifdef WIN32

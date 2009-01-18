@@ -95,7 +95,7 @@ public class AgentUtils
 	public static boolean readBoolean (String aPropertyName, boolean aDefault)
 	{
 		String theString = System.getProperty(aPropertyName);
-		System.out.println("[TOD] "+aPropertyName+"="+theString);
+//		_IO.out("[TOD] "+aPropertyName+"="+theString);
 		return theString != null ? Boolean.parseBoolean(theString) : aDefault;
 	}
 	
@@ -106,7 +106,7 @@ public class AgentUtils
 	public static int readInt (String aPropertyName, int aDefault)
 	{
 		String theString = System.getProperty(aPropertyName);
-		System.out.println("[TOD] "+aPropertyName+"="+theString);
+//		_IO.out("[TOD] "+aPropertyName+"="+theString);
 		return theString != null ? Integer.parseInt(theString) : aDefault;
 	}
 	
@@ -117,7 +117,7 @@ public class AgentUtils
 	public static long readLong (String aPropertyName, long aDefault)
 	{
 		String theString = System.getProperty(aPropertyName);
-		System.out.println("[TOD] "+aPropertyName+"="+theString);
+//		_IO.out("[TOD] "+aPropertyName+"="+theString);
 		return theString != null ? Long.parseLong(theString) : aDefault;
 	}
 	
@@ -128,7 +128,7 @@ public class AgentUtils
 	public static String readString (String aPropertyName, String aDefault)
 	{
 		String theString = System.getProperty(aPropertyName);
-		System.out.println("[TOD] "+aPropertyName+"="+theString);
+//		_IO.out("[TOD] "+aPropertyName+"="+theString);
 		if (theString != null && theString.length() == 0) return null;
 		return theString != null ? theString : aDefault;
 	}
@@ -141,7 +141,7 @@ public class AgentUtils
 	public static long readSize (String aPropertyName, String aDefault)
 	{
 		String theString = readString(aPropertyName, aDefault);
-		System.out.println("[TOD] "+aPropertyName+"="+theString);
+//		_IO.out("[TOD] "+aPropertyName+"="+theString);
 		return readSize(theString);
 	}
 

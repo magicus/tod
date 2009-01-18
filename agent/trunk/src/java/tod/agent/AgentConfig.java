@@ -22,6 +22,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.agent;
 
+import java.tod.io._IO;
+
 
 /**
  * Configuration of the agent in the target VM. 
@@ -29,11 +31,6 @@ package tod.agent;
  */
 public class AgentConfig
 {
-	static
-	{
-		System.out.println("AgentConfig loaded by: "+AgentConfig.class.getClassLoader());
-	}
-	
 	/**
 	 * Signature for connections from the native side.
 	 */

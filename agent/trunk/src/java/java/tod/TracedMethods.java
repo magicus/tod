@@ -22,6 +22,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package java.tod;
 
+import java.tod.io._IO;
+
 /**
  * This class keeps a registry of traced methods.
  * This is used by the instrumentation of method calls:
@@ -39,17 +41,17 @@ public class TracedMethods
 		{
 			boolean[] room = new boolean[aId*2];
 			System.arraycopy(traced, 0, room, 0, traced.length);
-			System.out.println("Reallocated TracedMethods: "+room.length);
+			_IO.out("Reallocated TracedMethods: "+room.length);
 			traced = room;
 		}
 		
-		//System.out.println("Marking traced: "+aId);
+		//_IO.out("Marking traced: "+aId);
 		traced[aId] = true;
 	}
 	
 	public static final boolean isTraced(int aId)
 	{
-		//System.out.println("isTraced: "+aId);
+		//_IO.out("isTraced: "+aId);
 		return aId >= traced.length ? false : traced[aId];
 	}
 }

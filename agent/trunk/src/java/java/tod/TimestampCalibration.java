@@ -22,6 +22,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package java.tod;
 
+import java.tod.io._IO;
+
 import tod.agent.BitUtilsLite;
 
 
@@ -55,7 +57,7 @@ public class TimestampCalibration
 		for (int i=0;i<10;i++)
 		{
 			long d = getTimestampDelta();
-//			System.out.println("[TOD] Delay: "+d+"ns.");
+//			_IO.out("[TOD] Delay: "+d+"ns.");
 			total += d;
 			c++;
 		}
@@ -69,7 +71,7 @@ public class TimestampCalibration
 		int extraRange = (int) (evps/1000000000L);
 		shift = Math.max(BitUtilsLite.log2ceil(extraRange), 0);
 		
-		System.out.println("[TOD] Timer calibration done (d: "+avg+", s: "+shift+", i: "+inaccuracy+").");
+		_IO.out("[TOD] Timer calibration done (d: "+avg+", s: "+shift+", i: "+inaccuracy+").");
 	}
 	
 	/**

@@ -42,39 +42,34 @@ import java.util.Map;
  */
 public class SpecialCases
 {
-	private static Map<String, InstrumentationSpec> itsCasesMap = new HashMap<String, InstrumentationSpec>();
+	private static Map<String, InstrumentationSpec> itsSpecs = new HashMap<String, InstrumentationSpec>();
 	
-	private static void add(String aClassName, String... aBehaviorNames)
+	private static void add(String aClassName, InstrumentationSpec aSpec)
 	{
-		itsCasesMap.put(aClassName, new InstrumentationSpec.BehaviorFilter(aClassName, aBehaviorNames));
+		itsSpecs.put(aClassName, aSpec);
 	}
+	
+	private static boolean isArrayCopy(String aOwner, String aName, String aDesc)
+	{
+		return "java/lang/System".equals(aOwner) && "arraycopy".equals(aName);
+	}
+	
+	private static final InstrumentationSpec WRITES_AND_COPY = new WritesAndCopy();
+
 	
 	static
 	{
-		add(
-				"java/util/ArrayList",
-				"<init>",
-				"trimToSize",
-				"ensureCapacity",
-				"clone",
-				"toArray",
-				"set",
-				"add",
-				"remove", //TODO: exclude remove(Object)
-				"fastRemove",
-				"clear",
-				"addAll",
-				"removeRange",
-				"readObject");
+		add("java/util/ArrayList", WRITES_AND_COPY);
+		add("java/util/HashMap", WRITES_AND_COPY);
+		add("java/util/HashMap$Entry", WRITES_AND_COPY);
 	}
 
 	/**
-	 * Returns the instrumentation spec for the given class, or null if the given class
-	 * is not a special case.
+	 * Returns the instrumentation spec for the given class.
 	 */
-	public static InstrumentationSpec get(String aClassName)
+	public static InstrumentationSpec getSpec(String aClassName)
 	{
-		return itsCasesMap.get(aClassName);
+		return itsSpecs.get(aClassName);
 	}
 	
 	/**
@@ -82,6 +77,37 @@ public class SpecialCases
 	 */
 	public static Iterable<String> getAllClasses()
 	{
-		return itsCasesMap.keySet();
+		return itsSpecs.keySet();
+	}
+
+	/**
+	 * A spec that captures field and array writes, array creations, and calls to {@link System#arraycopy(Object, int, Object, int, int)}
+	 * @author gpothier
+	 */
+	private static class WritesAndCopy extends InstrumentationSpec.None
+	{
+		@Override
+		public boolean traceFieldWrite(String aOwner, String aName, String aDesc)
+		{
+			return true;
+		}
+		
+		@Override
+		public boolean traceArrayWrite()
+		{
+			return true;
+		}
+		
+		@Override
+		public boolean traceNewArray()
+		{
+			return true;
+		}
+		
+		@Override
+		public boolean traceCall(String aOwner, String aName, String aDesc)
+		{
+			return isArrayCopy(aOwner, aName, aDesc);
+		}
 	}
 }

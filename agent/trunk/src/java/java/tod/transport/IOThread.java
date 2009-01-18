@@ -22,9 +22,11 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package java.tod.transport;
 
+import java.nio.channels.ByteChannel;
 import java.tod.AgentReady;
 import java.tod.EventCollector;
 import java.tod.TOD;
+import java.tod.io._IO;
 import java.tod.io._SocketChannel;
 import java.tod.util._SyncRingBuffer;
 
@@ -134,7 +136,7 @@ public class IOThread extends Thread
 			
 			while(true)
 			{
-//				System.out.println("PacketBufferSender.run() - sentBuffers: "+sentBuffers);
+//				_IO.out("PacketBufferSender.run() - sentBuffers: "+sentBuffers);
 				PacketBuffer thePendingBuffer = popBuffer();
 				
 				if (thePendingBuffer != null)
@@ -161,7 +163,7 @@ public class IOThread extends Thread
 			}
 			else
 			{
-				System.err.println("[TOD] FATAL:");
+				_IO.err("[TOD] FATAL:");
 				e.printStackTrace();
 				Runtime.getRuntime().removeShutdownHook(itsShutdownHook);
 				System.exit(1);
@@ -185,7 +187,7 @@ public class IOThread extends Thread
 			(aBuffer.hasCleanStart() ? 2 : 0) 
 			| (aBuffer.hasCleanEnd() ? 1 : 0);
 		
-//		System.out.println(String.format(
+//		_IO.out(String.format(
 //				"[TOD-IOThread] Sending packet (th: %d, sz: %d, cs: %s, ce: %s)",
 //				theId,
 //				theSize,
@@ -261,12 +263,12 @@ public class IOThread extends Thread
 					boolean theEnable = readBoolean();
 					if (theEnable) 
 					{
-						System.out.println("[TOD] Enable capture request received.");
+						_IO.out("[TOD] Enable capture request received.");
 						TOD.enableCapture();
 					}
 					else 
 					{
-						System.out.println("[TOD] Disable capture request received.");
+						_IO.out("[TOD] Disable capture request received.");
 						TOD.disableCapture();
 					}
 					break;
@@ -313,7 +315,7 @@ public class IOThread extends Thread
 		public void run()
 		{
 			itsShutdownStarted = true;
-			System.out.println("[TOD] Flushing buffers...");
+			_IO.out("[TOD] Flushing buffers...");
 			
 			EventCollector.INSTANCE.end();
 			
@@ -328,7 +330,7 @@ public class IOThread extends Thread
 					int theNewSize = itsPendingBuffers.size();
 					if (theNewSize == thePrevSize)
 					{
-						System.err.println("[TOD] Buffers are not being sent, shutting down anyway ("+theNewSize+" buffers remaining).");
+						_IO.err("[TOD] Buffers are not being sent, shutting down anyway ("+theNewSize+" buffers remaining).");
 						break;
 					}
 					thePrevSize = theNewSize;
@@ -344,7 +346,7 @@ public class IOThread extends Thread
 				throw new RuntimeException(e);
 			}
 			
-			System.out.println("[TOD] Shutting down.");
+			_IO.out("[TOD] Shutting down.");
 		}
 	}
 	

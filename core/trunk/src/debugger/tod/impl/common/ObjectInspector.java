@@ -268,22 +268,17 @@ public class ObjectInspector implements IObjectInspector
 	{
 		if (itsDelegate == null)
 		{
-			ICreationEvent theCreationEvent = getCreationEvent();
-			if (theCreationEvent == null) itsDelegate = UNAVAILABLE;
-			else
+			ITypeInfo theType = getType();
+			
+			if (theType instanceof IArrayTypeInfo)
 			{
-				ITypeInfo theType = theCreationEvent.getType();
-				
-				if (theType instanceof IArrayTypeInfo)
-				{
-					itsDelegate = new ArrayDelegate();
-				}
-				else if (theType instanceof IClassInfo)
-				{
-					itsDelegate = new ObjectDelegate();
-				}
-				else throw new RuntimeException("Not handled: "+theType);
+				itsDelegate = new ArrayDelegate();
 			}
+			else if (theType instanceof IClassInfo)
+			{
+				itsDelegate = new ObjectDelegate();
+			}
+			else throw new RuntimeException("Not handled: "+theType);
 		}
 		
 		return itsDelegate;

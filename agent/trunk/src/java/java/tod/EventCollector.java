@@ -23,6 +23,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package java.tod;
 
 import java.io.PrintStream;
+import java.tod.io._IO;
 import java.tod.io._SocketChannel;
 import java.tod.transport.IOThread;
 import java.tod.transport.LowLevelEventWriter;
@@ -31,7 +32,6 @@ import java.tod.transport.NakedLinkedList;
 import tod.agent.AgentConfig;
 import tod.agent.AgentDebugFlags;
 import tod.agent.AgentUtils;
-import tod.agent.Command;
 import tod.agent.io._ByteBuffer;
 import tod.agent.io._GrowingByteBuffer;
 import tod.agent.io._IOException;
@@ -49,31 +49,32 @@ public final class EventCollector
 	
 	static
 	{
+		_IO.out("[TOD] Init EventCollector");
 		EventCollector c = null; // Just to have it compiling (because of final keyword)
 		try
 		{
 			// Force loading of TOD
 			TOD.captureEnabled();
 			
-			int thePort = AgentUtils.readInt(AgentConfig.PARAM_COLLECTOR_PORT, 0);
-			String theHost = AgentUtils.readString(AgentConfig.PARAM_COLLECTOR_HOST, null);
-			String theClientName = AgentUtils.readString(AgentConfig.PARAM_CLIENT_NAME, null);
+			int thePort = Integer.parseInt(_IO.getCollectorPort());
+			String theHost = _IO.getCollectorHost();
+			String theClientName = _IO.getClientName();
 			
 			if (thePort == 0)
 			{
-				System.err.println("[TOD] Must specify database port");
+				_IO.err("[TOD] Must specify database port");
 				System.exit(1);
 			}
 			
 			if (theHost == null)
 			{
-				System.err.println("[TOD] Must specify database host");
+				_IO.err("[TOD] Must specify database host");
 				System.exit(1);
 			}
 			
 			if (theClientName == null)
 			{
-				System.err.println("[TOD] Must specify client name");
+				_IO.err("[TOD] Must specify client name");
 				System.exit(1);
 			}
 
@@ -81,7 +82,7 @@ public final class EventCollector
 		}
 		catch (Throwable e)
 		{
-			e.printStackTrace();
+			_IO.err("[TOD] FATAL: Got exception");
 			System.exit(1);
 		}
 		INSTANCE = c;
@@ -89,16 +90,13 @@ public final class EventCollector
 	
 	private static PrintStream itsPrintStream = AgentDebugFlags.EVENT_INTERPRETER_PRINT_STREAM;
 	
-	private ThreadLocal<ThreadData> itsThreadData = new ThreadLocal<ThreadData>() 
-	{
-		@Override
-		protected ThreadData initialValue()
-		{
-			return createThreadData();
-		}
-	};
+	private ThreadLocal<ThreadData> itsThreadData = null;
 	
 	private _SocketChannel itsChannel;
+	
+	private final String itsCollectorHost;
+	private final int itsCollectorPort;
+	private final String itsClientName;
 	
 	/**
 	 * A dummy thread data that is used for control messages.
@@ -113,20 +111,30 @@ public final class EventCollector
 	
 	public EventCollector(String aHostname, int aPort, String aClientName) throws _IOException
 	{
-		this (_SocketChannel.open(aHostname, aPort), aClientName);
+		itsCollectorHost = aHostname;
+		itsCollectorPort = aPort;
+		itsClientName = aClientName;
 	}
 	
-	public EventCollector(_SocketChannel aChannel, String aClientName)
+	void init()
 	{
-		itsChannel = aChannel;
+		itsThreadData = new ThreadLocal<ThreadData>() 
+		{
+			@Override
+			protected ThreadData initialValue()
+			{
+				return createThreadData();
+			}
+		};
 		
 		// Send initialization
 		_ByteBuffer theBuffer = _GrowingByteBuffer.allocate(200);
 		theBuffer.putIntB(AgentConfig.CNX_JAVA);
-		theBuffer.putString(aClientName);
+		theBuffer.putString(itsClientName);
 		theBuffer.flip();
 		try
 		{
+			itsChannel = _SocketChannel.open(itsCollectorHost, itsCollectorPort);
 			itsChannel.write(theBuffer);
 		}
 		catch (_IOException e)
@@ -145,7 +153,7 @@ public final class EventCollector
 		}
 		catch (UnsatisfiedLinkError e)
 		{
-			System.err.println("ABORTING:");
+			_IO.err("ABORTING:");
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -164,7 +172,7 @@ public final class EventCollector
 		ThreadData theThreadData = new ThreadData(theId);
 		itsThreadData.set(theThreadData);
 		
-		assert ! theThreadData.isSending();
+		if (theThreadData.isSending()) throw new RuntimeException();
 		
     	LowLevelEventWriter theWriter = theThreadData.packetStart(0);
     	theWriter.sendThread(theJvmId, theCurrentThread.getName());
@@ -748,7 +756,7 @@ public final class EventCollector
 
 		ThreadData theThread = getThreadData();
 
-		assert ! theThread.isSending();
+		if (theThread.isSending()) throw new RuntimeException();
     	LowLevelEventWriter theWriter = theThread.packetStart(0);
     	theWriter.sendClear();
         theThread.packetEnd();
@@ -764,7 +772,7 @@ public final class EventCollector
 		ThreadData theThread = getControlThreadData();
 		synchronized (theThread)
 		{
-			assert ! theThread.isSending();
+			if (theThread.isSending()) throw new RuntimeException();
 	    	LowLevelEventWriter theWriter = theThread.packetStart(0);
 	    	theWriter.sendFlush();
 	    	theThread.packetEnd();
@@ -779,7 +787,7 @@ public final class EventCollector
 		ThreadData theThread = getControlThreadData();
 		synchronized (theThread)
 		{
-			assert ! theThread.isSending();
+			if (theThread.isSending()) throw new RuntimeException();
 			LowLevelEventWriter theWriter = theThread.packetStart(0);
 			theWriter.sendEnd();
 			theThread.packetEnd();
@@ -794,7 +802,7 @@ public final class EventCollector
 		ThreadData theThread = getControlThreadData();
 		synchronized (theThread)
 		{
-			assert ! theThread.isSending();
+			if (theThread.isSending()) throw new RuntimeException();
 			LowLevelEventWriter theWriter = theThread.packetStart(0);
 			theWriter.sendEvCaptureEnabled(aEnabled);
 			theThread.packetEnd();

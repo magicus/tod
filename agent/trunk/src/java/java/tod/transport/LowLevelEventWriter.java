@@ -49,6 +49,7 @@ import java.tod._BehaviorCallType;
 import java.tod._LowLevelEventType;
 import java.tod._Output;
 import java.tod._ValueType;
+import java.tod.io._IO;
 
 import tod.agent.Command;
 import tod.agent.io._ByteBuffer;
@@ -123,7 +124,7 @@ public class LowLevelEventWriter
 			_LowLevelEventType aType,
 			long aTimestamp)
 	{
-//		System.out.println("Starting packet: "+itsStream.getThreadId()+" - "+aTimestamp);
+//		_IO.out("Starting packet: "+itsStream.getThreadId()+" - "+aTimestamp);
 		sendEventType(itsBuffer, aType);
 		itsBuffer.putLong(aTimestamp);
 	}
@@ -397,7 +398,7 @@ public class LowLevelEventWriter
 		if (itsDeferredObjectsStack.isAvailable(aDeferRequestorId))
 		{
 			DeferredObjectEntry theEntry = itsDeferredObjectsStack.pop();
-			// System.out.println("Sending deferred object: "+theEntry.id);
+			// _IO.out("Sending deferred object: "+theEntry.id);
 			sendRegisteredObject(theEntry.id, theEntry.object, theEntry.timestamp);
 		}
 	}
@@ -631,14 +632,14 @@ public class LowLevelEventWriter
 			{
 				// add the time stamp for flushing purpose in ObjectDatabase
 				itsRegisteredObjectsStack.push(theObjectId, aObject, aTimestamp);
-				// System.out.println("Registering: "+aObject+", id:
+				// _IO.out("Registering: "+aObject+", id:
 				// "+theObjectId);
 			}
 			else
 			{
 				// add the time stamp for flushing purpose in ObjectDatabase
 				itsDeferredObjectsStack.push(aDeferRequestor, theObjectId, aObject, aTimestamp);
-				// System.out.println("Deferring: "+aObject+", id:
+				// _IO.out("Deferring: "+aObject+", id:
 				// "+theObjectId+", p.ts: "+aDefer);
 			}
 		}
@@ -824,9 +825,9 @@ public class LowLevelEventWriter
 		{
 			//TODO remove this 
 			if (itsSize>= itsObjects.length) {
-				System.out.println("---------TOD---------WARNING");
+				_IO.out("---------TOD---------WARNING");
 				for (int theI = 0; theI < itsObjects.length; theI++)
-					System.out.print(itsObjects[theI].object.getClass() +" ");
+					_IO.out(itsObjects[theI].object.getClass() +" ");
 			}
 			
 			itsObjects[itsSize++].set(aId, aObject, aTimestamp);

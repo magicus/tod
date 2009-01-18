@@ -71,6 +71,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	private final ASMDebuggerConfig itsConfig;
 	
 	private final boolean itsUseJava14;
+	private final InstrumentationSpec itsSpec;
 	
 	/**
 	 * Index of the variable that stores the real return point of the method.
@@ -110,7 +111,8 @@ public class ASMBehaviorInstrumenter implements Opcodes
 			MethodVisitor mv,
 			IMutableBehaviorInfo aBehavior,
 			ASMMethodInfo aMethodInfo,
-			boolean aUseJava14)
+			boolean aUseJava14,
+			InstrumentationSpec aSpec)
 	{
 		itsConfig = aConfig;
 		this.mv = mv;
@@ -143,6 +145,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		itsFirstFreeVar += 1;
 		
 		itsUseJava14 = aUseJava14;
+		itsSpec = aSpec;
 	}
 	
 	/**
@@ -229,11 +232,16 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		mv.visitFieldInsn(GETSTATIC, CLS_AGENTREADY, "CAPTURE_ENABLED", "Z");
 		mv.visitVarInsn(ISTORE, itsCaptureEnabledVar);
 
+		if (! itsSpec.traceEnveloppe())
+		{
+			itsInstrumentationRanges.end();
+			return;
+		}
 		
 		// Call logBehaviorEnter
 		// We suppose that if a class is instrumented all its descendants
 		// are also instrumented, so we can't miss a super call
-		if (LogBCIVisitor.TRACE_ENTRY)
+		if (itsSpec.traceEntry())
 		{
 			behaviorEnter("<init>".equals(itsMethodInfo.getName()) ?
 					BehaviorCallType.INSTANTIATION
@@ -246,7 +254,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		mv.visitLabel(itsReturnHookLabel);
 
 		// Call logBehaviorExit
-		if (LogBCIVisitor.TRACE_EXIT)
+		if (itsSpec.traceExit())
 		{
 			behaviorExit();
 		}
@@ -259,7 +267,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		mv.visitLabel(itsFinallyHookLabel);
 		
 		// Call logBehaviorExitWithException
-		if (LogBCIVisitor.TRACE_EXIT)
+		if (itsSpec.traceExit())
 		{
 			behaviorExitWithException();
 		}
@@ -279,9 +287,12 @@ public class ASMBehaviorInstrumenter implements Opcodes
 	
 	public void endHooks()
 	{
-		Label theCodeEndLabel = new Label();
-		mv.visitLabel(theCodeEndLabel);
-		mv.visitTryCatchBlock(itsCodeStartLabel, theCodeEndLabel, itsFinallyHookLabel, null);
+		if (itsSpec.traceEnveloppe())
+		{
+			Label theCodeEndLabel = new Label();
+			mv.visitLabel(theCodeEndLabel);
+			mv.visitTryCatchBlock(itsCodeStartLabel, theCodeEndLabel, itsFinallyHookLabel, null);
+		}
 	}
 
 	public void doReturn(int aOpcode)

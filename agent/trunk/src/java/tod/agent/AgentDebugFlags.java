@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.tod.io._IO;
 
 /**
  * This class groups several flags that are used to
@@ -72,7 +73,7 @@ public class AgentDebugFlags
 			theFile.delete();
 			File theParentFile = theFile.getParentFile();
 			if (theParentFile != null) theParentFile.mkdirs();
-//			System.out.println(theFile.getAbsolutePath());
+//			_IO.out(theFile.getAbsolutePath());
 			return new PrintStream(new FileOutputStream(theFile));
 		}
 		catch (FileNotFoundException e)
@@ -84,8 +85,8 @@ public class AgentDebugFlags
 
 	static
 	{
-		if (DISABLE_EVENT_SEND == true) System.err.println("******* Warning: DISABLE_EVENT_SEND (AgentDebugFlags)");
-		if (COLLECTOR_IGNORE_ALL == true) System.err.println("******* Warning: COLLECTOR_IGNORE_ALL (AgentDebugFlags)");
-		if (TRANSPORT_LONGPACKETS_LOG == true) System.err.println("******* Warning: TRANSPORT_LONGPACKETS_LOG (AgentDebugFlags)");
+		if (DISABLE_EVENT_SEND == true) _IO.err("******* Warning: DISABLE_EVENT_SEND (AgentDebugFlags)");
+		if (COLLECTOR_IGNORE_ALL == true) _IO.err("******* Warning: COLLECTOR_IGNORE_ALL (AgentDebugFlags)");
+		if (TRANSPORT_LONGPACKETS_LOG == true) _IO.err("******* Warning: TRANSPORT_LONGPACKETS_LOG (AgentDebugFlags)");
 	}
 }

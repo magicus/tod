@@ -3,6 +3,8 @@
  */
 package java.tod;
 
+import java.tod.io._IO;
+
 import tod.agent.AgentUtils;
 
 /**
@@ -25,7 +27,7 @@ public class _AgentConfig
 		
 		if (JAVA14)
 		{
-			System.err.println("[TOD] Using Java 1.4 compatibility mode.");
+			_IO.err("[TOD] Using Java 1.4 compatibility mode.");
 			System.load(System.getProperty("tod.agent.lib"));
 		}
 	}

@@ -22,6 +22,8 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package java.tod;
 
+import java.tod.io._IO;
+
 
 /**
  * This class provides a method that is called by the JNI side when
@@ -85,12 +87,12 @@ public class ExceptionGeneratedReceiver
 			
 			if (processingExceptions.get()) 
 			{
-				System.err.println("[TOD] Recursive exception, probably because we got disconnected from the database.");
+				_IO.err("[TOD] Recursive exception, probably because we got disconnected from the database.");
 				System.exit(1);
 			}
 			processingExceptions.set(true);
 			
-//			System.out.println(String.format("Exception generated: %s.%s, %d", aMethodDeclaringClassSignature, aMethodName, aOperationBytecodeIndex));
+//			_IO.out(String.format("Exception generated: %s.%s, %d", aMethodDeclaringClassSignature, aMethodName, aOperationBytecodeIndex));
 			COLLECTOR.logExceptionGenerated(
 					aMethodName,
 					aMethodSignature, 
@@ -102,7 +104,7 @@ public class ExceptionGeneratedReceiver
 		}
 		catch (Throwable e)
 		{
-			System.err.println("[TOD] Exception in ExceptionGeneratedReceiver.exceptionGenerated:");
+			_IO.err("[TOD] Exception in ExceptionGeneratedReceiver.exceptionGenerated:");
 			e.printStackTrace();
 			System.exit(1);
 		}

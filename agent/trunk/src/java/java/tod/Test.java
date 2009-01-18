@@ -3,12 +3,14 @@
  */
 package java.tod;
 
+import java.tod.io._IO;
+
 
 public class Test
 {
 	static
 	{
-		System.out.println("java.tod.Test loaded by: "+Test.class.getClassLoader());
+		_IO.out("java.tod.Test loaded by: "+Test.class.getClassLoader());
 	}
 
 }

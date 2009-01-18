@@ -46,14 +46,13 @@ public class AgentReady
 	 * @see TOD#enableCapture()
 	 * @see TOD#disableCapture()
 	 */
-	public static boolean CAPTURE_ENABLED = true;
+	public static boolean CAPTURE_ENABLED = false;
 	
 	/**
 	 * Called by the native agent.
 	 */
 	private static void nativeAgentLoaded()
 	{
-		// Don't use System.out here, it is still null when this method is called...
 		NATIVE_AGENT_LOADED = true;
 	}
 	
@@ -65,5 +64,12 @@ public class AgentReady
 		return NATIVE_AGENT_LOADED;
 	}
 	
-	
+	/**
+	 * Called by the native agent when the system is ready to start capturing
+	 */
+	private static void start()
+	{
+		EventCollector.INSTANCE.init();
+		TOD.loadInitialCaptureState();
+	}
 }

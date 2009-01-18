@@ -31,10 +31,6 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.bci.asm;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import zz.utils.Utils;
 
 /**
  * Instrumentation specification for a given class.
@@ -43,66 +39,146 @@ import zz.utils.Utils;
  */
 public abstract class InstrumentationSpec
 {
-	public static InstrumentationSpec ALL = new All(null);
+	public static InstrumentationSpec NORMAL = new All();
 	
-	private final String itsClassName;
+	public abstract boolean traceEnveloppe();
+	public abstract boolean traceEntry();
+	public abstract boolean traceExit();
 	
-	public InstrumentationSpec(String aClassName)
-	{
-		itsClassName = aClassName;
-	}
+	public abstract boolean traceFieldWrite(String aOwner, String aName, String aDesc);
+	public abstract boolean traceVarWrite();
+	public abstract boolean traceCall(String aOwner, String aName, String aDesc);
+	public abstract boolean traceNewInstance();
+	public abstract boolean traceNewArray();
+	public abstract boolean traceArrayWrite();
 	
-	public abstract boolean shouldInstrument();
-	public abstract boolean shouldInstrument(String aBehaviorName, String aSignature);
-	
+	public abstract boolean traceInstanceOf();
 	
 	
 	public static class All extends InstrumentationSpec
 	{
-		public All(String aClassName)
-		{
-			super(aClassName);
-		}
-
 		@Override
-		public boolean shouldInstrument()
+		public boolean traceArrayWrite()
 		{
 			return true;
 		}
 
 		@Override
-		public boolean shouldInstrument(String arg0, String arg1)
+		public boolean traceCall(String aOwner, String aName, String aDesc)
+		{
+			return true;
+		}
+
+		@Override
+		public boolean traceEntry()
+		{
+			return true;
+		}
+
+		@Override
+		public boolean traceEnveloppe()
+		{
+			return true;
+		}
+
+		@Override
+		public boolean traceExit()
+		{
+			return true;
+		}
+
+		@Override
+		public boolean traceFieldWrite(String aOwner, String aName, String aDesc)
+		{
+			return true;
+		}
+
+		@Override
+		public boolean traceInstanceOf()
+		{
+			return true;
+		}
+
+		@Override
+		public boolean traceNewArray()
+		{
+			return true;
+		}
+
+		@Override
+		public boolean traceNewInstance()
+		{
+			return true;
+		}
+
+		@Override
+		public boolean traceVarWrite()
 		{
 			return true;
 		}
 	}
 	
-	/**
-	 * This spec filters behaviors by name and signature.
-	 * @author gpothier
-	 */
-	public static class BehaviorFilter extends InstrumentationSpec
+	public static class None extends InstrumentationSpec
 	{
-		private Set<String> itsInstrumentedBehaviors = new HashSet<String>();
-		
-		public BehaviorFilter(String aClassName, String... aBehaviorNames)
-		{
-			super(aClassName);
-			Utils.fillCollection(itsInstrumentedBehaviors, aBehaviorNames);
-		}
-		
 		@Override
-		public boolean shouldInstrument()
+		public boolean traceArrayWrite()
 		{
-			return true;
+			return false;
 		}
-		
+
 		@Override
-		public boolean shouldInstrument(String aBehaviorName, String aSignature)
+		public boolean traceCall(String aOwner, String aName, String aDesc)
 		{
-			// TODO: handle signatures.
-			return itsInstrumentedBehaviors.contains(aBehaviorName);
+			return false;
 		}
-		
+
+		@Override
+		public boolean traceEntry()
+		{
+			return false;
+		}
+
+		@Override
+		public boolean traceEnveloppe()
+		{
+			return false;
+		}
+
+		@Override
+		public boolean traceExit()
+		{
+			return false;
+		}
+
+		@Override
+		public boolean traceFieldWrite(String aOwner, String aName, String aDesc)
+		{
+			return false;
+		}
+
+		@Override
+		public boolean traceInstanceOf()
+		{
+			return false;
+		}
+
+		@Override
+		public boolean traceNewArray()
+		{
+			return false;
+		}
+
+		@Override
+		public boolean traceNewInstance()
+		{
+			return false;
+		}
+
+		@Override
+		public boolean traceVarWrite()
+		{
+			return false;
+		}
 	}
+
 }
