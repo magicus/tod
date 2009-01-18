@@ -681,7 +681,7 @@ void agentInit(
 {
 	fs::path::default_name_check(fs::no_check);
 
-	printf("Loading TOD agent - v3.1\n");
+	printf("Loading TOD agent - v4.0\n");
 	if (cfgObfuscation == 1) printf(">>>>WARNING obfuscation form agent package to agentX is considered \n");
 	fflush(stdout);
 
