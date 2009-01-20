@@ -29,7 +29,7 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.tools.tostring;
+package tod.tools.interpreter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,6 +41,8 @@ import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.ICompoundInspector.EntryValue;
+import tod.core.database.browser.IObjectInspector.FieldEntryInfo;
+import tod.core.database.browser.IObjectInspector.IEntryInfo;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IClassInfo;
@@ -53,7 +55,6 @@ import tod.tools.parsers.ParseException;
 import tod.tools.parsers.workingset.WorkingSetFactory;
 import zz.jinterp.JArray;
 import zz.jinterp.JArrayType;
-import zz.jinterp.JBehavior;
 import zz.jinterp.JClass;
 import zz.jinterp.JField;
 import zz.jinterp.JInstance;
@@ -62,36 +63,24 @@ import zz.jinterp.JObject;
 import zz.jinterp.JStaticField;
 import zz.jinterp.JType;
 import zz.jinterp.SimpleInterp;
-import zz.jinterp.JPrimitive.JVoid;
-import zz.jinterp.SimpleInterp.SimpleStaticField;
 
-/**
- * Permits to compute the result of toString on reconstituted objects.
- * @author gpothier
- */
-public class ToStringComputer
+public class TODInterpreter extends SimpleInterp
 {
-	private static final JObject NULL = new JVoid();
-	
-	private final TODConfig itsConfig;
-	private final IObjectInspector itsInspector;
-	private final JInterpreter itsInterpreter;
+	private final ILogBrowser itsLogBrowser;
 	
 	private final ClassSelector itsGlobalSelector;
 	private final ClassSelector itsTraceSelector;
-
 	
-	public ToStringComputer(TODConfig aConfig, IObjectInspector aInspector)
+	private ILogEvent itsRefEvent;
+
+	public TODInterpreter(TODConfig aConfig, ILogBrowser aLogBrowser)
 	{
-		itsConfig = aConfig;
-		itsInspector = aInspector;
+		itsLogBrowser = aLogBrowser;
 		itsGlobalSelector = parseWorkingSet(aConfig.get(TODConfig.SCOPE_GLOBAL_FILTER));
 		itsTraceSelector = parseWorkingSet(aConfig.get(TODConfig.SCOPE_TRACE_FILTER));
-		
-		itsInterpreter = new TODInterpreter();
 	}
-	
-	private ClassSelector parseWorkingSet(String aWorkingSet)
+
+	private static ClassSelector parseWorkingSet(String aWorkingSet)
 	{
 		try
 		{
@@ -103,33 +92,19 @@ public class ToStringComputer
 		}
 	}
 	
-
-	
-	/**
-	 * Computes the toString of the inspected object. 
-	 */
-	public String compute()
+	public ILogBrowser getLogBrowser()
 	{
-		JObject[] args = {}; 
-		JType theType = convertType(itsInspector.getType());
-		
-		JObject theResult;
-		if (theType instanceof JClass)
-		{
-			JClass theClass = (JClass) theType;
-			JBehavior theBehavior = theClass.getVirtualBehavior("toString", "()Ljava/lang/String;");
-			TODInstance theInstance = new TODInstance(theClass, itsInspector);
-			theResult = theBehavior.invoke(null, theInstance, args);
-			
-		}
-		else throw new RuntimeException("Not handled: "+theType);
-		
-		if (theResult instanceof JInstance)
-		{
-			JInstance theInstance = (JInstance) theResult;
-			return itsInterpreter.toString(theInstance);
-		}
-		else throw new RuntimeException("Unexpected result: "+theResult);
+		return itsLogBrowser;
+	}
+	
+	public ILogEvent getRefEvent()
+	{
+		return itsRefEvent;
+	}
+	
+	public void setRefEvent(ILogEvent aRefEvent)
+	{
+		itsRefEvent = aRefEvent;
 	}
 	
 	public boolean isInScope(JClass aClass)
@@ -140,13 +115,21 @@ public class ToStringComputer
 		return true;
 	}
 
+	/**
+	 * Creates a new {@link TODInstance}.
+	 */
+	public TODInstance newInstance(JClass aClass, IObjectInspector aInspector)
+	{
+		return new TODInstance(aClass, aInspector);
+	}
+	
 	private JObject convertObject(Object aValue)
 	{
 		if (aValue instanceof ObjectId)
 		{
 			ObjectId theId = (ObjectId) aValue;
 			Object theRegistered = getLogBrowser().getRegistered(theId);
-			if (theRegistered != null) return itsInterpreter.toJObject(theRegistered);
+			if (theRegistered != null) return toJObject(theRegistered);
 			else 
 			{
 				IObjectInspector theInspector = getLogBrowser().createObjectInspector(theId);
@@ -155,7 +138,7 @@ public class ToStringComputer
 				if (theType instanceof IClassInfo)
 				{
 					IClassInfo theClass = (IClassInfo) theType;
-					return new TODInstance(convertClass(theClass), theInspector);
+					return newInstance(convertClass(theClass), theInspector);
 				}
 				else if (theType instanceof IArrayTypeInfo)
 				{
@@ -166,10 +149,13 @@ public class ToStringComputer
 				
 			}
 		}
-		else return itsInterpreter.toJObject(aValue);
+		else return toJObject(aValue);
 	}
 	
-	private JType convertType(ITypeInfo aType)
+	/**
+	 * Converts a TOD type to a {@link JInterpreter} one.
+	 */
+	public JType convertType(ITypeInfo aType)
 	{
 		if (aType instanceof IClassInfo)
 		{
@@ -186,7 +172,7 @@ public class ToStringComputer
 	
 	private JClass convertClass(IClassInfo aClass)
 	{
-		return itsInterpreter.getClass(aClass.getName().replace('.', '/'));
+		return getClass(aClass.getName().replace('.', '/'));
 	}
 	
 	private IClassInfo convertClass(JClass aClass)
@@ -207,58 +193,60 @@ public class ToStringComputer
 		throw new UnsupportedOperationException();
 	}
 	
-	private ILogBrowser getLogBrowser()
+	@Override
+	protected byte[] getClassBytecode(String aName)
 	{
-		return itsInspector.getLogBrowser();
+		IStructureDatabase theStructureDatabase = getLogBrowser().getStructureDatabase();
+		IClassInfo theClass = theStructureDatabase.getClass(aName.replace('/', '.'), false);
+		return theClass != null ? theClass.getOriginalBytecode() : null;
+	}
+	
+	private static IEntryInfo getEntry(IObjectInspector aInspector, IFieldInfo aField) 
+	{
+		List<IEntryInfo> theEntries = aInspector.getEntries(0, Integer.MAX_VALUE);
+		for (IEntryInfo theEntry : theEntries)
+		{
+			if (theEntry instanceof FieldEntryInfo)
+			{
+				FieldEntryInfo theFieldEntry = (FieldEntryInfo) theEntry;
+				if (theFieldEntry.getField().equals(aField)) return theEntry;
+			}
+		}
+		
+		throw new RuntimeException("Field not found: "+aField);
 	}
 
-	private ILogEvent getRefEvent()
+	@Override
+	public JStaticField createStaticField(JClass aClass, String aName, JType aType, int aAccess)
 	{
-		return itsInspector.getReferenceEvent();
-	}
-
-	private class TODInterpreter extends SimpleInterp
-	{
-		@Override
-		protected byte[] getClassBytecode(String aName)
+		if (! isInScope(aClass)) return new SimpleStaticField(aClass, aName, aType, aAccess);
+		
+		IClassInfo theTODClass = convertClass(aClass);
+		IObjectInspector theInspector = getLogBrowser().createClassInspector(theTODClass);
+		theInspector.setReferenceEvent(getRefEvent());
+		IFieldInfo theTODField = theTODClass.getField(aName);
+		EntryValue[] theEntryValue = theInspector.getEntryValue(getEntry(theInspector, theTODField));
+		
+		JObject theValue;
+		if (theEntryValue.length == 0)
 		{
-			IStructureDatabase theStructureDatabase = getLogBrowser().getStructureDatabase();
-			IClassInfo theClass = theStructureDatabase.getClass(aName.replace('/', '.'), false);
-			return theClass != null ? theClass.getOriginalBytecode() : null;
+			theValue = aType.getInitialValue();
 		}
-
-		@Override
-		public JStaticField createStaticField(JClass aClass, String aName, JType aType, int aAccess)
+		else if (theEntryValue.length == 1)
 		{
-			if (! isInScope(aClass)) return new SimpleStaticField(aClass, aName, aType, aAccess);
-			
-			IClassInfo theTODClass = convertClass(aClass);
-			IObjectInspector theInspector = getLogBrowser().createClassInspector(theTODClass);
-			theInspector.setReferenceEvent(getRefEvent());
-			IFieldInfo theTODField = theTODClass.getField(aName);
-			EntryValue[] theEntryValue = theInspector.getEntryValue(theTODField);
-			
-			JObject theValue;
-			if (theEntryValue.length == 0)
-			{
-				theValue = aType.getInitialValue();
-			}
-			else if (theEntryValue.length == 1)
-			{
-				theValue = convertObject(theEntryValue[0].getValue());
-			}
-			else
-			throw new RuntimeException("Can't retrieve value");
-
-			return new TODStaticField(aClass, aName, aType, aAccess, theValue);
+			theValue = convertObject(theEntryValue[0].getValue());
 		}
+		else
+		throw new RuntimeException("Can't retrieve value");
+
+		return new TODStaticField(aClass, aName, aType, aAccess, theValue);
 	}
 
 	/**
 	 * A {@link JInstance} that obtains field values from reconstituted objects
 	 * @author gpothier
 	 */
-	private class TODInstance extends JInstance
+	public class TODInstance extends JInstance
 	{
 		private final IObjectInspector itsInspector;
 		private final Map<JField, JObject> itsValues = new HashMap<JField, JObject>();
@@ -275,13 +263,14 @@ public class ToStringComputer
 			JObject theResult = itsValues.get(aField);
 			if (theResult == null)
 			{
-				EntryValue[] theEntryValue = itsInspector.getEntryValue(convertField(aField));
+				IEntryInfo theEntry = getEntry(itsInspector, convertField(aField));
+				EntryValue[] theEntryValue = itsInspector.getEntryValue(theEntry);
 				if (theEntryValue.length != 1) throw new RuntimeException("Can't retrieve value");
 				Object theValue = theEntryValue[0].getValue();
-				theResult = theValue == null ? NULL : convertObject(theValue);
+				theResult = theValue == null ? ToStringComputer.NULL : convertObject(theValue);
 			}
 			
-			return theResult == NULL ? null : theResult;
+			return theResult == ToStringComputer.NULL ? null : theResult;
 		}
 		
 		@Override
@@ -291,7 +280,7 @@ public class ToStringComputer
 		}
 	}
 	
-	private class TODArray extends JArray
+	public class TODArray extends JArray
 	{
 		private final IObjectInspector itsInspector;
 		private final List<JObject> itsValues = new ArrayList<JObject>();
@@ -304,7 +293,7 @@ public class ToStringComputer
 		@Override
 		public int getSize()
 		{
-			return itsInspector.getFieldCount();
+			return itsInspector.getEntryCount();
 		}
 
 		@Override
@@ -313,14 +302,14 @@ public class ToStringComputer
 			JObject theResult = itsValues.get(aIndex);
 			if (theResult == null)
 			{
-				IFieldInfo theField = itsInspector.getFields(aIndex, 1).get(0);
-				EntryValue[] theEntryValue = itsInspector.getEntryValue(theField);
+				IEntryInfo theEntry = itsInspector.getEntries(aIndex, 1).get(0);
+				EntryValue[] theEntryValue = itsInspector.getEntryValue(theEntry);
 				if (theEntryValue.length != 1) throw new RuntimeException("Can't retrieve value");
 				Object theValue = theEntryValue[0].getValue();
-				theResult = theValue == null ? NULL : convertObject(theValue);
+				theResult = theValue == null ? ToStringComputer.NULL : convertObject(theValue);
 			}
 			
-			return theResult == NULL ? null : theResult;
+			return theResult == ToStringComputer.NULL ? null : theResult;
 		}
 
 		@Override
@@ -330,7 +319,7 @@ public class ToStringComputer
 		}
 	}
 	
-	private class TODStaticField extends SimpleStaticField
+	public class TODStaticField extends SimpleStaticField
 	{
 		public TODStaticField(
 				JClass aClass,
@@ -342,4 +331,5 @@ public class ToStringComputer
 			super(aClass, aName, aType, aAccess, aStaticValue);
 		}
 	}
+
 }

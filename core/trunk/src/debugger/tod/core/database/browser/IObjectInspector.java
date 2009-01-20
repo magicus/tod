@@ -25,9 +25,7 @@ package tod.core.database.browser;
 import java.util.List;
 
 import tod.core.database.event.ICreationEvent;
-import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IFieldInfo;
-import tod.core.database.structure.IMemberInfo;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 
@@ -39,7 +37,7 @@ import tod.core.database.structure.ObjectId;
  * It can also provide browsers for individual members. 
  * @author gpothier
  */
-public interface IObjectInspector extends ICompoundInspector<IFieldInfo>
+public interface IObjectInspector extends ICompoundInspector<IObjectInspector.IEntryInfo>
 {
 	/**
 	 * Returns the log browser that created this inspector.
@@ -63,26 +61,78 @@ public interface IObjectInspector extends ICompoundInspector<IFieldInfo>
 	public ITypeInfo getType();
 
 	/**
-	 * Returns the total number of fields available in the inspected object.
+	 * Returns the total number of entries (fields) available in the inspected object.
 	 */
-	public int getFieldCount();
+	public int getEntryCount();
 	
 	/**
 	 * Retrieves all or a subset of the field descriptors of the inspected object.
 	 * @param aRangeStart Index of the first entry to return
 	 * @param aRangeSize Maximum number of entries to return
 	 */
-	public List<IFieldInfo> getFields(int aRangeStart, int aRangeSize);
+	public List<IEntryInfo> getEntries(int aRangeStart, int aRangeSize);
 	
 	/**
 	 * Returns an event broswer on the events that changed the value 
-	 * of the specified member of the inspected object.
+	 * of the specified entry of the inspected object.
 	 */
-	public IEventBrowser getBrowser (IFieldInfo aField);
+	public IEventBrowser getBrowser (IEntryInfo aEntry);
 	
 	/**
-	 * Returns the possible values assigned to the given field by the given event.
-	 * @param aEvent Must be an event returned by {@link #getBrowser(IFieldInfo)}.
+	 * Represents an entry in an inspected object.
+	 * @author gpothier
 	 */
-	public Object[] getNewValue(IFieldInfo aField, ILogEvent aEvent);
+	public interface IEntryInfo
+	{
+		public String getName();
+	}
+
+	/**
+	 * A field entry for actual objects (ie. not arrays)
+	 * @author gpothier
+	 */
+	public static class FieldEntryInfo implements IEntryInfo
+	{
+		private final IFieldInfo itsField;
+
+		public FieldEntryInfo(IFieldInfo aField)
+		{
+			itsField = aField;
+		}
+		
+		public IFieldInfo getField()
+		{
+			return itsField;
+		}
+		
+		public String getName()
+		{
+			return itsField.getName();
+		}
+	}
+	
+	/**
+	 * Represents a slot for arrays.
+	 * @author gpothier
+	 */
+	public static class ArraySlotEntryInfo implements IEntryInfo
+	{
+		private final int itsIndex;
+
+		public ArraySlotEntryInfo(int aIndex)
+		{
+			itsIndex = aIndex;
+		}
+
+		public int getIndex()
+		{
+			return itsIndex;
+		}
+		
+		public String getName()
+		{
+			return "["+itsIndex+"]";
+		}
+	}
+
 }

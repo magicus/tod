@@ -33,13 +33,13 @@ import java.util.Random;
 import tod.BenchBase;
 import tod.Util;
 import tod.BenchBase.BenchResults;
-import tod.core.config.TODConfig;
 import tod.core.database.browser.ICompoundFilter;
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.Stepper;
+import tod.core.database.browser.IObjectInspector.IEntryInfo;
 import tod.core.database.event.ICreationEvent;
 import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILogEvent;
@@ -662,8 +662,8 @@ public class GridQuery
 			return null;
 		}
 		ITypeInfo theType = theInspector.getType();
-		List<IFieldInfo> theFields = theInspector.getFields(0, Integer.MAX_VALUE);
-		if (theFields.size() == 0)
+		List<IEntryInfo> theEntries = theInspector.getEntries(0, Integer.MAX_VALUE);
+		if (theEntries.size() == 0)
 		{
 			System.out.println("  No fields found for object: "+aId);
 			return null;
@@ -672,14 +672,14 @@ public class GridQuery
 		long t1 = System.currentTimeMillis();
 		long t = t1-t0;
 		
-		System.out.println("  Retrieved fields for obj "+aId+"("+theType+"): "+t+"ms, "+theFields.size()+" fields");
+		System.out.println("  Retrieved fields for obj "+aId+"("+theType+"): "+t+"ms, "+theEntries.size()+" fields");
 		
 		final long theFirstTimestamp = theCreationEventEvent.getTimestamp();
 		final long theLastTimestamp = aBrowser.getLastTimestamp();
 		final long theTimeSpan = theLastTimestamp-theFirstTimestamp;
 		
 		Random theRandom = new Random(aId);
-		ObjectInspectorResult theResult = new ObjectInspectorResult(theFields.size());
+		ObjectInspectorResult theResult = new ObjectInspectorResult(theEntries.size());
 		for (int i=0;i<20;i++)
 		{
 			long theTimestamp = theRandom.nextLong();
@@ -702,11 +702,11 @@ public class GridQuery
 		ILogEvent theEvent = theBrowser.next();
 		
 		aInspector.setReferenceEvent(theEvent);
-		List<IFieldInfo> theFields = aInspector.getFields(0, Integer.MAX_VALUE);
+		List<IEntryInfo> theEntries = aInspector.getEntries(0, Integer.MAX_VALUE);
 		
-		for (IFieldInfo theField : theFields)
+		for (IEntryInfo theEntry : theEntries)
 		{
-			aInspector.getEntryValue(theField);
+			aInspector.getEntryValue(theEntry);
 		}
 		
 		long t1 = System.currentTimeMillis();

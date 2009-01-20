@@ -46,7 +46,6 @@ import tod.core.database.event.IFieldWriteEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.INewArrayEvent;
 import tod.core.database.event.IWriteEvent;
-import tod.core.database.structure.IArraySlotFieldInfo;
 import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
@@ -56,7 +55,6 @@ import tod.core.database.structure.IPrimitiveTypeInfo;
 import tod.core.database.structure.IStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
-import tod.impl.database.structure.standard.ArraySlotFieldInfo;
 import tod.tools.monitoring.Monitored;
 import tod.utils.TODUtils;
 import zz.utils.Sieve;
@@ -84,7 +82,7 @@ public class ObjectInspector implements IObjectInspector
 	
 	private Delegate itsDelegate;
 	
-	private Map<IFieldInfo, IEventBrowser> itsBrowsersMap = new HashMap<IFieldInfo, IEventBrowser>();
+	private Map<IEntryInfo, IEventBrowser> itsBrowsersMap = new HashMap<IEntryInfo, IEventBrowser>();
 	private ITypeInfo itsType;
 	
 	private ICreationEvent itsCreationEvent;
@@ -285,16 +283,16 @@ public class ObjectInspector implements IObjectInspector
 	}
 	
 	@Monitored
-	public List<IFieldInfo> getFields(int aRangeStart, int aRangeSize)
+	public List<IEntryInfo> getEntries(int aRangeStart, int aRangeSize)
 	{
 		Delegate theDelegate = getDelegate();
-		return theDelegate != UNAVAILABLE ? theDelegate.getFields(aRangeStart, aRangeSize) : Collections.EMPTY_LIST;
+		return theDelegate != UNAVAILABLE ? theDelegate.getEntries(aRangeStart, aRangeSize) : Collections.EMPTY_LIST;
 	}
 	
-	public int getFieldCount()
+	public int getEntryCount()
 	{
 		Delegate theDelegate = getDelegate();
-		return theDelegate != UNAVAILABLE ? theDelegate.getFieldsCount() : 0;
+		return theDelegate != UNAVAILABLE ? theDelegate.getEntryCount() : 0;
 	}
 
 	public void setReferenceEvent(ILogEvent aEvent)
@@ -318,7 +316,7 @@ public class ObjectInspector implements IObjectInspector
 	}
 
 	@Monitored
-	public EntryValue[] getEntryValue(IFieldInfo aField)
+	public EntryValue[] getEntryValue(IEntryInfo aEntry)
 	{
 		checkReferenceEvent();
 		List<EntryValue> theResult = new ArrayList<EntryValue>();
@@ -327,14 +325,14 @@ public class ObjectInspector implements IObjectInspector
 		if (itsReferenceEvent instanceof IFieldWriteEvent)
 		{
 			IFieldWriteEvent theEvent = (IFieldWriteEvent) itsReferenceEvent;
-			if (theEvent.getField().equals(aField))
+			if (theEvent.getField().equals(aEntry))
 			{
 				theResult.add(new EntryValue(theEvent.getValue(), theEvent));
 				return theResult.toArray(new EntryValue[theResult.size()]);
 			}
 		}
 		
-		IEventBrowser theBrowser = getBrowser(aField);
+		IEventBrowser theBrowser = getBrowser(aEntry);
 		theBrowser.setPreviousEvent(itsReferenceEvent);
 		
 		long thePreviousTimestamp = -1;
@@ -348,7 +346,7 @@ public class ObjectInspector implements IObjectInspector
 			
 			if (theTimestamp == thePreviousTimestamp) 
 			{
-				Object[] theNewValue = getNewValue(aField, theEvent);
+				Object[] theNewValue = getNewValue(aEntry, theEvent);
 				for (Object v : theNewValue) theResult.add(new EntryValue(v, theEvent));
 			}
 			else break;
@@ -358,10 +356,10 @@ public class ObjectInspector implements IObjectInspector
 	}
 	
 	@Monitored
-	public EntryValue[] nextEntryValue(IFieldInfo aField)
+	public EntryValue[] nextEntryValue(IEntryInfo aEntry)
 	{
-		IEventBrowser theBrowser = getBrowser(aField);
-		EntryValue[] theEntryValue = getEntryValue(aField);
+		IEventBrowser theBrowser = getBrowser(aEntry);
+		EntryValue[] theEntryValue = getEntryValue(aEntry);
 		
 		List<EntryValue> theResult = new ArrayList<EntryValue>();
 		for (EntryValue theValue : theEntryValue)
@@ -374,7 +372,7 @@ public class ObjectInspector implements IObjectInspector
 			theNext = theBrowser.next();
 			
 			itsReferenceEvent = theNext;
-			Object[] theNewValue = getNewValue(aField, theNext);
+			Object[] theNewValue = getNewValue(aEntry, theNext);
 			for (Object v : theNewValue) theResult.add(new EntryValue(v, theNext));
 		}
 		
@@ -382,10 +380,10 @@ public class ObjectInspector implements IObjectInspector
 	}
 
 	@Monitored
-	public EntryValue[] previousEntryValue(IFieldInfo aField)
+	public EntryValue[] previousEntryValue(IEntryInfo aEntry)
 	{
-		IEventBrowser theBrowser = getBrowser(aField);
-		EntryValue[] theEntryValue = getEntryValue(aField);
+		IEventBrowser theBrowser = getBrowser(aEntry);
+		EntryValue[] theEntryValue = getEntryValue(aEntry);
 		
 		List<EntryValue> theResult = new ArrayList<EntryValue>();
 		for (EntryValue theValue : theEntryValue)
@@ -398,18 +396,22 @@ public class ObjectInspector implements IObjectInspector
 			thePrevious = theBrowser.previous();
 			
 			itsReferenceEvent = thePrevious;
-			Object[] theNewValue = getNewValue(aField, thePrevious);
+			Object[] theNewValue = getNewValue(aEntry, thePrevious);
 			for (Object v : theNewValue) theResult.add(new EntryValue(v, thePrevious));
 		}
 		
 		return theResult.isEmpty() ? null : theResult.toArray(new EntryValue[theResult.size()]);
 	}
 
+	/**
+	 * Returns the possible values assigned to the given field by the given event.
+	 * @param aEvent Must be an event returned by {@link #getBrowser(IFieldInfo)}.
+	 */
 	@Monitored
-	public Object[] getNewValue(IFieldInfo aField, ILogEvent aEvent)
+	public Object[] getNewValue(IEntryInfo aEntry, ILogEvent aEvent)
 	{
 		checkReferenceEvent();
-		return getDelegate().getNewValue(aField, aEvent);
+		return getDelegate().getNewValue(aEntry, aEvent);
 	}
 
 
@@ -417,15 +419,15 @@ public class ObjectInspector implements IObjectInspector
 	 * Returns an event browser for the specified field.
 	 */
 	@Monitored
-	public IEventBrowser getBrowser(IFieldInfo aMember)
+	public IEventBrowser getBrowser(IEntryInfo aEntry)
 	{
-		IEventBrowser theBrowser = itsBrowsersMap.get(aMember);
+		IEventBrowser theBrowser = itsBrowsersMap.get(aEntry);
 		if (theBrowser == null)
 		{
 			Delegate theDelegate = getDelegate();
-			IEventFilter theFilter = theDelegate != UNAVAILABLE ? theDelegate.getFilter(aMember) : null;
+			IEventFilter theFilter = theDelegate != UNAVAILABLE ? theDelegate.getFilter(aEntry) : null;
 			theBrowser = itsLogBrowser.createBrowser(theFilter);
-			itsBrowsersMap.put (aMember, theBrowser);
+			itsBrowsersMap.put (aEntry, theBrowser);
 		}
 		
 		return theBrowser;
@@ -439,48 +441,48 @@ public class ObjectInspector implements IObjectInspector
 	private static abstract class Delegate
 	{
 		/**
-		 * Delegate method for {@link ObjectInspector#getFieldCount()}
+		 * Delegate method for {@link ObjectInspector#getEntryCount()}
 		 */
-		public abstract int getFieldsCount();
+		public abstract int getEntryCount();
 
 		/**
 		 * Delegate method for {@link ObjectInspector#getFields()}
 		 */
-		public abstract List<IFieldInfo> getFields(int aRangeStart, int aRangeSize);
+		public abstract List<IEntryInfo> getEntries(int aRangeStart, int aRangeSize);
 
 		/**
 		 * Delegate method for {@link ObjectInspector#getFilter(IMemberInfo)}
 		 */
-		public abstract IEventFilter getFilter(IFieldInfo aMember);
+		public abstract IEventFilter getFilter(IEntryInfo aEntry);
 		
 		/**
 		 * Delegate method for {@link ObjectInspector#getNewValue(IFieldInfo, ILogEvent)}
 		 */
-		public abstract Object[] getNewValue(IFieldInfo aField, ILogEvent aEvent);
+		public abstract Object[] getNewValue(IEntryInfo aEntry, ILogEvent aEvent);
 	}
 	
 	private static final Delegate UNAVAILABLE = new Delegate()
 	{
 		@Override
-		public List<IFieldInfo> getFields(int aRangeStart, int aRangeSize)
+		public List<IEntryInfo> getEntries(int aRangeStart, int aRangeSize)
 		{
 			throw new UnsupportedOperationException();
 		}
 
 		@Override
-		public int getFieldsCount()
+		public int getEntryCount()
 		{
 			throw new UnsupportedOperationException();
 		}
 
 		@Override
-		public IEventFilter getFilter(IFieldInfo aMember)
+		public IEventFilter getFilter(IEntryInfo aEntry)
 		{
 			throw new UnsupportedOperationException();
 		}
 
 		@Override
-		public Object[] getNewValue(IFieldInfo aField, ILogEvent aEvent)
+		public Object[] getNewValue(IEntryInfo aEntry, ILogEvent aEvent)
 		{
 			throw new UnsupportedOperationException();
 		}
@@ -488,12 +490,12 @@ public class ObjectInspector implements IObjectInspector
 	
 	private class ObjectDelegate extends Delegate
 	{
-		private List<IFieldInfo> itsFields;
+		private List<IEntryInfo> itsFields;
 		
 		/**
 		 * Recursively finds all inherited members of the inspected object.
 		 */
-		private void fillMembers (List<IFieldInfo> aMembers, ITypeInfo aType)
+		private void fillMembers (List<IEntryInfo> aMembers, ITypeInfo aType)
 		{
 			if (aType instanceof IClassInfo)
 			{
@@ -501,7 +503,7 @@ public class ObjectInspector implements IObjectInspector
 				
 				for (IFieldInfo theField : theClass.getFields())
 				{
-					if (theField.isStatic() == (getObject() == null)) aMembers.add(theField);
+					if (theField.isStatic() == (getObject() == null)) aMembers.add(new FieldEntryInfo(theField));
 				}
 
 				// Fill supertypes recursively
@@ -514,13 +516,13 @@ public class ObjectInspector implements IObjectInspector
 		{
 			if (itsFields == null)
 			{
-				itsFields = new ArrayList<IFieldInfo>();
+				itsFields = new ArrayList<IEntryInfo>();
 				fillMembers(itsFields, getType());
 			}
 		}
 		
 		@Override
-		public int getFieldsCount()
+		public int getEntryCount()
 		{
 			checkFields();
 			return itsFields.size();
@@ -528,10 +530,10 @@ public class ObjectInspector implements IObjectInspector
 
 		@Override
 		@Monitored
-		public List<IFieldInfo> getFields(int aRangeStart, int aRangeSize)
+		public List<IEntryInfo> getEntries(int aRangeStart, int aRangeSize)
 		{
 			checkFields();
-			List<IFieldInfo> theResult = new ArrayList<IFieldInfo>();
+			List<IEntryInfo> theResult = new ArrayList<IEntryInfo>();
 			for(int i=aRangeStart;i<Math.min(aRangeStart+aRangeSize, itsFields.size());i++) 
 				theResult.add(itsFields.get(i));
 			
@@ -539,29 +541,33 @@ public class ObjectInspector implements IObjectInspector
 		}
 		
 		@Override
-		public IEventFilter getFilter(IFieldInfo aField)
+		public IEventFilter getFilter(IEntryInfo aEntry)
 		{
+			IFieldInfo theField = ((FieldEntryInfo) aEntry).getField();
+			
 			if (getObject() == null)
 			{
 				// static version
-				return itsLogBrowser.createFieldFilter(aField);
+				return itsLogBrowser.createFieldFilter(theField);
 			}
 			else
 			{
 				// Non-static version
 				return itsLogBrowser.createIntersectionFilter(
-						itsLogBrowser.createFieldFilter(aField),
+						itsLogBrowser.createFieldFilter(theField),
 						itsLogBrowser.createTargetFilter(itsObjectId));
 			}
 		}
 		
 		@Override
-		public Object[] getNewValue(IFieldInfo aField, ILogEvent aEvent)
+		public Object[] getNewValue(IEntryInfo aEntry, ILogEvent aEvent)
 		{
+			IFieldInfo theField = ((FieldEntryInfo) aEntry).getField();
+
 			IFieldWriteEvent theEvent = (IFieldWriteEvent) aEvent;
-			if (! theEvent.getField().equals(aField)) 
+			if (! theEvent.getField().equals(theField)) 
 			{
-				throw new IllegalArgumentException("Argument mismatch: "+aField+", "+aEvent);
+				throw new IllegalArgumentException("Argument mismatch: "+theField+", "+aEvent);
 			}
 			else 
 			{
@@ -595,7 +601,7 @@ public class ObjectInspector implements IObjectInspector
 		}
 
 		@Override
-		public int getFieldsCount()
+		public int getEntryCount()
 		{
 			INewArrayEvent theEvent = (INewArrayEvent) getCreationEvent();
 			return theEvent.getArraySize();
@@ -603,30 +609,27 @@ public class ObjectInspector implements IObjectInspector
 
 		@Override
 		@Monitored
-		public List<IFieldInfo> getFields(int aRangeStart, int aRangeSize)
+		public List<IEntryInfo> getEntries(int aRangeStart, int aRangeSize)
 		{
-			List<IFieldInfo> theResult = new ArrayList<IFieldInfo>();
+			List<IEntryInfo> theResult = new ArrayList<IEntryInfo>();
 			INewArrayEvent theEvent = (INewArrayEvent) getCreationEvent();
 			int theSize = theEvent.getArraySize();
 				
 			for(int i=aRangeStart;i<Math.min(aRangeStart+aRangeSize, theSize);i++)
 			{
-				theResult.add(new ArraySlotFieldInfo(
-						getLogBrowser().getStructureDatabase(),
-						(IArrayTypeInfo) getType(),
-						i));
+				theResult.add(new ArraySlotEntryInfo(i));
 			}
 
 			return theResult;
 		}
 		
 		@Override
-		public IEventFilter getFilter(IFieldInfo aField)
+		public IEventFilter getFilter(IEntryInfo aEntry)
 		{
-			IArraySlotFieldInfo theField = (IArraySlotFieldInfo) aField;
+			int theIndex = ((ArraySlotEntryInfo) aEntry).getIndex();
 			
 			IEventFilter theFieldWriteFilter = itsLogBrowser.createIntersectionFilter(
-					itsLogBrowser.createFieldFilter(theField),
+					itsLogBrowser.createArrayWriteFilter(theIndex),
 					itsLogBrowser.createTargetFilter(itsObjectId));
 			
 			if (itsArrayCopy == null)
@@ -637,7 +640,7 @@ public class ObjectInspector implements IObjectInspector
 			else
 			{
 				IEventFilter theCopyFilter = itsLogBrowser.createPredicateFilter(
-						new ArrayCopyFilter(theField.getIndex()), 
+						new ArrayCopyFilter(theIndex), 
 						itsLogBrowser.createIntersectionFilter(
 								itsLogBrowser.createBehaviorCallFilter(itsArrayCopy),
 								itsLogBrowser.createArgumentFilter(itsObjectId, 3)));
@@ -650,12 +653,12 @@ public class ObjectInspector implements IObjectInspector
 
 		@Override
 		@Monitored
-		public Object[] getNewValue(IFieldInfo aField, ILogEvent aEvent)
+		public Object[] getNewValue(IEntryInfo aEntry, ILogEvent aEvent)
 		{
-			IArraySlotFieldInfo theField = (IArraySlotFieldInfo) aField;
+			int theIndex = ((ArraySlotEntryInfo) aEntry).getIndex();
 			Object[] theResult;
 			
-			TODUtils.logf(0, "Retrieving slot %d of array %s", theField.getIndex(), itsObjectId);
+			TODUtils.logf(0, "Retrieving slot %d of array %s", theIndex, itsObjectId);
 			
 			if (aEvent instanceof IWriteEvent)
 			{
@@ -666,13 +669,13 @@ public class ObjectInspector implements IObjectInspector
 			{
 				ArraySlotTrack theQuery = new ArraySlotTrack(
 						aEvent.getPointer(), 
-						theField.getIndex());
+						theIndex);
 				
 				theResult = getLogBrowser().exec(theQuery);
 //				theResult = theQuery.run(getLogBrowser());
 			}
 			
-			TODUtils.logf(0, "Retrieved slot %d of array %s -> %s", theField.getIndex(), itsObjectId, Arrays.asList(theResult));
+			TODUtils.logf(0, "Retrieved slot %d of array %s -> %s", theIndex, itsObjectId, Arrays.asList(theResult));
 			
 			return theResult;
 		}
@@ -721,10 +724,7 @@ public class ObjectInspector implements IObjectInspector
 					theInspector.setReferenceEvent(theCall);
 					
 					TODUtils.logf(0, "Looking up slot %d of src array %s", itsIndex-theSrcPos, theSource);
-					theEntryValue = theInspector.getEntryValue(new ArraySlotFieldInfo(
-							aLogBrowser.getStructureDatabase(),
-							null,
-							itsIndex-theDestPos+theSrcPos));
+					theEntryValue = theInspector.getEntryValue(new ArraySlotEntryInfo(itsIndex-theDestPos+theSrcPos));
 				}
 				
 				if (theEntryValue == null) return null;

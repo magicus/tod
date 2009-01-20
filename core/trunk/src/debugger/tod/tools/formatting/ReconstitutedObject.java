@@ -22,11 +22,13 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.tools.formatting;
 
+import java.util.List;
+
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.ICompoundInspector.EntryValue;
+import tod.core.database.browser.IObjectInspector.IEntryInfo;
 import tod.core.database.structure.IClassInfo;
-import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ObjectId;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
@@ -61,27 +63,29 @@ public class ReconstitutedObject
 		
 		return itsClass;
 	}
+	
+	private IEntryInfo getEntry(String aFieldName)
+	{
+		List<IEntryInfo> theEntries = itsInspector.getEntries(0, Integer.MAX_VALUE);
+		for (IEntryInfo theEntry : theEntries)
+		{
+			if (theEntry.getName().equals(aFieldName)) return theEntry; 
+		}
+		return null;
+	}
 
 	@Monitored
 	public Object get(String aFieldName)
 	{
-		IClassInfo theClass = getType();
+		IEntryInfo theEntry = getEntry(aFieldName);
 		
-		IFieldInfo theField = null;
-		while(theClass != null)
+		if (theEntry == null) 
 		{
-			theField = theClass.getField(aFieldName);
-			if (theField != null) break;
-			theClass = theClass.getSupertype();
+			if (getType().isInScope()) Utils.rtex("Field %s not found in class %s.", aFieldName, getType().getName());
+			else Utils.rtex("Class %s is not in scope, cannot access field %s.", getType().getName(), aFieldName);
 		}
 		
-		if (theField == null) 
-		{
-			if (theClass.isInScope()) Utils.rtex("Field %s not found in class %s.", aFieldName, theClass.getName());
-			else Utils.rtex("Class %s is not in scope, cannot access field %s.", theClass.getName(), aFieldName);
-		}
-		
-		EntryValue[] theEntryValues = itsInspector.getEntryValue(theField);
+		EntryValue[] theEntryValues = itsInspector.getEntryValue(theEntry);
 		if (theEntryValues == null || theEntryValues.length > 1) throw new RuntimeException("What do we do? "+theEntryValues);
 		
 		Object theValue = theEntryValues.length == 1 ? theEntryValues[0].getValue() : null;

@@ -34,19 +34,19 @@ import javax.swing.JPanel;
 import tod.core.config.TODConfig;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.ICompoundInspector.EntryValue;
+import tod.core.database.browser.IObjectInspector.IEntryInfo;
 import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
-import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.ObjectId;
 import tod.gui.FontConfig;
 import tod.gui.GUIUtils;
 import tod.gui.Hyperlinks;
 import tod.gui.IGUIManager;
 import tod.gui.kit.AsyncPanel;
+import tod.tools.interpreter.ToStringComputer;
 import tod.tools.scheduling.IJobScheduler;
 import tod.tools.scheduling.IJobScheduler.JobPriority;
-import tod.tools.tostring.ToStringComputer;
 import zz.utils.ui.ZHyperlink;
 import zz.utils.ui.ZLabel;
 
@@ -171,32 +171,32 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 	@Override
 	public int getEntryCount()
 	{
-		return getInspector().getFieldCount();
+		return getInspector().getEntryCount();
 	}
 
 	@Override
 	public List<Entry> getEntries(int aRangeStart, int aRangeSize)
 	{
-		List<IFieldInfo> theFields = getInspector().getFields(aRangeStart, aRangeSize);
-		List<Entry> theResult = new ArrayList<Entry>(theFields.size());
-		for (IFieldInfo theField : theFields) theResult.add(new ObjectEntry(theField));
+		List<IEntryInfo> theEntries = getInspector().getEntries(aRangeStart, aRangeSize);
+		List<Entry> theResult = new ArrayList<Entry>(theEntries.size());
+		for (IEntryInfo theEntry : theEntries) theResult.add(new ObjectEntry(theEntry));
 
 		return theResult;
 	}
 
 	private class ObjectEntry extends Entry
 	{
-		private IFieldInfo itsField;
+		private IEntryInfo itsEntry;
 
-		public ObjectEntry(IFieldInfo aField)
+		public ObjectEntry(IEntryInfo aEntry)
 		{
-			itsField = aField;
+			itsEntry = aEntry;
 		}
 		
 		@Override
 		public String getName()
 		{
-			return itsField.getName();
+			return itsEntry.getName();
 		}
 
 		@Override
@@ -204,7 +204,7 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 		{
 			IObjectInspector theInspector = getInspector();
 			theInspector.setReferenceEvent(itsRefEvent);
-			return theInspector.getEntryValue(itsField);
+			return theInspector.getEntryValue(itsEntry);
 		}
 
 		@Override
@@ -212,7 +212,7 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 		{
 			IObjectInspector theInspector = getInspector();
 			theInspector.setReferenceEvent(itsRefEvent);
-			return theInspector.nextEntryValue(itsField);
+			return theInspector.nextEntryValue(itsEntry);
 		}
 
 		@Override
@@ -220,7 +220,7 @@ public class ObjectWatchProvider extends AbstractWatchProvider
 		{
 			IObjectInspector theInspector = getInspector();
 			theInspector.setReferenceEvent(itsRefEvent);
-			return theInspector.previousEntryValue(itsField);
+			return theInspector.previousEntryValue(itsEntry);
 		}
 	}
 	

@@ -31,7 +31,6 @@ import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.LocationUtils;
 import tod.core.database.event.ILogEvent;
-import tod.core.database.structure.IArraySlotFieldInfo;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
@@ -193,15 +192,7 @@ public class GridLogBrowserNG extends GridLogBrowser
 
 	public IEventFilter createFieldFilter(IFieldInfo aField)
 	{
-		if (aField instanceof IArraySlotFieldInfo)
-		{
-			IArraySlotFieldInfo theField = (IArraySlotFieldInfo) aField;
-			return SplittedConditionHandler.INDEXES.createCondition(theField.getIndex(), (byte) 0);
-		}
-		else
-		{
-			return new FieldCondition(aField.getId());
-		}
+		return new FieldCondition(aField.getId());
 	}
 
 	public IEventFilter createFieldWriteFilter()
