@@ -31,11 +31,12 @@ import java.tod.transport.NakedLinkedList;
 
 import tod.agent.AgentConfig;
 import tod.agent.AgentDebugFlags;
-import tod.agent.AgentUtils;
+import tod.agent.Command;
 import tod.agent.io._ByteBuffer;
 import tod.agent.io._GrowingByteBuffer;
 import tod.agent.io._IOException;
 import tod.agent.util._ArrayList;
+import tod.agent.util._IntStack;
 
 
 /**
@@ -183,7 +184,7 @@ public final class EventCollector
 	
 	private ThreadData getThreadData()
 	{
-		return itsThreadData.get();
+		return itsThreadData != null ? itsThreadData.get() : null;
 	}
 
 	public void logClInitEnter(
@@ -213,6 +214,8 @@ public final class EventCollector
 				theTimestamp,
 				aBehaviorId,
 				aCallType);
+		
+//		theThread.pushEnter();		
 	}
 	
 	public void logBehaviorEnter(
@@ -246,6 +249,8 @@ public final class EventCollector
 				aCallType,
 				formatObj(aObject),
 				formatArgs(aArguments));
+		
+//		theThread.pushEnter();
 	}
 	
 	private String formatObj(Object aObject)
@@ -297,6 +302,8 @@ public final class EventCollector
 				aProbeId,
 				aBehaviorId,
 				formatObj(aResult));
+
+//		theThread.popEnter();
 	}
 	
 	public void logBehaviorExit(
@@ -327,6 +334,8 @@ public final class EventCollector
 				aProbeId,
 				aBehaviorId,
 				formatObj(aResult));
+		
+//		theThread.popEnter();
 	}
 	
 	
@@ -355,6 +364,8 @@ public final class EventCollector
 				theTimestamp,
 				aBehaviorId,
 				aException);
+		
+//		theThread.popEnter();		
 	}
 	
 	/**
@@ -594,6 +605,7 @@ public final class EventCollector
 				aBehaviorId,
 				aCallType);
 
+		theThread.pushCall(aBehaviorId);
 	}
 	
 	public void logBeforeBehaviorCall(
@@ -631,6 +643,7 @@ public final class EventCollector
 				formatObj(aTarget),
 				formatArgs(aArguments));
 
+		theThread.pushCall(aBehaviorId);
 	}
 
 	public void logAfterBehaviorCallDry()
@@ -649,6 +662,8 @@ public final class EventCollector
 				"logAfterBehaviorCallDry(th: %d, ts: %d)",
 				theThread.getId(),
 				theTimestamp);
+		
+		theThread.popCall();		
 	}
 	
 	public void logAfterBehaviorCall(
@@ -683,6 +698,7 @@ public final class EventCollector
 				formatObj(aTarget),
 				formatObj(aResult));
 
+		theThread.popCall();
 	}
 	
 	public void logAfterBehaviorCallWithException(
@@ -716,6 +732,8 @@ public final class EventCollector
 				aBehaviorId,
 				formatObj(aTarget),
 				aException);
+
+		theThread.popCall();
 	}
 	
 	public void logOutput(
@@ -736,6 +754,17 @@ public final class EventCollector
     			aData);
     	
         theThread.packetEnd();
+	}
+
+	/**
+	 * Returns the id of the currently called behavior (as registered).
+	 */
+	public int getCurrentCalledBehavior()
+	{
+		if (! AgentReady.COLLECTOR_READY) return 0;
+		ThreadData theThread = getThreadData();
+		
+		return theThread != null ? theThread.getCurrentCall() : 0;
 	}
 
 	private ThreadData getControlThreadData()
@@ -849,6 +878,11 @@ public final class EventCollector
 		 */
 		private NakedLinkedList.Entry<ThreadData> itsEntry;
 		
+		/**
+		 * This stack contains the behavior ids of called methods
+		 */
+		private _IntStack itsCallStack = new _IntStack(128);
+		
 		public ThreadData(int aId)
 		{
 			itsId = aId;
@@ -955,6 +989,35 @@ public final class EventCollector
 		{
 			return itsEntry;
 		}
+		
+		public void pushCall(int aBehaviorId)
+		{
+			itsCallStack.push(aBehaviorId);
+		}
+		
+		public void popCall()
+		{
+			itsCallStack.pop();
+		}
+		
+		public int getCurrentCall()
+		{
+			return itsCallStack.isEmpty() ? 0 : itsCallStack.peek();
+		}
+		
+//		public void pushEnter()
+//		{
+//			itsCallStack.push(0);
+//			System.out.println("ThreadData.pushEnter()");
+//		}
+//		
+//		public void popEnter()
+//		{
+//			int v = itsCallStack.pop();
+//			if (v != 0) throw new RuntimeException("Call stack error");
+//			System.out.println("ThreadData.popEnter()");
+//		}
+//		
 	}
 	
 	private static void printf(String aString, Object... aArgs)

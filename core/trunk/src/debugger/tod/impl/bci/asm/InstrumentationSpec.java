@@ -54,6 +54,12 @@ public abstract class InstrumentationSpec
 	
 	public abstract boolean traceInstanceOf();
 	
+	/**
+	 * Whether the instrumenter should add a field to the class that
+	 * indicates whether an instance was created by in-scope or out-of-scope
+	 * code.
+	 */
+	public abstract boolean hasCreatedInScope();
 	
 	public static class All extends InstrumentationSpec
 	{
@@ -116,6 +122,12 @@ public abstract class InstrumentationSpec
 		{
 			return true;
 		}
+		
+		@Override
+		public boolean hasCreatedInScope()
+		{
+			return false;
+		}
 	}
 	
 	public static class None extends InstrumentationSpec
@@ -176,6 +188,12 @@ public abstract class InstrumentationSpec
 
 		@Override
 		public boolean traceVarWrite()
+		{
+			return false;
+		}
+
+		@Override
+		public boolean hasCreatedInScope()
 		{
 			return false;
 		}

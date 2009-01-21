@@ -227,10 +227,33 @@ public class ASMBehaviorInstrumenter implements Opcodes
 				DSC_EVENTCOLLECTOR);
 		mv.visitVarInsn(ASTORE, itsCollectorVar);
 		
+		// Init the CreatedInScope field (only for constructors)
+		if (itsSpec.hasCreatedInScope() 
+				&& "<init>".equals(itsMethodInfo.getName()))
+		{
+			initCreatedInScope();
+		}
+		
 		// Store the capture enabled flag
 		// We need to use the same value of the flag during the whole execution of the method.
 		mv.visitFieldInsn(GETSTATIC, CLS_AGENTREADY, "CAPTURE_ENABLED", "Z");
 		mv.visitVarInsn(ISTORE, itsCaptureEnabledVar);
+		
+		if (itsSpec.hasCreatedInScope() && ! itsMethodInfo.isStatic())
+		{
+			// If the current instance is not created in scope, disable capture
+			mv.visitVarInsn(ALOAD, 0);
+			mv.visitFieldInsn(GETFIELD, itsMethodInfo.getOwner(), LogBCIVisitor.FIELD_CREATEDINSCOPE, "I");
+
+			mv.visitInsn(ICONST_1);
+			Label theInScopeLabel = new Label();
+			mv.visitJumpInsn(IF_ICMPEQ, theInScopeLabel);
+			
+			mv.visitInsn(ICONST_0);
+			mv.visitVarInsn(ISTORE, itsCaptureEnabledVar);
+			
+			mv.visitLabel(theInScopeLabel);
+		}
 
 		if (! itsSpec.traceEnveloppe())
 		{
@@ -295,6 +318,56 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		}
 	}
 
+	public void initCreatedInScope()
+	{
+		// ->this
+		mv.visitVarInsn(ALOAD, 0);
+		
+		mv.visitFieldInsn(GETFIELD, itsMethodInfo.getOwner(), LogBCIVisitor.FIELD_CREATEDINSCOPE, "I");
+
+		Label theInitialized = new Label();
+		mv.visitJumpInsn(IFNE, theInitialized);
+		
+		// ->this
+		mv.visitVarInsn(ALOAD, 0);
+		
+		// ->this, target collector
+		mv.visitVarInsn(ALOAD, itsCollectorVar);
+
+		// ->this, result
+		mv.visitMethodInsn(
+				INVOKEVIRTUAL, 
+				CLS_EVENTCOLLECTOR, 
+				"getCurrentCalledBehavior", 
+				"()I");
+
+		// ->this, result, our bid
+		mv.visitLdcInsn(itsBehavior.getId());
+		
+		Label theSame = new Label();
+		Label theEndCmp = new Label();
+		
+		mv.visitJumpInsn(IF_ICMPEQ, theSame);
+		
+		// different
+		
+		mv.visitInsn(ICONST_M1);
+		
+		mv.visitJumpInsn(GOTO, theEndCmp);
+		mv.visitLabel(theSame);
+		
+		// same
+		
+		mv.visitInsn(ICONST_1);
+		
+		mv.visitLabel(theEndCmp);
+		
+		// ->this, val
+		mv.visitFieldInsn(PUTFIELD, itsMethodInfo.getOwner(), LogBCIVisitor.FIELD_CREATEDINSCOPE, "I");
+		
+		mv.visitLabel(theInitialized);
+	}
+	
 	public void doReturn(int aOpcode)
 	{
 		// Store location of this return into the variable

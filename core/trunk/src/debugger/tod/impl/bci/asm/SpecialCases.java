@@ -32,7 +32,11 @@ Inc. MD5 Message-Digest Algorithm".
 package tod.impl.bci.asm;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+
+import zz.utils.Utils;
 
 /**
  * A registry for special instrumentation cases.
@@ -54,14 +58,11 @@ public class SpecialCases
 		return "java/lang/System".equals(aOwner) && "arraycopy".equals(aName);
 	}
 	
-	private static final InstrumentationSpec WRITES_AND_COPY = new WritesAndCopy();
-
-	
 	static
 	{
-		add("java/util/ArrayList", WRITES_AND_COPY);
-		add("java/util/HashMap", WRITES_AND_COPY);
-		add("java/util/HashMap$Entry", WRITES_AND_COPY);
+		add("java/util/ArrayList", new WritesAndCopy());
+		add("java/util/HashMap", new WritesAndCopy("java/util/HashMap$Entry"));
+		add("java/util/HashMap$Entry", new WritesAndCopy());
 	}
 
 	/**
@@ -81,11 +82,20 @@ public class SpecialCases
 	}
 
 	/**
-	 * A spec that captures field and array writes, array creations, and calls to {@link System#arraycopy(Object, int, Object, int, int)}
+	 * A spec that captures field and array writes, array creations, 
+	 * calls to {@link System#arraycopy(Object, int, Object, int, int)}
+	 * and calls to the constructor of any of the specified classes.
 	 * @author gpothier
 	 */
 	private static class WritesAndCopy extends InstrumentationSpec.None
 	{
+		private final Set<String> itsTracedClasses = new HashSet<String>();
+		
+		public WritesAndCopy(String... aTracedClasses)
+		{
+			Utils.fillCollection(itsTracedClasses, aTracedClasses);
+		}
+		
 		@Override
 		public boolean traceFieldWrite(String aOwner, String aName, String aDesc)
 		{
@@ -107,7 +117,16 @@ public class SpecialCases
 		@Override
 		public boolean traceCall(String aOwner, String aName, String aDesc)
 		{
-			return isArrayCopy(aOwner, aName, aDesc);
+			if (isArrayCopy(aOwner, aName, aDesc)) return true;
+			if ("<init>".equals(aName) && itsTracedClasses.contains(aOwner)) return true;
+			
+			return false;
+		}
+		
+		@Override
+		public boolean hasCreatedInScope()
+		{
+			return true;
 		}
 	}
 }

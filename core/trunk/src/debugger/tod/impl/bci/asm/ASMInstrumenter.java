@@ -76,6 +76,11 @@ public class ASMInstrumenter implements IInstrumenter
 	{
 		// Strange things happen inside those classes...
 		if (aName.startsWith("sun/reflect/")) return null;
+		
+		if (aName.equals("java/util/ArrayList"))
+		{
+			System.out.println("ASMInstrumenter.instrumentClass()");
+		}
 				
 		if (TODConfig.DB_SCOPE_CHECK)
 		{

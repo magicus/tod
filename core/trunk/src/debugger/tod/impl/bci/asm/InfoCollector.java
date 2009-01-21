@@ -53,6 +53,7 @@ public class InfoCollector extends ClassAdapter
 	private ASMMethodInfo itsCurrentMethodInfo;
 	
 	private final String itsName;
+	private String itsSuperName;
 	
 	public InfoCollector(String aName)
 	{
@@ -71,17 +72,35 @@ public class InfoCollector extends ClassAdapter
 	}
 	
 	@Override
+	public void visit(
+			int aVersion,
+			int aAccess,
+			String aName,
+			String aSignature,
+			String aSuperName,
+			String[] aInterfaces)
+	{
+		assert aName.equals(itsName);
+		itsSuperName = aSuperName;
+	}
+	
+	@Override
 	public MethodVisitor visitMethod(int access, String aName, String aDesc, String aSignature, String[] aExceptions)
 	{
 		MethodVisitor mv = super.visitMethod(access, aName, aDesc, aSignature, aExceptions);
-		itsCurrentMethodInfo = new ASMMethodInfo(itsName, aName, aDesc, BCIUtils.isStatic(access));
+		itsCurrentMethodInfo = new ASMMethodInfo(itsName, itsSuperName, aName, aDesc, BCIUtils.isStatic(access));
 		itsMethodsInfo.add(itsCurrentMethodInfo);
-		return new CallClassCollector(
-				new JSRAnalyser(
-						new MethodAttributesCollector(
-								new MyCounter(mv))));
+		return new InstantiationAnalyserVisitor(new ConstructorChainingAnalyzer(
+				new CallClassCollector(
+					new JSRAnalyser(
+							new MethodAttributesCollector(
+									new MyCounter(mv))))), itsCurrentMethodInfo);
 	}
 	
+	/**
+	 * Collects all the classes on which a method calls some methods.
+	 * @author gpothier
+	 */
 	private class CallClassCollector extends MethodAdapter
 	{
 		public CallClassCollector(MethodVisitor mv)
@@ -347,5 +366,33 @@ public class InfoCollector extends ClassAdapter
 		public boolean ignore = false;
 	}
 	
+	/**
+	 * Registers if a constructor calls a super constructor or a this(...)
+	 * @author gpothier
+	 */
+	private class ConstructorChainingAnalyzer extends MethodAdapter
+	implements CCMethodVisitor
+	{
+		public ConstructorChainingAnalyzer(MethodVisitor mv)
+		{
+			super(mv);
+		}
+
+		public void visitConstructorCallInsn(int aOpcode, String aOwner, String aName, String aDesc)
+		{
+			mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
+		}
+
+		public void visitSuperOrThisCallInsn(
+				int aOpcode,
+				String aOwner,
+				String aName,
+				String aDesc,
+				boolean aSuper)
+		{
+			mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
+			if (! aSuper) itsCurrentMethodInfo.setCallsThis(true);
+		}
+	}
 	
 }

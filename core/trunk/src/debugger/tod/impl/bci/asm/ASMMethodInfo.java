@@ -37,6 +37,7 @@ public class ASMMethodInfo
 {
 	private int itsMaxLocals;
 	private final String itsOwner;
+	private final String itsOwnerSuper;
 	private final String itsName;
 	private final String itsDescriptor;
 	private final boolean itsStatic;
@@ -67,9 +68,15 @@ public class ASMMethodInfo
 	 */
 	private Set<String> itsCalledClasses = new HashSet<String>();
 	
-	public ASMMethodInfo(String aOwner, String aName, String aDescriptor, boolean aStatic)
+	/**
+	 * For constructors, whether the constructor calls this(...)
+	 */
+	private boolean itsCallsThis = false;
+	
+	public ASMMethodInfo(String aOwner, String aOwnerSuper, String aName, String aDescriptor, boolean aStatic)
 	{
 		itsOwner = aOwner;
+		itsOwnerSuper = aOwnerSuper;
 		itsName = aName;
 		itsDescriptor = aDescriptor;
 		itsStatic = aStatic;
@@ -116,6 +123,14 @@ public class ASMMethodInfo
 	public String getOwner()
 	{
 		return itsOwner;
+	}
+	
+	/**
+	 * Returns the name of the superclass of the owner.
+	 */
+	public String getOwnerSuper()
+	{
+		return itsOwnerSuper;
 	}
 	
 	public String getName()
@@ -248,5 +263,15 @@ public class ASMMethodInfo
     public Set<String> getCalledClasses()
 	{
 		return itsCalledClasses;
+	}
+    
+    public void setCallsThis(boolean aCallsThis)
+    {
+    	itsCallsThis = aCallsThis;
+    }
+    
+    public boolean doesCallsThis()
+	{
+		return itsCallsThis;
 	}
 }

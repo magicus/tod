@@ -53,8 +53,6 @@ import tod.impl.bci.asm.attributes.AspectInfoAttribute;
 import tod.impl.bci.asm.attributes.DummyLabelsAttribute;
 import tod.impl.bci.asm.attributes.SootAttribute;
 import tod.impl.database.structure.standard.TagMap;
-import zz.utils.ArrayStack;
-import zz.utils.Stack;
 
 /**
  * The ASM visitor that instruments the classes.
@@ -63,6 +61,15 @@ import zz.utils.Stack;
 public class LogBCIVisitor extends ClassAdapter implements Opcodes
 {
 	private static final int LOG = 1;
+	
+	/**
+	 * This field is added to classes for which the spec says 
+	 * {@link InstrumentationSpec#hasCreatedInScope()}. Possible values are:
+	 * 0: not initialized
+	 * 1: in scope
+	 * -1: not in scope 
+	 */
+	public static final String FIELD_CREATEDINSCOPE = "$TOD$CreatedInScope";
 		
 	/**
 	 * If set to true, features that prevent bytecode verification will
@@ -254,10 +261,14 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			
 			for (String theClass : theCalledClasses)
 			{
-				visitField(ACC_STATIC | ACC_SYNTHETIC, getClassFieldName(theClass), "Z", null, null);
+				super.visitField(ACC_STATIC | ACC_SYNTHETIC, getClassFieldName(theClass), "Z", null, null);
 			}
 		}
 		
+		if (itsSpec != null && itsSpec.hasCreatedInScope())
+		{
+			super.visitField(ACC_SYNTHETIC | ACC_PRIVATE | ACC_FINAL, FIELD_CREATEDINSCOPE, "I", null, null);
+		}
 
 		super.visitEnd();
 	}
@@ -274,6 +285,7 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 	}
 	
 	private class BCIMethodVisitor extends MethodAdapter
+	implements CCMethodVisitor
 	{
 		private InstructionCounterAdapter itsCounter;
 		private ASMMethodInfo itsMethodInfo;
@@ -369,13 +381,13 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			else mv.visitTypeInsn(aOpcode, aDesc);
 		}
 		
-		public void visitSuperOrThisCallInsn(int aOpcode, String aOwner, String aName, String aDesc)
+		public void visitSuperOrThisCallInsn(int aOpcode, String aOwner, String aName, String aDesc, boolean aSuper)
 		{
 			if (itsSpec != null && itsSpec.traceCall(aOwner, aName, aDesc) && ! ENABLE_VERIFY) itsInstrumenter.methodCall(aOpcode, aOwner, aName, aDesc, BehaviorCallType.SUPER_CALL);
 			else mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
 		}
 		
-		public void visitConstructorCallInsn(int aOpcode, String aOwner, int aCalledTypeId, String aName, String aDesc)
+		public void visitConstructorCallInsn(int aOpcode, String aOwner, String aName, String aDesc)
 		{
 			if (itsSpec != null && itsSpec.traceCall(aOwner, aName, aDesc) && ! ENABLE_VERIFY) itsInstrumenter.methodCall(aOpcode, aOwner, aName, aDesc, BehaviorCallType.INSTANTIATION);
 			else mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
@@ -606,99 +618,5 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			return ms-hs;
 		}
 	}
-	
-	private class InstantiationInfo
-	{
-		/**
-		 * Id of the instantiated type
-		 */
-		private int itsInstantiatedTypeId;
-		
-		public InstantiationInfo(String aTypeDesc)
-		{
-			IClassInfo theClass = itsDatabase.getNewClass(Util.jvmToScreen(aTypeDesc));
-			itsInstantiatedTypeId = theClass.getId();
-		}
-
-		public int getInstantiatedTypeId()
-		{
-			return itsInstantiatedTypeId;
-		}
-
-		
-	}
-
-	/**
-	 * This visitor acts as a filter before {@link BCIMethodVisitor}. It permits
-	 * to detect if a NEW is followed by a DUP or not.
-	 * @author gpothier
-	 */
-	private class InstantiationAnalyserVisitor extends MethodAdapter
-	{
-		private BCIMethodVisitor mv;
-		private Stack<InstantiationInfo> itsInstantiationInfoStack = new ArrayStack<InstantiationInfo>();
-		private final ASMMethodInfo itsMethodInfo;
-		
-		public InstantiationAnalyserVisitor(BCIMethodVisitor mv, ASMMethodInfo aMethodInfo)
-		{
-			super (mv);
-			this.mv = mv;
-			itsMethodInfo = aMethodInfo;
-		}
-
-		@Override
-		public void visitTypeInsn(int aOpcode, String aDesc)
-		{
-			if (aOpcode == NEW)
-			{
-				itsInstantiationInfoStack.push(new InstantiationInfo(aDesc));
-			}
-			mv.visitTypeInsn(aOpcode, aDesc);
-		}
-		
-		@Override
-		public void visitMethodInsn(int aOpcode, String aOwner, String aName, String aDesc)
-		{
-			if (aOpcode == INVOKESPECIAL && "<init>".equals(aName))
-			{
-				// We are invoking a constructor.
-				
-				IClassInfo theClass = itsDatabase.getNewClass(Util.jvmToScreen(aOwner));
-				int theCalledTypeId = theClass.getId();
-				
-				if ("<init>".equals(itsMethodInfo.getName()))
-				{
-					// We are in a constructor
-					if (theCalledTypeId == itsClassInfo.getSupertype().getId() 
-							|| theCalledTypeId == itsClassInfo.getId())
-					{
-						// Potential call to super or this
-						InstantiationInfo theInfo = itsInstantiationInfoStack.peek();
-						if (theInfo == null || theInfo.getInstantiatedTypeId() != theCalledTypeId)
-						{
-							mv.visitSuperOrThisCallInsn(aOpcode, aOwner, aName, aDesc);
-							return;
-						}
-					}
-				}
-				
-				InstantiationInfo theInfo = itsInstantiationInfoStack.pop();
-				if (theInfo.getInstantiatedTypeId() != theCalledTypeId)
-					throw new RuntimeException(String.format(
-							"[LogBCIVisitor] Type mismatch in %s.%s (found %d, expected %d)",
-							itsClassInfo.getName(),
-							itsMethodInfo.getName(),
-							theCalledTypeId,
-							theInfo.getInstantiatedTypeId()));
-				
-				mv.visitConstructorCallInsn(aOpcode, aOwner, theCalledTypeId, aName, aDesc);
-				return;
-			}
-			
-			mv.visitMethodInsn(aOpcode, aOwner, aName, aDesc);
-		}
-	}
-	
-
 }
 

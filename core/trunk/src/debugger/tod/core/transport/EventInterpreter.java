@@ -667,7 +667,7 @@ public final class EventInterpreter implements ILowLevelCollector
 					IntArray.toList(theThread.getAdviceCFlow())));
 		}
 
-		assert theFrame.directParent && theFrame.behavior > 0 : theFrame;
+//		assert theFrame.directParent && theFrame.behavior > 0 : theFrame;
 
 		theFrame = theThread.pushFrame(true, aBehaviorId, true, theFrame.parentTimestamp, aCallType, aProbeId);
 		
