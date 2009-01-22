@@ -278,6 +278,11 @@ public class TODInterpreter extends SimpleInterp
 		{
 			itsValues.put(aField, aValue);
 		}
+		
+		public ObjectId getObjectId()
+		{
+			return itsInspector.getObject();
+		}
 	}
 	
 	public class TODArray extends JArray

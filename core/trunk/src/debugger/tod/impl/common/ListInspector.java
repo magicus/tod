@@ -31,34 +31,23 @@ Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.common;
 
-import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IObjectInspector;
+import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.ObjectId;
+import tod.tools.interpreter.TODInterpreter.TODInstance;
 import zz.jinterp.JBehavior;
-import zz.jinterp.JClass;
 import zz.jinterp.JInstance;
+import zz.jinterp.JInterpreter;
 import zz.jinterp.JObject;
 import zz.jinterp.JPrimitive.JInt;
 
-public class MapInspector extends IteratorStructureInspector<MapInspector.EntryInfo>
+public class ListInspector extends IteratorStructureInspector<ListInspector.ItemInfo>
 {
-	private final JClass itsMapEntryClass;
-	private final JClass itsSetClass;
-	
-	private final JBehavior itsGetKeyMethod;
-	private final JBehavior itsGetValueMethod;
-	
-	
-	public MapInspector(IObjectInspector aOriginal)
+	public ListInspector(IObjectInspector aOriginal)
 	{
-		super(aOriginal, "java/util/Map");
-
-		itsMapEntryClass = getInterpreter().getClass("java/util/Map$Entry");
-		itsSetClass = getInterpreter().getClass("java/util/Set");
-		
-		itsGetKeyMethod = itsMapEntryClass.getVirtualBehavior("getKey", "()Ljava/lang/Object;");
-		itsGetValueMethod = itsMapEntryClass.getVirtualBehavior("getValue", "()Ljava/lang/Object;");
+		super(aOriginal, "java/util/List");
 	}
-	
+
 	@Override
 	protected int getEntryCount0()
 	{
@@ -70,26 +59,32 @@ public class MapInspector extends IteratorStructureInspector<MapInspector.EntryI
 	@Override
 	protected JInstance getIteratorInstance0()
 	{
-		JBehavior theEntrySetBehavior = getObjectClass().getVirtualBehavior("entrySet", "()Ljava/util/Set;");
-		JInstance theEntrySet = (JInstance) theEntrySetBehavior.invoke(null, getInstance(), new JObject[] {});
-		JBehavior theIteratorBehavior = itsSetClass.getVirtualBehavior("iterator", "()Ljava/util/Iterator;");
-		return (JInstance) theIteratorBehavior.invoke(null, theEntrySet, new JObject[] {});
+		JBehavior theIteratorBehavior = getObjectClass().getVirtualBehavior("iterator", "()Ljava/util/Iterator;");
+		return (JInstance) theIteratorBehavior.invoke(null, getInstance(), JInterpreter.NOARGS);
 	}
 	
 	@Override
-	protected EntryInfo createEntry(int aIndex, JInstance aEntryInstance)
+	protected ItemInfo createEntry(int aIndex, JInstance aEntryInstance)
 	{
-		return new EntryInfo(aEntryInstance);
-	}
-
-	public IEventBrowser getBrowser(IEntryInfo aEntry)
-	{
-		return null;
+		return new ItemInfo(aIndex, aEntryInstance);
 	}
 
 	public EntryValue[] getEntryValue(IEntryInfo aEntry)
 	{
-		return null;
+		JInstance theItem = ((ItemInfo) aEntry).getItem();
+		
+		if (theItem instanceof TODInstance)
+		{
+			TODInstance theInstance = (TODInstance) theItem;
+			ObjectId theId = theInstance.getObjectId();
+			ILogEvent theSetter = null;
+			
+			return new EntryValue[] {new EntryValue(theId, theSetter)};
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	public EntryValue[] nextEntryValue(IEntryInfo aEntry)
@@ -102,22 +97,28 @@ public class MapInspector extends IteratorStructureInspector<MapInspector.EntryI
 		return null;
 	}
 
-	private class EntryInfo implements IObjectInspector.IEntryInfo
+
+
+	private class ItemInfo implements IObjectInspector.IEntryInfo
 	{
-		private final JInstance itsEntry;
-		private final JInstance itsKey;
-		private final JInstance itsValue;
+		private final int itsIndex;
+		private final JInstance itsItem;
 		
-		public EntryInfo(JInstance aEntry)
+		public ItemInfo(int aIndex, JInstance aItem)
 		{
-			itsEntry = aEntry;
-			itsKey = (JInstance) itsGetKeyMethod.invoke(null, itsEntry, new JObject[] {});
-			itsValue = (JInstance) itsGetValueMethod.invoke(null, itsEntry, new JObject[] {});
+			itsIndex = aIndex;
+			itsItem = aItem;
 		}
 
+		public JInstance getItem()
+		{
+			return itsItem;
+		}
+		
 		public String getName()
 		{
-			return null;
+			return "[" + itsIndex + "]";
 		}
 	}
+
 }

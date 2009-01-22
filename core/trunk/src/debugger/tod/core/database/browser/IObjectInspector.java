@@ -75,6 +75,7 @@ public interface IObjectInspector extends ICompoundInspector<IObjectInspector.IE
 	/**
 	 * Returns an event broswer on the events that changed the value 
 	 * of the specified entry of the inspected object.
+	 * Note: Optional operation
 	 */
 	public IEventBrowser getBrowser (IEntryInfo aEntry);
 	
