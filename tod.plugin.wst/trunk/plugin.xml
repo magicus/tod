@@ -34,8 +34,8 @@
       <import plugin="org.eclipse.wst.server.ui"/>
       <import plugin="org.eclipse.wst.server.core"/>
       <import plugin="org.eclipse.jst.server.tomcat.core" optional="true"/>
-      <import plugin="org.eclipse.jst.server.generic.core" version="1.0.305" optional="true"/>
-      <import plugin="org.eclipse.jst.server.generic.ui" version="1.0.305" optional="true"/>
+      <import plugin="org.eclipse.jst.server.generic.core" optional="true"/>
+      <import plugin="org.eclipse.jst.server.generic.ui" optional="true"/>
    </requires>
    
    <extension
