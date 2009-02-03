@@ -56,6 +56,7 @@ import tod.impl.database.structure.standard.StructureDatabase;
 import tod.impl.database.structure.standard.StructureDatabaseUtils;
 import tod.impl.database.structure.standard.TagMap;
 import zz.utils.Utils;
+import zz.utils.primitive.IntArray;
 
 /**
  * Remote object that mimics a {@link IStructureDatabase}.
@@ -143,6 +144,13 @@ public class RemoteStructureDatabase implements RIStructureDatabase
 	public IClassInfo getClass(int aId, boolean aFailIfAbsent)
 	{
 		return itsSource.getClass(aId, aFailIfAbsent);
+	}
+	
+	public IClassInfo[] getClasses(int[] aIds, boolean aFailIfAbsent)
+	{
+		IClassInfo[] theClasses = new IClassInfo[aIds.length];
+		for(int i=0;i<theClasses.length;i++) theClasses[i] = getClass(aIds[i], aFailIfAbsent);
+		return theClasses;
 	}
 
 	public IClassInfo getClass(String aName, boolean aFailIfAbsent)
@@ -536,13 +544,24 @@ public class RemoteStructureDatabase implements RIStructureDatabase
 		public IClassInfo[] getClasses()
 		{
 			updateStats();
-			List<IClassInfo> theClasses = new ArrayList<IClassInfo>();
+			IntArray theMissingIds = new IntArray();
 			for (int i=StructureDatabase.FIRST_CLASS_ID;i<getStats().nTypes;i++)
 			{
-				IMutableClassInfo theClass = getClass(i, false);
-				if (theClass != null) theClasses.add(theClass);
+				IMutableClassInfo theClass = Utils.listGet(itsClasses, i);
+				if (theClass == null) theMissingIds.add(i);
 			}
-			return theClasses.toArray(new IClassInfo[theClasses.size()]);
+			
+			IClassInfo[] theClasses = itsDatabase.getClasses(theMissingIds.toArray(), false);
+			for (IClassInfo theClass : theClasses) cacheClass((IMutableClassInfo) theClass, false);
+			
+			List<IClassInfo> theResult = new ArrayList<IClassInfo>();
+			for (int i=StructureDatabase.FIRST_CLASS_ID;i<getStats().nTypes;i++)
+			{
+				IMutableClassInfo theClass = Utils.listGet(itsClasses, i);
+				if (theClass != null) theResult.add(theClass);
+			}
+			
+			return theResult.toArray(new IClassInfo[theResult.size()]);
 		}
 
 		public IClassInfo[] getClasses(String aName)

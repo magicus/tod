@@ -247,14 +247,14 @@ public class NodeConnector implements RINodeConnector
 		return itsDatabaseNode.searchStrings(aText);
 	}
 
-	public long getEventCountAtBehavior(int aBehaviorId) 
+	public long[] getEventCountAtBehaviors(int[] aBehaviorIds) 
 	{
-		return itsDatabaseNode.getEventCountAtBehavior(aBehaviorId);
+		return itsDatabaseNode.getEventCountAtBehaviors(aBehaviorIds);
 	}
 	
-	public long getEventCountAtClass(int aClassId)
+	public long[] getEventCountAtClasses(int[] aClassIds)
 	{
-		return itsDatabaseNode.getEventCountAtClass(aClassId);
+		return itsDatabaseNode.getEventCountAtClasses(aClassIds);
 	}
 	
 	private void startMonitoringThread()

@@ -382,14 +382,18 @@ implements ILogBrowser, IScheduled
 		return itsQueryResultCache.getResult(aQuery);
 	}
 
-	public long getEventCountAt(IBehaviorInfo aBehavior)
+	public long[] getEventCounts(IBehaviorInfo[] aBehaviors)
 	{
-		return getMaster().getEventCountAtBehavior(aBehavior.getId());
+		int[] theIds = new int[aBehaviors.length];
+		for(int i=0;i<theIds.length;i++) theIds[i] = aBehaviors[i].getId();
+		return getMaster().getEventCountAtBehaviors(theIds);
 	}
 
-	public long getEventCountAt(IClassInfo aClass)
+	public long[] getEventCounts(IClassInfo[] aClasses)
 	{
-		return getMaster().getEventCountAtClass(aClass.getId());
+		int[] theIds = new int[aClasses.length];
+		for(int i=0;i<theIds.length;i++) theIds[i] = aClasses[i].getId();
+		return getMaster().getEventCountAtClasses(theIds);
 	}
 	
 	/**

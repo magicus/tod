@@ -125,7 +125,7 @@ public class EventDatabase1 extends EventDatabase
 	}
 	
 	@Override
-	public long getEventCountAtBehavior(int aBehaviorId)
+	public long[] getEventCountAtBehaviors(int[] aBehaviorIds)
 	{
 		throw new UnsupportedOperationException("Implement that");
 	}

@@ -385,14 +385,18 @@ public class LocalBrowser implements ILogBrowser
 		return aQuery.run(this);
 	}
 	
-	public long getEventCountAt(IBehaviorInfo aBehavior)
+	public long[] getEventCounts(IBehaviorInfo[] aBehaviors)
 	{
 		throw new UnsupportedOperationException();
 	}
 	
-	public long getEventCountAt(IClassInfo aClass)
+	public long[] getEventCounts(IClassInfo[] aClasses)
 	{
 		throw new UnsupportedOperationException();
 	}
-	
+
+	public long getEventCountFor(String aPackageName)
+	{
+		throw new UnsupportedOperationException();
+	}
 }

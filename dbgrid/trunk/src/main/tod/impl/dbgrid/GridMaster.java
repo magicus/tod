@@ -679,42 +679,48 @@ public class GridMaster implements RIGridMaster
 		return aTask.run(itsLocalLogBrowser);
 	}
 
-	public long getEventCountAtBehavior(final int aBehaviorId)
+	public long[] getEventCountAtBehaviors(final int[] aBehaviorIds)
 	{
-		List<Long> theResults = Utils.fork(getNodes(), new ITask<RINodeConnector, Long>()
+		List<long[]> theResults = Utils.fork(getNodes(), new ITask<RINodeConnector, long[]>()
 		{
-			public Long run(RINodeConnector aInput)
+			public long[] run(RINodeConnector aInput)
 			{
-				return aInput.getEventCountAtBehavior(aBehaviorId);
+				return aInput.getEventCountAtBehaviors(aBehaviorIds);
 			}
 		});
 
-		long theCount = 0;
-		for (Long theResult : theResults)
+		long[] theCounts = new long[aBehaviorIds.length];
+		for (long[] theResult : theResults)
 		{
-			theCount += theResult.longValue();
+			for(int i=0;i<theCounts.length;i++)
+			{
+				theCounts[i] += theResult[i];
+			}
 		}
 
-		return theCount;
+		return theCounts;
 	}
 	
-	public long getEventCountAtClass(final int aClassId)
+	public long[] getEventCountAtClasses(final int[] aClassIds)
 	{
-		List<Long> theResults = Utils.fork(getNodes(), new ITask<RINodeConnector, Long>()
+		List<long[]> theResults = Utils.fork(getNodes(), new ITask<RINodeConnector, long[]>()
 		{
-			public Long run(RINodeConnector aInput)
+			public long[] run(RINodeConnector aInput)
 			{
-				return aInput.getEventCountAtClass(aClassId);
+				return aInput.getEventCountAtClasses(aClassIds);
 			}
 		});
 
-		long theCount = 0;
-		for (Long theResult : theResults)
+		long[] theCounts = new long[aClassIds.length];
+		for (long[] theResult : theResults)
 		{
-			theCount += theResult.longValue();
+			for(int i=0;i<theCounts.length;i++)
+			{
+				theCounts[i] += theResult[i];
+			}
 		}
 
-		return theCount;
+		return theCounts;
 	}
 	
 	/**

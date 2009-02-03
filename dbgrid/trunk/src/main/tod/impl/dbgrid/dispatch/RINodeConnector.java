@@ -105,14 +105,14 @@ public interface RINodeConnector extends IRemote, RIMonitoringServerProvider
 	public RIBufferIterator<StringSearchHit[]> searchStrings(String aText);
 	
 	/**
-	 * Returns the number of events that occurred within the given behavior.
+	 * Returns the number of events that occurred within each given behavior.
 	 */
-	public long getEventCountAtBehavior(int aBehaviorId);
+	public long[] getEventCountAtBehaviors(int[] aBehaviorIds);
 
 	/**
-	 * Returns the number of events that occurred within the given class.
+	 * Returns the number of events that occurred within each given class.
 	 */
-	public long getEventCountAtClass(int aClassId);
+	public long[] getEventCountAtClasses(int[] aClassIds);
 	
 	/**
 	 * Represents a search hit.

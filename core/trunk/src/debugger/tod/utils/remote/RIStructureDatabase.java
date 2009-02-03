@@ -56,6 +56,7 @@ public interface RIStructureDatabase extends IRemote
 	public IClassInfo[] getClasses();
 	public IClassInfo getClass(String aName, boolean aFailIfAbsent);
 	public IClassInfo getClass(int aId, boolean aFailIfAbsent);
+	public IClassInfo[] getClasses(int[] aIds, boolean aFailIfAbsent);
 	public IClassInfo getNewClass(String aName);
 	public ITypeInfo getType(String aName, boolean aFailIfAbsent);
 	public Stats getStats();

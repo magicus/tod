@@ -38,7 +38,6 @@ import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.transport.ObjectDecoder;
-import tod.core.transport.ValueReader;
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
@@ -50,6 +49,7 @@ import tod.impl.dbgrid.messages.GridEvent;
 import tod.tools.monitoring.MonitoringClient.MonitorId;
 import tod.utils.remote.RemoteStructureDatabase;
 import zz.utils.Utils;
+import zz.utils.primitive.IntArray;
 
 /**
  * Performs the indexing of events and handles queries for a single database node.
@@ -481,28 +481,34 @@ public abstract class DatabaseNode
 	}
 
 	/**
-	 * Returns the number of events that occurred within the given behavior.
+	 * Returns the number of events that occurred within each given behavior.
 	 */
-	public long getEventCountAtBehavior(int aBehaviorId)
+	public long[] getEventCountAtBehaviors(int[] aBehaviorIds)
 	{
-		return itsEventsDatabase.getEventCountAtBehavior(aBehaviorId);
+		return itsEventsDatabase.getEventCountAtBehaviors(aBehaviorIds);
 	}
 	
-	/**
-	 * Returns the number of events that occurred within the given class.
-	 */
-	public long getEventCountAtClass(int aClassId)
+	private long getEventCountAtClass(int aClassId)
 	{
 		long theTotal = 0;
 		IClassInfo theClass = getStructureDatabase().getClass(aClassId, true);
-		for (IBehaviorInfo theBehavior : theClass.getBehaviors())
-		{
-			theTotal += getEventCountAtBehavior(theBehavior.getId());
-		}
+		IntArray theIds = new IntArray();
+		for (IBehaviorInfo theBehavior : theClass.getBehaviors()) theIds.add(theBehavior.getId());
+		long[] theCounts = getEventCountAtBehaviors(theIds.toArray());
+		for (long theCount : theCounts) theTotal += theCount;
 		
 		return theTotal;
 	}
 	
+	/**
+	 * Returns the number of events that occurred within each given class.
+	 */
+	public long[] getEventCountAtClasses(int[] aClassIds)
+	{
+		long[] theCounts = new long[aClassIds.length];
+		for(int i=0;i<theCounts.length;i++) theCounts[i] = getEventCountAtClass(aClassIds[i]);
+		return theCounts;
+	}
 
 	private static class BidiHitIterator implements RIBufferIterator<StringSearchHit[]>
 	{

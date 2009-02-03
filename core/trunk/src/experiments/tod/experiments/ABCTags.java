@@ -444,12 +444,12 @@ public class ABCTags
 			throw new UnsupportedOperationException();
 		}
 
-		public long getEventCountAt(IBehaviorInfo aBehavior)
+		public long[] getEventCounts(IBehaviorInfo[] aBehaviors)
 		{
 			throw new UnsupportedOperationException();
 		}
 		
-		public long getEventCountAt(IClassInfo aClass)
+		public long[] getEventCounts(IClassInfo[] aClasses)
 		{
 			throw new UnsupportedOperationException();
 		}

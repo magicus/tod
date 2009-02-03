@@ -195,9 +195,11 @@ public class EventDatabaseNG extends EventDatabase
 	}
 
 	@Override
-	public long getEventCountAtBehavior(int aBehaviorId)
+	public long[] getEventCountAtBehaviors(int[] aBehaviorIds)
 	{
-		return itsIndexes.getEventsAtBehavior(aBehaviorId);
+		long[] theCounts = new long[aBehaviorIds.length];
+		for(int i=0;i<theCounts.length;i++) theCounts[i] = itsIndexes.getEventsAtBehavior(aBehaviorIds[i]);
+		return theCounts;
 	}
 	
 	/**

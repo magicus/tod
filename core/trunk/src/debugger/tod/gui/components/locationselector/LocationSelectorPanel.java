@@ -23,7 +23,9 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.gui.components.locationselector;
 
 import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.AbstractListModel;
@@ -138,11 +140,7 @@ public class LocationSelectorPanel extends JPanel
 		
 		checkCacheValid();
 		Long theCount = itsCountsCache.get(theLocation);
-		if (theCount == null)
-		{
-			theCount = computeEventCountAt(aNode);
-			itsCountsCache.put(theLocation, theCount);
-		}
+		if (theCount == null) theCount = computeEventCountAt(aNode);
 		
 		return theCount;
 	}
@@ -155,26 +153,61 @@ public class LocationSelectorPanel extends JPanel
 		if (theLocation instanceof IBehaviorInfo)
 		{
 			IBehaviorInfo theBehavior = (IBehaviorInfo) theLocation;
-			return getLogBrowser().getEventCountAt(theBehavior);
+			long theCount = getLogBrowser().getEventCounts(new IBehaviorInfo[] {theBehavior})[0];
+			itsCountsCache.put(theLocation, theCount);
+			return theCount;
 		}
 		else if (theLocation instanceof IClassInfo)
 		{
 			IClassInfo theClass = (IClassInfo) theLocation;
-			return getLogBrowser().getEventCountAt(theClass);
+			long theCount = getLogBrowser().getEventCounts(new IClassInfo[] {theClass})[0];
+			itsCountsCache.put(theLocation, theCount);
+			return theCount;
 		}
 		else if (theLocation instanceof PackageInfo)
 		{
 			long theTotal = 0;
-			for (SimpleTreeNode<ILocationInfo> theChild : aNode.pChildren())
+			IClassInfo[] theClasses = getClasses(aNode);
+			long[] theCounts = getLogBrowser().getEventCounts(theClasses);
+			
+			for(int i=0;i<theCounts.length;i++)
 			{
-				theTotal += getEventCountAt(theChild);
+				theTotal += theCounts[i];
+				itsCountsCache.put(theClasses[i], theCounts[i]);
 			}
+			
 			return theTotal;
 		}
 		else
 		{
 			System.err.println("Not handled: "+theLocation);
 			return -1;
+		}
+	}
+	
+	private IClassInfo[] getClasses(SimpleTreeNode<ILocationInfo> aNode)
+	{
+		List<IClassInfo> theClasses = new ArrayList<IClassInfo>();
+		getClasses(theClasses, aNode);
+		return theClasses.toArray(new IClassInfo[theClasses.size()]);
+	}
+	
+	private void getClasses(List<IClassInfo> aResult, SimpleTreeNode<ILocationInfo> aNode)
+	{
+		ILocationInfo theLocation = aNode.pValue().get();
+
+		if (theLocation instanceof IClassInfo)
+		{
+			IClassInfo theClass = (IClassInfo) theLocation;
+			aResult.add(theClass);
+		}
+		else if (theLocation instanceof PackageInfo)
+		{
+			for (SimpleTreeNode<ILocationInfo> theChild : aNode.pChildren()) getClasses(aResult, theChild);
+		}
+		else
+		{
+			System.err.println("Not handled: "+theLocation);
 		}
 	}
 	

@@ -358,14 +358,14 @@ public interface ILogBrowser
 	public <O> O exec(Query<O> aQuery);
 	
 	/**
-	 * Returns the number of events that occurred within the given behavior.
+	 * Returns the number of events that occurred within each given behavior.
 	 */
-	public long getEventCountAt(IBehaviorInfo aBehavior);
+	public long[] getEventCounts(IBehaviorInfo[] aBehaviors);
 	
 	/**
-	 * Returns the number of events that occurred within the given class.
+	 * Returns the number of events that occurred within each given class.
 	 */
-	public long getEventCountAt(IClassInfo aClass);
+	public long[] getEventCounts(IClassInfo[] aClasses);
 	
 	/**
 	 * A query that is executable by the database.
