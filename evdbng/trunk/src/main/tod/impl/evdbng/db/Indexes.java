@@ -22,21 +22,11 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.evdbng.db;
 
-import static tod.impl.evdbng.DebuggerGridConfigNG.*;
-import static tod.impl.evdbng.DebuggerGridConfigNG.STRUCTURE_ADVICE_SRC_ID_COUNT;
-import static tod.impl.evdbng.DebuggerGridConfigNG.STRUCTURE_BEHAVIOR_COUNT;
-import static tod.impl.evdbng.DebuggerGridConfigNG.STRUCTURE_BYTECODE_LOCS_COUNT;
-import static tod.impl.evdbng.DebuggerGridConfigNG.STRUCTURE_DEPTH_RANGE;
-import static tod.impl.evdbng.DebuggerGridConfigNG.STRUCTURE_FIELD_COUNT;
-import static tod.impl.evdbng.DebuggerGridConfigNG.STRUCTURE_THREADS_COUNT;
-import static tod.impl.evdbng.DebuggerGridConfigNG.STRUCTURE_VAR_COUNT;
-
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import tod.core.database.structure.IStructureDatabase.ProbeInfo;
-import tod.impl.dbgrid.messages.MessageType;
 import tod.impl.evdbng.DebuggerGridConfigNG;
 import tod.impl.evdbng.ObjectCodecNG;
 import tod.impl.evdbng.SplittedConditionHandler;
@@ -106,16 +96,16 @@ public class Indexes
 		
 		itsTimestampTree = new SequenceTree("[EventDatabase] timestamp tree", aFile);
 		
-		itsTypeIndexSet = new SimpleIndexSet(itsIndexManager, "type", aFile, MessageType.VALUES.length+1);
-		itsThreadIndexSet = new SimpleIndexSet(itsIndexManager, "thread", aFile, STRUCTURE_THREADS_COUNT+1);
-		itsDepthIndexSet = new SimpleIndexSet(itsIndexManager, "depth", aFile, STRUCTURE_DEPTH_RANGE+1);
-		itsLocationIndexSet = new SimpleIndexSet(itsIndexManager, "bytecodeLoc.", aFile, STRUCTURE_BYTECODE_LOCS_COUNT+1);
-		itsAdviceSourceIdIndexSet = new SimpleIndexSet(itsIndexManager, "advice src id", aFile, STRUCTURE_ADVICE_SRC_ID_COUNT+1);
-		itsAdviceCFlowIndexSet = new SimpleIndexSet(itsIndexManager, "advice cflow", aFile, STRUCTURE_ADVICE_SRC_ID_COUNT+1);
-		itsRoleIndexSet = new SimpleIndexSet(itsIndexManager, "role", aFile, STRUCTURE_ROLE_COUNT+1);
-		itsBehaviorIndexSet = new RoleIndexSet(itsIndexManager, "behavior", aFile, STRUCTURE_BEHAVIOR_COUNT+1);
-		itsFieldIndexSet = new SimpleIndexSet(itsIndexManager, "field", aFile, STRUCTURE_FIELD_COUNT+1);
-		itsVariableIndexSet = new SimpleIndexSet(itsIndexManager, "variable", aFile, STRUCTURE_VAR_COUNT+1);
+		itsTypeIndexSet = new SimpleIndexSet(itsIndexManager, "type", aFile);
+		itsThreadIndexSet = new SimpleIndexSet(itsIndexManager, "thread", aFile);
+		itsDepthIndexSet = new SimpleIndexSet(itsIndexManager, "depth", aFile);
+		itsLocationIndexSet = new SimpleIndexSet(itsIndexManager, "bytecodeLoc.", aFile);
+		itsAdviceSourceIdIndexSet = new SimpleIndexSet(itsIndexManager, "advice src id", aFile);
+		itsAdviceCFlowIndexSet = new SimpleIndexSet(itsIndexManager, "advice cflow", aFile);
+		itsRoleIndexSet = new SimpleIndexSet(itsIndexManager, "role", aFile);
+		itsBehaviorIndexSet = new RoleIndexSet(itsIndexManager, "behavior", aFile);
+		itsFieldIndexSet = new SimpleIndexSet(itsIndexManager, "field", aFile);
+		itsVariableIndexSet = new SimpleIndexSet(itsIndexManager, "variable", aFile);
 
 		itsArrayIndexIndexSets = createSplitIndex(
 				"arIndex", 

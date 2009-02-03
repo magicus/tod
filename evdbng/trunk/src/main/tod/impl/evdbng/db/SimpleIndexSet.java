@@ -37,10 +37,9 @@ public class SimpleIndexSet extends IndexSet<SimpleTuple>
 	public SimpleIndexSet(
 			IndexManager aIndexManager, 
 			String aName, 
-			PagedFile aFile, 
-			int aIndexCount)
+			PagedFile aFile)
 	{
-		super(aIndexManager, aName, aFile, aIndexCount);
+		super(aIndexManager, aName, aFile);
 	}
 
 	@Override

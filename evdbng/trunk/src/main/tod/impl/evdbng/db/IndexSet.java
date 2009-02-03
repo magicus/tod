@@ -24,6 +24,10 @@ package tod.impl.evdbng.db;
 
 import static tod.impl.evdbng.DebuggerGridConfigNG.DB_PAGE_BUFFER_SIZE;
 import static tod.impl.evdbng.DebuggerGridConfigNG.DB_PAGE_SIZE;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import tod.impl.database.AbstractFilteredBidiIterator;
 import tod.impl.database.IBidiIterator;
 import tod.impl.evdbng.DebuggerGridConfigNG;
@@ -33,10 +37,12 @@ import tod.impl.evdbng.db.file.Tuple;
 import tod.impl.evdbng.db.file.PagedFile.Page;
 import tod.impl.evdbng.db.file.PagedFile.PageIOStream;
 import tod.tools.ConcurrentMRUBuffer;
+import zz.utils.Utils;
 import zz.utils.list.NakedLinkedList.Entry;
 import zz.utils.monitoring.AggregationType;
 import zz.utils.monitoring.Monitor;
 import zz.utils.monitoring.Probe;
+import zz.utils.primitive.IntArray;
 
 /**
  * A set of indexes for a given attribute. Within a set,
@@ -67,12 +73,12 @@ public abstract class IndexSet<T extends Tuple>
 	 */
 	private final IndexManager itsIndexManager;
 	
-	private final Entry<BTreeWrapper<T>>[] itsIndexes;
+	private final List<Entry<BTreeWrapper<T>>> itsIndexes;
 	
 	/**
 	 * The page ids of all the pages that are used to store discarded indexes.
 	 */
-	private final int[] itsIndexPages;
+	private final IntArray itsIndexPages;
 	
 	/**
 	 * Number of discarded indexes that fit in a page. 
@@ -92,19 +98,17 @@ public abstract class IndexSet<T extends Tuple>
 	private int itsLoadCount = 0;
 
 	
-	public IndexSet(IndexManager aIndexManager, String aName, PagedFile aFile, int aIndexCount)
+	public IndexSet(IndexManager aIndexManager, String aName, PagedFile aFile)
 	{
 		itsIndexManager = aIndexManager;
 		itsName = aName;
 		itsFile = aFile;
-		itsIndexes = new Entry[aIndexCount];
+		itsIndexes = new ArrayList<Entry<BTreeWrapper<T>>>();
 		
 		// Init discarded index page directory.
 		itsIndexesPerPage = aFile.getPageSize()/BTree.getSerializedSize();
-		int theNumPages = (aIndexCount+itsIndexesPerPage-1)/itsIndexesPerPage;
-		itsIndexPages = new int[theNumPages];
+		itsIndexPages = new IntArray();
 		
-		System.out.println("Created index "+itsName+" with "+aIndexCount+" entries.");
 		Monitor.getInstance().register(this);
 	}
 	
@@ -143,9 +147,7 @@ public abstract class IndexSet<T extends Tuple>
 	 */
 	public BTree<T> getIndex(int aIndex)
 	{
-		if (aIndex >= itsIndexes.length) throw new IndexOutOfBoundsException("Index overflow for "+itsName+": "+aIndex+" >= "+itsIndexes.length);
-		
-		Entry<BTreeWrapper<T>> theEntry = itsIndexes[aIndex];
+		Entry<BTreeWrapper<T>> theEntry = Utils.listGet(itsIndexes, aIndex);
 		BTreeWrapper<T> theIndex;
 		
 		if (theEntry == null)
@@ -155,7 +157,7 @@ public abstract class IndexSet<T extends Tuple>
 			theIndex = new BTreeWrapper<T>(theTree, this, aIndex);
 			theEntry = new Entry<BTreeWrapper<T>>(theIndex);
 			
-			itsIndexes[aIndex] = theEntry;
+			Utils.listSet(itsIndexes, aIndex, theEntry);
 			itsIndexManager.use((Entry) theEntry);
 			itsIndexCount++;
 		}
@@ -168,7 +170,7 @@ public abstract class IndexSet<T extends Tuple>
 			theIndex = new BTreeWrapper<T>(theTree, this, aIndex);
 			theEntry = new Entry<BTreeWrapper<T>>(theIndex);
 			
-			itsIndexes[aIndex] = theEntry;
+			Utils.listSet(itsIndexes, aIndex, theEntry);
 			itsIndexManager.use((Entry) theEntry);
 			itsLoadCount++;
 		}
@@ -188,13 +190,13 @@ public abstract class IndexSet<T extends Tuple>
 	 */
 	private PageIOStream getIndexPage(int aIndex)
 	{
-		int thePageId = itsIndexPages[aIndex/itsIndexesPerPage];
+		int thePageId = itsIndexPages.get(aIndex/itsIndexesPerPage);
 		
 		Page thePage;
 		if (thePageId == 0)
 		{
 			thePage = itsFile.create();
-			itsIndexPages[aIndex/itsIndexesPerPage] = thePage.getPageId();
+			itsIndexPages.set(aIndex/itsIndexesPerPage, thePage.getPageId());
 		}
 		else
 		{
@@ -209,14 +211,14 @@ public abstract class IndexSet<T extends Tuple>
 	
 	private void discardIndex(int aIndex)
 	{
-		Entry<BTreeWrapper<T>> theEntry = itsIndexes[aIndex];
+		Entry<BTreeWrapper<T>> theEntry = Utils.listGet(itsIndexes, aIndex);
 		assert theEntry != null : itsName+": "+aIndex;
 		assert theEntry != DISCARDED_ENTRY : itsName+": "+aIndex;
 		assert theEntry.getValue() != null : itsName+": "+aIndex;
 		BTree<T> theIndex = theEntry.getValue().getTree();
 		
 		theIndex.writeTo(getIndexPage(aIndex));
-		itsIndexes[aIndex] = DISCARDED_ENTRY;
+		Utils.listSet(itsIndexes, aIndex, DISCARDED_ENTRY);
 		itsDiscardCount++;
 	}
 
@@ -296,7 +298,7 @@ public abstract class IndexSet<T extends Tuple>
 		protected boolean isStillValid(Entry<BTreeWrapper< ? extends Tuple>> aEntry)
 		{
 			BTreeWrapper<? extends Tuple> theWrapper = aEntry.getValue();
-			return theWrapper.getIndexSet().itsIndexes[theWrapper.getIndex()] != DISCARDED_ENTRY;
+			return Utils.listGet(theWrapper.getIndexSet().itsIndexes, theWrapper.getIndex()) != DISCARDED_ENTRY;
 		}
 
 		@Override
