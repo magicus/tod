@@ -107,17 +107,8 @@ public class Indexes
 		itsFieldIndexSet = new SimpleIndexSet(itsIndexManager, "field", aFile);
 		itsVariableIndexSet = new SimpleIndexSet(itsIndexManager, "variable", aFile);
 
-		itsArrayIndexIndexSets = createSplitIndex(
-				"arIndex", 
-				SimpleIndexSet.class, 
-				DebuggerGridConfigNG.INDEX_ARRAY_INDEX_PARTS,
-				aFile);
-		
-		itsObjectIndexeSets = createSplitIndex(
-				"object",
-				RoleIndexSet.class,
-				DebuggerGridConfigNG.INDEX_OBJECT_PARTS,
-				aFile);
+		itsArrayIndexIndexSets = createSplitIndex("arIndex", SimpleIndexSet.class, aFile);
+		itsObjectIndexeSets = createSplitIndex("object", RoleIndexSet.class, aFile);
 	}
 	
 	/**
@@ -128,7 +119,6 @@ public class Indexes
 	private <T extends IndexSet> T[] createSplitIndex(
 			String aName, 
 			Class<T> aIndexClass, 
-			int aBits,
 			PagedFile aFile)
 	{
 		try
@@ -136,12 +126,11 @@ public class Indexes
 			Constructor<T> theConstructor = aIndexClass.getConstructor(
 					IndexManager.class,
 					String.class,
-					PagedFile.class, 
-					int.class);
+					PagedFile.class);
 			
 			T[] theResult = (T[]) Array.newInstance(aIndexClass, 2);
-			theResult[0] = theConstructor.newInstance(itsIndexManager, aName+"_0", aFile, BitUtils.pow2i(aBits)+1);
-			theResult[1] = theConstructor.newInstance(itsIndexManager, aName+"_1", aFile, BitUtils.pow2i(aBits)+1);
+			theResult[0] = theConstructor.newInstance(itsIndexManager, aName+"_0", aFile);
+			theResult[1] = theConstructor.newInstance(itsIndexManager, aName+"_1", aFile);
 			
 			return theResult;
 		}

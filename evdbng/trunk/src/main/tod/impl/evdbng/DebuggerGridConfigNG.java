@@ -23,7 +23,6 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.evdbng;
 
 import sun.misc.VM;
-import tod.impl.evdbng.db.file.BufferManager;
 import tod.impl.evdbng.db.file.PagedFile;
 import tod.impl.evdbng.db.file.SimpleTree;
 import tod.utils.ConfigUtils;
@@ -86,19 +85,6 @@ public class DebuggerGridConfigNG
 	 */
 	public static final int STRUCTURE_ARRAY_INDEX_COUNT = BitUtils.pow2i(14);
 	
-	/**
-	 * Number of partitions of key values for the objects index.
-	 * @see SplittedConditionHandler
-	 */
-	public static final int INDEX_OBJECT_PARTS = 16;
-
-	/**
-	 * Number of partitions of key values for the array index index.
-	 * @see SplittedConditionHandler
-	 */
-	public static final int INDEX_ARRAY_INDEX_PARTS = 14;
-	
-
 	/**
 	 * Size of file pages in the database
 	 */
