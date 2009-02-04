@@ -746,7 +746,7 @@ JNIEXPORT jlong JNICALL Java_java_tod_ObjectIdentity_get15
 	agentimplGetObjectId(jni, obj);
 }
 
-JNIEXPORT jint JNICALL Java_java_tod__1AgentConfig_getHostId
+JNIEXPORT jint JNICALL Java_java_tod__1AgConfig_getHostId
 	(JNIEnv * jni, jclass)
 {
 	return cfgHostId;
@@ -758,52 +758,25 @@ JNIEXPORT jlong JNICALL Java_java_todX_ObjectIdentity_get15
 	return Java_java_tod_ObjectIdentity_get15(jni, cls, obj);
 }
 
-JNIEXPORT jint JNICALL Java_java_todX__1AgentConfig_getHostId
+JNIEXPORT jint JNICALL Java_java_todX__1AgConfig_getHostId
 	(JNIEnv * jni, jclass cls)
 {
-	return Java_java_tod__1AgentConfig_getHostId(jni, cls);
+	return Java_java_tod__1AgConfig_getHostId(jni, cls);
 }
 
-void ioPrint(JNIEnv* jni, jstring str, FILE* o)
-{
-	int len = jni->GetStringUTFLength(str);
-	char* b = (char*) jni->GetStringUTFChars(str, NULL);
-	char* c = (char*) malloc(len+1);
-	memcpy(c, b, len);
-	c[len] = 0;
-	
-	fprintf(o, "%s\n", c);
-	fflush(o);
-	
-	free(c);
-	jni->ReleaseStringUTFChars(str, b);
-}
-
-JNIEXPORT jint JNICALL Java_java_tod_io__1IO_out
-  (JNIEnv* jni, jclass, jstring str)
-{
-	ioPrint(jni, str, stdout);
-}
-
-JNIEXPORT jint JNICALL Java_java_tod_io__1IO_err
-  (JNIEnv* jni, jclass, jstring str)
-{
-	ioPrint(jni, str, stderr);
-}
-
-JNIEXPORT jstring JNICALL Java_java_tod_io__1IO_getCollectorHost
+JNIEXPORT jstring JNICALL Java_java_tod__1AgConfig_getCollectorHost
   (JNIEnv* jni, jclass)
 {
 	return jni->NewStringUTF(propHost);
 }
 
-JNIEXPORT jstring JNICALL Java_java_tod_io__1IO_getCollectorPort
+JNIEXPORT jstring JNICALL Java_java_tod__1AgConfig_getCollectorPort
   (JNIEnv* jni, jclass)
 {
 	return jni->NewStringUTF(propPort);
 }
 
-JNIEXPORT jstring JNICALL Java_java_tod_io__1IO_getClientName
+JNIEXPORT jstring JNICALL Java_java_tod__1AgConfig_getClientName
   (JNIEnv* jni, jclass)
 {
 	return jni->NewStringUTF(propClientName);

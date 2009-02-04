@@ -81,6 +81,7 @@ CXXFLAGS += -I$(BOOST_INCLUDES)
 LDFLAGS += -fPIC
 
 AGENT14_LIBNAME = $(LIBPREFIX)$(AGENT_NAME)14$(AGENT_NAME_SUFFIX).$(LIBEXT)
+# AGENT14_IOLIBNAME = $(LIBPREFIX)$(AGENT_NAME)io14$(AGENT_NAME_SUFFIX).$(LIBEXT)
 AGENT15_LIBNAME = $(LIBPREFIX)$(AGENT_NAME)15$(AGENT_NAME_SUFFIX).$(LIBEXT)
 
 LDFLAGS_BOOST += \
@@ -95,7 +96,8 @@ common-objects = \
 	$(PLATFORM)/md5.o \
 	$(PLATFORM)/jniutils.o \
 	$(PLATFORM)/workingset.o \
-	$(PLATFORM)/socketChannel.o
+	$(PLATFORM)/io.o
+
 
 agent14-objects = $(common-objects) $(PLATFORM)/agentimpl14.o 
 agent15-objects = $(common-objects) $(PLATFORM)/agentimpl15.o 
@@ -107,6 +109,8 @@ all: agent15 agent14
 agent14: dirs $(agent14-objects)
 	$(CXX) $(SHARED_MAGIC) -o $(PLATFORM)/$(AGENT14_LIBNAME) $(agent14-objects) $(LDFLAGS) $(LDFLAGS_BOOST)
 	cp $(PLATFORM)/$(AGENT14_LIBNAME) ../..
+# 	$(CXX) $(SHARED_MAGIC) -o $(PLATFORM)/$(AGENT14_IOLIBNAME) $(PLATFORM)/io.o $(LDFLAGS) $(LDFLAGS_BOOST)
+# 	cp $(PLATFORM)/$(AGENT14_IOLIBNAME) ../..
 
 agent15: dirs $(agent15-objects)
 	$(CXX) $(SHARED_MAGIC) -o $(PLATFORM)/$(AGENT15_LIBNAME) $(agent15-objects) $(LDFLAGS) $(LDFLAGS_BOOST)
@@ -156,5 +160,5 @@ $(PLATFORM)/workingset.o: workingset.cpp workingset.h utils.h
 $(PLATFORM)/workingsettest.o: workingsettest.cpp workingset.h utils.h
 	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) workingsettest.cpp -o $(PLATFORM)/workingsettest.o
 
-$(PLATFORM)/socketChannel.o: socketChannel.cpp
-	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) $(CXXFLAGS15) socketChannel.cpp -o $(PLATFORM)/socketChannel.o
+$(PLATFORM)/io.o: io.cpp
+	$(CXX) $(SHARED_MAGIC) -c $(CXXFLAGS) $(CXXFLAGS15) io.cpp -o $(PLATFORM)/io.o

@@ -31,6 +31,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 #include "agent.h"
 
 #include "utils.h"
+#include "io.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -214,9 +215,52 @@ void cbClassLoadHook(JVMPI_Event* event)
 		event->u.class_load_hook.malloc_f);
 }
 
+jclass loadClass(JNIEnv* jni, char* aName)
+{
+	jclass cls = jni->FindClass(aName);
+	if (cls == NULL) printf("Could not load %s!\n", aName);
+	return cls;
+}
+
+void registerNative(JNIEnv* jni, jclass aClass, char* aName, char* aSig, void* aPtr)
+{
+	JNINativeMethod m;
+	m.name = aName;
+	m.signature = aSig;
+	m.fnPtr = aPtr;
+	int res = jni->RegisterNatives(aClass, &m, 1);
+	
+	if (res != 0)
+	{
+		fprintf(stderr, "Failed to register %s %s\n", aName, aSig);
+		fflush(stderr);
+	}
+}
+
+
 void cbJvmInitDone(JVMPI_Event *event)
 {
-	agentStart(event->env_id);
+	JNIEnv* jni = event->env_id;
+	
+	// Register native methods
+	printf("Registering native methods...\n");
+	fflush(stdout);
+	
+	jclass cls_IO = loadClass(jni, "java/tod/io/_IO");
+	registerNative(jni, cls_IO, "out", "(Ljava/lang/String;)V", (void*) Java_java_tod_io__1IO_out);
+	registerNative(jni, cls_IO, "err", "(Ljava/lang/String;)V", (void*) Java_java_tod_io__1IO_err);
+
+	jclass cls_AgConfig = loadClass(jni, "java/tod/_AgConfig");
+	registerNative(jni, cls_AgConfig, "getHostId", "()I", (void*) Java_java_tod__1AgConfig_getHostId);
+	registerNative(jni, cls_AgConfig, "getCollectorHost", "()Ljava/lang/String;", (void*) Java_java_tod__1AgConfig_getCollectorHost);
+	registerNative(jni, cls_AgConfig, "getCollectorPort", "()Ljava/lang/String;", (void*) Java_java_tod__1AgConfig_getCollectorPort);
+	registerNative(jni, cls_AgConfig, "getClientName", "()Ljava/lang/String;", (void*) Java_java_tod__1AgConfig_getClientName);
+
+	printf("Registered native methods.\n");
+	fflush(stdout);
+	
+
+	agentStart(jni);
 }
 
 void cbJVMPIEvent(JVMPI_Event *event)

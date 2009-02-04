@@ -1,4 +1,27 @@
-#include <jni.h>
+/*
+TOD - Trace Oriented Debugger.
+Copyright (c) 2006-2008, Guillaume Pothier
+All rights reserved.
+
+This program is free software; you can redistribute it and/or 
+modify it under the terms of the GNU General Public License 
+version 2 as published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful, 
+but WITHOUT ANY WARRANTY; without even the implied warranty of 
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License 
+along with this program; if not, write to the Free Software 
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+MA 02111-1307 USA
+
+Parts of this work rely on the MD5 algorithm "derived from the 
+RSA Data Security, Inc. MD5 Message-Digest Algorithm".
+*/
+#include "io.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <boost/asio.hpp>
@@ -111,6 +134,34 @@ JNIEXPORT jint JNICALL Java_java_tod_io__1SocketChannel_in_1avail0
 	STREAM* s = fds[fd];
 	return s->rdbuf()->in_avail();
 }
+
+void ioPrint(JNIEnv* jni, jstring str, FILE* o)
+{
+	int len = jni->GetStringUTFLength(str);
+	char* b = (char*) jni->GetStringUTFChars(str, NULL);
+	char* c = (char*) malloc(len+1);
+	memcpy(c, b, len);
+	c[len] = 0;
+	
+	fprintf(o, "%s\n", c);
+	fflush(o);
+	
+	free(c);
+	jni->ReleaseStringUTFChars(str, b);
+}
+
+JNIEXPORT jint JNICALL Java_java_tod_io__1IO_out
+  (JNIEnv* jni, jclass, jstring str)
+{
+	ioPrint(jni, str, stdout);
+}
+
+JNIEXPORT jint JNICALL Java_java_tod_io__1IO_err
+  (JNIEnv* jni, jclass, jstring str)
+{
+	ioPrint(jni, str, stderr);
+}
+
 
 #ifdef __cplusplus
 }

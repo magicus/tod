@@ -66,6 +66,18 @@ void agentInit(
 	
 void agentStop();
 
+JNIEXPORT jint JNICALL Java_java_tod__1AgConfig_getHostId
+	(JNIEnv * jni, jclass);
+
+JNIEXPORT jstring JNICALL Java_java_tod__1AgConfig_getCollectorHost
+  (JNIEnv* jni, jclass);
+
+JNIEXPORT jstring JNICALL Java_java_tod__1AgConfig_getCollectorPort
+  (JNIEnv* jni, jclass);
+
+JNIEXPORT jstring JNICALL Java_java_tod__1AgConfig_getClientName
+  (JNIEnv* jni, jclass);
+
 #ifdef __cplusplus
 }
 #endif

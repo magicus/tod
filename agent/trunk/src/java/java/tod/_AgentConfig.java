@@ -36,12 +36,7 @@ public class _AgentConfig
 	/**
 	 * The host id assigned by the database to this host.
 	 */
-	public static final int HOST_ID = getHostId();
+	public static final int HOST_ID = _AgConfig.getHostId();
 	
-	/**
-	 * Retrieves the host id that was sent to the native agent.
-	 */
-	public static native int getHostId();
-
 
 }

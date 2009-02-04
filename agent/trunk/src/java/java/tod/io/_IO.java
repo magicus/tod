@@ -27,7 +27,5 @@ public class _IO
 		err(theStringWriter.toString());
 	}
 	
-	public static native String getCollectorHost();
-	public static native String getCollectorPort();
-	public static native String getClientName();
+	
 }

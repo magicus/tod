@@ -57,9 +57,9 @@ public final class EventCollector
 			// Force loading of TOD
 			TOD.captureEnabled();
 			
-			int thePort = Integer.parseInt(_IO.getCollectorPort());
-			String theHost = _IO.getCollectorHost();
-			String theClientName = _IO.getClientName();
+			int thePort = Integer.parseInt(_AgConfig.getCollectorPort());
+			String theHost = _AgConfig.getCollectorHost();
+			String theClientName = _AgConfig.getClientName();
 			
 			if (thePort == 0)
 			{
