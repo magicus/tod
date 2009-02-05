@@ -48,7 +48,9 @@ public class TOD
 	
 	public static void loadInitialCaptureState()
 	{
-		CAPTURE_ENABLED = AgentUtils.readBoolean(AgentConfig.PARAM_CAPTURE_AT_START, true) ? 1 : 0;
+		boolean theEnabled = AgentUtils.readBoolean(AgentConfig.PARAM_CAPTURE_AT_START, true);
+		_IO.out("[TOD] Capture enabled at start: "+theEnabled);
+		CAPTURE_ENABLED = theEnabled ? 1 : 0;
 		AgentReady.CAPTURE_ENABLED = CAPTURE_ENABLED > 0;
 	}
 	

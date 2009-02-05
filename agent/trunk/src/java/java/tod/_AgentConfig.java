@@ -25,11 +25,7 @@ public class _AgentConfig
 		if (theMinor < 4) throw new RuntimeException("Unsupported VM version");
 		JAVA14 = theMinor == 4;
 		
-		if (JAVA14)
-		{
-			_IO.err("[TOD] Using Java 1.4 compatibility mode.");
-			System.load(System.getProperty("tod.agent.lib"));
-		}
+		if (JAVA14) _IO.err("[TOD] Using Java 1.4 compatibility mode.");
 	}
 	
 

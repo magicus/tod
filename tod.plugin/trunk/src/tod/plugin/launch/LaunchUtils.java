@@ -401,9 +401,6 @@ public class LaunchUtils
 			TODConfig theConfig = aInfo.config;
 			ConnectionInfo theConnectionInfo = aInfo.session.getConnectionInfo();
 			
-			String theNativeAgentPath = getNativeLibraryPath()+File.separator+getArch().getLibraryFileName(getLibraryName());
-			theVMArgs.add("-Dtod.agent.lib="+theNativeAgentPath);
-			
 			theVMArgs.add("-Xdebug");
 			theVMArgs.add("-Xnoagent");
 			
@@ -416,7 +413,6 @@ public class LaunchUtils
 					theConfig.get(TODConfig.CLIENT_NAME));
 			
 			theVMArgs.add("-Xrun"+getLibraryName()+":"+theAgentArgs);
-			
 			
 			theVMArgs.add("-Dcollector-host="+theConnectionInfo.getHostName());
 			theVMArgs.add("-Dcollector-port="+theConnectionInfo.getPort());
