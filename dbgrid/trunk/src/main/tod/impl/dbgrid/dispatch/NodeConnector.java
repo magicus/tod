@@ -44,6 +44,7 @@ import tod.impl.dbgrid.db.DatabaseNode;
 import tod.impl.dbgrid.db.NodeRejectedException;
 import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.db.RINodeEventIterator;
+import tod.impl.dbgrid.db.ObjectsDatabase.Decodable;
 import tod.tools.monitoring.MonitoringServer;
 import tod.tools.monitoring.RIMonitoringServer;
 import zz.utils.monitoring.Monitor;
@@ -232,7 +233,7 @@ public class NodeConnector implements RINodeConnector
 		return itsDatabaseNode.getIterator(aCondition);
 	}
 
-	public Object getRegisteredObject(long aId) 
+	public Decodable getRegisteredObject(long aId) 
 	{
 		return itsDatabaseNode.getRegisteredObject(aId);
 	}

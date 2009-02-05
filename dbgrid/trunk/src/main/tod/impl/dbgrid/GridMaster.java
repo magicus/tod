@@ -54,6 +54,7 @@ import tod.impl.dbgrid.aggregator.StringHitsAggregator;
 import tod.impl.dbgrid.db.DatabaseNode;
 import tod.impl.dbgrid.db.NodeRejectedException;
 import tod.impl.dbgrid.db.RIBufferIterator;
+import tod.impl.dbgrid.db.ObjectsDatabase.Decodable;
 import tod.impl.dbgrid.dispatch.DispatcherCollector;
 import tod.impl.dbgrid.dispatch.NodeConnector;
 import tod.impl.dbgrid.dispatch.NodeProxy;
@@ -585,18 +586,18 @@ public class GridMaster implements RIGridMaster
 		return itsLastTimestamp;
 	}
 
-	public Object getRegisteredObject(final long aId)
+	public Decodable getRegisteredObject(final long aId)
 	{
-		List<Object> theResults = Utils.fork(getNodes(), new ITask<RINodeConnector, Object>()
+		List<Decodable> theResults = Utils.fork(getNodes(), new ITask<RINodeConnector, Decodable>()
 		{
-			public Object run(RINodeConnector aInput)
+			public Decodable run(RINodeConnector aInput)
 			{
 				return aInput.getRegisteredObject(aId);
 			}
 		});
 
-		Object theObject = null;
-		for (Object theResult : theResults)
+		Decodable theObject = null;
+		for (Decodable theResult : theResults)
 		{
 			if (theResult == null) continue;
 			if (theObject != null) throw new RuntimeException("Object present in various nodes!");

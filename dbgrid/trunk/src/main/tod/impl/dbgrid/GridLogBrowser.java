@@ -50,6 +50,7 @@ import tod.impl.common.VariablesInspector;
 import tod.impl.database.IBidiIterator;
 import tod.impl.dbgrid.aggregator.GridEventBrowser;
 import tod.impl.dbgrid.aggregator.StringHitsIterator;
+import tod.impl.dbgrid.db.ObjectsDatabase.Decodable;
 import tod.impl.dbgrid.queries.EventIdCondition;
 import zz.utils.Utils;
 import zz.utils.cache.MRUBuffer;
@@ -190,7 +191,8 @@ implements ILogBrowser, IScheduled
 	
 	public Object getRegistered(ObjectId aId)
 	{
-		return itsMaster.getRegisteredObject(aId.getId());
+		Decodable theDecodable = itsMaster.getRegisteredObject(aId.getId());
+		return theDecodable != null ? theDecodable.decode() : null;
 	}
 
 	public long getEventsCount()

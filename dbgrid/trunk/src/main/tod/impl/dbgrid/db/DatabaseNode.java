@@ -43,6 +43,7 @@ import tod.impl.dbgrid.DebuggerGridConfig;
 import tod.impl.dbgrid.GridMaster;
 import tod.impl.dbgrid.IGridEventFilter;
 import tod.impl.dbgrid.RIGridMaster;
+import tod.impl.dbgrid.db.ObjectsDatabase.Decodable;
 import tod.impl.dbgrid.db.ObjectsDatabase.LoadedTypeInfo;
 import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
 import tod.impl.dbgrid.messages.GridEvent;
@@ -444,7 +445,7 @@ public abstract class DatabaseNode
 	 */
 	protected abstract ObjectsDatabase createObjectsDatabase(File aDirectory, String aName);
 	
-	public Object getRegisteredObject(long aId) 
+	public Decodable getRegisteredObject(long aId) 
 	{
 		if (DebugFlags.SKIP_OBJECTS) return null;
 		

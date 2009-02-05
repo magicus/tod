@@ -33,6 +33,7 @@ import tod.impl.dbgrid.aggregator.QueryAggregator;
 import tod.impl.dbgrid.aggregator.RIQueryAggregator;
 import tod.impl.dbgrid.db.NodeRejectedException;
 import tod.impl.dbgrid.db.RIBufferIterator;
+import tod.impl.dbgrid.db.ObjectsDatabase.Decodable;
 import tod.impl.dbgrid.dispatch.RINodeConnector;
 import tod.impl.dbgrid.dispatch.RINodeConnector.StringSearchHit;
 import tod.tools.monitoring.RIMonitoringServerProvider;
@@ -167,7 +168,7 @@ public interface RIGridMaster extends IRemote, RIMonitoringServerProvider
 	 * Returns an object registered by the database, or null
 	 * if not found.
 	 */
-	public Object getRegisteredObject(long aId);
+	public Decodable getRegisteredObject(long aId);
 	
 	/**
 	 * Returns the type of an object registered by the database.

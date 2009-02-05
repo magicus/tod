@@ -27,6 +27,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import tod.impl.dbgrid.db.ObjectsDatabase.Decodable;
 import tod.impl.evdb1.db.ObjectsDatabase1;
 import zz.utils.Utils;
 
@@ -57,7 +58,8 @@ public class TestObjectsDatabase
 		
 		for (int i=0;i<COUNT;i++)
 		{
-			Long theLong = (Long) theDatabase.load(theId);
+			Decodable theDecodable = theDatabase.load(theId);
+			Long theLong = (Long) theDecodable.decode();
 			Assert.assertTrue(theLong.longValue() == i);
 			
 			theId += theRandom.nextInt(100)+1;

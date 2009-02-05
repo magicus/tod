@@ -31,6 +31,7 @@ import tod.core.database.structure.ITypeInfo;
 import tod.impl.dbgrid.IGridEventFilter;
 import tod.impl.dbgrid.db.RIBufferIterator;
 import tod.impl.dbgrid.db.RINodeEventIterator;
+import tod.impl.dbgrid.db.ObjectsDatabase.Decodable;
 import tod.tools.monitoring.RIMonitoringServerProvider;
 import zz.utils.net.Server.ServerAdress;
 import zz.utils.srpc.IRemote;
@@ -90,7 +91,7 @@ public interface RINodeConnector extends IRemote, RIMonitoringServerProvider
 	 * Returns an object registered by this dispatcher, or null
 	 * if not found.
 	 */
-	public Object getRegisteredObject(long aId);
+	public Decodable getRegisteredObject(long aId);
 	
 	/**
 	 * Returns the type of the given object.

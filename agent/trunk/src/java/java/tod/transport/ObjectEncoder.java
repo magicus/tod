@@ -122,7 +122,7 @@ public class ObjectEncoder
 		aBuffer.putInt(theFields.length);
 		for(FieldValue theField : theFields)
 		{
-			writeString(theField.fieldName, aBuffer);
+			aBuffer.putString(theField.fieldName);
 			encode(theField.value, aBuffer, aMapping);
 		}
 	}

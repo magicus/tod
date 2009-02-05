@@ -22,13 +22,11 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 */
 package tod.impl.evdbng.db;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import tod.core.database.structure.IMutableStructureDatabase;
@@ -40,7 +38,6 @@ import tod.impl.evdbng.db.file.ObjectRefTuple;
 import tod.impl.evdbng.db.file.PagedFile;
 import tod.impl.evdbng.db.file.PagedFile.Page;
 import tod.impl.evdbng.db.file.PagedFile.PageIOStream;
-import zz.utils.Utils;
 import zz.utils.monitoring.Monitor;
 
 /**
@@ -172,7 +169,7 @@ public class ObjectsDatabaseNG extends ObjectsDatabase
 	 * @param aId Id of the object to load.
 	 */
 	@Override
-	public Object load(long aId)
+	public Decodable load(long aId)
 	{
 		ObjectPointerTuple theTuple = itsPointersTree.getTupleAt(aId, null);
 		if (theTuple == null) return null;
@@ -185,30 +182,19 @@ public class ObjectsDatabaseNG extends ObjectsDatabase
 		int theDataSize = theStruct.readInt();
 		boolean theCompressed = theStruct.readBoolean();
 		
-		PageListInputStream theStream = new PageListInputStream(theStruct, theDataSize);
-		
-		return theCompressed ? decompress(aId, theStream, theDataSize) : decode(aId, theStream);
-	}
-	
-	/**
-	 * Decompresses and decodes an object
-	 */
-	protected Object decompress(long aId, InputStream aStream, int aSize)
-	{
+		DataInputStream theStream = new DataInputStream(new PageListInputStream(theStruct, theDataSize));
+		byte[] theData = new byte[theDataSize];
 		try
 		{
-			byte[] theData = new byte[aSize];
-			DataInputStream theIn = new DataInputStream(aStream);
-			theIn.readFully(theData);
-			return decode(aId, new GZIPInputStream(new ByteArrayInputStream(theData)));
+			theStream.readFully(theData);
 		}
 		catch (IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+		
+		return new Decodable(aId, theCompressed, theData);
 	}
-	
-
 	
 	@Override
 	protected void registerRef0(long aId, long aClassId)
@@ -286,4 +272,5 @@ public class ObjectsDatabaseNG extends ObjectsDatabase
 			return theSizeToRead;
 		}
 	}
+	
 }

@@ -168,7 +168,7 @@ public class ObjectsDatabase1 extends ObjectsDatabase
 	 * @param aId Id of the object to load.
 	 */
 	@Override
-	public Object load(long aId)
+	public Decodable load(long aId)
 	{
 		ObjectPointerTuple theTuple = itsindex.getTupleAt(aId, true);
 		if (theTuple == null) return null;
@@ -217,7 +217,7 @@ public class ObjectsDatabase1 extends ObjectsDatabase
 			}
 		}
 		
-		return decode(aId, itsByteBuffer.array());
+		return new Decodable(aId, false, itsByteBuffer.array());
 	}
 	
 	@Override

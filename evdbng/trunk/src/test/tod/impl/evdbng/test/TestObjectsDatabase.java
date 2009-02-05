@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import tod.core.config.TODConfig;
 import tod.impl.database.structure.standard.StructureDatabase;
+import tod.impl.dbgrid.db.ObjectsDatabase.Decodable;
 import tod.impl.evdbng.db.ObjectsDatabaseNG;
 import tod.impl.evdbng.db.file.PagedFile;
 import zz.utils.Utils;
@@ -68,7 +69,8 @@ public class TestObjectsDatabase
 		
 		for (int i=0;i<COUNT;i++)
 		{
-			String theString = (String) theDatabase.load(theId);
+			Decodable theDecodable = theDatabase.load(theId);
+			String theString = (String) theDecodable.decode();
 			Assert.assertEquals(theString, theGen.next());
 			
 			theId += theRandom.nextInt(100)+1;

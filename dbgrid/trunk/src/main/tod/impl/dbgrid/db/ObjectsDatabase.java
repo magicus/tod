@@ -24,9 +24,12 @@ package tod.impl.dbgrid.db;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 import tod.core.DebugFlags;
 import tod.core.database.structure.IMutableStructureDatabase;
@@ -242,7 +245,7 @@ public abstract class ObjectsDatabase
 		Monitor.getInstance().unregister(this);
 	}
 	
-	public abstract Object load(long aObjectId);
+	public abstract Decodable load(long aObjectId);
 	
 	/**
 	 * Returns the class id of an object previously registered
@@ -253,7 +256,7 @@ public abstract class ObjectsDatabase
 	/**
 	 * Deserializes an object previously serialized by {@link #encode(Object)}.
 	 */
-	protected Object decode(long aId, byte[] aData)
+	protected static Object decode(long aId, byte[] aData)
 	{
 		assert aData.length > 0;
 		ByteArrayInputStream theStream = new ByteArrayInputStream(aData);
@@ -263,7 +266,7 @@ public abstract class ObjectsDatabase
 	/**
 	 * Deserializes an object previously serialized by {@link #encode(Object)}.
 	 */
-	protected Object decode(long aId, InputStream aStream)
+	protected static Object decode(long aId, InputStream aStream)
 	{
 		return ObjectDecoder.decode(new DataInputStream(aStream));
 	}
@@ -331,6 +334,40 @@ public abstract class ObjectsDatabase
 		public String toString()
 		{
 			return "LoadedTypeInfo "+id+", "+loaderId+" - "+typeInfo;
+		}
+	}
+	
+	/**
+	 * Transport format for registered objects.
+	 * @author gpothier
+	 */
+	public static class Decodable implements Serializable
+	{
+		private static final long serialVersionUID = 47812004581172391L;
+		
+		private final long itsId;
+		private final boolean itsCompressed;
+		private final byte[] itsData;
+		
+		public Decodable(long aId, boolean aCompressed, byte[] aData)
+		{
+			itsId = aId;
+			itsCompressed = aCompressed;
+			itsData = aData;
+		}
+
+		public Object decode()
+		{
+			try
+			{
+				InputStream theStream = new ByteArrayInputStream(itsData);
+				if (itsCompressed) theStream = new GZIPInputStream(theStream);
+				return ObjectsDatabase.decode(itsId, theStream);
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
+			}
 		}
 	}
 }
