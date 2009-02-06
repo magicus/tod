@@ -198,7 +198,15 @@ public class ASMMethodInfo
     	
     	for (ASMLocalVariableInfo theInfo : itsLocalVariableInfo)
     	{
-    		theTable.add(theInfo.resolve());
+    		try
+			{
+				theTable.add(theInfo.resolve());
+			}
+			catch (Exception e)
+			{
+				System.err.println("[ASMMethodInfo.createLocalVariableTable] WARNING: "+e.getMessage());
+				System.err.println(" in: "+itsOwner+"."+itsName+" "+itsDescriptor);
+			}
     	}
     	
     	return theTable;
