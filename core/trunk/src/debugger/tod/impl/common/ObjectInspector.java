@@ -352,6 +352,12 @@ public class ObjectInspector implements IObjectInspector
 			else break;
 		}
 		
+		if (theResult.isEmpty())
+		{
+			// If there is no result, use default initial value (null or 0).
+			theResult.add(new EntryValue(getDelegate().getDefaultInitialValue(aEntry), null));
+		}
+		
 		return theResult.toArray(new EntryValue[theResult.size()]);
 	}
 	
@@ -364,6 +370,7 @@ public class ObjectInspector implements IObjectInspector
 		List<EntryValue> theResult = new ArrayList<EntryValue>();
 		for (EntryValue theValue : theEntryValue)
 		{
+			if (theValue.getSetter() == null) continue;
 			theBrowser.setNextEvent(theValue.getSetter());
 			ILogEvent theNext = theBrowser.next();
 			assert theNext.equals(theValue.getSetter());
@@ -388,6 +395,7 @@ public class ObjectInspector implements IObjectInspector
 		List<EntryValue> theResult = new ArrayList<EntryValue>();
 		for (EntryValue theValue : theEntryValue)
 		{
+			if (theValue.getSetter() == null) continue;
 			theBrowser.setPreviousEvent(theValue.getSetter());
 			ILogEvent thePrevious = theBrowser.previous();
 			assert thePrevious.equals(theValue.getSetter());
@@ -459,6 +467,11 @@ public class ObjectInspector implements IObjectInspector
 		 * Delegate method for {@link ObjectInspector#getNewValue(IFieldInfo, ILogEvent)}
 		 */
 		public abstract Object[] getNewValue(IEntryInfo aEntry, ILogEvent aEvent);
+		
+		/**
+		 * Returns the default JVM-assigned value for the given entry.
+		 */
+		public abstract Object getDefaultInitialValue(IEntryInfo aEntry);
 	}
 	
 	private static final Delegate UNAVAILABLE = new Delegate()
@@ -483,6 +496,12 @@ public class ObjectInspector implements IObjectInspector
 
 		@Override
 		public Object[] getNewValue(IEntryInfo aEntry, ILogEvent aEvent)
+		{
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
+		public Object getDefaultInitialValue(IEntryInfo arg0)
 		{
 			throw new UnsupportedOperationException();
 		}
@@ -573,9 +592,14 @@ public class ObjectInspector implements IObjectInspector
 			{
 				return new Object[] {theEvent.getValue()};
 			}
-				
 		}
-		
+
+		@Override
+		public Object getDefaultInitialValue(IEntryInfo aEntry)
+		{
+			FieldEntryInfo theEntry = (FieldEntryInfo) aEntry;
+			return theEntry.getField().getType().getDefaultInitialValue();
+		}
 	}
 
 	private static IBehaviorInfo getArrayCopy(IStructureDatabase aStructureDatabase)
@@ -678,6 +702,12 @@ public class ObjectInspector implements IObjectInspector
 			TODUtils.logf(0, "Retrieved slot %d of array %s -> %s", theIndex, itsObjectId, Arrays.asList(theResult));
 			
 			return theResult;
+		}
+		
+		@Override
+		public Object getDefaultInitialValue(IEntryInfo arg0)
+		{
+			return ((IArrayTypeInfo) getType()).getElementType().getDefaultInitialValue();
 		}
 	}
 	

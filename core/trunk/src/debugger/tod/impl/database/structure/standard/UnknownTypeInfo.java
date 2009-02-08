@@ -66,4 +66,9 @@ public class UnknownTypeInfo extends TypeInfo
 	{
 		return this;
 	}
+
+	public Object getDefaultInitialValue()
+	{
+		return null;
+	}
 }

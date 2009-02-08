@@ -63,6 +63,7 @@ import zz.jinterp.JObject;
 import zz.jinterp.JStaticField;
 import zz.jinterp.JType;
 import zz.jinterp.SimpleInterp;
+import zz.utils.Utils;
 
 public class TODInterpreter extends SimpleInterp
 {
@@ -265,7 +266,7 @@ public class TODInterpreter extends SimpleInterp
 			{
 				IEntryInfo theEntry = getEntry(itsInspector, convertField(aField));
 				EntryValue[] theEntryValue = itsInspector.getEntryValue(theEntry);
-				if (theEntryValue.length != 1) throw new RuntimeException("Can't retrieve value");
+				if (theEntryValue.length != 1) throw new RuntimeException("Can't retrieve value for: "+aField);
 				Object theValue = theEntryValue[0].getValue();
 				theResult = theValue == null ? ToStringComputer.NULL : convertObject(theValue);
 			}
@@ -304,14 +305,15 @@ public class TODInterpreter extends SimpleInterp
 		@Override
 		public JObject get(int aIndex)
 		{
-			JObject theResult = itsValues.get(aIndex);
+			JObject theResult = Utils.listGet(itsValues, aIndex);
 			if (theResult == null)
 			{
 				IEntryInfo theEntry = itsInspector.getEntries(aIndex, 1).get(0);
 				EntryValue[] theEntryValue = itsInspector.getEntryValue(theEntry);
-				if (theEntryValue.length != 1) throw new RuntimeException("Can't retrieve value");
+				if (theEntryValue.length != 1) throw new RuntimeException("Can't retrieve value at "+aIndex);
 				Object theValue = theEntryValue[0].getValue();
 				theResult = theValue == null ? ToStringComputer.NULL : convertObject(theValue);
+				Utils.listSet(itsValues, aIndex, theResult);
 			}
 			
 			return theResult == ToStringComputer.NULL ? null : theResult;

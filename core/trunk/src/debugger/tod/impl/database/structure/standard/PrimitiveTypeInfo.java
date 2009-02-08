@@ -26,19 +26,82 @@ import org.objectweb.asm.Type;
 
 import tod.core.database.structure.IPrimitiveTypeInfo;
 
-public class PrimitiveTypeInfo extends TypeInfo implements IPrimitiveTypeInfo
+public abstract class PrimitiveTypeInfo extends TypeInfo implements IPrimitiveTypeInfo
 {
 	private static final long serialVersionUID = 2145422655286109651L;
 	
-	public static final PrimitiveTypeInfo VOID = new PrimitiveTypeInfo("void", Type.VOID_TYPE, 0, 1);
-	public static final PrimitiveTypeInfo BOOLEAN = new PrimitiveTypeInfo("boolean", Type.BOOLEAN_TYPE, 1, 2);
-	public static final PrimitiveTypeInfo INT = new PrimitiveTypeInfo("int", Type.INT_TYPE, 1, 3);
-	public static final PrimitiveTypeInfo LONG = new PrimitiveTypeInfo("long", Type.LONG_TYPE, 2, 4);
-	public static final PrimitiveTypeInfo BYTE = new PrimitiveTypeInfo("byte", Type.BYTE_TYPE, 1, 5);
-	public static final PrimitiveTypeInfo SHORT = new PrimitiveTypeInfo("short", Type.SHORT_TYPE, 1, 6);
-	public static final PrimitiveTypeInfo CHAR = new PrimitiveTypeInfo("char", Type.CHAR_TYPE, 1, 7);
-	public static final PrimitiveTypeInfo DOUBLE = new PrimitiveTypeInfo("double", Type.DOUBLE_TYPE, 2, 8);
-	public static final PrimitiveTypeInfo FLOAT = new PrimitiveTypeInfo("float", Type.FLOAT_TYPE, 1, 9);
+	public static final PrimitiveTypeInfo VOID = new PrimitiveTypeInfo("void", Type.VOID_TYPE, 0, 1)
+	{
+		public Object getDefaultInitialValue()
+		{
+			return null;
+		}
+	};
+	
+	public static final PrimitiveTypeInfo BOOLEAN = new PrimitiveTypeInfo("boolean", Type.BOOLEAN_TYPE, 1, 2)
+	{
+		public Object getDefaultInitialValue()
+		{
+			return Boolean.FALSE;
+		}
+	};
+	
+	public static final PrimitiveTypeInfo INT = new PrimitiveTypeInfo("int", Type.INT_TYPE, 1, 3)
+	{
+		public Object getDefaultInitialValue()
+		{
+			return 0;
+		}
+	};
+	
+	public static final PrimitiveTypeInfo LONG = new PrimitiveTypeInfo("long", Type.LONG_TYPE, 2, 4)
+	{
+		public Object getDefaultInitialValue()
+		{
+			return 0;
+		}
+	};
+	
+	public static final PrimitiveTypeInfo BYTE = new PrimitiveTypeInfo("byte", Type.BYTE_TYPE, 1, 5)
+	{
+		public Object getDefaultInitialValue()
+		{
+			return 0;
+		}
+	};
+	
+	public static final PrimitiveTypeInfo SHORT = new PrimitiveTypeInfo("short", Type.SHORT_TYPE, 1, 6)
+	{
+		public Object getDefaultInitialValue()
+		{
+			return 0;
+		}
+	};
+	
+	public static final PrimitiveTypeInfo CHAR = new PrimitiveTypeInfo("char", Type.CHAR_TYPE, 1, 7)
+	{
+		public Object getDefaultInitialValue()
+		{
+			return 0;
+		}
+	};
+	
+	public static final PrimitiveTypeInfo DOUBLE = new PrimitiveTypeInfo("double", Type.DOUBLE_TYPE, 2, 8)
+	{
+		public Object getDefaultInitialValue()
+		{
+			return 0;
+		}
+	};
+	
+	public static final PrimitiveTypeInfo FLOAT = new PrimitiveTypeInfo("float", Type.FLOAT_TYPE, 1, 9)
+	{
+		public Object getDefaultInitialValue()
+		{
+			return 0;
+		}
+	};
+	
 
 	public static final PrimitiveTypeInfo[] TYPES = {
 		VOID, BOOLEAN, INT, LONG, BYTE, SHORT, CHAR, DOUBLE, FLOAT

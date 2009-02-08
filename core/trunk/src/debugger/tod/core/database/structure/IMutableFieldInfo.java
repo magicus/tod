@@ -26,7 +26,6 @@ package tod.core.database.structure;
  * Writable extension of {@link IFieldInfo}.
  * @author gpothier
  */
-public interface IMutableFieldInfo extends IFieldInfo, IMutableLocationInfo
+public interface IMutableFieldInfo extends IFieldInfo, IMutableMemberInfo
 {
-
 }

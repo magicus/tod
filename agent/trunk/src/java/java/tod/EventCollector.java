@@ -28,6 +28,8 @@ import java.tod.io._SocketChannel;
 import java.tod.transport.IOThread;
 import java.tod.transport.LowLevelEventWriter;
 import java.tod.transport.NakedLinkedList;
+import java.util.ArrayList;
+import java.util.List;
 
 import tod.agent.AgentConfig;
 import tod.agent.AgentDebugFlags;
@@ -87,6 +89,11 @@ public final class EventCollector
 			System.exit(1);
 		}
 		INSTANCE = c;
+		
+		// Force loading of a few classes to allow execution of ArrayList.toString
+		Class f;
+		f = Void.class;
+		f = InternalError.class;
 	}
 	
 	private static PrintStream itsPrintStream = AgentDebugFlags.EVENT_INTERPRETER_PRINT_STREAM;

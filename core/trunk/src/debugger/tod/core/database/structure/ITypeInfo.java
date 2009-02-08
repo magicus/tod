@@ -62,5 +62,8 @@ public interface ITypeInfo extends ILocationInfo
 	 */
 	public ITypeInfo createUncertainClone();
 	
-
+	/**
+	 * Returns the default JVM-assigned value for uninitialized fields of this type.
+	 */
+	public Object getDefaultInitialValue();
 }

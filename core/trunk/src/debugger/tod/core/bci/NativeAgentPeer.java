@@ -368,7 +368,7 @@ public abstract class NativeAgentPeer extends SocketThread
 		byte[] theBytecode = new byte[theLength];
 		aInputStream.readFully(theBytecode);
 		
-//		Utils.println("Registering %s [%d]...", theClassName, theLength);
+		Utils.println("Registering %s [%d]...", theClassName, theLength);
 		InstrumentedClass theInstrumentedClass = null;
 		try
 		{

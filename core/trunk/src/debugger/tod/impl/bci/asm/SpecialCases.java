@@ -66,6 +66,14 @@ public class SpecialCases
 	}
 
 	/**
+	 * Whether there is a spec for the given class.
+	 */
+	public static boolean hasSpec(String aClassName)
+	{
+		return itsSpecs.containsKey(aClassName);
+	}
+	
+	/**
 	 * Returns the instrumentation spec for the given class.
 	 */
 	public static InstrumentationSpec getSpec(String aClassName)

@@ -23,6 +23,7 @@ RSA Data Security, Inc. MD5 Message-Digest Algorithm".
 package tod.impl.database.structure.standard;
 
 import tod.core.ILogCollector;
+import tod.core.database.structure.Access;
 import tod.core.database.structure.IMemberInfo;
 import tod.core.database.structure.IShareableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
@@ -46,6 +47,7 @@ implements IMemberInfo, ISerializableLocationInfo
 	private int itsTypeId;
 	
 	private boolean itsStatic;
+	private Access itsAccess;
 	
 	public MemberInfo(
 			IShareableStructureDatabase aDatabase, 
@@ -67,5 +69,15 @@ implements IMemberInfo, ISerializableLocationInfo
 	public boolean isStatic()
 	{
 		return itsStatic;
+	}
+
+	public Access getAccess()
+	{
+		return itsAccess;
+	}
+
+	public void setAccess(Access aAccess)
+	{
+		itsAccess = aAccess;
 	}
 }

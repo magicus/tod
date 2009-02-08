@@ -93,6 +93,16 @@ public class ASMDebuggerConfig
 	 */
 	public boolean isInScope(String aClassName)
 	{
+		if (getTODConfig().get(TODConfig.AGENT_SKIP_CORE_CLASSE))
+		{
+			// These are the same is in agent.cpp 
+			if (aClassName.startsWith("java/")
+				|| aClassName.startsWith("sun/")
+		// 		|| aName.startsWith("javax/")
+				|| aClassName.startsWith("com/sun/")
+				|| aClassName.startsWith("net/sourceforge/retroweaver/")) return false;
+		}
+
 		return BCIUtils.acceptClass(aClassName, getGlobalSelector())
 			&& BCIUtils.acceptClass(aClassName, getTraceSelector());
 	}

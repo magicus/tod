@@ -536,5 +536,8 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		return theClone;
 	}
 
-
+	public Object getDefaultInitialValue()
+	{
+		return null;
+	}
 }

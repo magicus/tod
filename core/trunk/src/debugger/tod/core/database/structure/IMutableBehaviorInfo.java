@@ -31,7 +31,7 @@ import tod.impl.database.structure.standard.TagMap;
  * Writable extension of {@link IBehaviorInfo}
  * @author gpothier
  */
-public interface IMutableBehaviorInfo extends IBehaviorInfo, IMutableLocationInfo
+public interface IMutableBehaviorInfo extends IBehaviorInfo, IMutableMemberInfo
 {
 	/**
 	 * Sets up the attributes of this behavior.

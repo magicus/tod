@@ -33,6 +33,7 @@ import org.objectweb.asm.Type;
 import tod.Util;
 import tod.agent.BehaviorCallType;
 import tod.core.config.TODConfig;
+import tod.core.database.structure.Access;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IMutableBehaviorInfo;
@@ -635,6 +636,22 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		itsInstrumentationRanges.end();
 	}
 	
+	private IFieldInfo getVirtualField(IMutableClassInfo aOwner, String aName, ITypeInfo aType, boolean aStatic)
+	{
+		IMutableClassInfo theClass = aOwner;
+		while(theClass != null)
+		{
+			IFieldInfo theField = theClass.getField(aName);
+			if (theField != null)
+			{
+				if (theClass == aOwner) return theField;
+				else if (theField.getAccess() != Access.PRIVATE) return theField;
+			}
+			theClass = (IMutableClassInfo) theClass.getSupertype();
+		}
+		
+		return aOwner.getNewField(aName, aType, aStatic);
+	}
 	
 	public void fieldWrite(
 			int aOpcode, 
@@ -647,7 +664,7 @@ public class ASMBehaviorInstrumenter implements Opcodes
 		IMutableClassInfo theOwner = itsStructureDatabase.getNewClass(Util.jvmToScreen(aOwner));
 
 		ITypeInfo theType = itsStructureDatabase.getNewType(aDesc);
-		IFieldInfo theField = theOwner.getNewField(aName, theType, theStatic);
+		IFieldInfo theField = getVirtualField(theOwner, aName, theType, theStatic);
 		
 		Type theASMType = Type.getType(aDesc);
 		

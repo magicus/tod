@@ -77,14 +77,14 @@ public class ASMInstrumenter implements IInstrumenter
 		// Strange things happen inside those classes...
 		if (aName.startsWith("sun/reflect/")) return null;
 		
-		if (aName.equals("java/util/ArrayList"))
-		{
-			System.out.println("ASMInstrumenter.instrumentClass()");
-		}
-				
 		if (TODConfig.DB_SCOPE_CHECK)
 		{
 			if (!BCIUtils.acceptClass(aName, itsConfig.getGlobalSelector())) return null;
+		}
+		
+		if ("java/util/ArrayList".equals(aName))
+		{
+			System.out.println("ASMInstrumenter.instrumentClass()");
 		}
 		
 		String theChecksum = Utils.md5String(aBytecode);

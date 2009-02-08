@@ -29,63 +29,12 @@ POSSIBILITY OF SUCH DAMAGE.
 Parts of this work rely on the MD5 algorithm "derived from the RSA Data Security, 
 Inc. MD5 Message-Digest Algorithm".
 */
-package tod.tools.interpreter;
+package tod.core.database.structure;
 
-
-import tod.core.config.TODConfig;
-import tod.core.database.browser.IObjectInspector;
-import tod.tools.interpreter.TODInterpreter.TODInstance;
-import zz.jinterp.JBehavior;
-import zz.jinterp.JClass;
-import zz.jinterp.JInstance;
-import zz.jinterp.JObject;
-import zz.jinterp.JType;
-import zz.jinterp.JPrimitive.JVoid;
-
-/**
- * Permits to compute the result of toString on reconstituted objects.
- * @author gpothier
- */
-public class ToStringComputer
+public interface IMutableMemberInfo extends IMemberInfo, IMutableLocationInfo
 {
-	static final JObject NULL = new JVoid();
-	
-	private final IObjectInspector itsInspector;
-	private final TODInterpreter itsInterpreter;
-	
-	
-	public ToStringComputer(TODConfig aConfig, IObjectInspector aInspector)
-	{
-		itsInspector = aInspector;
-		
-		itsInterpreter = new TODInterpreter(aConfig, aInspector.getLogBrowser());
-		itsInterpreter.setRefEvent(itsInspector.getReferenceEvent());
-	}
-	
 	/**
-	 * Computes the toString of the inspected object. 
+	 * Changes the access type for this member
 	 */
-	public String compute()
-	{
-		JObject[] args = {}; 
-		JType theType = itsInterpreter.convertType(itsInspector.getType());
-		
-		JObject theResult;
-		if (theType instanceof JClass)
-		{
-			JClass theClass = (JClass) theType;
-			JBehavior theBehavior = theClass.getVirtualBehavior("toString", "()Ljava/lang/String;");
-			TODInstance theInstance = itsInterpreter.newInstance(theClass, itsInspector);
-			theResult = theBehavior.invoke(null, theInstance, args);
-		}
-		else throw new RuntimeException("Not handled: "+theType);
-		
-		if (theResult instanceof JInstance)
-		{
-			JInstance theInstance = (JInstance) theResult;
-			return itsInterpreter.toString(theInstance);
-		}
-		else throw new RuntimeException("Unexpected result: "+theResult);
-	}
-	
+	public void setAccess(Access aAccess);
 }

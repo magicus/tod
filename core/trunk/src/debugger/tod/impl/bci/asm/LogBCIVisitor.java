@@ -40,10 +40,12 @@ import org.objectweb.asm.Opcodes;
 import tod.Util;
 import tod.agent.BehaviorCallType;
 import tod.core.config.TODConfig;
+import tod.core.database.structure.Access;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IMutableBehaviorInfo;
 import tod.core.database.structure.IMutableClassInfo;
+import tod.core.database.structure.IMutableFieldInfo;
 import tod.core.database.structure.IMutableStructureDatabase;
 import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.IBehaviorInfo.BytecodeRole;
@@ -233,7 +235,15 @@ public class LogBCIVisitor extends ClassAdapter implements Opcodes
 			Object aValue)
 	{
 		ITypeInfo theType = itsDatabase.getNewType(aDesc);
-		itsClassInfo.getNewField(aName, theType, (aAccess & Opcodes.ACC_STATIC) != 0);
+		IMutableFieldInfo theField = itsClassInfo.getNewField(aName, theType, (aAccess & Opcodes.ACC_STATIC) != 0);
+		
+		Access theAccess = Access.DEFAULT;
+		if ((aAccess & Opcodes.ACC_PUBLIC) != 0) theAccess = Access.PUBLIC;
+		else if ((aAccess & Opcodes.ACC_PROTECTED) != 0) theAccess = Access.PROTECTED;
+		else if ((aAccess & Opcodes.ACC_PRIVATE) != 0) theAccess = Access.PRIVATE;
+		
+		theField.setAccess(theAccess);
+		
 		return super.visitField(aAccess, aName, aDesc, aSignature, aValue);
 	}
 	
