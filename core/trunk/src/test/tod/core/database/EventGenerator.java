@@ -90,7 +90,7 @@ public class EventGenerator
 		
 		for(int i=0;i<itsThreadsRange;i++) itsThreads.add(new ThreadInfo(null, i, 0, ""+i));
 		for(int i=0;i<itsBehaviorRange;i++) itsBehaviors.add(new BehaviorInfo(null, i, null, ""+i, false, "", null, null));
-		for(int i=0;i<itsFieldRange;i++) itsFields.add(new FieldInfo(null, i, null, ""+i, false));
+		for(int i=0;i<itsFieldRange;i++) itsFields.add(new FieldInfo(null, i, null, ""+i, null, false));
 	}
 
 	public EventGenerator(long aSeed)

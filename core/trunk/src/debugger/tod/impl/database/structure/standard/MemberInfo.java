@@ -44,26 +44,26 @@ implements IMemberInfo, ISerializableLocationInfo
 	 * We keep the type id instead of actual type in order to simplify
 	 * the handling of remote structure databases.
 	 */
-	private int itsTypeId;
+	private final int itsDeclaringTypeId;
 	
-	private boolean itsStatic;
+	private final boolean itsStatic;
 	private Access itsAccess;
 	
 	public MemberInfo(
 			IShareableStructureDatabase aDatabase, 
 			int aId, 
-			ITypeInfo aType, 
+			ITypeInfo aDeclaringType, 
 			String aName, 
 			boolean aStatic)
 	{
 		super(aDatabase, aId, aName);
-		itsTypeId = aType.getId();
+		itsDeclaringTypeId = aDeclaringType.getId();
 		itsStatic = aStatic;
 	}
 	
 	public ITypeInfo getDeclaringType()
 	{
-		return getDatabase().getType(itsTypeId, true);
+		return getDatabase().getType(itsDeclaringTypeId, true);
 	}
 	
 	public boolean isStatic()

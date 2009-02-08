@@ -409,7 +409,7 @@ implements IMutableClassInfo, ISerializableLocationInfo
 		if (theField == null)
 		{
 			int theId = itsClassNameInfo.getFieldId(aName, aType);
-			theField = new FieldInfo(getStructureDatabase(), theId, this, aName, aStatic);
+			theField = new FieldInfo(getStructureDatabase(), theId, this, aName, aType, aStatic);
 			
 			register(theField);
 		}
@@ -425,7 +425,7 @@ implements IMutableClassInfo, ISerializableLocationInfo
 			throw new IllegalArgumentException("There is already a field with id "+aId);
 		}
 		
-		theField = new FieldInfo(getStructureDatabase(), aId, this, aName, aStatic);
+		theField = new FieldInfo(getStructureDatabase(), aId, this, aName, aType, aStatic);
 		register(theField);
 		return theField;
 	}

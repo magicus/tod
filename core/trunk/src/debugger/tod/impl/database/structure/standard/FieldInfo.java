@@ -37,14 +37,22 @@ public class FieldInfo extends MemberInfo implements IMutableFieldInfo
 {
 	private static final long serialVersionUID = 1642825455287392890L;
 
+	/**
+	 * We keep the type id instead of actual type in order to simplify
+	 * the handling of remote structure databases.
+	 */
+	private final int itsTypeId;
+
 	public FieldInfo(
 			IShareableStructureDatabase aDatabase, 
 			int aId, 
-			ITypeInfo aTypeInfo, 
+			ITypeInfo aDeclaringType, 
 			String aName,
+			ITypeInfo aType,
 			boolean aStatic)
 	{
-		super(aDatabase, aId, aTypeInfo, aName, aStatic);
+		super(aDatabase, aId, aDeclaringType, aName, aStatic);
+		itsTypeId = aType.getId();
 	}
 
 	@Override
@@ -55,8 +63,7 @@ public class FieldInfo extends MemberInfo implements IMutableFieldInfo
 	
 	public ITypeInfo getType()
 	{
-		// TODO: implement
-		throw new UnsupportedOperationException("This should be implemented");
+		return getDatabase().getType(itsTypeId, true);
 	}
 
 	@Override

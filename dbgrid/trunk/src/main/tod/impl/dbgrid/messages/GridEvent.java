@@ -145,7 +145,7 @@ implements Serializable
 		}
 		else
 		{
-			return new FieldInfo(null, aId, null, null, false);
+			return new FieldInfo(null, aId, null, null, null, false);
 		}
 	}
 
