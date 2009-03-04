@@ -255,7 +255,7 @@ void cbJvmInitDone(JVMPI_Event *event)
 	registerNative(jni, cls_AgConfig, "getCollectorHost", "()Ljava/lang/String;", (void*) Java_java_tod__1AgConfig_getCollectorHost);
 	registerNative(jni, cls_AgConfig, "getCollectorPort", "()Ljava/lang/String;", (void*) Java_java_tod__1AgConfig_getCollectorPort);
 	registerNative(jni, cls_AgConfig, "getClientName", "()Ljava/lang/String;", (void*) Java_java_tod__1AgConfig_getClientName);
-	
+
 	jclass cls_SocketChannel = loadClass(jni, "java/tod/io/_SocketChannel");
 	registerNative(jni, cls_SocketChannel, "open0", "(Ljava/lang/String;I)I", (void*) Java_java_tod_io__1SocketChannel_open0);
 	registerNative(jni, cls_SocketChannel, "flush0", "(I)I", (void*) Java_java_tod_io__1SocketChannel_flush0);
@@ -263,12 +263,9 @@ void cbJvmInitDone(JVMPI_Event *event)
 	registerNative(jni, cls_SocketChannel, "write0", "(I[BII)I", (void*) Java_java_tod_io__1SocketChannel_write0);
 	registerNative(jni, cls_SocketChannel, "read0", "(I[BII)I", (void*) Java_java_tod_io__1SocketChannel_read0);
 	registerNative(jni, cls_SocketChannel, "in_avail0", "(I)I", (void*) Java_java_tod_io__1SocketChannel_in_1avail0);
-	
-
 
 	printf("Registered native methods.\n");
 	fflush(stdout);
-	
 
 	agentStart(jni);
 }
