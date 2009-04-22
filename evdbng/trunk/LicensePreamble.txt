@@ -1,5 +1,0 @@
-/*
-evdbng - Fast database for TOD
-Copyright (C) 2007 Sylapse
-Proprietary and confidential
-*/
