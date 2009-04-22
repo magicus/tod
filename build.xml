@@ -1,0 +1,111 @@
+<project name="TOD" default="compile" basedir=".">
+
+    <target name="init">
+
+        <property name="build.dir" value="${basedir}/build"/>
+        <property name="lib.dir" value="${basedir}/lib"/>
+        <property name="src-agent.dir" value="${basedir}/src/agent"/>
+        <property name="src-debugger.dir" value="${basedir}/src/debugger"/>
+        <property name="src-test.dir" value="${basedir}/src/test"/>
+        <property name="src-testcase.dir" value="${basedir}/src/testcase"/>
+        <property name="classes-agent.dir" value="${basedir}/classes-agent"/>
+        <property name="classes-debugger.dir" value="${basedir}/classes-debugger"/>
+        <property name="classes-test.dir" value="${basedir}/classes-test"/>
+        <property name="classes-testcase.dir" value="${basedir}/classes-testcase"/>
+
+        <path id="agent.classpath">
+            <pathelement path="${lib.dir}/asm-2.1.jar"/>
+            <pathelement path="${lib.dir}/asm-commons-2.1.jar"/>
+        </path>
+    	
+        <path id="debugger.classpath">
+            <pathelement path="../zz.utils/bin"/>
+            <pathelement path="../zz.csg/bin"/>
+        	<pathelement path="${classes-agent.dir}"/>
+            <pathelement path="${lib.dir}/asm-2.1.jar"/>
+            <pathelement path="${lib.dir}/asm-commons-2.1.jar"/>
+        </path>
+    	
+        <path id="test.classpath">
+            <pathelement path="../zz.utils/bin"/>
+        	<pathelement path="${classes-agent.dir}"/>
+        	<pathelement path="${classes-debugger.dir}"/>
+            <pathelement path="${lib.dir}/junit-4.1.jar"/>
+        </path>
+
+    </target>
+
+    <target name="clean" depends="init">
+        <delete includeemptydirs="true" failonerror="false">
+            <fileset dir="${build.dir}"/>
+            <fileset dir="${classes-agent.dir}"/>
+            <fileset dir="${classes-debugger.dir}"/>
+        </delete>
+    </target>
+
+    <target name="compile-agent" depends="init">
+        <mkdir dir="${classes-agent.dir}"/>
+        <javac compiler="javac1.5" source="1.5" target="1.5"
+        	debug="yes" nowarn="yes"
+            srcdir="${src-agent.dir}"
+            destdir="${classes-agent.dir}"
+            classpathref="agent.classpath"/>
+    </target>
+
+    <target name="compile-debugger" depends="init, compile-agent">
+        <mkdir dir="${classes-debugger.dir}"/>
+        <javac compiler="javac1.5" source="1.5" target="1.5"
+        	debug="yes" nowarn="yes"
+            srcdir="${src-debugger.dir}"
+            destdir="${classes-debugger.dir}"
+            classpathref="debugger.classpath"/>
+    </target>
+	
+    <target name="compile-test" depends="init, compile-agent, compile-debugger">
+        <mkdir dir="${classes-test.dir}"/>
+        <javac compiler="javac1.5" source="1.5" target="1.5"
+        	debug="yes" nowarn="yes"
+            srcdir="${src-test.dir}"
+            destdir="${classes-test.dir}"
+            classpathref="test.classpath"/>
+    </target>
+	
+    <target name="compile-testcase" depends="init">
+        <mkdir dir="${classes-testcase.dir}"/>
+        <javac compiler="javac1.5" source="1.5" target="1.5"
+        	debug="yes" nowarn="yes"
+            srcdir="${src-testcase.dir}"
+            destdir="${classes-testcase.dir}"
+            classpathref="debugger.classpath"/>
+    </target>
+	
+	<target name="compile" depends="compile-agent, compile-debugger, compile-test, compile-testcase"/>
+	
+	<target name="rmic" depends="compile">
+		<rmic 
+			base="${classes-debugger.dir}" 
+			classpathref="debugger.classpath"
+			classname="tod.impl.dbgrid.GridMaster"/>
+	</target>
+
+	<target name="jar" depends="compile, rmic">
+        <mkdir dir="${build.dir}"/>
+		<jar destfile="${build.dir}/tod-agent.jar" basedir="${classes-agent.dir}"/>
+		<jar destfile="${build.dir}/tod-debugger.jar" basedir="${classes-debugger.dir}"/>
+		<jar destfile="${build.dir}/tod-test.jar" basedir="${classes-test.dir}"/>
+		<jar destfile="${build.dir}/tod-testcase.jar" basedir="${classes-testcase.dir}"/>
+	</target>
+	
+    <target name="pushJars" depends="jar" >
+        <exec executable="rsync" failonerror="true" output="rsync.log">
+        	<arg value="-avz"/>
+        	<arg value="-e"/>
+        	<arg value="ssh"/>
+        	<arg value="--rsync-path"/>
+        	<arg value="/usr/bin/rsync --server --daemon --config=/home/gpothier/rsync.conf ."/>
+        	<arg value="${build.dir}"/>
+        	<arg value="gpothier@syntagma.dim.uchile.cl::tod"/>
+    	</exec>
+    </target>
+	
+</project>
