@@ -3,7 +3,7 @@
 	<classpathentry kind="src" path="src/main"/>
 	<classpathentry kind="src" path="src/test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="src" path="/TOD">
+	<classpathentry exported="true" kind="src" path="/TOD-core">
 		<attributes>
 			<attribute name="org.eclipse.ajdt.aspectpath" value="true"/>
 		</attributes>
